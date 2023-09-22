@@ -1,0 +1,20 @@
+{
+  "name": "dispensing-manager-ui",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "nuxt": "^3.7.3",
+    "nuxt-base": "workspace:*",
+    "unocss-config": "workspace:*"
+  }
+}

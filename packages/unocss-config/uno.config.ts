@@ -1,0 +1,16 @@
+import { defineConfig, presetAttributify, presetUno, transformerDirectives, transformerVariantGroup } from 'unocss'
+
+// https://unocss.dev/guide/
+export default defineConfig({
+  shortcuts: {
+    'e-border': 'border-solid border-1px',
+  },
+  presets: [
+    presetUno({ preflight: true }),
+    presetAttributify(),
+  ],
+  transformers: [
+    transformerVariantGroup(),
+    transformerDirectives(),
+  ],
+})
