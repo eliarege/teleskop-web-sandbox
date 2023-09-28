@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import type { TableColumnCtx } from 'element-plus'
-import { ElScrollbar } from 'element-plus'
 import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
 import type {

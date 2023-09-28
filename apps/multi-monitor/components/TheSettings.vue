@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { ElButton } from 'element-plus'
 import {
   sharpDashboard,
   sharpFormatColorFill,

@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import type { TableData } from 'shared/types'
 import { useI18n } from 'vue-i18n'
-import { ElInput, ElTable, ElTableColumn } from 'element-plus'
 import { useDataStore } from '../store/Datas'
+import type { TableData } from '~/shared/types'
 
 const router = useRouter()
 const search = ref('')

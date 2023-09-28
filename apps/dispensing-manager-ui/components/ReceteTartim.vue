@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ElScrollbar } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { navigateToPage } from '../shared/functions'
 
@@ -99,8 +98,8 @@ function changePlannedMachine() {
         :settings="a"
       />
     </ElScrollbar>
-      <div class="footer-buttons gap-5">
-        <q-btn
+    <div class="footer-buttons gap-5">
+      <q-btn
         v-for="button of buttonProps"
         :key="button.name"
         class="e-border"
@@ -109,14 +108,13 @@ function changePlannedMachine() {
         :label="button.label"
         :icon="button.icon"
         @click="navigateToPage(button.link)"
-        />
-        <!-- TODO: button operations function that decides what t2o do it can be refresh or redirect to another page  -->
-      </div>
+      />
+      <!-- TODO: button operations function that decides what t2o do it can be refresh or redirect to another page  -->
+    </div>
   </div>
 </template>
 
 <style scoped>
-
 .header-class {
   background-color: gray;
   color: white;

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { ElBacktop } from 'element-plus'
 import type { MachineData } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
 
