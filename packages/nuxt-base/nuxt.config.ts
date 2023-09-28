@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  css: ['element-plus/dist/index.css'],
+  css: ['@unocss/reset/tailwind.css', 'element-plus/dist/index.css'],
   modules: [
     '@element-plus/nuxt',
     'nuxt-quasar-ui',

@@ -1,0 +1,532 @@
+<script setup lang="ts">
+import type { PropType } from 'vue'
+import type { TableColumnCtx } from 'element-plus'
+import { ElScrollbar } from 'element-plus'
+import { Icon } from '@iconify/vue'
+import { useI18n } from 'vue-i18n'
+import type {
+  MachineDataRaw,
+  NewBatchLogs,
+  NewInterventions,
+  NewRecipe,
+  Recipe,
+} from '~/shared/types'
+import { useDataStore } from '~~/store/Datas'
+
+export interface SpanMethodProps {
+  row: Recipe
+  column: TableColumnCtx<Recipe>
+  rowIndex: number
+  columnIndex: number
+}
+const props = defineProps({
+  currentMachine: {
+    type: Object as PropType<MachineDataRaw> | null,
+    required: true,
+  },
+  maxValue: {
+    type: Number,
+    default: 140,
+  },
+  intervents: {
+    type: Array as PropType<NewInterventions[]> | null,
+    required: true,
+  },
+  logData: {
+    type: Array as PropType<NewBatchLogs[]>,
+    required: true,
+  },
+})
+
+const route = useRoute()
+const router = useRouter()
+const store = useDataStore()
+const { t } = useI18n()
+
+const { data: recipe } = await useFetch('/api/recipe', {
+  query: {
+    recipeJB: props.currentMachine.runningJobOrder,
+    recipeID: props.currentMachine.id,
+    teleskopType: store.settings !== '0' ? 'washing' : 'normal',
+  },
+})
+
+const deg = (value: number) => (value / 180) * Math.PI
+
+function unitFunc(param: number) {
+  if (param === 3) {
+    return 'GR'
+  } else if (param === 5) {
+    return 'KG'
+  } else if (param === 6) {
+    return 'LT'
+  } else {
+    return 'unknown'
+  }
+}
+
+const autoRecipe = computed(() => {
+  return recipe.value![0].map((val) => {
+    return {
+      ...val,
+      phaseIndex: val.phaseIndex! + 1,
+      program: `${val.recNo} - ${val.name}`,
+      amount: val.amount,
+      newAmount: `${val.amount} ${unitFunc(val.unit)}`,
+    } as NewRecipe
+  })
+})
+
+const manuelRecipe = computed(() => {
+  return recipe.value![1].map((val) => {
+    return {
+      ...val,
+      program: `${val.recNo} - ${val.name}`,
+      amount: Math.round(val.amount || 0),
+      newAmount: `${val.amount} ${unitFunc(val.unit)}`,
+    } as NewRecipe
+  })
+})
+
+const modal = ref(false)
+const erpVal = computed(() => {
+  return props.currentMachine.erp
+})
+function closeModal() {
+  store.tableShow = false
+}
+const checkedNames = ref()
+
+const sortedLogs = computed(() => {
+  const activeLogs = props.logData.filter(a => a.planKey)
+  if (checkedNames.value === 'Plan Key') {
+    return activeLogs.sort((c, d) => (c.planKey < d.planKey ? -1 : 1))
+  } else if (checkedNames.value === 'ID') {
+    return activeLogs.sort((c, d) => (c.id < d.id ? -1 : 1))
+  } else if (checkedNames.value === 'Event Time') {
+    return activeLogs.sort((c, d) => (c.newTime < d.newTime ? -1 : 1))
+  } else {
+    return activeLogs
+  }
+})
+
+const logTableFilter = ref()
+const { width: windowWidth } = useWindowSize()
+const config = useRuntimeConfig()
+</script>
+
+<template>
+  <div class="wrapper">
+    <div class="header">
+      <div>
+        <Icon
+          icon="iconamoon:home-duotone"
+          :width="windowWidth > 1350 ? '30' : '20'"
+          class="cursor-pointer"
+          @click="router.push('/')"
+        />
+        <QTooltip>
+          {{ t('home') }}
+        </QTooltip>
+      </div>
+    </div>
+    <ElScrollbar class="table-wrapper e-border">
+      <div class="table-body">
+        <RecipeTable
+          :data="autoRecipe || []"
+          :title="t('details.recipe-t-auto')"
+          is-first
+        />
+        <div v-if="recipe![1].length">
+          <RecipeTable
+            :data="manuelRecipe || []"
+            :title="t('details.recipe-t-manuel')"
+            :is-first="false"
+          />
+        </div>
+      </div>
+    </ElScrollbar>
+    <ElScrollbar class="chart-wrapper e-border">
+      <div class="chart-body">
+        <DGauge
+          :model-value="currentMachine.currentTemperature"
+          :arc-count="14"
+          :min-value="0"
+          :max-value="140"
+          :min-angle="deg(-120)"
+          :max-angle="deg(120)"
+          :pad-angle="deg(2)"
+          :min-duration="400"
+          :max-duration="800"
+          :inner-radius="18"
+          :outer-radius="23"
+          needle-color="red"
+        />
+      </div>
+    </ElScrollbar>
+
+    <ElScrollbar class="info-wrapper e-border">
+      <div class="info">
+        <div class="title">
+          {{ t("details.info") }}
+        </div>
+        <div class="info-body">
+          <div class="info-col">
+            <span>
+              {{ t("details.name") }}:
+              {{ currentMachine.name }}
+            </span>
+          </div>
+          <div class="info-col">
+            <span>
+              {{ t("details.machine-cap") }}:
+              {{ currentMachine.machineCapacity }} (KG)
+            </span>
+          </div>
+          <div class="info-col">
+            <span>
+              {{ t("details.order-no") }}:
+              {{ currentMachine.reqProgramNo }}
+            </span>
+          </div>
+          <div
+            v-for="(val, idx) in erpVal"
+            :key="idx"
+            class="info-col"
+          >
+            {{ idx }}: {{ val }}
+          </div>
+        </div>
+      </div>
+    </ElScrollbar>
+    <ElScrollbar class="command-wrapper e-border">
+      <div class="op-commands">
+        <div class="title">
+          {{ t("details.op-intervents") }}
+        </div>
+        <div v-if="!intervents" class="loader" />
+        <div
+          v-for="(item, idx) in intervents"
+          :key="idx"
+          class="flex flex-col w-full h-full"
+        >
+          <div class="command-items">
+            <span>
+              {{ item.newTime }}
+            </span>
+            <span class="flex justify-center w-full">
+              {{ item.explanation }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </ElScrollbar>
+    <div class="log-wrapper">
+      <div class="log__item e-border">
+        <QTable
+          dense
+          :columns="[
+            { name: 'planKey', label: t('batchLogs.plan-key'), field: 'planKey', align: 'left' },
+            { name: 'newTime', label: t('batchLogs.new-time'), field: 'newTime', align: 'left' },
+            { name: 'jobOrder', label: t('batchLogs.job-order'), field: 'jobOrder', align: 'left' },
+            { name: 'explanation', label: t('batchLogs.explanation'), field: 'explanation', align: 'left' },
+            { name: 'programIndex', label: t('batchLogs.program-index'), field: 'programIndex', align: 'left' },
+            { name: 'programNo', label: t('batchLogs.program-no'), field: 'programNo', align: 'left' },
+            { name: 'recipeType', label: t('batchLogs.recipe-type'), field: 'recipeType', align: 'left' },
+            { name: 'requestprogramIndex', label: t('batchLogs.request-program-index'), field: 'requestprogramIndex', align: 'left' },
+            { name: 'status', label: t('batchLogs.status'), field: 'status', align: 'left' },
+          ]"
+          :no-data-label="config.public.teleskopHasLogs === 'true' ? t('batchLogs.no-data') : t('batchLogs.invalid-version')"
+          row-key="name"
+          :rows="sortedLogs"
+          :filter="logTableFilter"
+        >
+          <template #top>
+            <div class="flex w-full">
+              <q-input
+                v-model="logTableFilter"
+                borderless
+                dense
+                debounce="300"
+                :placeholder="t('batchLogs.placeholder')"
+              >
+                <template #append>
+                  <div display: flex-col />
+                  <q-icon name="search" />
+                </template>
+              </q-input>
+              <QSpace />
+
+              <div class="flex gap-3">
+                <div class="m-auto">
+                  {{ t('batchLogs.checked-names') }} {{ checkedNames }}
+                </div>
+                <div class="flex flex-col-reversed w-auto justify-center items-center">
+                  <input
+                    id="id"
+                    v-model="checkedNames"
+                    type="radio"
+                    value="ID"
+                  >
+                  <label for="id">ID</label>
+                </div>
+                <div class="flex flex-col-reversed w-auto justify-center items-center">
+                  <input
+                    id="planKey"
+                    v-model="checkedNames"
+                    type="radio"
+                    value="Plan Key"
+                  >
+                  <label for="planKey">Plan Key</label>
+                </div>
+                <div class="flex flex-col-reversed w-auto justify-center items-center">
+                  <input
+                    id="eventTime"
+                    v-model="checkedNames"
+                    type="radio"
+                    value="Event Time"
+                  >
+                  <label for="eventTime">{{ t('batchLogs.new-time') }}</label>
+                </div>
+              </div>
+            </div>
+          </template>
+        </QTable>
+      </div>
+    </div>
+  </div>
+  <Teleport to="body">
+    <div v-if="store.tableShow">
+      <div class="modal-mask cursor-pointer" @click.stop="closeModal">
+        <div class="modal-wrapper">
+          <div class="modal-container cursor-default" @click.stop.prevent>
+            <div class="bg-white flex flex-col w-full h-full">
+              <RecipeTable
+                :data="autoRecipe || []"
+                :show="modal"
+                :title="t('details.recipe-t-auto')"
+                is-first
+              />
+              <RecipeTable
+                :data="manuelRecipe || []"
+                :show="modal"
+                :title="t('details.recipe-t-manuel')"
+                :is-first="false"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<style scoped lang="scss">
+* {
+  box-sizing: border-box;
+}
+
+.icon {
+  @apply absolute mt-1 hidden;
+}
+
+.wrapper {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr 1fr 0.5fr;
+  grid-template-rows: 35px repeat(3, 1fr);
+  grid-template-areas:
+    "header header header header"
+    "operator table table info"
+    "operator table table info"
+    "operator logs logs chart";
+  @apply grid gap-x-3 gap-y-1 w-full h-screen text-center max-w-1920px px-2 pb-2 text-black;
+}
+
+.header {
+  grid-area: header;
+  @apply w-full flex justify-center items-center mt-1;
+}
+
+.table-wrapper {
+  grid-area: table;
+  @apply rounded-2xl h-auto shadow shadow-gray-700/50 shadow-lg;
+}
+
+.info-wrapper {
+  grid-area: info;
+  @apply rounded-2xl h-auto overflow-auto shadow shadow-gray-700/50 shadow-lg shadow;
+
+  .info {
+    @apply text-lg;
+
+    .info-body {
+      @apply border-t border-white text-left;
+
+      .info-col {
+        @apply mt-3 p-3px pl-5;
+
+        span {
+          @apply;
+        }
+      }
+    }
+  }
+}
+
+.chart-wrapper {
+  grid-area: chart;
+  @apply w-full h-full rounded-2xl shadow shadow-gray-700/50 shadow-lg;
+
+  .chart-body {
+    @apply w-full h-full;
+  }
+}
+
+.command-wrapper {
+  grid-area: operator;
+  @apply rounded-2xl shadow shadow-gray-700/50 shadow-lg overflow-auto;
+
+  .command-items {
+    @apply flex flex-row justify-center items-center gap-3 w-full h-full;
+
+    span {
+      @apply p-3;
+    }
+  }
+}
+
+.log-wrapper {
+  grid-area: logs;
+  @apply rounded-2xl border border-gray-500 flex justify-between w-full h-auto shadow shadow-gray-700/50 shadow-lg overflow-auto;
+  ::slotted(.content) {
+    background-color: rgb(48, 76, 76);
+  }
+  .log__item {
+    @apply w-full h-full;
+  }
+}
+
+.title {
+  @apply text-black font-extrabold w-full rounded-2xl;
+}
+
+.modal-mask {
+  background: rgba(0, 0, 0, 0.7);
+  @apply fixed z-100 justify-center left-0 top-0 w-full h-full;
+
+  .modal-wrapper {
+    @apply flex justify-center items-center h-full max-w-1920px w-full overflow-auto;
+
+    .modal-container {
+      @apply rounded-l w-95/100 m-auto;
+    }
+  }
+}
+
+@media (min-width: 735px) and (max-width: 1350px) {
+  .icon {
+    @apply flex;
+  }
+
+  .wrapper {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 15px 100px 1fr;
+    grid-template-areas:
+      "header header header"
+      "table table table"
+      "table table table"
+      "chart operator operator"
+      "info operator operator"
+      "logs logs logs";
+    @apply grid w-full h-full max-w-full px-10;
+
+    .table-wrapper {
+      @apply h-min;
+    }
+
+    .info-wrapper {
+      @apply h-full;
+    }
+
+    .chart-wrapper {
+      @apply h-full;
+    }
+
+    .command-wrapper {
+      @apply h-full;
+    }
+  }
+}
+
+@media screen and (max-width: 735px) {
+  .icon {
+    @apply flex;
+  }
+
+  .wrapper {
+    @apply flex flex-col w-full h-full max-h-full max-w-full;
+
+    .table-wrapper {
+      @apply w-full h-full min-h-100;
+
+      .custom-btn {
+        @apply hidden;
+      }
+    }
+
+    .command-wrapper {
+      .op-commands {
+        .command-items {
+          @apply flex flex-row justify-center items-center gap-1 w-full h-full;
+
+          span {
+            @apply p-1;
+          }
+        }
+      }
+    }
+  }
+}
+
+//////////////////////////
+.loader {
+  border-color: #212121 #212121 transparent transparent;
+  animation: rotation 1s linear infinite;
+  @apply w-48px h-48px rounded-1/2 inline-block relative border-3px box-border;
+}
+
+.loader::after,
+.loader::before {
+  content: "";
+  border-color: transparent transparent #0d94fc #0d94fc;
+  animation: rotationBack 0.5s linear infinite;
+  transform-origin: center center;
+  @apply absolute left-0 right-0 top-0 bottom-0 m-auto border-3px box-border w-40px h-40px rounded-1/2;
+}
+
+.loader::before {
+  border-color: #212121 #212121 transparent transparent;
+  animation: rotation 1.5s linear infinite;
+  @apply w-32px h-32px;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotationBack {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+</style>

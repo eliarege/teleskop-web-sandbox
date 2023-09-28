@@ -1,0 +1,220 @@
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { ElButton } from 'element-plus'
+import {
+  sharpDashboard,
+  sharpFormatColorFill,
+  sharpGrid3x3,
+} from '@quasar/extras/material-icons-sharp'
+import { useDataStore } from '../store/Datas'
+import { useColorStore } from '~/store/Colors'
+
+defineProps({
+  show: Boolean,
+})
+defineEmits(['close'])
+
+const { t } = useI18n()
+const colors = useColorStore()
+const store = useDataStore()
+function setDefaultSettings() {
+  colors.cardActiveBg = '#4B5563'
+  colors.cardIdleBg = '#D1D5DB'
+  colors.cardItemBg = '#000000'
+  colors.bgColor = '#FFFFFF'
+  colors.textcolor = '#000000'
+  store.mode = true
+  store.electricity = true
+  store.steam = true
+  store.salt = true
+  store.water = true
+}
+</script>
+
+<template>
+  <div class="modal-mask cursor-pointer" @click.stop="$emit('close')">
+    <div class="modal-wrapper cursor-pointer">
+      <div class="modal-container cursor-pointer">
+        <div class="wrapper cursor-default" @click.stop.prevent>
+          <ElScrollbar>
+            <div class="flex flex-col w-full items-center justify-center self-center bg-white overflow-auto">
+              <q-list class="w-full">
+                <q-expansion-item
+                  class="text-black"
+                  expand-separator
+                  :icon="sharpGrid3x3"
+                  :label="t('settings.visual-config')"
+                >
+                  <div class="flex flex-col justify-center items-center">
+                    <span>{{ t("settings.sort-by") }}</span>
+                    <div>
+                      <q-option-group
+                        v-model="store.sortMachines"
+                        type="radio"
+                        checked-icon="task_alt"
+                        unchecked-icon="highlight_off"
+                        :options="[
+                          { label: t('settings.sort-id'), value: 1 },
+                          { label: t('settings.sort-active'), value: 2 },
+                          { label: t('settings.sort-idle'), value: 3 },
+                          { label: t('settings.sort-group'), value: 4 },
+                        ]"
+                        class="grid grid-cols-4"
+                      />
+                    </div>
+                  </div>
+
+                  <q-separator spaced />
+                  <div class="label-wrapper text-black px-3">
+                    <span>{{ t("settings.options") }}</span>
+                    <div>
+                      <q-checkbox
+                        v-model="store.electricity"
+                        :label="t('settings.electricity')"
+                        checked-icon="task_alt"
+                        unchecked-icon="highlight_off"
+                      />
+                      <q-checkbox
+                        v-model="store.salt"
+                        :label="t('settings.salt')"
+                        checked-icon="task_alt"
+                        unchecked-icon="highlight_off"
+                      />
+                      <q-checkbox
+                        v-model="store.water"
+                        :label="t('settings.water')"
+                        checked-icon="task_alt"
+                        unchecked-icon="highlight_off"
+                      />
+                      <q-checkbox
+                        v-model="store.steam"
+                        :label="t('settings.steam')"
+                        checked-icon="task_alt"
+                        unchecked-icon="highlight_off"
+                      />
+                      <q-checkbox
+                        v-model="store.group"
+                        :label="t('settings.group')"
+                        checked-icon="task_alt"
+                        unchecked-icon="highlight_off"
+                      />
+                    </div>
+                  </div>
+                </q-expansion-item>
+                <q-expansion-item
+                  :icon="sharpFormatColorFill"
+                  class="text-black"
+                  expand-separator
+                  :label="t('settings.color-picker')"
+                >
+                  <div class="colorp flex p-2 gap-3">
+                    <q-color v-model="colors.cardActiveBg" class="my-picker" />
+                    <q-color
+                      v-model="colors.cardIdleBg"
+                      class="my-picker"
+                    />
+                  </div>
+                </q-expansion-item>
+                <q-expansion-item
+                  :icon="sharpDashboard"
+                  class="text-black"
+                  expand-separator
+                  :label="t('settings.layout')"
+                >
+                  <div class="layout">
+                    <q-option-group
+                      v-model="store.mode"
+                      type="radio"
+                      checked-icon="task_alt"
+                      :options="[
+                        { label: t('settings.side'), value: false },
+                        { label: t('settings.top'), value: true },
+                      ]"
+                      class="flex"
+                    />
+                  </div>
+                </q-expansion-item>
+              </q-list>
+
+              <div class="btns">
+                <ElButton
+                  color="#0d94fc"
+                  plain
+                  @click="setDefaultSettings"
+                >
+                  {{ t("settings.default") }}
+                </ElButton>
+                <ElButton
+                  color="#0d94fc"
+                  plain
+                  @click="$emit('close')"
+                >
+                  {{
+                    t("settings.close")
+                  }}
+                </ElButton>
+              </div>
+            </div>
+          </ElScrollbar>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="scss">
+* {
+  z-index: 10;
+}
+.modal-mask {
+  background-color: rgba(0, 0, 0, 0.5);
+  @apply fixed top-0 left-0 w-full h-screen flex z-100 justify-center items-center self-center m-auto select-none;
+  .modal-wrapper {
+    @apply flex justify-center items-center w-full;
+    .modal-container {
+      @apply h-min min-h-990px m-auto flex justify-center items-center w-full;
+    }
+  }
+}
+.layout {
+  @apply flex flex-col gap-3 font-extrabold justify-center w-full items-center text-center text-black;
+}
+
+.wrapper {
+  @apply flex flex-col p-5 rounded-2xl border border-gray-300 shadow shadow-gray-500/50 shadow-md border-4px w-125 h-full bg-white gap-5;
+
+  .label-wrapper {
+    @apply flex flex-col justify-center items-center;
+  }
+
+  .colorp {
+    @apply flex items-center text-black font-extrabold justify-center w-full h-full;
+  }
+  .el-carousel {
+   @apply w-full h-full;
+  }
+
+  .el-carousel__item h3 {
+    color: #475669;
+    opacity: 0.75;
+    line-height: 200px;
+    margin: 0;
+    text-align: center;
+  }
+
+  .btns {
+    @apply relative flex w-full justify-end gap-3 bottom-1 right-2;
+  }
+}
+@media screen and (max-width: 735px) {
+  .modal-mask .modal-wrapper .modal-container {
+    @apply justify-center overflow-auto;
+  }
+  .wrapper {
+    @apply max-h-90vh overflow-auto;
+  }
+  .btns {
+    @apply justify-center;
+  }
+}
+</style>

@@ -1,0 +1,37 @@
+{
+  "name": "multi-monitor",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@intlify/unplugin-vue-i18n": "^0.11.0",
+    "animejs": "^3.2.1",
+    "d3": "^7.8.5",
+    "defu": "^6.1.2",
+    "lodash-es": "^4.17.21",
+    "mssql": "^10.0.1",
+    "ui": "workspace:*",
+    "vue-i18n": "^9.2.2"
+  },
+  "devDependencies": {
+    "@firebase/app-types": "^0.9.0",
+    "@iconify/vue": "^4.1.1",
+    "@nuxt/devtools": "latest",
+    "@types/animejs": "^3.1.8",
+    "@types/d3": "^7.4.1",
+    "@types/lodash-es": "^4.17.9",
+    "@types/mssql": "^9.1.0",
+    "nuxt": "^3.7.3",
+    "nuxt-base": "workspace:*",
+    "rollup": "^3.29.4",
+    "unocss-config": "workspace:*"
+  }
+}

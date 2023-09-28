@@ -1,0 +1,1 @@
+export { default as NoVnc, NoVncProps } from './components/NoVnc.vue'

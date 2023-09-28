@@ -3,6 +3,7 @@ import { defineConfig, presetAttributify, presetUno, transformerDirectives, tran
 // https://unocss.dev/guide/
 export default defineConfig({
   shortcuts: {
+    'flex-center': 'flex items-center justify-center',
     'e-border': 'border-solid border-1px',
   },
   presets: [

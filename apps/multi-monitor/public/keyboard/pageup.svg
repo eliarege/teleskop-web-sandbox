@@ -1,0 +1,14 @@
+<svg width="49" height="73" xmlns="http://www.w3.org/2000/svg">
+ <style type="text/css">.st0{fill:#B2B7B5;}
+	.st1{fill-rule:evenodd;clip-rule:evenodd;fill:#3F3939;}</style>
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="75" width="51" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <path id="svg_1" d="m20.24,0.48l8.38,0c11.04,0 19.99,8.95 19.99,19.99l0,52.47l-28.33,0c-11.07,0 -20.05,-8.98 -20.05,-20.05l0,-32.4l0,-20.01l20.01,0z" class="st0"/>
+  <polygon id="svg_2" points="24.110000610351562,22.26000213623047 18.910003662109375,39.24000549316406 21.910003662109375,39.24000549316406 18.910003662109375,50.220001220703125 29.660003662109375,50.220001220703125 26.389999389648438,39.24000549316406 29.660003662109375,39.24000549316406 " class="st1"/>
+ </g>
+</svg>
