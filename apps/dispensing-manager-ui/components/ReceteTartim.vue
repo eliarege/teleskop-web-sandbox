@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { ElScrollbar } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { navigateToPage } from '../shared/functions'
 
 const { t } = useI18n()
+async function printKey() {
+  const { data: key } = await useFetch('/api/recipe/joborder?recipeJB=11428')
+  console.log(key.value)
+}
 
 const { data: setting } = await useFetch('http://localhost:3000/api/settings')
 const a = 0
-const { data: recipeData, pending: waitingForData } = useFetch('http://localhost:3000/api/recipe?recipeJB=11428&recipeID=3&teleskopType=normal')
-
-console.log(setting.value)
+// const { data: recipeData, pending: waitingForData } = useFetch('/api/recipe?recipeJB=11428&recipeID=3&teleskopType=normal')
+const recipeData = ref()
 const jobordernum = ref()
 const b = ref()
 const buttonProps = ref([
@@ -26,15 +30,16 @@ const buttonProps = ref([
  * Have to have joborder of the recipe
  * Might to have colors array
  */
-
-function requestJobOrder() {
+const recipeDataTemp = ref()
+async function requestJobOrder() {
   if (jobordernum.value) {
-    /**
-     * Change recipeData.value according to the jobordernum.value request again
-     */
-    const { data: recipeDataTemp, pending: waitingForData } = useFetch(`http://localhost:3000/api/recipe?recipeJB=${jobordernum.value}&recipeID=24&teleskopType=normal`)
+    // const { data: recipeDataTemp, pending: waitingForData } = useFetch(`/api/recipe?recipeJB=${jobordernum.value}&recipeID=24&teleskopType=normal`)
+    recipeDataTemp.value = await useFetch(`/api/recipe?recipeJB=${jobordernum.value}&recipeID=24&teleskopType=normal`)
+    console.log(recipeDataTemp.value.data[0])
     if (!recipeDataTemp.value) recipeData.value = []
-    else recipeData.value = recipeDataTemp.value
+    else recipeData.value = recipeDataTemp.value.data[0]
+  } else {
+    recipeData.value = []
   }
 }
 
@@ -52,6 +57,8 @@ function changePlannedMachine() {
 </script>
 
 <template>
+  <!-- <button class="w-50 h-50" @click="printKey()">
+  </button> -->
   <div class="flex flex-col gap-5">
     <span class="header-class">
       {{ t('distributionProcessor.a') }} - {{ t('recipe.header') }}
@@ -62,7 +69,7 @@ function changePlannedMachine() {
         {{ t('joborderNo') }}
         <q-input v-model="jobordernum" clearable />
         <q-btn :label="t('request')" @click="requestJobOrder()" />
-        "sometext"
+        "sometext" --> 11428 can be used as an example
       </div>
       <div class="flex flex-row items-center gap-5 mt-2">
         {{ t('correctionNo') }}
@@ -85,15 +92,15 @@ function changePlannedMachine() {
     </div>
     <ElScrollbar class="table-wrapper ml-5 mr-5">
       <RecipeTable
-        :data="recipeData[0]"
+        :data="recipeData"
         :show="true"
         title="Title"
         :is-first="true"
         :settings="a"
       />
     </ElScrollbar>
-    <div class="footer-buttons gap-5">
-      <q-btn
+      <div class="footer-buttons gap-5">
+        <q-btn
         v-for="button of buttonProps"
         :key="button.name"
         class="e-border"
@@ -101,12 +108,15 @@ function changePlannedMachine() {
         color="primary"
         :label="button.label"
         :icon="button.icon"
-      />
-    </div>
+        @click="navigateToPage(button.link)"
+        />
+        <!-- TODO: button operations function that decides what t2o do it can be refresh or redirect to another page  -->
+      </div>
   </div>
 </template>
 
 <style scoped>
+
 .header-class {
   background-color: gray;
   color: white;
@@ -118,10 +128,12 @@ function changePlannedMachine() {
   grid-area: table;
   width: 100vw;
   max-width: 100vw;
+  height: 50vh;
 }
 
 .footer-buttons {
   background-color: rgb(236, 236, 236);
+  position:static;
   height: 10vh;
   width: 100vw;
   bottom: 0px;

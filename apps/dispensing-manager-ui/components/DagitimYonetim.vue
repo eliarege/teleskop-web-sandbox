@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { navigateToPage } from '../shared/functions'
 
 const { t } = useI18n()
 const jobordersText = t('joborders')
@@ -270,6 +271,7 @@ function toggleRow(row: any) {
           outline
           color="primary"
           :label="recetetartim"
+          @click="navigateToPage('recete-tartim')"
         />
         <q-btn
           outline
