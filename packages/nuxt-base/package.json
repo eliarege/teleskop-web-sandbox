@@ -8,7 +8,6 @@
     "lint:fix": "eslint --fix ."
   },
   "dependencies": {
-    "@nuxtjs/i18n": "8.0.0-rc.4",
     "@pinia/nuxt": "^0.4.11",
     "@quasar/extras": "^1.16.6",
     "@unocss/nuxt": "^0.56.0",

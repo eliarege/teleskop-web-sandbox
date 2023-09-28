@@ -1,1 +1,123 @@
-{}
+{
+  "allJobOrders": "Tüm İş Emirlerini Göster",
+  "close": "Kapat",
+  "joborders": "İş Emirleri",
+  "correctionNo": "Düzeltme numarası",
+  "joborder": "İş Emri",
+  "joborderNo": "İş Emri Numarası",
+  "machinename": "Makine Adı",
+  "materialCode": "Madde Kodu",
+  "materialName": "Madde Adı",
+  "plannedMachine": "Planlanan Makine",
+  "programName": "Program Adı",
+  "programNo": "Program Numarası",
+  "recipeAmount": "Reçete Miktarı",
+  "recipeType": "Reçete Tipi",
+  "request": "Sorgula",
+  "requestTime": "İstek Zamanı",
+  "status": "Durum",
+  "tankNo": "Tank Numarası",
+
+  "distributionProcessor": {
+    "a": "Dağıtım Yöneticisi",
+    "recipeRequest": "Reçete Bilgilerini Sorgulama",
+    "alerts": "Oluşan Alarmlar",
+    "code": "Kod",
+    "hide": "Ekranı Gizle",
+    "incidents": "Olaylar",
+    "info": "Bilgi",
+    "materialDistributor": "Dağıtıcı",
+    "recipeMeasurement": "Reçete ve Tartımlar",
+    "recipeOrder": "Reçete Sıra Numarası",
+    "recipeStepNum": "Reçete Adım Numarası",
+    "recipeType": "Reçete Tipi",
+    "selectedRequest": "Seçili İsteğin Maddeleri",
+    "stepNo": "Adım Numarası"
+  },
+
+  "jobOrderLogs": {
+    "a": "İş Emri Logları",
+    "arrangement": "Sıralama",
+    "arrangementCriterion": "Sıralama Kriteri",
+    "arrangementSort": "Sıralama Yönü",
+    "canceledDistributingWeighing": "Dağıtım / Tartım İptal Edildi",
+    "changedDistributor": "Dağıtıcı Değiştirildi",
+    "completedDistributingWeighing": "Dağıtım / Tartım Tamamlandı",
+    "description": "Açıklama",
+    "eventTime": "Olay Zamanı",
+    "faultyOther": "Hatalı / Diğer",
+    "filter": "Filtre",
+    "forwardDistributor": "Dağıtıcıya İletildi",
+    "id": "ID",
+    "jobOrderCode": "İş Emri Kodu",
+    "newRequest": "Yeni İstek",
+    "priorityChange": "Öncelik Değişimi",
+    "programIndex": "Program İndeks",
+    "requestQueue": "İstek Sırası",
+    "startedDistributingWeighing": "Dağıtım / Tartım Başladı"
+  },
+
+  "jobOrderParameters": {
+    "a": "İş Emri Parametreleri",
+    "jobOrderNo": "İş Emri Numarası",
+    "parameterName": "Parametre Adı",
+    "type": "Tipi",
+    "unit": "Birimi",
+    "value": "Değeri"
+  },
+
+  "recipe": {
+    "a": "Reçete",
+    "amount": "Miktar",
+    "changePlannedMachine": "Planlanan Makineyi Değiştir",
+    "header": "Reçete Bilgileri Sorgulama",
+    "infoText": "Çalışmak istediğiniz iş emri numarasını yazınız. Sorgulama işlemi yapınız.",
+    "ISN": "ISN",
+    "jobOrderMeasurement": "İş Emri Tartımlarını Göster",
+    "jobOrderMeasurementRefresh": "İş Emri Tartım İsteklerini Yenile",
+    "jobOrderParameters": "İş Emri Parametrelerini Göster",
+    "jobOrderSolvingRefresh": "İş Emrinin Çözme İsteklerini Yenile",
+    "logs": "Logları Göster",
+    "machineCode": "Makine Kodu",
+    "mainStep": "Ana Adım",
+    "metric": "Birim",
+    "processOrder": "İşlem Sırası",
+    "processNo": "İşlem numarası",
+    "PSN": "PSN",
+    "recipeInfo": "Reçete Bilgileri",
+    "recipeNo": "Reçete No"
+  },
+
+  "registeredJobOrders": {
+    "a": "Kayıtlı İş Emirleri",
+    "programList": "Program Listesi",
+    "scheduledStartTime": "Planlanan Başlangıç Zamanı",
+    "showJobOrderRecipe": "İş Emrinin Reçetesini Görmek İçin Üzerine Çıft Tıklayınız",
+    "useDateFilter": "Tarih Filtresi Kullan"
+  },
+
+  "weighingInformation": {
+    "a": "Tartım Bilgileri",
+    "automaticRequest": "Otomatik İstek",
+    "completionTime": "Tamamlama Zamanı",
+    "mainStep": "Ana Adım",
+    "manualRequestViaDY": "El ile DY Üzerinden Yapılan İstek",
+    "otoMan": "Otomatik / Manuel",
+    "passingTime": "Geçen Süre",
+    "processOrder": "Proses Sırası",
+    "processStep": "Proses Adım",
+    "R.miktarı": "-------------------------",
+    "T.Miktarı": "-------------------------",
+    "weighingNumber": "Tartım Numarası"
+  },
+  "statusCodes": {
+    "text": "Durum",
+    "0": "Yeni İstek Geldi",
+    "1": "İstek Dağıtıcıda",
+    "2": "İstek İşlemde",
+    "3": "İstek Tamamlandı",
+    "4": "Öncelik Değişimi",
+    "8": "İptal",
+    "10": "Dağıtıcı Değişti"
+  }
+}
