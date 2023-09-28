@@ -18,7 +18,8 @@ logs
 .idea
 
 # VSCode
-.vscode
+.vscode/*
+!.vscode/launch.json
 
 # Local env files
 .env
