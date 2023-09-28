@@ -1,16 +1,4 @@
-import { defineConfig, presetAttributify, presetUno, transformerDirectives, transformerVariantGroup } from 'unocss'
+import { mergeConfigs } from 'unocss'
+import sharedConfig from 'unocss-config'
 
-// https://unocss.dev/guide/
-export default defineConfig({
-  shortcuts: {
-    'e-border': 'border-solid border-1px',
-  },
-  presets: [
-    presetUno({ preflight: true }),
-    presetAttributify(),
-  ],
-  transformers: [
-    transformerVariantGroup(),
-    transformerDirectives(),
-  ],
-})
+export default mergeConfigs([sharedConfig])
