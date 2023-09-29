@@ -29,7 +29,7 @@ COPY out/full ./
 ARG APP_NAME
 ARG TURBO_CONFIG
 
-RUN mkdir -p .turbo && echo $TURBO_CONFIG > .turbo/config.json
+RUN mkdir -p .turbo && echo "$TURBO_CONFIG" > .turbo/config.json
 
 RUN \
   --mount=type=secret,id=NPM_TOKEN,required=true \
