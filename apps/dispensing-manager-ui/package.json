@@ -1,11 +1,12 @@
 {
-  "name": "nuxt-app",
+  "name": "dispensing-manager-ui",
   "private": true,
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint:fix": "eslint --fix .",
+    "start": "node .output/server/index.mjs"
   },
   "dependencies": {
     "knex": "^2.5.1",
