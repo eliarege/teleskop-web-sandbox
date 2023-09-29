@@ -76,7 +76,8 @@
     "amount": "Miktar",
     "btn-open": "Tam Görünüm",
     "btn-close": "Kapat",
-    "id": "ID"
+    "id": "ID",
+    "empty-text": "Gösterilecek reçete yok"
   },
   "table": {
     "header-name": "Makineler",

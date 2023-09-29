@@ -76,7 +76,8 @@
     "amount": "Amount",
     "btn-open": "Full View",
     "btn-close": "Close",
-    "id": "ID"
+    "id": "ID",
+    "empty-text": "There is no recipe to show"
   },
   "table": {
     "header-name": "Machines",
