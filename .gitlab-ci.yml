@@ -9,7 +9,6 @@ stages:
 .docker-login: &docker-login
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-
 workflow:
   rules:
     - if: $CI_COMMIT_TAG == "staging"
@@ -19,8 +18,7 @@ prepare:
   stage: prepare
   parallel:
     matrix:
-      - APP_NAME:
-          - *apps
+      - APP_NAME: *apps
   script:
     - corepack enable
     - corepack prepare pnpm@latest-8 --activate
@@ -35,8 +33,7 @@ release:
   tags: ['docker']
   parallel:
     matrix:
-      - APP_NAME:
-          - *apps
+      - APP_NAME: *apps
   variables:
     NPM_TOKEN: $CI_JOB_TOKEN
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_TAG
