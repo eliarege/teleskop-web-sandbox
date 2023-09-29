@@ -20,10 +20,8 @@ prepare:
     matrix:
       - APP_NAME: *apps
   script:
-    - corepack enable
-    - corepack prepare pnpm@latest-8 --activate
-    - pnpm install -g turbo
-    - pnpx turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
+    - npm install -g turbo
+    - npx turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
   artifacts:
     paths:
       - out-$APP_NAME/
