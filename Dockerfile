@@ -36,7 +36,7 @@ RUN \
   --mount=type=secret,id=TURBO_TOKEN \
   NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) \
   TURBO_TOKEN=$(cat /run/secrets/TURBO_TOKEN) \
-  pnpx turbo build --filter ${APP_NAME}
+  pnpx turbo build --filter ${APP_NAME} --remote-only
 
 FROM base
 
