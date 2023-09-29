@@ -1,0 +1,58 @@
+stages:
+  - prepare
+  - release
+
+.apps: &apps
+  - dispensing-manager-ui
+  - multi-monitor
+
+.docker-login: &docker-login
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG == "staging"
+
+prepare:
+  image: node:18
+  stage: prepare
+  parallel:
+    matrix:
+      - APP_NAME:
+          - *apps
+  script:
+    - corepack enable
+    - corepack prepare pnpm@latest-8 --activate
+    - pnpm install -g turbo
+    - pnpx turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
+  artifacts:
+    paths:
+      - out-$APP_NAME/
+
+release:
+  stage: release
+  tags: ['docker']
+  parallel:
+    matrix:
+      - APP_NAME:
+          - *apps
+  variables:
+    NPM_TOKEN: $CI_JOB_TOKEN
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_TAG
+    IMAGE_SHA: $CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_SHA
+    IMAGE_LATEST: $CI_REGISTRY_IMAGE/$APP_NAME:latest
+  script:
+    - mv out-$APP_NAME out
+    - *docker-login
+    - docker build
+      --cache-from IMAGE_LATEST
+      --build-arg APP_NAME=$APP_NAME
+      --build-arg APP_VERSION=$IMAGE_TAG
+      --secret id=NPM_TOKEN
+      -t $IMAGE_TAG
+      -t $IMAGE_SHA .
+    - docker push -t $IMAGE_TAG
+    - docker push -t $IMAGE_SHA
+
+

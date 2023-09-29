@@ -8,4 +8,10 @@ export default defineNuxtConfig({
     '@element-plus/nuxt',
     'nuxt-quasar-ui',
   ],
+  // quasar: {
+  //   plugins: [
+  //     'Dialog',
+  //     'Notify',
+  //   ],
+  // },
 })
