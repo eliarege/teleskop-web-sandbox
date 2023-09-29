@@ -47,7 +47,7 @@ release:
       --secret id=NPM_TOKEN
       -t $IMAGE_TAG
       -t $IMAGE_SHA .
-    - docker push -t $IMAGE_TAG
-    - docker push -t $IMAGE_SHA
+    - docker push $IMAGE_TAG
+    - docker push $IMAGE_SHA
 
 
