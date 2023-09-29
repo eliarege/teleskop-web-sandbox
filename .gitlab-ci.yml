@@ -44,9 +44,10 @@ release:
       --cache-from IMAGE_LATEST
       --build-arg APP_NAME=$APP_NAME
       --build-arg APP_VERSION=$IMAGE_TAG
+      --build-arg TURBO_CONFIG=$TURBO_CONFIG
       --secret id=NPM_TOKEN
-      -t $IMAGE_TAG
-      -t $IMAGE_SHA .
+      --secret id=TURBO_TOKEN
+      -t $IMAGE_TAG -t $IMAGE_SHA .
     - docker push $IMAGE_TAG
     - docker push $IMAGE_SHA
 

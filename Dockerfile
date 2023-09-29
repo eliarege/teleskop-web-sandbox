@@ -27,9 +27,16 @@ RUN --mount=type=secret,id=NPM_TOKEN,required=true \
 COPY out/full ./
 
 ARG APP_NAME
+ARG TURBO_CONFIG
 
-RUN --mount=type=secret,id=NPM_TOKEN,required=true \
-  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpx turbo build --filter ${APP_NAME}
+RUN mkdir -p .turbo && echo $TURBO_CONFIG > .turbo/config.json
+
+RUN \
+  --mount=type=secret,id=NPM_TOKEN,required=true \
+  --mount=type=secret,id=TURBO_TOKEN \
+  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) \
+  TURBO_TOKEN=$(cat /run/secrets/TURBO_TOKEN) \
+  pnpx turbo build --filter ${APP_NAME}
 
 FROM base
 
