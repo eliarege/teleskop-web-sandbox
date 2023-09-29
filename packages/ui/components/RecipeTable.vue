@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TableColumnCtx } from 'element-plus'
+import { ElTable, ElTableColumn } from 'element-plus'
 
 interface Recipe {
   planKey: number | null;
