@@ -59,13 +59,54 @@ router.get('/test', defineEventHandler(async (event) => {
   }
 }))
 
+router.get('/correction-number-by-parameter', defineEventHandler(async (event) => {
+  const { parameter } = getQuery(event)
+  const { searchBy } = getQuery(event)
+  let result
+  console.log(parameter)
+  console.log(searchBy)
+  /** Returns correction no list */
+  if(searchBy === 'recipeJB') {
+    result = await knex('DYBFBATCHPLAN')
+    .where('JOBORDER', parameter)
+    .groupBy('CORRECTIONNUMBER')
+    .orderBy('CORRECTIONNUMBER', 'asc')
+    .select('CORRECTIONNUMBER')
+  }
+  /** Returns correction no of the spesific planKey */
+  if(searchBy === 'planKey') {
+    result = await knex('DYBFBATCHPLAN')
+    .where('PLANKEY', parameter)
+    .select('CORRECTIONNUMBER')
+    console.log(result)
+  }
+  return result
+}))
+
+// router.get('/correction-number-by-plankey', defineEventHandler(async (event) => {
+//   const { planKey } = getQuery(event)
+//   const result = await knex('DYBFBATCHPLAN')
+//     .where('PLANKEY', planKey)
+//     .select('CORRECTIONNUMBER')
+//     return result
+// }))
+
 router.get('/joborder', defineEventHandler(async (event) => {
   const { recipeJB } = getQuery(event)
-  const planKey = knex('DYBFBATCHPLAN')
+  const { correctionNo } = getQuery(event)
+  let planKey;
+  if(correctionNo) {
+    planKey = knex('DYBFBATCHPLAN')
+      .where('JOBORDER', recipeJB)
+      .andWhere('CORRECTIONNUMBER')
+      .select('PLANKEY')
+  } else {
+    planKey = knex('DYBFBATCHPLAN')
     .where('JOBORDER', recipeJB)
     .orderBy('PLANKEY', 'desc')
     .limit(1)
     .select('PLANKEY')
+  }
 
   const asd = await knex('dbo.DYBFBATCHORDERRECIPESTEPS as r')
     .where('PLANKEY', planKey)
@@ -95,7 +136,7 @@ router.get('/joborder', defineEventHandler(async (event) => {
 
     /** FIXME: .join function 'cause .join does not work as expected???????? */
     const a = await knex('dbo.DYBFBATCHORDERRECIPEHEADER as p')
-      .where('JOBORDER', '11428')
+      .where('JOBORDER', recipeJB)
       .orderBy('RECIPENO', 'asc')
     asd.forEach(elem => {
       for(let i=0;i<a.length;i++) {

@@ -23,6 +23,20 @@ const buttonProps = ref([
   { name: 'close', label: t('close'), link: '', icon: 'close' },
 ])
 
+const correctionNoList = ref([])
+const correctionNoDisplayed = ref()
+async function getCorrectionNOs(parameter: string, parameterType: string) {
+  if(parameterType === 'planKey') {
+    const { data: correctiontemp } = await useFetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=planKey`)
+    correctionNoDisplayed.value = correctiontemp.value[0].CORRECTIONNUMBER
+  }
+  if(parameterType === 'joborder') {
+    const { data: correctionListTemp } = await useFetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=recipeJB`)
+    correctionNoList.value = []
+    correctionListTemp.value.forEach((element: {CORRECTIONNUMBER: number}) => correctionNoList.value.push(element.CORRECTIONNUMBER));
+  }
+}
+
 /**
  * TODO:
  * Have to have the machine that joborder is running
@@ -32,9 +46,10 @@ const buttonProps = ref([
 const recipeDataTemp = ref()
 async function requestJobOrder() {
   if (jobordernum.value) {
+    console.log(jobordernum.value)
     // const { data: recipeDataTemp, pending: waitingForData } = useFetch(`/api/recipe?recipeJB=${jobordernum.value}&recipeID=24&teleskopType=normal`)
     recipeDataTemp.value = await useFetch(`/api/recipe?recipeJB=${jobordernum.value}&recipeID=24&teleskopType=normal`)
-    console.log(recipeDataTemp.value.data[0])
+    console.log(recipeDataTemp.value.data)
     if (!recipeDataTemp.value) recipeData.value = []
     else recipeData.value = recipeDataTemp.value.data[0]
   } else {
@@ -56,7 +71,7 @@ function changePlannedMachine() {
 </script>
 
 <template>
-  <!-- <button class="w-50 h-50" @click="printKey()">
+  <!-- <button class="w-50 h-50" @click="">
   </button> -->
   <div class="flex flex-col gap-5">
     <span class="header-class">
@@ -73,10 +88,10 @@ function changePlannedMachine() {
       <div class="flex flex-row items-center gap-5 mt-2">
         {{ t('correctionNo') }}
         <q-select
-          v-model="b"
+          v-model="correctionNoDisplayed"
           class="w-40"
           filled
-          :options="b"
+          :options="correctionListTemp"
         />
         <q-btn :label="t('allJobOrders')" />
       </div>

@@ -1,10 +1,10 @@
-import { knex } from '~/server/connectionPool'
+import { pool } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
   const { recipeJB } = getQuery(event)
   const { recipeID } = getQuery(event)
   const { teleskopType } = getQuery(event)
-  const response = await knex.raw(
+  const response = await pool.query(
     teleskopType !== 'washing'
       ? `
    SELECT
@@ -50,9 +50,9 @@ FROM DYBFBATCHORDERRECIPEMANUALS r
  LEFT JOIN DYTFMATERIAL m ON m.MATERIALCODE = r.CHEMCODE
     WHERE p.PLANKEY = ( SELECT TOP 1 PLANKEY FROM DYBFBATCHPLAN WHERE JOBORDER = '${recipeJB}' ORDER BY PLANKEY DESC ) AND REQNO_BATCH IS NOT NULL AND AMOUNT != 0
     ORDER BY p.RCPINDEX, DYEREQUESTNUMBER, PARALLELSTEP`
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-      : `
-  SELECT
+      : //////////////////////////////////////////////////////////////////////////////////////////////////
+      `
+      SELECT
     p.RCPINDEX AS recIndex,
     p.RECIPENO AS recNo,
     h.NAME AS name,
