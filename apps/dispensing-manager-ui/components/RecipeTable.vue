@@ -158,7 +158,7 @@ function a({ row, columnIndex }: SpanMethodProps) {
   </div>
 </template>
 
-<style lang="scss">
+<style lang="postcss">
 .normal-class {
   background: scroll !important;
 }
