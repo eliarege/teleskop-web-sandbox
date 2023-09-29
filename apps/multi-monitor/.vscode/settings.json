@@ -1,0 +1,18 @@
+{
+  "scss.lint.unknownAtRules": "ignore",
+  "prettier.enable": true,
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "i18n-ally.localesPaths": ["./locales"],
+  "i18n-ally.keystyle": "nested",
+  "files.associations": {
+    ".env.*": "env",
+    "intervent-types.json": "jsonc"
+  },
+  "files.exclude": {
+    ".nuxt": false
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
