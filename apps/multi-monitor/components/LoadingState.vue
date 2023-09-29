@@ -25,7 +25,7 @@ const { t } = useI18n()
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="postcss">
 .loader {
   border-color: #212121 #212121 transparent transparent;
   animation: rotation 1s linear infinite;

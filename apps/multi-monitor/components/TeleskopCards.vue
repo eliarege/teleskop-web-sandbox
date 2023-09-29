@@ -322,7 +322,7 @@ const screenWidth = useWindowSize().width
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="postcss">
 * {
   transform: translate3d(0, 0, 0);
 }

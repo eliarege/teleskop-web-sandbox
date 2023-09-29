@@ -60,7 +60,7 @@ const pieArcs = computed(() =>
   </svg>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="postcss">
 g:hover > :not(:hover) {
   transition: 0.4s;
   opacity: 0.4 !important;

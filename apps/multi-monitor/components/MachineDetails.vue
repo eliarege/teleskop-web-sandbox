@@ -320,7 +320,7 @@ const config = useRuntimeConfig()
   </Teleport>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="postcss">
 * {
   box-sizing: border-box;
 }
@@ -487,7 +487,6 @@ const config = useRuntimeConfig()
   }
 }
 
-//////////////////////////
 .loader {
   border-color: #212121 #212121 transparent transparent;
   animation: rotation 1s linear infinite;

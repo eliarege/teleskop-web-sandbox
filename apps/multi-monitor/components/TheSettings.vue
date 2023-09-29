@@ -161,7 +161,7 @@ function setDefaultSettings() {
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="postcss">
 * {
   z-index: 10;
 }

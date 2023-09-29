@@ -34,7 +34,7 @@ const { t } = useI18n()
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="postcss">
 .rotate-center {
   animation: rotate-center 5s linear infinite both;
 }

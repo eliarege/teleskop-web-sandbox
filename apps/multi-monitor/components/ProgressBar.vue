@@ -37,7 +37,7 @@ function colorMethod(elapsedTime: number, theoreticalTime: number) {
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="postcss">
 .wrapper {
   @apply flex flex-row w-full h-full rounded-2xl z-0 text-xs justify-start items-center;
   .background {

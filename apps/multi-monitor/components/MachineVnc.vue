@@ -249,7 +249,7 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="postcss">
 * {
   @apply font-extrabold text-gray-900;
 }
@@ -479,7 +479,7 @@ onMounted(async () => {
 
         .arrow-pg-down {
           grid-area: pgdown;
-          // border-radius: 10px 4px 4px 10px;
+          /* border-radius: 10px 4px 4px 10px; */
           @apply cursor-pointer overflow-hidden;
         }
       }
@@ -534,7 +534,6 @@ onMounted(async () => {
   }
 }
 
-///
 .loader {
   border-color: #FFFFFF #FFFFFF transparent transparent;
   animation: rotation 1s linear infinite;

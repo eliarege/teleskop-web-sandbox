@@ -136,7 +136,7 @@ const needlePath = computed(
   </svg>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="postcss">
 svg {
   @apply m-auto w-full h-full;
 }
@@ -144,7 +144,6 @@ svg {
   font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
   font-size: 5px;
   fill: rgb(0, 0, 0);
-  @apply;
 }
 @media screen and (max-width: 735px) {
   svg {

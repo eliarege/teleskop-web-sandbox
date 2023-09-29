@@ -8,4 +8,4 @@ definePageMeta({
   <MachineTable />
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="postcss"></style>

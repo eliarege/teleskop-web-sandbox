@@ -19,7 +19,7 @@ const colors = useColorStore()
   </Suspense>
 </template>
 
-<style lang="scss">
+<style lang="postcss">
 @import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
 
 :root {

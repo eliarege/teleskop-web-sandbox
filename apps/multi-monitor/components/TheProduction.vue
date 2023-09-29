@@ -22,22 +22,23 @@ const store = useDataStore()
   </div>
 </template>
 
-<style lang="scss">
-// .alarm {
-//   animation: alarm 0.5s linear infinite;
-// }
-// @keyframes alarm {
-//   0% {
-//     @apply text-green-400;
-//   }
-//   25% {
-//     @apply text-white;
-//   }
-//   75% {
-//     @apply text-red-900;
-//   }
-//   100% {
-//     @apply text-green-400;
-//   }
-// }
+<style lang="postcss">
+/*
+.alarm {
+   animation: alarm 0.5s linear infinite;
+ }
+ @keyframes alarm {
+   0% {
+     @apply text-green-400;
+   }
+   25% {
+     @apply text-white;
+   }
+   75% {
+     @apply text-red-900;
+   }
+   100% {
+     @apply text-green-400;
+   }
+} */
 </style>

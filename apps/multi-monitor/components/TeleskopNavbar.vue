@@ -244,7 +244,7 @@ const options = {
   </Teleport>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="postcss">
 @media screen and (min-width: 735px) {
   .menu-btn,
   .menu-icon {
