@@ -1,5 +1,6 @@
 {
   "name": "teleskop-web",
+  "type": "module",
   "version": "1.0.0",
   "description": "",
   "private": true,
@@ -12,7 +13,7 @@
   "license": "UNLICENSED",
   "packageManager": "pnpm@8.8.0",
   "devDependencies": {
-    "@eliarelektronik/eslint-config": "^1.2.1",
+    "@eliarelektronik/eslint-config": "^2.0.0",
     "eslint": "^8.49.0",
     "turbo": "^1.10.14"
   }
