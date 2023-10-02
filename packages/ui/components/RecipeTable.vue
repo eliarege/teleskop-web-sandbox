@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { TableColumnCtx } from 'element-plus'
-import { ElTable, ElTableColumn } from 'element-plus'
+import { ElTable, ElTableColumn, ElButton } from 'element-plus'
+import 'element-plus/es/components/button/style'
+import 'element-plus/es/components/table/style'
+import 'element-plus/es/components/table-column/style'
 
 interface Recipe {
   planKey: number | null;
@@ -152,7 +155,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
   </div>
 </template>
 
-<style lang="scss">
+<style lang="postcss">
 @media (min-width: 735px) and (max-width: 1350px) {
   .el-table--small .el-table__cell {
     padding: 0 !important;

@@ -1,5 +1,10 @@
 <script setup lang="ts">
-defineProps<{ firstMessage: string, secondMessage?: string, image: string }>()
+import '../stylesheets/animations.css'
+defineProps<{
+  firstMessage: string,
+  secondMessage?: string,
+  image: string
+}>()
 </script>
 
 <template>
@@ -83,7 +88,7 @@ defineProps<{ firstMessage: string, secondMessage?: string, image: string }>()
   border-style: solid;
   border-width: 3px;
   border-radius: 50%;
-  animation: rotationBack 0.5s linear infinite;
+  animation: rotation 0.5s reverse infinite;
   transform-origin: center center;
   content: '';
   position: absolute;
@@ -104,25 +109,6 @@ defineProps<{ firstMessage: string, secondMessage?: string, image: string }>()
   height: 32px;
 }
 
-@keyframes rotation {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes rotationBack {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(-360deg);
-  }
-}
 @media (min-width: 640px) {
   .container {
     width: 33%;

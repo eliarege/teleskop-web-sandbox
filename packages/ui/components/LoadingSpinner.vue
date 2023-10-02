@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+import '../stylesheets/animations.css'
 </script>
 
 <template>
@@ -8,7 +8,7 @@
       <span class="loader" />
       <slot name="text" />
     </div>
-    </div>
+  </div>
 </template>
 
 <style scoped lang="postcss">
@@ -50,7 +50,7 @@
   border-style: solid;
   border-width: 3px;
   border-radius: 50%;
-  animation: rotationBack 0.5s linear infinite;
+  animation: rotation 0.5s reverse infinite;
   transform-origin: center center;
   content: '';
   position: absolute;
@@ -71,23 +71,4 @@
   height: 32px;
 }
 
-@keyframes rotation {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes rotationBack {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(-360deg);
-  }
-}
 </style>
