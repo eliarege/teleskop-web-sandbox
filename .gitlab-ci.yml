@@ -28,7 +28,7 @@ prepare:
 
 release:
   stage: release
-  tags: ['docker']
+  tags: [docker]
   parallel:
     matrix:
       - APP_NAME: *apps
@@ -51,5 +51,3 @@ release:
       -t $IMAGE_TAG -t $IMAGE_SHA .
     - docker push $IMAGE_TAG
     - docker push $IMAGE_SHA
-
-
