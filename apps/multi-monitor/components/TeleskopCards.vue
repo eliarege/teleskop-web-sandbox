@@ -332,7 +332,7 @@ const screenWidth = useWindowSize().width
   @apply grid gap-x-3 gap-y-2 mt-1 mb-3 overflow-x-hidden font-extrabold;
   .cards {
     border-radius: 20px;
-    @apply flex flex-col;
+    @apply flex flex-col e-border border-dark-900/10;
     .icons {
       @apply w-7 h-7 p-3px;
     }
@@ -343,7 +343,7 @@ const screenWidth = useWindowSize().width
     .items {
       @apply flex flex-row-reverse justify-evenly text-center;
       .item {
-        @apply border border-black w-full;
+        @apply e-border border-black w-full;
       }
     }
     .machine-info {

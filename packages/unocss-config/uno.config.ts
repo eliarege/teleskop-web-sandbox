@@ -4,7 +4,7 @@ import { defineConfig, presetAttributify, presetUno, transformerDirectives, tran
 export default defineConfig({
   shortcuts: {
     'flex-center': 'flex items-center justify-center',
-    'e-border': 'border-solid border-1px',
+    'e-border': 'border-solid border-1px border-black',
   },
   presets: [
     presetUno({ preflight: true }),
