@@ -33,8 +33,7 @@ const sortedMachines = computed(() => {
       ...inactiveSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
     ]
   } else if (store.sortMachines === 4) {
-    return [...props.machineData].sort((a, b) =>
-      a.groupName < b.groupName ? -1 : 1,
+    return [...props.machineData].sort((a, b) => a.groupName < b.groupName ? -1 : 1,
     )
   } else {
     return [...props.machineData].sort((a, b) => (a.id < b.id ? -1 : 1))

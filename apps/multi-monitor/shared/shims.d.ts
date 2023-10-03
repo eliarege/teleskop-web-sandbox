@@ -1,4 +1,4 @@
 declare module '*.sql' {
-    const query: string
-    export default query
+  const query: string
+  export default query
 }

@@ -47,8 +47,7 @@ const pieArcs = pieArcData.map(
 )
 
 const pieArcColors = times(props.arcCount, i =>
-  interpolateRdYlGn(i / props.arcCount),
-).reverse()
+  interpolateRdYlGn(i / props.arcCount)).reverse()
 const theta = ref(calculateTheta(props.modelValue))
 
 watch(

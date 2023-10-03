@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
       b.EXPLANATION as explanation
     FROM TFMACHINESTATUS s
       LEFT JOIN BAINTERVENTION b ON s.RUNNING_BATCHKEY  = b.BATCHKEY 
-    WHERE s.MACHINEID = ${interventParam}`)
+    WHERE s.MACHINEID = ${interventParam}`,
+  )
   return response.recordset
 })

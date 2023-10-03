@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import type { BatchLogs, MachineDataRaw, NewInterventions } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
-import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 
 definePageMeta({
   layout: 'teleskop',

@@ -27,7 +27,8 @@ function textFormatter(text: number) {
     .replace(/(\d)(?=(\d{3})+$)/g, '$1' + '.')
 }
 const trends = computed(() => {
-  if (!trendData.value) return []
+  if (!trendData.value)
+    return []
   return trendData.value.map((trend) => {
     return {
       currentWeekElectricity: trend.currentWeekElectricity
