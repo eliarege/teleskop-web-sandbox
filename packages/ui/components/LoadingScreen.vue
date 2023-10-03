@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import '../stylesheets/animations.css'
+
 defineProps<{
-  firstMessage: string,
-  secondMessage?: string,
+  firstMessage: string
+  secondMessage?: string
   image: string
 }>()
 </script>
@@ -43,7 +44,7 @@ defineProps<{
     justify-content: center;
     align-items: center;
     .container__item {
-      border: 1px solid;
+      border: 1px solid #363535;
       border-radius: 1rem;
       box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
       display: flex;
@@ -55,7 +56,6 @@ defineProps<{
         flex-direction: column;
         justify-content: center;
         align-items: center;
-
         .container__item-body__text {
           display: flex;
           text-align: center;

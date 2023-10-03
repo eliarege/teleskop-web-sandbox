@@ -11,6 +11,7 @@ import type {
   Recipe,
 } from '~/shared/types'
 import { useDataStore } from '~~/store/Datas'
+import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 
 export interface SpanMethodProps {
   row: Recipe
@@ -118,12 +119,8 @@ const config = useRuntimeConfig()
   <div class="wrapper">
     <div class="header">
       <div>
-        <Icon
-          icon="iconamoon:home-duotone"
-          :width="windowWidth > 1350 ? '30' : '20'"
-          class="cursor-pointer"
-          @click="router.push('/')"
-        />
+        <Icon icon="iconamoon:home-duotone" :width="windowWidth > 1350 ? '30' : '20'" class="cursor-pointer"
+          @click="router.push('/')" />
         <QTooltip>
           {{ t('home') }}
         </QTooltip>
@@ -131,36 +128,17 @@ const config = useRuntimeConfig()
     </div>
     <ElScrollbar class="table-wrapper e-border">
       <div class="table-body">
-        <RecipeTable
-          :data="autoRecipe || []"
-          :title="t('details.recipe-t-auto')"
-          is-first
-        />
+        <RecipeTable :data="autoRecipe || []" :title="t('details.recipe-t-auto')" is-first />
         <div v-if="recipe![1].length">
-          <RecipeTable
-            :data="manuelRecipe || []"
-            :title="t('details.recipe-t-manuel')"
-            :is-first="false"
-          />
+          <RecipeTable :data="manuelRecipe || []" :title="t('details.recipe-t-manuel')" :is-first="false" />
         </div>
       </div>
     </ElScrollbar>
     <ElScrollbar class="chart-wrapper e-border">
       <div class="chart-body">
-        <DGauge
-          :model-value="currentMachine.currentTemperature"
-          :arc-count="14"
-          :min-value="0"
-          :max-value="140"
-          :min-angle="deg(-120)"
-          :max-angle="deg(120)"
-          :pad-angle="deg(2)"
-          :min-duration="400"
-          :max-duration="800"
-          :inner-radius="18"
-          :outer-radius="23"
-          needle-color="red"
-        />
+        <DGauge :model-value="currentMachine.currentTemperature" :arc-count="14" :min-value="0" :max-value="140"
+          :min-angle="deg(-120)" :max-angle="deg(120)" :pad-angle="deg(2)" :min-duration="400" :max-duration="800"
+          :inner-radius="18" :outer-radius="23" needle-color="red" />
       </div>
     </ElScrollbar>
 
@@ -188,27 +166,21 @@ const config = useRuntimeConfig()
               {{ currentMachine.reqProgramNo }}
             </span>
           </div>
-          <div
-            v-for="(val, idx) in erpVal"
-            :key="idx"
-            class="info-col"
-          >
+          <div v-for="(val, idx) in erpVal" :key="idx" class="info-col">
             {{ idx }}: {{ val }}
           </div>
         </div>
       </div>
     </ElScrollbar>
-    <ElScrollbar class="command-wrapper e-border">
+    <ElScrollbar class="command-wrapper relative">
+      <div v-if="!intervents" class="absolute w-full h-full top-1/2 left-1/2 transform -translate-1/2">
+        <LoadingSpinner />
+      </div>
       <div class="op-commands">
         <div class="title">
           {{ t("details.op-intervents") }}
         </div>
-        <div v-if="!intervents" class="loader" />
-        <div
-          v-for="(item, idx) in intervents"
-          :key="idx"
-          class="flex flex-col w-full h-full"
-        >
+        <div v-for="(item, idx) in intervents" :key="idx" class="flex flex-col w-full h-full">
           <div class="command-items">
             <span>
               {{ item.newTime }}
@@ -222,33 +194,22 @@ const config = useRuntimeConfig()
     </ElScrollbar>
     <div class="log-wrapper">
       <div class="log__item e-border">
-        <QTable
-          dense
-          :columns="[
-            { name: 'planKey', label: t('batchLogs.plan-key'), field: 'planKey', align: 'left' },
-            { name: 'newTime', label: t('batchLogs.new-time'), field: 'newTime', align: 'left' },
-            { name: 'jobOrder', label: t('batchLogs.job-order'), field: 'jobOrder', align: 'left' },
-            { name: 'explanation', label: t('batchLogs.explanation'), field: 'explanation', align: 'left' },
-            { name: 'programIndex', label: t('batchLogs.program-index'), field: 'programIndex', align: 'left' },
-            { name: 'programNo', label: t('batchLogs.program-no'), field: 'programNo', align: 'left' },
-            { name: 'recipeType', label: t('batchLogs.recipe-type'), field: 'recipeType', align: 'left' },
-            { name: 'requestprogramIndex', label: t('batchLogs.request-program-index'), field: 'requestprogramIndex', align: 'left' },
-            { name: 'status', label: t('batchLogs.status'), field: 'status', align: 'left' },
-          ]"
+        <QTable dense :columns="[
+          { name: 'planKey', label: t('batchLogs.plan-key'), field: 'planKey', align: 'left' },
+          { name: 'newTime', label: t('batchLogs.new-time'), field: 'newTime', align: 'left' },
+          { name: 'jobOrder', label: t('batchLogs.job-order'), field: 'jobOrder', align: 'left' },
+          { name: 'explanation', label: t('batchLogs.explanation'), field: 'explanation', align: 'left' },
+          { name: 'programIndex', label: t('batchLogs.program-index'), field: 'programIndex', align: 'left' },
+          { name: 'programNo', label: t('batchLogs.program-no'), field: 'programNo', align: 'left' },
+          { name: 'recipeType', label: t('batchLogs.recipe-type'), field: 'recipeType', align: 'left' },
+          { name: 'requestprogramIndex', label: t('batchLogs.request-program-index'), field: 'requestprogramIndex', align: 'left' },
+          { name: 'status', label: t('batchLogs.status'), field: 'status', align: 'left' },
+        ]"
           :no-data-label="config.public.teleskopHasLogs === 'true' ? t('batchLogs.no-data') : t('batchLogs.invalid-version')"
-          row-key="name"
-          :rows="sortedLogs"
-          :filter="logTableFilter"
-        >
+          row-key="name" :rows="sortedLogs" :filter="logTableFilter">
           <template #top>
             <div class="flex w-full">
-              <q-input
-                v-model="logTableFilter"
-                borderless
-                dense
-                debounce="300"
-                :placeholder="t('batchLogs.placeholder')"
-              >
+              <q-input v-model="logTableFilter" borderless dense debounce="300" :placeholder="t('batchLogs.placeholder')">
                 <template #append>
                   <div display: flex-col />
                   <q-icon name="search" />
@@ -261,30 +222,15 @@ const config = useRuntimeConfig()
                   {{ t('batchLogs.checked-names') }} {{ checkedNames }}
                 </div>
                 <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <input
-                    id="id"
-                    v-model="checkedNames"
-                    type="radio"
-                    value="ID"
-                  >
+                  <input id="id" v-model="checkedNames" type="radio" value="ID">
                   <label for="id">ID</label>
                 </div>
                 <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <input
-                    id="planKey"
-                    v-model="checkedNames"
-                    type="radio"
-                    value="Plan Key"
-                  >
+                  <input id="planKey" v-model="checkedNames" type="radio" value="Plan Key">
                   <label for="planKey">Plan Key</label>
                 </div>
                 <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <input
-                    id="eventTime"
-                    v-model="checkedNames"
-                    type="radio"
-                    value="Event Time"
-                  >
+                  <input id="eventTime" v-model="checkedNames" type="radio" value="Event Time">
                   <label for="eventTime">{{ t('batchLogs.new-time') }}</label>
                 </div>
               </div>
@@ -300,18 +246,9 @@ const config = useRuntimeConfig()
         <div class="modal-wrapper">
           <div class="modal-container cursor-default" @click.stop.prevent>
             <div class="bg-white flex flex-col w-full h-full">
-              <RecipeTable
-                :data="autoRecipe || []"
-                :show="modal"
-                :title="t('details.recipe-t-auto')"
-                is-first
-              />
-              <RecipeTable
-                :data="manuelRecipe || []"
-                :show="modal"
-                :title="t('details.recipe-t-manuel')"
-                :is-first="false"
-              />
+              <RecipeTable :data="autoRecipe || []" :show="modal" :title="t('details.recipe-t-auto')" is-first />
+              <RecipeTable :data="manuelRecipe || []" :show="modal" :title="t('details.recipe-t-manuel')"
+                :is-first="false" />
             </div>
           </div>
         </div>
@@ -321,9 +258,6 @@ const config = useRuntimeConfig()
 </template>
 
 <style scoped lang="postcss">
-* {
-  box-sizing: border-box;
-}
 
 .icon {
   @apply absolute mt-1 hidden;
@@ -383,8 +317,7 @@ const config = useRuntimeConfig()
 
 .command-wrapper {
   grid-area: operator;
-  @apply rounded-2xl shadow shadow-gray-700/50 shadow-lg overflow-auto;
-
+  @apply e-border rounded-2xl shadow shadow-gray-700/50 shadow-lg overflow-auto relative;
   .command-items {
     @apply flex flex-row justify-center items-center gap-3 w-full h-full;
 
@@ -397,9 +330,11 @@ const config = useRuntimeConfig()
 .log-wrapper {
   grid-area: logs;
   @apply rounded-2xl border border-gray-500 flex justify-between w-full h-auto shadow shadow-gray-700/50 shadow-lg overflow-auto;
+
   ::slotted(.content) {
     background-color: rgb(48, 76, 76);
   }
+
   .log__item {
     @apply w-full h-full;
   }
@@ -484,47 +419,6 @@ const config = useRuntimeConfig()
         }
       }
     }
-  }
-}
-
-.loader {
-  border-color: #212121 #212121 transparent transparent;
-  animation: rotation 1s linear infinite;
-  @apply w-48px h-48px rounded-1/2 inline-block relative border-3px box-border;
-}
-
-.loader::after,
-.loader::before {
-  content: "";
-  border-color: transparent transparent #0d94fc #0d94fc;
-  animation: rotationBack 0.5s linear infinite;
-  transform-origin: center center;
-  @apply absolute left-0 right-0 top-0 bottom-0 m-auto border-3px box-border w-40px h-40px rounded-1/2;
-}
-
-.loader::before {
-  border-color: #212121 #212121 transparent transparent;
-  animation: rotation 1.5s linear infinite;
-  @apply w-32px h-32px;
-}
-
-@keyframes rotation {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes rotationBack {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(-360deg);
   }
 }
 </style>

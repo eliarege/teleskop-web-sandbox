@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { BatchLogs, MachineDataRaw, NewInterventions } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
+import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 
 definePageMeta({
   layout: 'teleskop',
@@ -62,7 +63,7 @@ onMounted(async () => {
       />
     </div>
     <template #fallback>
-      <LoadingState />
+      <LoadingSpinner />
     </template>
   </Suspense>
 </template>

@@ -3,25 +3,13 @@ import '../stylesheets/animations.css'
 </script>
 
 <template>
-  <div class="wrapper">
-    <div class="slot">
+  <div class="spinner-wrapper">
       <span class="loader" />
-      <slot name="text" />
-    </div>
   </div>
 </template>
 
 <style scoped lang="postcss">
-.slot {
-  display: flex;
-  gap: 0.25rem;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
-.wrapper {
+.spinner-wrapper {
   width: 100%;
   height: 100%;
   position: absolute;
