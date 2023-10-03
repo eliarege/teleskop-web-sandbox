@@ -9,7 +9,6 @@ export const useDataStore = defineStore('datas', () => {
   const steam = useStorage('steam', true)
   const salt = useStorage('salt', true)
   const water = useStorage('water', true)
-  const tableShow = useStorage('table', false)
   const group = useStorage('group', false)
   // machinestatus
   const sortMachines = useStorage('machine-sort', 1)
@@ -45,7 +44,6 @@ export const useDataStore = defineStore('datas', () => {
     machine,
     electricity,
     interval,
-    tableShow,
     steam,
     salt,
     water,
