@@ -41,6 +41,11 @@ interface RecipeTableProps {
 }
 const props = defineProps<RecipeTableProps>()
 defineEmits(['fullScren', 'close'])
+
+function last<T>(array: T[]): T | undefined {
+  return array[array.length - 1]
+}
+
 function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
   const property = props.groupables.find(prop => prop.index === columnIndex)
   console.log(property)
@@ -111,18 +116,18 @@ function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
             </div>
           </template>
           <ElTableColumn
-            :label="props.columns[props.columns.length - 1].label"
-            :prop="props.columns[props.columns.length - 1].prop"
-            :align="props.columns[props.columns.length - 1].align"
-            :show-overflow-tooltip="props.columns[props.columns.length - 1].showOverflowTooltip"
+            :label="last(props.columns)?.label"
+            :prop="last(props.columns)?.prop"
+            :align="last(props.columns)?.align"
+            :show-overflow-tooltip="last(props.columns)?.showOverflowTooltip"
           />
         </ElTableColumn>
         <ElTableColumn
           v-else
-          :label="props.columns[props.columns.length - 1].label"
-          :prop="props.columns[props.columns.length - 1].prop"
-          :align="props.columns[props.columns.length - 1].align"
-          :show-overflow-tooltip="props.columns[props.columns.length - 1].showOverflowTooltip"
+          :label="last(props.columns)?.label"
+          :prop="last(props.columns)?.prop"
+          :align="last(props.columns)?.align"
+          :show-overflow-tooltip="last(props.columns)?.showOverflowTooltip"
         />
       </ElTableColumn>
     </ElTable>
