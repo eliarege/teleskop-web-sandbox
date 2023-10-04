@@ -57,8 +57,9 @@ function setDefaultSettings() {
                           { label: t('settings.sort-active'), value: 2 },
                           { label: t('settings.sort-idle'), value: 3 },
                           { label: t('settings.sort-group'), value: 4 },
+                          { label: 'Alarm', value: 5 },
                         ]"
-                        class="grid grid-cols-4"
+                        class="grid grid-cols-5"
                       />
                     </div>
                   </div>

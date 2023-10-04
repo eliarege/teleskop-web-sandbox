@@ -35,6 +35,8 @@ const sortedMachines = computed(() => {
   } else if (store.sortMachines === 4) {
     return [...props.machineData].sort((a, b) => a.groupName < b.groupName ? -1 : 1,
     )
+  } else if (store.sortMachines === 5) {
+    return props.machineData.filter(alarm => alarm.currentAlarmStatus !== 2).sort((a, b) => a.currentAlarmStatus > b.currentAlarmStatus ? 1 : -1)
   } else {
     return [...props.machineData].sort((a, b) => (a.id < b.id ? -1 : 1))
   }
@@ -62,7 +64,18 @@ function reqStatus(params: number) {
     return t('teleskop.status-prio')
   } else return t('teleskop.status-cancelled')
 }
-const screenWidth = useWindowSize().width
+const { width: screenWidth } = useWindowSize()
+function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
+  if (currentAlarmStatus === 0) {
+    return '#FF3030'
+  } else if (currentAlarmStatus === 1) {
+    return '#FFA730'
+  } else {
+    if (runningBatchStatus !== 2) {
+      return colors.cardIdleBg
+    } else return colors.cardActiveBg
+  }
+}
 ///////
 </script>
 
@@ -72,11 +85,7 @@ const screenWidth = useWindowSize().width
       v-for="element in sortedMachines"
       :key="element.id"
       class="cards"
-      :style="
-        element.runningBatchStatus !== 0
-          ? { background: colors.cardActiveBg }
-          : { background: colors.cardIdleBg }
-      "
+      :style="{ background: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus) }"
     >
       <div class="commandtitle p-1" :style="{ background: colors.cardItemBg }">
         <div class="ml-3">
@@ -166,7 +175,7 @@ const screenWidth = useWindowSize().width
 
       <!-- MACHINE INFO -->
 
-      <div class="commands">
+      <div v-if="store.sortMachines !== 5" class="commands">
         <!-- ERP DROPDOWN -->
         <div
           v-show="element.runningBatchStatus === 2"
@@ -175,9 +184,7 @@ const screenWidth = useWindowSize().width
         >
           <MachineSettings :data="element" />
         </div>
-
         <!-- PROG ID/NAME -->
-
         <div
           v-show="element.runningBatchStatus === 2"
           class="commanditems"
@@ -317,6 +324,22 @@ const screenWidth = useWindowSize().width
           </div>
         </div>
       </div>
+      <div v-else class="commands !gap-2">
+        <div
+          class="commanditems min-h-20 text-center justify-center text-2xl"
+          :style="{ background: colors.cardItemBg }"
+        >
+          {{ element.name }}
+        </div>
+        <div
+          class="commanditems min-h-20 text-center justify-center text-2xl alarm"
+          :style="{ background: colors.cardItemBg }"
+        >
+          {{ element.runningAlarmNo }}
+          <span v-show="element.runningAlarmName !== ' '">&nbsp;|&nbsp;</span>
+          {{ element.runningAlarmName }}
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -379,7 +402,7 @@ const screenWidth = useWindowSize().width
   }
 }
 .alarm {
-  animation: alarm 20s ease-out infinite;
+  animation: alarm 10s ease-out infinite;
   transform: translate3d(0);
 }
 @keyframes alarm {

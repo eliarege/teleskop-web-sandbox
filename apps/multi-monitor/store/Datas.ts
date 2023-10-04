@@ -35,6 +35,7 @@ export const useDataStore = defineStore('datas', () => {
     settingsFetch()
     getMachineData()
   }, 5000)
+
   return {
     hex,
     settings,
