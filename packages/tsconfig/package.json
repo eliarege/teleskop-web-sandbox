@@ -1,0 +1,16 @@
+{
+  "name": "tsconfig",
+  "version": "0.0.0",
+  "description": "Shared tsconfig.json files",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": {
+      "import": "./tsconfig.json",
+      "require": "./tsconfig.json"
+    },
+    "./node": {
+      "import": "./node.json",
+      "require": "./node.json"
+    }
+  }
+}
