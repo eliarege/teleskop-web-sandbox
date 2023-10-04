@@ -27,14 +27,7 @@ export default defineNuxtConfig({
       teleskopHasLogs: process.env.TELESKOP_HAS_DY_LOGS,
       websockifyPort: process.env.WEBSOCKIFY_PORT,
     },
-    /*
-        DYTFSETTINGS tablosundaki
-        settingId = 1
-        settingValue = 127
-        ise env true olmalı
-      */
   },
-  quasar: { plugins: ['Notify'] },
   vite: {
     plugins: [
       i18n({

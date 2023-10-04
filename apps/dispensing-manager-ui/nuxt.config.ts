@@ -6,11 +6,6 @@ export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
   extends: ['nuxt-base'],
-  quasar: {
-    plugins: [
-      'Dialog',
-    ],
-  },
   runtimeConfig: {
     teleskopHost: process.env.TELESKOP_HOST,
     teleskopUser: process.env.TELESKOP_USER,
