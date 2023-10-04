@@ -66,15 +66,16 @@ function reqStatus(params: number) {
 }
 const { width: screenWidth } = useWindowSize()
 function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
-  if (currentAlarmStatus === 0) {
-    return '#FF3030'
-  } else if (currentAlarmStatus === 1) {
-    return '#FFA730'
-  } else {
-    if (runningBatchStatus !== 2) {
-      return colors.cardIdleBg
-    } else return colors.cardActiveBg
+  if (store.sortMachines === 5) {
+    if (currentAlarmStatus === 0) {
+      return '#FF3030'
+    } else if (currentAlarmStatus === 1) {
+      return '#FFA730'
+    }
   }
+  if (runningBatchStatus !== 2) {
+    return colors.cardIdleBg
+  } else return colors.cardActiveBg
 }
 ///////
 </script>
