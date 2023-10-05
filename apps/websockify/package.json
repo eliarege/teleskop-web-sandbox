@@ -1,0 +1,46 @@
+{
+  "name": "t7-websockify",
+  "type": "module",
+  "version": "0.2.1",
+  "packageManager": "pnpm@8.6.0",
+  "description": "NoVNC için WebSocket Proxy. Teleskopta tanımlanmış cihazlardaki VNC sunucularına WebSocket trafiğini yönlendirir.",
+  "author": {
+    "name": "Ege İliklier",
+    "email": "ege.iliklier@eliarge.com"
+  },
+  "license": "ISC",
+  "keywords": [],
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "node --require dotenv/config --enable-source-maps ./dist/server.js | pino-pretty",
+    "start": "node dist/server.js",
+    "watch": "NODE_ENV=development rollup --config rollup.config.ts --configPlugin esbuild --watch",
+    "build": "NODE_ENV=production rollup --config rollup.config.ts --configPlugin esbuild",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "knex": "^2.3.0",
+    "pino": "^8.7.0",
+    "tedious": "^15.1.2",
+    "ws": "^8.11.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-alias": "^4.0.2",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-replace": "^5.0.1",
+    "@types/node": "^18.11.15",
+    "@types/ws": "^8.5.3",
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "@typescript-eslint/parser": "^5.46.1",
+    "dotenv": "^16.0.3",
+    "esbuild": "^0.16.6",
+    "eslint": "^8.29.0",
+    "eslint-import-resolver-typescript": "^3.5.2",
+    "eslint-plugin-import": "^2.26.0",
+    "pino-pretty": "^9.1.1",
+    "rollup": "^3.7.4",
+    "rollup-plugin-esbuild": "^5.0.0",
+    "typescript": "^4.9.4"
+  }
+}
