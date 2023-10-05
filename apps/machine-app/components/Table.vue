@@ -210,7 +210,6 @@ const selected = ref([])
     hide-pagination
     separator="cell"
     bordered
-    dense
     selection="multiple"
     table-header-class="table-header"
   />
