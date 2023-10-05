@@ -16,11 +16,11 @@
     "@element-plus/nuxt": "^1.0.6",
     "@iconify/vue": "^4.1.1",
     "@intlify/unplugin-vue-i18n": "^0.11.0",
-    "@nuxt/devtools": "latest",
+    "@nuxt/devtools": "1.0.0-beta.0",
     "@types/mssql": "^9.1.0",
     "@types/node": "^18",
     "element-plus": "^2.3.14",
-    "nuxt": "^3.7.3",
+    "nuxt": "^3.7.4",
     "nuxt-base": "workspace:*",
     "unocss-config": "workspace:*",
     "vue-i18n": "^9.2.2"

@@ -22,7 +22,7 @@
     "unocss": "^0.56.5"
   },
   "devDependencies": {
-    "@nuxt/devtools": "latest",
-    "nuxt": "^3.7.3"
+    "@nuxt/devtools": "1.0.0-beta.0",
+    "nuxt": "^3.7.4"
   }
 }
