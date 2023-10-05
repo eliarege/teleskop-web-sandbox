@@ -1,7 +1,9 @@
 {
   "name": "nuxt-base",
   "type": "module",
+  "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "main": "./nuxt.config.ts",
   "scripts": {
     "lint": "eslint .",
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "1.0.0-beta.0",
+    "@types/node": "^18.18.0",
     "nuxt": "^3.7.4"
   }
 }

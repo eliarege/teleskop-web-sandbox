@@ -1,6 +1,9 @@
 {
   "name": "dispensing-manager-ui",
+  "type": "module",
+  "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -18,7 +21,7 @@
     "@intlify/unplugin-vue-i18n": "^0.11.0",
     "@nuxt/devtools": "1.0.0-beta.0",
     "@types/mssql": "^9.1.0",
-    "@types/node": "^18",
+    "@types/node": "^18.18.0",
     "element-plus": "^2.3.14",
     "nuxt": "^3.7.4",
     "nuxt-base": "workspace:*",

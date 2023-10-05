@@ -1,7 +1,9 @@
 {
   "name": "multi-monitor",
   "type": "module",
+  "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -29,6 +31,7 @@
     "@types/d3": "^7.4.1",
     "@types/lodash-es": "^4.17.9",
     "@types/mssql": "^9.1.0",
+    "@types/node": "^18.18.0",
     "nuxt": "^3.7.4",
     "nuxt-base": "workspace:*",
     "rollup": "^3.29.4",

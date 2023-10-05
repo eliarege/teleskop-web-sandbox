@@ -1,16 +1,16 @@
 {
   "name": "ui",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
+  "license": "UNLICENSED",
+  "keywords": [],
   "main": "index.ts",
   "scripts": {},
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@novnc/novnc": "^1.4.0"
   },
   "devDependencies": {
+    "tsconfig": "workspace:*",
     "vue": "^3.3.4"
   }
 }

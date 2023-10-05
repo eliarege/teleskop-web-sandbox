@@ -1,10 +1,10 @@
 {
   "name": "unocss-config",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared UnoCSS configuration",
-  "main": "./uno.config.ts",
   "license": "UNLICENSED",
-  "dependencies": {
+  "main": "./uno.config.ts",
+  "peerDependencies": {
     "unocss": "^0.56.0"
   }
 }
