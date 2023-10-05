@@ -1,15 +1,14 @@
 <script setup lang="ts">
-
 </script>
 
 <template>
   <div class="flex flex-row justify-between">
     <div class="flex flex-row items-center">
-      <q-btn label="yeni" color="primary" class="mr-4 ml-2" />
-      <q-btn label="proje yükle" color="primary" class="mr-4" />
-      <q-btn label="özellikler" color="primary" class="mr-4" />
-      <q-btn label="sil" color="primary" class="mr-4" />
-      <q-btn label="versiyon bilgisi al" color="primary" class="mr-4" />
+      <q-btn label="Yeni" no-caps icon="note_add" color="primary" class="mr-4 ml-2" />
+      <q-btn label="Proje Yükle" no-caps icon="system_update_alt" color="primary" class="mr-4" />
+      <q-btn label="Özellikler" no-caps icon="tune" color="primary" class="mr-4" />
+      <q-btn label="Sil" no-caps icon="delete" color="primary" class="mr-4" />
+      <q-btn label="Versiyon Bilgisi Al" no-caps color="primary" class="mr-4" />
     </div>
     <div class="flex flex-row items-end mr-8">
       <q-chip class="mr-4 mb-2">
@@ -20,8 +19,8 @@
           Hoşgeldiniz Barış
         </q-card-section>
         <q-card-section>
-          <q-btn>
-            çıkış yap
+          <q-btn no-caps>
+            Çıkış Yap
           </q-btn>
         </q-card-section>
       </q-card>
