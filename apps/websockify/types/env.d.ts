@@ -8,7 +8,7 @@ declare namespace NodeJS {
     TELESKOP_PASSWORD?: string
     TELESKOP_DATABASE?: string
     LOG_LEVEL?: string
-    NODE_ENV?: 'production' | 'development'
+    NODE_ENV?: 'production' | 'development' | 'test'
     /** Development environment */
     TARGET_HOST?: string
     /** Development environment */

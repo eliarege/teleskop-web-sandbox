@@ -38,7 +38,7 @@ const wss = new WebSocketServer({
 
 // Heartbeat Monitor
 const monitor = setInterval(() => {
-  wss.clients.forEach((ws) => {
+  (wss.clients as Set<WebSocket & { isAlive: boolean }>).forEach((ws) => {
     if (!ws.isAlive) {
       ws.terminate()
     } else {
@@ -62,7 +62,7 @@ wss.on('close', () => {
 
 const expectedPathPattern = /^\/\d+$/
 
-wss.on('connection', async (client, request) => {
+wss.on('connection', async (client: WebSocket & { isAlive: boolean }, request) => {
   client.isAlive = true
   client.on('pong', () => {
     client.isAlive = true
@@ -75,7 +75,7 @@ wss.on('connection', async (client, request) => {
   logger.info('Client connected')
 
   /**
-   * Terminate socket connection with code 1009.
+   * Terminate socket connection with code 1008.
    *
    * RFC: https://www.rfc-editor.org/rfc/rfc6455.html#section-7.4.1
    */
