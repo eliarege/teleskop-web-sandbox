@@ -8,7 +8,6 @@ export default defineNuxtConfig({
   extends: ['nuxt-base'],
   quasar: {
     plugins: [
-      'Dialog',
     ],
   },
   runtimeConfig: {
