@@ -1,21 +1,5 @@
 {
-    "compilerOptions": {
-      "jsx": "preserve",
-      "baseUrl": ".",
-      "allowJs": true,
-      "module": "ESNext",
-      "target": "es2017",
-      "lib": ["DOM", "ESNext"],
-      "strict": true,
-      "esModuleInterop": true,
-      "incremental": true,
-      "skipLibCheck": true,
-      "moduleResolution": "node",
-      "resolveJsonModule": true,
-      "noUnusedLocals": true,
-      "strictNullChecks": true,
-      "forceConsistentCasingInFileNames": true,
-    },
-    "exclude": ["dist", "node_modules"],
-  }
-  
+  "extends": "tsconfig/vue",
+  "include": ["**/*.vue", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}

@@ -10,6 +10,10 @@
     "./node": {
       "import": "./node.json",
       "require": "./node.json"
+    },
+    "./vue": {
+      "import": "./vue.json",
+      "require": "./vue.json"
     }
   }
 }
