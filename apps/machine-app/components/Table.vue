@@ -212,11 +212,12 @@ const selected = ref([])
     bordered
     dense
     selection="multiple"
+    table-header-class="table-header"
   />
 </template>
 
 <style scoped>
-.text-header {
+:deep .table-header > th {
   font-weight: bold;
 }
 </style>
