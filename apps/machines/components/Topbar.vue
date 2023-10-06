@@ -9,7 +9,9 @@
         <q-list>
           <q-item>
             <q-item-section>
-              <q-btn label="Yeni" flat no-caps />
+              <NuxtLink to="/new-machine">
+                Yeni
+              </NuxtLink>
             </q-item-section>
           </q-item>
           <q-item>
