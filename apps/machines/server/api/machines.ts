@@ -1,7 +1,6 @@
+import connectionPool from '../connectionPool'
 
-import connectionPool from "../connectionPool"
-
-export default defineEventHandler(async ()=> {
+export default defineEventHandler(async () => {
   await connectionPool.pool.connect()
   const response = await connectionPool.pool.query(`select
   MACHINEID, MACHINECODE, TBBMODEL, VERSION,

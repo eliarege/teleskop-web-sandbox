@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 const { data: machines } = await useFetch('/api/machines')
 
 const columns = [
@@ -74,9 +73,18 @@ const selected = ref([])
 </script>
 
 <template>
-  <q-table v-model:selected="selected" :pagination="pagination" :rows="machines"
-  :columns="columns" hide-pagination row-key="MACHINEID"
-    separator="cell" bordered selection="multiple" table-header-class="table-header" />
+  <q-table
+    v-model:selected="selected"
+    :pagination="pagination"
+    :rows="machines"
+    :columns="columns"
+    hide-pagination
+    row-key="MACHINEID"
+    separator="cell"
+    bordered
+    selection="multiple"
+    table-header-class="table-header"
+  />
 </template>
 
 <style scoped>
