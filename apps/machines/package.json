@@ -1,10 +1,12 @@
 {
-  "name": "nuxt-app",
+  "name": "machines",
   "type": "module",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
+    "start": "node .output/server/index.mjs",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -16,7 +18,6 @@
     "nuxt-base": "workspace:*",
     "unocss-config": "workspace:*",
     "vue": "^3.3.4",
-    "vue-i18n": "^9.2.2",
-    "vue-router": "^4.2.5"
+    "vue-i18n": "^9.2.2"
   }
 }
