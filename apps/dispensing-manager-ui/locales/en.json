@@ -61,6 +61,7 @@
     "description": "Explanation",
     "eventTime": "Event Time",
     "faultyOther": "Incorrect / Other",
+    "other": "Other",
     "filter": "Filter",
     "forwardDistributor": "Forwarded to Distributor",
     "id": "ID",

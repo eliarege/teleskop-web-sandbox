@@ -62,6 +62,7 @@
     "description": "Açıklama",
     "eventTime": "Olay Zamanı",
     "faultyOther": "Hatalı / Diğer",
+    "other": "Diğer",
     "filter": "Filtre",
     "forwardDistributor": "Dağıtıcıya İletildi",
     "id": "ID",
