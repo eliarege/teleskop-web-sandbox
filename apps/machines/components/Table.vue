@@ -1,198 +1,70 @@
 <script setup lang="ts">
+
+const { data: machines } = await useFetch('/api/machines')
+
 const columns = [
   {
     name: 'id',
     label: 'ID',
-    field: (row: any) => row.id,
+    field: (row: any) => row.MACHINEID,
     align: 'left',
   },
   {
     name: 'machineName',
     label: 'Makine Adı',
-    field: (row: any) => row.machineName,
+    field: (row: any) => row.MACHINECODE,
     align: 'left',
   },
   {
     name: 'group',
     label: 'Grup',
-    field: (row: any) => row.group,
+    field: (row: any) => row.GROUPNAME,
     align: 'left',
   },
 
   {
     name: 'model',
     label: 'Model',
-    field: (row: any) => row.model,
+    field: (row: any) => row.TBBMODEL,
     align: 'left',
   },
 
   {
     name: 'version',
     label: 'Versiyon',
-    field: (row: any) => row.version,
+    field: (row: any) => row.VERSION,
     align: 'left',
   },
   {
     name: 'machineCapacity',
     label: 'Makine Kapasitesi',
-    field: (row: any) => row.machineCapacity,
+    field: (row: any) => row.MACHINECAPACITY,
     align: 'left',
   },
 
   {
-    name: 'towerCount',
+    name: 'nozzleCount',
     label: 'Kule Sayısı',
-    field: (row: any) => row.towerCount,
+    field: (row: any) => row.NOZZLECOUNT,
     align: 'left',
   },
   {
     name: 'machineIP',
     label: 'Makine IP',
-    field: (row: any) => row.machineIP,
+    field: (row: any) => row.IP,
     align: 'left',
   },
   {
-    name: 'atUse',
+    name: 'inUse',
     label: 'Kullanımda',
-    field: (row: any) => row.atUse,
+    field: (row: any) => row.INUSE,
     align: 'left',
   },
   {
     name: 'PLCModel',
     label: 'PLC Modeli',
-    field: (row: any) => row.PLCModel,
+    field: (row: any) => row.PlcModel,
     align: 'left',
-  },
-
-]
-const rows = [
-  {
-    id: 1,
-    machineName: '900HT3',
-    group: 'HT-2',
-    model: 'T7000',
-    version: '3.19.1.RC.16',
-    machineCapacity: 540,
-    towerCount: 3,
-    machineIP: '10.0.10.4',
-    atUse: true,
-    PLCModel: 'TBBPLC',
-  },
-  {
-    id: 2,
-    machineName: '900HT3',
-    group: 'HT-2',
-    model: 'T7000',
-    version: '3.19.1.RC.16',
-    machineCapacity: 540,
-    towerCount: 3,
-    machineIP: '10.0.10.4',
-    atUse: true,
-    PLCModel: 'TBBPLC',
-  },
-
-  {
-    id: 3,
-    machineName: '900HT3',
-    group: 'HT-2',
-    model: 'T7000',
-    version: '3.19.1.RC.16',
-    machineCapacity: 540,
-    towerCount: 3,
-    machineIP: '10.0.10.4',
-    atUse: true,
-    PLCModel: 'TBBPLC',
-  },
-
-  {
-    id: 4,
-    machineName: '900HT3',
-    group: 'HT-2',
-    model: 'T7000',
-    version: '3.19.1.RC.16',
-    machineCapacity: 540,
-    towerCount: 3,
-    machineIP: '10.0.10.4',
-    atUse: true,
-    PLCModel: 'TBBPLC',
-  },
-
-  {
-    id: 5,
-    machineName: '900HT3',
-    group: 'HT-2',
-    model: 'T7000',
-    version: '3.19.1.RC.16',
-    machineCapacity: 540,
-    towerCount: 3,
-    machineIP: '10.0.10.4',
-    atUse: true,
-    PLCModel: 'TBBPLC',
-  },
-
-  {
-    id: 6,
-    machineName: '900HT3',
-    group: 'HT-2',
-    model: 'T7000',
-    version: '3.19.1.RC.16',
-    machineCapacity: 540,
-    towerCount: 3,
-    machineIP: '10.0.10.4',
-    atUse: true,
-    PLCModel: 'TBBPLC',
-  },
-
-  {
-    id: 7,
-    machineName: '900HT3',
-    group: 'HT-2',
-    model: 'T7000',
-    version: '3.19.1.RC.16',
-    machineCapacity: 540,
-    towerCount: 3,
-    machineIP: '10.0.10.4',
-    atUse: true,
-    PLCModel: 'TBBPLC',
-  },
-
-  {
-    id: 8,
-    machineName: '900HT3',
-    group: 'HT-2',
-    model: 'T7000',
-    version: '3.19.1.RC.16',
-    machineCapacity: 540,
-    towerCount: 3,
-    machineIP: '10.0.10.4',
-    atUse: true,
-    PLCModel: 'TBBPLC',
-  },
-
-  {
-    id: 9,
-    machineName: '900HT3',
-    group: 'HT-2',
-    model: 'T7000',
-    version: '3.19.1.RC.16',
-    machineCapacity: 540,
-    towerCount: 3,
-    machineIP: '10.0.10.4',
-    atUse: true,
-    PLCModel: 'TBBPLC',
-  },
-
-  {
-    id: 10,
-    machineName: '900HT3',
-    group: 'HT-2',
-    model: 'T7000',
-    version: '3.19.1.RC.16',
-    machineCapacity: 540,
-    towerCount: 3,
-    machineIP: '10.0.10.4',
-    atUse: true,
-    PLCModel: 'TBBPLC',
   },
 
 ]
@@ -202,21 +74,13 @@ const selected = ref([])
 </script>
 
 <template>
-  <q-table
-    v-model:selected="selected"
-    :pagination="pagination"
-    :rows="rows"
-    :columns="columns"
-    hide-pagination
-    separator="cell"
-    bordered
-    selection="multiple"
-    table-header-class="table-header"
-  />
+  <q-table v-model:selected="selected" :pagination="pagination" :rows="machines"
+  :columns="columns" hide-pagination row-key="MACHINEID"
+    separator="cell" bordered selection="multiple" table-header-class="table-header" />
 </template>
 
 <style scoped>
-:deep .table-header > th {
+:deep .table-header>th {
   font-weight: bold;
 }
 </style>
