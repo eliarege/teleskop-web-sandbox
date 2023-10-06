@@ -54,15 +54,15 @@ const columns = [
     align: 'left',
   },
   {
-    name: 'inUse',
-    label: 'Kullanımda',
-    field: (row: any) => row.INUSE,
-    align: 'left',
-  },
-  {
     name: 'PLCModel',
     label: 'PLC Modeli',
     field: (row: any) => row.PlcModel,
+    align: 'left',
+  },
+  {
+    name: 'inUse',
+    label: 'Kullanımda',
+    field: (row: any) => row.INUSE,
     align: 'left',
   },
 
@@ -73,22 +73,37 @@ const selected = ref([])
 </script>
 
 <template>
-  <q-table
-    v-model:selected="selected"
-    :pagination="pagination"
-    :rows="machines"
-    :columns="columns"
-    hide-pagination
-    row-key="MACHINEID"
-    separator="cell"
-    bordered
-    selection="multiple"
-    table-header-class="table-header"
-  />
+  <div class="table-scroll">
+    <q-table
+      v-model:selected="selected"
+      :pagination="pagination"
+      :rows="machines"
+      :columns="columns"
+      hide-pagination
+      row-key="MACHINEID"
+      separator="cell"
+      bordered
+      selection="multiple"
+      table-header-class="table-header"
+    >
+      <template #body-cell-inUse="props">
+        <q-td :props="props">
+          <q-checkbox
+            v-model="props.row.INUSE"
+            color="primary"
+          />
+        </q-td>
+      </template>
+    </q-table>
+  </div>
 </template>
 
 <style scoped>
 :deep .table-header>th {
   font-weight: bold;
+}
+.table-scroll {
+  max-height: 45em;
+  overflow-y: auto;
 }
 </style>
