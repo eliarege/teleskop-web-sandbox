@@ -19,5 +19,9 @@
     "unocss-config": "workspace:*",
     "vue": "^3.3.4",
     "vue-i18n": "^9.2.2"
+  },
+  "dependencies": {
+    "knex": "^2.5.1",
+    "mssql": "^10.0.1"
   }
 }
