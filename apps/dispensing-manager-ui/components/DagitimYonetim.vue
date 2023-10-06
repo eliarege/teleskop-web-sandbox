@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { navigateToPage } from '../shared/functions'
+import { navigateToPage, textAlignOverride } from '../shared/functions'
 
 const { t } = useI18n()
 const jobordersText = t('joborders')
@@ -9,6 +9,9 @@ const selectedRequestText = t('distributionProcessor.selectedRequest')
 const dagitimyonet = t('distributionProcessor.a')
 const hide = t('distributionProcessor.hide')
 const recetetartim = t('distributionProcessor.recipeMeasurement')
+const paginationSync = ref(5)
+const paginationPageRight = ref(1)
+const paginationPageLeft = ref(1)
 
 const columnsRecipe = [
   { name: 'joborder', label: t('joborder'), field: 'joborder' },
@@ -40,7 +43,12 @@ const finishedColumns = [
   { name: 'status', label: t('statusCodes.text'), field: 'status' },
 ]
 
-const { data: recipe } = await useFetch('/api/dispenser/joborderlogs')
+// TODO: Will request every 10 seconds to ensure data stream
+const recipe = ref()
+const { data: recipeChem } = await useFetch('/api/dispenser/joborderlogs?type=chem')
+const { data: recipeDye } = await useFetch('/api/dispenser/joborderlogs?type=dye')
+recipe.value = recipeChem.value
+
 const { data: canceled } = await useFetch('/api/dispenser/joborderlogs?isCanceled=true')
 const material = ref()
 async function fetchMaterialData(reqnumber: number) {
@@ -51,13 +59,20 @@ async function fetchMaterialData(reqnumber: number) {
 
 function rowBGColorHandler(row: any) {
   if (row.field === 'status') {
-    if (row.value === 0) return '#b7eeff'
-    if (row.value === 1) return '#8dffcf'
-    if (row.value === 2) return '#38df4e'
-    if (row.value === 4) return '#eda72d'
-    if (row.value === 10) return '#eb7979'
-    if (row.value === 3) return '#61b3ff'
-    if (row.value === 8) return '#ff0000'
+    if (row.value === 0)
+      return '#b7eeff'
+    if (row.value === 1)
+      return '#8dffcf'
+    if (row.value === 2)
+      return '#38df4e'
+    if (row.value === 4)
+      return '#eda72d'
+    if (row.value === 10)
+      return '#eb7979'
+    if (row.value === 3)
+      return '#61b3ff'
+    if (row.value === 8)
+      return '#ff0000'
   }
 }
 
@@ -74,15 +89,16 @@ async function selectRow(rowReqNumber: number) {
   await fetchMaterialData(rowReqNumber)
 }
 
-function textAlignOverride(pos: string) {
-  if (pos === 'center') return 'text-override-center'
-  if (pos === 'left') return 'text-override-left'
-  if (pos === 'right') return 'text-override-right'
-}
-
 function toggleRow(row: any) {
   row.expand = !row.expand
 }
+
+async function clickShowRecipe(row) {
+  console.log(row)
+  await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.batchCorrectionNo}`)
+}
+
+const isChem = ref(true)
 </script>
 
 <template>
@@ -102,14 +118,34 @@ function toggleRow(row: any) {
           row-key="name"
           class="table-header-word-break-override"
           :class="textAlignOverride('left')"
-          style="width: 60vw;"
+          :pagination="{ rowsPerPage: paginationSync, page: paginationPageLeft }"
+          style="width: 60vw; height: 100%;"
+          @update:pagination="(newPag) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
         >
+          <template #top>
+            <span style="font-size: 20px; font-weight: 400;">
+              {{ jobordersText }}
+            </span>
+            <q-space />
+            <q-btn-toggle
+              v-model="isChem"
+              class="table-header-toggle"
+              toggle-color="secondary"
+              :options="[
+                { label: t('chemical'), value: true },
+                { label: t('dye'), value: false },
+              ]"
+              @vue:updated="isChem ? recipe = recipeChem : recipe = recipeDye"
+            />
+          </template>
           <template #body="recipe">
             <q-tr
               :class="{ 'selected-row': selectedJobOrderTableRow === recipe.row.reqnumber }"
               style="cursor: pointer;"
               @click="selectRow(recipe.row.reqnumber)"
+              @contextmenu="selectRow(recipe.row.reqnumber)"
             >
+              <!-- @right="" -->
               <q-td
                 v-for="row in recipe.cols"
                 :key="row.name"
@@ -122,6 +158,30 @@ function toggleRow(row: any) {
                 <span v-else>
                   {{ row.value }}
                 </span>
+                <q-menu
+                  touch-position
+                  context-menu
+                >
+                  <!-- FIXME: min width should not be 300px -->
+                  <q-list style="min-width: 300px;">
+                    <q-item v-close-popup clickable>
+                      <q-item-section>{{ t('distributionProcessor.rcMenu.showLogs') }}</q-item-section>
+                    </q-item>
+                    <q-item v-close-popup clickable @click="clickShowRecipe(recipe.row)">
+                      <q-item-section>{{ t('distributionProcessor.rcMenu.showRecipe') }}</q-item-section>
+                    </q-item>
+                    <q-separator />
+                    <q-item v-close-popup clickable>
+                      <q-item-section>{{ t('distributionProcessor.rcMenu.retry') }}</q-item-section>
+                    </q-item>
+                    <q-item v-close-popup clickable>
+                      <q-item-section>{{ t('distributionProcessor.rcMenu.cancel') }}</q-item-section>
+                    </q-item>
+                    <q-item v-close-popup clickable>
+                      <q-item-section>{{ t('distributionProcessor.rcMenu.complete') }}</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
               </q-td>
             </q-tr>
           </template>
@@ -137,7 +197,9 @@ function toggleRow(row: any) {
           :columns="finishedColumns"
           row-key="name"
           :class="textAlignOverride('left')"
-          style="width: 35vw;"
+          :pagination="{ rowsPerPage: paginationSync, page: paginationPageRight }"
+          style="width: 35vw; height: 100%;"
+          @update:pagination="(newPag) => { paginationSync = newPag.rowsPerPage, paginationPageRight = newPag.page }"
         >
           <template #header="props">
             <q-tr :props="props">
@@ -272,11 +334,6 @@ function toggleRow(row: any) {
           color="primary"
           :label="recetetartim"
           @click="navigateToPage('recete-tartim')"
-        />
-        <q-btn
-          outline
-          color="primary"
-          :label="hide"
         />
       </div>
     </div>

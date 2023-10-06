@@ -2,11 +2,11 @@
 import type { TableColumnCtx } from 'element-plus'
 import type { PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { Recipe } from '~/shared/types'
+import type { RecipeLatest } from '~/shared/types'
 
 const props = defineProps({
   data: {
-    type: Array as PropType<Recipe[]>,
+    type: Array as PropType<RecipeLatest[]>,
     required: true,
   },
   show: Boolean,
@@ -23,20 +23,21 @@ const props = defineProps({
 
 const { t } = useI18n()
 interface SpanMethodProps {
-  row: Recipe
-  column: TableColumnCtx<Recipe>
+  row: RecipeLatest
+  column: TableColumnCtx<RecipeLatest>
   rowIndex: number
   columnIndex: number
 }
-// const size = window.innerWidth
+const size = window.innerWidth
 const groupables = [
-  { key: 'recIndex', index: 0 },
-  { key: 'recNo', index: 1 },
-  { key: 'name', index: 2 },
-  { key: 'reqNumber', index: 3 },
-  { key: 'mainStep', index: 4 },
-  // { key: "", index: 7 },
-] as { key: keyof Recipe; index: number }[]
+  { key: 'processOrder', index: 0 },
+  { key: 'recipeType', index: 1 },
+  { key: 'programNo', index: 2 },
+  { key: 'processOrder', index: 3 },
+  { key: 'ISN', index: 4 },
+  { key: 'mainStep', index: 5 },
+  { key: 'parallelStep', index: 6 },
+] as { key: keyof RecipeLatest; index: number }[]
 function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
   const property = groupables.find(prop => prop.index === columnIndex)
   if (!property) {
@@ -68,7 +69,7 @@ function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
 }
 function a({ row, columnIndex }: SpanMethodProps) {
   // HARDCODED! columnIndex 4 === chemCode --> veri değişirse değiştir!
-  if ((columnIndex === 5 || columnIndex === 6) && row.recType === 1) {
+  if ((columnIndex === 7 || columnIndex === 8) && row.recipeType === 1) {
     return 'green-class'
   }
   return 'normal-class'
@@ -92,32 +93,44 @@ function a({ row, columnIndex }: SpanMethodProps) {
     >
       <ElTableColumn :label="title" align="center">
         <ElTableColumn
-          prop="recIndex"
-          label="recIndex"
+          prop="processOrder"
+          label="processOrder"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
-          prop="recNo"
-          label="recNo"
+          prop="recipeType"
+          label="recipeType"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
-          prop="name"
-          label="name"
+          prop="programNo"
+          label="programNo"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
-          prop="reqNumber"
-          label="reqNumber"
+          prop="processOrder"
+          label="processOrder"
+          align="center"
+          show-overflow-tooltip
+        />
+        <ElTableColumn
+          prop="ISN"
+          label="ISN"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
           prop="mainStep"
           label="mainStep"
+          align="center"
+          show-overflow-tooltip
+        />
+        <ElTableColumn
+          prop="parallelStep"
+          label="parallelStep"
           align="center"
           show-overflow-tooltip
         />
@@ -134,22 +147,20 @@ function a({ row, columnIndex }: SpanMethodProps) {
           show-overflow-tooltip
         />
         <ElTableColumn
-          v-if="props.settings"
-          label="Faz İndeks"
-          prop="phaseIndex"
+          label="programProcessNo"
+          prop="programProcessNo"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
-          v-if="props.settings"
-          label="Faz Numarası"
-          prop="phaseNo"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
+          label="amount"
           prop="amount"
-          label="newAmount"
+          align="center"
+          show-overflow-tooltip
+        />
+        <ElTableColumn
+          prop="unit"
+          label="unit"
           align="center"
           show-overflow-tooltip
         />

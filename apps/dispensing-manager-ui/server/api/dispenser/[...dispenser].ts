@@ -5,11 +5,10 @@ const router = createRouter()
 export default useBase('/api/dispenser', router.handler)
 
 router.get('/joborderlogs', defineEventHandler(async (event) => {
-  let result
-  const { isCanceled } = getQuery(event)
+  const { isCanceled, type } = getQuery(event)
   console.log(isCanceled)
   try {
-    const query: any = knex('dbo.DYTFCHEMREQUESTS as r')
+    const result = knex('dbo.DYTFCHEMREQUESTS as r')
       .join('dbo.DYTFMACHINES as m', 'r.MACHINEID', 'm.MACHINEID')
       .leftJoin('dbo.DYTFDISPENSERSETTINGS as d', 'r.DISPENSERID', 'd.DISPENSERID')
       .leftJoin('dbo.BFMASTERPRGHEADER as p', function () {
@@ -34,18 +33,32 @@ router.get('/joborderlogs', defineEventHandler(async (event) => {
       })
       .limit(1000)
       .orderBy('r.REQNUMBER', 'asc')
+      .where((builder) => {
+        if (type === 'chem') {
+          builder.where('r.ACTUALRECIPETYPE', '=', 0)
+        }
+        if (type === 'dye') {
+          builder.where('r.ACTUALRECIPETYPE', '=', 1)
+        }
+        if (isCanceled && isCanceled === 'true') {
+          builder.where('r.STATUS', 3)
+            .orWhere('r.STATUS', 8)
+        } else {
+          builder.whereNot('r.STATUS', 3)
+            .andWhereNot('r.STATUS', 8)
+        }
+      })
     // .whereNot('r.STATUS', 3)
     // .andWhereNot('r.STATUS', 8)
-
-    if (isCanceled && isCanceled === 'true') {
-      console.log(1231231231231)
-      result = await query.where('r.STATUS', 3)
-        .orWhere('r.STATUS', 8)
-    } else {
-      console.log(1230)
-      result = await query.whereNot('r.STATUS', 3)
-        .andWhereNot('r.STATUS', 8)
-    }
+    // if (isCanceled && isCanceled === 'true') {
+    //   console.log(1231231231231)
+    //   result = await query.where('r.STATUS', 3)
+    //     .orWhere('r.STATUS', 8)
+    // } else {
+    //   console.log(1230)
+    //   result = await query.whereNot('r.STATUS', 3)
+    //     .andWhereNot('r.STATUS', 8)
+    // }
 
     return result
   } catch (e) {
@@ -81,9 +94,9 @@ router.get('/requestmaterials', defineEventHandler(async (event) => {
 /**
  * import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool';
-
+ 
 const router = createRouter()
-
+ 
 router.get('/test', defineEventHandler(async (event) => {
   let result;
   try {
@@ -112,7 +125,7 @@ router.get('/test', defineEventHandler(async (event) => {
     .limit(10)
     .orderBy('r.REQNUMBER', 'asc')
     .groupBy('r.REQNUMBER')
-
+ 
     return result
   }
   catch (e) {

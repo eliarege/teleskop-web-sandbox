@@ -1,41 +1,75 @@
 <script setup lang="ts">
-const props = defineProps({
-  rows: Array,
-  columns: Array,
-})
+import { useI18n } from 'vue-i18n'
+import { navigateToPage, textAlignOverride } from '../shared/functions'
 
-const rows = ref(props.rows)
-const columns = ref(props.columns)
+const { t } = useI18n()
 
-const a = ref()
-const b = ref()
-const date = ref({ from: '2020/07/08', to: '2020/07/17' })
+const joborderInput = ref()
+const date = ref({ from: '', to: '' })
+
+const selectedMachine = ref()
+const { data: machines } = await useFetch('/api/machine/machines')
+console.log(machines.value)
+const { data: joborders } = await useFetch('/api/joborder/joborders')
+console.log(joborders.value)
+
+const columns = [
+  { name: 'joborder', label: t('joborder'), field: 'joborder' },
+  { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo' },
+  { name: 'plannedMachineName', label: t('plannedMachine'), field: 'plannedMachineName' },
+  { name: 'programList', label: t('registeredJobOrders.programList'), field: 'programList' },
+  { name: 'plannedStartTime', label: t('registeredJobOrders.scheduledStartTime'), field: 'plannedStartTime' },
+]
+const noFilterSpec = ref(true)
+
+async function request() {
+  let query = '/api/joborder/filtered-joborders?'
+  if (selectedMachine.value?.machineid)
+    query += `machineid=${selectedMachine.value.machineid}&`
+  if (joborderInput.value)
+    query += `joborder=${joborderInput.value}&`
+  if (date.value.from && date.value.to)
+    query += `startdate=${date.value.from}&enddate=${date.value.to}&`
+  const { data: tempMachines } = await useFetch(query)
+  joborders.value = tempMachines.value
+}
+
+async function handleRowDblClick(row) {
+  console.log(row)
+  await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.correctionNo}`)
+}
 </script>
 
 <template>
   <div class="flex flex-col gap-5 e-border">
     <div class="ml-5">
       <div class="flex flex-row items-center gap-5">
-        İş Emir Numarası:
-        <q-input v-model="a" clearable />
-        <q-btn label="Sorgula" />
-        <q-btn label="Tüm İş Emirlerini Göster" />
+        {{ t('joborderNo') }}:
+        <q-input v-model="joborderInput" clearable />
+        <q-btn :label="t('request')" @click="request()" />
+        <span v-if="noFilterSpec" style="font-size: small; color: blue;">
+          ( {{ t('warnings.noFilterSpec') }} )
+        </span>
+        <!-- <q-btn label="Tüm İş Emirlerini Göster" /> -->
       </div>
       <div class="flex flex-row gap-5 mt-5 items-center">
-        Makine:
+        {{ t('machinename') }}:
         <q-select
-          v-model="b"
+          v-model="selectedMachine"
           class="w-50"
-          label="Tüm Makineler"
+          :label="t('allMachines')"
           filled
-          :options="b"
+          clearable
+          option-label="machinename"
+          :options="machines"
         />
+        <!-- :prefix="selectedMachine?.machineid + '. '" -->
         <div class="gap-0 flex flex-row items-center justify-center">
           <q-input
             v-model="date.from"
             filled
             mask="date"
-            label="Başlangıç Tarihi"
+            :label="t('starttime')"
             stack-label
           >
             <template #append>
@@ -67,35 +101,33 @@ const date = ref({ from: '2020/07/08', to: '2020/07/17' })
             v-model="date.to"
             filled
             mask="date"
-            label="Bitiş Tarihi"
+            :label="t('endtime')"
             stack-label
           />
         </div>
-        (If no date specified date filter text message display!!!)
+        <span v-if="noFilterSpec" style="font-size: small; color: blue;">
+          ( {{ t('warnings.noDateSpec') }} )
+        </span>
       </div>
     </div>
     <span class="header-class">
-      Tüm İş Emirleri
+      {{ t('joborders') }}
     </span>
     <q-table
       flat
       bordered
-      :rows="rows"
+      :rows="joborders"
       :columns="columns"
+      :class="textAlignOverride('center')"
       row-key="recIndex"
+      :pagination="{ rowsPerPage: 10 }"
+      @row-dblclick="(evt, row) => handleRowDblClick(row)"
     />
-    <!-- <div class="footer-buttons gap-5">
+    <div class="footer-buttons gap-5">
       <span class="absolute flex left-15">
-        İş emri reçetesi görmek için rowa tıkla message show
+        ( {{ t('warnings.doubleClickToShowRecipe') }} )
       </span>
-      <q-btn
-        class="e-border absolute flex right-15"
-        outline color="primary"
-        label="close"
-        icon="close"
-      />
-
-    </div> -->
+    </div>
   </div>
 </template>
 
@@ -108,11 +140,29 @@ const date = ref({ from: '2020/07/08', to: '2020/07/17' })
   padding-left: 1%;
 }
 
+.text-override-right :deep(.text-right){
+  text-align: right;
+  word-break: normal;
+  white-space: normal;
+}
+.text-override-center :deep(.text-right){
+  text-align: center;
+  word-break: normal;
+  white-space: normal;
+}
+.text-override-left :deep(.text-right){
+  text-align: left;
+  word-break: normal;
+  white-space: normal;
+}
+
 .footer-buttons {
+  font-size: medium;
+  color: blue;
   background-color: rgb(236, 236, 236);
   height: 10vh;
   width: 100vw;
-  position: absolute;
+  position: relative;
   bottom: 0px;
   right: 0px;
   display: flex;

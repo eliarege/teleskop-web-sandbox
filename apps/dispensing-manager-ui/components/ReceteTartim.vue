@@ -8,11 +8,16 @@ async function printKey() {
   console.log(key.value)
 }
 
-const { data: setting } = await useFetch('http://localhost:3000/api/settings')
+const plannedMachineChangeVal = ref()
+const coupledMachineChangeVal = ref()
+const isCoupled = ref(false)
 const a = 0
+const { data: machines } = await useFetch('/api/machine/machines')
+console.log(machines.value)
 // const { data: recipeData, pending: waitingForData } = useFetch('/api/recipe?recipeJB=11428&recipeID=3&teleskopType=normal')
 const recipeData = ref()
 const jobordernum = ref()
+const showChangeMachineDialog = ref(false)
 const b = ref()
 const buttonProps = ref([
   { name: 'logs', label: t('recipe.logs'), link: '', icon: 'description' },
@@ -23,18 +28,11 @@ const buttonProps = ref([
   { name: 'close', label: t('close'), link: '', icon: 'close' },
 ])
 
-const correctionNoList = ref([])
-const correctionNoDisplayed = ref()
-async function getCorrectionNOs(parameter: string, parameterType: string) {
-  if(parameterType === 'planKey') {
-    const { data: correctiontemp } = await useFetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=planKey`)
-    correctionNoDisplayed.value = correctiontemp.value[0].CORRECTIONNUMBER
-  }
-  if(parameterType === 'joborder') {
-    const { data: correctionListTemp } = await useFetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=recipeJB`)
-    correctionNoList.value = []
-    correctionListTemp.value.forEach((element: {CORRECTIONNUMBER: number}) => correctionNoList.value.push(element.CORRECTIONNUMBER));
-  }
+async function getCorrectionNOs(parameter: string) {
+  const { data: correctionListTemp } = await useFetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=recipeJB`)
+  correctionNoList.value = []
+  correctionListTemp.value.forEach((element: { CORRECTIONNUMBER: number }) => correctionNoList.value.push(element.CORRECTIONNUMBER))
+  console.log(correctionNoList.value)
 }
 
 /**
@@ -44,17 +42,41 @@ async function getCorrectionNOs(parameter: string, parameterType: string) {
  * Might to have colors array
  */
 const recipeDataTemp = ref()
+const correctionNoList = ref([])
+const correctionNoDisplayed = ref(0)
+const machine = ref()
+
 async function requestJobOrder() {
   if (jobordernum.value) {
-    console.log(jobordernum.value)
-    // const { data: recipeDataTemp, pending: waitingForData } = useFetch(`/api/recipe?recipeJB=${jobordernum.value}&recipeID=24&teleskopType=normal`)
-    recipeDataTemp.value = await useFetch(`/api/recipe?recipeJB=${jobordernum.value}&recipeID=24&teleskopType=normal`)
-    console.log(recipeDataTemp.value.data)
-    if (!recipeDataTemp.value) recipeData.value = []
-    else recipeData.value = recipeDataTemp.value.data[0]
+    getCorrectionNOs(jobordernum.value)
+    recipeDataTemp.value = await useFetch(`/api/recipe/joborder?recipeJB=${jobordernum.value}&correctionNo=${correctionNoDisplayed.value}`)
+    const { data: tempMach } = await useFetch(`/api/machine/machine?joborder=${jobordernum.value}&correctionNo=${correctionNoDisplayed.value}`)
+    machine.value = tempMach.value
+    console.log(machine.value)
+    if (!recipeDataTemp.value)
+      recipeData.value = []
+    else {
+      recipeData.value = recipeDataTemp.value.data
+      if (!correctionNoDisplayed.value) {
+        const { data: tempNo } = await useFetch(`/api/recipe/correction-number-by-parameter?parameter=${jobordernum.value}&searchBy=planKey`)
+        correctionNoDisplayed.value = tempNo.value[0].CORRECTIONNUMBER
+      }
+    }
   } else {
     recipeData.value = []
   }
+}
+
+function clearCorrectionNo() {
+  correctionNoDisplayed.value = 0
+}
+
+const queryString = window.location.search
+const urlParams = new URLSearchParams(queryString)
+if (urlParams.get('correctionNo') && urlParams.get('joborder')) {
+  jobordernum.value = urlParams.get('joborder')
+  correctionNoDisplayed.value = Number(urlParams.get('correctionNo'))
+  await requestJobOrder()
 }
 
 function seeAllJoborders() {
@@ -71,8 +93,10 @@ function changePlannedMachine() {
 </script>
 
 <template>
-  <!-- <button class="w-50 h-50" @click="">
+  <!-- <button class="w-50 h-50 e-border" @click="getCorrectionNOs('11428', 'planKey')">
+    1
   </button> -->
+
   <div class="flex flex-col gap-5">
     <span class="header-class">
       {{ t('distributionProcessor.a') }} - {{ t('recipe.header') }}
@@ -81,7 +105,7 @@ function changePlannedMachine() {
       {{ t('recipe.infoText') }}
       <div class="flex flex-row items-center gap-5">
         {{ t('joborderNo') }}
-        <q-input v-model="jobordernum" clearable />
+        <q-input v-model="jobordernum" clearable @vue:updated="clearCorrectionNo()" />
         <q-btn :label="t('request')" @click="requestJobOrder()" />
         "sometext" --> 11428 can be used as an example
       </div>
@@ -91,9 +115,9 @@ function changePlannedMachine() {
           v-model="correctionNoDisplayed"
           class="w-40"
           filled
-          :options="correctionListTemp"
+          :options="correctionNoList"
         />
-        <q-btn :label="t('allJobOrders')" />
+        <q-btn :label="t('allJobOrders')" @click="navigateToPage('registered-job-orders')" />
       </div>
     </div>
     <span class="header-class">
@@ -102,13 +126,37 @@ function changePlannedMachine() {
     <div class="ml-5">
       {{ t('plannedMachine') }}
       "-makine ismi-"
-      <q-btn :label="`-someicon-${t('recipe.changePlannedMachine')}`" />
+      <q-btn :label="`-someicon-${t('recipe.changePlannedMachine')}`" @click="showChangeMachineDialog = true" />
     </div>
+    <q-dialog v-model="showChangeMachineDialog">
+      <q-card class="w-400">
+        <q-card-section>
+          <div class="text-h6">
+            {{ t('recipe.machineChange') }}
+          </div>
+        </q-card-section>
+
+        <q-card-section class="flex flex-col gap-5" style="justify-content: center; align-items: center;">
+          {{ t('currentMachine') }} : {{ machine[0].machinename }}
+          <q-select v-model="plannedMachineChangeVal" :options="machines" option-label="machinename" :label="t('plannedMachine')" style="width: 50%;" />
+
+          <q-checkbox v-model="isCoupled" :label="t('recipe.joborderCoupled')" />
+
+          <q-select v-model="coupledMachineChangeVal" :disable="!isCoupled" :options="machines" option-label="machinename" :label="t('recipe.coupleMachine')" style="width: 50%;" />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn v-close-popup flat :label="t('submit')" color="primary" />
+          <q-btn v-close-popup flat :label="t('close')" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <ElScrollbar class="table-wrapper ml-5 mr-5">
       <RecipeTable
         :data="recipeData"
         :show="true"
-        title="Title"
+        title="Recipe Table"
         :is-first="true"
         :settings="a"
       />
@@ -131,7 +179,7 @@ function changePlannedMachine() {
 
 <style scoped>
 .header-class {
-  background-color: gray;
+  background-color: rgb(42, 62, 92);
   color: white;
   font-size: large;
   width: 100vw;

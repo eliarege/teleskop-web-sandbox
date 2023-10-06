@@ -2,7 +2,7 @@
   "allJobOrders": "Tüm İş Emirlerini Göster",
   "close": "Kapat",
   "joborders": "İş Emirleri",
-  "correctionNo": "Düzeltme numarası",
+  "correctionNo": "Düzeltme Numarası",
   "joborder": "İş Emri",
   "joborderNo": "İş Emri Numarası",
   "machinename": "Makine Adı",
@@ -17,6 +17,13 @@
   "requestTime": "İstek Zamanı",
   "status": "Durum",
   "tankNo": "Tank Numarası",
+  "allMachines": "Tüm Makineler",
+  "starttime": "Başlangıç Tarihi",
+  "endtime": "Bitiş Tarihi",
+  "dye": "Boya",
+  "chemical": "Kimyasal",
+  "submit": "Kaydet",
+  "currentMachine": "Mevcut Makine",
 
   "distributionProcessor": {
     "a": "Dağıtım Yöneticisi",
@@ -32,7 +39,16 @@
     "recipeStepNum": "Reçete Adım Numarası",
     "recipeType": "Reçete Tipi",
     "selectedRequest": "Seçili İsteğin Maddeleri",
-    "stepNo": "Adım Numarası"
+    "stepNo": "Adım Numarası",
+    "rcMenu": {
+      "showLogs": "Seçili İş Emrine Ait Logları Göster",
+      "showRecipe": "Seçili Adımın Reçetesini Göster",
+      "retry": "Seçili İsteği Tekrarla",
+      "cancel": "Seçili İsteği İptal Et",
+      "complete": "Seçili İsteği Tamamlandı Yap",
+      "justChem": "Sadece Kimyasal İsteklerini Göster",
+      "justDye": "Sadece Boya İsteklerini Göster"
+    }
   },
 
   "jobOrderLogs": {
@@ -82,10 +98,13 @@
     "mainStep": "Ana Adım",
     "metric": "Birim",
     "processOrder": "İşlem Sırası",
-    "processNo": "İşlem numarası",
+    "processNo": "İşlem Numarası",
     "PSN": "PSN",
     "recipeInfo": "Reçete Bilgileri",
-    "recipeNo": "Reçete No"
+    "recipeNo": "Reçete No",
+    "machineChange": "Makine Değiştirme",
+    "joborderCoupled": "İş Emri Akuple Mi ?",
+    "coupleMachine": "Akuple Makinesi"
   },
 
   "registeredJobOrders": {
@@ -119,5 +138,10 @@
     "4": "Öncelik Değişimi",
     "8": "İptal",
     "10": "Dağıtıcı Değişti"
+  },
+  "warnings": {
+    "noFilterSpec": "Herhangi bir filtre seçilmemesi durumunda mevcut bütün iş emirleri gösterilecektir.",
+    "noDateSpec": "Herhangi bir tarih aralığı seçilmemesi durumunda bütün iş emirleri arasında filtreleme yapılır.",
+    "doubleClickToShowRecipe": "İş emrinin reçetesini görmek için üzerine çift tıklayınız."
   }
 }

@@ -7,7 +7,7 @@
   "joborderNo": "Job Order Number",
   "machinename": "Machine Name",
   "materialCode": "Material Code",
-  "materialName": "Material name",
+  "materialName": "Material Name",
   "plannedMachine": "Planned Machine",
   "programName": "Program Name",
   "programNo": "Program Number",
@@ -17,6 +17,14 @@
   "requestTime": "Request Time",
   "status": "Status",
   "tankNo": "Tank Number",
+  "allMachines": "All Machines",
+  "starttime": "Start Date",
+  "endtime": "End Date",
+  "dye": "Dye",
+  "chemical": "Chemical",
+  "submit": "Submit",
+  "currentMachine": "Current Machine",
+
   "distributionProcessor": {
     "a": "Distribution Processor",
     "recipeRequest": "Request Recipe Details",
@@ -31,7 +39,16 @@
     "recipeStepNum": "Recipe Step Number",
     "recipeType": "Recipe Type",
     "selectedRequest": "Items of the Selected Request",
-    "stepNo": "Step Number"
+    "stepNo": "Step Number",
+    "rcMenu": {
+      "showLogs": "Show Logs of the Selected Job Order",
+      "showRecipe": "Show Recipe of the Selected Step",
+      "retry": "Repeat Selected Request",
+      "cancel": "Cancel Selected Request",
+      "complete": "Make Selected Request Completed",
+      "justChem": "Just Show Chemical Requests",
+      "justDye": "Just Show Dye Requests"
+    }
   },
   "jobOrderLogs": {
     "a": "Job Order Logs",
@@ -81,7 +98,10 @@
     "processNo": "Process number",
     "PSN": "PSN",
     "recipeInfo": "Recipe Information",
-    "recipeNo": "Recipe Number"
+    "recipeNo": "Recipe Number",
+    "machineChange": "Change Machine",
+    "joborderCoupled": "Is Joborder Coupled ?",
+    "coupleMachine": "Couple Machine"
   },
   "registeredJobOrders": {
     "a": "Registered Job Orders",
@@ -113,5 +133,10 @@
     "4": "Priority Changed",
     "8": "Canceled",
     "10": "Dispenser Changed"
+  },
+  "warnings": {
+    "noFilterSpec": "If no filter specified, all the job orders will be displayed.",
+    "noDateSpec": "If no date range specified, filter other filter will be applied all the job orders.",
+    "doubleClickToShowRecipe": "To see the recipe of the job order, double click to the job order."
   }
 }
