@@ -88,9 +88,17 @@ const selected = ref([])
     >
       <template #body-cell-inUse="props">
         <q-td :props="props">
-          <q-checkbox
-            v-model="props.row.INUSE"
+          <q-icon
+            v-if="props.row.INUSE"
+            name="play_arrow"
             color="primary"
+            size="sm"
+          />
+          <q-icon
+            v-else-if="!props.row.INUSE"
+            name="stop"
+            color="primary"
+            size="sm"
           />
         </q-td>
       </template>
