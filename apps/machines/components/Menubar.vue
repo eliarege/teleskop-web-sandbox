@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const showNewMachine = ref(false)
 </script>
 
 <template>
@@ -10,6 +11,7 @@
         icon="note_add"
         color="primary"
         class="mr-4 ml-2"
+        @click="showNewMachine = true"
       />
       <q-btn
         label="Proje Yükle"
@@ -56,6 +58,7 @@
       </q-card>
     </q-card-section>
   </q-card>
+  <NewMachineDialog :show="showNewMachine" @close="showNewMachine = false" />
 </template>
 
 <style scoped>
