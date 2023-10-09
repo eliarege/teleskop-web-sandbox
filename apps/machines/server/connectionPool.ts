@@ -1,17 +1,24 @@
-import mssql from 'mssql'
+import Knex from 'knex'
 
-const { ConnectionPool } = mssql
 const config = useRuntimeConfig()
-const pool = new ConnectionPool({
-  server: config.teleskopHost,
-  port: Number.parseInt(config.teleskopPort),
-  user: config.teleskopUser,
-  password: config.teleskopPassword.toString(),
-  database: config.teleskopDatabase,
-  options: {
-    trustServerCertificate: true,
+const knex = Knex({
+  client: 'mssql',
+  connection: {
+    host: config.teleskopHost,
+    port: Number.parseInt(config.teleskopPort),
+    user: config.teleskopUser,
+    password: config.teleskopPassword.toString(),
+    database: config.teleskopDatabase,
+    options: {
+      trustServerCertificate: true,
+    },
   },
 })
-export default {
-  pool,
+
+knex.raw('select 1+1 as result')
+  .then(() => console.log('Connected to the SQL Server via knex'))
+  .catch((err: any) => console.error('Error connecting to SQL Server:', err))
+
+export {
+  knex,
 }
