@@ -28,7 +28,6 @@ interface Machine {
 
 const modelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
 const { data: machineGroups } = await useFetch('/api/machine/machine-group')
-console.log('machineGroups = ', machineGroups.value)
 
 const check = (false)
 
@@ -36,9 +35,7 @@ const machine: Machine = ref({})
 
 async function handleFormSubmit() {
   // add machine
-  console.log('machine.value = ', machine.value)
   const res = await $fetch('/api/machine/machine-add', { method: 'POST', body: machine.value })
-  console.log('res = ', res)
   emit('close')
 }
 </script>
