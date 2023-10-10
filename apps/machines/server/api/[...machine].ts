@@ -31,7 +31,7 @@ router.get('/machines', defineEventHandler(async () => {
 router.get('/machine-group', defineEventHandler(async () => {
   try {
     const machineGroups = await knex('BFMACHGROUP').select('GROUPNAME')
-    return machineGroups
+    return machineGroups.map(obj => obj.GROUPNAME)
   } catch (e) {
     return e
   }

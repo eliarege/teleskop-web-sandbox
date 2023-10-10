@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { data: machines } = await useFetch('/api/machines')
+const { data: machines } = await useFetch('/api/machine/machines')
 
 const columns = [
   {
