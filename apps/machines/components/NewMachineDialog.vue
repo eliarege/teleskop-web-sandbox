@@ -4,31 +4,43 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['close'])
 
-const no = ref()
-const name = ref()
-const group = ref()
-const model = ref()
-const ip = ref()
-const theoricalCharge = ref()
-const theoricalChargeDuration = ref()
-const machineCapacity = ref()
-const reelCount = ref()
-const nozzleCount = ref()
-const steamUnit = ref()
-const steamKgPerHour = ref()
+interface Machine {
+  no: boolean
+  name: string
+  group: string
+  model: string
+  ip: string
+  theoricalCharge: string
+  theoricalChargeDuration: string
+  machineCapacity: string
+  reelCount: number
+  nozzleCount: number
+  steamUnit: string
+  steamKgPerHour: number
+  additionalTank1: boolean
+  additionalTank2: boolean
+  additionalTank3: boolean
+  additionalTank4: boolean
+  reserveTank: boolean
+  inUse: boolean
+  MTTempIo: Array<string>
+}
 
-const additionalTank1 = ref(false)
-const additionalTank2 = ref(false)
-const additionalTank3 = ref(false)
-const additionalTank4 = ref(false)
-const reserveTank = ref(false)
-const inUse = ref(false)
-const MTTempIo = ref([])
+const modelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
+const { data: machineGroups } = await useFetch('/api/machine/machine-group')
+console.log('machineGroups = ', machineGroups.value)
 
-const modelOptions = ref(['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello'])
-const { data: machineGroupOptions } = await useFetch('/api/machine/machine-group')
+const check = (false)
 
-const check = ref(false)
+const machine: Machine = ref({})
+
+async function handleFormSubmit() {
+  // add machine
+  console.log('machine.value = ', machine.value)
+  const res = await $fetch('/api/machine/machine-add', { method: 'POST', body: machine.value })
+  console.log('res = ', res)
+  emit('close')
+}
 </script>
 
 <template>
@@ -39,31 +51,33 @@ const check = ref(false)
   >
     <q-card>
       <q-card-section>
-        <q-form>
+        <q-form @submit.prevent>
           <div class="flex flex-col">
             <div class="flex flex-row">
               <div class="flex flex-row justify-start">
                 <div class="flex flex-col mr-8 w-xs input-field">
                   <q-input
-                    v-model="no"
+                    v-model="machine.no"
                     label="Makine No"
                     filled
                     clearable
                   />
                   <q-input
-                    v-model="name"
+                    v-model="machine.name"
                     label="Makine Adı"
                     filled
                     clearable
                   />
                   <q-select
-                    v-model="group"
-                    :options="machineGroupOptions"
+                    v-model="machine.group"
+                    :options="machineGroups"
+                    :option-label="(m) => m.GROUPNAME"
+                    :option-value="(m) => m.GROUPID"
                     label="Grup"
                     filled
                   />
                   <q-select
-                    v-model="steamUnit"
+                    v-model="machine.steamUnit"
                     :options="machineGroupOptions"
                     label="Buhar Birimi"
                     filled
@@ -71,25 +85,25 @@ const check = ref(false)
                 </div>
                 <div class="flex flex-col mr-8 w-xs input-field">
                   <q-select
-                    v-model="model"
+                    v-model="machine.model"
                     :options="modelOptions"
                     label="Model"
                     filled
                   />
                   <q-input
-                    v-model="ip"
+                    v-model="machine.ip"
                     label="IP Numarası"
                     filled
                     clearable
                   />
                   <q-input
-                    v-model="theoricalCharge"
+                    v-model="machine.theoricalCharge"
                     label="Teorik Şarj Sayısı"
                     filled
                     clearable
                   />
                   <q-select
-                    v-model="group"
+                    v-model="machine.group"
                     :options="machineGroupOptions"
                     label="Ana Kazan Sıcaklık Girişi"
                     filled
@@ -97,25 +111,25 @@ const check = ref(false)
                 </div>
                 <div class="flex flex-col w-xs input-field">
                   <q-input
-                    v-model="theoricalChargeDuration"
+                    v-model="machine.theoricalChargeDuration"
                     label="Teorik Şarj Süresi (dk)"
                     filled
                     clearable
                   />
                   <q-input
-                    v-model="machineCapacity"
+                    v-model="machine.machineCapacity"
                     label="Makine Kapasitesi (kg)"
                     filled
                     clearable
                   />
                   <q-input
-                    v-model="reelCount"
+                    v-model="machine.reelCount"
                     label="Düze Sayısı"
                     filled
                     clearable
                   />
                   <q-input
-                    v-model="nozzleCount"
+                    v-model="machine.nozzleCount"
                     label="Kule Sayısı"
                     filled
                     clearable
@@ -125,16 +139,16 @@ const check = ref(false)
 
               <div class="flex flex-row flex-1 justify-around">
                 <div class="flex flex-col check-box">
-                  <q-checkbox v-model="inUse" label="Kullanımda" />
+                  <q-checkbox v-model="machine.inUse" label="Kullanımda" />
                   <q-checkbox v-model="check" label="Teorik Su Miktarı Hesaplama Aktif" />
                   <q-checkbox v-model="check" label="Elektrik Sayacı Değerini Artan Olarak Sakla" />
                 </div>
                 <div class="flex flex-col check-box">
-                  <q-checkbox v-model="additionalTank1" label="İlave Kazan 1" />
-                  <q-checkbox v-model="additionalTank2" label="İlave Kazan 2" />
-                  <q-checkbox v-model="additionalTank3" label="İlave Kazan 3" />
-                  <q-checkbox v-model="additionalTank4" label="İlave Kazan 4" />
-                  <q-checkbox v-model="reserveTank" label="Rezerve Kazan" />
+                  <q-checkbox v-model="machine.additionalTank1" label="İlave Kazan 1" />
+                  <q-checkbox v-model="machine.additionalTank2" label="İlave Kazan 2" />
+                  <q-checkbox v-model="machine.additionalTank3" label="İlave Kazan 3" />
+                  <q-checkbox v-model="machine.additionalTank4" label="İlave Kazan 4" />
+                  <q-checkbox v-model="machine.reserveTank" label="Rezerve Kazan" />
                 </div>
               </div>
             </div>
@@ -151,7 +165,7 @@ const check = ref(false)
                 />
               </div>
               <q-input
-                v-model="steamKgPerHour"
+                v-model="machine.steamKgPerHour"
                 label="Buhar Tüketimi (kg/saat)"
                 :disable="check"
                 filled
@@ -159,7 +173,7 @@ const check = ref(false)
                 class="mb-8"
               />
               <q-select
-                v-model="group"
+                v-model="machine.group"
                 label="Buhar Vanası"
                 :options="machineGroupOptions"
                 :disable="check"
@@ -187,7 +201,7 @@ const check = ref(false)
                 type="submit"
                 color="primary"
                 no-caps
-                @click="$emit('close')"
+                @click="handleFormSubmit()"
               />
               <q-btn
                 label="Sıfırla"
