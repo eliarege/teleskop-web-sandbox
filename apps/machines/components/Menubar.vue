@@ -1,5 +1,15 @@
 <script setup lang="ts">
+import { useMachineStore } from '~/stores/machine'
+
 const showNewMachine = ref(false)
+async function handleMachineDelete() {
+  const selectedMachines = useMachineStore()
+  const machineIds = selectedMachines.value.map(m => m.MACHINEID)
+  console.log('machineIds = ', machineIds)
+  // delete machine
+  const res = await $fetch('/api/machine/machine-delete', { method: 'POST', body: { machineIds } })
+  console.log('res = ', res)
+}
 </script>
 
 <template>
@@ -33,6 +43,7 @@ const showNewMachine = ref(false)
         icon="delete"
         color="primary"
         class="mr-4"
+        @click="handleMachineDelete()"
       />
       <q-btn
         label="Versiyon Bilgisi Al"
