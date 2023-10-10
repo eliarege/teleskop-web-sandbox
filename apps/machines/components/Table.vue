@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useMachineStore } from '~/stores/machine'
+
 const { data: machines } = await useFetch('/api/machine/machines')
 
 const columns = [
@@ -69,7 +71,10 @@ const columns = [
 ]
 
 const pagination = { rowsPerPage: 0 }
-const selected = ref([])
+const selected = useMachineStore()
+
+// delete machine
+// await $fetch('/api/machine/machine-delete', { method: 'POST' })
 </script>
 
 <template>
