@@ -11,6 +11,10 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
+  "dependencies": {
+    "knex": "^2.5.1",
+    "mssql": "^10.0.1"
+  },
   "devDependencies": {
     "@intlify/unplugin-vue-i18n": "^0.11.0",
     "@nuxt/devtools": "latest",
@@ -19,9 +23,5 @@
     "unocss-config": "workspace:*",
     "vue": "^3.3.4",
     "vue-i18n": "^9.2.2"
-  },
-  "dependencies": {
-    "knex": "^2.5.1",
-    "mssql": "^10.0.1"
   }
 }
