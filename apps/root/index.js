@@ -1,14 +1,21 @@
-import path, { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import process from 'node:process'
 import express from 'express'
 
 const app = express()
-const port = 3001
+const port = 4000
+const urls = {
+  machines: process.env.MACHINES_URL,
+  multiMonitor: process.env.MULTIMONITOR_URL,
+  dispensing: process.env.DISPENSING_MANAGER_UI_URL,
+  reporting: process.env.REPORTING_URL,
+}
 
 app.use(express.static('assets'))
 
+app.set('view engine', 'ejs')
+
 app.get('/', (req, res) => {
-  res.sendFile(path.join(dirname(fileURLToPath(import.meta.url)), 'index.html'))
+  res.render('index', { machines: urls.machines, multiMonitor: urls.multiMonitor, dispensing: urls.dispensing, reporting: urls.reporting })
 })
 
 app.listen(port, () => {

@@ -4,13 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Root</title>
-    <!--
-      <a href="https://www.flaticon.com/free-icons/machine" title="machine icons">Machine icons created by Freepik - Flaticon</a>
-      <a href="https://www.flaticon.com/free-icons/screen" title="screen icons">Screen icons created by Talha Dogar - Flaticon</a>
-      <a href="https://www.flaticon.com/free-icons/report" title="report icons">Report icons created by Freepik - Flaticon</a>
-      <a href="https://www.flaticon.com/free-icons/invoice" title="invoice icons">Invoice icons created by Freepik - Flaticon</a>
-     -->
      <style>
+      :root {
+        font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        font-weight: 400;
+
+        color-scheme: light dark;
+        color: rgba(255, 255, 255, 0.87);
+        background-color: #242424;
+
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
       .layout {
       display: flex;
       flex-direction: column;
@@ -30,7 +38,7 @@
       }
       a {
         text-decoration: none;
-        color: black;
+        color: white;
       }
 
      </style>
@@ -39,19 +47,19 @@
   <div class="layout">
     <h1 class="title">Teleskop Web</h1>
     <div class="list-layout">
-        <a class="list-item" href="http://localhost:3000">
+        <a class="list-item" href="<%= machines %>">
           <img src="/factory-machine.png" width="100" height="100">
           <h3>Machines</h3>
         </a>
-        <a  class="list-item" href="http://localhost:3000">
+        <a  class="list-item" href="<%= multiMonitor %>">
           <img src="/sharing.png" width="100" height="100">
           <h3>Multi Monitor</h3>
         </a>
-        <a class="list-item" href="http://localhost:3000">
+        <a class="list-item" href="<%= dispensing %>">
           <img src="/bill.png" width="100" height="100">
           <h3>Dispensing Manager</h3>
         </a>
-        <a class="list-item" href="http://localhost:3000">
+        <a class="list-item" href="<%= reporting %>">
           <img src="/report.png" width="100" height="100">
           <h3>Reporting</h3>
         </a>
