@@ -15,7 +15,7 @@ app.use(express.static('assets'))
 app.set('view engine', 'ejs')
 
 app.get('/', (req, res) => {
-  res.render('index', { machines: urls.machines, multiMonitor: urls.multiMonitor, dispensing: urls.dispensing, reporting: urls.reporting })
+  res.render('index', urls)
 })
 
 app.listen(port, () => {
