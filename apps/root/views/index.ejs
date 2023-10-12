@@ -28,46 +28,67 @@
         align-items: center;
       }
 
-      .title {
-        margin-top: 2em;
-      }
-
       .list-layout {
         display: flex;
         flex-direction: row;
-        justify-content: space-around;
-        align-items: top;
+        justify-content: space-evenly;
         width: 100%;
-        margin-top: 15%;
+        margin-top: 1%;
+        height: 70vh;
       }
 
       a {
         text-decoration: none;
         color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .layout-item {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
       }
     </style>
   </head>
 
   <body>
     <div class="layout">
-      <h1 class="title">Teleskop Web</h1>
+      <h1 class="title">Teleskop</h1>
       <div class="list-layout">
-        <a class="list-item" href="<%= machines %>">
-          <img src="/factory-machine.png" width="100" height="100">
-          <h3>Machines</h3>
-        </a>
-        <a class="list-item" href="<%= multiMonitor %>">
-          <img src="/sharing.png" width="100" height="100">
-          <h3>Multi Monitor</h3>
-        </a>
-        <a class="list-item" href="<%= dispensing %>">
-          <img src="/bill.png" width="100" height="100">
-          <h3>Dispensing Manager</h3>
-        </a>
-        <a class="list-item" href="<%= reporting %>">
-          <img src="/report.png" width="100" height="100">
-          <h3>Reporting</h3>
-        </a>
+        <div class="layout-item">
+          <a class="list-item" href="<%= machines %>">
+            <img src="/factory-machine.png" width="100" height="100">
+            <h3>Machines</h3>
+          </a>
+          <a class="list-item" href="<%= multiMonitor %>">
+            <img src="/sharing.png" width="100" height="100">
+            <h3>Multi Monitor</h3>
+          </a>
+
+        </div>
+        <div class="layout-item">
+          <a class="list-item" href="<%= dispensing %>">
+            <img src="/scientific.png" width="100" height="100">
+            <h3>Dispensing Manager</h3>
+          </a>
+          <a class="list-item" href="<%= reporting %>">
+            <img src="/report.png" width="100" height="100">
+            <h3>Reporting</h3>
+          </a>
+        </div>
+        <div class="layout-item">
+          <a class="list-item" href="<%= programEditor %>">
+            <img src="/writer.png" width="100" height="100">
+            <h3>Program Editor</h3>
+          </a>
+          <a class="list-item" href="<%= archive %>">
+            <img src="/file.png" width="100" height="100">
+            <h3>Archive</h3>
+          </a>
+        </div>
       </div>
     </div>
   </body>

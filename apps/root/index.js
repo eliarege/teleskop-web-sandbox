@@ -8,6 +8,8 @@ const urls = {
   multiMonitor: process.env.MULTIMONITOR_URL,
   dispensing: process.env.DISPENSING_MANAGER_UI_URL,
   reporting: process.env.REPORTING_URL,
+  archive: process.env.ARCHIVE_URL,
+  programEditor: process.env.PROGRAM_EDITOR_URL,
 }
 
 app.use(express.static('assets'))
