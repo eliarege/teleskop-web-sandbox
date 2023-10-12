@@ -3,6 +3,7 @@
   "close": "Close",
   "correctionNo": "Correction Number",
   "joborder": "Job order",
+  "finishedJobOrders": "Previous Job Orders",
   "joborders": "Job Orders",
   "joborderNo": "Job Order Number",
   "machinename": "Machine Name",
@@ -12,6 +13,7 @@
   "programName": "Program Name",
   "programNo": "Program Number",
   "recipeAmount": "Recipe Amount",
+  "actualAmount": "Weighed Amount",
   "recipeType": "Recipe Type",
   "request": "Request",
   "requestTime": "Request Time",
@@ -24,6 +26,7 @@
   "chemical": "Chemical",
   "submit": "Submit",
   "currentMachine": "Current Machine",
+  "apply": "Apply Filters",
 
   "distributionProcessor": {
     "a": "Distribution Processor",
@@ -70,7 +73,14 @@
     "priorityChange": "Priority Change",
     "programIndex": "Program Index",
     "requestQueue": "Request Queue",
-    "startedDistributingWeighing": "Distribution / Weighing Started"
+    "startedDistributingWeighing": "Distribution / Weighing Started",
+    "timeOrder": "Sort By Date",
+    "recipeStepOrder": "Sort By Recipe Step",
+    "asc": "Ascending",
+    "desc": "Descending",
+    "hideFilters": "Hide Filters",
+    "showFilters": "Show Filters",
+    "requestIndex": "Request Index"
   },
   "jobOrderParameters": {
     "a": "Job Order Parameters",
@@ -112,10 +122,13 @@
     "useDateFilter": "Use Date Filter"
   },
   "weighingInformation": {
-    "a": "Weighing Information",
+    "a": " Weighing Information",
+    "oto": "Automatic",
+    "man": "Manuel",
     "automaticRequest": "Auto Request",
     "completionTime": "Completion Time",
     "mainStep": "Main Step",
+    "parallelStep": "Parallel Step",
     "manualRequestViaDY": "Manual Request via DY",
     "otoMan": "Automatic / Manual",
     "passingTime": "The passing time",
@@ -134,6 +147,10 @@
     "4": "Priority Changed",
     "8": "Canceled",
     "10": "Dispenser Changed"
+  },
+  "recipeTypes": {
+    "0": "Chemical",
+    "1": "Dye"
   },
   "warnings": {
     "noFilterSpec": "If no filter specified, all the job orders will be displayed.",

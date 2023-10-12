@@ -63,23 +63,21 @@ router.get('/correction-number-by-parameter', defineEventHandler(async (event) =
   const { parameter } = getQuery(event)
   const { searchBy } = getQuery(event)
   let result
-  console.log(parameter)
-  console.log(searchBy)
   /** Returns correction no list */
-  if(searchBy === 'recipeJB') {
+  if (searchBy === 'recipeJB') {
     result = await knex('DYBFBATCHPLAN')
-    .where('JOBORDER', parameter)
-    .groupBy('CORRECTIONNUMBER')
-    .orderBy('CORRECTIONNUMBER', 'asc')
-    .select('CORRECTIONNUMBER')
+      .where('JOBORDER', parameter)
+      .groupBy('CORRECTIONNUMBER')
+      .orderBy('CORRECTIONNUMBER', 'asc')
+      .select('CORRECTIONNUMBER')
   }
   /** Returns correction no of the spesific joborder's highest planKey */
-  if(searchBy === 'planKey') {
+  if (searchBy === 'planKey') {
     result = knex('DYBFBATCHPLAN')
-    .where('JOBORDER', parameter)
-    .orderBy('PLANKEY', 'desc')
-    .limit(1)
-    .select('CORRECTIONNUMBER')
+      .where('JOBORDER', parameter)
+      .orderBy('PLANKEY', 'desc')
+      .limit(1)
+      .select('CORRECTIONNUMBER')
   }
   return result
 }))
@@ -95,18 +93,18 @@ router.get('/correction-number-by-parameter', defineEventHandler(async (event) =
 router.get('/joborder', defineEventHandler(async (event) => {
   const { recipeJB } = getQuery(event)
   const { correctionNo } = getQuery(event)
-  let planKey;
-  if(Number(correctionNo)) {
+  let planKey
+  if (Number(correctionNo)) {
     planKey = knex('DYBFBATCHPLAN')
       .where('JOBORDER', recipeJB)
       .andWhere('CORRECTIONNUMBER', correctionNo)
       .select('PLANKEY')
   } else {
     planKey = knex('DYBFBATCHPLAN')
-     .where('JOBORDER', recipeJB)
-     .orderBy('PLANKEY', 'desc')
-     .limit(1)
-     .select('PLANKEY')
+      .where('JOBORDER', recipeJB)
+      .orderBy('PLANKEY', 'desc')
+      .limit(1)
+      .select('PLANKEY')
   }
   const asd = await knex('dbo.DYBFBATCHORDERRECIPESTEPS as r')
     .where('r.PLANKEY', planKey)
@@ -123,7 +121,7 @@ router.get('/joborder', defineEventHandler(async (event) => {
       programProcessNo: 'r.REQNO_PROG',
       amount: 'r.AMOUNT',
       unit: 'r.otherUnit',
-      programNo: 'p.RECIPENO'
+      programNo: 'p.RECIPENO',
     })
     .leftJoin('dbo.DYBFBATCHORDERRECIPEHEADER as p', function () {
       this.on('r.PLANKEY', '=', 'p.PLANKEY')
@@ -134,17 +132,17 @@ router.get('/joborder', defineEventHandler(async (event) => {
     .whereNotNull('REQNO_BATCH')
     .orderBy(['r.RCPINDEX', 'r.REQNO_PROG', 'r.PARALLELSTEP'])
 
-    /** FIXME: .join function 'cause .join does not work as expected???????? */
-    // const a = await knex('dbo.DYBFBATCHORDERRECIPEHEADER as p')
-    //   .where('JOBORDER', recipeJB)
-    //   .orderBy('RECIPENO', 'asc')
-    // asd.forEach(elem => {
-    //   for(let i=0;i<a.length;i++) {
-    //     if((elem.planKey === a[i].PLANKEY) && (elem.processOrder === a[i].RCPINDEX) && (elem.recipeType === a[i].RECIPETYPE)) {
-    //       elem.programNo = a[i].RECIPENO
-    //       break
-    //     }
-    //   }
-    // })
+  /** FIXME: .join function 'cause .join does not work as expected???????? */
+  // const a = await knex('dbo.DYBFBATCHORDERRECIPEHEADER as p')
+  //   .where('JOBORDER', recipeJB)
+  //   .orderBy('RECIPENO', 'asc')
+  // asd.forEach(elem => {
+  //   for(let i=0;i<a.length;i++) {
+  //     if((elem.planKey === a[i].PLANKEY) && (elem.processOrder === a[i].RCPINDEX) && (elem.recipeType === a[i].RECIPETYPE)) {
+  //       elem.programNo = a[i].RECIPENO
+  //       break
+  //     }
+  //   }
+  // })
   return asd
 }))

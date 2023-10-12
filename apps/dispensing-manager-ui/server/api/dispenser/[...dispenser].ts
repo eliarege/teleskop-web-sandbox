@@ -1,3 +1,4 @@
+/* eslint-disable ts/no-invalid-this */
 import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
 
@@ -6,7 +7,6 @@ export default useBase('/api/dispenser', router.handler)
 
 router.get('/joborderlogs', defineEventHandler(async (event) => {
   const { isCanceled, type } = getQuery(event)
-  console.log(isCanceled)
   try {
     const result = knex('dbo.DYTFCHEMREQUESTS as r')
       .join('dbo.DYTFMACHINES as m', 'r.MACHINEID', 'm.MACHINEID')
@@ -24,7 +24,7 @@ router.get('/joborderlogs', defineEventHandler(async (event) => {
         tankno: 'r.TANKNO',
         dispenserName: 'd.NAME',
         programno: 'r.PROGRAMNO',
-        programname: 'p.name',
+        programname: 'p.NAME',
         stepno: 'r.PROGRAMSTEPNO',
         recipeType: 'r.ACTUALRECIPETYPE',
         recipeProcessNo: 'r.RECIPEINDEX',
@@ -51,11 +51,9 @@ router.get('/joborderlogs', defineEventHandler(async (event) => {
     // .whereNot('r.STATUS', 3)
     // .andWhereNot('r.STATUS', 8)
     // if (isCanceled && isCanceled === 'true') {
-    //   console.log(1231231231231)
     //   result = await query.where('r.STATUS', 3)
     //     .orWhere('r.STATUS', 8)
     // } else {
-    //   console.log(1230)
     //   result = await query.whereNot('r.STATUS', 3)
     //     .andWhereNot('r.STATUS', 8)
     // }

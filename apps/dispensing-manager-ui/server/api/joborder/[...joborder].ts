@@ -27,7 +27,6 @@ router.get('/joborders', defineEventHandler(async (event) => {
 router.get('/filtered-joborders', defineEventHandler(async (event) => {
   try {
     const { joborder, machineid, startdate, enddate } = getQuery(event)
-    console.log(machineid)
     const orders = await knex('DYBFBATCHPLAN as b')
       .select({
         joborder: 'b.JOBORDER',

@@ -4,7 +4,7 @@ import { navigateToPage, textAlignOverride } from '../shared/functions'
 
 const { t } = useI18n()
 const jobordersText = t('joborders')
-const finishedJobOrderText = 'Biten İş Emirleri'
+const finishedJobOrderText = t('finishedJobOrders')
 const selectedRequestText = t('distributionProcessor.selectedRequest')
 const dagitimyonet = t('distributionProcessor.a')
 const hide = t('distributionProcessor.hide')
@@ -167,7 +167,11 @@ const isChem = ref(true)
                     <q-item v-close-popup clickable>
                       <q-item-section>{{ t('distributionProcessor.rcMenu.showLogs') }}</q-item-section>
                     </q-item>
-                    <q-item v-close-popup clickable @click="clickShowRecipe(recipe.row)">
+                    <q-item
+                      v-close-popup
+                      clickable
+                      @click="clickShowRecipe(recipe.row)"
+                    >
                       <q-item-section>{{ t('distributionProcessor.rcMenu.showRecipe') }}</q-item-section>
                     </q-item>
                     <q-separator />
@@ -292,7 +296,7 @@ const isChem = ref(true)
         </template>
       </q-table>
     </div>
-    <span class="header-class">
+    <!-- <span class="header-class">
       {{ t('distributionProcessor.incidents') }}
     </span>
     <div class="flex flex-col ml-5">
@@ -319,7 +323,7 @@ const isChem = ref(true)
           <p>{{ element }}</p>
         </span>
       </q-virtual-scroll>
-    </div>
+    </div> -->
     <div class="footer-buttons gap-5 ml-5">
       <div class="left">
         <q-btn

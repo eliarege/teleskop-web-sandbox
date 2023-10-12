@@ -2,6 +2,7 @@
   "allJobOrders": "Tüm İş Emirlerini Göster",
   "close": "Kapat",
   "joborders": "İş Emirleri",
+  "finishedJobOrders": "Geçmiş İş Emirleri",
   "correctionNo": "Düzeltme Numarası",
   "joborder": "İş Emri",
   "joborderNo": "İş Emri Numarası",
@@ -11,7 +12,8 @@
   "plannedMachine": "Planlanan Makine",
   "programName": "Program Adı",
   "programNo": "Program Numarası",
-  "recipeAmount": "Reçete Miktarı",
+  "recipeAmount": "Reçeteki Miktar",
+  "actualAmount": "Tartılan Miktar",
   "recipeType": "Reçete Tipi",
   "request": "Sorgula",
   "requestTime": "İstek Zamanı",
@@ -24,6 +26,7 @@
   "chemical": "Kimyasal",
   "submit": "Kaydet",
   "currentMachine": "Mevcut Makine",
+  "apply": "Filtreleri Uygula",
 
   "distributionProcessor": {
     "a": "Dağıtım Yöneticisi",
@@ -41,7 +44,7 @@
     "selectedRequest": "Seçili İsteğin Maddeleri",
     "stepNo": "Adım Numarası",
     "rcMenu": {
-      "showLogs": "Seçili İş Emrine Ait Logları Göster",
+      "showLogs": "Seçili İş Emrine Ait Kayıtları Göster",
       "showRecipe": "Seçili Adımın Reçetesini Göster",
       "retry": "Seçili İsteği Tekrarla",
       "cancel": "Seçili İsteği İptal Et",
@@ -52,7 +55,7 @@
   },
 
   "jobOrderLogs": {
-    "a": "İş Emri Logları",
+    "a": "İş Emri Kayıtları",
     "arrangement": "Sıralama",
     "arrangementCriterion": "Sıralama Kriteri",
     "arrangementSort": "Sıralama Yönü",
@@ -69,9 +72,16 @@
     "jobOrderCode": "İş Emri Kodu",
     "newRequest": "Yeni İstek",
     "priorityChange": "Öncelik Değişimi",
-    "programIndex": "Program İndeks",
+    "programIndex": "Program Sırası",
     "requestQueue": "İstek Sırası",
-    "startedDistributingWeighing": "Dağıtım / Tartım Başladı"
+    "startedDistributingWeighing": "Dağıtım / Tartım Başladı",
+    "timeOrder": "Tarihe Göre",
+    "recipeStepOrder": "Reçete Adımına Göre",
+    "asc": "Artan",
+    "desc": "Azalan",
+    "hideFilters": "Filtreleri Gizle",
+    "showFilters": "Filtreleri Göster",
+    "requestIndex": "İstek Sırası"
   },
 
   "jobOrderParameters": {
@@ -94,7 +104,7 @@
     "jobOrderMeasurementRefresh": "İş Emri Tartım İsteklerini Yenile",
     "jobOrderParameters": "İş Emri Parametrelerini Göster",
     "jobOrderSolvingRefresh": "İş Emrinin Çözme İsteklerini Yenile",
-    "logs": "Logları Göster",
+    "logs": "Kayıtları Göster",
     "machineCode": "Makine Kodu",
     "mainStep": "Ana Adım",
     "metric": "Birim",
@@ -117,10 +127,13 @@
   },
 
   "weighingInformation": {
-    "a": "Tartım Bilgileri",
+    "a": " Tartım Bilgileri",
     "automaticRequest": "Otomatik İstek",
+    "oto": "Otomatik",
+    "man": "Manuel",
     "completionTime": "Tamamlama Zamanı",
     "mainStep": "Ana Adım",
+    "parallelStep": "Parallel Adım",
     "manualRequestViaDY": "El ile DY Üzerinden Yapılan İstek",
     "otoMan": "Otomatik / Manuel",
     "passingTime": "Geçen Süre",
@@ -139,6 +152,18 @@
     "4": "Öncelik Değişimi",
     "8": "İptal",
     "10": "Dağıtıcı Değişti"
+  },
+  "recipeTypes": {
+    "0": "Kimyasal",
+    "1": "Boya"
+  },
+  "units": {
+    "1": "gr/lt",
+    "2": "cc/lt",
+    "3": "gr",
+    "4": "cc",
+    "5": "kg",
+    "6": "lt"
   },
   "warnings": {
     "noFilterSpec": "Herhangi bir filtre seçilmemesi durumunda mevcut bütün iş emirleri gösterilecektir.",
