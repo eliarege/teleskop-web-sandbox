@@ -3,22 +3,22 @@ import { useI18n } from 'vue-i18n'
 import { navigateToPage } from '../shared/functions'
 
 const { t } = useI18n()
-async function printKey() {
-  const { data: key } = await useFetch('/api/recipe/joborder?recipeJB=11428')
-  console.log(key.value)
-}
+// async function printKey() {
+//   const { data: key } = await useFetch('/api/recipe/joborder?recipeJB=11428')
+//   console.log(key.value)
+// }
 
 const plannedMachineChangeVal = ref()
 const coupledMachineChangeVal = ref()
 const isCoupled = ref(false)
 const showParameterDialog = ref(false)
 const showLogsDialog = ref(false)
+const showConsumptionDialog = ref(false)
 const lastJobOrder = ref()
 const plankey = ref()
 // TODO: Job<Typeof Joborder> with plankey joborder correctiion no can be stored
 const a = 0
 const { data: machines } = await useFetch('/api/machine/machines')
-console.log(machines.value)
 // const { data: recipeData, pending: waitingForData } = useFetch('/api/recipe?recipeJB=11428&recipeID=3&teleskopType=normal')
 const recipeData = ref()
 const jobordernum = ref()
@@ -26,7 +26,7 @@ const showChangeMachineDialog = ref(false)
 const b = ref()
 const buttonProps = ref([
   { name: 'logs', label: t('recipe.logs'), link: 'showLogs', icon: 'description' },
-  { name: 'tartim', label: t('recipe.jobOrderMeasurement'), link: '', icon: 'content_paste_search' },
+  { name: 'tartim', label: t('recipe.jobOrderMeasurement'), link: 'showConsumptions', icon: 'content_paste_search' },
   { name: 'parameters', label: t('recipe.jobOrderParameters'), link: 'showParameters', icon: 'search' },
   { name: 'tartimrefresh', label: t('recipe.jobOrderMeasurementRefresh'), link: '', icon: 'refresh' },
   { name: 'solvingrefresh', label: t('recipe.jobOrderSolvingRefresh'), link: '', icon: 'refresh' },
@@ -36,7 +36,6 @@ async function getCorrectionNOs(parameter: string) {
   const { data: correctionListTemp } = await useFetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=recipeJB`)
   correctionNoList.value = []
   correctionListTemp.value.forEach((element: { CORRECTIONNUMBER: number }) => correctionNoList.value.push(element.CORRECTIONNUMBER))
-  console.log(correctionNoList.value)
 }
 
 /**
@@ -57,15 +56,16 @@ async function requestJobOrder() {
     recipeDataTemp.value = await useFetch(`/api/recipe/joborder?recipeJB=${jobordernum.value}&correctionNo=${correctionNoDisplayed.value}`)
     const { data: tempMach } = await useFetch(`/api/machine/machine?joborder=${jobordernum.value}&correctionNo=${correctionNoDisplayed.value}`)
     machine.value = tempMach.value
-    console.log(recipeDataTemp.value)
+    console.log(machine.value)
     if (!recipeDataTemp.value)
       recipeData.value = []
     else {
       recipeData.value = recipeDataTemp.value.data
+      recipeData.value.map(row => row.unit = t(`units.${row.unit}`))
       plankey.value = recipeData.value[0].planKey
 
       if (!correctionNoDisplayed.value) {
-        const { data: tempNo } = await useFetch(`/api/recipe/correction-number-by-parameter?parameter=${jobordernum.value}&searchBy=planKey`)
+        const tempNo = await $fetch(`/api/recipe/correction-number-by-parameter?parameter=${jobordernum.value}&searchBy=planKey`)
         correctionNoDisplayed.value = tempNo.value[0].CORRECTIONNUMBER
       }
     }
@@ -81,7 +81,6 @@ function clearCorrectionNo() {
 const queryString = window.location.search
 const urlParams = new URLSearchParams(queryString)
 if (urlParams.get('correctionNo') && urlParams.get('joborder')) {
-  console.log(1111111111111111)
   jobordernum.value = urlParams.get('joborder')
   correctionNoDisplayed.value = Number(urlParams.get('correctionNo'))
   await requestJobOrder()
@@ -99,6 +98,9 @@ function buttonAction(link: string) {
   }
   if (link === 'showLogs') {
     showLogsDialog.value = true
+  }
+  if (link === 'showConsumptions') {
+    showConsumptionDialog.value = true
   }
 }
 </script>
@@ -122,7 +124,7 @@ function buttonAction(link: string) {
           @vue:updated="clearCorrectionNo()"
         />
         <q-btn :label="t('request')" @click="requestJobOrder()" />
-        "sometext" --> 11428 can be used as an example
+        {{ plankey }} --> Joborder: 84956 can be used as an example
       </div>
       <div class="flex flex-row items-center gap-5 mt-2">
         {{ t('correctionNo') }}
@@ -148,6 +150,7 @@ function buttonAction(link: string) {
         @click="showChangeMachineDialog = true"
       />
     </div>
+    <!-- Machine Change Dialog -->
     <q-dialog v-model="showChangeMachineDialog">
       <q-card class="w-400">
         <q-card-section>
@@ -198,14 +201,21 @@ function buttonAction(link: string) {
       v-model="showParameterDialog"
       full-height
     >
-      <ParameterDialogContent :joborder="lastJobOrder" :plankey="plankey" />
+      <ParameterDialogContent :joborder="Number(lastJobOrder)" :plankey="plankey" />
     </q-dialog>
     <q-dialog
       v-model="showLogsDialog"
       full-height
       full-width
     >
-      <LogsDialogContent :joborder="lastJobOrder" :plankey="plankey" />
+      <LogsDialogContent :joborder="Number(lastJobOrder)" :plankey="plankey" />
+    </q-dialog>
+    <q-dialog
+      v-model="showConsumptionDialog"
+      full-height
+      full-width
+    >
+      <ConsumptionDialogContent :joborder="Number(lastJobOrder)" :machinename="machine[0].machinename" />
     </q-dialog>
     <ElScrollbar class="table-wrapper-recipe ml-5 mr-5">
       <RecipeTable
