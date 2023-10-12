@@ -63,7 +63,7 @@ const showFilters = ref(true)
 const logRows = ref()
 await applyFilters()
 async function applyFilters() {
-  const { data: tempFilteredLogs } = await useFetch('/api/logs/filtered-logs', {
+  const tempFilteredLogs = await $fetch('/api/logs/filtered-logs', {
     method: 'post',
     body: {
       status: checkboxesStatus.value,
@@ -74,7 +74,7 @@ async function applyFilters() {
       plankey: plankey.value,
     },
   })
-  logRows.value = tempFilteredLogs.value
+  logRows.value = tempFilteredLogs
   console.log(logRows.value)
   machinename.value = logRows.value[0].machineName
 }

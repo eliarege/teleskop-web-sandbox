@@ -8,9 +8,11 @@ const joborderInput = ref()
 const date = ref({ from: '', to: '' })
 
 const selectedMachine = ref()
-const { data: machines } = await useFetch('/api/machine/machines')
-console.log(machines.value)
-const { data: joborders } = await useFetch('/api/joborder/joborders')
+const machines = await $fetch('/api/machine/machines')
+console.log(machines)
+const joborders = ref()
+const jobordersTemp = await $fetch('/api/joborder/joborders')
+joborders.value = jobordersTemp
 console.log(joborders.value)
 
 const columns = [
@@ -30,8 +32,8 @@ async function request() {
     query += `joborder=${joborderInput.value}&`
   if (date.value.from && date.value.to)
     query += `startdate=${date.value.from}&enddate=${date.value.to}&`
-  const { data: tempMachines } = await useFetch(query)
-  joborders.value = tempMachines.value
+  const tempMachines = await $fetch(query)
+  joborders.value = tempMachines
 }
 
 async function handleRowDblClick(row) {

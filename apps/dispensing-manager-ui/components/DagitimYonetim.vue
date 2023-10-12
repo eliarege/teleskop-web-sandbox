@@ -52,8 +52,8 @@ recipe.value = recipeChem.value
 const { data: canceled } = await useFetch('/api/dispenser/joborderlogs?isCanceled=true')
 const material = ref()
 async function fetchMaterialData(reqnumber: number) {
-  const { data: materialDataTemp } = await useFetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
-  material.value = materialDataTemp.value
+  const materialDataTemp = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
+  material.value = materialDataTemp
   console.log(material.value)
 }
 

@@ -19,8 +19,8 @@ const parameterCols = [
   { name: 'unit', label: t('jobOrderParameters.unit'), field: 'unit' },
 ]
 
-const { data: parameterRows } = await useFetch(`/api/parameter/parameters?plankey=${plankey.value}`)
-console.log(parameterRows.value)
+const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.value}`)
+console.log(parameterRows)
 </script>
 
 <template>

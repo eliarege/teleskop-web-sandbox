@@ -18,7 +18,7 @@ const lastJobOrder = ref()
 const plankey = ref()
 // TODO: Job<Typeof Joborder> with plankey joborder correctiion no can be stored
 const a = 0
-const { data: machines } = await useFetch('/api/machine/machines')
+const machines = await $fetch('/api/machine/machines')
 // const { data: recipeData, pending: waitingForData } = useFetch('/api/recipe?recipeJB=11428&recipeID=3&teleskopType=normal')
 const recipeData = ref()
 const jobordernum = ref()
@@ -33,9 +33,9 @@ const buttonProps = ref([
 ])
 
 async function getCorrectionNOs(parameter: string) {
-  const { data: correctionListTemp } = await useFetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=recipeJB`)
+  const correctionListTemp = await $fetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=recipeJB`)
   correctionNoList.value = []
-  correctionListTemp.value.forEach((element: { CORRECTIONNUMBER: number }) => correctionNoList.value.push(element.CORRECTIONNUMBER))
+  correctionListTemp.forEach((element: { CORRECTIONNUMBER: number }) => correctionNoList.value.push(element.CORRECTIONNUMBER))
 }
 
 /**
@@ -53,22 +53,22 @@ async function requestJobOrder() {
   if (jobordernum.value) {
     getCorrectionNOs(jobordernum.value)
     lastJobOrder.value = jobordernum.value
-    recipeDataTemp.value = await useFetch(`/api/recipe/joborder?recipeJB=${jobordernum.value}&correctionNo=${correctionNoDisplayed.value}`)
-    const { data: tempMach } = await useFetch(`/api/machine/machine?joborder=${jobordernum.value}&correctionNo=${correctionNoDisplayed.value}`)
-    machine.value = tempMach.value
-    console.log(machine.value)
+    recipeDataTemp.value = await $fetch(`/api/recipe/joborder?recipeJB=${jobordernum.value}&correctionNo=${correctionNoDisplayed.value}`)
     if (!recipeDataTemp.value)
       recipeData.value = []
     else {
-      recipeData.value = recipeDataTemp.value.data
+      recipeData.value = recipeDataTemp.value
       recipeData.value.map(row => row.unit = t(`units.${row.unit}`))
       plankey.value = recipeData.value[0].planKey
 
       if (!correctionNoDisplayed.value) {
         const tempNo = await $fetch(`/api/recipe/correction-number-by-parameter?parameter=${jobordernum.value}&searchBy=planKey`)
-        correctionNoDisplayed.value = tempNo.value[0].CORRECTIONNUMBER
+        correctionNoDisplayed.value = tempNo[0].CORRECTIONNUMBER
       }
     }
+    const tempMach = await $fetch(`/api/machine/machine?joborder=${jobordernum.value}&correctionNo=${correctionNoDisplayed.value}`)
+    machine.value = tempMach
+    console.log(machine.value)
   } else {
     recipeData.value = []
   }
