@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "knex": "^2.5.1",
+    "moment": "^2.29.4",
     "mssql": "^10.0.1"
   },
   "devDependencies": {
