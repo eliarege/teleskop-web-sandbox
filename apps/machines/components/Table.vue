@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { useMachineStore } from '~/stores/machine'
+import type { Machine } from '~/types'
 
-const { data: machines } = await useFetch('/api/machine/machines')
+const props = defineProps<{
+  machines: Machine[]
+  selectedMachines: Machine[]
+}>()
+
+const emit = defineEmits(['machine-selection'])
 
 const columns = [
   {
@@ -71,16 +76,12 @@ const columns = [
 ]
 
 const pagination = { rowsPerPage: 0 }
-const selected = useMachineStore()
-
-// delete machine
-// await $fetch('/api/machine/machine-delete', { method: 'POST' })
 </script>
 
 <template>
   <div class="table-scroll">
     <q-table
-      v-model:selected="selected"
+      :selected="selectedMachines"
       :pagination="pagination"
       :rows="machines"
       :columns="columns"
@@ -90,6 +91,7 @@ const selected = useMachineStore()
       bordered
       selection="multiple"
       table-header-class="table-header"
+      @selection="(e) => $emit('machine-selection', e)"
     >
       <template #body-cell-inUse="props">
         <q-td :props="props">

@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import { useMachineStore } from '~/stores/machine'
+import type { Machine } from '~/types'
+
+const props = defineProps<{
+  machines: Machine[]
+  selectedMachines: Machine[]
+}>()
+
+const emit = defineEmits(['delete-machine', 'add-machine'])
 
 const showNewMachine = ref(false)
 async function handleMachineDelete() {
-  const selectedMachines = useMachineStore()
-  const machineIds = selectedMachines.value.map(m => m.MACHINEID)
-  console.log('machineIds = ', machineIds)
+  const machineIds = props.selectedMachines.map(m => m.MACHINEID)
   // delete machine
-  const res = await $fetch('/api/machine/machine-delete', { method: 'POST', body: { machineIds } })
-  console.log('res = ', res)
+  await $fetch('/api/machine/machine-delete', { method: 'POST', body: { machineIds } })
+  emit('delete-machine', machineIds)
 }
 </script>
 
@@ -69,7 +75,11 @@ async function handleMachineDelete() {
       </q-card>
     </q-card-section>
   </q-card>
-  <NewMachineDialog :show="showNewMachine" @close="showNewMachine = false" />
+  <NewMachineDialog
+    :show="showNewMachine"
+    @close="showNewMachine = false"
+    @add-machine="$emit('add-machine')"
+  />
 </template>
 
 <style scoped>

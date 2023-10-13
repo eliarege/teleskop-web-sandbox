@@ -1,30 +1,10 @@
 <script setup lang="ts">
+import type { Machine } from '~/types'
+
 const props = defineProps<{
   show: boolean
 }>()
-const emit = defineEmits(['close'])
-
-interface Machine {
-  no: boolean
-  name: string
-  group: string
-  model: string
-  ip: string
-  theoricalCharge: string
-  theoricalChargeDuration: string
-  machineCapacity: string
-  reelCount: number
-  nozzleCount: number
-  steamUnit: string
-  steamKgPerHour: number
-  additionalTank1: boolean
-  additionalTank2: boolean
-  additionalTank3: boolean
-  additionalTank4: boolean
-  reserveTank: boolean
-  inUse: boolean
-  MTTempIo: Array<string>
-}
+const emit = defineEmits(['close', 'add-machine'])
 
 const modelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
 const { data: machineGroups } = await useFetch('/api/machine/machine-group')
@@ -35,8 +15,9 @@ const machine: Machine = ref({})
 
 async function handleFormSubmit() {
   // add machine
-  const res = await $fetch('/api/machine/machine-add', { method: 'POST', body: machine.value })
+  await $fetch('/api/machine/machine-add', { method: 'POST', body: machine.value })
   emit('close')
+  emit('add-machine')
 }
 </script>
 
@@ -75,7 +56,7 @@ async function handleFormSubmit() {
                   />
                   <q-select
                     v-model="machine.steamUnit"
-                    :options="machineGroupOptions"
+                    :options="machineGroups"
                     label="Buhar Birimi"
                     filled
                   />
@@ -101,7 +82,7 @@ async function handleFormSubmit() {
                   />
                   <q-select
                     v-model="machine.group"
-                    :options="machineGroupOptions"
+                    :options="machineGroups"
                     label="Ana Kazan Sıcaklık Girişi"
                     filled
                   />
@@ -172,7 +153,7 @@ async function handleFormSubmit() {
               <q-select
                 v-model="machine.group"
                 label="Buhar Vanası"
-                :options="machineGroupOptions"
+                :options="machineGroups"
                 :disable="check"
                 filled
               />
