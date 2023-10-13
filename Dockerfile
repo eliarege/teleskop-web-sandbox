@@ -12,22 +12,24 @@ WORKDIR /workspace
 RUN corepack enable
 RUN corepack prepare pnpm@latest-8 --activate
 
-COPY out/json/pnpm-*.yaml out/json/.npmrc ./
+# COPY out/json/pnpm-*.yaml out/json/.npmrc ./
+
+# RUN \
+#   --mount=type=cache,id=pnpm,target=/pnpm/store \
+#   --mount=type=secret,id=NPM_TOKEN,required=true \
+#   NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm fetch --frozen-lockfile
+
+COPY out/json/ ./
 
 RUN \
   --mount=type=cache,id=pnpm,target=/pnpm/store \
   --mount=type=secret,id=NPM_TOKEN,required=true \
-  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm fetch --frozen-lockfile
-
-COPY out/json/ ./
-
-RUN --mount=type=secret,id=NPM_TOKEN,required=true \
-  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm install --offline --frozen-lockfile
+  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm install --no-frozen-lockfile
 
 COPY out/full ./
 
 ARG APP_NAME
-ARG TURBO_CONFIG
+ARG TURBO_CONFIG={}
 
 RUN mkdir -p .turbo && echo "$TURBO_CONFIG" > .turbo/config.json
 
