@@ -8,12 +8,12 @@ function machineSelection(e) {
   if (e.added)
     selectedMachines.value.push(e.rows[0])
   else
-    selectedMachines.value = selectedMachines.value.filter((m: Machine) => m.MACHINEID !== e.rows[0].MACHINEID)
+    selectedMachines.value = selectedMachines.value.filter((m: Machine) => m.id !== e.rows[0].id)
 }
 
 function deleteMachine(machineIds: string[]) {
-  machines.value = machines.value.filter((m: Machine) => !machineIds.includes(m.MACHINEID))
-  selectedMachines.value = selectedMachines.value.filter((m: Machine) => !machineIds.includes(m.MACHINEID))
+  machines.value = machines.value.filter((m: Machine) => !machineIds.includes(m.id))
+  selectedMachines.value = selectedMachines.value.filter((m: Machine) => !machineIds.includes(m.id))
 }
 
 async function addMachine() {

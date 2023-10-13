@@ -1,8 +1,9 @@
 export interface Machine {
-  no: boolean
-  name: string
+  id: boolean
+  code: string
   group: string
-  model: string
+  tbbModel: string
+  plcModel: string
   ip: string
   theoricalCharge: string
   theoricalChargeDuration: string

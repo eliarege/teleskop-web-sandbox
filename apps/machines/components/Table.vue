@@ -12,64 +12,64 @@ const columns = [
   {
     name: 'id',
     label: 'ID',
-    field: (row: any) => row.MACHINEID,
+    field: (row: any) => row.id,
     align: 'left',
   },
   {
-    name: 'machineName',
+    name: 'code',
     label: 'Makine Adı',
-    field: (row: any) => row.MACHINECODE,
+    field: (row: any) => row.code,
     align: 'left',
   },
   {
     name: 'group',
     label: 'Grup',
-    field: (row: any) => row.GROUPNAME,
+    field: (row: any) => row.groupName,
     align: 'left',
   },
 
   {
-    name: 'model',
+    name: 'tbbModel',
     label: 'Model',
-    field: (row: any) => row.TBBMODEL,
+    field: (row: any) => row.tbbModel,
     align: 'left',
   },
 
   {
     name: 'version',
     label: 'Versiyon',
-    field: (row: any) => row.VERSION,
+    field: (row: any) => row.version,
     align: 'left',
   },
   {
     name: 'machineCapacity',
     label: 'Makine Kapasitesi',
-    field: (row: any) => row.MACHINECAPACITY,
+    field: (row: any) => row.machineCapacity,
     align: 'left',
   },
 
   {
     name: 'nozzleCount',
     label: 'Kule Sayısı',
-    field: (row: any) => row.NOZZLECOUNT,
+    field: (row: any) => row.nozzleCount,
     align: 'left',
   },
   {
-    name: 'machineIP',
+    name: 'ip',
     label: 'Makine IP',
-    field: (row: any) => row.IP,
+    field: (row: any) => row.ip,
     align: 'left',
   },
   {
-    name: 'PLCModel',
+    name: 'plcModel',
     label: 'PLC Modeli',
-    field: (row: any) => row.PlcModel,
+    field: (row: any) => row.plcModel,
     align: 'left',
   },
   {
     name: 'inUse',
     label: 'Kullanımda',
-    field: (row: any) => row.INUSE,
+    field: (row: any) => row.inUse,
     align: 'left',
   },
 
@@ -86,7 +86,7 @@ const pagination = { rowsPerPage: 0 }
       :rows="machines"
       :columns="columns"
       hide-pagination
-      row-key="MACHINEID"
+      row-key="id"
       separator="cell"
       bordered
       selection="multiple"
@@ -96,13 +96,13 @@ const pagination = { rowsPerPage: 0 }
       <template #body-cell-inUse="props">
         <q-td :props="props">
           <q-icon
-            v-if="props.row.INUSE"
+            v-if="props.row.inUse"
             name="play_arrow"
             color="primary"
             size="sm"
           />
           <q-icon
-            v-else-if="!props.row.INUSE"
+            v-else-if="!props.row.inUse"
             name="stop"
             color="primary"
             size="sm"

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useMachineStore } from '~/stores/machine'
 import type { Machine } from '~/types'
 
 const props = defineProps<{
@@ -10,9 +9,13 @@ const props = defineProps<{
 const emit = defineEmits(['delete-machine', 'add-machine'])
 
 const showNewMachine = ref(false)
+const showEditMachine = ref(false)
+
 async function handleMachineDelete() {
-  const machineIds = props.selectedMachines.map(m => m.MACHINEID)
+  console.log('props.selectedMachines = ', props.selectedMachines)
+  const machineIds = props.selectedMachines.map(m => m.id)
   // delete machine
+  console.log('machineIds = ', machineIds)
   await $fetch('/api/machine/machine-delete', { method: 'POST', body: { machineIds } })
   emit('delete-machine', machineIds)
 }
@@ -42,6 +45,7 @@ async function handleMachineDelete() {
         icon="tune"
         color="primary"
         class="mr-4"
+        @click="showEditMachine = true"
       />
       <q-btn
         label="Sil"
@@ -78,6 +82,12 @@ async function handleMachineDelete() {
   <NewMachineDialog
     :show="showNewMachine"
     @close="showNewMachine = false"
+    @add-machine="$emit('add-machine')"
+  />
+  <EditMachineDialog
+    :show="showEditMachine"
+    :selected-machines="selectedMachines"
+    @close="showEditMachine = false"
     @add-machine="$emit('add-machine')"
   />
 </template>

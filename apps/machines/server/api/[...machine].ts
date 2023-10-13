@@ -7,17 +7,18 @@ export default useBase('/api/machine', router.handler)
 router.get('/machines', defineEventHandler(async () => {
   try {
     const machines = await knex('BFMACHINES')
-      .select(
-        'MACHINEID',
-        'MACHINECODE',
-        'TBBMODEL',
-        'VERSION',
-        'MACHINECAPACITY',
-        'IP',
-        'INUSE',
-        'PlcModel',
-        'NOZZLECOUNT',
-        'GROUPNAME',
+      .select({
+        id: 'MACHINEID',
+        code: 'MACHINECODE',
+        tbbModel: 'TBBMODEL',
+        version: 'VERSION',
+        machineCapacity: 'MACHINECAPACITY',
+        ip: 'IP',
+        inUse: 'INUSE',
+        plcModel: 'PlcModel',
+        nozzleCount: 'NOZZLECOUNT',
+        groupName: 'GROUPNAME',
+      },
       )
       .leftJoin('BFMACHGROUP', 'BFMACHINES.GRUPNO', 'BFMACHGROUP.GROUPID')
       .where('GRUPNO', '!=', -1)
@@ -30,7 +31,10 @@ router.get('/machines', defineEventHandler(async () => {
 
 router.get('/machine-group', defineEventHandler(async () => {
   try {
-    const machineGroups = await knex('BFMACHGROUP').select('GROUPNAME', 'GROUPID')
+    const machineGroups = await knex('BFMACHGROUP').select({
+      groupName: 'GROUPNAME',
+      groupId: 'GROUPID',
+    })
     return machineGroups
   } catch (e) {
     return e
@@ -41,10 +45,10 @@ router.post('/machine-add', defineEventHandler(async (event) => {
   try {
     const machine = await readBody(event)
     const res = await knex('BFMACHINES').insert({
-      MACHINEID: machine.no,
-      MACHINECODE: machine.name,
-      GRUPNO: machine.group.GROUPID,
-      TBBMODEL: machine.model,
+      MACHINEID: machine.id,
+      MACHINECODE: machine.code,
+      GRUPNO: machine.group.groupId,
+      TBBMODEL: machine.tbbModel,
       THEORICALCHARGE: machine.theoricalCharge,
       MACHINECAPACITY: machine.machineCapacity,
       IP: machine.ip,

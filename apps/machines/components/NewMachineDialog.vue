@@ -35,13 +35,13 @@ async function handleFormSubmit() {
               <div class="flex flex-row justify-start">
                 <div class="flex flex-col mr-8 w-xs input-field">
                   <q-input
-                    v-model="machine.no"
+                    v-model="machine.id"
                     label="Makine No"
                     filled
                     clearable
                   />
                   <q-input
-                    v-model="machine.name"
+                    v-model="machine.code"
                     label="Makine Adı"
                     filled
                     clearable
@@ -49,8 +49,8 @@ async function handleFormSubmit() {
                   <q-select
                     v-model="machine.group"
                     :options="machineGroups"
-                    :option-label="(m) => m.GROUPNAME"
-                    :option-value="(m) => m.GROUPID"
+                    :option-label="(m) => m.groupName"
+                    :option-value="(m) => m.groupId"
                     label="Grup"
                     filled
                   />
@@ -63,7 +63,7 @@ async function handleFormSubmit() {
                 </div>
                 <div class="flex flex-col mr-8 w-xs input-field">
                   <q-select
-                    v-model="machine.model"
+                    v-model="machine.tbbModel"
                     :options="modelOptions"
                     label="Model"
                     filled
