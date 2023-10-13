@@ -52,7 +52,7 @@ release:
       --build-arg APP_NAME="$APP_NAME"
       --build-arg APP_VERSION="$IMAGE_TAG"
       --build-arg APP_PORT=$(jq .eliar.port $PKG_PATH)
-      --build-arg APP_OUT_DIR=(jq .eliar.outDir $PKG_PATH)
+      --build-arg APP_OUT_DIR=$(jq .eliar.outDir $PKG_PATH)
       --build-arg TURBO_CONFIG="$TURBO_CONFIG"
       --secret id=NPM_TOKEN
       --secret id=TURBO_TOKEN
