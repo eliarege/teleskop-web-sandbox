@@ -43,7 +43,7 @@ release:
     IMAGE_LATEST: $CI_REGISTRY_IMAGE/$APP_NAME:latest
     PKG_PATH: apps/$APP_NAME/package.json
   before_script:
-    - apt-get update && apt-get install jq
+    - apk add --no-cache jq
   script:
     - mv out-$APP_NAME out
     - *docker-login
