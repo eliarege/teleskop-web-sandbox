@@ -40,7 +40,7 @@ RUN \
   TURBO_TOKEN=$(cat /run/secrets/TURBO_TOKEN) \
   pnpx turbo build --filter ${APP_NAME} --remote-only
 
-FROM base
+FROM base as common
 
 WORKDIR /app
 
@@ -56,8 +56,20 @@ ENV NODE_ENV=production
 COPY --from=workspace /workspace/apps/${APP_NAME}/package.json ./
 COPY --from=workspace /workspace/apps/${APP_NAME}/${APP_OUT_DIR} ${APP_OUT_DIR}
 
-EXPOSE ${APP_PORT}
+FROM common as nuxt
 
 USER node
+ENTRYPOINT [ "npm", "start" ]
 
+FROM workspace as dependencies
+
+COPY out/json/ ./
+
+RUN pnpm install --no-frozen-lockfile --prod
+
+FROM common as node
+
+COPY --from=dependencies /workspace/node_modules node_modules
+
+USER node
 ENTRYPOINT [ "npm", "start" ]

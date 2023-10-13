@@ -30,6 +30,7 @@
     "unbuild": "2.0.0"
   },
   "eliar": {
+    "type": "node",
     "port": 6800,
     "outDir": "dist"
   }

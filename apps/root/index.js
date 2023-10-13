@@ -23,3 +23,6 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`Express server is running on port ${port}`)
 })
+
+process.on('SIGTERM', () => process.exit(0))
+process.on('SIGINT', () => process.exit(0))

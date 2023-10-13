@@ -48,6 +48,7 @@ release:
     - mv out-$APP_NAME out
     - *docker-login
     - docker build
+      --target $(jq -r .eliar.type $PKG_PATH)
       --cache-from $IMAGE_LATEST
       --build-arg APP_NAME="$APP_NAME"
       --build-arg APP_VERSION="$IMAGE_TAG"
