@@ -28,5 +28,9 @@
     "tsconfig": "workspace:*",
     "typescript": "^5.2.2",
     "unbuild": "2.0.0"
+  },
+  "eliar": {
+    "port": 6800,
+    "outDir": "dist"
   }
 }

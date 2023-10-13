@@ -28,5 +28,9 @@
     "nuxt-base": "workspace:*",
     "unocss-config": "workspace:*",
     "vue-i18n": "^9.2.2"
+  },
+  "eliar": {
+    "port": 3000,
+    "outDir": ".output"
   }
 }

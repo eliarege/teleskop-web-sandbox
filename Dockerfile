@@ -44,17 +44,18 @@ WORKDIR /app
 
 ARG APP_NAME
 ARG APP_VERSION
+ARG APP_PORT=3000
+ARG APP_OUT_DIR=.output
 
 ENV APP_NAME=${APP_NAME}
 ENV APP_VERSION=${APP_VERSION}
 ENV NODE_ENV=production
 
 COPY --from=workspace /workspace/apps/${APP_NAME}/package.json ./
-COPY --from=workspace /workspace/apps/${APP_NAME}/.output .output
+COPY --from=workspace /workspace/apps/${APP_NAME}/${APP_OUT_DIR} ${APP_OUT_DIR}
 
-EXPOSE 3000
+EXPOSE ${APP_PORT}
 
 USER node
 
 ENTRYPOINT [ "npm", "start" ]
-

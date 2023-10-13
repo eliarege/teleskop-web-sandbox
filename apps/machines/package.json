@@ -23,5 +23,9 @@
     "unocss-config": "workspace:*",
     "vue": "^3.3.4",
     "vue-i18n": "^9.2.2"
+  },
+  "eliar": {
+    "port": 3000,
+    "outDir": ".output"
   }
 }
