@@ -70,3 +70,34 @@ router.post('/machine-delete', defineEventHandler(async (event) => {
     return e
   }
 }))
+
+router.get('/manual-reasons', defineEventHandler(async () => {
+  try {
+    const manualReasons = await knex('BFMANUALREASONSGENERAL')
+      .select({
+
+        manualReason: 'manualString',
+        reportToERP: 'ReportToERP',
+      },
+      )
+    return manualReasons
+  } catch (e) {
+    return e
+  }
+}))
+
+router.put('/edit-manual-reason', defineEventHandler(async (event) => {
+  try {
+    const { oldManualReason, newManualReason, reportToERP } = await readBody(event)
+
+    const res = await knex('BFMANUALREASONSGENERAL').where('manualString', oldManualReason)
+      .update({
+        manualString: newManualReason,
+        ReportToERP: reportToERP,
+      })
+
+    return res
+  } catch (e) {
+    return e
+  }
+}))
