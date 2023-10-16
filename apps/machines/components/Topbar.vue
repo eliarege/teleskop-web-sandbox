@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+const showManualReasonsDialog = ref(false)
 </script>
 
 <template>
@@ -144,6 +144,7 @@
                 label="Manuele Alma Nedenleri"
                 flat
                 no-caps
+                @click="showManualReasonsDialog = true"
               />
             </q-item-section>
           </q-item>
@@ -358,6 +359,10 @@
       </q-menu>
     </q-btn>
   </div>
+  <ManualReasonsDialog
+    :show="showManualReasonsDialog"
+    @close="showManualReasonsDialog = false"
+  />
 </template>
 
 <style scoped>

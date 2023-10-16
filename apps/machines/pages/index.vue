@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Machine } from '~/types'
 
-const machines = ref(await $fetch('api/machine/machines'))
+const machines = ref(await $fetch('/api/machine/machines'))
+
 const selectedMachines: Machine[] = ref([])
 
 function machineSelection(e) {
@@ -17,7 +18,7 @@ function deleteMachine(machineIds: string[]) {
 }
 
 async function addMachine() {
-  machines.value = await $fetch('api/machine/machines')
+  machines.value = await $fetch('/api/machine/machines')
 }
 </script>
 
@@ -32,7 +33,7 @@ async function addMachine() {
     @delete-machine="deleteMachine"
     @add-machine="addMachine"
   />
-  <Table
+  <MachinesTable
     :machines="machines"
     :selected-machines="selectedMachines"
     @machine-selection="machineSelection"
