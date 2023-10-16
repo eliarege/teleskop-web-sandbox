@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { QTableColumn } from 'quasar'
 import type { Machine } from '~/types'
 
 const props = defineProps<{
@@ -8,62 +9,62 @@ const props = defineProps<{
 
 const emit = defineEmits(['machine-selection'])
 
-const columns = [
+const columns: QTableColumn<Machine>[] = [
   {
     name: 'id',
     label: 'ID',
-    field: (row: any) => row.id,
+    field: row => row.id,
     align: 'left',
   },
   {
     name: 'code',
     label: 'Makine Adı',
-    field: (row: any) => row.code,
+    field: row => row.code,
     align: 'left',
   },
   {
     name: 'group',
     label: 'Grup',
-    field: (row: any) => row.groupName,
+    field: row => row.groupName,
     align: 'left',
   },
 
   {
     name: 'tbbModel',
     label: 'Model',
-    field: (row: any) => row.tbbModel,
+    field: row => row.tbbModel,
     align: 'left',
   },
 
   {
     name: 'version',
     label: 'Versiyon',
-    field: (row: any) => row.version,
+    field: row => row.version,
     align: 'left',
   },
   {
     name: 'machineCapacity',
     label: 'Makine Kapasitesi',
-    field: (row: any) => row.machineCapacity,
+    field: row => row.machineCapacity,
     align: 'left',
   },
 
   {
     name: 'nozzleCount',
     label: 'Kule Sayısı',
-    field: (row: any) => row.nozzleCount,
+    field: row => row.nozzleCount,
     align: 'left',
   },
   {
     name: 'ip',
     label: 'Makine IP',
-    field: (row: any) => row.ip,
+    field: row => row.ip,
     align: 'left',
   },
   {
     name: 'plcModel',
     label: 'PLC Modeli',
-    field: (row: any) => row.plcModel,
+    field: row => row.plcModel,
     align: 'left',
   },
   {

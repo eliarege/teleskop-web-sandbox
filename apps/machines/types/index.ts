@@ -1,7 +1,7 @@
 export interface Machine {
   id: boolean
   code: string
-  group: string
+  groupName: string
   tbbModel: string
   plcModel: string
   ip: string
@@ -19,4 +19,5 @@ export interface Machine {
   reserveTank: boolean
   inUse: boolean
   MTTempIo: Array<string>
+  version: string
 }
