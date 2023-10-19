@@ -19,39 +19,26 @@ const layoutSide = ref('layoutContainerSide')
 const layoutTop = ref('layoutContainerTop')
 
 // trends
-const { data: trendData } = await useFetch('/api/trends')
+const { data: trends } = useFetch('/api/trends', {
+  default: () => ({
+    currentWeekElectricity: 0,
+    currentWeekFM: 0,
+    currentWeekSalt: 0,
+    currentWeekSteam: 0,
+    currentWeekTotalWater: 0,
+    lastWeekElectricity: 0,
+    lastWeekFM: 0,
+    lastWeekSalt: 0,
+    lastWeekTotalWater: 0,
+    lastWeekSteam: 0,
+  }),
+})
 
 function textFormatter(text: number) {
   return Math.round(text)
     .toString()
     .replace(/(\d)(?=(\d{3})+$)/g, '$1' + '.')
 }
-const trends = computed(() => {
-  if (!trendData.value)
-    return []
-  return trendData.value.map((trend) => {
-    return {
-      currentWeekElectricity: trend.currentWeekElectricity
-        ? trend.currentWeekElectricity
-        : 0,
-      currentWeekFM: trend.currentWeekFM ? trend.currentWeekFM : 0,
-      currentWeekSalt: trend.currentWeekSalt ? trend.currentWeekSalt : 0,
-      currentWeekSteam: trend.currentWeekSteam ? trend.currentWeekSteam : 0,
-      currentWeekTotalWater: trend.currentWeekTotalWater
-        ? trend.currentWeekTotalWater
-        : 0,
-      lastWeekElectricity: trend.lastWeekElectricity
-        ? trend.lastWeekElectricity
-        : 0,
-      lastWeekFM: trend.lastWeekFM ? trend.lastWeekFM : 0,
-      lastWeekSalt: trend.lastWeekSalt ? trend.lastWeekSalt : 0,
-      lastWeekTotalWater: trend.lastWeekTotalWater
-        ? trend.lastWeekTotalWater
-        : 0,
-      lastWeekSteam: trend.lastWeekSteam ? trend.lastWeekSteam : 0,
-    } as Trends
-  })
-})
 const textGreen = 'text-green-500'
 const textRed = 'text-red-500'
 // pie charts
@@ -131,7 +118,7 @@ const options = {
                 :offset="[3, 3]"
               >
                 {{ t("teleskop.consumption-electricity") }}
-                {{ textFormatter(trends[0].lastWeekElectricity!) }}
+                {{ textFormatter(trends.lastWeekElectricity) }}
               </QTooltip>
               <Icon
                 icon="ant-design:thunderbolt-twotone"
@@ -140,9 +127,9 @@ const options = {
                 color="#2281ae"
               />
               <span
-                :class="trends[0].currentWeekElectricity! > trends[0].lastWeekElectricity! ? textRed : textGreen "
+                :class="trends.currentWeekElectricity > trends.lastWeekElectricity ? textRed : textGreen "
               >
-                {{ textFormatter(trends[0].currentWeekElectricity!) }} KWH
+                {{ textFormatter(trends.currentWeekElectricity) }} KWH
               </span>
             </div>
             <div
@@ -156,7 +143,7 @@ const options = {
                 :offset="[3, 3]"
               >
                 {{ t("teleskop.consumption-water") }}
-                {{ textFormatter(trends[0].lastWeekTotalWater!) }}
+                {{ textFormatter(trends.lastWeekTotalWater) }}
               </QTooltip>
               <Icon
                 icon="ic:baseline-water-drop"
@@ -166,9 +153,9 @@ const options = {
                 :horizontal-flip="true"
               />
               <span
-                :class="trends[0].currentWeekTotalWater! > trends[0].lastWeekTotalWater! ? textRed : textGreen "
+                :class="trends.currentWeekTotalWater > trends.lastWeekTotalWater ? textRed : textGreen "
               >
-                {{ textFormatter(trends[0].currentWeekTotalWater!) }} L
+                {{ textFormatter(trends.currentWeekTotalWater) }} L
               </span>
             </div>
             <div v-if="store.salt" class="icons">
@@ -178,7 +165,7 @@ const options = {
                 :offset="[3, 3]"
               >
                 {{ t("teleskop.consumption-salt") }}
-                {{ textFormatter(trends[0].lastWeekSalt!) }}
+                {{ textFormatter(trends.lastWeekSalt) }}
               </QTooltip>
               <Icon
                 icon="tabler:salt"
@@ -187,9 +174,9 @@ const options = {
                 height="40"
               />
               <span
-                :class="trends[0].currentWeekSalt! > trends[0].lastWeekSalt! ? textRed : textGreen "
+                :class="trends.currentWeekSalt > trends.lastWeekSalt ? textRed : textGreen "
               >
-                {{ textFormatter(trends[0].currentWeekSalt!) }} L
+                {{ textFormatter(trends.currentWeekSalt) }} L
               </span>
             </div>
             <div v-if="store.steam" class="icons">
@@ -199,7 +186,7 @@ const options = {
                 :offset="[3, 3]"
               >
                 {{ t("teleskop.consumption-steam") }}
-                {{ textFormatter(trends[0].lastWeekSteam!) }}
+                {{ textFormatter(trends.lastWeekSteam) }}
               </QTooltip>
 
               <Icon
@@ -209,9 +196,9 @@ const options = {
                 color="#2281ae"
               />
               <span
-                :class="trends[0].currentWeekSteam! > trends[0].lastWeekSteam! ? textRed : textGreen "
+                :class="trends.currentWeekSteam > trends.lastWeekSteam ? textRed : textGreen "
               >
-                {{ textFormatter(trends[0].currentWeekSteam!) }} KG
+                {{ textFormatter(trends.currentWeekSteam) }} KG
               </span>
             </div>
           </div>

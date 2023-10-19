@@ -39,13 +39,12 @@ const props = defineProps({
   },
 })
 
-const route = useRoute()
 const router = useRouter()
 const store = useDataStore()
 const { t, locale } = useI18n()
 const tableShow = ref(false)
 
-const { data: recipe } = await useFetch('/api/recipe', {
+const { data: recipe } = useFetch('/api/recipe', {
   query: {
     recipeJB: props.currentMachine.runningJobOrder,
     recipeID: props.currentMachine.id,
@@ -83,7 +82,7 @@ function unitFunc(param: number) {
 }
 
 const autoRecipe = computed(() => {
-  return recipe.value![0].map((val) => {
+  return recipe.value?.[0].map((val) => {
     return {
       ...val,
       phaseIndex: val.phaseIndex! + 1,
@@ -95,7 +94,7 @@ const autoRecipe = computed(() => {
 })
 
 const manuelRecipe = computed(() => {
-  return recipe.value![1].map((val) => {
+  return recipe.value?.[1].map((val) => {
     return {
       ...val,
       program: `${val.recNo} - ${val.name}`,
@@ -105,7 +104,6 @@ const manuelRecipe = computed(() => {
   })
 })
 
-const modal = ref(false)
 const erpVal = computed(() => {
   return props.currentMachine.erp
 })
@@ -174,7 +172,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
           dyeing-class="normal-class"
           @full-scren="tableShow = !tableShow"
         />
-        <div v-if="recipe![1].length">
+        <div v-if="recipe?.[1].length">
           <RecipeTable
             show
             :title="t('details.recipe-t-manuel')"

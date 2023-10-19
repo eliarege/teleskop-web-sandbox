@@ -71,16 +71,16 @@ export interface TableData extends MachineDataRaw {
   alarm: number
 }
 export interface Trends {
-  lastWeekTotalWater: number | null
-  currentWeekTotalWater: number | null
-  currentWeekElectricity: number | null
-  currentWeekFM: number | null
-  currentWeekSalt: number | null
-  currentWeekSteam: number | null
-  lastWeekElectricity: number | null
-  lastWeekFM: number | null
-  lastWeekSalt: number | null
-  lastWeekSteam: number | null
+  currentWeekTotalWater: number
+  currentWeekElectricity: number
+  currentWeekFM: number
+  currentWeekSalt: number
+  currentWeekSteam: number
+  lastWeekTotalWater: number
+  lastWeekElectricity: number
+  lastWeekFM: number
+  lastWeekSalt: number
+  lastWeekSteam: number
 }
 export interface Interventions {
   interventKey: number
