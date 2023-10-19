@@ -37,7 +37,7 @@ interface RecipeTableProps {
     key: string
     index: number
   }[]
-  cellClass: string
+  cellClass?: string
 }
 const props = defineProps<RecipeTableProps>()
 defineEmits(['fullScren', 'close'])
@@ -48,7 +48,6 @@ function last<T>(array: T[]): T | undefined {
 
 function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
   const property = props.groupables.find(prop => prop.index === columnIndex)
-  console.log(property)
   if (!property) {
     return { rowspan: 1, colspan: 1 }
   }
