@@ -2,7 +2,6 @@
 import LoadingScreen from 'ui/components/LoadingScreen.vue'
 import { useI18n } from 'vue-i18n'
 import { useColorStore } from '~/store/Colors'
-import EliarLogo from '~/public/eliarkurumsal.png'
 
 const { t, locale } = useI18n()
 const colors = useColorStore()
@@ -21,7 +20,11 @@ const messages = controlledComputed(locale, () => {
       </NuxtLayout>
     </div>
     <template #fallback>
-      <LoadingScreen :image="EliarLogo" :first-message="messages.firstMessage" :second-message="messages.secondMessage" />
+      <LoadingScreen
+        image="/eliarkurumsal.png"
+        :first-message="messages.firstMessage"
+        :second-message="messages.secondMessage"
+      />
     </template>
   </Suspense>
 </template>
