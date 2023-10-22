@@ -60,8 +60,12 @@ const definitionItems = ref([
         label: 'Cihaz Ayarları',
         items: [
           {
+            label: 'Cihaz Kullanıcıları',
+          },
+          {
             label: 'Cihaz Erişim Hataları',
           },
+
           {
             label: 'Cihaz Kapalı Zamanlar',
           },
