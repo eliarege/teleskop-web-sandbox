@@ -32,6 +32,8 @@ prepare:
 release:
   stage: release
   tags: [docker]
+  retry:
+    max: 2
   parallel:
     matrix:
       - APP_NAME: *apps
