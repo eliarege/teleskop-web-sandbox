@@ -171,52 +171,55 @@ const definitionItems = ref([
 </script>
 
 <template>
-  <q-chip outline color="teal">
-    Teleskop Basic - Makineler 4.19
-  </q-chip>
-  <div class="flex flex-row">
-    <DropdownMenu
-      v-for="(item, idx) in definitionItems"
-      :key="idx"
-      :model="item"
-      strategy="fixed"
-      placement="bottom"
-      second-placement="right-start"
-    >
-      <template #default="{ item, depth, active }">
-        <div
-          v-if="depth === 0"
-          class="cursor-pointer whitespace-nowrap select-none text-black text-center gap-1 hover:(bg-light-400 text-gray-800) rounded p-2 lg:px-3 xl:px-4  transition-all"
-          :class="{ 'bg-light-400 !text-gray-800': active }"
-          @click="item.onClick"
-        >
-          {{ item.label }}
-        </div>
-        <div v-else class="w-full cursor-pointer select-none bg-white border px-3 py-2 flex items-center gap-3 justify-between whitespace-nowrap hover:(bg-gray-300 shadow-4xl shadow-gray-500)">
-          {{ item.label }}
-          <i v-if="item.items" class="fa fa-chevron-right" />
-          <q-btn
-            v-if="item.items"
-            class="text-xs"
-            flat
-            no-caps
-            icon-right="chevron_right"
-          />
-        </div>
-      </template>
-    </DropdownMenu>
+  <div class="relative">
+    <q-chip outline color="teal">
+      Teleskop Basic - Makineler 4.19
+    </q-chip>
+    <div class="flex flex-row">
+      <DropdownMenu
+        v-for="(item, idx) in definitionItems"
+        :key="idx"
+        :model="item"
+        strategy="fixed"
+        placement="bottom"
+        second-placement="right-start"
+        class="z-10"
+      >
+        <template #default="{ item, depth, active }">
+          <div
+            v-if="depth === 0"
+            class="cursor-pointer whitespace-nowrap select-none text-black text-center gap-1 hover:(bg-light-400 text-gray-800) rounded p-2 lg:px-3 xl:px-4  transition-all"
+            :class="{ 'bg-light-400 !text-gray-800': active }"
+            @click="item.onClick"
+          >
+            {{ item.label }}
+          </div>
+          <div v-else class="w-full cursor-pointer select-none bg-white border px-3 py-2 flex items-center gap-3 justify-between whitespace-nowrap hover:(bg-gray-300 shadow-4xl shadow-gray-500)">
+            {{ item.label }}
+            <i v-if="item.items" class="fa fa-chevron-right" />
+            <q-btn
+              v-if="item.items"
+              class="text-xs"
+              flat
+              no-caps
+              icon-right="chevron_right"
+            />
+          </div>
+        </template>
+      </DropdownMenu>
+    </div>
+    <Menubar
+      :machines="machines"
+      :selected-machines="selectedMachines"
+      @delete-machine="deleteMachine"
+      @add-machine="addMachine"
+    />
+    <MachinesTable
+      :machines="machines"
+      :selected-machines="selectedMachines"
+      @machine-selection="machineSelection"
+    />
   </div>
-  <Menubar
-    :machines="machines"
-    :selected-machines="selectedMachines"
-    @delete-machine="deleteMachine"
-    @add-machine="addMachine"
-  />
-  <MachinesTable
-    :machines="machines"
-    :selected-machines="selectedMachines"
-    @machine-selection="machineSelection"
-  />
 </template>
 
 <style scoped>

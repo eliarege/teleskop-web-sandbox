@@ -115,7 +115,7 @@ const pagination = { rowsPerPage: 0 }
 </template>
 
 <style scoped>
-:deep .table-header>th {
+:deep(.table-header > th) {
   font-weight: bold;
 }
 .table-scroll {
