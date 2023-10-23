@@ -32,6 +32,9 @@ COPY out/full ./
 
 ARG APP_NAME
 ARG TURBO_CONFIG={}
+ARG TURBO_FORCE=false
+
+ENV TURBO_FORCE=${TURBO_FORCE}
 
 RUN mkdir -p .turbo && echo "$TURBO_CONFIG" > .turbo/config.json
 
