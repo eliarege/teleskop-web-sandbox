@@ -47,6 +47,7 @@ release:
   script:
     - mv out-$APP_NAME out
     - *docker-login
+    - docker pull $IMAGE_LATEST || true
     - docker build
       --target $(jq -r .eliar.type $PKG_PATH)
       --cache-from $IMAGE_LATEST
