@@ -4,6 +4,7 @@ import {
   sharpDashboard,
   sharpFormatColorFill,
   sharpGrid3x3,
+  sharpLanguage,
 } from '@quasar/extras/material-icons-sharp'
 import { useDataStore } from '../store/Datas'
 import { useColorStore } from '~/store/Colors'
@@ -13,7 +14,7 @@ defineProps({
 })
 defineEmits(['close'])
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const colors = useColorStore()
 const store = useDataStore()
 function setDefaultSettings() {
@@ -38,6 +39,27 @@ function setDefaultSettings() {
           <ElScrollbar>
             <div class="flex flex-col w-full items-center justify-center self-center bg-white overflow-auto">
               <q-list class="w-full">
+                <q-expansion-item
+                  class="text-black"
+                  expand-separator
+                  :icon="sharpLanguage"
+                  :label="t('settings.language-settings')"
+                >
+                  <div class="text-black flex-center gap-9 w-full h-full p-2">
+                    <q-radio
+                      v-model="locale"
+                      dense
+                      val="en"
+                      label="English"
+                    />
+                    <q-radio
+                      v-model="locale"
+                      dense
+                      val="tr"
+                      label="Turkish"
+                    />
+                  </div>
+                </q-expansion-item>
                 <q-expansion-item
                   class="text-black"
                   expand-separator

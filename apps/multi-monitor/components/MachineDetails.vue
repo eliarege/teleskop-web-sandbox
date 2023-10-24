@@ -22,7 +22,7 @@ export interface SpanMethodProps {
 }
 const props = defineProps({
   currentMachine: {
-    type: Object as PropType<MachineDataRaw> | null,
+    type: Object as PropType<MachineDataRaw>,
     required: true,
   },
   maxValue: {
@@ -80,9 +80,8 @@ function unitFunc(param: number) {
     return 'unknown'
   }
 }
-
 const autoRecipe = computed(() => {
-  return recipe.value?.[0].map((val) => {
+  return recipe.value?.map((val) => {
     return {
       ...val,
       phaseIndex: val.phaseIndex! + 1,
@@ -94,7 +93,7 @@ const autoRecipe = computed(() => {
 })
 
 const manuelRecipe = computed(() => {
-  return recipe.value?.[1].map((val) => {
+  return recipe.value?.map((val) => {
     return {
       ...val,
       program: `${val.recNo} - ${val.name}`,
@@ -157,10 +156,10 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
           :title="t('details.recipe-t-auto')"
           is-first
           has-object-span-method
-          full-screen
+          :full-screen="true"
           :cell-class="cellClass"
           :full-screen-button-props="{
-            buttonText: t('fullscreen'),
+            buttonText: t('details.btn-open'),
             plain: true,
             color: '#0d94fc',
           }"
@@ -172,15 +171,15 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
           dyeing-class="normal-class"
           @fullscreen="tableShow = !tableShow"
         />
-        <div v-if="recipe?.[1].length">
+        <div v-if="recipe?.length">
           <RecipeTable
             show
             :title="t('details.recipe-t-manuel')"
             :is-first="false"
             has-object-span-method
-            full-screen
+            :full-screen="false"
             :full-screen-button-props="{
-              buttonText: t('fullscreen'),
+              buttonText: t('details.btn-open'),
               plain: true,
               color: '#0d94fc',
             }"
@@ -312,31 +311,25 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
                   {{ t('batchLogs.checked-names') }} {{ checkedNames }}
                 </div>
                 <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <input
-                    id="id"
+                  <q-radio
                     v-model="checkedNames"
-                    type="radio"
-                    value="ID"
-                  >
-                  <label for="id">ID</label>
+                    val="ID"
+                    label="ID"
+                  />
                 </div>
                 <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <input
-                    id="planKey"
+                  <q-radio
                     v-model="checkedNames"
-                    type="radio"
-                    value="Plan Key"
-                  >
-                  <label for="planKey">Plan Key</label>
+                    val="Plan Key"
+                    :label="t('batchLogs.plan-key')"
+                  />
                 </div>
                 <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <input
-                    id="eventTime"
+                  <q-radio
                     v-model="checkedNames"
-                    type="radio"
-                    value="Event Time"
-                  >
-                  <label for="eventTime">{{ t('batchLogs.new-time') }}</label>
+                    val="Event Time"
+                    :label="t('batchLogs.new-time')"
+                  />
                 </div>
               </div>
             </div>
@@ -358,7 +351,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
                 has-object-span-method
                 full-screen
                 :full-screen-button-props="{
-                  buttonText: t('close'),
+                  buttonText: t('details.btn-close'),
                   plain: true,
                   color: '#0d94fc',
                 }"

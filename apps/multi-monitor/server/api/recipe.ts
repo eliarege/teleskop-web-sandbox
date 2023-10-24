@@ -135,5 +135,5 @@ ORDER BY
     PARALLELSTEP
       `,
   )
-  return response.recordsets
+  return response.recordset
 })

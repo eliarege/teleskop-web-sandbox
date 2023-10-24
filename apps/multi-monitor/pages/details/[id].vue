@@ -54,16 +54,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Suspense>
-    <div class="flex justify-center">
-      <MachineDetails
-        :current-machine="currentMachine!"
-        :intervents="interventions"
-        :log-data="refactoredBatchLogs"
-      />
-    </div>
-    <template #fallback>
-      <LoadingSpinner />
-    </template>
-  </Suspense>
+  <div v-if="currentMachine" class="flex justify-center">
+    <MachineDetails
+      :current-machine="currentMachine!"
+      :intervents="interventions"
+      :log-data="refactoredBatchLogs"
+    />
+  </div>
 </template>

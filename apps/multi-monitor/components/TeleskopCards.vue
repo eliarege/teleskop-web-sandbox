@@ -327,7 +327,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
       </div>
       <div v-else class="commands !gap-2">
         <div
-          class="commanditems min-h-20 text-center justify-center text-2xl"
+          class="commanditems min-h-20 text-center justify-center text-4xl"
           :style="{ background: colors.cardItemBg }"
         >
           {{ element.name }}
