@@ -160,7 +160,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
           full-screen
           :cell-class="cellClass"
           :full-screen-button-props="{
-            buttonText: 'Full Screen',
+            buttonText: t('fullscreen'),
             plain: true,
             color: '#0d94fc',
           }"
@@ -170,7 +170,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
           :empty-text="t('details.empty-text')"
           chem-class="green-class"
           dyeing-class="normal-class"
-          @full-scren="tableShow = !tableShow"
+          @fullscreen="tableShow = !tableShow"
         />
         <div v-if="recipe?.[1].length">
           <RecipeTable
@@ -180,7 +180,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
             has-object-span-method
             full-screen
             :full-screen-button-props="{
-              buttonText: 'Full Screen',
+              buttonText: t('fullscreen'),
               plain: true,
               color: '#0d94fc',
             }"
@@ -301,7 +301,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
                 :placeholder="t('batchLogs.placeholder')"
               >
                 <template #append>
-                  <div display: flex-col />
+                  <div />
                   <q-icon name="search" />
                 </template>
               </q-input>
@@ -350,7 +350,6 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
       <div class="modal-mask cursor-pointer" @click.stop="closeModal">
         <div class="modal-wrapper">
           <div class="modal-container cursor-default" @click.stop.prevent>
-            {{ tableShow }}
             <div class="bg-white flex flex-col w-full h-full">
               <RecipeTable
                 show
@@ -359,7 +358,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
                 has-object-span-method
                 full-screen
                 :full-screen-button-props="{
-                  buttonText: 'Close',
+                  buttonText: t('close'),
                   plain: true,
                   color: '#0d94fc',
                 }"
@@ -369,7 +368,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
                 :empty-text="t('details.empty-text')"
                 chem-class="green-class"
                 dyeing-class="normal-class"
-                @close="tableShow = false"
+                @fullscreen="tableShow = false"
               />
               <RecipeTable
                 show

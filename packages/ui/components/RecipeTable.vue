@@ -40,7 +40,7 @@ interface RecipeTableProps {
   cellClass?: string
 }
 const props = defineProps<RecipeTableProps>()
-defineEmits(['fullScren', 'close'])
+defineEmits(['fullscreen'])
 
 function last<T>(array: T[]): T | undefined {
   return array[array.length - 1]
@@ -108,7 +108,7 @@ function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
               <ElButton
                 :plain="fullScreenButtonProps?.plain"
                 :color="fullScreenButtonProps?.color"
-                @click="$emit('fullScren')"
+                @click="$emit('fullscreen')"
               >
                 {{ fullScreenButtonProps?.buttonText }}
               </ElButton>
