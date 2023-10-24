@@ -189,12 +189,11 @@ const definitionItems = ref([
           <div
             v-if="depth === 0"
             class="cursor-pointer whitespace-nowrap select-none text-black text-center gap-1 hover:(bg-light-400 text-gray-800) rounded p-2 lg:px-3 xl:px-4  transition-all"
-            :class="{ 'bg-light-400 !text-gray-800': active }"
             @click="item.onClick"
           >
             {{ item.label }}
           </div>
-          <div v-else class="w-full cursor-pointer select-none bg-white border px-3 py-2 flex items-center gap-3 justify-between whitespace-nowrap hover:(bg-gray-300 shadow-4xl shadow-gray-500)">
+          <div v-else class="w-full cursor-pointer bg-white text-black border px-3 py-2 flex items-center gap-3 justify-between whitespace-nowrap hover:(important-bg-light-400 important-text-gray-800)">
             {{ item.label }}
             <i v-if="item.items" class="fa fa-chevron-right" />
             <q-btn
