@@ -121,3 +121,22 @@ router.put('/edit-manual-reason', defineEventHandler(async (event) => {
     return e
   }
 }))
+
+router.get('/user-definitions', defineEventHandler(async () => {
+  try {
+    const machines = await knex('BFUSERS')
+      .select({
+        userId: 'userID',
+        userName: 'userName',
+        userSurname: 'userSurname',
+        userPass: 'userPass',
+        userActive: 'userActive',
+        userType: 'userType',
+      },
+      )
+      .orderBy('userID')
+    return machines
+  } catch (e) {
+    return e
+  }
+}))
