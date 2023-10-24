@@ -61,6 +61,7 @@ const definitionItems = ref([
         items: [
           {
             label: 'Cihaz Kullanıcıları',
+            to: '/user-definitions',
           },
           {
             label: 'Cihaz Erişim Hataları',
