@@ -54,8 +54,6 @@ RUN \
   NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) \
   pnpm install --prod --no-frozen-lockfile
 
-RUN ls node_modules
-
 FROM base as common
 
 WORKDIR /app
