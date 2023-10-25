@@ -21,3 +21,12 @@ export interface Machine {
   MTTempIo: Array<string>
   version: string
 }
+
+export interface User {
+  userId: string
+  userName: string
+  userSurname: string
+  userPass: string
+  userActive: boolean
+  userType: string
+}

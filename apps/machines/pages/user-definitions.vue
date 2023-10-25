@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-
-interface User {
-  userId
-  userName
-  userSurname
-  userPass
-  userActive
-  userType
-}
+import type { User } from '~/types'
 
 const columns: QTableColumn<User>[] = [
   {
@@ -55,6 +47,7 @@ const columns: QTableColumn<User>[] = [
 
 const users = ref(await $fetch('/api/machine/user-definitions'))
 const userTypeOptions = ['Operatör', 'Diğer']
+const selectedUsers = ref<Array<User>>([users.value[0]])
 </script>
 
 <template>
@@ -62,26 +55,31 @@ const userTypeOptions = ['Operatör', 'Diğer']
     <q-card-section>
       <div class="flex flex-row input-field justify-between">
         <q-input
+          v-model="selectedUsers[0].userId"
           label="Kullanıcı No"
           filled
           clearable
         />
         <q-input
+          v-model="selectedUsers[0].userName"
           label="İsim"
           filled
           clearable
         />
         <q-input
+          v-model="selectedUsers[0].userSurname"
           label="Soy İsim"
           filled
           clearable
         />
         <q-input
+          v-model="selectedUsers[0].userPass"
           label="Kullanıcı Şifresi"
           filled
           clearable
         />
         <q-select
+          v-model="selectedUsers[0].userType"
           :options="userTypeOptions"
           label="Kullanıcı Tipi"
           filled
@@ -94,7 +92,7 @@ const userTypeOptions = ['Operatör', 'Diğer']
           type="textarea"
           class="w-3xl"
         />
-        <q-checkbox label="Aktif" />
+        <q-checkbox v-model="selectedUsers[0].userActive" label="Aktif" />
       </div>
 
       <div class="input-field my-8">
@@ -122,6 +120,8 @@ const userTypeOptions = ['Operatör', 'Diğer']
 
   <div class="table-scroll">
     <q-table
+      v-model:selected="selectedUsers"
+      selection="single"
       :rows="users"
       :columns="columns"
       row-key="userId"
@@ -130,7 +130,24 @@ const userTypeOptions = ['Operatör', 'Diğer']
       bordered
       separator="cell"
       table-header-class="table-header"
-    />
+    >
+      <template #body-cell-userActive="props">
+        <q-td :props="props">
+          <span v-if="props.row.userActive">
+            Evet
+          </span>
+          <span v-else>Hayır</span>
+        </q-td>
+      </template>
+      <template #body-cell-userType="props">
+        <q-td :props="props">
+          <span v-if="props.row.userType === 1">
+            Operatör
+          </span>
+          <span v-else-if="props.row.userType === 2">Diğer</span>
+        </q-td>
+      </template>
+    </q-table>
   </div>
 </template>
 
