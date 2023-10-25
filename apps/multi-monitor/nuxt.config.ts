@@ -37,7 +37,7 @@ export default defineNuxtConfig({
   },
   nitro: {
     rollupConfig: {
-      // @ts-expect-error type check
+      // @ts-expect-error type check, TODO: create rollup plugins directory
       plugins: [
         <RollupPlugin>{
           name: 'rollup-plugin-sql',
