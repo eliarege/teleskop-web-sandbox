@@ -14,19 +14,19 @@ RUN corepack prepare pnpm@latest-8 --activate
 
 FROM workspace as build
 
-# COPY out/json/pnpm-*.yaml out/json/.npmrc ./
+COPY out/json/pnpm-*.yaml out/json/.npmrc ./
 
-# RUN \
-#   --mount=type=cache,id=pnpm,target=/pnpm/store \
-#   --mount=type=secret,id=NPM_TOKEN,required=true \
-#   NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm fetch --frozen-lockfile
+RUN \
+  --mount=type=cache,id=pnpm,target=/pnpm/store \
+  --mount=type=secret,id=NPM_TOKEN,required=true \
+  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm fetch --frozen-lockfile
 
 COPY out/json/ ./
 
 RUN \
   --mount=type=cache,id=pnpm,target=/pnpm/store \
   --mount=type=secret,id=NPM_TOKEN,required=true \
-  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm install --no-frozen-lockfile
+  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm install --offline --frozen-lockfile
 
 COPY out/full ./
 
@@ -52,7 +52,7 @@ COPY out/json/ ./
 RUN \
   --mount=type=secret,id=NPM_TOKEN,required=true \
   NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) \
-  pnpm install --prod --no-frozen-lockfile
+  pnpm install --prod --frozen-lockfile
 
 FROM base as common
 

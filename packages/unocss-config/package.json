@@ -5,6 +5,6 @@
   "license": "UNLICENSED",
   "main": "./uno.config.ts",
   "peerDependencies": {
-    "unocss": "^0.56.0"
+    "unocss": "^0.56.5"
   }
 }
