@@ -1,13 +1,13 @@
 {
   "name": "websockify",
   "type": "module",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "NoVNC için WebSocket Proxy. Teleskopta tanımlanmış cihazlardaki VNC sunucularına WebSocket trafiğini yönlendirir.",
   "license": "UNLICENSED",
   "main": "dist/server.mjs",
   "scripts": {
     "dev": "NODE_ENV=development tsx -r dotenv/config src/server.ts | pino-pretty",
-    "start": "node dist/server.js",
+    "start": "node dist/server.mjs",
     "preview": "NODE_ENV=production node -r dotenv/config dist/server.mjs | pino-pretty",
     "build": "unbuild",
     "stub": "unbuild --stub",
