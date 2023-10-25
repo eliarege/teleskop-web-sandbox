@@ -55,6 +55,7 @@ const definitionItems = [
 
           {
             label: 'Manuele Alma Nedenleri',
+            to: '/manual-reasons',
           },
 
           {
