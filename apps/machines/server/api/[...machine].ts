@@ -1,5 +1,6 @@
 import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
+import type { User } from '~/types'
 
 const router = createRouter()
 export default useBase('/api/machine', router.handler)
@@ -81,6 +82,7 @@ router.post('/machine-edit', defineEventHandler(async (event) => {
     return e
   }
 }))
+
 router.post('/machine-delete', defineEventHandler(async (event) => {
   try {
     const { machineIds } = await readBody(event)
@@ -136,6 +138,53 @@ router.get('/user-definitions', defineEventHandler(async () => {
       )
       .orderBy('userID')
     return machines
+  } catch (e) {
+    return e
+  }
+}))
+
+router.post('/user-add', defineEventHandler(async (event) => {
+  try {
+    const user: User = await readBody(event)
+    const res = await knex('BFUSERS').insert({
+      userId: user.userId,
+      userName: user.userName,
+      userSurname: user.userSurname,
+      userPass: user.userPass,
+      userActive: user.userActive,
+      userType: user.userType,
+    })
+    return res
+  } catch (e) {
+    console.error(e)
+    return e
+  }
+}))
+
+router.post('/user-edit', defineEventHandler(async (event) => {
+  try {
+    const user: User = await readBody(event)
+    const res = await knex('BFUSERS').where({
+      userId: user.userId,
+    }).insert({
+      userName: user.userName,
+      userSurname: user.userSurname,
+      userPass: user.userPass,
+      userActive: user.userActive,
+      userType: user.userType,
+    })
+    return res
+  } catch (e) {
+    console.error(e)
+    return e
+  }
+}))
+
+router.post('/user-delete', defineEventHandler(async (event) => {
+  try {
+    const { userIds } = await readBody(event)
+    const res = await knex('BFUSERS').whereIn('userId', userIds).del()
+    return res
   } catch (e) {
     return e
   }
