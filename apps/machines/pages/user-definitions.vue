@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
 import type { User } from '~/types'
-import { addUser, getUsers } from '~/utils'
+import { addUser, deleteUser, getUsers } from '~/utils'
 
 const columns: QTableColumn<User>[] = [
   {
@@ -80,6 +80,12 @@ async function handleUserAdd() {
     user.value.userType = user.value.userType = 'Operatör' ? 1 : 2
   console.log('user.value = ', user.value)
   await addUser(user.value)
+  users.value.push(user.value)
+}
+
+async function handleUserDelete() {
+  await deleteUser([user.value.userId])
+  users.value = users.value.filter((u: User) => u.userId !== user.value.userId)
 }
 </script>
 
@@ -140,6 +146,7 @@ async function handleUserAdd() {
         <q-btn
           label="Sil"
           no-caps
+          @click="handleUserDelete()"
         />
         <q-btn
           label="Yetkiler"
