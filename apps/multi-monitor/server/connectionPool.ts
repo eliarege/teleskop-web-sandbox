@@ -9,6 +9,8 @@ const pool = new ConnectionPool({
   password: config.teleskopPassword.toString(),
   database: config.teleskopDatabase,
   options: {
+    encrypt: false,
+    database: config.teleskopDatabase,
     trustServerCertificate: true,
   },
 })
