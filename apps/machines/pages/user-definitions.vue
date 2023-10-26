@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
 import type { User } from '~/types'
+import { getUsers } from '~/utils'
 
 const columns: QTableColumn<User>[] = [
   {
@@ -45,9 +46,11 @@ const columns: QTableColumn<User>[] = [
 
 ]
 
-const users = ref(await $fetch('/api/machine/user-definitions'))
+const users = ref(await getUsers())
 const userTypeOptions = ['Operatör', 'Diğer']
 const selectedUsers = ref<Array<User>>([users.value[0]])
+
+const showPermissionsDialog = ref(false)
 </script>
 
 <template>
@@ -99,21 +102,14 @@ const selectedUsers = ref<Array<User>>([users.value[0]])
         <q-btn label="Ekle" no-caps />
         <q-btn label="Düzenle" no-caps />
         <q-btn
-          label="Kaydet"
-          no-caps
-          disabled
-        />
-        <q-btn
           label="Sil"
           no-caps
-          disabled
         />
         <q-btn
-          label="İptal"
+          label="Yetkiler"
           no-caps
-          disabled
+          @click="showPermissionsDialog = true"
         />
-        <q-btn label="Yetkiler" no-caps />
       </div>
     </q-card-section>
   </q-card>
@@ -148,6 +144,11 @@ const selectedUsers = ref<Array<User>>([users.value[0]])
         </q-td>
       </template>
     </q-table>
+
+    <UserPermissionsDialog
+      :show="showPermissionsDialog"
+      @close="showPermissionsDialog = false"
+    />
   </div>
 </template>
 

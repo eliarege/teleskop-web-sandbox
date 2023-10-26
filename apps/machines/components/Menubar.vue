@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Machine } from '~/types'
+import { deleteMachines } from '~/utils'
 
 const props = defineProps<{
   machines: Machine[]
@@ -12,11 +13,9 @@ const showNewMachine = ref(false)
 const showEditMachine = ref(false)
 
 async function handleMachineDelete() {
-  console.log('props.selectedMachines = ', props.selectedMachines)
   const machineIds = props.selectedMachines.map(m => m.id)
   // delete machine
-  console.log('machineIds = ', machineIds)
-  await $fetch('/api/machine/machine-delete', { method: 'POST', body: { machineIds } })
+  await deleteMachines(machineIds)
   emit('delete-machine', machineIds)
 }
 </script>

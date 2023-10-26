@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
+import { editManualReason, getManualReasons } from '~/utils'
 
 const props = defineProps<{
   show: boolean
@@ -7,8 +8,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const manualReasons = ref(await $fetch('/api/machine/manual-reasons'))
-console.log('manualReasons = ', manualReasons)
+const manualReasons = ref(await getManualReasons())
 
 const columns: QTableColumn[] = [
   {
@@ -34,12 +34,8 @@ function handleSelection(obj: object) {
   checkReportToERP.value = obj.rows[0].reportToERP
 }
 
-async function editManualReason() {
-  await $fetch('/api/machine/edit-manual-reason', { method: 'PUT',body: {
-      oldManualReason: oldReasonName.value,
-      newManualReason: newReasonName.value,
-      reportToERP: checkReportToERP.value,
-    } })
+async function handleEditManualReason() {
+  await editManualReason(oldReasonName.value, newReasonName.value, checkReportToERP.value)
 }
 </script>
 
@@ -84,7 +80,7 @@ async function editManualReason() {
           <q-btn
             label="Düzenle"
             no-caps
-            @click="editManualReason()"
+            @click="handleEditManualReason()"
           />
           <q-btn
             label="Kaydet"

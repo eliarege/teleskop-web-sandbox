@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
+import { editManualReason } from '~/utils'
 
-const manualReasons = ref(await $fetch('/api/machine/manual-reasons'))
+const manualReasons = ref(await getManualReasons())
 
 const columns: QTableColumn[] = [
   {
@@ -27,13 +28,9 @@ function handleSelection(obj: object) {
   checkReportToERP.value = obj.rows[0].reportToERP
 }
 
-async function editManualReason() {
-  await $fetch('/api/machine/edit-manual-reason', { method: 'PUT',
-body: {
-    oldManualReason: oldReasonName.value,
-    newManualReason: newReasonName.value,
-    reportToERP: checkReportToERP.value,
-  } })
+async function handleEditManualReason() {
+  await editManualReason(oldReasonName.value, newReasonName.value, checkReportToERP.value)
+
   const index = manualReasons.value.findIndex(m => m.manualReason === oldReasonName.value)
   if (index !== -1) {
     manualReasons.value[index].manualReason = newReasonName.value
@@ -41,20 +38,13 @@ body: {
   }
 }
 
-async function addManualReason() {
-  await $fetch('/api/machine/add-manual-reason', { method: 'POST',body: {
-      manualId: manualReasons.value[manualReasons.value.length - 1].manualId + 1,
-      newManualReason: newReasonName.value,
-      reportToERP: checkReportToERP.value,
-    } })
-
+async function handleAddManualReason() {
+  await addManualReason(manualReasons.value, newReasonName.value, checkReportToERP.value)
   manualReasons.value.push({ manualReason: newReasonName.value, reportToErp: checkReportToERP.value })
 }
 
-async function deleteManualReasons() {
-  await $fetch('/api/machine/delete-manual-reasons', { method: 'POST', body: {
-    manualIds: [selectedReason.value[0].manualId],
-  } })
+async function handleDeleteManualReasons() {
+  await deleteManualReasons(selectedReason.value)
   manualReasons.value = manualReasons.value.filter(m => m !== selectedReason.value[0])
 }
 </script>
@@ -84,17 +74,17 @@ async function deleteManualReasons() {
         <q-btn
           label="Ekle"
           no-caps
-          @click="addManualReason()"
+          @click="handleAddManualReason()"
         />
         <q-btn
           label="Düzenle"
           no-caps
-          @click="editManualReason()"
+          @click="handleEditManualReason()"
         />
         <q-btn
           label="Sil"
           no-caps
-          @click="deleteManualReasons()"
+          @click="handleDeleteManualReasons()"
         />
       </div>
 

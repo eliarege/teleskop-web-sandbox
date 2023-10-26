@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Machine } from '~/types'
+import { editMachine, getMachineGroups } from '~/utils'
 
 const props = defineProps<{
   selectedMachines: Machine[]
@@ -8,16 +9,15 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'edit-machine'])
 
 const modelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
-const { data: machineGroups } = await useFetch('/api/machine/machine-group')
+const { data: machineGroups } = await getMachineGroups()
 
 const check = (false)
 
 const machine: Machine = computed(() => props.selectedMachines[0])
-console.log('machine = ', props.selectedMachines)
 
 async function handleFormSubmit() {
   // add machine
-  await $fetch('/api/machine/machine-edit', { method: 'POST', body: machine.value })
+  await editMachine(machine.value)
   emit('close')
   emit('edit-machine')
 }

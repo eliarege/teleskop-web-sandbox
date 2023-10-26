@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Machine } from '~/types'
+import { addMachine, getMachineGroups } from '~/utils'
 
 const props = defineProps<{
   show: boolean
@@ -7,15 +8,14 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'add-machine'])
 
 const modelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
-const { data: machineGroups } = await useFetch('/api/machine/machine-group')
+const machineGroups = ref(await getMachineGroups())
 
 const check = (false)
 
 const machine: Machine = ref({})
 
 async function handleFormSubmit() {
-  // add machine
-  await $fetch('/api/machine/machine-add', { method: 'POST', body: machine.value })
+  await addMachine(machine.value)
   emit('close')
   emit('add-machine')
 }
