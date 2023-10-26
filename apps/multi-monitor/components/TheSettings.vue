@@ -28,6 +28,7 @@ function setDefaultSettings() {
   store.steam = true
   store.salt = true
   store.water = true
+  store.locale = 'tr'
 }
 </script>
 
@@ -44,22 +45,21 @@ function setDefaultSettings() {
                   expand-separator
                   :icon="sharpLanguage"
                   :label="t('settings.language-settings')"
+                  :caption="t('language')"
                 >
-                  <div class="text-black flex-center gap-9 w-full h-full p-2">
-                    <q-radio
-                      v-model="locale"
-                      dense
-                      val="en"
-                      label="English"
-                    />
-                    <q-radio
-                      v-model="locale"
-                      dense
-                      val="tr"
-                      label="Turkish"
+                  <div class="flex justify-center">
+                    <q-option-group
+                      v-model="store.locale"
+                      type="radio"
+                      :options="[
+                        { label: 'Türkçe', value: 'tr' },
+                        { label: 'English', value: 'en' },
+                      ]"
+                      class="flex"
                     />
                   </div>
                 </q-expansion-item>
+
                 <q-expansion-item
                   class="text-black"
                   expand-separator

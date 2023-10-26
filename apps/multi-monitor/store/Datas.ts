@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useStorage } from '@vueuse/core'
+import { useI18n } from 'vue-i18n'
 import type { MachineDataRaw } from '../shared/types'
 
 export const useDataStore = defineStore('datas', () => {
@@ -10,6 +11,7 @@ export const useDataStore = defineStore('datas', () => {
   const salt = useStorage('salt', true)
   const water = useStorage('water', true)
   const group = useStorage('group', false)
+  const locale = useStorage('language', useI18n().locale)
   // machinestatus
   const sortMachines = useStorage('machine-sort', 1)
   const machine = ref([] as MachineDataRaw[])
@@ -37,6 +39,7 @@ export const useDataStore = defineStore('datas', () => {
   }, 5000)
 
   return {
+    locale,
     hex,
     settings,
     group,
