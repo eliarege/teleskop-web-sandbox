@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
 import type { User } from '~/types'
-import { addUser, deleteUser, getUsers } from '~/utils'
+import { addUser, deleteUser, editUser, getUsers } from '~/utils'
 
 const columns: QTableColumn<User>[] = [
   {
@@ -54,6 +54,7 @@ const user = ref<User>({
   userName: '',
   userSurname: '',
   userPass: '',
+  userInfo: '',
   userActive: false,
   userType: '',
 })
@@ -70,6 +71,7 @@ function handleSelection(e) {
       userName: '',
       userSurname: '',
       userPass: '',
+      userInfo: '',
       userActive: false,
       userType: '',
     }
@@ -78,8 +80,14 @@ function handleSelection(e) {
 async function handleUserAdd() {
   if (user.value.userType)
     user.value.userType = user.value.userType = 'Operatör' ? 1 : 2
-  console.log('user.value = ', user.value)
   await addUser(user.value)
+  users.value.push(user.value)
+}
+
+async function handleUserEdit() {
+  if (user.value.userType)
+    user.value.userType = user.value.userType = 'Operatör' ? 1 : 2
+  await editUser(user.value)
   users.value.push(user.value)
 }
 
@@ -129,6 +137,7 @@ async function handleUserDelete() {
 
       <div class="flex flex-row justify-start">
         <q-input
+          v-model="user.userInfo"
           label="Bilgi Notu"
           type="textarea"
           class="w-3xl"
@@ -142,7 +151,11 @@ async function handleUserDelete() {
           no-caps
           @click="handleUserAdd()"
         />
-        <q-btn label="Düzenle" no-caps />
+        <q-btn
+          label="Düzenle"
+          no-caps
+          @click="handleUserEdit()"
+        />
         <q-btn
           label="Sil"
           no-caps

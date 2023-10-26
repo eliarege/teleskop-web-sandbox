@@ -159,6 +159,7 @@ router.get('/user-definitions', defineEventHandler(async () => {
         userName: 'userName',
         userSurname: 'userSurname',
         userPass: 'userPass',
+        userInfo: 'userInfo',
         userActive: 'userActive',
         userType: 'userType',
       },
@@ -179,6 +180,7 @@ router.post('/user-add', defineEventHandler(async (event) => {
       userName: user.userName,
       userSurname: user.userSurname,
       userPass: user.userPass,
+      userInfo: user.userInfo,
       userActive: user.userActive,
       userType: user.userType,
     })
@@ -192,12 +194,14 @@ router.post('/user-add', defineEventHandler(async (event) => {
 router.put('/user-edit', defineEventHandler(async (event) => {
   try {
     const user: User = await readBody(event)
+    console.log('user = ', user)
     const res = await knex('BFUSERS').where({
       userID: user.userId,
-    }).insert({
+    }).update({
       userName: user.userName,
       userSurname: user.userSurname,
       userPass: user.userPass,
+      userInfo: user.userInfo,
       userActive: user.userActive,
       userType: user.userType,
     })
