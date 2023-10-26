@@ -60,6 +60,7 @@ const definitionItems = [
 
           {
             label: 'Makine Duruş Nedenleri',
+            to: '/machine-stop-reasons',
           },
 
           {

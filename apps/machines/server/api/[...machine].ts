@@ -62,7 +62,7 @@ router.post('/machine-add', defineEventHandler(async (event) => {
   }
 }))
 
-router.post('/machine-edit', defineEventHandler(async (event) => {
+router.put('/machine-edit', defineEventHandler(async (event) => {
   try {
     const machine = await readBody(event)
     const res = await knex('BFMACHINES').where({
@@ -83,7 +83,7 @@ router.post('/machine-edit', defineEventHandler(async (event) => {
   }
 }))
 
-router.post('/machine-delete', defineEventHandler(async (event) => {
+router.delete('/machine-delete', defineEventHandler(async (event) => {
   try {
     const { machineIds } = await readBody(event)
     const res = await knex('BFMACHINES').whereIn('MACHINEID', machineIds).del()
@@ -141,10 +141,9 @@ router.put('/edit-manual-reason', defineEventHandler(async (event) => {
   }
 }))
 
-router.post('/delete-manual-reasons', defineEventHandler(async (event) => {
+router.delete('/delete-manual-reasons', defineEventHandler(async (event) => {
   try {
     const { manualIds } = await readBody(event)
-    console.log('manualIds = ', manualIds)
     const res = await knex('BFMANUALREASONSGENERAL').whereIn('manualID', manualIds).del()
     return res
   } catch (e) {
@@ -189,7 +188,7 @@ router.post('/user-add', defineEventHandler(async (event) => {
   }
 }))
 
-router.post('/user-edit', defineEventHandler(async (event) => {
+router.put('/user-edit', defineEventHandler(async (event) => {
   try {
     const user: User = await readBody(event)
     const res = await knex('BFUSERS').where({
@@ -208,10 +207,65 @@ router.post('/user-edit', defineEventHandler(async (event) => {
   }
 }))
 
-router.post('/user-delete', defineEventHandler(async (event) => {
+router.delete('/user-delete', defineEventHandler(async (event) => {
   try {
     const { userIds } = await readBody(event)
     const res = await knex('BFUSERS').whereIn('userId', userIds).del()
+    return res
+  } catch (e) {
+    return e
+  }
+}))
+
+router.get('/stop-reasons', defineEventHandler(async (event) => {
+  try {
+    return await knex('BFSTOPREASONS').select({
+      stopCode: 'STOPCODE',
+      stopName: 'STOPNAME',
+      reportToERP: 'ReportToERP',
+    })
+  } catch (e) {
+    return e
+  }
+}))
+
+router.post('/add-stop-reason', defineEventHandler(async (event) => {
+  try {
+    const { stopCode, newStopName, reportToERP } = await readBody(event)
+
+    const res = await knex('BFSTOPREASONS')
+      .insert({
+        STOPCODE: stopCode,
+        STOPNAME: newStopName,
+        ReportToERP: reportToERP,
+      })
+
+    return res
+  } catch (e) {
+    return e
+  }
+}))
+
+router.put('/edit-stop-reason', defineEventHandler(async (event) => {
+  try {
+    const { oldStopName, newStopName, reportToERP } = await readBody(event)
+
+    const res = await knex('BFSTOPREASONS').where('STOPNAME', oldStopName)
+      .update({
+        STOPNAME: newStopName,
+        ReportToERP: reportToERP,
+      })
+
+    return res
+  } catch (e) {
+    return e
+  }
+}))
+
+router.delete('/delete-stop-reasons', defineEventHandler(async (event) => {
+  try {
+    const { stopCodes } = await readBody(event)
+    const res = await knex('BFSTOPREASONS').whereIn('STOPCODE', stopCodes).del()
     return res
   } catch (e) {
     return e

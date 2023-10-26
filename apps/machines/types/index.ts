@@ -30,3 +30,13 @@ export interface User {
   userActive: boolean
   userType: string
 }
+
+export interface MachineStopReason {
+  stopName: string
+  reportToERP: boolean
+}
+
+export interface ManualReason {
+  manualReason: string
+  reportToERP: boolean
+}
