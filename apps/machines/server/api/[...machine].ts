@@ -173,8 +173,9 @@ router.get('/user-definitions', defineEventHandler(async () => {
 router.post('/user-add', defineEventHandler(async (event) => {
   try {
     const user: User = await readBody(event)
+    console.log('user = ', user)
     const res = await knex('BFUSERS').insert({
-      userId: user.userId,
+      userID: user.userId,
       userName: user.userName,
       userSurname: user.userSurname,
       userPass: user.userPass,
@@ -192,7 +193,7 @@ router.put('/user-edit', defineEventHandler(async (event) => {
   try {
     const user: User = await readBody(event)
     const res = await knex('BFUSERS').where({
-      userId: user.userId,
+      userID: user.userId,
     }).insert({
       userName: user.userName,
       userSurname: user.userSurname,
@@ -210,7 +211,7 @@ router.put('/user-edit', defineEventHandler(async (event) => {
 router.delete('/user-delete', defineEventHandler(async (event) => {
   try {
     const { userIds } = await readBody(event)
-    const res = await knex('BFUSERS').whereIn('userId', userIds).del()
+    const res = await knex('BFUSERS').whereIn('userID', userIds).del()
     return res
   } catch (e) {
     return e

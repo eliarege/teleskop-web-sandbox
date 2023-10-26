@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
 import type { User } from '~/types'
-import { getUsers } from '~/utils'
+import { addUser, getUsers } from '~/utils'
 
 const columns: QTableColumn<User>[] = [
   {
@@ -47,10 +47,40 @@ const columns: QTableColumn<User>[] = [
 ]
 
 const users = ref(await getUsers())
-const userTypeOptions = ['Operatör', 'Diğer']
-const selectedUsers = ref<Array<User>>([users.value[0]])
+const userTypeOptions = [{ label: 'Operatör', value: 1 }, { label: 'Diğer', value: 2 }]
+const selectedUsers = ref<Array<User>>()
+const user = ref<User>({
+  userId: '',
+  userName: '',
+  userSurname: '',
+  userPass: '',
+  userActive: false,
+  userType: '',
+})
 
 const showPermissionsDialog = ref(false)
+
+function handleSelection(e) {
+  if (e.added) {
+    user.value = e.rows[0]
+    user.value.userType = user.value.userType = 1 ? 'Operatör' : 'Diğer'
+  } else
+    user.value = {
+      userId: '',
+      userName: '',
+      userSurname: '',
+      userPass: '',
+      userActive: false,
+      userType: '',
+    }
+}
+
+async function handleUserAdd() {
+  if (user.value.userType)
+    user.value.userType = user.value.userType = 'Operatör' ? 1 : 2
+  console.log('user.value = ', user.value)
+  await addUser(user.value)
+}
 </script>
 
 <template>
@@ -58,32 +88,34 @@ const showPermissionsDialog = ref(false)
     <q-card-section>
       <div class="flex flex-row input-field justify-between">
         <q-input
-          v-model="selectedUsers[0].userId"
+          v-model="user.userId"
           label="Kullanıcı No"
           filled
           clearable
         />
         <q-input
-          v-model="selectedUsers[0].userName"
+          v-model="user.userName"
           label="İsim"
           filled
           clearable
         />
         <q-input
-          v-model="selectedUsers[0].userSurname"
+          v-model="user.userSurname"
           label="Soy İsim"
           filled
           clearable
         />
         <q-input
-          v-model="selectedUsers[0].userPass"
+          v-model="user.userPass"
           label="Kullanıcı Şifresi"
           filled
           clearable
         />
         <q-select
-          v-model="selectedUsers[0].userType"
+          v-model="user.userType"
           :options="userTypeOptions"
+          option-label="label"
+          option-value="value"
           label="Kullanıcı Tipi"
           filled
         />
@@ -95,11 +127,15 @@ const showPermissionsDialog = ref(false)
           type="textarea"
           class="w-3xl"
         />
-        <q-checkbox v-model="selectedUsers[0].userActive" label="Aktif" />
+        <q-checkbox v-model="user.userActive" label="Aktif" />
       </div>
 
       <div class="input-field my-8">
-        <q-btn label="Ekle" no-caps />
+        <q-btn
+          label="Ekle"
+          no-caps
+          @click="handleUserAdd()"
+        />
         <q-btn label="Düzenle" no-caps />
         <q-btn
           label="Sil"
@@ -126,6 +162,7 @@ const showPermissionsDialog = ref(false)
       bordered
       separator="cell"
       table-header-class="table-header"
+      @selection="(e) => handleSelection(e)"
     >
       <template #body-cell-userActive="props">
         <q-td :props="props">

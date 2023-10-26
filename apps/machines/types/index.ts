@@ -28,7 +28,7 @@ export interface User {
   userSurname: string
   userPass: string
   userActive: boolean
-  userType: string
+  userType: string | number
 }
 
 export interface MachineStopReason {
