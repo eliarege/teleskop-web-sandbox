@@ -174,7 +174,6 @@ router.get('/user-definitions', defineEventHandler(async () => {
 router.post('/user-add', defineEventHandler(async (event) => {
   try {
     const user: User = await readBody(event)
-    console.log('user = ', user)
     const res = await knex('BFUSERS').insert({
       userID: user.userId,
       userName: user.userName,

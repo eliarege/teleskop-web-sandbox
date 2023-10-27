@@ -33,6 +33,7 @@ export interface User {
 }
 
 export interface MachineStopReason {
+  stopCode: string
   stopName: string
   reportToERP: boolean
 }

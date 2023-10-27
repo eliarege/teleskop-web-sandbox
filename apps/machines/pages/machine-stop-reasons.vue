@@ -33,7 +33,7 @@ function handleSelection(obj: object) {
 async function handleEditStopReason() {
   await editStopReason(oldStopName.value, newStopName.value, checkReportToERP.value)
 
-  const index = stopReasons.value.findIndex(m => m.manualReason === oldStopName.value)
+  const index = stopReasons.value.findIndex(m => m.stopName === oldStopName.value)
   if (index !== -1) {
     stopReasons.value[index].stopName = newStopName.value
     stopReasons.value[index].reportToERP = checkReportToERP.value
@@ -96,7 +96,7 @@ async function handleDeleteStopReasons() {
         :columns="columns"
         hide-pagination
         :pagination="{ rowsPerPage: 0 }"
-        row-key="manualReason"
+        row-key="stopCode"
         separator="cell"
         bordered
         selection="single"
@@ -119,7 +119,7 @@ async function handleDeleteStopReasons() {
 </template>
 
 <style scoped>
-:deep .table-header>th {
+:deep(.table-header > th) {
   font-weight: bold;
 }
 .table-scroll {
