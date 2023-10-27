@@ -222,7 +222,7 @@ router.delete('/user-delete', defineEventHandler(async (event) => {
   }
 }))
 
-router.get('/stop-reasons', defineEventHandler(async (event) => {
+router.get('/stop-reasons', defineEventHandler(async () => {
   try {
     return await knex('BFSTOPREASONS').select({
       stopCode: 'STOPCODE',

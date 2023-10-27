@@ -38,6 +38,7 @@ export interface MachineStopReason {
 }
 
 export interface ManualReason {
+  manualId: string
   manualReason: string
   reportToERP: boolean
 }

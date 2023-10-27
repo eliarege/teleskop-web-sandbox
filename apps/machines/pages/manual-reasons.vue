@@ -31,7 +31,7 @@ function handleSelection(obj: object) {
 async function handleEditManualReason() {
   await editManualReason(oldReasonName.value, newReasonName.value, checkReportToERP.value)
 
-  const index = manualReasons.value.findIndex(m => m.manualReason === oldReasonName.value)
+  const index = manualReasons.value.findIndex(m => m.manualReason === okjldReasonName.value)
   if (index !== -1) {
     manualReasons.value[index].manualReason = newReasonName.value
     manualReasons.value[index].reportToERP = checkReportToERP.value
@@ -39,8 +39,9 @@ async function handleEditManualReason() {
 }
 
 async function handleAddManualReason() {
-  await addManualReason(manualReasons.value, newReasonName.value, checkReportToERP.value)
-  manualReasons.value.push({ manualReason: newReasonName.value, reportToErp: checkReportToERP.value })
+  const manualId = manualReasons.value[manualReasons.value.length - 1].manualId + 1
+  await addManualReason(manualId, newReasonName.value, checkReportToERP.value)
+  manualReasons.value.push({ manualId, manualReason: newReasonName.value, reportToErp: checkReportToERP.value })
 }
 
 async function handleDeleteManualReasons() {
