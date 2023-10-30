@@ -1,0 +1,3466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="Service"
+ xmlns="http://schemas.xmlsoap.org/wsdl/"
+ xmlns:SOAP="http://schemas.xmlsoap.org/wsdl/soap/"
+ xmlns:WSDL="http://schemas.xmlsoap.org/wsdl/"
+ targetNamespace="http://location/Service.wsdl"
+ xmlns:tns="http://location/Service.wsdl"
+ xmlns:SOAP-ENV="http://www.w3.org/2002/06/soap-envelope"
+ xmlns:SOAP-ENC="http://www.w3.org/2002/06/soap-encoding"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ xmlns:ns="http://tempuri.org">
+
+<types>
+ <schema targetNamespace="http://tempuri.org"
+  xmlns:SOAP-ENV="http://www.w3.org/2002/06/soap-envelope"
+  xmlns:SOAP-ENC="http://www.w3.org/2002/06/soap-encoding"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:ns="http://tempuri.org"
+  xmlns="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="unqualified"
+  attributeFormDefault="unqualified">
+
+  <complexType name="stSoap-TEvents">
+   <all>
+    <element name="EventCode" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="EventType" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Unique-Event-ID" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="EventTime" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="EventDate" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="P1" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="P2" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="P3" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="ArrayOfstSoap-TEvents">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="ns:stSoap-TEvents" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stSoap-TEvents[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="TEventsArrayResponse">
+   <all>
+    <element name="response" type="ns:ArrayOfstSoap-TEvents" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="st-TChemicalRequest">
+   <all>
+    <element name="JobOrder" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="RecipeIndex" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="RequestOrderIndex" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="OperationCode" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="TargetRecipe" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="TankNo" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Priority" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="TotalNumberOfRequest" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="ProgramNo" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="st-TChemicalRequestStatus">
+   <all>
+    <element name="JobOrder" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="RecipeIndex" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="RequestOrderIndex" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="StatusCode" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="TChemicalRequestStatusResponse">
+   <all>
+    <element name="response" type="ns:st-TChemicalRequestStatus" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="TChemicalRequestResponse">
+   <all>
+    <element name="response" type="ns:st-TChemicalRequest" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stRTC">
+   <all>
+    <element name="Day" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Month" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Year" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Hour" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Minute" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Second" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="MSecond" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="RTCResponse">
+   <all>
+    <element name="result" type="ns:stRTC" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapKomutGenel">
+   <all>
+    <element name="id" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="cActivated" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="sName" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sFunctionName" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sIconFile" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="iMode" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="cManuel" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="iOpcsFID" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="tasimaModu" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapKomutGeridonus">
+   <all>
+    <element name="cMode" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="sFeedback" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sMessage" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="cShow" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="cValue" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="cSP-relation" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapKomutSelectableIO">
+   <all>
+    <element name="cType" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="iChannelId" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="isDefault" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapKomutIo">
+   <all>
+    <element name="cType" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="iChannelId" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="cSelectableIO" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="selectableIO" type="ns:Array19OfstSoapKomutSelectableIO" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapKomutSelectable">
+   <all>
+    <element name="cSelectable" type="ns:Array100Ofstring" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="fValue" type="ns:Array100Offloat" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapKomutParamsGraphic">
+   <all>
+    <element name="cSicaklik" type="ns:Array2Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="cZaman" type="ns:Array2Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="cSB-Property" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="sSure" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sSicaklik" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sEgim" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sMaxEgim" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sBeklemeSuresi" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapKomutParam">
+   <all>
+    <element name="cMode" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="sName" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sMessage" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sFormul" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="cLinking" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="fDefault" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    <element name="fMin" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    <element name="fMax" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    <element name="cTT" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="nSelectable" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="selectable" type="ns:stSoapKomutSelectable" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapKomutEditing">
+   <all>
+    <element name="iAdvice" type="ns:Array10Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="iCancel" type="ns:Array100Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="iCancelMode" type="ns:Array100Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapKomutAlarm">
+   <all>
+    <element name="iAlarmId" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="iPriority" type="xsd:unsignedInt" minOccurs="1" maxOccurs="1"/>
+    <element name="sText" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="iClass" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapKomut">
+   <all>
+    <element name="genel" type="ns:stSoapKomutGenel" minOccurs="1" maxOccurs="1"/>
+    <element name="graphic" type="ns:stSoapKomutParamsGraphic" minOccurs="1" maxOccurs="1"/>
+    <element name="editing" type="ns:stSoapKomutEditing" minOccurs="1" maxOccurs="1"/>
+    <element name="io" type="ns:Array20OfstSoapKomutIo" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="geridonus" type="ns:Array20OfstSoapKomutGeridonus" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="param" type="ns:Array20OfstSoapKomutParam" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="alarm" type="ns:Array10OfstSoapKomutAlarm" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="CommandDataResponse">
+   <all>
+    <element name="response" type="ns:stSoapKomut" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="denemeSencer">
+   <all>
+    <element name="x" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="y" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="denemeHasan">
+   <all>
+    <element name="x" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="y" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="SoapDeneme">
+   <all>
+    <element name="a" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Hasan" type="ns:Array10OfdenemeHasan" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="Sencer" type="ns:denemeSencer" minOccurs="0" maxOccurs="20"/>
+   </all>
+  </complexType>
+
+  <complexType name="DenemeDataResponse">
+   <all>
+    <element name="response" type="ns:SoapDeneme" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="ArrayOfint">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="xsd:int" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:int[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="stSoapProgramListResponse">
+   <all>
+    <element name="response" type="ns:ArrayOfint" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapIO">
+   <all>
+    <element name="cType" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="iChannelid" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="fValue" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="ArrayOfstSoapIO">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="ns:stSoapIO" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stSoapIO[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="stSoapIOArrayResponse">
+   <all>
+    <element name="response" type="ns:ArrayOfstSoapIO" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapPV">
+   <all>
+    <element name="commandNo" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="paralelNo" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="fValue" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="ArrayOfstSoapPV">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="ns:stSoapPV" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stSoapPV[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="stSoapPVArrayResponse">
+   <all>
+    <element name="response" type="ns:ArrayOfstSoapPV" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSoapIO-Shared">
+   <all>
+    <element name="cType" type="ns:Array19Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="iChannelId" type="ns:Array19Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="ArrayOfstSoapIO-Shared">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="ns:stSoapIO-Shared" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stSoapIO-Shared[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="stSoapIO-SharedArrayResponse">
+   <all>
+    <element name="response" type="ns:ArrayOfstSoapIO-Shared" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stBatchBaslatmaParametreleri">
+   <all>
+    <element name="cIsim" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="fValue" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stBatchHeader">
+   <all>
+    <element name="BatchBaslatma" type="ns:Array50OfstBatchBaslatmaParametreleri" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="StartTime" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="MusteriNo" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="BatchId" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="OperatorNo" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="ProgramNo" type="ns:Array50Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="OperatorName" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="theoreticTime" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="batchType" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stLastBatch">
+   <all>
+    <element name="StartDate" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="eventID" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMachineStatus">
+   <all>
+    <element name="manuelStatus" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="akupleStatus" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="ilaveStatus" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stBatchHeaderResponse">
+   <all>
+    <element name="response" type="ns:stBatchHeader" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stString">
+   <all>
+    <element name="String" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="BatchNoResponse">
+   <all>
+    <element name="result" type="ns:stString" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="RunningProgramResponse">
+   <all>
+    <element name="result" type="ns:stString" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="VersionResponse">
+   <all>
+    <element name="result" type="ns:stString" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="LastBatchEventResponse">
+   <all>
+    <element name="result" type="ns:stLastBatch" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="MachineStatusResponse">
+   <all>
+    <element name="result" type="ns:stMachineStatus" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stSpRunTime">
+   <all>
+    <element name="SP" type="ns:Array20Offloat" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="SpRunTimeResult">
+   <all>
+    <element name="result" type="ns:stSpRunTime" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stCommandDetail">
+   <all>
+    <element name="no" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="status" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stRunningBatchDetails">
+   <all>
+    <element name="batchStatus" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="cd" type="ns:Array10OfstCommandDetail" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stRunningBatchDetailsResult">
+   <all>
+    <element name="response" type="ns:stRunningBatchDetails" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="RunningProgramPath">
+   <all>
+    <element name="String" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <simpleType name="ArrayOfunsignedByte">
+   <restriction base="xsd:base64Binary"/>
+  </simpleType>
+
+  <complexType name="MSsiraliTime">
+   <all>
+    <element name="startTime" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="finishTime" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="MSsiraliProgramlar">
+   <all>
+    <element name="iSiraliProgramSayisi" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="indexSiraliProgramlar" type="ns:Array50Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="cSiraliProgramlar" type="ns:Array50Ofstring" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="siraliProgramZamanlari" type="ns:Array50OfMSsiraliTime" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="MSprosesTime">
+   <all>
+    <element name="minute" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="second" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="MSBatchData">
+   <all>
+    <element name="batchNo" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="runningProgram" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="musteriNo" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="startTime" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="activeStep" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="oldStep" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="totalStep" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="batchStatus" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="statusFrom" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="batchMode" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="activeTime" type="ns:MSprosesTime" minOccurs="1" maxOccurs="1"/>
+    <element name="totalTime" type="ns:MSprosesTime" minOccurs="1" maxOccurs="1"/>
+    <element name="kalanZaman" type="ns:MSprosesTime" minOccurs="1" maxOccurs="1"/>
+    <element name="activeStepFont" type="xsd:unsignedLong" minOccurs="1" maxOccurs="1"/>
+    <element name="oldStepFont" type="xsd:unsignedLong" minOccurs="1" maxOccurs="1"/>
+    <element name="siraliProgramlar" type="ns:MSsiraliProgramlar" minOccurs="1" maxOccurs="1"/>
+    <element name="runningProgramIndex" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMsKomutGenel">
+   <all>
+    <element name="id" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="cActivated" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="sName" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sFunctionName" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sIconFile" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="iMode" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="cManuel" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="iOpcsFID" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="tasimaModu" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMsKomutGeridonus">
+   <all>
+    <element name="cMode" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="sFeedback" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sMessage" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="cShow" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="cValue" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="cSP-relation" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMsKomutSelectableIO">
+   <all>
+    <element name="cType" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="iChannelId" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="isDefault" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMsKomutIo">
+   <all>
+    <element name="cType" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="iChannelId" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="cSelectableIO" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="selectableIO" type="ns:Array19OfstMsKomutSelectableIO" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMsKomutSelectable">
+   <all>
+    <element name="cSelectable" type="ns:Array100Ofstring" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="fValue" type="ns:Array100Offloat" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMsKomutParamsGraphic">
+   <all>
+    <element name="cSicaklik" type="ns:Array2Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="cZaman" type="ns:Array2Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMsKomutParam">
+   <all>
+    <element name="cMode" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="sName" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sMessage" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="sFormul" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="cLinking" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="fDefault" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    <element name="fMin" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    <element name="fMax" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    <element name="cTT" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="nSelectable" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+    <element name="selectable" type="ns:stMsKomutSelectable" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMsKomutEditing">
+   <all>
+    <element name="iAdvice" type="ns:Array10Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="iCancel" type="ns:Array100Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="iCancelMode" type="ns:Array100Ofint" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMsKomutAlarm">
+   <all>
+    <element name="iAlarmId" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="iPriority" type="xsd:unsignedInt" minOccurs="1" maxOccurs="1"/>
+    <element name="sText" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="iClass" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMsKomut">
+   <all>
+    <element name="genel" type="ns:stMsKomutGenel" minOccurs="1" maxOccurs="1"/>
+    <element name="graphic" type="ns:stMsKomutParamsGraphic" minOccurs="1" maxOccurs="1"/>
+    <element name="editing" type="ns:stMsKomutEditing" minOccurs="1" maxOccurs="1"/>
+    <element name="io" type="ns:Array20OfstMsKomutIo" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="geridonus" type="ns:Array20OfstMsKomutGeridonus" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="param" type="ns:Array20OfstMsKomutParam" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="alarm" type="ns:Array10OfstMsKomutAlarm" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="MsCommandDataResponse">
+   <all>
+    <element name="response" type="ns:stMsKomut" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stKomutHatasi">
+   <all>
+    <element name="result" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="result-i" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="result-j" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGenel">
+   <all>
+    <element name="KilitlemeNo" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="Aktif" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+    <element name="LogicType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+    <element name="BoyamaDurdur" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+    <element name="AdimAtla" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+    <element name="Alarm" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+    <element name="OnDelay" type="xsd:unsignedInt" minOccurs="1" maxOccurs="1"/>
+    <element name="StepDelay" type="xsd:unsignedInt" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisAI">
+   <all>
+    <element name="id" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="ActivateType" type="xsd:byte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisDI">
+   <all>
+    <element name="id" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="ActivateType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisKomut">
+   <all>
+    <element name="id" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="ActivateType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisKilit">
+   <all>
+    <element name="KilitlemeNo" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="ActivateType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisDOUT">
+   <all>
+    <element name="id" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="ActivateType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeCikisDO">
+   <all>
+    <element name="id" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="ActivateType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeCikisAO">
+   <all>
+    <element name="id" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Value" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisAnaloglar">
+   <all>
+    <element name="Giris" type="ns:Array5OfstMS_KilitlemeGirisAI" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="LogicType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisDigitaller">
+   <all>
+    <element name="Giris" type="ns:Array32OfstMS_KilitlemeGirisDI" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="LogicType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisKomutlar">
+   <all>
+    <element name="Giris" type="ns:Array16OfstMS_KilitlemeGirisKomut" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="LogicType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisKilitler">
+   <all>
+    <element name="Giris" type="ns:Array16OfstMS_KilitlemeGirisKilit" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="LogicType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisDOUTlar">
+   <all>
+    <element name="Giris" type="ns:Array10OfstMS_KilitlemeGirisDOUT" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="LogicType" type="xsd:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeCikisAnaloglar">
+   <all>
+    <element name="Cikis" type="ns:Array5OfstMS_KilitlemeCikisAO" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeCikisDigitaller">
+   <all>
+    <element name="Cikis" type="ns:Array10OfstMS_KilitlemeCikisDO" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeGirisler">
+   <all>
+    <element name="Analog" type="ns:stMS-KilitlemeGirisAnaloglar" minOccurs="1" maxOccurs="1"/>
+    <element name="Digital" type="ns:stMS-KilitlemeGirisDigitaller" minOccurs="1" maxOccurs="1"/>
+    <element name="Komut" type="ns:stMS-KilitlemeGirisKomutlar" minOccurs="1" maxOccurs="1"/>
+    <element name="Kilit" type="ns:stMS-KilitlemeGirisKilitler" minOccurs="1" maxOccurs="1"/>
+    <element name="DigitalOut" type="ns:stMS-KilitlemeGirisDOUTlar" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-KilitlemeCikislar">
+   <all>
+    <element name="Analog" type="ns:stMS-KilitlemeCikisAnaloglar" minOccurs="1" maxOccurs="1"/>
+    <element name="Digital" type="ns:stMS-KilitlemeCikisDigitaller" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stMS-Kilitleme">
+   <all>
+    <element name="Genel" type="ns:stMS-KilitlemeGenel" minOccurs="1" maxOccurs="1"/>
+    <element name="Girisler" type="ns:stMS-KilitlemeGirisler" minOccurs="1" maxOccurs="1"/>
+    <element name="Cikislar" type="ns:stMS-KilitlemeCikislar" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stKilitlemeHatasi">
+   <all>
+    <element name="result" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="result-index" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="stRutinKontrol">
+   <all>
+    <element name="BatchState" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="CurrentAdimNo" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="AdimGecisi" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="AkupleSinyali" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </all>
+  </complexType>
+
+  <complexType name="Array10OfstMS_KilitlemeCikisDO">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMS-KilitlemeCikisDO[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array5OfstMS_KilitlemeCikisAO">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMS-KilitlemeCikisAO[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array10OfstMS_KilitlemeGirisDOUT">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMS-KilitlemeGirisDOUT[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array16OfstMS_KilitlemeGirisKilit">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMS-KilitlemeGirisKilit[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array16OfstMS_KilitlemeGirisKomut">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMS-KilitlemeGirisKomut[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array32OfstMS_KilitlemeGirisDI">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMS-KilitlemeGirisDI[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array5OfstMS_KilitlemeGirisAI">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMS-KilitlemeGirisAI[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array10OfstMsKomutAlarm">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMsKomutAlarm[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array20OfstMsKomutParam">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMsKomutParam[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array20OfstMsKomutGeridonus">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMsKomutGeridonus[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array20OfstMsKomutIo">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMsKomutIo[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array19OfstMsKomutSelectableIO">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stMsKomutSelectableIO[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array50OfMSsiraliTime">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:MSsiraliTime[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array50Ofstring">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:string[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array10OfstCommandDetail">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stCommandDetail[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array20Offloat">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:float[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array50Ofint">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:int[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array50OfstBatchBaslatmaParametreleri">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stBatchBaslatmaParametreleri[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array20OfstSoapIO_Shared">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stSoapIO-Shared[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array19Ofint">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:int[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array10OfdenemeHasan">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:denemeHasan[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array10OfstSoapKomutAlarm">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stSoapKomutAlarm[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array20OfstSoapKomutParam">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stSoapKomutParam[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array20OfstSoapKomutGeridonus">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stSoapKomutGeridonus[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array20OfstSoapKomutIo">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stSoapKomutIo[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array100Ofint">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:int[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array10Ofint">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:int[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array2Ofint">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:int[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array100Offloat">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:float[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array100Ofstring">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:string[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+  <complexType name="Array19OfstSoapKomutSelectableIO">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="ns:stSoapKomutSelectableIO[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+
+ </schema>
+</types>
+
+<message name="GetProcessEventsRequest">
+ <part name="EventStartID" type="xsd:int"/>
+ <part name="Date" type="xsd:string"/>
+</message>
+
+<message name="TEventsArrayResponse">
+ <part name="response" type="ns:ArrayOfstSoap-TEvents"/>
+</message>
+
+<message name="SoapConnectRequest">
+</message>
+
+<message name="SoapConnectResponse">
+ <part name="X" type="xsd:int"/>
+</message>
+
+<message name="GetLastEventRequest">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetChemicalRequestRequest">
+ <part name="ChemicalAlarmID" type="xsd:int"/>
+ <part name="KomutID" type="xsd:int"/>
+</message>
+
+<message name="TChemicalRequestResponse">
+ <part name="response" type="ns:st-TChemicalRequest"/>
+</message>
+
+<message name="SetChemicalRequestStatusRequest">
+ <part name="KomutID" type="xsd:int"/>
+ <part name="status" type="ns:st-TChemicalRequestStatus"/>
+</message>
+
+<message name="SetChemicalRequestStatusResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="SetChemicalRequestStatusV2Request">
+ <part name="KomutID" type="xsd:int"/>
+ <part name="status" type="ns:st-TChemicalRequestStatus"/>
+ <part name="msg" type="xsd:string"/>
+</message>
+
+<message name="SetChemicalRequestStatusV2Response">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="SetRTCRequest">
+ <part name="v" type="ns:stRTC"/>
+</message>
+
+<message name="SetRTCResponse">
+ <part name="a" type="xsd:int"/>
+</message>
+
+<message name="GetRTCRequest">
+ <part name="a" type="xsd:int"/>
+</message>
+
+<message name="RTCResponse">
+ <part name="result" type="ns:stRTC"/>
+</message>
+
+<message name="getImageRequest">
+ <part name="name" type="xsd:string"/>
+</message>
+
+<message name="getImageResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetImageRequest">
+ <part name="FileName" type="xsd:string"/>
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetImageResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetCommandDataRequest">
+ <part name="KomutID" type="xsd:int"/>
+</message>
+
+<message name="CommandDataResponse">
+ <part name="response" type="ns:stSoapKomut"/>
+</message>
+
+<message name="SetCommandDataRequest">
+ <part name="SoapKomut" type="ns:stSoapKomut"/>
+</message>
+
+<message name="SetCommandDataResponse">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetCommandListRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetCommandListResponse">
+ <part name="KomutListesi" type="ns:Array100Ofint"/>
+</message>
+
+<message name="GetDenemeDataRequest">
+ <part name="KomutID" type="xsd:int"/>
+</message>
+
+<message name="DenemeDataResponse">
+ <part name="response" type="ns:SoapDeneme"/>
+</message>
+
+<message name="GetMachineConstantsRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetMachineConstantsResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetMachineConstantsRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetMachineConstantsResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetAiConfigFileRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetAiConfigFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetAiConfigFileRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetAiConfigFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetAoConfigFileRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetAoConfigFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetAoConfigFileRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetAoConfigFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetDiConfigFileRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetDiConfigFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetDiConfigFileRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetDiConfigFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetDoConfigFileRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetDoConfigFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetDoConfigFileRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetDoConfigFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetSayacConfigFileRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetSayacConfigFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetSayacConfigFileRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetSayacConfigFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetBatchStartConfigFileRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetBatchStartConfigFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetBatchStartConfigFileRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetBatchStartConfigFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetProgramListRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="stSoapProgramListResponse">
+ <part name="response" type="ns:ArrayOfint"/>
+</message>
+
+<message name="SetProgramFileRequest">
+ <part name="Program-id" type="xsd:int"/>
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetProgramFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetProgramFileRequest">
+ <part name="Program-id" type="xsd:int"/>
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetProgramFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="DeleteProgramFileRequest">
+ <part name="Program-id" type="xsd:int"/>
+</message>
+
+<message name="DeleteProgramFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetManuelReasonFileRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetManuelReasonFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetManuelReasonFileRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetManuelReasonFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetEndingReasonFileTranRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetEndingReasonFileTranResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetEndingReasonFileTranRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetEndingReasonFileTranResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="SetRunTimeIOValuesRequest">
+ <part name="ptr" type="ns:Array20OfstSoapIO_Shared"/>
+ <part name="CommandNo" type="xsd:int"/>
+ <part name="StepNo" type="xsd:int"/>
+ <part name="ParalelStepNo" type="xsd:int"/>
+ <part name="BatchNo" type="xsd:string"/>
+</message>
+
+<message name="SetRunTimeIOValuesResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetRunTimeIOValuesRequest">
+ <part name="CommandNo" type="xsd:int"/>
+ <part name="StepNo" type="xsd:int"/>
+ <part name="ParalelStepNo" type="xsd:int"/>
+ <part name="BatchNo" type="xsd:string"/>
+</message>
+
+<message name="stSoapIO-SharedArrayResponse">
+ <part name="response" type="ns:ArrayOfstSoapIO-Shared"/>
+</message>
+
+<message name="GetIOValuesRequest">
+ <part name="A" type="xsd:int"/>
+</message>
+
+<message name="stSoapIOArrayResponse">
+ <part name="response" type="ns:ArrayOfstSoapIO"/>
+</message>
+
+<message name="GetPVValuesRequest">
+ <part name="A" type="xsd:int"/>
+</message>
+
+<message name="stSoapPVArrayResponse">
+ <part name="response" type="ns:ArrayOfstSoapPV"/>
+</message>
+
+<message name="GetBatchHeaderExtendedRequest">
+ <part name="BatchId" type="xsd:string"/>
+ <part name="DateTime" type="xsd:string"/>
+</message>
+
+<message name="stBatchHeaderResponse">
+ <part name="response" type="ns:stBatchHeader"/>
+</message>
+
+<message name="GetBatchHeaderRequest">
+</message>
+
+<message name="GetBatchProgramHeaderRequest">
+ <part name="Program-id" type="xsd:int"/>
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetBatchProgramHeaderResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="GetBatchIDRequest">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="BatchNoResponse">
+ <part name="result" type="ns:stString"/>
+</message>
+
+<message name="GetVersionRequest">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="VersionResponse">
+ <part name="result" type="ns:stString"/>
+</message>
+
+<message name="GetLastBatchEventIDRequest">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="LastBatchEventResponse">
+ <part name="result" type="ns:stLastBatch"/>
+</message>
+
+<message name="GetMachineStatusRequest">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="MachineStatusResponse">
+ <part name="result" type="ns:stMachineStatus"/>
+</message>
+
+<message name="GetRunningStepsRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="GetRunningStepsResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="SetRunTimeSPRequest">
+ <part name="SP" type="ns:Array20Offloat"/>
+ <part name="CommandNo" type="xsd:int"/>
+ <part name="StepNo" type="xsd:int"/>
+ <part name="ParalelStepNo" type="xsd:int"/>
+ <part name="BatchNo" type="xsd:string"/>
+</message>
+
+<message name="SetRunTimeSPResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetRunTimeSPRequest">
+ <part name="CommandNo" type="xsd:int"/>
+ <part name="StepNo" type="xsd:int"/>
+ <part name="ParalelStepNo" type="xsd:int"/>
+ <part name="BatchNo" type="xsd:string"/>
+</message>
+
+<message name="SpRunTimeResult">
+ <part name="result" type="ns:stSpRunTime"/>
+</message>
+
+<message name="GetRunningBatchDetailsRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="stRunningBatchDetailsResult">
+ <part name="response" type="ns:stRunningBatchDetails"/>
+</message>
+
+<message name="GetKilitlemeGenelConfigFileRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetKilitlemeGenelConfigFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetKilitlemeGenelConfigFileRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetKilitlemeGenelConfigFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetKilitlemeGirisConfigFileRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetKilitlemeGirisConfigFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetKilitlemeGirisConfigFileRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetKilitlemeGirisConfigFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetKilitlemeCikisConfigFileRequest">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="GetKilitlemeCikisConfigFileResponse">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetKilitlemeCikisConfigFileRequest">
+ <part name="image" type="xsd:base64Binary"/>
+</message>
+
+<message name="SetKilitlemeCikisConfigFileResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="GetRunningProgramRequest">
+</message>
+
+<message name="RunningProgramPath">
+ <part name="String" type="xsd:string"/>
+</message>
+
+<message name="setRemoteControlStateRequest">
+ <part name="state" type="xsd:int"/>
+</message>
+
+<message name="setRemoteControlStateResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="loadBatchRequest">
+ <part name="batchNo" type="xsd:string"/>
+</message>
+
+<message name="loadBatchResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="GetLoadingStatusRequest">
+ <part name="batchNo" type="xsd:string"/>
+</message>
+
+<message name="GetLoadingStatusResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="startBatchRequest">
+ <part name="batchNo" type="xsd:string"/>
+</message>
+
+<message name="startBatchResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="startBatchFromStepNoRequest">
+ <part name="batchNo" type="xsd:string"/>
+ <part name="stepNo" type="xsd:int"/>
+</message>
+
+<message name="startBatchFromStepNoResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="stopBatchRequest">
+ <part name="batchNo" type="xsd:string"/>
+</message>
+
+<message name="stopBatchResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="lockKeyboardRequest">
+</message>
+
+<message name="lockKeyboardResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="unlockKeyboardRequest">
+</message>
+
+<message name="unlockKeyboardResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="lockMenuRequest">
+</message>
+
+<message name="lockMenuResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="unlockMenuRequest">
+</message>
+
+<message name="unlockMenuResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="lockPanelRequest">
+</message>
+
+<message name="lockPanelResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="unlockPanelRequest">
+</message>
+
+<message name="unlockPanelResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="noManualPanelPermissionRequest">
+ <part name="reason" type="xsd:int"/>
+</message>
+
+<message name="noManualPanelPermissionResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="remoteShowMessageRequest">
+ <part name="header" type="xsd:string"/>
+ <part name="msg" type="xsd:string"/>
+</message>
+
+<message name="remoteShowMessageResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="setRemoteBatchDownloadStateRequest">
+ <part name="state" type="xsd:int"/>
+</message>
+
+<message name="setRemoteBatchDownloadStateResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="setRemoteBatchStartRequestRequest">
+ <part name="batchStartStatus" type="xsd:int"/>
+</message>
+
+<message name="setRemoteBatchStartRequestResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="setRemoteBatchStartRequestExtendedRequest">
+ <part name="batchStartStatus" type="xsd:int"/>
+ <part name="blockReason" type="xsd:string"/>
+</message>
+
+<message name="setRemoteBatchStartRequestExtendedResponse">
+ <part name="returnValue" type="xsd:int"/>
+</message>
+
+<message name="MsBatchStartRequest">
+ <part name="AdimNo" type="xsd:int"/>
+ <part name="Action" type="xsd:int"/>
+</message>
+
+<message name="MsBatchStartResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="MsBatchStopRequest">
+ <part name="Action" type="xsd:int"/>
+</message>
+
+<message name="MsBatchStopResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="SetPointDegistirRequest">
+ <part name="AdimNo" type="xsd:int"/>
+ <part name="ParalelNo" type="xsd:int"/>
+ <part name="SetPointValues" type="ns:Array20Offloat"/>
+</message>
+
+<message name="SetPointDegistirResponse">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="SetPumpOutputRequest">
+ <part name="pumpOutput" type="xsd:float"/>
+</message>
+
+<message name="SetPumpOutputResponse">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="SetBatchParameterValuesRequest">
+ <part name="setBatchParameterValues" type="xsd:int"/>
+</message>
+
+<message name="SetBatchParameterValuesResponse">
+ <part name="Dummy" type="xsd:int"/>
+</message>
+
+<message name="SetRunTimeProgramRequest">
+ <part name="name" type="xsd:string"/>
+ <part name="image" type="ns:ArrayOfunsignedByte"/>
+</message>
+
+<message name="SetRunTimeProgramResponse">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="BatchYuklemeRequest">
+ <part name="Calisan-Program" type="ns:MSBatchData"/>
+</message>
+
+<message name="BatchYuklemeResponse">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="KarsilastirKomutBilgisiRequest">
+ <part name="MsKomut" type="ns:stMsKomut"/>
+</message>
+
+<message name="stKomutHatasi">
+ <part name="result" type="xsd:int"/>
+ <part name="result-i" type="xsd:int"/>
+ <part name="result-j" type="xsd:int"/>
+</message>
+
+<message name="Kilitleme-KarsilastirRequest">
+ <part name="KNo" type="xsd:int"/>
+ <part name="MSKilitleme" type="ns:stMS-Kilitleme"/>
+</message>
+
+<message name="stKilitlemeHatasi">
+ <part name="result" type="xsd:int"/>
+ <part name="result-index" type="xsd:int"/>
+</message>
+
+<message name="GetExecuterStatusRequest">
+ <part name="AdimNo" type="xsd:int"/>
+</message>
+
+<message name="GetExecuterStatusResponse">
+ <part name="dummy" type="xsd:int"/>
+</message>
+
+<message name="SetExecuterAdimGecmeOkRequest">
+</message>
+
+<message name="SetExecuterAdimGecmeOkResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="SlaveAktifAdimNoRequest">
+</message>
+
+<message name="SlaveAktifAdimNoResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="AkupledenBaskaDurduranVarMiRequest">
+</message>
+
+<message name="AkupledenBaskaDurduranVarMiResponse">
+ <part name="Status" type="xsd:int"/>
+</message>
+
+<message name="GetBatchStatusRequest">
+</message>
+
+<message name="GetBatchStatusResponse">
+ <part name="Status" type="xsd:int"/>
+</message>
+
+<message name="MS-ConnectRequest">
+ <part name="AkupleMode" type="xsd:int"/>
+ <part name="MasterIP" type="xsd:string"/>
+</message>
+
+<message name="MS-ConnectResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="SetFarkliAdimDurumuYasanmisFlagSlaveRequest">
+ <part name="FlagValue" type="xsd:int"/>
+</message>
+
+<message name="SetFarkliAdimDurumuYasanmisFlagSlaveResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="SetConnectedFlagRequest">
+</message>
+
+<message name="SetConnectedFlagResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="PorgramSaatiDurumRequest">
+</message>
+
+<message name="PorgramSaatiDurumResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="EklePorgramSaatiDurdurRequest">
+</message>
+
+<message name="EklePorgramSaatiDurdurResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="SilPorgramSaatiDurdurRequest">
+</message>
+
+<message name="SilPorgramSaatiDurdurResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="MS-SignalCheckRequest">
+ <part name="master-di" type="xsd:int"/>
+</message>
+
+<message name="MS-SignalCheckResponse">
+ <part name="akuple-di" type="xsd:int"/>
+</message>
+
+<message name="MSBatchVarMiSlaveRequest">
+</message>
+
+<message name="MSBatchVarMiSlaveResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="SetTurSuresiRequest">
+ <part name="Cycle" type="xsd:int"/>
+</message>
+
+<message name="SetTurSuresiResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="SetAKSicakligiRequest">
+ <part name="AKsicakligi" type="xsd:float"/>
+</message>
+
+<message name="SetAKSicakligiResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="GetAKSicakligiRequest">
+</message>
+
+<message name="GetAKSicakligiResponse">
+ <part name="AKsicakligi" type="xsd:float"/>
+</message>
+
+<message name="SetMTLevelRequest">
+ <part name="MTLevel" type="xsd:float"/>
+</message>
+
+<message name="SetMTLevelResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="SetTimersForFarkBasinc-farkBasincSureRequest">
+ <part name="farkBasincSure" type="xsd:int"/>
+</message>
+
+<message name="SetTimersForFarkBasinc-farkBasincSureResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="SetTimersForFarkBasinc-farkBasincStateTimerRequest">
+ <part name="farkBasincStateTimer" type="xsd:int"/>
+</message>
+
+<message name="SetTimersForFarkBasinc-farkBasincStateTimerResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="SetTimersForFarkBasinc-farkBasincKlapeTimerRequest">
+ <part name="farkBasincKlapeTimer" type="xsd:int"/>
+</message>
+
+<message name="SetTimersForFarkBasinc-farkBasincKlapeTimerResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="SetAlarmForFarkBasinc-alarmStateRequest">
+ <part name="alarmState" type="xsd:int"/>
+</message>
+
+<message name="SetAlarmForFarkBasinc-alarmStateResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="GetAlarmForFarkBasinc-slaveAlarmStateRequest">
+</message>
+
+<message name="GetAlarmForFarkBasinc-slaveAlarmStateResponse">
+ <part name="alarmState" type="xsd:int"/>
+</message>
+
+<message name="SetStateForFarkBasinc-masterFuncStateRequest">
+ <part name="functionState" type="xsd:int"/>
+</message>
+
+<message name="SetStateForFarkBasinc-masterFuncStateResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="GetStateForFarkBasinc-slaveFuncStateRequest">
+</message>
+
+<message name="GetStateForFarkBasinc-slaveFuncStateResponse">
+ <part name="functionState" type="xsd:int"/>
+</message>
+
+<message name="WriteIORequest">
+ <part name="IO-Tip" type="xsd:int"/>
+ <part name="IO-Index" type="xsd:int"/>
+ <part name="value" type="xsd:float"/>
+</message>
+
+<message name="WriteIOResponse">
+ <part name="result" type="xsd:int"/>
+</message>
+
+<message name="ReadIORequest">
+ <part name="IO-Tip" type="xsd:int"/>
+ <part name="IO-Index" type="xsd:int"/>
+</message>
+
+<message name="ReadIOResponse">
+ <part name="result" type="xsd:float"/>
+</message>
+
+<portType name="ServicePortType">
+ <operation name="GetProcessEvents">
+  <documentation>Service definition of function ns__GetProcessEvents</documentation>
+  <input message="tns:GetProcessEventsRequest"/>
+  <output message="tns:TEventsArrayResponse"/>
+ </operation>
+ <operation name="SoapConnect">
+  <documentation>Service definition of function ns__SoapConnect</documentation>
+  <input message="tns:SoapConnectRequest"/>
+  <output message="tns:SoapConnectResponse"/>
+ </operation>
+ <operation name="GetLastEvent">
+  <documentation>Service definition of function ns__GetLastEvent</documentation>
+  <input message="tns:GetLastEventRequest"/>
+  <output message="tns:TEventsArrayResponse"/>
+ </operation>
+ <operation name="GetChemicalRequest">
+  <documentation>Service definition of function ns__GetChemicalRequest</documentation>
+  <input message="tns:GetChemicalRequestRequest"/>
+  <output message="tns:TChemicalRequestResponse"/>
+ </operation>
+ <operation name="SetChemicalRequestStatus">
+  <documentation>Service definition of function ns__SetChemicalRequestStatus</documentation>
+  <input message="tns:SetChemicalRequestStatusRequest"/>
+  <output message="tns:SetChemicalRequestStatusResponse"/>
+ </operation>
+ <operation name="SetChemicalRequestStatusV2">
+  <documentation>Service definition of function ns__SetChemicalRequestStatusV2</documentation>
+  <input message="tns:SetChemicalRequestStatusV2Request"/>
+  <output message="tns:SetChemicalRequestStatusV2Response"/>
+ </operation>
+ <operation name="SetRTC">
+  <documentation>Service definition of function ns__SetRTC</documentation>
+  <input message="tns:SetRTCRequest"/>
+  <output message="tns:SetRTCResponse"/>
+ </operation>
+ <operation name="GetRTC">
+  <documentation>Service definition of function ns__GetRTC</documentation>
+  <input message="tns:GetRTCRequest"/>
+  <output message="tns:RTCResponse"/>
+ </operation>
+ <operation name="getImage">
+  <documentation>Service definition of function ns__getImage</documentation>
+  <input message="tns:getImageRequest"/>
+  <output message="tns:getImageResponse"/>
+ </operation>
+ <operation name="SetImage">
+  <documentation>Service definition of function ns__SetImage</documentation>
+  <input message="tns:SetImageRequest"/>
+  <output message="tns:SetImageResponse"/>
+ </operation>
+ <operation name="GetCommandData">
+  <documentation>Service definition of function ns__GetCommandData</documentation>
+  <input message="tns:GetCommandDataRequest"/>
+  <output message="tns:CommandDataResponse"/>
+ </operation>
+ <operation name="SetCommandData">
+  <documentation>Service definition of function ns__SetCommandData</documentation>
+  <input message="tns:SetCommandDataRequest"/>
+  <output message="tns:SetCommandDataResponse"/>
+ </operation>
+ <operation name="GetCommandList">
+  <documentation>Service definition of function ns__GetCommandList</documentation>
+  <input message="tns:GetCommandListRequest"/>
+  <output message="tns:GetCommandListResponse"/>
+ </operation>
+ <operation name="GetDenemeData">
+  <documentation>Service definition of function ns__GetDenemeData</documentation>
+  <input message="tns:GetDenemeDataRequest"/>
+  <output message="tns:DenemeDataResponse"/>
+ </operation>
+ <operation name="GetMachineConstants">
+  <documentation>Service definition of function ns__GetMachineConstants</documentation>
+  <input message="tns:GetMachineConstantsRequest"/>
+  <output message="tns:GetMachineConstantsResponse"/>
+ </operation>
+ <operation name="SetMachineConstants">
+  <documentation>Service definition of function ns__SetMachineConstants</documentation>
+  <input message="tns:SetMachineConstantsRequest"/>
+  <output message="tns:SetMachineConstantsResponse"/>
+ </operation>
+ <operation name="GetAiConfigFile">
+  <documentation>Service definition of function ns__GetAiConfigFile</documentation>
+  <input message="tns:GetAiConfigFileRequest"/>
+  <output message="tns:GetAiConfigFileResponse"/>
+ </operation>
+ <operation name="SetAiConfigFile">
+  <documentation>Service definition of function ns__SetAiConfigFile</documentation>
+  <input message="tns:SetAiConfigFileRequest"/>
+  <output message="tns:SetAiConfigFileResponse"/>
+ </operation>
+ <operation name="GetAoConfigFile">
+  <documentation>Service definition of function ns__GetAoConfigFile</documentation>
+  <input message="tns:GetAoConfigFileRequest"/>
+  <output message="tns:GetAoConfigFileResponse"/>
+ </operation>
+ <operation name="SetAoConfigFile">
+  <documentation>Service definition of function ns__SetAoConfigFile</documentation>
+  <input message="tns:SetAoConfigFileRequest"/>
+  <output message="tns:SetAoConfigFileResponse"/>
+ </operation>
+ <operation name="GetDiConfigFile">
+  <documentation>Service definition of function ns__GetDiConfigFile</documentation>
+  <input message="tns:GetDiConfigFileRequest"/>
+  <output message="tns:GetDiConfigFileResponse"/>
+ </operation>
+ <operation name="SetDiConfigFile">
+  <documentation>Service definition of function ns__SetDiConfigFile</documentation>
+  <input message="tns:SetDiConfigFileRequest"/>
+  <output message="tns:SetDiConfigFileResponse"/>
+ </operation>
+ <operation name="GetDoConfigFile">
+  <documentation>Service definition of function ns__GetDoConfigFile</documentation>
+  <input message="tns:GetDoConfigFileRequest"/>
+  <output message="tns:GetDoConfigFileResponse"/>
+ </operation>
+ <operation name="SetDoConfigFile">
+  <documentation>Service definition of function ns__SetDoConfigFile</documentation>
+  <input message="tns:SetDoConfigFileRequest"/>
+  <output message="tns:SetDoConfigFileResponse"/>
+ </operation>
+ <operation name="GetSayacConfigFile">
+  <documentation>Service definition of function ns__GetSayacConfigFile</documentation>
+  <input message="tns:GetSayacConfigFileRequest"/>
+  <output message="tns:GetSayacConfigFileResponse"/>
+ </operation>
+ <operation name="SetSayacConfigFile">
+  <documentation>Service definition of function ns__SetSayacConfigFile</documentation>
+  <input message="tns:SetSayacConfigFileRequest"/>
+  <output message="tns:SetSayacConfigFileResponse"/>
+ </operation>
+ <operation name="GetBatchStartConfigFile">
+  <documentation>Service definition of function ns__GetBatchStartConfigFile</documentation>
+  <input message="tns:GetBatchStartConfigFileRequest"/>
+  <output message="tns:GetBatchStartConfigFileResponse"/>
+ </operation>
+ <operation name="SetBatchStartConfigFile">
+  <documentation>Service definition of function ns__SetBatchStartConfigFile</documentation>
+  <input message="tns:SetBatchStartConfigFileRequest"/>
+  <output message="tns:SetBatchStartConfigFileResponse"/>
+ </operation>
+ <operation name="GetProgramList">
+  <documentation>Service definition of function ns__GetProgramList</documentation>
+  <input message="tns:GetProgramListRequest"/>
+  <output message="tns:stSoapProgramListResponse"/>
+ </operation>
+ <operation name="SetProgramFile">
+  <documentation>Service definition of function ns__SetProgramFile</documentation>
+  <input message="tns:SetProgramFileRequest"/>
+  <output message="tns:SetProgramFileResponse"/>
+ </operation>
+ <operation name="GetProgramFile">
+  <documentation>Service definition of function ns__GetProgramFile</documentation>
+  <input message="tns:GetProgramFileRequest"/>
+  <output message="tns:GetProgramFileResponse"/>
+ </operation>
+ <operation name="DeleteProgramFile">
+  <documentation>Service definition of function ns__DeleteProgramFile</documentation>
+  <input message="tns:DeleteProgramFileRequest"/>
+  <output message="tns:DeleteProgramFileResponse"/>
+ </operation>
+ <operation name="GetManuelReasonFile">
+  <documentation>Service definition of function ns__GetManuelReasonFile</documentation>
+  <input message="tns:GetManuelReasonFileRequest"/>
+  <output message="tns:GetManuelReasonFileResponse"/>
+ </operation>
+ <operation name="SetManuelReasonFile">
+  <documentation>Service definition of function ns__SetManuelReasonFile</documentation>
+  <input message="tns:SetManuelReasonFileRequest"/>
+  <output message="tns:SetManuelReasonFileResponse"/>
+ </operation>
+ <operation name="GetEndingReasonFileTran">
+  <documentation>Service definition of function ns__GetEndingReasonFileTran</documentation>
+  <input message="tns:GetEndingReasonFileTranRequest"/>
+  <output message="tns:GetEndingReasonFileTranResponse"/>
+ </operation>
+ <operation name="SetEndingReasonFileTran">
+  <documentation>Service definition of function ns__SetEndingReasonFileTran</documentation>
+  <input message="tns:SetEndingReasonFileTranRequest"/>
+  <output message="tns:SetEndingReasonFileTranResponse"/>
+ </operation>
+ <operation name="SetRunTimeIOValues">
+  <documentation>Service definition of function ns__SetRunTimeIOValues</documentation>
+  <input message="tns:SetRunTimeIOValuesRequest"/>
+  <output message="tns:SetRunTimeIOValuesResponse"/>
+ </operation>
+ <operation name="GetRunTimeIOValues">
+  <documentation>Service definition of function ns__GetRunTimeIOValues</documentation>
+  <input message="tns:GetRunTimeIOValuesRequest"/>
+  <output message="tns:stSoapIO-SharedArrayResponse"/>
+ </operation>
+ <operation name="GetIOValues">
+  <documentation>Service definition of function ns__GetIOValues</documentation>
+  <input message="tns:GetIOValuesRequest"/>
+  <output message="tns:stSoapIOArrayResponse"/>
+ </operation>
+ <operation name="GetPVValues">
+  <documentation>Service definition of function ns__GetPVValues</documentation>
+  <input message="tns:GetPVValuesRequest"/>
+  <output message="tns:stSoapPVArrayResponse"/>
+ </operation>
+ <operation name="GetBatchHeaderExtended">
+  <documentation>Service definition of function ns__GetBatchHeaderExtended</documentation>
+  <input message="tns:GetBatchHeaderExtendedRequest"/>
+  <output message="tns:stBatchHeaderResponse"/>
+ </operation>
+ <operation name="GetBatchHeader">
+  <documentation>Service definition of function ns__GetBatchHeader</documentation>
+  <input message="tns:GetBatchHeaderRequest"/>
+  <output message="tns:stBatchHeaderResponse"/>
+ </operation>
+ <operation name="GetBatchProgramHeader">
+  <documentation>Service definition of function ns__GetBatchProgramHeader</documentation>
+  <input message="tns:GetBatchProgramHeaderRequest"/>
+  <output message="tns:GetBatchProgramHeaderResponse"/>
+ </operation>
+ <operation name="GetBatchID">
+  <documentation>Service definition of function ns__GetBatchID</documentation>
+  <input message="tns:GetBatchIDRequest"/>
+  <output message="tns:BatchNoResponse"/>
+ </operation>
+ <operation name="GetVersion">
+  <documentation>Service definition of function ns__GetVersion</documentation>
+  <input message="tns:GetVersionRequest"/>
+  <output message="tns:VersionResponse"/>
+ </operation>
+ <operation name="GetLastBatchEventID">
+  <documentation>Service definition of function ns__GetLastBatchEventID</documentation>
+  <input message="tns:GetLastBatchEventIDRequest"/>
+  <output message="tns:LastBatchEventResponse"/>
+ </operation>
+ <operation name="GetMachineStatus">
+  <documentation>Service definition of function ns__GetMachineStatus</documentation>
+  <input message="tns:GetMachineStatusRequest"/>
+  <output message="tns:MachineStatusResponse"/>
+ </operation>
+ <operation name="GetRunningSteps">
+  <documentation>Service definition of function ns__GetRunningSteps</documentation>
+  <input message="tns:GetRunningStepsRequest"/>
+  <output message="tns:GetRunningStepsResponse"/>
+ </operation>
+ <operation name="SetRunTimeSP">
+  <documentation>Service definition of function ns__SetRunTimeSP</documentation>
+  <input message="tns:SetRunTimeSPRequest"/>
+  <output message="tns:SetRunTimeSPResponse"/>
+ </operation>
+ <operation name="GetRunTimeSP">
+  <documentation>Service definition of function ns__GetRunTimeSP</documentation>
+  <input message="tns:GetRunTimeSPRequest"/>
+  <output message="tns:SpRunTimeResult"/>
+ </operation>
+ <operation name="GetRunningBatchDetails">
+  <documentation>Service definition of function ns__GetRunningBatchDetails</documentation>
+  <input message="tns:GetRunningBatchDetailsRequest"/>
+  <output message="tns:stRunningBatchDetailsResult"/>
+ </operation>
+ <operation name="GetKilitlemeGenelConfigFile">
+  <documentation>Service definition of function ns__GetKilitlemeGenelConfigFile</documentation>
+  <input message="tns:GetKilitlemeGenelConfigFileRequest"/>
+  <output message="tns:GetKilitlemeGenelConfigFileResponse"/>
+ </operation>
+ <operation name="SetKilitlemeGenelConfigFile">
+  <documentation>Service definition of function ns__SetKilitlemeGenelConfigFile</documentation>
+  <input message="tns:SetKilitlemeGenelConfigFileRequest"/>
+  <output message="tns:SetKilitlemeGenelConfigFileResponse"/>
+ </operation>
+ <operation name="GetKilitlemeGirisConfigFile">
+  <documentation>Service definition of function ns__GetKilitlemeGirisConfigFile</documentation>
+  <input message="tns:GetKilitlemeGirisConfigFileRequest"/>
+  <output message="tns:GetKilitlemeGirisConfigFileResponse"/>
+ </operation>
+ <operation name="SetKilitlemeGirisConfigFile">
+  <documentation>Service definition of function ns__SetKilitlemeGirisConfigFile</documentation>
+  <input message="tns:SetKilitlemeGirisConfigFileRequest"/>
+  <output message="tns:SetKilitlemeGirisConfigFileResponse"/>
+ </operation>
+ <operation name="GetKilitlemeCikisConfigFile">
+  <documentation>Service definition of function ns__GetKilitlemeCikisConfigFile</documentation>
+  <input message="tns:GetKilitlemeCikisConfigFileRequest"/>
+  <output message="tns:GetKilitlemeCikisConfigFileResponse"/>
+ </operation>
+ <operation name="SetKilitlemeCikisConfigFile">
+  <documentation>Service definition of function ns__SetKilitlemeCikisConfigFile</documentation>
+  <input message="tns:SetKilitlemeCikisConfigFileRequest"/>
+  <output message="tns:SetKilitlemeCikisConfigFileResponse"/>
+ </operation>
+ <operation name="GetRunningProgram">
+  <documentation>Service definition of function ns__GetRunningProgram</documentation>
+  <input message="tns:GetRunningProgramRequest"/>
+  <output message="tns:RunningProgramPath"/>
+ </operation>
+ <operation name="setRemoteControlState">
+  <documentation>Service definition of function ns__setRemoteControlState</documentation>
+  <input message="tns:setRemoteControlStateRequest"/>
+  <output message="tns:setRemoteControlStateResponse"/>
+ </operation>
+ <operation name="loadBatch">
+  <documentation>Service definition of function ns__loadBatch</documentation>
+  <input message="tns:loadBatchRequest"/>
+  <output message="tns:loadBatchResponse"/>
+ </operation>
+ <operation name="GetLoadingStatus">
+  <documentation>Service definition of function ns__GetLoadingStatus</documentation>
+  <input message="tns:GetLoadingStatusRequest"/>
+  <output message="tns:GetLoadingStatusResponse"/>
+ </operation>
+ <operation name="startBatch">
+  <documentation>Service definition of function ns__startBatch</documentation>
+  <input message="tns:startBatchRequest"/>
+  <output message="tns:startBatchResponse"/>
+ </operation>
+ <operation name="startBatchFromStepNo">
+  <documentation>Service definition of function ns__startBatchFromStepNo</documentation>
+  <input message="tns:startBatchFromStepNoRequest"/>
+  <output message="tns:startBatchFromStepNoResponse"/>
+ </operation>
+ <operation name="stopBatch">
+  <documentation>Service definition of function ns__stopBatch</documentation>
+  <input message="tns:stopBatchRequest"/>
+  <output message="tns:stopBatchResponse"/>
+ </operation>
+ <operation name="lockKeyboard">
+  <documentation>Service definition of function ns__lockKeyboard</documentation>
+  <input message="tns:lockKeyboardRequest"/>
+  <output message="tns:lockKeyboardResponse"/>
+ </operation>
+ <operation name="unlockKeyboard">
+  <documentation>Service definition of function ns__unlockKeyboard</documentation>
+  <input message="tns:unlockKeyboardRequest"/>
+  <output message="tns:unlockKeyboardResponse"/>
+ </operation>
+ <operation name="lockMenu">
+  <documentation>Service definition of function ns__lockMenu</documentation>
+  <input message="tns:lockMenuRequest"/>
+  <output message="tns:lockMenuResponse"/>
+ </operation>
+ <operation name="unlockMenu">
+  <documentation>Service definition of function ns__unlockMenu</documentation>
+  <input message="tns:unlockMenuRequest"/>
+  <output message="tns:unlockMenuResponse"/>
+ </operation>
+ <operation name="lockPanel">
+  <documentation>Service definition of function ns__lockPanel</documentation>
+  <input message="tns:lockPanelRequest"/>
+  <output message="tns:lockPanelResponse"/>
+ </operation>
+ <operation name="unlockPanel">
+  <documentation>Service definition of function ns__unlockPanel</documentation>
+  <input message="tns:unlockPanelRequest"/>
+  <output message="tns:unlockPanelResponse"/>
+ </operation>
+ <operation name="noManualPanelPermission">
+  <documentation>Service definition of function ns__noManualPanelPermission</documentation>
+  <input message="tns:noManualPanelPermissionRequest"/>
+  <output message="tns:noManualPanelPermissionResponse"/>
+ </operation>
+ <operation name="remoteShowMessage">
+  <documentation>Service definition of function ns__remoteShowMessage</documentation>
+  <input message="tns:remoteShowMessageRequest"/>
+  <output message="tns:remoteShowMessageResponse"/>
+ </operation>
+ <operation name="setRemoteBatchDownloadState">
+  <documentation>Service definition of function ns__setRemoteBatchDownloadState</documentation>
+  <input message="tns:setRemoteBatchDownloadStateRequest"/>
+  <output message="tns:setRemoteBatchDownloadStateResponse"/>
+ </operation>
+ <operation name="setRemoteBatchStartRequest">
+  <documentation>Service definition of function ns__setRemoteBatchStartRequest</documentation>
+  <input message="tns:setRemoteBatchStartRequestRequest"/>
+  <output message="tns:setRemoteBatchStartRequestResponse"/>
+ </operation>
+ <operation name="setRemoteBatchStartRequestExtended">
+  <documentation>Service definition of function ns__setRemoteBatchStartRequestExtended</documentation>
+  <input message="tns:setRemoteBatchStartRequestExtendedRequest"/>
+  <output message="tns:setRemoteBatchStartRequestExtendedResponse"/>
+ </operation>
+ <operation name="MsBatchStart">
+  <documentation>Service definition of function ns__MsBatchStart</documentation>
+  <input message="tns:MsBatchStartRequest"/>
+  <output message="tns:MsBatchStartResponse"/>
+ </operation>
+ <operation name="MsBatchStop">
+  <documentation>Service definition of function ns__MsBatchStop</documentation>
+  <input message="tns:MsBatchStopRequest"/>
+  <output message="tns:MsBatchStopResponse"/>
+ </operation>
+ <operation name="SetPointDegistir">
+  <documentation>Service definition of function ns__SetPointDegistir</documentation>
+  <input message="tns:SetPointDegistirRequest"/>
+  <output message="tns:SetPointDegistirResponse"/>
+ </operation>
+ <operation name="SetPumpOutput">
+  <documentation>Service definition of function ns__SetPumpOutput</documentation>
+  <input message="tns:SetPumpOutputRequest"/>
+  <output message="tns:SetPumpOutputResponse"/>
+ </operation>
+ <operation name="SetBatchParameterValues">
+  <documentation>Service definition of function ns__SetBatchParameterValues</documentation>
+  <input message="tns:SetBatchParameterValuesRequest"/>
+  <output message="tns:SetBatchParameterValuesResponse"/>
+ </operation>
+ <operation name="SetRunTimeProgram">
+  <documentation>Service definition of function ns__SetRunTimeProgram</documentation>
+  <input message="tns:SetRunTimeProgramRequest"/>
+  <output message="tns:SetRunTimeProgramResponse"/>
+ </operation>
+ <operation name="BatchYukleme">
+  <documentation>Service definition of function ns__BatchYukleme</documentation>
+  <input message="tns:BatchYuklemeRequest"/>
+  <output message="tns:BatchYuklemeResponse"/>
+ </operation>
+ <operation name="KarsilastirKomutBilgisi">
+  <documentation>Service definition of function ns__KarsilastirKomutBilgisi</documentation>
+  <input message="tns:KarsilastirKomutBilgisiRequest"/>
+  <output message="tns:stKomutHatasi"/>
+ </operation>
+ <operation name="Kilitleme-Karsilastir">
+  <documentation>Service definition of function ns__Kilitleme_Karsilastir</documentation>
+  <input message="tns:Kilitleme-KarsilastirRequest"/>
+  <output message="tns:stKilitlemeHatasi"/>
+ </operation>
+ <operation name="GetExecuterStatus">
+  <documentation>Service definition of function ns__GetExecuterStatus</documentation>
+  <input message="tns:GetExecuterStatusRequest"/>
+  <output message="tns:GetExecuterStatusResponse"/>
+ </operation>
+ <operation name="SetExecuterAdimGecmeOk">
+  <documentation>Service definition of function ns__SetExecuterAdimGecmeOk</documentation>
+  <input message="tns:SetExecuterAdimGecmeOkRequest"/>
+  <output message="tns:SetExecuterAdimGecmeOkResponse"/>
+ </operation>
+ <operation name="SlaveAktifAdimNo">
+  <documentation>Service definition of function ns__SlaveAktifAdimNo</documentation>
+  <input message="tns:SlaveAktifAdimNoRequest"/>
+  <output message="tns:SlaveAktifAdimNoResponse"/>
+ </operation>
+ <operation name="AkupledenBaskaDurduranVarMi">
+  <documentation>Service definition of function ns__AkupledenBaskaDurduranVarMi</documentation>
+  <input message="tns:AkupledenBaskaDurduranVarMiRequest"/>
+  <output message="tns:AkupledenBaskaDurduranVarMiResponse"/>
+ </operation>
+ <operation name="GetBatchStatus">
+  <documentation>Service definition of function ns__GetBatchStatus</documentation>
+  <input message="tns:GetBatchStatusRequest"/>
+  <output message="tns:GetBatchStatusResponse"/>
+ </operation>
+ <operation name="MS-Connect">
+  <documentation>Service definition of function ns__MS_Connect</documentation>
+  <input message="tns:MS-ConnectRequest"/>
+  <output message="tns:MS-ConnectResponse"/>
+ </operation>
+ <operation name="SetFarkliAdimDurumuYasanmisFlagSlave">
+  <documentation>Service definition of function ns__SetFarkliAdimDurumuYasanmisFlagSlave</documentation>
+  <input message="tns:SetFarkliAdimDurumuYasanmisFlagSlaveRequest"/>
+  <output message="tns:SetFarkliAdimDurumuYasanmisFlagSlaveResponse"/>
+ </operation>
+ <operation name="SetConnectedFlag">
+  <documentation>Service definition of function ns__SetConnectedFlag</documentation>
+  <input message="tns:SetConnectedFlagRequest"/>
+  <output message="tns:SetConnectedFlagResponse"/>
+ </operation>
+ <operation name="PorgramSaatiDurum">
+  <documentation>Service definition of function ns__PorgramSaatiDurum</documentation>
+  <input message="tns:PorgramSaatiDurumRequest"/>
+  <output message="tns:PorgramSaatiDurumResponse"/>
+ </operation>
+ <operation name="EklePorgramSaatiDurdur">
+  <documentation>Service definition of function ns__EklePorgramSaatiDurdur</documentation>
+  <input message="tns:EklePorgramSaatiDurdurRequest"/>
+  <output message="tns:EklePorgramSaatiDurdurResponse"/>
+ </operation>
+ <operation name="SilPorgramSaatiDurdur">
+  <documentation>Service definition of function ns__SilPorgramSaatiDurdur</documentation>
+  <input message="tns:SilPorgramSaatiDurdurRequest"/>
+  <output message="tns:SilPorgramSaatiDurdurResponse"/>
+ </operation>
+ <operation name="MS-SignalCheck">
+  <documentation>Service definition of function ns__MS_SignalCheck</documentation>
+  <input message="tns:MS-SignalCheckRequest"/>
+  <output message="tns:MS-SignalCheckResponse"/>
+ </operation>
+ <operation name="MSBatchVarMiSlave">
+  <documentation>Service definition of function ns__MSBatchVarMiSlave</documentation>
+  <input message="tns:MSBatchVarMiSlaveRequest"/>
+  <output message="tns:MSBatchVarMiSlaveResponse"/>
+ </operation>
+ <operation name="SetTurSuresi">
+  <documentation>Service definition of function ns__SetTurSuresi</documentation>
+  <input message="tns:SetTurSuresiRequest"/>
+  <output message="tns:SetTurSuresiResponse"/>
+ </operation>
+ <operation name="SetAKSicakligi">
+  <documentation>Service definition of function ns__SetAKSicakligi</documentation>
+  <input message="tns:SetAKSicakligiRequest"/>
+  <output message="tns:SetAKSicakligiResponse"/>
+ </operation>
+ <operation name="GetAKSicakligi">
+  <documentation>Service definition of function ns__GetAKSicakligi</documentation>
+  <input message="tns:GetAKSicakligiRequest"/>
+  <output message="tns:GetAKSicakligiResponse"/>
+ </operation>
+ <operation name="SetMTLevel">
+  <documentation>Service definition of function ns__SetMTLevel</documentation>
+  <input message="tns:SetMTLevelRequest"/>
+  <output message="tns:SetMTLevelResponse"/>
+ </operation>
+ <operation name="SetTimersForFarkBasinc-farkBasincSure">
+  <documentation>Service definition of function ns__SetTimersForFarkBasinc_farkBasincSure</documentation>
+  <input message="tns:SetTimersForFarkBasinc-farkBasincSureRequest"/>
+  <output message="tns:SetTimersForFarkBasinc-farkBasincSureResponse"/>
+ </operation>
+ <operation name="SetTimersForFarkBasinc-farkBasincStateTimer">
+  <documentation>Service definition of function ns__SetTimersForFarkBasinc_farkBasincStateTimer</documentation>
+  <input message="tns:SetTimersForFarkBasinc-farkBasincStateTimerRequest"/>
+  <output message="tns:SetTimersForFarkBasinc-farkBasincStateTimerResponse"/>
+ </operation>
+ <operation name="SetTimersForFarkBasinc-farkBasincKlapeTimer">
+  <documentation>Service definition of function ns__SetTimersForFarkBasinc_farkBasincKlapeTimer</documentation>
+  <input message="tns:SetTimersForFarkBasinc-farkBasincKlapeTimerRequest"/>
+  <output message="tns:SetTimersForFarkBasinc-farkBasincKlapeTimerResponse"/>
+ </operation>
+ <operation name="SetAlarmForFarkBasinc-alarmState">
+  <documentation>Service definition of function ns__SetAlarmForFarkBasinc_alarmState</documentation>
+  <input message="tns:SetAlarmForFarkBasinc-alarmStateRequest"/>
+  <output message="tns:SetAlarmForFarkBasinc-alarmStateResponse"/>
+ </operation>
+ <operation name="GetAlarmForFarkBasinc-slaveAlarmState">
+  <documentation>Service definition of function ns__GetAlarmForFarkBasinc_slaveAlarmState</documentation>
+  <input message="tns:GetAlarmForFarkBasinc-slaveAlarmStateRequest"/>
+  <output message="tns:GetAlarmForFarkBasinc-slaveAlarmStateResponse"/>
+ </operation>
+ <operation name="SetStateForFarkBasinc-masterFuncState">
+  <documentation>Service definition of function ns__SetStateForFarkBasinc_masterFuncState</documentation>
+  <input message="tns:SetStateForFarkBasinc-masterFuncStateRequest"/>
+  <output message="tns:SetStateForFarkBasinc-masterFuncStateResponse"/>
+ </operation>
+ <operation name="GetStateForFarkBasinc-slaveFuncState">
+  <documentation>Service definition of function ns__GetStateForFarkBasinc_slaveFuncState</documentation>
+  <input message="tns:GetStateForFarkBasinc-slaveFuncStateRequest"/>
+  <output message="tns:GetStateForFarkBasinc-slaveFuncStateResponse"/>
+ </operation>
+ <operation name="WriteIO">
+  <documentation>Service definition of function ns__WriteIO</documentation>
+  <input message="tns:WriteIORequest"/>
+  <output message="tns:WriteIOResponse"/>
+ </operation>
+ <operation name="ReadIO">
+  <documentation>Service definition of function ns__ReadIO</documentation>
+  <input message="tns:ReadIORequest"/>
+  <output message="tns:ReadIOResponse"/>
+ </operation>
+</portType>
+
+<binding name="ServiceBinding" type="tns:ServicePortType">
+ <SOAP:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+ <operation name="GetProcessEvents">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SoapConnect">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetLastEvent">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetChemicalRequest">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetChemicalRequestStatus">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetChemicalRequestStatusV2">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetRTC">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetRTC">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="getImage">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetImage">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetCommandData">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetCommandData">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetCommandList">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetDenemeData">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetMachineConstants">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetMachineConstants">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetAiConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetAiConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetAoConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetAoConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetDiConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetDiConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetDoConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetDoConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetSayacConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetSayacConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetBatchStartConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetBatchStartConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetProgramList">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetProgramFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetProgramFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="DeleteProgramFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetManuelReasonFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetManuelReasonFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetEndingReasonFileTran">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetEndingReasonFileTran">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetRunTimeIOValues">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetRunTimeIOValues">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetIOValues">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetPVValues">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetBatchHeaderExtended">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetBatchHeader">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetBatchProgramHeader">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetBatchID">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetVersion">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetLastBatchEventID">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetMachineStatus">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetRunningSteps">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetRunTimeSP">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetRunTimeSP">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetRunningBatchDetails">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetKilitlemeGenelConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetKilitlemeGenelConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetKilitlemeGirisConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetKilitlemeGirisConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetKilitlemeCikisConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetKilitlemeCikisConfigFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetRunningProgram">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="setRemoteControlState">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="loadBatch">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetLoadingStatus">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="startBatch">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="startBatchFromStepNo">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="stopBatch">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="lockKeyboard">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="unlockKeyboard">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="lockMenu">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="unlockMenu">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="lockPanel">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="unlockPanel">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="noManualPanelPermission">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="remoteShowMessage">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="setRemoteBatchDownloadState">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="setRemoteBatchStartRequest">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="setRemoteBatchStartRequestExtended">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="MsBatchStart">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="MsBatchStop">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetPointDegistir">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetPumpOutput">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetBatchParameterValues">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetRunTimeProgram">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="BatchYukleme">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="KarsilastirKomutBilgisi">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="Kilitleme-Karsilastir">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetExecuterStatus">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetExecuterAdimGecmeOk">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SlaveAktifAdimNo">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="AkupledenBaskaDurduranVarMi">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetBatchStatus">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="MS-Connect">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetFarkliAdimDurumuYasanmisFlagSlave">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetConnectedFlag">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="PorgramSaatiDurum">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="EklePorgramSaatiDurdur">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SilPorgramSaatiDurdur">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="MS-SignalCheck">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="MSBatchVarMiSlave">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetTurSuresi">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetAKSicakligi">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetAKSicakligi">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetMTLevel">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetTimersForFarkBasinc-farkBasincSure">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetTimersForFarkBasinc-farkBasincStateTimer">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetTimersForFarkBasinc-farkBasincKlapeTimer">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetAlarmForFarkBasinc-alarmState">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetAlarmForFarkBasinc-slaveAlarmState">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="SetStateForFarkBasinc-masterFuncState">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="GetStateForFarkBasinc-slaveFuncState">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="WriteIO">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="ReadIO">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="http://tempuri.org" encodingStyle="http://www.w3.org/2002/06/soap-encoding"/>
+  </output>
+ </operation>
+</binding>
+
+<service name="Service">
+ <documentation>gSOAP 2.2.2 generated service definition</documentation>
+ <port name="Service" binding="tns:ServiceBinding">
+  <SOAP:address location="http://location"/>
+ </port>
+</service>
+
+</definitions>

@@ -24,4 +24,23 @@ export default defineNuxtConfig({
       }),
     ],
   },
+  nitro: {
+    rollupConfig: {
+      // @ts-expect-error Infinite
+      plugins: [
+        {
+          name: 'machine:wsdl',
+          transform(code, id) {
+            if (id.endsWith('.wsdl')) {
+              return {
+                code: `export default ${JSON.stringify(code)}`,
+                map: { mappings: '' },
+              }
+            }
+          },
+
+        },
+      ],
+    },
+  },
 })

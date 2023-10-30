@@ -100,7 +100,7 @@ async function handleUserDelete() {
 <template>
   <q-card>
     <q-card-section>
-      <div class="flex flex-row input-field justify-between">
+      <div class="flex flex-row input-field justify-around">
         <q-input
           v-model="user.userId"
           label="Kullanıcı No"
@@ -145,7 +145,7 @@ async function handleUserDelete() {
         <q-checkbox v-model="user.userActive" label="Aktif" />
       </div>
 
-      <div class="input-field my-8">
+      <div class="button-field my-8">
         <q-btn
           label="Ekle"
           no-caps
@@ -211,6 +211,11 @@ async function handleUserDelete() {
 
 <style scoped>
 .input-field > * {
+  margin-right: 2em;
+  width: 15em;
+}
+
+.button-field > * {
   margin-right: 2em;
 }
 
