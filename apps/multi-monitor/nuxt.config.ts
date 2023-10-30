@@ -25,8 +25,9 @@ export default defineNuxtConfig({
     machineStatusUrl: process.env.MACHINE_STATUS_URL || 'http://machine-status',
     isStaging: process.env.IS_STAGING || 'false',
     public: {
-      teleskopHasLogs: process.env.TELESKOP_HAS_DY_LOGS || 'true',
-      websockifyPort: process.env.WEBSOCKIFY_PORT || '6800',
+      isDigitalFactory: process.env.IS_DIGITAL_FACTORY,
+      teleskopHasLogs: process.env.TELESKOP_HAS_DY_LOGS,
+      websockifyPort: process.env.WEBSOCKIFY_PORT,
     },
   },
   vite: {
