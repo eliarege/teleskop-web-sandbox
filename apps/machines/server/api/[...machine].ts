@@ -275,3 +275,62 @@ router.delete('/delete-stop-reasons', defineEventHandler(async (event) => {
     return e
   }
 }))
+
+router.get('/finish-reasons', defineEventHandler(async () => {
+  try {
+    return await knex('BFDYLOTFINISHREASONS').select({
+      reasonId: 'REASONID',
+      typeId: 'TYPEID',
+      text: 'TEXT',
+      reportToERP: 'ReportToERP',
+    })
+  } catch (e) {
+    return e
+  }
+}))
+
+router.post('/add-finish-reason', defineEventHandler(async (event) => {
+  try {
+    const { reasonId, typeId, text } = await readBody(event)
+    console.log('reasonId, typeId, text, reportToERP = ', reasonId, typeId, text)
+    const res = await knex('BFDYLOTFINISHREASONS')
+      .insert({
+        REASONID: reasonId,
+        TYPEID: typeId,
+        TEXT: text,
+        ReportToERP: false,
+      })
+
+    return res
+  } catch (e) {
+    return e
+  }
+}))
+
+router.put('/edit-finish-reason', defineEventHandler(async (event) => {
+  try {
+    const { reasonId, typeId, text } = await readBody(event)
+    console.log('reasonId, typeId, text = ', reasonId, typeId, text)
+
+    const res = await knex('BFDYLOTFINISHREASONS').where('REASONID', reasonId)
+      .update({
+        TYPEID: typeId.value,
+        TEXT: text,
+      })
+
+    return res
+  } catch (e) {
+    return e
+  }
+}))
+
+router.delete('/delete-finish-reasons', defineEventHandler(async (event) => {
+  try {
+    const { reasonIds } = await readBody(event)
+    console.log('reasonIds = ', reasonIds)
+    const res = await knex('BFDYLOTFINISHREASONS').whereIn('REASONID', reasonIds).del()
+    return res
+  } catch (e) {
+    return e
+  }
+}))

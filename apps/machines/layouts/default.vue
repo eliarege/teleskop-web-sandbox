@@ -65,6 +65,7 @@ const definitionItems = [
 
           {
             label: 'Makine Bitirme Nedenleri',
+            to: '/machine-finish-reasons',
           },
 
           {

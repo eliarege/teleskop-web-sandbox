@@ -79,14 +79,14 @@ function handleSelection(e) {
 
 async function handleUserAdd() {
   if (user.value.userType)
-    user.value.userType = user.value.userType = 'Operatör' ? 1 : 2
+    user.value.userType = user.value.userType === 'Operatör' ? 1 : 2
   await addUser(user.value)
   users.value.push(user.value)
 }
 
 async function handleUserEdit() {
   if (user.value.userType)
-    user.value.userType = user.value.userType = 'Operatör' ? 1 : 2
+    user.value.userType = user.value.userType === 'Operatör' ? 1 : 2
   await editUser(user.value)
   users.value.push(user.value)
 }

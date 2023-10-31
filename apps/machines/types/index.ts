@@ -43,3 +43,10 @@ export interface ManualReason {
   manualReason: string
   reportToERP: boolean
 }
+
+export interface FinishReason {
+  reasonId: string
+  typeId: string | number
+  text: string
+  reportToERP: boolean
+}
