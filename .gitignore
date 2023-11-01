@@ -27,3 +27,5 @@ logs
 .env.*
 !.env.example
 
+# Machines Data
+apps/machines/server/data
