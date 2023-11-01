@@ -2,13 +2,6 @@ stages:
   - prepare
   - release
 
-.apps: &apps
-  - dispensing-manager-ui
-  - machines
-  - multi-monitor
-  - root
-  - websockify
-
 .docker-login: &docker-login
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
