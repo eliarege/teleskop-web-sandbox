@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { navigateToPage, textAlignOverride } from '../shared/functions'
+import { filtersToKnex, navigateToPage, textAlignOverride } from '../shared/functions'
+import { rows } from '../shared/constants'
+import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 
@@ -8,19 +10,17 @@ const joborderInput = ref()
 const date = ref({ from: '', to: '' })
 
 const selectedMachine = ref()
-const machines = await $fetch('/api/machine/machines')
-console.log(machines)
+const machines = await $fetch('/api/machine/machines') // FIXME: useFetc better $fetch may cause page to fail
 const joborders = ref()
 const jobordersTemp = await $fetch('/api/joborder/joborders')
 joborders.value = jobordersTemp
-console.log(joborders.value)
 
-const columns = [
-  { name: 'joborder', label: t('joborder'), field: 'joborder' },
-  { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo' },
-  { name: 'plannedMachineName', label: t('plannedMachine'), field: 'plannedMachineName' },
+const columns: Array<Column> = [
+  { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
+  { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo', filterable: true, filterType: 'comparison' },
+  { name: 'plannedMachineName', label: t('plannedMachine'), field: 'plannedMachineName', filterable: true, filterType: 'select', selectionOptions: machines, optionLabel: 'machinename', optionValue: 'machineid' },
   { name: 'programList', label: t('registeredJobOrders.programList'), field: 'programList' },
-  { name: 'plannedStartTime', label: t('registeredJobOrders.scheduledStartTime'), field: 'plannedStartTime' },
+  { name: 'plannedStartTime', label: t('registeredJobOrders.scheduledStartTime'), field: 'plannedStartTime', filterable: true, filterType: 'date' },
 ]
 const noFilterSpec = ref(true)
 
@@ -37,14 +37,19 @@ async function request() {
 }
 
 async function handleRowDblClick(row) {
-  console.log(row)
   await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.correctionNo}`)
+}
+
+const externalFilterSlots = ref([])
+function handleFilterSlotsUpdate(updatedValue) {
+  externalFilterSlots.value = updatedValue
+  filtersToKnex(externalFilterSlots.value, null)
 }
 </script>
 
 <template>
   <div class="flex flex-col gap-5 e-border">
-    <div class="ml-5">
+    <!-- <div class="ml-5">
       <div class="flex flex-row items-center gap-5">
         {{ t('joborderNo') }}:
         <q-input v-model="joborderInput" clearable />
@@ -52,7 +57,6 @@ async function handleRowDblClick(row) {
         <span v-if="noFilterSpec" style="font-size: small; color: blue;">
           ( {{ t('warnings.noFilterSpec') }} )
         </span>
-        <!-- <q-btn label="Tüm İş Emirlerini Göster" /> -->
       </div>
       <div class="flex flex-row gap-5 mt-5 items-center">
         {{ t('machinename') }}:
@@ -65,7 +69,6 @@ async function handleRowDblClick(row) {
           option-label="machinename"
           :options="machines"
         />
-        <!-- :prefix="selectedMachine?.machineid + '. '" -->
         <div class="gap-0 flex flex-row items-center justify-center">
           <q-input
             v-model="date.from"
@@ -111,21 +114,30 @@ async function handleRowDblClick(row) {
           ( {{ t('warnings.noDateSpec') }} )
         </span>
       </div>
-    </div>
+    </div> -->
     <span class="header-class">
       {{ t('joborders') }}
     </span>
-    <q-table
-      flat
-      bordered
+    <FilterableTable
       :rows="joborders"
       :columns="columns"
-      :class="textAlignOverride('center')"
-      row-key="recIndex"
-      :pagination="{ rowsPerPage: 10 }"
-      @row-dblclick="(evt, row) => handleRowDblClick(row)"
-    />
-    <div class="footer-buttons gap-5">
+      :pagination="{ rowsPerPage: 8 }"
+      @row-dblclick="row => handleRowDblClick(row)"
+      @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
+    >
+      <!-- <template #custombody="props">
+        <q-tr :props="props">
+          <q-td
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+          >
+            {{ col.value }}
+          </q-td>
+        </q-tr>
+      </template> -->
+    </FilterableTable>
+    <div class="footer-buttons">
       <span class="absolute flex left-15">
         ( {{ t('warnings.doubleClickToShowRecipe') }} )
       </span>
@@ -164,7 +176,7 @@ async function handleRowDblClick(row) {
   background-color: rgb(236, 236, 236);
   height: 10vh;
   width: 100vw;
-  position: relative;
+  position: absolute;
   bottom: 0px;
   right: 0px;
   display: flex;

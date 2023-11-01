@@ -200,6 +200,7 @@ function buttonAction(link: string) {
     <q-dialog
       v-model="showParameterDialog"
       full-height
+      full-width
     >
       <ParameterDialogContent :joborder="Number(lastJobOrder)" :plankey="plankey" />
     </q-dialog>

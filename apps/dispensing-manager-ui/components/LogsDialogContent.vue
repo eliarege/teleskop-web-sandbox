@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import moment from 'moment'
+import type { Column } from '~/shared/types'
 
 const props = defineProps({
   joborder: Number,
@@ -12,8 +13,19 @@ const { t } = useI18n()
 const joborder = ref(props.joborder)
 const plankey = ref(props.plankey)
 const machinename = ref()
-const logCols = [
-  { name: 'id', label: t('jobOrderLogs.id'), field: 'id' },
+const checkboxesStatus = ref([
+  { label: t('jobOrderLogs.newRequest'), code: 0 },
+  { label: t('jobOrderLogs.forwardDistributor'), code: 1 },
+  { label: t('jobOrderLogs.startedDistributingWeighing'), code: 2 },
+  { label: t('jobOrderLogs.completedDistributingWeighing'), code: 3 },
+  { label: t('jobOrderLogs.canceledDistributingWeighing'), code: 8 },
+  { label: t('jobOrderLogs.priorityChange'), code: 4 },
+  { label: t('jobOrderLogs.changedDistributor'), code: 10 },
+  { label: t('jobOrderLogs.faultyOther'), code: null },
+])
+
+const logCols: Column[] = [
+  { name: 'id', label: t('jobOrderLogs.id'), field: 'id', filterable: true },
   // { name: 'machineName', label: t('machinename'), field: 'machineName' },
   // { name: 'joborder', label: t('jobOrderLogs.jobOrderCode'), field: 'joborder' },
   { name: 'programIndex', label: t('jobOrderLogs.programIndex'), field: 'programIndex' },
@@ -21,20 +33,10 @@ const logCols = [
   { name: 'programName', label: t('programName'), field: 'programName' },
   { name: 'recipeType', label: t('recipeType'), field: 'recipeType' },
   { name: 'requestIndex', label: t('jobOrderLogs.requestIndex'), field: 'requestIndex' },
-  { name: 'status', label: t('status'), field: 'status' },
-  { name: 'time', label: t('jobOrderLogs.eventTime'), field: 'time' },
+  { name: 'status', label: t('status'), field: 'status', filterable: true, filterType: 'multiselect', selectionOptions: checkboxesStatus.value, optionLabel: 'label', optionValue: 'code' },
+  { name: 'time', label: t('jobOrderLogs.eventTime'), field: 'time', filterable: true, filterType: 'date' },
   { name: 'description', label: t('jobOrderLogs.description'), field: 'description' },
 ]
-const checkboxesStatus = ref([
-  { value: true, label: t('jobOrderLogs.newRequest'), code: 0 },
-  { value: true, label: t('jobOrderLogs.forwardDistributor'), code: 1 },
-  { value: true, label: t('jobOrderLogs.startedDistributingWeighing'), code: 2 },
-  { value: true, label: t('jobOrderLogs.completedDistributingWeighing'), code: 3 },
-  { value: true, label: t('jobOrderLogs.canceledDistributingWeighing'), code: 8 },
-  { value: true, label: t('jobOrderLogs.priorityChange'), code: 4 },
-  { value: true, label: t('jobOrderLogs.changedDistributor'), code: 10 },
-  { value: true, label: t('jobOrderLogs.faultyOther'), code: null },
-])
 
 const checkboxesRecipeType = ref([
   { value: true, label: t('chemical'), code: 0 },
@@ -91,7 +93,7 @@ async function applyFilters() {
         {{ t('machinename') }} : {{ machinename }}
       </span>
     </div>
-    <div v-if="showFilters">
+    <!-- <div v-if="showFilters">
       <q-card-section class="ml-5">
         <div class="flex gap-5">
           <div class="flex flex-col filter-divs" style="width: 15%;">
@@ -189,20 +191,14 @@ async function applyFilters() {
       color="primary"
       style="width: 20%; font-weight: 500;"
       @click="showFilters = !showFilters"
-    />
+    /> -->
     <q-card-section class="col" style="display: flex;">
-      <q-table
-        class="text-override-left ml-5 mr-5 my-sticky-virtscroll-table-recipe "
+      <FilterableTable
         :columns="logCols"
         :rows="logRows"
-        :rows-per-page-options="[0]"
         style="width: 100%; height: 100%;"
-        virtual-scroll
-        flat
-        bordered
-        :virtual-scroll-sticky-size-start="48"
       >
-        <template #body="log">
+        <template #custombody="log">
           <q-tr>
             <q-td
               v-for="row in log.cols"
@@ -224,7 +220,7 @@ async function applyFilters() {
             </q-td>
           </q-tr>
         </template>
-      </q-table>
+      </FilterableTable>
     </q-card-section>
 
     <q-card-actions align="right" style="position:relative;">

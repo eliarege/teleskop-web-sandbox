@@ -35,16 +35,11 @@ console.log(parameterRows)
     </q-card-section>
 
     <q-card-section class="col" style="display: flex;">
-      <q-table
-        class="text-override-left ml-5 mr-5 my-sticky-virtscroll-table-recipe "
+      <FilterableTable
+        class="ml-5 mr-5"
         :columns="parameterCols"
         :rows="parameterRows"
-        :rows-per-page-options="[0]"
         style="width: 100%; height: 100%;"
-        virtual-scroll
-        flat
-        bordered
-        :virtual-scroll-sticky-size-start="48"
       />
     </q-card-section>
 
@@ -62,32 +57,6 @@ console.log(parameterRows)
 </template>
 
 <style scoped>
-.my-sticky-virtscroll-table-recipe {
-  height: 410px;
-}
-
-.my-sticky-virtscroll-table-recipe :deep(.q-table__top),
-.my-sticky-virtscroll-table-recipe :deep(.q-table__bottom),
-.my-sticky-virtscroll-table-recipe :deep(thead tr:first-child th) {
-  background-color: #dddddd;
-}
-
-.my-sticky-virtscroll-table-recipe :deep(thead tr th) {
-  position: sticky;
-  z-index: 1;
-}
-
-.my-sticky-virtscroll-table-recipe :deep(thead tr:last-child th) {
-  top: 48px;
-}
-
-.my-sticky-virtscroll-table-recipe :deep(thead tr:first-child th) {
-  top: 0;
-}
-
-.my-sticky-virtscroll-table-recipe :deep(tbody) {
-  scroll-margin-top: 48px;
-}
 .text-override-left :deep(.text-right){
   text-align: left;
   word-break: normal;

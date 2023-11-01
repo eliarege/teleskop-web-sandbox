@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { navigateToPage, textAlignOverride } from '../shared/functions'
+import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const jobordersText = t('joborders')
@@ -13,8 +14,8 @@ const paginationSync = ref(5)
 const paginationPageRight = ref(1)
 const paginationPageLeft = ref(1)
 
-const columnsRecipe = [
-  { name: 'joborder', label: t('joborder'), field: 'joborder' },
+const columnsRecipe: Column[] = [
+  { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo' },
   { name: 'machinename', label: t('machinename'), field: 'machinename' },
   { name: 'tankno', label: t('tankNo'), field: 'tankno' },
@@ -58,22 +59,25 @@ async function fetchMaterialData(reqnumber: number) {
 }
 
 function rowBGColorHandler(row: any) {
+  let temp = 'background-color: '
   if (row.field === 'status') {
     if (row.value === 0)
-      return '#b7eeff'
+      temp += '#007BFF'
     if (row.value === 1)
-      return '#8dffcf'
+      temp += '#64abfc'
     if (row.value === 2)
-      return '#38df4e'
+      temp += '#73cece'
     if (row.value === 4)
-      return '#eda72d'
+      temp += '#7f72fa'
     if (row.value === 10)
-      return '#eb7979'
+      temp += '#ffbb00'
     if (row.value === 3)
-      return '#61b3ff'
+      temp += '#4CAF50'
     if (row.value === 8)
-      return '#ff0000'
+      temp += '#FF4B4B'
+    temp += '; color: white; font-weight: bolder; font-size: large'
   }
+  return temp
 }
 
 const selectedJobOrder = ref()
@@ -102,30 +106,30 @@ const isChem = ref(true)
 </script>
 
 <template>
-  <div class="dialog-class flex flex-row gap-5">
+  <div class="dialog-class flex  flex-row gap-5">
     <span class="header-class">
       Eliar - {{ t('distributionProcessor.a') }}
+      <img
+        src="/eliarname.png"
+        class="invert-colors"
+        style="display: flex; right: 1rem; position: absolute; height: 3rem; width: 3rem;"
+      >
     </span>
     <div class="ml-5 mr-5 gap-5 flex flex-row">
       <!-- Incoming joborders table -->
       <div>
-        <q-table
-          flat
-          bordered
-          :title="jobordersText"
+        <!-- :title="jobordersText" -->
+        <!-- :class="textAlignOverride('left')" -->
+        <FilterableTable
+          :key="isChem ? 'chem' : 'dye'"
           :rows="recipe"
           :columns="columnsRecipe"
-          row-key="name"
           class="table-header-word-break-override"
-          :class="textAlignOverride('left')"
           :pagination="{ rowsPerPage: paginationSync, page: paginationPageLeft }"
-          style="width: 60vw; height: 100%;"
+          style="width: 55vw; height: 100%;"
           @update:pagination="(newPag) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
         >
-          <template #top>
-            <span style="font-size: 20px; font-weight: 400;">
-              {{ jobordersText }}
-            </span>
+          <template #top-right>
             <q-space />
             <q-btn-toggle
               v-model="isChem"
@@ -135,10 +139,11 @@ const isChem = ref(true)
                 { label: t('chemical'), value: true },
                 { label: t('dye'), value: false },
               ]"
-              @vue:updated="isChem ? recipe = recipeChem : recipe = recipeDye"
+              @update:model-value="isChem ? recipe = recipeChem : recipe = recipeDye"
             />
+            <!-- @vnode-updated="isChem ? recipe = recipeChem : recipe = recipeDye + console.log(isChem)" -->
           </template>
-          <template #body="recipe">
+          <template #custombody="recipe">
             <q-tr
               :class="{ 'selected-row': selectedJobOrderTableRow === recipe.row.reqnumber }"
               style="cursor: pointer;"
@@ -150,7 +155,7 @@ const isChem = ref(true)
                 v-for="row in recipe.cols"
                 :key="row.name"
                 :props="recipe"
-                :style="`background-color:${rowBGColorHandler(row)}`"
+                :style="rowBGColorHandler(row)"
               >
                 <span v-if="row.field === 'status'">
                   {{ t(`statusCodes.${row.value}`) }}
@@ -189,36 +194,22 @@ const isChem = ref(true)
               </q-td>
             </q-tr>
           </template>
-        </q-table>
+        </FilterableTable>
       </div>
       <!-- Canceled orders table -->
       <div>
-        <q-table
-          flat
-          bordered
-          :title="finishedJobOrderText"
+        <!-- :title="finishedJobOrderText" -->
+        <!-- row-key="name" -->
+        <!-- :class="textAlignOverride('left')" -->
+        <FilterableTable
           :rows="canceled"
           :columns="finishedColumns"
-          row-key="name"
-          :class="textAlignOverride('left')"
+          :is-expandable="true"
           :pagination="{ rowsPerPage: paginationSync, page: paginationPageRight }"
-          style="width: 35vw; height: 100%;"
+          style="width: 40vw; height: 100%;"
           @update:pagination="(newPag) => { paginationSync = newPag.rowsPerPage, paginationPageRight = newPag.page }"
         >
-          <template #header="props">
-            <q-tr :props="props">
-              <q-th />
-              <q-th
-                v-for="col in props.cols"
-                :key="col.name"
-                :props="props"
-              >
-                {{ col.label }}
-              </q-th>
-            </q-tr>
-          </template>
-
-          <template #body="props">
+          <template #custombody="props">
             <q-tr :props="props">
               <q-td>
                 <q-btn
@@ -234,7 +225,7 @@ const isChem = ref(true)
                 v-for="col in props.cols"
                 :key="col.name"
                 :props="props"
-                :style="`background-color:${rowBGColorHandler(col)}`"
+                :style="rowBGColorHandler(col)"
               >
                 <span v-if="col.field === 'status'">
                   {{ t(`statusCodes.${col.value}`) }}
@@ -257,7 +248,7 @@ const isChem = ref(true)
               </q-td>
             </q-tr>
           </template>
-        </q-table>
+        </FilterableTable>
       </div>
     </div>
     <span class="header-class">
@@ -345,6 +336,9 @@ const isChem = ref(true)
 </template>
 
 <style scoped>
+img.invert-colors {
+  filter: invert(1);
+}
 .selected-row {
   background-color: #cce8ff;
 }
@@ -370,10 +364,14 @@ const isChem = ref(true)
 }
 
 .header-class {
-  background-color: rgb(42, 62, 92);
+  background-color: rgb(0, 0, 0);
   color: white;
-  font-size: large;
+  font-size: x-large;
   width: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 1rem;
+  height: 3rem;
 }
 
 .footer-buttons {
