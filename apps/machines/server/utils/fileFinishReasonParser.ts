@@ -6,7 +6,6 @@ export function fileFinishReasonParser(content: string) {
   const reasons = []
   let match = pattern.exec(content)
   while (match !== null) {
-    console.log('match = ', match)
     const reason: FinishReason = {
       reasonId: match[1],
       text: match[2],
