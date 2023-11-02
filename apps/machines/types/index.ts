@@ -52,3 +52,23 @@ export interface FinishReason {
   text: string
   reportToERP: boolean
 }
+
+export interface LockGeneral {
+  machineId: number
+  lockNo: number
+  lockName: string
+  logicType: number
+  stopDyeing: number
+  jumpStep: number
+  alarm: number
+  onDelay: string
+  stepDelay: string
+  giveMessage: number
+  messageString: string
+  aInLogicType: number
+  dInLogicType: number
+  commandLogicType: number
+  lockLogicType: number
+  dOutLogicType: number
+  vInLogicType: number
+}
