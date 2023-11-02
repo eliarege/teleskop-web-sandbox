@@ -29,6 +29,8 @@ export interface User {
   userPass: string
   userInfo: string
   userActive: boolean
+  userMode: string
+  userMode2: string
   userType: string | number
 }
 
