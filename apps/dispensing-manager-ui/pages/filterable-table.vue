@@ -194,6 +194,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
 </script>
 
 <template>
+  <div class="flex bg-yellow-600">
+    <NavigationButton type="back" />
+    <NavigationButton type="home" />
+  </div>
   <FilterableTable
     :filters="filters"
     :columns="columns"

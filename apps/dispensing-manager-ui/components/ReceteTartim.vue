@@ -112,7 +112,12 @@ function buttonAction(link: string) {
 
   <div class="flex flex-col gap-5">
     <span class="header-class-recipe">
+      <NavigationButton type="back" />
+      &nbsp;&nbsp;
       {{ t('distributionProcessor.a') }} - {{ t('recipe.header') }}
+      <span class="right-home">
+        <NavigationButton type="home" />
+      </span>
     </span>
     <div class="ml-5">
       {{ t('recipe.infoText') }}
@@ -137,7 +142,7 @@ function buttonAction(link: string) {
         <q-btn :label="t('allJobOrders')" @click="navigateToPage('registered-job-orders')" />
       </div>
     </div>
-    <span class="header-class-recipe">
+    <span class="header-class-recipe pl-4">
       {{ t('recipe.recipeInfo') }}
     </span>
     <div class="ml-5">
@@ -218,7 +223,7 @@ function buttonAction(link: string) {
     >
       <ConsumptionDialogContent :joborder="Number(lastJobOrder)" :machinename="machine[0].machinename" />
     </q-dialog>
-    <ElScrollbar class="table-wrapper-recipe ml-5 mr-5">
+    <ElScrollbar class="table-wrapper-recipe">
       <RecipeTable
         :data="recipeData"
         :show="true"
@@ -245,15 +250,22 @@ function buttonAction(link: string) {
 
 <style scoped>
 .header-class-recipe {
-  background-color: rgb(42, 62, 92);
+  background-color: rgb(70, 56, 141);
   color: white;
-  font-size: large;
-  width: 100vw;
-  padding-left: 1%;
+  font-size: x-large;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  height: 3rem;
+}
+
+.right-home {
+  position: absolute;
+  right: 0;
 }
 .table-wrapper-recipe {
   grid-area: table;
-  width: 100vw;
+  width: 100%;
   max-width: 100vw;
   height: 50vh;
 }
@@ -265,8 +277,8 @@ function buttonAction(link: string) {
 .footer-buttons-recipe {
   background-color: rgb(236, 236, 236);
   position:static;
-  height: 10vh;
-  width: 100vw;
+  height: 7vh;
+  width: 100%;
   bottom: 0px;
   right: 0px;
   display: flex;

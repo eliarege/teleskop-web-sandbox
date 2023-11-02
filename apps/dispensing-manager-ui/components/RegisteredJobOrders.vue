@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { onMounted } from 'vue'
 import { filtersToKnex, navigateToPage, textAlignOverride } from '../shared/functions'
 import { rows } from '../shared/constants'
+import LoadingSpinner from '../../../packages/ui/components/LoadingSpinner.vue'
 import type { Column } from '~/shared/types'
+
+// Call fetchData when component is mounted.
+// For this, we can use the onMounted hook from 'vue'
 
 const { t } = useI18n()
 
@@ -10,18 +15,28 @@ const joborderInput = ref()
 const date = ref({ from: '', to: '' })
 
 const selectedMachine = ref()
-const machines = await $fetch('/api/machine/machines') // FIXME: useFetc better $fetch may cause page to fail
-const joborders = ref()
-const jobordersTemp = await $fetch('/api/joborder/joborders')
-joborders.value = jobordersTemp
+const machines = ref([])
 
-const columns: Array<Column> = [
+const joborders = ref()
+const visibleLoading = ref(true)
+async function fetchData() {
+  try {
+    machines.value = await $fetch('/api/machine/machines') // FIXME: useFetc better $fetch may cause page to fail
+    joborders.value = await $fetch('/api/joborder/joborders')
+    console.log(machines.value)
+  } finally {
+    visibleLoading.value = false
+  }
+}
+onMounted(fetchData)
+
+const columns = computed(() => [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo', filterable: true, filterType: 'comparison' },
-  { name: 'plannedMachineName', label: t('plannedMachine'), field: 'plannedMachineName', filterable: true, filterType: 'select', selectionOptions: machines, optionLabel: 'machinename', optionValue: 'machineid' },
-  { name: 'programList', label: t('registeredJobOrders.programList'), field: 'programList' },
+  { name: 'plannedMachineName', label: t('plannedMachine'), field: 'plannedMachineName', filterable: true, filterType: 'select', selectionOptions: machines.value, optionLabel: 'machinename', optionValue: 'machineid' },
+  { name: 'programList', label: t('registeredJobOrders.programList'), field: 'programList', filterable: true, filterType: 'includes' },
   { name: 'plannedStartTime', label: t('registeredJobOrders.scheduledStartTime'), field: 'plannedStartTime', filterable: true, filterType: 'date' },
-]
+])
 const noFilterSpec = ref(true)
 
 async function request() {
@@ -41,14 +56,28 @@ async function handleRowDblClick(row) {
 }
 
 const externalFilterSlots = ref([])
-function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue) {
   externalFilterSlots.value = updatedValue
-  filtersToKnex(externalFilterSlots.value, null)
+  console.log(updatedValue)
+  joborders.value = await $fetch('/api/joborder/filtered-joborders', {
+    method: 'post',
+    body: externalFilterSlots.value,
+  })
+
+  // filtersToKnex(externalFilterSlots.value, null)
 }
 </script>
 
 <template>
-  <div class="flex flex-col gap-5 e-border">
+  <div class="header-class">
+    <NavigationButton type="back" />
+      &nbsp;&nbsp;
+    {{ t('joborders') }}
+    <span class="right-home">
+      <NavigationButton type="home" />
+    </span>
+  </div>
+  <div class="flex flex-col gap-5">
     <!-- <div class="ml-5">
       <div class="flex flex-row items-center gap-5">
         {{ t('joborderNo') }}:
@@ -115,13 +144,14 @@ function handleFilterSlotsUpdate(updatedValue) {
         </span>
       </div>
     </div> -->
-    <span class="header-class">
-      {{ t('joborders') }}
-    </span>
+    <div v-if="visibleLoading" class="absolute w-full h-full top-1/2 left-1/2 transform -translate-1/2 z-10">
+      <LoadingSpinner />
+    </div>
     <FilterableTable
       :rows="joborders"
       :columns="columns"
-      :pagination="{ rowsPerPage: 8 }"
+      class="override-class-height"
+      :pagination="{ rowsPerPage: 20 }"
       @row-dblclick="row => handleRowDblClick(row)"
       @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
     >
@@ -146,12 +176,22 @@ function handleFilterSlotsUpdate(updatedValue) {
 </template>
 
 <style scoped>
+.override-class-height :deep(.my-sticky-virtscroll-table-recipe) {
+  height: 80vh;
+  margin: 1rem;
+}
 .header-class {
-  background-color: gray;
+  background-color: rgb(70, 56, 141);
   color: white;
-  font-size: large;
+  font-size: x-large;
   width: 100%;
-  padding-left: 1%;
+  display: flex;
+  align-items: center;
+  height: 3rem;
+}
+.right-home {
+  position: absolute;
+  right: 0;
 }
 
 .text-override-right :deep(.text-right){

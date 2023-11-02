@@ -14,36 +14,18 @@ export function textAlignOverride(pos: string) {
     return 'text-override-right'
 }
 
-const wordbank = [
-  { word: 'joborder', mean: 'b.JOBORDER' },
-  { word: '', mean: '' },
-  { word: '', mean: '' },
-  { word: '', mean: '' },
-  { word: '', mean: '' },
-  { word: '', mean: '' },
-  { word: '', mean: '' },
-  { word: '', mean: '' },
-  { word: '', mean: '' },
-  { word: '', mean: '' },
-]
-
 /** Returns a database name of the spesific attribute */
-function returnDBCol(param: string) {
-  if (param === 'machineid')
-    return 'b.PLANNEDMACHINE'
-  if (param === 'correctionNo')
-    return 'b.CORRECTIONNUMBER'
-  if (param === 'plannedStartTime')
-    return 'b.PLANNEDSTARTTIME'
-}
 
-export async function filtersToKnex(filters: Array<FilterSlot>, knexInstance: Knex.QueryBuilder) {
-  console.log(knexInstance)
+export async function filtersToKnex(filters: Array<FilterSlot>, attributes: any, knexInstance: Knex.QueryBuilder) {
   const resultQuery: Knex.QueryBuilder = await knexInstance
     .where((builder) => {
       filters.forEach((filter) => {
         const attName = filter.optionValue ? filter.optionValue : filter.field
-        const DBName = returnDBCol(attName)
+        const DBName = attributes[attName]
+        console.log(attributes)
+        console.log(DBName)
+        console.log(attName)
+
         if (filter.isOrderFilter) {
           console.log('Ordering is an optional for backend. Its not implemented right now.')
         } else if (filter.filterType === 'select' || filter.filterType === 'multiselect') {
@@ -64,6 +46,10 @@ export async function filtersToKnex(filters: Array<FilterSlot>, knexInstance: Kn
           builder.andWhere(DBName, '>=', filter.value.from)
         } else if (filter.filterType === 'boolean') {
           builder.andWhere(DBName, filter.value.option[0])
+        } else if (filter.filterType === 'includes') {
+          builder.andWhere(DBName, 'like', `%${filter.value}%`)
+        } else if (filter.filterType === 'equals') {
+          builder.andWhere(DBName, `${filter.value}`)
         }
       })
     })

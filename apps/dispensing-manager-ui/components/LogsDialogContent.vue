@@ -13,66 +13,38 @@ const { t } = useI18n()
 const joborder = ref(props.joborder)
 const plankey = ref(props.plankey)
 const machinename = ref()
-const checkboxesStatus = ref([
-  { label: t('jobOrderLogs.newRequest'), code: 0 },
-  { label: t('jobOrderLogs.forwardDistributor'), code: 1 },
-  { label: t('jobOrderLogs.startedDistributingWeighing'), code: 2 },
-  { label: t('jobOrderLogs.completedDistributingWeighing'), code: 3 },
-  { label: t('jobOrderLogs.canceledDistributingWeighing'), code: 8 },
-  { label: t('jobOrderLogs.priorityChange'), code: 4 },
-  { label: t('jobOrderLogs.changedDistributor'), code: 10 },
-  { label: t('jobOrderLogs.faultyOther'), code: null },
+const status = ref([
+  { label: t('jobOrderLogs.newRequest'), status: 0 },
+  { label: t('jobOrderLogs.forwardDistributor'), status: 1 },
+  { label: t('jobOrderLogs.startedDistributingWeighing'), status: 2 },
+  { label: t('jobOrderLogs.completedDistributingWeighing'), status: 3 },
+  { label: t('jobOrderLogs.canceledDistributingWeighing'), status: 8 },
+  { label: t('jobOrderLogs.priorityChange'), status: 4 },
+  { label: t('jobOrderLogs.changedDistributor'), status: 10 },
+  { label: t('jobOrderLogs.faultyOther'), status: null },
 ])
 
 const logCols: Column[] = [
-  { name: 'id', label: t('jobOrderLogs.id'), field: 'id', filterable: true },
+  { name: 'id', label: t('jobOrderLogs.id'), field: 'id', filterable: true, filterType: 'comparison' },
   // { name: 'machineName', label: t('machinename'), field: 'machineName' },
   // { name: 'joborder', label: t('jobOrderLogs.jobOrderCode'), field: 'joborder' },
-  { name: 'programIndex', label: t('jobOrderLogs.programIndex'), field: 'programIndex' },
-  { name: 'programNo', label: t('programNo'), field: 'programNo' },
+  { name: 'programIndex', label: t('jobOrderLogs.programIndex'), field: 'programIndex', filterable: true, filterType: 'comparison' },
+  { name: 'programNo', label: t('programNo'), field: 'programNo', filterable: true, filterType: 'comparison' },
   { name: 'programName', label: t('programName'), field: 'programName' },
-  { name: 'recipeType', label: t('recipeType'), field: 'recipeType' },
-  { name: 'requestIndex', label: t('jobOrderLogs.requestIndex'), field: 'requestIndex' },
-  { name: 'status', label: t('status'), field: 'status', filterable: true, filterType: 'multiselect', selectionOptions: checkboxesStatus.value, optionLabel: 'label', optionValue: 'code' },
+  { name: 'recipeType', label: t('recipeType'), field: 'recipeType', filterable: true, filterType: 'select', selectionOptions: [{ label: t('chemical'), recipeType: 0 }, { label: t('dye'), recipeType: 1 }], optionValue: 'recipeType', optionLabel: 'label' },
+  { name: 'requestIndex', label: t('jobOrderLogs.requestIndex'), field: 'requestIndex', filterable: true, filterType: 'comparison' },
+  { name: 'status', label: t('status'), field: 'status', filterable: true, filterType: 'multiselect', selectionOptions: status.value, optionLabel: 'label', optionValue: 'status' },
   { name: 'time', label: t('jobOrderLogs.eventTime'), field: 'time', filterable: true, filterType: 'date' },
   { name: 'description', label: t('jobOrderLogs.description'), field: 'description' },
 ]
 
-const checkboxesRecipeType = ref([
-  { value: true, label: t('chemical'), code: 0 },
-  { value: true, label: t('dye'), code: 1 },
-])
-
-const checkboxesProgramIndex = ref([
-  { value: true, label: 1, code: 1 },
-  { value: true, label: 2, code: 2 },
-  { value: true, label: t('jobOrderLogs.other'), code: 0 },
-])
-
-const selectedOrderingMethod = ref()
-const selectedSortingMethod = ref()
-
-const orderOptins = [
-  { value: 'EVENTTIME', label: t('jobOrderLogs.timeOrder') },
-  // { value: 'recipeStep', label: t('jobOrderLogs.recipeStepOrder') },
-]
-const sortOptions = [
-  { value: 'asc', label: t('jobOrderLogs.asc') },
-  { value: 'desc', label: t('jobOrderLogs.desc') },
-]
-const showFilters = ref(true)
-
 const logRows = ref()
-await applyFilters()
-async function applyFilters() {
+await applyFilters([])
+async function applyFilters(updatedValue) {
   const tempFilteredLogs = await $fetch('/api/logs/filtered-logs', {
     method: 'post',
     body: {
-      status: checkboxesStatus.value,
-      recipeType: checkboxesRecipeType.value,
-      programIndex: checkboxesProgramIndex.value,
-      // sortBy: selectedOrderingMethod.value.value,
-      // direction: selectedSortingMethod.value.value,
+      filters: updatedValue,
       plankey: plankey.value,
     },
   })
@@ -93,110 +65,13 @@ async function applyFilters() {
         {{ t('machinename') }} : {{ machinename }}
       </span>
     </div>
-    <!-- <div v-if="showFilters">
-      <q-card-section class="ml-5">
-        <div class="flex gap-5">
-          <div class="flex flex-col filter-divs" style="width: 15%;">
-            <span class="filter-header">
-              - {{ t('status') }}
-            </span>
-            <label
-              v-for="(element, index) in checkboxesStatus"
-              :key="index"
-              style="display: flex; align-items: center;"
-            >
-              <input
-                v-model="element.value"
-                type="checkbox"
-                style="width: 1rem; height: 1rem; margin-right: 5px;"
-              >
-              {{ element.label }}
-            </label>
-          </div>
-
-          <div class="flex flex-col filter-divs" style="width: 15%;">
-            <span class="filter-header">
-              - {{ t('recipeType') }}
-            </span>
-            <label
-              v-for="(element, index) in checkboxesRecipeType"
-              :key="index"
-              style="display: flex; align-items: center;"
-            >
-              <input
-                v-model="element.value"
-                type="checkbox"
-                style="width: 1rem; height: 1rem; margin-right: 5px;"
-              >
-              {{ element.label }}
-            </label>
-          </div>
-
-          <div class="flex flex-col filter-divs" style="width: 15%;">
-            <span class="filter-header">
-              - {{ t('jobOrderLogs.programIndex') }}
-            </span>
-            <label
-              v-for="(element, index) in checkboxesProgramIndex"
-              :key="index"
-              style="display: flex; align-items: center;"
-            >
-              <input
-                v-model="element.value"
-                type="checkbox"
-                style="width: 1rem; height: 1rem; margin-right: 5px;"
-              >
-              {{ element.label }}
-            </label>
-          </div>
-          <div class="flex flex-col gap-5 filter-divs" style="width: 15%;">
-            <span class="filter-header">
-              - {{ t('jobOrderLogs.arrangement') }}
-            </span>
-            <q-select
-              v-model="selectedOrderingMethod"
-              filled
-              clearable
-              :label="t('jobOrderLogs.arrangementCriterion')"
-              :options="orderOptins"
-              option-label="label"
-              option-value="value"
-            />
-            <q-select
-              v-model="selectedSortingMethod"
-              filled
-              clearable
-              :label="t('jobOrderLogs.arrangementSort')"
-              :options="sortOptions"
-              option-label="label"
-              option-value="value"
-            />
-          </div>
-        </div>
-        <div class="flex-center">
-          <q-btn
-            color="primary"
-            icon="sort"
-            :label="t('apply')"
-            class="px-10"
-            @click="applyFilters()"
-          />
-        </div>
-      </q-card-section>
-    </div>
-    <q-btn
-      :label="showFilters ? t('jobOrderLogs.hideFilters') : t('jobOrderLogs.showFilters')"
-      :icon="showFilters ? 'filter_alt' : 'filter_alt_off'"
-      class="ml-10"
-      color="primary"
-      style="width: 20%; font-weight: 500;"
-      @click="showFilters = !showFilters"
-    /> -->
     <q-card-section class="col" style="display: flex;">
       <FilterableTable
+        class="override-class-height"
         :columns="logCols"
         :rows="logRows"
         style="width: 100%; height: 100%;"
+        @update-filter-slots="(evt) => applyFilters(evt)"
       >
         <template #custombody="log">
           <q-tr>
@@ -205,10 +80,10 @@ async function applyFilters() {
               :key="row.name"
               :props="log"
             >
-              <span v-if="row.field === 'status'">
+              <span v-if="row.field === 'status' && row.value !== null">
                 {{ t(`statusCodes.${row.value}`) }}
               </span>
-              <span v-else-if="row.field === 'recipeType'">
+              <span v-else-if="row.field === 'recipeType' && row.value !== null">
                 {{ t(`recipeTypes.${row.value}`) }}
               </span>
               <span v-else-if="row.field === 'time'">
@@ -239,6 +114,10 @@ async function applyFilters() {
 <style scoped>
 .filter-divs {
   height: 14rem;
+}
+.override-class-height :deep(.my-sticky-virtscroll-table-recipe) {
+  height: 100%;
+  margin: 1rem;
 }
 
 .filter-header {

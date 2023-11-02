@@ -1,12 +1,31 @@
 /* eslint-disable ts/no-invalid-this */
 import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
+import { filtersToKnex } from '~/shared/functions'
 
 const router = createRouter()
 export default useBase('/api/dispenser', router.handler)
 
-router.get('/joborderlogs', defineEventHandler(async (event) => {
+const selectParameters = {
+  reqnumber: 'r.REQNUMBER',
+  joborder: 'r.BATCHNO',
+  batchCorrectionNo: 'r.BATCHCORRECTIONNO',
+  machinename: 'm.MACHINENAME',
+  machineid: 'm.MACHINEID',
+  tankno: 'r.TANKNO',
+  dispenserName: 'd.NAME',
+  programno: 'r.PROGRAMNO',
+  programname: 'p.NAME',
+  stepno: 'r.PROGRAMSTEPNO',
+  recipeType: 'r.ACTUALRECIPETYPE',
+  recipeProcessNo: 'r.RECIPEINDEX',
+  recipeStepNo: 'r.RECIPESTEPNO',
+  status: 'r.STATUS',
+}
+
+router.post('/joborderlogs', defineEventHandler(async (event) => {
   const { isCanceled, type } = getQuery(event)
+  const body = await readBody(event)
   try {
     const result = knex('dbo.DYTFCHEMREQUESTS as r')
       .join('dbo.DYTFMACHINES as m', 'r.MACHINEID', 'm.MACHINEID')
@@ -16,22 +35,8 @@ router.get('/joborderlogs', defineEventHandler(async (event) => {
           .on('r.PROGRAMNO', '=', 'p.PROGNO')
           .andOn('r.MACHINEID', '=', 'p.MACHINEID')
       })
-      .select({ // TODO: There are no duplicates but this is not the way how its done for sure
-        reqnumber: 'r.REQNUMBER',
-        joborder: 'r.BATCHNO',
-        batchCorrectionNo: 'r.BATCHCORRECTIONNO',
-        machinename: 'm.MACHINENAME',
-        tankno: 'r.TANKNO',
-        dispenserName: 'd.NAME',
-        programno: 'r.PROGRAMNO',
-        programname: 'p.NAME',
-        stepno: 'r.PROGRAMSTEPNO',
-        recipeType: 'r.ACTUALRECIPETYPE',
-        recipeProcessNo: 'r.RECIPEINDEX',
-        recipeStepNo: 'r.RECIPESTEPNO',
-        status: 'r.STATUS',
-      })
-      .limit(1000)
+      // TODO: There are no duplicates but this is not the way how its done for sure
+      .select(selectParameters)
       .orderBy('r.REQNUMBER', 'asc')
       .where((builder) => {
         if (type === 'chem') {
@@ -48,17 +53,12 @@ router.get('/joborderlogs', defineEventHandler(async (event) => {
             .andWhereNot('r.STATUS', 8)
         }
       })
-    // .whereNot('r.STATUS', 3)
-    // .andWhereNot('r.STATUS', 8)
-    // if (isCanceled && isCanceled === 'true') {
-    //   result = await query.where('r.STATUS', 3)
-    //     .orWhere('r.STATUS', 8)
-    // } else {
-    //   result = await query.whereNot('r.STATUS', 3)
-    //     .andWhereNot('r.STATUS', 8)
-    // }
-
-    return result
+    if (body.length > 0) {
+      return await filtersToKnex(body, selectParameters, result)
+    } else {
+      result.limit(1000)
+      return await result
+    }
   } catch (e) {
     return e
   }

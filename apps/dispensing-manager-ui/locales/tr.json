@@ -4,6 +4,8 @@
   "joborders": "İş Emirleri",
   "finishedJobOrders": "Geçmiş İş Emirleri",
   "correctionNo": "Düzeltme Numarası",
+  "canceledJobOrdersTable": "Biten İş Emirleri",
+  "includes": "içerir",
   "joborder": "İş Emri",
   "joborderNo": "İş Emri Numarası",
   "machinename": "Makine Adı",

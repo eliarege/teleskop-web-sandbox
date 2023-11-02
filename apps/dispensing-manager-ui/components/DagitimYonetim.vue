@@ -13,19 +13,19 @@ const recetetartim = t('distributionProcessor.recipeMeasurement')
 const paginationSync = ref(5)
 const paginationPageRight = ref(1)
 const paginationPageLeft = ref(1)
-
+const machines = await $fetch('/api/machine/machines')
 const columnsRecipe: Column[] = [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
-  { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo' },
-  { name: 'machinename', label: t('machinename'), field: 'machinename' },
-  { name: 'tankno', label: t('tankNo'), field: 'tankno' },
-  { name: 'dispenserName', label: t('distributionProcessor.a'), field: 'dispenserName' },
-  { name: 'programno', label: t('programNo'), field: 'programno' },
-  { name: 'programname', label: t('programName'), field: 'programname' },
-  { name: 'stepno', label: t('distributionProcessor.stepNo'), field: 'stepno' },
-  { name: 'recipeType', label: t('distributionProcessor.recipeType'), field: 'recipeType' },
-  { name: 'recipeProcessNo', label: t('distributionProcessor.recipeOrder'), field: 'recipeProcessNo' },
-  { name: 'recipeStepNo', label: t('distributionProcessor.recipeStepNum'), field: 'recipeStepNo' },
+  { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
+  { name: 'machinename', label: t('machinename'), field: 'machinename', filterable: true, filterType: 'select', selectionOptions: machines, optionLabel: 'machinename', optionValue: 'machineid' },
+  { name: 'tankno', label: t('tankNo'), field: 'tankno', filterable: true, filterType: 'comparison' },
+  { name: 'dispenserName', label: t('distributionProcessor.a'), field: 'dispenserName', filterable: true }, // TODO: Dispenserşarı dönen endpoint
+  { name: 'programno', label: t('programNo'), field: 'programno', filterable: true, filterType: 'comparison' },
+  { name: 'programname', label: t('programName'), field: 'programname', filterable: true }, // TODO: select
+  { name: 'stepno', label: t('distributionProcessor.stepNo'), field: 'stepno', filterable: true, filterType: 'comparison' },
+  { name: 'recipeType', label: t('distributionProcessor.recipeType'), field: 'recipeType' }, // filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType'
+  { name: 'recipeProcessNo', label: t('distributionProcessor.recipeOrder'), field: 'recipeProcessNo', filterable: true, filterType: 'comparison' },
+  { name: 'recipeStepNo', label: t('distributionProcessor.recipeStepNum'), field: 'recipeStepNo', filterable: true, filterType: 'comparison' },
   { name: 'status', label: t('statusCodes.text'), field: 'status' },
 ]
 const columnsMaterial = [
@@ -46,16 +46,65 @@ const finishedColumns = [
 
 // TODO: Will request every 10 seconds to ensure data stream
 const recipe = ref()
-const { data: recipeChem } = await useFetch('/api/dispenser/joborderlogs?type=chem')
-const { data: recipeDye } = await useFetch('/api/dispenser/joborderlogs?type=dye')
-recipe.value = recipeChem.value
+const isChem = ref('chem')
+const ongoingFilters = ref([])
+const canceledFilters = ref([])
+const recipeChem = ref()
+const recipeDye = ref()
+const canceledVisible = ref(false)
+const canceled = ref()
+await updateRecipeChem()
+await updateRecipeDye()
+await updateRecipeCancel()
+async function updateRecipeChem() {
+  recipeChem.value = await $fetch('/api/dispenser/joborderlogs?type=chem', {
+    method: 'post',
+    body: ongoingFilters.value,
+  })
+}
+async function updateRecipeDye() {
+  recipeDye.value = await $fetch('/api/dispenser/joborderlogs?type=dye', {
+    method: 'post',
+    body: ongoingFilters.value,
+  })
+}
 
-const { data: canceled } = await useFetch('/api/dispenser/joborderlogs?isCanceled=true')
+updateRecipeTable()
+async function updateRecipeCancel() {
+  canceled.value = await $fetch('/api/dispenser/joborderlogs?isCanceled=true', {
+    method: 'post',
+    body: canceledFilters.value,
+  })
+}
 const material = ref()
 async function fetchMaterialData(reqnumber: number) {
   const materialDataTemp = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
   material.value = materialDataTemp
   console.log(material.value)
+}
+
+async function applyFiltersOngoing(updatedValue) {
+  ongoingFilters.value = updatedValue
+  await updateRecipeChem()
+  await updateRecipeDye()
+  updateRecipeTable()
+}
+
+async function applyFiltersCanceled(updatedValue) {
+  canceledFilters.value = updatedValue
+  await updateRecipeCancel()
+}
+
+function updateRecipeTable() {
+  if (isChem.value === 'chem') {
+    canceledVisible.value = false
+    recipe.value = recipeChem.value
+  } else if (isChem.value === 'dye') {
+    canceledVisible.value = false
+    recipe.value = recipeDye.value
+  } else {
+    canceledVisible.value = !canceledVisible.value
+  }
 }
 
 function rowBGColorHandler(row: any) {
@@ -101,12 +150,10 @@ async function clickShowRecipe(row) {
   console.log(row)
   await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.batchCorrectionNo}`)
 }
-
-const isChem = ref(true)
 </script>
 
 <template>
-  <div class="dialog-class flex  flex-row gap-5">
+  <div class="dialog-class flex flex-row gap-5">
     <span class="header-class">
       Eliar - {{ t('distributionProcessor.a') }}
       <img
@@ -115,20 +162,16 @@ const isChem = ref(true)
         style="display: flex; right: 1rem; position: absolute; height: 3rem; width: 3rem;"
       >
     </span>
-    <div class="ml-5 mr-5 gap-5 flex flex-row">
-      <!-- Incoming joborders table -->
-      <div>
-        <!-- :title="jobordersText" -->
-        <!-- :class="textAlignOverride('left')" -->
+    <div class="responsive-flex-container ">
+      <div class="responsive-table" :style="canceledVisible ? 'display: none;' : ''">
         <FilterableTable
-          :key="isChem ? 'chem' : 'dye'"
           :rows="recipe"
           :columns="columnsRecipe"
-          class="table-header-word-break-override"
           :pagination="{ rowsPerPage: paginationSync, page: paginationPageLeft }"
-          style="width: 55vw; height: 100%;"
           @update:pagination="(newPag) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
+          @update-filter-slots="(evt) => applyFiltersOngoing(evt)"
         >
+          <!-- style="width: 55%; height: 100%;" -->
           <template #top-right>
             <q-space />
             <q-btn-toggle
@@ -136,10 +179,11 @@ const isChem = ref(true)
               class="table-header-toggle"
               toggle-color="secondary"
               :options="[
-                { label: t('chemical'), value: true },
-                { label: t('dye'), value: false },
+                { label: t('chemical'), value: 'chem' },
+                { label: t('dye'), value: 'dye' },
+                { label: t('canceledJobOrdersTable'), value: 'cancel' },
               ]"
-              @update:model-value="isChem ? recipe = recipeChem : recipe = recipeDye"
+              @update:model-value="updateRecipeTable()"
             />
             <!-- @vnode-updated="isChem ? recipe = recipeChem : recipe = recipeDye + console.log(isChem)" -->
           </template>
@@ -159,6 +203,9 @@ const isChem = ref(true)
               >
                 <span v-if="row.field === 'status'">
                   {{ t(`statusCodes.${row.value}`) }}
+                </span>
+                <span v-else-if="row.field === 'recipeType'">
+                  {{ t(`recipeTypes.${row.value}`) }}
                 </span>
                 <span v-else>
                   {{ row.value }}
@@ -196,19 +243,33 @@ const isChem = ref(true)
           </template>
         </FilterableTable>
       </div>
-      <!-- Canceled orders table -->
-      <div>
-        <!-- :title="finishedJobOrderText" -->
-        <!-- row-key="name" -->
-        <!-- :class="textAlignOverride('left')" -->
+      <div
+        class="responsive-table"
+        :style="canceledVisible ? '' : 'display: none'"
+      >
         <FilterableTable
           :rows="canceled"
           :columns="finishedColumns"
-          :is-expandable="true"
           :pagination="{ rowsPerPage: paginationSync, page: paginationPageRight }"
-          style="width: 40vw; height: 100%;"
           @update:pagination="(newPag) => { paginationSync = newPag.rowsPerPage, paginationPageRight = newPag.page }"
+          @update-filter-slots="(evt) => applyFiltersCanceled(evt)"
         >
+          <!-- style="width: 100%; height: 100%;" -->
+          <template #top-right>
+            <q-space />
+            <q-btn-toggle
+              v-model="isChem"
+              class="table-header-toggle"
+              toggle-color="secondary"
+              :options="[
+                { label: t('chemical'), value: 'chem' },
+                { label: t('dye'), value: 'dye' },
+                { label: t('canceledJobOrdersTable'), value: 'cancel' },
+              ]"
+              @update:model-value="updateRecipeTable()"
+            />
+            <!-- @vnode-updated="isChem ? recipe = recipeChem : recipe = recipeDye + console.log(isChem)" -->
+          </template>
           <template #custombody="props">
             <q-tr :props="props">
               <q-td>
@@ -230,11 +291,42 @@ const isChem = ref(true)
                 <span v-if="col.field === 'status'">
                   {{ t(`statusCodes.${col.value}`) }}
                 </span>
+                <span v-else-if="col.field === 'recipeType'">
+                  {{ t(`recipeTypes.${col.value}`) }}
+                </span>
                 <span v-else>
                   {{ col.value }}
                 </span>
               </q-td>
             </q-tr>
+            <q-menu
+              touch-position
+              context-menu
+            >
+              <!-- FIXME: min width should not be 300px -->
+              <q-list style="min-width: 300px;">
+                <q-item v-close-popup clickable>
+                  <q-item-section>{{ t('distributionProcessor.rcMenu.showLogs') }}</q-item-section>
+                </q-item>
+                <q-item
+                  v-close-popup
+                  clickable
+                  @click="clickShowRecipe(props.row)"
+                >
+                  <q-item-section>{{ t('distributionProcessor.rcMenu.showRecipe') }}</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item v-close-popup clickable>
+                  <q-item-section>{{ t('distributionProcessor.rcMenu.retry') }}</q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable>
+                  <q-item-section>{{ t('distributionProcessor.rcMenu.cancel') }}</q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable>
+                  <q-item-section>{{ t('distributionProcessor.rcMenu.complete') }}</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
             <q-tr v-show="props.row.expand" :props="props">
               <q-td colspan="100%">
                 <div class="gap-5 flex flex-row">
@@ -287,42 +379,15 @@ const isChem = ref(true)
         </template>
       </q-table>
     </div>
-    <!-- <span class="header-class">
-      {{ t('distributionProcessor.incidents') }}
-    </span>
-    <div class="flex flex-col ml-5">
-      <q-virtual-scroll
-        type="table"
-        style="max-height: 20vh; width: 95vw;"
-        :items="a"
-      >
-        <span v-for="element of a" class="">
-          <p>{{ element }}</p>
-        </span>
-      </q-virtual-scroll>
-    </div>
-    <span class="header-class">
-      {{ t('distributionProcessor.alerts') }}
-    </span>
-    <div class="flex flex-col ml-5">
-      <q-virtual-scroll
-        type="table"
-        style="max-height: 20vh; width: 95vw;"
-        :items="a"
-      >
-        <span v-for="element of a" class="">
-          <p>{{ element }}</p>
-        </span>
-      </q-virtual-scroll>
-    </div> -->
+
     <div class="footer-buttons gap-5 ml-5">
-      <div class="left">
+      <!-- <div class="left">
         <q-btn
           outline
           color="primary"
           :label="dagitimyonet"
         />
-      </div>
+      </div> -->
       <div class="right">
         <q-btn
           outline
@@ -336,6 +401,28 @@ const isChem = ref(true)
 </template>
 
 <style scoped>
+@media (max-width: 768px) {
+  .responsive-flex-container {
+    display: block !important;
+  }
+
+  .responsive-table {
+    width: 100%;
+    margin-right: 0.2rem;
+  }
+}
+.responsive-flex-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+  width: 100%;
+  padding: 1rem;
+}
+.responsive-table {
+  width: 100%;
+
+}
 img.invert-colors {
   filter: invert(1);
 }
@@ -343,8 +430,9 @@ img.invert-colors {
   background-color: #cce8ff;
 }
 .dialog-class {
-  height: 100vh;
+  height: 100%;
   width: 100%;
+  justify-content: center;
 }
 
 .text-override-right :deep(.text-right){
@@ -364,7 +452,7 @@ img.invert-colors {
 }
 
 .header-class {
-  background-color: rgb(0, 0, 0);
+  background-color: rgb(70, 56, 141);
   color: white;
   font-size: x-large;
   width: 100%;
@@ -372,13 +460,6 @@ img.invert-colors {
   align-items: center;
   padding-left: 1rem;
   height: 3rem;
-}
-
-.footer-buttons {
-  position: relative;
-  height: 8vh;
-  margin-bottom: 60px;
-  width: 100%;
 }
 
 .footer-buttons .left {

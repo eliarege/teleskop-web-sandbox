@@ -36,7 +36,7 @@ console.log(parameterRows)
 
     <q-card-section class="col" style="display: flex;">
       <FilterableTable
-        class="ml-5 mr-5"
+        class="ml-5 mr-5 override-class-height"
         :columns="parameterCols"
         :rows="parameterRows"
         style="width: 100%; height: 100%;"
@@ -61,5 +61,9 @@ console.log(parameterRows)
   text-align: left;
   word-break: normal;
   white-space: normal;
+}
+.override-class-height :deep(.my-sticky-virtscroll-table-recipe) {
+  height: 100%;
+  margin: 1rem;
 }
 </style>

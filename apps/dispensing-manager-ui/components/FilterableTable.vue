@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Column, DateType, FilterSlot } from '../shared/types'
 
 const props = defineProps({
@@ -29,7 +30,7 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(['rowDblclick', 'updateFilterSlots'])
-
+const { t } = useI18n()
 function handleDoubleClick(row: any) {
   console.log(row)
   emit('rowDblclick', row)
@@ -144,6 +145,11 @@ function pushToFilters(col: Column, index: number, orderByType?: string) {
       if (!contains(filterSlots.value, temp) && option !== null) {
         filterSlots.value.push(temp)
       }
+    }
+    if (col.filterType === 'equals' || col.filterType === 'includes') {
+      temp = { label: `${name} ${col.filterType} ${option} `, field: col.field, value: option, filterType: col.filterType }
+      if (!contains(filterSlots.value, temp))
+        filterSlots.value.push(temp)
     }
     if (col.filterType === 'comparison' && option && option.number1) {
       if (option.operator.text === 'between' && option.number2) {
@@ -284,6 +290,18 @@ watch(filterSlots.value, (newValue) => {
                     </span>
                   </span>
                 </div>
+                <div v-if="col.filterType === 'equals' || col.filterType === 'includes'" class="flex flex-row justify-center items-center mt-5">
+                  {{ `${col.label}  ${t(`${col.filterType}`)} ` }} &nbsp;
+                  <span class="flex items-center">
+                    <q-input
+                      v-model="selectedOptions[index]"
+                      filled
+                      clearable
+                      dense
+                      style="width: 100px;"
+                    />
+                  </span>
+                </div>
                 <div v-if="col.filterType === 'date'">
                   <q-tabs
                     v-model="dateTabPanel"
@@ -383,7 +401,7 @@ watch(filterSlots.value, (newValue) => {
 
 <style scoped>
 .my-sticky-virtscroll-table-recipe {
-  height: 60vh;
+  height: 50vh;
 }
 
 .my-sticky-virtscroll-table-recipe :deep(.q-table__top),
