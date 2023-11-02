@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import * as ftp from 'basic-ftp'
-import { fileUserParser } from '../utils/fileUserParser'
 
 export default defineEventHandler(async () => {
   const ftpClient = new ftp.Client()
@@ -11,20 +10,20 @@ export default defineEventHandler(async () => {
       user: 'eliar',
       password: 'el1984',
     })
-
-    const sourceFolderPath = './server/data/users'
-    const sourcePath = './server/data/users/users'
-    const remotePath = '../../tbb6500/data/users/users'
+    const sourceFolderPath = './server/data/config'
+    const sourcePath = './server/data/config/bitirmenedenleri'
+    const remotePath = '../../tbb6500/data/config/bitirmenedenleri'
 
     if (!fs.existsSync(sourceFolderPath)) {
       await fs.promises.mkdir(sourceFolderPath)
     }
+
     await ftpClient.downloadTo(sourcePath, remotePath)
 
     const content = await fs.promises.readFile(sourcePath, 'utf8')
-    const users = fileUserParser(content)
+    const finishReasons = fileFinishReasonParser(content)
 
-    return users
+    return finishReasons
   } catch (err) {
     console.log(err)
   }
