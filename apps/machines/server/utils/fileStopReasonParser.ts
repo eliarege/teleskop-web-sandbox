@@ -1,5 +1,6 @@
 import type { MachineStopReason } from '~/types'
 
+// '../../tbb6500/data/config/manuelmodnedenleri'
 export function fileStopReasonParser(content: string) {
   const pattern = /^(\d+) "([^"]+)"$/gim
 

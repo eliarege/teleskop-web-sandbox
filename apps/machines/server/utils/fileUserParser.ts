@@ -1,3 +1,4 @@
+// '../../tbb6500/data/users/users'
 export function fileUserParser(content: string) {
   const pattern = /^(\d+) (\d+) ([a-z]+) ([a-z]+) (0x\d+) (0x\d+) (\d+)$/gim
 

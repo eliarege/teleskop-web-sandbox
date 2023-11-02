@@ -1,5 +1,6 @@
 import type { FinishReason } from '~/types'
 
+// '../../tbb6500/data/config/bitirmenedenleri'
 export function fileFinishReasonParser(content: string) {
   const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
 

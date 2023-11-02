@@ -1,5 +1,6 @@
 import type { ManualReason } from '~/types'
 
+// '../../tbb6500/data/config/manuelmodnedenleri'
 export function fileManualReasonParser(content: string) {
   const pattern = /^(\d+) "([^"]+)"$/gim
 
