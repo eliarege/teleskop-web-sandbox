@@ -25,6 +25,7 @@
     "element-plus": "^2.4.1",
     "nuxt": "^3.8.0",
     "nuxt-base": "workspace:*",
+    "ui": "workspace:*",
     "unocss-config": "workspace:*",
     "vue-i18n": "^9.5.0"
   },

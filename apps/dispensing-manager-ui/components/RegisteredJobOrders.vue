@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { onMounted } from 'vue'
+import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import { filtersToKnex, navigateToPage, textAlignOverride } from '../shared/functions'
 import { rows } from '../shared/constants'
-import LoadingSpinner from '../../../packages/ui/components/LoadingSpinner.vue'
 import type { Column } from '~/shared/types'
 
 // Call fetchData when component is mounted.
