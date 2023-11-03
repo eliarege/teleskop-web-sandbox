@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import * as ftp from 'basic-ftp'
-import { fileUserParser } from '../utils/fileUserParser'
 
 export default defineEventHandler(async () => {
   const ftpClient = new ftp.Client()

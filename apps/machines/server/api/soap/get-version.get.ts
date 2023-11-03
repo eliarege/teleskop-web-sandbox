@@ -1,5 +1,5 @@
 import { WSDL } from 'soap'
-import WSDL_CONTENT from '../wsdl/ns.wsdl'
+import WSDL_CONTENT from '../../wsdl/ns.wsdl'
 import soapSchema from '~/utils/soapSchema'
 
 const wsdl = new WSDL(WSDL_CONTENT, '', {})
