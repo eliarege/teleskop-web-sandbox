@@ -5,19 +5,43 @@ import { addMachine, getMachineGroups } from '~/utils'
 const props = defineProps<{
   show: boolean
 }>()
-const emit = defineEmits(['close', 'add-machine'])
+const emit = defineEmits(['close', 'addMachine'])
 
 const modelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
 const machineGroups = ref(await getMachineGroups())
 
 const check = (false)
 
-const machine: Machine = ref({})
+const machine = ref<Machine>({
+  id: -1,
+  code: '',
+  name: '',
+  groupName: '',
+  groupId: -1,
+  tbbModel: '',
+  plcModel: '',
+  ip: '',
+  theoricalCharge: '',
+  theoricalChargeDuration: '',
+  machineCapacity: '',
+  reelCount: 0,
+  nozzleCount: 0,
+  steamUnit: '',
+  steamKgPerHour: 0,
+  additionalTank1: false,
+  additionalTank2: false,
+  additionalTank3: false,
+  additionalTank4: false,
+  reserveTank: false,
+  inUse: false,
+  MTTempIo: [],
+  version: '',
+})
 
 async function handleFormSubmit() {
   await addMachine(machine.value)
   emit('close')
-  emit('add-machine')
+  emit('addMachine')
 }
 </script>
 
@@ -47,10 +71,10 @@ async function handleFormSubmit() {
                     clearable
                   />
                   <q-select
-                    v-model="machine.group"
+                    v-model="machine.groupId"
                     :options="machineGroups"
-                    :option-label="(m) => m.groupName"
-                    :option-value="(m) => m.groupId"
+                    option-label="groupName"
+                    option-value="groupId"
                     label="Grup"
                     filled
                   />

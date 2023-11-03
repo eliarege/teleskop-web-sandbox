@@ -7,16 +7,15 @@ const props = defineProps<{
   selectedMachines: Machine[]
 }>()
 
-const emit = defineEmits(['delete-machine', 'add-machine'])
+const emit = defineEmits(['deleteMachine', 'addMachine'])
 
 const showNewMachine = ref(false)
 const showEditMachine = ref(false)
 
 async function handleMachineDelete() {
   const machineIds = props.selectedMachines.map(m => m.id)
-  // delete machine
   await deleteMachines(machineIds)
-  emit('delete-machine', machineIds)
+  emit('deleteMachine', machineIds)
 }
 </script>
 
@@ -81,13 +80,13 @@ async function handleMachineDelete() {
   <NewMachineDialog
     :show="showNewMachine"
     @close="showNewMachine = false"
-    @add-machine="$emit('add-machine')"
+    @add-machine="$emit('addMachine')"
   />
   <EditMachineDialog
     :show="showEditMachine"
     :selected-machines="selectedMachines"
     @close="showEditMachine = false"
-    @add-machine="$emit('add-machine')"
+    @add-machine="$emit('addMachine')"
   />
 </template>
 

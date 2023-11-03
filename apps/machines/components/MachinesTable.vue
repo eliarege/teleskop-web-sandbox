@@ -7,7 +7,7 @@ const props = defineProps<{
   selectedMachines: Machine[]
 }>()
 
-const emit = defineEmits(['machine-selection'])
+const emit = defineEmits(['machineSelection'])
 
 const columns: QTableColumn<Machine>[] = [
   {
@@ -92,7 +92,7 @@ const pagination = { rowsPerPage: 0 }
       bordered
       selection="multiple"
       table-header-class="table-header"
-      @selection="(e) => $emit('machine-selection', e)"
+      @selection="(e) => $emit('machineSelection', e)"
     >
       <template #body-cell-inUse="props">
         <q-td :props="props">

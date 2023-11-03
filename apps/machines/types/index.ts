@@ -1,7 +1,9 @@
 export interface Machine {
-  id: boolean
+  id: number
   code: string
+  name: string
   groupName: string
+  groupId: number
   tbbModel: string
   plcModel: string
   ip: string
@@ -18,11 +20,12 @@ export interface Machine {
   additionalTank4: boolean
   reserveTank: boolean
   inUse: boolean
-  MTTempIo: Array<string>
+  MTTempIo: string[]
   version: string
 }
 
 export interface User {
+  value: any
   userId: string
   userName: string
   userSurname: string

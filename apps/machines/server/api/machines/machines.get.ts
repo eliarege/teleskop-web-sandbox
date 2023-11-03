@@ -1,8 +1,9 @@
 import { knex } from '~/server/connectionPool'
+import type { Machine } from '~/types'
 
 export default defineEventHandler(async () => {
   try {
-    const machines = await knex('BFMACHINES')
+    const machines: Machine[] = await knex('BFMACHINES')
       .select({
         id: 'MACHINEID',
         code: 'MACHINECODE',
@@ -14,6 +15,7 @@ export default defineEventHandler(async () => {
         plcModel: 'PlcModel',
         nozzleCount: 'NOZZLECOUNT',
         groupName: 'GROUPNAME',
+        groupId: 'GRUPNO',
       },
       )
       .leftJoin('BFMACHGROUP', 'BFMACHINES.GRUPNO', 'BFMACHGROUP.GROUPID')

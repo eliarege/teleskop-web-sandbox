@@ -1,8 +1,9 @@
 import { knex } from '~/server/connectionPool'
+import type { Machine } from '~/types'
 
 export default defineEventHandler(async (event) => {
   try {
-    const machine = await readBody(event)
+    const machine: Machine = await readBody(event)
     const res = await knex('BFMACHINES').insert({
       MACHINEID: machine.id,
       MACHINECODE: machine.code,

@@ -48,7 +48,7 @@ const columns: QTableColumn<User>[] = [
 
 const users = ref(await getUsers())
 const userTypeOptions = [{ label: 'Operatör', value: 1 }, { label: 'Diğer', value: 2 }]
-const selectedUsers = ref<Array<User>>()
+const selectedUsers = ref<User[]>()
 const user = ref<User>({
   userId: '',
   userName: '',

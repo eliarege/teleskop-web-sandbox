@@ -2,7 +2,7 @@ import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async () => {
   try {
-    const machineGroups = await knex('BFMACHGROUP').select({
+    const machineGroups: string[] = await knex('BFMACHGROUP').select({
       groupName: 'GROUPNAME',
       groupId: 'GROUPID',
     })

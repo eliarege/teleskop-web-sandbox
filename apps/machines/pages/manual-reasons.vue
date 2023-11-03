@@ -31,7 +31,7 @@ function handleSelection(obj: object) {
 async function handleEditManualReason() {
   await editManualReason(oldReasonName.value, newReasonName.value, checkReportToERP.value)
 
-  const index = manualReasons.value.findIndex(m => m.manualReason === okjldReasonName.value)
+  const index = manualReasons.value.findIndex(m => m.manualReason === oldReasonName.value)
   if (index !== -1) {
     manualReasons.value[index].manualReason = newReasonName.value
     manualReasons.value[index].reportToERP = checkReportToERP.value

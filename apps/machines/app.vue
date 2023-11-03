@@ -2,6 +2,7 @@
 const definitionItems = [
   {
     label: 'Makine',
+    to: '/',
     items: [
       {
         label: 'Yeni',

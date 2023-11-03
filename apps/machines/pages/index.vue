@@ -4,7 +4,7 @@ import { getMachines } from '~/utils'
 
 const machines = ref(await getMachines())
 
-const selectedMachines: Machine[] = ref([])
+const selectedMachines = ref<Machine[]>([])
 
 function machineSelection(e) {
   if (e.added)

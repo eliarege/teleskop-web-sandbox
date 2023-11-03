@@ -6,20 +6,22 @@ const props = defineProps<{
   selectedMachines: Machine[]
   show: boolean
 }>()
-const emit = defineEmits(['close', 'edit-machine'])
+const emit = defineEmits(['close', 'editMachine'])
 
 const modelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
-const { data: machineGroups } = await getMachineGroups()
+const machineGroups = await getMachineGroups()
+console.log('machineGroups = ', machineGroups)
 
 const check = (false)
 
-const machine: Machine = computed(() => props.selectedMachines[0])
+const machine = computed<Machine>(() => props.selectedMachines[0])
+console.log('props.selectedMachines = ', props.selectedMachines)
 
 async function handleFormSubmit() {
   // add machine
   await editMachine(machine.value)
   emit('close')
-  emit('edit-machine')
+  emit('editMachine')
 }
 </script>
 
@@ -49,10 +51,10 @@ async function handleFormSubmit() {
                     clearable
                   />
                   <q-select
-                    v-model="machine.group"
+                    v-model="machine.groupId"
                     :options="machineGroups"
-                    :option-label="(m) => m.groupName"
-                    :option-value="(m) => m.groupId"
+                    option-label="groupName"
+                    option-value="groupId"
                     label="Grup"
                     filled
                   />
@@ -65,7 +67,7 @@ async function handleFormSubmit() {
                 </div>
                 <div class="flex flex-col mr-8 w-xs input-field">
                   <q-select
-                    v-model="machine.model"
+                    v-model="machine.tbbModel"
                     :options="modelOptions"
                     label="Model"
                     filled
