@@ -4,9 +4,6 @@ import { useDateFormat, useNow } from '@vueuse/core'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
 
-definePageMeta({
-  layout: 'teleskop',
-})
 const { t } = useI18n()
 const store = useDataStore()
 const machineData = computed(() => {

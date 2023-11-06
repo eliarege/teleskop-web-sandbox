@@ -3,6 +3,9 @@ import LoadingScreen from 'ui/components/LoadingScreen.vue'
 import { useI18n } from 'vue-i18n'
 import { useColorStore } from '~/store/Colors'
 
+useHead({
+  link: [{ rel: 'icon', type: 'image/svg', href: '/logo-dark-raw.svg' }],
+})
 const { t, locale } = useI18n()
 const colors = useColorStore()
 const messages = controlledComputed(locale, () => {

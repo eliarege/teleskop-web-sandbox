@@ -3,10 +3,6 @@ import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import type { BatchLogs, MachineDataRaw, NewBatchLogs, NewInterventions } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
 
-definePageMeta({
-  layout: 'teleskop',
-})
-
 const store = useDataStore()
 const route = useRoute()
 
