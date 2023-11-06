@@ -1,11 +1,9 @@
 import process from 'node:process'
 
+// TODO: Application manifests
 export default defineEventHandler(() => {
-  const { APP_NAME, APP_VERSION } = process.env
-
   return {
-    name: APP_NAME || 'unknown',
-    version: APP_VERSION || 'unknown',
-    // appIcon: '', /* '/favicon.ico */
+    name: process.env.APP_NAME || 'unknown',
+    version: process.env.APP_VERSION || 'unknown',
   }
 })
