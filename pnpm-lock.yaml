@@ -168,6 +168,46 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(vue@3.3.7)
 
+  apps/planning-board:
+    dependencies:
+      '@bryntum/schedulerpro-trial':
+        specifier: workspace:*
+        version: link:../../vendor/schedulerpro-trial
+      knex:
+        specifier: ^2.5.1
+        version: 2.5.1(tedious@16.5.0)
+      mssql:
+        specifier: ^10.0.1
+        version: 10.0.1
+      rollup:
+        specifier: ^3.29.4
+        version: 3.29.4
+      tedious:
+        specifier: ^16.4.1
+        version: 16.5.0
+      ui:
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@nuxt/devtools':
+        specifier: latest
+        version: 1.0.0(nuxt@3.8.0)(rollup@3.29.4)(vite@4.5.0)
+      nuxt:
+        specifier: ^3.7.4
+        version: 3.8.0(@types/node@18.18.6)(eslint@8.52.0)(rollup@3.29.4)(typescript@5.2.2)(vite@4.5.0)
+      nuxt-base:
+        specifier: workspace:*
+        version: link:../../packages/nuxt-base
+      unocss-config:
+        specifier: workspace:*
+        version: link:../../packages/unocss-config
+      vue:
+        specifier: ^3.3.4
+        version: 3.3.7(typescript@5.2.2)
+      vue-router:
+        specifier: ^4.2.5
+        version: 4.2.5(vue@3.3.7)
+
   apps/root:
     dependencies:
       ejs:
@@ -296,6 +336,14 @@ importers:
       unocss:
         specifier: ^0.56.5
         version: 0.56.5(@unocss/webpack@0.56.5)(postcss@8.4.31)(vite@4.5.0)
+
+  vendor/schedulerpro-trial:
+    dependencies:
+      '@bryntum/schedulerpro-trial-lib':
+        specifier: workspace:*
+        version: link:../schedulerpro-trial-lib
+
+  vendor/schedulerpro-trial-lib: {}
 
 packages:
 
@@ -7839,7 +7887,7 @@ packages:
     engines: {node: ^16.14.0 || >=18.0.0}
     dependencies:
       hosted-git-info: 7.0.1
-      is-core-module: 2.13.0
+      is-core-module: 2.13.1
       semver: 7.5.4
       validate-npm-package-license: 3.0.4
 
