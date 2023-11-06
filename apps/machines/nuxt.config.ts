@@ -1,5 +1,6 @@
 import process from 'node:process'
 import i18n from '@intlify/unplugin-vue-i18n/vite'
+import string from 'rollup-plugin-string'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -28,18 +29,7 @@ export default defineNuxtConfig({
     rollupConfig: {
       // @ts-expect-error Infinite
       plugins: [
-        {
-          name: 'machine:wsdl',
-          transform(code, id) {
-            if (id.endsWith('.wsdl')) {
-              return {
-                code: `export default ${JSON.stringify(code)}`,
-                map: { mappings: '' },
-              }
-            }
-          },
-
-        },
+        string({ ext: ['.wsdl'] }),
       ],
     },
   },

@@ -1,5 +1,6 @@
 import process from 'node:process'
 import i18n from '@intlify/unplugin-vue-i18n/vite'
+import string from 'rollup-plugin-string'
 import type { Plugin as RollupPlugin } from 'rollup'
 
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
@@ -37,19 +38,9 @@ export default defineNuxtConfig({
   },
   nitro: {
     rollupConfig: {
-      // @ts-expect-error type check, TODO: create rollup plugins directory
+      // @ts-expect-error Infinite
       plugins: [
-        <RollupPlugin>{
-          name: 'rollup-plugin-sql',
-          transform(code, id) {
-            if (id.endsWith('.sql')) {
-              return {
-                code: `export default ${JSON.stringify(code)}`,
-                map: { mappings: '' },
-              }
-            }
-          },
-        },
+        string({ ext: ['.sql'] }),
       ],
     },
   },

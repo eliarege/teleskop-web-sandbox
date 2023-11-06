@@ -97,6 +97,9 @@ importers:
       nuxt-base:
         specifier: workspace:*
         version: link:../../packages/nuxt-base
+      rollup-plugin-string:
+        specifier: workspace:*
+        version: link:../../packages/rollup-plugin-string
       unocss-config:
         specifier: workspace:*
         version: link:../../packages/unocss-config
@@ -161,6 +164,9 @@ importers:
       rollup:
         specifier: ^3.29.4
         version: 3.29.4
+      rollup-plugin-string:
+        specifier: workspace:*
+        version: link:../../packages/rollup-plugin-string
       unocss-config:
         specifier: workspace:*
         version: link:../../packages/unocss-config
@@ -198,6 +204,9 @@ importers:
       nuxt-base:
         specifier: workspace:*
         version: link:../../packages/nuxt-base
+      rollup-plugin-string:
+        specifier: workspace:*
+        version: link:../../packages/rollup-plugin-string
       unocss-config:
         specifier: workspace:*
         version: link:../../packages/unocss-config
@@ -296,6 +305,28 @@ importers:
       nuxt:
         specifier: ^3.8.0
         version: 3.8.0(@types/node@18.18.6)(eslint@8.52.0)(typescript@5.2.2)(vite@4.5.0)
+
+  packages/rollup-plugin-string:
+    dependencies:
+      '@rollup/pluginutils':
+        specifier: ^5.0.5
+        version: 5.0.5(rollup@3.29.4)
+      rollup:
+        specifier: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+        version: 3.29.4
+    devDependencies:
+      '@types/node':
+        specifier: ^20.8.10
+        version: 20.8.10
+      tsconfig:
+        specifier: workspace:*
+        version: link:../tsconfig
+      typescript:
+        specifier: ^5.2.2
+        version: 5.2.2
+      unbuild:
+        specifier: 2.0.0
+        version: 2.0.0(typescript@5.2.2)
 
   packages/teleskop-lib:
     dependencies:
@@ -2753,6 +2784,12 @@ packages:
 
   /@types/node@18.18.6:
     resolution: {integrity: sha512-wf3Vz+jCmOQ2HV1YUJuCWdL64adYxumkrxtc+H1VUQlnQI04+5HtH+qZCOE21lBE7gIrt+CwX2Wv8Acrw5Ak6w==}
+
+  /@types/node@20.8.10:
+    resolution: {integrity: sha512-TlgT8JntpcbmKUFzjhsyhGfP2fsiz1Mv56im6enJ905xG1DAYesxJaeSbGqQmAw8OWPdhyJGhGSQGKRNJ45u9w==}
+    dependencies:
+      undici-types: 5.26.5
+    dev: true
 
   /@types/node@20.8.8:
     resolution: {integrity: sha512-YRsdVxq6OaLfmR9Hy816IMp33xOBjfyOgUd77ehqg96CFywxAPbDbXvAsuN2KVg2HOT8Eh6uAfU+l4WffwPVrQ==}
@@ -6804,7 +6841,7 @@ packages:
   /is-reference@1.2.1:
     resolution: {integrity: sha512-U82MsXXiFIrjCK4otLT+o2NA2Cd2g5MLoOVXUZjIOhLurrRxpEXzI8O0KZHr3IjLvlAH1kTPYSuqer5T9ZVBKQ==}
     dependencies:
-      '@types/estree': 1.0.2
+      '@types/estree': 1.0.3
 
   /is-regex@1.1.4:
     resolution: {integrity: sha512-kvRdxDsxZjhzUX07ZnLydzS1TU/TJlTUHHY4YLL87e37oUA49DfkLqgy+VjFocowy29cKvcSiu+kIv728jTTVg==}
@@ -10192,6 +10229,10 @@ packages:
 
   /undici-types@5.25.3:
     resolution: {integrity: sha512-Ga1jfYwRn7+cP9v8auvEXN1rX3sWqlayd4HP7OKk4mZWylEmu3KzXDUGrQUN6Ol7qo1gPvB2e5gX6udnyEPgdA==}
+
+  /undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+    dev: true
 
   /undici@5.26.5:
     resolution: {integrity: sha512-cSb4bPFd5qgR7qr2jYAi0hlX9n5YKK2ONKkLFkxl+v/9BvC0sOpZjBHDBSXc5lWAf5ty9oZdRXytBIHzgUcerw==}
