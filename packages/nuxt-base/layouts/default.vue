@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
-
 const config = useRuntimeConfig()
 const { bottomSheet } = useQuasar()
 
