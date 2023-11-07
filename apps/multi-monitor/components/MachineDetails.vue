@@ -429,10 +429,6 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
 
       .info-col {
         @apply mt-3 p-3px pl-5;
-
-        span {
-          @apply;
-        }
       }
     }
   }
@@ -454,7 +450,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
   .command-items {
     @apply flex flex-row justify-center items-center gap-3 w-full h-full;
 
-    span {
+    :is(span) {
       @apply p-3;
     }
   }
@@ -546,7 +542,7 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
         .command-items {
           @apply flex flex-row justify-center items-center gap-1 w-full h-full;
 
-          span {
+          :is(span) {
             @apply p-1;
           }
         }

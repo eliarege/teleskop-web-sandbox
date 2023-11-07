@@ -377,7 +377,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
         grid-template-rows: 1fr;
         @apply grid self-center justify-evenly gap-2px;
-        img {
+        :is(img) {
           @apply w-10 h-10;
         }
       }
