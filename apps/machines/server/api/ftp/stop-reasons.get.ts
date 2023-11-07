@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import * as ftp from 'basic-ftp'
+import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async () => {
   const ftpClient = new ftp.Client()
@@ -12,7 +13,7 @@ export default defineEventHandler(async () => {
     })
     const sourceFolderPath = './server/data/config'
     const sourcePath = './server/data/config/durusnedenleri'
-    const remotePath = '../../tbb6500/data/config/durusnedenleri'
+    const remotePath = '/tbb6500/data/config/durusnedenleri'
 
     if (!fs.existsSync(sourceFolderPath)) {
       await fs.promises.mkdir(sourceFolderPath)
@@ -23,9 +24,12 @@ export default defineEventHandler(async () => {
     const content = await fs.promises.readFile(sourcePath, 'utf8')
     const stopReasons = fileStopReasonParser(content)
 
+    await knex('BFSTOPREASONS').del()
+    await knex('BFSTOPREASONS').insert(stopReasons)
+
     return stopReasons
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
   ftpClient.close()
 })

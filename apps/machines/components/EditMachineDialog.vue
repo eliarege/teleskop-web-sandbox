@@ -23,6 +23,10 @@ async function handleFormSubmit() {
   emit('close')
   emit('editMachine')
 }
+
+function handleMachineGroupSelect(e) {
+  machine.value.groupId = e.groupId
+}
 </script>
 
 <template>
@@ -51,12 +55,13 @@ async function handleFormSubmit() {
                     clearable
                   />
                   <q-select
-                    v-model="machine.groupId"
+                    :model-value="machine.groupName"
                     :options="machineGroups"
                     option-label="groupName"
                     option-value="groupId"
                     label="Grup"
                     filled
+                    @update:model-value="(e) => handleMachineGroupSelect(e)"
                   />
                   <q-select
                     v-model="machine.steamUnit"

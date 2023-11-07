@@ -1,5 +1,7 @@
 import fs from 'node:fs'
 import * as ftp from 'basic-ftp'
+import { knex } from '~/server/connectionPool'
+import { ManualReason } from '~/types'
 
 export default defineEventHandler(async () => {
   const ftpClient = new ftp.Client()
@@ -12,7 +14,7 @@ export default defineEventHandler(async () => {
     })
     const sourceFolderPath = './server/data/config'
     const sourcePath = './server/data/config/manuelmodnedenleri'
-    const remotePath = '../../tbb6500/data/config/manuelmodnedenleri'
+    const remotePath = '/tbb6500/data/config/manuelmodnedenleri'
 
     if (!fs.existsSync(sourceFolderPath)) {
       await fs.promises.mkdir(sourceFolderPath)
@@ -21,11 +23,22 @@ export default defineEventHandler(async () => {
     await ftpClient.downloadTo(sourcePath, remotePath)
 
     const content = await fs.promises.readFile(sourcePath, 'utf8')
-    const manualReasons = fileStopReasonParser(content)
+    const manualReasons = fileManualReasonParser(content)
+
+    const modifiedManualReasons = manualReasons.map((r) => {
+      return {
+        manualID: r.manualId,
+        manualString: r.manualReason,
+        ReportToERP: r.reportToERP,
+      }
+    })
+
+    await knex('BFMANUALREASONSGENERAL').del()
+    await knex('BFMANUALREASONSGENERAL').insert(modifiedManualReasons)
 
     return manualReasons
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
   ftpClient.close()
 })

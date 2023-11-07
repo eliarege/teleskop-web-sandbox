@@ -53,7 +53,6 @@ async function handleSelection(obj: object) {
       reportToERP: false,
     }
   }
-  console.log('finishReason.value = ', finishReason.value)
 }
 
 async function handleAddFinishReason() {

@@ -25,7 +25,6 @@ export interface Machine {
 }
 
 export interface User {
-  value: any
   userId: string
   userName: string
   userSurname: string
