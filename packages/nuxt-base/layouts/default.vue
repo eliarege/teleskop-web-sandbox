@@ -2,21 +2,32 @@
 const config = useRuntimeConfig()
 const { bottomSheet } = useQuasar()
 
-function parseAppList(appList: string): { name: string; url: string }[] {
-  try {
-    return JSON.parse(appList || '[]') as any[]
-  } catch (error) {
-    console.warn(`Failed to parse APP_LIST`, error)
+function parseAppList(appList: unknown): { name: string; url: string }[] {
+  if (typeof appList === 'string') {
+    try {
+      return JSON.parse(appList || '[]') as any[]
+    } catch (error) {
+      console.warn(`Failed to parse APP_LIST`, error)
+      return []
+    }
+  } else if (Array.isArray(appList)) {
+    return appList
+  } else {
+    if (appList)
+      console.warn(`Unexpected appList value`, appList)
     return []
   }
 }
 
-const bottomSheetActions = parseAppList(config.public.appList).map((app) => {
+const appList = parseAppList(config.public.appList)
+
+const bottomSheetActions = appList.map((app) => {
   return {
     label: app.name,
     url: app.url,
   }
 })
+
 function showBottomsheet() {
   bottomSheet({
     message: '',
@@ -31,7 +42,7 @@ function showBottomsheet() {
 </script>
 
 <template>
-  <div>
+  <div v-show="appList.length">
     <img
       src="/eliar.svg"
       class="z-1 w-full h-10 fixed -bottom-1 flex-center transition-all duration-400 bg-transparent opacity-50 hover:(opacity-100)"
