@@ -12,6 +12,9 @@ export default defineNuxtConfig({
     teleskopPort: process.env.TELESKOP_PORT,
     teleskopPassword: process.env.TELESKOP_PASSWORD,
     teleskopDatabase: process.env.TELESKOP_DATABASE,
+    public: {
+      appList: process.env.APP_LIST,
+    },
   },
   nitro: {
     rollupConfig: {

@@ -27,6 +27,7 @@ export default defineNuxtConfig({
     public: {
       teleskopHasLogs: process.env.TELESKOP_HAS_DY_LOGS,
       websockifyPort: process.env.WEBSOCKIFY_PORT,
+      appList: process.env.APP_LIST,
     },
   },
   vite: {
