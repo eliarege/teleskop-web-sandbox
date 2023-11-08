@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getWaterTypes } from '~/utils'
+
 const columns = [
   {
     name: 'waterTypeId',
@@ -9,12 +11,13 @@ const columns = [
   {
     name: 'waterTypeName',
     label: 'Su Tipi İsmi',
-    field: row => row.waterTypeId,
+    field: row => row.waterTypeName,
     align: 'left',
   },
 ]
 
-const rows = ref([])
+const { data } = await useAsyncData('recipes', () => getWaterTypes())
+
 const selectedType = ref()
 </script>
 
@@ -39,7 +42,7 @@ const selectedType = ref()
 
       <q-table
         v-model:selected="selectedType"
-        :rows="rows"
+        :rows="data"
         :columns="columns"
         hide-pagination
         :pagination="{ rowsPerPage: 0 }"

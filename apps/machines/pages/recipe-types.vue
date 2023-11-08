@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import { getRecipeTypes } from '~/utils'
+
 const columns = [
   {
-    name: 'recipeTypeName',
+    name: 'typeName',
     label: 'Reçete Tip Adı',
-    field: row => row.recipeTypeName,
+    field: row => row.typeName,
     align: 'left',
   },
 ]
 
-const rows = ref([])
+const { data } = await useAsyncData('recipes', () => getRecipeTypes())
 </script>
 
 <template>
@@ -34,10 +36,11 @@ const rows = ref([])
   <div class="table-scroll">
     <q-table
       selection="single"
-      :rows="rows"
+      :rows="data"
       :columns="columns"
       :pagination="{ rowsPerPage: 0 }"
       hide-pagination
+      row-key="typeName"
       bordered
       separator="cell"
       table-header-class="table-header"

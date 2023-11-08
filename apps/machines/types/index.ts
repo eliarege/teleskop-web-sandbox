@@ -73,3 +73,12 @@ export interface LockGeneral {
   dOutLogicType: number
   vInLogicType: number
 }
+
+export interface RecipeType {
+  id: number
+  typeName: string
+}
+export interface WaterType {
+  waterTypeId: number
+  waterTypeName: string
+}
