@@ -42,8 +42,9 @@ function showBottomsheet() {
 </script>
 
 <template>
-  <div v-show="appList.length">
+  <div>
     <img
+      v-show="appList.length"
       src="/eliar.svg"
       class="z-1 w-full h-10 fixed -bottom-1 flex-center transition-all duration-400 bg-transparent opacity-50 hover:(opacity-100)"
       @click="showBottomsheet"
