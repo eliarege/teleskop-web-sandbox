@@ -6,7 +6,6 @@
   "license": "UNLICENSED",
   "main": "./nuxt.config.ts",
   "scripts": {
-    "build": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "postinstall": "nuxt prepare"
