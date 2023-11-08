@@ -10,7 +10,7 @@ const emit = defineEmits(['close', 'addMachine'])
 const modelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
 const machineGroups = ref(await getMachineGroups())
 
-const check = (false)
+const check = ref(false)
 
 const machine = ref<Machine>({
   id: -1,

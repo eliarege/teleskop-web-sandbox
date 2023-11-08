@@ -1,7 +1,6 @@
 export interface Machine {
   id: number
   code: string
-  name: string
   groupName: string
   groupId: number
   tbbModel: string

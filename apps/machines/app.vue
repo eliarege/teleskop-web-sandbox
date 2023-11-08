@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 const definitionItems = [
   {
-    label: 'Makine',
+    label: t('machine'),
     to: '/',
     items: [
       {
@@ -44,10 +48,12 @@ const definitionItems = [
           },
           {
             label: 'Cihaz Erişim Hataları',
+            to: '/machine-access-fails',
           },
 
           {
             label: 'Cihaz Kapalı Zamanlar',
+            to: '/controller-closed-times',
           },
 
           {
@@ -79,6 +85,7 @@ const definitionItems = [
 
           {
             label: 'Diğer Makineler',
+            to: '/data-collection-devices',
           },
         ],
       },
@@ -101,12 +108,14 @@ const definitionItems = [
         items: [
           {
             label: 'ERP Parametreleri',
+            to: '/erp-parameter-definitions',
           },
           {
             label: 'Başlatma Parametresi Tipleri',
           },
           {
             label: 'Reçete Tipleri',
+            to: '/recipe-types',
           },
           {
             label: 'Optimizasyon Parametreleri',
@@ -118,6 +127,7 @@ const definitionItems = [
         items: [
           {
             label: 'Su Tipleri',
+            to: '/water-type-definitions',
           },
           {
             label: 'Tüketim Sayaç Seçimi',

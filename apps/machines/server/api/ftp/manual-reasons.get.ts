@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import * as ftp from 'basic-ftp'
 import { knex } from '~/server/connectionPool'
-import { ManualReason } from '~/types'
 
 export default defineEventHandler(async () => {
   const ftpClient = new ftp.Client()

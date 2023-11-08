@@ -1,3 +1,16 @@
 {
-
+  "machine": "Machine",
+  "new": "New",
+  "properties": "Properties",
+  "delete": "Delete",
+  "load": "Load",
+  "exit": "Exit",
+  "machineGroup": "Machine Group",
+  "change": "Change",
+  "settings": "Settings",
+  "machineSettings": "Machine Settings",
+  "machineAccessFails": "Machine Access Fails",
+  "controllerClosedTimes": "ControllerClosedTimes",
+  "machineUsers": "Machine Users",
+  "commandTypeDefinitions": "Command Type Definitions"
 }
