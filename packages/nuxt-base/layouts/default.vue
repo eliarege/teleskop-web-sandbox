@@ -35,8 +35,11 @@ function showBottomsheet() {
     grid: true,
     actions: bottomSheetActions,
   }).onOk((action) => {
-    if (action.url)
-      window.location.href = action.url
+    if (action.url) {
+      const host = new URL(action.url).host
+      if (window.location.host !== host)
+        window.location.href = action.url
+    }
   })
 }
 </script>
