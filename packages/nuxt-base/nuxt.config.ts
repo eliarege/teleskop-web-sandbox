@@ -1,10 +1,12 @@
+import process from 'node:process'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  // runtimeConfig: {
-  //   public: {
-  //     appList: process.env.APP_LIST,
-  //   },
-  // },
+  runtimeConfig: {
+    public: {
+      appList: process.env.APP_LIST,
+    },
+  },
   css: ['@unocss/reset/tailwind.css'],
   modules: [
     '@unocss/nuxt',

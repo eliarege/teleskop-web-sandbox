@@ -7,14 +7,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   extends: ['nuxt-base'],
   runtimeConfig: {
-    teleskopHost: process.env.TELESKOP_HOST,
-    teleskopUser: process.env.TELESKOP_USER,
-    teleskopPort: process.env.TELESKOP_PORT,
-    teleskopPassword: process.env.TELESKOP_PASSWORD,
-    teleskopDatabase: process.env.TELESKOP_DATABASE,
-    public: {
-      appList: process.env.APP_LIST,
-    },
+    teleskopHost: process.env.TELESKOP_HOST || 'localhost',
+    teleskopUser: process.env.TELESKOP_USER || '',
+    teleskopPort: process.env.TELESKOP_PORT || '1433',
+    teleskopPassword: process.env.TELESKOP_PASSWORD || '',
+    teleskopDatabase: process.env.TELESKOP_DATABASE || 'Teleskop',
   },
   nitro: {
     rollupConfig: {
