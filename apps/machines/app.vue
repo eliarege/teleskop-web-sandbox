@@ -9,22 +9,22 @@ const definitionItems = [
     to: '/',
     items: [
       {
-        label: 'Yeni',
+        label: t('new'),
       },
       {
-        label: 'Özellikler',
-      },
-
-      {
-        label: 'Sil',
+        label: t('properties'),
       },
 
       {
-        label: 'Yükle',
+        label: t('delete'),
       },
 
       {
-        label: 'Çıkış',
+        label: t('load'),
+      },
+
+      {
+        label: t('exit'),
       },
     ],
   },
@@ -77,6 +77,7 @@ const definitionItems = [
 
           {
             label: 'Adım Atlatma Ayarları',
+            to: '/step-skipping-reasons',
           },
 
           {
