@@ -11,6 +11,5 @@ export default defineEventHandler(async () => {
   })
 
   const object = wsdl.xmlToObject(response)
-  console.log('object = ', object)
   return object.Body.VersionResponse.result.String
 })

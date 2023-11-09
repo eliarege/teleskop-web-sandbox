@@ -10,15 +10,12 @@ const emit = defineEmits(['close', 'editMachine'])
 
 const modelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
 const machineGroups = await getMachineGroups()
-console.log('machineGroups = ', machineGroups)
 
 const check = ref(false)
 
 const machine = computed<Machine>(() => props.selectedMachines[0])
-console.log('props.selectedMachines = ', props.selectedMachines)
 
 async function handleFormSubmit() {
-  // add machine
   await editMachine(machine.value)
   emit('close')
   emit('editMachine')

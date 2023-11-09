@@ -4,7 +4,6 @@ import type { Machine } from '~/types'
 export default defineEventHandler(async (event) => {
   try {
     const machine: Machine = await readBody(event)
-    console.log('machine = ', machine)
     const res = await knex('BFMACHINES').where({
       MACHINEID: machine.id,
     }).update({
