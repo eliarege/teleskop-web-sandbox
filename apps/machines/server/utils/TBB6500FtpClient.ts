@@ -1,0 +1,168 @@
+import fs from 'node:fs'
+import * as ftp from 'basic-ftp'
+
+export class TBB6500FtpClient {
+  host: string
+  ftpClient = new ftp.Client()
+
+  constructor(host: string) {
+    this.host = host
+  }
+
+  async connectClient() {
+    await this.ftpClient.access({
+      host: this.host,
+      user: 'eliar',
+      password: 'el1984',
+    })
+  }
+
+  async fetchLocksGeneral() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/locks'
+      const sourcePath = './server/data/locks/locks_general'
+      const remotePath = '/tbb6500/data/locks/locks_general'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const locks = fileLockGeneralParser(content)
+
+      const modifiedLocks = locks.map((l) => {
+        return {
+          MACHINEID: l.machineId,
+          LOCKNO: l.lockNo,
+          LOCKNAME: l.lockName,
+          LOGICTYPE: l.logicType,
+          STOPDYEING: l.stopDyeing,
+          JUMPSTEP: l.jumpStep,
+          ALARM: l.alarm,
+          ONDELAY: l.onDelay,
+          STEPDELAY: l.stepDelay,
+          GIVEMESSAGE: l.giveMessage,
+          MESSAGESTRING: l.messageString,
+          AINLOGICTYPE: 0,
+          DINLOGICTYPE: 0,
+          COMMANDLOGICTYPE: 0,
+          LOCKLOGICTYPE: 0,
+          DOUTLOGICTYPE: 0,
+          VINLOGICTYPE: 0,
+        }
+      })
+
+      return modifiedLocks
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchUsers() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/users'
+      const sourcePath = './server/data/users/users'
+      const remotePath = '/tbb6500/data/users/users'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const users = fileUserParser(content)
+
+      return users
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchManualReasons() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/config'
+      const sourcePath = './server/data/config/manuelmodnedenleri'
+      const remotePath = '/tbb6500/data/config/manuelmodnedenleri'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const manualReasons = fileManualReasonParser(content)
+
+      const modifiedManualReasons = manualReasons.map((r) => {
+        return {
+          manualID: r.manualId,
+          manualString: r.manualReason,
+          ReportToERP: r.reportToERP,
+        }
+      })
+
+      return modifiedManualReasons
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchStopReasons() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/config'
+      const sourcePath = './server/data/config/durusnedenleri'
+      const remotePath = '/tbb6500/data/config/durusnedenleri'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const stopReasons = fileStopReasonParser(content)
+
+      return stopReasons
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchFinishReasons() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/config'
+      const sourcePath = './server/data/config/bitirmenedenleri'
+      const remotePath = '/tbb6500/data/config/bitirmenedenleri'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const finishReasons = fileFinishReasonParser(content)
+
+      return finishReasons
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+}

@@ -1,9 +1,8 @@
 import type { FinishReason } from '~/types'
 
+const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
 // '../../tbb6500/data/config/bitirmenedenleri'
 export function fileFinishReasonParser(content: string) {
-  const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
-
   const reasons = []
   let match = pattern.exec(content)
   while (match !== null) {

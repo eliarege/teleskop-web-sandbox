@@ -1,9 +1,8 @@
 import type { User } from '~/types'
 
 // '../../tbb6500/data/users/users'
+const pattern = /^(\d+) (\d+) ([a-z]+) ([a-z]+) (0x\d+) (0x\d+) (\d+)$/gim
 export function fileUserParser(content: string) {
-  const pattern = /^(\d+) (\d+) ([a-z]+) ([a-z]+) (0x\d+) (0x\d+) (\d+)$/gim
-
   const users = []
   let match = pattern.exec(content)
   while (match !== null) {

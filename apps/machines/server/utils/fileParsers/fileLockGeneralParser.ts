@@ -1,9 +1,8 @@
 import type { LockGeneral } from '~/types'
 
 // '../../tbb6500/data/locks/locks_general'
+const pattern = /^(\d+) "([^"]+)" (\d+) (\d+) (\d+) (\d+) "([^"]+)" "([^"]+)" (\d+) "([^"]*)" (\d+)$/gim
 export function fileLockGeneralParser(content: string) {
-  const pattern = /^(\d+) "([^"]+)" (\d+) (\d+) (\d+) (\d+) "([^"]+)" "([^"]+)" (\d+) "([^"]*)" (\d+)$/gim
-
   const locks = []
   let match = pattern.exec(content)
   while (match !== null) {
