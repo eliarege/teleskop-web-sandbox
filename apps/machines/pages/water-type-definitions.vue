@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { getWaterTypes } from '~/utils'
-
 const columns = [
   {
     name: 'waterTypeId',
@@ -16,7 +14,7 @@ const columns = [
   },
 ]
 
-const { data } = await useAsyncData('recipes', () => getWaterTypes())
+const { data, pending } = useFetch('/api/water-types/water-types', { default: () => [] })
 
 const selectedType = ref()
 </script>
@@ -39,9 +37,9 @@ const selectedType = ref()
           no-caps
         />
       </div>
-
       <q-table
         v-model:selected="selectedType"
+        :loading="pending"
         :rows="data"
         :columns="columns"
         hide-pagination

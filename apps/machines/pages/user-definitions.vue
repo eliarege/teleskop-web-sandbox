@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
 import type { User } from '~/types'
-import { addUser, deleteUser, editUser, getUsers } from '~/utils'
+import { addUser, deleteUser, editUser } from '~/utils'
 
 const columns: QTableColumn<User>[] = [
   {
@@ -46,7 +46,7 @@ const columns: QTableColumn<User>[] = [
 
 ]
 
-const users = ref(await getUsers())
+const { data: users, pending, refresh } = useLazyFetch('/api/user-definitions/user-definitions', { default: () => [] })
 const userTypeOptions = [{ label: 'Operatör', value: 1 }, { label: 'Diğer', value: 2 }]
 const selectedUsers = ref<User[]>()
 const user = ref<User>({
@@ -81,19 +81,20 @@ async function handleUserAdd() {
   if (user.value.userType)
     user.value.userType = user.value.userType === 'Operatör' ? 1 : 2
   await addUser(user.value)
-  users.value.push(user.value)
+  await refresh()
 }
 
 async function handleUserEdit() {
   if (user.value.userType)
     user.value.userType = user.value.userType === 'Operatör' ? 1 : 2
   await editUser(user.value)
-  users.value.push(user.value)
+  await refresh()
 }
 
 async function handleUserDelete() {
   await deleteUser([user.value.userId])
-  users.value = users.value.filter((u: User) => u.userId !== user.value.userId)
+  await refresh()
+  selectedUsers.value = []
 }
 </script>
 
@@ -176,6 +177,7 @@ async function handleUserDelete() {
       selection="single"
       :rows="users"
       :columns="columns"
+      :loading="pending"
       row-key="userId"
       :pagination="{ rowsPerPage: 0 }"
       hide-pagination

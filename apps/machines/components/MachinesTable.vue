@@ -4,6 +4,7 @@ import type { Machine } from '~/types'
 
 const props = defineProps<{
   machines: Machine[]
+  pending: boolean
   selectedMachines: Machine[]
 }>()
 
@@ -82,6 +83,7 @@ const pagination = { rowsPerPage: 0 }
 <template>
   <div class="table-scroll">
     <q-table
+      :loading="pending"
       :selected="selectedMachines"
       :pagination="pagination"
       :rows="machines"

@@ -2,7 +2,7 @@
 import type { Machine } from '~/types'
 import { getMachines } from '~/utils'
 
-const machines = ref(await getMachines())
+const { data: machines, pending, refresh } = useLazyFetch('/api/machines/machines', { default: () => [] })
 
 const selectedMachines = ref<Machine[]>([])
 
@@ -12,26 +12,18 @@ function machineSelection(e) {
   else
     selectedMachines.value = selectedMachines.value.filter((m: Machine) => m.id !== e.rows[0].id)
 }
-
-function deleteMachine(machineIds: string[]) {
-  machines.value = machines.value.filter((m: Machine) => !machineIds.includes(m.id))
-  selectedMachines.value = selectedMachines.value.filter((m: Machine) => !machineIds.includes(m.id))
-}
-
-async function addMachine() {
-  machines.value = await getMachines()
-}
 </script>
 
 <template>
   <Menubar
     :machines="machines"
     :selected-machines="selectedMachines"
-    @delete-machine="deleteMachine"
-    @add-machine="addMachine"
+    @delete-machine="refresh"
+    @add-machine="refresh"
   />
   <MachinesTable
     :machines="machines"
+    :pending="pending"
     :selected-machines="selectedMachines"
     @machine-selection="machineSelection"
   />

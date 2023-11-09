@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
 import type { FinishReason } from '~/types'
-import { getFinishReasons } from '~/utils'
 
-const finishReasons = ref(await getFinishReasons())
+const { data: finishReasons, pending, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', { default: () => [] })
 
 const columns: QTableColumn<FinishReason>[] = [
   {
@@ -57,13 +56,17 @@ async function handleSelection(obj: object) {
 
 async function handleAddFinishReason() {
   await addFinishReason(finishReasons.value, finishReason.value.typeId.value, finishReason.value.text)
+  await refresh()
 }
 async function handleDeleteFinishReasons() {
   await deleteFinishReasons(selectedReason.value)
+  await refresh()
+  selectedReason.value = []
 }
 
 async function handleEditFinishReason() {
   await editFinishReason(finishReason.value)
+  await refresh()
 }
 </script>
 
@@ -108,6 +111,7 @@ async function handleEditFinishReason() {
       <q-table
         v-model:selected="selectedReason"
         :rows="finishReasons"
+        :loading="pending"
         :columns="columns"
         hide-pagination
         :pagination="{ rowsPerPage: 0 }"

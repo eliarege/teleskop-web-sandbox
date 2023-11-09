@@ -2,7 +2,7 @@
 import type { QTableColumn } from 'quasar'
 import { editManualReason } from '~/utils'
 
-const manualReasons = ref(await getManualReasons())
+const { data: manualReasons, pending, refresh } = useLazyFetch('/api/manual-reasons/manual-reasons', { default: () => [] })
 
 const columns: QTableColumn[] = [
   {
@@ -30,23 +30,19 @@ function handleSelection(obj: object) {
 
 async function handleEditManualReason() {
   await editManualReason(oldReasonName.value, newReasonName.value, checkReportToERP.value)
-
-  const index = manualReasons.value.findIndex(m => m.manualReason === oldReasonName.value)
-  if (index !== -1) {
-    manualReasons.value[index].manualReason = newReasonName.value
-    manualReasons.value[index].reportToERP = checkReportToERP.value
-  }
+  await refresh()
 }
 
 async function handleAddManualReason() {
   const manualId = manualReasons.value[manualReasons.value.length - 1].manualId + 1
   await addManualReason(manualId, newReasonName.value, checkReportToERP.value)
-  manualReasons.value.push({ manualId, manualReason: newReasonName.value, reportToErp: checkReportToERP.value })
+  await refresh()
 }
 
 async function handleDeleteManualReasons() {
   await deleteManualReasons(selectedReason.value)
-  manualReasons.value = manualReasons.value.filter(m => m !== selectedReason.value[0])
+  await refresh()
+  selectedReason.value = []
 }
 </script>
 
@@ -93,6 +89,7 @@ async function handleDeleteManualReasons() {
         v-model:selected="selectedReason"
         :rows="manualReasons"
         :columns="columns"
+        :loading="pending"
         hide-pagination
         :pagination="{ rowsPerPage: 0 }"
         row-key="manualReason"

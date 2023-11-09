@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import type { MachineStopReason } from '~/types'
-import { editManualReason, getMachineStopReasons } from '~/utils'
 
-const stopReasons = ref(await getMachineStopReasons())
+const { data: stopReasons, pending, refresh } = useLazyFetch('/api/stop-reasons/stop-reasons', { default: () => [] })
 
 const columns: QTableColumn[] = [
   {
@@ -32,22 +30,18 @@ function handleSelection(obj: object) {
 
 async function handleEditStopReason() {
   await editStopReason(oldStopName.value, newStopName.value, checkReportToERP.value)
-
-  const index = stopReasons.value.findIndex(m => m.stopName === oldStopName.value)
-  if (index !== -1) {
-    stopReasons.value[index].stopName = newStopName.value
-    stopReasons.value[index].reportToERP = checkReportToERP.value
-  }
+  await refresh()
 }
 
 async function handleAddStopReason() {
   await addStopReason(stopReasons.value, newStopName.value, checkReportToERP.value)
-  stopReasons.value.push({ stopName: newStopName.value, reportToErp: checkReportToERP.value })
+  await refresh()
 }
 
 async function handleDeleteStopReasons() {
   await deleteStopReasons(selectedReason.value)
-  stopReasons.value = stopReasons.value.filter(m => m !== selectedReason.value[0])
+  await refresh()
+  selectedReason.value = []
 }
 </script>
 
@@ -93,6 +87,7 @@ async function handleDeleteStopReasons() {
       <q-table
         v-model:selected="selectedReason"
         :rows="stopReasons"
+        :loading="pending"
         :columns="columns"
         hide-pagination
         :pagination="{ rowsPerPage: 0 }"

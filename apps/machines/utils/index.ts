@@ -91,7 +91,7 @@ export async function editStopReason(oldStopName, newStopName, checkReportToERP)
 }
 
 export async function deleteStopReasons(selectedStopReason) {
-  await $fetch('/api/stop-reasons/stop-reason', { method: 'DELETE',body: {
+  await $fetch('/api/stop-reasons/stop-reasons', { method: 'DELETE',body: {
       stopCodes: [selectedStopReason[0].stopCode],
     } })
 }
