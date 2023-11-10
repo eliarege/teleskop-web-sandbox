@@ -106,12 +106,16 @@
     "group": "Grup",
     "language-settings": "Dil Seçenekleri",
     "visual-config": "Görsel Ayarlar",
-    "sort-by": "Makine Filtresi",
+    "sort-by": "Makine Sıralaması",
     "sort-id": "ID'ye Göre",
     "sort-active": "Aktif Makineler",
     "sort-idle": "Boş Makineler",
     "sort-group": "Gruba Göre",
-    "options": "Seçenekler"
+    "options": "Seçenekler",
+    "filter": {
+      "title": "Makine Filtreleme",
+      "group-title": "Grup Filtreleme"
+    }
   },
   "batchLogs": {
     "id": "ID",

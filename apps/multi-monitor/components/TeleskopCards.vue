@@ -16,7 +16,8 @@ const { t } = useI18n()
 const store = useDataStore()
 const colors = useColorStore()
 const sortedMachines = computed(() => {
-  const filteredMachines = props.machineData.filter(item => !store.filteredMachines.has(item.id))
+  const filteredGroups = props.machineData.filter(group => !store.filteredGroups.has(group.groupName))
+  const filteredMachines = filteredGroups.filter(item => !store.filteredMachines.has(item.id))
   const activeSort = filteredMachines.filter(
     machine => machine.runningBatchStatus !== 0,
   )
