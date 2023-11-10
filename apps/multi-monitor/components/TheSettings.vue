@@ -31,7 +31,6 @@ function setDefaultSettings() {
   store.locale = 'tr'
 }
 const config = useRuntimeConfig()
-const testModel = reactive([])
 </script>
 
 <template>
@@ -127,12 +126,15 @@ const testModel = reactive([])
                   </div>
                   <q-separator spaced />
                   <span class="w-full flex-center">
-                    {{ testModel }}
+                    Machine Filter
                   </span>
                   <div class="grid grid-cols-3">
                     <div v-for="item in store.machine" :key="item.id">
-                      <!-- <q-checkbox @update:model-value="item.id" /> -->
-                      {{ item.name }}
+                      <q-checkbox
+                        :label="item.name"
+                        :model-value="!store.filteredMachines.has(item.id)"
+                        @update:model-value="(r) => r ? store.filteredMachines.delete(item.id) : store.filteredMachines.add(item.id)"
+                      />
                     </div>
                   </div>
                 </q-expansion-item>

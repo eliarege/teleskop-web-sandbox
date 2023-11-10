@@ -12,6 +12,7 @@ export const useDataStore = defineStore('datas', () => {
   const water = useStorage('water', true)
   const group = useStorage('group', false)
   const locale = useStorage('language', useI18n().locale)
+  const filteredMachines = useStorage('filtered-machines', new Set<number>())
   // machinestatus
   const sortMachines = useStorage('machine-sort', 1)
   const machine = ref([] as MachineDataRaw[])
@@ -41,6 +42,7 @@ export const useDataStore = defineStore('datas', () => {
   return {
     locale,
     hex,
+    filteredMachines,
     settings,
     group,
     sortMachines,

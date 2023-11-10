@@ -16,10 +16,11 @@ const { t } = useI18n()
 const store = useDataStore()
 const colors = useColorStore()
 const sortedMachines = computed(() => {
-  const activeSort = props.machineData.filter(
+  const filteredMachines = props.machineData.filter(item => !store.filteredMachines.has(item.id))
+  const activeSort = filteredMachines.filter(
     machine => machine.runningBatchStatus !== 0,
   )
-  const inactiveSort = props.machineData.filter(
+  const inactiveSort = filteredMachines.filter(
     machine => machine.runningBatchStatus === 0,
   )
   if (store.sortMachines === 3) {
@@ -33,12 +34,12 @@ const sortedMachines = computed(() => {
       ...inactiveSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
     ]
   } else if (store.sortMachines === 4) {
-    return [...props.machineData].sort((a, b) => a.groupName < b.groupName ? -1 : 1,
+    return [...filteredMachines].sort((a, b) => a.groupName < b.groupName ? -1 : 1,
     )
   } else if (store.sortMachines === 5) {
-    return props.machineData.filter(alarm => alarm.currentAlarmStatus !== 2).sort((a, b) => a.currentAlarmStatus > b.currentAlarmStatus ? 1 : -1)
+    return filteredMachines.filter(alarm => alarm.currentAlarmStatus !== 2).sort((a, b) => a.currentAlarmStatus > b.currentAlarmStatus ? 1 : -1)
   } else {
-    return [...props.machineData].sort((a, b) => (a.id < b.id ? -1 : 1))
+    return [...filteredMachines].sort((a, b) => (a.id < b.id ? -1 : 1))
   }
 })
 // machine connection
