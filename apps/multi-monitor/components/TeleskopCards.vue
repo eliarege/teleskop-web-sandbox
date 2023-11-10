@@ -332,13 +332,22 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         >
           {{ element.name }}
         </div>
+        <div v-if="element.connectionStatus === 1">
+          <div
+            class="commanditems min-h-20 text-center justify-center text-2xl alarm"
+            :style="{ background: colors.cardItemBg }"
+          >
+            {{ element.runningAlarmNo }}
+            <span v-show="element.runningAlarmName !== ' '">&nbsp;|&nbsp;</span>
+            {{ element.runningAlarmName }}
+          </div>
+        </div>
         <div
+          v-else
           class="commanditems min-h-20 text-center justify-center text-2xl alarm"
           :style="{ background: colors.cardItemBg }"
         >
-          {{ element.runningAlarmNo }}
-          <span v-show="element.runningAlarmName !== ' '">&nbsp;|&nbsp;</span>
-          {{ element.runningAlarmName }}
+          {{ t('teleskop.no-connection') }}
         </div>
       </div>
     </div>

@@ -31,6 +31,7 @@ function setDefaultSettings() {
   store.locale = 'tr'
 }
 const config = useRuntimeConfig()
+const testModel = reactive([])
 </script>
 
 <template>
@@ -122,6 +123,16 @@ const config = useRuntimeConfig()
                         checked-icon="task_alt"
                         unchecked-icon="highlight_off"
                       />
+                    </div>
+                  </div>
+                  <q-separator spaced />
+                  <span class="w-full flex-center">
+                    {{ testModel }}
+                  </span>
+                  <div class="grid grid-cols-3">
+                    <div v-for="item in store.machine" :key="item.id">
+                      <!-- <q-checkbox @update:model-value="item.id" /> -->
+                      {{ item.name }}
                     </div>
                   </div>
                 </q-expansion-item>
