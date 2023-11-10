@@ -10,34 +10,57 @@ const columns = [
   },
 ]
 
-const { data } = await useAsyncData('recipes', () => getRecipeTypes())
+const { data: recipeTypes, pending, refresh } = useLazyFetch('/api/recipe-types/recipe-types', { default: () => [] })
+const typeName = ref('')
+const selectedRecipe = ref([])
+
+async function handleAddRecipe() {
+  await addRecipeType(typeName.value)
+  await refresh()
+}
+
+async function handleEditRecipe() {
+  await editRecipeType(selectedRecipe.value[0].id, typeName.value)
+  await refresh()
+}
+
+async function handleDeleteRecipe() {
+  await deleteRecipeType(selectedRecipe.value)
+  await refresh()
+  selectedRecipe.value = []
+}
 </script>
 
 <template>
   <q-card class="flex flex-row">
     <q-card-section>
-      <q-input label="Reçete Tipi Adı" />
+      <q-input v-model="typeName" label="Reçete Tipi Adı" />
       <div class="flex flex-row input-field my-8">
         <q-btn
           label="Ekle"
           no-caps
+          @click="handleAddRecipe()"
         />
         <q-btn
           label="Düzenle"
           no-caps
+          @click="handleEditRecipe()"
         />
         <q-btn
           label="Sil"
           no-caps
+          @click="handleDeleteRecipe()"
         />
       </div>
     </q-card-section>
   </q-card>
   <div class="table-scroll">
     <q-table
+      v-model:selected="selectedRecipe"
       selection="single"
-      :rows="data"
+      :rows="recipeTypes"
       :columns="columns"
+      :loading="pending"
       :pagination="{ rowsPerPage: 0 }"
       hide-pagination
       row-key="typeName"
