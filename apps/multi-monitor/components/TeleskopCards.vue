@@ -2,6 +2,7 @@
 import { Icon } from '@iconify/vue'
 import type { PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { color } from 'd3'
 import type { MachineData } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
 import { useColorStore } from '~/store/Colors'
@@ -80,6 +81,22 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
   } else return colors.cardActiveBg
 }
 ///////
+function textColor(bgColor: string) {
+  const colorToRGB = color(bgColor)!.rgb()
+  const sRGB = {
+    r: colorToRGB.r / 255,
+    g: colorToRGB.g / 255,
+    b: colorToRGB.b / 255,
+  }
+  function sRGBtoLin(colorChannel: number) {
+    if (colorChannel <= 0.04045) {
+      return colorChannel / 12.92
+    } else {
+      return ((colorChannel + 0.055) / 1.055) ** 2.4
+    }
+  }
+  return (0.2126 * sRGBtoLin(sRGB.r) + 0.7152 * sRGBtoLin(sRGB.g) + 0.0722 * sRGBtoLin(sRGB.b)) > 0.5 ? 'black' : 'white'
+}
 </script>
 
 <template>
@@ -88,9 +105,9 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
       v-for="element in sortedMachines"
       :key="element.id"
       class="cards"
-      :style="{ background: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus) }"
+      :style="{ background: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus), color: textColor(cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus)) }"
     >
-      <div class="commandtitle p-1" :style="{ background: colors.cardItemBg }">
+      <div class="commandtitle p-1" :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }">
         <div class="ml-3">
           <q-tooltip
             transition-show="scale"
@@ -131,7 +148,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         </NuxtLink>
       </div>
       <div class="machine-info">
-        <div class="temp" :style="{ background: colors.cardItemBg }">
+        <div class="temp" :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }">
           <Icon
             icon="jam:temperature"
             color="orange"
@@ -183,7 +200,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         <div
           v-show="element.runningBatchStatus === 2"
           class="commanditems justify-center"
-          :style="{ background: colors.cardItemBg }"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <MachineSettings :data="element" />
         </div>
@@ -191,7 +208,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         <div
           v-show="element.runningBatchStatus === 2"
           class="commanditems"
-          :style="{ background: colors.cardItemBg }"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <q-tooltip
             transition-show="scale"
@@ -223,7 +240,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
               : 'justify-center'
           "
           class="commanditems gap-3"
-          :style="{ background: colors.cardItemBg }"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <q-tooltip
             transition-show="scale"
@@ -242,7 +259,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         <div
           v-show="element.runningBatchStatus === 2"
           class="commanditems justify-center"
-          :style="{ background: colors.cardItemBg }"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <q-tooltip
             transition-show="scale"
@@ -266,7 +283,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         <!-- STOP REASON (IF THERES ANY) -->
         <div
           class="commanditems justify-center gap-1"
-          :style="{ background: colors.cardItemBg }"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <q-tooltip
             transition-show="scale"
@@ -283,7 +300,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         </div>
         <div
           class="commanditems justify-center"
-          :style="{ background: colors.cardItemBg }"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
           :class="
             element.runningAlarmName === ' '
               ? 'text-white'
@@ -308,7 +325,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         <div
           v-show="element.runningBatchStatus === 2"
           class="commanditems justify-center"
-          :style="{ background: colors.cardItemBg }"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <div v-show="element.reqOrderIndex !== -1" class="overflow-hidden">
             <span>{{ t("teleskop.order-index") }} - {{ element.reqOrderIndex }}
@@ -330,14 +347,14 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
       <div v-else class="commands !gap-2">
         <div
           class="commanditems min-h-20 text-center justify-center text-4xl"
-          :style="{ background: colors.cardItemBg }"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           {{ element.name }}
         </div>
         <div v-if="element.connectionStatus === 1">
           <div
             class="commanditems min-h-20 text-center justify-center text-2xl alarm"
-            :style="{ background: colors.cardItemBg }"
+            :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
           >
             {{ element.runningAlarmNo }}
             <span v-show="element.runningAlarmName !== ' '">&nbsp;|&nbsp;</span>
@@ -347,7 +364,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         <div
           v-else
           class="commanditems min-h-20 text-center justify-center text-2xl alarm"
-          :style="{ background: colors.cardItemBg }"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           {{ t('teleskop.no-connection') }}
         </div>
