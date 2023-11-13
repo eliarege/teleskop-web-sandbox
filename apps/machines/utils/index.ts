@@ -140,3 +140,20 @@ export async function deleteRecipeType(recipeTypes) {
 export async function getWaterTypes(): Promise<WaterType[]> {
   return await $fetch('/api/water-types/water-types')
 }
+
+export async function getMachineCommands(machineId: number) {
+  return await $fetch('/api/master-commands/master-commands', { method: 'POST',body: {
+      machineId,
+    } })
+}
+
+export async function getSelectedTimeoutReasons(machineId: number, commandNo: number) {
+  return await $fetch('/api/command-timeout-reasons/selected-timeout-reasons', { method: 'POST',body: {
+      machineId,
+      commandNo,
+    } })
+}
+
+export async function getTimeoutReasons() {
+  return await $fetch('/api/command-timeout-reasons/timeout-reasons')
+}

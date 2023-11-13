@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import * as ftp from 'basic-ftp'
+import { fileCommandAlarmReasonsParser } from './fileParsers/fileCommandAlarmReasonsParser'
 
 export class TBB6500FtpClient {
   host: string
@@ -159,6 +160,30 @@ export class TBB6500FtpClient {
       const finishReasons = fileFinishReasonParser(content)
 
       return finishReasons
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchCommandAlarmReasons() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/config'
+      const sourcePath = './server/data/config/commandAlarmReasons'
+      const remotePath = '/tbb6500/data/config/commandAlarmReasons'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const commandAlarmReasons = fileCommandAlarmReasonsParser(content)
+
+      return commandAlarmReasons
     } catch (err) {
       console.error(err)
     } finally {

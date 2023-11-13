@@ -85,6 +85,11 @@ const definitionItems = [
           },
 
           {
+            label: 'Komut Zaman Aşımı Sebepleri',
+            to: 'command-timeout-reasons',
+          },
+
+          {
             label: 'Diğer Makineler',
             to: '/data-collection-devices',
           },

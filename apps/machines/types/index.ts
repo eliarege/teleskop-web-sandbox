@@ -82,3 +82,10 @@ export interface WaterType {
   waterTypeId: number
   waterTypeName: string
 }
+
+export interface CommandAlarmReason {
+  id: number
+  reasonText: string
+  commandNumbers: number[]
+  groupId: number
+}
