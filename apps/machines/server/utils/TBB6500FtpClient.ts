@@ -3,6 +3,8 @@ import * as ftp from 'basic-ftp'
 import { fileCommandAlarmReasonsParser } from './fileParsers/fileCommandAlarmReasonsParser'
 import { fileMachineParametersParser } from './fileParsers/fileMachineParametersParser'
 import { fileMachineParameterValuesParser } from './fileParsers/fileMachineParameterValuesParser'
+import { fileFinishReasonWriter } from './fileWriters/fileFinishReasonWriter'
+import type { FinishReason } from '~/types'
 
 export class TBB6500FtpClient {
   host: string
@@ -162,6 +164,29 @@ export class TBB6500FtpClient {
       const finishReasons = fileFinishReasonParser(content)
 
       return finishReasons
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async writeFinishReasons(finishReasons: FinishReason[]) {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/config'
+      const sourcePath = './server/data/config/bitirmenedenleri'
+      const remotePath = '/tbb6500/data/config/bitirmenedenleri'
+
+      const content = fileFinishReasonWriter(finishReasons)
+
+      console.log('content = ', content)
+      /*       if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+      await fs.promises.writeFile(sourcePath, content)
+      await this.ftpClient.uploadFrom(sourcePath, remotePath)
+ */
     } catch (err) {
       console.error(err)
     } finally {
