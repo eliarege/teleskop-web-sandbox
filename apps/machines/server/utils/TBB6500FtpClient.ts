@@ -1,6 +1,8 @@
 import fs from 'node:fs'
 import * as ftp from 'basic-ftp'
 import { fileCommandAlarmReasonsParser } from './fileParsers/fileCommandAlarmReasonsParser'
+import { fileMachineParametersParser } from './fileParsers/fileMachineParametersParser'
+import { fileMachineParameterValuesParser } from './fileParsers/fileMachineParameterValuesParser'
 
 export class TBB6500FtpClient {
   host: string
@@ -189,6 +191,52 @@ export class TBB6500FtpClient {
       console.error(err)
     } finally {
       // this.ftpClient.close()
+    }
+  }
+
+  async fetchMachineParameters() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/config'
+      let sourcePath = './server/data/config/makinesabitleri'
+      let remotePath = '/tbb6500/data/config/makinesabitleri'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      let content = await fs.promises.readFile(sourcePath, 'utf8')
+      const machineParameters = fileMachineParametersParser(content)
+
+      sourcePath = './server/data/config/makinesabitleriDegerler'
+      remotePath = '/tbb6500/data/config/makinesabitleriDegerler'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      content = await fs.promises.readFile(sourcePath, 'utf8')
+      const currentValues = fileMachineParameterValuesParser(content)
+
+      const res = machineParameters.map(m => ({
+        ...m,
+        currentValue: currentValues.find(p => p.id === m.id).currentValue,
+        parameterType: 1,
+        selectionList: 'YOK',
+        unitCode: 1,
+        selectionValues: 'YOK',
+        isDeleted: 0,
+      }))
+
+      return res
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
     }
   }
 }

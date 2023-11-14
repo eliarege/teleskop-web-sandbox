@@ -89,3 +89,22 @@ export interface CommandAlarmReason {
   commandNumbers: number[]
   groupId: number
 }
+
+export interface MachineParameter {
+  id: number
+  paramString: string
+  defaultValue: number
+  dmArea: number
+  consScreen: number
+  paramLowLimit: number
+  paramHighLimit: number
+  consFormat: number
+  paramNo: number
+  consUnit: number
+  currentValue: number
+  parameterType: number
+  selectionList: string
+  unitCode: number
+  selectionValues: string
+  isDeleted: number
+}
