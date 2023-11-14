@@ -23,8 +23,8 @@ async function handleCommandClick(commandNo: number) {
 </script>
 
 <template>
-  <div class="flex flex-row justify-around">
-    <div class="w-sm">
+  <q-card class="flex flex-row justify-around">
+    <q-card-section class="w-sm">
       <h3>Makineler</h3>
       <q-list bordered separator>
         <q-item
@@ -39,9 +39,9 @@ async function handleCommandClick(commandNo: number) {
           </q-item-section>
         </q-item>
       </q-list>
-    </div>
+    </q-card-section>
 
-    <div class="w-sm">
+    <q-card-section class="w-sm">
       <h3>Komutlar</h3>
       <q-list bordered separator>
         <q-item
@@ -56,9 +56,9 @@ async function handleCommandClick(commandNo: number) {
           </q-item-section>
         </q-item>
       </q-list>
-    </div>
+    </q-card-section>
 
-    <div class="w-sm">
+    <q-card-section class="w-sm">
       <h3>Sebepler</h3>
       <q-list bordered separator>
         <q-item
@@ -73,8 +73,8 @@ async function handleCommandClick(commandNo: number) {
           </q-item-section>
         </q-item>
       </q-list>
-    </div>
-  </div>
+    </q-card-section>
+  </q-card>
 </template>
 
 <style scoped>

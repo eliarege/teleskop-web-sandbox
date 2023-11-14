@@ -169,9 +169,8 @@ export class TBB6500FtpClient {
 
   async fetchCommandAlarmReasons() {
     try {
-      await this.connectClient()
+      /*       await this.connectClient()
       const sourceFolderPath = './server/data/config'
-      const sourcePath = './server/data/config/commandAlarmReasons'
       const remotePath = '/tbb6500/data/config/commandAlarmReasons'
 
       if (!fs.existsSync(sourceFolderPath)) {
@@ -179,7 +178,9 @@ export class TBB6500FtpClient {
       }
 
       await this.ftpClient.downloadTo(sourcePath, remotePath)
+ */
 
+      const sourcePath = './server/data/config/commandAlarmReasons'
       const content = await fs.promises.readFile(sourcePath, 'utf8')
       const commandAlarmReasons = fileCommandAlarmReasonsParser(content)
 
@@ -187,7 +188,7 @@ export class TBB6500FtpClient {
     } catch (err) {
       console.error(err)
     } finally {
-      this.ftpClient.close()
+      // this.ftpClient.close()
     }
   }
 }

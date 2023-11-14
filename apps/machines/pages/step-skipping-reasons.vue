@@ -16,15 +16,18 @@ const columns = [
   },
 ]
 
-const { data } = await useAsyncData('recipes', () => getWaterTypes())
+const { data: stepSkippingReasons, pending, refresh } = useFetch('/api/step-skipping-reasons/step-skipping-reasons', { default: () => [] })
 
-const selectedType = ref()
+const selectedReason = ref()
 </script>
 
 <template>
   <q-card>
     <q-card-section>
-      <q-input label="Su Tipi İsmi" />
+      <div class="input-field flex flex-row">
+        <q-input label="Numara" />
+        <q-input label="Atlatma Nedeni" />
+      </div>
       <div class="flex flex-row input-field my-4">
         <q-btn
           label="Ekle"
@@ -41,12 +44,13 @@ const selectedType = ref()
       </div>
 
       <q-table
-        v-model:selected="selectedType"
-        :rows="data"
+        v-model:selected="selectedReason"
+        :rows="stepSkippingReasons"
         :columns="columns"
+        :loading="pending"
         hide-pagination
         :pagination="{ rowsPerPage: 0 }"
-        row-key="waterTypeId"
+        row-key="id"
         separator="cell"
         bordered
         selection="single"
