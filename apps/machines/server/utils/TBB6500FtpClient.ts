@@ -4,6 +4,7 @@ import { fileCommandAlarmReasonsParser } from './fileParsers/fileCommandAlarmRea
 import { fileMachineParametersParser } from './fileParsers/fileMachineParametersParser'
 import { fileMachineParameterValuesParser } from './fileParsers/fileMachineParameterValuesParser'
 import { fileFinishReasonWriter } from './fileWriters/fileFinishReasonWriter'
+import { fileControllerModelParser } from './fileParsers/fileControllerModelParser'
 import type { FinishReason } from '~/types'
 
 export class TBB6500FtpClient {
@@ -258,6 +259,30 @@ export class TBB6500FtpClient {
       }))
 
       return res
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchControllerModel() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/var'
+      const sourcePath = './server/data/var/controllerModel'
+      const remotePath = '/var/controllerModel'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const controllerModel = fileControllerModelParser(content)
+
+      return controllerModel
     } catch (err) {
       console.error(err)
     } finally {
