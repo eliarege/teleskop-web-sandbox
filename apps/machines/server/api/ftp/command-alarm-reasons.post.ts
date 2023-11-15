@@ -32,7 +32,6 @@ export default defineEventHandler(async (event) => {
         commandMapEntries.push(mapEntry)
       }
     }
-    console.log('commandMapEntries = ', commandMapEntries)
     // await knex('BFCOMMANDTIMEOUTREASONMAP').del()
     // await knex('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
 

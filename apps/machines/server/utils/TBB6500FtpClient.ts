@@ -6,7 +6,8 @@ import { fileMachineParameterValuesParser } from './fileParsers/fileMachineParam
 import { fileFinishReasonWriter } from './fileWriters/fileFinishReasonWriter'
 import { fileStopReasonWriter } from './fileWriters/fileStopReasonWriter'
 import { fileControllerModelParser } from './fileParsers/fileControllerModelParser'
-import type { FinishReason, MachineStopReason } from '~/types'
+import { fileUserWriter } from './fileWriters/fileUserWriter'
+import type { FinishReason, MachineStopReason, User } from '~/types'
 
 export class TBB6500FtpClient {
   host: string
@@ -93,6 +94,28 @@ export class TBB6500FtpClient {
     }
   }
 
+  async writeUsers(users: User[]) {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/users'
+      const sourcePath = './server/data/users/users'
+      const remotePath = '/tbb6500/data/users/users'
+
+      const content = fileUserWriter(users)
+
+      /*       if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+      await fs.promises.writeFile(sourcePath, content)
+      await this.ftpClient.uploadFrom(sourcePath, remotePath)
+ */
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
   async fetchManualReasons() {
     try {
       await this.connectClient()
@@ -158,7 +181,6 @@ export class TBB6500FtpClient {
 
       const content = fileStopReasonWriter(stopReasons)
 
-      console.log('content = ', content)
       /*       if (!fs.existsSync(sourceFolderPath)) {
         await fs.promises.mkdir(sourceFolderPath)
       }
@@ -205,7 +227,6 @@ export class TBB6500FtpClient {
 
       const content = fileFinishReasonWriter(finishReasons)
 
-      console.log('content = ', content)
       /*       if (!fs.existsSync(sourceFolderPath)) {
         await fs.promises.mkdir(sourceFolderPath)
       }

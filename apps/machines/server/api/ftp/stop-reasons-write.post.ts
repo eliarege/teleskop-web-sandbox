@@ -11,7 +11,6 @@ export default defineEventHandler(async () => {
       stopName: 'STOPNAME',
       reportToERP: 'ReportToERP',
     })
-    console.log('stopReasons = ', stopReasons)
 
     const tbb = new TBB6500FtpClient('192.168.88.202')
     await tbb.writeStopReasons(stopReasons)
