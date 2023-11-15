@@ -1,6 +1,9 @@
 import type { User } from '~/types'
 
-// '../../tbb6500/data/users/users'
+/**
+ *  '../../tbb6500/data/users/users'
+ * example: 0 12345 Sadirlar Operator 0x11100150 0x00000003 1
+ */
 const pattern = /^(\d+) (\d+) ([a-z]+) ([a-z]+) (0x\d+) (0x\d+) (\d+)$/gim
 export function fileUserParser(content: string) {
   const users = []
