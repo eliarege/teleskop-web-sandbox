@@ -116,3 +116,12 @@ export interface AnalogInput {
   name: string
   enabled: number
 }
+
+export interface AnalogOutput {
+  id: number
+  card: number
+  canal: number
+  name: string
+  enabled: number
+  defaultValue: number
+}
