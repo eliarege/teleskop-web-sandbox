@@ -4,8 +4,9 @@ import { fileCommandAlarmReasonsParser } from './fileParsers/fileCommandAlarmRea
 import { fileMachineParametersParser } from './fileParsers/fileMachineParametersParser'
 import { fileMachineParameterValuesParser } from './fileParsers/fileMachineParameterValuesParser'
 import { fileFinishReasonWriter } from './fileWriters/fileFinishReasonWriter'
+import { fileStopReasonWriter } from './fileWriters/fileStopReasonWriter'
 import { fileControllerModelParser } from './fileParsers/fileControllerModelParser'
-import type { FinishReason } from '~/types'
+import type { FinishReason, MachineStopReason } from '~/types'
 
 export class TBB6500FtpClient {
   host: string
@@ -141,6 +142,29 @@ export class TBB6500FtpClient {
       const stopReasons = fileStopReasonParser(content)
 
       return stopReasons
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async writeStopReasons(stopReasons: MachineStopReason[]) {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/config'
+      const sourcePath = './server/data/config/durusnedenleri'
+      const remotePath = '/tbb6500/data/config/durusnedenleri'
+
+      const content = fileStopReasonWriter(stopReasons)
+
+      console.log('content = ', content)
+      /*       if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+      await fs.promises.writeFile(sourcePath, content)
+      await this.ftpClient.uploadFrom(sourcePath, remotePath)
+ */
     } catch (err) {
       console.error(err)
     } finally {
