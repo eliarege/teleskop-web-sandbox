@@ -7,6 +7,7 @@ import { fileFinishReasonWriter } from './fileWriters/fileFinishReasonWriter'
 import { fileStopReasonWriter } from './fileWriters/fileStopReasonWriter'
 import { fileControllerModelParser } from './fileParsers/fileControllerModelParser'
 import { fileUserWriter } from './fileWriters/fileUserWriter'
+import { fileAnalogInputParser } from './fileParsers/fileAnalogInputParser'
 import type { FinishReason, MachineStopReason, User } from '~/types'
 
 export class TBB6500FtpClient {
@@ -328,6 +329,30 @@ export class TBB6500FtpClient {
       const controllerModel = fileControllerModelParser(content)
 
       return controllerModel
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchAnalogInputs() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/io'
+      const sourcePath = './server/data/io/analoginput'
+      const remotePath = '/tbb6500/data/io/analoginput'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const analogInputs = fileAnalogInputParser(content)
+
+      return analogInputs
     } catch (err) {
       console.error(err)
     } finally {

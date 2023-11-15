@@ -108,3 +108,11 @@ export interface MachineParameter {
   selectionValues: string
   isDeleted: number
 }
+
+export interface AnalogInput {
+  id: number
+  card: number
+  canal: number
+  name: string
+  enabled: number
+}
