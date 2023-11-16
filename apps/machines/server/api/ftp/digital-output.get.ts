@@ -10,7 +10,6 @@ export default defineEventHandler(async () => {
 
     const digitalOutputs = await tbb.fetchDigitalOutputs()
 
-    console.log('digitalOutputs = ', digitalOutputs)
     // await knex('BFMACHDOUT').del()
     // await knex('BFMACHDOUT').insert(digitalOutputs)
 

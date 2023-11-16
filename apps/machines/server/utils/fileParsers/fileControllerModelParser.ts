@@ -14,6 +14,6 @@ export function fileControllerModelParser(content: string) {
     HardwareModel: match[2],
     PlcModel: match[3],
   }
-
+  pattern.lastIndex = 0
   return controllerModel
 }

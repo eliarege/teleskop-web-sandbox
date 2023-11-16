@@ -10,7 +10,6 @@ export default defineEventHandler(async () => {
 
     const digitalInputs = await tbb.fetchDigitalInputs()
 
-    console.log('digitalInputs = ', digitalInputs)
     // await knex('BFMACHDIN').del()
     // await knex('BFMACHDIN').insert(digitalInputs)
 

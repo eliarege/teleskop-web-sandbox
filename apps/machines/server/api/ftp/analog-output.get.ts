@@ -10,7 +10,6 @@ export default defineEventHandler(async () => {
 
     const analogOutputs = await tbb.fetchAnalogOutputs()
 
-    console.log('analogOutputs = ', analogOutputs)
     // await knex('BFMACHAOUT').del()
     // await knex('BFMACHAOUT').insert(analogInputs)
 

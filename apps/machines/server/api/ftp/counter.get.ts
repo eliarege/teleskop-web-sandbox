@@ -10,7 +10,6 @@ export default defineEventHandler(async () => {
 
     const counters = await tbb.fetchCounters()
 
-    console.log('counters = ', counters)
     // await knex('BFMACHCOUNTER').del()
     // await knex('BFMACHCOUNTER').insert(counters)
 
