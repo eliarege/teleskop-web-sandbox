@@ -9,6 +9,7 @@ import { fileControllerModelParser } from './fileParsers/fileControllerModelPars
 import { fileUserWriter } from './fileWriters/fileUserWriter'
 import { fileAnalogInputParser } from './fileParsers/fileAnalogInputParser'
 import { fileAnalogOutputParser } from './fileParsers/fileAnalogOutputParser'
+import { fileDigitalInputParser } from './fileParsers/fileDigitalInputParser'
 import type { FinishReason, MachineStopReason, User } from '~/types'
 
 export class TBB6500FtpClient {
@@ -378,6 +379,30 @@ export class TBB6500FtpClient {
       const analogOutputs = fileAnalogOutputParser(content)
 
       return analogOutputs
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchDigitalInputs() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/io'
+      const sourcePath = './server/data/io/sayisalinput'
+      const remotePath = '/tbb6500/data/io/sayisalinput'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const digitalInput = fileDigitalInputParser(content)
+
+      return digitalInput
     } catch (err) {
       console.error(err)
     } finally {
