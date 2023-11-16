@@ -2,10 +2,10 @@ import type { IOOutput } from '~/types'
 
 const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (\d+) (\d+) (\d+)$/gim
 /**
- *   /tbb6500/data/io/analogoutput
- * example: 0 1 1 "Pompa Hizi" 60 1 0
+ *   /tbb6500/data/io/sayisaloutput
+ * example: 0 1 1 "Otomatik Lambasi" 0 1 0
  */
-export function fileAnalogOutputParser(content: string) {
+export function fileDigitalOutputParser(content: string) {
   const outputs = []
   let match = pattern.exec(content)
   while (match !== null) {

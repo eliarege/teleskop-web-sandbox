@@ -1,4 +1,4 @@
-import type { AnalogInput } from '~/types'
+import type { IOInput } from '~/types'
 
 const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (\d+) (\d+)$/gim
 /**
@@ -9,7 +9,7 @@ export function fileDigitalInputParser(content: string) {
   const inputs = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const input: AnalogInput = {
+    const input: IOInput = {
       id: match[1],
       card: match[2],
       canal: match[3],

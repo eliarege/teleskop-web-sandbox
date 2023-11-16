@@ -109,7 +109,7 @@ export interface MachineParameter {
   isDeleted: number
 }
 
-export interface AnalogInput {
+export interface IOInput {
   id: number
   card: number
   canal: number
@@ -117,7 +117,7 @@ export interface AnalogInput {
   enabled: number
 }
 
-export interface AnalogOutput {
+export interface IOOutput {
   id: number
   card: number
   canal: number
