@@ -12,7 +12,8 @@ import { fileAnalogOutputParser } from './fileParsers/fileAnalogOutputParser'
 import { fileDigitalInputParser } from './fileParsers/fileDigitalInputParser'
 import { fileDigitalOutputParser } from './fileParsers/fileDigitalOutputParser'
 import { fileCounterParser } from './fileParsers/fileCounterParser'
-import type { FinishReason, MachineStopReason, User } from '~/types'
+import { calcIONumber } from '.'
+import type { FinishReason, IOInput, IOOutput, MachineStopReason, User } from '~/types'
 
 export class TBB6500FtpClient {
   host: string
@@ -354,7 +355,12 @@ export class TBB6500FtpClient {
       await this.ftpClient.downloadTo(sourcePath, remotePath)
 
       const content = await fs.promises.readFile(sourcePath, 'utf8')
-      const analogInputs = fileAnalogInputParser(content)
+
+      const controllerModel = await this.fetchControllerModel()
+      const analogInputs = fileAnalogInputParser(content).map(input => ({
+        ...input,
+        id: calcIONumber(input, controllerModel),
+      }))
 
       return analogInputs
     } catch (err) {
@@ -378,7 +384,11 @@ export class TBB6500FtpClient {
       await this.ftpClient.downloadTo(sourcePath, remotePath)
 
       const content = await fs.promises.readFile(sourcePath, 'utf8')
-      const analogOutputs = fileAnalogOutputParser(content)
+      const controllerModel = await this.fetchControllerModel()
+      const analogOutputs = fileAnalogOutputParser(content).map(input => ({
+        ...input,
+        id: calcIONumber(input, controllerModel),
+      }))
 
       return analogOutputs
     } catch (err) {
@@ -402,7 +412,11 @@ export class TBB6500FtpClient {
       await this.ftpClient.downloadTo(sourcePath, remotePath)
 
       const content = await fs.promises.readFile(sourcePath, 'utf8')
-      const digitalInput = fileDigitalInputParser(content)
+      const controllerModel = await this.fetchControllerModel()
+      const digitalInput = fileDigitalInputParser(content).map(input => ({
+        ...input,
+        id: calcIONumber(input, controllerModel),
+      }))
 
       return digitalInput
     } catch (err) {
@@ -426,7 +440,12 @@ export class TBB6500FtpClient {
       await this.ftpClient.downloadTo(sourcePath, remotePath)
 
       const content = await fs.promises.readFile(sourcePath, 'utf8')
-      const digitalOutputs = fileDigitalOutputParser(content)
+
+      const controllerModel = await this.fetchControllerModel()
+      const digitalOutputs = fileDigitalOutputParser(content).map(input => ({
+        ...input,
+        id: calcIONumber(input, controllerModel),
+      }))
 
       return digitalOutputs
     } catch (err) {
@@ -450,7 +469,11 @@ export class TBB6500FtpClient {
       await this.ftpClient.downloadTo(sourcePath, remotePath)
 
       const content = await fs.promises.readFile(sourcePath, 'utf8')
-      const analogInputs = fileCounterParser(content)
+      const controllerModel = await this.fetchControllerModel()
+      const analogInputs = fileCounterParser(content).map(input => ({
+        ...input,
+        id: calcIONumber(input, controllerModel),
+      }))
 
       return analogInputs
     } catch (err) {

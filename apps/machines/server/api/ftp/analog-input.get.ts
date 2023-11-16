@@ -10,7 +10,6 @@ export default defineEventHandler(async () => {
 
     const analogInputs = await tbb.fetchAnalogInputs()
 
-    console.log('analogInputs = ', analogInputs)
     // await knex('BFMACHAIN').del()
     // await knex('BFMACHAIN').insert(analogInputs)
 
