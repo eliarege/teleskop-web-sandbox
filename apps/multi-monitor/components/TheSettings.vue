@@ -43,7 +43,7 @@ const machineGroups = computed(() => new Set(store.machine.map(g => g.groupName)
             <div class="flex flex-col w-full items-center justify-center self-center bg-white overflow-auto">
               <q-list class="w-full">
                 <q-expansion-item
-                  v-if="config.public.isDigitalFactory === 'false'"
+                  v-if="JSON.parse(config.public.isDigitalFactory) === false"
                   class="text-black"
                   expand-separator
                   :icon="sharpLanguage"
