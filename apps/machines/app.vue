@@ -123,6 +123,7 @@ const definitionItems = [
           },
           {
             label: 'Başlatma Parametresi Tipleri',
+            to: '/starting-parameter-types',
           },
           {
             label: 'Reçete Tipleri',
