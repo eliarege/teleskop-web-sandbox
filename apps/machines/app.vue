@@ -33,6 +33,7 @@ const definitionItems = [
     items: [
       {
         label: 'Değiştir',
+        to: '/machine-group-definitions',
       },
     ],
   },
