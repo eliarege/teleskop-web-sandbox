@@ -182,12 +182,10 @@ const filters = ref<FilterSlot[]>([])
 const data = ref()
 async function handleFilterSlotsUpdate(updatedValue) {
   filters.value = updatedValue
-  console.log(updatedValue)
   data.value = await $fetch('/api/joborder/filtered-joborders', {
     method: 'post',
     body: updatedValue,
   })
-  console.log(data.value)
   rows.value = data.value
   // filtersToKnex(externalFilterSlots.value, null)
 }

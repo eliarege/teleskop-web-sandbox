@@ -20,7 +20,6 @@ const parameterCols = [
 ]
 
 const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.value}`)
-console.log(parameterRows)
 </script>
 
 <template>
@@ -40,7 +39,27 @@ console.log(parameterRows)
         :columns="parameterCols"
         :rows="parameterRows"
         style="width: 100%; height: 100%;"
-      />
+      >
+        <template #custombody="props">
+          <q-tr>
+            <q-td
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+            >
+              <span v-if="col.field === 'type'">
+                {{ t(`recipeTypes.${col.value}`) }}
+              </span>
+              <span v-else-if="col.field === 'unit'">
+                {{ t(`units.${col.value}`) }}
+              </span>
+              <span v-else>
+                {{ col.value }}
+              </span>
+            </q-td>
+          </q-tr>
+        </template>
+      </FilterableTable>
     </q-card-section>
 
     <q-card-actions align="right" style="position:relative;">

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+
 import type { Column, DateType, FilterSlot } from '../shared/types'
 
 const props = defineProps({
@@ -30,13 +31,16 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(['rowDblclick', 'updateFilterSlots'])
+
 const { t } = useI18n()
 function handleDoubleClick(row: any) {
-  console.log(row)
   emit('rowDblclick', row)
 }
 const { rows, columns } = toRefs(props)
-
+const visibleColumns = ref([])
+const showVisibilityMenu = ref(false)
+const tableFilter = ref()
+columns.value.forEach(row => visibleColumns.value.push(row.field))
 const comparisonOperations = [
   { text: 'equals', symbol: '=' },
   { text: 'bigger than', symbol: '>' },
@@ -107,7 +111,7 @@ function contains(list: Array<any>, elem: any) {
 
 function pushToFilters(col: Column, index: number, orderByType?: string) {
   let temp
-  if (orderByType && col.filterType) { // FIXME: Now its guaranteed that filterType is exist but if the column is not ilterable and wanted to order it will not possible
+  if (orderByType) { // FIXME: Now its guaranteed that filterType is exist but if the column is not ilterable and wanted to order it will not possible
     temp = { label: `${col.label} in ${orderByType} order`, field: col.field, isOrderFilter: true, value: { direction: orderByType === 'ascending' ? 'asc' : 'desc' }, filterType: col.filterType }
     filterSlots.value.forEach((filter, index) => {
       if (filter.isOrderFilter)
@@ -163,7 +167,6 @@ function pushToFilters(col: Column, index: number, orderByType?: string) {
         filterSlots.value.push(temp)
     }
   }
-  // console.log(filterSlots.value)
 }
 
 function comparisonOptionInit(index: number) {
@@ -194,11 +197,49 @@ watch(filterSlots.value, (newValue) => {
       :virtual-scroll-sticky-size-start="48"
       class="text-override-left filterable-table my-sticky-virtscroll-table-recipe"
       column-sort-order="da"
+      :visible-columns="visibleColumns"
+      :filter="tableFilter"
     >
-      <!-- @row-dblclick="(evt, row) => handleDoubleClick(row)" -->
-      <!-- @update:pagination="console.log(tablePagination)" -->
       <template #top>
-        <div class="flex flex-row gap-5 min-h-6">
+        <div class="flex gap-5 min-h-6">
+          <div class="flex gap-5 border-1 border-blue p-1 border-rounded">
+            <div
+              class="w-10 h-10 flex items-center justify-center color-blue cursor-pointer"
+              @click="showVisibilityMenu = !showVisibilityMenu"
+            >
+              <q-icon name="filter_alt" size="1.5rem" />
+            </div>
+            <div
+              v-if="showVisibilityMenu"
+              class="flex flex-row"
+            >
+              <q-input
+                v-model="tableFilter"
+                borderless
+                dense
+                debounce="300"
+                :placeholder="t('search')"
+              >
+                <template #append>
+                  <q-icon name="search" />
+                </template>
+              </q-input>
+              <!-- TODO: If the section would be settings this displayment is much better -->
+              <q-select
+                v-model="visibleColumns"
+                multiple
+                borderless
+                dense
+                options-dense
+                :display-value="$q.lang.table.columns"
+                emit-value
+                map-options
+                :options="columns"
+                option-value="name"
+                style="min-width: 150px"
+              />
+            </div>
+          </div>
           <div
             v-for="(filter, index) in filterSlots"
             :key="index"
@@ -211,6 +252,7 @@ watch(filterSlots.value, (newValue) => {
             <q-icon name="close" @click="removeFilter(index)" />
           </div>
         </div>
+
         <slot name="top-right" />
       </template>
       <template #header="tableProps">
@@ -222,7 +264,8 @@ watch(filterSlots.value, (newValue) => {
             :props="tableProps"
           >
             <div
-              class="column-group"
+              class="column-group text-override-left-header"
+              :style="col.filterable ? 'cursor: pointer;' : ''"
               @click="openMenu(col.name)"
             >
               {{ col.label }}
@@ -369,7 +412,7 @@ watch(filterSlots.value, (newValue) => {
                   />
                 </div>
                 <q-btn
-                  v-if="col.filterType !== 'date'"
+                  v-if="col.filterType !== 'date' && col.filterType"
                   class="mt-5 flex right-0"
                   @click="pushToFilters(col, index)"
                 >
@@ -401,7 +444,8 @@ watch(filterSlots.value, (newValue) => {
 
 <style scoped>
 .my-sticky-virtscroll-table-recipe {
-  height: 50vh;
+  height: 100%;
+  min-height: 50vh;
 }
 
 .my-sticky-virtscroll-table-recipe :deep(.q-table__top),
@@ -469,7 +513,6 @@ watch(filterSlots.value, (newValue) => {
   border: 1px solid rgba(80, 158, 227, 0.2);
   border-radius: 6px;
   color: #509ee3;
-  cursor: pointer;
   font-size: 12.5px;
   font-weight: 700;
 }
@@ -484,7 +527,7 @@ watch(filterSlots.value, (newValue) => {
 }
 .text-override-left :deep(.text-right){
   text-align: left;
-  word-break: normal;
-  white-space: normal;
+  /* word-break: normal;
+  white-space: normal; */
 }
 </style>

@@ -91,8 +91,7 @@ router.get('/correction-number-by-parameter', defineEventHandler(async (event) =
 // }))
 
 router.get('/joborder', defineEventHandler(async (event) => {
-  const { recipeJB } = getQuery(event)
-  const { correctionNo } = getQuery(event)
+  const { recipeJB, correctionNo } = getQuery(event)
   let planKey
   if (Number(correctionNo)) {
     planKey = knex('DYBFBATCHPLAN')
@@ -106,6 +105,10 @@ router.get('/joborder', defineEventHandler(async (event) => {
       .limit(1)
       .select('PLANKEY')
   }
+  const machineid = knex('DYBFBATCHPLAN')
+    .select('PLANNEDMACHINE')
+    .where('PLANKEY', planKey)
+
   const asd = await knex('dbo.DYBFBATCHORDERRECIPESTEPS as r')
     .where('r.PLANKEY', planKey)
     .select({
@@ -122,11 +125,17 @@ router.get('/joborder', defineEventHandler(async (event) => {
       amount: 'r.AMOUNT',
       unit: 'r.otherUnit',
       programNo: 'p.RECIPENO',
+      programName: 't.NAME',
     })
     .leftJoin('dbo.DYBFBATCHORDERRECIPEHEADER as p', function () {
       this.on('r.PLANKEY', '=', 'p.PLANKEY')
         .andOn('r.RCPINDEX', '=', 'p.RCPINDEX')
         .andOn('r.RECIPETYPE', '=', 'p.RECIPETYPE')
+    })
+    .leftJoin('dbo.BFMASTERPRGHEADER as t', function () {
+      this
+        .on('p.RECIPENO', '=', 't.PROGNO')
+        .andOn('t.MACHINEID', '=', machineid)
     })
     .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
     .whereNotNull('REQNO_BATCH')
@@ -145,4 +154,23 @@ router.get('/joborder', defineEventHandler(async (event) => {
   //   }
   // })
   return asd
+}))
+
+router.put('/change-planned-machine', defineEventHandler(async (event) => {
+  try {
+    const body = await readBody(event)
+    const query = knex('DYBFBATCHPLAN')
+      .where('PLANKEY', body.plankey)
+    query.update({
+      PLANNEDMACHINE: body.newPlannedMachine,
+    })
+    if (body.isCoupled) {
+      query.update({
+        SLAVEMACHINEID: body.newCoupledMachine,
+      })
+    }
+    return query
+  } catch (e) {
+    return e
+  }
 }))

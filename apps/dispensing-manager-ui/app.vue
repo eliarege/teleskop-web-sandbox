@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { useQuasar } from 'quasar'
+import languageTR from 'quasar/lang/tr'
+
+const $q = useQuasar()
+$q.lang.set(languageTR)
 </script>
 
 <template>

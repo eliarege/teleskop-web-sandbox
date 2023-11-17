@@ -35,3 +35,12 @@ router.get('/machine', defineEventHandler(async (event) => {
     .where('MACHINEID', machineid)
   return machine
 }))
+
+router.get('/machineid', defineEventHandler(async (event) => {
+  const { plankey } = getQuery(event)
+  const machineid = await knex('DYBFBATCHPLAN')
+    .select('PLANNEDMACHINE')
+    .where('PLANKEY', Number(plankey))
+
+  return machineid
+}))

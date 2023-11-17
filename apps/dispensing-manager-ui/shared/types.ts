@@ -26,7 +26,7 @@ export interface Column {
   filterable?: boolean // If it is flase, no filter will be applied
   sortable?: boolean
   filterType?: 'select' | 'multiselect' | 'date' | 'comparison' | 'boolean' | 'equals' | 'includes'
-  selectionOptions?: Array // Necessary if filterType is select or multiselect
+  selectionOptions?: Array<any> // Necessary if filterType is select or multiselect
   optionLabel?: string // Necessary if each element of selectionOptions array has more than one attributes
   optionValue?: string // Returns optionValue on select and multiselect if specified else return the whole object
   // Optionvalue is not implemented for now
@@ -69,4 +69,5 @@ export interface RecipeLatest {
   amount: number | null
   unit: string | null
   programNo: number | null
+  programName: string | null
 }

@@ -29,6 +29,10 @@
   "submit": "Submit",
   "currentMachine": "Current Machine",
   "apply": "Apply Filters",
+  "hour": "hours",
+  "min": "mins",
+  "ongoingJoborders": "Job Orders in progress",
+  "search": "Search",
 
   "distributionProcessor": {
     "a": "Distribution Processor",
@@ -94,6 +98,7 @@
   },
   "recipe": {
     "a": "Recipe",
+    "recipeTable": "Recipe Table",
     "amount": "Amount",
     "changePlannedMachine": "Change Planned Machine",
     "header": "Recipe Information Inquiry",
@@ -153,6 +158,15 @@
   "recipeTypes": {
     "0": "Chemical",
     "1": "Dye"
+  },
+  "units": {
+    "0": "%",
+    "1": "gr/lt",
+    "2": "cc/lt",
+    "3": "gr",
+    "4": "cc",
+    "5": "kg",
+    "6": "lt"
   },
   "warnings": {
     "noFilterSpec": "If no filter specified, all the job orders will be displayed.",

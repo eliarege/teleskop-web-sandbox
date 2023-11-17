@@ -28,12 +28,11 @@ interface SpanMethodProps {
   rowIndex: number
   columnIndex: number
 }
-const size = window.innerWidth
 const groupables = [
   { key: 'processOrder', index: 0 },
   { key: 'recipeType', index: 1 },
   { key: 'programNo', index: 2 },
-  { key: 'processOrder', index: 3 },
+  { key: 'programName', index: 3 },
   { key: 'ISN', index: 4 },
   { key: 'mainStep', index: 5 },
   { key: 'parallelStep', index: 6 },
@@ -67,10 +66,12 @@ function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
   }
   return { rowspan, colspan: 1 }
 }
+const rgbClasses = ['violet-class', 'blue-class', 'green-class', 'red-class', 'aqua-class', 'orange-class']
 function a({ row, columnIndex }: SpanMethodProps) {
   // HARDCODED! columnIndex 4 === chemCode --> veri değişirse değiştir!
-  if ((columnIndex === 7 || columnIndex === 8) && row.recipeType === 1) {
-    return 'green-class'
+  if ((columnIndex === 7 || columnIndex === 8) && row.recipeType === 1 && row.processOrder) {
+    const color = rgbClasses[row.processOrder % rgbClasses.length]
+    return color
   }
   return 'normal-class'
 }
@@ -94,73 +95,73 @@ function a({ row, columnIndex }: SpanMethodProps) {
       <ElTableColumn :label="title" align="center">
         <ElTableColumn
           prop="processOrder"
-          label="processOrder"
+          :label="t('recipe.processOrder')"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
           prop="recipeType"
-          label="recipeType"
+          :label="t('recipeType')"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
           prop="programNo"
-          label="programNo"
+          :label="t('programNo')"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
-          prop="processOrder"
-          label="processOrder"
+          prop="programName"
+          :label="t('programName')"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
           prop="ISN"
-          label="ISN"
+          :label="t('recipe.ISN')"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
           prop="mainStep"
-          label="mainStep"
+          :label="t('recipe.mainStep')"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
           prop="parallelStep"
-          label="parallelStep"
+          :label="t('weighingInformation.parallelStep')"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
           prop="chemCode"
-          label="chemCode"
+          :label="t('materialCode')"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
           prop="materialName"
-          label="materialName"
+          :label="t('materialName')"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
-          label="programProcessNo"
+          :label="t('recipe.processNo')"
           prop="programProcessNo"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
-          label="amount"
+          :label="t('recipe.amount')"
           prop="amount"
           align="center"
           show-overflow-tooltip
         />
         <ElTableColumn
           prop="unit"
-          label="unit"
+          :label="t('recipe.metric')"
           align="center"
           show-overflow-tooltip
         />
@@ -175,6 +176,21 @@ function a({ row, columnIndex }: SpanMethodProps) {
 }
 .green-class {
   background: rgba(40, 220, 40, 0.6) !important;
+}
+.orange-class {
+  background: rgba(235, 155, 36, 0.6) !important;
+}
+.blue-class {
+  background: rgba(40, 220, 220, 0.6) !important;
+}
+.red-class {
+  background: rgba(250, 151, 175, 0.6) !important;
+}
+.aqua-class {
+  background: rgba(144, 245, 245, 0.6) !important;
+}
+.violet-class {
+  background: rgba(225, 145, 250, 0.6) !important;
 }
 @media screen and (max-width: 735px) {
   .disable {

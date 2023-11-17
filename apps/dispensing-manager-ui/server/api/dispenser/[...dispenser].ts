@@ -39,12 +39,12 @@ router.post('/joborderlogs', defineEventHandler(async (event) => {
       .select(selectParameters)
       .orderBy('r.REQNUMBER', 'asc')
       .where((builder) => {
-        if (type === 'chem') {
-          builder.where('r.ACTUALRECIPETYPE', '=', 0)
-        }
-        if (type === 'dye') {
-          builder.where('r.ACTUALRECIPETYPE', '=', 1)
-        }
+        // if (type === 'chem') {
+        //   builder.where('r.ACTUALRECIPETYPE', '=', 0)
+        // }
+        // if (type === 'dye') {
+        //   builder.where('r.ACTUALRECIPETYPE', '=', 1)
+        // }
         if (isCanceled && isCanceled === 'true') {
           builder.where('r.STATUS', 3)
             .orWhere('r.STATUS', 8)

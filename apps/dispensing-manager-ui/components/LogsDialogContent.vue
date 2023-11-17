@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import moment from 'moment'
+import { rowBGColorHandler } from '../shared/functions'
 import type { Column } from '~/shared/types'
 
 const props = defineProps({
@@ -49,8 +50,7 @@ async function applyFilters(updatedValue) {
     },
   })
   logRows.value = tempFilteredLogs
-  console.log(logRows.value)
-  machinename.value = logRows.value[0].machineName
+  machinename.value = logRows.value[0]?.machineName
 }
 </script>
 
@@ -74,11 +74,12 @@ async function applyFilters(updatedValue) {
         @update-filter-slots="(evt) => applyFilters(evt)"
       >
         <template #custombody="log">
-          <q-tr>
+          <q-tr class="text-override-left">
             <q-td
               v-for="row in log.cols"
               :key="row.name"
               :props="log"
+              :style="rowBGColorHandler(row)"
             >
               <span v-if="row.field === 'status' && row.value !== null">
                 {{ t(`statusCodes.${row.value}`) }}

@@ -13,21 +13,44 @@ export function textAlignOverride(pos: string) {
   if (pos === 'right')
     return 'text-override-right'
 }
-
+/**
+ * rowBGColorHandler function sets background color to related color in status columns. Hardcoded numbers (0, 1, 2, 3, 4, 8, 10) represent the current situation of the process.
+ * @param row row in table
+ * @returns style of the status column for each row respectively
+ */
+export function rowBGColorHandler(row: any) {
+  let temp = 'background-color: '
+  if (row.field === 'status') {
+    if (row.value === 0)
+      temp += '#007BFF'
+    if (row.value === 1)
+      temp += '#64abfc'
+    if (row.value === 2)
+      temp += '#73cece'
+    if (row.value === 4)
+      temp += '#7f72fa'
+    if (row.value === 10)
+      temp += '#ffbb00'
+    if (row.value === 3)
+      temp += '#4CAF50'
+    if (row.value === 8)
+      temp += '#FF4B4B'
+    temp += '; color: white; font-weight: bolder; font-size: medium'
+  }
+  return temp
+}
 /** Returns a database name of the spesific attribute */
 
 export async function filtersToKnex(filters: Array<FilterSlot>, attributes: any, knexInstance: Knex.QueryBuilder) {
+  // TODO: knexInstance içine bak belki select parameters kenx objenin içerisinden alınıyordur
   const resultQuery: Knex.QueryBuilder = await knexInstance
     .where((builder) => {
       filters.forEach((filter) => {
         const attName = filter.optionValue ? filter.optionValue : filter.field
         const DBName = attributes[attName]
-        console.log(attributes)
-        console.log(DBName)
-        console.log(attName)
 
         if (filter.isOrderFilter) {
-          console.log('Ordering is an optional for backend. Its not implemented right now.')
+          // Ordering is an optional for backend. Its not implemented right now.
         } else if (filter.filterType === 'select' || filter.filterType === 'multiselect') {
           builder.andWhere((innerBuilder) => {
             filter.value.option.forEach((opt) => {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { navigateToPage, textAlignOverride } from '../shared/functions'
+import { navigateToPage, rowBGColorHandler, textAlignOverride } from '../shared/functions'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
@@ -23,7 +23,8 @@ const columnsRecipe: Column[] = [
   { name: 'programno', label: t('programNo'), field: 'programno', filterable: true, filterType: 'comparison' },
   { name: 'programname', label: t('programName'), field: 'programname', filterable: true }, // TODO: select
   { name: 'stepno', label: t('distributionProcessor.stepNo'), field: 'stepno', filterable: true, filterType: 'comparison' },
-  { name: 'recipeType', label: t('distributionProcessor.recipeType'), field: 'recipeType' }, // filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType'
+  { name: 'recipeType', label: t('distributionProcessor.recipeType'), field: 'recipeType', filterable: true, filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType' },
+  // filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType'}]
   { name: 'recipeProcessNo', label: t('distributionProcessor.recipeOrder'), field: 'recipeProcessNo', filterable: true, filterType: 'comparison' },
   { name: 'recipeStepNo', label: t('distributionProcessor.recipeStepNum'), field: 'recipeStepNo', filterable: true, filterType: 'comparison' },
   { name: 'status', label: t('statusCodes.text'), field: 'status' },
@@ -47,29 +48,37 @@ const finishedColumns = [
 // TODO: Will request every 10 seconds to ensure data stream
 const recipe = ref()
 const isChem = ref('chem')
+const recipeTypeDecider = ref('ongoing')
 const ongoingFilters = ref([])
 const canceledFilters = ref([])
 const recipeChem = ref()
 const recipeDye = ref()
 const canceledVisible = ref(false)
 const canceled = ref()
-await updateRecipeChem()
-await updateRecipeDye()
+// await updateRecipeChem()
+// await updateRecipeDye()
+await updateRecipe()
 await updateRecipeCancel()
-async function updateRecipeChem() {
-  recipeChem.value = await $fetch('/api/dispenser/joborderlogs?type=chem', {
+async function updateRecipe() {
+  recipe.value = await $fetch('/api/dispenser/joborderlogs', {
     method: 'post',
     body: ongoingFilters.value,
   })
 }
-async function updateRecipeDye() {
-  recipeDye.value = await $fetch('/api/dispenser/joborderlogs?type=dye', {
-    method: 'post',
-    body: ongoingFilters.value,
-  })
-}
+// async function updateRecipeChem() {
+//   recipeChem.value = await $fetch('/api/dispenser/joborderlogs?type=chem', {
+//     method: 'post',
+//     body: ongoingFilters.value,
+//   })
+// }
+// async function updateRecipeDye() {
+//   recipeDye.value = await $fetch('/api/dispenser/joborderlogs?type=dye', {
+//     method: 'post',
+//     body: ongoingFilters.value,
+//   })
+// }
 
-updateRecipeTable()
+// updateRecipeTable()
 async function updateRecipeCancel() {
   canceled.value = await $fetch('/api/dispenser/joborderlogs?isCanceled=true', {
     method: 'post',
@@ -80,14 +89,14 @@ const material = ref()
 async function fetchMaterialData(reqnumber: number) {
   const materialDataTemp = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
   material.value = materialDataTemp
-  console.log(material.value)
 }
 
 async function applyFiltersOngoing(updatedValue) {
   ongoingFilters.value = updatedValue
-  await updateRecipeChem()
-  await updateRecipeDye()
-  updateRecipeTable()
+  await updateRecipe()
+  // await updateRecipeChem()
+  // await updateRecipeDye()
+  // updateRecipeTable()
 }
 
 async function applyFiltersCanceled(updatedValue) {
@@ -96,37 +105,16 @@ async function applyFiltersCanceled(updatedValue) {
 }
 
 function updateRecipeTable() {
-  if (isChem.value === 'chem') {
-    canceledVisible.value = false
-    recipe.value = recipeChem.value
-  } else if (isChem.value === 'dye') {
-    canceledVisible.value = false
-    recipe.value = recipeDye.value
-  } else {
-    canceledVisible.value = !canceledVisible.value
-  }
-}
-
-function rowBGColorHandler(row: any) {
-  let temp = 'background-color: '
-  if (row.field === 'status') {
-    if (row.value === 0)
-      temp += '#007BFF'
-    if (row.value === 1)
-      temp += '#64abfc'
-    if (row.value === 2)
-      temp += '#73cece'
-    if (row.value === 4)
-      temp += '#7f72fa'
-    if (row.value === 10)
-      temp += '#ffbb00'
-    if (row.value === 3)
-      temp += '#4CAF50'
-    if (row.value === 8)
-      temp += '#FF4B4B'
-    temp += '; color: white; font-weight: bolder; font-size: large'
-  }
-  return temp
+//   if (isChem.value === 'chem') {
+//     canceledVisible.value = false
+//     recipe.value = recipeChem.value
+//   } else if (isChem.value === 'dye') {
+//     canceledVisible.value = false
+//     recipe.value = recipeDye.value
+//   } else {
+//     canceledVisible.value = !canceledVisible.value
+//   }
+  canceledVisible.value = !canceledVisible.value
 }
 
 const selectedJobOrder = ref()
@@ -137,7 +125,6 @@ const w = ' '
 for (let i = 0; i < 2; i++) a.push(w)
 
 async function selectRow(rowReqNumber: number) {
-  console.log(rowReqNumber)
   selectedJobOrderTableRow.value = rowReqNumber
   await fetchMaterialData(rowReqNumber)
 }
@@ -146,9 +133,8 @@ function toggleRow(row: any) {
   row.expand = !row.expand
 }
 
-async function clickShowRecipe(row) {
-  console.log(row)
-  await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.batchCorrectionNo}`)
+async function clickShowRecipe(row, isLogs: boolean) {
+  await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.batchCorrectionNo}&isLogs=${isLogs}`)
 }
 </script>
 
@@ -163,7 +149,10 @@ async function clickShowRecipe(row) {
       >
     </span>
     <div class="responsive-flex-container ">
-      <div class="responsive-table" :style="canceledVisible ? 'display: none;' : ''">
+      <div
+        class="responsive-table"
+        :style="canceledVisible ? 'display: none;' : ''"
+      >
         <FilterableTable
           :rows="recipe"
           :columns="columnsRecipe"
@@ -174,18 +163,20 @@ async function clickShowRecipe(row) {
           <!-- style="width: 55%; height: 100%;" -->
           <template #top-right>
             <q-space />
-            <q-btn-toggle
-              v-model="isChem"
-              class="table-header-toggle"
-              toggle-color="secondary"
-              :options="[
-                { label: t('chemical'), value: 'chem' },
-                { label: t('dye'), value: 'dye' },
-                { label: t('canceledJobOrdersTable'), value: 'cancel' },
-              ]"
-              @update:model-value="updateRecipeTable()"
-            />
-            <!-- @vnode-updated="isChem ? recipe = recipeChem : recipe = recipeDye + console.log(isChem)" -->
+            <div class="mt-2">
+              <q-btn-toggle
+                v-model="recipeTypeDecider"
+                class="table-header-toggle"
+                toggle-color="secondary"
+                :options="[
+                  // { label: t('chemical'), value: 'chem' },
+                  // { label: t('dye'), value: 'dye' },
+                  { label: t('ongoingJoborders'), value: 'ongoing' },
+                  { label: t('canceledJobOrdersTable'), value: 'cancel' },
+                ]"
+                @update:model-value="updateRecipeTable()"
+              />
+            </div>
           </template>
           <template #custombody="recipe">
             <q-tr
@@ -216,13 +207,17 @@ async function clickShowRecipe(row) {
                 >
                   <!-- FIXME: min width should not be 300px -->
                   <q-list style="min-width: 300px;">
-                    <q-item v-close-popup clickable>
+                    <q-item
+                      v-close-popup
+                      clickable
+                      @click="clickShowRecipe(recipe.row, true)"
+                    >
                       <q-item-section>{{ t('distributionProcessor.rcMenu.showLogs') }}</q-item-section>
                     </q-item>
                     <q-item
                       v-close-popup
                       clickable
-                      @click="clickShowRecipe(recipe.row)"
+                      @click="clickShowRecipe(recipe.row, false)"
                     >
                       <q-item-section>{{ t('distributionProcessor.rcMenu.showRecipe') }}</q-item-section>
                     </q-item>
@@ -250,25 +245,28 @@ async function clickShowRecipe(row) {
         <FilterableTable
           :rows="canceled"
           :columns="finishedColumns"
+          :is-expandable="true"
           :pagination="{ rowsPerPage: paginationSync, page: paginationPageRight }"
           @update:pagination="(newPag) => { paginationSync = newPag.rowsPerPage, paginationPageRight = newPag.page }"
           @update-filter-slots="(evt) => applyFiltersCanceled(evt)"
         >
           <!-- style="width: 100%; height: 100%;" -->
           <template #top-right>
-            <q-space />
-            <q-btn-toggle
-              v-model="isChem"
-              class="table-header-toggle"
-              toggle-color="secondary"
-              :options="[
-                { label: t('chemical'), value: 'chem' },
-                { label: t('dye'), value: 'dye' },
-                { label: t('canceledJobOrdersTable'), value: 'cancel' },
-              ]"
-              @update:model-value="updateRecipeTable()"
-            />
-            <!-- @vnode-updated="isChem ? recipe = recipeChem : recipe = recipeDye + console.log(isChem)" -->
+            <div class="mt-2 absolute right-3">
+              <q-space />
+              <q-btn-toggle
+                v-model="recipeTypeDecider"
+                class="table-header-toggle"
+                toggle-color="secondary"
+                :options="[
+                  // { label: t('chemical'), value: 'chem' },
+                  // { label: t('dye'), value: 'dye' },
+                  { label: t('ongoingJoborders'), value: 'ongoing' },
+                  { label: t('canceledJobOrdersTable'), value: 'cancel' },
+                ]"
+                @update:model-value="updateRecipeTable()"
+              />
+            </div>
           </template>
           <template #custombody="props">
             <q-tr :props="props">
@@ -305,13 +303,17 @@ async function clickShowRecipe(row) {
             >
               <!-- FIXME: min width should not be 300px -->
               <q-list style="min-width: 300px;">
-                <q-item v-close-popup clickable>
+                <q-item
+                  v-close-popup
+                  clickable
+                  @click="clickShowRecipe(props.row, true)"
+                >
                   <q-item-section>{{ t('distributionProcessor.rcMenu.showLogs') }}</q-item-section>
                 </q-item>
                 <q-item
                   v-close-popup
                   clickable
-                  @click="clickShowRecipe(props.row)"
+                  @click="clickShowRecipe(props.row, false)"
                 >
                   <q-item-section>{{ t('distributionProcessor.rcMenu.showRecipe') }}</q-item-section>
                 </q-item>
@@ -402,6 +404,9 @@ async function clickShowRecipe(row) {
 
 <style scoped>
 @media (max-width: 768px) {
+  .table-header-toggle :deep(.q-btn) {
+    line-height: 1rem !important;
+  }
   .responsive-flex-container {
     display: block !important;
   }
@@ -414,10 +419,10 @@ async function clickShowRecipe(row) {
 .responsive-flex-container {
   display: flex;
   justify-content: center;
-  align-items: center;
   overflow-x: hidden;
   width: 100%;
   padding: 1rem;
+  min-height: 25rem;
 }
 .responsive-table {
   width: 100%;

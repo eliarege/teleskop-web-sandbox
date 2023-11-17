@@ -29,7 +29,10 @@
   "submit": "Kaydet",
   "currentMachine": "Mevcut Makine",
   "apply": "Filtreleri Uygula",
-
+  "hour": "saat",
+  "min": "dk",
+  "ongoingJoborders": "İşlemdeki İş Emirleri",
+  "search": "Ara",
   "distributionProcessor": {
     "a": "Dağıtım Yöneticisi",
     "recipeRequest": "Reçete Bilgilerini Sorgulama",
@@ -97,6 +100,7 @@
 
   "recipe": {
     "a": "Reçete",
+    "recipeTable": "Reçete Tablosu",
     "amount": "Miktar",
     "changePlannedMachine": "Planlanan Makineyi Değiştir",
     "header": "Reçete Bilgileri Sorgulama",
@@ -160,6 +164,7 @@
     "1": "Boya"
   },
   "units": {
+    "0": "%",
     "1": "gr/lt",
     "2": "cc/lt",
     "3": "gr",
