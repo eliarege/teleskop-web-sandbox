@@ -110,6 +110,7 @@ const definitionItems = [
           },
           {
             label: 'Kazan-Materyal Eşleştirme',
+            to: '/tank-material-matching',
           },
           {
             label: 'Kazan-Materyal Su Limit Tanımları',
