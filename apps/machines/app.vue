@@ -143,6 +143,7 @@ const definitionItems = [
           },
           {
             label: 'Tüketim Sayaç Seçimi',
+            to: '/consumption-counter-select',
           },
           {
             label: 'Teorik Su Tüketimi Ayarları',
