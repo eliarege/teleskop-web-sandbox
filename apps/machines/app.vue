@@ -147,6 +147,7 @@ const definitionItems = [
           },
           {
             label: 'Teorik Su Tüketimi Ayarları',
+            to: '/theoretical-water-consumptions',
           },
         ],
       },

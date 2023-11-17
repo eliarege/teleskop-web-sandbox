@@ -41,15 +41,15 @@ async function handleCommandClick(commandNo: number) {
     </q-card-section>
 
     <q-card-section class="flex flex-col">
-      <q-input label="Mal (Kumaş) Miktarı - Kilo" />
-      <q-input label="AK Flotte Oranı Parametresi" />
-      <q-input label="Parça Sayısı" />
-      <q-input label="Parti Numarası" />
-      <q-input label="Refakat Numarası" />
-      <q-input label="Kumaş Uzunluğu" />
-      <q-input label="Müşteri" />
-      <q-input label="Sipariş Numarası" />
-      <q-input label="Kumaş Tipi" />
+      <q-select label="Mal (Kumaş) Miktarı - Kilo" />
+      <q-select label="AK Flotte Oranı Parametresi" />
+      <q-select label="Parça Sayısı" />
+      <q-select label="Parti Numarası" />
+      <q-select label="Refakat Numarası" />
+      <q-select label="Kumaş Uzunluğu" />
+      <q-select label="Müşteri" />
+      <q-select label="Sipariş Numarası" />
+      <q-select label="Kumaş Tipi" />
     </q-card-section>
   </q-card>
 </template>
