@@ -47,13 +47,13 @@ async function handleMachineClick(machineId: number) {
       </q-list>
     </q-card-section>
 
-    <q-card-section class="flex flex-col">
+    <q-card-section class="w-xs flex flex-col">
       <div class="flex flex-col">
         <h3>Su Kaynağı - IO</h3>
         <q-select />
         <q-select />
       </div>
-      <div class="flex flex-col">
+      <div class="w-xs flex flex-col">
         <h3>Su Miktarı - Parametre</h3>
         <q-select />
       </div>

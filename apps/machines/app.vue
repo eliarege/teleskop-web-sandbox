@@ -87,6 +87,7 @@ const definitionItems = [
 
           {
             label: 'Akıllı İstek Komut Tanımları',
+            to: 'smart-request-command-definitions',
           },
 
           {
