@@ -160,6 +160,7 @@ const definitionItems = [
         items: [
           {
             label: 'Teleskop Ayarları',
+            to: '/teleskop-settings',
           },
           {
             label: 'Proje Görünüm Dili',
