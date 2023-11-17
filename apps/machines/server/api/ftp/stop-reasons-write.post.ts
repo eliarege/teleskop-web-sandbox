@@ -6,15 +6,14 @@ export default defineEventHandler(async () => {
   const ftpClient = new ftp.Client()
   ftpClient.ftp.verbose = false
   try {
-    const finishReasons = await knex('BFDYLOTFINISHREASONS').select({
-      reasonId: 'REASONID',
-      typeId: 'TYPEID',
-      text: 'TEXT',
+    const stopReasons = await knex('BFSTOPREASONS').select({
+      stopCode: 'STOPCODE',
+      stopName: 'STOPNAME',
       reportToERP: 'ReportToERP',
     })
 
     const tbb = new TBB6500FtpClient('192.168.88.202')
-    await tbb.writeFinishReasons(finishReasons)
+    await tbb.writeStopReasons(stopReasons)
   } catch (err) {
     console.error(err)
   }

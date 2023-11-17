@@ -11,6 +11,7 @@ const emit = defineEmits(['deleteMachine', 'addMachine'])
 
 const showNewMachine = ref(false)
 const showEditMachine = ref(false)
+const showMachineParameters = ref(false)
 
 async function handleMachineDelete() {
   const machineIds = props.selectedMachines.map(m => m.id)
@@ -59,6 +60,13 @@ async function handleMachineDelete() {
         color="primary"
         class="mr-4"
       />
+      <q-btn
+        label="Makine Sabitleri"
+        no-caps
+        color="primary"
+        class="mr-4"
+        @click="showMachineParameters = true"
+      />
     </q-card-section>
 
     <q-card-section class="flex flex-row items-end mr-8">
@@ -87,6 +95,12 @@ async function handleMachineDelete() {
     :selected-machines="selectedMachines"
     @close="showEditMachine = false"
     @add-machine="$emit('addMachine')"
+  />
+  <MachineParametersDialog
+    v-if="showMachineParameters"
+    :show="showMachineParameters"
+    :selected-machines="selectedMachines"
+    @close="showMachineParameters = false"
   />
 </template>
 

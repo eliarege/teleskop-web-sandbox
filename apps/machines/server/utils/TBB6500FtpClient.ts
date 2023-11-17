@@ -4,7 +4,16 @@ import { fileCommandAlarmReasonsParser } from './fileParsers/fileCommandAlarmRea
 import { fileMachineParametersParser } from './fileParsers/fileMachineParametersParser'
 import { fileMachineParameterValuesParser } from './fileParsers/fileMachineParameterValuesParser'
 import { fileFinishReasonWriter } from './fileWriters/fileFinishReasonWriter'
-import type { FinishReason } from '~/types'
+import { fileStopReasonWriter } from './fileWriters/fileStopReasonWriter'
+import { fileControllerModelParser } from './fileParsers/fileControllerModelParser'
+import { fileUserWriter } from './fileWriters/fileUserWriter'
+import { fileAnalogInputParser } from './fileParsers/fileAnalogInputParser'
+import { fileAnalogOutputParser } from './fileParsers/fileAnalogOutputParser'
+import { fileDigitalInputParser } from './fileParsers/fileDigitalInputParser'
+import { fileDigitalOutputParser } from './fileParsers/fileDigitalOutputParser'
+import { fileCounterParser } from './fileParsers/fileCounterParser'
+import { calcIONumber } from '.'
+import type { FinishReason, IOInput, IOOutput, MachineStopReason, User } from '~/types'
 
 export class TBB6500FtpClient {
   host: string
@@ -91,6 +100,28 @@ export class TBB6500FtpClient {
     }
   }
 
+  async writeUsers(users: User[]) {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/users'
+      const sourcePath = './server/data/users/users'
+      const remotePath = '/tbb6500/data/users/users'
+
+      const content = fileUserWriter(users)
+
+      /*       if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+      await fs.promises.writeFile(sourcePath, content)
+      await this.ftpClient.uploadFrom(sourcePath, remotePath)
+ */
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
   async fetchManualReasons() {
     try {
       await this.connectClient()
@@ -147,6 +178,28 @@ export class TBB6500FtpClient {
     }
   }
 
+  async writeStopReasons(stopReasons: MachineStopReason[]) {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/config'
+      const sourcePath = './server/data/config/durusnedenleri'
+      const remotePath = '/tbb6500/data/config/durusnedenleri'
+
+      const content = fileStopReasonWriter(stopReasons)
+
+      /*       if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+      await fs.promises.writeFile(sourcePath, content)
+      await this.ftpClient.uploadFrom(sourcePath, remotePath)
+ */
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
   async fetchFinishReasons() {
     try {
       await this.connectClient()
@@ -180,7 +233,6 @@ export class TBB6500FtpClient {
 
       const content = fileFinishReasonWriter(finishReasons)
 
-      console.log('content = ', content)
       /*       if (!fs.existsSync(sourceFolderPath)) {
         await fs.promises.mkdir(sourceFolderPath)
       }
@@ -258,6 +310,172 @@ export class TBB6500FtpClient {
       }))
 
       return res
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchControllerModel() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/var'
+      const sourcePath = './server/data/var/controllerModel'
+      const remotePath = '/var/controllerModel'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const controllerModel = fileControllerModelParser(content)
+
+      return controllerModel
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchAnalogInputs() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/io'
+      const sourcePath = './server/data/io/analoginput'
+      const remotePath = '/tbb6500/data/io/analoginput'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+
+      const controllerModel = await this.fetchControllerModel()
+      const analogInputs = fileAnalogInputParser(content).map(input => ({
+        ...input,
+        id: calcIONumber(input, controllerModel),
+      }))
+
+      return analogInputs
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchAnalogOutputs() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/io'
+      const sourcePath = './server/data/io/analogoutput'
+      const remotePath = '/tbb6500/data/io/analogoutput'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const controllerModel = await this.fetchControllerModel()
+      const analogOutputs = fileAnalogOutputParser(content).map(input => ({
+        ...input,
+        id: calcIONumber(input, controllerModel),
+      }))
+
+      return analogOutputs
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchDigitalInputs() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/io'
+      const sourcePath = './server/data/io/sayisalinput'
+      const remotePath = '/tbb6500/data/io/sayisalinput'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const controllerModel = await this.fetchControllerModel()
+      const digitalInput = fileDigitalInputParser(content).map(input => ({
+        ...input,
+        id: calcIONumber(input, controllerModel),
+      }))
+
+      return digitalInput
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchDigitalOutputs() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/io'
+      const sourcePath = './server/data/io/sayisaloutput'
+      const remotePath = '/tbb6500/data/io/sayisaloutput'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+
+      const controllerModel = await this.fetchControllerModel()
+      const digitalOutputs = fileDigitalOutputParser(content).map(input => ({
+        ...input,
+        id: calcIONumber(input, controllerModel),
+      }))
+
+      return digitalOutputs
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchCounters() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/io'
+      const sourcePath = './server/data/io/sayac'
+      const remotePath = '/tbb6500/data/io/sayac'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const controllerModel = await this.fetchControllerModel()
+      const analogInputs = fileCounterParser(content).map(input => ({
+        ...input,
+        id: calcIONumber(input, controllerModel),
+      }))
+
+      return analogInputs
     } catch (err) {
       console.error(err)
     } finally {

@@ -6,15 +6,20 @@ export default defineEventHandler(async () => {
   const ftpClient = new ftp.Client()
   ftpClient.ftp.verbose = false
   try {
-    const finishReasons = await knex('BFDYLOTFINISHREASONS').select({
-      reasonId: 'REASONID',
-      typeId: 'TYPEID',
-      text: 'TEXT',
-      reportToERP: 'ReportToERP',
+    const users = await knex('BFUSERS').select({
+      userId: 'userID',
+      userName: 'userName',
+      userSurname: 'userSurname',
+      userPass: 'userPass',
+      userInfo: 'userInfo',
+      userActive: 'userActive',
+      userType: 'userType',
+      userMode: 'userMode',
+      userMode2: 'userMode2',
     })
 
     const tbb = new TBB6500FtpClient('192.168.88.202')
-    await tbb.writeFinishReasons(finishReasons)
+    await tbb.writeUsers(users)
   } catch (err) {
     console.error(err)
   }

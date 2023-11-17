@@ -108,3 +108,20 @@ export interface MachineParameter {
   selectionValues: string
   isDeleted: number
 }
+
+export interface IOInput {
+  id: number
+  card: number
+  canal: number
+  name: string
+  enabled: number
+}
+
+export interface IOOutput {
+  id: number
+  card: number
+  canal: number
+  name: string
+  enabled: number
+  defaultValue: number
+}
