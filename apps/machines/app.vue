@@ -107,6 +107,7 @@ const definitionItems = [
         items: [
           {
             label: 'Kazan Tanımları',
+            to: 'tank-definitions',
           },
           {
             label: 'Kazan-Materyal Eşleştirme',
