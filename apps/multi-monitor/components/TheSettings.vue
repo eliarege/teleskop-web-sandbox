@@ -30,6 +30,8 @@ function setDefaultSettings() {
   store.water = true
   store.locale = 'tr'
 }
+const config = useRuntimeConfig()
+const machineGroups = computed(() => new Set(store.machine.map(g => g.groupName)))
 </script>
 
 <template>
@@ -41,6 +43,7 @@ function setDefaultSettings() {
             <div class="flex flex-col w-full items-center justify-center self-center bg-white overflow-auto">
               <q-list class="w-full">
                 <q-expansion-item
+                  v-if="JSON.parse(config.public.isDigitalFactory) === false"
                   class="text-black"
                   expand-separator
                   :icon="sharpLanguage"
@@ -119,6 +122,32 @@ function setDefaultSettings() {
                         :label="t('settings.group')"
                         checked-icon="task_alt"
                         unchecked-icon="highlight_off"
+                      />
+                    </div>
+                  </div>
+                  <q-separator spaced />
+                  <span class="w-full flex-center">
+                    {{ t('settings.filter.title') }}
+                  </span>
+                  <div class="grid grid-cols-3">
+                    <div v-for="item in store.machine" :key="item.id">
+                      <q-checkbox
+                        :label="item.name"
+                        :model-value="!store.filteredMachines.has(item.id)"
+                        @update:model-value="(r) => r ? store.filteredMachines.delete(item.id) : store.filteredMachines.add(item.id)"
+                      />
+                    </div>
+                  </div>
+                  <q-separator spaced />
+                  <span class="w-full flex-center">
+                    {{ t('settings.filter.group-title') }}
+                  </span>
+                  <div class="grid grid-cols-3">
+                    <div v-for="(item, idx) in machineGroups" :key="idx">
+                      <q-checkbox
+                        :label="item"
+                        :model-value="!store.filteredGroups.has(item)"
+                        @update:model-value="(r) => r ? store.filteredGroups.delete(item) : store.filteredGroups.add(item)"
                       />
                     </div>
                   </div>

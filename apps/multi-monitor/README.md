@@ -25,6 +25,7 @@ services:
       NUXT_TELESKOP_HAS_DY_LOGS: ${BOOLEAN}
       NUXT_IS_STAGING: ${BOOLEAN}
       NUXT_PUBLIC_WEBSOCKIFY_PORT: ${WEBSOCKIFY_PORT}
+      NUXT_PUBLIC_IS_DIGITAL_FACTORY: ${IS_DIGITAL_FACTORY}
     pull_policy: always
 
   machine-status:

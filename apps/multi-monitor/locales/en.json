@@ -106,12 +106,16 @@
     "group": "Group",
     "language-settings": "Language Settings",
     "visual-config": "Visual Configuration",
-    "sort-by": "Filter",
+    "sort-by": "Machine Order",
     "sort-id": "ID",
     "sort-active": "Active Machines",
     "sort-idle": "Idle Machines",
     "sort-group": "Group",
-    "options": "Options"
+    "options": "Options",
+    "filter": {
+      "title": "Machine Filter",
+      "group-title": "Group Filter"
+    }
   },
   "batchLogs": {
     "id": "ID",

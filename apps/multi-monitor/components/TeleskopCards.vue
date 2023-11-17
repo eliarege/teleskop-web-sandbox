@@ -2,6 +2,7 @@
 import { Icon } from '@iconify/vue'
 import type { PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { color } from 'd3'
 import type { MachineData } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
 import { useColorStore } from '~/store/Colors'
@@ -16,10 +17,12 @@ const { t } = useI18n()
 const store = useDataStore()
 const colors = useColorStore()
 const sortedMachines = computed(() => {
-  const activeSort = props.machineData.filter(
+  const filteredGroups = props.machineData.filter(group => !store.filteredGroups.has(group.groupName))
+  const filteredMachines = filteredGroups.filter(item => !store.filteredMachines.has(item.id))
+  const activeSort = filteredMachines.filter(
     machine => machine.runningBatchStatus !== 0,
   )
-  const inactiveSort = props.machineData.filter(
+  const inactiveSort = filteredMachines.filter(
     machine => machine.runningBatchStatus === 0,
   )
   if (store.sortMachines === 3) {
@@ -33,15 +36,15 @@ const sortedMachines = computed(() => {
       ...inactiveSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
     ]
   } else if (store.sortMachines === 4) {
-    return [...props.machineData].sort((a, b) => a.groupName < b.groupName ? -1 : 1,
+    return [...filteredMachines].sort((a, b) => a.groupName < b.groupName ? -1 : 1,
     )
   } else if (store.sortMachines === 5) {
-    return props.machineData.filter(alarm => alarm.currentAlarmStatus !== 2).sort((a, b) => a.currentAlarmStatus > b.currentAlarmStatus ? 1 : -1)
+    return filteredMachines.filter(alarm => alarm.currentAlarmStatus !== 2).sort((a, b) => a.currentAlarmStatus > b.currentAlarmStatus ? 1 : -1)
   } else {
-    return [...props.machineData].sort((a, b) => (a.id < b.id ? -1 : 1))
+    return [...filteredMachines].sort((a, b) => (a.id < b.id ? -1 : 1))
   }
 })
-// machine connection
+// #region FUNCTIONS
 function connectionStatus(params: number) {
   if (params === 1) {
     return '/icons/baglanti-var.png'
@@ -77,18 +80,37 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
     return colors.cardIdleBg
   } else return colors.cardActiveBg
 }
-///////
+function textColor(bgColor: string) {
+  const colorToRGB = color(bgColor)!.rgb()
+  const sRGB = {
+    r: colorToRGB.r / 255,
+    g: colorToRGB.g / 255,
+    b: colorToRGB.b / 255,
+  }
+  function sRGBtoLin(colorChannel: number) {
+    if (colorChannel <= 0.04045) {
+      return colorChannel / 12.92
+    } else {
+      return ((colorChannel + 0.055) / 1.055) ** 2.4
+    }
+  }
+  return (0.2126 * sRGBtoLin(sRGB.r) + 0.7152 * sRGBtoLin(sRGB.g) + 0.0722 * sRGBtoLin(sRGB.b)) > 0.5 ? 'black' : 'white'
+}
+function isScreenViable(screen: number) {
+  return screen < 900
+}
+// #endregion
 </script>
 
 <template>
-  <div class="cardwrapper" :class="store.mode === false ? 'ml-25' : ''">
+  <div class="card-wrapper" :class="store.mode === false ? 'ml-25' : ''">
     <div
       v-for="element in sortedMachines"
       :key="element.id"
-      class="cards"
-      :style="{ background: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus) }"
+      class="card-container"
+      :style="{ background: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus), color: textColor(cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus)) }"
     >
-      <div class="commandtitle p-1" :style="{ background: colors.cardItemBg }">
+      <div class="command-title p-1" :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }">
         <div class="ml-3">
           <q-tooltip
             transition-show="scale"
@@ -103,11 +125,11 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
           <span v-if="store.group"> {{ element.groupName }} &nbsp; </span>
           {{ element.loggedInOperatorName }}
         </div>
-        <NuxtLink :to="screenWidth < 900 ? '/' : `vnc/${element.id}`" :target="screenWidth < 900 ? '_self' : '_blank'">
+        <NuxtLink :to="isScreenViable(screenWidth) ? '/' : `vnc/${element.id}`" :target="isScreenViable(screenWidth) ? '_self' : '_blank'">
           <span
             class="flex w-min whitespace-nowrap text-left"
             :class="
-              screenWidth < 900
+              isScreenViable(screenWidth)
                 ? 'cursor-not-allowed opacity-70'
                 : 'cursor-pointer hover:(underline text-white)'
             "
@@ -116,11 +138,11 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
           </span>
         </NuxtLink>
       </div>
-      <div class="items justify-center">
-        <span class="item">{{ element.runningStartHour }}</span>
+      <div class="card-items justify-center">
+        <span class="card-items__item">{{ element.runningStartHour }}</span>
         <NuxtLink
           :to="element.runningBatchStatus !== 0 ? `/details/${element.id}` : '/'"
-          class="item hover:underline hover:text-shadow-lg"
+          class="card-items__item hover:underline hover:text-shadow-lg"
           :class="element.runningBatchStatus !== 0 ? 'cursor-pointer' : 'cursor-not-allowed'"
         >
           <span>
@@ -129,7 +151,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         </NuxtLink>
       </div>
       <div class="machine-info">
-        <div class="temp" :style="{ background: colors.cardItemBg }">
+        <div class="thermometer" :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }">
           <Icon
             icon="jam:temperature"
             color="orange"
@@ -148,9 +170,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
             />
           </div>
         </div>
-
         <!-- ICONS -->
-
         <div class="machine-icons">
           <img
             v-if="element.runningBatchStatus !== 0"
@@ -160,7 +180,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
                 : '/icons/is-emri-on.png'
             "
           >
-          <img :src="connectionStatus(element.connectionStatus)" alt="">
+          <img :src="connectionStatus(element.connectionStatus)">
           <img
             v-if="element.autoManualStatus === 0"
             src="icons/auto.png"
@@ -173,23 +193,21 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
           >
         </div>
       </div>
-
       <!-- MACHINE INFO -->
-
-      <div v-if="store.sortMachines !== 5" class="commands">
+      <div v-if="store.sortMachines !== 5" class="machine-commands">
         <!-- ERP DROPDOWN -->
         <div
           v-show="element.runningBatchStatus === 2"
-          class="commanditems justify-center"
-          :style="{ background: colors.cardItemBg }"
+          class="machine-commands_items justify-center"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <MachineSettings :data="element" />
         </div>
         <!-- PROG ID/NAME -->
         <div
           v-show="element.runningBatchStatus === 2"
-          class="commanditems"
-          :style="{ background: colors.cardItemBg }"
+          class="machine-commands_items"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <q-tooltip
             transition-show="scale"
@@ -220,8 +238,8 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
               ? 'justify-start'
               : 'justify-center'
           "
-          class="commanditems gap-3"
-          :style="{ background: colors.cardItemBg }"
+          class="machine-commands_items gap-3"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <q-tooltip
             transition-show="scale"
@@ -239,8 +257,8 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         <!-- STEP NO / COMMAND NO / COMMAND NAME -->
         <div
           v-show="element.runningBatchStatus === 2"
-          class="commanditems justify-center"
-          :style="{ background: colors.cardItemBg }"
+          class="machine-commands_items justify-center"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <q-tooltip
             transition-show="scale"
@@ -263,8 +281,8 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         </div>
         <!-- STOP REASON (IF THERES ANY) -->
         <div
-          class="commanditems justify-center gap-1"
-          :style="{ background: colors.cardItemBg }"
+          class="machine-commands_items justify-center gap-1"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <q-tooltip
             transition-show="scale"
@@ -280,8 +298,8 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
           </span>
         </div>
         <div
-          class="commanditems justify-center"
-          :style="{ background: colors.cardItemBg }"
+          class="machine-commands_items justify-center"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
           :class="
             element.runningAlarmName === ' '
               ? 'text-white'
@@ -305,8 +323,8 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         </div>
         <div
           v-show="element.runningBatchStatus === 2"
-          class="commanditems justify-center"
-          :style="{ background: colors.cardItemBg }"
+          class="machine-commands_items justify-center"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           <div v-show="element.reqOrderIndex !== -1" class="overflow-hidden">
             <span>{{ t("teleskop.order-index") }} - {{ element.reqOrderIndex }}
@@ -325,20 +343,29 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
           </div>
         </div>
       </div>
-      <div v-else class="commands !gap-2">
+      <div v-else class="machine-commands !gap-2">
         <div
-          class="commanditems min-h-20 text-center justify-center text-4xl"
-          :style="{ background: colors.cardItemBg }"
+          class="machine-commands_items min-h-20 text-center justify-center text-4xl"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
           {{ element.name }}
         </div>
+        <div v-if="element.connectionStatus === 1">
+          <div
+            class="machine-commands_items min-h-20 text-center justify-center text-2xl alarm"
+            :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
+          >
+            {{ element.runningAlarmNo }}
+            <span v-show="element.runningAlarmName !== ' '">&nbsp;|&nbsp;</span>
+            {{ element.runningAlarmName }}
+          </div>
+        </div>
         <div
-          class="commanditems min-h-20 text-center justify-center text-2xl alarm"
-          :style="{ background: colors.cardItemBg }"
+          v-else
+          class="machine-commands_items min-h-20 text-center justify-center text-2xl alarm"
+          :style="{ background: colors.cardItemBg, color: textColor(colors.cardItemBg) }"
         >
-          {{ element.runningAlarmNo }}
-          <span v-show="element.runningAlarmName !== ' '">&nbsp;|&nbsp;</span>
-          {{ element.runningAlarmName }}
+          {{ t('teleskop.no-connection') }}
         </div>
       </div>
     </div>
@@ -346,26 +373,23 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
 </template>
 
 <style scoped lang="postcss">
-* {
-  transform: translate3d(0, 0, 0);
-}
-.cardwrapper {
+.card-wrapper {
   grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
   grid-auto-rows: repeat(auto-fill, minmax(370px, 1fr));
   @apply grid gap-x-3 gap-y-2 mt-1 mb-3 overflow-x-hidden font-extrabold;
-  .cards {
+  .card-container {
     border-radius: 20px;
     @apply flex flex-col e-border border-dark-900/10;
     .icons {
       @apply w-7 h-7 p-3px;
     }
-    .commandtitle {
+    .command-title {
       border-radius: 15px 15px 0 0;
       @apply h-5 flex flex-row-reverse justify-evenly px-3 text-center items-center;
     }
-    .items {
+    .card-items {
       @apply flex flex-row-reverse justify-evenly text-center;
-      .item {
+      .card-items__item {
         @apply e-border border-black w-full;
       }
     }
@@ -381,22 +405,22 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
           @apply w-10 h-10;
         }
       }
-      .temp {
+      .thermometer {
         border-radius: 25px;
         @apply relative w-auto bg-black h-full max-w-25 max-h-35px flex  items-center justify-center text-2xl;
       }
     }
 
-    .commands {
+    .machine-commands {
       @apply relative flex flex-col gap-2px px-1 mb-1 h-full justify-end;
-      .commanditems {
+      .machine-commands_items {
         @apply w-full h-7 flex text-center items-center rounded-2xl overflow-hidden whitespace-nowrap text-white;
       }
     }
   }
 }
 @media screen and (max-width: 735px) {
-  .cardwrapper {
+  .card-wrapper {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     grid-auto-rows: repeat(auto-fill, minmax(300px, 1fr));
     @apply mt-6 ml-0;

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import type { MachineData } from '~/shared/types'
-import { useDataStore } from '~/store/Datas'
 
 defineProps({
   formatted: String,
@@ -10,8 +9,6 @@ defineProps({
     required: true,
   },
 })
-
-const store = useDataStore()
 </script>
 
 <template>
@@ -21,24 +18,3 @@ const store = useDataStore()
     <TeleskopCards :machine-data="machineData" />
   </div>
 </template>
-
-<style lang="postcss">
-/*
-.alarm {
-   animation: alarm 0.5s linear infinite;
- }
- @keyframes alarm {
-   0% {
-     @apply text-green-400;
-   }
-   25% {
-     @apply text-white;
-   }
-   75% {
-     @apply text-red-900;
-   }
-   100% {
-     @apply text-green-400;
-   }
-} */
-</style>
