@@ -168,6 +168,7 @@ const definitionItems = [
         items: [
           {
             label: 'E-posta Bildirim Ayarları',
+            to: 'email-notification-settings',
           },
         ],
       },
