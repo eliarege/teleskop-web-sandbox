@@ -12,6 +12,7 @@ import { fileAnalogOutputParser } from './fileParsers/fileAnalogOutputParser'
 import { fileDigitalInputParser } from './fileParsers/fileDigitalInputParser'
 import { fileDigitalOutputParser } from './fileParsers/fileDigitalOutputParser'
 import { fileCounterParser } from './fileParsers/fileCounterParser'
+import { fileCommandGroupParser } from './fileParsers/fileCommandGroupParser'
 import { calcIONumber } from '.'
 import type { FinishReason, IOInput, IOOutput, MachineStopReason, User } from '~/types'
 
@@ -476,6 +477,30 @@ export class TBB6500FtpClient {
       }))
 
       return analogInputs
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchCommandGroups() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/commands'
+      const sourcePath = './server/data/commands/commandGroup'
+      const remotePath = '/tbb6500/data/commands/commandGroup'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const commandGroups = fileCommandGroupParser(content)
+
+      return commandGroups
     } catch (err) {
       console.error(err)
     } finally {
