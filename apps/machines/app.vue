@@ -113,6 +113,7 @@ const definitionItems = [
           },
           {
             label: 'Kazan-Materyal Su Limit Tanımları',
+            to: '/tank-material-water-limit-definitions',
           },
         ],
       },
