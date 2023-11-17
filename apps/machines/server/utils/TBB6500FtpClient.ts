@@ -13,8 +13,10 @@ import { fileDigitalInputParser } from './fileParsers/fileDigitalInputParser'
 import { fileDigitalOutputParser } from './fileParsers/fileDigitalOutputParser'
 import { fileCounterParser } from './fileParsers/fileCounterParser'
 import { fileCommandGroupParser } from './fileParsers/fileCommandGroupParser'
+import { fileCommandsEditingParser } from './fileParsers/fileCommandsEditingParser'
+import { fileCommandsGeneralParser } from './fileParsers/fileCommandsGeneralParser'
 import { calcIONumber } from '.'
-import type { FinishReason, IOInput, IOOutput, MachineStopReason, User } from '~/types'
+import type { FinishReason, MachineStopReason, User } from '~/types'
 
 export class TBB6500FtpClient {
   host: string
@@ -501,6 +503,54 @@ export class TBB6500FtpClient {
       const commandGroups = fileCommandGroupParser(content)
 
       return commandGroups
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchCommandsGeneral() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/commands'
+      const sourcePath = './server/data/commands/general'
+      const remotePath = '/tbb6500/data/commands/general'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const commands = fileCommandsGeneralParser(content)
+
+      return commands
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchCommandsEditing() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/commands'
+      const sourcePath = './server/data/commands/editing'
+      const remotePath = '/tbb6500/data/commands/editing'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const commands = fileCommandsEditingParser(content)
+
+      return commands
     } catch (err) {
       console.error(err)
     } finally {
