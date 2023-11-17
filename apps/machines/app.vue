@@ -58,6 +58,7 @@ const definitionItems = [
 
           {
             label: 'Komut Tipi Tanımları',
+            to: '/command-type-definitions',
           },
 
           {
@@ -78,6 +79,10 @@ const definitionItems = [
           {
             label: 'Adım Atlatma Ayarları',
             to: '/step-skipping-reasons',
+          },
+          {
+            label: 'Adım Atlatmada Sebep Sorulacak Komutlar',
+            to: '/step-skipping-reason-commands',
           },
 
           {
