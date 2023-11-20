@@ -6,34 +6,57 @@ export interface MachineList {
   machineCapacity: number
 }
 
-export interface PlannedEvents {
+export interface PlannedEventsRaw {
   planKey: number
   recordTime: string | Date
   jobOrder: string
-  machineId: number
   plannedMachine: number
-  startedMachine: number | null
-  partlyPlanned: number
-  isCorrection: number
-  isCoupled: number
+  startedMachine: number
+  isDeleted: boolean
+  isStarted: boolean
+  isStopped: boolean
   programCount: number
-  programNoList: number[]
   plannedStartTime: string | Date
-  actualStartTime: string | Date | null
-  note: string
+  actualStartTime: string | Date
   theoricalDuration: number
-  fabricWeight: number | null
-  customerName: string | null
+  fabricWeight: number
+  customerName: string
+}
+export interface PlannedEvents {
+  id: number
+  name: string
+  resourceId: number | string
+  startDate: string | Date
+  endDate: string | Date
+  iconCls?: string
+  resizable: boolean
+  draggable: boolean
+  editable: boolean
+}
+
+export interface UnplannedEventsRaw {
+  planKey: number
+  recordTime: string | Date
+  jobOrder: string
+  plannedMachineId: number
+  programCount: number
+  plannedStartTime: string | Date
+  isDeleted: 0 | 1
+  isStarted: 0 | 1
+  isStopped: 0 | 1
+  theoricalDuration?: number
+  fabricWeight?: number
+  note?: string
+  erpFieldName?: string
+  batchParameterId?: string
+  value?: string | number
+  iconCls?: string
 }
 
 export interface UnplannedEvents {
-  id: number
+  id: string | number
   name: string
   duration: number
-  process: number
-  processName: string
-  durationUnit: 'h' | 'm'
-  iconCls?: string
-  constraintType?: string
-  constraintDate?: string | Date
+  durationUnit: 'millisecond' | 'second' | 'minute' | 'hour' | 'day'
+  constraintDate: string | Date
 }
