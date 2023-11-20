@@ -3,24 +3,43 @@
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { Splitter } from '@bryntum/schedulerpro-trial'
 import { Drag, Schedule, Task, UnplannedGrid } from '~/lib/bryntum'
+import type { PlannedEvents, PlannedEventsRaw, UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
 const { data: machines } = await useFetch('/api/machineList')
-const { data: events } = await useFetch('/api/plannedEvents')
+const { data: events } = await useFetch('/api/planned/task')
+const { data: unScheduledEvents } = await useFetch('/api/non-planned/task')
 
 const currentTime = useNow({ interval: 1000 })
-const modifiedEvents = computed(() => events.value?.map((ev) => {
+const modifiedEvents = computed(() => events.value?.map((ev: PlannedEventsRaw) => {
   return {
     id: ev.planKey,
     name: ev.jobOrder,
-    resourceId: ev.machineId,
+    resourceId: ev.startedMachine,
     startDate: new Date(ev.plannedStartTime),
     endDate: new Date(new Date(ev.plannedStartTime).getTime() + ev.theoricalDuration * 1000),
-    ...ev,
-  }
+    isDeleted: ev.isDeleted,
+    isStarted: ev.isStarted,
+    isStopped: ev.isStopped,
+    resizable: false,
+    draggable: true,
+    editable: false,
+    iconCls: 'b-fa b-fa-book',
+  } as PlannedEvents
 }))
-const { data: unScheduledEvents } = await useFetch('/api/unplannedEvents')
+const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
+  return {
+    id: unp.planKey,
+    name: unp.jobOrder,
+    duration: unp.theoricalDuration ? (unp.theoricalDuration / 60) / 60 : Math.round(Math.random() * 10) + 1,
+    durationUnit: 'hour',
+    constraintDate: new Date(),
+    iconCls: 'b-fa b-fa-book',
+  } as UnplannedEvents
+}))
+let schedule: SchedulerPro | null = null
+
 onMounted(() => {
-  const _schedule: SchedulerPro = new Schedule({
+  const _schedule: SchedulerPro = schedule = new Schedule({
     ref: 'schedule',
     appendTo: 'main',
     createEventOnDblClick: false,
@@ -32,7 +51,16 @@ onMounted(() => {
     },
     flex: 1,
     project: {
-      autoLoad: true,
+      listeners: {
+        change() {
+          if (schedule) {
+            schedule.widgetMap.saveButton.disabled = !schedule.eventStore.changes
+          }
+        },
+      },
+      eventStore: {
+        removeUnassignedEvent: false,
+      },
       eventModelClass: Task,
     },
     eventColor: 'blue',
@@ -42,13 +70,11 @@ onMounted(() => {
       unit: 'minute',
       increment: 5,
     },
-    getDateConstraints() {
-      return {
-        start: currentTime.value,
-      }
-    },
-    allowOverlap: false,
-    // contextMenu: contextMenuConfig,
+    // getDateConstraints() {
+    //   return {
+    //     start: currentTime.value,
+    //   }
+    // },
     features: {
       scheduleContext: {
         disabled: true,
@@ -95,10 +121,17 @@ onMounted(() => {
       '->',
       {
         text: 'Teleskop Planning Board',
-        tooltip: 'Go Back to Previous Page',
         cls: '!text-white !border-none b-raised b-blue',
       },
       '->',
+      {
+        text: 'Save',
+        width: 100,
+        cls: 'b-raised b-blue',
+        ref: 'saveButton',
+        disabled: true,
+        onAction: 'up.onSave',
+      },
     ],
   } as Partial<SchedulerProConfig>)
   new Splitter({
@@ -110,15 +143,13 @@ onMounted(() => {
     collapsible: true,
     features: {
       cellEdit: false,
-      group: {
-        field: 'processName',
-      },
     },
     flex: '0 1 300px',
     ui: 'toolbar',
     project: _schedule.project,
     store: {
-      data: unScheduledEvents.value,
+      data: modifiedUnscheduledEvents.value,
+      modelClass: Task,
       autoLoad: true,
     },
   } as Partial<GridConfig>)
