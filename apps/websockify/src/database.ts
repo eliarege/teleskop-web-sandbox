@@ -15,6 +15,7 @@ const {
   TELESKOP_DATABASE = 'Teleskop',
   TELESKOP_USER,
   TELESKOP_PASSWORD,
+  TELESKOP_INSTANCE_NAME,
 } = getEnv(process.env)
 
 const logger = createLogger('database')
@@ -35,6 +36,10 @@ const knex = Knex({
     user: TELESKOP_USER,
     password: TELESKOP_PASSWORD,
     database: TELESKOP_DATABASE,
+    options: {
+      appName: process.env.APP_NAME,
+      instanceName: TELESKOP_INSTANCE_NAME,
+    },
   },
 })
 
