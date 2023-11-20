@@ -1,4 +1,14 @@
-import { DateHelper, DomHelper, DragHelper, EventModel, EventStore, Grid, SchedulerPro, StringHelper, Toast, Tooltip } from '@bryntum/schedulerpro-trial'
+import {
+  DateHelper,
+  DomHelper,
+  DragHelper,
+  EventModel,
+  Grid,
+  SchedulerPro,
+  StringHelper,
+  Toast,
+  Tooltip,
+} from '@bryntum/schedulerpro-trial'
 
 export class Drag extends DragHelper {
   static get configurable() {
@@ -24,8 +34,13 @@ export class Drag extends DragHelper {
     proxy.style.cssText = ''
 
     proxy.style.width = `${durationInPixels}px`
-    proxy.style.height = `${schedule.rowHeight - (2 * schedule.resourceMargin)}px`
-    proxy.classList.add('b-sch-event-wrap', 'b-sch-style-border', 'b-unassigned-class', 'b-sch-horizontal')
+    proxy.style.height = `${schedule.rowHeight - 2 * schedule.resourceMargin}px`
+    proxy.classList.add(
+      'b-sch-event-wrap',
+      'b-sch-style-border',
+      'b-unassigned-class',
+      'b-sch-horizontal',
+    )
     proxy.innerHTML = StringHelper.xss`
         <div class="b-sch-event b-has-content b-sch-event-withicon">
             <div class="b-sch-event-content">
@@ -36,10 +51,10 @@ export class Drag extends DragHelper {
             </div>
         </div>
     `
-    let totalDuration = 0
-    grid.selectedRecords.forEach(task => totalDuration += task.duration)
-    context.totalDuration = totalDuration
 
+    let totalDuration = 0
+    grid.selectedRecords.forEach(task => (totalDuration += task.duration))
+    context.totalDuration = totalDuration
     return proxy
   }
 
@@ -51,7 +66,9 @@ export class Drag extends DragHelper {
     context.task = grid.getRecordFromElement(context.grabbed)
     context.relatedElements = selectedRecords
       .sort((r1, r2) => store.indexOf(r1) - store.indexOf(r2))
-      .map(rec => rec !== context.task && grid.rowManager.getRowFor(rec).element)
+      .map(
+        rec => rec !== context.task && grid.rowManager.getRowFor(rec).element,
+      )
       .filter(el => el)
 
     eventTooltip.disabled = true
@@ -71,10 +88,18 @@ export class Drag extends DragHelper {
     const { schedule } = this
     const { task } = context
     const coordinate = DomHelper[`getTranslate${schedule.isHorizontal ? 'X' : 'Y'}`](context.element)
-    const machine = context.target && schedule.resolveResourceRecord(context.target, [event.offsetX, event.offsetY])
-    const startDate = schedule.getDateFromCoordinate(coordinate, 'round', false)
-    const endDate = startDate && DateHelper.add(startDate, task.duration, task.durationUnit)
+    const machine = context.target && schedule.resolveResourceRecord(context.target, [
+      event.offsetX,
+      event.offsetY,
+    ])
+    const startDate = schedule.getDateFromCoordinate(
+      coordinate,
+      'round',
+      false,
+    )
+    const endDate = startDate && DateHelper.add(startDate, task.originalData.duration, 'h')
     context.machine = machine
+    // TODO: Machine capacity and program comparison for context.valid
     context.valid = Boolean(startDate && machine)
       && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
 
@@ -95,7 +120,6 @@ export class Drag extends DragHelper {
   }
 
   async onDrop({ context }) {
-    // TODO: onDrop not working because context.task on line 51 is somehow not correct
     /**
      * @type {import('@bryntum/schedulerpro').SchedulerPro}
      */
@@ -103,16 +127,20 @@ export class Drag extends DragHelper {
     const { task, target, valid, element, machine } = context
     this.tip?.hide()
     schedule.disableScrollingCloseToEdges(this.schedule.timeAxisSubGrid)
-    console.log('valid:', valid)
     if (valid && target) {
       const coordinate = DomHelper.getTranslateX(element)
-      const startDate = schedule.getDateFromCoordinate(coordinate, 'round', false)
+      const startDate = schedule.getDateFromCoordinate(
+        coordinate,
+        'round',
+        false,
+      )
       if (!startDate)
         return
 
       this.grid.store.remove(task)
       task.setStartDate(startDate)
-      const machine = schedule.resolveResourceRecord(context.target).originalData.id
+      const machine = schedule.resolveResourceRecord(context.target)
+        .originalData.id
 
       await schedule.scheduleEvent({
         eventRecord: task,
@@ -128,7 +156,16 @@ export class Drag extends DragHelper {
     }
     schedule.features.eventTooltip.disabled = false
   }
-};
+
+  set schedule(schedule) {
+    this._schedule = schedule
+    this.scrollManager = schedule.scrollManager
+  }
+
+  get schedule() {
+    return this._schedule
+  }
+}
 export class Task extends EventModel {
   static $name = 'Task'
 
@@ -139,79 +176,6 @@ export class Task extends EventModel {
       name: 'New event',
 
       iconCls: 'b-fa b-fa-asterisk',
-    }
-  }
-}
-export class TaskStore extends EventStore {
-  static $name = 'TaskStore'
-
-  static get defaultConfig() {
-    return {
-      modelClass: Task,
-    }
-  }
-
-  add(records, silent = false) {
-    const me = this
-
-    if (me.autoRescheduleTasks) {
-      me.isRescheduling = true
-      me.beginBatch()
-    }
-
-    if (!Array.isArray(records)) {
-      records = [records]
-    }
-
-    super.add(records, silent)
-
-    if (me.autoRescheduleTasks) {
-      me.endBatch()
-      me.isRescheduling = false
-    }
-  }
-
-  onUpdate({ record }) {
-    if (this.autoRescheduleTasks && !this.isRescheduling) {
-      this.rescheduleOverlappingTasks(record)
-    }
-  }
-
-  rescheduleOverlappingTasks(eventRecord) {
-    if (eventRecord.resource) {
-      const futureEvents = []
-      const earlierEvents = []
-
-      eventRecord.resource.events.forEach((event) => {
-        if (event !== eventRecord) {
-          if (event.startDate >= eventRecord.startDate) {
-            futureEvents.push(event)
-          } else {
-            earlierEvents.push(event)
-          }
-        }
-      })
-
-      if (futureEvents.length || earlierEvents.length) {
-        futureEvents.sort((a, b) => (a.startDate > b.startDate ? 1 : -1))
-        earlierEvents.sort((a, b) => (a.startDate > b.startDate ? -1 : 1))
-
-        futureEvents.forEach((ev, i) => {
-          const prev = futureEvents[i - 1] || eventRecord
-
-          ev.startDate = DateHelper.max(prev.endDate, ev.startDate)
-        });
-
-        [eventRecord, ...earlierEvents].forEach((ev, i, all) => {
-          const prev = all[i - 1]
-
-          if (ev.endDate > Date.now() && ev !== eventRecord && prev) {
-            ev.setEndDate(DateHelper.min(prev.startDate, ev.endDate), true)
-          }
-        })
-
-        this.isRescheduling = false
-      }
     }
   }
 }
@@ -241,7 +205,12 @@ export class Schedule extends SchedulerPro {
           calendar: 'resource',
           collectAvailableResources({ scheduler, eventRecords }) {
             const draggedTask = eventRecords[0]
-            return scheduler.resourceStore.query(resourceRecord => resourceRecord.processes.map(a => a.id).includes(draggedTask.process) || !draggedTask.process)
+            return scheduler.resourceStore.query(
+              resourceRecord =>
+                resourceRecord.processes
+                  .map(a => a.id)
+                  .includes(draggedTask.process) || !draggedTask.process,
+            )
           },
         },
         eventMenu: {
@@ -257,7 +226,6 @@ export class Schedule extends SchedulerPro {
       },
       rowHeight: 50,
       barMargin: 4,
-      allowOverlap: false,
       columns: [
         {
           type: 'resourceInfo',
@@ -302,6 +270,13 @@ export class Schedule extends SchedulerPro {
         ],
       },
       removeUnassignedEvent: false,
+      allowOverlap: false,
+      onSave() {
+        Toast.show('TODO: Save data (see onSave() event for SchedulerPro)')
+        console.log('Changes:', this.project.changes.events)
+        // TODO: Disable save button after changes are submitted.
+        // TODO: Post changes
+      },
     }
   }
 }
@@ -349,4 +324,5 @@ export class UnplannedGrid extends Grid {
     }
   }
 }
+
 UnplannedGrid.initClass()
