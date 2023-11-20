@@ -12,6 +12,7 @@ const emit = defineEmits(['deleteMachine', 'addMachine'])
 const showNewMachine = ref(false)
 const showEditMachine = ref(false)
 const showMachineParameters = ref(false)
+const showMimic = ref(false)
 
 async function handleMachineDelete() {
   const machineIds = props.selectedMachines.map(m => m.id)
@@ -67,6 +68,13 @@ async function handleMachineDelete() {
         class="mr-4"
         @click="showMachineParameters = true"
       />
+      <q-btn
+        label="Mimic"
+        no-caps
+        color="primary"
+        class="mr-4"
+        @click="showMimic = true"
+      />
     </q-card-section>
 
     <q-card-section class="flex flex-row items-end mr-8">
@@ -86,11 +94,13 @@ async function handleMachineDelete() {
     </q-card-section>
   </q-card>
   <NewMachineDialog
+    v-if="showNewMachine"
     :show="showNewMachine"
     @close="showNewMachine = false"
     @add-machine="$emit('addMachine')"
   />
   <EditMachineDialog
+    v-if="showEditMachine"
     :show="showEditMachine"
     :selected-machines="selectedMachines"
     @close="showEditMachine = false"
@@ -101,6 +111,12 @@ async function handleMachineDelete() {
     :show="showMachineParameters"
     :selected-machines="selectedMachines"
     @close="showMachineParameters = false"
+  />
+  <MimicDialog
+    v-if="showMimic"
+    :show="showMimic"
+    :selected-machines="selectedMachines"
+    @close="showMimic = false"
   />
 </template>
 

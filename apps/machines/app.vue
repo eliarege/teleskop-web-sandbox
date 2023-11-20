@@ -33,6 +33,7 @@ const definitionItems = [
     items: [
       {
         label: 'Değiştir',
+        to: '/machine-group-definitions',
       },
     ],
   },
@@ -58,6 +59,7 @@ const definitionItems = [
 
           {
             label: 'Komut Tipi Tanımları',
+            to: '/command-type-definitions',
           },
 
           {
@@ -79,9 +81,14 @@ const definitionItems = [
             label: 'Adım Atlatma Ayarları',
             to: '/step-skipping-reasons',
           },
+          {
+            label: 'Adım Atlatmada Sebep Sorulacak Komutlar',
+            to: '/step-skipping-reason-commands',
+          },
 
           {
             label: 'Akıllı İstek Komut Tanımları',
+            to: 'smart-request-command-definitions',
           },
 
           {
@@ -100,12 +107,15 @@ const definitionItems = [
         items: [
           {
             label: 'Kazan Tanımları',
+            to: 'tank-definitions',
           },
           {
             label: 'Kazan-Materyal Eşleştirme',
+            to: '/tank-material-matching',
           },
           {
             label: 'Kazan-Materyal Su Limit Tanımları',
+            to: '/tank-material-water-limit-definitions',
           },
         ],
       },
@@ -118,6 +128,7 @@ const definitionItems = [
           },
           {
             label: 'Başlatma Parametresi Tipleri',
+            to: '/starting-parameter-types',
           },
           {
             label: 'Reçete Tipleri',
@@ -137,9 +148,11 @@ const definitionItems = [
           },
           {
             label: 'Tüketim Sayaç Seçimi',
+            to: '/consumption-counter-select',
           },
           {
             label: 'Teorik Su Tüketimi Ayarları',
+            to: '/theoretical-water-consumptions',
           },
         ],
       },
@@ -148,6 +161,7 @@ const definitionItems = [
         items: [
           {
             label: 'Teleskop Ayarları',
+            to: '/teleskop-settings',
           },
           {
             label: 'Proje Görünüm Dili',
@@ -159,6 +173,7 @@ const definitionItems = [
         items: [
           {
             label: 'E-posta Bildirim Ayarları',
+            to: 'email-notification-settings',
           },
         ],
       },
