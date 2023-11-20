@@ -11,6 +11,7 @@ const pool = new ConnectionPool({
   options: {
     encrypt: false,
     database: config.teleskopDatabase,
+    instanceName: config.teleskopInstanceName || undefined,
     trustServerCertificate: true,
   },
 })

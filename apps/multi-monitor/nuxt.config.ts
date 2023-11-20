@@ -22,6 +22,7 @@ export default defineNuxtConfig({
     teleskopPort: process.env.TELESKOP_PORT || '1433',
     teleskopPassword: process.env.TELESKOP_PASSWORD || '',
     teleskopDatabase: process.env.TELESKOP_DATABASE || 'Teleskop',
+    teleskopInstanceName: process.env.TELESKOP_INSTANCE_NAME || '',
     machineStatusUrl: process.env.MACHINE_STATUS_URL || 'http://machine-status',
     isStaging: process.env.IS_STAGING || 'false',
     public: {
