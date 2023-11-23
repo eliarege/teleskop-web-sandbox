@@ -1,3 +1,5 @@
+import type { QTableColumn } from 'quasar'
+
 export interface Recipe {
   planKey: number | null
   recIndex: number | null
@@ -19,10 +21,7 @@ export interface Recipe {
   unit: number
 }
 
-export interface Column {
-  name: string
-  field: string
-  label: string
+export interface Column extends QTableColumn {
   filterable?: boolean // If it is flase, no filter will be applied
   sortable?: boolean
   filterType?: 'select' | 'multiselect' | 'date' | 'comparison' | 'boolean' | 'equals' | 'includes'
