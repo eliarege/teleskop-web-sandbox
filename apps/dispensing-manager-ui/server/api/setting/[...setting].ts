@@ -4,6 +4,10 @@ import { knex } from '~/server/connectionPool'
 const router = createRouter()
 export default useBase('/api/setting', router.handler)
 
+
+/**
+ * Dispenser settings
+ */
 router.get('/dispenser-type', defineEventHandler(async () => {
   const types = await knex('DYTFDISPENSERTYPE')
     .select({
@@ -76,6 +80,10 @@ router.put('/update-dispenser', defineEventHandler(async (event) => {
     return e
   }
 }))
+
+/**
+ * Machine Dispenser Connections settings
+ */
 
 router.get('/machine-dispenser-connection', defineEventHandler(async () => {
   const dispensers = await knex('DYTFMACHDISPCONNECTION as M')
@@ -157,6 +165,11 @@ router.put('/update-machine-dispenser-connection', defineEventHandler(async (eve
   return 1
 }))
 
+
+/**
+ * Material settings
+ */
+
 router.get('/material', defineEventHandler(async () => {
   const dispensers = await knex('DYTFMATERIAL')
     .select({
@@ -171,5 +184,85 @@ router.get('/material', defineEventHandler(async () => {
       directTransfer: 'DirectTransfer',
     })
     .orderBy('MATERIALCODE', 'asc')
+  return dispensers
+}))
+
+router.get('/material-connections', defineEventHandler(async (event) => {
+  const { chemCode } = getQuery(event)
+  const materials = await knex('DYTFCHEMDISPCONNECTION as C')
+    .select({
+      materialCode: 'C.CHEMCODE',
+      dispNo: 'C.DISPENSERID',
+      name: 'D.NAME'
+    })
+    .where('C.CHEMCODE', chemCode)
+    .leftJoin('DYTFDISPENSERSETTINGS as D', 'C.DISPENSERID', 'D.DISPENSERID')
+    .orderBy('C.CHEMCODE', 'asc')
+  return materials
+}))
+
+router.post('/create-material-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const isThereMaterial = await knex('DYTFMATERIAL')
+    .where('MATERIALCODE', body.materialCode)
+  if (isThereMaterial.length > 0)
+    return 'A material already exists with given material code'
+  await knex('DYTFMATERIAL')
+    .insert({
+      MATERIALCODE: body.materialCode,
+      MATERIALNAME: body.materialName,
+      MADDEGRUPNO: body.materialGroup,
+      YOGUNLUK: body.density,
+      PH: body.ph,
+      SOURCE: body.source,
+      BIRIMMALIYET: body.cost,
+      ReRequestable: body.rerequestable,
+      DirectTransfer: body.directTransfer,
+    })
+  body.connectedDisps.forEach(async (disp) => {
+    await knex('DYTFCHEMDISPCONNECTION').insert({
+      CHEMCODE: body.materialCode,
+      DISPENSERID: disp.dispNo,
+    })
+  })
+  return 1 // return 200
+}))
+
+
+router.put('/update-material-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  await knex('DYTFMATERIAL')
+    .where('MATERIALCODE', body.materialCode)
+    .update({
+      MATERIALCODE: body.materialCode,
+      MATERIALNAME: body.materialName,
+      MADDEGRUPNO: body.materialGroup,
+      YOGUNLUK: body.density,
+      PH: body.ph,
+      SOURCE: body.source,
+      BIRIMMALIYET: body.cost,
+      ReRequestable: body.rerequestable,
+      DirectTransfer: body.directTransfer,
+    })
+  await knex('DYTFCHEMDISPCONNECTION')
+    .where('CHEMCODE', body.materialCode)
+    .delete()
+  body.connectedDisps.forEach(async (disp) => {
+    await knex('DYTFCHEMDISPCONNECTION')
+      .insert({
+        CHEMCODE: body.materialCode,
+        DISPENSERID: disp.dispNo,
+      })
+  })
+  return 1
+}))
+
+
+/**
+ * Request Mechanism settings
+ */
+
+router.get('/request-mechanism-settings', defineEventHandler(async () => {
+  const dispensers = await knex('DYTFDYSETTINGS')
   return dispensers
 }))

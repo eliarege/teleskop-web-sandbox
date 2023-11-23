@@ -4,8 +4,10 @@ import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref([])
+const disps = ref([])
 
 await getRows()
+await getDisps()
 
 const columns: Array<Column> = [
   {
@@ -28,6 +30,12 @@ const columns: Array<Column> = [
   },
 ]
 
+const materialGroups = [
+  { label: t('dye'), value: 1 },
+  { label: t('chemical'), value: 2 },
+  { label: t('settings.other'), value: 3 },
+]
+
 const materialInfo = ref<{ label: string; value: any; field: string }[]>([
   { label: t('settings.materialCode'), value: '', field: 'materialCode' },
   { label: t('settings.materialName'), value: '', field: 'materialName' },
@@ -38,6 +46,7 @@ const materialInfo = ref<{ label: string; value: any; field: string }[]>([
   { label: t('settings.materialKgPrice'), value: '', field: 'cost' },
   { label: t('settings.rerequestable'), value: '', field: 'rerequestable' },
   { label: t('settings.directlyTransfer'), value: '', field: 'directTransfer' },
+  { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
 
 ])
 
@@ -46,16 +55,23 @@ async function getRows() {
   rows.value.unshift({})
 }
 
-function resetMaterialInfo(row?: any) {
+async function getDisps() {
+  disps.value = await $fetch('/api/setting/dispenser')
+}
+
+async function resetMaterialInfo(row?: any) {
   if (!row)
     materialInfo.value.forEach(mate => mate.value = '')
   else {
+    const mateDispsTemp = await $fetch(`/api/setting/material-connections?chemCode=${row.materialCode}`)
     materialInfo.value.forEach((mate) => {
-      if (mate.field === 'controlDevice') {
-        controlDevices.forEach(dev => dev.value === row[mate.field] ? mate.value = dev : '')
+      if (mate.field === 'materialGroup') {
+        materialGroups.forEach(dev => dev.value === row[mate.field] ? mate.value = dev : '')
       } else if (mate.field === 'connectedDisps') {
-        mate.value = row.disps
+        mate.value = mateDispsTemp
         console.log(mate.value)
+      } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
+        mate.value = false
       } else {
         mate.value = row[mate.field]
       }
@@ -70,7 +86,7 @@ function toggleRow(row: any, index: number) {
     ? expandedRow.value = null
     : expandedRow.value = index
   resetMaterialInfo(row)
-  console.log(materialInfo.value)
+  console.log(row)
 }
 
 function customSortMethod(rows, sortBy, descending) {
@@ -104,27 +120,51 @@ function customSortMethod(rows, sortBy, descending) {
 async function submit(rowIndex: number) {
   /** If create */
   if (rowIndex === 0) {
-    // await $fetch('/api/setting/create-machine-dispenser-connection', {
-    //   method: 'post',
-    //   body: {
-    //     machineid: materialInfo.value[0].value,
-    //     machinename: materialInfo.value[1].value,
-    //     controlDevice: materialInfo.value[2].value.value,
-    //     disps: materialInfo.value[3].value,
-    //   },
-    // })
+    console.log(materialInfo.value)
+    await $fetch('/api/setting/create-material-connection', {
+      method: 'post',
+      body: {
+        materialCode: materialInfo.value[0].value,
+        materialName: materialInfo.value[1].value,
+        materialGroup: materialInfo.value[2].value.value,
+        density: materialInfo.value[3].value,
+        ph: materialInfo.value[4].value,
+        source: materialInfo.value[5].value,
+        cost: materialInfo.value[6].value,
+        rerequestable: materialInfo.value[7].value,
+        directTransfer: materialInfo.value[8].value,
+        connectedDisps: materialInfo.value[9].value,
+      },
+    })
   }
   if (rowIndex) { /** If it is put */
-    console.log(materialInfo.value)
-    // await $fetch('/api/setting/update-machine-dispenser-connection', {
-    //   method: 'put',
-    //   body: {
-    //     machineid: materialInfo.value[0].value,
-    //     machinename: materialInfo.value[1].value,
-    //     controlDevice: materialInfo.value[2].value.value,
-    //     disps: materialInfo.value[3].value,
-    //   },
-    // })
+    console.log({
+      materialCode: materialInfo.value[0].value,
+      materialName: materialInfo.value[1].value,
+      materialGroup: materialInfo.value[2].value.value,
+      density: materialInfo.value[3].value,
+      ph: materialInfo.value[4].value,
+      source: materialInfo.value[5].value,
+      cost: materialInfo.value[6].value,
+      rerequestable: materialInfo.value[7].value,
+      directTransfer: materialInfo.value[8].value,
+      connectedDisps: materialInfo.value[9].value,
+    })
+    await $fetch('/api/setting/update-material-connection', {
+      method: 'put',
+      body: {
+        materialCode: materialInfo.value[0].value,
+        materialName: materialInfo.value[1].value,
+        materialGroup: materialInfo.value[2].value.value,
+        density: materialInfo.value[3].value,
+        ph: materialInfo.value[4].value,
+        source: materialInfo.value[5].value,
+        cost: materialInfo.value[6].value,
+        rerequestable: materialInfo.value[7].value,
+        directTransfer: materialInfo.value[8].value,
+        connectedDisps: materialInfo.value[9].value,
+      },
+    })
   }
   await getRows()
 }
@@ -186,7 +226,7 @@ async function submit(rowIndex: number) {
                   {{ mate.label }}
                 </div>
                 <div class=" flex w-100 pl-2 m-1 items-center">
-                  <span v-if="mate.field === 'controlDevice'">
+                  <span v-if="mate.field === 'materialGroup'">
                     <q-select
                       v-model="mate.value"
                       borderless
@@ -194,7 +234,7 @@ async function submit(rowIndex: number) {
                       filled
                       class="w-70"
                       options-dense
-                      :options="controlDevices"
+                      :options="materialGroups"
                       option-value="value"
                       option-label="label"
                       style="min-width: 150px"
@@ -216,6 +256,9 @@ async function submit(rowIndex: number) {
                     />
                     <!-- :display-value=" mate.value && mate.value.length > 1 ? `${mate.value[0]?.name} + ${mate.value?.length - 1} ${t('more')}` : mate.value[0]?.name" -->
                   </span>
+                  <span v-else-if="mate.field === 'directTransfer' || mate.field === 'rerequestable'">
+                    <q-checkbox v-model="mate.value" />
+                  </span>
                   <span v-else>
                     <q-input
                       v-model="mate.value"
@@ -224,7 +267,7 @@ async function submit(rowIndex: number) {
                       filled
                       :type="mate.field === 'machineid' ? 'number' : 'text'"
                       :placeholder="mate.value"
-                      :disable="props.row.machineid > 0 && mate.field === 'machineid'"
+                      :disable="props.row.materialCode !== undefined && mate.field === 'materialCode'"
                     />
 
                   </span>
