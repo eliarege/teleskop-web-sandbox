@@ -19,8 +19,10 @@
   "dependencies": {
     "async-mutex": "^0.4.0",
     "fastify": "^4.24.3",
+    "fastify-socket.io": "^5.0.0",
     "knex": "^3.0.1",
     "pino": "^8.16.2",
+    "socket.io": "^4.7.2",
     "tedious": "^16.6.1"
   },
   "devDependencies": {
