@@ -163,7 +163,7 @@ async function clickShowRecipe(row, isLogs: boolean) {
           <!-- style="width: 55%; height: 100%;" -->
           <template #top-right>
             <q-space />
-            <div class="mt-2">
+            <div class="mt-2 top-r-class">
               <q-btn-toggle
                 v-model="recipeTypeDecider"
                 class="table-header-toggle"
@@ -430,6 +430,11 @@ async function clickShowRecipe(row, isLogs: boolean) {
 }
 img.invert-colors {
   filter: invert(1);
+}
+
+.top-r-class {
+  word-break: keep-all;
+  white-space: nowrap;
 }
 .selected-row {
   background-color: #cce8ff;

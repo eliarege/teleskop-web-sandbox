@@ -14,6 +14,10 @@ const props = defineProps({
     required: true,
   },
   isExpandable: Boolean,
+  customSortMethod: {
+    type: Function,
+    required: false,
+  },
   pagination: {
     type: Object,
     default: () => ({
@@ -191,6 +195,7 @@ watch(filterSlots.value, (newValue) => {
       :rows="rows"
       :columns="columns"
       row-key="id"
+      :sort-method="props?.customSortMethod"
       flat
       bordered
       virtual-scroll
@@ -201,8 +206,11 @@ watch(filterSlots.value, (newValue) => {
       :filter="tableFilter"
     >
       <template #top>
-        <div class="flex gap-5 min-h-6">
-          <div class="flex gap-5 border-1 border-blue p-1 border-rounded">
+        <div class="flex w-full flex-nowrap">
+          <div
+            class="flex flex-col gap-5 border-1 border-blue p-1 h-12 border-rounded"
+            :style="showVisibilityMenu ? 'width: 40%' : ''"
+          >
             <div
               class="w-10 h-10 flex items-center justify-center color-blue cursor-pointer"
               @click="showVisibilityMenu = !showVisibilityMenu"
@@ -211,7 +219,7 @@ watch(filterSlots.value, (newValue) => {
             </div>
             <div
               v-if="showVisibilityMenu"
-              class="flex flex-row"
+              class="flex"
             >
               <q-input
                 v-model="tableFilter"
@@ -219,11 +227,7 @@ watch(filterSlots.value, (newValue) => {
                 dense
                 debounce="300"
                 :placeholder="t('search')"
-              >
-                <template #append>
-                  <q-icon name="search" />
-                </template>
-              </q-input>
+              />
               <!-- TODO: If the section would be settings this displayment is much better -->
               <q-select
                 v-model="visibleColumns"
@@ -240,20 +244,23 @@ watch(filterSlots.value, (newValue) => {
               />
             </div>
           </div>
-          <div
-            v-for="(filter, index) in filterSlots"
-            :key="index"
-            class="filter-slots"
-            :style="filter.isOrderFilter
-              ? 'background-color: rgba(124, 196, 255, 0.185); color: #509ee3;'
-              : 'background-color: rgba(113, 114, 173, 0.2); color: rgb(113, 114, 173);'"
-          >
-            {{ filter.label }} &nbsp;&nbsp;
-            <q-icon name="close" @click="removeFilter(index)" />
+          <div class="flex gap-x-5 gap-y-1 px-5 w-full">
+            <div
+              v-for="(filter, index) in filterSlots"
+              :key="index"
+              class="filter-slots"
+              :style="filter.isOrderFilter
+                ? 'background-color: rgba(124, 196, 255, 0.185); color: #509ee3;'
+                : 'background-color: rgba(113, 114, 173, 0.2); color: rgb(113, 114, 173);'"
+            >
+              {{ filter.label }} &nbsp;&nbsp;
+              <q-icon name="close" @click="removeFilter(index)" />
+            </div>
+          </div>
+          <div>
+            <slot name="top-right" />
           </div>
         </div>
-
-        <slot name="top-right" />
       </template>
       <template #header="tableProps">
         <q-tr :props="tableProps">
