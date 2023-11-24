@@ -58,7 +58,7 @@ async function handleCommandClick(commandNo: number) {
       </q-list>
     </q-card-section>
 
-    <q-card-section class="grid">
+    <q-card-section class="grid flex-grow">
       <div class="w-sm box">
         <h3>Kimyasal Kazanı Transfer Komutları</h3>
         <q-list bordered separator>
@@ -276,5 +276,6 @@ async function handleCommandClick(commandNo: number) {
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 3em;
 }
 </style>

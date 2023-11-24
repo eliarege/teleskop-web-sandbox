@@ -55,22 +55,23 @@ async function handleMachineClick(machineId: number) {
         <q-input label="Üst Limit" />
       </div>
 
-      <div class="flex flex-col">
-        <div class="flex flex-row">
-          <q-table
-            title="Transfer/Dozaj Komutları"
-          />
-          <q-table title="İstek Komutları" />
-        </div>
-        <div class="flex flex-row">
-          <q-table title="Sirkülasyonlu Dozaj Komutları" />
-          <q-table title="Sirkülasyonlu İstek Komutlarık" />
-        </div>
+      <div class="grid">
+        <q-table
+          title="Transfer/Dozaj Komutları"
+        />
+        <q-table title="İstek Komutları" />
+        <q-table title="Sirkülasyonlu Dozaj Komutları" />
+        <q-table title="Sirkülasyonlu İstek Komutları" />
       </div>
     </q-card-section>
   </q-card>
 </template>
 
 <style scoped>
-
+.grid{
+  grid-template-areas: "1 1"
+                       "1 1";
+  gap: 2em;
+  margin-top: 4em;
+}
 </style>
