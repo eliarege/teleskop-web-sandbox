@@ -1,6 +1,6 @@
 const pattern = /^(\d+) ((?:\d+(?:,\d+)*,)*\d?) ((?:\d+(?:,\d+)*,)*\d*) ((?:\d+(?:,\d+)*,)*\d?)$/gim
 /**
- *  '../../tbb6500/data/commands/editing'
+ *  '/tbb6500/data/commands/editing'
  * example:
  * 1  16,30,31,38,42 1,1,1,1,1
  * 15  16 1
