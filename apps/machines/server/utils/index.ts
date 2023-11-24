@@ -1,4 +1,5 @@
 import type { IOInput, IOOutput } from '~/types'
+import { knex } from '~/server/connectionPool'
 
 export function calcIONumber(ioObject: IOInput | IOOutput, controllerModel) {
   const { ProductModel, HardwareModel, PlcModel } = controllerModel
@@ -16,4 +17,33 @@ export function calcIONumber(ioObject: IOInput | IOOutput, controllerModel) {
   ioNumber = (ioObject.card - 1) * channelSum + ioObject.canal - 1
 
   return ioNumber
+}
+
+export async function getIOName(machineId, type, id) {
+  let tableName
+  switch (type) {
+    case 0:
+      tableName = 'BFMACHAIN'
+      break
+    case 1:
+      tableName = 'BFMACHAOUT'
+      break
+    case 2:
+      tableName = 'BFMACHDIN'
+      break
+    case 3:
+      tableName = 'BFMACHDOUT'
+      break
+    case 4:
+      tableName = 'BFMACHCOUNTER'
+      break
+
+    default:
+      break
+  }
+
+  return await knex(tableName).where({
+    MACHINEID: machineId,
+    ID: id,
+  }).select('NAME')
 }
