@@ -1,6 +1,6 @@
 import type { FinishReason } from '~/types'
 
-// '../../tbb6500/data/config/bitirmenedenleri'
+// '/tbb6500/data/config/bitirmenedenleri'
 const typeIdMap = {
   3: 'Bitir',
   4: 'Atla',
