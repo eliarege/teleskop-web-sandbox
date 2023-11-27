@@ -3,8 +3,7 @@ import * as ftp from 'basic-ftp'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  // const {machineId} = getQuery(event)
-  const machineId = 3
+  const { machineId } = await getQuery(event)
   const ftpClient = new ftp.Client()
   ftpClient.ftp.verbose = false
   try {
@@ -13,7 +12,7 @@ export default defineEventHandler(async (event) => {
     const commands = await tbb.fetchCommandAlarms()
     const functionAlarms = await tbb.fetchFunctionAlarms()
 
-    // await knex('BFMASTERCOMMANDSALARMS').del()
+    await knex('BFMASTERCOMMANDSALARMS').del()
     for (const c of commands) {
       let functionName = await knex('BFMASTERCOMMANDS').where({
         MACHINEID: machineId,
@@ -36,6 +35,7 @@ export default defineEventHandler(async (event) => {
             }
           }
           await knex('BFMASTERCOMMANDSALARMS').insert({
+            MACHINEID: machineId,
             ALARMINDEX: c.alarmNo,
             ALARMNO: c.alarmNo,
             UNIVERSALALARMNO: c.alarmNo,

@@ -2,7 +2,8 @@ import fs from 'node:fs'
 import * as ftp from 'basic-ftp'
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  const { machineId } = await getQuery(event)
   const ftpClient = new ftp.Client()
   ftpClient.ftp.verbose = false
   try {
@@ -10,10 +11,15 @@ export default defineEventHandler(async () => {
 
     const locks = await tbb.fetchLocksGeneral()
 
-    await knex('BFLOCKSGENERAL').del()
-    await knex('BFLOCKSGENERAL').insert(locks)
+    const generalLocks = locks?.map(l => ({
+      ...l,
+      machineId,
+    }))
 
-    return locks
+    await knex('BFLOCKSGENERAL').del()
+    await knex('BFLOCKSGENERAL').insert(generalLocks)
+
+    return generalLocks
   } catch (err) {
     console.error(err)
   }

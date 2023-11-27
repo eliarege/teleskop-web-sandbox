@@ -2,16 +2,22 @@ import fs from 'node:fs'
 import * as ftp from 'basic-ftp'
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  const { machineId } = await getQuery(event)
   const ftpClient = new ftp.Client()
   ftpClient.ftp.verbose = false
   try {
     const tbb = new TBB6500FtpClient('192.168.88.202')
 
-    const digitalOutputs = await tbb.fetchDigitalOutputs()
+    const outputs = await tbb.fetchDigitalOutputs()
 
-    // await knex('BFMACHDOUT').del()
-    // await knex('BFMACHDOUT').insert(digitalOutputs)
+    const digitalOutputs = outputs?.map(o => ({
+      ...o,
+      machineId,
+    }))
+
+    await knex('BFMACHDOUT').del()
+    await knex('BFMACHDOUT').insert(digitalOutputs)
 
     return digitalOutputs
   } catch (err) {

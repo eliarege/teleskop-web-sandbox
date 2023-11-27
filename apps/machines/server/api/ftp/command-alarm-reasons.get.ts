@@ -3,7 +3,7 @@ import * as ftp from 'basic-ftp'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  const { machineId, host } = await readBody(event)
+  const { machineId } = await getQuery(event)
   const ftpClient = new ftp.Client()
   ftpClient.ftp.verbose = false
   try {
@@ -18,8 +18,8 @@ export default defineEventHandler(async (event) => {
         GROUPID: r.groupId,
       }
     })
-    // await knex('BFCOMMANDTIMEOUTREASONS').del()
-    // await knex('BFCOMMANDTIMEOUTREASONS').insert(timeoutReasons)
+    await knex('BFCOMMANDTIMEOUTREASONS').del()
+    await knex('BFCOMMANDTIMEOUTREASONS').insert(timeoutReasons)
 
     const commandMapEntries = []
     for (const reason of commandAlarmReasons) {
@@ -32,8 +32,8 @@ export default defineEventHandler(async (event) => {
         commandMapEntries.push(mapEntry)
       }
     }
-    // await knex('BFCOMMANDTIMEOUTREASONMAP').del()
-    // await knex('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
+    await knex('BFCOMMANDTIMEOUTREASONMAP').del()
+    await knex('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
 
     return commandMapEntries
   } catch (err) {
