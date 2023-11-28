@@ -15,6 +15,9 @@ import { fileCounterParser } from './fileParsers/fileCounterParser'
 import { fileCommandGroupParser } from './fileParsers/fileCommandGroupParser'
 import { fileCommandsEditingParser } from './fileParsers/fileCommandsEditingParser'
 import { fileCommandsGeneralParser } from './fileParsers/fileCommandsGeneralParser'
+import { fileCommandIOParser } from './fileParsers/fileCommandIOParser'
+import { fileCommandFeedbackParser } from './fileParsers/fileCommandFeedbackParser'
+import { fileFunctionAlarmsParser } from './fileParsers/fileFunctionAlarmsParser'
 import { calcIONumber } from '.'
 import type { FinishReason, MachineStopReason, User } from '~/types'
 
@@ -551,6 +554,150 @@ export class TBB6500FtpClient {
       const commands = fileCommandsEditingParser(content)
 
       return commands
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchCommandIO() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/commands'
+      const sourcePath = './server/data/commands/io'
+      const remotePath = '/tbb6500/data/commands/io'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const commandGroups = fileCommandIOParser(content)
+
+      return commandGroups
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchCommandParams() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/commands'
+      const sourcePath = './server/data/commands/params'
+      const remotePath = '/tbb6500/data/commands/params'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const commandGroups = fileCommandParamsParser(content)
+
+      return commandGroups
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchCommandFeedback() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/commands'
+      const sourcePath = './server/data/commands/feedback'
+      const remotePath = '/tbb6500/data/commands/feedback'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const commandGroups = fileCommandFeedbackParser(content)
+
+      return commandGroups
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchFunctionAlarms() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/config'
+      const sourcePath = './server/data/config/function_alarms'
+      const remotePath = '/tbb6500/data/config/function_alarms'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const commandGroups = fileFunctionAlarmsParser(content)
+
+      return commandGroups
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchCommandGraphic() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/commands'
+      const sourcePath = './server/data/commands/graphic'
+      const remotePath = '/tbb6500/data/commands/graphic'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const commandGroups = fileCommandGraphicParser(content)
+
+      return commandGroups
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async fetchCommandAlarms() {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/commands'
+      const sourcePath = './server/data/commands/alarms'
+      const remotePath = '/tbb6500/data/commands/alarms'
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+
+      await this.ftpClient.downloadTo(sourcePath, remotePath)
+
+      const content = await fs.promises.readFile(sourcePath, 'utf8')
+      const commandGroups = fileCommandAlarmsParser(content)
+
+      return commandGroups
     } catch (err) {
       console.error(err)
     } finally {

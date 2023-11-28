@@ -2,7 +2,7 @@ import type { FinishReason } from '~/types'
 
 const pattern = /^(\d+) "([^"]+)" "([^"]+)"$/gim
 /**
- *  '../../tbb6500/data/commands/commandGroup'
+ *  '/tbb6500/data/commands/commandGroup'
  * example: 0 "Komutlar" "grupBoyama.gif"
  */
 export function fileCommandGroupParser(content: string) {

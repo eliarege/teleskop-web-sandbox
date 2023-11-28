@@ -1,6 +1,6 @@
 const pattern = /^(\d+) (\d+) "([^"]+)" "([^"]+)" "([^"]+)" (\d+) (\d+) (-\d+) (\d+) (\d+) *(-?\d+)?$/gim
 /**
- *  '../../tbb6500/data/commands/general'
+ *  '/tbb6500/data/commands/general'
  * example: 1 1 "AK Doldur Cm" "f2" "bobin_AK_Boya_Suyu_Al.gif" 0 1 -1 2 0 -1
  */
 export function fileCommandsGeneralParser(content: string) {

@@ -1,7 +1,7 @@
 import type { LockGeneral } from '~/types'
 
 /**
- *   '../../tbb6500/data/locks/locks_general'
+ *   '/tbb6500/data/locks/locks_general'
  * example: 0 "Otomatik" 0 0 0 0 "0" "0" 0 "" 1
  */
 const pattern = /^(\d+) "([^"]+)" (\d+) (\d+) (\d+) (\d+) "([^"]+)" "([^"]+)" (\d+) "([^"]*)" (\d+)$/gim
