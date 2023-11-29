@@ -28,17 +28,30 @@ async function handleCommandClick(commandNo: number) {
 async function handleCheckChange(e, reason) {
   reason.machineId = selectedMachineId.value
   reason.commandNo = selectedCommandNo.value
-  console.log('e, reason = ', e, reason)
   if (e)
     await checkTimeoutReason(reason)
   else if (!e)
     await uncheckTimeoutReason(reason)
 }
 const showAddReasonDialog = ref(false)
-const newReasonName = ref('')
+const showEditReasonDialog = ref(false)
+
+const newReasonText = ref('')
 async function handleAddReason() {
-  console.log('newReasonName.value = ', newReasonName.value)
-  await addCommandTimeoutReason(newReasonName.value)
+  await addCommandTimeoutReason(newReasonText.value)
+}
+function handleEditButton() {
+  newReasonText.value = timeoutReasons.value.find(d => d.id === selectedReasonId.value).reasonText
+  showEditReasonDialog.value = true
+}
+
+async function handleEditReason() {
+  await editCommandTimeoutReason(selectedReasonId.value, newReasonText.value)
+  showEditReasonDialog.value = false
+}
+
+async function handleDeleteReason() {
+  await deleteCommandTimeoutReason(selectedReasonId.value)
 }
 </script>
 
@@ -47,7 +60,7 @@ async function handleAddReason() {
     <q-card>
       <q-card-section class="flex flex-col items-center">
         <q-input
-          v-model="newReasonName"
+          v-model="newReasonText"
           label="Yeni Sebep Ekle"
           class="mb-4"
         />
@@ -62,6 +75,27 @@ async function handleAddReason() {
       </q-card-section>
     </q-card>
   </q-dialog>
+
+  <q-dialog :model-value="showEditReasonDialog" @hide="showEditReasonDialog = false">
+    <q-card>
+      <q-card-section class="flex flex-col items-center">
+        <q-input
+          v-model="newReasonText"
+          label="Sebep Düzenle"
+          class="mb-4"
+        />
+        <div>
+          <q-btn
+            label="Düzenle"
+            class="mr-4"
+            @click="handleEditReason()"
+          />
+          <q-btn label="İptal" @click="showEditReasonDialog = false" />
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+
   <div class="flex justify-end mb-4 mr-4">
     <q-btn-group push>
       <q-btn
@@ -74,11 +108,13 @@ async function handleAddReason() {
         push
         label="Düzenle"
         icon="edit"
+        @click="handleEditButton()"
       />
       <q-btn
         push
         label="Sil"
         icon="delete"
+        @click="handleDeleteReason()"
       />
     </q-btn-group>
   </div>

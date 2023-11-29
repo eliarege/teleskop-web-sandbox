@@ -2,11 +2,11 @@ import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
   try {
-    const { reasonName } = await readBody(event)
+    const { reasonText } = await readBody(event)
 
     const res = await knex('BFCOMMANDTIMEOUTREASONS').insert({
       GROUPID: 1,
-      REASONTEXT: reasonName,
+      REASONTEXT: reasonText,
       ISDELETED: 0,
     })
 
