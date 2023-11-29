@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Machine } from '~/types'
-import { getMachines } from '~/utils'
 
 const { data: machines, pending, refresh } = useLazyFetch('/api/machines/machines', { default: () => [] })
 
