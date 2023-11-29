@@ -7,7 +7,8 @@ const selectedMachineId = ref()
 const machineCommands = ref()
 
 async function handleMachineClick(machineId: number) {
-  machineCommands.value = await getMachineCommands(machineId)
+  const { data } = await useFetch('/api/master-commands/master-commands', { query: { machineId } })
+  machineCommands.value = data.value
   selectedMachineId.value = machineId
 }
 

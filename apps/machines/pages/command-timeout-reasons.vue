@@ -1,24 +1,37 @@
 <script setup lang="ts">
-import { getMachineCommands, getTimeoutReasons } from '~/utils'
+import { addTimeoutReason, deleteTimeoutReason, getMachineCommands, getTimeoutReasons } from '~/utils'
 
 const { data: machines, pending, refresh } = await useFetch('/api/command-timeout-reasons/command-map-machines')
 
 const selectedMachineId = ref()
+const selectedCommandNo = ref()
 const machineCommands = ref()
 const timeoutReasons = ref()
 
 async function handleMachineClick(machineId: number) {
-  machineCommands.value = await getMachineCommands(machineId)
+  const { data } = await useFetch('/api/master-commands/master-commands', { query: { machineId } })
+  machineCommands.value = data.value
   selectedMachineId.value = machineId
 }
 
 async function handleCommandClick(commandNo: number) {
-  const selectedTimeoutReasons = await getSelectedTimeoutReasons(selectedMachineId.value, commandNo)
-  const allTimeoutReasons = await getTimeoutReasons()
-  timeoutReasons.value = allTimeoutReasons.map(r => ({
+  const { data: selectedTimeoutReasons } = await useFetch('/api/command-timeout-reasons/selected-timeout-reasons', { query: { machineId: selectedMachineId.value, commandNo } })
+  const { data: allTimeoutReasons } = await useFetch('/api/command-timeout-reasons/timeout-reasons')
+  timeoutReasons.value = allTimeoutReasons.value.map(r => ({
     ...r,
-    checked: selectedTimeoutReasons.some(selectedReason => selectedReason.id === r.id),
+    checked: selectedTimeoutReasons.value.some(selectedReason => selectedReason.id === r.id),
   }))
+  selectedCommandNo.value = commandNo
+}
+
+async function handleCheckChange(e, reason) {
+  reason.machineId = selectedMachineId.value
+  reason.commandNo = selectedCommandNo.value
+  console.log('e, reason = ', e, reason)
+  if (e)
+    await addTimeoutReason(reason)
+  else if (!e)
+    await deleteTimeoutReason(reason)
 }
 </script>
 
@@ -67,7 +80,7 @@ async function handleCommandClick(commandNo: number) {
           v-ripple
           clickable
         >
-          <q-checkbox v-model:model-value="reason.checked" />
+          <q-checkbox v-model:model-value="reason.checked" @update:model-value="(e) => handleCheckChange(e, reason)" />
           <q-item-section>
             {{ reason.reasonText }}
           </q-item-section>
