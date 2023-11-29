@@ -19,3 +19,4 @@ export default defineEventHandler(async () => {
     return e
   }
 })
+// inuse = 1 & useinteleskop = 1

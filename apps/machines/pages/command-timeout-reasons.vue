@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { addTimeoutReason, deleteTimeoutReason, getMachineCommands, getTimeoutReasons } from '~/utils'
 
-const { data: machines, pending, refresh } = await useFetch('/api/command-timeout-reasons/command-map-machines')
+const { data: machines, pending, refresh } = await useFetch('/api/machines/active-machines')
 
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
