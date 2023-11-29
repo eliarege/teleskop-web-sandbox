@@ -170,10 +170,18 @@ export async function editMachineGroupType(group) {
   await $fetch('/api/machines/machine-group-type', { method: 'PUT', body: group })
 }
 
-export async function addTimeoutReason(reason) {
-  await $fetch('/api/command-timeout-reasons/command-timeout-reason', { method: 'POST', body: reason })
+export async function checkTimeoutReason(reason) {
+  await $fetch('/api/command-timeout-reasons/check-command-timeout-reason', { method: 'POST', body: reason })
 }
 
-export async function deleteTimeoutReason(reason) {
+export async function uncheckTimeoutReason(reason) {
+  await $fetch('/api/command-timeout-reasons/uncheck-command-timeout-reason', { method: 'DELETE', body: reason })
+}
+
+export async function addCommandTimeoutReason(reasonName: string) {
+  await $fetch('/api/command-timeout-reasons/command-timeout-reason', { method: 'POST', body: { reasonName } })
+}
+
+export async function deleteCommandTimeoutReason(reason) {
   await $fetch('/api/command-timeout-reasons/command-timeout-reason', { method: 'DELETE', body: reason })
 }

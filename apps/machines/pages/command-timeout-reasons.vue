@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { addTimeoutReason, deleteTimeoutReason, getMachineCommands, getTimeoutReasons } from '~/utils'
+import { addCommandTimeoutReason, getMachineCommands, getTimeoutReasons } from '~/utils'
 
 const { data: machines, pending, refresh } = await useFetch('/api/machines/active-machines')
 
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
+const selectedReasonId = ref()
 const machineCommands = ref()
 const timeoutReasons = ref()
 
@@ -29,13 +30,58 @@ async function handleCheckChange(e, reason) {
   reason.commandNo = selectedCommandNo.value
   console.log('e, reason = ', e, reason)
   if (e)
-    await addTimeoutReason(reason)
+    await checkTimeoutReason(reason)
   else if (!e)
-    await deleteTimeoutReason(reason)
+    await uncheckTimeoutReason(reason)
+}
+const showAddReasonDialog = ref(false)
+const newReasonName = ref('')
+async function handleAddReason() {
+  console.log('newReasonName.value = ', newReasonName.value)
+  await addCommandTimeoutReason(newReasonName.value)
 }
 </script>
 
 <template>
+  <q-dialog :model-value="showAddReasonDialog" @hide="showAddReasonDialog = false">
+    <q-card>
+      <q-card-section class="flex flex-col items-center">
+        <q-input
+          v-model="newReasonName"
+          label="Yeni Sebep Ekle"
+          class="mb-4"
+        />
+        <div>
+          <q-btn
+            label="Ekle"
+            class="mr-4"
+            @click="handleAddReason()"
+          />
+          <q-btn label="İptal" @click="showAddReasonDialog = false" />
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+  <div class="flex justify-end mb-4 mr-4">
+    <q-btn-group push>
+      <q-btn
+        push
+        label="Ekle"
+        icon="add"
+        @click="showAddReasonDialog = true"
+      />
+      <q-btn
+        push
+        label="Düzenle"
+        icon="edit"
+      />
+      <q-btn
+        push
+        label="Sil"
+        icon="delete"
+      />
+    </q-btn-group>
+  </div>
   <q-card class="flex flex-row justify-around">
     <q-card-section class="w-sm">
       <h3>Makineler</h3>
@@ -45,6 +91,7 @@ async function handleCheckChange(e, reason) {
           :key="machine.machineId"
           v-ripple
           clickable
+          :active="selectedMachineId === machine.machineId"
           @click="handleMachineClick(machine.machineId)"
         >
           <q-item-section>
@@ -62,6 +109,7 @@ async function handleCheckChange(e, reason) {
           :key="command.commandNo"
           v-ripple
           clickable
+          :active="selectedCommandNo === command.commandNo"
           @click="handleCommandClick(command.commandNo)"
         >
           <q-item-section>
@@ -79,6 +127,8 @@ async function handleCheckChange(e, reason) {
           :key="reason.id"
           v-ripple
           clickable
+          :active="selectedReasonId === reason.id"
+          @click="selectedReasonId = reason.id"
         >
           <q-checkbox v-model:model-value="reason.checked" @update:model-value="(e) => handleCheckChange(e, reason)" />
           <q-item-section>
