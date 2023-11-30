@@ -1,18 +1,33 @@
 <script setup lang="ts">
-import { getMachineCommands } from '~/utils'
-
-const { data: machines } = await useFetch('/api/command-timeout-reasons/command-map-machines')
-
 const selectedMachineId = ref()
-const machineCommands = ref()
 
-async function handleMachineClick(machineId: number) {
-  const { data } = await useFetch('/api/master-commands/master-commands', { query: { machineId } })
-  machineCommands.value = data.value
-  selectedMachineId.value = machineId
+const { data: machines } = useLazyFetch('/api/machines/active-machines')
+
+const { data: selectedCommands } = useLazyFetch('/api/step-skipping-reasons/step-skipping-reason-commands', {
+  immediate: false,
+  query: { machineId: selectedMachineId },
+})
+
+const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
+  immediate: false,
+  query: { machineId: selectedMachineId },
+  watch: [selectedCommands],
+  transform: (commands) => {
+    return commands.map(command => ({
+      ...command,
+      checked: selectedCommands.value ? selectedCommands.value.some(selectedCommand => selectedCommand.commandNo === command.commandNo) : false,
+    }))
+  },
+})
+
+async function handleCheckChange(e, command) {
+  console.log('e, command = ', e, command)
+  command.machineId = selectedMachineId.value
+  if (e)
+    await checkStepSkippingReason(command)
+  else if (!e)
+    await uncheckStepSkippingReason(command)
 }
-
-const checked = ref(false)
 </script>
 
 <template>
@@ -25,7 +40,7 @@ const checked = ref(false)
           :key="machine.machineId"
           v-ripple
           clickable
-          @click="handleMachineClick(machine.machineId)"
+          @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>
             {{ machine.machineName }}
@@ -38,13 +53,17 @@ const checked = ref(false)
       <h3>Komut Listesi</h3>
       <q-list bordered separator>
         <q-item
-          v-for="command in machineCommands"
+          v-for="command in commands"
           :key="command.commandNo"
           v-ripple
           clickable
         >
           <q-item-section>
-            <q-checkbox v-model="checked" :label="command.commandName" />
+            <q-checkbox
+              v-model:model-value="command.checked"
+              :label="command.commandName"
+              @update:model-value="(e) => handleCheckChange(e, command)"
+            />
           </q-item-section>
         </q-item>
       </q-list>

@@ -10,7 +10,6 @@ export default defineEventHandler(async (event) => {
     }).select({
       commandNo: 'COMMANDNO',
     })
-    console.log('selectedCommandIds = ', selectedCommandIds)
 
     return selectedCommandIds
   } catch (e) {

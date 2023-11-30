@@ -27,7 +27,6 @@ export default defineEventHandler(async (event) => {
           PROGRAMEDITING: false,
           COMMANDRUN: false,
         }
-        console.log('obj = ', obj)
         await knex('BFCOMMANDINPUTOUTPUTS').insert(obj)
 
         await knex('BFCOMMANDSELECTIONLIST').insert({

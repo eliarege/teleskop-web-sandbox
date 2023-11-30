@@ -21,7 +21,6 @@ const { data, pending, refresh } = useFetch('/api/water-types/water-types', { de
 const waterTypeName = ref()
 
 async function handleAddWaterType() {
-  console.log('waterTypeName.value = ', waterTypeName.value)
   await addWaterType(waterTypeName.value)
   await refresh()
   waterTypeName.value = ''
