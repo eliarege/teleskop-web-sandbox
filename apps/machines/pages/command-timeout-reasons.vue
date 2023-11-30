@@ -15,12 +15,12 @@ const { data: selectedTimeoutReasons } = useLazyFetch('/api/command-timeout-reas
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })
 const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useLazyFetch('/api/command-timeout-reasons/timeout-reasons', {
-  immediate: false,
+  immediate: true,
   watch: [selectedTimeoutReasons],
   transform: (timeoutReasons) => {
     return timeoutReasons.map(r => ({
       ...r,
-      checked: selectedTimeoutReasons.value.some(selectedReason => selectedReason.id === r.id),
+      checked: selectedTimeoutReasons.value ? selectedTimeoutReasons.value.some(selectedReason => selectedReason.id === r.id) : false,
     }))
   },
 })
