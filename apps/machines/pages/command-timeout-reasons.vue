@@ -14,7 +14,7 @@ const { data: selectedTimeoutReasons } = useLazyFetch('/api/command-timeout-reas
   immediate: false,
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })
-const { data: timeoutReasons } = useLazyFetch('/api/command-timeout-reasons/timeout-reasons', {
+const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useLazyFetch('/api/command-timeout-reasons/timeout-reasons', {
   immediate: false,
   watch: [selectedTimeoutReasons],
   transform: (timeoutReasons) => {
@@ -39,6 +39,9 @@ const showEditReasonDialog = ref(false)
 const newReasonText = ref('')
 async function handleAddReason() {
   await addCommandTimeoutReason(newReasonText.value)
+  showAddReasonDialog.value = false
+  newReasonText.value = ''
+  await refreshTimeoutReasons()
 }
 function handleEditButton() {
   newReasonText.value = timeoutReasons.value.find(d => d.id === selectedReasonId.value).reasonText
@@ -48,10 +51,13 @@ function handleEditButton() {
 async function handleEditReason() {
   await editCommandTimeoutReason(selectedReasonId.value, newReasonText.value)
   showEditReasonDialog.value = false
+  newReasonText.value = ''
+  await refreshTimeoutReasons()
 }
 
 async function handleDeleteReason() {
   await deleteCommandTimeoutReason(selectedReasonId.value)
+  await refreshTimeoutReasons()
 }
 </script>
 
