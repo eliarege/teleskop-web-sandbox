@@ -197,3 +197,14 @@ export async function checkStepSkippingReason(command) {
 export async function uncheckStepSkippingReason(command) {
   await $fetch('/api/step-skipping-reasons/uncheck-reason', { method: 'DELETE', body: command })
 }
+
+export async function addStepSkippingReason(reasonId: string, reasonText: string) {
+  await $fetch('/api/step-skipping-reasons/reason', { method: 'POST', body: { reasonId, reasonText } })
+}
+
+export async function editStepSkippingReason(reasonId: string, reasonText: string, oldReasonId: string) {
+  await $fetch('/api/step-skipping-reasons/reason', { method: 'PUT', body: { reasonId, reasonText, oldReasonId } })
+}
+export async function deleteStepSkippingReason(reasonId: string) {
+  await $fetch('/api/step-skipping-reasons/reason', { method: 'DELETE', body: { reasonId } })
+}
