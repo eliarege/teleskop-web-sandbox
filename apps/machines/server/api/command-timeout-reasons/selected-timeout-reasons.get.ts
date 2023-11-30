@@ -2,17 +2,17 @@ import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
   try {
-    const { machineId, commandNo } = await getQuery(event)
+    const { machineId, reasonId } = await getQuery(event)
 
-    const reasonIds = await knex('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId)
-      .andWhere('COMMANDNO', commandNo).select('REASONID')
+    const selectedCommandIds = await knex('BFCOMMANDTIMEOUTREASONMAP').where({
+      MACHINEID: machineId,
+      REASONID: reasonId,
+    }).select({
+      commandNo: 'COMMANDNO',
+    })
+    console.log('selectedCommandIds = ', selectedCommandIds)
 
-    const timeoutReasons = await knex('BFCOMMANDTIMEOUTREASONS').whereIn('ID', reasonIds.map(r => r.REASONID))
-      .select(
-        { id: 'ID', reasonText: 'REASONTEXT' },
-      )
-
-    return timeoutReasons
+    return selectedCommandIds
   } catch (e) {
     return e
   }

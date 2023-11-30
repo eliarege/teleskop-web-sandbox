@@ -10,19 +10,24 @@ const { data: machineCommands } = useLazyFetch(`/api/master-commands/master-comm
   immediate: false,
   query: { machineId: selectedMachineId },
 })
-const { data: selectedTimeoutReasons } = useLazyFetch('/api/command-timeout-reasons/selected-timeout-reasons', {
+const { data: selectedCommandReasons } = useLazyFetch('/api/command-timeout-reasons/selected-command-reasons', {
   immediate: false,
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })
 const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useLazyFetch('/api/command-timeout-reasons/timeout-reasons', {
   immediate: true,
-  watch: [selectedTimeoutReasons],
+  watch: [selectedCommandReasons],
   transform: (timeoutReasons) => {
     return timeoutReasons.map(r => ({
       ...r,
-      checked: selectedTimeoutReasons.value ? selectedTimeoutReasons.value.some(selectedReason => selectedReason.id === r.id) : false,
+      checked: selectedCommandReasons.value ? selectedCommandReasons.value.some(selectedReason => selectedReason.id === r.id) : false,
     }))
   },
+})
+
+const { data: selectedReasonCommands } = useLazyFetch('/api/command-timeout-reasons/selected-timeout-reasons', {
+  immediate: false,
+  query: { machineId: selectedMachineId, reasonId: selectedReasonId },
 })
 
 async function handleCheckChange(e, reason) {
@@ -133,7 +138,7 @@ async function handleDeleteReason() {
           :key="machine.machineId"
           v-ripple
           clickable
-          :active="selectedMachineId === machine.machineId"
+          :focused="selectedMachineId === machine.machineId"
           @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>
@@ -151,7 +156,8 @@ async function handleDeleteReason() {
           :key="command.commandNo"
           v-ripple
           clickable
-          :active="selectedCommandNo === command.commandNo"
+          :focused="selectedCommandNo === command.commandNo"
+          :active="selectedReasonCommands && selectedReasonCommands.length ? selectedReasonCommands.some(r => r.commandNo === command.commandNo) : false"
           @click="selectedCommandNo = command.commandNo"
         >
           <q-item-section>
@@ -169,7 +175,7 @@ async function handleDeleteReason() {
           :key="reason.id"
           v-ripple
           clickable
-          :active="selectedReasonId === reason.id"
+          :focused="selectedReasonId === reason.id"
           @click="selectedReasonId = reason.id"
         >
           <q-checkbox v-model:model-value="reason.checked" @update:model-value="(e) => handleCheckChange(e, reason)" />
