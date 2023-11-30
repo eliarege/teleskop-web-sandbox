@@ -1,29 +1,29 @@
 <script setup lang="ts">
 import { addCommandTimeoutReason, getMachineCommands, getTimeoutReasons } from '~/utils'
 
-const { data: machines, pending, refresh } = await useFetch('/api/machines/active-machines')
-
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 const selectedReasonId = ref()
-const machineCommands = ref()
-const timeoutReasons = ref()
 
-async function handleMachineClick(machineId: number) {
-  const { data } = await useFetch('/api/master-commands/master-commands', { query: { machineId } })
-  machineCommands.value = data.value
-  selectedMachineId.value = machineId
-}
-
-async function handleCommandClick(commandNo: number) {
-  const { data: selectedTimeoutReasons } = await useFetch('/api/command-timeout-reasons/selected-timeout-reasons', { query: { machineId: selectedMachineId.value, commandNo } })
-  const { data: allTimeoutReasons } = await useFetch('/api/command-timeout-reasons/timeout-reasons')
-  timeoutReasons.value = allTimeoutReasons.value.map(r => ({
-    ...r,
-    checked: selectedTimeoutReasons.value.some(selectedReason => selectedReason.id === r.id),
-  }))
-  selectedCommandNo.value = commandNo
-}
+const { data: machines } = useFetch('/api/machines/active-machines')
+const { data: machineCommands } = useLazyFetch(`/api/master-commands/master-commands`, {
+  immediate: false,
+  query: { machineId: selectedMachineId },
+})
+const { data: selectedTimeoutReasons } = useLazyFetch('/api/command-timeout-reasons/selected-timeout-reasons', {
+  immediate: false,
+  query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
+})
+const { data: timeoutReasons } = useLazyFetch('/api/command-timeout-reasons/timeout-reasons', {
+  immediate: false,
+  watch: [selectedTimeoutReasons],
+  transform: (timeoutReasons) => {
+    return timeoutReasons.map(r => ({
+      ...r,
+      checked: selectedTimeoutReasons.value.some(selectedReason => selectedReason.id === r.id),
+    }))
+  },
+})
 
 async function handleCheckChange(e, reason) {
   reason.machineId = selectedMachineId.value
@@ -128,7 +128,7 @@ async function handleDeleteReason() {
           v-ripple
           clickable
           :active="selectedMachineId === machine.machineId"
-          @click="handleMachineClick(machine.machineId)"
+          @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>
             {{ machine.machineName }}
@@ -146,7 +146,7 @@ async function handleDeleteReason() {
           v-ripple
           clickable
           :active="selectedCommandNo === command.commandNo"
-          @click="handleCommandClick(command.commandNo)"
+          @click="selectedCommandNo = command.commandNo"
         >
           <q-item-section>
             {{ command.commandName }}
