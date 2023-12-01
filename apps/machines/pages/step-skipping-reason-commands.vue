@@ -21,7 +21,6 @@ const { data: commands } = useLazyFetch('/api/master-commands/master-commands', 
 })
 
 async function handleCheckChange(e, command) {
-  console.log('e, command = ', e, command)
   command.machineId = selectedMachineId.value
   if (e)
     await checkStepSkippingReason(command)

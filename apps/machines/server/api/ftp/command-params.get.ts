@@ -3,7 +3,7 @@ import * as ftp from 'basic-ftp'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  const { machineId } = await getQuery(event)
+  const { machineId } = getQuery(event)
   const ftpClient = new ftp.Client()
   ftpClient.ftp.verbose = false
   try {

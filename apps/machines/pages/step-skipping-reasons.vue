@@ -41,7 +41,6 @@ function handleSelection(obj: object) {
 }
 
 async function handleReasonEdit() {
-  console.log('reasonId.value, reasonText.value, oldReasonId.value = ', reasonId.value, reasonText.value, oldId.value)
   await editStepSkippingReason(reasonId.value, reasonText.value, oldId.value)
   await refresh()
 }

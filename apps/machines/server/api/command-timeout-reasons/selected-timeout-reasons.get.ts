@@ -2,7 +2,7 @@ import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
   try {
-    const { machineId, reasonId } = await getQuery(event)
+    const { machineId, reasonId } = getQuery(event)
 
     const selectedCommandIds = await knex('BFCOMMANDTIMEOUTREASONMAP').where({
       MACHINEID: machineId,
