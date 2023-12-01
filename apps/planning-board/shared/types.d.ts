@@ -7,53 +7,59 @@ export interface MachineList {
 }
 
 export interface PlannedEventsRaw {
+  id: number
   planKey: number
-  recordTime: string | Date
+  machineId: number
+  queueNumber: number
+  recordTime: string
   jobOrder: string
-  plannedMachine: number
-  startedMachine: number
+  programNoList: string
+  plannedStartTime: string
+  theoreticalDuration: number
+  fabricWeight: number
+  partyNumber: string
+  note: string
+}
+export interface PlannedEvents {
+  planKey: number
+  machineId: number
+  queueNumber: number
+  recordTime: string
+  jobOrder: string
+  programNoList: string
+  plannedStartTime: string
+  plannedEndTime: string
+  theoreticalDuration: number
+  fabricWeight: number
+  partyNumber: string
+  note: string
   isDeleted: boolean
   isStarted: boolean
   isStopped: boolean
-  programCount: number
-  plannedStartTime: string | Date
-  actualStartTime: string | Date
-  theoricalDuration: number
-  fabricWeight: number
-  customerName: string
-}
-export interface PlannedEvents {
-  id: number
-  name: string
-  resourceId: number | string
-  startDate: string | Date
-  endDate: string | Date
-  iconCls?: string
-  resizable: boolean
-  draggable: boolean
-  editable: boolean
+  isDeviation: boolean
+  deviation: number
+  isFinished: boolean
+  notStarted: boolean
+  hasAlarm: boolean
+  isRunning: boolean
 }
 
 export interface UnplannedEventsRaw {
   planKey: number
-  recordTime: string | Date
+  recordTime: string
   jobOrder: string
   plannedMachineId: number
   programCount: number
-  plannedStartTime: string | Date
-  isDeleted: 0 | 1
-  isStarted: 0 | 1
-  isStopped: 0 | 1
-  theoricalDuration?: number
+  plannedStartTime: string
+  theoricalDuration: number
   fabricWeight?: number
-  note?: string
+  note: string
   erpFieldName?: string
-  batchParameterId?: string
-  value?: string | number
-  iconCls?: string
+  batchParameterId?: number
+  value?: string
 }
 
-export interface UnplannedEvents {
+export interface UnplannedEvents extends UnplannedEventsRaw {
   id: string | number
   name: string
   duration: number
