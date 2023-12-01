@@ -11,5 +11,11 @@ export default defineEventHandler(async () => {
 	    machineCapacity: 'b.MACHINECAPACITY',
     })
     .where('b.INUSE', '=', 1)
-  return machineList
+  return (await machineList).map((machine) => {
+    return {
+      ...machine,
+      isLocked: false,
+      // eventColor: 'blue',
+    }
+  })
 })
