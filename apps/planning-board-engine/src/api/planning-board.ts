@@ -25,7 +25,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       const unplannedEvents = await getUnplannedEvents(from, to)
       return reply.code(200).send(unplannedEvents)
     } catch (err) {
-
+      fastify.log.error(err)
+      return reply.code(500).send({ error: 'Internal Server Error' })
     }
   })
   done()
