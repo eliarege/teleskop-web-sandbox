@@ -1,5 +1,4 @@
 import process from 'node:process'
-import i18n from '@intlify/unplugin-vue-i18n/vite'
 import string from 'rollup-plugin-string'
 import type { Plugin as RollupPlugin } from 'rollup'
 
@@ -15,7 +14,6 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
-  modules: [],
   runtimeConfig: {
     teleskopHost: process.env.TELESKOP_HOST || 'localhost',
     teleskopUser: process.env.TELESKOP_USER || '',
@@ -30,13 +28,6 @@ export default defineNuxtConfig({
       teleskopHasLogs: process.env.TELESKOP_HAS_DY_LOGS || 'true',
       websockifyPort: process.env.WEBSOCKIFY_PORT || '6800',
     },
-  },
-  vite: {
-    plugins: [
-      i18n({
-        include: ['locales/*'],
-      }),
-    ],
   },
   nitro: {
     rollupConfig: {

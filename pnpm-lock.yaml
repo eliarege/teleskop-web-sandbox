@@ -33,9 +33,6 @@ importers:
       '@iconify/vue':
         specifier: ^4.1.1
         version: 4.1.1(vue@3.3.9)
-      '@intlify/unplugin-vue-i18n':
-        specifier: ^1.5.0
-        version: 1.5.0(vue-i18n@9.8.0)
       '@types/node':
         specifier: ^18.19.0
         version: 18.19.0
@@ -48,9 +45,6 @@ importers:
       unocss-config:
         specifier: workspace:*
         version: link:../../packages/unocss-config
-      vue-i18n:
-        specifier: ^9.8.0
-        version: 9.8.0(vue@3.3.9)
 
   apps/dispensing-manager-ui:
     dependencies:
@@ -67,9 +61,6 @@ importers:
       '@iconify/vue':
         specifier: ^4.1.1
         version: 4.1.1(vue@3.3.9)
-      '@intlify/unplugin-vue-i18n':
-        specifier: ^1.5.0
-        version: 1.5.0(vue-i18n@9.8.0)
       '@types/mssql':
         specifier: ^9.1.4
         version: 9.1.4
@@ -88,9 +79,6 @@ importers:
       unocss-config:
         specifier: workspace:*
         version: link:../../packages/unocss-config
-      vue-i18n:
-        specifier: ^9.8.0
-        version: 9.8.0(vue@3.3.9)
 
   apps/machines:
     dependencies:
@@ -110,9 +98,6 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0(axios@0.27.2)
     devDependencies:
-      '@intlify/unplugin-vue-i18n':
-        specifier: ^1.5.0
-        version: 1.5.0(vue-i18n@9.8.0)
       nuxt:
         specifier: ^3.8.0
         version: 3.8.0(@types/node@18.19.0)(eslint@8.54.0)(typescript@5.3.2)(vite@4.5.0)
@@ -128,9 +113,6 @@ importers:
       vue:
         specifier: ^3.3.9
         version: 3.3.9(typescript@5.3.2)
-      vue-i18n:
-        specifier: ^9.8.0
-        version: 9.8.0(vue@3.3.9)
 
   apps/multi-monitor:
     dependencies:
@@ -153,15 +135,9 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
     devDependencies:
-      '@firebase/app-types':
-        specifier: ^0.9.0
-        version: 0.9.0
       '@iconify/vue':
         specifier: ^4.1.1
         version: 4.1.1(vue@3.3.9)
-      '@intlify/unplugin-vue-i18n':
-        specifier: ^1.5.0
-        version: 1.5.0(vue-i18n@9.8.0)
       '@types/animejs':
         specifier: ^3.1.12
         version: 3.1.12
@@ -189,9 +165,6 @@ importers:
       unocss-config:
         specifier: workspace:*
         version: link:../../packages/unocss-config
-      vue-i18n:
-        specifier: ^9.8.0
-        version: 9.8.0(vue@3.3.9)
 
   apps/planning-board:
     dependencies:
@@ -291,9 +264,6 @@ importers:
       '@iconify/vue':
         specifier: ^4.1.1
         version: 4.1.1(vue@3.3.9)
-      '@intlify/unplugin-vue-i18n':
-        specifier: ^1.5.0
-        version: 1.5.0(vue-i18n@9.8.0)
       '@types/node':
         specifier: ^18.19.0
         version: 18.19.0
@@ -306,9 +276,6 @@ importers:
       unocss-config:
         specifier: workspace:*
         version: link:../../packages/unocss-config
-      vue-i18n:
-        specifier: ^9.8.0
-        version: 9.8.0(vue@3.3.9)
 
   apps/root:
     dependencies:
@@ -358,6 +325,9 @@ importers:
       '@element-plus/nuxt':
         specifier: ^1.0.7
         version: 1.0.7(@element-plus/icons-vue@2.3.1)(element-plus@2.4.3)
+      '@intlify/unplugin-vue-i18n':
+        specifier: ^1.5.0
+        version: 1.5.0(vue-i18n@9.8.0)
       '@pinia/nuxt':
         specifier: ^0.5.1
         version: 0.5.1(typescript@5.3.2)(vue@3.3.9)
@@ -391,6 +361,9 @@ importers:
       unocss:
         specifier: ^0.57.7
         version: 0.57.7(@unocss/webpack@0.57.7)(postcss@8.4.31)(vite@5.0.0-beta.20)
+      vue-i18n:
+        specifier: ^9.8.0
+        version: 9.8.0(vue@3.3.9)
     devDependencies:
       '@types/node':
         specifier: ^18.19.0
@@ -1901,10 +1874,6 @@ packages:
       fast-json-stringify: 5.9.1
     dev: false
 
-  /@firebase/app-types@0.9.0:
-    resolution: {integrity: sha512-AeweANOIo0Mb8GiYm3xhTEBVCmPwTYAu9Hcd2qSkLuga/6+j9b1Jskl5bpiSQWy9eJ/j5pavxj6eYogmnuzm+Q==}
-    dev: true
-
   /@floating-ui/core@1.5.0:
     resolution: {integrity: sha512-kK1h4m36DQ0UHGj5Ah4db7R0rHemTqqO0QLvUqi1/mUUp3LuAWbWxdxSIf/XsnH9VS6rRVPLJCncjRzUvyCLXg==}
     dependencies:
@@ -1997,7 +1966,7 @@ packages:
       source-map-js: 1.0.2
       vue-i18n: 9.8.0(vue@3.3.9)
       yaml-eslint-parser: 1.2.2
-    dev: true
+    dev: false
 
   /@intlify/core-base@9.8.0:
     resolution: {integrity: sha512-UxaSZVZ1DwqC/CltUZrWZNaWNhfmKtfyV4BJSt/Zt4Or/fZs1iFj0B+OekYk1+MRHfIOe3+x00uXGQI4PbO/9g==}
@@ -2005,7 +1974,7 @@ packages:
     dependencies:
       '@intlify/message-compiler': 9.8.0
       '@intlify/shared': 9.8.0
-    dev: true
+    dev: false
 
   /@intlify/message-compiler@9.8.0:
     resolution: {integrity: sha512-McnYWhcoYmDJvssVu6QGR0shqlkJuL1HHdi5lK7fNqvQqRYaQ4lSLjYmZxwc8tRNMdIe9/KUKfyPxU9M6yCtNQ==}
@@ -2013,12 +1982,12 @@ packages:
     dependencies:
       '@intlify/shared': 9.8.0
       source-map-js: 1.0.2
-    dev: true
+    dev: false
 
   /@intlify/shared@9.8.0:
     resolution: {integrity: sha512-TmgR0RCLjzrSo+W3wT0ALf9851iFMlVI9EYNGeWvZFUQTAJx0bvfsMlPdgVtV1tDNRiAfhkFsMKu6jtUY1ZLKQ==}
     engines: {node: '>= 16'}
-    dev: true
+    dev: false
 
   /@intlify/unplugin-vue-i18n@1.5.0(vue-i18n@9.8.0):
     resolution: {integrity: sha512-jW0MCCdwxybxcwjEfCunAcKjVoxyO3i+cnLL6v+MNGRLUHqrpELF6zQAJUhgAK2afhY7mCliy8RxTFWKdXm26w==}
@@ -2051,7 +2020,7 @@ packages:
     transitivePeerDependencies:
       - rollup
       - supports-color
-    dev: true
+    dev: false
 
   /@ioredis/commands@1.2.0:
     resolution: {integrity: sha512-Sx1pU8EM64o2BrqNpEO1CNLtKQwyhuXuqyfH7oGKCk+1a33d2r5saW8zNwm3j6BTExtjrv2BxTgzzkMwts6vGg==}
@@ -4262,6 +4231,7 @@ packages:
     resolution: {integrity: sha512-nc0Axzp/0FILLEVsm4fNwLCwMttvhEI263QtVPQcbpfZZ3ts0hLsZGOpE6czNlid7CJ9MlyH8reXkpsf3YUY4w==}
     engines: {node: '>=0.4.0'}
     hasBin: true
+    dev: false
 
   /agent-base@6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
@@ -6062,7 +6032,7 @@ packages:
       esutils: 2.0.3
     optionalDependencies:
       source-map: 0.6.1
-    dev: true
+    dev: false
 
   /eslint-compat-utils@0.1.2(eslint@8.54.0):
     resolution: {integrity: sha512-Jia4JDldWnFNIru1Ehx1H5s9/yxiRHY/TimCuUc0jNexew3cF1gI6CYZil1ociakfWO3rRqFjl1mskBblB3RYg==}
@@ -6427,6 +6397,7 @@ packages:
     resolution: {integrity: sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==}
     engines: {node: '>=4'}
     hasBin: true
+    dev: false
 
   /esquery@1.5.0:
     resolution: {integrity: sha512-YQLXUplAwJgCydQ78IMJywZCceoqk1oH01OERdSAJc/7U2AylwjhSCLDEtqwg811idIS/9fIU5GjG73IgjKMVg==}
@@ -7743,7 +7714,6 @@ packages:
       eslint-visitor-keys: 3.4.3
       espree: 9.6.1
       semver: 7.5.4
-    dev: true
 
   /jsonc-parser@3.2.0:
     resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
@@ -11140,6 +11110,7 @@ packages:
       chokidar: 3.5.3
       webpack-sources: 3.2.3
       webpack-virtual-modules: 0.6.1
+    dev: false
 
   /unstorage@1.9.0:
     resolution: {integrity: sha512-VpD8ZEYc/le8DZCrny3bnqKE4ZjioQxBRnWE+j5sGNvziPjeDlaS1NaFFHzl/kkXaO3r7UaF8MGQrs14+1B4pQ==}
@@ -11686,7 +11657,7 @@ packages:
       '@intlify/shared': 9.8.0
       '@vue/devtools-api': 6.5.1
       vue: 3.3.9(typescript@5.3.2)
-    dev: true
+    dev: false
 
   /vue-router@4.2.5(vue@3.3.9):
     resolution: {integrity: sha512-DIUpKcyg4+PTQKfFPX88UWhlagBEBEfJ5A8XDXRJLUnZOvcpMF8o/dnL90vpVkGaPbjvXazV/rC1qBKrZlFugw==}
@@ -11731,6 +11702,7 @@ packages:
 
   /webpack-virtual-modules@0.6.1:
     resolution: {integrity: sha512-poXpCylU7ExuvZK8z+On3kX+S8o/2dQ/SVYueKA0D4WEMXROXgY8Ez50/bQEUmvoSMMrWcrJqCHuhAbsiwg7Dg==}
+    dev: false
 
   /webpack@5.89.0:
     resolution: {integrity: sha512-qyfIC10pOr70V+jkmud8tMfajraGCZMBWJtrmuBymQKCrLTRejBI8STDp1MCyZu/QTdZSeacCQYpYNQVOzX5kw==}
@@ -11936,7 +11908,6 @@ packages:
       eslint-visitor-keys: 3.4.3
       lodash: 4.17.21
       yaml: 2.3.3
-    dev: true
 
   /yaml@2.3.3:
     resolution: {integrity: sha512-zw0VAJxgeZ6+++/su5AFoqBbZbrEakwu+X0M5HmcwUiBL7AzcuPKjj5we4xfQLp78LkEMpD0cOnUhmgOVy3KdQ==}
