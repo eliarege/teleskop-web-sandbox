@@ -1,3 +1,8 @@
+<script setup lang="ts">
+globalThis.bryntum ??= {}
+globalThis.bryntum.isTestEnv = true
+</script>
+
 <template>
   <div>
     <NuxtPage />
