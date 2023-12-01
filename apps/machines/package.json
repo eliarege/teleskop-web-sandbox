@@ -14,12 +14,12 @@
   "dependencies": {
     "@floating-ui/vue": "^1.0.2",
     "basic-ftp": "^5.0.3",
-    "knex": "^2.5.1",
+    "knex": "^3.0.1",
     "mssql": "^10.0.1",
     "soap": "^1.0.0"
   },
   "devDependencies": {
-    "@intlify/unplugin-vue-i18n": "^0.11.0",
+    "@intlify/unplugin-vue-i18n": "^1.5.0",
     "nuxt": "^3.8.0",
     "nuxt-base": "workspace:*",
     "rollup-plugin-string": "workspace:*",

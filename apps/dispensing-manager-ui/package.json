@@ -12,13 +12,13 @@
     "start": "node .output/server/index.mjs"
   },
   "dependencies": {
-    "knex": "^2.5.1",
+    "knex": "^3.0.1",
     "moment": "^2.29.4",
     "mssql": "^10.0.1"
   },
   "devDependencies": {
     "@iconify/vue": "^4.1.1",
-    "@intlify/unplugin-vue-i18n": "^0.11.0",
+    "@intlify/unplugin-vue-i18n": "^1.5.0",
     "@types/mssql": "^9.1.4",
     "@types/node": "^18.19.0",
     "nuxt": "^3.8.0",

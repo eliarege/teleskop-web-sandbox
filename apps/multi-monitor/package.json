@@ -25,7 +25,7 @@
   "devDependencies": {
     "@firebase/app-types": "^0.9.0",
     "@iconify/vue": "^4.1.1",
-    "@intlify/unplugin-vue-i18n": "^0.11.0",
+    "@intlify/unplugin-vue-i18n": "^1.5.0",
     "@types/animejs": "^3.1.12",
     "@types/d3": "^7.4.3",
     "@types/lodash-es": "^4.17.12",
@@ -33,7 +33,6 @@
     "@types/node": "^18.19.0",
     "nuxt": "^3.8.0",
     "nuxt-base": "workspace:*",
-    "rollup": "^3.29.4",
     "rollup-plugin-string": "workspace:*",
     "unocss-config": "workspace:*",
     "vue-i18n": "^9.8.0"
