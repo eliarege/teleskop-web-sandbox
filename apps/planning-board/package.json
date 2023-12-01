@@ -19,7 +19,7 @@
     "knex": "^2.5.1",
     "mssql": "^10.0.1",
     "rollup": "^3.29.4",
-    "tedious": "^16.4.1",
+    "tedious": "^16.6.1",
     "ui": "workspace:*"
   },
   "devDependencies": {
@@ -27,7 +27,7 @@
     "nuxt-base": "workspace:*",
     "rollup-plugin-string": "workspace:*",
     "unocss-config": "workspace:*",
-    "vue": "^3.3.4",
+    "vue": "^3.3.9",
     "vue-router": "^4.2.5"
   },
   "eliar": {
