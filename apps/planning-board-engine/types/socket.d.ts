@@ -4,8 +4,8 @@ declare module 'fastify' {
   interface FastifyInstance {
     io: Server<{
       hello: () => string
-      hi: (data: string) => void // Specify the type of the payload here
-      clientMessage: (data: string) => void
+      hi: (data: string) => void
+      clientMessage: (data: object) => void
       serverResponse: (data: string) => void
     }>
   }
