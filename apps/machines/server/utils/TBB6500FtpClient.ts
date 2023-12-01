@@ -18,6 +18,7 @@ import { fileCommandsGeneralParser } from './fileParsers/fileCommandsGeneralPars
 import { fileCommandIOParser } from './fileParsers/fileCommandIOParser'
 import { fileCommandFeedbackParser } from './fileParsers/fileCommandFeedbackParser'
 import { fileFunctionAlarmsParser } from './fileParsers/fileFunctionAlarmsParser'
+import { fileMachineParameterValuesWriter } from './fileWriters/fileMachineParameterValuesWriter'
 import { calcIONumber } from '.'
 import type { FinishReason, MachineStopReason, User } from '~/types'
 
@@ -115,12 +116,11 @@ export class TBB6500FtpClient {
 
       const content = fileUserWriter(users)
 
-      /*       if (!fs.existsSync(sourceFolderPath)) {
+      if (!fs.existsSync(sourceFolderPath)) {
         await fs.promises.mkdir(sourceFolderPath)
       }
       await fs.promises.writeFile(sourcePath, content)
       await this.ftpClient.uploadFrom(sourcePath, remotePath)
- */
     } catch (err) {
       console.error(err)
     } finally {
@@ -193,12 +193,11 @@ export class TBB6500FtpClient {
 
       const content = fileStopReasonWriter(stopReasons)
 
-      /*       if (!fs.existsSync(sourceFolderPath)) {
+      if (!fs.existsSync(sourceFolderPath)) {
         await fs.promises.mkdir(sourceFolderPath)
       }
       await fs.promises.writeFile(sourcePath, content)
       await this.ftpClient.uploadFrom(sourcePath, remotePath)
- */
     } catch (err) {
       console.error(err)
     } finally {
@@ -239,12 +238,11 @@ export class TBB6500FtpClient {
 
       const content = fileFinishReasonWriter(finishReasons)
 
-      /*       if (!fs.existsSync(sourceFolderPath)) {
+      if (!fs.existsSync(sourceFolderPath)) {
         await fs.promises.mkdir(sourceFolderPath)
       }
       await fs.promises.writeFile(sourcePath, content)
       await this.ftpClient.uploadFrom(sourcePath, remotePath)
- */
     } catch (err) {
       console.error(err)
     } finally {
@@ -254,8 +252,10 @@ export class TBB6500FtpClient {
 
   async fetchCommandAlarmReasons() {
     try {
-      /*       await this.connectClient()
+      await this.connectClient()
+
       const sourceFolderPath = './server/data/config'
+      const sourcePath = './server/data/config/commandAlarmReasons'
       const remotePath = '/tbb6500/data/config/commandAlarmReasons'
 
       if (!fs.existsSync(sourceFolderPath)) {
@@ -263,9 +263,7 @@ export class TBB6500FtpClient {
       }
 
       await this.ftpClient.downloadTo(sourcePath, remotePath)
- */
 
-      const sourcePath = './server/data/config/commandAlarmReasons'
       const content = await fs.promises.readFile(sourcePath, 'utf8')
       const commandAlarmReasons = fileCommandAlarmReasonsParser(content)
 
@@ -273,7 +271,7 @@ export class TBB6500FtpClient {
     } catch (err) {
       console.error(err)
     } finally {
-      // this.ftpClient.close()
+      this.ftpClient.close()
     }
   }
 
@@ -698,6 +696,27 @@ export class TBB6500FtpClient {
       const commandGroups = fileCommandAlarmsParser(content)
 
       return commandGroups
+    } catch (err) {
+      console.error(err)
+    } finally {
+      this.ftpClient.close()
+    }
+  }
+
+  async writeMachineParameterValues(values) {
+    try {
+      await this.connectClient()
+      const sourceFolderPath = './server/data/config'
+      const sourcePath = './server/data/config/makinesabitleriDegerler'
+      const remotePath = '/tbb6500/data/config/makinesabitleriDegerler'
+
+      const content = fileMachineParameterValuesWriter(values)
+
+      if (!fs.existsSync(sourceFolderPath)) {
+        await fs.promises.mkdir(sourceFolderPath)
+      }
+      await fs.promises.writeFile(sourcePath, content)
+      await this.ftpClient.uploadFrom(sourcePath, remotePath)
     } catch (err) {
       console.error(err)
     } finally {

@@ -3,7 +3,6 @@ import { knex } from '~/server/connectionPool'
 export default defineEventHandler(async (event) => {
   try {
     const { machineId } = await getQuery(event)
-    console.log('machineId = ', machineId)
     const machineParameters = await knex('BFMACHPARAMETERS').where('MACHINEID', machineId).select({
       id: 'MACHINEPARAMETERID',
       paramString: 'PARAMSTRING',

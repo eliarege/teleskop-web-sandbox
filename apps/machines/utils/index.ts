@@ -141,6 +141,14 @@ export async function getWaterTypes(): Promise<WaterType[]> {
   return await $fetch('/api/water-types/water-types')
 }
 
+export async function addWaterType(waterTypeName: string) {
+  await $fetch('/api/water-types/water-type', { method: 'POST', body: { waterTypeName } })
+}
+
+export async function deleteWaterTypes(waterTypes) {
+  await $fetch('/api/water-types/water-types', { method: 'DELETE', body: waterTypes })
+}
+
 export async function getMachineCommands(machineId: number) {
   return await $fetch('/api/master-commands/master-commands', { method: 'POST',body: {
       machineId,
@@ -156,4 +164,47 @@ export async function getSelectedTimeoutReasons(machineId: number, commandNo: nu
 
 export async function getTimeoutReasons() {
   return await $fetch('/api/command-timeout-reasons/timeout-reasons')
+}
+
+export async function editMachineGroupType(group) {
+  await $fetch('/api/machines/machine-group-type', { method: 'PUT', body: group })
+}
+
+export async function checkTimeoutReason(reason) {
+  await $fetch('/api/command-timeout-reasons/check-command-timeout-reason', { method: 'POST', body: reason })
+}
+
+export async function uncheckTimeoutReason(reason) {
+  await $fetch('/api/command-timeout-reasons/uncheck-command-timeout-reason', { method: 'DELETE', body: reason })
+}
+
+export async function addCommandTimeoutReason(reasonText: string) {
+  await $fetch('/api/command-timeout-reasons/command-timeout-reason', { method: 'POST', body: { reasonText } })
+}
+
+export async function editCommandTimeoutReason(id: number, reasonText: string) {
+  await $fetch('/api/command-timeout-reasons/command-timeout-reason', { method: 'PUT', body: { reasonText, id } })
+}
+
+export async function deleteCommandTimeoutReason(id) {
+  await $fetch('/api/command-timeout-reasons/command-timeout-reason', { method: 'DELETE', body: { id } })
+}
+
+export async function checkStepSkippingReason(command) {
+  await $fetch('/api/step-skipping-reasons/check-reason', { method: 'POST', body: command })
+}
+
+export async function uncheckStepSkippingReason(command) {
+  await $fetch('/api/step-skipping-reasons/uncheck-reason', { method: 'DELETE', body: command })
+}
+
+export async function addStepSkippingReason(reasonId: string, reasonText: string) {
+  await $fetch('/api/step-skipping-reasons/reason', { method: 'POST', body: { reasonId, reasonText } })
+}
+
+export async function editStepSkippingReason(reasonId: string, reasonText: string, oldReasonId: string) {
+  await $fetch('/api/step-skipping-reasons/reason', { method: 'PUT', body: { reasonId, reasonText, oldReasonId } })
+}
+export async function deleteStepSkippingReason(reasonId: string) {
+  await $fetch('/api/step-skipping-reasons/reason', { method: 'DELETE', body: { reasonId } })
 }
