@@ -1,4 +1,3 @@
-import process from 'node:process'
 import Knex from 'knex'
 
 export const knex = Knex({

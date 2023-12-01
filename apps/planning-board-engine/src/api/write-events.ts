@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyPluginCallback, FastifyRequest } from 'fastify'
+import type { FastifyPluginCallback } from 'fastify'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.post('/execute', async (request, reply) => {

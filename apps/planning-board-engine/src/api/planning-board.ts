@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyPluginCallback, FastifyRequest } from 'fastify'
+import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import { getPlannedEvents, getUnplannedEvents } from '../composables/query'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {

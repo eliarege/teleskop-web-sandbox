@@ -1,4 +1,4 @@
-import { updateEventStates } from '../helper'
+import { updateEventStates } from '../composables/helper'
 import { knex } from '../knexConfig'
 
 export async function getPlannedEvents(from: Date | string, to: Date | string) {
