@@ -47,7 +47,7 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
   <q-card class="column flex flex-column relative">
     <q-card-section class="text-override-left flex-grow">
       <div class="text-h6 ml-7 mt-3">
-        {{ t('jobOrderLogs.a') }} -
+        {{ t('jobOrderLogs._') }} -
         <span v-if="joborder">
           {{ t('joborder') }} : {{ joborder }} -
         </span>
@@ -63,7 +63,7 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
           flat
           bordered
           :virtual-scroll-sticky-size-start="48"
-          :title="t('weighingInformation.oto') + t('weighingInformation.a')"
+          :title="t('weighingInformation.oto') + t('weighingInformation._')"
         >
           <template #body="props">
             <q-tr :props="props">
@@ -109,7 +109,7 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
           flat
           bordered
           :virtual-scroll-sticky-size-start="48"
-          :title="t('weighingInformation.man') + t('weighingInformation.a')"
+          :title="t('weighingInformation.man') + t('weighingInformation._')"
         >
           <template #body="props">
             <q-tr :props="props">

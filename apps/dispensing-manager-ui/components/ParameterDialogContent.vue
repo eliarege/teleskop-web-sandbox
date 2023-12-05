@@ -25,7 +25,7 @@ const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.
   <q-card class="column">
     <q-card-section>
       <div class="text-h6 ml-5 mt-5">
-        {{ t('jobOrderParameters.a') }} - {{ t('joborder') }} :
+        {{ t('jobOrderParameters._') }} - {{ t('joborder') }} :
         <span v-if="joborder">
           {{ joborder }}
         </span>

@@ -131,7 +131,7 @@ async function submitCoupleMachine() {
       <span class="header-class-recipe">
         <NavigationButton type="back" />
         &nbsp;&nbsp;
-        {{ t('distributionProcessor.a') }} - {{ t('recipe.header') }}
+        {{ t('distributionProcessor._') }} - {{ t('recipe.header') }}
         <span class="right-home">
           <NavigationButton type="home" />
         </span>

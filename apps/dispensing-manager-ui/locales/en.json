@@ -35,10 +35,10 @@
   "search": "Search",
   "more": "more",
   "settings": {
-    "a": "Settings",
+    "_": "Settings",
     "requestFileSystem": "Request files directory",
     "dispSettings": {
-      "a": "Dispenser Settings",
+      "_": "Dispenser Settings",
       "dispInfo": "Dispenser Information",
       "dispNo": "Dispenser Number",
       "dispName": "Dispenser Name",
@@ -51,7 +51,7 @@
       "readFromDMS": "Read from DMS"
     },
     "driverInfo": {
-      "a": "Driver Settings",
+      "_": "Driver Settings",
       "driverCode": "Driver Code",
       "driverName": "Driver Name",
       "driverFileName": "File Name",
@@ -95,7 +95,7 @@
     "find": "Find",
     "clear": "Clear",
     "requestMechanism": {
-      "a": "Request Mechanism",
+      "_": "Request Mechanism",
       "request1": "Let repeated requests be implemented.",
       "request2": "If the repeated request is the last, then it should be implemented.",
       "request3": "Do not implement repeated requests.",
@@ -112,7 +112,7 @@
     "archiveRetentionDayCount": "Archive Retention Day Count",
     "oldRequestInfoDelete": "Delete request information for materials older than a certain number of days from the database. (Enter 0 for unlimited)",
     "orderBasedDyeRequest": {
-      "a": "Order Based Dye Request",
+      "_": "Order Based Dye Request",
       "active": "Order based dye request active",
       "required": "It is mandatory for order programs and recipe programs to be the same"
     },
@@ -139,7 +139,7 @@
     "checkTankNumberWhenMakingManualOnlineRequest": "Check Tank Number When Making a Manual Online Request"
   },
   "distributionProcessor": {
-    "a": "Distribution Processor",
+    "_": "Distribution Processor",
     "recipeRequest": "Request Recipe Details",
     "alerts": "Occurring Alarms",
     "code": "Code",
@@ -164,7 +164,7 @@
     }
   },
   "jobOrderLogs": {
-    "a": "Job Order Logs",
+    "_": "Job Order Logs",
     "arrangement": "Arrangement",
     "arrangementCriterion": "Sorting Criteria",
     "arrangementSort": "Sort Direction",
@@ -193,7 +193,7 @@
     "requestIndex": "Request Index"
   },
   "jobOrderParameters": {
-    "a": "Job Order Parameters",
+    "_": "Job Order Parameters",
     "jobOrderNo": "Job Order Number",
     "parameterName": "Parameter Name",
     "type": "Type",
@@ -201,7 +201,7 @@
     "value": "Value"
   },
   "recipe": {
-    "a": "Recipe",
+    "_": "Recipe",
     "recipeTable": "Recipe Table",
     "amount": "Amount",
     "changePlannedMachine": "Change Planned Machine",
@@ -226,14 +226,14 @@
     "coupleMachine": "Couple Machine"
   },
   "registeredJobOrders": {
-    "a": "Registered Job Orders",
+    "_": "Registered Job Orders",
     "programList": "Program List",
     "scheduledStartTime": "Planned Start Time",
     "showJobOrderRecipe": "Double Click on the Job Order to See the Recipe",
     "useDateFilter": "Use Date Filter"
   },
   "weighingInformation": {
-    "a": " Weighing Information",
+    "_": " Weighing Information",
     "oto": "Automatic",
     "man": "Manuel",
     "automaticRequest": "Auto Request",

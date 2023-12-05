@@ -219,7 +219,7 @@ async function clickShowRecipe(row, isLogs: boolean) {
         class=""
         color="black"
         icon="settings"
-        :label="t('settings.a')"
+        :label="t('settings._')"
         @click="navigateToPage('setting')"
       />
     </div>

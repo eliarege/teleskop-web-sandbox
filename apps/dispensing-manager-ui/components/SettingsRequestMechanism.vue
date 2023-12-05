@@ -82,7 +82,7 @@ async function changeSettings() {
         >
           <div v-if="n === 1">
             <div class="setting-section-header">
-              {{ t('settings.requestMechanism.a') }}
+              {{ t('settings.requestMechanism._') }}
             </div>
             <div class="flex flex-col">
               <q-option-group
@@ -149,7 +149,7 @@ async function changeSettings() {
           </div>
           <div v-if="n === 4">
             <div class="setting-section-header">
-              {{ t('settings.orderBasedDyeRequest.a') }}
+              {{ t('settings.orderBasedDyeRequest._') }}
             </div>
             <div class="m-5">
               <q-checkbox

@@ -171,6 +171,7 @@ function pushToFilters(col: Column, index: number, orderByType?: string) {
         filterSlots.value.push(temp)
     }
   }
+  console.log(filterSlots.value)
 }
 
 function comparisonOptionInit(index: number) {

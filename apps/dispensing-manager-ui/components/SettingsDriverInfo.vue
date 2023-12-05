@@ -56,7 +56,7 @@ async function fetchData() {
     <div class=" flex flex-col items-center justify-center gap-5 text-size-4 w-full ">
       <div class="w-full items-center justify-center flex">
         <div class="setting-section-header">
-          {{ t('settings.driverInfo.a') }}
+          {{ t('settings.driverInfo._') }}
         </div>
         <div class="row-item ">
           {{ t('settings.requestFileSystem') }}

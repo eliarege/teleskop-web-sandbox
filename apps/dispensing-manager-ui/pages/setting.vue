@@ -7,14 +7,9 @@ const splitterModel = ref(10)
 const innerWidth = ref(window.innerWidth)
 function handleResize() {
   innerWidth.value = window.innerWidth
-  console.log(123123)
 }
-onMounted(() => {
-  window.addEventListener('resize', handleResize)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
+useResizeObserver(document.body, () => {
+  handleResize()
 })
 </script>
 
@@ -22,7 +17,7 @@ onUnmounted(() => {
   <span class="header-class">
     <NavigationButton type="back" />
     &nbsp;&nbsp;
-    Eliar - {{ t('distributionProcessor.a') }} - {{ t('settings.a') }}
+    Eliar - {{ t('distributionProcessor._') }} - {{ t('settings._') }}
     <span class="right-home">
       <NavigationButton type="home" />
     </span>
@@ -42,7 +37,7 @@ onUnmounted(() => {
             name="dispenser"
             icon="settings"
             style="white-space: normal;"
-            :label="innerWidth > 768 ? `${t('settings.dispSettings.a')}` : ''"
+            :label="innerWidth > 768 ? `${t('settings.dispSettings._')}` : ''"
           />
           <q-separator />
           <q-tab
@@ -63,14 +58,14 @@ onUnmounted(() => {
             name="request-mechanism"
             icon="settings"
             style="white-space: normal;"
-            :label="innerWidth > 768 ? `${t('settings.requestMechanism.a')}` : ''"
+            :label="innerWidth > 768 ? `${t('settings.requestMechanism._')}` : ''"
           />
           <q-separator />
           <q-tab
             name="driver-info"
             icon="settings"
             style="white-space: normal;"
-            :label="innerWidth > 768 ? `${t('settings.driverInfo.a')}` : ''"
+            :label="innerWidth > 768 ? `${t('settings.driverInfo._')}` : ''"
           />
         </q-tabs>
       </template>
