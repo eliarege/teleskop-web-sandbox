@@ -35,10 +35,10 @@
   "search": "Ara",
   "more": "fazlası",
   "settings": {
-    "a": "Ayarlar",
+    "_": "Ayarlar",
     "requestFileSystem": "İstek dosyalarının dizini",
     "dispSettings": {
-      "a": "Dağıtıcı Ayarları",
+      "_": "Dağıtıcı Ayarları",
       "dispInfo": "Dağıtıcı Bilgileri",
       "dispNo": "Dağıtıcı Numarası",
       "dispName": "Dağıtıcı Adı",
@@ -51,7 +51,7 @@
       "readFromDMS": "DMS'den Oku"
     },
     "driverInfo": {
-      "a": "Sürücü Ayarları",
+      "_": "Sürücü Ayarları",
       "driverCode": "Sürücü Kodu",
       "driverName": "Sürücü Adı",
       "driverFileName": "Dosya Adı",
@@ -94,7 +94,7 @@
     "find": "Bul",
     "clear": "Temizle",
     "requestMechanism": {
-      "a": "İstek Mekanizması",
+      "_": "İstek Mekanizması",
       "request1": "Tekrarlanan istekler gerçekleşşin.",
       "request2": "Tekrarlanan istek, son istek ise gerçekleşşin.",
       "request3": "Tekrarlanan istekler gerçekleşmesin.",
@@ -111,7 +111,7 @@
     "archiveRetentionDayCount": "Arşiv Tutma Gün Sayısı",
     "oldRequestInfoDelete": "Belirtilen günden eski malzeme istek bilgileri veritabanından silinsin. (Sınırsız için 0 yazınız)",
     "orderBasedDyeRequest": {
-      "a": "İş Emri Bazında Boya İsteği",
+      "_": "İş Emri Bazında Boya İsteği",
       "active": "İş emri bazında boya isteği aktif",
       "required": "İş emri programları ile reçete programlarının aynı olması zorunlu"
     },
@@ -138,7 +138,7 @@
     "checkTankNumberWhenMakingManualOnlineRequest": "Manuel Online İstek Yapılırken Tank Numarasını Kontrolünü Yapsın"
   },
   "distributionProcessor": {
-    "a": "Dağıtım Yöneticisi",
+    "_": "Dağıtım Yöneticisi",
     "recipeRequest": "Reçete Bilgilerini Sorgulama",
     "alerts": "Oluşan Alarmlar",
     "code": "Kod",
@@ -163,7 +163,7 @@
     }
   },
   "jobOrderLogs": {
-    "a": "İş Emri Kayıtları",
+    "_": "İş Emri Kayıtları",
     "arrangement": "Sıralama",
     "arrangementCriterion": "Sıralama Kriteri",
     "arrangementSort": "Sıralama Yönü",
@@ -192,7 +192,7 @@
     "requestIndex": "İstek Sırası"
   },
   "jobOrderParameters": {
-    "a": "İş Emri Parametreleri",
+    "_": "İş Emri Parametreleri",
     "jobOrderNo": "İş Emri Numarası",
     "parameterName": "Parametre Adı",
     "type": "Tipi",
@@ -200,7 +200,7 @@
     "value": "Değeri"
   },
   "recipe": {
-    "a": "Reçete",
+    "_": "Reçete",
     "recipeTable": "Reçete Tablosu",
     "amount": "Miktar",
     "changePlannedMachine": "Planlanan Makineyi Değiştir",
@@ -225,14 +225,14 @@
     "coupleMachine": "Akuple Makinesi"
   },
   "registeredJobOrders": {
-    "a": "Kayıtlı İş Emirleri",
+    "_": "Kayıtlı İş Emirleri",
     "programList": "Program Listesi",
     "scheduledStartTime": "Planlanan Başlangıç Zamanı",
     "showJobOrderRecipe": "İş Emrinin Reçetesini Görmek İçin Üzerine Çıft Tıklayınız",
     "useDateFilter": "Tarih Filtresi Kullan"
   },
   "weighingInformation": {
-    "a": " Tartım Bilgileri",
+    "_": " Tartım Bilgileri",
     "automaticRequest": "Otomatik İstek",
     "oto": "Otomatik",
     "man": "Manuel",
