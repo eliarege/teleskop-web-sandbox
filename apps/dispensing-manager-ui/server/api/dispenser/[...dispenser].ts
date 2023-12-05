@@ -24,7 +24,7 @@ const selectParameters = {
 }
 
 router.post('/joborderlogs', defineEventHandler(async (event) => {
-  const { isCanceled, type } = getQuery(event)
+  const { isCanceled } = getQuery(event)
   const body = await readBody(event)
   try {
     const result = knex('dbo.DYTFCHEMREQUESTS as r')
@@ -37,14 +37,9 @@ router.post('/joborderlogs', defineEventHandler(async (event) => {
       })
       // TODO: There are no duplicates but this is not the way how its done for sure
       .select(selectParameters)
+      .limit(500)
       .orderBy('r.REQNUMBER', 'asc')
       .where((builder) => {
-        // if (type === 'chem') {
-        //   builder.where('r.ACTUALRECIPETYPE', '=', 0)
-        // }
-        // if (type === 'dye') {
-        //   builder.where('r.ACTUALRECIPETYPE', '=', 1)
-        // }
         if (isCanceled && isCanceled === 'true') {
           builder.where('r.STATUS', 3)
             .orWhere('r.STATUS', 8)
@@ -53,10 +48,17 @@ router.post('/joborderlogs', defineEventHandler(async (event) => {
             .andWhereNot('r.STATUS', 8)
         }
       })
+    if (isCanceled === 'false') {
+      console.log(isCanceled)
+      result.rightJoin('TFMACHINESTATUS as s', function () {
+        this
+          .on('r.BATCHNO', '=', 's.RUNNING_JOBORDER')
+          .andOn('m.MACHINEID', '=', 's.MACHINEID')
+      })
+    }
     if (body.length > 0) {
       return await filtersToKnex(body, selectParameters, result)
     } else {
-      result.limit(1000)
       return await result
     }
   } catch (e) {

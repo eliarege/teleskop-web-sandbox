@@ -33,6 +33,110 @@
   "min": "dk",
   "ongoingJoborders": "İşlemdeki İş Emirleri",
   "search": "Ara",
+  "more": "fazlası",
+  "settings": {
+    "a": "Ayarlar",
+    "requestFileSystem": "İstek dosyalarının dizini",
+    "dispSettings": {
+      "a": "Dağıtıcı Ayarları",
+      "dispInfo": "Dağıtıcı Bilgileri",
+      "dispNo": "Dağıtıcı Numarası",
+      "dispName": "Dağıtıcı Adı",
+      "dispType": "Dağıtıcı Tipi",
+      "dispIP": "Dağıtıcı IP",
+      "dispFileSystem": "Dağıtıcı Dosya Sistemi",
+      "dispFileName": "Dağıtıcı Dosya Adı",
+      "dispProtocol": "Dağıtıcı Protokolü",
+      "dispConsumptionFileName": "Tüketim Dosya Adı",
+      "readFromDMS": "DMS'den Oku"
+    },
+    "driverInfo": {
+      "a": "Sürücü Ayarları",
+      "driverCode": "Sürücü Kodu",
+      "driverName": "Sürücü Adı",
+      "driverFileName": "Dosya Adı",
+      "referenceType": "Referans Tipi",
+      "protocol": "Protokolü",
+      "n-v5": "n-v5 açıklama bilgisi işlensin",
+      "control": "İstek dosyalarındaki toplam istek sayısı ile kontrol yapılsın",
+      "allBatchRequests": "Tüm batch istek sayıları üzerinden kontrol yap",
+      "totalRequest": "Programların toplam istek sayıları üzerindne kontrol yap",
+      "v1TankNoUse": "V1-Tank No Kullanmaz",
+      "v2TankUse": "V2 Tank No Kullanır",
+      "prgNo": "Program Nuamrası",
+      "recipeIndex": "Reçete Indexi",
+      "refNoAllJoborders": "Tüm İş Emri İçinde Referans No",
+      "refNoPrgNo": "İş Emri Referans No - Program No"
+    },
+    "new": "Ekle",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "submit": "Kaydet",
+    "cancel": "İptal",
+    "optional": "İsteğe Bağlı",
+    "machDispConnection": "Makine Dağıtıcı Bağlantısı",
+    "connectionInfo": "Bağlantı Bilgileri",
+    "machineCode": "Makine Kodu",
+    "machinename": "Makine Adı",
+    "controlMach": "Kontrol Makinesi",
+    "connectedDisps": "Bağlı Dağıtıcılar",
+    "machMaterialConnection": "Malzeme Ayarları",
+    "materialInfo": "Malzeme Bilgisi",
+    "materialType": "Malzeme Tipi",
+    "materialCode": "Malzeme Kodu",
+    "materialName": "Malzeme Adı",
+    "materialDensity": "Malzeme Yoğunluğu",
+    "materialKgPrice": "Malzeme Kg Fiyatı",
+    "supplySource": "Tedarik Kaynağı",
+    "rerequestable": "Yeniden İstenebilir",
+    "directlyTransfer": "Doğrudan Transfer",
+    "dispListOfMaterial": "Malzeme Listesi Dağıtıcı",
+    "find": "Bul",
+    "clear": "Temizle",
+    "requestMechanism": {
+      "a": "İstek Mekanizması",
+      "request1": "Tekrarlanan istekler gerçekleşşin.",
+      "request2": "Tekrarlanan istek, son istek ise gerçekleşşin.",
+      "request3": "Tekrarlanan istekler gerçekleşmesin.",
+      "requestCheckBox": "Tekrarlanan istek tamamlanmamış ise gerçekleşsin.",
+      "answer": "Tekrar nediniyle iptal edilen istekler için cihaza gönderilecek cevap",
+      "ans1": "Cihaza tamamlandı gönder",
+      "ans2": "Cihaza iptal gönder",
+      "ans3": "Cihaza hiçbir şey gönderme",
+      "infoText1": "Bu durumda tekrarlanan istekler gerçekleştirilir. Tekrarlanan istek zaten dağıtımda ise, dağıtıcıya yeni bir istek gönderilmez. Dağıtımın son durumu cihaza iletilir.",
+      "infoText2": "Bu durumda sadece son istek tekrarlanır ise gerçekleştirilir. Tekrarlanan istek zaten dağıtımda ise, dağıtıcıya yeni bir istek gönderilmez. Dağıtımın son durumu cihaza iletilir.",
+      "infoText3": "Bu durumda sadece, tekrarlanan istek daha önce dağıtımı tamamlanmamış bir istek ise gerçekleştirilir. Tekrarlanan istek zaten dağıtımda ise, dağıtıcıya yeni bir istek gönderilmez."
+    },
+    "archiveRetentionPeriod": "Arşiv - İstek Geçmişi Tutma Süresi",
+    "archiveRetentionDayCount": "Arşiv Tutma Gün Sayısı",
+    "oldRequestInfoDelete": "Belirtilen günden eski malzeme istek bilgileri veritabanından silinsin. (Sınırsız için 0 yazınız)",
+    "orderBasedDyeRequest": {
+      "a": "İş Emri Bazında Boya İsteği",
+      "active": "İş emri bazında boya isteği aktif",
+      "required": "İş emri programları ile reçete programlarının aynı olması zorunlu"
+    },
+    "powderDye": {
+      "sendPowderDyeInformationWhen": "Toz Boya Tartım Bilgileri Dağıtıcıya Ne Zaman Gönderilsin",
+      "sendPowderDyeDissolvingInformationWhen": "Toz Boya Çözme Bilgileri Dağıtıcıya Ne Zaman Gönderilsin",
+      "sendPowderChemicalWeighingInformationWhen": "Toz Kimyasal Tartım Bilgileri Dağıtıcıya Ne Zaman Gönderilsin",
+      "sendManualMaterialWeighingInformationWhen": "Manuel Materyal Tartım Bilgileri Dağıtıcıya Ne Zaman Gönderilsin",
+      "opt1": "İş Emri Harici Sistemden Transfer Edildiğinde",
+      "opt2": "İş emri Programatörde Başlatıldığında",
+      "opt3": "Programatörde İstek Komutu Çalıştığında"
+    },
+    "genericRequests": "Jenerik İstekler",
+    "saltCode": "Tuz Kodu",
+    "activeSaltRequest": "Aktif Tuz İsteği",
+    "genericMaterial1": "Jenerik Materyal 1",
+    "activeGenericMaterial1": "Aktif Jenerik Materyal 1",
+    "genericMaterial2": "Jenerik Materyal 2",
+    "activeGenericMaterial2": "Aktif Jenerik Materyal 2",
+    "other": "Diğer",
+    "checkTankLevelInChemicalRequests": "Kimyasal İsteklerde Tank Seviyesini Kontrol Et",
+    "executeOrderOnlyInPlannedMachine": "İş Emrini Sadece Planlanan Makinede Çalışsın",
+    "determineCouplingRecipe": "Aküple Reçetesi Bölünsün",
+    "checkTankNumberWhenMakingManualOnlineRequest": "Manuel Online İstek Yapılırken Tank Numarasını Kontrolünü Yapsın"
+  },
   "distributionProcessor": {
     "a": "Dağıtım Yöneticisi",
     "recipeRequest": "Reçete Bilgilerini Sorgulama",
@@ -58,7 +162,6 @@
       "justDye": "Sadece Boya İsteklerini Göster"
     }
   },
-
   "jobOrderLogs": {
     "a": "İş Emri Kayıtları",
     "arrangement": "Sıralama",
@@ -88,7 +191,6 @@
     "showFilters": "Filtreleri Göster",
     "requestIndex": "İstek Sırası"
   },
-
   "jobOrderParameters": {
     "a": "İş Emri Parametreleri",
     "jobOrderNo": "İş Emri Numarası",
@@ -97,7 +199,6 @@
     "unit": "Birimi",
     "value": "Değeri"
   },
-
   "recipe": {
     "a": "Reçete",
     "recipeTable": "Reçete Tablosu",
@@ -123,7 +224,6 @@
     "joborderCoupled": "İş Emri Akuple Mi ?",
     "coupleMachine": "Akuple Makinesi"
   },
-
   "registeredJobOrders": {
     "a": "Kayıtlı İş Emirleri",
     "programList": "Program Listesi",
@@ -131,7 +231,6 @@
     "showJobOrderRecipe": "İş Emrinin Reçetesini Görmek İçin Üzerine Çıft Tıklayınız",
     "useDateFilter": "Tarih Filtresi Kullan"
   },
-
   "weighingInformation": {
     "a": " Tartım Bilgileri",
     "automaticRequest": "Otomatik İstek",
@@ -150,14 +249,14 @@
     "weighingNumber": "Tartım Numarası"
   },
   "statusCodes": {
-    "text": "Durum",
     "0": "Yeni İstek Geldi",
     "1": "İstek Dağıtıcıda",
     "2": "İstek İşlemde",
     "3": "İstek Tamamlandı",
     "4": "Öncelik Değişimi",
     "8": "İptal",
-    "10": "Dağıtıcı Değişti"
+    "10": "Dağıtıcı Değişti",
+    "text": "Durum"
   },
   "recipeTypes": {
     "0": "Kimyasal",
@@ -175,6 +274,7 @@
   "warnings": {
     "noFilterSpec": "Herhangi bir filtre seçilmemesi durumunda mevcut bütün iş emirleri gösterilecektir.",
     "noDateSpec": "Herhangi bir tarih aralığı seçilmemesi durumunda bütün iş emirleri arasında filtreleme yapılır.",
-    "doubleClickToShowRecipe": "İş emrinin reçetesini görmek için üzerine çift tıklayınız."
+    "doubleClickToShowRecipe": "İş emrinin reçetesini görmek için üzerine çift tıklayınız.",
+    "deleteRow": "Mevcut satırı silmek istediğinize emin misiniz?"
   }
 }

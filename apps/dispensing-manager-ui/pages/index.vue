@@ -1,18 +1,20 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { colors } from '~/shared/constants'
 
+const { t } = useI18n()
 </script>
 
 <template>
-  <!-- <RegisteredJobOrders :rows="recipeData[0]" :columns="columns"/> -->
-  <!-- <button class="w-100 h-100 flex absolute right-0" @click="fetch()"/> -->
+  <span class="header-class">
+    Eliar - {{ t('distributionProcessor._') }}
+    <img
+      src="/eliarname.png"
+      class="invert-colors"
+      style="display: flex; right: 1rem; position: absolute; height: 3rem; width: 3rem;"
+    >
+  </span>
   <DagitimYonetim />
-  <!-- <ReceteTartim /> -->
-  <!-- <div class="buttons">
-    <q-btn color="white" text-color="black" label="Ana Ekran" class="buttons" @click="visMain = true"/>
-    <q-dialog v-model="visMain" class="bg-color-gray">
-      <DagitimYonetim />
-    </q-dialog>
-  </div> -->
 </template>
 
 <style scoped lang="postcss">
@@ -22,5 +24,18 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+img.invert-colors {
+  filter: invert(1);
+}
+.header-class {
+  background-color: rgb(0, 0, 0);
+  color: white;
+  font-size: x-large;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 1rem;
+  height: 3rem;
 }
 </style>

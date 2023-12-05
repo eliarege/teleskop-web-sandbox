@@ -18,7 +18,6 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
-  settings: Number,
 })
 
 const { t } = useI18n()
@@ -30,7 +29,7 @@ interface SpanMethodProps {
 }
 const groupables = [
   { key: 'processOrder', index: 0 },
-  { key: 'recipeType', index: 1 },
+  { key: 'recipeTypeText', index: 1 },
   { key: 'programNo', index: 2 },
   { key: 'programName', index: 3 },
   { key: 'ISN', index: 4 },
@@ -88,11 +87,16 @@ function a({ row, columnIndex }: SpanMethodProps) {
       header-cell-class-name="whitespace-nowrap"
       :cell-class-name="a"
       row-class-name="normal-class"
+      style="color: black;"
       size="small"
       empty-text="There is no Recipe to show."
       :show-overflow-tooltip="true"
     >
-      <ElTableColumn :label="title" align="center">
+      <ElTableColumn
+        style="color: black;"
+        :label="title"
+        align="center"
+      >
         <ElTableColumn
           prop="processOrder"
           :label="t('recipe.processOrder')"
@@ -100,7 +104,7 @@ function a({ row, columnIndex }: SpanMethodProps) {
           show-overflow-tooltip
         />
         <ElTableColumn
-          prop="recipeType"
+          prop="recipeTypeText"
           :label="t('recipeType')"
           align="center"
           show-overflow-tooltip

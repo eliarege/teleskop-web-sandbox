@@ -14,6 +14,10 @@ const props = defineProps({
     required: true,
   },
   isExpandable: Boolean,
+  customSortMethod: {
+    type: Function,
+    required: false,
+  },
   pagination: {
     type: Object,
     default: () => ({
@@ -167,6 +171,7 @@ function pushToFilters(col: Column, index: number, orderByType?: string) {
         filterSlots.value.push(temp)
     }
   }
+  console.log(filterSlots.value)
 }
 
 function comparisonOptionInit(index: number) {
@@ -191,6 +196,7 @@ watch(filterSlots.value, (newValue) => {
       :rows="rows"
       :columns="columns"
       row-key="id"
+      :sort-method="props?.customSortMethod"
       flat
       bordered
       virtual-scroll
@@ -201,17 +207,20 @@ watch(filterSlots.value, (newValue) => {
       :filter="tableFilter"
     >
       <template #top>
-        <div class="flex gap-5 min-h-6">
-          <div class="flex gap-5 border-1 border-blue p-1 border-rounded">
+        <div class="flex w-full flex-nowrap">
+          <div
+            class="flex flex-col gap-5 border-1 border-black p-1 h-12 border-rounded"
+            :style="showVisibilityMenu ? 'width: 40%' : ''"
+          >
             <div
-              class="w-10 h-10 flex items-center justify-center color-blue cursor-pointer"
+              class="w-10 h-10 flex items-center justify-center color-black cursor-pointer"
               @click="showVisibilityMenu = !showVisibilityMenu"
             >
               <q-icon name="filter_alt" size="1.5rem" />
             </div>
             <div
               v-if="showVisibilityMenu"
-              class="flex flex-row"
+              class="flex"
             >
               <q-input
                 v-model="tableFilter"
@@ -219,11 +228,7 @@ watch(filterSlots.value, (newValue) => {
                 dense
                 debounce="300"
                 :placeholder="t('search')"
-              >
-                <template #append>
-                  <q-icon name="search" />
-                </template>
-              </q-input>
+              />
               <!-- TODO: If the section would be settings this displayment is much better -->
               <q-select
                 v-model="visibleColumns"
@@ -240,24 +245,30 @@ watch(filterSlots.value, (newValue) => {
               />
             </div>
           </div>
-          <div
-            v-for="(filter, index) in filterSlots"
-            :key="index"
-            class="filter-slots"
-            :style="filter.isOrderFilter
-              ? 'background-color: rgba(124, 196, 255, 0.185); color: #509ee3;'
-              : 'background-color: rgba(113, 114, 173, 0.2); color: rgb(113, 114, 173);'"
-          >
-            {{ filter.label }} &nbsp;&nbsp;
-            <q-icon name="close" @click="removeFilter(index)" />
+          <div class="flex gap-x-5 gap-y-1 px-5 w-full">
+            <div
+              v-for="(filter, index) in filterSlots"
+              :key="index"
+              class="filter-slots"
+              :style="filter.isOrderFilter
+                ? 'background-color: rgba(124, 196, 255, 0.185); color: #509ee3;'
+                : 'background-color: rgba(0, 0, 0, 0.1); color: black;'"
+            >
+              <!-- :style="filter.isOrderFilter
+                ? 'background-color: rgba(124, 196, 255, 0.185); color: #509ee3;'
+                : 'background-color: rgba(113, 114, 173, 0.2); color: rgb(113, 114, 173);'" -->
+              {{ filter.label }} &nbsp;&nbsp;
+              <q-icon name="close" @click="removeFilter(index)" />
+            </div>
+          </div>
+          <div>
+            <slot name="top-right" />
           </div>
         </div>
-
-        <slot name="top-right" />
       </template>
       <template #header="tableProps">
         <q-tr :props="tableProps">
-          <q-th v-if="props.isExpandable" />
+          <q-th v-if="props.isExpandable" style="width: 5rem; max-width: 20%" />
           <q-th
             v-for="(col, index) in tableProps.cols"
             :key="col.name"
@@ -350,8 +361,8 @@ watch(filterSlots.value, (newValue) => {
                     v-model="dateTabPanel"
                     dense
                     class="text-grey"
-                    active-color="primary"
-                    indicator-color="primary"
+                    active-color="black"
+                    indicator-color="black"
                     align="justify"
                     narrow-indicator
                   >
@@ -411,13 +422,17 @@ watch(filterSlots.value, (newValue) => {
                     :val="0"
                   />
                 </div>
-                <q-btn
-                  v-if="col.filterType !== 'date' && col.filterType"
-                  class="mt-5 flex right-0"
-                  @click="pushToFilters(col, index)"
-                >
-                  Add
-                </q-btn>
+                <div class="flex justify-end">
+                  <q-btn
+                    v-if="col.filterType !== 'date' && col.filterType"
+                    class="mt-5 mb-1"
+                    style="color: rgb(0, 0, 0);"
+
+                    @click="pushToFilters(col, index)"
+                  >
+                    Add
+                  </q-btn>
+                </div>
               </q-list>
             </q-menu>
           </q-th>
@@ -472,8 +487,8 @@ watch(filterSlots.value, (newValue) => {
 }
 .ordering-buttons {
   transition: all 200ms linear 0s;
-  color: rgb(80, 158, 227);
-  border: 1px solid rgba(80, 158, 227, 0.35);
+  color: rgb(0, 0, 0);
+  border: 1px solid rgba(0, 0, 0, 0.5);
   font-size: 0.75rem;
   padding: 0rem 1.275rem;
   border-radius: 100px;
@@ -481,11 +496,11 @@ watch(filterSlots.value, (newValue) => {
 }
 .ordering-buttons:hover {
   color: rgb(255, 255, 255);
-  background-color: rgb(80, 158, 227);
-  border-color: rgb(80, 158, 227);
+  background-color: rgb(0, 0, 0);
+  border-color: rgb(0, 0, 0);
 }
 .filterable-table {
-  border: 1px solid rgb(80, 158, 227);
+  border: 1px solid rgb(0, 0, 0);
   border-radius: 5px;
   padding: 3px 8px;
 }
@@ -508,11 +523,12 @@ watch(filterSlots.value, (newValue) => {
   cursor: pointer;
 }
 .column-group {
-  width:fit-content;
+  width: 100%;
+  justify-content: center;
   padding: 0.25em 0.65em;
-  border: 1px solid rgba(80, 158, 227, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 6px;
-  color: #509ee3;
+  color: rgb(0, 0, 0);
   font-size: 12.5px;
   font-weight: 700;
 }

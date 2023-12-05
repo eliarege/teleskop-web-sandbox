@@ -129,7 +129,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
   }
 }
 .header-class {
-  background-color: rgb(70, 56, 141);
+  background-color: rgb(0, 0, 0);
   color: white;
   font-size: x-large;
   width: 100%;

@@ -14,7 +14,6 @@ const plankey = ref(props.plankey)
 const parameterCols = [
   { name: 'joborder', label: t('jobOrderParameters.jobOrderNo'), field: 'joborder' },
   { name: 'parameter', label: t('jobOrderParameters.parameterName'), field: 'parameter' },
-  { name: 'type', label: t('jobOrderParameters.type'), field: 'type' },
   { name: 'value', label: t('jobOrderParameters.value'), field: 'value' },
   { name: 'unit', label: t('jobOrderParameters.unit'), field: 'unit' },
 ]
@@ -26,7 +25,7 @@ const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.
   <q-card class="column">
     <q-card-section>
       <div class="text-h6 ml-5 mt-5">
-        {{ t('jobOrderParameters.a') }} - {{ t('joborder') }} :
+        {{ t('jobOrderParameters._') }} - {{ t('joborder') }} :
         <span v-if="joborder">
           {{ joborder }}
         </span>
@@ -51,7 +50,9 @@ const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.
                 {{ t(`recipeTypes.${col.value}`) }}
               </span>
               <span v-else-if="col.field === 'unit'">
-                {{ t(`units.${col.value}`) }}
+                <span v-if="col.value !== 100">
+                  {{ t(`units.${col.value}`) }}
+                </span>
               </span>
               <span v-else>
                 {{ col.value }}

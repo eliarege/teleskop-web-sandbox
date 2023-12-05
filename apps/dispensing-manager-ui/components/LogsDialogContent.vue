@@ -57,7 +57,7 @@ async function applyFilters(updatedValue) {
 <template>
   <q-card class="column">
     <div class="text-h6 ml-7 mt-3">
-      {{ t('jobOrderLogs.a') }} -
+      {{ t('jobOrderLogs._') }} -
       <span v-if="joborder">
         {{ t('joborder') }} : {{ joborder }} -
       </span>

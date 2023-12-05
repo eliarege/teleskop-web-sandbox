@@ -64,7 +64,7 @@ router.get('/manual', defineEventHandler(async (event) => {
     .select({
       joborder: 'A.BATCHNO',
       correctionNo: 'A.CORRECTIONNO',
-      weighingNumber: 'B.AMOUNT',
+      weighingNumber: 'A.QUEUENO',
       recipeType: 'A.RECIPETYPE',
       materialCode: 'B.CODE',
       materialName: 'C.MATERIALNAME',
