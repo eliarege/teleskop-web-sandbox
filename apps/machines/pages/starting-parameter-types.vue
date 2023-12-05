@@ -13,6 +13,29 @@ const customer = ref()
 const customerOrder = ref()
 const fabricType = ref()
 
+const paramTypeMapping = {
+  0: fabricWeight,
+  1: flotteRatio,
+  2: partCount,
+  3: partyNo,
+  4: accompanyNo,
+  5: clothLength,
+  6: customer,
+  7: customerOrder,
+  8: fabricType,
+}
+const nameToParamTypeId = {
+  fabricWeight: 0,
+  flotteRatio: 1,
+  partCount: 2,
+  partyNo: 3,
+  accompanyNo: 4,
+  clothLength: 5,
+  customer: 6,
+  customerOrder: 7,
+  fabricType: 8,
+}
+
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
 
 const { data: parameterOptions } = useLazyFetch('/api/starting-parameter-types/starting-parameters', {
@@ -38,29 +61,6 @@ const { data: parameterTypes } = useLazyFetch('/api/starting-parameter-types/sta
   },
 
 })
-
-const paramTypeMapping = {
-  0: fabricWeight,
-  1: flotteRatio,
-  2: partCount,
-  3: partyNo,
-  4: accompanyNo,
-  5: clothLength,
-  6: customer,
-  7: customerOrder,
-  8: fabricType,
-}
-const nameToParamTypeId = {
-  fabricWeight: 0,
-  flotteRatio: 1,
-  partCount: 2,
-  partyNo: 3,
-  accompanyNo: 4,
-  clothLength: 5,
-  customer: 6,
-  customerOrder: 7,
-  fabricType: 8,
-}
 
 watch(parameterTypes, (newValue, oldValue) => {
   for (const [paramTypeId, variable] of Object.entries(paramTypeMapping)) {
