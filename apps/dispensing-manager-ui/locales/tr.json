@@ -60,7 +60,13 @@
       "n-v5": "n-v5 açıklama bilgisi işlensin",
       "control": "İstek dosyalarındaki toplam istek sayısı ile kontrol yapılsın",
       "allBatchRequests": "Tüm batch istek sayıları üzerinden kontrol yap",
-      "totalRequest": "Programların toplam istek sayıları üzerindne kontrol yap"
+      "totalRequest": "Programların toplam istek sayıları üzerindne kontrol yap",
+      "v1TankNoUse": "V1-Tank No Kullanmaz",
+      "v2TankUse": "V2 Tank No Kullanır",
+      "prgNo": "Program Nuamrası",
+      "recipeIndex": "Reçete Indexi",
+      "refNoAllJoborders": "Tüm İş Emri İçinde Referans No",
+      "refNoPrgNo": "İş Emri Referans No - Program No"
     },
     "new": "Ekle",
     "edit": "Düzenle",
@@ -74,7 +80,7 @@
     "machinename": "Makine Adı",
     "controlMach": "Kontrol Makinesi",
     "connectedDisps": "Bağlı Dağıtıcılar",
-    "machMaterialConnection": "Makine Malzeme Bağlantısı",
+    "machMaterialConnection": "Malzeme Ayarları",
     "materialInfo": "Malzeme Bilgisi",
     "materialType": "Malzeme Tipi",
     "materialCode": "Malzeme Kodu",
@@ -95,9 +101,11 @@
       "requestCheckBox": "Tekrarlanan istek tamamlanmamış ise gerçekleşsin.",
       "answer": "Tekrar nediniyle iptal edilen istekler için cihaza gönderilecek cevap",
       "ans1": "Cihaza tamamlandı gönder",
-      "ans2": "",
-      "ans3": "",
-      "infoText": "Bu durumda sadece, tekrarlanan istek daha önce dağıtımı tamamlanmamış bir istek ise gerçekleştirilir. Tekrarlanan istek zaten dağıtımda ise, dağıtıcıya yeni bir istek gönderilmez."
+      "ans2": "Cihaza iptal gönder",
+      "ans3": "Cihaza hiçbir şey gönderme",
+      "infoText1": "Bu durumda tekrarlanan istekler gerçekleştirilir. Tekrarlanan istek zaten dağıtımda ise, dağıtıcıya yeni bir istek gönderilmez. Dağıtımın son durumu cihaza iletilir.",
+      "infoText2": "Bu durumda sadece son istek tekrarlanır ise gerçekleştirilir. Tekrarlanan istek zaten dağıtımda ise, dağıtıcıya yeni bir istek gönderilmez. Dağıtımın son durumu cihaza iletilir.",
+      "infoText3": "Bu durumda sadece, tekrarlanan istek daha önce dağıtımı tamamlanmamış bir istek ise gerçekleştirilir. Tekrarlanan istek zaten dağıtımda ise, dağıtıcıya yeni bir istek gönderilmez."
     },
     "archiveRetentionPeriod": "Arşiv - İstek Geçmişi Tutma Süresi",
     "archiveRetentionDayCount": "Arşiv Tutma Gün Sayısı",
@@ -154,7 +162,6 @@
       "justDye": "Sadece Boya İsteklerini Göster"
     }
   },
-
   "jobOrderLogs": {
     "a": "İş Emri Kayıtları",
     "arrangement": "Sıralama",
@@ -184,7 +191,6 @@
     "showFilters": "Filtreleri Göster",
     "requestIndex": "İstek Sırası"
   },
-
   "jobOrderParameters": {
     "a": "İş Emri Parametreleri",
     "jobOrderNo": "İş Emri Numarası",
@@ -193,7 +199,6 @@
     "unit": "Birimi",
     "value": "Değeri"
   },
-
   "recipe": {
     "a": "Reçete",
     "recipeTable": "Reçete Tablosu",
@@ -219,7 +224,6 @@
     "joborderCoupled": "İş Emri Akuple Mi ?",
     "coupleMachine": "Akuple Makinesi"
   },
-
   "registeredJobOrders": {
     "a": "Kayıtlı İş Emirleri",
     "programList": "Program Listesi",
@@ -227,7 +231,6 @@
     "showJobOrderRecipe": "İş Emrinin Reçetesini Görmek İçin Üzerine Çıft Tıklayınız",
     "useDateFilter": "Tarih Filtresi Kullan"
   },
-
   "weighingInformation": {
     "a": " Tartım Bilgileri",
     "automaticRequest": "Otomatik İstek",
@@ -246,14 +249,14 @@
     "weighingNumber": "Tartım Numarası"
   },
   "statusCodes": {
-    "text": "Durum",
     "0": "Yeni İstek Geldi",
     "1": "İstek Dağıtıcıda",
     "2": "İstek İşlemde",
     "3": "İstek Tamamlandı",
     "4": "Öncelik Değişimi",
     "8": "İptal",
-    "10": "Dağıtıcı Değişti"
+    "10": "Dağıtıcı Değişti",
+    "text": "Durum"
   },
   "recipeTypes": {
     "0": "Kimyasal",
@@ -271,6 +274,7 @@
   "warnings": {
     "noFilterSpec": "Herhangi bir filtre seçilmemesi durumunda mevcut bütün iş emirleri gösterilecektir.",
     "noDateSpec": "Herhangi bir tarih aralığı seçilmemesi durumunda bütün iş emirleri arasında filtreleme yapılır.",
-    "doubleClickToShowRecipe": "İş emrinin reçetesini görmek için üzerine çift tıklayınız."
+    "doubleClickToShowRecipe": "İş emrinin reçetesini görmek için üzerine çift tıklayınız.",
+    "deleteRow": "Mevcut satırı silmek istediğinize emin misiniz?"
   }
 }

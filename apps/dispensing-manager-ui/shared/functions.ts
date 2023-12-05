@@ -35,7 +35,7 @@ export function rowBGColorHandler(row: any) {
       temp += '#4CAF50'
     if (row.value === 8)
       temp += '#FF4B4B'
-    temp += '; color: white; font-weight: bolder; font-size: medium'
+    temp += '; width: 10rem; border-color: white; border-width: bold; color: white; font-weight: bolder; font-size: medium'
   }
   return temp
 }

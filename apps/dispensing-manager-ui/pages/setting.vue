@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const tab = ref('machine-material')
+const tab = ref('material')
 const splitterModel = ref(10)
 const innerWidth = ref(window.innerWidth)
 function handleResize() {
@@ -20,12 +20,12 @@ onUnmounted(() => {
 
 <template>
   <span class="header-class">
+    <NavigationButton type="back" />
+    &nbsp;&nbsp;
     Eliar - {{ t('distributionProcessor.a') }} - {{ t('settings.a') }}
-    <img
-      src="/eliarname.png"
-      class="invert-colors"
-      style="display: flex; right: 1rem; position: absolute; height: 3rem; width: 3rem;"
-    >
+    <span class="right-home">
+      <NavigationButton type="home" />
+    </span>
   </span>
   <div>
     <q-splitter
@@ -35,7 +35,7 @@ onUnmounted(() => {
         <q-tabs
           v-model="tab"
           vertical
-          style="color: rgb(70, 56, 141); width: 100%;"
+          style="color: rgb(0, 0, 0); width: 100%;"
           class="tab-overwrite"
         >
           <q-tab
@@ -53,7 +53,7 @@ onUnmounted(() => {
           />
           <q-separator />
           <q-tab
-            name="machine-material"
+            name="material"
             icon="settings"
             style="white-space: normal;"
             :label="innerWidth > 768 ? `${t('settings.machMaterialConnection')}` : ''"
@@ -79,7 +79,6 @@ onUnmounted(() => {
         <q-tab-panels
           v-model="tab"
           animated
-          swipeable
           vertical
           transition-prev="jump-up"
           transition-next="jump-up"
@@ -92,7 +91,7 @@ onUnmounted(() => {
             <SettingsMachineDispenserConnection />
           </q-tab-panel>
 
-          <q-tab-panel name="machine-material">
+          <q-tab-panel name="material">
             <SettingsMaterial />
           </q-tab-panel>
 
@@ -110,8 +109,17 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* Mobile view */
+@media (max-width: 600px) {
+
+  .header-class {
+  font-size: medium !important;
+}
+
+}
+
 .header-class {
-  background-color: rgb(70, 56, 141);
+  background-color: rgb(0, 0, 0);
   color: white;
   font-size: x-large;
   width: 100%;
@@ -120,7 +128,10 @@ onUnmounted(() => {
   padding-left: 1rem;
   height: 3rem;
 }
-
+.right-home {
+  position: absolute;
+  right: 0;
+}
 .tab-overwrite :deep(.q-tab__label) {
   font-weight: bold !important;
 }

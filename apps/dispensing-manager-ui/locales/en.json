@@ -60,7 +60,14 @@
       "n-v5": "Use n-v5 info in process",
       "control": "Check and control the total request count in request files",
       "allBatchRequests": "Check and control all the batch request count ",
-      "totalRequest": "Check and control all the programs' total request count"
+      "totalRequest": "Check and control all the programs' total request count",
+      "v1TankNoUse": "Do Not Use V1-Tank No",
+      "v2TankUse": "Use V2 Tank No",
+      "prgNo": "Program No",
+      "recipeIndex": "Recipe Index",
+      "refNoAllJoborders": "Reference No in All Job Orders",
+      "refNoPrgNo": "Job Order Reference No - Program No"
+
     },
     "new": "New",
     "edit": "Edit",
@@ -74,7 +81,7 @@
     "machinename": "Machine Name",
     "controlMach": "Control Machine",
     "connectedDisps": "Connected Dispensers",
-    "machMaterialConnection": "Machine Material Connection",
+    "machMaterialConnection": "Material Settings",
     "materialInfo": "Material Information",
     "materialType": "Material Type",
     "materialCode": "Material Code",
@@ -95,9 +102,11 @@
       "requestCheckBox": "If the repeated request is not completed, then it should be implemented.",
       "answer": "The response to be sent to the device for requests canceled due to repetition",
       "ans1": "Send 'completed' to the device",
-      "ans2": "",
-      "ans3": "",
-      "infoText": "In this case, only if the repeated request is a request that has not been previously completed in distribution. If the repeated request is already in distribution, a new request will not be sent to the distributor."
+      "ans2": "Send 'canceled' to the device",
+      "ans3": "Do not send anything to the device",
+      "infoText1": "In this case, repeated requests are carried out. If the repeated request is already in distribution, no new request is sent to the distributor. The final status of the distribution is transmitted to the device.",
+      "infoText2": "In this case, it is executed only if the last request is repeated. If the repeated request is already in distribution, no new request is sent to the distributor. The final status of the distribution is transmitted to the device.",
+      "infoText3": "In this case, only if the repeated request is a request that has not been previously completed in distribution. If the repeated request is already in distribution, a new request will not be sent to the distributor."
     },
     "archiveRetentionPeriod": "Archive Retention - Request History Period",
     "archiveRetentionDayCount": "Archive Retention Day Count",
@@ -129,7 +138,6 @@
     "determineCouplingRecipe": "Determine Coupling Recipe",
     "checkTankNumberWhenMakingManualOnlineRequest": "Check Tank Number When Making a Manual Online Request"
   },
-
   "distributionProcessor": {
     "a": "Distribution Processor",
     "recipeRequest": "Request Recipe Details",
@@ -242,14 +250,14 @@
     "weighingNumber": "Weighing Number"
   },
   "statusCodes": {
-    "text": "Status",
     "0": "New Request",
     "1": "In The Dispenser",
     "2": "In The Process",
     "3": "Request Completed",
     "4": "Priority Changed",
     "8": "Canceled",
-    "10": "Dispenser Changed"
+    "10": "Dispenser Changed",
+    "text": "Status"
   },
   "recipeTypes": {
     "0": "Chemical",
@@ -267,6 +275,7 @@
   "warnings": {
     "noFilterSpec": "If no filter specified, all the job orders will be displayed.",
     "noDateSpec": "If no date range specified, filter other filter will be applied all the job orders.",
-    "doubleClickToShowRecipe": "To see the recipe of the job order, double click to the job order."
+    "doubleClickToShowRecipe": "To see the recipe of the job order, double click to the job order.",
+    "deleteRow": "Are you sure you want to delete selected row?"
   }
 }

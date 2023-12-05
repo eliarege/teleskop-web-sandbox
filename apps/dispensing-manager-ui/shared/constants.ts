@@ -8,6 +8,11 @@ export const columns: Array<Column> = [
   { name: 'protein', label: 'Protein (g)', field: 'protein', filterable: true, filterType: 'boolean' },
   { name: 'sodium', label: 'Sodium (mg)', field: 'sodium', filterable: true, filterType: 'boolean' },
 ]
+export const colors = {
+  violet: 'rgb(70, 56, 141)',
+  blue: '',
+  black: 'rgb(0, 0, 0)',
+}
 
 export const rows = [
   {

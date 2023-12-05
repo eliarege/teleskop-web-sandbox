@@ -35,7 +35,7 @@ const columnsMan = [
   { name: 'recipeType', label: t('recipeType'), field: 'recipeType' },
   { name: 'materialCode', label: t('materialCode'), field: 'materialCode' },
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
-  { name: 'actualAmount', label: t('actualAmount'), field: 'actualAmount' },
+  { name: 'actualAmount', label: t('recipeAmount'), field: 'actualAmount' },
   { name: 'status', label: t('statusCodes.text'), field: 'status' },
   { name: 'requestTime', label: t('requestTime'), field: 'requestTime' },
 ]
@@ -125,7 +125,7 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
                 <span v-else-if="col.field === 'status'">
                   {{ t(`statusCodes.${col.value}`) }}
                 </span>
-                <span v-else-if="col.field === 'weighingNumber'">
+                <span v-else-if="col.field === 'actualAmount'">
                   {{ (col.value === -1) ? '____' : col.value }}
                 </span>
                 <span v-else-if="col.field === 'recipeType'">
