@@ -18,6 +18,10 @@ const props = defineProps({
     type: Function,
     required: false,
   },
+  filterSlots: {
+    type: Array<FilterSlot>,
+    required: false,
+  },
   pagination: {
     type: Object,
     default: () => ({
@@ -88,7 +92,7 @@ const dateOptions = ref<DateType[]>([
   { from: new Date(), to: new Date() },
 ])
 
-const filterSlots = ref<FilterSlot[]>([])
+const filterSlots = props.filterSlots ? ref<FilterSlot[]>(props.filterSlots) : ref<FilterSlot[]>([])
 
 const dateTabPanel = ref('intervals')
 

@@ -6,24 +6,6 @@ import { knex } from '~/server/connectionPool'
 const router = createRouter()
 export default useBase('/api/consumption', router.handler)
 
-const selectParameters = {
-  processNo: '',
-  machinename: 'm.MACHINENAME',
-  tankNo: '',
-  processIndex: '',
-  mainStep: 'MAINSTEP',
-  parallelStep: '',
-  materialCode: '',
-  materialName: '',
-  recipeAmount: '',
-  actualAmount: '',
-  status: '',
-  requestTime: '',
-  completedTime: '',
-  interval: '',
-  otoMan: 'c.ISMANUEL',
-}
-
 router.get('/theoretical', defineEventHandler(async (event) => {
   const { joborder, correctionNo } = getQuery(event)
 

@@ -2,6 +2,7 @@
 import moment from 'moment'
 import { useI18n } from 'vue-i18n'
 import { rowBGColorHandler } from '../shared/functions'
+import { colors } from '~/shared/constants'
 
 const props = defineProps({
   joborder: String,
@@ -66,7 +67,10 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
           :title="t('weighingInformation.oto') + t('weighingInformation._')"
         >
           <template #body="props">
-            <q-tr :props="props">
+            <q-tr
+              :props="props"
+              :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
+            >
               <q-td
                 v-for="col in props.cols"
                 :key="col.name"
@@ -112,7 +116,10 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
           :title="t('weighingInformation.man') + t('weighingInformation._')"
         >
           <template #body="props">
-            <q-tr :props="props">
+            <q-tr
+              :props="props"
+              :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
+            >
               <q-td
                 v-for="col in props.cols"
                 :key="col.name"

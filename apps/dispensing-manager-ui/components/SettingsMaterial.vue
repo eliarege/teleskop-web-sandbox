@@ -122,7 +122,7 @@ async function submit(rowIndex: number) {
   /** If create */
   if (rowIndex === 0) {
     console.log(materialInfo.value)
-    await $fetch('/api/setting/create-material-connection', {
+    await $fetch('/api/setting/material-connection', {
       method: 'post',
       body: {
         materialCode: materialInfo.value[0].value,
@@ -151,7 +151,7 @@ async function submit(rowIndex: number) {
       directTransfer: materialInfo.value[8].value,
       connectedDisps: materialInfo.value[9].value,
     })
-    await $fetch('/api/setting/update-material-connection', {
+    await $fetch('/api/setting/material-connection', {
       method: 'put',
       body: {
         materialCode: materialInfo.value[0].value,
@@ -172,7 +172,7 @@ async function submit(rowIndex: number) {
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
   console.log(materialInfo.value)
-  await $fetch('/api/setting/delete-material', {
+  await $fetch('/api/setting/material', {
     method: 'delete',
     body: {
       materialCode: materialInfo.value[0].value,
@@ -200,6 +200,7 @@ async function deleteRow() {
       <q-tr :props="props">
         <q-td
           class="cursor-pointer"
+          :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           @click="toggleRow(props.row, props.rowIndex)"
         >
           <q-btn
@@ -222,6 +223,7 @@ async function deleteRow() {
         <q-td
           v-for="col in props.cols"
           :key="col.name"
+          :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           :props="props"
           class="cursor-pointer"
           @click="toggleRow(props.row, props.rowIndex)"

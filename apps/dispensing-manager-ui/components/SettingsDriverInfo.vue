@@ -24,13 +24,13 @@ const radio = ref(driver.value.CONTROLTOTALBATCH ? 0 : 1)
 console.log(driver.value)
 
 async function updateDriverSettings() {
-  await $fetch('/api/setting/update-file-system', {
+  await $fetch('/api/setting/file-system', {
     method: 'put',
     body: {
       path: requestFilteSystemPath.value,
     },
   })
-  await $fetch('/api/setting/update-driver', {
+  await $fetch('/api/setting/driver', {
     method: 'put',
     body: {
       DRIVERID: driver.value.DRIVERID,

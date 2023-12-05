@@ -161,7 +161,8 @@ async function submitCoupleMachine() {
             class="py-2"
             @click="requestJobOrder()"
           />
-          {{ plankey }} Joborder: 84956 can be used as an example
+          {{ plankey }}
+          Joborder: <q-btn :label="84956" @click="(jobordernum = 84956), requestJobOrder()" /> can be used as an example
           <q-btn
             class="ml-auto mr-5 py-3 w-75 items-start"
             :label="t('allJobOrders')"

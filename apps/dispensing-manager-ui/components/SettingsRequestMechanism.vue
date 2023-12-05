@@ -40,7 +40,7 @@ genericOptions.value = await $fetch('/api/setting/material')
 
 async function changeSettings() {
   console.log(settingsData.value)
-  await $fetch('/api/setting/update-request-mechanism-settings', {
+  await $fetch('/api/setting/request-mechanism-settings', {
     method: 'put',
     body: {
       reqMechanismOption1: reqMechanism.value === 1 ? 1 : 0,

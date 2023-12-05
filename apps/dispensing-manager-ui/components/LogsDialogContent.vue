@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import moment from 'moment'
 import { rowBGColorHandler } from '../shared/functions'
+import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
 const props = defineProps({
@@ -74,7 +75,10 @@ async function applyFilters(updatedValue) {
         @update-filter-slots="(evt) => applyFilters(evt)"
       >
         <template #custombody="log">
-          <q-tr class="text-override-left">
+          <q-tr
+            class="text-override-left"
+            :style="log.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
+          >
             <q-td
               v-for="row in log.cols"
               :key="row.name"

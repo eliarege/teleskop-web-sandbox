@@ -12,6 +12,7 @@ export const colors = {
   violet: 'rgb(70, 56, 141)',
   blue: '',
   black: 'rgb(0, 0, 0)',
+  tableGray: 'rgb(248, 248, 248)',
 }
 
 export const rows = [
