@@ -5,6 +5,7 @@ import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import moment from 'moment'
 import { filtersToKnex, navigateToPage, textAlignOverride } from '../shared/functions'
 import { rows } from '../shared/constants'
+import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
 // Call fetchData when component is mounted.
@@ -20,10 +21,20 @@ const machines = ref([])
 
 const joborders = ref()
 const visibleLoading = ref(true)
+
+const externalFilterSlots = ref([])
+const tempFilterSlots = sessionStorage.getItem('filterSlots')
+if (tempFilterSlots)
+  externalFilterSlots.value = JSON.parse(tempFilterSlots)
+
 async function fetchData() {
   try {
     machines.value = await $fetch('/api/machine/machines') // FIXME: useFetc better $fetch may cause page to fail
-    joborders.value = await $fetch('/api/joborder/joborders')
+    if (tempFilterSlots) {
+      await handleFilterSlotsUpdate(externalFilterSlots.value)
+    } else {
+      joborders.value = await $fetch('/api/joborder/joborders')
+    }
   } finally {
     visibleLoading.value = false
   }
@@ -55,14 +66,13 @@ async function handleRowDblClick(row) {
   await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.correctionNo}`)
 }
 
-const externalFilterSlots = ref([])
 async function handleFilterSlotsUpdate(updatedValue) {
   externalFilterSlots.value = updatedValue
   joborders.value = await $fetch('/api/joborder/filtered-joborders', {
     method: 'post',
     body: externalFilterSlots.value,
   })
-
+  sessionStorage.setItem('filterSlots', JSON.stringify(externalFilterSlots.value))
   // filtersToKnex(externalFilterSlots.value, null)
 }
 </script>
@@ -90,14 +100,19 @@ async function handleFilterSlotsUpdate(updatedValue) {
           class="responsive-table"
           :rows="joborders"
           :columns="columns"
+          :filter-slots="externalFilterSlots"
           :pagination="{ rowsPerPage: 20 }"
           @row-dblclick="row => handleRowDblClick(row)"
           @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
         >
           <template #custombody="props">
-            <q-tr :props="props" style="cursor: pointer;">
+            <q-tr
+              :props="props"
+              style="cursor: pointer;"
+              :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
+            >
               <q-td
-                v-for="col in props.cols"
+                v-for="(col, index) in props.cols"
                 :key="col.name"
                 :props="props"
                 @dblclick="handleRowDblClick(props.row)"
