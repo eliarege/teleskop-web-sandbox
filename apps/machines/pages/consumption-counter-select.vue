@@ -18,7 +18,7 @@ const { data: counterOptions } = useLazyFetch('/api/consumption-counters/mach-co
   },
 })
 
-const { data: counters } = useLazyFetch('/api/consumption-counters/consumption-counters', {
+const { data: counters } = useLazyFetch('/api/consumption-counters/consumption-counter', {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
@@ -30,6 +30,11 @@ watch(counters, (newValue, oldValue) => {
 
 async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
+}
+
+async function handleOptionChange() {
+  console.log('counter1.value, counter2.value = ', counter1.value, counter2.value)
+  await selectConsumptionCounter(selectedMachineId.value, counter1.value.id, counter2.value.id)
 }
 </script>
 
@@ -59,6 +64,7 @@ async function handleMachineClick(machineId: number) {
         option-label="name"
         option-value="id"
         label="Sayaç 1"
+        @update:model-value="handleOptionChange()"
       />
       <q-select
         v-model="counter2"
@@ -66,6 +72,7 @@ async function handleMachineClick(machineId: number) {
         option-label="name"
         option-value="id"
         label="Sayaç 2"
+        @update:model-value="handleOptionChange()"
       />
     </q-card-section>
   </q-card>
