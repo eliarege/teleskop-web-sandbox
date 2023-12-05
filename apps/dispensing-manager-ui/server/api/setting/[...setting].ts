@@ -4,7 +4,6 @@ import { knex } from '~/server/connectionPool'
 const router = createRouter()
 export default useBase('/api/setting', router.handler)
 
-
 /**
  * Dispenser settings
  */
@@ -76,6 +75,18 @@ router.put('/update-dispenser', defineEventHandler(async (event) => {
         IP: body?.dispIP,
       })
     return dispenser
+  } catch (e) {
+    return e
+  }
+}))
+
+router.delete('/delete-dispenser', defineEventHandler(async (event) => {
+  try {
+    const body = await readBody(event)
+    await knex('DYTFDISPENSERSETTINGS')
+      .where('DISPENSERID', body.dispNo)
+      .del()
+    return 1
   } catch (e) {
     return e
   }
@@ -165,6 +176,24 @@ router.put('/update-machine-dispenser-connection', defineEventHandler(async (eve
   return 1
 }))
 
+router.delete('/delete-machine-dispenser-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const query = await knex('DYTFMACHINES')
+    .where('MACHINEID', body.machineid)
+    .del()
+  // let query = knex('DYTFMACHDISPCONNECTION')
+  // body.disps.forEach((disp) => {
+  //   query = query.orWhere({ MACHINEID: body.machineid, DISPENSERID: disp.dispNo })
+  // })
+  // await query.del()
+  return 1
+  /**
+   * I delete the machine and the connection will became deleted
+   * TODO: IMMEDIATELY: This part on frontend also creates machine learn the logic
+   *  should it creates machine or just the connection? What do I delete what do I create?
+   * I think it should not create machine
+   */
+}))
 
 /**
  * Material settings
@@ -193,7 +222,7 @@ router.get('/material-connections', defineEventHandler(async (event) => {
     .select({
       materialCode: 'C.CHEMCODE',
       dispNo: 'C.DISPENSERID',
-      name: 'D.NAME'
+      name: 'D.NAME',
     })
     .where('C.CHEMCODE', chemCode)
     .leftJoin('DYTFDISPENSERSETTINGS as D', 'C.DISPENSERID', 'D.DISPENSERID')
@@ -228,7 +257,6 @@ router.post('/create-material-connection', defineEventHandler(async (event) => {
   return 1 // return 200
 }))
 
-
 router.put('/update-material-connection', defineEventHandler(async (event) => {
   const body = await readBody(event)
   await knex('DYTFMATERIAL')
@@ -257,6 +285,13 @@ router.put('/update-material-connection', defineEventHandler(async (event) => {
   return 1
 }))
 
+router.delete('/delete-material', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  await knex('DYTFMATERIAL')
+    .where('MATERIALCODE', body.materialCode)
+    .delete()
+  return 1
+}))
 
 /**
  * Request Mechanism settings
@@ -264,5 +299,100 @@ router.put('/update-material-connection', defineEventHandler(async (event) => {
 
 router.get('/request-mechanism-settings', defineEventHandler(async () => {
   const dispensers = await knex('DYTFDYSETTINGS')
-  return dispensers
+  // saltText: '',
+  // reqMechanismAnswerOptions: '',
+  // genericMaterialTwoText: '',
+  // genericMaterialOneText: '',
+    .select({
+      reqMechanismOption1: 'DYREQMECHANISM',
+      reqMechanismOption2: 'repeatRequestIfLastcompleted',
+      reqMechanismOption3: 'repeatRequestIfNotCompleted',
+      reqMechanismAnswer: 'canceledByRepeatAnswer',
+      archiveKeepTime: 'ARCHIVEKEEPTIME',
+      archiveDeletionTime: 'REQ_ARCH_KEEPTIME',
+      joborderBasedActive: 'FreeDyeRequestActive',
+      joborderBasedEqualMachinesRequired: 'ForceProgramsEqual',
+      tozBoyaTartim: 'mmForWeigh',
+      tozBoyaCozme: 'mmForSolvent',
+      tozChemTartim: 'mmForDustChem',
+      manuelMateryalTartim: 'mmForManMaterial',
+      genericSaltActive: 'SaltRequestActive',
+      saltCode: 'saltCode',
+      genericMaterialOneActive: 'genericMaterialOneActive',
+      genericMaterialOne: 'genericMaterialOne',
+      genericMaterialTwoActive: 'genericMaterialTwoActive',
+      genericMaterialTwo: 'genericMaterialTwo',
+      chemTankLevelControl: 'ChemTankLevelControl',
+      manuelOnlineRequestTankNoControl: 'DYMANUALTANKMECH',
+      coupleMechanismSplit: 'DYCOUPLEMECHANISM',
+      justRunOnPlannedMachine: 'DYMACHCONTROLMECH',
+    })
+  return dispensers[0]
+}))
+
+// DirectTransferActive
+// DirectTransferAllMaterial
+// OPTIMIZATIONUSED
+// DYREQMECHANISM first on first
+// repeatRequestIfLastcompleted //second on first
+// no third on first
+
+router.put('/update-request-mechanism-settings', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const settings = await knex('DYTFDYSETTINGS')
+    .update({
+      DYREQMECHANISM: body.reqMechanismOption1,
+      repeatRequestIfLastcompleted: body.reqMechanismOption2,
+      repeatRequestIfNotCompleted: body.reqMechanismOption3,
+      canceledByRepeatAnswer: body.reqMechanismAnswer,
+      ARCHIVEKEEPTIME: body.archiveKeepTime,
+      REQ_ARCH_KEEPTIME: body.archiveDeletionTime,
+      FreeDyeRequestActive: body.joborderBasedActive,
+      ForceProgramsEqual: body.joborderBasedEqualMachinesRequired,
+      mmForWeigh: body.tozBoyaTartim,
+      mmForSolvent: body.tozBoyaCozme,
+      mmForDustChem: body.tozChemTartim,
+      mmForManMaterial: body.manuelMateryalTartim,
+      SaltRequestActive: body.genericSaltActive,
+      saltCode: body.saltCode,
+      genericMaterialOneActive: body.genericMaterialOneActive,
+      genericMaterialOne: body.genericMaterialOne,
+      genericMaterialTwoActive: body.genericMaterialTwoActive,
+      genericMaterialTwo: body.genericMaterialTwo,
+      ChemTankLevelControl: body.chemTankLevelControl,
+      DYMANUALTANKMECH: body.manuelOnlineRequestTankNoControl,
+      DYCOUPLEMECHANISM: body.coupleMechanismSplit,
+      DYMACHCONTROLMECH: body.justRunOnPlannedMachine,
+    })
+
+  // reqMechanismAnswerOptions: '',
+  // saltText: '',
+  // genericMaterialOneText: '',
+  // genericMaterialTwoText: '',
+  return settings
+}))
+
+router.get('/file-system', defineEventHandler(async () => {
+  const result = await knex('DYTFELIARSETTINGS')
+    .select('BDYREQSEARCHPATH')
+  return result[0].BDYREQSEARCHPATH
+}))
+
+router.put('/update-file-system', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  await knex('DYTFELIARSETTINGS')
+    .update({ BDYREQSEARCHPATH: body.path })
+  return 1
+}))
+
+router.get('/driver', defineEventHandler(async () => {
+  const result = await knex('DYTFCOMDRIVERS')
+  return result[0]
+}))
+
+router.put('/update-driver', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  await knex('DYTFCOMDRIVERs')
+    .update(body)
+  return 1
 }))

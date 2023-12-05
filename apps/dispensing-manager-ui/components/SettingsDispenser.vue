@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { Column } from '~/shared/types'
+import { colors } from '~/shared/constants'
 
 const { t } = useI18n()
 const rows = ref([])
@@ -122,7 +123,7 @@ async function submit(rowIndex: number, row: any) {
       body: {
         dispNo: dispenserInfo.value[0].value,
         name: dispenserInfo.value[1].value,
-        dispType: dispenserInfo.value[2].value,
+        dispType: dispenserInfo.value[2].value.type,
         dispIP: dispenserInfo.value[3].value,
         fileSystem: dispenserInfo.value[4].value,
         fileName: dispenserInfo.value[5].value,
@@ -130,6 +131,7 @@ async function submit(rowIndex: number, row: any) {
       },
     })
     console.log(a)
+    expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
     if (row.dispNo !== dispenserInfo.value[0].value) {
@@ -141,7 +143,7 @@ async function submit(rowIndex: number, row: any) {
         dispNo: dispenserInfo.value[0].value,
         isOriginNo,
         name: dispenserInfo.value[1].value,
-        dispType: dispenserInfo.value[2].value,
+        dispType: dispenserInfo.value[2].value.type,
         dispIP: dispenserInfo.value[3].value,
         fileSystem: dispenserInfo.value[4].value,
         fileName: dispenserInfo.value[5].value,
@@ -151,6 +153,23 @@ async function submit(rowIndex: number, row: any) {
   }
   await getRows()
 }
+const cancelDialogVisible = ref(false)
+async function deleteRow() {
+  console.log(dispenserInfo.value)
+  await $fetch('/api/setting/delete-dispenser', {
+    method: 'delete',
+    body: {
+      dispNo: dispenserInfo.value[0].value,
+    },
+  })
+  expandedRow.value = null
+  /**
+   * I did not reset the dispenserInfo array careful. It has to be
+   * set before use so it will not be a problem but in case
+   * to relocate buttons on top of the screen can be example where we boomed
+   */
+  await getRows()
+}
 </script>
 
 <template>
@@ -158,6 +177,7 @@ async function submit(rowIndex: number, row: any) {
     :rows="rows"
     :columns="columns"
     :is-expandable="true"
+    style="height: 85vh;"
     :custom-sort-method="customSortMethod"
   >
     <template #custombody="props">
@@ -169,7 +189,7 @@ async function submit(rowIndex: number, row: any) {
           <q-btn
             v-if="props.rowIndex"
             size="sm"
-            style="background-color: rgb(80, 158, 227); color: white;"
+            :style="`background-color: ${colors.black}; color: white;`"
             round
             dense
             :icon="props.rowIndex === expandedRow ? 'expand_less' : 'expand_more'"
@@ -177,9 +197,9 @@ async function submit(rowIndex: number, row: any) {
           <q-btn
             v-else
             outline
-            style="color: rgb(80, 158, 227); font-weight: bold; font-size: larger; "
+            :style="'color:' + ` ${colors.black} ` + 'font-weight: bold; font-size: larger; '"
             :label="t('settings.new')"
-            class=""
+            class="w-30"
             :icon="props.rowIndex === expandedRow ? 'remove' : 'add'"
           />
         </q-td>
@@ -196,79 +216,118 @@ async function submit(rowIndex: number, row: any) {
 
       <q-tr v-if="props.rowIndex === expandedRow" :props="props">
         <q-td colspan="100%">
-          <div class="e-border flex">
-            <div>
-              <div
-                v-for="disp in dispenserInfo"
-                :key="disp.label"
-                class="flex flex-row ml-5 mt-1"
-              >
-                <div class="flex w-70 pl-2 m-1 items-center">
-                  {{ disp.label }}
-                </div>
-                <div class=" flex w-100 pl-2 m-1 items-center">
-                  <span v-if="disp.field === 'protocol'">
-                    <q-select
-                      v-model="disp.value"
-                      borderless
-                      dense
-                      filled
-                      options-dense
-                      :options="protocols"
-                      style="min-width: 150px"
-                    />
-                  </span>
-                  <span v-else-if="disp.field === 'dispType'">
-                    <q-select
-                      v-model="disp.value"
-                      borderless
-                      dense
-                      filled
-                      options-dense
-                      :options="types"
-                      option-value="type"
-                      option-label="name"
-                      style="min-width: 150px"
-                    />
-                  </span>
-                  <span v-else>
-                    <q-input
-                      v-model="disp.value"
-                      dense
-                      :type="disp.field === 'dispNo' ? 'number' : 'text'"
-                      filled
-                      :placeholder="disp.value"
-                      :disable="disp.field === 'dispNo' && props.row.dispNo > 0"
-                    />
-                  </span>
-                  <span v-if="disp.field === 'consumptionFile'">
-                    <q-checkbox v-model="dmsRead" :label="t('settings.dispSettings.readFromDMS')" />
-                  </span>
-                </div>
+          <div class="flex justify-center pt-5">
+            <div
+              v-for="disp in dispenserInfo"
+              :key="disp.label"
+              class="flex flex-row ml-5 mt-1"
+            >
+              <div class="flex w-70 pl-2 m-1 items-center">
+                {{ disp.label }}
               </div>
-              <div class="flex items-center justify-center gap-5 py-10">
-                <q-btn
-                  color="primary"
-                  :label="t('settings.submit')"
-                  :disable="dispenserInfo[0].value === undefined || dispenserInfo[0].value === ''"
-                  outline
-                  icon="done"
-                  @click="submit(props.rowIndex, props.row)"
-                />
-                <q-btn
-                  color="primary"
-                  :label="t('settings.cancel')"
-                  icon="close"
-                  outline
-                  @click="toggleRow(props.row, props.rowIndex)"
-                />
+              <div class=" flex w-100 pl-2 m-1 items-center">
+                <span v-if="disp.field === 'protocol'">
+                  <q-select
+                    v-model="disp.value"
+                    borderless
+                    dense
+                    class="w-70"
+                    filled
+                    options-dense
+                    :options="protocols"
+                    style="min-width: 150px"
+                  />
+                </span>
+                <span v-else-if="disp.field === 'dispType'">
+                  <q-select
+                    v-model="disp.value"
+                    borderless
+                    dense
+                    filled
+                    class="w-70"
+                    options-dense
+                    :options="types"
+                    option-value="type"
+                    option-label="name"
+                    style="min-width: 150px"
+                  />
+                </span>
+                <span v-else>
+                  <q-input
+                    v-model="disp.value"
+                    class="w-70"
+                    dense
+                    :type="disp.field === 'dispNo' ? 'number' : 'text'"
+                    filled
+                    :placeholder="disp.value"
+                    :disable="disp.field === 'dispNo' && props.row.dispNo > 0"
+                  />
+                </span>
+                <span v-if="disp.field === 'consumptionFile'">
+                  <q-checkbox v-model="dmsRead" :label="t('settings.dispSettings.readFromDMS')" />
+                </span>
               </div>
+            </div>
+            <div class="flex items-center justify-center gap-5 py-10">
+              <q-btn
+                color="black"
+                :label="props.rowIndex ? t('settings.submit') : t('settings.new')"
+                :disable="dispenserInfo[0].value === undefined || dispenserInfo[0].value === ''"
+                outline
+                icon="done"
+                @click="submit(props.rowIndex, props.row)"
+              />
+              <q-btn
+                color="black"
+                :label="t('settings.cancel')"
+                icon="close"
+                outline
+                @click="toggleRow(props.row, props.rowIndex)"
+              />
+              <q-btn
+                v-if="props.rowIndex"
+                color="red"
+                :label="t('settings.delete')"
+                icon="delete"
+                outline
+                @click="cancelDialogVisible = true"
+              />
             </div>
           </div>
         </q-td>
       </q-tr>
     </template>
   </FilterableTable>
+  <q-dialog v-model="cancelDialogVisible" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <q-avatar
+          icon="delete"
+          color="white"
+          text-color="delete"
+        />
+        <span class="q-ml-sm"> {{ t('warnings.deleteRow') }}</span>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn
+          v-close-popup
+          :label="t('settings.cancel')"
+          outline
+          color="black"
+          icon="close"
+        />
+        <q-btn
+          v-close-popup
+          outline
+          :label="t('settings.delete')"
+          color="red"
+          icon="delete"
+          @click="deleteRow()"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <style scoped>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { Column } from '~/shared/types'
+import { colors } from '~/shared/constants'
 
 const { t } = useI18n()
 const rows = ref([])
@@ -139,6 +140,19 @@ async function submit(rowIndex: number) {
   }
   await getRows()
 }
+
+const cancelDialogVisible = ref(false)
+async function deleteRow() {
+  await $fetch('/api/setting/delete-machine-dispenser-connection', {
+    method: 'delete',
+    body: {
+      machineid: machineInfo.value[0].value,
+      disps: machineInfo.value[3].value,
+    },
+  })
+  expandedRow.value = null
+  await getRows()
+}
 </script>
 
 <template>
@@ -146,6 +160,7 @@ async function submit(rowIndex: number) {
     :rows="rows"
     :columns="columns"
     :is-expandable="true"
+    style="height: 85vh;"
     :custom-sort-method="customSortMethod"
   >
     <template #custombody="props">
@@ -157,7 +172,7 @@ async function submit(rowIndex: number) {
           <q-btn
             v-if="props.rowIndex"
             size="sm"
-            style="background-color: rgb(80, 158, 227); color: white;"
+            :style="`background-color: ${colors.black}; color: white;`"
             round
             dense
             :icon="props.rowIndex === expandedRow ? 'expand_less' : 'expand_more'"
@@ -165,9 +180,9 @@ async function submit(rowIndex: number) {
           <q-btn
             v-else
             outline
-            style="color: rgb(80, 158, 227); font-weight: bold; font-size: larger; "
+            class="w-30"
+            :style="`color: ${colors.black}; font-weight: bold; font-size: larger;`"
             :label="t('settings.new')"
-            class=""
             :icon="props.rowIndex === expandedRow ? 'remove' : 'add'"
           />
         </q-td>
@@ -189,79 +204,85 @@ async function submit(rowIndex: number) {
 
       <q-tr v-if="props.rowIndex === expandedRow" :props="props">
         <q-td colspan="100%">
-          <div class=" flex">
-            <div class="">
-              <div
-                v-for="mach in machineInfo"
-                :key="mach.label"
-                class="flex ml-5 mt-1"
-              >
-                <div class="flex w-70 pl-2 m-1 items-center">
-                  {{ mach.label }}
-                </div>
-                <div class=" flex w-100 pl-2 m-1 items-center">
-                  <span v-if="mach.field === 'controlDevice'">
-                    <q-select
-                      v-model="mach.value"
-                      borderless
-                      dense
-                      filled
-                      class="w-70"
-                      options-dense
-                      :options="controlDevices"
-                      option-value="value"
-                      option-label="label"
-                      style="min-width: 150px"
-                    />
-                  </span>
-                  <span v-else-if="mach.field === 'connectedDisps'">
-                    <q-select
-                      v-model="mach.value"
-                      borderless
-                      multiple
-                      dense
-                      filled
-                      class="w-70 overflow-hidden"
-                      options-dense
-                      :options="disps"
-                      option-value="dispNo"
-                      option-label="name"
-                      style="min-width: 150px"
-                    />
-                    <!-- :display-value=" mach.value && mach.value.length > 1 ? `${mach.value[0]?.name} + ${mach.value?.length - 1} ${t('more')}` : mach.value[0]?.name" -->
-                  </span>
-                  <span v-else>
-                    <q-input
-                      v-model="mach.value"
-                      dense
-                      class="w-70"
-                      filled
-                      :type="mach.field === 'machineid' ? 'number' : 'text'"
-                      :placeholder="mach.value"
-                      :disable="props.row.machineid > 0 && mach.field === 'machineid'"
-                    />
-
-                  </span>
-                </div>
+          <div class="flex justify-center pt-5">
+            <div
+              v-for="mach in machineInfo"
+              :key="mach.label"
+              class="flex ml-5 mt-1"
+            >
+              <div class="flex w-70 pl-2 m-1 items-center">
+                {{ mach.label }}
               </div>
+              <div class=" flex w-100 pl-2 m-1 items-center">
+                <span v-if="mach.field === 'controlDevice'">
+                  <q-select
+                    v-model="mach.value"
+                    borderless
+                    dense
+                    filled
+                    class="w-70"
+                    options-dense
+                    :options="controlDevices"
+                    option-value="value"
+                    option-label="label"
+                    style="min-width: 150px"
+                  />
+                </span>
+                <span v-else-if="mach.field === 'connectedDisps'">
+                  <q-select
+                    v-model="mach.value"
+                    borderless
+                    multiple
+                    dense
+                    filled
+                    class="w-70 overflow-hidden"
+                    options-dense
+                    :options="disps"
+                    option-value="dispNo"
+                    option-label="name"
+                    style="min-width: 150px"
+                  />
+                  <!-- :display-value=" mach.value && mach.value.length > 1 ? `${mach.value[0]?.name} + ${mach.value?.length - 1} ${t('more')}` : mach.value[0]?.name" -->
+                </span>
+                <span v-else>
+                  <q-input
+                    v-model="mach.value"
+                    dense
+                    class="w-70"
+                    filled
+                    :type="mach.field === 'machineid' ? 'number' : 'text'"
+                    :placeholder="mach.value"
+                    :disable="props.row.machineid > 0 && mach.field === 'machineid'"
+                  />
 
-              <div class="flex items-center justify-center gap-5 py-10">
-                <q-btn
-                  color="primary"
-                  :label="t('settings.submit')"
-                  outline
-                  :disable="machineInfo[0].value === undefined || machineInfo[0].value === ''"
-                  icon="done"
-                  @click="submit(props.rowIndex)"
-                />
-                <q-btn
-                  color="primary"
-                  :label="t('settings.cancel')"
-                  icon="close"
-                  outline
-                  @click="toggleRow(props.row, props.rowIndex)"
-                />
+                </span>
               </div>
+            </div>
+
+            <div class="flex items-center justify-center gap-5 py-10">
+              <q-btn
+                color="black"
+                :label="props.rowIndex ? t('settings.submit') : t('settings.new')"
+                outline
+                :disable="machineInfo[0].value === undefined || machineInfo[0].value === ''"
+                icon="done"
+                @click="submit(props.rowIndex)"
+              />
+              <q-btn
+                color="black"
+                :label="t('settings.cancel')"
+                icon="close"
+                outline
+                @click="toggleRow(props.row, props.rowIndex)"
+              />
+              <q-btn
+                v-if="props.rowIndex"
+                color="red"
+                :label="t('settings.delete')"
+                icon="delete"
+                outline
+                @click="cancelDialogVisible = true"
+              />
             </div>
           </div>
         </q-td>
@@ -269,6 +290,36 @@ async function submit(rowIndex: number) {
     </template>
   </FilterableTable>
   <!-------------------------------------------------------------------------------------->
+  <q-dialog v-model="cancelDialogVisible" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <q-avatar
+          icon="delete"
+          color="white"
+          text-color="delete"
+        />
+        <span class="q-ml-sm"> {{ t('warnings.deleteRow') }}</span>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn
+          v-close-popup
+          :label="t('settings.cancel')"
+          outline
+          color="black"
+          icon="close"
+        />
+        <q-btn
+          v-close-popup
+          outline
+          :label="t('settings.delete')"
+          color="red"
+          icon="delete"
+          @click="deleteRow()"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <style scoped>
