@@ -18,8 +18,10 @@
     "@bryntum/schedulerpro-trial": "workspace:*",
     "knex": "^3.0.1",
     "mssql": "^10.0.1",
+    "socket.io-client": "^4.7.2",
     "tedious": "^16.6.1",
-    "ui": "workspace:*"
+    "ui": "workspace:*",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "nuxt": "^3.7.4",

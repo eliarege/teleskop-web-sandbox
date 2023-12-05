@@ -1,0 +1,53 @@
+import { v4 } from 'uuid'
+
+interface PlannedEvents {
+  planKey: number
+  machineId: number
+  queueNumber: number
+  recordTime: string
+  jobOrder: string
+  programNoList: string
+  plannedStartTime: string
+  plannedEndTime: string
+  theoreticalDuration: number
+  fabricWeight: number
+  partyNumber: string
+  note: string
+  isDeleted: boolean
+  isStarted: boolean
+  isStopped: boolean
+  isDeviation: boolean
+  deviation: number
+  isFinished: boolean
+  hasAlarm: boolean
+  isRunning: boolean
+}
+export function generateClientId() {
+  return v4()
+}
+
+export function updateEventStates(ev: PlannedEvents[]) {
+  return ev.map((e) => {
+    return {
+      ...e,
+      isDeviation: e.isStarted
+        ? new Date(e.plannedStartTime) < new Date()
+        : false,
+      deviation: (new Date(e.plannedStartTime).getTime() - new Date().getTime()) < 0
+        ? 0
+        : (Math.abs(new Date(e.plannedEndTime).getTime() - new Date().getTime())), // seconds
+      // originally should be like this --> e.isStarted
+      //   ? new Date(e.plannedEndTime) < new Date()
+      //   : false,
+      // because othervise there might be deviation
+      isFinished: new Date(e.plannedEndTime) < new Date(),
+      // ask how to check if this event has an alarm
+      notStarted: new Date(e.plannedStartTime) > new Date(),
+      isRunning: e.isStarted
+        ? (new Date(e.plannedStartTime) < new Date() && new Date(e.plannedEndTime) > new Date())
+        : false,
+      hasAlarm: false,
+      // ask how to check if this event is running or not
+    }
+  })
+}

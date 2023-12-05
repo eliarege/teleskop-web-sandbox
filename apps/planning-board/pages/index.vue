@@ -1,5 +1,6 @@
 <script setup lang="ts">
-
+const url = useRouter()
+url.replace('?thumb')
 </script>
 
 <template>

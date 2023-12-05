@@ -9,7 +9,25 @@ import {
   Toast,
   Tooltip,
 } from '@bryntum/schedulerpro-trial'
+import { io } from 'socket.io-client'
 
+const serverUrl = 'ws://192.168.19.240:3500'
+const socket = io(serverUrl)
+socket.on('connection', (data) => {
+  console.log('connection:', data)
+})
+function onDragStartSocket(task) {
+  socket.emit('onDragStart', task)
+}
+socket.on('onDragStartResponse', async (res) => {
+  console.log('onDragStartResponse:', res)
+})
+function onDropSocket() {
+  socket.emit('onDrop')
+}
+socket.on('dropResponse', async (res) => {
+  console.log('dropResponse:', res)
+})
 export class Drag extends DragHelper {
   static get configurable() {
     return {
@@ -30,7 +48,6 @@ export class Drag extends DragHelper {
     const task = grid.getRecordFromElement(grabbedElement)
     const durationInPixels = schedule.timeAxisViewModel.getDistanceForDuration(task.durationMS)
     const proxy = document.createElement('div')
-
     proxy.style.cssText = ''
 
     proxy.style.width = `${durationInPixels}px`
@@ -59,10 +76,12 @@ export class Drag extends DragHelper {
   }
 
   async onDragStart({ context }) {
+    // TODO: Lock context.grabbed
+    // set grabbed status to false if needed (figure out wtf is needed)
     const { schedule, grid } = this
     const { eventTooltip, eventDrag } = schedule.features
     const { selectedRecords, store } = grid
-
+    onDragStartSocket(selectedRecords[0].originalData.id)
     context.task = grid.getRecordFromElement(context.grabbed)
     context.relatedElements = selectedRecords
       .sort((r1, r2) => store.indexOf(r1) - store.indexOf(r2))
@@ -101,21 +120,38 @@ export class Drag extends DragHelper {
     context.machine = machine
     // TODO: Machine capacity and program comparison for context.valid
     context.valid = Boolean(startDate && machine)
+      && !(startDate < new Date())
       && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
+    if (this.tip) {
+      if (!context.valid) {
+        if (!schedule.isDateRangeAvailable(startDate, endDate, null, machine)) {
+          this.tip.html = `
+                <div class="b-sch-event-title" style="color: #FF2E51 !important">
+                You can not overlap events!
+                </div>
+            `
+          this.tip.showBy(context.element)
+        } else {
+          this.tip.html = `
+        <div class="b-sch-event-title" style="color: #FF2E51 !important">
+        Event can not be scheduled before current time!
+        </div>
+        `
+          this.tip.showBy(context.element)
+        }
+      }
+      if (context.valid) {
+        const dateFormat = schedule.displayDateFormat
+        const formattedStartDate = DateHelper.format(startDate, dateFormat)
+        const formattedEndDate = DateHelper.format(endDate, dateFormat)
 
-    if (this.tip && context.valid) {
-      const dateFormat = schedule.displayDateFormat
-      const formattedStartDate = DateHelper.format(startDate, dateFormat)
-      const formattedEndDate = DateHelper.format(endDate, dateFormat)
-
-      this.tip.html = `
+        this.tip.html = `
                 <div class="b-sch-event-title">${task.name}</div>
                 <div class="b-sch-tooltip-startdate">Starts: ${formattedStartDate}</div>
                 <div class="b-sch-tooltip-enddate">Ends: ${formattedEndDate}</div>
             `
-      this.tip.showBy(context.element)
-    } else {
-      this.tip?.hide()
+        this.tip.showBy(context.element)
+      }
     }
   }
 
@@ -123,10 +159,13 @@ export class Drag extends DragHelper {
     /**
      * @type {import('@bryntum/schedulerpro').SchedulerPro}
      */
+    // TODO: Remove all locks
     const schedule = this.schedule
     const { task, target, valid, element, machine } = context
+
     this.tip?.hide()
     schedule.disableScrollingCloseToEdges(this.schedule.timeAxisSubGrid)
+    onDropSocket()
     if (valid && target) {
       const coordinate = DomHelper.getTranslateX(element)
       const startDate = schedule.getDateFromCoordinate(
@@ -169,13 +208,39 @@ export class Drag extends DragHelper {
 export class Task extends EventModel {
   static $name = 'Task'
 
+  get eventColor() {
+    switch (true) {
+      // case this.notStarted:
+      //   return 'gray'
+
+      case this.isDeviation:
+        return 'red'
+
+      case this.isFinished:
+        return 'pink'
+
+      case this.hasAlarm:
+        return 'red'
+
+        // case this.isLocked:
+        //   return 'yellow'
+
+      case this.isRunning:
+        return 'green'
+
+      case this.isStopped:
+        return 'gray'
+
+      case this.isDeleted:
+        return 'orange'
+
+      default: return 'blue'
+    }
+  }
+
   static get defaults() {
     return {
       durationUnit: 'h',
-
-      name: 'New event',
-
-      iconCls: 'b-fa b-fa-asterisk',
     }
   }
 }
@@ -224,6 +289,16 @@ export class Schedule extends SchedulerPro {
           },
         },
       },
+      // onEventDragStart({ context }) {
+      //   console.log('arg:', context)
+      //   // console.log('this:', this)
+      // },
+      // onEventDrag(arg) {
+      //   // console.log('arg:', arg)
+      // },
+      // onEventDrop(arg) {
+      //   // console.log('arg:', arg)
+      // },
       rowHeight: 50,
       barMargin: 4,
       columns: [
@@ -271,12 +346,6 @@ export class Schedule extends SchedulerPro {
       },
       removeUnassignedEvent: false,
       allowOverlap: false,
-      onSave() {
-        Toast.show('TODO: Save data (see onSave() event for SchedulerPro)')
-        console.log('Changes:', this.project.changes.events)
-        // TODO: Disable save button after changes are submitted.
-        // TODO: Post changes
-      },
     }
   }
 }
