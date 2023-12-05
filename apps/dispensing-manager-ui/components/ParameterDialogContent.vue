@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { colors } from '~/shared/constants'
 
 const props = defineProps({
   joborder: Number,
@@ -40,7 +41,9 @@ const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.
         style="width: 100%; height: 100%;"
       >
         <template #custombody="props">
-          <q-tr>
+          <q-tr
+            :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
+          >
             <q-td
               v-for="col in props.cols"
               :key="col.name"

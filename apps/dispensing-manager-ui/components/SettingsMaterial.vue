@@ -200,6 +200,7 @@ async function deleteRow() {
       <q-tr :props="props">
         <q-td
           class="cursor-pointer"
+          :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           @click="toggleRow(props.row, props.rowIndex)"
         >
           <q-btn
@@ -222,6 +223,7 @@ async function deleteRow() {
         <q-td
           v-for="col in props.cols"
           :key="col.name"
+          :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           :props="props"
           class="cursor-pointer"
           @click="toggleRow(props.row, props.rowIndex)"
