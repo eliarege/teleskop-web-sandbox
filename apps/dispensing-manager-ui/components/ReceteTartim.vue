@@ -21,7 +21,6 @@ const machines = await $fetch('/api/machine/machines')
 const recipeData = ref()
 const jobordernum = ref()
 const showChangeMachineDialog = ref(false)
-const b = ref()
 const buttonProps = ref([
   { name: 'logs', label: t('recipe.logs'), link: 'showLogs', icon: 'description' },
   { name: 'tartim', label: t('recipe.jobOrderMeasurement'), link: 'showConsumptions', icon: 'content_paste_search' },
@@ -59,7 +58,10 @@ async function requestJobOrder() {
       recipeData.value = []
     else {
       recipeData.value = recipeDataTemp.value
-      recipeData.value.map(row => row.unit = t(`units.${row.unit}`))
+      recipeData.value.forEach((row) => {
+        row.unit = t(`units.${row.unit}`)
+        row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
+      })
       plankey.value = recipeData.value[0].planKey
 
       if (!correctionNoDisplayed.value) {
@@ -128,7 +130,7 @@ async function submitCoupleMachine() {
     <div class="content flex flex-col gap-5">
       <span class="header-class-recipe">
         <NavigationButton type="back" />
-      &nbsp;&nbsp;
+        &nbsp;&nbsp;
         {{ t('distributionProcessor.a') }} - {{ t('recipe.header') }}
         <span class="right-home">
           <NavigationButton type="home" />
@@ -230,14 +232,14 @@ async function submitCoupleMachine() {
               v-close-popup
               flat
               :label="t('submit')"
-              color="primary"
+              color="black"
               @click="submitCoupleMachine()"
             />
             <q-btn
               v-close-popup
               flat
               :label="t('close')"
-              color="primary"
+              color="black"
             />
           </q-card-actions>
         </q-card>
@@ -273,7 +275,6 @@ async function submitCoupleMachine() {
           :show="true"
           :title="t('recipe.recipeTable')"
           :is-first="true"
-          :settings="a"
         />
       </ElScrollbar>
     </div>
@@ -284,7 +285,7 @@ async function submitCoupleMachine() {
         :key="button.name"
         class="footer-button"
         outline
-        color="primary"
+        color="black"
         @click="buttonAction(button.link)"
       >
         <q-icon
@@ -344,7 +345,7 @@ async function submitCoupleMachine() {
   grid-area: 1 / 2 / 2 / 4;
 }
 .header-class-recipe {
-  background-color: rgb(70, 56, 141);
+  background-color: rgb(0, 0, 0);
   color: white;
   font-size: x-large;
   width: 100%;
