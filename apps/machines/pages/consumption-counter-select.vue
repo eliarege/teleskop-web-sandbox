@@ -33,7 +33,6 @@ async function handleMachineClick(machineId: number) {
 }
 
 async function handleOptionChange() {
-  console.log('counter1.value, counter2.value = ', counter1.value, counter2.value)
   await selectConsumptionCounter(selectedMachineId.value, counter1.value.id, counter2.value.id)
 }
 </script>
