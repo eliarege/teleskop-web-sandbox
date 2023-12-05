@@ -118,7 +118,7 @@ async function submit(rowIndex: number, row: any) {
   let isOriginNo = true
   /** If create */
   if (rowIndex === 0) {
-    const a = await $fetch('/api/setting/create-dispenser', {
+    const a = await $fetch('/api/setting/dispenser', {
       method: 'post',
       body: {
         dispNo: dispenserInfo.value[0].value,
@@ -137,7 +137,7 @@ async function submit(rowIndex: number, row: any) {
     if (row.dispNo !== dispenserInfo.value[0].value) {
       isOriginNo = false
     }
-    await $fetch('/api/setting/update-dispenser', {
+    await $fetch('/api/setting/dispenser', {
       method: 'put',
       body: {
         dispNo: dispenserInfo.value[0].value,
@@ -156,7 +156,7 @@ async function submit(rowIndex: number, row: any) {
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
   console.log(dispenserInfo.value)
-  await $fetch('/api/setting/delete-dispenser', {
+  await $fetch('/api/setting/dispenser', {
     method: 'delete',
     body: {
       dispNo: dispenserInfo.value[0].value,

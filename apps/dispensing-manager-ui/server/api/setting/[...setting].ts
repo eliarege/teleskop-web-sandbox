@@ -31,7 +31,7 @@ router.get('/dispenser', defineEventHandler(async () => {
   return dispensers
 }))
 
-router.post('/create-dispenser', defineEventHandler(async (event) => {
+router.post('/dispenser', defineEventHandler(async (event) => {
   try {
     let dispenser
     const body = await readBody(event)
@@ -61,7 +61,7 @@ router.post('/create-dispenser', defineEventHandler(async (event) => {
   }
 }))
 
-router.put('/update-dispenser', defineEventHandler(async (event) => {
+router.put('/dispenser', defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
     const dispenser = await knex('DYTFDISPENSERSETTINGS')
@@ -80,7 +80,7 @@ router.put('/update-dispenser', defineEventHandler(async (event) => {
   }
 }))
 
-router.delete('/delete-dispenser', defineEventHandler(async (event) => {
+router.delete('/dispenser', defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
     await knex('DYTFDISPENSERSETTINGS')
@@ -127,7 +127,7 @@ router.get('/machine-dispenser-connection', defineEventHandler(async () => {
   return result
 }))
 
-router.post('/create-machine-dispenser-connection', defineEventHandler(async (event) => {
+router.post('/machine-dispenser-connection', defineEventHandler(async (event) => {
   const body = await readBody(event)
   const isThereMachine = await knex('DYTFMACHINES')
     .where('MACHINEID', body.machineid)
@@ -149,7 +149,7 @@ router.post('/create-machine-dispenser-connection', defineEventHandler(async (ev
   return 1 // return 200
 }))
 
-router.put('/update-machine-dispenser-connection', defineEventHandler(async (event) => {
+router.put('/machine-dispenser-connection', defineEventHandler(async (event) => {
   const body = await readBody(event)
   console.log(1)
   await knex('DYTFMACHINES')
@@ -176,7 +176,7 @@ router.put('/update-machine-dispenser-connection', defineEventHandler(async (eve
   return 1
 }))
 
-router.delete('/delete-machine-dispenser-connection', defineEventHandler(async (event) => {
+router.delete('/machine-dispenser-connection', defineEventHandler(async (event) => {
   const body = await readBody(event)
   const query = await knex('DYTFMACHINES')
     .where('MACHINEID', body.machineid)
@@ -230,7 +230,7 @@ router.get('/material-connections', defineEventHandler(async (event) => {
   return materials
 }))
 
-router.post('/create-material-connection', defineEventHandler(async (event) => {
+router.post('/material-connection', defineEventHandler(async (event) => {
   const body = await readBody(event)
   const isThereMaterial = await knex('DYTFMATERIAL')
     .where('MATERIALCODE', body.materialCode)
@@ -257,7 +257,7 @@ router.post('/create-material-connection', defineEventHandler(async (event) => {
   return 1 // return 200
 }))
 
-router.put('/update-material-connection', defineEventHandler(async (event) => {
+router.put('/material-connection', defineEventHandler(async (event) => {
   const body = await readBody(event)
   await knex('DYTFMATERIAL')
     .where('MATERIALCODE', body.materialCode)
@@ -285,7 +285,7 @@ router.put('/update-material-connection', defineEventHandler(async (event) => {
   return 1
 }))
 
-router.delete('/delete-material', defineEventHandler(async (event) => {
+router.delete('/material', defineEventHandler(async (event) => {
   const body = await readBody(event)
   await knex('DYTFMATERIAL')
     .where('MATERIALCODE', body.materialCode)
@@ -337,7 +337,7 @@ router.get('/request-mechanism-settings', defineEventHandler(async () => {
 // repeatRequestIfLastcompleted //second on first
 // no third on first
 
-router.put('/update-request-mechanism-settings', defineEventHandler(async (event) => {
+router.put('/request-mechanism-settings', defineEventHandler(async (event) => {
   const body = await readBody(event)
   const settings = await knex('DYTFDYSETTINGS')
     .update({
@@ -378,7 +378,7 @@ router.get('/file-system', defineEventHandler(async () => {
   return result[0].BDYREQSEARCHPATH
 }))
 
-router.put('/update-file-system', defineEventHandler(async (event) => {
+router.put('/file-system', defineEventHandler(async (event) => {
   const body = await readBody(event)
   await knex('DYTFELIARSETTINGS')
     .update({ BDYREQSEARCHPATH: body.path })
@@ -390,7 +390,7 @@ router.get('/driver', defineEventHandler(async () => {
   return result[0]
 }))
 
-router.put('/update-driver', defineEventHandler(async (event) => {
+router.put('/driver', defineEventHandler(async (event) => {
   const body = await readBody(event)
   await knex('DYTFCOMDRIVERs')
     .update(body)

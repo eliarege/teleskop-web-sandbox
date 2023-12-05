@@ -116,7 +116,7 @@ function customSortMethod(rows, sortBy, descending) {
 async function submit(rowIndex: number) {
   /** If create */
   if (rowIndex === 0) {
-    await $fetch('/api/setting/create-machine-dispenser-connection', {
+    await $fetch('/api/setting/machine-dispenser-connection', {
       method: 'post',
       body: {
         machineid: machineInfo.value[0].value,
@@ -128,7 +128,7 @@ async function submit(rowIndex: number) {
   }
   if (rowIndex) { /** If it is put */
     console.log(machineInfo.value)
-    await $fetch('/api/setting/update-machine-dispenser-connection', {
+    await $fetch('/api/setting/machine-dispenser-connection', {
       method: 'put',
       body: {
         machineid: machineInfo.value[0].value,
@@ -143,7 +143,7 @@ async function submit(rowIndex: number) {
 
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  await $fetch('/api/setting/delete-machine-dispenser-connection', {
+  await $fetch('/api/setting/machine-dispenser-connection', {
     method: 'delete',
     body: {
       machineid: machineInfo.value[0].value,
