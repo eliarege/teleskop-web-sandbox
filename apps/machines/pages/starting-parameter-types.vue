@@ -13,28 +13,17 @@ const customer = ref()
 const customerOrder = ref()
 const fabricType = ref()
 
-const paramTypeMapping = {
-  0: fabricWeight,
-  1: flotteRatio,
-  2: partCount,
-  3: partyNo,
-  4: accompanyNo,
-  5: clothLength,
-  6: customer,
-  7: customerOrder,
-  8: fabricType,
-}
-const nameToParamTypeId = {
-  fabricWeight: 0,
-  flotteRatio: 1,
-  partCount: 2,
-  partyNo: 3,
-  accompanyNo: 4,
-  clothLength: 5,
-  customer: 6,
-  customerOrder: 7,
-  fabricType: 8,
-}
+const paramTypeMaps = reactive([
+  { id: 0, name: 'fabricWeight', data: fabricWeight },
+  { id: 1, name: 'flotteRatio', data: flotteRatio },
+  { id: 2, name: 'partCount', data: partCount },
+  { id: 3, name: 'partyNo', data: partyNo },
+  { id: 4, name: 'accompanyNo', data: accompanyNo },
+  { id: 5, name: 'clothLength', data: clothLength },
+  { id: 6, name: 'customer', data: customer },
+  { id: 7, name: 'customerOrder', data: customerOrder },
+  { id: 8, name: 'fabricType', data: fabricType },
+])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
 
@@ -62,9 +51,9 @@ const { data: parameterTypes } = useLazyFetch('/api/starting-parameter-types/sta
 
 })
 
-watch(parameterTypes, (newValue, oldValue) => {
-  for (const [paramTypeId, variable] of Object.entries(paramTypeMapping)) {
-    variable.value = parameterTypes.value.find(t => t.paramTypeId === Number(paramTypeId))?.paramString || 'Seçilmedi'
+watch(parameterTypes, (_newValue, _oldValue) => {
+  for (const paramTypeMap of paramTypeMaps) {
+    paramTypeMap.data = parameterTypes.value.find(t => t.paramTypeId === Number(paramTypeMap.id))?.paramString || 'Seçilmedi'
   }
 })
 
@@ -72,10 +61,10 @@ async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
 }
 
-async function handleOptionChange(paramTypeName) {
-  const paramTypeId = nameToParamTypeId[paramTypeName]
-  const paramId = paramTypeMapping[paramTypeId].value.paramId
-  console.log('paramTypeId, paramId, paramString = ', paramTypeId, paramId)
+async function handleOptionChange(paramTypeName: string) {
+  const param = paramTypeMaps.find(p => p.name === paramTypeName)
+  const paramTypeId = param.id
+  const paramId = param.data.paramId
   await selectStartingParameterType(selectedMachineId.value, paramTypeId, paramId)
 }
 </script>

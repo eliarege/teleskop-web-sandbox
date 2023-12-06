@@ -11,29 +11,19 @@ const tank3Request = ref()
 const tank3Dosage1 = ref()
 const tank3Dosage2 = ref()
 
-const commandTypeMap = {
-  101: tank1Request,
-  102: tank1Dosage1,
-  103: tank1Dosage2,
-  201: tank2Request,
-  202: tank2Dosage1,
-  203: tank2Dosage2,
-  301: tank3Request,
-  302: tank3Dosage1,
-  303: tank3Dosage2,
-}
+const commandTypeMaps = reactive([
+  { id: 101, name: 'tank1Request', data: tank1Request },
+  { id: 102, name: 'tank1Dosage1', data: tank1Dosage1 },
+  { id: 103, name: 'tank1Dosage2', data: tank1Dosage2 },
 
-const nameToTypeMap = {
-  tank1Request: 101,
-  tank1Dosage1: 102,
-  tank1Dosage2: 103,
-  tank2Request: 201,
-  tank2Dosage1: 202,
-  tank2Dosage2: 203,
-  tank3Request: 301,
-  tank3Dosage1: 302,
-  tank3Dosage2: 303,
-}
+  { id: 201, name: 'tank2Request', data: tank2Request },
+  { id: 202, name: 'tank2Dosage1', data: tank2Dosage1 },
+  { id: 203, name: 'tank2Dosage2', data: tank2Dosage2 },
+
+  { id: 301, name: 'tank3Request', data: tank3Request },
+  { id: 302, name: 'tank3Dosage1', data: tank3Dosage1 },
+  { id: 303, name: 'tank3Dosage2', data: tank3Dosage2 },
+])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
 const { data: commandOptions } = useLazyFetch('/api/master-commands/master-commands', {
@@ -53,9 +43,9 @@ const { data: commands } = useLazyFetch('/api/smart-request-commands/smart-reque
   immediate: false,
 })
 
-watch(commands, (newValue, oldValue) => {
-  for (const [commandType, variable] of Object.entries(commandTypeMap)) {
-    variable.value = commands.value.find(t => t.commandType === Number(commandType))?.commandName || 'Boş'
+watch(commands, (_newValue, _oldValue) => {
+  for (const commandTypeMap of commandTypeMaps) {
+    commandTypeMap.data = commands.value.find(t => t.commandType === Number(commandTypeMap.id))?.commandName || 'Boş'
   }
 })
 
@@ -64,9 +54,9 @@ async function handleMachineClick(machineId: number) {
 }
 
 async function handleOptionChange(commandTypeName) {
-  const commandTypeId = nameToTypeMap[commandTypeName]
-  const commandNo = commandTypeMap[commandTypeId].value.commandNo
-  console.log('selectedMachineId, commandTypeId, commandNo = ', selectedMachineId.value, commandTypeId, commandNo)
+  const command = commandTypeMaps.find(c => c.name === commandTypeName)
+  const commandTypeId = command.id
+  const commandNo = command.data.commandNo
   await selectSmartRequestCommand(selectedMachineId.value, commandTypeId, commandNo)
 }
 </script>
