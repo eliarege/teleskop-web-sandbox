@@ -349,6 +349,9 @@ importers:
       element-plus:
         specifier: ^2.4.3
         version: 2.4.3(vue@3.3.9)
+      keycloak-js:
+        specifier: ^23.0.1
+        version: 23.0.1
       nuxt-quasar-ui:
         specifier: ^2.0.6
         version: 2.0.6(@quasar/extras@1.16.9)(quasar@2.14.1)
@@ -7641,6 +7644,10 @@ packages:
   /js-md4@0.3.2:
     resolution: {integrity: sha512-/GDnfQYsltsjRswQhN9fhv3EMw2sCpUdrdxyWDOUK7eyD++r3gRhzgiQgc/x4MAv2i1iuQ4lxO5mvqM3vj4bwA==}
 
+  /js-sha256@0.10.1:
+    resolution: {integrity: sha512-5obBtsz9301ULlsgggLg542s/jqtddfOpV5KJc4hajc9JV8GeY2gZHSVpYBn4nWqAUTJ9v+xwtbJ1mIBgIH5Vw==}
+    dev: false
+
   /js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
     requiresBuild: true
@@ -7769,6 +7776,19 @@ packages:
     dependencies:
       jwa: 2.0.0
       safe-buffer: 5.2.1
+
+  /jwt-decode@4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
+    dev: false
+
+  /keycloak-js@23.0.1:
+    resolution: {integrity: sha512-n7bF7GGrxmzB6mveXYhVoKDZv96PEtrn89/2qSNSCreBKovW/bGcrB6WFBiUOzdWoRW03mDYcU8sUfvELiBPPw==}
+    dependencies:
+      base64-js: 1.5.1
+      js-sha256: 0.10.1
+      jwt-decode: 4.0.0
+    dev: false
 
   /keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
