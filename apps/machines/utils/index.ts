@@ -240,6 +240,13 @@ export async function selectStartingParameterType(machineId, paramTypeId, paramI
 }
 
 export async function selectSmartRequestCommand(machineId, commandTypeId, commandNo) {
+  if(commandNo === -1){
+  await $fetch('/api/smart-request-commands/smart-request-command', { method: 'DELETE', body: {
+    machineId,
+    commandTypeId,
+    commandNo,
+  } })
+  } else
   await $fetch('/api/smart-request-commands/smart-request-command', { method: 'POST', body: {
     machineId,
     commandTypeId,

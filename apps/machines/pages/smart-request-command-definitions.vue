@@ -39,6 +39,13 @@ const { data: machines } = useLazyFetch('/api/machines/active-machines')
 const { data: commandOptions } = useLazyFetch('/api/master-commands/master-commands', {
   query: { machineId: selectedMachineId },
   immediate: false,
+  transform: (commandOptions) => {
+    commandOptions.unshift({
+      commandNo: -1,
+      commandName: 'Boş',
+    })
+    return commandOptions
+  },
 })
 
 const { data: commands } = useLazyFetch('/api/smart-request-commands/smart-request-commands', {
