@@ -150,7 +150,7 @@ export async function deleteWaterTypes(waterTypes) {
 }
 
 export async function getMachineCommands(machineId: number) {
-  return await $fetch('/api/master-commands/master-commands', { method: 'POST',body: {
+  return await $fetch('/api/master-commands/master-commands', { method: 'GET',query: {
       machineId,
     } })
 }
@@ -205,6 +205,50 @@ export async function addStepSkippingReason(reasonId: string, reasonText: string
 export async function editStepSkippingReason(reasonId: string, reasonText: string, oldReasonId: string) {
   await $fetch('/api/step-skipping-reasons/reason', { method: 'PUT', body: { reasonId, reasonText, oldReasonId } })
 }
+
 export async function deleteStepSkippingReason(reasonId: string) {
   await $fetch('/api/step-skipping-reasons/reason', { method: 'DELETE', body: { reasonId } })
+}
+
+export async function addOtherMachine(otherMachine) {
+  await $fetch('/api/machines/other-machine', { method: 'POST', body: otherMachine })
+}
+
+export async function editOtherMachine(machine, oldId) {
+  await $fetch('/api/machines/other-machine', { method: 'PUT', body: { machine, oldId } })
+}
+
+export async function deleteOtherMachine(machineId) {
+  await $fetch('/api/machines/other-machine', { method: 'DELETE', body: { machineId } })
+}
+
+export async function selectConsumptionCounter(machineId, counterId1, counterId2) {
+  await $fetch('/api/consumption-counters/consumption-counter', { method: 'POST',body: {
+      machineId,
+      counterId1,
+      counterId2,
+    } })
+}
+
+export async function selectStartingParameterType(machineId, paramTypeId, paramId) {
+  await $fetch('/api/starting-parameter-types/starting-parameter-type', { method: 'POST',body: {
+      machineId,
+      paramTypeId,
+      paramId,
+    } })
+}
+
+export async function selectSmartRequestCommand(machineId, commandTypeId, commandNo) {
+  if (commandNo === -1) {
+    await $fetch('/api/smart-request-commands/smart-request-command', { method: 'DELETE',body: {
+        machineId,
+        commandTypeId,
+        commandNo,
+      } })
+  } else
+    await $fetch('/api/smart-request-commands/smart-request-command', { method: 'POST',body: {
+        machineId,
+        commandTypeId,
+        commandNo,
+      } })
 }

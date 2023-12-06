@@ -6,7 +6,7 @@ const selectedCommandNo = ref()
 const selectedReasonId = ref()
 
 const { data: machines } = useFetch('/api/machines/active-machines')
-const { data: machineCommands } = useLazyFetch(`/api/master-commands/master-commands`, {
+const { data: machineCommands } = useLazyFetch(`/api/command-timeout-reasons/master-commands-timeout`, {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
