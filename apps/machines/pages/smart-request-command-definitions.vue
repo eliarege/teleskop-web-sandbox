@@ -55,6 +55,13 @@ watch(commands, (newValue, oldValue) => {
 async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
 }
+
+async function handleOptionChange(commandTypeName) {
+  const commandTypeId = nameToTypeMap[commandTypeName]
+  const commandNo = commandTypeMap[commandTypeId].value.commandNo
+  console.log('selectedMachineId, commandTypeId, commandNo = ', selectedMachineId.value, commandTypeId, commandNo)
+  await selectSmartRequestCommand(selectedMachineId.value, commandTypeId, commandNo)
+}
 </script>
 
 <template>
@@ -83,6 +90,7 @@ async function handleMachineClick(machineId: number) {
         :options="commandOptions"
         option-label="commandName"
         option-value="commandNo"
+        @update:model-value="handleOptionChange('tank1Request')"
       />
       <q-select
         v-model="tank1Dosage1"
@@ -90,6 +98,7 @@ async function handleMachineClick(machineId: number) {
         :options="commandOptions"
         option-label="commandName"
         option-value="commandNo"
+        @update:model-value="handleOptionChange('tank1Dosage1')"
       />
       <q-select
         v-model="tank1Dosage2"
@@ -97,6 +106,7 @@ async function handleMachineClick(machineId: number) {
         :options="commandOptions"
         option-label="commandName"
         option-value="commandNo"
+        @update:model-value="handleOptionChange('tank1Dosage2')"
       />
 
       <q-select
@@ -105,6 +115,7 @@ async function handleMachineClick(machineId: number) {
         :options="commandOptions"
         option-label="commandName"
         option-value="commandNo"
+        @update:model-value="handleOptionChange('tank2Request')"
       />
       <q-select
         v-model="tank2Dosage1"
@@ -112,6 +123,7 @@ async function handleMachineClick(machineId: number) {
         :options="commandOptions"
         option-label="commandName"
         option-value="commandNo"
+        @update:model-value="handleOptionChange('tank2Dosage1')"
       />
       <q-select
         v-model="tank2Dosage2"
@@ -119,6 +131,7 @@ async function handleMachineClick(machineId: number) {
         :options="commandOptions"
         option-label="commandName"
         option-value="commandNo"
+        @update:model-value="handleOptionChange('tank2Dosage2')"
       />
 
       <q-select
@@ -127,6 +140,7 @@ async function handleMachineClick(machineId: number) {
         :options="commandOptions"
         option-label="commandName"
         option-value="commandNo"
+        @update:model-value="handleOptionChange('tank3Request')"
       />
       <q-select
         v-model="tank3Dosage1"
@@ -134,6 +148,7 @@ async function handleMachineClick(machineId: number) {
         :options="commandOptions"
         option-label="commandName"
         option-value="commandNo"
+        @update:model-value="handleOptionChange('tank3Dosage1')"
       />
       <q-select
         v-model="tank3Dosage2"
@@ -141,6 +156,7 @@ async function handleMachineClick(machineId: number) {
         :options="commandOptions"
         option-label="commandName"
         option-value="commandNo"
+        @update:model-value="handleOptionChange('tank3Dosage2')"
       />
     </q-card-section>
   </q-card>

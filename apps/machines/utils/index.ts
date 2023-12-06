@@ -238,3 +238,11 @@ export async function selectStartingParameterType(machineId, paramTypeId, paramI
     paramId,
   } })
 }
+
+export async function selectSmartRequestCommand(machineId, commandTypeId, commandNo) {
+  await $fetch('/api/smart-request-commands/smart-request-command', { method: 'POST', body: {
+    machineId,
+    commandTypeId,
+    commandNo,
+  } })
+}
