@@ -2,14 +2,14 @@ import messages from '@intlify/unplugin-vue-i18n/messages'
 import { createI18n } from 'vue-i18n'
 
 export default defineNuxtPlugin(({ vueApp }) => {
-  const route = useRoute()
+  const locale = useCookie('locale')
   const i18n = createI18n({
     legacy: false,
-    locale: typeof route.query.lang === 'string' ? route.query.lang : 'en',
+    locale: locale.value || 'en',
     messages,
     fallbackLocale: 'en-US',
     datetimeFormats: {
-      'en-US': {
+      en: {
         datetime: {
           year: 'numeric',
           month: 'numeric',
@@ -24,7 +24,7 @@ export default defineNuxtPlugin(({ vueApp }) => {
           day: 'numeric',
         },
       },
-      'tr-TR': {
+      tr: {
         datetime: {
           year: 'numeric',
           month: 'numeric',
