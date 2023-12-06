@@ -14,15 +14,15 @@ const customerOrder = ref()
 const fabricType = ref()
 
 const paramTypeMaps = reactive([
-  { id: 0, name: 'fabricWeight', data: fabricWeight },
-  { id: 1, name: 'flotteRatio', data: flotteRatio },
-  { id: 2, name: 'partCount', data: partCount },
-  { id: 3, name: 'partyNo', data: partyNo },
-  { id: 4, name: 'accompanyNo', data: accompanyNo },
-  { id: 5, name: 'clothLength', data: clothLength },
-  { id: 6, name: 'customer', data: customer },
-  { id: 7, name: 'customerOrder', data: customerOrder },
-  { id: 8, name: 'fabricType', data: fabricType },
+  { id: 0, name: 'fabricWeight', data: fabricWeight, label: 'Mal (Kumaş) Miktarı - Kilo' },
+  { id: 1, name: 'flotteRatio', data: flotteRatio, label: 'AK Flotte Oranı Parametresi' },
+  { id: 2, name: 'partCount', data: partCount, label: 'Parça Sayısı' },
+  { id: 3, name: 'partyNo', data: partyNo, label: 'Parti Numarası' },
+  { id: 4, name: 'accompanyNo', data: accompanyNo, label: 'Refakat Numarası' },
+  { id: 5, name: 'clothLength', data: clothLength, label: 'Kumaş Uzunluğu' },
+  { id: 6, name: 'customer', data: customer, label: 'Müşteri' },
+  { id: 7, name: 'customerOrder', data: customerOrder, label: 'Sipariş Numarası' },
+  { id: 8, name: 'fabricType', data: fabricType, label: 'Kumaş Tipi' },
 ])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
@@ -89,78 +89,16 @@ async function handleOptionChange(paramTypeName: string) {
     </q-card-section>
 
     <q-card-section class="flex flex-col input-field">
-      <q-select
-        v-model="fabricWeight"
-        :options="parameterOptions"
-        option-label="paramString"
-        option-value="paramId"
-        label="Mal (Kumaş) Miktarı - Kilo"
-        @update:model-value="handleOptionChange('fabricWeight')"
-      />
-      <q-select
-        v-model="flotteRatio"
-        label="AK Flotte Oranı Parametresi"
-        :options="parameterOptions"
-        option-label="paramString"
-        option-value="paramId"
-        @update:model-value="handleOptionChange('flotteRatio')"
-      />
-      <q-select
-        v-model="partCount"
-        label="Parça Sayısı"
-        :options="parameterOptions"
-        option-label="paramString"
-        option-value="paramId"
-        @update:model-value="handleOptionChange('partCount')"
-      />
-      <q-select
-        v-model="partyNo"
-        label="Parti Numarası"
-        :options="parameterOptions"
-        option-label="paramString"
-        option-value="paramId"
-        @update:model-value="handleOptionChange('partyNo')"
-      />
-      <q-select
-        v-model="accompanyNo"
-        label="Refakat Numarası"
-        :options="parameterOptions"
-        option-label="paramString"
-        option-value="paramId"
-        @update:model-value="handleOptionChange('accompanyNo')"
-      />
-      <q-select
-        v-model="clothLength"
-        label="Kumaş Uzunluğu"
-        :options="parameterOptions"
-        option-label="paramString"
-        option-value="paramId"
-        @update:model-value="handleOptionChange('clothLength')"
-      />
-      <q-select
-        v-model="customer"
-        label="Müşteri"
-        :options="parameterOptions"
-        option-label="paramString"
-        option-value="paramId"
-        @update:model-value="handleOptionChange('customer')"
-      />
-      <q-select
-        v-model="customerOrder"
-        label="Sipariş Numarası"
-        :options="parameterOptions"
-        option-label="paramString"
-        option-value="paramId"
-        @update:model-value="handleOptionChange('customerOrder')"
-      />
-      <q-select
-        v-model="fabricType"
-        label="Kumaş Tipi"
-        :options="parameterOptions"
-        option-label="paramString"
-        option-value="paramId"
-        @update:model-value="handleOptionChange('fabricType')"
-      />
+      <div v-for="paramTypeMap in paramTypeMaps" :key="paramTypeMap.id">
+        <q-select
+          v-model="paramTypeMap.data"
+          :options="parameterOptions"
+          option-label="paramString"
+          option-value="paramId"
+          :label="paramTypeMap.label"
+          @update:model-value="handleOptionChange(paramTypeMap.name)"
+        />
+      </div>
     </q-card-section>
   </q-card>
 </template>

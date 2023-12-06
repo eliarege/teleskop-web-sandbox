@@ -12,17 +12,17 @@ const tank3Dosage1 = ref()
 const tank3Dosage2 = ref()
 
 const commandTypeMaps = reactive([
-  { id: 101, name: 'tank1Request', data: tank1Request },
-  { id: 102, name: 'tank1Dosage1', data: tank1Dosage1 },
-  { id: 103, name: 'tank1Dosage2', data: tank1Dosage2 },
+  { id: 101, name: 'tank1Request', data: tank1Request, label: 'Tank 1 İstek Komutları' },
+  { id: 102, name: 'tank1Dosage1', data: tank1Dosage1, label: 'Tank 1 Dozaj1 Komutları' },
+  { id: 103, name: 'tank1Dosage2', data: tank1Dosage2, label: 'Tank 1 Dozaj2 Komutları' },
 
-  { id: 201, name: 'tank2Request', data: tank2Request },
-  { id: 202, name: 'tank2Dosage1', data: tank2Dosage1 },
-  { id: 203, name: 'tank2Dosage2', data: tank2Dosage2 },
+  { id: 201, name: 'tank2Request', data: tank2Request, label: 'Tank 2 İstek Komutları' },
+  { id: 202, name: 'tank2Dosage1', data: tank2Dosage1, label: 'Tank 2 Dozaj1 Komutları' },
+  { id: 203, name: 'tank2Dosage2', data: tank2Dosage2, label: 'Tank 2 Dozaj2 Komutları' },
 
-  { id: 301, name: 'tank3Request', data: tank3Request },
-  { id: 302, name: 'tank3Dosage1', data: tank3Dosage1 },
-  { id: 303, name: 'tank3Dosage2', data: tank3Dosage2 },
+  { id: 301, name: 'tank3Request', data: tank3Request, label: 'Tank 3 İstek Komutları' },
+  { id: 302, name: 'tank3Dosage1', data: tank3Dosage1, label: 'Tank 3 Dozaj1 Komutları' },
+  { id: 303, name: 'tank3Dosage2', data: tank3Dosage2, label: 'Tank 3 Dozaj2 Komutları' },
 ])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
@@ -81,80 +81,16 @@ async function handleOptionChange(commandTypeName) {
     </q-card-section>
 
     <q-card-section class="w-xs flex flex-col">
-      <q-select
-        v-model="tank1Request"
-        label="Tank 1 İstek Komutları"
-        :options="commandOptions"
-        option-label="commandName"
-        option-value="commandNo"
-        @update:model-value="handleOptionChange('tank1Request')"
-      />
-      <q-select
-        v-model="tank1Dosage1"
-        label="Tank 1 Dozaj1 Komutları"
-        :options="commandOptions"
-        option-label="commandName"
-        option-value="commandNo"
-        @update:model-value="handleOptionChange('tank1Dosage1')"
-      />
-      <q-select
-        v-model="tank1Dosage2"
-        label="Tank 1 Dozaj2 Komutları"
-        :options="commandOptions"
-        option-label="commandName"
-        option-value="commandNo"
-        @update:model-value="handleOptionChange('tank1Dosage2')"
-      />
-
-      <q-select
-        v-model="tank2Request"
-        label="Tank 2 İstek Komutları"
-        :options="commandOptions"
-        option-label="commandName"
-        option-value="commandNo"
-        @update:model-value="handleOptionChange('tank2Request')"
-      />
-      <q-select
-        v-model="tank2Dosage1"
-        label="Tank 2 Dozaj1 Komutları"
-        :options="commandOptions"
-        option-label="commandName"
-        option-value="commandNo"
-        @update:model-value="handleOptionChange('tank2Dosage1')"
-      />
-      <q-select
-        v-model="tank2Dosage2"
-        label="Tank 2 Dozaj2 Komutları"
-        :options="commandOptions"
-        option-label="commandName"
-        option-value="commandNo"
-        @update:model-value="handleOptionChange('tank2Dosage2')"
-      />
-
-      <q-select
-        v-model="tank3Request"
-        label="Tank 3 İstek Komutları"
-        :options="commandOptions"
-        option-label="commandName"
-        option-value="commandNo"
-        @update:model-value="handleOptionChange('tank3Request')"
-      />
-      <q-select
-        v-model="tank3Dosage1"
-        label="Tank 3 Dozaj1 Komutları"
-        :options="commandOptions"
-        option-label="commandName"
-        option-value="commandNo"
-        @update:model-value="handleOptionChange('tank3Dosage1')"
-      />
-      <q-select
-        v-model="tank3Dosage2"
-        label="Tank 3 Dozaj2 Komutları"
-        :options="commandOptions"
-        option-label="commandName"
-        option-value="commandNo"
-        @update:model-value="handleOptionChange('tank3Dosage2')"
-      />
+      <div v-for="commandMap in commandTypeMaps" :key="commandMap.id">
+        <q-select
+          v-model="commandMap.data"
+          :label="commandMap.label"
+          :options="commandOptions"
+          option-label="commandName"
+          option-value="commandNo"
+          @update:model-value="handleOptionChange(commandMap.name)"
+        />
+      </div>
     </q-card-section>
   </q-card>
 </template>
