@@ -20,6 +20,7 @@
     "@vueuse/core": "^10.6.1",
     "@vueuse/nuxt": "^10.6.1",
     "element-plus": "^2.4.3",
+    "keycloak-js": "^23.0.1",
     "nuxt-quasar-ui": "^2.0.6",
     "pinia": "^2.1.7",
     "quasar": "^2.14.1",
