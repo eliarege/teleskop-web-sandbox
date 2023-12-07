@@ -11,6 +11,7 @@ export default defineEventHandler(async () => {
 	    machineCapacity: 'b.MACHINECAPACITY',
     })
     .where('b.INUSE', '=', 1)
+    .andWhere('b.USEINTELESKOP', '=', 1)
   return (await machineList).map((machine) => {
     return {
       ...machine,
