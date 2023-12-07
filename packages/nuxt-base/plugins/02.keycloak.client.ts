@@ -109,12 +109,14 @@ export default defineNuxtPlugin(() => {
     initPromise = keycloak.init({
       onLoad: 'login-required',
       locale: locale.value || 'en-US',
+      enableLogging: appConfig.enableKeycloakLogging
     })
   } else {
     initPromise = keycloak.init({
       onLoad: 'check-sso',
       silentCheckSsoRedirectUri: `${location.origin}/api/check-sso`,
       messageReceiveTimeout: 5000,
+      enableLogging: appConfig.enableKeycloakLogging
     })
   }
 
@@ -151,8 +153,8 @@ export default defineNuxtPlugin(() => {
     )
   }
 
-  const updateToken = async (minimumTokenValidity?: number) => {
-    await keycloak.updateToken(minimumTokenValidity ?? appConfig.minimumTokenValidity)
+  const updateToken = async (minimumTokenValidity?: number): Promise<boolean> => {
+    return keycloak.updateToken(minimumTokenValidity ?? appConfig.minimumTokenValidity)
   }
 
   const loadUserProfile = async () => {

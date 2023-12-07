@@ -39,6 +39,7 @@ export default defineAppConfig({
   minimumTokenValidity: 30,
   globalAuthMiddleware: false,
   loginRequired: false,
+  enableKeycloakLogging: import.meta.env.DEV
 })
 ```
 
@@ -54,6 +55,9 @@ Adds `auth` middleware as global middleware. Meaning every page in app requires 
 
 Redirects user to login page if the user is not logged in. Default: `false`.
 
+##### `enableKeycloakLogging`
+
+Enables logging of `keycloak-js`
 
 #### Composables
 
