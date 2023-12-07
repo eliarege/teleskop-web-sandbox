@@ -8,9 +8,9 @@ export default defineNuxtConfig({
   extends: ['nuxt-base'],
   runtimeConfig: {
     teleskopHost: process.env.TELESKOP_HOST || 'localhost',
-    teleskopUser: process.env.TELESKOP_USER || '',
+    teleskopUser: process.env.TELESKOP_USER || 'sa',
     teleskopPort: process.env.TELESKOP_PORT || '1433',
-    teleskopPassword: process.env.TELESKOP_PASSWORD || '',
+    teleskopPassword: process.env.TELESKOP_PASSWORD || '145236987Alp',
     teleskopDatabase: process.env.TELESKOP_DATABASE || 'Teleskop',
     planningEngineUrl: process.env.PLANNING_ENGINE_URL || 'http://localhost:3500',
   },

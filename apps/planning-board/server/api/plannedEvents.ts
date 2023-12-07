@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const { from } = getQuery(event)
   const { to } = getQuery(event)
 
-  const url = `${config.planningEngineUrl}/planned_events`
+  const url = `${config.planningEngineUrl}/planning_board/scheduled_events`
 
   const plannedEvents = $fetch<PlannedEvents[]>(url, {
     query: { from, to },
