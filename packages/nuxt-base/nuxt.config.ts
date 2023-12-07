@@ -1,4 +1,3 @@
-import process from 'node:process'
 import i18n from '@intlify/unplugin-vue-i18n/vite'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config

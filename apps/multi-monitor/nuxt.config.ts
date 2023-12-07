@@ -1,4 +1,3 @@
-import process from 'node:process'
 import string from 'rollup-plugin-string'
 import type { Plugin as RollupPlugin } from 'rollup'
 

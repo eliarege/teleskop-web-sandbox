@@ -1,4 +1,3 @@
-import process from 'node:process'
 import string from 'rollup-plugin-string'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config

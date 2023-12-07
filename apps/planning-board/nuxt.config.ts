@@ -1,4 +1,3 @@
-import process from 'node:process'
 import string from 'rollup-plugin-string'
 
 export default defineNuxtConfig({
