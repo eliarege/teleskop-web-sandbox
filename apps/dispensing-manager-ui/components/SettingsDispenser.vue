@@ -188,7 +188,7 @@ async function deleteRow() {
           @click="toggleRow(props.row, props.rowIndex)"
         >
           <q-btn
-            v-if="props.rowIndex"
+            v-if="props.row.dispNo"
             size="sm"
             :style="`background-color: ${colors.black}; color: white;`"
             round
@@ -270,7 +270,7 @@ async function deleteRow() {
                 </span>
               </div>
             </div>
-            <div class="flex items-center justify-center gap-5 py-10">
+            <div class="flex items-center justify-center gap-5 py-10 w-full">
               <q-btn
                 color="black"
                 :label="props.rowIndex ? t('settings.submit') : t('settings.new')"

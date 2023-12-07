@@ -45,9 +45,9 @@ const materialInfo = ref<{ label: string; value: any; field: string }[]>([
   { label: 'pH', value: '', field: 'ph' },
   { label: t('settings.supplySource'), value: '', field: 'source' },
   { label: t('settings.materialKgPrice'), value: '', field: 'cost' },
+  { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
   { label: t('settings.rerequestable'), value: '', field: 'rerequestable' },
   { label: t('settings.directlyTransfer'), value: '', field: 'directTransfer' },
-  { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
 
 ])
 
@@ -204,7 +204,7 @@ async function deleteRow() {
           @click="toggleRow(props.row, props.rowIndex)"
         >
           <q-btn
-            v-if="props.rowIndex"
+            v-if="props.row.materialCode"
             size="sm"
             :style="`background-color: ${colors.black}; color: white;`"
             round
@@ -246,17 +246,17 @@ async function deleteRow() {
               :key="mate.label"
               class="flex ml-5 mt-1"
             >
-              <div class="flex w-70 pl-2 m-1 items-center">
+              <div class="flex class-w-70 pl-2 m-1 items-center">
                 {{ mate.label }}
               </div>
-              <div class=" flex w-100 pl-2 m-1 items-center">
+              <div class=" flex class-w-100 pl-2 m-1 items-center">
                 <span v-if="mate.field === 'materialGroup'">
                   <q-select
                     v-model="mate.value"
                     borderless
                     dense
                     filled
-                    class="w-70"
+                    class="class-w-70"
                     options-dense
                     :options="materialGroups"
                     option-value="value"
@@ -271,7 +271,7 @@ async function deleteRow() {
                     multiple
                     dense
                     filled
-                    class="w-70 overflow-hidden"
+                    class="class-w-70 overflow-hidden"
                     options-dense
                     :options="disps"
                     option-value="dispNo"
@@ -287,7 +287,7 @@ async function deleteRow() {
                   <q-input
                     v-model="mate.value"
                     dense
-                    class="w-70"
+                    class="class-w-70"
                     filled
                     :type="mate.field === 'machineid' ? 'number' : 'text'"
                     :placeholder="mate.value"
@@ -297,8 +297,7 @@ async function deleteRow() {
                 </span>
               </div>
             </div>
-
-            <div class="flex items-center justify-center gap-5 py-10">
+            <div class="flex items-center justify-center gap-5 py-10 w-full">
               <q-btn
                 color="black"
                 :label="props.rowIndex ? t('settings.submit') : t('settings.new')"
@@ -361,6 +360,12 @@ async function deleteRow() {
 </template>
 
 <style scoped>
+.class-w-70 {
+  width: 18rem;
+}
+.class-w-100 {
+  width: 20rem;
+}
 .setting-section-header {
   align-items: center;
   font-size: x-large;
