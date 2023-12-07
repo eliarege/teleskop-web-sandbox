@@ -1,81 +1,97 @@
-# Turborepo starter
+# Teleskop Web
 
-This is an official starter Turborepo.
+## Nuxt Layer
 
-## Using this example
+### `nuxt.config.ts`
 
-Run the following command:
-
-```sh
-npx create-turbo@latest
+```ts
+export default defineNuxtConfig({
+  runtimeConfig: {
+    public: {
+      kcUrl: 'http://keycloak:8080',
+      kcRealm: 'teleskop-web',
+      kcClientId: 'nuxt-client'
+    }
+  }
+})
 ```
 
-## What's inside?
+#### `kcUrl`
 
-This Turborepo includes the following packages/apps:
+Configurable via `NUXT_PUBLIC_KC_URL` environment variable. Keycloak URL.
 
-### Apps and Packages
+#### `kcRealm`
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `ui`: a stub React component library shared by both `web` and `docs` applications
-- `eslint-config-custom`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `tsconfig`: `tsconfig.json`s used throughout the monorepo
+Configurable via `NUXT_PUBLIC_KC_REALM` environment variable. Keycloak Realm, default is `teleskop-web`.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+#### `kcClientId`
 
-### Utilities
+Configurable via `NUXT_PUBLIC_KC_CLIENT_ID` environment variable. Keycloak Client ID, should be same as app name.
 
-This Turborepo has some additional tools already setup for you:
+### Composables
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+#### `useAuthFetch`
 
-### Build
+Wrapper around `useFetch` that sets `Authorization` header for configured keycloak server.
 
-To build all apps and packages, run the following command:
+#### `createAuthFetch`
 
+Returns alternate `$fetch` that sets `Authorization` headers for configured keycloak server.
+
+#### `useKeycloak`
+
+Returns keycloak composition API.
+
+```ts
+interface KeycloakPlugin {
+  ready: Readonly<Ref<boolean>>
+  /** Did keycloak initialise? **/
+  didInitialise: Readonly<Ref<boolean>>
+  /** Access Token **/
+  token: Readonly<Ref<string | undefined>>
+  /** Is user authenticated **/
+  authenticated: Readonly<Ref<boolean>>
+  userProfile: Readonly<Ref<KeycloakProfile | undefined>>
+  userInfo: Readonly<Ref<Record<string, any> | undefined>>
+  /** Redirects to login form. */
+  login: () => void
+  /** Redirects to logout. */
+  logout: () => void
+  /** Redirects to registration form. */
+  register: () => void
+  /** Called when keycloak is initialised */
+  onReady: EventHookOn<boolean>
+  /** Called when a user is successfully authenticated. */
+  onAuthSuccess: EventHookOn
+  /** Called if there was an error during authentication. */
+  onAuthError: EventHookOn<KeycloakError>
+  /** Called when the token is refreshed. */
+  onAuthRefreshSuccess: EventHookOn
+  /** Called if there was an error while trying to refresh the token. */
+  onAuthRefreshError: EventHookOn
+  /** Called if the user is logged out (will only be called if the session status iframe is enabled. */
+  onAuthLogout: EventHookOn
+  /** Called when the access token is expired. If a refresh token is available the token can be refreshed with updateToken, or in cases where it is not (that is, with implicit flow) you can redirect to the login screen to obtain a new access token. */
+  onTokenExpired: EventHookOn
+  /** Called when a AIA has been requested by the application. */
+  onActionUpdate: EventHookOn<'success' | 'cancelled' | 'error'>
+  /** Returns true if the token has the given realm role. */
+  hasRealmRole: Keycloak['hasRealmRole']
+  /** Returns true if the token has the given role for the resource (resource is optional, if not specified clientId is used). */
+  hasResourceRole: Keycloak['hasResourceRole']
+  /** Returns true if the token has less than minValidity seconds left before it expires (minValidity is optional, if not specified 0 is used). */
+  isTokenExpired: Keycloak['isTokenExpired']
+  /** If the token expires within minValidity seconds (minValidity is optional, if not specified 5 is used) the token is refreshed. If -1 is passed as the minValidity, the token will be forcibly refreshed. If the session status iframe is enabled, the session status is also checked. */
+  updateToken: Keycloak['updateToken']
+  /**
+   * Clear authentication state, including tokens. This can be useful if application has detected the session was expired, for example if updating token fails.
+   *
+   * Invoking this results in onAuthLogout callback listener being invoked.
+   */
+  clearToken: Keycloak['clearToken']
+  /** Loads the users info. Updates `userInfo` ref */
+  loadUserInfo: () => void
+  /** Loads the users profile. Updates `userProfile` ref */
+  loadUserProfile: () => void
+}
 ```
-cd my-turborepo
-pnpm build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
-```
-
-### Remote Caching
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)

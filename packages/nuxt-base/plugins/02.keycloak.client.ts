@@ -4,8 +4,11 @@ import type { EventHookOn } from '@vueuse/core'
 
 export interface KeycloakPlugin {
   ready: Readonly<Ref<boolean>>
+  /** Did keycloak initialise? **/
   didInitialise: Readonly<Ref<boolean>>
+  /** Access Token **/
   token: Readonly<Ref<string | undefined>>
+  /** Is user authenticated **/
   authenticated: Readonly<Ref<boolean>>
   userProfile: Readonly<Ref<KeycloakProfile | undefined>>
   userInfo: Readonly<Ref<Record<string, any> | undefined>>
