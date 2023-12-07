@@ -133,6 +133,7 @@ async function submitCoupleMachine() {
         &nbsp;&nbsp;
         {{ t('distributionProcessor._') }} - {{ t('recipe.header') }}
         <span class="right-home">
+          <NavigationButton type="setting" />
           <NavigationButton type="home" />
         </span>
       </span>
