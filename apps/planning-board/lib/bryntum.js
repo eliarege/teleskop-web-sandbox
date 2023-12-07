@@ -1,4 +1,5 @@
 import {
+  AjaxHelper,
   DateHelper,
   DomHelper,
   DragHelper,
@@ -11,7 +12,7 @@ import {
 } from '@bryntum/schedulerpro-trial'
 import { io } from 'socket.io-client'
 
-const serverUrl = 'ws://192.168.19.240:3500'
+const serverUrl = `ws://$192.168.18.240:3500`
 const socket = io(serverUrl)
 socket.on('connection', (data) => {
   console.log('connection:', data)
@@ -167,6 +168,7 @@ export class Drag extends DragHelper {
     schedule.disableScrollingCloseToEdges(this.schedule.timeAxisSubGrid)
     onDropSocket()
     if (valid && target) {
+      context.task.originalData.notStarted = true
       const coordinate = DomHelper.getTranslateX(element)
       const startDate = schedule.getDateFromCoordinate(
         coordinate,
@@ -186,7 +188,14 @@ export class Drag extends DragHelper {
         startDate,
         resourceRecord: machine,
       })
-
+      const newEvent = {
+        planKey: task.originalData.id,
+        machineId: machine,
+        plannedStartTime: startDate,
+      }
+      console.log(newEvent)
+      AjaxHelper.post('/api/planningBoardPost', newEvent, { credentials: 'omit' })
+        .then(() => schedule.renderRows())
       Toast.show('Event saved')
     }
 
@@ -296,9 +305,17 @@ export class Schedule extends SchedulerPro {
       // onEventDrag(arg) {
       //   // console.log('arg:', arg)
       // },
-      // onEventDrop(arg) {
-      //   // console.log('arg:', arg)
-      // },
+      onEventDrop({ context }) {
+        const { valid, element, target } = context.context
+        const updatedEvent = {
+          planKey: context.context.grabbed.elementData.eventId,
+          machineId: context.newResource.originalData.id,
+          plannedStartDate: context.startDate,
+        }
+        console.log(updatedEvent)
+        AjaxHelper.post('/api/planningBoardUpdate', updatedEvent, { credentials: 'omit' })
+          .then(() => this.renderRows())
+      },
       rowHeight: 50,
       barMargin: 4,
       columns: [
