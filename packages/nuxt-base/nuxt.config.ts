@@ -6,10 +6,10 @@ export default defineNuxtConfig({
   ssr: false,
   runtimeConfig: {
     public: {
-      appList: process.env.NUXT_PUBLIC_APP_LIST,
-      kcUrl: process.env.NUXT_PUBLIC_KC_URL || 'http://localhost:8080',
-      kcRealm: process.env.NUXT_PUBLIC_KC_REALM || 'teleskop-web',
-      kcClientId: process.env.NUXT_PUBLIC_KC_CLIENT_ID || 'nuxt-client',
+      appList: '',
+      kcUrl: 'http://localhost:8080',
+      kcRealm: 'teleskop-web',
+      kcClientId: 'nuxt-client',
     },
   },
   css: ['@unocss/reset/tailwind.css'],
