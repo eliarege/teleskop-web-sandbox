@@ -148,14 +148,18 @@ export default defineNuxtPlugin(() => {
     )
   }
 
+  const updateToken = async (minimumTokenValidity?: number) => {
+    await keycloak.updateToken(minimumTokenValidity ?? appConfig.minimumTokenValidity)
+  }
+
   const loadUserProfile = async () => {
-    await keycloak.updateToken(appConfig.minimumTokenValidity)
+    await updateToken()
     await keycloak.loadUserProfile()
     userProfile.value = keycloak.profile
   }
 
   const loadUserInfo = async () => {
-    await keycloak.updateToken(appConfig.minimumTokenValidity)
+    await updateToken()
     await keycloak.loadUserInfo()
     userInfo.value = keycloak.userInfo
   }
@@ -183,7 +187,7 @@ export default defineNuxtPlugin(() => {
         hasRealmRole: keycloak.hasRealmRole,
         hasResourceRole: keycloak.hasResourceRole,
         isTokenExpired: keycloak.isTokenExpired,
-        updateToken: keycloak.updateToken,
+        updateToken,
         clearToken: keycloak.clearToken,
         loadUserInfo,
         loadUserProfile,
