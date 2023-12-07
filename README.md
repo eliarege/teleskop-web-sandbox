@@ -170,3 +170,36 @@ Returns app properties in production.
 Used to silently check if user is logged via `keycloak-js`.
 
 Details: https://www.keycloak.org/docs/23.0.1/securing_apps/#using-the-adapter
+
+### Fastify
+
+#### `keycloak-fastify-adapter`
+
+##### Usage
+
+```ts
+import Fastify from 'fastify'
+import { keycloakAdapter } from 'fastify-keycloak-adapter'
+
+const app = Fastify()
+
+await app.register(keycloakAdapter, {
+  url: 'http://localhost:8080',
+  realm: 'teleskop-web',
+  clientId: 'fastify-client',
+})
+
+app.get('/authenticated-request', {
+  auth: true,
+}, () => {
+  return 'Authenticated'
+})
+
+app.get('/authorized-request', {
+  auth: {
+    roles: ['client-role']
+  },
+}, () => {
+  return 'Authorized'
+})
+```
