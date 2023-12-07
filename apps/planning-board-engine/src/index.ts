@@ -4,7 +4,6 @@ import Fastify from 'fastify'
 import fastifyIO from 'fastify-socket.io'
 import pino from 'pino'
 import * as planningBoard from './api/planning-board'
-import * as writeEvents from './api/write-events'
 import { generateClientId } from './composables/helper'
 import { getAllTasks } from './composables/socket'
 
@@ -18,7 +17,6 @@ app.register(fastifyIO, {
 })
 function registerRoutes(fastify: typeof app): void {
   fastify.register(planningBoard.routes)
-  fastify.register(writeEvents.routes)
 }
 registerRoutes(app)
 
