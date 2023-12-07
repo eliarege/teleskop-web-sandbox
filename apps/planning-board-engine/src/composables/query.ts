@@ -43,7 +43,10 @@ export async function getUnplannedEvents(from: Date | string, to: Date | string)
       theoricalDuration: knex.raw(`
     (SELECT SUM(B.DURATION)
     FROM BFMASTERPRGHEADER B
-    WHERE B.MACHINEID = 7
+    WHERE B.MACHINEID = (
+      select p.INTVALUE from PTSETTINGS p
+      where p.USERID = -1 and p.SETTINGID = 5
+    )
       AND B.PROGNO IN (SELECT RECIPENO FROM DYBFBATCHORDERRECIPEHEADER WHERE PLANKEY = P.PLANKEY))
 `),
       fabricWeight: 'P.FABRICWEIGHT',
