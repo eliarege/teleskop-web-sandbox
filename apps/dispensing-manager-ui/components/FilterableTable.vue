@@ -48,7 +48,11 @@ const { rows, columns } = toRefs(props)
 const visibleColumns = ref([])
 const showVisibilityMenu = ref(false)
 const tableFilter = ref()
-columns.value.forEach(row => visibleColumns.value.push(row.field))
+columns.value.forEach((row) => {
+  if (typeof row.field === 'function')
+    row.field = row.field(row)
+  visibleColumns.value.push(row.field)
+})
 const comparisonOperations = [
   { text: 'equals', symbol: '=' },
   { text: 'bigger than', symbol: '>' },
