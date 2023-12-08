@@ -11,6 +11,8 @@ function handleClick() {
     router.push('/')
   } else if (props.type === 'back') {
     router.back()
+  } else if (props.type === 'setting') {
+    router.push('/setting')
   }
 }
 </script>
@@ -25,6 +27,11 @@ function handleClick() {
     <q-icon
       v-else-if="props.type === 'back'"
       name="arrow_back"
+      class="btn-icon"
+    />
+    <q-icon
+      v-else-if="props.type === 'setting'"
+      name="settings"
       class="btn-icon"
     />
   </button>

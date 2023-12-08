@@ -36,6 +36,7 @@ useResizeObserver(document.body, () => {
           <q-tab
             name="dispenser"
             icon="settings"
+            :style="tab === 'dispenser' ? 'background-color: black; color: white;' : ''"
             style="white-space: normal;"
             :label="innerWidth > 768 ? `${t('settings.dispSettings._')}` : ''"
           />
@@ -43,6 +44,7 @@ useResizeObserver(document.body, () => {
           <q-tab
             name="machine-disp"
             icon="settings"
+            :style="tab === 'machine-disp' ? 'background-color: black; color: white;' : ''"
             style="white-space: normal;"
             :label="innerWidth > 768 ? `${t('settings.machDispConnection')}` : ''"
           />
@@ -50,6 +52,7 @@ useResizeObserver(document.body, () => {
           <q-tab
             name="material"
             icon="settings"
+            :style="tab === 'material' ? 'background-color: black; color: white;' : ''"
             style="white-space: normal;"
             :label="innerWidth > 768 ? `${t('settings.machMaterialConnection')}` : ''"
           />
@@ -57,6 +60,7 @@ useResizeObserver(document.body, () => {
           <q-tab
             name="request-mechanism"
             icon="settings"
+            :style="tab === 'request-mechanism' ? 'background-color: black; color: white;' : ''"
             style="white-space: normal;"
             :label="innerWidth > 768 ? `${t('settings.requestMechanism._')}` : ''"
           />
@@ -64,6 +68,7 @@ useResizeObserver(document.body, () => {
           <q-tab
             name="driver-info"
             icon="settings"
+            :style="tab === 'driver-info' ? 'background-color: black; color: white;' : ''"
             style="white-space: normal;"
             :label="innerWidth > 768 ? `${t('settings.driverInfo._')}` : ''"
           />

@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { onMounted } from 'vue'
 import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import moment from 'moment'
+import { useStorage } from '@vueuse/core'
 import { filtersToKnex, navigateToPage, textAlignOverride } from '../shared/functions'
 import { rows } from '../shared/constants'
 import { colors } from '~/shared/constants'
@@ -22,15 +23,16 @@ const machines = ref([])
 const joborders = ref()
 const visibleLoading = ref(true)
 
-const externalFilterSlots = ref([])
-const tempFilterSlots = sessionStorage.getItem('filterSlots')
-if (tempFilterSlots)
-  externalFilterSlots.value = JSON.parse(tempFilterSlots)
+// const externalFilterSlots = ref([])
+// const tempFilterSlots = sessionStorage.getItem('filterSlots')
+const externalFilterSlots = useStorage('filterSlots', [], sessionStorage)
+// if (tempFilterSlots)
+//   externalFilterSlots.value = JSON.parse(tempFilterSlots)
 
 async function fetchData() {
   try {
     machines.value = await $fetch('/api/machine/machines') // FIXME: useFetc better $fetch may cause page to fail
-    if (tempFilterSlots) {
+    if (externalFilterSlots.value.length) {
       await handleFilterSlotsUpdate(externalFilterSlots.value)
     } else {
       joborders.value = await $fetch('/api/joborder/joborders')
@@ -45,9 +47,9 @@ const columns = computed(() => [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo', filterable: true, filterType: 'comparison' },
   { name: 'plannedMachineName', label: t('plannedMachine'), field: 'plannedMachineName', filterable: true, filterType: 'select', selectionOptions: machines.value, optionLabel: 'machinename', optionValue: 'machineid' },
-  { name: 'programList', label: t('registeredJobOrders.programList'), field: 'programList', filterable: true, filterType: 'includes' },
+  { name: 'programList', label: t('registeredJobOrders.programList'), field: 'programList', format: val => val.slice(0, -1), filterable: true, filterType: 'includes' },
   { name: 'plannedStartTime', label: t('registeredJobOrders.scheduledStartTime'), field: 'plannedStartTime', filterable: true, filterType: 'date' },
-])
+] as Column[])
 const noFilterSpec = ref(true)
 
 async function request() {
@@ -72,7 +74,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
     method: 'post',
     body: externalFilterSlots.value,
   })
-  sessionStorage.setItem('filterSlots', JSON.stringify(externalFilterSlots.value))
+  // sessionStorage.setItem('filterSlots', JSON.stringify(externalFilterSlots.value))
   // filtersToKnex(externalFilterSlots.value, null)
 }
 </script>
@@ -84,6 +86,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
       &nbsp;&nbsp;
       {{ t('joborders') }}
       <span class="right-home">
+        <NavigationButton type="setting" />
         <NavigationButton type="home" />
       </span>
     </div>
@@ -115,7 +118,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
                 v-for="(col, index) in props.cols"
                 :key="col.name"
                 :props="props"
-                @dblclick="handleRowDblClick(props.row)"
+                @click="handleRowDblClick(props.row)"
               >
                 <span v-if="col.field === 'plannedStartTime'">
                   {{ moment(col.value).format('HH:m:ss DD/MM/YYYY') }}

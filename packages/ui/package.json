@@ -10,6 +10,7 @@
     "@novnc/novnc": "^1.4.0"
   },
   "devDependencies": {
+    "quasar": "^2.14.1",
     "tsconfig": "workspace:*",
     "vue": "^3.3.9"
   }

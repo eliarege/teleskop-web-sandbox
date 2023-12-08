@@ -48,7 +48,7 @@ async function updateRecipe() {
   })
   console.log(recipe.value)
 }
-
+setInterval(updateRecipe, 10000)
 const material = ref()
 async function fetchMaterialData(reqnumber: number) {
   const materialDataTemp = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
@@ -113,7 +113,11 @@ async function clickShowRecipe(row, isLogs: boolean) {
             <q-tr
               :class="{ 'selected-row': selectedJobOrderTableRow === recipe.row.reqnumber }"
               style="cursor: pointer;"
-              :style="recipe.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
+              :style="selectedJobOrderTableRow === recipe.row.reqnumber
+                ? 'background-color: #cce8ff;'
+                : recipe.rowIndex % 2
+                  ? `background-color: ${colors.tableGray}`
+                  : '' "
               @click="selectRow(recipe.row.reqnumber)"
               @contextmenu="selectRow(recipe.row.reqnumber)"
             >

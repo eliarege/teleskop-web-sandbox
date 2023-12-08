@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import type { Column, DateType, FilterSlot } from '../shared/types'
+import type { Column, DateType, FilterSlot } from '../types/FilterableTable'
 
 const props = defineProps({
   rows: {
@@ -258,9 +258,6 @@ watch(filterSlots.value, (newValue) => {
                 ? 'background-color: rgba(124, 196, 255, 0.185); color: #509ee3;'
                 : 'background-color: rgba(0, 0, 0, 0.1); color: black;'"
             >
-              <!-- :style="filter.isOrderFilter
-                ? 'background-color: rgba(124, 196, 255, 0.185); color: #509ee3;'
-                : 'background-color: rgba(113, 114, 173, 0.2); color: rgb(113, 114, 173);'" -->
               {{ filter.label }} &nbsp;&nbsp;
               <q-icon name="close" @click="removeFilter(index)" />
             </div>
