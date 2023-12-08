@@ -25,6 +25,7 @@ const bottomSheetActions = appList.map((app) => {
   return {
     label: app.name,
     url: app.url,
+    img: `/app-icons/${app.img}`,
   }
 })
 
@@ -57,4 +58,11 @@ function showBottomsheet() {
 </template>
 
 <style>
+.q-bottom-sheet__item {
+  text-align: center;
+
+  & img {
+    display: inline-block;
+  }
+}
 </style>
