@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import { onMounted } from 'vue'
 import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
+import FilterableTable from 'ui/components/FilterableTable.vue'
 import moment from 'moment'
 import { useStorage } from '@vueuse/core'
 import { filtersToKnex, navigateToPage, textAlignOverride } from '../shared/functions'

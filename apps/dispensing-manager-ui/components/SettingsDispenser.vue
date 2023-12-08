@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { Column } from '~/shared/types'
 import { colors } from '~/shared/constants'
 
