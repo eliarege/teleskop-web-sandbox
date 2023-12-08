@@ -30,7 +30,7 @@
 
       .list-layout {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: space-evenly;
         width: 100%;
         height: 100vh;
@@ -47,7 +47,7 @@
 
       .layout-item {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         justify-content: space-evenly;
         align-items: center;
       }
@@ -65,31 +65,35 @@
     <div class="layout">
       <h1 class="title">Teleskop</h1>
       <div class="list-layout">
+
         <div class="layout-item">
           <a class="list-item" href="<%= machines %>">
             <img src="/factory-machine.png" width="100" height="100">
             <h3>Machines</h3>
           </a>
-          <a class="list-item" href="<%= multiMonitor %>">
-            <img src="/sharing.png" width="100" height="100">
-            <h3>Multi Monitor</h3>
-          </a>
-
-        </div>
-        <div class="layout-item">
           <a class="list-item" href="<%= dispensing %>">
             <img src="/scientific.png" width="100" height="100">
             <h3>Dispensing Manager</h3>
           </a>
-          <a class="list-item" href="<%= reporting %>">
-            <img src="/report.png" width="100" height="100">
-            <h3>Reporting</h3>
-          </a>
-        </div>
-        <div class="layout-item">
           <a class="list-item" href="<%= programEditor %>">
             <img src="/writer.png" width="100" height="100">
             <h3>Program Editor</h3>
+          </a>
+
+          <a class="list-item" href="<%= planningBoard %>">
+            <img src="/kanban.png" width="100" height="100">
+            <h3>Planning Board</h3>
+          </a>
+        </div>
+
+        <div class="layout-item">
+            <a class="list-item" href="<%= multiMonitor %>">
+            <img src="/sharing.png" width="100" height="100">
+            <h3>Multi Monitor</h3>
+          </a>
+          <a class="list-item" href="<%= reporting %>">
+            <img src="/report.png" width="100" height="100">
+            <h3>Reporting</h3>
           </a>
           <a class="list-item" href="<%= archive %>">
             <img src="/file.png" width="100" height="100">

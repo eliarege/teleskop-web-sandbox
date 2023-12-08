@@ -10,6 +10,7 @@ const urls = {
   reporting: process.env.REPORTING_URL,
   archive: process.env.ARCHIVE_URL,
   programEditor: process.env.PROGRAM_EDITOR_URL,
+  planningBoard: process.env.PLANNING_BOARD_URL,
 }
 
 app.use(express.static('assets'))

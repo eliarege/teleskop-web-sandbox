@@ -9,6 +9,46 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'editMachine'])
 
 const modelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
+const unitOptions = [
+  '---',
+
+  'Kg',
+  'm/dk',
+  'bar',
+  'rpm',
+  'Sie',
+  'm',
+  'kWh',
+  'cc',
+  'lt/Kg',
+  'gr/lt',
+  '°C/dk',
+  'lt',
+  'cm',
+  'mS/cm',
+  'K',
+  'gr/mt-lin',
+  'gr/mt',
+  'inch',
+  'g',
+  'Lb',
+  'Galon',
+  '\'F',
+  'sn',
+  'Feet',
+  'Galon/min',
+  'Feet/min',
+  'Galon/Lb',
+  'oz/Galon',
+  '\'F/min',
+  'oz/Feet',
+  'dk',
+  '\'C',
+  '%',
+  'pH',
+  'mbar',
+  'lt/dk',
+]
 const machineGroups = await getMachineGroups()
 
 const check = ref(false)
@@ -62,7 +102,7 @@ function handleMachineGroupSelect(e) {
                   />
                   <q-select
                     v-model="machine.steamUnit"
-                    :options="machineGroups"
+                    :options="unitOptions"
                     label="Buhar Birimi"
                     filled
                   />
