@@ -5,6 +5,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   extends: ['nuxt-base'],
   runtimeConfig: {
+    kcClientId: 'planning-board',
     teleskopHost: 'localhost',
     teleskopUser: '',
     teleskopPort: '1433',

@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   extends: ['nuxt-base'],
   runtimeConfig: {
+    kcClientId: 'machines',
     teleskopHost: 'localhost',
     teleskopUser: 'EliarClient',
     teleskopPort: '1433',
