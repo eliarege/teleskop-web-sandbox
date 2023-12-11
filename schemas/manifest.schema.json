@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "roles": {
+      "type": "array",
+      "description": "List of client roles",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Role name"
+          },
+          "adminOnly": {
+            "type": "boolean",
+            "description": "Should role only be mapped to `admin` group"
+          }
+        },
+        "required": ["name"]
+      }
+    }
+  }
+}
