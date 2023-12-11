@@ -1,6 +1,7 @@
 import { updateEventStates } from '../composables/helper'
 import { knex } from '../knexConfig'
 
+// GET
 export async function getPlannedEvents(from: Date | string, to: Date | string) {
   const events = await knex({ p: 'PTBATCHPLANQUEUE' })
     .select({
@@ -11,8 +12,22 @@ export async function getPlannedEvents(from: Date | string, to: Date | string) {
       jobOrder: 'd.JOBORDER',
       programNoList: 'd.PROGRAMNOLIST',
       plannedStartTime: 'd.PLANNEDSTARTTIME',
-      theoreticalDuration: 'd.TheoricalDuration',
-      fabricWeight: 'd.FABRICWEIGHT',
+      theoreticalDuration: knex.raw(`
+      (SELECT SUM(B.DURATION)
+        FROM BFMASTERPRGHEADER B
+        WHERE
+          B.MACHINEID = (
+            SELECT INTVALUE
+            FROM PTSETTINGS
+            WHERE USERID = -1 AND SETTINGID = 5
+          )
+          AND B.PROGNO IN (
+            SELECT RECIPENO
+            FROM DYBFBATCHORDERRECIPEHEADER
+            WHERE PLANKEY = d.PLANKEY
+          )
+        )`),
+      fabricWeight: knex.raw(`(select r.VALUE from DYBFBATCHPLANPARAMETERS r where r.PARAMSTRING = 'Kilo' and r.PLANKEY = p.PLANKEY)`),
       partyNumber: 'd.PARTYNUMBER',
       note: 'd.NOTE',
       isDeleted: 'd.ISDELETED',
@@ -21,6 +36,9 @@ export async function getPlannedEvents(from: Date | string, to: Date | string) {
     })
     .leftJoin({ d: 'DYBFBATCHPLAN' }, 'd.PLANKEY', 'p.PLANKEY')
     .whereBetween('d.RECORDTIME', [from, to])
+    .andWhere((builder) => {
+      builder.whereNull('d.ISDELETED').orWhere('d.ISDELETED', 0)
+    })
     .orderBy('p.MACHINEID')
     .orderBy('p.QUEUENUMBER')
   const modifiedEvents = events.map((e) => {
@@ -54,6 +72,7 @@ export async function getUnplannedEvents(from: Date | string, to: Date | string)
       erpFieldName: 'D.ERPFIELDNAME',
       batchParameterId: 'R.BATCHPARAMETERID',
       value: 'R.VALUE',
+      isStopped: 'P.ISSTOPPED',
     })
     .leftJoin('dbo.PTBATCHPLANQUEUE as Q', 'Q.PLANKEY', 'P.PLANKEY')
     .leftJoin('dbo.DYBFBATCHPLANPARAMETERS as R', (builder) => {
@@ -74,18 +93,116 @@ export async function getUnplannedEvents(from: Date | string, to: Date | string)
     .andWhereBetween('P.RECORDTIME', [from, to])
   return events
 }
-export async function saveChanges(changes: { updated?: any[]; deleted?: any[]; added?: any[] }) {
-  if (changes.updated && changes.updated.length > 0) {
-    changes.updated.forEach((el) => {
-      // UPDATE
+export async function getRecipe(machineId: string, jobOrder: string) {
+  const autoRecipe = await knex.select(
+    'p.RCPINDEX AS recIndex',
+    'p.RECIPENO AS recNo',
+    'h.NAME AS name',
+    'DYEREQUESTNUMBER AS reqNumber',
+    'MAINSTEP AS mainStep',
+    'PARALLELSTEP AS parallelStep',
+    'r.RECIPETYPE AS recType',
+    'CHEMCODE AS chemCode',
+    'm.MATERIALNAME AS materialName',
+    'AMOUNT AS amount',
+    'REQNO_BATCH AS reqBatchNo',
+    'REQNO_PROG AS reqProgNo',
+    'PHASENO AS phaseNo',
+    'PHASEINDEX as phaseIndex',
+    'otherUnit as unit',
+  )
+    .from('DYBFBATCHORDERRECIPESTEPS as r')
+    .rightJoin('DYBFBATCHORDERRECIPEHEADER as p', (builder) => {
+      builder.on('r.PLANKEY', '=', 'p.PLANKEY')
+        .andOn('r.RCPINDEX', '=', 'p.RCPINDEX')
+        .andOn('r.RECIPETYPE', '=', 'p.RECIPETYPE')
     })
-  } if (changes.added && changes.added.length > 0) {
-    changes.added.forEach((el) => {
-      // ADD
+    .leftJoin('BFMASTERPRGHEADER as h', 'p.RECIPENO', '=', 'h.PROGNO')
+    .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
+    .where('h.MACHINEID', '=', machineId)
+    .whereIn('p.PLANKEY', (builder) => {
+      builder.select('PLANKEY').from('DYBFBATCHPLAN').where('JOBORDER', '=', jobOrder).orderBy('PLANKEY', 'desc').limit(1)
     })
-  } if (changes.deleted && changes.deleted.length > 0) {
-    changes.deleted.forEach((el) => {
-      // DELETE
+    .whereNotNull('REQNO_BATCH')
+    .orderBy(['p.RCPINDEX', 'DYEREQUESTNUMBER', 'PARALLELSTEP'])
+
+  const manualRecipe = await knex.select(
+    'p.RCPINDEX AS recIndex',
+    'p.RECIPENO AS recNo',
+    'h.NAME AS name',
+    'DYEREQUESTNUMBER AS reqNumber',
+    'MAINSTEP AS mainStep',
+    'PARALLELSTEP AS parallelStep',
+    'r.RECIPETYPE AS recType',
+    'CHEMCODE AS chemCode',
+    'm.MATERIALNAME AS materialName',
+    'AMOUNT AS amount',
+    'REQNO_BATCH AS reqBatchNo',
+    'REQNO_PROG AS reqProgNo',
+    'otherUnit as unit',
+  )
+    .from('DYBFBATCHORDERRECIPEMANUALS as r')
+    .leftJoin('DYBFBATCHORDERRECIPEHEADER as p', (builder) => {
+      builder.on('r.PLANKEY', '=', 'p.PLANKEY')
+        .andOn('r.RCPINDEX', '=', 'p.RCPINDEX')
     })
+    .leftJoin('BFMASTERPRGHEADER as h', 'p.RECIPENO', '=', 'h.PROGNO')
+    .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
+    .where('h.MACHINEID', '=', machineId)
+    .whereIn('p.PLANKEY', (builder) => {
+      builder.select('PLANKEY').from('DYBFBATCHPLAN').where('JOBORDER', '=', jobOrder).orderBy('PLANKEY', 'desc').limit(1)
+    })
+    .whereNotNull('REQNO_BATCH')
+    .where('AMOUNT', '!=', 0)
+    .orderBy(['p.RCPINDEX', 'DYEREQUESTNUMBER', 'PARALLELSTEP'])
+  return { autoRecipe, manualRecipe }
+}
+//  UPDATE
+export async function updateEvents(planKey: number, machineId: number, plannedStartTime: string) {
+  const queueNumber = (await knex.raw(`SELECT TOP 1 p.QUEUENUMBER + 1 as queue FROM PTBATCHPLANQUEUE p WHERE p.MACHINEID = ${machineId} ORDER BY p.QUEUENUMBER DESC`))[0].queue
+
+  await knex('PTBATCHPLANQUEUE')
+    .update({ MACHINEID: machineId, STARTTIME: plannedStartTime, QUEUENUMBER: queueNumber })
+    .where({ PLANKEY: planKey })
+
+  await knex('DYBFBATCHPLAN')
+    .update({
+      MACHINEIDLIST: machineId,
+      PLANNEDMACHINE: machineId,
+      PLANNEDSTARTTIME: plannedStartTime,
+    })
+    .where({ PLANKEY: planKey })
+}
+export async function removeFromPlan(planKey: number) {
+  console.log('WTF IS PLANKEY', planKey)
+  await knex('dbo.DYBFBATCHPLAN').update({ MACHINEIDLIST: 0, PLANNEDMACHINE: 0, PLANNEDSTARTTIME: '2019-03-22 00:00:00.000' }).where('PLANKEY', '=', planKey)
+  await knex('dbo.PTBATCHPLANQUEUE').where('PLANKEY', '=', planKey).del()
+}
+// SAVE
+export async function scheduleEvents(planKey: number, machineId: number, plannedStartTime: string) {
+  const queueNumber = (await knex.raw(`SELECT TOP 1 p.QUEUENUMBER + 1 as queue FROM PTBATCHPLANQUEUE p WHERE p.MACHINEID = ${machineId} ORDER BY p.QUEUENUMBER DESC`))[0].queue
+  await knex('DYBFBATCHPLAN')
+    .update({
+      MACHINEIDLIST: machineId,
+      PLANNEDMACHINE: machineId,
+      PLANNEDSTARTTIME: plannedStartTime,
+    })
+    .where({ PLANKEY: planKey })
+
+  await knex('PTBATCHPLANQUEUE')
+    .insert({
+      PLANKEY: planKey,
+      MACHINEID: machineId,
+      QUEUENUMBER: queueNumber,
+      STARTTIME: plannedStartTime,
+    })
+}
+// DELETE
+export async function deleteEvent(planKey: number) {
+  await knex('dbo.DYBFBATCHPLAN').update({ ISDELETED: 1 }).where('PLANKEY', '=', planKey)
+}
+export async function bulkDeleteEvents(planKeys: number[]) {
+  for (const key in planKeys) {
+    await knex('dbo.DYBFBATCHPLAN p').update({ ISDELETED: 1 }).where('p.planKey', '=', key)
   }
 }
