@@ -1,14 +1,38 @@
 <script setup lang="ts">
-import { getMachineCommands } from '~/utils'
-
-const { data: machines } = await useFetch('/api/command-timeout-reasons/command-map-machines')
-
 const selectedMachineId = ref()
-const machineCommands = ref()
+const tankNo = ref()
+const tankName = ref()
+const highLimit = ref()
+const machineConstantHighLimit = ref()
+
+const { data: machines } = useLazyFetch('/api/command-timeout-reasons/command-map-machines')
+
+const { data: highLimitOptions } = await useFetch('/api/machine-parameters/machine-parameters', {
+  immediate: false,
+  query: { machineId: selectedMachineId },
+  transform: (parameters) => {
+    return parameters.map((p) => {
+      return {
+        label: `${p.paramString} (${p.paramHighLimit})`,
+        value: p.paramHighLimit,
+      }
+    })
+  },
+})
 
 async function handleMachineClick(machineId: number) {
-  machineCommands.value = await getMachineCommands(machineId)
   selectedMachineId.value = machineId
+}
+
+async function handleTankDefinitionAdd() {
+  const tankDef = {
+    machineId: selectedMachineId.value,
+    tankNo: tankNo.value,
+    name: tankName.value,
+    highLimit: highLimit.value.value,
+    machineConstantHighLimit: machineConstantHighLimit.value,
+  }
+  await addTankDefinition(tankDef)
 }
 </script>
 
@@ -49,12 +73,24 @@ async function handleMachineClick(machineId: number) {
 
     <q-card-section class="w-3xl flex flex-col">
       <div class="flex flex-col">
-        <q-input label="Kazan no" />
-        <q-input label="Kazan Adı" />
-        <q-input label="Üst Limit Makine Sabiti" />
-        <q-input label="Üst Limit" />
+        <q-input v-model="tankNo" label="Kazan no" />
+        <q-input v-model="tankName" label="Kazan Adı" />
+        <q-select
+          v-model="highLimit"
+          :options="highLimitOptions"
+          label="Üst Limit Makine Sabiti"
+          option-label="label"
+          option-value="value"
+        />
+        <q-input v-model="machineConstantHighLimit" label="Üst Limit" />
+        <div>
+          <q-btn
+            label="Ekle"
+            no-caps
+            @click="handleTankDefinitionAdd"
+          />
+        </div>
       </div>
-
       <div class="grid">
         <q-table
           title="Transfer/Dozaj Komutları"
