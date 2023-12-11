@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const selectedMachineId = ref()
+const selectedDefinition = ref()
 const tankNo = ref()
 const tankName = ref()
 const highLimit = ref()
@@ -7,7 +8,12 @@ const machineConstantHighLimit = ref()
 
 const { data: machines } = useLazyFetch('/api/command-timeout-reasons/command-map-machines')
 
-const { data: highLimitOptions } = await useFetch('/api/machine-parameters/machine-parameters', {
+const { data: tankDefinitions, refresh: refreshDefinitions } = useLazyFetch('/api/tank-definitions/tank-definitions', {
+  immediate: false,
+  query: { machineId: selectedMachineId },
+})
+
+const { data: highLimitOptions } = useLazyFetch('/api/machine-parameters/machine-parameters', {
   immediate: false,
   query: { machineId: selectedMachineId },
   transform: (parameters) => {
@@ -24,6 +30,14 @@ async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
 }
 
+async function handleTankDefinitionClick(tankDef) {
+  selectedDefinition.value = tankDef.tankNo
+  tankNo.value = tankDef.tankNo
+  tankName.value = tankDef.name
+  highLimit.value = tankDef.highLimit
+  machineConstantHighLimit.value = tankDef.machineConstantHighLimit
+}
+
 async function handleTankDefinitionAdd() {
   const tankDef = {
     machineId: selectedMachineId.value,
@@ -33,6 +47,7 @@ async function handleTankDefinitionAdd() {
     machineConstantHighLimit: machineConstantHighLimit.value,
   }
   await addTankDefinition(tankDef)
+  await refreshDefinitions()
 }
 </script>
 
@@ -59,13 +74,14 @@ async function handleTankDefinitionAdd() {
       <h3>Kazan Tanımları</h3>
       <q-list bordered separator>
         <q-item
-          v-for="command in machineCommands"
-          :key="command.commandNo"
+          v-for="def in tankDefinitions"
+          :key="def"
           v-ripple
           clickable
+          @click="handleTankDefinitionClick(def)"
         >
           <q-item-section>
-            {{ command.commandName }}
+            {{ def.name }}
           </q-item-section>
         </q-item>
       </q-list>
@@ -73,16 +89,29 @@ async function handleTankDefinitionAdd() {
 
     <q-card-section class="w-3xl flex flex-col">
       <div class="flex flex-col">
-        <q-input v-model="tankNo" label="Kazan no" />
-        <q-input v-model="tankName" label="Kazan Adı" />
+        <q-input
+          v-model="tankNo"
+          label="Kazan no"
+          filled
+        />
+        <q-input
+          v-model="tankName"
+          label="Kazan Adı"
+          filled
+        />
         <q-select
           v-model="highLimit"
           :options="highLimitOptions"
           label="Üst Limit Makine Sabiti"
           option-label="label"
           option-value="value"
+          filled
         />
-        <q-input v-model="machineConstantHighLimit" label="Üst Limit" />
+        <q-input
+          v-model="machineConstantHighLimit"
+          filled
+          label="Üst Limit"
+        />
         <div>
           <q-btn
             label="Ekle"
