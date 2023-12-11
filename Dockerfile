@@ -26,7 +26,7 @@ COPY out/json/ ./
 RUN \
   --mount=type=cache,id=pnpm,target=/pnpm/store \
   --mount=type=secret,id=NPM_TOKEN,required=true \
-  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm install --offline --frozen-lockfile
+  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm install --offline --frozen-lockfile --ignore-scripts=false
 
 COPY out/full ./
 
