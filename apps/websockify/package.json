@@ -13,7 +13,8 @@
     "stub": "unbuild --stub",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "keycloak": "pnpm -C ../../keycloak keycloak"
   },
   "dependencies": {
     "knex": "^3.0.1",

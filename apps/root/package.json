@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "node -r dotenv/config index.js",
     "build": "./scripts/package.sh",
-    "start": "cd dist && node index.js"
+    "start": "cd dist && node index.js",
+    "keycloak": "pnpm -C ../../keycloak keycloak"
   },
   "dependencies": {
     "ejs": "^3.1.9",
