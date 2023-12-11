@@ -1,14 +1,24 @@
 <script setup lang="ts">
-import { getMachineCommands } from '~/utils'
-
-const { data: machines } = await useFetch('/api/command-timeout-reasons/command-map-machines')
-
 const selectedMachineId = ref()
-const machineCommands = ref()
+const selectedCommandNo = ref()
+
+const { data: machines } = useLazyFetch('/api/machines/active-machines')
+const { data: machineCommands } = await useLazyFetch('/api/master-commands/master-commands', {
+  immediate: false,
+  query: { machineId: selectedMachineId },
+})
+
+const { data: waterConsumptions } = await useLazyFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+  immediate: false,
+  query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
+})
 
 async function handleMachineClick(machineId: number) {
-  machineCommands.value = await getMachineCommands(machineId)
   selectedMachineId.value = machineId
+}
+
+async function handleCommandClick(commandNo: number) {
+  selectedCommandNo.value = commandNo
 }
 </script>
 
@@ -39,6 +49,7 @@ async function handleMachineClick(machineId: number) {
           :key="command.commandNo"
           v-ripple
           clickable
+          @click="handleCommandClick(command.commandNo)"
         >
           <q-item-section>
             {{ command.commandName }}

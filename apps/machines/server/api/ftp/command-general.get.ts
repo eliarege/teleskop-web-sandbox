@@ -17,7 +17,9 @@ export default defineEventHandler(async (event) => {
       activated: (command.activated === '1' && command.machineConstantId && command.machineConstantId !== -1) ? 1 : 0,
     }))
 
-    await knex('BFMASTERCOMMANDS').del()
+    await knex('BFMASTERCOMMANDS')
+      .where('MACHINEID', machineId)
+      .del()
     await knex('BFMASTERCOMMANDS').insert(generalCommands)
 
     return generalCommands
