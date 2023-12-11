@@ -1,5 +1,14 @@
 # Teleskop Web
 
+## Keycloak Setup
+
+```sh
+# At workspace root or in any app directory
+pnpm keycloak up
+# Wait until initialised (5-10 seconds)
+pnpm keycloak sync
+```
+
 ## Keycloak Integration
 
 ### Nuxt
@@ -175,11 +184,9 @@ Used to silently check if user is logged via `keycloak-js`.
 
 Details: https://www.keycloak.org/docs/23.0.1/securing_apps/#using-the-adapter
 
-### Fastify
+### `keycloak-fastify-adapter`
 
-#### `keycloak-fastify-adapter`
-
-##### Usage
+#### Usage
 
 ```ts
 import Fastify from 'fastify'
