@@ -1,9 +1,5 @@
 <script setup lang="ts">
-const machines = ref(await getMachines())
-
-const machineOptions = ref(machines.value.map((m) => {
-  return { label: m.code, value: m.code }
-}))
+import { getControllerClosedTimes } from '~/utils'
 
 const closedTimeOptions = ref([
   { label: 'Cihaz yeniden başlatıldı', value: 0 },
@@ -12,50 +8,62 @@ const closedTimeOptions = ref([
   { label: 'Diğer', value: 3 },
 ])
 
-const machineGroup = ref([])
-const closedTimeGroup = ref([])
-const dateRange = ref()
-
 const columns = [
   {
-    name: 'machineNo',
+    name: 'machineId',
     label: 'Makine No',
-    field: row => row.machineNo,
+    field: 'machineId',
     align: 'left',
   },
   {
-    name: 'machine',
+    name: 'machineName',
     label: 'Makine',
-    field: row => row.machineName,
+    field: 'machineName',
     align: 'left',
   },
   {
-    name: 'eventStart',
+    name: 'startTime',
     label: 'Başlangıç Tarihi',
-    field: row => row.eventStart,
+    field: 'startTime',
     align: 'left',
   },
 
   {
-    name: 'eventEnd',
+    name: 'endTime',
     label: 'Bitiş Tarihi',
-    field: row => row.eventEnd,
+    field: 'endTime',
     align: 'left',
   },
   {
     name: 'duration',
     label: 'Süre',
-    field: row => row.duration,
+    field: 'duration',
     align: 'left',
   },
   {
-    name: 'event',
+    name: 'closedType',
     label: 'Sebep',
-    field: row => row.event,
+    field: 'closedType',
     align: 'left',
   },
 ]
-const rows = ref([])
+
+const machineGroups = ref([])
+const closedTimeGroups = ref([])
+const machineOptions = ref([])
+const times = ref([])
+
+const { data: machines } = useLazyFetch('/api/machines/machines')
+
+watch(machines, (newValue, oldValue) => {
+  machineOptions.value = machines.value.map((m) => {
+    return { label: m.code, value: m.id }
+  })
+})
+
+async function loadTimes() {
+  times.value = await getControllerClosedTimes(machineGroups.value, closedTimeGroups.value)
+}
 </script>
 
 <template>
@@ -63,7 +71,7 @@ const rows = ref([])
     <q-card-section class="h-sm overflow-y-scroll">
       <h3>Makineler</h3>
       <q-option-group
-        v-model="machineGroup"
+        v-model="machineGroups"
         :options="machineOptions"
         type="checkbox"
       />
@@ -71,29 +79,32 @@ const rows = ref([])
     <q-card-section>
       <h3>Sebepler</h3>
       <q-option-group
-        v-model="closedTimeGroup"
+        v-model="closedTimeGroups"
         :options="closedTimeOptions"
         type="checkbox"
       />
     </q-card-section>
-    <q-card-section class="flex flex-col">
-      <q-date v-model="dateRange" range />
-      <q-btn class="mt-4">
-        Göster
-      </q-btn>
-    </q-card-section>
+    <q-btn @click="loadTimes">
+      Yükle
+    </q-btn>
   </q-card>
   <div class="table-scroll">
     <q-table
       selection="single"
-      :rows="rows"
+      :rows="times"
       :columns="columns"
       :pagination="{ rowsPerPage: 0 }"
       hide-pagination
       bordered
       separator="cell"
       table-header-class="table-header"
-    />
+    >
+      <template #body-cell-closedType="props">
+        <q-td :props="props">
+          {{ closedTimeOptions.find(o => o.value === props.row.closedType)?.label }}
+        </q-td>
+      </template>
+    </q-table>
   </div>
 </template>
 
