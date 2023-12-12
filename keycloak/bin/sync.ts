@@ -30,7 +30,6 @@ interface EliarMeta {
 
 interface AppRole {
   name: string
-  adminOnly: boolean
 }
 
 interface SyncedAppRole extends AppRole {
@@ -145,6 +144,7 @@ async function ensureUser(admin: KcAdminClient, username: string, representation
   const user = users.find(u => u.username === username)
   return user || admin.users.create({
     ...representation,
+    enabled: true,
     username,
   })
 }
@@ -317,10 +317,8 @@ async function main() {
   }
 
   const adminRoles = appList.flatMap(app => app.roles)
-  const userRoles = appList.flatMap(app => app.roles.filter(r => !r.adminOnly))
-
   const adminGroup = await syncGroupRoleMappings(admin, ADMIN_GROUP, adminRoles)
-  const userGroup = await syncGroupRoleMappings(admin, USER_GROUP, userRoles)
+  const userGroup = await syncGroupRoleMappings(admin, USER_GROUP, [])
 
   const adminUser = await ensureUser(admin, 'admin', {
     firstName: 'Admin',

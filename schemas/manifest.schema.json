@@ -11,10 +11,6 @@
           "name": {
             "type": "string",
             "description": "Role name"
-          },
-          "adminOnly": {
-            "type": "boolean",
-            "description": "Should role only be mapped to `admin` group"
           }
         },
         "required": ["name"]
