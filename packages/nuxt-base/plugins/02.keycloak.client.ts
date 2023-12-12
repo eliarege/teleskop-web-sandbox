@@ -4,11 +4,11 @@ import type { EventHookOn } from '@vueuse/core'
 
 export interface KeycloakPlugin {
   ready: Readonly<Ref<boolean>>
-  /** Did keycloak initialise? **/
+  /** Did keycloak initialise? */
   didInitialise: Readonly<Ref<boolean>>
-  /** Access Token **/
+  /** Access Token */
   token: Readonly<Ref<string | undefined>>
-  /** Is user authenticated **/
+  /** Is user authenticated */
   authenticated: Readonly<Ref<boolean>>
   userProfile: Readonly<Ref<KeycloakProfile | undefined>>
   userInfo: Readonly<Ref<Record<string, any> | undefined>>
@@ -109,14 +109,14 @@ export default defineNuxtPlugin(() => {
     initPromise = keycloak.init({
       onLoad: 'login-required',
       locale: locale.value || 'en-US',
-      enableLogging: appConfig.enableKeycloakLogging
+      enableLogging: appConfig.enableKeycloakLogging,
     })
   } else {
     initPromise = keycloak.init({
       onLoad: 'check-sso',
       silentCheckSsoRedirectUri: `${location.origin}/api/check-sso`,
       messageReceiveTimeout: 5000,
-      enableLogging: appConfig.enableKeycloakLogging
+      enableLogging: appConfig.enableKeycloakLogging,
     })
   }
 
