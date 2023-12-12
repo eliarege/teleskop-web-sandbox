@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
 import { getControllerClosedTimes } from '~/utils'
 
 const closedTimeOptions = ref([
@@ -89,22 +91,26 @@ async function loadTimes() {
     </q-btn>
   </q-card>
   <div class="table-scroll">
-    <q-table
-      selection="single"
+    <FilterableTable
       :rows="times"
       :columns="columns"
-      :pagination="{ rowsPerPage: 0 }"
-      hide-pagination
-      bordered
-      separator="cell"
-      table-header-class="table-header"
     >
-      <template #body-cell-closedType="props">
-        <q-td :props="props">
-          {{ closedTimeOptions.find(o => o.value === props.row.closedType)?.label }}
-        </q-td>
+      <template #custombody="times">
+        <q-tr>
+          <q-td
+            v-for="row in times.cols"
+            :key="row"
+          >
+            <span v-if="row.field === 'closedType'">
+              {{ closedTimeOptions.find(o => o.value === row.value)?.label }}
+            </span>
+            <span v-else>
+              {{ row.value }}
+            </span>
+          </q-td>
+        </q-tr>
       </template>
-    </q-table>
+    </FilterableTable>
   </div>
 </template>
 
