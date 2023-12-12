@@ -23,6 +23,21 @@ const { data: waterParams } = useLazyFetch('/api/commands/command-parameters', {
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })
 
+const { data: waterConsumptions } = useLazyFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+  immediate: false,
+  query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
+})
+
+watch([waterConsumptions, waterParams], ([newCons, newParams], [oldCons, oldParams]) => {
+  console.log('waterParams.value = ', waterParams.value)
+  if (waterConsumptions && waterConsumptions.value) {
+    const command = waterConsumptions.value[0]
+    waterIO1.value = waterIO.value.find(io => io.ioIndex === command.commandIO)
+    waterIO2.value = waterIO.value.find(io => io.ioIndex === command.commandIO2)
+    waterParam.value = waterParams.value.find(io => io.parameterIndex === command.commandParameter)
+  }
+})
+
 async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
 }
