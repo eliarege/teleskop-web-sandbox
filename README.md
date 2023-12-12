@@ -1,5 +1,6 @@
 # Teleskop Web
 
+
 ## Keycloak
 
 ### Setup
@@ -32,11 +33,23 @@ In this realm, there are:
 Everytime you run `pnpm keycloak sync`, client and role information is updated to the current state of files.
 
 
-## Keycloak Integration
 
-### Nuxt
+## Integrating Apps to Keycloak
 
-#### Nuxt Configuration
+Define application roles (or permissions) in `manifest.json`
+```jsonc
+// manifest.json
+{
+  "roles": [
+    { "name": "access-vnc" },
+    { "name": "manage-vnc" }
+  ]
+}
+```
+
+## Nuxt Keycloak Integration
+
+### Configuration
 
 ```ts
 // nuxt.config.ts
@@ -51,19 +64,19 @@ export default defineNuxtConfig({
 })
 ```
 
-##### `kcUrl`
+#### `kcUrl`
 
 Configurable via `NUXT_PUBLIC_KC_URL` environment variable. Keycloak URL.
 
-##### `kcRealm`
+#### `kcRealm`
 
 Configurable via `NUXT_PUBLIC_KC_REALM` environment variable. Keycloak Realm, default is `teleskop-web`.
 
-##### `kcClientId`
+#### `kcClientId`
 
 Configurable via `NUXT_PUBLIC_KC_CLIENT_ID` environment variable. Keycloak Client ID, should be same as app name.
 
-#### App Configuration
+### App Configuration
 
 ```ts
 // app.config.ts
@@ -75,21 +88,23 @@ export default defineAppConfig({
 })
 ```
 
-##### `minimumTokenValidity`
+#### `minimumTokenValidity`
 
 Access tokens are refreshed if it expires within `minimumTokenValidity` seconds.
 
-##### `globalAuthMiddleware`
+#### `globalAuthMiddleware`
 
 Adds `auth` middleware as global middleware. Meaning every page in app requires authentication. See middlewares for more details.
 
-##### `loginRequired`
+#### `loginRequired`
 
 Redirects user to login page if the user is not logged in. Default: `false`.
 
-##### `enableKeycloakLogging`
+#### `enableKeycloakLogging`
 
 Enables logging of `keycloak-js`
+
+### Features
 
 #### Composables
 
@@ -164,14 +179,12 @@ interface KeycloakPlugin {
 
 ##### `auth`
 
-```vue
-<script setup>
+```ts
 // pages/example.vue
 definePageMeta({
   middleware: ['auth'],
   roles: ['client-role']
 })
-</script>
 ```
 
 Use `auth` middleware to enforce user to be authenticated. Will redirect to login page if not logged in.
@@ -180,13 +193,11 @@ If the user does not have the required roles, user will be redirected to `unauth
 
 You can set `globalAuthMiddleware` to `true` to add this middleware to every page. If `globalAuthMiddleware` is enabled and you want to disable the middleware for only select pages, you can use the `noAuth` option in `definePageMeta`.
 
-```vue
-<script setup>
+```ts
 // pages/example.vue
 definePageMeta({
   noAuth: true
 })
-</script>
 ```
 
 #### Pages
@@ -197,17 +208,45 @@ Unauthorized requests should be redirected to this page.
 
 #### Server
 
-##### `/properties`
+##### `/api/properties`
 
 Returns app properties in production.
 
-##### `/check-sso`
+##### `/api/check-sso`
 
 Used to silently check if user is logged via `keycloak-js`.
 
 Details: https://www.keycloak.org/docs/23.0.1/securing_apps/#using-the-adapter
 
-### `keycloak-fastify-adapter`
+#### Server Utils
+
+##### `defineAuthEventHandler`
+
+Created authorized endpoints in nuxt
+
+```ts
+export default defineAuthEventHandler(() => {
+  return 'Hello User'
+})
+```
+
+```ts
+export default defineAuthEventHandler({
+  roles: ['priviledged-access'],
+  handler() {
+    return 'Hello Admin'
+  }
+})
+```
+
+```ts
+export default defineAuthEventHandler((event) => {
+  // Access authenticated user details
+  event.context.kauth.name
+})
+```
+
+## Fastify Keycloak Integration
 
 #### Usage
 
@@ -233,7 +272,8 @@ app.get('/authorized-request', {
   auth: {
     roles: ['client-role']
   },
-}, () => {
+}, (req) => {
+  req.kauth.name // Authenticated user details
   return 'Authorized'
 })
 ```
