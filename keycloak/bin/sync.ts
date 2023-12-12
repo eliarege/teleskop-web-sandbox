@@ -4,11 +4,13 @@ import { fileURLToPath } from 'node:url'
 import process from 'node:process'
 import consola from 'consola'
 import objectHash from 'object-hash'
-import Ajv, { ErrorObject } from 'ajv'
+import type { ErrorObject } from 'ajv'
+import Ajv from 'ajv'
 import KcAdminClient from '@keycloak/keycloak-admin-client'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
 import type RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation'
+import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 
 interface PackageJSON {
   name: string
@@ -138,7 +140,16 @@ async function ensureRealm(admin: KcAdminClient, realmName: string): Promise<voi
   }
 }
 
-async function syncClient(admin: KcAdminClient, app: App, clients: ClientRepresentation[], ): Promise<string> {
+async function ensureUser(admin: KcAdminClient, username: string, representation: Omit<UserRepresentation, 'username'>): Promise<UserRepresentation> {
+  const users = await admin.users.find()
+  const user = users.find(u => u.username === username)
+  return user || admin.users.create({
+    ...representation,
+    username,
+  })
+}
+
+async function syncClient(admin: KcAdminClient, app: App, clients: ClientRepresentation[]): Promise<string> {
   const clientRepresentation = getClientRepresentation(app)
   const currentHash = objectHash(clientRepresentation)
   const client = clients.find(c => c.clientId === app.name)
@@ -203,7 +214,7 @@ async function syncClientRoles(admin: KcAdminClient, clientId: string, clientNam
   }))
 }
 
-async function syncGroupRoleMappings(admin: KcAdminClient, groupName: string, roles: SyncedAppRole[]) {
+async function syncGroupRoleMappings(admin: KcAdminClient, groupName: string, roles: SyncedAppRole[]): Promise<GroupRepresentation> {
   const group = await ensureGroup(admin, groupName)
   const { clientMappings = {} } = await admin.groups.listRoleMappings({ id: group.id! }) as MappingsRepresentation
 
@@ -249,6 +260,8 @@ async function syncGroupRoleMappings(admin: KcAdminClient, groupName: string, ro
   if (changesMade) {
     consola.info(`Updated role mappings of group "${groupName}"`)
   }
+
+  return group
 }
 
 function serializeAjvErrors(errors: ErrorObject[]) {
@@ -258,8 +271,8 @@ function serializeAjvErrors(errors: ErrorObject[]) {
 async function main() {
   const ajv = new Ajv({
     schemas: {
-      'https://json.schemastore.org/package': true
-    }
+      'https://json.schemastore.org/package': true,
+    },
   })
   const manifestSchema = await readJSON(join(SCHEMA_DIR, 'manifest.schema.json'))
   const packageSchema = await readJSON(join(SCHEMA_DIR, 'package.schema.json'))
@@ -306,8 +319,33 @@ async function main() {
   const adminRoles = appList.flatMap(app => app.roles)
   const userRoles = appList.flatMap(app => app.roles.filter(r => !r.adminOnly))
 
-  await syncGroupRoleMappings(admin, ADMIN_GROUP, adminRoles)
-  await syncGroupRoleMappings(admin, USER_GROUP, userRoles)
+  const adminGroup = await syncGroupRoleMappings(admin, ADMIN_GROUP, adminRoles)
+  const userGroup = await syncGroupRoleMappings(admin, USER_GROUP, userRoles)
+
+  const adminUser = await ensureUser(admin, 'admin', {
+    firstName: 'Admin',
+    lastName: 'At Eliar',
+    email: 'admin@eliar.com',
+    credentials: [
+      { type: 'password', value: 'password' },
+    ],
+  })
+  const generalUser = await ensureUser(admin, 'user', {
+    firstName: 'Eliar',
+    lastName: 'At Eliar',
+    email: 'user@eliar.com',
+    credentials: [
+      { type: 'password', value: 'passowrd' },
+    ],
+  })
+
+  if (!adminUser.groups || !adminUser.groups.includes(ADMIN_GROUP)) {
+    await admin.users.addToGroup({ id: adminUser.id!, groupId: adminGroup.id! })
+  }
+  if (!generalUser.groups || !generalUser.groups.includes(USER_GROUP)) {
+    await admin.users.addToGroup({ id: generalUser.id!, groupId: userGroup.id! })
+  }
+
   consola.info('Synchronization complete')
 }
 
