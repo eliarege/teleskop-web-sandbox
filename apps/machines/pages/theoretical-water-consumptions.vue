@@ -2,6 +2,10 @@
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 
+const waterIO1 = ref()
+const waterIO2 = ref()
+const waterParam = ref()
+
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
 const { data: machineCommands } = useLazyFetch('/api/master-commands/master-commands', {
   immediate: false,
@@ -24,6 +28,18 @@ async function handleMachineClick(machineId: number) {
 async function handleCommandClick(commandNo: number) {
   selectedCommandNo.value = commandNo
 }
+const filteredWaterIO1Options = computed(() => {
+  // Filter waterIO options based on waterIO2 selection
+  return (waterIO.value && waterIO2.value)
+    ? waterIO.value.filter(io => io.ioIndex !== waterIO2.value.ioIndex)
+    : waterIO.value ? waterIO.value : []
+})
+const filteredWaterIO2Options = computed(() => {
+  // Filter waterIO options based on waterIO1 selection
+  return (waterIO.value && waterIO1.value)
+    ? waterIO.value.filter(io => io.ioIndex !== waterIO1.value.ioIndex)
+    : waterIO.value ? waterIO.value : []
+})
 </script>
 
 <template>
@@ -66,12 +82,14 @@ async function handleCommandClick(commandNo: number) {
       <div class="flex flex-col">
         <h3>Su Kaynağı - IO</h3>
         <q-select
-          :options="waterIO"
+          v-model="waterIO1"
+          :options="filteredWaterIO1Options"
           option-label="name"
           option-value="ioIndex"
         />
         <q-select
-          :options="waterIO"
+          v-model="waterIO2"
+          :options="filteredWaterIO2Options"
           option-label="name"
           option-value="ioIndex"
         />
@@ -79,6 +97,7 @@ async function handleCommandClick(commandNo: number) {
       <div class="w-xs flex flex-col">
         <h3>Su Miktarı - Parametre</h3>
         <q-select
+          v-model="waterParam"
           :options="waterParams"
           option-label="paramString"
           option-value="parameterIndex"
