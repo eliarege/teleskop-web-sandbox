@@ -3,17 +3,16 @@ const selectedMachineId = ref()
 const selectedCommandNo = ref()
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
-const { data: machineCommands } = await useLazyFetch('/api/master-commands/master-commands', {
+const { data: machineCommands } = useLazyFetch('/api/master-commands/master-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
-
-/* const { data: waterConsumptions } = await useLazyFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+const { data: waterIO } = useLazyFetch('/api/IO/command-io-all', {
   immediate: false,
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
-}) */
+})
 
-const { data: waterIO } = await useLazyFetch('/api/IO/command-io-all', {
+const { data: waterParams } = useLazyFetch('/api/commands/command-parameters', {
   immediate: false,
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })
@@ -79,7 +78,11 @@ async function handleCommandClick(commandNo: number) {
       </div>
       <div class="w-xs flex flex-col">
         <h3>Su Miktarı - Parametre</h3>
-        <q-select />
+        <q-select
+          :options="waterParams"
+          option-label="paramString"
+          option-value="parameterIndex"
+        />
       </div>
     </q-card-section>
   </q-card>

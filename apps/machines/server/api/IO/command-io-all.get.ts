@@ -9,6 +9,8 @@ export default defineEventHandler(async (event) => {
         COMMANDNO: commandNo,
       })
       .select({
+        machineId: 'MACHINEID',
+        commandNo: 'COMMANDNO',
         ioIndex: 'IOINDEX',
         ioId: 'IOID',
         ioType: 'IOTYPE',
