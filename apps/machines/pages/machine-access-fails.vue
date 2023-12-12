@@ -11,7 +11,7 @@ const accessFailOptions = ref([
 
 const columns: Column[] = [
   {
-    name: 'machine',
+    name: 'machineName',
     label: 'Makine',
     field: 'machineName',
     align: 'left',
@@ -95,28 +95,27 @@ async function loadFails() {
     </q-btn>
   </q-card>
   <div class="table-scroll">
-    <!--     <FilterableTable
+    <FilterableTable
       :rows="fails"
       :columns="columns"
       @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-    />
- -->
-    <q-table
-      selection="single"
-      :rows="fails"
-      :columns="columns"
-      :pagination="{ rowsPerPage: 0 }"
-      hide-pagination
-      bordered
-      separator="cell"
-      table-header-class="table-header"
     >
-      <template #body-cell-eventCode="props">
-        <q-td :props="props">
-          {{ accessFailOptions.find(o => o.value === props.row.eventCode)?.label }}
-        </q-td>
+      <template #custombody="fails">
+        <q-tr>
+          <q-td
+            v-for="row in fails.cols"
+            :key="row"
+          >
+            <span v-if="row.field === 'eventCode'">
+              {{ accessFailOptions.find(o => o.value === row.value)?.label }}
+            </span>
+            <span v-else>
+              {{ row.value }}
+            </span>
+          </q-td>
+        </q-tr>
       </template>
-    </q-table>
+    </filterabletable>
   </div>
 </template>
 
