@@ -1,6 +1,8 @@
 # Teleskop Web
 
-## Keycloak Setup
+## Keycloak
+
+### Setup
 
 ```sh
 # At workspace root or in any app directory
@@ -8,6 +10,27 @@ pnpm keycloak up
 # Wait until initialised (5-10 seconds)
 pnpm keycloak sync
 ```
+
+### Details
+
+When keycloak is ready, you can access it from http://localhost:8080.
+
+Admin credentials are:
+
+- Username: admin
+- Password: password
+
+`teleskop-web` realm is created.
+
+In this realm, there are:
+
+- Two groups, `admin` and `user`
+- Two users, `admin` and `user` mapped to their respective groups. (Their credentials are `password`)
+- Clients named after the `apps`
+- Clients with roles that are defined via `manifest.json`
+
+Everytime you run `pnpm keycloak sync`, client and role information is updated to the current state of files.
+
 
 ## Keycloak Integration
 
