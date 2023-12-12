@@ -66,3 +66,27 @@ export interface UnplannedEvents extends UnplannedEventsRaw {
   durationUnit: 'millisecond' | 'second' | 'minute' | 'hour' | 'day'
   constraintDate: string | Date
 }
+export interface RecipeRaw {
+  planKey: number | null
+  recIndex: number | null
+  recNo: number | null
+  name: string | null
+  reqNumber: number | null
+  mainStep: number | null
+  parallelStep: number | null
+  recType: number | null
+  chemCode: string | null
+  materialName: string | null
+  amount: number | null
+  reqBatchNo: number | null
+  reqProgNo: number | null
+  otherUnit: number | null
+  phaseNo: number | null
+  phaseIndex: number | null
+  washingName: string | null
+  unit: number
+}
+export interface Recipe {
+  autoRecipe: RecipeRaw[]
+  manualRecipe: RecipeRaw[]
+}

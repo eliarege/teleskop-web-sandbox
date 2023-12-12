@@ -3,6 +3,7 @@
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { DateField, DateHelper, DatePicker, Label, PanelCollapser, Splitter, Toast } from '@bryntum/schedulerpro-trial'
 import { EliarModal } from 'ui'
+import { matDisplaySettings, matEditCalendar, matPendingActions, matPreview } from '@quasar/extras/material-icons'
 import { Drag, Schedule, Task, UnplannedGrid } from '~/lib/bryntum'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
@@ -23,7 +24,7 @@ const showModal = reactive({
   },
   recipe: {
     show: false,
-    unit: { name: '' },
+    unit: { machineId: 0, jobOrder: '' },
   },
   process: {
     show: false,
@@ -40,11 +41,38 @@ const showModal = reactive({
   datePicker: false,
   settings: false,
 })
-const tab = ref('mails')
+const ptSettings = reactive([
+  {
+    name: 'view',
+    icon: matPreview,
+    label: 'Görünüm',
+    panel: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.',
+  },
+  {
+    name: 'general',
+    icon: matEditCalendar,
+    label: 'Genel',
+    panel: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.',
+  },
+  {
+    name: 'settings',
+    icon: matDisplaySettings,
+    label: 'Gösterge Seçenekleri',
+    panel: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.',
+  },
+  {
+    name: 'unplanned',
+    icon: matPendingActions,
+    label: 'Bekleyen İş Emirleri',
+    panel: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.',
+  },
+],
+)
+const tab = ref(ptSettings[0].name)
 const splitterModel = ref(20)
 
 const { data: machines } = await useFetch('/api/machineList')
-const { data: events } = await useFetch('/api/plannedEvents', {
+const { data: events, refresh } = await useFetch('/api/plannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
 const { data: unScheduledEvents } = await useFetch('/api/unplannedEvents', {
@@ -81,9 +109,20 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((u
     constraintDate: new Date(),
   } as UnplannedEvents
 }))
-let schedule: SchedulerPro | null = null
+async function unPlanEvent(planKey: number) {
+  await $fetch('/api/unplan', {
+    method: 'PUT',
+    query: { planKey },
+  }).then(() => refresh())
+}
+async function deleteEvent(planKey: number) {
+  await $fetch('api/delete', {
+    method: 'PUT',
+    query: { planKey },
+  })
+}
 onMounted(() => {
-  const _schedule: SchedulerPro = schedule = new Schedule({
+  const schedule: SchedulerPro = new Schedule({
     ref: 'schedule',
     appendTo: 'main',
     multiEventSelect: false,
@@ -112,17 +151,17 @@ onMounted(() => {
     listeners: {
       eventSelectionChange({ action }: any) {
         if (action === 'select' || action === 'update') {
-          _schedule.widgetMap.parameterButton.disabled = false
-          _schedule.widgetMap.recipeButton.disabled = false
-          _schedule.widgetMap.processButton.disabled = false
-          _schedule.widgetMap.theoreticalButton.disabled = false
-          _schedule.widgetMap.noteButton.disabled = false
+          schedule.widgetMap.parameterButton.disabled = false
+          schedule.widgetMap.recipeButton.disabled = false
+          schedule.widgetMap.processButton.disabled = false
+          schedule.widgetMap.theoreticalButton.disabled = false
+          schedule.widgetMap.noteButton.disabled = false
         } else {
-          _schedule.widgetMap.parameterButton.disabled = true
-          _schedule.widgetMap.recipeButton.disabled = true
-          _schedule.widgetMap.processButton.disabled = true
-          _schedule.widgetMap.theoreticalButton.disabled = true
-          _schedule.widgetMap.noteButton.disabled = true
+          schedule.widgetMap.parameterButton.disabled = true
+          schedule.widgetMap.recipeButton.disabled = true
+          schedule.widgetMap.processButton.disabled = true
+          schedule.widgetMap.theoreticalButton.disabled = true
+          schedule.widgetMap.noteButton.disabled = true
         }
       },
     },
@@ -165,6 +204,7 @@ onMounted(() => {
       unit: 'minute',
       increment: 5,
     },
+    useInitialAnimation: false,
     features: {
       scheduleContext: {
         disabled: true,
@@ -175,6 +215,47 @@ onMounted(() => {
         items: {
           addEvent: {
             hidden: true,
+          },
+          copyEvent: {
+            hidden: true,
+          },
+          cutEvent: {
+            hidden: true,
+          },
+          deleteEvent: {
+            hidden: true,
+          },
+          splitEvent: {
+            hidden: true,
+          },
+        },
+      },
+      eventMenu: {
+        items: {
+          taskEdit: {
+            icon: 'b-fa-sharp b-fa-light b-fa-pen-to-square',
+            text: 'Update Event',
+            disabled: true,
+            onItem({ eventRecord }: any) {
+            },
+          },
+          delete: {
+            icon: 'b-fa-solid b-fa-trash',
+            text: 'Delete Event',
+            onItem({ eventRecord }: any) {
+              deleteEvent(eventRecord.originalData.id)
+                .then(() => eventRecord.unassign())
+                .catch(err => console.error(err))
+            },
+          },
+          unplan: {
+            icon: 'b-fa-solid b-fa-calendar-xmark',
+            text: 'Remove from plan',
+            onItem({ eventRecord }: any) {
+              unPlanEvent(eventRecord.originalData.id)
+                .then(() => eventRecord.unassign())
+                .catch(err => console.error(err))
+            },
           },
           copyEvent: {
             hidden: true,
@@ -210,7 +291,7 @@ onMounted(() => {
         color: 'toolbar-buttons',
         onClick() {
           showModal.planParameters.show = true
-          showModal.planParameters.unit.name = _schedule.selectedEvents[0].name
+          showModal.planParameters.unit.name = schedule.selectedEvents[0].name
         },
       },
       {
@@ -222,7 +303,10 @@ onMounted(() => {
         color: 'toolbar-buttons',
         onClick() {
           showModal.recipe.show = true
-          showModal.recipe.unit.name = _schedule.selectedEvents[0].name
+          showModal.recipe.unit.jobOrder = schedule.selectedEvents[0].name
+          console.log(schedule.selectedEvents[0]._data)
+          // @ts-expect-error type error
+          showModal.recipe.unit.machineId = schedule.selectedEvents[0]._data.resourceId
         },
       },
       {
@@ -234,7 +318,7 @@ onMounted(() => {
         color: 'toolbar-buttons',
         onClick() {
           showModal.process.show = true
-          showModal.process.unit.name = _schedule.selectedEvents[0].name
+          showModal.process.unit.name = schedule.selectedEvents[0].name
         },
       },
       {
@@ -246,7 +330,7 @@ onMounted(() => {
         color: 'toolbar-buttons',
         onClick() {
           showModal.theoreticalProgram.show = true
-          showModal.theoreticalProgram.unit.name = _schedule.selectedEvents[0].name
+          showModal.theoreticalProgram.unit.name = schedule.selectedEvents[0].name
         },
       },
       {
@@ -258,7 +342,7 @@ onMounted(() => {
         color: 'toolbar-buttons',
         onClick() {
           showModal.notes.show = true
-          showModal.notes.unit.name = _schedule.selectedEvents[0].name
+          showModal.notes.unit.name = schedule.selectedEvents[0].name
         },
       },
       {
@@ -284,14 +368,14 @@ onMounted(() => {
         icon: 'b-icon-search-plus',
         tooltip: 'Yakınlaştır',
         color: 'toolbar-buttons',
-        onAction: () => _schedule.zoomIn(),
+        onAction: () => schedule.zoomIn(),
       },
       {
         type: 'button',
         icon: 'b-icon b-icon-search-minus',
         tooltip: 'Uzaklaştır',
         color: 'toolbar-buttons',
-        onAction: () => _schedule.zoomOut(),
+        onAction: () => schedule.zoomOut(),
       },
     ],
   } as Partial<SchedulerProConfig>)
@@ -326,7 +410,7 @@ onMounted(() => {
       },
     ],
     flex: '0 1 300px',
-    project: _schedule.project,
+    project: schedule.project,
     store: {
       data: modifiedUnscheduledEvents.value,
       modelClass: Task,
@@ -335,7 +419,7 @@ onMounted(() => {
   } as Partial<GridConfig>)
   new Drag({
     grid: unplannedGrid,
-    schedule: _schedule,
+    schedule,
     constrain: false,
     outerElement: unplannedGrid.element,
   } as Partial<DragHelperConfig>)
@@ -359,31 +443,22 @@ onMounted(() => {
     </EliarModal>
     <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
       <template #default>
-        <div class="flex justify-center w-1/3 m-auto rounded bg-white!" @click.stop.prevent>
+        <div class="bg-white!" @click.stop.prevent>
           <q-splitter
             v-model="splitterModel"
-            style="height: 450px"
           >
             <template #before>
               <q-tabs
                 v-model="tab"
                 vertical
-                class="text-teal"
+                class="text-blue"
               >
                 <q-tab
-                  name="mails"
-                  icon="mail"
-                  label="Mails"
-                />
-                <q-tab
-                  name="alarms"
-                  icon="alarm"
-                  label="Alarms"
-                />
-                <q-tab
-                  name="movies"
-                  icon="movie"
-                  label="Movies"
+                  v-for="(item, idx) in ptSettings"
+                  :key="idx"
+                  :name="item.name"
+                  :icon="item.icon"
+                  :label="item.label"
                 />
               </q-tabs>
             </template>
@@ -397,29 +472,14 @@ onMounted(() => {
                 transition-prev="jump-up"
                 transition-next="jump-up"
               >
-                <q-tab-panel name="mails">
-                  <div class="text-h4 q-mb-md">
-                    Mails
+                <q-tab-panel
+                  v-for="(item, idx) in ptSettings"
+                  :key="idx"
+                  :name="item.name"
+                >
+                  <div>
+                    {{ item.panel }}
                   </div>
-                  <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
-                  <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
-                </q-tab-panel>
-
-                <q-tab-panel name="alarms">
-                  <div class="text-h4 q-mb-md">
-                    Alarms
-                  </div>
-                  <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
-                  <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
-                </q-tab-panel>
-
-                <q-tab-panel name="movies">
-                  <div class="text-h4 q-mb-md">
-                    Movies
-                  </div>
-                  <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
-                  <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
-                  <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
                 </q-tab-panel>
               </q-tab-panels>
             </template>
@@ -436,8 +496,8 @@ onMounted(() => {
     </EliarModal>
     <EliarModal v-if="showModal.recipe.show" @click.stop="showModal.recipe.show = false">
       <template #default>
-        <div class="w-full bg-white e-border p-3">
-          recipe: {{ showModal.recipe.unit.name }}
+        <div class="!w-80vw !h-full">
+          <PlanRecipe :machine-id="showModal.recipe.unit.machineId" :job-order="showModal.recipe.unit.jobOrder" />
         </div>
       </template>
     </EliarModal>

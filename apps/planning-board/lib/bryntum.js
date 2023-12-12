@@ -192,8 +192,8 @@ export class Drag extends DragHelper {
         planKey: task.originalData.id,
         machineId: machine,
         plannedStartTime: startDate,
+        theoreticalDuration: task.originalData.theoricalDuration,
       }
-      console.log(newEvent)
       AjaxHelper.post('/api/planningBoardPost', newEvent, { credentials: 'omit' })
         .then(() => schedule.renderRows())
       Toast.show('Event saved')
@@ -312,7 +312,6 @@ export class Schedule extends SchedulerPro {
           machineId: context.newResource.originalData.id,
           plannedStartDate: context.startDate,
         }
-        console.log(updatedEvent)
         AjaxHelper.post('/api/planningBoardUpdate', updatedEvent, { credentials: 'omit' })
           .then(() => this.renderRows())
       },

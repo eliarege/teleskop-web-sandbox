@@ -1,6 +1,5 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import { getPlannedEvents, getUnplannedEvents } from '../composables/query'
-import { knex } from '../knexConfig'
+import { deleteEvent, getPlannedEvents, getRecipe, getUnplannedEvents, removeFromPlan, scheduleEvents, updateEvents } from '../composables/query'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get('/planning_board/scheduled_events', async (request: FastifyRequest<{
@@ -11,7 +10,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       if (!from || !to) {
         return reply.code(400).send({ error: 'Both "from" and "to" parameters are required.' })
       }
-      const plannedEvents = (await getPlannedEvents(from, to))
+      const plannedEvents = await getPlannedEvents(from, to)
       return reply.code(200).send(plannedEvents)
     } catch (err) {
       fastify.log.error(err)
@@ -35,18 +34,28 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   }>('/planning_board/scheduled_events/update', async (request, reply) => {
     try {
       const { planKey, machineId, plannedStartTime } = request.body
-      await knex('PTBATCHPLANQUEUE')
-        .update({ MACHINEID: machineId })
-        .where({ PLANKEY: planKey })
-
-      await knex('DYBFBATCHPLAN')
-        .update({
-          MACHINEIDLIST: machineId,
-          PLANNEDMACHINE: machineId,
-          PLANNEDSTARTTIME: plannedStartTime,
-        })
-        .where({ PLANKEY: planKey })
-      return reply.code(200).send('Succesfull!')
+      await updateEvents(planKey, machineId, plannedStartTime)
+      return reply.code(200).send('Succesful!')
+    } catch (err) {
+      fastify.log.error(err)
+      return reply.code(500).send({ error: 'Internal Server Error' })
+    }
+  })
+  fastify.put<{ Querystring: { planKey: number } }>('/planning_board/unplan', async (request, reply) => {
+    try {
+      const { planKey } = request.query
+      await removeFromPlan(planKey)
+      return reply.code(200).send('Succesful!')
+    } catch (err) {
+      fastify.log.error(err)
+      return reply.code(500).send({ error: 'Internal Server Error' })
+    }
+  })
+  fastify.put<{ Querystring: { planKey: number } }>('/planning_board/delete', async (request, reply) => {
+    try {
+      const { planKey } = request.query
+      await deleteEvent(planKey)
+      return reply.code(200).send('Succesful!')
     } catch (err) {
       fastify.log.error(err)
       return reply.code(500).send({ error: 'Internal Server Error' })
@@ -57,29 +66,23 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   }>('/planning_board/unscheduled_events/schedule', async (request, reply) => {
     try {
       const { planKey, machineId, plannedStartTime } = request.body
-      const queueNumber = (await knex.raw(`SELECT TOP 1 p.QUEUENUMBER + 1 as queue FROM PTBATCHPLANQUEUE p WHERE p.MACHINEID = ${machineId} ORDER BY p.QUEUENUMBER DESC`))[0].queue
-      console.log(queueNumber)
-      await knex('DYBFBATCHPLAN')
-        .update({
-          MACHINEIDLIST: machineId,
-          PLANNEDMACHINE: machineId,
-          PLANNEDSTARTTIME: plannedStartTime,
-        })
-        .where({ PLANKEY: planKey })
-
-      await knex('PTBATCHPLANQUEUE')
-        .insert({
-          PLANKEY: planKey,
-          MACHINEID: machineId,
-          QUEUENUMBER: queueNumber,
-          STARTTIME: plannedStartTime,
-        })
-
+      await scheduleEvents(planKey, machineId, plannedStartTime)
       return reply.code(200).send('Succesfull!')
     } catch (err) {
       console.error(err)
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
   })
+  fastify.get('/planning_board/recipe', async (request: FastifyRequest<{ Querystring: { machineId: string; jobOrder: string } }>, reply) => {
+    try {
+      const { jobOrder, machineId } = request.query
+      const recipe = await getRecipe(machineId, jobOrder)
+      return reply.code(200).send(recipe)
+    } catch (err) {
+      fastify.log.error(`Error fetching recipe: ${err.message}`)
+      return reply.code(500).send({ error: 'Internal Server Error' })
+    }
+  })
+
   done()
 }
