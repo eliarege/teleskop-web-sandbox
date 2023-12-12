@@ -14,7 +14,6 @@ export default defineNuxtConfig({
     strict: true,
   },
   runtimeConfig: {
-    kcClientId: 'multi-monitor',
     teleskopHost: 'localhost',
     teleskopUser: '',
     teleskopPort: '1433',
@@ -24,6 +23,7 @@ export default defineNuxtConfig({
     machineStatusUrl: 'http://machine-status',
     isStaging: 'false',
     public: {
+      kcClientId: 'multi-monitor',
       isDigitalFactory: 'false',
       teleskopHasLogs: 'true',
       websockifyPort: '6800',

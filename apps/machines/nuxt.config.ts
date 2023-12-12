@@ -6,12 +6,14 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   extends: ['nuxt-base'],
   runtimeConfig: {
-    kcClientId: 'machines',
     teleskopHost: 'localhost',
     teleskopUser: 'EliarClient',
     teleskopPort: '1433',
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
+    public: {
+      kcClientId: 'machines',
+    },
   },
   nitro: {
     rollupConfig: {
