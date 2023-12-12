@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { upsertTheoreticalWaterConsumption } from '~/utils'
+
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 
@@ -40,6 +42,17 @@ const filteredWaterIO2Options = computed(() => {
     ? waterIO.value.filter(io => io.ioIndex !== waterIO1.value.ioIndex)
     : waterIO.value ? waterIO.value : []
 })
+
+async function handleSelectionChange(data, columnName) {
+  const obj = {
+    machineId: selectedMachineId.value,
+    commandNo: selectedCommandNo.value,
+    commandIO: waterIO1.value ? waterIO1.value.ioIndex : undefined,
+    commandIO2: waterIO2.value ? waterIO2.value.ioIndex : undefined,
+    commandParameter: waterParam.value ? waterParam.value.parameterIndex : undefined,
+  }
+  await upsertTheoreticalWaterConsumption(obj)
+}
 </script>
 
 <template>
@@ -86,12 +99,14 @@ const filteredWaterIO2Options = computed(() => {
           :options="filteredWaterIO1Options"
           option-label="name"
           option-value="ioIndex"
+          @update:model-value="handleSelectionChange()"
         />
         <q-select
           v-model="waterIO2"
           :options="filteredWaterIO2Options"
           option-label="name"
           option-value="ioIndex"
+          @update:model-value="handleSelectionChange()"
         />
       </div>
       <div class="w-xs flex flex-col">
@@ -101,6 +116,7 @@ const filteredWaterIO2Options = computed(() => {
           :options="waterParams"
           option-label="paramString"
           option-value="parameterIndex"
+          @update:model-value="handleSelectionChange()"
         />
       </div>
     </q-card-section>
