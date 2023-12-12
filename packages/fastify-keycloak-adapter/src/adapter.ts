@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest, RouteOptions, onRequestHookHandler } from 'fastify'
 import fp from 'fastify-plugin'
-import { createRemoteJWKSet, jwtVerify } from 'jose'
+import { JWTPayload, createRemoteJWKSet, jwtVerify } from 'jose'
 
 export interface KeycloakPluginConfig {
   url: string
@@ -12,7 +12,10 @@ export interface KeycloakAuthOptions {
   roles?: string[]
 }
 
-interface KeycloakScope {
+export interface KeycloakScope {
+  scope?: string
+  name?: string
+  preferred_username?: string
   session_state?: string
   realm_access?: {
     roles: string[]
@@ -23,6 +26,9 @@ interface KeycloakScope {
 }
 
 declare module 'fastify' {
+  interface FastifyRequest {
+    kauth: (JWTPayload & KeycloakScope) | null
+  }
   interface RouteShorthandOptions {
     auth?: boolean | KeycloakAuthOptions
   }
@@ -78,12 +84,15 @@ export const keycloakAdapter = fp<KeycloakPluginConfig>((fastify, config, done) 
             return callUnauthorized(reply)
           }
         }
+        request.kauth = payload
       } catch (err) {
         fastify.log.debug(err, 'Invalid JWT')
         return callUnauthenticated(reply)
       }
     }
   }
+
+  fastify.decorateRequest('kauth', null)
 
   fastify.addHook('onRoute', (options) => {
     if (options.auth) {
