@@ -45,15 +45,6 @@ const columns: Column[] = [
   },
 ]
 
-async function handleFilterSlotsUpdate(updatedValue) {
-  machines.value = await $fetch('/api/machines/other-machines', {
-    method: 'POST',
-    body: {
-      filters: updatedValue,
-    },
-  })
-}
-
 const machineGroups = ref([])
 const accessFailGroups = ref([])
 const fails = ref([])
@@ -69,6 +60,17 @@ watch(machines, (newValue, oldValue) => {
 
 async function loadFails() {
   fails.value = await getMachineAccessFails(machineGroups.value, accessFailGroups.value)
+}
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  fails.value = await $fetch('/api/machine-access-fails/machine-access-fails', {
+    method: 'POST',
+    body: {
+      machineIds: machineGroups.value,
+      eventCodes: accessFailGroups.value,
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 

@@ -16,18 +16,24 @@ const columns = [
     label: 'Makine No',
     field: 'machineId',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'machineName',
     label: 'Makine',
     field: 'machineName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'startTime',
     label: 'Başlangıç Tarihi',
     field: 'startTime',
     align: 'left',
+    filterable: true,
+    filterType: 'date',
   },
 
   {
@@ -35,18 +41,24 @@ const columns = [
     label: 'Bitiş Tarihi',
     field: 'endTime',
     align: 'left',
+    filterable: true,
+    filterType: 'date',
   },
   {
     name: 'duration',
     label: 'Süre',
     field: 'duration',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'closedType',
     label: 'Sebep',
     field: 'closedType',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
 
@@ -65,6 +77,17 @@ watch(machines, (newValue, oldValue) => {
 
 async function loadTimes() {
   times.value = await getControllerClosedTimes(machineGroups.value, closedTimeGroups.value)
+}
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  times.value = await $fetch('/api/controller-closed-times/controller-closed-times', {
+    method: 'POST',
+    body: {
+      machineIds: machineGroups.value,
+      closedTypes: closedTimeGroups.value,
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 
@@ -94,6 +117,7 @@ async function loadTimes() {
     <FilterableTable
       :rows="times"
       :columns="columns"
+      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
     >
       <template #custombody="times">
         <q-tr>
