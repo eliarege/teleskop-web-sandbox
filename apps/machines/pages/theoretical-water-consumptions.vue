@@ -8,7 +8,12 @@ const { data: machineCommands } = await useLazyFetch('/api/master-commands/maste
   query: { machineId: selectedMachineId },
 })
 
-const { data: waterConsumptions } = await useLazyFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+/* const { data: waterConsumptions } = await useLazyFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+  immediate: false,
+  query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
+}) */
+
+const { data: waterIO } = await useLazyFetch('/api/IO/command-io-all', {
   immediate: false,
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })
@@ -61,8 +66,16 @@ async function handleCommandClick(commandNo: number) {
     <q-card-section class="w-xs flex flex-col">
       <div class="flex flex-col">
         <h3>Su Kaynağı - IO</h3>
-        <q-select />
-        <q-select />
+        <q-select
+          :options="waterIO"
+          option-label="name"
+          option-value="ioIndex"
+        />
+        <q-select
+          :options="waterIO"
+          option-label="name"
+          option-value="ioIndex"
+        />
       </div>
       <div class="w-xs flex flex-col">
         <h3>Su Miktarı - Parametre</h3>
