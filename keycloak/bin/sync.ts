@@ -30,6 +30,7 @@ interface EliarMeta {
 
 interface AppRole {
   name: string
+  description?: string
 }
 
 interface SyncedAppRole extends AppRole {
@@ -55,7 +56,6 @@ interface MappingsRepresentation {
 
 const KEYCLOAK_URL = 'http://127.0.0.1:8080'
 const KEYCLOAK_REALM = 'teleskop-web'
-const USER_GROUP = 'user'
 const ADMIN_GROUP = 'admin'
 const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const APP_DIR = resolve(ROOT_DIR, 'apps')
@@ -134,6 +134,9 @@ async function ensureRealm(admin: KcAdminClient, realmName: string): Promise<voi
       realm: realmName,
       enabled: true,
       displayName: toTitleCase(realmName),
+      internationalizationEnabled: true,
+      defaultLocale: 'en',
+      supportedLocales: ['en', 'tr']
     })
     consola.info(`Created realm ${realmName}`)
   }
@@ -197,6 +200,7 @@ async function syncClientRoles(admin: KcAdminClient, clientId: string, clientNam
       await admin.clients.createRole({
         id: clientId,
         name: role.name,
+        description: role.description,
       })
       changesMade = true
     }
@@ -318,7 +322,6 @@ async function main() {
 
   const adminRoles = appList.flatMap(app => app.roles)
   const adminGroup = await syncGroupRoleMappings(admin, ADMIN_GROUP, adminRoles)
-  const userGroup = await syncGroupRoleMappings(admin, USER_GROUP, [])
 
   const adminUser = await ensureUser(admin, 'admin', {
     firstName: 'Admin',
@@ -328,7 +331,7 @@ async function main() {
       { type: 'password', value: 'password' },
     ],
   })
-  const generalUser = await ensureUser(admin, 'user', {
+  await ensureUser(admin, 'user', {
     firstName: 'Eliar',
     lastName: 'At Eliar',
     email: 'user@eliar.com',
@@ -339,9 +342,6 @@ async function main() {
 
   if (!adminUser.groups || !adminUser.groups.includes(ADMIN_GROUP)) {
     await admin.users.addToGroup({ id: adminUser.id!, groupId: adminGroup.id! })
-  }
-  if (!generalUser.groups || !generalUser.groups.includes(USER_GROUP)) {
-    await admin.users.addToGroup({ id: generalUser.id!, groupId: userGroup.id! })
   }
 
   consola.info('Synchronization complete')

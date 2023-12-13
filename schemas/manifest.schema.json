@@ -11,6 +11,10 @@
           "name": {
             "type": "string",
             "description": "Role name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Role description"
           }
         },
         "required": ["name"]
