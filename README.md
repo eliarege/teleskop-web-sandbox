@@ -1,6 +1,21 @@
 # Teleskop Web
 
 
+## VSCode Profile
+
+Profiles allow us create set of customizations and quickly switch between them or share them with others.
+This monorepo uses to following [profile](https://gist.github.com/Maiquu/9f56512b2ea6709a16c0584a821ced8b).
+
+### Setting up
+
+https://code.visualstudio.com/assets/docs/editor/profiles/create-profile-via-manage.png
+
+- Click `Import Profile` like shown in image
+- Enter following URL: https://gist.github.com/Maiquu/9f56512b2ea6709a16c0584a821ced8b
+- Click `Create Profile` > `Create`
+
+More details about profiles: https://code.visualstudio.com/docs/editor/profiles
+
 ## Keycloak
 
 ### Setup
