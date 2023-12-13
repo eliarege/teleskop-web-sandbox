@@ -10,7 +10,8 @@
   "scripts": {
     "build": "turbo build",
     "lint": "turbo lint",
-    "clean": "turbo clean"
+    "clean": "turbo clean",
+    "keycloak": "pnpm -C ./keycloak keycloak"
   },
   "devDependencies": {
     "@eliarelektronik/eslint-config": "^2.0.1",

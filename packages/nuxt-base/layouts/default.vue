@@ -14,7 +14,7 @@ function parseAppList(appList: unknown): { name: string; url: string }[] {
     return appList
   } else {
     if (appList)
-      console.warn(`Unexpected appList value`, appList)
+      console.warn(`Unexpected APP_LIST value`, appList)
     return []
   }
 }

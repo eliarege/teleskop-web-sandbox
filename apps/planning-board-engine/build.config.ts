@@ -1,5 +1,4 @@
 import { join } from 'node:path'
-import process from 'node:process'
 import { defineBuildConfig } from 'unbuild'
 
 const src = join(process.cwd(), 'src')

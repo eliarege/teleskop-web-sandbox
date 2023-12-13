@@ -14,7 +14,8 @@
     "stub": "unbuild --stub",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "keycloak": "pnpm -C ../../keycloak keycloak"
   },
   "dependencies": {
     "async-mutex": "^0.4.0",
