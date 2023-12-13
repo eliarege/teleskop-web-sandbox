@@ -1,9 +1,7 @@
 <script setup lang="ts">
-const machines = ref(await getMachines())
-
-const machineOptions = ref(machines.value.map((m) => {
-  return { label: m.code, value: m.code }
-}))
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
+import { getMachineAccessFails } from '~/utils'
 
 const accessFailOptions = ref([
   { label: 'Network erişimi yok', value: 0 },
@@ -11,38 +9,69 @@ const accessFailOptions = ref([
   { label: 'Cihaz tarihi yanlış', value: 2 },
 ])
 
-const machineGroup = ref([])
-const accessFailGroup = ref([])
-const dateRange = ref()
-
-const columns = [
+const columns: Column[] = [
   {
-    name: 'machine',
+    name: 'machineName',
     label: 'Makine',
-    field: row => row.machineName,
+    field: 'machineName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'event',
+    name: 'eventCode',
     label: 'Sebep',
-    field: row => row.event,
+    field: 'eventCode',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'eventStart',
     label: 'Başlangıç Tarihi',
-    field: row => row.eventStart,
+    field: 'eventStart',
     align: 'left',
+    filterable: true,
+    filterType: 'date',
   },
 
   {
     name: 'eventEnd',
     label: 'Bitiş Tarihi',
-    field: row => row.eventEnd,
+    field: 'eventEnd',
     align: 'left',
+    filterable: true,
+    filterType: 'date',
   },
 ]
-const rows = ref([])
+
+const machineGroups = ref([])
+const accessFailGroups = ref([])
+const fails = ref([])
+
+const { data: machines } = useLazyFetch('/api/machines/machines')
+const machineOptions = ref([])
+
+watch(machines, (newValue, oldValue) => {
+  machineOptions.value = machines.value.map((m) => {
+    return { label: m.code, value: m.id }
+  })
+})
+
+async function loadFails() {
+  fails.value = await getMachineAccessFails(machineGroups.value, accessFailGroups.value)
+}
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  fails.value = await $fetch('/api/machine-access-fails/machine-access-fails', {
+    method: 'POST',
+    body: {
+      machineIds: machineGroups.value,
+      eventCodes: accessFailGroups.value,
+      filters: updatedValue,
+    },
+  })
+}
 </script>
 
 <template>
@@ -50,7 +79,7 @@ const rows = ref([])
     <q-card-section class="h-sm overflow-y-scroll">
       <h3>Makineler</h3>
       <q-option-group
-        v-model="machineGroup"
+        v-model="machineGroups"
         :options="machineOptions"
         type="checkbox"
       />
@@ -58,29 +87,37 @@ const rows = ref([])
     <q-card-section>
       <h3>Sebepler</h3>
       <q-option-group
-        v-model="accessFailGroup"
+        v-model="accessFailGroups"
         :options="accessFailOptions"
         type="checkbox"
       />
     </q-card-section>
-    <q-card-section class="flex flex-col">
-      <q-date v-model="dateRange" range />
-      <q-btn class="mt-4">
-        Göster
-      </q-btn>
-    </q-card-section>
+    <q-btn @click="loadFails">
+      Yükle
+    </q-btn>
   </q-card>
   <div class="table-scroll">
-    <q-table
-      selection="single"
-      :rows="rows"
+    <FilterableTable
+      :rows="fails"
       :columns="columns"
-      :pagination="{ rowsPerPage: 0 }"
-      hide-pagination
-      bordered
-      separator="cell"
-      table-header-class="table-header"
-    />
+      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+    >
+      <template #custombody="fails">
+        <q-tr>
+          <q-td
+            v-for="row in fails.cols"
+            :key="row"
+          >
+            <span v-if="row.field === 'eventCode'">
+              {{ accessFailOptions.find(o => o.value === row.value)?.label }}
+            </span>
+            <span v-else>
+              {{ row.value }}
+            </span>
+          </q-td>
+        </q-tr>
+      </template>
+    </filterabletable>
   </div>
 </template>
 

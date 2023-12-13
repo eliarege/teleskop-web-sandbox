@@ -1,14 +1,72 @@
 <script setup lang="ts">
-import { getMachineCommands } from '~/utils'
-
-const { data: machines } = await useFetch('/api/command-timeout-reasons/command-map-machines')
+import { upsertTheoreticalWaterConsumption } from '~/utils'
 
 const selectedMachineId = ref()
-const machineCommands = ref()
+const selectedCommandNo = ref()
+
+const waterIO1 = ref()
+const waterIO2 = ref()
+const waterParam = ref()
+
+const { data: machines } = useLazyFetch('/api/machines/active-machines')
+const { data: machineCommands } = useLazyFetch('/api/master-commands/master-commands', {
+  immediate: false,
+  query: { machineId: selectedMachineId },
+})
+const { data: waterIO } = useLazyFetch('/api/IO/command-io-all', {
+  immediate: false,
+  query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
+})
+
+const { data: waterParams } = useLazyFetch('/api/commands/command-parameters', {
+  immediate: false,
+  query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
+})
+
+const { data: waterConsumptions } = useLazyFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+  immediate: false,
+  query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
+})
+
+watch([waterConsumptions, waterParams], ([newCons, newParams], [oldCons, oldParams]) => {
+  console.log('waterParams.value = ', waterParams.value)
+  if (waterConsumptions && waterConsumptions.value) {
+    const command = waterConsumptions.value[0]
+    waterIO1.value = waterIO.value.find(io => io.ioIndex === command.commandIO)
+    waterIO2.value = waterIO.value.find(io => io.ioIndex === command.commandIO2)
+    waterParam.value = waterParams.value.find(io => io.parameterIndex === command.commandParameter)
+  }
+})
 
 async function handleMachineClick(machineId: number) {
-  machineCommands.value = await getMachineCommands(machineId)
   selectedMachineId.value = machineId
+}
+
+async function handleCommandClick(commandNo: number) {
+  selectedCommandNo.value = commandNo
+}
+const filteredWaterIO1Options = computed(() => {
+  // Filter waterIO options based on waterIO2 selection
+  return (waterIO.value && waterIO2.value)
+    ? waterIO.value.filter(io => io.ioIndex !== waterIO2.value.ioIndex)
+    : waterIO.value ? waterIO.value : []
+})
+const filteredWaterIO2Options = computed(() => {
+  // Filter waterIO options based on waterIO1 selection
+  return (waterIO.value && waterIO1.value)
+    ? waterIO.value.filter(io => io.ioIndex !== waterIO1.value.ioIndex)
+    : waterIO.value ? waterIO.value : []
+})
+
+async function handleSelectionChange(data, columnName) {
+  const obj = {
+    machineId: selectedMachineId.value,
+    commandNo: selectedCommandNo.value,
+    commandIO: waterIO1.value ? waterIO1.value.ioIndex : undefined,
+    commandIO2: waterIO2.value ? waterIO2.value.ioIndex : undefined,
+    commandParameter: waterParam.value ? waterParam.value.parameterIndex : undefined,
+  }
+  await upsertTheoreticalWaterConsumption(obj)
 }
 </script>
 
@@ -39,6 +97,7 @@ async function handleMachineClick(machineId: number) {
           :key="command.commandNo"
           v-ripple
           clickable
+          @click="handleCommandClick(command.commandNo)"
         >
           <q-item-section>
             {{ command.commandName }}
@@ -50,12 +109,30 @@ async function handleMachineClick(machineId: number) {
     <q-card-section class="w-xs flex flex-col">
       <div class="flex flex-col">
         <h3>Su Kaynağı - IO</h3>
-        <q-select />
-        <q-select />
+        <q-select
+          v-model="waterIO1"
+          :options="filteredWaterIO1Options"
+          option-label="name"
+          option-value="ioIndex"
+          @update:model-value="handleSelectionChange()"
+        />
+        <q-select
+          v-model="waterIO2"
+          :options="filteredWaterIO2Options"
+          option-label="name"
+          option-value="ioIndex"
+          @update:model-value="handleSelectionChange()"
+        />
       </div>
       <div class="w-xs flex flex-col">
         <h3>Su Miktarı - Parametre</h3>
-        <q-select />
+        <q-select
+          v-model="waterParam"
+          :options="waterParams"
+          option-label="paramString"
+          option-value="parameterIndex"
+          @update:model-value="handleSelectionChange()"
+        />
       </div>
     </q-card-section>
   </q-card>

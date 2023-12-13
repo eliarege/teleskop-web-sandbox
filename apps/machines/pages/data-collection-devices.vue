@@ -1,22 +1,29 @@
 <script setup lang="ts">
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
 import { addOtherMachine, deleteOtherMachine } from '~/utils'
 
-const columns = [
+const columns: Column[] = [
   {
     name: 'machineId',
     label: 'Makine No',
-    field: row => row.machineId,
+    field: 'machineId',
     align: 'left',
+    filterable: true,
+    filterType: 'equals',
+
   },
   {
-    name: 'machine',
+    name: 'machineName',
     label: 'Makine',
-    field: row => row.machineName,
+    field: 'machineName',
     align: 'left',
+    filterable: true,
+    filterType: 'equals',
   },
 ]
 
-const { data: machines, pending, refresh } = await useFetch('/api/machines/other-machines')
+const machines = ref(await $fetch('/api/machines/other-machines'))
 const machineId = ref()
 const machineName = ref('')
 const inUse = ref(true)
@@ -31,12 +38,10 @@ async function handleAddClick() {
     inUse: inUse.value,
   }
   await addOtherMachine(selected)
-  await refresh()
 }
 
 async function handleDeleteClick() {
   await deleteOtherMachine(otherMachine.value[0].machineId)
-  await refresh()
   machineId.value = ''
   machineName.value = ''
   inUse.value = true
@@ -63,7 +68,15 @@ async function handleEditClick() {
     inUse: inUse.value,
   }
   await editOtherMachine(selected, oldId.value)
-  await refresh()
+}
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  machines.value = await $fetch('/api/machines/other-machines', {
+    method: 'POST',
+    body: {
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 
@@ -96,7 +109,14 @@ async function handleEditClick() {
     </q-card-section>
   </q-card>
   <div class="table-scroll">
-    <q-table
+    <FilterableTable
+      :rows="machines"
+      :columns="columns"
+      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+      @selection="(e) => handleSelection(e)"
+    />
+
+    <!--  <q-table
       v-model:selected="otherMachine"
       :loading="pending"
       :rows="machines"
@@ -109,7 +129,7 @@ async function handleEditClick() {
       separator="cell"
       table-header-class="table-header"
       @selection="(e) => handleSelection(e)"
-    />
+    /> -->
   </div>
 </template>
 

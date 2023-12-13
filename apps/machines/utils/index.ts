@@ -252,3 +252,31 @@ export async function selectSmartRequestCommand(machineId, commandTypeId, comman
         commandNo,
       } })
 }
+
+export async function getMachineAccessFails(machineIds, eventCodes) {
+  return await $fetch('/api/machine-access-fails/machine-access-fails', {
+    method: 'POST',
+    body: { machineIds, eventCodes },
+  })
+}
+
+export async function getControllerClosedTimes(machineIds, closedTypes) {
+  return await $fetch('/api/controller-closed-times/controller-closed-times', {
+    method: 'POST',
+    body: { machineIds, closedTypes },
+  })
+}
+
+export async function addTankDefinition(tankDef: object) {
+  return await $fetch('/api/tank-definitions/tank-definition', {
+    method: 'POST',
+    body: tankDef,
+  })
+}
+
+export async function upsertTheoreticalWaterConsumption(obj: object) {
+  return await $fetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+    method: 'POST',
+    body: obj,
+  })
+}
