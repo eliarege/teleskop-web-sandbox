@@ -21,23 +21,12 @@ const { data: tankDefinitions, refresh: refreshDefinitions } = useLazyFetch('/ap
   query: { machineId: selectedMachineId },
 })
 
-const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
+const { data: commands, refresh: refreshCommands } = useLazyFetch('/api/master-commands/master-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
   default: () => [],
   onResponse({ request, response, options }) {
     const data = response._data
-
-    /*   listOfTransferCommands.value = tankDefinitions.value[0].listOfTransferCommands.map((no) => {
-      const commandIndex = data.findIndex(d => no === d.commandNo)
-      if (commandIndex !== -1) {
-        const command = data.splice(commandIndex, 1)[0]
-        return {
-          commandNo: command.commandNo,
-          commandName: command.commandName,
-        }
-      }
-    }) */
 
     const lists = [
       { name: 'listOfTransferCommands', ref: listOfTransferCommands },
@@ -55,6 +44,7 @@ const { data: commands } = useLazyFetch('/api/master-commands/master-commands', 
             list.ref.value.push({
               commandNo: command.commandNo,
               commandName: command.commandName,
+              tankNo: tankDef.tankNo,
             })
           }
         })
@@ -62,6 +52,7 @@ const { data: commands } = useLazyFetch('/api/master-commands/master-commands', 
     })
 
     commands.value = data
+    filterCommandLists()
   },
 })
 
@@ -87,6 +78,7 @@ async function handleTankDefinitionClick(tankDef) {
   tankName.value = tankDef.name
   highLimit.value = tankDef.highLimit
   machineConstantHighLimit.value = tankDef.machineConstantHighLimit
+  await refreshCommands()
 }
 
 async function handleTankDefinitionAdd() {
@@ -99,6 +91,21 @@ async function handleTankDefinitionAdd() {
   }
   await addTankDefinition(tankDef)
   await refreshDefinitions()
+}
+
+function filterCommandLists() {
+  const lists = [
+    { name: 'listOfTransferCommands', ref: listOfTransferCommands },
+    { name: 'listOfCirculationDoSageCommand', ref: listOfCirculationDoSageCommand },
+    { name: 'listOfCirculationRequestCommands', ref: listOfCirculationRequestCommands },
+    { name: 'listOfRequestCommands', ref: listOfRequestCommands },
+  ]
+
+  if (tankNo.value === undefined)
+    tankNo.value = tankDefinitions.value[0].tankNo
+  for (const list of lists) {
+    list.ref.value = list.ref.value.filter(d => d.tankNo === tankNo.value)
+  }
 }
 </script>
 
