@@ -51,7 +51,7 @@ export interface UnplannedEventsRaw {
   plannedMachineId: number
   programCount: number
   plannedStartTime: string
-  theoricalDuration: number
+  theoreticalDuration: number
   fabricWeight?: number
   note: string
   erpFieldName?: string
