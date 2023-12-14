@@ -28,7 +28,7 @@ const { data: commands } = useLazyFetch('/api/master-commands/master-commands', 
   onResponse({ request, response, options }) {
     const data = response._data
 
-    listOfTransferCommands.value = tankDefinitions.value[0].listOfTransferCommands.map((no) => {
+    /*   listOfTransferCommands.value = tankDefinitions.value[0].listOfTransferCommands.map((no) => {
       const commandIndex = data.findIndex(d => no === d.commandNo)
       if (commandIndex !== -1) {
         const command = data.splice(commandIndex, 1)[0]
@@ -37,6 +37,28 @@ const { data: commands } = useLazyFetch('/api/master-commands/master-commands', 
           commandName: command.commandName,
         }
       }
+    }) */
+
+    const lists = [
+      { name: 'listOfTransferCommands', ref: listOfTransferCommands },
+      { name: 'listOfCirculationDoSageCommand', ref: listOfCirculationDoSageCommand },
+      { name: 'listOfCirculationRequestCommands', ref: listOfCirculationRequestCommands },
+      { name: 'listOfRequestCommands', ref: listOfRequestCommands },
+    ]
+
+    tankDefinitions.value.forEach((tankDef) => {
+      lists.forEach((list) => {
+        tankDef[list.name].forEach((commandNo) => {
+          const commandIndex = data.findIndex(d => tankDef[list.name].includes(d.commandNo))
+          if (commandIndex !== -1) {
+            const command = data.splice(commandIndex, 1)[0]
+            list.ref.value.push({
+              commandNo: command.commandNo,
+              commandName: command.commandName,
+            })
+          }
+        })
+      })
     })
 
     commands.value = data
