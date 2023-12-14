@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Sortable } from 'sortablejs-vue3'
+
 const selectedMachineId = ref()
 const selectedDefinition = ref()
 const tankNo = ref()
@@ -6,11 +8,39 @@ const tankName = ref()
 const highLimit = ref()
 const machineConstantHighLimit = ref()
 
+const listOfTransferCommands = ref([])
+const listOfCirculationDoSageCommand = ref([])
+const listOfCirculationRequestCommands = ref([])
+const listOfRequestCommands = ref([])
+
 const { data: machines } = useLazyFetch('/api/command-timeout-reasons/command-map-machines')
 
 const { data: tankDefinitions, refresh: refreshDefinitions } = useLazyFetch('/api/tank-definitions/tank-definitions', {
   immediate: false,
+  default: () => [],
   query: { machineId: selectedMachineId },
+})
+
+const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
+  immediate: false,
+  query: { machineId: selectedMachineId },
+  default: () => [],
+  onResponse({ request, response, options }) {
+    const data = response._data
+
+    listOfTransferCommands.value = tankDefinitions.value[0].listOfTransferCommands.map((no) => {
+      const commandIndex = data.findIndex(d => no === d.commandNo)
+      if (commandIndex !== -1) {
+        const command = data.splice(commandIndex, 1)[0]
+        return {
+          commandNo: command.commandNo,
+          commandName: command.commandName,
+        }
+      }
+    })
+
+    commands.value = data
+  },
 })
 
 const { data: highLimitOptions } = useLazyFetch('/api/machine-parameters/machine-parameters', {
@@ -25,7 +55,6 @@ const { data: highLimitOptions } = useLazyFetch('/api/machine-parameters/machine
     })
   },
 })
-
 async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
 }
@@ -120,7 +149,46 @@ async function handleTankDefinitionAdd() {
           />
         </div>
       </div>
+
       <div class="grid">
+        <div>
+          <h3>Transfer/Dozaj Komutları</h3>
+          <Sortable
+            :list="commands"
+            item-key="id"
+            class="w-xs"
+            :options="{ group: 'group' }"
+          >
+            <template #item="{ element, index }">
+              <div
+                :key="element.commandNo"
+                class="draggable"
+              >
+                {{ `${element.commandNo} ${element.commandName}` }}
+              </div>
+            </template>
+          </Sortable>
+        </div>
+
+        <div>
+          <h3>Transfer/Dozaj Komutları</h3>
+          <Sortable
+            :list="listOfTransferCommands"
+            item-key="id"
+            :options="{ group: 'group' }"
+          >
+            <template #item="{ element, index }">
+              <div
+                :key="element.commandNo"
+                class="draggable"
+              >
+                {{ `${element.commandNo} ${element.commandName}` }}
+              </div>
+            </template>
+          </Sortable>
+        </div>
+      </div>
+      <!--       <div class="grid">
         <q-table
           title="Transfer/Dozaj Komutları"
         />
@@ -128,12 +196,13 @@ async function handleTankDefinitionAdd() {
         <q-table title="Sirkülasyonlu Dozaj Komutları" />
         <q-table title="Sirkülasyonlu İstek Komutları" />
       </div>
+ -->
     </q-card-section>
   </q-card>
 </template>
 
 <style scoped>
-.grid{
+.grid {
   grid-template-areas: "1 1"
                        "1 1";
   gap: 2em;

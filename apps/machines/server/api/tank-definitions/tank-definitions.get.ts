@@ -18,8 +18,16 @@ export default defineEventHandler(async (event) => {
         listOfCirculationRequestCommands: 'LISTOFCIRCULATIONREQUESTCOMMANDS',
         listOfRequestCommands: 'LISTOFREQUESTCOMMANDS',
       })
-      .orderBy('BFMACHINETANKS.MACHINEID')
-    return machines
+
+    return machines.map((d) => {
+      return {
+        ...d,
+        listOfTransferCommands: d.listOfTransferCommands ? d.listOfTransferCommands.split(',').map(Number) : [],
+        listOfCirculationDoSageCommand: d.listOfCirculationDoSageCommand ? d.listOfCirculationDoSageCommand.split(',').map(Number) : [],
+        listOfCirculationRequestCommands: d.listOfCirculationRequestCommands ? d.listOfCirculationRequestCommands.split(',').map(Number) : [],
+        listOfRequestCommands: d.listOfRequestCommands ? d.listOfRequestCommands.split(',').map(Number) : [],
+      }
+    })
   } catch (e) {
     return e
   }
