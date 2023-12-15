@@ -180,12 +180,12 @@ function filterCommandLists() {
       </div>
 
       <div class="grid">
-        <div>
-          <h3>Transfer/Dozaj Komutları</h3>
+        <div class="h-sm overflow-y-scroll">
+          <h3>Komutlar</h3>
           <Sortable
             :list="commands"
             item-key="id"
-            class="w-xs"
+            class=""
             :options="{ group: 'group' }"
           >
             <template #item="{ element, index }">
@@ -199,28 +199,81 @@ function filterCommandLists() {
           </Sortable>
         </div>
 
-        <div>
-          <h3>Transfer/Dozaj Komutları</h3>
-          <Sortable
-            :list="listOfTransferCommands"
-            item-key="id"
-            :options="{ group: 'group' }"
-          >
-            <template #item="{ element, index }">
-              <div
-                :key="element.commandNo"
-                class="draggable"
-              >
-                {{ `${element.commandNo} ${element.commandName}` }}
-              </div>
-            </template>
-          </Sortable>
+        <div class="grid">
+          <div>
+            <h3>Transfer/Dozaj Komutları</h3>
+            <Sortable
+              :list="listOfTransferCommands"
+              item-key="id"
+              :options="{ group: 'group' }"
+            >
+              <template #item="{ element, index }">
+                <div
+                  :key="element.commandNo"
+                  class="draggable"
+                >
+                  {{ `${element.commandNo} ${element.commandName}` }}
+                </div>
+              </template>
+            </Sortable>
+          </div>
+          <div>
+            <h3>İstek Komutları</h3>
+            <Sortable
+              :list="listOfRequestCommands"
+              item-key="id"
+              :options="{ group: 'group' }"
+            >
+              <template #item="{ element, index }">
+                <div
+                  :key="element.commandNo"
+                  class="draggable"
+                >
+                  {{ `${element.commandNo} ${element.commandName}` }}
+                </div>
+              </template>
+            </Sortable>
+          </div>
+
+          <div>
+            <h3>Sirkülasyonlu Dozaj Komutları</h3>
+            <Sortable
+              :list="listOfCirculationDoSageCommand"
+              item-key="id"
+              :options="{ group: 'group' }"
+            >
+              <template #item="{ element, index }">
+                <div
+                  :key="element.commandNo"
+                  class="draggable"
+                >
+                  {{ `${element.commandNo} ${element.commandName}` }}
+                </div>
+              </template>
+            </Sortable>
+          </div>
+
+          <div>
+            <h3>Sirkülasyonlu İstek Komutları</h3>
+            <Sortable
+              :list="listOfCirculationRequestCommands"
+              item-key="id"
+              :options="{ group: 'group' }"
+            >
+              <template #item="{ element, index }">
+                <div
+                  :key="element.commandNo"
+                  class="draggable"
+                >
+                  {{ `${element.commandNo} ${element.commandName}` }}
+                </div>
+              </template>
+            </Sortable>
+          </div>
         </div>
       </div>
       <!--       <div class="grid">
-        <q-table
-          title="Transfer/Dozaj Komutları"
-        />
+        <q-table title="Transfer/Dozaj Komutları"/>
         <q-table title="İstek Komutları" />
         <q-table title="Sirkülasyonlu Dozaj Komutları" />
         <q-table title="Sirkülasyonlu İstek Komutları" />
