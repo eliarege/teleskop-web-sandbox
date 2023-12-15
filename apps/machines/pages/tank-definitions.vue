@@ -110,8 +110,18 @@ function filterCommandLists() {
   }
 }
 
-function handleDragDrop(e) {
-  console.log('e = ', e)
+function handleDragDrop(e, list) {
+  const text: string = e.item.innerHTML
+  const matches = text.match(/\d+/)
+  if (matches && matches.length) {
+    const commandNo = Number.parseInt(matches[0])
+    console.log('commandNo = ', commandNo)
+    // update relevant list in db
+    if (e.type === 'add')
+      console.log('add')
+    else if (e.type === 'remove')
+      console.log('remove')
+  }
 }
 </script>
 
@@ -195,7 +205,6 @@ function handleDragDrop(e) {
               item-key="id"
               class=""
               :options="{ group: 'group' }"
-              @update="handleDragDrop"
             >
               <template #item="{ element, index }">
                 <div
@@ -215,11 +224,14 @@ function handleDragDrop(e) {
                 :list="listOfTransferCommands"
                 item-key="id"
                 :options="{ group: 'group' }"
+                @add="(e) => handleDragDrop(e, listOfTransferCommands)"
+                @remove="(e) => handleDragDrop(e, listOfTransferCommands)"
               >
                 <template #item="{ element, index }">
                   <div
                     :key="element.commandNo"
                     class="draggable"
+                    :data-command-no="element.commandNo"
                   >
                     {{ `${element.commandNo} ${element.commandName}` }}
                   </div>
@@ -232,6 +244,8 @@ function handleDragDrop(e) {
                 :list="listOfRequestCommands"
                 item-key="id"
                 :options="{ group: 'group' }"
+                @add="(e) => handleDragDrop(e, listOfTransferCommands)"
+                @remove="(e) => handleDragDrop(e, listOfTransferCommands)"
               >
                 <template #item="{ element, index }">
                   <div
@@ -250,6 +264,8 @@ function handleDragDrop(e) {
                 :list="listOfCirculationDoSageCommand"
                 item-key="id"
                 :options="{ group: 'group' }"
+                @add="(e) => handleDragDrop(e, listOfTransferCommands)"
+                @remove="(e) => handleDragDrop(e, listOfTransferCommands)"
               >
                 <template #item="{ element, index }">
                   <div
@@ -268,6 +284,8 @@ function handleDragDrop(e) {
                 :list="listOfCirculationRequestCommands"
                 item-key="id"
                 :options="{ group: 'group' }"
+                @add="(e) => handleDragDrop(e, listOfTransferCommands)"
+                @remove="(e) => handleDragDrop(e, listOfTransferCommands)"
               >
                 <template #item="{ element, index }">
                   <div
