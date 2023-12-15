@@ -3,7 +3,6 @@
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { DateField, DateHelper, DatePicker, Label, PanelCollapser, Splitter, Toast } from '@bryntum/schedulerpro-trial'
 import { EliarModal } from 'ui'
-import { matDisplaySettings, matEditCalendar, matPendingActions, matPreview } from '@quasar/extras/material-icons'
 import { Drag, Schedule, Task, UnplannedGrid } from '~/lib/bryntum'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
@@ -41,35 +40,6 @@ const showModal = reactive({
   datePicker: false,
   settings: false,
 })
-const ptSettings = reactive([
-  {
-    name: 'view',
-    icon: matPreview,
-    label: 'Görünüm',
-    panel: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.',
-  },
-  {
-    name: 'general',
-    icon: matEditCalendar,
-    label: 'Genel',
-    panel: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.',
-  },
-  {
-    name: 'settings',
-    icon: matDisplaySettings,
-    label: 'Gösterge Seçenekleri',
-    panel: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.',
-  },
-  {
-    name: 'unplanned',
-    icon: matPendingActions,
-    label: 'Bekleyen İş Emirleri',
-    panel: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.',
-  },
-],
-)
-const tab = ref(ptSettings[0].name)
-const splitterModel = ref(20)
 
 const { data: machines } = await useFetch('/api/machineList')
 const { data: events, refresh } = await useFetch('/api/plannedEvents', {
@@ -83,7 +53,6 @@ const modifiedMachines = computed(() => machines.value?.map((m) => {
     ...m,
     // TODO: machine icons?
     // iconCls: 'b-fa b-fa-solid b-fa-play',
-    color: 'red',
   }
 }))
 const modifiedEvents = computed(() => events.value?.map((ev) => {
@@ -104,7 +73,7 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((u
     ...unp,
     id: unp.planKey,
     name: unp.jobOrder,
-    duration: unp.theoricalDuration ? (unp.theoricalDuration / 60) / 60 : Math.round(Math.random() * 10) + 1,
+    duration: (unp.theoreticalDuration / 60) / 60,
     durationUnit: 'hour',
     constraintDate: new Date(),
   } as UnplannedEvents
@@ -443,48 +412,7 @@ onMounted(() => {
     </EliarModal>
     <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
       <template #default>
-        <div class="bg-white!" @click.stop.prevent>
-          <q-splitter
-            v-model="splitterModel"
-          >
-            <template #before>
-              <q-tabs
-                v-model="tab"
-                vertical
-                class="text-blue"
-              >
-                <q-tab
-                  v-for="(item, idx) in ptSettings"
-                  :key="idx"
-                  :name="item.name"
-                  :icon="item.icon"
-                  :label="item.label"
-                />
-              </q-tabs>
-            </template>
-
-            <template #after>
-              <q-tab-panels
-                v-model="tab"
-                animated
-                swipeable
-                vertical
-                transition-prev="jump-up"
-                transition-next="jump-up"
-              >
-                <q-tab-panel
-                  v-for="(item, idx) in ptSettings"
-                  :key="idx"
-                  :name="item.name"
-                >
-                  <div>
-                    {{ item.panel }}
-                  </div>
-                </q-tab-panel>
-              </q-tab-panels>
-            </template>
-          </q-splitter>
-        </div>
+        <PlanningSettings />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.planParameters.show" @click.stop="showModal.planParameters.show = false">

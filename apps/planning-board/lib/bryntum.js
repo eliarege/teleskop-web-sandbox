@@ -29,6 +29,10 @@ function onDropSocket() {
 socket.on('dropResponse', async (res) => {
   console.log('dropResponse:', res)
 })
+let prevMachineId
+let theoreticalDuration
+let endDate
+
 export class Drag extends DragHelper {
   static get configurable() {
     return {
@@ -84,6 +88,10 @@ export class Drag extends DragHelper {
     const { selectedRecords, store } = grid
     onDragStartSocket(selectedRecords[0].originalData.id)
     context.task = grid.getRecordFromElement(context.grabbed)
+    const a = await $fetch('/api/isValid', {
+      query: { planKey: context.task.originalData.id },
+    })
+    console.log('huh', a)
     context.relatedElements = selectedRecords
       .sort((r1, r2) => store.indexOf(r1) - store.indexOf(r2))
       .map(
@@ -104,7 +112,7 @@ export class Drag extends DragHelper {
     }
   }
 
-  onDrag({ event, context }) {
+  async onDrag({ event, context }) {
     const { schedule } = this
     const { task } = context
     const coordinate = DomHelper[`getTranslate${schedule.isHorizontal ? 'X' : 'Y'}`](context.element)
@@ -117,8 +125,17 @@ export class Drag extends DragHelper {
       'round',
       false,
     )
-    const endDate = startDate && DateHelper.add(startDate, task.originalData.duration, 'h')
     context.machine = machine
+    if (machine) {
+      const currentMachineId = machine.id
+      if (prevMachineId !== currentMachineId && prevMachineId !== undefined) {
+        theoreticalDuration = await $fetch('api/theoreticalDuration', {
+          query: { planKey: context.task.originalData.id, machineId: machine.id },
+        })
+      }
+      prevMachineId = currentMachineId
+      endDate = startDate && DateHelper.add(startDate, theoreticalDuration, 'h')
+    }
     // TODO: Machine capacity and program comparison for context.valid
     context.valid = Boolean(startDate && machine)
       && !(startDate < new Date())
@@ -150,6 +167,7 @@ export class Drag extends DragHelper {
                 <div class="b-sch-event-title">${task.name}</div>
                 <div class="b-sch-tooltip-startdate">Starts: ${formattedStartDate}</div>
                 <div class="b-sch-tooltip-enddate">Ends: ${formattedEndDate}</div>
+                <div class="b-sch-tooltip-enddate">Ends: ${theoreticalDuration}</div>
             `
         this.tip.showBy(context.element)
       }
@@ -310,7 +328,7 @@ export class Schedule extends SchedulerPro {
         const updatedEvent = {
           planKey: context.context.grabbed.elementData.eventId,
           machineId: context.newResource.originalData.id,
-          plannedStartDate: context.startDate,
+          plannedStartTime: context.startDate,
         }
         AjaxHelper.post('/api/planningBoardUpdate', updatedEvent, { credentials: 'omit' })
           .then(() => this.renderRows())

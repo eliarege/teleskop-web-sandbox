@@ -12,21 +12,7 @@ export async function getPlannedEvents(from: Date | string, to: Date | string) {
       jobOrder: 'd.JOBORDER',
       programNoList: 'd.PROGRAMNOLIST',
       plannedStartTime: 'd.PLANNEDSTARTTIME',
-      theoreticalDuration: knex.raw(`
-      (SELECT SUM(B.DURATION)
-        FROM BFMASTERPRGHEADER B
-        WHERE
-          B.MACHINEID = (
-            SELECT INTVALUE
-            FROM PTSETTINGS
-            WHERE USERID = -1 AND SETTINGID = 5
-          )
-          AND B.PROGNO IN (
-            SELECT RECIPENO
-            FROM DYBFBATCHORDERRECIPEHEADER
-            WHERE PLANKEY = d.PLANKEY
-          )
-        )`),
+      theoreticalDuration: 'd.TheoricalDuration',
       fabricWeight: knex.raw(`(select r.VALUE from DYBFBATCHPLANPARAMETERS r where r.PARAMSTRING = 'Kilo' and r.PLANKEY = p.PLANKEY)`),
       partyNumber: 'd.PARTYNUMBER',
       note: 'd.NOTE',
@@ -57,8 +43,13 @@ export async function getUnplannedEvents(from: Date | string, to: Date | string)
       jobOrder: 'P.JOBORDER',
       plannedMachineId: 'P.PLANNEDMACHINE',
       programCount: 'P.PRGCOUNT',
+      programList: 'P.PROGRAMNOLIST',
       plannedStartTime: 'P.PLANNEDSTARTTIME',
-      theoricalDuration: knex.raw(`
+      fabricWeight: 'R.VALUE',
+      note: 'P.NOTE',
+      erpFieldName: 'D.ERPFIELDNAME',
+      batchParameterId: 'R.BATCHPARAMETERID',
+      theoreticalDuration: knex.raw(`
     (SELECT SUM(B.DURATION)
     FROM BFMASTERPRGHEADER B
     WHERE B.MACHINEID = (
@@ -67,11 +58,6 @@ export async function getUnplannedEvents(from: Date | string, to: Date | string)
     )
       AND B.PROGNO IN (SELECT RECIPENO FROM DYBFBATCHORDERRECIPEHEADER WHERE PLANKEY = P.PLANKEY))
 `),
-      fabricWeight: 'P.FABRICWEIGHT',
-      note: 'P.NOTE',
-      erpFieldName: 'D.ERPFIELDNAME',
-      batchParameterId: 'R.BATCHPARAMETERID',
-      value: 'R.VALUE',
       isStopped: 'P.ISSTOPPED',
     })
     .leftJoin('dbo.PTBATCHPLANQUEUE as Q', 'Q.PLANKEY', 'P.PLANKEY')
@@ -157,9 +143,40 @@ export async function getRecipe(machineId: string, jobOrder: string) {
     .orderBy(['p.RCPINDEX', 'DYEREQUESTNUMBER', 'PARALLELSTEP'])
   return { autoRecipe, manualRecipe }
 }
+export async function isTaskValid(planKey: number, machineId: number) {
+  const taskPrgList: string[] = ((await knex({ p: 'dbo.DYBFBATCHPLAN' }).select({ prgList: 'p.PROGRAMNOLIST' }).where('p.PLANKEY', '=', planKey))[0].prgList).split(',').slice(0, -1).map(a => Number.parseInt(a))
+
+  const machinePrgList: { machineId: number; prgList: number[] }[] = await knex({ p: 'dbo.BFMASTERPRGHEADER' }).select({
+    machineId: 'MACHINEID',
+    prgList: knex.raw("CONCAT('[', STRING_AGG(PROGNO, ','), ']')"),
+  })
+    .where('MACHINEID', '=', machineId)
+    .groupBy('MACHINEID')
+  return taskPrgList.every(a => machinePrgList[0].prgList.includes(a))
+}
+export async function getTheoreticalDuration(planKey: number, machineId: number) {
+  return (await knex.raw(`
+  SELECT SUM(B.DURATION) as theoreticalDuration
+  FROM BFMASTERPRGHEADER B
+  WHERE B.MACHINEID = ${machineId}
+    AND B.PROGNO IN (
+      SELECT RECIPENO
+      FROM DYBFBATCHORDERRECIPEHEADER
+      WHERE PLANKEY = ${planKey}
+    )
+`)
+  )[0].theoreticalDuration
+}
 //  UPDATE
 export async function updateEvents(planKey: number, machineId: number, plannedStartTime: string) {
-  const queueNumber = (await knex.raw(`SELECT TOP 1 p.QUEUENUMBER + 1 as queue FROM PTBATCHPLANQUEUE p WHERE p.MACHINEID = ${machineId} ORDER BY p.QUEUENUMBER DESC`))[0].queue
+  const theoreticalDuration = await getTheoreticalDuration(planKey, machineId)
+
+  const queueNumber = (await knex.raw(`
+  SELECT TOP 1 p.QUEUENUMBER + 1 as queue
+  FROM PTBATCHPLANQUEUE p
+  WHERE p.MACHINEID = ${machineId}
+  ORDER BY p.QUEUENUMBER DESC
+`))[0].queue
 
   await knex('PTBATCHPLANQUEUE')
     .update({ MACHINEID: machineId, STARTTIME: plannedStartTime, QUEUENUMBER: queueNumber })
@@ -170,22 +187,24 @@ export async function updateEvents(planKey: number, machineId: number, plannedSt
       MACHINEIDLIST: machineId,
       PLANNEDMACHINE: machineId,
       PLANNEDSTARTTIME: plannedStartTime,
+      TheoricalDuration: theoreticalDuration,
     })
     .where({ PLANKEY: planKey })
 }
 export async function removeFromPlan(planKey: number) {
-  console.log('WTF IS PLANKEY', planKey)
   await knex('dbo.DYBFBATCHPLAN').update({ MACHINEIDLIST: 0, PLANNEDMACHINE: 0, PLANNEDSTARTTIME: '2019-03-22 00:00:00.000' }).where('PLANKEY', '=', planKey)
   await knex('dbo.PTBATCHPLANQUEUE').where('PLANKEY', '=', planKey).del()
 }
 // SAVE
 export async function scheduleEvents(planKey: number, machineId: number, plannedStartTime: string) {
+  const theoreticalDuration = await getTheoreticalDuration(planKey, machineId)
   const queueNumber = (await knex.raw(`SELECT TOP 1 p.QUEUENUMBER + 1 as queue FROM PTBATCHPLANQUEUE p WHERE p.MACHINEID = ${machineId} ORDER BY p.QUEUENUMBER DESC`))[0].queue
   await knex('DYBFBATCHPLAN')
     .update({
       MACHINEIDLIST: machineId,
       PLANNEDMACHINE: machineId,
       PLANNEDSTARTTIME: plannedStartTime,
+      TheoricalDuration: theoreticalDuration,
     })
     .where({ PLANKEY: planKey })
 
