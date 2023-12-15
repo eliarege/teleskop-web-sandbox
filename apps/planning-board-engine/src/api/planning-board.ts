@@ -39,20 +39,20 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
   })
-  fastify.get('/planning_board/valid', async (request: FastifyRequest<{ Querystring: { planKey: number; machineId: number } }>, reply) => {
+  fastify.get('/planning_board/valid', async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
     try {
-      const { planKey, machineId } = request.query
-      const isValid = await isTaskValid(planKey, machineId)
+      const { planKey } = request.query
+      const isValid = await isTaskValid(planKey)
       return reply.code(200).send(isValid)
     } catch (err) {
       fastify.log.error(`Error fetching recipe: ${err.message}`)
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
   })
-  fastify.get('/planning_board/theoretical_duration', async (request: FastifyRequest<{ Querystring: { planKey: number; machineId: number } }>, reply) => {
+  fastify.get('/planning_board/theoretical_duration', async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
     try {
-      const { planKey, machineId } = request.query
-      return await getTheoreticalDuration(planKey, machineId)
+      const { planKey } = request.query
+      return await getTheoreticalDuration(planKey)
     } catch (err) {
       fastify.log.error(`Error fetching recipe: ${err.message}`)
       return reply.code(500).send({ error: 'Internal Server Error' })
