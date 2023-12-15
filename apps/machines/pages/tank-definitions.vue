@@ -35,6 +35,8 @@ const { data: commands, refresh: refreshCommands } = useLazyFetch('/api/master-c
       { name: 'listOfRequestCommands', ref: listOfRequestCommands },
     ]
 
+    lists.forEach(list => list.ref.value = [])
+
     tankDefinitions.value.forEach((tankDef) => {
       lists.forEach((list) => {
         tankDef[list.name].forEach((commandNo) => {
@@ -107,122 +109,93 @@ function filterCommandLists() {
     list.ref.value = list.ref.value.filter(d => d.tankNo === tankNo.value)
   }
 }
+
+function handleDragDrop(e) {
+  console.log('e = ', e)
+}
 </script>
 
 <template>
   <q-card class="flex flex-row justify-around">
-    <q-card-section class="w-sm">
-      <h3>Makineler</h3>
-      <q-list bordered separator>
-        <q-item
-          v-for="machine in machines"
-          :key="machine.machineId"
-          v-ripple
-          clickable
-          @click="handleMachineClick(machine.machineId)"
-        >
-          <q-item-section>
-            {{ machine.machineName }}
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-card-section>
+    <q-card-section class="flex flex-row">
+      <div class="mr-8 w-xs">
+        <h3>Makineler</h3>
+        <q-list bordered separator>
+          <q-item
+            v-for="machine in machines"
+            :key="machine.machineId"
+            v-ripple
+            clickable
+            :focused="selectedMachineId === machine.machineId"
+            :active="selectedMachineId === machine.machineId"
+            @click="handleMachineClick(machine.machineId)"
+          >
+            <q-item-section>
+              {{ machine.machineName }}
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
 
-    <q-card-section class="w-sm">
-      <h3>Kazan Tanımları</h3>
-      <q-list bordered separator>
-        <q-item
-          v-for="def in tankDefinitions"
-          :key="def"
-          v-ripple
-          clickable
-          @click="handleTankDefinitionClick(def)"
-        >
-          <q-item-section>
-            {{ def.name }}
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-card-section>
+      <div class="w-xs mr-8">
+        <h3>Kazan Tanımları</h3>
+        <q-list bordered separator>
+          <q-item
+            v-for="def in tankDefinitions"
+            :key="def.tankNo"
+            v-ripple
+            clickable
+            :focused="selectedDefinition === def.tankNo"
+            :active="selectedDefinition === def.tankNo"
+            @click="handleTankDefinitionClick(def)"
+          >
+            <q-item-section>
+              {{ def.name }}
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
 
-    <q-card-section class="w-3xl flex flex-col">
-      <div class="flex flex-col">
-        <q-input
-          v-model="tankNo"
-          label="Kazan no"
-          filled
-        />
-        <q-input
-          v-model="tankName"
-          label="Kazan Adı"
-          filled
-        />
-        <q-select
-          v-model="highLimit"
-          :options="highLimitOptions"
-          label="Üst Limit Makine Sabiti"
-          option-label="label"
-          option-value="value"
-          filled
-        />
-        <q-input
-          v-model="machineConstantHighLimit"
-          filled
-          label="Üst Limit"
-        />
-        <div>
+      <div class="w-3xl flex flex-col">
+        <div class="grid">
+          <q-input
+            v-model="tankNo"
+            label="Kazan no"
+            filled
+          />
+          <q-input
+            v-model="tankName"
+            label="Kazan Adı"
+            filled
+          />
+          <q-select
+            v-model="highLimit"
+            :options="highLimitOptions"
+            label="Üst Limit Makine Sabiti"
+            option-label="label"
+            option-value="value"
+            filled
+          />
+          <q-input
+            v-model="machineConstantHighLimit"
+            filled
+            label="Üst Limit"
+          />
           <q-btn
             label="Ekle"
             no-caps
             @click="handleTankDefinitionAdd"
           />
         </div>
-      </div>
-
-      <div class="grid">
-        <div class="h-sm overflow-y-scroll">
-          <h3>Komutlar</h3>
-          <Sortable
-            :list="commands"
-            item-key="id"
-            class=""
-            :options="{ group: 'group' }"
-          >
-            <template #item="{ element, index }">
-              <div
-                :key="element.commandNo"
-                class="draggable"
-              >
-                {{ `${element.commandNo} ${element.commandName}` }}
-              </div>
-            </template>
-          </Sortable>
-        </div>
-
         <div class="grid">
-          <div>
-            <h3>Transfer/Dozaj Komutları</h3>
+          <div class="h-sm overflow-y-scroll">
+            <h3>Komutlar</h3>
             <Sortable
-              :list="listOfTransferCommands"
+              :list="commands"
               item-key="id"
+              class=""
               :options="{ group: 'group' }"
-            >
-              <template #item="{ element, index }">
-                <div
-                  :key="element.commandNo"
-                  class="draggable"
-                >
-                  {{ `${element.commandNo} ${element.commandName}` }}
-                </div>
-              </template>
-            </Sortable>
-          </div>
-          <div>
-            <h3>İstek Komutları</h3>
-            <Sortable
-              :list="listOfRequestCommands"
-              item-key="id"
-              :options="{ group: 'group' }"
+              @update="handleDragDrop"
             >
               <template #item="{ element, index }">
                 <div
@@ -235,50 +208,80 @@ function filterCommandLists() {
             </Sortable>
           </div>
 
-          <div>
-            <h3>Sirkülasyonlu Dozaj Komutları</h3>
-            <Sortable
-              :list="listOfCirculationDoSageCommand"
-              item-key="id"
-              :options="{ group: 'group' }"
-            >
-              <template #item="{ element, index }">
-                <div
-                  :key="element.commandNo"
-                  class="draggable"
-                >
-                  {{ `${element.commandNo} ${element.commandName}` }}
-                </div>
-              </template>
-            </Sortable>
-          </div>
+          <div class="grid">
+            <div>
+              <h3>Transfer/Dozaj Komutları</h3>
+              <Sortable
+                :list="listOfTransferCommands"
+                item-key="id"
+                :options="{ group: 'group' }"
+              >
+                <template #item="{ element, index }">
+                  <div
+                    :key="element.commandNo"
+                    class="draggable"
+                  >
+                    {{ `${element.commandNo} ${element.commandName}` }}
+                  </div>
+                </template>
+              </Sortable>
+            </div>
+            <div>
+              <h3>İstek Komutları</h3>
+              <Sortable
+                :list="listOfRequestCommands"
+                item-key="id"
+                :options="{ group: 'group' }"
+              >
+                <template #item="{ element, index }">
+                  <div
+                    :key="element.commandNo"
+                    class="draggable"
+                  >
+                    {{ `${element.commandNo} ${element.commandName}` }}
+                  </div>
+                </template>
+              </Sortable>
+            </div>
 
-          <div>
-            <h3>Sirkülasyonlu İstek Komutları</h3>
-            <Sortable
-              :list="listOfCirculationRequestCommands"
-              item-key="id"
-              :options="{ group: 'group' }"
-            >
-              <template #item="{ element, index }">
-                <div
-                  :key="element.commandNo"
-                  class="draggable"
-                >
-                  {{ `${element.commandNo} ${element.commandName}` }}
-                </div>
-              </template>
-            </Sortable>
+            <div>
+              <h3>Sirkülasyonlu Dozaj Komutları</h3>
+              <Sortable
+                :list="listOfCirculationDoSageCommand"
+                item-key="id"
+                :options="{ group: 'group' }"
+              >
+                <template #item="{ element, index }">
+                  <div
+                    :key="element.commandNo"
+                    class="draggable"
+                  >
+                    {{ `${element.commandNo} ${element.commandName}` }}
+                  </div>
+                </template>
+              </Sortable>
+            </div>
+
+            <div>
+              <h3>Sirkülasyonlu İstek Komutları</h3>
+              <Sortable
+                :list="listOfCirculationRequestCommands"
+                item-key="id"
+                :options="{ group: 'group' }"
+              >
+                <template #item="{ element, index }">
+                  <div
+                    :key="element.commandNo"
+                    class="draggable"
+                  >
+                    {{ `${element.commandNo} ${element.commandName}` }}
+                  </div>
+                </template>
+              </Sortable>
+            </div>
           </div>
         </div>
       </div>
-      <!--       <div class="grid">
-        <q-table title="Transfer/Dozaj Komutları"/>
-        <q-table title="İstek Komutları" />
-        <q-table title="Sirkülasyonlu Dozaj Komutları" />
-        <q-table title="Sirkülasyonlu İstek Komutları" />
-      </div>
- -->
     </q-card-section>
   </q-card>
 </template>
@@ -289,5 +292,11 @@ function filterCommandLists() {
                        "1 1";
   gap: 2em;
   margin-top: 4em;
+}
+
+.input-field {
+  grid-template-areas: "1 1"
+                       "1 1";
+  gap: 1em;
 }
 </style>
