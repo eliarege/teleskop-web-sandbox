@@ -64,7 +64,7 @@ const machineGroups = computed(() => new Set(store.machine.map(g => g.groupName)
                 </q-expansion-item>
 
                 <q-expansion-item
-                  class="text-black"
+                  class="text-black max-h-150 overflow-auto"
                   expand-separator
                   :icon="sharpGrid3x3"
                   :label="t('settings.visual-config')"
@@ -130,7 +130,11 @@ const machineGroups = computed(() => new Set(store.machine.map(g => g.groupName)
                     {{ t('settings.filter.title') }}
                   </span>
                   <div class="grid grid-cols-3">
-                    <div v-for="item in store.machine" :key="item.id">
+                    <div
+                      v-for="item in store.machine"
+                      :key="item.id"
+                      class="max-h-50"
+                    >
                       <q-checkbox
                         :label="item.name"
                         :model-value="!store.filteredMachines.has(item.id)"
@@ -138,6 +142,7 @@ const machineGroups = computed(() => new Set(store.machine.map(g => g.groupName)
                       />
                     </div>
                   </div>
+
                   <q-separator spaced />
                   <span class="w-full flex-center">
                     {{ t('settings.filter.group-title') }}
