@@ -42,10 +42,10 @@ const showModal = reactive({
 })
 
 const { data: machines } = await useFetch('/api/machineList')
-const { data: events, refresh } = await useFetch('/api/plannedEvents', {
+const { data: events, refresh: plannedRefresh } = await useFetch('/api/plannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
-const { data: unScheduledEvents } = await useFetch('/api/unplannedEvents', {
+const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
 const modifiedMachines = computed(() => machines.value?.map((m) => {
@@ -78,11 +78,16 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((u
     constraintDate: new Date(),
   } as UnplannedEvents
 }))
+async function refreshScheduler() {
+  await plannedRefresh()
+  await unScheduledRefresh()
+  // TODO: render grid rows
+}
 async function unPlanEvent(planKey: number) {
   await $fetch('/api/unplan', {
     method: 'PUT',
     query: { planKey },
-  }).then(() => refresh())
+  }).then(() => refreshScheduler())
 }
 async function deleteEvent(planKey: number) {
   await $fetch('api/delete', {
@@ -222,7 +227,9 @@ onMounted(() => {
             text: 'Remove from plan',
             onItem({ eventRecord }: any) {
               unPlanEvent(eventRecord.originalData.id)
-                .then(() => eventRecord.unassign())
+                .then(() => {
+                  eventRecord.unassign()
+                })
                 .catch(err => console.error(err))
             },
           },
@@ -457,6 +464,13 @@ onMounted(() => {
 </template>
 
 <style lang="postcss">
+div[bgRed] {
+  background-color: rgba(237, 16, 16, 0.3) !important;
+}
+
+div[bgGreen] {
+  background-color: rgba(51, 255, 57, 0.3) !important;
+}
 .toolbar-buttons {
   color: white;
   background-color: #03A9F4;

@@ -32,7 +32,18 @@ socket.on('dropResponse', async (res) => {
 let prevMachineId
 let theoreticalDuration
 let endDate
-
+function removeAttributes(element, pattern) {
+  if (element) {
+    for (const attr of element.attributes) {
+      if (pattern.test(attr.name)) {
+        element.removeAttribute(attr.name)
+      }
+    }
+  }
+}
+function getResourceRow(resource) {
+  return document.querySelector(`div[data-id="${resource.id}"]`)
+}
 export class Drag extends DragHelper {
   static get configurable() {
     return {
@@ -88,10 +99,13 @@ export class Drag extends DragHelper {
     const { selectedRecords, store } = grid
     onDragStartSocket(selectedRecords[0].originalData.id)
     context.task = grid.getRecordFromElement(context.grabbed)
-    const a = await $fetch('/api/isValid', {
+    theoreticalDuration = await $fetch('api/theoreticalDuration', {
       query: { planKey: context.task.originalData.id },
     })
-    console.log('huh', a)
+    const isValid = await $fetch('/api/isValid', {
+      query: { planKey: context.task.originalData.id },
+    })
+    context.isValid = isValid
     context.relatedElements = selectedRecords
       .sort((r1, r2) => store.indexOf(r1) - store.indexOf(r2))
       .map(
@@ -109,6 +123,16 @@ export class Drag extends DragHelper {
 
         cls: 'b-popup b-sch-event-tooltip',
       })
+    }
+    if (context.grabbed) {
+      for (let i = 0; i < isValid.length; i++) {
+        const currentRow = document.querySelector(`div[data-id="${isValid[i].machineId}"]`)
+        if (isValid[i].valid) {
+          currentRow?.setAttribute('bgGreen', '')
+        } else {
+          currentRow?.setAttribute('bgRed', '')
+        }
+      }
     }
   }
 
@@ -128,27 +152,30 @@ export class Drag extends DragHelper {
     context.machine = machine
     if (machine) {
       const currentMachineId = machine.id
-      if (prevMachineId !== currentMachineId && prevMachineId !== undefined) {
-        theoreticalDuration = await $fetch('api/theoreticalDuration', {
-          query: { planKey: context.task.originalData.id, machineId: machine.id },
-        })
-      }
       prevMachineId = currentMachineId
-      endDate = startDate && DateHelper.add(startDate, theoreticalDuration, 'h')
+      endDate = startDate && DateHelper.add(startDate, theoreticalDuration.find(a => a.machineId === currentMachineId).theoreticalDuration, 'seconds')
     }
+    const isValid = context.isValid
     // TODO: Machine capacity and program comparison for context.valid
     context.valid = Boolean(startDate && machine)
       && !(startDate < new Date())
       && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
+      && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).valid : true)
     if (this.tip) {
       if (!context.valid) {
         if (!schedule.isDateRangeAvailable(startDate, endDate, null, machine)) {
           this.tip.html = `
-                <div class="b-sch-event-title" style="color: #FF2E51 !important">
-                You can not overlap events!
-                </div>
+            <div class="b-sch-event-title" style="color: #FF2E51 !important">
+            You can not overlap events!
+            </div>
             `
           this.tip.showBy(context.element)
+        } else if (!isValid.find(a => a.machineId === machine.id).valid) {
+          this.tip.html = `
+              <div class="b-sch-event-title" style="color: #FF2E51 !important">
+              Programs does not Match!
+              </div>
+          `
         } else {
           this.tip.html = `
         <div class="b-sch-event-title" style="color: #FF2E51 !important">
@@ -164,10 +191,8 @@ export class Drag extends DragHelper {
         const formattedEndDate = DateHelper.format(endDate, dateFormat)
 
         this.tip.html = `
-                <div class="b-sch-event-title">${task.name}</div>
                 <div class="b-sch-tooltip-startdate">Starts: ${formattedStartDate}</div>
                 <div class="b-sch-tooltip-enddate">Ends: ${formattedEndDate}</div>
-                <div class="b-sch-tooltip-enddate">Ends: ${theoreticalDuration}</div>
             `
         this.tip.showBy(context.element)
       }
@@ -221,6 +246,11 @@ export class Drag extends DragHelper {
       machine.cls = ''
     }
     schedule.features.eventTooltip.disabled = false
+    for (let i = 0; i < schedule.resources.length; i++) {
+      const element = schedule.resources[i]
+      const currentRow = getResourceRow(element)
+      removeAttributes(currentRow, /^bg/)
+    }
   }
 
   set schedule(schedule) {
