@@ -10,12 +10,12 @@ export function fileAnalogOutputParser(content: string) {
   let match = pattern.exec(content)
   while (match !== null) {
     const output: IOOutput = {
-      id: match[1],
-      card: match[2],
-      canal: match[3],
+      id: Number.parseInt(match[1]),
+      card: Number.parseInt(match[2]),
+      canal: Number.parseInt(match[3]),
       name: match[4],
-      defaultValue: match[5],
-      enabled: match[6],
+      defaultValue: Number.parseInt(match[5]),
+      enabled: Number.parseInt(match[6]),
     }
     outputs.push(output)
     match = pattern.exec(content)

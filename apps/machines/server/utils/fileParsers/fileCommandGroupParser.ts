@@ -1,4 +1,4 @@
-import type { FinishReason } from '~/types'
+import type { CommandGroup } from '~/types'
 
 const pattern = /^(\d+) "([^"]+)" "([^"]+)"$/gim
 /**
@@ -9,8 +9,8 @@ export function fileCommandGroupParser(content: string) {
   const groups = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const group = {
-      commandGroupId: match[1],
+    const group: CommandGroup = {
+      commandGroupId: Number.parseInt(match[1]),
       name: match[2],
       icon: match[3].split('.')[0],
     }

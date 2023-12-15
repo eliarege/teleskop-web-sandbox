@@ -12,7 +12,7 @@ export function fileFinishReasonParser(content: string) {
     const reason: FinishReason = {
       reasonId: match[1],
       text: match[2],
-      typeId: match[3],
+      typeId: Number.parseInt(match[3]),
     }
     reasons.push(reason)
     match = pattern.exec(content)

@@ -1,57 +1,59 @@
 export interface Machine {
-  id: number
-  code: string
-  groupName: string
-  groupId: number
-  tbbModel: string
-  plcModel: string
-  ip: string
-  theoricalCharge: string
-  theoricalChargeDuration: string
-  machineCapacity: string
-  reelCount: number
-  nozzleCount: number
-  steamUnit: string
-  steamKgPerHour: number
-  additionalTank1: boolean
-  additionalTank2: boolean
-  additionalTank3: boolean
-  additionalTank4: boolean
-  reserveTank: boolean
-  inUse: boolean
-  MTTempIo: string[]
-  version: string
+  id?: number
+  code?: string
+  groupName?: string
+  groupId?: number
+  tbbModel?: string
+  plcModel?: string
+  ip?: string
+  theoricalCharge?: string
+  theoricalChargeDuration?: string
+  machineCapacity?: string
+  reelCount?: number
+  nozzleCount?: number
+  steamUnit?: string
+  steamKgPerHour?: number
+  additionalTank1?: boolean
+  additionalTank2?: boolean
+  additionalTank3?: boolean
+  additionalTank4?: boolean
+  reserveTank?: boolean
+  inUse?: boolean
+  MTTempIo?: string[]
+  version?: string
+  productModel?: string
+  hardwareModel?: string
 }
 
 export interface User {
-  userId: string
+  userId: number
   userName: string
   userSurname: string
   userPass: string
-  userInfo: string
-  userActive: boolean
+  userInfo?: string
+  userActive?: number
   userMode: string
   userMode2: string
-  userType: string | number
+  userType: number
 }
 
-export interface MachineStopReason {
-  stopCode: string
+export interface StopReason {
+  stopCode: number
   stopName: string
-  reportToERP: boolean
+  reportToERP?: boolean
 }
 
 export interface ManualReason {
-  manualId: string
+  manualId: number
   manualReason: string
-  reportToERP: boolean
+  reportToERP?: boolean
 }
 
 export interface FinishReason {
   reasonId: string
-  typeId: string | number
+  typeId: number
   text: string
-  reportToERP: boolean
+  reportToERP?: number
 }
 
 export interface LockGeneral {
@@ -91,25 +93,25 @@ export interface CommandAlarmReason {
 }
 
 export interface MachineParameter {
-  id: number
-  paramString: string
-  defaultValue: number
-  dmArea: number
-  consScreen: number
-  paramLowLimit: number
-  paramHighLimit: number
-  consFormat: number
-  paramNo: number
-  consUnit: number
-  currentValue: number
-  parameterType: number
-  selectionList: string
-  unitCode: number
-  selectionValues: string
-  isDeleted: number
+  machineParameterId?: number
+  paramString?: string
+  defaultValue?: number
+  dmArea?: number
+  consScreen?: number
+  paramLowLimit?: number
+  paramHighLimit?: number
+  consFormat?: number
+  paramNo?: number
+  consUnit?: number
+  currentValue?: number
+  parameterType?: number
+  selectionList?: string
+  unitCode?: number
+  selectionValues?: string
+  isDeleted?: number
 }
 
-export interface IOInput {
+export interface IO {
   id: number
   card: number
   canal: number
@@ -117,11 +119,61 @@ export interface IOInput {
   enabled: number
 }
 
-export interface IOOutput {
-  id: number
-  card: number
-  canal: number
-  name: string
-  enabled: number
+export interface IOOutput extends IO {
   defaultValue: number
+}
+
+export interface MasterCommandsAlarm {
+  commandNo: number
+  alarmNo: number
+  alarm: string
+}
+
+export interface FeedbackCommand {
+  commandNo: number
+  PVNo: number
+  returnValueName: number
+  canShow: number
+  SPRelation: number
+}
+
+export interface MasterCommand {
+  commandNo?: number
+  commandType?: number
+  x?: string
+  y?: string
+  a?: string
+  maxA?: string
+  b?: string
+  adviceList?: string
+  dontUseList?: string
+  functionId?: number
+  tbbFunctionName?: string
+  name?: string
+  activated?: number
+  isRunManual?: number
+  moveParallel?: number
+  changeTime?: Date
+  tbbChangeTime?: Date
+  isDeleted?: number
+  isChanged?: number
+  isTemperature?: number
+  isUnload?: number
+  icon?: string
+  groupId?: number
+  type?: number
+}
+
+export interface CommandGroup {
+  commandGroupId: number
+  name: string
+  icon: string
+}
+
+export interface FunctionAlarm {
+  f: string
+  s: string
+  e: string
+  o: string
+  m: string
 }

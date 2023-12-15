@@ -1,4 +1,4 @@
-import type { FinishReason } from '~/types'
+import type { Machine } from '~/types'
 
 const pattern = /^(.+)-(.+)-(.+)$/gim
 
@@ -9,11 +9,13 @@ const pattern = /^(.+)-(.+)-(.+)$/gim
 
 export function fileControllerModelParser(content: string) {
   const match = pattern.exec(content)
-  const controllerModel = {
-    ProductModel: match[1],
-    HardwareModel: match[2],
-    PlcModel: match[3],
+  if (match) {
+    const controllerModel: Machine = {
+      productModel: match[1],
+      hardwareModel: match[2],
+      plcModel: match[3],
+    }
+    pattern.lastIndex = 0
+    return controllerModel
   }
-  pattern.lastIndex = 0
-  return controllerModel
 }

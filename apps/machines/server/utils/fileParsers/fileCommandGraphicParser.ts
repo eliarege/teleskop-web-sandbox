@@ -1,3 +1,5 @@
+import type { MasterCommand } from '~/types'
+
 const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" "([^"]*)" "([^"]*)" "([^"]*)"$/gim
 /**
  *  '/tbb6500/data/commands/graphic'
@@ -7,9 +9,9 @@ export function fileCommandGraphicParser(content: string) {
   const groups = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const group = {
-      commandNo: match[1],
-      type: match[2],
+    const group: MasterCommand = {
+      commandNo: Number.parseInt(match[1]),
+      type: Number.parseInt(match[2]),
       x: match[3],
       y: match[4],
       a: match[5],
