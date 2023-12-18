@@ -280,3 +280,10 @@ export async function upsertTheoreticalWaterConsumption(obj: object) {
     body: obj,
   })
 }
+
+export async function updateTankDefinitionList(tankDefinition) {
+  return await $fetch('/api/tank-definitions/tank-definition-list', {
+    method: 'PUT',
+    body: tankDefinition,
+  })
+}
