@@ -10,13 +10,13 @@ const highLimit = ref()
 const machineConstantHighLimit = ref()
 
 const listOfTransferCommands = ref([])
-const listOfCirculationDoSageCommand = ref([])
+const listOfCirculationDoSageCommands = ref([])
 const listOfCirculationRequestCommands = ref([])
 const listOfRequestCommands = ref([])
 
 const lists = [
   { name: 'listOfTransferCommands', ref: listOfTransferCommands },
-  { name: 'listOfCirculationDoSageCommand', ref: listOfCirculationDoSageCommand },
+  { name: 'listOfCirculationDoSageCommands', ref: listOfCirculationDoSageCommands },
   { name: 'listOfCirculationRequestCommands', ref: listOfCirculationRequestCommands },
   { name: 'listOfRequestCommands', ref: listOfRequestCommands },
 ]
@@ -264,11 +264,11 @@ async function handleDragDrop(e, listName) {
             <div>
               <h3>Sirkülasyonlu Dozaj Komutları</h3>
               <Sortable
-                :list="listOfCirculationDoSageCommand"
+                :list="listOfCirculationDoSageCommands"
                 item-key="id"
                 :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommand')"
-                @remove="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommand')"
+                @add="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommands')"
+                @remove="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommands')"
               >
                 <template #item="{ element, index }">
                   <div
