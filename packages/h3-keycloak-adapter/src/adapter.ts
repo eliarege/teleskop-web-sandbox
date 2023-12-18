@@ -1,7 +1,8 @@
-import { JWTPayload, createRemoteJWKSet, jwtVerify } from 'jose'
-import { H3Event, EventHandler, EventHandlerRequest, EventHandlerResponse } from 'h3'
-import { defineEventHandler, getHeader, createError } from 'h3'
-import { createConsola, LogLevels, type LogLevel } from 'consola'
+import type { JWTPayload } from 'jose'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
+import { createError, defineEventHandler, getHeader } from 'h3'
+import type { EventHandler, EventHandlerRequest, EventHandlerResponse, H3Event } from 'h3'
+import { type LogLevel, createConsola } from 'consola'
 
 export interface KeycloakAdapterConfig {
   url: string
@@ -41,8 +42,8 @@ export type H3AuthEvent<Request extends EventHandlerRequest> = H3Event<Request> 
 }
 
 export interface AuthEventHandler<Request extends EventHandlerRequest = EventHandlerRequest, Response extends EventHandlerResponse = EventHandlerResponse> {
-  __is_handler__?: true;
-  (event: H3AuthEvent<Request>): Response;
+  __is_handler__?: true
+  (event: H3AuthEvent<Request>): Response
 }
 
 export interface AuthEventHandlerObject<T extends EventHandlerRequest, D> {
@@ -50,11 +51,10 @@ export interface AuthEventHandlerObject<T extends EventHandlerRequest, D> {
   handler: AuthEventHandler<T, D>
 }
 
-
 export function keycloakAdapter(config: KeycloakAdapterConfig) {
   /** JSON Web Key Set. Read more: https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-sets */
   const logger = createConsola({
-    level: config.logger ? config.logLevel : LogLevels.silent
+    level: config.logger ? config.logLevel : -999,
   })
   const JWKS = createRemoteJWKSet(new URL(`${config.url}/realms/${config.realm}/protocol/openid-connect/certs`))
 
@@ -62,7 +62,7 @@ export function keycloakAdapter(config: KeycloakAdapterConfig) {
     defineAuthEventHandler<T extends EventHandlerRequest, D>(
       authHandler:
         | AuthEventHandlerObject<T, D>
-        | AuthEventHandler<T, D>
+        | AuthEventHandler<T, D>,
     ): EventHandler<T, D> {
       const { handler, roles = [] } = typeof authHandler === 'object'
         ? authHandler
@@ -93,6 +93,6 @@ export function keycloakAdapter(config: KeycloakAdapterConfig) {
         }
         return handler(event as H3AuthEvent<T>)
       })
-    }
+    },
   }
 }

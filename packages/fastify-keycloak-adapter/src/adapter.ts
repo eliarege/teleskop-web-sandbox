@@ -1,6 +1,7 @@
 import type { FastifyReply, FastifyRequest, RouteOptions, onRequestHookHandler } from 'fastify'
 import fp from 'fastify-plugin'
-import { JWTPayload, createRemoteJWKSet, jwtVerify } from 'jose'
+import type { JWTPayload } from 'jose'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
 
 export interface KeycloakPluginConfig {
   url: string
