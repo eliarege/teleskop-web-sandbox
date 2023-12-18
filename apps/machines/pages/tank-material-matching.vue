@@ -1,13 +1,24 @@
 <script setup lang="ts">
-import { getMachineCommands } from '~/utils'
+import { Sortable } from 'sortablejs-vue3'
 
-const { data: machines } = await useFetch('/api/command-timeout-reasons/command-map-machines')
+/*
+1 kimyasal
+2 boya
+3 diğer
+*/
 
 const selectedMachineId = ref()
-const machineCommands = ref()
+
+const { data: machines } = useLazyFetch('/api/command-timeout-reasons/command-map-machines')
+const { data: materials } = useLazyFetch('/api/materials/materials')
+
+const { data: tanks } = useLazyFetch('/api/tank-definitions/tank-definitions', {
+  immediate: false,
+  default: () => [],
+  query: { machineId: selectedMachineId },
+})
 
 async function handleMachineClick(machineId: number) {
-  machineCommands.value = await getMachineCommands(machineId)
   selectedMachineId.value = machineId
 }
 </script>
@@ -29,26 +40,31 @@ async function handleMachineClick(machineId: number) {
           </q-item-section>
         </q-item>
       </q-list>
-    </q-card-section>
 
-    <q-card-section>
-      <h3>Materyaller</h3>
-      <div class="flex flex-row">
-        <q-input label="materyal ara" class="w-xs" />
-        <q-select label="materyal tipi" class="w-xs" />
-      </div>
-      <q-list bordered separator>
-        <q-item
-          v-for="command in machineCommands"
-          :key="command.commandNo"
-          v-ripple
-          clickable
+      <div class="h-sm overflow-y-scroll">
+        <h3>Komutlar</h3>
+        <Sortable
+          :list="materials"
+          item-key="id"
+          class=""
+          :options="{ group: 'group' }"
         >
-          <q-item-section>
-            {{ command.commandName }}
-          </q-item-section>
-        </q-item>
-      </q-list>
+          <template #item="{ element, index }">
+            <div
+              :key="element.materialCode"
+              class="draggable"
+            >
+              {{ `${element.materialCode} ${element.materialName}` }}
+            </div>
+          </template>
+        </Sortable>
+      </div>
+      <!-- tanks -->
+      <div v-if="tanks.length">
+        <div v-for="tank in tanks" :key="tank">
+          <h3>{{ tank.name }}</h3>
+        </div>
+      </div>
     </q-card-section>
   </q-card>
 </template>
