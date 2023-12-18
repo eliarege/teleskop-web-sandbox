@@ -25,18 +25,19 @@ export async function getUsers(): Promise<User[]> {
 }
 
 export async function addUser(user: User) {
-  await $fetch('/api/user-definitions/user-definition', { method: 'POST',body:
+  await $fetch('/api/user-definitions/user-definition', { method: 'POST',
+body:
       user })
 }
 
 export async function editUser(user: User) {
-  await $fetch('/api/user-definitions/user-definition', { method: 'PUT',body:
+  await $fetch('/api/user-definitions/user-definition', { method: 'PUT',
+body:
       user })
 }
 
 export async function deleteUser(userIds: string[]) {
-  await $fetch('/api/user-definitions/user-definition', { method: 'DELETE',
-body: {
+  await $fetch('/api/user-definitions/user-definition', { method: 'DELETE', body: {
     userIds,
   } })
 }
@@ -46,16 +47,16 @@ export async function getManualReasons(): Promise<ManualReason> {
 }
 
 export async function addManualReason(manualId, newReasonName, checkReportToERP) {
-  await $fetch('/api/manual-reasons/manual-reason', { method: 'POST',body: {
-      manualId,
-      newManualReason: newReasonName,
-      reportToERP: checkReportToERP,
-    } })
+  await $fetch('/api/manual-reasons/manual-reason', { method: 'POST',
+body: {
+    manualId,
+    newManualReason: newReasonName,
+    reportToERP: checkReportToERP,
+  } })
 }
 
 export async function editManualReason(oldReasonName, newReasonName, checkReportToERP) {
-  await $fetch('/api/manual-reasons/manual-reason', { method: 'PUT',
-body: {
+  await $fetch('/api/manual-reasons/manual-reason', { method: 'PUT', body: {
     oldManualReason: oldReasonName,
     newManualReason: newReasonName,
     reportToERP: checkReportToERP,
@@ -63,9 +64,9 @@ body: {
 }
 
 export async function deleteManualReasons(selectedReason) {
-  await $fetch('/api/manual-reasons/manual-reasons', { method: 'DELETE', body: {
-    manualIds: [selectedReason[0].manualId],
-  } })
+  await $fetch('/api/manual-reasons/manual-reasons', { method: 'DELETE',body: {
+      manualIds: [selectedReason[0].manualId],
+    } })
 }
 
 export async function getMachineStopReasons(): Promise<MachineStopReason[]> {
@@ -73,16 +74,16 @@ export async function getMachineStopReasons(): Promise<MachineStopReason[]> {
 }
 
 export async function addStopReason(stopReasons, newStopName, checkReportToERP) {
-  await $fetch('/api/stop-reasons/stop-reason', { method: 'POST',body: {
-      stopCode: stopReasons[stopReasons.length - 1].stopCode + 1,
-      newStopName,
-      reportToERP: checkReportToERP,
-    } })
+  await $fetch('/api/stop-reasons/stop-reason', { method: 'POST',
+body: {
+    stopCode: stopReasons[stopReasons.length - 1].stopCode + 1,
+    newStopName,
+    reportToERP: checkReportToERP,
+  } })
 }
 
 export async function editStopReason(oldStopName, newStopName, checkReportToERP) {
-  await $fetch('/api/stop-reasons/stop-reason', { method: 'PUT',
-body: {
+  await $fetch('/api/stop-reasons/stop-reason', { method: 'PUT', body: {
     oldStopName,
     newStopName,
     reportToERP: checkReportToERP,
@@ -90,9 +91,9 @@ body: {
 }
 
 export async function deleteStopReasons(selectedStopReason) {
-  await $fetch('/api/stop-reasons/stop-reasons', { method: 'DELETE', body: {
-    stopCodes: [selectedStopReason[0].stopCode],
-  } })
+  await $fetch('/api/stop-reasons/stop-reasons', { method: 'DELETE',body: {
+      stopCodes: [selectedStopReason[0].stopCode],
+    } })
 }
 
 export async function getFinishReasons(): Promise<FinishReason[]> {
@@ -100,17 +101,18 @@ export async function getFinishReasons(): Promise<FinishReason[]> {
 }
 
 export async function addFinishReason(finishReasons, typeId, text) {
-  await $fetch('/api/finish-reasons/finish-reason', { method: 'POST',body: {
-      reasonId: finishReasons[finishReasons.length - 1].reasonId + 1,
-      typeId,
-      text,
-    } })
+  await $fetch('/api/finish-reasons/finish-reason', { method: 'POST',
+body: {
+    reasonId: finishReasons[finishReasons.length - 1].reasonId + 1,
+    typeId,
+    text,
+  } })
 }
 
 export async function deleteFinishReasons(selectedFinishReason) {
-  await $fetch('/api/finish-reasons/finish-reasons', { method: 'DELETE', body: {
-    reasonIds: [selectedFinishReason[0].reasonId],
-  } })
+  await $fetch('/api/finish-reasons/finish-reasons', { method: 'DELETE',body: {
+      reasonIds: [selectedFinishReason[0].reasonId],
+    } })
 }
 
 export async function editFinishReason(finishReason) {
@@ -122,9 +124,10 @@ export async function getRecipeTypes(): Promise<RecipeType[]> {
 }
 
 export async function addRecipeType(typeName) {
-  await $fetch('/api/recipe-types/recipe-type', { method: 'POST',body: {
-      typeName,
-    } })
+  await $fetch('/api/recipe-types/recipe-type', { method: 'POST',
+body: {
+    typeName,
+  } })
 }
 
 export async function editRecipeType(id, typeName) {
@@ -132,9 +135,9 @@ export async function editRecipeType(id, typeName) {
 }
 
 export async function deleteRecipeType(recipeTypes) {
-  await $fetch('/api/recipe-types/recipe-types', { method: 'DELETE', body: {
-    ids: [recipeTypes[0].id],
-  } })
+  await $fetch('/api/recipe-types/recipe-types', { method: 'DELETE',body: {
+      ids: [recipeTypes[0].id],
+    } })
 }
 
 export async function getWaterTypes(): Promise<WaterType[]> {
@@ -150,16 +153,18 @@ export async function deleteWaterTypes(waterTypes) {
 }
 
 export async function getMachineCommands(machineId: number) {
-  return await $fetch('/api/master-commands/master-commands', { method: 'GET',query: {
-      machineId,
-    } })
+  return await $fetch('/api/master-commands/master-commands', { method: 'GET',
+query: {
+    machineId,
+  } })
 }
 
 export async function getSelectedTimeoutReasons(machineId: number, commandNo: number) {
-  return await $fetch('/api/command-timeout-reasons/selected-timeout-reasons', { method: 'POST',body: {
-      machineId,
-      commandNo,
-    } })
+  return await $fetch('/api/command-timeout-reasons/selected-timeout-reasons', { method: 'POST',
+body: {
+    machineId,
+    commandNo,
+  } })
 }
 
 export async function getTimeoutReasons() {
@@ -223,34 +228,38 @@ export async function deleteOtherMachine(machineId) {
 }
 
 export async function selectConsumptionCounter(machineId, counterId1, counterId2) {
-  await $fetch('/api/consumption-counters/consumption-counter', { method: 'POST',body: {
-      machineId,
-      counterId1,
-      counterId2,
-    } })
+  await $fetch('/api/consumption-counters/consumption-counter', { method: 'POST',
+body: {
+    machineId,
+    counterId1,
+    counterId2,
+  } })
 }
 
 export async function selectStartingParameterType(machineId, paramTypeId, paramId) {
-  await $fetch('/api/starting-parameter-types/starting-parameter-type', { method: 'POST',body: {
-      machineId,
-      paramTypeId,
-      paramId,
-    } })
+  await $fetch('/api/starting-parameter-types/starting-parameter-type', { method: 'POST',
+body: {
+    machineId,
+    paramTypeId,
+    paramId,
+  } })
 }
 
 export async function selectSmartRequestCommand(machineId, commandTypeId, commandNo) {
   if (commandNo === -1) {
-    await $fetch('/api/smart-request-commands/smart-request-command', { method: 'DELETE',body: {
-        machineId,
-        commandTypeId,
-        commandNo,
-      } })
+    await $fetch('/api/smart-request-commands/smart-request-command', { method: 'DELETE',
+body: {
+      machineId,
+      commandTypeId,
+      commandNo,
+    } })
   } else
-    await $fetch('/api/smart-request-commands/smart-request-command', { method: 'POST',body: {
-        machineId,
-        commandTypeId,
-        commandNo,
-      } })
+    await $fetch('/api/smart-request-commands/smart-request-command', { method: 'POST',
+body: {
+      machineId,
+      commandTypeId,
+      commandNo,
+    } })
 }
 
 export async function getMachineAccessFails(machineIds, eventCodes) {

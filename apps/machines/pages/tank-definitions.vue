@@ -110,17 +110,20 @@ async function handleDragDrop(e, listName) {
   if (matches && matches.length) {
     const commandNo = Number.parseInt(matches[0])
     // update relevant list in db
-    const list = lists.find(list => list.name === listName)
-    if (e.type === 'add') {
-      console.log('add')
-      await updateTankDefinitionList({
-        machineId: selectedMachineId.value,
-        tankDefinitionId: selectedDefinition.value,
-        listName,
-        commandNo,
-      })
-    } else if (e.type === 'remove')
-      console.log('remove')
+    let action
+    if (e.type === 'add')
+      action = 'add'
+    else if (e.type === 'remove')
+      action = 'remove'
+
+    await updateTankDefinitionList({
+      machineId: selectedMachineId.value,
+      tankDefinitionId: selectedDefinition.value,
+      listName,
+      commandNo,
+      action,
+    })
+    await refreshDefinitions()
   }
 }
 </script>
