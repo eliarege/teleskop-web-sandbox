@@ -1,3 +1,5 @@
+import type { MasterCommand } from '~/types'
+
 const pattern = /^(\d+) ((?:\d+(?:,\d+)*,)*\d?) ((?:\d+(?:,\d+)*,)*\d*) ((?:\d+(?:,\d+)*,)*\d?)$/gim
 /**
  *  '/tbb6500/data/commands/editing'
@@ -10,8 +12,8 @@ export function fileCommandsEditingParser(content: string) {
   const commands = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const command = {
-      commandNo: match[1],
+    const command: MasterCommand = {
+      commandNo: Number.parseInt(match[1]),
       adviceList: match[2],
       dontUseList: match[3],
     }

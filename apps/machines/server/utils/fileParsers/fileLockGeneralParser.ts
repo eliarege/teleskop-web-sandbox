@@ -10,23 +10,23 @@ export function fileLockGeneralParser(content: string) {
   let match = pattern.exec(content)
   while (match !== null) {
     const lock: LockGeneral = {
-      machineId: match[1],
+      machineId: Number.parseInt(match[1]),
       lockName: match[2],
-      lockNo: match[3],
-      logicType: match[4],
-      stopDyeing: match[5],
-      jumpStep: match[6],
-      alarm: match[7],
+      lockNo: Number.parseInt(match[3]),
+      logicType: Number.parseInt(match[4]),
+      stopDyeing: Number.parseInt(match[5]),
+      jumpStep: Number.parseInt(match[6]),
+      alarm: Number.parseInt(match[7]),
       onDelay: match[8],
       stepDelay: match[9],
       messageString: match[10],
-      giveMessage: match[11],
-      aInLogicType: match[12],
-      dInLogicType: match[13],
-      commandLogicType: match[14],
-      lockLogicType: match[15],
-      dOutLogicType: match[16],
-      vInLogicType: match[17],
+      giveMessage: Number.parseInt(match[11]),
+      aInLogicType: Number.parseInt(match[12]),
+      dInLogicType: Number.parseInt(match[13]),
+      commandLogicType: Number.parseInt(match[14]),
+      lockLogicType: Number.parseInt(match[15]),
+      dOutLogicType: Number.parseInt(match[16]),
+      vInLogicType: Number.parseInt(match[17]),
     }
     locks.push(lock)
     match = pattern.exec(content)

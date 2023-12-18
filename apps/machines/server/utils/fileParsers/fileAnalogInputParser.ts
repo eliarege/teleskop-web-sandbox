@@ -1,4 +1,4 @@
-import type { IOInput } from '~/types'
+import type { IO } from '~/types'
 
 const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (\d+) (\d+) "([^"]+)" $/gim
 /**
@@ -9,12 +9,12 @@ export function fileAnalogInputParser(content: string) {
   const inputs = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const input: IOInput = {
-      id: match[1],
-      card: match[2],
-      canal: match[3],
+    const input: IO = {
+      id: Number.parseInt(match[1]),
+      card: Number.parseInt(match[2]),
+      canal: Number.parseInt(match[3]),
       name: match[4],
-      enabled: match[5],
+      enabled: Number.parseInt(match[5]),
     }
     inputs.push(input)
     match = pattern.exec(content)

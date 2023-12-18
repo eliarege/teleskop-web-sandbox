@@ -17,15 +17,15 @@ export function fileMachineParametersParser(content: string) {
     // paramNo,consUnit
 
     const parameter: MachineParameter = {
-      id,
+      machineParameterId: Number.parseInt(id),
       paramString: values[0],
-      defaultValue: values[1],
-      dmArea: values[2],
-      consScreen: values[3],
-      paramLowLimit: values[4],
-      paramHighLimit: values[5],
-      consFormat: values[6],
-      consUnit: values[8],
+      defaultValue: Number.parseInt(values[1]),
+      dmArea: Number.parseInt(values[2]),
+      consScreen: Number.parseInt(values[3]),
+      paramLowLimit: Number.parseInt(values[4]),
+      paramHighLimit: Number.parseInt(values[5]),
+      consFormat: Number.parseInt(values[6]),
+      consUnit: Number.parseInt(values[8]),
     }
 
     machineParameters.push(parameter)

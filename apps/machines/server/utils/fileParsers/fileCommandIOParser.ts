@@ -11,7 +11,7 @@ export function fileCommandIOParser(content: string) {
       commandNo: match[1],
     }
     if (match[3]) {
-      const groups = match[3].match(/(\d+,\d+ \d+)/g)
+      const groups = match[3].match(/(\d+,\d+ [01])/g)
       command.chooseList = groups.map((g) => {
         const [xy, z] = g.split(' ')
         const [x, y] = xy.split(',')

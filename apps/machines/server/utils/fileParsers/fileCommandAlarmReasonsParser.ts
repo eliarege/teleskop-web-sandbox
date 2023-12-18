@@ -12,10 +12,10 @@ export function fileCommandAlarmReasonsParser(content: string) {
     const commandNumbersArray = match[3].split(',').map(Number)
 
     const reason: CommandAlarmReason = {
-      id: match[1],
+      id: Number.parseInt(match[1]),
       reasonText: match[2],
       commandNumbers: commandNumbersArray,
-      groupId: match[4],
+      groupId: Number.parseInt(match[4]),
     }
     reasons.push(reason)
     match = pattern.exec(content)

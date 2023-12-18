@@ -13,8 +13,8 @@ export function fileMachineParameterValuesParser(content: string) {
     const values = match[2].split(',')
 
     const parameter: MachineParameter = {
-      id,
-      currentValue: values[0],
+      machineParameterId: Number.parseInt(id),
+      currentValue: Number.parseInt(values[0]),
     }
 
     machineParameterValues.push(parameter)

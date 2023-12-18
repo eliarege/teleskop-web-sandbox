@@ -10,7 +10,7 @@ export function fileManualReasonParser(content: string) {
   let match = pattern.exec(content)
   while (match !== null) {
     const reason: ManualReason = {
-      manualId: match[1],
+      manualId: Number.parseInt(match[1]),
       manualReason: match[2],
     }
     reasons.push(reason)
