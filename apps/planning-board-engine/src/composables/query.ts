@@ -143,33 +143,60 @@ export async function getRecipe(machineId: string, jobOrder: string) {
     .orderBy(['p.RCPINDEX', 'DYEREQUESTNUMBER', 'PARALLELSTEP'])
   return { autoRecipe, manualRecipe }
 }
-export async function isTaskValid(planKey: number, machineId: number) {
-  const taskPrgList: string[] = ((await knex({ p: 'dbo.DYBFBATCHPLAN' }).select({ prgList: 'p.PROGRAMNOLIST' }).where('p.PLANKEY', '=', planKey))[0].prgList).split(',').slice(0, -1).map(a => Number.parseInt(a))
+export async function isTaskValid(planKey: number) {
+  const taskPrgList: Set<number> = new Set(
+    (
+      await knex({ p: 'dbo.DYBFBATCHPLAN' })
+        .select({ prgList: 'p.PROGRAMNOLIST' })
+        .where('p.PLANKEY', '=', planKey)
+    )[0].prgList.split(',').slice(0, -1).map(a => Number.parseInt(a)),
+  )
+  const allMachineIds: number[] = (
+    await knex({ p: 'dbo.BFMASTERPRGHEADER' })
+      .leftJoin({ d: 'dbo.BFMACHINES' }, 'p.MACHINEID', 'd.MACHINEID')
+      .select({ machineId: 'p.MACHINEID' })
+      .where('d.INUSE', '=', 1)
+      .andWhere('d.USEINTELESKOP', '=', 1)
+      .groupBy('p.MACHINEID')
+  ).map(row => row.machineId)
 
-  const machinePrgList: { machineId: number; prgList: number[] }[] = await knex({ p: 'dbo.BFMASTERPRGHEADER' }).select({
-    machineId: 'MACHINEID',
-    prgList: knex.raw("CONCAT('[', STRING_AGG(PROGNO, ','), ']')"),
+  const promises = allMachineIds.map(async (machineId) => {
+    const machinePrgList: Set<number> = new Set(
+      (
+        await knex({ p: 'dbo.BFMASTERPRGHEADER' })
+          .select({
+            prgList: knex.raw("CONCAT('[', STRING_AGG(PROGNO, ','), ']')"),
+          })
+          .where('MACHINEID', '=', machineId)
+          .groupBy('MACHINEID')
+      )[0].prgList
+        .replace(/^\[|\]$/g, '')
+        .split(',')
+        .map(a => Number.parseInt(a)),
+    )
+
+    const isValid = [...taskPrgList].every(a => machinePrgList.has(a))
+    return { machineId, valid: isValid }
   })
-    .where('MACHINEID', '=', machineId)
-    .groupBy('MACHINEID')
-  return taskPrgList.every(a => machinePrgList[0].prgList.includes(a))
+
+  return Promise.all(promises)
 }
-export async function getTheoreticalDuration(planKey: number, machineId: number) {
-  return (await knex.raw(`
-  SELECT SUM(B.DURATION) as theoreticalDuration
+
+export async function getTheoreticalDuration(planKey: number) {
+  return await knex.raw(`
+  SELECT b.MACHINEID as machineId ,SUM(B.DURATION) as theoreticalDuration
   FROM BFMASTERPRGHEADER B
-  WHERE B.MACHINEID = ${machineId}
-    AND B.PROGNO IN (
+  WHERE B.PROGNO IN (
       SELECT RECIPENO
       FROM DYBFBATCHORDERRECIPEHEADER
       WHERE PLANKEY = ${planKey}
     )
+    group by b.MACHINEID
 `)
-  )[0].theoreticalDuration
 }
 //  UPDATE
 export async function updateEvents(planKey: number, machineId: number, plannedStartTime: string) {
-  const theoreticalDuration = await getTheoreticalDuration(planKey, machineId)
+  const theoreticalDuration = await getTheoreticalDuration(planKey)
 
   const queueNumber = (await knex.raw(`
   SELECT TOP 1 p.QUEUENUMBER + 1 as queue
@@ -187,7 +214,7 @@ export async function updateEvents(planKey: number, machineId: number, plannedSt
       MACHINEIDLIST: machineId,
       PLANNEDMACHINE: machineId,
       PLANNEDSTARTTIME: plannedStartTime,
-      TheoricalDuration: theoreticalDuration,
+      TheoricalDuration: theoreticalDuration.find(a => a.machineId === machineId).theoreticalDuration,
     })
     .where({ PLANKEY: planKey })
 }
@@ -197,14 +224,15 @@ export async function removeFromPlan(planKey: number) {
 }
 // SAVE
 export async function scheduleEvents(planKey: number, machineId: number, plannedStartTime: string) {
-  const theoreticalDuration = await getTheoreticalDuration(planKey, machineId)
+  const theoreticalDuration = await getTheoreticalDuration(planKey)
+  console.log('WTF:', theoreticalDuration)
   const queueNumber = (await knex.raw(`SELECT TOP 1 p.QUEUENUMBER + 1 as queue FROM PTBATCHPLANQUEUE p WHERE p.MACHINEID = ${machineId} ORDER BY p.QUEUENUMBER DESC`))[0].queue
   await knex('DYBFBATCHPLAN')
     .update({
       MACHINEIDLIST: machineId,
       PLANNEDMACHINE: machineId,
       PLANNEDSTARTTIME: plannedStartTime,
-      TheoricalDuration: theoreticalDuration,
+      TheoricalDuration: theoreticalDuration.find(a => a.machineId === machineId).theoreticalDuration,
     })
     .where({ PLANKEY: planKey })
 
