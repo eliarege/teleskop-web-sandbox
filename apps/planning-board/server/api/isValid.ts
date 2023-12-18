@@ -4,8 +4,8 @@ export default defineEventHandler(async (event) => {
 
   const url = `${config.planningEngineUrl}/planning_board/valid`
 
-  const plannedEvents = $fetch(url, {
+  const isValid = $fetch(url, {
     query: { planKey },
   })
-  return plannedEvents
+  return isValid
 })
