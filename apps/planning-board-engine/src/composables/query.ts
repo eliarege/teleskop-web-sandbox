@@ -194,6 +194,17 @@ export async function getTheoreticalDuration(planKey: number) {
     group by b.MACHINEID
 `)
 }
+export async function getBatchNotes(jobOrder: string) {
+  return await knex({ p: 'dbo.PTBATCHNOTES' })
+    .leftJoin({ b: 'dbo.BFUSERS' }, 'b.userID', 'p.USERID')
+    .select({
+      id: 'p.NOTEKEY',
+      userName: 'b.userName',
+      jobOrder: 'p.JOBORDER',
+      note: 'p.NOTE',
+      noteDate: 'p.NOTEDATE',
+    }).where('JOBORDER', '=', jobOrder)
+}
 //  UPDATE
 export async function updateEvents(planKey: number, machineId: number, plannedStartTime: string) {
   const theoreticalDuration = await getTheoreticalDuration(planKey)
@@ -221,6 +232,16 @@ export async function updateEvents(planKey: number, machineId: number, plannedSt
 export async function removeFromPlan(planKey: number) {
   await knex('dbo.DYBFBATCHPLAN').update({ MACHINEIDLIST: 0, PLANNEDMACHINE: 0, PLANNEDSTARTTIME: '2019-03-22 00:00:00.000' }).where('PLANKEY', '=', planKey)
   await knex('dbo.PTBATCHPLANQUEUE').where('PLANKEY', '=', planKey).del()
+}
+export async function addBatchNote(jobOrder: string, note: string, userId: number, showOnScreen: boolean) {
+  await knex('dbo.PTBATCHNOTES').insert({
+    JOBORDER: jobOrder,
+    NOTE: note,
+    NOTEDATE: new Date(),
+    USERID: userId,
+    USERTYPE: 1,
+    SHOWONSCREEN: showOnScreen,
+  })
 }
 // SAVE
 export async function scheduleEvents(planKey: number, machineId: number, plannedStartTime: string) {
@@ -252,4 +273,7 @@ export async function bulkDeleteEvents(planKeys: number[]) {
   for (const key in planKeys) {
     await knex('dbo.DYBFBATCHPLAN p').update({ ISDELETED: 1 }).where('p.planKey', '=', key)
   }
+}
+export async function deleteNote(id: number) {
+  await knex('PTBATCHNOTES').where('NOTEKEY', '=', id).delete()
 }

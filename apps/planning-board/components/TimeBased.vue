@@ -38,6 +38,7 @@ const showModal = reactive({
     unit: { name: '' },
   },
   datePicker: false,
+  rule: false,
   settings: false,
 })
 
@@ -127,14 +128,14 @@ onMounted(() => {
         if (action === 'select' || action === 'update') {
           schedule.widgetMap.parameterButton.disabled = false
           schedule.widgetMap.recipeButton.disabled = false
-          schedule.widgetMap.processButton.disabled = false
-          schedule.widgetMap.theoreticalButton.disabled = false
+          // schedule.widgetMap.processButton.disabled = false
+          // schedule.widgetMap.theoreticalButton.disabled = false
           schedule.widgetMap.noteButton.disabled = false
         } else {
           schedule.widgetMap.parameterButton.disabled = true
           schedule.widgetMap.recipeButton.disabled = true
-          schedule.widgetMap.processButton.disabled = true
-          schedule.widgetMap.theoreticalButton.disabled = true
+          // schedule.widgetMap.processButton.disabled = true
+          // schedule.widgetMap.theoreticalButton.disabled = true
           schedule.widgetMap.noteButton.disabled = true
         }
       },
@@ -292,6 +293,7 @@ onMounted(() => {
         text: 'Prosess Bilgileri',
         icon: 'b-fa b-fa-solid b-fa-receipt',
         color: 'toolbar-buttons',
+        tooltip: 'Currently under development!',
         onClick() {
           showModal.process.show = true
           showModal.process.unit.name = schedule.selectedEvents[0].name
@@ -301,6 +303,7 @@ onMounted(() => {
         type: 'button',
         disabled: true,
         ref: 'theoreticalButton',
+        tooltip: 'Currently under development!',
         text: 'Teorik Program',
         icon: 'b-fa b-fa-solid b-fa-file-zipper',
         color: 'toolbar-buttons',
@@ -337,6 +340,15 @@ onMounted(() => {
         color: 'toolbar-buttons',
         onClick() {
           showModal.datePicker = true
+        },
+      },
+      {
+        type: 'button',
+        text: 'Rules',
+        icon: 'b-fa b-fa-solid b-fa-list-check',
+        color: 'toolbar-buttons',
+        onClick() {
+          showModal.rule = true
         },
       },
       {
@@ -452,9 +464,12 @@ onMounted(() => {
     </EliarModal>
     <EliarModal v-if="showModal.notes.show" @click.stop="showModal.notes.show = false">
       <template #default>
-        <div class="w-full bg-white e-border p-3">
-          notes: {{ showModal.notes.unit.name }}
-        </div>
+        <BatchNotes :job-order="showModal.notes.unit.name" />
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.rule" @click.stop="showModal.rule = false">
+      <template #default>
+        <MachineRuleList />
       </template>
     </EliarModal>
     <div class="e-border w-full h-screen">
