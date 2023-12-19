@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
     const selectParams = {
       materialId: 'ID',
       machineName: 'MACHINECODE',
+      machineId: 'DYTFMATERIALTANKMAP.MACHINEID',
       tankName: 'NAME',
       tankNo: 'DYTFMATERIALTANKMAP.TANKNO',
       materialCode: 'DYTFMATERIALTANKMAP.MATERIALCODE',

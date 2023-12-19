@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { Column } from 'ui/types/FilterableTable'
+import { updateTankMaterialWaterDefinition } from '~/utils'
 
 const materialTypeMap = [
   { id: 1, name: 'kimyasal' },
@@ -83,8 +84,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
   await execute()
 }
 
-function popupUpdate(value, rowName, props) {
-  tankMaterialDefinitions.value[props.rowIndex][rowName] = value
+async function popupUpdate(value, rowName, props) {
+  const tankDefinition = tankMaterialDefinitions.value[props.rowIndex]
+  tankDefinition[rowName] = value
+  await updateTankMaterialWaterDefinition({ tankDefinition, rowName, value })
 }
 </script>
 
