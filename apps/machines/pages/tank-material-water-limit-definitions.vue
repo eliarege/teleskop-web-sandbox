@@ -82,6 +82,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
   console.log('filters.value = ', filters.value)
   await execute()
 }
+
+function popupUpdate(value, rowName, props) {
+  tankMaterialDefinitions.value[props.rowIndex][rowName] = value
+}
 </script>
 
 <template>
@@ -94,16 +98,35 @@ async function handleFilterSlotsUpdate(updatedValue) {
         @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       >
         <template #custombody="tankMaterialDefinitions">
-          <q-tr>
+          <q-tr :props="tankMaterialDefinitions">
             <q-td
-              v-for="row in tankMaterialDefinitions.cols"
-              :key="row"
+              v-for="col in tankMaterialDefinitions.cols"
+              :key="col"
             >
-              <span v-if="row.field === 'materialGroupNo'">
-                {{ materialTypeMap.find(m => m.id === row.value).name }}
+              <span v-if="col.field === 'materialGroupNo'">
+                {{ materialTypeMap.find(m => m.id === col.value).name }}
               </span>
+
+              <span v-else-if="col.field === 'preWater' || col.field === 'betweenWater' || col.field === 'postWater'">
+                {{ col.value ?? 0 }}
+                <q-popup-edit
+                  v-slot="scope"
+                  :model-value="col.value"
+                  :title="`${col.label}`"
+                  buttons
+                  @update:model-value="(e) => popupUpdate(e, col.name, tankMaterialDefinitions)"
+                >
+                  <q-input
+                    v-model="scope.value"
+                    type="number"
+                    dense
+                    autofocus
+                  />
+                </q-popup-edit>
+              </span>
+
               <span v-else>
-                {{ row.value }}
+                {{ col.value }}
               </span>
             </q-td>
           </q-tr>
