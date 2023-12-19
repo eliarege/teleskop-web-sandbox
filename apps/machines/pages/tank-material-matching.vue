@@ -16,23 +16,6 @@ const { data: tanks } = useLazyFetch('/api/materials/material-tank-map', {
   immediate: false,
   default: () => [],
   query: { machineId: selectedMachineId },
-  transform: (tanks) => {
-    const groups = new Map()
-    for (const tank of tanks) {
-      const key = `${tank.machineId}-${tank.tankNo}`
-      if (!groups.has(key)) {
-        groups.set(key, {
-          tankNo: tank.tankNo,
-          tankName: tank.tankName,
-          materials: [],
-          mapId: tank.id,
-        })
-      }
-      const group = groups.get(key)
-      group.materials.push(tank)
-    }
-    return [...groups.values()]
-  },
 })
 
 async function handleMachineClick(machineId: number) {
@@ -80,11 +63,20 @@ async function handleMachineClick(machineId: number) {
       <div v-if="tanks.length" class="flex flex-row">
         <div v-for="tank in tanks" :key="tank">
           <h3>{{ tank.tankName }}</h3>
-          <div v-if="tank.mapId !== null">
-            <div v-for="material in tank.materials" :key="material.id">
-              {{ material.materialName }}
-            </div>
-          </div>
+          <Sortable
+            :list="tank.materials"
+            item-key="id"
+            :options="{ group: 'group' }"
+          >
+            <template #item="{ element, index }">
+              <div
+                :key="element.id"
+                class="draggable"
+              >
+                {{ element.materialName }}
+              </div>
+            </template>
+          </Sortable>
         </div>
       </div>
     </q-card-section>
