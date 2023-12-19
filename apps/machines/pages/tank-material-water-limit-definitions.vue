@@ -14,6 +14,8 @@ const columns = [
     label: 'Materyal Tipi',
     field: 'materialGroupNo',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'machineName',
@@ -70,7 +72,14 @@ const { data: tankMaterialDefinitions, execute, pending } = await useAsyncData(a
 })
 
 async function handleFilterSlotsUpdate(updatedValue) {
-  filters.value = updatedValue
+  console.log('updatedValue = ', updatedValue)
+
+  filters.value = updatedValue.map((filter) => {
+    if (filter.field === 'materialGroupNo')
+      filter.value = materialTypeMap.find(m => m.name === filter.value).id
+    return filter
+  })
+  console.log('filters.value = ', filters.value)
   await execute()
 }
 </script>
@@ -83,7 +92,23 @@ async function handleFilterSlotsUpdate(updatedValue) {
         :rows="tankMaterialDefinitions"
         :columns="columns"
         @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-      />
+      >
+        <template #custombody="tankMaterialDefinitions">
+          <q-tr>
+            <q-td
+              v-for="row in tankMaterialDefinitions.cols"
+              :key="row"
+            >
+              <span v-if="row.field === 'materialGroupNo'">
+                {{ materialTypeMap.find(m => m.id === row.value).name }}
+              </span>
+              <span v-else>
+                {{ row.value }}
+              </span>
+            </q-td>
+          </q-tr>
+        </template>
+      </FilterableTable>
     </q-card-section>
   </q-card>
 </template>
