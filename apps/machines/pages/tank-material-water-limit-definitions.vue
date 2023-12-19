@@ -1,60 +1,64 @@
 <script setup lang="ts">
+const materialTypeMap = [
+  { id: 1, name: 'kimyasal' },
+  { id: 2, name: 'boya' },
+  { id: 3, name: 'diğer' },
+]
+
 const columns = [
   {
-    name: 'reasonID',
+    name: 'materialGroupNo',
     label: 'Materyal Tipi',
-    field: row => row.reasonId,
+    field: row => row.materialGroupNo,
     align: 'left',
   },
   {
-    name: 'type',
+    name: 'machineName',
     label: 'Makine',
-    field: row => row.typeId,
+    field: row => row.machineName,
     align: 'left',
   },
   {
-    name: 'text',
+    name: 'tankName',
     label: 'Kazan Adı',
-    field: row => row.text,
+    field: row => row.tankName,
     align: 'left',
   },
   {
-    name: 'type',
+    name: 'materialName',
     label: 'Materyal',
-    field: row => row.typeId,
+    field: row => row.materialName,
     align: 'left',
   },
   {
-    name: 'type',
+    name: 'preWater',
     label: 'Ön Su',
-    field: row => row.typeId,
+    field: row => row.preWater,
     align: 'left',
   },
   {
-    name: 'type',
+    name: 'betweenWater',
     label: 'Orta Su',
-    field: row => row.typeId,
+    field: row => row.betweenWater,
     align: 'left',
   },
   {
-    name: 'type',
+    name: 'postWater',
     label: 'Son Su',
-    field: row => row.typeId,
+    field: row => row.postWater,
     align: 'left',
   },
 ]
+
+const { data: tankMaterialDefinitions, pending } = useLazyFetch('/api/materials/material-tank-water-definitions')
 </script>
 
 <template>
   <q-card>
     <q-card-section class="flex flex-col">
-      <div class="flex flex-row mb-8">
-        <q-select class="w-xs" label="Materyal Tipi" />
-        <q-select class="w-xs" label="Makine" />
-        <q-select class="w-xs" label="Kazan Adı" />
-        <q-select class="w-xs" label="Materyal" />
-      </div>
       <q-table
+        :loading="pending"
+        :rows="tankMaterialDefinitions"
         :columns="columns"
         hide-pagination
         :pagination="{ rowsPerPage: 0 }"

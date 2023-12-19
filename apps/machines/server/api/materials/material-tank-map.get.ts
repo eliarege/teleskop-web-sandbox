@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   try {
     const { machineId } = getQuery(event)
 
-    const tanks = await knex('BFMACHINETANKS') // Replace with your actual tanks table
+    const tanks = await knex('BFMACHINETANKS')
       .where('MACHINEID', machineId).select({
         machineId: 'MACHINEID',
         tankName: 'NAME',
