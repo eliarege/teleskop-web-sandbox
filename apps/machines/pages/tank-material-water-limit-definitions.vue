@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
+
 const materialTypeMap = [
   { id: 1, name: 'kimyasal' },
   { id: 2, name: 'boya' },
@@ -9,63 +12,77 @@ const columns = [
   {
     name: 'materialGroupNo',
     label: 'Materyal Tipi',
-    field: row => row.materialGroupNo,
+    field: 'materialGroupNo',
     align: 'left',
   },
   {
     name: 'machineName',
     label: 'Makine',
-    field: row => row.machineName,
+    field: 'machineName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'tankName',
     label: 'Kazan Adı',
-    field: row => row.tankName,
+    field: 'tankName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'materialName',
     label: 'Materyal',
-    field: row => row.materialName,
+    field: 'materialName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'preWater',
     label: 'Ön Su',
-    field: row => row.preWater,
+    field: 'preWater',
     align: 'left',
   },
   {
     name: 'betweenWater',
     label: 'Orta Su',
-    field: row => row.betweenWater,
+    field: 'betweenWater',
     align: 'left',
   },
   {
     name: 'postWater',
     label: 'Son Su',
-    field: row => row.postWater,
+    field: 'postWater',
     align: 'left',
   },
 ]
 
-const { data: tankMaterialDefinitions, pending } = useLazyFetch('/api/materials/material-tank-water-definitions')
+const filters = ref()
+
+const { data: tankMaterialDefinitions, execute, pending } = await useAsyncData(async () => {
+  const res = await $fetch('/api/materials/material-tank-water-definitions', {
+    method: 'POST',
+    body: { filters: filters.value },
+  })
+  return res
+})
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  filters.value = updatedValue
+  await execute()
+}
 </script>
 
 <template>
   <q-card>
     <q-card-section class="flex flex-col">
-      <q-table
+      <FilterableTable
         :loading="pending"
         :rows="tankMaterialDefinitions"
         :columns="columns"
-        hide-pagination
-        :pagination="{ rowsPerPage: 0 }"
-        row-key="reasonId"
-        separator="cell"
-        bordered
-        table-header-class="table-header"
+        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       />
     </q-card-section>
   </q-card>
