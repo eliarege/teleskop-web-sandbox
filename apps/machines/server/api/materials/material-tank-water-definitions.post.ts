@@ -24,7 +24,6 @@ export default defineEventHandler(async (event) => {
       .leftJoin('BFMACHINETANKS', 'BFMACHINETANKS.TANKNO', 'DYTFMATERIALTANKMAP.TANKNO')
       .leftJoin('BFMACHINES', 'BFMACHINES.MACHINEID', 'DYTFMATERIALTANKMAP.MACHINEID')
       .select(selectParams)
-    console.log('filters = ', filters)
     if (filters)
       return await filtersToKnex(filters, selectParams, query)
 

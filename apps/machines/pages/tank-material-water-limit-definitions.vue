@@ -73,14 +73,11 @@ const { data: tankMaterialDefinitions, execute, pending } = await useAsyncData(a
 })
 
 async function handleFilterSlotsUpdate(updatedValue) {
-  console.log('updatedValue = ', updatedValue)
-
   filters.value = updatedValue.map((filter) => {
     if (filter.field === 'materialGroupNo')
       filter.value = materialTypeMap.find(m => m.name === filter.value).id
     return filter
   })
-  console.log('filters.value = ', filters.value)
   await execute()
 }
 

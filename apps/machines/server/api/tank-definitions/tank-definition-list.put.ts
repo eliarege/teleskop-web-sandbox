@@ -4,7 +4,6 @@ export default defineEventHandler(async (event) => {
   try {
     const tankDefinition = await readBody(event)
     const { machineId, tankDefinitionId, listName, commandNo, action } = tankDefinition
-    console.log('machineId, tankDefinitionId, listName, commandNo, action = ', machineId, tankDefinitionId, listName, commandNo, action)
 
     if (action === 'add') {
       await addToList(machineId, tankDefinitionId, listName, commandNo)

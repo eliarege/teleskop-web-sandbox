@@ -29,7 +29,6 @@ const { data: waterConsumptions } = useLazyFetch('/api/theoretical-water-consump
 })
 
 watch([waterConsumptions, waterParams], ([newCons, newParams], [oldCons, oldParams]) => {
-  console.log('waterParams.value = ', waterParams.value)
   if (waterConsumptions && waterConsumptions.value) {
     const command = waterConsumptions.value[0]
     waterIO1.value = waterIO.value.find(io => io.ioIndex === command.commandIO)
