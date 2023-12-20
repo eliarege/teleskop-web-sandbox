@@ -62,14 +62,12 @@ const columns = [
   },
 ]
 
-const filters = ref()
+const filters = ref([])
 
-const { data: tankMaterialDefinitions, execute, pending } = await useAsyncData(async () => {
-  const res = await $fetch('/api/materials/material-tank-water-definitions', {
-    method: 'POST',
-    body: { filters: filters.value },
-  })
-  return res
+const { data: tankMaterialDefinitions, execute } = useLazyFetch('/api/materials/material-tank-water-definitions', {
+  method: 'POST',
+  body: { filters },
+  default: () => [],
 })
 
 async function handleFilterSlotsUpdate(updatedValue) {
@@ -92,7 +90,6 @@ async function popupUpdate(value, rowName, props) {
   <q-card>
     <q-card-section class="flex flex-col">
       <FilterableTable
-        :loading="pending"
         :rows="tankMaterialDefinitions"
         :columns="columns"
         @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
