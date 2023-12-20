@@ -1,4 +1,4 @@
-import { download } from './utils/ftp'
+import { download, upload } from './utils/ftp'
 import { parseLockGeneral } from './parsers/parseLockGeneral'
 import { parseUser } from './parsers/parseUser'
 import { parseManualReason } from './parsers/parseManualReason'
@@ -23,8 +23,10 @@ import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
 import { calcIONumber } from './utils'
+import { writeFinishReason } from './writers/writeFinishReason'
+import { FinishReason } from './types'
 
-export class TBB6500FtpClient {
+export class FTPClient {
   host: string
 
   constructor(host: string) {
@@ -326,27 +328,12 @@ export class TBB6500FtpClient {
       this.ftpClient.close()
     }
   }
-
-  async writeFinishReasons(finishReasons: FinishReason[]) {
-    try {
-      await this.connectClient()
-      const sourceFolderPath = './server/data/config'
-      const sourcePath = './server/data/config/bitirmenedenleri'
+*/
+/*   async uploadFinishReasons(finishReasons: FinishReason[]) {
       const remotePath = '/tbb6500/data/config/bitirmenedenleri'
-
-      const content = fileFinishReasonWriter(finishReasons)
-
-      if (!fs.existsSync(sourceFolderPath)) {
-        await fs.promises.mkdir(sourceFolderPath)
-      }
-      await fs.promises.writeFile(sourcePath, content)
-      await this.ftpClient.uploadFrom(sourcePath, remotePath)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      this.ftpClient.close()
-    }
-  } */
-
+      const content = writeFinishReason(finishReasons)
+      await upload(remotePath, this.host, content)
+  }
+ */
 
 }

@@ -23,15 +23,34 @@ export async function download(remotePath: string, host: string) {
       }
     });
 
-    writableStream.on('finish', () => {
-      content = Buffer.concat(chunks).toString('utf8');
-    });
-
     await ftpClient.downloadTo(writableStream, remotePath)
+
+      content = Buffer.concat(chunks).toString('utf8');
     return content
   } catch (err) {
     console.error(err)
   } finally {
     ftpClient.close()
   }
+}
+
+export async function upload(remotePath: string, host: string, content: string) {
+  try {
+  await connectClient(host)
+
+    const readableStream = new stream.Readable({
+      read(){}
+    })
+    readableStream.push(content)
+    readableStream.push(null)
+
+    const res = await ftpClient.uploadFrom(readableStream, remotePath)
+
+    console.log('res = ', res);
+  } catch (err) {
+   console.error(err)
+  } finally {
+    ftpClient.close()
+  }
+
 }

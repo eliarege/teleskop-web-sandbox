@@ -1,7 +1,4 @@
-import { FTPClient } from "./src/TBBFTPClient";
+import { FTPClient } from "./src/FTPClient";
 
-
-const client = new FTPClient('192.168.88.202')
-
-const data = await client.fetchCommandIO()
-console.log('data = ', data);
+export default FTPClient
+//const client = new FTPClient('192.168.88.202')
