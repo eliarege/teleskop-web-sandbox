@@ -21,7 +21,7 @@ export function inferBoolean(value: string | undefined) {
  * const { PORT = '8080' } = process.env
  *
  * // Safely extracts PORT variable and applies defaults if its falsy
- * const { PORT = '8080' } = getEnv(process.env)
+ * const { PORT = '8080' } = destruct(process.env)
  *
  */
 export function destruct<T extends Record<string, any>>(object: T): T {
