@@ -47,18 +47,24 @@ const columns = [
     label: 'Ön Su',
     field: 'preWater',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'betweenWater',
     label: 'Orta Su',
     field: 'betweenWater',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'postWater',
     label: 'Son Su',
     field: 'postWater',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
 
