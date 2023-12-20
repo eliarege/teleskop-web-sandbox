@@ -1,0 +1,6 @@
+{
+  "roles": [
+    { "name": "vnc-view" },
+    { "name": "vnc-input" }
+  ]
+}

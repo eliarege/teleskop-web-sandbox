@@ -8,11 +8,18 @@ declare namespace NodeJS {
     TELESKOP_PASSWORD?: string
     TELESKOP_DATABASE?: string
     TELESKOP_INSTANCE_NAME?: string
+
+    KC_URL?: string
+    KC_REALM?: string
+    KC_CLIENT_ID?: string
+    /** Enable Keycloak, default value is `false` in development, `true` in production */
+    KC_ENABLED?: string
+
     LOG_LEVEL?: string
     NODE_ENV?: 'production' | 'development' | 'test'
-    /** Development environment */
+    /** Dev only, ignores `TELESKOP_*` variables when set */
     TARGET_HOST?: string
-    /** Development environment */
+    /** Dev only */
     TARGET_PORT?: string
   }
 }

@@ -1,7 +1,7 @@
 import process from 'node:process'
 import Knex from 'knex'
-import { getEnv } from './helpers'
-import { createLogger } from './logger'
+import { destruct } from './utils'
+import { logger as parentLogger } from './logger'
 
 export interface Machine {
   name: string
@@ -16,9 +16,9 @@ const {
   TELESKOP_USER,
   TELESKOP_PASSWORD,
   TELESKOP_INSTANCE_NAME,
-} = getEnv(process.env)
+} = destruct(process.env)
 
-const logger = createLogger('database')
+const logger = parentLogger.child({ name: 'database' })
 
 if (process.env.NODE_ENV === 'production') {
   if (!TELESKOP_USER)

@@ -1,39 +1,47 @@
-/* eslint-disable node/no-deprecated-api */
-import { randomInt } from 'node:crypto'
 import { createConnection } from 'node:net'
 import { setTimeout as wait } from 'node:timers/promises'
 import type { Buffer } from 'node:buffer'
-import { parse as parseURL } from 'node:url'
 import process from 'node:process'
+import type { IncomingMessage } from 'node:http'
+import { createServer } from 'node:http'
 import type { WebSocket } from 'ws'
 import { WebSocketServer } from 'ws'
+import type { Logger } from 'pino'
 import type { Machine } from './database'
 import { fetchTeleskopMachine } from './database'
-import { getEnv } from './helpers'
-import type { NsLogger } from './logger'
-import { createLogger } from './logger'
+import { destruct, getPathname } from './utils'
+import { logger as parentLogger } from './logger'
+import type { AuthPayload } from './auth'
+import { initAuth } from './auth'
+import { ClientMessageType, HandshakeError, MessageType, createRFBHandshakeProxy, interceptClientMessageType } from './rfb'
 
 const {
   SERVER_HOST = '0.0.0.0',
   SERVER_PORT = '6800',
   TARGET_HOST,
   TARGET_PORT = '5900',
-} = getEnv(process.env)
+} = destruct(process.env)
 
 const MAX_RETRIES = 5
 const RETRY_INTERVAL = 1000
 const HEARTBEAT_INTERVAL = 30000
 const CONNECTION_TIMEOUT = 10000
 
-const logger = createLogger('server')
+const VNC_READ_ROLE = 'vnc-view'
+const VNC_INPUT_ROLE = 'vnc-input'
+
+const MACHINE_PATH_RE = /^\/\d+$/
+
+const auth = initAuth()
+const logger = parentLogger.child({ name: 'server' })
 
 if (process.env.NODE_ENV === 'development' && TARGET_HOST) {
   logger.info(`TARGET_HOST defined, requests will be forwarded to ${TARGET_HOST}`)
 }
 
+const server = createServer()
 const wss = new WebSocketServer({
-  host: SERVER_HOST,
-  port: Number.parseInt(SERVER_PORT),
+  noServer: true,
 })
 
 // Heartbeat Monitor
@@ -48,6 +56,34 @@ const monitor = setInterval(() => {
   })
 }, HEARTBEAT_INTERVAL)
 
+// Protocol Upgrade and Client Authorization
+server.on('upgrade', async (request, socket, head) => {
+  try {
+    const payload = await auth.getAuthPayload(request)
+    if (socket.closed) {
+      return logger.error(socket.errored, `Socket closed during upgrade`)
+    }
+    if (!payload) {
+      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+      return socket.destroy()
+    }
+    if (!payload.roles.includes(VNC_READ_ROLE)) {
+      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n')
+      return socket.destroy()
+    }
+
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request, payload)
+    })
+  } catch (err) {
+    if (!socket.closed) {
+      socket.write('HTTP/1.1 500 Internal Server Error\r\n\r\n')
+      socket.destroy()
+    }
+    logger.error(err, 'Unexpecter error during upgrade')
+  }
+})
+
 wss.on('listening', () => {
   logger.info(`WebSocketServer listening ${SERVER_PORT}`)
 })
@@ -60,17 +96,15 @@ wss.on('close', () => {
   clearInterval(monitor)
 })
 
-const expectedPathPattern = /^\/\d+$/
-
-wss.on('connection', async (client: WebSocket & { isAlive: boolean }, request) => {
+// When authenticated client connects via WebSocket
+wss.on('connection', async (client: WebSocket & { isAlive: boolean }, request: IncomingMessage, payload: AuthPayload) => {
   client.isAlive = true
   client.on('pong', () => {
     client.isAlive = true
   })
-
-  const namespace = randomInt(0x10000, 0xFFFFF).toString(16)
-  const { pathname } = parseURL(request.url || '')
-  const logger = createLogger(namespace)
+  const pathname = getPathname(request)
+  const logger = parentLogger.child({ name: payload.name })
+  const readonly = !payload.roles.includes(VNC_INPUT_ROLE)
 
   logger.info('Client connected')
 
@@ -89,7 +123,7 @@ wss.on('connection', async (client: WebSocket & { isAlive: boolean }, request) =
   if (process.env.NODE_ENV === 'production' || !TARGET_HOST) {
     if (!pathname || pathname === '/')
       return close('Expected machine id')
-    if (!expectedPathPattern.test(pathname))
+    if (!MACHINE_PATH_RE.test(pathname))
       return close('Invalid machine id')
 
     const id = Number.parseInt(pathname.slice(1))
@@ -105,16 +139,29 @@ wss.on('connection', async (client: WebSocket & { isAlive: boolean }, request) =
     }
   }
 
-  createProxyStream(machine, client, logger)
+  createProxyStream(machine, client, logger, readonly)
 })
 
-function createProxyStream(machine: Machine, client: WebSocket, logger: NsLogger) {
+server.listen(Number.parseInt(SERVER_PORT), SERVER_HOST, () => {
+  logger.info(`Server listening %s:%s.`, SERVER_HOST, SERVER_PORT)
+})
+
+function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, readonly: boolean) {
   logger.info(`Client requested to connect to machine '${machine.name}' at '${machine.host}:${machine.port}'`)
 
   const server = createConnection({
     host: machine.host,
     port: machine.port,
   })
+  const proxy = createRFBHandshakeProxy()
+  // The argument passed to the first next() call cannot be retrieved because there's no currently suspended yield.
+  // So we need to call next() once before initiating the handshake
+  // Read more: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield
+  proxy.next()
+
+  let handshakeInProgress = true
+  let handshakeSuccess = false
+
   /** Retry counter for connection errors */
   let retries = 0
 
@@ -130,12 +177,51 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: NsLogger
     logger.info('Connected to target server')
   })
 
-  server.on('data', (data) => {
+  // Intercept server messages
+  server.on('data', (data: Buffer) => {
     try {
+      if (handshakeInProgress) {
+        // Server finalizes handshakes, so we check if iterator is done
+        const result = proxy.next({ type: MessageType.Server, data })
+        if (result.done) {
+          handshakeInProgress = false
+          handshakeSuccess = result.value
+        }
+      }
       client.send(data)
-    } catch {
-      logger.debug('Client closed connection, closing server connection')
+    } catch (err) {
+      if (err instanceof HandshakeError) {
+        logger.error(err, 'Error during handshake:')
+      } else {
+        logger.debug('Client closed connection, closing server connection')
+      }
       server.end()
+    }
+  })
+
+  // Intercept Client Messages
+  client.on('message', (data: Buffer) => {
+    try {
+      if (handshakeInProgress) {
+        proxy.next({ type: MessageType.Client, data })
+        server.write(data)
+      } else if (handshakeSuccess) {
+        // Filter out key and pointer events if client is readonly
+        if (readonly) {
+          const type = interceptClientMessageType(data)
+          if (type === ClientMessageType.KeyEvent || type === ClientMessageType.PointerEvent) {
+            return
+          }
+        }
+        server.write(data)
+      }
+    } catch (err) {
+      if (err instanceof HandshakeError) {
+        logger.error(err, 'Error during handshake:')
+      } else {
+        logger.debug('Server closed connection, closing client connection')
+      }
+      client.close()
     }
   })
 
@@ -158,15 +244,6 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: NsLogger
     clearTimeout(timeout)
     logger.info('Server connection closed')
     client.close()
-  })
-
-  client.on('message', (data) => {
-    try {
-      server.write(data as Buffer)
-    } catch {
-      logger.debug('Server closed connection, closing client connection')
-      client.close()
-    }
   })
 
   client.on('error', (err) => {
