@@ -1,6 +1,7 @@
-import { TBB6500FtpClient } from "./src/TBBFTPClient";
+import { FTPClient } from "./src/TBBFTPClient";
 
-const client = new TBB6500FtpClient('192.168.88.202')
 
-const data = await client.fetchFinishReasons()
+const client = new FTPClient('192.168.88.202')
+
+const data = await client.fetchCommandIO()
 console.log('data = ', data);

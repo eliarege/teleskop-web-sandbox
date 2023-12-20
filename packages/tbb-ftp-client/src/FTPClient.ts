@@ -24,7 +24,7 @@ import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
 import { calcIONumber } from './utils'
 
-export class FTPClient {
+export class TBB6500FtpClient {
   host: string
 
   constructor(host: string) {
@@ -162,6 +162,7 @@ export class FTPClient {
 
   async fetchDigitalInputs() {
       const remotePath = '/tbb6500/data/io/sayisalinput'
+
       const content = await download(remotePath, this.host)
       const controllerModel = await this.fetchControllerModel()
 
