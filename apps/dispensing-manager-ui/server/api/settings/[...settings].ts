@@ -2,7 +2,7 @@ import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
-export default useBase('/api/setting', router.handler)
+export default useBase('/api/settings', router.handler)
 
 /**
  * Dispenser settings

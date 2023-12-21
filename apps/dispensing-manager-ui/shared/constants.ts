@@ -1,5 +1,9 @@
 import type { Column } from './types'
 
+export const breakpoints = {
+  laptop: 768,
+}
+
 export const columns: Array<Column> = [
   { name: 'name', label: 'Name', field: 'name', filterable: true, filterType: 'select', selectionOptions: ['Choose 1', 'Choose 2', 'Choose 3'] },
   { name: 'calories', label: 'Calories', field: 'calories', filterable: true, filterType: 'multiselect', selectionOptions: ['Choose 1', 'Choose 2', 'Choose 3'] },
