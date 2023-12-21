@@ -8,10 +8,15 @@ export default defineEventHandler(async (event) => {
 
     const counters = await tbb.fetchCounters()
 
-    await knex('BFMACHCOUNTER').del()
-    await knex('BFMACHCOUNTER').insert(counters?.map(c => ({
-      ...c,
-      machineId,
+    await knex('BFMACHCOUNTER').where('MACHINEID', machineId).del()
+    await knex('BFMACHCOUNTER').insert(counters?.map(d => ({
+      MACHINEID: machineId,
+      ID: d.id,
+      CARD: d.card,
+      CANAL: d.canal,
+      NAME: d.name,
+      ENABLED: d.enabled,
+      ISDELETED: false,
     })))
 
     return counters

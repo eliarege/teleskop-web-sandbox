@@ -7,12 +7,17 @@ export default defineEventHandler(async (event) => {
     const tbb = new FTPClient('192.168.88.202')
 
     const inputs = await tbb.fetchAnalogInputs()
-    const analogInputs = inputs?.map(i => ({
-      ...i,
-      machineId,
+    const analogInputs = inputs?.map(d => ({
+      MACHINEID: machineId,
+      ID: d.id,
+      CARD: d.card,
+      CANAL: d.canal,
+      NAME: d.name,
+      ENABLED: d.enabled,
+      ISDELETED: false,
     }))
 
-    await knex('BFMACHAIN').del()
+    await knex('BFMACHAIN').where('MACHINEID', machineId).del()
     await knex('BFMACHAIN').insert(analogInputs)
 
     return analogInputs

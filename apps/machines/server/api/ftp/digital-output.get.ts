@@ -8,12 +8,18 @@ export default defineEventHandler(async (event) => {
 
     const outputs = await tbb.fetchDigitalOutputs()
 
-    const digitalOutputs = outputs?.map(o => ({
-      ...o,
-      machineId,
+    const digitalOutputs = outputs?.map(d => ({
+      MACHINEID: machineId,
+      ID: d.id,
+      CARD: d.card,
+      CANAL: d.canal,
+      NAME: d.name,
+      ENABLED: d.enabled,
+      ISDELETED: false,
+      DEFAULTVALUE: d.defaultValue,
     }))
 
-    await knex('BFMACHDOUT').del()
+    await knex('BFMACHDOUT').where('MACHINEID', machineId).del()
     await knex('BFMACHDOUT').insert(digitalOutputs)
 
     return digitalOutputs
