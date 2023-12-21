@@ -1,16 +1,14 @@
-import type { IncomingMessage } from 'node:http'
+import type { Buffer } from 'node:buffer'
 import process from 'node:process'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
-import manifest from '../manifest.json'
+import type { WebSocket } from 'ws'
+import { JOSEError } from 'jose/errors'
 import { logger as parentLogger } from './logger'
 import { getEnvOrThrow, inferBoolean } from './utils'
 
-const BEARER_RE = /^[Bb]earer$/
-const ALL_ROLES = manifest.roles.map(r => r.name)
-
 const logger = parentLogger.child({ name: 'auth' })
 
-interface KeycloakScope {
+export interface KeycloakScope {
   scope?: string
   name?: string
   preferred_username?: string
@@ -23,24 +21,31 @@ interface KeycloakScope {
   }>
 }
 
-interface KeycloakConfig {
+export interface KeycloakConfig {
   url: string
   realm: string
   clientId: string
 }
+
+export type AuthResult<T = any> =
+  | { status: 'success'; payload: T }
+  | { status: 'error'; reason: Error }
 
 export interface AuthPayload {
   name: string
   roles: string[]
 }
 
-interface AuthMethods {
-  getAuthPayload(request: IncomingMessage): Promise<AuthPayload | null>
+export interface KeycloakAuthMethods {
+  authenticate(socket: WebSocket): Promise<AuthResult<AuthPayload>>
 }
 
-function getBearerToken(request: IncomingMessage): string | null {
-  const [type, token] = request.headers.authorization?.split(' ') || ''
-  return BEARER_RE.test(type) ? token : null
+export type KeycloakAuth =
+  | ({ enabled: true } & KeycloakAuthMethods)
+  | { enabled: false }
+
+if (process.env.NODE_ENV === 'development' && process.env.KC_DEV_TOKEN) {
+  logger.info(`Using KC_DEV_TOKEN for authentications`)
 }
 
 function isKeycloakEnabled() {
@@ -65,43 +70,88 @@ function getKeycloakEnv(): KeycloakConfig {
   }
 }
 
-function mockAuth(): AuthMethods {
+function sendError(msg: string): AuthResult {
   return {
-    getAuthPayload: async () => ({
-      name: 'user',
-      roles: ALL_ROLES,
-    }),
+    status: 'error',
+    reason: new Error(msg),
   }
 }
 
-export function initAuth(): AuthMethods {
+function sendPayload<T>(payload: T): AuthResult<T> {
+  return {
+    status: 'success',
+    payload,
+  }
+}
+
+export function initKcAuth(): KeycloakAuth {
   const enabled = isKeycloakEnabled()
   if (!enabled) {
-    return mockAuth()
+    return { enabled }
   }
-
+  logger.debug('Authentication enabled')
   const { url, realm, clientId } = getKeycloakEnv()
   const JWKS = createRemoteJWKSet(new URL(`${url}/realms/${realm}/protocol/openid-connect/certs`))
 
-  async function getAuthPayload(request: IncomingMessage): Promise<AuthPayload | null> {
-    const jwt = getBearerToken(request)
+  async function authenticate(client: WebSocket): Promise<AuthResult> {
+    const result = await getBearer(client)
+    if (result.status === 'error') {
+      return result
+    }
+    const jwt = result.payload
     if (!jwt) {
-      logger.debug(`No Bearer Token`)
-      return null
+      return sendError('No Bearer Token')
     }
     try {
       const { payload } = await jwtVerify<KeycloakScope>(jwt, JWKS)
-      return {
+      return sendPayload({
         name: payload.preferred_username || 'unknown_user',
         roles: payload.resource_access?.[clientId]?.roles || [],
-      }
+      })
     } catch (err) {
-      logger.debug(err, 'Invalid JWT')
-      return null
+      if (err instanceof JOSEError) {
+        logger.debug(err)
+        return sendError(err.code)
+      } else {
+        logger.error(err)
+        return sendError('Internal Server Error')
+      }
     }
   }
 
   return {
-    getAuthPayload,
+    enabled: true,
+    authenticate,
   }
+}
+
+/** Wait until socket sends bearer message  */
+function getBearer(socket: WebSocket) {
+  const AUTH_TIMEOUT = 3000
+  const BEARER_RE = /^[Bb]earer /
+
+  // Return Dev Token
+  if (process.env.NODE_ENV === 'development' && process.env.KC_DEV_TOKEN) {
+    return Promise.resolve(sendPayload(process.env.KC_DEV_TOKEN))
+  }
+
+  return new Promise<AuthResult<string>>((resolve) => {
+    const timeout = setTimeout(() => {
+      socket.off('message', listener)
+      resolve(sendError('Auth timeout'))
+    }, AUTH_TIMEOUT)
+
+    function listener(data: Buffer, isBinary: boolean) {
+      if (!isBinary) {
+        const msg = data.toString('utf-8')
+        if (BEARER_RE.test(msg)) {
+          clearTimeout(timeout)
+          socket.off('message', listener)
+          resolve(sendPayload(msg.slice(7)))
+        }
+      }
+    }
+
+    socket.on('message', listener)
+  })
 }

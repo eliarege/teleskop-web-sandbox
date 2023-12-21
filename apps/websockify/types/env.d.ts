@@ -14,6 +14,10 @@ declare namespace NodeJS {
     KC_CLIENT_ID?: string
     /** Enable Keycloak, default value is `false` in development, `true` in production */
     KC_ENABLED?: string
+    /** Dev only, token to use for authentication */
+    KC_DEV_TOKEN?: string
+    /** Dev only, read token from clipboard on startup, clipboard overrides `KC_DEV_TOKEN` if enabled */
+    KC_DEV_TOKEN_CLIPBOARD?: string
 
     LOG_LEVEL?: string
     NODE_ENV?: 'production' | 'development' | 'test'

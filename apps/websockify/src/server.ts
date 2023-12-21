@@ -1,9 +1,8 @@
 import { createConnection } from 'node:net'
 import { setTimeout as wait } from 'node:timers/promises'
-import type { Buffer } from 'node:buffer'
+import { Buffer } from 'node:buffer'
 import process from 'node:process'
 import type { IncomingMessage } from 'node:http'
-import { createServer } from 'node:http'
 import type { WebSocket } from 'ws'
 import { WebSocketServer } from 'ws'
 import type { Logger } from 'pino'
@@ -11,9 +10,9 @@ import type { Machine } from './database'
 import { fetchTeleskopMachine } from './database'
 import { destruct, getPathname } from './utils'
 import { logger as parentLogger } from './logger'
-import type { AuthPayload } from './auth'
-import { initAuth } from './auth'
-import { ClientMessageType, HandshakeError, MessageType, createRFBHandshakeProxy, interceptClientMessageType } from './rfb'
+import { DESECBCipher } from './crypto/des'
+import { initKcAuth } from './auth'
+import { ClientMessageType, HandshakeError, HandshakeState, createRFBHandshakeProxy, interceptClientMessageType } from './rfb'
 
 const {
   SERVER_HOST = '0.0.0.0',
@@ -22,67 +21,44 @@ const {
   TARGET_PORT = '5900',
 } = destruct(process.env)
 
+interface WebSocketExt extends WebSocket {
+  isAlive: boolean
+}
+
 const MAX_RETRIES = 5
 const RETRY_INTERVAL = 1000
 const HEARTBEAT_INTERVAL = 30000
 const CONNECTION_TIMEOUT = 10000
+const TBB_VNC_PASSWORD = '123456'
 
-const VNC_READ_ROLE = 'vnc-view'
+const VNC_VIEW_ROLE = 'vnc-view'
 const VNC_INPUT_ROLE = 'vnc-input'
 
 const MACHINE_PATH_RE = /^\/\d+$/
 
-const auth = initAuth()
+const kcAuth = initKcAuth()
 const logger = parentLogger.child({ name: 'server' })
 
 if (process.env.NODE_ENV === 'development' && TARGET_HOST) {
   logger.info(`TARGET_HOST defined, requests will be forwarded to ${TARGET_HOST}`)
 }
 
-const server = createServer()
 const wss = new WebSocketServer({
-  noServer: true,
+  host: SERVER_HOST,
+  port: Number.parseInt(SERVER_PORT),
 })
 
 // Heartbeat Monitor
 const monitor = setInterval(() => {
-  (wss.clients as Set<WebSocket & { isAlive: boolean }>).forEach((ws) => {
+  (wss.clients as Set<WebSocketExt>).forEach((ws) => {
     if (!ws.isAlive) {
       ws.terminate()
     } else {
-      ws.isAlive = true
+      ws.isAlive = false
       ws.ping()
     }
   })
 }, HEARTBEAT_INTERVAL)
-
-// Protocol Upgrade and Client Authorization
-server.on('upgrade', async (request, socket, head) => {
-  try {
-    const payload = await auth.getAuthPayload(request)
-    if (socket.closed) {
-      return logger.error(socket.errored, `Socket closed during upgrade`)
-    }
-    if (!payload) {
-      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
-      return socket.destroy()
-    }
-    if (!payload.roles.includes(VNC_READ_ROLE)) {
-      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n')
-      return socket.destroy()
-    }
-
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request, payload)
-    })
-  } catch (err) {
-    if (!socket.closed) {
-      socket.write('HTTP/1.1 500 Internal Server Error\r\n\r\n')
-      socket.destroy()
-    }
-    logger.error(err, 'Unexpecter error during upgrade')
-  }
-})
 
 wss.on('listening', () => {
   logger.info(`WebSocketServer listening ${SERVER_PORT}`)
@@ -97,15 +73,12 @@ wss.on('close', () => {
 })
 
 // When authenticated client connects via WebSocket
-wss.on('connection', async (client: WebSocket & { isAlive: boolean }, request: IncomingMessage, payload: AuthPayload) => {
+wss.on('connection', async (client: WebSocketExt, request: IncomingMessage) => {
   client.isAlive = true
   client.on('pong', () => {
     client.isAlive = true
   })
-  const pathname = getPathname(request)
-  const logger = parentLogger.child({ name: payload.name })
-  const readonly = !payload.roles.includes(VNC_INPUT_ROLE)
-
+  let logger = parentLogger.child({ name: 'user.anonymous' })
   logger.info('Client connected')
 
   /**
@@ -118,6 +91,30 @@ wss.on('connection', async (client: WebSocket & { isAlive: boolean }, request: I
     client.close(1008, msg)
   }
 
+  let viewOnly = false
+
+  if (kcAuth.enabled) {
+    const result = await kcAuth.authenticate(client)
+    if (result.status === 'error') {
+      logger.debug('Client failed security challenge')
+      return close(result.reason.message)
+    } else {
+      const { payload } = result
+      logger = parentLogger.child({ name: `user.${payload.name}` })
+      logger.info('Client authenticated')
+      logger.debug(`Client roles: %o`, payload.roles)
+
+      if (!payload.roles.includes(VNC_VIEW_ROLE)) {
+        logger.debug('Client unauthorized')
+        return close('Unauthorized')
+      }
+
+      viewOnly = !payload.roles.includes(VNC_INPUT_ROLE)
+      client.send(JSON.stringify({ viewOnly }))
+    }
+  }
+
+  const pathname = getPathname(request)
   let machine: Machine | null = null
 
   if (process.env.NODE_ENV === 'production' || !TARGET_HOST) {
@@ -139,14 +136,10 @@ wss.on('connection', async (client: WebSocket & { isAlive: boolean }, request: I
     }
   }
 
-  createProxyStream(machine, client, logger, readonly)
+  createProxyStream(machine, client, logger, viewOnly)
 })
 
-server.listen(Number.parseInt(SERVER_PORT), SERVER_HOST, () => {
-  logger.info(`Server listening %s:%s.`, SERVER_HOST, SERVER_PORT)
-})
-
-function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, readonly: boolean) {
+function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, viewOnly: boolean) {
   logger.info(`Client requested to connect to machine '${machine.name}' at '${machine.host}:${machine.port}'`)
 
   const server = createConnection({
@@ -159,8 +152,10 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
   // Read more: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield
   proxy.next()
 
-  let handshakeInProgress = true
-  let handshakeSuccess = false
+  let hsInProgress = true
+  let hsSuccess = false
+  let hsNextState = HandshakeState.ProtocolVersionServer
+  let hsChallenge: Buffer | null = null
 
   /** Retry counter for connection errors */
   let retries = 0
@@ -180,12 +175,17 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
   // Intercept server messages
   server.on('data', (data: Buffer) => {
     try {
-      if (handshakeInProgress) {
+      if (hsInProgress) {
         // Server finalizes handshakes, so we check if iterator is done
-        const result = proxy.next({ type: MessageType.Server, data })
+        const result = proxy.next({ type: 'server', data })
         if (result.done) {
-          handshakeInProgress = false
-          handshakeSuccess = result.value
+          hsInProgress = false
+          hsSuccess = result.value
+        } else {
+          hsNextState = result.value
+          if (hsNextState === HandshakeState.AuthenticationClient) {
+            hsChallenge = data
+          }
         }
       }
       client.send(data)
@@ -202,12 +202,21 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
   // Intercept Client Messages
   client.on('message', (data: Buffer) => {
     try {
-      if (handshakeInProgress) {
-        proxy.next({ type: MessageType.Client, data })
-        server.write(data)
-      } else if (handshakeSuccess) {
-        // Filter out key and pointer events if client is readonly
-        if (readonly) {
+      if (hsInProgress) {
+        const prevState = hsNextState
+        // Client never finalizes handshake so we can safely assume iterator is `done` yet
+        hsNextState = proxy.next({ type: 'client', data }).value as HandshakeState
+        // Solve authentication challenge
+        if (prevState === HandshakeState.AuthenticationClient && hsChallenge) {
+          const cipher = DESECBCipher.importKey(Buffer.from(TBB_VNC_PASSWORD))
+          const result = cipher.encrypt(data)
+          server.write(result || data)
+        } else {
+          server.write(data)
+        }
+      } else if (hsSuccess) {
+        // Filter out key and pointer events if client is view only
+        if (viewOnly) {
           const type = interceptClientMessageType(data)
           if (type === ClientMessageType.KeyEvent || type === ClientMessageType.PointerEvent) {
             return
