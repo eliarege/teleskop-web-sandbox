@@ -27,7 +27,7 @@ const tartimOptionsExtra = ref([
   { value: 2, label: t('settings.powderDye.opt3') },
 ])
 async function fetchSettings() {
-  settingsData.value = await $fetch('/api/setting/request-mechanism-settings')
+  settingsData.value = await $fetch('/api/settings/request-mechanism-settings')
 
   reqMechanism.value = settingsData.value.reqMechanismOption1 ? 1 : settingsData.value.reqMechanismOption2 ? 2 : 3
   reqMechanismNotCompletedOption.value = settingsData.value.reqMechanismOption3
@@ -36,11 +36,11 @@ async function fetchSettings() {
 await fetchSettings()
 
 const genericOptions = ref()
-genericOptions.value = await $fetch('/api/setting/material')
+genericOptions.value = await $fetch('/api/settings/material')
 
 async function changeSettings() {
   console.log(settingsData.value)
-  await $fetch('/api/setting/request-mechanism-settings', {
+  await $fetch('/api/settings/request-mechanism-settings', {
     method: 'put',
     body: {
       reqMechanismOption1: reqMechanism.value === 1 ? 1 : 0,
@@ -78,10 +78,10 @@ async function changeSettings() {
         <div
           v-for="n in 10"
           :key="n"
-          class="grid-item setting-section"
+          class="grid-item settings-section"
         >
           <div v-if="n === 1">
-            <div class="setting-section-header">
+            <div class="settings-section-header">
               {{ t('settings.requestMechanism._') }}
             </div>
             <div class="flex flex-col">
@@ -121,7 +121,7 @@ async function changeSettings() {
             </div>
           </div>
           <div v-if="n === 3">
-            <div class="setting-section-header">
+            <div class="settings-section-header">
               {{ t('settings.archiveRetentionPeriod') }}
             </div>
             <div class="flex  gap-5 m-5">
@@ -148,7 +148,7 @@ async function changeSettings() {
             </div>
           </div>
           <div v-if="n === 4">
-            <div class="setting-section-header">
+            <div class="settings-section-header">
               {{ t('settings.orderBasedDyeRequest._') }}
             </div>
             <div class="m-5">
@@ -167,7 +167,7 @@ async function changeSettings() {
           </div>
 
           <div v-if="n === 5">
-            <div class="setting-section-header">
+            <div class="settings-section-header">
               {{ t('settings.powderDye.sendPowderDyeInformationWhen') }}
             </div>
             <div class="p-5">
@@ -180,7 +180,7 @@ async function changeSettings() {
           </div>
 
           <div v-if="n === 6">
-            <div class="setting-section-header">
+            <div class="settings-section-header">
               {{ t('settings.powderDye.sendPowderDyeDissolvingInformationWhen') }}
             </div>
             <div class="p-5">
@@ -193,7 +193,7 @@ async function changeSettings() {
           </div>
 
           <div v-if="n === 7">
-            <div class="setting-section-header">
+            <div class="settings-section-header">
               {{ t('settings.powderDye.sendPowderChemicalWeighingInformationWhen') }}
             </div>
             <div class="p-5">
@@ -206,7 +206,7 @@ async function changeSettings() {
           </div>
 
           <div v-if="n === 8">
-            <div class="setting-section-header">
+            <div class="settings-section-header">
               {{ t('settings.powderDye.sendManualMaterialWeighingInformationWhen') }}
             </div>
             <div class="p-5">
@@ -219,7 +219,7 @@ async function changeSettings() {
           </div>
 
           <div v-if="n === 9">
-            <div class="setting-section-header">
+            <div class="settings-section-header">
               {{ t('settings.genericRequests') }}
             </div>
             <div class="flex m-5 gap-15">
@@ -275,7 +275,7 @@ async function changeSettings() {
             </div>
           </div>
           <div v-if="n === 10">
-            <div class="setting-section-header">
+            <div class="settings-section-header">
               {{ t('settings.other') }}
             </div>
             <div class="m-5">
@@ -335,11 +335,11 @@ async function changeSettings() {
     grid-template-columns: repeat(1, 1fr);
   }
 
-  .setting-section-header {
+  .settings-section-header {
   font-size: medium !important;
   font-weight: bold;
 }
-  .setting-section {
+  .settings-section {
     font-size: small;
     padding-right: 0rem !important;
     padding-left: 1rem !important;
@@ -353,11 +353,11 @@ async function changeSettings() {
   width: 100%;
   box-sizing: border-box;
 }
-.setting-section-header {
+.settings-section-header {
   align-items: center;
   font-size: x-large;
 }
-.setting-section {
+.settings-section {
   padding-right: 6.25rem;
   padding-left: 6.25rem;
   padding-top: 1rem;

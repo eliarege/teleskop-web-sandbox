@@ -24,13 +24,13 @@ const radio = ref(driver.value.CONTROLTOTALBATCH ? 0 : 1)
 console.log(driver.value)
 
 async function updateDriverSettings() {
-  await $fetch('/api/setting/file-system', {
+  await $fetch('/api/settings/file-system', {
     method: 'put',
     body: {
       path: requestFilteSystemPath.value,
     },
   })
-  await $fetch('/api/setting/driver', {
+  await $fetch('/api/settings/driver', {
     method: 'put',
     body: {
       DRIVERID: driver.value.DRIVERID,
@@ -46,8 +46,8 @@ async function updateDriverSettings() {
   })
 }
 async function fetchData() {
-  requestFilteSystemPath.value = await $fetch('/api/setting/file-system')
-  driver.value = await $fetch('/api/setting/driver')
+  requestFilteSystemPath.value = await $fetch('/api/settings/file-system')
+  driver.value = await $fetch('/api/settings/driver')
 }
 </script>
 
@@ -55,7 +55,7 @@ async function fetchData() {
   <div class="flex flex-col items-center justify-center h-200">
     <div class=" flex flex-col items-center justify-center gap-5 text-size-4 w-full ">
       <div class="w-full items-center justify-center flex">
-        <div class="setting-section-header">
+        <div class="settings-section-header">
           {{ t('settings.driverInfo._') }}
         </div>
         <div class="row-item ">
@@ -158,7 +158,7 @@ async function fetchData() {
 </template>
 
 <style scoped>
-.setting-section-header {
+.settings-section-header {
   align-items: center;
   font-size: x-large;
   display: flex;
@@ -186,7 +186,7 @@ async function fetchData() {
   width: 50%;
   margin: 0.25rem;
 }
-.setting-section-header {
+.settings-section-header {
   align-items: center;
   font-size: x-large;
 }

@@ -50,12 +50,12 @@ const machineInfo = ref<{ label: string; value: any; field: string }[]>([
 ])
 
 async function getRows() {
-  rows.value = await $fetch('/api/setting/machine-dispenser-connection')
+  rows.value = await $fetch('/api/settings/machine-dispenser-connection')
   rows.value.unshift({})
 }
 
 async function getDisps() {
-  disps.value = await $fetch('/api/setting/dispenser')
+  disps.value = await $fetch('/api/settings/dispenser')
 }
 
 function resetMachineInfo(row?: any) {
@@ -84,7 +84,6 @@ function toggleRow(row: any, index: number) {
   resetMachineInfo(row)
   console.log(machineInfo.value)
 }
-const dmsRead = ref(false)
 
 function customSortMethod(rows, sortBy, descending) {
   expandedRow.value = null
@@ -117,7 +116,7 @@ function customSortMethod(rows, sortBy, descending) {
 async function submit(rowIndex: number) {
   /** If create */
   if (rowIndex === 0) {
-    await $fetch('/api/setting/machine-dispenser-connection', {
+    await $fetch('/api/settings/machine-dispenser-connection', {
       method: 'post',
       body: {
         machineid: machineInfo.value[0].value,
@@ -126,10 +125,11 @@ async function submit(rowIndex: number) {
         disps: machineInfo.value[3].value,
       },
     })
+    expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
     console.log(machineInfo.value)
-    await $fetch('/api/setting/machine-dispenser-connection', {
+    await $fetch('/api/settings/machine-dispenser-connection', {
       method: 'put',
       body: {
         machineid: machineInfo.value[0].value,
@@ -144,7 +144,7 @@ async function submit(rowIndex: number) {
 
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  await $fetch('/api/setting/machine-dispenser-connection', {
+  await $fetch('/api/settings/machine-dispenser-connection', {
     method: 'delete',
     body: {
       machineid: machineInfo.value[0].value,
@@ -326,7 +326,7 @@ async function deleteRow() {
 </template>
 
 <style scoped>
-.setting-section-header {
+.settings-section-header {
   align-items: center;
   font-size: x-large;
   display: flex;

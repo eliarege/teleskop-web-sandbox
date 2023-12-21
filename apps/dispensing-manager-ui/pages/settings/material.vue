@@ -6,73 +6,77 @@ import { colors } from '~/shared/constants'
 
 const { t } = useI18n()
 const rows = ref([])
-const types = ref([])
-const protocols = ref(['7', '15', 'n', 'n-v2', 'n-v3', 'n-v4', 'n-v5', 'EMTS'])
+const disps = ref([])
 
 await getRows()
-await getTypes()
+await getDisps()
 
 const columns: Array<Column> = [
   {
-    name: 'dispNo',
-    label: t('settings.dispSettings.dispNo'),
-    field: 'dispNo',
+    name: 'materialName',
+    label: t('settings.materialName'),
+    field: 'materialName',
     filterable: true,
   },
   {
-    name: 'name',
-    label: t('settings.dispSettings.dispName'),
-    field: 'name',
+    name: 'materialCode',
+    label: t('settings.machinename'),
+    field: 'materialCode',
     filterable: true,
   },
   {
-    name: 'fileSystem',
-    label: t('settings.dispSettings.dispFileSystem'),
-    field: 'fileSystem',
-    filterable: true,
-  },
-  {
-    name: 'fileName',
-    label: t('settings.dispSettings.dispFileName'),
-    field: 'fileName',
-  },
-  {
-    name: 'protocol',
-    label: t('settings.dispSettings.dispProtocol'),
-    field: 'protocol',
+    name: 'materialGroup',
+    label: t('settings.materialType'),
+    field: 'materialGroup',
     filterable: true,
   },
 ]
 
-const dispenserInfo = ref<{ label: string; value: any; field: string; options?: Array<any> }[]>([
-  { label: t('settings.dispSettings.dispNo'), value: '', field: 'dispNo' },
-  { label: t('settings.dispSettings.dispName'), value: '', field: 'name' },
-  { label: t('settings.dispSettings.dispType'), value: '', field: 'dispType' },
-  { label: t('settings.dispSettings.dispIP'), value: '', field: 'dispIP' },
-  { label: t('settings.dispSettings.dispFileSystem'), value: '', field: 'fileSystem' },
-  { label: t('settings.dispSettings.dispFileName'), value: '', field: 'fileName' },
-  { label: t('settings.dispSettings.dispProtocol'), value: '', field: 'protocol' },
-  { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'consumptionFile' },
+const materialGroups = [
+  { label: t('dye'), value: 1 },
+  { label: t('chemical'), value: 2 },
+  { label: t('settings.other'), value: 3 },
+]
+
+const materialInfo = ref<{ label: string; value: any; field: string }[]>([
+  { label: t('settings.materialCode'), value: '', field: 'materialCode' },
+  { label: t('settings.materialName'), value: '', field: 'materialName' },
+  { label: t('settings.materialType'), value: '', field: 'materialGroup' },
+  { label: t('settings.materialDensity'), value: '', field: 'density' },
+  { label: 'pH', value: '', field: 'ph' },
+  { label: t('settings.supplySource'), value: '', field: 'source' },
+  { label: t('settings.materialKgPrice'), value: '', field: 'cost' },
+  { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
+  { label: t('settings.rerequestable'), value: '', field: 'rerequestable' },
+  { label: t('settings.directlyTransfer'), value: '', field: 'directTransfer' },
+
 ])
 
-async function getTypes() {
-  types.value = await $fetch('/api/setting/dispenser-type')
-}
-
 async function getRows() {
-  rows.value = await $fetch('/api/setting/dispenser')
+  rows.value = await $fetch('/api/settings/material')
   rows.value.unshift({})
 }
 
-function resetDispenserInfo(row?: any) {
-  console.log('Reseting --->>')
+async function getDisps() {
+  disps.value = await $fetch('/api/settings/dispenser')
+}
+
+async function resetMaterialInfo(row?: any) {
   if (!row)
-    dispenserInfo.value.forEach(disp => disp.value = '')
+    materialInfo.value.forEach(mate => mate.value = '')
   else {
-    dispenserInfo.value.forEach((disp) => {
-      disp.field === 'dispType'
-        ? types.value.forEach((type: { type: number; name: string }) => type.type === row[disp.field] ? disp.value = type : '')
-        : disp.value = row[disp.field]
+    const mateDispsTemp = await $fetch(`/api/settings/material-connections?chemCode=${row.materialCode}`)
+    materialInfo.value.forEach((mate) => {
+      if (mate.field === 'materialGroup') {
+        materialGroups.forEach(dev => dev.value === row[mate.field] ? mate.value = dev : '')
+      } else if (mate.field === 'connectedDisps') {
+        mate.value = mateDispsTemp
+        console.log(mate.value)
+      } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
+        mate.value = false
+      } else {
+        mate.value = row[mate.field]
+      }
     })
   }
 }
@@ -83,9 +87,9 @@ function toggleRow(row: any, index: number) {
   expandedRow.value === index
     ? expandedRow.value = null
     : expandedRow.value = index
-  resetDispenserInfo(row)
+  resetMaterialInfo(row)
+  console.log(row)
 }
-const dmsRead = ref(false)
 
 function customSortMethod(rows, sortBy, descending) {
   expandedRow.value = null
@@ -115,40 +119,40 @@ function customSortMethod(rows, sortBy, descending) {
   return sortedRows
 }
 
-async function submit(rowIndex: number, row: any) {
-  let isOriginNo = true
+async function submit(rowIndex: number) {
   /** If create */
   if (rowIndex === 0) {
-    const a = await $fetch('/api/setting/dispenser', {
+    await $fetch('/api/settings/material-connection', {
       method: 'post',
       body: {
-        dispNo: dispenserInfo.value[0].value,
-        name: dispenserInfo.value[1].value,
-        dispType: dispenserInfo.value[2].value.type,
-        dispIP: dispenserInfo.value[3].value,
-        fileSystem: dispenserInfo.value[4].value,
-        fileName: dispenserInfo.value[5].value,
-        protocol: dispenserInfo.value[6].value,
+        materialCode: materialInfo.value[0].value,
+        materialName: materialInfo.value[1].value,
+        materialGroup: materialInfo.value[2].value.value,
+        density: materialInfo.value[3].value,
+        ph: materialInfo.value[4].value,
+        source: materialInfo.value[5].value,
+        cost: materialInfo.value[6].value,
+        connectedDisps: materialInfo.value[7].value,
+        directTransfer: materialInfo.value[8].value,
+        rerequestable: materialInfo.value[9].value,
       },
     })
-    console.log(a)
     expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
-    if (row.dispNo !== dispenserInfo.value[0].value) {
-      isOriginNo = false
-    }
-    await $fetch('/api/setting/dispenser', {
+    await $fetch('/api/settings/material-connection', {
       method: 'put',
       body: {
-        dispNo: dispenserInfo.value[0].value,
-        isOriginNo,
-        name: dispenserInfo.value[1].value,
-        dispType: dispenserInfo.value[2].value.type,
-        dispIP: dispenserInfo.value[3].value,
-        fileSystem: dispenserInfo.value[4].value,
-        fileName: dispenserInfo.value[5].value,
-        protocol: dispenserInfo.value[6].value,
+        materialCode: materialInfo.value[0].value,
+        materialName: materialInfo.value[1].value,
+        materialGroup: materialInfo.value[2].value.value,
+        density: materialInfo.value[3].value,
+        ph: materialInfo.value[4].value,
+        source: materialInfo.value[5].value,
+        cost: materialInfo.value[6].value,
+        connectedDisps: materialInfo.value[7].value,
+        directTransfer: materialInfo.value[8].value,
+        rerequestable: materialInfo.value[9].value,
       },
     })
   }
@@ -156,11 +160,11 @@ async function submit(rowIndex: number, row: any) {
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  console.log(dispenserInfo.value)
-  await $fetch('/api/setting/dispenser', {
+  console.log(materialInfo.value)
+  await $fetch('/api/settings/material', {
     method: 'delete',
     body: {
-      dispNo: dispenserInfo.value[0].value,
+      materialCode: materialInfo.value[0].value,
     },
   })
   expandedRow.value = null
@@ -178,18 +182,18 @@ async function deleteRow() {
     :rows="rows"
     :columns="columns"
     :is-expandable="true"
-    style="height: 85vh;"
+    style="height: 90vh;"
     :custom-sort-method="customSortMethod"
   >
     <template #custombody="props">
       <q-tr :props="props">
         <q-td
-          :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           class="cursor-pointer"
+          :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           @click="toggleRow(props.row, props.rowIndex)"
         >
           <q-btn
-            v-if="props.row.dispNo"
+            v-if="props.row.materialCode"
             size="sm"
             :style="`background-color: ${colors.black}; color: white;`"
             round
@@ -199,7 +203,7 @@ async function deleteRow() {
           <q-btn
             v-else
             outline
-            :style="'color:' + ` ${colors.black} ` + 'font-weight: bold; font-size: larger; '"
+            :style="`color: ${colors.black}; font-weight: bold; font-size: larger; `"
             :label="t('settings.new')"
             class="w-30"
             :icon="props.rowIndex === expandedRow ? 'remove' : 'add'"
@@ -208,66 +212,77 @@ async function deleteRow() {
         <q-td
           v-for="col in props.cols"
           :key="col.name"
-          :props="props"
           :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
+          :props="props"
           class="cursor-pointer"
           @click="toggleRow(props.row, props.rowIndex)"
         >
-          {{ col.value }}
+          <span>
+            {{ col.value }}
+          </span>
         </q-td>
       </q-tr>
 
-      <q-tr v-if="props.rowIndex === expandedRow" :props="props">
+      <q-tr
+        v-if="props.rowIndex === expandedRow"
+        :props="props"
+        class="expanded-row"
+      >
         <q-td colspan="100%">
           <div class="flex justify-center pt-5">
             <div
-              v-for="disp in dispenserInfo"
-              :key="disp.label"
-              class="flex flex-row ml-5 mt-1"
+              v-for="mate in materialInfo"
+              :key="mate.label"
+              class="flex ml-5 mt-1"
             >
-              <div class="flex w-70 pl-2 m-1 items-center">
-                {{ disp.label }}
+              <div class="flex class-w-70 pl-2 m-1 items-center">
+                {{ mate.label }}
               </div>
-              <div class=" flex w-100 pl-2 m-1 items-center">
-                <span v-if="disp.field === 'protocol'">
+              <div class=" flex class-w-100 pl-2 m-1 items-center">
+                <span v-if="mate.field === 'materialGroup'">
                   <q-select
-                    v-model="disp.value"
+                    v-model="mate.value"
                     borderless
                     dense
-                    class="w-70"
                     filled
+                    class="class-w-70"
                     options-dense
-                    :options="protocols"
+                    :options="materialGroups"
+                    option-value="value"
+                    option-label="label"
                     style="min-width: 150px"
                   />
                 </span>
-                <span v-else-if="disp.field === 'dispType'">
+                <span v-else-if="mate.field === 'connectedDisps'">
                   <q-select
-                    v-model="disp.value"
+                    v-model="mate.value"
                     borderless
+                    multiple
                     dense
                     filled
-                    class="w-70"
+                    class="class-w-70 overflow-hidden"
                     options-dense
-                    :options="types"
-                    option-value="type"
+                    :options="disps"
+                    option-value="dispNo"
                     option-label="name"
                     style="min-width: 150px"
                   />
+                  <!-- :display-value=" mate.value && mate.value.length > 1 ? `${mate.value[0]?.name} + ${mate.value?.length - 1} ${t('more')}` : mate.value[0]?.name" -->
+                </span>
+                <span v-else-if="mate.field === 'directTransfer' || mate.field === 'rerequestable'">
+                  <q-checkbox v-model="mate.value" />
                 </span>
                 <span v-else>
                   <q-input
-                    v-model="disp.value"
-                    class="w-70"
+                    v-model="mate.value"
                     dense
-                    :type="disp.field === 'dispNo' ? 'number' : 'text'"
+                    class="class-w-70"
                     filled
-                    :placeholder="disp.value"
-                    :disable="disp.field === 'dispNo' && props.row.dispNo > 0"
+                    :type="mate.field === 'machineid' ? 'number' : 'text'"
+                    :placeholder="mate.value"
+                    :disable="props.row.materialCode !== undefined && mate.field === 'materialCode'"
                   />
-                </span>
-                <span v-if="disp.field === 'consumptionFile'">
-                  <q-checkbox v-model="dmsRead" :label="t('settings.dispSettings.readFromDMS')" />
+
                 </span>
               </div>
             </div>
@@ -275,10 +290,10 @@ async function deleteRow() {
               <q-btn
                 color="black"
                 :label="props.rowIndex ? t('settings.submit') : t('settings.new')"
-                :disable="dispenserInfo[0].value === undefined || dispenserInfo[0].value === ''"
                 outline
+                :disable="materialInfo[0].value === undefined || materialInfo[0].value === ''"
                 icon="done"
-                @click="submit(props.rowIndex, props.row)"
+                @click="submit(props.rowIndex)"
               />
               <q-btn
                 color="black"
@@ -334,7 +349,13 @@ async function deleteRow() {
 </template>
 
 <style scoped>
-.setting-section-header {
+.class-w-70 {
+  width: 18rem;
+}
+.class-w-100 {
+  width: 20rem;
+}
+.settings-section-header {
   align-items: center;
   font-size: x-large;
   display: flex;
