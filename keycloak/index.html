@@ -1,0 +1,69 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keycloak Dev</title>
+</head>
+<body>
+  <div class="container">
+    <div class="card-container">
+      <div>
+        Token
+        <div class="card" id="token"></div>
+        <div class="button-container">
+          <button id="clipboard-button">Save Token to Clipboard</button>
+          <button id="update-button">Update Token</button>
+          <button id="logout-button">Logout</button>
+        </div>
+      </div>
+      <div>
+        Parsed Token
+        <div class="card language-json" id="token-parsed"></div>
+      </div>
+      <div>
+        User Info
+        <div class="card language-json" id="user-info"></div>
+      </div>
+    </div>
+
+  </div>
+  <script src="/web/index.ts" type="module"></script>
+  <style>
+    hr {
+      border-color: #0003;
+    }
+    .container {
+      margin: 1rem;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .card-container {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .card {
+      border: 1px solid #0003;
+      padding: 0.5rem;
+      font-family: monospace;
+      width: 30rem;
+      min-height: 8rem;
+      max-height: 40rem;
+      overflow: auto;
+    }
+    #token {
+      word-wrap: break-word;
+    }
+    #token-parsed {
+      white-space: pre-line;
+    }
+    #user-info {
+      white-space: pre-line;
+    }
+    .button-container {
+      margin-top: 0.5rem;
+    }
+    .button-container *:not(:first-child) {
+      margin-left: 0.5rem;
+    }
+  </style>
+</body>
+</html>

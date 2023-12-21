@@ -56,7 +56,9 @@ interface MappingsRepresentation {
 
 const KEYCLOAK_URL = 'http://127.0.0.1:8080'
 const KEYCLOAK_REALM = 'teleskop-web'
+const KEYCLOAK_DEV_CLIENT = 'keycloak-dev'
 const ADMIN_GROUP = 'admin'
+const USER_GROUP = 'user'
 const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const APP_DIR = resolve(ROOT_DIR, 'apps')
 const SCHEMA_DIR = resolve(ROOT_DIR, 'schemas')
@@ -136,7 +138,7 @@ async function ensureRealm(admin: KcAdminClient, realmName: string): Promise<voi
       displayName: toTitleCase(realmName),
       internationalizationEnabled: true,
       defaultLocale: 'en',
-      supportedLocales: ['en', 'tr']
+      supportedLocales: ['en', 'tr'],
     })
     consola.info(`Created realm ${realmName}`)
   }
@@ -268,6 +270,26 @@ async function syncGroupRoleMappings(admin: KcAdminClient, groupName: string, ro
   return group
 }
 
+async function ensureDevClient(admin: KcAdminClient, clients: ClientRepresentation[]) {
+  if (!clients.some(c => c.clientId === KEYCLOAK_DEV_CLIENT)) {
+    await admin.clients.create({
+      clientId: KEYCLOAK_DEV_CLIENT,
+      enabled: true,
+      name: 'Keycloak Dev',
+      description: 'Used for creating/inspecting tokens in development',
+      publicClient: true,
+      webOrigins: [
+        'http://127.0.0.1:8082',
+        'http://localhost:8082',
+      ],
+      redirectUris: [
+        'http://127.0.0.1:8082/*',
+        'http://localhost:8082/*',
+      ],
+    })
+  }
+}
+
 function serializeAjvErrors(errors: ErrorObject[]) {
   return errors.map(err => `- ${err.instancePath}: ${err.message}`).join('\n')
 }
@@ -313,6 +335,8 @@ async function main() {
   const appList = [...apps.values()]
   const clients = await admin.clients.find()
 
+  await ensureDevClient(admin, clients)
+
   for (const app of appList) {
     app.clientId = await syncClient(admin, app, clients)
     if (app.manifest) {
@@ -322,6 +346,7 @@ async function main() {
 
   const adminRoles = appList.flatMap(app => app.roles)
   const adminGroup = await syncGroupRoleMappings(admin, ADMIN_GROUP, adminRoles)
+  const userGroup = await ensureGroup(admin, USER_GROUP)
 
   const adminUser = await ensureUser(admin, 'admin', {
     firstName: 'Admin',
@@ -331,17 +356,20 @@ async function main() {
       { type: 'password', value: 'password' },
     ],
   })
-  await ensureUser(admin, 'user', {
+  const userUser = await ensureUser(admin, 'user', {
     firstName: 'Eliar',
     lastName: 'At Eliar',
     email: 'user@eliar.com',
     credentials: [
-      { type: 'password', value: 'passowrd' },
+      { type: 'password', value: 'password' },
     ],
   })
 
   if (!adminUser.groups || !adminUser.groups.includes(ADMIN_GROUP)) {
     await admin.users.addToGroup({ id: adminUser.id!, groupId: adminGroup.id! })
+  }
+  if (!userUser.groups || !userUser.groups.includes(USER_GROUP)) {
+    await admin.users.addToGroup({ id: userUser.id!, groupId: userGroup.id! })
   }
 
   consola.info('Synchronization complete')
