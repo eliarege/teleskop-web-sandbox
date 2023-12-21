@@ -1,10 +1,7 @@
-import fs from 'node:fs'
-import * as ftp from 'basic-ftp'
+import FTPClient from 'tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async () => {
-  const ftpClient = new ftp.Client()
-  ftpClient.ftp.verbose = false
   try {
     const users = await knex('BFUSERS').select({
       userId: 'userID',
@@ -18,10 +15,9 @@ export default defineEventHandler(async () => {
       userMode2: 'userMode2',
     })
 
-    const tbb = new TBB6500FtpClient('192.168.88.202')
-    await tbb.writeUsers(users)
+    const tbb = new FTPClient('192.168.88.202')
+    // await tbb.writeUsers(users)
   } catch (err) {
     console.error(err)
   }
-  ftpClient.close()
 })

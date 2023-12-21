@@ -1,10 +1,7 @@
-import fs from 'node:fs'
-import * as ftp from 'basic-ftp'
+import FTPClient from 'tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async () => {
-  const ftpClient = new ftp.Client()
-  ftpClient.ftp.verbose = false
   try {
     const finishReasons = await knex('BFDYLOTFINISHREASONS').select({
       reasonId: 'REASONID',
@@ -13,10 +10,10 @@ export default defineEventHandler(async () => {
       reportToERP: 'ReportToERP',
     })
 
-    const tbb = new TBB6500FtpClient('192.168.88.202')
-    await tbb.writeFinishReasons(finishReasons)
+    const tbb = new FTPClient('192.168.88.202')
+    // await tbb.writeFinishReasons(finishReasons)
+    return finishReasons
   } catch (err) {
     console.error(err)
   }
-  ftpClient.close()
 })
