@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import FilterableTable from 'ui/components/FilterableTable.vue'
-import { navigateToPage, rowBGColorHandler, textAlignOverride } from '../shared/functions'
-import type { Column } from '~/shared/types'
-import { colors } from '~/shared/constants'
+import FilterableTable from 'ui/components/FilterableTable.vue';
+import { colors } from '~/shared/constants';
+import type { Column } from '~/shared/types';
+import { navigateToPage, rowBGColorHandler, textAlignOverride } from '../shared/functions';
 
 const { t } = useI18n()
 const recetetartim = t('distributionProcessor.recipeMeasurement')

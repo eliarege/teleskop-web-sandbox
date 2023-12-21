@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { colors } from '~/shared/constants'
 
 const { t } = useI18n()

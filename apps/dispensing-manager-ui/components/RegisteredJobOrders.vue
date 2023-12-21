@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { onMounted } from 'vue'
-import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
-import FilterableTable from 'ui/components/FilterableTable.vue'
-import moment from 'moment'
 import { useStorage } from '@vueuse/core'
-import { navigateToPage } from '../shared/functions'
+import moment from 'moment'
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
+import { onMounted } from 'vue'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
+import { navigateToPage } from '../shared/functions'
 
 // Call fetchData when component is mounted.
 // For this, we can use the onMounted hook from 'vue'

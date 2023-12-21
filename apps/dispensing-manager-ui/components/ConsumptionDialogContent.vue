@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import moment from 'moment'
-import { useI18n } from 'vue-i18n'
-import { rowBGColorHandler } from '../shared/functions'
-import { colors } from '~/shared/constants'
+import moment from 'moment';
+import { colors } from '~/shared/constants';
+import { rowBGColorHandler } from '../shared/functions';
 
 const props = defineProps({
   joborder: String,

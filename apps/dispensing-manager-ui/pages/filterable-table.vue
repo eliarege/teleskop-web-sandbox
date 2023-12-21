@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import FilterableTable from 'ui/components/FilterableTable.vue'
-import type { Column, FilterSlot } from '../shared/types'
-import { filtersToKnex } from '~/shared/functions'
+import FilterableTable from 'ui/components/FilterableTable.vue';
+import type { Column, FilterSlot } from '../shared/types';
 
 const { t } = useI18n()
 const returnType = [

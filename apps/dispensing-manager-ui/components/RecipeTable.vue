@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import type { ColumnCls, TableColumnCtx } from 'element-plus'
-import type { PropType } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { RecipeLatest } from '~/shared/types'
+import type { TableColumnCtx } from 'element-plus';
+import type { PropType } from 'vue';
+import type { RecipeLatest } from '~/shared/types';
 
 const props = defineProps({
   data: {

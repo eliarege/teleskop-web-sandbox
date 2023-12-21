@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 
 const props = defineProps(['type'])
 const { t } = useI18n()

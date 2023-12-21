@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { Notify } from 'quasar'
-import { navigateToPage } from '../shared/functions'
+import { Notify } from 'quasar';
+import { navigateToPage } from '../shared/functions';
 
 const { t } = useI18n()
 

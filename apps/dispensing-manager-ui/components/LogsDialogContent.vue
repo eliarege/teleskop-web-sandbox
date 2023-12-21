@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import moment from 'moment'
 import FilterableTable from 'ui/components/FilterableTable.vue'
-import { rowBGColorHandler } from '../shared/functions'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
+import { rowBGColorHandler } from '../shared/functions'
 
 const props = defineProps({
   joborder: Number,
