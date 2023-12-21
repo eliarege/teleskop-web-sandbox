@@ -13,5 +13,9 @@
     "quasar": "^2.14.1",
     "tsconfig": "workspace:*",
     "vue": "^3.3.9"
+  },
+  "peerDependencies": {
+    "vue-i18n": "^9",
+    "@iconify/vue": "^4"
   }
 }
