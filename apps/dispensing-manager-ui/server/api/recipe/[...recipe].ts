@@ -174,3 +174,54 @@ router.put('/change-planned-machine', defineEventHandler(async (event) => {
     return e
   }
 }))
+
+router.put('/change-recipe-amount', defineEventHandler(async (event) => {
+  try {
+    const body = await readBody(event)
+    const query = await knex('DYBFBATCHORDERRECIPESTEPS')
+      .where('PLANKEY', body.planKey)
+      .andWhere('REQNO_BATCH', body.ISN)
+      .andWhere('CHEMCODE', body.chemCode)
+      .update({
+        AMOUNT: body.newAmount,
+      })
+    return query
+  } catch (e) {
+    return e
+  }
+}))
+
+router.post('/previous-requests', defineEventHandler(async (event) => {
+  const { joborder, programNo, programStepNo } = await readBody(event)
+  const query = await knex('DYTFCHEMREQUESTS')
+    .where('BATCHNO', joborder)
+    .andWhere('PROGRAMNO', programNo)
+    .andWhere('PROGRAMSTEPNO', programStepNo)
+    .select({
+      joborder: 'BATCHNO',
+      correctionNo: 'BATCHCORRECTIONNO',
+      mainStep: 'PROGRAMSTEPNO',
+      status: 'STATUS',
+      requestTime: 'REQUESTTIME',
+      endTime: 'COMPLETEDTIME',
+    })
+  return query
+}))
+
+router.post('/check-tank-no-required', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+
+  const arr = await knex('DYTFCHEMDISPCONNECTION as C')
+    .whereIn('C.CHEMCODE', body.materialCodes)
+    .select('PROTOCOL')
+    .join('DYTFDISPENSERSETTINGS as D', 'C.DISPENSERID', 'D.DISPENSERID')
+  let check = false
+  console.log(arr)
+  arr.forEach((a) => {
+    if (['n-v2', 'n-v3', 'n-v4', 'n-v5'].includes(a.PROTOCOL))
+      check = true
+  })
+
+  console.log(check)
+  return check
+}))
