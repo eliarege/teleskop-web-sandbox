@@ -49,7 +49,6 @@ router.post('/joborderlogs', defineEventHandler(async (event) => {
         }
       })
     if (isCanceled === 'false') {
-      console.log(isCanceled)
       result.rightJoin('TFMACHINESTATUS as s', function () {
         this
           .on('r.BATCHNO', '=', 's.RUNNING_JOBORDER')
@@ -94,9 +93,9 @@ router.get('/requestmaterials', defineEventHandler(async (event) => {
 /**
  * import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool';
- 
+
 const router = createRouter()
- 
+
 router.get('/test', defineEventHandler(async (event) => {
   let result;
   try {
@@ -125,7 +124,7 @@ router.get('/test', defineEventHandler(async (event) => {
     .limit(10)
     .orderBy('r.REQNUMBER', 'asc')
     .groupBy('r.REQNUMBER')
- 
+
     return result
   }
   catch (e) {

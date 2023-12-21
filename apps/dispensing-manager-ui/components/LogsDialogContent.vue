@@ -43,7 +43,7 @@ const logCols: Column[] = [
 
 const logRows = ref()
 await applyFilters([])
-async function applyFilters(updatedValue) {
+async function applyFilters(updatedValue: any) {
   const tempFilteredLogs = await $fetch('/api/logs/filtered-logs', {
     method: 'post',
     body: {

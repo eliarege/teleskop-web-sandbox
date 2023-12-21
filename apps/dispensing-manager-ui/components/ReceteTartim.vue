@@ -87,7 +87,6 @@ function clearCorrectionNo() {
 }
 
 const route = useRoute()
-console.log(route.query)
 if (route.query.correctionNo && route.query.joborder) {
   if (route.query.isLogs === 'true')
     showLogsDialog.value = true
@@ -133,7 +132,7 @@ async function submitCoupleMachine() {
         &nbsp;&nbsp;
         {{ t('distributionProcessor._') }} - {{ t('recipe.header') }}
         <span class="right-home">
-          <NavigationButton type="setting" />
+          <NavigationButton type="settings" />
           <NavigationButton type="home" />
         </span>
       </span>

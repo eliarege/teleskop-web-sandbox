@@ -47,7 +47,6 @@ async function updateRecipe() {
     method: 'post',
     body: filters.value,
   })
-  console.log(recipe.value)
 }
 setInterval(updateRecipe, 10000)
 const material = ref()
@@ -56,7 +55,7 @@ async function fetchMaterialData(reqnumber: number) {
   material.value = materialDataTemp
 }
 
-async function applyFilters(updatedValue) {
+async function applyFilters(updatedValue: any) {
   filters.value = updatedValue
   await updateRecipe()
 }
@@ -73,7 +72,7 @@ async function selectRow(rowReqNumber: number) {
   await fetchMaterialData(rowReqNumber)
 }
 
-async function clickShowRecipe(row, isLogs: boolean) {
+async function clickShowRecipe(row: any, isLogs: boolean) {
   await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.batchCorrectionNo}&isLogs=${isLogs}`)
 }
 </script>
@@ -89,7 +88,7 @@ async function clickShowRecipe(row, isLogs: boolean) {
           :columns="columnsRecipe"
           class="h-120"
           :pagination="{ rowsPerPage: paginationSync, page: paginationPageLeft }"
-          @update:pagination="(newPag) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
+          @update:pagination="(newPag: any) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
           @update-filter-slots="(evt) => applyFilters(evt)"
         >
           <!-- style="width: 55%; height: 100%;" -->
@@ -226,7 +225,7 @@ async function clickShowRecipe(row, isLogs: boolean) {
         color="black"
         icon="settings"
         :label="t('settings._')"
-        @click="navigateToPage('setting')"
+        @click="navigateToPage('settings')"
       />
     </div>
   </div>
