@@ -56,10 +56,10 @@ interface MappingsRepresentation {
 
 const KEYCLOAK_URL = 'http://127.0.0.1:8080'
 const KEYCLOAK_REALM = 'teleskop-web'
-const KEYCLOAK_DEV_CLIENT = 'keycloak-dev'
+const KEYCLOAK_TOKEN_INSPECTOR = 'keycloak-token-inspector'
 const ADMIN_GROUP = 'admin'
 const USER_GROUP = 'user'
-const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
+const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const APP_DIR = resolve(ROOT_DIR, 'apps')
 const SCHEMA_DIR = resolve(ROOT_DIR, 'schemas')
 
@@ -270,12 +270,12 @@ async function syncGroupRoleMappings(admin: KcAdminClient, groupName: string, ro
   return group
 }
 
-async function ensureDevClient(admin: KcAdminClient, clients: ClientRepresentation[]) {
-  if (!clients.some(c => c.clientId === KEYCLOAK_DEV_CLIENT)) {
+async function ensureTokenInspectorClient(admin: KcAdminClient, clients: ClientRepresentation[]) {
+  if (!clients.some(c => c.clientId === KEYCLOAK_TOKEN_INSPECTOR)) {
     await admin.clients.create({
-      clientId: KEYCLOAK_DEV_CLIENT,
+      clientId: KEYCLOAK_TOKEN_INSPECTOR,
       enabled: true,
-      name: 'Keycloak Dev',
+      name: 'Keycloak Token Inspector',
       description: 'Used for creating/inspecting tokens in development',
       publicClient: true,
       webOrigins: [
@@ -335,7 +335,7 @@ async function main() {
   const appList = [...apps.values()]
   const clients = await admin.clients.find()
 
-  await ensureDevClient(admin, clients)
+  await ensureTokenInspectorClient(admin, clients)
 
   for (const app of appList) {
     app.clientId = await syncClient(admin, app, clients)

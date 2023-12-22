@@ -1,0 +1,20 @@
+{
+  "name": "keycloak-token-inspector",
+  "version": "1.0.0",
+  "description": "",
+  "license": "UNLICENSED",
+  "keywords": [],
+  "scripts": {
+    "dev": "vite --port 8082 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --port 8082 --strictPort"
+  },
+  "dependencies": {
+    "highlight.js": "^11.9.0",
+    "keycloak-js": "^23.0.1"
+  },
+  "devDependencies": {
+    "tsconfig": "workspace:*",
+    "vite": "^5.0.10"
+  }
+}

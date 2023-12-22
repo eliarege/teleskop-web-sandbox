@@ -9,3 +9,8 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: password
     extra_hosts:
       - host.docker.internal:host-gateway
+
+  keycloak-token-inspector:
+    build: ./keycloak-token-inspector
+    ports:
+      - 8082:8082

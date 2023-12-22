@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "typecheck": "tsc --noEmit",
-    "keycloak": "pnpm -C ../../keycloak keycloak"
+    "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
     "async-mutex": "^0.4.0",

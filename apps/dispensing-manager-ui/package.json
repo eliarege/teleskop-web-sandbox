@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "start": "node .output/server/index.mjs",
-    "keycloak": "pnpm -C ../../keycloak keycloak"
+    "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
     "knex": "^3.0.1",

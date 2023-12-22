@@ -13,7 +13,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "keycloak": "pnpm -C ../../keycloak keycloak"
+    "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
     "animejs": "^3.2.2",

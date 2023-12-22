@@ -5,10 +5,11 @@ DIR=$(dirname $0)
 case "$1" in
   up)
     shift
-    exec docker compose -f $DIR/../docker-compose.yml -p teleskop up -d $@
+    cd $DIR/keycloak-token-inspector && pnpm build && cd -
+    exec docker compose -f $DIR/docker-compose.yml -p teleskop up -d $@
     ;;
   sync)
-    out=$(script -q /dev/null -c "pnpm exec tsx $DIR/sync.ts" | tee /dev/tty)
+    out=$(script -q /dev/null -c "pnpm exec tsx $DIR/keycloak-sync/bin/sync.ts" | tee /dev/tty)
     # NodeJS BUG: `fetch` exits the process silently if Keycloak has not been initialized.
     # If the sync process exits with 0 and has no output, weinfer it's due to the fetch issue.
     if [[ -z $out && $? -eq 0 ]]; then
@@ -17,7 +18,7 @@ case "$1" in
     fi
     ;;
   create | down | kill | restart | pull | start | stop)
-    exec docker compose -f $DIR/../docker-compose.yml -p teleskop $@
+    exec docker compose -f $DIR/docker-compose.yml -p teleskop $@
     ;;
   *)
     echo "Usage: $0 {up|sync|create|down|kill|restart|pull|start|stop}"

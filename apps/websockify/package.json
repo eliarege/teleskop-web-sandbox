@@ -14,7 +14,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "typecheck": "tsc --noEmit",
-    "keycloak": "pnpm -C ../../keycloak keycloak"
+    "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
     "jose": "^5.1.3",

@@ -11,7 +11,7 @@
     "dev": "node -r dotenv/config index.js",
     "build": "./scripts/package.sh",
     "start": "cd dist && node index.js",
-    "keycloak": "pnpm -C ../../keycloak keycloak"
+    "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
     "ejs": "^3.1.9",

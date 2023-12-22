@@ -11,7 +11,7 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "clean": "turbo clean",
-    "keycloak": "pnpm -C ./keycloak keycloak"
+    "keycloak": "./keycloak/keycloak.sh"
   },
   "devDependencies": {
     "@eliarelektronik/eslint-config": "^2.0.1",
