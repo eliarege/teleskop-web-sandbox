@@ -94,7 +94,7 @@ export function keycloakAdapter(config: KeycloakAdapterConfig) {
           throw createError({ statusMessage: 'Unauthenticated', statusCode: 401 })
         }
         if (roles.length) {
-          const userRoles = payload.resource_access?.[config.clientId].roles || []
+          const userRoles = payload.resource_access?.[config.clientId]?.roles || []
           const hasPermission = roles.every(role => userRoles.includes(role))
           if (!hasPermission) {
             logger.debug('Does not have permission')

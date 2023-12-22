@@ -1,19 +1,19 @@
 {
   "name": "tbb-ftp-client",
+  "type": "module",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
   "keywords": [],
-  "type": "module",
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "dependencies": {
+    "basic-ftp": "^5.0.3"
+  },
   "devDependencies": {
     "tsconfig": "workspace:*",
     "typescript": "^5.3.2"
-  },
-  "dependencies": {
-    "basic-ftp": "^5.0.3"
   }
 }

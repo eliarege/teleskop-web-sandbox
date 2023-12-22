@@ -2,7 +2,7 @@ import type { UseFetchOptions } from 'nuxt/app'
 import type { KeycloakPlugin } from '~/plugins/02.keycloak.client'
 
 export interface UseAuthFetchOptions<T> extends UseFetchOptions<T> {
-  minimumTokenValidity: number
+  minimumTokenValidity?: number
 }
 
 export function useAuthFetch<T>(url: string | (() => string), options?: UseAuthFetchOptions<T>) {
