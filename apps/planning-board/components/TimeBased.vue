@@ -1,14 +1,16 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { DateField, DateHelper, DatePicker, Label, PanelCollapser, Splitter, Toast } from '@bryntum/schedulerpro-trial'
-import { EliarModal } from 'ui'
+import { Splitter } from '@bryntum/schedulerpro-trial'
+import { EliarModal, MachineCard } from 'ui'
+import { addDays } from 'date-fns'
 import { Drag, Schedule, Task, UnplannedGrid } from '~/lib/bryntum'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
 const currentTime = useNow({ interval: 1000 })
 const router = useRouter()
 
+// TODO (BEFORE PRODUCTION): change start/end date!
 const startDate = ref('2022/07/01')
 const endDate = ref('2022/07/07')
 
@@ -19,7 +21,7 @@ const schedulerDateModel = ref({
 const showModal = reactive({
   planParameters: {
     show: false,
-    unit: { name: '' },
+    unit: { name: 0 },
   },
   recipe: {
     show: false,
@@ -36,6 +38,10 @@ const showModal = reactive({
   notes: {
     show: false,
     unit: { name: '' },
+  },
+  properties: {
+    show: false,
+    unit: { machineId: 0, jobOrder: '', planKey: 0 },
   },
   datePicker: false,
   rule: false,
@@ -96,8 +102,14 @@ async function deleteEvent(planKey: number) {
     query: { planKey },
   })
 }
-onMounted(() => {
-  const schedule: SchedulerPro = new Schedule({
+let scheduler: SchedulerPro
+function dateRangeEnd() {
+  scheduler.startDate = new Date(schedulerDateModel.value.from)
+  scheduler.endDate = new Date(schedulerDateModel.value.to)
+  scheduler.zoomLevel = 17
+}
+onMounted(async () => {
+  const schedule: SchedulerPro = scheduler = new Schedule({
     ref: 'schedule',
     appendTo: 'main',
     multiEventSelect: false,
@@ -246,6 +258,17 @@ onMounted(() => {
           splitEvent: {
             hidden: true,
           },
+          properties: {
+            icon: 'b-fa-solid b-fa-calendar-xmark',
+            text: 'Job Order Properties',
+            onItem({ eventRecord, assignmentRecord }: any) {
+              console.log(assignmentRecord.originalData.resourceId)
+              showModal.properties.show = true
+              showModal.properties.unit.planKey = eventRecord.originalData.id
+              showModal.properties.unit.jobOrder = eventRecord.originalData.name
+              showModal.properties.unit.machineId = assignmentRecord.originalData.resourceId
+            },
+          },
         },
       },
       taskEdit: false,
@@ -268,7 +291,8 @@ onMounted(() => {
         color: 'toolbar-buttons',
         onClick() {
           showModal.planParameters.show = true
-          showModal.planParameters.unit.name = schedule.selectedEvents[0].name
+          // @ts-expect-error type is always number, not string | number
+          showModal.planParameters.unit.name = schedule.selectedEvents[0].id
         },
       },
       {
@@ -281,7 +305,6 @@ onMounted(() => {
         onClick() {
           showModal.recipe.show = true
           showModal.recipe.unit.jobOrder = schedule.selectedEvents[0].name
-          console.log(schedule.selectedEvents[0]._data)
           // @ts-expect-error type error
           showModal.recipe.unit.machineId = schedule.selectedEvents[0]._data.resourceId
         },
@@ -379,6 +402,20 @@ onMounted(() => {
       cellEdit: false,
     },
     collapsible: false,
+    eventMenu: {
+      copyEvent: {
+        hidden: true,
+      },
+      cutEvent: {
+        hidden: true,
+      },
+      deleteEvent: {
+        hidden: true,
+      },
+      splitEvent: {
+        hidden: true,
+      },
+    },
     tbar: [
       {
         type: 'textfield',
@@ -416,6 +453,15 @@ onMounted(() => {
 
 <template>
   <div>
+    <EliarModal v-if="showModal.properties.show" @click.stop="showModal.properties.show = false">
+      <template #default>
+        <BatchProperties
+          :plan-key="showModal.properties.unit.planKey"
+          :machine-id="showModal.properties.unit.machineId"
+          :job-order="showModal.properties.unit.jobOrder"
+        />
+      </template>
+    </EliarModal>
     <EliarModal v-if="showModal.datePicker" @click.stop="showModal.datePicker = false">
       <template #default>
         <div class="flex justify-center w-min m-auto rounded" @click.stop.prevent>
@@ -425,20 +471,19 @@ onMounted(() => {
             dark
             landscape
             @click.stop.prevent
+            @range-end="dateRangeEnd(schedule)"
           />
         </div>
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
       <template #default>
-        <PlanningSettings />
+        <PlanSettings />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.planParameters.show" @click.stop="showModal.planParameters.show = false">
       <template #default>
-        <div class="w-full bg-white e-border p-3">
-          planParameters: {{ showModal.planParameters.unit.name }}
-        </div>
+        <PlanParameters :plan-key="showModal.planParameters.unit.name" />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.recipe.show" @click.stop="showModal.recipe.show = false">
@@ -472,7 +517,7 @@ onMounted(() => {
         <MachineRuleList />
       </template>
     </EliarModal>
-    <div class="e-border w-full h-screen">
+    <div class="w-full h-screen">
       <div id="main" class="w-full h-full" />
     </div>
   </div>
@@ -513,5 +558,17 @@ div[bgGreen] {
 
 .b-timeline-subgrid .b-sch-current-time {
   border: 1px solid red !important
+}
+.b-sch-event-wrap.b-nested-events-parent[data-level="1"] > .b-sch-event:hover > .b-nested-events-container {
+  border-color: #555;
+  background-color: rgba(0, 0, 0, 0.0666666667);
+}
+
+.b-sch-event {
+  border-radius: 9px !important;
+}
+
+.b-sch-event-content {
+  white-space: normal;
 }
 </style>
