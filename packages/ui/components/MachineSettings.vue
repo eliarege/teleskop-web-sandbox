@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
+import { ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { isEmpty } from 'lodash-es'
@@ -67,7 +68,7 @@ const key = useStorage(
   </q-btn>
 </template>
 
-<style>
+<style scoped>
 .q-btn {
   width: 100%;
   font-weight: 600;
