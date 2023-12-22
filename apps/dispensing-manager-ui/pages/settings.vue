@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { breakpoints } from '~/shared/constants';
+import { breakpoints } from '~/shared/constants'
 
 const { t } = useI18n()
 const tempRoute = useRoute()

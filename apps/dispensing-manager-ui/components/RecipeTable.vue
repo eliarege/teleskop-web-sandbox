@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { TableColumnCtx } from 'element-plus';
-import type { PropType } from 'vue';
-import type { RecipeLatest } from '~/shared/types';
+import type { TableColumnCtx } from 'element-plus'
+import type { PropType } from 'vue'
+import type { RecipeLatest } from '~/shared/types'
 
 const props = defineProps({
   data: {
@@ -13,9 +13,13 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  isFirst: {
-    type: Boolean,
+  machineid: {
+    type: Number,
     required: true,
+  },
+  resetCounter: {
+    type: Number,
+    default: 0,
   },
 })
 
@@ -149,13 +153,16 @@ const logsDialog = ref(false)
 const priority = ref()
 const tankNo = ref()
 const isTankNoRequired = ref()
+let materialCodes: (string | null)[] = []
+
 async function checkIsTankNoRequired() {
   requestDialog.value = true
-  const materialCodes: (string | null)[] = []
+  selectedRow.value.programTotalCount = 0
   props.data.forEach((row) => {
-    if (selectedRow.value.processOrder === row.processOrder)
-      if (selectedRow.value.ISN === row.ISN)
-        materialCodes.push(row.chemCode)
+    if (selectedRow.value.ISN === row.ISN)
+      materialCodes.push(row.chemCode)
+    if (selectedRow.value.programNo === row.programNo && row.parallelStep === 1)
+      selectedRow.value.programTotalCount++
   })
   console.log(selectedRow.value)
   isTankNoRequired.value = await $fetch('/api/recipe/check-tank-no-required', {
@@ -172,11 +179,28 @@ const priorityOptions = [
   { label: t('recipe.priorityHigh'), value: 75 },
   { label: t('recipe.priorityCritical'), value: 99 },
 ]
-function requestRow() {
-  console.log('row requested')
+async function requestRow() {
+  const data = [2, priority.value.value, props.machineid, tankNo.value, selectedRow.value.joborder, selectedRow.value.programNo, selectedRow.value.mainStep, selectedRow.value.mainStep, selectedRow.value.programTotalCount, selectedRow.value.recipeType, selectedRow.value.processOrder]
+  console.log(data)
+  await $fetch('/api/file/write', {
+    method: 'POST',
+    body: {
+      row: selectedRow.value,
+      content: data,
+      path: 'ozkantest/index.req',
+      materialCodes,
+    },
+  })
   tankNo.value = null
   priority.value = null
+  materialCodes = []
 }
+
+watch(() => props.resetCounter, (newValue, oldValue) => {
+  if (newValue !== oldValue) {
+    selectedRow.value = null
+  }
+})
 
 function isCorrectPlankey(param: any) {
   // TODO: Global function that checks if it is the last correction no or highest plankey
@@ -266,7 +290,7 @@ function isCorrectPlankey(param: any) {
             :label="t('settings.cancel')"
             outline
             icon="close"
-            @click="tankNo = null, priority = null"
+            @click="tankNo = null, priority = null, materialCodes = []"
           />
           <q-btn
             v-close-popup
@@ -295,7 +319,7 @@ function isCorrectPlankey(param: any) {
             :label="t('no')"
             outline
             icon="close"
-            @click="tankNo = null, priority = null"
+            @click="tankNo = null, priority = null, materialCodes = []"
           />
           <q-btn
             v-close-popup
@@ -343,7 +367,7 @@ function isCorrectPlankey(param: any) {
     <q-dialog
       v-model="logsDialog"
       persistent
-      class="flex"
+      class="prev-logs-class flex"
     >
       <RecipeStepPreviousRequestsContent
         :joborder="selectedRow?.joborder"
@@ -388,9 +412,11 @@ function isCorrectPlankey(param: any) {
     display: none !important;
   }
 }
+
 @media (min-width: 600px) {
-.q-dialog__inner--minimized > div {
-    max-width: 100%;
+
+  .prev-logs-class .q-dialog__inner--minimized > div {
+  max-width: 100%;
 }
 }
 @media (min-width: 735px) and (max-width: 1350px) {

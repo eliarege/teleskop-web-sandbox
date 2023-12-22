@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import moment from 'moment';
-import FilterableTable from 'ui/components/FilterableTable.vue';
-import { colors } from '~/shared/constants';
-import { rowBGColorHandler } from '../shared/functions';
+import moment from 'moment'
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import { rowBGColorHandler } from '../shared/functions'
+import { colors } from '~/shared/constants'
 
 const props = defineProps({
   joborder: String,
