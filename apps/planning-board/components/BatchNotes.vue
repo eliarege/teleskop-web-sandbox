@@ -34,9 +34,8 @@ function addNote() {
 const q = useQuasar()
 function deleteNote(id: number) {
   q.dialog({
-    title: `Delete Rule ${id}`,
-    message: `Are you sure to delete rule ${id}`,
-    class: 'text-center',
+    title: 'Are you sure to delete this note?',
+    class: 'e-border',
     ok: {
       push: true,
       color: 'primary',
@@ -65,7 +64,7 @@ function deleteNote(id: number) {
       :rows="batchNotes"
       :columns="columns"
       :rows-per-page-options="[]"
-      no-data-label="No Rule"
+      no-data-label="No Note"
     >
       <template #header="prop">
         <q-tr :props="prop">
