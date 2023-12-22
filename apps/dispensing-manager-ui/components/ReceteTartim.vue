@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Notify } from 'quasar';
-import { navigateToPage } from '../shared/functions';
+import { Notify } from 'quasar'
+import { navigateToPage } from '../shared/functions'
 
 const { t } = useI18n()
 
@@ -13,6 +13,8 @@ const showConsumptionDialog = ref(false)
 const lastJobOrder = ref()
 const plankey = ref()
 const showJoborderError = ref(false)
+const resetCounter = ref(0)
+
 // TODO: Job<Typeof Joborder> with plankey joborder correctiion no can be stored
 const a = 0
 const machines = await $fetch('/api/machine/machines')
@@ -20,6 +22,8 @@ const machines = await $fetch('/api/machine/machines')
 const recipeData = ref()
 const jobordernum = ref()
 const showChangeMachineDialog = ref(false)
+const correctionNoList = ref([])
+
 const buttonProps = ref([
   { name: 'logs', label: t('recipe.logs'), link: 'showLogs', icon: 'description' },
   { name: 'tartim', label: t('recipe.jobOrderMeasurement'), link: 'showConsumptions', icon: 'content_paste_search' },
@@ -41,12 +45,12 @@ async function getCorrectionNOs(parameter: string) {
  * Might to have colors array
  */
 const recipeDataTemp = ref()
-const correctionNoList = ref([])
 const correctionNoDisplayed = ref(0)
 const machine = ref([])
 const currentRecipeJoborder = ref('0')
 
 async function requestJobOrder() {
+  resetCounter.value += 1
   if (jobordernum.value) {
     showJoborderError.value = false
     currentRecipeJoborder.value = jobordernum.value
@@ -274,7 +278,8 @@ async function submitCoupleMachine() {
           :data="recipeData"
           :show="true"
           :title="t('recipe.recipeTable')"
-          :is-first="true"
+          :machineid="machine[0].machineid"
+          :reset-counter="resetCounter"
         />
       </ElScrollbar>
     </div>
