@@ -1,38 +1,32 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
-    const { machineId } = getQuery(event)
+  const { machineId } = getQuery(event)
 
-    const tanks = await knex('BFMACHINETANKS')
-      .where('MACHINEID', machineId).select({
-        machineId: 'MACHINEID',
-        tankName: 'NAME',
-        tankNo: 'TANKNO',
-      })
-    const map = tanks.map(async (tank) => {
-      const materials = await knex('DYTFMATERIALTANKMAP')
-        .leftOuterJoin('DYTFMATERIAL', 'DYTFMATERIALTANKMAP.MATERIALCODE', 'DYTFMATERIAL.MATERIALCODE')
-        .where('TANKNO', tank.tankNo)
-        .select({
-          materialId: 'ID',
-          materialCode: 'DYTFMATERIALTANKMAP.MATERIALCODE',
-          materialName: 'MATERIALNAME',
-          materialGroupNo: 'MADDEGRUPNO',
-          preWater: 'PREWATER',
-          betweenWater: 'BETWEENWATER',
-          postWater: 'POSTWATER',
-        })
-
-      return {
-        ...tank,
-        materials: materials.length > 0 ? materials : [],
-      }
+  const tanks = await knex('BFMACHINETANKS')
+    .where('MACHINEID', machineId)
+    .select({
+      machineId: 'MACHINEID',
+      tankName: 'NAME',
+      tankNo: 'TANKNO',
+      materials: knex.raw(`ISNULL((
+        select
+          ID as materialId,
+          DYTFMATERIALTANKMAP.MATERIALCODE as materialCode,
+          DYTFMATERIAL.MATERIALNAME as materialName,
+          DYTFMATERIAL.MADDEGRUPNO as materialGroupNo,
+          PREWATER as preWater,
+          BETWEENWATER as betweenWater,
+          POSTWATER as postWater
+        from DYTFMATERIALTANKMAP
+        left join DYTFMATERIAL on DYTFMATERIAL.MATERIALCODE = DYTFMATERIALTANKMAP.MATERIALCODE
+        where DYTFMATERIALTANKMAP.TANKNO = BFMACHINETANKS.TANKNO
+        for json path, INCLUDE_NULL_VALUES
+      ), '[]')`),
     })
 
-    return Promise.all(map)
-  } catch (e) {
-    console.log('e = ', e)
-    return e
-  }
+  return tanks.map(t => ({
+    ...t,
+    materials: JSON.parse(t.materials),
+  }))
 })
