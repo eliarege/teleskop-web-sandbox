@@ -26,7 +26,7 @@ import { calcIONumber } from './utils'
 import { writeFinishReason } from './writers/writeFinishReason'
 import { FinishReason } from './types'
 
-export class FTPClient {
+export class TbbFtpClient {
   host: string
 
   constructor(host: string) {

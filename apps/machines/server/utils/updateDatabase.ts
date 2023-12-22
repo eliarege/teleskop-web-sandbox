@@ -1,5 +1,6 @@
 import type { Knex } from 'knex'
-import type FTPClient from 'tbb-ftp-client'
+import type TbbFtpClient from 'tbb-ftp-client'
+import { calcIONumber } from '.'
 import { knex } from '~/server/connectionPool'
 
 async function executeTransacted(tableName: string, whereObject?: Record<string, any>, data, trx?) {
@@ -19,7 +20,7 @@ async function executeTransacted(tableName: string, whereObject?: Record<string,
   await insertQuery
 }
 
-export async function updateAnalogInputs(machineId: number, tbb: FTPClient, trx?: Knex.Transaction) {
+export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const inputs = await tbb.fetchAnalogInputs()
   const analogInputs = inputs?.map(d => ({
     MACHINEID: machineId,
@@ -36,7 +37,7 @@ export async function updateAnalogInputs(machineId: number, tbb: FTPClient, trx?
   return analogInputs
 }
 
-export async function updateAnalogOutputs(machineId: number, tbb: FTPClient, trx?: Knex.Transaction) {
+export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const outputs = await tbb.fetchAnalogOutputs()
   const analogOutputs = outputs?.map(d => ({
     MACHINEID: machineId,
@@ -54,7 +55,7 @@ export async function updateAnalogOutputs(machineId: number, tbb: FTPClient, trx
   return analogOutputs
 }
 
-export async function updateDigitalInputs(machineId: number, tbb: FTPClient, trx?: Knex.Transaction) {
+export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const inputs = await tbb.fetchDigitalInputs()
   const digitalInputs = inputs?.map(d => ({
     MACHINEID: machineId,
@@ -71,7 +72,7 @@ export async function updateDigitalInputs(machineId: number, tbb: FTPClient, trx
   return digitalInputs
 }
 
-export async function updateDigitalOutputs(machineId: number, tbb: FTPClient, trx?: Knex.Transaction) {
+export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const outputs = await tbb.fetchDigitalOutputs()
 
   const digitalOutputs = outputs?.map(d => ({
@@ -90,7 +91,7 @@ export async function updateDigitalOutputs(machineId: number, tbb: FTPClient, tr
   return digitalOutputs
 }
 
-export async function updateCounters(machineId: number, tbb: FTPClient, trx?: Knex.Transaction) {
+export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const counters = await tbb.fetchCounters()
 
   const data = counters?.map(d => ({
@@ -108,7 +109,7 @@ export async function updateCounters(machineId: number, tbb: FTPClient, trx?: Kn
   return counters
 }
 
-export async function updateFinishReasons(tbb: FTPClient, trx?: Knex.Transaction) {
+export async function updateFinishReasons(tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const finishReasons = await tbb.fetchFinishReasons()
 
   await executeTransacted('BFDYLOTFINISHREASONS', undefined, finishReasons, trx)
@@ -116,7 +117,7 @@ export async function updateFinishReasons(tbb: FTPClient, trx?: Knex.Transaction
   return finishReasons
 }
 
-export async function updateManualReasons(tbb: FTPClient, trx?: Knex.Transaction) {
+export async function updateManualReasons(tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const manualReasons = await tbb.fetchManualReasons()
 
   await executeTransacted('BFMANUALREASONSGENERAL', undefined, manualReasons, trx)
@@ -124,7 +125,7 @@ export async function updateManualReasons(tbb: FTPClient, trx?: Knex.Transaction
   return manualReasons
 }
 
-export async function updateStopReasons(tbb: FTPClient, trx?: Knex.Transaction) {
+export async function updateStopReasons(tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const stopReasons = await tbb.fetchStopReasons()
 
   await executeTransacted('BFSTOPREASONS', undefined, stopReasons, trx)
