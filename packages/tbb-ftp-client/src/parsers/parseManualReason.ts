@@ -11,7 +11,7 @@ export function parseManualReason(content: string) {
   while (match !== null) {
     const reason: ManualReason = {
       manualId: Number.parseInt(match[1]),
-      manualReason: match[2],
+      manualString: match[2],
     }
     reasons.push(reason)
     match = pattern.exec(content)

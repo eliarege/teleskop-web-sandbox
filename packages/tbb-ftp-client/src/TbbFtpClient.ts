@@ -51,16 +51,7 @@ export class TbbFtpClient {
     const remotePath = '/tbb6500/data/config/manuelmodnedenleri'
     const content = await download(remotePath, this.host)
     const manualReasons = parseManualReason(content)
-
-    const modifiedManualReasons = manualReasons.map((r) => {
-      return {
-        manualID: r.manualId,
-        manualString: r.manualReason,
-        ReportToERP: r.reportToERP,
-      }
-    })
-
-    return modifiedManualReasons
+    return manualReasons
   }
 
   async fetchStopReasons() {
@@ -88,22 +79,14 @@ export class TbbFtpClient {
     const remotePath = '/tbb6500/data/config/makinesabitleri'
     const content = await download(remotePath, this.host)
     const machineParameters = parseMachineParameters(content)
+    return machineParameters
+  }
 
-    const valuesRemotePath = '/tbb6500/data/config/makinesabitleriDegerler'
-    const valuesContent = await download(valuesRemotePath, this.host)
-    const currentValues = parseMachineParameterValues(valuesContent)
-
-    const res = machineParameters.map(m => ({
-      ...m,
-      currentValue: currentValues.find(p => p.id === m.id).currentValue,
-      parameterType: 1,
-      selectionList: 'YOK',
-      unitCode: 1,
-      selectionValues: 'YOK',
-      isDeleted: 0,
-    }))
-
-    return res
+  async fetchMachineParameterValues() {
+    const remotePath = '/tbb6500/data/config/makinesabitleriDegerler'
+    const content = await download(remotePath, this.host)
+    const values = parseMachineParameterValues(content)
+    return values
   }
 
   async fetchControllerModel() {
