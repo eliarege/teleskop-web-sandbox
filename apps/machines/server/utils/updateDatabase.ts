@@ -2,17 +2,19 @@ import type { Knex } from 'knex'
 import type FTPClient from 'tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 
-async function executeTransacted(tableName: string, machineId: number, data, trx?) {
-  const delQuery = knex(tableName)
-    .where('MACHINEID', machineId)
-    .del()
+async function executeTransacted(tableName: string, whereObject?: Record<string, any>, data, trx?) {
+  const delQuery = knex(tableName).del()
+  if (whereObject)
+    delQuery.where(whereObject)
 
   const insertQuery = knex(tableName)
     .insert(data)
+
   if (trx) {
     delQuery.transacting(trx)
     insertQuery.transacting(trx)
   }
+
   await delQuery
   await insertQuery
 }
@@ -29,7 +31,7 @@ export async function updateAnalogInputs(machineId: number, tbb: FTPClient, trx?
     ISDELETED: false,
   }))
 
-  await executeTransacted('BFMACHAIN', machineId, analogInputs, trx)
+  await executeTransacted('BFMACHAIN', { MACHINEID: machineId }, analogInputs, trx)
 
   return analogInputs
 }
@@ -47,7 +49,7 @@ export async function updateAnalogOutputs(machineId: number, tbb: FTPClient, trx
     ISDELETED: false,
   }))
 
-  await executeTransacted('BFMACHAOUT', machineId, analogOutputs, trx)
+  await executeTransacted('BFMACHAOUT', { MACHINEID: machineId }, analogOutputs, trx)
 
   return analogOutputs
 }
@@ -64,7 +66,7 @@ export async function updateDigitalInputs(machineId: number, tbb: FTPClient, trx
     ISDELETED: false,
   }))
 
-  await executeTransacted('BFMACHDIN', machineId, digitalInputs, trx)
+  await executeTransacted('BFMACHDIN', { MACHINEID: machineId }, digitalInputs, trx)
 
   return digitalInputs
 }
@@ -83,7 +85,7 @@ export async function updateDigitalOutputs(machineId: number, tbb: FTPClient, tr
     DEFAULTVALUE: d.defaultValue,
   }))
 
-  await executeTransacted('BFMACHDOUT', machineId, digitalOutputs, trx)
+  await executeTransacted('BFMACHDOUT', { MACHINEID: machineId }, digitalOutputs, trx)
 
   return digitalOutputs
 }
@@ -101,7 +103,31 @@ export async function updateCounters(machineId: number, tbb: FTPClient, trx?: Kn
     ISDELETED: false,
   }))
 
-  await executeTransacted('BFMACHCOUNTER', machineId, data, trx)
+  await executeTransacted('BFMACHCOUNTER', { MACHINEID: machineId }, data, trx)
 
   return counters
+}
+
+export async function updateFinishReasons(tbb: FTPClient, trx?: Knex.Transaction) {
+  const finishReasons = await tbb.fetchFinishReasons()
+
+  await executeTransacted('BFDYLOTFINISHREASONS', undefined, finishReasons, trx)
+
+  return finishReasons
+}
+
+export async function updateManualReasons(tbb: FTPClient, trx?: Knex.Transaction) {
+  const manualReasons = await tbb.fetchManualReasons()
+
+  await executeTransacted('BFMANUALREASONSGENERAL', undefined, manualReasons, trx)
+
+  return manualReasons
+}
+
+export async function updateStopReasons(tbb: FTPClient, trx?: Knex.Transaction) {
+  const stopReasons = await tbb.fetchStopReasons()
+
+  await executeTransacted('BFSTOPREASONS', undefined, stopReasons, trx)
+
+  return stopReasons
 }

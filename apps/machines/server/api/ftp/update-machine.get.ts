@@ -1,7 +1,7 @@
 import FTPClient from 'tbb-ftp-client'
 import { EventHandlerRequest, getQuery } from 'h3'
 import { knex } from '~/server/connectionPool'
-import { updateAnalogInputs, updateDigitalInputs } from '~/server/utils/updateDatabase'
+import { updateAnalogInputs, updateDigitalInputs, updateLocksGeneral } from '~/server/utils/updateDatabase'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
       const tbb = new FTPClient('192.168.88.202')
 
       await knex.transaction(async (trx) => {
-        await updateAnalogInputs(numMachineId, tbb, trx)
+        await updateLocksGeneral(numMachineId, tbb, trx)
       })
     } else {
       console.log('typeof machineId = ', typeof machineId)
