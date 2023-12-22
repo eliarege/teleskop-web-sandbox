@@ -5,7 +5,9 @@ DIR=$(dirname $0)
 case "$1" in
   up)
     shift
-    cd $DIR/keycloak-token-inspector && pnpm build && cd -
+    if [[ ! -e $DIR/keycloak-token-inspector/dist ]]; then
+      cd $DIR/keycloak-token-inspector && pnpm build && cd -
+    fi
     exec docker compose -f $DIR/docker-compose.yml -p teleskop up -d $@
     ;;
   sync)
