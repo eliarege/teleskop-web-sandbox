@@ -25,6 +25,7 @@
     "nuxt": "^3.8.0",
     "nuxt-base": "workspace:*",
     "rollup-plugin-string": "workspace:*",
+    "tbb-ftp-client": "workspace:*",
     "ui": "workspace:*",
     "unocss-config": "workspace:*",
     "utils": "workspace:*",
