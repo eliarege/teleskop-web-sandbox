@@ -1,20 +1,59 @@
 <script setup lang="ts">
-import { getMachineCommands } from '~/utils'
+import { Sortable } from 'sortablejs-vue3'
+import { deleteTankMaterialMap } from '~/utils'
 
-const { data: machines } = await useFetch('/api/command-timeout-reasons/command-map-machines')
+/*
+1 kimyasal
+2 boya
+3 diğer
+*/
 
 const selectedMachineId = ref()
-const machineCommands = ref()
+
+const { data: machines } = useLazyFetch('/api/command-timeout-reasons/command-map-machines')
+const { data: materials } = useLazyFetch('/api/materials/materials')
+
+const { data: tanks, refresh: refreshTanks } = useLazyFetch('/api/materials/material-tank-map', {
+  immediate: false,
+  default: () => [],
+  query: { machineId: selectedMachineId },
+})
 
 async function handleMachineClick(machineId: number) {
-  machineCommands.value = await getMachineCommands(machineId)
   selectedMachineId.value = machineId
+}
+
+async function handleDragDrop(e, tank) {
+  const text = e.item.innerHTML
+  const matches = text.split('. ')
+  if (matches && matches.length) {
+    const materialCode = matches[0]
+    if (e.type === 'add') {
+      await addTankMaterialMap({
+        machineId: selectedMachineId.value,
+        tank,
+        materialCode,
+      })
+      await refreshTanks()
+    } else if (e.type === 'remove') {
+      deleteItem(tank, materialCode)
+    }
+  }
+}
+
+async function deleteItem(tank, materialCode: string) {
+  await deleteTankMaterialMap({
+    machineId: selectedMachineId.value,
+    tank,
+    materialCode,
+  })
+  await refreshTanks()
 }
 </script>
 
 <template>
   <q-card class="flex flex-row justify-around">
-    <q-card-section class="w-sm">
+    <q-card-section class="flex flex-row">
       <h3>Makineler</h3>
       <q-list bordered separator>
         <q-item
@@ -29,26 +68,50 @@ async function handleMachineClick(machineId: number) {
           </q-item-section>
         </q-item>
       </q-list>
-    </q-card-section>
 
-    <q-card-section>
-      <h3>Materyaller</h3>
-      <div class="flex flex-row">
-        <q-input label="materyal ara" class="w-xs" />
-        <q-select label="materyal tipi" class="w-xs" />
-      </div>
-      <q-list bordered separator>
-        <q-item
-          v-for="command in machineCommands"
-          :key="command.commandNo"
-          v-ripple
-          clickable
+      <div class="h-sm overflow-y-scroll">
+        <h3>Materyaller</h3>
+        <Sortable
+          :list="materials"
+          item-key="id"
+          class=""
+          :options="{ group: { name: 'group', pull: 'clone', put: false } }"
         >
-          <q-item-section>
-            {{ command.commandName }}
-          </q-item-section>
-        </q-item>
-      </q-list>
+          <template #item="{ element, index }">
+            <div
+              :key="element.materialCode"
+              class="draggable"
+            >
+              {{ `${element.materialCode}. ${element.materialName}` }}
+            </div>
+          </template>
+        </Sortable>
+      </div>
+      <!-- tanks -->
+      <div v-if="tanks.length" class="flex flex-row">
+        <div v-for="tank in tanks" :key="tank">
+          <h3>{{ tank.tankName }}</h3>
+          <Sortable
+            :list="tank.materials"
+            item-key="id"
+            :options="{ group: { name: 'group' } }"
+            @add="(e) => handleDragDrop(e, tank)"
+            @remove="(e) => handleDragDrop(e, tank)"
+          >
+            <template #item="{ element, index }">
+              <div
+                :key="element.id"
+                class="draggable"
+              >
+                {{ `${element.materialCode}. ${element.materialName}` }}
+                <button @click="deleteItem(tank, element.materialCode)">
+                  x
+                </button>
+              </div>
+            </template>
+          </Sortable>
+        </div>
+      </div>
     </q-card-section>
   </q-card>
 </template>

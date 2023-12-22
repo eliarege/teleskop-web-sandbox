@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
         highLimit: 'HIGHLIMIT',
         machineConstantHighLimit: 'MACHINECONSTANTHIGHLIMIT',
         listOfTransferCommands: 'LISTOFTRASNFERCOMMANDS',
-        listOfCirculationDoSageCommand: 'LISTOFCIRCULATIONDOSAGECOMMANDS',
+        listOfCirculationDoSageCommands: 'LISTOFCIRCULATIONDOSAGECOMMANDS',
         listOfCirculationRequestCommands: 'LISTOFCIRCULATIONREQUESTCOMMANDS',
         listOfRequestCommands: 'LISTOFREQUESTCOMMANDS',
       })
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
       return {
         ...d,
         listOfTransferCommands: d.listOfTransferCommands ? d.listOfTransferCommands.split(',').map(Number) : [],
-        listOfCirculationDoSageCommand: d.listOfCirculationDoSageCommand ? d.listOfCirculationDoSageCommand.split(',').map(Number) : [],
+        listOfCirculationDoSageCommands: d.listOfCirculationDoSageCommands ? d.listOfCirculationDoSageCommands.split(',').map(Number) : [],
         listOfCirculationRequestCommands: d.listOfCirculationRequestCommands ? d.listOfCirculationRequestCommands.split(',').map(Number) : [],
         listOfRequestCommands: d.listOfRequestCommands ? d.listOfRequestCommands.split(',').map(Number) : [],
       }

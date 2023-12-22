@@ -1,68 +1,140 @@
 <script setup lang="ts">
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
+import { updateTankMaterialWaterDefinition } from '~/utils'
+
+const materialTypeMap = [
+  { id: 1, name: 'kimyasal' },
+  { id: 2, name: 'boya' },
+  { id: 3, name: 'diğer' },
+]
+
 const columns = [
   {
-    name: 'reasonID',
+    name: 'materialGroupNo',
     label: 'Materyal Tipi',
-    field: row => row.reasonId,
+    field: 'materialGroupNo',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'type',
+    name: 'machineName',
     label: 'Makine',
-    field: row => row.typeId,
+    field: 'machineName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'text',
+    name: 'tankName',
     label: 'Kazan Adı',
-    field: row => row.text,
+    field: 'tankName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'type',
+    name: 'materialName',
     label: 'Materyal',
-    field: row => row.typeId,
+    field: 'materialName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'type',
+    name: 'preWater',
     label: 'Ön Su',
-    field: row => row.typeId,
+    field: 'preWater',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'type',
+    name: 'betweenWater',
     label: 'Orta Su',
-    field: row => row.typeId,
+    field: 'betweenWater',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'type',
+    name: 'postWater',
     label: 'Son Su',
-    field: row => row.typeId,
+    field: 'postWater',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
+
+const filters = ref([])
+
+const { data: tankMaterialDefinitions, execute } = useLazyFetch('/api/materials/material-tank-water-definitions', {
+  method: 'POST',
+  body: { filters },
+  default: () => [],
+})
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  filters.value = updatedValue.map((filter) => {
+    if (filter.field === 'materialGroupNo')
+      filter.value = materialTypeMap.find(m => m.name === filter.value).id
+    return filter
+  })
+  await execute()
+}
+
+async function popupUpdate(value, rowName, props) {
+  const tankDefinition = tankMaterialDefinitions.value[props.rowIndex]
+  tankDefinition[rowName] = value
+  await updateTankMaterialWaterDefinition({ tankDefinition, rowName, value })
+}
 </script>
 
 <template>
   <q-card>
     <q-card-section class="flex flex-col">
-      <div class="flex flex-row mb-8">
-        <q-select class="w-xs" label="Materyal Tipi" />
-        <q-select class="w-xs" label="Makine" />
-        <q-select class="w-xs" label="Kazan Adı" />
-        <q-select class="w-xs" label="Materyal" />
-      </div>
-      <q-table
+      <FilterableTable
+        :rows="tankMaterialDefinitions"
         :columns="columns"
-        hide-pagination
-        :pagination="{ rowsPerPage: 0 }"
-        row-key="reasonId"
-        separator="cell"
-        bordered
-        table-header-class="table-header"
-      />
+        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+      >
+        <template #custombody="tankMaterialDefinitions">
+          <q-tr :props="tankMaterialDefinitions">
+            <q-td
+              v-for="col in tankMaterialDefinitions.cols"
+              :key="col"
+            >
+              <span v-if="col.field === 'materialGroupNo'">
+                {{ materialTypeMap.find(m => m.id === col.value).name }}
+              </span>
+
+              <span v-else-if="col.field === 'preWater' || col.field === 'betweenWater' || col.field === 'postWater'">
+                {{ col.value ?? 0 }}
+                <q-popup-edit
+                  v-slot="scope"
+                  :model-value="col.value"
+                  :title="`${col.label}`"
+                  buttons
+                  @update:model-value="(e) => popupUpdate(e, col.name, tankMaterialDefinitions)"
+                >
+                  <q-input
+                    v-model="scope.value"
+                    type="number"
+                    dense
+                    autofocus
+                  />
+                </q-popup-edit>
+              </span>
+
+              <span v-else>
+                {{ col.value }}
+              </span>
+            </q-td>
+          </q-tr>
+        </template>
+      </FilterableTable>
     </q-card-section>
   </q-card>
 </template>

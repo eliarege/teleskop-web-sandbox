@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
+import { updateTankDefinitionList } from '~/utils'
 
 const selectedMachineId = ref()
 const selectedDefinition = ref()
@@ -9,9 +10,16 @@ const highLimit = ref()
 const machineConstantHighLimit = ref()
 
 const listOfTransferCommands = ref([])
-const listOfCirculationDoSageCommand = ref([])
+const listOfCirculationDoSageCommands = ref([])
 const listOfCirculationRequestCommands = ref([])
 const listOfRequestCommands = ref([])
+
+const lists = [
+  { name: 'listOfTransferCommands', ref: listOfTransferCommands },
+  { name: 'listOfCirculationDoSageCommands', ref: listOfCirculationDoSageCommands },
+  { name: 'listOfCirculationRequestCommands', ref: listOfCirculationRequestCommands },
+  { name: 'listOfRequestCommands', ref: listOfRequestCommands },
+]
 
 const { data: machines } = useLazyFetch('/api/command-timeout-reasons/command-map-machines')
 
@@ -27,13 +35,6 @@ const { data: commands, refresh: refreshCommands } = useLazyFetch('/api/master-c
   default: () => [],
   onResponse({ request, response, options }) {
     const data = response._data
-
-    const lists = [
-      { name: 'listOfTransferCommands', ref: listOfTransferCommands },
-      { name: 'listOfCirculationDoSageCommand', ref: listOfCirculationDoSageCommand },
-      { name: 'listOfCirculationRequestCommands', ref: listOfCirculationRequestCommands },
-      { name: 'listOfRequestCommands', ref: listOfRequestCommands },
-    ]
 
     lists.forEach(list => list.ref.value = [])
 
@@ -96,13 +97,6 @@ async function handleTankDefinitionAdd() {
 }
 
 function filterCommandLists() {
-  const lists = [
-    { name: 'listOfTransferCommands', ref: listOfTransferCommands },
-    { name: 'listOfCirculationDoSageCommand', ref: listOfCirculationDoSageCommand },
-    { name: 'listOfCirculationRequestCommands', ref: listOfCirculationRequestCommands },
-    { name: 'listOfRequestCommands', ref: listOfRequestCommands },
-  ]
-
   if (tankNo.value === undefined)
     tankNo.value = tankDefinitions.value[0].tankNo
   for (const list of lists) {
@@ -110,17 +104,26 @@ function filterCommandLists() {
   }
 }
 
-function handleDragDrop(e, list) {
+async function handleDragDrop(e, listName) {
   const text: string = e.item.innerHTML
-  const matches = text.match(/\d+/)
+  const matches = text.match(/(\d+) (.+)/)
   if (matches && matches.length) {
     const commandNo = Number.parseInt(matches[0])
-    console.log('commandNo = ', commandNo)
     // update relevant list in db
+    let action
     if (e.type === 'add')
-      console.log('add')
+      action = 'add'
     else if (e.type === 'remove')
-      console.log('remove')
+      action = 'remove'
+
+    await updateTankDefinitionList({
+      machineId: selectedMachineId.value,
+      tankDefinitionId: selectedDefinition.value,
+      listName,
+      commandNo,
+      action,
+    })
+    await refreshDefinitions()
   }
 }
 </script>
@@ -224,8 +227,8 @@ function handleDragDrop(e, list) {
                 :list="listOfTransferCommands"
                 item-key="id"
                 :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, listOfTransferCommands)"
-                @remove="(e) => handleDragDrop(e, listOfTransferCommands)"
+                @add="(e) => handleDragDrop(e, 'listOfTransferCommands')"
+                @remove="(e) => handleDragDrop(e, 'listOfTransferCommands')"
               >
                 <template #item="{ element, index }">
                   <div
@@ -244,8 +247,8 @@ function handleDragDrop(e, list) {
                 :list="listOfRequestCommands"
                 item-key="id"
                 :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, listOfTransferCommands)"
-                @remove="(e) => handleDragDrop(e, listOfTransferCommands)"
+                @add="(e) => handleDragDrop(e, 'listOfRequestCommands')"
+                @remove="(e) => handleDragDrop(e, 'listOfRequestCommands')"
               >
                 <template #item="{ element, index }">
                   <div
@@ -261,11 +264,11 @@ function handleDragDrop(e, list) {
             <div>
               <h3>Sirkülasyonlu Dozaj Komutları</h3>
               <Sortable
-                :list="listOfCirculationDoSageCommand"
+                :list="listOfCirculationDoSageCommands"
                 item-key="id"
                 :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, listOfTransferCommands)"
-                @remove="(e) => handleDragDrop(e, listOfTransferCommands)"
+                @add="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommands')"
+                @remove="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommands')"
               >
                 <template #item="{ element, index }">
                   <div
@@ -284,8 +287,8 @@ function handleDragDrop(e, list) {
                 :list="listOfCirculationRequestCommands"
                 item-key="id"
                 :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, listOfTransferCommands)"
-                @remove="(e) => handleDragDrop(e, listOfTransferCommands)"
+                @add="(e) => handleDragDrop(e, 'listOfCirculationRequestCommands')"
+                @remove="(e) => handleDragDrop(e, 'listOfCirculationRequestCommands')"
               >
                 <template #item="{ element, index }">
                   <div
