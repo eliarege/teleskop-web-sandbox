@@ -1,4 +1,4 @@
-import type { KeycloakError, KeycloakProfile } from 'keycloak-js'
+import type { KeycloakError, KeycloakProfile, KeycloakTokenParsed } from 'keycloak-js'
 import Keycloak from 'keycloak-js'
 import type { EventHookOn } from '@vueuse/core'
 
@@ -8,6 +8,7 @@ export interface KeycloakPlugin {
   didInitialise: Readonly<Ref<boolean>>
   /** Access Token */
   token: Readonly<Ref<string | undefined>>
+  tokenParsed: Readonly<Ref<KeycloakTokenParsed | undefined>>
   /** Is user authenticated */
   authenticated: Readonly<Ref<boolean>>
   userProfile: Readonly<Ref<KeycloakProfile | undefined>>
@@ -68,6 +69,7 @@ export default defineNuxtPlugin(() => {
   const ready = ref(false)
   const didInitialise = ref(false)
   const token = ref<string>()
+  const tokenParsed = ref<KeycloakTokenParsed>()
   const authenticated = ref(false)
   const userProfile = ref<KeycloakProfile>()
   const userInfo = ref<Record<string, any>>()
@@ -85,6 +87,7 @@ export default defineNuxtPlugin(() => {
   keycloak.onAuthSuccess = () => {
     authenticated.value = true
     token.value = keycloak.token
+    tokenParsed.value = keycloak.tokenParsed
     onAuthSuccess.trigger()
   }
   keycloak.onAuthError = err => onAuthError.trigger(err)
@@ -96,6 +99,7 @@ export default defineNuxtPlugin(() => {
   keycloak.onAuthLogout = () => {
     authenticated.value = false
     token.value = undefined
+    tokenParsed.value = undefined
     userInfo.value = undefined
     userProfile.value = undefined
     onAuthLogout.trigger()
@@ -169,12 +173,21 @@ export default defineNuxtPlugin(() => {
     userInfo.value = keycloak.userInfo
   }
 
+  const hasRealmRole = (role: string) => {
+    return tokenParsed.value?.realm_access?.roles.includes(role) ?? false
+  }
+
+  const hasResourceRole = (role: string, resource = config.public.kcClientId) => {
+    return tokenParsed.value?.resource_access?.[resource]?.roles.includes(role) ?? false
+  }
+
   return {
     provide: {
       keycloak: {
         ready: readonly(ready),
         didInitialise: readonly(didInitialise),
         token: readonly(token),
+        tokenParsed: readonly(tokenParsed),
         authenticated: readonly(authenticated),
         userProfile: readonly(userProfile),
         userInfo: readonly(userInfo),
@@ -189,10 +202,11 @@ export default defineNuxtPlugin(() => {
         onAuthLogout: onAuthLogout.on,
         onTokenExpired: onTokenExpired.on,
         onActionUpdate: onActionUpdate.on,
-        hasRealmRole: keycloak.hasRealmRole,
-        hasResourceRole: keycloak.hasResourceRole,
+        hasRealmRole,
+        hasResourceRole,
         isTokenExpired: keycloak.isTokenExpired,
         updateToken,
+        // No need to wrap this since its already handled by `onAuthLogout` listener
         clearToken: keycloak.clearToken,
         loadUserInfo,
         loadUserProfile,
