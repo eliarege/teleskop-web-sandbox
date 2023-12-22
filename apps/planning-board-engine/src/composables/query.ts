@@ -181,7 +181,6 @@ export async function isTaskValid(planKey: number) {
 
   return Promise.all(promises)
 }
-
 export async function getTheoreticalDuration(planKey: number) {
   return await knex.raw(`
   SELECT b.MACHINEID as machineId ,SUM(B.DURATION) as theoreticalDuration
@@ -204,6 +203,22 @@ export async function getBatchNotes(jobOrder: string) {
       note: 'p.NOTE',
       noteDate: 'p.NOTEDATE',
     }).where('JOBORDER', '=', jobOrder)
+}
+export async function getPlanParameters(planKey: number) {
+  return await knex({ p: 'dbo.DYBFBATCHPLANPARAMETERS' })
+    .select({
+      id: 'p.BATCHPARAMETERID',
+      paramString: 'p.PARAMSTRING',
+      value: 'p.VALUE',
+    })
+    .where('p.PLANKEY', '=', planKey)
+}
+export async function getErpParameteres(machineId: number) {
+  return await knex({ p: 'dbo.BFERPPARAMETERDEFINITIONS' }).select({
+    id: 'p.PARAMID',
+    paramName: 'p.PARAMNAME',
+    erpFieldName: 'p.ERPFIELDNAME',
+  }).where('p.MACHINEID', '=', machineId)
 }
 //  UPDATE
 export async function updateEvents(planKey: number, machineId: number, plannedStartTime: string) {
@@ -228,6 +243,14 @@ export async function updateEvents(planKey: number, machineId: number, plannedSt
       TheoricalDuration: theoreticalDuration.find(a => a.machineId === machineId).theoreticalDuration,
     })
     .where({ PLANKEY: planKey })
+  await knex('DYBFBATCHPLANPARAMETERS')
+    .update('PARAMSTRING', knex.raw('B.PARAMNAME'))
+    .from('DYBFBATCHPLANPARAMETERS')
+    .innerJoin({ B: 'BFERPPARAMETERDEFINITIONS' }, (builder) => {
+      builder.on('PLANKEY', '=', knex.raw(planKey))
+        .andOn('B.MACHINEID', '=', knex.raw(machineId))
+        .andOn('B.PARAMID', '=', 'BATCHPARAMETERID')
+    })
 }
 export async function removeFromPlan(planKey: number) {
   await knex('dbo.DYBFBATCHPLAN').update({ MACHINEIDLIST: 0, PLANNEDMACHINE: 0, PLANNEDSTARTTIME: '2019-03-22 00:00:00.000' }).where('PLANKEY', '=', planKey)
@@ -246,7 +269,6 @@ export async function addBatchNote(jobOrder: string, note: string, userId: numbe
 // SAVE
 export async function scheduleEvents(planKey: number, machineId: number, plannedStartTime: string) {
   const theoreticalDuration = await getTheoreticalDuration(planKey)
-  console.log('WTF:', theoreticalDuration)
   const queueNumber = (await knex.raw(`SELECT TOP 1 p.QUEUENUMBER + 1 as queue FROM PTBATCHPLANQUEUE p WHERE p.MACHINEID = ${machineId} ORDER BY p.QUEUENUMBER DESC`))[0].queue
   await knex('DYBFBATCHPLAN')
     .update({
@@ -263,6 +285,14 @@ export async function scheduleEvents(planKey: number, machineId: number, planned
       MACHINEID: machineId,
       QUEUENUMBER: queueNumber,
       STARTTIME: plannedStartTime,
+    })
+  await knex('DYBFBATCHPLANPARAMETERS')
+    .update('PARAMSTRING', knex.raw('B.PARAMNAME'))
+    .from('DYBFBATCHPLANPARAMETERS')
+    .innerJoin({ B: 'BFERPPARAMETERDEFINITIONS' }, (builder) => {
+      builder.on('PLANKEY', '=', knex.raw(planKey))
+        .andOn('B.MACHINEID', '=', knex.raw(machineId))
+        .andOn('B.PARAMID', '=', 'BATCHPARAMETERID')
     })
 }
 // DELETE
