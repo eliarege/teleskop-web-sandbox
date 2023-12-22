@@ -123,49 +123,28 @@ export class TbbFtpClient {
   async fetchAnalogOutputs() {
     const remotePath = '/tbb6500/data/io/analogoutput'
     const content = await download(remotePath, this.host)
-    const controllerModel = await this.fetchControllerModel()
-
-    const analogOutputs = parseAnalogOutput(content).map(input => ({
-      ...input,
-    }))
-
+    const analogOutputs = parseAnalogOutput(content)
     return analogOutputs
   }
 
   async fetchDigitalInputs() {
     const remotePath = '/tbb6500/data/io/sayisalinput'
-
     const content = await download(remotePath, this.host)
-    const controllerModel = await this.fetchControllerModel()
-
-    const digitalInput = parseDigitalInput(content).map(input => ({
-      ...input,
-    }))
-
+    const digitalInput = parseDigitalInput(content)
     return digitalInput
   }
 
   async fetchDigitalOutputs() {
     const remotePath = '/tbb6500/data/io/sayisaloutput'
     const content = await download(remotePath, this.host)
-    const controllerModel = await this.fetchControllerModel()
-
-    const digitalOutputs = parseDigitalOutput(content).map(input => ({
-      ...input,
-    }))
-
+    const digitalOutputs = parseDigitalOutput(content)
     return digitalOutputs
   }
 
   async fetchCounters() {
     const remotePath = '/tbb6500/data/io/sayac'
     const content = await download(remotePath, this.host)
-    const controllerModel = await this.fetchControllerModel()
-
-    const analogInputs = parseCounter(content).map(input => ({
-      ...input,
-    }))
-
+    const analogInputs = parseCounter(content)
     return analogInputs
   }
 

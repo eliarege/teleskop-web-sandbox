@@ -41,9 +41,10 @@ export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, t
 
 export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const outputs = await tbb.fetchAnalogOutputs()
+  const controllerModel = await tbb.fetchControllerModel()
   const analogOutputs = outputs?.map(d => ({
     MACHINEID: machineId,
-    ID: d.id,
+    ID: calcIONumber(d, controllerModel),
     CARD: d.card,
     CANAL: d.canal,
     NAME: d.name,
@@ -59,9 +60,10 @@ export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, 
 
 export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const inputs = await tbb.fetchDigitalInputs()
+  const controllerModel = await tbb.fetchControllerModel()
   const digitalInputs = inputs?.map(d => ({
     MACHINEID: machineId,
-    ID: d.id,
+    ID: calcIONumber(d, controllerModel),
     CARD: d.card,
     CANAL: d.canal,
     NAME: d.name,
@@ -76,10 +78,10 @@ export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, 
 
 export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const outputs = await tbb.fetchDigitalOutputs()
-
+  const controllerModel = await tbb.fetchControllerModel()
   const digitalOutputs = outputs?.map(d => ({
     MACHINEID: machineId,
-    ID: d.id,
+    ID: calcIONumber(d, controllerModel),
     CARD: d.card,
     CANAL: d.canal,
     NAME: d.name,
@@ -95,10 +97,10 @@ export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient,
 
 export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const counters = await tbb.fetchCounters()
-
+  const controllerModel = await tbb.fetchControllerModel()
   const data = counters?.map(d => ({
     MACHINEID: machineId,
-    ID: d.id,
+    ID: calcIONumber(d, controllerModel),
     CARD: d.card,
     CANAL: d.canal,
     NAME: d.name,
