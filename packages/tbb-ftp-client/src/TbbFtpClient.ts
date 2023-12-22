@@ -22,7 +22,6 @@ import { parseCommandFeedback } from './parsers/parseCommandFeedback'
 import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
-import { calcIONumber } from './utils'
 import { writeFinishReason } from './writers/writeFinishReason'
 import { FinishReason } from './types'
 
@@ -117,13 +116,7 @@ export class TbbFtpClient {
   async fetchAnalogInputs() {
     const remotePath = '/tbb6500/data/io/analoginput'
     const content = await download(remotePath, this.host)
-    const controllerModel = await this.fetchControllerModel()
-
-    const analogInputs = parseAnalogInput(content).map(input => ({
-      ...input,
-      id: calcIONumber(input, controllerModel),
-    }))
-
+    const analogInputs = parseAnalogInput(content)
     return analogInputs
   }
 
@@ -134,7 +127,6 @@ export class TbbFtpClient {
 
     const analogOutputs = parseAnalogOutput(content).map(input => ({
       ...input,
-      id: calcIONumber(input, controllerModel),
     }))
 
     return analogOutputs
@@ -148,7 +140,6 @@ export class TbbFtpClient {
 
     const digitalInput = parseDigitalInput(content).map(input => ({
       ...input,
-      id: calcIONumber(input, controllerModel),
     }))
 
     return digitalInput
@@ -161,7 +152,6 @@ export class TbbFtpClient {
 
     const digitalOutputs = parseDigitalOutput(content).map(input => ({
       ...input,
-      id: calcIONumber(input, controllerModel),
     }))
 
     return digitalOutputs
@@ -174,7 +164,6 @@ export class TbbFtpClient {
 
     const analogInputs = parseCounter(content).map(input => ({
       ...input,
-      id: calcIONumber(input, controllerModel),
     }))
 
     return analogInputs

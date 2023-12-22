@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type TbbFtpClient from 'tbb-ftp-client'
+import type { TbbFtpClient } from 'tbb-ftp-client'
 import { calcIONumber } from '.'
 import { knex } from '~/server/connectionPool'
 
@@ -22,9 +22,11 @@ async function executeTransacted(tableName: string, whereObject?: Record<string,
 
 export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const inputs = await tbb.fetchAnalogInputs()
+  const controllerModel = await tbb.fetchControllerModel()
+
   const analogInputs = inputs?.map(d => ({
     MACHINEID: machineId,
-    ID: d.id,
+    ID: calcIONumber(d, controllerModel),
     CARD: d.card,
     CANAL: d.canal,
     NAME: d.name,

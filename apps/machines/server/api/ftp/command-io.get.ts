@@ -1,11 +1,11 @@
-import FTPClient from 'tbb-ftp-client'
+import { TbbFtpClient } from 'tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 import { getIOName } from '~/server/utils'
 
 export default defineEventHandler(async (event) => {
   const { machineId } = getQuery(event)
   try {
-    const tbb = new FTPClient('192.168.88.202')
+    const tbb = new TbbFtpClient('192.168.88.202')
 
     const commands = await tbb.fetchCommandIO()
 

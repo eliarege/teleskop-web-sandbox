@@ -1,4 +1,4 @@
-import FTPClient from 'tbb-ftp-client'
+import { TbbFtpClient } from 'tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async () => {
@@ -10,7 +10,7 @@ export default defineEventHandler(async () => {
       reportToERP: 'ReportToERP',
     })
 
-    const tbb = new FTPClient('192.168.88.202')
+    const tbb = new TbbFtpClient('192.168.88.202')
     // await tbb.writeFinishReasons(finishReasons)
     return finishReasons
   } catch (err) {
