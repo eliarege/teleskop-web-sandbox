@@ -114,9 +114,11 @@ export interface MachineParameter {
 export interface IO {
   id: number
   card: number
-  canal: number
+  channel: number
   name: string
   enabled: number
+  plcIO: number
+  icon?: string
 }
 
 export interface IOOutput extends IO {

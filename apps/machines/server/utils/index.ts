@@ -13,7 +13,7 @@ export function calcIONumber(ioObject, controllerModel) {
   } else if (['T7000EPAC', 'T712', 'T7500', '7701ex', 'T711ex'].includes(productModel)) {
     channelSum = 21
   }
-  ioNumber = (ioObject.card - 1) * channelSum + ioObject.canal - 1
+  ioNumber = (ioObject.card - 1) * channelSum + ioObject.channel - 1
 
   return ioNumber
 }
