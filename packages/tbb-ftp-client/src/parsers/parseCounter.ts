@@ -2,8 +2,12 @@ import type { IO } from '../types'
 
 const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (\d+) (\d+)(?: "([^"]+)")?$/gim
 /**
- *   /tbb6500/data/io/sayac
- * example: 3 1 4 "Su Sayaci" 1 3
+ * **Path**: `/tbb6500/data/io/sayac`
+ *
+ * **Example**:
+ * ```txt
+ * 3 1 4 "Su Sayaci" 1 3
+ * ```
  */
 export function parseCounter(content: string) {
   const inputs = []

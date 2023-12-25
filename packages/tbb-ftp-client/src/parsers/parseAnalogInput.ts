@@ -2,8 +2,12 @@ import type { IO } from '../types'
 
 const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (\d+) (\d+)(?: "([^"]+)"( ?))?$/gim
 /**
- *   /tbb6500/data/io/analoginput
- * example: 7 1 8 "BK2 Seviyesi" 1 7 "KK_seviye.gif"
+ * **Path**: `/tbb6500/data/io/analoginput`
+ *
+ * **Example**:
+ * ```txt
+ * 7 1 8 "BK2 Seviyesi" 1 7 "KK_seviye.gif"
+ * ```
  */
 export function parseAnalogInput(content: string) {
   const inputs = []

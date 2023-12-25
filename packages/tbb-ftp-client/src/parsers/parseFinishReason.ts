@@ -2,8 +2,12 @@ import type { FinishReason } from '../types'
 
 const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
 /**
- *  '/tbb6500/data/config/bitirmenedenleri'
- * example: 1 "Renk OK" 3 "Bitir"
+ * **Path**: `/tbb6500/data/config/bitirmenedenleri`
+ *
+ * **Example**:
+ * ```txt
+ * 1 "Renk OK" 3 "Bitir"
+ * ```
  */
 export function parseFinishReason(content: string) {
   const reasons = []

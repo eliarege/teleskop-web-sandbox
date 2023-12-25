@@ -1,7 +1,10 @@
 import type { StopReason } from '../types'
 
-// '/tbb6500/data/config/durusnedenleri'
 const pattern = /^(\d+) "([^"]+)"$/gim
+
+/**
+ * **Path**: `/tbb6500/data/config/durusnedenleri`
+ */
 export function parseStopReason(content: string) {
   const reasons = []
   let match = pattern.exec(content)

@@ -2,8 +2,12 @@ import type { FeedbackCommand } from '../types'
 
 const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" (\d+) (\d+) ?(\d*)$/gim
 /**
- *  '/tbb6500/data/commands/feedback'
- * example: 15 0 "PV 1" "Çalisma Süresi" 1 1
+ * **Path**: `/tbb6500/data/commands/feedback`
+ *
+ * **Example**:
+ * ```txt
+ * 15 0 "PV 1" "Çalisma Süresi" 1 1
+ * ```
  */
 export function parseCommandFeedback(content: string) {
   const groups = []

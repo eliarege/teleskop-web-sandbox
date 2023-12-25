@@ -2,8 +2,12 @@ import type { MasterCommandsAlarm } from '../types'
 
 const pattern = /^(\d+) (\d+) (\d+) -(\d+) "([^"]*)" "([^"]*)" ?$/gim
 /**
- *  '/tbb6500/data/commands/alarms'
- * example: 1 100 0 -1 "" "Tanımsız"
+ * **Path**: `/tbb6500/data/commands/alarms`
+ *
+ * **Example**:
+ * ```txt
+ * 1 100 0 -1 "" "Tanımsız"
+ * ```
  */
 export function parseCommandAlarms(content: string) {
   const commands = []

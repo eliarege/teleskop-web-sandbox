@@ -1,9 +1,15 @@
 const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" "([^"]*)" (\d+) -?(.+) -?(.+) (.+) (\d+)(?: (.+))?$/gim
+
+// TODO: ["Calisma","0","Calis","1"] => [{name: "calis", value: 0}, ...]
 /**
- *  '/tbb6500/data/commands/params'
- * example: 8 0 "SP 12" "Mikser Off Delay" "" 3 30 0 600 2
- * 9 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"] => [{name: "calis", value: 0}, ...] TODO
- * 10 0 "SP 2" "Litre" "IK1 Ust Seviye*IK1 Oran/100" 3 0 0 1000 0
+ * **Path**: `/tbb6500/data/commands/params`
+ *
+ * **Example**:
+ * ```txt
+ *  8 0 "SP 12" "Mikser Off Delay" "" 3 30 0 600 2`
+ *  9 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+ *  10 0 "SP 2" "Litre" "IK1 Ust Seviye*IK1 Oran/100" 3 0 0 1000 0
+ * ```
  */
 export function parseCommandParams(content: string) {
   const groups = []

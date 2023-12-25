@@ -1,7 +1,11 @@
 const pattern = /^(\d+) "([^"]*)" (.*)$/gim
 /**
- *  '/tbb6500/data/commands/io'
- * example: 1 "Referans Seçiniz" 4,13 1 4,28 0
+ * **Path**: `/tbb6500/data/commands/io`
+ *
+ * **Example**:
+ * ```txt
+ * 1 "Referans Seçiniz" 4,13 1 4,28 0
+ * ```
  */
 export function parseCommandIO(content: string) {
   const commands = []

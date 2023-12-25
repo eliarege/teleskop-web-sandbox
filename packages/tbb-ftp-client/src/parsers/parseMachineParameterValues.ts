@@ -2,8 +2,12 @@ import type { MachineParameter } from '../types'
 
 const pattern = /^SABIT_(\d+)=(\d+).(\d+)$/gim
 /**
- *  '/tbb6500/data/config/makinesabitleriDegerler'
- * example: SABIT_0=4500.000000
+ * **Path**: `/tbb6500/data/config/makinesabitleriDegerler`
+ *
+ * **Example**:
+ * ```txt
+ * SABIT_0=4500.000000
+ * ```
  */
 export function parseMachineParameterValues(content: string) {
   const machineParameterValues: MachineParameter[] = []

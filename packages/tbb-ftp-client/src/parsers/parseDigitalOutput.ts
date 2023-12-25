@@ -2,8 +2,12 @@ import type { IOOutput } from '../types'
 
 const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (.+) (\d+) (\d+)(?: "([^"]+)")?$/gim
 /**
- *   /tbb6500/data/io/sayisaloutput
- * example: 0 1 1 "Otomatik Lambasi" 0 1 0
+ * **Path**: `/tbb6500/data/io/sayisaloutput`
+ *
+ * **Example**:
+ * ```txt
+ * 0 1 1 "Otomatik Lambasi" 0 1 0
+ * ```
  */
 export function parseDigitalOutput(content: string) {
   const outputs = []

@@ -2,8 +2,12 @@ import type { CommandGroup } from '../types'
 
 const pattern = /^(\d+) "([^"]+)" "([^"]+)"$/gim
 /**
- *  '/tbb6500/data/commands/commandGroup'
- * example: 0 "Komutlar" "grupBoyama.gif"
+ * **Path**: `/tbb6500/data/commands/commandGroup`
+ *
+ * **Example**:
+ * ```txt
+ * 0 "Komutlar" "grupBoyama.gif"
+ * ```
  */
 export function parseCommandGroup(content: string) {
   const groups = []

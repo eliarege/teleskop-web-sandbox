@@ -2,8 +2,12 @@ import type { MasterCommand } from '../types'
 
 const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" "([^"]*)" "([^"]*)" "([^"]*)"$/gim
 /**
- *  '/tbb6500/data/commands/graphic'
- * example: 15 2 "Çalisma Süresi" "Sicaklik" "Gradyan" "5" "Bekleme Süresi"
+ * **Path**: `/tbb6500/data/commands/graphic`
+ *
+ * **Example**:
+ * ```txt
+ * 15 2 "Çalisma Süresi" "Sicaklik" "Gradyan" "5" "Bekleme Süresi"
+ * ```
  */
 export function parseCommandGraphic(content: string) {
   const groups = []

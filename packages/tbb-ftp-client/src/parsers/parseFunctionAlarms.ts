@@ -2,8 +2,12 @@ import type { FunctionAlarm } from '../types'
 
 const pattern = /^(f(.*)|istek) S=(.*) E=(.*) O=(.*)(?: M=(.*))?$/gim
 /**
- *  '/tbb6500/data/config/function_alarms'
- * example: f9 S=101,102 E=100,103,104,105,106 O=
+ * **Path**: `/tbb6500/data/config/function_alarms`
+ *
+ * **Example**:
+ * ```txt
+ * f9 S=101,102 E=100,103,104,105,106 O=
+ * ```
  */
 export function parseFunctionAlarms(content: string) {
   const alarms = []

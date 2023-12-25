@@ -2,8 +2,12 @@ import type { CommandAlarmReason } from '../types'
 
 const pattern = /^(\d+) "([^"]+)" ((?:\d+(?:,\d+)*,)*\d+) (\d+)$/gim
 /**
- * '/tbb6500/data/config/commandAlarmReasons'
- * example: 2 "Sicak Su Vanasi Acilmadi" 2,3,5,6,7 1
+ * **Path**: `/tbb6500/data/config/commandAlarmReasons`
+ *
+ * **Example**:
+ * ```txt
+ * 2 "Sicak Su Vanasi Acilmadi" 2,3,5,6,7 1
+ * ```
  */
 export function parseCommandAlarmReasons(content: string) {
   const reasons = []

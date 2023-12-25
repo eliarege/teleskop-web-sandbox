@@ -3,8 +3,12 @@ import type { Machine } from '../types'
 const pattern = /^(.+)-(.+)-(.+)$/gim
 
 /**
- * '/var/controllerModel'
- * example: T7700-Giada-TBBPLC
+ * **Path**: `/var/controllerModel`
+ *
+ * **Example**:
+ * ```txt
+ * T7700-Giada-TBBPLC
+ * ```
  */
 
 export function parseControllerModel(content: string) {

@@ -1,8 +1,12 @@
 import type { ManualReason } from '../types'
 
 /**
- *  '/tbb6500/data/config/manuelmodnedenleri'
- * example: 2 "Kumaş koptu-sardı"
+ * **Path**: `/tbb6500/data/config/manuelmodnedenleri`
+ *
+ * **Example**:
+ * ```txt
+ * 2 "Kumaş koptu-sardı"
+ * ```
  */
 const pattern = /^(\d+) "([^"]+)"$/gim
 export function parseManualReason(content: string) {
