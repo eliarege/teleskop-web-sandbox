@@ -226,6 +226,7 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
 
   return commands
 }
+
 export async function updateMachineParameters(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
   const parameters = await tbb.fetchMachineParameters()
   const machineParameters = parameters?.map(d => ({
@@ -244,4 +245,22 @@ export async function updateMachineParameters(machineId: number, tbb: TbbFtpClie
   await executeTransacted('BFMACHPARAMETERS', { MACHINEID: machineId }, machineParameters, trx)
 
   return machineParameters
+}
+
+export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+  const commands = await tbb.fetchCommandsEditing()
+
+  for (const command of commands) {
+    const query = knex('BFMASTERCOMMANDS').where({
+      COMMANDNO: command.commandNo,
+      MACHINEID: machineId,
+    }).update({
+      ADVICELIST: (command.adviceList && command.adviceList.length) ? command.adviceList : -1,
+      DONTUSELIST: command.dontUseList,
+    })
+    if (trx)
+      query.transacting(trx)
+    await query
+  }
+  return commands
 }
