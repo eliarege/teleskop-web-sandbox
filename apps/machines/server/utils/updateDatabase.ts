@@ -178,3 +178,27 @@ export async function updateUsers(tbb: TbbFtpClient, trx?: Knex.Transaction) {
   await executeTransacted('BFUSERS', undefined, data, trx)
   return users
 }
+
+export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+  const commands = await tbb.fetchCommandsGeneral()
+
+  const data = commands.map(d => ({
+    COMMANDNO: d.commandNo,
+    NAME: d.name,
+    TBBFUNTIONNAME: d.tbbFunctionName,
+    ICON: d.icon,
+    COMMANDTYPE: d.commandType,
+    ISRUNMANUAL: d.isRunManual,
+    MOVEPARALLEL: d.moveParallel,
+    GROUPID: d.groupId,
+    MACHINEID: machineId,
+    ACTIVATED: (d.activated === '1' && d.machineConstantId && d.machineConstantId !== -1) ? 1 : 0,
+    ISDELETED: 0,
+    ISCHANGED: 1,
+    FUNCTIONID: 0,
+  }))
+
+  await executeTransacted('BFMASTERCOMMANDS', { MACHINEID: machineId }, data, trx)
+
+  return commands
+}
