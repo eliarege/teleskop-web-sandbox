@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@bryntum/schedulerpro-trial": "workspace:*",
+    "date-fns": "^3.0.4",
     "knex": "^3.0.1",
     "mssql": "^10.0.1",
     "socket.io-client": "^4.7.2",

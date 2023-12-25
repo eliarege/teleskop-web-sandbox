@@ -1,12 +1,23 @@
 <script setup lang="ts">
+import { LoadingScreen, MachineCard } from 'ui'
+
 globalThis.bryntum ??= {}
 globalThis.bryntum.isTestEnv = true
 </script>
 
 <template>
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
+  <Suspense>
+    <template #fallback>
+      <LoadingScreen
+        first-message="App is Loading"
+        second-message="Please Wait!"
+        image="/eliarkurumsal.png"
+      />
+    </template>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </Suspense>
 </template>
 
 <style>
