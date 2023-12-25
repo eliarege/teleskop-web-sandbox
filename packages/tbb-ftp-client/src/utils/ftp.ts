@@ -1,49 +1,42 @@
-import stream from 'node:stream'
-import * as ftp from 'basic-ftp'
+import { Readable, Writable } from 'node:stream'
+import { Buffer } from 'node:buffer'
+import type { AccessOptions } from 'basic-ftp'
+import { Client } from 'basic-ftp'
 
-const ftpClient = new ftp.Client()
+export async function withClient(clientOrOptions: AccessOptions | Client, callback: (client: Client) => any) {
+  if (clientOrOptions instanceof Client) {
+    await callback(clientOrOptions)
+  } else {
+    const client = new Client()
+    try {
+      await client.access(clientOrOptions)
+      await callback(client)
+    } finally {
+      client.close()
+    }
+  }
+}
 
-async function connectClient(host) {
-  await ftpClient.access({
-    host,
-    user: 'eliar',
-    password: 'el1984',
+export async function download(client: Client, remotePath: string) {
+  const chunks: Buffer[] = []
+  const writableStream = new Writable({
+    write(data, _encoding, callback) {
+      chunks.push(data)
+      callback()
+    },
   })
-}
-export async function download(remotePath: string, host: string) {
-  try {
-    await connectClient(host)
 
-    const chunks = []
-    let content
-    const writableStream = new stream.Writable({
-      write(data, encoding, callback) {
-        chunks.push(data)
-        callback()
-      },
-    })
+  await client.downloadTo(writableStream, remotePath)
 
-    await ftpClient.downloadTo(writableStream, remotePath)
-    content = Buffer.concat(chunks).toString('utf8')
-
-    return content
-  } finally {
-    ftpClient.close()
-  }
+  return Buffer.concat(chunks).toString('utf8')
 }
 
-export async function upload(remotePath: string, host: string, content: string) {
-  try {
-    await connectClient(host)
-
-    const readableStream = new stream.Readable({
-      read() {},
-    })
-    readableStream.push(content)
-    readableStream.push(null)
-
-    await ftpClient.uploadFrom(readableStream, remotePath)
-  } finally {
-    ftpClient.close()
-  }
+export async function upload(client: Client, remotePath: string, content: string) {
+  const readableStream = new Readable({
+    read() {
+      this.push(content)
+      this.push(null)
+    },
+  })
+  await client.uploadFrom(readableStream, remotePath)
 }
