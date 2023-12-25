@@ -133,8 +133,9 @@ export interface MasterCommandsAlarm {
 
 export interface FeedbackCommand {
   commandNo: number
-  PVNo: number
-  returnValueName: number
+  format: number
+  pvNo: string
+  returnValueName: string
   canShow: number
   SPRelation: number
 }

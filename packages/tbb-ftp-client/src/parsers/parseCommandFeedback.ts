@@ -15,8 +15,9 @@ export function parseCommandFeedback(content: string) {
   while (match !== null) {
     const group: FeedbackCommand = {
       commandNo: Number.parseInt(match[1]),
-      PVNo: Number.parseInt(match[3]),
-      returnValueName: Number.parseInt(match[4]),
+      format: Number.parseInt(match[2]),
+      pvNo: match[3],
+      returnValueName: match[4],
       canShow: Number.parseInt(match[5]),
       SPRelation: Number.parseInt(match[6]),
     }
