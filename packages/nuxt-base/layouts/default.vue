@@ -2,7 +2,7 @@
 const config = useRuntimeConfig()
 const { bottomSheet } = useQuasar()
 
-function parseAppList(appList: unknown): { name: string; url: string }[] {
+function parseAppList(appList: unknown): { name: string; url: string; img: string }[] {
   if (typeof appList === 'string') {
     try {
       return JSON.parse(appList || '[]') as any[]

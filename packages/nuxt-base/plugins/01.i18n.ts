@@ -7,7 +7,7 @@ export default defineNuxtPlugin(({ vueApp }) => {
     legacy: false,
     locale: locale.value || 'en',
     messages,
-    fallbackLocale: 'en-US',
+    fallbackLocale: 'en',
     datetimeFormats: {
       en: {
         datetime: {
