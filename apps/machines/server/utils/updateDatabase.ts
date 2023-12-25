@@ -264,3 +264,19 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
   }
   return commands
 }
+
+export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+  const commandFeedback = await tbb.fetchCommandFeedback()
+  const data = commandFeedback?.map(c => ({
+    MACHINEID: machineId,
+    COMMANDNO: c.commandNo,
+    RETURNVALUEINDEX: Number.parseInt(c.pvNo.split(' ')[1]) - 1,
+    RETURNVALUENAME: c.returnValueName,
+    CANSHOW: c.canShow,
+    SPRELATION: c.SPRelation,
+  }))
+
+  await executeTransacted('BFMASTERCOMMANDRETURNVALUES', { MACHINEID: machineId }, data, trx)
+
+  return commandFeedback
+}
