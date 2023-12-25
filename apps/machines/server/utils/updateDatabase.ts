@@ -202,3 +202,27 @@ export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient
 
   return commands
 }
+
+export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+  const commands = await tbb.fetchCommandGraphic()
+
+  for (const c of commands) {
+    const query = knex('BFMASTERCOMMANDS').where({
+      COMMANDNO: c.commandNo,
+      MACHINEID: machineId,
+    }).update({
+      ISTEMPERATURE: !!((c.type === 2 || c.type === 6)),
+      ISUNLOAD: !!((c.type === 4 || c.type === 6)),
+      X: c.x,
+      Y: c.y,
+      A: c.a,
+      MAXA: c.maxA,
+      B: c.b,
+    })
+    if (trx)
+      query.transacting(trx)
+    await query
+  }
+
+  return commands
+}
