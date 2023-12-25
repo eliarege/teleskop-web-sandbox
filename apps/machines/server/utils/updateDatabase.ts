@@ -136,3 +136,45 @@ export async function updateStopReasons(tbb: TbbFtpClient, trx?: Knex.Transactio
 
   return stopReasons
 }
+
+export async function updateMachineController(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+  const { productModel, hardwareModel, plcModel } = await tbb.fetchControllerModel()
+  const updateQuery = knex('BFMACHINES').where('MACHINEID', machineId).update({
+    productModel,
+    hardwareModel,
+    plcModel,
+  })
+  if (trx)
+    updateQuery.transacting(trx)
+  await updateQuery
+}
+
+export async function updateCommandGroups(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+  const commands = await tbb.fetchCommandGroups()
+  const data = commands.map((d) => {
+    return {
+      COMMANDGROUPID: d.commandGroupId,
+      NAME: d.name,
+      ICON: d.icon,
+      MACHINEID: machineId,
+    }
+  })
+  await executeTransacted('BFCOMMANDGROUP', { MACHINEID: machineId }, data, trx)
+  return commands
+}
+export async function updateUsers(tbb: TbbFtpClient, trx?: Knex.Transaction) {
+  const users = await tbb.fetchUsers()
+  const data = users.map((d) => {
+    return {
+      userID: d.userId,
+      userPass: d.userPass,
+      userName: d.userName,
+      userSurname: d.userSurname,
+      userMode: d.userMode,
+      userMode2: d.userMode2,
+      userType: d.userType,
+    }
+  })
+  await executeTransacted('BFUSERS', undefined, data, trx)
+  return users
+}
