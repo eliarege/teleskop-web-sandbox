@@ -6,9 +6,9 @@ const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" "([^"]*)" (\d+) -?(.+) -?(.+) 
  *
  * **Example**:
  * ```txt
- *  8 0 "SP 12" "Mikser Off Delay" "" 3 30 0 600 2`
- *  9 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
- *  10 0 "SP 2" "Litre" "IK1 Ust Seviye*IK1 Oran/100" 3 0 0 1000 0
+ * 8 0 "SP 12" "Mikser Off Delay" "" 3 30 0 600 2`
+ * 9 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+ * 10 0 "SP 2" "Litre" "IK1 Ust Seviye*IK1 Oran/100" 3 0 0 1000 0
  * ```
  */
 export function parseCommandParams(content: string) {

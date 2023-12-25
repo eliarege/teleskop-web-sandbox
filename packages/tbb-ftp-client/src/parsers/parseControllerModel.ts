@@ -10,7 +10,6 @@ const pattern = /^(.+)-(.+)-(.+)$/gim
  * T7700-Giada-TBBPLC
  * ```
  */
-
 export function parseControllerModel(content: string) {
   const match = pattern.exec(content)
   if (match) {

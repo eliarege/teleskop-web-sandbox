@@ -1,5 +1,7 @@
 import type { User } from '../types'
 
+const pattern = /^(\d+) (\d+) ([a-z]+) ([a-z]+) (0x\d+) (0x\d+) (\d+)$/gim
+
 /**
  * **Path**: `/tbb6500/data/users/users`
  *
@@ -8,7 +10,6 @@ import type { User } from '../types'
  * 0 12345 Sadirlar Operator 0x11100150 0x00000003 1
  * ```
  */
-const pattern = /^(\d+) (\d+) ([a-z]+) ([a-z]+) (0x\d+) (0x\d+) (\d+)$/gim
 export function parseUser(content: string) {
   const users = []
   let match = pattern.exec(content)

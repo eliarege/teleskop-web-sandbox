@@ -1,5 +1,6 @@
 import type { ManualReason } from '../types'
 
+const pattern = /^(\d+) "([^"]+)"$/gim
 /**
  * **Path**: `/tbb6500/data/config/manuelmodnedenleri`
  *
@@ -8,7 +9,6 @@ import type { ManualReason } from '../types'
  * 2 "Kumaş koptu-sardı"
  * ```
  */
-const pattern = /^(\d+) "([^"]+)"$/gim
 export function parseManualReason(content: string) {
   const reasons = []
   let match = pattern.exec(content)
