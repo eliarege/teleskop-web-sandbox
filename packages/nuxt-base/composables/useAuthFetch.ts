@@ -5,7 +5,7 @@ export interface UseAuthFetchOptions<T> extends UseFetchOptions<T> {
   minimumTokenValidity?: number
 }
 
-export function useAuthFetch<T>(url: string | (() => string), options?: UseAuthFetchOptions<T>) {
+export const useAuthFetch: typeof useFetch = <T>(url: string | (() => string), options?: UseAuthFetchOptions<T>) => {
   const keycloak = useKeycloak()
   const onRequest: UseFetchOptions<T>['onRequest'] = async (context) => {
     await keycloak.updateToken(options?.minimumTokenValidity)
