@@ -226,3 +226,22 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
 
   return commands
 }
+export async function updateMachineParameters(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+  const parameters = await tbb.fetchMachineParameters()
+  const machineParameters = parameters?.map(d => ({
+    MACHINEID: machineId,
+    MACHINEPARAMETERID: d.machineParameterId,
+    PARAMSTRING: d.paramString,
+    DEFAULTVALUE: d.defaultValue,
+    dmArea: 9100,
+    consScreen: 1,
+    PARAMLOWLIMIT: d.paramLowLimit,
+    PARAMHIGHLIMIT: d.paramHighLimit,
+    consFormat: 0,
+    consUnit: 0,
+  }))
+
+  await executeTransacted('BFMACHPARAMETERS', { MACHINEID: machineId }, machineParameters, trx)
+
+  return machineParameters
+}
