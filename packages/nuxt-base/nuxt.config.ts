@@ -9,6 +9,7 @@ export default defineNuxtConfig({
       kcUrl: 'http://localhost:8080',
       kcRealm: 'teleskop-web',
       kcClientId: 'nuxt-client',
+      kcEnabled: true,
     },
   },
   css: ['@unocss/reset/tailwind.css'],

@@ -1,8 +1,10 @@
 import type { KeycloakError, KeycloakProfile, KeycloakTokenParsed } from 'keycloak-js'
 import Keycloak from 'keycloak-js'
 import type { EventHookOn } from '@vueuse/core'
+import { setHeader } from '~/utils/ofetch'
 
 export interface KeycloakPlugin {
+  fetch: typeof $fetch
   ready: Readonly<Ref<boolean>>
   /** Did keycloak initialise? */
   didInitialise: Readonly<Ref<boolean>>
@@ -60,6 +62,7 @@ export default defineNuxtPlugin(() => {
   const appConfig = useAppConfig()
   const route = useRoute()
   const locale = useCookie('locale')
+  const kcEnabled = config.public.kcEnabled
 
   const keycloak = new Keycloak({
     url: config.public.kcUrl,
@@ -109,24 +112,27 @@ export default defineNuxtPlugin(() => {
 
   let initPromise: Promise<any>
 
-  if (appConfig.loginRequired) {
-    initPromise = keycloak.init({
-      onLoad: 'login-required',
-      locale: locale.value || 'en-US',
-      enableLogging: appConfig.enableKeycloakLogging,
-    })
-  } else {
-    initPromise = keycloak.init({
-      onLoad: 'check-sso',
-      silentCheckSsoRedirectUri: `${location.origin}/api/check-sso`,
-      messageReceiveTimeout: 5000,
-      enableLogging: appConfig.enableKeycloakLogging,
+  if (kcEnabled) {
+    if (appConfig.loginRequired) {
+      initPromise = keycloak.init({
+        onLoad: 'login-required',
+        locale: locale.value || 'en-US',
+        enableLogging: appConfig.enableKeycloakLogging,
+      })
+    } else {
+      initPromise = keycloak.init({
+        onLoad: 'check-sso',
+        silentCheckSsoRedirectUri: `${location.origin}/api/check-sso`,
+        messageReceiveTimeout: 5000,
+        enableLogging: appConfig.enableKeycloakLogging,
+      })
+    }
+    initPromise.finally(() => {
+      didInitialise.value = true
     })
   }
 
-  initPromise.finally(() => {
-    didInitialise.value = true
-  })
+  const noop = () => {}
 
   const login = () => {
     navigateTo(
@@ -173,6 +179,15 @@ export default defineNuxtPlugin(() => {
     userInfo.value = keycloak.userInfo
   }
 
+  const fetch = $fetch.create({
+    async onRequest(context) {
+      if (kcEnabled) {
+        await keycloak.updateToken(appConfig.minimumTokenValidity)
+        setHeader(context.options, 'Authorization', `Bearer ${token.value}`)
+      }
+    },
+  })
+
   const hasRealmRole = (role: string) => {
     return tokenParsed.value?.realm_access?.roles.includes(role) ?? false
   }
@@ -184,6 +199,7 @@ export default defineNuxtPlugin(() => {
   return {
     provide: {
       keycloak: {
+        fetch,
         ready: readonly(ready),
         didInitialise: readonly(didInitialise),
         token: readonly(token),
@@ -191,9 +207,9 @@ export default defineNuxtPlugin(() => {
         authenticated: readonly(authenticated),
         userProfile: readonly(userProfile),
         userInfo: readonly(userInfo),
-        login,
-        logout,
-        register,
+        login: kcEnabled ? login : noop,
+        logout: kcEnabled ? logout : noop,
+        register: kcEnabled ? register : noop,
         onReady: onReady.on,
         onAuthSuccess: onAuthSuccess.on,
         onAuthError: onAuthError.on,
@@ -202,14 +218,14 @@ export default defineNuxtPlugin(() => {
         onAuthLogout: onAuthLogout.on,
         onTokenExpired: onTokenExpired.on,
         onActionUpdate: onActionUpdate.on,
-        hasRealmRole,
-        hasResourceRole,
-        isTokenExpired: keycloak.isTokenExpired,
-        updateToken,
+        hasRealmRole: kcEnabled ? hasRealmRole : () => false,
+        hasResourceRole: kcEnabled ? hasResourceRole : () => false,
+        isTokenExpired: kcEnabled ? keycloak.isTokenExpired : () => true,
+        updateToken: kcEnabled ? updateToken : noop,
         // No need to wrap this since its already handled by `onAuthLogout` listener
-        clearToken: keycloak.clearToken,
-        loadUserInfo,
-        loadUserProfile,
+        clearToken: kcEnabled ? keycloak.clearToken : noop,
+        loadUserInfo: kcEnabled ? loadUserInfo : noop,
+        loadUserProfile: kcEnabled ? loadUserProfile : noop,
       } as KeycloakPlugin,
     },
   }
