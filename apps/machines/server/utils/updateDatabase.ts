@@ -1,26 +1,24 @@
 import type { Knex } from 'knex'
 import type { TbbFtpClient } from 'tbb-ftp-client'
+import { chunk } from 'lodash-es'
 import { calcIONumber } from '.'
-import { knex } from '~/server/connectionPool'
 
-async function executeTransacted(tableName: string, whereObject?: Record<string, any>, data, trx?) {
+async function replaceRecords(knex: Knex, tableName: string, data, whereObject?: Record<string, any>) {
+  const chunks = chunk(data, 50)
+
   const delQuery = knex(tableName).del()
   if (whereObject)
     delQuery.where(whereObject)
 
   const insertQuery = knex(tableName)
-    .insert(data)
-
-  if (trx) {
-    delQuery.transacting(trx)
-    insertQuery.transacting(trx)
-  }
 
   await delQuery
-  await insertQuery
+  for (const chunk of chunks) {
+    await insertQuery.insert(chunk)
+  }
 }
 
-export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const inputs = await tbb.fetchAnalogInputs()
   const controllerModel = await tbb.fetchControllerModel()
 
@@ -34,12 +32,12 @@ export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, t
     ISDELETED: false,
   }))
 
-  await executeTransacted('BFMACHAIN', { MACHINEID: machineId }, analogInputs, trx)
+  await replaceRecords(trx, 'BFMACHAIN', analogInputs, { MACHINEID: machineId })
 
   return analogInputs
 }
 
-export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const outputs = await tbb.fetchAnalogOutputs()
   const controllerModel = await tbb.fetchControllerModel()
   const analogOutputs = outputs?.map(d => ({
@@ -53,12 +51,12 @@ export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, 
     ISDELETED: false,
   }))
 
-  await executeTransacted('BFMACHAOUT', { MACHINEID: machineId }, analogOutputs, trx)
+  await replaceRecords(trx, 'BFMACHAOUT', analogOutputs, { MACHINEID: machineId })
 
   return analogOutputs
 }
 
-export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const inputs = await tbb.fetchDigitalInputs()
   const controllerModel = await tbb.fetchControllerModel()
   const digitalInputs = inputs?.map(d => ({
@@ -71,12 +69,12 @@ export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, 
     ISDELETED: false,
   }))
 
-  await executeTransacted('BFMACHDIN', { MACHINEID: machineId }, digitalInputs, trx)
+  await replaceRecords(trx, 'BFMACHDIN', digitalInputs, { MACHINEID: machineId })
 
   return digitalInputs
 }
 
-export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const outputs = await tbb.fetchDigitalOutputs()
   const controllerModel = await tbb.fetchControllerModel()
   const digitalOutputs = outputs?.map(d => ({
@@ -90,12 +88,12 @@ export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient,
     DEFAULTVALUE: d.defaultValue,
   }))
 
-  await executeTransacted('BFMACHDOUT', { MACHINEID: machineId }, digitalOutputs, trx)
+  await replaceRecords(trx, 'BFMACHDOUT', digitalOutputs, { MACHINEID: machineId })
 
   return digitalOutputs
 }
 
-export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const counters = await tbb.fetchCounters()
   const controllerModel = await tbb.fetchControllerModel()
   const data = counters?.map(d => ({
@@ -108,36 +106,36 @@ export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx?:
     ISDELETED: false,
   }))
 
-  await executeTransacted('BFMACHCOUNTER', { MACHINEID: machineId }, data, trx)
+  await replaceRecords(trx, 'BFMACHCOUNTER', data, { MACHINEID: machineId })
 
   return counters
 }
 
-export async function updateFinishReasons(tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   const finishReasons = await tbb.fetchFinishReasons()
 
-  await executeTransacted('BFDYLOTFINISHREASONS', undefined, finishReasons, trx)
+  await replaceRecords(trx, 'BFDYLOTFINISHREASONS', finishReasons, undefined)
 
   return finishReasons
 }
 
-export async function updateManualReasons(tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateManualReasons(tbb: TbbFtpClient, trx: Knex) {
   const manualReasons = await tbb.fetchManualReasons()
 
-  await executeTransacted('BFMANUALREASONSGENERAL', undefined, manualReasons, trx)
+  await replaceRecords(trx, 'BFMANUALREASONSGENERAL', manualReasons, undefined)
 
   return manualReasons
 }
 
-export async function updateStopReasons(tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateStopReasons(tbb: TbbFtpClient, trx: Knex) {
   const stopReasons = await tbb.fetchStopReasons()
 
-  await executeTransacted('BFSTOPREASONS', undefined, stopReasons, trx)
+  await replaceRecords(trx, 'BFSTOPREASONS', stopReasons, undefined)
 
   return stopReasons
 }
 
-export async function updateMachineController(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateMachineController(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const { productModel, hardwareModel, plcModel } = await tbb.fetchControllerModel()
   const updateQuery = knex('BFMACHINES').where('MACHINEID', machineId).update({
     productModel,
@@ -149,7 +147,7 @@ export async function updateMachineController(machineId: number, tbb: TbbFtpClie
   await updateQuery
 }
 
-export async function updateCommandGroups(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateCommandGroups(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const commands = await tbb.fetchCommandGroups()
   const data = commands.map((d) => {
     return {
@@ -159,10 +157,10 @@ export async function updateCommandGroups(machineId: number, tbb: TbbFtpClient, 
       MACHINEID: machineId,
     }
   })
-  await executeTransacted('BFCOMMANDGROUP', { MACHINEID: machineId }, data, trx)
+  await replaceRecords(trx, 'BFCOMMANDGROUP', data, { MACHINEID: machineId })
   return commands
 }
-export async function updateUsers(tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateUsers(tbb: TbbFtpClient, trx: Knex) {
   const users = await tbb.fetchUsers()
   const data = users.map((d) => {
     return {
@@ -175,11 +173,11 @@ export async function updateUsers(tbb: TbbFtpClient, trx?: Knex.Transaction) {
       userType: d.userType,
     }
   })
-  await executeTransacted('BFUSERS', undefined, data, trx)
+  await replaceRecords(trx, 'BFUSERS', data, undefined)
   return users
 }
 
-export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const commands = await tbb.fetchCommandsGeneral()
 
   const data = commands.map(d => ({
@@ -198,12 +196,12 @@ export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient
     FUNCTIONID: 0,
   }))
 
-  await executeTransacted('BFMASTERCOMMANDS', { MACHINEID: machineId }, data, trx)
+  await replaceRecords(trx, 'BFMASTERCOMMANDS', data, { MACHINEID: machineId })
 
   return commands
 }
 
-export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const commands = await tbb.fetchCommandGraphic()
 
   for (const c of commands) {
@@ -227,7 +225,7 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
   return commands
 }
 
-export async function updateMachineParameters(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateMachineParameters(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const parameters = await tbb.fetchMachineParameters()
   const machineParameters = parameters?.map(d => ({
     MACHINEID: machineId,
@@ -242,12 +240,12 @@ export async function updateMachineParameters(machineId: number, tbb: TbbFtpClie
     consUnit: 0,
   }))
 
-  await executeTransacted('BFMACHPARAMETERS', { MACHINEID: machineId }, machineParameters, trx)
+  await replaceRecords(trx, 'BFMACHPARAMETERS', machineParameters, { MACHINEID: machineId })
 
   return machineParameters
 }
 
-export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const commands = await tbb.fetchCommandsEditing()
 
   for (const command of commands) {
@@ -265,7 +263,7 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
   return commands
 }
 
-export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const commandFeedback = await tbb.fetchCommandFeedback()
   const data = commandFeedback?.map(c => ({
     MACHINEID: machineId,
@@ -276,12 +274,12 @@ export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient
     SPRELATION: c.SPRelation,
   }))
 
-  await executeTransacted('BFMASTERCOMMANDRETURNVALUES', { MACHINEID: machineId }, data, trx)
+  await replaceRecords(trx, 'BFMASTERCOMMANDRETURNVALUES', data, { MACHINEID: machineId })
 
   return commandFeedback
 }
 
-export async function updateConsumption(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateConsumption(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const consumption = await tbb.fetchConsumption()
 
   const query = knex('BFMACHINES')
@@ -306,7 +304,7 @@ export async function updateConsumption(machineId: number, tbb: TbbFtpClient, tr
   return consumption
 }
 
-export async function updateGlobalCommandFormulas(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+export async function updateGlobalCommandFormulas(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const formulas = await tbb.fetchGlobalCommandFormulas()
   const data = formulas.map((d) => {
     return {
@@ -314,7 +312,55 @@ export async function updateGlobalCommandFormulas(machineId: number, tbb: TbbFtp
       ...d,
     }
   })
-  await executeTransacted('BFCOMMANDFORMULAS', { machineId }, data, trx)
+  await replaceRecords(trx, 'BFCOMMANDFORMULAS', data, { machineId })
 
   return formulas
+}
+
+export async function updateCommandParameters(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const commands = await tbb.fetchCommandParams()
+
+  const promises = commands.map(async (c) => {
+    const query = knex('BFCOMMANDFORMULAS')
+      .where({
+        machineId,
+        commandNo: c.commandNo,
+      }).count()
+    if (trx)
+      query.transacting(trx)
+
+    const globalCommandFormula = await query
+
+    return {
+      MACHINEID: machineId,
+      COMMANDNO: c.commandNo,
+      PARAMSTRING: c.paramName,
+      COMMANDDEFINITION: false,
+      PROGRAMEDITING: c.binding === 1,
+      BATCHPLANNING: false,
+      BATCHSTART: c.binding === 2,
+      COMMANDRUN: false,
+      RECIPE: false,
+      VALUE: c.paramFormula ? c.paramFormula : (c.defaultValue).toString(),
+      PARAMETERTYPE: ((c.selectionList && c.selectionList.length) || globalCommandFormula) ? 1 : 0,
+      SELECTIONLIST: (c.selectionList && c.selectionList.length) ? c.selectionList.filter((c, i) => i % 2 === 0).join(' ') : '',
+      SELECTIONVALUES: (c.selectionList && c.selectionList.length) ? c.selectionList.filter((c, i) => i % 2 === 1).join(' ') : '',
+      UNITCODE: 0,
+      PARAMLOWLIMIT: c.minValue,
+      PARAMHIGHLIMIT: c.maxValue,
+      CONTAINSVARIABLE: !!c.paramFormula,
+      TEMPERATURE: c.graphic,
+      USEDEFAULT: c.binding === 2 || c.binding === 3,
+      ISCOMMANDVARIABLE: false,
+      TBBFORMUL: !!c.paramFormula,
+      USEFORMULA: c.binding === 5,
+      PARAMETERINDEX: Number.parseInt(c.name.split(' ')[1]),
+    }
+  })
+
+  const data = await Promise.all(promises)
+
+  await replaceRecords(trx, 'BFCOMMANDPARAMETERS', data, { MACHINEID: machineId })
+
+  return data.slice(0, 10)
 }
