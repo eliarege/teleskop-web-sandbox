@@ -36,6 +36,9 @@ export default defineNuxtConfig({
       'Notify',
     ],
   },
+  elementPlus: {
+    icon: false,
+  },
   vite: {
     plugins: [
       i18n({
