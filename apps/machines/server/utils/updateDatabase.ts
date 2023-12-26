@@ -319,17 +319,10 @@ export async function updateGlobalCommandFormulas(machineId: number, tbb: TbbFtp
 
 export async function updateCommandParameters(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const commands = await tbb.fetchCommandParams()
+  const formulas = await tbb.fetchGlobalCommandFormulas()
 
   const promises = commands.map(async (c) => {
-    const query = knex('BFCOMMANDFORMULAS')
-      .where({
-        machineId,
-        commandNo: c.commandNo,
-      }).count()
-    if (trx)
-      query.transacting(trx)
-
-    const globalCommandFormula = await query
+    const globalCommandFormula = formulas.findIndex(f => f.commandNo === c.commandNo)
 
     return {
       MACHINEID: machineId,
