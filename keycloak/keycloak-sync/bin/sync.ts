@@ -94,6 +94,7 @@ function getClientRepresentation(app: App): ClientRepresentation {
   if (!appType) {
     throw new Error(`"eliar" key undefined in "apps/${app.name}"`)
   } else if (appType === 'nuxt') {
+    const appPort = app.pkg.eliar.port || 3000
     return {
       clientId: app.name,
       enabled: true,
@@ -101,12 +102,12 @@ function getClientRepresentation(app: App): ClientRepresentation {
       description: app.pkg.description,
       publicClient: true,
       webOrigins: [
-        'http://127.0.0.1:3000',
-        'http://localhost:3000',
+        `http://127.0.0.1:${appPort}`,
+        `http://localhost:${appPort}`,
       ],
       redirectUris: [
-        'http://127.0.0.1:3000/*',
-        'http://localhost:3000/*',
+        `http://127.0.0.1:${appPort}/*`,
+        `http://localhost:${appPort}/*`,
       ],
     }
   } else if (appType === 'node') {
