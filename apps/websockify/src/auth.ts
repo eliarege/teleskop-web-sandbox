@@ -126,8 +126,7 @@ export function initKcAuth(): KeycloakAuth {
 }
 
 /** Wait until socket sends bearer message  */
-function getBearer(socket: WebSocket) {
-  const AUTH_TIMEOUT = 3000
+function getBearer(socket: WebSocket, authTimeout = 1000) {
   const BEARER_RE = /^[Bb]earer /
 
   // Return Dev Token
@@ -139,19 +138,17 @@ function getBearer(socket: WebSocket) {
     const timeout = setTimeout(() => {
       socket.off('message', listener)
       resolve(sendError('Auth timeout'))
-    }, AUTH_TIMEOUT)
+    }, authTimeout)
 
-    function listener(data: Buffer, isBinary: boolean) {
-      if (!isBinary) {
-        const msg = data.toString('utf-8')
-        if (BEARER_RE.test(msg)) {
-          clearTimeout(timeout)
-          socket.off('message', listener)
-          resolve(sendPayload(msg.slice(7)))
-        }
-      }
+    function listener(data: Buffer) {
+      const msg = data.toString('utf-8')
+      if (!BEARER_RE.test(msg))
+        return resolve(sendError('Auth failed'))
+
+      clearTimeout(timeout)
+      resolve(sendPayload(msg.slice(7)))
     }
 
-    socket.on('message', listener)
+    socket.once('message', listener)
   })
 }
