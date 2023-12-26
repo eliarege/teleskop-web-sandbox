@@ -229,3 +229,11 @@ export interface FunctionAlarm {
   o: string
   m: string
 }
+
+export interface GlobalCommandFormula {
+  formula: string
+  formulaId: number
+  commandNo: number
+  commandParameterNo: number
+  formulaName: string
+}

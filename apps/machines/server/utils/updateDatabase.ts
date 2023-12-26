@@ -305,3 +305,16 @@ export async function updateConsumption(machineId: number, tbb: TbbFtpClient, tr
 
   return consumption
 }
+
+export async function updateGlobalCommandFormulas(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+  const formulas = await tbb.fetchGlobalCommandFormulas()
+  const data = formulas.map((d) => {
+    return {
+      machineId,
+      ...d,
+    }
+  })
+  await executeTransacted('BFCOMMANDFORMULAS', { machineId }, data, trx)
+
+  return formulas
+}
