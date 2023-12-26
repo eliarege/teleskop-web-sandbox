@@ -111,7 +111,7 @@ function expectServer(msg: Message, action: string) {
 }
 
 function getSecurityTypeString(type: SecurityType): string {
-  return Object.entries(SecurityType).find(e => e[1])?.[0] || `Unknown [${type}]`
+  return Object.entries(SecurityType).find(e => e[1] === type)?.[0] || `Unknown [${type}]`
 }
 
 /**
@@ -130,6 +130,7 @@ export function* createRFBHandshakeProxy(): Generator<HandshakeState, boolean, M
     const numberOfSecurityTypes = securityTypes.data.readUInt8(0)
     if (numberOfSecurityTypes > 0) {
       securityType = expectClient(yield HandshakeState.SecurityServer, 'Client selected security type').data.readUInt8(0)
+      logger.debug(`Selected security type: ${getSecurityTypeString(securityType)}`)
     }
   } else {
     securityType = expectServer(yield HandshakeState.SecurityServer, 'Server sent auth scheme').data.readUint32BE(0)

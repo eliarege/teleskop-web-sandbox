@@ -279,7 +279,7 @@ export class DESECBCipher {
 
   /**
    *
-   * @param {ArrayBufferLike} x
+   * @param {Buffer} data
    * @returns
    */
   encrypt(data) {
