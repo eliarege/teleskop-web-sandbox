@@ -23,6 +23,55 @@ export interface Machine {
   version?: string
   productModel?: string
   hardwareModel?: string
+  waterCounterId?: number
+  waterType0Do?: number
+  waterType1Do?: number
+  waterType2Do?: number
+  waterType3Do?: number
+  waterType4do?: number
+  waterType5Do?: number
+  waterType6Do?: number
+  electricityCounterId?: number
+}
+
+export interface Consumption {
+  IP_CONVERTOR: number
+  HEATING_VALVE: number
+  PROPORTIONAL: number
+  STEAM_COEFFICENT: number
+  TANK_0_TEMPERATURE: number
+  TANK_0_LEVEL: number
+  TANK_1_TEMPERATURE: number
+  TANK_1_LEVEL: number
+  TANK_2_TEMPERATURE: number
+  TANK_2_LEVEL: number
+  TANK_3_TEMPERATURE: number
+  TANK_3_LEVEL: number
+  TANK_4_TEMPERATURE: number
+  TANK_4_LEVEL: number
+  BOBIN_CAPACITY: number
+  STEAM_CONSUMPTION_COEFFICENT: number
+  STEAM_CORRECTION_COEFFICENT: number
+  WATERTYPE_0_DO: number
+  WATERTYPE_1_DO: number
+  WATERTYPE_2_DO: number
+  WATERTYPE_3_DO: number
+  WATERTYPE_4_DO: number
+  WATERTYPE_5_DO: number
+  WATERTYPE_6_DO: number
+  SU_SAYACI: number
+  ELEKTRIK_SAYACI: number
+  RESERVE_HEATING_VALVE: number
+  DAILYWATERCONS_ENABLED: number
+  DISCHARGE_VALVE_1: number
+  DISCHARGE_VALVE_2: number
+  DISCHARGE_VALVE_3: number
+  DISCHARGE_VALVE_4: number
+  DAILYWATERCONS_EVENT_HOUR: number
+  DAILYWATERCONS_EVENT_MIN: number
+  DAILYWATERCONS_PREVIOUS_STATUS: number
+  DAILYWATERCONS_LAST_EVENT_TIME: string
+  BUHAR_SAYACI_REEL: number
 }
 
 export interface User {

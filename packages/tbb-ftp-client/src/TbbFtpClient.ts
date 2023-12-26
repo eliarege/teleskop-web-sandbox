@@ -25,6 +25,7 @@ import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
 import { writeFinishReason } from './writers/writeFinishReason'
 import { FinishReason } from './types'
+import { parseConsumption } from './parsers/parseConsumption'
 
 export class TbbFtpClient {
   private host: string
@@ -221,6 +222,13 @@ export class TbbFtpClient {
     const content = await download(this.client, remotePath)
     const commandGroups = parseCommandAlarms(content)
     return commandGroups
+  }
+
+  async fetchConsumption() {
+    const remotePath = '/tbb6500/data/config/consumption'
+    const content = await download(remotePath, this.host)
+    const consumption = parseConsumption(content)
+    return consumption
   }
 
   /*   async writeMachineParameterValues(values) {
