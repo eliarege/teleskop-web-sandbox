@@ -280,3 +280,28 @@ export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient
 
   return commandFeedback
 }
+
+export async function updateConsumption(machineId: number, tbb: TbbFtpClient, trx?: Knex.Transaction) {
+  const consumption = await tbb.fetchConsumption()
+
+  const query = knex('BFMACHINES')
+    .where('MACHINEID', machineId)
+    .update({
+      WATERCOUNTERID: consumption.SU_SAYACI,
+      ELECTRICITYCOUNTERID: consumption.ELEKTRIK_SAYACI,
+      WATERTYPE_0_DO: consumption.WATERTYPE_0_DO,
+      WATERTYPE_1_DO: consumption.WATERTYPE_1_DO,
+      WATERTYPE_2_DO: consumption.WATERTYPE_2_DO,
+      WATERTYPE_3_DO: consumption.WATERTYPE_3_DO,
+      WATERTYPE_4_DO: consumption.WATERTYPE_4_DO,
+      WATERTYPE_5_DO: consumption.WATERTYPE_5_DO,
+      WATERTYPE_6_DO: consumption.WATERTYPE_6_DO,
+    })
+
+  if (trx)
+    query.transacting(trx)
+
+  await query
+
+  return consumption
+}
