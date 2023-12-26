@@ -21,6 +21,7 @@
     "knex": "^3.0.1",
     "pino": "^8.16.2",
     "tedious": "^16.6.1",
+    "utils": "workspace:*",
     "ws": "^8.14.2"
   },
   "devDependencies": {

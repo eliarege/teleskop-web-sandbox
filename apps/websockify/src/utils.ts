@@ -1,18 +1,7 @@
 import type { IncomingMessage } from 'node:http'
 import process from 'node:process'
 
-const TRUE_RE = /^(?:y|yes|true|on)$/i
-const FALSE_RE = /^(?:no?|false|off)$/i
-
-export function inferBoolean(value: string | undefined) {
-  if (!value)
-    return false
-  if (TRUE_RE.test(value))
-    return true
-  if (FALSE_RE.test(value))
-    return false
-  throw new TypeError(`Expected boolean value, got ${value}`)
-}
+export { inferBoolean } from 'utils'
 
 /**
  * Makes it possible to safely destruct properties with defaults.

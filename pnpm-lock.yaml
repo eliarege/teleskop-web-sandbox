@@ -318,6 +318,9 @@ importers:
       tedious:
         specifier: ^16.6.1
         version: 16.6.1
+      utils:
+        specifier: workspace:*
+        version: link:../../packages/utils
       ws:
         specifier: ^8.14.2
         version: 8.14.2
