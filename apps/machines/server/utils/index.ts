@@ -1,4 +1,4 @@
-import { knex } from '~/server/connectionPool'
+import type { Knex } from 'knex'
 
 export function calcIONumber(ioObject, controllerModel) {
   const { productModel, hardwareModel, plcModel } = controllerModel
@@ -16,31 +16,17 @@ export function calcIONumber(ioObject, controllerModel) {
   return (ioObject.card - 1) * channelSum + ioObject.channel - 1
 }
 
-export async function getIOName(machineId, type, id) {
+export async function getIOName(machineId, type, id, trx: Knex) {
   let tableName
   switch (type) {
-    case 0:
-      tableName = 'BFMACHAIN'
-      break
-    case 1:
-      tableName = 'BFMACHAOUT'
-      break
-    case 2:
-      tableName = 'BFMACHDIN'
-      break
-    case 3:
-      tableName = 'BFMACHDOUT'
-      break
-    case 4:
-      tableName = 'BFMACHCOUNTER'
-      break
-
-    default:
-      break
+    case 0: tableName = 'BFMACHAIN'; break
+    case 1: tableName = 'BFMACHAOUT'; break
+    case 2: tableName = 'BFMACHDIN'; break
+    case 3: tableName = 'BFMACHDOUT'; break
+    case 4: tableName = 'BFMACHCOUNTER'; break
+    default: throw new Error(`Invalid type: ${type}`)
   }
 
-  return await knex(tableName).where({
-    MACHINEID: machineId,
-    ID: id,
-  }).select('NAME')
+  const result = await trx(tableName).where({ MACHINEID: machineId, ID: id }).select('NAME')
+  return result.length > 0 ? result[0].NAME : ''
 }
