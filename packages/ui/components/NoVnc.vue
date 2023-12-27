@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import type { NoVncEvents } from '@novnc/novnc/core/rfb'
 import RFB from '@novnc/novnc/core/rfb'
-import { ref, onMounted, nextTick, onBeforeMount, watch } from 'vue'
+import { nextTick, onBeforeMount, onMounted, ref, toRef, watch } from 'vue'
+import type { Ref } from 'vue'
+
 export interface NoVncProps {
   /** WebSocket URL `string` */
   url?: string
@@ -16,6 +18,14 @@ export interface NoVncProps {
     /** Target machine or session */
     target?: string
   }
+  /**
+   * Enable authentication protocol, will wait for `props.token` to be truthy.
+   */
+  auth?: boolean
+  /**
+   * Token used for authentication
+   */
+  token?: string
   /**
    * A `boolean` indicating if the remote server should be shared or if any other connected
    * clients should be disconnected. Enabled by default.
@@ -77,8 +87,18 @@ export interface NoVncProps {
   compressionLevel?: number
 }
 
+type AuthResponse<T> =
+  | { status: 'resolved'; data: T }
+  | { status: 'rejected'; reason: string }
+
+interface ConnectionDetails {
+  viewOnly: boolean
+}
+
 const props = withDefaults(defineProps<NoVncProps>(), {
   url: 'ws://localhost:6080/websockify',
+  credentials: () => ({ password: '...' }),
+  auth: false,
   viewOnly: false,
   focusOnClick: true,
   clipViewport: false,
@@ -102,9 +122,69 @@ const screen = ref<HTMLElement | undefined>()
 
 let rfb: RFB | null = null
 
+function authenticate(socket: WebSocket, token: string): Promise<AuthResponse<ConnectionDetails>> {
+  return new Promise((resolve) => {
+    const onClose = (ev: CloseEvent) => {
+      detach()
+      resolve({
+        status: 'rejected',
+        reason: ev.reason,
+      })
+    }
+    const onMessage = (ev: MessageEvent<string>) => {
+      detach()
+      resolve({
+        status: 'resolved',
+        data: JSON.parse(ev.data),
+      })
+    }
+    const onOpen = () => {
+      socket.send(`Bearer ${token}`)
+      socket.addEventListener('message', onMessage)
+    }
+    function detach() {
+      socket.removeEventListener('close', onClose)
+      socket.removeEventListener('message', onMessage)
+      socket.removeEventListener('open', onOpen)
+    }
+    socket.addEventListener('open', onOpen)
+    socket.addEventListener('close', onClose)
+  })
+}
+
+function untilTruthy<T>(ref: Ref<T>): Promise<NonNullable<T>> {
+  return new Promise((resolve) => {
+    const stop = watch(ref, (value) => {
+      if (value) {
+        nextTick(() => stop())
+        resolve(value!)
+      }
+    }, {
+      immediate: true,
+    })
+  })
+}
+
 onMounted(async () => {
   await nextTick()
-  rfb = new RFB(screen.value!, props.url, {
+  let socket: WebSocket
+  let viewOnly = props.viewOnly
+  // Authenticate, send token when token arrives
+  if (props.auth) {
+    const token = await untilTruthy(toRef(() => props.token))
+    socket = new WebSocket(props.url)
+    const response = await authenticate(socket, token)
+    if (response.status === 'resolved') {
+      viewOnly = response.data.viewOnly
+    } else {
+      console.error(`VNC Authentication failed: ${response.reason}`)
+      return
+    }
+  } else {
+    socket = new WebSocket(props.url)
+  }
+
+  rfb = new RFB(screen.value!, socket, {
     credentials: props.credentials,
   })
   rfb.addEventListener('connect', () => emit('connect'))
@@ -114,7 +194,7 @@ onMounted(async () => {
   rfb.addEventListener('clipboard', (e: NoVncEvents['clipboard']) => {
     emit('clipboard', e.detail.text)
   })
-  rfb.viewOnly = props.viewOnly
+  rfb.viewOnly = viewOnly
   rfb.focusOnClick = props.focusOnClick
   rfb.clipViewport = props.clipViewport
   rfb.dragViewport = props.dragViewport
@@ -131,40 +211,47 @@ onBeforeMount(() => {
   rfb?.disconnect()
 })
 
-watch(() => props.viewOnly, (newValue) => {
-  if (rfb) rfb.viewOnly = newValue
-})
 watch(() => props.focusOnClick, (newValue) => {
-  if (rfb) rfb.focusOnClick = newValue
+  if (rfb)
+    rfb.focusOnClick = newValue
 })
 watch(() => props.clipViewport, (newValue) => {
-  if (rfb) rfb.clipViewport = newValue
+  if (rfb)
+    rfb.clipViewport = newValue
 })
 watch(() => props.dragViewport, (newValue) => {
-  if (rfb) rfb.dragViewport = newValue
+  if (rfb)
+    rfb.dragViewport = newValue
 })
 watch(() => props.scaleViewport, (newValue) => {
-  if (rfb) rfb.scaleViewport = newValue
+  if (rfb)
+    rfb.scaleViewport = newValue
 })
 watch(() => props.resizeSession, (newValue) => {
-  if (rfb) rfb.resizeSession = newValue
+  if (rfb)
+    rfb.resizeSession = newValue
 })
 watch(() => props.showDotCursor, (newValue) => {
-  if (rfb) rfb.showDotCursor = newValue
+  if (rfb)
+    rfb.showDotCursor = newValue
 })
 watch(() => props.background, (newValue) => {
-  if (rfb) rfb.background = newValue
+  if (rfb)
+    rfb.background = newValue
 })
 watch(() => props.qualityLevel, (newValue) => {
-  if (rfb) rfb.qualityLevel = newValue
+  if (rfb)
+    rfb.qualityLevel = newValue
 })
 watch(() => props.compressionLevel, (newValue) => {
-  if (rfb) rfb.compressionLevel = newValue
+  if (rfb)
+    rfb.compressionLevel = newValue
 })
 
 function wrap<T extends any[] = any[]>(callback: (rfb: RFB, ...args: T) => void) {
   return (...args: T) => {
-    if (!rfb) throw new Error('RFB is not ready')
+    if (!rfb)
+      throw new Error('RFB is not ready')
     callback(rfb, ...args)
   }
 }
@@ -198,9 +285,7 @@ defineExpose({
    * @param down A `boolean` specifying if a press or a release event should be sent. If omitted
    * then both a press and release event are sent.
    */
-  sendKey: wrap((rfb, keysym: number, code: string | null, down?: boolean) =>
-    rfb.sendKey(keysym, code, down),
-  ),
+  sendKey: wrap((rfb, keysym: number, code: string | null, down?: boolean) => rfb.sendKey(keysym, code, down)),
 })
 </script>
 
