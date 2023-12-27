@@ -326,8 +326,8 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
       RECIPE: false,
       VALUE: c.paramFormula ? c.paramFormula : (c.defaultValue).toString(),
       PARAMETERTYPE: ((c.selectionList && c.selectionList.length) || globalCommandFormula) ? 1 : 0,
-      SELECTIONLIST: (c.selectionList && c.selectionList.length) ? c.selectionList.filter((c, i) => i % 2 === 0).join(' ') : '',
-      SELECTIONVALUES: (c.selectionList && c.selectionList.length) ? c.selectionList.filter((c, i) => i % 2 === 1).join(' ') : '',
+      SELECTIONLIST: (c.selectionList && c.selectionList.length) ? c.selectionList.map(d => d.name).join(' ') : '',
+      SELECTIONVALUES: (c.selectionList && c.selectionList.length) ? c.selectionList.map(d => d.value).join(' ') : '',
       UNITCODE: 0,
       PARAMLOWLIMIT: c.minValue,
       PARAMHIGHLIMIT: c.maxValue,
@@ -345,5 +345,5 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
 
   await replaceRecords(trx, 'BFCOMMANDPARAMETERS', data, { MACHINEID: machineId })
 
-  return data.slice(0, 10)
+  return data
 }

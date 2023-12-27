@@ -25,10 +25,18 @@ export function parseCommandParams(content: string) {
       minValue: Number.parseInt(match[8]),
       maxValue: Number.parseInt(match[9]),
       graphic: Number.parseInt(match[10]),
-      selectionList: match[11] ? JSON.parse(match[11]) : null,
+      selectionList: match[11] ? processSelectionList(JSON.parse(match[11])) : null,
     }
     groups.push(group)
     match = pattern.exec(content)
   }
   return groups
+}
+
+function processSelectionList(list: string[]) {
+  const processedList: { name: string; value: number }[] = []
+  for (let i = 0; i < list.length; i += 2) {
+    processedList.push({ name: list[i], value: Number(list[i + 1]) })
+  }
+  return processedList
 }
