@@ -137,13 +137,11 @@ export async function updateStopReasons(tbb: TbbFtpClient, trx: Knex) {
 
 export async function updateMachineController(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const { productModel, hardwareModel, plcModel } = await tbb.fetchControllerModel()
-  const updateQuery = knex('BFMACHINES').where('MACHINEID', machineId).update({
+  const updateQuery = trx('BFMACHINES').where('MACHINEID', machineId).update({
     productModel,
     hardwareModel,
     plcModel,
   })
-  if (trx)
-    updateQuery.transacting(trx)
   await updateQuery
 }
 
@@ -205,7 +203,7 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
   const commands = await tbb.fetchCommandGraphic()
 
   for (const c of commands) {
-    const query = knex('BFMASTERCOMMANDS').where({
+    const query = trx('BFMASTERCOMMANDS').where({
       COMMANDNO: c.commandNo,
       MACHINEID: machineId,
     }).update({
@@ -217,8 +215,6 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
       MAXA: c.maxA,
       B: c.b,
     })
-    if (trx)
-      query.transacting(trx)
     await query
   }
 
@@ -249,15 +245,13 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
   const commands = await tbb.fetchCommandsEditing()
 
   for (const command of commands) {
-    const query = knex('BFMASTERCOMMANDS').where({
+    const query = trx('BFMASTERCOMMANDS').where({
       COMMANDNO: command.commandNo,
       MACHINEID: machineId,
     }).update({
       ADVICELIST: (command.adviceList && command.adviceList.length) ? command.adviceList : -1,
       DONTUSELIST: command.dontUseList,
     })
-    if (trx)
-      query.transacting(trx)
     await query
   }
   return commands
@@ -282,7 +276,7 @@ export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient
 export async function updateConsumption(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const consumption = await tbb.fetchConsumption()
 
-  const query = knex('BFMACHINES')
+  const query = trx('BFMACHINES')
     .where('MACHINEID', machineId)
     .update({
       WATERCOUNTERID: consumption.SU_SAYACI,
@@ -295,10 +289,6 @@ export async function updateConsumption(machineId: number, tbb: TbbFtpClient, tr
       WATERTYPE_5_DO: consumption.WATERTYPE_5_DO,
       WATERTYPE_6_DO: consumption.WATERTYPE_6_DO,
     })
-
-  if (trx)
-    query.transacting(trx)
-
   await query
 
   return consumption
