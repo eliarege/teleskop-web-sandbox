@@ -347,3 +347,106 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
 
   return data
 }
+// TODO: file does not exist
+export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const commandAlarmReasons = await tbb.fetchCommandAlarmReasons()
+
+  const timeoutReasons = commandAlarmReasons.map(r => ({
+    ID: r.id,
+    REASONTEXT: r.reasonText,
+    GROUPID: r.groupId,
+  }))
+
+  const commandMapEntries = commandAlarmReasons.flatMap(reason =>
+    reason.commandNumbers.map(commandNo => ({
+      REASONID: reason.id,
+      MACHINEID: machineId,
+      COMMANDNO: commandNo,
+    })),
+  )
+
+  await trx('BFCOMMANDTIMEOUTREASONS').del()
+  await trx('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId).del()
+  await trx('BFCOMMANDTIMEOUTREASONS').insert(timeoutReasons)
+  await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
+}
+
+export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const commands = await tbb.fetchCommandAlarms()
+  const functionAlarms = await tbb.fetchFunctionAlarms()
+
+  const commandsAlarmsInserts = []
+
+  for (const c of commands) {
+    const [functionNameRow] = await trx('BFMASTERCOMMANDS')
+      .where({
+        MACHINEID: machineId,
+        COMMANDNO: c.commandNo,
+      })
+      .select('TBBFUNTIONNAME')
+
+    const functionName = functionNameRow?.TBBFUNTIONNAME
+    const alarmObj = functionAlarms.find(a => a.f === functionName)
+
+    if (alarmObj) {
+      const alarmTypeIndex = Object.keys(alarmObj)
+        .findIndex(key => alarmObj[key]?.includes(c.alarmNo)) + 1
+
+      commandsAlarmsInserts.push({
+        MACHINEID: machineId,
+        ALARMINDEX: c.alarmNo,
+        COMMANDNO: c.commandNo,
+        ALARMNO: c.alarmNo,
+        UNIVERSALALARMNO: c.alarmNo,
+        ALARM: c.alarm,
+        ALARMTYPE: alarmTypeIndex || null,
+      })
+    }
+  }
+
+  await replaceRecords(trx, 'BFMASTERCOMMANDSALARMS', commandsAlarmsInserts, { MACHINEID: machineId })
+
+  return functionAlarms
+}
+
+export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const commands = await tbb.fetchCommandIO()
+
+  const inputsOutputs = []
+  const selectionList = []
+
+  for (const [index, command] of commands.entries()) {
+    for (const [i, c] of command.chooseList.entries()) {
+      const commonData = {
+        IOINDEX: i,
+        MACHINEID: Number.parseInt(machineId),
+        COMMANDNO: command.commandNo,
+        IOID: Number.parseInt(c.ioId),
+      }
+
+      inputsOutputs.push({
+        ...commonData,
+        NAME: c.name.length ? c.name : 'bos',
+        IOTYPE: (c.ioType <= 4 && c.ioType >= 0 && c.name.length > 0) ? 5 : Number.parseInt(c.ioType),
+        PROGRAMEDITING: false,
+        COMMANDRUN: false,
+      })
+
+      selectionList.push({
+        ...commonData,
+        SELECTINDEX: index,
+        IOTYPE: c.ioType,
+        NAME: (c.name && c.name.length) ? c.name : c.ioType !== 5 ? await getIOName(machineId, c.ioType, c.ioId, trx) : '',
+        SELECTEDIOID: c.ioId,
+        ISDEFAULT: c.isDefault,
+        MODEL: 'MODEL',
+        EXTENTION: 'EXTENTION',
+      })
+    }
+  }
+
+  await replaceRecords(trx, 'BFCOMMANDINPUTOUTPUTS', inputsOutputs, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFCOMMANDSELECTIONLIST', selectionList, { MACHINEID: machineId })
+
+  return selectionList
+}
