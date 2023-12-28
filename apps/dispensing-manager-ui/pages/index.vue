@@ -6,7 +6,7 @@ const { t } = useI18n()
 
 <template>
   <span class="header-class">
-    Eliar - {{ t('distributionProcessor._') }}
+    Eliar - {{ t('dispensingManager._') }}
     <img
       src="/eliarname.png"
       class="invert-colors"

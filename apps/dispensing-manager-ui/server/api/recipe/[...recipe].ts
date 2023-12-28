@@ -216,12 +216,10 @@ router.post('/check-tank-no-required', defineEventHandler(async (event) => {
     .select('PROTOCOL')
     .join('DYTFDISPENSERSETTINGS as D', 'C.DISPENSERID', 'D.DISPENSERID')
   let check = false
-  console.log(arr)
   arr.forEach((a) => {
     if (['n-v2', 'n-v3', 'n-v4', 'n-v5'].includes(a.PROTOCOL))
       check = true
   })
 
-  console.log(check)
   return check
 }))

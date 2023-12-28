@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { breakpoints } from '~/shared/constants'
+import { navigateToPage } from '~/shared/functions'
 
 const { t } = useI18n()
 const tempRoute = useRoute()
-
 const tabRef = computed(() => tempRoute.fullPath.split('/')[2] || 'material')
+if (!tempRoute.fullPath.split('/')[2])
+  navigateToPage('settings/material')
+
 const splitterModel = ref(10)
 const isLaptop = useBreakpoints(breakpoints).greaterOrEqual('laptop')
 const settings = [
@@ -20,7 +23,7 @@ const settings = [
   <span class="header-class">
     <NavigationButton type="back" />
     &nbsp;&nbsp;
-    Eliar - {{ t('distributionProcessor._') }} - {{ t('settings._') }}
+    Eliar - {{ t('dispensingManager._') }} - {{ t('settings._') }}
     <span class="right-home">
       <NavigationButton type="home" />
     </span>

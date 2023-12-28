@@ -11,12 +11,10 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-console.log(props)
 const data = await $fetch('/api/recipe/previous-requests', {
   method: 'POST',
   body: props,
 })
-console.log(data)
 const rerequestedStepCols = [
   { name: 'joborder', label: t('joborder'), field: 'joborder' },
   { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo' },
@@ -47,8 +45,8 @@ const manuelWeiStepCols = [
   <div>
     <q-card>
       <q-card-section class="flex flex-col">
-        <span class="text-h5"> {{ t('distributionProcessor._') }} - {{ t('recipe.previousRequests') }}</span>
-        <span class="text-h6">{{ `${t('recipe.stepReInfo')} - (${t('joborder')}: ${props.joborder}) - (${t('programNo')}: ${props.programNo}) - (${t('distributionProcessor.stepNo')}: ${props.programStepNo})` }}</span>
+        <span class="text-h5"> {{ t('dispensingManager._') }} - {{ t('recipe.previousRequests') }}</span>
+        <span class="text-h6">{{ `${t('recipe.stepReInfo')} - (${t('joborder')}: ${props.joborder}) - (${t('programNo')}: ${props.programNo}) - (${t('dispensingManager.stepNo')}: ${props.programStepNo})` }}</span>
       </q-card-section>
       <q-card-section>
         <FilterableTable

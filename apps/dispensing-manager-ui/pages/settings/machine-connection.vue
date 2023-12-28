@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import FilterableTable from 'ui/components/FilterableTable.vue';
-import { colors } from '~/shared/constants';
-import type { Column } from '~/shared/types';
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import { colors } from '~/shared/constants'
+import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref([])
@@ -66,7 +66,6 @@ function resetMachineInfo(row?: any) {
         controlDevices.forEach(dev => dev.value === row[mach.field] ? mach.value = dev : '')
       } else if (mach.field === 'connectedDisps') {
         mach.value = row.disps
-        console.log(mach.value)
       } else {
         mach.value = row[mach.field]
       }
@@ -81,7 +80,6 @@ function toggleRow(row: any, index: number) {
     ? expandedRow.value = null
     : expandedRow.value = index
   resetMachineInfo(row)
-  console.log(machineInfo.value)
 }
 
 function customSortMethod(rows, sortBy, descending) {
@@ -127,7 +125,6 @@ async function submit(rowIndex: number) {
     expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
-    console.log(machineInfo.value)
     await $fetch('/api/settings/machine-dispenser-connection', {
       method: 'put',
       body: {

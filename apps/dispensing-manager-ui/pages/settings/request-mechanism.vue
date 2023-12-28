@@ -37,7 +37,6 @@ const genericOptions = ref()
 genericOptions.value = await $fetch('/api/settings/material')
 
 async function changeSettings() {
-  console.log(settingsData.value)
   await $fetch('/api/settings/request-mechanism-settings', {
     method: 'put',
     body: {

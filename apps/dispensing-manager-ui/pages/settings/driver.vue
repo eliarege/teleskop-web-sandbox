@@ -19,7 +19,6 @@ await fetchData()
 const referenceType = ref(referenceOptions.value[driver.value.REFERENCEID])
 const protocol = ref(protocolOptions.value[driver.value.PROTOCOL])
 const radio = ref(driver.value.CONTROLTOTALBATCH ? 0 : 1)
-console.log(driver.value)
 
 async function updateDriverSettings() {
   await $fetch('/api/settings/file-system', {

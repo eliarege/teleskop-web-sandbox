@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import FilterableTable from 'ui/components/FilterableTable.vue';
-import { colors } from '~/shared/constants';
-import type { Column } from '~/shared/types';
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import { colors } from '~/shared/constants'
+import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref([])
@@ -64,7 +64,6 @@ async function getRows() {
 }
 
 function resetDispenserInfo(row?: any) {
-  console.log('Reseting --->>')
   if (!row)
     dispenserInfo.value.forEach(disp => disp.value = '')
   else {
@@ -130,7 +129,6 @@ async function submit(rowIndex: number, row: any) {
         protocol: dispenserInfo.value[6].value,
       },
     })
-    console.log(a)
     expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
@@ -155,7 +153,6 @@ async function submit(rowIndex: number, row: any) {
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  console.log(dispenserInfo.value)
   await $fetch('/api/settings/dispenser', {
     method: 'delete',
     body: {

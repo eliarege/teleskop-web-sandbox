@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import FilterableTable from 'ui/components/FilterableTable.vue';
-import { colors } from '~/shared/constants';
-import type { Column } from '~/shared/types';
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import { colors } from '~/shared/constants'
+import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref([])
@@ -70,7 +70,6 @@ async function resetMaterialInfo(row?: any) {
         materialGroups.forEach(dev => dev.value === row[mate.field] ? mate.value = dev : '')
       } else if (mate.field === 'connectedDisps') {
         mate.value = mateDispsTemp
-        console.log(mate.value)
       } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
         mate.value = false
       } else {
@@ -87,7 +86,6 @@ function toggleRow(row: any, index: number) {
     ? expandedRow.value = null
     : expandedRow.value = index
   resetMaterialInfo(row)
-  console.log(row)
 }
 
 function customSortMethod(rows, sortBy, descending) {
@@ -159,7 +157,6 @@ async function submit(rowIndex: number) {
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  console.log(materialInfo.value)
   await $fetch('/api/settings/material', {
     method: 'delete',
     body: {

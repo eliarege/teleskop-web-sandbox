@@ -136,7 +136,6 @@ const confirmationDialog = ref(false)
 const changeDialog = ref(false)
 const changeValue = ref()
 async function changeRow() {
-  console.log(selectedRow.value)
   await $fetch('/api/recipe/change-recipe-amount', {
     method: 'PUT',
     body: {
@@ -164,14 +163,12 @@ async function checkIsTankNoRequired() {
     if (selectedRow.value.programNo === row.programNo && row.parallelStep === 1)
       selectedRow.value.programTotalCount++
   })
-  console.log(selectedRow.value)
   isTankNoRequired.value = await $fetch('/api/recipe/check-tank-no-required', {
     method: 'POST',
     body: {
       materialCodes,
     },
   })
-  console.log(isTankNoRequired.value)
 }
 const priorityOptions = [
   { label: t('recipe.priorityLow'), value: 10 },
@@ -181,8 +178,7 @@ const priorityOptions = [
 ]
 async function requestRow() {
   const data = [2, priority.value.value, props.machineid, tankNo.value, selectedRow.value.joborder, selectedRow.value.programNo, selectedRow.value.mainStep, selectedRow.value.mainStep, selectedRow.value.programTotalCount, selectedRow.value.recipeType, selectedRow.value.processOrder]
-  console.log(data)
-  await $fetch('/api/file/write', {
+  await $fetch('/api/file/write-recipe-step', {
     method: 'POST',
     body: {
       row: selectedRow.value,
