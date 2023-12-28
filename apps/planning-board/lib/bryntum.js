@@ -265,33 +265,49 @@ export class Drag extends DragHelper {
 export class Task extends EventModel {
   static $name = 'Task'
 
+  // case this.isRunning:
+  //   return 'green'
+
+  // case this.isStopped:
+  //   return 'gray'
+
+  // case this.isDeleted:
+  //   return 'orange'
+
+  // default: return 'blue'
+
   get eventColor() {
+    const ptSettings = JSON.parse(localStorage.getItem('pt-settings'))
+    const completedBatchSettings = ptSettings.completedBatch
+    const ongoingBatchBatchSettings = ptSettings.ongoingBatch
+    const plannedBatchBatchSettings = ptSettings.plannedBatch
     switch (true) {
-      // case this.notStarted:
-      //   return 'gray'
+      case (!completedBatchSettings.isBatchFabricColor && this.isFinished && this.deviation > 0):
+        return completedBatchSettings.deviationBatchFabricColor
+      case (!completedBatchSettings.isBatchFabricColor && this.isFinished):
+        return completedBatchSettings.actualBatchFabricColor
 
-      case this.isDeviation:
-        return 'red'
+      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.isRunning && this.deviation > 0):
+        console.log(this)
+        return plannedBatchBatchSettings.deviationBatchFabricColor
+      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.isRunning):
+        return plannedBatchBatchSettings.actualBatchFabricColor
 
-      case this.isFinished:
-        return 'pink'
+      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.isRunning && this.deviation > 0):
+        return ongoingBatchBatchSettings.deviationBatchFabricColor
+      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.isRunning):
+        return ongoingBatchBatchSettings.actualBatchFabricColor
 
       case this.hasAlarm:
         return 'red'
-
-        // case this.isLocked:
-        //   return 'yellow'
-
-      case this.isRunning:
-        return 'green'
-
+      case this.isLocked:
+        return 'yellow'
       case this.isStopped:
         return 'gray'
-
       case this.isDeleted:
         return 'orange'
-
-      default: return 'blue'
+      default:
+        return '#03a9f4'
     }
   }
 
