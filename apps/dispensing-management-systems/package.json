@@ -21,9 +21,11 @@
   "devDependencies": {
     "@iconify/vue": "^4.1.1",
     "@types/node": "^18.19.0",
-    "nuxt": "^3.8.0",
+    "nuxt": "^3.9.0",
     "nuxt-base": "workspace:*",
-    "unocss-config": "workspace:*"
+    "unocss-config": "workspace:*",
+    "vue": "^3.3.13",
+    "vue-router": "^4.2.5"
   },
   "eliar": {
     "type": "nuxt",

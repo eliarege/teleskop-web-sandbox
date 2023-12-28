@@ -26,11 +26,11 @@
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {
-    "nuxt": "^3.7.4",
+    "nuxt": "^3.9.0",
     "nuxt-base": "workspace:*",
     "rollup-plugin-string": "workspace:*",
     "unocss-config": "workspace:*",
-    "vue": "^3.3.9",
+    "vue": "^3.3.13",
     "vue-router": "^4.2.5"
   },
   "eliar": {
