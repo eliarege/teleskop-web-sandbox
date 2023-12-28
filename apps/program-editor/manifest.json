@@ -1,0 +1,9 @@
+{
+  "roles": [
+    { "name": "program-upload" },
+    { "name": "program-download" },
+    { "name": "program-create" },
+    { "name": "program-edit" },
+    { "name": "program-delete" }
+  ]
+}

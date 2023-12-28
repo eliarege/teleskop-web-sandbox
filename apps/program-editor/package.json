@@ -1,0 +1,28 @@
+{
+  "name": "program-editor",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "start": "node .output/server/index.mjs",
+    "keycloak": "../../keycloak/keycloak.sh"
+  },
+  "devDependencies": {
+    "nuxt": "^3.9.0",
+    "nuxt-base": "workspace:*",
+    "unocss-config": "workspace:*",
+    "vue": "^3.3.13",
+    "vue-router": "^4.2.5"
+  },
+  "eliar": {
+    "type": "nuxt",
+    "port": 3000,
+    "outDir": ".output"
+  }
+}
