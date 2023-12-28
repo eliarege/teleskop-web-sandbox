@@ -14,9 +14,8 @@ const lastJobOrder = ref()
 const plankey = ref()
 const showJoborderError = ref(false)
 const resetCounter = ref(0)
-
+const showWeiRequestDialog = ref(false)
 // TODO: Job<Typeof Joborder> with plankey joborder correctiion no can be stored
-const a = 0
 const machines = await $fetch('/api/machine/machines')
 // const { data: recipeData, pending: waitingForData } = useFetch('/api/recipe?recipeJB=11428&recipeID=3&teleskopType=normal')
 const recipeData = ref()
@@ -28,8 +27,8 @@ const buttonProps = ref([
   { name: 'logs', label: t('recipe.logs'), link: 'showLogs', icon: 'description' },
   { name: 'tartim', label: t('recipe.jobOrderMeasurement'), link: 'showConsumptions', icon: 'content_paste_search' },
   { name: 'parameters', label: t('recipe.jobOrderParameters'), link: 'showParameters', icon: 'search' },
-  { name: 'tartimrefresh', label: t('recipe.jobOrderMeasurementRefresh'), link: '', icon: 'refresh' },
-  { name: 'solvingrefresh', label: t('recipe.jobOrderSolvingRefresh'), link: '', icon: 'refresh' },
+  { name: 'tartimrefresh', label: t('recipe.jobOrderMeasurementRefresh'), link: 'tartimrefresh', icon: 'refresh' },
+  { name: 'solvingrefresh', label: t('recipe.jobOrderSolvingRefresh'), link: 'solvingrefresh', icon: 'refresh' },
 ])
 
 async function getCorrectionNOs(parameter: string) {
@@ -99,14 +98,19 @@ if (route.query.correctionNo && route.query.joborder) {
 }
 
 function buttonAction(link: string) {
-  if (link === 'showParameters' && lastJobOrder.value) {
-    showParameterDialog.value = true
-  }
-  if (link === 'showLogs') {
-    showLogsDialog.value = true
-  }
-  if (link === 'showConsumptions') {
-    showConsumptionDialog.value = true
+  if (lastJobOrder.value) {
+    if (link === 'showParameters') {
+      showParameterDialog.value = true
+    }
+    if (link === 'showLogs') {
+      showLogsDialog.value = true
+    }
+    if (link === 'showConsumptions') {
+      showConsumptionDialog.value = true
+    }
+    if (link === 'tartimrefresh') {
+      showWeiRequestDialog.value = true
+    }
   }
 }
 
@@ -121,6 +125,10 @@ async function submitCoupleMachine() {
     },
   })
 }
+
+async function rerequestWei() {
+  console.log(recipeData.value)
+}
 </script>
 
 <template>
@@ -128,12 +136,12 @@ async function submitCoupleMachine() {
     1
   </button> -->
 
-  <div class="outer-div ">
+  <div class="outer-div">
     <div class="content flex flex-col gap-5">
       <span class="header-class-recipe">
         <NavigationButton type="back" />
         &nbsp;&nbsp;
-        {{ t('distributionProcessor._') }} - {{ t('recipe.header') }}
+        {{ t('dispensingManager._') }} - {{ t('recipe.header') }}
         <span class="right-home">
           <NavigationButton type="settings" />
           <NavigationButton type="home" />
@@ -273,12 +281,39 @@ async function submitCoupleMachine() {
           :correction-no="correctionNoDisplayed"
         />
       </q-dialog>
+      <q-dialog v-model="showWeiRequestDialog" persistent>
+        <q-card>
+          <q-card-section class="row items-center">
+            <q-avatar
+              icon="help"
+              color="white"
+            />
+            {{ t('recipe.weiRerequest') }}
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn
+              v-close-popup
+              :label="t('no')"
+              outline
+              icon="close"
+            />
+            <q-btn
+              v-close-popup
+              outline
+              :label="t('yes')"
+              icon="check"
+              @click="rerequestWei()"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
       <ElScrollbar class="table-wrapper-recipe">
         <RecipeTable
           :data="recipeData"
           :show="true"
           :title="t('recipe.recipeTable')"
-          :machineid="machine[0].machineid"
+          :machineid="machine[0]?.machineid"
           :reset-counter="resetCounter"
         />
       </ElScrollbar>
@@ -396,5 +431,6 @@ async function submitCoupleMachine() {
 .footer-button{
   margin: 1rem;
   margin-bottom: 1rem;
+  overflow: hidden;
 }
 </style>
