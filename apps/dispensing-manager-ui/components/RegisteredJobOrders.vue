@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
-import moment from 'moment'
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import { onMounted } from 'vue'
+import { navigateToPage } from '../shared/functions'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
-import { navigateToPage } from '../shared/functions'
 
 // Call fetchData when component is mounted.
 // For this, we can use the onMounted hook from 'vue'
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 
 const machines = ref([])
 
@@ -103,7 +102,7 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
                 @click="handleRowDblClick(props.row)"
               >
                 <span v-if="col.field === 'plannedStartTime'">
-                  {{ moment(col.value).format('HH:m:ss DD/MM/YYYY') }}
+                  {{ d(col.value, 'datetime') }}
                 </span>
                 <span v-else>
                   {{ col.value }}

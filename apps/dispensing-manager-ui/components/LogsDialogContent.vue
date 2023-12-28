@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import moment from 'moment'
 import FilterableTable from 'ui/components/FilterableTable.vue'
+import { rowBGColorHandler } from '../shared/functions'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
-import { rowBGColorHandler } from '../shared/functions'
 
 const props = defineProps({
   joborder: Number,
   plankey: Number,
 })
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 
 const joborder = ref(props.joborder)
 const plankey = ref(props.plankey)
@@ -92,7 +91,7 @@ async function applyFilters(updatedValue: any) {
                 {{ t(`recipeTypes.${row.value}`) }}
               </span>
               <span v-else-if="row.field === 'time'">
-                {{ moment(row.value).format('DD-MM-YYYY hh:m:ss') }}
+                {{ d(row.value, 'datetime') }}
               </span>
               <span v-else>
                 {{ row.value }}

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import moment from 'moment'
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import { rowBGColorHandler } from '../shared/functions'
 import { colors } from '~/shared/constants'
@@ -10,7 +9,7 @@ const props = defineProps({
   programStepNo: Number,
 })
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 const data = await $fetch('/api/recipe/previous-requests', {
   method: 'POST',
   body: props,
@@ -66,7 +65,7 @@ const manuelWeiStepCols = [
                 :style="rowBGColorHandler(col)"
               >
                 <span v-if="col.field === 'requestTime' || col.field === 'endTime'">
-                  {{ col.value ? moment(col.value).format('HH:m:ss DD/MM/YYYY') : '____' }}
+                  {{ col.value ? d(col.value, 'datettime') : '_'.repeat(4) }}
                 </span>
                 <span v-else-if="col.field === 'status'">
                   {{ t(`statusCodes.${col.value}`) }}

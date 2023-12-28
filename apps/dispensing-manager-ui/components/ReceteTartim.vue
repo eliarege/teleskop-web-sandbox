@@ -45,7 +45,7 @@ async function getCorrectionNOs(parameter: string) {
  */
 const recipeDataTemp = ref()
 const correctionNoDisplayed = ref(0)
-const machine = ref([])
+const machine = ref()
 const currentRecipeJoborder = ref('0')
 
 async function requestJobOrder() {
@@ -115,7 +115,7 @@ function buttonAction(link: string) {
 }
 
 async function submitCoupleMachine() {
-  await $fetch('/api/recipe/change-planned-machine', {
+  const check = await $fetch('/api/recipe/change-planned-machine', {
     method: 'put',
     body: {
       plankey: plankey.value,
@@ -124,10 +124,32 @@ async function submitCoupleMachine() {
       newCoupleMachine: coupledMachineChangeVal.value?.machineid,
     },
   })
+  if (check)
+    machine.value = plannedMachineChangeVal.value
 }
 
 async function rerequestWei() {
   console.log(recipeData.value)
+
+  const a = await $fetch('/api/settings/machine-dispenser-connection')
+  console.log(a)
+  // await $fetch('/api/machine/check-dispenser', {
+  //   method: 'POST',
+  //   body: {
+  //     machineid: machine.value.machineid,
+  //   },
+  // })
+
+  // const data = [2, priority.value.value, props.machineid, tankNo.value, selectedRow.value.joborder, selectedRow.value.programNo, selectedRow.value.mainStep, selectedRow.value.mainStep, selectedRow.value.programTotalCount, selectedRow.value.recipeType, selectedRow.value.processOrder]
+  // await $fetch('/api/file/write-recipe-step', {
+  //   method: 'POST',
+  //   body: {
+  //     row: selectedRow.value,
+  //     content: data,
+  //     path: 'ozkantest/index.req',
+  //     materialCodes,
+  //   },
+  // })
 }
 </script>
 
@@ -199,7 +221,7 @@ async function rerequestWei() {
         />
         <div class="ml-auto items-center mr-5">
           {{ t('plannedMachine') }} :
-          {{ machine[0]?.machinename }}
+          {{ machine?.machinename }}
           <q-btn
             class="ml-5 py-3 w-75 items-start"
             :label="`${t('recipe.changePlannedMachine')}`"
@@ -218,7 +240,7 @@ async function rerequestWei() {
           </q-card-section>
 
           <q-card-section class="flex flex-col gap-5" style="justify-content: center; align-items: center;">
-            {{ t('currentMachine') }} : {{ machine[0].machinename }}
+            {{ t('currentMachine') }} : {{ machine.machinename }}
             <q-select
               v-model="plannedMachineChangeVal"
               :options="machines"
@@ -277,7 +299,7 @@ async function rerequestWei() {
       >
         <ConsumptionDialogContent
           :joborder="lastJobOrder"
-          :machinename="machine[0].machinename"
+          :machinename="machine.machinename"
           :correction-no="correctionNoDisplayed"
         />
       </q-dialog>
@@ -313,7 +335,7 @@ async function rerequestWei() {
           :data="recipeData"
           :show="true"
           :title="t('recipe.recipeTable')"
-          :machineid="machine[0]?.machineid"
+          :machineid="machine?.machineid"
           :reset-counter="resetCounter"
         />
       </ElScrollbar>
