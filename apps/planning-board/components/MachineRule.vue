@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { useDataStore } from '~/store/Datas'
 import type {
   AndBlock,
   Field,
@@ -13,26 +12,6 @@ import type {
 
 const emits = defineEmits(['close', 'submit'])
 const { t } = useI18n()
-const store = useDataStore()
-
-const fields: Field[] = [
-  {
-    label: t('rule.field.fabric_weight'),
-    name: 'fabric_weight',
-    type: 'number',
-  },
-  {
-    label: t('rule.field.job_order'),
-    name: 'job_order',
-    type: 'string',
-  },
-  {
-    label: t('rule.field.fabric_type'),
-    name: 'fabric_type',
-    type: 'values',
-    source: '/planning_board/machine_rule/fabric_type/values',
-  },
-]
 
 const condition: RuleCondition[] = [
   { value: true, label: t('rule.not.true') },
@@ -43,8 +22,10 @@ type PartialExcept<T, K extends keyof T> = Partial<Omit<T, K>> & Pick<T, K>
 
 const machineRule: PartialExcept<MachineRule, 'name' | 'machines'> = reactive({
   name: '',
-  department: undefined,
-  machines: [],
+  machines: {
+    id: 0,
+    name: '',
+  },
   rule: {
     or: [
       {
@@ -84,7 +65,7 @@ function isValidMachineRule(rule: PartialExcept<MachineRule, 'name' | 'machines'
   if (
     rule.name !== ''
     && rule.department
-    && rule.machines.length > 0
+    && rule.machines.id > 0
     && rule.rule!.or.length > 0
   ) {
     for (const orBlock of rule.rule!.or) {
@@ -97,22 +78,7 @@ function isValidMachineRule(rule: PartialExcept<MachineRule, 'name' | 'machines'
   return false
 }
 
-const department = computed(() => store.departments.map((a) => {
-  return {
-    id: a.id,
-    name: a.name,
-  }
-}))
-const machines = computed(() => store.departments.find(
-  dep => dep.id === machineRule.department!.id,
-)
-  ?.machines.map((a) => {
-    return {
-      id: a.id,
-      name: a.name,
-    }
-  }))
-
+const { data: machines } = await useFetch('/api/machineList')
 function addAndRow(orId: number) {
   machineRule.rule!.or[orId].and.push(
     {
@@ -152,11 +118,7 @@ async function onSubmit() {
       department_id: machineRule.department!.id,
       expression: machineRule.rule!.or,
     },
-    machineRule.machines!.map((a) => {
-      return {
-        machineId: a.id,
-      }
-    }),
+    machineRule.machines.id,
   ]
   await $fetch('/api/machineRule', {
     method: 'POST',
@@ -166,6 +128,16 @@ async function onSubmit() {
 }
 const { data: operator } = useFetch<Operator[]>('/api/machine_rule/operator')
 const { data: fabricType } = useFetch<{ id: number; label: string }[]>('/api/machine_rule/fabric_type')
+const fields = ref([] as Field[])
+watch(() => machineRule.machines.id, () => {
+  fetchFields(machineRule.machines.id)
+})
+async function fetchFields(machineId: number) {
+  const res = await $fetch<Field[]>('/api/machine_rule/field', {
+    query: { machineId },
+  })
+  return fields.value = res
+}
 
 function conditionalOperators(type: ValueType) {
   const op = operator.value?.map((op) => {
@@ -181,135 +153,122 @@ function conditionalOperators(type: ValueType) {
 </script>
 
 <template>
-  <CustomModal @close="$emit('close')">
-    <template #default>
-      <div class="wrapper cursor-default">
-        <div class="select-items">
-          <div class="select-items-head">
-            <QInput
-              v-model="machineRule.name"
-              class="w-1/3"
-              filled
-              :label="t('rule.main.name')"
+  <div class="wrapper cursor-default">
+    <div class="select-items">
+      <div class="select-items-head">
+        <QInput
+          v-model="machineRule.name"
+          class="w-1/3"
+          filled
+          :label="t('rule.main.name')"
+        />
+        <QSelect
+          v-model="machineRule.machines"
+          class="w-1/3"
+          :label="t('rule.main.machine')"
+          filled
+          option-label="name"
+          :options="machines"
+        />
+      </div>
+      <div
+        v-for="(orItem, orId) in machineRule.rule!.or"
+        :key="orId"
+        class="bg-gray-500/10 rounded-2xl"
+      >
+        <div
+          v-for="(andItem, andId) in orItem.and"
+          :key="andId"
+          class="h-full w-full gap-3 flex flex-1 justify-center items-center m-3"
+        >
+          <div class="select-items-body">
+            <QSelect
+              v-model="andItem.not"
+              :options="condition"
+              :label="t('rule.main.condition')"
             />
             <QSelect
-              v-model="machineRule.department"
-              class="w-1/3"
-              filled
-              :label="t('rule.main.department')"
-              :options="department"
-              option-label="name"
+              v-if="machineRule.machines.id > 0"
+              v-model="andItem.field"
+              :options="fields"
+              :label="t('rule.main.field')"
             />
             <QSelect
-              v-if="machineRule.department"
-              v-model="machineRule.machines"
-              class="w-1/3"
-              :label="t('rule.main.machine')"
-              filled
+              v-if="andItem.field"
+              v-model="andItem.operator"
+              :options="conditionalOperators(andItem.field.type)"
+              :option-value="andItem.operator?.name"
+              map-options
               option-label="name"
-              multiple
-              :options="machines"
+              :label="t('rule.main.op')"
             />
-          </div>
-          <div
-            v-for="(orItem, orId) in machineRule.rule!.or"
-            :key="orId"
-            class="bg-gray-500/10 rounded-2xl"
-          >
-            <div
-              v-for="(andItem, andId) in orItem.and"
-              :key="andId"
-              class="h-full w-full gap-3 flex flex-1 justify-center items-center m-3"
-            >
-              <div class="select-items-body">
-                <QSelect
-                  v-model="andItem.not"
-                  :options="condition"
-                  :label="t('rule.main.condition')"
-                />
-                <QSelect
-                  v-model="andItem.field"
-                  :options="fields"
-                  :label="t('rule.main.field')"
-                />
-                <QSelect
-                  v-if="andItem.field"
-                  v-model="andItem.operator"
-                  :options="conditionalOperators(andItem.field.type)"
-                  :option-value="andItem.operator?.name"
-                  map-options
-                  option-label="name"
-                  :label="t('rule.main.op')"
-                />
-                <div v-if="andItem.operator" class="w-full gap-3 inline-flex">
-                  <div
-                    v-for="(param, paramId) in andItem.operator.parameters"
-                    :key="paramId"
-                    class="w-full"
-                  >
-                    <div v-if="andItem.field?.type === 'values'">
-                      <QSelect
-                        v-model="andItem.parameters![paramId]"
-                        :options="fabricType || []"
-                        emit-value
-                        map-options
-                      />
-                    </div>
-                    <div v-else>
-                      <QInput
-                        v-if="andItem.field!.type === 'number'"
-                        v-model="andItem.parameters![paramId]"
-                        mask="##################"
-                      />
-                      <QInput
-                        v-else
-                        v-model="andItem.parameters![paramId]"
-                      />
-                    </div>
-                  </div>
+            <div v-if="andItem.operator" class="w-full gap-3 inline-flex">
+              <div
+                v-for="(param, paramId) in andItem.operator.parameters"
+                :key="paramId"
+                class="w-full"
+              >
+                <div v-if="andItem.field?.type === 'values'">
+                  <QSelect
+                    v-model="andItem.parameters![paramId]"
+                    :options="fabricType || []"
+                    emit-value
+                    map-options
+                  />
                 </div>
-              </div>
-              <div class="flex gap-3 justify-center items-center h-full">
-                <QBtn
-                  v-if="orItem.and.length > 1"
-                  icon="delete"
-                  @click="removeAndRow(orId, andId)"
-                >
-                  <QTooltip>
-                    {{ t('rule.delete') }}
-                  </QTooltip>
-                </QBtn>
-                <QBtn icon="add" @click="addAndRow(orId)">
-                  <QTooltip>
-                    {{ t('rule.and') }}
-                  </QTooltip>
-                </QBtn>
+                <div v-else>
+                  <QInput
+                    v-if="andItem.field!.type === 'number'"
+                    v-model="andItem.parameters![paramId]"
+                    mask="##################"
+                  />
+                  <QInput
+                    v-else
+                    v-model="andItem.parameters![paramId]"
+                  />
+                </div>
               </div>
             </div>
           </div>
-          <div class="splitter" />
-          <div class="select-item-bottom">
-            <QBtn icon="add" @click="addOrRow">
-              <QTooltip>{{ t('rule.or') }}</QTooltip>
-            </QBtn>
+          <div class="flex gap-3 justify-center items-center h-full">
             <QBtn
-              v-if="machineRule.rule!.or.length > 1"
+              v-if="orItem.and.length > 1"
               icon="delete"
-              @click="removeOrRow"
+              @click="removeAndRow(orId, andId)"
             >
-              <QTooltip>{{ t('rule.or') }}</QTooltip>
+              <QTooltip>
+                {{ t('rule.delete') }}
+              </QTooltip>
             </QBtn>
-            <QSpace />
-            <QBtn
-              :label="t('rule.submit')"
-              :disable="!isValidMachineRule(machineRule)"
-              @click="onSubmit"
-            />
+            <QBtn icon="add" @click="addAndRow(orId)">
+              <QTooltip>
+                {{ t('rule.and') }}
+              </QTooltip>
+            </QBtn>
           </div>
         </div>
       </div>
-    </template>
-  </CustomModal>
+      <div class="splitter" />
+      <div class="select-item-bottom">
+        <QBtn icon="add" @click="addOrRow">
+          <QTooltip>{{ t('rule.or') }}</QTooltip>
+        </QBtn>
+        <QBtn
+          v-if="machineRule.rule!.or.length > 1"
+          icon="delete"
+          @click="removeOrRow"
+        >
+          <QTooltip>{{ t('rule.or') }}</QTooltip>
+        </QBtn>
+        <QSpace />
+        <QBtn
+          :label="t('rule.submit')"
+          :disable="!isValidMachineRule(machineRule)"
+          @click="onSubmit"
+        />
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="postcss">

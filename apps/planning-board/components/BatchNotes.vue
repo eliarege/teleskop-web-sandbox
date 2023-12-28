@@ -1,17 +1,27 @@
 <script setup lang="ts">
 import { Toast } from '@bryntum/schedulerpro-trial'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{ jobOrder: string }>()
+
+const { t, d } = useI18n()
+
 const { data: batchNotes, refresh } = await useFetch('/api/note/getNote', {
   query: { jobOrder: props.jobOrder },
 })
+const refactoredBatchNotes = computed(() => batchNotes.value?.map((a) => {
+  return {
+    ...a,
+    noteDate: d(a.noteDate, 'datetime'),
+  }
+}))
 // TODO: format batchNotes date with useI18N.d
 const columns = computed(() => {
   return [
-    { name: 'userName', label: 'User Name', align: 'center', field: 'userName' },
-    { name: 'jobOrder', label: 'Job Order', align: 'center', field: 'jobOrder' },
-    { name: 'note', label: 'Note', align: 'center', field: 'note' },
-    { name: 'noteDate', label: 'Date', align: 'center', field: 'noteDate' },
+    { name: 'userName', label: t('columns.user-name'), align: 'center', field: 'userName' },
+    { name: 'jobOrder', label: t('columns.job-order'), align: 'center', field: 'jobOrder' },
+    { name: 'note', label: t('columns.note'), align: 'center', field: 'note' },
+    { name: 'noteDate', label: t('columns.date'), align: 'center', field: 'noteDate' },
   ]
 })
 const newNote = reactive({
@@ -25,10 +35,10 @@ function addNote() {
     method: 'POST',
     body: newNote,
   }).then(() => {
-    Toast.show('Note added succefuly')
+    Toast.show(t('toast.succesful'))
     refresh()
   }).catch((err) => {
-    Toast.show(`An error occured: ${err}`)
+    Toast.show(t('toast.error', err))
   })
 }
 const q = useQuasar()
@@ -38,10 +48,12 @@ function deleteNote(id: number) {
     class: 'e-border',
     ok: {
       push: true,
+      label: t('template.ok'),
       color: 'primary',
     },
     cancel: {
       push: true,
+      label: t('template.cancel'),
       color: 'red',
     },
   }).onOk(async () => {
@@ -49,10 +61,10 @@ function deleteNote(id: number) {
       method: 'delete',
       query: { id },
     }).then(() => {
-      Toast.show('Note deleted succefuly')
+      Toast.show(t('toast.succesful'))
       refresh()
     }).catch((err) => {
-      Toast.show(`An error occured: ${err}`)
+      Toast.show(t('toast.error', err))
     })
   })
 }
@@ -61,7 +73,7 @@ function deleteNote(id: number) {
 <template>
   <div class="note-wrapper">
     <QTable
-      :rows="batchNotes"
+      :rows="refactoredBatchNotes"
       :columns="columns"
       :rows-per-page-options="[]"
       no-data-label="No Note"
@@ -76,7 +88,7 @@ function deleteNote(id: number) {
             {{ col.label }}
           </q-th>
           <q-th auto-width>
-            Delete
+            {{ t('template.delete') }}
           </q-th>
         </q-tr>
       </template>
@@ -134,3 +146,56 @@ function deleteNote(id: number) {
   @apply w-full max-h-200 p-3 overflow-auto border border-3 border-gray-600 rounded z-100 bg-white items-center;
 }
 </style>
+
+<i18n>
+ {
+  "en": {
+    "columns": {
+      "user-name": "User Name",
+      "job-order": "Job Order",
+      "note": "Note",
+      "date": "Date"
+    },
+    "toast": {
+      "succesful": "Note Added succesfuly!",
+      "error": "An error occured: {err}"
+    },
+    "dialog": {
+      "title": "Are you sure to delete this note?"
+    },
+    "template": {
+      "no-data": "No Note to show.",
+      "delete": "Delete",
+      "ok": "Delete",
+      "cancel": "Cancel",
+      "new-note": "Add new Note",
+      "show-on-screen": "Show on Screen",
+      "submit": "Add Note"
+    }
+  },
+  "tr": {
+    "columns": {
+      "user-name": "Kullanıcı Adı",
+      "job-order": "İş Emri",
+      "note": "Not",
+      "date": "Tarih"
+    },
+    "toast": {
+      "succesful": "Not başarıyla eklendi!",
+      "error": "Bir hata oluştu: {err}"
+    },
+    "dialog": {
+      "title": "Bu notu silmek istediğinizden emin misiniz?"
+    },
+    "template": {
+      "no-data": "Gösterilecek not yok.",
+      "delete": "Sil",
+      "ok": "Sil",
+      "cancel": "İptal",
+      "new-note": "Yeni not ekle",
+      "show-on-screen": "Ekranda göster",
+      "submit": "Not Ekle"
+    }
+  }
+}
+</i18n>
