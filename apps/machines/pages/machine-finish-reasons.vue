@@ -50,18 +50,18 @@ const typeIdMap = {
   4: 'Atla',
   5: 'Makine Duraklatma',
 }
-async function handleSelection(obj: object) {
-  if (obj.added) {
-    finishReason.value.reasonId = obj.rows[0].reasonId
-    finishReason.value.text = obj.rows[0].text
-    finishReason.value.typeId = obj.rows[0].typeId
-  } else {
+async function handleSelection(obj: FinishReason) {
+  if (finishReason.value.reasonId === obj.reasonId) {
     finishReason.value = {
       reasonId: '',
       typeId: '',
       text: '',
       reportToERP: false,
     }
+  } else {
+    finishReason.value.reasonId = obj.reasonId
+    finishReason.value.text = obj.text
+    finishReason.value.typeId = obj.typeId
   }
 }
 
@@ -134,7 +134,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
         @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       >
         <template #custombody="finishReasons">
-          <q-tr>
+          <q-tr
+            :class="{ 'selected-row': finishReason.reasonId === finishReasons.row.reasonId }"
+            @click="handleSelection(finishReasons.row)"
+          >
             <q-td
               v-for="row in finishReasons.cols"
               :key="row"
@@ -167,5 +170,8 @@ async function handleFilterSlotsUpdate(updatedValue) {
 
 .input-field > * {
   margin-right: 2em;
+}
+.selected-row {
+  background-color: #cce8ff;
 }
 </style>
