@@ -1,27 +1,34 @@
 <script setup lang="ts">
-import type { QTableColumn } from 'quasar'
+import type { Column } from 'ui/types/FilterableTable'
+import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { FinishReason } from '~/types'
 
 const { data: finishReasons, pending, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', { default: () => [] })
 
-const columns: QTableColumn<FinishReason>[] = [
+const columns: Column[] = [
   {
-    name: 'reasonID',
+    name: 'reasonId',
     label: 'ID',
-    field: row => row.reasonId,
+    field: 'reasonId',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'type',
+    name: 'typeId',
     label: 'Tip',
-    field: row => row.typeId,
+    field: 'typeId',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'text',
     label: 'Açıklama',
-    field: row => row.text,
+    field: 'text',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
 
@@ -68,6 +75,9 @@ async function handleEditFinishReason() {
   await editFinishReason(finishReason.value)
   await refresh()
 }
+async function handleFilterSlotsUpdate(e) {
+  console.log('e = ', e)
+}
 </script>
 
 <template>
@@ -107,37 +117,32 @@ async function handleEditFinishReason() {
           @click="handleDeleteFinishReasons()"
         />
       </div>
-
-      <q-table
+      <FilterableTable
         v-model:selected="selectedReason"
         :rows="finishReasons"
-        :loading="pending"
         :columns="columns"
-        hide-pagination
-        :pagination="{ rowsPerPage: 0 }"
-        row-key="reasonId"
-        separator="cell"
-        bordered
-        selection="single"
-        table-header-class="table-header"
         @selection="(e) => handleSelection(e)"
+        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       >
-        <template #body-cell-type="props">
-          <q-td :props="props">
-            {{ typeIdMap[props.row.typeId] }}
-          </q-td>
+        <template #custombody="finishReasons">
+          <q-tr>
+            <q-td
+              v-for="row in finishReasons.cols"
+              :key="row"
+            >
+              <span v-if="row.field === 'typeId'">
+                {{ typeIdMap[row.value] }}
+              </span>
+              <span v-else-if="row.field === 'reportToERP'">
+                {{ row.value ? "Evet" : "Hayır" }}
+              </span>
+              <span v-else>
+                {{ row.value }}
+              </span>
+            </q-td>
+          </q-tr>
         </template>
-        <template #body-cell-reportToERP="props">
-          <q-td :props="props">
-            <span v-if="props.row.reportToERP">
-              Evet
-            </span>
-            <span v-else>
-              Hayır
-            </span>
-          </q-td>
-        </template>
-      </q-table>
+      </FilterableTable>
     </q-card-section>
   </q-card>
 </template>
