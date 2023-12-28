@@ -18,6 +18,19 @@ async function replaceRecords(knex: Knex, tableName: string, data, whereObject?:
   }
 }
 
+async function insertIgnoringDuplicates(trx, tableName, data, uniqueColumns) {
+  for (const item of data) {
+    const exists = await trx(tableName)
+      .select('*')
+      .where(uniqueColumns.reduce((acc, col) => ({ ...acc, [col]: item[col] }), {}))
+      .first()
+
+    if (!exists) {
+      await trx(tableName).insert(item)
+    }
+  }
+}
+
 export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const inputs = await tbb.fetchAnalogInputs()
   const controllerModel = await tbb.fetchControllerModel()
@@ -347,12 +360,10 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
 
   return data
 }
-// TODO: file does not exist
 export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const commandAlarmReasons = await tbb.fetchCommandAlarmReasons()
 
   const timeoutReasons = commandAlarmReasons.map(r => ({
-    ID: r.id,
     REASONTEXT: r.reasonText,
     GROUPID: r.groupId,
   }))
@@ -365,10 +376,16 @@ export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpCl
     })),
   )
 
-  await trx('BFCOMMANDTIMEOUTREASONS').del()
-  await trx('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId).del()
-  await trx('BFCOMMANDTIMEOUTREASONS').insert(timeoutReasons)
-  await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
+  try {
+    await trx('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId).del()
+    // await trx('BFCOMMANDTIMEOUTREASONS').del()
+    await insertIgnoringDuplicates(trx, 'BFCOMMANDTIMEOUTREASONS', timeoutReasons, ['REASONTEXT', 'GROUPID'])
+
+    await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
+  } catch (err) {
+    console.error(err)
+  }
+  return timeoutReasons
 }
 
 export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, trx: Knex) {
@@ -449,4 +466,26 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
   await replaceRecords(trx, 'BFCOMMANDSELECTIONLIST', selectionList, { MACHINEID: machineId })
 
   return selectionList
+}
+// locks in ve out gerekli insert icin
+export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const locks = await tbb.fetchLocksGeneral()
+
+  const data = locks.map(d => ({
+    MACHINEID: machineId,
+    LOCKNO: d.lockNo + 1,
+    LOCKNAME: d.lockName,
+    LOGICTYPE: d.logicType,
+    STOPDYEING: d.stopDyeing,
+    JUMPSTEP: d.jumpStep,
+    ALARM: d.alarm,
+    ONDELAY: d.onDelay,
+    STEPDELAY: d.stepDelay,
+    GIVEMESSAGE: d.giveMessage,
+    MESSAGESTRING: d.messageString,
+  }))
+
+  await replaceRecords(trx, 'BFLOCKSGENERAL', data, { MACHINEID: machineId })
+
+  return locks
 }

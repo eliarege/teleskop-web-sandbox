@@ -106,7 +106,6 @@ export interface FinishReason {
 }
 
 export interface LockGeneral {
-  machineId: number
   lockNo: number
   lockName: string
   logicType: number
@@ -117,12 +116,13 @@ export interface LockGeneral {
   stepDelay: string
   giveMessage: number
   messageString: string
-  aInLogicType: number
-  dInLogicType: number
-  commandLogicType: number
-  lockLogicType: number
-  dOutLogicType: number
-  vInLogicType: number
+  aInLogicType?: number
+  dInLogicType?: number
+  commandLogicType?: number
+  lockLogicType?: number
+  dOutLogicType?: number
+  vInLogicType?: number
+  active: number
 }
 
 export interface RecipeType {
