@@ -140,7 +140,7 @@
     "determineCouplingRecipe": "Determine Coupling Recipe",
     "checkTankNumberWhenMakingManualOnlineRequest": "Check Tank Number When Making a Manual Online Request"
   },
-  "distributionProcessor": {
+  "dispensingManager": {
     "_": "Distribution Processor",
     "recipeRequest": "Request Recipe Details",
     "alerts": "Occurring Alarms",
@@ -163,7 +163,12 @@
       "complete": "Make Selected Request Completed",
       "justChem": "Just Show Chemical Requests",
       "justDye": "Just Show Dye Requests"
-    }
+    },
+    "recipeDeletedWarning": "The process cannot continue because the recipe has been deleted.",
+    "alreadyStartedWarning": "The request has already been initiated. Are you sure you want to continue?",
+    "requestSent": "Request sent.",
+    "retryRequestSent": "Retry request sent.",
+    "deleteRequestSent": "Delete request sent."
   },
   "jobOrderLogs": {
     "_": "Job Order Logs",
@@ -241,7 +246,10 @@
     "priorityNormal": "Normal",
     "priorityHigh": "High",
     "priorityCritical": "Very High",
-    "inputTankNo": "Please enter a tank no as 'integer'!"
+    "inputTankNo": "Please enter a tank no as 'integer'!",
+    "weiRerequest": "Are you sure you want to rerequest weighing requests?",
+    "solvingRerequest": "Are you sure you want to rerequest solving requests?"
+
   },
   "registeredJobOrders": {
     "_": "Registered Job Orders",
