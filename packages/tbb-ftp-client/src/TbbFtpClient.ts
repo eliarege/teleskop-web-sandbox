@@ -27,6 +27,7 @@ import { writeFinishReason } from './writers/writeFinishReason'
 import { FinishReason } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
+import { parseLockInput } from './parsers/parseLocksInput'
 
 export class TbbFtpClient {
   private host: string
@@ -237,6 +238,13 @@ export class TbbFtpClient {
     const content = await download(remotePath, this.host)
     const formulas = parseGlobalCommandFormulas(content)
     return formulas
+  }
+
+  async fetchLocksInput() {
+    const remotePath = '/tbb6500/data/locks/locks_inputs'
+    const content = await download(remotePath, this.host)
+    const locks = parseLockInput(content)
+    return locks
   }
 
   /*   async writeMachineParameterValues(values) {
