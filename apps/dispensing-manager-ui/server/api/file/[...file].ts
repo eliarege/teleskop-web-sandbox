@@ -14,13 +14,11 @@ router.post('/read', defineEventHandler(async (event) => {
     if (err)
       return err
     temp = data
-    console.log(`inside:${temp}`)
   })
-  console.log(temp)
   return temp
 }))
 
-router.post('/write', defineEventHandler(async (event) => {
+router.post('/write-recipe-step', defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   const arr = await knex('DYTFMATERIAL')
@@ -52,4 +50,29 @@ router.post('/write', defineEventHandler(async (event) => {
       })
     }
   } else return `Status code ${query[0].STATUS} cannot be rerequested.`
+}))
+
+router.post('/write-dispenser-step', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const contentString = `${body.content.join(',')},\n`
+
+  return new Promise((resolve, reject) => {
+    fs.appendFile(body.path, contentString, 'utf8', async (err) => {
+      if (err) {
+        reject(new Error('Error appending to file'))
+      } else {
+        try {
+          await knex('DYTFCHEMREQUESTS')
+            .where('REQNUMBER', body.reqNumber)
+            .update({ STATUS: 8 })
+          await knex('DYTFREQMATERIALS')
+            .where('REQNUMBER', body.reqNumber)
+            .update({ STATUS: 8 })
+          resolve({ message: 'Data appended and status are set to 8', code: 200 })
+        } catch (fetchError) {
+          reject(new Error('Error during setting to 8'))
+        }
+      }
+    })
+  })
 }))

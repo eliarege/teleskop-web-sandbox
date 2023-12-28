@@ -21,6 +21,8 @@ const selectParameters = {
   recipeProcessNo: 'r.RECIPEINDEX',
   recipeStepNo: 'r.RECIPESTEPNO',
   status: 'r.STATUS',
+  priority: 'r.PRIORTY',
+  plankey: 'r.PLANKEY',
 }
 
 router.post('/joborderlogs', defineEventHandler(async (event) => {
@@ -38,7 +40,7 @@ router.post('/joborderlogs', defineEventHandler(async (event) => {
       // TODO: There are no duplicates but this is not the way how its done for sure
       .select(selectParameters)
       .limit(500)
-      .orderBy('r.REQNUMBER', 'asc')
+      .orderBy('r.REQNUMBER', 'desc')
       .where((builder) => {
         if (isCanceled && isCanceled === 'true') {
           builder.where('r.STATUS', 3)
@@ -90,45 +92,46 @@ router.get('/requestmaterials', defineEventHandler(async (event) => {
   }
 }))
 
-/**
- * import { createRouter, defineEventHandler, useBase } from 'h3'
-import { knex } from '~/server/connectionPool';
-
-const router = createRouter()
-
-router.get('/test', defineEventHandler(async (event) => {
-  let result;
+router.put('/complete-program', defineEventHandler(async (event) => {
+  const body = await readBody(event)
   try {
-    result = await knex('dbo.DYTFCHEMREQUESTS as r')
-    .join('dbo.DYTFMACHINES as m', 'r.MACHINEID', 'm.MACHINEID')
-    .leftJoin('dbo.DYTFDISPENSERSETTINGS as d', 'r.DISPENSERID', 'd.DISPENSERID')
-    .leftJoin('dbo.BFMASTERPRGHEADER as p', function() {
-      this
-        .on('r.PROGRAMNO', '=', 'p.PROGNO')
-        .andOn('r.MACHINEID', '=', 'p.MACHINEID')
-    })
-    .select({ //TODO: There are no duplicates but this is not the way how its done for sure
-      reqnumber: 'r.REQNUMBER',
-      joborder: knex.raw('MAX(r.BATCHNO)'),
-      batchCorrectionNo: knex.raw('MAX(r.BATCHCORRECTIONNO)'),
-      machinename: knex.raw('MAX(m.MACHINENAME)'),
-      tankno: knex.raw('MAX(r.TANKNO)'),
-      dispenserName: knex.raw('MAX(d.NAME)'),
-      programno: knex.raw('MAX(r.PROGRAMNO)'),
-      programname: knex.raw('MAX(p.NAME)'),
-      stepno: knex.raw('MAX(r.PROGRAMSTEPNO)'),
-      recipeType: knex.raw('MAX(r.ACTUALRECIPETYPE)'),
-      recipeProcessNo: knex.raw('MAX(r.RECIPEINDEX)'),
-      recipeStepNo: knex.raw('MAX(r.RECIPESTEPNO)'),
-    })
-    .limit(10)
-    .orderBy('r.REQNUMBER', 'asc')
-    .groupBy('r.REQNUMBER')
-
+    const result = await knex('DYTFCHEMREQUESTS')
+      .where('REQNUMBER', body.reqNumber)
+      .update({ STATUS: 3 })
     return result
-  }
-  catch (e) {
+  } catch (e) {
     return e
   }
 }))
- */
+
+router.post('/check-status', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const status = await knex('DYBFBATCHPLAN')
+    .where('JOBORDER', body.joborder)
+    .andWhere('CORRECTIONNUMBER', body.correctionNo)
+    .select('ISDELETED')
+  return status[0].ISDELETED
+}))
+
+router.put('/retry-cancel-status-setter', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  await knex('DYTFCHEMREQUESTS')
+    .where('REQNUMBER', body.reqNumber)
+    .update({ STATUS: 8 })
+  await knex('DYTFREQMATERIALS')
+    .where('REQNUMBER', body.reqNumber)
+    .update({ STATUS: 8 })
+  console.log(1123123123)
+  return 1
+}))
+
+router.post('/total-step-count', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const result = await knex('DYBFBATCHORDERRECIPESTEPS')
+    .where('PLANKEY', body.plankey)
+    .andWhere('RCPINDEX', body.recipeProcessNo)
+    .andWhere('RECIPETYPE', body.recipeType)
+    .countDistinct('MAINSTEP as count')
+  console.log(result[0].count)
+  return result[0].count
+}))
