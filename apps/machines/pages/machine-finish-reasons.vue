@@ -3,7 +3,11 @@ import type { Column } from 'ui/types/FilterableTable'
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { FinishReason } from '~/types'
 
-const { data: finishReasons, pending, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', { default: () => [] })
+const { data: finishReasons, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
 
 const columns: Column[] = [
   {
@@ -75,8 +79,13 @@ async function handleEditFinishReason() {
   await editFinishReason(finishReason.value)
   await refresh()
 }
-async function handleFilterSlotsUpdate(e) {
-  console.log('e = ', e)
+async function handleFilterSlotsUpdate(updatedValue) {
+  finishReasons.value = await $fetch('/api/finish-reasons/finish-reasons', {
+    method: 'POST',
+    body: {
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 
