@@ -117,6 +117,7 @@ const emit = defineEmits<{
   (e: 'connect'): void
   (e: 'disconnect', clean: boolean): void
   (e: 'clipboard', content: string): void
+  (e: 'error', error: Error): void
 }>()
 
 const screen = ref<HTMLElement | undefined>()
@@ -167,7 +168,6 @@ function untilTruthy<T>(ref: Ref<T>, timeoutReason = 'Timeout'): Promise<NonNull
 }
 
 async function initRFB() {
-  await nextTick()
   let socket: WebSocket
   let viewOnly = props.viewOnly
   if (props.auth) {
@@ -206,7 +206,7 @@ onMounted(async () => {
   try {
     await initRFB()
   } catch (err) {
-    console.error(err)
+    emit('error', err as Error)
   }
 })
 
