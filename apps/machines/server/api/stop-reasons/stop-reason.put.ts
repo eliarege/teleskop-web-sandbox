@@ -2,11 +2,11 @@ import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
   try {
-    const { oldStopName, newStopName, reportToERP } = await readBody(event)
+    const { stopCode, stopName, reportToERP } = await readBody(event)
 
-    const res = await knex('BFSTOPREASONS').where('STOPNAME', oldStopName)
+    const res = await knex('BFSTOPREASONS').where('STOPCODE', stopCode)
       .update({
-        STOPNAME: newStopName,
+        STOPNAME: stopName,
         ReportToERP: reportToERP,
       })
 

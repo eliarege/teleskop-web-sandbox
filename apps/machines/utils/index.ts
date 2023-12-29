@@ -1,4 +1,4 @@
-import type { FinishReason, Machine, MachineStopReason, ManualReason, RecipeType, User, WaterType } from '~/types'
+import type { FinishReason, Machine, ManualReason, RecipeType, StopReason, User, WaterType } from '~/types'
 
 export async function getMachineGroups(): Promise<string[]> {
   return await $fetch('/api/machines/machine-groups')
@@ -69,30 +69,26 @@ export async function deleteManualReasons(selectedReason) {
     } })
 }
 
-export async function getMachineStopReasons(): Promise<MachineStopReason[]> {
+export async function getMachineStopReasons(): Promise<StopReason[]> {
   return await $fetch('/api/stop-reasons/stop-reasons')
 }
 
-export async function addStopReason(stopReasons, newStopName, checkReportToERP) {
+export async function addStopReason(reasons: StopReason[], reason: StopReason) {
   await $fetch('/api/stop-reasons/stop-reason', { method: 'POST',
 body: {
-    stopCode: stopReasons[stopReasons.length - 1].stopCode + 1,
-    newStopName,
-    reportToERP: checkReportToERP,
+    stopCode: reasons[reasons.length - 1].stopCode + 1,
+    stopName: reason.stopName,
+    reportToERP: reason.reportToERP,
   } })
 }
 
-export async function editStopReason(oldStopName, newStopName, checkReportToERP) {
-  await $fetch('/api/stop-reasons/stop-reason', { method: 'PUT', body: {
-    oldStopName,
-    newStopName,
-    reportToERP: checkReportToERP,
-  } })
+export async function editStopReason(reason: StopReason) {
+  await $fetch('/api/stop-reasons/stop-reason', { method: 'PUT', body: reason })
 }
 
-export async function deleteStopReasons(selectedStopReason) {
+export async function deleteStopReasons(reason: StopReason) {
   await $fetch('/api/stop-reasons/stop-reasons', { method: 'DELETE',body: {
-      stopCodes: [selectedStopReason[0].stopCode],
+      stopCodes: [reason.stopCode],
     } })
 }
 
