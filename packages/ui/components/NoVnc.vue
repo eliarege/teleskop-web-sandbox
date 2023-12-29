@@ -27,6 +27,10 @@ export interface NoVncProps {
    */
   token?: string
   /**
+   * Amount of time to wait for token
+   */
+  tokenTimeout?: number
+  /**
    * A `boolean` indicating if the remote server should be shared or if any other connected
    * clients should be disconnected. Enabled by default.
    */
@@ -87,10 +91,6 @@ export interface NoVncProps {
   compressionLevel?: number
 }
 
-type AuthResponse<T> =
-  | { status: 'resolved'; data: T }
-  | { status: 'rejected'; reason: string }
-
 interface ConnectionDetails {
   viewOnly: boolean
 }
@@ -99,6 +99,7 @@ const props = withDefaults(defineProps<NoVncProps>(), {
   url: 'ws://localhost:6080/websockify',
   credentials: () => ({ password: '...' }),
   auth: false,
+  tokenTimeout: 3000,
   viewOnly: false,
   focusOnClick: true,
   clipViewport: false,
@@ -122,21 +123,15 @@ const screen = ref<HTMLElement | undefined>()
 
 let rfb: RFB | null = null
 
-function authenticate(socket: WebSocket, token: string): Promise<AuthResponse<ConnectionDetails>> {
-  return new Promise((resolve) => {
+function authenticate(socket: WebSocket, token: string): Promise<ConnectionDetails> {
+  return new Promise((resolve, reject) => {
     const onClose = (ev: CloseEvent) => {
       detach()
-      resolve({
-        status: 'rejected',
-        reason: ev.reason,
-      })
+      reject(new Error(`VNC Authentication Failed: ${ev.reason}`))
     }
     const onMessage = (ev: MessageEvent<string>) => {
       detach()
-      resolve({
-        status: 'resolved',
-        data: JSON.parse(ev.data),
-      })
+      resolve(JSON.parse(ev.data))
     }
     const onOpen = () => {
       socket.send(`Bearer ${token}`)
@@ -152,12 +147,18 @@ function authenticate(socket: WebSocket, token: string): Promise<AuthResponse<Co
   })
 }
 
-function untilTruthy<T>(ref: Ref<T>): Promise<NonNullable<T>> {
-  return new Promise((resolve) => {
-    const stop = watch(ref, (value) => {
+function untilTruthy<T>(ref: Ref<T>, timeoutReason = 'Timeout'): Promise<NonNullable<T>> {
+  return new Promise((resolve, reject) => {
+    let stop: (() => void) | null = null
+    const timer = window.setTimeout(() => {
+      stop?.()
+      reject(new Error(timeoutReason))
+    }, props.tokenTimeout)
+    stop = watch(ref, (value) => {
       if (value) {
-        nextTick(() => stop())
+        nextTick(() => stop?.())
         resolve(value!)
+        window.clearTimeout(timer)
       }
     }, {
       immediate: true,
@@ -165,25 +166,18 @@ function untilTruthy<T>(ref: Ref<T>): Promise<NonNullable<T>> {
   })
 }
 
-onMounted(async () => {
+async function initRFB() {
   await nextTick()
   let socket: WebSocket
   let viewOnly = props.viewOnly
-  // Authenticate, send token when token arrives
   if (props.auth) {
     const token = await untilTruthy(toRef(() => props.token))
     socket = new WebSocket(props.url)
     const response = await authenticate(socket, token)
-    if (response.status === 'resolved') {
-      viewOnly = response.data.viewOnly
-    } else {
-      console.error(`VNC Authentication failed: ${response.reason}`)
-      return
-    }
+    viewOnly = response.viewOnly
   } else {
     socket = new WebSocket(props.url)
   }
-
   rfb = new RFB(screen.value!, socket, {
     credentials: props.credentials,
   })
@@ -205,6 +199,15 @@ onMounted(async () => {
   rfb.qualityLevel = props.qualityLevel
   rfb.compressionLevel = props.compressionLevel
   emit('ready')
+}
+
+onMounted(async () => {
+  await nextTick()
+  try {
+    await initRFB()
+  } catch (err) {
+    console.error(err)
+  }
 })
 
 onBeforeMount(() => {
