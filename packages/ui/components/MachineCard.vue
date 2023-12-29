@@ -139,7 +139,7 @@ function reqStatus(params: number) {
         <img :src="connectionStatus(machine.connectionStatus)">
         <img
           v-if="machine.autoManualStatus === 0"
-          src="icons/auto.png"
+          src="/icons/auto.png"
           alt=""
         >
         <img v-if="machine.autoManualStatus === 1" src="/icons/manual.png">
