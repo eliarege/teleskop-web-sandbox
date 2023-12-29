@@ -19,8 +19,6 @@ globalThis.bryntum.isTestEnv = true
 </script>
 
 <template>
-  <QBtn label="tr" @click="locale = 'tr'" />
-  <QBtn label="en" @click="locale = 'en'" />
   <Suspense>
     <template #fallback>
       <LoadingScreen
