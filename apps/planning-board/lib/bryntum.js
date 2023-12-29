@@ -5,13 +5,60 @@ import {
   DragHelper,
   EventModel,
   Grid,
+  LocaleHelper,
+  LocaleManager,
   SchedulerPro,
   StringHelper,
   Toast,
   Tooltip,
+
 } from '@bryntum/schedulerpro-trial'
 import { io } from 'socket.io-client'
 
+const trLocalization = {
+  Object: {
+    planparam: 'Plan Parametreleri',
+    recipe: 'Reçete',
+    process: 'Prosess Bilgileri',
+    theoretical: 'Teorik Program',
+    settings: 'Ayarlar',
+    note: 'Notlar',
+    datepicker: 'Tarih',
+    rules: 'Kurallar',
+    zoomin: 'Yakınlaştır',
+    zoomout: 'Uzaklaştır',
+    search: 'İş Emri Arama',
+    overlap: 'Etkinlik, bu kaynaktaki başka bir Etkinlikle çakışıyor!',
+    beforeNow: 'İş emrini güncel zamandan önceye planlayamazsın!',
+    program: 'Programlar eşleşmiyor!',
+    unassign: 'Planlanmamış İş Emirleri',
+    machine: 'Makine İsmi',
+    unassign: 'Planlanmamış İş Emirleri',
+  },
+}
+const enLocalization = {
+  Object: {
+    planparam: 'Plan Parameters',
+    recipe: 'Recipe',
+    process: 'Process Information',
+    theoretical: 'Theoretical Program',
+    settings: 'Settings',
+    note: 'Notes',
+    datepicker: 'Date Picker',
+    rules: 'Rules',
+    zoomin: 'Zoom in',
+    zoomout: 'Zoom Out',
+    search: 'Job Order Search',
+    overlap: 'Event overlaps existing event for this resource!',
+    beforeNow: 'You can not schedule this event before current time!',
+    program: 'Programs does not match',
+    unassign: 'Unassigned Job Orders',
+    machine: 'Machine Name',
+    unassign: 'Unassigned Job Orders',
+  },
+}
+LocaleHelper.publishLocale('Tr', trLocalization)
+LocaleHelper.publishLocale('En', enLocalization)
 const serverUrl = `ws://$192.168.18.240:3500`
 const socket = io(serverUrl)
 socket.on('connection', (data) => {
@@ -161,39 +208,54 @@ export class Drag extends DragHelper {
       && !(startDate < new Date())
       && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
       && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).valid : true)
+
     if (this.tip) {
+      const startMonth = DateHelper.format(startDate, 'MMM')
+      const startDay = DateHelper.format(startDate, 'D')
+
+      const endMonth = DateHelper.format(endDate, 'MM')
+      const endDay = DateHelper.format(endDate, 'D')
+
+      const startMinuteRotation = (startDate.getMinutes() + startDate.getSeconds() / 60) * 6
+      const startHourRotation = (startDate.getHours() % 12 + startDate.getMinutes() / 60) * 30
+
+      const endMinuteRotation = (endDate.getMinutes() + endDate.getSeconds() / 60) * 6
+      const endHourRotation = (endDate.getHours() % 12 + endDate.getMinutes() / 60) * 30
+
+      const timeDisplay = text => `
+      <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
+                <div class="b-sch-clock">
+                    <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">${startMonth}</div>
+                    <div class="b-sch-minute-indicator" style="transform: rotate(${startMinuteRotation}deg);">${startDay}</div>
+                    <div class="b-sch-clock-dot"></div>
+                </div>
+                <span class="b-sch-clock-text">${DateHelper.format(startDate, schedule.displayDateFormat)}</span>
+            </div>
+            <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-enddate">
+                <div class="b-sch-clock">
+                    <div class="b-sch-hour-indicator" style="transform: rotate(${endHourRotation}deg);">${endMonth}</div>
+                    <div class="b-sch-minute-indicator" style="transform: rotate(${endMinuteRotation}deg);">${endDay}</div>
+                    <div class="b-sch-clock-dot"></div>
+                </div>
+                <span class="b-sch-clock-text">${DateHelper.format(endDate, schedule.displayDateFormat)}</span>
+            </div>
+            <div class="b-sch-event-title" style="color: #E07D80 !important">
+          ${this.tip.L(text)}
+        </div>
+            `
       if (!context.valid) {
         if (!schedule.isDateRangeAvailable(startDate, endDate, null, machine)) {
-          this.tip.html = `
-            <div class="b-sch-event-title" style="color: #FF2E51 !important">
-            You can not overlap events!
-            </div>
-            `
+          this.tip.html = timeDisplay('overlap')
           this.tip.showBy(context.element)
         } else if (!isValid.find(a => a.machineId === machine.id).valid) {
-          this.tip.html = `
-              <div class="b-sch-event-title" style="color: #FF2E51 !important">
-              Programs does not Match!
-              </div>
-          `
+          this.tip.html = timeDisplay('program')
         } else {
-          this.tip.html = `
-        <div class="b-sch-event-title" style="color: #FF2E51 !important">
-        Event can not be scheduled before current time!
-        </div>
-        `
+          this.tip.html = timeDisplay('beforeNow')
           this.tip.showBy(context.element)
         }
       }
       if (context.valid) {
-        const dateFormat = schedule.displayDateFormat
-        const formattedStartDate = DateHelper.format(startDate, dateFormat)
-        const formattedEndDate = DateHelper.format(endDate, dateFormat)
-
-        this.tip.html = `
-                <div class="b-sch-tooltip-startdate">Starts: ${formattedStartDate}</div>
-                <div class="b-sch-tooltip-enddate">Ends: ${formattedEndDate}</div>
-            `
+        this.tip.html = timeDisplay('')
         this.tip.showBy(context.element)
       }
     }
@@ -288,7 +350,6 @@ export class Task extends EventModel {
         return completedBatchSettings.actualBatchFabricColor
 
       case (!plannedBatchBatchSettings.isBatchFabricColor && !this.isRunning && this.deviation > 0):
-        console.log(this)
         return plannedBatchBatchSettings.deviationBatchFabricColor
       case (!plannedBatchBatchSettings.isBatchFabricColor && !this.isRunning):
         return plannedBatchBatchSettings.actualBatchFabricColor
@@ -384,28 +445,12 @@ export class Schedule extends SchedulerPro {
       columns: [
         {
           type: 'resourceInfo',
-          text: 'Name',
+          text: 'L{machine}',
           flex: 1,
           width: 250,
           showEventCount: false,
           showRole: true,
           field: 'name',
-        },
-        {
-          text: 'Tasks',
-          editor: true,
-          renderer: data => `${data.record.tasks.length || ''}`,
-          align: 'center',
-          sortable: (a, b) => (a.tasks.length < b.tasks.length ? -1 : 1),
-          width: 70,
-          hidden: true,
-        },
-        {
-          text: 'Alarms',
-          width: 35,
-          align: 'center',
-          hidden: true,
-          field: 'alarm',
         },
       ],
       viewPreset: {
@@ -453,7 +498,8 @@ export class UnplannedGrid extends Grid {
 
       columns: [
         {
-          text: 'Unassigned tasks',
+          type: 'resourceInfo',
+          text: 'L{unassign}',
           flex: 1,
           field: 'name',
           htmlEncode: false,
@@ -463,7 +509,6 @@ export class UnplannedGrid extends Grid {
         },
         {
           type: 'duration',
-          text: 'Duration',
           width: 100,
           align: 'right',
         },

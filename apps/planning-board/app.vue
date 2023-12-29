@@ -1,11 +1,26 @@
 <script setup lang="ts">
-import { LoadingScreen, MachineCard } from 'ui'
+import { LocaleManager } from '@bryntum/schedulerpro-trial'
+import '@bryntum/schedulerpro-trial/locales/schedulerpro.locale.En'
+import '@bryntum/schedulerpro-trial/locales/schedulerpro.locale.Tr'
+import { LoadingScreen } from 'ui'
+import { useI18n } from 'vue-i18n'
 
+const { locale } = useI18n()
+
+watch(() => locale.value, (newLocale: string) => {
+  if (newLocale === 'tr') {
+    LocaleManager.locale = 'Tr'
+  } else {
+    LocaleManager.locale = 'En'
+  }
+})
 globalThis.bryntum ??= {}
 globalThis.bryntum.isTestEnv = true
 </script>
 
 <template>
+  <QBtn label="tr" @click="locale = 'tr'" />
+  <QBtn label="en" @click="locale = 'en'" />
   <Suspense>
     <template #fallback>
       <LoadingScreen
