@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     teleskopPort: '1433',
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
+    reqFilePath: '/opt/req',
     public: {
       kcClientId: 'dispensing-manager-ui',
     },

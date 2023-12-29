@@ -33,7 +33,7 @@ router.get('/machine', defineEventHandler(async (event) => {
       controllerType: 'CONTROLLERTYPE',
     })
     .where('MACHINEID', machineid)
-  return machine
+  return machine[0]
 }))
 
 router.get('/machineid', defineEventHandler(async (event) => {
@@ -43,4 +43,16 @@ router.get('/machineid', defineEventHandler(async (event) => {
     .where('PLANKEY', Number(plankey))
 
   return machineid
+}))
+
+router.post('/control-dispenser-type-by-machineid', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const dispensers = await knex('DYTFMACHDISPCONNECTION as M')
+    .where('M.MACHINEID', body.machineid)
+    .andWhere('D.DISPENSERTYPENO', body.dispenserType)
+    .leftJoin('DYTFDISPENSERSETTINGS as D', 'M.DISPENSERID', 'D.DISPENSERID')
+
+  if (dispensers.length)
+    return true
+  return false
 }))

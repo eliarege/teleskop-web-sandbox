@@ -118,16 +118,19 @@ function handleContextMenu(event: { preventDefault: () => void; clientY: any; cl
   selectedRow.value = row
   event.preventDefault()
   contextMenuVisible.value = true
+  document.body.style.overflow = 'hidden'
   contextMenuPosition.value = { top: `${event.clientY}px`, left: `${event.clientX}px` }
 }
 function handleMenuClick() {
   contextMenuVisible.value = false
+  document.body.style.overflow = 'auto'
 }
 
 document.addEventListener('click', (e) => {
   if (tableContainer.value && !tableContainer.value.contains(e.target)) {
     contextMenuVisible.value = false
   }
+  document.body.style.overflow = 'auto'
 })
 
 const requestDialog = ref(false)

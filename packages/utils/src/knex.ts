@@ -25,7 +25,7 @@ export async function filtersToKnex(filters: Array<FilterSlot>, attributes: any,
             builder.andWhere(DBName, filter.value.operator, filter.value.number)
           }
         } else if (filter.filterType === 'date') {
-          builder.andWhere(DBName, '<', filter.value.to)
+          builder.andWhere(DBName, '<', filter.value.to) // FIXME:
           builder.andWhere(DBName, '>=', filter.value.from)
         } else if (filter.filterType === 'boolean') {
           builder.andWhere(DBName, filter.value.option[0])

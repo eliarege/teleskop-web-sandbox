@@ -128,28 +128,56 @@ async function submitCoupleMachine() {
     machine.value = plannedMachineChangeVal.value
 }
 
+const programs = ref()
+
 async function rerequestWei() {
-  console.log(recipeData.value)
+  // TODO: Daha düzgün bir implementasyon bul.
+  programs.value = await $fetch('/api/recipe/programs-by-plankey', {
+    method: 'POST',
+    body: {
+      plankey: plankey.value,
+    },
+  })
+  programs.value.forEach((program) => {
+    recipeData.value.forEach((row) => {
+      if (program.programNo === row.programNo && program.recipeType === row.recipeType) {
+        if (!program.materialCodes)
+          program.materialCodes = []
+        program.materialCodes.push(row.chemCode)
+        program.row = row
+      }
+    })
+  })
 
-  const a = await $fetch('/api/settings/machine-dispenser-connection')
-  console.log(a)
-  // await $fetch('/api/machine/check-dispenser', {
-  //   method: 'POST',
-  //   body: {
-  //     machineid: machine.value.machineid,
-  //   },
-  // })
-
-  // const data = [2, priority.value.value, props.machineid, tankNo.value, selectedRow.value.joborder, selectedRow.value.programNo, selectedRow.value.mainStep, selectedRow.value.mainStep, selectedRow.value.programTotalCount, selectedRow.value.recipeType, selectedRow.value.processOrder]
-  // await $fetch('/api/file/write-recipe-step', {
-  //   method: 'POST',
-  //   body: {
-  //     row: selectedRow.value,
-  //     content: data,
-  //     path: 'ozkantest/index.req',
-  //     materialCodes,
-  //   },
-  // })
+  programs.value.forEach(async (program) => {
+    if (program.materialCodes.length) {
+      const data = [
+        2,
+        50,
+        machine.value.machineid,
+        0,
+        program.row.joborder,
+        program.row.programNo,
+        program.row.mainStep,
+        program.row.mainStep,
+        program.materialCodes.length,
+        program.row.recipeType,
+        program.row.processOrder,
+      ]
+      await $fetch('/api/file/write-recipe-step', {
+        method: 'POST',
+        body: {
+          machineid: machine.value.machineid,
+          materialCodes: ['BAKR01', 'BAKR02', 'BAKR03'],
+          checkMachineDispenser: true,
+          checkMaterialDispenser: true,
+          dispenserType: 2,
+          content: data,
+          row: program.row,
+        },
+      })
+    }
+  })
 }
 </script>
 

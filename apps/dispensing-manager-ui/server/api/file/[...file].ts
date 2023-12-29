@@ -6,6 +6,7 @@ import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
 export default useBase('/api/file', router.handler)
+const config = useRuntimeConfig()
 
 router.post('/read', defineEventHandler(async (event) => {
   let temp = ''
@@ -20,7 +21,6 @@ router.post('/read', defineEventHandler(async (event) => {
 
 router.post('/write-recipe-step', defineEventHandler(async (event) => {
   const body = await readBody(event)
-
   const arr = await knex('DYTFMATERIAL')
     .whereIn('MATERIALCODE', body.materialCodes)
     .select('MATERIALCODE', 'ReRequestable')
@@ -29,6 +29,26 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
     if (!a.ReRequestable)
       check = false
   })
+
+  if (body.checkMachineDispenser) {
+    const dispensers = await knex('DYTFMACHDISPCONNECTION as M')
+      .where('M.MACHINEID', body.machineid)
+      .andWhere('D.DISPENSERTYPENO', body.dispenserType)
+      .leftJoin('DYTFDISPENSERSETTINGS as D', 'M.DISPENSERID', 'D.DISPENSERID')
+    if (!dispensers.length)
+      return 'Machine is not connected to related dispenser.'
+  }
+
+  if (body.checkMaterialDispenser) {
+    const materialConnections = await knex('DYTFCHEMDISPCONNECTION as C')
+      .select('D.DISPENSERTYPENO', 'C.CHEMCODE')
+      .whereIn('C.CHEMCODE', body.materialCodes)
+      .where('D.DISPENSERTYPENO', body.dispenserType)
+      .leftJoin('DYTFDISPENSERSETTINGS as D', 'D.DISPENSERID', 'C.DISPENSERID')
+      .leftJoin('DYTFDISPENSERTYPE as T', 'T.DISPENSERTYPENO', 'D.DISPENSERTYPENO')
+    if (materialConnections.length !== body.materialCodes.length)
+      return 'All the materials on the probram have to be connected to related dispenser.'
+  }
 
   const query = await knex('DYTFCHEMREQUESTS')
     .where('BATCHNO', body.row.joborder)
@@ -42,7 +62,7 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
     } else {
       const contentString = `${body.content.join(',')},\n`
 
-      fs.appendFile(body.path, contentString, 'utf8', (err) => {
+      fs.appendFile(config.reqFilePath, contentString, 'utf8', (err) => {
         if (err) {
           return { error: 'Error appending to file' }
         }
