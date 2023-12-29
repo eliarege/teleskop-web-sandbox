@@ -56,6 +56,11 @@ export interface FinishReason {
   reportToERP?: number
 }
 
+export interface StepReason {
+  id: number
+  reasonText: string
+}
+
 export interface LockGeneral {
   machineId: number
   lockNo: number
