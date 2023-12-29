@@ -29,13 +29,17 @@ import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
 import { parseLockInput } from './parsers/parseLocksInput'
 
+export interface TbbFtpClientOptions {
+  timeout?: number
+}
+
 export class TbbFtpClient {
   private host: string
   private client: Client
 
-  constructor(host: string, timeout?: number) {
+  constructor(host: string, options?: TbbFtpClientOptions) {
     this.host = host
-    this.client = new Client(timeout)
+    this.client = new Client(options?.timeout)
   }
 
   /**
@@ -228,21 +232,21 @@ export class TbbFtpClient {
 
   async fetchConsumption() {
     const remotePath = '/tbb6500/data/config/consumption'
-    const content = await download(remotePath, this.host)
+    const content = await download(this.client, remotePath)
     const consumption = parseConsumption(content)
     return consumption
   }
 
   async fetchGlobalCommandFormulas() {
     const remotePath = '/tbb6500/yedek/data/config/globalCommandFormulas'
-    const content = await download(remotePath, this.host)
+    const content = await download(this.client, remotePath)
     const formulas = parseGlobalCommandFormulas(content)
     return formulas
   }
 
   async fetchLocksInput() {
     const remotePath = '/tbb6500/data/locks/locks_inputs'
-    const content = await download(remotePath, this.host)
+    const content = await download(this.client, remotePath)
     const locks = parseLockInput(content)
     return locks
   }
