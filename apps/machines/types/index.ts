@@ -1,6 +1,6 @@
 export interface Machine {
-  id?: number
-  code?: string
+  machineId?: number
+  machineCode?: string
   groupName?: string
   groupId?: number
   tbbModel?: string

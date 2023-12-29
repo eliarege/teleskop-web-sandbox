@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { Column } from 'ui/types/FilterableTable'
+import type { Machine } from '~/types'
 import { addOtherMachine, deleteOtherMachine } from '~/utils'
 
 const columns: Column[] = [
   {
     name: 'machineId',
-    label: 'Makine No',
+    label: 'Makine Id',
     field: 'machineId',
     align: 'left',
     filterable: true,
@@ -14,60 +15,52 @@ const columns: Column[] = [
 
   },
   {
-    name: 'machineName',
+    name: 'machineCode',
     label: 'Makine',
-    field: 'machineName',
+    field: 'machineCode',
     align: 'left',
     filterable: true,
     filterType: 'equals',
   },
 ]
 
-const machines = ref(await $fetch('/api/machines/other-machines'))
-const machineId = ref()
-const machineName = ref('')
-const inUse = ref(true)
-const oldId = ref()
+const { data: machines, refresh } = useLazyFetch('/api/machines/other-machines', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
 
-const otherMachine = ref([])
+const selected = ref<Machine>({
+  machineId: undefined,
+  machineCode: '',
+  inUse: false,
+})
+
+const oldId = ref(-1)
 
 async function handleAddClick() {
-  const selected = {
-    machineId: machineId.value,
-    machineName: machineName.value,
-    inUse: inUse.value,
-  }
-  await addOtherMachine(selected)
+  await addOtherMachine(selected.value)
+  await refresh()
 }
 
 async function handleDeleteClick() {
-  await deleteOtherMachine(otherMachine.value[0].machineId)
-  machineId.value = ''
-  machineName.value = ''
-  inUse.value = true
+  await deleteOtherMachine(selected.value)
+  selected.value = {
+    machineId: undefined,
+    machineCode: '',
+    inUse: false,
+  }
+  await refresh()
 }
 
-function handleSelection(e) {
-  if (e.added) {
-    const selected = e.rows[0]
-    machineId.value = selected.machineId
-    oldId.value = selected.machineId
-    machineName.value = selected.machineName
-    inUse.value = selected.inUse
-  } else if (!e.added) {
-    machineId.value = ''
-    machineName.value = ''
-    inUse.value = true
-  }
+function handleSelection(obj: Machine) {
+  selected.value = { ...obj }
+  oldId.value = obj.machineId
 }
 
 async function handleEditClick() {
-  const selected = {
-    machineId: machineId.value,
-    machineName: machineName.value,
-    inUse: inUse.value,
-  }
-  await editOtherMachine(selected, oldId.value)
+  await editOtherMachine(selected.value, oldId.value)
+  await refresh()
 }
 
 async function handleFilterSlotsUpdate(updatedValue) {
@@ -84,9 +77,19 @@ async function handleFilterSlotsUpdate(updatedValue) {
   <q-card class="flex flex-row">
     <q-card-section>
       <div class="flex flex-row justify-around w-3xl">
-        <q-input v-model="machineId" label="Makine No" />
-        <q-input v-model="machineName" label="Makine Adı" />
-        <q-checkbox v-model="inUse" label="Kullanımda" />
+        <q-input
+          v-model="selected.machineId"
+          clearable
+          filled
+          label="Makine No"
+        />
+        <q-input
+          v-model="selected.machineCode"
+          clearable
+          filled
+          label="Makine Adı"
+        />
+        <q-checkbox v-model="selected.inUse" label="Kullanımda" />
       </div>
 
       <div class="flex flex-row input-field my-8">
@@ -110,26 +113,28 @@ async function handleFilterSlotsUpdate(updatedValue) {
   </q-card>
   <div class="table-scroll">
     <FilterableTable
+      v-model:selected="selected"
       :rows="machines"
       :columns="columns"
       @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       @selection="(e) => handleSelection(e)"
-    />
-
-    <!--  <q-table
-      v-model:selected="otherMachine"
-      :loading="pending"
-      :rows="machines"
-      :columns="columns"
-      :pagination="{ rowsPerPage: 0 }"
-      selection="single"
-      row-key="machineId"
-      hide-pagination
-      bordered
-      separator="cell"
-      table-header-class="table-header"
-      @selection="(e) => handleSelection(e)"
-    /> -->
+    >
+      <template #custombody="machines">
+        <q-tr
+          :class="{ 'selected-row': selected.machineId === machines.row.machineId }"
+          @click="handleSelection(machines.row)"
+        >
+          <q-td
+            v-for="row in machines.cols"
+            :key="row"
+          >
+            <span>
+              {{ row.value }}
+            </span>
+          </q-td>
+        </q-tr>
+      </template>
+    </FilterableTable>
   </div>
 </template>
 
@@ -144,5 +149,8 @@ async function handleFilterSlotsUpdate(updatedValue) {
 
 .input-field > * {
   margin-right: 2em;
+}
+.selected-row {
+  background-color: #cce8ff;
 }
 </style>
