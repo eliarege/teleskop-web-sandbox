@@ -5,17 +5,14 @@ export default defineEventHandler(async (event) => {
   try {
     const { filters } = await readBody(event)
     const selectParams = {
-      machineId: 'MACHINEID',
-      machineName: 'MACHINECODE',
-      inUse: 'INUSE',
+      reasonId: 'REASONID',
+      typeId: 'TYPEID',
+      text: 'TEXT',
+      reportToERP: 'ReportToERP',
     }
-    const query = knex('BFMACHINES')
-      .where({
-        USEINTELESKOP: false,
-        GRUPNO: -1,
-      })
+    const query = knex('BFDYLOTFINISHREASONS')
       .select(selectParams)
-      .orderBy('MACHINEID')
+
     if (filters)
       return await filtersToKnex(filters, selectParams, query)
 

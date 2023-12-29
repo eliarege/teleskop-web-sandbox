@@ -1,27 +1,38 @@
 <script setup lang="ts">
-import type { QTableColumn } from 'quasar'
+import type { Column } from 'ui/types/FilterableTable'
+import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { FinishReason } from '~/types'
 
-const { data: finishReasons, pending, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', { default: () => [] })
+const { data: finishReasons, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
 
-const columns: QTableColumn<FinishReason>[] = [
+const columns: Column[] = [
   {
-    name: 'reasonID',
+    name: 'reasonId',
     label: 'ID',
-    field: row => row.reasonId,
+    field: 'reasonId',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'type',
+    name: 'typeId',
     label: 'Tip',
-    field: row => row.typeId,
+    field: 'typeId',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'text',
     label: 'Açıklama',
-    field: row => row.text,
+    field: 'text',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
 
@@ -39,18 +50,18 @@ const typeIdMap = {
   4: 'Atla',
   5: 'Makine Duraklatma',
 }
-async function handleSelection(obj: object) {
-  if (obj.added) {
-    finishReason.value.reasonId = obj.rows[0].reasonId
-    finishReason.value.text = obj.rows[0].text
-    finishReason.value.typeId = obj.rows[0].typeId
-  } else {
+async function handleSelection(obj: FinishReason) {
+  if (finishReason.value.reasonId === obj.reasonId) {
     finishReason.value = {
       reasonId: '',
       typeId: '',
       text: '',
       reportToERP: false,
     }
+  } else {
+    finishReason.value.reasonId = obj.reasonId
+    finishReason.value.text = obj.text
+    finishReason.value.typeId = obj.typeId
   }
 }
 
@@ -67,6 +78,14 @@ async function handleDeleteFinishReasons() {
 async function handleEditFinishReason() {
   await editFinishReason(finishReason.value)
   await refresh()
+}
+async function handleFilterSlotsUpdate(updatedValue) {
+  finishReasons.value = await $fetch('/api/finish-reasons/finish-reasons', {
+    method: 'POST',
+    body: {
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 
@@ -107,37 +126,35 @@ async function handleEditFinishReason() {
           @click="handleDeleteFinishReasons()"
         />
       </div>
-
-      <q-table
+      <FilterableTable
         v-model:selected="selectedReason"
         :rows="finishReasons"
-        :loading="pending"
         :columns="columns"
-        hide-pagination
-        :pagination="{ rowsPerPage: 0 }"
-        row-key="reasonId"
-        separator="cell"
-        bordered
-        selection="single"
-        table-header-class="table-header"
         @selection="(e) => handleSelection(e)"
+        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       >
-        <template #body-cell-type="props">
-          <q-td :props="props">
-            {{ typeIdMap[props.row.typeId] }}
-          </q-td>
+        <template #custombody="finishReasons">
+          <q-tr
+            :class="{ 'selected-row': finishReason.reasonId === finishReasons.row.reasonId }"
+            @click="handleSelection(finishReasons.row)"
+          >
+            <q-td
+              v-for="row in finishReasons.cols"
+              :key="row"
+            >
+              <span v-if="row.field === 'typeId'">
+                {{ typeIdMap[row.value] }}
+              </span>
+              <span v-else-if="row.field === 'reportToERP'">
+                {{ row.value ? "Evet" : "Hayır" }}
+              </span>
+              <span v-else>
+                {{ row.value }}
+              </span>
+            </q-td>
+          </q-tr>
         </template>
-        <template #body-cell-reportToERP="props">
-          <q-td :props="props">
-            <span v-if="props.row.reportToERP">
-              Evet
-            </span>
-            <span v-else>
-              Hayır
-            </span>
-          </q-td>
-        </template>
-      </q-table>
+      </FilterableTable>
     </q-card-section>
   </q-card>
 </template>
@@ -153,5 +170,8 @@ async function handleEditFinishReason() {
 
 .input-field > * {
   margin-right: 2em;
+}
+.selected-row {
+  background-color: #cce8ff;
 }
 </style>

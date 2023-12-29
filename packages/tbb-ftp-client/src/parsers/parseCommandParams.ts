@@ -16,19 +16,27 @@ export function parseCommandParams(content: string) {
   let match = pattern.exec(content)
   while (match !== null) {
     const group = {
-      commandNo: match[1],
+      commandNo: Number.parseInt(match[1]),
       name: match[3],
       paramName: match[4],
       paramFormula: match[5],
-      binding: match[6],
-      defaultValue: match[7],
-      minValue: match[8],
-      maxValue: match[9],
-      graphic: match[10],
-      selectionList: match[11] ? JSON.parse(match[11]) : null,
+      binding: Number.parseInt(match[6]),
+      defaultValue: Number.parseInt(match[7]),
+      minValue: Number.parseInt(match[8]),
+      maxValue: Number.parseInt(match[9]),
+      graphic: Number.parseInt(match[10]),
+      selectionList: match[11] ? processSelectionList(JSON.parse(match[11])) : null,
     }
     groups.push(group)
     match = pattern.exec(content)
   }
   return groups
+}
+
+function processSelectionList(list: string[]) {
+  const processedList: { name: string; value: number }[] = []
+  for (let i = 0; i < list.length; i += 2) {
+    processedList.push({ name: list[i], value: Number(list[i + 1]) })
+  }
+  return processedList
 }
