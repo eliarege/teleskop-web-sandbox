@@ -2,13 +2,14 @@
 <script setup lang="ts">
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { Splitter } from '@bryntum/schedulerpro-trial'
-import { EliarModal, MachineCard } from 'ui'
-import { addDays } from 'date-fns'
+import { EliarModal } from 'ui'
+import { useI18n } from 'vue-i18n'
 import { Drag, Schedule, Task, UnplannedGrid } from '~/lib/bryntum'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
 const currentTime = useNow({ interval: 1000 })
 const router = useRouter()
+const { t, locale } = useI18n()
 
 // TODO (BEFORE PRODUCTION): change start/end date!
 const startDate = ref('2022/07/01')
@@ -75,6 +76,7 @@ const modifiedEvents = computed(() => events.value?.map((ev) => {
     ...ev,
   }
 }))
+console.log(modifiedEvents.value)
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
@@ -107,6 +109,7 @@ function dateRangeEnd() {
   scheduler.startDate = new Date(schedulerDateModel.value.from)
   scheduler.endDate = new Date(schedulerDateModel.value.to)
   scheduler.zoomLevel = 17
+  scheduler.refreshRows()
 }
 onMounted(async () => {
   const schedule: SchedulerPro = scheduler = new Schedule({
@@ -221,14 +224,14 @@ onMounted(async () => {
         items: {
           taskEdit: {
             icon: 'b-fa-sharp b-fa-light b-fa-pen-to-square',
-            text: 'Update Event',
+            text: t('ctx-menu.task-edit'),
             disabled: true,
             onItem({ eventRecord }: any) {
             },
           },
           delete: {
             icon: 'b-fa-solid b-fa-trash',
-            text: 'Delete Event',
+            text: t('ctx-menu.task-delete'),
             onItem({ eventRecord }: any) {
               deleteEvent(eventRecord.originalData.id)
                 .then(() => eventRecord.unassign())
@@ -237,7 +240,7 @@ onMounted(async () => {
           },
           unplan: {
             icon: 'b-fa-solid b-fa-calendar-xmark',
-            text: 'Remove from plan',
+            text: t('ctx-menu.remove-plan'),
             onItem({ eventRecord }: any) {
               unPlanEvent(eventRecord.originalData.id)
                 .then(() => {
@@ -260,7 +263,7 @@ onMounted(async () => {
           },
           properties: {
             icon: 'b-fa-solid b-fa-calendar-xmark',
-            text: 'Job Order Properties',
+            text: t('ctx-menu.properties'),
             onItem({ eventRecord, assignmentRecord }: any) {
               console.log(assignmentRecord.originalData.resourceId)
               showModal.properties.show = true
@@ -285,8 +288,8 @@ onMounted(async () => {
         type: 'button',
         disabled: true,
         ref: 'parameterButton',
-        tooltip: 'Hello World',
-        text: 'Plan Parametreleri',
+        text: t('tbar.parameter.text'),
+        tooltip: t('tbar.parameter.tooltip'),
         icon: 'b-fa b-fa-solid b-fa-sliders',
         color: 'toolbar-buttons',
         onClick() {
@@ -299,7 +302,8 @@ onMounted(async () => {
         type: 'button',
         disabled: true,
         ref: 'recipeButton',
-        text: 'Reçete',
+        text: t('tbar.recipe.text'),
+        tooltip: t('tbar.recipe.tooltip'),
         icon: 'b-fa b-fa-solid b-fa-flask-vial',
         color: 'toolbar-buttons',
         onClick() {
@@ -313,10 +317,10 @@ onMounted(async () => {
         type: 'button',
         disabled: true,
         ref: 'processButton',
-        text: 'Prosess Bilgileri',
+        text: t('tbar.process.text'),
+        tooltip: t('tbar.process.tooltip'),
         icon: 'b-fa b-fa-solid b-fa-receipt',
         color: 'toolbar-buttons',
-        tooltip: 'Currently under development!',
         onClick() {
           showModal.process.show = true
           showModal.process.unit.name = schedule.selectedEvents[0].name
@@ -326,8 +330,8 @@ onMounted(async () => {
         type: 'button',
         disabled: true,
         ref: 'theoreticalButton',
-        tooltip: 'Currently under development!',
-        text: 'Teorik Program',
+        text: t('tbar.theoretical.text'),
+        tooltip: t('tbar.theoretical.tooltip'),
         icon: 'b-fa b-fa-solid b-fa-file-zipper',
         color: 'toolbar-buttons',
         onClick() {
@@ -339,7 +343,8 @@ onMounted(async () => {
         type: 'button',
         disabled: true,
         ref: 'noteButton',
-        text: 'Notlar',
+        text: t('tbar.note.text'),
+        tooltip: t('tbar.note.tooltip'),
         icon: 'b-fa b-fa-solid b-fa-note-sticky',
         color: 'toolbar-buttons',
         onClick() {
@@ -349,7 +354,8 @@ onMounted(async () => {
       },
       {
         type: 'button',
-        text: 'Ayarlar',
+        text: t('tbar.settings.text'),
+        tooltip: t('tbar.settings.tooltip'),
         icon: 'b-fa b-fa-solid b-fa-gear',
         color: 'toolbar-buttons',
         onClick() {
@@ -358,7 +364,8 @@ onMounted(async () => {
       },
       {
         type: 'button',
-        text: 'Date Picker',
+        text: t('tbar.date-picker.text'),
+        tooltip: t('tbar.date-picker.tooltip'),
         icon: 'b-fa b-fa-solid b-fa-calendar-days',
         color: 'toolbar-buttons',
         onClick() {
@@ -367,7 +374,9 @@ onMounted(async () => {
       },
       {
         type: 'button',
-        text: 'Rules',
+        disabled: true,
+        text: t('tbar.rules.text'),
+        tooltip: t('tbar.rules.tooltip'),
         icon: 'b-fa b-fa-solid b-fa-list-check',
         color: 'toolbar-buttons',
         onClick() {
@@ -377,14 +386,14 @@ onMounted(async () => {
       {
         type: 'button',
         icon: 'b-icon-search-plus',
-        tooltip: 'Yakınlaştır',
+        tooltip: t('tbar.zoom-in'),
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomIn(),
       },
       {
         type: 'button',
         icon: 'b-icon b-icon-search-minus',
-        tooltip: 'Uzaklaştır',
+        tooltip: t('tbar.zoom-out'),
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomOut(),
       },
@@ -419,7 +428,7 @@ onMounted(async () => {
     tbar: [
       {
         type: 'textfield',
-        label: 'İş Emri Arama',
+        label: t('tbar.search'),
         inputType: 'text',
         clearable: true,
         cls: 'flex justify-center items-center',
@@ -449,6 +458,9 @@ onMounted(async () => {
     outerElement: unplannedGrid.element,
   } as Partial<DragHelperConfig>)
 })
+function updateTaskColor() {
+  scheduler.refreshRows()
+}
 </script>
 
 <template>
@@ -471,14 +483,14 @@ onMounted(async () => {
             dark
             landscape
             @click.stop.prevent
-            @range-end="dateRangeEnd(schedule)"
+            @range-end="dateRangeEnd()"
           />
         </div>
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
       <template #default>
-        <PlanSettings />
+        <PlanSettings @update-scheduler="updateTaskColor()" />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.planParameters.show" @click.stop="showModal.planParameters.show = false">
@@ -514,7 +526,7 @@ onMounted(async () => {
     </EliarModal>
     <EliarModal v-if="showModal.rule" @click.stop="showModal.rule = false">
       <template #default>
-        <MachineRuleList />
+        <MachineRule />
       </template>
     </EliarModal>
     <div class="w-full h-screen">
@@ -572,3 +584,98 @@ div[bgGreen] {
   white-space: normal;
 }
 </style>
+
+<i18n>
+{
+  "en": {
+    "ctx-menu": {
+      "task-edit": "Update Job Order",
+      "task-delete": "Delete Job Order",
+      "remove-plan": "Remove From Plan",
+      "properties": "Job Order Properties"
+    },
+    "tbar": {
+      "parameter": {
+        "text": "Plan Parameters",
+        "tooltip": ""
+      },
+      "recipe": {
+        "text": "Recipe",
+        "tooltip": ""
+      },
+      "process": {
+        "text": "Process Information",
+        "tooltip": "Currently Under Development!"
+      },
+      "theoretical": {
+        "text": "Theoretical Program",
+        "tooltip": "Currently Under Development!"
+      },
+      "settings": {
+        "text": "Settings",
+        "tooltip": ""
+      },
+      "note": {
+        "text": "Notes",
+        "tooltip": ""
+      },
+      "date-picker": {
+        "text": "Date Picker",
+        "tooltip": ""
+      },
+      "rules": {
+        "text": "Rules",
+        "tooltip": ""
+      },
+      "zoom-in": "Zoom In",
+      "zoom-out": "Zoom Out",
+      "search": "Job Order Search"
+    }
+  },
+  "tr": {
+    "ctx-menu": {
+      "task-edit": "İş Emrini Güncelle",
+      "task-delete": "İş Emrini Sil",
+      "remove-plan": "Plandan kaldır",
+      "properties": "İş Emri Özellikleri"
+    },
+    "tbar": {
+      "parameter": {
+        "text": "Plan Parametreleri",
+        "tooltip": ""
+      },
+      "recipe": {
+        "text": "Reçete",
+        "tooltip": ""
+      },
+      "process": {
+        "text": "Prosess Bilgileri",
+        "tooltip": "Geliştirme Aşamasında!"
+      },
+      "theoretical": {
+        "text": "Teorik Program",
+        "tooltip": "Geliştirme Aşamasında!"
+      },
+      "settings": {
+        "text": "Ayalar",
+        "tooltip": ""
+      },
+      "note": {
+        "text": "Notlar",
+        "tooltip": ""
+      },
+      "date-picker": {
+        "text": "Tarih",
+        "tooltip": ""
+      },
+      "rules": {
+        "text": "Kurallar",
+        "tooltip": ""
+      },
+      "zoom-in": "Yakınlaştır",
+      "zoom-out": "Uzaklaştır",
+      "search": "İş Emri Arama"
+    }
+  }
+}
+</i18n>

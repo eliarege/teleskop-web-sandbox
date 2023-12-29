@@ -1,13 +1,18 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 const props = defineProps<{ planKey: number }>()
+
+const { t } = useI18n()
+
 const { data: planParameters } = await useFetch('/api/planParameters', {
   query: { planKey: props.planKey },
 })
 const columns = computed(() => {
   return [
-    { name: 'id', label: 'Parameter ID', align: 'center', field: 'id' },
-    { name: 'paramString', label: 'Parameter', align: 'center', field: 'paramString' },
-    { name: 'value', label: 'Value', align: 'center', field: 'value' },
+    { name: 'id', label: t('id'), align: 'center', field: 'id' },
+    { name: 'paramString', label: t('param-string'), align: 'center', field: 'paramString' },
+    { name: 'value', label: t('value'), align: 'center', field: 'value' },
   ]
 })
 </script>
@@ -63,3 +68,18 @@ const columns = computed(() => {
     </QTable>
   </div>
 </template>
+
+<i18n>
+  {
+  "en": {
+    "id": "Parameter ID",
+    "param-string": "Parameter",
+    "value": "Value"
+  },
+  "tr": {
+    "id": "Parametre ID",
+    "param-string": "Parametre",
+    "value": "Değer"
+  }
+}
+</i18n>
