@@ -141,18 +141,6 @@ router.get('/joborder', defineEventHandler(async (event) => {
     .whereNotNull('REQNO_BATCH')
     .orderBy(['r.RCPINDEX', 'r.REQNO_PROG', 'r.PARALLELSTEP'])
 
-  /** FIXME: .join function 'cause .join does not work as expected???????? */
-  // const a = await knex('dbo.DYBFBATCHORDERRECIPEHEADER as p')
-  //   .where('JOBORDER', recipeJB)
-  //   .orderBy('RECIPENO', 'asc')
-  // asd.forEach(elem => {
-  //   for(let i=0;i<a.length;i++) {
-  //     if((elem.planKey === a[i].PLANKEY) && (elem.processOrder === a[i].RCPINDEX) && (elem.recipeType === a[i].RECIPETYPE)) {
-  //       elem.programNo = a[i].RECIPENO
-  //       break
-  //     }
-  //   }
-  // })
   return asd
 }))
 
@@ -169,8 +157,99 @@ router.put('/change-planned-machine', defineEventHandler(async (event) => {
         SLAVEMACHINEID: body.newCoupledMachine,
       })
     }
+    return await query
+  } catch (e) {
+    return e
+  }
+}))
+
+router.put('/change-recipe-amount', defineEventHandler(async (event) => {
+  try {
+    const body = await readBody(event)
+    const query = await knex('DYBFBATCHORDERRECIPESTEPS')
+      .where('PLANKEY', body.planKey)
+      .andWhere('REQNO_BATCH', body.ISN)
+      .andWhere('CHEMCODE', body.chemCode)
+      .update({
+        AMOUNT: body.newAmount,
+      })
     return query
   } catch (e) {
     return e
   }
+}))
+
+router.post('/previous-requests', defineEventHandler(async (event) => {
+  const { joborder, programNo, programStepNo } = await readBody(event)
+  const query = await knex('DYTFCHEMREQUESTS')
+    .where('BATCHNO', joborder)
+    .andWhere('PROGRAMNO', programNo)
+    .andWhere('PROGRAMSTEPNO', programStepNo)
+    .select({
+      joborder: 'BATCHNO',
+      correctionNo: 'BATCHCORRECTIONNO',
+      mainStep: 'PROGRAMSTEPNO',
+      status: 'STATUS',
+      requestTime: 'REQUESTTIME',
+      endTime: 'COMPLETEDTIME',
+    })
+  return query
+}))
+
+router.post('/check-tank-no-required', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+
+  const arr = await knex('DYTFCHEMDISPCONNECTION as C')
+    .whereIn('C.CHEMCODE', body.materialCodes)
+    .select('PROTOCOL')
+    .join('DYTFDISPENSERSETTINGS as D', 'C.DISPENSERID', 'D.DISPENSERID')
+  let check = false
+  arr.forEach((a) => {
+    if (['n-v2', 'n-v3', 'n-v4', 'n-v5'].includes(a.PROTOCOL))
+      check = true
+  })
+
+  return check
+}))
+
+// router.post('/programs-with-materials', defineEventHandler(async (event) => {
+//   const body = await readBody(event)
+//   const steps = await knex('DYBFBATCHORDERRECIPESTEPS as S')
+//     .select({
+//       planKey: 'S.PLANKEY',
+//       joborder: 'S.JOBORDER',
+//       recipeType: 'S.RECIPETYPE',
+//       processOrder: 'S.RCPINDEX',
+//       ISN: 'S.REQNO_BATCH',
+//       mainStep: 'S.MAINSTEP',
+//       parallelStep: 'S.PARALLELSTEP',
+//       materialCode: 'S.CHEMCODE',
+//       materialName: 'M.MATERIALNAME',
+//       programProcessNo: 'S.REQNO_PROG',
+//       amount: 'S.AMOUNT',
+//       unit: 'S.otherUnit',
+//       programNo: 'H.RECIPENO',
+//     })
+//     .where('S.PLANKEY', body.plankey)
+//     .leftJoin('DYBFBATCHORDERRECIPEHEADER as H', function () {
+//       this.on('S.PLANKEY', '=', 'H.PLANKEY')
+//         .andOn('S.RCPINDEX', '=', 'H.RCPINDEX')
+//         .andOn('S.RECIPETYPE', '=', 'H.RECIPETYPE')
+//     })
+//     .leftJoin('DYTFMATERIAL as M', 'M.MATERIALCODE', '=', 'S.CHEMCODE')
+//     .orderBy(['S.RCPINDEX', 'S.REQNO_PROG', 'S.PARALLELSTEP'])
+
+//   return steps
+// }))
+
+router.post('/programs-by-plankey', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const result = await knex('DYBFBATCHORDERRECIPEHEADER')
+    .where('PLANKEY', body.plankey)
+    .select({
+      recipeIndex: 'RCPINDEX',
+      programNo: 'RECIPENO',
+      recipeType: 'RECIPETYPE',
+    })
+  return result
 }))

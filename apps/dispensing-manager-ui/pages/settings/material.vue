@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import type { Column } from '~/shared/types'
+import FilterableTable from 'ui/components/FilterableTable.vue'
 import { colors } from '~/shared/constants'
+import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref([])
@@ -52,25 +52,24 @@ const materialInfo = ref<{ label: string; value: any; field: string }[]>([
 ])
 
 async function getRows() {
-  rows.value = await $fetch('/api/setting/material')
+  rows.value = await $fetch('/api/settings/material')
   rows.value.unshift({})
 }
 
 async function getDisps() {
-  disps.value = await $fetch('/api/setting/dispenser')
+  disps.value = await $fetch('/api/settings/dispenser')
 }
 
 async function resetMaterialInfo(row?: any) {
   if (!row)
     materialInfo.value.forEach(mate => mate.value = '')
   else {
-    const mateDispsTemp = await $fetch(`/api/setting/material-connections?chemCode=${row.materialCode}`)
+    const mateDispsTemp = await $fetch(`/api/settings/material-connections?chemCode=${row.materialCode}`)
     materialInfo.value.forEach((mate) => {
       if (mate.field === 'materialGroup') {
         materialGroups.forEach(dev => dev.value === row[mate.field] ? mate.value = dev : '')
       } else if (mate.field === 'connectedDisps') {
         mate.value = mateDispsTemp
-        console.log(mate.value)
       } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
         mate.value = false
       } else {
@@ -87,7 +86,6 @@ function toggleRow(row: any, index: number) {
     ? expandedRow.value = null
     : expandedRow.value = index
   resetMaterialInfo(row)
-  console.log(row)
 }
 
 function customSortMethod(rows, sortBy, descending) {
@@ -121,8 +119,7 @@ function customSortMethod(rows, sortBy, descending) {
 async function submit(rowIndex: number) {
   /** If create */
   if (rowIndex === 0) {
-    console.log(materialInfo.value)
-    await $fetch('/api/setting/material-connection', {
+    await $fetch('/api/settings/material-connection', {
       method: 'post',
       body: {
         materialCode: materialInfo.value[0].value,
@@ -132,26 +129,15 @@ async function submit(rowIndex: number) {
         ph: materialInfo.value[4].value,
         source: materialInfo.value[5].value,
         cost: materialInfo.value[6].value,
-        rerequestable: materialInfo.value[7].value,
+        connectedDisps: materialInfo.value[7].value,
         directTransfer: materialInfo.value[8].value,
-        connectedDisps: materialInfo.value[9].value,
+        rerequestable: materialInfo.value[9].value,
       },
     })
+    expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
-    console.log({
-      materialCode: materialInfo.value[0].value,
-      materialName: materialInfo.value[1].value,
-      materialGroup: materialInfo.value[2].value.value,
-      density: materialInfo.value[3].value,
-      ph: materialInfo.value[4].value,
-      source: materialInfo.value[5].value,
-      cost: materialInfo.value[6].value,
-      rerequestable: materialInfo.value[7].value,
-      directTransfer: materialInfo.value[8].value,
-      connectedDisps: materialInfo.value[9].value,
-    })
-    await $fetch('/api/setting/material-connection', {
+    await $fetch('/api/settings/material-connection', {
       method: 'put',
       body: {
         materialCode: materialInfo.value[0].value,
@@ -161,9 +147,9 @@ async function submit(rowIndex: number) {
         ph: materialInfo.value[4].value,
         source: materialInfo.value[5].value,
         cost: materialInfo.value[6].value,
-        rerequestable: materialInfo.value[7].value,
+        connectedDisps: materialInfo.value[7].value,
         directTransfer: materialInfo.value[8].value,
-        connectedDisps: materialInfo.value[9].value,
+        rerequestable: materialInfo.value[9].value,
       },
     })
   }
@@ -171,8 +157,7 @@ async function submit(rowIndex: number) {
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  console.log(materialInfo.value)
-  await $fetch('/api/setting/material', {
+  await $fetch('/api/settings/material', {
     method: 'delete',
     body: {
       materialCode: materialInfo.value[0].value,
@@ -366,7 +351,7 @@ async function deleteRow() {
 .class-w-100 {
   width: 20rem;
 }
-.setting-section-header {
+.settings-section-header {
   align-items: center;
   font-size: x-large;
   display: flex;

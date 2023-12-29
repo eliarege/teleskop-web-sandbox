@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { colors } from '~/shared/constants'
+import FilterableTable from 'ui/components/FilterableTable.vue';
+import { colors } from '~/shared/constants';
 
 const props = defineProps({
   joborder: Number,

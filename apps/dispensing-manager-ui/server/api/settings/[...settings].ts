@@ -2,7 +2,7 @@ import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
-export default useBase('/api/setting', router.handler)
+export default useBase('/api/settings', router.handler)
 
 /**
  * Dispenser settings
@@ -41,7 +41,6 @@ router.post('/dispenser', defineEventHandler(async (event) => {
     dispenser = await knex('DYTFDISPENSERSETTINGS')
       .where('DISPENSERID', body.dispNo)
       .select('DISPENSERID')
-    console.log(dispenser)
     if (dispenser.length)
       return 'Error Message there already are dispenser with given id'
     dispenser = await knex('DYTFDISPENSERSETTINGS')
@@ -139,7 +138,6 @@ router.post('/machine-dispenser-connection', defineEventHandler(async (event) =>
       MACHINENAME: body.machinename,
       CONTROLLERTYPE: body.controlDevice,
     })
-  console.log(body.disps)
   body.disps.forEach(async (disp) => {
     await knex('DYTFMACHDISPCONNECTION').insert({
       DISPENSERID: disp.dispNo,
@@ -151,7 +149,6 @@ router.post('/machine-dispenser-connection', defineEventHandler(async (event) =>
 
 router.put('/machine-dispenser-connection', defineEventHandler(async (event) => {
   const body = await readBody(event)
-  console.log(1)
   await knex('DYTFMACHINES')
     .where('MACHINEID', body.machineid)
     .update({

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 
 const props = defineProps(['type'])
 const { t } = useI18n()
@@ -11,8 +9,8 @@ function handleClick() {
     router.push('/')
   } else if (props.type === 'back') {
     router.back()
-  } else if (props.type === 'setting') {
-    router.push('/setting')
+  } else if (props.type === 'settings') {
+    router.push('/settings')
   }
 }
 </script>
@@ -30,7 +28,7 @@ function handleClick() {
       class="btn-icon"
     />
     <q-icon
-      v-else-if="props.type === 'setting'"
+      v-else-if="props.type === 'settings'"
       name="settings"
       class="btn-icon"
     />

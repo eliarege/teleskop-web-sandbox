@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { colors } from '~/shared/constants'
 
 const { t } = useI18n()
@@ -7,7 +6,7 @@ const { t } = useI18n()
 
 <template>
   <span class="header-class">
-    Eliar - {{ t('distributionProcessor._') }}
+    Eliar - {{ t('dispensingManager._') }}
     <img
       src="/eliarname.png"
       class="invert-colors"

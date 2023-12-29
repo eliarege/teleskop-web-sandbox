@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import moment from 'moment'
+import FilterableTable from 'ui/components/FilterableTable.vue'
 import { rowBGColorHandler } from '../shared/functions'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
@@ -10,7 +9,7 @@ const props = defineProps({
   plankey: Number,
 })
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 
 const joborder = ref(props.joborder)
 const plankey = ref(props.plankey)
@@ -42,7 +41,7 @@ const logCols: Column[] = [
 
 const logRows = ref()
 await applyFilters([])
-async function applyFilters(updatedValue) {
+async function applyFilters(updatedValue: any) {
   const tempFilteredLogs = await $fetch('/api/logs/filtered-logs', {
     method: 'post',
     body: {
@@ -92,7 +91,7 @@ async function applyFilters(updatedValue) {
                 {{ t(`recipeTypes.${row.value}`) }}
               </span>
               <span v-else-if="row.field === 'time'">
-                {{ moment(row.value).format('DD-MM-YYYY hh:m:ss') }}
+                {{ d(row.value, 'datetime') }}
               </span>
               <span v-else>
                 {{ row.value }}

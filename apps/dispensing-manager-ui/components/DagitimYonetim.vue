@@ -1,33 +1,44 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import { Notify } from 'quasar'
 import { navigateToPage, rowBGColorHandler, textAlignOverride } from '../shared/functions'
-import type { Column } from '~/shared/types'
 import { colors } from '~/shared/constants'
+import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
-const recetetartim = t('distributionProcessor.recipeMeasurement')
+const recetetartim = t('dispensingManager.recipeMeasurement')
 const paginationSync = ref(5)
 const paginationPageLeft = ref(1)
+
+type Action = 'retry' | 'cancel'
+interface ConfirmationDialog {
+  vis: boolean
+  act: Action
+}
+
+const actions = ref<Action[]>(['retry', 'cancel'])
+const confirmationDialog = ref<ConfirmationDialog>({ vis: false, act: 'cancel' })
+
 const machines = await $fetch('/api/machine/machines')
 const columnsRecipe: Column[] = [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
   { name: 'machinename', label: t('machinename'), field: 'machinename', filterable: true, filterType: 'select', selectionOptions: machines, optionLabel: 'machinename', optionValue: 'machineid' },
   { name: 'tankno', label: t('tankNo'), field: 'tankno', filterable: true, filterType: 'comparison' },
-  { name: 'dispenserName', label: t('distributionProcessor.materialDistributor'), field: 'dispenserName', filterable: true }, // TODO: Dispenserşarı dönen endpoint
+  { name: 'dispenserName', label: t('dispensingManager.materialDistributor'), field: 'dispenserName', filterable: true }, // TODO: Dispenserşarı dönen endpoint
   { name: 'programno', label: t('programNo'), field: 'programno', filterable: true, filterType: 'comparison' },
   { name: 'programname', label: t('programName'), field: 'programname', filterable: true }, // TODO: select
-  { name: 'stepno', label: t('distributionProcessor.stepNo'), field: 'stepno', filterable: true, filterType: 'comparison' },
-  { name: 'recipeType', label: t('distributionProcessor.recipeType'), field: 'recipeType', filterable: true, filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType' },
+  { name: 'stepno', label: t('dispensingManager.stepNo'), field: 'stepno', filterable: true, filterType: 'comparison' },
+  { name: 'recipeType', label: t('dispensingManager.recipeType'), field: 'recipeType', filterable: true, filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType' },
   // filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType'}]
-  { name: 'recipeProcessNo', label: t('distributionProcessor.recipeOrder'), field: 'recipeProcessNo', filterable: true, filterType: 'comparison' },
-  { name: 'recipeStepNo', label: t('distributionProcessor.recipeStepNum'), field: 'recipeStepNo', filterable: true, filterType: 'comparison' },
+  { name: 'recipeProcessNo', label: t('dispensingManager.recipeOrder'), field: 'recipeProcessNo', filterable: true, filterType: 'comparison' },
+  { name: 'recipeStepNo', label: t('dispensingManager.recipeStepNum'), field: 'recipeStepNo', filterable: true, filterType: 'comparison' },
   { name: 'status', label: t('statusCodes.text'), field: 'status' },
 ]
 const columnsMaterial = [
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
   { name: 'materialCode', label: t('materialCode'), field: 'materialCode' },
-  { name: 'dispenserName', label: t('distributionProcessor.materialDistributor'), field: 'dispenserName' },
+  { name: 'dispenserName', label: t('dispensingManager.materialDistributor'), field: 'dispenserName' },
   { name: 'amount', label: t('recipe.amount'), field: 'amount' },
   { name: 'status', label: t('statusCodes.text'), field: 'status' },
 ]
@@ -46,7 +57,6 @@ async function updateRecipe() {
     method: 'post',
     body: filters.value,
   })
-  console.log(recipe.value)
 }
 setInterval(updateRecipe, 10000)
 const material = ref()
@@ -55,7 +65,7 @@ async function fetchMaterialData(reqnumber: number) {
   material.value = materialDataTemp
 }
 
-async function applyFilters(updatedValue) {
+async function applyFilters(updatedValue: any) {
   filters.value = updatedValue
   await updateRecipe()
 }
@@ -65,15 +75,88 @@ async function updateRecipeTable() {
   await updateRecipe()
 }
 
-const selectedJobOrderTableRow = ref()
+const selectedRow = ref()
 
-async function selectRow(rowReqNumber: number) {
-  selectedJobOrderTableRow.value = rowReqNumber
-  await fetchMaterialData(rowReqNumber)
+async function selectRow(row: any) {
+  selectedRow.value = row
+  await fetchMaterialData(row.reqnumber)
 }
 
-async function clickShowRecipe(row, isLogs: boolean) {
+async function clickShowRecipe(row: any, isLogs: boolean) {
   await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.batchCorrectionNo}&isLogs=${isLogs}`)
+}
+
+async function completeProgram(row) {
+  console.log(row)
+  await $fetch('/api/dispenser/complete-program', {
+    method: 'PUT',
+    body: {
+      reqNumber: row.reqnumber,
+    },
+  })
+  await updateRecipe()
+}
+
+async function isRecipeDeleted(row) {
+  console.log(row)
+  const isDeleted = await $fetch('/api/dispenser/check-status', {
+    method: 'POST',
+    body: {
+      joborder: row.joborder,
+      correctionNo: row.batchCorrectionNo,
+    },
+  })
+  return isDeleted
+}
+
+async function processRequest(type: 'retry' | 'cancel', row: any) {
+  const isDeleted = await isRecipeDeleted(row)
+  if (isDeleted)
+    Notify.create({
+      message: t('dispensingManager.recipeDeletedWarning'),
+      type: 'warning',
+      position: 'top',
+    })
+  else {
+    const countInProgram = await $fetch('/api/dispenser/total-step-count', {
+      method: 'POST',
+      body: {
+        plankey: row.plankey,
+        recipeProcessNo: row.recipeProcessNo,
+        recipeType: row.recipeType,
+      },
+    })
+
+    const data = [
+      type === 'retry' ? 1 : 8,
+      row.priority,
+      row.machineid,
+      row.tankno,
+      row.joborder,
+      row.programno,
+      row.stepno,
+      row.recipeStepNo,
+      countInProgram,
+      row.recipeType,
+      row.recipeProcessNo,
+      type === 'retry' ? 1 : 0,
+    ]
+
+    const isWritten = await $fetch('/api/file/write-dispenser-step', {
+      method: 'POST',
+      body: {
+        path: 'ozkantest/index.req',
+        content: data,
+        reqNumber: row.reqnumber,
+      },
+    })
+    if (isWritten?.code === 200)
+      Notify.create({
+        message: t(`dispensingManager.${type}RequestSent`),
+        type: 'positive',
+        position: 'top',
+      })
+  }
 }
 </script>
 
@@ -88,7 +171,7 @@ async function clickShowRecipe(row, isLogs: boolean) {
           :columns="columnsRecipe"
           class="h-120"
           :pagination="{ rowsPerPage: paginationSync, page: paginationPageLeft }"
-          @update:pagination="(newPag) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
+          @update:pagination="(newPag: any) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
           @update-filter-slots="(evt) => applyFilters(evt)"
         >
           <!-- style="width: 55%; height: 100%;" -->
@@ -111,15 +194,15 @@ async function clickShowRecipe(row, isLogs: boolean) {
           </template>
           <template #custombody="recipe">
             <q-tr
-              :class="{ 'selected-row': selectedJobOrderTableRow === recipe.row.reqnumber }"
+              :class="{ 'selected-row': selectedRow === recipe.row }"
               style="cursor: pointer;"
-              :style="selectedJobOrderTableRow === recipe.row.reqnumber
+              :style="selectedRow === recipe.row
                 ? 'background-color: #cce8ff;'
                 : recipe.rowIndex % 2
                   ? `background-color: ${colors.tableGray}`
                   : '' "
-              @click="selectRow(recipe.row.reqnumber)"
-              @contextmenu="selectRow(recipe.row.reqnumber)"
+              @click="selectRow(recipe.row)"
+              @contextmenu="selectRow(recipe.row)"
             >
               <!-- @right="" -->
               <q-td
@@ -148,24 +231,35 @@ async function clickShowRecipe(row, isLogs: boolean) {
                       clickable
                       @click="clickShowRecipe(recipe.row, true)"
                     >
-                      <q-item-section>{{ t('distributionProcessor.rcMenu.showLogs') }}</q-item-section>
+                      <q-item-section>{{ t('dispensingManager.rcMenu.showLogs') }}</q-item-section>
                     </q-item>
                     <q-item
                       v-close-popup
                       clickable
                       @click="clickShowRecipe(recipe.row, false)"
                     >
-                      <q-item-section>{{ t('distributionProcessor.rcMenu.showRecipe') }}</q-item-section>
+                      <q-item-section>{{ t('dispensingManager.rcMenu.showRecipe') }}</q-item-section>
                     </q-item>
                     <q-separator />
-                    <q-item v-close-popup clickable>
-                      <q-item-section>{{ t('distributionProcessor.rcMenu.retry') }}</q-item-section>
+                    <q-item
+                      v-for="act in actions"
+                      :key="act"
+                      v-close-popup
+                      clickable
+                      @click="
+                        selectedRow.status === 3 || selectedRow.status === 8
+                          ? processRequest(act, selectedRow)
+                          : confirmationDialog = { vis: true, act }
+                      "
+                    >
+                      <q-item-section>{{ t(`dispensingManager.rcMenu.${act}`) }}</q-item-section>
                     </q-item>
-                    <q-item v-close-popup clickable>
-                      <q-item-section>{{ t('distributionProcessor.rcMenu.cancel') }}</q-item-section>
-                    </q-item>
-                    <q-item v-close-popup clickable>
-                      <q-item-section>{{ t('distributionProcessor.rcMenu.complete') }}</q-item-section>
+                    <q-item
+                      v-close-popup
+                      clickable
+                      @click="completeProgram(selectedRow)"
+                    >
+                      <q-item-section>{{ t('dispensingManager.rcMenu.complete') }}</q-item-section>
                     </q-item>
                   </q-list>
                 </q-menu>
@@ -175,8 +269,35 @@ async function clickShowRecipe(row, isLogs: boolean) {
         </FilterableTable>
       </div>
     </div>
+    <q-dialog v-model="confirmationDialog.vis" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar
+            icon="help"
+            color="white"
+          />
+          {{ t('dispensingManager.alreadyStartedWarning') }}
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            v-close-popup
+            :label="t('no')"
+            outline
+            icon="close"
+          />
+          <q-btn
+            v-close-popup
+            outline
+            :label="t('yes')"
+            icon="check"
+            @click="processRequest(confirmationDialog.act, selectedRow)"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <span class="header-class">
-      {{ t('distributionProcessor.selectedRequest') }}
+      {{ t('dispensingManager.selectedRequest') }}
     </span>
 
     <div class="ml-5 mr-5" style="width: 100%;">
@@ -225,7 +346,7 @@ async function clickShowRecipe(row, isLogs: boolean) {
         color="black"
         icon="settings"
         :label="t('settings._')"
-        @click="navigateToPage('setting')"
+        @click="navigateToPage('settings')"
       />
     </div>
   </div>

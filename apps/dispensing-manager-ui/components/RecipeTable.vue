@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { TableColumnCtx } from 'element-plus'
 import type { PropType } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { RecipeLatest } from '~/shared/types'
 
 const props = defineProps({
@@ -14,9 +13,13 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  isFirst: {
-    type: Boolean,
+  machineid: {
+    type: Number,
     required: true,
+  },
+  resetCounter: {
+    type: Number,
+    default: 0,
   },
 })
 
@@ -27,9 +30,25 @@ interface SpanMethodProps {
   rowIndex: number
   columnIndex: number
 }
+
+const columns = [
+  { label: t('recipe.processOrder'), field: 'processOrder' },
+  { label: t('recipeType'), field: 'recipeTypeText' },
+  { label: t('programNo'), field: 'programNo' },
+  { label: t('programName'), field: 'programName' },
+  { label: t('recipe.ISN'), field: 'ISN' },
+  { label: t('recipe.mainStep'), field: 'mainStep' },
+  { label: t('weighingInformation.parallelStep'), field: 'parallelStep' },
+  { label: t('materialCode'), field: 'chemCode' },
+  { label: t('materialName'), field: 'materialName' },
+  { label: t('recipe.processNo'), field: 'programProcessNo' },
+  { label: t('recipe.amount'), field: 'amount' },
+  { label: t('recipe.metric'), field: 'unit' },
+]
+
 const groupables = [
   { key: 'processOrder', index: 0 },
-  { key: 'recipeTypeText', index: 1 },
+  { key: 'recipeType', index: 1 },
   { key: 'programNo', index: 2 },
   { key: 'programName', index: 3 },
   { key: 'ISN', index: 4 },
@@ -65,6 +84,8 @@ function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
   }
   return { rowspan, colspan: 1 }
 }
+
+const selectedRow = ref()
 const rgbClasses = ['violet-class', 'blue-class', 'green-class', 'red-class', 'aqua-class', 'orange-class']
 function a({ row, columnIndex }: SpanMethodProps) {
   // HARDCODED! columnIndex 4 === chemCode --> veri değişirse değiştir!
@@ -72,7 +93,116 @@ function a({ row, columnIndex }: SpanMethodProps) {
     const color = rgbClasses[row.processOrder % rgbClasses.length]
     return color
   }
+  let colorCondition = row.processOrder === selectedRow.value?.processOrder
+  let className = ''
+  if (colorCondition) {
+    if (row === selectedRow.value) {
+      return 'selected-blue'
+    } else {
+      groupables.forEach((item) => {
+        colorCondition = colorCondition && row[item.key] === selectedRow.value[item.key]
+        if (colorCondition && columnIndex === item.index)
+          className = 'selected-blue'
+      })
+      return className
+    }
+  }
+
   return 'normal-class'
+}
+
+const tableContainer = ref()
+const contextMenuVisible = ref(false)
+const contextMenuPosition = ref({ top: '0px', left: '0px' })
+function handleContextMenu(event: { preventDefault: () => void; clientY: any; clientX: any }, row: any) {
+  selectedRow.value = row
+  event.preventDefault()
+  contextMenuVisible.value = true
+  document.body.style.overflow = 'hidden'
+  contextMenuPosition.value = { top: `${event.clientY}px`, left: `${event.clientX}px` }
+}
+function handleMenuClick() {
+  contextMenuVisible.value = false
+  document.body.style.overflow = 'auto'
+}
+
+document.addEventListener('click', (e) => {
+  if (tableContainer.value && !tableContainer.value.contains(e.target)) {
+    contextMenuVisible.value = false
+  }
+  document.body.style.overflow = 'auto'
+})
+
+const requestDialog = ref(false)
+const confirmationDialog = ref(false)
+
+const changeDialog = ref(false)
+const changeValue = ref()
+async function changeRow() {
+  await $fetch('/api/recipe/change-recipe-amount', {
+    method: 'PUT',
+    body: {
+      planKey: selectedRow.value.planKey,
+      ISN: selectedRow.value.ISN,
+      chemCode: selectedRow.value.chemCode,
+      newAmount: changeValue.value,
+    },
+  })
+  selectedRow.value.amount = changeValue.value
+  changeValue.value = null
+}
+const logsDialog = ref(false)
+const priority = ref()
+const tankNo = ref()
+const isTankNoRequired = ref()
+let materialCodes: (string | null)[] = []
+
+async function checkIsTankNoRequired() {
+  requestDialog.value = true
+  selectedRow.value.programTotalCount = 0
+  props.data.forEach((row) => {
+    if (selectedRow.value.ISN === row.ISN)
+      materialCodes.push(row.chemCode)
+    if (selectedRow.value.programNo === row.programNo && row.parallelStep === 1)
+      selectedRow.value.programTotalCount++
+  })
+  isTankNoRequired.value = await $fetch('/api/recipe/check-tank-no-required', {
+    method: 'POST',
+    body: {
+      materialCodes,
+    },
+  })
+}
+const priorityOptions = [
+  { label: t('recipe.priorityLow'), value: 10 },
+  { label: t('recipe.priorityNormal'), value: 50 },
+  { label: t('recipe.priorityHigh'), value: 75 },
+  { label: t('recipe.priorityCritical'), value: 99 },
+]
+async function requestRow() {
+  const data = [2, priority.value.value, props.machineid, tankNo.value, selectedRow.value.joborder, selectedRow.value.programNo, selectedRow.value.mainStep, selectedRow.value.mainStep, selectedRow.value.programTotalCount, selectedRow.value.recipeType, selectedRow.value.processOrder]
+  await $fetch('/api/file/write-recipe-step', {
+    method: 'POST',
+    body: {
+      row: selectedRow.value,
+      content: data,
+      path: 'ozkantest/index.req',
+      materialCodes,
+    },
+  })
+  tankNo.value = null
+  priority.value = null
+  materialCodes = []
+}
+
+watch(() => props.resetCounter, (newValue, oldValue) => {
+  if (newValue !== oldValue) {
+    selectedRow.value = null
+  }
+})
+
+function isCorrectPlankey(param: any) {
+  // TODO: Global function that checks if it is the last correction no or highest plankey
 }
 </script>
 
@@ -86,11 +216,12 @@ function a({ row, columnIndex }: SpanMethodProps) {
       table-layout="fixed"
       header-cell-class-name="whitespace-nowrap"
       :cell-class-name="a"
-      row-class-name="normal-class"
-      style="color: black;"
+      style="color: black; cursor: pointer;"
       size="small"
       empty-text="There is no Recipe to show."
       :show-overflow-tooltip="true"
+      @cell-click="(row, col, cell, event) => selectedRow === row ? selectedRow = null : selectedRow = row"
+      @cell-contextmenu="(row, col, cell, event) => handleContextMenu(event, row)"
     >
       <ElTableColumn
         style="color: black;"
@@ -98,83 +229,162 @@ function a({ row, columnIndex }: SpanMethodProps) {
         align="center"
       >
         <ElTableColumn
-          prop="processOrder"
-          :label="t('recipe.processOrder')"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          prop="recipeTypeText"
-          :label="t('recipeType')"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          prop="programNo"
-          :label="t('programNo')"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          prop="programName"
-          :label="t('programName')"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          prop="ISN"
-          :label="t('recipe.ISN')"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          prop="mainStep"
-          :label="t('recipe.mainStep')"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          prop="parallelStep"
-          :label="t('weighingInformation.parallelStep')"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          prop="chemCode"
-          :label="t('materialCode')"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          prop="materialName"
-          :label="t('materialName')"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          :label="t('recipe.processNo')"
-          prop="programProcessNo"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          :label="t('recipe.amount')"
-          prop="amount"
-          align="center"
-          show-overflow-tooltip
-        />
-        <ElTableColumn
-          prop="unit"
-          :label="t('recipe.metric')"
+          v-for="col in columns"
+          :key="col.field"
+          :prop="col.field"
+          :label="col.label"
           align="center"
           show-overflow-tooltip
         />
       </ElTableColumn>
     </ElTable>
+    <div
+      v-if="contextMenuVisible"
+      ref="tableContainer"
+      class="context-menu"
+      :style="contextMenuPosition"
+    >
+      <ElMenu
+        default-active="2"
+        class="el-menu-vertical-demo"
+        @click="handleMenuClick"
+      >
+        <ElMenuItem index="1" @click="checkIsTankNoRequired()">
+          {{ t('recipe.requestSelectedStep') }}
+        </ElMenuItem>
+        <ElMenuItem index="2" @click="changeDialog = true">
+          {{ t('recipe.changeSelectedStepAmount') }}
+        </ElMenuItem>
+        <ElMenuItem index="3" @click="logsDialog = true">
+          {{ t('recipe.showLogsSelectedStep') }}
+        </ElMenuItem>
+      </ElMenu>
+    </div>
+    <q-dialog v-model="requestDialog" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <span class="text-h6"> {{ t('recipe.prioritySelect') }}</span>
+        </q-card-section>
+        <q-card-section>
+          <q-select
+            v-model="priority"
+            filled
+            :options="priorityOptions"
+          />
+        </q-card-section>
+        <q-card-section v-if="priority && isTankNoRequired">
+          <span class="text-h6"> {{ t('recipe.inputTankNo') }}</span>
+        </q-card-section>
+        <q-card-section v-if="priority && isTankNoRequired">
+          <q-input
+            v-model="tankNo"
+            type="number"
+            filled
+          />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            v-close-popup
+            :label="t('settings.cancel')"
+            outline
+            icon="close"
+            @click="tankNo = null, priority = null, materialCodes = []"
+          />
+          <q-btn
+            v-close-popup
+            outline
+            :label="t('submit')"
+            icon="check"
+            @click="confirmationDialog = true"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="confirmationDialog" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar
+            icon="help"
+            color="white"
+          />
+          <span class="q-ml-sm"> {{ selectedRow.chemCode }} {{ t('recipe.requestConfirmation') }}</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            v-close-popup
+            :label="t('no')"
+            outline
+            icon="close"
+            @click="tankNo = null, priority = null, materialCodes = []"
+          />
+          <q-btn
+            v-close-popup
+            outline
+            :label="t('yes')"
+            icon="check"
+            @click="requestRow()"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="changeDialog" persistent>
+      <q-card>
+        <q-card-section class="row items-center flex m-5">
+          <span class="text-h6"> {{ selectedRow.chemCode }} - {{ selectedRow.materialName }} - {{ (selectedRow.amount).toFixed(2) }} {{ selectedRow.unit }}</span>
+        </q-card-section>
+        <q-card-section>
+          <q-input
+            v-model="changeValue"
+            type="number"
+            class="mx-5"
+            filled
+            :label="t('recipe.newAmount')"
+          />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            v-close-popup
+            :label="t('settings.cancel')"
+            outline
+            icon="close"
+            @click="changeValue = null"
+          />
+          <q-btn
+            v-close-popup
+            outline
+            :label="t('settings.submit')"
+            icon="check"
+            @click="changeRow()"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog
+      v-model="logsDialog"
+      persistent
+      class="prev-logs-class flex"
+    >
+      <RecipeStepPreviousRequestsContent
+        :joborder="selectedRow?.joborder"
+        :program-no="selectedRow?.programNo"
+        :program-step-no="selectedRow?.mainStep"
+      />
+    </q-dialog>
   </div>
 </template>
 
 <style lang="postcss">
+.selected-blue {
+  background-color: #cce8ff !important;
+}
+.context-menu {
+  position: fixed;
+  z-index: 2000;
+}
 .normal-class {
   background: scroll !important;
 }
@@ -201,9 +411,21 @@ function a({ row, columnIndex }: SpanMethodProps) {
     display: none !important;
   }
 }
+
+@media (min-width: 600px) {
+
+  .prev-logs-class .q-dialog__inner--minimized > div {
+  max-width: 100%;
+}
+}
 @media (min-width: 735px) and (max-width: 1350px) {
   .el-table--small .el-table__cell {
     padding: 0 !important;
   }
+}
+
+.context-menu {
+  border-width: 1px;
+  border-radius: 2px;
 }
 </style>

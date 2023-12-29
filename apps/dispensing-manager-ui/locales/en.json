@@ -34,6 +34,8 @@
   "ongoingJoborders": "Job Orders in progress",
   "search": "Search",
   "more": "more",
+  "yes": "Yes",
+  "no": "No",
   "settings": {
     "_": "Settings",
     "requestFileSystem": "Request files directory",
@@ -138,7 +140,7 @@
     "determineCouplingRecipe": "Determine Coupling Recipe",
     "checkTankNumberWhenMakingManualOnlineRequest": "Check Tank Number When Making a Manual Online Request"
   },
-  "distributionProcessor": {
+  "dispensingManager": {
     "_": "Distribution Processor",
     "recipeRequest": "Request Recipe Details",
     "alerts": "Occurring Alarms",
@@ -161,7 +163,12 @@
       "complete": "Make Selected Request Completed",
       "justChem": "Just Show Chemical Requests",
       "justDye": "Just Show Dye Requests"
-    }
+    },
+    "recipeDeletedWarning": "The process cannot continue because the recipe has been deleted.",
+    "alreadyStartedWarning": "The request has already been initiated. Are you sure you want to continue?",
+    "requestSent": "Request sent.",
+    "retryRequestSent": "Retry request sent.",
+    "deleteRequestSent": "Delete request sent."
   },
   "jobOrderLogs": {
     "_": "Job Order Logs",
@@ -215,6 +222,7 @@
     "logs": "Show Logs",
     "machineCode": "Machine Code",
     "mainStep": "Main Step",
+    "parallelStep": "Parallel Step",
     "metric": "Unit",
     "processOrder": "Order of Operation",
     "processNo": "Process number",
@@ -223,7 +231,25 @@
     "recipeNo": "Recipe Number",
     "machineChange": "Change Machine",
     "joborderCoupled": "Is Joborder Coupled ?",
-    "coupleMachine": "Couple Machine"
+    "coupleMachine": "Couple Machine",
+    "requestSelectedStep": "Request Selected Step",
+    "changeSelectedStepAmount": "Change Selected Step's Amount",
+    "showLogsSelectedStep": "Show Previous Requests of Selected Step",
+    "requestConfirmation": "as material code. Are you sure you request the selected step manually?",
+    "newAmount": "New Amount",
+    "previousRequests": "Step's Previous Details",
+    "stepReInfo": "Rerequested Step's Details",
+    "autoWeiDetails": "Automatic Weighing Details",
+    "manuelWeiDetails": "Manuel Weighing Details",
+    "prioritySelect": "Please select priority preferences.",
+    "priorityLow": "Low",
+    "priorityNormal": "Normal",
+    "priorityHigh": "High",
+    "priorityCritical": "Very High",
+    "inputTankNo": "Please enter a tank no as 'integer'!",
+    "weiRerequest": "Are you sure you want to rerequest weighing requests?",
+    "solvingRerequest": "Are you sure you want to rerequest solving requests?"
+
   },
   "registeredJobOrders": {
     "_": "Registered Job Orders",

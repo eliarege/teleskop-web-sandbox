@@ -1,23 +1,17 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { onMounted } from 'vue'
-import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
-import moment from 'moment'
 import { useStorage } from '@vueuse/core'
-import { filtersToKnex, navigateToPage, textAlignOverride } from '../shared/functions'
-import { rows } from '../shared/constants'
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
+import { onMounted } from 'vue'
+import { navigateToPage } from '../shared/functions'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
 // Call fetchData when component is mounted.
 // For this, we can use the onMounted hook from 'vue'
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 
-const joborderInput = ref()
-const date = ref({ from: '', to: '' })
-
-const selectedMachine = ref()
 const machines = ref([])
 
 const joborders = ref()
@@ -50,25 +44,12 @@ const columns = computed(() => [
   { name: 'programList', label: t('registeredJobOrders.programList'), field: 'programList', format: val => val.slice(0, -1), filterable: true, filterType: 'includes' },
   { name: 'plannedStartTime', label: t('registeredJobOrders.scheduledStartTime'), field: 'plannedStartTime', filterable: true, filterType: 'date' },
 ] as Column[])
-const noFilterSpec = ref(true)
 
-async function request() {
-  let query = '/api/joborder/filtered-joborders?'
-  if (selectedMachine.value?.machineid)
-    query += `machineid=${selectedMachine.value.machineid}&`
-  if (joborderInput.value)
-    query += `joborder=${joborderInput.value}&`
-  if (date.value.from && date.value.to)
-    query += `startdate=${date.value.from}&enddate=${date.value.to}&`
-  const tempMachines = await $fetch(query)
-  joborders.value = tempMachines
-}
-
-async function handleRowDblClick(row) {
+async function handleRowDblClick(row: any) {
   await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.correctionNo}`)
 }
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: any) {
   externalFilterSlots.value = updatedValue
   joborders.value = await $fetch('/api/joborder/filtered-joborders', {
     method: 'post',
@@ -86,7 +67,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
       &nbsp;&nbsp;
       {{ t('joborders') }}
       <span class="right-home">
-        <NavigationButton type="setting" />
+        <NavigationButton type="settings" />
         <NavigationButton type="home" />
       </span>
     </div>
@@ -115,13 +96,13 @@ async function handleFilterSlotsUpdate(updatedValue) {
               :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
             >
               <q-td
-                v-for="(col, index) in props.cols"
+                v-for="(col) in props.cols"
                 :key="col.name"
                 :props="props"
                 @click="handleRowDblClick(props.row)"
               >
                 <span v-if="col.field === 'plannedStartTime'">
-                  {{ moment(col.value).format('HH:m:ss DD/MM/YYYY') }}
+                  {{ d(col.value, 'datetime') }}
                 </span>
                 <span v-else>
                   {{ col.value }}

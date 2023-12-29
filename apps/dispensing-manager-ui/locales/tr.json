@@ -34,6 +34,8 @@
   "ongoingJoborders": "İşlemdeki İş Emirleri",
   "search": "Ara",
   "more": "fazlası",
+  "yes": "Evet",
+  "no": "Hayır",
   "settings": {
     "_": "Ayarlar",
     "requestFileSystem": "İstek dosyalarının dizini",
@@ -137,7 +139,7 @@
     "determineCouplingRecipe": "Aküple Reçetesi Bölünsün",
     "checkTankNumberWhenMakingManualOnlineRequest": "Manuel Online İstek Yapılırken Tank Numarasını Kontrolünü Yapsın"
   },
-  "distributionProcessor": {
+  "dispensingManager": {
     "_": "Dağıtım Yöneticisi",
     "recipeRequest": "Reçete Bilgilerini Sorgulama",
     "alerts": "Oluşan Alarmlar",
@@ -160,7 +162,12 @@
       "complete": "Seçili İsteği Tamamlandı Yap",
       "justChem": "Sadece Kimyasal İsteklerini Göster",
       "justDye": "Sadece Boya İsteklerini Göster"
-    }
+    },
+    "recipeDeletedWarning": "Reçete silinmiş olduğu için işleme devam edilemiyor.",
+    "alreadyStartedWarning": "İstek çoktan başlatıldı. Devam etmek istediğinize emin misiniz?",
+    "requestSent": "İstek gönderildi.",
+    "retryRequestSent": "Adımı tekrarlama isteği göderildi.",
+    "deleteRequestSent": "Adımı iptal etme isteği göderildi."
   },
   "jobOrderLogs": {
     "_": "İş Emri Kayıtları",
@@ -214,6 +221,7 @@
     "logs": "Kayıtları Göster",
     "machineCode": "Makine Kodu",
     "mainStep": "Ana Adım",
+    "parallelStep": "Parallel Adım",
     "metric": "Birim",
     "processOrder": "İşlem Sırası",
     "processNo": "İşlem Numarası",
@@ -222,7 +230,24 @@
     "recipeNo": "Reçete No",
     "machineChange": "Makine Değiştirme",
     "joborderCoupled": "İş Emri Akuple Mi ?",
-    "coupleMachine": "Akuple Makinesi"
+    "coupleMachine": "Akuple Makinesi",
+    "requestSelectedStep": "Seçili Adımı İste",
+    "changeSelectedStepAmount": "Seçili Adımın Miktarını Değiştir",
+    "showLogsSelectedStep": "Seçili Adımın Geçmiş İsteklerini Görüntüle",
+    "requestConfirmation": "Madde kodlu seçili adımı manuel olarak istediğinize emin misiniz?",
+    "newAmount": "Yeni miktar",
+    "previousRequests": "İsteğin Geçmiş Detayları",
+    "stepReInfo": "Adım Tekrar Bilgileri",
+    "autoWeiDetails": "Otomatik Tartım Detayları",
+    "manuelWeiDetails": "Manuel Tartım Detayları",
+    "prioritySelect": "Lütfen öncelik seçimi yapınız.",
+    "priorityLow": "Düşük",
+    "priorityNormal": "Normal",
+    "priorityHigh": "Acil",
+    "priorityCritical": "Çok Acil",
+    "inputTankNo": "Lütfen tank numarasını 'sayı' olarak giriniz!",
+    "weiRerequest": "İş emri tartım isteklerini yenilemek istediğinize emin misiniz?",
+    "solvingRerequest": "İş emri çözme isteklerini isteklerini yenilemek istediğinize emin misiniz?"
   },
   "registeredJobOrders": {
     "_": "Kayıtlı İş Emirleri",

@@ -1,75 +1,76 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import type { Column } from '~/shared/types'
+import FilterableTable from 'ui/components/FilterableTable.vue'
 import { colors } from '~/shared/constants'
+import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref([])
-const disps = ref([])
+const types = ref([])
+const protocols = ref(['7', '15', 'n', 'n-v2', 'n-v3', 'n-v4', 'n-v5', 'EMTS'])
 
 await getRows()
-await getDisps()
+await getTypes()
 
 const columns: Array<Column> = [
   {
-    name: 'machineid',
-    label: t('settings.machineCode'),
-    field: 'machineid',
+    name: 'dispNo',
+    label: t('settings.dispSettings.dispNo'),
+    field: 'dispNo',
     filterable: true,
   },
   {
-    name: 'machinename',
-    label: t('settings.machinename'),
-    field: 'machinename',
+    name: 'name',
+    label: t('settings.dispSettings.dispName'),
+    field: 'name',
     filterable: true,
   },
   {
-    name: 'controlDevice',
-    label: t('settings.controlMach'),
-    field: 'controlDevice',
+    name: 'fileSystem',
+    label: t('settings.dispSettings.dispFileSystem'),
+    field: 'fileSystem',
+    filterable: true,
+  },
+  {
+    name: 'fileName',
+    label: t('settings.dispSettings.dispFileName'),
+    field: 'fileName',
+  },
+  {
+    name: 'protocol',
+    label: t('settings.dispSettings.dispProtocol'),
+    field: 'protocol',
     filterable: true,
   },
 ]
 
-const controlDevices = [
-  { value: 0, label: 'Programatörü Yok' },
-  { value: 1, label: 'Eliar' },
-  { value: 2, label: 'Sedo' },
-  { value: 3, label: 'Setrex' },
-  { value: 4, label: 'Termo' },
-  { value: 5, label: 'Tonello' },
-]
-
-const machineInfo = ref<{ label: string; value: any; field: string }[]>([
-  { label: t('settings.machineCode'), value: '', field: 'machineid' },
-  { label: t('settings.machinename'), value: '', field: 'machinename' },
-  { label: t('settings.controlMach'), value: '', field: 'controlDevice' },
-  { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
-
+const dispenserInfo = ref<{ label: string; value: any; field: string; options?: Array<any> }[]>([
+  { label: t('settings.dispSettings.dispNo'), value: '', field: 'dispNo' },
+  { label: t('settings.dispSettings.dispName'), value: '', field: 'name' },
+  { label: t('settings.dispSettings.dispType'), value: '', field: 'dispType' },
+  { label: t('settings.dispSettings.dispIP'), value: '', field: 'dispIP' },
+  { label: t('settings.dispSettings.dispFileSystem'), value: '', field: 'fileSystem' },
+  { label: t('settings.dispSettings.dispFileName'), value: '', field: 'fileName' },
+  { label: t('settings.dispSettings.dispProtocol'), value: '', field: 'protocol' },
+  { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'consumptionFile' },
 ])
 
+async function getTypes() {
+  types.value = await $fetch('/api/settings/dispenser-type')
+}
+
 async function getRows() {
-  rows.value = await $fetch('/api/setting/machine-dispenser-connection')
+  rows.value = await $fetch('/api/settings/dispenser')
   rows.value.unshift({})
 }
 
-async function getDisps() {
-  disps.value = await $fetch('/api/setting/dispenser')
-}
-
-function resetMachineInfo(row?: any) {
+function resetDispenserInfo(row?: any) {
   if (!row)
-    machineInfo.value.forEach(mach => mach.value = '')
+    dispenserInfo.value.forEach(disp => disp.value = '')
   else {
-    machineInfo.value.forEach((mach) => {
-      if (mach.field === 'controlDevice') {
-        controlDevices.forEach(dev => dev.value === row[mach.field] ? mach.value = dev : '')
-      } else if (mach.field === 'connectedDisps') {
-        mach.value = row.disps
-        console.log(mach.value)
-      } else {
-        mach.value = row[mach.field]
-      }
+    dispenserInfo.value.forEach((disp) => {
+      disp.field === 'dispType'
+        ? types.value.forEach((type: { type: number; name: string }) => type.type === row[disp.field] ? disp.value = type : '')
+        : disp.value = row[disp.field]
     })
   }
 }
@@ -80,8 +81,7 @@ function toggleRow(row: any, index: number) {
   expandedRow.value === index
     ? expandedRow.value = null
     : expandedRow.value = index
-  resetMachineInfo(row)
-  console.log(machineInfo.value)
+  resetDispenserInfo(row)
 }
 const dmsRead = ref(false)
 
@@ -113,44 +113,58 @@ function customSortMethod(rows, sortBy, descending) {
   return sortedRows
 }
 
-async function submit(rowIndex: number) {
+async function submit(rowIndex: number, row: any) {
+  let isOriginNo = true
   /** If create */
   if (rowIndex === 0) {
-    await $fetch('/api/setting/machine-dispenser-connection', {
+    const a = await $fetch('/api/settings/dispenser', {
       method: 'post',
       body: {
-        machineid: machineInfo.value[0].value,
-        machinename: machineInfo.value[1].value,
-        controlDevice: machineInfo.value[2].value.value,
-        disps: machineInfo.value[3].value,
+        dispNo: dispenserInfo.value[0].value,
+        name: dispenserInfo.value[1].value,
+        dispType: dispenserInfo.value[2].value.type,
+        dispIP: dispenserInfo.value[3].value,
+        fileSystem: dispenserInfo.value[4].value,
+        fileName: dispenserInfo.value[5].value,
+        protocol: dispenserInfo.value[6].value,
       },
     })
+    expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
-    console.log(machineInfo.value)
-    await $fetch('/api/setting/machine-dispenser-connection', {
+    if (row.dispNo !== dispenserInfo.value[0].value) {
+      isOriginNo = false
+    }
+    await $fetch('/api/settings/dispenser', {
       method: 'put',
       body: {
-        machineid: machineInfo.value[0].value,
-        machinename: machineInfo.value[1].value,
-        controlDevice: machineInfo.value[2].value.value,
-        disps: machineInfo.value[3].value,
+        dispNo: dispenserInfo.value[0].value,
+        isOriginNo,
+        name: dispenserInfo.value[1].value,
+        dispType: dispenserInfo.value[2].value.type,
+        dispIP: dispenserInfo.value[3].value,
+        fileSystem: dispenserInfo.value[4].value,
+        fileName: dispenserInfo.value[5].value,
+        protocol: dispenserInfo.value[6].value,
       },
     })
   }
   await getRows()
 }
-
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  await $fetch('/api/setting/machine-dispenser-connection', {
+  await $fetch('/api/settings/dispenser', {
     method: 'delete',
     body: {
-      machineid: machineInfo.value[0].value,
-      disps: machineInfo.value[3].value,
+      dispNo: dispenserInfo.value[0].value,
     },
   })
   expandedRow.value = null
+  /**
+   * I did not reset the dispenserInfo array careful. It has to be
+   * set before use so it will not be a problem but in case
+   * to relocate buttons on top of the screen can be example where we boomed
+   */
   await getRows()
 }
 </script>
@@ -171,7 +185,7 @@ async function deleteRow() {
           @click="toggleRow(props.row, props.rowIndex)"
         >
           <q-btn
-            v-if="props.row.machineid"
+            v-if="props.row.dispNo"
             size="sm"
             :style="`background-color: ${colors.black}; color: white;`"
             round
@@ -181,9 +195,9 @@ async function deleteRow() {
           <q-btn
             v-else
             outline
-            class="w-30"
-            :style="`color: ${colors.black}; font-weight: bold; font-size: larger;`"
+            :style="'color:' + ` ${colors.black} ` + 'font-weight: bold; font-size: larger; '"
             :label="t('settings.new')"
+            class="w-30"
             :icon="props.rowIndex === expandedRow ? 'remove' : 'add'"
           />
         </q-td>
@@ -195,12 +209,7 @@ async function deleteRow() {
           class="cursor-pointer"
           @click="toggleRow(props.row, props.rowIndex)"
         >
-          <span v-if="col.field === 'controlDevice'">
-            {{ controlDevices[col.value]?.label }}
-          </span>
-          <span v-else>
-            {{ col.value }}
-          </span>
+          {{ col.value }}
         </q-td>
       </q-tr>
 
@@ -208,67 +217,64 @@ async function deleteRow() {
         <q-td colspan="100%">
           <div class="flex justify-center pt-5">
             <div
-              v-for="mach in machineInfo"
-              :key="mach.label"
-              class="flex ml-5 mt-1"
+              v-for="disp in dispenserInfo"
+              :key="disp.label"
+              class="flex flex-row ml-5 mt-1"
             >
               <div class="flex w-70 pl-2 m-1 items-center">
-                {{ mach.label }}
+                {{ disp.label }}
               </div>
               <div class=" flex w-100 pl-2 m-1 items-center">
-                <span v-if="mach.field === 'controlDevice'">
+                <span v-if="disp.field === 'protocol'">
                   <q-select
-                    v-model="mach.value"
+                    v-model="disp.value"
+                    borderless
+                    dense
+                    class="w-70"
+                    filled
+                    options-dense
+                    :options="protocols"
+                    style="min-width: 150px"
+                  />
+                </span>
+                <span v-else-if="disp.field === 'dispType'">
+                  <q-select
+                    v-model="disp.value"
                     borderless
                     dense
                     filled
                     class="w-70"
                     options-dense
-                    :options="controlDevices"
-                    option-value="value"
-                    option-label="label"
-                    style="min-width: 150px"
-                  />
-                </span>
-                <span v-else-if="mach.field === 'connectedDisps'">
-                  <q-select
-                    v-model="mach.value"
-                    borderless
-                    multiple
-                    dense
-                    filled
-                    class="w-70 overflow-hidden"
-                    options-dense
-                    :options="disps"
-                    option-value="dispNo"
+                    :options="types"
+                    option-value="type"
                     option-label="name"
                     style="min-width: 150px"
                   />
-                  <!-- :display-value=" mach.value && mach.value.length > 1 ? `${mach.value[0]?.name} + ${mach.value?.length - 1} ${t('more')}` : mach.value[0]?.name" -->
                 </span>
                 <span v-else>
                   <q-input
-                    v-model="mach.value"
-                    dense
+                    v-model="disp.value"
                     class="w-70"
+                    dense
+                    :type="disp.field === 'dispNo' ? 'number' : 'text'"
                     filled
-                    :type="mach.field === 'machineid' ? 'number' : 'text'"
-                    :placeholder="mach.value"
-                    :disable="props.row.machineid > 0 && mach.field === 'machineid'"
+                    :placeholder="disp.value"
+                    :disable="disp.field === 'dispNo' && props.row.dispNo > 0"
                   />
-
+                </span>
+                <span v-if="disp.field === 'consumptionFile'">
+                  <q-checkbox v-model="dmsRead" :label="t('settings.dispSettings.readFromDMS')" />
                 </span>
               </div>
             </div>
-
             <div class="flex items-center justify-center gap-5 py-10 w-full">
               <q-btn
                 color="black"
                 :label="props.rowIndex ? t('settings.submit') : t('settings.new')"
+                :disable="dispenserInfo[0].value === undefined || dispenserInfo[0].value === ''"
                 outline
-                :disable="machineInfo[0].value === undefined || machineInfo[0].value === ''"
                 icon="done"
-                @click="submit(props.rowIndex)"
+                @click="submit(props.rowIndex, props.row)"
               />
               <q-btn
                 color="black"
@@ -291,7 +297,6 @@ async function deleteRow() {
       </q-tr>
     </template>
   </FilterableTable>
-  <!-------------------------------------------------------------------------------------->
   <q-dialog v-model="cancelDialogVisible" persistent>
     <q-card>
       <q-card-section class="row items-center">
@@ -325,7 +330,7 @@ async function deleteRow() {
 </template>
 
 <style scoped>
-.setting-section-header {
+.settings-section-header {
   align-items: center;
   font-size: x-large;
   display: flex;

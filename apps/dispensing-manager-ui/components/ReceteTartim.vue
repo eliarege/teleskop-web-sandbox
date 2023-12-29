@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { Notify } from 'quasar'
 import { navigateToPage } from '../shared/functions'
 
@@ -14,19 +13,22 @@ const showConsumptionDialog = ref(false)
 const lastJobOrder = ref()
 const plankey = ref()
 const showJoborderError = ref(false)
+const resetCounter = ref(0)
+const showWeiRequestDialog = ref(false)
 // TODO: Job<Typeof Joborder> with plankey joborder correctiion no can be stored
-const a = 0
 const machines = await $fetch('/api/machine/machines')
 // const { data: recipeData, pending: waitingForData } = useFetch('/api/recipe?recipeJB=11428&recipeID=3&teleskopType=normal')
 const recipeData = ref()
 const jobordernum = ref()
 const showChangeMachineDialog = ref(false)
+const correctionNoList = ref([])
+
 const buttonProps = ref([
   { name: 'logs', label: t('recipe.logs'), link: 'showLogs', icon: 'description' },
   { name: 'tartim', label: t('recipe.jobOrderMeasurement'), link: 'showConsumptions', icon: 'content_paste_search' },
   { name: 'parameters', label: t('recipe.jobOrderParameters'), link: 'showParameters', icon: 'search' },
-  { name: 'tartimrefresh', label: t('recipe.jobOrderMeasurementRefresh'), link: '', icon: 'refresh' },
-  { name: 'solvingrefresh', label: t('recipe.jobOrderSolvingRefresh'), link: '', icon: 'refresh' },
+  { name: 'tartimrefresh', label: t('recipe.jobOrderMeasurementRefresh'), link: 'tartimrefresh', icon: 'refresh' },
+  { name: 'solvingrefresh', label: t('recipe.jobOrderSolvingRefresh'), link: 'solvingrefresh', icon: 'refresh' },
 ])
 
 async function getCorrectionNOs(parameter: string) {
@@ -42,12 +44,12 @@ async function getCorrectionNOs(parameter: string) {
  * Might to have colors array
  */
 const recipeDataTemp = ref()
-const correctionNoList = ref([])
 const correctionNoDisplayed = ref(0)
-const machine = ref([])
+const machine = ref()
 const currentRecipeJoborder = ref('0')
 
 async function requestJobOrder() {
+  resetCounter.value += 1
   if (jobordernum.value) {
     showJoborderError.value = false
     currentRecipeJoborder.value = jobordernum.value
@@ -87,7 +89,6 @@ function clearCorrectionNo() {
 }
 
 const route = useRoute()
-console.log(route.query)
 if (route.query.correctionNo && route.query.joborder) {
   if (route.query.isLogs === 'true')
     showLogsDialog.value = true
@@ -97,19 +98,24 @@ if (route.query.correctionNo && route.query.joborder) {
 }
 
 function buttonAction(link: string) {
-  if (link === 'showParameters' && lastJobOrder.value) {
-    showParameterDialog.value = true
-  }
-  if (link === 'showLogs') {
-    showLogsDialog.value = true
-  }
-  if (link === 'showConsumptions') {
-    showConsumptionDialog.value = true
+  if (lastJobOrder.value) {
+    if (link === 'showParameters') {
+      showParameterDialog.value = true
+    }
+    if (link === 'showLogs') {
+      showLogsDialog.value = true
+    }
+    if (link === 'showConsumptions') {
+      showConsumptionDialog.value = true
+    }
+    if (link === 'tartimrefresh') {
+      showWeiRequestDialog.value = true
+    }
   }
 }
 
 async function submitCoupleMachine() {
-  await $fetch('/api/recipe/change-planned-machine', {
+  const check = await $fetch('/api/recipe/change-planned-machine', {
     method: 'put',
     body: {
       plankey: plankey.value,
@@ -117,6 +123,60 @@ async function submitCoupleMachine() {
       isCoupled: isCoupled.value,
       newCoupleMachine: coupledMachineChangeVal.value?.machineid,
     },
+  })
+  if (check)
+    machine.value = plannedMachineChangeVal.value
+}
+
+const programs = ref()
+
+async function rerequestWei() {
+  // TODO: Daha düzgün bir implementasyon bul.
+  programs.value = await $fetch('/api/recipe/programs-by-plankey', {
+    method: 'POST',
+    body: {
+      plankey: plankey.value,
+    },
+  })
+  programs.value.forEach((program) => {
+    recipeData.value.forEach((row) => {
+      if (program.programNo === row.programNo && program.recipeType === row.recipeType) {
+        if (!program.materialCodes)
+          program.materialCodes = []
+        program.materialCodes.push(row.chemCode)
+        program.row = row
+      }
+    })
+  })
+
+  programs.value.forEach(async (program) => {
+    if (program.materialCodes.length) {
+      const data = [
+        2,
+        50,
+        machine.value.machineid,
+        0,
+        program.row.joborder,
+        program.row.programNo,
+        program.row.mainStep,
+        program.row.mainStep,
+        program.materialCodes.length,
+        program.row.recipeType,
+        program.row.processOrder,
+      ]
+      await $fetch('/api/file/write-recipe-step', {
+        method: 'POST',
+        body: {
+          machineid: machine.value.machineid,
+          materialCodes: ['BAKR01', 'BAKR02', 'BAKR03'],
+          checkMachineDispenser: true,
+          checkMaterialDispenser: true,
+          dispenserType: 2,
+          content: data,
+          row: program.row,
+        },
+      })
+    }
   })
 }
 </script>
@@ -126,14 +186,14 @@ async function submitCoupleMachine() {
     1
   </button> -->
 
-  <div class="outer-div ">
+  <div class="outer-div">
     <div class="content flex flex-col gap-5">
       <span class="header-class-recipe">
         <NavigationButton type="back" />
         &nbsp;&nbsp;
-        {{ t('distributionProcessor._') }} - {{ t('recipe.header') }}
+        {{ t('dispensingManager._') }} - {{ t('recipe.header') }}
         <span class="right-home">
-          <NavigationButton type="setting" />
+          <NavigationButton type="settings" />
           <NavigationButton type="home" />
         </span>
       </span>
@@ -189,7 +249,7 @@ async function submitCoupleMachine() {
         />
         <div class="ml-auto items-center mr-5">
           {{ t('plannedMachine') }} :
-          {{ machine[0]?.machinename }}
+          {{ machine?.machinename }}
           <q-btn
             class="ml-5 py-3 w-75 items-start"
             :label="`${t('recipe.changePlannedMachine')}`"
@@ -208,7 +268,7 @@ async function submitCoupleMachine() {
           </q-card-section>
 
           <q-card-section class="flex flex-col gap-5" style="justify-content: center; align-items: center;">
-            {{ t('currentMachine') }} : {{ machine[0].machinename }}
+            {{ t('currentMachine') }} : {{ machine.machinename }}
             <q-select
               v-model="plannedMachineChangeVal"
               :options="machines"
@@ -267,16 +327,44 @@ async function submitCoupleMachine() {
       >
         <ConsumptionDialogContent
           :joborder="lastJobOrder"
-          :machinename="machine[0].machinename"
+          :machinename="machine.machinename"
           :correction-no="correctionNoDisplayed"
         />
+      </q-dialog>
+      <q-dialog v-model="showWeiRequestDialog" persistent>
+        <q-card>
+          <q-card-section class="row items-center">
+            <q-avatar
+              icon="help"
+              color="white"
+            />
+            {{ t('recipe.weiRerequest') }}
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn
+              v-close-popup
+              :label="t('no')"
+              outline
+              icon="close"
+            />
+            <q-btn
+              v-close-popup
+              outline
+              :label="t('yes')"
+              icon="check"
+              @click="rerequestWei()"
+            />
+          </q-card-actions>
+        </q-card>
       </q-dialog>
       <ElScrollbar class="table-wrapper-recipe">
         <RecipeTable
           :data="recipeData"
           :show="true"
           :title="t('recipe.recipeTable')"
-          :is-first="true"
+          :machineid="machine?.machineid"
+          :reset-counter="resetCounter"
         />
       </ElScrollbar>
     </div>
@@ -393,5 +481,6 @@ async function submitCoupleMachine() {
 .footer-button{
   margin: 1rem;
   margin-bottom: 1rem;
+  overflow: hidden;
 }
 </style>

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import moment from 'moment'
-import { useI18n } from 'vue-i18n'
 import { rowBGColorHandler } from '../shared/functions'
 import { colors } from '~/shared/constants'
 
@@ -9,7 +7,7 @@ const props = defineProps({
   machinename: String,
   correctionNo: Number,
 })
-const { t } = useI18n()
+const { t, d } = useI18n()
 
 const columnsOto = [
   { name: 'processNo', label: t('recipe.processNo'), field: 'processNo' },
@@ -78,7 +76,7 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
                 :style="rowBGColorHandler(col)"
               >
                 <span v-if="col.field === 'requestTime' || col.field === 'completedTime'">
-                  {{ col.value ? moment(col.value).format('HH:m:ss DD/MM/YYYY') : '____' }}
+                  {{ col.value ? d(col.value, 'datetime') : '_'.repeat(4) }}
                 </span>
                 <span v-else-if="col.field === 'status'">
                   {{ t(`statusCodes.${col.value}`) }}
@@ -127,7 +125,7 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
                 :style="rowBGColorHandler(col)"
               >
                 <span v-if="col.field === 'requestTime'">
-                  {{ moment(col.value).format('HH:m:ss DD/MM/YYYY') }}
+                  {{ d(col.value, 'datetime') }}
                 </span>
                 <span v-else-if="col.field === 'status'">
                   {{ t(`statusCodes.${col.value}`) }}
