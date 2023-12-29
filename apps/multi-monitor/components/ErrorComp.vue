@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
-
 const { t } = useI18n()
 </script>
 
@@ -23,9 +20,8 @@ const { t } = useI18n()
             t("error-message-last")
           }}</span>
           <Icon
-            icon="icon-park:six-circular-connection"
-            width="60"
-            height="60"
+            name="icon-park:six-circular-connection"
+            size="60"
             class="rotate-center"
           />
         </div>

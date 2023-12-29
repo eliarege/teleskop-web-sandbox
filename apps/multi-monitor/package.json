@@ -24,7 +24,6 @@
     "ui": "workspace:*"
   },
   "devDependencies": {
-    "@iconify/vue": "^4.1.1",
     "@types/animejs": "^3.1.12",
     "@types/d3": "^7.4.3",
     "@types/lodash-es": "^4.17.12",

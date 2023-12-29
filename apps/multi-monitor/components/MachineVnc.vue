@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
 import { NoVnc } from 'ui'
-import { useQuasar } from 'quasar'
-import { useDataStore } from '~/store/Datas'
 import type { MachineDataRaw } from '~/shared/types'
 
 const props = defineProps({
@@ -12,9 +8,7 @@ const props = defineProps({
     required: true,
   },
 })
-const emit = defineEmits(['close'])
 const { t } = useI18n()
-const store = useDataStore()
 const SymKey = {
   // https://github.com/D-Programming-Deimos/libX11/blob/master/c/X11/keysymdef.h
   F1: 0xFFBE, // XK_F1
@@ -62,6 +56,7 @@ const SymKey = {
 } as const
 const quasar = useQuasar()
 const config = useRuntimeConfig()
+const { token } = useKeycloak()
 const vnc = ref<InstanceType<typeof NoVnc> | null>(null)
 const vncCredentials = {
   password: '123456',
@@ -71,7 +66,7 @@ function sendKey(key: keyof typeof SymKey) {
   vnc.value!.sendKey(SymKey[key], null)
 }
 
-function onDisconnect(clean: boolean) {
+function onDisconnect(_clean: boolean) {
   quasar.notify({
     message: t('vnc-error', { name: props.currentMachine.name }),
     timeout: 4000,
@@ -165,7 +160,7 @@ onMounted(async () => {
         <div class="wrapper" @click.stop.prevent>
           <div class="machine-screen">
             <span class="cursor-pointer absolute border border-gray-300" @click="closeTab()">
-              <Icon icon="material-symbols:close" color="white" />
+              <Icon name="material-symbols:close" color="white" />
             </span>
             <div class="screen">
               <span class="loader z-1 absolute" />
@@ -173,6 +168,8 @@ onMounted(async () => {
                 ref="vnc"
                 :url="`ws://${location}:${config.public.websockifyPort || '6800'}/${props.currentMachine.id}`"
                 :credentials="vncCredentials"
+                :auth="config.public.kcEnabled"
+                :token="token"
                 drag-viewport
                 resize-session
                 class="z-2 absolute"

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { color } from 'd3'
 import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
 import type { MachineCardData } from '../types/MachineCard'
 import MachineSettings from './MachineSettings.vue'
 import ProgressBar from './ProgressBar.vue'
@@ -19,7 +18,7 @@ interface MachineCardProps {
   machineSort: number
   machineSettings: '0' | '1'
 }
-const props = defineProps<MachineCardProps>()
+defineProps<MachineCardProps>()
 function textColor(bgColor: string) {
   const colorToRGB = color(bgColor)!.rgb()
   const sRGB = {
@@ -110,7 +109,7 @@ function reqStatus(params: number) {
     <div class="machine-info">
       <div class="thermometer" :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }">
         <Icon
-          icon="jam:temperature"
+          name="jam:temperature"
           color="orange"
           :inline="true"
         />

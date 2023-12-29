@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import type { TableColumnCtx } from 'element-plus'
-import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
 import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import RecipeTable from 'ui/components/RecipeTable.vue'
@@ -139,8 +138,8 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
     <div class="header">
       <div>
         <Icon
-          icon="iconamoon:home-duotone"
-          :width="windowWidth > 1350 ? '30' : '20'"
+          name="iconamoon:home-duotone"
+          :size="windowWidth > 1350 ? '30' : '20'"
           class="cursor-pointer"
           @click="router.push('/')"
         />
@@ -385,9 +384,6 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
 </template>
 
 <style scoped lang="postcss">
-.icon {
-  @apply absolute mt-1 hidden;
-}
 .normal-class {
   background: scroll !important;
 }
@@ -487,9 +483,6 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
 }
 
 @media (min-width: 735px) and (max-width: 1350px) {
-  .icon {
-    @apply flex;
-  }
 
   .wrapper {
     grid-template-columns: repeat(3, 1fr);
@@ -522,10 +515,6 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
 }
 
 @media screen and (max-width: 735px) {
-  .icon {
-    @apply flex;
-  }
-
   .wrapper {
     @apply flex flex-col w-full h-full max-h-full max-w-full;
 

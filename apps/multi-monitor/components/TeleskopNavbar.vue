@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
 import type { PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDataStore } from '~/store/Datas'
@@ -121,9 +120,8 @@ const options = {
                 {{ textFormatter(trends.lastWeekElectricity) }}
               </QTooltip>
               <Icon
-                icon="ant-design:thunderbolt-twotone"
-                width="40"
-                height="40"
+                name="ant-design:thunderbolt-twotone"
+                size="40"
                 color="#2281ae"
               />
               <span
@@ -146,10 +144,9 @@ const options = {
                 {{ textFormatter(trends.lastWeekTotalWater) }}
               </QTooltip>
               <Icon
-                icon="ic:baseline-water-drop"
+                name="ic:baseline-water-drop"
                 color="#2281ae"
-                width="40"
-                height="40"
+                size="40"
                 :horizontal-flip="true"
               />
               <span
@@ -168,10 +165,9 @@ const options = {
                 {{ textFormatter(trends.lastWeekSalt) }}
               </QTooltip>
               <Icon
-                icon="tabler:salt"
+                name="tabler:salt"
+                size="40"
                 color="#2281ae"
-                width="40"
-                height="40"
               />
               <span
                 :class="trends.currentWeekSalt > trends.lastWeekSalt ? textRed : textGreen "
@@ -190,9 +186,8 @@ const options = {
               </QTooltip>
 
               <Icon
-                icon="fluent:building-factory-48-regular"
-                width="40"
-                height="40"
+                name="fluent:building-factory-48-regular"
+                size="40"
                 color="#2281ae"
               />
               <span
@@ -205,10 +200,9 @@ const options = {
           <div class="settings">
             <NuxtLink to="/details" class="icons hover:cursor-pointer">
               <Icon
-                icon="dashicons:list-view"
+                name="dashicons:list-view"
                 color="#2281ae"
-                width="30"
-                height="30"
+                size="30"
               />{{ t("teleskop.mode") }}
             </NuxtLink>
             <div
@@ -216,10 +210,9 @@ const options = {
               @click="showSettings = true"
             >
               <Icon
-                icon="eva:settings-2-outline"
+                name="eva:settings-2-outline"
                 color="#2281ae"
-                width="30"
-                height="30"
+                size="30"
               />{{ t("teleskop.settings") }}
             </div>
           </div>

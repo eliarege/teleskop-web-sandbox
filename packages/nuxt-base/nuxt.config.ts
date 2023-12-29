@@ -19,6 +19,7 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@element-plus/nuxt',
     'nuxt-quasar-ui',
+    'nuxt-icon',
   ],
   imports: {
     presets: [
