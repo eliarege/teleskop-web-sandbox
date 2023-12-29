@@ -16,6 +16,6 @@
   "devDependencies": {
     "quasar": "^2.14.1",
     "tsconfig": "workspace:*",
-    "vue": "^3.3.13"
+    "vue": "^3.4.0"
   }
 }

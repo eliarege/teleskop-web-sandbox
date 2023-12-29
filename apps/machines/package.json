@@ -30,7 +30,7 @@
     "ui": "workspace:*",
     "unocss-config": "workspace:*",
     "utils": "workspace:*",
-    "vue": "^3.3.13",
+    "vue": "^3.4.0",
     "vue-router": "^4.2.5"
   },
   "eliar": {
