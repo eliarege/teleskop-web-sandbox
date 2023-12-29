@@ -134,7 +134,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
       >
         <template #custombody="stopReasons">
           <q-tr
-            :class="{ 'selected-row': stopReasons.stopCode === stopReasons.row.stopCode }"
+            :class="{ 'selected-row': selected.stopCode === stopReasons.row.stopCode }"
             @click="handleSelection(stopReasons.row)"
           >
             <q-td

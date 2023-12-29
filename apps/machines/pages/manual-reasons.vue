@@ -1,48 +1,78 @@
 <script setup lang="ts">
-import type { QTableColumn } from 'quasar'
+import type { Column } from 'ui/types/FilterableTable'
+import FilterableTable from 'ui/components/FilterableTable.vue'
 import { editManualReason } from '~/utils'
+import type { ManualReason } from '~/types'
 
-const { data: manualReasons, pending, refresh } = useLazyFetch('/api/manual-reasons/manual-reasons', { default: () => [] })
-
-const columns: QTableColumn[] = [
+const columns: Column[] = [
+  {
+    name: 'manualId',
+    label: 'Manual Id',
+    field: 'manualId',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+  },
   {
     name: 'manualReason',
     label: 'Manuel Sebebi',
-    field: (row: any) => row.manualReason,
+    field: 'manualReason',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'reportToERP',
     label: 'ERP Arıza Bildirimi',
-    field: (row: any) => row.reportToERP,
+    field: 'reportToERP',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
-const selectedReason = ref([])
-const newReasonName = ref()
-const oldReasonName = ref()
-const checkReportToERP = ref(false)
-function handleSelection(obj: object) {
-  newReasonName.value = obj.rows[0].manualReason
-  oldReasonName.value = obj.rows[0].manualReason
-  checkReportToERP.value = obj.rows[0].reportToERP
+
+const { data: manualReasons, refresh } = useLazyFetch('/api/manual-reasons/manual-reasons', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
+
+const selected = ref<ManualReason>({
+  manualId: -1,
+  manualReason: '',
+  reportToERP: false,
+})
+
+function handleSelection(obj: ManualReason) {
+  selected.value = { ...obj }
 }
 
 async function handleEditManualReason() {
-  await editManualReason(oldReasonName.value, newReasonName.value, checkReportToERP.value)
+  await editManualReason(selected.value)
   await refresh()
 }
 
 async function handleAddManualReason() {
-  const manualId = manualReasons.value[manualReasons.value.length - 1].manualId + 1
-  await addManualReason(manualId, newReasonName.value, checkReportToERP.value)
+  await addManualReason(manualReasons.value, selected.value)
   await refresh()
 }
 
 async function handleDeleteManualReasons() {
-  await deleteManualReasons(selectedReason.value)
+  await deleteManualReasons(selected.value)
   await refresh()
-  selectedReason.value = []
+  selected.value = {
+    manualId: -1,
+    manualReason: '',
+    reportToERP: false,
+  }
+}
+async function handleFilterSlotsUpdate(updatedValue) {
+  manualReasons.value = await $fetch('/api/manual-reasons/manual-reasons', {
+    method: 'POST',
+    body: {
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 
@@ -57,7 +87,7 @@ async function handleDeleteManualReasons() {
       </div>
 
       <q-input
-        v-model="newReasonName"
+        v-model="selected.manualReason"
         label="Manuel Sebebi"
         filled
         class="w-xs"
@@ -65,7 +95,7 @@ async function handleDeleteManualReasons() {
 
       <div class="flex flex-row input-field my-4">
         <q-checkbox
-          v-model="checkReportToERP"
+          v-model="selected.reportToERP"
           label="ERP Sistemine Arıza Olarak Bildir"
         />
         <q-btn
@@ -84,32 +114,32 @@ async function handleDeleteManualReasons() {
           @click="handleDeleteManualReasons()"
         />
       </div>
-
-      <q-table
-        v-model:selected="selectedReason"
+      <FilterableTable
+        v-model:selected="selected"
         :rows="manualReasons"
         :columns="columns"
-        :loading="pending"
-        hide-pagination
-        :pagination="{ rowsPerPage: 0 }"
-        row-key="manualReason"
-        separator="cell"
-        bordered
-        selection="single"
-        table-header-class="table-header"
         @selection="(e) => handleSelection(e)"
+        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       >
-        <template #body-cell-reportToERP="props">
-          <q-td :props="props">
-            <span v-if="props.row.reportToERP">
-              Evet
-            </span>
-            <span v-else>
-              Hayır
-            </span>
-          </q-td>
+        <template #custombody="manualReasons">
+          <q-tr
+            :class="{ 'selected-row': selected.manualId === manualReasons.row.manualId }"
+            @click="handleSelection(manualReasons.row)"
+          >
+            <q-td
+              v-for="row in manualReasons.cols"
+              :key="row"
+            >
+              <span v-if="row.field === 'reportToERP'">
+                {{ row.value ? "Evet" : "Hayır" }}
+              </span>
+              <span v-else>
+                {{ row.value }}
+              </span>
+            </q-td>
+          </q-tr>
         </template>
-      </q-table>
+      </FilterableTable>
     </q-card-section>
   </q-card>
 </template>
@@ -125,5 +155,8 @@ async function handleDeleteManualReasons() {
 
 .input-field > * {
   margin-right: 2em;
+}
+.selected-row {
+  background-color: #cce8ff;
 }
 </style>
