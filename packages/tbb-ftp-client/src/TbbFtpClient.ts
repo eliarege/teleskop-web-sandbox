@@ -27,7 +27,7 @@ import { writeFinishReason } from './writers/writeFinishReason'
 import { FinishReason } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
-import { parseLockInput } from './parsers/parseLocksInput'
+import { parseLine, parseLockInput } from './parsers/parseLocksInput'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -247,8 +247,11 @@ export class TbbFtpClient {
   async fetchLocksInput() {
     const remotePath = '/tbb6500/data/locks/locks_inputs'
     const content = await download(this.client, remotePath)
-    const locks = parseLockInput(content)
-    return locks
+
+    const lines = content.split('\n')
+    const parsedData = lines.map(parseLine)
+
+    return parsedData
   }
 
   /*   async writeMachineParameterValues(values) {
