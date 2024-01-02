@@ -1,6 +1,6 @@
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
-  const appConfig = useAppConfig()
+  const kcConfig = useAppConfig().keycloak
   const kcEnabled = config.public.kcEnabled
   const unauthorized = () => navigateTo('/unauthorized', { replace: true })
 
@@ -8,7 +8,7 @@ export default defineNuxtPlugin(() => {
     if (!kcEnabled)
       return
 
-    const noAuth = to.meta.noAuth ?? false
+    const noAuth = to.meta.noAuth as boolean ?? false
     if (noAuth)
       return
 
@@ -19,11 +19,10 @@ export default defineNuxtPlugin(() => {
     if (!keycloak.authenticated.value) {
       return keycloak.login()
     }
-
-    const roles = to.meta.roles
+    const roles = to.meta.roles as string[] | undefined
     if (roles?.length) {
       try {
-        await keycloak.updateToken(appConfig.minimumTokenValidity)
+        await keycloak.updateToken(kcConfig?.minimumTokenValidity)
       } catch (err) {
         if (!keycloak.authenticated.value) {
           return unauthorized()
@@ -34,5 +33,5 @@ export default defineNuxtPlugin(() => {
         return unauthorized()
       }
     }
-  }, { global: appConfig.globalAuthMiddleware })
+  }, { global: kcConfig?.globalMiddlware ?? false })
 })

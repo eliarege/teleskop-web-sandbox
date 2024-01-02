@@ -59,11 +59,10 @@ export interface KeycloakPlugin {
 
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
-  const appConfig = useAppConfig()
   const route = useRoute()
   const locale = useCookie('locale')
+  const kcConfig = useAppConfig().keycloak
   const kcEnabled = config.public.kcEnabled
-
   const keycloak = new Keycloak({
     url: config.public.kcUrl,
     realm: config.public.kcRealm,
@@ -113,18 +112,18 @@ export default defineNuxtPlugin(() => {
   let initPromise: Promise<any>
 
   if (kcEnabled) {
-    if (appConfig.loginRequired) {
+    if (kcConfig?.loginRequired) {
       initPromise = keycloak.init({
         onLoad: 'login-required',
         locale: locale.value || 'en-US',
-        enableLogging: appConfig.enableKeycloakLogging,
+        enableLogging: kcConfig?.enableLogging ?? import.meta.env.DEV,
       })
     } else {
       initPromise = keycloak.init({
         onLoad: 'check-sso',
         silentCheckSsoRedirectUri: `${location.origin}/api/check-sso`,
         messageReceiveTimeout: 5000,
-        enableLogging: appConfig.enableKeycloakLogging,
+        enableLogging: kcConfig?.enableLogging ?? import.meta.env.DEV,
       })
     }
     initPromise.finally(() => {
@@ -164,7 +163,7 @@ export default defineNuxtPlugin(() => {
   }
 
   const updateToken = async (minimumTokenValidity?: number): Promise<boolean> => {
-    return keycloak.updateToken(minimumTokenValidity ?? appConfig.minimumTokenValidity)
+    return keycloak.updateToken(minimumTokenValidity ?? kcConfig?.minimumTokenValidity)
   }
 
   const loadUserProfile = async () => {
@@ -182,7 +181,7 @@ export default defineNuxtPlugin(() => {
   const fetch = $fetch.create({
     async onRequest(context) {
       if (kcEnabled) {
-        await keycloak.updateToken(appConfig.minimumTokenValidity)
+        await keycloak.updateToken(kcConfig?.minimumTokenValidity)
         setHeader(context.options, 'Authorization', `Bearer ${token.value}`)
       }
     },

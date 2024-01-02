@@ -64,7 +64,7 @@ Define application roles (or permissions) in `manifest.json`
 
 ## Nuxt Keycloak Integration
 
-### Configuration
+### Runtime Configuration
 
 ```ts
 // nuxt.config.ts
@@ -96,10 +96,12 @@ Configurable via `NUXT_PUBLIC_KC_CLIENT_ID` environment variable. Keycloak Clien
 ```ts
 // app.config.ts
 export default defineAppConfig({
-  minimumTokenValidity: 30,
-  globalAuthMiddleware: false,
-  loginRequired: false,
-  enableKeycloakLogging: import.meta.env.DEV
+  keycloak: {
+    globalMiddleware: true,
+    loginRequired: false,
+    minimumTokenValidity: 30,
+    enableLogging: import.meta.env.DEV
+  }
 })
 ```
 
@@ -107,7 +109,7 @@ export default defineAppConfig({
 
 Access tokens are refreshed if it expires within `minimumTokenValidity` seconds.
 
-#### `globalAuthMiddleware`
+#### `globalMiddleware`
 
 Adds `auth` middleware as global middleware. Meaning every page in app requires authentication. See middlewares for more details.
 
@@ -115,7 +117,7 @@ Adds `auth` middleware as global middleware. Meaning every page in app requires 
 
 Redirects user to login page if the user is not logged in. Default: `false`.
 
-#### `enableKeycloakLogging`
+#### `enableLogging`
 
 Enables logging of `keycloak-js`
 
@@ -137,12 +139,14 @@ Returns keycloak composition API.
 
 ```ts
 interface KeycloakPlugin {
+  fetch: typeof $fetch
   ready: Readonly<Ref<boolean>>
-  /** Did keycloak initialise? **/
+  /** Did keycloak initialise? */
   didInitialise: Readonly<Ref<boolean>>
-  /** Access Token **/
+  /** Access Token */
   token: Readonly<Ref<string | undefined>>
-  /** Is user authenticated **/
+  tokenParsed: Readonly<Ref<KeycloakTokenParsed | undefined>>
+  /** Is user authenticated */
   authenticated: Readonly<Ref<boolean>>
   userProfile: Readonly<Ref<KeycloakProfile | undefined>>
   userInfo: Readonly<Ref<Record<string, any> | undefined>>
@@ -254,6 +258,7 @@ export default defineAuthEventHandler({
 })
 ```
 
+
 ```ts
 export default defineAuthEventHandler((event) => {
   // Access authenticated user details
@@ -275,6 +280,7 @@ await app.register(keycloakAdapter, {
   url: 'http://localhost:8080',
   realm: 'teleskop-web',
   clientId: 'fastify-client',
+  global: true, // TODO
 })
 
 app.get('/authenticated-request', {

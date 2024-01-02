@@ -46,4 +46,50 @@ export default defineNuxtConfig({
       }),
     ],
   },
+  hooks: {
+    'schema:extend': (schemas) => {
+      schemas.push({
+        appConfig: {
+          keycloak: {
+            $schema: {
+              title: 'Keycloak',
+              description: 'Configure keycloak plugin and middleware behaviour',
+            },
+            globalMiddlware: {
+              $default: false,
+              $schema: {
+                title: 'Global Middleware',
+                description: 'Adds `auth` middleware as global middleware. Authentication is done silently unlike `loginRequired`',
+                tsType: 'boolean',
+              },
+            },
+            loginRequired: {
+              $default: false,
+              $schema: {
+                title: 'Login Required',
+                description: 'Redirects user to login page if the user is not logged in.',
+                tsType: 'boolean',
+              },
+            },
+            minimumTokenValidity: {
+              $default: 5,
+              $schema: {
+                title: 'Minimum Token Validity',
+                description: 'Access tokens are refreshed if it expires within `minimumTokenValidity` seconds.',
+                tsType: 'number',
+              },
+            },
+            enableLogging: {
+              $default: 'import.meta.env.DEV',
+              $schema: {
+                title: 'Global Middleware',
+                description: 'Enables logging of `keycloak-js`',
+                tsType: 'boolean',
+              },
+            },
+          },
+        },
+      })
+    },
+  },
 })
