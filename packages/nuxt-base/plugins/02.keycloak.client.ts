@@ -129,6 +129,10 @@ export default defineNuxtPlugin(() => {
     initPromise.finally(() => {
       didInitialise.value = true
     })
+  } else {
+    ready.value = true
+    authenticated.value = true
+    didInitialise.value = true
   }
 
   const noop = () => {}
@@ -217,9 +221,9 @@ export default defineNuxtPlugin(() => {
         onAuthLogout: onAuthLogout.on,
         onTokenExpired: onTokenExpired.on,
         onActionUpdate: onActionUpdate.on,
-        hasRealmRole: kcEnabled ? hasRealmRole : () => false,
-        hasResourceRole: kcEnabled ? hasResourceRole : () => false,
-        isTokenExpired: kcEnabled ? keycloak.isTokenExpired : () => true,
+        hasRealmRole: kcEnabled ? hasRealmRole : () => true,
+        hasResourceRole: kcEnabled ? hasResourceRole : () => true,
+        isTokenExpired: kcEnabled ? keycloak.isTokenExpired : () => false,
         updateToken: kcEnabled ? updateToken : noop,
         // No need to wrap this since its already handled by `onAuthLogout` listener
         clearToken: kcEnabled ? keycloak.clearToken : noop,
