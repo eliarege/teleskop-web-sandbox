@@ -489,3 +489,85 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
 
   return locks
 }
+
+export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const locks = await tbb.fetchLocksInput()
+
+  const analogInputs = locks.filter(d => d.inputType === 0)
+  const analogInputsDB = analogInputs.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      LOCKAININDEX: index,
+      ID: input.id + 1,
+      R1MIN: input.r1min,
+      R2MAX: input.r2max,
+      HISTERISIS: input.histerisis,
+      STATE: input.state,
+    })),
+  )
+
+  const digitalInputs = locks.filter(d => d.inputType === 1)
+  const digitalInputsDB = digitalInputs.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      LOCKDININDEX: index,
+      ID: input.id + 1,
+      STATE: input.state,
+    })),
+  )
+
+  const digitalOutputs = locks.filter(d => d.inputType === 7)
+  const digitalOutputsDB = digitalOutputs.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      LOCKDOUTINDEX: index,
+      ID: input.id + 1,
+      STATE: input.state,
+    })),
+  )
+
+  const commands = locks.filter(d => d.inputType === 4)
+  const commandsDB = commands.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      COMMANDINDEX: index,
+      COMMANDNO: input.id + 1,
+      STATE: input.state,
+    })),
+  )
+
+  const locksInput = locks.filter(d => d.inputType === 5)
+  const locksInputDB = locksInput.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      LOCKLOCKINDEX: index,
+      OTHERLOCKNO: input.id + 1,
+      STATE: input.state,
+    })),
+  )
+
+  const virtualInputs = locks.filter(d => d.inputType === 8)
+  const virtualInputsDB = virtualInputs.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      LOCKDININDEX: index,
+      ID: input.id + 1,
+      TRIGGER: input.state,
+    })),
+  )
+
+  await replaceRecords(trx, 'BFLOCKSINPUTAIN', analogInputsDB, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFLOCKSINPUTDIN', digitalInputsDB, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFLOCKSINPUTDOUT', digitalOutputsDB, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFLOCKSINPUTCOMMAND', commandsDB, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFLOCKSINPUTKILIT', locksInputDB, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFLOCKSINPUTVIN', virtualInputsDB, { MACHINEID: machineId })
+
+  return virtualInputsDB
+}
