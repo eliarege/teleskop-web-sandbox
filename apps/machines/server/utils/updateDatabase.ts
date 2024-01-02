@@ -467,28 +467,6 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
 
   return selectionList
 }
-// locks in ve out gerekli insert icin
-export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex) {
-  const locks = await tbb.fetchLocksGeneral()
-
-  const data = locks.map(d => ({
-    MACHINEID: machineId,
-    LOCKNO: d.lockNo + 1,
-    LOCKNAME: d.lockName,
-    LOGICTYPE: d.logicType,
-    STOPDYEING: d.stopDyeing,
-    JUMPSTEP: d.jumpStep,
-    ALARM: d.alarm,
-    ONDELAY: d.onDelay,
-    STEPDELAY: d.stepDelay,
-    GIVEMESSAGE: d.giveMessage,
-    MESSAGESTRING: d.messageString,
-  }))
-
-  await replaceRecords(trx, 'BFLOCKSGENERAL', data, { MACHINEID: machineId })
-
-  return locks
-}
 
 export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const locks = await tbb.fetchLocksInput()
@@ -570,4 +548,53 @@ export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx
   await replaceRecords(trx, 'BFLOCKSINPUTVIN', virtualInputsDB, { MACHINEID: machineId })
 
   return virtualInputsDB
+}
+
+// TODO: can be optimized
+/**
+ * 0: analog input
+ * 1: digital input
+ * 4: command
+ * 5: lock
+ * 7: digital output
+ * 8: virtual input
+ */
+export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const locks = await tbb.fetchLocksGeneral()
+  const locksInput = await tbb.fetchLocksInput()
+
+  const data = locks.map(d => ({
+    MACHINEID: machineId,
+    LOCKNO: d.lockNo + 1,
+    LOCKNAME: d.lockName,
+    LOGICTYPE: d.logicType,
+    STOPDYEING: d.stopDyeing,
+    JUMPSTEP: d.jumpStep,
+    ALARM: d.alarm,
+    ONDELAY: d.onDelay,
+    STEPDELAY: d.stepDelay,
+    GIVEMESSAGE: d.giveMessage,
+    MESSAGESTRING: d.messageString,
+
+    AINLOGICTYPE: 0,
+    DINLOGICTYPE: 0,
+    COMMANDLOGICTYPE: 0,
+    LOCKLOGICTYPE: 0,
+    DOUTLOGICTYPE: 0,
+    VINLOGICTYPE: 0,
+  }))
+
+  for (const d of data) {
+    const filtered = locksInput.filter(l => l.lockId === d.LOCKNO)
+    d.AINLOGICTYPE = filtered.find(l => l.logicType === 0)?.logicType ?? 0
+    d.DINLOGICTYPE = filtered.find(l => l.logicType === 1)?.logicType ?? 0
+    d.COMMANDLOGICTYPE = filtered.find(l => l.logicType === 4)?.logicType ?? 0
+    d.LOCKLOGICTYPE = filtered.find(l => l.logicType === 5)?.logicType ?? 0
+    d.DOUTLOGICTYPE = filtered.find(l => l.logicType === 7)?.logicType ?? 0
+    d.VINLOGICTYPE = filtered.find(l => l.logicType === 8)?.logicType ?? 0
+  }
+
+  await replaceRecords(trx, 'BFLOCKSGENERAL', data, { MACHINEID: machineId })
+
+  return data
 }
