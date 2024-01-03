@@ -28,8 +28,6 @@ prepare:
 release:
   stage: release
   tags: [docker]
-  retry:
-    max: 2
   variables:
     NPM_TOKEN: $CI_JOB_TOKEN
     TURBO_TOKEN: $TURBO_TOKEN
@@ -43,7 +41,7 @@ release:
         IMAGE_SHA=$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_SHA
         IMAGE_LATEST=$CI_REGISTRY_IMAGE/$APP_NAME:latest
         PKG_PATH=apps/$APP_NAME/package.json
-
+        echo "Building $APP_NAME"
         rm -rf out && mv out-$APP_NAME out
         docker pull $IMAGE_LATEST || true
         docker build \
