@@ -1,4 +1,4 @@
-import type { FilterSlot } from 'ui/types/FilterableTable'
+import type { FilterSlot } from 'ui-types'
 import type { Knex } from 'knex'
 
 export async function filtersToKnex(filters: Array<FilterSlot>, attributes: any, knexInstance: Knex.QueryBuilder) {

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import type { Column, DateType, FilterSlot } from '../types/FilterableTable'
+import type { Column, DateType, FilterSlot } from 'ui-types'
 
 const props = defineProps({
   rows: {

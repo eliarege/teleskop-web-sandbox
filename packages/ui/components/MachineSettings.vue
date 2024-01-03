@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { isEmpty } from 'lodash-es'
-import type { MachineCardData } from '../types/MachineCard'
+import type { MachineCardData } from 'ui-types'
 
 const props = defineProps({
   data: {

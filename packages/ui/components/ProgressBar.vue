@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import type { MachineCardData } from '../types/MachineCard'
+import type { MachineCardData } from 'ui-types'
 
 defineProps({
   data: {

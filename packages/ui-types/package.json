@@ -1,0 +1,8 @@
+{
+  "name": "ui-types",
+  "version": "1.0.0",
+  "description": "",
+  "license": "UNLICENSED",
+  "keywords": [],
+  "main": "./types/index.ts"
+}

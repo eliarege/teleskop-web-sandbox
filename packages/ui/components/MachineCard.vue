@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { color } from 'd3'
 import { useI18n } from 'vue-i18n'
-import type { MachineCardData } from '../types/MachineCard'
+import type { MachineCardData } from 'ui-types'
 import MachineSettings from './MachineSettings.vue'
 import ProgressBar from './ProgressBar.vue'
 

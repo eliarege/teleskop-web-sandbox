@@ -606,9 +606,14 @@ importers:
       tsconfig:
         specifier: workspace:*
         version: link:../tsconfig
+      ui-types:
+        specifier: workspace:*
+        version: link:../ui-types
       vue:
         specifier: ^3.4.0
         version: 3.4.0(typescript@5.3.2)
+
+  packages/ui-types: {}
 
   packages/unocss-config:
     dependencies:
@@ -621,9 +626,9 @@ importers:
       knex:
         specifier: ^3.0.1
         version: 3.0.1(tedious@16.6.1)
-      ui:
+      ui-types:
         specifier: workspace:*
-        version: link:../ui
+        version: link:../ui-types
 
   vendor/schedulerpro-trial:
     dependencies:

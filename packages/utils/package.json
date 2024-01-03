@@ -11,6 +11,6 @@
   },
   "devDependencies": {
     "knex": "^3.0.1",
-    "ui": "workspace:*"
+    "ui-types": "workspace:*"
   }
 }

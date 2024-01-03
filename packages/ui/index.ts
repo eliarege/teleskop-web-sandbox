@@ -1,3 +1,5 @@
+/// <reference types="ui-types/novnc" />
+
 export { default as NoVnc } from './components/NoVnc.vue'
 export { default as LoadingSpinner } from './components/LoadingSpinner.vue'
 export { default as LoadingScreen } from './components/LoadingScreen.vue'
