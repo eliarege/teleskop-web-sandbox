@@ -1,7 +1,7 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { Splitter } from '@bryntum/schedulerpro-trial'
+import { Splitter, Tooltip } from '@bryntum/schedulerpro-trial'
 import { EliarModal } from 'ui'
 import { useI18n } from 'vue-i18n'
 import { Drag, Schedule, Task, UnplannedGrid } from '~/lib/bryntum'
@@ -76,7 +76,6 @@ const modifiedEvents = computed(() => events.value?.map((ev) => {
     ...ev,
   }
 }))
-console.log(modifiedEvents.value)
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
@@ -265,7 +264,6 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-calendar-xmark',
             text: t('ctx-menu.properties'),
             onItem({ eventRecord, assignmentRecord }: any) {
-              console.log(assignmentRecord.originalData.resourceId)
               showModal.properties.show = true
               showModal.properties.unit.planKey = eventRecord.originalData.id
               showModal.properties.unit.jobOrder = eventRecord.originalData.name
@@ -288,8 +286,7 @@ onMounted(async () => {
         type: 'button',
         disabled: true,
         ref: 'parameterButton',
-        text: t('tbar.parameter.text'),
-        tooltip: t('tbar.parameter.tooltip'),
+        text: 'L{planparam}',
         icon: 'b-fa b-fa-solid b-fa-sliders',
         color: 'toolbar-buttons',
         onClick() {
@@ -302,8 +299,7 @@ onMounted(async () => {
         type: 'button',
         disabled: true,
         ref: 'recipeButton',
-        text: t('tbar.recipe.text'),
-        tooltip: t('tbar.recipe.tooltip'),
+        text: 'L{recipe}',
         icon: 'b-fa b-fa-solid b-fa-flask-vial',
         color: 'toolbar-buttons',
         onClick() {
@@ -317,8 +313,7 @@ onMounted(async () => {
         type: 'button',
         disabled: true,
         ref: 'processButton',
-        text: t('tbar.process.text'),
-        tooltip: t('tbar.process.tooltip'),
+        text: 'L{process}',
         icon: 'b-fa b-fa-solid b-fa-receipt',
         color: 'toolbar-buttons',
         onClick() {
@@ -330,8 +325,7 @@ onMounted(async () => {
         type: 'button',
         disabled: true,
         ref: 'theoreticalButton',
-        text: t('tbar.theoretical.text'),
-        tooltip: t('tbar.theoretical.tooltip'),
+        text: 'L{theoretical}',
         icon: 'b-fa b-fa-solid b-fa-file-zipper',
         color: 'toolbar-buttons',
         onClick() {
@@ -343,8 +337,7 @@ onMounted(async () => {
         type: 'button',
         disabled: true,
         ref: 'noteButton',
-        text: t('tbar.note.text'),
-        tooltip: t('tbar.note.tooltip'),
+        text: 'L{note}',
         icon: 'b-fa b-fa-solid b-fa-note-sticky',
         color: 'toolbar-buttons',
         onClick() {
@@ -354,8 +347,7 @@ onMounted(async () => {
       },
       {
         type: 'button',
-        text: t('tbar.settings.text'),
-        tooltip: t('tbar.settings.tooltip'),
+        text: 'L{settings}',
         icon: 'b-fa b-fa-solid b-fa-gear',
         color: 'toolbar-buttons',
         onClick() {
@@ -364,8 +356,7 @@ onMounted(async () => {
       },
       {
         type: 'button',
-        text: t('tbar.date-picker.text'),
-        tooltip: t('tbar.date-picker.tooltip'),
+        text: 'L{datepicker}',
         icon: 'b-fa b-fa-solid b-fa-calendar-days',
         color: 'toolbar-buttons',
         onClick() {
@@ -375,8 +366,7 @@ onMounted(async () => {
       {
         type: 'button',
         disabled: true,
-        text: t('tbar.rules.text'),
-        tooltip: t('tbar.rules.tooltip'),
+        text: 'L{rules}',
         icon: 'b-fa b-fa-solid b-fa-list-check',
         color: 'toolbar-buttons',
         onClick() {
@@ -386,14 +376,14 @@ onMounted(async () => {
       {
         type: 'button',
         icon: 'b-icon-search-plus',
-        tooltip: t('tbar.zoom-in'),
+        tooltip: 'L{zoomin}',
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomIn(),
       },
       {
         type: 'button',
         icon: 'b-icon b-icon-search-minus',
-        tooltip: t('tbar.zoom-out'),
+        tooltip: 'L{zoomout}',
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomOut(),
       },
@@ -428,7 +418,7 @@ onMounted(async () => {
     tbar: [
       {
         type: 'textfield',
-        label: t('tbar.search'),
+        label: 'L{search}',
         inputType: 'text',
         clearable: true,
         cls: 'flex justify-center items-center',
@@ -585,7 +575,7 @@ div[bgGreen] {
 }
 </style>
 
-<i18n>
+<i18n lang="json">
 {
   "en": {
     "ctx-menu": {
@@ -593,43 +583,6 @@ div[bgGreen] {
       "task-delete": "Delete Job Order",
       "remove-plan": "Remove From Plan",
       "properties": "Job Order Properties"
-    },
-    "tbar": {
-      "parameter": {
-        "text": "Plan Parameters",
-        "tooltip": ""
-      },
-      "recipe": {
-        "text": "Recipe",
-        "tooltip": ""
-      },
-      "process": {
-        "text": "Process Information",
-        "tooltip": "Currently Under Development!"
-      },
-      "theoretical": {
-        "text": "Theoretical Program",
-        "tooltip": "Currently Under Development!"
-      },
-      "settings": {
-        "text": "Settings",
-        "tooltip": ""
-      },
-      "note": {
-        "text": "Notes",
-        "tooltip": ""
-      },
-      "date-picker": {
-        "text": "Date Picker",
-        "tooltip": ""
-      },
-      "rules": {
-        "text": "Rules",
-        "tooltip": ""
-      },
-      "zoom-in": "Zoom In",
-      "zoom-out": "Zoom Out",
-      "search": "Job Order Search"
     }
   },
   "tr": {
@@ -638,43 +591,6 @@ div[bgGreen] {
       "task-delete": "İş Emrini Sil",
       "remove-plan": "Plandan kaldır",
       "properties": "İş Emri Özellikleri"
-    },
-    "tbar": {
-      "parameter": {
-        "text": "Plan Parametreleri",
-        "tooltip": ""
-      },
-      "recipe": {
-        "text": "Reçete",
-        "tooltip": ""
-      },
-      "process": {
-        "text": "Prosess Bilgileri",
-        "tooltip": "Geliştirme Aşamasında!"
-      },
-      "theoretical": {
-        "text": "Teorik Program",
-        "tooltip": "Geliştirme Aşamasında!"
-      },
-      "settings": {
-        "text": "Ayalar",
-        "tooltip": ""
-      },
-      "note": {
-        "text": "Notlar",
-        "tooltip": ""
-      },
-      "date-picker": {
-        "text": "Tarih",
-        "tooltip": ""
-      },
-      "rules": {
-        "text": "Kurallar",
-        "tooltip": ""
-      },
-      "zoom-in": "Yakınlaştır",
-      "zoom-out": "Uzaklaştır",
-      "search": "İş Emri Arama"
     }
   }
 }
