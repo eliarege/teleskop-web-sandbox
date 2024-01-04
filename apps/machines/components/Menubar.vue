@@ -13,6 +13,7 @@ const showNewMachine = ref(false)
 const showEditMachine = ref(false)
 const showMachineParameters = ref(false)
 const showMimic = ref(false)
+const showFormulas = ref(false)
 
 async function handleMachineDelete() {
   const machineIds = props.selectedMachines.map(m => m.id)
@@ -75,6 +76,13 @@ async function handleMachineDelete() {
         class="mr-4"
         @click="showMimic = true"
       />
+      <q-btn
+        label="Formüller"
+        no-caps
+        color="primary"
+        class="mr-4"
+        @click="showFormulas = true"
+      />
     </q-card-section>
 
     <q-card-section class="flex flex-row items-end mr-8">
@@ -117,6 +125,12 @@ async function handleMachineDelete() {
     :show="showMimic"
     :selected-machines="selectedMachines"
     @close="showMimic = false"
+  />
+  <FormulasDialog
+    v-if="showFormulas"
+    :show="showFormulas"
+    :selected-machines="selectedMachines"
+    @close="showFormulas = false"
   />
 </template>
 
