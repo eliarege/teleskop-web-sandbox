@@ -30,9 +30,6 @@ export function updateEventStates(ev: PlannedEvents[]) {
   return ev.map((e) => {
     return {
       ...e,
-      isDeviation: e.isStarted
-        ? new Date(e.plannedStartTime) < new Date()
-        : false,
       deviation: (new Date(e.plannedStartTime).getTime() - new Date().getTime()) < 0
         ? 0
         : (Math.abs(new Date(e.plannedEndTime).getTime() - new Date().getTime())), // seconds
@@ -41,13 +38,14 @@ export function updateEventStates(ev: PlannedEvents[]) {
       //   : false,
       // because othervise there might be deviation
       isFinished: new Date(e.plannedEndTime) < new Date(),
-      // ask how to check if this event has an alarm
+      isStarted: new Date(e.plannedStartTime) < new Date(),
       notStarted: new Date(e.plannedStartTime) > new Date(),
+      // ask how to check if this event is running or not
       isRunning: e.isStarted
         ? (new Date(e.plannedStartTime) < new Date() && new Date(e.plannedEndTime) > new Date())
         : false,
+      // ask how to check if this event has an alarm
       hasAlarm: false,
-      // ask how to check if this event is running or not
     }
   })
 }
