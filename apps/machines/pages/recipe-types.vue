@@ -1,40 +1,74 @@
 <script setup lang="ts">
-import { getRecipeTypes } from '~/utils'
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
+import type { RecipeType } from '~/types'
 
-const columns = [
+const columns: Column[] = [
   {
     name: 'typeName',
     label: 'Reçete Tip Adı',
-    field: row => row.typeName,
+    field: 'typeName',
     align: 'left',
+    filterable: true,
+    filterType: 'equals',
   },
 ]
 
-const { data: recipeTypes, pending, refresh } = useLazyFetch('/api/recipe-types/recipe-types', { default: () => [] })
-const typeName = ref('')
-const selectedRecipe = ref([])
+const { data: recipeTypes, refresh } = useLazyFetch('/api/recipe-types/recipe-types', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
+
+const selected = ref<RecipeType>({
+  id: -1,
+  typeName: '',
+})
 
 async function handleAddRecipe() {
-  await addRecipeType(typeName.value)
+  await addRecipeType(selected.value.typeName)
   await refresh()
 }
 
 async function handleEditRecipe() {
-  await editRecipeType(selectedRecipe.value[0].id, typeName.value)
+  await editRecipeType(selected.value.id, selected.value.typeName)
   await refresh()
 }
 
 async function handleDeleteRecipe() {
-  await deleteRecipeType(selectedRecipe.value)
+  await deleteRecipeType(selected.value)
   await refresh()
-  selectedRecipe.value = []
+  selected.value = {
+    id: -1,
+    typeName: '',
+  }
+}
+
+async function handleSelection(obj: RecipeType) {
+  if (selected.value.id === obj.id) {
+    selected.value = {
+      id: -1,
+      typeName: '',
+    }
+  } else {
+    selected.value = obj
+  }
+}
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  recipeTypes.value = await $fetch('/api/recipe-types/recipe-types', {
+    method: 'POST',
+    body: {
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 
 <template>
   <q-card class="flex flex-row">
     <q-card-section>
-      <q-input v-model="typeName" label="Reçete Tipi Adı" />
+      <q-input v-model="selected.typeName" label="Reçete Tipi Adı" />
       <div class="flex flex-row input-field my-8">
         <q-btn
           label="Ekle"
@@ -55,32 +89,33 @@ async function handleDeleteRecipe() {
     </q-card-section>
   </q-card>
   <div class="table-scroll">
-    <q-table
-      v-model:selected="selectedRecipe"
-      selection="single"
+    <FilterableTable
+      v-model:selected="selected"
       :rows="recipeTypes"
       :columns="columns"
-      :loading="pending"
-      :pagination="{ rowsPerPage: 0 }"
-      hide-pagination
-      row-key="typeName"
-      bordered
-      separator="cell"
-      table-header-class="table-header"
-    />
+      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+    >
+      <template #custombody="recipeTypes">
+        <q-tr
+          :class="{ 'selected-row': selected.id === recipeTypes.row.id }"
+          @click="handleSelection(recipeTypes.row)"
+        >
+          <q-td
+            v-for="row in recipeTypes.cols"
+            :key="row"
+          >
+            <span>
+              {{ row.value }}
+            </span>
+          </q-td>
+        </q-tr>
+      </template>
+    </FilterableTable>
   </div>
 </template>
 
 <style scoped>
-:deep(.table-header > th) {
-  font-weight: bold;
-}
-.table-scroll {
-  max-height: 45em;
-  overflow-y: auto;
-}
-
-.input-field > * {
-  margin-right: 2em;
+.selected-row {
+  background-color: #cce8ff;
 }
 </style>
