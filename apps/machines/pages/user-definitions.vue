@@ -1,100 +1,128 @@
 <script setup lang="ts">
-import type { QTableColumn } from 'quasar'
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
 import type { User } from '~/types'
 import { addUser, deleteUser, editUser } from '~/utils'
 
-const columns: QTableColumn<User>[] = [
+const columns: Column[] = [
   {
     name: 'userId',
     label: 'Kullanıcı No',
-    field: row => row.userId,
+    field: 'userId',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'userName',
     label: 'İsim',
-    field: row => row.userName,
+    field: 'userName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'userSurname',
     label: 'Soyisim',
-    field: row => row.userSurname,
+    field: 'userSurname',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 
   {
     name: 'userPass',
     label: 'Kullanıcı Şifresi',
-    field: row => row.userPass,
+    field: 'userPass',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 
   {
     name: 'userActive',
     label: 'Aktif',
-    field: row => row.userActive,
+    field: 'userActive',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 
   {
     name: 'userType',
     label: 'Kullanıcı Tipi',
-    field: row => row.userType,
+    field: 'userType',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 
 ]
 
-const { data: users, pending, refresh } = useLazyFetch('/api/user-definitions/user-definitions', { default: () => [] })
+const { data: users, refresh } = useLazyFetch('/api/user-definitions/user-definitions', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
 const userTypeOptions = [{ label: 'Operatör', value: 1 }, { label: 'Diğer', value: 2 }]
-const selectedUsers = ref<User[]>()
-const user = ref<User>({
-  userId: '',
+
+const showPermissionsDialog = ref(false)
+const selected = ref<User>({
+  userId: -1,
   userName: '',
   userSurname: '',
   userPass: '',
   userInfo: '',
-  userActive: false,
-  userType: '',
+  userActive: 0,
+  userType: -1,
+  userMode: '',
+  userMode2: '',
 })
 
-const showPermissionsDialog = ref(false)
-
-function handleSelection(e) {
-  if (e.added) {
-    user.value = e.rows[0]
-    user.value.userType = user.value.userType = 1 ? 'Operatör' : 'Diğer'
-  } else
-    user.value = {
-      userId: '',
+function handleSelection(user: User) {
+  if (selected.value.userId === user.userId) {
+    selected.value = {
+      userId: -1,
       userName: '',
       userSurname: '',
       userPass: '',
       userInfo: '',
-      userActive: false,
-      userType: '',
+      userActive: 0,
+      userType: -1,
+      userMode: '',
+      userMode2: '',
     }
+  } else {
+    selected.value = user
+  }
 }
 
 async function handleUserAdd() {
-  if (user.value.userType)
-    user.value.userType = user.value.userType === 'Operatör' ? 1 : 2
-  await addUser(user.value)
+  if (selected.value.userType)
+    selected.value.userType = selected.value.userType === 'Operatör' ? 1 : 2
+  await addUser(selected.value)
   await refresh()
 }
 
 async function handleUserEdit() {
-  if (user.value.userType)
-    user.value.userType = user.value.userType === 'Operatör' ? 1 : 2
-  await editUser(user.value)
+  if (selected.value.userType)
+    selected.value.userType = selected.value.userType === 'Operatör' ? 1 : 2
+  await editUser(selected.value)
   await refresh()
 }
 
 async function handleUserDelete() {
-  await deleteUser([user.value.userId])
+  await deleteUser([selected.value.userId])
   await refresh()
-  selectedUsers.value = []
+}
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  users.value = await $fetch('/api/user-definitions/user-definitions', {
+    method: 'POST',
+    body: {
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 
@@ -103,31 +131,31 @@ async function handleUserDelete() {
     <q-card-section>
       <div class="flex flex-row input-field justify-around">
         <q-input
-          v-model="user.userId"
+          v-model="selected.userId"
           label="Kullanıcı No"
           filled
           clearable
         />
         <q-input
-          v-model="user.userName"
+          v-model="selected.userName"
           label="İsim"
           filled
           clearable
         />
         <q-input
-          v-model="user.userSurname"
+          v-model="selected.userSurname"
           label="Soy İsim"
           filled
           clearable
         />
         <q-input
-          v-model="user.userPass"
+          v-model="selected.userPass"
           label="Kullanıcı Şifresi"
           filled
           clearable
         />
         <q-select
-          v-model="user.userType"
+          v-model="selected.userType"
           :options="userTypeOptions"
           option-label="label"
           option-value="value"
@@ -138,12 +166,12 @@ async function handleUserDelete() {
 
       <div class="flex flex-row justify-start">
         <q-input
-          v-model="user.userInfo"
+          v-model="selected.userInfo"
           label="Bilgi Notu"
           type="textarea"
           class="w-3xl"
         />
-        <q-checkbox v-model="user.userActive" label="Aktif" />
+        <q-checkbox v-model="selected.userActive" label="Aktif" />
       </div>
 
       <div class="button-field my-8">
@@ -172,38 +200,34 @@ async function handleUserDelete() {
   </q-card>
 
   <div class="table-scroll">
-    <q-table
-      v-model:selected="selectedUsers"
-      selection="single"
+    <FilterableTable
+      v-model:selected="selected"
       :rows="users"
       :columns="columns"
-      :loading="pending"
-      row-key="userId"
-      :pagination="{ rowsPerPage: 0 }"
-      hide-pagination
-      bordered
-      separator="cell"
-      table-header-class="table-header"
-      @selection="(e) => handleSelection(e)"
+      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
     >
-      <template #body-cell-userActive="props">
-        <q-td :props="props">
-          <span v-if="props.row.userActive">
-            Evet
-          </span>
-          <span v-else>Hayır</span>
-        </q-td>
+      <template #custombody="users">
+        <q-tr
+          :class="{ 'selected-row': selected.userId === users.row.userId }"
+          @click="handleSelection(users.row)"
+        >
+          <q-td
+            v-for="row in users.cols"
+            :key="row"
+          >
+            <span v-if="row.field === 'userActive'">
+              {{ row.value ? 'Evet' : 'Hayır' }}
+            </span>
+            <span v-else-if="row.field === 'userType'">
+              {{ userTypeOptions.find(o => o.value === row.value).label }}
+            </span>
+            <span v-else>
+              {{ row.value }}
+            </span>
+          </q-td>
+        </q-tr>
       </template>
-      <template #body-cell-userType="props">
-        <q-td :props="props">
-          <span v-if="props.row.userType === 1">
-            Operatör
-          </span>
-          <span v-else-if="props.row.userType === 2">Diğer</span>
-        </q-td>
-      </template>
-    </q-table>
-
+    </FilterableTable>
     <UserPermissionsDialog
       :show="showPermissionsDialog"
       @close="showPermissionsDialog = false"
@@ -227,5 +251,9 @@ async function handleUserDelete() {
 .table-scroll {
   max-height: 45em;
   overflow-y: auto;
+}
+
+.selected-row {
+  background-color: #cce8ff;
 }
 </style>
