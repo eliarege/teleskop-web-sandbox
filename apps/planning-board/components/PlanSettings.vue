@@ -4,9 +4,11 @@ import { useStorage } from '@vueuse/core'
 import { color } from 'd3'
 import { LoadingSpinner } from 'ui'
 import { useI18n } from 'vue-i18n'
+import { useSettingStore } from '~/store/settings'
 
 const emits = defineEmits(['updateScheduler'])
 const { t } = useI18n()
+const store = useSettingStore()
 const { data: machines, pending } = await useFetch('/api/machineList')
 const splitterModel = ref('view')
 const erpParameters = ref([] as any[])
@@ -41,33 +43,6 @@ const erpParameterColumns = reactive([
   { name: 'paramName', align: 'center', label: t('erp-param-columns.param-name'), field: 'paramName' },
   { name: 'erpFieldName', align: 'center', label: t('erp-param-columns.field-name'), field: 'erpFieldName' },
 ])
-const settings = useStorage('pt-settings', {
-  completedBatch: {
-    batchText: '',
-    isBatchFabricColor: false,
-    actualBatchFabricColor: '',
-    deviationBatchFabricColor: '',
-  },
-  ongoingBatch: {
-    batchText: '',
-    isBatchFabricColor: false,
-    actualBatchFabricColor: '',
-    deviationBatchFabricColor: '',
-  },
-  plannedBatch: {
-    batchText: '',
-    isBatchFabricColor: false,
-    actualBatchFabricColor: '',
-    deviationBatchFabricColor: '',
-  },
-  batchText: [
-    { id: 1, label: t('batch-text.job-order'), value: 'jobOrder' },
-    { id: 2, label: t('batch-text.party'), value: 'planKey' },
-    { id: 3, label: t('batch-text.customer'), value: 'customerName' },
-  ],
-  archiveDays: 0,
-  showStops: { show: false, color: '' },
-})
 </script>
 
 <template>
@@ -97,11 +72,11 @@ const settings = useStorage('pt-settings', {
                   <div class="flex items-center gap-3">
                     <span>{{ t('settings.plan-area.completed.text') }}</span>
                     <QSelect
-                      v-model="settings.completedBatch.batchText"
+                      v-model="store.settings.completedBatch.batchText"
                       square
                       dense
                       outlined
-                      :options="settings.batchText"
+                      :options="store.settings.batchText"
                       option-value="value"
                       option-label="label"
                       class="w-200px"
@@ -109,36 +84,36 @@ const settings = useStorage('pt-settings', {
                   </div>
                   <q-separator />
                   <div class="flex items-center gap-3">
-                    <q-checkbox v-model="settings.completedBatch.isBatchFabricColor" :label="t('settings.plan-area.completed.is-batch-fabric-color')" />
-                    <div v-show="!settings.completedBatch.isBatchFabricColor" class="flex-center flex-col gap-3">
+                    <q-checkbox v-model="store.settings.completedBatch.isBatchFabricColor" :label="t('settings.plan-area.completed.is-batch-fabric-color')" />
+                    <div v-show="!store.settings.completedBatch.isBatchFabricColor" class="flex-center flex-col gap-3">
                       <div class="flex-center gap-2">
                         <q-input
-                          v-model="settings.completedBatch.actualBatchFabricColor"
+                          v-model="store.settings.completedBatch.actualBatchFabricColor"
                           dense
                           readonly
                           borderless
                           class="border-b-1px border-b-solid"
                           :placeholder="t('settings.plan-area.completed.actual-batch-fabric-color')"
                           clearable
-                          :style="{ backgroundColor: settings.completedBatch.actualBatchFabricColor }"
+                          :style="{ backgroundColor: store.settings.completedBatch.actualBatchFabricColor }"
                         >
                           <template #append>
                             <q-icon
-                              v-if="settings.completedBatch.actualBatchFabricColor !== ''"
+                              v-if="store.settings.completedBatch.actualBatchFabricColor !== ''"
                               name="cancel"
                               class="cursor-pointer"
-                              :color="iconColor(settings.completedBatch.actualBatchFabricColor)"
-                              @click="settings.completedBatch.actualBatchFabricColor = ''"
+                              :color="iconColor(store.settings.completedBatch.actualBatchFabricColor)"
+                              @click="store.settings.completedBatch.actualBatchFabricColor = ''"
                             />
                             <q-icon
                               name="colorize"
                               class="cursor-pointer"
                               square
-                              :color="iconColor(settings.completedBatch.actualBatchFabricColor)"
+                              :color="iconColor(store.settings.completedBatch.actualBatchFabricColor)"
                             >
                               <q-popup-proxy cover>
                                 <q-color
-                                  v-model="settings.completedBatch.actualBatchFabricColor"
+                                  v-model="store.settings.completedBatch.actualBatchFabricColor"
                                   no-header
                                   no-footer
                                   @change="emits('updateScheduler')"
@@ -148,32 +123,32 @@ const settings = useStorage('pt-settings', {
                           </template>
                         </q-input>
                         <q-input
-                          v-model="settings.completedBatch.deviationBatchFabricColor"
+                          v-model="store.settings.completedBatch.deviationBatchFabricColor"
                           dense
                           readonly
                           borderless
                           :placeholder="t('settings.plan-area.completed.deviation-batch-fabric-color')"
                           clearable
                           class="border-b-1px border-b-solid"
-                          :style="{ backgroundColor: settings.completedBatch.deviationBatchFabricColor }"
+                          :style="{ backgroundColor: store.settings.completedBatch.deviationBatchFabricColor }"
                         >
                           <template #append>
                             <q-icon
-                              v-if="settings.completedBatch.deviationBatchFabricColor !== ''"
+                              v-if="store.settings.completedBatch.deviationBatchFabricColor !== ''"
                               name="cancel"
                               class="cursor-pointer"
-                              :color="iconColor(settings.completedBatch.deviationBatchFabricColor)"
-                              @click="settings.completedBatch.deviationBatchFabricColor = ''"
+                              :color="iconColor(store.settings.completedBatch.deviationBatchFabricColor)"
+                              @click="store.settings.completedBatch.deviationBatchFabricColor = ''"
                             />
                             <q-icon
                               name="colorize"
                               class="cursor-pointer"
                               square
-                              :color="iconColor(settings.completedBatch.deviationBatchFabricColor)"
+                              :color="iconColor(store.settings.completedBatch.deviationBatchFabricColor)"
                             >
                               <q-popup-proxy cover>
                                 <q-color
-                                  v-model="settings.completedBatch.deviationBatchFabricColor"
+                                  v-model="store.settings.completedBatch.deviationBatchFabricColor"
                                   no-header
                                   no-footer
                                   @change="emits('updateScheduler')"
@@ -197,11 +172,11 @@ const settings = useStorage('pt-settings', {
                   <div class="flex items-center gap-3">
                     <span>{{ t('settings.plan-area.ongoing.text') }}</span>
                     <QSelect
-                      v-model="settings.ongoingBatch.batchText"
+                      v-model="store.settings.ongoingBatch.batchText"
                       square
                       dense
                       outlined
-                      :options="settings.batchText"
+                      :options="store.settings.batchText"
                       option-value="value"
                       option-label="label"
                       class="w-200px"
@@ -210,38 +185,38 @@ const settings = useStorage('pt-settings', {
                   <q-separator />
                   <div class="flex items-center gap-3">
                     <q-checkbox
-                      v-model="settings.ongoingBatch.isBatchFabricColor"
+                      v-model="store.settings.ongoingBatch.isBatchFabricColor"
                       :label="t('settings.plan-area.ongoing.is-batch-fabric-color')"
                     />
-                    <div v-show="!settings.ongoingBatch.isBatchFabricColor" class="flex-center flex-col gap-3">
+                    <div v-show="!store.settings.ongoingBatch.isBatchFabricColor" class="flex-center flex-col gap-3">
                       <div class="flex-center gap-2">
                         <q-input
-                          v-model="settings.ongoingBatch.actualBatchFabricColor"
+                          v-model="store.settings.ongoingBatch.actualBatchFabricColor"
                           dense
                           readonly
                           borderless
                           class="border-b-1px border-b-solid"
                           :placeholder="t('settings.plan-area.ongoing.actual-batch-fabric-color')"
                           clearable
-                          :style="{ backgroundColor: settings.ongoingBatch.actualBatchFabricColor }"
+                          :style="{ backgroundColor: store.settings.ongoingBatch.actualBatchFabricColor }"
                         >
                           <template #append>
                             <q-icon
-                              v-if="settings.ongoingBatch.actualBatchFabricColor !== ''"
+                              v-if="store.settings.ongoingBatch.actualBatchFabricColor !== ''"
                               name="cancel"
                               class="cursor-pointer"
-                              :color="iconColor(settings.ongoingBatch.actualBatchFabricColor)"
-                              @click="settings.ongoingBatch.actualBatchFabricColor = ''"
+                              :color="iconColor(store.settings.ongoingBatch.actualBatchFabricColor)"
+                              @click="store.settings.ongoingBatch.actualBatchFabricColor = ''"
                             />
                             <q-icon
                               name="colorize"
                               class="cursor-pointer"
                               square
-                              :color="iconColor(settings.ongoingBatch.actualBatchFabricColor)"
+                              :color="iconColor(store.settings.ongoingBatch.actualBatchFabricColor)"
                             >
                               <q-popup-proxy cover>
                                 <q-color
-                                  v-model="settings.ongoingBatch.actualBatchFabricColor"
+                                  v-model="store.settings.ongoingBatch.actualBatchFabricColor"
                                   no-header
                                   no-footer
                                   @change="emits('updateScheduler')"
@@ -251,32 +226,32 @@ const settings = useStorage('pt-settings', {
                           </template>
                         </q-input>
                         <q-input
-                          v-model="settings.ongoingBatch.deviationBatchFabricColor"
+                          v-model="store.settings.ongoingBatch.deviationBatchFabricColor"
                           dense
                           readonly
                           borderless
                           :placeholder="t('settings.plan-area.ongoing.deviation-batch-fabric-color')"
                           clearable
                           class="border-b-1px border-b-solid"
-                          :style="{ backgroundColor: settings.ongoingBatch.deviationBatchFabricColor }"
+                          :style="{ backgroundColor: store.settings.ongoingBatch.deviationBatchFabricColor }"
                         >
                           <template #append>
                             <q-icon
-                              v-if="settings.ongoingBatch.deviationBatchFabricColor !== ''"
+                              v-if="store.settings.ongoingBatch.deviationBatchFabricColor !== ''"
                               name="cancel"
                               class="cursor-pointer"
-                              :color="iconColor(settings.ongoingBatch.deviationBatchFabricColor)"
-                              @click="settings.ongoingBatch.deviationBatchFabricColor = ''"
+                              :color="iconColor(store.settings.ongoingBatch.deviationBatchFabricColor)"
+                              @click="store.settings.ongoingBatch.deviationBatchFabricColor = ''"
                             />
                             <q-icon
                               name="colorize"
                               class="cursor-pointer"
                               square
-                              :color="iconColor(settings.ongoingBatch.deviationBatchFabricColor)"
+                              :color="iconColor(store.settings.ongoingBatch.deviationBatchFabricColor)"
                             >
                               <q-popup-proxy cover>
                                 <q-color
-                                  v-model="settings.ongoingBatch.deviationBatchFabricColor"
+                                  v-model="store.settings.ongoingBatch.deviationBatchFabricColor"
                                   no-header
                                   no-footer
                                   @change="emits('updateScheduler')"
@@ -300,11 +275,11 @@ const settings = useStorage('pt-settings', {
                   <div class="flex items-center gap-3">
                     <span>{{ t('settings.plan-area.planned.text') }}</span>
                     <QSelect
-                      v-model="settings.plannedBatch.batchText"
+                      v-model="store.settings.plannedBatch.batchText"
                       square
                       dense
                       outlined
-                      :options="settings.batchText"
+                      :options="store.settings.batchText"
                       option-value="value"
                       option-label="label"
                       class="w-200px"
@@ -312,36 +287,36 @@ const settings = useStorage('pt-settings', {
                   </div>
                   <q-separator />
                   <div class="flex items-center gap-3">
-                    <q-checkbox v-model="settings.plannedBatch.isBatchFabricColor" :label="t('settings.plan-area.planned.is-batch-fabric-color')" />
-                    <div v-show="!settings.plannedBatch.isBatchFabricColor" class="flex-center flex-col gap-3">
+                    <q-checkbox v-model="store.settings.plannedBatch.isBatchFabricColor" :label="t('settings.plan-area.planned.is-batch-fabric-color')" />
+                    <div v-show="!store.settings.plannedBatch.isBatchFabricColor" class="flex-center flex-col gap-3">
                       <div class="flex-center gap-2">
                         <q-input
-                          v-model="settings.plannedBatch.actualBatchFabricColor"
+                          v-model="store.settings.plannedBatch.actualBatchFabricColor"
                           dense
                           readonly
                           borderless
                           class="border-b-1px border-b-solid"
                           :placeholder="t('settings.plan-area.planned.actual-batch-fabric-color')"
                           clearable
-                          :style="{ backgroundColor: settings.plannedBatch.actualBatchFabricColor }"
+                          :style="{ backgroundColor: store.settings.plannedBatch.actualBatchFabricColor }"
                         >
                           <template #append>
                             <q-icon
-                              v-if="settings.plannedBatch.actualBatchFabricColor !== ''"
+                              v-if="store.settings.plannedBatch.actualBatchFabricColor !== ''"
                               name="cancel"
                               class="cursor-pointer"
-                              :color="iconColor(settings.plannedBatch.actualBatchFabricColor)"
-                              @click="settings.plannedBatch.actualBatchFabricColor = ''"
+                              :color="iconColor(store.settings.plannedBatch.actualBatchFabricColor)"
+                              @click="store.settings.plannedBatch.actualBatchFabricColor = ''"
                             />
                             <q-icon
                               name="colorize"
                               class="cursor-pointer"
                               square
-                              :color="iconColor(settings.plannedBatch.actualBatchFabricColor)"
+                              :color="iconColor(store.settings.plannedBatch.actualBatchFabricColor)"
                             >
                               <q-popup-proxy cover>
                                 <q-color
-                                  v-model="settings.plannedBatch.actualBatchFabricColor"
+                                  v-model="store.settings.plannedBatch.actualBatchFabricColor"
                                   no-header
                                   no-footer
                                   @change="emits('updateScheduler')"
@@ -351,32 +326,32 @@ const settings = useStorage('pt-settings', {
                           </template>
                         </q-input>
                         <q-input
-                          v-model="settings.plannedBatch.deviationBatchFabricColor"
+                          v-model="store.settings.plannedBatch.deviationBatchFabricColor"
                           dense
                           readonly
                           borderless
                           :placeholder="t('settings.plan-area.planned.actual-batch-fabric-color')"
                           clearable
                           class="border-b-1px border-b-solid"
-                          :style="{ backgroundColor: settings.plannedBatch.deviationBatchFabricColor }"
+                          :style="{ backgroundColor: store.settings.plannedBatch.deviationBatchFabricColor }"
                         >
                           <template #append>
                             <q-icon
-                              v-if="settings.plannedBatch.deviationBatchFabricColor !== ''"
+                              v-if="store.settings.plannedBatch.deviationBatchFabricColor !== ''"
                               name="cancel"
                               class="cursor-pointer"
-                              :color="iconColor(settings.plannedBatch.deviationBatchFabricColor)"
-                              @click="settings.plannedBatch.deviationBatchFabricColor = ''"
+                              :color="iconColor(store.settings.plannedBatch.deviationBatchFabricColor)"
+                              @click="store.settings.plannedBatch.deviationBatchFabricColor = ''"
                             />
                             <q-icon
                               name="colorize"
                               class="cursor-pointer"
                               square
-                              :color="iconColor(settings.plannedBatch.deviationBatchFabricColor)"
+                              :color="iconColor(store.settings.plannedBatch.deviationBatchFabricColor)"
                             >
                               <q-popup-proxy cover>
                                 <q-color
-                                  v-model="settings.plannedBatch.deviationBatchFabricColor"
+                                  v-model="store.settings.plannedBatch.deviationBatchFabricColor"
                                   no-header
                                   no-footer
                                   @change="emits('updateScheduler')"
@@ -397,35 +372,35 @@ const settings = useStorage('pt-settings', {
           <div class="ml-3">
             <span>{{ t('settings.plan-area.stops.main') }}</span>
             <div class="settings-border ml-5 my-2 flex gap-3">
-              <QCheckbox v-model="settings.showStops.show" :label="t('settings.plan-area.stops.title')" />
+              <QCheckbox v-model="store.settings.showStops.show" :label="t('settings.plan-area.stops.title')" />
               <q-input
-                v-if="settings.showStops.show"
-                v-model="settings.showStops.color"
+                v-if="store.settings.showStops.show"
+                v-model="store.settings.showStops.color"
                 dense
                 readonly
                 borderless
                 class="border-b-1px border-b-solid"
                 :placeholder="t('settings.plan-area.stops.color')"
                 clearable
-                :style="{ backgroundColor: settings.showStops.color }"
+                :style="{ backgroundColor: store.settings.showStops.color }"
               >
                 <template #append>
                   <q-icon
-                    v-if="settings.showStops.color !== ''"
+                    v-if="store.settings.showStops.color !== ''"
                     name="cancel"
                     class="cursor-pointer"
-                    :color="iconColor(settings.showStops.color)"
-                    @click="settings.showStops.color = ''"
+                    :color="iconColor(store.settings.showStops.color)"
+                    @click="store.settings.showStops.color = ''"
                   />
                   <q-icon
                     name="colorize"
                     class="cursor-pointer"
                     square
-                    :color="iconColor(settings.showStops.color)"
+                    :color="iconColor(store.settings.showStops.color)"
                   >
                     <q-popup-proxy cover>
                       <q-color
-                        v-model="settings.showStops.color"
+                        v-model="store.settings.showStops.color"
                         no-header
                         no-footer
                         @change="emits('updateScheduler')"
@@ -443,7 +418,7 @@ const settings = useStorage('pt-settings', {
             <div class="settings-border ml-5 my-2 flex items-center gap-3">
               <span>{{ t('settings.plan-area.archive.text') }}</span>
               <q-input
-                v-model="settings.archiveDays"
+                v-model="store.settings.archiveDays"
                 type="number"
                 mask="##"
               />

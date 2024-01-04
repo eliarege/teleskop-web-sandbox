@@ -4,6 +4,9 @@ import '@bryntum/schedulerpro-trial/locales/schedulerpro.locale.En'
 import '@bryntum/schedulerpro-trial/locales/schedulerpro.locale.Tr'
 import { LoadingScreen } from 'ui'
 import { useI18n } from 'vue-i18n'
+import { useSettingStore } from '~/store/settings'
+
+useSettingStore()
 
 const { locale } = useI18n()
 

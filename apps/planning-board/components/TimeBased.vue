@@ -154,10 +154,6 @@ onMounted(async () => {
         }
       },
     },
-    onEventDrag(asd) {
-      console.log('wheres my tooltip', asd)
-      console.log(Tooltip.tooltip)
-    },
     eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
       if (eventRecord.originalData.notStarted) {
