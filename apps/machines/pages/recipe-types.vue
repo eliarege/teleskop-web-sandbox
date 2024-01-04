@@ -10,7 +10,7 @@ const columns: Column[] = [
     field: 'typeName',
     align: 'left',
     filterable: true,
-    filterType: 'equals',
+    filterType: 'includes',
   },
 ]
 

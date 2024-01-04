@@ -1,44 +1,77 @@
 <script setup lang="ts">
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
 import type { WaterType } from '~/types'
 
-const columns = [
+const columns: Column[] = [
   {
     name: 'waterTypeId',
     label: 'Su Tipi No',
-    field: row => row.waterTypeId,
+    field: 'waterTypeId',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'waterTypeName',
     label: 'Su Tipi İsmi',
-    field: row => row.waterTypeName,
+    field: 'waterTypeName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
 
-const { data, pending, refresh } = useFetch('/api/water-types/water-types', { default: () => [] })
+const { data: waterTypes, refresh } = useLazyFetch('/api/water-types/water-types', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
 
-const waterTypeName = ref()
+const selected = ref<WaterType>({
+  waterTypeId: -1,
+  waterTypeName: '',
+})
 
 async function handleAddWaterType() {
-  await addWaterType(waterTypeName.value)
+  await addWaterType(selected.value.waterTypeName)
   await refresh()
-  waterTypeName.value = ''
 }
-const selectedWaterType = ref([])
+
+async function handleSelection(obj: WaterType) {
+  if (selected.value.waterTypeId === obj.waterTypeId) {
+    selected.value = {
+      waterTypeId: -1,
+      waterTypeName: '',
+    }
+  } else {
+    selected.value = obj
+  }
+}
 
 async function handleDeleteWaterTypes() {
-  await deleteWaterTypes(selectedWaterType.value.map(d => d.waterTypeId))
+  await deleteWaterTypes(selected.value)
   await refresh()
-  selectedWaterType.value = []
-  waterTypeName.value = ''
+  selected.value = {
+    waterTypeId: -1,
+    waterTypeName: '',
+  }
+}
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  waterTypes.value = await $fetch('/api/water-types/water-types', {
+    method: 'POST',
+    body: {
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 
 <template>
   <q-card>
     <q-card-section>
-      <q-input v-model="waterTypeName" label="Su Tipi İsmi" />
+      <q-input v-model="selected.waterTypeName" label="Su Tipi İsmi" />
       <div class="flex flex-row input-field my-4">
         <q-btn
           label="Ekle"
@@ -51,33 +84,35 @@ async function handleDeleteWaterTypes() {
           @click="handleDeleteWaterTypes()"
         />
       </div>
-      <q-table
-        v-model:selected="selectedWaterType"
-        :loading="pending"
-        :rows="data"
+
+      <FilterableTable
+        v-model:selected="selected"
+        :rows="waterTypes"
         :columns="columns"
-        hide-pagination
-        :pagination="{ rowsPerPage: 0 }"
-        row-key="waterTypeId"
-        separator="cell"
-        bordered
-        selection="single"
-        table-header-class="table-header"
-      />
+        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+      >
+        <template #custombody="waterTypes">
+          <q-tr
+            :class="{ 'selected-row': selected.waterTypeId === waterTypes.row.waterTypeId }"
+            @click="handleSelection(waterTypes.row)"
+          >
+            <q-td
+              v-for="row in waterTypes.cols"
+              :key="row"
+            >
+              <span>
+                {{ row.value }}
+              </span>
+            </q-td>
+          </q-tr>
+        </template>
+      </FilterableTable>
     </q-card-section>
   </q-card>
 </template>
 
 <style scoped>
-:deep(.table-header > th) {
-  font-weight: bold;
-}
-.table-scroll {
-  max-height: 45em;
-  overflow-y: auto;
-}
-
-.input-field > * {
-  margin-right: 2em;
+.selected-row {
+  background-color: #cce8ff;
 }
 </style>
