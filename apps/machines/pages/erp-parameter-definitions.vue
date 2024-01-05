@@ -2,6 +2,7 @@
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { Column } from 'ui/types/FilterableTable'
 import type { ErpParameter, Machine } from '~/types'
+import { addErpParameterField, deleteErpParameterField, updateErpParameterField } from '~/utils'
 
 const machineColumns: Column[] = [
   {
@@ -39,9 +40,146 @@ const parameterColumns = [
     filterable: true,
     filterType: 'includes',
   },
+  {
+    name: 'erpFieldName',
+    label: 'ERP Eşleştirme Alanı',
+    field: 'erpFieldName',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+  },
 ]
 
-const erpMatchingOptions = [{ label: 'Bitir', value: 3 }, { label: 'Atla', value: 4 }, { label: 'Makine Duraklatma', value: 5 }]
+const paramOptions = [
+  'DyelotRefNo',
+  'Dyelot',
+  'ExternalDyelot',
+  'ReDye',
+  'Machine',
+  'Color',
+  'State',
+  'ImportState',
+  'StartTime',
+  'EndTime',
+  'OrderNo',
+  'Customer',
+  'Article',
+  'RecipeNo',
+  'Text1',
+  'Text2',
+  'Text3',
+  'Text4',
+  'Text5',
+  'Weight',
+  'LiquorRatio',
+  'LiquorQuantity',
+  'Parameter1',
+  'Parameter2',
+  'Parameter3',
+  'Parameter4',
+  'Parameter5',
+  'Parameter6',
+  'Parameter7',
+  'Parameter8',
+  'Parameter9',
+  'Parameter10',
+  'Parameter11',
+  'Parameter12',
+  'Parameter13',
+  'Parameter14',
+  'Parameter15',
+  'Parameter16',
+  'Parameter17',
+  'Parameter18',
+  'Parameter19',
+  'Parameter20',
+  'Note1',
+  'Note2',
+  'Note3',
+  'Note4',
+  'Note5',
+  'RunTime',
+  'SetTime',
+  'OperatorTime',
+  'HoldAlarmTime',
+  'StopAlarmTime',
+  'ManualTime',
+  'CorrectionTime',
+  'StopTime',
+  'PrepTime',
+  'Time1',
+  'Time2',
+  'Time3',
+  'Water1',
+  'Water2',
+  'Power',
+  'HeatingEnergy',
+  'CoolingEnergy',
+  'Consumption1',
+  'Consumption2',
+  'AlarmCnt',
+  'InterventionCnt',
+  'SendTime',
+  'Coupling',
+  'Slavemachine1',
+  'endState',
+  'Parameter21',
+  'Parameter22',
+  'Parameter23',
+  'Parameter24',
+  'Parameter25',
+  'Parameter26',
+  'Parameter27',
+  'Parameter28',
+  'Parameter29',
+  'Parameter30',
+  'StartingOperator',
+  'FinishingOperaor',
+  'ColourNo',
+  'ColourDescript',
+  'ColourGroup',
+  'FiberGroup',
+  'DyeGroup',
+  'DyeType',
+  'Parameter31',
+  'Parameter32',
+  'Parameter33',
+  'Parameter34',
+  'Parameter35',
+  'Parameter36',
+  'Parameter37',
+  'Parameter38',
+  'Parameter39',
+  'Parameter40',
+  'Parameter41',
+  'Parameter42',
+  'Parameter43',
+  'Parameter44',
+  'Parameter45',
+  'Parameter46',
+  'Parameter47',
+  'Parameter48',
+  'Parameter49',
+  'Parameter50',
+  'StartConfirm',
+  'EndConfirm',
+  'ActualMachine',
+  'LastCompletedRequest',
+  'ReadyToStart',
+  'BlockReason',
+  'Steam',
+  'TotalWater',
+  'Water3',
+  'Water4',
+  'Water5',
+  'Water6',
+  'FabricQualityInfo',
+  'FabricLotNumber',
+  'DyehouseNumber',
+  'WITHOUTRECIPE',
+  'CreateDate',
+
+]
 
 const selectedMachine = ref<Machine>({
   machineId: -1,
@@ -59,7 +197,7 @@ const { data: machines } = useLazyFetch('/api/machines/machines', {
   body: {},
 })
 
-const { data: parameters } = useLazyFetch('/api/erp/erp-parameters', {
+const { data: params, refresh: refreshParams } = useLazyFetch('/api/erp/erp-parameters', {
   default: () => [],
   immediate: false,
   method: 'POST',
@@ -94,6 +232,24 @@ async function handleParamSelection(obj: ErpParameter) {
     selectedParam.value = obj
   }
 }
+
+async function addParam() {
+  if (params.value.length) {
+    const paramId = Math.max(...params.value.map(p => p.paramId)) + 1
+    await addErpParameterField(paramId, selectedMachineId.value, selectedParam.value)
+    await refreshParams()
+  }
+}
+
+async function editParam() {
+  await updateErpParameterField(selectedParam.value)
+  await refreshParams()
+}
+
+async function deleteParam() {
+  await deleteErpParameterField(selectedParam.value)
+  await refreshParams()
+}
 </script>
 
 <template>
@@ -107,7 +263,8 @@ async function handleParamSelection(obj: ErpParameter) {
           class="w-xs"
         />
         <q-select
-          :options="erpMatchingOptions"
+          v-model="selectedParam.erpFieldName"
+          :options="paramOptions"
           label="ERP Eşleştirme Alanı"
           filled
           class="w-xs"
@@ -118,14 +275,17 @@ async function handleParamSelection(obj: ErpParameter) {
         <q-btn
           label="Ekle"
           no-caps
+          @click="addParam"
         />
         <q-btn
           label="Düzenle"
           no-caps
+          @click="editParam"
         />
         <q-btn
           label="Sil"
           no-caps
+          @click="deleteParam"
         />
       </div>
 
@@ -153,7 +313,7 @@ async function handleParamSelection(obj: ErpParameter) {
         </FilterableTable>
 
         <FilterableTable
-          :rows="parameters"
+          :rows="params"
           :columns="parameterColumns"
         >
           <template #custombody="parameters">

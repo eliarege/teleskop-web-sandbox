@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
   const { machineId, filters } = await readBody(event)
 
   const selectParams = {
+    machineId: 'MACHINEID',
     paramId: 'PARAMID',
     paramName: 'PARAMNAME',
     paramType: 'PARAMTYPE',

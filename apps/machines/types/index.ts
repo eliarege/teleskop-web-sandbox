@@ -184,6 +184,7 @@ export interface FunctionAlarm {
 }
 
 export interface ErpParameter {
+  machineId: number
   paramId: number
   paramName: string
   paramType: number

@@ -1,4 +1,4 @@
-import type { FinishReason, Machine, ManualReason, RecipeType, StepReason, StopReason, User, WaterType } from '~/types'
+import type { ErpParameter, FinishReason, Machine, ManualReason, RecipeType, StepReason, StopReason, User, WaterType } from '~/types'
 
 export async function getMachineGroups(): Promise<string[]> {
   return await $fetch('/api/machines/machine-groups')
@@ -300,5 +300,26 @@ export async function updateTankMaterialWaterDefinition(body: object) {
   return await $fetch('/api/materials/material-tank-water-definition', {
     method: 'POST',
     body,
+  })
+}
+
+export async function addErpParameterField(paramId: number, machineId: number, erpParameter: ErpParameter) {
+  return await $fetch('/api/erp/erp-parameter', {
+    method: 'POST',
+    body: { paramId, machineId, erpParameter },
+  })
+}
+
+export async function updateErpParameterField(erpParameter: ErpParameter) {
+  return await $fetch('/api/erp/erp-parameter', {
+    method: 'PUT',
+    body: { erpParameter },
+  })
+}
+
+export async function deleteErpParameterField(erpParameter: ErpParameter) {
+  return await $fetch('/api/erp/erp-parameter', {
+    method: 'DELETE',
+    body: { erpParameter },
   })
 }
