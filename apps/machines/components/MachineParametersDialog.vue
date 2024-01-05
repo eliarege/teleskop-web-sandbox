@@ -1,59 +1,84 @@
 <script setup lang="ts">
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
 import type { Machine } from '~/types'
-import { addMachine, getMachineGroups } from '~/utils'
 
 const props = defineProps<{
   show: boolean
-  selectedMachines: Machine[]
+  selected: Machine
 }>()
 
 const emit = defineEmits(['close'])
 
-const columns = [
+const columns: Column[] = [
   {
     name: 'id',
     label: 'Parametre No',
-    field: row => row.id,
+    field: 'id',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'paramString',
     label: 'İsim',
-    field: row => row.paramString,
+    field: 'paramString',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'paramLowLimit',
     label: 'Alt Limit',
-    field: row => row.paramLowLimit,
+    field: 'paramLowLimit',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 
   {
     name: 'paramHighLimit',
     label: 'Üst Limit',
-    field: row => row.paramHighLimit,
+    field: 'paramHighLimit',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 
   {
     name: 'defaultValue',
     label: 'Varsayılan Değer',
-    field: row => row.defaultValue,
+    field: 'defaultValue',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'currentValue',
     label: 'Değer',
-    field: row => row.currentValue,
+    field: 'currentValue',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
 
-const id = computed(() => props.selectedMachines.length ? props.selectedMachines[0].id : null)
-const { data: rows, pending } = await useFetch('/api/machines/machine-parameters', {
-  query: { machineId: id.value },
+const id = computed(() => props.selected.machineId)
+const { data: params } = useLazyFetch('/api/machines/machine-parameters', {
+  default: () => [],
+  method: 'POST',
+  body: { machineId: id.value },
 })
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  params.value = await $fetch('/api/machines/machine-parameters', {
+    method: 'POST',
+    body: {
+      machineId: id.value,
+      filters: updatedValue,
+    },
+  })
+}
 </script>
 
 <template>
@@ -64,17 +89,16 @@ const { data: rows, pending } = await useFetch('/api/machines/machine-parameters
   >
     <q-card>
       <q-card-section>
-        <q-table
-          :loading="pending && id"
-          :rows="rows"
+        <q-icon
+          name="close"
+          class="flex justify-end w-full mb-4 cursor-pointer"
+          size="1.5em"
+          @click="$emit('close')"
+        />
+        <FilterableTable
+          :rows="params"
           :columns="columns"
-          hide-pagination
-          :pagination="{ rowsPerPage: 0 }"
-          row-key="reasonId"
-          separator="cell"
-          bordered
-          selection="single"
-          table-header-class="table-header"
+          @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
         />
       </q-card-section>
     </q-card>

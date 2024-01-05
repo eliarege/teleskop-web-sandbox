@@ -5,12 +5,12 @@ import type { Machine } from '~/types'
 
 const props = defineProps<{
   show: boolean
-  selectedMachines: Machine[]
+  selected: Machine
 }>()
 
 const emit = defineEmits(['close'])
 
-const machineId = computed(() => props.selectedMachines[0].id)
+const machineId = computed(() => props.selected.machineId)
 
 const { data: formulas } = useLazyFetch('/api/machines/formulas', {
   query: { machineId: machineId.value },

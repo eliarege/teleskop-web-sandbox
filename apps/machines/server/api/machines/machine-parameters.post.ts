@@ -1,9 +1,11 @@
+import { filtersToKnex } from 'utils/src/index'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
   try {
-    const { machineId } = getQuery(event)
-    const machineParameters = await knex('BFMACHPARAMETERS').where('MACHINEID', machineId).select({
+    const { machineId, filters } = await readBody(event)
+
+    const selectParams = {
       id: 'MACHINEPARAMETERID',
       paramString: 'PARAMSTRING',
       defaultValue: 'DEFAULTVALUE',
@@ -14,8 +16,16 @@ export default defineEventHandler(async (event) => {
       consFormat: 'consFormat',
       consUnit: 'consUnit',
       currentValue: 'currentValue',
-    })
-    return machineParameters
+    }
+
+    const query = knex('BFMACHPARAMETERS')
+      .select(selectParams)
+      .where('MACHINEID', machineId)
+
+    if (filters)
+      return await filtersToKnex(filters, selectParams, query)
+
+    return await query
   } catch (e) {
     return e
   }

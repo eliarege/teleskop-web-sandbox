@@ -4,7 +4,7 @@ import { deleteMachines } from '~/utils'
 
 const props = defineProps<{
   machines: Machine[]
-  selectedMachines: Machine[]
+  selected: Machine
 }>()
 
 const emit = defineEmits(['deleteMachine', 'addMachine'])
@@ -16,7 +16,7 @@ const showMimic = ref(false)
 const showFormulas = ref(false)
 
 async function handleMachineDelete() {
-  const machineIds = props.selectedMachines.map(m => m.id)
+  const machineIds = [props.selected]
   await deleteMachines(machineIds)
   emit('deleteMachine', machineIds)
 }
@@ -110,26 +110,26 @@ async function handleMachineDelete() {
   <EditMachineDialog
     v-if="showEditMachine"
     :show="showEditMachine"
-    :selected-machines="selectedMachines"
+    :selected="selected"
     @close="showEditMachine = false"
     @add-machine="$emit('addMachine')"
   />
   <MachineParametersDialog
     v-if="showMachineParameters"
     :show="showMachineParameters"
-    :selected-machines="selectedMachines"
+    :selected="selected"
     @close="showMachineParameters = false"
   />
   <MimicDialog
     v-if="showMimic"
     :show="showMimic"
-    :selected-machines="selectedMachines"
+    :selected="selected"
     @close="showMimic = false"
   />
   <FormulasDialog
     v-if="showFormulas"
     :show="showFormulas"
-    :selected-machines="selectedMachines"
+    :selected="selected"
     @close="showFormulas = false"
   />
 </template>

@@ -1,54 +1,88 @@
 <script setup lang="ts">
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
 import type { Machine } from '~/types'
 
 const props = defineProps<{
   show: boolean
-  selectedMachines: Machine[]
+  selected: Machine
 }>()
 
 const emit = defineEmits(['close'])
 
 const tab = ref('inputs')
 
-const machineId = computed(() => props.selectedMachines[0].id)
+const machineId = computed(() => props.selected.machineId)
 
-const { data: inputs, pending: inputPending } = await useFetch('/api/IO/analog-input', {
-  query: { machineId: machineId.value },
+const { data: inputs } = useLazyFetch('/api/IO/analog-input', {
+  body: { machineId: machineId.value },
+  method: 'POST',
+  default: () => [],
 })
 
-const inputColumns = [
+const inputColumns: Column[] = [
   {
     name: 'id',
     label: 'ID',
-    field: row => row.id,
+    field: 'id',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'name',
     label: 'Giriş/Çıkış Adı',
-    field: row => row.name,
+    field: 'name',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
 
-const { data: outputs, pending: outputPending } = await useFetch('/api/IO/analog-output', {
-  query: { machineId: machineId.value },
+const { data: outputs } = useLazyFetch('/api/IO/analog-output', {
+  body: { machineId: machineId.value },
+  method: 'POST',
+  default: () => [],
 })
 
-const outputColumns = [
+const outputColumns: Column[] = [
   {
     name: 'id',
     label: 'ID',
-    field: row => row.id,
+    field: 'id',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'name',
     label: 'Giriş/Çıkış Adı',
-    field: row => row.name,
+    field: 'name',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
+
+async function handleFilterSlotsUpdateInputs(updatedValue) {
+  inputs.value = await $fetch('/api/IO/analog-input', {
+    method: 'POST',
+    body: {
+      machineId: machineId.value,
+      filters: updatedValue,
+    },
+  })
+}
+
+async function handleFilterSlotsUpdateOutputs(updatedValue) {
+  outputs.value = await $fetch('/api/IO/analog-output', {
+    method: 'POST',
+    body: {
+      machineId: machineId.value,
+      filters: updatedValue,
+    },
+  })
+}
 </script>
 
 <template>
@@ -78,30 +112,18 @@ const outputColumns = [
 
           <q-tab-panels v-model="tab" animated>
             <q-tab-panel name="inputs">
-              <q-table
-                :loading="inputPending"
+              <FilterableTable
                 :rows="inputs"
                 :columns="inputColumns"
-                hide-pagination
-                :pagination="{ rowsPerPage: 0 }"
-                row-key="reasonId"
-                separator="cell"
-                bordered
-                table-header-class="table-header"
+                @update-filter-slots="evt => handleFilterSlotsUpdateInputs(evt)"
               />
             </q-tab-panel>
 
             <q-tab-panel name="outputs">
-              <q-table
-                :loading="outputPending"
+              <FilterableTable
                 :rows="outputs"
                 :columns="outputColumns"
-                hide-pagination
-                :pagination="{ rowsPerPage: 0 }"
-                row-key="reasonId"
-                separator="cell"
-                bordered
-                table-header-class="table-header"
+                @update-filter-slots="evt => handleFilterSlotsUpdateOutputs(evt)"
               />
             </q-tab-panel>
 
