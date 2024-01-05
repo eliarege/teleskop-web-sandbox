@@ -1,39 +1,99 @@
 <script setup lang="ts">
-const machineRows = ref([])
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'ui/types/FilterableTable'
+import type { ErpParameter, Machine } from '~/types'
 
-const machineColumns = [
+const machineColumns: Column[] = [
   {
     name: 'machineId',
     label: 'Makine Id',
-    field: row => row.machineId,
+    field: 'machineId',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'machineName',
+    name: 'machineCode',
     label: 'Makine Adı',
-    field: row => row.machineName,
+    field: 'machineCode',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
 
-const parameterRows = ref([])
-
 const parameterColumns = [
   {
-    name: 'parameterId',
+    name: 'paramId',
     label: 'Parametre Id',
-    field: row => row.parameterId,
+    field: 'paramId',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'ParameterName',
+    name: 'paramName',
     label: 'Parametre Adı',
-    field: row => row.parameterName,
+    field: 'paramName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
 
 const erpMatchingOptions = [{ label: 'Bitir', value: 3 }, { label: 'Atla', value: 4 }, { label: 'Makine Duraklatma', value: 5 }]
+
+const selectedMachine = ref<Machine>({
+  machineId: -1,
+})
+
+const selectedParam = ref<ErpParameter>({
+  paramId: -1,
+})
+
+const selectedMachineId = computed(() => selectedMachine.value.machineId)
+
+const { data: machines } = useLazyFetch('/api/machines/machines', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
+
+const { data: parameters } = useLazyFetch('/api/erp/erp-parameters', {
+  default: () => [],
+  immediate: false,
+  method: 'POST',
+  body: { machineId: selectedMachineId },
+})
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  machines.value = await $fetch('/api/machines/machines', {
+    method: 'POST',
+    body: {
+      filters: updatedValue,
+    },
+  })
+}
+
+async function handleMachineSelection(obj: Machine) {
+  if (selectedMachine.value.machineId === obj.machineId) {
+    selectedMachine.value = {
+      machineId: -1,
+    }
+  } else {
+    selectedMachine.value = obj
+  }
+}
+
+async function handleParamSelection(obj: ErpParameter) {
+  if (selectedParam.value.paramId === obj.paramId) {
+    selectedParam.value = {
+      paramId: -1,
+    }
+  } else {
+    selectedParam.value = obj
+  }
+}
 </script>
 
 <template>
@@ -41,6 +101,7 @@ const erpMatchingOptions = [{ label: 'Bitir', value: 3 }, { label: 'Atla', value
     <q-card-section>
       <div class="flex flex-row justify-start input-field">
         <q-input
+          v-model="selectedParam.paramName"
           label="Parametre İsmi"
           filled
           class="w-xs"
@@ -67,40 +128,56 @@ const erpMatchingOptions = [{ label: 'Bitir', value: 3 }, { label: 'Atla', value
           no-caps
         />
       </div>
+
       <div class="flex flex-row justify-evenly">
-        <q-table
-          :rows="machineRows"
+        <FilterableTable
+          :rows="machines"
           :columns="machineColumns"
-          hide-pagination
-          :pagination="{ rowsPerPage: 0 }"
-          row-key="machineId"
-          separator="cell"
-          bordered
-          selection="single"
-          table-header-class="table-header"
-          class="w-3xl"
-        />
-        <q-table
-          :rows="parameterRows"
+          @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+        >
+          <template #custombody="machines">
+            <q-tr
+              :class="{ 'selected-row': selectedMachine.machineId === machines.row.machineId }"
+              @click="handleMachineSelection(machines.row)"
+            >
+              <q-td
+                v-for="row in machines.cols"
+                :key="row"
+              >
+                <span>
+                  {{ row.value }}
+                </span>
+              </q-td>
+            </q-tr>
+          </template>
+        </FilterableTable>
+
+        <FilterableTable
+          :rows="parameters"
           :columns="parameterColumns"
-          hide-pagination
-          :pagination="{ rowsPerPage: 0 }"
-          row-key="parameterId"
-          separator="cell"
-          bordered
-          selection="single"
-          table-header-class="table-header"
-          class="w-3xl"
-        />
+        >
+          <template #custombody="parameters">
+            <q-tr
+              :class="{ 'selected-row': selectedParam.paramId === parameters.row.paramId }"
+              @click="handleParamSelection(parameters.row)"
+            >
+              <q-td
+                v-for="row in parameters.cols"
+                :key="row"
+              >
+                <span>
+                  {{ row.value }}
+                </span>
+              </q-td>
+            </q-tr>
+          </template>
+        </FilterableTable>
       </div>
     </q-card-section>
   </q-card>
 </template>
 
 <style scoped>
-:deep(.table-header > th) {
-  font-weight: bold;
-}
 .table-scroll {
   max-height: 45em;
   overflow-y: auto;
@@ -108,5 +185,9 @@ const erpMatchingOptions = [{ label: 'Bitir', value: 3 }, { label: 'Atla', value
 
 .input-field > * {
   margin-right: 2em;
+}
+
+.selected-row {
+  background-color: #cce8ff;
 }
 </style>

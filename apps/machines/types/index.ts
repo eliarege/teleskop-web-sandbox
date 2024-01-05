@@ -182,3 +182,13 @@ export interface FunctionAlarm {
   o: string
   m: string
 }
+
+export interface ErpParameter {
+  paramId: number
+  paramName: string
+  paramType: number
+  erpFieldName: string
+  batchReportVisible: number
+  batchReportOrder: number
+  partyNoParam: number
+}
