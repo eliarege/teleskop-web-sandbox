@@ -595,3 +595,16 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
 
   return data
 }
+
+export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex) {
+  const finishReasons = await trx('BFDYLOTFINISHREASONS').select({
+    reasonId: 'REASONID',
+    typeId: 'TYPEID',
+    text: 'TEXT',
+    reportToERP: 'ReportToERP',
+  })
+
+  await tbb.uploadFinishReasons(finishReasons)
+
+  return finishReasons
+}

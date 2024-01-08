@@ -24,7 +24,7 @@ import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
 import { writeFinishReason } from './writers/writeFinishReason'
-import { FinishReason } from './types'
+import type { FinishReason } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
 import { parseLine, parseLockInput } from './parsers/parseLocksInput'
@@ -317,10 +317,9 @@ export class TbbFtpClient {
     }
   }
 */
-  /*   async uploadFinishReasons(finishReasons: FinishReason[]) {
-      const remotePath = '/tbb6500/data/config/bitirmenedenleri'
-      const content = writeFinishReason(finishReasons)
-      await upload(remotePath, this.host, content)
+  async uploadFinishReasons(finishReasons: FinishReason[]) {
+    const remotePath = '/tbb6500/data/config/bitirmenedenleri'
+    const content = writeFinishReason(finishReasons)
+    await upload(this.client, remotePath, content)
   }
- */
 }
