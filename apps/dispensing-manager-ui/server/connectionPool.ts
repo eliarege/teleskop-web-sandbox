@@ -10,6 +10,7 @@ const knex = Knex({
     user: config.teleskopUser,
     password: config.teleskopPassword.toString(),
     database: config.teleskopDatabase,
+    instanceName: config.teleskopInstanceName || undefined,
     options: {
       trustServerCertificate: true,
     },
