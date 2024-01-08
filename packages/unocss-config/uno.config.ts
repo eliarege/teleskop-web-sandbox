@@ -7,7 +7,13 @@ export default defineConfig({
     'e-border': 'border-solid border-1px border-black',
   },
   presets: [
-    presetUno({ preflight: true }),
+    presetUno({
+      preflight: true,
+      dark: {
+        dark: '.body--dark',
+        light: '.body--light',
+      },
+    }),
     presetAttributify(),
   ],
   transformers: [
