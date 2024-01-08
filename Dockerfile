@@ -45,17 +45,7 @@ RUN \
   TURBO_TOKEN=$(cat /run/secrets/TURBO_TOKEN) \
   pnpx turbo build --filter ${APP_NAME} --remote-only
 
-FROM workspace as dependencies
-
-COPY out/json/ ./
-
-RUN \
-  --mount=type=cache,id=pnpm,target=/pnpm/store \
-  --mount=type=secret,id=NPM_TOKEN,required=true \
-  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) \
-  pnpm install --prod --frozen-lockfile
-
-FROM base as common
+FROM base
 
 WORKDIR /app
 
@@ -68,18 +58,10 @@ ENV APP_NAME=${APP_NAME}
 ENV APP_VERSION=${APP_VERSION}
 ENV NODE_ENV=production
 
-COPY --from=build /workspace/apps/${APP_NAME}/package.json ./
-COPY --from=build /workspace/apps/${APP_NAME}/${APP_OUT_DIR} ${APP_OUT_DIR}
+COPY --from=build --chown=node:node /workspace/apps/${APP_NAME}/package.json ./
+COPY --from=build --chown=node:node /workspace/apps/${APP_NAME}/${APP_OUT_DIR} ${APP_OUT_DIR}
 
 EXPOSE ${APP_PORT}
 
-FROM common as nuxt
-
-USER node
-ENTRYPOINT [ "npm", "start" ]
-
-FROM common as node
-
-COPY --from=dependencies /workspace/node_modules node_modules
 USER node
 ENTRYPOINT [ "npm", "start" ]
