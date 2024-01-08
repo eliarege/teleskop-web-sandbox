@@ -49,7 +49,7 @@ if (process.env.NODE_ENV === 'development' && process.env.KC_DEV_TOKEN) {
 }
 
 function isKeycloakEnabled() {
-  const defaultValue = process.env.NODE_ENV === 'production'
+  const defaultValue = false
   return process.env.KC_ENABLED
     ? inferBoolean(process.env.KC_ENABLED)
     : defaultValue
