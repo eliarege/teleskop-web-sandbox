@@ -631,6 +631,7 @@ export async function writeMachineParameterValues(machineId: number, tbb: TbbFtp
 
   return values
 }
+
 export async function writeUsers(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const users = await trx('BFUSERS').select({
     userId: 'userID',
@@ -647,4 +648,14 @@ export async function writeUsers(machineId: number, tbb: TbbFtpClient, trx: Knex
   await tbb.uploadUsers(users)
 
   return users
+}
+
+export async function writeGlobalCommandFormulas(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const formulas = await trx('BFCOMMANDPARAMETERS')
+    .where('MACHINEID', machineId)
+    .select()
+
+  await tbb.uploadStopReasons(formulas)
+
+  return formulas
 }

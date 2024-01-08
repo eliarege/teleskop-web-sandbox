@@ -24,13 +24,14 @@ import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
 import { writeFinishReason } from './writers/writeFinishReason'
-import type { FinishReason, StopReason, User } from './types'
+import type { FinishReason, GlobalCommandFormula, StopReason, User } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
 import { parseLine, parseLockInput } from './parsers/parseLocksInput'
 import { writeStopReason } from './writers/writeStopReason'
 import { writeMachineParameterValues } from './writers/writeMachineParameterValues'
 import { writeFileUser } from './writers/writeFileUser'
+import { writeGlobalCommandFormulas } from './writers/writeGlobalCommandFormulas'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -278,6 +279,12 @@ export class TbbFtpClient {
   async uploadFinishReasons(finishReasons: FinishReason[]) {
     const remotePath = '/tbb6500/data/config/bitirmenedenleri'
     const content = writeFinishReason(finishReasons)
+    await upload(this.client, remotePath, content)
+  }
+
+  async uploadGlobalCommandFormulas(formulas: GlobalCommandFormula[]) {
+    const remotePath = '/tbb6500/data/yedek/globalCommandFormulas'
+    const content = writeGlobalCommandFormulas(formulas)
     await upload(this.client, remotePath, content)
   }
 }
