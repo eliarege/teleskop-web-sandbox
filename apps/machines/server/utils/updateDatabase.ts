@@ -631,3 +631,20 @@ export async function writeMachineParameterValues(machineId: number, tbb: TbbFtp
 
   return values
 }
+export async function writeUsers(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const users = await trx('BFUSERS').select({
+    userId: 'userID',
+    userName: 'userName',
+    userSurname: 'userSurname',
+    userPass: 'userPass',
+    userInfo: 'userInfo',
+    userActive: 'userActive',
+    userType: 'userType',
+    userMode: 'userMode',
+    userMode2: 'userMode2',
+  })
+
+  await tbb.uploadUsers(users)
+
+  return users
+}

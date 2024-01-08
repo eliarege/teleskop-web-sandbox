@@ -24,12 +24,13 @@ import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
 import { writeFinishReason } from './writers/writeFinishReason'
-import type { FinishReason, StopReason } from './types'
+import type { FinishReason, StopReason, User } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
 import { parseLine, parseLockInput } from './parsers/parseLocksInput'
 import { writeStopReason } from './writers/writeStopReason'
 import { writeMachineParameterValues } from './writers/writeMachineParameterValues'
+import { writeFileUser } from './writers/writeFileUser'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -261,28 +262,12 @@ export class TbbFtpClient {
     const content = writeMachineParameterValues(values)
     await upload(this.client, remotePath, content)
   }
-  /*
-  async writeUsers(users: User[]) {
-    try {
-      await this.connectClient()
-      const sourceFolderPath = './server/data/users'
-      const sourcePath = './server/data/users/users'
-      const remotePath = '/tbb6500/data/users/users'
 
-      const content = fileUserWriter(users)
-
-      if (!fs.existsSync(sourceFolderPath)) {
-        await fs.promises.mkdir(sourceFolderPath)
-      }
-      await fs.promises.writeFile(sourcePath, content)
-      await this.ftpClient.uploadFrom(sourcePath, remotePath)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      this.ftpClient.close()
-    }
+  async uploadUsers(users: User[]) {
+    const remotePath = '/tbb6500/data/users/users'
+    const content = writeFileUser(users)
+    await upload(this.client, remotePath, content)
   }
-*/
 
   async uploadStopReasons(stopReasons: StopReason[]) {
     const remotePath = '/tbb6500/data/config/durusnedenleri'
