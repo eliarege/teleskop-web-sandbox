@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
+
     const { machineId } = getQuery(event)
     const commands = await knex('BFMASTERCOMMANDS')
       .where('MACHINEID', machineId)
@@ -10,7 +10,5 @@ export default defineEventHandler(async (event) => {
       )
 
     return commands
-  } catch (e) {
-    return e
-  }
+
 })

@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
+
     const materials = await knex('DYTFMATERIAL')
       .select({
         materialCode: 'MATERIALCODE',
@@ -19,7 +19,5 @@ export default defineEventHandler(async (event) => {
       })
 
     return materials
-  } catch (e) {
-    return e
-  }
+
 })

@@ -376,15 +376,12 @@ export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpCl
     })),
   )
 
-  try {
-    await trx('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId).del()
-    // await trx('BFCOMMANDTIMEOUTREASONS').del()
-    await insertIgnoringDuplicates(trx, 'BFCOMMANDTIMEOUTREASONS', timeoutReasons, ['REASONTEXT', 'GROUPID'])
+  await trx('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId).del()
+  // await trx('BFCOMMANDTIMEOUTREASONS').del()
+  await insertIgnoringDuplicates(trx, 'BFCOMMANDTIMEOUTREASONS', timeoutReasons, ['REASONTEXT', 'GROUPID'])
 
-    await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
-  } catch (err) {
-    console.error(err)
-  }
+  await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
+
   return timeoutReasons
 }
 

@@ -2,18 +2,14 @@ import { TbbFtpClient } from 'tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async () => {
-  try {
-    const finishReasons = await knex('BFDYLOTFINISHREASONS').select({
-      reasonId: 'REASONID',
-      typeId: 'TYPEID',
-      text: 'TEXT',
-      reportToERP: 'ReportToERP',
-    })
+  const finishReasons = await knex('BFDYLOTFINISHREASONS').select({
+    reasonId: 'REASONID',
+    typeId: 'TYPEID',
+    text: 'TEXT',
+    reportToERP: 'ReportToERP',
+  })
 
-    const tbb = new TbbFtpClient('192.168.88.202')
-    // await tbb.writeFinishReasons(finishReasons)
-    return finishReasons
-  } catch (err) {
-    console.error(err)
-  }
+  const tbb = new TbbFtpClient('192.168.88.202')
+  // await tbb.writeFinishReasons(finishReasons)
+  return finishReasons
 })

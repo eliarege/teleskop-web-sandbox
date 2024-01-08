@@ -2,7 +2,7 @@ import { filtersToKnex } from 'utils'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
+
     const { filters } = await readBody(event)
     const selectParams = {
       stopCode: 'STOPCODE',
@@ -16,7 +16,5 @@ export default defineEventHandler(async (event) => {
       return await filtersToKnex(filters, selectParams, query)
 
     return await query
-  } catch (e) {
-    return e
-  }
+
 })

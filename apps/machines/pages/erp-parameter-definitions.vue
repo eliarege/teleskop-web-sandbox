@@ -185,7 +185,7 @@ const selectedMachine = ref<Machine>({
   machineId: -1,
 })
 
-const selectedParam = ref<ErpParameter>({
+const selectedParam = ref<Partial<ErpParameter>>({
   paramId: -1,
 })
 

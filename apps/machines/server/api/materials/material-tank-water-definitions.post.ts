@@ -2,34 +2,29 @@ import { filtersToKnex } from 'utils/src/index'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
-    const { filters } = await readBody(event)
+  const { filters } = await readBody(event)
 
-    const selectParams = {
-      materialId: 'ID',
-      machineName: 'MACHINECODE',
-      machineId: 'DYTFMATERIALTANKMAP.MACHINEID',
-      tankName: 'NAME',
-      tankNo: 'DYTFMATERIALTANKMAP.TANKNO',
-      materialCode: 'DYTFMATERIALTANKMAP.MATERIALCODE',
-      materialName: 'MATERIALNAME',
-      materialGroupNo: 'MADDEGRUPNO',
-      preWater: 'PREWATER',
-      betweenWater: 'BETWEENWATER',
-      postWater: 'POSTWATER',
-    }
-
-    const query = knex('DYTFMATERIALTANKMAP')
-      .leftJoin('DYTFMATERIAL', 'DYTFMATERIAL.MATERIALCODE', 'DYTFMATERIALTANKMAP.MATERIALCODE')
-      .leftJoin('BFMACHINETANKS', 'BFMACHINETANKS.TANKNO', 'DYTFMATERIALTANKMAP.TANKNO')
-      .leftJoin('BFMACHINES', 'BFMACHINES.MACHINEID', 'DYTFMATERIALTANKMAP.MACHINEID')
-      .select(selectParams)
-    if (filters && filters.length)
-      return await filtersToKnex(filters, selectParams, query)
-
-    return await query
-  } catch (e) {
-    console.log('e = ', e)
-    return e
+  const selectParams = {
+    materialId: 'ID',
+    machineName: 'MACHINECODE',
+    machineId: 'DYTFMATERIALTANKMAP.MACHINEID',
+    tankName: 'NAME',
+    tankNo: 'DYTFMATERIALTANKMAP.TANKNO',
+    materialCode: 'DYTFMATERIALTANKMAP.MATERIALCODE',
+    materialName: 'MATERIALNAME',
+    materialGroupNo: 'MADDEGRUPNO',
+    preWater: 'PREWATER',
+    betweenWater: 'BETWEENWATER',
+    postWater: 'POSTWATER',
   }
+
+  const query = knex('DYTFMATERIALTANKMAP')
+    .leftJoin('DYTFMATERIAL', 'DYTFMATERIAL.MATERIALCODE', 'DYTFMATERIALTANKMAP.MATERIALCODE')
+    .leftJoin('BFMACHINETANKS', 'BFMACHINETANKS.TANKNO', 'DYTFMATERIALTANKMAP.TANKNO')
+    .leftJoin('BFMACHINES', 'BFMACHINES.MACHINEID', 'DYTFMATERIALTANKMAP.MACHINEID')
+    .select(selectParams)
+  if (filters && filters.length)
+    return await filtersToKnex(filters, selectParams, query)
+
+  return await query
 })

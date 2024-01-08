@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async () => {
-  try {
+
     const machineIds = await knex('BFCOMMANDTIMEOUTREASONMAP').distinct(
       { machineId: 'MACHINEID' },
     )
@@ -15,8 +15,6 @@ export default defineEventHandler(async () => {
     })
 
     return machineNames
-  } catch (e) {
-    return e
-  }
+
 })
 // inuse = 1 & useinteleskop = 1

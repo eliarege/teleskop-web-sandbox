@@ -4,23 +4,19 @@ import { knex } from '~/server/connectionPool'
 import { updateAnalogInputs, updateCommandAlarmReasons, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral } from '~/server/utils/updateDatabase'
 
 export default defineEventHandler(async (event) => {
-  try {
-    const { machineId } = getQuery(event)
-    const numMachineId = Number.parseInt(machineId as string)
-    let res
-    if (!Number.isNaN(numMachineId)) {
-      await withTbbFtpClient('192.168.88.202', async (tbb) => {
-        await tbb.fetchLocksInput()
-      })
-      /*       await knex.transaction(async (trx) => {
+  const { machineId } = getQuery(event)
+  const numMachineId = Number.parseInt(machineId as string)
+  let res
+  if (!Number.isNaN(numMachineId)) {
+    await withTbbFtpClient('192.168.88.202', async (tbb) => {
+      await tbb.fetchLocksInput()
+    })
+    /*       await knex.transaction(async (trx) => {
         res = await updateLocksGeneral(numMachineId, tbb, trx)
       })
  */
-    } else {
-      console.log('typeof machineId = ', typeof machineId)
-    }
-    return res
-  } catch (err) {
-    console.error(err)
+  } else {
+    console.log('typeof machineId = ', typeof machineId)
   }
+  return res
 })

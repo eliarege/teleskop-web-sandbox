@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
+
     const { machineId, tankNo, name, highLimit, machineConstantHighLimit } = await readBody(event)
     const res = await knex('BFMACHINETANKS')
       .insert({
@@ -13,7 +13,5 @@ export default defineEventHandler(async (event) => {
       })
 
     return res
-  } catch (e) {
-    return e
-  }
+
 })
