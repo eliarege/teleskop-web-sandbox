@@ -608,3 +608,15 @@ export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex) {
 
   return finishReasons
 }
+
+export async function writeStopReasons(tbb: TbbFtpClient, trx: Knex) {
+  const stopReasons = await trx('BFSTOPREASONS').select({
+    stopCode: 'STOPCODE',
+    stopName: 'STOPNAME',
+    reportToERP: 'ReportToERP',
+  })
+
+  await tbb.uploadStopReasons(stopReasons)
+
+  return stopReasons
+}
