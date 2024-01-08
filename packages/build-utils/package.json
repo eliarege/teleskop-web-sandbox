@@ -1,0 +1,19 @@
+{
+  "name": "build-utils",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "main": "src/index.ts",
+  "dependencies": {
+    "@vercel/nft": "^0.26.2",
+    "consola": "^3.2.3",
+    "mlly": "^1.4.2",
+    "pkg-types": "^1.0.3",
+    "semver": "^7.5.4"
+  },
+  "devDependencies": {
+    "tsconfig": "workspace:*",
+    "unbuild": "2.0.0"
+  }
+}
