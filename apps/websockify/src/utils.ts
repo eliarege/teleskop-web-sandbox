@@ -39,3 +39,9 @@ export function getPathname(request: IncomingMessage) {
     return ''
   return request.url.match(PATH_RE)?.[0] || ''
 }
+
+/** When exit signal is received */
+export function onExitSignal(callback: () => void) {
+  process.on('SIGINT', callback)
+  process.on('SIGTERM', callback)
+}

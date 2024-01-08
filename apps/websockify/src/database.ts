@@ -1,6 +1,6 @@
 import process from 'node:process'
 import Knex from 'knex'
-import { destruct } from './utils'
+import { destruct, onExitSignal } from './utils'
 import { logger as parentLogger } from './logger'
 
 export interface Machine {
@@ -76,3 +76,7 @@ export async function fetchTeleskopMachine(id: number): Promise<Machine | null> 
     return null
   }
 }
+
+onExitSignal(async () => {
+  await knex.destroy()
+})

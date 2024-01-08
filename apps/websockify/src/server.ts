@@ -8,7 +8,7 @@ import { WebSocketServer } from 'ws'
 import type { Logger } from 'pino'
 import type { Machine } from './database'
 import { fetchTeleskopMachine } from './database'
-import { destruct, getPathname } from './utils'
+import { destruct, getPathname, onExitSignal } from './utils'
 import { logger as parentLogger } from './logger'
 import { DESECBCipher } from './crypto/des'
 import { initKcAuth } from './auth'
@@ -267,3 +267,7 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
     server.end()
   })
 }
+
+onExitSignal(() => {
+  wss.close()
+})
