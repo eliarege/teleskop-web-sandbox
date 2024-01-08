@@ -29,6 +29,7 @@ import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
 import { parseLine, parseLockInput } from './parsers/parseLocksInput'
 import { writeStopReason } from './writers/writeStopReason'
+import { writeMachineParameterValues } from './writers/writeMachineParameterValues'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -255,27 +256,12 @@ export class TbbFtpClient {
     return parsedData
   }
 
-  /*   async writeMachineParameterValues(values) {
-    try {
-      await this.connectClient()
-      const sourceFolderPath = './server/data/config'
-      const sourcePath = './server/data/config/makinesabitleriDegerler'
-      const remotePath = '/tbb6500/data/config/makinesabitleriDegerler'
-
-      const content = fileMachineParameterValuesWriter(values)
-
-      if (!fs.existsSync(sourceFolderPath)) {
-        await fs.promises.mkdir(sourceFolderPath)
-      }
-      await fs.promises.writeFile(sourcePath, content)
-      await this.ftpClient.uploadFrom(sourcePath, remotePath)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      this.ftpClient.close()
-    }
+  async uploadMachineParameterValues(values) {
+    const remotePath = '/tbb6500/data/config/makinesabitleriDegerler'
+    const content = writeMachineParameterValues(values)
+    await upload(this.client, remotePath, content)
   }
-
+  /*
   async writeUsers(users: User[]) {
     try {
       await this.connectClient()

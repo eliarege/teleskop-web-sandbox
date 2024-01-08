@@ -620,3 +620,14 @@ export async function writeStopReasons(tbb: TbbFtpClient, trx: Knex) {
 
   return stopReasons
 }
+
+export async function writeMachineParameterValues(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const values = await trx('BFMACHPARAMETERS').where('MACHINEID', machineId).select({
+    id: 'MACHINEPARAMETERID',
+    currentValue: 'currentValue',
+  })
+
+  await tbb.uploadStopReasons(values)
+
+  return values
+}
