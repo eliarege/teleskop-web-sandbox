@@ -1,6 +1,6 @@
 export interface Machine {
-  id?: number
-  code?: string
+  machineId?: number
+  machineCode?: string
   groupName?: string
   groupId?: number
   tbbModel?: string
@@ -54,6 +54,11 @@ export interface FinishReason {
   typeId: number
   text: string
   reportToERP?: number
+}
+
+export interface StepReason {
+  id: number
+  reasonText: string
 }
 
 export interface LockGeneral {
@@ -176,4 +181,22 @@ export interface FunctionAlarm {
   e: string
   o: string
   m: string
+}
+
+export interface ErpParameter {
+  machineId: number
+  paramId: number
+  paramName: string
+  paramType: number
+  erpFieldName: string
+  batchReportVisible: number
+  batchReportOrder: number
+  partyNoParam: number
+}
+
+export interface CommandType {
+  machineId: number
+  commandNo: number
+  commandType: number
+  commandName?: string
 }

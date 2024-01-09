@@ -2,7 +2,7 @@ import { knex } from '~/server/connectionPool'
 import type { Machine } from '~/types'
 
 export default defineEventHandler(async () => {
-  try {
+
     const machines: Machine[] = await knex('BFMACHINES')
       .where({
         INUSE: 1,
@@ -15,7 +15,5 @@ export default defineEventHandler(async () => {
       )
       .orderBy('MACHINEID')
     return machines
-  } catch (e) {
-    return e
-  }
+
 })

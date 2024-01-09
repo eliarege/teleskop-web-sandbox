@@ -1,18 +1,13 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
-    const tankDefinition = await readBody(event)
-    const { machineId, tankDefinitionId, listName, commandNo, action } = tankDefinition
+  const tankDefinition = await readBody(event)
+  const { machineId, tankDefinitionId, listName, commandNo, action } = tankDefinition
 
-    if (action === 'add') {
-      await addToList(machineId, tankDefinitionId, listName, commandNo)
-    } else if (action === 'remove') {
-      await removeFromList(machineId, tankDefinitionId, listName, commandNo)
-    }
-  } catch (e) {
-    console.log('e = ', e)
-    return e
+  if (action === 'add') {
+    await addToList(machineId, tankDefinitionId, listName, commandNo)
+  } else if (action === 'remove') {
+    await removeFromList(machineId, tankDefinitionId, listName, commandNo)
   }
 })
 

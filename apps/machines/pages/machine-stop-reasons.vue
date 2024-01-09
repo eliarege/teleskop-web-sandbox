@@ -1,47 +1,88 @@
 <script setup lang="ts">
-import type { QTableColumn } from 'quasar'
+import type { Column } from 'ui/types/FilterableTable'
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { StopReason } from '~/types'
 
-const { data: stopReasons, pending, refresh } = useLazyFetch('/api/stop-reasons/stop-reasons', { default: () => [] })
-
-const columns: QTableColumn[] = [
+const columns: Column[] = [
+  {
+    name: 'stopCode',
+    label: 'Duruş ID',
+    field: 'stopCode',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+  },
   {
     name: 'stopName',
     label: 'Duruş Nedeni',
-    field: (row: any) => row.stopName,
+    field: 'stopName',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'reportToERP',
     label: 'ERP Arıza Bildirimi',
-    field: (row: any) => row.reportToERP,
+    field: 'reportToERP',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
-const selectedReason = ref([])
-const newStopName = ref()
-const oldStopName = ref()
-const checkReportToERP = ref(false)
 
-function handleSelection(obj: object) {
-  newStopName.value = obj.rows[0].stopName
-  oldStopName.value = obj.rows[0].stopName
-  checkReportToERP.value = obj.rows[0].reportToERP
+const { data: stopReasons, refresh } = useLazyFetch('/api/stop-reasons/stop-reasons', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
+
+const selected = ref<StopReason>({
+  stopCode: -1,
+  stopName: '',
+  reportToERP: false,
+})
+
+function handleSelection(obj: StopReason) {
+  if (selected.value.stopCode === obj.stopCode) {
+    selected.value = {
+      stopCode: -1,
+      stopName: '',
+      reportToERP: false,
+    }
+  } else {
+    selected.value.stopCode = obj.stopCode
+    selected.value.stopName = obj.stopName
+    selected.value.reportToERP = obj.reportToERP
+  }
 }
 
 async function handleEditStopReason() {
-  await editStopReason(oldStopName.value, newStopName.value, checkReportToERP.value)
+  await editStopReason(selected.value)
   await refresh()
 }
 
 async function handleAddStopReason() {
-  await addStopReason(stopReasons.value, newStopName.value, checkReportToERP.value)
+  await addStopReason(stopReasons.value, selected.value)
   await refresh()
 }
 
 async function handleDeleteStopReasons() {
-  await deleteStopReasons(selectedReason.value)
+  await deleteStopReasons(selected.value)
   await refresh()
-  selectedReason.value = []
+  selected.value = {
+    stopCode: -1,
+    stopName: '',
+    reportToERP: false,
+  }
+}
+
+async function handleFilterSlotsUpdate(updatedValue) {
+  stopReasons.value = await $fetch('/api/stop-reasons/stop-reasons', {
+    method: 'POST',
+    body: {
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 
@@ -56,7 +97,7 @@ async function handleDeleteStopReasons() {
       </div>
 
       <q-input
-        v-model="newStopName"
+        v-model="selected.stopName"
         label="Duruş Nedeni"
         filled
         class="w-xs"
@@ -64,7 +105,7 @@ async function handleDeleteStopReasons() {
 
       <div class="flex flex-row input-field my-4">
         <q-checkbox
-          v-model="checkReportToERP"
+          v-model="selected.reportToERP"
           label="ERP Sistemine Arıza Olarak Bildir"
         />
         <q-btn
@@ -84,31 +125,32 @@ async function handleDeleteStopReasons() {
         />
       </div>
 
-      <q-table
-        v-model:selected="selectedReason"
+      <FilterableTable
+        v-model:selected="selected"
         :rows="stopReasons"
-        :loading="pending"
         :columns="columns"
-        hide-pagination
-        :pagination="{ rowsPerPage: 0 }"
-        row-key="stopCode"
-        separator="cell"
-        bordered
-        selection="single"
-        table-header-class="table-header"
         @selection="(e) => handleSelection(e)"
+        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       >
-        <template #body-cell-reportToERP="props">
-          <q-td :props="props">
-            <span v-if="props.row.reportToERP">
-              Evet
-            </span>
-            <span v-else>
-              Hayır
-            </span>
-          </q-td>
+        <template #custombody="stopReasons">
+          <q-tr
+            :class="{ 'selected-row': selected.stopCode === stopReasons.row.stopCode }"
+            @click="handleSelection(stopReasons.row)"
+          >
+            <q-td
+              v-for="row in stopReasons.cols"
+              :key="row"
+            >
+              <span v-if="row.field === 'reportToERP'">
+                {{ row.value ? "Evet" : "Hayır" }}
+              </span>
+              <span v-else>
+                {{ row.value }}
+              </span>
+            </q-td>
+          </q-tr>
         </template>
-      </q-table>
+      </FilterableTable>
     </q-card-section>
   </q-card>
 </template>
@@ -124,5 +166,8 @@ async function handleDeleteStopReasons() {
 
 .input-field > * {
   margin-right: 2em;
+}
+.selected-row {
+  background-color: #cce8ff;
 }
 </style>

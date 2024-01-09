@@ -1,11 +1,9 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
-    const { ids } = await readBody(event)
-    const res = await knex('BFSTEPSKIPPINGREASONS').whereIn('id', ids).del()
-    return res
-  } catch (e) {
-    return e
-  }
+  const { reasonIds } = await readBody(event)
+  const res = await knex('BFSTEPSKIPPINGREASONS')
+    .whereIn('ID', reasonIds)
+    .del()
+  return res
 })

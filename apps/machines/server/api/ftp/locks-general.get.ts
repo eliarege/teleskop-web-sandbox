@@ -3,21 +3,18 @@ import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
   const { machineId } = getQuery(event)
-  try {
-    const tbb = new TbbFtpClient('192.168.88.202')
 
-    const locks = await tbb.fetchLocksGeneral()
+  const tbb = new TbbFtpClient('192.168.88.202')
 
-    const generalLocks = locks?.map(l => ({
-      ...l,
-      machineId,
-    }))
+  const locks = await tbb.fetchLocksGeneral()
 
-    await knex('BFLOCKSGENERAL').del()
-    await knex('BFLOCKSGENERAL').insert(generalLocks)
+  const generalLocks = locks?.map(l => ({
+    ...l,
+    machineId,
+  }))
 
-    return generalLocks
-  } catch (err) {
-    console.error(err)
-  }
+  await knex('BFLOCKSGENERAL').del()
+  await knex('BFLOCKSGENERAL').insert(generalLocks)
+
+  return generalLocks
 })

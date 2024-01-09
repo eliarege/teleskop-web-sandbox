@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
+
     const { machineId, commandNo } = getQuery(event)
 
     const reasonIds = await knex('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId)
@@ -13,7 +13,5 @@ export default defineEventHandler(async (event) => {
       )
 
     return timeoutReasons
-  } catch (e) {
-    return e
-  }
+
 })

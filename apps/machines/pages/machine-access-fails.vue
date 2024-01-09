@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { Column } from 'ui/types/FilterableTable'
+import type { Machine } from '~/types'
 import { getMachineAccessFails } from '~/utils'
 
 const accessFailOptions = ref([
@@ -49,12 +50,15 @@ const machineGroups = ref([])
 const accessFailGroups = ref([])
 const fails = ref([])
 
-const { data: machines } = useLazyFetch('/api/machines/machines')
+const { data: machines } = useLazyFetch('/api/machines/machines', {
+  method: 'POST',
+  body: {},
+})
 const machineOptions = ref([])
 
 watch(machines, (newValue, oldValue) => {
-  machineOptions.value = machines.value.map((m) => {
-    return { label: m.code, value: m.id }
+  machineOptions.value = machines.value.map((m: Machine) => {
+    return { label: m.machineCode, value: m.machineId }
   })
 })
 
@@ -91,10 +95,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
         :options="accessFailOptions"
         type="checkbox"
       />
+      <q-btn @click="loadFails">
+        Yükle
+      </q-btn>
     </q-card-section>
-    <q-btn @click="loadFails">
-      Yükle
-    </q-btn>
   </q-card>
   <div class="table-scroll">
     <FilterableTable
@@ -117,7 +121,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
           </q-td>
         </q-tr>
       </template>
-    </filterabletable>
+    </filterableTable>
   </div>
 </template>
 

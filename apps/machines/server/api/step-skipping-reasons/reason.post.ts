@@ -1,17 +1,12 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
-    const { reasonId, reasonText } = await readBody(event)
+  const { reasonId, reasonText } = await readBody(event)
 
-    const res = await knex('BFSTEPSKIPPINGREASONS').insert({
-      ID: reasonId,
-      REASONTEXT: reasonText,
-    })
+  const res = await knex('BFSTEPSKIPPINGREASONS').insert({
+    ID: reasonId,
+    REASONTEXT: reasonText,
+  })
 
-    return res
-  } catch (err) {
-    console.error(err)
-    return err
-  }
+  return res
 })

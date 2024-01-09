@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
+
     const { machineId, counterId1, counterId2 } = await readBody(event)
 
     return await knex('BFCONSUMPTIONCOUNTERS')
@@ -10,8 +10,5 @@ export default defineEventHandler(async (event) => {
         COUNTER1: counterId1,
         COUNTER2: counterId2,
       })
-  } catch (err) {
-    console.log('err = ', err)
-    return err
-  }
+
 })

@@ -1,13 +1,13 @@
 import { Client } from 'basic-ftp'
 import { download, upload } from './utils/ftp'
 import { parseLockGeneral } from './parsers/parseLockGeneral'
-import { parseUser } from './parsers/parseUser'
-import { parseManualReason } from './parsers/parseManualReason'
-import { parseStopReason } from './parsers/parseStopReason'
-import { parseFinishReason } from './parsers/parseFinishReason'
+import { parseUser, serializeUser } from './parsers/parseUser'
+import { parseManualReason, serializeManualReason } from './parsers/parseManualReason'
+import { parseStopReason, serializeStopReason } from './parsers/parseStopReason'
+import { parseFinishReason, serializeFinishReason } from './parsers/parseFinishReason'
 import { parseCommandAlarmReasons } from './parsers/parseCommandAlarmReasons'
 import { parseMachineParameters } from './parsers/parseMachineParameters'
-import { parseMachineParameterValues } from './parsers/parseMachineParameterValues'
+import { parseMachineParameterValues, serializeMachineParameterValues } from './parsers/parseMachineParameterValues'
 import { parseControllerModel } from './parsers/parseControllerModel'
 import { parseAnalogInput } from './parsers/parseAnalogInput'
 import { parseAnalogOutput } from './parsers/parseAnalogOutput'
@@ -23,11 +23,10 @@ import { parseCommandFeedback } from './parsers/parseCommandFeedback'
 import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
-import { writeFinishReason } from './writers/writeFinishReason'
-import { FinishReason } from './types'
+import type { FinishReason, GlobalCommandFormula, ManualReason, StopReason, User } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
-import { parseGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
-import { parseLockInput } from './parsers/parseLocksInput'
+import { parseGlobalCommandFormulas, serializeGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
+import { parseSeperatedLocks } from './parsers/parseLocksInput'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -247,77 +246,47 @@ export class TbbFtpClient {
   async fetchLocksInput() {
     const remotePath = '/tbb6500/data/locks/locks_inputs'
     const content = await download(this.client, remotePath)
-    const locks = parseLockInput(content)
-    return locks
+
+    const lines = content.split('\n')
+    const parsedData = lines.map(parseSeperatedLocks)
+
+    return parsedData
   }
 
-  /*   async writeMachineParameterValues(values) {
-    try {
-      await this.connectClient()
-      const sourceFolderPath = './server/data/config'
-      const sourcePath = './server/data/config/makinesabitleriDegerler'
-      const remotePath = '/tbb6500/data/config/makinesabitleriDegerler'
-
-      const content = fileMachineParameterValuesWriter(values)
-
-      if (!fs.existsSync(sourceFolderPath)) {
-        await fs.promises.mkdir(sourceFolderPath)
-      }
-      await fs.promises.writeFile(sourcePath, content)
-      await this.ftpClient.uploadFrom(sourcePath, remotePath)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      this.ftpClient.close()
-    }
+  async uploadMachineParameterValues(values) {
+    const remotePath = '/tbb6500/data/config/makinesabitleriDegerler'
+    const content = serializeMachineParameterValues(values)
+    await upload(this.client, remotePath, content)
   }
 
-  async writeUsers(users: User[]) {
-    try {
-      await this.connectClient()
-      const sourceFolderPath = './server/data/users'
-      const sourcePath = './server/data/users/users'
-      const remotePath = '/tbb6500/data/users/users'
-
-      const content = fileUserWriter(users)
-
-      if (!fs.existsSync(sourceFolderPath)) {
-        await fs.promises.mkdir(sourceFolderPath)
-      }
-      await fs.promises.writeFile(sourcePath, content)
-      await this.ftpClient.uploadFrom(sourcePath, remotePath)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      this.ftpClient.close()
-    }
+  async uploadUsers(users: User[]) {
+    const remotePath = '/tbb6500/data/users/users'
+    const content = serializeUser(users)
+    await upload(this.client, remotePath, content)
   }
 
-  async writeStopReasons(stopReasons: StopReason[]) {
-    try {
-      await this.connectClient()
-      const sourceFolderPath = './server/data/config'
-      const sourcePath = './server/data/config/durusnedenleri'
-      const remotePath = '/tbb6500/data/config/durusnedenleri'
-
-      const content = fileStopReasonWriter(stopReasons)
-
-      if (!fs.existsSync(sourceFolderPath)) {
-        await fs.promises.mkdir(sourceFolderPath)
-      }
-      await fs.promises.writeFile(sourcePath, content)
-      await this.ftpClient.uploadFrom(sourcePath, remotePath)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      this.ftpClient.close()
-    }
+  async uploadStopReasons(stopReasons: StopReason[]) {
+    const remotePath = '/tbb6500/data/config/durusnedenleri'
+    const content = serializeStopReason(stopReasons)
+    await upload(this.client, remotePath, content)
   }
-*/
-  /*   async uploadFinishReasons(finishReasons: FinishReason[]) {
-      const remotePath = '/tbb6500/data/config/bitirmenedenleri'
-      const content = writeFinishReason(finishReasons)
-      await upload(remotePath, this.host, content)
+
+  async uploadFinishReasons(finishReasons: FinishReason[]) {
+    const remotePath = '/tbb6500/data/config/bitirmenedenleri'
+    const content = serializeFinishReason(finishReasons)
+    await upload(this.client, remotePath, content)
   }
- */
+
+  async uploadGlobalCommandFormulas(formulas: GlobalCommandFormula[]) {
+    const remotePath = '/tbb6500/yedek/data/config/globalCommandFormulas'
+    console.log('formulas = ', formulas)
+    const content = serializeGlobalCommandFormulas(formulas)
+    await upload(this.client, remotePath, content)
+  }
+
+  async uploadManualReasons(reasons: ManualReason[]) {
+    const remotePath = '/tbb6500/data/config/manuelmodnedenleri'
+    const content = serializeManualReason(reasons)
+    await upload(this.client, remotePath, content)
+  }
 }

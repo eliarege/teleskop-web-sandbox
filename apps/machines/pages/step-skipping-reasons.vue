@@ -1,55 +1,71 @@
 <script setup lang="ts">
+import type { Column } from 'ui/types/FilterableTable'
+import FilterableTable from 'ui/components/FilterableTable.vue'
 import { addStepSkippingReason, deleteStepSkippingReason, editStepSkippingReason, getWaterTypes } from '~/utils'
+import type { StepReason } from '~/types'
 
-const columns = [
+const columns: Column[] = [
   {
     name: 'id',
     label: 'ID',
-    field: row => row.id,
+    field: 'id',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'reasonText',
     label: 'Atlatma Nedeni',
-    field: row => row.reasonText,
+    field: 'reasonText',
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
 ]
 
-const { data: stepSkippingReasons, pending, refresh } = useFetch('/api/step-skipping-reasons/step-skipping-reasons', { default: () => [] })
+const { data: stepSkippingReasons, refresh } = useLazyFetch('/api/step-skipping-reasons/step-skipping-reasons', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
 
-const selectedReason = ref()
+const selected = ref<StepReason>({
+  id: undefined,
+  reasonText: '',
+})
 
-const reasonId = ref()
-const reasonText = ref()
 const oldId = ref()
 
 async function handleReasonAdd() {
-  await addStepSkippingReason(reasonId.value, reasonText.value)
+  await addStepSkippingReason(selected.value)
   await refresh()
 }
 
-function handleSelection(obj: object) {
-  if (obj.added) {
-    reasonId.value = obj.rows[0].id
-    oldId.value = obj.rows[0].id
-    reasonText.value = obj.rows[0].reasonText
-  } else {
-    reasonId.value = ''
-    reasonText.value = ''
-  }
+function handleSelection(obj: StepReason) {
+  selected.value = obj
+  oldId.value = obj.id
 }
 
 async function handleReasonEdit() {
-  await editStepSkippingReason(reasonId.value, reasonText.value, oldId.value)
+  await editStepSkippingReason(selected.value, oldId.value)
   await refresh()
 }
 
 async function handleReasonDelete() {
-  await deleteStepSkippingReason(reasonId.value)
+  await deleteStepSkippingReason(selected.value)
   await refresh()
-  reasonId.value = ''
-  reasonText.value = ''
+  selected.value = {
+    id: undefined,
+    reasonText: '',
+  }
+}
+async function handleFilterSlotsUpdate(updatedValue) {
+  stepSkippingReasons.value = await $fetch('/api/step-skipping-reasons/step-skipping-reasons', {
+    method: 'POST',
+    body: {
+      filters: updatedValue,
+    },
+  })
 }
 </script>
 
@@ -57,41 +73,49 @@ async function handleReasonDelete() {
   <q-card>
     <q-card-section>
       <div class="input-field flex flex-row">
-        <q-input v-model="reasonId" label="Numara" />
-        <q-input v-model="reasonText" label="Atlatma Nedeni" />
+        <q-input v-model="selected.id" label="Numara" />
+        <q-input v-model="selected.reasonText" label="Atlatma Nedeni" />
       </div>
       <div class="flex flex-row input-field my-4">
         <q-btn
           label="Ekle"
           no-caps
-          @click="handleReasonAdd()"
+          @click="handleReasonAdd"
         />
         <q-btn
           label="Düzenle"
           no-caps
-          @click="handleReasonEdit()"
+          @click="handleReasonEdit"
         />
         <q-btn
           label="Sil"
           no-caps
-          @click="handleReasonDelete()"
+          @click="handleReasonDelete"
         />
       </div>
 
-      <q-table
-        v-model:selected="selectedReason"
+      <FilterableTable
+        v-model:selected="selected"
         :rows="stepSkippingReasons"
         :columns="columns"
-        :loading="pending"
-        hide-pagination
-        :pagination="{ rowsPerPage: 0 }"
-        row-key="id"
-        separator="cell"
-        bordered
-        selection="single"
-        table-header-class="table-header"
-        @selection="(e) => handleSelection(e)"
-      />
+        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+      >
+        <template #custombody="stepSkippingReasons">
+          <q-tr
+            :class="{ 'selected-row': selected.id === stepSkippingReasons.row.id }"
+            @click="handleSelection(stepSkippingReasons.row)"
+          >
+            <q-td
+              v-for="row in stepSkippingReasons.cols"
+              :key="row"
+            >
+              <span>
+                {{ row.value }}
+              </span>
+            </q-td>
+          </q-tr>
+        </template>
+      </FilterableTable>
     </q-card-section>
   </q-card>
 </template>
@@ -107,5 +131,8 @@ async function handleReasonDelete() {
 
 .input-field > * {
   margin-right: 2em;
+}
+.selected-row {
+  background-color: #cce8ff;
 }
 </style>

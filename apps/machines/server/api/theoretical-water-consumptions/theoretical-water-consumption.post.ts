@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
+
     const { machineId, commandNo, commandIO, commandIO2, commandParameter } = await readBody(event)
 
     const insertData = {}
@@ -28,7 +28,5 @@ export default defineEventHandler(async (event) => {
       return await knex('BFTHEORETICALWATERCONSUMPTION')
         .insert(insertData)
     }
-  } catch (e) {
-    return e
-  }
+
 })

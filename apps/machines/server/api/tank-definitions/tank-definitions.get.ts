@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
+
     const { machineId } = getQuery(event)
     const machines = await knex('BFMACHINETANKS')
       .leftJoin('BFMACHINES', 'BFMACHINES.MACHINEID', 'BFMACHINETANKS.MACHINEID')
@@ -28,7 +28,5 @@ export default defineEventHandler(async (event) => {
         listOfRequestCommands: d.listOfRequestCommands ? d.listOfRequestCommands.split(',').map(Number) : [],
       }
     })
-  } catch (e) {
-    return e
-  }
+
 })

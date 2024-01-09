@@ -100,6 +100,10 @@ const definitionItems = [
             label: 'Diğer Makineler',
             to: '/data-collection-devices',
           },
+          {
+            label: 'Operator Mesajları',
+            to: '/operator-messages',
+          },
         ],
       },
       {

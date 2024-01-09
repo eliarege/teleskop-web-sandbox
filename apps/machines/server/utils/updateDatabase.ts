@@ -376,15 +376,12 @@ export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpCl
     })),
   )
 
-  try {
-    await trx('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId).del()
-    // await trx('BFCOMMANDTIMEOUTREASONS').del()
-    await insertIgnoringDuplicates(trx, 'BFCOMMANDTIMEOUTREASONS', timeoutReasons, ['REASONTEXT', 'GROUPID'])
+  await trx('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId).del()
+  // await trx('BFCOMMANDTIMEOUTREASONS').del()
+  await insertIgnoringDuplicates(trx, 'BFCOMMANDTIMEOUTREASONS', timeoutReasons, ['REASONTEXT', 'GROUPID'])
 
-    await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
-  } catch (err) {
-    console.error(err)
-  }
+  await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
+
   return timeoutReasons
 }
 
@@ -467,9 +464,101 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
 
   return selectionList
 }
-// locks in ve out gerekli insert icin
+
+export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const locks = await tbb.fetchLocksInput()
+
+  const analogInputs = locks.filter(d => d.inputType === 0)
+  const analogInputsDB = analogInputs.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      LOCKAININDEX: index,
+      ID: input.id + 1,
+      R1MIN: input.r1min,
+      R2MAX: input.r2max,
+      HISTERISIS: input.histerisis,
+      STATE: input.state,
+    })),
+  )
+
+  const digitalInputs = locks.filter(d => d.inputType === 1)
+  const digitalInputsDB = digitalInputs.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      LOCKDININDEX: index,
+      ID: input.id + 1,
+      STATE: input.state,
+    })),
+  )
+
+  const digitalOutputs = locks.filter(d => d.inputType === 7)
+  const digitalOutputsDB = digitalOutputs.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      LOCKDOUTINDEX: index,
+      ID: input.id + 1,
+      STATE: input.state,
+    })),
+  )
+
+  const commands = locks.filter(d => d.inputType === 4)
+  const commandsDB = commands.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      COMMANDINDEX: index,
+      COMMANDNO: input.id + 1,
+      STATE: input.state,
+    })),
+  )
+
+  const locksInput = locks.filter(d => d.inputType === 5)
+  const locksInputDB = locksInput.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      LOCKLOCKINDEX: index,
+      OTHERLOCKNO: input.id + 1,
+      STATE: input.state,
+    })),
+  )
+
+  const virtualInputs = locks.filter(d => d.inputType === 8)
+  const virtualInputsDB = virtualInputs.flatMap(d =>
+    d.inputs.map((input, index) => ({
+      MACHINEID: machineId,
+      LOCKNO: d.lockId + 1,
+      LOCKDININDEX: index,
+      ID: input.id + 1,
+      TRIGGER: input.state,
+    })),
+  )
+
+  await replaceRecords(trx, 'BFLOCKSINPUTAIN', analogInputsDB, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFLOCKSINPUTDIN', digitalInputsDB, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFLOCKSINPUTDOUT', digitalOutputsDB, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFLOCKSINPUTCOMMAND', commandsDB, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFLOCKSINPUTKILIT', locksInputDB, { MACHINEID: machineId })
+  await replaceRecords(trx, 'BFLOCKSINPUTVIN', virtualInputsDB, { MACHINEID: machineId })
+
+  return virtualInputsDB
+}
+
+// TODO: can be optimized
+/**
+ * 0: analog input
+ * 1: digital input
+ * 4: command
+ * 5: lock
+ * 7: digital output
+ * 8: virtual input
+ */
 export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const locks = await tbb.fetchLocksGeneral()
+  const locksInput = await tbb.fetchLocksInput()
 
   const data = locks.map(d => ({
     MACHINEID: machineId,
@@ -483,9 +572,109 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
     STEPDELAY: d.stepDelay,
     GIVEMESSAGE: d.giveMessage,
     MESSAGESTRING: d.messageString,
+
+    AINLOGICTYPE: 0,
+    DINLOGICTYPE: 0,
+    COMMANDLOGICTYPE: 0,
+    LOCKLOGICTYPE: 0,
+    DOUTLOGICTYPE: 0,
+    VINLOGICTYPE: 0,
   }))
+
+  for (const d of data) {
+    const filtered = locksInput.filter(l => l.lockId === d.LOCKNO)
+    d.AINLOGICTYPE = filtered.find(l => l.logicType === 0)?.logicType ?? 0
+    d.DINLOGICTYPE = filtered.find(l => l.logicType === 1)?.logicType ?? 0
+    d.COMMANDLOGICTYPE = filtered.find(l => l.logicType === 4)?.logicType ?? 0
+    d.LOCKLOGICTYPE = filtered.find(l => l.logicType === 5)?.logicType ?? 0
+    d.DOUTLOGICTYPE = filtered.find(l => l.logicType === 7)?.logicType ?? 0
+    d.VINLOGICTYPE = filtered.find(l => l.logicType === 8)?.logicType ?? 0
+  }
 
   await replaceRecords(trx, 'BFLOCKSGENERAL', data, { MACHINEID: machineId })
 
-  return locks
+  return data
+}
+
+export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex) {
+  const finishReasons = await trx('BFDYLOTFINISHREASONS').select({
+    reasonId: 'REASONID',
+    typeId: 'TYPEID',
+    text: 'TEXT',
+    reportToERP: 'ReportToERP',
+  })
+
+  await tbb.uploadFinishReasons(finishReasons)
+
+  return finishReasons
+}
+
+export async function writeStopReasons(tbb: TbbFtpClient, trx: Knex) {
+  const stopReasons = await trx('BFSTOPREASONS').select({
+    stopCode: 'STOPCODE',
+    stopName: 'STOPNAME',
+    reportToERP: 'ReportToERP',
+  })
+
+  await tbb.uploadStopReasons(stopReasons)
+
+  return stopReasons
+}
+
+export async function writeMachineParameterValues(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const values = await trx('BFMACHPARAMETERS').where('MACHINEID', machineId).select({
+    id: 'MACHINEPARAMETERID',
+    currentValue: 'currentValue',
+  })
+
+  await tbb.uploadStopReasons(values)
+
+  return values
+}
+
+export async function writeUsers(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const users = await trx('BFUSERS').select({
+    userId: 'userID',
+    userName: 'userName',
+    userSurname: 'userSurname',
+    userPass: 'userPass',
+    userInfo: 'userInfo',
+    userActive: 'userActive',
+    userType: 'userType',
+    userMode: 'userMode',
+    userMode2: 'userMode2',
+  })
+
+  await tbb.uploadUsers(users)
+
+  return users
+}
+
+export async function writeGlobalCommandFormulas(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const formulas = await trx('BFCOMMANDFORMULAS')
+    .where('machineId', machineId)
+    .select(
+      'formula',
+      'formulaId',
+      'commandNo',
+      'commandParameterNo',
+      'formulaName',
+    )
+
+  await tbb.uploadGlobalCommandFormulas(formulas)
+
+  return formulas
+}
+
+export async function writeManualReasons(tbb: TbbFtpClient, trx: Knex) {
+  const formulas = await trx('BFMANUALREASONSGENERAL')
+    .select({
+      manualId: 'manualID',
+      manualReason: 'manualString',
+      reportToERP: 'ReportToERP',
+    })
+
+  await tbb.uploadStopReasons(formulas)
+
+  return formulas
 }

@@ -28,3 +28,8 @@ export function parseUser(content: string) {
   }
   return users
 }
+
+export function serializeUser(users: User[]): string {
+  const regexStrings = users.map(user => `${user.userId} ${user.userPass} ${user.userName} ${user.userSurname} ${user.userMode} ${user.userMode2} ${user.userType}`)
+  return regexStrings.join('\n')
+}

@@ -13,7 +13,7 @@ const { data: machineCommands } = useLazyFetch('/api/master-commands/master-comm
   immediate: false,
   query: { machineId: selectedMachineId },
 })
-const { data: waterIO } = useLazyFetch('/api/IO/command-io-all', {
+const { data: waterIO } = useLazyFetch('/api/io/command-io-all', {
   immediate: false,
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })

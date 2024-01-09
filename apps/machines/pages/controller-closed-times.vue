@@ -67,7 +67,10 @@ const closedTimeGroups = ref([])
 const machineOptions = ref([])
 const times = ref([])
 
-const { data: machines } = useLazyFetch('/api/machines/machines')
+const { data: machines } = useLazyFetch('/api/machines/machines', {
+  method: 'POST',
+  body: {},
+})
 
 watch(machines, (newValue, oldValue) => {
   machineOptions.value = machines.value.map((m) => {
@@ -108,10 +111,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
         :options="closedTimeOptions"
         type="checkbox"
       />
+      <q-btn @click="loadTimes">
+        Yükle
+      </q-btn>
     </q-card-section>
-    <q-btn @click="loadTimes">
-      Yükle
-    </q-btn>
   </q-card>
   <div class="table-scroll">
     <FilterableTable

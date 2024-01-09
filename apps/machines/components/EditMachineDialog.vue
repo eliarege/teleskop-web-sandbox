@@ -3,7 +3,7 @@ import type { Machine } from '~/types'
 import { editMachine, getMachineGroups } from '~/utils'
 
 const props = defineProps<{
-  selectedMachines: Machine[]
+  selected: Machine
   show: boolean
 }>()
 const emit = defineEmits(['close', 'editMachine'])
@@ -53,7 +53,7 @@ const machineGroups = await getMachineGroups()
 
 const check = ref(false)
 
-const machine = computed<Machine>(() => props.selectedMachines[0])
+const machine = computed<Machine>(() => props.selected)
 
 async function handleFormSubmit() {
   await editMachine(machine.value)
@@ -80,13 +80,13 @@ function handleMachineGroupSelect(e) {
               <div class="flex flex-row justify-start">
                 <div class="flex flex-col mr-8 w-xs input-field">
                   <q-input
-                    v-model="machine.code"
+                    v-model="machine.machineId"
                     label="Makine No"
                     filled
                     clearable
                   />
                   <q-input
-                    v-model="machine.name"
+                    v-model="machine.machineCode"
                     label="Makine Adı"
                     filled
                     clearable
@@ -127,7 +127,7 @@ function handleMachineGroupSelect(e) {
                     clearable
                   />
                   <q-select
-                    v-model="machine.group"
+                    v-model="machine.groupName"
                     :options="machineGroups"
                     label="Ana Kazan Sıcaklık Girişi"
                     filled
@@ -197,7 +197,7 @@ function handleMachineGroupSelect(e) {
                 class="mb-8"
               />
               <q-select
-                v-model="machine.group"
+                v-model="machine.groupName"
                 label="Buhar Vanası"
                 :options="machineGroups"
                 :disable="check"

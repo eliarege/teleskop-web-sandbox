@@ -3,37 +3,34 @@ import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
   const { machineId } = getQuery(event)
-  try {
-    const tbb = new TbbFtpClient('192.168.88.202')
 
-    const commandAlarmReasons = await tbb.fetchCommandAlarmReasons()
+  const tbb = new TbbFtpClient('192.168.88.202')
 
-    const timeoutReasons = commandAlarmReasons.map((r) => {
-      return {
-        ID: r.id,
-        REASONTEXT: r.reasonText,
-        GROUPID: r.groupId,
-      }
-    })
-    await knex('BFCOMMANDTIMEOUTREASONS').del()
-    await knex('BFCOMMANDTIMEOUTREASONS').insert(timeoutReasons)
+  const commandAlarmReasons = await tbb.fetchCommandAlarmReasons()
 
-    const commandMapEntries = []
-    for (const reason of commandAlarmReasons) {
-      for (const commandNo of reason.commandNumbers) {
-        const mapEntry = {
-          REASONID: reason.id,
-          MACHINEID: machineId,
-          COMMANDNO: commandNo,
-        }
-        commandMapEntries.push(mapEntry)
-      }
+  const timeoutReasons = commandAlarmReasons.map((r) => {
+    return {
+      ID: r.id,
+      REASONTEXT: r.reasonText,
+      GROUPID: r.groupId,
     }
-    await knex('BFCOMMANDTIMEOUTREASONMAP').del()
-    await knex('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
+  })
+  await knex('BFCOMMANDTIMEOUTREASONS').del()
+  await knex('BFCOMMANDTIMEOUTREASONS').insert(timeoutReasons)
 
-    return commandMapEntries
-  } catch (err) {
-    console.error(err)
+  const commandMapEntries = []
+  for (const reason of commandAlarmReasons) {
+    for (const commandNo of reason.commandNumbers) {
+      const mapEntry = {
+        REASONID: reason.id,
+        MACHINEID: machineId,
+        COMMANDNO: commandNo,
+      }
+      commandMapEntries.push(mapEntry)
+    }
   }
+  await knex('BFCOMMANDTIMEOUTREASONMAP').del()
+  await knex('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
+
+  return commandMapEntries
 })

@@ -18,3 +18,8 @@ export function parseStopReason(content: string) {
   }
   return reasons
 }
+
+export function serializeStopReason(reasons: StopReason[]): string {
+  const regexStrings = reasons.map(reason => `${reason.stopCode} "${reason.stopName}"`)
+  return regexStrings.join('\n')
+}
