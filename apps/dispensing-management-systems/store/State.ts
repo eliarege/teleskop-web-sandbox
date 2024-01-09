@@ -6,7 +6,7 @@ export const useStateStore = defineStore('state', {
     const locale = useStorage('language', useI18n().locale)
     return {
       isLoading: false,
-      locale
+      locale,
     }
-  }
+  },
 })

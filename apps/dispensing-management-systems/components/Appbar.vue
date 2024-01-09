@@ -13,13 +13,13 @@ watch(
 function goToHomepage() {
   dataStore.selectedDispenser = undefined
   navigateTo({
-      path: `/`
-    })
+    path: `/`,
+  })
 }
 function goToSettings() {
-    navigateTo({
-      path:`/settings`
-    })
+  navigateTo({
+    path: `/settings`,
+  })
 }
 </script>
 
@@ -41,11 +41,11 @@ function goToSettings() {
     </div>
     <div>
       <QToolbar :class="dark.isActive ? 'bg-black' : 'bg-primary'">
-        <QSpace/>
+        <QSpace />
         <h3 v-if="dataStore">
           {{ dataStore.title }}
         </h3>
-        <QSpace/>
+        <QSpace />
         <QBtn
           v-if="dataStore.user"
           flat

@@ -17,8 +17,8 @@ export default defineEventHandler(async (event) => {
       bdyRequestName: 'bdy_requestname',
       bdyRequestPath: 'bdy_requestpath',
     })
-    .where('dispenser_id', id)
-    .first()
+      .where('dispenser_id', id)
+      .first()
     return dispenser
   } catch (e) {
     console.log(e)

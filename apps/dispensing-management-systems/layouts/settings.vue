@@ -3,9 +3,9 @@
 
 <template>
   <QLayout view="hHh lpR fFf">
-  <Appbar/>
-  <QPageContainer>
+    <Appbar />
+    <QPageContainer>
     <NuxtPage/>
-  </QPageContainer>
-</QLayout>
+    </QPageContainer>
+  </QLayout>
 </template>

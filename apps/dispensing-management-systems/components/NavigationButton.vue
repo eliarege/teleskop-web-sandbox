@@ -3,7 +3,7 @@ import { useRouter } from '#vue-router'
 
 const route = useRouter()
 const { t } = useI18n()
-const unavailableRoutes = ['/','/settings']
+const unavailableRoutes = ['/', '/settings']
 
 function onClickNavButton() {
   route.back()
@@ -20,9 +20,10 @@ function onClickNavButton() {
     style="align-self: flex-start;"
     @click="onClickNavButton"
   >
-  <QTooltip
-    :offset="[10,10]">
-    {{ t('GoBack') }}
-  </QTooltip>
+    <QTooltip
+      :offset="[10, 10]"
+    >
+      {{ t('GoBack') }}
+    </QTooltip>
   </QBtn>
 </template>

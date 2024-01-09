@@ -6,7 +6,6 @@ export default defineEventHandler(async () => {
     const machines: Array<Machine> = await dmsDB('MACHINE').insert({
       machineId: 'machine_id',
       machineName: 'machine_name',
-
     })
     return machines
   } catch (e) {

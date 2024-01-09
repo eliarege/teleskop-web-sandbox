@@ -7,22 +7,23 @@ const { dark } = useQuasar()
 
 const langs = [
   { value: 'tr', label: 'Türkçe' },
-  { value: 'en', label: 'English' }
+  { value: 'en', label: 'English' },
 ]
 const themes = ref([
   { value: false, label: t('Light') },
-  { value: true, label: t('Dark') }
+  { value: true, label: t('Dark') },
 ])
-watch(locale, ()=> {
+watch(locale, () => {
   themes.value = [
-  { value: false, label: t('Light') },
-  { value: true, label: t('Dark') }
-]})
+    { value: false, label: t('Light') },
+    { value: true, label: t('Dark') },
+  ]
+})
 
 const cookie = useCookie<'auto' | boolean>('dark')
 watch(
   () => dark.mode,
-  mode => cookie.value = mode
+  mode => cookie.value = mode,
 )
 </script>
 
@@ -32,12 +33,11 @@ watch(
       {{ t('settings.App') }}
     </div>
     <div class="flex-center flex-col gap-5 text-size-4 mt-10 w-full ">
-
       <div class="row-item">
         {{ t('Language') }}
         <QSelect
-          v-model=stateStore.locale
-          :options=langs
+          v-model="stateStore.locale"
+          :options="langs"
           class="w-100"
           filled
           dense
@@ -46,15 +46,16 @@ watch(
         />
       </div>
       <QSeparator
-        class="w-full "/>
+        class="w-full "
+      />
       <div class="row-item">
         {{ t('Theme') }}
         <QOptionGroup
           v-model="dark.isActive"
-          @update:model-value="dark.set($event)"
           type="radio"
-          :options=themes
+          :options="themes"
           class="flex"
+          @update:model-value="dark.set($event)"
         />
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useStorage, StorageSerializers } from '@vueuse/core'
+import { StorageSerializers, useStorage } from '@vueuse/core'
 import type { Dispenser, User } from '~/shared/types'
 
 export const useDataStore = defineStore('data', () => {
@@ -11,11 +11,6 @@ export const useDataStore = defineStore('data', () => {
     user,
     title,
     selectedDispenser,
-    dispensers
+    dispensers,
   }
 })
-
-
-
-
-

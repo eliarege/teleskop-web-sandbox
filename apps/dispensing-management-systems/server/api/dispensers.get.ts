@@ -15,7 +15,6 @@ export default defineEventHandler(async () => {
       consumptionFilename: 'consumption_filename',
       bdyRequestName: 'bdy_requestname',
       bdyRequestPath: 'bdy_requestpath',
-
     })
     return dispensers
   } catch (e) {

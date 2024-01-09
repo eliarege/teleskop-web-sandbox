@@ -1,5 +1,5 @@
 <script lang = "ts" setup>
-import type { Dispenser } from '~/shared/types';
+import type { Dispenser } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
 
 const dataStore = useDataStore()
@@ -9,17 +9,16 @@ if (!dataStore.selectedDispenser) {
   const { data: dispenser } = await useFetch<Dispenser>(`/api/dispensers/${route.params.id}`)
   if (!dispenser.value || dispenser.value?.dispenserId < 0) {
     navigateTo({
-      path: '/'
+      path: '/',
     })
-  }
-  else {
+  } else {
     dataStore.selectedDispenser = dispenser.value
     dataStore.title = dispenser.value.dispenserName
     load.value = true
   }
-}
-else
+} else {
   load.value = true
+}
 </script>
 
 <template>

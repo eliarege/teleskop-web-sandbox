@@ -5,25 +5,25 @@ const { t } = useI18n()
 const dataStore = useDataStore()
 const q = useQuasar()
 
-const name = ref("");
+const name = ref('')
 const password = ref(null)
 const accept = ref(false)
 
 function onSubmit() {
   q.notify({
-    position: "top",
+    position: 'top',
     color: 'green-4',
     textColor: 'white',
     icon: 'cloud_done',
     message: t('LoggedIn'),
-    timeout: 3000
+    timeout: 3000,
   })
-  dataStore.$patch({user: {username: name.value}})
+  dataStore.$patch({ user: { username: name.value } })
   onReset()
 }
 
 function onReset() {
-  name.value = ""
+  name.value = ''
   password.value = null
   accept.value = false
 }
@@ -35,20 +35,21 @@ function onForgotPassword() {
 
 <template>
   <QForm
+    style="width: 400px"
     @submit="onSubmit"
     @reset="onReset"
-    style="width: 400px">
+  >
     <QInput
-      filled
       v-model="name"
+      filled
       :label="t('Username')"
       lazy-rules="ondemand"
       :rules="[(val: string) => val && val.length > 0 || '']"
     />
     <QInput
+      v-model="password"
       filled
       type="password"
-      v-model="password"
       :label="t('Password')"
       lazy-rules="ondemand"
       :rules="[(val: string) => val !== null && val !== '' || '']"

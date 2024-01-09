@@ -1,25 +1,25 @@
 <script lang="ts" setup>
-import type { Dispenser } from '~/shared/types';
+import type { Dispenser } from '~/shared/types'
 import { useStateStore } from '~/store/State'
-
-const { t } = useI18n()
-const q = useQuasar()
-const stateStore = useStateStore()
 
 const props = defineProps({
   dispenser: {
     type: Object as PropType<Dispenser>,
     required: true,
-  }
+  },
 })
+const { t } = useI18n()
+const q = useQuasar()
+const stateStore = useStateStore()
+
 const dispenser = props.dispenser
-//Placeholder ping method
+// Placeholder ping method
 async function onPing() {
   try {
     stateStore.isLoading = true
     const ping = await useFetch(`http://${dispenser.dispenserIP.split(':')[0]}`, {
       mode: 'no-cors',
-      timeout: 3000
+      timeout: 3000,
     })
     if (ping.status.value === 'success')
       q.notify({
@@ -27,7 +27,7 @@ async function onPing() {
         textColor: 'white',
         icon: 'done',
         message: t('Success'),
-        timeout: 3000
+        timeout: 3000,
       })
     else
       q.notify({
@@ -35,40 +35,37 @@ async function onPing() {
         textColor: 'white',
         icon: 'cancel',
         message: t('Failed'),
-        timeout: 3000
+        timeout: 3000,
       })
-  }
-  catch(e) {
+  } catch (e) {
     console.error(e)
     q.notify({
       color: 'red-4',
       textColor: 'white',
       icon: 'cancel',
       message: t('Failed'),
-      timeout: 3000
+      timeout: 3000,
     })
-  }
-  finally {
+  } finally {
     stateStore.isLoading = false
   }
 }
 
 function onClickJobOrders() {
   navigateTo({
-    path: `/jobOrders/${dispenser.dispenserId}`
+    path: `/jobOrders/${dispenser.dispenserId}`,
   })
 }
 
 function onClickScreen() {
   navigateTo({
-    path: `/vnc/${dispenser.dispenserId}`
+    path: `/vnc/${dispenser.dispenserId}`,
   })
 }
 
 function onClickEdit() {
 
 }
-
 </script>
 
 <template>
@@ -79,7 +76,7 @@ function onClickEdit() {
           src="/dispenser.png"
           width="200"
           height="200"
-        />
+        >
         <QBtn
           round
           flat
@@ -87,7 +84,7 @@ function onClickEdit() {
           icon="wifi"
           @click="onPing"
         >
-          <QTooltip :offset="[10,10]">
+          <QTooltip :offset="[10, 10]">
             {{ t('ConnectionCheck') }}
           </QTooltip>
         </QBtn>
@@ -128,4 +125,3 @@ function onClickEdit() {
     </div>
   </div>
 </template>
-

@@ -3,7 +3,7 @@ import type { User } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
 
 const dataStore = useDataStore()
-const user = ref<User| null>()
+const user = ref<User | null>()
 user.value = dataStore.user
 dataStore.$subscribe((_, data) => {
   user.value = data.user
@@ -14,9 +14,7 @@ dataStore.title = ''
 
 <template>
   <div class="q-pa-md flex-center mt-50">
-    <MainMenu v-if="user"/>
-    <LoginForm v-if="!user"/>
+    <MainMenu v-if="user" />
+    <LoginForm v-if="!user" />
   </div>
 </template>
-
-

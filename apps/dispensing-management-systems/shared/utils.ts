@@ -15,33 +15,33 @@ export function convertTeleskopData(data: types.TeleskopData[]) {
       recipeType: val.recipeType,
       recipeProcessNo: val.recipeProcessNo,
       recipeStepNo: val.recipeStepNo,
-      status: val.status
+      status: val.status,
     }
   })
-  const dispensers: types.Dispenser[] = [];
-  const uniqueDispenserIds = new Set();
+  const dispensers: types.Dispenser[] = []
+  const uniqueDispenserIds = new Set()
 
   data.forEach((val) => {
     if (!uniqueDispenserIds.has(val.dispenserId)) {
       dispensers.push({
         dispenserId: val.dispenserId,
         dispenserName: val.dispenserName,
-      });
-      uniqueDispenserIds.add(val.dispenserId);
+      })
+      uniqueDispenserIds.add(val.dispenserId)
     }
-  });
+  })
 
-  const machines: types.Machine[] = [];
-  const uniqueMachineIds = new Set();
+  const machines: types.Machine[] = []
+  const uniqueMachineIds = new Set()
   data.forEach((val) => {
     if (!uniqueMachineIds.has(val.machineId)) {
       machines.push({
         machineId: val.machineId,
         machineName: val.machineName,
-      });
-      uniqueMachineIds.add(val.machineId);
+      })
+      uniqueMachineIds.add(val.machineId)
     }
-  });
+  })
 
   return { jobOrders, dispensers, machines }
 }

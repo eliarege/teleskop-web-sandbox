@@ -3,7 +3,7 @@ import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import { useStateStore } from '~/store/State'
 import { useDataStore } from '~/store/DataStore'
 
-const q = useQuasar();
+const q = useQuasar()
 const { t } = useI18n()
 const stateStore = useStateStore()
 const dataStore = useDataStore()
@@ -21,42 +21,44 @@ dataStore.$subscribe((_, store) => {
 })
 function goToHomepage() {
   navigateTo({
-      path: `/`
-    })
+    path: `/`,
+  })
 }
 function onLogout() {
   onRefresh()
   q.notify({
-    position: "top",
+    position: 'top',
     color: 'red-4',
     textColor: 'white',
     icon: 'cloud_done',
     message: t('LoggedOut'),
-    timeout: 3000
+    timeout: 3000,
   })
   goToHomepage()
 }
 function onRefresh() {
   dataStore.$patch({
     user: undefined,
-    title: "",
+    title: '',
     selectedDispenser: undefined,
-    dispensers: undefined
+    dispensers: undefined,
   })
 }
-const DISPENSER_PATH_RE = /^\/dispenser\/\d+$/;
+const DISPENSER_PATH_RE = /^\/dispenser\/\d+$/
 watch(() => route.params, () => {
-  if (route.path === '/') dataStore.selectedDispenser = undefined
+  if (route.path === '/')
+    dataStore.selectedDispenser = undefined
   else if (DISPENSER_PATH_RE.test(route.path)) {
-    const id = parseInt(route.params.id as string)
-    const dispenser = dataStore.dispensers?.find((val) => val.dispenserId === id)
+    const id = Number.parseInt(route.params.id as string)
+    const dispenser = dataStore.dispensers?.find(val => val.dispenserId === id)
     dataStore.$patch({
       selectedDispenser: dispenser,
-      title: dispenser?.dispenserName})
+      title: dispenser?.dispenserName,
+    })
   }
 })
 function stickyHeight() {
-  const percentage = 45;
+  const percentage = 45
   return (window.innerHeight * (percentage / 100))
 }
 
@@ -69,9 +71,9 @@ onMounted(() => {
 
 <template>
   <QLayout view="hHh LpR fFf">
-  <LoadingSpinner v-if="isLoading"/>
-  <Appbar/>
-  <QDrawer
+    <LoadingSpinner v-if="isLoading" />
+    <Appbar />
+    <QDrawer
       v-if="drawer && user"
       show-if-above
       bordered
@@ -84,38 +86,40 @@ onMounted(() => {
       >
         <Menubar
           mt-1
-          @refresh="onRefresh"/>
+          @refresh="onRefresh"
+        />
         <DispenserList
           class="my-1"
           @logout="onLogout"
         />
       </QScrollArea>
-  </QDrawer>
+    </QDrawer>
     <QPageSticky
       v-if="user"
       position="top-left"
       :offset="[5, stickyHeight()]"
       style="z-index: 100;"
-      >
+    >
       <QBtn
         round
         color="primary"
         :icon="drawer ? 'chevron_left' : 'chevron_right'"
-        @click="() => {drawer = !drawer}">
+        @click="() => { drawer = !drawer }"
+      >
         <QTooltip
           :offset="[10, 10]"
           anchor="center right"
           self="center left"
           text-center
-          >
-          {{ drawer ? t('HideDispenserList') : t('ShowDispenserList')}}
+        >
+          {{ drawer ? t('HideDispenserList') : t('ShowDispenserList') }}
         </QTooltip>
       </QBtn>
     </QPageSticky>
     <QPageContainer>
       <div class="row">
         <div class="col-auto">
-          <NavigationButton class="mt-5 ml-5"/>
+          <NavigationButton class="mt-5 ml-5" />
         </div>
         <div class="col">
           <NuxtPage/>

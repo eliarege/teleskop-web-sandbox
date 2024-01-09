@@ -14,7 +14,7 @@ const selectParameters = {
   recipeStepNo: 'r.RECIPESTEPNO',
   status: 'r.STATUS',
   dispenserId: 'r.DISPENSERID',
-  dispenserName: 'd.NAME'
+  dispenserName: 'd.NAME',
 }
 export default defineEventHandler(async (event) => {
   const { isCanceled } = getQuery(event)
@@ -29,18 +29,17 @@ export default defineEventHandler(async (event) => {
       })
       .select(selectParameters)
       .orderBy('r.REQNUMBER', 'asc')
-      //.where((builder) => {
-        //if (isCanceled === 'true') {
-          //builder.where('r.STATUS', 3)
-            //.orWhere('r.STATUS', 8)
-        //} else {
-          //builder.whereNot('r.STATUS', 3)
-            //.andWhereNot('r.STATUS', 8)
-        //}
-      //})
-      //result.limit(1000)
-      return result
-
+      // .where((builder) => {
+    // if (isCanceled === 'true') {
+    // builder.where('r.STATUS', 3)
+    // .orWhere('r.STATUS', 8)
+    // } else {
+    // builder.whereNot('r.STATUS', 3)
+    // .andWhereNot('r.STATUS', 8)
+    // }
+      // })
+      // result.limit(1000)
+    return result
   } catch (e) {
     return e
   }

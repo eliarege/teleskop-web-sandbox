@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { useDataStore } from '~/store/DataStore'
 
+const emit = defineEmits(['logout'])
 const dataStore = useDataStore()
 const { t } = useI18n()
 
-const emit = defineEmits(['logout'])
 function logout() {
   emit('logout')
 }
@@ -23,7 +23,7 @@ function logout() {
         @click="logout"
       >
         <QTooltip
-          :offset=[10,10]
+          :offset="[10, 10]"
           anchor="center right"
           self="center left"
         >

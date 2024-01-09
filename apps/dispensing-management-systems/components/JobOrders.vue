@@ -11,103 +11,99 @@ const colorStore = useColorStore()
 const { data: jobOrders } = await useFetch<JobOrder[]>(`/api/jobOrders/${route.params.id}`)
 
 const columns: (QTableColumn<JobOrder>)[] = [
-    {
-      name: 'job_order',
-      label: t('Job Order'),
-      field: 'jobId',
-      sortable: true,
-      align: 'left'
-    },
-    {
-      name: 'batch_correction_no',
-      label: t('Batch Correction No'),
-      field: 'batchCorrectionNo',
-      sortable: true,
-      align: 'left'
-    },
-    {
-      name: 'machine_name',
-      label: t('Machine Name'),
-      field: 'machineName',
-      sortable: true,
-      align: 'left'
-    },
-    {
-      name: 'tank_no',
-      label: t('Tank No'),
-      field: 'tankNo',
-      sortable: true,
-      align: 'left',
-    },
-    {
-      name: 'program_no',
-      label: t('Program No'),
-      field: 'programNo',
-      sortable: true,
-      align: 'left',
-    },
-    {
-      name: 'program_name',
-      label: t('Program Name'),
-      field: 'programName',
-      sortable: true,
-      align: 'left',
-    },
-    {
-      name: 'step_no',
-      label: t('Step No'),
-      field: 'stepNo',
-      sortable: true,
-      align: 'left',
-    },
-    {
-      name: 'recipe_type',
-      label: t('Recipe Type'),
-      field: 'recipeType',
-      sortable: false,
-      align: 'left',
-    },
-    {
-      name: 'recipe_process_no',
-      label: t('Recipe Process No'),
-      field: 'recipeProcessNo',
-      sortable: true,
-      align: 'left',
-    },
-    {
-      name: 'recipe_step_no',
-      label: t('Recipe Step No'),
-      field: 'recipeStepNo',
-      sortable: true,
-      align: 'left',
-    },
-    {
-      name: 'status',
-      label: t('Status'),
-      field: 'status',
-      sortable: false,
-      align: 'left',
-    }
+  {
+    name: 'job_order',
+    label: t('Job Order'),
+    field: 'jobId',
+    sortable: true,
+    align: 'left',
+  },
+  {
+    name: 'batch_correction_no',
+    label: t('Batch Correction No'),
+    field: 'batchCorrectionNo',
+    sortable: true,
+    align: 'left',
+  },
+  {
+    name: 'machine_name',
+    label: t('Machine Name'),
+    field: 'machineName',
+    sortable: true,
+    align: 'left',
+  },
+  {
+    name: 'tank_no',
+    label: t('Tank No'),
+    field: 'tankNo',
+    sortable: true,
+    align: 'left',
+  },
+  {
+    name: 'program_no',
+    label: t('Program No'),
+    field: 'programNo',
+    sortable: true,
+    align: 'left',
+  },
+  {
+    name: 'program_name',
+    label: t('Program Name'),
+    field: 'programName',
+    sortable: true,
+    align: 'left',
+  },
+  {
+    name: 'step_no',
+    label: t('Step No'),
+    field: 'stepNo',
+    sortable: true,
+    align: 'left',
+  },
+  {
+    name: 'recipe_type',
+    label: t('Recipe Type'),
+    field: 'recipeType',
+    sortable: false,
+    align: 'left',
+  },
+  {
+    name: 'recipe_process_no',
+    label: t('Recipe Process No'),
+    field: 'recipeProcessNo',
+    sortable: true,
+    align: 'left',
+  },
+  {
+    name: 'recipe_step_no',
+    label: t('Recipe Step No'),
+    field: 'recipeStepNo',
+    sortable: true,
+    align: 'left',
+  },
+  {
+    name: 'status',
+    label: t('Status'),
+    field: 'status',
+    sortable: false,
+    align: 'left',
+  },
 ]
 function cellStyle(col: any, row: any, pageIndex: number, isDarkMode: boolean) {
   let style = 'background-color: '
   if (col.field === 'status') {
     style += colorStore.jobOrderStatusColors[row.status] || '#FFFFFF'
     style += '; color: white; font-weight: bolder; font-size: medium'
-  }
-  else if (isDarkMode) {
-    if (pageIndex%2 === 0) {
+  } else if (isDarkMode) {
+    if (pageIndex % 2 === 0) {
       style += colorStore.darkJobOrderCellEven
-    }
-    else {
+    } else {
       style += colorStore.darkJobOrderCellOdd
     }
-  }
-  else {
-    if (pageIndex%2 === 0) {
+  } else {
+    if (pageIndex % 2 === 0) {
       style += colorStore.lightJobOrderCellEven
-    }
-    else {
+    } else {
       style += colorStore.lightJobOrderCellOdd
     }
   }
@@ -127,16 +123,16 @@ function cellStyle(col: any, row: any, pageIndex: number, isDarkMode: boolean) {
       separator="none"
       row-key="name"
     >
-    <template #body-cell="props">
+      <template #body-cell="props">
         <QTd
           :props="props"
           :style="cellStyle(props.col, props.row, props.pageIndex, dark.isActive)"
         >
           <span v-if="props.col.field === 'status'">
-              {{ t(`statusCodes.${props.row.status}`) }}
+            {{ t(`statusCodes.${props.row.status}`) }}
           </span>
           <span v-else-if="props.col.field === 'recipeType'">
-              {{ t(`recipeTypes.${props.row.recipeType}`) }}
+            {{ t(`recipeTypes.${props.row.recipeType}`) }}
           </span>
           <span v-else>
             {{ props.value }}

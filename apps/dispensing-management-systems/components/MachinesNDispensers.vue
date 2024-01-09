@@ -2,7 +2,6 @@
 import { useI18n } from 'vue-i18n'
 import type { QTableColumn } from 'quasar'
 import type { Dispenser, Machine } from '~/shared/types'
-import { useDataStore } from '~/store/DataStore'
 
 const { t } = useI18n()
 

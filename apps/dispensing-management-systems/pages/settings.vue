@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { useQuasar } from 'quasar'
-import { useRouter } from '#vue-router';
-import { useDataStore } from '~/store/DataStore';
+import { useRouter } from '#vue-router'
+import { useDataStore } from '~/store/DataStore'
 
 definePageMeta({
-  layout: 'settings'
+  layout: 'settings',
 })
 const { t, locale } = useI18n()
 const q = useQuasar()
@@ -16,7 +16,7 @@ const innerWidth = ref(window.innerWidth)
 const minSize = 768
 if (dataStore.user === undefined) {
   await navigateTo({
-    path: '/'
+    path: '/',
   })
 }
 dataStore.title = t('Settings')
@@ -29,7 +29,6 @@ function handleResize() {
 useResizeObserver(document.body, () => {
   handleResize()
 })
-
 </script>
 
 <template>
@@ -46,10 +45,10 @@ useResizeObserver(document.body, () => {
             @click="router.back"
           >
             <QTooltip
-              :offset="[10,10]"
+              :offset="[10, 10]"
               anchor="center right"
               self="center left"
-              >
+            >
               {{ t('GoBack') }}
             </QTooltip>
           </QBtn>
@@ -62,44 +61,44 @@ useResizeObserver(document.body, () => {
           <QTab
             name="s1"
             icon="settings"
-            :class="tab === 's1' ?  (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :class="tab === 's1' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
             :label="innerWidth > minSize ? `${t('settings.App')}` : ''"
           >
             <QTooltip
               v-if="innerWidth <= minSize"
-              :offset="[10,10]"
+              :offset="[10, 10]"
               anchor="center right"
               self="center left"
-              >
+            >
               {{ t('settings.App') }}
             </QTooltip>
           </QTab>
-          <QSeparator/>
+          <QSeparator />
           <QTab
             name="s2"
             icon="settings"
-            :class="tab === 's2' ?  (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :class="tab === 's2' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
             :label="innerWidth > minSize ? `${t('settings.2')}` : ''"
           />
-          <QSeparator/>
+          <QSeparator />
           <QTab
             name="s3"
             icon="settings"
-            :class="tab === 's3' ?  (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :class="tab === 's3' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
             :label="innerWidth > minSize ? `${t('settings.3')}` : ''"
           />
-          <QSeparator/>
+          <QSeparator />
           <QTab
             name="s4"
             icon="settings"
-            :class="tab === 's4' ?  (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :class="tab === 's4' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
             :label="innerWidth > minSize ? `${t('settings.4')}` : ''"
           />
-          <QSeparator/>
+          <QSeparator />
           <QTab
             name="s5"
             icon="settings"
-            :class="tab === 's5' ?  (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :class="tab === 's5' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
             :label="innerWidth > minSize ? `${t('settings.5')}` : ''"
           />
         </QTabs>
@@ -114,29 +113,28 @@ useResizeObserver(document.body, () => {
           transition-next="jump-up"
         >
           <QTabPanel name="s1">
-            <AppSettings/>
+            <AppSettings />
           </QTabPanel>
 
           <QTabPanel name="s2">
-            <!--Settings Component-->
+            <!-- Settings Component -->
           </QTabPanel>
 
           <QTabPanel name="s3">
-            <!--Settings Component-->
+            <!-- Settings Component -->
           </QTabPanel>
 
           <QTabPanel name="s4">
-            <!--Settings Component-->
+            <!-- Settings Component -->
           </QTabPanel>
 
           <QTabPanel name="s5">
-            <!--Settings Component-->
+            <!-- Settings Component -->
           </QTabPanel>
         </QTabPanels>
       </template>
     </QSplitter>
   </div>
-
 </template>
 
 <style scoped>

@@ -34,5 +34,6 @@ teleskopDB.raw('select 1+1 as result')
   .then(() => console.log('Connected to the Teleskop SQL Server via knex'))
   .catch((err: any) => console.error('Error connecting to Teleskop SQL Server:', err))
 export {
-  dmsDB, teleskopDB
+  dmsDB,
+  teleskopDB,
 }
