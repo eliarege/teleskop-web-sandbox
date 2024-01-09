@@ -8,7 +8,7 @@ import type { LockGeneral } from '../types'
  * 0 4 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 0
  * 0 5 52 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 0
  */
-export function parseLine(line) {
+export function parseSeperatedLocks(line) {
   const regex = /"[^"]+"|\S+/g
   const parts = []
   let match
