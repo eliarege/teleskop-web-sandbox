@@ -9,13 +9,18 @@
   "main": "index.js",
   "scripts": {
     "dev": "node -r dotenv/config index.js",
-    "build": "./scripts/package.sh",
+    "build": "unbuild",
     "start": "cd dist && node index.js",
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
     "ejs": "^3.1.9",
     "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "build-utils": "workspace:*",
+    "unbuild": "2.0.0"
   },
   "eliar": {
     "type": "node",
