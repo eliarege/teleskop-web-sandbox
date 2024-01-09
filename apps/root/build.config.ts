@@ -11,7 +11,9 @@ export default defineBuildConfig({
   clean: true,
   hooks: {
     'build:prepare': (ctx) => {
-      workspaceExternals(ctx)
+      workspaceExternals(ctx, {
+        traceInclude: ['ejs'],
+      })
     },
   },
   replace: {

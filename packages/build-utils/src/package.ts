@@ -93,6 +93,9 @@ function compareVersions(v1 = '0.0.0', v2 = '0.0.0') {
   }
 }
 
+interface CopyNodeExternalsOptions {
+  traceInclude?: string[]
+}
 /**
  * Copy all traced node_modules under `outDir.
  *
@@ -100,7 +103,7 @@ function compareVersions(v1 = '0.0.0', v2 = '0.0.0') {
  *
  * Source: https://github.com/unjs/nitro/blob/main/src/rollup/plugins/externals.ts
  */
-async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'options'>) {
+async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'options'>, options: CopyNodeExternalsOptions = {}) {
   const builtinModules = [
     ...Module.builtinModules,
     ...Module.builtinModules.map(m => `node:${m}`),
@@ -113,6 +116,8 @@ async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'optio
   const JAVASCRIPT_RE = /\.(?:[cm])?js$/
 
   const dependencies = new Set<string>()
+  const resolvedDependencies = new Set<string>()
+
   for (const entry of ctx.buildEntries) {
     const entryPath = resolve(outDir, entry.path)
     // Is javascript file
@@ -129,10 +134,20 @@ async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'optio
       }
     }
   }
-  const resolvedDependencies = await Promise.all([...dependencies].map(d => resolvePath(d)))
 
-  // Trace used files using nft
-  const result = await nodeFileTrace(resolvedDependencies, {
+  for (const dep of dependencies) {
+    resolvedDependencies.add(await resolvePath(dep))
+  }
+
+  // Include explicitly defined modules
+  if (options.traceInclude) {
+    for (const name of options.traceInclude) {
+      resolvedDependencies.add(await resolvePath(name))
+    }
+  }
+
+  // Trace used files using `@vercel/nft`
+  const result = await nodeFileTrace([...resolvedDependencies], {
     base: '/',
     processCwd: ctx.options.rootDir,
     exportsOnly: true,
@@ -411,7 +426,7 @@ async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'optio
  *
  * Copies all used external modules to `outDir`. Inlines workspace dependencies.
  */
-export function workspaceExternals(ctx: BuildContext) {
+export function workspaceExternals(ctx: BuildContext, options?: CopyNodeExternalsOptions) {
   ctx.hooks.hook('build:before', async (ctx) => {
     // Inline workspace dependencies
     const workspaceDependencies = await getWorkspaceDependencies()
@@ -422,6 +437,6 @@ export function workspaceExternals(ctx: BuildContext) {
   })
   ctx.hooks.hook('build:done', async (ctx) => {
     consola.info(`Copying externals`)
-    await copyNodeExternals(ctx)
+    await copyNodeExternals(ctx, options)
   })
 }
