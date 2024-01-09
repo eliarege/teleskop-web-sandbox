@@ -73,7 +73,8 @@ export default defineNuxtConfig({
     public: {
       kcUrl: 'http://keycloak:8080',
       kcRealm: 'teleskop-web',
-      kcClientId: 'nuxt-client'
+      kcClientId: 'nuxt-client',
+      kcEnabled: true
     }
   }
 })
