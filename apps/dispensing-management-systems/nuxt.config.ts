@@ -5,18 +5,18 @@ export default defineNuxtConfig({
   extends: ['nuxt-base'],
   ssr: false,
   runtimeConfig: {
-    dmsHost: process.env.DMS_HOST || 'localhost',
-    dmsUser: process.env.DMS_USER || 'postgres',
-    dmsPort: process.env.DMS_PORT || '5432',
-    dmsPassword: process.env.DMS_PASSWORD || '123456',
-    dmsDatabase: process.env.DMS_DATABASE || 'test',
-    teleskopHost: process.env.TELESKOP_HOST || '192.168.16.87',
-    teleskopUser: process.env.TELESKOP_USER || 'sa',
-    teleskopPort: process.env.TELESKOP_PORT || '7654',
-    teleskopPassword: process.env.TELESKOP_PASSWORD || '12345678tT',
-    teleskopDatabase: process.env.TELESKOP_DATABASE || 'Teleskop',
+    dmsHost: 'localhost',
+    dmsUser: 'postgres',
+    dmsPort: '5432',
+    dmsPassword: '123456',
+    dmsDatabase: 'test',
+    teleskopHost: '192.168.16.87',
+    teleskopUser: 'sa',
+    teleskopPort: '7654',
+    teleskopPassword: '12345678tT',
+    teleskopDatabase: 'Teleskop',
     public: {
-      websockifyPort: process.env.WEBSOCKIFY_PORT || '6800'
-    }
+      websockifyPort: '6800',
+    },
   },
 })
