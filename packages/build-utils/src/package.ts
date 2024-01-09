@@ -110,10 +110,13 @@ async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'optio
     : join(ctx.options.rootDir, ctx.options.outDir)
 
   // Resolve all imports detected in output
+  const JAVASCRIPT_RE = /\.(?:[cm])?js$/
+
   const dependencies = new Set<string>()
   for (const entry of ctx.buildEntries) {
     const entryPath = resolve(outDir, entry.path)
-    if (await isFile(entryPath)) {
+    // Is javascript file
+    if (await isFile(entryPath) && JAVASCRIPT_RE.test(entryPath)) {
       const code = await fsp.readFile(entryPath, 'utf8')
       const imports = [
         ...findStaticImports(code).map(i => i.specifier),
