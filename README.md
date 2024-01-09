@@ -91,6 +91,10 @@ Configurable via `NUXT_PUBLIC_KC_REALM` environment variable. Keycloak Realm, de
 
 Configurable via `NUXT_PUBLIC_KC_CLIENT_ID` environment variable. Keycloak Client ID, should be same as app name.
 
+#### `kcEnabled`
+
+Configurable via `NUXT_PUBLIC_KC_ENABLED` environment variable. Enables Keycloak Integration, default `false`.
+
 ### App Configuration
 
 ```ts
@@ -128,10 +132,6 @@ Enables logging of `keycloak-js`
 ##### `useAuthFetch`
 
 Wrapper around `useFetch` that sets `Authorization` header for configured keycloak server.
-
-##### `createAuthFetch`
-
-Returns alternate `$fetch` that sets `Authorization` headers for configured keycloak server.
 
 ##### `useKeycloak`
 
