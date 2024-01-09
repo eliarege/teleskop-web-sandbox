@@ -14,7 +14,7 @@ const tab = ref('inputs')
 
 const machineId = computed(() => props.selected.machineId)
 
-const { data: inputs } = useLazyFetch('/api/IO/analog-input', {
+const { data: inputs } = useLazyFetch('/api/io/analog-input', {
   body: { machineId: machineId.value },
   method: 'POST',
   default: () => [],
@@ -39,7 +39,7 @@ const inputColumns: Column[] = [
   },
 ]
 
-const { data: outputs } = useLazyFetch('/api/IO/analog-output', {
+const { data: outputs } = useLazyFetch('/api/io/analog-output', {
   body: { machineId: machineId.value },
   method: 'POST',
   default: () => [],
@@ -65,7 +65,7 @@ const outputColumns: Column[] = [
 ]
 
 async function handleFilterSlotsUpdateInputs(updatedValue) {
-  inputs.value = await $fetch('/api/IO/analog-input', {
+  inputs.value = await $fetch('/api/io/analog-input', {
     method: 'POST',
     body: {
       machineId: machineId.value,
@@ -75,7 +75,7 @@ async function handleFilterSlotsUpdateInputs(updatedValue) {
 }
 
 async function handleFilterSlotsUpdateOutputs(updatedValue) {
-  outputs.value = await $fetch('/api/IO/analog-output', {
+  outputs.value = await $fetch('/api/io/analog-output', {
     method: 'POST',
     body: {
       machineId: machineId.value,
