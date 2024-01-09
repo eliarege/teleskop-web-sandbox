@@ -26,7 +26,7 @@ import { parseCommandAlarms } from './parsers/parseCommandAlarms'
 import type { FinishReason, GlobalCommandFormula, ManualReason, StopReason, User } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas, serializeGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
-import { parseLine } from './parsers/parseLocksInput'
+import { parseSeperatedLocks } from './parsers/parseLocksInput'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -248,7 +248,7 @@ export class TbbFtpClient {
     const content = await download(this.client, remotePath)
 
     const lines = content.split('\n')
-    const parsedData = lines.map(parseLine)
+    const parsedData = lines.map(parseSeperatedLocks)
 
     return parsedData
   }
