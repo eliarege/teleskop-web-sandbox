@@ -1,4 +1,4 @@
-import type { FinishReason } from "../types"
+import type { FinishReason } from '../types'
 
 // '/tbb6500/data/config/bitirmenedenleri'
 const typeIdMap = {
@@ -7,7 +7,7 @@ const typeIdMap = {
   5: 'Makine Duraklatma',
 }
 
-export function writeFinishReason(reasons: FinishReason[]): string {
+export function serializeFinishReason(reasons: FinishReason[]): string {
   const regexStrings = reasons.map(reason => `${reason.reasonId} "${reason.text}" ${reason.typeId} "${typeIdMap[reason.typeId]}"`)
   return regexStrings.join('\n')
 }

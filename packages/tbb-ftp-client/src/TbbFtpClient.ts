@@ -23,16 +23,16 @@ import { parseCommandFeedback } from './parsers/parseCommandFeedback'
 import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
-import { writeFinishReason } from './writers/writeFinishReason'
+import { serializeFinishReason } from './writers/serializeFinishReason'
 import type { FinishReason, GlobalCommandFormula, ManualReason, StopReason, User } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
-import { parseLine, parseLockInput } from './parsers/parseLocksInput'
-import { writeStopReason } from './writers/writeStopReason'
-import { writeMachineParameterValues } from './writers/writeMachineParameterValues'
-import { writeUser } from './writers/writeUser'
-import { writeGlobalCommandFormulas } from './writers/writeGlobalCommandFormulas'
-import { writeManualReason } from './writers/writeManualReason'
+import { parseLine } from './parsers/parseLocksInput'
+import { serializeStopReason } from './writers/serializeStopReason'
+import { serializeMachineParameterValues } from './writers/serializeMachineParameterValues'
+import { serializeUser } from './writers/serializeUser'
+import { serializeGlobalCommandFormulas } from './writers/serializeGlobalCommandFormulas'
+import { serializeManualReason } from './writers/serializeManualReason'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -261,38 +261,38 @@ export class TbbFtpClient {
 
   async uploadMachineParameterValues(values) {
     const remotePath = '/tbb6500/data/config/makinesabitleriDegerler'
-    const content = writeMachineParameterValues(values)
+    const content = serializeMachineParameterValues(values)
     await upload(this.client, remotePath, content)
   }
 
   async uploadUsers(users: User[]) {
     const remotePath = '/tbb6500/data/users/users'
-    const content = writeUser(users)
+    const content = serializeUser(users)
     await upload(this.client, remotePath, content)
   }
 
   async uploadStopReasons(stopReasons: StopReason[]) {
     const remotePath = '/tbb6500/data/config/durusnedenleri'
-    const content = writeStopReason(stopReasons)
+    const content = serializeStopReason(stopReasons)
     await upload(this.client, remotePath, content)
   }
 
   async uploadFinishReasons(finishReasons: FinishReason[]) {
     const remotePath = '/tbb6500/data/config/bitirmenedenleri'
-    const content = writeFinishReason(finishReasons)
+    const content = serializeFinishReason(finishReasons)
     await upload(this.client, remotePath, content)
   }
 
   async uploadGlobalCommandFormulas(formulas: GlobalCommandFormula[]) {
     const remotePath = '/tbb6500/yedek/data/config/globalCommandFormulas'
     console.log('formulas = ', formulas)
-    const content = writeGlobalCommandFormulas(formulas)
+    const content = serializeGlobalCommandFormulas(formulas)
     await upload(this.client, remotePath, content)
   }
 
   async uploadManualReasons(reasons: ManualReason[]) {
     const remotePath = '/tbb6500/data/config/manuelmodnedenleri'
-    const content = writeManualReason(reasons)
+    const content = serializeManualReason(reasons)
     await upload(this.client, remotePath, content)
   }
 }

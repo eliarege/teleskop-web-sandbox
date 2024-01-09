@@ -1,6 +1,6 @@
 import type { ManualReason } from '../types'
 
-export function writeManualReason(reasons: ManualReason[]): string {
+export function serializeManualReason(reasons: ManualReason[]): string {
   const lines = reasons.map((reason) => {
     return `${reason.manualId} "${reason.manualString}"`
   })
