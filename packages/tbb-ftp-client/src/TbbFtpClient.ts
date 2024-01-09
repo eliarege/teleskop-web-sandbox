@@ -24,14 +24,15 @@ import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
 import { writeFinishReason } from './writers/writeFinishReason'
-import type { FinishReason, GlobalCommandFormula, StopReason, User } from './types'
+import type { FinishReason, GlobalCommandFormula, ManualReason, StopReason, User } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
 import { parseLine, parseLockInput } from './parsers/parseLocksInput'
 import { writeStopReason } from './writers/writeStopReason'
 import { writeMachineParameterValues } from './writers/writeMachineParameterValues'
-import { writeFileUser } from './writers/writeFileUser'
+import { writeUser } from './writers/writeUser'
 import { writeGlobalCommandFormulas } from './writers/writeGlobalCommandFormulas'
+import { writeManualReason } from './writers/writeManualReason'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -266,7 +267,7 @@ export class TbbFtpClient {
 
   async uploadUsers(users: User[]) {
     const remotePath = '/tbb6500/data/users/users'
-    const content = writeFileUser(users)
+    const content = writeUser(users)
     await upload(this.client, remotePath, content)
   }
 
@@ -283,8 +284,15 @@ export class TbbFtpClient {
   }
 
   async uploadGlobalCommandFormulas(formulas: GlobalCommandFormula[]) {
-    const remotePath = '/tbb6500/data/yedek/globalCommandFormulas'
+    const remotePath = '/tbb6500/yedek/data/config/globalCommandFormulas'
+    console.log('formulas = ', formulas)
     const content = writeGlobalCommandFormulas(formulas)
+    await upload(this.client, remotePath, content)
+  }
+
+  async uploadManualReasons(reasons: ManualReason[]) {
+    const remotePath = '/tbb6500/data/config/manuelmodnedenleri'
+    const content = writeManualReason(reasons)
     await upload(this.client, remotePath, content)
   }
 }

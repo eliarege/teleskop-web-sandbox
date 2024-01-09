@@ -651,9 +651,28 @@ export async function writeUsers(machineId: number, tbb: TbbFtpClient, trx: Knex
 }
 
 export async function writeGlobalCommandFormulas(machineId: number, tbb: TbbFtpClient, trx: Knex) {
-  const formulas = await trx('BFCOMMANDPARAMETERS')
-    .where('MACHINEID', machineId)
-    .select()
+  const formulas = await trx('BFCOMMANDFORMULAS')
+    .where('machineId', machineId)
+    .select(
+      'formula',
+      'formulaId',
+      'commandNo',
+      'commandParameterNo',
+      'formulaName',
+    )
+
+  await tbb.uploadGlobalCommandFormulas(formulas)
+
+  return formulas
+}
+
+export async function writeManualReasons(tbb: TbbFtpClient, trx: Knex) {
+  const formulas = await trx('BFMANUALREASONSGENERAL')
+    .select({
+      manualId: 'manualID',
+      manualReason: 'manualString',
+      reportToERP: 'ReportToERP',
+    })
 
   await tbb.uploadStopReasons(formulas)
 
