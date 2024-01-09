@@ -16,10 +16,20 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
+    "knex": "^3.1.0",
+    "mssql": "^10.0.1",
+    "pg": "^8.11.3",
+    "simple-keyboard": "^3.7.36",
     "ui": "workspace:*"
   },
   "devDependencies": {
+    "@iconify/vue": "^4.1.1",
+    "@intlify/unplugin-vue-i18n": "^0.11.0",
+    "@types/mssql": "^9.1.4",
     "@types/node": "^18.19.0",
+    "@types/pg": "^8.10.9",
+    "@vueuse/core": "^10.1.2",
+    "@vueuse/nuxt": "^10.1.2",
     "nuxt": "^3.9.0",
     "nuxt-base": "workspace:*",
     "unocss-config": "workspace:*",

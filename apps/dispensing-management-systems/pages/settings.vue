@@ -1,0 +1,171 @@
+<script lang="ts" setup>
+import { useQuasar } from 'quasar'
+import { useRouter } from '#vue-router';
+import { useDataStore } from '~/store/DataStore';
+
+definePageMeta({
+  layout: 'settings'
+})
+const { t, locale } = useI18n()
+const q = useQuasar()
+const dataStore = useDataStore()
+const router = useRouter()
+const tab = ref('material')
+const splitterModel = ref(10)
+const innerWidth = ref(window.innerWidth)
+const minSize = 768
+if (dataStore.user === undefined) {
+  await navigateTo({
+    path: '/'
+  })
+}
+dataStore.title = t('Settings')
+watch(locale, () => {
+  dataStore.title = t('Settings')
+})
+function handleResize() {
+  innerWidth.value = window.innerWidth
+}
+useResizeObserver(document.body, () => {
+  handleResize()
+})
+
+</script>
+
+<template>
+  <div>
+    <QSplitter
+      v-model="splitterModel"
+    >
+      <template #before>
+        <div flex-center>
+          <QBtn
+            flat
+            icon="arrow_back"
+            class="min-h-20 w-full"
+            @click="router.back"
+          >
+            <QTooltip
+              :offset="[10,10]"
+              anchor="center right"
+              self="center left"
+              >
+              {{ t('GoBack') }}
+            </QTooltip>
+          </QBtn>
+        </div>
+        <QTabs
+          v-model="tab"
+          vertical
+          style="color: rgb(0, 0, 0); width: 100%;"
+        >
+          <QTab
+            name="s1"
+            icon="settings"
+            :class="tab === 's1' ?  (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :label="innerWidth > minSize ? `${t('settings.App')}` : ''"
+          >
+            <QTooltip
+              v-if="innerWidth <= minSize"
+              :offset="[10,10]"
+              anchor="center right"
+              self="center left"
+              >
+              {{ t('settings.App') }}
+            </QTooltip>
+          </QTab>
+          <QSeparator/>
+          <QTab
+            name="s2"
+            icon="settings"
+            :class="tab === 's2' ?  (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :label="innerWidth > minSize ? `${t('settings.2')}` : ''"
+          />
+          <QSeparator/>
+          <QTab
+            name="s3"
+            icon="settings"
+            :class="tab === 's3' ?  (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :label="innerWidth > minSize ? `${t('settings.3')}` : ''"
+          />
+          <QSeparator/>
+          <QTab
+            name="s4"
+            icon="settings"
+            :class="tab === 's4' ?  (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :label="innerWidth > minSize ? `${t('settings.4')}` : ''"
+          />
+          <QSeparator/>
+          <QTab
+            name="s5"
+            icon="settings"
+            :class="tab === 's5' ?  (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :label="innerWidth > minSize ? `${t('settings.5')}` : ''"
+          />
+        </QTabs>
+      </template>
+
+      <template #after>
+        <QTabPanels
+          v-model="tab"
+          animated
+          vertical
+          transition-prev="jump-up"
+          transition-next="jump-up"
+        >
+          <QTabPanel name="s1">
+            <AppSettings/>
+          </QTabPanel>
+
+          <QTabPanel name="s2">
+            <!--Settings Component-->
+          </QTabPanel>
+
+          <QTabPanel name="s3">
+            <!--Settings Component-->
+          </QTabPanel>
+
+          <QTabPanel name="s4">
+            <!--Settings Component-->
+          </QTabPanel>
+
+          <QTabPanel name="s5">
+            <!--Settings Component-->
+          </QTabPanel>
+        </QTabPanels>
+      </template>
+    </QSplitter>
+  </div>
+
+</template>
+
+<style scoped>
+/* Light Theme */
+.settings-light {
+  background-color: white;
+  white-space: normal;
+  color: black
+}
+
+.settings-light-active {
+  background-color: black;
+  white-space: normal;
+  color: white
+}
+/* Dark Theme */
+.settings-dark {
+  background-color: black;
+  white-space: normal;
+  color: white
+}
+
+.settings-dark-active {
+  background-color: white;
+  white-space: normal;
+  color: black
+}
+
+.q-tab--full{
+  min-height: 8rem;
+}
+</style>

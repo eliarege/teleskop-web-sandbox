@@ -289,6 +289,11 @@ defineExpose({
    * then both a press and release event are sent.
    */
   sendKey: wrap((rfb, keysym: number, code: string | null, down?: boolean) => rfb.sendKey(keysym, code, down)),
+
+  /**
+   * Send ctrl+alt+del sequence
+   */
+  sendCtrlAltDel: wrap(rfb => rfb.sendCtrlAltDel()),
 })
 </script>
 
