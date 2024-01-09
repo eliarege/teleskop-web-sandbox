@@ -8,6 +8,7 @@
     "types": [],
     "resolveJsonModule": true,
     "allowJs": true,
+    "noEmit": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
