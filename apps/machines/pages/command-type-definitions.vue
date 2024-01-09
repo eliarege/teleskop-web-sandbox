@@ -1,24 +1,140 @@
 <script setup lang="ts">
-import { getMachineCommands, getTimeoutReasons } from '~/utils'
-
-const { data: machines } = await useFetch('/api/command-timeout-reasons/command-map-machines')
+import { Sortable } from 'sortablejs-vue3'
+import type { CommandType } from '~/types'
 
 const selectedMachineId = ref()
-const machineCommands = ref()
-const timeoutReasons = ref()
+const selectedCommandNo = ref()
 
-async function handleMachineClick(machineId: number) {
-  machineCommands.value = await getMachineCommands(machineId)
-  selectedMachineId.value = machineId
+const cmdTypeChemicalReq = ref<CommandType[]>([])
+const cmdTypeManualChemicalReq = ref<CommandType[]>([])
+const cmdTypeDyeReq = ref<CommandType[]>([])
+const cmdTypeManualDyeReq = ref<CommandType[]>([])
+const cmdTypeCTTransfer = ref<CommandType[]>([])
+const cmdTypeDTTransfer = ref<CommandType[]>([])
+const cmdTypeRTTransfer = ref<CommandType[]>([])
+const cmdTypePhControl = ref<CommandType[]>([])
+const cmdTypeSample = ref<CommandType[]>([])
+const cmdTypeSaltReq = ref<CommandType[]>([])
+const cmdTypeGenericMaterialOneReq = ref<CommandType[]>([])
+const cmdTypeGenericMaterialTwoReq = ref<CommandType[]>([])
+const cmdOperatorWarningCommands = ref<CommandType[]>([])
+const cmdManuelMeasuredCommands = ref<CommandType[]>([])
+
+const { data: machines } = useLazyFetch('/api/machines/machines', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
+
+const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
+  default: () => [],
+  immediate: false,
+  query: {
+    machineId: selectedMachineId,
+  },
+})
+
+const commandTypeMap = [
+  { label: 'cmdTypeChemicalReq', value: 100 },
+  { label: 'cmdTypeManualChemicalReq', value: 101 },
+  { label: 'cmdTypeDyeReq', value: 200 },
+  { label: 'cmdTypeManualDyeReq', value: 201 },
+  { label: 'cmdTypeCTTransfer', value: 300 },
+  { label: 'cmdTypeDTTransfer', value: 400 },
+  { label: 'cmdTypeRTTransfer', value: 500 },
+  { label: 'cmdTypePhControl', value: 600 },
+  { label: 'cmdTypeSample', value: 700 },
+  { label: 'cmdTypeSaltReq', value: 800 },
+  { label: 'cmdTypeGenericMaterialOneReq', value: 810 },
+  { label: 'cmdTypeGenericMaterialTwoReq', value: 820 },
+  { label: 'cmdOperatorWarningCommands', value: 90 },
+  { label: 'cmdManuelMeasuredCommands', value: 1000 },
+]
+
+const { data: commandTypes } = useLazyFetch('/api/commands/command-types', {
+  default: () => [],
+  immediate: false,
+  query: {
+    machineId: selectedMachineId,
+  },
+})
+
+function mapCommandToTypeArray(command: CommandType) {
+  const mapping = commandTypeMap.find(m => m.value === command.commandType)
+  if (!mapping)
+    return
+
+  switch (mapping.label) {
+    case 'cmdTypeChemicalReq':
+      cmdTypeChemicalReq.value.push(command)
+      break
+    case 'cmdTypeManualChemicalReq':
+      cmdTypeManualChemicalReq.value.push(command)
+      break
+    case 'cmdTypeDyeReq':
+      cmdTypeDyeReq.value.push(command)
+      break
+    case 'cmdTypeManualDyeReq':
+      cmdTypeManualDyeReq.value.push(command)
+      break
+    case 'cmdTypeCTTransfer':
+      cmdTypeCTTransfer.value.push(command)
+      break
+    case 'cmdTypeDTTransfer':
+      cmdTypeDTTransfer.value.push(command)
+      break
+    case 'cmdTypeRTTransfer':
+      cmdTypeRTTransfer.value.push(command)
+      break
+    case 'cmdTypePhControl':
+      cmdTypePhControl.value.push(command)
+      break
+    case 'cmdTypeSample':
+      cmdTypeSample.value.push(command)
+      break
+    case 'cmdTypeSaltReq':
+      cmdTypeSaltReq.value.push(command)
+      break
+    case 'cmdTypeGenericMaterialOneReq':
+      cmdTypeGenericMaterialOneReq.value.push(command)
+      break
+    case 'cmdTypeGenericMaterialTwoReq':
+      cmdTypeGenericMaterialTwoReq.value.push(command)
+      break
+    case 'cmdOperatorWarningCommands':
+      cmdOperatorWarningCommands.value.push(command)
+      break
+    case 'cmdManuelMeasuredCommands':
+      cmdManuelMeasuredCommands.value.push(command)
+      break
+    default:
+      console.warn('Unrecognized command type:', command.commandType)
+  }
 }
 
-async function handleCommandClick(commandNo: number) {
-  const selectedTimeoutReasons = await getSelectedTimeoutReasons(selectedMachineId.value, commandNo)
-  const allTimeoutReasons = await getTimeoutReasons()
-  timeoutReasons.value = allTimeoutReasons.map(r => ({
-    ...r,
-    checked: selectedTimeoutReasons.some(selectedReason => selectedReason.id === r.id),
-  }))
+watch(commandTypes, (_newCommandTypes) => {
+  cmdTypeChemicalReq.value = []
+  cmdTypeManualChemicalReq.value = []
+  cmdTypeDyeReq.value = []
+  cmdTypeManualDyeReq.value = []
+  cmdTypeCTTransfer.value = []
+  cmdTypeDTTransfer.value = []
+  cmdTypeRTTransfer.value = []
+  cmdTypePhControl.value = []
+  cmdTypeSample.value = []
+  cmdTypeSaltReq.value = []
+  cmdTypeGenericMaterialOneReq.value = []
+  cmdTypeGenericMaterialTwoReq.value = []
+  cmdOperatorWarningCommands.value = []
+  cmdManuelMeasuredCommands.value = []
+
+  commandTypes.value.forEach((command) => {
+    mapCommandToTypeArray(command)
+  })
+})
+
+async function handleMachineClick(machineId: number) {
+  selectedMachineId.value = machineId
 }
 </script>
 
@@ -35,21 +151,20 @@ async function handleCommandClick(commandNo: number) {
           @click="handleMachineClick(machine.machineId)"
         >
           <q-item-section>
-            {{ machine.machineName }}
+            {{ machine.machineCode }}
           </q-item-section>
         </q-item>
       </q-list>
     </q-card-section>
-
     <q-card-section class="w-sm">
       <h3>Seçili Makine Komutları</h3>
       <q-list bordered separator>
         <q-item
-          v-for="command in machineCommands"
+          v-for="command in commands"
           :key="command.commandNo"
           v-ripple
           clickable
-          @click="handleCommandClick(command.commandNo)"
+          @click="selectedCommandNo = command.commandNo"
         >
           <q-item-section>
             {{ command.commandName }}
@@ -63,14 +178,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>Kimyasal Kazanı Transfer Komutları</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypeCTTransfer"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -80,14 +194,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>Kimyasal İstek Komutları</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypeChemicalReq"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -97,14 +210,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>Boya Kazanı Transfer Komutları</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypeDTTransfer"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -114,14 +226,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>Boya İstek Komutları</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypeDyeReq"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -131,14 +242,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>pH Kontrol</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypePhControl"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -148,14 +258,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>Rezerve Kazanı Transfer Komutları</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypeRTTransfer"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -165,14 +274,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>Tuz İstek Komutları</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypeSaltReq"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -182,14 +290,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>Manuel Ölçüm Komutları</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdManuelMeasuredCommands"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -199,14 +306,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>Manuel Kimyasal İstek Komutları</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypeManualChemicalReq"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -216,14 +322,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>Manuel Boya İstek Komutları</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypeManualDyeReq"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -233,14 +338,13 @@ async function handleCommandClick(commandNo: number) {
         <h3>Jenerik Materyal 1 İstek</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypeGenericMaterialOneReq"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -250,14 +354,28 @@ async function handleCommandClick(commandNo: number) {
         <h3>Jenerik Materyal 2 İstek</h3>
         <q-list bordered separator>
           <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
+            v-for="commandType in cmdTypeGenericMaterialTwoReq"
+            :key="commandType.commandNo"
             v-ripple
             clickable
           >
-            <q-checkbox v-model:model-value="reason.checked" />
             <q-item-section>
-              {{ reason.reasonText }}
+              {{ commandType.commandName }}
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
+      <div class="w-sm box">
+        <h3>Numune Al</h3>
+        <q-list bordered separator>
+          <q-item
+            v-for="commandType in cmdTypeSample"
+            :key="commandType.commandNo"
+            v-ripple
+            clickable
+          >
+            <q-item-section>
+              {{ commandType.commandName }}
             </q-item-section>
           </q-item>
         </q-list>

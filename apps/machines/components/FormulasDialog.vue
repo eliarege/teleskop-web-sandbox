@@ -80,6 +80,12 @@ async function handleFilterSlotsUpdate(updatedValue) {
   >
     <q-card>
       <q-card-section>
+        <q-icon
+          name="close"
+          class="flex justify-end w-full mb-4 cursor-pointer"
+          size="1.5em"
+          @click="$emit('close')"
+        />
         <FilterableTable
           :rows="formulas"
           :columns="columns"

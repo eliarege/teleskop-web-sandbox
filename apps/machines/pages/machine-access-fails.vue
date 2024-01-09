@@ -95,10 +95,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
         :options="accessFailOptions"
         type="checkbox"
       />
+      <q-btn @click="loadFails">
+        Yükle
+      </q-btn>
     </q-card-section>
-    <q-btn @click="loadFails">
-      Yükle
-    </q-btn>
   </q-card>
   <div class="table-scroll">
     <FilterableTable
@@ -121,7 +121,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
           </q-td>
         </q-tr>
       </template>
-    </filterabletable>
+    </filterableTable>
   </div>
 </template>
 

@@ -111,10 +111,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
         :options="closedTimeOptions"
         type="checkbox"
       />
+      <q-btn @click="loadTimes">
+        Yükle
+      </q-btn>
     </q-card-section>
-    <q-btn @click="loadTimes">
-      Yükle
-    </q-btn>
   </q-card>
   <div class="table-scroll">
     <FilterableTable

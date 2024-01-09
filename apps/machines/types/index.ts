@@ -193,3 +193,10 @@ export interface ErpParameter {
   batchReportOrder: number
   partyNoParam: number
 }
+
+export interface CommandType {
+  machineId: number
+  commandNo: number
+  commandType: number
+  commandName?: string
+}
