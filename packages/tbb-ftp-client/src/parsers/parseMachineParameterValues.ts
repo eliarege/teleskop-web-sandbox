@@ -26,3 +26,8 @@ export function parseMachineParameterValues(content: string) {
   }
   return machineParameterValues
 }
+
+export function serializeMachineParameterValues(values: MachineParameter[]): string {
+  const regexStrings = values.map(value => `"SABIT_${value.id}"=${value.currentValue}.000000`)
+  return regexStrings.join('\n')
+}

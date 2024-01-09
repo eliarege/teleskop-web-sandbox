@@ -1,6 +1,5 @@
 import type { FinishReason } from '../types'
 
-const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
 /**
  * **Path**: `/tbb6500/data/config/bitirmenedenleri`
  *
@@ -9,6 +8,14 @@ const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
  * 1 "Renk OK" 3 "Bitir"
  * ```
  */
+const typeIdMap = {
+  3: 'Bitir',
+  4: 'Atla',
+  5: 'Makine Duraklatma',
+}
+
+const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
+
 export function parseFinishReason(content: string) {
   const reasons = []
   let match = pattern.exec(content)
@@ -22,4 +29,9 @@ export function parseFinishReason(content: string) {
     match = pattern.exec(content)
   }
   return reasons
+}
+
+export function serializeFinishReason(reasons: FinishReason[]): string {
+  const regexStrings = reasons.map(reason => `${reason.reasonId} "${reason.text}" ${reason.typeId} "${typeIdMap[reason.typeId]}"`)
+  return regexStrings.join('\n')
 }
