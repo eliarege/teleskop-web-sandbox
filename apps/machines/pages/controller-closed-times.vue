@@ -67,7 +67,10 @@ const closedTimeGroups = ref([])
 const machineOptions = ref([])
 const times = ref([])
 
-const { data: machines } = useLazyFetch('/api/machines/machines')
+const { data: machines } = useLazyFetch('/api/machines/machines', {
+  method: 'POST',
+  body: {},
+})
 
 watch(machines, (newValue, oldValue) => {
   machineOptions.value = machines.value.map((m) => {
