@@ -7,5 +7,7 @@ locale.value = state.locale
 </script>
 
 <template>
-  <NuxtLayout/>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
 </template>

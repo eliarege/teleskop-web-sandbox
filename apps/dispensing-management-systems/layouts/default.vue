@@ -122,7 +122,7 @@ onMounted(() => {
           <NavigationButton class="mt-5 ml-5" />
         </div>
         <div class="col">
-          <NuxtPage/>
+          <slot />
         </div>
       </div>
     </QPageContainer>

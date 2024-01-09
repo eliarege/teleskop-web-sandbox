@@ -5,7 +5,7 @@
   <QLayout view="hHh lpR fFf">
     <Appbar />
     <QPageContainer>
-    <NuxtPage/>
+      <slot />
     </QPageContainer>
   </QLayout>
 </template>
