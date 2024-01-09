@@ -64,4 +64,5 @@ COPY --from=build --chown=node:node /workspace/apps/${APP_NAME}/${APP_OUT_DIR} $
 EXPOSE ${APP_PORT}
 
 USER node
+RUN npm config set update-notifier false
 ENTRYPOINT [ "npm", "start" ]
