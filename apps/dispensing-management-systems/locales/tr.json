@@ -43,8 +43,20 @@
   "Success": "Başarılı",
   "Failed": "Başarısız",
   "vncError": "{name} Bağlantısı Başarısız Oldu!",
+  "Save": "Kaydet",
+  "Cancel": "İptal",
   "settings": {
     "App": "Uygulama Ayarları"
+  },
+  "dispenserFields": {
+    "Name": "Dağıtıcı Adı",
+    "IP": "Dağıtıcı IP",
+    "FileName": "Dosya Adı",
+    "FilePath": "Dosya Konumu",
+    "ID": "Dağıtıcı No",
+    "Type": "Dağıtıcı Tipi",
+    "Protocol": "Protokol",
+    "ConsumptionFile": "Tüketim Dosya Adı"
   },
   "statusCodes": {
     "text": "Durum",

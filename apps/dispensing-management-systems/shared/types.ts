@@ -21,10 +21,10 @@ export interface Dispenser {
   lastConsumptionControl: Date
   dispenserType: number
   protocol: string
-  readConsumptionFromDMS: BinaryType
+  readConsumptionFromDMS: boolean
   consumptionFilename: string
-  bdyRequestName: string
-  bdyRequestPath: string
+  fileName: string
+  filePath: string
 }
 export interface Machine {
   machineId: number

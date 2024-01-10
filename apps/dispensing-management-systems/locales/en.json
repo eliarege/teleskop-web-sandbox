@@ -43,8 +43,20 @@
   "Success": "Success",
   "Failed": "Failed",
   "vncError": "{name} Connection Failed!",
+  "Save": "Save",
+  "Cancel": "Cancel",
   "settings": {
     "App": "App Settings"
+  },
+  "dispenserFields": {
+    "Name": "Dispenser Name",
+    "IP": "Dispenser IP",
+    "FileName": "File Name",
+    "FilePath": "File Path",
+    "ID": "Dispenser ID",
+    "Type": "Dispenser Type",
+    "Protocol": "Protocol",
+    "ConsumptionFile": "Consumtpion File Name"
   },
   "statusCodes": {
     "text": "Status",

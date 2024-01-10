@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import EditDispenser from './EditDispenser.vue';
 import type { Dispenser } from '~/shared/types'
 import { useStateStore } from '~/store/State'
 
@@ -64,7 +65,10 @@ function onClickScreen() {
 }
 
 function onClickEdit() {
-
+  q.dialog({
+    component: EditDispenser,
+    componentProps: {dispenser: dispenser}
+  })
 }
 </script>
 

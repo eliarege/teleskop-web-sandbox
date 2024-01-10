@@ -13,8 +13,9 @@ export default defineEventHandler(async () => {
       lastConsumptionControl: 'last_consumption_control',
       readConsumptionFromDMS: 'read_consumption_from_dms',
       consumptionFilename: 'consumption_filename',
-      bdyRequestName: 'bdy_requestname',
-      bdyRequestPath: 'bdy_requestpath',
+      fileName: 'bdy_requestname',
+      filePath: 'bdy_requestpath',
+
     })
     return dispensers
   } catch (e) {
