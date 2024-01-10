@@ -17,7 +17,10 @@ export async function withClient(clientOrOptions: AccessOptions | Client, callba
   }
 }
 
-export async function download(client: Client, remotePath: string) {
+export async function download(client: Client, remotePath: string): Promise<Buffer>
+export async function download(client: Client, remotePath: string, encoding: BufferEncoding): Promise<string>
+export async function download(client: Client, remotePath: string, encoding?: BufferEncoding): Promise<string | Buffer>
+export async function download(client: Client, remotePath: string, encoding?: BufferEncoding): Promise<string | Buffer> {
   const chunks: Buffer[] = []
   const writableStream = new Writable({
     write(data, _encoding, callback) {
@@ -28,10 +31,13 @@ export async function download(client: Client, remotePath: string) {
 
   await client.downloadTo(writableStream, remotePath)
 
-  return Buffer.concat(chunks).toString('utf8')
+  const output = Buffer.concat(chunks)
+  return encoding
+    ? output.toString(encoding)
+    : output
 }
 
-export async function upload(client: Client, remotePath: string, content: string) {
+export async function upload(client: Client, remotePath: string, content: string | Buffer | Uint8Array): Promise<void> {
   const readableStream = new Readable({
     read() {
       this.push(content)
