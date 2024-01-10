@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AddMachineDispenser from '~/pages/addMachineDispenser.vue'
 import type { TeleskopData } from '~/shared/types'
 import { convertTeleskopData } from '~/shared/utils'
 import { useStateStore } from '~/store/State'
@@ -35,7 +36,7 @@ async function syncData() {
         no-caps
         icon="note_add"
         color="primary"
-        @click="{}"
+        @click="navigateTo(`/addMachineDispenser`)"
       >
         <QTooltip :offset="[10, 10]">
           {{ t('New') }}
