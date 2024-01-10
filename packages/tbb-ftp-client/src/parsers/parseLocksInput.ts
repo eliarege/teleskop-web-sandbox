@@ -1,52 +1,59 @@
-import type { LockGeneral } from '../types'
-
+const InputType = {
+  AnalogInput: 0,
+  DigitalInput: 1,
+  DigitalOutput: 7,
+  VirtualInput: 8,
+  Command: 4,
+  Lock: 5,
+} as const
 /**
- *   '/tbb6500/data/locks/locks_inputs'
- * example: 0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 0
+ * **Path**: `/tbb6500/data/locks/locks_inputs`
+ *
+ * **Example**:
+ * ```txt
+ * 0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 0
  * 0 1 13 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 0
  * 0 7 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 0
  * 0 4 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 0
  * 0 5 52 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 0
+ * ```
  */
-export function parseSeperatedLocks(line) {
+export function parseSeperatedLocks(line: string) {
   const regex = /"[^"]+"|\S+/g
-  const parts = []
-  let match
-
-  while ((match = regex.exec(line)) !== null) {
-    parts.push(match[0].replace(/"/g, ''))
-  }
+  const parts = [...line.matchAll(regex)].map(p => p[0].replace(/"/g, ''))
 
   const lockId = Number.parseInt(parts[0], 10)
   const inputType = Number.parseInt(parts[1], 10)
   const logicType = Number.parseInt(parts[parts.length - 1], 10)
-  let inputs = []
+  let inputs: any[]
 
   switch (inputType) {
-    case 0: // Analog input
+    case InputType.AnalogInput:
       inputs = parseAnalogInputs(parts.slice(2, -1))
       break
-    case 1: // Digital input
+    case InputType.DigitalInput:
       inputs = parseDigitalInputs(parts.slice(2, -1))
       break
-    case 7: // Digital output
+    case InputType.DigitalOutput:
       inputs = parseDigitalOutputs(parts.slice(2, -1))
       break
-    case 4: // Command
+    case InputType.Command:
       inputs = parseCommandInputs(parts.slice(2, -1))
       break
-    case 5: // Lock
+    case InputType.Lock:
       inputs = parseLockInputs(parts.slice(2, -1))
       break
-    case 8: // Virtual input
+    case InputType.VirtualInput: // Virtual input
       inputs = parseVirtualInputs(parts.slice(2, -1))
       break
+    default:
+      throw new TypeError(`Unexpected inputType: ${inputType}`)
   }
 
   return { lockId, inputType, inputs, logicType }
 }
 
-function parseAnalogInputs(parts) {
+function parseAnalogInputs(parts: string[]) {
   const inputs = []
   for (let i = 0; i < parts.length; i += 5) {
     inputs.push({
@@ -60,7 +67,7 @@ function parseAnalogInputs(parts) {
   return inputs
 }
 
-function parseDigitalInputs(parts) {
+function parseDigitalInputs(parts: string[]) {
   const inputs = []
   for (let i = 0; i < parts.length; i += 2) {
     if (Number.parseInt(parts[i], 10) !== -1) {
@@ -73,7 +80,7 @@ function parseDigitalInputs(parts) {
   return inputs
 }
 
-function parseDigitalOutputs(parts) {
+function parseDigitalOutputs(parts: string[]) {
   const outputs = []
   for (let i = 0; i < parts.length; i += 2) {
     if (Number.parseInt(parts[i], 10) !== -1) {
@@ -86,7 +93,7 @@ function parseDigitalOutputs(parts) {
   return outputs
 }
 
-function parseCommandInputs(parts) {
+function parseCommandInputs(parts: string[]) {
   const commands = []
   for (let i = 0; i < parts.length; i += 2) {
     if (Number.parseInt(parts[i], 10) !== -1) {
@@ -99,7 +106,7 @@ function parseCommandInputs(parts) {
   return commands
 }
 
-function parseLockInputs(parts) {
+function parseLockInputs(parts: string[]) {
   const locks = []
   for (let i = 0; i < parts.length; i += 2) {
     if (Number.parseInt(parts[i], 10) !== -1) {
@@ -112,7 +119,7 @@ function parseLockInputs(parts) {
   return locks
 }
 
-function parseVirtualInputs(parts) {
+function parseVirtualInputs(parts: string[]) {
   const inputs = []
   for (let i = 0; i < parts.length; i += 2) {
     if (Number.parseInt(parts[i], 10) !== -1) {

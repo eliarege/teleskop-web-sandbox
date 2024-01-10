@@ -12,7 +12,7 @@ const typeIdMap = {
   3: 'Bitir',
   4: 'Atla',
   5: 'Makine Duraklatma',
-}
+} as Record<number, string>
 
 const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
 

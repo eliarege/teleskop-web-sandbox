@@ -1,25 +1,24 @@
 import type { Consumption } from '../types'
 
 /**
- *   /tbb6500/data/config/consumption
+ * /tbb6500/data/config/consumption
+ *
  * example:WATERTYPE_5_DO=-1
  */
 export function parseConsumption(content: string) {
-  const consumption: Consumption = {}
+  const consumption: Record<string, string | number> = {}
   const lines = content.split('\n')
 
   for (const line of lines) {
-    let [key, value] = line.split('=')
+    const [key, value] = line.split('=')
     if (key) {
       if (value !== '') {
-        value = key.includes('TIME')
+        consumption[key] = key.includes('TIME')
           ? value
           : Number.parseInt(value)
       }
-
-      consumption[key] = value
     }
   }
 
-  return consumption
+  return consumption as unknown as Consumption
 }
