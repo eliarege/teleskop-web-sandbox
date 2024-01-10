@@ -4,4 +4,19 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   extends: ['nuxt-base'],
   ssr: false,
+  runtimeConfig: {
+    dmsHost: 'localhost',
+    dmsUser: 'postgres',
+    dmsPort: '5432',
+    dmsPassword: '123456',
+    dmsDatabase: 'test',
+    teleskopHost: '192.168.16.87',
+    teleskopUser: 'sa',
+    teleskopPort: '7654',
+    teleskopPassword: '12345678tT',
+    teleskopDatabase: 'Teleskop',
+    public: {
+      websockifyPort: '6800',
+    },
+  },
 })
