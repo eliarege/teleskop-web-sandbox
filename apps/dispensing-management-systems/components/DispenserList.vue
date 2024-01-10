@@ -10,8 +10,7 @@ const shouldFetch = !dataStore.dispensers
 const { data } = shouldFetch
   ? await useFetch<Dispenser[]>(`/api/dispensers/dispensers`)
   : { data: dataStore.dispensers }
-const validDispensers = shouldFetch ? data?.value.filter((val: Dispenser) => val.dispenserId !== -1) : data
-dataStore.dispensers = validDispensers
+dataStore.dispensers = data
 const q = useQuasar()
 async function selectItem(selection: Dispenser) {
   dataStore.$patch({ selectedDispenser: selection })
@@ -56,7 +55,7 @@ function onLogout() {
       default-expand-all
     >
       <QItem
-        v-for="item in validDispensers"
+        v-for="item in dataStore.dispensers"
         :key="item.dispenserId"
         clickable
         :active="dataStore.selectedDispenser?.dispenserId === item.dispenserId"

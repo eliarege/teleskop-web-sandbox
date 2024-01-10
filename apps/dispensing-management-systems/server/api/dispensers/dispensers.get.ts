@@ -17,7 +17,7 @@ export default defineEventHandler(async () => {
       filePath: 'bdy_requestpath',
     })
     .orderBy('dispenser_id')
-    return dispensers
+    return dispensers.filter(val => val.dispenserId !== -1)
   } catch (e) {
     console.log(e)
     return e

@@ -9,8 +9,8 @@ const stateStore = useStateStore()
 async function syncData() {
   try {
     stateStore.isLoading = true
-    const { data: teleskopData } = await useFetch<TeleskopData[]>('/api/teleskop/sync')
-    const data = convertTeleskopData(teleskopData.value!)
+    const teleskopData = await $fetch<TeleskopData[]>('/api/teleskop/sync')
+    const data = convertTeleskopData(teleskopData)
     await $fetch('/api/teleskop/sync', { method: 'POST', body: data })
   } catch (e) {
     console.error(e)

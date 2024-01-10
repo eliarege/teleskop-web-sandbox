@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import type { Dispenser } from '~/shared/types';
-//import { useDialogPluginComponent } from 'quasar'
+import { useDialogPluginComponent } from 'quasar'
+import type { Dispenser } from '~/shared/types'
 
 const { t } = useI18n()
-//const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const props = defineProps({
   dispenser: {
     type: Object as PropType<Dispenser>,
@@ -11,24 +11,27 @@ const props = defineProps({
   }
 })
 
-const dispenser = props.dispenser
-const editedDispenser = ref({...dispenser})
+const dispenser = toRef(props, 'dispenser')
+const editedDispenser = ref({...dispenser.value})
 async function onSave() {
-  await $fetch(`/api/dispensers/${dispenser.dispenserId}`, { method: 'PUT', body: editedDispenser.value })
-  //onDialogOK()
+  await $fetch(`/api/dispensers/${dispenser.value.dispenserId}`, { method: 'PUT', body: editedDispenser.value })
+  onDialogOK(editedDispenser.value)
 }
 
 function onCancel() {
-  //onDialogCancel()
+  onDialogCancel()
 }
 
 function onReset() {
-  editedDispenser.value = {...dispenser}
+  editedDispenser.value = {...dispenser.value}
 }
 </script>
 
 <template>
-  <QDialog full-width>
+  <QDialog
+    ref="dialogRef"
+    @hide="onDialogHide"
+    full-width>
     <QCard>
       <QForm @submit.prevent>
         <div class="flex flex-col pb-10">

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import EditDispenser from './EditDispenser.vue';
 import type { Dispenser } from '~/shared/types'
+import { useDataStore } from '~/store/DataStore';
 import { useStateStore } from '~/store/State'
 
 const props = defineProps({
@@ -11,14 +12,15 @@ const props = defineProps({
 })
 const { t } = useI18n()
 const q = useQuasar()
+const dataStore = useDataStore()
 const stateStore = useStateStore()
 
-const dispenser = props.dispenser
+const dispenser = toRef(props, 'dispenser')
 // Placeholder ping method
 async function onPing() {
   try {
     stateStore.isLoading = true
-    const ping = await useFetch(`http://${dispenser.dispenserIP.split(':')[0]}`, {
+    const ping = await useFetch(`http://${dispenser.value.dispenserIP.split(':')[0]}`, {
       mode: 'no-cors',
       timeout: 3000,
     })
@@ -54,22 +56,40 @@ async function onPing() {
 
 function onClickJobOrders() {
   navigateTo({
-    path: `/jobOrders/${dispenser.dispenserId}`,
+    path: `/jobOrders/${dispenser.value.dispenserId}`,
   })
 }
 
 function onClickScreen() {
   navigateTo({
-    path: `/vnc/${dispenser.dispenserId}`,
+    path: `/vnc/${dispenser.value.dispenserId}`,
   })
 }
 
 function onClickEdit() {
   q.dialog({
     component: EditDispenser,
-    componentProps: {dispenser: dispenser}
+    componentProps: {dispenser}
+  }).onOk((payload) => {
+    dataStore.selectedDispenser = payload
+    onRefreshList()
+    q.notify({
+        color: 'green-4',
+        textColor: 'white',
+        icon: 'done',
+        message: t('Success'),
+        timeout: 3000,
+      })
   })
 }
+
+async function onRefreshList() {
+  const dispensers = await $fetch<Dispenser[]>(`/api/dispensers/dispensers`)
+  dataStore.dispensers = dispensers
+}
+watch((dispenser), () => {
+  dataStore.title = dispenser.value.dispenserName
+})
 </script>
 
 <template>

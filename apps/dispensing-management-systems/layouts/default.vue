@@ -8,12 +8,9 @@ const { t } = useI18n()
 const stateStore = useStateStore()
 const dataStore = useDataStore()
 const route = useRoute()
-const isLoading = ref(false)
 const drawer = ref(true)
 const user = ref(dataStore.user)
-stateStore.$subscribe((_, state) => {
-  isLoading.value = state.isLoading
-})
+const { height } = useWindowSize()
 dataStore.$subscribe((_, store) => {
   user.value = store.user
   if (!user.value)
@@ -57,21 +54,12 @@ watch(() => route.params, () => {
     })
   }
 })
-function stickyHeight() {
-  const percentage = 45
-  return (window.innerHeight * (percentage / 100))
-}
 
-onMounted(() => {
-  window.addEventListener('resize', () => {
-    stickyHeight()
-  })
-})
 </script>
 
 <template>
   <QLayout view="hHh LpR fFf">
-    <LoadingSpinner v-if="isLoading" />
+    <LoadingSpinner v-if="stateStore.isLoading" />
     <Appbar />
     <QDrawer
       v-if="drawer && user"
@@ -97,7 +85,7 @@ onMounted(() => {
     <QPageSticky
       v-if="user"
       position="top-left"
-      :offset="[5, stickyHeight()]"
+      :offset="[5, height * (9 / 20)]"
       style="z-index: 100;"
     >
       <QBtn

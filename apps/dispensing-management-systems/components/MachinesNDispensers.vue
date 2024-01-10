@@ -40,8 +40,8 @@ const machineColumns: (QTableColumn<Machine>)[] = [
   { name: 'controllertype', label: t('Controller Type'), align: 'center', field: 'controllerType', sortable: true },
 
 ]
-const { data: dispenserRows } = await useFetch(`/api/dispensers/dispensers`)
-const { data: machineRows } = await useFetch(`/api/machines/machines`)
+const { data: dispenserRows, refresh: refreshDispensers } = await useFetch(`/api/dispensers/dispensers`)
+const { data: machineRows, refresh: refreshMachines } = await useFetch(`/api/machines/machines`)
 
 async function addDispenser(newDispenser: Dispenser) {
   await $fetch('/api/dispensers/dispensers/post', { method: 'POST', body: newDispenser })
@@ -53,14 +53,13 @@ async function addMachine(newMachine: Machine) {
 
 async function handleNewDispenser(newDispenser: Dispenser) {
   await addDispenser(newDispenser)
-  dispenserRows = await useFetch(`/api/dispensers/dispensers`)
+  refreshDispensers()
   console.log('dispenser')
 }
 
 async function handleNewMachine(newMachine: Machine) {
   await addMachine(newMachine)
-  machineRows = await useFetch(`/api/machines/machines`)
-  await useFetch(`/api/machines/machines`)
+  refreshMachines()
   console.log('machine')
 }
 

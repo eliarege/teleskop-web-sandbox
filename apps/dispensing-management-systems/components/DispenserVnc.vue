@@ -12,7 +12,7 @@ const props = defineProps({
 
 const { t } = useI18n()
 
-const dispenser = props.dispenser
+const dispenser = toRef(props, 'dispenser')
 
 const KeyEnum = {
   'A': 65,
@@ -168,7 +168,7 @@ const KeyEnum = {
   'x': 120,
   'y': 121,
   'z': 122,
-} as const
+} as Readonly<Record<string, number>>
 
 const quasar = useQuasar()
 const vnc = ref<InstanceType<typeof NoVnc> | null>(null)
@@ -179,14 +179,14 @@ const vncCredentials = {
 }
 function onDisconnect() {
   quasar.notify({
-    message: t('vncError', { name: dispenser.dispenserName }),
+    message: t('vncError', { name: dispenser.value.dispenserName }),
     timeout: 3000,
     position: 'top',
     color: 'negative',
   })
 }
 function onConnect() {
-  console.log('connected', dispenser.dispenserName)
+  console.log('connected', dispenser.value.dispenserName)
 }
 
 const fnKeys = reactive([
