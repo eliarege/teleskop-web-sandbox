@@ -3,7 +3,6 @@ import { Sortable } from 'sortablejs-vue3'
 import type { CommandType } from '~/types'
 
 const selectedMachineId = ref()
-const selectedCommandNo = ref()
 
 const cmdTypeChemicalReq = ref<CommandType[]>([])
 const cmdTypeManualChemicalReq = ref<CommandType[]>([])
@@ -19,20 +18,6 @@ const cmdTypeGenericMaterialOneReq = ref<CommandType[]>([])
 const cmdTypeGenericMaterialTwoReq = ref<CommandType[]>([])
 const cmdManuelMeasuredCommands = ref<CommandType[]>([])
 // const cmdOperatorWarningCommands = ref<CommandType[]>([])
-
-const { data: machines } = useLazyFetch('/api/machines/machines', {
-  default: () => [],
-  method: 'POST',
-  body: {},
-})
-
-const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
-  default: () => [],
-  immediate: false,
-  query: {
-    machineId: selectedMachineId,
-  },
-})
 
 const commandTypeMap = reactive([
   { ref: cmdTypeChemicalReq, label: 'cmdTypeChemicalReq', value: 100, title: 'Kimyasal İstek Komutları' },
@@ -50,6 +35,12 @@ const commandTypeMap = reactive([
   { ref: cmdManuelMeasuredCommands, label: 'cmdManuelMeasuredCommands', value: 1000, title: 'Manuel Ölçüm Komutları' },
   // { ref: cmdOperatorWarningCommands, label: 'cmdOperatorWarningCommands', value: 90, title: null },
 ])
+
+const { data: machines } = useLazyFetch('/api/machines/machines', {
+  default: () => [],
+  method: 'POST',
+  body: {},
+})
 
 const { data: commandTypes } = useLazyFetch('/api/commands/command-types', {
   default: () => [],
@@ -71,8 +62,45 @@ watch(commandTypes, (_newCommandTypes) => {
   })
 })
 
+const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
+  default: () => [],
+  immediate: false,
+  query: {
+    machineId: selectedMachineId,
+  },
+  transform: (commands) => {
+    let commandNos: number[] = []
+    commandTypeMap.forEach((cmd) => {
+      commandNos = [...commandNos, ...cmd.ref.map(commandType => commandType.commandNo)]
+    })
+
+    return commands.filter(d => !commandNos.includes(d.commandNo))
+  },
+})
+
 async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
+}
+
+async function handleDragDrop(e, commandType: number) {
+  const text: string = e.item.innerHTML
+  const matches = text.match(/(\d+) (.+)/)
+  if (matches && matches.length) {
+    const commandNo = Number.parseInt(matches[0])
+    // update relevant list in db
+    let action
+    if (e.type === 'add')
+      action = 'add'
+    else if (e.type === 'remove')
+      action = 'remove'
+
+    await updateCommandTypeDefinitions({
+      machineId: selectedMachineId.value,
+      commandNo,
+      commandType,
+      action,
+    })
+  }
 }
 </script>
 
@@ -96,19 +124,23 @@ async function handleMachineClick(machineId: number) {
     </q-card-section>
     <q-card-section class="w-sm">
       <h3>Seçili Makine Komutları</h3>
-      <q-list bordered separator>
-        <q-item
-          v-for="command in commands"
-          :key="command.commandNo"
-          v-ripple
-          clickable
-          @click="selectedCommandNo = command.commandNo"
-        >
-          <q-item-section>
-            {{ command.commandName }}
-          </q-item-section>
-        </q-item>
-      </q-list>
+      <Sortable
+        :list="commands"
+        item-key="id"
+        class="q-list q-list--bordered q-list--separator"
+        :options="{ group: 'group' }"
+      >
+        <template #item="{ element, index }">
+          <q-item
+            :key="element.commandNo"
+            class="draggable"
+          >
+            <q-item-section>
+              {{ `${element.commandNo} ${element.commandName}` }}
+            </q-item-section>
+          </q-item>
+        </template>
+      </Sortable>
     </q-card-section>
 
     <q-card-section class="grid flex-grow">
@@ -118,18 +150,25 @@ async function handleMachineClick(machineId: number) {
         class="w-sm box"
       >
         <h3>{{ item.title }}</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="cmd in item.ref"
-            :key="cmd.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ cmd.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
+        <Sortable
+          :list="item.ref"
+          item-key="id"
+          class="q-list q-list--bordered q-list--separator"
+          :options="{ group: 'group' }"
+          @add="(e) => handleDragDrop(e, item.value)"
+          @remove="(e) => handleDragDrop(e, item.value)"
+        >
+          <template #item="{ element, index }">
+            <q-item
+              :key="element.commandNo"
+              class="draggable"
+            >
+              <q-item-section>
+                {{ `${element.commandNo} ${element.commandName}` }}
+              </q-item-section>
+            </q-item>
+          </template>
+        </Sortable>
       </div>
     </q-card-section>
   </q-card>

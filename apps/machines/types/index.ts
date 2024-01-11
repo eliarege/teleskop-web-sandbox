@@ -200,3 +200,7 @@ export interface CommandType {
   commandType: number
   commandName?: string
 }
+
+export interface CommandTypeEvent extends CommandType {
+  action?: string
+}
