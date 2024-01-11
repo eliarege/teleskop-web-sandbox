@@ -15,11 +15,11 @@
   "json.schemas": [
     {
       "fileMatch": ["apps/*/manifest.json"],
-      "url": "./schemas/manifest.schema.json"
+      "url": "../../schemas/manifest.schema.json"
     },
     {
       "fileMatch": ["apps/*/package.json"],
-      "url": "./schemas/package.schema.json"
+      "url": "../../schemas/package.schema.json"
     }
   ],
 
