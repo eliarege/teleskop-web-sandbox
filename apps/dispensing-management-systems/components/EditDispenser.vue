@@ -12,6 +12,14 @@ const { t } = useI18n()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const dispenser = toRef(props, 'dispenser')
 const editedDispenser = ref({ ...dispenser.value })
+const protocols = ref(['7', '15', 'n', 'n-v2', 'n-v3', 'n-v4', 'n-v5', 'EMTS'])
+const dispenserTypes = ref([])
+
+getTypes()
+
+async function getTypes() {
+  dispenserTypes.value = await $fetch('/api/dispensers/types')
+}
 async function onSave() {
   await $fetch(`/api/dispensers/${dispenser.value.dispenserId}`, { method: 'PUT', body: editedDispenser.value })
   onDialogOK(editedDispenser.value)
@@ -83,26 +91,32 @@ function onReset() {
               <span class="item-label">
                 {{ t('dispenserFields.Protocol') }}
               </span>
-              <QInput
+              <QSelect
                 v-model="editedDispenser.protocol"
-                class="item-input"
+                borderless
                 dense
-                type="text"
+                class="item-input"
                 filled
-                :placeholder="editedDispenser.protocol"
+                options-dense
+                :options="protocols"
               />
             </div>
             <div class="row-item">
               <span class="item-label">
                 {{ t('dispenserFields.Type') }}
               </span>
-              <QInput
+              <QSelect
                 v-model="editedDispenser.dispenserType"
-                class="item-input"
+                borderless
                 dense
-                type="text"
+                class="item-input"
                 filled
-                :placeholder="editedDispenser.dispenserType"
+                emit-value
+                map-options
+                options-dense
+                option-value="dispenserTypeId"
+                option-label="dispenserTypeName"
+                :options="dispenserTypes"
               />
             </div>
             <div class="row-item">
@@ -172,9 +186,6 @@ function onReset() {
 
 <style scoped>
 .row-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 2rem;
   margin: 1.25rem;
   width: 40rem;

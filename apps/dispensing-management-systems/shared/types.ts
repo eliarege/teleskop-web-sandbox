@@ -26,6 +26,10 @@ export interface Dispenser {
   fileName: string
   filePath: string
 }
+export interface DispenserType {
+  dispenserTypeId: number
+  dispenserTypeName: string
+}
 export interface Machine {
   machineId: number
   machineName: string

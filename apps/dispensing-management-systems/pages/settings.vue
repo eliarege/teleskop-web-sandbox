@@ -50,6 +50,7 @@ useResizeObserver(document.body, () => {
             </QTooltip>
           </QBtn>
         </div>
+        <QSeparator />
         <QTabs
           v-model="tab"
           vertical

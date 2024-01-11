@@ -174,8 +174,8 @@ const quasar = useQuasar()
 const vnc = ref<InstanceType<typeof NoVnc> | null>(null)
 const isFullScreen = ref(false)
 const vncCredentials = {
-  target: `ws://${dispenser.dispenserIP}`,
-  password: dispenser.dipenserPswrd,
+  target: `ws://${dispenser.value.dispenserIP}`,
+  password: dispenser.value.dipenserPswrd,
 }
 function onDisconnect() {
   quasar.notify({
