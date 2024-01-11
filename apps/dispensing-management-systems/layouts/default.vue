@@ -8,9 +8,12 @@ const { t } = useI18n()
 const stateStore = useStateStore()
 const dataStore = useDataStore()
 const route = useRoute()
-const drawer = ref(true)
+const stickyUnavailablePaths = ['/settings']
+const showDrawer = ref(true)
+const showSticky = ref(!stickyUnavailablePaths.includes(route.path))
 const user = ref(dataStore.user)
 const { height } = useWindowSize()
+
 dataStore.$subscribe((_, store) => {
   user.value = store.user
   if (!user.value)
@@ -43,6 +46,7 @@ function onRefresh() {
 }
 const DISPENSER_PATH_RE = /^\/dispenser\/\d+$/
 watch(() => route.params, () => {
+  showSticky.value = !stickyUnavailablePaths.includes(route.path)
   if (route.path === '/')
     dataStore.selectedDispenser = undefined
   else if (DISPENSER_PATH_RE.test(route.path)) {
@@ -54,15 +58,16 @@ watch(() => route.params, () => {
     })
   }
 })
-
 </script>
 
 <template>
   <QLayout view="hHh LpR fFf">
     <LoadingSpinner v-if="stateStore.isLoading" />
-    <Appbar />
+    <KeepAlive>
+      <Appbar />
+    </KeepAlive>
     <QDrawer
-      v-if="drawer && user"
+      v-if="showDrawer && user && route.path !== '/settings'"
       show-if-above
       bordered
       persistent
@@ -83,7 +88,7 @@ watch(() => route.params, () => {
       </QScrollArea>
     </QDrawer>
     <QPageSticky
-      v-if="user"
+      v-if="user && showSticky"
       position="top-left"
       :offset="[5, height * (9 / 20)]"
       style="z-index: 100;"
@@ -91,8 +96,8 @@ watch(() => route.params, () => {
       <QBtn
         round
         color="primary"
-        :icon="drawer ? 'chevron_left' : 'chevron_right'"
-        @click="() => { drawer = !drawer }"
+        :icon="showDrawer ? 'chevron_left' : 'chevron_right'"
+        @click="() => { showDrawer = !showDrawer }"
       >
         <QTooltip
           :offset="[10, 10]"
@@ -100,7 +105,7 @@ watch(() => route.params, () => {
           self="center left"
           text-center
         >
-          {{ drawer ? t('HideDispenserList') : t('ShowDispenserList') }}
+          {{ showDrawer ? t('HideDispenserList') : t('ShowDispenserList') }}
         </QTooltip>
       </QBtn>
     </QPageSticky>

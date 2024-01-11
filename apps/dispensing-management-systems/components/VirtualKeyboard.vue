@@ -3,11 +3,11 @@ import Keyboard from 'simple-keyboard'
 import 'simple-keyboard/build/css/index.css'
 
 export interface Props {
-  keyboardClass?: string,
+  keyboardClass?: string
   input: string
 }
 const props = withDefaults(defineProps<Props>(), {
-  keyboardClass: 'simple-keyboard'
+  keyboardClass: 'simple-keyboard',
 })
 const emit = defineEmits(['onChange', 'onKeyPress'])
 const keyboard = ref<Keyboard | null>(null)

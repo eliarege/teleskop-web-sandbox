@@ -3,9 +3,6 @@ import { useQuasar } from 'quasar'
 import { useRouter } from '#vue-router'
 import { useDataStore } from '~/store/DataStore'
 
-definePageMeta({
-  layout: 'settings',
-})
 const { t, locale } = useI18n()
 const q = useQuasar()
 const dataStore = useDataStore()

@@ -2,17 +2,16 @@
 import { useDialogPluginComponent } from 'quasar'
 import type { Dispenser } from '~/shared/types'
 
-const { t } = useI18n()
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const props = defineProps({
   dispenser: {
     type: Object as PropType<Dispenser>,
     required: true,
-  }
+  },
 })
-
+const { t } = useI18n()
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const dispenser = toRef(props, 'dispenser')
-const editedDispenser = ref({...dispenser.value})
+const editedDispenser = ref({ ...dispenser.value })
 async function onSave() {
   await $fetch(`/api/dispensers/${dispenser.value.dispenserId}`, { method: 'PUT', body: editedDispenser.value })
   onDialogOK(editedDispenser.value)
@@ -23,15 +22,16 @@ function onCancel() {
 }
 
 function onReset() {
-  editedDispenser.value = {...dispenser.value}
+  editedDispenser.value = { ...dispenser.value }
 }
 </script>
 
 <template>
   <QDialog
     ref="dialogRef"
+    full-width
     @hide="onDialogHide"
-    full-width>
+  >
     <QCard>
       <QForm @submit.prevent>
         <div class="flex flex-col pb-10">
@@ -40,112 +40,112 @@ function onReset() {
           </div>
           <div class="flex flex-row flex-wrap justify-center">
             <div class="row-item">
-                <span class="item-label">
-                  {{ t('dispenserFields.ID') }}
-                </span>
-                <QInput
-                  v-model="editedDispenser.dispenserId"
-                  class="item-input"
-                  dense
-                  type="text"
-                  filled
-                  disable
-                  :placeholder="editedDispenser.dispenserId"
-                />
-              </div>
-              <div class="row-item">
-                <span class="item-label">
-                  {{ t('dispenserFields.Name') }}
-                </span>
-                <QInput
-                  v-model="editedDispenser.dispenserName"
-                  class="item-input"
-                  dense
-                  type="text"
-                  filled
-                  :placeholder="editedDispenser.dispenserName"
-                />
-              </div>
-              <div class="row-item">
-                <span class="item-label">
-                  {{ t('dispenserFields.ConsumptionFile') }}
-                </span>
-                <QInput
-                  v-model="editedDispenser.consumptionFilename"
-                  class="item-input"
-                  dense
-                  type="text"
-                  filled
-                  :placeholder="editedDispenser.consumptionFilename"
-                />
-              </div>
-              <div class="row-item">
-                <span class="item-label">
-                  {{ t('dispenserFields.Protocol') }}
-                </span>
-                <QInput
-                  v-model="editedDispenser.protocol"
-                  class="item-input"
-                  dense
-                  type="text"
-                  filled
-                  :placeholder="editedDispenser.protocol"
-                />
-              </div>
-              <div class="row-item">
-                <span class="item-label">
-                  {{ t('dispenserFields.Type') }}
-                </span>
-                <QInput
-                  v-model="editedDispenser.dispenserType"
-                  class="item-input"
-                  dense
-                  type="text"
-                  filled
-                  :placeholder="editedDispenser.dispenserType"
-                />
-              </div>
-              <div class="row-item">
-                <span class="item-label">
-                  {{ t('dispenserFields.IP') }}
-                </span>
-                <QInput
-                  v-model="editedDispenser.dispenserIP"
-                  class="item-input"
-                  dense
-                  type="text"
-                  filled
-                  :placeholder="editedDispenser.dispenserIP"
-                />
-              </div>
-              <div class="row-item">
-                <span class="item-label">
-                  {{ t('dispenserFields.FileName') }}
-                </span>
-                <QInput
-                  v-model="editedDispenser.fileName"
-                  class="item-input"
-                  dense
-                  type="text"
-                  filled
-                  :placeholder="editedDispenser.fileName"
-                />
-              </div>
-              <div class="row-item">
-                <span class="item-label">
-                  {{ t('dispenserFields.FilePath') }}
-                </span>
-                <QInput
-                  v-model="editedDispenser.filePath"
-                  class="item-input"
-                  dense
-                  type="text"
-                  filled
-                  :placeholder="editedDispenser.filePath"
-                />
-              </div>
+              <span class="item-label">
+                {{ t('dispenserFields.ID') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.dispenserId"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                disable
+                :placeholder="editedDispenser.dispenserId"
+              />
             </div>
-            <div class="flex-center justify-evenly p-10">
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.Name') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.dispenserName"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="editedDispenser.dispenserName"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.ConsumptionFile') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.consumptionFilename"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="editedDispenser.consumptionFilename"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.Protocol') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.protocol"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="editedDispenser.protocol"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.Type') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.dispenserType"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="editedDispenser.dispenserType"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.IP') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.dispenserIP"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="editedDispenser.dispenserIP"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.FileName') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.fileName"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="editedDispenser.fileName"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.FilePath') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.filePath"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="editedDispenser.filePath"
+              />
+            </div>
+          </div>
+          <div class="flex-center justify-evenly p-10">
             <QBtn
               :label="t('Save')"
               color="primary"
@@ -188,4 +188,3 @@ function onReset() {
   width: 27.5 rem;
 }
 </style>
-

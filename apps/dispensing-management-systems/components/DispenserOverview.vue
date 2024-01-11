@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import EditDispenser from './EditDispenser.vue';
+import EditDispenser from './EditDispenser.vue'
 import type { Dispenser } from '~/shared/types'
-import { useDataStore } from '~/store/DataStore';
+import { useDataStore } from '~/store/DataStore'
 import { useStateStore } from '~/store/State'
 
 const props = defineProps({
@@ -69,17 +69,17 @@ function onClickScreen() {
 function onClickEdit() {
   q.dialog({
     component: EditDispenser,
-    componentProps: {dispenser}
+    componentProps: { dispenser },
   }).onOk((payload) => {
     dataStore.selectedDispenser = payload
     onRefreshList()
     q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
+      color: 'green-4',
+      textColor: 'white',
+      icon: 'done',
+      message: t('Success'),
+      timeout: 3000,
+    })
   })
 }
 

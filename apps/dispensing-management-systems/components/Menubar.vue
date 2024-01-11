@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AddMachineDispenser from '~/pages/addMachineDispenser.vue'
 import type { TeleskopData } from '~/shared/types'
 import { convertTeleskopData } from '~/shared/utils'
 import { useStateStore } from '~/store/State'
