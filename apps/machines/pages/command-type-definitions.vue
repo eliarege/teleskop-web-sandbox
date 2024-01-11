@@ -143,7 +143,7 @@ async function handleDragDrop(e, commandType: number) {
       </Sortable>
     </q-card-section>
 
-    <q-card-section class="grid flex-grow">
+    <q-card-section class="inline-grid grid-cols-3 gap-15">
       <div
         v-for="item in commandTypeMap"
         :key="item.value"
@@ -177,13 +177,11 @@ async function handleDragDrop(e, commandType: number) {
 <style scoped>
 .box {
   max-width: 20em;
-  max-height: 20em;
+  height: 20em;
   overflow-y: scroll;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 3em;
+.inline-grid {
+  height: fit-content;
 }
 </style>
