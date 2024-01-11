@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const { filters, machineIds, closedTypes } = await readBody(event)
   const selectParams = {
     machineId: 'BACONTROLLERCLOSEDTIMES.MACHINEID',
-    machineName: 'MACHINECODE',
+    machineCode: 'MACHINECODE',
     autoKey: 'AUTOKEY',
     startTime: 'STARTTIME',
     endTime: 'ENDTIME',

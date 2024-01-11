@@ -20,9 +20,9 @@ const columns = [
     filterType: 'includes',
   },
   {
-    name: 'machineName',
+    name: 'machineCode',
     label: 'Makine',
-    field: 'machineName',
+    field: 'machineCode',
     align: 'left',
     filterable: true,
     filterType: 'includes',
@@ -74,7 +74,7 @@ const { data: machines } = useLazyFetch('/api/machines/machines', {
 
 watch(machines, (newValue, oldValue) => {
   machineOptions.value = machines.value.map((m) => {
-    return { label: m.code, value: m.id }
+    return { label: m.machineCode, value: m.machineId }
   })
 })
 
