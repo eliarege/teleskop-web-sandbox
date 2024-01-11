@@ -74,16 +74,18 @@ async function deleteItem(tank, materialCode: string) {
         <Sortable
           :list="materials"
           item-key="id"
-          class=""
+          class="q-list q-list--bordered q-list--separator"
           :options="{ group: { name: 'group', pull: 'clone', put: false } }"
         >
           <template #item="{ element, index }">
-            <div
+            <q-item
               :key="element.materialCode"
               class="draggable"
             >
-              {{ `${element.materialCode}. ${element.materialName}` }}
-            </div>
+              <q-item-section>
+                {{ `${element.materialCode}. ${element.materialName}` }}
+              </q-item-section>
+            </q-item>
           </template>
         </Sortable>
       </div>
@@ -94,20 +96,23 @@ async function deleteItem(tank, materialCode: string) {
           <Sortable
             :list="tank.materials"
             item-key="id"
+            class="q-list q-list--bordered q-list--separator"
             :options="{ group: { name: 'group' } }"
             @add="(e) => handleDragDrop(e, tank)"
             @remove="(e) => handleDragDrop(e, tank)"
           >
             <template #item="{ element, index }">
-              <div
+              <q-item
                 :key="element.id"
                 class="draggable"
               >
-                {{ `${element.materialCode}. ${element.materialName}` }}
+                <q-item-section>
+                  {{ `${element.materialCode}. ${element.materialName}` }}
+                </q-item-section>
                 <button @click="deleteItem(tank, element.materialCode)">
                   x
                 </button>
-              </div>
+              </q-item>
             </template>
           </Sortable>
         </div>

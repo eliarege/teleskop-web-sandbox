@@ -206,16 +206,18 @@ async function handleDragDrop(e, listName) {
             <Sortable
               :list="commands"
               item-key="id"
-              class=""
+              class="q-list q-list--bordered q-list--separator"
               :options="{ group: 'group' }"
             >
               <template #item="{ element, index }">
-                <div
+                <q-item
                   :key="element.commandNo"
                   class="draggable"
                 >
-                  {{ `${element.commandNo} ${element.commandName}` }}
-                </div>
+                  <q-item-section>
+                    {{ `${element.commandNo} ${element.commandName}` }}
+                  </q-item-section>
+                </q-item>
               </template>
             </Sortable>
           </div>
@@ -226,18 +228,21 @@ async function handleDragDrop(e, listName) {
               <Sortable
                 :list="listOfTransferCommands"
                 item-key="id"
+                class="q-list q-list--bordered q-list--separator"
                 :options="{ group: 'group' }"
                 @add="(e) => handleDragDrop(e, 'listOfTransferCommands')"
                 @remove="(e) => handleDragDrop(e, 'listOfTransferCommands')"
               >
                 <template #item="{ element, index }">
-                  <div
+                  <q-item
                     :key="element.commandNo"
                     class="draggable"
                     :data-command-no="element.commandNo"
                   >
-                    {{ `${element.commandNo} ${element.commandName}` }}
-                  </div>
+                    <q-item-section>
+                      {{ `${element.commandNo} ${element.commandName}` }}
+                    </q-item-section>
+                  </q-item>
                 </template>
               </Sortable>
             </div>
@@ -246,17 +251,20 @@ async function handleDragDrop(e, listName) {
               <Sortable
                 :list="listOfRequestCommands"
                 item-key="id"
+                class="q-list q-list--bordered q-list--separator"
                 :options="{ group: 'group' }"
                 @add="(e) => handleDragDrop(e, 'listOfRequestCommands')"
                 @remove="(e) => handleDragDrop(e, 'listOfRequestCommands')"
               >
                 <template #item="{ element, index }">
-                  <div
+                  <q-item
                     :key="element.commandNo"
                     class="draggable"
                   >
-                    {{ `${element.commandNo} ${element.commandName}` }}
-                  </div>
+                    <q-item-section>
+                      {{ `${element.commandNo} ${element.commandName}` }}
+                    </q-item-section>
+                  </q-item>
                 </template>
               </Sortable>
             </div>
@@ -266,17 +274,20 @@ async function handleDragDrop(e, listName) {
               <Sortable
                 :list="listOfCirculationDoSageCommands"
                 item-key="id"
+                class="q-list q-list--bordered q-list--separator"
                 :options="{ group: 'group' }"
                 @add="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommands')"
                 @remove="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommands')"
               >
                 <template #item="{ element, index }">
-                  <div
+                  <q-item
                     :key="element.commandNo"
                     class="draggable"
                   >
-                    {{ `${element.commandNo} ${element.commandName}` }}
-                  </div>
+                    <q-item-section>
+                      {{ `${element.commandNo} ${element.commandName}` }}
+                    </q-item-section>
+                  </q-item>
                 </template>
               </Sortable>
             </div>
@@ -286,17 +297,20 @@ async function handleDragDrop(e, listName) {
               <Sortable
                 :list="listOfCirculationRequestCommands"
                 item-key="id"
+                class="q-list q-list--bordered q-list--separator"
                 :options="{ group: 'group' }"
                 @add="(e) => handleDragDrop(e, 'listOfCirculationRequestCommands')"
                 @remove="(e) => handleDragDrop(e, 'listOfCirculationRequestCommands')"
               >
                 <template #item="{ element, index }">
-                  <div
+                  <q-item
                     :key="element.commandNo"
                     class="draggable"
                   >
-                    {{ `${element.commandNo} ${element.commandName}` }}
-                  </div>
+                    <q-item-section>
+                      {{ `${element.commandNo} ${element.commandName}` }}
+                    </q-item-section>
+                  </q-item>
                 </template>
               </Sortable>
             </div>
