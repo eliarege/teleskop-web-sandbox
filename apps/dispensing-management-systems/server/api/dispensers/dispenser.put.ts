@@ -4,7 +4,9 @@ import type { Dispenser } from '~/shared/types'
 export default defineEventHandler(async (event) => {
   try {
     const dispenser: Dispenser = await readBody(event)
-    const res = await dmsDB('MACHINE').insert({
+    const res = await dmsDB('DISPENSER').where({
+      dispenser_id: dispenser.dispenserId,
+    }).update({
       dispenser_id: dispenser.dispenserId,
       dispenser_name: dispenser.dispenserName,
       ip_address: dispenser.dispenserIP,

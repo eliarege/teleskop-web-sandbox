@@ -5,9 +5,9 @@ export default defineEventHandler(async (event) => {
   try {
     const machine: Machine = await readBody(event)
     const res = await dmsDB('MACHINE').insert({
-      machineId: machine.machineId,
-      machineName: machine.machineName,
-      machineControllerType: machine.controllerType,
+      machine_id: machine.machineId,
+      machine_name: machine.machineName,
+      controller_type: machine.controllerType,
     })
     return res
   } catch (e) {

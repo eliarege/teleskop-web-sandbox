@@ -4,9 +4,9 @@ import type { Machine } from '~/shared/types'
 export default defineEventHandler(async () => {
   try {
     const machines: Array<Machine> = await dmsDB('MACHINE').select({
-      machineId: 'machine_id',
-      machineName: 'machine_name',
-      machineControllerType: 'controller_type',
+      machine_id: 'machine_id',
+      machine_name: 'machine_name',
+      controller_type: 'controller_type',
     })
     return machines
   } catch (e) {
