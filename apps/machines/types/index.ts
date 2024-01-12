@@ -204,3 +204,17 @@ export interface CommandType {
 export interface CommandTypeEvent extends CommandType {
   action?: string
 }
+
+export interface TreatmentParameter {
+  id: number
+  unit: string
+  treatmentParameter: string
+  minValue: number
+  maxValue: number
+}
+
+export interface TreatmentMachineGroup {
+  id: number
+  groupName: string
+  temperatureControlCommand: number
+}

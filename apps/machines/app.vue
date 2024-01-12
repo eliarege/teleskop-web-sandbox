@@ -140,6 +140,7 @@ const definitionItems = [
           },
           {
             label: 'Optimizasyon Parametreleri',
+            to: '/optimization-parameters',
           },
         ],
       },
