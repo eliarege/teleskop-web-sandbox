@@ -4,6 +4,7 @@ export function convertTeleskopData(data: types.TeleskopData[]) {
   const jobOrders: types.JobOrder[] = data.map((val) => {
     return {
       jobId: val.jobId,
+      batchNo: val.batchNo,
       batchCorrectionNo: val.batchCorrectionNo,
       machineName: val.machineName,
       machineId: val.machineId,
@@ -18,6 +19,7 @@ export function convertTeleskopData(data: types.TeleskopData[]) {
       status: val.status,
     }
   })
+
   const dispensers: types.Dispenser[] = []
   const uniqueDispenserIds = new Set()
 
@@ -26,6 +28,15 @@ export function convertTeleskopData(data: types.TeleskopData[]) {
       dispensers.push({
         dispenserId: val.dispenserId,
         dispenserName: val.dispenserName,
+        dispenserIP: '192.168.17.14',
+        dipenserPswrd: '35427',
+        lastConsumptionControl: val.lastConsumptionControl,
+        dispenserType: val.dispenserType,
+        protocol: val.protocol,
+        readConsumptionFromDMS: val.readConsumptionFromDMS,
+        consumptionFilename: val.consumptionFilename,
+        fileName: val.fileName,
+        filePath: val.filePath,
       })
       uniqueDispenserIds.add(val.dispenserId)
     }
@@ -38,6 +49,7 @@ export function convertTeleskopData(data: types.TeleskopData[]) {
       machines.push({
         machineId: val.machineId,
         machineName: val.machineName,
+        controllerType: val.controllerType,
       })
       uniqueMachineIds.add(val.machineId)
     }

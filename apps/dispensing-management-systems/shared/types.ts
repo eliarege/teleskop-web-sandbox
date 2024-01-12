@@ -1,5 +1,6 @@
 export interface JobOrder {
   jobId: number
+  batchNo: number
   batchCorrectionNo: number
   machineName: string
   machineId: number
@@ -11,7 +12,7 @@ export interface JobOrder {
   recipeType: string
   recipeProcessNo: number
   recipeStepNo: number
-  status: string
+  status: number
 }
 export interface Dispenser {
   dispenserId: number
@@ -39,10 +40,26 @@ export interface User {
   username: string
 }
 export interface TeleskopData {
-  jobId: number
-  batchCorrectionNo: number
+  // dispenser
+  dispenserId: number
+  dispenserName: string
+  dispenserIP: string
+  dipenserPswrd: string
+  lastConsumptionControl: Date
+  dispenserType: number
+  protocol: string
+  readConsumptionFromDMS: boolean
+  consumptionFilename: string
+  fileName: string
+  filePath: string
+  // machine
   machineName: string
   machineId: number
+  controllerType: number
+  // job order
+  jobId: number
+  batchNo: number
+  batchCorrectionNo: number
   tankNo: number
   programNo: number
   programName: string
@@ -51,6 +68,4 @@ export interface TeleskopData {
   stepNo: number
   recipeStepNo: number
   status: number
-  dispenserId: number
-  dispenserName: string
 }

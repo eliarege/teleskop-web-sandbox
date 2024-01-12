@@ -14,7 +14,7 @@ const columns: (QTableColumn<JobOrder>)[] = [
   {
     name: 'job_order',
     label: t('JobOrder'),
-    field: 'jobId',
+    field: 'batchNo',
     sortable: true,
     align: 'left',
   },
@@ -109,6 +109,9 @@ function cellStyle(col: any, row: any, pageIndex: number, isDarkMode: boolean) {
   }
   return style
 }
+function onRowClick(_event: Event, row: JobOrder) {
+  console.log(row.jobId)
+}
 </script>
 
 <template>
@@ -134,6 +137,7 @@ function cellStyle(col: any, row: any, pageIndex: number, isDarkMode: boolean) {
       :columns="columns"
       separator="none"
       row-key="name"
+      @row-click="onRowClick"
     >
       <template #body-cell="props">
         <QTd

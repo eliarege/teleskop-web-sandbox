@@ -1,10 +1,12 @@
 import { teleskopDB } from '~/server/connectionPool'
 
 const selectParameters = {
-  jobId: 'r.BATCHNO',
+  jobId: 'r.REQNUMBER',
+  batchNo: 'r.BATCHNO',
   batchCorrectionNo: 'r.BATCHCORRECTIONNO',
   machineName: 'm.MACHINENAME',
   machineId: 'm.MACHINEID',
+  controllerType: 'm.CONTROLLERTYPE',
   tankNo: 'r.TANKNO',
   programNo: 'r.PROGRAMNO',
   programName: 'p.NAME',
@@ -15,9 +17,17 @@ const selectParameters = {
   status: 'r.STATUS',
   dispenserId: 'r.DISPENSERID',
   dispenserName: 'd.NAME',
+  dispenserIP: 'd.IP',
+  lastConsumptionControl: 'd.lastConsumptionControl',
+  dispenserType: 'd.DISPENSERTYPENO',
+  protocol: 'd.PROTOCOL',
+  readConsumptionFromDMS: 'd.READCONSUMPTIONFROMDMS',
+  consumptionFilename: 'd.CONSUMPTIONFILENAME',
+  fileName: 'd.BDYREQUESTNAME',
+  filePath: 'd.BDYREQUESTPATH',
 }
-export default defineEventHandler(async (event) => {
-  const { isCanceled } = getQuery(event)
+export default defineEventHandler(async () => {
+  // const { isCanceled } = getQuery(event)
   try {
     const result = teleskopDB('dbo.DYTFCHEMREQUESTS as r')
       .join('dbo.DYTFMACHINES as m', 'r.MACHINEID', 'm.MACHINEID')

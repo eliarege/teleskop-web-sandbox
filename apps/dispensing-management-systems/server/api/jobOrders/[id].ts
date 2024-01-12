@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
       )
       .select({
         jobId: 'j.job_id',
+        batchNo: 'j.batch_no',
         batchCorrectionNo: 'j.batch_correction_no',
         machineName: 'm.machine_name',
         machineId: 'm.machine_id',

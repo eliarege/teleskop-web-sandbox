@@ -11,6 +11,15 @@ export default defineEventHandler(async (event) => {
       const dispenser = {
         dispenser_id: data.dispenserId,
         dispenser_name: data.dispenserName,
+        ip_address: data.dispenserIP,
+        password: data.dipenserPswrd,
+        dispenser_type: data.dispenserType,
+        protocol: data.protocol,
+        last_consumption_control: data.lastConsumptionControl,
+        read_consumption_from_dms: data.readConsumptionFromDMS,
+        consumption_filename: data.consumptionFilename,
+        bdy_requestname: data.fileName,
+        bdy_requestpath: data.filePath,
       }
       dispensers.push(dispenser)
     })
@@ -18,12 +27,14 @@ export default defineEventHandler(async (event) => {
       const machine = {
         machine_id: data.machineId,
         machine_name: data.machineName,
+        controller_type: data.controllerType,
       }
       machines.push(machine)
     })
     teleskopData.jobOrders.forEach((data: any) => {
       const jobOrder = ({
         job_id: data.jobId,
+        batch_no: data.batchNo,
         batch_correction_no: data.batchCorrectionNo,
         dispenser_id: data.dispenserId,
         machine_id: data.machineId,
@@ -39,12 +50,12 @@ export default defineEventHandler(async (event) => {
       jobOrders.push(jobOrder)
     })
     await dmsDB('JOB_ORDER').del()
-    // await dmsDB('DISPENSER').del()
+    await dmsDB('DISPENSER').del()
     await dmsDB('MACHINE').del()
 
     const batchSize = 1000
 
-    // await batchInsert(dispensers, batchSize, 'DISPENSER')
+    await batchInsert(dispensers, batchSize, 'DISPENSER')
     await batchInsert(machines, batchSize, 'MACHINE')
     await batchInsert(jobOrders, batchSize, 'JOB_ORDER')
   } catch (e) {
