@@ -7,9 +7,9 @@ export default defineEventHandler(async (event) => {
     const res = await dmsDB('MACHINE').where({
       machine_id: machine.machineId,
     }).update({
-      machine_id: 'machine_id',
-      machine_name: 'machine_name',
-      controller_type: 'controller_type',
+      machine_id: 'machineId',
+      machine_name: 'machineName',
+      controller_type: 'controllerType',
     })
     return res
   } catch (e) {

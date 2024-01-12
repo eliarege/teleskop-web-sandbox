@@ -1,14 +1,17 @@
 import { dmsDB } from '~/server/connectionPool'
 import type { Machine } from '~/shared/types'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
   try {
-    const machines: Array<Machine> = await dmsDB('MACHINE').select({
+    const { id } = getRouterParams(event)
+    const machine: Array<Machine> = await dmsDB('MACHINE').select({
       machineId: 'machine_id',
       machineName: 'machine_name',
       controllerType: 'controller_type',
     })
-    return machines
+      .where('dispenser_id', id)
+      .first()
+    return machine
   } catch (e) {
     console.log(e)
     return e
