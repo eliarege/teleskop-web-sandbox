@@ -27,7 +27,7 @@ function logout() {
           anchor="center right"
           self="center left"
         >
-          {{ t('Log Out') }}
+          {{ t('LogOut') }}
         </QTooltip>
       </QBtn>
     </div>

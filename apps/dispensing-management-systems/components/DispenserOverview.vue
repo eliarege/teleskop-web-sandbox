@@ -122,7 +122,7 @@ watch((dispenser), () => {
         icon="list"
         @click="onClickJobOrders"
       >
-        {{ t('Job Orders') }}
+        {{ t('JobOrders') }}
       </QBtn>
     </div>
     <div class="q-mt-md">
