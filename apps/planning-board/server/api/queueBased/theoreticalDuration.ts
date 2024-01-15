@@ -2,10 +2,10 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const { planKey } = getQuery(event)
 
-  const url = `${config.planningEngineUrl}/planning_board/valid`
+  const url = `${config.planningEngineUrl}/queue_based/theoretical_duration`
 
-  const isValid = $fetch(url, {
+  const theoreticalDuration = $fetch(url, {
     query: { planKey },
   })
-  return isValid
+  return theoreticalDuration
 })

@@ -2,11 +2,11 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const { updatedEvent } = getQuery(event)
   const body = await readBody(event)
-  const url = `${config.planningEngineUrl}/planning_board/scheduled_events/update`
+  const url = `${config.planningEngineUrl}/time_based/unscheduled_events/schedule`
   const planningBoardUpdate = await $fetch(url, {
     query: { updatedEvent },
     body,
-    method: 'PUT',
+    method: 'POST',
   })
   return planningBoardUpdate
 })

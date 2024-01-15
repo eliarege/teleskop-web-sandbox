@@ -1,25 +1,19 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import { addBatchNote, deleteEvent, deleteNote, getBatchNotes, getErpParameteres, getPlanParameters, getPlannedEvents, getRecipe, getTheoreticalDuration, getUnplannedEvents, isTaskValid, removeFromPlan, scheduleEvents, updateEvents } from '../composables/query'
+import {
+  addBatchNote,
+  deleteEvent,
+  deleteNote,
+  getBatchNotes,
+  getErpParameteres,
+  getMachines,
+  getPlanParameters,
+  getPlannedEvents,
+  getRecipe,
+  getUnplannedEvents,
+  removeFromPlan,
+} from './queries'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
-  fastify.get(
-    '/planning_board/scheduled_events',
-    async (request: FastifyRequest<{
-      Querystring: { from: string; to: string }
-    }>, reply) => {
-      try {
-        const { from, to } = request.query
-        if (!from || !to) {
-          return reply.code(400).send({ error: 'Both "from" and "to" parameters are required.' })
-        }
-        const plannedEvents = await getPlannedEvents(from, to)
-        return reply.code(200).send(plannedEvents)
-      } catch (err) {
-        fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
-      }
-    },
-  )
   fastify.get(
     '/planning_board/unscheduled_events',
     async (request: FastifyRequest<{
@@ -42,31 +36,6 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { jobOrder, machineId } = request.query
         const recipe = await getRecipe(machineId, jobOrder)
         return reply.code(200).send(recipe)
-      } catch (err) {
-        fastify.log.error(`Error fetching recipe: ${err.message}`)
-        return reply.code(500).send({ error: 'Internal Server Error' })
-      }
-    },
-  )
-  fastify.get(
-    '/planning_board/valid',
-    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
-      try {
-        const { planKey } = request.query
-        const isValid = await isTaskValid(planKey)
-        return reply.code(200).send(isValid)
-      } catch (err) {
-        fastify.log.error(`Error fetching recipe: ${err.message}`)
-        return reply.code(500).send({ error: 'Internal Server Error' })
-      }
-    },
-  )
-  fastify.get(
-    '/planning_board/theoretical_duration',
-    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
-      try {
-        const { planKey } = request.query
-        return await getTheoreticalDuration(planKey)
       } catch (err) {
         fastify.log.error(`Error fetching recipe: ${err.message}`)
         return reply.code(500).send({ error: 'Internal Server Error' })
@@ -97,30 +66,23 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
+  fastify.get(
+    '/planning_board/machines',
+    async (request, reply) => {
+      try {
+        return await getMachines()
+      } catch (err) {
+        fastify.log.error(`Error fetching recipe: ${err.message}`)
+        return reply.code(500).send({ error: 'Internal Server Error' })
+      }
+    },
+  )
   fastify.get<{ Querystring: { machineId: number } }>(
     '/planning_board/settings/erp_parameters',
     async (request, reply) => {
       try {
         const { machineId } = request.query
-        return (await getErpParameteres(machineId)).map((a) => {
-          return {
-            ...a,
-            id: a.id + 1,
-          }
-        })
-      } catch (err) {
-        fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
-      }
-    },
-  )
-  fastify.put<{ Body: { planKey: number; machineId: number; plannedStartTime: string } }>(
-    '/planning_board/scheduled_events/update',
-    async (request, reply) => {
-      try {
-        const { planKey, machineId, plannedStartTime } = request.body
-        await updateEvents(planKey, machineId, plannedStartTime)
-        return reply.code(200).send('Succesful!')
+        return await getErpParameteres(machineId)
       } catch (err) {
         fastify.log.error(err)
         return reply.code(500).send({ error: 'Internal Server Error' })
@@ -164,21 +126,6 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         return reply.code(200).send('Succesful!')
       } catch (err) {
         fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
-      }
-    },
-  )
-  fastify.post<{
-    Body: { planKey: number; machineId: number; plannedStartTime: string }
-  }>(
-    '/planning_board/unscheduled_events/schedule',
-    async (request, reply) => {
-      try {
-        const { planKey, machineId, plannedStartTime } = request.body
-        await scheduleEvents(planKey, machineId, plannedStartTime)
-        return reply.code(200).send('Succesful!')
-      } catch (err) {
-        console.error(err)
         return reply.code(500).send({ error: 'Internal Server Error' })
       }
     },

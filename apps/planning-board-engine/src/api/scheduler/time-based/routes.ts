@@ -1,0 +1,85 @@
+import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
+import {
+  getTimeBasedPlannedEvents,
+  getTimeBasedTheoreticalDuration,
+  isTaskValidTimeBased,
+  scheduleTimeBasedEvents,
+  updateTimeBasedEvents,
+} from './queries'
+
+export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
+  fastify.get(
+    '/time_based/scheduled_events',
+    async (request: FastifyRequest<{
+      Querystring: { from: string; to: string }
+    }>, reply) => {
+      try {
+        const { from, to } = request.query
+        if (!from || !to) {
+          return reply.code(400).send({ error: 'Both "from" and "to" parameters are required.' })
+        }
+        const plannedEvents = await getTimeBasedPlannedEvents(from, to)
+        return reply.code(200).send(plannedEvents)
+      } catch (err) {
+        fastify.log.error(err)
+        return reply.code(500).send({ error: 'Internal Server Error' })
+      }
+    },
+  )
+  fastify.get(
+    '/time_based/valid',
+    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
+      try {
+        const { planKey } = request.query
+        const isValid = await isTaskValidTimeBased(planKey)
+        return reply.code(200).send(isValid)
+      } catch (err) {
+        fastify.log.error(`Error fetching recipe: ${err.message}`)
+        return reply.code(500).send({ error: 'Internal Server Error' })
+      }
+    },
+  )
+  fastify.get(
+    '/time_based/theoretical_duration',
+    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
+      try {
+        const { planKey } = request.query
+        return await getTimeBasedTheoreticalDuration(planKey)
+      } catch (err) {
+        fastify.log.error(`Error fetching recipe: ${err.message}`)
+        return reply.code(500).send({ error: 'Internal Server Error' })
+      }
+    },
+  )
+
+  fastify.put<{ Body: { planKey: number; machineId: number; plannedStartTime: string } }>(
+    '/time_based/scheduled_events/update',
+    async (request, reply) => {
+      try {
+        const { planKey, machineId, plannedStartTime } = request.body
+        await updateTimeBasedEvents(planKey, machineId, plannedStartTime)
+        return reply.code(200).send('Succesful!')
+      } catch (err) {
+        fastify.log.error(err)
+        return reply.code(500).send({ error: 'Internal Server Error' })
+      }
+    },
+  )
+
+  fastify.post<{
+    Body: { planKey: number; machineId: number; plannedStartTime: string }
+  }>(
+    '/time_based/unscheduled_events/schedule',
+    async (request, reply) => {
+      try {
+        const { planKey, machineId, plannedStartTime } = request.body
+        await scheduleTimeBasedEvents(planKey, machineId, plannedStartTime)
+        return reply.code(200).send('Succesful!')
+      } catch (err) {
+        console.error(err)
+        return reply.code(500).send({ error: 'Internal Server Error' })
+      }
+    },
+  )
+  done()
+}

@@ -49,3 +49,33 @@ export function updateEventStates(ev: PlannedEvents[]) {
     }
   })
 }
+
+export function generateEventDates(events: any[]): Event[] {
+  const updatedEvents: Event[] = []
+
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i]
+
+    let startDate: Date
+    let endDate: Date
+
+    if (event.queueNumber === 1 || i === 0 || event.machineId !== events[i - 1].machineId) {
+      startDate = new Date()
+    } else {
+      const previousEndDate = updatedEvents[updatedEvents.length - 1].endDate
+      startDate = new Date(previousEndDate.getTime() + 5 * 60 * 1000)
+    }
+
+    endDate = new Date(startDate.getTime() + event.theoreticalDuration * 1000)
+
+    const updatedEvent: Event = {
+      ...event,
+      startDate,
+      endDate,
+    }
+
+    updatedEvents.push(updatedEvent)
+  }
+
+  return updatedEvents
+}

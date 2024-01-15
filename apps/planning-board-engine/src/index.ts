@@ -3,9 +3,12 @@ import { Mutex } from 'async-mutex'
 import Fastify from 'fastify'
 import fastifyIO from 'fastify-socket.io'
 import pino from 'pino'
-import * as planningBoard from './api/planning-board'
+import * as planningBoard from './api/scheduler/routes'
+import * as queueBased from './api/scheduler/queue-based/routes'
+import * as timeBased from './api/scheduler/time-based/routes'
 import { generateClientId } from './composables/helper'
 import { getAllTasks } from './composables/socket'
+import { knex } from './knexConfig'
 
 const logger = pino()
 const app = Fastify({ logger })
@@ -17,6 +20,8 @@ app.register(fastifyIO, {
 })
 function registerRoutes(fastify: typeof app): void {
   fastify.register(planningBoard.routes)
+  fastify.register(queueBased.routes)
+  fastify.register(timeBased.routes)
 }
 registerRoutes(app)
 
