@@ -69,7 +69,7 @@ export function withFTP<This extends { ftp: TbbFtpClient }>(target: This, proper
   if (typeof method !== 'function')
     throw new TypeError('Decorator should be used on methods')
 
-  async function wrappedMethod(this: This, ...args: any[]) {
+  descriptor.value = async function (this: This, ...args: any[]) {
     let ref = ftpRefMap.get(this)
     if (!ref) {
       ref = { count: 1 }
@@ -89,7 +89,6 @@ export function withFTP<This extends { ftp: TbbFtpClient }>(target: This, proper
       }
     }
   }
-  descriptor.value = wrappedMethod.bind(target)
 }
 
 export function withTransaction<This extends { trx: Knex.Transaction }>(target: This, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -97,7 +96,7 @@ export function withTransaction<This extends { trx: Knex.Transaction }>(target: 
   if (typeof method !== 'function' || typeof target !== 'object')
     throw new TypeError('Decorator should be used on methods')
 
-  async function wrappedMethod(this: This, ...args: any[]) {
+  descriptor.value = async function (this: This, ...args: any[]) {
     let ref = trxRefMap.get(this)
     if (!ref) {
       ref = { count: 1, failed: false }
@@ -116,13 +115,15 @@ export function withTransaction<This extends { trx: Knex.Transaction }>(target: 
       ref.count--
       if (!ref.count) {
         trxRefMap.delete(this)
-        if (!ref.failed) {
-          await this.trx.commit()
-        } else {
-          await this.trx.rollback()
+        if (this.trx.isTransaction && !this.trx.isCompleted()) {
+          if (!ref.failed) {
+            await this.trx.commit()
+          } else {
+            await this.trx.rollback()
+            this.trx = db as Knex.Transaction
+          }
         }
       }
     }
   }
-  descriptor.value = wrappedMethod.bind(target)
 }
