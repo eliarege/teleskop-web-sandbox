@@ -46,6 +46,9 @@
   "vncError": "{name} Bağlantısı Başarısız Oldu!",
   "Save": "Kaydet",
   "Cancel": "İptal",
+  "MaterialName": "Malzeme Adı",
+  "MaterialCode": "Malzeme Kodu",
+  "Amount": "Miktar",
   "settings": {
     "App": "Uygulama Ayarları"
   },

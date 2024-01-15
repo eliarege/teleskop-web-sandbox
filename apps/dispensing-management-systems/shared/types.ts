@@ -31,6 +31,21 @@ export interface DispenserType {
   dispenserTypeId: number
   dispenserTypeName: string
 }
+export interface Material {
+  materialCode: string
+  materialName: string
+  materialGroupNo: number
+  density: number
+  ph: number
+  costUnit: string
+  unitCost: number
+}
+export interface MaterialRequest {
+  materialCode: string
+  materialName: string
+  amount: number
+  status: number
+}
 export interface Machine {
   machineId: number
   machineName: string

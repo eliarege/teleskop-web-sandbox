@@ -1,15 +1,21 @@
 <script lang="ts" setup>
 import type { QTableColumn } from 'quasar'
+import MaterialRequests from './MaterialRequests.vue'
 import type { JobOrder } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
+import { cellStyle } from '~/shared/utils'
 
 const { t } = useI18n()
-const { dark } = useQuasar()
+const q = useQuasar()
 const route = useRoute()
 const colorStore = useColorStore()
 const searchFilter = ref('')
-const { data: jobOrders } = await useFetch<JobOrder[]>(`/api/jobOrders/${route.params.id}`)
+const jobOrders = ref()
 
+getJobOrders()
+async function getJobOrders() {
+  jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders/${route.params.id}`)
+}
 const columns: (QTableColumn<JobOrder>)[] = [
   {
     name: 'job_order',
@@ -89,28 +95,13 @@ const columns: (QTableColumn<JobOrder>)[] = [
     align: 'left',
   },
 ]
-function cellStyle(col: any, row: any, pageIndex: number, isDarkMode: boolean) {
-  let style = 'background-color: '
-  if (col.field === 'status') {
-    style += colorStore.jobOrderStatusColors[row.status] || '#FFFFFF'
-    style += '; color: white; font-weight: bolder; font-size: medium'
-  } else if (isDarkMode) {
-    if (pageIndex % 2 === 0) {
-      style += colorStore.darkJobOrderCellEven
-    } else {
-      style += colorStore.darkJobOrderCellOdd
-    }
-  } else {
-    if (pageIndex % 2 === 0) {
-      style += colorStore.lightJobOrderCellEven
-    } else {
-      style += colorStore.lightJobOrderCellOdd
-    }
-  }
-  return style
-}
+
 function onRowClick(_event: Event, row: JobOrder) {
   console.log(row.jobId)
+  q.dialog({
+    component: MaterialRequests,
+    componentProps: { jobId: row.jobId },
+  })
 }
 </script>
 
@@ -128,9 +119,9 @@ function onRowClick(_event: Event, row: JobOrder) {
       </QInput>
     </div>
     <QTable
-      :card-class="dark.isActive ? 'card-dark' : 'card-light'"
-      :table-class="dark.isActive ? 'table-dark' : 'table-light'"
-      :table-header-class="dark.isActive ? 'header-dark' : 'header-light'"
+      :card-class="q.dark.isActive ? 'card-dark' : 'card-light'"
+      :table-class="q.dark.isActive ? 'table-dark' : 'table-light'"
+      :table-header-class="q.dark.isActive ? 'header-dark' : 'header-light'"
       :title="t('JobOrders')"
       :filter="searchFilter"
       :rows="jobOrders"
@@ -142,7 +133,7 @@ function onRowClick(_event: Event, row: JobOrder) {
       <template #body-cell="props">
         <QTd
           :props="props"
-          :style="cellStyle(props.col, props.row, props.pageIndex, dark.isActive)"
+          :style="cellStyle(props.col, props.row, props.pageIndex, q.dark.isActive, colorStore.colors)"
         >
           <span v-if="props.col.field === 'status'">
             {{ t(`statusCodes.${props.row.status}`) }}

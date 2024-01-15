@@ -1,0 +1,74 @@
+<script setup lang="ts">
+import type { QTableColumn } from 'quasar'
+import { useDialogPluginComponent } from 'quasar'
+import type { MaterialRequest } from '~/shared/types'
+import { cellStyle } from '~/shared/utils'
+import { useColorStore } from '~/store/Colors'
+
+const props = defineProps({
+  jobId: {
+    type: Number,
+    required: true,
+  },
+})
+const q = useQuasar()
+const { t } = useI18n()
+const colorStore = useColorStore()
+const { dialogRef, onDialogHide } = useDialogPluginComponent()
+
+const columns: (QTableColumn<MaterialRequest>)[] = [
+  { name: 'materialCode', label: t('MaterialCode'), field: 'materialCode', align: 'left' },
+  { name: 'materialName', label: t('MaterialName'), field: 'materialName', align: 'left' },
+  { name: 'amount', label: t('Amount'), field: 'amount', align: 'left' },
+  { name: 'status', label: t('statusCodes.text'), field: 'status', align: 'left' },
+]
+
+const materials = ref<MaterialRequest[]>()
+getMaterials()
+async function getMaterials() {
+  materials.value = await $fetch(`/api/materials/materials?jobId=${props.jobId}`)
+}
+</script>
+
+<template>
+  <QDialog
+    ref="dialogRef"
+    full-width
+    @hide="onDialogHide"
+  >
+    <QCard>
+      <QTable
+        flat
+        bordered
+        separator="cell"
+        :columns="columns"
+        :rows="materials"
+        row-key="name"
+      >
+        <template #body-cell="material">
+          <QTd
+            :props="material"
+            :style="cellStyle(material.col, material.row, material.pageIndex, q.dark.isActive, colorStore.colors)"
+          >
+            <span v-if="material.col.field === 'status'">
+              {{ t(`statusCodes.${material.value}`) }}
+            </span>
+            <span v-else-if="material.col.field === 'amount'">
+              {{ material.value }}
+            </span>
+            <span v-else-if="material.row.field === 'status'" style="width: 10%">
+              {{ t(`statusCodes.${material.value}`) }}
+            </span>
+            <span v-else>
+              {{ material.value }}
+            </span>
+          </QTd>
+        </template>
+      </QTable>
+    </QCard>
+  </QDialog>
+</template>
+
+<style scoped lang="postcss">
+
+</style>

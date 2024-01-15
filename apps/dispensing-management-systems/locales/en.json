@@ -46,6 +46,9 @@
   "vncError": "{name} Connection Failed!",
   "Save": "Save",
   "Cancel": "Cancel",
+  "MaterialName": "Material Name",
+  "MaterialCode": "Material Code",
+  "Amount": "Amount",
   "settings": {
     "App": "App Settings"
   },
