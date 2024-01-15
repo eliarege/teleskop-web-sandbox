@@ -54,7 +54,9 @@ interface MappingsRepresentation {
   }>
 }
 
-const KEYCLOAK_URL = 'http://127.0.0.1:8080'
+const isDevContainer = !!process.env.REMOTE_CONTAINERS_IPC
+
+const KEYCLOAK_URL = `http://${isDevContainer ? 'keycloak' : 'localhost'}:8080`
 const KEYCLOAK_REALM = 'teleskop-web'
 const KEYCLOAK_TOKEN_INSPECTOR = 'keycloak-token-inspector'
 const ADMIN_GROUP = 'admin'
@@ -104,10 +106,18 @@ function getClientRepresentation(app: App): ClientRepresentation {
       webOrigins: [
         `http://127.0.0.1:${appPort}`,
         `http://localhost:${appPort}`,
+        ...(isDevContainer ? [
+          `http://app:${appPort}`,
+          `http://${app.name}:${appPort}`
+        ] : [])
       ],
       redirectUris: [
         `http://127.0.0.1:${appPort}/*`,
         `http://localhost:${appPort}/*`,
+        ...(isDevContainer ? [
+          `http://app:${appPort}`,
+          `http://${app.name}:${appPort}`
+        ] : [])
       ],
     }
   } else if (appType === 'node') {
