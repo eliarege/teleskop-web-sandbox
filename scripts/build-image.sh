@@ -5,7 +5,6 @@ rm -rf out
 npx turbo prune --scope=$APP_NAME --docker
 
 docker build \
-  --target $(jq -r .eliar.type $PKG_PATH) \
   --build-arg APP_NAME="$APP_NAME" \
   --build-arg APP_VERSION="1.0.0" \
   --build-arg APP_PORT=$(jq -r .eliar.port $PKG_PATH) \
