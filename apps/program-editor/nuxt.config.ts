@@ -13,4 +13,22 @@ export default defineNuxtConfig({
       kcClientId: 'program-editor',
     },
   },
+  nitro: {
+    typescript: {
+      tsConfig: {
+        compilerOptions: {
+          experimentalDecorators: true,
+        },
+      },
+    },
+    esbuild: {
+      options: {
+        tsconfigRaw: {
+          compilerOptions: {
+            experimentalDecorators: true,
+          },
+        },
+      },
+    },
+  },
 })
