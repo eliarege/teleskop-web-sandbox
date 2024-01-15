@@ -95,7 +95,7 @@ export interface Recipe {
 export interface MachineRule {
   name: string
   department: RuleField
-  machines: RuleField[]
+  machines: RuleField
   rule: RecursiveRuleBlock
 }
 export interface RuleField {
