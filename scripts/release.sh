@@ -1,24 +1,26 @@
-#!/bin/bash
+#!/bin/sh
 # This script:
 #  - assumes 'out' directory contains the build output
 #  - expects to be run in gitlab ci environment
 
+set -e
+
 throw() {
-  echo "ERROR: $1"
+  echo "ERROR: $1" >&2
   exit 1
 }
 
 APP_NAME=$1
 
-if [[ -z "$APP_NAME" ]]; then
+if [ -z "$APP_NAME" ]; then
   throw "App name is not defined"
 fi
 
-if [[ ! -e "apps/$APP_NAME" ]]; then
+if [ ! -e "apps/$APP_NAME" ]; then
   throw "App \"$APP_NAME\" does not exist"
 fi
 
-if [[ -z "$CI_REGISTRY_IMAGE" ]]; then
+if [ -z "$CI_REGISTRY_IMAGE" ]; then
   throw "Should be run via gitlab-ci"
 fi
 
