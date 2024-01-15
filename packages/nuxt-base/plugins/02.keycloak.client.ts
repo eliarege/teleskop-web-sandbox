@@ -5,6 +5,7 @@ import { setHeader } from '~/utils/ofetch'
 
 export interface KeycloakPlugin {
   fetch: typeof $fetch
+  enabled: boolean
   ready: Readonly<Ref<boolean>>
   /** Did keycloak initialise? */
   didInitialise: Readonly<Ref<boolean>>
@@ -203,6 +204,7 @@ export default defineNuxtPlugin(() => {
     provide: {
       keycloak: {
         fetch,
+        enabled: kcEnabled,
         ready: readonly(ready),
         didInitialise: readonly(didInitialise),
         token: readonly(token),
