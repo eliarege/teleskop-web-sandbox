@@ -4,7 +4,7 @@ import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } f
 import { Splitter, Tooltip } from '@bryntum/schedulerpro-trial'
 import { EliarModal } from 'ui'
 import { useI18n } from 'vue-i18n'
-import { Drag, Schedule, Task, UnplannedGrid } from '~/lib/bryntum'
+import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
 const currentTime = useNow({ interval: 1000 })
@@ -50,7 +50,7 @@ const showModal = reactive({
 })
 
 const { data: machines } = await useFetch('/api/machineList')
-const { data: events, refresh: plannedRefresh } = await useFetch('/api/plannedEvents', {
+const { data: events, refresh: plannedRefresh } = await useFetch('/api/timeBased/plannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents', {
@@ -111,7 +111,7 @@ function dateRangeEnd() {
   scheduler.refreshRows()
 }
 onMounted(async () => {
-  const schedule: SchedulerPro = scheduler = new Schedule({
+  const schedule: SchedulerPro = scheduler = new TimeSchedule({
     ref: 'schedule',
     appendTo: 'main',
     multiEventSelect: false,
@@ -132,7 +132,7 @@ onMounted(async () => {
       eventStore: {
         removeUnassignedEvent: false,
       },
-      eventModelClass: Task,
+      eventModelClass: TimeTask,
     },
     eventColor: 'blue',
     resources: modifiedMachines.value,
@@ -387,12 +387,14 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomOut(),
       },
+      '->',
+      'Time Based',
     ],
   } as Partial<SchedulerProConfig>)
   new Splitter({
     appendTo: 'main',
   })
-  const unplannedGrid = new UnplannedGrid({
+  const unplannedGrid = new TimeUnplannedGrid({
     ref: 'unplanned',
     appendTo: 'main',
     ui: 'toolbar',
@@ -437,11 +439,11 @@ onMounted(async () => {
     project: schedule.project,
     store: {
       data: modifiedUnscheduledEvents.value,
-      modelClass: Task,
+      modelClass: TimeTask,
       autoLoad: true,
     },
   } as Partial<GridConfig>)
-  new Drag({
+  new TimeDrag({
     grid: unplannedGrid,
     schedule,
     constrain: false,
@@ -514,11 +516,7 @@ function updateTaskColor() {
         <BatchNotes :job-order="showModal.notes.unit.name" />
       </template>
     </EliarModal>
-    <EliarModal v-if="showModal.rule" @click.stop="showModal.rule = false">
-      <template #default>
-        <MachineRule />
-      </template>
-    </EliarModal>
+    <EliarModal v-if="showModal.rule" @click.stop="showModal.rule = false" />
     <div class="w-full h-screen">
       <div id="main" class="w-full h-full" />
     </div>
@@ -595,3 +593,4 @@ div[bgGreen] {
   }
 }
 </i18n>
+~/lib/timeBased

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const url = useRouter()
 url.replace('?thumb')
-const count = ref(true)
+const count = ref(false)
 </script>
 
 <template>

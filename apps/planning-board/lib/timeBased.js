@@ -91,7 +91,7 @@ function removeAttributes(element, pattern) {
 function getResourceRow(resource) {
   return document.querySelector(`div[data-id="${resource.id}"]`)
 }
-export class Drag extends DragHelper {
+export class TimeDrag extends DragHelper {
   static get configurable() {
     return {
       callOnFunctions: true,
@@ -146,10 +146,10 @@ export class Drag extends DragHelper {
     const { selectedRecords, store } = grid
     onDragStartSocket(selectedRecords[0].originalData.id)
     context.task = grid.getRecordFromElement(context.grabbed)
-    theoreticalDuration = await $fetch('api/theoreticalDuration', {
+    theoreticalDuration = await $fetch('api/timeBased/theoreticalDuration', {
       query: { planKey: context.task.originalData.id },
     })
-    const isValid = await $fetch('/api/isValid', {
+    const isValid = await $fetch('/api/timeBased/isValid', {
       query: { planKey: context.task.originalData.id },
     })
     context.isValid = isValid
@@ -299,7 +299,7 @@ export class Drag extends DragHelper {
         plannedStartTime: startDate,
         theoreticalDuration: task.originalData.theoricalDuration,
       }
-      AjaxHelper.post('/api/planningBoardPost', newEvent, { credentials: 'omit' })
+      AjaxHelper.post('/api/timeBased/planningBoardPost', newEvent, { credentials: 'omit' })
         .then(() => schedule.renderRows())
       Toast.show('Event saved')
     }
@@ -324,7 +324,7 @@ export class Drag extends DragHelper {
     return this._schedule
   }
 }
-export class Task extends EventModel {
+export class TimeTask extends EventModel {
   static $name = 'Task'
 
   // case this.isRunning:
@@ -378,7 +378,7 @@ export class Task extends EventModel {
     }
   }
 }
-export class Schedule extends SchedulerPro {
+export class TimeSchedule extends SchedulerPro {
   static get $name() {
     return 'Schedule'
   }
@@ -437,7 +437,7 @@ export class Schedule extends SchedulerPro {
           machineId: context.newResource.originalData.id,
           plannedStartTime: context.startDate,
         }
-        AjaxHelper.post('/api/planningBoardUpdate', updatedEvent, { credentials: 'omit' })
+        AjaxHelper.post('/api/timeBased/planningBoardUpdate', updatedEvent, { credentials: 'omit' })
           .then(() => this.renderRows())
       },
       rowHeight: 50,
@@ -474,9 +474,7 @@ export class Schedule extends SchedulerPro {
     }
   }
 }
-Schedule.initClass()
-
-export class UnplannedGrid extends Grid {
+export class TimeUnplannedGrid extends Grid {
   /**
    * Original class name getter. See Widget.$name docs for the details.
    * @returns {string}
@@ -518,5 +516,3 @@ export class UnplannedGrid extends Grid {
     }
   }
 }
-
-UnplannedGrid.initClass()
