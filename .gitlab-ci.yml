@@ -35,8 +35,16 @@ release:
     - apk add --no-cache jq
     - *docker-login
   script:
+    - mkdir release-errors
     - |
       for APP_NAME in $TARGET_APPS; do
         rm -rf out && mv out-$APP_NAME out
-        ./scripts/release.sh || true
+        exec 3>&1
+        ./scripts/release.sh $APP_NAME 2>&1 1>&3 3>&- | tee release-errors/$APP_NAME.log
       done
+    - '[ -z $(ls -A ./release-errors) ] && exit 1'
+  artifacts:
+    name: release-errors
+    paths:
+      - release-errors/
+    when: on_failure

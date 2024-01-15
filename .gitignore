@@ -29,3 +29,6 @@ logs
 
 # Machines Data
 apps/machines/server/data
+
+# CI/CD
+release-errors
