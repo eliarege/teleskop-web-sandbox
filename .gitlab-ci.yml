@@ -38,11 +38,19 @@ release:
     - mkdir release-logs
     - |
       for APP_NAME in $TARGET_APPS; do
+        LOG_PATH="release-logs/$APP_NAME.log"
+        ERR_PATH="release-logs/$APP_NAME.error.log"
         rm -rf out && mv out-$APP_NAME out
-        ./scripts/release.sh $APP_NAME 2>&1 | tee release-logs/$APP_NAME.log || CI_ERROR=1
+        {
+          ./scripts/release.sh $APP_NAME 2>&1 || {
+            CI_ERROR=1
+            mv $LOG_PATH $ERR_PATH
+          }
+        } | tee $LOG_PATH
       done
     - '[ -n "$CI_ERROR" ] && exit 1'
   artifacts:
     name: $CI_COMMIT_TAG-$CI_PIPELINE_ID
+    when: always
     paths:
       - release-logs/
