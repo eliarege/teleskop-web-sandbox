@@ -35,17 +35,14 @@ release:
     - apk add --no-cache jq
     - *docker-login
   script:
-    - mkdir release-errors
+    - mkdir release-logs
     - |
       for APP_NAME in $TARGET_APPS; do
         rm -rf out && mv out-$APP_NAME out
-        exec 3>&1
-        ./scripts/release.sh $APP_NAME 2>&1 1>&3 3>&- | tee release-errors/$APP_NAME.log || true
+        ./scripts/release.sh $APP_NAME 2>&1 | tee release-logs/$APP_NAME.log || CI_ERROR=1
       done
-    # If any errors are generated during pipeline, it is considered failure (Risk: are warnings outputted to stderr or stdout)
-    - '[ -z $(ls -A ./release-errors) ] && exit 1'
+    - '[ -n "$CI_ERROR" ] && exit 1'
   artifacts:
     name: $CI_COMMIT_TAG-$CI_PIPELINE_ID
     paths:
-      - release-errors/
-    when: on_failure
+      - release-logs/
