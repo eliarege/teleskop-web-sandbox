@@ -48,7 +48,7 @@ release:
           }
         } | tee $LOG_PATH
       done
-    - '[ -n "$CI_ERROR" ] && exit 1'
+    - 'if [ -n "$CI_ERROR" ]; then exit 1; fi;'
   artifacts:
     name: $CI_COMMIT_TAG-$CI_PIPELINE_ID
     when: always
