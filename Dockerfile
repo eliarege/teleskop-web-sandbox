@@ -59,6 +59,7 @@ FROM base
 
 WORKDIR /app
 
+ARG APP_NAME
 ARG APP_PORT=3000
 ARG APP_OUT_DIR=.output
 
