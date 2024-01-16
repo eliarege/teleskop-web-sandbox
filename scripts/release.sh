@@ -2,6 +2,7 @@
 # This script:
 #  - assumes 'out' directory contains the build output
 #  - expects to be run in gitlab ci environment
+#  - uses busybox date function
 
 set -e
 
@@ -28,7 +29,7 @@ IMAGE_TAG=$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_TAG
 IMAGE_SHA=$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_SHA
 IMAGE_LATEST=$CI_REGISTRY_IMAGE/$APP_NAME:latest
 
-BUILD_DATE=$(date -u --rfc-3339=seconds)
+BUILD_DATE=$(date -u -Iseconds)
 PKG_PATH=apps/$APP_NAME/package.json
 MANIFEST_PATH=apps/$APP_NAME/manifest.json
 
