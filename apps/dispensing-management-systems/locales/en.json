@@ -46,11 +46,23 @@
   "vncError": "{name} Connection Failed!",
   "Save": "Save",
   "Cancel": "Cancel",
-  "MaterialName": "Material Name",
-  "MaterialCode": "Material Code",
+  "Material": "Material",
   "Amount": "Amount",
   "settings": {
-    "App": "App Settings"
+    "App": "App Settings",
+    "Material": "Material Settings"
+  },
+  "materialFields": {
+    "Name": "Material Name",
+    "Code": "Material Code",
+    "GroupNo": "Material Group No",
+    "PH": "PH",
+    "Density": "Density",
+    "UnitCost": "Unit Cost",
+    "CostUnit": "Cost Unit",
+    "ReRequestable": "ReRequestable",
+    "Source": "Source",
+    "DirectTransfer": "Can Transfer Directly"
   },
   "dispenserFields": {
     "Name": "Dispenser Name",

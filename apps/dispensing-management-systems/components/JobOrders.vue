@@ -97,7 +97,6 @@ const columns: (QTableColumn<JobOrder>)[] = [
 ]
 
 function onRowClick(_event: Event, row: JobOrder) {
-  console.log(row.jobId)
   q.dialog({
     component: MaterialRequests,
     componentProps: { jobId: row.jobId },

@@ -46,11 +46,23 @@
   "vncError": "{name} Bağlantısı Başarısız Oldu!",
   "Save": "Kaydet",
   "Cancel": "İptal",
-  "MaterialName": "Malzeme Adı",
-  "MaterialCode": "Malzeme Kodu",
   "Amount": "Miktar",
+  "Material": "Malzeme",
   "settings": {
-    "App": "Uygulama Ayarları"
+    "App": "Uygulama Ayarları",
+    "Material": "Malzeme Ayarları"
+  },
+  "materialFields": {
+    "Name": "Malzeme Adı",
+    "Code": "Malzeme Kodu",
+    "GroupNo": "Malzeme Grup Numarası",
+    "PH": "PH",
+    "Density": "Yoğunluk",
+    "UnitCost": "Birim Fiyatı",
+    "CostUnit": "Birim",
+    "ReRequestable": "Yeniden İstenebilir",
+    "Source": "Kaynak",
+    "DirectTransfer": "Doğrudan Transfer Edilebilir"
   },
   "dispenserFields": {
     "Name": "Dağıtıcı Adı",

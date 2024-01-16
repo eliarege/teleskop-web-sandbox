@@ -37,8 +37,11 @@ export interface Material {
   materialGroupNo: number
   density: number
   ph: number
+  source: string
   costUnit: string
   unitCost: number
+  reRequestable: boolean
+  directTransfer: boolean
 }
 export interface MaterialRequest {
   materialCode: string

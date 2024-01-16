@@ -26,7 +26,7 @@ const columns: (QTableColumn<MaterialRequest>)[] = [
 const materials = ref<MaterialRequest[]>()
 getMaterials()
 async function getMaterials() {
-  materials.value = await $fetch(`/api/materials/materials?jobId=${props.jobId}`)
+  materials.value = await $fetch(`/api/materials/requests?jobId=${props.jobId}`)
 }
 </script>
 
@@ -51,12 +51,6 @@ async function getMaterials() {
             :style="cellStyle(material.col, material.row, material.pageIndex, q.dark.isActive, colorStore.colors)"
           >
             <span v-if="material.col.field === 'status'">
-              {{ t(`statusCodes.${material.value}`) }}
-            </span>
-            <span v-else-if="material.col.field === 'amount'">
-              {{ material.value }}
-            </span>
-            <span v-else-if="material.row.field === 'status'" style="width: 10%">
               {{ t(`statusCodes.${material.value}`) }}
             </span>
             <span v-else>

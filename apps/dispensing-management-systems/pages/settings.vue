@@ -76,7 +76,7 @@ useResizeObserver(document.body, () => {
             name="s2"
             icon="settings"
             :class="tab === 's2' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
-            :label="innerWidth > minSize ? `${t('settings.2')}` : ''"
+            :label="innerWidth > minSize ? `${t('settings.Material')}` : ''"
           />
           <QSeparator />
           <QTab
@@ -115,7 +115,7 @@ useResizeObserver(document.body, () => {
           </QTabPanel>
 
           <QTabPanel name="s2">
-            <!-- Settings Component -->
+            <MaterialSettings />
           </QTabPanel>
 
           <QTabPanel name="s3">
