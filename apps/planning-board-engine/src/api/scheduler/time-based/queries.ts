@@ -31,6 +31,7 @@ export async function getTimeBasedPlannedEvents(from: Date | string, to: Date | 
     return {
       ...e,
       plannedEndTime: new Date(new Date(e.plannedStartTime).getTime() + e.theoreticalDuration * 1000),
+      isDeviaiton: e.isStarted ? new Date(e.actualStartTime) !== e.plannedStartTime : false,
     }
   })
   return updateEventStates(modifiedEvents)

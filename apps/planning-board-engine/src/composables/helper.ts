@@ -8,6 +8,7 @@ interface PlannedEvents {
   jobOrder: string
   programNoList: string
   plannedStartTime: string
+  actualStartTime: string
   plannedEndTime: string
   theoreticalDuration: number
   fabricWeight: number
@@ -30,16 +31,10 @@ export function updateEventStates(ev: PlannedEvents[]) {
   return ev.map((e) => {
     return {
       ...e,
-      deviation: (new Date(e.plannedStartTime).getTime() - new Date().getTime()) < 0
-        ? 0
-        : (Math.abs(new Date(e.plannedEndTime).getTime() - new Date().getTime())), // seconds
-      // originally should be like this --> e.isStarted
-      //   ? new Date(e.plannedEndTime) < new Date()
-      //   : false,
-      // because othervise there might be deviation
+      deviation: e.isDeviation ? calculateDeviation(e.actualStartTime, e.plannedStartTime) : 0,
       isFinished: new Date(e.plannedEndTime) < new Date(),
       isStarted: new Date(e.plannedStartTime) < new Date(),
-      notStarted: new Date(e.plannedStartTime) > new Date(),
+      notStarted: !e.isStarted,
       // ask how to check if this event is running or not
       isRunning: e.isStarted
         ? (new Date(e.plannedStartTime) < new Date() && new Date(e.plannedEndTime) > new Date())
@@ -48,6 +43,10 @@ export function updateEventStates(ev: PlannedEvents[]) {
       hasAlarm: false,
     }
   })
+}
+
+export function calculateDeviation(actualStartTime: string, plannedStartTime: string) {
+  return new Date(actualStartTime).getTime() - new Date(plannedStartTime).getTime()
 }
 
 export function generateEventDates(events: any[]): Event[] {

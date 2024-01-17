@@ -1,3 +1,4 @@
+import { addSeconds } from 'date-fns'
 import { updateEventStates } from '../../../composables/helper'
 import { knex } from '../../../knexConfig'
 
@@ -25,7 +26,14 @@ export async function getQueueBasedPlannedEvents(from: Date | string, to: Date |
     })
     .orderBy('p.MACHINEID')
     .orderBy('p.QUEUENUMBER')
-  return events.filter(a => a.theoreticalDuration !== 0 && a.theoreticalDuration !== null)
+  const modifiedEvents = events.filter(a => a.theoreticalDuration !== 0 && a.theoreticalDuration !== null).map((ev) => {
+    return {
+      ...ev,
+      plannedEndTime: addSeconds(ev.plannedStartTime, ev.theoreticalDuration),
+      isDeviaiton: ev.isStarted ? new Date(ev.actualStartTime) !== ev.plannedStartTime : false,
+    }
+  })
+  return updateEventStates(modifiedEvents)
 }
 export async function isTaskValidQueueBased(planKey: number) {
   const taskPrgList: Set<number> = new Set(

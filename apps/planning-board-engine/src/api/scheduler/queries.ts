@@ -1,4 +1,4 @@
-import { updateEventStates } from '../../composables/helper'
+import { calculateDeviation, updateEventStates } from '../../composables/helper'
 import { knex } from '../../knexConfig'
 
 export async function getPlannedEvents(from: Date | string, to: Date | string) {
@@ -11,6 +11,7 @@ export async function getPlannedEvents(from: Date | string, to: Date | string) {
       jobOrder: 'd.JOBORDER',
       programNoList: 'd.PROGRAMNOLIST',
       plannedStartTime: 'd.PLANNEDSTARTTIME',
+      actualStartTime: 'd.STARTDATETIME',
       theoreticalDuration: 'd.TheoricalDuration',
       fabricWeight: knex.raw(`(select r.VALUE from DYBFBATCHPLANPARAMETERS r where r.PARAMSTRING = 'Kilo' and r.PLANKEY = p.PLANKEY)`),
       partyNumber: 'd.PARTYNUMBER',
