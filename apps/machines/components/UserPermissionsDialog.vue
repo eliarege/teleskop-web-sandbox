@@ -8,51 +8,61 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 
 const permissionsGroup1 = ref([
-  { label: 'Program Oluşturma', index: 1, value: false },
-  { label: 'Program Değiştirme', index: 2, value: false },
-  { label: 'Program Kopyalama', index: 3, value: false },
-  { label: 'Program Silme', index: 4, value: false },
-  { label: 'Manuel Komut Çalıştırma', index: 5, value: false },
-  { label: 'Sistem Menülerine Erişim', index: 6, value: false },
-  { label: 'Çalışırken Program Değiştirme', index: 7, value: false },
-  { label: 'Test Yetkisi', index: 8, value: false },
-  { label: 'İşletme Parametrelerine Erişim', index: 9, value: false },
-  { label: 'I/O Ayarlama Yetkisi', index: 10, value: false },
-  { label: 'I/O Güncelleme ve Dil', index: 11, value: false },
-  { label: 'Cihaz Ayar Yetkisi', index: 12, value: false },
-  { label: 'Kullanıcı Ayar Yetkisi', index: 13, value: false },
-  { label: 'Kilitlemeler', index: 14, value: false },
-  { label: 'Kalibrasyon', index: 15, value: false },
-  { label: 'Komutlar', index: 16, value: false },
-  { label: 'İş Emri Başlatma', index: 17, value: false },
-  { label: 'Teçhizat Bakım', index: 18, value: false },
-  { label: 'GLG Sayfası Erişim Hakkını Kısıtla', index: 19, value: false },
-  { label: 'Pompa Kule Düze Plater Ayarları', index: 21, value: false },
-  { label: 'İş Emri Parametresi Tanımlama', index: 25, value: false },
-  { label: 'Makine ve Zamanlayıcı Sabiti Tanımlama', index: 26, value: false },
-  { label: 'Başlatma Parametresi Değiştirme', index: 29, value: false },
+  { label: 'Program Oluşturma', index: 0, value: false },
+  { label: 'Program Değiştirme', index: 1, value: false },
+  { label: 'Program Kopyalama', index: 2, value: false },
+  { label: 'Program Silme', index: 3, value: false },
+  { label: 'Manuel Komut Çalıştırma', index: 4, value: false },
+  { label: 'Sistem Menülerine Erişim', index: 5, value: false },
+  { label: 'Çalışırken Program Değiştirme', index: 6, value: false },
+  { label: 'Test Yetkisi', index: 7, value: false },
+  { label: 'İşletme Parametrelerine Erişim', index: 8, value: false },
+  { label: 'I/O Ayarlama Yetkisi', index: 9, value: false },
+  { label: 'I/O Güncelleme ve Dil', index: 10, value: false },
+  { label: 'Cihaz Ayar Yetkisi', index: 11, value: false },
+  { label: 'Kullanıcı Ayar Yetkisi', index: 12, value: false },
+  { label: 'Kilitlemeler', index: 13, value: false },
+  { label: 'Kalibrasyon', index: 14, value: false },
+  { label: 'Komutlar', index: 15, value: false },
+  { label: 'İş Emri Başlatma', index: 16, value: false },
+  { label: 'Teçhizat Bakım', index: 17, value: false },
+  { label: 'GLG Sayfası Erişim Hakkını Kısıtla', index: 18, value: false },
+  { label: 'Pompa Kule Düze Plater Ayarları', index: 20, value: false },
+  { label: 'İş Emri Parametresi Tanımlama', index: 24, value: false },
+  { label: 'Makine ve Zamanlayıcı Sabiti Tanımlama', index: 25, value: false },
+  { label: 'Başlatma Parametresi Değiştirme', index: 28, value: false },
 ])
 
-const permissionsGroup2 = [
-  { label: 'Uyarı Komutları onaylama yetkisi', index: 1, value: false },
-  { label: 'Adım Atlatma Yetkisi', index: 2, value: false },
-  { label: 'Makine Değiştirme Yetkisi', index: 3, value: false },
-  { label: 'Operatör Müdahalesi Serbest Programlar İçin Yetki', index: 4, value: false },
-]
+const permissionsGroup2 = ref([
+  { label: 'Uyarı Komutları onaylama yetkisi', index: 0, value: true },
+  { label: 'Adım Atlatma Yetkisi', index: 1, value: true },
+  { label: 'Makine Değiştirme Yetkisi', index: 2, value: false },
+  { label: 'Operatör Müdahalesi Serbest Programlar İçin Yetki', index: 3, value: false },
+])
 
 function savePermissions() {
-  const selectedPermissionsArray = selectedPermissions.value
+  let combinedPermissionValueGroup1 = 0
+  let combinedPermissionValueGroup2 = 0
 
-  let combinedPermissionValue = 0
-  for (let i = 0; i < selectedPermissionsArray.length; i++) {
-    if (selectedPermissionsArray[i]) {
-      combinedPermissionValue |= 1 << i
+  // Group 1
+  permissionsGroup1.value.forEach((permission) => {
+    if (permission.value) {
+      combinedPermissionValueGroup1 |= 1 << (permission.index)
     }
-  }
+  })
 
-  const hexadecimalValue = combinedPermissionValue.toString(16)
+  // Group 2
+  permissionsGroup2.value.forEach((permission) => {
+    if (permission.value) {
+      combinedPermissionValueGroup2 |= 1 << (permission.index)
+    }
+  })
 
-  console.log(hexadecimalValue)
+  const hexadecimalValueGroup1 = `0x${combinedPermissionValueGroup1.toString(16).padStart(8, '0')}`
+  const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
+
+  console.log('Group 1 Hexadecimal:', hexadecimalValueGroup1)
+  console.log('Group 2 Hexadecimal:', hexadecimalValueGroup2)
 }
 </script>
 
@@ -71,13 +81,13 @@ function savePermissions() {
               <q-checkbox
                 v-model="permission.value"
                 :label="permission.label"
-                :disable="!permissionsGroup1.find(d => d.label === 'Sistem Menülerine Erişim').value
+                :disable="!permissionsGroup1.find(d => d.label === 'Sistem Menülerine Erişim')!.value
                   && (permission.label === 'İşletme Parametrelerine Erişim'
                     || permission.label === 'I/O Ayarlama Yetkisi'
                     || permission.label === 'Kilitlemeler'
                     || permission.label === 'Kalibrasyon'
                     || permission.label === 'Komutlar')
-                  || !permissionsGroup1.find(d => d.label === 'Cihaz Ayar Yetkisi').value
+                  || !permissionsGroup1.find(d => d.label === 'Cihaz Ayar Yetkisi')!.value
                   && (permission.label === 'Kullanıcı Ayar Yetkisi'
                     || permission.label === 'Teçhizat Bakım')
                 "
