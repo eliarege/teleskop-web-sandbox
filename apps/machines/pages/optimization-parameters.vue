@@ -1,8 +1,17 @@
 <script setup lang="ts">
 const selectedOption = ref()
 const showAddMachineGroupDialog = ref(false)
+const showAddTreatmentParameterDialog = ref(false)
 const selectedMachineGroup = ref(false)
 const options = []
+
+const { data: machineGroups } = useLazyFetch('/api/treatment-parameters/machine-groups', {
+  default: () => [],
+})
+
+const { data: treatmentParameters } = useLazyFetch('/api/treatment-parameters/treatment-parameters', {
+  default: () => [],
+})
 </script>
 
 <template>
@@ -12,17 +21,22 @@ const options = []
         <div>
           <h3>Makine Grupları</h3>
           <q-icon name="add" @click="showAddMachineGroupDialog = true" />
-          <q-list>
-            <q-item>
-              Eliar
+          <q-list separator bordered>
+            <q-item v-for="machineGroup in machineGroups" :key="machineGroup.groupId">
+              <q-item-section>
+                {{ machineGroup.groupName }}
+              </q-item-section>
             </q-item>
           </q-list>
         </div>
         <div>
           <h3>Parametre Listesi</h3>
+          <q-icon name="add" @click="showAddTreatmentParameterDialog = true" />
           <q-list>
-            <q-item>
-              Parametre 1
+            <q-item v-for="param in treatmentParameters" :key="param.id">
+              <q-item-section>
+                {{ param.treatmentParameter }}
+              </q-item-section>
             </q-item>
           </q-list>
         </div>
@@ -46,6 +60,12 @@ const options = []
     :show="showAddMachineGroupDialog"
     :selected="selectedMachineGroup"
     @close="showAddMachineGroupDialog = false"
+  />
+
+  <AddTreatmentParameterDialog
+    v-if="showAddTreatmentParameterDialog"
+    :show="showAddTreatmentParameterDialog"
+    @close="showAddTreatmentParameterDialog = false"
   />
 </template>
 
