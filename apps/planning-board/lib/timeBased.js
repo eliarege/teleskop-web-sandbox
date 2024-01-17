@@ -268,7 +268,6 @@ export class TimeDrag extends DragHelper {
     // TODO: Remove all locks
     const schedule = this.schedule
     const { task, target, valid, element, machine } = context
-
     this.tip?.hide()
     schedule.disableScrollingCloseToEdges(this.schedule.timeAxisSubGrid)
     onDropSocket()
@@ -326,17 +325,6 @@ export class TimeDrag extends DragHelper {
 }
 export class TimeTask extends EventModel {
   static $name = 'Task'
-
-  // case this.isRunning:
-  //   return 'green'
-
-  // case this.isStopped:
-  //   return 'gray'
-
-  // case this.isDeleted:
-  //   return 'orange'
-
-  // default: return 'blue'
 
   get eventColor() {
     const ptSettings = JSON.parse(localStorage.getItem('pt-settings'))
