@@ -2,7 +2,8 @@
 const selectedOption = ref()
 const showAddMachineGroupDialog = ref(false)
 const showAddTreatmentParameterDialog = ref(false)
-const selectedMachineGroup = ref(false)
+const selectedMachineGroup = ref()
+const selectedParameter = ref()
 const options = []
 
 const { data: machineGroups } = useLazyFetch('/api/treatment-parameters/machine-groups', {
@@ -12,6 +13,16 @@ const { data: machineGroups } = useLazyFetch('/api/treatment-parameters/machine-
 const { data: treatmentParameters } = useLazyFetch('/api/treatment-parameters/treatment-parameters', {
   default: () => [],
 })
+
+/*
+SELECT map.PARAMID ,map.GROUPID ,map.COMMANDNO ,map.PARAMETERINDEX, prm.TREATMENTPARAMETER, grp.GROUPNAME, mach.MACHINEID, cmd.NAME, cmdPrm.PARAMSTRING FROM BFTREATMENTPARAMGROUPMAP map
+LEFT JOIN BFTREATMENTPARAMETERS prm ON map.PARAMID = prm.ID
+LEFT JOIN BFTREATMENTPARAMETERGROUPS grp ON map.GROUPID = grp.ID
+OUTER APPLY ( SELECT TOP 1 g.MACHINEID FROM BFTREATMENTPARAMETERGROUPMACHINES g WHERE g.GROUPID = map.GROUPID ) as mach
+LEFT JOIN BFMASTERCOMMANDS cmd ON mach.MACHINEID = cmd.MACHINEID AND cmd.COMMANDNO = map.COMMANDNO
+LEFT JOIN BFCOMMANDPARAMETERS cmdPrm ON mach.MACHINEID = cmdPrm.MACHINEID AND cmdPrm.COMMANDNO = map.COMMANDNO AND cmdPrm.PARAMETERINDEX = map.PARAMETERINDEX
+ORDER BY map.GROUPID, map.PARAMID ,map.COMMANDNO ,map.PARAMETERINDEX ASC
+*/
 </script>
 
 <template>
@@ -22,7 +33,15 @@ const { data: treatmentParameters } = useLazyFetch('/api/treatment-parameters/tr
           <h3>Makine Grupları</h3>
           <q-icon name="add" @click="showAddMachineGroupDialog = true" />
           <q-list separator bordered>
-            <q-item v-for="machineGroup in machineGroups" :key="machineGroup.groupId">
+            <q-item
+              v-for="machineGroup in machineGroups"
+              :key="machineGroup.groupId"
+              v-ripple
+              clickable
+              :focused="selectedMachineGroup === machineGroup"
+              :active="selectedMachineGroup === machineGroup"
+              @click="selectedMachineGroup = machineGroup"
+            >
               <q-item-section>
                 {{ machineGroup.groupName }}
               </q-item-section>
@@ -32,8 +51,17 @@ const { data: treatmentParameters } = useLazyFetch('/api/treatment-parameters/tr
         <div>
           <h3>Parametre Listesi</h3>
           <q-icon name="add" @click="showAddTreatmentParameterDialog = true" />
-          <q-list>
-            <q-item v-for="param in treatmentParameters" :key="param.id">
+          <q-list bordered separator>
+            <q-item
+              v-for="param in treatmentParameters"
+              :key="param.id"
+              v-ripple
+              clickable
+              :focused="selectedParameter === param"
+
+              :active="selectedParameter === param"
+              @click="selectedParameter = param"
+            >
               <q-item-section>
                 {{ param.treatmentParameter }}
               </q-item-section>
