@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import type { User } from '~/types'
+import { updateUserPermissions } from '~/utils'
 
 const props = defineProps<{
   show: boolean
+  selected: User
 }>()
 
 const emit = defineEmits(['close'])
@@ -39,8 +42,32 @@ const permissionsGroup2 = ref([
   { label: 'Makine Değiştirme Yetkisi', index: 2, value: false },
   { label: 'Operatör Müdahalesi Serbest Programlar İçin Yetki', index: 3, value: false },
 ])
+const user = computed(() => props.selected)
+watch(user, (_newValue, _oldValue) => {
+  if (props.selected && props.selected.userMode)
+    updatePermissionsFromHex(props.selected.userMode, props.selected.userMode2)
+})
 
-function savePermissions() {
+function updatePermissionsFromHex(hexStringGroup1, hexStringGroup2) {
+  const binaryStringGroup1 = Number.parseInt(hexStringGroup1.slice(2), 16).toString(2).padStart(32, '0')
+  const binaryStringGroup2 = Number.parseInt(hexStringGroup2.slice(2), 16).toString(2).padStart(32, '0')
+
+  console.log('binaryStringGroup1 = ', binaryStringGroup1)
+  console.log('binaryStringGroup2 = ', binaryStringGroup2)
+  // Update Group 1 permissions
+  permissionsGroup1.value.forEach((permission) => {
+    const bitPosition = permission.index
+    permission.value = binaryStringGroup1.charAt(31 - bitPosition) === '1'
+  })
+
+  // Update Group 2 permissions
+  permissionsGroup2.value.forEach((permission) => {
+    const bitPosition = permission.index
+    permission.value = binaryStringGroup2.charAt(31 - bitPosition) === '1'
+  })
+}
+
+async function savePermissions() {
   let combinedPermissionValueGroup1 = 0
   let combinedPermissionValueGroup2 = 0
 
@@ -63,6 +90,8 @@ function savePermissions() {
 
   console.log('Group 1 Hexadecimal:', hexadecimalValueGroup1)
   console.log('Group 2 Hexadecimal:', hexadecimalValueGroup2)
+
+  await updateUserPermissions({ userId: user.value.userId, userMode: hexadecimalValueGroup1, userMode2: hexadecimalValueGroup2 })
 }
 </script>
 

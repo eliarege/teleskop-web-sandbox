@@ -35,6 +35,7 @@ export interface User {
   userMode: string
   userMode2: string
   userType: number
+  userDeleted: boolean
 }
 
 export interface StopReason {

@@ -67,7 +67,7 @@ const { data: users, refresh } = useLazyFetch('/api/user-definitions/user-defini
 const userTypeOptions = [{ label: 'Operatör', value: 1 }, { label: 'Diğer', value: 2 }]
 
 const showPermissionsDialog = ref(false)
-const selected = ref<User>({
+const selected = ref<Partial<User>>({
   userId: -1,
   userName: '',
   userSurname: '',
@@ -230,6 +230,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
     </FilterableTable>
     <UserPermissionsDialog
       :show="showPermissionsDialog"
+      :selected="selected"
       @close="showPermissionsDialog = false"
     />
   </div>
