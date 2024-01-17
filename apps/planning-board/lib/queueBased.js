@@ -13,8 +13,8 @@ import {
   StringHelper,
   Toast,
   Tooltip,
-
 } from '@bryntum/schedulerpro-trial'
+import { addMinutes, addSeconds } from 'date-fns'
 import { io } from 'socket.io-client'
 
 const trLocalization = {
@@ -59,6 +59,15 @@ const enLocalization = {
     unassign: 'Unassigned Job Orders',
   },
 }
+
+function generateQueueNumber(ev, resourceId) {
+  const sortedEvents = ev.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+  const eventsWithQueueNumber = sortedEvents.map((e, i) => {
+    return { ...e, originalData: { ...e.originalData, queueNumber: i + 1, resourceId, machineId: resourceId } }
+  })
+  return eventsWithQueueNumber
+}
+
 LocaleHelper.publishLocale('Tr', trLocalization)
 LocaleHelper.publishLocale('En', enLocalization)
 const serverUrl = `ws://$192.168.18.240:3500`
@@ -92,9 +101,6 @@ function removeAttributes(element, pattern) {
 }
 function getResourceRow(resource) {
   return document.querySelector(`div[data-id="${resource.id}"]`)
-}
-function findLastTask(targetMachine) {
-
 }
 export class QueueDrag extends DragHelper {
   static get configurable() {
@@ -154,7 +160,6 @@ export class QueueDrag extends DragHelper {
     const { selectedRecords, store } = grid
     onDragStartSocket(selectedRecords[0].originalData.id)
     context.task = grid.getRecordFromElement(context.grabbed)
-    console.log('context', context)
     theoreticalDuration = await $fetch('api/queueBased/theoreticalDuration', {
       query: { planKey: context.task.originalData.id },
     })
@@ -214,10 +219,10 @@ export class QueueDrag extends DragHelper {
     const isValid = context.isValid
     // TODO: Machine capacity and program comparison for context.valid
     context.valid = Boolean(startDate && machine)
-      && !(startDate < new Date())
-      && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
-      && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).valid : true)
-
+    && !(startDate < new Date())
+    && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
+    && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).valid : true)
+    task.startDate = startDate
     if (this.tip) {
       const startMonth = DateHelper.format(startDate, 'MMM')
       const startDay = DateHelper.format(startDate, 'D')
@@ -271,55 +276,75 @@ export class QueueDrag extends DragHelper {
   }
 
   async onDrop({ context }) {
-    /**
-     * @type {import('@bryntum/schedulerpro').SchedulerPro}
-     */
-    // TODO: Remove all locks
-    const schedule = this.schedule
-    const { task, target, valid, element, machine } = context
+    const { schedule, grid } = this
+    const { task, valid, target, machine } = context
+    schedule.disableScrollingCloseToEdges(schedule.timeAxisSubGrid)
     const targetEventRecord = schedule.resolveEventRecord(target)
-    if (targetEventRecord) {
-      Toast.show(`dropped on ${target}, ${targetEventRecord}`)
-    }
-    this.tip?.hide()
-    schedule.disableScrollingCloseToEdges(this.schedule.timeAxisSubGrid)
-    onDropSocket()
-    if (valid && target) {
-      context.task.originalData.notStarted = true
-      const coordinate = DomHelper.getTranslateX(element)
-      const startDate = schedule.getDateFromCoordinate(
-        coordinate,
-        'round',
-        false,
-      )
-      if (!startDate)
-        return
-
-      this.grid.store.remove(task)
-      task.setStartDate(startDate)
-      const machine = schedule.resolveResourceRecord(context.target)
-        .originalData.id
-      // schedule.eventStore.add(task)
-      await schedule.scheduleEvent({
-        eventRecord: task,
-        startDate,
-        resourceRecord: machine,
-      })
-      const newEvent = {
-        planKey: task.originalData.id,
-        machineId: machine,
-        plannedStartTime: startDate,
-        theoreticalDuration: task.originalData.theoricalDuration,
+    const events = machine.events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+    if (target) {
+      if (targetEventRecord) {
+        const futureEvents = machine.events.filter(a => a.startDate > targetEventRecord.startDate).sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+        task.startDate = addMinutes(targetEventRecord.endDate, 5)
+        task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
+        futureEvents.forEach((ev, i) => {
+          if (i === 0) {
+            ev.startDate = addMinutes(task.endDate, 5)
+            ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
+          } else {
+            const prevEvent = futureEvents[i - 1]
+            ev.startDate = addMinutes(prevEvent.endDate, 5)
+            ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
+          }
+        })
+        await schedule.scheduleEvent({
+          eventRecord: task,
+          startDate: task.startDate,
+          resourceRecord: machine,
+        }).then(async () => {
+          grid.store.remove(task)
+          task.assign(machine)
+          schedule.renderRows()
+          const body = generateQueueNumber(machine.events, machine.id).map(a => a.originalData).map((ev) => {
+            return {
+              planKey: ev.id,
+              machineId: ev.resourceId,
+              queueNumber: ev.queueNumber,
+            }
+          })
+          await $fetch('/api/queueBased/planningBoardUpdate', {
+            method: 'PUT',
+            body,
+          })
+        }).catch(err => Toast.show(`Scheduling Failed: ${err}`))
+      } else {
+        const lastEvent = events[events.length - 1]
+        const startDate = addMinutes(lastEvent.endDate, 5)
+        task.startDate = startDate
+        task.endDate = addSeconds(startDate, task.theoreticalDuration)
+        await schedule.scheduleEvent({
+          eventRecord: task,
+          startDate: task.startDate,
+          resourceRecord: machine,
+        }).then(async () => {
+          grid.store.remove(task)
+          task.assign(machine)
+          schedule.renderRows()
+          const body = generateQueueNumber(machine.events, machine.id).map(a => a.originalData).map((ev) => {
+            return {
+              planKey: ev.id,
+              machineId: ev.resourceId,
+              queueNumber: ev.queueNumber,
+            }
+          })
+          await $fetch('/api/queueBased/planningBoardUpdate', {
+            method: 'PUT',
+            body,
+          })
+        }).catch(err => Toast.show(`Scheduling Failed: ${err}`))
       }
-      AjaxHelper.post('/api/queueBased/planningBoardPost', newEvent, { credentials: 'omit' })
-        .then(() => schedule.renderRows())
-      Toast.show('Event saved')
-    }
-
-    if (machine) {
-      machine.cls = ''
     }
     schedule.features.eventTooltip.disabled = false
+
     for (let i = 0; i < schedule.resources.length; i++) {
       const element = schedule.resources[i]
       const currentRow = getResourceRow(element)
@@ -338,17 +363,6 @@ export class QueueDrag extends DragHelper {
 }
 export class QueueTask extends EventModel {
   static $name = 'Task'
-
-  // case this.isRunning:
-  //   return 'green'
-
-  // case this.isStopped:
-  //   return 'gray'
-
-  // case this.isDeleted:
-  //   return 'orange'
-
-  // default: return 'blue'
 
   get eventColor() {
     const ptSettings = JSON.parse(localStorage.getItem('pt-settings'))
@@ -409,8 +423,8 @@ export class TaskStore extends EventStore {
 
       previousFirstEvent.startDate = new Date()
       targetFirstEvent.startDate = new Date()
-      previousFirstEvent.endDate = new Date(previousFirstEvent.startDate.getTime() + previousFirstEvent.theoreticalDuration * 1000)
-      targetFirstEvent.endDate = new Date(targetFirstEvent.startDate.getTime() + targetFirstEvent.theoreticalDuration * 1000)
+      previousFirstEvent.endDate = addSeconds(previousFirstEvent.startDate, previousFirstEvent.theoreticalDuration)
+      targetFirstEvent.endDate = addSeconds(targetFirstEvent.startDate, targetFirstEvent.theoreticalDuration)
 
       const previousFutureEvents = []
       const targetFutureEvents = []
@@ -433,20 +447,20 @@ export class TaskStore extends EventStore {
 
       previousFutureEvents.forEach((ev, i, all) => {
         const prev = all[i - 1] || previousFirstEvent
-        ev.startDate = new Date(prev.endDate.getTime() + 5 * 60000)
-        ev.endDate = new Date(ev.startDate.getTime() + ev.theoreticalDuration * 1000)
+        ev.startDate = addMinutes(prev.endDate, 5)
+        ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
       })
 
       targetFutureEvents.forEach((ev, i, all) => {
         const prev = all[i - 1] || targetFirstEvent
-        ev.startDate = new Date(prev.endDate.getTime() + 5 * 60000)
-        ev.endDate = new Date(ev.startDate.getTime() + ev.theoreticalDuration * 1000)
+        ev.startDate = addMinutes(prev.endDate, 5)
+        ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
       })
     } else {
       const resourceEvents = targetResource.events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
       const firstEvent = resourceEvents[0]
       firstEvent.startDate = new Date()
-      firstEvent.endDate = new Date(firstEvent.startDate.getTime() + firstEvent.theoreticalDuration * 1000)
+      firstEvent.endDate = addSeconds(firstEvent.startDate, firstEvent.theoreticalDuration)
       const futureEvents = []
       resourceEvents.forEach((event) => {
         if (event !== firstEvent) {
@@ -457,8 +471,8 @@ export class TaskStore extends EventStore {
       })
       futureEvents.forEach((ev, i, all) => {
         const prev = all[i - 1] || firstEvent
-        ev.startDate = new Date(prev.endDate.getTime() + 5 * 60000)
-        ev.endDate = new Date(ev.startDate.getTime() + ev.theoreticalDuration * 1000)
+        ev.startDate = addMinutes(prev.endDate, 5)
+        ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
       })
     }
     await this.finalizeRescheduling(targetResource, previousResource)
@@ -469,7 +483,7 @@ export class TaskStore extends EventStore {
     const futureEvents = []
     const firstEvent = eventRecord.resource.events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)[0]
     firstEvent.startDate = new Date()
-    firstEvent.endDate = new Date(firstEvent.startDate.getTime() + firstEvent.theoreticalDuration * 1000)
+    firstEvent.endDate = addSeconds(firstEvent.startDate, firstEvent.theoreticalDuration)
     eventRecord.resource.events.forEach((event) => {
       if (event !== firstEvent) {
         if (event.startDate >= firstEvent.startDate) {
@@ -480,8 +494,8 @@ export class TaskStore extends EventStore {
     futureEvents.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
     futureEvents.forEach((ev, i, all) => {
       const prev = all[i - 1] || firstEvent
-      ev.startDate = new Date(prev.endDate.getTime() + 5 * 60000)
-      ev.endDate = new Date(ev.startDate.getTime() + ev.theoreticalDuration * 1000)
+      ev.startDate = addMinutes(prev.endDate, 5)
+      ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
     })
     await this.finalizeRescheduling(targetResource, previousResource)
   }
