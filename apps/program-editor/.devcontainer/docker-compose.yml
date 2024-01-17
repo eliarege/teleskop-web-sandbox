@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - 'PNPM_HOME=$PNPM_HOME'
+    environment:
+      NPM_TOKEN: $NPM_TOKEN
+      TEST_DB_HOST: db
+      TEST_DB_DATABASE: Teleskop
+      TEST_DB_PASSWORD: Devcontainer101
+    volumes:
+      - ../../..:/workspaces:cached
+      - $HOME/.npmrc:/home/node/.npmrc
+      - $PNPM_HOME:$PNPM_HOME
+
+    command: sleep infinity
+    network_mode: service:db
+
+  # Teleskop veritabanı
+  db:
+    build:
+      context: database
+      dockerfile: Dockerfile
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_DATABASE: Teleskop
+      MSSQL_SA_PASSWORD: Devcontainer101
+
+  # T7 FTP server
+  ftp-server:
+    image: stilliard/pure-ftpd
+    environment:
+      PUBLICHOST: ftp-server
+      FTP_USER_NAME: eliar
+      FTP_USER_PASS: el1984
+      FTP_USER_HOME: /home/eliar
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.4
+    command: ["start-dev"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
