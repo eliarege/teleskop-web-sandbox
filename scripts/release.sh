@@ -39,7 +39,7 @@ docker pull $IMAGE_LATEST || true
 docker build \
   --cache-from $IMAGE_LATEST \
   --build-arg APP_NAME="$APP_NAME" \
-  --build-arg APP_VERSION="$IMAGE_TAG" \
+  --build-arg APP_VERSION="$CI_COMMIT_TAG" \
   --build-arg APP_COMMIT_HASH="$CI_COMMIT_SHA" \
   --build-arg APP_BUILD_DATE="$BUILD_DATE" \
   --build-arg APP_PORT="$(jq -r .eliar.port $PKG_PATH)" \
@@ -47,7 +47,7 @@ docker build \
   --build-arg TURBO_CONFIG="$TURBO_CONFIG" \
   --build-arg TURBO_FORCE="$TURBO_FORCE" \
   --label com.eliar.manifest.name="$APP_NAME" \
-  --label com.eliar.manifest.version="$IMAGE_TAG" \
+  --label com.eliar.manifest.version="$CI_COMMIT_TAG" \
   --label com.eliar.manifest.roles="$(jq -Mc .roles $MANIFEST_PATH 2> /dev/null || echo '[]')" \
   --label com.eliar.manifest.build.commit_hash="$CI_COMMIT_SHA" \
   --label com.eliar.manifest.build.date="$BUILD_DATE" \
