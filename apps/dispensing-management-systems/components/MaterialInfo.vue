@@ -12,7 +12,6 @@ const { t } = useI18n()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const material = toRef(props, 'material')
 const editedMaterial = ref({ ...material.value })
-console.log(material.value)
 const groupOptions = [{
   groupNo: 1,
   groupName: 'Chemical',

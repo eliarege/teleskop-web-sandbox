@@ -44,10 +44,12 @@ async function onRowClick(_event: Event, row: any) {
 </script>
 
 <template>
+  <div class="flex-center text-xl mb-10">
+    {{ t('settings.Material') }}
+  </div>
   <QTable
     flat
     bordered
-    class="mt-10"
     separator="cell"
     :columns="columns"
     :rows="materials"

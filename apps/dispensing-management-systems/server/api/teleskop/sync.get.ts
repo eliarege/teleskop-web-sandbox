@@ -1,56 +1,76 @@
 import { teleskopDB } from '~/server/connectionPool'
 
-const selectParameters = {
-  jobId: 'r.REQNUMBER',
-  batchNo: 'r.BATCHNO',
-  batchCorrectionNo: 'r.BATCHCORRECTIONNO',
-  machineName: 'm.MACHINENAME',
-  machineId: 'm.MACHINEID',
-  controllerType: 'm.CONTROLLERTYPE',
-  tankNo: 'r.TANKNO',
-  programNo: 'r.PROGRAMNO',
+const jobOrderParams = {
+  jobId: 'j.REQNUMBER',
+  batchNo: 'j.BATCHNO',
+  batchCorrectionNo: 'j.BATCHCORRECTIONNO',
+  dispenserId: 'j.DISPENSERID',
+  machineId: 'j.MACHINEID',
+  tankNo: 'j.TANKNO',
+  programNo: 'j.PROGRAMNO',
   programName: 'p.NAME',
-  recipeType: 'r.RECIPETYPE',
-  recipeProcessNo: 'r.RECIPEINDEX',
-  stepNo: 'r.PROGRAMSTEPNO',
-  recipeStepNo: 'r.RECIPESTEPNO',
-  status: 'r.STATUS',
-  dispenserId: 'r.DISPENSERID',
-  dispenserName: 'd.NAME',
-  dispenserIP: 'd.IP',
-  lastConsumptionControl: 'd.lastConsumptionControl',
-  dispenserType: 'd.DISPENSERTYPENO',
-  protocol: 'd.PROTOCOL',
-  readConsumptionFromDMS: 'd.READCONSUMPTIONFROMDMS',
-  consumptionFilename: 'd.CONSUMPTIONFILENAME',
-  fileName: 'd.BDYREQUESTNAME',
-  filePath: 'd.BDYREQUESTPATH',
+  recipeType: 'j.ACTUALRECIPETYPE',
+  recipeProcessNo: 'j.RECIPEINDEX',
+  stepNo: 'j.PROGRAMSTEPNO',
+  recipeStepNo: 'j.RECIPESTEPNO',
+  status: 'j.STATUS',
+}
+const dispenserParams = {
+  dispenserId: 'DISPENSERID',
+  dispenserName: 'NAME',
+  dispenserIP: 'IP',
+  lastConsumptionControl: 'lastConsumptionControl',
+  dispenserType: 'DISPENSERTYPENO',
+  protocol: 'PROTOCOL',
+  readConsumptionFromDMS: 'READCONSUMPTIONFROMDMS',
+  consumptionFilename: 'CONSUMPTIONFILENAME',
+  fileName: 'BDYREQUESTNAME',
+  filePath: 'BDYREQUESTPATH',
+}
+const machineParams = {
+  machineName: 'MACHINENAME',
+  machineId: 'MACHINEID',
+  controllerType: 'CONTROLLERTYPE',
+}
+const materialParams = {
+  materialCode: 'MATERIALCODE',
+  materialName: 'MATERIALNAME',
+  materialGroupNo: 'MADDEGRUPNO',
+  density: 'YOGUNLUK',
+  ph: 'PH',
+  source: 'SOURCE',
+  costUnit: 'MALIYETBIRIMI',
+  unitCost: 'BIRIMMALIYET',
+  reRequestable: 'ReRequestable',
+  directTransfer: 'DirectTransfer',
+}
+const materialRequestParams = {
+  materialCode: 'CHEMCODE',
+  jobId: 'REQNUMBER',
+  amount: 'AMOUNT',
+  status: 'STATUS',
 }
 export default defineEventHandler(async () => {
-  // const { isCanceled } = getQuery(event)
   try {
-    const result = teleskopDB('dbo.DYTFCHEMREQUESTS as r')
-      .join('dbo.DYTFMACHINES as m', 'r.MACHINEID', 'm.MACHINEID')
-      .leftJoin('dbo.DYTFDISPENSERSETTINGS as d', 'r.DISPENSERID', 'd.DISPENSERID')
+    const jobOrders = await teleskopDB('dbo.DYTFCHEMREQUESTS as j')
       .leftJoin('dbo.BFMASTERPRGHEADER as p', (builder) => {
         builder
-          .on('r.PROGRAMNO', '=', 'p.PROGNO')
-          .andOn('r.MACHINEID', '=', 'p.MACHINEID')
+          .on('j.PROGRAMNO', '=', 'p.PROGNO')
+          .andOn('j.MACHINEID', '=', 'p.MACHINEID')
       })
-      .select(selectParameters)
-      .orderBy('r.REQNUMBER', 'asc')
-      // .where((builder) => {
-    // if (isCanceled === 'true') {
-    // builder.where('r.STATUS', 3)
-    // .orWhere('r.STATUS', 8)
-    // } else {
-    // builder.whereNot('r.STATUS', 3)
-    // .andWhereNot('r.STATUS', 8)
-    // }
-      // })
-      // result.limit(1000)
-    return result
+      .select(jobOrderParams)
+    const dispensers = await teleskopDB('dbo.DYTFDISPENSERSETTINGS')
+      .select(dispenserParams)
+    const machines = await teleskopDB('dbo.DYTFMACHINES')
+      .select(machineParams)
+    const materials = await teleskopDB('dbo.DYTFMATERIAL')
+      .select(materialParams)
+    const materialReqs = await teleskopDB('dbo.DYTFREQMATERIALS')
+      .select(materialRequestParams)
+    const res = { dispensers, machines, jobOrders, materials, materialReqs }
+    return res
   } catch (e) {
+    console.log(e)
     return e
   }
 })

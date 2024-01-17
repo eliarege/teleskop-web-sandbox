@@ -6,6 +6,8 @@ export default defineEventHandler(async (event) => {
     const machines: any[] = []
     const dispensers: any[] = []
     const jobOrders: any[] = []
+    const materials: any[] = []
+    const materialReqs: any[] = []
 
     teleskopData.dispensers.forEach((data: any) => {
       const dispenser = {
@@ -33,7 +35,6 @@ export default defineEventHandler(async (event) => {
     })
     teleskopData.jobOrders.forEach((data: any) => {
       const jobOrder = ({
-        job_id: data.jobId,
         batch_no: data.batchNo,
         batch_correction_no: data.batchCorrectionNo,
         dispenser_id: data.dispenserId,
@@ -49,15 +50,44 @@ export default defineEventHandler(async (event) => {
       })
       jobOrders.push(jobOrder)
     })
+
+    teleskopData.materials.forEach((data: any) => {
+      const material = ({
+        material_code: data.materialCode,
+        material_name: data.materialName,
+        material_group_no: data.materialGroupNo,
+        density: data.density,
+        ph: data.ph,
+        source: data.source,
+        cost_unit: data.costUnit,
+        unit_cost: data.unitCost,
+        re_requestable: data.reRequestable,
+        direct_transfer: data.directTransfer,
+      })
+      materials.push(material)
+    })
+    teleskopData.materialReqs.forEach((data: any) => {
+      const materialReq = ({
+        material_code: data.materialCode,
+        req_no: data.jobId,
+        amount: data.amount,
+        status: data.status,
+      })
+      materialReqs.push(materialReq)
+    })
+    const batchSize = 1000
+
     await dmsDB('JOB_ORDER').del()
     await dmsDB('DISPENSER').del()
     await dmsDB('MACHINE').del()
-
-    const batchSize = 1000
+    await dmsDB('MATERIAL_REQUEST').del()
+    await dmsDB('MATERIAL').del()
 
     await batchInsert(dispensers, batchSize, 'DISPENSER')
     await batchInsert(machines, batchSize, 'MACHINE')
     await batchInsert(jobOrders, batchSize, 'JOB_ORDER')
+    await batchInsert(materials, batchSize, 'MATERIAL')
+    await batchInsert(materialReqs, batchSize, 'MATERIAL_REQUEST')
   } catch (e) {
     console.error(e)
     return e

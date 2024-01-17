@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { TeleskopData } from '~/shared/types'
-import { convertTeleskopData } from '~/shared/utils'
 import { useStateStore } from '~/store/State'
 
 const emit = defineEmits(['refresh'])
@@ -9,8 +7,7 @@ const stateStore = useStateStore()
 async function syncData() {
   try {
     stateStore.isLoading = true
-    const teleskopData = await $fetch<TeleskopData[]>('/api/teleskop/sync')
-    const data = convertTeleskopData(teleskopData)
+    const data = await $fetch('/api/teleskop/sync')
     await $fetch('/api/teleskop/sync', { method: 'POST', body: data })
   } catch (e) {
     console.error(e)

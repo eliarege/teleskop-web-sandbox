@@ -44,6 +44,7 @@ export interface Material {
   directTransfer: boolean
 }
 export interface MaterialRequest {
+  jobId: number
   materialCode: string
   materialName: string
   amount: number
@@ -56,34 +57,4 @@ export interface Machine {
 }
 export interface User {
   username: string
-}
-export interface TeleskopData {
-  // dispenser
-  dispenserId: number
-  dispenserName: string
-  dispenserIP: string
-  dipenserPswrd: string
-  lastConsumptionControl: Date
-  dispenserType: number
-  protocol: string
-  readConsumptionFromDMS: boolean
-  consumptionFilename: string
-  fileName: string
-  filePath: string
-  // machine
-  machineName: string
-  machineId: number
-  controllerType: number
-  // job order
-  jobId: number
-  batchNo: number
-  batchCorrectionNo: number
-  tankNo: number
-  programNo: number
-  programName: string
-  recipeType: string
-  recipeProcessNo: number
-  stepNo: number
-  recipeStepNo: number
-  status: number
 }
