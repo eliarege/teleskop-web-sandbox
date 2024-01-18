@@ -1,6 +1,7 @@
 {
   "New": "Yeni",
   "AddNew": "Yeni Dağıtıcı Ekle",
+  "AddNewMac": "Yeni Makine Ekle",
   "SyncData": "Teleskop Verisiyle Senkronize Et",
   "Homepage": "Anasayfa",
   "Settings": "Ayarlar",
@@ -73,6 +74,10 @@
     "Type": "Dağıtıcı Tipi",
     "Protocol": "Protokol",
     "ConsumptionFile": "Tüketim Dosya Adı"
+  },
+  "machineFields": {
+    "Name": "Makine Adı",
+    "ControllerType": "Kontrol Makinesi"
   },
   "statusCodes": {
     "text": "Durum",

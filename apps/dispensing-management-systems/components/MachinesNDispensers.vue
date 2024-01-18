@@ -1,8 +1,12 @@
 <script lang="ts" setup>
 import type { QTableColumn } from 'quasar'
+import AddDispenser from './AddDispenser.vue'
+import AddMachine from './AddMachine.vue'
+
 import type { Dispenser, Machine } from '~/shared/types'
 
 const { t } = useI18n()
+const q = useQuasar()
 
 const dispenserColumns: (QTableColumn<Dispenser>)[] = [
   {
@@ -18,12 +22,6 @@ const dispenserColumns: (QTableColumn<Dispenser>)[] = [
   { name: 'ip', label: t('Dispenser IP'), field: 'dispenserIP' },
   { name: 'type', label: t('Dispenser Type'), field: 'dispenserType' },
   { name: 'protocol', label: t('Protocol'), field: 'protocol' },
-  // { name: 'last_consumption_control', label: t('Last Consumption Control'), field: 'lastConsumptionControl' },
-  // { name: 'read_consumption_from_dms', label: t('Read Consumption from DMS'), field: 'readConsumptionFromDMS', sortable: true },
-  // { name: 'consumption_filename', label: t('Consumption Filename'), field: 'consumptionFilename' },
-  // { name: 'bdy_requestname', label: t('Body Request Name'), field: 'bdyRequestName' },
-  // { name: 'bdy_requestpath', label: t('Body Request Path'), field: 'bdyRequestPath' },
-
 ]
 
 const machineColumns: (QTableColumn<Machine>)[] = [
@@ -43,24 +41,36 @@ const machineColumns: (QTableColumn<Machine>)[] = [
 const { data: dispenserRows, refresh: refreshDispensers } = await useFetch(`/api/dispensers/dispensers`)
 const { data: machineRows, refresh: refreshMachines } = await useFetch(`/api/machines/machines`)
 
-async function addDispenser(newDispenser: Dispenser) {
-  await $fetch('/api/dispensers/dispensers/post', { method: 'POST', body: newDispenser })
+async function handleNewDispenser() {
+  q.dialog({
+    component: AddDispenser,
+  }).onOk(() => {
+    refreshDispensers()
+    q.notify({
+      color: 'green-4',
+      textColor: 'white',
+      icon: 'done',
+      message: t('Success'),
+      timeout: 3000,
+    })
+  })
+  console.log('new dispenser')
 }
 
-async function addMachine(newMachine: Machine) {
-  await $fetch('/api/machines/machines/post', { method: 'POST', body: newMachine })
-}
-
-async function handleNewDispenser(newDispenser: Dispenser) {
-  await addDispenser(newDispenser)
-  refreshDispensers()
-  console.log('dispenser')
-}
-
-async function handleNewMachine(newMachine: Machine) {
-  await addMachine(newMachine)
-  refreshMachines()
-  console.log('machine')
+async function handleNewMachine() {
+  q.dialog({
+    component: AddMachine,
+  }).onOk(() => {
+    refreshMachines()
+    q.notify({
+      color: 'green-4',
+      textColor: 'white',
+      icon: 'done',
+      message: t('Success'),
+      timeout: 3000,
+    })
+  })
+  console.log('new machine')
 }
 
 const expandedDispensers = ref<number[]>([])
@@ -102,7 +112,7 @@ const myPagination = ref({ rowsPerPage: 14 })
       <q-card class="flex flex-column justify-between" bordered>
         <q-card-section class="flex items-center">
           <q-btn
-            :label="$t('New')"
+            :label="$t('AddNew')"
             no-caps
             icon="note_add"
             color="primary"
@@ -119,10 +129,9 @@ const myPagination = ref({ rowsPerPage: 14 })
         :rows="dispenserRows"
         :columns="dispenserColumns"
         separator="cell"
-        auto-width="true"
         loading="true"
         virtual-scroll
-        style="height: 600px"
+        style="height: 700px"
         flat
         bordered
       >
@@ -176,11 +185,12 @@ const myPagination = ref({ rowsPerPage: 14 })
       <q-card class="flex flex-row justify-between" bordered>
         <q-card-section class="flex items-center">
           <q-btn
-            :label="$t('New')"
+            :label="$t('AddNewMac')"
             no-caps
             icon="note_add"
             color="primary"
             class="mr-4 ml-2"
+            clickable
             @click="handleNewMachine()"
           />
         </q-card-section>
@@ -193,9 +203,8 @@ const myPagination = ref({ rowsPerPage: 14 })
         :columns="machineColumns"
         row-key="name"
         separator="cell"
-        auto-width="true"
         virtual-scroll
-        style="height: 600px"
+        style="height: 700px"
         flat
         bordered
       >

@@ -1,6 +1,7 @@
 {
   "New": "New",
   "AddNew": "Add New Dispenser",
+  "AddNewMac": "Add New Machine",
   "SyncData": "Sync Teleskop Data",
   "Homepage": "Homepage",
   "Settings": "Settings",
@@ -73,6 +74,10 @@
     "Type": "Dispenser Type",
     "Protocol": "Protocol",
     "ConsumptionFile": "Consumtpion File Name"
+  },
+  "machineFields": {
+    "Name": "Machine Name",
+    "ControllerType": "Controller Type"
   },
   "statusCodes": {
     "text": "Status",

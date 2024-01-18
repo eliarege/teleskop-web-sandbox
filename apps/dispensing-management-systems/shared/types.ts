@@ -55,6 +55,10 @@ export interface Machine {
   machineName: string
   controllerType: number
 }
+export interface MachineControllerType {
+  controllerTypeId: number
+  controllerTypeName: string
+}
 export interface User {
   username: string
 }
