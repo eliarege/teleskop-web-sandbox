@@ -36,6 +36,7 @@ export async function getTimeBasedPlannedEvents(from: Date | string, to: Date | 
   })
   return updateEventStates(modifiedEvents)
 }
+// Zaman Bazlı planlamada taskin hangi makinelerde çalışabileceğini döndürür.
 export async function isTaskValidTimeBased(planKey: number) {
   const taskPrgList: Set<number> = new Set(
     (
@@ -95,56 +96,62 @@ export async function updateTimeBasedEvents(planKey: number, machineId: number, 
   FROM PTBATCHPLANQUEUE p
   WHERE p.MACHINEID = ${machineId}
   ORDER BY p.QUEUENUMBER DESC
-`))[0].queue
+  `))[0].queue
 
-  await knex('PTBATCHPLANQUEUE')
-    .update({ MACHINEID: machineId, STARTTIME: plannedStartTime, QUEUENUMBER: queueNumber })
-    .where({ PLANKEY: planKey })
+  await knex.transaction(async (trx) => {
+    await trx('PTBATCHPLANQUEUE')
+      .update({ MACHINEID: machineId, STARTTIME: plannedStartTime, QUEUENUMBER: queueNumber })
+      .where({ PLANKEY: planKey })
 
-  await knex('DYBFBATCHPLAN')
-    .update({
-      MACHINEIDLIST: machineId,
-      PLANNEDMACHINE: machineId,
-      PLANNEDSTARTTIME: plannedStartTime,
-      TheoricalDuration: theoreticalDuration.find(a => a.machineId === machineId).theoreticalDuration,
-    })
-    .where({ PLANKEY: planKey })
-  await knex('DYBFBATCHPLANPARAMETERS')
-    .update('PARAMSTRING', knex.raw('B.PARAMNAME'))
-    .from('DYBFBATCHPLANPARAMETERS')
-    .innerJoin({ B: 'BFERPPARAMETERDEFINITIONS' }, (builder) => {
-      builder.on('PLANKEY', '=', knex.raw(planKey))
-        .andOn('B.MACHINEID', '=', knex.raw(machineId))
-        .andOn('B.PARAMID', '=', 'BATCHPARAMETERID')
-    })
+    await trx('DYBFBATCHPLAN')
+      .update({
+        MACHINEIDLIST: machineId,
+        PLANNEDMACHINE: machineId,
+        PLANNEDSTARTTIME: plannedStartTime,
+        TheoricalDuration: theoreticalDuration.find(a => a.machineId === machineId).theoreticalDuration,
+      })
+      .where({ PLANKEY: planKey })
+
+    await trx('DYBFBATCHPLANPARAMETERS')
+      .update('PARAMSTRING', knex.raw('B.PARAMNAME'))
+      .from('DYBFBATCHPLANPARAMETERS')
+      .innerJoin({ B: 'BFERPPARAMETERDEFINITIONS' }, (builder) => {
+        builder.on('PLANKEY', '=', knex.raw(planKey))
+          .andOn('B.MACHINEID', '=', knex.raw(machineId))
+          .andOn('B.PARAMID', '=', 'BATCHPARAMETERID')
+      })
+  })
 }
 // SAVE
 export async function scheduleTimeBasedEvents(planKey: number, machineId: number, plannedStartTime: string) {
   const theoreticalDuration = await getTimeBasedTheoreticalDuration(planKey)
   const queueNumber = (await knex.raw(`SELECT TOP 1 p.QUEUENUMBER + 1 as queue FROM PTBATCHPLANQUEUE p WHERE p.MACHINEID = ${machineId} ORDER BY p.QUEUENUMBER DESC`))[0].queue
-  await knex('DYBFBATCHPLAN')
-    .update({
-      MACHINEIDLIST: machineId,
-      PLANNEDMACHINE: machineId,
-      PLANNEDSTARTTIME: plannedStartTime,
-      TheoricalDuration: theoreticalDuration.find(a => a.machineId === machineId).theoreticalDuration,
-    })
-    .where({ PLANKEY: planKey })
 
-  await knex('PTBATCHPLANQUEUE')
-    .insert({
-      PLANKEY: planKey,
-      MACHINEID: machineId,
-      QUEUENUMBER: queueNumber,
-      STARTTIME: plannedStartTime,
-    })
-  await knex('DYBFBATCHPLANPARAMETERS')
-    .update('PARAMSTRING', knex.raw('B.PARAMNAME'))
-    .from('DYBFBATCHPLANPARAMETERS')
-    .innerJoin({ B: 'BFERPPARAMETERDEFINITIONS' }, (builder) => {
-      builder.on('PLANKEY', '=', knex.raw(planKey))
-        .andOn('B.MACHINEID', '=', knex.raw(machineId))
-        .andOn('B.PARAMID', '=', 'BATCHPARAMETERID')
-    })
+  await knex.transaction(async (trx) => {
+    await trx('DYBFBATCHPLAN')
+      .update({
+        MACHINEIDLIST: machineId,
+        PLANNEDMACHINE: machineId,
+        PLANNEDSTARTTIME: plannedStartTime,
+        TheoricalDuration: theoreticalDuration.find(a => a.machineId === machineId).theoreticalDuration,
+      })
+      .where({ PLANKEY: planKey })
+
+    await trx('PTBATCHPLANQUEUE')
+      .insert({
+        PLANKEY: planKey,
+        MACHINEID: machineId,
+        QUEUENUMBER: queueNumber,
+        STARTTIME: plannedStartTime,
+      })
+    await trx('DYBFBATCHPLANPARAMETERS')
+      .update('PARAMSTRING', knex.raw('B.PARAMNAME'))
+      .from('DYBFBATCHPLANPARAMETERS')
+      .innerJoin({ B: 'BFERPPARAMETERDEFINITIONS' }, (builder) => {
+        builder.on('PLANKEY', '=', knex.raw(planKey))
+          .andOn('B.MACHINEID', '=', knex.raw(machineId))
+          .andOn('B.PARAMID', '=', 'BATCHPARAMETERID')
+      })
+  })
 }
 // DELETE

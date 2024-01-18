@@ -1,6 +1,7 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import { generateEventDates } from '../../../composables/helper'
 import {
+  getQueueBasedArchiveEvents,
   getQueueBasedPlannedEvents,
   getQueueBasedTheoreticalDuration,
   isTaskValidQueueBased,
@@ -20,8 +21,23 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           return reply.code(400).send({ error: 'Both "from" and "to" parameters are required.' })
         }
         const plannedEvents = await getQueueBasedPlannedEvents(from, to)
-        const a = generateEventDates(plannedEvents)
-        return reply.code(200).send(a)
+        const datedPlannedEvents = generateEventDates(plannedEvents)
+        return reply.code(200).send(datedPlannedEvents)
+      } catch (err) {
+        fastify.log.error(err)
+        return reply.code(500).send({ error: 'Internal Server Error' })
+      }
+    },
+  )
+  fastify.get(
+    '/queue_based/archive_events',
+    async (request: FastifyRequest<{
+      Querystring: { archiveDays: string }
+    }>, reply) => {
+      try {
+        const { archiveDays } = request.query
+        const plannedEvents = await getQueueBasedArchiveEvents(Number.parseInt(archiveDays))
+        return reply.code(200).send(plannedEvents)
       } catch (err) {
         fastify.log.error(err)
         return reply.code(500).send({ error: 'Internal Server Error' })
