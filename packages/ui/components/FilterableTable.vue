@@ -613,7 +613,7 @@ function checkForButtonsInsteadOfSelect(col: any) {
     "last12month": "Son 12 Ay",
     "custom": "Özel",
     "intervals": "aralıklar",
-    "in": "in",
+    "in": " ",
     "ascending": "artan",
     "descending": "azalan",
     "order": "sırada",

@@ -46,7 +46,13 @@ const columnsRecipe: Column[] = [
     optionValue: 'dispNo',
   }, // TODO: Dispenserşarı dönen endpoint
   { name: 'programno', label: t('programNo'), field: 'programno', filterable: true, filterType: 'comparison' },
-  { name: 'programname', label: t('programName'), field: 'programname', filterable: true }, // TODO: select
+  {
+    name: 'programname',
+    label: t('programName'),
+    field: 'programname',
+    filterable: true,
+    filterType: 'includes',
+  },
   { name: 'stepno', label: t('dispensingManager.stepNo'), field: 'stepno', filterable: true, filterType: 'comparison' },
   {
     name: 'recipeType',
@@ -64,7 +70,24 @@ const columnsRecipe: Column[] = [
   // filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType'}]
   { name: 'recipeProcessNo', label: t('dispensingManager.recipeOrder'), field: 'recipeProcessNo', filterable: true, filterType: 'comparison' },
   { name: 'recipeStepNo', label: t('dispensingManager.recipeStepNum'), field: 'recipeStepNo', filterable: true, filterType: 'comparison' },
-  { name: 'status', label: t('statusCodes.text'), field: 'status' },
+  {
+    name: 'status',
+    label: t('statusCodes.text'),
+    field: 'status',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: [
+      { label: t('statusCodes.0'), status: 0 },
+      { label: t('statusCodes.1'), status: 1 },
+      { label: t('statusCodes.2'), status: 2 },
+      { label: t('statusCodes.3'), status: 3 },
+      { label: t('statusCodes.4'), status: 4 },
+      { label: t('statusCodes.8'), status: 8 },
+      { label: t('statusCodes.10'), status: 10 },
+    ],
+    optionLabel: 'label',
+    optionValue: 'status',
+  },
 ]
 const columnsMaterial = [
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
