@@ -20,6 +20,16 @@ async function handleMachineDelete() {
   await deleteMachines(machineIds)
   emit('deleteMachine', machineIds)
 }
+
+async function loadProject() {
+  await $fetch('/api/ftp/update-machine', {
+    method: 'GET',
+    query: {
+      machineId: props.selected.machineId,
+      ip: props.selected.ip,
+    },
+  })
+}
 </script>
 
 <template>
@@ -39,6 +49,7 @@ async function handleMachineDelete() {
         icon="system_update_alt"
         color="primary"
         class="mr-4"
+        @click="loadProject"
       />
       <q-btn
         label="Özellikler"
