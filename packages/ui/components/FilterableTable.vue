@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { Column, DateType, FilterSlot } from 'ui-types'
 
 // @ts-expect-error nuxt import
@@ -196,6 +196,12 @@ function updateSortOrder(col: Column, index: number, isDescending: boolean) {
 watch(filterSlots.value, (newValue) => {
   emit('updateFilterSlots', newValue)
 })
+
+function checkForButtonsInsteadOfSelect(col: any) {
+  if (col.selectionOptions !== undefined && col.filterType !== undefined)
+    return (col.selectionOptions.length < 6 && col.filterType === 'select')
+  return false
+}
 </script>
 
 <template>
@@ -305,7 +311,17 @@ watch(filterSlots.value, (newValue) => {
                 </div>
                 <q-separator />
                 <div v-if="col.filterType === 'multiselect' || col.filterType === 'select'">
+                  <div v-if="checkForButtonsInsteadOfSelect(col)" class="flex flex-col gap-5 m-2">
+                    <q-btn
+                      v-for="opt in col.selectionOptions"
+                      :key="opt"
+                      :label="opt[col.optionLabel]"
+                      no-caps
+                      @click="selectedOptions[index] = opt, pushToFilters(col, index)"
+                    />
+                  </div>
                   <q-select
+                    v-else
                     v-model="selectedOptions[index]"
                     :options="col.selectionOptions"
                     :option-label="col?.optionLabel"
@@ -431,10 +447,10 @@ watch(filterSlots.value, (newValue) => {
                 </div>
                 <div class="flex justify-end">
                   <q-btn
-                    v-if="col.filterType !== 'date' && col.filterType"
+                    v-if="col.filterType !== 'date' && col.filterType && !checkForButtonsInsteadOfSelect(col)"
                     class="mt-5 mb-1"
                     style="color: rgb(0, 0, 0);"
-
+                    no-caps
                     @click="pushToFilters(col, index)"
                   >
                     {{ t('add') }}
