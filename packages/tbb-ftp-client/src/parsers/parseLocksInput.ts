@@ -47,7 +47,7 @@ export function parseSeperatedLocks(line: string) {
       inputs = parseVirtualInputs(parts.slice(2, -1))
       break
     default:
-      throw new TypeError(`Unexpected inputType: ${inputType}`)
+      break
   }
 
   return { lockId, inputType, inputs, logicType }
