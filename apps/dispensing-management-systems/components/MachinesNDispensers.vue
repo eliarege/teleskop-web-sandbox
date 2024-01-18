@@ -10,7 +10,7 @@ const q = useQuasar()
 
 const dispenserColumns: (QTableColumn<Dispenser>)[] = [
   {
-    name: 'id',
+    name: 'dispenserid',
     required: true,
     label: t('Dispenser Number'),
     align: 'center',
@@ -18,7 +18,7 @@ const dispenserColumns: (QTableColumn<Dispenser>)[] = [
     format: val => `${val}`,
     sortable: true,
   },
-  { name: 'name', label: t('Dispenser Name'), align: 'center', field: 'dispenserName', sortable: true },
+  { name: 'dispensername', label: t('Dispenser Name'), align: 'center', field: 'dispenserName', sortable: true },
   { name: 'ip', label: t('Dispenser IP'), field: 'dispenserIP' },
   { name: 'type', label: t('Dispenser Type'), field: 'dispenserType' },
   { name: 'protocol', label: t('Protocol'), field: 'protocol' },
@@ -26,15 +26,15 @@ const dispenserColumns: (QTableColumn<Dispenser>)[] = [
 
 const machineColumns: (QTableColumn<Machine>)[] = [
   {
-    name: 'id',
+    name: 'machineid',
     required: true,
     label: t('Machine Number'),
     align: 'center',
     field: 'machineId',
     format: val => `${val}`,
-    sortable: false,
+    sortable: true,
   },
-  { name: 'name', label: t('Machine Name'), align: 'center', field: 'machineName', sortable: true },
+  { name: 'machinename', label: t('Machine Name'), align: 'center', field: 'machineName', sortable: true },
   { name: 'controllertype', label: t('Controller Type'), align: 'center', field: 'controllerType', sortable: true },
 
 ]
@@ -98,7 +98,8 @@ function toggleMachineRow(id: number) {
   console.log(expandedMachines.value)
 }
 
-const myPagination = ref({ rowsPerPage: 14 })
+const dispenserPagination = ref({ rowsPerPage: 14 })
+const machinePagination = ref({ rowsPerPage: 14 })
 </script>
 
 <template>
@@ -124,7 +125,7 @@ const myPagination = ref({ rowsPerPage: 14 })
       </q-card>
 
       <q-table
-        v-model:pagination="myPagination"
+        v-model:pagination="dispenserPagination"
         title="Dispensers"
         :rows="dispenserRows"
         :columns="dispenserColumns"
@@ -197,7 +198,7 @@ const myPagination = ref({ rowsPerPage: 14 })
       </q-card>
 
       <q-table
-        v-model:pagination="myPagination"
+        v-model:pagination="machinePagination"
         title="Machines"
         :rows="machineRows"
         :columns="machineColumns"

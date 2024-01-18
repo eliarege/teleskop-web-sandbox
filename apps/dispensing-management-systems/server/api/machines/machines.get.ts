@@ -8,6 +8,7 @@ export default defineEventHandler(async () => {
       machineName: 'machine_name',
       controllerType: 'controller_type',
     })
+      .orderBy('machine_id')
     return machines
   } catch (e) {
     console.log(e)
