@@ -59,11 +59,24 @@ const enLocalization = {
     unassign: 'Unassigned Job Orders',
   },
 }
-
+function sortEventsByDateDesc(events) {
+  return events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+}
+function sortEventsByDateAsc(events) {
+  return events.sort((a, b) => a.startDate < b.startDate ? 1 : -1)
+}
 function generateQueueNumber(ev, resourceId) {
-  const sortedEvents = ev.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+  const sortedEvents = sortEventsByDateDesc(ev)
   const eventsWithQueueNumber = sortedEvents.map((e, i) => {
-    return { ...e, originalData: { ...e.originalData, queueNumber: i + 1, resourceId, machineId: resourceId } }
+    return {
+      ...e,
+      originalData: {
+        ...e.originalData,
+        queueNumber: i + 1,
+        resourceId,
+        machineId: resourceId,
+      },
+    }
   })
   return eventsWithQueueNumber
 }
@@ -280,10 +293,10 @@ export class QueueDrag extends DragHelper {
     const { task, valid, target, machine } = context
     schedule.disableScrollingCloseToEdges(schedule.timeAxisSubGrid)
     const targetEventRecord = schedule.resolveEventRecord(target)
-    const events = machine.events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+    const events = sortEventsByDateDesc(machine.events)
     if (target) {
       if (targetEventRecord) {
-        const futureEvents = machine.events.filter(a => a.startDate > targetEventRecord.startDate).sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+        const futureEvents = sortEventsByDateDesc(machine.events.filter(a => a.startDate > targetEventRecord.startDate))
         task.startDate = addMinutes(targetEventRecord.endDate, 5)
         task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
         futureEvents.forEach((ev, i) => {
@@ -416,8 +429,8 @@ export class TaskStore extends EventStore {
   // use this if you want to re-schedule a first event
   async scheduleFirstEvent(previousResource, targetResource) {
     if (previousResource !== targetResource) {
-      const previousResourceEvents = previousResource.events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
-      const targetResourceEvents = targetResource.events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+      const previousResourceEvents = sortEventsByDateDesc(previousResource.events)
+      const targetResourceEvents = sortEventsByDateDesc(targetResource.events)
       const previousFirstEvent = previousResourceEvents[0]
       const targetFirstEvent = targetResourceEvents[0]
 
@@ -457,7 +470,7 @@ export class TaskStore extends EventStore {
         ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
       })
     } else {
-      const resourceEvents = targetResource.events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+      const resourceEvents = sortEventsByDateDesc(targetResource.events)
       const firstEvent = resourceEvents[0]
       firstEvent.startDate = new Date()
       firstEvent.endDate = addSeconds(firstEvent.startDate, firstEvent.theoreticalDuration)
@@ -481,7 +494,7 @@ export class TaskStore extends EventStore {
   // use this if you want to re-schedule an event
   async rescheduleEvents(eventRecord, previousResource, targetResource) {
     const futureEvents = []
-    const firstEvent = eventRecord.resource.events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)[0]
+    const firstEvent = sortEventsByDateDesc(eventRecord.resource.events)[0]
     firstEvent.startDate = new Date()
     firstEvent.endDate = addSeconds(firstEvent.startDate, firstEvent.theoreticalDuration)
     eventRecord.resource.events.forEach((event) => {
@@ -491,7 +504,7 @@ export class TaskStore extends EventStore {
         }
       }
     })
-    futureEvents.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+    sortEventsByDateDesc(futureEvents)
     futureEvents.forEach((ev, i, all) => {
       const prev = all[i - 1] || firstEvent
       ev.startDate = addMinutes(prev.endDate, 5)
@@ -501,8 +514,8 @@ export class TaskStore extends EventStore {
   }
 
   async finalizeRescheduling(targetResource, previousResource) {
-    const targetResourceEvents = targetResource.events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
-    const previousResourceEvents = previousResource.events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+    const targetResourceEvents = sortEventsByDateDesc(targetResource.events)
+    const previousResourceEvents = sortEventsByDateDesc(previousResource.events)
 
     targetResourceEvents.forEach((event, i) => {
       event.originalData.queueNumber = i + 1
