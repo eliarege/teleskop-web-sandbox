@@ -17,7 +17,7 @@ const selectParameters = {
   programno: 'r.PROGRAMNO',
   programname: 'p.NAME',
   stepno: 'r.PROGRAMSTEPNO',
-  recipeType: 'r.ACTUALRECIPETYPE',
+  recipeType: 'r.RECIPETYPE',
   recipeProcessNo: 'r.RECIPEINDEX',
   recipeStepNo: 'r.RECIPESTEPNO',
   status: 'r.STATUS',
