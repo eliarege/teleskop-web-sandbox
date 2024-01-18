@@ -30,6 +30,16 @@ async function loadProject() {
     },
   })
 }
+
+async function loadDefinitions() {
+  await $fetch('/api/ftp/update-definitions', {
+    method: 'GET',
+    query: {
+      machineId: props.selected.machineId,
+      ip: props.selected.ip,
+    },
+  })
+}
 </script>
 
 <template>
@@ -93,6 +103,13 @@ async function loadProject() {
         color="primary"
         class="mr-4"
         @click="showFormulas = true"
+      />
+      <q-btn
+        label="Tanımları Al"
+        no-caps
+        color="primary"
+        class="mr-4"
+        @click="loadDefinitions"
       />
     </q-card-section>
 
