@@ -32,6 +32,7 @@ export function updateEventStates(ev: PlannedEvents[]) {
     return {
       ...e,
       deviation: e.isDeviation ? calculateDeviation(e.actualStartTime, e.plannedStartTime) : 0,
+      // ask how to check if this event is finished
       isFinished: new Date(e.plannedEndTime) < new Date(),
       isStarted: new Date(e.plannedStartTime) < new Date(),
       notStarted: !e.isStarted,

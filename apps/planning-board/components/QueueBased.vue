@@ -12,7 +12,7 @@ const { t } = useI18n()
 
 // TODO (BEFORE PRODUCTION): change start/end date!
 const startDate = ref('2022/01/01')
-const endDate = ref('2024/07/07')
+const endDate = ref('2023/07/07')
 
 const schedulerDateModel = ref({
   from: startDate.value,
@@ -47,11 +47,15 @@ const showModal = reactive({
   rule: false,
   settings: false,
 })
-
+const archiveDays = localStorage.getItem('pt-settings')
 const { data: machines } = await useFetch('/api/machineList')
 const { data: events, refresh: plannedRefresh } = await useFetch('/api/queueBased/plannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
+const { data: archiveEvents, refresh: archiveRefresh } = await useFetch('/api/queueBased/archiveEvents', {
+  query: { archiveDays: JSON.parse(archiveDays).archiveDays },
+})
+
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
@@ -68,6 +72,21 @@ const modifiedEvents = computed(() => events.value?.map((ev: any) => {
     ...ev,
   }
 }))
+const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
+  return {
+    id: ev.plannedStartTime ? ev.planKey : `${ev.planKey}A`,
+    planKey: ev.plannedStartTime ? ev.planKey : `${ev.planKey}A`,
+    name: ev.jobOrder,
+    resourceId: ev.machineId,
+    resizable: false,
+    draggable: true,
+    editable: false,
+    startDate: ev.plannedStartTime ? new Date(ev.plannedStartTime) : new Date(ev.actualStartTime),
+    endDate: ev.plannedEndtime ? new Date(ev.plannedEndtime) : new Date(ev.actualEndTime),
+    ...ev,
+  }
+}))
+const mergedEvents = computed(() => modifiedEvents.value.concat(modifiedArchive.value))
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
@@ -133,7 +152,7 @@ onMounted(async () => {
     },
     eventColor: 'blue',
     resources: machines.value,
-    events: modifiedEvents.value,
+    events: mergedEvents.value,
     listeners: {
       eventSelectionChange({ action }: any) {
         if (action === 'select' || action === 'update') {
@@ -528,6 +547,7 @@ div[bgRed] {
 div[bgGreen] {
   background-color: rgba(51, 255, 57, 0.3) !important;
 }
+
 .toolbar-buttons {
   color: white;
   background-color: #03A9F4;
@@ -556,7 +576,8 @@ div[bgGreen] {
 .b-timeline-subgrid .b-sch-current-time {
   border: 1px solid red !important
 }
-.b-sch-event-wrap.b-nested-events-parent[data-level="1"] > .b-sch-event:hover > .b-nested-events-container {
+
+.b-sch-event-wrap.b-nested-events-parent[data-level="1"]>.b-sch-event:hover>.b-nested-events-container {
   border-color: #555;
   background-color: rgba(0, 0, 0, 0.0666666667);
 }

@@ -59,11 +59,14 @@ const enLocalization = {
     unassign: 'Unassigned Job Orders',
   },
 }
+function nonStartedEvents(events) {
+  return events.filter(ev => ev.originalData.isArchive === false || ev.originalData.isArchive === undefined)
+}
 function sortEventsByDateDesc(events) {
-  return events.sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+  return nonStartedEvents(events).sort((a, b) => a.startDate < b.startDate ? -1 : 1)
 }
 function sortEventsByDateAsc(events) {
-  return events.sort((a, b) => a.startDate < b.startDate ? 1 : -1)
+  return nonStartedEvents(events).sort((a, b) => a.startDate < b.startDate ? 1 : -1)
 }
 function generateQueueNumber(ev, resourceId) {
   const sortedEvents = sortEventsByDateDesc(ev)
@@ -295,6 +298,7 @@ export class QueueDrag extends DragHelper {
     const targetEventRecord = schedule.resolveEventRecord(target)
     const events = sortEventsByDateDesc(machine.events)
     if (target) {
+      const nonStartedEvents = machine.events.filter(a => a.startDate > new Date())
       if (targetEventRecord) {
         const futureEvents = sortEventsByDateDesc(machine.events.filter(a => a.startDate > targetEventRecord.startDate))
         task.startDate = addMinutes(targetEventRecord.endDate, 5)
@@ -317,7 +321,7 @@ export class QueueDrag extends DragHelper {
           grid.store.remove(task)
           task.assign(machine)
           schedule.renderRows()
-          const body = generateQueueNumber(machine.events, machine.id).map(a => a.originalData).map((ev) => {
+          const body = generateQueueNumber(nonStartedEvents, machine.id).map(a => a.originalData).map((ev) => {
             return {
               planKey: ev.id,
               machineId: ev.resourceId,
@@ -342,7 +346,7 @@ export class QueueDrag extends DragHelper {
           grid.store.remove(task)
           task.assign(machine)
           schedule.renderRows()
-          const body = generateQueueNumber(machine.events, machine.id).map(a => a.originalData).map((ev) => {
+          const body = generateQueueNumber(nonStartedEvents, machine.id).map(a => a.originalData).map((ev) => {
             return {
               planKey: ev.id,
               machineId: ev.resourceId,
@@ -429,26 +433,32 @@ export class TaskStore extends EventStore {
   // use this if you want to re-schedule a first event
   async scheduleFirstEvent(previousResource, targetResource) {
     if (previousResource !== targetResource) {
-      const previousResourceEvents = sortEventsByDateDesc(previousResource.events)
+      if (nonStartedEvents(previousResource.events).length > 1) {
+        const previousResourceEvents = sortEventsByDateDesc(previousResource.events)
+        const previousFirstEvent = previousResourceEvents[0]
+        previousFirstEvent.startDate = new Date()
+        previousFirstEvent.endDate = addSeconds(previousFirstEvent.startDate, previousFirstEvent.theoreticalDuration)
+        const previousFutureEvents = []
+        previousResourceEvents.forEach((event) => {
+          if (event !== previousFirstEvent) {
+            if (event.startDate >= previousFirstEvent.startDate) {
+              previousFutureEvents.push(event)
+            }
+          }
+        })
+        previousFutureEvents.forEach((ev, i, all) => {
+          const prev = all[i - 1] || previousFirstEvent
+          ev.startDate = addMinutes(prev.endDate, 5)
+          ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
+        })
+      }
       const targetResourceEvents = sortEventsByDateDesc(targetResource.events)
-      const previousFirstEvent = previousResourceEvents[0]
       const targetFirstEvent = targetResourceEvents[0]
 
-      previousFirstEvent.startDate = new Date()
       targetFirstEvent.startDate = new Date()
-      previousFirstEvent.endDate = addSeconds(previousFirstEvent.startDate, previousFirstEvent.theoreticalDuration)
       targetFirstEvent.endDate = addSeconds(targetFirstEvent.startDate, targetFirstEvent.theoreticalDuration)
 
-      const previousFutureEvents = []
       const targetFutureEvents = []
-
-      previousResourceEvents.forEach((event) => {
-        if (event !== previousFirstEvent) {
-          if (event.startDate >= previousFirstEvent.startDate) {
-            previousFutureEvents.push(event)
-          }
-        }
-      })
 
       targetResourceEvents.forEach((event) => {
         if (event !== targetFirstEvent) {
@@ -456,12 +466,6 @@ export class TaskStore extends EventStore {
             targetFutureEvents.push(event)
           }
         }
-      })
-
-      previousFutureEvents.forEach((ev, i, all) => {
-        const prev = all[i - 1] || previousFirstEvent
-        ev.startDate = addMinutes(prev.endDate, 5)
-        ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
       })
 
       targetFutureEvents.forEach((ev, i, all) => {
@@ -532,7 +536,6 @@ export class TaskStore extends EventStore {
       machineId: a.originalData.resourceId,
       planKey: a.originalData.id,
     }))
-    console.log(updatedEvents)
     await $fetch('/api/queueBased/planningBoardUpdate', {
       method: 'PUT',
       body: updatedEvents,
