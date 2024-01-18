@@ -223,7 +223,6 @@ async function rerequestWei() {
             @click="requestJobOrder()"
           />
           {{ plankey }}
-          Joborder: <q-btn :label="84956" @click="(jobordernum = 84956), requestJobOrder()" /> can be used as an example
           <q-btn
             class="ml-auto mr-5 py-3 w-75 items-start"
             :label="t('allJobOrders')"
