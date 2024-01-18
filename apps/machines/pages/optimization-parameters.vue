@@ -14,15 +14,17 @@ const { data: treatmentParameters } = useLazyFetch('/api/treatment-parameters/tr
   default: () => [],
 })
 
-/*
-SELECT map.PARAMID ,map.GROUPID ,map.COMMANDNO ,map.PARAMETERINDEX, prm.TREATMENTPARAMETER, grp.GROUPNAME, mach.MACHINEID, cmd.NAME, cmdPrm.PARAMSTRING FROM BFTREATMENTPARAMGROUPMAP map
-LEFT JOIN BFTREATMENTPARAMETERS prm ON map.PARAMID = prm.ID
-LEFT JOIN BFTREATMENTPARAMETERGROUPS grp ON map.GROUPID = grp.ID
-OUTER APPLY ( SELECT TOP 1 g.MACHINEID FROM BFTREATMENTPARAMETERGROUPMACHINES g WHERE g.GROUPID = map.GROUPID ) as mach
-LEFT JOIN BFMASTERCOMMANDS cmd ON mach.MACHINEID = cmd.MACHINEID AND cmd.COMMANDNO = map.COMMANDNO
-LEFT JOIN BFCOMMANDPARAMETERS cmdPrm ON mach.MACHINEID = cmdPrm.MACHINEID AND cmdPrm.COMMANDNO = map.COMMANDNO AND cmdPrm.PARAMETERINDEX = map.PARAMETERINDEX
-ORDER BY map.GROUPID, map.PARAMID ,map.COMMANDNO ,map.PARAMETERINDEX ASC
-*/
+const { data: commandParameters } = useLazyFetch('/api/treatment-parameters/command-parameters', {
+  default: () => [],
+  immediate: false,
+  method: 'POST',
+  body:
+    selectedMachineGroup,
+})
+
+const { data: matchedTreatments } = useLazyFetch('/api/treatment-parameters/treatment-map', {
+  default: () => [],
+})
 </script>
 
 <template>
@@ -71,15 +73,25 @@ ORDER BY map.GROUPID, map.PARAMID ,map.COMMANDNO ,map.PARAMETERINDEX ASC
         <div>
           <q-select
             v-model="selectedOption"
-            :options="options"
+            :options="commandParameters"
             label="ERP Eşleştirme Alanı"
             filled
             class="w-xs"
-          />
+          >
+            <template #option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.NAME }} - {{ scope.opt.PARAMSTRING }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
         </div>
       </div>
       <div>
-        <q-table />
+        <q-table
+          :rows="matchedTreatments"
+        />
       </div>
     </q-card-section>
   </q-card>
