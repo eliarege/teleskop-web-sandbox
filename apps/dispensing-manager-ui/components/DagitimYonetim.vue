@@ -20,16 +20,47 @@ const actions = ref<Action[]>(['retry', 'cancel'])
 const confirmationDialog = ref<ConfirmationDialog>({ vis: false, act: 'cancel' })
 
 const machines = await $fetch('/api/machine/machines')
+const dispensers = await $fetch('/api/settings/dispenser')
 const columnsRecipe: Column[] = [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
-  { name: 'machinename', label: t('machinename'), field: 'machinename', filterable: true, filterType: 'select', selectionOptions: machines, optionLabel: 'machinename', optionValue: 'machineid' },
+  {
+    name: 'machinename',
+    label: t('machinename'),
+    field: 'machinename',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: machines,
+    optionLabel: 'machinename',
+    optionValue: 'machineid',
+  },
   { name: 'tankno', label: t('tankNo'), field: 'tankno', filterable: true, filterType: 'comparison' },
-  { name: 'dispenserName', label: t('dispensingManager.materialDistributor'), field: 'dispenserName', filterable: true }, // TODO: Dispenserşarı dönen endpoint
+  {
+    name: 'dispenserName',
+    label: t('dispensingManager.materialDistributor'),
+    field: 'dispenserName',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: dispensers,
+    optionLabel: 'name',
+    optionValue: 'dispNo',
+  }, // TODO: Dispenserşarı dönen endpoint
   { name: 'programno', label: t('programNo'), field: 'programno', filterable: true, filterType: 'comparison' },
   { name: 'programname', label: t('programName'), field: 'programname', filterable: true }, // TODO: select
   { name: 'stepno', label: t('dispensingManager.stepNo'), field: 'stepno', filterable: true, filterType: 'comparison' },
-  { name: 'recipeType', label: t('dispensingManager.recipeType'), field: 'recipeType', filterable: true, filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType' },
+  {
+    name: 'recipeType',
+    label: t('dispensingManager.recipeType'),
+    field: 'recipeType',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: [
+      { label: t('recipeTypes.0'), recipeType: 0 },
+      { label: t('recipeTypes.1'), recipeType: 1 },
+    ],
+    optionLabel: 'label',
+    optionValue: 'recipeType',
+  },
   // filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType'}]
   { name: 'recipeProcessNo', label: t('dispensingManager.recipeOrder'), field: 'recipeProcessNo', filterable: true, filterType: 'comparison' },
   { name: 'recipeStepNo', label: t('dispensingManager.recipeStepNum'), field: 'recipeStepNo', filterable: true, filterType: 'comparison' },
@@ -38,7 +69,7 @@ const columnsRecipe: Column[] = [
 const columnsMaterial = [
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
   { name: 'materialCode', label: t('materialCode'), field: 'materialCode' },
-  { name: 'dispenserName', label: t('dispensingManager.materialDistributor'), field: 'dispenserName' },
+  { name: 'name', label: t('dispensingManager.materialDistributor'), field: 'name' },
   { name: 'amount', label: t('recipe.amount'), field: 'amount' },
   { name: 'status', label: t('statusCodes.text'), field: 'status' },
 ]

@@ -13,7 +13,8 @@ const selectParameters = {
   machinename: 'm.MACHINENAME',
   machineid: 'm.MACHINEID',
   tankno: 'r.TANKNO',
-  dispenserName: 'd.NAME',
+  name: 'd.NAME',
+  dispNo: 'd.DISPENSERID',
   programno: 'r.PROGRAMNO',
   programname: 'p.NAME',
   stepno: 'r.PROGRAMSTEPNO',
@@ -81,7 +82,7 @@ router.get('/requestmaterials', defineEventHandler(async (event) => {
       .select({
         materialName: 'm.MATERIALNAME',
         materialCode: 'r.CHEMCODE',
-        dispenserName: 'd.NAME',
+        name: 'd.NAME',
         amount: 'r.AMOUNT',
         status: 'r.STATUS',
       })
