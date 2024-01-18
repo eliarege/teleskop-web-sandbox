@@ -14,6 +14,14 @@ const showEditMachine = ref(false)
 const showMachineParameters = ref(false)
 const showMimic = ref(false)
 const showFormulas = ref(false)
+const selectedIp = computed(() => props.selected.ip)
+
+const { data: version } = useLazyFetch('/api/soap/get-version', {
+  default: () => 0,
+  query: {
+    ip: selectedIp,
+  },
+})
 
 async function handleMachineDelete() {
   const machineIds = [props.selected]
@@ -115,7 +123,7 @@ async function loadDefinitions() {
 
     <q-card-section class="flex flex-row items-end mr-8">
       <q-chip class="mr-4 mb-2">
-        DB v3.3.95.0
+        DB v{{ version }}
       </q-chip>
       <q-card class="flex flex row mb-2 items-center">
         <q-card-section>
