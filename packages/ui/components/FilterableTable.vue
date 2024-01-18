@@ -60,7 +60,7 @@ const comparisonOperations = [
   { text: 'bigger than or equal ', symbol: '>=' },
   { text: 'smaller than', symbol: '<' },
   { text: 'smaller then or equal', symbol: '<=' },
-  { text: 'between', symbol: 'bt' },
+  { text: 'between', symbol: t('between') },
 ]
 
 const tablePagination = ref(props.pagination)
@@ -69,27 +69,27 @@ const today = new Date()
 const startOfToday = new Date(today)
 startOfToday.setHours(0, 0, 0, 0)
 const dateOptions = ref<DateType[]>([
-  { text: 'Today', from: startOfToday, to: today },
-  { text: 'Yesterday', from: new Date(new Date().setDate(new Date().getDate() - 1)), to: new Date(new Date().setDate(new Date().getDate() - 1)) },
-  { text: 'Last 7 Days', from: new Date(new Date().setDate(new Date().getDate() - 7)), to: new Date() },
-  { text: 'Last 30 Days', from: new Date(new Date().setDate(new Date().getDate() - 30)), to: new Date() },
+  { text: t('today'), from: startOfToday, to: today },
+  { text: t('yesterday'), from: new Date(new Date().setDate(new Date().getDate() - 1)), to: new Date(new Date().setDate(new Date().getDate() - 1)) },
+  { text: t('last7days'), from: new Date(new Date().setDate(new Date().getDate() - 7)), to: new Date() },
+  { text: t('last30days'), from: new Date(new Date().setDate(new Date().getDate() - 30)), to: new Date() },
   {
-    text: 'Last Week',
+    text: t('lastweek'),
     from: new Date(new Date().setDate(new Date().getDate() - new Date().getDay() - 7)),
     to: new Date(new Date().setDate(new Date().getDate() - new Date().getDay() - 1)),
   },
   {
-    text: 'Last Month',
+    text: t('lastmonth'),
     from: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1),
     to: new Date(new Date().getFullYear(), new Date().getMonth(), 0),
   },
   {
-    text: 'Last 3 Month',
+    text: t('last3month'),
     from: new Date(new Date().getFullYear(), new Date().getMonth() - 3, 1),
     to: new Date(),
   },
   {
-    text: 'Last 12 Month',
+    text: t('last12month'),
     from: new Date(new Date().getFullYear() - 1, new Date().getMonth() + 1, 1),
     to: new Date(),
   },
@@ -125,7 +125,7 @@ function contains(list: Array<any>, elem: any) {
 function pushToFilters(col: Column, index: number, orderByType?: string) {
   let temp
   if (orderByType) { // FIXME: Now its guaranteed that filterType is exist but if the column is not ilterable and wanted to order it will not possible
-    temp = { label: `${col.label} in ${orderByType} order`, field: col.field, isOrderFilter: true, value: { direction: orderByType === 'ascending' ? 'asc' : 'desc' }, filterType: col.filterType }
+    temp = { label: `${col.label} ${t('in')} ${orderByType} ${t('order')}`, field: col.field, isOrderFilter: true, value: { direction: orderByType === t('ascending') ? 'asc' : 'desc' }, filterType: col.filterType }
     filterSlots.value.forEach((filter, index) => {
       if (filter.isOrderFilter)
         filterSlots.value.splice(index, 1)
@@ -136,9 +136,9 @@ function pushToFilters(col: Column, index: number, orderByType?: string) {
   else if (col.filterType === 'date') {
     const selectedDate: DateType = dateOptions.value[index]
     if (selectedDate.text) {
-      temp = { label: `${col.label} in ${selectedDate.text}`, field: col.field, value: { from: selectedDate.from, to: selectedDate.to }, filterType: col.filterType }
+      temp = { label: `${col.label} ${t('in')} ${selectedDate.text}`, field: col.field, value: { from: selectedDate.from, to: selectedDate.to }, filterType: col.filterType }
     } else {
-      temp = { label: `${col.label} from ${selectedDate.from} to ${selectedDate.to}`, field: col.field, value: { from: selectedDate.from, to: selectedDate.to }, filterType: col.filterType }
+      temp = { label: `${col.label} ${t('from')} ${selectedDate.from} ${t('to')} ${selectedDate.to}`, field: col.field, value: { from: selectedDate.from, to: selectedDate.to }, filterType: col.filterType }
     }
     if (!contains(filterSlots.value, temp))
       filterSlots.value.push(temp)
@@ -156,7 +156,7 @@ function pushToFilters(col: Column, index: number, orderByType?: string) {
       optionLabel = option
     const filterType = col.filterType
     if (filterType === 'select' || filterType === 'multiselect' || filterType === 'boolean') {
-      temp = { label: `${name} is ${optionLabel}`, field: col.field, value: { option: [option] }, filterType, optionValue: col.optionValue }
+      temp = { label: `${name} ${t('is')} ${optionLabel}`, field: col.field, value: { option: [option] }, filterType, optionValue: col.optionValue }
       if (filterType === 'multiselect')
         temp.value.option = option
       if (!contains(filterSlots.value, temp) && option !== null) {
@@ -172,7 +172,7 @@ function pushToFilters(col: Column, index: number, orderByType?: string) {
       if (option.operator.text === 'between' && option.number2) {
         const min = Math.min(option.number1, option.number2)
         const max = Math.max(option.number1, option.number2)
-        temp = { label: `${name} between ${min} and ${max}`, field: col.field, value: { min, max }, filterType: col.filterType }
+        temp = { label: `${name} ${t('between')} ${min} ${t('and')} ${max}`, field: col.field, value: { min, max }, filterType: col.filterType }
       } else {
         temp = { label: `${name} ${option.operator.symbol} ${option.number1}`, field: col.field, value: { operator: option.operator.symbol, number: option.number1 }, filterType: col.filterType }
       }
@@ -190,7 +190,7 @@ function comparisonOptionInit(index: number) {
 function updateSortOrder(col: Column, index: number, isDescending: boolean) {
   tablePagination.value.sortBy = col.field
   tablePagination.value.descending = isDescending
-  pushToFilters(col, index, isDescending ? 'descending' : 'ascending')
+  pushToFilters(col, index, isDescending ? t('descending') : t('ascending'))
 }
 
 watch(filterSlots.value, (newValue) => {
@@ -312,7 +312,7 @@ watch(filterSlots.value, (newValue) => {
                     :option-value="col?.optionvalue"
                     clearable
                     :multiple="col.filterType === 'multiselect'"
-                    label="Select an option"
+                    :label="t('selectOption')"
                     style="width: 150px;"
                   />
                 </div>
@@ -323,6 +323,7 @@ watch(filterSlots.value, (newValue) => {
                     v-model="selectedOptions[index].operator"
                     :options="comparisonOperations"
                     option-label="symbol"
+                    overflow="hidden"
                     style="width: 80px;"
                     filled
                     item-aligned
@@ -339,7 +340,7 @@ watch(filterSlots.value, (newValue) => {
                       style="width: 100px;"
                     />
                     <span v-if="selectedOptions[index]?.operator?.text === 'between'" class="flex items-center">
-                      &nbsp; and &nbsp;
+                      &nbsp; {{ t('and') }} &nbsp;
                       <q-input
                         v-model="selectedOptions[index].number2"
                         filled
@@ -372,8 +373,8 @@ watch(filterSlots.value, (newValue) => {
                     align="justify"
                     narrow-indicator
                   >
-                    <q-tab name="intervals" label="Intervals" />
-                    <q-tab name="custom" label="Custom" />
+                    <q-tab name="intervals" :label="t('intervals')" />
+                    <q-tab name="custom" :label="t('custom')" />
                   </q-tabs>
 
                   <q-separator />
@@ -409,7 +410,7 @@ watch(filterSlots.value, (newValue) => {
                             @click="pushToFilters(col, 8)"
                           >
                             <!-- FIXME: HARDOCDED: '8' is the index of custom object of dateOptions array if more spesific intervals added it should be changed -->
-                            Add
+                            {{ t('add') }}
                           </q-btn>
                         </template>
                       </q-date>
@@ -419,12 +420,12 @@ watch(filterSlots.value, (newValue) => {
                 <div v-if="col.filterType === 'boolean'">
                   <q-radio
                     v-model="selectedOptions[index]"
-                    label="True"
+                    :label="t('true')"
                     :val="1"
                   />
                   <q-radio
                     v-model="selectedOptions[index]"
-                    label="False"
+                    :label="t('false')"
                     :val="0"
                   />
                 </div>
@@ -436,7 +437,7 @@ watch(filterSlots.value, (newValue) => {
 
                     @click="pushToFilters(col, index)"
                   >
-                    Add
+                    {{ t('add') }}
                   </q-btn>
                 </div>
               </q-list>
@@ -553,3 +554,64 @@ watch(filterSlots.value, (newValue) => {
   white-space: normal; */
 }
 </style>
+
+<i18n lang="json">
+{
+  "en": {
+    "between": "between",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "last7days": "Last 7 Days",
+    "last30days": "Last 30 Days",
+    "lastweek": "Last Week",
+    "lastmonth": "Last Month",
+    "last3month": "Last 3 Month",
+    "last12month": "Last 12 Month",
+    "custom": "Custom",
+    "intervals": "intervals",
+    "in": "in",
+    "ascending": "ascending",
+    "descending": "descending",
+    "order": "order",
+    "add": "Add",
+    "and": "and",
+    "equals": "equals",
+    "includes": "includes",
+    "search": "Search",
+    "selectOption": "Select an option",
+    "true": "True",
+    "false": "False",
+    "from": "from",
+    "to": "to",
+    "is": "is"
+  },
+  "tr": {
+    "between": "arasında",
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "last7days": "Son 7 Gün",
+    "last30days": "Son 30 Gün",
+    "lastweek": "Son Hafta",
+    "lastmonth": "Son Ay",
+    "last3month": "Son 3 Ay",
+    "last12month": "Son 12 Ay",
+    "custom": "Özel",
+    "intervals": "aralıklar",
+    "in": "in",
+    "ascending": "artan",
+    "descending": "azalan",
+    "order": "sırada",
+    "add": "Ekle",
+    "and": "ve",
+    "equals": "eşittir",
+    "includes": "içerir",
+    "search": "Ara",
+    "selectOption": "Seçiniz",
+    "true": "Doğru",
+    "false": "Yanlış",
+    "from": "arasında",
+    "to": "ile",
+    "is": "eşittir"
+  }
+}
+</i18n>
