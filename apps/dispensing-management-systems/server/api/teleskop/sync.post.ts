@@ -35,6 +35,7 @@ export default defineEventHandler(async (event) => {
     })
     teleskopData.jobOrders.forEach((data: any) => {
       const jobOrder = ({
+        job_id: data.jobId,
         batch_no: data.batchNo,
         batch_correction_no: data.batchCorrectionNo,
         dispenser_id: data.dispenserId,

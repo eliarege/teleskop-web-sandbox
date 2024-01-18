@@ -1,10 +1,14 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
-import type { Material } from '~/shared/types'
+import type { Material, MaterialGroup } from '~/shared/types'
 
 const props = defineProps({
   material: {
     type: Object as PropType<Material>,
+    required: true,
+  },
+  groupOptions: {
+    type: Object as PropType<MaterialGroup[]>,
     required: true,
   },
 })
@@ -12,54 +16,11 @@ const { t } = useI18n()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const material = toRef(props, 'material')
 const editedMaterial = ref({ ...material.value })
-const groupOptions = [{
-  groupNo: 1,
-  groupName: 'Chemical',
-}, {
-  groupNo: 2,
-  groupName: 'Dye',
-}, {
-  groupNo: 3,
-  groupName: 'Other',
-}]
+
 const unitOptions = ref([
   '---',
-  'Kg',
-  'm/dk',
-  'bar',
-  'rpm',
-  'Sie',
-  'm',
-  'kWh',
-  'cc',
-  'lt/Kg',
-  'gr/lt',
-  '°C/dk',
-  'lt',
-  'cm',
-  'mS/cm',
-  'K',
-  'gr/mt-lin',
-  'gr/mt',
-  'inch',
-  'g',
-  'Lb',
-  'Galon',
-  '\'F',
-  'sn',
-  'Feet',
-  'Galon/min',
-  'Feet/min',
-  'Galon/Lb',
-  'oz/Galon',
-  '\'F/min',
-  'oz/Feet',
-  'dk',
-  '\'C',
-  '%',
-  'pH',
-  'mbar',
-  'lt/dk',
+  'TL',
+  '$',
 ])
 
 async function onSave() {
@@ -132,7 +93,7 @@ function onReset() {
             </div>
             <div class="row-item">
               <span class="item-label">
-                {{ t('materialFields.GroupNo') }}
+                {{ t('materialFields.Group') }}
               </span>
               <QSelect
                 v-model="editedMaterial.materialGroupNo"
@@ -143,8 +104,8 @@ function onReset() {
                 emit-value
                 map-options
                 options-dense
-                option-value="groupNo"
-                option-label="groupName"
+                option-value="materialGroupNo"
+                option-label="materialGroupName"
                 :options="groupOptions"
               />
             </div>
@@ -189,11 +150,24 @@ function onReset() {
             </div>
             <div class="row-item">
               <span class="item-label">
+                {{ t('materialFields.Source') }}
+              </span>
+              <QInput
+                v-model="editedMaterial.source"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="editedMaterial.source"
+              />
+            </div>
+            <div class="row-item pl-50">
+              <span class="item-label">
                 {{ t('materialFields.ReRequestable') }}
               </span>
               <QCheckbox v-model="editedMaterial.reRequestable" />
             </div>
-            <div class="row-item">
+            <div class="row-item pl-50">
               <span class="item-label">
                 {{ t('materialFields.DirectTransfer') }}
               </span>

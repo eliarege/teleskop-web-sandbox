@@ -50,6 +50,10 @@ export interface MaterialRequest {
   amount: number
   status: number
 }
+export interface MaterialGroup {
+  materialGroupNo: number
+  materialGroupName: string
+}
 export interface Machine {
   machineId: number
   machineName: string
