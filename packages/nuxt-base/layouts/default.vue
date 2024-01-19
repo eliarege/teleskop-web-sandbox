@@ -19,12 +19,16 @@ function parseAppList(appList: unknown): { name: string; url: string; img: strin
   }
 }
 
+function withHost(url: string) {
+  return url.replace('$host', window.location.hostname)
+}
+
 const appList = parseAppList(config.public.appList)
 
 const bottomSheetActions = appList.map((app) => {
   return {
     label: app.name,
-    url: app.url,
+    url: withHost(app.url),
     img: `/app-icons/${app.img}`,
   }
 })

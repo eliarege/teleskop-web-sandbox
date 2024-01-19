@@ -23,12 +23,28 @@ app.set('views', join(__dirname, 'views'))
 app.set('view engine', 'ejs')
 
 app.get('/', (req, res) => {
-  res.render('index', urls)
+  res.render('index', {
+    ...urls,
+    withHost(url = '') {
+      return url.includes('$host')
+        ? url.replace('$host', getHostname(req.headers.host || ''))
+        : url
+    },
+  })
 })
 
 const server = app.listen(port, () => {
   console.log(`Express server is running on port ${port}`)
 })
 
-process.on('SIGTERM', () => server.close())
-process.on('SIGINT', () => server.close())
+function onExitSignal() {
+  server.close()
+  process.exit(0)
+}
+
+function getHostname(host) {
+  return new URL(`http://${host || 'localhost'}`).hostname
+}
+
+process.on('SIGINT', onExitSignal)
+process.on('SIGTERM', onExitSignal)
