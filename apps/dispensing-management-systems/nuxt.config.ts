@@ -1,5 +1,7 @@
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 
+import { resolve } from 'node:path'
+
 export default defineNuxtConfig({
   devtools: { enabled: true },
   extends: ['nuxt-base'],
@@ -17,6 +19,15 @@ export default defineNuxtConfig({
     teleskopDatabase: 'Teleskop',
     public: {
       websockifyPort: '6800',
+    },
+  },
+  vite: {
+    build: {
+      rollupOptions: {
+        external: [
+          resolve(__dirname, '../../packages/ui/components/MachineCard.vue'),
+        ],
+      },
     },
   },
 })
