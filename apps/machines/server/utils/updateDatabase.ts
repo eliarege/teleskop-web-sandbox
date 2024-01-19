@@ -630,6 +630,41 @@ export async function updateCycleControl(machineId: number, tbb: TbbFtpClient, t
   return control
 }
 
+export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const params = await tbb.fetchBatchParameters()
+
+  const data = params.map((d) => {
+    return {
+      BATCHPARAMETERID: d.batchParameterId,
+      MACHINEID: machineId,
+      PARAMSTRING: d.paramString,
+      PARAMLOWLIMIT: d.min,
+      PARAMHIGHLIMIT: d.max,
+      DEFAULTVALUE: d.default,
+      UNITCODE: d.unitCode,
+      FORMAT: d.format,
+      UNITTEXT: d.unitText,
+      PARAMETERID: d.parameterId,
+      SELECTIONLIST: JSON.stringify(d.selectionList),
+      SELECTIONVALUES: JSON.stringify(d.selectionValues),
+      SELECTIONLISTDEFAULT: JSON.stringify(d.selectionListDefault),
+      BATCHPLANNING: false,
+      BATCHSTART: true,
+      RECIPE: false,
+      PARAMETERTYPE: 1,
+      ISDELETED: false,
+      TBBCHANGETIME: null,
+      CHANGETIME: null,
+      PARAMSTRINGEn: d.paramString,
+    }
+  })
+  console.log('params = ', data)
+
+  await replaceRecords(trx, 'BFMACHBATCHPARAMETERS', data, { MACHINEID: machineId })
+
+  return params
+}
+
 export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   const finishReasons = await trx('BFDYLOTFINISHREASONS').select({
     reasonId: 'REASONID',
