@@ -214,6 +214,7 @@
     "changePlannedMachine": "Change Planned Machine",
     "header": "Recipe Information Inquiry",
     "infoText": "Type the Job order number you want to Job on ",
+    "noRecipeText": "There is no recipe with given joborder. Please enter a valid joborder.",
     "ISN": "ISN",
     "jobOrderMeasurement": "Show Job Order Weighings",
     "jobOrderMeasurementRefresh": "Refresh Job Order Weighing Requests",

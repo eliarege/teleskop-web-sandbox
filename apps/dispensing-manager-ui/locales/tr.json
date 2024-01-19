@@ -213,6 +213,7 @@
     "changePlannedMachine": "Planlanan Makineyi Değiştir",
     "header": "Reçete Bilgileri Sorgulama",
     "infoText": "Çalışmak istediğiniz iş emri numarasını yazınız. Sorgulama işlemi yapınız.",
+    "noRecipeText": "Verilen iş emri numarası ile reçete bulunamadı. Lütfen geçerli bir iş emri numarası giriniz.",
     "ISN": "ISN",
     "jobOrderMeasurement": "İş Emri Tartımlarını Göster",
     "jobOrderMeasurementRefresh": "İş Emri Tartım İsteklerini Yenile",
