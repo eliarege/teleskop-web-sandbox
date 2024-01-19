@@ -30,6 +30,7 @@ import { parseGlobalCommandFormulas, serializeGlobalCommandFormulas } from './pa
 import { parseSeperatedLocks } from './parsers/parseLocksInput'
 import { parseBatchParameters } from './parsers/parseBatchParameters'
 import { parseCycleControl } from './parsers/parseCycleControl'
+import { parseSystem } from './parsers/parseSystem'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -296,6 +297,13 @@ export class TbbFtpClient {
     const content = await download(this.client, remotePath, 'utf8')
     const cycleControl = parseCycleControl(content)
     return cycleControl
+  }
+
+  async fetchSystem() {
+    const remotePath = '/tbb6500/data/config/sistem'
+    const content = await download(this.client, remotePath, 'utf8')
+    const system = parseSystem(content)
+    return system
   }
 
   async uploadMachineParameterValues(values: MachineParameter[]) {
