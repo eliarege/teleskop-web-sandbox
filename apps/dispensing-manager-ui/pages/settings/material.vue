@@ -19,7 +19,7 @@ const columns: Array<Column> = [
   },
   {
     name: 'materialCode',
-    label: t('settings.machinename'),
+    label: t('settings.materialCode'),
     field: 'materialCode',
     filterable: true,
   },
