@@ -618,6 +618,18 @@ export async function updateSystem(machineId: number, tbb: TbbFtpClient, trx: Kn
   return system
 }
 
+export async function updateCycleControl(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const control = await tbb.fetchCycleControl()
+
+  await trx('BFMACHINES')
+    .where('MACHINEID', machineId)
+    .update({
+      REELCOUNT: control[0].reelCount,
+    })
+
+  return control
+}
+
 export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   const finishReasons = await trx('BFDYLOTFINISHREASONS').select({
     reasonId: 'REASONID',
