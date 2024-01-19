@@ -596,6 +596,28 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
   return data
 }
 
+export async function updateSystem(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const system = await tbb.fetchSystem()
+
+  await trx('BFMACHINESYSTEMPARAMS')
+    .where('MachineId', machineId)
+    .del()
+
+  for (const key in system) {
+    if (Object.prototype.hasOwnProperty.call(system, key)) {
+      const value = system[key]
+      await trx('BFMACHINESYSTEMPARAMS')
+        .insert({
+          MachineId: machineId,
+          ParamToken: key,
+          ParamValue: value,
+        })
+    }
+  }
+
+  return system
+}
+
 export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   const finishReasons = await trx('BFDYLOTFINISHREASONS').select({
     reasonId: 'REASONID',
