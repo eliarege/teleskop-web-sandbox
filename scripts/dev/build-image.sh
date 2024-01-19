@@ -1,5 +1,6 @@
-APP_NAME=root
-PKG_PATH=apps/$APP_NAME/package.json
+APP_NAME=dispensing-management-systems
+APP_ROOT=$(realpath $(dirname $0)/../..)
+PKG_PATH=$APP_ROOT/apps/$APP_NAME/package.json
 
 rm -rf out
 npx turbo prune --scope=$APP_NAME --docker
@@ -12,4 +13,4 @@ docker build \
   --secret id=NPM_TOKEN \
   --secret id=TURBO_TOKEN \
   --progress plain \
-  -t registry.gitlab.com/eliarelektronik/dijital_boyahane/teleskop-web/$APP_NAME:test .
+  -t registry.gitlab.com/eliarelektronik/dijital_boyahane/teleskop-web/$APP_NAME:test $APP_ROOT
