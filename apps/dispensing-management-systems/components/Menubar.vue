@@ -1,20 +1,12 @@
 <script setup lang="ts">
-import { useStateStore } from '~/store/State'
+import { useDataStore } from '~/store/DataStore'
 
-const emit = defineEmits(['refresh'])
+const dataStore = useDataStore()
 const { t } = useI18n()
-const stateStore = useStateStore()
-async function syncData() {
-  try {
-    stateStore.isLoading = true
-    const data = await $fetch('/api/teleskop/sync')
-    await $fetch('/api/teleskop/sync', { method: 'POST', body: data })
-  } catch (e) {
-    console.error(e)
-  } finally {
-    stateStore.isLoading = false
-    emit('refresh')
-  }
+
+async function refreshDispensers() {
+  const res = await $fetch(`/api/dispensers/dispensers`)
+  dataStore.dispensers = res
 }
 </script>
 
@@ -42,11 +34,11 @@ async function syncData() {
         flex-center
         class="border-rd-10 m-2"
         no-caps
-        icon="sync"
-        @click="syncData()"
+        icon="refresh"
+        @click="refreshDispensers"
       >
         <QTooltip :offset="[10, 10]">
-          {{ t('SyncData') }}
+          {{ t('Refresh') }}
         </QTooltip>
       </QBtn>
     </QCardSection>

@@ -84,7 +84,9 @@ function onLogout() {
           </QList>
         </QMenu>
         <QItemSection avatar>
-          <QAvatar icon="directions" />
+          <QAvatar
+            icon="check"
+          />
         </QItemSection>
         <QItemSection>
           <QItemLabel>{{ item.dispenserName }}</QItemLabel>
