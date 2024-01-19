@@ -48,6 +48,18 @@ const correctionNoDisplayed = ref(0)
 const machine = ref()
 const currentRecipeJoborder = ref('0')
 
+function resetValues() {
+  recipeData.value = []
+  machine.value = null
+  currentRecipeJoborder.value = ''
+  correctionNoDisplayed.value = 0
+  recipeDataTemp.value = null
+  lastJobOrder.value = null
+  plankey.value = 0
+  console.log(plankey.value)
+  jobordernum.value = null
+}
+
 async function requestJobOrder() {
   resetCounter.value += 1
   if (jobordernum.value) {
@@ -56,9 +68,15 @@ async function requestJobOrder() {
     getCorrectionNOs(currentRecipeJoborder.value)
     lastJobOrder.value = currentRecipeJoborder.value
     recipeDataTemp.value = await $fetch(`/api/recipe/joborder?recipeJB=${currentRecipeJoborder.value}&correctionNo=${correctionNoDisplayed.value}`)
-    if (!recipeDataTemp.value)
-      recipeData.value = []
-    else {
+    console.log(recipeDataTemp)
+    if (!recipeDataTemp.value.length) {
+      resetValues()
+      Notify.create({
+        message: t('recipe.noRecipeText'),
+        color: 'red',
+        position: 'top',
+      })
+    } else {
       recipeData.value = recipeDataTemp.value
       recipeData.value.forEach((row) => {
         row.unit = t(`units.${row.unit}`)
@@ -74,7 +92,7 @@ async function requestJobOrder() {
     const tempMach = await $fetch(`/api/machine/machine?joborder=${currentRecipeJoborder.value}&correctionNo=${correctionNoDisplayed.value}`)
     machine.value = tempMach
   } else {
-    recipeData.value = []
+    resetValues()
     showJoborderError.value = true
     Notify.create({
       message: t('recipe.infoText'),
@@ -374,6 +392,7 @@ async function rerequestWei() {
         :key="button.name"
         class="footer-button"
         outline
+        :disabled="!plankey"
         color="black"
         @click="buttonAction(button.link)"
       >
