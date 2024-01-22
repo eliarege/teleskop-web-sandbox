@@ -1,10 +1,10 @@
-import { addDays, addSeconds } from 'date-fns'
-import { updateEventStates } from '../../../composables/helper'
+import type { QueueBasedPlannedEventsRaw } from '../../../../types/planning-board'
 import { knex } from '../../../knexConfig'
+import { updateArchiveQueueEventStates, updateRawQueueEventStates } from './helper'
 
 // GET
-export async function getQueueBasedPlannedEvents(from: Date | string, to: Date | string) {
-  const events = await knex({ p: 'PTBATCHPLANQUEUE' })
+export async function getQueueBasedPlannedEvents() {
+  const events: QueueBasedPlannedEventsRaw[] = await knex({ p: 'PTBATCHPLANQUEUE' })
     .select({
       planKey: 'p.PLANKEY',
       machineId: 'p.MACHINEID',
@@ -20,57 +20,64 @@ export async function getQueueBasedPlannedEvents(from: Date | string, to: Date |
       isStopped: 'd.ISSTOPPED',
     })
     .leftJoin({ d: 'DYBFBATCHPLAN' }, 'd.PLANKEY', 'p.PLANKEY')
-    .whereBetween('d.RECORDTIME', [from, to])
     .andWhere((builder) => {
       builder.whereNull('d.ISDELETED').orWhere('d.ISDELETED', 0)
     })
     .orderBy('p.MACHINEID')
     .orderBy('p.QUEUENUMBER')
-  const modifiedEvents = events.filter(a => a.theoreticalDuration !== 0 && a.theoreticalDuration !== null).map((ev) => {
-    return {
-      ...ev,
-      plannedEndTime: addSeconds(ev.plannedStartTime, ev.theoreticalDuration),
-      isDeviaiton: ev.isStarted ? new Date(ev.actualStartTime) !== ev.plannedStartTime : false,
-    }
-  })
-  return updateEventStates(modifiedEvents)
+  return updateRawQueueEventStates(events)
 }
 export async function getQueueBasedArchiveEvents(archiveDays: number) {
-  const events = await knex({ p: 'DYBFBATCHPLAN' })
-    .select({
-      planKey: 'p.PLANKEY',
-      machineId: 'p.MACHINEIDLIST',
-      jobOrder: 'p.JOBORDER',
-      programNoList: 'p.PROGRAMNOLIST',
-      plannedStartTime: 'p.PLANNEDSTARTTIME',
-      actualStartTime: 'p.STARTDATETIME',
-      theoreticalDuration: 'p.TheoricalDuration',
-      fabricWeight: 'p.FABRICWEIGHT',
-      partyNumber: 'p.PARTYNUMBER',
-      note: 'p.NOTE',
-      isDeleted: 'p.ISDELETED',
-      isStarted: 'p.ISSTARTED',
-      isStopped: 'p.ISSTOPPED',
-    })
-    .whereBetween('p.RECORDTIME', [addDays(new Date(), -archiveDays), new Date()])
-    .andWhere((builder) => {
-      builder.whereNull('p.ISDELETED').orWhere('p.ISDELETED', 0)
-    })
-    .andWhere('p.ISSTARTED', '=', 1)
-  const modifiedEvents = events.map((ev) => {
-    return {
-      ...ev,
-      plannedEndTime: addSeconds(ev.plannedStartTime, ev.theoreticalDuration),
-      actualEndTime: addSeconds(ev.actualStartTime, ev.theoreticalDuration),
-      isDeviaiton: ev.isStarted ? new Date(ev.actualStartTime) !== ev.plannedStartTime : false,
-      isArchive: true,
-    }
-  },
-  )
-  const actualEvents = modifiedEvents.map(({ plannedStartTime, plannedEndTime, ...rest }) => ({ ...rest }))
-  const plannedEvents = modifiedEvents.map(({ actualStartTime, actualEndtime, ...rest }) => ({ ...rest }))
-  const mergedEvents = [...actualEvents, ...plannedEvents]
-  return updateEventStates(mergedEvents)
+  const events = await knex.raw(`
+    WITH RankedBatches AS (
+      SELECT
+        P.BATCHKEY as batchKey,
+        p.PLANKEY AS planKey,
+        p.MACHINEID AS machineId,
+        p.JOBORDER AS jobOrder,
+        p.PROGRAMNOLIST AS programNoList,
+        p.STARTTIME AS startTime,
+        p.ENDTIME as endTime,
+        p.CANCELTIME as cancelTime,
+        p.THEORETICDURAT AS theoreticalDuration,
+        p.FABRIC_WEIGHT AS fabricWeight,
+        p.PARTYNUMBER AS partyNumber,
+        p.DEVIATION as deviation,
+        d.NOTE AS note,
+        d.ISDELETED AS isDeleted,
+        d.ISSTARTED AS isStarted,
+        d.ISSTOPPED AS isStopped,
+        ROW_NUMBER() OVER (PARTITION BY p.PLANKEY ORDER BY p.BATCHREFERENCE DESC) AS RowNum
+      FROM
+        BADATA AS p
+        LEFT JOIN DYBFBATCHPLAN d ON d.PLANKEY = P.PLANKEY
+      WHERE
+        p.STARTTIME BETWEEN DATEADD(DAY, -${archiveDays}, GETDATE()) AND GETDATE()
+        AND (d.ISDELETED IS NULL OR d.ISDELETED = 0)
+        AND d.ISSTARTED = 1
+    )
+    SELECT
+      batchKey,
+      planKey,
+      machineId,
+      jobOrder,
+      programNoList,
+      startTime,
+      endTime,
+      cancelTime,
+      theoreticalDuration,
+      fabricWeight,
+      partyNumber,
+      deviation,
+      note,
+      isDeleted,
+      isStarted,
+      isStopped
+    FROM RankedBatches
+    WHERE RowNum = 1;
+  `)
+
+  return updateArchiveQueueEventStates(events)
 }
 export async function isTaskValidQueueBased(planKey: number) {
   const taskPrgList: Set<number> = new Set(
