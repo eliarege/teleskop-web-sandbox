@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@8.12.1",
+  "packageManager": "pnpm@8.14.2",
   "description": "",
   "license": "UNLICENSED",
   "keywords": [],
@@ -14,9 +14,9 @@
     "keycloak": "./keycloak/keycloak.sh"
   },
   "devDependencies": {
-    "@eliarelektronik/eslint-config": "^2.0.1",
+    "@eliarelektronik/eslint-config": "^2.2.0",
     "dotenv": "^16.3.1",
-    "eslint": "^8.54.0",
+    "eslint": "^8.56.0",
     "tsx": "^4.6.1",
     "turbo": "^1.11.3"
   }
