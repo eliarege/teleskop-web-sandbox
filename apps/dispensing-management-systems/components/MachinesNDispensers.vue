@@ -12,15 +12,15 @@ const dispenserColumns: (QTableColumn<Dispenser>)[] = [
   {
     name: 'dispenserid',
     required: true,
-    label: t('Dispenser Number'),
+    label: t('dispenserFields.ID'),
     align: 'center',
     field: 'dispenserId',
     format: val => `${val}`,
     sortable: true,
   },
-  { name: 'dispensername', label: t('Dispenser Name'), align: 'center', field: 'dispenserName', sortable: true },
-  { name: 'ip', label: t('Dispenser IP'), field: 'dispenserIP' },
-  { name: 'type', label: t('Dispenser Type'), field: 'dispenserType' },
+  { name: 'dispensername', label: t('dispenserFields.Name'), align: 'center', field: 'dispenserName', sortable: true },
+  { name: 'ip', label: t('dispenserFields.IP'), field: 'dispenserIP' },
+  { name: 'type', label: t('dispenserFields.Type'), field: 'dispenserType' },
   { name: 'protocol', label: t('Protocol'), field: 'protocol' },
 ]
 
@@ -28,14 +28,14 @@ const machineColumns: (QTableColumn<Machine>)[] = [
   {
     name: 'machineid',
     required: true,
-    label: t('Machine Number'),
+    label: t('machineFields.No'),
     align: 'center',
     field: 'machineId',
     format: val => `${val}`,
     sortable: true,
   },
-  { name: 'machinename', label: t('Machine Name'), align: 'center', field: 'machineName', sortable: true },
-  { name: 'controllertype', label: t('Controller Type'), align: 'center', field: 'controllerType', sortable: true },
+  { name: 'machinename', label: t('machineFields.Name'), align: 'center', field: 'machineName', sortable: true },
+  { name: 'controllertype', label: t('machineFields.ControllerType'), align: 'center', field: 'controllerType', sortable: true },
 
 ]
 const { data: dispenserRows, refresh: refreshDispensers } = await useFetch(`/api/dispensers/dispensers`)
@@ -54,7 +54,6 @@ async function handleNewDispenser() {
       timeout: 3000,
     })
   })
-  console.log('new dispenser')
 }
 
 async function handleNewMachine() {
@@ -70,32 +69,27 @@ async function handleNewMachine() {
       timeout: 3000,
     })
   })
-  console.log('new machine')
 }
 
 const expandedDispensers = ref<number[]>([])
 const expandedMachines = ref<number[]>([])
 
 function toggleDispenserRow(id: number) {
-  console.log(id)
   if (!expandedDispensers.value.includes(id)) {
     expandedDispensers.value.push(id)
   } else {
     const index = expandedDispensers.value.indexOf(id)
     expandedDispensers.value.splice(index, 1)
   }
-  console.log(expandedDispensers.value)
 }
 
 function toggleMachineRow(id: number) {
-  console.log(id)
   if (!expandedMachines.value.includes(id)) {
     expandedMachines.value.push(id)
   } else {
     const index = expandedMachines.value.indexOf(id)
     expandedMachines.value.splice(index, 1)
   }
-  console.log(expandedMachines.value)
 }
 
 const dispenserPagination = ref({ rowsPerPage: 14 })

@@ -61,7 +61,7 @@
     "PH": "PH",
     "Density": "Yoğunluk",
     "UnitCost": "Birim Fiyatı",
-    "CostUnit": "Birim",
+    "CostUnit": "Fiyat Birimi",
     "ReRequestable": "Yeniden İstenebilir",
     "Source": "Kaynak",
     "DirectTransfer": "Doğrudan Transfer Edilebilir"
@@ -78,6 +78,7 @@
   },
   "machineFields": {
     "Name": "Makine Adı",
+    "No": "Makine Numarası",
     "ControllerType": "Kontrol Makinesi"
   },
   "statusCodes": {

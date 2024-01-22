@@ -74,10 +74,11 @@
     "ID": "Dispenser ID",
     "Type": "Dispenser Type",
     "Protocol": "Protocol",
-    "ConsumptionFile": "Consumtpion File Name"
+    "ConsumptionFile": "Consumption File Name"
   },
   "machineFields": {
     "Name": "Machine Name",
+    "No": "Machine No",
     "ControllerType": "Controller Type"
   },
   "statusCodes": {
