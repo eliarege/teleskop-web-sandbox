@@ -1,5 +1,5 @@
-import { updateEventStates } from '../../../composables/helper'
 import { knex } from '../../../knexConfig'
+import { updateTimeBasedEventStates } from './helper'
 
 // GET
 export async function getTimeBasedPlannedEvents(from: Date | string, to: Date | string) {
@@ -34,7 +34,7 @@ export async function getTimeBasedPlannedEvents(from: Date | string, to: Date | 
       isDeviaiton: e.isStarted ? new Date(e.actualStartTime) !== e.plannedStartTime : false,
     }
   })
-  return updateEventStates(modifiedEvents)
+  return updateTimeBasedEventStates(modifiedEvents)
 }
 // Zaman Bazlı planlamada taskin hangi makinelerde çalışabileceğini döndürür.
 export async function isTaskValidTimeBased(planKey: number) {

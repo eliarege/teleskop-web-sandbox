@@ -26,26 +26,6 @@ interface PlannedEvents {
 export function generateClientId() {
   return v4()
 }
-
-export function updateEventStates(ev: PlannedEvents[]) {
-  return ev.map((e) => {
-    return {
-      ...e,
-      deviation: e.isDeviation ? calculateDeviation(e.actualStartTime, e.plannedStartTime) : 0,
-      // ask how to check if this event is finished
-      isFinished: new Date(e.plannedEndTime) < new Date(),
-      isStarted: new Date(e.plannedStartTime) < new Date(),
-      notStarted: !e.isStarted,
-      // ask how to check if this event is running or not
-      isRunning: e.isStarted
-        ? (new Date(e.plannedStartTime) < new Date() && new Date(e.plannedEndTime) > new Date())
-        : false,
-      // ask how to check if this event has an alarm
-      hasAlarm: false,
-    }
-  })
-}
-
 export function calculateDeviation(actualStartTime: string, plannedStartTime: string) {
   return new Date(actualStartTime).getTime() - new Date(plannedStartTime).getTime()
 }
