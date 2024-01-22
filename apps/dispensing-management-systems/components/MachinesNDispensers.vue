@@ -21,7 +21,7 @@ const dispenserColumns: (QTableColumn<Dispenser>)[] = [
   { name: 'dispensername', label: t('dispenserFields.Name'), align: 'center', field: 'dispenserName', sortable: true },
   { name: 'ip', label: t('dispenserFields.IP'), field: 'dispenserIP' },
   { name: 'type', label: t('dispenserFields.Type'), field: 'dispenserType' },
-  { name: 'protocol', label: t('Protocol'), field: 'protocol' },
+  { name: 'protocol', label: t('dispenserFields.Protocol'), field: 'protocol' },
 ]
 
 const machineColumns: (QTableColumn<Machine>)[] = [
