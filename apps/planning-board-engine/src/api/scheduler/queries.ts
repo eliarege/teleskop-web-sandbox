@@ -1,41 +1,16 @@
 import { calculateDeviation, updateEventStates } from '../../composables/helper'
 import { knex } from '../../knexConfig'
 
-export async function getPlannedEvents(from: Date | string, to: Date | string) {
-  const events = await knex({ p: 'PTBATCHPLANQUEUE' })
+export async function getPtStatus() {
+  const res = await knex('dbo.TFTELESKOPSETTINGS as P')
     .select({
-      planKey: 'p.PLANKEY',
-      machineId: 'p.MACHINEID',
-      queueNumber: 'p.QUEUENUMBER',
-      recordTime: 'd.RECORDTIME',
-      jobOrder: 'd.JOBORDER',
-      programNoList: 'd.PROGRAMNOLIST',
-      plannedStartTime: 'd.PLANNEDSTARTTIME',
-      actualStartTime: 'd.STARTDATETIME',
-      theoreticalDuration: 'd.TheoricalDuration',
-      fabricWeight: knex.raw(`(select r.VALUE from DYBFBATCHPLANPARAMETERS r where r.PARAMSTRING = 'Kilo' and r.PLANKEY = p.PLANKEY)`),
-      partyNumber: 'd.PARTYNUMBER',
-      note: 'd.NOTE',
-      isDeleted: 'd.ISDELETED',
-      isStarted: 'd.ISSTARTED',
-      isStopped: 'd.ISSTOPPED',
-    })
-    .leftJoin({ d: 'DYBFBATCHPLAN' }, 'd.PLANKEY', 'p.PLANKEY')
-    .whereBetween('d.RECORDTIME', [from, to])
-    .andWhere((builder) => {
-      builder.whereNull('d.ISDELETED').orWhere('d.ISDELETED', 0)
-    })
-    .orderBy('p.MACHINEID')
-    .orderBy('p.QUEUENUMBER')
-  const modifiedEvents = events.map((e) => {
-    return {
-      ...e,
-      plannedEndTime: new Date(new Date(e.plannedStartTime).getTime() + e.theoreticalDuration * 1000),
-    }
-  })
-  return updateEventStates(modifiedEvents)
+      value: 'P.value',
+    }).where('ID', '=', '6')
+  if (res.length > 0) {
+    return res[0].value
+  }
 }
-export async function getUnplannedEvents(from: Date | string, to: Date | string) {
+export async function getUnplannedEvents() {
   const events = await knex('dbo.DYBFBATCHPLAN as P')
     .select({
       planKey: 'P.PLANKEY',
@@ -76,7 +51,6 @@ export async function getUnplannedEvents(from: Date | string, to: Date | string)
       builder.whereNull('P.ISDELETESENDTOMANUNITES').orWhere('P.ISDELETESENDTOMANUNITES', 0)
     })
     .andWhere('P.LASTFORJOBORDER', 1)
-    .andWhereBetween('P.RECORDTIME', [from, to])
   return events
 }
 export async function getRecipe(machineId: string, jobOrder: string) {
