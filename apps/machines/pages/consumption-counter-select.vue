@@ -41,7 +41,11 @@ async function handleOptionChange() {
   <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
       <h3>Makineler</h3>
-      <q-list bordered separator>
+      <q-list
+        bordered
+        separator
+        class="overflow-y-auto h-140"
+      >
         <q-item
           v-for="machine in machines"
           :key="machine.machineId"
@@ -50,7 +54,7 @@ async function handleOptionChange() {
           @click="handleMachineClick(machine.machineId)"
         >
           <q-item-section>
-            {{ machine.machineName }}
+            {{ machine.machineCode }}
           </q-item-section>
         </q-item>
       </q-list>
@@ -78,7 +82,7 @@ async function handleOptionChange() {
 </template>
 
 <style scoped>
-.input-field>* {
+.input-field > * {
   min-width: 20em;
   margin-bottom: 1em;
 }

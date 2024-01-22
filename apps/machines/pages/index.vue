@@ -128,7 +128,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
     v-model:selected="selected"
     :rows="machines"
     :columns="columns"
-    class="overflow-y-auto	h-180"
+    class="overflow-y-auto h-220"
     @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
   >
     <template #custombody="machines">

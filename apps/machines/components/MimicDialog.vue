@@ -115,6 +115,7 @@ async function handleFilterSlotsUpdateOutputs(updatedValue) {
               <FilterableTable
                 :rows="inputs"
                 :columns="inputColumns"
+                class="overflow-y-auto h-160"
                 @update-filter-slots="evt => handleFilterSlotsUpdateInputs(evt)"
               />
             </q-tab-panel>
@@ -123,12 +124,15 @@ async function handleFilterSlotsUpdateOutputs(updatedValue) {
               <FilterableTable
                 :rows="outputs"
                 :columns="outputColumns"
+                class="overflow-y-auto h-160"
                 @update-filter-slots="evt => handleFilterSlotsUpdateOutputs(evt)"
               />
             </q-tab-panel>
 
             <q-tab-panel name="other">
-              <q-input label="Maksimum Kule Hızı" />
+              <div class="h-160">
+                <q-input label="Maksimum Kule Hızı" />
+              </div>
             </q-tab-panel>
           </q-tab-panels>
         </q-card>

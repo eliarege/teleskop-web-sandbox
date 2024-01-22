@@ -89,6 +89,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
         v-model:selected="selected"
         :rows="waterTypes"
         :columns="columns"
+        class="overflow-y-auto h-160"
         @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       >
         <template #custombody="waterTypes">
@@ -114,5 +115,8 @@ async function handleFilterSlotsUpdate(updatedValue) {
 <style scoped>
 .selected-row {
   background-color: #cce8ff;
+}
+.input-field > * {
+  margin-right: 2em;
 }
 </style>
