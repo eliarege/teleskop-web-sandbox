@@ -169,7 +169,10 @@ const machinePagination = ref({ rowsPerPage: 14 })
           >
             <q-td colspan="100%">
               <div class="text-left">
-                {{ props.row.dispenserId }}.
+                Last Consumption Control: {{ props.row.lastConsumptionControl }},
+                Read Consumption from DMS: {{ props.row.readConsumptionFromDMS }},
+                FileName: {{ props.row.consumptionFilename }},
+                FilePath: {{ props.row.filePath }}
               </div>
             </q-td>
           </q-tr>
