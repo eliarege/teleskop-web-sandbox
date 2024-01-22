@@ -177,7 +177,7 @@ export class QueueDrag extends DragHelper {
     theoreticalDuration = await $fetch('api/queueBased/theoreticalDuration', {
       query: { planKey: context.task.originalData.id },
     })
-    const isValid = await $fetch('/api/queueBased/isValid', {
+    const isValid = await $fetch('/api/isValid', {
       query: { planKey: context.task.originalData.id },
     })
 
@@ -203,7 +203,7 @@ export class QueueDrag extends DragHelper {
     if (context.grabbed) {
       for (let i = 0; i < isValid.length; i++) {
         const currentRow = document.querySelector(`div[data-id="${isValid[i].machineId}"]`)
-        if (isValid[i].valid) {
+        if (isValid[i].programs) {
           currentRow?.setAttribute('bgGreen', '')
         } else {
           currentRow?.setAttribute('bgRed', '')
@@ -236,7 +236,7 @@ export class QueueDrag extends DragHelper {
     context.valid = Boolean(startDate && machine)
     && !(startDate < new Date())
     && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
-    && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).valid : true)
+    && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).programs : true)
     task.startDate = startDate
 
     if (this.tip) {

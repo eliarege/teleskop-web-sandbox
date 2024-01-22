@@ -2,7 +2,6 @@ import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import {
   getTimeBasedPlannedEvents,
   getTimeBasedTheoreticalDuration,
-  isTaskValidTimeBased,
   scheduleTimeBasedEvents,
   updateTimeBasedEvents,
 } from './queries'
@@ -23,19 +22,6 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching planned events: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching planned events: ${err}` })
-      }
-    },
-  )
-  fastify.get(
-    '/time_based/valid',
-    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
-      try {
-        const { planKey } = request.query
-        const isValid = await isTaskValidTimeBased(planKey)
-        return reply.code(200).send(isValid)
-      } catch (err) {
-        fastify.log.error(`An error occured while fetching valid status: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching valid status: ${err}` })
       }
     },
   )

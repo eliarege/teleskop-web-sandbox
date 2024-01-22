@@ -37,44 +37,7 @@ export async function getTimeBasedPlannedEvents(from: Date | string, to: Date | 
   return updateTimeBasedEventStates(modifiedEvents)
 }
 // Zaman Bazlı planlamada taskin hangi makinelerde çalışabileceğini döndürür.
-export async function isTaskValidTimeBased(planKey: number) {
-  const taskPrgList: Set<number> = new Set(
-    (
-      await knex({ p: 'dbo.DYBFBATCHPLAN' })
-        .select({ prgList: 'p.PROGRAMNOLIST' })
-        .where('p.PLANKEY', '=', planKey)
-    )[0].prgList.split(',').slice(0, -1).map(a => Number.parseInt(a)),
-  )
-  const allMachineIds: number[] = (
-    await knex({ p: 'dbo.BFMASTERPRGHEADER' })
-      .leftJoin({ d: 'dbo.BFMACHINES' }, 'p.MACHINEID', 'd.MACHINEID')
-      .select({ machineId: 'p.MACHINEID' })
-      .where('d.INUSE', '=', 1)
-      .andWhere('d.USEINTELESKOP', '=', 1)
-      .groupBy('p.MACHINEID')
-  ).map(row => row.machineId)
 
-  const promises = allMachineIds.map(async (machineId) => {
-    const machinePrgList: Set<number> = new Set(
-      (
-        await knex({ p: 'dbo.BFMASTERPRGHEADER' })
-          .select({
-            prgList: knex.raw("CONCAT('[', STRING_AGG(PROGNO, ','), ']')"),
-          })
-          .where('MACHINEID', '=', machineId)
-          .groupBy('MACHINEID')
-      )[0].prgList
-        .replace(/^\[|\]$/g, '')
-        .split(',')
-        .map(a => Number.parseInt(a)),
-    )
-
-    const isValid = [...taskPrgList].every(a => machinePrgList.has(a))
-    return { machineId, valid: isValid }
-  })
-
-  return Promise.all(promises)
-}
 export async function getTimeBasedTheoreticalDuration(planKey: number) {
   return await knex.raw(`
   SELECT b.MACHINEID as machineId ,SUM(B.DURATION) as theoreticalDuration

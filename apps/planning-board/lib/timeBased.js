@@ -149,7 +149,7 @@ export class TimeDrag extends DragHelper {
     theoreticalDuration = await $fetch('api/timeBased/theoreticalDuration', {
       query: { planKey: context.task.originalData.id },
     })
-    const isValid = await $fetch('/api/timeBased/isValid', {
+    const isValid = await $fetch('/api/isValid', {
       query: { planKey: context.task.originalData.id },
     })
     context.isValid = isValid
@@ -174,7 +174,7 @@ export class TimeDrag extends DragHelper {
     if (context.grabbed) {
       for (let i = 0; i < isValid.length; i++) {
         const currentRow = document.querySelector(`div[data-id="${isValid[i].machineId}"]`)
-        if (isValid[i].valid) {
+        if (isValid[i].programs) {
           currentRow?.setAttribute('bgGreen', '')
         } else {
           currentRow?.setAttribute('bgRed', '')
@@ -207,7 +207,7 @@ export class TimeDrag extends DragHelper {
     context.valid = Boolean(startDate && machine)
       && !(startDate < new Date())
       && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
-      && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).valid : true)
+      && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).programs : true)
 
     if (this.tip) {
       const startMonth = DateHelper.format(startDate, 'MMM')

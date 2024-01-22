@@ -10,6 +10,7 @@ import {
   getPtStatus,
   getRecipe,
   getUnplannedEvents,
+  isTaskValid,
   removeFromPlan,
 } from './queries'
 
@@ -95,6 +96,19 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching erp parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching erp parameters: ${err}` })
+      }
+    },
+  )
+  fastify.get(
+    '/planning_board/valid',
+    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
+      try {
+        const { planKey } = request.query
+        const isValid = await isTaskValid(planKey)
+        return reply.code(200).send(isValid)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching valid status: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching valid status: ${err}` })
       }
     },
   )

@@ -157,6 +157,40 @@ export async function getErpParameteres(machineId: number) {
     erpFieldName: 'p.ERPFIELDNAME',
   }).where('p.MACHINEID', '=', machineId)
 }
+export async function isTaskValid(planKey: number) {
+  const taskPrgList: Set<number> = new Set(
+    (
+      await knex({ p: 'dbo.DYBFBATCHPLAN' })
+        .select({ prgList: 'p.PROGRAMNOLIST' })
+        .where('p.PLANKEY', '=', planKey)
+    )[0].prgList.split(',').slice(0, -1).map(a => Number.parseInt(a)),
+  )
+
+  const machinePrgList: number[] = (
+    await knex({ p: 'dbo.BFMACHINES' })
+      .select({
+        machineId: 'p.MACHINEID',
+        programs: knex.raw(`
+        (select
+          CONCAT('[', STRING_AGG(PROGNO, ','), ']') list
+        from BFMASTERPRGHEADER b
+          where b.MACHINEID = p.MACHINEID
+          for json auto, include_null_values)
+      `),
+      })
+      .where('p.INUSE', '=', true)
+      .andWhere('p.USEINTELESKOP', '=', true)
+  )
+  const isValid = machinePrgList.map((machine: any) => {
+    const prgList: any[] = JSON.parse(machine.programs)
+    return {
+      machineId: machine.machineId,
+      programs: [...taskPrgList].every(a => prgList[0].list.includes(a)),
+    }
+  })
+
+  return isValid
+}
 export async function removeFromPlan(planKey: number) {
   await knex('dbo.DYBFBATCHPLAN').update({ MACHINEIDLIST: 0, PLANNEDMACHINE: 0, PLANNEDSTARTTIME: '2019-03-22 00:00:00.000' }).where('PLANKEY', '=', planKey)
   await knex('dbo.PTBATCHPLANQUEUE').where('PLANKEY', '=', planKey).del()
