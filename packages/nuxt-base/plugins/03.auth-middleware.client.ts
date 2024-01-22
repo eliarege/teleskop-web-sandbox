@@ -33,5 +33,5 @@ export default defineNuxtPlugin(() => {
         return unauthorized()
       }
     }
-  }, { global: kcConfig?.globalMiddlware ?? false })
+  }, { global: kcConfig?.globalMiddleware ?? false })
 })

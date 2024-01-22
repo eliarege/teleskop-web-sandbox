@@ -79,7 +79,7 @@ export default defineNuxtConfig({
               title: 'Keycloak',
               description: 'Configure keycloak plugin and middleware behaviour',
             },
-            globalMiddlware: {
+            globalMiddleware: {
               $default: false,
               $schema: {
                 title: 'Global Middleware',
