@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
 import type { Dispenser } from '~/shared/types'
+import ipformat from '~/shared/utils'
 
 const props = defineProps({
   dispenser: {
@@ -130,6 +131,7 @@ function onReset() {
                 type="text"
                 filled
                 :placeholder="editedDispenser.dispenserIP"
+                :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
               />
             </div>
             <div class="row-item">

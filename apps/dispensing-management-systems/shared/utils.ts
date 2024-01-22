@@ -19,3 +19,5 @@ export function cellStyle(col: any, row: any, pageIndex: number, isDarkMode: boo
   }
   return style
 }
+const ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+export default ipformat
