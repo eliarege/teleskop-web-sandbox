@@ -1,5 +1,4 @@
 import {
-  AjaxHelper,
   DateHelper,
   DomHelper,
   DragHelper,
@@ -7,8 +6,6 @@ import {
   EventStore,
   Grid,
   LocaleHelper,
-  LocaleManager,
-  ResourceModel,
   SchedulerPro,
   StringHelper,
   Toast,
@@ -170,18 +167,20 @@ export class QueueDrag extends DragHelper {
 
   async onDragStart({ context }) {
     // TODO: Lock context.grabbed
-    // set grabbed status to false if needed (figure out wtf is needed)
+    // set grabbed status to false if needed
     const { schedule, grid } = this
     const { eventTooltip, eventDrag } = schedule.features
     const { selectedRecords, store } = grid
     onDragStartSocket(selectedRecords[0].originalData.id)
     context.task = grid.getRecordFromElement(context.grabbed)
+
     theoreticalDuration = await $fetch('api/queueBased/theoreticalDuration', {
       query: { planKey: context.task.originalData.id },
     })
     const isValid = await $fetch('/api/queueBased/isValid', {
       query: { planKey: context.task.originalData.id },
     })
+
     context.isValid = isValid
     context.relatedElements = selectedRecords
       .sort((r1, r2) => store.indexOf(r1) - store.indexOf(r2))
@@ -239,6 +238,7 @@ export class QueueDrag extends DragHelper {
     && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
     && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).valid : true)
     task.startDate = startDate
+
     if (this.tip) {
       const startMonth = DateHelper.format(startDate, 'MMM')
       const startDay = DateHelper.format(startDate, 'D')
@@ -387,22 +387,22 @@ export class QueueTask extends EventModel {
     const ongoingBatchBatchSettings = ptSettings.ongoingBatch
     const plannedBatchBatchSettings = ptSettings.plannedBatch
     switch (true) {
-      case (!completedBatchSettings.isBatchFabricColor && this.isFinished && this.deviation > 0):
+      case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished && this.originalData.isDeviation):
         return completedBatchSettings.deviationBatchFabricColor
-      case (!completedBatchSettings.isBatchFabricColor && this.isFinished):
+      case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished):
         return completedBatchSettings.actualBatchFabricColor
 
-      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.isRunning && this.deviation > 0):
+      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.originalData.isRunning && this.originalData.isDeviation):
         return plannedBatchBatchSettings.deviationBatchFabricColor
-      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.isRunning):
+      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.originalData.isRunning):
         return plannedBatchBatchSettings.actualBatchFabricColor
 
-      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.isRunning && this.deviation > 0):
+      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning && this.originalData.isDeviation):
         return ongoingBatchBatchSettings.deviationBatchFabricColor
-      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.isRunning):
+      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning):
         return ongoingBatchBatchSettings.actualBatchFabricColor
 
-      case this.hasAlarm:
+      case this.isAlarm:
         return 'red'
       case this.isLocked:
         return 'yellow'
@@ -428,6 +428,12 @@ export class TaskStore extends EventStore {
     return {
       modelClass: QueueTask,
     }
+  }
+
+  rescheduleAllEvents(events) {
+    this.beginBatch()
+    events.forEach(ev => ev.shift(1, 'm'))
+    this.endBatch()
   }
 
   // use this if you want to re-schedule a first event
@@ -495,7 +501,7 @@ export class TaskStore extends EventStore {
     await this.finalizeRescheduling(targetResource, previousResource)
   }
 
-  // use this if you want to re-schedule an event
+  // use this if you want to re-schedule any event
   async rescheduleEvents(eventRecord, previousResource, targetResource) {
     const futureEvents = []
     const firstEvent = sortEventsByDateDesc(eventRecord.resource.events)[0]
