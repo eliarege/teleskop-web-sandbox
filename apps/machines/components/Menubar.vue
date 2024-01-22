@@ -125,16 +125,6 @@ async function loadDefinitions() {
       <q-chip class="mr-4 mb-2">
         DB v{{ version }}
       </q-chip>
-      <q-card class="flex flex row mb-2 items-center">
-        <q-card-section>
-          Hoşgeldiniz Barış
-        </q-card-section>
-        <q-card-section>
-          <q-btn no-caps>
-            Çıkış Yap
-          </q-btn>
-        </q-card-section>
-      </q-card>
     </q-card-section>
   </q-card>
   <NewMachineDialog

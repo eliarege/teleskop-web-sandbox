@@ -293,6 +293,7 @@ async function deleteParam() {
         <FilterableTable
           :rows="machines"
           :columns="machineColumns"
+          class="overflow-y-auto	h-160 w-xl"
           @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
         >
           <template #custombody="machines">
@@ -315,6 +316,7 @@ async function deleteParam() {
         <FilterableTable
           :rows="params"
           :columns="parameterColumns"
+          class="overflow-y-auto h-160 w-2xl"
         >
           <template #custombody="parameters">
             <q-tr

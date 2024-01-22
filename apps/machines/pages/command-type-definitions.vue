@@ -106,9 +106,13 @@ async function handleDragDrop(e, commandType: number) {
 
 <template>
   <q-card class="flex flex-row">
-    <q-card-section class="w-sm">
+    <q-card-section class="w-2xs">
       <h3>Makineler</h3>
-      <q-list bordered separator>
+      <q-list
+        bordered
+        separator
+        class="h-160 overflow-y-auto"
+      >
         <q-item
           v-for="machine in machines"
           :key="machine.machineId"
@@ -122,12 +126,12 @@ async function handleDragDrop(e, commandType: number) {
         </q-item>
       </q-list>
     </q-card-section>
-    <q-card-section class="w-sm">
+    <q-card-section class="w-2xs">
       <h3>Seçili Makine Komutları</h3>
       <Sortable
         :list="commands"
         item-key="id"
-        class="q-list q-list--bordered q-list--separator"
+        class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
         :options="{ group: 'group' }"
       >
         <template #item="{ element, index }">
@@ -143,17 +147,17 @@ async function handleDragDrop(e, commandType: number) {
       </Sortable>
     </q-card-section>
 
-    <q-card-section class="inline-grid grid-cols-3 gap-15">
+    <q-card-section class="inline-grid grid-cols-5 gap-5 ml-8">
       <div
         v-for="item in commandTypeMap"
         :key="item.value"
-        class="w-sm box"
+        class="w-2xs box"
       >
         <h3>{{ item.title }}</h3>
         <Sortable
           :list="item.ref"
           item-key="id"
-          class="q-list q-list--bordered q-list--separator"
+          class="q-list q-list--bordered q-list--separator overflow-y-auto h-50"
           :options="{ group: 'group' }"
           @add="(e) => handleDragDrop(e, item.value)"
           @remove="(e) => handleDragDrop(e, item.value)"
@@ -175,12 +179,6 @@ async function handleDragDrop(e, commandType: number) {
 </template>
 
 <style scoped>
-.box {
-  max-width: 20em;
-  height: 20em;
-  overflow-y: scroll;
-}
-
 .inline-grid {
   height: fit-content;
 }

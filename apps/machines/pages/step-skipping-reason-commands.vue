@@ -30,7 +30,7 @@ async function handleCheckChange(e, command) {
 </script>
 
 <template>
-  <q-card class="flex flex-row justify-around">
+  <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
       <h3>Makineler</h3>
       <q-list bordered separator>
@@ -42,7 +42,7 @@ async function handleCheckChange(e, command) {
           @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>
-            {{ machine.machineName }}
+            {{ machine.machineCode }}
           </q-item-section>
         </q-item>
       </q-list>
@@ -50,7 +50,11 @@ async function handleCheckChange(e, command) {
 
     <q-card-section class="w-sm">
       <h3>Komut Listesi</h3>
-      <q-list bordered separator>
+      <q-list
+        bordered
+        separator
+        class="overflow-y-auto h-160"
+      >
         <q-item
           v-for="command in commands"
           :key="command.commandNo"

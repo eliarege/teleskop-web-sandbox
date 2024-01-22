@@ -116,29 +116,28 @@ async function handleFilterSlotsUpdate(updatedValue) {
       </q-btn>
     </q-card-section>
   </q-card>
-  <div class="table-scroll">
-    <FilterableTable
-      :rows="times"
-      :columns="columns"
-      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-    >
-      <template #custombody="times">
-        <q-tr>
-          <q-td
-            v-for="row in times.cols"
-            :key="row"
-          >
-            <span v-if="row.field === 'closedType'">
-              {{ closedTimeOptions.find(o => o.value === row.value)?.label }}
-            </span>
-            <span v-else>
-              {{ row.value }}
-            </span>
-          </q-td>
-        </q-tr>
-      </template>
-    </FilterableTable>
-  </div>
+  <FilterableTable
+    :rows="times"
+    :columns="columns"
+    class="overflow-y-auto	h-120"
+    @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+  >
+    <template #custombody="times">
+      <q-tr>
+        <q-td
+          v-for="row in times.cols"
+          :key="row"
+        >
+          <span v-if="row.field === 'closedType'">
+            {{ closedTimeOptions.find(o => o.value === row.value)?.label }}
+          </span>
+          <span v-else>
+            {{ row.value }}
+          </span>
+        </q-td>
+      </q-tr>
+    </template>
+  </FilterableTable>
 </template>
 
 <style scoped>

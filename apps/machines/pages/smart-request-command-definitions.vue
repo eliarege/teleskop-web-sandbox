@@ -74,14 +74,18 @@ async function handleOptionChange(commandTypeName) {
           @click="handleMachineClick(machine.machineId)"
         >
           <q-item-section>
-            {{ machine.machineName }}
+            {{ machine.machineCode }}
           </q-item-section>
         </q-item>
       </q-list>
     </q-card-section>
 
     <q-card-section class="w-xs flex flex-col">
-      <div v-for="commandMap in commandTypeMaps" :key="commandMap.id">
+      <div
+        v-for="commandMap in commandTypeMaps"
+        :key="commandMap.id"
+        class="mb-4"
+      >
         <q-select
           v-model="commandMap.data"
           :label="commandMap.label"

@@ -111,42 +111,33 @@ async function handleFilterSlotsUpdate(updatedValue) {
       </div>
     </q-card-section>
   </q-card>
-  <div class="table-scroll">
-    <FilterableTable
-      v-model:selected="selected"
-      :rows="machines"
-      :columns="columns"
-      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-      @selection="(e) => handleSelection(e)"
-    >
-      <template #custombody="machines">
-        <q-tr
-          :class="{ 'selected-row': selected.machineId === machines.row.machineId }"
-          @click="handleSelection(machines.row)"
+  <FilterableTable
+    v-model:selected="selected"
+    :rows="machines"
+    :columns="columns"
+    class="overflow-y-auto h-160"
+    @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+    @selection="(e) => handleSelection(e)"
+  >
+    <template #custombody="machines">
+      <q-tr
+        :class="{ 'selected-row': selected.machineId === machines.row.machineId }"
+        @click="handleSelection(machines.row)"
+      >
+        <q-td
+          v-for="row in machines.cols"
+          :key="row"
         >
-          <q-td
-            v-for="row in machines.cols"
-            :key="row"
-          >
-            <span>
-              {{ row.value }}
-            </span>
-          </q-td>
-        </q-tr>
-      </template>
-    </FilterableTable>
-  </div>
+          <span>
+            {{ row.value }}
+          </span>
+        </q-td>
+      </q-tr>
+    </template>
+  </FilterableTable>
 </template>
 
 <style scoped>
-:deep(.table-header > th) {
-  font-weight: bold;
-}
-.table-scroll {
-  max-height: 45em;
-  overflow-y: auto;
-}
-
 .input-field > * {
   margin-right: 2em;
 }

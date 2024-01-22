@@ -199,41 +199,40 @@ async function handleFilterSlotsUpdate(updatedValue) {
     </q-card-section>
   </q-card>
 
-  <div class="table-scroll">
-    <FilterableTable
-      v-model:selected="selected"
-      :rows="users"
-      :columns="columns"
-      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-    >
-      <template #custombody="users">
-        <q-tr
-          :class="{ 'selected-row': selected.userId === users.row.userId }"
-          @click="handleSelection(users.row)"
+  <FilterableTable
+    v-model:selected="selected"
+    :rows="users"
+    :columns="columns"
+    class="overflow-y-auto	h-160"
+    @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+  >
+    <template #custombody="users">
+      <q-tr
+        :class="{ 'selected-row': selected.userId === users.row.userId }"
+        @click="handleSelection(users.row)"
+      >
+        <q-td
+          v-for="row in users.cols"
+          :key="row"
         >
-          <q-td
-            v-for="row in users.cols"
-            :key="row"
-          >
-            <span v-if="row.field === 'userActive'">
-              {{ row.value ? 'Evet' : 'Hayır' }}
-            </span>
-            <span v-else-if="row.field === 'userType'">
-              {{ userTypeOptions.find(o => o.value === row.value).label }}
-            </span>
-            <span v-else>
-              {{ row.value }}
-            </span>
-          </q-td>
-        </q-tr>
-      </template>
-    </FilterableTable>
-    <UserPermissionsDialog
-      :show="showPermissionsDialog"
-      :selected="selected"
-      @close="showPermissionsDialog = false"
-    />
-  </div>
+          <span v-if="row.field === 'userActive'">
+            {{ row.value ? 'Evet' : 'Hayır' }}
+          </span>
+          <span v-else-if="row.field === 'userType'">
+            {{ userTypeOptions.find(o => o.value === row.value).label }}
+          </span>
+          <span v-else>
+            {{ row.value }}
+          </span>
+        </q-td>
+      </q-tr>
+    </template>
+  </FilterableTable>
+  <UserPermissionsDialog
+    :show="showPermissionsDialog"
+    :selected="selected"
+    @close="showPermissionsDialog = false"
+  />
 </template>
 
 <style scoped>
@@ -245,15 +244,6 @@ async function handleFilterSlotsUpdate(updatedValue) {
 .button-field > * {
   margin-right: 2em;
 }
-
-:deep(.table-header > th) {
-  font-weight: bold;
-}
-.table-scroll {
-  max-height: 45em;
-  overflow-y: auto;
-}
-
 .selected-row {
   background-color: #cce8ff;
 }

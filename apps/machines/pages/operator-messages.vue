@@ -75,6 +75,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
       <FilterableTable
         :rows="messages"
         :columns="columns"
+        class="overflow-y-auto h-160"
         @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       />
     </q-card-section>

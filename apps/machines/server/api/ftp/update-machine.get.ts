@@ -1,7 +1,7 @@
 import { TbbFtpClient, withTbbFtpClient } from 'tbb-ftp-client'
 import { EventHandlerRequest, getQuery } from 'h3'
 import { knex } from '~/server/connectionPool'
-import { updateAnalogInputs, updateCommandAlarmReasons, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral, writeFinishReasons, writeGlobalCommandFormulas, writeManualReasons, writeStopReasons, writeUsers } from '~/server/utils/updateDatabase'
+import { updateAnalogInputs, updateBatchParameters, updateCommandAlarmReasons, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral, updateSystem, writeFinishReasons, writeGlobalCommandFormulas, writeManualReasons, writeStopReasons, writeUsers } from '~/server/utils/updateDatabase'
 
 export default defineEventHandler(async (event) => {
   const { machineId, ip } = getQuery(event)
@@ -13,13 +13,13 @@ export default defineEventHandler(async (event) => {
         // controllerModel
         await updateMachineController(numMachineId, tbb, trx)
         // baslatmaparametreleri
-
+        await updateBatchParameters(numMachineId, tbb, trx)
         // commandGroup
         await updateCommandGroups(numMachineId, tbb, trx)
         // cycle_kontrol
-
+        await updateCycleControl(numMachineId, tbb, trx)
         // sistem
-
+        await updateSystem(numMachineId, tbb, trx)
         // manuelmodenedenleri
         await updateManualReasons(tbb, trx)
         // analoginput
@@ -32,7 +32,6 @@ export default defineEventHandler(async (event) => {
         await updateDigitalOutputs(numMachineId, tbb, trx)
         // sayac
         await updateCounters(numMachineId, tbb, trx)
-
         // commands general
         await updateCommandsGeneral(numMachineId, tbb, trx)
         // commands params

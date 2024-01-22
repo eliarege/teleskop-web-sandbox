@@ -100,29 +100,28 @@ async function handleFilterSlotsUpdate(updatedValue) {
       </q-btn>
     </q-card-section>
   </q-card>
-  <div class="table-scroll">
-    <FilterableTable
-      :rows="fails"
-      :columns="columns"
-      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-    >
-      <template #custombody="fails">
-        <q-tr>
-          <q-td
-            v-for="row in fails.cols"
-            :key="row"
-          >
-            <span v-if="row.field === 'eventCode'">
-              {{ accessFailOptions.find(o => o.value === row.value)?.label }}
-            </span>
-            <span v-else>
-              {{ row.value }}
-            </span>
-          </q-td>
-        </q-tr>
-      </template>
-    </filterableTable>
-  </div>
+  <FilterableTable
+    :rows="fails"
+    :columns="columns"
+    class="overflow-y-auto	h-120"
+    @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+  >
+    <template #custombody="fails">
+      <q-tr>
+        <q-td
+          v-for="row in fails.cols"
+          :key="row"
+        >
+          <span v-if="row.field === 'eventCode'">
+            {{ accessFailOptions.find(o => o.value === row.value)?.label }}
+          </span>
+          <span v-else>
+            {{ row.value }}
+          </span>
+        </q-td>
+      </q-tr>
+    </template>
+  </filterableTable>
 </template>
 
 <style scoped>
