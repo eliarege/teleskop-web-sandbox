@@ -332,22 +332,22 @@ export class TimeTask extends EventModel {
     const ongoingBatchBatchSettings = ptSettings.ongoingBatch
     const plannedBatchBatchSettings = ptSettings.plannedBatch
     switch (true) {
-      case (!completedBatchSettings.isBatchFabricColor && this.isFinished && this.deviation > 0):
+      case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished && this.originalData.deviation > 0):
         return completedBatchSettings.deviationBatchFabricColor
-      case (!completedBatchSettings.isBatchFabricColor && this.isFinished):
+      case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished):
         return completedBatchSettings.actualBatchFabricColor
 
-      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.isRunning && this.deviation > 0):
+      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.originalData.isRunning && this.originalData.deviation > 0):
         return plannedBatchBatchSettings.deviationBatchFabricColor
-      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.isRunning):
+      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.originalData.isRunning):
         return plannedBatchBatchSettings.actualBatchFabricColor
 
-      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.isRunning && this.deviation > 0):
+      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning && this.originalData.deviation > 0):
         return ongoingBatchBatchSettings.deviationBatchFabricColor
-      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.isRunning):
+      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning):
         return ongoingBatchBatchSettings.actualBatchFabricColor
 
-      case this.hasAlarm:
+      case this.isAlarm:
         return 'red'
       case this.isLocked:
         return 'yellow'

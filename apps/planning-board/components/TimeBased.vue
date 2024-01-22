@@ -8,8 +8,7 @@ import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeB
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
 const currentTime = useNow({ interval: 1000 })
-const router = useRouter()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 // TODO (BEFORE PRODUCTION): change start/end date!
 const startDate = ref('2022/07/01')
@@ -59,7 +58,7 @@ const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch(
 const modifiedMachines = computed(() => machines.value?.map((m) => {
   return {
     ...m,
-    // TODO: machine icons?
+    // TODO?: machine icons
     // iconCls: 'b-fa b-fa-solid b-fa-play',
   }
 }))
@@ -175,7 +174,7 @@ onMounted(async () => {
           icons.push('b-fa b-fa-solid b-fa-play')
         }
       }
-      if (eventRecord.originalData.hasAlarm) {
+      if (eventRecord.originalData.isAlarm) {
         icons.push('b-fa b-fa-solid b-fa-bell')
       }
 

@@ -40,7 +40,7 @@ export interface PlannedEvents {
   deviation: number
   isFinished: boolean
   notStarted: boolean
-  hasAlarm: boolean
+  isAlarm: boolean
   isRunning: boolean
 }
 
