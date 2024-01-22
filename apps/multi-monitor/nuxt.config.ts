@@ -29,6 +29,14 @@ export default defineNuxtConfig({
       websockifyPort: '6800',
     },
   },
+  i18n: {
+    lazy: true,
+    langDir: './locales',
+    locales: [
+      { code: 'en', file: 'en.json' },
+      { code: 'tr', file: 'tr.json' },
+    ],
+  },
   nitro: {
     rollupConfig: {
       // @ts-expect-error Infinite

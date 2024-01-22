@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { arc, pie } from 'd3'
-import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   color: string[]

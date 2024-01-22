@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import {
   sharpDashboard,
   sharpFormatColorFill,
   sharpGrid3x3,
   sharpLanguage,
 } from '@quasar/extras/material-icons-sharp'
-import { useDataStore } from '../store/Datas'
+import { useDataStore } from '~/store/Datas'
 import { useColorStore } from '~/store/Colors'
 
 defineProps({
@@ -14,7 +13,7 @@ defineProps({
 })
 defineEmits(['close'])
 
-const { t, locale } = useI18n()
+const { t, locale, setLocale } = useI18n()
 const colors = useColorStore()
 const store = useDataStore()
 function setDefaultSettings() {
@@ -28,9 +27,9 @@ function setDefaultSettings() {
   store.steam = true
   store.salt = true
   store.water = true
-  store.locale = 'tr'
 }
 const config = useRuntimeConfig()
+
 const machineGroups = computed(() => new Set(store.machine.map(g => g.groupName)))
 </script>
 
@@ -52,17 +51,17 @@ const machineGroups = computed(() => new Set(store.machine.map(g => g.groupName)
                 >
                   <div class="flex justify-center">
                     <q-option-group
-                      v-model="store.locale"
+                      :model-value="locale"
                       type="radio"
                       :options="[
                         { label: 'Türkçe', value: 'tr' },
                         { label: 'English', value: 'en' },
                       ]"
                       class="flex"
+                      @update:model-value="setLocale($event)"
                     />
                   </div>
                 </q-expansion-item>
-
                 <q-expansion-item
                   class="text-black max-h-150 overflow-auto"
                   expand-separator
@@ -191,7 +190,6 @@ const machineGroups = computed(() => new Set(store.machine.map(g => g.groupName)
                   </div>
                 </q-expansion-item>
               </q-list>
-
               <div class="btns">
                 <ElButton
                   color="#0d94fc"

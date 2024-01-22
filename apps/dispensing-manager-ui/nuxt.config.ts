@@ -15,4 +15,12 @@ export default defineNuxtConfig({
       kcClientId: 'dispensing-manager-ui',
     },
   },
+  i18n: {
+    lazy: true,
+    langDir: './locales',
+    locales: [
+      { code: 'en', file: 'en.json' },
+      { code: 'tr', file: 'tr.json' },
+    ],
+  },
 })

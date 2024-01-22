@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { useStorage } from '@vueuse/core'
-import { useI18n } from 'vue-i18n'
 import type { MachineDataRaw } from '../shared/types'
 
 export const useDataStore = defineStore('datas', () => {

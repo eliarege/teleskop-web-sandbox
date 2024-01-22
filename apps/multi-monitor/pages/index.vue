@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { useDateFormat, useNow } from '@vueuse/core'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
 
@@ -49,7 +47,7 @@ const machineData = computed(() => {
       runningAlarmNo: machine.runningAlarmNo ? machine.runningAlarmNo : ' ',
       runningBatchRatio: Math.round(
         (machine.theoreticalDuration! / machine.runningTheoreticalDuration!)
-          * 100,
+        * 100,
       ),
     } as MachineData
   })

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { MachineCard } from 'ui'
 import type { PropType } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { MachineData } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { useDataStore } from '~/store/Datas'

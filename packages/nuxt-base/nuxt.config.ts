@@ -1,5 +1,4 @@
 import process from 'node:process'
-import i18n from '@intlify/unplugin-vue-i18n/vite'
 
 const appMetaVars = {
   name: process.env.APP_NAME || '',
@@ -25,18 +24,11 @@ export default defineNuxtConfig({
     '@unocss/nuxt',
     '@vueuse/nuxt',
     '@pinia/nuxt',
+    '@nuxtjs/i18n',
     '@element-plus/nuxt',
     'nuxt-quasar-ui',
     'nuxt-icon',
   ],
-  imports: {
-    presets: [
-      {
-        from: 'vue-i18n',
-        imports: ['useI18n'],
-      },
-    ],
-  },
   nitro: {
     replace: {
       ...Object.fromEntries(
@@ -63,12 +55,13 @@ export default defineNuxtConfig({
   elementPlus: {
     icon: false,
   },
-  vite: {
-    plugins: [
-      i18n({
-        include: ['locales/*'],
-      }),
-    ],
+  i18n: {
+    strategy: 'prefix_except_default',
+    defaultLocale: 'en',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_locale',
+    },
   },
   hooks: {
     'schema:extend': (schemas) => {

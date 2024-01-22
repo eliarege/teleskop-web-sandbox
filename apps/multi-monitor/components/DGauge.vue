@@ -2,7 +2,6 @@
 import { arc, interpolateRdYlGn, pie } from 'd3'
 import { clamp, times } from 'lodash-es'
 import anime from 'animejs'
-import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   modelValue: number
@@ -57,10 +56,10 @@ watch(
     const duration
       = (Math.abs(
         clamp(nextValue, minValue, props.maxValue)
-          - clamp(prevValue, minValue, props.maxValue),
+        - clamp(prevValue, minValue, props.maxValue),
       )
-        / (props.maxValue - minValue))
-        * (props.maxDuration - props.minDuration)
+      / (props.maxValue - minValue))
+      * (props.maxDuration - props.minDuration)
       + props.minDuration
     anime({
       targets: theta,
@@ -75,7 +74,7 @@ watch(
 function calculateTheta(value: number) {
   return (
     clamp((value - minValue) / (props.maxValue - minValue), 0, 1) // ratio
-      * (props.maxAngle - props.minAngle)
+    * (props.maxAngle - props.minAngle)
     + props.minAngle // angle
     + Math.PI / 2
   ) // offset

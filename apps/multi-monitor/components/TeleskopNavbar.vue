@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData, Trends } from '~/shared/types'
 
@@ -13,6 +12,8 @@ const props = defineProps({
 })
 const { t } = useI18n()
 const store = useDataStore()
+const router = useRouter()
+const route = useRoute()
 // layout
 const layoutSide = ref('layoutContainerSide')
 const layoutTop = ref('layoutContainerTop')
@@ -57,8 +58,16 @@ const inactive = computed(() => {
     .map(machine => machine.machineCapacity - machine.runningMachineCapacity)
     .reduce((sum, val) => Math.round(sum) + Math.round(val), 0)
 })
+const showSettings = ref('settings' in route.query)
 
-const showSettings = ref(false)
+watch(showSettings, (value) => {
+  if (value) {
+    router.replace({ query: { settings: '' } })
+  } else {
+    router.replace({ query: {} })
+  }
+})
+
 const options = {
   cornerRadius: 0,
   startAngle: 0,
