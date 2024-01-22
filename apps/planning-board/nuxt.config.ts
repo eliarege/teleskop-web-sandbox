@@ -3,7 +3,10 @@ import string from 'rollup-plugin-string'
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
-  extends: ['nuxt-base'],
+  extends: [
+    'nuxt-base',
+    'nuxt-machine-card',
+  ],
   runtimeConfig: {
     teleskopHost: 'localhost',
     teleskopUser: '',

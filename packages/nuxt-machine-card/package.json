@@ -1,0 +1,21 @@
+{
+  "name": "nuxt-machine-card",
+  "version": "1.0.0",
+  "description": "",
+  "license": "UNLICENSED",
+  "keywords": [],
+  "main": "nuxt.config.ts",
+  "scripts": {
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "nuxt-base": "workspace:*",
+    "ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "nuxt": "^3.9.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.5"
+  }
+}
