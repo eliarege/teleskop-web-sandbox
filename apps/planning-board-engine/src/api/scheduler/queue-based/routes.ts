@@ -12,20 +12,14 @@ import {
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
     '/queue_based/scheduled_events',
-    async (request: FastifyRequest<{
-      Querystring: { from: string; to: string }
-    }>, reply) => {
+    async (request, reply) => {
       try {
-        const { from, to } = request.query
-        if (!from || !to) {
-          return reply.code(400).send({ error: 'Both "from" and "to" parameters are required.' })
-        }
-        const plannedEvents = await getQueueBasedPlannedEvents(from, to)
+        const plannedEvents = await getQueueBasedPlannedEvents()
         const datedPlannedEvents = generateEventDates(plannedEvents)
         return reply.code(200).send(datedPlannedEvents)
       } catch (err) {
-        fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while fetching planned events: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching planned events: ${err}` })
       }
     },
   )
@@ -39,8 +33,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const plannedEvents = await getQueueBasedArchiveEvents(Number.parseInt(archiveDays))
         return reply.code(200).send(plannedEvents)
       } catch (err) {
-        fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while fetching archive events: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching archive events: ${err}` })
       }
     },
   )
@@ -52,8 +46,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const isValid = await isTaskValidQueueBased(planKey)
         return reply.code(200).send(isValid)
       } catch (err) {
-        fastify.log.error(`Error fetching recipe: ${err.message}`)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while fetching valid status: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching valid status: ${err}` })
       }
     },
   )
@@ -64,8 +58,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { planKey } = request.query
         return await getQueueBasedTheoreticalDuration(planKey)
       } catch (err) {
-        fastify.log.error(`Error fetching recipe: ${err.message}`)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while fetching theoretical duration: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching theoretical duration: ${err}` })
       }
     },
   )
@@ -77,8 +71,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await updateQueueBasedEvents(body)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while updating events: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating events: ${err}` })
       }
     },
   )
@@ -92,8 +86,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await scheduleQueueBasedEvents(planKey, machineId, plannedStartTime)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        console.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while adding events: ${err}`)
+        return reply.code(500).send({ error: `An error occured while adding events: ${err}` })
       }
     },
   )

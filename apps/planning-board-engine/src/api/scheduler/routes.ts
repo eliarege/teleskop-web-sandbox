@@ -7,7 +7,7 @@ import {
   getErpParameteres,
   getMachines,
   getPlanParameters,
-  getPlannedEvents,
+  getPtStatus,
   getRecipe,
   getUnplannedEvents,
   removeFromPlan,
@@ -15,17 +15,26 @@ import {
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
-    '/planning_board/unscheduled_events',
-    async (request: FastifyRequest<{
-      Querystring: { from: string; to: string }
-    }>, reply) => {
+    '/planning_board/state',
+    async (request, reply) => {
       try {
-        const { from, to } = request.query
-        const unplannedEvents = await getUnplannedEvents(from, to)
+        const pt = await getPtStatus()
+        return reply.code(200).send(pt)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching pt status: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching pt status: ${err}` })
+      }
+    },
+  )
+  fastify.get(
+    '/planning_board/unscheduled_events',
+    async (request, reply) => {
+      try {
+        const unplannedEvents = await getUnplannedEvents()
         return reply.code(200).send(unplannedEvents)
       } catch (err) {
-        fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while fetching unplanned events: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching unplanned events: ${err}` })
       }
     },
   )
@@ -37,8 +46,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const recipe = await getRecipe(machineId, jobOrder)
         return reply.code(200).send(recipe)
       } catch (err) {
-        fastify.log.error(`Error fetching recipe: ${err.message}`)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while fetching recipe: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching recipe: ${err}` })
       }
     },
   )
@@ -49,8 +58,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { jobOrder } = request.query
         return await getBatchNotes(jobOrder)
       } catch (err) {
-        fastify.log.error(`Error fetching recipe: ${err.message}`)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while fetching batch notes: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching batch notes: ${err}` })
       }
     },
   )
@@ -61,8 +70,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { planKey } = request.query
         return await getPlanParameters(planKey)
       } catch (err) {
-        fastify.log.error(`Error fetching recipe: ${err.message}`)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while fetching plan parameters: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching plan parameters: ${err}` })
       }
     },
   )
@@ -72,8 +81,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         return await getMachines()
       } catch (err) {
-        fastify.log.error(`Error fetching recipe: ${err.message}`)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while fetching machines: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching machines: ${err}` })
       }
     },
   )
@@ -84,8 +93,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { machineId } = request.query
         return await getErpParameteres(machineId)
       } catch (err) {
-        fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while fetching erp parameters: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching erp parameters: ${err}` })
       }
     },
   )
@@ -97,8 +106,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await removeFromPlan(planKey)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while removing event from plan: ${err}`)
+        return reply.code(500).send({ error: `An error occured while removing event from plan: ${err}` })
       }
     },
   )
@@ -110,8 +119,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await deleteEvent(planKey)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while deleting event: ${err}`)
+        return reply.code(500).send({ error: `An error occured while deleting event: ${err}` })
       }
     },
   )
@@ -125,8 +134,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await addBatchNote(jobOrder, note, userId, showOnScreen)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        fastify.log.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        fastify.log.error(`An error occured while adding batch note: ${err}`)
+        return reply.code(500).send({ error: `An error occured while adding batch note: ${err}` })
       }
     },
   )
@@ -140,8 +149,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await deleteNote(id)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        console.error(err)
-        return reply.code(500).send({ error: 'Internal Server Error' })
+        console.error(`An error occured while deleting batch note: ${err}`)
+        return reply.code(500).send({ error: `An error occured while deleting batch note: ${err}` })
       }
     },
   )
