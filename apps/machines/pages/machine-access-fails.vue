@@ -2,6 +2,8 @@
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { Column } from 'ui/types/FilterableTable'
 
+const { t, d } = useI18n()
+
 const accessFailOptions = ref([
   { label: 'Network erişimi yok', eventCode: 0 },
   { label: 'Teleskop iletişimi yok', eventCode: 1 },
@@ -78,6 +80,13 @@ async function handleFilterSlotsUpdate(updatedValue) {
         >
           <span v-if="row.field === 'eventCode'">
             {{ accessFailOptions.find(o => o.eventCode === row.value)?.label }}
+          </span>
+
+          <span v-else-if="row.field === 'eventStart'">
+            {{ d(row.value, 'datetime') }}
+          </span>
+          <span v-else-if="row.field === 'eventEnd'">
+            {{ d(row.value, 'datetime') }}
           </span>
           <span v-else>
             {{ row.value }}

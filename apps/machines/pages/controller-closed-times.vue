@@ -2,6 +2,8 @@
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { Column } from 'ui/types/FilterableTable'
 
+const { t, d } = useI18n()
+
 const closedTimeOptions = ref([
   { label: 'Cihaz yeniden başlatıldı', closedType: 0 },
   { label: 'Cihaz kapatıldı', closedType: 1 },
@@ -95,6 +97,12 @@ async function handleFilterSlotsUpdate(updatedValue) {
         >
           <span v-if="row.field === 'closedType'">
             {{ closedTimeOptions.find(o => o.closedType === row.value)?.label }}
+          </span>
+          <span v-else-if="row.field === 'startTime'">
+            {{ d(row.value, 'datetime') }}
+          </span>
+          <span v-else-if="row.field === 'endTime'">
+            {{ d(row.value, 'datetime') }}
           </span>
           <span v-else>
             {{ row.value }}
