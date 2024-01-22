@@ -14,12 +14,12 @@ const showEditMachine = ref(false)
 const showMachineParameters = ref(false)
 const showMimic = ref(false)
 const showFormulas = ref(false)
-const selectedIp = computed(() => props.selected.ip)
+const machineId = computed(() => props.selected.machineId)
 
 const { data: version } = useLazyFetch('/api/soap/get-version', {
   default: () => 0,
   query: {
-    ip: selectedIp,
+    machineId,
   },
 })
 
