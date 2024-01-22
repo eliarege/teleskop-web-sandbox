@@ -1,7 +1,7 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { Splitter, Tooltip } from '@bryntum/schedulerpro-trial'
+import { Splitter } from '@bryntum/schedulerpro-trial'
 import { EliarModal } from 'ui'
 import { useI18n } from 'vue-i18n'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
@@ -49,16 +49,12 @@ const showModal = reactive({
 })
 const archiveDays = localStorage.getItem('pt-settings')
 const { data: machines } = await useFetch('/api/machineList')
-const { data: events, refresh: plannedRefresh } = await useFetch('/api/queueBased/plannedEvents', {
-  query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
-})
-const { data: archiveEvents, refresh: archiveRefresh } = await useFetch('/api/queueBased/archiveEvents', {
-  query: { archiveDays: JSON.parse(archiveDays).archiveDays },
+const { data: events, refresh: plannedRefresh } = await useFetch('/api/queueBased/plannedEvents')
+const { data: archiveEvents } = await useFetch('/api/queueBased/archiveEvents', {
+  query: { archiveDays: JSON.parse(archiveDays).archiveDays ?? 0 },
 })
 
-const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents', {
-  query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
-})
+const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
 const modifiedEvents = computed(() => events.value?.map((ev: any) => {
   return {
     id: ev.planKey,
@@ -74,19 +70,18 @@ const modifiedEvents = computed(() => events.value?.map((ev: any) => {
 }))
 const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
   return {
-    id: ev.plannedStartTime ? ev.planKey : `${ev.planKey}A`,
-    planKey: ev.plannedStartTime ? ev.planKey : `${ev.planKey}A`,
+    id: ev.planKey,
     name: ev.jobOrder,
     resourceId: ev.machineId,
     resizable: false,
-    draggable: true,
+    draggable: !ev.isStarted,
     editable: false,
-    startDate: ev.plannedStartTime ? new Date(ev.plannedStartTime) : new Date(ev.actualStartTime),
-    endDate: ev.plannedEndtime ? new Date(ev.plannedEndtime) : new Date(ev.actualEndTime),
+    startDate: ev.startTime,
+    endDate: ev.endTime ? ev.endTime : ev.cancelTime,
     ...ev,
   }
 }))
-const mergedEvents = computed(() => modifiedEvents.value.concat(modifiedArchive.value))
+const mergedEvents = computed(() => modifiedEvents.value?.concat(modifiedArchive.value))
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
@@ -102,6 +97,7 @@ async function refreshScheduler() {
   await unScheduledRefresh()
   // TODO: render grid rows
 }
+
 async function unPlanEvent(planKey: number) {
   await $fetch('/api/unplan', {
     method: 'PUT',
@@ -148,6 +144,7 @@ onMounted(async () => {
         storeClass: TaskStore,
         removeUnassignedEvent: false,
       },
+      autoLoad: true,
       eventModelClass: QueueTask,
     },
     eventColor: 'blue',
@@ -172,18 +169,15 @@ onMounted(async () => {
     },
     eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
-      if (eventRecord.originalData.notStarted) {
-        icons.push('b-fa b-fa-solid b-fa-list-check')
-      }
       if (eventRecord.originalData.isDeviation) {
-        icons.push('b-fa b-fa-solid b-fa-clock')
+        icons.push('b-fa b-fa-solid b-fa-user-clock')
       }
       if (eventRecord.originalData.isFinished) {
         icons.push('b-fa b-fa-solid b-fa-flag-checkered')
       }
-      // if (eventRecord.originalData.isLocked) {
-      //   icons.push('b-fa b-fa-lock')
-      // }
+      if (eventRecord.originalData.isLocked) {
+        icons.push('b-fa b-fa-lock')
+      }
       if (eventRecord.originalData.isRunning) {
         if (eventRecord.originalData.isStopped) {
           icons.push('b-fa b-fa-solid b-fa-stop')
@@ -191,7 +185,7 @@ onMounted(async () => {
           icons.push('b-fa b-fa-solid b-fa-play')
         }
       }
-      if (eventRecord.originalData.hasAlarm) {
+      if (eventRecord.originalData.isAlarm) {
         icons.push('b-fa b-fa-solid b-fa-bell')
       }
 
@@ -405,7 +399,12 @@ onMounted(async () => {
       'Queue Based',
     ],
   } as Partial<SchedulerProConfig>)
-  // @ts-expect-error type error
+  function updateEvents(events: any[]) {
+    setInterval(() => {
+      schedule.eventStore.rescheduleAllEvents(events)
+    }, 60_000)
+  }
+  updateEvents(schedule.events.filter(a => a.originalData.isArchive === false || a.originalData.isArchive === undefined))
   window.sch = schedule
   new Splitter({
     appendTo: 'main',
