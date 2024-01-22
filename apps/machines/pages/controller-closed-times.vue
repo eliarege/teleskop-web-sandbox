@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { Column } from 'ui/types/FilterableTable'
-import { getControllerClosedTimes } from '~/utils'
 
 const closedTimeOptions = ref([
-  { label: 'Cihaz yeniden başlatıldı', value: 0 },
-  { label: 'Cihaz kapatıldı', value: 1 },
-  { label: 'Elektrik kesildi', value: 2 },
-  { label: 'Diğer', value: 3 },
+  { label: 'Cihaz yeniden başlatıldı', closedType: 0 },
+  { label: 'Cihaz kapatıldı', closedType: 1 },
+  { label: 'Elektrik kesildi', closedType: 2 },
+  { label: 'Diğer', closedType: 3 },
 ])
 
-const columns = [
+const columns: Column[] = [
   {
     name: 'machineId',
     label: 'Makine No',
@@ -58,36 +57,23 @@ const columns = [
     field: 'closedType',
     align: 'left',
     filterable: true,
-    filterType: 'includes',
+    filterType: 'multiselect',
+    selectionOptions: closedTimeOptions.value,
+    optionLabel: 'label',
+    optionValue: 'closedType',
   },
 ]
 
-const machineGroups = ref([])
-const closedTimeGroups = ref([])
-const machineOptions = ref([])
-const times = ref([])
-
-const { data: machines } = useLazyFetch('/api/machines/machines', {
+const { data: times } = useLazyFetch('/api/controller-closed-times/controller-closed-times', {
+  default: () => [],
   method: 'POST',
   body: {},
 })
-
-watch(machines, (newValue, oldValue) => {
-  machineOptions.value = machines.value.map((m) => {
-    return { label: m.machineCode, value: m.machineId }
-  })
-})
-
-async function loadTimes() {
-  times.value = await getControllerClosedTimes(machineGroups.value, closedTimeGroups.value)
-}
 
 async function handleFilterSlotsUpdate(updatedValue) {
   times.value = await $fetch('/api/controller-closed-times/controller-closed-times', {
     method: 'POST',
     body: {
-      machineIds: machineGroups.value,
-      closedTypes: closedTimeGroups.value,
       filters: updatedValue,
     },
   })
@@ -95,31 +81,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
 </script>
 
 <template>
-  <q-card class="flex flex-row">
-    <q-card-section class="h-sm overflow-y-scroll">
-      <h3>Makineler</h3>
-      <q-option-group
-        v-model="machineGroups"
-        :options="machineOptions"
-        type="checkbox"
-      />
-    </q-card-section>
-    <q-card-section>
-      <h3>Sebepler</h3>
-      <q-option-group
-        v-model="closedTimeGroups"
-        :options="closedTimeOptions"
-        type="checkbox"
-      />
-      <q-btn @click="loadTimes">
-        Yükle
-      </q-btn>
-    </q-card-section>
-  </q-card>
   <FilterableTable
     :rows="times"
     :columns="columns"
-    class="overflow-y-auto	h-120"
+    class="overflow-y-auto	h-220"
     @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
   >
     <template #custombody="times">
@@ -129,7 +94,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
           :key="row"
         >
           <span v-if="row.field === 'closedType'">
-            {{ closedTimeOptions.find(o => o.value === row.value)?.label }}
+            {{ closedTimeOptions.find(o => o.closedType === row.value)?.label }}
           </span>
           <span v-else>
             {{ row.value }}

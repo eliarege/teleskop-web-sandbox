@@ -1,20 +1,18 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
 import type { Column } from 'ui/types/FilterableTable'
-import type { Machine } from '~/types'
-import { getMachineAccessFails } from '~/utils'
 
 const accessFailOptions = ref([
-  { label: 'Network erişimi yok', value: 0 },
-  { label: 'Teleskop iletişimi yok', value: 1 },
-  { label: 'Cihaz tarihi yanlış', value: 2 },
+  { label: 'Network erişimi yok', eventCode: 0 },
+  { label: 'Teleskop iletişimi yok', eventCode: 1 },
+  { label: 'Cihaz tarihi yanlış', eventCode: 2 },
 ])
 
 const columns: Column[] = [
   {
-    name: 'machineName',
+    name: 'machineCode',
     label: 'Makine',
-    field: 'machineName',
+    field: 'machineCode',
     align: 'left',
     filterable: true,
     filterType: 'includes',
@@ -25,7 +23,10 @@ const columns: Column[] = [
     field: 'eventCode',
     align: 'left',
     filterable: true,
-    filterType: 'includes',
+    filterType: 'multiselect',
+    selectionOptions: accessFailOptions.value,
+    optionLabel: 'label',
+    optionValue: 'eventCode',
   },
   {
     name: 'eventStart',
@@ -46,32 +47,16 @@ const columns: Column[] = [
   },
 ]
 
-const machineGroups = ref([])
-const accessFailGroups = ref([])
-const fails = ref([])
-
-const { data: machines } = useLazyFetch('/api/machines/machines', {
+const { data: fails } = useLazyFetch('/api/machine-access-fails/machine-access-fails', {
+  default: () => [],
   method: 'POST',
   body: {},
 })
-const machineOptions = ref([])
-
-watch(machines, (newValue, oldValue) => {
-  machineOptions.value = machines.value.map((m: Machine) => {
-    return { label: m.machineCode, value: m.machineId }
-  })
-})
-
-async function loadFails() {
-  fails.value = await getMachineAccessFails(machineGroups.value, accessFailGroups.value)
-}
 
 async function handleFilterSlotsUpdate(updatedValue) {
   fails.value = await $fetch('/api/machine-access-fails/machine-access-fails', {
     method: 'POST',
     body: {
-      machineIds: machineGroups.value,
-      eventCodes: accessFailGroups.value,
       filters: updatedValue,
     },
   })
@@ -79,31 +64,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
 </script>
 
 <template>
-  <q-card class="flex flex-row">
-    <q-card-section class="h-sm overflow-y-scroll">
-      <h3>Makineler</h3>
-      <q-option-group
-        v-model="machineGroups"
-        :options="machineOptions"
-        type="checkbox"
-      />
-    </q-card-section>
-    <q-card-section>
-      <h3>Sebepler</h3>
-      <q-option-group
-        v-model="accessFailGroups"
-        :options="accessFailOptions"
-        type="checkbox"
-      />
-      <q-btn @click="loadFails">
-        Yükle
-      </q-btn>
-    </q-card-section>
-  </q-card>
   <FilterableTable
     :rows="fails"
     :columns="columns"
-    class="overflow-y-auto	h-120"
+    class="overflow-y-auto	h-220"
     @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
   >
     <template #custombody="fails">
@@ -113,7 +77,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
           :key="row"
         >
           <span v-if="row.field === 'eventCode'">
-            {{ accessFailOptions.find(o => o.value === row.value)?.label }}
+            {{ accessFailOptions.find(o => o.eventCode === row.value)?.label }}
           </span>
           <span v-else>
             {{ row.value }}
