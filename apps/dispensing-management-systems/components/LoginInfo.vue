@@ -1,26 +1,27 @@
 <script lang="ts" setup>
-import { useDataStore } from '~/store/DataStore'
+const { userProfile, loadUserProfile, logout } = useKeycloak()
+loadUserProfile()
 
 const emit = defineEmits(['logout'])
-const dataStore = useDataStore()
 const { t } = useI18n()
 
-function logout() {
+function onLogout() {
   emit('logout')
+  logout()
 }
 </script>
 
 <template>
   <div class="q-pa-md">
     <div class="welcome-message">
-      {{ `${t('Welcome')}, ${dataStore.user!.username}` }}
+      {{ `${t('Welcome')}, ${userProfile?.username}` }}
     </div>
     <div text-center>
       <QBtn
         class="border-rd-2"
         icon="logout"
         color="primary"
-        @click="logout"
+        @click="onLogout"
       >
         <QTooltip
           :offset="[10, 10]"

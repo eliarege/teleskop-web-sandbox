@@ -3,6 +3,7 @@ import { LoadingSpinner } from 'ui'
 import { useStateStore } from '~/store/State'
 import { useDataStore } from '~/store/DataStore'
 
+const { didInitialise } = useKeycloak()
 const q = useQuasar()
 const { t } = useI18n()
 const stateStore = useStateStore()
@@ -11,14 +12,8 @@ const route = useRoute()
 const stickyUnavailablePaths = ['/settings']
 const showDrawer = ref(true)
 const showSticky = ref(!stickyUnavailablePaths.includes(route.path))
-const user = ref(dataStore.user)
 const { height } = useWindowSize()
 
-dataStore.$subscribe((_, store) => {
-  user.value = store.user
-  if (!user.value)
-    goToHomepage()
-})
 function goToHomepage() {
   navigateTo({
     path: `/`,
@@ -38,7 +33,6 @@ function onLogout() {
 }
 function onRefresh() {
   dataStore.$patch({
-    user: undefined,
     title: '',
     selectedDispenser: undefined,
     dispensers: undefined,
@@ -61,13 +55,13 @@ watch(() => route.params, () => {
 </script>
 
 <template>
-  <QLayout view="hHh LpR fFf">
+  <QLayout view="hHh LpR fFf" v-if="didInitialise">
     <LoadingSpinner v-if="stateStore.isLoading" />
     <KeepAlive>
       <Appbar />
     </KeepAlive>
     <QDrawer
-      v-if="showDrawer && user && route.path !== '/settings'"
+      v-if="showDrawer && route.path !== '/settings'"
       show-if-above
       bordered
       persistent
@@ -88,7 +82,7 @@ watch(() => route.params, () => {
       </QScrollArea>
     </QDrawer>
     <QPageSticky
-      v-if="user && showSticky"
+      v-if="showSticky"
       position="top-left"
       :offset="[5, height * (9 / 20)]"
       style="z-index: 100;"

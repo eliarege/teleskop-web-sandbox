@@ -11,11 +11,7 @@ const tab = ref('material')
 const splitterModel = ref(10)
 const innerWidth = ref(window.innerWidth)
 const minSize = 768
-if (dataStore.user === undefined) {
-  await navigateTo({
-    path: '/',
-  })
-}
+
 dataStore.title = t('Settings')
 watch(locale, () => {
   dataStore.title = t('Settings')
@@ -99,6 +95,7 @@ useResizeObserver(document.body, () => {
             :class="tab === 's5' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
             :label="innerWidth > minSize ? `${t('settings.5')}` : ''"
           />
+          <QSeparator />
         </QTabs>
       </template>
 

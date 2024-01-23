@@ -1,8 +1,6 @@
 <script lang ="ts" setup>
-import { useDataStore } from '~/store/DataStore'
-
+//REPLACED BY KEYCLOAK
 const { t } = useI18n()
-const dataStore = useDataStore()
 const q = useQuasar()
 
 const name = ref('')
@@ -18,7 +16,7 @@ function onSubmit() {
     message: t('LoggedIn'),
     timeout: 3000,
   })
-  dataStore.$patch({ user: { username: name.value } })
+  //dataStore.$patch({ user: { username: name.value } })
   onReset()
 }
 
