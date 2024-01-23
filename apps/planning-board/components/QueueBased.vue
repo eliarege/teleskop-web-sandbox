@@ -1,10 +1,12 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
+import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { Splitter } from '@bryntum/schedulerpro-trial'
+import { addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
 import { useI18n } from 'vue-i18n'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
+import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
 const currentTime = useNow({ interval: 1000 })
@@ -48,26 +50,26 @@ const showModal = reactive({
   settings: false,
 })
 const archiveDays = localStorage.getItem('pt-settings')
-const { data: machines } = await useFetch('/api/machineList')
+const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
+const { data: machines, refresh: machineRefresh } = await useFetch('/api/machineList')
 const { data: events, refresh: plannedRefresh } = await useFetch('/api/queueBased/plannedEvents')
 const { data: archiveEvents } = await useFetch('/api/queueBased/archiveEvents', {
-  query: { archiveDays: JSON.parse(archiveDays).archiveDays ?? 0 },
+  query: { archiveDays: JSON.parse(archiveDays || '0').archiveDays ?? 0 },
 })
 
-const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
 const modifiedEvents = computed(() => events.value?.map((ev: any) => {
   return {
     id: ev.planKey,
     name: ev.jobOrder,
     resourceId: ev.machineId,
     resizable: false,
-    draggable: true,
+    draggable: !ev.isStarted,
     editable: false,
-    startDate: new Date(),
-    endDate: new Date(new Date().getTime() + ev.theoreticalDuration * 1000),
+    endDate: addSeconds(ev.startDate, ev.theoreticalDuration),
     ...ev,
-  }
+  } as QueueBasedPlannedEvents
 }))
+console.log(modifiedEvents.value?.map(a => a.startDate))
 const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
   return {
     id: ev.planKey,
@@ -79,8 +81,9 @@ const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
     startDate: ev.startTime,
     endDate: ev.endTime ? ev.endTime : ev.cancelTime,
     ...ev,
-  }
+  } as QueueBasedArchiveEvents
 }))
+
 const mergedEvents = computed(() => modifiedEvents.value?.concat(modifiedArchive.value))
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
   return {
@@ -92,12 +95,22 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((u
     constraintDate: new Date(),
   } as UnplannedEvents
 }))
+let scheduler: SchedulerPro
+let grid: Grid
+setInterval(async () => {
+  await refreshScheduler()
+}, 60_000)
 async function refreshScheduler() {
   await plannedRefresh()
   await unScheduledRefresh()
-  // TODO: render grid rows
+  await machineRefresh()
 }
-
+watch(mergedEvents, (newVal: QueueBasedPlannedEvents[]) => {
+  scheduler.events = newVal
+})
+watch(modifiedUnscheduledEvents, (newVal) => {
+  grid.store.data = newVal
+})
 async function unPlanEvent(planKey: number) {
   await $fetch('/api/unplan', {
     method: 'PUT',
@@ -110,7 +123,6 @@ async function deleteEvent(planKey: number) {
     query: { planKey },
   })
 }
-let scheduler: SchedulerPro
 function dateRangeEnd() {
   scheduler.startDate = new Date(schedulerDateModel.value.from)
   scheduler.endDate = new Date(schedulerDateModel.value.to)
@@ -134,10 +146,6 @@ onMounted(async () => {
         start: currentTime.value,
       }
     },
-    transitionDuration: 0,
-    testConfig: {
-      transitionDuration: 0,
-    },
     flex: 1,
     project: {
       eventStore: {
@@ -147,7 +155,6 @@ onMounted(async () => {
       autoLoad: true,
       eventModelClass: QueueTask,
     },
-    eventColor: 'blue',
     resources: machines.value,
     events: mergedEvents.value,
     listeners: {
@@ -395,21 +402,14 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomOut(),
       },
-      '->',
-      'Queue Based',
     ],
   } as Partial<SchedulerProConfig>)
-  function updateEvents(events: any[]) {
-    setInterval(() => {
-      schedule.eventStore.rescheduleAllEvents(events)
-    }, 60_000)
-  }
-  updateEvents(schedule.events.filter(a => a.originalData.isArchive === false || a.originalData.isArchive === undefined))
+  // @ts-expect-error missing type
   window.sch = schedule
   new Splitter({
     appendTo: 'main',
   })
-  const unplannedGrid = new QueueUnplannedGrid({
+  const unplannedGrid = grid = new QueueUnplannedGrid({
     ref: 'unplanned',
     appendTo: 'main',
     ui: 'toolbar',

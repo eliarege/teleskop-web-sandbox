@@ -18,9 +18,10 @@ export async function getQueueBasedPlannedEvents() {
       isDeleted: 'd.ISDELETED',
       isStarted: 'd.ISSTARTED',
       isStopped: 'd.ISSTOPPED',
+      startDate: 'd.STARTDATETIME',
     })
     .leftJoin({ d: 'DYBFBATCHPLAN' }, 'd.PLANKEY', 'p.PLANKEY')
-    .andWhere((builder) => {
+    .where((builder) => {
       builder.whereNull('d.ISDELETED').orWhere('d.ISDELETED', 0)
     })
     .orderBy('p.MACHINEID')

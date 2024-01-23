@@ -40,7 +40,13 @@ export function generateEventDates(events: any[]): Event[] {
     let endDate: Date
 
     if (event.queueNumber === 1 || i === 0 || event.machineId !== events[i - 1].machineId) {
-      startDate = new Date()
+      // NOTE: Acil test gerekli. Bir task başladığı zaman tam olarak neler olduğunu
+      // bilmediğim için doğru yapamamış olma ihtimalim yüksek!
+      // Özellikle task bittikten sonra hala daha planlanmış eventler içinde gözükebilir.
+      // Buda archive durumunu karıştırır.
+      if (!event.isStarted) {
+        startDate = new Date()
+      } else startDate = event.startDate
     } else {
       const previousEndDate = updatedEvents[updatedEvents.length - 1].endDate
       startDate = new Date(previousEndDate.getTime() + 5 * 60 * 1000)
