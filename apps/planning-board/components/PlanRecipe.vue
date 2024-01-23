@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { LoadingSpinner, RecipeTable } from 'ui'
 import type { TableColumnCtx } from 'element-plus'
-import { useI18n } from 'vue-i18n'
 import type { RecipeRaw } from '~/shared/types'
 
 const props = defineProps<{ machineId: number; jobOrder: string }>()

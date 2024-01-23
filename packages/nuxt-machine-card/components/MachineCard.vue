@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { color } from 'd3'
-import { useI18n } from 'vue-i18n'
 import type { MachineCardData } from '../types'
 
 interface MachineCardProps {

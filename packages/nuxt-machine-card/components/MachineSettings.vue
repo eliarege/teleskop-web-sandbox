@@ -2,7 +2,6 @@
 import type { PropType } from 'vue'
 import { computed } from 'vue'
 import { useStorage } from '@vueuse/core'
-import { useI18n } from 'vue-i18n'
 import type { MachineCardData } from '../types'
 
 const props = defineProps({
