@@ -2,7 +2,7 @@ import { knex } from '../../../knexConfig'
 import { updateTimeBasedEventStates } from './helper'
 
 // GET
-export async function getTimeBasedPlannedEvents(from: Date | string, to: Date | string) {
+export async function getTimeBasedPlannedEvents() {
   const events = await knex({ p: 'PTBATCHPLANQUEUE' })
     .select({
       planKey: 'p.PLANKEY',
@@ -21,8 +21,7 @@ export async function getTimeBasedPlannedEvents(from: Date | string, to: Date | 
       isStopped: 'd.ISSTOPPED',
     })
     .leftJoin({ d: 'DYBFBATCHPLAN' }, 'd.PLANKEY', 'p.PLANKEY')
-    .whereBetween('d.RECORDTIME', [from, to])
-    .andWhere((builder) => {
+    .where((builder) => {
       builder.whereNull('d.ISDELETED').orWhere('d.ISDELETED', 0)
     })
     .orderBy('p.MACHINEID')

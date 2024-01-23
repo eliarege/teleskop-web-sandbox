@@ -9,15 +9,9 @@ import {
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
     '/time_based/scheduled_events',
-    async (request: FastifyRequest<{
-      Querystring: { from: string; to: string }
-    }>, reply) => {
+    async (request, reply) => {
       try {
-        const { from, to } = request.query
-        if (!from || !to) {
-          return reply.code(400).send({ error: 'Both "from" and "to" parameters are required.' })
-        }
-        const plannedEvents = await getTimeBasedPlannedEvents(from, to)
+        const plannedEvents = await getTimeBasedPlannedEvents()
         return reply.code(200).send(plannedEvents)
       } catch (err) {
         fastify.log.error(`An error occured while fetching planned events: ${err}`)
