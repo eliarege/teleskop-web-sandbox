@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar';
-import languageTR from 'quasar/lang/tr';
+import { useQuasar } from 'quasar'
+import languageTR from 'quasar/lang/tr'
 
 const $q = useQuasar()
 $q.lang.set(languageTR)
-const { locale } = useI18n()
-locale.value = 'tr'
+const { setLocale } = useI18n()
+setLocale('tr')
 </script>
 
 <template>

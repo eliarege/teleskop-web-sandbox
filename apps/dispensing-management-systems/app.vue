@@ -2,8 +2,8 @@
 import { useStateStore } from '~/store/State'
 
 const state = useStateStore()
-const { locale } = useI18n()
-locale.value = state.locale
+const { setLocale } = useI18n()
+setLocale(state.locale)
 </script>
 
 <template>
