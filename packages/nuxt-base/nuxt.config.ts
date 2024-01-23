@@ -60,7 +60,7 @@ export default defineNuxtConfig({
     defaultLocale: 'en',
     detectBrowserLanguage: {
       useCookie: true,
-      cookieKey: 'i18n_locale',
+      cookieKey: 'teleskop_locale',
     },
   },
   hooks: {

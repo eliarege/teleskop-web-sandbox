@@ -61,7 +61,7 @@ export interface KeycloakPlugin {
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
   const route = useRoute()
-  const locale = useCookie('locale')
+  const locale = useCookie('teleskop_locale')
   const kcConfig = useAppConfig().keycloak
   const kcEnabled = config.public.kcEnabled
   const keycloak = new Keycloak({
