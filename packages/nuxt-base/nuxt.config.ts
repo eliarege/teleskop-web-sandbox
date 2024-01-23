@@ -56,7 +56,7 @@ export default defineNuxtConfig({
     icon: false,
   },
   i18n: {
-    strategy: 'prefix_except_default',
+    strategy: 'no_prefix',
     defaultLocale: 'en',
     detectBrowserLanguage: {
       useCookie: true,

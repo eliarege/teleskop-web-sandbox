@@ -12,8 +12,6 @@ const props = defineProps({
 })
 const { t } = useI18n()
 const store = useDataStore()
-const router = useRouter()
-const route = useRoute()
 // layout
 const layoutSide = ref('layoutContainerSide')
 const layoutTop = ref('layoutContainerTop')
@@ -58,15 +56,7 @@ const inactive = computed(() => {
     .map(machine => machine.machineCapacity - machine.runningMachineCapacity)
     .reduce((sum, val) => Math.round(sum) + Math.round(val), 0)
 })
-const showSettings = ref('settings' in route.query)
-
-watch(showSettings, (value) => {
-  if (value) {
-    router.replace({ query: { settings: '' } })
-  } else {
-    router.replace({ query: {} })
-  }
-})
+const showSettings = ref(false)
 
 const options = {
   cornerRadius: 0,
