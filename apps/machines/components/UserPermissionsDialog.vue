@@ -10,25 +10,29 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const permissionsGroup1 = ref([
+// sistem menulerine erisim ve cihaz ayar yetkisi'nin baglı oldugu izinler var bu secenekler secilmeden diger izinler secilemez
+const controllerPermission = ref(false)
+const menuAccessPermission = ref(false)
+
+const permissionsGroup1 = reactive([
   { label: 'Program Oluşturma', index: 0, value: false },
   { label: 'Program Değiştirme', index: 1, value: false },
   { label: 'Program Kopyalama', index: 2, value: false },
   { label: 'Program Silme', index: 3, value: false },
   { label: 'Manuel Komut Çalıştırma', index: 4, value: false },
-  { label: 'Sistem Menülerine Erişim', index: 5, value: false },
+  { label: 'Sistem Menülerine Erişim', index: 5, value: menuAccessPermission },
   { label: 'Çalışırken Program Değiştirme', index: 6, value: false },
   { label: 'Test Yetkisi', index: 7, value: false },
-  { label: 'İşletme Parametrelerine Erişim', index: 8, value: false },
-  { label: 'I/O Ayarlama Yetkisi', index: 9, value: false },
+  { label: 'İşletme Parametrelerine Erişim', index: 8, value: false, disabled: computed(() => !menuAccessPermission.value) },
+  { label: 'I/O Ayarlama Yetkisi', index: 9, value: false, disabled: computed(() => !menuAccessPermission.value) },
   { label: 'I/O Güncelleme ve Dil', index: 10, value: false },
-  { label: 'Cihaz Ayar Yetkisi', index: 11, value: false },
-  { label: 'Kullanıcı Ayar Yetkisi', index: 12, value: false },
-  { label: 'Kilitlemeler', index: 13, value: false },
-  { label: 'Kalibrasyon', index: 14, value: false },
-  { label: 'Komutlar', index: 15, value: false },
+  { label: 'Cihaz Ayar Yetkisi', index: 11, value: controllerPermission },
+  { label: 'Kullanıcı Ayar Yetkisi', index: 12, value: false, disabled: computed(() => !controllerPermission.value) },
+  { label: 'Kilitlemeler', index: 13, value: false, disabled: computed(() => !menuAccessPermission.value) },
+  { label: 'Kalibrasyon', index: 14, value: false, disabled: computed(() => !menuAccessPermission.value) },
+  { label: 'Komutlar', index: 15, value: false, disabled: computed(() => !menuAccessPermission.value) },
   { label: 'İş Emri Başlatma', index: 16, value: false },
-  { label: 'Teçhizat Bakım', index: 17, value: false },
+  { label: 'Teçhizat Bakım', index: 17, value: false, disabled: computed(() => !controllerPermission.value) },
   { label: 'GLG Sayfası Erişim Hakkını Kısıtla', index: 18, value: false },
   { label: 'Pompa Kule Düze Plater Ayarları', index: 20, value: false },
   { label: 'İş Emri Parametresi Tanımlama', index: 24, value: false },
@@ -110,16 +114,7 @@ async function savePermissions() {
               <q-checkbox
                 v-model="permission.value"
                 :label="permission.label"
-                :disable="!permissionsGroup1.find(d => d.label === 'Sistem Menülerine Erişim')!.value
-                  && (permission.label === 'İşletme Parametrelerine Erişim'
-                    || permission.label === 'I/O Ayarlama Yetkisi'
-                    || permission.label === 'Kilitlemeler'
-                    || permission.label === 'Kalibrasyon'
-                    || permission.label === 'Komutlar')
-                  || !permissionsGroup1.find(d => d.label === 'Cihaz Ayar Yetkisi')!.value
-                  && (permission.label === 'Kullanıcı Ayar Yetkisi'
-                    || permission.label === 'Teçhizat Bakım')
-                "
+                :disable="permission.disabled"
               />
             </div>
           </div>
