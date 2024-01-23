@@ -1,7 +1,7 @@
-import { knex } from '~/server/connectionPool'
+import type { MachineStatus } from '~/shared/types'
 
 export default defineEventHandler(async () => {
   const config = useRuntimeConfig()
-  const url = `${config.planningEngineUrl}/planning_board/machines`
-  return await $fetch(url)
+  const machineStatusUrl = `${config.machineStatusUrl}/api/v1/machine_status`
+  return await $fetch<MachineStatus[]>(machineStatusUrl)
 })
