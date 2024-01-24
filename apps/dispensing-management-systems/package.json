@@ -23,7 +23,7 @@
     "ui": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^18.19.0",
+    "@types/node": "^20.11.6",
     "@types/pg": "^8.10.9",
     "nuxt": "^3.9.0",
     "nuxt-base": "workspace:*",

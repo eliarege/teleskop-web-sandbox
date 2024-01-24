@@ -28,7 +28,7 @@
     "tedious": "^16.6.1"
   },
   "devDependencies": {
-    "@types/node": "^18.19.0",
+    "@types/node": "^20.11.6",
     "@types/ws": "^8.5.10",
     "build-utils": "workspace:*",
     "pino-pretty": "^10.2.3",
