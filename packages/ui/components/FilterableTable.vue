@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-
 import type { Column, DateType, FilterSlot } from 'ui-types'
+
+// @ts-expect-error nuxt import
+import { useI18n } from '#imports'
 
 const props = defineProps({
   rows: {
@@ -32,9 +33,9 @@ const props = defineProps({
     }),
     validator: (obj: any): boolean => {
       return 'descending' in obj && typeof obj.descending === 'boolean'
-             && 'page' in obj && typeof obj.page === 'number'
-             && 'rowsPerPage' in obj && typeof obj.rowsPerPage === 'number'
-             && 'sortBy' in obj && typeof obj.sortBy === 'string'
+        && 'page' in obj && typeof obj.page === 'number'
+        && 'rowsPerPage' in obj && typeof obj.rowsPerPage === 'number'
+        && 'sortBy' in obj && typeof obj.sortBy === 'string'
     },
   },
 })
