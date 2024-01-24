@@ -215,7 +215,7 @@ async function changeSettings() {
             </div>
           </div>
 
-          <div v-if="n === 9">
+          <div v-if="n === 9" class="mb-20">
             <div class="settings-section-header">
               {{ t('settings.genericRequests') }}
             </div>
@@ -271,7 +271,7 @@ async function changeSettings() {
               </div>
             </div>
           </div>
-          <div v-if="n === 10">
+          <div v-if="n === 10" class="mb-20">
             <div class="settings-section-header">
               {{ t('settings.other') }}
             </div>
@@ -297,17 +297,18 @@ async function changeSettings() {
           </div>
         </div>
       </div>
-      <div class="bottom-buttons flex gap-5 my-10">
+      <div class="bottom-buttons fixed bottom-0 flex justify-center bg-white gap-10 w-full h-20">
         <q-btn
           color="black"
           :label="t('settings.submit')"
           outline
-          class="border-width-2"
+          class="border-width-2 my-5"
           icon="done"
           @click="changeSettings"
         />
         <q-btn
-          color="black"
+          color="red"
+          class="my-5 border-width-2"
           :label="t('settings.cancel')"
           icon="close"
           outline
