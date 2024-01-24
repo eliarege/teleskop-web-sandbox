@@ -3,7 +3,6 @@ import { Sortable } from 'sortablejs-vue3'
 import type { CommandType } from '~/types'
 
 const selectedMachineId = ref()
-const selectedCommandNo = ref()
 
 const cmdTypeChemicalReq = ref<CommandType[]>([])
 const cmdTypeManualChemicalReq = ref<CommandType[]>([])
@@ -17,39 +16,31 @@ const cmdTypeSample = ref<CommandType[]>([])
 const cmdTypeSaltReq = ref<CommandType[]>([])
 const cmdTypeGenericMaterialOneReq = ref<CommandType[]>([])
 const cmdTypeGenericMaterialTwoReq = ref<CommandType[]>([])
-const cmdOperatorWarningCommands = ref<CommandType[]>([])
 const cmdManuelMeasuredCommands = ref<CommandType[]>([])
+// const cmdOperatorWarningCommands = ref<CommandType[]>([])
+
+const commandTypeMap = reactive([
+  { ref: cmdTypeChemicalReq, label: 'cmdTypeChemicalReq', value: 100, title: 'Kimyasal İstek Komutları' },
+  { ref: cmdTypeManualChemicalReq, label: 'cmdTypeManualChemicalReq', value: 101, title: 'Manuel Kimyasal İstek Komutları' },
+  { ref: cmdTypeDyeReq, label: 'cmdTypeDyeReq', value: 200, title: 'Boya İstek Komutları' },
+  { ref: cmdTypeManualDyeReq, label: 'cmdTypeManualDyeReq', value: 201, title: 'Manuel Boya İstek Komutları' },
+  { ref: cmdTypeCTTransfer, label: 'cmdTypeCTTransfer', value: 300, title: 'Kimyasal Kazanı Transfer Komutları' },
+  { ref: cmdTypeDTTransfer, label: 'cmdTypeDTTransfer', value: 400, title: 'Boya Kazanı Transfer Komutları' },
+  { ref: cmdTypeRTTransfer, label: 'cmdTypeRTTransfer', value: 500, title: 'Rezerve Kazanı Transfer Komutları' },
+  { ref: cmdTypePhControl, label: 'cmdTypePhControl', value: 600, title: 'pH Kontrol' },
+  { ref: cmdTypeSample, label: 'cmdTypeSample', value: 700, title: 'Numune Al' },
+  { ref: cmdTypeSaltReq, label: 'cmdTypeSaltReq', value: 800, title: 'Tuz İstek Komutları' },
+  { ref: cmdTypeGenericMaterialOneReq, label: 'cmdTypeGenericMaterialOneReq', value: 810, title: 'Jenerik Materyal 1 İstek' },
+  { ref: cmdTypeGenericMaterialTwoReq, label: 'cmdTypeGenericMaterialTwoReq', value: 820, title: 'Jenerik Materyal 2 İstek' },
+  { ref: cmdManuelMeasuredCommands, label: 'cmdManuelMeasuredCommands', value: 1000, title: 'Manuel Ölçüm Komutları' },
+  // { ref: cmdOperatorWarningCommands, label: 'cmdOperatorWarningCommands', value: 90, title: null },
+])
 
 const { data: machines } = useLazyFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
   body: {},
 })
-
-const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
-  default: () => [],
-  immediate: false,
-  query: {
-    machineId: selectedMachineId,
-  },
-})
-
-const commandTypeMap = [
-  { label: 'cmdTypeChemicalReq', value: 100 },
-  { label: 'cmdTypeManualChemicalReq', value: 101 },
-  { label: 'cmdTypeDyeReq', value: 200 },
-  { label: 'cmdTypeManualDyeReq', value: 201 },
-  { label: 'cmdTypeCTTransfer', value: 300 },
-  { label: 'cmdTypeDTTransfer', value: 400 },
-  { label: 'cmdTypeRTTransfer', value: 500 },
-  { label: 'cmdTypePhControl', value: 600 },
-  { label: 'cmdTypeSample', value: 700 },
-  { label: 'cmdTypeSaltReq', value: 800 },
-  { label: 'cmdTypeGenericMaterialOneReq', value: 810 },
-  { label: 'cmdTypeGenericMaterialTwoReq', value: 820 },
-  { label: 'cmdOperatorWarningCommands', value: 90 },
-  { label: 'cmdManuelMeasuredCommands', value: 1000 },
-]
 
 const { data: commandTypes } = useLazyFetch('/api/commands/command-types', {
   default: () => [],
@@ -59,90 +50,69 @@ const { data: commandTypes } = useLazyFetch('/api/commands/command-types', {
   },
 })
 
-function mapCommandToTypeArray(command: CommandType) {
-  const mapping = commandTypeMap.find(m => m.value === command.commandType)
-  if (!mapping)
-    return
-
-  switch (mapping.label) {
-    case 'cmdTypeChemicalReq':
-      cmdTypeChemicalReq.value.push(command)
-      break
-    case 'cmdTypeManualChemicalReq':
-      cmdTypeManualChemicalReq.value.push(command)
-      break
-    case 'cmdTypeDyeReq':
-      cmdTypeDyeReq.value.push(command)
-      break
-    case 'cmdTypeManualDyeReq':
-      cmdTypeManualDyeReq.value.push(command)
-      break
-    case 'cmdTypeCTTransfer':
-      cmdTypeCTTransfer.value.push(command)
-      break
-    case 'cmdTypeDTTransfer':
-      cmdTypeDTTransfer.value.push(command)
-      break
-    case 'cmdTypeRTTransfer':
-      cmdTypeRTTransfer.value.push(command)
-      break
-    case 'cmdTypePhControl':
-      cmdTypePhControl.value.push(command)
-      break
-    case 'cmdTypeSample':
-      cmdTypeSample.value.push(command)
-      break
-    case 'cmdTypeSaltReq':
-      cmdTypeSaltReq.value.push(command)
-      break
-    case 'cmdTypeGenericMaterialOneReq':
-      cmdTypeGenericMaterialOneReq.value.push(command)
-      break
-    case 'cmdTypeGenericMaterialTwoReq':
-      cmdTypeGenericMaterialTwoReq.value.push(command)
-      break
-    case 'cmdOperatorWarningCommands':
-      cmdOperatorWarningCommands.value.push(command)
-      break
-    case 'cmdManuelMeasuredCommands':
-      cmdManuelMeasuredCommands.value.push(command)
-      break
-    default:
-      console.warn('Unrecognized command type:', command.commandType)
-  }
-}
-
 watch(commandTypes, (_newCommandTypes) => {
-  cmdTypeChemicalReq.value = []
-  cmdTypeManualChemicalReq.value = []
-  cmdTypeDyeReq.value = []
-  cmdTypeManualDyeReq.value = []
-  cmdTypeCTTransfer.value = []
-  cmdTypeDTTransfer.value = []
-  cmdTypeRTTransfer.value = []
-  cmdTypePhControl.value = []
-  cmdTypeSample.value = []
-  cmdTypeSaltReq.value = []
-  cmdTypeGenericMaterialOneReq.value = []
-  cmdTypeGenericMaterialTwoReq.value = []
-  cmdOperatorWarningCommands.value = []
-  cmdManuelMeasuredCommands.value = []
+  for (const cmd of commandTypeMap) {
+    cmd.ref = []
+  }
 
   commandTypes.value.forEach((command) => {
-    mapCommandToTypeArray(command)
+    const mapping = commandTypeMap.find(m => m.value === command.commandType)
+    if (mapping)
+      mapping?.ref.push(command)
   })
+})
+
+const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
+  default: () => [],
+  immediate: false,
+  query: {
+    machineId: selectedMachineId,
+  },
+  transform: (commands) => {
+    let commandNos: number[] = []
+    commandTypeMap.forEach((cmd) => {
+      commandNos = [...commandNos, ...cmd.ref.map(commandType => commandType.commandNo)]
+    })
+
+    return commands.filter(d => !commandNos.includes(d.commandNo))
+  },
 })
 
 async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
 }
+
+async function handleDragDrop(e, commandType: number) {
+  const text: string = e.item.innerHTML
+  const matches = text.match(/(\d+) (.+)/)
+  if (matches && matches.length) {
+    const commandNo = Number.parseInt(matches[0])
+    // update relevant list in db
+    let action
+    if (e.type === 'add')
+      action = 'add'
+    else if (e.type === 'remove')
+      action = 'remove'
+
+    await updateCommandTypeDefinitions({
+      machineId: selectedMachineId.value,
+      commandNo,
+      commandType,
+      action,
+    })
+  }
+}
 </script>
 
 <template>
   <q-card class="flex flex-row">
-    <q-card-section class="w-sm">
+    <q-card-section class="w-2xs">
       <h3>Makineler</h3>
-      <q-list bordered separator>
+      <q-list
+        bordered
+        separator
+        class="h-160 overflow-y-auto"
+      >
         <q-item
           v-for="machine in machines"
           :key="machine.machineId"
@@ -156,244 +126,60 @@ async function handleMachineClick(machineId: number) {
         </q-item>
       </q-list>
     </q-card-section>
-    <q-card-section class="w-sm">
+    <q-card-section class="w-2xs">
       <h3>Seçili Makine Komutları</h3>
-      <q-list bordered separator>
-        <q-item
-          v-for="command in commands"
-          :key="command.commandNo"
-          v-ripple
-          clickable
-          @click="selectedCommandNo = command.commandNo"
-        >
-          <q-item-section>
-            {{ command.commandName }}
-          </q-item-section>
-        </q-item>
-      </q-list>
+      <Sortable
+        :list="commands"
+        item-key="id"
+        class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
+        :options="{ group: 'group' }"
+      >
+        <template #item="{ element, index }">
+          <q-item
+            :key="element.commandNo"
+            class="draggable"
+          >
+            <q-item-section>
+              {{ `${element.commandNo} ${element.commandName}` }}
+            </q-item-section>
+          </q-item>
+        </template>
+      </Sortable>
     </q-card-section>
 
-    <q-card-section class="grid flex-grow">
-      <div class="w-sm box">
-        <h3>Kimyasal Kazanı Transfer Komutları</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeCTTransfer"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>Kimyasal İstek Komutları</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeChemicalReq"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>Boya Kazanı Transfer Komutları</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeDTTransfer"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>Boya İstek Komutları</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeDyeReq"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>pH Kontrol</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypePhControl"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>Rezerve Kazanı Transfer Komutları</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeRTTransfer"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>Tuz İstek Komutları</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeSaltReq"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>Manuel Ölçüm Komutları</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdManuelMeasuredCommands"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>Manuel Kimyasal İstek Komutları</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeManualChemicalReq"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>Manuel Boya İstek Komutları</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeManualDyeReq"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>Jenerik Materyal 1 İstek</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeGenericMaterialOneReq"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-sm box">
-        <h3>Jenerik Materyal 2 İstek</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeGenericMaterialTwoReq"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-      <div class="w-sm box">
-        <h3>Numune Al</h3>
-        <q-list bordered separator>
-          <q-item
-            v-for="commandType in cmdTypeSample"
-            :key="commandType.commandNo"
-            v-ripple
-            clickable
-          >
-            <q-item-section>
-              {{ commandType.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
+    <q-card-section class="inline-grid grid-cols-5 gap-5 ml-8">
+      <div
+        v-for="item in commandTypeMap"
+        :key="item.value"
+        class="w-2xs box"
+      >
+        <h3>{{ item.title }}</h3>
+        <Sortable
+          :list="item.ref"
+          item-key="id"
+          class="q-list q-list--bordered q-list--separator overflow-y-auto h-50"
+          :options="{ group: 'group' }"
+          @add="(e) => handleDragDrop(e, item.value)"
+          @remove="(e) => handleDragDrop(e, item.value)"
+        >
+          <template #item="{ element, index }">
+            <q-item
+              :key="element.commandNo"
+              class="draggable"
+            >
+              <q-item-section>
+                {{ `${element.commandNo} ${element.commandName}` }}
+              </q-item-section>
+            </q-item>
+          </template>
+        </Sortable>
       </div>
     </q-card-section>
   </q-card>
 </template>
 
 <style scoped>
-.box {
-  max-width: 20em;
-  max-height: 20em;
-  overflow-y: scroll;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 3em;
+.inline-grid {
+  height: fit-content;
 }
 </style>

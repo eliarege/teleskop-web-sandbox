@@ -88,33 +88,35 @@ async function handleFilterSlotsUpdate(updatedValue) {
       </div>
     </q-card-section>
   </q-card>
-  <div class="table-scroll">
-    <FilterableTable
-      v-model:selected="selected"
-      :rows="recipeTypes"
-      :columns="columns"
-      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-    >
-      <template #custombody="recipeTypes">
-        <q-tr
-          :class="{ 'selected-row': selected.id === recipeTypes.row.id }"
-          @click="handleSelection(recipeTypes.row)"
+  <FilterableTable
+    v-model:selected="selected"
+    :rows="recipeTypes"
+    :columns="columns"
+    class="overflow-y-auto h-160"
+    @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+  >
+    <template #custombody="recipeTypes">
+      <q-tr
+        :class="{ 'selected-row': selected.id === recipeTypes.row.id }"
+        @click="handleSelection(recipeTypes.row)"
+      >
+        <q-td
+          v-for="row in recipeTypes.cols"
+          :key="row"
         >
-          <q-td
-            v-for="row in recipeTypes.cols"
-            :key="row"
-          >
-            <span>
-              {{ row.value }}
-            </span>
-          </q-td>
-        </q-tr>
-      </template>
-    </FilterableTable>
-  </div>
+          <span>
+            {{ row.value }}
+          </span>
+        </q-td>
+      </q-tr>
+    </template>
+  </FilterableTable>
 </template>
 
 <style scoped>
+.input-field > * {
+  margin-right: 2em;
+}
 .selected-row {
   background-color: #cce8ff;
 }

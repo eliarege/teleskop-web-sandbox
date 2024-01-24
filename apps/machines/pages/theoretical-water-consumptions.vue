@@ -13,23 +13,30 @@ const { data: machineCommands } = useLazyFetch('/api/master-commands/master-comm
   immediate: false,
   query: { machineId: selectedMachineId },
 })
+
+const fetchParams = computed(() => {
+  return selectedCommandNo.value && selectedMachineId.value
+    ? { machineId: selectedMachineId.value, commandNo: selectedCommandNo.value }
+    : undefined
+})
+
 const { data: waterIO } = useLazyFetch('/api/io/command-io-all', {
   immediate: false,
-  query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
+  query: fetchParams,
 })
 
 const { data: waterParams } = useLazyFetch('/api/commands/command-parameters', {
   immediate: false,
-  query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
+  query: fetchParams,
 })
 
 const { data: waterConsumptions } = useLazyFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
   immediate: false,
-  query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
+  query: fetchParams,
 })
 
 watch([waterConsumptions, waterParams], ([newCons, newParams], [oldCons, oldParams]) => {
-  if (waterConsumptions && waterConsumptions.value) {
+  if (waterConsumptions.value && waterConsumptions.value.length) {
     const command = waterConsumptions.value[0]
     waterIO1.value = waterIO.value.find(io => io.ioIndex === command.commandIO)
     waterIO2.value = waterIO.value.find(io => io.ioIndex === command.commandIO2)
@@ -73,7 +80,11 @@ async function handleSelectionChange(data, columnName) {
   <q-card class="flex flex-row justify-around">
     <q-card-section class="w-sm">
       <h3>Makineler</h3>
-      <q-list bordered separator>
+      <q-list
+        bordered
+        separator
+        class="overflow-y-auto h-160"
+      >
         <q-item
           v-for="machine in machines"
           :key="machine.machineId"
@@ -82,7 +93,7 @@ async function handleSelectionChange(data, columnName) {
           @click="handleMachineClick(machine.machineId)"
         >
           <q-item-section>
-            {{ machine.machineName }}
+            {{ machine.machineCode }}
           </q-item-section>
         </q-item>
       </q-list>
@@ -90,7 +101,11 @@ async function handleSelectionChange(data, columnName) {
 
     <q-card-section class="w-sm">
       <h3>Komutlar</h3>
-      <q-list bordered separator>
+      <q-list
+        bordered
+        separator
+        class="overflow-y-auto h-160"
+      >
         <q-item
           v-for="command in machineCommands"
           :key="command.commandNo"
@@ -113,6 +128,7 @@ async function handleSelectionChange(data, columnName) {
           :options="filteredWaterIO1Options"
           option-label="name"
           option-value="ioIndex"
+          class="mb-2"
           @update:model-value="handleSelectionChange()"
         />
         <q-select
@@ -120,6 +136,7 @@ async function handleSelectionChange(data, columnName) {
           :options="filteredWaterIO2Options"
           option-label="name"
           option-value="ioIndex"
+          class="mb-2"
           @update:model-value="handleSelectionChange()"
         />
       </div>

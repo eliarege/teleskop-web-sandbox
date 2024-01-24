@@ -118,6 +118,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
         v-model:selected="selected"
         :rows="manualReasons"
         :columns="columns"
+        class="overflow-y-auto h-160"
         @selection="(e) => handleSelection(e)"
         @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       >

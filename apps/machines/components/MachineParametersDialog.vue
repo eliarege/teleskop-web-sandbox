@@ -98,6 +98,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
         <FilterableTable
           :rows="params"
           :columns="columns"
+          class="overflow-y-auto h-160"
           @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
         />
       </q-card-section>
@@ -106,11 +107,4 @@ async function handleFilterSlotsUpdate(updatedValue) {
 </template>
 
 <style scoped>
-:deep(.table-header > th) {
-  font-weight: bold;
-}
-.table-scroll {
-  max-height: 45em;
-  overflow-y: auto;
-}
 </style>

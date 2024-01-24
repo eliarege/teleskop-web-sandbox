@@ -98,6 +98,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
         v-model:selected="selected"
         :rows="stepSkippingReasons"
         :columns="columns"
+        class="overflow-y-auto h-160"
         @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       >
         <template #custombody="stepSkippingReasons">
@@ -121,14 +122,6 @@ async function handleFilterSlotsUpdate(updatedValue) {
 </template>
 
 <style scoped>
-:deep(.table-header > th) {
-  font-weight: bold;
-}
-.table-scroll {
-  max-height: 45em;
-  overflow-y: auto;
-}
-
 .input-field > * {
   margin-right: 2em;
 }

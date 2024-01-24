@@ -10,7 +10,7 @@ import { deleteTankMaterialMap } from '~/utils'
 
 const selectedMachineId = ref()
 
-const { data: machines } = useLazyFetch('/api/command-timeout-reasons/command-map-machines')
+const { data: machines } = useLazyFetch('/api/machines/active-machines')
 const { data: materials } = useLazyFetch('/api/materials/materials')
 
 const { data: tanks, refresh: refreshTanks } = useLazyFetch('/api/materials/material-tank-map', {
@@ -24,8 +24,8 @@ async function handleMachineClick(machineId: number) {
 }
 
 async function handleDragDrop(e, tank) {
-  const text = e.item.innerHTML
-  const matches = text.split('. ')
+  const text = e.item.innerText
+  const matches = text.split('.')
   if (matches && matches.length) {
     const materialCode = matches[0]
     if (e.type === 'add') {
@@ -52,62 +52,81 @@ async function deleteItem(tank, materialCode: string) {
 </script>
 
 <template>
-  <q-card class="flex flex-row justify-around">
-    <q-card-section class="flex flex-row">
-      <h3>Makineler</h3>
-      <q-list bordered separator>
-        <q-item
-          v-for="machine in machines"
-          :key="machine.machineId"
-          v-ripple
-          clickable
-          @click="handleMachineClick(machine.machineId)"
+  <q-card class="flex flex-row justify-around w-full">
+    <q-card-section class="flex flex-row w-full justify-start">
+      <div class="mr-4 w-xs">
+        <h3>Makineler</h3>
+        <q-list
+          bordered
+          separator
+          class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
         >
-          <q-item-section>
-            {{ machine.machineName }}
-          </q-item-section>
-        </q-item>
-      </q-list>
+          <q-item
+            v-for="machine in machines"
+            :key="machine.machineId"
+            v-ripple
+            clickable
+            @click="handleMachineClick(machine.machineId)"
+          >
+            <q-item-section>
+              {{ machine.machineCode }}
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
 
-      <div class="h-sm overflow-y-scroll">
+      <div class="mr-4 w-sm">
         <h3>Materyaller</h3>
         <Sortable
           :list="materials"
           item-key="id"
-          class=""
+          class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
           :options="{ group: { name: 'group', pull: 'clone', put: false } }"
         >
           <template #item="{ element, index }">
-            <div
+            <q-item
               :key="element.materialCode"
               class="draggable"
             >
-              {{ `${element.materialCode}. ${element.materialName}` }}
-            </div>
+              <q-item-section>
+                {{ `${element.materialCode}. ${element.materialName}` }}
+              </q-item-section>
+            </q-item>
           </template>
         </Sortable>
       </div>
       <!-- tanks -->
-      <div v-if="tanks.length" class="flex flex-row">
+      <div v-if="tanks.length" class="flex flex-col w-lg overflow-y-auto h-160">
         <div v-for="tank in tanks" :key="tank">
           <h3>{{ tank.tankName }}</h3>
           <Sortable
             :list="tank.materials"
             item-key="id"
+            class="q-list q-list--bordered q-list--separator"
             :options="{ group: { name: 'group' } }"
             @add="(e) => handleDragDrop(e, tank)"
             @remove="(e) => handleDragDrop(e, tank)"
           >
             <template #item="{ element, index }">
-              <div
+              <q-item
                 :key="element.id"
                 class="draggable"
+                :data-material-code="element.materialCode"
               >
-                {{ `${element.materialCode}. ${element.materialName}` }}
-                <button @click="deleteItem(tank, element.materialCode)">
-                  x
-                </button>
-              </div>
+                <q-item-section
+                  :data-material-code="element.materialCode"
+                >
+                  {{ `${element.materialCode}. ${element.materialName}` }}
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn
+                    icon="delete"
+                    flat
+                    dense
+                    @click="deleteItem(tank, element.materialCode)"
+                  />
+                </q-item-section>
+              </q-item>
             </template>
           </Sortable>
         </div>

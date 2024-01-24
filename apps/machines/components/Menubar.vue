@@ -14,11 +14,39 @@ const showEditMachine = ref(false)
 const showMachineParameters = ref(false)
 const showMimic = ref(false)
 const showFormulas = ref(false)
+const machineId = computed(() => props.selected.machineId)
+
+const { data: version } = useLazyFetch('/api/soap/get-version', {
+  default: () => 0,
+  query: {
+    machineId,
+  },
+})
 
 async function handleMachineDelete() {
   const machineIds = [props.selected]
   await deleteMachines(machineIds)
   emit('deleteMachine', machineIds)
+}
+
+async function loadProject() {
+  await $fetch('/api/ftp/update-machine', {
+    method: 'GET',
+    query: {
+      machineId: props.selected.machineId,
+      ip: props.selected.ip,
+    },
+  })
+}
+
+async function loadDefinitions() {
+  await $fetch('/api/ftp/update-definitions', {
+    method: 'GET',
+    query: {
+      machineId: props.selected.machineId,
+      ip: props.selected.ip,
+    },
+  })
 }
 </script>
 
@@ -39,6 +67,7 @@ async function handleMachineDelete() {
         icon="system_update_alt"
         color="primary"
         class="mr-4"
+        @click="loadProject"
       />
       <q-btn
         label="Özellikler"
@@ -83,22 +112,19 @@ async function handleMachineDelete() {
         class="mr-4"
         @click="showFormulas = true"
       />
+      <q-btn
+        label="Tanımları Al"
+        no-caps
+        color="primary"
+        class="mr-4"
+        @click="loadDefinitions"
+      />
     </q-card-section>
 
     <q-card-section class="flex flex-row items-end mr-8">
       <q-chip class="mr-4 mb-2">
-        DB v3.3.95.0
+        DB v{{ version }}
       </q-chip>
-      <q-card class="flex flex row mb-2 items-center">
-        <q-card-section>
-          Hoşgeldiniz Barış
-        </q-card-section>
-        <q-card-section>
-          <q-btn no-caps>
-            Çıkış Yap
-          </q-btn>
-        </q-card-section>
-      </q-card>
     </q-card-section>
   </q-card>
   <NewMachineDialog

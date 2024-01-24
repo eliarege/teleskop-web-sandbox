@@ -98,6 +98,7 @@ async function popupUpdate(value, rowName, props) {
       <FilterableTable
         :rows="tankMaterialDefinitions"
         :columns="columns"
+        class="overflow-y-auto h-160"
         @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
       >
         <template #custombody="tankMaterialDefinitions">
@@ -140,14 +141,6 @@ async function popupUpdate(value, rowName, props) {
 </template>
 
 <style scoped>
-:deep(.table-header > th) {
-  font-weight: bold;
-}
-.table-scroll {
-  max-height: 45em;
-  overflow-y: auto;
-}
-
 .input-field > * {
   margin-right: 2em;
 }

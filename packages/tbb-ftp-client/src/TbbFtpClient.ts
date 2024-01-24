@@ -28,6 +28,9 @@ import type { FinishReason, GlobalCommandFormula, MachineParameter, ManualReason
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas, serializeGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
 import { parseSeperatedLocks } from './parsers/parseLocksInput'
+import { parseBatchParameters } from './parsers/parseBatchParameters'
+import { parseCycleControl } from './parsers/parseCycleControl'
+import { parseSystem } from './parsers/parseSystem'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -280,6 +283,27 @@ export class TbbFtpClient {
     const parsedData = lines.map(parseSeperatedLocks)
 
     return parsedData
+  }
+
+  async fetchBatchParameters() {
+    const remotePath = '/tbb6500/data/config/baslatmaParametreleri'
+    const content = await download(this.client, remotePath, 'utf8')
+    const batchParameters = parseBatchParameters(content)
+    return batchParameters
+  }
+
+  async fetchCycleControl() {
+    const remotePath = '/tbb6500/data/config/manuel/cycle_kontrol'
+    const content = await download(this.client, remotePath, 'utf8')
+    const cycleControl = parseCycleControl(content)
+    return cycleControl
+  }
+
+  async fetchSystem() {
+    const remotePath = '/tbb6500/data/config/sistem'
+    const content = await download(this.client, remotePath, 'utf8')
+    const system = parseSystem(content)
+    return system
   }
 
   async uploadMachineParameterValues(values: MachineParameter[]) {

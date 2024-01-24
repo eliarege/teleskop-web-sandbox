@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { addCommandTimeoutReason, getMachineCommands, getTimeoutReasons } from '~/utils'
+import { addCommandTimeoutReason } from '~/utils'
 
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 const selectedReasonId = ref()
 
-const { data: machines } = useFetch('/api/machines/active-machines')
+const { data: machines } = useLazyFetch('/api/machines/active-machines', {
+  default: () => [],
+})
 const { data: machineCommands } = useLazyFetch(`/api/command-timeout-reasons/master-commands-timeout`, {
   immediate: false,
   query: { machineId: selectedMachineId },
@@ -15,7 +17,7 @@ const { data: selectedCommandReasons } = useLazyFetch('/api/command-timeout-reas
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })
 const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useLazyFetch('/api/command-timeout-reasons/timeout-reasons', {
-  immediate: true,
+  immediate: false,
   watch: [selectedCommandReasons],
   transform: (timeoutReasons) => {
     return timeoutReasons.map(r => ({
@@ -132,7 +134,11 @@ async function handleDeleteReason() {
   <q-card class="flex flex-row justify-around">
     <q-card-section class="w-sm">
       <h3>Makineler</h3>
-      <q-list bordered separator>
+      <q-list
+        bordered
+        separator
+        class="overflow-y-auto h-160"
+      >
         <q-item
           v-for="machine in machines"
           :key="machine.machineId"
@@ -142,7 +148,7 @@ async function handleDeleteReason() {
           @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>
-            {{ machine.machineName }}
+            {{ machine.machineCode }}
           </q-item-section>
         </q-item>
       </q-list>
@@ -150,7 +156,11 @@ async function handleDeleteReason() {
 
     <q-card-section class="w-sm">
       <h3>Komutlar</h3>
-      <q-list bordered separator>
+      <q-list
+        bordered
+        separator
+        class="overflow-y-auto h-160"
+      >
         <q-item
           v-for="command in machineCommands"
           :key="command.commandNo"
@@ -169,7 +179,11 @@ async function handleDeleteReason() {
 
     <q-card-section class="w-sm">
       <h3>Sebepler</h3>
-      <q-list bordered separator>
+      <q-list
+        bordered
+        separator
+        class="overflow-y-auto h-160"
+      >
         <q-item
           v-for="reason in timeoutReasons"
           :key="reason.id"

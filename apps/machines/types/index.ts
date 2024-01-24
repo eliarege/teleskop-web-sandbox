@@ -35,6 +35,7 @@ export interface User {
   userMode: string
   userMode2: string
   userType: number
+  userDeleted: boolean
 }
 
 export interface StopReason {
@@ -199,4 +200,22 @@ export interface CommandType {
   commandNo: number
   commandType: number
   commandName?: string
+}
+
+export interface CommandTypeEvent extends CommandType {
+  action?: string
+}
+
+export interface TreatmentParameter {
+  id: number
+  unit: string
+  treatmentParameter: string
+  minValue: number
+  maxValue: number
+}
+
+export interface TreatmentMachineGroup {
+  id: number
+  groupName: string
+  temperatureControlCommand: number
 }

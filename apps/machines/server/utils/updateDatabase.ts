@@ -596,6 +596,75 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
   return data
 }
 
+export async function updateSystem(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const system = await tbb.fetchSystem()
+
+  await trx('BFMACHINESYSTEMPARAMS')
+    .where('MachineId', machineId)
+    .del()
+
+  for (const key in system) {
+    if (Object.prototype.hasOwnProperty.call(system, key)) {
+      const value = system[key]
+      await trx('BFMACHINESYSTEMPARAMS')
+        .insert({
+          MachineId: machineId,
+          ParamToken: key,
+          ParamValue: value,
+        })
+    }
+  }
+
+  return system
+}
+
+export async function updateCycleControl(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const control = await tbb.fetchCycleControl()
+
+  await trx('BFMACHINES')
+    .where('MACHINEID', machineId)
+    .update({
+      REELCOUNT: control[0].reelCount,
+    })
+
+  return control
+}
+
+export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const params = await tbb.fetchBatchParameters()
+
+  const data = params.map((d) => {
+    return {
+      BATCHPARAMETERID: d.batchParameterId,
+      MACHINEID: machineId,
+      PARAMSTRING: d.paramString,
+      PARAMLOWLIMIT: d.min,
+      PARAMHIGHLIMIT: d.max,
+      DEFAULTVALUE: d.default,
+      UNITCODE: d.unitCode,
+      FORMAT: d.format,
+      UNITTEXT: d.unitText,
+      PARAMETERID: d.parameterId,
+      SELECTIONLIST: JSON.stringify(d.selectionList),
+      SELECTIONVALUES: JSON.stringify(d.selectionValues),
+      SELECTIONLISTDEFAULT: JSON.stringify(d.selectionListDefault),
+      BATCHPLANNING: false,
+      BATCHSTART: true,
+      RECIPE: false,
+      PARAMETERTYPE: 1,
+      ISDELETED: false,
+      TBBCHANGETIME: null,
+      CHANGETIME: null,
+      PARAMSTRINGEn: d.paramString,
+    }
+  })
+  console.log('params = ', data)
+
+  await replaceRecords(trx, 'BFMACHBATCHPARAMETERS', data, { MACHINEID: machineId })
+
+  return params
+}
+
 export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   const finishReasons = await trx('BFDYLOTFINISHREASONS').select({
     reasonId: 'REASONID',

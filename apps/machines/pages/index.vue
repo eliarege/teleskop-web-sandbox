@@ -124,40 +124,35 @@ async function handleFilterSlotsUpdate(updatedValue) {
     @delete-machine="refresh"
     @add-machine="refresh"
   />
-  <div class="table-scroll">
-    <FilterableTable
-      v-model:selected="selected"
-      :rows="machines"
-      :columns="columns"
-      @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-    >
-      <template #custombody="machines">
-        <q-tr
-          :class="{ 'selected-row': selected.machineId === machines.row.machineId }"
-          @click="handleSelection(machines.row)"
+  <FilterableTable
+    v-model:selected="selected"
+    :rows="machines"
+    :columns="columns"
+    class="overflow-y-auto h-220"
+    @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+  >
+    <template #custombody="machines">
+      <q-tr
+        :class="{ 'selected-row': selected.machineId === machines.row.machineId }"
+        @click="handleSelection(machines.row)"
+      >
+        <q-td
+          v-for="row in machines.cols"
+          :key="row"
         >
-          <q-td
-            v-for="row in machines.cols"
-            :key="row"
-          >
-            <span v-if="row.field === 'inUse'">
-              {{ row.value ? 'Evet' : 'Hayır' }}
-            </span>
-            <span v-else>
-              {{ row.value }}
-            </span>
-          </q-td>
-        </q-tr>
-      </template>
-    </FilterableTable>
-  </div>
+          <span v-if="row.field === 'inUse'">
+            {{ row.value ? 'Evet' : 'Hayır' }}
+          </span>
+          <span v-else>
+            {{ row.value }}
+          </span>
+        </q-td>
+      </q-tr>
+    </template>
+  </FilterableTable>
 </template>
 
 <style scoped>
-.table-scroll {
-  max-height: 45em;
-  overflow-y: auto;
-}
 .selected-row {
   background-color: #cce8ff;
 }

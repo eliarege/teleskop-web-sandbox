@@ -21,7 +21,7 @@ const lists = [
   { name: 'listOfRequestCommands', ref: listOfRequestCommands },
 ]
 
-const { data: machines } = useLazyFetch('/api/command-timeout-reasons/command-map-machines')
+const { data: machines } = useLazyFetch('/api/machines/active-machines')
 
 const { data: tankDefinitions, refresh: refreshDefinitions } = useLazyFetch('/api/tank-definitions/tank-definitions', {
   immediate: false,
@@ -109,7 +109,6 @@ async function handleDragDrop(e, listName) {
   const matches = text.match(/(\d+) (.+)/)
   if (matches && matches.length) {
     const commandNo = Number.parseInt(matches[0])
-    // update relevant list in db
     let action
     if (e.type === 'add')
       action = 'add'
@@ -133,7 +132,11 @@ async function handleDragDrop(e, listName) {
     <q-card-section class="flex flex-row">
       <div class="mr-8 w-xs">
         <h3>Makineler</h3>
-        <q-list bordered separator>
+        <q-list
+          bordered
+          separator
+          class="overflow-y-auto h-160 w-xs"
+        >
           <q-item
             v-for="machine in machines"
             :key="machine.machineId"
@@ -144,7 +147,7 @@ async function handleDragDrop(e, listName) {
             @click="handleMachineClick(machine.machineId)"
           >
             <q-item-section>
-              {{ machine.machineName }}
+              {{ machine.machineCode }}
             </q-item-section>
           </q-item>
         </q-list>
@@ -152,7 +155,11 @@ async function handleDragDrop(e, listName) {
 
       <div class="w-xs mr-8">
         <h3>Kazan Tanımları</h3>
-        <q-list bordered separator>
+        <q-list
+          bordered
+          separator
+          class="overflow-y-auto h-160 w-xs"
+        >
           <q-item
             v-for="def in tankDefinitions"
             :key="def.tankNo"
@@ -170,7 +177,7 @@ async function handleDragDrop(e, listName) {
       </div>
 
       <div class="w-3xl flex flex-col">
-        <div class="grid">
+        <div class="grid mb-4">
           <q-input
             v-model="tankNo"
             label="Kazan no"
@@ -201,21 +208,23 @@ async function handleDragDrop(e, listName) {
           />
         </div>
         <div class="grid">
-          <div class="h-sm overflow-y-scroll">
+          <div>
             <h3>Komutlar</h3>
             <Sortable
               :list="commands"
               item-key="id"
-              class=""
+              class="q-list q-list--bordered q-list--separator overflow-y-auto h-xs"
               :options="{ group: 'group' }"
             >
               <template #item="{ element, index }">
-                <div
+                <q-item
                   :key="element.commandNo"
                   class="draggable"
                 >
-                  {{ `${element.commandNo} ${element.commandName}` }}
-                </div>
+                  <q-item-section>
+                    {{ `${element.commandNo} ${element.commandName}` }}
+                  </q-item-section>
+                </q-item>
               </template>
             </Sortable>
           </div>
@@ -226,18 +235,21 @@ async function handleDragDrop(e, listName) {
               <Sortable
                 :list="listOfTransferCommands"
                 item-key="id"
+                class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
                 :options="{ group: 'group' }"
                 @add="(e) => handleDragDrop(e, 'listOfTransferCommands')"
                 @remove="(e) => handleDragDrop(e, 'listOfTransferCommands')"
               >
                 <template #item="{ element, index }">
-                  <div
+                  <q-item
                     :key="element.commandNo"
                     class="draggable"
                     :data-command-no="element.commandNo"
                   >
-                    {{ `${element.commandNo} ${element.commandName}` }}
-                  </div>
+                    <q-item-section>
+                      {{ `${element.commandNo} ${element.commandName}` }}
+                    </q-item-section>
+                  </q-item>
                 </template>
               </Sortable>
             </div>
@@ -246,17 +258,20 @@ async function handleDragDrop(e, listName) {
               <Sortable
                 :list="listOfRequestCommands"
                 item-key="id"
+                class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
                 :options="{ group: 'group' }"
                 @add="(e) => handleDragDrop(e, 'listOfRequestCommands')"
                 @remove="(e) => handleDragDrop(e, 'listOfRequestCommands')"
               >
                 <template #item="{ element, index }">
-                  <div
+                  <q-item
                     :key="element.commandNo"
                     class="draggable"
                   >
-                    {{ `${element.commandNo} ${element.commandName}` }}
-                  </div>
+                    <q-item-section>
+                      {{ `${element.commandNo} ${element.commandName}` }}
+                    </q-item-section>
+                  </q-item>
                 </template>
               </Sortable>
             </div>
@@ -266,17 +281,20 @@ async function handleDragDrop(e, listName) {
               <Sortable
                 :list="listOfCirculationDoSageCommands"
                 item-key="id"
+                class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
                 :options="{ group: 'group' }"
                 @add="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommands')"
                 @remove="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommands')"
               >
                 <template #item="{ element, index }">
-                  <div
+                  <q-item
                     :key="element.commandNo"
                     class="draggable"
                   >
-                    {{ `${element.commandNo} ${element.commandName}` }}
-                  </div>
+                    <q-item-section>
+                      {{ `${element.commandNo} ${element.commandName}` }}
+                    </q-item-section>
+                  </q-item>
                 </template>
               </Sortable>
             </div>
@@ -286,17 +304,20 @@ async function handleDragDrop(e, listName) {
               <Sortable
                 :list="listOfCirculationRequestCommands"
                 item-key="id"
+                class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
                 :options="{ group: 'group' }"
                 @add="(e) => handleDragDrop(e, 'listOfCirculationRequestCommands')"
                 @remove="(e) => handleDragDrop(e, 'listOfCirculationRequestCommands')"
               >
                 <template #item="{ element, index }">
-                  <div
+                  <q-item
                     :key="element.commandNo"
                     class="draggable"
                   >
-                    {{ `${element.commandNo} ${element.commandName}` }}
-                  </div>
+                    <q-item-section>
+                      {{ `${element.commandNo} ${element.commandName}` }}
+                    </q-item-section>
+                  </q-item>
                 </template>
               </Sortable>
             </div>
@@ -312,12 +333,5 @@ async function handleDragDrop(e, listName) {
   grid-template-areas: "1 1"
                        "1 1";
   gap: 2em;
-  margin-top: 4em;
-}
-
-.input-field {
-  grid-template-areas: "1 1"
-                       "1 1";
-  gap: 1em;
 }
 </style>

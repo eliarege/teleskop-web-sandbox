@@ -1,0 +1,11 @@
+import { knex } from '~/server/connectionPool'
+import type { TreatmentParameter } from '~/types'
+
+export default defineEventHandler(async (event) => {
+  const { id, treatmentParameter } = await readBody(event)
+  return await knex('BFTREATMENTPARAMETERS')
+    .where('ID', id)
+    .update({
+      TREATMENTPARAMETER: treatmentParameter,
+    })
+})
