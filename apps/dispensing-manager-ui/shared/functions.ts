@@ -1,4 +1,5 @@
 import type { Knex } from 'knex'
+import { Notify } from 'quasar'
 import type { FilterSlot } from './types'
 import { colors } from './constants'
 
@@ -23,7 +24,7 @@ export function rowBGColorHandler(row: any) {
   let temp = 'background-color: '
   if (row.field === 'status') {
     if (row.value === 0) {
-      temp += 'white; color: black'
+      temp += 'white; text-color: black'
     } else {
       if (row.value === 1)
         temp += colors.status1
@@ -39,6 +40,7 @@ export function rowBGColorHandler(row: any) {
         temp += colors.status8
       temp += '; color: white;'
     }
+    console.log(temp)
     temp += 'width: 10rem; border-color: white; border-width: bold; font-weight: bolder; font-size: medium;'
   }
   return temp
@@ -98,3 +100,11 @@ export async function filtersToKnex(filters: Array<FilterSlot>, attributes: any,
 //     knexInstance.andWhere(name, '>=', filter.value.min)
 //   }
 // }
+
+export function notification(isSuccess: any, message: string) {
+  Notify.create({
+    message,
+    type: isSuccess ? 'positive' : 'warning',
+    position: 'top',
+  })
+}
