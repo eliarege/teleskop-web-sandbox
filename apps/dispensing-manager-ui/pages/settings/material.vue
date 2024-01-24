@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
+import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
@@ -76,6 +77,13 @@ async function resetMaterialInfo(row?: any) {
     }
   })
 }
+
+function checkIsThereAnyChange() {
+  console.log(materialInfoStatic)
+  console.log(materialInfo.value)
+  if (materialInfoStatic === materialInfo.value || !materialInfoStatic.length)
+    return false
+  return true
 }
 
 const expandedRow = ref()
@@ -84,6 +92,8 @@ function toggleRow(row: any, index: number) {
   expandedRow.value === index
     ? expandedRow.value = null
     : expandedRow.value = index
+  console.log(materialInfo.value)
+  materialInfoStatic = materialInfo.value
   resetMaterialInfo(row)
 }
 
@@ -115,10 +125,20 @@ function customSortMethod(rows, sortBy, descending) {
   return sortedRows
 }
 
+function notification(isSuccess: any, message: string) {
+  Notify.create({
+    message,
+    type: isSuccess ? 'positive' : 'warning',
+    position: 'top',
+  })
+}
+
 async function submit(rowIndex: number) {
+  let isSuccess
+  let keyI18N
   /** If create */
   if (rowIndex === 0) {
-    await $fetch('/api/settings/material-connection', {
+    isSuccess = await $fetch('/api/settings/material-connection', {
       method: 'post',
       body: {
         materialCode: materialInfo.value[0].value,
@@ -133,10 +153,11 @@ async function submit(rowIndex: number) {
         rerequestable: materialInfo.value[9].value,
       },
     })
+    keyI18N = 'warnings.createResponse'
     expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
-    await $fetch('/api/settings/material-connection', {
+    isSuccess = await $fetch('/api/settings/material-connection', {
       method: 'put',
       body: {
         materialCode: materialInfo.value[0].value,
@@ -151,22 +172,26 @@ async function submit(rowIndex: number) {
         rerequestable: materialInfo.value[9].value,
       },
     })
+    keyI18N = 'warnings.changeResponse'
   }
+  notification(isSuccess, t(keyI18N!, { type: t('warnings.material'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   await getRows()
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  await $fetch('/api/settings/material', {
+  const isSuccess = await $fetch('/api/settings/material', {
     method: 'delete',
     body: {
       materialCode: materialInfo.value[0].value,
     },
   })
   expandedRow.value = null
+  notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.material'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+
   /**
-   * I did not reset the dispenserInfo array careful. It has to be
+   * I did not reset the dispenserInfo array be careful. It has to be
    * set before use so it will not be a problem but in case
-   * to relocate buttons on top of the screen can be example where we boomed
+   * to relocate filtering buttons on top of the screen can be example where we boomed
    */
   await getRows()
 }
@@ -212,7 +237,10 @@ async function deleteRow() {
           class="cursor-pointer"
           @click="toggleRow(props.row, props.rowIndex)"
         >
-          <span>
+          <span v-if="col.field === 'materialGroup' && col.value !== undefined">
+            {{ t(`recipeTypes.${col.value - 1}`) }}
+          </span>
+          <span v-else>
             {{ col.value }}
           </span>
         </q-td>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
+import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
@@ -110,10 +111,20 @@ function customSortMethod(rows, sortBy, descending) {
   return sortedRows
 }
 
+function notification(isSuccess: any, message: string) {
+  Notify.create({
+    message,
+    type: isSuccess ? 'positive' : 'warning',
+    position: 'top',
+  })
+}
+
 async function submit(rowIndex: number) {
+  let isSuccess
+  let keyI18N
   /** If create */
   if (rowIndex === 0) {
-    await $fetch('/api/settings/machine-dispenser-connection', {
+    isSuccess = await $fetch('/api/settings/machine-dispenser-connection', {
       method: 'post',
       body: {
         machineid: machineInfo.value[0].value,
@@ -122,10 +133,12 @@ async function submit(rowIndex: number) {
         disps: machineInfo.value[3].value,
       },
     })
+    keyI18N = 'warnings.createResponse'
+
     expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
-    await $fetch('/api/settings/machine-dispenser-connection', {
+    isSuccess = await $fetch('/api/settings/machine-dispenser-connection', {
       method: 'put',
       body: {
         machineid: machineInfo.value[0].value,
@@ -134,13 +147,15 @@ async function submit(rowIndex: number) {
         disps: machineInfo.value[3].value,
       },
     })
+    keyI18N = 'warnings.changeResponse'
   }
+  notification(isSuccess, t(keyI18N!, { type: t('warnings.machine'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   await getRows()
 }
 
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  await $fetch('/api/settings/machine-dispenser-connection', {
+  const isSuccess = await $fetch('/api/settings/machine-dispenser-connection', {
     method: 'delete',
     body: {
       machineid: machineInfo.value[0].value,
@@ -148,6 +163,8 @@ async function deleteRow() {
     },
   })
   expandedRow.value = null
+  notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.machine'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+
   await getRows()
 }
 </script>

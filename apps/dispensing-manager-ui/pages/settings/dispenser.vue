@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
+import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
@@ -113,11 +114,21 @@ function customSortMethod(rows, sortBy, descending) {
   return sortedRows
 }
 
+function notification(isSuccess: any, message: string) {
+  Notify.create({
+    message,
+    type: isSuccess ? 'positive' : 'warning',
+    position: 'top',
+  })
+}
+
 async function submit(rowIndex: number, row: any) {
   let isOriginNo = true
+  let isSuccess
+  let keyI18N
   /** If create */
   if (rowIndex === 0) {
-    const a = await $fetch('/api/settings/dispenser', {
+    isSuccess = await $fetch('/api/settings/dispenser', {
       method: 'post',
       body: {
         dispNo: dispenserInfo.value[0].value,
@@ -129,13 +140,14 @@ async function submit(rowIndex: number, row: any) {
         protocol: dispenserInfo.value[6].value,
       },
     })
+    keyI18N = 'warnings.createResponse'
     expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
     if (row.dispNo !== dispenserInfo.value[0].value) {
       isOriginNo = false
     }
-    await $fetch('/api/settings/dispenser', {
+    isSuccess = await $fetch('/api/settings/dispenser', {
       method: 'put',
       body: {
         dispNo: dispenserInfo.value[0].value,
@@ -148,17 +160,20 @@ async function submit(rowIndex: number, row: any) {
         protocol: dispenserInfo.value[6].value,
       },
     })
+    keyI18N = 'warnings.changeResponse'
   }
+  notification(isSuccess, t(keyI18N!, { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   await getRows()
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  await $fetch('/api/settings/dispenser', {
+  const isSuccess = await $fetch('/api/settings/dispenser', {
     method: 'delete',
     body: {
       dispNo: dispenserInfo.value[0].value,
     },
   })
+  notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   expandedRow.value = null
   /**
    * I did not reset the dispenserInfo array careful. It has to be
