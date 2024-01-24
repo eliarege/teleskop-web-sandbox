@@ -61,22 +61,19 @@ async function getDisps() {
 }
 
 async function resetMaterialInfo(row?: any) {
-  if (!row)
-    materialInfo.value.forEach(mate => mate.value = '')
-  else {
-    const mateDispsTemp = await $fetch(`/api/settings/material-connections?chemCode=${row.materialCode}`)
-    materialInfo.value.forEach((mate) => {
-      if (mate.field === 'materialGroup') {
-        materialGroups.forEach(dev => dev.value === row[mate.field] ? mate.value = dev : '')
-      } else if (mate.field === 'connectedDisps') {
-        mate.value = mateDispsTemp
-      } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
-        mate.value = false
-      } else {
-        mate.value = row[mate.field]
-      }
-    })
-  }
+  const mateDispsTemp = await $fetch(`/api/settings/material-connections?chemCode=${row.materialCode}`)
+  materialInfo.value.forEach((mate) => {
+    if (mate.field === 'materialGroup') {
+      materialGroups.forEach(dev => dev.value === row[mate.field] ? mate.value = dev : '')
+    } else if (mate.field === 'connectedDisps') {
+      mate.value = mateDispsTemp
+    } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
+      row[mate.field] === undefined ? mate.value = false : mate.value = row[mate.field]
+    } else {
+      mate.value = row[mate.field]
+    }
+  })
+}
 }
 
 const expandedRow = ref()
