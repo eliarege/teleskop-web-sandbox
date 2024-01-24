@@ -272,10 +272,10 @@ function isCorrectPlankey(param: any) {
             :options="priorityOptions"
           />
         </q-card-section>
-        <q-card-section v-if="priority && isTankNoRequired">
+        <q-card-section v-if="isTankNoRequired">
           <span class="text-h6"> {{ t('recipe.inputTankNo') }}</span>
         </q-card-section>
-        <q-card-section v-if="priority && isTankNoRequired">
+        <q-card-section v-if="isTankNoRequired">
           <q-input
             v-model="tankNo"
             type="number"
