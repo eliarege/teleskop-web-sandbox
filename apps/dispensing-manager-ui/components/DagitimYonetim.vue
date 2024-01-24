@@ -213,6 +213,28 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
       })
   }
 }
+
+function handleKeyUp(event) {
+  console.log(`length ${recipe.value.length}`)
+  if (event.key === 'ArrowUp') {
+    if (selectedRow.value.rowIndex) {
+      selectRow(selectedRow.value.rowIndex - 1)
+    }
+  } else if (event.key === 'ArrowDown') {
+    if (selectedRow.value.rowIndex !== undefined && recipe.value[selectedRow.value.rowIndex + 1]) {
+      event.preventDefault()
+      selectRow(selectedRow.value.rowIndex + 1)
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keyup', handleKeyUp)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keyup', handleKeyUp)
+})
 </script>
 
 <template>
