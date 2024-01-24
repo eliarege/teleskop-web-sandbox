@@ -145,8 +145,7 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
         </q-table>
       </div>
     </q-card-section>
-
-    <!-- <q-card-actions class="self-end">
+    <q-card-actions align="right" style="position:relative;">
       <q-btn
         v-close-popup
         class="m-2"
@@ -155,7 +154,7 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
         :label="t('close')"
         style="font-size: medium;"
       />
-    </q-card-actions> -->
+    </q-card-actions>
   </q-card>
 </template>
 
