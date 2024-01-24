@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Toast } from '@bryntum/schedulerpro-trial'
-import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{ jobOrder: string }>()
 

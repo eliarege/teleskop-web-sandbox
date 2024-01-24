@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { useDataStore } from '../store/Datas'
 import type { TableData } from '~/shared/types'
 

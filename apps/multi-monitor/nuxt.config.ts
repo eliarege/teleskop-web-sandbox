@@ -1,5 +1,4 @@
 import string from 'rollup-plugin-string'
-import type { Plugin as RollupPlugin } from 'rollup'
 
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 
@@ -7,7 +6,10 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true,
   },
-  extends: ['nuxt-base'],
+  extends: [
+    'nuxt-base',
+    'nuxt-machine-card',
+  ],
   spaLoadingTemplate: false,
   ssr: false,
   typescript: {
@@ -29,6 +31,14 @@ export default defineNuxtConfig({
       websockifyPort: '6800',
     },
   },
+  i18n: {
+    lazy: true,
+    langDir: './locales',
+    locales: [
+      { code: 'en', file: 'en.json' },
+      { code: 'tr', file: 'tr.json' },
+    ],
+  },
   nitro: {
     rollupConfig: {
       // @ts-expect-error Infinite
@@ -37,5 +47,4 @@ export default defineNuxtConfig({
       ],
     },
   },
-
 })

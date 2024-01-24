@@ -3,7 +3,6 @@
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { Splitter, Tooltip } from '@bryntum/schedulerpro-trial'
 import { EliarModal } from 'ui'
-import { useI18n } from 'vue-i18n'
 import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 

@@ -3,7 +3,6 @@ import { matDisplaySettings, matPreview } from '@quasar/extras/material-icons'
 import { useStorage } from '@vueuse/core'
 import { color } from 'd3'
 import { LoadingSpinner } from 'ui'
-import { useI18n } from 'vue-i18n'
 import { useSettingStore } from '~/store/settings'
 
 const emits = defineEmits(['updateScheduler'])

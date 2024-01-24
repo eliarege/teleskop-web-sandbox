@@ -13,6 +13,14 @@ export default defineNuxtConfig({
       kcClientId: 'program-editor',
     },
   },
+  i18n: {
+    lazy: true,
+    langDir: './locales',
+    locales: [
+      { code: 'en', file: 'en.json' },
+      { code: 'tr', file: 'tr.json' },
+    ],
+  },
   nitro: {
     typescript: {
       tsConfig: {

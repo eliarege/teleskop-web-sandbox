@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { color } from 'd3'
-import { useI18n } from 'vue-i18n'
-import type { MachineCardData } from 'ui-types'
-import MachineSettings from './MachineSettings.vue'
-import ProgressBar from './ProgressBar.vue'
+import type { MachineCardData } from '../types'
 
 interface MachineCardProps {
   colors: {
@@ -50,14 +47,14 @@ function connectionStatus(params: number) {
 
 function reqStatus(params: number) {
   if (params === 0) {
-    return t('teleskop.status-new')
+    return t('machine-card.status-new')
   } else if (params === 1) {
-    return t('teleskop.status-sent')
+    return t('machine-card.status-sent')
   } else if (params === 2) {
-    return t('teleskop.status-finished')
+    return t('machine-card.status-finished')
   } else if (params === 4) {
-    return t('teleskop.status-prio')
-  } else return t('teleskop.status-cancelled')
+    return t('machine-card.status-prio')
+  } else return t('machine-card.status-cancelled')
 }
 </script>
 
@@ -120,7 +117,7 @@ function reqStatus(params: number) {
           class="relative w-25"
           :class="machine.runningStepNo === 0 ? 'invisible' : 'visible'"
         >
-          <ProgressBar
+          <MachineProgressBar
             :data="machine"
             :completition-ratio="(machine.elapsedTime! / machine.theoreticalDuration!) * 100"
           />
@@ -170,7 +167,7 @@ function reqStatus(params: number) {
           class="text-black e-border bg-white"
           :offset="[3, 3]"
         >
-          {{ t("teleskop.program-name") }}
+          {{ t("machine-card.program-name") }}
         </q-tooltip>
         <span
           class="w-full overflow-hidden"
@@ -202,7 +199,7 @@ function reqStatus(params: number) {
           class="text-black e-border bg-white"
           :offset="[3, 3]"
         >
-          {{ t("teleskop.phase") }}
+          {{ t("machine-card.phase") }}
         </q-tooltip>
         <span>
           {{ machine.runningPhaseNo }}
@@ -221,7 +218,7 @@ function reqStatus(params: number) {
           class="text-black e-border bg-white"
           :offset="[3, 3]"
         >
-          {{ t("teleskop.command") }}
+          {{ t("machine-card.command") }}
         </q-tooltip>
         <span>
           {{ machine.runningStepNo }}
@@ -245,12 +242,12 @@ function reqStatus(params: number) {
           class="text-black e-border bg-white"
           :offset="[3, 3]"
         >
-          {{ t("teleskop.stop-reason") }}
+          {{ t("machine-card.stop-reason") }}
         </q-tooltip>
         <span>{{ machine.manualReason }}</span>
         <span>{{ machine.stopReason }}</span>
         <span v-show="machine.connectionStatus === 2" class="text-red-700">
-          {{ t("teleskop.no-connection") }}
+          {{ t("machine-card.no-connection") }}
         </span>
       </div>
       <div
@@ -271,7 +268,7 @@ function reqStatus(params: number) {
           class="text-black e-border bg-white"
           :offset="[3, 3]"
         >
-          {{ t("teleskop.alarm-second") }}
+          {{ t("machine-card.alarm-second") }}
         </q-tooltip>
         {{ machine.runningAlarmNo }}
         <span v-show="machine.runningAlarmName !== ' '">&nbsp;|&nbsp;</span>
@@ -283,18 +280,18 @@ function reqStatus(params: number) {
         :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }"
       >
         <div v-show="machine.reqOrderIndex !== -1" class="overflow-hidden">
-          <span>{{ t("teleskop.order-index") }} - {{ machine.reqOrderIndex }}
+          <span>{{ t("machine-card.order-index") }} - {{ machine.reqOrderIndex }}
           </span>
           |
-          <span>{{ t("teleskop.target-recipe") }} -
+          <span>{{ t("machine-card.target-recipe") }} -
             {{ machine.reqTargetRecipe }}</span>
           <!--  0 kimyasal 1 boya 2 tuz 4 jenerik materyal 1 5 jenerik 2  -->
           |
-          <span>{{ t("teleskop.tank-no") }} - {{ machine.reqTankNo }}</span>
+          <span>{{ t("machine-card.tank-no") }} - {{ machine.reqTankNo }}</span>
           |
-          <span>{{ t("teleskop.program-no") }} - {{ machine.reqProgramNo }}</span>
+          <span>{{ t("machine-card.program-no") }} - {{ machine.reqProgramNo }}</span>
           |
-          <span>{{ t("teleskop.req-status") }} -
+          <span>{{ t("machine-card.req-status") }} -
             {{ reqStatus(machine.reqStatus) }}</span>
         </div>
       </div>
@@ -321,7 +318,7 @@ function reqStatus(params: number) {
         class="machine-commands_items min-h-20 text-center justify-center text-2xl alarm"
         :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }"
       >
-        {{ t('teleskop.no-connection') }}
+        {{ t('machine-card.no-connection') }}
       </div>
     </div>
   </div>
@@ -390,84 +387,3 @@ function reqStatus(params: number) {
   }
 }
 </style>
-
-<i18n>
-  {
-    "en": {
-      "teleskop": {
-    "consumption-electricity": "Last Week Electricity",
-    "consumption-water": "Last Week Water",
-    "consumption-salt": "Last Week Salt",
-    "consumption-steam": "Last Week Steam",
-    "active": "Active",
-    "idle": "Idle",
-    "mode": "Details",
-    "event": "Events",
-    "alarm": "Alarm(s)",
-    "alarm-second": "Alarm",
-    "settings": "Settings",
-    "machine-stop-notification": "Machine Stop",
-    "machine-active-command": "Command",
-    "machine-process": "Process",
-    "machine-step-no": "Step No",
-    "list": "List",
-    "program": "Program",
-    "in-use": "In Use",
-    "empty": "Empty",
-    "no-connection": "NO CONNECTION!",
-    "program-name": "Program Name",
-    "phase": "Phase",
-    "stop-reason": "Stop Reason",
-    "order-index": "Order",
-    "target-recipe": "Recipe",
-    "tank-no": "Tank",
-    "program-no": "Program",
-    "req-status": "Status",
-    "status-new": "New",
-    "status-sent": "Sent to Dispenser",
-    "status-finished": "Finished",
-    "status-prio": "Priority Changed",
-    "status-cancelled": "Cancelled",
-    "command": "Step No - Command No - Command Name"
-  },
-    },
-    "tr": {
-      "teleskop": {
-    "consumption-electricity": "Geçen Hafta Elektrik",
-    "consumption-water": "Geçen Hafta Su",
-    "consumption-salt": "Geçen Hafta Tuz",
-    "consumption-steam": "Geçen Hafta Buhar",
-    "active": "Aktif",
-    "idle": "Boş",
-    "mode": "Detaylar",
-    "event": "Bildirimler",
-    "alarm": "Alarmlar",
-    "alarm-second": "Alarm",
-    "settings": "Ayarlar",
-    "machine-stop-notification": "Makine Duruş",
-    "machine-active-command": "Emir",
-    "machine-process": "Süreç",
-    "machine-step-no": "Step No",
-    "list": "Liste",
-    "program": "Program",
-    "in-use": "Kullanımda",
-    "empty": "Boşta",
-    "no-connection": "BAĞLANTI YOK!",
-    "program-name": "Program İsmi",
-    "phase": "Faz",
-    "stop-reason": "Duruş Nedeni",
-    "order-index": "Sıra",
-    "target-recipe": "Reçete",
-    "tank-no": "Tank",
-    "program-no": "Program",
-    "req-status": "Durum",
-    "status-new": "Yeni",
-    "status-sent": "Dağıtıcıya Gönderildi",
-    "status-finished": "Bitti",
-    "status-prio": "Öncelik Değişti",
-    "status-cancelled": "İptal Edildi",
-    "command": "Adım No - Komut No - Komut İsmi"
-  },
-    }
-  }
-  </i18n>

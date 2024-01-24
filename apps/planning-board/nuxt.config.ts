@@ -3,7 +3,10 @@ import string from 'rollup-plugin-string'
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
-  extends: ['nuxt-base'],
+  extends: [
+    'nuxt-base',
+    'nuxt-machine-card',
+  ],
   runtimeConfig: {
     teleskopHost: 'localhost',
     teleskopUser: '',
@@ -15,6 +18,14 @@ export default defineNuxtConfig({
     public: {
       kcClientId: 'planning-board',
     },
+  },
+  i18n: {
+    lazy: true,
+    langDir: './locales',
+    locales: [
+      { code: 'en', file: 'en.json' },
+      { code: 'tr', file: 'tr.json' },
+    ],
   },
   nitro: {
     rollupConfig: {

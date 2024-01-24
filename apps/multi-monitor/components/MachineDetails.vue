@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import type { TableColumnCtx } from 'element-plus'
-import { useI18n } from 'vue-i18n'
 import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import RecipeTable from 'ui/components/RecipeTable.vue'
 import type {
@@ -57,7 +56,7 @@ const groupables = [
   { key: 'program', index: 1 },
   { key: 'reqNumber', index: 2 },
   { key: 'mainStep', index: 3 },
-] as { key: keyof Recipe; index: number }[]
+] as { key: keyof Recipe, index: number }[]
 const columns = controlledComputed(locale, () => [
   { label: t('details.index'), prop: 'recIndex', align: 'center', showOverflowTooltip: true },
   { label: t('details.program'), prop: 'program', align: 'center', showOverflowTooltip: true },
@@ -66,7 +65,7 @@ const columns = controlledComputed(locale, () => [
   { label: t('details.chem-code'), prop: 'chemCode', align: 'center', showOverflowTooltip: true },
   { label: t('details.material-name'), prop: 'materialName', align: 'center', showOverflowTooltip: true },
   { label: t('details.amount'), prop: 'newAmount', align: 'center', showOverflowTooltip: true },
-] as { label: string; prop: string; align: 'left' | 'right' | 'start' | 'end' | 'center'; showOverflowTooltip: boolean }[])
+] as { label: string, prop: string, align: 'left' | 'right' | 'start' | 'end' | 'center', showOverflowTooltip: boolean }[])
 
 function unitFunc(param: number) {
   if (param === 3) {

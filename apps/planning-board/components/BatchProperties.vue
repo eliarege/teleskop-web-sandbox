@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { MachineCard } from 'ui'
-
-const props = defineProps<{ machineId: number; jobOrder: string; planKey: number }>()
+const props = defineProps<{ machineId: number, jobOrder: string, planKey: number }>()
 const colors = reactive({
   activeBackGround: '#4B5563',
   backGround: '#4B5563',

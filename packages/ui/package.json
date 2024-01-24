@@ -5,7 +5,8 @@
   "description": "",
   "license": "UNLICENSED",
   "keywords": [],
-  "main": "index.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {},
   "peerDependencies": {
     "vue-i18n": "^9"

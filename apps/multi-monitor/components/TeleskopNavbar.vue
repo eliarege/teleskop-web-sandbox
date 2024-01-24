@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData, Trends } from '~/shared/types'
 
@@ -57,8 +56,8 @@ const inactive = computed(() => {
     .map(machine => machine.machineCapacity - machine.runningMachineCapacity)
     .reduce((sum, val) => Math.round(sum) + Math.round(val), 0)
 })
-
 const showSettings = ref(false)
+
 const options = {
   cornerRadius: 0,
   startAngle: 0,

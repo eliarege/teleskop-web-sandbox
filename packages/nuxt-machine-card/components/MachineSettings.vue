@@ -1,45 +1,39 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
+import { computed } from 'vue'
 import { useStorage } from '@vueuse/core'
-import { useI18n } from 'vue-i18n'
-import { isEmpty } from 'lodash-es'
-import type { MachineData } from '~/shared/types'
+import type { MachineCardData } from '../types'
 
 const props = defineProps({
   data: {
-    type: Object as PropType<MachineData>,
+    type: Object as PropType<MachineCardData>,
     required: true,
   },
 })
 const { t } = useI18n()
-const defaultValue = ref()
-const value = ref(
-  isEmpty(props.data.erp)
-    ? t('no-erp-val')
-    : props.data.erp[defaultValue.value],
-)
-const key = useStorage(
+
+const erpKey = useStorage<string | null>(
   `machine-${props.data.id}-settings`,
-  {
-    name: props.data.erp ? defaultValue : ' ',
-    val: value,
-  },
+  null,
   localStorage,
   { mergeDefaults: true },
 )
+
+const erpLabel = computed(() => {
+  if (!props.data.erp)
+    return t('no-erp-val')
+  if (!erpKey.value)
+    return ''
+  const value = props.data.erp[erpKey.value]
+  return typeof value === 'number' && !Number.isInteger(value)
+    ? value.toFixed(2)
+    : value
+})
 </script>
 
 <template>
   <q-btn
-    :label="`${key.name === void 0 ? '' : key.name} ${
-      key.val === void 0
-        ? t('no-erp-val')
-        : typeof key.val === 'number'
-          ? Number.isInteger(key.val)
-            ? key.val
-            : key.val.toFixed(2)
-          : key.val
-    }`"
+    :label="erpLabel"
     rounded
     :disable="!props.data.erp"
   >
@@ -54,7 +48,7 @@ const key = useStorage(
           :key="idx"
           clickable
         >
-          <span class="w-full" @click="(key.val = item), (key.name = idx)">
+          <span class="w-full" @click="erpKey = idx">
             <q-item-section>
               <q-item-label class="p-3 text-black border-b border-b-gray-200">
                 {{ idx }}
@@ -67,7 +61,7 @@ const key = useStorage(
   </q-btn>
 </template>
 
-<style>
+<style scoped>
 .q-btn {
   width: 100%;
   font-weight: 600;
