@@ -102,6 +102,7 @@ function onRowClick(_event: Event, row: JobOrder) {
     componentProps: { jobId: row.jobId },
   })
 }
+const pagination = ref({ rowsPerPage: 50 })
 </script>
 
 <template>
@@ -123,6 +124,7 @@ function onRowClick(_event: Event, row: JobOrder) {
       :table-header-class="q.dark.isActive ? 'header-dark' : 'header-light'"
       :title="t('JobOrders')"
       :filter="searchFilter"
+      :pagination
       :rows="jobOrders"
       :columns="columns"
       separator="none"
@@ -163,13 +165,24 @@ function onRowClick(_event: Event, row: JobOrder) {
   font-weight: bold;
   padding-right: 5px;
   text-decoration: underline;
+  position: sticky;
+  background-color: var(--q-primary);
+  top: 0px;
+  z-index: 1;
 }
 .header-dark th {
   font-weight: bold;
   padding-right: 5px;
   text-decoration: underline;
+  position: sticky;
+  background-color: var(--q-dark);
+  top: 0px;
+  z-index: 1;
 }
 /* Light Theme Styles */
+.table-dark, .table-light {
+  max-height: 400px;
+}
 .table-light td {
   border: 1px solid blue;
   border-right: none;
