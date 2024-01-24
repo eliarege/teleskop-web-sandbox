@@ -6,7 +6,7 @@ const { t } = useI18n()
 const tempRoute = useRoute()
 const tabRef = computed(() => tempRoute.fullPath.split('/')[2] || 'material')
 if (!tempRoute.fullPath.split('/')[2])
-  navigateToPage('settings/material')
+  navigateToPage('settings/dispenser')
 
 const splitterModel = ref(10)
 const isLaptop = useBreakpoints(breakpoints).greaterOrEqual('laptop')
