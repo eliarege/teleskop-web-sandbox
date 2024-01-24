@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
-import { navigateToPage } from '../shared/functions'
+import { navigateToPage, notification } from '../shared/functions'
 
 const { t } = useI18n()
 
 const plannedMachineChangeVal = ref()
 const coupledMachineChangeVal = ref()
 const isCoupled = ref(false)
+const isThereAnyLog = ref(true)
 const showParameterDialog = ref(false)
 const showLogsDialog = ref(false)
 const showConsumptionDialog = ref(false)
@@ -100,19 +101,32 @@ async function requestJobOrder() {
       position: 'top',
     })
   }
+  isThereAnyLog.value = await checkIsThereAnyLog(plankey.value)
 }
 
 function clearCorrectionNo() {
   correctionNoDisplayed.value = 0
 }
 
+async function checkIsThereAnyLog(plankey) {
+  const check = await $fetch('/api/logs/check-if-log-exists', {
+    method: 'post',
+    body: {
+      plankey,
+    },
+  })
+  return check
+}
+
 const route = useRoute()
 if (route.query.correctionNo && route.query.joborder) {
-  if (route.query.isLogs === 'true')
-    showLogsDialog.value = true
   jobordernum.value = route.query.joborder
   correctionNoDisplayed.value = Number(route.query.correctionNo)
   await requestJobOrder()
+  if (route.query.isLogs === 'true') {
+    if (isThereAnyLog.value)
+      showLogsDialog.value = true
+  }
 }
 
 function buttonAction(link: string) {
@@ -122,6 +136,9 @@ function buttonAction(link: string) {
     }
     if (link === 'showLogs') {
       showLogsDialog.value = true
+      if (!isThereAnyLog.value) {
+        notification(false, t('warnings.noDataLogs', { joborder: jobordernum.value }))
+      }
     }
     if (link === 'showConsumptions') {
       showConsumptionDialog.value = true
@@ -344,6 +361,7 @@ const isCoupledTheSame = computed(() => {
         <ParameterDialogContent :joborder="Number(lastJobOrder)" :plankey="plankey" />
       </q-dialog>
       <q-dialog
+        v-if="isThereAnyLog"
         v-model="showLogsDialog"
         full-height
         full-width
