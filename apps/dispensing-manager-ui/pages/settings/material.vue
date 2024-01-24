@@ -186,7 +186,7 @@ async function deleteRow() {
           @click="toggleRow(props.row, props.rowIndex)"
         >
           <q-btn
-            v-if="props.row.materialCode"
+            v-if="props.row.materialCode || props.rowIndex !== 0"
             size="sm"
             :style="`background-color: ${colors.black}; color: white;`"
             round
