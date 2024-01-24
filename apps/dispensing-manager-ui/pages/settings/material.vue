@@ -37,14 +37,16 @@ const materialGroups = [
   { label: t('settings.other'), value: 3 },
 ]
 
-const materialInfo = ref<{ label: string; value: any; field: string }[]>([
+let materialInfoStatic: { label: string; value: any; field: string }[] = []
+
+const materialInfo = ref<{ label: string; value: any; field: string; numeric?: boolean }[]>([
   { label: t('settings.materialCode'), value: '', field: 'materialCode' },
   { label: t('settings.materialName'), value: '', field: 'materialName' },
   { label: t('settings.materialType'), value: '', field: 'materialGroup' },
-  { label: t('settings.materialDensity'), value: '', field: 'density' },
-  { label: 'pH', value: '', field: 'ph' },
+  { label: t('settings.materialDensity'), value: '', field: 'density', numeric: true },
+  { label: 'pH', value: '', field: 'ph', numeric: true },
   { label: t('settings.supplySource'), value: '', field: 'source' },
-  { label: t('settings.materialKgPrice'), value: '', field: 'cost' },
+  { label: t('settings.materialKgPrice'), value: '', field: 'cost', numeric: true },
   { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
   { label: t('settings.rerequestable'), value: '', field: 'rerequestable' },
   { label: t('settings.directlyTransfer'), value: '', field: 'directTransfer' },
@@ -271,7 +273,7 @@ async function deleteRow() {
                     dense
                     class="class-w-70"
                     filled
-                    :type="mate.field === 'machineid' ? 'number' : 'text'"
+                    :type="mate.numeric ? 'number' : 'text'"
                     :placeholder="mate.value"
                     :disable="props.row.materialCode !== undefined && mate.field === 'materialCode'"
                   />
