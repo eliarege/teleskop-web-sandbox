@@ -97,9 +97,12 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((u
 }))
 let scheduler: SchedulerPro
 let grid: Grid
-setInterval(async () => {
+const schedulerRefreshInterval = setInterval(async () => {
   await refreshScheduler()
 }, 60_000)
+onUnmounted(() => {
+  clearInterval(schedulerRefreshInterval)
+})
 async function refreshScheduler() {
   await plannedRefresh()
   await unScheduledRefresh()
