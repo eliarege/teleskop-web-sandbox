@@ -385,8 +385,25 @@ onBeforeUnmount(() => {
         :columns="columnsMaterial"
         :rows="material"
         row-key="name"
+        class="material-table"
         :class="textAlignOverride('left')"
       >
+        <template #header="tableProps">
+          <q-tr :props="tableProps">
+            <q-th
+              v-for="col in tableProps.cols"
+              :key="col.name"
+              :props="tableProps"
+            >
+              <div
+                class="column-group text-override-left-header"
+                :style="col.filterable ? 'cursor: pointer;' : ''"
+              >
+                {{ col.label }}
+              </div>
+            </q-th>
+          </q-tr>
+        </template>
         <template #body="material">
           <q-tr>
             <q-td
@@ -442,6 +459,22 @@ onBeforeUnmount(() => {
     width: 100%;
     margin-right: 0.2rem;
   }
+}
+
+.material-table {
+  border: 1px solid rgb(0, 0, 0);
+  border-radius: 5px;
+  padding: 3px 8px;
+}
+.column-group {
+  width: 100%;
+  justify-content: center;
+  padding: 0.25em 0.65em;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  color: rgb(0, 0, 0);
+  font-size: 12.5px;
+  font-weight: 700;
 }
 .responsive-flex-container {
   display: flex;
