@@ -7,7 +7,7 @@ import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const recetetartim = t('dispensingManager.recipeMeasurement')
-const paginationSync = ref(5)
+const paginationSync = ref(500)
 const paginationPageLeft = ref(1)
 
 type Action = 'retry' | 'cancel'
@@ -36,9 +36,9 @@ const columnsRecipe: Column[] = [
   },
   { name: 'tankno', label: t('tankNo'), field: 'tankno', filterable: true, filterType: 'comparison' },
   {
-    name: 'dispenserName',
+    name: 'name',
     label: t('dispensingManager.materialDistributor'),
-    field: 'dispenserName',
+    field: 'name',
     filterable: true,
     filterType: 'select',
     selectionOptions: dispensers,
@@ -114,6 +114,8 @@ async function updateRecipe() {
 }
 setInterval(updateRecipe, 10000)
 const material = ref()
+const selectedRow = ref()
+
 async function fetchMaterialData(reqnumber: number) {
   material.value = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
 }
@@ -130,11 +132,11 @@ async function updateRecipeTable() {
   await updateRecipe()
 }
 
-const selectedRow = ref()
-
-async function selectRow(row: any) {
-  selectedRow.value = row
-  await fetchMaterialData(row.reqnumber)
+async function selectRow(rowIndex: any) {
+  console.log(recipe.value[rowIndex])
+  selectedRow.value = recipe.value[rowIndex]
+  selectedRow.value.rowIndex = rowIndex
+  await fetchMaterialData(recipe.value[rowIndex].reqnumber)
 }
 
 async function clickShowRecipe(row: any, isLogs: boolean) {
@@ -278,8 +280,8 @@ onBeforeUnmount(() => {
                 : recipe.rowIndex % 2
                   ? `background-color: ${colors.tableGray}`
                   : '' "
-              @click="selectRow(recipe.row)"
-              @contextmenu="selectRow(recipe.row)"
+              @click="selectRow(recipe.rowIndex)"
+              @contextmenu="selectRow(recipe.rowIndex)"
             >
               <!-- @right="" -->
               <q-td
