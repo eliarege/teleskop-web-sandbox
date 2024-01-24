@@ -197,6 +197,10 @@ async function rerequestWei() {
     }
   })
 }
+
+const isCoupledTheSame = computed(() => {
+  return plannedMachineChangeVal.value?.machineid && coupledMachineChangeVal.value?.machineid && plannedMachineChangeVal.value?.machineid === coupledMachineChangeVal.value?.machineid
+})
 </script>
 
 <template>
@@ -290,15 +294,23 @@ async function rerequestWei() {
               v-model="plannedMachineChangeVal"
               :options="machines"
               option-label="machinename"
+              :error="isCoupledTheSame || plannedMachineChangeVal?.machineid === machine.machineid"
+              :error-message="isCoupledTheSame ? t('warnings.coupledMachineIsTheSame') : plannedMachineChangeVal?.machineid === machine.machineid ? t('warnings.tryToChangeWithSameMachine') : ''"
               :label="t('plannedMachine')"
               style="width: 50%;"
             />
 
-            <q-checkbox v-model="isCoupled" :label="t('recipe.joborderCoupled')" />
+            <q-checkbox
+              v-model="isCoupled"
+              :label="t('recipe.joborderCoupled')"
+              @update:model-value="isCoupled === false ? coupledMachineChangeVal = null : ''"
+            />
 
             <q-select
               v-model="coupledMachineChangeVal"
+              :error="isCoupledTheSame"
               :disable="!isCoupled"
+              :error-message="t('warnings.coupledMachineIsTheSame')"
               :options="machines"
               option-label="machinename"
               :label="t('recipe.coupleMachine')"
@@ -311,6 +323,7 @@ async function rerequestWei() {
               v-close-popup
               flat
               :label="t('submit')"
+              :disable="isCoupledTheSame"
               color="black"
               @click="submitCoupleMachine()"
             />
