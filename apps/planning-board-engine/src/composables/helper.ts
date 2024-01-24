@@ -1,3 +1,4 @@
+import { addSeconds } from 'date-fns'
 import { v4 } from 'uuid'
 
 interface PlannedEvents {
@@ -44,15 +45,26 @@ export function generateEventDates(events: any[]): Event[] {
       // bilmediğim için doğru yapamamış olma ihtimalim yüksek!
       // Özellikle task bittikten sonra hala daha planlanmış eventler içinde gözükebilir.
       // Buda archive durumunu karıştırır.
-      if (!event.isStarted) {
+      if (event.isStarted) {
+        startDate = event.startDate
+        if (event.isFinished) {
+          endDate = event.endDate
+        } else {
+          endDate = addSeconds(startDate, event.theoreticalDuration)
+          if (endDate.getTime() < new Date().getTime()) {
+            endDate = new Date()
+          }
+        }
+      } else {
         startDate = new Date()
-      } else startDate = event.startDate
+        endDate = addSeconds(startDate, event.theoreticalDuration)
+      }
     } else {
       const previousEndDate = updatedEvents[updatedEvents.length - 1].endDate
       startDate = new Date(previousEndDate.getTime() + 5 * 60 * 1000)
+      endDate = addSeconds(startDate, event.theoreticalDuration)
     }
-
-    endDate = new Date(startDate.getTime() + event.theoreticalDuration * 1000)
+    console.log({ endDate, startDate })
 
     const updatedEvent: Event = {
       ...event,
