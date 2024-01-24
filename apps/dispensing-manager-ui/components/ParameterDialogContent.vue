@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import FilterableTable from 'ui/components/FilterableTable.vue';
-import { colors } from '~/shared/constants';
+import FilterableTable from 'ui/components/FilterableTable.vue'
+import { colors } from '~/shared/constants'
 
 const props = defineProps({
   joborder: Number,
@@ -13,7 +13,6 @@ const joborder = ref(props.joborder)
 const plankey = ref(props.plankey)
 
 const parameterCols = [
-  { name: 'joborder', label: t('jobOrderParameters.jobOrderNo'), field: 'joborder' },
   { name: 'parameter', label: t('jobOrderParameters.parameterName'), field: 'parameter' },
   { name: 'value', label: t('jobOrderParameters.value'), field: 'value' },
   { name: 'unit', label: t('jobOrderParameters.unit'), field: 'unit' },
