@@ -127,7 +127,7 @@ export async function deleteFinishReasons(selectedFinishReason) {
   await $fetch('/api/finish-reasons/finish-reasons', {
     method: 'DELETE',
     body: {
-      reasonIds: [selectedFinishReason[0].reasonId],
+      reasonIds: [selectedFinishReason.reasonId],
     },
   })
 }

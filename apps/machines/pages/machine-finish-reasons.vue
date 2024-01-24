@@ -35,7 +35,7 @@ const columns: Column[] = [
   },
 ]
 
-const selectedReason = ref([])
+const form = ref()
 const finishReason = ref<FinishReason>({
   reasonId: '',
   typeId: '',
@@ -57,6 +57,7 @@ async function handleSelection(obj: FinishReason) {
       text: '',
       reportToERP: false,
     }
+    form.value.reset()
   } else {
     finishReason.value.reasonId = obj.reasonId
     finishReason.value.text = obj.text
@@ -64,20 +65,6 @@ async function handleSelection(obj: FinishReason) {
   }
 }
 
-async function handleAddFinishReason() {
-  await addFinishReason(finishReasons.value, finishReason.value.typeId.value, finishReason.value.text)
-  await refresh()
-}
-async function handleDeleteFinishReasons() {
-  await deleteFinishReasons(selectedReason.value)
-  await refresh()
-  selectedReason.value = []
-}
-
-async function handleEditFinishReason() {
-  await editFinishReason(finishReason.value)
-  await refresh()
-}
 async function handleFilterSlotsUpdate(updatedValue) {
   finishReasons.value = await $fetch('/api/finish-reasons/finish-reasons', {
     method: 'POST',
@@ -86,47 +73,96 @@ async function handleFilterSlotsUpdate(updatedValue) {
     },
   })
 }
+
+async function handleAddFinishReason() {
+  const isValid = await form.value.validate()
+  if (isValid) {
+    await addFinishReason(finishReasons.value, finishReason.value.typeId.value, finishReason.value.text)
+    await refresh()
+    finishReason.value = {
+      reasonId: '',
+      typeId: '',
+      text: '',
+      reportToERP: false,
+    }
+    form.value.reset()
+  }
+}
+
+async function handleDeleteFinishReasons() {
+  const isValid = await form.value.validate()
+  if (isValid) {
+    await deleteFinishReasons(finishReason.value)
+    await refresh()
+    finishReason.value = {
+      reasonId: '',
+      typeId: '',
+      text: '',
+      reportToERP: false,
+    }
+    form.value.reset()
+  }
+}
+
+async function handleEditFinishReason() {
+  const isValid = await form.value.validate()
+  if (isValid) {
+    await editFinishReason(finishReason.value)
+    await refresh()
+  }
+}
+
+function handleSubmit() {
+}
 </script>
 
 <template>
   <q-card>
     <q-card-section>
-      <div class="flex flex-row justify-start input-field">
-        <q-input
-          v-model="finishReason.text"
-          label="Açıklama"
-          filled
-          class="w-xs"
-        />
-        <q-select
-          v-model="finishReason.typeId"
-          :options="finishOptions"
-          label="Kullanıcı Tipi"
-          filled
-          class="w-xs"
-          :display-value="typeIdMap[finishReason.typeId]"
-        />
-      </div>
+      <q-form ref="form" @submit.prevent="handleSubmit">
+        <div class="flex flex-row justify-start input-field">
+          <q-input
+            v-model="finishReason.text"
+            label="Açıklama"
+            filled
+            clearable
+            :rules="[notEmptyRule]"
+            class="w-xs"
+          />
+          <q-select
+            v-model="finishReason.typeId"
+            :options="finishOptions"
+            label="Kullanıcı Tipi"
+            filled
+            :rules="[selectionRule]"
+            class="w-xs"
+            :display-value="typeIdMap[finishReason.typeId]"
+          />
+        </div>
+        <div class="flex flex-row input-field my-4">
+          <q-btn
+            label="Ekle"
+            no-caps
+            type="submit"
+            @click="handleAddFinishReason()"
+          />
+          <q-btn
+            label="Düzenle"
+            no-caps
+            type="submit"
+            @click="handleEditFinishReason()"
+          />
+          <q-btn
+            label="Sil"
+            no-caps
+            type="submit"
+            @click="handleDeleteFinishReasons()"
+          />
+        </div>
+      </q-form>
 
-      <div class="flex flex-row input-field my-4">
-        <q-btn
-          label="Ekle"
-          no-caps
-          @click="handleAddFinishReason()"
-        />
-        <q-btn
-          label="Düzenle"
-          no-caps
-          @click="handleEditFinishReason()"
-        />
-        <q-btn
-          label="Sil"
-          no-caps
-          @click="handleDeleteFinishReasons()"
-        />
-      </div>
       <FilterableTable
-        v-model:selected="selectedReason"
+        v-model:selected="finishReason"
         :rows="finishReasons"
         :columns="columns"
         class="overflow-y-auto h-160"
