@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, toRefs, watch } from 'vue'
 import type { Column, DateType, FilterSlot } from 'ui-types'
 
 // @ts-expect-error nuxt import
@@ -41,7 +41,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['rowDblclick', 'updateFilterSlots'])
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 function handleDoubleClick(row: any) {
   emit('rowDblclick', row)
 }
@@ -202,6 +202,20 @@ function checkForButtonsInsteadOfSelect(col: any) {
     return (col.selectionOptions.length < 6 && col.filterType === 'select')
   return false
 }
+
+function customFilterMethod(rows, terms, cols) {
+  console.log(terms)
+  const lowercaseTerms = terms ? terms.toLowerCase() : ''
+  return rows.filter((row) => {
+    return cols.some((col) => {
+      const cellValue = row[col.field]
+      if (cellValue === null || cellValue === undefined) {
+        return false
+      }
+      return cellValue.toString().toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN').includes(lowercaseTerms)
+    })
+  })
+}
 </script>
 
 <template>
@@ -212,6 +226,8 @@ function checkForButtonsInsteadOfSelect(col: any) {
       :columns="columns"
       row-key="id"
       :sort-method="props?.customSortMethod"
+      :filter-method="customFilterMethod"
+      :filter="tableFilter"
       flat
       bordered
       virtual-scroll
@@ -219,7 +235,6 @@ function checkForButtonsInsteadOfSelect(col: any) {
       class="text-override-left filterable-table my-sticky-virtscroll-table-recipe"
       column-sort-order="da"
       :visible-columns="visibleColumns"
-      :filter="tableFilter"
     >
       <template #top>
         <div class="flex w-full flex-nowrap">
