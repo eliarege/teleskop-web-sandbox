@@ -1,53 +1,136 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
+import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { Splitter } from '@bryntum/schedulerpro-trial'
-import { Drag, Schedule, Task, UnplannedGrid } from '~/lib/bryntum'
+import { addSeconds } from 'date-fns'
+import { EliarModal } from 'ui'
+import { useI18n } from 'vue-i18n'
+import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
+import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
 const currentTime = useNow({ interval: 1000 })
+const { t } = useI18n()
 
-const { data: machines } = await useFetch('/api/machineList')
-const { data: events } = await useFetch('/api/plannedEvents', {
-  query: { from: '2023-07-01', to: '2023-07-07' },
+// TODO (BEFORE PRODUCTION): change start/end date!
+const startDate = ref('2022/01/01')
+const endDate = ref('2023/07/07')
+
+const schedulerDateModel = ref({
+  from: startDate.value,
+  to: endDate.value,
 })
-const { data: unScheduledEvents } = await useFetch('/api/unplannedEvents', {
-  query: { from: '2023-07-01', to: '2023-07-07' },
+const showModal = reactive({
+  planParameters: {
+    show: false,
+    unit: { name: 0 },
+  },
+  recipe: {
+    show: false,
+    unit: { machineId: 0, jobOrder: '' },
+  },
+  process: {
+    show: false,
+    unit: { name: '' },
+  },
+  theoreticalProgram: {
+    show: false,
+    unit: { name: '' },
+  },
+  notes: {
+    show: false,
+    unit: { name: '' },
+  },
+  properties: {
+    show: false,
+    unit: { machineId: 0, jobOrder: '', planKey: 0 },
+  },
+  datePicker: false,
+  rule: false,
+  settings: false,
 })
-const modifiedMachines = computed(() => machines.value?.map((m) => {
-  return {
-    ...m,
-    // TODO: machine icons?
-    iconCls: 'b-fa b-fa-solid b-fa-play',
-    color: 'red',
-  }
-}))
-const modifiedEvents = computed(() => events.value?.map((ev) => {
+const archiveDays = localStorage.getItem('pt-settings')
+const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
+const { data: machines, refresh: machineRefresh } = await useFetch('/api/machineList')
+const { data: events, refresh: plannedRefresh } = await useFetch('/api/queueBased/plannedEvents')
+const { data: archiveEvents } = await useFetch('/api/queueBased/archiveEvents', {
+  query: { archiveDays: JSON.parse(archiveDays || '0').archiveDays ?? 0 },
+})
+
+const modifiedEvents = computed(() => events.value?.map((ev: any) => {
   return {
     id: ev.planKey,
     name: ev.jobOrder,
     resourceId: ev.machineId,
-    startDate: new Date(ev.plannedStartTime),
-    endDate: new Date(ev.plannedEndTime),
     resizable: false,
-    draggable: true,
+    draggable: !ev.isStarted,
     editable: false,
+    endDate: addSeconds(ev.startDate, ev.theoreticalDuration),
     ...ev,
-  }
+  } as QueueBasedPlannedEvents
 }))
+console.log(modifiedEvents.value?.map(a => a.startDate))
+const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
+  return {
+    id: ev.planKey,
+    name: ev.jobOrder,
+    resourceId: ev.machineId,
+    resizable: false,
+    draggable: !ev.isStarted,
+    editable: false,
+    startDate: ev.startTime,
+    endDate: ev.endTime ? ev.endTime : ev.cancelTime,
+    ...ev,
+  } as QueueBasedArchiveEvents
+}))
+
+const mergedEvents = computed(() => modifiedEvents.value?.concat(modifiedArchive.value))
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
     id: unp.planKey,
     name: unp.jobOrder,
-    duration: unp.theoricalDuration ? (unp.theoricalDuration / 60) / 60 : Math.round(Math.random() * 10) + 1,
+    duration: (unp.theoreticalDuration / 60) / 60,
     durationUnit: 'hour',
     constraintDate: new Date(),
   } as UnplannedEvents
 }))
-let schedule: SchedulerPro | null = null
-onMounted(() => {
-  const _schedule: SchedulerPro = schedule = new Schedule({
+let scheduler: SchedulerPro
+let grid: Grid
+setInterval(async () => {
+  await refreshScheduler()
+}, 60_000)
+async function refreshScheduler() {
+  await plannedRefresh()
+  await unScheduledRefresh()
+  await machineRefresh()
+}
+watch(mergedEvents, (newVal: QueueBasedPlannedEvents[]) => {
+  scheduler.events = newVal
+})
+watch(modifiedUnscheduledEvents, (newVal) => {
+  grid.store.data = newVal
+})
+async function unPlanEvent(planKey: number) {
+  await $fetch('/api/unplan', {
+    method: 'PUT',
+    query: { planKey },
+  }).then(() => refreshScheduler())
+}
+async function deleteEvent(planKey: number) {
+  await $fetch('api/delete', {
+    method: 'PUT',
+    query: { planKey },
+  })
+}
+function dateRangeEnd() {
+  scheduler.startDate = new Date(schedulerDateModel.value.from)
+  scheduler.endDate = new Date(schedulerDateModel.value.to)
+  scheduler.zoomLevel = 17
+  scheduler.refreshRows()
+}
+onMounted(async () => {
+  const schedule: SchedulerPro = scheduler = new QueueSchedule({
     ref: 'schedule',
     appendTo: 'main',
     multiEventSelect: false,
@@ -66,36 +149,53 @@ onMounted(() => {
     flex: 1,
     project: {
       eventStore: {
+        storeClass: TaskStore,
         removeUnassignedEvent: false,
       },
-      eventModelClass: Task,
+      autoLoad: true,
+      eventModelClass: QueueTask,
     },
-    eventColor: 'blue',
-    resources: modifiedMachines.value,
-    events: modifiedEvents.value,
-    eventRenderer({ eventRecord }) {
+    resources: machines.value,
+    events: mergedEvents.value,
+    listeners: {
+      eventSelectionChange({ action }: any) {
+        if (action === 'select' || action === 'update') {
+          schedule.widgetMap.parameterButton.disabled = false
+          schedule.widgetMap.recipeButton.disabled = false
+          // schedule.widgetMap.processButton.disabled = false
+          // schedule.widgetMap.theoreticalButton.disabled = false
+          schedule.widgetMap.noteButton.disabled = false
+        } else {
+          schedule.widgetMap.parameterButton.disabled = true
+          schedule.widgetMap.recipeButton.disabled = true
+          // schedule.widgetMap.processButton.disabled = true
+          // schedule.widgetMap.theoreticalButton.disabled = true
+          schedule.widgetMap.noteButton.disabled = true
+        }
+      },
+    },
+    eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
-      // if (eventRecord.originalData.notStarted) {
-      // icons.push('b-fa b-fa-solid b-fa-list-check')
-      // }
       if (eventRecord.originalData.isDeviation) {
-        icons.push('b-fa b-fa-solid b-fa-clock')
+        icons.push('b-fa b-fa-solid b-fa-user-clock')
       }
       if (eventRecord.originalData.isFinished) {
         icons.push('b-fa b-fa-solid b-fa-flag-checkered')
       }
-      // if (eventRecord.originalData.isLocked) {
-      //   icons.push('b-fa b-fa-lock')
-      // }
-      if (eventRecord.originalData.isRunning) {
-        icons.push('b-fa b-fa-solid b-fa-play')
+      if (eventRecord.originalData.isLocked) {
+        icons.push('b-fa b-fa-lock')
       }
-      if (eventRecord.originalData.hasAlarm) {
+      if (eventRecord.originalData.isRunning) {
+        if (eventRecord.originalData.isStopped) {
+          icons.push('b-fa b-fa-solid b-fa-stop')
+        } else {
+          icons.push('b-fa b-fa-solid b-fa-play')
+        }
+      }
+      if (eventRecord.originalData.isAlarm) {
         icons.push('b-fa b-fa-solid b-fa-bell')
       }
-      if (eventRecord.originalData.isStopped) {
-        icons.push('b-fa b-fa-solid b-fa-stop')
-      }
+
       if (eventRecord.originalData.isDeleted) {
         icons.push('b-fa b-fa-solid b-fa-ban')
       }
@@ -110,6 +210,7 @@ onMounted(() => {
       unit: 'minute',
       increment: 5,
     },
+
     features: {
       scheduleContext: {
         disabled: true,
@@ -135,6 +236,57 @@ onMounted(() => {
           },
         },
       },
+      eventMenu: {
+        items: {
+          taskEdit: {
+            icon: 'b-fa-sharp b-fa-light b-fa-pen-to-square',
+            text: t('ctx-menu.task-edit'),
+            disabled: true,
+          },
+          delete: {
+            icon: 'b-fa-solid b-fa-trash',
+            text: t('ctx-menu.task-delete'),
+            onItem({ eventRecord }: any) {
+              deleteEvent(eventRecord.originalData.id)
+                .then(() => eventRecord.unassign())
+                .catch(err => console.error(err))
+            },
+          },
+          unplan: {
+            icon: 'b-fa-solid b-fa-calendar-xmark',
+            text: t('ctx-menu.remove-plan'),
+            onItem({ eventRecord }: any) {
+              unPlanEvent(eventRecord.originalData.id)
+                .then(() => {
+                  eventRecord.unassign()
+                })
+                .catch(err => console.error(err))
+            },
+          },
+          copyEvent: {
+            hidden: true,
+          },
+          cutEvent: {
+            hidden: true,
+          },
+          deleteEvent: {
+            hidden: true,
+          },
+          splitEvent: {
+            hidden: true,
+          },
+          properties: {
+            icon: 'b-fa-solid b-fa-calendar-xmark',
+            text: t('ctx-menu.properties'),
+            onItem({ eventRecord, assignmentRecord }: any) {
+              showModal.properties.show = true
+              showModal.properties.unit.planKey = eventRecord.originalData.id
+              showModal.properties.unit.jobOrder = eventRecord.originalData.name
+              showModal.properties.unit.machineId = assignmentRecord.originalData.resourceId
+            },
+          },
+        },
+      },
       taskEdit: false,
       headerZoom: true,
       scheduleTooltip: {
@@ -144,59 +296,267 @@ onMounted(() => {
         showCurrentTimeLine: true,
       },
     },
-    // timeRanges: [
-    //   {
-    //     id: 1,
-    //     cls: 'shaded',
-    //     startDate: '1900-01-01',
-    //     endDate: currentTime.value,
-    //   },
-    // ],
     tbar: [
-      '->',
       {
-        text: 'Teleskop Planning Board',
-        cls: '!text-white !border-none b-raised b-blue',
+        type: 'button',
+        disabled: true,
+        ref: 'parameterButton',
+        text: 'L{planparam}',
+        icon: 'b-fa b-fa-solid b-fa-sliders',
+        color: 'toolbar-buttons',
+        onClick() {
+          showModal.planParameters.show = true
+          // @ts-expect-error type is always number, not string | number
+          showModal.planParameters.unit.name = schedule.selectedEvents[0].id
+        },
       },
-      '->',
+      {
+        type: 'button',
+        disabled: true,
+        ref: 'recipeButton',
+        text: 'L{recipe}',
+        icon: 'b-fa b-fa-solid b-fa-flask-vial',
+        color: 'toolbar-buttons',
+        onClick() {
+          showModal.recipe.show = true
+          showModal.recipe.unit.jobOrder = schedule.selectedEvents[0].name
+          // @ts-expect-error type error
+          showModal.recipe.unit.machineId = schedule.selectedEvents[0]._data.resourceId
+        },
+      },
+      {
+        type: 'button',
+        disabled: true,
+        ref: 'processButton',
+        text: 'L{process}',
+        icon: 'b-fa b-fa-solid b-fa-receipt',
+        color: 'toolbar-buttons',
+        onClick() {
+          showModal.process.show = true
+          showModal.process.unit.name = schedule.selectedEvents[0].name
+        },
+      },
+      {
+        type: 'button',
+        disabled: true,
+        ref: 'theoreticalButton',
+        text: 'L{theoretical}',
+        icon: 'b-fa b-fa-solid b-fa-file-zipper',
+        color: 'toolbar-buttons',
+        onClick() {
+          showModal.theoreticalProgram.show = true
+          showModal.theoreticalProgram.unit.name = schedule.selectedEvents[0].name
+        },
+      },
+      {
+        type: 'button',
+        disabled: true,
+        ref: 'noteButton',
+        text: 'L{note}',
+        icon: 'b-fa b-fa-solid b-fa-note-sticky',
+        color: 'toolbar-buttons',
+        onClick() {
+          showModal.notes.show = true
+          showModal.notes.unit.name = schedule.selectedEvents[0].name
+        },
+      },
+      {
+        type: 'button',
+        text: 'L{settings}',
+        icon: 'b-fa b-fa-solid b-fa-gear',
+        color: 'toolbar-buttons',
+        onClick() {
+          showModal.settings = true
+        },
+      },
+      {
+        type: 'button',
+        text: 'L{datepicker}',
+        icon: 'b-fa b-fa-solid b-fa-calendar-days',
+        color: 'toolbar-buttons',
+        onClick() {
+          showModal.datePicker = true
+        },
+      },
+      {
+        type: 'button',
+        disabled: true,
+        text: 'L{rules}',
+        icon: 'b-fa b-fa-solid b-fa-list-check',
+        color: 'toolbar-buttons',
+        onClick() {
+          showModal.rule = true
+        },
+      },
+      {
+        type: 'button',
+        icon: 'b-icon-search-plus',
+        tooltip: 'L{zoomin}',
+        color: 'toolbar-buttons',
+        onAction: () => schedule.zoomIn(),
+      },
+      {
+        type: 'button',
+        icon: 'b-icon b-icon-search-minus',
+        tooltip: 'L{zoomout}',
+        color: 'toolbar-buttons',
+        onAction: () => schedule.zoomOut(),
+      },
     ],
   } as Partial<SchedulerProConfig>)
+  // @ts-expect-error missing type
+  window.sch = schedule
   new Splitter({
     appendTo: 'main',
   })
-  const unplannedGrid = new UnplannedGrid({
+  const unplannedGrid = grid = new QueueUnplannedGrid({
     ref: 'unplanned',
     appendTo: 'main',
+    ui: 'toolbar',
     multiEventSelect: false,
-    collapsible: true,
     features: {
       cellEdit: false,
     },
+    collapsible: false,
+    eventMenu: {
+      copyEvent: {
+        hidden: true,
+      },
+      cutEvent: {
+        hidden: true,
+      },
+      deleteEvent: {
+        hidden: true,
+      },
+      splitEvent: {
+        hidden: true,
+      },
+    },
+    tbar: [
+      {
+        type: 'textfield',
+        label: 'L{search}',
+        inputType: 'text',
+        clearable: true,
+        cls: 'flex justify-center items-center',
+        onChange({ value }: any) {
+          if (value === '') {
+            // @ts-expect-error type error
+            unplannedGrid.data = modifiedUnscheduledEvents.value
+          } else {
+            // @ts-expect-error type error
+            unplannedGrid.data = unplannedGrid.data.filter(a => a.originalData.name.includes(value))
+          }
+        },
+      },
+    ],
     flex: '0 1 300px',
-    ui: 'toolbar',
-    project: _schedule.project,
+    project: schedule.project,
     store: {
       data: modifiedUnscheduledEvents.value,
-      modelClass: Task,
+      modelClass: QueueTask,
       autoLoad: true,
     },
   } as Partial<GridConfig>)
-  new Drag({
+  new QueueDrag({
     grid: unplannedGrid,
-    schedule: _schedule,
+    schedule,
     constrain: false,
     outerElement: unplannedGrid.element,
   } as Partial<DragHelperConfig>)
 })
+function updateTaskColor() {
+  scheduler.refreshRows()
+}
 </script>
 
 <template>
-  <div class="e-border w-full h-screen">
-    <div id="main" class="w-full h-full" />
+  <div>
+    <EliarModal v-if="showModal.properties.show" @click.stop="showModal.properties.show = false">
+      <template #default>
+        <BatchProperties
+          :plan-key="showModal.properties.unit.planKey"
+          :machine-id="showModal.properties.unit.machineId"
+          :job-order="showModal.properties.unit.jobOrder"
+        />
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.datePicker" @click.stop="showModal.datePicker = false">
+      <template #default>
+        <div class="flex justify-center w-min m-auto rounded" @click.stop.prevent>
+          <QDate
+            v-model="schedulerDateModel"
+            range
+            dark
+            landscape
+            @click.stop.prevent
+            @range-end="dateRangeEnd()"
+          />
+        </div>
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
+      <template #default>
+        <PlanSettings @update-scheduler="updateTaskColor()" />
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.planParameters.show" @click.stop="showModal.planParameters.show = false">
+      <template #default>
+        <PlanParameters :plan-key="showModal.planParameters.unit.name" />
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.recipe.show" @click.stop="showModal.recipe.show = false">
+      <template #default>
+        <div class="!w-80vw !h-full">
+          <PlanRecipe :machine-id="showModal.recipe.unit.machineId" :job-order="showModal.recipe.unit.jobOrder" />
+        </div>
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.process.show" @click.stop="showModal.process.show = false">
+      <template #default>
+        <div class="w-full bg-white e-border p-3">
+          process: {{ showModal.process.unit.name }}
+        </div>
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.theoreticalProgram.show" @click.stop="showModal.theoreticalProgram.show = false">
+      <template #default>
+        <div class="w-full bg-white e-border p-3">
+          theoreticalProgram: {{ showModal.theoreticalProgram.unit.name }}
+        </div>
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.notes.show" @click.stop="showModal.notes.show = false">
+      <template #default>
+        <BatchNotes :job-order="showModal.notes.unit.name" />
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.rule" @click.stop="showModal.rule = false" />
+    <div class="w-full h-screen">
+      <div id="main" class="w-full h-full" />
+    </div>
   </div>
 </template>
 
 <style lang="postcss">
+div[bgRed] {
+  background-color: rgba(237, 16, 16, 0.3) !important;
+}
+
+div[bgGreen] {
+  background-color: rgba(51, 255, 57, 0.3) !important;
+}
+
+.toolbar-buttons {
+  color: white;
+  background-color: #03A9F4;
+  @apply rounded;
+}
+
+.custom-label {
+  @apply text-red-500 ! bg-green-500 w-1/3 flex-center;
+}
+
 .b-selected {
   background-color: inherit !important;
   opacity: 1 !important;
@@ -211,7 +571,43 @@ onMounted(() => {
 #main .b-resourceheader {
   height: 100%;
 }
+
 .b-timeline-subgrid .b-sch-current-time {
   border: 1px solid red !important
 }
+
+.b-sch-event-wrap.b-nested-events-parent[data-level="1"]>.b-sch-event:hover>.b-nested-events-container {
+  border-color: #555;
+  background-color: rgba(0, 0, 0, 0.0666666667);
+}
+
+.b-sch-event {
+  border-radius: 9px !important;
+}
+
+.b-sch-event-content {
+  white-space: normal;
+}
 </style>
+
+<i18n lang="json">
+{
+  "en": {
+    "ctx-menu": {
+      "task-edit": "Update Job Order",
+      "task-delete": "Delete Job Order",
+      "remove-plan": "Remove From Plan",
+      "properties": "Job Order Properties"
+    }
+  },
+  "tr": {
+    "ctx-menu": {
+      "task-edit": "İş Emrini Güncelle",
+      "task-delete": "İş Emrini Sil",
+      "remove-plan": "Plandan kaldır",
+      "properties": "İş Emri Özellikleri"
+    }
+  }
+}
+</i18n>
+~/lib/timeBased

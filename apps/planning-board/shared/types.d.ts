@@ -40,7 +40,7 @@ export interface PlannedEvents {
   deviation: number
   isFinished: boolean
   notStarted: boolean
-  hasAlarm: boolean
+  isAlarm: boolean
   isRunning: boolean
 }
 
@@ -90,68 +90,57 @@ export interface Recipe {
   autoRecipe: RecipeRaw[]
   manualRecipe: RecipeRaw[]
 }
-
-// #region MachineRule
-export interface MachineRule {
-  name: string
-  department: RuleField
-  machines: RuleField[]
-  rule: RecursiveRuleBlock
-}
-export interface RuleField {
+export interface MachineStatus {
   id: number
   name: string
+  groupName: string
+  elapsedTime: number
+  theoreticalDuration: number
+  autoManualStatus: number
+  loggedInOperatorNo: number
+  loggedInOperatorName: string
+  runningJobOrder: string
+  runningStartTime: string
+  runningBatchKey: number
+  runningBatchStatus: number
+  runningProgramId: number
+  runningProgramName: string
+  runningProgramList: string
+  runningStepNo: number
+  runningCommandNo: number
+  runningCommandName: string
+  runningAlarmNo: number
+  runningAlarmName: string
+  runningTheoreticalDuration: number
+  runningPhaseNo: number
+  runningPhaseName: string
+  runningPhaseStepNo: number
+  runningMachineCapacity: number
+  reqRecipeIndex: number
+  reqOrderIndex: number
+  reqOperationCode: number
+  reqTargetRecipe: number
+  reqTankNo: number
+  reqPriority: number
+  reqProgramNo: number
+  reqCommandNo: number
+  reqStatus: number
+  stopReason: string
+  stopReasonDateTime: string
+  connectionStatus: number
+  isSynchronizing: boolean
+  currentTemperature: number
+  currentAlarmStatus: number
+  runningCompletionRatio: number
+  manualReason: string
+  manualReasonDateTime: string
+  manualCommandActive: boolean
+  machineCapacity: number
+  machineIpAddress: string
+  totalConsumedWater: number
+  totalConsumedSalt: number
+  totalSteam: number
+  totalFM1: number
+  totalConsumedElectricity: number
+  erp: any
 }
-export interface RecursiveRuleBlock {
-  or: OrBlock[]
-}
-export interface OrBlock {
-  and: AndBlock[]
-}
-export interface AndBlock {
-  not?: NotBlock
-  field?: Field
-  operator?: Operator
-  parameters?: number[] | string[]
-}
-export interface NotBlock {
-  value: boolean
-  label: string
-}
-export interface Field {
-  label: string
-  name: string
-  type: ValueType
-  source?: string
-}
-export interface Operator {
-  name: string
-  value: string
-  type: ValueType | ValueType[]
-  parameters: number
-  execute(value: any, ...params: any[]): boolean
-}
-export type ValueType = 'string' | 'number' | 'values'
-export interface RuleCondition {
-  label: string
-  value: boolean
-}
-export interface RuleCredentials {
-  and: AndBlock[]
-}
-export interface RuleMachine {
-  machineId: number
-}
-export interface MachineRuleInfo {
-  id: number
-  name: string
-  departmentId: number
-  expression: RuleCredentials[]
-  ruleAssociations: RuleMachine[]
-  createdAt: string
-  updatedAt?: string
-}
-export interface NewMachineRuleInfo extends MachineRuleInfo {
-  machine: RuleMachine[]
-}
-// #endregion

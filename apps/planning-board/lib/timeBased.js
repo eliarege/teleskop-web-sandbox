@@ -91,7 +91,7 @@ function removeAttributes(element, pattern) {
 function getResourceRow(resource) {
   return document.querySelector(`div[data-id="${resource.id}"]`)
 }
-export class Drag extends DragHelper {
+export class TimeDrag extends DragHelper {
   static get configurable() {
     return {
       callOnFunctions: true,
@@ -146,7 +146,7 @@ export class Drag extends DragHelper {
     const { selectedRecords, store } = grid
     onDragStartSocket(selectedRecords[0].originalData.id)
     context.task = grid.getRecordFromElement(context.grabbed)
-    theoreticalDuration = await $fetch('api/theoreticalDuration', {
+    theoreticalDuration = await $fetch('api/timeBased/theoreticalDuration', {
       query: { planKey: context.task.originalData.id },
     })
     const isValid = await $fetch('/api/isValid', {
@@ -174,7 +174,7 @@ export class Drag extends DragHelper {
     if (context.grabbed) {
       for (let i = 0; i < isValid.length; i++) {
         const currentRow = document.querySelector(`div[data-id="${isValid[i].machineId}"]`)
-        if (isValid[i].valid) {
+        if (isValid[i].programs) {
           currentRow?.setAttribute('bgGreen', '')
         } else {
           currentRow?.setAttribute('bgRed', '')
@@ -207,7 +207,7 @@ export class Drag extends DragHelper {
     context.valid = Boolean(startDate && machine)
       && !(startDate < new Date())
       && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
-      && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).valid : true)
+      && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).programs : true)
 
     if (this.tip) {
       const startMonth = DateHelper.format(startDate, 'MMM')
@@ -268,7 +268,6 @@ export class Drag extends DragHelper {
     // TODO: Remove all locks
     const schedule = this.schedule
     const { task, target, valid, element, machine } = context
-
     this.tip?.hide()
     schedule.disableScrollingCloseToEdges(this.schedule.timeAxisSubGrid)
     onDropSocket()
@@ -299,7 +298,7 @@ export class Drag extends DragHelper {
         plannedStartTime: startDate,
         theoreticalDuration: task.originalData.theoricalDuration,
       }
-      AjaxHelper.post('/api/planningBoardPost', newEvent, { credentials: 'omit' })
+      AjaxHelper.post('/api/timeBased/planningBoardPost', newEvent, { credentials: 'omit' })
         .then(() => schedule.renderRows())
       Toast.show('Event saved')
     }
@@ -324,19 +323,8 @@ export class Drag extends DragHelper {
     return this._schedule
   }
 }
-export class Task extends EventModel {
+export class TimeTask extends EventModel {
   static $name = 'Task'
-
-  // case this.isRunning:
-  //   return 'green'
-
-  // case this.isStopped:
-  //   return 'gray'
-
-  // case this.isDeleted:
-  //   return 'orange'
-
-  // default: return 'blue'
 
   get eventColor() {
     const ptSettings = JSON.parse(localStorage.getItem('pt-settings'))
@@ -344,22 +332,22 @@ export class Task extends EventModel {
     const ongoingBatchBatchSettings = ptSettings.ongoingBatch
     const plannedBatchBatchSettings = ptSettings.plannedBatch
     switch (true) {
-      case (!completedBatchSettings.isBatchFabricColor && this.isFinished && this.deviation > 0):
+      case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished && this.originalData.deviation > 0):
         return completedBatchSettings.deviationBatchFabricColor
-      case (!completedBatchSettings.isBatchFabricColor && this.isFinished):
+      case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished):
         return completedBatchSettings.actualBatchFabricColor
 
-      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.isRunning && this.deviation > 0):
+      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.originalData.isRunning && this.originalData.deviation > 0):
         return plannedBatchBatchSettings.deviationBatchFabricColor
-      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.isRunning):
+      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.originalData.isRunning):
         return plannedBatchBatchSettings.actualBatchFabricColor
 
-      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.isRunning && this.deviation > 0):
+      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning && this.originalData.deviation > 0):
         return ongoingBatchBatchSettings.deviationBatchFabricColor
-      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.isRunning):
+      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning):
         return ongoingBatchBatchSettings.actualBatchFabricColor
 
-      case this.hasAlarm:
+      case this.isAlarm:
         return 'red'
       case this.isLocked:
         return 'yellow'
@@ -378,7 +366,7 @@ export class Task extends EventModel {
     }
   }
 }
-export class Schedule extends SchedulerPro {
+export class TimeSchedule extends SchedulerPro {
   static get $name() {
     return 'Schedule'
   }
@@ -437,7 +425,7 @@ export class Schedule extends SchedulerPro {
           machineId: context.newResource.originalData.id,
           plannedStartTime: context.startDate,
         }
-        AjaxHelper.post('/api/planningBoardUpdate', updatedEvent, { credentials: 'omit' })
+        AjaxHelper.post('/api/timeBased/planningBoardUpdate', updatedEvent, { credentials: 'omit' })
           .then(() => this.renderRows())
       },
       rowHeight: 50,
@@ -474,9 +462,7 @@ export class Schedule extends SchedulerPro {
     }
   }
 }
-Schedule.initClass()
-
-export class UnplannedGrid extends Grid {
+export class TimeUnplannedGrid extends Grid {
   /**
    * Original class name getter. See Widget.$name docs for the details.
    * @returns {string}
@@ -518,5 +504,3 @@ export class UnplannedGrid extends Grid {
     }
   }
 }
-
-UnplannedGrid.initClass()

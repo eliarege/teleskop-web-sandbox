@@ -8,6 +8,7 @@ interface PlannedEvents {
   jobOrder: string
   programNoList: string
   plannedStartTime: string
+  actualStartTime: string
   plannedEndTime: string
   theoreticalDuration: number
   fabricWeight: number
@@ -25,27 +26,42 @@ interface PlannedEvents {
 export function generateClientId() {
   return v4()
 }
+export function calculateDeviation(actualStartTime: string, plannedStartTime: string) {
+  return new Date(actualStartTime).getTime() - new Date(plannedStartTime).getTime()
+}
 
-export function updateEventStates(ev: PlannedEvents[]) {
-  return ev.map((e) => {
-    return {
-      ...e,
-      deviation: (new Date(e.plannedStartTime).getTime() - new Date().getTime()) < 0
-        ? 0
-        : (Math.abs(new Date(e.plannedEndTime).getTime() - new Date().getTime())), // seconds
-      // originally should be like this --> e.isStarted
-      //   ? new Date(e.plannedEndTime) < new Date()
-      //   : false,
-      // because othervise there might be deviation
-      isFinished: new Date(e.plannedEndTime) < new Date(),
-      isStarted: new Date(e.plannedStartTime) < new Date(),
-      notStarted: new Date(e.plannedStartTime) > new Date(),
-      // ask how to check if this event is running or not
-      isRunning: e.isStarted
-        ? (new Date(e.plannedStartTime) < new Date() && new Date(e.plannedEndTime) > new Date())
-        : false,
-      // ask how to check if this event has an alarm
-      hasAlarm: false,
+export function generateEventDates(events: any[]): Event[] {
+  const updatedEvents: Event[] = []
+
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i]
+
+    let startDate: Date
+    let endDate: Date
+
+    if (event.queueNumber === 1 || i === 0 || event.machineId !== events[i - 1].machineId) {
+      // NOTE: Acil test gerekli. Bir task başladığı zaman tam olarak neler olduğunu
+      // bilmediğim için doğru yapamamış olma ihtimalim yüksek!
+      // Özellikle task bittikten sonra hala daha planlanmış eventler içinde gözükebilir.
+      // Buda archive durumunu karıştırır.
+      if (!event.isStarted) {
+        startDate = new Date()
+      } else startDate = event.startDate
+    } else {
+      const previousEndDate = updatedEvents[updatedEvents.length - 1].endDate
+      startDate = new Date(previousEndDate.getTime() + 5 * 60 * 1000)
     }
-  })
+
+    endDate = new Date(startDate.getTime() + event.theoreticalDuration * 1000)
+
+    const updatedEvent: Event = {
+      ...event,
+      startDate,
+      endDate,
+    }
+
+    updatedEvents.push(updatedEvent)
+  }
+
+  return updatedEvents
 }
