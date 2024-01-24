@@ -303,6 +303,18 @@
     "noFilterSpec": "If no filter specified, all the job orders will be displayed.",
     "noDateSpec": "If no date range specified, filter other filter will be applied all the job orders.",
     "doubleClickToShowRecipe": "To see the recipe of the job order, double click to the job order.",
-    "deleteRow": "Are you sure you want to delete selected row?"
+    "deleteRow": "Are you sure you want to delete selected row?",
+    "dispenser": "dispenser",
+    "material": "material",
+    "machine": "machine",
+    "reqMechanism": "request mechanism settings",
+    "success": "succeeded",
+    "fail": "failed",
+    "deleteResponse": "Delete { type } operation is { result }.",
+    "changeResponse": "Update { type } operation is { result }.",
+    "createResponse": "Create { type } operation is { result }.",
+    "coupledMachineIsTheSame": "Planned machine and coupled machine cannot be the same.",
+    "tryToChangeWithSameMachine": "Planned machine cannot be the same with previous machine.",
+    "noDataLogs": "No data found for joborder {joborder}"
   }
 }
