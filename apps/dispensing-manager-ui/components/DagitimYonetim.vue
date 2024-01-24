@@ -115,12 +115,13 @@ async function updateRecipe() {
 setInterval(updateRecipe, 10000)
 const material = ref()
 async function fetchMaterialData(reqnumber: number) {
-  const materialDataTemp = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
-  material.value = materialDataTemp
+  material.value = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
 }
 
 async function applyFilters(updatedValue: any) {
   filters.value = updatedValue
+  material.value = []
+  selectedRow.value = null
   await updateRecipe()
 }
 
