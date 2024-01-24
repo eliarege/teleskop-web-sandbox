@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const { t } = useI18n()
+import { notification } from '~/shared/functions'
+
+const { t, locale } = useI18n()
 const settingsData = ref()
 const reqMechanism = ref()
 const reqMechanismNotCompletedOption = ref()
@@ -24,20 +26,29 @@ const tartimOptionsExtra = ref([
   { value: 1, label: t('settings.powderDye.opt2') },
   { value: 2, label: t('settings.powderDye.opt3') },
 ])
+
+const genericOptions = ref()
+genericOptions.value = await $fetch('/api/settings/material')
+console.log(genericOptions.value)
+
 async function fetchSettings() {
   settingsData.value = await $fetch('/api/settings/request-mechanism-settings')
 
   reqMechanism.value = settingsData.value.reqMechanismOption1 ? 1 : settingsData.value.reqMechanismOption2 ? 2 : 3
   reqMechanismNotCompletedOption.value = settingsData.value.reqMechanismOption3
   reqMechanismAnswer.value = reqMechanismAnswerOptions.value[settingsData.value.reqMechanismAnswer - 1]
+  genericOptions.value.forEach((opt) => {
+    ['saltCode', 'genericMaterialOne', 'genericMaterialTwo'].forEach((str) => {
+      if (opt.materialCode === settingsData.value[str])
+        settingsData.value[str] = opt
+    })
+  })
 }
+
 await fetchSettings()
 
-const genericOptions = ref()
-genericOptions.value = await $fetch('/api/settings/material')
-
 async function changeSettings() {
-  await $fetch('/api/settings/request-mechanism-settings', {
+  const isSuccess = await $fetch('/api/settings/request-mechanism-settings', {
     method: 'put',
     body: {
       reqMechanismOption1: reqMechanism.value === 1 ? 1 : 0,
@@ -64,7 +75,22 @@ async function changeSettings() {
       justRunOnPlannedMachine: settingsData.value.justRunOnPlannedMachine,
     },
   })
+  notification(isSuccess, t('warnings.changeResponse', { type: t('warnings.reqMechanism'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   await fetchSettings()
+}
+
+const filteredOptions = ref([...genericOptions.value])
+
+function filterOptions(val, update) {
+  update(() => {
+    if (val === '') {
+      filteredOptions.value = [...genericOptions.value]
+    } else {
+      const lang = locale.value === 'tr' ? 'tr-TR' : 'en-EN'
+      const needle = val.toLocaleLowerCase(lang)
+      filteredOptions.value = genericOptions.value.filter(v => v.materialLabel.toLocaleLowerCase(lang).includes(needle))
+    }
+  })
 }
 </script>
 
@@ -220,54 +246,67 @@ async function changeSettings() {
               {{ t('settings.genericRequests') }}
             </div>
             <div class="flex m-5 gap-15">
-              <div class="flex flex-col">
-                <q-checkbox
-                  v-model="settingsData.genericSaltActive"
-                  class="m-3"
-                  :label="t('settings.activeSaltRequest')"
-                />
-                <q-checkbox
-                  v-model="settingsData.genericMaterialOneActive"
-                  class="m-3"
-                  :label="t('settings.activeGenericMaterial1')"
-                />
-                <q-checkbox
-                  v-model="settingsData.genericMaterialTwoActive"
-                  class="m-3"
-                  :label="t('settings.activeGenericMaterial2')"
-                />
+              <div class="flex flex-col w-full">
+                <div class="flex flex-row justify-between">
+                  <q-checkbox
+                    v-model="settingsData.genericSaltActive"
+                    class="m-3"
+                    :label="t('settings.activeSaltRequest')"
+                  />
+                  <q-select
+                    v-model="settingsData.saltCode"
+                    :options="filteredOptions"
+                    :disable="!settingsData.genericSaltActive"
+                    class="m-3 w-50"
+                    option-label="materialLabel"
+                    dense
+                    clearable
+                    filled
+                    use-input
+                    @filter="filterOptions"
+                  />
+                </div>
+                <div class="flex flex-row justify-between">
+                  <q-checkbox
+                    v-model="settingsData.genericMaterialOneActive"
+                    class="m-3"
+                    :label="t('settings.activeGenericMaterial1')"
+                  />
+                  <q-select
+                    v-model="settingsData.genericMaterialOne"
+                    :options="filteredOptions"
+                    :disable="!settingsData.genericMaterialOneActive"
+                    class="m-3 w-50"
+                    option-label="materialLabel"
+                    dense
+                    clearable
+                    filled
+                    use-input
+                    @filter="filterOptions"
+                  />
+                </div>
+                <div class="flex flex-row justify-between">
+                  <q-checkbox
+                    v-model="settingsData.genericMaterialTwoActive"
+                    class="m-3"
+                    :label="t('settings.activeGenericMaterial2')"
+                  />
+                  <q-select
+                    v-model="settingsData.genericMaterialTwo"
+                    :options="filteredOptions"
+                    :disable="!settingsData.genericMaterialTwoActive"
+                    class="m-3 w-50"
+                    option-label="materialLabel"
+                    clearable
+                    dense
+                    use-input
+                    filled
+                    @filter="filterOptions"
+                  />
+                </div>
               </div>
               <div class="flex flex-col">
                 <!-- TODO: Make the selection menu more solid and add searchbar also it should not go all the page long -->
-                <q-select
-                  v-model="settingsData.saltCode"
-                  :options="genericOptions"
-                  :disable="!settingsData.genericSaltActive"
-                  class="m-3 w-40"
-                  option-label="materialName"
-                  dense
-                  filled
-                />
-                <q-select
-                  v-model="settingsData.genericMaterialOne"
-                  :options="genericOptions"
-                  :disable="!settingsData.genericMaterialOneActive"
-                  class="m-3 w-40"
-                  option-label="materialName"
-                  option-value="materialCode"
-                  dense
-                  filled
-                />
-                <q-select
-                  v-model="settingsData.genericMaterialTwo"
-                  :options="genericOptions"
-                  :disable="!settingsData.genericMaterialTwoActive"
-                  class="m-3 w-40"
-                  option-label="materialName"
-                  option-value="materialCode"
-                  dense
-                  filled
-                />
               </div>
             </div>
           </div>
