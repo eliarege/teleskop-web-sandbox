@@ -1,7 +1,7 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { Splitter, Tooltip } from '@bryntum/schedulerpro-trial'
+import { DateHelper, Splitter, Tooltip } from '@bryntum/schedulerpro-trial'
 import { addDays } from 'date-fns'
 import { EliarModal } from 'ui'
 import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
