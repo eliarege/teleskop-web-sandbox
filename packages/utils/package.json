@@ -11,6 +11,6 @@
   },
   "devDependencies": {
     "knex": "^3.0.1",
-    "ui-types": "workspace:*"
+    "nuxt-ui-types": "workspace:*"
   }
 }

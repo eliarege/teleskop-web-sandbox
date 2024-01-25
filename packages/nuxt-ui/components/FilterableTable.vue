@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import { ref, toRefs, watch } from 'vue'
-import type { Column, DateType, FilterSlot } from 'ui-types'
-
-// @ts-expect-error nuxt import
-import { useI18n } from '#imports'
+import type { Column, DateType, FilterSlot } from '../types'
 
 const props = defineProps({
   rows: {
@@ -41,7 +37,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['rowDblclick', 'updateFilterSlots'])
 
-const { t, locale } = useI18n()
+const { t, locale } = useI18n({ useScope: 'local' })
 function handleDoubleClick(row: any) {
   emit('rowDblclick', row)
 }

@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
-  extends: ['nuxt-base'],
+  extends: ['nuxt-base', 'nuxt-ui'],
   runtimeConfig: {
     teleskopHost: 'localhost',
     teleskopUser: '',

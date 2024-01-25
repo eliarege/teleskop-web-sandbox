@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import FilterableTable from 'ui/components/FilterableTable.vue'
-import type { Column } from 'ui/types/FilterableTable'
+import type { Column } from 'nuxt-ui-types'
 import type { ErpParameter, Machine } from '~/types'
 import { addErpParameterField, deleteErpParameterField, updateErpParameterField } from '~/utils'
 

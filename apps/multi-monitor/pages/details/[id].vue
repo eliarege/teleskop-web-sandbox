@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
+import { LoadingSpinner } from 'ui'
 import type { BatchLogs, MachineDataRaw, NewBatchLogs, NewInterventions } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
 

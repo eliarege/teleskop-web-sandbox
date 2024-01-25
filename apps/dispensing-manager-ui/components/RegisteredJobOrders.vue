@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
-import FilterableTable from 'ui/components/FilterableTable.vue'
-import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
+import { LoadingSpinner } from 'ui'
 import { onMounted } from 'vue'
 import { navigateToPage } from '../shared/functions'
 import { colors } from '~/shared/constants'

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { Column } from 'ui/types/FilterableTable'
-import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'nuxt-ui-types'
 import type { FinishReason } from '~/types'
 
 const { data: finishReasons, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', {

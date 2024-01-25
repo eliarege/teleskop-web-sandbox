@@ -32,6 +32,7 @@
     "nuxt": "^3.9.0",
     "nuxt-base": "workspace:*",
     "nuxt-machine-card": "workspace:*",
+    "nuxt-ui": "workspace:*",
     "rollup-plugin-string": "workspace:*",
     "unocss-config": "workspace:*",
     "vue": "^3.4.0",

@@ -25,6 +25,8 @@
   "devDependencies": {
     "nuxt": "^3.9.0",
     "nuxt-base": "workspace:*",
+    "nuxt-ui": "workspace:*",
+    "nuxt-ui-types": "workspace:*",
     "rollup-plugin-string": "workspace:*",
     "tbb-ftp-client": "workspace:*",
     "ui": "workspace:*",

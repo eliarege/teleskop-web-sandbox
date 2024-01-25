@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import FilterableTable from 'ui/components/FilterableTable.vue'
 import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
@@ -51,7 +50,7 @@ const columns: Array<Column> = [
   },
 ]
 
-const machineInfo = ref<{ label: string; value: any; field: string }[]>([
+const machineInfo = ref<{ label: string, value: any, field: string }[]>([
   { label: t('settings.machineCode'), value: '', field: 'machineid' },
   { label: t('settings.machinename'), value: '', field: 'machinename' },
   { label: t('settings.controlMach'), value: '', field: 'controlDevice' },

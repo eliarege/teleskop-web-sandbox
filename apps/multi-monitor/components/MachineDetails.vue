@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import type { TableColumnCtx } from 'element-plus'
-import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
-import RecipeTable from 'ui/components/RecipeTable.vue'
+import { LoadingSpinner } from 'ui'
 import type {
   MachineDataRaw,
   NewBatchLogs,

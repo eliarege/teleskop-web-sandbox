@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import FilterableTable from 'ui/components/FilterableTable.vue'
 import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
@@ -60,7 +59,7 @@ const columns: Array<Column> = [
   },
 ]
 
-const dispenserInfo = ref<{ label: string; value: any; field: string; options?: Array<any> }[]>([
+const dispenserInfo = ref<{ label: string, value: any, field: string, options?: Array<any> }[]>([
   { label: t('settings.dispSettings.dispNo'), value: '', field: 'dispNo' },
   { label: t('settings.dispSettings.dispName'), value: '', field: 'name' },
   { label: t('settings.dispSettings.dispType'), value: '', field: 'dispType' },
@@ -86,7 +85,7 @@ function resetDispenserInfo(row?: any) {
   else {
     dispenserInfo.value.forEach((disp) => {
       disp.field === 'dispType'
-        ? types.value.forEach((type: { type: number; name: string }) => type.type === row[disp.field] ? disp.value = type : '')
+        ? types.value.forEach((type: { type: number, name: string }) => type.type === row[disp.field] ? disp.value = type : '')
         : disp.value = row[disp.field]
     })
   }

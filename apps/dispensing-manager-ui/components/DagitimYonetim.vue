@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import FilterableTable from 'ui/components/FilterableTable.vue'
 import { Notify } from 'quasar'
 import { navigateToPage, rowBGColorHandler, textAlignOverride } from '../shared/functions'
 import { colors } from '~/shared/constants'

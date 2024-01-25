@@ -1,9 +1,5 @@
 <script setup lang="ts">
 import type { TableColumnCtx } from 'element-plus'
-import { ElButton, ElTable, ElTableColumn } from 'element-plus'
-import 'element-plus/es/components/button/style/css'
-import 'element-plus/es/components/table/style/css'
-import 'element-plus/es/components/table-column/style/css'
 
 interface SpanMethodProps {
   row: any

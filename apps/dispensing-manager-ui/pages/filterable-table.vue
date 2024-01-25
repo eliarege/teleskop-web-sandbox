@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import FilterableTable from 'ui/components/FilterableTable.vue';
-import type { Column, FilterSlot } from '../shared/types';
+import type { Column, FilterSlot } from '../shared/types'
 
 const { t } = useI18n()
 const returnType = [

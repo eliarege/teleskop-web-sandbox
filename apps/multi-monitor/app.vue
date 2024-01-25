@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import LoadingScreen from 'ui/components/LoadingScreen.vue'
+import { LoadingScreen } from 'ui'
 import { useColorStore } from '~/store/Colors'
 
 useHead({

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { Column } from 'ui/types/FilterableTable'
-import FilterableTable from 'ui/components/FilterableTable.vue'
+import type { Column } from 'nuxt-ui-types'
 import type { Machine } from '~/types'
 
 const props = defineProps<{
