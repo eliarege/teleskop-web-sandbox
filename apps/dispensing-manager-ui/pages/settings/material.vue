@@ -10,6 +10,11 @@ const disps = ref([])
 
 await getRows()
 await getDisps()
+const materialGroups = [
+  { label: t('chemical'), materialGroup: 1 },
+  { label: t('dye'), materialGroup: 2 },
+  { label: t('settings.other'), materialGroup: 3 },
+]
 
 const columns: Array<Column> = [
   {
@@ -17,25 +22,25 @@ const columns: Array<Column> = [
     label: t('settings.materialName'),
     field: 'materialName',
     filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'materialCode',
     label: t('settings.materialCode'),
     field: 'materialCode',
     filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'materialGroup',
     label: t('settings.materialType'),
     field: 'materialGroup',
     filterable: true,
+    filterType: 'select',
+    optionLabel: 'label',
+    optionValue: 'materialGroup',
+    selectionOptions: materialGroups,
   },
-]
-
-const materialGroups = [
-  { label: t('dye'), value: 1 },
-  { label: t('chemical'), value: 2 },
-  { label: t('settings.other'), value: 3 },
 ]
 
 let materialInfoStatic: { label: string; value: any; field: string }[] = []
@@ -67,7 +72,7 @@ async function resetMaterialInfo(row?: any) {
   const mateDispsTemp = await $fetch(`/api/settings/material-connections?chemCode=${row.materialCode}`)
   materialInfo.value.forEach((mate) => {
     if (mate.field === 'materialGroup') {
-      materialGroups.forEach(dev => dev.value === row[mate.field] ? mate.value = dev : '')
+      materialGroups.forEach(dev => dev.materialGroup === row[mate.field] ? mate.value = dev : '')
     } else if (mate.field === 'connectedDisps') {
       mate.value = mateDispsTemp
     } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
@@ -76,6 +81,14 @@ async function resetMaterialInfo(row?: any) {
       mate.value = row[mate.field]
     }
   })
+}
+
+async function applyFilters(updatedValue: any) {
+  rows.value = await $fetch('/api/settings/filtered-materials', {
+    method: 'POST',
+    body: updatedValue,
+  })
+  rows.value.unshift({})
 }
 
 function checkIsThereAnyChange() {
@@ -143,7 +156,7 @@ async function submit(rowIndex: number) {
       body: {
         materialCode: materialInfo.value[0].value,
         materialName: materialInfo.value[1].value,
-        materialGroup: materialInfo.value[2].value.value,
+        materialGroup: materialInfo.value[2].value.materialGroup,
         density: materialInfo.value[3].value,
         ph: materialInfo.value[4].value,
         source: materialInfo.value[5].value,
@@ -162,7 +175,7 @@ async function submit(rowIndex: number) {
       body: {
         materialCode: materialInfo.value[0].value,
         materialName: materialInfo.value[1].value,
-        materialGroup: materialInfo.value[2].value.value,
+        materialGroup: materialInfo.value[2].value.materialGroup,
         density: materialInfo.value[3].value,
         ph: materialInfo.value[4].value,
         source: materialInfo.value[5].value,
@@ -204,6 +217,7 @@ async function deleteRow() {
     :is-expandable="true"
     style="height: 90vh;"
     :custom-sort-method="customSortMethod"
+    @update-filter-slots="(evt) => applyFilters(evt)"
   >
     <template #custombody="props">
       <q-tr :props="props">
@@ -271,7 +285,7 @@ async function deleteRow() {
                     class="class-w-70"
                     options-dense
                     :options="materialGroups"
-                    option-value="value"
+                    option-value="materialGroup"
                     option-label="label"
                     style="min-width: 150px"
                   />

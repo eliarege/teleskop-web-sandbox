@@ -217,7 +217,6 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
 }
 
 function handleKeyUp(event) {
-  console.log(`length ${recipe.value.length}`)
   if (event.key === 'ArrowUp') {
     if (selectedRow.value.rowIndex) {
       selectRow(selectedRow.value.rowIndex - 1)
