@@ -50,8 +50,27 @@ const materialRequestParams = {
   amount: 'AMOUNT',
   status: 'STATUS',
 }
+const batchRecipeStepParams = {
+  planKey: 'r.PLANKEY',
+  batchNo: 'r.JOBORDER',
+  recipeType: 'r.RECIPETYPE',
+  processOrder: 'r.RCPINDEX',
+  ISN: 'r.REQNO_BATCH',
+  mainStep: 'r.MAINSTEP',
+  parallelStep: 'r.PARALLELSTEP',
+  chemCode: 'r.CHEMCODE',
+  programProcessNo: 'r.REQNO_PROG',
+  amount: 'r.AMOUNT',
+  unit: 'r.otherUnit',
+}
+const programHeaderParams = {
+  machineId: 'MACHINEID',
+  programNo: 'PROGNO',
+  programName: 'NAME'
+}
 export default defineEventHandler(async () => {
   try {
+
     const jobOrders = await teleskopDB('dbo.DYTFCHEMREQUESTS as j')
       .leftJoin('dbo.BFMASTERPRGHEADER as p', (builder) => {
         builder
@@ -59,6 +78,7 @@ export default defineEventHandler(async () => {
           .andOn('j.MACHINEID', '=', 'p.MACHINEID')
       })
       .select(jobOrderParams)
+
     const dispensers = await teleskopDB('dbo.DYTFDISPENSERSETTINGS')
       .select(dispenserParams)
     const machines = await teleskopDB('dbo.DYTFMACHINES')
@@ -67,7 +87,11 @@ export default defineEventHandler(async () => {
       .select(materialParams)
     const materialReqs = await teleskopDB('dbo.DYTFREQMATERIALS')
       .select(materialRequestParams)
-    const res = { dispensers, machines, jobOrders, materials, materialReqs }
+    const programHeaders = await teleskopDB('dbo.BFMASTERPRGHEADER')
+      .select(programHeaderParams)
+    const batchRecipeSteps = await teleskopDB('dbo.DYBFBATCHORDERRECIPESTEPS as r')
+      .select(batchRecipeStepParams)
+    const res = { dispensers, machines, jobOrders, materials, materialReqs, programHeaders, batchRecipeSteps }
     return res
   } catch (e) {
     console.log(e)

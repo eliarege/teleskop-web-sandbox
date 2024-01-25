@@ -14,6 +14,24 @@ export interface JobOrder {
   recipeStepNo: number
   status: number
 }
+export interface ProgramHeader {
+  machineId: number
+  programNo: number
+  programName: number
+}
+export interface BatchRecipeStep {
+  planKey: number
+  batchNo: number
+  mainStep: number
+  parallelStep: number
+  recipeType: number
+  ISN: number
+  processOrder: number
+  chemCode: string
+  programProcessNo: number
+  amount: number
+  unit: number
+}
 export interface Dispenser {
   dispenserId: number
   dispenserName: string
@@ -49,6 +67,7 @@ export interface MaterialRequest {
   materialName: string
   amount: number
   status: number
+  unit: number
 }
 export interface MaterialGroup {
   materialGroupNo: number

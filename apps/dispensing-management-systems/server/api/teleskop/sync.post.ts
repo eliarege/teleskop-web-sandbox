@@ -8,6 +8,8 @@ export default defineEventHandler(async (event) => {
     const jobOrders: any[] = []
     const materials: any[] = []
     const materialReqs: any[] = []
+    const batchRecipeSteps: any[] = []
+    const programHeaders: any[] = []
 
     teleskopData.dispensers.forEach((data: any) => {
       const dispenser = {
@@ -32,6 +34,14 @@ export default defineEventHandler(async (event) => {
         controller_type: data.controllerType,
       }
       machines.push(machine)
+    })
+    teleskopData.programHeaders.forEach((data: any) => {
+      const programHeader = {
+        machine_id: data.machineId,
+        program_no: data.programNo,
+        program_name: data.programName,
+      }
+      programHeaders.push(programHeader)
     })
     teleskopData.jobOrders.forEach((data: any) => {
       const jobOrder = ({
@@ -76,19 +86,37 @@ export default defineEventHandler(async (event) => {
       })
       materialReqs.push(materialReq)
     })
+    teleskopData.batchRecipeSteps.forEach((data: any) => {
+      const batchRecipeStep = ({
+        plan_key: data.planKey,
+        batch_no: data.batchNo,
+        main_step: data.mainStep,
+        parallel_step: data.parallelStep,
+        req_no_batch: data.ISN,
+        process_order: data.processOrder,
+        chem_code: data.chemCode,
+        prog_proc_no: data.programProcessNo,
+        amount: data.amount,
+        unit: data.unit
+      })
+      batchRecipeSteps.push(batchRecipeStep)
+    })
     const batchSize = 1000
-
     await dmsDB('JOB_ORDER').del()
+    await dmsDB('BATCH_RECIPE_STEP').del()
     await dmsDB('DISPENSER').del()
     await dmsDB('MACHINE').del()
     await dmsDB('MATERIAL_REQUEST').del()
     await dmsDB('MATERIAL').del()
+    await dmsDB('PROGRAM_HEADER').del()
 
     await batchInsert(dispensers, batchSize, 'DISPENSER')
+    await batchInsert(batchRecipeSteps, batchSize, 'BATCH_RECIPE_STEP')
     await batchInsert(machines, batchSize, 'MACHINE')
     await batchInsert(jobOrders, batchSize, 'JOB_ORDER')
     await batchInsert(materials, batchSize, 'MATERIAL')
     await batchInsert(materialReqs, batchSize, 'MATERIAL_REQUEST')
+    await batchInsert(programHeaders, batchSize, 'PROGRAM_HEADER')
   } catch (e) {
     console.error(e)
     return e

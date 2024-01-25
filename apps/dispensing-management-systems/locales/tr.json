@@ -49,7 +49,6 @@
   "vncError": "{name} Bağlantısı Başarısız Oldu!",
   "Save": "Kaydet",
   "Cancel": "İptal",
-  "Amount": "Miktar",
   "Material": "Malzeme",
   "settings": {
     "App": "Uygulama Ayarları",
@@ -65,7 +64,8 @@
     "CostUnit": "Fiyat Birimi",
     "ReRequestable": "Yeniden İstenebilir",
     "Source": "Kaynak",
-    "DirectTransfer": "Doğrudan Transfer Edilebilir"
+    "DirectTransfer": "Doğrudan Transfer Edilebilir",
+    "Amount": "Miktar"
   },
   "dispenserFields": {
     "Name": "Dağıtıcı Adı",
@@ -100,5 +100,14 @@
     "1": "Kimyasal",
     "2": "Boya",
     "3": "Diğer"
+  },
+  "units": {
+    "0": "%",
+    "1": "gr/lt",
+    "2": "cc/lt",
+    "3": "gr",
+    "4": "cc",
+    "5": "kg",
+    "6": "lt"
   }
 }

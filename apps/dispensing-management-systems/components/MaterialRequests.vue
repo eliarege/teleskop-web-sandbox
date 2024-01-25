@@ -19,7 +19,7 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent()
 const columns: (QTableColumn<MaterialRequest>)[] = [
   { name: 'materialCode', label: t('materialFields.Code'), field: 'materialCode', align: 'left' },
   { name: 'materialName', label: t('materialFields.Name'), field: 'materialName', align: 'left' },
-  { name: 'amount', label: t('Amount'), field: 'amount', align: 'left' },
+  { name: 'amount', label: t('materialFields.Amount'), field: 'amount', align: 'left' },
   { name: 'status', label: t('statusCodes.text'), field: 'status', align: 'left' },
 ]
 
@@ -52,6 +52,9 @@ async function getMaterials() {
           >
             <span v-if="material.col.field === 'status'">
               {{ t(`statusCodes.${material.value}`) }}
+            </span>
+            <span v-else-if="material.col.field === 'amount'">
+              {{ `${material.value} (${t(`units.${material.row.unit}`)})` }}
             </span>
             <span v-else>
               {{ material.value }}

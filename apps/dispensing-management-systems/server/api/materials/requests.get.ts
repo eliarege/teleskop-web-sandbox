@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
         materialCode: 'r.material_code',
         amount: 'r.amount',
         status: 'r.status',
+        unit: 'r.unit'
       })
     return materialRequests
   } catch (e) {

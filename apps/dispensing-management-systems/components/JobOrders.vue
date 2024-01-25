@@ -125,8 +125,8 @@ const pagination = ref({ rowsPerPage: 50 })
       :title="t('JobOrders')"
       :filter="searchFilter"
       :pagination
+      :columns
       :rows="jobOrders"
-      :columns="columns"
       separator="none"
       row-key="name"
       @row-click="onRowClick"

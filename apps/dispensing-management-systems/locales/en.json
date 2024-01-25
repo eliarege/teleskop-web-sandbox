@@ -50,7 +50,6 @@
   "Save": "Save",
   "Cancel": "Cancel",
   "Material": "Material",
-  "Amount": "Amount",
   "settings": {
     "App": "App Settings",
     "Material": "Material Settings"
@@ -65,7 +64,8 @@
     "CostUnit": "Cost Unit",
     "ReRequestable": "ReRequestable",
     "Source": "Source",
-    "DirectTransfer": "Can Transfer Directly"
+    "DirectTransfer": "Can Transfer Directly",
+    "Amount": "Amount"
   },
   "dispenserFields": {
     "Name": "Dispenser Name",
@@ -100,5 +100,14 @@
     "1": "Chemical",
     "2": "Dye",
     "3": "Other"
+  },
+  "units": {
+    "0": "%",
+    "1": "g/lt",
+    "2": "cc/lt",
+    "3": "g",
+    "4": "cc",
+    "5": "kg",
+    "6": "lt"
   }
 }
