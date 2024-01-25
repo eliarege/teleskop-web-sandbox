@@ -218,6 +218,21 @@ async function rerequestWei() {
 const isCoupledTheSame = computed(() => {
   return plannedMachineChangeVal.value?.machineid && coupledMachineChangeVal.value?.machineid && plannedMachineChangeVal.value?.machineid === coupledMachineChangeVal.value?.machineid
 })
+
+async function handleKeyUp(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    await requestJobOrder()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keyup', handleKeyUp)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keyup', handleKeyUp)
+})
 </script>
 
 <template>
