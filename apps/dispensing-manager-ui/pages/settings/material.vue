@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
+import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
@@ -9,6 +10,11 @@ const disps = ref([])
 
 await getRows()
 await getDisps()
+const materialGroups = [
+  { label: t('chemical'), materialGroup: 1 },
+  { label: t('dye'), materialGroup: 2 },
+  { label: t('settings.other'), materialGroup: 3 },
+]
 
 const columns: Array<Column> = [
   {
@@ -16,35 +22,37 @@ const columns: Array<Column> = [
     label: t('settings.materialName'),
     field: 'materialName',
     filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'materialCode',
-    label: t('settings.machinename'),
+    label: t('settings.materialCode'),
     field: 'materialCode',
     filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'materialGroup',
     label: t('settings.materialType'),
     field: 'materialGroup',
     filterable: true,
+    filterType: 'select',
+    optionLabel: 'label',
+    optionValue: 'materialGroup',
+    selectionOptions: materialGroups,
   },
 ]
 
-const materialGroups = [
-  { label: t('dye'), value: 1 },
-  { label: t('chemical'), value: 2 },
-  { label: t('settings.other'), value: 3 },
-]
+let materialInfoStatic: { label: string; value: any; field: string }[] = []
 
-const materialInfo = ref<{ label: string; value: any; field: string }[]>([
+const materialInfo = ref<{ label: string; value: any; field: string; numeric?: boolean }[]>([
   { label: t('settings.materialCode'), value: '', field: 'materialCode' },
   { label: t('settings.materialName'), value: '', field: 'materialName' },
   { label: t('settings.materialType'), value: '', field: 'materialGroup' },
-  { label: t('settings.materialDensity'), value: '', field: 'density' },
-  { label: 'pH', value: '', field: 'ph' },
+  { label: t('settings.materialDensity'), value: '', field: 'density', numeric: true },
+  { label: 'pH', value: '', field: 'ph', numeric: true },
   { label: t('settings.supplySource'), value: '', field: 'source' },
-  { label: t('settings.materialKgPrice'), value: '', field: 'cost' },
+  { label: t('settings.materialKgPrice'), value: '', field: 'cost', numeric: true },
   { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
   { label: t('settings.rerequestable'), value: '', field: 'rerequestable' },
   { label: t('settings.directlyTransfer'), value: '', field: 'directTransfer' },
@@ -61,22 +69,34 @@ async function getDisps() {
 }
 
 async function resetMaterialInfo(row?: any) {
-  if (!row)
-    materialInfo.value.forEach(mate => mate.value = '')
-  else {
-    const mateDispsTemp = await $fetch(`/api/settings/material-connections?chemCode=${row.materialCode}`)
-    materialInfo.value.forEach((mate) => {
-      if (mate.field === 'materialGroup') {
-        materialGroups.forEach(dev => dev.value === row[mate.field] ? mate.value = dev : '')
-      } else if (mate.field === 'connectedDisps') {
-        mate.value = mateDispsTemp
-      } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
-        mate.value = false
-      } else {
-        mate.value = row[mate.field]
-      }
-    })
-  }
+  const mateDispsTemp = await $fetch(`/api/settings/material-connections?chemCode=${row.materialCode}`)
+  materialInfo.value.forEach((mate) => {
+    if (mate.field === 'materialGroup') {
+      materialGroups.forEach(dev => dev.materialGroup === row[mate.field] ? mate.value = dev : '')
+    } else if (mate.field === 'connectedDisps') {
+      mate.value = mateDispsTemp
+    } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
+      row[mate.field] === undefined ? mate.value = false : mate.value = row[mate.field]
+    } else {
+      mate.value = row[mate.field]
+    }
+  })
+}
+
+async function applyFilters(updatedValue: any) {
+  rows.value = await $fetch('/api/settings/filtered-materials', {
+    method: 'POST',
+    body: updatedValue,
+  })
+  rows.value.unshift({})
+}
+
+function checkIsThereAnyChange() {
+  console.log(materialInfoStatic)
+  console.log(materialInfo.value)
+  if (materialInfoStatic === materialInfo.value || !materialInfoStatic.length)
+    return false
+  return true
 }
 
 const expandedRow = ref()
@@ -85,6 +105,8 @@ function toggleRow(row: any, index: number) {
   expandedRow.value === index
     ? expandedRow.value = null
     : expandedRow.value = index
+  console.log(materialInfo.value)
+  materialInfoStatic = materialInfo.value
   resetMaterialInfo(row)
 }
 
@@ -116,15 +138,25 @@ function customSortMethod(rows, sortBy, descending) {
   return sortedRows
 }
 
+function notification(isSuccess: any, message: string) {
+  Notify.create({
+    message,
+    type: isSuccess ? 'positive' : 'warning',
+    position: 'top',
+  })
+}
+
 async function submit(rowIndex: number) {
+  let isSuccess
+  let keyI18N
   /** If create */
   if (rowIndex === 0) {
-    await $fetch('/api/settings/material-connection', {
+    isSuccess = await $fetch('/api/settings/material-connection', {
       method: 'post',
       body: {
         materialCode: materialInfo.value[0].value,
         materialName: materialInfo.value[1].value,
-        materialGroup: materialInfo.value[2].value.value,
+        materialGroup: materialInfo.value[2].value.materialGroup,
         density: materialInfo.value[3].value,
         ph: materialInfo.value[4].value,
         source: materialInfo.value[5].value,
@@ -134,15 +166,16 @@ async function submit(rowIndex: number) {
         rerequestable: materialInfo.value[9].value,
       },
     })
+    keyI18N = 'warnings.createResponse'
     expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
-    await $fetch('/api/settings/material-connection', {
+    isSuccess = await $fetch('/api/settings/material-connection', {
       method: 'put',
       body: {
         materialCode: materialInfo.value[0].value,
         materialName: materialInfo.value[1].value,
-        materialGroup: materialInfo.value[2].value.value,
+        materialGroup: materialInfo.value[2].value.materialGroup,
         density: materialInfo.value[3].value,
         ph: materialInfo.value[4].value,
         source: materialInfo.value[5].value,
@@ -152,22 +185,26 @@ async function submit(rowIndex: number) {
         rerequestable: materialInfo.value[9].value,
       },
     })
+    keyI18N = 'warnings.changeResponse'
   }
+  notification(isSuccess, t(keyI18N!, { type: t('warnings.material'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   await getRows()
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  await $fetch('/api/settings/material', {
+  const isSuccess = await $fetch('/api/settings/material', {
     method: 'delete',
     body: {
       materialCode: materialInfo.value[0].value,
     },
   })
   expandedRow.value = null
+  notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.material'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+
   /**
-   * I did not reset the dispenserInfo array careful. It has to be
+   * I did not reset the dispenserInfo array be careful. It has to be
    * set before use so it will not be a problem but in case
-   * to relocate buttons on top of the screen can be example where we boomed
+   * to relocate filtering buttons on top of the screen can be example where we boomed
    */
   await getRows()
 }
@@ -180,6 +217,7 @@ async function deleteRow() {
     :is-expandable="true"
     style="height: 90vh;"
     :custom-sort-method="customSortMethod"
+    @update-filter-slots="(evt) => applyFilters(evt)"
   >
     <template #custombody="props">
       <q-tr :props="props">
@@ -189,7 +227,7 @@ async function deleteRow() {
           @click="toggleRow(props.row, props.rowIndex)"
         >
           <q-btn
-            v-if="props.row.materialCode"
+            v-if="props.row.materialCode || props.rowIndex !== 0"
             size="sm"
             :style="`background-color: ${colors.black}; color: white;`"
             round
@@ -213,7 +251,10 @@ async function deleteRow() {
           class="cursor-pointer"
           @click="toggleRow(props.row, props.rowIndex)"
         >
-          <span>
+          <span v-if="col.field === 'materialGroup' && col.value !== undefined">
+            {{ t(`recipeTypes.${col.value - 1}`) }}
+          </span>
+          <span v-else>
             {{ col.value }}
           </span>
         </q-td>
@@ -244,7 +285,7 @@ async function deleteRow() {
                     class="class-w-70"
                     options-dense
                     :options="materialGroups"
-                    option-value="value"
+                    option-value="materialGroup"
                     option-label="label"
                     style="min-width: 150px"
                   />
@@ -274,7 +315,7 @@ async function deleteRow() {
                     dense
                     class="class-w-70"
                     filled
-                    :type="mate.field === 'machineid' ? 'number' : 'text'"
+                    :type="mate.numeric ? 'number' : 'text'"
                     :placeholder="mate.value"
                     :disable="props.row.materialCode !== undefined && mate.field === 'materialCode'"
                   />

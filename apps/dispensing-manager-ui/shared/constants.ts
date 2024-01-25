@@ -17,6 +17,13 @@ export const colors = {
   blue: '',
   black: 'rgb(0, 0, 0)',
   tableGray: 'rgb(248, 248, 248)',
+  status0: '',
+  status1: '#61b3ff',
+  status2: '#008cff',
+  status3: '#eda72d',
+  status4: '#00ffc8',
+  status8: '#ff0000',
+  status10: '#c95a00',
 }
 
 export const rows = [

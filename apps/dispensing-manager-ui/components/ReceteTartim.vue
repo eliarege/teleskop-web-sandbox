@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
-import { navigateToPage } from '../shared/functions'
+import { navigateToPage, notification } from '../shared/functions'
 
 const { t } = useI18n()
 
 const plannedMachineChangeVal = ref()
 const coupledMachineChangeVal = ref()
 const isCoupled = ref(false)
+const isThereAnyLog = ref(true)
 const showParameterDialog = ref(false)
 const showLogsDialog = ref(false)
 const showConsumptionDialog = ref(false)
@@ -48,6 +49,18 @@ const correctionNoDisplayed = ref(0)
 const machine = ref()
 const currentRecipeJoborder = ref('0')
 
+function resetValues() {
+  recipeData.value = []
+  machine.value = null
+  currentRecipeJoborder.value = ''
+  correctionNoDisplayed.value = 0
+  recipeDataTemp.value = null
+  lastJobOrder.value = null
+  plankey.value = 0
+  console.log(plankey.value)
+  jobordernum.value = null
+}
+
 async function requestJobOrder() {
   resetCounter.value += 1
   if (jobordernum.value) {
@@ -56,9 +69,15 @@ async function requestJobOrder() {
     getCorrectionNOs(currentRecipeJoborder.value)
     lastJobOrder.value = currentRecipeJoborder.value
     recipeDataTemp.value = await $fetch(`/api/recipe/joborder?recipeJB=${currentRecipeJoborder.value}&correctionNo=${correctionNoDisplayed.value}`)
-    if (!recipeDataTemp.value)
-      recipeData.value = []
-    else {
+    console.log(recipeDataTemp)
+    if (!recipeDataTemp.value.length) {
+      resetValues()
+      Notify.create({
+        message: t('recipe.noRecipeText'),
+        color: 'red',
+        position: 'top',
+      })
+    } else {
       recipeData.value = recipeDataTemp.value
       recipeData.value.forEach((row) => {
         row.unit = t(`units.${row.unit}`)
@@ -74,7 +93,7 @@ async function requestJobOrder() {
     const tempMach = await $fetch(`/api/machine/machine?joborder=${currentRecipeJoborder.value}&correctionNo=${correctionNoDisplayed.value}`)
     machine.value = tempMach
   } else {
-    recipeData.value = []
+    resetValues()
     showJoborderError.value = true
     Notify.create({
       message: t('recipe.infoText'),
@@ -82,19 +101,32 @@ async function requestJobOrder() {
       position: 'top',
     })
   }
+  isThereAnyLog.value = await checkIsThereAnyLog(plankey.value)
 }
 
 function clearCorrectionNo() {
   correctionNoDisplayed.value = 0
 }
 
+async function checkIsThereAnyLog(plankey) {
+  const check = await $fetch('/api/logs/check-if-log-exists', {
+    method: 'post',
+    body: {
+      plankey,
+    },
+  })
+  return check
+}
+
 const route = useRoute()
 if (route.query.correctionNo && route.query.joborder) {
-  if (route.query.isLogs === 'true')
-    showLogsDialog.value = true
   jobordernum.value = route.query.joborder
   correctionNoDisplayed.value = Number(route.query.correctionNo)
   await requestJobOrder()
+  if (route.query.isLogs === 'true') {
+    if (isThereAnyLog.value)
+      showLogsDialog.value = true
+  }
 }
 
 function buttonAction(link: string) {
@@ -104,6 +136,9 @@ function buttonAction(link: string) {
     }
     if (link === 'showLogs') {
       showLogsDialog.value = true
+      if (!isThereAnyLog.value) {
+        notification(false, t('warnings.noDataLogs', { joborder: jobordernum.value }))
+      }
     }
     if (link === 'showConsumptions') {
       showConsumptionDialog.value = true
@@ -179,6 +214,25 @@ async function rerequestWei() {
     }
   })
 }
+
+const isCoupledTheSame = computed(() => {
+  return plannedMachineChangeVal.value?.machineid && coupledMachineChangeVal.value?.machineid && plannedMachineChangeVal.value?.machineid === coupledMachineChangeVal.value?.machineid
+})
+
+async function handleKeyUp(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    await requestJobOrder()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keyup', handleKeyUp)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keyup', handleKeyUp)
+})
 </script>
 
 <template>
@@ -223,7 +277,6 @@ async function rerequestWei() {
             @click="requestJobOrder()"
           />
           {{ plankey }}
-          Joborder: <q-btn :label="84956" @click="(jobordernum = 84956), requestJobOrder()" /> can be used as an example
           <q-btn
             class="ml-auto mr-5 py-3 w-75 items-start"
             :label="t('allJobOrders')"
@@ -273,15 +326,23 @@ async function rerequestWei() {
               v-model="plannedMachineChangeVal"
               :options="machines"
               option-label="machinename"
+              :error="isCoupledTheSame || plannedMachineChangeVal?.machineid === machine.machineid"
+              :error-message="isCoupledTheSame ? t('warnings.coupledMachineIsTheSame') : plannedMachineChangeVal?.machineid === machine.machineid ? t('warnings.tryToChangeWithSameMachine') : ''"
               :label="t('plannedMachine')"
               style="width: 50%;"
             />
 
-            <q-checkbox v-model="isCoupled" :label="t('recipe.joborderCoupled')" />
+            <q-checkbox
+              v-model="isCoupled"
+              :label="t('recipe.joborderCoupled')"
+              @update:model-value="isCoupled === false ? coupledMachineChangeVal = null : ''"
+            />
 
             <q-select
               v-model="coupledMachineChangeVal"
+              :error="isCoupledTheSame"
               :disable="!isCoupled"
+              :error-message="t('warnings.coupledMachineIsTheSame')"
               :options="machines"
               option-label="machinename"
               :label="t('recipe.coupleMachine')"
@@ -294,6 +355,7 @@ async function rerequestWei() {
               v-close-popup
               flat
               :label="t('submit')"
+              :disable="isCoupledTheSame"
               color="black"
               @click="submitCoupleMachine()"
             />
@@ -314,6 +376,7 @@ async function rerequestWei() {
         <ParameterDialogContent :joborder="Number(lastJobOrder)" :plankey="plankey" />
       </q-dialog>
       <q-dialog
+        v-if="isThereAnyLog"
         v-model="showLogsDialog"
         full-height
         full-width
@@ -375,6 +438,7 @@ async function rerequestWei() {
         :key="button.name"
         class="footer-button"
         outline
+        :disabled="!plankey"
         color="black"
         @click="buttonAction(button.link)"
       >

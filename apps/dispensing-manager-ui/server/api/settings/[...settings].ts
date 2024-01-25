@@ -1,5 +1,6 @@
 import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
+import { filtersToKnex } from '~/shared/functions'
 
 const router = createRouter()
 export default useBase('/api/settings', router.handler)
@@ -31,6 +32,24 @@ router.get('/dispenser', defineEventHandler(async () => {
   return dispensers
 }))
 
+const dispenserParameters = {
+  dispNo: 'DISPENSERID',
+  name: 'NAME',
+  dispType: 'DISPENSERTYPENO',
+  fileName: 'BDYREQUESTNAME',
+  fileSystem: 'BDYREQUESTPATH',
+  protocol: 'PROTOCOL',
+  dispIP: 'IP',
+}
+
+router.post('/filtered-dispensers', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const dispensers = knex('DYTFDISPENSERSETTINGS')
+    .select(dispenserParameters)
+    .orderBy('DISPENSERID', 'asc')
+  return await filtersToKnex(body, dispenserParameters, dispensers)
+}))
+
 router.post('/dispenser', defineEventHandler(async (event) => {
   try {
     let dispenser
@@ -42,7 +61,7 @@ router.post('/dispenser', defineEventHandler(async (event) => {
       .where('DISPENSERID', body.dispNo)
       .select('DISPENSERID')
     if (dispenser.length)
-      return 'Error Message there already are dispenser with given id'
+      return 0
     dispenser = await knex('DYTFDISPENSERSETTINGS')
       .where('DISPENSERID', body.dispNo)
       .insert({
@@ -95,22 +114,29 @@ router.delete('/dispenser', defineEventHandler(async (event) => {
  * Machine Dispenser Connections settings
  */
 
-router.get('/machine-dispenser-connection', defineEventHandler(async () => {
-  const dispensers = await knex('DYTFMACHDISPCONNECTION as M')
-    .select({
-      machineid: 'M.MACHINEID',
-      dispNo: 'M.DISPENSERID',
-      dispName: 'D.NAME',
-      machinename: 'N.MACHINENAME',
-      controlDevice: 'N.CONTROLLERTYPE',
-    })
+const machineParameters = {
+  machineid: 'M.MACHINEID',
+  dispNo: 'M.DISPENSERID',
+  dispName: 'D.NAME',
+  machinename: 'N.MACHINENAME',
+  controlDevice: 'N.CONTROLLERTYPE',
+}
+
+router.post('/machine-dispenser-connection-filtered', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  let machines: any = knex('DYTFMACHDISPCONNECTION as M')
+    .select(machineParameters)
     .leftJoin('DYTFDISPENSERSETTINGS as D', 'M.DISPENSERID', 'D.DISPENSERID')
     .leftJoin('DYTFMACHINES as N', 'N.MACHINEID', 'M.MACHINEID')
     .orderBy('M.MACHINEID', 'M.DISPENSERID')
-
+  if (body?.length > 0) {
+    machines = await filtersToKnex(body, machineParameters, machines)
+  } else {
+    machines = await machines
+  }
   const result: Array<{ machineid: number; disps: Array<{ dispNo: number; name: string }>; machinename: string; controlDevice: number }> = []
   let lastID = 0
-  dispensers.forEach((log) => {
+  machines.forEach((log) => {
     if (lastID === log.machineid)
       result[result.length - 1].disps.push({ dispNo: log.dispNo, name: log.dispName })
     else {
@@ -131,7 +157,7 @@ router.post('/machine-dispenser-connection', defineEventHandler(async (event) =>
   const isThereMachine = await knex('DYTFMACHINES')
     .where('MACHINEID', body.machineid)
   if (isThereMachine.length > 0)
-    return 'A machine already exists with given ID'
+    return 0
   await knex('DYTFMACHINES')
     .insert({
       MACHINEID: body.machineid,
@@ -201,6 +227,7 @@ router.get('/material', defineEventHandler(async () => {
     .select({
       materialCode: 'MATERIALCODE',
       materialName: 'MATERIALNAME',
+      materialLabel: knex.raw("CONCAT('(', MATERIALCODE, ') ', MATERIALNAME)"),
       materialGroup: 'MADDEGRUPNO',
       density: 'YOGUNLUK',
       ph: 'PH',
@@ -211,6 +238,27 @@ router.get('/material', defineEventHandler(async () => {
     })
     .orderBy('MATERIALCODE', 'asc')
   return dispensers
+}))
+
+const selectParametersMaterials = {
+  materialCode: 'MATERIALCODE',
+  materialName: 'MATERIALNAME',
+  materialLabel: knex.raw("CONCAT('(', MATERIALCODE, ') ', MATERIALNAME)"),
+  materialGroup: 'MADDEGRUPNO',
+  density: 'YOGUNLUK',
+  ph: 'PH',
+  source: 'SOURCE',
+  cost: 'BIRIMMALIYET',
+  rerequestable: 'ReRequestable',
+  directTransfer: 'DirectTransfer',
+}
+
+router.post('/filtered-materials', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const materials = knex('DYTFMATERIAL')
+    .select(selectParametersMaterials)
+    .orderBy('MATERIALCODE', 'asc')
+  return await filtersToKnex(body, selectParametersMaterials, materials)
 }))
 
 router.get('/material-connections', defineEventHandler(async (event) => {
@@ -232,7 +280,7 @@ router.post('/material-connection', defineEventHandler(async (event) => {
   const isThereMaterial = await knex('DYTFMATERIAL')
     .where('MATERIALCODE', body.materialCode)
   if (isThereMaterial.length > 0)
-    return 'A material already exists with given material code'
+    return 0
   await knex('DYTFMATERIAL')
     .insert({
       MATERIALCODE: body.materialCode,
@@ -295,7 +343,7 @@ router.delete('/material', defineEventHandler(async (event) => {
  */
 
 router.get('/request-mechanism-settings', defineEventHandler(async () => {
-  const dispensers = await knex('DYTFDYSETTINGS')
+  const sett = await knex('DYTFDYSETTINGS')
   // saltText: '',
   // reqMechanismAnswerOptions: '',
   // genericMaterialTwoText: '',
@@ -324,7 +372,7 @@ router.get('/request-mechanism-settings', defineEventHandler(async () => {
       coupleMechanismSplit: 'DYCOUPLEMECHANISM',
       justRunOnPlannedMachine: 'DYMACHCONTROLMECH',
     })
-  return dispensers[0]
+  return sett[0]
 }))
 
 // DirectTransferActive
@@ -351,11 +399,11 @@ router.put('/request-mechanism-settings', defineEventHandler(async (event) => {
       mmForDustChem: body.tozChemTartim,
       mmForManMaterial: body.manuelMateryalTartim,
       SaltRequestActive: body.genericSaltActive,
-      saltCode: body.saltCode,
+      saltCode: body.genericSaltActive ? body.saltCode : '',
       genericMaterialOneActive: body.genericMaterialOneActive,
-      genericMaterialOne: body.genericMaterialOne,
+      genericMaterialOne: body.genericMaterialOneActive ? body.genericMaterialOne : '',
       genericMaterialTwoActive: body.genericMaterialTwoActive,
-      genericMaterialTwo: body.genericMaterialTwo,
+      genericMaterialTwo: body.genericMaterialTwoActive ? body.genericMaterialTwo : '',
       ChemTankLevelControl: body.chemTankLevelControl,
       DYMANUALTANKMECH: body.manuelOnlineRequestTankNoControl,
       DYCOUPLEMECHANISM: body.coupleMechanismSplit,
@@ -366,7 +414,7 @@ router.put('/request-mechanism-settings', defineEventHandler(async (event) => {
   // saltText: '',
   // genericMaterialOneText: '',
   // genericMaterialTwoText: '',
-  return settings
+  return 1
 }))
 
 router.get('/file-system', defineEventHandler(async () => {

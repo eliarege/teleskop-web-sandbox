@@ -1,5 +1,7 @@
 import type { Knex } from 'knex'
+import { Notify } from 'quasar'
 import type { FilterSlot } from './types'
+import { colors } from './constants'
 
 export async function navigateToPage(page: string) {
   await navigateTo(`/${page}`)
@@ -21,21 +23,25 @@ export function textAlignOverride(pos: string) {
 export function rowBGColorHandler(row: any) {
   let temp = 'background-color: '
   if (row.field === 'status') {
-    if (row.value === 0)
-      temp += '#007BFF'
-    if (row.value === 1)
-      temp += '#64abfc'
-    if (row.value === 2)
-      temp += '#73cece'
-    if (row.value === 4)
-      temp += '#7f72fa'
-    if (row.value === 10)
-      temp += '#ffbb00'
-    if (row.value === 3)
-      temp += '#4CAF50'
-    if (row.value === 8)
-      temp += '#FF4B4B'
-    temp += '; width: 10rem; border-color: white; border-width: bold; color: white; font-weight: bolder; font-size: medium'
+    if (row.value === 0) {
+      temp += 'white; text-color: black'
+    } else {
+      if (row.value === 1)
+        temp += colors.status1
+      if (row.value === 2)
+        temp += colors.status2
+      if (row.value === 4)
+        temp += colors.status4
+      if (row.value === 10)
+        temp += colors.status10
+      if (row.value === 3)
+        temp += colors.status3
+      if (row.value === 8)
+        temp += colors.status8
+      temp += '; color: white;'
+    }
+    console.log(temp)
+    temp += 'width: 10rem; border-color: white; border-width: bold; font-weight: bolder; font-size: medium;'
   }
   return temp
 }
@@ -94,3 +100,11 @@ export async function filtersToKnex(filters: Array<FilterSlot>, attributes: any,
 //     knexInstance.andWhere(name, '>=', filter.value.min)
 //   }
 // }
+
+export function notification(isSuccess: any, message: string) {
+  Notify.create({
+    message,
+    type: isSuccess ? 'positive' : 'warning',
+    position: 'top',
+  })
+}

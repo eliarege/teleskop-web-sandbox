@@ -214,9 +214,11 @@ function isCorrectPlankey(param: any) {
       :border="true"
       :stripe="true"
       table-layout="fixed"
-      header-cell-class-name="whitespace-nowrap"
+      class-name="el-table-override"
+      header-cell-class-name="whitespace-nowrap text-black"
+      row-class-name="text-black"
       :cell-class-name="a"
-      style="color: black; cursor: pointer;"
+      style="color: rgb(223, 0, 0); cursor: pointer;"
       size="small"
       empty-text="There is no Recipe to show."
       :show-overflow-tooltip="true"
@@ -272,10 +274,10 @@ function isCorrectPlankey(param: any) {
             :options="priorityOptions"
           />
         </q-card-section>
-        <q-card-section v-if="priority && isTankNoRequired">
+        <q-card-section v-if="isTankNoRequired">
           <span class="text-h6"> {{ t('recipe.inputTankNo') }}</span>
         </q-card-section>
-        <q-card-section v-if="priority && isTankNoRequired">
+        <q-card-section v-if="isTankNoRequired">
           <q-input
             v-model="tankNo"
             type="number"
@@ -379,7 +381,14 @@ function isCorrectPlankey(param: any) {
 
 <style lang="postcss">
 .selected-blue {
-  background-color: #cce8ff !important;
+  background-color: #b8dfff !important;
+}
+.el-table {
+    --el-table-border: 1.5px solid #999999;
+}
+
+.el-table thead.is-group th.el-table__cell {
+    background: #aaaaaa;
 }
 .context-menu {
   position: fixed;

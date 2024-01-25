@@ -8,7 +8,7 @@ const selectParameters = {
   tankNo: 'r.TANKNO',
   programNo: 'r.PROGRAMNO',
   programName: 'p.NAME',
-  recipeType: 'r.ACTUALRECIPETYPE',
+  recipeType: 'r.RECIPETYPE',
   recipeProcessNo: 'r.RECIPEINDEX',
   stepNo: 'r.PROGRAMSTEPNO',
   recipeStepNo: 'r.RECIPESTEPNO',

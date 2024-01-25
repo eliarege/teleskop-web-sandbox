@@ -7,7 +7,7 @@ import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const recetetartim = t('dispensingManager.recipeMeasurement')
-const paginationSync = ref(5)
+const paginationSync = ref(500)
 const paginationPageLeft = ref(1)
 
 type Action = 'retry' | 'cancel'
@@ -20,25 +20,79 @@ const actions = ref<Action[]>(['retry', 'cancel'])
 const confirmationDialog = ref<ConfirmationDialog>({ vis: false, act: 'cancel' })
 
 const machines = await $fetch('/api/machine/machines')
+const dispensers = await $fetch('/api/settings/dispenser')
 const columnsRecipe: Column[] = [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
-  { name: 'machinename', label: t('machinename'), field: 'machinename', filterable: true, filterType: 'select', selectionOptions: machines, optionLabel: 'machinename', optionValue: 'machineid' },
+  {
+    name: 'machinename',
+    label: t('machinename'),
+    field: 'machinename',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: machines,
+    optionLabel: 'machinename',
+    optionValue: 'machineid',
+  },
   { name: 'tankno', label: t('tankNo'), field: 'tankno', filterable: true, filterType: 'comparison' },
-  { name: 'dispenserName', label: t('dispensingManager.materialDistributor'), field: 'dispenserName', filterable: true }, // TODO: Dispenserşarı dönen endpoint
+  {
+    name: 'name',
+    label: t('dispensingManager.materialDistributor'),
+    field: 'name',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: dispensers,
+    optionLabel: 'name',
+    optionValue: 'dispNo',
+  }, // TODO: Dispenserşarı dönen endpoint
   { name: 'programno', label: t('programNo'), field: 'programno', filterable: true, filterType: 'comparison' },
-  { name: 'programname', label: t('programName'), field: 'programname', filterable: true }, // TODO: select
+  {
+    name: 'programname',
+    label: t('programName'),
+    field: 'programname',
+    filterable: true,
+    filterType: 'includes',
+  },
   { name: 'stepno', label: t('dispensingManager.stepNo'), field: 'stepno', filterable: true, filterType: 'comparison' },
-  { name: 'recipeType', label: t('dispensingManager.recipeType'), field: 'recipeType', filterable: true, filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType' },
+  {
+    name: 'recipeType',
+    label: t('dispensingManager.recipeType'),
+    field: 'recipeType',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: [
+      { label: t('recipeTypes.0'), recipeType: 0 },
+      { label: t('recipeTypes.1'), recipeType: 1 },
+    ],
+    optionLabel: 'label',
+    optionValue: 'recipeType',
+  },
   // filterType: 'select', selectionOptions: [{ label: t('recipeTypes.0'), recipeType: 0 }, { label: t('recipeTypes.1'), recipeType: 1 }], optionLabel: 'label', optionValue: 'recipeType'}]
   { name: 'recipeProcessNo', label: t('dispensingManager.recipeOrder'), field: 'recipeProcessNo', filterable: true, filterType: 'comparison' },
   { name: 'recipeStepNo', label: t('dispensingManager.recipeStepNum'), field: 'recipeStepNo', filterable: true, filterType: 'comparison' },
-  { name: 'status', label: t('statusCodes.text'), field: 'status' },
+  {
+    name: 'status',
+    label: t('statusCodes.text'),
+    field: 'status',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: [
+      { label: t('statusCodes.0'), status: 0 },
+      { label: t('statusCodes.1'), status: 1 },
+      { label: t('statusCodes.2'), status: 2 },
+      { label: t('statusCodes.3'), status: 3 },
+      { label: t('statusCodes.4'), status: 4 },
+      { label: t('statusCodes.8'), status: 8 },
+      { label: t('statusCodes.10'), status: 10 },
+    ],
+    optionLabel: 'label',
+    optionValue: 'status',
+  },
 ]
 const columnsMaterial = [
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
   { name: 'materialCode', label: t('materialCode'), field: 'materialCode' },
-  { name: 'dispenserName', label: t('dispensingManager.materialDistributor'), field: 'dispenserName' },
+  { name: 'name', label: t('dispensingManager.materialDistributor'), field: 'name' },
   { name: 'amount', label: t('recipe.amount'), field: 'amount' },
   { name: 'status', label: t('statusCodes.text'), field: 'status' },
 ]
@@ -60,13 +114,16 @@ async function updateRecipe() {
 }
 setInterval(updateRecipe, 10000)
 const material = ref()
+const selectedRow = ref()
+
 async function fetchMaterialData(reqnumber: number) {
-  const materialDataTemp = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
-  material.value = materialDataTemp
+  material.value = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
 }
 
 async function applyFilters(updatedValue: any) {
   filters.value = updatedValue
+  material.value = []
+  selectedRow.value = null
   await updateRecipe()
 }
 
@@ -75,11 +132,11 @@ async function updateRecipeTable() {
   await updateRecipe()
 }
 
-const selectedRow = ref()
-
-async function selectRow(row: any) {
-  selectedRow.value = row
-  await fetchMaterialData(row.reqnumber)
+async function selectRow(rowIndex: any) {
+  console.log(recipe.value[rowIndex])
+  selectedRow.value = recipe.value[rowIndex]
+  selectedRow.value.rowIndex = rowIndex
+  await fetchMaterialData(recipe.value[rowIndex].reqnumber)
 }
 
 async function clickShowRecipe(row: any, isLogs: boolean) {
@@ -158,6 +215,27 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
       })
   }
 }
+
+function handleKeyUp(event) {
+  if (event.key === 'ArrowUp') {
+    if (selectedRow.value.rowIndex) {
+      selectRow(selectedRow.value.rowIndex - 1)
+    }
+  } else if (event.key === 'ArrowDown') {
+    if (selectedRow.value.rowIndex !== undefined && recipe.value[selectedRow.value.rowIndex + 1]) {
+      event.preventDefault()
+      selectRow(selectedRow.value.rowIndex + 1)
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keyup', handleKeyUp)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keyup', handleKeyUp)
+})
 </script>
 
 <template>
@@ -201,8 +279,8 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
                 : recipe.rowIndex % 2
                   ? `background-color: ${colors.tableGray}`
                   : '' "
-              @click="selectRow(recipe.row)"
-              @contextmenu="selectRow(recipe.row)"
+              @click="selectRow(recipe.rowIndex)"
+              @contextmenu="selectRow(recipe.rowIndex)"
             >
               <!-- @right="" -->
               <q-td
@@ -308,8 +386,25 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
         :columns="columnsMaterial"
         :rows="material"
         row-key="name"
+        class="material-table"
         :class="textAlignOverride('left')"
       >
+        <template #header="tableProps">
+          <q-tr :props="tableProps">
+            <q-th
+              v-for="col in tableProps.cols"
+              :key="col.name"
+              :props="tableProps"
+            >
+              <div
+                class="column-group text-override-left-header"
+                :style="col.filterable ? 'cursor: pointer;' : ''"
+              >
+                {{ col.label }}
+              </div>
+            </q-th>
+          </q-tr>
+        </template>
         <template #body="material">
           <q-tr>
             <q-td
@@ -365,6 +460,22 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
     width: 100%;
     margin-right: 0.2rem;
   }
+}
+
+.material-table {
+  border: 1px solid rgb(0, 0, 0);
+  border-radius: 5px;
+  padding: 3px 8px;
+}
+.column-group {
+  width: 100%;
+  justify-content: center;
+  padding: 0.25em 0.65em;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  color: rgb(0, 0, 0);
+  font-size: 12.5px;
+  font-weight: 700;
 }
 .responsive-flex-container {
   display: flex;

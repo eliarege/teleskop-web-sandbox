@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
+import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref([])
 const types = ref([])
-const protocols = ref(['7', '15', 'n', 'n-v2', 'n-v3', 'n-v4', 'n-v5', 'EMTS'])
+const protocols = ref([
+  { label: '7', protocol: '7' },
+  { label: '15', protocol: '15' },
+  { label: 'n', protocol: 'n' },
+  { label: 'n-v2', protocol: 'n-v2' },
+  { label: 'n-v3', protocol: 'n-v3' },
+  { label: 'n-v4', protocol: 'n-v4' },
+  { label: 'n-v5', protocol: 'n-v5' },
+  { label: 'EMTS', protocol: 'EMTS' },
+])
 
 await getRows()
 await getTypes()
@@ -17,18 +27,21 @@ const columns: Array<Column> = [
     label: t('settings.dispSettings.dispNo'),
     field: 'dispNo',
     filterable: true,
+    filterType: 'comparison',
   },
   {
     name: 'name',
     label: t('settings.dispSettings.dispName'),
     field: 'name',
     filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'fileSystem',
     label: t('settings.dispSettings.dispFileSystem'),
     field: 'fileSystem',
     filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'fileName',
@@ -40,6 +53,10 @@ const columns: Array<Column> = [
     label: t('settings.dispSettings.dispProtocol'),
     field: 'protocol',
     filterable: true,
+    filterType: 'select',
+    selectionOptions: protocols.value,
+    optionLabel: 'label',
+    optionValue: 'protocol',
   },
 ]
 
@@ -73,6 +90,14 @@ function resetDispenserInfo(row?: any) {
         : disp.value = row[disp.field]
     })
   }
+}
+
+async function applyFilters(updatedValue: any) {
+  rows.value = await $fetch('/api/settings/filtered-dispensers', {
+    method: 'POST',
+    body: updatedValue,
+  })
+  rows.value.unshift({})
 }
 
 const expandedRow = ref()
@@ -113,11 +138,21 @@ function customSortMethod(rows, sortBy, descending) {
   return sortedRows
 }
 
+function notification(isSuccess: any, message: string) {
+  Notify.create({
+    message,
+    type: isSuccess ? 'positive' : 'warning',
+    position: 'top',
+  })
+}
+
 async function submit(rowIndex: number, row: any) {
   let isOriginNo = true
+  let isSuccess
+  let keyI18N
   /** If create */
   if (rowIndex === 0) {
-    const a = await $fetch('/api/settings/dispenser', {
+    isSuccess = await $fetch('/api/settings/dispenser', {
       method: 'post',
       body: {
         dispNo: dispenserInfo.value[0].value,
@@ -126,16 +161,17 @@ async function submit(rowIndex: number, row: any) {
         dispIP: dispenserInfo.value[3].value,
         fileSystem: dispenserInfo.value[4].value,
         fileName: dispenserInfo.value[5].value,
-        protocol: dispenserInfo.value[6].value,
+        protocol: dispenserInfo.value[6].value.protocol,
       },
     })
+    keyI18N = 'warnings.createResponse'
     expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
     if (row.dispNo !== dispenserInfo.value[0].value) {
       isOriginNo = false
     }
-    await $fetch('/api/settings/dispenser', {
+    isSuccess = await $fetch('/api/settings/dispenser', {
       method: 'put',
       body: {
         dispNo: dispenserInfo.value[0].value,
@@ -145,20 +181,23 @@ async function submit(rowIndex: number, row: any) {
         dispIP: dispenserInfo.value[3].value,
         fileSystem: dispenserInfo.value[4].value,
         fileName: dispenserInfo.value[5].value,
-        protocol: dispenserInfo.value[6].value,
+        protocol: dispenserInfo.value[6].value.protocol,
       },
     })
+    keyI18N = 'warnings.changeResponse'
   }
+  notification(isSuccess, t(keyI18N!, { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   await getRows()
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  await $fetch('/api/settings/dispenser', {
+  const isSuccess = await $fetch('/api/settings/dispenser', {
     method: 'delete',
     body: {
       dispNo: dispenserInfo.value[0].value,
     },
   })
+  notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   expandedRow.value = null
   /**
    * I did not reset the dispenserInfo array careful. It has to be
@@ -176,6 +215,7 @@ async function deleteRow() {
     :is-expandable="true"
     style="height: 85vh;"
     :custom-sort-method="customSortMethod"
+    @update-filter-slots="(evt) => applyFilters(evt)"
   >
     <template #custombody="props">
       <q-tr :props="props">
@@ -234,6 +274,8 @@ async function deleteRow() {
                     filled
                     options-dense
                     :options="protocols"
+                    option-label="label"
+                    option-value="protocol"
                     style="min-width: 150px"
                   />
                 </span>

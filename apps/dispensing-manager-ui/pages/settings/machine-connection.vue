@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FilterableTable from 'ui/components/FilterableTable.vue'
+import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
@@ -9,6 +10,16 @@ const disps = ref([])
 
 await getRows()
 await getDisps()
+const machines = await $fetch('/api/machine/machines')
+
+const controlDevices = [
+  { controlDevice: 0, label: 'Programatörü Yok' }, // TODO:
+  { controlDevice: 1, label: 'Eliar' },
+  { controlDevice: 2, label: 'Sedo' },
+  { controlDevice: 3, label: 'Setrex' },
+  { controlDevice: 4, label: 'Termo' },
+  { controlDevice: 5, label: 'Tonello' },
+]
 
 const columns: Array<Column> = [
   {
@@ -16,28 +27,28 @@ const columns: Array<Column> = [
     label: t('settings.machineCode'),
     field: 'machineid',
     filterable: true,
+    filterType: 'comparison',
   },
   {
     name: 'machinename',
     label: t('settings.machinename'),
     field: 'machinename',
     filterable: true,
+    filterType: 'select',
+    selectionOptions: machines,
+    optionLabel: 'machinename',
+    optionValue: 'machineid',
   },
   {
     name: 'controlDevice',
     label: t('settings.controlMach'),
     field: 'controlDevice',
     filterable: true,
+    filterType: 'select',
+    selectionOptions: controlDevices,
+    optionLabel: 'label',
+    optionValue: 'controlDevice',
   },
-]
-
-const controlDevices = [
-  { value: 0, label: 'Programatörü Yok' },
-  { value: 1, label: 'Eliar' },
-  { value: 2, label: 'Sedo' },
-  { value: 3, label: 'Setrex' },
-  { value: 4, label: 'Termo' },
-  { value: 5, label: 'Tonello' },
 ]
 
 const machineInfo = ref<{ label: string; value: any; field: string }[]>([
@@ -45,11 +56,12 @@ const machineInfo = ref<{ label: string; value: any; field: string }[]>([
   { label: t('settings.machinename'), value: '', field: 'machinename' },
   { label: t('settings.controlMach'), value: '', field: 'controlDevice' },
   { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
-
 ])
 
 async function getRows() {
-  rows.value = await $fetch('/api/settings/machine-dispenser-connection')
+  rows.value = await $fetch('/api/settings/machine-dispenser-connection-filtered', {
+    method: 'POST',
+  })
   rows.value.unshift({})
 }
 
@@ -63,7 +75,7 @@ function resetMachineInfo(row?: any) {
   else {
     machineInfo.value.forEach((mach) => {
       if (mach.field === 'controlDevice') {
-        controlDevices.forEach(dev => dev.value === row[mach.field] ? mach.value = dev : '')
+        controlDevices.forEach(dev => dev.controlDevice === row[mach.field] ? mach.value = dev : '')
       } else if (mach.field === 'connectedDisps') {
         mach.value = row.disps
       } else {
@@ -71,6 +83,14 @@ function resetMachineInfo(row?: any) {
       }
     })
   }
+}
+
+async function applyFilters(updatedValue: any) {
+  rows.value = await $fetch('/api/settings/machine-dispenser-connection-filtered', {
+    method: 'POST',
+    body: updatedValue,
+  })
+  rows.value.unshift({})
 }
 
 const expandedRow = ref()
@@ -110,37 +130,52 @@ function customSortMethod(rows, sortBy, descending) {
   return sortedRows
 }
 
+function notification(isSuccess: any, message: string) {
+  Notify.create({
+    message,
+    type: isSuccess ? 'positive' : 'warning',
+    position: 'top',
+  })
+}
+
 async function submit(rowIndex: number) {
+  let isSuccess
+  let keyI18N
   /** If create */
   if (rowIndex === 0) {
-    await $fetch('/api/settings/machine-dispenser-connection', {
+    isSuccess = await $fetch('/api/settings/machine-dispenser-connection', {
       method: 'post',
       body: {
         machineid: machineInfo.value[0].value,
         machinename: machineInfo.value[1].value,
-        controlDevice: machineInfo.value[2].value.value,
+        controlDevice: machineInfo.value[2].value.controlDevice,
         disps: machineInfo.value[3].value,
       },
     })
+    keyI18N = 'warnings.createResponse'
+
     expandedRow.value = null
   }
   if (rowIndex) { /** If it is put */
-    await $fetch('/api/settings/machine-dispenser-connection', {
+    console.log(machineInfo.value)
+    isSuccess = await $fetch('/api/settings/machine-dispenser-connection', {
       method: 'put',
       body: {
         machineid: machineInfo.value[0].value,
         machinename: machineInfo.value[1].value,
-        controlDevice: machineInfo.value[2].value.value,
+        controlDevice: machineInfo.value[2].value.controlDevice,
         disps: machineInfo.value[3].value,
       },
     })
+    keyI18N = 'warnings.changeResponse'
   }
+  notification(isSuccess, t(keyI18N!, { type: t('warnings.machine'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   await getRows()
 }
 
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  await $fetch('/api/settings/machine-dispenser-connection', {
+  const isSuccess = await $fetch('/api/settings/machine-dispenser-connection', {
     method: 'delete',
     body: {
       machineid: machineInfo.value[0].value,
@@ -148,6 +183,8 @@ async function deleteRow() {
     },
   })
   expandedRow.value = null
+  notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.machine'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+
   await getRows()
 }
 </script>
@@ -159,6 +196,7 @@ async function deleteRow() {
     :is-expandable="true"
     style="height: 85vh;"
     :custom-sort-method="customSortMethod"
+    @update-filter-slots="(evt) => applyFilters(evt)"
   >
     <template #custombody="props">
       <q-tr :props="props">
@@ -222,7 +260,7 @@ async function deleteRow() {
                     class="w-70"
                     options-dense
                     :options="controlDevices"
-                    option-value="value"
+                    option-value="controlDevice"
                     option-label="label"
                     style="min-width: 150px"
                   />
