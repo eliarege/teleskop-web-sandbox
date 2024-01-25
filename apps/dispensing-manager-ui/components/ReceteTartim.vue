@@ -126,6 +126,8 @@ if (route.query.correctionNo && route.query.joborder) {
   if (route.query.isLogs === 'true') {
     if (isThereAnyLog.value)
       showLogsDialog.value = true
+    else
+      notification(false, t('warnings.noDataLogs', { joborder: jobordernum.value }))
   }
 }
 
