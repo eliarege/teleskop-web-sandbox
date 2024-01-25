@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { Splitter, Tooltip } from '@bryntum/schedulerpro-trial'
+import { addDays } from 'date-fns'
 import { EliarModal } from 'ui'
 import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
@@ -10,8 +11,8 @@ const currentTime = useNow({ interval: 1000 })
 const { t } = useI18n()
 
 // TODO (BEFORE PRODUCTION): change start/end date!
-const startDate = ref('2022/07/01')
-const endDate = ref('2022/07/07')
+const startDate = ref('2022/01/01')
+const endDate = ref('2024/01/23')
 
 const schedulerDateModel = ref({
   from: startDate.value,
@@ -48,19 +49,19 @@ const showModal = reactive({
 })
 
 const { data: machines } = await useFetch('/api/machineList')
-const { data: events, refresh: plannedRefresh } = await useFetch('/api/timeBased/plannedEvents', {
-  query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
-})
+const { data: events, refresh: plannedRefresh } = await useFetch('/api/timeBased/plannedEvents')
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
+// TODO: make api for real events
 const modifiedMachines = computed(() => machines.value?.map((m) => {
   return {
     ...m,
     // TODO?: machine icons
-    // iconCls: 'b-fa b-fa-solid b-fa-play',
+    // iconCls: m.'b-fa b-fa-solid b-fa-play',
   }
 }))
+
 const modifiedEvents = computed(() => events.value?.map((ev) => {
   return {
     id: ev.planKey,
@@ -107,6 +108,58 @@ function dateRangeEnd() {
   scheduler.endDate = new Date(schedulerDateModel.value.to)
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
+}
+async function eventTooltip(eventRecord: any) {
+  const startMonth = DateHelper.format(eventRecord.startDate, 'MMM')
+  const startDay = DateHelper.format(eventRecord.startDate, 'D')
+
+  const endMonth = DateHelper.format(eventRecord.endDate, 'MM')
+  const endDay = DateHelper.format(eventRecord.endDate, 'D')
+
+  const startMinuteRotation = (eventRecord.startDate.getMinutes() + eventRecord.startDate.getSeconds() / 60) * 6
+  const startHourRotation = (eventRecord.startDate.getHours() % 12 + eventRecord.startDate.getMinutes() / 60) * 30
+
+  const endMinuteRotation = (eventRecord.endDate.getMinutes() + eventRecord.endDate.getSeconds() / 60) * 6
+  const endHourRotation = (eventRecord.endDate.getHours() % 12 + eventRecord.endDate.getMinutes() / 60) * 30
+
+  const parameters = await $fetch('/api/tootlipParameters', {
+    query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
+  })
+  const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
+  return `
+        <div>
+          <div class="b-sch-event-title">${eventRecord.originalData.name}</div>
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
+            <div class="b-sch-clock">
+              <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">
+                ${startMonth}
+              </div>
+              <div class="b-sch-minute-indicator" style="transform: rotate(${startMinuteRotation}deg);">
+                ${startDay}
+              </div>
+              <div class="b-sch-clock-dot"></div>
+            </div>
+            <span class="b-sch-clock-text">${DateHelper.format(eventRecord.startDate, scheduler.displayDateFormat)}</span>
+          </div>
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-enddate">
+            <div class="b-sch-clock">
+              <div class="b-sch-hour-indicator" style="transform: rotate(${endHourRotation}deg);">
+                ${endMonth}
+              </div>
+              <div class="b-sch-minute-indicator" style="transform: rotate(${endMinuteRotation}deg);">
+                ${endDay}
+              </div>
+              <div class="b-sch-clock-dot"></div>
+            </div>
+            <span class="b-sch-clock-text">${DateHelper.format(eventRecord.endDate, scheduler.displayDateFormat)}</span>
+            </div>
+          <div class="b-sch-event-title">
+            <div class="b-sch-event-title">
+              ${parameterValues}
+            </div>
+          </div>
+        </div>
+`
 }
 onMounted(async () => {
   const schedule: SchedulerPro = scheduler = new TimeSchedule({
@@ -278,6 +331,7 @@ onMounted(async () => {
       timeRanges: {
         showCurrentTimeLine: true,
       },
+      eventTooltip: ({ eventRecord }: any) => eventTooltip(eventRecord),
     },
     tbar: [
       {
@@ -385,8 +439,6 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomOut(),
       },
-      '->',
-      'Time Based',
     ],
   } as Partial<SchedulerProConfig>)
   new Splitter({

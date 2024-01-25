@@ -1,7 +1,7 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { Splitter } from '@bryntum/schedulerpro-trial'
+import { DateHelper, Splitter } from '@bryntum/schedulerpro-trial'
 import { addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
 import { useI18n } from 'vue-i18n'
@@ -69,7 +69,6 @@ const modifiedEvents = computed(() => events.value?.map((ev: any) => {
     ...ev,
   } as QueueBasedPlannedEvents
 }))
-console.log(modifiedEvents.value?.map(a => a.startDate))
 const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
   return {
     id: ev.planKey,
@@ -131,6 +130,58 @@ function dateRangeEnd() {
   scheduler.endDate = new Date(schedulerDateModel.value.to)
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
+}
+async function eventTooltip(eventRecord: any) {
+  const startMonth = DateHelper.format(eventRecord.startDate, 'MMM')
+  const startDay = DateHelper.format(eventRecord.startDate, 'D')
+
+  const endMonth = DateHelper.format(eventRecord.endDate, 'MM')
+  const endDay = DateHelper.format(eventRecord.endDate, 'D')
+
+  const startMinuteRotation = (eventRecord.startDate.getMinutes() + eventRecord.startDate.getSeconds() / 60) * 6
+  const startHourRotation = (eventRecord.startDate.getHours() % 12 + eventRecord.startDate.getMinutes() / 60) * 30
+
+  const endMinuteRotation = (eventRecord.endDate.getMinutes() + eventRecord.endDate.getSeconds() / 60) * 6
+  const endHourRotation = (eventRecord.endDate.getHours() % 12 + eventRecord.endDate.getMinutes() / 60) * 30
+
+  const parameters = await $fetch('/api/tootlipParameters', {
+    query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
+  })
+  const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
+  return `
+        <div>
+          <div class="b-sch-event-title">${eventRecord.originalData.name}</div>
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
+            <div class="b-sch-clock">
+              <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">
+                ${startMonth}
+              </div>
+              <div class="b-sch-minute-indicator" style="transform: rotate(${startMinuteRotation}deg);">
+                ${startDay}
+              </div>
+              <div class="b-sch-clock-dot"></div>
+            </div>
+            <span class="b-sch-clock-text">${DateHelper.format(eventRecord.startDate, scheduler.displayDateFormat)}</span>
+          </div>
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-enddate">
+            <div class="b-sch-clock">
+              <div class="b-sch-hour-indicator" style="transform: rotate(${endHourRotation}deg);">
+                ${endMonth}
+              </div>
+              <div class="b-sch-minute-indicator" style="transform: rotate(${endMinuteRotation}deg);">
+                ${endDay}
+              </div>
+              <div class="b-sch-clock-dot"></div>
+            </div>
+            <span class="b-sch-clock-text">${DateHelper.format(eventRecord.endDate, scheduler.displayDateFormat)}</span>
+            </div>
+          <div class="b-sch-event-title">
+            <div class="b-sch-event-title">
+              ${parameterValues}
+            </div>
+          </div>
+        </div>
+`
 }
 onMounted(async () => {
   const schedule: SchedulerPro = scheduler = new QueueSchedule({
@@ -298,6 +349,7 @@ onMounted(async () => {
       timeRanges: {
         showCurrentTimeLine: true,
       },
+      eventTooltip: ({ eventRecord }: any) => eventTooltip(eventRecord),
     },
     tbar: [
       {

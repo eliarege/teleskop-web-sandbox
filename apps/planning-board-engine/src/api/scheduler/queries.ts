@@ -150,12 +150,49 @@ export async function getMachines() {
     .where('b.INUSE', '=', 1)
     .andWhere('b.USEINTELESKOP', '=', 1)
 }
-export async function getErpParameteres(machineId: number) {
-  return await knex({ p: 'dbo.BFERPPARAMETERDEFINITIONS' }).select({
-    id: 'p.PARAMID',
-    paramName: 'p.PARAMNAME',
-    erpFieldName: 'p.ERPFIELDNAME',
-  }).where('p.MACHINEID', '=', machineId)
+export async function getErpParameters(machineId: number) {
+  const definitions = await knex({ p: 'dbo.BFERPPARAMETERDEFINITIONS' })
+    .select({
+      id: 'p.PARAMID',
+      paramName: 'p.PARAMNAME',
+      erpFieldName: 'p.ERPFIELDNAME',
+    }).where('p.MACHINEID', '=', machineId)
+
+  const plannedDefinitions = await knex({ p: 'dbo.PTERPPARAMBYUSER' })
+    .leftJoin('dbo.BFERPPARAMETERDEFINITIONS as d', 'd.PARAMID', 'p.PARAMID')
+    .select({
+      paramId: 'p.PARAMID',
+      owner: 'p.OWNER',
+      machineId: 'p.MACHINEID',
+      paramName: 'd.PARAMNAME',
+    }).where('p.OWNER', '=', 117).andWhere('p.MACHINEID', '=', machineId)
+    .groupBy('p.OWNER', 'p.PARAMID', 'd.PARAMNAME', 'p.MACHINEID')
+
+  const unplannedDefinitions = await knex({ p: 'dbo.PTERPPARAMBYUSER' })
+    .leftJoin('dbo.BFERPPARAMETERDEFINITIONS as d', 'd.PARAMID', 'p.PARAMID')
+    .select({
+      paramId: 'p.PARAMID',
+      owner: 'p.OWNER',
+      machineId: 'p.MACHINEID',
+      paramName: 'd.PARAMNAME',
+    }).where('p.OWNER', '=', 118).andWhere('p.MACHINEID', '=', machineId)
+    .groupBy('p.OWNER', 'p.PARAMID', 'd.PARAMNAME', 'p.MACHINEID')
+  return { definitions, plannedDefinitions, unplannedDefinitions }
+}
+export async function getEventTooltipParams(planKey: number, machineId: number) {
+  const subquery = await knex('PTERPPARAMBYUSER as p')
+    .select('p.PARAMID')
+    .leftJoin('BFERPPARAMETERDEFINITIONS as d', 'd.PARAMID', 'p.PARAMID')
+    .where('p.MACHINEID', '=', machineId)
+    .where('p.OWNER', '=', 118)
+    .groupBy('p.PARAMID')
+  return await knex('DYBFBATCHPLANPARAMETERS as b')
+    .select({
+      paramString: 'b.PARAMSTRING',
+      value: 'b.VALUE',
+    })
+    .where('b.PLANKEY', '=', planKey)
+    .whereIn('b.BATCHPARAMETERID', subquery.map(item => item.PARAMID.toString()))
 }
 export async function isTaskValid(planKey: number) {
   const taskPrgList: Set<number> = new Set(
@@ -208,6 +245,21 @@ export async function addBatchNote(jobOrder: string, note: string, userId: numbe
     SHOWONSCREEN: showOnScreen,
   })
 }
+export async function addErpParameters(paramId: number, owner: number, machineId: number) {
+  await knex('PTERPPARAMBYUSER').insert({
+    USERID: 0,
+    ORDERID: 0,
+    PARAMID: paramId,
+    OWNER: owner,
+    MACHINEID: machineId,
+  })
+}
 export async function deleteNote(id: number) {
   await knex('PTBATCHNOTES').where('NOTEKEY', '=', id).delete()
+}
+export async function deleteErpParameters(paramId: number, owner: number, machineId: number) {
+  await knex('PTERPPARAMBYUSER')
+    .where('PARAMID', '=', paramId)
+    .andWhere('OWNER', '=', owner)
+    .andWhere('MACHINEID', '=', machineId).del()
 }

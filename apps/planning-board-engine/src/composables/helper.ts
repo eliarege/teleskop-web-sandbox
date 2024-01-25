@@ -64,7 +64,6 @@ export function generateEventDates(events: any[]): Event[] {
       startDate = new Date(previousEndDate.getTime() + 5 * 60 * 1000)
       endDate = addSeconds(startDate, event.theoreticalDuration)
     }
-    console.log({ endDate, startDate })
 
     const updatedEvent: Event = {
       ...event,

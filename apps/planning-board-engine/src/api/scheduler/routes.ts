@@ -1,10 +1,13 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import {
   addBatchNote,
+  addErpParameters,
+  deleteErpParameters,
   deleteEvent,
   deleteNote,
   getBatchNotes,
-  getErpParameteres,
+  getErpParameters,
+  getEventTooltipParams,
   getMachines,
   getPlanParameters,
   getPtStatus,
@@ -92,7 +95,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request, reply) => {
       try {
         const { machineId } = request.query
-        return await getErpParameteres(machineId)
+        return await getErpParameters(machineId)
       } catch (err) {
         fastify.log.error(`An error occured while fetching erp parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching erp parameters: ${err}` })
@@ -109,6 +112,19 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching valid status: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching valid status: ${err}` })
+      }
+    },
+  )
+  fastify.get(
+    '/planning_board/event_tooltip',
+    async (request: FastifyRequest<{ Querystring: { planKey: number; machineId: number } }>, reply) => {
+      try {
+        const { machineId, planKey } = request.query
+        const tooltipParams = await getEventTooltipParams(planKey, machineId)
+        return reply.code(200).send(tooltipParams)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching tooltip parameters: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching tooltip parameters: ${err}` })
       }
     },
   )
@@ -153,6 +169,21 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
+  fastify.post<{
+    Body: { paramId: number; owner: number; machineId: number }
+  }>(
+    '/planning_board/erp_parameters/add_parameter',
+    async (request, reply) => {
+      try {
+        const { machineId, owner, paramId } = request.body
+        await addErpParameters(paramId, owner, machineId)
+        return reply.code(200).send('Succesful')
+      } catch (err) {
+        fastify.log.error(`An error occured while adding batch note: ${err}`)
+        return reply.code(500).send({ error: `An error occured while adding batch note: ${err}` })
+      }
+    },
+  )
   fastify.delete<{
     Querystring: { id: number }
   }>(
@@ -165,6 +196,21 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         console.error(`An error occured while deleting batch note: ${err}`)
         return reply.code(500).send({ error: `An error occured while deleting batch note: ${err}` })
+      }
+    },
+  )
+  fastify.delete(
+    '/planning_board/erp_parameters/delete_parameter',
+    async (request: FastifyRequest<{
+      Querystring: { paramId: number; owner: number; machineId: number }
+    }>, reply) => {
+      try {
+        const { paramId, owner, machineId } = request.query
+        await deleteErpParameters(paramId, owner, machineId)
+        return reply.code(200).send('Succesful')
+      } catch (err) {
+        console.error(`An error occured while deleting erp parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occured while deleting erp parameter: ${err}` })
       }
     },
   )
