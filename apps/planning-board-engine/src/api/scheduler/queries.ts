@@ -1,4 +1,3 @@
-import { calculateDeviation, updateEventStates } from '../../composables/helper'
 import { knex } from '../../knexConfig'
 
 export async function getPtStatus() {

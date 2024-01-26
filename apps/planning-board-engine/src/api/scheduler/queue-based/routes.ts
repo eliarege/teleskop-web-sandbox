@@ -1,10 +1,10 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import { generateEventDates } from '../../../composables/helper'
+import { isTaskValid } from '../queries'
 import {
   getQueueBasedArchiveEvents,
   getQueueBasedPlannedEvents,
   getQueueBasedTheoreticalDuration,
-  isTaskValidQueueBased,
   scheduleQueueBasedEvents,
   updateQueueBasedEvents,
 } from './queries'
@@ -43,7 +43,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
       try {
         const { planKey } = request.query
-        const isValid = await isTaskValidQueueBased(planKey)
+        const isValid = await isTaskValid(planKey)
         return reply.code(200).send(isValid)
       } catch (err) {
         fastify.log.error(`An error occured while fetching valid status: ${err}`)
