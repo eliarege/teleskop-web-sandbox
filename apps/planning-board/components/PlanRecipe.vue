@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { LoadingSpinner, RecipeTable } from 'ui'
+import { LoadingSpinner } from 'ui'
 import type { TableColumnCtx } from 'element-plus'
 import type { RecipeRaw } from '~/shared/types'
 
-const props = defineProps<{ machineId: number; jobOrder: string }>()
+const props = defineProps<{ machineId: number, jobOrder: string }>()
 
 const { t } = useI18n()
 
@@ -28,7 +28,7 @@ const groupables = [
   { key: 'program', index: 1 },
   { key: 'reqNumber', index: 2 },
   { key: 'mainStep', index: 3 },
-] as { key: keyof RecipeRaw; index: number }[]
+] as { key: keyof RecipeRaw, index: number }[]
 const columns = computed(() => [
   { label: t('index'), prop: 'recIndex', align: 'center', showOverflowTooltip: true },
   { label: t('program'), prop: 'program', align: 'center', showOverflowTooltip: true },
@@ -37,7 +37,7 @@ const columns = computed(() => [
   { label: t('chem-code'), prop: 'chemCode', align: 'center', showOverflowTooltip: true },
   { label: t('material-name'), prop: 'materialName', align: 'center', showOverflowTooltip: true },
   { label: t('amount'), prop: 'newAmount', align: 'center', showOverflowTooltip: true },
-] as { label: string; prop: string; align: 'left' | 'right' | 'start' | 'end' | 'center'; showOverflowTooltip: boolean }[])
+] as { label: string, prop: string, align: 'left' | 'right' | 'start' | 'end' | 'center', showOverflowTooltip: boolean }[])
 </script>
 
 <template>
