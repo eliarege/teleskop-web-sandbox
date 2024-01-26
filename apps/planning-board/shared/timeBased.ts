@@ -1,38 +1,3 @@
-export interface QueueBasedPlannedEventsRaw {
-  planKey: number
-  machineId: number
-  queueNumber: number
-  jobOrder: string
-  programNoList: string
-  theoreticalDuration: number
-  fabricWeight: string
-  partyNumber: string
-  note: string
-  isDeleted: boolean
-  isStarted: boolean
-  isStopped: boolean
-}
-export interface QueueBasedPlannedEventsExtended extends QueueBasedPlannedEventsRaw {
-  // isDeviaiton: boolean
-  isRunning: boolean
-}
-
-export interface QueueBasedArchiveEvents extends QueueBasedPlannedEventsRaw {
-  batchKey: number
-  startTime: Date | string
-  endTime: Date | string
-  cancelTime: Date | string
-  deviation: number
-}
-
-export interface ArchiveEventStates extends QueueBasedArchiveEvents {
-  isDeviation: boolean
-  isRunning: boolean
-  isFinished: boolean
-  isLocked: boolean
-  isAlarm: boolean
-}
-
 export interface TimeBasedEventStates {
   plannedEvents: TimeBasedPlannedStates[]
   startedEvents: TimeBasedStartedStates[]
@@ -82,7 +47,7 @@ export interface TimeBasedStartedEvents {
   isStopped: boolean
 }
 
-export interface TimeBasedStartedStates {
+export interface TimeBasedStartedStates extends TimeBasedStartedEvents {
   isRunning: boolean
   isFinished: boolean
   isAlarm: boolean
@@ -108,7 +73,7 @@ export interface TimeBasedFinishedEvents {
   isStarted: boolean
   isStopped: boolean
 }
-export interface TimeBasedFinishedStates {
+export interface TimeBasedFinishedStates extends TimeBasedFinishedEvents {
   isFinished: boolean
   isAlarm: boolean
   isDeviation: boolean
