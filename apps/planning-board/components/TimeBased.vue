@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { DateHelper, Splitter, Tooltip } from '@bryntum/schedulerpro-trial'
-import { addDays } from 'date-fns'
+import { addDays, addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
 import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
@@ -47,34 +47,57 @@ const showModal = reactive({
   rule: false,
   settings: false,
 })
+const archiveDays = localStorage.getItem('pt-settings')
 
 const { data: machines } = await useFetch('/api/machineList')
-const { data: events, refresh: plannedRefresh } = await useFetch('/api/timeBased/plannedEvents')
+const { data: events, refresh: plannedRefresh } = await useFetch('/api/timeBased/plannedEvents', {
+  query: { archiveDays: JSON.parse(archiveDays || '0').archiveDays ?? 0 },
+})
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
-// TODO: make api for real events
-const modifiedMachines = computed(() => machines.value?.map((m) => {
-  return {
-    ...m,
-    // TODO?: machine icons
-    // iconCls: m.'b-fa b-fa-solid b-fa-play',
-  }
-}))
 
-const modifiedEvents = computed(() => events.value?.map((ev) => {
+const plannedEvents = computed(() => events.value?.plannedEvents.map((ev) => {
   return {
+    ...ev,
     id: ev.planKey,
     name: ev.jobOrder,
+    startDate: ev.plannedStartTime,
+    endDate: ev.plannedEndTime,
     resourceId: ev.machineId,
-    startDate: new Date(ev.plannedStartTime),
-    endDate: new Date(ev.plannedEndTime),
     resizable: false,
     draggable: true,
     editable: false,
-    ...ev,
   }
 }))
+const startedEvents = computed(() => events.value?.startedEvents.map((ev) => {
+  return {
+    ...ev,
+    id: `S${ev.planKey}`,
+    name: ev.jobOrder,
+    startDate: ev.actualStartTime,
+    endDate: addSeconds(ev.actualStartTime, ev.theoreticalDuration),
+    resourceId: ev.machineId,
+    resizable: false,
+    draggable: false,
+    editable: false,
+  }
+}))
+const finishedEvents = computed(() => events.value?.finishedEvents.map((ev) => {
+  return {
+    ...ev,
+    id: ev.batchKey,
+    name: ev.jobOrder,
+    startDate: ev.startTime,
+    endDate: ev.endTime,
+    resourceId: ev.machineId,
+    resizable: false,
+    draggable: false,
+    editable: false,
+  }
+}))
+const allEvents = computed(() => [...plannedEvents.value, ...startedEvents.value, ...finishedEvents.value])
+console.log(allEvents.value)
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
@@ -186,8 +209,8 @@ onMounted(async () => {
       eventModelClass: TimeTask,
     },
     eventColor: 'blue',
-    resources: modifiedMachines.value,
-    events: modifiedEvents.value,
+    resources: machines.value,
+    events: allEvents.value,
     listeners: {
       eventSelectionChange({ action }: any) {
         if (action === 'select' || action === 'update') {

@@ -1,6 +1,6 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import {
-  getTimeBasedPlannedEvents,
+  getTimeBasedEvents,
   getTimeBasedTheoreticalDuration,
   scheduleTimeBasedEvents,
   updateTimeBasedEvents,
@@ -9,9 +9,10 @@ import {
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
     '/time_based/scheduled_events',
-    async (request, reply) => {
+    async (request: FastifyRequest<{ Querystring: { archiveDays: string } }>, reply) => {
       try {
-        const plannedEvents = await getTimeBasedPlannedEvents()
+        const { archiveDays } = request.query
+        const plannedEvents = await getTimeBasedEvents(Number.parseInt(archiveDays))
         return reply.code(200).send(plannedEvents)
       } catch (err) {
         fastify.log.error(`An error occured while fetching planned events: ${err}`)

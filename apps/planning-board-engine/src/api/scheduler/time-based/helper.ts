@@ -1,21 +1,45 @@
-import { differenceInSeconds, isBefore } from 'date-fns'
-import type { TimeBasedEventStates, TimeBasedPlannedEventsExtended } from '../../../../types/planning-board'
+import { addSeconds } from 'date-fns'
+import type { TimeBasedEventStates, TimeBasedEvents } from '../../../../types/planning-board'
 
-export function updateTimeBasedEventStates(ev: TimeBasedPlannedEventsExtended[]): TimeBasedEventStates[] {
-  return ev.map((e) => {
+export function updateTimeBasedEventStates(ev: TimeBasedEvents): TimeBasedEventStates {
+  const plannedEvents = ev.plannedEvents.map((e) => {
     return {
       ...e,
-      deviation: e.isStarted
-        ? differenceInSeconds(new Date(), e.plannedStartTime)
-        : 0,
-      // NOTE!: this is only for development! Production build should be like this:
-      // isRunning: e.isStarted && !e.isFinished
-      isRunning: isBefore(e.plannedStartTime, new Date()) && isBefore(new Date(), e.plannedEndTime),
+      isRunning: e.isStarted && !e.isStopped,
       isAlarm: false,
-      // NOTE!: this is only for development! Production build should be like this:
-      // isFinished: e.isStarted ? isBefore(e.plannedEndTime, new Date()) : false,
-      isFinished: isBefore(e.plannedEndTime, new Date()),
       isLocked: false,
     }
   })
+
+  const startedEvents = ev.startedEvents.map((e) => {
+    return {
+      ...e,
+      isRunning: e.isStarted && !e.isStopped,
+      isFinished: e.isStarted
+        ? addSeconds(e.actualStartTime, e.theoreticalDuration) < new Date()
+        : false,
+      isAlarm: false,
+      isLocked: false,
+      isArchive: !(e.isStarted
+        ? addSeconds(e.actualStartTime, e.theoreticalDuration) < new Date()
+        : false),
+    }
+  })
+
+  const finishedEvents = ev.finishedEvents.map((e) => {
+    return {
+      ...e,
+      isFinished: e.isStarted
+        ? e.endTime !== null || e.cancelTime !== null
+        : false,
+      isRunning: e.isStarted ? e.endTime === null && e.cancelTime === null : false,
+      // TODO: ask how to check alarms
+      isAlarm: false,
+      isDeviation: e.deviation !== 0 || e.deviation !== null,
+      isLocked: false,
+      isArchive: true,
+    }
+  })
+
+  return { plannedEvents, startedEvents, finishedEvents }
 }
