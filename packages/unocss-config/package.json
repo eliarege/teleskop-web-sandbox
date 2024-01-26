@@ -4,7 +4,7 @@
   "description": "Shared UnoCSS configuration",
   "license": "UNLICENSED",
   "main": "./uno.config.ts",
-  "peerDependencies": {
+  "devDependencies": {
     "unocss": "^0.57.7"
   }
 }

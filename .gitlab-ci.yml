@@ -44,7 +44,7 @@ release:
         rm -rf out && mv out-$APP_NAME out
         {
           ./scripts/release.sh $APP_NAME 2>&1 || {
-            CI_ERROR=1
+            export CI_ERROR=1
             mv $LOG_PATH $ERR_PATH
           }
         } | tee $LOG_PATH
