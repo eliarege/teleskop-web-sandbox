@@ -4,8 +4,8 @@ import type { TimeBasedEvents } from '../../../../types/planning-board'
 import { updateTimeBasedEventStates } from './helper'
 
 // GET
-export async function getTimeBasedEvents(archiveDays: number) {
-  const plannedEvents = (await knex({ p: 'dbo.PTBATCHPLANQUEUE' })
+export async function getTimeBasedPlannedEvents() {
+  return await knex({ p: 'dbo.PTBATCHPLANQUEUE' })
     .leftJoin('dbo.DYBFBATCHPLAN as d', 'd.PLANKEY', 'p.PLANKEY')
     .select({
       planKey: 'p.PLANKEY',
@@ -15,69 +15,44 @@ export async function getTimeBasedEvents(archiveDays: number) {
       programNoList: 'd.PROGRAMNOLIST',
       theoreticalDuration: 'd.TheoricalDuration',
       fabricWeight: 'd.FABRICWEIGHT',
-      partyNumber: 'd.PARTYNUMBER',
-      note: 'd.NOTE',
-      isDeleted: 'd.ISDELETED',
-      isStarted: 'd.ISSTARTED',
-      isStopped: 'd.ISSTARTED',
-    })
-    .whereNotNull('p.STARTTIME')).map((ev) => {
-    return {
-      ...ev,
-      plannedEndTime: addSeconds(ev.plannedStartTime, ev.theoreticalDuration),
-    }
-  })
-
-  const startedEvents = await knex({ d: 'dbo.DYBFBATCHPLAN' })
-    .select({
-      planKey: 'd.PLANKEY',
-      jobOrder: 'd.JOBORDER',
-      machineId: 'd.MACHINEIDLIST',
-      programNoList: 'd.PROGRAMNOLIST',
-      plannedStartTime: 'd.PLANNEDSTARTTIME',
-      actualStartTime: 'd.STARTDATETIME',
-      theoreticalDuration: 'd.TheoricalDuration',
-      fabricWeight: 'd.FABRICWEIGHT',
-      note: 'd.NOTE',
-      isDeleted: 'd.ISDELETED',
       isStarted: 'd.ISSTARTED',
       isStopped: 'd.ISSTOPPED',
-    })
-    .whereNotNull('d.TheoricalDuration')
-    .andWhere(builder => builder.andWhereRaw(`d.RECORDTIME BETWEEN DATEADD(DAY, -${archiveDays}, GETDATE()) AND GETDATE()`))
-    .andWhere(builder => builder.whereNull('d.ISDELETED').orWhere('d.ISDELETED', 0))
-
-  const finishedEvents = await knex.raw(
-    `
+    }).whereNotNull('p.STARTTIME')
+}
+export async function getTimeBasedEvents(archiveDays: number) {
+  const archiveEvents = knex.raw(`
     WITH RankedBatches AS (
       SELECT
-          P.BATCHKEY as batchKey,
-          p.PLANKEY AS planKey,
-          p.MACHINEID AS machineId,
-          p.JOBORDER AS jobOrder,
-          p.PROGRAMNOLIST AS programNoList,
-          p.STARTTIME AS startTime,
-          p.ENDTIME as endTime,
-          p.CANCELTIME as cancelTime,
-          p.THEORETICDURAT AS theoreticalDuration,
-          p.FABRIC_WEIGHT AS fabricWeight,
-          p.PARTYNUMBER AS partyNumber,
-          p.DEVIATION as deviation,
-          d.NOTE AS note,
-          d.ISDELETED AS isDeleted,
-          d.ISSTARTED AS isStarted,
-          d.ISSTOPPED AS isStopped,
-          ROW_NUMBER() OVER (PARTITION BY p.PLANKEY ORDER BY p.BATCHREFERENCE DESC) AS RowNum
+        P.BATCHKEY as batchKey,
+        p.PLANKEY AS planKey,
+        p.MACHINEID AS machineId,
+        p.JOBORDER AS jobOrder,
+        p.PROGRAMNOLIST AS programNoList,
+        p.STARTTIME AS startTime,
+        CASE
+          WHEN p.ENDTIME IS NULL THEN p.CANCELTIME
+          ELSE p.ENDTIME
+        END as endTime,
+        p.THEORETICDURAT AS theoreticalDuration,
+        p.FABRIC_WEIGHT AS fabricWeight,
+        p.PARTYNUMBER AS partyNumber,
+        p.DEVIATION as deviation,
+        d.PLANNEDMACHINE as plannedMachineId,
+        d.PLANNEDSTARTTIME as plannedStartTime,
+        d.NOTE AS note,
+        d.ISDELETED AS isDeleted,
+        d.ISSTARTED AS isStarted,
+        d.ISSTOPPED AS isStopped,
+        ROW_NUMBER() OVER (PARTITION BY p.PLANKEY ORDER BY p.BATCHREFERENCE DESC) AS RowNum
       FROM
-          BADATA AS p
-          LEFT JOIN DYBFBATCHPLAN d ON d.PLANKEY = P.PLANKEY
-          left join BAALARM a on a.BATCHKEY = p.BATCHKEY
+        BADATA AS p
+        LEFT JOIN DYBFBATCHPLAN d ON d.PLANKEY = P.PLANKEY
       WHERE
-          d.RECORDTIME BETWEEN DATEADD(DAY, -${archiveDays}, GETDATE()) AND GETDATE()
-          AND (d.ISDELETED IS NULL OR d.ISDELETED = 0)
-          AND d.ISSTARTED = 1
-  )
-  SELECT
+        p.STARTTIME BETWEEN DATEADD(DAY, -${archiveDays}, GETDATE()) AND GETDATE()
+        AND (d.ISDELETED IS NULL OR d.ISDELETED = 0)
+        AND d.ISSTARTED = 1
+    )
+    SELECT
       batchKey,
       planKey,
       machineId,
@@ -85,21 +60,20 @@ export async function getTimeBasedEvents(archiveDays: number) {
       programNoList,
       startTime,
       endTime,
-      cancelTime,
       theoreticalDuration,
       fabricWeight,
       partyNumber,
       deviation,
+      plannedMachineId,
+      plannedStartTime,
       note,
       isDeleted,
       isStarted,
       isStopped
-  FROM RankedBatches
-  WHERE RowNum = 1
-    `,
-  )
-  const allEvents: TimeBasedEvents = { plannedEvents, startedEvents, finishedEvents }
-  return updateTimeBasedEventStates(allEvents)
+    FROM RankedBatches
+    WHERE RowNum = 1
+`)
+  return archiveEvents
 }
 export async function getTimeBasedTheoreticalDuration(planKey: number) {
   return await knex.raw(`
@@ -117,16 +91,9 @@ export async function getTimeBasedTheoreticalDuration(planKey: number) {
 export async function updateTimeBasedEvents(planKey: number, machineId: number, plannedStartTime: string) {
   const theoreticalDuration = await getTimeBasedTheoreticalDuration(planKey)
 
-  const queueNumber = (await knex.raw(`
-  SELECT TOP 1 p.QUEUENUMBER + 1 as queue
-  FROM PTBATCHPLANQUEUE p
-  WHERE p.MACHINEID = ${machineId}
-  ORDER BY p.QUEUENUMBER DESC
-  `))[0].queue
-
   await knex.transaction(async (trx) => {
     await trx('PTBATCHPLANQUEUE')
-      .update({ MACHINEID: machineId, STARTTIME: plannedStartTime, QUEUENUMBER: queueNumber })
+      .update({ MACHINEID: machineId, STARTTIME: plannedStartTime })
       .where({ PLANKEY: planKey })
 
     await trx('DYBFBATCHPLAN')

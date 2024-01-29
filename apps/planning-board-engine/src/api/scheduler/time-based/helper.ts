@@ -2,44 +2,62 @@ import { addSeconds } from 'date-fns'
 import type { TimeBasedEventStates, TimeBasedEvents } from '../../../../types/planning-board'
 
 export function updateTimeBasedEventStates(ev: TimeBasedEvents): TimeBasedEventStates {
-  const plannedEvents = ev.plannedEvents.map((e) => {
+  const plannedEventStates = ev.plannedEvents.map((e) => {
     return {
       ...e,
-      isRunning: e.isStarted && !e.isStopped,
+      plannedEndTime: addSeconds(e.plannedStartTime, e.theoreticalDuration),
       isAlarm: false,
       isLocked: false,
     }
   })
-
-  const startedEvents = ev.startedEvents.map((e) => {
+  const archiveActualEventStates = ev.archiveEvents.map((e) => {
     return {
-      ...e,
-      isRunning: e.isStarted && !e.isStopped,
-      isFinished: e.isStarted
-        ? addSeconds(e.actualStartTime, e.theoreticalDuration) < new Date()
-        : false,
+      batchKey: e.batchKey,
+      planKey: e.planKey,
+      machineId: e.machineId,
+      jobOrder: e.jobOrder,
+      programNoList: e.programNoList,
+      startTime: e.startTime,
+      endTime: e.endTime,
+      theoreticalDuration: e.theoreticalDuration,
+      fabricWeight: e.fabricWeight,
+      partyNumber: e.partyNumber,
+      deviation: e.deviation,
+      note: e.note,
+      isDeleted: e.isDeleted,
+      isStarted: e.isStarted,
+      isStopped: e.isStopped,
       isAlarm: false,
       isLocked: false,
-      isArchive: !(e.isStarted
-        ? addSeconds(e.actualStartTime, e.theoreticalDuration) < new Date()
-        : false),
+      isActual: true,
     }
   })
-
-  const finishedEvents = ev.finishedEvents.map((e) => {
+  const archivePlannedEventStates = ev.archiveEvents.map((e) => {
     return {
-      ...e,
-      isFinished: e.isStarted
-        ? e.endTime !== null || e.cancelTime !== null
-        : false,
-      isRunning: e.isStarted ? e.endTime === null && e.cancelTime === null : false,
-      // TODO: ask how to check alarms
+      batchKey: `P${e.batchKey}`,
+      planKey: `P${e.planKey}`,
+      machineId: e.machineId,
+      jobOrder: e.jobOrder,
+      programNoList: e.programNoList,
+      startTime: e.plannedStartTime,
+      endTime: addSeconds(e.plannedStartTime, e.theoreticalDuration),
+      theoreticalDuration: e.theoreticalDuration,
+      fabricWeight: e.fabricWeight,
+      partyNumber: e.partyNumber,
+      deviation: e.deviation,
+      note: e.note,
+      isDeleted: e.isDeleted,
+      isStarted: e.isStarted,
+      isStopped: e.isStopped,
       isAlarm: false,
-      isDeviation: e.deviation !== 0 || e.deviation !== null,
       isLocked: false,
-      isArchive: true,
+      isDeviation: e.deviation !== 0 || e.deviation !== undefined || e.deviation !== null,
+      isFinished: e.isStopped && e.endTime !== null,
+      isActual: false,
     }
   })
+  const mergedArchiveStates = [...archiveActualEventStates, ...archivePlannedEventStates]
+  console.log('mergedArchive', mergedArchiveStates)
 
-  return { plannedEvents, startedEvents, finishedEvents }
+  return { plannedEventStates, mergedArchiveStates }
 }

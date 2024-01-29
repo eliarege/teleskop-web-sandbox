@@ -1,81 +1,77 @@
-export interface TimeBasedEventStates {
-  plannedEvents: TimeBasedPlannedStates[]
-  startedEvents: TimeBasedStartedStates[]
-  finishedEvents: TimeBasedFinishedStates[]
-}
-export interface TimeBasedEvents {
-  plannedEvents: TimeBasedPlannedEvents[]
-  startedEvents: TimeBasedStartedEvents[]
-  finishedEvents: TimeBasedFinishedEvents[]
-}
-export interface TimeBasedPlannedEventsRaw {
-  planKey: number
-  machineId: number
-  plannedStartTime: string
-  jobOrder: string
-  programNoList: string
-  theoreticalDuration: number
-  fabricWeight: number
-  partyNumber?: number
-  note: string
-  isDeleted: boolean
-  isStarted: boolean
-  isStopped: boolean
-}
-
-export interface TimeBasedPlannedEvents extends TimeBasedPlannedEventsRaw {
-  plannedEndTime: string
-}
-export interface TimeBasedPlannedStates extends TimeBasedPlannedEvents {
-  isLocked: boolean
-  isAlarm: boolean
-  isRunning: boolean
-}
-
-export interface TimeBasedStartedEvents {
-  planKey: number
-  jobOrder: string
-  machineId: number
-  programNoList: string
-  plannedStartTime: string
-  actualStartTime: string
-  theoreticalDuration: number
-  fabricWeight: number
-  note: string
-  isDeleted: boolean
-  isStarted: boolean
-  isStopped: boolean
-}
-
-export interface TimeBasedStartedStates extends TimeBasedStartedEvents {
-  isRunning: boolean
-  isFinished: boolean
-  isAlarm: boolean
-  isLocked: boolean
-  isArchive: boolean
-}
-
-export interface TimeBasedFinishedEvents {
+export interface TimeBasedArchiveEvents {
   batchKey: number
   planKey: number
   machineId: number
   jobOrder: string
   programNoList: string
-  startTime: string
-  endTime: string
-  cancelTime: string
+  startTime: Date | string
+  endTime: Date | string
   theoreticalDuration: number
   fabricWeight: number
   partyNumber: string
   deviation: number
+  plannedMachineId: number
+  plannedStartTime: Date | string
   note: string
   isDeleted: boolean
   isStarted: boolean
   isStopped: boolean
 }
-export interface TimeBasedFinishedStates extends TimeBasedFinishedEvents {
-  isFinished: boolean
+
+export interface TimeBasedPlannedEvents {
+  planKey: number
+  machineId: number
+  plannedStartTime: Date | string
+  jobOrder: string
+  programNoList: string
+  theoreticalDuration: number
+  fabricWeight: number
+  isStarted: boolean
+  isStopped: boolean
+}
+export interface TimeBasedEvents {
+  plannedEvents: TimeBasedPlannedEvents[]
+  archiveEvents: TimeBasedArchiveEvents[]
+}
+export interface TimeBasedPlannedEventStates extends TimeBasedPlannedEvents {
+  plannedEndTime: Date | string
   isAlarm: boolean
-  isDeviation: boolean
-  isArchive: boolean
+  isLocked: boolean
+}
+export interface TimeBasedEventStates {
+  plannedEventStates: {
+    planKey: number
+    machineId: number
+    plannedStartTime: Date | string
+    plannedEndTime: Date | string
+    jobOrder: string
+    programNoList: string
+    theoreticalDuration: number
+    fabricWeight: number
+    isStarted: boolean
+    isStopped: boolean
+    isAlarm: boolean
+    isLocked: boolean
+  }[]
+  mergedArchiveStates: {
+    batchKey: number | string
+    planKey: number | string
+    machineId: number
+    jobOrder: string
+    programNoList: string
+    startTime: Date | string
+    endTime: Date | string
+    theoreticalDuration: number
+    fabricWeight: number
+    partyNumber: string
+    deviation: number
+    note: string
+    isDeleted: boolean
+    isStarted: boolean
+    isStopped: boolean
+    isAlarm: boolean
+    isLocked: boolean
+    isDeviation: boolean
+    isFinished: boolean
+  }[]
 }

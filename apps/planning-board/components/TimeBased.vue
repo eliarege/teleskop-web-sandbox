@@ -56,48 +56,21 @@ const { data: events, refresh: plannedRefresh } = await useFetch('/api/timeBased
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
-
-const plannedEvents = computed(() => events.value?.plannedEvents.map((ev) => {
+const allEvents = [...events.value!.plannedEventStates, ...events.value!.mergedArchiveStates]
+const schedulerEvents = computed(() => allEvents.map((ev) => {
   return {
     ...ev,
     id: ev.planKey,
     name: ev.jobOrder,
-    startDate: ev.plannedStartTime,
-    endDate: ev.plannedEndTime,
     resourceId: ev.machineId,
+    startDate: ev.startTime ?? ev.plannedStartTime,
+    endDate: ev.endTime ?? ev.plannedEndTime,
+    draggable: !ev.isStarted,
     resizable: false,
-    draggable: true,
     editable: false,
   }
 }))
-const startedEvents = computed(() => events.value?.startedEvents.map((ev) => {
-  return {
-    ...ev,
-    id: `S${ev.planKey}`,
-    name: ev.jobOrder,
-    startDate: ev.actualStartTime,
-    endDate: addSeconds(ev.actualStartTime, ev.theoreticalDuration),
-    resourceId: ev.machineId,
-    resizable: false,
-    draggable: false,
-    editable: false,
-  }
-}))
-const finishedEvents = computed(() => events.value?.finishedEvents.map((ev) => {
-  return {
-    ...ev,
-    id: ev.batchKey,
-    name: ev.jobOrder,
-    startDate: ev.startTime,
-    endDate: ev.endTime,
-    resourceId: ev.machineId,
-    resizable: false,
-    draggable: false,
-    editable: false,
-  }
-}))
-const allEvents = computed(() => [...plannedEvents.value, ...startedEvents.value, ...finishedEvents.value])
-console.log(allEvents.value)
+console.log(schedulerEvents.value)
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
@@ -138,20 +111,21 @@ async function eventTooltip(eventRecord: any) {
 
   const endMonth = DateHelper.format(eventRecord.endDate, 'MM')
   const endDay = DateHelper.format(eventRecord.endDate, 'D')
-
   const startMinuteRotation = (eventRecord.startDate.getMinutes() + eventRecord.startDate.getSeconds() / 60) * 6
   const startHourRotation = (eventRecord.startDate.getHours() % 12 + eventRecord.startDate.getMinutes() / 60) * 30
 
   const endMinuteRotation = (eventRecord.endDate.getMinutes() + eventRecord.endDate.getSeconds() / 60) * 6
   const endHourRotation = (eventRecord.endDate.getHours() % 12 + eventRecord.endDate.getMinutes() / 60) * 30
-
+  const planKey = typeof eventRecord.originalData.planKey === 'string'
+    ? eventRecord.originalData.planKey.replace('P', '')
+    : eventRecord.originalData.planKey
   const parameters = await $fetch('/api/tootlipParameters', {
-    query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
+    query: { machineId: eventRecord.originalData.machineId, planKey },
   })
   const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
   return `
         <div>
-          <div class="b-sch-event-title">${eventRecord.originalData.name}</div>
+          <div class="b-sch-event-title">${eventRecord.originalData.isActual}</div>
           <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
             <div class="b-sch-clock">
               <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">
@@ -210,7 +184,7 @@ onMounted(async () => {
     },
     eventColor: 'blue',
     resources: machines.value,
-    events: allEvents.value,
+    events: schedulerEvents.value,
     listeners: {
       eventSelectionChange({ action }: any) {
         if (action === 'select' || action === 'update') {

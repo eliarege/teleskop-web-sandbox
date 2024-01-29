@@ -1,10 +1,13 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
+import type { TimeBasedArchiveEvents, TimeBasedEvents, TimeBasedPlannedEvents } from '../../../../types/planning-board'
 import {
   getTimeBasedEvents,
+  getTimeBasedPlannedEvents,
   getTimeBasedTheoreticalDuration,
   scheduleTimeBasedEvents,
   updateTimeBasedEvents,
 } from './queries'
+import { updateTimeBasedEventStates } from './helper'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -12,8 +15,10 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request: FastifyRequest<{ Querystring: { archiveDays: string } }>, reply) => {
       try {
         const { archiveDays } = request.query
-        const plannedEvents = await getTimeBasedEvents(Number.parseInt(archiveDays))
-        return reply.code(200).send(plannedEvents)
+        const plannedEvents: TimeBasedPlannedEvents[] = await getTimeBasedPlannedEvents()
+        const archiveEvents: TimeBasedArchiveEvents[] = await getTimeBasedEvents(Number.parseInt(archiveDays))
+        const events: TimeBasedEvents = { plannedEvents, archiveEvents }
+        return reply.code(200).send(updateTimeBasedEventStates(events))
       } catch (err) {
         fastify.log.error(`An error occured while fetching planned events: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching planned events: ${err}` })
@@ -33,7 +38,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     },
   )
 
-  fastify.put<{ Body: { planKey: number; machineId: number; plannedStartTime: string } }>(
+  fastify.put<{ Body: { planKey: number, machineId: number, plannedStartTime: string } }>(
     '/time_based/scheduled_events/update',
     async (request, reply) => {
       try {
@@ -48,7 +53,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   )
 
   fastify.post<{
-    Body: { planKey: number; machineId: number; plannedStartTime: string }
+    Body: { planKey: number, machineId: number, plannedStartTime: string }
   }>(
     '/time_based/unscheduled_events/schedule',
     async (request, reply) => {
