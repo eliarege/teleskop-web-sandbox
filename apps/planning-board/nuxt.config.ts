@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   extends: [
     'nuxt-base',
     'nuxt-machine-card',
+    'nuxt-ui',
   ],
   runtimeConfig: {
     teleskopHost: 'localhost',
