@@ -70,7 +70,6 @@ const schedulerEvents = computed(() => allEvents.map((ev) => {
     editable: false,
   }
 }))
-console.log(schedulerEvents.value)
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
