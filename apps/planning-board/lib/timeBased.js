@@ -205,9 +205,9 @@ export class TimeDrag extends DragHelper {
     const isValid = context.isValid
     // TODO: Machine capacity and program comparison for context.valid
     context.valid = Boolean(startDate && machine)
-      && !(startDate < new Date())
-      && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
-      && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).programs : true)
+    && !(startDate < new Date())
+    && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
+    && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).programs : true)
 
     if (this.tip) {
       const startMonth = DateHelper.format(startDate, 'MMM')
@@ -286,7 +286,7 @@ export class TimeDrag extends DragHelper {
       task.setStartDate(startDate)
       const machine = schedule.resolveResourceRecord(context.target)
         .originalData.id
-
+      context.task.originalData.machineId = machine
       await schedule.scheduleEvent({
         eventRecord: task,
         startDate,

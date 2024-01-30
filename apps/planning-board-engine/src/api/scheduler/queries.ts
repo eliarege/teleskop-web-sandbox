@@ -183,15 +183,15 @@ export async function getEventTooltipParams(planKey: number, machineId: number) 
     .select('p.PARAMID')
     .leftJoin('BFERPPARAMETERDEFINITIONS as d', 'd.PARAMID', 'p.PARAMID')
     .where('p.MACHINEID', '=', machineId)
-    .where('p.OWNER', '=', 118)
+    .andWhere('p.OWNER', '=', 118)
     .groupBy('p.PARAMID')
   return await knex('DYBFBATCHPLANPARAMETERS as b')
     .select({
       paramString: 'b.PARAMSTRING',
       value: 'b.VALUE',
     })
-    .where('b.PLANKEY', '=', planKey)
     .whereIn('b.BATCHPARAMETERID', subquery.map(item => item.PARAMID.toString()))
+    .andWhere('b.PLANKEY', '=', planKey)
 }
 export async function isTaskValid(planKey: number) {
   const taskPrgList: Set<number> = new Set(

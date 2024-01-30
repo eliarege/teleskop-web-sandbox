@@ -313,6 +313,7 @@ export class QueueDrag extends DragHelper {
             ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
           }
         })
+        task.originalData.machineId = machine.id
         await schedule.scheduleEvent({
           eventRecord: task,
           startDate: task.startDate,

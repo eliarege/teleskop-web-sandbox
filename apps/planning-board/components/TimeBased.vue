@@ -131,6 +131,7 @@ async function eventTooltip(eventRecord: any) {
   const planKey = typeof eventRecord.originalData.planKey === 'string'
     ? eventRecord.originalData.planKey.replace('P', '')
     : eventRecord.originalData.planKey
+
   const parameters = await $fetch('/api/tootlipParameters', {
     query: { machineId: eventRecord.originalData.machineId, planKey },
   })
