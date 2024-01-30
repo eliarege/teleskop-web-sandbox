@@ -8,7 +8,7 @@ const { t } = useI18n()
 const materials = ref([])
 getMaterials()
 async function getMaterials() {
-  materials.value = await $fetch('/api/materials/materials')
+  materials.value = await $fetch('/api/materials')
 }
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,

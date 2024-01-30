@@ -5,7 +5,7 @@ const dataStore = useDataStore()
 const { t } = useI18n()
 
 async function refreshDispensers() {
-  const res = await $fetch(`/api/dispensers/dispensers`)
+  const res = await $fetch(`/api/dispensers`)
   dataStore.dispensers = res
 }
 </script>

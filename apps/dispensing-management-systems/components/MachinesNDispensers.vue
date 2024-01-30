@@ -38,8 +38,8 @@ const machineColumns: (QTableColumn<Machine>)[] = [
   { name: 'controllertype', label: t('machineFields.ControllerType'), align: 'center', field: 'controllerType', sortable: true },
 
 ]
-const { data: dispenserRows, refresh: refreshDispensers } = await useFetch(`/api/dispensers/dispensers`)
-const { data: machineRows, refresh: refreshMachines } = await useFetch(`/api/machines/machines`)
+const { data: dispenserRows, refresh: refreshDispensers } = await useFetch(`/api/dispensers`)
+const { data: machineRows, refresh: refreshMachines } = await useFetch(`/api/machines`)
 
 async function handleNewDispenser() {
   q.dialog({

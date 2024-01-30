@@ -6,7 +6,7 @@ const dataStore = useDataStore()
 const route = useRoute()
 const load = ref(false)
 if (!dataStore.selectedDispenser) {
-  const { data: dispenser } = await useFetch<Dispenser>(`/api/dispensers/${route.params.id}`)
+  const { data: dispenser } = await useFetch<Dispenser>(`/api/dispensers/${route.query.dispenserId}`)
   if (!dispenser.value || dispenser.value?.dispenserId < 0) {
     navigateTo({
       path: '/',

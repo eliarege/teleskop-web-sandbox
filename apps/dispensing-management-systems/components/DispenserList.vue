@@ -8,7 +8,7 @@ const { t } = useI18n()
 const dataStore = useDataStore()
 const shouldFetch = !dataStore.dispensers
 const { data } = shouldFetch
-  ? await useFetch<Dispenser[]>(`/api/dispensers/dispensers`)
+  ? await useFetch<Dispenser[]>(`/api/dispensers`)
   : { data: dataStore.dispensers }
 dataStore.dispensers = data
 const q = useQuasar()

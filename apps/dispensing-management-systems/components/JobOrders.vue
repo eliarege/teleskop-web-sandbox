@@ -14,7 +14,7 @@ const jobOrders = ref()
 
 getJobOrders()
 async function getJobOrders() {
-  jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders/${route.params.id}`)
+  jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${route.query.dispenserId}`)
 }
 const columns: (QTableColumn<JobOrder>)[] = [
   {

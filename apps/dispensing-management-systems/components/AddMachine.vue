@@ -20,7 +20,7 @@ async function getTypes() {
   machineControllerTypes.value = await $fetch('/api/machines/types')
 }
 async function onSave() {
-  await $fetch(`/api/machines/machines`, { method: 'POST', body: newMachine.value })
+  await $fetch(`/api/machines`, { method: 'POST', body: newMachine.value })
   onDialogOK(newMachine.value)
 }
 

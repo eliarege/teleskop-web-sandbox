@@ -22,7 +22,7 @@ async function getTypes() {
   dispenserTypes.value = await $fetch('/api/dispensers/types')
 }
 async function onSave() {
-  await $fetch(`/api/dispensers/dispensers`, { method: 'POST', body: newDispenser.value })
+  await $fetch(`/api/dispensers`, { method: 'POST', body: newDispenser.value })
   onDialogOK(newDispenser.value)
 }
 

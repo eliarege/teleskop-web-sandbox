@@ -56,7 +56,8 @@ async function onPing() {
 
 function onClickJobOrders() {
   navigateTo({
-    path: `/jobOrders/${dispenser.value.dispenserId}`,
+    path: `/jobOrders`,
+    query: { dispenserId: dispenser.value.dispenserId },
   })
 }
 
@@ -84,7 +85,7 @@ function onClickEdit() {
 }
 
 async function onRefreshList() {
-  const dispensers = await $fetch<Dispenser[]>(`/api/dispensers/dispensers`)
+  const dispensers = await $fetch<Dispenser[]>(`/api/dispensers`)
   dataStore.dispensers = dispensers
 }
 watch((dispenser), () => {

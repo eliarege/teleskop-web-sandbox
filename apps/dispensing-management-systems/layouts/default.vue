@@ -55,7 +55,7 @@ watch(() => route.params, () => {
 </script>
 
 <template>
-  <QLayout view="hHh LpR fFf" v-if="didInitialise">
+  <QLayout v-if="didInitialise" view="hHh LpR fFf">
     <LoadingSpinner v-if="stateStore.isLoading" />
     <KeepAlive>
       <Appbar />
@@ -106,7 +106,7 @@ watch(() => route.params, () => {
     <QPageContainer>
       <div class="row">
         <div class="col-auto">
-          <NavigationButton class="mt-5 ml-5" />
+          <NavigationButton class="mt-5 ml-5 z-1" />
         </div>
         <div class="col">
           <slot />
