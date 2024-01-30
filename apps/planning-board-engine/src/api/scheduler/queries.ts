@@ -36,7 +36,7 @@ export async function getUnplannedEvents() {
     })
     .leftJoin('dbo.PTBATCHPLANQUEUE as Q', 'Q.PLANKEY', 'P.PLANKEY')
     .leftJoin('dbo.DYBFBATCHPLANPARAMETERS as R', (builder) => {
-      builder.on('R.PLANKEY', 'P.PLANKEY').andOn('R.PARAMSTRING', '=', knex.raw("'Kilo'"))
+      builder.on('R.PLANKEY', 'P.PLANKEY').andOn('R.PARAMSTRING', '=', knex.raw('\'Kilo\''))
     })
     .leftJoin('dbo.BFERPPARAMETERDEFINITIONS as D', (builder) => {
       builder.on('D.MACHINEID', 'P.MACHINEIDLIST').andOn('D.PARAMID', 'R.BATCHPARAMETERID')
@@ -252,6 +252,10 @@ export async function addErpParameters(paramId: number, owner: number, machineId
     OWNER: owner,
     MACHINEID: machineId,
   })
+}
+export async function pinEvent(planKey: number) {
+  console.log('PLANKEY', planKey)
+  await knex('dbo.PTBATCHPLANQUEUE').update({ PINNED: 1 }).where('PLANKEY', '=', planKey)
 }
 export async function deleteNote(id: number) {
   await knex('PTBATCHNOTES').where('NOTEKEY', '=', id).delete()

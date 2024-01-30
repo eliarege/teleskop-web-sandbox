@@ -14,6 +14,7 @@ export async function getQueueBasedPlannedEvents() {
       theoreticalDuration: 'd.TheoricalDuration',
       fabricWeight: knex.raw(`(select r.VALUE from DYBFBATCHPLANPARAMETERS r where r.PARAMSTRING = 'Kilo' and r.PLANKEY = p.PLANKEY)`),
       partyNumber: 'd.PARTYNUMBER',
+      pinned: 'p.PINNED',
       note: 'd.NOTE',
       isDeleted: 'd.ISDELETED',
       isStarted: 'd.ISSTARTED',
@@ -102,7 +103,7 @@ export async function checkMachineLastTaskQueue(machineId: number) {
     .limit(1)
 }
 // UPDATE
-export async function updateQueueBasedEvents(body: { planKey: number; queueNumber: number; machineId: number }[]) {
+export async function updateQueueBasedEvents(body: { planKey: number, queueNumber: number, machineId: number }[]) {
   await knex.transaction(async (trx) => {
     const machineIdList = new Set(body.map(a => a.machineId))
     const planKeyList = new Set(body.map(a => a.planKey))

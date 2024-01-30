@@ -15,6 +15,7 @@ export async function getTimeBasedPlannedEvents() {
       programNoList: 'd.PROGRAMNOLIST',
       theoreticalDuration: 'd.TheoricalDuration',
       fabricWeight: 'd.FABRICWEIGHT',
+      pinned: 'p.PINNED',
       isStarted: 'd.ISSTARTED',
       isStopped: 'd.ISSTOPPED',
     }).whereNotNull('p.STARTTIME')

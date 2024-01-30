@@ -14,6 +14,7 @@ import {
   getRecipe,
   getUnplannedEvents,
   isTaskValid,
+  pinEvent,
   removeFromPlan,
 } from './queries'
 
@@ -44,7 +45,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   )
   fastify.get(
     '/planning_board/recipe',
-    async (request: FastifyRequest<{ Querystring: { machineId: string; jobOrder: string } }>, reply) => {
+    async (request: FastifyRequest<{ Querystring: { machineId: string, jobOrder: string } }>, reply) => {
       try {
         const { jobOrder, machineId } = request.query
         const recipe = await getRecipe(machineId, jobOrder)
@@ -117,7 +118,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   )
   fastify.get(
     '/planning_board/event_tooltip',
-    async (request: FastifyRequest<{ Querystring: { planKey: number; machineId: number } }>, reply) => {
+    async (request: FastifyRequest<{ Querystring: { planKey: number, machineId: number } }>, reply) => {
       try {
         const { machineId, planKey } = request.query
         const tooltipParams = await getEventTooltipParams(planKey, machineId)
@@ -154,8 +155,20 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
+  fastify.put<{ Querystring: { planKey: number } }>(
+    '/planning_board/pin_event',
+    async (request, reply) => {
+      try {
+        const { planKey } = request.query
+        await pinEvent(planKey)
+      } catch (err) {
+        fastify.log.error(`An error occured while pinning event: ${err}`)
+        return reply.code(500).send({ error: `An error occured while pinning event: ${err}` })
+      }
+    },
+  )
   fastify.post<{
-    Body: { jobOrder: string; note: string; showOnScreen: boolean; userId: number }
+    Body: { jobOrder: string, note: string, showOnScreen: boolean, userId: number }
   }>(
     '/planning_board/batch_notes/add_note',
     async (request, reply) => {
@@ -170,7 +183,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     },
   )
   fastify.post<{
-    Body: { paramId: number; owner: number; machineId: number }
+    Body: { paramId: number, owner: number, machineId: number }
   }>(
     '/planning_board/erp_parameters/add_parameter',
     async (request, reply) => {
@@ -202,7 +215,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.delete(
     '/planning_board/erp_parameters/delete_parameter',
     async (request: FastifyRequest<{
-      Querystring: { paramId: number; owner: number; machineId: number }
+      Querystring: { paramId: number, owner: number, machineId: number }
     }>, reply) => {
       try {
         const { paramId, owner, machineId } = request.query

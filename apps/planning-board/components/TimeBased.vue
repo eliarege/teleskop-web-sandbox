@@ -1,8 +1,7 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { DateHelper, Splitter, Tooltip } from '@bryntum/schedulerpro-trial'
-import { addDays, addSeconds } from 'date-fns'
+import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
+import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro-trial'
 import { EliarModal } from 'ui'
 import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
@@ -49,7 +48,7 @@ const showModal = reactive({
 })
 const archiveDays = localStorage.getItem('pt-settings')
 
-const { data: machines } = await useFetch('/api/machineList')
+const { data: machines, refresh: machineRefresh } = await useFetch('/api/machineList')
 const { data: events, refresh: plannedRefresh } = await useFetch('/api/timeBased/plannedEvents', {
   query: { archiveDays: JSON.parse(archiveDays || '0').archiveDays ?? 0 },
 })
@@ -80,11 +79,25 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((u
     constraintDate: new Date(),
   } as UnplannedEvents
 }))
+let scheduler: SchedulerPro
+let grid: Grid
+const schedulerRefreshInterval = setInterval(async () => {
+  await refreshScheduler()
+}, 60_000)
+onUnmounted(() => {
+  clearInterval(schedulerRefreshInterval)
+})
 async function refreshScheduler() {
   await plannedRefresh()
   await unScheduledRefresh()
-  // TODO: render grid rows
+  await machineRefresh()
 }
+watch(schedulerEvents, (newVal) => {
+  scheduler.events = newVal
+})
+watch(modifiedUnscheduledEvents, (newVal) => {
+  grid.store.data = newVal
+})
 async function unPlanEvent(planKey: number) {
   await $fetch('/api/unplan', {
     method: 'PUT',
@@ -97,7 +110,7 @@ async function deleteEvent(planKey: number) {
     query: { planKey },
   })
 }
-let scheduler: SchedulerPro
+
 function dateRangeEnd() {
   scheduler.startDate = new Date(schedulerDateModel.value.from)
   scheduler.endDate = new Date(schedulerDateModel.value.to)
@@ -124,7 +137,6 @@ async function eventTooltip(eventRecord: any) {
   const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
   return `
         <div>
-          <div class="b-sch-event-title">${eventRecord.originalData.isActual}</div>
           <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
             <div class="b-sch-clock">
               <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">
@@ -203,31 +215,36 @@ onMounted(async () => {
     },
     eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
-      if (eventRecord.originalData.notStarted) {
-        icons.push('b-fa b-fa-solid b-fa-list-check')
-      }
-      if (eventRecord.originalData.isDeviation) {
-        icons.push('b-fa b-fa-solid b-fa-clock')
-      }
-      if (eventRecord.originalData.isFinished) {
-        icons.push('b-fa b-fa-solid b-fa-flag-checkered')
-      }
-      // if (eventRecord.originalData.isLocked) {
-      //   icons.push('b-fa b-fa-lock')
-      // }
-      if (eventRecord.originalData.isRunning) {
-        if (eventRecord.originalData.isStopped) {
-          icons.push('b-fa b-fa-solid b-fa-stop')
-        } else {
-          icons.push('b-fa b-fa-solid b-fa-play')
+      if (!eventRecord.originalData.isActual) {
+        icons.push('b-fa b-fa-solid b-fa-calendar-check')
+        if (eventRecord.originalData.pinned) {
+          icons.push('b-fa b-fa-solid b-fa-thumbtack')
         }
-      }
-      if (eventRecord.originalData.isAlarm) {
-        icons.push('b-fa b-fa-solid b-fa-bell')
-      }
-
-      if (eventRecord.originalData.isDeleted) {
-        icons.push('b-fa b-fa-solid b-fa-ban')
+      } else {
+        if (eventRecord.originalData.isActual) {
+          icons.push('b-fa b-fa-solid b-fa-calendar-days')
+        }
+        if (eventRecord.originalData.notStarted) {
+          icons.push('b-fa b-fa-solid b-fa-list-check')
+        }
+        if (eventRecord.originalData.isDeviation) {
+          icons.push('b-fa b-fa-solid b-fa-clock')
+        }
+        if (eventRecord.originalData.isFinished) {
+          icons.push('b-fa b-fa-solid b-fa-flag-checkered')
+        } else {
+          if (eventRecord.originalData.isStopped) {
+            icons.push('b-fa b-fa-solid b-fa-stop')
+          } if (eventRecord.originalData.isStarted) {
+            icons.push('b-fa b-fa-solid b-fa-play')
+          }
+        }
+        if (eventRecord.originalData.isAlarm) {
+          icons.push('b-fa b-fa-solid b-fa-bell')
+        }
+        if (eventRecord.originalData.isDeleted) {
+          icons.push('b-fa b-fa-solid b-fa-ban')
+        }
       }
 
       const iconClass = icons.map(icon => `<i class="${icon}"></i>`).join('')
@@ -293,6 +310,21 @@ onMounted(async () => {
                   eventRecord.unassign()
                 })
                 .catch(err => console.error(err))
+            },
+          },
+          pin: {
+            icon: 'b-fa-solid b-fa-thumbtack',
+            text: t('ctx-menu.pin'),
+            async onItem({ eventRecord }: any) {
+              await $fetch('api/pinEvent', {
+                query: { planKey: eventRecord.originalData.id },
+                method: 'PUT',
+              })
+                .then(() => {
+                  refreshScheduler()
+                  Toast.show('Event succesfuly pinned!')
+                })
+                .catch(err => Toast.show(err))
             },
           },
           copyEvent: {
@@ -440,7 +472,7 @@ onMounted(async () => {
   new Splitter({
     appendTo: 'main',
   })
-  const unplannedGrid = new TimeUnplannedGrid({
+  const unplannedGrid = grid = new TimeUnplannedGrid({
     ref: 'unplanned',
     appendTo: 'main',
     ui: 'toolbar',
@@ -626,7 +658,8 @@ div[bgGreen] {
       "task-edit": "Update Job Order",
       "task-delete": "Delete Job Order",
       "remove-plan": "Remove From Plan",
-      "properties": "Job Order Properties"
+      "properties": "Job Order Properties",
+      "pin": "Pin Task"
     }
   },
   "tr": {
@@ -634,7 +667,8 @@ div[bgGreen] {
       "task-edit": "İş Emrini Güncelle",
       "task-delete": "İş Emrini Sil",
       "remove-plan": "Plandan kaldır",
-      "properties": "İş Emri Özellikleri"
+      "properties": "İş Emri Özellikleri",
+      "pin": "İş Emrini Sabitle"
     }
   }
 }

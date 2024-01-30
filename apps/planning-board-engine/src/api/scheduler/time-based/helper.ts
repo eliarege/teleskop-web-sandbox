@@ -8,6 +8,7 @@ export function updateTimeBasedEventStates(ev: TimeBasedEvents): TimeBasedEventS
       plannedEndTime: addSeconds(e.plannedStartTime, e.theoreticalDuration),
       isAlarm: false,
       isLocked: false,
+      notStarted: !e.isStarted,
     }
   })
   const archiveActualEventStates = ev.archiveEvents.map((e) => {
@@ -27,8 +28,10 @@ export function updateTimeBasedEventStates(ev: TimeBasedEvents): TimeBasedEventS
       isDeleted: e.isDeleted,
       isStarted: e.isStarted,
       isStopped: e.isStopped,
+      isFinished: e.isStopped && e.endTime !== null,
       isAlarm: false,
       isLocked: false,
+      isDeviation: e.deviation !== 0 || e.deviation !== undefined || e.deviation !== null,
       isActual: true,
     }
   })

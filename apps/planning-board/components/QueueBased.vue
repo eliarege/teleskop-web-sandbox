@@ -230,26 +230,26 @@ onMounted(async () => {
     },
     eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
+      if (eventRecord.originalData.pinned) {
+        icons.push('b-fa b-fa-solid b-fa-thumbtack')
+      }
       if (eventRecord.originalData.isDeviation) {
-        icons.push('b-fa b-fa-solid b-fa-user-clock')
+        icons.push('b-fa b-fa-solid b-fa-clock')
       }
       if (eventRecord.originalData.isFinished) {
         icons.push('b-fa b-fa-solid b-fa-flag-checkered')
-      }
-      if (eventRecord.originalData.isLocked) {
-        icons.push('b-fa b-fa-lock')
-      }
-      if (eventRecord.originalData.isRunning) {
-        if (eventRecord.originalData.isStopped) {
+      } else {
+        if (eventRecord.originalData.isRunning) {
+          icons.push('b-fa b-fa-solid b-fa-play')
+        } else if (eventRecord.originalData.isStopped) {
           icons.push('b-fa b-fa-solid b-fa-stop')
         } else {
-          icons.push('b-fa b-fa-solid b-fa-play')
+          icons.push('b-fa b-fa-solid b-fa-list-check')
         }
       }
       if (eventRecord.originalData.isAlarm) {
         icons.push('b-fa b-fa-solid b-fa-bell')
       }
-
       if (eventRecord.originalData.isDeleted) {
         icons.push('b-fa b-fa-solid b-fa-ban')
       }
