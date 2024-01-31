@@ -137,17 +137,62 @@ export async function getPlanParameters(planKey: number) {
     .where('p.PLANKEY', '=', planKey)
 }
 export async function getMachines() {
-  return await knex('dbo.BFMACHINES as b')
-    .leftJoin('dbo.BFMACHGROUP as c', 'c.GROUPID', 'b.GRUPNO')
+  return await knex('dbo.BFMACHINES as m')
+    .leftJoin('dbo.TFMACHINESTATUS as s', 'm.MACHINEID', 's.MACHINEID')
+    .leftJoin('dbo.BFMACHGROUP as g', 'm.GRUPNO', 'g.GROUPID')
+    .leftJoin('dbo.BADATA as b', 'b.BATCHKEY', 's.RUNNING_BATCHKEY')
     .select({
-      id: 'b.MACHINEID',
-	    groupNo: 'b.GRUPNO',
-	    groupName: 'c.GROUPNAME',
-	    name: 'b.MACHINECODE',
-	    machineCapacity: 'b.MACHINECAPACITY',
+      id: 'm.MACHINEID',
+      name: 'm.MACHINECODE',
+      machineCapacity: 'm.MACHINECAPACITY',
+      machineIpAddress: 'm.IP',
+      groupName: 'g.GROUPNAME',
+      elapsedTime: knex.raw('DATEDIFF(SECOND, b.STARTTIME, GETDATE())'),
+      theoreticalDuration: 'b.THEORETICDURAT',
+      autoManualStatus: 's.RUNNING_AUTOMANSTATUS',
+      loggedInOperatorNo: 's.RUNNING_OPRNO',
+      loggedInOperatorName: 's.RUNNING_OPRNAME',
+      runningJobOrder: 's.RUNNING_JOBORDER',
+      runningStartTime: 's.RUNNING_JOBORDERSTARTTIME',
+      runningBatchKey: 's.RUNNING_BATCHKEY',
+      runningBatchStatus: 's.RUNNING_BATCHSTATUS',
+      runningProgramId: 's.RUNNING_PROGRAMID',
+      runningProgramName: 's.RUNNING_PROGRAMNAME',
+      runningProgramList: 's.RUNNING_PROGNOLIST',
+      runningStepNo: 's.RUNNING_STEPNO',
+      runningCommandNo: 's.RUNNING_CMDNO',
+      runningCommandName: 's.RUNNING_CMDNAME',
+      runningAlarmNo: 's.RUNNING_ALARMNO',
+      runningAlarmName: 's.RUNNING_ALARMNAME',
+      runningTheoreticalDuration: 's.RUNNING_THEOTIME',
+      runningPhaseNo: 's.RUNNING_PHASENO',
+      runningPhaseName: 's.RUNNING_PHASENAME',
+      runningPhaseStepNo: 's.RUNNING_PHASESTEPNO',
+      runningMachineCapacity: 'b.FABRIC_WEIGHT',
+      reqRecipeIndex: 's.REQ_RECIPEINDEX',
+      reqOrderIndex: 's.REQ_REQORDERINDEX',
+      reqOperationCode: 's.REQ_OPERATIONCODE',
+      reqTargetRecipe: 's.REQ_TARGETRECIPE',
+      reqTankNo: 's.REQ_TANKNO',
+      reqPriority: 's.REQ_PRIORITY',
+      totalRequestCount: 's.REQ_TOTALREQCOUNT',
+      reqProgramNo: 's.REQ_PRGNO',
+      reqCommandNo: 's.REQ_CMDNO',
+      reqStatus: 's.REQ_STATUS',
+      stopReason: 's.stopReason',
+      stopReasonDateTime: 's.stopReasonDateTime',
+      connectionStatus: 's.ConnectionStatus',
+      isSynchronizing: 's.IsSynchronizing',
+      currentTemperature: 's.currentTemp',
+      currentAlarmStatus: 's.currentAlarmStatus',
+      runningCompletionRatio: 's.runningCompletionRatio',
+      manualReason: 's.manuelReason',
+      manualReasonDateTime: 's.manuelReasonDateTime',
+      manualCommandActive: 's.MANUELCOMMANDACTIVE',
+      totalAlarmCount: knex.raw(`(select count(*) from BAALARM where BAALARM.BATCHKEY = s.RUNNING_BATCHKEY and BAALARM.CONFIRMTIME is NULL)`),
     })
-    .where('b.INUSE', '=', 1)
-    .andWhere('b.USEINTELESKOP', '=', 1)
+    .where('m.INUSE', '=', 1)
+    .andWhere('m.USEINTELESKOP', '=', 1)
 }
 export async function getErpParameters(machineId: number) {
   const definitions = await knex({ p: 'dbo.BFERPPARAMETERDEFINITIONS' })

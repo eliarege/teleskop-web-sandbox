@@ -15,7 +15,6 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     planningEngineUrl: 'http://localhost:3500',
-    machineStatusUrl: 'http://machine-status',
     public: {
       kcClientId: 'planning-board',
     },
