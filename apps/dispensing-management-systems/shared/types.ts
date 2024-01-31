@@ -19,9 +19,16 @@ export interface ProgramHeader {
   programNo: number
   programName: number
 }
+export interface BatchPlan {
+  planKey: number
+  batch: string
+  batchCorrectionNo: number
+  plannedMachine: number
+  plannedStartDate: Date
+}
 export interface BatchRecipeStep {
   planKey: number
-  batchNo: number
+  batch: string
   mainStep: number
   parallelStep: number
   recipeType: number

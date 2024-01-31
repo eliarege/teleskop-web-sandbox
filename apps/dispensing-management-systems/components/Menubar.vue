@@ -6,7 +6,11 @@ const { t } = useI18n()
 
 async function refreshDispensers() {
   const res = await $fetch(`/api/dispensers`)
+  dataStore.selectedDispenser = undefined
   dataStore.dispensers = res
+  navigateTo({
+    path: '/',
+  })
 }
 </script>
 

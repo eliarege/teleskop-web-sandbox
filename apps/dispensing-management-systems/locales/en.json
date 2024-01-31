@@ -26,6 +26,8 @@
   "RecipeProcessNo": "Recipe Process No",
   "RecipeStepNo": "Recipe Step No",
   "Status": "Status",
+  "Amount": "Amount",
+  "Unit": "Unit",
   "Details": "Details",
   "Screen": "Screen",
   "Name": "Name",
@@ -76,6 +78,18 @@
     "Type": "Dispenser Type",
     "Protocol": "Protocol",
     "ConsumptionFile": "Consumption File Name"
+  },
+  "recipeFields": {
+    "Info": "Recipe Info",
+    "Details": "Recipe Details for Job Order: {batch}",
+    "ProcessOrder": "Process Order",
+    "RecipeType": "Recipe Type",
+    "ISN": "ISN",
+    "MainStep": "Main Step",
+    "ParallelStep": "Parallel Step",
+    "ProcessNo": "Process No",
+    "Amount": "Amount",
+    "Unit": "Unit"
   },
   "machineFields": {
     "Name": "Machine Name",

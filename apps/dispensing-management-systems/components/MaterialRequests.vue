@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
 import { useDialogPluginComponent } from 'quasar'
-import type { MaterialRequest } from '~/shared/types'
+import type { JobOrder, MaterialRequest } from '~/shared/types'
 import { cellStyle } from '~/shared/utils'
 import { useColorStore } from '~/store/Colors'
 
 const props = defineProps({
-  jobId: {
-    type: Number,
+  jobOrder: {
+    type: Object as PropType<JobOrder>,
     required: true,
   },
 })
@@ -26,7 +26,17 @@ const columns: (QTableColumn<MaterialRequest>)[] = [
 const materials = ref<MaterialRequest[]>()
 getMaterials()
 async function getMaterials() {
-  materials.value = await $fetch(`/api/materials/requests?jobId=${props.jobId}`)
+  materials.value = await $fetch(`/api/materials/requests?jobId=${props.jobOrder.jobId}`)
+}
+async function getRecipe() {
+  navigateTo({
+    path: '/recipe',
+    query: {
+      batchNo: props.jobOrder.batchNo,
+      correctionNo: props.jobOrder.batchCorrectionNo,
+      machineId: props.jobOrder.machineId,
+    },
+  })
 }
 </script>
 
@@ -37,6 +47,20 @@ async function getMaterials() {
     @hide="onDialogHide"
   >
     <QCard>
+      <div class="flex-center">
+        <QBtn
+          icon="description"
+          @click="getRecipe"
+        >
+          <QTooltip
+            :offset="[10, 10]"
+            anchor="top middle"
+            self="bottom middle"
+          >
+            {{ t('recipeFields.Info') }}
+          </QTooltip>
+        </QBtn>
+      </div>
       <QTable
         flat
         bordered

@@ -8,10 +8,12 @@ export default defineEventHandler(async (event) => {
     const jobOrders: any[] = []
     const materials: any[] = []
     const materialReqs: any[] = []
+    const batchPlans: any[] = []
     const batchRecipeSteps: any[] = []
+    const batchHeaders: any[] = []
     const programHeaders: any[] = []
 
-    teleskopData.dispensers.forEach((data: any) => {
+    teleskopData.dispensers?.forEach((data: any) => {
       const dispenser = {
         dispenser_id: data.dispenserId,
         dispenser_name: data.dispenserName,
@@ -27,7 +29,8 @@ export default defineEventHandler(async (event) => {
       }
       dispensers.push(dispenser)
     })
-    teleskopData.machines.forEach((data: any) => {
+
+    teleskopData.machines?.forEach((data: any) => {
       const machine = {
         machine_id: data.machineId,
         machine_name: data.machineName,
@@ -35,7 +38,7 @@ export default defineEventHandler(async (event) => {
       }
       machines.push(machine)
     })
-    teleskopData.programHeaders.forEach((data: any) => {
+    teleskopData.programHeaders?.forEach((data: any) => {
       const programHeader = {
         machine_id: data.machineId,
         program_no: data.programNo,
@@ -43,7 +46,7 @@ export default defineEventHandler(async (event) => {
       }
       programHeaders.push(programHeader)
     })
-    teleskopData.jobOrders.forEach((data: any) => {
+    teleskopData.jobOrders?.forEach((data: any) => {
       const jobOrder = ({
         job_id: data.jobId,
         batch_no: data.batchNo,
@@ -62,7 +65,7 @@ export default defineEventHandler(async (event) => {
       jobOrders.push(jobOrder)
     })
 
-    teleskopData.materials.forEach((data: any) => {
+    teleskopData.materials?.forEach((data: any) => {
       const material = ({
         material_code: data.materialCode,
         material_name: data.materialName,
@@ -77,7 +80,7 @@ export default defineEventHandler(async (event) => {
       })
       materials.push(material)
     })
-    teleskopData.materialReqs.forEach((data: any) => {
+    teleskopData.materialReqs?.forEach((data: any) => {
       const materialReq = ({
         material_code: data.materialCode,
         req_no: data.jobId,
@@ -86,10 +89,29 @@ export default defineEventHandler(async (event) => {
       })
       materialReqs.push(materialReq)
     })
-    teleskopData.batchRecipeSteps.forEach((data: any) => {
+    teleskopData.batchPlans?.forEach((data: any) => {
+      const batchPlan = ({
+        plan_key: data.planKey,
+        batch: data.batch,
+        batch_correction_no: data.batchCorrectionNo,
+        planned_machine: data.plannedMachine,
+        planned_start_date: data.plannedStartDate,
+      })
+      batchPlans.push(batchPlan)
+    })
+    teleskopData.batchHeaders?.forEach((data: any) => {
+      const batchHeader = ({
+        plan_key: data.planKey,
+        recipe_index: data.recipeIndex,
+        recipe_no: data.recipeNo,
+        recipe_type: data.recipeType,
+      })
+      batchHeaders.push(batchHeader)
+    })
+    teleskopData.batchRecipeSteps?.forEach((data: any) => {
       const batchRecipeStep = ({
         plan_key: data.planKey,
-        batch_no: data.batchNo,
+        batch_order: data.batchNo,
         main_step: data.mainStep,
         parallel_step: data.parallelStep,
         req_no_batch: data.ISN,
@@ -97,17 +119,19 @@ export default defineEventHandler(async (event) => {
         chem_code: data.chemCode,
         prog_proc_no: data.programProcessNo,
         amount: data.amount,
-        unit: data.unit
+        unit: data.unit,
       })
       batchRecipeSteps.push(batchRecipeStep)
     })
-    const batchSize = 1000
+    const batchSize = 3000
     await dmsDB('JOB_ORDER').del()
     await dmsDB('BATCH_RECIPE_STEP').del()
     await dmsDB('DISPENSER').del()
     await dmsDB('MACHINE').del()
     await dmsDB('MATERIAL_REQUEST').del()
     await dmsDB('MATERIAL').del()
+    await dmsDB('BATCH_PLAN').del()
+    await dmsDB('BATCH_HEADER').del()
     await dmsDB('PROGRAM_HEADER').del()
 
     await batchInsert(dispensers, batchSize, 'DISPENSER')
@@ -116,6 +140,8 @@ export default defineEventHandler(async (event) => {
     await batchInsert(jobOrders, batchSize, 'JOB_ORDER')
     await batchInsert(materials, batchSize, 'MATERIAL')
     await batchInsert(materialReqs, batchSize, 'MATERIAL_REQUEST')
+    await batchInsert(batchPlans, batchSize, 'BATCH_PLAN')
+    await batchInsert(batchHeaders, batchSize, 'BATCH_HEADER')
     await batchInsert(programHeaders, batchSize, 'PROGRAM_HEADER')
   } catch (e) {
     console.error(e)

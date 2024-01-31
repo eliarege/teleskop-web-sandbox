@@ -99,7 +99,7 @@ const columns: (QTableColumn<JobOrder>)[] = [
 function onRowClick(_event: Event, row: JobOrder) {
   q.dialog({
     component: MaterialRequests,
-    componentProps: { jobId: row.jobId },
+    componentProps: { jobOrder: row },
   })
 }
 const pagination = ref({ rowsPerPage: 50 })

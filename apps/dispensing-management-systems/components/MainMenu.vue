@@ -7,8 +7,7 @@ const stateStore = useStateStore()
 async function syncData() {
   try {
     stateStore.isLoading = true
-    const data = await $fetch('/api/teleskop/sync')
-    await $fetch('/api/teleskop/sync', { method: 'POST', body: data })
+    await $fetch('/api/teleskop/sync')
   } catch (e) {
     console.error(e)
   } finally {

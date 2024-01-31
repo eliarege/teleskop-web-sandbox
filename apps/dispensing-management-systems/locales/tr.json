@@ -26,6 +26,8 @@
   "RecipeProcessNo": "Reçete Sıra Numarası",
   "RecipeStepNo": "Reçete Adım Numarası",
   "Status": "Durum",
+  "Amount": "Miktar",
+  "Unit": "Birim",
   "Details": "Detaylar",
   "Screen": "Ekran",
   "Name": "İsim",
@@ -76,6 +78,16 @@
     "Type": "Dağıtıcı Tipi",
     "Protocol": "Protokol",
     "ConsumptionFile": "Tüketim Dosya Adı"
+  },
+  "recipeFields": {
+    "Info": "Reçete Bilgisi",
+    "Details": "{batch} İş Emri Reçete Detayları",
+    "ProcessOrder": "İşlem Sırası",
+    "RecipeType": "Reçete Tipi",
+    "ISN": "ISN",
+    "MainStep": "Ana Adım",
+    "ParallelStep": "Paralel Adım",
+    "ProcessNo": "İşlem Numarası"
   },
   "machineFields": {
     "Name": "Makine Adı",
