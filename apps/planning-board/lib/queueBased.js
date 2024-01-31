@@ -651,6 +651,10 @@ export class QueueSchedule extends SchedulerPro {
           width: 250,
           showEventCount: false,
           showRole: true,
+          showMeta: ({ originalData }) => {
+            return `<div>Total Alarm Count: ${originalData.totalAlarmCount}</div>`
+          },
+          enableCellContextMenu: false,
           field: 'name',
         },
       ],

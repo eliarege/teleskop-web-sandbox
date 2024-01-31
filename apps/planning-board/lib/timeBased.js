@@ -332,6 +332,8 @@ export class TimeTask extends EventModel {
     const ongoingBatchBatchSettings = ptSettings.ongoingBatch
     const plannedBatchBatchSettings = ptSettings.plannedBatch
     switch (true) {
+      case (!this.originalData.isActual):
+        return plannedBatchBatchSettings.actualBatchFabricColor
       case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished && this.originalData.deviation > 0):
         return completedBatchSettings.deviationBatchFabricColor
       case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished):
@@ -438,6 +440,10 @@ export class TimeSchedule extends SchedulerPro {
           width: 250,
           showEventCount: false,
           showRole: true,
+          showMeta: ({ originalData }) => {
+            return `<div>Total Alarm Count: ${originalData.totalAlarmCount}</div>`
+          },
+          enableCellContextMenu: false,
           field: 'name',
         },
       ],
