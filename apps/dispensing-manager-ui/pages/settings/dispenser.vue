@@ -67,7 +67,7 @@ const dispenserInfo = ref<{ label: string, value: any, field: string, options?: 
   { label: t('settings.dispSettings.dispFileSystem'), value: '', field: 'fileSystem' },
   { label: t('settings.dispSettings.dispFileName'), value: '', field: 'fileName' },
   { label: t('settings.dispSettings.dispProtocol'), value: '', field: 'protocol' },
-  { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'consumptionFile' },
+  // { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'consumptionFile' },
 ])
 
 async function getTypes() {
@@ -80,15 +80,11 @@ async function getRows() {
 }
 
 function resetDispenserInfo(row?: any) {
-  if (!row)
-    dispenserInfo.value.forEach(disp => disp.value = '')
-  else {
-    dispenserInfo.value.forEach((disp) => {
-      disp.field === 'dispType'
-        ? types.value.forEach((type: { type: number, name: string }) => type.type === row[disp.field] ? disp.value = type : '')
-        : disp.value = row[disp.field]
-    })
-  }
+  dispenserInfo.value.forEach((disp) => {
+    disp.field === 'dispType'
+      ? types.value.forEach((type: { type: number, name: string }) => type.type === row[disp.field] ? disp.value = type : '')
+      : disp.value = row[disp.field]
+  })
 }
 
 async function applyFilters(updatedValue: any) {
@@ -99,14 +95,54 @@ async function applyFilters(updatedValue: any) {
   rows.value.unshift({})
 }
 
-const expandedRow = ref()
+const expandedRow: Ref<number | null> = ref(null)
+const submitDialog = ref(false)
 
-function toggleRow(row: any, index: number) {
-  expandedRow.value === index
-    ? expandedRow.value = null
-    : expandedRow.value = index
+async function toggleRowExpand(row: any, index: number) {
+  if (expandedRow.value === index) {
+    expandedRow.value = null
+  } else {
+    expandedRow.value = index
+  }
   resetDispenserInfo(row)
 }
+
+function showSubmitDialog() {
+  submitDialog.value = true
+}
+
+async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
+  if (toggleCollapse)
+    await toggleRowExpand(row, index)
+  else {
+    let canContinue = true
+    if (expandedRow.value !== null) {
+      canContinue = !isFormChangedComparison()
+    }
+    if (canContinue)
+      toggleRowExpand(row, index)
+    else
+      showSubmitDialog()
+  }
+}
+
+function isFormChangedComparison() {
+  const actualData = rows.value.find(el => el.dispNo === dispenserInfo.value[0].value)
+  console.log(actualData)
+  if (!actualData?.dispNo)
+    return false
+  const isThereAnyChange = dispenserInfo.value.some((element) => {
+    if (element.field === 'dispType')
+      return (
+        actualData![element.field] !== element.value.type
+      )
+    else
+      return actualData![element.field] !== element.value
+  })
+  console.log(isThereAnyChange)
+  return isThereAnyChange
+}
+
 const dmsRead = ref(false)
 
 function customSortMethod(rows, sortBy, descending) {
@@ -115,14 +151,10 @@ function customSortMethod(rows, sortBy, descending) {
     return rows
   }
 
-  // Clone the rows array to avoid mutating the original data
   const sortedRows = [...rows]
 
-  // Remove the first row from the sorting process
   const firstRow = sortedRows.shift()
 
-  // Apply your sorting logic here
-  // Example sorting logic (adjust as needed):
   sortedRows.sort((a, b) => {
     if (descending) {
       return a[sortBy] < b[sortBy] ? 1 : -1
@@ -131,7 +163,6 @@ function customSortMethod(rows, sortBy, descending) {
     }
   })
 
-  // Add the first row back at the beginning
   sortedRows.unshift(firstRow)
 
   return sortedRows
@@ -145,12 +176,11 @@ function notification(isSuccess: any, message: string) {
   })
 }
 
-async function submit(rowIndex: number, row: any) {
-  let isOriginNo = true
+async function submit(isPut: boolean) {
   let isSuccess
   let keyI18N
   /** If create */
-  if (rowIndex === 0) {
+  if (!isPut) {
     isSuccess = await $fetch('/api/settings/dispenser', {
       method: 'post',
       body: {
@@ -165,16 +195,11 @@ async function submit(rowIndex: number, row: any) {
     })
     keyI18N = 'warnings.createResponse'
     expandedRow.value = null
-  }
-  if (rowIndex) { /** If it is put */
-    if (row.dispNo !== dispenserInfo.value[0].value) {
-      isOriginNo = false
-    }
+  } else { /** If it is put */
     isSuccess = await $fetch('/api/settings/dispenser', {
       method: 'put',
       body: {
         dispNo: dispenserInfo.value[0].value,
-        isOriginNo,
         name: dispenserInfo.value[1].value,
         dispType: dispenserInfo.value[2].value.type,
         dispIP: dispenserInfo.value[3].value,
@@ -187,6 +212,7 @@ async function submit(rowIndex: number, row: any) {
   }
   notification(isSuccess, t(keyI18N!, { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   await getRows()
+  expandedRow.value = null
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
@@ -205,6 +231,17 @@ async function deleteRow() {
    */
   await getRows()
 }
+onBeforeRouteLeave(async (to, from, next) => {
+  let check = false
+  if (expandedRow.value)
+    check = isFormChangedComparison()
+  if (check) {
+    showSubmitDialog()
+    next(false)
+  } else {
+    next()
+  }
+})
 </script>
 
 <template>
@@ -221,10 +258,10 @@ async function deleteRow() {
         <q-td
           :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           class="cursor-pointer"
-          @click="toggleRow(props.row, props.rowIndex)"
+          @click="toggleRow(props.row, props.rowIndex, false)"
         >
           <q-btn
-            v-if="props.row.dispNo"
+            v-if="props.row.dispNo || props.rowIndex !== 0"
             size="sm"
             :style="`background-color: ${colors.black}; color: white;`"
             round
@@ -246,7 +283,7 @@ async function deleteRow() {
           :props="props"
           :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           class="cursor-pointer"
-          @click="toggleRow(props.row, props.rowIndex)"
+          @click="toggleRow(props.row, props.rowIndex, false)"
         >
           {{ col.value }}
         </q-td>
@@ -311,18 +348,18 @@ async function deleteRow() {
             <div class="flex items-center justify-center gap-5 py-10 w-full">
               <q-btn
                 color="black"
-                :label="props.rowIndex ? t('settings.submit') : t('settings.new')"
+                :label="props.rowIndex || props.row.dispNo ? t('settings.submit') : t('settings.new')"
                 :disable="dispenserInfo[0].value === undefined || dispenserInfo[0].value === ''"
                 outline
                 icon="done"
-                @click="submit(props.rowIndex, props.row)"
+                @click="submit(props.rowIndex || props.row.dispNo)"
               />
               <q-btn
                 color="black"
                 :label="t('settings.cancel')"
                 icon="close"
                 outline
-                @click="toggleRow(props.row, props.rowIndex)"
+                @click="toggleRow(props.row, props.rowIndex, true)"
               />
               <q-btn
                 v-if="props.rowIndex"
@@ -364,6 +401,35 @@ async function deleteRow() {
           color="red"
           icon="delete"
           @click="deleteRow()"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <q-dialog v-model="submitDialog" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <q-avatar
+          icon="question_mark"
+        />
+        <span class="q-ml-sm"> {{ t('warnings.formDidnotSubmit', { type: t('warnings.dispenser') }) }}</span>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn
+          v-close-popup
+          :label="t('settings.discard')"
+          outline
+          color="red"
+          icon="close"
+          @click="expandedRow = null"
+        />
+        <q-btn
+          v-close-popup
+          outline
+          :label="t('settings.submit')"
+          color="light-blue-10"
+          icon="done_all"
+          @click="submit(true)"
         />
       </q-card-actions>
     </q-card>

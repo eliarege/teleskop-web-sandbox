@@ -74,6 +74,7 @@
     "edit": "Düzenle",
     "delete": "Sil",
     "submit": "Kaydet",
+    "discard": "Yoksay",
     "cancel": "İptal",
     "optional": "İsteğe Bağlı",
     "machDispConnection": "Makine Dağıtıcı Bağlantısı",
@@ -313,6 +314,8 @@
     "createResponse": "{type} oluşturma işlemi {result}.",
     "coupledMachineIsTheSame": "Plananlanan makine ile akuple makinesi aynı olamaz.",
     "tryToChangeWithSameMachine": "Planlanan makine eski makine ile aynı olamaz.",
-    "noDataLogs": "{joborder} numaralı iş emri için kayıt bulunamadı."
+    "noDataLogs": "{joborder} numaralı iş emri için kayıt bulunamadı.",
+    "formDidnotSubmit": "{type} için kaydedilmemiş değişiklikleriniz var.",
+    "createFormDidnotSubmit": "Yeni oluşturulan {type} henüz kaydedilmedi."
   }
 }

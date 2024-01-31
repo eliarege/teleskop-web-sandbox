@@ -75,6 +75,7 @@
     "edit": "Edit",
     "delete": "Delete",
     "submit": "Submit",
+    "discard": "Discard",
     "cancel": "Cancel",
     "optional": "Optional",
     "machDispConnection": "Machine Dispenser Connection",
@@ -315,6 +316,7 @@
     "createResponse": "Create { type } operation is { result }.",
     "coupledMachineIsTheSame": "Planned machine and coupled machine cannot be the same.",
     "tryToChangeWithSameMachine": "Planned machine cannot be the same with previous machine.",
-    "noDataLogs": "No data found for joborder {joborder}"
+    "noDataLogs": "No data found for joborder {joborder}",
+    "formDidnotSubmit": "You have unsaved changes on {type}."
   }
 }
