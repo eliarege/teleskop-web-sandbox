@@ -124,7 +124,6 @@ async function deleteDriver() {
             :options="drivers"
             option-label="DRIVERNAME"
             class="input-class text-size-xl"
-            borderless
             @update:model-value="setVariables()"
           />
           <q-btn
@@ -211,6 +210,7 @@ async function deleteDriver() {
           color="black"
           :label="t('settings.submit')"
           outline
+          :disable="!driver.DRIVERID"
           class="btn-bottom"
           icon="done"
           @click="updateDriverSettings(!driver.newDriver)"
