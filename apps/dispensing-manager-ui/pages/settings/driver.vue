@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { notification } from '~/shared/functions'
+
 const { t } = useI18n()
 
 const referenceOptions = ref([
@@ -14,44 +16,83 @@ const protocolOptions = ref([
 ])
 
 const driver = ref()
+const drivers = ref()
 const requestFilteSystemPath = ref()
+const referenceType = ref()
+const protocol = ref()
+const radio = ref()
 await fetchData()
-const referenceType = ref(referenceOptions.value[driver.value.REFERENCEID])
-const protocol = ref(protocolOptions.value[driver.value.PROTOCOL])
-const radio = ref(driver.value.CONTROLTOTALBATCH ? 0 : 1)
-
-async function updateDriverSettings() {
+function setVariables() {
+  referenceType.value = driver.value.REFERENCEID !== undefined ? referenceOptions.value[driver.value.REFERENCEID] : referenceOptions.value[0]
+  protocol.value = driver.value.PROTOCOL !== undefined ? protocolOptions.value[driver.value.PROTOCOL] : protocolOptions.value[0]
+  radio.value = driver.value.CONTROLTOTALBATCH ? 0 : 1
+}
+async function updateDriverSettings(isPut: boolean) {
+  let isSuccess
+  let keyI18N
   await $fetch('/api/settings/file-system', {
     method: 'put',
     body: {
       path: requestFilteSystemPath.value,
     },
   })
-  await $fetch('/api/settings/driver', {
-    method: 'put',
-    body: {
-      DRIVERID: driver.value.DRIVERID,
-      DRIVERNAME: driver.value.DRIVERNAME,
-      PROTOCOL: protocol.value.value,
-      REFERENCEID: referenceType.value.value,
-      DRIVERFILENAME: driver.value.DRIVERFILENAME,
-      CONTROLTOTALBATCH: radio.value === 0,
-      CONTROLPROGRAMREQUEST: radio.value === 1,
-      CONTROLTOTALREQ: driver.value.CONTROLTOTALREQ,
-      CONTROLNV5DESC: driver.value.CONTROLNV5DESC,
-    },
-  })
+  console.log(isPut)
+  if (!isPut) {
+    isSuccess = await $fetch('/api/settings/driver', {
+      method: 'POST',
+      body: {
+        DRIVERID: driver.value.DRIVERID,
+        DRIVERNAME: driver.value.DRIVERNAME,
+        PROTOCOL: protocol.value.value,
+        REFERENCEID: referenceType.value.value,
+        DRIVERFILENAME: driver.value.DRIVERFILENAME,
+        CONTROLTOTALBATCH: radio.value === 0,
+        CONTROLPROGRAMREQUEST: radio.value === 1,
+        CONTROLTOTALREQ: driver.value.CONTROLTOTALREQ,
+        CONTROLNV5DESC: driver.value.CONTROLNV5DESC,
+      },
+    })
+    keyI18N = 'warnings.createResponse'
+  } else {
+    console.log(typeof driver.value.DRIVERID)
+    isSuccess = await $fetch('/api/settings/driver', {
+      method: 'PUT',
+      body: {
+        DRIVERID: driver.value.DRIVERID,
+        DRIVERNAME: driver.value.DRIVERNAME,
+        PROTOCOL: protocol.value.value,
+        REFERENCEID: referenceType.value.value,
+        DRIVERFILENAME: driver.value.DRIVERFILENAME,
+        CONTROLTOTALBATCH: radio.value === 0,
+        CONTROLPROGRAMREQUEST: radio.value === 1,
+        CONTROLTOTALREQ: driver.value.CONTROLTOTALREQ,
+        CONTROLNV5DESC: driver.value.CONTROLNV5DESC,
+      },
+    })
+    keyI18N = 'warnings.changeResponse'
+  }
+  drivers.value = await $fetch('/api/settings/drivers')
+  driver.value.newDriver = false
+  notification(isSuccess, t(keyI18N!, { type: t('warnings.driver'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
 }
 async function fetchData() {
   requestFilteSystemPath.value = await $fetch('/api/settings/file-system')
-  driver.value = await $fetch('/api/settings/driver')
+  drivers.value = await $fetch('/api/settings/drivers')
+  driver.value = drivers.value[0]
+  setVariables()
+  driver.value.newDriver = false
+}
+
+async function addNewDriver() {
+  driver.value = { DRIVERNAME: t('settings.driverInfo.newDriverName'), CONTROLNV5DESC: false, CONTROLTOTALREQ: false, newDriver: true }
+  setVariables()
 }
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center h-200">
-    <div class=" flex flex-col items-center justify-center gap-5 text-size-4 w-full ">
-      <div class="w-full items-center justify-center flex">
+  <div class="flex flex-col items-center justify-center h-full">
+    <div class=" flex flex-col items-center justify-center text-size-4 w-full ">
+      <div class="items-center justify-center flex">
         <div class="settings-section-header">
           {{ t('settings.driverInfo._') }}
         </div>
@@ -65,11 +106,30 @@ async function fetchData() {
           />
         </div>
         <div class="row-item">
+          <q-select
+            v-model="driver"
+            :options="drivers"
+            option-label="DRIVERNAME"
+            class="input-class text-size-xl"
+            borderless
+            @update:model-value="setVariables()"
+          />
+          <q-btn
+            color="black"
+            :label="t('settings.new')"
+            outline
+            class="btn-bottom"
+            icon="add"
+            @click="addNewDriver()"
+          />
+        </div>
+        <div class="row-item">
           {{ t('settings.driverInfo.driverCode') }}
           <q-input
             v-model="driver.DRIVERID"
             class="input-class"
             filled
+            type="number"
             dense
           />
         </div>
@@ -132,14 +192,14 @@ async function fetchData() {
           />
         </div>
       </div>
-      <div class="flex gap-5">
+      <div class="flex gap-5 mt-5">
         <q-btn
           color="black"
           :label="t('settings.submit')"
           outline
           class="btn-bottom"
           icon="done"
-          @click="updateDriverSettings"
+          @click="updateDriverSettings(!driver.newDriver)"
         />
         <q-btn
           color="black"
@@ -175,7 +235,7 @@ async function fetchData() {
   justify-content: space-between;
   gap: 2rem;
   width: 50%;
-  margin: 1.25rem;
+  margin: 0.75rem;
 }
 .row-item-bottom {
   display: flex;

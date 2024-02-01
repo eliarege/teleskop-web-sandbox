@@ -68,7 +68,8 @@
       "prgNo": "Program No",
       "recipeIndex": "Recipe Index",
       "refNoAllJoborders": "Reference No in All Job Orders",
-      "refNoPrgNo": "Job Order Reference No - Program No"
+      "refNoPrgNo": "Job Order Reference No - Program No",
+      "newDriverName": "New Driver's Name"
 
     },
     "new": "New",

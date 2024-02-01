@@ -65,10 +65,11 @@
       "totalRequest": "Programların toplam istek sayıları üzerindne kontrol yap",
       "v1TankNoUse": "V1-Tank No Kullanmaz",
       "v2TankUse": "V2 Tank No Kullanır",
-      "prgNo": "Program Nuamrası",
+      "prgNo": "Program Numarası",
       "recipeIndex": "Reçete Indexi",
       "refNoAllJoborders": "Tüm İş Emri İçinde Referans No",
-      "refNoPrgNo": "İş Emri Referans No - Program No"
+      "refNoPrgNo": "İş Emri Referans No - Program No",
+      "newDriverName": "Yeni Sürücü İsmi"
     },
     "new": "Ekle",
     "edit": "Düzenle",
@@ -306,6 +307,7 @@
     "dispenser": "Dağıtıcı",
     "material": "Malzeme",
     "machine": "Makine",
+    "driver": "Sürücü",
     "reqMechanism": "İstek mekanizması ayarlarını",
     "success": "başarılı",
     "fail": "başarısız",
