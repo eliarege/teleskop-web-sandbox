@@ -1,4 +1,5 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
+import { compressJson } from '../../composables/helper'
 import {
   addBatchNote,
   addErpParameters,
@@ -36,7 +37,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request, reply) => {
       try {
         const unplannedEvents = await getUnplannedEvents()
-        return reply.code(200).send(unplannedEvents)
+        return compressJson(unplannedEvents)
       } catch (err) {
         fastify.log.error(`An error occured while fetching unplanned events: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching unplanned events: ${err}` })

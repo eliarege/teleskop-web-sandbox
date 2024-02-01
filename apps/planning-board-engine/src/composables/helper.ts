@@ -1,5 +1,6 @@
 import { addSeconds } from 'date-fns'
 import { v4 } from 'uuid'
+import type { UnscheduledTasks } from '../../types/planning-board'
 
 interface PlannedEvents {
   planKey: number
@@ -75,4 +76,10 @@ export function generateEventDates(events: any[]): Event[] {
   }
 
   return updatedEvents
+}
+export async function compressJson(data: UnscheduledTasks[]) {
+  const columns = Object.keys(data[0])
+  const values = data.map(a => Object.values(a).map(e => e instanceof Date ? e.toISOString() : e))
+
+  return { columns, values }
 }

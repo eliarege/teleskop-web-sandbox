@@ -1,7 +1,7 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { DateHelper, Splitter } from '@bryntum/schedulerpro-trial'
+import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro-trial'
 import { addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
 import { useI18n } from 'vue-i18n'
@@ -84,7 +84,7 @@ const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
 }))
 
 const mergedEvents = computed(() => modifiedEvents.value?.concat(modifiedArchive.value))
-const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
+const modifiedUnscheduledEvents = computed(() => decompressJson(unScheduledEvents.value!).map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
     id: unp.planKey,
@@ -264,7 +264,15 @@ onMounted(async () => {
       unit: 'minute',
       increment: 5,
     },
-
+    onEventMenuBeforeShow: (a) => {
+      if (a.eventRecord.originalData.pinned) {
+        a.items.pin.hidden = true
+        a.items.unpin.hidden = false
+      } else {
+        a.items.pin.hidden = false
+        a.items.unpin.hidden = true
+      }
+    },
     features: {
       scheduleContext: {
         disabled: true,
@@ -315,6 +323,34 @@ onMounted(async () => {
                   eventRecord.unassign()
                 })
                 .catch(err => console.error(err))
+            },
+          },
+          pin: {
+            icon: 'b-fa-solid b-fa-thumbtack',
+            text: t('ctx-menu.pin'),
+            async onItem({ eventRecord }: any) {
+              await $fetch('api/pinEvent', {
+                query: { planKey: eventRecord.originalData.id },
+                method: 'PUT',
+              })
+                .then(() => {
+                  Toast.show('Event succesfuly pinned!')
+                })
+                .catch(err => Toast.show(err))
+            },
+          },
+          unpin: {
+            icon: 'b-fa-solid b-fa-thumbtack',
+            text: t('ctx-menu.unpin'),
+            async onItem({ eventRecord }: any) {
+              await $fetch('api/unpinEvent', {
+                query: { planKey: eventRecord.originalData.id },
+                method: 'PUT',
+              })
+                .then(() => {
+                  Toast.show('Event succesfuly pinned!')
+                })
+                .catch(err => Toast.show(err))
             },
           },
           copyEvent: {

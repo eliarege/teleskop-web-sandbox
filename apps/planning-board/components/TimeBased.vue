@@ -3,6 +3,7 @@
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro-trial'
 import { EliarModal } from 'ui'
+import { decompressJson } from '~/composables/helper'
 import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
@@ -69,7 +70,7 @@ const schedulerEvents = computed(() => allEvents.map((ev) => {
     editable: false,
   }
 }))
-const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
+const modifiedUnscheduledEvents = computed(() => decompressJson(unScheduledEvents.value).map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
     id: unp.planKey,

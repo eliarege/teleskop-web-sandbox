@@ -1,3 +1,19 @@
+export interface UnscheduledTasks {
+  planKey: number
+  recordTime: string
+  jobOrder: string
+  plannedMachineId: number
+  programCount: number
+  programList: string
+  plannedStartTime: string
+  fabricWeight: string
+  note: string
+  erpFieldName: string | null
+  batchParameterId: number
+  theoreticalDuration: number
+  isStopped: boolean
+}
+
 export interface QueueBasedPlannedEventsRaw {
   planKey: number
   machineId: number
