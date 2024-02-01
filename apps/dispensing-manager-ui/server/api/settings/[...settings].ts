@@ -134,7 +134,7 @@ router.post('/machine-dispenser-connection-filtered', defineEventHandler(async (
   } else {
     machines = await machines
   }
-  const result: Array<{ machineid: number; disps: Array<{ dispNo: number; name: string }>; machinename: string; controlDevice: number }> = []
+  const result: Array<{ machineid: number, disps: Array<{ dispNo: number, name: string }>, machinename: string, controlDevice: number }> = []
   let lastID = 0
   machines.forEach((log) => {
     if (lastID === log.machineid)
@@ -227,7 +227,7 @@ router.get('/material', defineEventHandler(async () => {
     .select({
       materialCode: 'MATERIALCODE',
       materialName: 'MATERIALNAME',
-      materialLabel: knex.raw("CONCAT('(', MATERIALCODE, ') ', MATERIALNAME)"),
+      materialLabel: knex.raw('CONCAT(\'(\', MATERIALCODE, \') \', MATERIALNAME)'),
       materialGroup: 'MADDEGRUPNO',
       density: 'YOGUNLUK',
       ph: 'PH',
@@ -243,7 +243,7 @@ router.get('/material', defineEventHandler(async () => {
 const selectParametersMaterials = {
   materialCode: 'MATERIALCODE',
   materialName: 'MATERIALNAME',
-  materialLabel: knex.raw("CONCAT('(', MATERIALCODE, ') ', MATERIALNAME)"),
+  materialLabel: knex.raw('CONCAT(\'(\', MATERIALCODE, \') \', MATERIALNAME)'),
   materialGroup: 'MADDEGRUPNO',
   density: 'YOGUNLUK',
   ph: 'PH',
@@ -430,14 +430,30 @@ router.put('/file-system', defineEventHandler(async (event) => {
   return 1
 }))
 
-router.get('/driver', defineEventHandler(async () => {
+router.get('/drivers', defineEventHandler(async () => {
   const result = await knex('DYTFCOMDRIVERS')
-  return result[0]
+  return result
+}))
+
+router.post('/driver', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  await knex('DYTFCOMDRIVERs')
+    .insert(body)
+  return 1
 }))
 
 router.put('/driver', defineEventHandler(async (event) => {
   const body = await readBody(event)
   await knex('DYTFCOMDRIVERs')
     .update(body)
+    .where('DRIVERID', body.DRIVERID)
+  return 1
+}))
+
+router.delete('/driver', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  await knex('DYTFCOMDRIVERs')
+    .where('DRIVERID', body.DRIVERID)
+    .delete()
   return 1
 }))

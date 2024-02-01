@@ -21,6 +21,8 @@ const requestFilteSystemPath = ref()
 const referenceType = ref()
 const protocol = ref()
 const radio = ref()
+const deleteDialogVisible = ref(false)
+
 await fetchData()
 function setVariables() {
   referenceType.value = driver.value.REFERENCEID !== undefined ? referenceOptions.value[driver.value.REFERENCEID] : referenceOptions.value[0]
@@ -87,6 +89,17 @@ async function addNewDriver() {
   driver.value = { DRIVERNAME: t('settings.driverInfo.newDriverName'), CONTROLNV5DESC: false, CONTROLTOTALREQ: false, newDriver: true }
   setVariables()
 }
+
+async function deleteDriver() {
+  const isSuccess = await $fetch('/api/settings/driver', {
+    method: 'DELETE',
+    body: {
+      DRIVERID: driver.value.DRIVERID,
+    },
+  })
+  notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.driver'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+  fetchData()
+}
 </script>
 
 <template>
@@ -127,6 +140,7 @@ async function addNewDriver() {
           {{ t('settings.driverInfo.driverCode') }}
           <q-input
             v-model="driver.DRIVERID"
+            :disable="!driver.newDriver"
             class="input-class"
             filled
             type="number"
@@ -209,9 +223,48 @@ async function addNewDriver() {
           outline
           @click="fetchData"
         />
+        <q-btn
+          v-if="!driver.newDriver"
+          color="red"
+          :label="t('settings.delete')"
+          outline
+          class="btn-bottom"
+          icon="delete"
+          @click="deleteDialogVisible = true"
+        />
       </div>
     </div>
   </div>
+  <q-dialog v-model="deleteDialogVisible" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <q-avatar
+          icon="delete"
+          color="white"
+          text-color="delete"
+        />
+        <span class="q-ml-sm"> {{ t('warnings.deleteRow') }}</span>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn
+          v-close-popup
+          :label="t('settings.cancel')"
+          outline
+          color="black"
+          icon="close"
+        />
+        <q-btn
+          v-close-popup
+          outline
+          :label="t('settings.delete')"
+          color="red"
+          icon="delete"
+          @click="deleteDriver()"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <style scoped>
