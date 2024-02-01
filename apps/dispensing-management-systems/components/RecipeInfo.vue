@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import RecipeTable from 'ui/components/RecipeTable.vue'
-
 const props = defineProps({
   batchNo: {
     type: String,
