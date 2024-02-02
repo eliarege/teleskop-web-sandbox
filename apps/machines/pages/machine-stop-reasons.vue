@@ -1,33 +1,50 @@
 <script setup lang="ts">
-import type { Column } from 'nuxt-ui-types'
-import type { StopReason } from '~/types'
-
-const columns: Column[] = [
-  {
-    name: 'stopCode',
+const columns = {
+  stopCode: {
     label: 'Duruş ID',
     field: 'stopCode',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'number',
+    visible: true,
+    editable: true,
+    unique: true,
+    schema: {
+      filled: true,
+      validation: 'required',
+    },
   },
-  {
-    name: 'stopName',
+  stopName: {
     label: 'Duruş Nedeni',
     field: 'stopName',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'text',
+    visible: true,
+    editable: true,
+    schema: {
+      filled: true,
+      validation: 'required',
+    },
   },
-  {
-    name: 'reportToERP',
+  reportToERP: {
     label: 'ERP Arıza Bildirimi',
     field: 'reportToERP',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'checkbox',
+    visible: true,
+    editable: true,
+    format: (val, row) => val ? 'Evet' : 'Hayır',
+    schema: {
+      filled: true,
+    },
   },
-]
+
+}
 
 const { data: stopReasons, refresh } = useLazyFetch('/api/stop-reasons/stop-reasons', {
   default: () => [],
@@ -35,44 +52,34 @@ const { data: stopReasons, refresh } = useLazyFetch('/api/stop-reasons/stop-reas
   body: {},
 })
 
-const selected = ref<StopReason>({
-  stopCode: -1,
-  stopName: '',
-  reportToERP: false,
-})
-
-function handleSelection(obj: StopReason) {
-  if (selected.value.stopCode === obj.stopCode) {
-    selected.value = {
-      stopCode: -1,
-      stopName: '',
-      reportToERP: false,
-    }
-  } else {
-    selected.value.stopCode = obj.stopCode
-    selected.value.stopName = obj.stopName
-    selected.value.reportToERP = obj.reportToERP
-  }
-}
-
-async function handleEditStopReason() {
-  await editStopReason(selected.value)
+async function handleEdit(formData) {
+  await $fetch('/api/stop-reasons/stop-reason', {
+    method: 'PUT',
+    body: formData,
+  })
   await refresh()
 }
 
-async function handleAddStopReason() {
-  await addStopReason(stopReasons.value, selected.value)
+async function handleAdd(formData) {
+  await $fetch('/api/stop-reasons/stop-reason', {
+    method: 'POST',
+    body: {
+      stopCode: stopReasons.value[stopReasons.value.length - 1].stopCode + 1,
+      stopName: formData.stopName,
+      reportToERP: formData.reportToERP,
+    },
+  })
   await refresh()
 }
 
-async function handleDeleteStopReasons() {
-  await deleteStopReasons(selected.value)
+async function handleDelete(formData) {
+  await $fetch('/api/stop-reasons/stop-reasons', {
+    method: 'DELETE',
+    body: {
+      stopCodes: formData.map(d => d.stopCode),
+    },
+  })
   await refresh()
-  selected.value = {
-    stopCode: -1,
-    stopName: '',
-    reportToERP: false,
-  }
 }
 
 async function handleFilterSlotsUpdate(updatedValue) {
@@ -94,72 +101,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
           cihazda kullanılabilir.
         </h3>
       </div>
-
-      <q-input
-        v-model="selected.stopName"
-        label="Duruş Nedeni"
-        filled
-        class="w-xs"
+      <FormTableKit
+        :rows="stopReasons" :columns="columns"
+        @add="handleAdd" @edit="handleEdit" @delete="handleDelete"
       />
-
-      <div class="flex flex-row input-field my-4">
-        <q-checkbox
-          v-model="selected.reportToERP"
-          label="ERP Sistemine Arıza Olarak Bildir"
-        />
-        <q-btn
-          label="Ekle"
-          no-caps
-          @click="handleAddStopReason()"
-        />
-        <q-btn
-          label="Düzenle"
-          no-caps
-          @click="handleEditStopReason()"
-        />
-        <q-btn
-          label="Sil"
-          no-caps
-          @click="handleDeleteStopReasons()"
-        />
-      </div>
-
-      <FilterableTable
-        v-model:selected="selected"
-        :rows="stopReasons"
-        :columns="columns"
-        class="overflow-y-auto h-160"
-        @selection="(e) => handleSelection(e)"
-        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-      >
-        <template #custombody="stopReasons">
-          <q-tr
-            :class="{ 'selected-row': selected.stopCode === stopReasons.row.stopCode }"
-            @click="handleSelection(stopReasons.row)"
-          >
-            <q-td
-              v-for="row in stopReasons.cols"
-              :key="row"
-            >
-              <span v-if="row.field === 'reportToERP'">
-                {{ row.value ? "Evet" : "Hayır" }}
-              </span>
-              <span v-else>
-                {{ row.value }}
-              </span>
-            </q-td>
-          </q-tr>
-        </template>
-      </FilterableTable>
     </q-card-section>
   </q-card>
 </template>
-
-<style scoped>
-.input-field > * {
-  margin-right: 2em;
-}
-.selected-row {
-  background-color: #cce8ff;
-}
-</style>
