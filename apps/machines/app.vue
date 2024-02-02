@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import '@formkit/themes/genesis'
+
 const { t } = useI18n()
 
 const definitionItems = [

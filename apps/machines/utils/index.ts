@@ -112,13 +112,12 @@ export async function getFinishReasons(): Promise<FinishReason[]> {
   return await $fetch('/api/finish-reasons/finish-reasons')
 }
 
-export async function addFinishReason(finishReasons, typeId, text) {
+export async function addFinishReason(finishReasons, formData) {
   await $fetch('/api/finish-reasons/finish-reason', {
     method: 'POST',
     body: {
       reasonId: finishReasons[finishReasons.length - 1].reasonId + 1,
-      typeId,
-      text,
+      formData,
     },
   })
 }
@@ -127,7 +126,7 @@ export async function deleteFinishReasons(selectedFinishReason) {
   await $fetch('/api/finish-reasons/finish-reasons', {
     method: 'DELETE',
     body: {
-      reasonIds: [selectedFinishReason.reasonId],
+      reasonIds: selectedFinishReason.map(d => d.reasonId),
     },
   })
 }
