@@ -1,17 +1,29 @@
 <script setup lang="ts">
-import type { Column } from 'nuxt-ui-types'
-import type { RecipeType } from '~/types'
-
-const columns: Column[] = [
-  {
-    name: 'typeName',
+const columns = {
+  id: {
+    label: 'ID',
+    field: 'id',
+    align: 'left',
+    type: 'number',
+    unique: true,
+    visible: false,
+    editable: false,
+  },
+  typeName: {
     label: 'Reçete Tip Adı',
     field: 'typeName',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'text',
+    visible: true,
+    editable: true,
+    schema: {
+      filled: true,
+      validation: 'required',
+    },
   },
-]
+}
 
 const { data: recipeTypes, refresh } = useLazyFetch('/api/recipe-types/recipe-types', {
   default: () => [],
@@ -19,39 +31,30 @@ const { data: recipeTypes, refresh } = useLazyFetch('/api/recipe-types/recipe-ty
   body: {},
 })
 
-const selected = ref<RecipeType>({
-  id: -1,
-  typeName: '',
-})
-
-async function handleAddRecipe() {
-  await addRecipeType(selected.value.typeName)
+async function handleAdd(formData) {
+  await $fetch('/api/recipe-types/recipe-type', {
+    method: 'POST',
+    body: formData,
+  })
   await refresh()
 }
 
-async function handleEditRecipe() {
-  await editRecipeType(selected.value.id, selected.value.typeName)
+async function handleEdit(formData) {
+  await $fetch('/api/recipe-types/recipe-type', {
+    method: 'PUT',
+    body: formData,
+  })
   await refresh()
 }
 
-async function handleDeleteRecipe() {
-  await deleteRecipeType(selected.value)
+async function handleDelete(formData) {
+  await $fetch('/api/recipe-types/recipe-types', {
+    method: 'DELETE',
+    body: {
+      ids: formData.map(d => d.id),
+    },
+  })
   await refresh()
-  selected.value = {
-    id: -1,
-    typeName: '',
-  }
-}
-
-async function handleSelection(obj: RecipeType) {
-  if (selected.value.id === obj.id) {
-    selected.value = {
-      id: -1,
-      typeName: '',
-    }
-  } else {
-    selected.value = obj
-  }
 }
 
 async function handleFilterSlotsUpdate(updatedValue) {
@@ -65,58 +68,8 @@ async function handleFilterSlotsUpdate(updatedValue) {
 </script>
 
 <template>
-  <q-card class="flex flex-row">
-    <q-card-section>
-      <q-input v-model="selected.typeName" label="Reçete Tipi Adı" />
-      <div class="flex flex-row input-field my-8">
-        <q-btn
-          label="Ekle"
-          no-caps
-          @click="handleAddRecipe()"
-        />
-        <q-btn
-          label="Düzenle"
-          no-caps
-          @click="handleEditRecipe()"
-        />
-        <q-btn
-          label="Sil"
-          no-caps
-          @click="handleDeleteRecipe()"
-        />
-      </div>
-    </q-card-section>
-  </q-card>
-  <FilterableTable
-    v-model:selected="selected"
-    :rows="recipeTypes"
-    :columns="columns"
-    class="overflow-y-auto h-160"
-    @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-  >
-    <template #custombody="recipeTypes">
-      <q-tr
-        :class="{ 'selected-row': selected.id === recipeTypes.row.id }"
-        @click="handleSelection(recipeTypes.row)"
-      >
-        <q-td
-          v-for="row in recipeTypes.cols"
-          :key="row"
-        >
-          <span>
-            {{ row.value }}
-          </span>
-        </q-td>
-      </q-tr>
-    </template>
-  </FilterableTable>
+  <FormTableKit
+    :rows="recipeTypes" :columns="columns"
+    @add="handleAdd" @edit="handleEdit" @delete="handleDelete"
+  />
 </template>
-
-<style scoped>
-.input-field > * {
-  margin-right: 2em;
-}
-.selected-row {
-  background-color: #cce8ff;
-}
-</style>
