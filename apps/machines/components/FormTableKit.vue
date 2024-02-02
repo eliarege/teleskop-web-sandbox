@@ -24,7 +24,9 @@ const schema = ref([])
 const visibleColumns = ref([])
 const rowKey = ref()
 
-watch(props.columns, (_newValue, _oldValue) => {
+const cols = computed(() => props.columns)
+
+watch(cols, (_newValue, _oldValue) => {
   tableColumns.value = []
   schema.value = []
   visibleColumns.value = []
@@ -33,8 +35,9 @@ watch(props.columns, (_newValue, _oldValue) => {
     tableColumns.value.push({ ...column, name: key })
 
     if (column.editable && column.schema) {
+      const deepClonedSchema = JSON.parse(JSON.stringify(column.schema))
       const schemaItem = {
-        ...column.schema,
+        ...deepClonedSchema,
         name: key,
         id: key,
         label: column.label,
