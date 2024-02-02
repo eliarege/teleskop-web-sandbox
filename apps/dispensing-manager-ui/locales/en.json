@@ -251,7 +251,8 @@
     "priorityCritical": "Very High",
     "inputTankNo": "Please enter a tank no as 'integer'!",
     "weiRerequest": "Are you sure you want to rerequest weighing requests?",
-    "solvingRerequest": "Are you sure you want to rerequest solving requests?"
+    "solvingRerequest": "Are you sure you want to rerequest solving requests?",
+    "manuelMaterials": "Manuel Materials"
 
   },
   "registeredJobOrders": {

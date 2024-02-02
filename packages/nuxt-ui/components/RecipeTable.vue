@@ -79,7 +79,7 @@ function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
       :border="true"
       table-layout="fixed"
       :span-method="objectSpanMethod"
-      header-cell-class-name="whitespace-nowrap"
+      header-cell-class-name="whitespace-nowrap text-black"
       :cell-class-name="cellClass"
       :row-class-name="dyeingClass"
       size="small"

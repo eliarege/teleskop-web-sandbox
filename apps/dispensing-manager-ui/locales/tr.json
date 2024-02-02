@@ -250,7 +250,8 @@
     "priorityCritical": "Çok Acil",
     "inputTankNo": "Lütfen tank numarasını 'sayı' olarak giriniz!",
     "weiRerequest": "İş emri tartım isteklerini yenilemek istediğinize emin misiniz?",
-    "solvingRerequest": "İş emri çözme isteklerini isteklerini yenilemek istediğinize emin misiniz?"
+    "solvingRerequest": "İş emri çözme isteklerini isteklerini yenilemek istediğinize emin misiniz?",
+    "manuelMaterials": "Manuel Materyaller"
   },
   "registeredJobOrders": {
     "_": "Kayıtlı İş Emirleri",

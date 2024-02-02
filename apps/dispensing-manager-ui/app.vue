@@ -15,6 +15,10 @@ setLocale('tr')
 </template>
 
 <style>
+.q-field--filled {
+    border-radius: 4px 4px 0 0;
+    background: rgba(0, 0, 0, 0.1);
+}
 .q-radio__inner--truthy {
     color: #000000;
 }
