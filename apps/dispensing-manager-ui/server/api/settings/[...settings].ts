@@ -27,6 +27,8 @@ router.get('/dispenser', defineEventHandler(async () => {
       fileSystem: 'BDYREQUESTPATH',
       protocol: 'PROTOCOL',
       dispIP: 'IP',
+      dispConsumptionFileName: 'CONSUMPTIONFILENAME',
+      dms: 'READCONSUMPTIONFROMDMS',
     })
     .orderBy('DISPENSERID', 'asc')
   return dispensers
@@ -40,6 +42,8 @@ const dispenserParameters = {
   fileSystem: 'BDYREQUESTPATH',
   protocol: 'PROTOCOL',
   dispIP: 'IP',
+  dispConsumptionFileName: 'CONSUMPTIONFILENAME',
+  dms: 'READCONSUMPTIONFROMDMS',
 }
 
 router.post('/filtered-dispensers', defineEventHandler(async (event) => {
@@ -72,6 +76,8 @@ router.post('/dispenser', defineEventHandler(async (event) => {
         BDYREQUESTPATH: body?.fileSystem,
         PROTOCOL: body?.protocol,
         IP: body?.dispIP,
+        CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
+        READCONSUMPTIONFROMDMS: body?.dms,
       })
     return dispenser
   } catch (e) {
@@ -91,6 +97,8 @@ router.put('/dispenser', defineEventHandler(async (event) => {
         BDYREQUESTPATH: body?.fileSystem,
         PROTOCOL: body?.protocol,
         IP: body?.dispIP,
+        CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
+        READCONSUMPTIONFROMDMS: body?.dms,
       })
     return dispenser
   } catch (e) {

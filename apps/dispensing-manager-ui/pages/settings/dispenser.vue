@@ -67,7 +67,8 @@ const dispenserInfo = ref<{ label: string, value: any, field: string, options?: 
   { label: t('settings.dispSettings.dispFileSystem'), value: '', field: 'fileSystem' },
   { label: t('settings.dispSettings.dispFileName'), value: '', field: 'fileName' },
   { label: t('settings.dispSettings.dispProtocol'), value: '', field: 'protocol' },
-  // { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'consumptionFile' },
+  { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'dispConsumptionFileName' },
+  { label: t('settings.dispSettings.readFromDMS'), value: '', field: 'dms' },
 ])
 
 async function getTypes() {
@@ -79,11 +80,15 @@ async function getRows() {
   rows.value.unshift({})
 }
 
+const dmsRead = ref(false)
+
 function resetDispenserInfo(row?: any) {
   dispenserInfo.value.forEach((disp) => {
     disp.field === 'dispType'
       ? types.value.forEach((type: { type: number, name: string }) => type.type === row[disp.field] ? disp.value = type : '')
-      : disp.value = row[disp.field]
+      : disp.field === 'dms'
+        ? dmsRead.value = row[disp.field] !== undefined ? row[disp.field] : false
+        : disp.value = row[disp.field]
   })
 }
 
@@ -136,14 +141,16 @@ function isFormChangedComparison() {
       return (
         actualData![element.field] !== element.value.type
       )
-    else
+    else if (element.field === 'dms') {
+      return (
+        actualData![element.field] !== dmsRead.value
+      )
+    } else
       return actualData![element.field] !== element.value
   })
   console.log(isThereAnyChange)
   return isThereAnyChange
 }
-
-const dmsRead = ref(false)
 
 function customSortMethod(rows, sortBy, descending) {
   expandedRow.value = null
@@ -191,6 +198,8 @@ async function submit(isPut: boolean) {
         fileSystem: dispenserInfo.value[4].value,
         fileName: dispenserInfo.value[5].value,
         protocol: dispenserInfo.value[6].value.protocol,
+        dispConsumptionFileName: dispenserInfo.value[7].value,
+        dms: dmsRead.value,
       },
     })
     keyI18N = 'warnings.createResponse'
@@ -206,6 +215,8 @@ async function submit(isPut: boolean) {
         fileSystem: dispenserInfo.value[4].value,
         fileName: dispenserInfo.value[5].value,
         protocol: dispenserInfo.value[6].value.protocol,
+        dispConsumptionFileName: dispenserInfo.value[7].value,
+        dms: dmsRead.value,
       },
     })
     keyI18N = 'warnings.changeResponse'
@@ -297,11 +308,11 @@ onBeforeRouteLeave(async (to, from, next) => {
               :key="disp.label"
               class="flex flex-row ml-5 mt-1"
             >
-              <div class="flex w-70 pl-2 m-1 items-center">
+              <div v-if="disp.field !== 'dms'" class="flex w-70 pl-2 m-1 items-center">
                 {{ disp.label }}
               </div>
               <div class=" flex w-100 pl-2 m-1 items-center">
-                <span v-if="disp.field === 'protocol'">
+                <span v-if="disp.field === 'protocol' || disp.field === 'dispType'">
                   <q-select
                     v-model="disp.value"
                     borderless
@@ -309,27 +320,13 @@ onBeforeRouteLeave(async (to, from, next) => {
                     class="w-70"
                     filled
                     options-dense
-                    :options="protocols"
-                    option-label="label"
-                    option-value="protocol"
+                    :options="disp.field === 'protocol' ? protocols : types"
+                    :option-label="disp.field === 'protocol' ? 'label' : 'name'"
+                    :option-value="disp.field === 'protocol' ? 'label' : 'type'"
                     style="min-width: 150px"
                   />
                 </span>
-                <span v-else-if="disp.field === 'dispType'">
-                  <q-select
-                    v-model="disp.value"
-                    borderless
-                    dense
-                    filled
-                    class="w-70"
-                    options-dense
-                    :options="types"
-                    option-value="type"
-                    option-label="name"
-                    style="min-width: 150px"
-                  />
-                </span>
-                <span v-else>
+                <span v-else-if="disp.field !== 'dms'">
                   <q-input
                     v-model="disp.value"
                     class="w-70"
@@ -340,7 +337,7 @@ onBeforeRouteLeave(async (to, from, next) => {
                     :disable="disp.field === 'dispNo' && props.row.dispNo > 0"
                   />
                 </span>
-                <span v-if="disp.field === 'consumptionFile'">
+                <span v-if="disp.field === 'dispConsumptionFileName'">
                   <q-checkbox v-model="dmsRead" :label="t('settings.dispSettings.readFromDMS')" />
                 </span>
               </div>
