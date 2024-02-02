@@ -2,12 +2,18 @@
 import Keyboard from 'simple-keyboard'
 import 'simple-keyboard/build/css/index.css'
 
-const props = defineProps(['keyboardClass', 'input'])
+export interface Props {
+  keyboardClass?: string
+  input: string
+}
+const props = withDefaults(defineProps<Props>(), {
+  keyboardClass: 'simple-keyboard',
+})
 const emit = defineEmits(['onChange', 'onKeyPress'])
-const keyboardClass = ref(props.keyboardClass || 'simple-keyboard')
 const keyboard = ref<Keyboard | null>(null)
+
 onMounted(() => {
-  keyboard.value = new Keyboard(keyboardClass.value, {
+  keyboard.value = new Keyboard(props.keyboardClass, {
     onChange: input => onChange(input),
     onKeyPress: button => onKeyPress(button),
   })

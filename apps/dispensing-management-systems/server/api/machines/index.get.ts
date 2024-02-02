@@ -6,8 +6,9 @@ export default defineEventHandler(async () => {
     const machines: Array<Machine> = await dmsDB('MACHINE').select({
       machineId: 'machine_id',
       machineName: 'machine_name',
-      machineControllerType: 'controller_type',
+      controllerType: 'controller_type',
     })
+      .orderBy('machine_id')
     return machines
   } catch (e) {
     console.log(e)

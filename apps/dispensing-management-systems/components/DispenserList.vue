@@ -8,10 +8,9 @@ const { t } = useI18n()
 const dataStore = useDataStore()
 const shouldFetch = !dataStore.dispensers
 const { data } = shouldFetch
-  ? await useFetch<Dispenser[]>(`/api/dispensers/dispensers`)
+  ? await useFetch<Dispenser[]>(`/api/dispensers`)
   : { data: dataStore.dispensers }
-const validDispensers = shouldFetch ? data?.value.filter((val: Dispenser) => val.dispenserId !== -1) : data
-dataStore.dispensers = validDispensers
+dataStore.dispensers = data
 const q = useQuasar()
 async function selectItem(selection: Dispenser) {
   dataStore.$patch({ selectedDispenser: selection })
@@ -56,7 +55,7 @@ function onLogout() {
       default-expand-all
     >
       <QItem
-        v-for="item in validDispensers"
+        v-for="item in dataStore.dispensers"
         :key="item.dispenserId"
         clickable
         :active="dataStore.selectedDispenser?.dispenserId === item.dispenserId"
@@ -85,7 +84,9 @@ function onLogout() {
           </QList>
         </QMenu>
         <QItemSection avatar>
-          <QAvatar icon="directions" />
+          <QAvatar
+            icon="check"
+          />
         </QItemSection>
         <QItemSection>
           <QItemLabel>{{ item.dispenserName }}</QItemLabel>

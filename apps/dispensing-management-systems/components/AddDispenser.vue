@@ -12,7 +12,7 @@ const props = defineProps({
 const { t } = useI18n()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const dispenser = toRef(props, 'dispenser')
-const editedDispenser = ref({ ...dispenser.value })
+const newDispenser = ref({ ...dispenser.value })
 const protocols = ref(['7', '15', 'n', 'n-v2', 'n-v3', 'n-v4', 'n-v5', 'EMTS'])
 const dispenserTypes = ref([])
 
@@ -22,8 +22,8 @@ async function getTypes() {
   dispenserTypes.value = await $fetch('/api/dispensers/types')
 }
 async function onSave() {
-  await $fetch(`/api/dispensers/${dispenser.value.dispenserId}`, { method: 'PUT', body: editedDispenser.value })
-  onDialogOK(editedDispenser.value)
+  await $fetch(`/api/dispensers`, { method: 'POST', body: newDispenser.value })
+  onDialogOK(newDispenser.value)
 }
 
 function onCancel() {
@@ -31,7 +31,7 @@ function onCancel() {
 }
 
 function onReset() {
-  editedDispenser.value = { ...dispenser.value }
+  newDispenser.value = { ...dispenser.value }
 }
 </script>
 
@@ -45,34 +45,20 @@ function onReset() {
       <QForm @submit.prevent>
         <div class="flex flex-col pb-10">
           <div class="text-center pt-5 text-xl">
-            <h2>{{ t('Edit') }}</h2>
+            <h2>{{ t('AddNew') }}</h2>
           </div>
           <div class="flex flex-row flex-wrap justify-center">
-            <div class="row-item">
-              <span class="item-label">
-                {{ t('dispenserFields.ID') }}
-              </span>
-              <QInput
-                v-model="editedDispenser.dispenserId"
-                class="item-input"
-                dense
-                type="text"
-                filled
-                disable
-                :placeholder="editedDispenser.dispenserId"
-              />
-            </div>
             <div class="row-item">
               <span class="item-label">
                 {{ t('dispenserFields.Name') }}
               </span>
               <QInput
-                v-model="editedDispenser.dispenserName"
+                v-model="newDispenser.dispenserName"
                 class="item-input"
                 dense
                 type="text"
                 filled
-                :placeholder="editedDispenser.dispenserName"
+                :placeholder="newDispenser.dispenserName"
               />
             </div>
             <div class="row-item">
@@ -80,12 +66,12 @@ function onReset() {
                 {{ t('dispenserFields.ConsumptionFile') }}
               </span>
               <QInput
-                v-model="editedDispenser.consumptionFilename"
+                v-model="newDispenser.consumptionFilename"
                 class="item-input"
                 dense
                 type="text"
                 filled
-                :placeholder="editedDispenser.consumptionFilename"
+                :placeholder="newDispenser.consumptionFilename"
               />
             </div>
             <div class="row-item">
@@ -93,7 +79,7 @@ function onReset() {
                 {{ t('dispenserFields.Protocol') }}
               </span>
               <QSelect
-                v-model="editedDispenser.protocol"
+                v-model="newDispenser.protocol"
                 borderless
                 dense
                 class="item-input"
@@ -107,7 +93,7 @@ function onReset() {
                 {{ t('dispenserFields.Type') }}
               </span>
               <QSelect
-                v-model="editedDispenser.dispenserType"
+                v-model="newDispenser.dispenserType"
                 borderless
                 dense
                 class="item-input"
@@ -125,12 +111,12 @@ function onReset() {
                 {{ t('dispenserFields.IP') }}
               </span>
               <QInput
-                v-model="editedDispenser.dispenserIP"
+                v-model="newDispenser.dispenserIP"
                 class="item-input"
                 dense
                 type="text"
                 filled
-                :placeholder="editedDispenser.dispenserIP"
+                :placeholder="newDispenser.dispenserIP"
                 :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
               />
             </div>
@@ -139,12 +125,12 @@ function onReset() {
                 {{ t('dispenserFields.FileName') }}
               </span>
               <QInput
-                v-model="editedDispenser.fileName"
+                v-model="newDispenser.fileName"
                 class="item-input"
                 dense
                 type="text"
                 filled
-                :placeholder="editedDispenser.fileName"
+                :placeholder="newDispenser.fileName"
               />
             </div>
             <div class="row-item">
@@ -152,12 +138,12 @@ function onReset() {
                 {{ t('dispenserFields.FilePath') }}
               </span>
               <QInput
-                v-model="editedDispenser.filePath"
+                v-model="newDispenser.filePath"
                 class="item-input"
                 dense
                 type="text"
                 filled
-                :placeholder="editedDispenser.filePath"
+                :placeholder="newDispenser.filePath"
               />
             </div>
           </div>

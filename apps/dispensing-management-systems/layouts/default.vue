@@ -3,22 +3,17 @@ import { LoadingSpinner } from 'ui'
 import { useStateStore } from '~/store/State'
 import { useDataStore } from '~/store/DataStore'
 
+const { didInitialise } = useKeycloak()
 const q = useQuasar()
 const { t } = useI18n()
 const stateStore = useStateStore()
 const dataStore = useDataStore()
 const route = useRoute()
-const isLoading = ref(false)
-const drawer = ref(true)
-const user = ref(dataStore.user)
-stateStore.$subscribe((_, state) => {
-  isLoading.value = state.isLoading
-})
-dataStore.$subscribe((_, store) => {
-  user.value = store.user
-  if (!user.value)
-    goToHomepage()
-})
+const stickyUnavailablePaths = ['/settings']
+const showDrawer = ref(true)
+const showSticky = ref(!stickyUnavailablePaths.includes(route.path))
+const { height } = useWindowSize()
+
 function goToHomepage() {
   navigateTo({
     path: `/`,
@@ -38,7 +33,6 @@ function onLogout() {
 }
 function onRefresh() {
   dataStore.$patch({
-    user: undefined,
     title: '',
     selectedDispenser: undefined,
     dispensers: undefined,
@@ -46,6 +40,7 @@ function onRefresh() {
 }
 const DISPENSER_PATH_RE = /^\/dispenser\/\d+$/
 watch(() => route.params, () => {
+  showSticky.value = !stickyUnavailablePaths.includes(route.path)
   if (route.path === '/')
     dataStore.selectedDispenser = undefined
   else if (DISPENSER_PATH_RE.test(route.path)) {
@@ -57,24 +52,16 @@ watch(() => route.params, () => {
     })
   }
 })
-function stickyHeight() {
-  const percentage = 45
-  return (window.innerHeight * (percentage / 100))
-}
-
-onMounted(() => {
-  window.addEventListener('resize', () => {
-    stickyHeight()
-  })
-})
 </script>
 
 <template>
-  <QLayout view="hHh LpR fFf">
-    <LoadingSpinner v-if="isLoading" />
-    <Appbar />
+  <QLayout v-if="didInitialise" view="hHh LpR fFf">
+    <LoadingSpinner v-if="stateStore.isLoading" />
+    <KeepAlive>
+      <Appbar />
+    </KeepAlive>
     <QDrawer
-      v-if="drawer && user"
+      v-if="showDrawer && route.path !== '/settings'"
       show-if-above
       bordered
       persistent
@@ -95,16 +82,16 @@ onMounted(() => {
       </QScrollArea>
     </QDrawer>
     <QPageSticky
-      v-if="user"
+      v-if="showSticky"
       position="top-left"
-      :offset="[5, stickyHeight()]"
+      :offset="[5, height * (9 / 20)]"
       style="z-index: 100;"
     >
       <QBtn
         round
         color="primary"
-        :icon="drawer ? 'chevron_left' : 'chevron_right'"
-        @click="() => { drawer = !drawer }"
+        :icon="showDrawer ? 'chevron_left' : 'chevron_right'"
+        @click="() => { showDrawer = !showDrawer }"
       >
         <QTooltip
           :offset="[10, 10]"
@@ -112,14 +99,14 @@ onMounted(() => {
           self="center left"
           text-center
         >
-          {{ drawer ? t('HideDispenserList') : t('ShowDispenserList') }}
+          {{ showDrawer ? t('HideDispenserList') : t('ShowDispenserList') }}
         </QTooltip>
       </QBtn>
     </QPageSticky>
     <QPageContainer>
       <div class="row">
         <div class="col-auto">
-          <NavigationButton class="mt-5 ml-5" />
+          <NavigationButton class="mt-5 ml-5 z-1" />
         </div>
         <div class="col">
           <slot />

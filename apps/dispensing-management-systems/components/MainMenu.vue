@@ -1,7 +1,5 @@
 <script lang="ts" setup>
 import { useStateStore } from '~/store/State'
-import type { TeleskopData } from '~/shared/types'
-import { convertTeleskopData } from '~/shared/utils'
 
 const { t } = useI18n()
 const stateStore = useStateStore()
@@ -9,9 +7,7 @@ const stateStore = useStateStore()
 async function syncData() {
   try {
     stateStore.isLoading = true
-    const { data: teleskopData } = await useFetch<TeleskopData[]>('/api/teleskop/sync')
-    const data = convertTeleskopData(teleskopData.value!)
-    await $fetch('/api/teleskop/sync', { method: 'POST', body: data })
+    await $fetch('/api/teleskop/sync')
   } catch (e) {
     console.error(e)
   } finally {
@@ -42,7 +38,7 @@ function onRefresh() {
         no-caps
         icon="add"
         :label="t('AddNew')"
-        @click="{}"
+        @click="navigateTo(`/addMachineDispenser`)"
       />
       <QBtn
         class="h-40 w-50 pb-10 pt-10 opacity-75 border border-solid text-5 b-rd-2"

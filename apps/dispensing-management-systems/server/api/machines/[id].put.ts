@@ -5,11 +5,11 @@ export default defineEventHandler(async (event) => {
   try {
     const machine: Machine = await readBody(event)
     const res = await dmsDB('MACHINE').where({
-      machineId: machine.machineId,
+      machine_id: machine.machineId,
     }).update({
-      machineId: 'machine_id',
-      machineName: 'machine_name',
-      machineControllerType: 'controller_type',
+      machine_id: 'machineId',
+      machine_name: 'machineName',
+      controller_type: 'controllerType',
     })
     return res
   } catch (e) {

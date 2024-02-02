@@ -18,6 +18,10 @@ export default defineNuxtConfig({
     teleskopPassword: '12345678tT',
     teleskopDatabase: 'Teleskop',
     public: {
+      kcUrl: 'http://localhost:8080',
+      kcRealm: 'teleskop-web',
+      kcClientId: 'dispensing-management-systems',
+      kcEnabled: true,
       websockifyPort: '6800',
     },
   },

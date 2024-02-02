@@ -1,82 +1,88 @@
 <script lang="ts" setup>
 import type { QTableColumn } from 'quasar'
+import MaterialRequests from './MaterialRequests.vue'
 import type { JobOrder } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
+import { cellStyle } from '~/shared/utils'
 
 const { t } = useI18n()
-const { dark } = useQuasar()
+const q = useQuasar()
 const route = useRoute()
 const colorStore = useColorStore()
+const searchFilter = ref('')
+const jobOrders = ref()
 
-const { data: jobOrders } = await useFetch<JobOrder[]>(`/api/jobOrders/${route.params.id}`)
-
+getJobOrders()
+async function getJobOrders() {
+  jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${route.query.dispenserId}`)
+}
 const columns: (QTableColumn<JobOrder>)[] = [
   {
     name: 'job_order',
-    label: t('Job Order'),
-    field: 'jobId',
+    label: t('JobOrder'),
+    field: 'batchNo',
     sortable: true,
     align: 'left',
   },
   {
     name: 'batch_correction_no',
-    label: t('Batch Correction No'),
+    label: t('BatchCorrectionNo'),
     field: 'batchCorrectionNo',
     sortable: true,
     align: 'left',
   },
   {
     name: 'machine_name',
-    label: t('Machine Name'),
+    label: t('MachineName'),
     field: 'machineName',
     sortable: true,
     align: 'left',
   },
   {
     name: 'tank_no',
-    label: t('Tank No'),
+    label: t('TankNo'),
     field: 'tankNo',
     sortable: true,
     align: 'left',
   },
   {
     name: 'program_no',
-    label: t('Program No'),
+    label: t('ProgramNo'),
     field: 'programNo',
     sortable: true,
     align: 'left',
   },
   {
     name: 'program_name',
-    label: t('Program Name'),
+    label: t('ProgramName'),
     field: 'programName',
     sortable: true,
     align: 'left',
   },
   {
     name: 'step_no',
-    label: t('Step No'),
+    label: t('StepNo'),
     field: 'stepNo',
     sortable: true,
     align: 'left',
   },
   {
     name: 'recipe_type',
-    label: t('Recipe Type'),
+    label: t('RecipeType'),
     field: 'recipeType',
     sortable: false,
     align: 'left',
   },
   {
     name: 'recipe_process_no',
-    label: t('Recipe Process No'),
+    label: t('RecipeProcessNo'),
     field: 'recipeProcessNo',
     sortable: true,
     align: 'left',
   },
   {
     name: 'recipe_step_no',
-    label: t('Recipe Step No'),
+    label: t('RecipeStepNo'),
     field: 'recipeStepNo',
     sortable: true,
     align: 'left',
@@ -85,48 +91,50 @@ const columns: (QTableColumn<JobOrder>)[] = [
     name: 'status',
     label: t('Status'),
     field: 'status',
-    sortable: false,
+    sortable: true,
     align: 'left',
   },
 ]
-function cellStyle(col: any, row: any, pageIndex: number, isDarkMode: boolean) {
-  let style = 'background-color: '
-  if (col.field === 'status') {
-    style += colorStore.jobOrderStatusColors[row.status] || '#FFFFFF'
-    style += '; color: white; font-weight: bolder; font-size: medium'
-  } else if (isDarkMode) {
-    if (pageIndex % 2 === 0) {
-      style += colorStore.darkJobOrderCellEven
-    } else {
-      style += colorStore.darkJobOrderCellOdd
-    }
-  } else {
-    if (pageIndex % 2 === 0) {
-      style += colorStore.lightJobOrderCellEven
-    } else {
-      style += colorStore.lightJobOrderCellOdd
-    }
-  }
-  return style
+
+function onRowClick(_event: Event, row: JobOrder) {
+  q.dialog({
+    component: MaterialRequests,
+    componentProps: { jobOrder: row },
+  })
 }
+const pagination = ref({ rowsPerPage: 50 })
 </script>
 
 <template>
-  <div class="q-pa-md outline-100 outline-red ml-9">
+  <div class="q-pa-md ml-9">
+    <div class="flex-center">
+      <QInput
+        v-model="searchFilter"
+        :label="t('Search')"
+        class="mb-10 w-50%"
+      >
+        <template #prepend>
+          <QIcon name="search" />
+        </template>
+      </QInput>
+    </div>
     <QTable
-      :card-class="dark.isActive ? 'card-dark' : 'card-light'"
-      :table-class="dark.isActive ? 'table-dark' : 'table-light'"
-      :table-header-class="dark.isActive ? 'header-dark' : 'header-light'"
-      :title="$t('Job Orders')"
+      :card-class="q.dark.isActive ? 'card-dark' : 'card-light'"
+      :table-class="q.dark.isActive ? 'table-dark' : 'table-light'"
+      :table-header-class="q.dark.isActive ? 'header-dark' : 'header-light'"
+      :title="t('JobOrders')"
+      :filter="searchFilter"
+      :pagination
+      :columns
       :rows="jobOrders"
-      :columns="columns"
       separator="none"
       row-key="name"
+      @row-click="onRowClick"
     >
       <template #body-cell="props">
         <QTd
           :props="props"
-          :style="cellStyle(props.col, props.row, props.pageIndex, dark.isActive)"
+          :style="cellStyle(props.col, props.row, props.pageIndex, q.dark.isActive, colorStore.colors)"
         >
           <span v-if="props.col.field === 'status'">
             {{ t(`statusCodes.${props.row.status}`) }}
@@ -157,13 +165,24 @@ function cellStyle(col: any, row: any, pageIndex: number, isDarkMode: boolean) {
   font-weight: bold;
   padding-right: 5px;
   text-decoration: underline;
+  position: sticky;
+  background-color: var(--q-primary);
+  top: 0px;
+  z-index: 1;
 }
 .header-dark th {
   font-weight: bold;
   padding-right: 5px;
   text-decoration: underline;
+  position: sticky;
+  background-color: var(--q-dark);
+  top: 0px;
+  z-index: 1;
 }
 /* Light Theme Styles */
+.table-dark, .table-light {
+  max-height: 400px;
+}
 .table-light td {
   border: 1px solid blue;
   border-right: none;

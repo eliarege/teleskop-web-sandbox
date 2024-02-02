@@ -10,15 +10,14 @@ export const useColorStore = defineStore('colors', () => {
     8: '#FF4B4B',
     10: '#FFBB00',
   }
-  const darkJobOrderCellEven = '#ACACAC'
-  const darkJobOrderCellOdd = 'grey'
-  const lightJobOrderCellEven = 'white'
-  const lightJobOrderCellOdd = '#CACACA'
-  return {
+  const colors = {
     jobOrderStatusColors,
-    darkJobOrderCellEven,
-    darkJobOrderCellOdd,
-    lightJobOrderCellEven,
-    lightJobOrderCellOdd,
+    darkJobOrderCellEven: '#ACACAC',
+    darkJobOrderCellOdd: 'grey',
+    lightJobOrderCellEven: 'white',
+    lightJobOrderCellOdd: '#CACACA',
+  }
+  return {
+    colors,
   }
 })

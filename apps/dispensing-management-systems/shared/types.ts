@@ -1,5 +1,6 @@
 export interface JobOrder {
   jobId: number
+  batchNo: number
   batchCorrectionNo: number
   machineName: string
   machineId: number
@@ -11,7 +12,32 @@ export interface JobOrder {
   recipeType: string
   recipeProcessNo: number
   recipeStepNo: number
-  status: string
+  status: number
+}
+export interface ProgramHeader {
+  machineId: number
+  programNo: number
+  programName: number
+}
+export interface BatchPlan {
+  planKey: number
+  batch: string
+  batchCorrectionNo: number
+  plannedMachine: number
+  plannedStartDate: Date
+}
+export interface BatchRecipeStep {
+  planKey: number
+  batch: string
+  mainStep: number
+  parallelStep: number
+  recipeType: number
+  ISN: number
+  processOrder: number
+  chemCode: string
+  programProcessNo: number
+  amount: number
+  unit: number
 }
 export interface Dispenser {
   dispenserId: number
@@ -26,27 +52,40 @@ export interface Dispenser {
   fileName: string
   filePath: string
 }
+export interface DispenserType {
+  dispenserTypeId: number
+  dispenserTypeName: string
+}
+export interface Material {
+  materialCode: string
+  materialName: string
+  materialGroupNo: number
+  density: number
+  ph: number
+  source: string
+  costUnit: string
+  unitCost: number
+  reRequestable: boolean
+  directTransfer: boolean
+}
+export interface MaterialRequest {
+  jobId: number
+  materialCode: string
+  materialName: string
+  amount: number
+  status: number
+  unit: number
+}
+export interface MaterialGroup {
+  materialGroupNo: number
+  materialGroupName: string
+}
 export interface Machine {
   machineId: number
   machineName: string
   controllerType: number
 }
-export interface User {
-  username: string
-}
-export interface TeleskopData {
-  jobId: number
-  batchCorrectionNo: number
-  machineName: string
-  machineId: number
-  tankNo: number
-  programNo: number
-  programName: string
-  recipeType: string
-  recipeProcessNo: number
-  stepNo: number
-  recipeStepNo: number
-  status: number
-  dispenserId: number
-  dispenserName: string
+export interface MachineControllerType {
+  controllerTypeId: number
+  controllerTypeName: string
 }

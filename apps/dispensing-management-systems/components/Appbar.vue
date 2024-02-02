@@ -29,7 +29,7 @@ function goToSettings() {
       <QBtn
         flat
         style="display: flex; left: 1rem; position: absolute; height: 3rem; width: 3rem; z-index: 1;"
-        @click="goToHomepage()"
+        @click="goToHomepage"
       >
         <QTooltip :offset="[10, 10]">
           {{ t('Homepage') }}
@@ -47,11 +47,10 @@ function goToSettings() {
         </h3>
         <QSpace />
         <QBtn
-          v-if="dataStore.user"
           flat
           class="h-6 w-6"
           icon="settings"
-          @click="goToSettings()"
+          @click="goToSettings"
         >
           <QTooltip :offset="[10, 10]">
             {{ t('Settings') }}

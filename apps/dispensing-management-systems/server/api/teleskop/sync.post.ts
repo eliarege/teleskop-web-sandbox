@@ -6,24 +6,50 @@ export default defineEventHandler(async (event) => {
     const machines: any[] = []
     const dispensers: any[] = []
     const jobOrders: any[] = []
+    const materials: any[] = []
+    const materialReqs: any[] = []
+    const batchPlans: any[] = []
+    const batchRecipeSteps: any[] = []
+    const batchHeaders: any[] = []
+    const programHeaders: any[] = []
 
-    teleskopData.dispensers.forEach((data: any) => {
+    teleskopData.dispensers?.forEach((data: any) => {
       const dispenser = {
         dispenser_id: data.dispenserId,
         dispenser_name: data.dispenserName,
+        ip_address: data.dispenserIP,
+        password: data.dipenserPswrd,
+        dispenser_type: data.dispenserType,
+        protocol: data.protocol,
+        last_consumption_control: data.lastConsumptionControl,
+        read_consumption_from_dms: data.readConsumptionFromDMS,
+        consumption_filename: data.consumptionFilename,
+        bdy_requestname: data.fileName,
+        bdy_requestpath: data.filePath,
       }
       dispensers.push(dispenser)
     })
-    teleskopData.machines.forEach((data: any) => {
+
+    teleskopData.machines?.forEach((data: any) => {
       const machine = {
         machine_id: data.machineId,
         machine_name: data.machineName,
+        controller_type: data.controllerType,
       }
       machines.push(machine)
     })
-    teleskopData.jobOrders.forEach((data: any) => {
+    teleskopData.programHeaders?.forEach((data: any) => {
+      const programHeader = {
+        machine_id: data.machineId,
+        program_no: data.programNo,
+        program_name: data.programName,
+      }
+      programHeaders.push(programHeader)
+    })
+    teleskopData.jobOrders?.forEach((data: any) => {
       const jobOrder = ({
         job_id: data.jobId,
+        batch_no: data.batchNo,
         batch_correction_no: data.batchCorrectionNo,
         dispenser_id: data.dispenserId,
         machine_id: data.machineId,
@@ -38,15 +64,85 @@ export default defineEventHandler(async (event) => {
       })
       jobOrders.push(jobOrder)
     })
+
+    teleskopData.materials?.forEach((data: any) => {
+      const material = ({
+        material_code: data.materialCode,
+        material_name: data.materialName,
+        material_group_no: data.materialGroupNo,
+        density: data.density,
+        ph: data.ph,
+        source: data.source,
+        cost_unit: data.costUnit,
+        unit_cost: data.unitCost,
+        re_requestable: data.reRequestable,
+        direct_transfer: data.directTransfer,
+      })
+      materials.push(material)
+    })
+    teleskopData.materialReqs?.forEach((data: any) => {
+      const materialReq = ({
+        material_code: data.materialCode,
+        req_no: data.jobId,
+        amount: data.amount,
+        status: data.status,
+      })
+      materialReqs.push(materialReq)
+    })
+    teleskopData.batchPlans?.forEach((data: any) => {
+      const batchPlan = ({
+        plan_key: data.planKey,
+        batch: data.batch,
+        batch_correction_no: data.batchCorrectionNo,
+        planned_machine: data.plannedMachine,
+        planned_start_date: data.plannedStartDate,
+      })
+      batchPlans.push(batchPlan)
+    })
+    teleskopData.batchHeaders?.forEach((data: any) => {
+      const batchHeader = ({
+        plan_key: data.planKey,
+        recipe_index: data.recipeIndex,
+        recipe_no: data.recipeNo,
+        recipe_type: data.recipeType,
+      })
+      batchHeaders.push(batchHeader)
+    })
+    teleskopData.batchRecipeSteps?.forEach((data: any) => {
+      const batchRecipeStep = ({
+        plan_key: data.planKey,
+        batch_order: data.batchNo,
+        main_step: data.mainStep,
+        parallel_step: data.parallelStep,
+        req_no_batch: data.ISN,
+        process_order: data.processOrder,
+        chem_code: data.chemCode,
+        prog_proc_no: data.programProcessNo,
+        amount: data.amount,
+        unit: data.unit,
+      })
+      batchRecipeSteps.push(batchRecipeStep)
+    })
+    const batchSize = 3000
     await dmsDB('JOB_ORDER').del()
-    // await dmsDB('DISPENSER').del()
+    await dmsDB('BATCH_RECIPE_STEP').del()
+    await dmsDB('DISPENSER').del()
     await dmsDB('MACHINE').del()
+    await dmsDB('MATERIAL_REQUEST').del()
+    await dmsDB('MATERIAL').del()
+    await dmsDB('BATCH_PLAN').del()
+    await dmsDB('BATCH_HEADER').del()
+    await dmsDB('PROGRAM_HEADER').del()
 
-    const batchSize = 1000
-
-    // await batchInsert(dispensers, batchSize, 'DISPENSER')
+    await batchInsert(dispensers, batchSize, 'DISPENSER')
+    await batchInsert(batchRecipeSteps, batchSize, 'BATCH_RECIPE_STEP')
     await batchInsert(machines, batchSize, 'MACHINE')
     await batchInsert(jobOrders, batchSize, 'JOB_ORDER')
+    await batchInsert(materials, batchSize, 'MATERIAL')
+    await batchInsert(materialReqs, batchSize, 'MATERIAL_REQUEST')
+    await batchInsert(batchPlans, batchSize, 'BATCH_PLAN')
+    await batchInsert(batchHeaders, batchSize, 'BATCH_HEADER')
+    await batchInsert(programHeaders, batchSize, 'PROGRAM_HEADER')
   } catch (e) {
     console.error(e)
     return e

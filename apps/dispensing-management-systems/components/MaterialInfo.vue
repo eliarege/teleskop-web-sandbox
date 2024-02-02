@@ -1,29 +1,31 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
-import type { Dispenser } from '~/shared/types'
-import ipformat from '~/shared/utils'
+import type { Material, MaterialGroup } from '~/shared/types'
 
 const props = defineProps({
-  dispenser: {
-    type: Object as PropType<Dispenser>,
+  material: {
+    type: Object as PropType<Material>,
+    required: true,
+  },
+  groupOptions: {
+    type: Object as PropType<MaterialGroup[]>,
     required: true,
   },
 })
 const { t } = useI18n()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
-const dispenser = toRef(props, 'dispenser')
-const editedDispenser = ref({ ...dispenser.value })
-const protocols = ref(['7', '15', 'n', 'n-v2', 'n-v3', 'n-v4', 'n-v5', 'EMTS'])
-const dispenserTypes = ref([])
+const material = toRef(props, 'material')
+const editedMaterial = ref({ ...material.value })
 
-getTypes()
+const unitOptions = ref([
+  '---',
+  'TL',
+  '$',
+])
 
-async function getTypes() {
-  dispenserTypes.value = await $fetch('/api/dispensers/types')
-}
 async function onSave() {
-  await $fetch(`/api/dispensers/${dispenser.value.dispenserId}`, { method: 'PUT', body: editedDispenser.value })
-  onDialogOK(editedDispenser.value)
+  await $fetch(`/api/materials/${material.value.materialCode}`, { method: 'PUT', body: editedMaterial.value })
+  onDialogOK(editedMaterial.value)
 }
 
 function onCancel() {
@@ -31,7 +33,7 @@ function onCancel() {
 }
 
 function onReset() {
-  editedDispenser.value = { ...dispenser.value }
+  editedMaterial.value = { ...material.value }
 }
 </script>
 
@@ -45,69 +47,56 @@ function onReset() {
       <QForm @submit.prevent>
         <div class="flex flex-col pb-10">
           <div class="text-center pt-5 text-xl">
-            <h2>{{ t('Edit') }}</h2>
+            <h2>{{ t('Material') }}</h2>
           </div>
           <div class="flex flex-row flex-wrap justify-center">
             <div class="row-item">
               <span class="item-label">
-                {{ t('dispenserFields.ID') }}
+                {{ t('materialFields.Code') }}
               </span>
               <QInput
-                v-model="editedDispenser.dispenserId"
+                v-model="editedMaterial.materialCode"
                 class="item-input"
                 dense
                 type="text"
                 filled
                 disable
-                :placeholder="editedDispenser.dispenserId"
+                :placeholder="editedMaterial.materialCode"
               />
             </div>
             <div class="row-item">
               <span class="item-label">
-                {{ t('dispenserFields.Name') }}
+                {{ t('materialFields.Name') }}
               </span>
               <QInput
-                v-model="editedDispenser.dispenserName"
+                v-model="editedMaterial.materialName"
                 class="item-input"
                 dense
                 type="text"
                 filled
-                :placeholder="editedDispenser.dispenserName"
+                :placeholder="editedMaterial.materialName"
               />
             </div>
             <div class="row-item">
               <span class="item-label">
-                {{ t('dispenserFields.ConsumptionFile') }}
+                {{ t('materialFields.PH') }}
               </span>
               <QInput
-                v-model="editedDispenser.consumptionFilename"
+                v-model="editedMaterial.ph"
                 class="item-input"
                 dense
-                type="text"
+                type="number"
                 filled
-                :placeholder="editedDispenser.consumptionFilename"
+                :rules="[(val: number) => val > 0 && val < 14]"
+                :placeholder="editedMaterial.ph"
               />
             </div>
             <div class="row-item">
               <span class="item-label">
-                {{ t('dispenserFields.Protocol') }}
+                {{ t('materialFields.Group') }}
               </span>
               <QSelect
-                v-model="editedDispenser.protocol"
-                borderless
-                dense
-                class="item-input"
-                filled
-                options-dense
-                :options="protocols"
-              />
-            </div>
-            <div class="row-item">
-              <span class="item-label">
-                {{ t('dispenserFields.Type') }}
-              </span>
-              <QSelect
-                v-model="editedDispenser.dispenserType"
+                v-model="editedMaterial.materialGroupNo"
                 borderless
                 dense
                 class="item-input"
@@ -115,50 +104,74 @@ function onReset() {
                 emit-value
                 map-options
                 options-dense
-                option-value="dispenserTypeId"
-                option-label="dispenserTypeName"
-                :options="dispenserTypes"
+                option-value="materialGroupNo"
+                option-label="materialGroupName"
+                :options="groupOptions"
               />
             </div>
             <div class="row-item">
               <span class="item-label">
-                {{ t('dispenserFields.IP') }}
+                {{ t('materialFields.CostUnit') }}
               </span>
-              <QInput
-                v-model="editedDispenser.dispenserIP"
-                class="item-input"
+              <QSelect
+                v-model="editedMaterial.costUnit"
+                borderless
                 dense
-                type="text"
+                class="item-input"
                 filled
-                :placeholder="editedDispenser.dispenserIP"
-                :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
+                :options="unitOptions"
               />
             </div>
             <div class="row-item">
               <span class="item-label">
-                {{ t('dispenserFields.FileName') }}
+                {{ t('materialFields.Density') }}
               </span>
               <QInput
-                v-model="editedDispenser.fileName"
+                v-model="editedMaterial.density"
                 class="item-input"
                 dense
-                type="text"
+                type="number"
                 filled
-                :placeholder="editedDispenser.fileName"
+                :placeholder="editedMaterial.density"
               />
             </div>
             <div class="row-item">
               <span class="item-label">
-                {{ t('dispenserFields.FilePath') }}
+                {{ t('materialFields.UnitCost') }}
               </span>
               <QInput
-                v-model="editedDispenser.filePath"
+                v-model="editedMaterial.unitCost"
+                class="item-input"
+                dense
+                type="number"
+                filled
+                :placeholder="editedMaterial.unitCost"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('materialFields.Source') }}
+              </span>
+              <QInput
+                v-model="editedMaterial.source"
                 class="item-input"
                 dense
                 type="text"
                 filled
-                :placeholder="editedDispenser.filePath"
+                :placeholder="editedMaterial.source"
               />
+            </div>
+            <div class="row-item pl-50">
+              <span class="item-label">
+                {{ t('materialFields.ReRequestable') }}
+              </span>
+              <QCheckbox v-model="editedMaterial.reRequestable" />
+            </div>
+            <div class="row-item pl-50">
+              <span class="item-label">
+                {{ t('materialFields.DirectTransfer') }}
+              </span>
+              <QCheckbox v-model="editedMaterial.directTransfer" />
             </div>
           </div>
           <div class="flex-center justify-evenly p-10">

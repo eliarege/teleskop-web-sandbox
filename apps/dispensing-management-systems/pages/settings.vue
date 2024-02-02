@@ -3,9 +3,6 @@ import { useQuasar } from 'quasar'
 import { useRouter } from '#vue-router'
 import { useDataStore } from '~/store/DataStore'
 
-definePageMeta({
-  layout: 'settings',
-})
 const { t, locale } = useI18n()
 const q = useQuasar()
 const dataStore = useDataStore()
@@ -14,11 +11,7 @@ const tab = ref('material')
 const splitterModel = ref(10)
 const innerWidth = ref(window.innerWidth)
 const minSize = 768
-if (dataStore.user === undefined) {
-  await navigateTo({
-    path: '/',
-  })
-}
+
 dataStore.title = t('Settings')
 watch(locale, () => {
   dataStore.title = t('Settings')
@@ -53,6 +46,7 @@ useResizeObserver(document.body, () => {
             </QTooltip>
           </QBtn>
         </div>
+        <QSeparator />
         <QTabs
           v-model="tab"
           vertical
@@ -78,7 +72,7 @@ useResizeObserver(document.body, () => {
             name="s2"
             icon="settings"
             :class="tab === 's2' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
-            :label="innerWidth > minSize ? `${t('settings.2')}` : ''"
+            :label="innerWidth > minSize ? `${t('settings.Material')}` : ''"
           />
           <QSeparator />
           <QTab
@@ -101,6 +95,7 @@ useResizeObserver(document.body, () => {
             :class="tab === 's5' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
             :label="innerWidth > minSize ? `${t('settings.5')}` : ''"
           />
+          <QSeparator />
         </QTabs>
       </template>
 
@@ -117,7 +112,7 @@ useResizeObserver(document.body, () => {
           </QTabPanel>
 
           <QTabPanel name="s2">
-            <!-- Settings Component -->
+            <MaterialSettings />
           </QTabPanel>
 
           <QTabPanel name="s3">

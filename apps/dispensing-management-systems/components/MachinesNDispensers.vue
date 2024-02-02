@@ -1,95 +1,99 @@
 <script lang="ts" setup>
 import type { QTableColumn } from 'quasar'
+import AddDispenser from './AddDispenser.vue'
+import AddMachine from './AddMachine.vue'
+
 import type { Dispenser, Machine } from '~/shared/types'
 
 const { t } = useI18n()
+const q = useQuasar()
 
 const dispenserColumns: (QTableColumn<Dispenser>)[] = [
   {
-    name: 'id',
+    name: 'dispenserid',
     required: true,
-    label: t('Dispenser Number'),
+    label: t('dispenserFields.ID'),
     align: 'center',
     field: 'dispenserId',
     format: val => `${val}`,
     sortable: true,
   },
-  { name: 'name', label: t('Dispenser Name'), align: 'center', field: 'dispenserName', sortable: true },
-  { name: 'ip', label: t('Dispenser IP'), field: 'dispenserIP' },
-  { name: 'type', label: t('Dispenser Type'), field: 'dispenserType' },
-  { name: 'protocol', label: t('Protocol'), field: 'protocol' },
-  // { name: 'last_consumption_control', label: t('Last Consumption Control'), field: 'lastConsumptionControl' },
-  // { name: 'read_consumption_from_dms', label: t('Read Consumption from DMS'), field: 'readConsumptionFromDMS', sortable: true },
-  // { name: 'consumption_filename', label: t('Consumption Filename'), field: 'consumptionFilename' },
-  // { name: 'bdy_requestname', label: t('Body Request Name'), field: 'bdyRequestName' },
-  // { name: 'bdy_requestpath', label: t('Body Request Path'), field: 'bdyRequestPath' },
-
+  { name: 'dispensername', label: t('dispenserFields.Name'), align: 'center', field: 'dispenserName', sortable: true },
+  { name: 'ip', label: t('dispenserFields.IP'), field: 'dispenserIP' },
+  { name: 'type', label: t('dispenserFields.Type'), field: 'dispenserType' },
+  { name: 'protocol', label: t('dispenserFields.Protocol'), field: 'protocol' },
 ]
 
 const machineColumns: (QTableColumn<Machine>)[] = [
   {
-    name: 'id',
+    name: 'machineid',
     required: true,
-    label: t('Machine Number'),
+    label: t('machineFields.No'),
     align: 'center',
     field: 'machineId',
     format: val => `${val}`,
-    sortable: false,
+    sortable: true,
   },
-  { name: 'name', label: t('Machine Name'), align: 'center', field: 'machineName', sortable: true },
-  { name: 'controllertype', label: t('Controller Type'), align: 'center', field: 'controllerType', sortable: true },
+  { name: 'machinename', label: t('machineFields.Name'), align: 'center', field: 'machineName', sortable: true },
+  { name: 'controllertype', label: t('machineFields.ControllerType'), align: 'center', field: 'controllerType', sortable: true },
 
 ]
-const { data: dispenserRows } = await useFetch(`/api/dispensers/dispensers`)
-const { data: machineRows } = await useFetch(`/api/machines/machines`)
+const { data: dispenserRows, refresh: refreshDispensers } = await useFetch(`/api/dispensers`)
+const { data: machineRows, refresh: refreshMachines } = await useFetch(`/api/machines`)
 
-async function addDispenser(newDispenser: Dispenser) {
-  await $fetch('/api/dispensers/dispensers/post', { method: 'POST', body: newDispenser })
+async function handleNewDispenser() {
+  q.dialog({
+    component: AddDispenser,
+  }).onOk(() => {
+    refreshDispensers()
+    q.notify({
+      color: 'green-4',
+      textColor: 'white',
+      icon: 'done',
+      message: t('Success'),
+      timeout: 3000,
+    })
+  })
 }
 
-async function addMachine(newMachine: Machine) {
-  await $fetch('/api/machines/machines/post', { method: 'POST', body: newMachine })
-}
-
-async function handleNewDispenser(newDispenser: Dispenser) {
-  await addDispenser(newDispenser)
-  dispenserRows = await useFetch(`/api/dispensers/dispensers`)
-  console.log('dispenser')
-}
-
-async function handleNewMachine(newMachine: Machine) {
-  await addMachine(newMachine)
-  machineRows = await useFetch(`/api/machines/machines`)
-  await useFetch(`/api/machines/machines`)
-  console.log('machine')
+async function handleNewMachine() {
+  q.dialog({
+    component: AddMachine,
+  }).onOk(() => {
+    refreshMachines()
+    q.notify({
+      color: 'green-4',
+      textColor: 'white',
+      icon: 'done',
+      message: t('Success'),
+      timeout: 3000,
+    })
+  })
 }
 
 const expandedDispensers = ref<number[]>([])
 const expandedMachines = ref<number[]>([])
 
 function toggleDispenserRow(id: number) {
-  console.log(id)
   if (!expandedDispensers.value.includes(id)) {
     expandedDispensers.value.push(id)
   } else {
     const index = expandedDispensers.value.indexOf(id)
     expandedDispensers.value.splice(index, 1)
   }
-  console.log(expandedDispensers.value)
 }
 
 function toggleMachineRow(id: number) {
-  console.log(id)
   if (!expandedMachines.value.includes(id)) {
     expandedMachines.value.push(id)
   } else {
     const index = expandedMachines.value.indexOf(id)
     expandedMachines.value.splice(index, 1)
   }
-  console.log(expandedMachines.value)
 }
 
-const myPagination = ref({ rowsPerPage: 14 })
+const dispenserPagination = ref({ rowsPerPage: 14 })
+const machinePagination = ref({ rowsPerPage: 14 })
 </script>
 
 <template>
@@ -103,7 +107,7 @@ const myPagination = ref({ rowsPerPage: 14 })
       <q-card class="flex flex-column justify-between" bordered>
         <q-card-section class="flex items-center">
           <q-btn
-            :label="$t('New')"
+            :label="$t('AddNew')"
             no-caps
             icon="note_add"
             color="primary"
@@ -115,15 +119,14 @@ const myPagination = ref({ rowsPerPage: 14 })
       </q-card>
 
       <q-table
-        v-model:pagination="myPagination"
+        v-model:pagination="dispenserPagination"
         title="Dispensers"
         :rows="dispenserRows"
         :columns="dispenserColumns"
         separator="cell"
-        auto-width="true"
         loading="true"
         virtual-scroll
-        style="height: 600px"
+        style="height: 700px"
         flat
         bordered
       >
@@ -166,7 +169,10 @@ const myPagination = ref({ rowsPerPage: 14 })
           >
             <q-td colspan="100%">
               <div class="text-left">
-                {{ props.row.dispenserId }}.
+                Last Consumption Control: {{ props.row.lastConsumptionControl }},
+                Read Consumption from DMS: {{ props.row.readConsumptionFromDMS }},
+                FileName: {{ props.row.consumptionFilename }},
+                FilePath: {{ props.row.filePath }}
               </div>
             </q-td>
           </q-tr>
@@ -177,26 +183,26 @@ const myPagination = ref({ rowsPerPage: 14 })
       <q-card class="flex flex-row justify-between" bordered>
         <q-card-section class="flex items-center">
           <q-btn
-            :label="$t('New')"
+            :label="$t('AddNewMac')"
             no-caps
             icon="note_add"
             color="primary"
             class="mr-4 ml-2"
+            clickable
             @click="handleNewMachine()"
           />
         </q-card-section>
       </q-card>
 
       <q-table
-        v-model:pagination="myPagination"
+        v-model:pagination="machinePagination"
         title="Machines"
         :rows="machineRows"
         :columns="machineColumns"
         row-key="name"
         separator="cell"
-        auto-width="true"
         virtual-scroll
-        style="height: 600px"
+        style="height: 700px"
         flat
         bordered
       >

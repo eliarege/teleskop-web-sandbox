@@ -1,27 +1,33 @@
 {
   "New": "Yeni",
   "AddNew": "Yeni Dağıtıcı Ekle",
+  "AddNewMac": "Yeni Makine Ekle",
+  "Refresh": "Yenile",
   "SyncData": "Teleskop Verisiyle Senkronize Et",
   "Homepage": "Anasayfa",
   "Settings": "Ayarlar",
   "Theme": "Tema",
-  "Log Out": "Çıkış Yap",
+  "LogOut": "Çıkış Yap",
+  "AddMOD": "Makine Veya Dağıtıcı Ekle",
   "ShowDispenserList": "Dağıtıcı Listesini Göster",
   "HideDispenserList": "Dağıtıcı Listesini Sakla",
   "GoBack": "Geri Dön",
-  "Job Order": "İş Emri",
-  "Job Orders": "İş Emirleri",
-  "Batch Correction No": "Düzeltme Numarası",
-  "Machine Name": "Makine Adı",
-  "Tank No": "Tank Numarası",
-  "Dispenser Name": "Dağıtıcı",
-  "Program No": "Program Numarası",
-  "Program Name": "Program Adı",
-  "Step No": "Adım Numarası",
-  "Recipe Type": "Reçete Tipi",
-  "Recipe Process No": "Reçete Sıra Numarası",
-  "Recipe Step No": "Reçete Adım Numarası",
+  "Search": "Ara",
+  "JobOrder": "İş Emri",
+  "JobOrders": "İş Emirleri",
+  "BatchCorrectionNo": "Düzeltme Numarası",
+  "MachineName": "Makine Adı",
+  "TankNo": "Tank Numarası",
+  "DispenserName": "Dağıtıcı",
+  "ProgramNo": "Program Numarası",
+  "ProgramName": "Program Adı",
+  "StepNo": "Adım Numarası",
+  "RecipeType": "Reçete Tipi",
+  "RecipeProcessNo": "Reçete Sıra Numarası",
+  "RecipeStepNo": "Reçete Adım Numarası",
   "Status": "Durum",
+  "Amount": "Miktar",
+  "Unit": "Birim",
   "Details": "Detaylar",
   "Screen": "Ekran",
   "Name": "İsim",
@@ -45,8 +51,23 @@
   "vncError": "{name} Bağlantısı Başarısız Oldu!",
   "Save": "Kaydet",
   "Cancel": "İptal",
+  "Material": "Malzeme",
   "settings": {
-    "App": "Uygulama Ayarları"
+    "App": "Uygulama Ayarları",
+    "Material": "Malzeme Ayarları"
+  },
+  "materialFields": {
+    "Name": "Malzeme Adı",
+    "Code": "Malzeme Kodu",
+    "Group": "Malzeme Grubu",
+    "PH": "PH",
+    "Density": "Yoğunluk",
+    "UnitCost": "Birim Fiyatı",
+    "CostUnit": "Fiyat Birimi",
+    "ReRequestable": "Yeniden İstenebilir",
+    "Source": "Kaynak",
+    "DirectTransfer": "Doğrudan Transfer Edilebilir",
+    "Amount": "Miktar"
   },
   "dispenserFields": {
     "Name": "Dağıtıcı Adı",
@@ -57,6 +78,21 @@
     "Type": "Dağıtıcı Tipi",
     "Protocol": "Protokol",
     "ConsumptionFile": "Tüketim Dosya Adı"
+  },
+  "recipeFields": {
+    "Info": "Reçete Bilgisi",
+    "Details": "{batch} İş Emri Reçete Detayları",
+    "ProcessOrder": "İşlem Sırası",
+    "RecipeType": "Reçete Tipi",
+    "ISN": "ISN",
+    "MainStep": "Ana Adım",
+    "ParallelStep": "Paralel Adım",
+    "ProcessNo": "İşlem Numarası"
+  },
+  "machineFields": {
+    "Name": "Makine Adı",
+    "No": "Makine Numarası",
+    "ControllerType": "Kontrol Makinesi"
   },
   "statusCodes": {
     "text": "Durum",
@@ -71,5 +107,19 @@
   "recipeTypes": {
     "0": "Kimyasal",
     "1": "Boya"
+  },
+  "materialTypes": {
+    "1": "Kimyasal",
+    "2": "Boya",
+    "3": "Diğer"
+  },
+  "units": {
+    "0": "%",
+    "1": "gr/lt",
+    "2": "cc/lt",
+    "3": "gr",
+    "4": "cc",
+    "5": "kg",
+    "6": "lt"
   }
 }

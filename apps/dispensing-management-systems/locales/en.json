@@ -1,27 +1,33 @@
 {
   "New": "New",
   "AddNew": "Add New Dispenser",
+  "AddNewMac": "Add New Machine",
+  "Refresh": "Refresh",
   "SyncData": "Sync Teleskop Data",
   "Homepage": "Homepage",
   "Settings": "Settings",
   "Theme": "Theme",
-  "Log Out": "Log Out",
+  "LogOut": "Log Out",
+  "AddMOD": "Add Machine Or Dispenser",
   "ShowDispenserList": "Show Dispenser List",
   "HideDispenserList": "Hide Dispenser List",
   "GoBack": "Go Back",
-  "Job Order": "Job Order",
-  "Job Orders": "Job Orders",
-  "Batch Correction No": "Batch Correction No",
-  "Machine Name": "Machine Name",
-  "Tank No": "Tank No",
-  "Dispenser Name": "Dispenser Name",
-  "Program No": "Program No",
-  "Program Name": "Program Name",
-  "Step No": "Step No",
-  "Recipe Type": "Recipe Type",
-  "Recipe Process No": "Recipe Process No",
-  "Recipe Step No": "Recipe Step No",
+  "Search": "Search",
+  "JobOrder": "Job Order",
+  "JobOrders": "Job Orders",
+  "BatchCorrectionNo": "Batch Correction No",
+  "MachineName": "Machine Name",
+  "TankNo": "Tank No",
+  "DispenserName": "Dispenser Name",
+  "ProgramNo": "Program No",
+  "ProgramName": "Program Name",
+  "StepNo": "Step No",
+  "RecipeType": "Recipe Type",
+  "RecipeProcessNo": "Recipe Process No",
+  "RecipeStepNo": "Recipe Step No",
   "Status": "Status",
+  "Amount": "Amount",
+  "Unit": "Unit",
   "Details": "Details",
   "Screen": "Screen",
   "Name": "Name",
@@ -45,8 +51,23 @@
   "vncError": "{name} Connection Failed!",
   "Save": "Save",
   "Cancel": "Cancel",
+  "Material": "Material",
   "settings": {
-    "App": "App Settings"
+    "App": "App Settings",
+    "Material": "Material Settings"
+  },
+  "materialFields": {
+    "Name": "Material Name",
+    "Code": "Material Code",
+    "Group": "Material Group",
+    "PH": "PH",
+    "Density": "Density",
+    "UnitCost": "Unit Cost",
+    "CostUnit": "Cost Unit",
+    "ReRequestable": "ReRequestable",
+    "Source": "Source",
+    "DirectTransfer": "Can Transfer Directly",
+    "Amount": "Amount"
   },
   "dispenserFields": {
     "Name": "Dispenser Name",
@@ -56,7 +77,24 @@
     "ID": "Dispenser ID",
     "Type": "Dispenser Type",
     "Protocol": "Protocol",
-    "ConsumptionFile": "Consumtpion File Name"
+    "ConsumptionFile": "Consumption File Name"
+  },
+  "recipeFields": {
+    "Info": "Recipe Info",
+    "Details": "Recipe Details for Job Order: {batch}",
+    "ProcessOrder": "Process Order",
+    "RecipeType": "Recipe Type",
+    "ISN": "ISN",
+    "MainStep": "Main Step",
+    "ParallelStep": "Parallel Step",
+    "ProcessNo": "Process No",
+    "Amount": "Amount",
+    "Unit": "Unit"
+  },
+  "machineFields": {
+    "Name": "Machine Name",
+    "No": "Machine No",
+    "ControllerType": "Controller Type"
   },
   "statusCodes": {
     "text": "Status",
@@ -71,5 +109,19 @@
   "recipeTypes": {
     "0": "Chemical",
     "1": "Dye"
+  },
+  "materialTypes": {
+    "1": "Chemical",
+    "2": "Dye",
+    "3": "Other"
+  },
+  "units": {
+    "0": "%",
+    "1": "g/lt",
+    "2": "cc/lt",
+    "3": "g",
+    "4": "cc",
+    "5": "kg",
+    "6": "lt"
   }
 }
