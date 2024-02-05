@@ -43,10 +43,10 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
 </script>
 
 <template>
-  <q-card class="column flex flex-column relative">
-    <q-card-section class="text-override-left flex-grow">
+  <q-card class="row">
+    <q-card-section>
       <div class="text-h6 ml-7 mt-3">
-        {{ t('jobOrderLogs._') }} -
+        {{ t('weighingInformation._') }} -
         <span v-if="joborder">
           {{ t('joborder') }} : {{ joborder }} -
         </span>
@@ -54,98 +54,100 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
           {{ t('machinename') }} : {{ props.machinename }}
         </span>
       </div>
-      <div class="m-5">
-        <q-table
-          :columns="columnsOto"
-          :rows="data"
-          virtual-scroll
-          flat
-          bordered
-          :virtual-scroll-sticky-size-start="48"
-          :title="t('weighingInformation.oto') + t('weighingInformation._')"
-        >
-          <template #body="props">
-            <q-tr
-              :props="props"
-              :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
-            >
-              <q-td
-                v-for="col in props.cols"
-                :key="col.name"
-                :props="props"
-                :style="rowBGColorHandler(col)"
-              >
-                <span v-if="col.field === 'requestTime' || col.field === 'completedTime'">
-                  {{ col.value ? d(col.value, 'datetime') : '_'.repeat(4) }}
-                </span>
-                <span v-else-if="col.field === 'status'">
-                  {{ t(`statusCodes.${col.value}`) }}
-                </span>
-                <span v-else-if="col.field === 'tankNo'">
-                  {{ (col.value === -1) ? '____' : col.value }}
-                </span>
-                <span v-else-if="col.field === 'actualAmount'">
-                  {{ (col.value === -1) ? '____' : col.value }}
-                </span>
-                <span v-else-if="col.field === 'interval'">
-                  {{ (!col.value) ? '____'
-                    : `${Math.floor(col.value / 60)} ${t('hour')} ${col.value % 60} ${t('min')}`
-                  }}
-                </span>
-                <span v-else-if="col.field === 'otoMan'">
-                  {{ col.value ? t('weighingInformation.oto') : t('weighingInformation.man') }}
-                </span>
-                <span v-else>
-                  {{ col.value }}
-                </span>
-              </q-td>
-            </q-tr>
-          </template>
-        </q-table>
-      </div>
-      <div class="m-5">
-        <q-table
-          :columns="columnsMan"
-          :rows="data2"
-          virtual-scroll
-          flat
-          bordered
-          :virtual-scroll-sticky-size-start="48"
-          :title="t('weighingInformation.man') + t('weighingInformation._')"
-        >
-          <template #body="props">
-            <q-tr
-              :props="props"
-              :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
-            >
-              <q-td
-                v-for="col in props.cols"
-                :key="col.name"
-                :props="props"
-                :style="rowBGColorHandler(col)"
-              >
-                <span v-if="col.field === 'requestTime'">
-                  {{ d(col.value, 'datetime') }}
-                </span>
-                <span v-else-if="col.field === 'status'">
-                  {{ t(`statusCodes.${col.value}`) }}
-                </span>
-                <span v-else-if="col.field === 'actualAmount'">
-                  {{ (col.value === -1) ? '____' : col.value }}
-                </span>
-                <span v-else-if="col.field === 'recipeType'">
-                  {{ t(`recipeTypes.${col.value}`) }}
-                </span>
-                <span v-else>
-                  {{ col.value }}
-                </span>
-              </q-td>
-            </q-tr>
-          </template>
-        </q-table>
-      </div>
     </q-card-section>
-    <q-card-actions align="right" style="position:relative;">
+
+    <q-card-section class="row gap-5" style="display: flex;">
+      <q-table
+        :columns="columnsOto"
+        :rows="data"
+        virtual-scroll
+        flat
+        class="w-full"
+        bordered
+        :virtual-scroll-sticky-size-start="48"
+        :title="t('weighingInformation.oto') + t('weighingInformation._')"
+      >
+        <template #body="props">
+          <q-tr
+            :props="props"
+            :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
+          >
+            <q-td
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+              :style="rowBGColorHandler(col)"
+            >
+              <span v-if="col.field === 'requestTime' || col.field === 'completedTime'">
+                {{ col.value ? d(col.value, 'datetime') : '_'.repeat(4) }}
+              </span>
+              <span v-else-if="col.field === 'status'">
+                {{ t(`statusCodes.${col.value}`) }}
+              </span>
+              <span v-else-if="col.field === 'tankNo'">
+                {{ (col.value === -1) ? '____' : col.value }}
+              </span>
+              <span v-else-if="col.field === 'actualAmount'">
+                {{ (col.value === -1) ? '____' : col.value }}
+              </span>
+              <span v-else-if="col.field === 'interval'">
+                {{ (!col.value) ? '____'
+                  : `${Math.floor(col.value / 60)} ${t('hour')} ${col.value % 60} ${t('min')}`
+                }}
+              </span>
+              <span v-else-if="col.field === 'otoMan'">
+                {{ col.value ? t('weighingInformation.oto') : t('weighingInformation.man') }}
+              </span>
+              <span v-else>
+                {{ col.value }}
+              </span>
+            </q-td>
+          </q-tr>
+        </template>
+      </q-table>
+      <q-table
+        :columns="columnsMan"
+        :rows="data2"
+        virtual-scroll
+        class="w-full"
+        flat
+        bordered
+        :virtual-scroll-sticky-size-start="48"
+        :title="t('weighingInformation.man') + t('weighingInformation._')"
+      >
+        <template #body="props">
+          <q-tr
+            :props="props"
+            :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
+          >
+            <q-td
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+              :style="rowBGColorHandler(col)"
+            >
+              <span v-if="col.field === 'requestTime'">
+                {{ d(col.value, 'datetime') }}
+              </span>
+              <span v-else-if="col.field === 'status'">
+                {{ t(`statusCodes.${col.value}`) }}
+              </span>
+              <span v-else-if="col.field === 'actualAmount'">
+                {{ (col.value === -1) ? '____' : col.value }}
+              </span>
+              <span v-else-if="col.field === 'recipeType'">
+                {{ t(`recipeTypes.${col.value}`) }}
+              </span>
+              <span v-else>
+                {{ col.value }}
+              </span>
+            </q-td>
+          </q-tr>
+        </template>
+      </q-table>
+    </q-card-section>
+    <q-card-actions class="w-full">
+      <q-space />
       <q-btn
         v-close-popup
         class="m-2"
