@@ -102,6 +102,10 @@ async function requestManuelMaterials() {
   materialRows.value.forEach((row: any) => {
     row.unit = t(`units.${row.unit}`)
     row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
+    const mainStep = row.mainStep
+    const ISN = row.ISN
+    row.mainStep = ISN ? `${ISN - 1} <-> ${ISN}` : 0
+    row.ISN = mainStep ? `${mainStep - 1} <-> ${mainStep}` : 0
   })
 }
 
