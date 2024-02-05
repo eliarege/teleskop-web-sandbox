@@ -12,6 +12,7 @@ const emit = defineEmits<{
   add: [data: object]
   edit: [data: object, oldData: object]
   delete: [data: object[]]
+  select: [data: object[]]
 }>()
 
 const q = useQuasar()
@@ -88,7 +89,7 @@ function handleDelete() {
     selected.value = []
   } else
     q.notify({
-      message: 'Please select a row to edit',
+      message: 'Please select a row to delete',
       position: 'top',
       timeout: 2000,
       actions: [
@@ -114,10 +115,11 @@ watch(showModal, async (newValue, oldValue) => {
   <!-- Table -->
   <q-table
     v-model:selected="selected"
-    :rows="rows" :columns="tableColumns" selection="multiple" :row-key="rowKey"
-    :visible-columns="visibleColumns"
+    :rows="rows"
+    :columns="tableColumns" selection="multiple" :row-key="rowKey" :visible-columns="visibleColumns"
     class="overflow-y-auto	h-160"
     :rows-per-page-options="[0]"
+    @update:selected="emit('select', selected)"
   >
     <template #body-cell="props">
       <q-td :props="props">
@@ -138,6 +140,7 @@ watch(showModal, async (newValue, oldValue) => {
       <q-card-section>
         <FormKit v-model="formData" type="form" @submit="handleSubmit">
           <FormKitSchema :schema="schema" />
+          <slot name="form-content" />
         </FormKit>
       </q-card-section>
     </q-card>

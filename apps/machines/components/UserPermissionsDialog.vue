@@ -56,10 +56,8 @@ function updatePermissionsFromHex(hexStringGroup1, hexStringGroup2) {
   const binaryStringGroup1 = Number.parseInt(hexStringGroup1.slice(2), 16).toString(2).padStart(32, '0')
   const binaryStringGroup2 = Number.parseInt(hexStringGroup2.slice(2), 16).toString(2).padStart(32, '0')
 
-  console.log('binaryStringGroup1 = ', binaryStringGroup1)
-  console.log('binaryStringGroup2 = ', binaryStringGroup2)
   // Update Group 1 permissions
-  permissionsGroup1.value.forEach((permission) => {
+  permissionsGroup1.forEach((permission) => {
     const bitPosition = permission.index
     permission.value = binaryStringGroup1.charAt(31 - bitPosition) === '1'
   })
@@ -92,9 +90,6 @@ async function savePermissions() {
   const hexadecimalValueGroup1 = `0x${combinedPermissionValueGroup1.toString(16).padStart(8, '0')}`
   const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
 
-  console.log('Group 1 Hexadecimal:', hexadecimalValueGroup1)
-  console.log('Group 2 Hexadecimal:', hexadecimalValueGroup2)
-
   await updateUserPermissions({ userId: user.value.userId, userMode: hexadecimalValueGroup1, userMode2: hexadecimalValueGroup2 })
 }
 </script>
@@ -103,7 +98,6 @@ async function savePermissions() {
   <div>
     <q-dialog
       :model-value="show"
-      full-width
       @hide="$emit('close')"
     >
       <q-card>
