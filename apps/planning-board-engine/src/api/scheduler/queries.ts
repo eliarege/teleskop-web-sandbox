@@ -23,15 +23,7 @@ export async function getUnplannedEvents() {
       note: 'P.NOTE',
       erpFieldName: 'D.ERPFIELDNAME',
       batchParameterId: 'R.BATCHPARAMETERID',
-      theoreticalDuration: knex.raw(`
-    (SELECT SUM(B.DURATION)
-    FROM BFMASTERPRGHEADER B
-    WHERE B.MACHINEID = (
-      select p.INTVALUE from PTSETTINGS p
-      where p.USERID = -1 and p.SETTINGID = 5
-    )
-      AND B.PROGNO IN (SELECT RECIPENO FROM DYBFBATCHORDERRECIPEHEADER WHERE PLANKEY = P.PLANKEY))
-`),
+      theoreticalDuration: 'P.TheoricalDuration',
       isStopped: 'P.ISSTOPPED',
     })
     .leftJoin('dbo.PTBATCHPLANQUEUE as Q', 'Q.PLANKEY', 'P.PLANKEY')
@@ -50,7 +42,7 @@ export async function getUnplannedEvents() {
       builder.whereNull('P.ISDELETESENDTOMANUNITES').orWhere('P.ISDELETESENDTOMANUNITES', 0)
     })
     .andWhere('P.LASTFORJOBORDER', 1)
-  return events
+  return events.filter(ev => ev.theoreticalDuration > 0)
 }
 export async function getRecipe(machineId: string, jobOrder: string) {
   const autoRecipe = await knex.select(
