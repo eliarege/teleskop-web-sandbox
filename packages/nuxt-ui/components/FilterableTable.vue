@@ -343,7 +343,7 @@ function customFilterMethod(rows, terms, cols) {
                     style="width: 150px;"
                   />
                 </div>
-                <div v-if="col.filterType === 'comparison'" class="flex flex-row justify-center items-center">
+                <div v-if="col.filterType === 'comparison'" class="flex flex-row justify-center items-center gap-2 mt-5">
                   {{ col.label }}
                   {{ comparisonOptionInit(index) }}
                   <q-select
@@ -351,9 +351,8 @@ function customFilterMethod(rows, terms, cols) {
                     :options="comparisonOperations"
                     option-label="symbol"
                     overflow="hidden"
-                    style="width: 80px;"
+                    style="width: 50px;"
                     filled
-                    item-aligned
                     dense
                     class="select-dropdown-removal"
                   />
