@@ -13,6 +13,7 @@ import {
   Tooltip,
 
 } from '@bryntum/schedulerpro-trial'
+import { addSeconds } from 'date-fns'
 import { io } from 'socket.io-client'
 
 const trLocalization = {
@@ -91,6 +92,7 @@ function removeAttributes(element, pattern) {
 function getResourceRow(resource) {
   return document.querySelector(`div[data-id="${resource.id}"]`)
 }
+
 export class TimeDrag extends DragHelper {
   static get configurable() {
     return {
@@ -413,22 +415,67 @@ export class TimeSchedule extends SchedulerPro {
           },
         },
       },
-      // onEventDragStart({ context }) {
-      //   console.log('arg:', context)
-      //   // console.log('this:', this)
-      // },
-      // onEventDrag(arg) {
-      //   // console.log('arg:', arg)
-      // },
+      async onEventDragStart({ context }) {
+        context.task = context.eventRecord.originalData
+        const planKey = context.task.id
+        theoreticalDuration = await $fetch('api/timeBased/theoreticalDuration', {
+          query: { planKey },
+        })
+        const isValid = await $fetch('/api/isValid', {
+          query: { planKey },
+        })
+        context.isValid = isValid
+        context.theoreticalDuration = theoreticalDuration
+        if (context.context.grabbed) {
+          for (let i = 0; i < isValid.length; i++) {
+            const currentRow = document.querySelector(`div[data-id="${isValid[i].machineId}"]`)
+            if (isValid[i].programs) {
+              currentRow?.setAttribute('bgGreen', '')
+            } else {
+              currentRow?.setAttribute('bgRed', '')
+            }
+          }
+        }
+      },
+      onEventDrag({ context, event }) {
+        const { startDate } = context
+        const machine = context.context.target && this.resolveResourceRecord(context.context.target, [
+          event.offsetX,
+          event.offsetY,
+        ])
+        if (machine) {
+          const currentMachineId = machine.id
+          prevMachineId = currentMachineId
+          const theoreticalDuration = context.theoreticalDuration.find(a => a.machineId === currentMachineId).theoreticalDuration
+          endDate = addSeconds(startDate, theoreticalDuration)
+        }
+        const isValid = context.isValid
+
+        context.valid = Boolean(startDate && machine)
+        && !(startDate < new Date())
+        && (this.allowOverlap || this.isDateRangeAvailable(startDate, endDate, null, machine))
+        && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).programs : true)
+      },
       onEventDrop({ context }) {
-        const { valid, element, target } = context.context
+        const { valid } = context
+        const { target } = context.context
         const updatedEvent = {
           planKey: context.context.grabbed.elementData.eventId,
           machineId: context.newResource.originalData.id,
           plannedStartTime: context.startDate,
         }
-        AjaxHelper.post('/api/timeBased/planningBoardUpdate', updatedEvent, { credentials: 'omit' })
-          .then(() => this.renderRows())
+        if (valid && target) {
+          const index = this.events.indexOf(context.task)
+          this.events.splice(index, 1)
+
+          AjaxHelper.post('/api/timeBased/planningBoardUpdate', updatedEvent, { credentials: 'omit' })
+            .then(() => this.renderRows())
+        }
+        for (let i = 0; i < this.resources.length; i++) {
+          const element = this.resources[i]
+          const currentRow = getResourceRow(element)
+          removeAttributes(currentRow, /^bg/)
+        }
       },
       rowHeight: 50,
       barMargin: 4,
