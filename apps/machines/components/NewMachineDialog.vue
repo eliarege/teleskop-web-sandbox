@@ -52,19 +52,19 @@ const unitOptions = [
 const check = ref(false)
 
 const machine = ref<Machine>({
-  id: -1,
-  code: '',
+  id: -1, //
+  code: '', //
   name: '',
-  groupName: '',
+  groupName: '', //
   groupId: -1,
-  tbbModel: '',
-  plcModel: '',
-  ip: '',
+  tbbModel: '', //
+  plcModel: '', //
+  ip: '', //
   theoricalCharge: '',
   theoricalChargeDuration: '',
-  machineCapacity: '',
+  machineCapacity: '', //
   reelCount: 0,
-  nozzleCount: 0,
+  nozzleCount: 0, //
   steamUnit: '',
   steamKgPerHour: 0,
   additionalTank1: false,
@@ -72,9 +72,9 @@ const machine = ref<Machine>({
   additionalTank3: false,
   additionalTank4: false,
   reserveTank: false,
-  inUse: false,
+  inUse: false, //
   MTTempIo: [],
-  version: '',
+  version: '', //
 })
 
 async function handleFormSubmit() {
@@ -144,7 +144,7 @@ async function handleFormSubmit() {
                     clearable
                   />
                   <q-select
-                    v-model="machine.group"
+                    v-model="machine.MTTempIo"
                     :options="machineGroups"
                     label="Ana Kazan Sıcaklık Girişi"
                     filled
@@ -181,8 +181,8 @@ async function handleFormSubmit() {
               <div class="flex flex-row flex-1 justify-around">
                 <div class="flex flex-col check-box">
                   <q-checkbox v-model="machine.inUse" label="Kullanımda" />
-                  <q-checkbox v-model="check" label="Teorik Su Miktarı Hesaplama Aktif" />
-                  <q-checkbox v-model="check" label="Elektrik Sayacı Değerini Artan Olarak Sakla" />
+                  <q-checkbox v-model="machine.theoreticalWater" label="Teorik Su Miktarı Hesaplama Aktif" />
+                  <q-checkbox v-model="machine.storeElectricityAsInc" label="Elektrik Sayacı Değerini Artan Olarak Sakla" />
                 </div>
                 <div class="flex flex-col check-box">
                   <q-checkbox v-model="machine.additionalTank1" label="İlave Kazan 1" />

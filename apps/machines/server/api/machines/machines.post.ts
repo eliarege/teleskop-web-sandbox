@@ -15,7 +15,14 @@ export default defineEventHandler(async (event) => {
     plcModel: 'PlcModel',
     nozzleCount: 'NOZZLECOUNT',
     groupName: 'GROUPNAME',
-    groupId: 'GRUPNO',
+    groupNo: 'GRUPNO',
+    theoricalCharge: 'THEORICALCHARGE',
+    theoricalChargeDuration: 'theoricalChargeDuration',
+    reelCount: 'REELCOUNT',
+    steamUnit: 'STEAMUNIT',
+    MTTempIo: 'MTTEMPIO',
+    steamKgPerHour: 'STEAMKGPERHOUR',
+    steamValveDo: 'STEAMVALVEDO',
   }
 
   const query = knex('BFMACHINES')

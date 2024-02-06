@@ -6,6 +6,7 @@ import { useQuasar } from 'quasar'
 const props = defineProps<{
   rows: object[]
   columns: object
+  formClass: string
 }>()
 
 const emit = defineEmits<{
@@ -107,7 +108,7 @@ watch(showModal, async (newValue, oldValue) => {
 
 <template>
   <!-- Actions -->
-  <q-btn-group push class="mb-4">
+  <q-btn-group push class="my-4">
     <q-btn push label="Add" color="primary" @click="showForm('add')" />
     <q-btn push label="Edit" color="primary" @click="showForm('edit')" />
     <q-btn push label="Delete" color="primary" @click="handleDelete" />
@@ -138,7 +139,10 @@ watch(showModal, async (newValue, oldValue) => {
         <q-btn flat icon="close" @click="showModal = false" />
       </q-card-actions>
       <q-card-section>
-        <FormKit v-model="formData" type="form" @submit="handleSubmit">
+        <FormKit
+          v-model="formData" type="form" :form-class="formClass"
+          @submit="handleSubmit"
+        >
           <FormKitSchema :schema="schema" />
           <slot name="form-content" />
         </FormKit>
@@ -147,4 +151,9 @@ watch(showModal, async (newValue, oldValue) => {
   </q-dialog>
 </template>
 
-<style scoped></style>
+<style scoped>
+.outerClass {
+  color: red !important;
+  background-color: red !important;
+}
+</style>

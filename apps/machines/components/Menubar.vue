@@ -54,36 +54,11 @@ async function loadDefinitions() {
   <q-card class="flex flex-row justify-between" bordered>
     <q-card-section class="flex items-center">
       <q-btn
-        label="Yeni"
-        no-caps
-        icon="note_add"
-        color="primary"
-        class="mr-4 ml-2"
-        @click="showNewMachine = true"
-      />
-      <q-btn
         label="Proje Yükle"
         no-caps
-        icon="system_update_alt"
         color="primary"
         class="mr-4"
         @click="loadProject"
-      />
-      <q-btn
-        label="Özellikler"
-        no-caps
-        icon="tune"
-        color="primary"
-        class="mr-4"
-        @click="showEditMachine = true"
-      />
-      <q-btn
-        label="Sil"
-        no-caps
-        icon="delete"
-        color="primary"
-        class="mr-4"
-        @click="handleMachineDelete()"
       />
       <q-btn
         label="Versiyon Bilgisi Al"
