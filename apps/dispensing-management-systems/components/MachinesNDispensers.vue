@@ -1,12 +1,20 @@
 <script lang="ts" setup>
 import type { QTableColumn } from 'quasar'
-import AddDispenser from './AddDispenser.vue'
+import EditDispenser from './EditDispenser.vue'
 import AddMachine from './AddMachine.vue'
+import { useDataStore } from '~/store/DataStore'
 
 import type { Dispenser, Machine } from '~/shared/types'
 
 const { t } = useI18n()
 const q = useQuasar()
+
+const dataStore = useDataStore()
+const shouldFetch = !dataStore.dispensers
+const { data } = shouldFetch
+  ? await useFetch<Dispenser[]>(`/api/dispensers`)
+  : { data: dataStore.dispensers }
+dataStore.dispensers = data
 
 const dispenserColumns: (QTableColumn<Dispenser>)[] = [
   {
@@ -38,12 +46,11 @@ const machineColumns: (QTableColumn<Machine>)[] = [
   { name: 'controllertype', label: t('machineFields.ControllerType'), align: 'center', field: 'controllerType', sortable: true },
 
 ]
-const { data: dispenserRows, refresh: refreshDispensers } = await useFetch(`/api/dispensers`)
 const { data: machineRows, refresh: refreshMachines } = await useFetch(`/api/machines`)
 
 async function handleNewDispenser() {
   q.dialog({
-    component: AddDispenser,
+    component: EditDispenser,
   }).onOk(() => {
     refreshDispensers()
     q.notify({
@@ -69,6 +76,10 @@ async function handleNewMachine() {
       timeout: 3000,
     })
   })
+}
+async function refreshDispensers() {
+  const dispensers = await $fetch<Dispenser[]>(`/api/dispensers`)
+  dataStore.dispensers = dispensers
 }
 
 const expandedDispensers = ref<number[]>([])
@@ -113,18 +124,17 @@ const machinePagination = ref({ rowsPerPage: 14 })
             color="primary"
             class="mr-4 ml-2"
             clickable
-            @click="handleNewDispenser()"
+            @click="handleNewDispenser"
           />
         </q-card-section>
       </q-card>
 
       <q-table
         v-model:pagination="dispenserPagination"
-        title="Dispensers"
-        :rows="dispenserRows"
+        :title="t('Dispensers')"
+        :rows="dataStore.dispensers"
         :columns="dispenserColumns"
         separator="cell"
-        loading="true"
         virtual-scroll
         style="height: 700px"
         flat
@@ -189,14 +199,14 @@ const machinePagination = ref({ rowsPerPage: 14 })
             color="primary"
             class="mr-4 ml-2"
             clickable
-            @click="handleNewMachine()"
+            @click="handleNewMachine"
           />
         </q-card-section>
       </q-card>
 
       <q-table
         v-model:pagination="machinePagination"
-        title="Machines"
+        :title="t('Machines')"
         :rows="machineRows"
         :columns="machineColumns"
         row-key="name"

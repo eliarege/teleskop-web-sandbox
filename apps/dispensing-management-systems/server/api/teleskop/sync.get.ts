@@ -81,6 +81,14 @@ const programHeaderParams = {
   programNo: 'PROGNO',
   programName: 'NAME',
 }
+const dispenserMachineConnectionParams = {
+  dispenserId: 'DISPENSERID',
+  machineId: 'MACHINEID',
+}
+const dispenserMaterialConnectionParams = {
+  dispenserId: 'DISPENSERID',
+  materialCode: 'CHEMCODE',
+}
 export default defineEventHandler(async () => {
   try {
     const jobOrders = await teleskopDB('dbo.DYTFCHEMREQUESTS as j')
@@ -106,6 +114,10 @@ export default defineEventHandler(async () => {
       .select(batchRecipeStepParams)
     const batchHeaders = await teleskopDB('dbo.DYBFBATCHORDERRECIPEHEADER')
       .select(batchHeaderParams)
+    const dispenserMachineConnections = await teleskopDB('dbo.DYTFMACHDISPCONNECTION')
+      .select(dispenserMachineConnectionParams)
+    const dispenserMaterialConnections = await teleskopDB('dbo.DYTFCHEMDISPCONNECTION')
+      .select(dispenserMaterialConnectionParams)
 
     batchSend(dispensers, 'dispensers')
     batchSend(machines, 'machines')
@@ -116,6 +128,8 @@ export default defineEventHandler(async () => {
     batchSend(programHeaders, 'programHeaders')
     batchSend(batchRecipeSteps, 'batchRecipeSteps')
     batchSend(batchHeaders, 'batchHeaders')
+    batchSend(dispenserMachineConnections, 'dispenserMachineConnections')
+    batchSend(dispenserMaterialConnections, 'dispenserMaterialConnections')
   } catch (e) {
     console.log(e)
     return e

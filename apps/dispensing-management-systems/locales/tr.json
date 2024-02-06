@@ -9,6 +9,8 @@
   "Theme": "Tema",
   "LogOut": "Çıkış Yap",
   "AddMOD": "Makine Veya Dağıtıcı Ekle",
+  "Dispensers": "Dağıtıcılar",
+  "Machines": "Makineler",
   "ShowDispenserList": "Dağıtıcı Listesini Göster",
   "HideDispenserList": "Dağıtıcı Listesini Sakla",
   "GoBack": "Geri Dön",
@@ -51,6 +53,7 @@
   "vncError": "{name} Bağlantısı Başarısız Oldu!",
   "Save": "Kaydet",
   "Cancel": "İptal",
+  "Delete": "Sil",
   "Material": "Malzeme",
   "settings": {
     "App": "Uygulama Ayarları",

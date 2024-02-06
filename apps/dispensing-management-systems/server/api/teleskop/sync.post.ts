@@ -12,6 +12,8 @@ export default defineEventHandler(async (event) => {
     const batchRecipeSteps: any[] = []
     const batchHeaders: any[] = []
     const programHeaders: any[] = []
+    const dispenserMachineConnections: any[] = []
+    const dispenserMaterialConnections: any[] = []
 
     teleskopData.dispensers?.forEach((data: any) => {
       const dispenser = {
@@ -123,6 +125,20 @@ export default defineEventHandler(async (event) => {
       })
       batchRecipeSteps.push(batchRecipeStep)
     })
+    teleskopData.dispenserMachineConnections?.forEach((data: any) => {
+      const dispenserMachineConnection = ({
+        dispenser_id: data.dispenserId,
+        machine_id: data.machineId,
+      })
+      dispenserMachineConnections.push(dispenserMachineConnection)
+    })
+    teleskopData.dispenserMaterialConnections?.forEach((data: any) => {
+      const dispenserMaterialConnection = ({
+        dispenser_id: data.dispenserId,
+        material_code: data.materialCode,
+      })
+      dispenserMaterialConnections.push(dispenserMaterialConnection)
+    })
     const batchSize = 3000
     await dmsDB('JOB_ORDER').del()
     await dmsDB('BATCH_RECIPE_STEP').del()
@@ -133,6 +149,8 @@ export default defineEventHandler(async (event) => {
     await dmsDB('BATCH_PLAN').del()
     await dmsDB('BATCH_HEADER').del()
     await dmsDB('PROGRAM_HEADER').del()
+    await dmsDB('DISPENSER_MACHINE_CONNECTION').del()
+    await dmsDB('DISPENSER_MATERIAL_CONNECTION').del()
 
     await batchInsert(dispensers, batchSize, 'DISPENSER')
     await batchInsert(batchRecipeSteps, batchSize, 'BATCH_RECIPE_STEP')
@@ -143,6 +161,8 @@ export default defineEventHandler(async (event) => {
     await batchInsert(batchPlans, batchSize, 'BATCH_PLAN')
     await batchInsert(batchHeaders, batchSize, 'BATCH_HEADER')
     await batchInsert(programHeaders, batchSize, 'PROGRAM_HEADER')
+    batchInsert(dispenserMachineConnections, batchSize, 'DISPENSER_MACHINE_CONNECTION')
+    batchInsert(dispenserMaterialConnections, batchSize, 'DISPENSER_MATERIAL_CONNECTION')
   } catch (e) {
     console.error(e)
     return e
@@ -159,6 +179,12 @@ async function batchInsert(data: any[], batchSize: number, tableName: string) {
       const end = Math.min((i + 1) * batchSize, totalRows)
       const batch = data.slice(start, end)
       await trx(tableName).insert(batch)
+
+      // batch.forEach(data => trx(`${tableName} as t`).insert(data),
+      // .whereExists(dmsDB.select('*')
+      // .from('MACHINE as m')
+      // .whereRaw('t.machine_id = m.machine_id'))
+      // )
     }
   })
 }

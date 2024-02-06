@@ -8,6 +8,8 @@
   "Settings": "Settings",
   "Theme": "Theme",
   "LogOut": "Log Out",
+  "Dispensers": "Dispensers",
+  "Machines": "Machines",
   "AddMOD": "Add Machine Or Dispenser",
   "ShowDispenserList": "Show Dispenser List",
   "HideDispenserList": "Hide Dispenser List",
@@ -51,6 +53,7 @@
   "vncError": "{name} Connection Failed!",
   "Save": "Save",
   "Cancel": "Cancel",
+  "Delete": "Delete",
   "Material": "Material",
   "settings": {
     "App": "App Settings",

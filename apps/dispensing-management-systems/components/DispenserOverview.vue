@@ -72,7 +72,11 @@ function onClickEdit() {
     component: EditDispenser,
     componentProps: { dispenser },
   }).onOk((payload) => {
-    dataStore.selectedDispenser = payload
+    if (payload)
+      dataStore.selectedDispenser = payload
+    else navigateTo({
+      path: '/'
+    })
     onRefreshList()
     q.notify({
       color: 'green-4',

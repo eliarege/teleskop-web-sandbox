@@ -22,7 +22,10 @@ async function getTypes() {
   dispenserTypes.value = await $fetch('/api/dispensers/types')
 }
 async function onSave() {
-  await $fetch(`/api/dispensers/${dispenser.value.dispenserId}`, { method: 'PUT', body: editedDispenser.value })
+  if (dispenser.value)
+    await $fetch(`/api/dispensers/${dispenser.value.dispenserId}`, { method: 'PUT', body: editedDispenser.value })
+  else
+    await $fetch(`/api/dispensers`, { method: 'POST', body: editedDispenser.value })
   onDialogOK(editedDispenser.value)
 }
 
@@ -32,6 +35,11 @@ function onCancel() {
 
 function onReset() {
   editedDispenser.value = { ...dispenser.value }
+}
+
+async function onDelete() {
+  await $fetch(`/api/dispensers`, { method: 'DELETE', body: dispenser.value.dispenserId })
+  onDialogOK(null)
 }
 </script>
 
@@ -48,7 +56,7 @@ function onReset() {
             <h2>{{ t('Edit') }}</h2>
           </div>
           <div class="flex flex-row flex-wrap justify-center">
-            <div class="row-item">
+            <div v-if="dispenser" class="row-item">
               <span class="item-label">
                 {{ t('dispenserFields.ID') }}
               </span>
@@ -170,14 +178,22 @@ function onReset() {
             />
             <QBtn
               :label="t('Cancel')"
-              color="negative"
+              color="warning"
               icon="cancel"
               @click="onCancel"
             />
             <QBtn
               :label="t('Reset')"
+              color="info"
               icon="refresh"
               @click="onReset"
+            />
+            <QBtn
+              v-if="dispenser"
+              :label="t('Delete')"
+              color="negative"
+              icon="delete"
+              @click="onDelete"
             />
           </div>
         </div>
