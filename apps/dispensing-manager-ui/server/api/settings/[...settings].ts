@@ -109,6 +109,13 @@ router.put('/dispenser', defineEventHandler(async (event) => {
 router.delete('/dispenser', defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
+    const conenctedMachines = await knex('DYTFMACHDISPCONNECTION')
+      .where('DISPENSERID', body.dispNo)
+    const connectedMaterials = await knex('DYTFCHEMDISPCONNECTION')
+      .where('DISPENSERID', body.dispNo)
+    if (conenctedMachines.length || connectedMaterials.length) {
+      return { isConnectedMaterialExist: !!connectedMaterials.length, isConnectedMachineExist: !!conenctedMachines.length }
+    }
     await knex('DYTFDISPENSERSETTINGS')
       .where('DISPENSERID', body.dispNo)
       .del()

@@ -233,7 +233,21 @@ async function deleteRow() {
       dispNo: dispenserInfo.value[0].value,
     },
   })
-  notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+  if (isSuccess.isConnectedMaterialExist || isSuccess.isConnectedMachineExist) {
+    let connectedThings = ''
+    if (isSuccess.isConnectedMachineExist) {
+      if (isSuccess.isConnectedMaterialExist)
+        connectedThings = `${t('warnings.machine')} ${t('warnings.and')} ${t('warnings.material')}`
+      else
+        connectedThings = t('warnings.machine')
+    } else
+      connectedThings = t('warnings.material')
+
+    notification(false, t('warnings.dispenserDeleteExistingMachineOrMaterial', {
+      connectedThings,
+    }))
+  } else
+    notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   expandedRow.value = null
   /**
    * I did not reset the dispenserInfo array careful. It has to be
