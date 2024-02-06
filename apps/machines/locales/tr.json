@@ -1,4 +1,5 @@
 {
   "machine": "Makine",
-  "machineStopReasons": "Makine Duruş Sebepleri"
+  "machineStopReasons": "Makine Duruş Sebepleri",
+  "loadProject": "Proje Yükle"
 }

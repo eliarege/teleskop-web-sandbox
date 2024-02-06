@@ -32,5 +32,6 @@
   "teleskopSettings": "Teleskop Settings",
   "projectLanguage": "Project Language",
   "notification": "Notification",
-  "emailNotificationSettings": "e-mail Notification Settings"
+  "emailNotificationSettings": "e-mail Notification Settings",
+  "loadProject": "Load Project"
 }

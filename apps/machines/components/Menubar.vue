@@ -9,8 +9,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['deleteMachine', 'addMachine'])
 
-const showNewMachine = ref(false)
-const showEditMachine = ref(false)
+const { t, locale, setLocale } = useI18n()
+
 const showMachineParameters = ref(false)
 const showMimic = ref(false)
 const showFormulas = ref(false)
@@ -22,12 +22,6 @@ const { data: version } = useLazyFetch('/api/soap/get-version', {
     machineId,
   },
 })
-
-async function handleMachineDelete() {
-  const machineIds = [props.selected]
-  await deleteMachines(machineIds)
-  emit('deleteMachine', machineIds)
-}
 
 async function loadProject() {
   await $fetch('/api/ftp/update-machine', {
@@ -54,7 +48,7 @@ async function loadDefinitions() {
   <q-card class="flex flex-row justify-between" bordered>
     <q-card-section class="flex items-center">
       <q-btn
-        label="Proje Yükle"
+        :label="t('loadProject')"
         no-caps
         color="primary"
         class="mr-4"
@@ -100,21 +94,18 @@ async function loadDefinitions() {
       <q-chip class="mr-4 mb-2">
         DB v{{ version }}
       </q-chip>
+      <q-option-group
+        :model-value="locale"
+        type="radio"
+        :options="[
+          { label: 'Türkçe', value: 'tr' },
+          { label: 'English', value: 'en' },
+        ]"
+        class="flex"
+        @update:model-value="setLocale($event)"
+      />
     </q-card-section>
   </q-card>
-  <NewMachineDialog
-    v-if="showNewMachine"
-    :show="showNewMachine"
-    @close="showNewMachine = false"
-    @add-machine="$emit('addMachine')"
-  />
-  <EditMachineDialog
-    v-if="showEditMachine"
-    :show="showEditMachine"
-    :selected="selected"
-    @close="showEditMachine = false"
-    @add-machine="$emit('addMachine')"
-  />
   <MachineParametersDialog
     v-if="showMachineParameters"
     :show="showMachineParameters"
@@ -134,6 +125,3 @@ async function loadDefinitions() {
     @close="showFormulas = false"
   />
 </template>
-
-<style scoped>
-</style>

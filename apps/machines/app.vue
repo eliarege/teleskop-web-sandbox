@@ -7,26 +7,6 @@ const definitionItems = [
   {
     label: t('machine'),
     to: '/',
-    items: [
-      {
-        label: t('new'),
-      },
-      {
-        label: t('properties'),
-      },
-
-      {
-        label: t('delete'),
-      },
-
-      {
-        label: t('load'),
-      },
-
-      {
-        label: t('exit'),
-      },
-    ],
   },
   {
     label: 'Makine Grubu',
