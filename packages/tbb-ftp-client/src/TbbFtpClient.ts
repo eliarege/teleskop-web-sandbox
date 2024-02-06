@@ -31,6 +31,7 @@ import { parseSeperatedLocks } from './parsers/parseLocksInput'
 import { parseBatchParameters } from './parsers/parseBatchParameters'
 import { parseCycleControl } from './parsers/parseCycleControl'
 import { parseSystem } from './parsers/parseSystem'
+import { parseLocksOutput } from './parsers/parseLocksOutput'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -283,6 +284,13 @@ export class TbbFtpClient {
     const parsedData = lines.map(parseSeperatedLocks)
 
     return parsedData
+  }
+
+  async fetchLocksOutput() {
+    const remotePath = '/tbb6500/data/locks/locks_outputs'
+    const content = await download(this.client, remotePath, 'utf8')
+    const locks = parseLocksOutput(content)
+    return locks
   }
 
   async fetchBatchParameters() {

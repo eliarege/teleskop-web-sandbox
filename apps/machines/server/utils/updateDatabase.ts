@@ -2,6 +2,7 @@ import type { Knex } from 'knex'
 import type { TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { calcIONumber } from '.'
+import { AnalogLock, DigitalLock } from '~/types'
 
 async function replaceRecords(knex: Knex, tableName: string, data, whereObject?: Record<string, any>) {
   const chunks = chunk(data, 50)
@@ -658,7 +659,6 @@ export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient
       PARAMSTRINGEn: d.paramString,
     }
   })
-  console.log('params = ', data)
 
   await replaceRecords(trx, 'BFMACHBATCHPARAMETERS', data, { MACHINEID: machineId })
 
@@ -746,4 +746,43 @@ export async function writeManualReasons(tbb: TbbFtpClient, trx: Knex) {
   await tbb.uploadStopReasons(formulas)
 
   return formulas
+}
+
+export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const { analogLocks, digitalLocks } = await tbb.fetchLocksOutput()
+
+  const analogOutputs = []
+  const digitalOutputs = []
+
+  analogLocks.forEach((lock) => {
+    lock.analogOutputs.forEach((output, index) => {
+      analogOutputs.push({
+        MACHINEID: machineId,
+        LOCKNO: lock.lockNo,
+        LOCKAOUTINDEX: index,
+        ID: output.outputId + 1,
+        PERCENTAGE: output.percentage,
+      })
+    })
+  })
+
+  digitalLocks.forEach((lock) => {
+    lock.digitalOutputs.forEach((output, index) => {
+      digitalOutputs.push({
+        MACHINEID: machineId,
+        LOCKNO: lock.lockNo,
+        LOCKDOUTINDEX: index,
+        ID: output.outputId + 1,
+        STATE: output.state,
+      })
+    })
+  })
+
+  if (analogOutputs.length > 0) {
+    await replaceRecords(trx, 'BFLOCKSOUTPUTAOUT', analogOutputs, { MACHINEID: machineId })
+  }
+
+  if (digitalOutputs.length > 0) {
+    await replaceRecords(trx, 'BFLOCKSOUTPUTDOUT', digitalOutputs, { MACHINEID: machineId })
+  }
 }

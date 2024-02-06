@@ -219,3 +219,18 @@ export interface TreatmentMachineGroup {
   groupName: string
   temperatureControlCommand: number
 }
+
+export interface AnalogLock {
+  lockNo: number
+  outputs: {
+    outputId: number
+    percentage: number | null
+  }[]
+}
+export interface DigitalLock {
+  lockNo: number
+  outputs: {
+    outputId: number
+    state: number | null
+  }[]
+}
