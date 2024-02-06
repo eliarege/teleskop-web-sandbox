@@ -129,13 +129,14 @@ async function applyFilters(updatedValue: any) {
 async function updateRecipeTable() {
   canceledVisible.value = !canceledVisible.value
   await updateRecipe()
+  selectedRow.value = recipe.value[0]
+  await fetchMaterialData(recipe.value[0].reqnumber)
 }
 
 async function selectRow(rowIndex: any) {
-  console.log(recipe.value[rowIndex])
   selectedRow.value = recipe.value[rowIndex]
   selectedRow.value.rowIndex = rowIndex
-  await fetchMaterialData(recipe.value[rowIndex].reqnumber)
+  await fetchMaterialData(selectedRow.value.reqnumber)
 }
 
 async function clickShowRecipe(row: any, isLogs: boolean) {
@@ -143,7 +144,6 @@ async function clickShowRecipe(row: any, isLogs: boolean) {
 }
 
 async function completeProgram(row) {
-  console.log(row)
   await $fetch('/api/dispenser/complete-program', {
     method: 'PUT',
     body: {
@@ -154,7 +154,6 @@ async function completeProgram(row) {
 }
 
 async function isRecipeDeleted(row) {
-  console.log(row)
   const isDeleted = await $fetch('/api/dispenser/check-status', {
     method: 'POST',
     body: {
