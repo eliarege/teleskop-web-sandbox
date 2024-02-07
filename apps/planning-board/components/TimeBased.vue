@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro-trial'
-import { EliarModal } from 'ui'
+import { EliarModal, LoadingSpinner } from 'ui'
 import { decompressJson } from '~/composables/helper'
 import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
@@ -56,8 +56,9 @@ const { data: events, refresh: plannedRefresh } = await useFetch('/api/timeBased
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
-const allEvents = [...events.value!.plannedEventStates, ...events.value!.mergedArchiveStates]
-const schedulerEvents = computed(() => allEvents.map((ev) => {
+const loading = ref(false)
+const allEvents = computed(() => [...events.value!.plannedEventStates, ...events.value!.mergedArchiveStates])
+const schedulerEvents = computed(() => allEvents.value.map((ev) => {
   return {
     ...ev,
     id: ev.planKey,
@@ -65,7 +66,7 @@ const schedulerEvents = computed(() => allEvents.map((ev) => {
     resourceId: ev.machineId,
     startDate: ev.startTime ?? ev.plannedStartTime,
     endDate: ev.endTime ?? ev.plannedEndTime,
-    draggable: !ev.isStarted,
+    draggable: !ev.isStarted && !ev.pinned,
     resizable: false,
     editable: false,
   }
@@ -88,13 +89,20 @@ const schedulerRefreshInterval = setInterval(async () => {
 onUnmounted(() => {
   clearInterval(schedulerRefreshInterval)
 })
+async function refreshSchedulerWithLoading() {
+  loading.value = true
+  await plannedRefresh()
+  await unScheduledRefresh()
+  await machineRefresh()
+  loading.value = false
+}
 async function refreshScheduler() {
   await plannedRefresh()
   await unScheduledRefresh()
   await machineRefresh()
 }
-watch(schedulerEvents, (newVal) => {
-  scheduler.events = newVal
+watch(events, () => {
+  scheduler.events = schedulerEvents.value
 })
 watch(modifiedUnscheduledEvents, (newVal) => {
   grid.store.data = newVal
@@ -103,7 +111,7 @@ async function unPlanEvent(planKey: number) {
   await $fetch('/api/unplan', {
     method: 'PUT',
     query: { planKey },
-  }).then(() => refreshScheduler())
+  }).then(() => refreshSchedulerWithLoading())
 }
 async function deleteEvent(planKey: number) {
   await $fetch('api/delete', {
@@ -137,8 +145,13 @@ async function eventTooltip(eventRecord: any) {
     query: { machineId: eventRecord.originalData.machineId, planKey },
   })
   const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
+  const notes = await $fetch('/api/note/getNote', {
+    query: { jobOrder: eventRecord.originalData.jobOrder },
+  })
+  const screenNotes = notes.filter(n => n.showOnScreen === true).map(a => a.note)
   return `
         <div>
+          ${screenNotes.length !== 0 ? `<div class="b-sch-event-title">Notes: ${screenNotes}</div>` : ''}
           <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
             <div class="b-sch-clock">
               <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">
@@ -217,6 +230,9 @@ onMounted(async () => {
     },
     eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
+      if (eventRecord.originalData.hasNote) {
+        icons.push('b-fa b-fa-solid b-fa-message')
+      }
       if (!eventRecord.originalData.isActual) {
         icons.push('b-fa b-fa-solid b-fa-calendar-check')
         if (eventRecord.originalData.pinned) {
@@ -258,6 +274,15 @@ onMounted(async () => {
     timeResolution: {
       unit: 'minute',
       increment: 5,
+    },
+    onEventMenuBeforeShow: (a) => {
+      if (a.eventRecord.originalData.pinned) {
+        a.items.pin.hidden = true
+        a.items.unpin.hidden = false
+      } else {
+        a.items.pin.hidden = false
+        a.items.unpin.hidden = true
+      }
     },
     useInitialAnimation: false,
     features: {
@@ -322,9 +347,26 @@ onMounted(async () => {
                 query: { planKey: eventRecord.originalData.id },
                 method: 'PUT',
               })
-                .then(() => {
-                  refreshScheduler()
+                .then(async () => {
+                  await refreshSchedulerWithLoading()
+                  schedule.renderRows()
                   Toast.show('Event succesfuly pinned!')
+                })
+                .catch(err => Toast.show(err))
+            },
+          },
+          unpin: {
+            icon: 'b-fa-solid b-fa-thumbtack',
+            text: t('ctx-menu.unpin'),
+            async onItem({ eventRecord }: any) {
+              await $fetch('api/unpinEvents', {
+                query: { planKey: eventRecord.originalData.id },
+                method: 'PUT',
+              })
+                .then(async () => {
+                  await refreshSchedulerWithLoading()
+                  schedule.renderRows()
+                  Toast.show('Event succesfuly unpinned!')
                 })
                 .catch(err => Toast.show(err))
             },
@@ -523,6 +565,7 @@ onMounted(async () => {
       autoLoad: true,
     },
   } as Partial<GridConfig>)
+
   new TimeDrag({
     grid: unplannedGrid,
     schedule,
@@ -536,6 +579,9 @@ function updateTaskColor() {
 </script>
 
 <template>
+  <div v-if="loading">
+    <LoadingSpinner />
+  </div>
   <div>
     <EliarModal v-if="showModal.properties.show" @click.stop="showModal.properties.show = false">
       <template #default>
@@ -593,7 +639,10 @@ function updateTaskColor() {
     </EliarModal>
     <EliarModal v-if="showModal.notes.show" @click.stop="showModal.notes.show = false">
       <template #default>
-        <BatchNotes :job-order="showModal.notes.unit.name" />
+        <BatchNotes
+          :job-order="showModal.notes.unit.name"
+          @update-scheduler="refreshSchedulerWithLoading()"
+        />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.rule" @click.stop="showModal.rule = false" />
@@ -661,7 +710,9 @@ div[bgGreen] {
       "task-delete": "Delete Job Order",
       "remove-plan": "Remove From Plan",
       "properties": "Job Order Properties",
-      "pin": "Pin Task"
+      "pin": "Pin Task",
+      "unpin": "Unpin Task"
+
     }
   },
   "tr": {
@@ -670,9 +721,9 @@ div[bgGreen] {
       "task-delete": "İş Emrini Sil",
       "remove-plan": "Plandan kaldır",
       "properties": "İş Emri Özellikleri",
-      "pin": "İş Emrini Sabitle"
+      "pin": "İş Emrini Sabitle",
+      "unpin": "İş Emri Sabitlemesini Kaldır"
     }
   }
 }
 </i18n>
-~/lib/timeBased

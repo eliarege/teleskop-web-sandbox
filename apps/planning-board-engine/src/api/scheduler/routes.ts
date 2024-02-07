@@ -168,6 +168,18 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
+  fastify.put<{ Querystring: { planKey: number } }>(
+    '/planning_board/unpin_event',
+    async (request, reply) => {
+      try {
+        const { planKey } = request.query
+        await unpinEvent(planKey)
+      } catch (err) {
+        fastify.log.error(`An error occured while unpinning event: ${err}`)
+        return reply.code(500).send({ error: `An error occured while unpinning event: ${err}` })
+      }
+    },
+  )
   fastify.post<{
     Body: { jobOrder: string, note: string, showOnScreen: boolean, userId: number }
   }>(

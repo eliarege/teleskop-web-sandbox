@@ -63,7 +63,7 @@ const modifiedEvents = computed(() => events.value?.map((ev: any) => {
     name: ev.jobOrder,
     resourceId: ev.machineId,
     resizable: false,
-    draggable: !ev.isStarted,
+    draggable: !ev.isStarted && !ev.pinned,
     editable: false,
     endDate: addSeconds(ev.startDate, ev.theoreticalDuration),
     ...ev,
@@ -123,7 +123,7 @@ async function deleteEvent(planKey: number) {
   await $fetch('api/delete', {
     method: 'PUT',
     query: { planKey },
-  })
+  }).then(() => refreshScheduler())
 }
 function dateRangeEnd() {
   scheduler.startDate = new Date(schedulerDateModel.value.from)
@@ -334,6 +334,8 @@ onMounted(async () => {
                 method: 'PUT',
               })
                 .then(() => {
+                  refreshScheduler()
+                  schedule.refreshRows()
                   Toast.show('Event succesfuly pinned!')
                 })
                 .catch(err => Toast.show(err))
@@ -348,6 +350,8 @@ onMounted(async () => {
                 method: 'PUT',
               })
                 .then(() => {
+                  refreshScheduler()
+                  schedule.refreshRows()
                   Toast.show('Event succesfuly pinned!')
                 })
                 .catch(err => Toast.show(err))
@@ -688,7 +692,9 @@ div[bgGreen] {
       "task-edit": "Update Job Order",
       "task-delete": "Delete Job Order",
       "remove-plan": "Remove From Plan",
-      "properties": "Job Order Properties"
+      "properties": "Job Order Properties",
+      "pin": "Pin Task",
+      "unpin": "Unpin Task"
     }
   },
   "tr": {
@@ -696,9 +702,10 @@ div[bgGreen] {
       "task-edit": "İş Emrini Güncelle",
       "task-delete": "İş Emrini Sil",
       "remove-plan": "Plandan kaldır",
-      "properties": "İş Emri Özellikleri"
+      "properties": "İş Emri Özellikleri",
+      "pin": "İş Emrini Sabitle",
+      "unpin": "İş Emri Sabitlemesini Kaldır"
     }
   }
 }
 </i18n>
-~/lib/timeBased
