@@ -17,6 +17,7 @@ import {
   isTaskValid,
   pinEvent,
   removeFromPlan,
+  unpinEvent,
 } from './queries'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {

@@ -294,6 +294,9 @@ export async function pinEvent(planKey: number) {
   console.log('PLANKEY', planKey)
   await knex('dbo.PTBATCHPLANQUEUE').update({ PINNED: 1 }).where('PLANKEY', '=', planKey)
 }
+export async function unpinEvent(planKey: number) {
+  await knex('dbo.PTBATCHPLANQUEUE').update({ PINNED: 0 }).where('PLANKEY', '=', planKey)
+}
 export async function deleteNote(id: number) {
   await knex('PTBATCHNOTES').where('NOTEKEY', '=', id).delete()
 }
