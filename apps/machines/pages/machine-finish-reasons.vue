@@ -24,7 +24,7 @@ const columns = {
     field: 'typeId',
     align: 'left',
     type: 'select',
-    format: (val, row) => finishOptions.find(d => d.value === val) ? finishOptions.find(d => d.value === val).label : val,
+    format: (val, row) => finishOptions.find(d => d.value === val)?.label || val,
     filterable: true,
     filterType: 'includes',
     editable: true,

@@ -16,7 +16,7 @@ const emit = defineEmits<{
   select: [data: object[]]
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const q = useQuasar()
 const showModal = ref(false)
 const selected = ref<object[]>([])
@@ -103,7 +103,7 @@ function handleDelete() {
 watch(showModal, async (newValue, oldValue) => {
   await nextTick()
   if (newValue)
-    changeLocale('en')
+    changeLocale(locale.value)
 })
 </script>
 

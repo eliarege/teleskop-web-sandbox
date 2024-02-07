@@ -17,7 +17,7 @@ const { data: machineGroups } = useLazyFetch('/api/machines/machine-groups', {
   },
 })
 
-const columns = ref({
+const columns = computed(() => ({
   machineId: {
     label: 'ID',
     field: 'machineId',
@@ -56,7 +56,7 @@ const columns = ref({
     type: 'select',
     visible: true,
     editable: true,
-    format: (val, row) => machineGroups.value.find(d => d.value === val) ? machineGroups.value.find(d => d.value === val).label : val,
+    format: (val, row) => machineGroups.value.find(d => d.value === val)?.label || val,
     schema: {
       validation: 'required',
       options: machineGroups.value,
@@ -71,7 +71,7 @@ const columns = ref({
     type: 'select',
     visible: true,
     editable: true,
-    format: (val, row) => tbbModelOptions.find(d => d === val) ? tbbModelOptions.find(d => d === val) : val,
+    format: (val, row) => tbbModelOptions.find(d => d === val),
     schema: {
       filled: true,
       validation: 'required',
@@ -196,7 +196,7 @@ const columns = ref({
     type: 'select',
     visible: false,
     editable: true,
-    format: (val, row) => steamUnitOptions.find(d => d === val) ? steamUnitOptions.find(d => d === val) : val,
+    format: (val, row) => steamUnitOptions.find(d => d === val),
     schema: {
       filled: true,
       options: steamUnitOptions,
@@ -357,7 +357,7 @@ const columns = ref({
       filled: true,
     },
   },
-})
+}))
 const { data: machines, refresh } = useLazyFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
