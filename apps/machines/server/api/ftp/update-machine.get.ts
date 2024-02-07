@@ -1,13 +1,18 @@
 import { TbbFtpClient, withTbbFtpClient } from 'tbb-ftp-client'
 import { EventHandlerRequest, getQuery } from 'h3'
 import { knex } from '~/server/connectionPool'
-import { updateAnalogInputs, updateBatchParameters, updateCommandAlarmReasons, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral, updateSystem, writeFinishReasons, writeGlobalCommandFormulas, writeManualReasons, writeStopReasons, writeUsers } from '~/server/utils/updateDatabase'
+import { updateAnalogInputs, updateBatchParameters, updateCommandAlarmReasons, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral, updateLocksOutput, updateSystem, writeFinishReasons, writeGlobalCommandFormulas, writeManualReasons, writeStopReasons, writeUsers } from '~/server/utils/updateDatabase'
 
 export default defineEventHandler(async (event) => {
-  const { machineId, ip } = getQuery(event)
+  const { machineId } = getQuery(event)
   const numMachineId = Number.parseInt(machineId as string)
   let res
   if (!Number.isNaN(numMachineId)) {
+    const ip = await knex('BFMACHINES')
+      .where('MACHINEID', numMachineId)
+      .select('IP')
+      .first()
+      .then(row => row ? row.IP : null)
     await withTbbFtpClient(ip, async (tbb) => {
       await knex.transaction(async (trx) => {
         // controllerModel
@@ -51,7 +56,7 @@ export default defineEventHandler(async (event) => {
         // locks inputs - buraya kadar
         await updateLocksInput(numMachineId, tbb, trx)
         // locks outputs
-
+        await updateLocksOutput(numMachineId, tbb, trx)
         // global command formulas
         await updateGlobalCommandFormulas(numMachineId, tbb, trx)
         // consumption

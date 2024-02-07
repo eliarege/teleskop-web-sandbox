@@ -7,18 +7,19 @@ const wsdl = new WSDL(WSDL_CONTENT, '', {})
 
 export default defineEventHandler(async (event) => {
   const { machineId } = getQuery(event)
+  if (machineId) {
+    const ip = await knex('BFMACHINES')
+      .select('IP')
+      .where('MACHINEID', machineId)
+      .first()
+      .then(row => row ? row.IP : null)
 
-  const ip = await knex('BFMACHINES')
-    .select('IP')
-    .where('MACHINEID', machineId)
-    .first()
-    .then(row => row ? row.IP : null)
+    const response = await $fetch(`http://${ip}:8080`, {
+      method: 'POST',
+      body: soapSchema('GetVersion', '<Dummy>0</Dummy>'),
+    })
 
-  const response = await $fetch(`http://${ip}:8080`, {
-    method: 'POST',
-    body: soapSchema('GetVersion', '<Dummy>0</Dummy>'),
-  })
-
-  const object = wsdl.xmlToObject(response)
-  return object.Body.VersionResponse.result.String
+    const object = wsdl.xmlToObject(response)
+    return object.Body.VersionResponse.result.String
+  }
 })

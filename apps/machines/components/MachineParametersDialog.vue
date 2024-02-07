@@ -9,6 +9,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const { t } = useI18n()
 const columns: Column[] = [
   {
     name: 'id',
@@ -20,7 +21,7 @@ const columns: Column[] = [
   },
   {
     name: 'paramString',
-    label: 'İsim',
+    label: t('name'),
     field: 'paramString',
     align: 'left',
     filterable: true,
@@ -28,7 +29,7 @@ const columns: Column[] = [
   },
   {
     name: 'paramLowLimit',
-    label: 'Alt Limit',
+    label: t('paramLowLimit'),
     field: 'paramLowLimit',
     align: 'left',
     filterable: true,
@@ -37,7 +38,7 @@ const columns: Column[] = [
 
   {
     name: 'paramHighLimit',
-    label: 'Üst Limit',
+    label: t('paramHighLimit'),
     field: 'paramHighLimit',
     align: 'left',
     filterable: true,
@@ -46,7 +47,7 @@ const columns: Column[] = [
 
   {
     name: 'defaultValue',
-    label: 'Varsayılan Değer',
+    label: t('defaultValue'),
     field: 'defaultValue',
     align: 'left',
     filterable: true,
@@ -54,7 +55,7 @@ const columns: Column[] = [
   },
   {
     name: 'currentValue',
-    label: 'Değer',
+    label: t('currentValue'),
     field: 'currentValue',
     align: 'left',
     filterable: true,

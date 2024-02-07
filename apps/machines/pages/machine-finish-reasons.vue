@@ -1,83 +1,55 @@
 <script setup lang="ts">
-import type { Column } from 'nuxt-ui-types'
-import type { FinishReason } from '~/types'
-
 const { data: finishReasons, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const columns: Column[] = [
-  {
-    name: 'reasonId',
+const finishOptions = [{ label: 'Bitir', value: 3 }, { label: 'Atla', value: 4 }, { label: 'Makine Duraklatma', value: 5 }]
+
+const columns = {
+  reasonId: {
     label: 'ID',
     field: 'reasonId',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    unique: true,
+    type: 'number',
+    visible: true,
+    editable: true,
   },
-  {
-    name: 'typeId',
+  typeId: {
     label: 'Tip',
     field: 'typeId',
     align: 'left',
+    type: 'select',
+    format: (val, row) => finishOptions.find(d => d.value === val)?.label || val,
     filterable: true,
     filterType: 'includes',
+    editable: true,
+    visible: true,
+    schema: {
+      validation: 'required',
+      options: finishOptions,
+    },
   },
-  {
-    name: 'text',
+  text: {
     label: 'Açıklama',
     field: 'text',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    editable: true,
+    visible: true,
+    renderCell: (row: any): VNode => h('span', {}, row.text),
+    schema: {
+      filled: true,
+      validation: 'required',
+    },
   },
-]
-
-const selectedReason = ref([])
-const finishReason = ref<FinishReason>({
-  reasonId: '',
-  typeId: '',
-  text: '',
-  reportToERP: false,
-})
-
-const finishOptions = [{ label: 'Bitir', value: 3 }, { label: 'Atla', value: 4 }, { label: 'Makine Duraklatma', value: 5 }]
-const typeIdMap = {
-  3: 'Bitir',
-  4: 'Atla',
-  5: 'Makine Duraklatma',
-}
-async function handleSelection(obj: FinishReason) {
-  if (finishReason.value.reasonId === obj.reasonId) {
-    finishReason.value = {
-      reasonId: '',
-      typeId: '',
-      text: '',
-      reportToERP: false,
-    }
-  } else {
-    finishReason.value.reasonId = obj.reasonId
-    finishReason.value.text = obj.text
-    finishReason.value.typeId = obj.typeId
-  }
 }
 
-async function handleAddFinishReason() {
-  await addFinishReason(finishReasons.value, finishReason.value.typeId.value, finishReason.value.text)
-  await refresh()
-}
-async function handleDeleteFinishReasons() {
-  await deleteFinishReasons(selectedReason.value)
-  await refresh()
-  selectedReason.value = []
-}
-
-async function handleEditFinishReason() {
-  await editFinishReason(finishReason.value)
-  await refresh()
-}
 async function handleFilterSlotsUpdate(updatedValue) {
   finishReasons.value = await $fetch('/api/finish-reasons/finish-reasons', {
     method: 'POST',
@@ -86,84 +58,44 @@ async function handleFilterSlotsUpdate(updatedValue) {
     },
   })
 }
+
+async function handleAdd(formData) {
+  await $fetch('/api/finish-reasons/finish-reason', {
+    method: 'POST',
+    body: {
+      reasonId: finishReasons.value[finishReasons.value.length - 1].reasonId + 1,
+      formData,
+    },
+  })
+  await refresh()
+}
+
+async function handleEdit(formData) {
+  await $fetch('/api/finish-reasons/finish-reason', {
+    method: 'PUT',
+    body: formData,
+  })
+  await refresh()
+}
+
+async function handleDelete(formData) {
+  await $fetch('/api/finish-reasons/finish-reasons', {
+    method: 'DELETE',
+    body: {
+      reasonIds: formData.map(d => d.reasonId),
+    },
+  })
+  await refresh()
+}
 </script>
 
 <template>
-  <q-card>
-    <q-card-section>
-      <div class="flex flex-row justify-start input-field">
-        <q-input
-          v-model="finishReason.text"
-          label="Açıklama"
-          filled
-          class="w-xs"
-        />
-        <q-select
-          v-model="finishReason.typeId"
-          :options="finishOptions"
-          label="Kullanıcı Tipi"
-          filled
-          class="w-xs"
-          :display-value="typeIdMap[finishReason.typeId]"
-        />
-      </div>
-
-      <div class="flex flex-row input-field my-4">
-        <q-btn
-          label="Ekle"
-          no-caps
-          @click="handleAddFinishReason()"
-        />
-        <q-btn
-          label="Düzenle"
-          no-caps
-          @click="handleEditFinishReason()"
-        />
-        <q-btn
-          label="Sil"
-          no-caps
-          @click="handleDeleteFinishReasons()"
-        />
-      </div>
-      <FilterableTable
-        v-model:selected="selectedReason"
-        :rows="finishReasons"
-        :columns="columns"
-        class="overflow-y-auto h-160"
-        @selection="(e) => handleSelection(e)"
-        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-      >
-        <template #custombody="finishReasons">
-          <q-tr
-            :class="{ 'selected-row': finishReason.reasonId === finishReasons.row.reasonId }"
-            @click="handleSelection(finishReasons.row)"
-          >
-            <q-td
-              v-for="row in finishReasons.cols"
-              :key="row"
-            >
-              <span v-if="row.field === 'typeId'">
-                {{ typeIdMap[row.value] }}
-              </span>
-              <span v-else-if="row.field === 'reportToERP'">
-                {{ row.value ? "Evet" : "Hayır" }}
-              </span>
-              <span v-else>
-                {{ row.value }}
-              </span>
-            </q-td>
-          </q-tr>
-        </template>
-      </FilterableTable>
-    </q-card-section>
-  </q-card>
+  <div
+    class="p-2"
+  >
+    <FormTableKit
+      :rows="finishReasons" :columns="columns"
+      @add="handleAdd" @edit="handleEdit" @delete="handleDelete"
+    />
+  </div>
 </template>
-
-<style scoped>
-.input-field > * {
-  margin-right: 2em;
-}
-.selected-row {
-  background-color: #cce8ff;
-}
-</style>

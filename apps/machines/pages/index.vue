@@ -1,91 +1,363 @@
 <script setup lang="ts">
-import type { Column } from 'nuxt-ui-types'
-import type { Machine } from '~/types'
+import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 
-const columns: Column<Machine>[] = [
-  {
-    name: 'machineId',
+const { t } = useI18n()
+
+const { data: machineGroups } = useLazyFetch('/api/machines/machine-groups', {
+  default: () => [],
+  transform: (machineGroups) => {
+    const options = []
+    machineGroups.forEach((group) => {
+      options.push({
+        label: group.groupName,
+        value: group.groupId,
+      })
+    })
+    return options
+  },
+})
+
+const columns = computed(() => ({
+  machineId: {
     label: 'ID',
     field: 'machineId',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    unique: true,
+    type: 'number',
+    visible: true,
+    editable: true,
+    schema: {
+      filled: true,
+      validation: 'required',
+    },
   },
-  {
-    name: 'machineCode',
-    label: 'Makine Adı',
+  machineCode: {
+    label: t('machineName'),
     field: 'machineCode',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'text',
+    visible: true,
+    editable: true,
+    schema: {
+      filled: true,
+      validation: 'required',
+    },
   },
-  {
-    name: 'groupName',
-    label: 'Grup',
-    field: 'groupName',
+  groupNo: {
+    label: t('group'),
+    field: 'groupNo',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'select',
+    visible: true,
+    editable: true,
+    format: (val, row) => machineGroups.value.find(d => d.value === val)?.label || val,
+    schema: {
+      validation: 'required',
+      options: machineGroups.value,
+    },
   },
-
-  {
-    name: 'tbbModel',
-    label: 'Model',
+  tbbModel: {
+    label: t('model'),
     field: 'tbbModel',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'select',
+    visible: true,
+    editable: true,
+    format: (val, row) => tbbModelOptions.find(d => d === val),
+    schema: {
+      filled: true,
+      validation: 'required',
+      options: tbbModelOptions,
+    },
   },
-
-  {
-    name: 'version',
-    label: 'Versiyon',
+  version: {
+    label: t('version'),
     field: 'version',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'number',
+    visible: true,
+    editable: false,
+    schema: {
+      filled: true,
+    },
   },
-  {
-    name: 'machineCapacity',
-    label: 'Makine Kapasitesi',
+  machineCapacity: {
+    label: t('machineCapacity'),
     field: 'machineCapacity',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'number',
+    visible: true,
+    editable: true,
+    schema: {
+      filled: true,
+      validation: 'required',
+    },
   },
-
-  {
-    name: 'nozzleCount',
-    label: 'Kule Sayısı',
-    field: 'nozzleCount',
+  reelCount: {
+    label: t('reelCount'),
+    field: 'reelCount',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'number',
+    visible: true,
+    editable: true,
+    schema: {
+      filled: true,
+    },
   },
-  {
-    name: 'ip',
-    label: 'Makine IP',
+  ip: {
+    label: t('ip'),
     field: 'ip',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'text',
+    visible: true,
+    editable: true,
+    schema: {
+      filled: true,
+      validation: 'required',
+    },
   },
-  {
-    name: 'plcModel',
-    label: 'PLC Modeli',
+  plcModel: {
+    label: t('plcModel'),
     field: 'plcModel',
     align: 'left',
     filterable: true,
     filterType: 'includes',
-  },
-  {
-    name: 'inUse',
-    label: 'Kullanımda',
-    field: 'inUse',
-    align: 'left',
+    type: 'text',
+    visible: true,
+    editable: true,
+    schema: {
+      filled: true,
+    },
   },
 
-]
+  ////
+  theoricalCharge: {
+    label: t('theoricalCharge'),
+    field: 'theoricalCharge',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'number',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+      validation: 'required',
+    },
+  },
+  theoricalChargeDuration: {
+    label: t('theoricalChargeDuration'),
+    field: 'theoricalChargeDuration',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'number',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  nozzleCount: {
+    label: t('nozzleCount'),
+    field: 'nozzleCount',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'number',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  steamUnit: {
+    label: t('steamUnit'),
+    field: 'steamUnit',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'select',
+    visible: false,
+    editable: true,
+    format: (val, row) => steamUnitOptions.find(d => d === val),
+    schema: {
+      filled: true,
+      options: steamUnitOptions,
+    },
+  },
+  inUse: {
+    label: t('inUse'),
+    field: 'inUse',
+    align: 'left',
+    type: 'checkbox',
+    visible: false,
+    editable: true,
+    format: (val, row) => val ? 'Evet' : 'Hayır',
+    schema: {
+      filled: true,
+    },
+  },
+  additionalTank1: {
+    label: t('additionalTank1'),
+    field: 'additionalTank1',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'checkbox',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  additionalTank2: {
+    label: t('additionalTank2'),
+    field: 'additionalTank2',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'checkbox',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  additionalTank3: {
+    label: t('additionalTank3'),
+    field: 'additionalTank3',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'checkbox',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  additionalTank4: {
+    label: t('additionalTank4'),
+    field: 'additionalTank4',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'checkbox',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  reserveTank: {
+    label: t('reserveTank'),
+    field: 'reserveTank',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'checkbox',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  storeElectricityAsInc: {
+    label: t('storeElectricityAsInc'),
+    field: 'storeElectricityAsInc',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'checkbox',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  theoreticalWater: {
+    label: t('theoreticalWaterCalculationActive'),
+    field: 'theoreticalWater',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'checkbox',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  MTTempIo: {
+    label: t('MTTempIo'),
+    field: 'MTTempIo',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'number',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  theoreticalSteam: {
+    label: t('theoreticalSteam'),
+    field: 'theoreticalSteam',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'checkbox',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  steamKgPerHour: {
+    label: t('steamKgPerHour'),
+    field: 'steamKgPerHour',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'number',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+  steamValveDo: {
+    label: t('steamValveDo'),
+    field: 'steamValveDo',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'number',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+    },
+  },
+}))
 const { data: machines, refresh } = useLazyFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
@@ -96,14 +368,13 @@ const selected = ref<Machine>({
   machineId: -1,
 })
 
-function handleSelection(obj: Machine) {
-  if (selected.value?.machineId === obj.machineId) {
+function handleSelection(formData) {
+  if (formData.length)
+    selected.value = formData[0]
+  else
     selected.value = {
       machineId: -1,
     }
-  } else {
-    selected.value = obj
-  }
 }
 
 async function handleFilterSlotsUpdate(updatedValue) {
@@ -114,6 +385,32 @@ async function handleFilterSlotsUpdate(updatedValue) {
     },
   })
 }
+
+async function handleAdd(formData) {
+  await $fetch('/api/machines/machine', {
+    method: 'POST',
+    body: formData,
+  })
+  await refresh()
+}
+
+async function handleEdit(formData) {
+  await $fetch('/api/machines/machine', {
+    method: 'PUT',
+    body: formData,
+  })
+  await refresh()
+}
+
+async function handleDelete(formData) {
+  await $fetch('/api/machines/machine', {
+    method: 'DELETE',
+    body: {
+      machineIds: formData.map(d => d.machineId),
+    },
+  })
+  await refresh()
+}
 </script>
 
 <template>
@@ -123,36 +420,12 @@ async function handleFilterSlotsUpdate(updatedValue) {
     @delete-machine="refresh"
     @add-machine="refresh"
   />
-  <FilterableTable
-    v-model:selected="selected"
-    :rows="machines"
-    :columns="columns"
-    class="overflow-y-auto h-220"
-    @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-  >
-    <template #custombody="machines">
-      <q-tr
-        :class="{ 'selected-row': selected.machineId === machines.row.machineId }"
-        @click="handleSelection(machines.row)"
-      >
-        <q-td
-          v-for="row in machines.cols"
-          :key="row"
-        >
-          <span v-if="row.field === 'inUse'">
-            {{ row.value ? 'Evet' : 'Hayır' }}
-          </span>
-          <span v-else>
-            {{ row.value }}
-          </span>
-        </q-td>
-      </q-tr>
-    </template>
-  </FilterableTable>
+  <FormTableKit
+    :rows="machines" :columns="columns"
+    form-class="grid grid-cols-2 gap-4 items-center"
+    @add="handleAdd"
+    @edit="handleEdit"
+    @select="handleSelection"
+    @delete="handleDelete"
+  />
 </template>
-
-<style scoped>
-.selected-row {
-  background-color: #cce8ff;
-}
-</style>

@@ -1,25 +1,32 @@
 <script setup lang="ts">
-import type { Column } from 'nuxt-ui-types'
-import type { WaterType } from '~/types'
-
-const columns: Column[] = [
-  {
-    name: 'waterTypeId',
+const columns = {
+  waterTypeId: {
     label: 'Su Tipi No',
     field: 'waterTypeId',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    unique: true,
+    type: 'number',
+    visible: true,
+    editable: true,
   },
-  {
-    name: 'waterTypeName',
+  waterTypeName: {
     label: 'Su Tipi İsmi',
     field: 'waterTypeName',
     align: 'left',
     filterable: true,
     filterType: 'includes',
+    type: 'text',
+    visible: true,
+    editable: true,
+    schema: {
+      filled: true,
+      validation: 'required',
+    },
   },
-]
+
+}
 
 const { data: waterTypes, refresh } = useLazyFetch('/api/water-types/water-types', {
   default: () => [],
@@ -27,34 +34,28 @@ const { data: waterTypes, refresh } = useLazyFetch('/api/water-types/water-types
   body: {},
 })
 
-const selected = ref<WaterType>({
-  waterTypeId: -1,
-  waterTypeName: '',
-})
-
-async function handleAddWaterType() {
-  await addWaterType(selected.value.waterTypeName)
+async function handleAdd(formData) {
+  await $fetch('/api/water-types/water-type', {
+    method: 'POST',
+    body: formData,
+  })
   await refresh()
 }
 
-async function handleSelection(obj: WaterType) {
-  if (selected.value.waterTypeId === obj.waterTypeId) {
-    selected.value = {
-      waterTypeId: -1,
-      waterTypeName: '',
-    }
-  } else {
-    selected.value = obj
-  }
+async function handleEdit(formData) {
+  await $fetch('/api/water-types/water-type', {
+    method: 'PUT',
+    body: formData,
+  })
+  await refresh()
 }
 
-async function handleDeleteWaterTypes() {
-  await deleteWaterTypes(selected.value)
+async function handleDelete(formData) {
+  await $fetch('/api/water-types/water-types', {
+    method: 'DELETE',
+    body: formData.map(d => d.waterTypeId),
+  })
   await refresh()
-  selected.value = {
-    waterTypeId: -1,
-    waterTypeName: '',
-  }
 }
 
 async function handleFilterSlotsUpdate(updatedValue) {
@@ -70,52 +71,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
 <template>
   <q-card>
     <q-card-section>
-      <q-input v-model="selected.waterTypeName" label="Su Tipi İsmi" />
-      <div class="flex flex-row input-field my-4">
-        <q-btn
-          label="Ekle"
-          no-caps
-          @click="handleAddWaterType()"
-        />
-        <q-btn
-          label="Sil"
-          no-caps
-          @click="handleDeleteWaterTypes()"
-        />
-      </div>
-
-      <FilterableTable
-        v-model:selected="selected"
-        :rows="waterTypes"
-        :columns="columns"
-        class="overflow-y-auto h-160"
-        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-      >
-        <template #custombody="waterTypes">
-          <q-tr
-            :class="{ 'selected-row': selected.waterTypeId === waterTypes.row.waterTypeId }"
-            @click="handleSelection(waterTypes.row)"
-          >
-            <q-td
-              v-for="row in waterTypes.cols"
-              :key="row"
-            >
-              <span>
-                {{ row.value }}
-              </span>
-            </q-td>
-          </q-tr>
-        </template>
-      </FilterableTable>
+      <FormTableKit
+        :rows="waterTypes" :columns="columns"
+        @add="handleAdd" @edit="handleEdit" @delete="handleDelete"
+      />
     </q-card-section>
   </q-card>
 </template>
-
-<style scoped>
-.selected-row {
-  background-color: #cce8ff;
-}
-.input-field > * {
-  margin-right: 2em;
-}
-</style>

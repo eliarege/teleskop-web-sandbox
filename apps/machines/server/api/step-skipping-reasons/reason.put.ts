@@ -1,12 +1,12 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  const { reasonId, reasonText, oldReasonId } = await readBody(event)
+  const { id, reasonText, oldId } = await readBody(event)
 
   const res = await knex('BFSTEPSKIPPINGREASONS')
-    .where('ID', oldReasonId)
+    .where('ID', oldId)
     .update({
-      ID: reasonId,
+      ID: id,
       REASONTEXT: reasonText,
     })
 

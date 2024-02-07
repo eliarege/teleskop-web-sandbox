@@ -1,181 +1,163 @@
 <script setup lang="ts">
+import '@formkit/themes/genesis'
+
 const { t } = useI18n()
 
 const definitionItems = [
   {
     label: t('machine'),
     to: '/',
-    items: [
-      {
-        label: t('new'),
-      },
-      {
-        label: t('properties'),
-      },
-
-      {
-        label: t('delete'),
-      },
-
-      {
-        label: t('load'),
-      },
-
-      {
-        label: t('exit'),
-      },
-    ],
   },
   {
-    label: 'Makine Grubu',
+    label: t('machineGroup'),
     items: [
       {
-        label: 'Değiştir',
+        label: t('change'),
         to: '/machine-group-definitions',
       },
     ],
   },
   {
-    label: 'Ayarlar',
+    label: t('settings'),
     items: [
       {
-        label: 'Cihaz Ayarları',
+        label: t('machineSettings'),
         items: [
           {
-            label: 'Cihaz Kullanıcıları',
+            label: t('controllerOperators'),
             to: '/user-definitions',
           },
           {
-            label: 'Cihaz Erişim Hataları',
+            label: t('machineAccessFails'),
             to: '/machine-access-fails',
           },
 
           {
-            label: 'Cihaz Kapalı Zamanlar',
+            label: t('controllerClosedTimes'),
             to: '/controller-closed-times',
           },
 
           {
-            label: 'Komut Tipi Tanımları',
+            label: t('commandTypeDefinitions'),
             to: '/command-type-definitions',
           },
 
           {
-            label: 'Manuele Alma Nedenleri',
+            label: t('commandTypeParameters'),
             to: '/manual-reasons',
           },
 
           {
-            label: 'Makine Duruş Nedenleri',
+            label: t('machineIdleReasons'),
             to: '/machine-stop-reasons',
           },
 
           {
-            label: 'Makine Bitirme Nedenleri',
+            label: t('machineFinishReasons'),
             to: '/machine-finish-reasons',
           },
 
           {
-            label: 'Adım Atlatma Ayarları',
+            label: t('stepSkippingReasons'),
             to: '/step-skipping-reasons',
           },
           {
-            label: 'Adım Atlatmada Sebep Sorulacak Komutlar',
+            label: t('stepSkippingReasonCommands'),
             to: '/step-skipping-reason-commands',
           },
 
           {
-            label: 'Akıllı İstek Komut Tanımları',
+            label: t('smartRequestCommandDefinitions'),
             to: 'smart-request-command-definitions',
           },
 
           {
-            label: 'Komut Zaman Aşımı Sebepleri',
+            label: t('commandTimeoutReasons'),
             to: 'command-timeout-reasons',
           },
 
           {
-            label: 'Diğer Makineler',
+            label: t('otherMachines'),
             to: '/data-collection-devices',
           },
           {
-            label: 'Operator Mesajları',
+            label: t('operatorMessages'),
             to: '/operator-messages',
           },
         ],
       },
       {
-        label: 'İlave Kabı Ayarları',
+        label: t('tankSettings'),
         items: [
           {
-            label: 'Kazan Tanımları',
+            label: t('tankDefinition'),
             to: 'tank-definitions',
           },
           {
-            label: 'Kazan-Materyal Eşleştirme',
+            label: t('tankMaterialPairing'),
             to: '/tank-material-matching',
           },
           {
-            label: 'Kazan-Materyal Su Limit Tanımları',
+            label: t('tankMaterialWaterLimitDefinitions'),
             to: '/tank-material-water-limit-definitions',
           },
         ],
       },
       {
-        label: 'Entegrasyon Ayarları',
+        label: t('integrationSettings'),
         items: [
           {
-            label: 'ERP Parametreleri',
+            label: t('erpParameterDefinitions'),
             to: '/erp-parameter-definitions',
           },
           {
-            label: 'Başlatma Parametresi Tipleri',
+            label: t('startingParameterTypes'),
             to: '/starting-parameter-types',
           },
           {
-            label: 'Reçete Tipleri',
+            label: t('recipeTypes'),
             to: '/recipe-types',
           },
           {
-            label: 'Optimizasyon Parametreleri',
+            label: t('optimizationParameters'),
             to: '/optimization-parameters',
           },
         ],
       },
       {
-        label: 'Tüketim Ayarları',
+        label: t('consumptionSettings'),
         items: [
           {
-            label: 'Su Tipleri',
+            label: t('waterTypeDefinitions'),
             to: '/water-type-definitions',
           },
           {
-            label: 'Tüketim Sayaç Seçimi',
+            label: t('consumptionCounterSelection'),
             to: '/consumption-counter-select',
           },
           {
-            label: 'Teorik Su Tüketimi Ayarları',
+            label: t('theoreticalWaterConsumptions'),
             to: '/theoretical-water-consumptions',
           },
         ],
       },
       {
-        label: 'Uygulama Ayarları',
+        label: t('applicationSettings'),
         items: [
           {
-            label: 'Teleskop Ayarları',
+            label: t('teleskopSettings'),
             to: '/teleskop-settings',
           },
           {
-            label: 'Proje Görünüm Dili',
+            label: t('projectViewLanguage'),
           },
         ],
       },
       {
-        label: 'Bildirim',
+        label: t('notificationSettings'),
         items: [
           {
-            label: 'E-posta Bildirim Ayarları',
+            label: t('emailNotificationSettings'),
             to: 'email-notification-settings',
           },
         ],
@@ -191,9 +173,6 @@ const definitionItems = [
   <div>
     <NuxtLayout>
       <div class="relative">
-        <q-chip outline color="teal">
-          Teleskop Basic - Makineler 4.19
-        </q-chip>
         <div class="flex flex-row">
           <DropdownMenu
             v-for="(item, idx) in definitionItems"
