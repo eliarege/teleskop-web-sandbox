@@ -1,66 +1,47 @@
 import { addSeconds } from 'date-fns'
-import type { TimeBasedEventStates, TimeBasedEvents } from '../../../../types/planning-board'
+import type { TimeBasedArchiveEvents, TimeBasedEventStates, TimeBasedEvents } from '../../../../types/planning-board'
+import { getAllNotes, hasNote } from '../../../composables/helper'
 
-export function updateTimeBasedEventStates(ev: TimeBasedEvents): TimeBasedEventStates {
-  const plannedEventStates = ev.plannedEvents.map((e) => {
+async function mapEvents(e: TimeBasedArchiveEvents, isPlanned: boolean) {
+  return {
+    batchKey: isPlanned ? `P${e.batchKey}` : e.batchKey,
+    planKey: isPlanned ? `P${e.planKey}` : e.planKey,
+    machineId: e.machineId,
+    jobOrder: e.jobOrder,
+    programNoList: e.programNoList,
+    startTime: isPlanned ? e.plannedStartTime : e.startTime,
+    endTime: isPlanned ? addSeconds(e.plannedStartTime, e.theoreticalDuration) : e.endTime,
+    theoreticalDuration: e.theoreticalDuration,
+    fabricWeight: e.fabricWeight,
+    partyNumber: e.partyNumber,
+    deviation: e.deviation,
+    note: e.note,
+    isDeleted: e.isDeleted,
+    isStarted: e.isStarted,
+    isStopped: e.isStopped,
+    isAlarm: false,
+    isLocked: false,
+    isDeviation: e.deviation !== 0 || e.deviation !== undefined || e.deviation !== null,
+    isFinished: e.isStopped && e.endTime !== null,
+    isActual: !isPlanned,
+    hasNote: await hasNote(e.jobOrder),
+  }
+}
+export async function updateTimeBasedEventStates(ev: TimeBasedEvents): Promise<TimeBasedEventStates> {
+  const plannedEventStates = await Promise.all(ev.plannedEvents.map(async (e) => {
     return {
       ...e,
       plannedEndTime: addSeconds(e.plannedStartTime, e.theoreticalDuration),
       isAlarm: false,
       isLocked: false,
       notStarted: !e.isStarted,
+      hasNote: await hasNote(e.jobOrder),
     }
-  })
-  const archiveActualEventStates = ev.archiveEvents.map((e) => {
-    return {
-      batchKey: e.batchKey,
-      planKey: e.planKey,
-      machineId: e.machineId,
-      jobOrder: e.jobOrder,
-      programNoList: e.programNoList,
-      startTime: e.startTime,
-      endTime: e.endTime,
-      theoreticalDuration: e.theoreticalDuration,
-      fabricWeight: e.fabricWeight,
-      partyNumber: e.partyNumber,
-      deviation: e.deviation,
-      note: e.note,
-      isDeleted: e.isDeleted,
-      isStarted: e.isStarted,
-      isStopped: e.isStopped,
-      isFinished: e.isStopped && e.endTime !== null,
-      isAlarm: false,
-      isLocked: false,
-      isDeviation: e.deviation !== 0 || e.deviation !== undefined || e.deviation !== null,
-      isActual: true,
-    }
-  })
-  const archivePlannedEventStates = ev.archiveEvents.map((e) => {
-    return {
-      batchKey: `P${e.batchKey}`,
-      planKey: `P${e.planKey}`,
-      machineId: e.machineId,
-      jobOrder: e.jobOrder,
-      programNoList: e.programNoList,
-      startTime: e.plannedStartTime,
-      endTime: addSeconds(e.plannedStartTime, e.theoreticalDuration),
-      theoreticalDuration: e.theoreticalDuration,
-      fabricWeight: e.fabricWeight,
-      partyNumber: e.partyNumber,
-      deviation: e.deviation,
-      note: e.note,
-      isDeleted: e.isDeleted,
-      isStarted: e.isStarted,
-      isStopped: e.isStopped,
-      isAlarm: false,
-      isLocked: false,
-      isDeviation: e.deviation !== 0 || e.deviation !== undefined || e.deviation !== null,
-      isFinished: e.isStopped && e.endTime !== null,
-      isActual: false,
-    }
-  })
-  const mergedArchiveStates = [...archiveActualEventStates, ...archivePlannedEventStates]
-  console.log('mergedArchive', mergedArchiveStates)
+  }))
 
+  const archiveActualEventStates = await Promise.all(ev.archiveEvents.map(async e => mapEvents(e, false)))
+  const archivePlannedEventStates = await Promise.all(ev.archiveEvents.map(async e => mapEvents(e, true)))
+
+  const mergedArchiveStates = [...archiveActualEventStates, ...archivePlannedEventStates]
   return { plannedEventStates, mergedArchiveStates }
 }

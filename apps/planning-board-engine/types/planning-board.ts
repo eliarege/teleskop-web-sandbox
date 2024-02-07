@@ -103,6 +103,7 @@ export interface TimeBasedEventStates {
     isStopped: boolean
     isAlarm: boolean
     isLocked: boolean
+    hasNote: boolean
   }[]
   mergedArchiveStates: {
     batchKey: number | string
@@ -124,5 +125,6 @@ export interface TimeBasedEventStates {
     isLocked: boolean
     isDeviation: boolean
     isFinished: boolean
+    hasNote: boolean
   }[]
 }

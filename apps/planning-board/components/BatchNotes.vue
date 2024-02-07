@@ -2,9 +2,8 @@
 import { Toast } from '@bryntum/schedulerpro-trial'
 
 const props = defineProps<{ jobOrder: string }>()
-
+const emit = defineEmits(['updateScheduler'])
 const { t, d } = useI18n()
-
 const { data: batchNotes, refresh } = await useFetch('/api/note/getNote', {
   query: { jobOrder: props.jobOrder },
 })
@@ -34,6 +33,7 @@ function addNote() {
     method: 'POST',
     body: newNote,
   }).then(() => {
+    emit('updateScheduler')
     Toast.show(t('toast.succesful'))
     refresh()
   }).catch((err) => {
@@ -60,6 +60,7 @@ function deleteNote(id: number) {
       method: 'delete',
       query: { id },
     }).then(() => {
+      emit('updateScheduler')
       Toast.show(t('toast.succesful'))
       refresh()
     }).catch((err) => {
