@@ -119,5 +119,17 @@
   "stepChangeAuthority": "Step Change Authority",
   "changingMachineAuthority": "Changing Machine Authority",
   "authorityForOperatorInterventionFreePrograms": "Authority For Operator Intervention Free Programs",
-  "save": "Save"
+  "save": "Save",
+  "additionalTank1": "Additional Tank 1",
+  "additionalTank2": "Additional Tank 2",
+  "additionalTank3": "Additional Tank 3",
+  "additionalTank4": "Additional Tank 4",
+  "reserveTank": "Reserve Tank",
+  "storeElectricityAsInc": "Store Electricity As Incremental",
+  "theoreticalWaterCalculationActive": "Theoretical Water Calculation Active",
+  "MTTempIo": "MT Temp IO",
+  "theoreticalSteam": "Theoretical Steam",
+  "steamKgPerHour": "Steam Kg Per Hour",
+  "steamValveDo": "Steam Valve",
+  "nozzleCount": "Nozzle Count"
 }

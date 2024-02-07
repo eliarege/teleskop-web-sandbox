@@ -162,7 +162,7 @@ const columns = computed(() => ({
     },
   },
   theoricalChargeDuration: {
-    label: 'Teorik Şarj Süresi (dk)',
+    label: t('theoricalChargeDuration'),
     field: 'theoricalChargeDuration',
     align: 'left',
     filterable: true,
@@ -175,7 +175,7 @@ const columns = computed(() => ({
     },
   },
   nozzleCount: {
-    label: 'Düze Sayısı',
+    label: t('nozzleCount'),
     field: 'nozzleCount',
     align: 'left',
     filterable: true,
@@ -188,7 +188,7 @@ const columns = computed(() => ({
     },
   },
   steamUnit: {
-    label: 'Buhar Birimi',
+    label: t('steamUnit'),
     field: 'steamUnit',
     align: 'left',
     filterable: true,
@@ -203,7 +203,7 @@ const columns = computed(() => ({
     },
   },
   inUse: {
-    label: 'Kullanımda',
+    label: t('inUse'),
     field: 'inUse',
     align: 'left',
     type: 'checkbox',
@@ -215,7 +215,7 @@ const columns = computed(() => ({
     },
   },
   additionalTank1: {
-    label: 'İlave Kazan 1',
+    label: t('additionalTank1'),
     field: 'additionalTank1',
     align: 'left',
     filterable: true,
@@ -228,7 +228,7 @@ const columns = computed(() => ({
     },
   },
   additionalTank2: {
-    label: 'İlave Kazan 2',
+    label: t('additionalTank2'),
     field: 'additionalTank2',
     align: 'left',
     filterable: true,
@@ -241,7 +241,7 @@ const columns = computed(() => ({
     },
   },
   additionalTank3: {
-    label: 'İlave Kazan 3',
+    label: t('additionalTank3'),
     field: 'additionalTank3',
     align: 'left',
     filterable: true,
@@ -254,7 +254,7 @@ const columns = computed(() => ({
     },
   },
   additionalTank4: {
-    label: 'İlave Kazan 4',
+    label: t('additionalTank4'),
     field: 'additionalTank4',
     align: 'left',
     filterable: true,
@@ -267,7 +267,7 @@ const columns = computed(() => ({
     },
   },
   reserveTank: {
-    label: 'Rezerve Kazan',
+    label: t('reserveTank'),
     field: 'reserveTank',
     align: 'left',
     filterable: true,
@@ -280,7 +280,7 @@ const columns = computed(() => ({
     },
   },
   storeElectricityAsInc: {
-    label: 'Elektrik Sayacı Değerini Artan Olarak Sakla',
+    label: t('storeElectricityAsInc'),
     field: 'storeElectricityAsInc',
     align: 'left',
     filterable: true,
@@ -293,7 +293,7 @@ const columns = computed(() => ({
     },
   },
   theoreticalWater: {
-    label: 'Teorik Su Miktarı Hesaplama Aktif',
+    label: t('theoreticalWaterCalculationActive'),
     field: 'theoreticalWater',
     align: 'left',
     filterable: true,
@@ -306,7 +306,7 @@ const columns = computed(() => ({
     },
   },
   MTTempIo: {
-    label: 'Ana Kazan Sıcaklık Girişi',
+    label: t('MTTempIo'),
     field: 'MTTempIo',
     align: 'left',
     filterable: true,
@@ -319,7 +319,7 @@ const columns = computed(() => ({
     },
   },
   theoreticalSteam: {
-    label: 'Teorik Buhar Hesabı Aktif',
+    label: t('theoreticalSteam'),
     field: 'theoreticalSteam',
     align: 'left',
     filterable: true,
@@ -332,8 +332,8 @@ const columns = computed(() => ({
     },
   },
   steamKgPerHour: {
-    label: 'Buhar Tüketimi (kg/saat)',
-    field: 'plcModel',
+    label: t('steamKgPerHour'),
+    field: 'steamKgPerHour',
     align: 'left',
     filterable: true,
     filterType: 'includes',
@@ -345,7 +345,7 @@ const columns = computed(() => ({
     },
   },
   steamValveDo: {
-    label: 'Buhar Vanası',
+    label: t('steamValveDo'),
     field: 'steamValveDo',
     align: 'left',
     filterable: true,

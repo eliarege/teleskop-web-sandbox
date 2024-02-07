@@ -114,5 +114,16 @@
   "stepChangeAuthority": "Adım Atlatma Yetkisi",
   "changingMachineAuthority": "Makine Değiştirme Yetkisi",
   "authorityForOperatorInterventionFreePrograms": "Operatör Müdahalesi Serbest Programlar İçin Yetki",
-  "save": "Kaydet"
+  "save": "Kaydet",
+  "additionalTank1": "İlave Kazan 1",
+  "additionalTank2": "İlave Kazan 2",
+  "additionalTank3": "İlave Kazan 3",
+  "additionalTank4": "İlave Kazan 4",
+  "reserveTank": "Rezerve Kazan",
+  "storeElectricityAsInc": "Elektrik Sayacı Değerini Artan Olarak Sakla",
+  "theoreticalWaterCalculationActive": "Teorik Su Miktarı Hesaplama Aktif",
+  "MTTempIo": "Ana Kazan Sıcaklık Girişi",
+  "theoreticalSteam": "Teorik Buhar Hesabı Aktif",
+  "steamKgPerHour": "Buhar Tüketimi (kg/saat)",
+  "steamValveDo": "Buhar Vanası"
 }
