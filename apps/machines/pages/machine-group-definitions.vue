@@ -1,16 +1,18 @@
 <script setup lang="ts">
 const { data: machineGroups, pending, refresh } = await useFetch('/api/machines/machine-groups')
 
+const { t } = useI18n()
+
 const columns = [
   {
     name: 'groupName',
-    label: 'Grup Adı',
+    label: t('group'),
     field: row => row.groupName,
     align: 'left',
   },
   {
     name: 'groupType',
-    label: 'Grup Tipi',
+    label: t('groupType'),
     field: row => row.groupType,
     align: 'left',
   },

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { User } from '~/types'
 
-const userTypeOptions = [{ label: 'Operatör', value: 1 }, { label: 'Diğer', value: 2 }]
+const { t } = useI18n()
+
+const userTypeOptions = [{ label: t('Operator'), value: 1 }, { label: t('other'), value: 2 }]
 
 const columns = {
   userId: {
-    label: 'Kullanıcı No',
+    label: t('userId'),
     field: 'userId',
     align: 'left',
     filterable: true,
@@ -21,7 +23,7 @@ const columns = {
   },
   userName: {
     name: 'userName',
-    label: 'İsim',
+    label: t('userName'),
     field: 'userName',
     align: 'left',
     filterable: true,
@@ -35,7 +37,7 @@ const columns = {
     },
   },
   userSurname: {
-    label: 'Soyisim',
+    label: t('userSurname'),
     field: 'userSurname',
     align: 'left',
     filterable: true,
@@ -49,7 +51,7 @@ const columns = {
     },
   },
   userPass: {
-    label: 'Kullanıcı Şifresi',
+    label: t('userPassword'),
     field: 'userPass',
     align: 'left',
     filterable: true,
@@ -63,7 +65,7 @@ const columns = {
     },
   },
   userActive: {
-    label: 'Aktif',
+    label: t('active'),
     field: 'userActive',
     align: 'left',
     filterable: true,
@@ -71,26 +73,27 @@ const columns = {
     type: 'checkbox',
     visible: true,
     editable: true,
+    format: (val, row) => val ? t('yes') : t('no'),
     schema: {
       filled: true,
       validation: 'required',
     },
   },
   userInfo: {
-    label: 'Bilgi Notu',
-    field: 'userActive',
+    label: t('userInfo'),
+    field: 'userInfo',
     align: 'left',
     filterable: true,
     filterType: 'includes',
     type: 'textarea',
-    visible: true,
+    visible: false,
     editable: true,
     schema: {
       filled: true,
     },
   },
   userType: {
-    label: 'Kullanıcı Tipi',
+    label: t('userType'),
     field: 'userType',
     align: 'left',
     filterable: true,
@@ -179,7 +182,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
   >
     <template #form-content>
       <q-btn
-        label="Yetkiler"
+        :label="t('permissions')"
         color="primary"
         no-caps
         class="mb-4"

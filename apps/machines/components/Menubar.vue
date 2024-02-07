@@ -55,13 +55,13 @@ async function loadDefinitions() {
         @click="loadProject"
       />
       <q-btn
-        label="Versiyon Bilgisi Al"
+        :label="t('receiveVersionInfo')"
         no-caps
         color="primary"
         class="mr-4"
       />
       <q-btn
-        label="Makine Sabitleri"
+        :label="t('machineConstants')"
         no-caps
         color="primary"
         class="mr-4"
@@ -75,14 +75,14 @@ async function loadDefinitions() {
         @click="showMimic = true"
       />
       <q-btn
-        label="Formüller"
+        :label="t('formulas')"
         no-caps
         color="primary"
         class="mr-4"
         @click="showFormulas = true"
       />
       <q-btn
-        label="Tanımları Al"
+        :label="t('getDyehouseDefinitions')"
         no-caps
         color="primary"
         class="mr-4"

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 
+const { t } = useI18n()
+
 const { data: machineGroups } = useLazyFetch('/api/machines/machine-groups', {
   default: () => [],
   transform: (machineGroups) => {
@@ -32,7 +34,7 @@ const columns = ref({
     },
   },
   machineCode: {
-    label: 'Makine Adı',
+    label: t('machineName'),
     field: 'machineCode',
     align: 'left',
     filterable: true,
@@ -46,7 +48,7 @@ const columns = ref({
     },
   },
   groupNo: {
-    label: 'Grup',
+    label: t('group'),
     field: 'groupNo',
     align: 'left',
     filterable: true,
@@ -61,7 +63,7 @@ const columns = ref({
     },
   },
   tbbModel: {
-    label: 'Model',
+    label: t('model'),
     field: 'tbbModel',
     align: 'left',
     filterable: true,
@@ -77,7 +79,7 @@ const columns = ref({
     },
   },
   version: {
-    label: 'Versiyon',
+    label: t('version'),
     field: 'version',
     align: 'left',
     filterable: true,
@@ -90,7 +92,7 @@ const columns = ref({
     },
   },
   machineCapacity: {
-    label: 'Makine Kapasitesi (kg)',
+    label: t('machineCapacity'),
     field: 'machineCapacity',
     align: 'left',
     filterable: true,
@@ -103,9 +105,9 @@ const columns = ref({
       validation: 'required',
     },
   },
-  nozzleCount: {
-    label: 'Kule Sayısı',
-    field: 'nozzleCount',
+  reelCount: {
+    label: t('reelCount'),
+    field: 'reelCount',
     align: 'left',
     filterable: true,
     filterType: 'includes',
@@ -117,7 +119,7 @@ const columns = ref({
     },
   },
   ip: {
-    label: 'Makine IP',
+    label: t('ip'),
     field: 'ip',
     align: 'left',
     filterable: true,
@@ -131,7 +133,7 @@ const columns = ref({
     },
   },
   plcModel: {
-    label: 'PLC Modeli',
+    label: t('plcModel'),
     field: 'plcModel',
     align: 'left',
     filterable: true,
@@ -146,7 +148,7 @@ const columns = ref({
 
   ////
   theoricalCharge: {
-    label: 'Teorik Şarj Sayısı',
+    label: t('theoricalCharge'),
     field: 'theoricalCharge',
     align: 'left',
     filterable: true,
@@ -172,9 +174,9 @@ const columns = ref({
       filled: true,
     },
   },
-  reelCount: {
+  nozzleCount: {
     label: 'Düze Sayısı',
-    field: 'reelCount',
+    field: 'nozzleCount',
     align: 'left',
     filterable: true,
     filterType: 'includes',
@@ -200,7 +202,6 @@ const columns = ref({
       options: steamUnitOptions,
     },
   },
-
   inUse: {
     label: 'Kullanımda',
     field: 'inUse',

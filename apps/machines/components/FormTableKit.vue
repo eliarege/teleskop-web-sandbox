@@ -16,6 +16,7 @@ const emit = defineEmits<{
   select: [data: object[]]
 }>()
 
+const { t } = useI18n()
 const q = useQuasar()
 const showModal = ref(false)
 const selected = ref<object[]>([])
@@ -64,7 +65,7 @@ function showForm(buttonAction: 'add' | 'edit') {
       showModal.value = true
     } else {
       q.notify({
-        message: 'Please select a row to edit',
+        message: t('pleaseSelectaRowToEdit'),
         position: 'top',
         timeout: 2000,
         actions: [
@@ -90,7 +91,7 @@ function handleDelete() {
     selected.value = []
   } else
     q.notify({
-      message: 'Please select a row to delete',
+      message: t('pleaseSelectaRowToDelete'),
       position: 'top',
       timeout: 2000,
       actions: [
@@ -109,9 +110,9 @@ watch(showModal, async (newValue, oldValue) => {
 <template>
   <!-- Actions -->
   <q-btn-group push class="my-4">
-    <q-btn push label="Add" color="primary" @click="showForm('add')" />
-    <q-btn push label="Edit" color="primary" @click="showForm('edit')" />
-    <q-btn push label="Delete" color="primary" @click="handleDelete" />
+    <q-btn push :label="t('add')" color="primary" @click="showForm('add')" />
+    <q-btn push :label="t('edit')" color="primary" @click="showForm('edit')" />
+    <q-btn push :label="t('delete')" color="primary" @click="handleDelete" />
   </q-btn-group>
   <!-- Table -->
   <q-table
@@ -150,10 +151,3 @@ watch(showModal, async (newValue, oldValue) => {
     </q-card>
   </q-dialog>
 </template>
-
-<style scoped>
-.outerClass {
-  color: red !important;
-  background-color: red !important;
-}
-</style>
