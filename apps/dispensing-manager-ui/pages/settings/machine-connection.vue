@@ -69,8 +69,6 @@ async function getDisps() {
 }
 
 function resetMachineInfo(row?: any) {
-  console.log(row)
-  console.log(machineInfo.value)
   machineInfo.value.forEach((mach) => {
     if (mach.field === 'controlDevice') {
       controlDevices.forEach(dev => dev.controlDevice === row[mach.field] ? mach.value = dev : '')
@@ -135,7 +133,6 @@ function isFormChangedComparison() {
     else
       return actualData[element.field] !== element.value
   })
-  console.log(isThereAnyChange)
   return isThereAnyChange
 }
 
@@ -173,30 +170,26 @@ function notification(isSuccess: any, message: string) {
 async function submit(isPut: boolean) {
   let isSuccess
   let keyI18N
+  const body = {
+    machineid: machineInfo.value[0].value,
+    machinename: machineInfo.value[1].value,
+    controlDevice: machineInfo.value[2].value?.controlDevice,
+    disps: machineInfo.value[3].value,
+  }
   /** If create */
   if (!isPut) {
-    isSuccess = await $fetch('/api/settings/machine-dispenser-connection', {
+    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection${body.machineid}`, {
       method: 'post',
-      body: {
-        machineid: machineInfo.value[0].value,
-        machinename: machineInfo.value[1].value,
-        controlDevice: machineInfo.value[2].value?.controlDevice,
-        disps: machineInfo.value[3].value,
-      },
+      body,
     })
     keyI18N = 'warnings.createResponse'
 
     expandedRow.value = null
   }
   if (isPut) { /** If it is put */
-    isSuccess = await $fetch('/api/settings/machine-dispenser-connection', {
+    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection${body.machineid}`, {
       method: 'put',
-      body: {
-        machineid: machineInfo.value[0].value,
-        machinename: machineInfo.value[1].value,
-        controlDevice: machineInfo.value[2].value.controlDevice,
-        disps: machineInfo.value[3].value,
-      },
+      body,
     })
     keyI18N = 'warnings.changeResponse'
   }
@@ -220,12 +213,8 @@ async function submit(isPut: boolean) {
 
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  const isSuccess = await $fetch('/api/settings/machine-dispenser-connection', {
+  const isSuccess = await $fetch(`/api/settings/machine-dispenser-connection${machineInfo.value[0].value}`, {
     method: 'delete',
-    body: {
-      machineid: machineInfo.value[0].value,
-      disps: machineInfo.value[3].value,
-    },
   })
   expandedRow.value = null
   notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.machine'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
@@ -250,6 +239,7 @@ onBeforeRouteLeave(async (to, from, next) => {
     :rows="rows"
     :columns="columns"
     :is-expandable="true"
+    :empty-first-row="true"
     style="height: 85vh;"
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"

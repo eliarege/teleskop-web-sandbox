@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { navigateToPage, notification } from '../shared/functions'
-import RecipeTable from '../../../packages/nuxt-ui/components/RecipeTable.vue'
 import type { RecipeLatest } from '~/shared/types'
 
 const { t } = useI18n()
@@ -85,7 +84,6 @@ function resetValues() {
   recipeDataTemp.value = null
   lastJobOrder.value = null
   plankey.value = 0
-  console.log(plankey.value)
   jobordernum.value = null
   materialRows.value = []
 }
@@ -98,7 +96,6 @@ async function requestManuelMaterials() {
       correctionNo: correctionNoDisplayed.value,
     },
   })
-  console.log(materialRows.value)
   materialRows.value.forEach((row: any) => {
     row.unit = t(`units.${row.unit}`)
     row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
@@ -117,7 +114,6 @@ async function requestJobOrder() {
     getCorrectionNOs(currentRecipeJoborder.value)
     lastJobOrder.value = currentRecipeJoborder.value
     recipeDataTemp.value = await $fetch(`/api/recipe/joborder?recipeJB=${currentRecipeJoborder.value}&correctionNo=${correctionNoDisplayed.value}`)
-    console.log(recipeDataTemp)
     if (!recipeDataTemp.value.length) {
       resetValues()
       Notify.create({

@@ -32,7 +32,7 @@ genericOptions.value = await $fetch('/api/settings/material')
 console.log(genericOptions.value)
 
 async function fetchSettings() {
-  settingsData.value = await $fetch('/api/settings/request-mechanism-settings')
+  settingsData.value = await $fetch('/api/settings/request-mechanism-setting')
 
   reqMechanism.value = settingsData.value.reqMechanismOption1 ? 1 : settingsData.value.reqMechanismOption2 ? 2 : 3
   reqMechanismNotCompletedOption.value = settingsData.value.reqMechanismOption3
@@ -48,7 +48,7 @@ async function fetchSettings() {
 await fetchSettings()
 
 async function changeSettings() {
-  const isSuccess = await $fetch('/api/settings/request-mechanism-settings', {
+  const isSuccess = await $fetch('/api/settings/request-mechanism-setting', {
     method: 'put',
     body: {
       reqMechanismOption1: reqMechanism.value === 1 ? 1 : 0,

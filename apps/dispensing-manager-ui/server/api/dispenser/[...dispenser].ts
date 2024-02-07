@@ -1,4 +1,3 @@
-/* eslint-disable ts/no-invalid-this */
 import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
 import { filtersToKnex } from '~/shared/functions'
@@ -122,7 +121,6 @@ router.put('/retry-cancel-status-setter', defineEventHandler(async (event) => {
   await knex('DYTFREQMATERIALS')
     .where('REQNUMBER', body.reqNumber)
     .update({ STATUS: 8 })
-  console.log(1123123123)
   return 1
 }))
 
@@ -133,6 +131,5 @@ router.post('/total-step-count', defineEventHandler(async (event) => {
     .andWhere('RCPINDEX', body.recipeProcessNo)
     .andWhere('RECIPETYPE', body.recipeType)
     .countDistinct('MAINSTEP as count')
-  console.log(result[0].count)
   return result[0].count
 }))

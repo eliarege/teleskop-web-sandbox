@@ -40,7 +40,7 @@ async function updateDriverSettings(isPut: boolean) {
   })
   console.log(isPut)
   if (!isPut) {
-    isSuccess = await $fetch('/api/settings/driver', {
+    isSuccess = await $fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
       method: 'POST',
       body: {
         DRIVERID: driver.value.DRIVERID,
@@ -57,7 +57,7 @@ async function updateDriverSettings(isPut: boolean) {
     keyI18N = 'warnings.createResponse'
   } else {
     console.log(typeof driver.value.DRIVERID)
-    isSuccess = await $fetch('/api/settings/driver', {
+    isSuccess = await $fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
       method: 'PUT',
       body: {
         DRIVERID: driver.value.DRIVERID,
@@ -73,13 +73,13 @@ async function updateDriverSettings(isPut: boolean) {
     })
     keyI18N = 'warnings.changeResponse'
   }
-  drivers.value = await $fetch('/api/settings/drivers')
+  drivers.value = await $fetch('/api/settings/driver')
   driver.value.newDriver = false
   notification(isSuccess, t(keyI18N!, { type: t('warnings.driver'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
 }
 async function fetchData() {
   requestFilteSystemPath.value = await $fetch('/api/settings/file-system')
-  drivers.value = await $fetch('/api/settings/drivers')
+  drivers.value = await $fetch('/api/settings/driver')
   driver.value = drivers.value[0]
   setVariables()
   driver.value.newDriver = false
@@ -91,11 +91,8 @@ async function addNewDriver() {
 }
 
 async function deleteDriver() {
-  const isSuccess = await $fetch('/api/settings/driver', {
+  const isSuccess = await $fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
     method: 'DELETE',
-    body: {
-      DRIVERID: driver.value.DRIVERID,
-    },
   })
   notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.driver'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   fetchData()

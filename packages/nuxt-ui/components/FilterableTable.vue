@@ -19,6 +19,10 @@ const props = defineProps({
     type: Array<FilterSlot>,
     required: false,
   },
+  emptyFirstRow: {
+    type: Boolean,
+    required: false,
+  },
   pagination: {
     type: Object,
     default: () => ({
@@ -199,18 +203,20 @@ function checkForButtonsInsteadOfSelect(col: any) {
   return false
 }
 
-function customFilterMethod(rows, terms, cols) {
+function customFilterMethod(rows, terms, cols, cellValue) {
   console.log(terms)
-  const lowercaseTerms = terms ? terms.toLowerCase() : ''
-  return rows.filter((row) => {
-    return cols.some((col) => {
-      const cellValue = row[col.field]
-      if (cellValue === null || cellValue === undefined) {
-        return false
-      }
-      return cellValue.toString().toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN').includes(lowercaseTerms)
-    })
-  })
+  const lowerTerms = terms ? terms.toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN') : ''
+  const result = rows.filter(
+    row => cols.some((col) => {
+      const val = `${cellValue(col, row)}`
+      const haystack = (val === 'undefined' || val === 'null') ? '' : val.toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN')
+      return haystack.includes(lowerTerms)
+    }),
+  )
+  if (props.emptyFirstRow) {
+    result.unshift({})
+  }
+  return result
 }
 </script>
 

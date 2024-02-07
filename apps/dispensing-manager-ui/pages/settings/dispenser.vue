@@ -93,7 +93,7 @@ function resetDispenserInfo(row?: any) {
 }
 
 async function applyFilters(updatedValue: any) {
-  rows.value = await $fetch('/api/settings/filtered-dispensers', {
+  rows.value = await $fetch('/api/settings/filtered-dispenser', {
     method: 'POST',
     body: updatedValue,
   })
@@ -133,7 +133,6 @@ async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
 
 function isFormChangedComparison() {
   const actualData = rows.value.find(el => el.dispNo === dispenserInfo.value[0].value)
-  console.log(actualData)
   if (!actualData?.dispNo)
     return false
   const isThereAnyChange = dispenserInfo.value.some((element) => {
@@ -148,7 +147,6 @@ function isFormChangedComparison() {
     } else
       return actualData![element.field] !== element.value
   })
-  console.log(isThereAnyChange)
   return isThereAnyChange
 }
 
@@ -186,38 +184,29 @@ function notification(isSuccess: any, message: string) {
 async function submit(isPut: boolean) {
   let isSuccess
   let keyI18N
+  const body = {
+    dispNo: dispenserInfo.value[0].value,
+    name: dispenserInfo.value[1].value,
+    dispType: dispenserInfo.value[2].value.type,
+    dispIP: dispenserInfo.value[3].value,
+    fileSystem: dispenserInfo.value[4].value,
+    fileName: dispenserInfo.value[5].value,
+    protocol: dispenserInfo.value[6].value?.protocol,
+    dispConsumptionFileName: dispenserInfo.value[7].value,
+    dms: dmsRead.value,
+  }
   /** If create */
   if (!isPut) {
-    isSuccess = await $fetch('/api/settings/dispenser', {
+    isSuccess = await $fetch(`/api/settings/dispenser/${body.dispNo}`, {
       method: 'post',
-      body: {
-        dispNo: dispenserInfo.value[0].value,
-        name: dispenserInfo.value[1].value,
-        dispType: dispenserInfo.value[2].value.type,
-        dispIP: dispenserInfo.value[3].value,
-        fileSystem: dispenserInfo.value[4].value,
-        fileName: dispenserInfo.value[5].value,
-        protocol: dispenserInfo.value[6].value?.protocol,
-        dispConsumptionFileName: dispenserInfo.value[7].value,
-        dms: dmsRead.value,
-      },
+      body,
     })
     keyI18N = 'warnings.createResponse'
     expandedRow.value = null
   } else { /** If it is put */
-    isSuccess = await $fetch('/api/settings/dispenser', {
+    isSuccess = await $fetch(`/api/settings/dispenser/${body.dispNo}`, {
       method: 'put',
-      body: {
-        dispNo: dispenserInfo.value[0].value,
-        name: dispenserInfo.value[1].value,
-        dispType: dispenserInfo.value[2].value.type,
-        dispIP: dispenserInfo.value[3].value,
-        fileSystem: dispenserInfo.value[4].value,
-        fileName: dispenserInfo.value[5].value,
-        protocol: dispenserInfo.value[6].value.protocol,
-        dispConsumptionFileName: dispenserInfo.value[7].value,
-        dms: dmsRead.value,
-      },
+      body,
     })
     keyI18N = 'warnings.changeResponse'
   }
@@ -237,11 +226,8 @@ async function submit(isPut: boolean) {
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  const isSuccess = await $fetch('/api/settings/dispenser', {
+  const isSuccess = await $fetch(`/api/settings/dispenser/${dispenserInfo.value[0].value}`, {
     method: 'delete',
-    body: {
-      dispNo: dispenserInfo.value[0].value,
-    },
   })
   if (isSuccess.isConnectedMaterialExist || isSuccess.isConnectedMachineExist) {
     let connectedThings = ''
@@ -284,6 +270,7 @@ onBeforeRouteLeave(async (to, from, next) => {
     :rows="rows"
     :columns="columns"
     :is-expandable="true"
+    :empty-first-row="true"
     style="height: 85vh;"
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"

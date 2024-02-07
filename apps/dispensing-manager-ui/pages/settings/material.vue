@@ -4,7 +4,7 @@ import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
-const rows = ref([])
+const rows = ref<any[]>([])
 const disps = ref([])
 
 await getRows()
@@ -42,8 +42,6 @@ const columns: Array<Column> = [
   },
 ]
 
-const materialInfoStatic: { label: string, value: any, field: string }[] = []
-
 const materialInfo = ref<{ label: string, value: any, field: string, numeric?: boolean }[]>([
   { label: t('settings.materialCode'), value: '', field: 'materialCode' },
   { label: t('settings.materialName'), value: '', field: 'materialName' },
@@ -67,8 +65,8 @@ async function getDisps() {
   disps.value = await $fetch('/api/settings/dispenser')
 }
 
-async function resetMaterialInfo(row?: any) {
-  const mateDispsTemp = await $fetch(`/api/settings/material-connections?chemCode=${row.materialCode}`)
+async function resetMaterialInfo(row: any) {
+  const mateDispsTemp = await $fetch(`/api/settings/material-connection?chemCode=${row.materialCode}`)
   materialInfo.value.forEach((mate) => {
     if (mate.field === 'materialGroup') {
       materialGroups.forEach(dev => dev.materialGroup === row[mate.field] ? mate.value = dev : '')
@@ -84,7 +82,7 @@ async function resetMaterialInfo(row?: any) {
 }
 
 async function applyFilters(updatedValue: any) {
-  rows.value = await $fetch('/api/settings/filtered-materials', {
+  rows.value = await $fetch('/api/settings/filtered-material', {
     method: 'POST',
     body: updatedValue,
   })
@@ -95,7 +93,6 @@ const expandedRow: Ref<number | null> = ref(null)
 const submitDialog = ref(false)
 
 async function toggleRowExpand(row: any, index: number) {
-  console.log(row)
   if (expandedRow.value === index) {
     expandedRow.value = null
   } else {
@@ -124,9 +121,7 @@ async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
 }
 
 function isFormChangedComparison() {
-  console.log(materialInfo.value)
   const actualData = rows.value.find(el => el.materialCode === materialInfo.value[0].value)
-  console.log(actualData)
   if (!actualData?.materialCode)
     return false
   const isThereAnyChange = materialInfo.value.some((element) => {
@@ -137,7 +132,6 @@ function isFormChangedComparison() {
     else
       return actualData![element.field] !== element.value
   })
-  console.log(isThereAnyChange)
   return isThereAnyChange
 }
 
@@ -180,41 +174,31 @@ function notification(isSuccess: any, message: string) {
 async function submit(isPut: boolean) {
   let isSuccess
   let keyI18N
+  const body = {
+    materialCode: materialInfo.value[0].value,
+    materialName: materialInfo.value[1].value,
+    materialGroup: materialInfo.value[2].value?.materialGroup,
+    density: materialInfo.value[3].value,
+    ph: materialInfo.value[4].value,
+    source: materialInfo.value[5].value,
+    cost: materialInfo.value[6].value,
+    connectedDisps: materialInfo.value[7].value,
+    directTransfer: materialInfo.value[8].value,
+    rerequestable: materialInfo.value[9].value,
+  }
   /** If create */
   if (!isPut) {
-    isSuccess = await $fetch('/api/settings/material-connection', {
+    isSuccess = await $fetch(`/api/settings/material-connection/${body.materialCode}`, {
       method: 'post',
-      body: {
-        materialCode: materialInfo.value[0].value,
-        materialName: materialInfo.value[1].value,
-        materialGroup: materialInfo.value[2].value?.materialGroup,
-        density: materialInfo.value[3].value,
-        ph: materialInfo.value[4].value,
-        source: materialInfo.value[5].value,
-        cost: materialInfo.value[6].value,
-        connectedDisps: materialInfo.value[7].value,
-        directTransfer: materialInfo.value[8].value,
-        rerequestable: materialInfo.value[9].value,
-      },
+      body,
     })
     keyI18N = 'warnings.createResponse'
     expandedRow.value = null
   }
   if (isPut) { /** If it is put */
-    isSuccess = await $fetch('/api/settings/material-connection', {
+    isSuccess = await $fetch(`/api/settings/material-connection/${body.materialCode}`, {
       method: 'put',
-      body: {
-        materialCode: materialInfo.value[0].value,
-        materialName: materialInfo.value[1].value,
-        materialGroup: materialInfo.value[2].value.materialGroup,
-        density: materialInfo.value[3].value,
-        ph: materialInfo.value[4].value,
-        source: materialInfo.value[5].value,
-        cost: materialInfo.value[6].value,
-        connectedDisps: materialInfo.value[7].value,
-        directTransfer: materialInfo.value[8].value,
-        rerequestable: materialInfo.value[9].value,
-      },
+      body,
     })
     keyI18N = 'warnings.changeResponse'
   }
@@ -234,11 +218,8 @@ async function submit(isPut: boolean) {
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  const isSuccess = await $fetch('/api/settings/material', {
+  const isSuccess = await $fetch(`/api/settings/material/${materialInfo.value[0].value}`, {
     method: 'delete',
-    body: {
-      materialCode: materialInfo.value[0].value,
-    },
   })
   expandedRow.value = null
   notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.material'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
@@ -269,6 +250,7 @@ onBeforeRouteLeave(async (to, from, next) => {
     :columns="columns"
     :is-expandable="true"
     style="height: 90vh;"
+    :empty-first-row="true"
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"
   >
@@ -280,7 +262,7 @@ onBeforeRouteLeave(async (to, from, next) => {
           @click="toggleRow(props.row, props.rowIndex, false)"
         >
           <q-btn
-            v-if="props.row.materialCode || props.rowIndex !== 0"
+            v-if="props.row.materialCode || props.rowIndex"
             size="sm"
             :style="`background-color: ${colors.black}; color: white;`"
             round
