@@ -19,6 +19,10 @@ const props = defineProps({
     type: Array<FilterSlot>,
     required: false,
   },
+  emptyFirstRow: {
+    type: Boolean,
+    required: false,
+  },
   pagination: {
     type: Object,
     default: () => ({
@@ -199,18 +203,20 @@ function checkForButtonsInsteadOfSelect(col: any) {
   return false
 }
 
-function customFilterMethod(rows, terms, cols) {
+function customFilterMethod(rows, terms, cols, cellValue) {
   console.log(terms)
-  const lowercaseTerms = terms ? terms.toLowerCase() : ''
-  return rows.filter((row) => {
-    return cols.some((col) => {
-      const cellValue = row[col.field]
-      if (cellValue === null || cellValue === undefined) {
-        return false
-      }
-      return cellValue.toString().toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN').includes(lowercaseTerms)
-    })
-  })
+  const lowerTerms = terms ? terms.toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN') : ''
+  const result = rows.filter(
+    row => cols.some((col) => {
+      const val = `${cellValue(col, row)}`
+      const haystack = (val === 'undefined' || val === 'null') ? '' : val.toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN')
+      return haystack.includes(lowerTerms)
+    }),
+  )
+  if (props.emptyFirstRow) {
+    result.unshift({})
+  }
+  return result
 }
 </script>
 
@@ -343,7 +349,7 @@ function customFilterMethod(rows, terms, cols) {
                     style="width: 150px;"
                   />
                 </div>
-                <div v-if="col.filterType === 'comparison'" class="flex flex-row justify-center items-center">
+                <div v-if="col.filterType === 'comparison'" class="flex flex-row justify-center items-center gap-2 mt-5">
                   {{ col.label }}
                   {{ comparisonOptionInit(index) }}
                   <q-select
@@ -351,9 +357,8 @@ function customFilterMethod(rows, terms, cols) {
                     :options="comparisonOperations"
                     option-label="symbol"
                     overflow="hidden"
-                    style="width: 80px;"
+                    style="width: 50px;"
                     filled
-                    item-aligned
                     dense
                     class="select-dropdown-removal"
                   />

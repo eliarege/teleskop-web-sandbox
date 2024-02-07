@@ -67,7 +67,8 @@ const dispenserInfo = ref<{ label: string, value: any, field: string, options?: 
   { label: t('settings.dispSettings.dispFileSystem'), value: '', field: 'fileSystem' },
   { label: t('settings.dispSettings.dispFileName'), value: '', field: 'fileName' },
   { label: t('settings.dispSettings.dispProtocol'), value: '', field: 'protocol' },
-  { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'consumptionFile' },
+  { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'dispConsumptionFileName' },
+  { label: t('settings.dispSettings.readFromDMS'), value: '', field: 'dms' },
 ])
 
 async function getTypes() {
@@ -79,35 +80,75 @@ async function getRows() {
   rows.value.unshift({})
 }
 
+const dmsRead = ref(false)
+
 function resetDispenserInfo(row?: any) {
-  if (!row)
-    dispenserInfo.value.forEach(disp => disp.value = '')
-  else {
-    dispenserInfo.value.forEach((disp) => {
-      disp.field === 'dispType'
-        ? types.value.forEach((type: { type: number, name: string }) => type.type === row[disp.field] ? disp.value = type : '')
+  dispenserInfo.value.forEach((disp) => {
+    disp.field === 'dispType'
+      ? types.value.forEach((type: { type: number, name: string }) => type.type === row[disp.field] ? disp.value = type : '')
+      : disp.field === 'dms'
+        ? dmsRead.value = row[disp.field] !== undefined ? row[disp.field] : false
         : disp.value = row[disp.field]
-    })
-  }
+  })
 }
 
 async function applyFilters(updatedValue: any) {
-  rows.value = await $fetch('/api/settings/filtered-dispensers', {
+  rows.value = await $fetch('/api/settings/filtered-dispenser', {
     method: 'POST',
     body: updatedValue,
   })
   rows.value.unshift({})
 }
 
-const expandedRow = ref()
+const expandedRow: Ref<number | null> = ref(null)
+const submitDialog = ref(false)
 
-function toggleRow(row: any, index: number) {
-  expandedRow.value === index
-    ? expandedRow.value = null
-    : expandedRow.value = index
+async function toggleRowExpand(row: any, index: number) {
+  if (expandedRow.value === index) {
+    expandedRow.value = null
+  } else {
+    expandedRow.value = index
+  }
   resetDispenserInfo(row)
 }
-const dmsRead = ref(false)
+
+function showSubmitDialog() {
+  submitDialog.value = true
+}
+
+async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
+  if (toggleCollapse)
+    await toggleRowExpand(row, index)
+  else {
+    let canContinue = true
+    if (expandedRow.value !== null) {
+      canContinue = !isFormChangedComparison()
+    }
+    if (canContinue)
+      toggleRowExpand(row, index)
+    else
+      showSubmitDialog()
+  }
+}
+
+function isFormChangedComparison() {
+  const actualData = rows.value.find(el => el.dispNo === dispenserInfo.value[0].value)
+  if (!actualData?.dispNo)
+    return false
+  const isThereAnyChange = dispenserInfo.value.some((element) => {
+    if (element.field === 'dispType')
+      return (
+        actualData![element.field] !== element.value.type
+      )
+    else if (element.field === 'dms') {
+      return (
+        actualData![element.field] !== dmsRead.value
+      )
+    } else
+      return actualData![element.field] !== element.value
+  })
+  return isThereAnyChange
+}
 
 function customSortMethod(rows, sortBy, descending) {
   expandedRow.value = null
@@ -115,14 +156,10 @@ function customSortMethod(rows, sortBy, descending) {
     return rows
   }
 
-  // Clone the rows array to avoid mutating the original data
   const sortedRows = [...rows]
 
-  // Remove the first row from the sorting process
   const firstRow = sortedRows.shift()
 
-  // Apply your sorting logic here
-  // Example sorting logic (adjust as needed):
   sortedRows.sort((a, b) => {
     if (descending) {
       return a[sortBy] < b[sortBy] ? 1 : -1
@@ -131,7 +168,6 @@ function customSortMethod(rows, sortBy, descending) {
     }
   })
 
-  // Add the first row back at the beginning
   sortedRows.unshift(firstRow)
 
   return sortedRows
@@ -145,58 +181,69 @@ function notification(isSuccess: any, message: string) {
   })
 }
 
-async function submit(rowIndex: number, row: any) {
-  let isOriginNo = true
+async function submit(isPut: boolean) {
   let isSuccess
   let keyI18N
+  const body = {
+    dispNo: dispenserInfo.value[0].value,
+    name: dispenserInfo.value[1].value,
+    dispType: dispenserInfo.value[2].value.type,
+    dispIP: dispenserInfo.value[3].value,
+    fileSystem: dispenserInfo.value[4].value,
+    fileName: dispenserInfo.value[5].value,
+    protocol: dispenserInfo.value[6].value?.protocol,
+    dispConsumptionFileName: dispenserInfo.value[7].value,
+    dms: dmsRead.value,
+  }
   /** If create */
-  if (rowIndex === 0) {
-    isSuccess = await $fetch('/api/settings/dispenser', {
+  if (!isPut) {
+    isSuccess = await $fetch(`/api/settings/dispenser/${body.dispNo}`, {
       method: 'post',
-      body: {
-        dispNo: dispenserInfo.value[0].value,
-        name: dispenserInfo.value[1].value,
-        dispType: dispenserInfo.value[2].value.type,
-        dispIP: dispenserInfo.value[3].value,
-        fileSystem: dispenserInfo.value[4].value,
-        fileName: dispenserInfo.value[5].value,
-        protocol: dispenserInfo.value[6].value.protocol,
-      },
+      body,
     })
     keyI18N = 'warnings.createResponse'
     expandedRow.value = null
-  }
-  if (rowIndex) { /** If it is put */
-    if (row.dispNo !== dispenserInfo.value[0].value) {
-      isOriginNo = false
-    }
-    isSuccess = await $fetch('/api/settings/dispenser', {
+  } else { /** If it is put */
+    isSuccess = await $fetch(`/api/settings/dispenser/${body.dispNo}`, {
       method: 'put',
-      body: {
-        dispNo: dispenserInfo.value[0].value,
-        isOriginNo,
-        name: dispenserInfo.value[1].value,
-        dispType: dispenserInfo.value[2].value.type,
-        dispIP: dispenserInfo.value[3].value,
-        fileSystem: dispenserInfo.value[4].value,
-        fileName: dispenserInfo.value[5].value,
-        protocol: dispenserInfo.value[6].value.protocol,
-      },
+      body,
     })
     keyI18N = 'warnings.changeResponse'
   }
-  notification(isSuccess, t(keyI18N!, { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+  notification(
+    isSuccess && isSuccess?.code !== 400,
+    t(keyI18N!, {
+      type: t('warnings.dispenser'),
+      result: isSuccess
+        ? isSuccess?.code === 400
+          ? t('warnings.idAlreadyExists', { code: dispenserInfo.value[0].value, type: t('warnings.dispenser') })
+          : t('warnings.success')
+        : t('warnings.fail'),
+    }),
+  )
   await getRows()
+  expandedRow.value = null
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  const isSuccess = await $fetch('/api/settings/dispenser', {
+  const isSuccess = await $fetch(`/api/settings/dispenser/${dispenserInfo.value[0].value}`, {
     method: 'delete',
-    body: {
-      dispNo: dispenserInfo.value[0].value,
-    },
   })
-  notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+  if (isSuccess.isConnectedMaterialExist || isSuccess.isConnectedMachineExist) {
+    let connectedThings = ''
+    if (isSuccess.isConnectedMachineExist) {
+      if (isSuccess.isConnectedMaterialExist)
+        connectedThings = `${t('warnings.machine')} ${t('warnings.and')} ${t('warnings.material')}`
+      else
+        connectedThings = t('warnings.machine')
+    } else
+      connectedThings = t('warnings.material')
+
+    notification(false, t('warnings.dispenserDeleteExistingMachineOrMaterial', {
+      connectedThings,
+    }))
+  } else
+    notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   expandedRow.value = null
   /**
    * I did not reset the dispenserInfo array careful. It has to be
@@ -205,6 +252,17 @@ async function deleteRow() {
    */
   await getRows()
 }
+onBeforeRouteLeave(async (to, from, next) => {
+  let check = false
+  if (expandedRow.value)
+    check = isFormChangedComparison()
+  if (check) {
+    showSubmitDialog()
+    next(false)
+  } else {
+    next()
+  }
+})
 </script>
 
 <template>
@@ -212,6 +270,7 @@ async function deleteRow() {
     :rows="rows"
     :columns="columns"
     :is-expandable="true"
+    :empty-first-row="true"
     style="height: 85vh;"
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"
@@ -221,10 +280,10 @@ async function deleteRow() {
         <q-td
           :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           class="cursor-pointer"
-          @click="toggleRow(props.row, props.rowIndex)"
+          @click="toggleRow(props.row, props.rowIndex, false)"
         >
           <q-btn
-            v-if="props.row.dispNo"
+            v-if="props.row.dispNo || props.rowIndex !== 0"
             size="sm"
             :style="`background-color: ${colors.black}; color: white;`"
             round
@@ -246,7 +305,7 @@ async function deleteRow() {
           :props="props"
           :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           class="cursor-pointer"
-          @click="toggleRow(props.row, props.rowIndex)"
+          @click="toggleRow(props.row, props.rowIndex, false)"
         >
           {{ col.value }}
         </q-td>
@@ -260,11 +319,11 @@ async function deleteRow() {
               :key="disp.label"
               class="flex flex-row ml-5 mt-1"
             >
-              <div class="flex w-70 pl-2 m-1 items-center">
+              <div v-if="disp.field !== 'dms'" class="flex w-70 pl-2 m-1 items-center">
                 {{ disp.label }}
               </div>
               <div class=" flex w-100 pl-2 m-1 items-center">
-                <span v-if="disp.field === 'protocol'">
+                <span v-if="disp.field === 'protocol' || disp.field === 'dispType'">
                   <q-select
                     v-model="disp.value"
                     borderless
@@ -272,27 +331,13 @@ async function deleteRow() {
                     class="w-70"
                     filled
                     options-dense
-                    :options="protocols"
-                    option-label="label"
-                    option-value="protocol"
+                    :options="disp.field === 'protocol' ? protocols : types"
+                    :option-label="disp.field === 'protocol' ? 'label' : 'name'"
+                    :option-value="disp.field === 'protocol' ? 'label' : 'type'"
                     style="min-width: 150px"
                   />
                 </span>
-                <span v-else-if="disp.field === 'dispType'">
-                  <q-select
-                    v-model="disp.value"
-                    borderless
-                    dense
-                    filled
-                    class="w-70"
-                    options-dense
-                    :options="types"
-                    option-value="type"
-                    option-label="name"
-                    style="min-width: 150px"
-                  />
-                </span>
-                <span v-else>
+                <span v-else-if="disp.field !== 'dms'">
                   <q-input
                     v-model="disp.value"
                     class="w-70"
@@ -303,7 +348,7 @@ async function deleteRow() {
                     :disable="disp.field === 'dispNo' && props.row.dispNo > 0"
                   />
                 </span>
-                <span v-if="disp.field === 'consumptionFile'">
+                <span v-if="disp.field === 'dispConsumptionFileName'">
                   <q-checkbox v-model="dmsRead" :label="t('settings.dispSettings.readFromDMS')" />
                 </span>
               </div>
@@ -311,18 +356,18 @@ async function deleteRow() {
             <div class="flex items-center justify-center gap-5 py-10 w-full">
               <q-btn
                 color="black"
-                :label="props.rowIndex ? t('settings.submit') : t('settings.new')"
+                :label="props.rowIndex || props.row.dispNo ? t('settings.submit') : t('settings.new')"
                 :disable="dispenserInfo[0].value === undefined || dispenserInfo[0].value === ''"
                 outline
                 icon="done"
-                @click="submit(props.rowIndex, props.row)"
+                @click="submit(props.rowIndex || props.row.dispNo)"
               />
               <q-btn
                 color="black"
                 :label="t('settings.cancel')"
                 icon="close"
                 outline
-                @click="toggleRow(props.row, props.rowIndex)"
+                @click="toggleRow(props.row, props.rowIndex, true)"
               />
               <q-btn
                 v-if="props.rowIndex"
@@ -364,6 +409,35 @@ async function deleteRow() {
           color="red"
           icon="delete"
           @click="deleteRow()"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <q-dialog v-model="submitDialog" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <q-avatar
+          icon="question_mark"
+        />
+        <span class="q-ml-sm"> {{ t('warnings.formDidnotSubmit', { type: t('warnings.dispenser') }) }}</span>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn
+          v-close-popup
+          :label="t('settings.discard')"
+          outline
+          color="red"
+          icon="close"
+          @click="expandedRow = null"
+        />
+        <q-btn
+          v-close-popup
+          outline
+          :label="t('settings.submit')"
+          color="light-blue-10"
+          icon="done_all"
+          @click="submit(true)"
         />
       </q-card-actions>
     </q-card>

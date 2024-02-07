@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { navigateToPage, notification } from '../shared/functions'
+import type { RecipeLatest } from '~/shared/types'
 
 const { t } = useI18n()
 
@@ -16,6 +17,7 @@ const plankey = ref()
 const showJoborderError = ref(false)
 const resetCounter = ref(0)
 const showWeiRequestDialog = ref(false)
+const materialRows = ref([])
 // TODO: Job<Typeof Joborder> with plankey joborder correctiion no can be stored
 const machines = await $fetch('/api/machine/machines')
 // const { data: recipeData, pending: waitingForData } = useFetch('/api/recipe?recipeJB=11428&recipeID=3&teleskopType=normal')
@@ -23,6 +25,31 @@ const recipeData = ref()
 const jobordernum = ref()
 const showChangeMachineDialog = ref(false)
 const correctionNoList = ref([])
+
+const groupables: Array<{ key: keyof RecipeLatest, index: number }> = [
+  { key: 'processOrder', index: 0 },
+  { key: 'recipeType', index: 1 },
+  { key: 'programNo', index: 2 },
+  { key: 'programName', index: 3 },
+  { key: 'ISN', index: 4 },
+  { key: 'mainStep', index: 5 },
+  { key: 'parallelStep', index: 6 },
+]
+
+const columns = [
+  { label: t('recipe.processOrder'), prop: 'processOrder', align: 'center', showOverflowTooltip: true },
+  { label: t('recipeType'), prop: 'recipeTypeText', align: 'center', showOverflowTooltip: true },
+  { label: t('programNo'), prop: 'programNo', align: 'center', showOverflowTooltip: true },
+  { label: t('programName'), prop: 'programName', align: 'center', showOverflowTooltip: true },
+  { label: t('recipe.ISN'), prop: 'ISN', align: 'center', showOverflowTooltip: true },
+  { label: t('recipe.mainStep'), prop: 'mainStep', align: 'center', showOverflowTooltip: true },
+  { label: t('weighingInformation.parallelStep'), prop: 'parallelStep', align: 'center', showOverflowTooltip: true },
+  { label: t('materialCode'), prop: 'chemCode', align: 'center', showOverflowTooltip: true },
+  { label: t('materialName'), prop: 'materialName', align: 'center', showOverflowTooltip: true },
+  { label: t('recipe.processNo'), prop: 'programProcessNo', align: 'center', showOverflowTooltip: true },
+  { label: t('recipe.amount'), prop: 'amount', align: 'center', showOverflowTooltip: true },
+  { label: t('recipe.metric'), prop: 'unit', align: 'center', showOverflowTooltip: true },
+]
 
 const buttonProps = ref([
   { name: 'logs', label: t('recipe.logs'), link: 'showLogs', icon: 'description' },
@@ -57,8 +84,26 @@ function resetValues() {
   recipeDataTemp.value = null
   lastJobOrder.value = null
   plankey.value = 0
-  console.log(plankey.value)
   jobordernum.value = null
+  materialRows.value = []
+}
+
+async function requestManuelMaterials() {
+  materialRows.value = await $fetch('/api/recipe/recipe-manuals', {
+    method: 'POST',
+    body: {
+      plankey: plankey.value,
+      correctionNo: correctionNoDisplayed.value,
+    },
+  })
+  materialRows.value.forEach((row: any) => {
+    row.unit = t(`units.${row.unit}`)
+    row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
+    const mainStep = row.mainStep
+    const ISN = row.ISN
+    row.mainStep = ISN ? `${ISN - 1} <-> ${ISN}` : 0
+    row.ISN = mainStep ? `${mainStep - 1} <-> ${mainStep}` : 0
+  })
 }
 
 async function requestJobOrder() {
@@ -69,7 +114,6 @@ async function requestJobOrder() {
     getCorrectionNOs(currentRecipeJoborder.value)
     lastJobOrder.value = currentRecipeJoborder.value
     recipeDataTemp.value = await $fetch(`/api/recipe/joborder?recipeJB=${currentRecipeJoborder.value}&correctionNo=${correctionNoDisplayed.value}`)
-    console.log(recipeDataTemp)
     if (!recipeDataTemp.value.length) {
       resetValues()
       Notify.create({
@@ -78,17 +122,17 @@ async function requestJobOrder() {
         position: 'top',
       })
     } else {
-      recipeData.value = recipeDataTemp.value
-      recipeData.value.forEach((row) => {
-        row.unit = t(`units.${row.unit}`)
-        row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
-      })
-      plankey.value = recipeData.value[0].planKey
-
       if (!correctionNoDisplayed.value) {
         const tempNo = await $fetch(`/api/recipe/correction-number-by-parameter?parameter=${currentRecipeJoborder.value}&searchBy=planKey`)
         correctionNoDisplayed.value = tempNo[0].CORRECTIONNUMBER
       }
+      recipeData.value = recipeDataTemp.value
+      plankey.value = recipeData.value[0].planKey
+      await requestManuelMaterials()
+      recipeData.value.forEach((row) => {
+        row.unit = t(`units.${row.unit}`)
+        row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
+      })
     }
     const tempMach = await $fetch(`/api/machine/machine?joborder=${currentRecipeJoborder.value}&correctionNo=${correctionNoDisplayed.value}`)
     machine.value = tempMach
@@ -126,6 +170,8 @@ if (route.query.correctionNo && route.query.joborder) {
   if (route.query.isLogs === 'true') {
     if (isThereAnyLog.value)
       showLogsDialog.value = true
+    else
+      notification(false, t('warnings.noDataLogs', { joborder: jobordernum.value }))
   }
 }
 
@@ -422,14 +468,27 @@ onBeforeUnmount(() => {
         </q-card>
       </q-dialog>
       <ElScrollbar class="table-wrapper-recipe">
-        <RecipeTable
+        <RecipeTableDMW
           :data="recipeData"
+          :columns="columns"
+          :groupables="groupables"
           :show="true"
           :title="t('recipe.recipeTable')"
           :machineid="machine?.machineid"
           :reset-counter="resetCounter"
         />
       </ElScrollbar>
+    </div>
+
+    <div>
+      <RecipeTable
+        v-if="materialRows.length > 0"
+        :title="t('recipe.manuelMaterials')"
+        :rows="materialRows"
+        :columns="columns"
+        :groupables="groupables"
+        dyeing-class="text-black"
+      />
     </div>
 
     <div class="footer-buttons-recipe">

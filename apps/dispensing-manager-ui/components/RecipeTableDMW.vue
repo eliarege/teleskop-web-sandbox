@@ -8,6 +8,14 @@ const props = defineProps({
     type: Array as PropType<RecipeLatest[]>,
     required: true,
   },
+  columns: {
+    type: Array,
+    required: true,
+  },
+  groupables: {
+    type: Array<{ key: keyof RecipeLatest, index: number }>,
+    required: true,
+  },
   show: Boolean,
   title: {
     type: String,
@@ -31,37 +39,13 @@ interface SpanMethodProps {
   columnIndex: number
 }
 
-const columns = [
-  { label: t('recipe.processOrder'), field: 'processOrder' },
-  { label: t('recipeType'), field: 'recipeTypeText' },
-  { label: t('programNo'), field: 'programNo' },
-  { label: t('programName'), field: 'programName' },
-  { label: t('recipe.ISN'), field: 'ISN' },
-  { label: t('recipe.mainStep'), field: 'mainStep' },
-  { label: t('weighingInformation.parallelStep'), field: 'parallelStep' },
-  { label: t('materialCode'), field: 'chemCode' },
-  { label: t('materialName'), field: 'materialName' },
-  { label: t('recipe.processNo'), field: 'programProcessNo' },
-  { label: t('recipe.amount'), field: 'amount' },
-  { label: t('recipe.metric'), field: 'unit' },
-]
-
-const groupables = [
-  { key: 'processOrder', index: 0 },
-  { key: 'recipeType', index: 1 },
-  { key: 'programNo', index: 2 },
-  { key: 'programName', index: 3 },
-  { key: 'ISN', index: 4 },
-  { key: 'mainStep', index: 5 },
-  { key: 'parallelStep', index: 6 },
-] as { key: keyof RecipeLatest; index: number }[]
 function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
-  const property = groupables.find(prop => prop.index === columnIndex)
+  const property = props.groupables.find(prop => prop.index === columnIndex)
   if (!property) {
     return { rowspan: 1, colspan: 1 }
   }
   const prevRow = props.data[rowIndex - 1] || {}
-  const prevGroupables = groupables.slice(0, columnIndex + 1)
+  const prevGroupables = props.groupables.slice(0, columnIndex + 1)
   let rowspan = 1
 
   const isSameAsPrevRow = prevGroupables.every(
@@ -99,7 +83,7 @@ function a({ row, columnIndex }: SpanMethodProps) {
     if (row === selectedRow.value) {
       return 'selected-blue'
     } else {
-      groupables.forEach((item) => {
+      props.groupables.forEach((item) => {
         colorCondition = colorCondition && row[item.key] === selectedRow.value[item.key]
         if (colorCondition && columnIndex === item.index)
           className = 'selected-blue'
@@ -114,7 +98,7 @@ function a({ row, columnIndex }: SpanMethodProps) {
 const tableContainer = ref()
 const contextMenuVisible = ref(false)
 const contextMenuPosition = ref({ top: '0px', left: '0px' })
-function handleContextMenu(event: { preventDefault: () => void; clientY: any; clientX: any }, row: any) {
+function handleContextMenu(event: { preventDefault: () => void, clientY: any, clientX: any }, row: any) {
   selectedRow.value = row
   event.preventDefault()
   contextMenuVisible.value = true
@@ -218,7 +202,7 @@ function isCorrectPlankey(param: any) {
       header-cell-class-name="whitespace-nowrap text-black"
       row-class-name="text-black"
       :cell-class-name="a"
-      style="color: rgb(223, 0, 0); cursor: pointer;"
+      style=" cursor: pointer;"
       size="small"
       empty-text="There is no Recipe to show."
       :show-overflow-tooltip="true"
@@ -231,9 +215,9 @@ function isCorrectPlankey(param: any) {
         align="center"
       >
         <ElTableColumn
-          v-for="col in columns"
-          :key="col.field"
-          :prop="col.field"
+          v-for="col in props.columns"
+          :key="col.prop"
+          :prop="col.prop"
           :label="col.label"
           align="center"
           show-overflow-tooltip
@@ -388,7 +372,7 @@ function isCorrectPlankey(param: any) {
 }
 
 .el-table thead.is-group th.el-table__cell {
-    background: #aaaaaa;
+    background: #00000040;
 }
 .context-menu {
   position: fixed;

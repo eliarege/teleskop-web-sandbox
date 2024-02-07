@@ -68,13 +68,15 @@
       "prgNo": "Program No",
       "recipeIndex": "Recipe Index",
       "refNoAllJoborders": "Reference No in All Job Orders",
-      "refNoPrgNo": "Job Order Reference No - Program No"
+      "refNoPrgNo": "Job Order Reference No - Program No",
+      "newDriverName": "New Driver's Name"
 
     },
     "new": "New",
     "edit": "Edit",
     "delete": "Delete",
     "submit": "Submit",
+    "discard": "Discard",
     "cancel": "Cancel",
     "optional": "Optional",
     "machDispConnection": "Machine Dispenser Connection",
@@ -168,7 +170,7 @@
     "alreadyStartedWarning": "The request has already been initiated. Are you sure you want to continue?",
     "requestSent": "Request sent.",
     "retryRequestSent": "Retry request sent.",
-    "deleteRequestSent": "Delete request sent."
+    "cancelRequestSent": "Delete request sent."
   },
   "jobOrderLogs": {
     "_": "Job Order Logs",
@@ -249,7 +251,8 @@
     "priorityCritical": "Very High",
     "inputTankNo": "Please enter a tank no as 'integer'!",
     "weiRerequest": "Are you sure you want to rerequest weighing requests?",
-    "solvingRerequest": "Are you sure you want to rerequest solving requests?"
+    "solvingRerequest": "Are you sure you want to rerequest solving requests?",
+    "manuelMaterials": "Manuel Materials"
 
   },
   "registeredJobOrders": {
@@ -307,14 +310,19 @@
     "dispenser": "dispenser",
     "material": "material",
     "machine": "machine",
+    "driver": "Driver",
+    "and": "and",
     "reqMechanism": "request mechanism settings",
     "success": "succeeded",
     "fail": "failed",
-    "deleteResponse": "Delete { type } operation is { result }.",
-    "changeResponse": "Update { type } operation is { result }.",
-    "createResponse": "Create { type } operation is { result }.",
+    "dispenserDeleteExistingMachineOrMaterial": "Delete dispenser operation is failed. There are existing {connectedThings} connected to selected dispenser.",
+    "deleteResponse": "Delete {type} operation is {result}.",
+    "changeResponse": "Update {type} operation is {result}.",
+    "createResponse": "Create {type} operation is {result}.",
     "coupledMachineIsTheSame": "Planned machine and coupled machine cannot be the same.",
     "tryToChangeWithSameMachine": "Planned machine cannot be the same with previous machine.",
-    "noDataLogs": "No data found for joborder {joborder}"
+    "noDataLogs": "No data found for joborder {joborder}",
+    "formDidnotSubmit": "You have unsaved changes on {type}.",
+    "idAlreadyExists": "failed. {type} with {type} ID {code} already exists."
   }
 }

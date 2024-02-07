@@ -2,15 +2,21 @@
 import { colors } from '~/shared/constants'
 
 const { t } = useI18n()
+const about = ref()
+about.value = await $fetch('/api/properties')
 </script>
 
 <template>
   <span class="header-class">
     Eliar - {{ t('dispensingManager._') }}
+    <q-space />
+    <span class="h-1 m-1 text-size-5">
+      {{ about.version }}
+    </span>
     <img
       src="/eliarname.png"
       class="invert-colors"
-      style="display: flex; right: 1rem; position: absolute; height: 3rem; width: 3rem;"
+      style="display: flex; height: 3rem; width: 3rem;"
     >
   </span>
   <DagitimYonetim />

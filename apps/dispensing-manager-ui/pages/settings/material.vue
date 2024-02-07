@@ -4,7 +4,7 @@ import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
-const rows = ref([])
+const rows = ref<any[]>([])
 const disps = ref([])
 
 await getRows()
@@ -42,9 +42,7 @@ const columns: Array<Column> = [
   },
 ]
 
-let materialInfoStatic: { label: string; value: any; field: string }[] = []
-
-const materialInfo = ref<{ label: string; value: any; field: string; numeric?: boolean }[]>([
+const materialInfo = ref<{ label: string, value: any, field: string, numeric?: boolean }[]>([
   { label: t('settings.materialCode'), value: '', field: 'materialCode' },
   { label: t('settings.materialName'), value: '', field: 'materialName' },
   { label: t('settings.materialType'), value: '', field: 'materialGroup' },
@@ -67,13 +65,14 @@ async function getDisps() {
   disps.value = await $fetch('/api/settings/dispenser')
 }
 
-async function resetMaterialInfo(row?: any) {
-  const mateDispsTemp = await $fetch(`/api/settings/material-connections?chemCode=${row.materialCode}`)
+async function resetMaterialInfo(row: any) {
+  const mateDispsTemp = await $fetch(`/api/settings/material-connection?chemCode=${row.materialCode}`)
   materialInfo.value.forEach((mate) => {
     if (mate.field === 'materialGroup') {
       materialGroups.forEach(dev => dev.materialGroup === row[mate.field] ? mate.value = dev : '')
     } else if (mate.field === 'connectedDisps') {
       mate.value = mateDispsTemp
+      row.connectedDisps = mateDispsTemp
     } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
       row[mate.field] === undefined ? mate.value = false : mate.value = row[mate.field]
     } else {
@@ -83,30 +82,57 @@ async function resetMaterialInfo(row?: any) {
 }
 
 async function applyFilters(updatedValue: any) {
-  rows.value = await $fetch('/api/settings/filtered-materials', {
+  rows.value = await $fetch('/api/settings/filtered-material', {
     method: 'POST',
     body: updatedValue,
   })
   rows.value.unshift({})
 }
 
-function checkIsThereAnyChange() {
-  console.log(materialInfoStatic)
-  console.log(materialInfo.value)
-  if (materialInfoStatic === materialInfo.value || !materialInfoStatic.length)
-    return false
-  return true
+const expandedRow: Ref<number | null> = ref(null)
+const submitDialog = ref(false)
+
+async function toggleRowExpand(row: any, index: number) {
+  if (expandedRow.value === index) {
+    expandedRow.value = null
+  } else {
+    expandedRow.value = index
+  }
+  resetMaterialInfo(row)
 }
 
-const expandedRow = ref()
+function showSubmitDialog() {
+  submitDialog.value = true
+}
 
-function toggleRow(row: any, index: number) {
-  expandedRow.value === index
-    ? expandedRow.value = null
-    : expandedRow.value = index
-  console.log(materialInfo.value)
-  materialInfoStatic = materialInfo.value
-  resetMaterialInfo(row)
+async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
+  if (toggleCollapse)
+    await toggleRowExpand(row, index)
+  else {
+    let canContinue = true
+    if (expandedRow.value !== null) {
+      canContinue = !isFormChangedComparison()
+    }
+    if (canContinue)
+      toggleRowExpand(row, index)
+    else
+      showSubmitDialog()
+  }
+}
+
+function isFormChangedComparison() {
+  const actualData = rows.value.find(el => el.materialCode === materialInfo.value[0].value)
+  if (!actualData?.materialCode)
+    return false
+  const isThereAnyChange = materialInfo.value.some((element) => {
+    if (element.field === 'materialGroup')
+      return (
+        actualData![element.field] !== element.value.materialGroup
+      )
+    else
+      return actualData![element.field] !== element.value
+  })
+  return isThereAnyChange
 }
 
 function customSortMethod(rows, sortBy, descending) {
@@ -145,57 +171,55 @@ function notification(isSuccess: any, message: string) {
   })
 }
 
-async function submit(rowIndex: number) {
+async function submit(isPut: boolean) {
   let isSuccess
   let keyI18N
+  const body = {
+    materialCode: materialInfo.value[0].value,
+    materialName: materialInfo.value[1].value,
+    materialGroup: materialInfo.value[2].value?.materialGroup,
+    density: materialInfo.value[3].value,
+    ph: materialInfo.value[4].value,
+    source: materialInfo.value[5].value,
+    cost: materialInfo.value[6].value,
+    connectedDisps: materialInfo.value[7].value,
+    directTransfer: materialInfo.value[8].value,
+    rerequestable: materialInfo.value[9].value,
+  }
   /** If create */
-  if (rowIndex === 0) {
-    isSuccess = await $fetch('/api/settings/material-connection', {
+  if (!isPut) {
+    isSuccess = await $fetch(`/api/settings/material-connection/${body.materialCode}`, {
       method: 'post',
-      body: {
-        materialCode: materialInfo.value[0].value,
-        materialName: materialInfo.value[1].value,
-        materialGroup: materialInfo.value[2].value.materialGroup,
-        density: materialInfo.value[3].value,
-        ph: materialInfo.value[4].value,
-        source: materialInfo.value[5].value,
-        cost: materialInfo.value[6].value,
-        connectedDisps: materialInfo.value[7].value,
-        directTransfer: materialInfo.value[8].value,
-        rerequestable: materialInfo.value[9].value,
-      },
+      body,
     })
     keyI18N = 'warnings.createResponse'
     expandedRow.value = null
   }
-  if (rowIndex) { /** If it is put */
-    isSuccess = await $fetch('/api/settings/material-connection', {
+  if (isPut) { /** If it is put */
+    isSuccess = await $fetch(`/api/settings/material-connection/${body.materialCode}`, {
       method: 'put',
-      body: {
-        materialCode: materialInfo.value[0].value,
-        materialName: materialInfo.value[1].value,
-        materialGroup: materialInfo.value[2].value.materialGroup,
-        density: materialInfo.value[3].value,
-        ph: materialInfo.value[4].value,
-        source: materialInfo.value[5].value,
-        cost: materialInfo.value[6].value,
-        connectedDisps: materialInfo.value[7].value,
-        directTransfer: materialInfo.value[8].value,
-        rerequestable: materialInfo.value[9].value,
-      },
+      body,
     })
     keyI18N = 'warnings.changeResponse'
   }
-  notification(isSuccess, t(keyI18N!, { type: t('warnings.material'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+  notification(
+    isSuccess && isSuccess?.code !== 400,
+    t(keyI18N!, {
+      type: t('warnings.material'),
+      result: isSuccess
+        ? isSuccess?.code === 400
+          ? t('warnings.idAlreadyExists', { code: materialInfo.value[0].value, type: t('warnings.material') })
+          : t('warnings.success')
+        : t('warnings.fail'),
+    }),
+  )
   await getRows()
+  expandedRow.value = null
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  const isSuccess = await $fetch('/api/settings/material', {
+  const isSuccess = await $fetch(`/api/settings/material/${materialInfo.value[0].value}`, {
     method: 'delete',
-    body: {
-      materialCode: materialInfo.value[0].value,
-    },
   })
   expandedRow.value = null
   notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.material'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
@@ -207,6 +231,17 @@ async function deleteRow() {
    */
   await getRows()
 }
+onBeforeRouteLeave(async (to, from, next) => {
+  let check = false
+  if (expandedRow.value)
+    check = isFormChangedComparison()
+  if (check) {
+    showSubmitDialog()
+    next(false)
+  } else {
+    next()
+  }
+})
 </script>
 
 <template>
@@ -215,6 +250,7 @@ async function deleteRow() {
     :columns="columns"
     :is-expandable="true"
     style="height: 90vh;"
+    :empty-first-row="true"
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"
   >
@@ -223,10 +259,10 @@ async function deleteRow() {
         <q-td
           class="cursor-pointer"
           :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
-          @click="toggleRow(props.row, props.rowIndex)"
+          @click="toggleRow(props.row, props.rowIndex, false)"
         >
           <q-btn
-            v-if="props.row.materialCode || props.rowIndex !== 0"
+            v-if="props.row.materialCode || props.rowIndex"
             size="sm"
             :style="`background-color: ${colors.black}; color: white;`"
             round
@@ -248,7 +284,7 @@ async function deleteRow() {
           :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
           :props="props"
           class="cursor-pointer"
-          @click="toggleRow(props.row, props.rowIndex)"
+          @click="toggleRow(props.row, props.rowIndex, false)"
         >
           <span v-if="col.field === 'materialGroup' && col.value !== undefined">
             {{ t(`recipeTypes.${col.value - 1}`) }}
@@ -325,18 +361,18 @@ async function deleteRow() {
             <div class="flex items-center justify-center gap-5 py-10 w-full">
               <q-btn
                 color="black"
-                :label="props.rowIndex ? t('settings.submit') : t('settings.new')"
+                :label="props.rowIndex || props.row.materialCode ? t('settings.submit') : t('settings.new')"
                 outline
                 :disable="materialInfo[0].value === undefined || materialInfo[0].value === ''"
                 icon="done"
-                @click="submit(props.rowIndex)"
+                @click="submit(props.rowIndex || props.row.dispNo)"
               />
               <q-btn
                 color="black"
                 :label="t('settings.cancel')"
                 icon="close"
                 outline
-                @click="toggleRow(props.row, props.rowIndex)"
+                @click="toggleRow(props.row, props.rowIndex, true)"
               />
               <q-btn
                 v-if="props.rowIndex"
@@ -378,6 +414,35 @@ async function deleteRow() {
           color="red"
           icon="delete"
           @click="deleteRow()"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <q-dialog v-model="submitDialog" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <q-avatar
+          icon="question_mark"
+        />
+        <span class="q-ml-sm"> {{ t('warnings.formDidnotSubmit', { type: t('warnings.dispenser') }) }}</span>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn
+          v-close-popup
+          :label="t('settings.discard')"
+          outline
+          color="red"
+          icon="close"
+          @click="expandedRow = null"
+        />
+        <q-btn
+          v-close-popup
+          outline
+          :label="t('settings.submit')"
+          color="light-blue-10"
+          icon="done_all"
+          @click="submit(true)"
         />
       </q-card-actions>
     </q-card>

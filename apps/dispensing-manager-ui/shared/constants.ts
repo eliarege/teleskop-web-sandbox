@@ -16,7 +16,7 @@ export const colors = {
   violet: 'rgb(70, 56, 141)',
   blue: '',
   black: 'rgb(0, 0, 0)',
-  tableGray: 'rgb(248, 248, 248)',
+  tableGray: 'rgb(0, 0, 0, 0.1)',
   status0: '',
   status1: '#61b3ff',
   status2: '#008cff',

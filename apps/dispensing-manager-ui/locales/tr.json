@@ -65,15 +65,17 @@
       "totalRequest": "Programların toplam istek sayıları üzerindne kontrol yap",
       "v1TankNoUse": "V1-Tank No Kullanmaz",
       "v2TankUse": "V2 Tank No Kullanır",
-      "prgNo": "Program Nuamrası",
+      "prgNo": "Program Numarası",
       "recipeIndex": "Reçete Indexi",
       "refNoAllJoborders": "Tüm İş Emri İçinde Referans No",
-      "refNoPrgNo": "İş Emri Referans No - Program No"
+      "refNoPrgNo": "İş Emri Referans No - Program No",
+      "newDriverName": "Yeni Sürücü İsmi"
     },
     "new": "Ekle",
     "edit": "Düzenle",
     "delete": "Sil",
     "submit": "Kaydet",
+    "discard": "Yoksay",
     "cancel": "İptal",
     "optional": "İsteğe Bağlı",
     "machDispConnection": "Makine Dağıtıcı Bağlantısı",
@@ -167,7 +169,7 @@
     "alreadyStartedWarning": "İstek çoktan başlatıldı. Devam etmek istediğinize emin misiniz?",
     "requestSent": "İstek gönderildi.",
     "retryRequestSent": "Adımı tekrarlama isteği göderildi.",
-    "deleteRequestSent": "Adımı iptal etme isteği göderildi."
+    "cancelRequestSent": "Adımı iptal etme isteği göderildi."
   },
   "jobOrderLogs": {
     "_": "İş Emri Kayıtları",
@@ -248,7 +250,8 @@
     "priorityCritical": "Çok Acil",
     "inputTankNo": "Lütfen tank numarasını 'sayı' olarak giriniz!",
     "weiRerequest": "İş emri tartım isteklerini yenilemek istediğinize emin misiniz?",
-    "solvingRerequest": "İş emri çözme isteklerini isteklerini yenilemek istediğinize emin misiniz?"
+    "solvingRerequest": "İş emri çözme isteklerini isteklerini yenilemek istediğinize emin misiniz?",
+    "manuelMaterials": "Manuel Materyaller"
   },
   "registeredJobOrders": {
     "_": "Kayıtlı İş Emirleri",
@@ -305,14 +308,20 @@
     "dispenser": "Dağıtıcı",
     "material": "Malzeme",
     "machine": "Makine",
+    "driver": "Sürücü",
+    "and": "ve",
     "reqMechanism": "İstek mekanizması ayarlarını",
     "success": "başarılı",
     "fail": "başarısız",
+    "dispenserDeleteExistingMachineOrMaterial": "Dağıtıcı silme işlemi başarısız. Seçili dağıtıcıya bağlı {connectedThings} mevcut.",
     "deleteResponse": "{type} silme işlemi {result}.",
     "changeResponse": "{type} değiştirme işlemi {result}.",
     "createResponse": "{type} oluşturma işlemi {result}.",
     "coupledMachineIsTheSame": "Plananlanan makine ile akuple makinesi aynı olamaz.",
     "tryToChangeWithSameMachine": "Planlanan makine eski makine ile aynı olamaz.",
-    "noDataLogs": "{joborder} numaralı iş emri için kayıt bulunamadı."
+    "noDataLogs": "{joborder} numaralı iş emri için kayıt bulunamadı.",
+    "formDidnotSubmit": "{type} için kaydedilmemiş değişiklikleriniz var.",
+    "createFormDidnotSubmit": "Yeni oluşturulan {type} henüz kaydedilmedi.",
+    "idAlreadyExists": "başarısız. {type} kodu {code} olan {type} mevcut."
   }
 }

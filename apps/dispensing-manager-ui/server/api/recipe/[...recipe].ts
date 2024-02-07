@@ -105,9 +105,9 @@ router.get('/joborder', defineEventHandler(async (event) => {
       .limit(1)
       .select('PLANKEY')
   }
-  const machineid = knex('DYBFBATCHPLAN')
+  const machineid = (await knex('DYBFBATCHPLAN')
     .select('PLANNEDMACHINE')
-    .where('PLANKEY', planKey)
+    .where('PLANKEY', planKey))[0].PLANNEDMACHINE
 
   const asd = await knex('dbo.DYBFBATCHORDERRECIPESTEPS as r')
     .where('r.PLANKEY', planKey)
@@ -250,6 +250,43 @@ router.post('/programs-by-plankey', defineEventHandler(async (event) => {
       recipeIndex: 'RCPINDEX',
       programNo: 'RECIPENO',
       recipeType: 'RECIPETYPE',
+    })
+  return result
+}))
+
+router.post('/recipe-manuals', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+
+  const result = await knex('DYBFBATCHORDERRECIPEMANUALS as A')
+    .leftJoin('DYTFMATERIAL as B', 'B.MATERIALCODE', 'A.CHEMCODE')
+    .leftJoin('DYBFBATCHPLAN as C', 'A.PLANKEY', 'C.PLANKEY')
+    .leftJoin('BFMASTERPRGHEADER as T', function () {
+      this
+        .on('A.RECIPENO', '=', 'T.PROGNO')
+        .andOn('T.MACHINEID', '=', 'C.PLANNEDMACHINE')
+    })
+    .where('A.PLANKEY', body.plankey)
+    .where('C.CORRECTIONNUMBER', body.correctionNo)
+    .orderBy('CallOffManuel', 'asc')
+    // .select('A.*', 'B.MATERIALNAME', 'C.CORRECTIONNUMBER', 'C.PROGRAMNOLIST', 'C.PLANNEDMACHINE', 'C.ISCOUPLED', 'C.SLAVEMACHINEID', 'C.STARTEDMACHINEID')
+    .select({
+      planKey: 'A.PLANKEY',
+      joborder: 'A.JOBORDER',
+      recipeType: 'A.RECIPETYPE',
+      processOrder: 'A.RCPINDEX',
+      ISN: 'A.REQNO_BATCH',
+      mainStep: 'A.MAINSTEP',
+      parallelStep: 'A.PARALLELSTEP',
+      chemCode: 'A.CHEMCODE',
+      materialName: 'B.MATERIALNAME',
+      programProcessNo: 'A.REQNO_PROG',
+      amount: 'A.AMOUNT',
+      unit: 'A.otherUnit',
+      programNo: 'A.RECIPENO',
+      programName: 'T.NAME',
+      // 'C.ISCOUPLED',
+      // 'C.SLAVEMACHINEID',
+      // 'C.STARTEDMACHINEID'
     })
   return result
 }))

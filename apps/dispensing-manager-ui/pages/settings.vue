@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { symOutlinedLocalLaundryService, symOutlinedManufacturing, symOutlinedPackage2, symOutlinedSettingsApplications } from '@quasar/extras/material-symbols-outlined'
+import { } from '@quasar/extras/material-icons-round'
 import { breakpoints } from '~/shared/constants'
 import { navigateToPage } from '~/shared/functions'
 
@@ -11,11 +13,11 @@ if (!tempRoute.fullPath.split('/')[2])
 const splitterModel = ref(10)
 const isLaptop = useBreakpoints(breakpoints).greaterOrEqual('laptop')
 const settings = [
-  { name: 'dispenser', label: t('settings.dispSettings._'), icon: 'settings' },
-  { name: 'machine-connection', label: t('settings.machDispConnection'), icon: 'settings' },
-  { name: 'material', label: t('settings.machMaterialConnection'), icon: 'settings' },
+  { name: 'dispenser', label: t('settings.dispSettings._'), icon: symOutlinedSettingsApplications },
+  { name: 'machine-connection', label: t('settings.machDispConnection'), icon: symOutlinedLocalLaundryService },
+  { name: 'material', label: t('settings.machMaterialConnection'), icon: symOutlinedPackage2 },
   { name: 'request-mechanism', label: t('settings.requestMechanism._'), icon: 'settings' },
-  { name: 'driver', label: t('settings.driverInfo._'), icon: 'settings' },
+  { name: 'driver', label: t('settings.driverInfo._'), icon: symOutlinedManufacturing },
 ]
 </script>
 
