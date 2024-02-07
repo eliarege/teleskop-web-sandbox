@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
       machineName: 'machine_name',
       controllerType: 'controller_type',
     })
-      .where('dispenser_id', id)
+      .where('machine_id', id)
       .first()
     return machine
   } catch (e) {

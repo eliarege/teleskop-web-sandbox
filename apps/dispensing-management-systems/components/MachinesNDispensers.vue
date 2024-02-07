@@ -3,8 +3,7 @@ import type { QTableColumn } from 'quasar'
 import EditDispenser from './EditDispenser.vue'
 import AddMachine from './AddMachine.vue'
 import { useDataStore } from '~/store/DataStore'
-
-import type { Dispenser, Machine } from '~/shared/types'
+import type { Dispenser, Machine, MachineControllerType } from '~/shared/types'
 
 const { t } = useI18n()
 const q = useQuasar()
@@ -15,6 +14,8 @@ const { data } = shouldFetch
   ? await useFetch<Dispenser[]>(`/api/dispensers`)
   : { data: dataStore.dispensers }
 dataStore.dispensers = data
+
+const { data: controllerTypes } = useFetch<MachineControllerType[]>('/api/machines/types')
 
 const dispenserColumns: (QTableColumn<Dispenser>)[] = [
   {
@@ -103,8 +104,8 @@ function toggleMachineRow(id: number) {
   }
 }
 
-const dispenserPagination = ref({ rowsPerPage: 14 })
-const machinePagination = ref({ rowsPerPage: 14 })
+const dispenserPagination = ref({ rowsPerPage: 20 })
+const machinePagination = ref({ rowsPerPage: 20 })
 </script>
 
 <template>
@@ -246,7 +247,12 @@ const machinePagination = ref({ rowsPerPage: 14 })
               :key="col.name"
               :props="props"
             >
-              {{ col.value }}
+              <span v-if="col.field === 'controllerType'">
+                {{ controllerTypes?.find(type => type.controllerTypeId === col.value)?.controllerTypeName }}
+              </span>
+              <span v-else>
+                {{ col.value }}
+              </span>
             </q-td>
           </q-tr>
           <q-tr v-if="expandedMachines.includes(props.rowIndex)">

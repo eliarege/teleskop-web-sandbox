@@ -1,53 +1,45 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import MaterialInfo from './MaterialInfo.vue'
-import type { Material, MaterialGroup } from '~/shared/types'
+import MachineInfo from './MachineInfo.vue'
+import type { Machine, MachineControllerType } from '~/shared/types'
 
 const q = useQuasar()
 const { t } = useI18n()
-const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials')
+const { data: machines, refresh: refreshMachines } = await useFetch<Machine[]>('/api/machines')
 
-const groupOptions: MaterialGroup[] = [{
-  materialGroupNo: 1,
-  materialGroupName: t('materialTypes.1'),
-}, {
-  materialGroupNo: 2,
-  materialGroupName: t('materialTypes.2'),
-}, {
-  materialGroupNo: 3,
-  materialGroupName: t('materialTypes.3'),
-}]
-const columns: (QTableColumn<Material>)[] = [
+const { data: controllerTypes } = await useFetch<MachineControllerType[]>('/api/machines/types')
+
+const columns: (QTableColumn<Machine>)[] = [
   {
-    name: 'materialCode',
-    label: t('materialFields.Code'),
-    field: 'materialCode',
+    name: 'machineNo',
+    label: t('machineFields.No'),
+    field: 'machineId',
     sortable: true,
     align: 'left',
   },
   {
-    name: 'materialName',
-    label: t('materialFields.Name'),
-    field: 'materialName',
+    name: 'machineName',
+    label: t('machineFields.Name'),
+    field: 'machineName',
     sortable: true,
     align: 'left',
   },
   {
-    name: 'materialGroupNo',
-    label: t('materialFields.Group'),
-    field: 'materialGroupNo',
+    name: 'controllerType',
+    label: t('machineFields.ControllerType'),
+    field: 'controllerType',
     sortable: true,
     align: 'left',
   },
 ]
 
 async function onRowClick(_event: Event, row: any) {
-  const selectedMaterial = await $fetch(`/api/materials/${row.materialCode}`)
+  const selectedMachine = await $fetch(`/api/machines/${row.machineId}`)
   q.dialog({
-    component: MaterialInfo,
+    component: MachineInfo,
     componentProps: {
-      material: selectedMaterial,
-      groupOptions,
+      machine: selectedMachine,
+      controllerTypes: controllerTypes.value,
     },
   }).onOk((payload) => {
     if (payload) {
@@ -58,7 +50,7 @@ async function onRowClick(_event: Event, row: any) {
         message: t('Success'),
         timeout: 3000,
       })
-      refreshMaterials()
+      refreshMachines()
     } else
       q.notify({
         color: 'red-4',
@@ -67,15 +59,14 @@ async function onRowClick(_event: Event, row: any) {
         message: t('Failed'),
         timeout: 3000,
       })
-  },
-  )
+  })
 }
 const pagination = ref({ rowsPerPage: 20 })
 </script>
 
 <template>
   <div class="flex-center text-xl mb-10">
-    {{ t('settings.Material') }}
+    {{ t('settings.Machine') }}
   </div>
   <QTable
     flat
@@ -84,7 +75,7 @@ const pagination = ref({ rowsPerPage: 20 })
     separator="cell"
     :pagination
     :columns="columns"
-    :rows="materials"
+    :rows="machines"
     row-key="name"
     @row-click="onRowClick"
   >
@@ -92,8 +83,8 @@ const pagination = ref({ rowsPerPage: 20 })
       <QTd
         :props="props"
       >
-        <span v-if="props.col.field === 'materialGroupNo'">
-          {{ groupOptions.at(props.value - 1)?.materialGroupName }}
+        <span v-if="props.col.field === 'controllerType'">
+          {{ controllerTypes?.find(type => type.controllerTypeId === props.value)?.controllerTypeName }}
         </span>
         <span v-else>
           {{ props.value }}
@@ -104,5 +95,4 @@ const pagination = ref({ rowsPerPage: 20 })
 </template>
 
 <style scoped lang="postcss">
-
 </style>

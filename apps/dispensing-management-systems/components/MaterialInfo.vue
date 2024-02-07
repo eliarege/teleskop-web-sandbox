@@ -24,8 +24,12 @@ const unitOptions = ref([
 ])
 
 async function onSave() {
-  await $fetch(`/api/materials/${material.value.materialCode}`, { method: 'PUT', body: editedMaterial.value })
-  onDialogOK(editedMaterial.value)
+  try {
+    await $fetch(`/api/materials/${material.value.materialCode}`, { method: 'PUT', body: editedMaterial.value })
+    onDialogOK(true)
+  } catch (e) {
+    onDialogOK(false)
+  }
 }
 
 function onCancel() {

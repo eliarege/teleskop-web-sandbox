@@ -7,7 +7,7 @@ const { t, locale } = useI18n()
 const q = useQuasar()
 const dataStore = useDataStore()
 const router = useRouter()
-const tab = ref('material')
+const tab = ref('s1')
 const splitterModel = ref(10)
 const innerWidth = ref(window.innerWidth)
 const minSize = 768
@@ -73,14 +73,31 @@ useResizeObserver(document.body, () => {
             icon="settings"
             :class="tab === 's2' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
             :label="innerWidth > minSize ? `${t('settings.Material')}` : ''"
-          />
+          >
+            <QTooltip
+              v-if="innerWidth <= minSize"
+              :offset="[10, 10]"
+              anchor="center right"
+              self="center left"
+            >
+              {{ t('settings.Material') }}
+            </QTooltip>
+          </QTab>
           <QSeparator />
           <QTab
             name="s3"
             icon="settings"
             :class="tab === 's3' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
-            :label="innerWidth > minSize ? `${t('settings.3')}` : ''"
+            :label="innerWidth > minSize ? `${t('settings.Machine')}` : ''"
           />
+          <QTooltip
+            v-if="innerWidth <= minSize"
+            :offset="[10, 10]"
+            anchor="center right"
+            self="center left"
+          >
+            {{ t('settings.Machine') }}
+          </QTooltip>
           <QSeparator />
           <QTab
             name="s4"
@@ -116,7 +133,7 @@ useResizeObserver(document.body, () => {
           </QTabPanel>
 
           <QTabPanel name="s3">
-            <!-- Settings Component -->
+            <MachineSettings />
           </QTabPanel>
 
           <QTabPanel name="s4">

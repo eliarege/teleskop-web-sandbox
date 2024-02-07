@@ -9,6 +9,7 @@ export default defineEventHandler(async () => {
         materialCode: 'material_code',
         materialGroupNo: 'material_group_no',
       })
+      .orderBy('material_code')
     return materials
   } catch (e) {
     console.log(e)

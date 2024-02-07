@@ -57,7 +57,8 @@
   "Material": "Material",
   "settings": {
     "App": "App Settings",
-    "Material": "Material Settings"
+    "Material": "Material Settings",
+    "Machine": "Machine Settings",
   },
   "materialFields": {
     "Name": "Material Name",

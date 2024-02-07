@@ -57,7 +57,8 @@
   "Material": "Malzeme",
   "settings": {
     "App": "Uygulama Ayarları",
-    "Material": "Malzeme Ayarları"
+    "Material": "Malzeme Ayarları",
+    "Machine": "Makine Ayarları"
   },
   "materialFields": {
     "Name": "Malzeme Adı",
