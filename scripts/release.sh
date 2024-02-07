@@ -57,3 +57,11 @@ docker build \
 
 docker push $IMAGE_TAG
 docker push $IMAGE_SHA
+
+LATEST_PATTERN="^v[0-9]+\.[0-9]+\.[0-9]+$"
+
+# If tag complies with the standard, tag it as latest
+if [ $(echo $CI_COMMIT_TAG | grep -Ev $LATEST_PATTERN) ]; then
+  docker tag $IMAGE_TAG $IMAGE_LATEST
+  docker push $IMAGE_LATEST
+fi
