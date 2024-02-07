@@ -129,8 +129,11 @@ async function applyFilters(updatedValue: any) {
 async function updateRecipeTable() {
   canceledVisible.value = !canceledVisible.value
   await updateRecipe()
-  selectedRow.value = recipe.value[0]
-  await fetchMaterialData(recipe.value[0].reqnumber)
+  selectedRow.value = recipe.value[0] ? recipe.value[0] : null
+  if (selectedRow.value?.reqnumber)
+    await fetchMaterialData(selectedRow.value.reqnumber)
+  else
+    material.value = []
 }
 
 async function selectRow(rowIndex: any) {
