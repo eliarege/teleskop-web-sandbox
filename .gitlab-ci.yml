@@ -65,7 +65,7 @@ deploy:
     max: 2
     when: script_failure
   variables:
-    DOCKER_HOST: ssh://eliar@staging
+    DOCKER_HOST: ssh://eliar@$STAGING_HOST
   before_script:
     # Run ssh-agent
     - eval $(ssh-agent -s)
