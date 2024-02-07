@@ -197,7 +197,7 @@ async function submit(isPut: boolean) {
         dispIP: dispenserInfo.value[3].value,
         fileSystem: dispenserInfo.value[4].value,
         fileName: dispenserInfo.value[5].value,
-        protocol: dispenserInfo.value[6].value.protocol,
+        protocol: dispenserInfo.value[6].value?.protocol,
         dispConsumptionFileName: dispenserInfo.value[7].value,
         dms: dmsRead.value,
       },
@@ -221,7 +221,17 @@ async function submit(isPut: boolean) {
     })
     keyI18N = 'warnings.changeResponse'
   }
-  notification(isSuccess, t(keyI18N!, { type: t('warnings.dispenser'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+  notification(
+    isSuccess && isSuccess?.code !== 400,
+    t(keyI18N!, {
+      type: t('warnings.dispenser'),
+      result: isSuccess
+        ? isSuccess?.code === 400
+          ? t('warnings.idAlreadyExists', { code: dispenserInfo.value[0].value, type: t('warnings.dispenser') })
+          : t('warnings.success')
+        : t('warnings.fail'),
+    }),
+  )
   await getRows()
   expandedRow.value = null
 }

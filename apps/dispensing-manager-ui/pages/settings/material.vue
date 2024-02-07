@@ -187,7 +187,7 @@ async function submit(isPut: boolean) {
       body: {
         materialCode: materialInfo.value[0].value,
         materialName: materialInfo.value[1].value,
-        materialGroup: materialInfo.value[2].value.materialGroup,
+        materialGroup: materialInfo.value[2].value?.materialGroup,
         density: materialInfo.value[3].value,
         ph: materialInfo.value[4].value,
         source: materialInfo.value[5].value,
@@ -218,7 +218,17 @@ async function submit(isPut: boolean) {
     })
     keyI18N = 'warnings.changeResponse'
   }
-  notification(isSuccess, t(keyI18N!, { type: t('warnings.material'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+  notification(
+    isSuccess && isSuccess?.code !== 400,
+    t(keyI18N!, {
+      type: t('warnings.material'),
+      result: isSuccess
+        ? isSuccess?.code === 400
+          ? t('warnings.idAlreadyExists', { code: materialInfo.value[0].value, type: t('warnings.material') })
+          : t('warnings.success')
+        : t('warnings.fail'),
+    }),
+  )
   await getRows()
   expandedRow.value = null
 }

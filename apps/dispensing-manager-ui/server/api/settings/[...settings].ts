@@ -65,7 +65,7 @@ router.post('/dispenser', defineEventHandler(async (event) => {
       .where('DISPENSERID', body.dispNo)
       .select('DISPENSERID')
     if (dispenser.length)
-      return 0
+      return { code: 400, error: 'Dispenser with given dispenser ID is already exist.' }
     dispenser = await knex('DYTFDISPENSERSETTINGS')
       .where('DISPENSERID', body.dispNo)
       .insert({
@@ -172,7 +172,7 @@ router.post('/machine-dispenser-connection', defineEventHandler(async (event) =>
   const isThereMachine = await knex('DYTFMACHINES')
     .where('MACHINEID', body.machineid)
   if (isThereMachine.length > 0)
-    return 0
+    return { code: 400, error: 'Machine with given machine ID is already exist.' }
   await knex('DYTFMACHINES')
     .insert({
       MACHINEID: body.machineid,
@@ -295,7 +295,8 @@ router.post('/material-connection', defineEventHandler(async (event) => {
   const isThereMaterial = await knex('DYTFMATERIAL')
     .where('MATERIALCODE', body.materialCode)
   if (isThereMaterial.length > 0)
-    return 0
+    return { code: 400, error: 'Material with given material code is already exist.' }
+
   await knex('DYTFMATERIAL')
     .insert({
       MATERIALCODE: body.materialCode,

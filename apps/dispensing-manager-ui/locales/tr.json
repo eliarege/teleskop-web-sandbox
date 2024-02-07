@@ -169,7 +169,7 @@
     "alreadyStartedWarning": "İstek çoktan başlatıldı. Devam etmek istediğinize emin misiniz?",
     "requestSent": "İstek gönderildi.",
     "retryRequestSent": "Adımı tekrarlama isteği göderildi.",
-    "deleteRequestSent": "Adımı iptal etme isteği göderildi."
+    "cancelRequestSent": "Adımı iptal etme isteği göderildi."
   },
   "jobOrderLogs": {
     "_": "İş Emri Kayıtları",
@@ -321,6 +321,7 @@
     "tryToChangeWithSameMachine": "Planlanan makine eski makine ile aynı olamaz.",
     "noDataLogs": "{joborder} numaralı iş emri için kayıt bulunamadı.",
     "formDidnotSubmit": "{type} için kaydedilmemiş değişiklikleriniz var.",
-    "createFormDidnotSubmit": "Yeni oluşturulan {type} henüz kaydedilmedi."
+    "createFormDidnotSubmit": "Yeni oluşturulan {type} henüz kaydedilmedi.",
+    "idAlreadyExists": "başarısız. {type} kodu {code} olan {type} mevcut."
   }
 }

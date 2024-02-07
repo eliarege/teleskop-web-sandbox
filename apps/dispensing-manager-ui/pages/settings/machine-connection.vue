@@ -180,7 +180,7 @@ async function submit(isPut: boolean) {
       body: {
         machineid: machineInfo.value[0].value,
         machinename: machineInfo.value[1].value,
-        controlDevice: machineInfo.value[2].value.controlDevice,
+        controlDevice: machineInfo.value[2].value?.controlDevice,
         disps: machineInfo.value[3].value,
       },
     })
@@ -200,7 +200,20 @@ async function submit(isPut: boolean) {
     })
     keyI18N = 'warnings.changeResponse'
   }
-  notification(isSuccess, t(keyI18N!, { type: t('warnings.machine'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+  notification(
+    isSuccess && isSuccess?.code !== 400,
+    t(keyI18N!, {
+      type: t('warnings.machine'),
+      result: isSuccess
+        ? isSuccess?.code === 400
+          ? t('warnings.idAlreadyExists', {
+            code: machineInfo.value[0].value,
+            type: t('warnings.machine'),
+          })
+          : t('warnings.success')
+        : t('warnings.fail'),
+    }),
+  )
   await getRows()
   expandedRow.value = null
 }

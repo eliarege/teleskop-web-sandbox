@@ -170,7 +170,7 @@
     "alreadyStartedWarning": "The request has already been initiated. Are you sure you want to continue?",
     "requestSent": "Request sent.",
     "retryRequestSent": "Retry request sent.",
-    "deleteRequestSent": "Delete request sent."
+    "cancelRequestSent": "Delete request sent."
   },
   "jobOrderLogs": {
     "_": "Job Order Logs",
@@ -316,12 +316,13 @@
     "success": "succeeded",
     "fail": "failed",
     "dispenserDeleteExistingMachineOrMaterial": "Delete dispenser operation is failed. There are existing {connectedThings} connected to selected dispenser.",
-    "deleteResponse": "Delete { type } operation is { result }.",
-    "changeResponse": "Update { type } operation is { result }.",
-    "createResponse": "Create { type } operation is { result }.",
+    "deleteResponse": "Delete {type} operation is {result}.",
+    "changeResponse": "Update {type} operation is {result}.",
+    "createResponse": "Create {type} operation is {result}.",
     "coupledMachineIsTheSame": "Planned machine and coupled machine cannot be the same.",
     "tryToChangeWithSameMachine": "Planned machine cannot be the same with previous machine.",
     "noDataLogs": "No data found for joborder {joborder}",
-    "formDidnotSubmit": "You have unsaved changes on {type}."
+    "formDidnotSubmit": "You have unsaved changes on {type}.",
+    "idAlreadyExists": "failed. {type} with {type} ID {code} already exists."
   }
 }
