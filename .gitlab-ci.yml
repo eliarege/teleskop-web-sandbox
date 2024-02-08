@@ -58,15 +58,12 @@ release:
       - release-logs/
 
 deploy:
+  image: ubuntu:22.04
   stage: deploy
-  tags: [docker]
   environment: staging
-  retry:
-    max: 2
-    when: script_failure
-  variables:
-    DOCKER_HOST: ssh://eliar@$STAGING_HOST
   before_script:
+    # Install ssh-agent
+    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
     # Run ssh-agent
     - eval $(ssh-agent -s)
     # # Give the right permissions, otherwise ssh-add will refuse to add files
@@ -80,5 +77,5 @@ deploy:
     - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - docker compose --project-directory $STAGING_PROJECT_DIR pull --ignore-pull-failures
-    - docker compose --project-directory $STAGING_PROJECT_DIR up -d
+    - ssh $STAGING_HOST "docker compose --project-directory $STAGING_PROJECT_DIR pull"
+    - ssh $STAGING_HOST "docker compose --project-directory $STAGING_PROJECT_DIR up -d"
