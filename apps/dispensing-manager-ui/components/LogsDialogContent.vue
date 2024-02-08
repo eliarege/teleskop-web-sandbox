@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { rowBGColorHandler } from '../shared/functions'
+import { cellRGBColorHandler } from '../shared/functions'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
@@ -31,10 +31,38 @@ const logCols: Column[] = [
   { name: 'programIndex', label: t('jobOrderLogs.programIndex'), field: 'programIndex', filterable: true, filterType: 'comparison' },
   { name: 'programNo', label: t('programNo'), field: 'programNo', filterable: true, filterType: 'comparison' },
   { name: 'programName', label: t('programName'), field: 'programName' },
-  { name: 'recipeType', label: t('recipeType'), field: 'recipeType', filterable: true, filterType: 'select', selectionOptions: [{ label: t('chemical'), recipeType: 0 }, { label: t('dye'), recipeType: 1 }], optionValue: 'recipeType', optionLabel: 'label' },
+  {
+    name: 'recipeType',
+    label: t('recipeType'),
+    field: 'recipeType',
+    format: (val, row) => t(`recipeTypes.${val}`),
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: [{ label: t('chemical'), recipeType: 0 }, { label: t('dye'), recipeType: 1 }],
+    optionValue: 'recipeType',
+    optionLabel: 'label',
+  },
   { name: 'requestIndex', label: t('jobOrderLogs.requestIndex'), field: 'requestIndex', filterable: true, filterType: 'comparison' },
-  { name: 'status', label: t('status'), field: 'status', filterable: true, filterType: 'multiselect', selectionOptions: status.value, optionLabel: 'label', optionValue: 'status' },
-  { name: 'time', label: t('jobOrderLogs.eventTime'), field: 'time', filterable: true, filterType: 'date' },
+  {
+    name: 'status',
+    label: t('status'),
+    field: 'status',
+    format: (val, row) => t(`statusCodes.${val}`),
+    style: row => cellRGBColorHandler(row.status),
+    filterable: true,
+    filterType: 'multiselect',
+    selectionOptions: status.value,
+    optionLabel: 'label',
+    optionValue: 'status',
+  },
+  {
+    name: 'time',
+    label: t('jobOrderLogs.eventTime'),
+    field: 'time',
+    format: (val, row) => d(val, 'datetime'),
+    filterable: true,
+    filterType: 'date',
+  },
   { name: 'description', label: t('jobOrderLogs.description'), field: 'description' },
 ]
 
@@ -81,20 +109,8 @@ async function applyFilters(updatedValue: any) {
               v-for="row in log.cols"
               :key="row.name"
               :props="log"
-              :style="rowBGColorHandler(row)"
             >
-              <span v-if="row.field === 'status' && row.value !== null">
-                {{ t(`statusCodes.${row.value}`) }}
-              </span>
-              <span v-else-if="row.field === 'recipeType' && row.value !== null">
-                {{ t(`recipeTypes.${row.value}`) }}
-              </span>
-              <span v-else-if="row.field === 'time'">
-                {{ d(row.value, 'datetime') }}
-              </span>
-              <span v-else>
-                {{ row.value }}
-              </span>
+              {{ row.value }}
             </q-td>
           </q-tr>
         </template>

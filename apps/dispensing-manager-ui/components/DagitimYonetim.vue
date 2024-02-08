@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
-import { navigateToPage, rowBGColorHandler, textAlignOverride } from '../shared/functions'
+import { cellRGBColorHandler, navigateToPage, textAlignOverride } from '../shared/functions'
 import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
@@ -57,6 +57,7 @@ const columnsRecipe: Column[] = [
     name: 'recipeType',
     label: t('dispensingManager.recipeType'),
     field: 'recipeType',
+    format: val => t(`recipeTypes.${val}`),
     filterable: true,
     filterType: 'select',
     selectionOptions: [
@@ -73,6 +74,8 @@ const columnsRecipe: Column[] = [
     name: 'status',
     label: t('statusCodes.text'),
     field: 'status',
+    format: val => t(`statusCodes.${val}`),
+    style: row => cellRGBColorHandler(row.status),
     filterable: true,
     filterType: 'select',
     selectionOptions: [
@@ -92,8 +95,8 @@ const columnsMaterial = [
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
   { name: 'materialCode', label: t('materialCode'), field: 'materialCode' },
   { name: 'name', label: t('dispensingManager.materialDistributor'), field: 'name' },
-  { name: 'amount', label: t('recipe.amount'), field: 'amount' },
-  { name: 'status', label: t('statusCodes.text'), field: 'status' },
+  { name: 'amount', label: t('recipe.amount'), field: 'amount', format: val => val.toFixed(2) },
+  { name: 'status', label: t('statusCodes.text'), field: 'status', format: val => t(`statusCodes.${val}`), style: row => cellRGBColorHandler(row.status) },
 ]
 
 // TODO: Will request every 10 seconds to ensure data stream
@@ -288,17 +291,8 @@ onBeforeUnmount(() => {
                 v-for="row in recipe.cols"
                 :key="row.name"
                 :props="recipe"
-                :style="rowBGColorHandler(row)"
               >
-                <span v-if="row.field === 'status'">
-                  {{ t(`statusCodes.${row.value}`) }}
-                </span>
-                <span v-else-if="row.field === 'recipeType'">
-                  {{ t(`recipeTypes.${row.value}`) }}
-                </span>
-                <span v-else>
-                  {{ row.value }}
-                </span>
+                {{ row.value }}
                 <q-menu
                   touch-position
                   context-menu
@@ -412,17 +406,8 @@ onBeforeUnmount(() => {
               v-for="row in material.cols"
               :key="row.name"
               :props="material"
-              :style="`${rowBGColorHandler(row)}`"
             >
-              <span v-if="row.field === 'amount'">
-                {{ row.value.toFixed(2) }}
-              </span>
-              <span v-else-if="row.field === 'status'" style="width: 10%">
-                {{ t(`statusCodes.${row.value}`) }}
-              </span>
-              <span v-else>
-                {{ row.value }}
-              </span>
+              {{ row.value }}
             </q-td>
           </q-tr>
         </template>

@@ -180,7 +180,6 @@ function pushToFilters(col: Column, index: number, orderByType?: string) {
         filterSlots.value.push(temp)
     }
   }
-  console.log(filterSlots.value)
 }
 
 function comparisonOptionInit(index: number) {
@@ -204,7 +203,6 @@ function checkForButtonsInsteadOfSelect(col: any) {
 }
 
 function customFilterMethod(rows, terms, cols, cellValue) {
-  console.log(terms)
   const lowerTerms = terms ? terms.toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN') : ''
   const result = rows.filter(
     row => cols.some((col) => {

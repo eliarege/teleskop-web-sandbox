@@ -20,29 +20,28 @@ export function textAlignOverride(pos: string) {
  * @param row row in table
  * @returns style of the status column for each row respectively
  */
-export function rowBGColorHandler(row: any) {
+export function cellRGBColorHandler(val) {
+  console.log(val)
   let temp = 'background-color: '
-  if (row.field === 'status') {
-    if (row.value === 0) {
-      temp += 'white; text-color: black'
-    } else {
-      if (row.value === 1)
-        temp += colors.status1
-      if (row.value === 2)
-        temp += colors.status2
-      if (row.value === 4)
-        temp += colors.status4
-      if (row.value === 10)
-        temp += colors.status10
-      if (row.value === 3)
-        temp += colors.status3
-      if (row.value === 8)
-        temp += colors.status8
-      temp += '; color: white;'
-    }
-    console.log(temp)
-    temp += 'width: 10rem; border-color: white; border-width: bold; font-weight: bolder; font-size: medium;'
+  if (val === 0) {
+    temp += 'white; text-color: black'
+  } else {
+    if (val === 1)
+      temp += colors.status1
+    if (val === 2)
+      temp += colors.status2
+    if (val === 4)
+      temp += colors.status4
+    if (val === 10)
+      temp += colors.status10
+    if (val === 3)
+      temp += colors.status3
+    if (val === 8)
+      temp += colors.status8
+    temp += '; color: white;'
   }
+  console.log(temp)
+  temp += 'width: 10rem; border-color: white; border-width: bold; font-weight: bolder; font-size: medium;'
   return temp
 }
 /** Returns a database name of the spesific attribute */
