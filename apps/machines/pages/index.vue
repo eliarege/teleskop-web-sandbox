@@ -411,6 +411,22 @@ async function handleDelete(formData) {
   })
   await refresh()
 }
+
+const showTeleskopSettings = ref(false)
+
+function handleKeyPress(event) {
+  if (event.altKey && event.shiftKey && event.key === 'T') {
+    showTeleskopSettings.value = !showTeleskopSettings.value
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyPress)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeyPress)
+})
 </script>
 
 <template>
@@ -428,4 +444,5 @@ async function handleDelete(formData) {
     @select="handleSelection"
     @delete="handleDelete"
   />
+  <TeleskopSettings :show="showTeleskopSettings" form-class="" />
 </template>

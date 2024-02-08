@@ -19,7 +19,7 @@ const machineId = computed(() => props.selected.machineId)
 const { data: version } = useLazyFetch('/api/soap/get-version', {
   default: () => 0,
   query: {
-    machineId,
+    machineId: machineId.value !== -1 ? machineId.value : undefined,
   },
 })
 
