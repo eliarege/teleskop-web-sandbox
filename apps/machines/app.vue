@@ -3,7 +3,7 @@ import '@formkit/themes/genesis'
 
 const { t } = useI18n()
 
-const definitionItems = [
+const definitionItems = computed(() => ([
   {
     label: t('machine'),
     to: '/',
@@ -166,7 +166,7 @@ const definitionItems = [
 
   },
 
-]
+]))
 </script>
 
 <template>

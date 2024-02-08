@@ -131,5 +131,6 @@
   "theoreticalSteam": "Theoretical Steam",
   "steamKgPerHour": "Steam Kg Per Hour",
   "steamValveDo": "Steam Valve",
-  "nozzleCount": "Nozzle Count"
+  "nozzleCount": "Nozzle Count",
+  "submit": "Submit"
 }

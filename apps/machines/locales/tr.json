@@ -125,5 +125,6 @@
   "MTTempIo": "Ana Kazan Sıcaklık Girişi",
   "theoreticalSteam": "Teorik Buhar Hesabı Aktif",
   "steamKgPerHour": "Buhar Tüketimi (kg/saat)",
-  "steamValveDo": "Buhar Vanası"
+  "steamValveDo": "Buhar Vanası",
+  "submit": "Kaydet"
 }
