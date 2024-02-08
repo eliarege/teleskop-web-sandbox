@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const { archiveDays } = getQuery(event)
   const url = `${config.planningEngineUrl}/time_based/scheduled_events`
 
-  const plannedEvents = $fetch<TimeBasedEventStates>(url, {
+  const plannedEvents = await $fetch<TimeBasedEventStates>(url, {
     query: { archiveDays },
   })
   return plannedEvents

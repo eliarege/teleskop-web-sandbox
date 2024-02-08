@@ -44,6 +44,18 @@ export async function getUnplannedEvents() {
     .andWhere('P.LASTFORJOBORDER', 1)
   return events.filter(ev => ev.theoreticalDuration > 0)
 }
+export async function getTheoreticalDuration(planKey: number) {
+  return await knex.raw(`
+  SELECT b.MACHINEID as machineId ,SUM(B.DURATION) as theoreticalDuration
+  FROM BFMASTERPRGHEADER B
+  WHERE B.PROGNO IN (
+      SELECT RECIPENO
+      FROM DYBFBATCHORDERRECIPEHEADER
+      WHERE PLANKEY = ${planKey}
+    )
+    group by b.MACHINEID
+`)
+}
 export async function getRecipe(machineId: string, jobOrder: string) {
   const autoRecipe = await knex.select(
     'p.RCPINDEX AS recIndex',
@@ -117,7 +129,25 @@ export async function getBatchNotes(jobOrder: string) {
       jobOrder: 'p.JOBORDER',
       note: 'p.NOTE',
       noteDate: 'p.NOTEDATE',
+      showOnScreen: 'p.SHOWONSCREEN',
     }).where('JOBORDER', '=', jobOrder)
+}
+export async function getBatchProperties(machineId: number, planKey: number) {
+  const erpParameters = await knex('PTERPPARAMBYUSER as p')
+    .select('p.PARAMID as paramId', 'b.PARAMNAME as paramName', 'd.VALUE as value')
+    .leftJoin('BFERPPARAMETERDEFINITIONS as b', 'b.PARAMID', 'p.PARAMID')
+    .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'p.PARAMID')
+    .where('p.OWNER', 118)
+    .andWhere('p.MACHINEID', machineId)
+    .andWhere('d.PLANKEY', planKey)
+    .groupBy('p.PARAMID', 'b.PARAMNAME', 'd.VALUE')
+
+  const delays = await knex()
+  const programs = await knex()
+  const times = await knex()
+  const summary = await knex()
+
+  return { erpParameters, delays, programs, times, summary }
 }
 export async function getPlanParameters(planKey: number) {
   return await knex({ p: 'dbo.DYBFBATCHPLANPARAMETERS' })
@@ -291,7 +321,6 @@ export async function addErpParameters(paramId: number, owner: number, machineId
   })
 }
 export async function pinEvent(planKey: number) {
-  console.log('PLANKEY', planKey)
   await knex('dbo.PTBATCHPLANQUEUE').update({ PINNED: 1 }).where('PLANKEY', '=', planKey)
 }
 export async function unpinEvent(planKey: number) {
@@ -305,4 +334,58 @@ export async function deleteErpParameters(paramId: number, owner: number, machin
     .where('PARAMID', '=', paramId)
     .andWhere('OWNER', '=', owner)
     .andWhere('MACHINEID', '=', machineId).del()
+}
+export async function updateSchedulerEvents(body: { planKey: number, queueNumber: number, machineId: number }[]) {
+  await knex.transaction(async (trx) => {
+    const machineIdList = new Set(body.map(a => a.machineId))
+    const planKeyList = new Set(body.map(a => a.planKey))
+    await trx('PTBATCHPLANQUEUE').whereIn('MACHINEID', [...machineIdList]).del()
+    // değiştirdiğimiz event, resource'a ait tek event ise previousResource.events.lenght 0 geliyor ve bu yüzden
+    // machineIdList içerisinde sadece targetResource.id bulunuyor. Bu yüzden ek olarak planKey'e göre de silmemiz gerekiyor.
+    await trx('PTBATCHPLANQUEUE').whereIn('PLANKEY', [...planKeyList]).del()
+    for (const ev of body) {
+      await trx('PTBATCHPLANQUEUE').where('PLANKEY', '=', ev.planKey).insert({
+        PLANKEY: ev.planKey,
+        QUEUENUMBER: ev.queueNumber,
+        MACHINEID: ev.machineId,
+        PINNED: 0,
+        STARTTIME: null,
+        STATE: 0,
+      })
+    }
+  })
+}
+export async function scheduleEvents(body: { planKey: number, queueNumber: number, machineId: number, plannedStartTime: string } []) {
+  await knex.transaction(async (trx) => {
+    const machineIdList = new Set(body.map(a => a.machineId))
+    const planKeyList = new Set(body.map(a => a.planKey))
+    await trx('PTBATCHPLANQUEUE').whereIn('MACHINEID', [...machineIdList]).del('PLANKEY')
+    await trx('PTBATCHPLANQUEUE').whereIn('PLANKEY', [...planKeyList]).del('PLANKEY')
+    for (const ev of body) {
+      const theoreticalDuration = (await getTheoreticalDuration(ev.planKey)).find(a => a.machineId === ev.machineId).theoreticalDuration
+
+      await trx('PTBATCHPLANQUEUE').where('PLANKEY', '=', ev.planKey).insert({
+        PLANKEY: ev.planKey,
+        QUEUENUMBER: ev.queueNumber,
+        MACHINEID: ev.machineId,
+        STARTTIME: ev.plannedStartTime,
+      })
+      await trx('DYBFBATCHPLAN')
+        .where('PLANKEY', '=', ev.planKey)
+        .update({
+          MACHINEIDLIST: ev.machineId,
+          PLANNEDMACHINE: ev.machineId,
+          PLANNEDSTARTTIME: ev.plannedStartTime,
+          TheoricalDuration: theoreticalDuration,
+        })
+      await trx('DYBFBATCHPLANPARAMETERS')
+        .update('PARAMSTRING', knex.raw('B.PARAMNAME'))
+        .from('DYBFBATCHPLANPARAMETERS')
+        .innerJoin({ B: 'BFERPPARAMETERDEFINITIONS' }, (builder) => {
+          builder.on('PLANKEY', '=', knex.raw(ev.planKey))
+            .andOn('B.MACHINEID', '=', knex.raw(ev.machineId))
+            .andOn('B.PARAMID', '=', 'BATCHPARAMETERID')
+        })
+    }
+  })
 }

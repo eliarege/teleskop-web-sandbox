@@ -92,7 +92,19 @@ function removeAttributes(element, pattern) {
 function getResourceRow(resource) {
   return document.querySelector(`div[data-id="${resource.id}"]`)
 }
-
+function archiveEvents(events) {
+  return events.filter(ev => ev.originalData.isArchive !== true)
+}
+function sortEventsByDateDesc(events) {
+  return archiveEvents(events).sort((a, b) => a.startDate < b.startDate ? -1 : 1)
+}
+function generateQueueNumber(ev) {
+  const modifiedEvents = sortEventsByDateDesc(ev)
+  modifiedEvents.forEach((e, i) => {
+    e.originalData.queueNumber = i + 1
+  })
+  return modifiedEvents
+}
 export class TimeDrag extends DragHelper {
   static get configurable() {
     return {
@@ -148,7 +160,7 @@ export class TimeDrag extends DragHelper {
     const { selectedRecords, store } = grid
     onDragStartSocket(selectedRecords[0].originalData.id)
     context.task = grid.getRecordFromElement(context.grabbed)
-    theoreticalDuration = await $fetch('api/timeBased/theoreticalDuration', {
+    theoreticalDuration = await $fetch('api/theoreticalDuration', {
       query: { planKey: context.task.originalData.id },
     })
     const isValid = await $fetch('/api/isValid', {
@@ -287,22 +299,31 @@ export class TimeDrag extends DragHelper {
       this.grid.store.remove(task)
       task.setStartDate(startDate)
       const machine = schedule.resolveResourceRecord(context.target)
-        .originalData.id
-      context.task.originalData.machineId = machine
+      const machineId = machine.originalData.id
+      context.task.originalData.machineId = machineId
+      const events = archiveEvents(machine.events)
       await schedule.scheduleEvent({
         eventRecord: task,
         startDate,
-        resourceRecord: machine,
+        resourceRecord: machineId,
       })
-      const newEvent = {
-        planKey: task.originalData.id,
-        machineId: machine,
-        plannedStartTime: startDate,
-        theoreticalDuration: task.originalData.theoricalDuration,
-      }
-      AjaxHelper.post('/api/timeBased/planningBoardPost', newEvent, { credentials: 'omit' })
-        .then(() => schedule.renderRows())
-      Toast.show('Event saved')
+      task.assign(machine)
+      const mergedEvents = events.concat(task)
+      const body = generateQueueNumber(mergedEvents).map((a) => {
+        return {
+          planKey: a.originalData.planKey,
+          machineId: a.originalData.machineId,
+          plannedStartTime: a.startDate,
+          queueNumber: a.originalData.queueNumber,
+        }
+      })
+      await $fetch('api/planningBoardUpdate', {
+        method: 'PUT',
+        body,
+      }).then(() => {
+        schedule.renderRows()
+        Toast.show('Event saved')
+      }).catch(err => console.error(err))
     }
 
     if (machine) {
@@ -416,9 +437,9 @@ export class TimeSchedule extends SchedulerPro {
         },
       },
       async onEventDragStart({ context }) {
-        context.task = context.eventRecord.originalData
-        const planKey = context.task.id
-        theoreticalDuration = await $fetch('api/timeBased/theoreticalDuration', {
+        context.task = context.eventRecord
+        const planKey = context.task.originalData.id
+        theoreticalDuration = await $fetch('api/theoreticalDuration', {
           query: { planKey },
         })
         const isValid = await $fetch('/api/isValid', {
@@ -456,21 +477,31 @@ export class TimeSchedule extends SchedulerPro {
         && (this.allowOverlap || this.isDateRangeAvailable(startDate, endDate, null, machine))
         && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).programs : true)
       },
-      onEventDrop({ context }) {
-        const { valid } = context
+      async onEventDrop({ context }) {
+        const { valid, task } = context
         const { target } = context.context
-        const updatedEvent = {
-          planKey: context.context.grabbed.elementData.eventId,
-          machineId: context.newResource.originalData.id,
-          plannedStartTime: context.startDate,
-        }
         if (valid && target) {
-          const index = this.events.indexOf(context.task)
+          const index = this.events.indexOf(task)
           this.events.splice(index, 1)
-
-          AjaxHelper.post('/api/timeBased/planningBoardUpdate', updatedEvent, { credentials: 'omit' })
-            .then(() => this.renderRows())
+          const machine = this.resolveResourceRecord(target)
+          const events = generateQueueNumber(archiveEvents(machine.events))
+          const body = events.map((a) => {
+            return {
+              planKey: a.originalData.planKey,
+              machineId: context.newResource.id,
+              plannedStartTime: a.startDate,
+              queueNumber: a.originalData.queueNumber,
+            }
+          })
+          await $fetch('/api/planningBoardUpdate', {
+            method: 'PUT',
+            body,
+          }).then(() => {
+            this.renderRows()
+            Toast.show('Event successfuly scheduled!')
+          }).catch(err => Toast.show(`An Error Occured: ${err}`))
         }
+
         for (let i = 0; i < this.resources.length; i++) {
           const element = this.resources[i]
           const currentRow = getResourceRow(element)

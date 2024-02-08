@@ -7,16 +7,19 @@ import {
   deleteEvent,
   deleteNote,
   getBatchNotes,
+  getBatchProperties,
   getErpParameters,
   getEventTooltipParams,
   getMachines,
   getPlanParameters,
   getPtStatus,
   getRecipe,
+  getTheoreticalDuration,
   getUnplannedEvents,
   isTaskValid,
   pinEvent,
   removeFromPlan,
+  scheduleEvents,
   unpinEvent,
 } from './queries'
 
@@ -131,6 +134,30 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
+  fastify.get(
+    '/planning_board/batch_properties',
+    async (request: FastifyRequest<{}>, reply) => {
+      try {
+        const batchProperties = await getBatchProperties()
+        return reply.code(200).send(batchProperties)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching batch properties: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching batch properties: ${err}` })
+      }
+    },
+  )
+  fastify.get(
+    '/planning_board/theoretical_duration',
+    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
+      try {
+        const { planKey } = request.query
+        return await getTheoreticalDuration(planKey)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching theoretical duration: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching theoretical duration: ${err}` })
+      }
+    },
+  )
   fastify.put<{ Querystring: { planKey: number } }>(
     '/planning_board/unplan',
     async (request, reply) => {
@@ -181,6 +208,19 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
+  fastify.put<{ Body: { planKey: number, machineId: number, plannedStartTime: string, queueNumber: number }[] }>(
+    '/planning_board/schedule_events',
+    async (request, reply) => {
+      try {
+        const body = request.body
+        await scheduleEvents(body)
+      } catch (err) {
+        fastify.log.error(`An error occured while scheduling events: ${err}`)
+        return reply.code(500).send({ error: `An error occured while scheduling events: ${err}` })
+      }
+    },
+  )
+
   fastify.post<{
     Body: { jobOrder: string, note: string, showOnScreen: boolean, userId: number }
   }>(
@@ -206,11 +246,12 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await addErpParameters(paramId, owner, machineId)
         return reply.code(200).send('Succesful')
       } catch (err) {
-        fastify.log.error(`An error occured while adding batch note: ${err}`)
-        return reply.code(500).send({ error: `An error occured while adding batch note: ${err}` })
+        fastify.log.error(`An error occured while adding erp parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occured while adding erp parameter: ${err}` })
       }
     },
   )
+
   fastify.delete<{
     Querystring: { id: number }
   }>(

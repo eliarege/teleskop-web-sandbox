@@ -1,6 +1,6 @@
 import { addSeconds } from 'date-fns'
 import type { TimeBasedArchiveEvents, TimeBasedEventStates, TimeBasedEvents } from '../../../../types/planning-board'
-import { getAllNotes, hasNote } from '../../../composables/helper'
+import { hasNote } from '../../../composables/helper'
 
 async function mapEvents(e: TimeBasedArchiveEvents, isPlanned: boolean) {
   return {
@@ -24,6 +24,7 @@ async function mapEvents(e: TimeBasedArchiveEvents, isPlanned: boolean) {
     isDeviation: e.deviation !== 0 || e.deviation !== undefined || e.deviation !== null,
     isFinished: e.isStopped && e.endTime !== null,
     isActual: !isPlanned,
+    isArchive: true,
     hasNote: await hasNote(e.jobOrder),
   }
 }
