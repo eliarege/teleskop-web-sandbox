@@ -5,13 +5,14 @@ import type { Dispenser } from '~/shared/types'
 
 const emit = defineEmits(['logout'])
 const { t } = useI18n()
+const q = useQuasar()
 const dataStore = useDataStore()
 const shouldFetch = !dataStore.dispensers
 const { data } = shouldFetch
   ? await useFetch<Dispenser[]>(`/api/dispensers`)
   : { data: dataStore.dispensers }
 dataStore.dispensers = data
-const q = useQuasar()
+
 async function selectItem(selection: Dispenser) {
   dataStore.$patch({ selectedDispenser: selection })
   await navigateTo({

@@ -71,6 +71,7 @@ const pagination = ref({ rowsPerPage: 20 })
   <QTable
     flat
     bordered
+    table-header-class="table-header"
     table-class="max-h-150"
     separator="cell"
     :pagination
@@ -93,6 +94,3 @@ const pagination = ref({ rowsPerPage: 20 })
     </template>
   </QTable>
 </template>
-
-<style scoped lang="postcss">
-</style>

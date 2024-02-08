@@ -80,10 +80,11 @@ const pagination = ref({ rowsPerPage: 20 })
   <QTable
     flat
     bordered
+    table-header-class="table-header"
     table-class="max-h-150"
     separator="cell"
     :pagination
-    :columns="columns"
+    :columns
     :rows="materials"
     row-key="name"
     @row-click="onRowClick"
@@ -103,6 +104,14 @@ const pagination = ref({ rowsPerPage: 20 })
   </QTable>
 </template>
 
-<style scoped lang="postcss">
-
+<style>
+.table-header th {
+  font-weight: bold;
+  color: white;
+  text-decoration: underline;
+  position: sticky;
+  background-color: var(--q-primary);
+  top: 0px;
+  z-index: 1;
+}
 </style>

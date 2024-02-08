@@ -34,6 +34,7 @@
   "Screen": "Screen",
   "Name": "Name",
   "Edit": "Edit",
+  "Connections": "Connections",
   "Username": "Username",
   "Password": "Password",
   "Login": "Login",
@@ -55,10 +56,11 @@
   "Cancel": "Cancel",
   "Delete": "Delete",
   "Material": "Material",
+  "Materials": "Materials",
   "settings": {
     "App": "App Settings",
     "Material": "Material Settings",
-    "Machine": "Machine Settings",
+    "Machine": "Machine Settings"
   },
   "materialFields": {
     "Name": "Material Name",

@@ -34,6 +34,7 @@
   "Screen": "Ekran",
   "Name": "İsim",
   "Edit": "Düzenle",
+  "Connections": "Bağlantılar",
   "Username": "Kullanıcı Adı",
   "Password": "Şifre",
   "Login": "Giriş",
@@ -55,6 +56,7 @@
   "Cancel": "İptal",
   "Delete": "Sil",
   "Material": "Malzeme",
+  "Materials": "Malzemeler",
   "settings": {
     "App": "Uygulama Ayarları",
     "Material": "Malzeme Ayarları",

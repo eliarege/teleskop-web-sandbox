@@ -75,7 +75,7 @@ function onClickEdit() {
     if (payload)
       dataStore.selectedDispenser = payload
     else navigateTo({
-      path: '/'
+      path: '/',
     })
     onRefreshList()
     q.notify({
@@ -88,6 +88,12 @@ function onClickEdit() {
   })
 }
 
+function onClickConnections() {
+  navigateTo({
+    path: '/dispenser/connections',
+    query: { dispenserId: dispenser.value.dispenserId },
+  })
+}
 async function onRefreshList() {
   const dispensers = await $fetch<Dispenser[]>(`/api/dispensers`)
   dataStore.dispensers = dispensers
@@ -150,6 +156,17 @@ watch((dispenser), () => {
         @click="onClickEdit"
       >
         {{ t('Edit') }}
+      </QBtn>
+    </div>
+    <div class="q-mt-md">
+      <QBtn
+        class="h-10vh w-40vw b-rd-2 text-lg"
+        color="primary"
+        no-caps
+        icon="link"
+        @click="onClickConnections"
+      >
+        {{ t('Connections') }}
       </QBtn>
     </div>
   </div>
