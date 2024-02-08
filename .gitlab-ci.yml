@@ -77,5 +77,5 @@ deploy:
     - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - ssh $STAGING_HOST "docker compose --project-directory $STAGING_PROJECT_DIR pull"
-    - ssh $STAGING_HOST "docker compose --project-directory $STAGING_PROJECT_DIR up -d"
+    - ssh eliar@$STAGING_HOST "docker compose --project-directory $STAGING_PROJECT_DIR pull"
+    - ssh eliar@$STAGING_HOST "docker compose --project-directory $STAGING_PROJECT_DIR up -d"
