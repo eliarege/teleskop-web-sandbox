@@ -145,8 +145,9 @@ async function selectRow(rowIndex: any) {
   await fetchMaterialData(selectedRow.value.reqnumber)
 }
 
-async function clickShowRecipe(row: any, isLogs: boolean) {
-  await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.batchCorrectionNo}&isLogs=${isLogs}`)
+async function clickShowRecipe(row: any, isLogs: string) {
+  const params = new URLSearchParams({ joborder: row.joborder, correctionNo: row.batchCorrectionNo, isLogs })
+  await navigateToPage(`recete-tartim?${params}`)
 }
 
 async function completeProgram(row) {
@@ -302,14 +303,14 @@ onBeforeUnmount(() => {
                     <q-item
                       v-close-popup
                       clickable
-                      @click="clickShowRecipe(recipe.row, true)"
+                      @click="clickShowRecipe(recipe.row, 'true')"
                     >
                       <q-item-section>{{ t('dispensingManager.rcMenu.showLogs') }}</q-item-section>
                     </q-item>
                     <q-item
                       v-close-popup
                       clickable
-                      @click="clickShowRecipe(recipe.row, false)"
+                      @click="clickShowRecipe(recipe.row, 'false')"
                     >
                       <q-item-section>{{ t('dispensingManager.rcMenu.showRecipe') }}</q-item-section>
                     </q-item>
