@@ -87,81 +87,88 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
             v-model="selected.groupName"
             filled
             placeholder="Makine Grup Adı"
+            class="w-md"
           />
-          <q-btn
-            no-caps
-            label="Ekle"
-            @click="handleAdd"
-          />
-          <q-btn
-            no-caps
-            label="Düzenle"
-            @click="handleEdit"
-          />
-          <q-btn
-            no-caps
-            label="Sil"
-            @click="handleDelete"
-          />
-        </div>
-        <div>
-          <h3>Makine Grupları</h3>
-          <q-list bordered separator>
-            <q-item
-              v-for="machineGroup in machineGroups"
-              :key="machineGroup.id"
-              v-ripple
-              clickable
-              @click="handleGroupClick(machineGroup)"
-            >
-              <q-item-section>
-                {{ machineGroup.groupName }}
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </div>
-        <div class="flex flex-row">
-          <div class="mr-8">
-            <h3>Seçilebilir Makineler</h3>
-            <Sortable
-              :list="machines"
-              item-key="id"
-              class="q-list q-list--bordered q-list--separator"
-              :options="{ group: 'group' }"
-            >
-              <template #item="{ element, index }">
-                <q-item
-                  :key="element.machineId"
-                  class="draggable"
-                >
-                  <q-item-section>
-                    {{ `${element.machineId} ${element.machineCode}` }}
-                  </q-item-section>
-                </q-item>
-              </template>
-            </Sortable>
+          <div class="flex gap-4 my-4">
+            <q-btn
+              no-caps
+              label="Ekle"
+              @click="handleAdd"
+            />
+            <q-btn
+              no-caps
+              label="Düzenle"
+              @click="handleEdit"
+            />
+            <q-btn
+              no-caps
+              label="Sil"
+              @click="handleDelete"
+            />
           </div>
-          <div>
-            <h3>Seçilmiş Grubun Makineleri</h3>
-            <Sortable
-              :list="selectedMachines"
-              item-key="id"
-              class="q-list q-list--bordered q-list--separator"
-              :options="{ group: 'group' }"
-              @add="(e) => handleDragDrop(e)"
-              @remove="(e) => handleDragDrop(e)"
-            >
-              <template #item="{ element, index }">
-                <q-item
-                  :key="element"
-                  class="draggable"
-                >
-                  <q-item-section>
-                    {{ `${element.machineId} ${element.machineCode}` }}
-                  </q-item-section>
-                </q-item>
-              </template>
-            </Sortable>
+        </div>
+
+        <div class="flex flex-row gap-x-8">
+          <div class="w-60">
+            <h3>Makine Grupları</h3>
+            <q-list bordered separator>
+              <q-item
+                v-for="machineGroup in machineGroups"
+                :key="machineGroup.id"
+                v-ripple
+                clickable
+                @click="handleGroupClick(machineGroup)"
+              >
+                <q-item-section>
+                  {{ machineGroup.groupName }}
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </div>
+
+          <div class="flex flex-row">
+            <div class="mr-8">
+              <h3>Seçilebilir Makineler</h3>
+              <Sortable
+                :list="machines"
+                item-key="id"
+                class="q-list q-list--bordered q-list--separator overflow-y-auto h-150 w-60"
+                :options="{ group: 'group' }"
+              >
+                <template #item="{ element, index }">
+                  <q-item
+                    :key="element.machineId"
+                    class="draggable"
+                  >
+                    <q-item-section>
+                      {{ `${element.machineId} ${element.machineCode}` }}
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </Sortable>
+            </div>
+            <div>
+              <h3>Seçilmiş Grubun Makineleri</h3>
+              <Sortable
+                :list="selectedMachines"
+                item-key="id"
+                class="q-list q-list--bordered q-list--separator overflow-y-auto h-150 w-60"
+                :options="{ group: 'group' }"
+                @add="(e) => handleDragDrop(e)"
+                @remove="(e) => handleDragDrop(e)"
+              >
+                <template #item="{ element, index }">
+                  <q-item
+                    :key="element"
+                    class="draggable"
+                  >
+                    <q-item-section>
+                      {{ `${element.machineId} ${element.machineCode}` }}
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </Sortable>
+            </div>
           </div>
         </div>
       </q-card-section>
@@ -171,6 +178,6 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
 
 <style scoped>
 .input-field > * {
-  margin-right: 2em;
+  margin-right: 1em;
 }
 </style>

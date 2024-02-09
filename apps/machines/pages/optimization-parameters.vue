@@ -18,13 +18,25 @@ const { data: commandParameters } = useLazyFetch('/api/treatment-parameters/comm
   default: () => [],
   immediate: false,
   method: 'POST',
-  body:
-    selectedMachineGroup,
+  body: selectedMachineGroup,
 })
 
-const { data: matchedTreatments } = useLazyFetch('/api/treatment-parameters/treatment-map', {
+const { data: matchedTreatments, refresh } = useLazyFetch('/api/treatment-parameters/treatment-map', {
   default: () => [],
 })
+
+async function handleAdd() {
+  await $fetch('/api/treatment-parameters/treatment-map', {
+    method: 'POST',
+    body: {
+      paramId: selectedParameter.value.id,
+      groupId: selectedMachineGroup.value.id,
+      commandNo: selectedOption.value.COMMANDNO,
+      parameterIndex: selectedOption.value.PARAMETERINDEX,
+    },
+  })
+  await refresh()
+}
 </script>
 
 <template>
@@ -76,7 +88,8 @@ const { data: matchedTreatments } = useLazyFetch('/api/treatment-parameters/trea
             :options="commandParameters"
             label="ERP Eşleştirme Alanı"
             filled
-            class="w-xs"
+            class="w-sm"
+            :display-value="`${selectedOption ? `${selectedOption.NAME} - ${selectedOption.PARAMSTRING}` : ''}`"
           >
             <template #option="scope">
               <q-item v-bind="scope.itemProps">
@@ -86,6 +99,8 @@ const { data: matchedTreatments } = useLazyFetch('/api/treatment-parameters/trea
               </q-item>
             </template>
           </q-select>
+
+          <q-btn label="Ekle" @click="handleAdd" />
         </div>
       </div>
       <div>
