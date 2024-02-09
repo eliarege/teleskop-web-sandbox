@@ -16,7 +16,9 @@ watch(() => locale.value, (newLocale: string) => {
     LocaleManager.locale = 'En'
   }
 })
+// @ts-expect-error TODO: window augmentation
 globalThis.bryntum ??= {}
+// @ts-expect-error TODO: window augmentation
 globalThis.bryntum.isTestEnv = true
 </script>
 

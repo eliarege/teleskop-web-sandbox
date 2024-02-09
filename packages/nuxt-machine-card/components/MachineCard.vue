@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { color } from 'd3'
+import { withBase } from 'ufo'
 import type { MachineCardData } from '../types'
 
 interface MachineCardProps {
@@ -33,15 +34,18 @@ function textColor(bgColor: string) {
   return (0.2126 * sRGBtoLin(sRGB.r) + 0.7152 * sRGBtoLin(sRGB.g) + 0.0722 * sRGBtoLin(sRGB.b)) > 0.5 ? 'black' : 'white'
 }
 const { t } = useI18n()
+const baseURL = useRuntimeConfig().app.baseURL
+const withBaseURL = (input: string) => withBase(input, baseURL)
+
 function connectionStatus(params: number) {
   if (params === 1) {
-    return '/icons/baglanti-var.png'
+    return withBaseURL('/icons/baglanti-var.png')
   } else if (params === 2) {
-    return '/icons/baglanti-yok.png'
+    return withBaseURL('/icons/baglanti-yok.png')
   } else if (params === 5) {
-    return '/icons/batarya.png'
+    return withBaseURL('/icons/batarya.png')
   } else {
-    return '/icons/baglanti-sorunlu.png'
+    return withBaseURL('/icons/baglanti-sorunlu.png')
   }
 }
 
@@ -129,8 +133,8 @@ function reqStatus(params: number) {
           v-if="machine.runningBatchStatus !== 0"
           :src="
             machine.runningBatchStatus === 1
-              ? '/icons/is-emri-off.png'
-              : '/icons/is-emri-on.png'
+              ? withBaseURL('/icons/is-emri-off.png')
+              : withBaseURL('/icons/is-emri-on.png')
           "
         >
         <img :src="connectionStatus(machine.connectionStatus)">

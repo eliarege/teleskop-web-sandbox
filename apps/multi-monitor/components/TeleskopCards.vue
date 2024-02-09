@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
+import { withBase } from 'ufo'
 import type { MachineData } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { useDataStore } from '~/store/Datas'
@@ -13,6 +14,8 @@ const props = defineProps({
 const { t } = useI18n()
 const store = useDataStore()
 const colors = useColorStore()
+const baseURL = useRuntimeConfig().app.baseURL
+const withBaseURL = (input: string) => withBase(input, baseURL)
 const sortedMachines = computed(() => {
   const filteredGroups = props.machineData.filter(group => !store.filteredGroups.has(group.groupName))
   const filteredMachines = filteredGroups.filter(item => !store.filteredMachines.has(item.id))
@@ -44,13 +47,13 @@ const sortedMachines = computed(() => {
 // #region FUNCTIONS
 function connectionStatus(params: number) {
   if (params === 1) {
-    return '/icons/baglanti-var.png'
+    return withBaseURL('/icons/baglanti-var.png')
   } else if (params === 2) {
-    return '/icons/baglanti-yok.png'
+    return withBaseURL('/icons/baglanti-yok.png')
   } else if (params === 5) {
-    return '/icons/batarya.png'
+    return withBaseURL('/icons/batarya.png')
   } else {
-    return '/icons/baglanti-sorunlu.png'
+    return withBaseURL('/icons/baglanti-sorunlu.png')
   }
 }
 function reqStatus(params: number) {

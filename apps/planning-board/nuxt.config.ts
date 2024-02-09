@@ -36,4 +36,13 @@ export default defineNuxtConfig({
     },
   },
   css: ['@bryntum/schedulerpro-trial/schedulerpro.classic.css'],
+  vite: {
+    vue: {
+      template: {
+        transformAssetUrls: {
+          LoadingScreen: ['image'],
+        },
+      },
+    },
+  },
 })
