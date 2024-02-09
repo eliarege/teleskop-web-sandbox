@@ -1,7 +1,9 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const columns = {
   stopCode: {
-    label: 'Duruş ID',
+    label: `${t('idle')} ID`,
     field: 'stopCode',
     align: 'left',
     filterable: true,
@@ -16,7 +18,7 @@ const columns = {
     },
   },
   stopName: {
-    label: 'Duruş Nedeni',
+    label: t('idleCause'),
     field: 'stopName',
     align: 'left',
     filterable: true,
@@ -30,7 +32,7 @@ const columns = {
     },
   },
   reportToERP: {
-    label: 'ERP Arıza Bildirimi',
+    label: t('erpFailureNotification'),
     field: 'reportToERP',
     align: 'left',
     filterable: true,
@@ -38,7 +40,7 @@ const columns = {
     type: 'checkbox',
     visible: true,
     editable: true,
-    format: (val, row) => val ? 'Evet' : 'Hayır',
+    format: (val, row) => val ? t('yes') : t('no'),
     schema: {
       filled: true,
     },
@@ -97,8 +99,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
     <q-card-section>
       <div class="flex flex-row justify-between">
         <h3>
-          Cihaz versiyonu 3.6 veya daha eski ise ilk 20 manuele alma nedeni
-          cihazda kullanılabilir.
+          {{ t('idleInfo') }}
         </h3>
       </div>
       <FormTableKit

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const selectedMachineId = ref()
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
@@ -32,7 +34,7 @@ async function handleCheckChange(e, command) {
 <template>
   <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
-      <h3>Makineler</h3>
+      <h3>{{ t('machines') }}</h3>
       <q-list bordered separator>
         <q-item
           v-for="machine in machines"
@@ -49,7 +51,7 @@ async function handleCheckChange(e, command) {
     </q-card-section>
 
     <q-card-section class="w-sm">
-      <h3>Komut Listesi</h3>
+      <h3>{{ t('commandList') }}</h3>
       <q-list
         bordered
         separator

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { addCommandTimeoutReason } from '~/utils'
 
+const { t } = useI18n()
+
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 const selectedReasonId = ref()
@@ -74,16 +76,16 @@ async function handleDeleteReason() {
       <q-card-section class="flex flex-col items-center">
         <q-input
           v-model="newReasonText"
-          label="Yeni Sebep Ekle"
+          :label="t('addNewReason')"
           class="mb-4"
         />
         <div>
           <q-btn
-            label="Ekle"
+            :label="t('add')"
             class="mr-4"
             @click="handleAddReason()"
           />
-          <q-btn label="İptal" @click="showAddReasonDialog = false" />
+          <q-btn :label="t('cancel')" @click="showAddReasonDialog = false" />
         </div>
       </q-card-section>
     </q-card>
@@ -94,16 +96,16 @@ async function handleDeleteReason() {
       <q-card-section class="flex flex-col items-center">
         <q-input
           v-model="newReasonText"
-          label="Sebep Düzenle"
+          :label="t('editReason')"
           class="mb-4"
         />
         <div>
           <q-btn
-            label="Düzenle"
+            :label="t('edit')"
             class="mr-4"
             @click="handleEditReason()"
           />
-          <q-btn label="İptal" @click="showEditReasonDialog = false" />
+          <q-btn :label="t('cancel')" @click="showEditReasonDialog = false" />
         </div>
       </q-card-section>
     </q-card>
@@ -113,19 +115,19 @@ async function handleDeleteReason() {
     <q-btn-group push>
       <q-btn
         push
-        label="Ekle"
+        :label="t('add')"
         icon="add"
         @click="showAddReasonDialog = true"
       />
       <q-btn
         push
-        label="Düzenle"
+        :label="t('edit')"
         icon="edit"
         @click="handleEditButton()"
       />
       <q-btn
         push
-        label="Sil"
+        :label="t('delete')"
         icon="delete"
         @click="handleDeleteReason()"
       />
@@ -133,7 +135,7 @@ async function handleDeleteReason() {
   </div>
   <q-card class="flex flex-row justify-around">
     <q-card-section class="w-sm">
-      <h3>Makineler</h3>
+      <h3>{{ t('machines') }}</h3>
       <q-list
         bordered
         separator
@@ -155,7 +157,7 @@ async function handleDeleteReason() {
     </q-card-section>
 
     <q-card-section class="w-sm">
-      <h3>Komutlar</h3>
+      <h3>{{ t('commands') }}</h3>
       <q-list
         bordered
         separator
@@ -178,7 +180,7 @@ async function handleDeleteReason() {
     </q-card-section>
 
     <q-card-section class="w-sm">
-      <h3>Sebepler</h3>
+      <h3>{{ t('reasons') }}</h3>
       <q-list
         bordered
         separator

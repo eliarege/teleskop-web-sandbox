@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const columns = {
   id: {
     label: 'ID',
@@ -16,7 +18,7 @@ const columns = {
     },
   },
   reasonText: {
-    label: 'Atlatma Nedeni',
+    label: t('skippingReason'),
     field: 'reasonText',
     align: 'left',
     filterable: true,

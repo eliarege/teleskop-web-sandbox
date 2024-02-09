@@ -71,7 +71,6 @@ const columns = computed(() => ({
     type: 'select',
     visible: true,
     editable: true,
-    format: (val, row) => tbbModelOptions.find(d => d === val),
     schema: {
       filled: true,
       validation: 'required',
@@ -196,7 +195,6 @@ const columns = computed(() => ({
     type: 'select',
     visible: false,
     editable: true,
-    format: (val, row) => steamUnitOptions.find(d => d === val),
     schema: {
       filled: true,
       options: steamUnitOptions,

@@ -1,11 +1,17 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const { data: finishReasons, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const finishOptions = [{ label: 'Bitir', value: 3 }, { label: 'Atla', value: 4 }, { label: 'Makine Duraklatma', value: 5 }]
+const finishOptions = [
+  { label: t('finish'), value: 3 },
+  { label: t('skip'), value: 4 },
+  { label: t('machinePause'), value: 5 },
+]
 
 const columns = {
   reasonId: {
@@ -20,7 +26,7 @@ const columns = {
     editable: true,
   },
   typeId: {
-    label: 'Tip',
+    label: t('type'),
     field: 'typeId',
     align: 'left',
     type: 'select',
@@ -35,7 +41,7 @@ const columns = {
     },
   },
   text: {
-    label: 'Açıklama',
+    label: t('description'),
     field: 'text',
     align: 'left',
     filterable: true,

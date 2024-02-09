@@ -4,15 +4,15 @@ import type { Column } from 'nuxt-ui-types'
 const { t, d } = useI18n()
 
 const accessFailOptions = ref([
-  { label: 'Network erişimi yok', eventCode: 0 },
-  { label: 'Teleskop iletişimi yok', eventCode: 1 },
-  { label: 'Cihaz tarihi yanlış', eventCode: 2 },
+  { label: t('noNetworkConnection'), eventCode: 0 },
+  { label: t('noTeleskopCommunication'), eventCode: 1 },
+  { label: t('wrongControllerDate'), eventCode: 2 },
 ])
 
 const columns: Column[] = [
   {
     name: 'machineCode',
-    label: 'Makine',
+    label: t('machine'),
     field: 'machineCode',
     align: 'left',
     filterable: true,
@@ -20,7 +20,7 @@ const columns: Column[] = [
   },
   {
     name: 'eventCode',
-    label: 'Sebep',
+    label: t('cause'),
     field: 'eventCode',
     align: 'left',
     filterable: true,
@@ -31,7 +31,7 @@ const columns: Column[] = [
   },
   {
     name: 'eventStart',
-    label: 'Başlangıç Tarihi',
+    label: t('startDate'),
     field: 'eventStart',
     align: 'left',
     filterable: true,
@@ -40,7 +40,7 @@ const columns: Column[] = [
 
   {
     name: 'eventEnd',
-    label: 'Bitiş Tarihi',
+    label: t('endDate'),
     field: 'eventEnd',
     align: 'left',
     filterable: true,
@@ -93,7 +93,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
         </q-td>
       </q-tr>
     </template>
-  </filterableTable>
+  </FilterableTable>
 </template>
 
 <style scoped>

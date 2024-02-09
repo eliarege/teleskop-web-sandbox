@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const selectedMachineId = ref()
 
 const tank1Request = ref()
@@ -12,17 +14,17 @@ const tank3Dosage1 = ref()
 const tank3Dosage2 = ref()
 
 const commandTypeMaps = reactive([
-  { id: 101, name: 'tank1Request', data: tank1Request, label: 'Tank 1 İstek Komutları' },
-  { id: 102, name: 'tank1Dosage1', data: tank1Dosage1, label: 'Tank 1 Dozaj1 Komutları' },
-  { id: 103, name: 'tank1Dosage2', data: tank1Dosage2, label: 'Tank 1 Dozaj2 Komutları' },
+  { id: 101, name: 'tank1Request', data: tank1Request, label: t('tank1Request') },
+  { id: 102, name: 'tank1Dosage1', data: tank1Dosage1, label: t('tank1Dosage1') },
+  { id: 103, name: 'tank1Dosage2', data: tank1Dosage2, label: t('tank1Dosage2') },
 
-  { id: 201, name: 'tank2Request', data: tank2Request, label: 'Tank 2 İstek Komutları' },
-  { id: 202, name: 'tank2Dosage1', data: tank2Dosage1, label: 'Tank 2 Dozaj1 Komutları' },
-  { id: 203, name: 'tank2Dosage2', data: tank2Dosage2, label: 'Tank 2 Dozaj2 Komutları' },
+  { id: 201, name: 'tank2Request', data: tank2Request, label: t('tank2Request') },
+  { id: 202, name: 'tank2Dosage1', data: tank2Dosage1, label: t('tank2Dosage1') },
+  { id: 203, name: 'tank2Dosage2', data: tank2Dosage2, label: t('tank2Dosage2') },
 
-  { id: 301, name: 'tank3Request', data: tank3Request, label: 'Tank 3 İstek Komutları' },
-  { id: 302, name: 'tank3Dosage1', data: tank3Dosage1, label: 'Tank 3 Dozaj1 Komutları' },
-  { id: 303, name: 'tank3Dosage2', data: tank3Dosage2, label: 'Tank 3 Dozaj2 Komutları' },
+  { id: 301, name: 'tank3Request', data: tank3Request, label: t('tank3Request') },
+  { id: 302, name: 'tank3Dosage1', data: tank3Dosage1, label: t('tank3Dosage1') },
+  { id: 303, name: 'tank3Dosage2', data: tank3Dosage2, label: t('tank3Dosage2') },
 ])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
@@ -32,7 +34,7 @@ const { data: commandOptions } = useLazyFetch('/api/master-commands/master-comma
   transform: (commandOptions) => {
     commandOptions.unshift({
       commandNo: -1,
-      commandName: 'Boş',
+      commandName: t('empty'),
     })
     return commandOptions
   },
@@ -64,7 +66,7 @@ async function handleOptionChange(commandTypeName) {
 <template>
   <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
-      <h3>Makineler</h3>
+      <h3>{{ t('machines') }}</h3>
       <q-list bordered separator>
         <q-item
           v-for="machine in machines"
