@@ -42,6 +42,7 @@ export async function getUnplannedEvents() {
       builder.whereNull('P.ISDELETESENDTOMANUNITES').orWhere('P.ISDELETESENDTOMANUNITES', 0)
     })
     .andWhere('P.LASTFORJOBORDER', 1)
+    .orderBy('P.RECORDTIME', 'desc')
   return events.filter(ev => ev.theoreticalDuration > 0)
 }
 export async function getTheoreticalDuration(planKey: number) {
@@ -362,7 +363,8 @@ export async function scheduleEvents(body: { planKey: number, queueNumber: numbe
     await trx('PTBATCHPLANQUEUE').whereIn('MACHINEID', [...machineIdList]).del('PLANKEY')
     await trx('PTBATCHPLANQUEUE').whereIn('PLANKEY', [...planKeyList]).del('PLANKEY')
     for (const ev of body) {
-      const theoreticalDuration = (await getTheoreticalDuration(ev.planKey)).find(a => a.machineId === ev.machineId).theoreticalDuration
+      const theoreticalDuration = (await getTheoreticalDuration(ev.planKey)).find(a => a.machineId === ev.machineId)?.theoreticalDuration || 0
+      console.log(theoreticalDuration)
 
       await trx('PTBATCHPLANQUEUE').where('PLANKEY', '=', ev.planKey).insert({
         PLANKEY: ev.planKey,

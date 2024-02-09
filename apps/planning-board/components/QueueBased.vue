@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro-trial'
-import { addSeconds } from 'date-fns'
+import { addDays, addHours, addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
 import { useI18n } from 'vue-i18n'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
@@ -190,6 +190,7 @@ onMounted(async () => {
     multiEventSelect: false,
     createEventOnDblClick: false,
     startDate: new Date(),
+    endDate: addDays(new Date(), 7),
     startDateField: {
       label: 'test',
       flex: '1 0 50%',
