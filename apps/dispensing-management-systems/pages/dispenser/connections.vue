@@ -24,6 +24,6 @@ if (!dataStore.selectedDispenser) {
 <template>
   <DispenserConnections
     v-if="load"
-    :dispenser="dataStore.selectedDispenser!"
+    :dispenser-id="route.query.dispenserId"
   />
 </template>
