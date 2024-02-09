@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { rowBGColorHandler } from '../shared/functions'
+import { cellRGBColorHandler } from '../shared/functions'
 import { colors } from '~/shared/constants'
 
 const props = defineProps({
@@ -17,15 +17,15 @@ const rerequestedStepCols = [
   { name: 'joborder', label: t('joborder'), field: 'joborder' },
   { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo' },
   { name: 'mainStep', label: t('recipe.mainStep'), field: 'mainStep' },
-  { name: 'status', label: t('statusCodes.text'), field: 'status' },
-  { name: 'requestTime', label: t('requestTime'), field: 'requestTime' },
-  { name: 'endTime', label: t('endtime'), field: 'endTime' },
+  { name: 'status', label: t('statusCodes.text'), field: 'status', format: (val, row) => t(`statusCodes.${val}`), style: row => cellRGBColorHandler(row.status) },
+  { name: 'requestTime', label: t('requestTime'), field: 'requestTime', format: (val, row) => val ? d(val, 'datettime') : '_'.repeat(4) },
+  { name: 'endTime', label: t('endtime'), field: 'endTime', format: (val, row) => val ? d(val, 'datettime') : '_'.repeat(4) },
 ]
 const autoWeiStepCols = [
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
   { name: 'parallelStep', label: t('recipe.parallelStep'), field: 'parallelStep' },
   { name: 'dispenser', label: t('settings.dispName'), field: 'dispenser' },
-  { name: 'status', label: t('statusCodes.text'), field: 'status' },
+  { name: 'status', label: t('statusCodes.text'), field: 'status', format: (val, row) => t(`statusCodes.${val}`), style: row => cellRGBColorHandler(row.status) },
   { name: 'recipeAmount', label: t('recipeAmount'), field: 'recipeAmount' },
   { name: 'actualAmount', label: t('actualAmount'), field: 'actualAmount' },
 ]
@@ -35,7 +35,7 @@ const manuelWeiStepCols = [
   { name: 'parallelStep', label: t('recipe.parallelStep'), field: 'parallelStep' },
   { name: 'weighingNumber', label: t('weighingInformation.weighingNumber'), field: 'weighingNumber' },
   { name: 'recipeAmount', label: t('recipeAmount'), field: 'recipeAmount' },
-  { name: 'status', label: t('statusCodes.text'), field: 'status' },
+  { name: 'status', label: t('statusCodes.text'), field: 'status', format: (val, row) => t(`statusCodes.${val}`), style: row => cellRGBColorHandler(row.status) },
 ]
 </script>
 
@@ -61,17 +61,8 @@ const manuelWeiStepCols = [
                 v-for="col in props.cols"
                 :key="col.name"
                 :props="props"
-                :style="rowBGColorHandler(col)"
               >
-                <span v-if="col.field === 'requestTime' || col.field === 'endTime'">
-                  {{ col.value ? d(col.value, 'datettime') : '_'.repeat(4) }}
-                </span>
-                <span v-else-if="col.field === 'status'">
-                  {{ t(`statusCodes.${col.value}`) }}
-                </span>
-                <span v-else>
-                  {{ col.value }}
-                </span>
+                {{ col.value }}
               </q-td>
             </q-tr>
           </template>

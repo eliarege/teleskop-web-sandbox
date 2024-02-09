@@ -113,7 +113,12 @@ async function requestJobOrder() {
     currentRecipeJoborder.value = jobordernum.value
     getCorrectionNOs(currentRecipeJoborder.value)
     lastJobOrder.value = currentRecipeJoborder.value
-    recipeDataTemp.value = await $fetch(`/api/recipe/joborder?recipeJB=${currentRecipeJoborder.value}&correctionNo=${correctionNoDisplayed.value}`)
+    recipeDataTemp.value = await $fetch('/api/recipe/joborder', {
+      query: {
+        recipeJB: currentRecipeJoborder.value,
+        correctionNo: correctionNoDisplayed.value,
+      },
+    })
     if (!recipeDataTemp.value.length) {
       resetValues()
       Notify.create({
@@ -123,7 +128,12 @@ async function requestJobOrder() {
       })
     } else {
       if (!correctionNoDisplayed.value) {
-        const tempNo = await $fetch(`/api/recipe/correction-number-by-parameter?parameter=${currentRecipeJoborder.value}&searchBy=planKey`)
+        const tempNo = await $fetch(`/api/recipe/correction-number-by-parameter?`, {
+          query: {
+            parameter: currentRecipeJoborder.value,
+            searchBy: 'planKey',
+          },
+        })
         correctionNoDisplayed.value = tempNo[0].CORRECTIONNUMBER
       }
       recipeData.value = recipeDataTemp.value
@@ -134,7 +144,12 @@ async function requestJobOrder() {
         row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
       })
     }
-    const tempMach = await $fetch(`/api/machine/machine?joborder=${currentRecipeJoborder.value}&correctionNo=${correctionNoDisplayed.value}`)
+    const tempMach = await $fetch(`/api/machine/machine?`, {
+      query: {
+        joborder: currentRecipeJoborder.value,
+        correctionNo: correctionNoDisplayed.value,
+      },
+    })
     machine.value = tempMach
   } else {
     resetValues()

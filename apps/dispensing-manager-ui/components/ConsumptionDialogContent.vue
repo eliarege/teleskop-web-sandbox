@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { rowBGColorHandler } from '../shared/functions'
+import { cellRGBColorHandler } from '../shared/functions'
 import { colors } from '~/shared/constants'
 
 const props = defineProps({
@@ -12,31 +12,59 @@ const { t, d } = useI18n()
 const columnsOto = [
   { name: 'processNo', label: t('recipe.processNo'), field: 'processNo' },
   { name: 'machinename', label: t('machinename'), field: 'machinename' },
-  { name: 'tankNo', label: t('tankNo'), field: 'tankNo' },
+  { name: 'tankNo', label: t('tankNo'), field: 'tankNo', format: (val, row) => (val === -1) ? '____' : val },
   { name: 'processIndex', label: t('recipe.processOrder'), field: 'processIndex' },
   { name: 'mainStep', label: t('weighingInformation.mainStep'), field: 'mainStep' },
   { name: 'parallelStep', label: t('weighingInformation.parallelStep'), field: 'parallelStep' },
   { name: 'materialCode', label: t('materialCode'), field: 'materialCode' },
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
   { name: 'recipeAmount', label: t('recipeAmount'), field: 'recipeAmount' },
-  { name: 'actualAmount', label: t('actualAmount'), field: 'actualAmount' },
-  { name: 'status', label: t('statusCodes.text'), field: 'status' },
-  { name: 'requestTime', label: t('requestTime'), field: 'requestTime' },
-  { name: 'completedTime', label: t('weighingInformation.completionTime'), field: 'completedTime' },
-  { name: 'interval', label: t('weighingInformation.passingTime'), field: 'interval' },
-  { name: 'otoMan', label: t('weighingInformation.otoMan'), field: 'otoMan' },
+  { name: 'actualAmount', label: t('actualAmount'), field: 'actualAmount', format: (val, row) => (val === -1) ? '____' : val },
+  { name: 'status', label: t('statusCodes.text'), field: 'status', format: (val, row) => t(`statusCodes.${val}`), style: row => cellRGBColorHandler(row.status) },
+  {
+    name: 'requestTime',
+    label: t('requestTime'),
+    field: 'requestTime',
+    format: (val, row) => {
+      return val ? d(val, 'datetime') : '_'.repeat(4)
+    },
+  },
+  {
+    name: 'completedTime',
+    label: t('weighingInformation.completionTime'),
+    field: 'completedTime',
+    format: (val, row) => {
+      return val ? d(val, 'datetime') : '_'.repeat(4)
+    },
+  },
+  {
+    name: 'interval',
+    label: t('weighingInformation.passingTime'),
+    field: 'interval',
+    format: (val, row) => {
+      return !val ? '____' : `${Math.floor(val / 60)} ${t('hour')} ${val % 60} ${t('min')}`
+    },
+  },
+  { name: 'otoMan', label: t('weighingInformation.otoMan'), field: 'otoMan', format: (val, row) => val ? t('weighingInformation.oto') : t('weighingInformation.man') },
 ]
 
 const columnsMan = [
   { name: 'joborder', label: t('joborder'), field: 'joborder' },
   { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo' },
   { name: 'weighingNumber', label: t('weighingInformation.weighingNumber'), field: 'weighingNumber' },
-  { name: 'recipeType', label: t('recipeType'), field: 'recipeType' },
+  { name: 'recipeType', label: t('recipeType'), field: 'recipeType', format: (val, row) => t(`recipeTypes.${val}`) },
   { name: 'materialCode', label: t('materialCode'), field: 'materialCode' },
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
-  { name: 'actualAmount', label: t('recipeAmount'), field: 'actualAmount' },
-  { name: 'status', label: t('statusCodes.text'), field: 'status' },
-  { name: 'requestTime', label: t('requestTime'), field: 'requestTime' },
+  { name: 'actualAmount', label: t('recipeAmount'), field: 'actualAmount', format: (val, row) => (val === -1) ? '____' : val },
+  { name: 'status', label: t('statusCodes.text'), field: 'status', format: (val, row) => t(`statusCodes.${val}`), style: row => cellRGBColorHandler(row.status) },
+  {
+    name: 'requestTime',
+    label: t('requestTime'),
+    field: 'requestTime',
+    format: (val, row) => {
+      return d(val, 'datetime')
+    },
+  },
 ]
 const data = await $fetch(`/api/consumption/theoretical?joborder=${props.joborder}&correctionNo=${props.correctionNo}`)
 const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&correctionNo=${props.correctionNo}`)
@@ -70,37 +98,15 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
         <template #body="props">
           <q-tr
             :props="props"
+            class="text-override-left"
             :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
           >
             <q-td
               v-for="col in props.cols"
               :key="col.name"
               :props="props"
-              :style="rowBGColorHandler(col)"
             >
-              <span v-if="col.field === 'requestTime' || col.field === 'completedTime'">
-                {{ col.value ? d(col.value, 'datetime') : '_'.repeat(4) }}
-              </span>
-              <span v-else-if="col.field === 'status'">
-                {{ t(`statusCodes.${col.value}`) }}
-              </span>
-              <span v-else-if="col.field === 'tankNo'">
-                {{ (col.value === -1) ? '____' : col.value }}
-              </span>
-              <span v-else-if="col.field === 'actualAmount'">
-                {{ (col.value === -1) ? '____' : col.value }}
-              </span>
-              <span v-else-if="col.field === 'interval'">
-                {{ (!col.value) ? '____'
-                  : `${Math.floor(col.value / 60)} ${t('hour')} ${col.value % 60} ${t('min')}`
-                }}
-              </span>
-              <span v-else-if="col.field === 'otoMan'">
-                {{ col.value ? t('weighingInformation.oto') : t('weighingInformation.man') }}
-              </span>
-              <span v-else>
-                {{ col.value }}
-              </span>
+              {{ col.value }}
             </q-td>
           </q-tr>
         </template>
@@ -118,29 +124,15 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
         <template #body="props">
           <q-tr
             :props="props"
+            class="text-override-left"
             :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
           >
             <q-td
               v-for="col in props.cols"
               :key="col.name"
               :props="props"
-              :style="rowBGColorHandler(col)"
             >
-              <span v-if="col.field === 'requestTime'">
-                {{ d(col.value, 'datetime') }}
-              </span>
-              <span v-else-if="col.field === 'status'">
-                {{ t(`statusCodes.${col.value}`) }}
-              </span>
-              <span v-else-if="col.field === 'actualAmount'">
-                {{ (col.value === -1) ? '____' : col.value }}
-              </span>
-              <span v-else-if="col.field === 'recipeType'">
-                {{ t(`recipeTypes.${col.value}`) }}
-              </span>
-              <span v-else>
-                {{ col.value }}
-              </span>
+              {{ col.value }}
             </q-td>
           </q-tr>
         </template>
