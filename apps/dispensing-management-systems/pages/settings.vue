@@ -148,34 +148,3 @@ useResizeObserver(document.body, () => {
     </QSplitter>
   </div>
 </template>
-
-<style>
-/* Light Theme */
-.tabs-light {
-  background-color: white;
-  white-space: normal;
-  color: black
-}
-
-.tabs-light-active {
-  background-color: black;
-  white-space: normal;
-  color: white
-}
-/* Dark Theme */
-.tabs-dark {
-  background-color: black;
-  white-space: normal;
-  color: white
-}
-
-.tabs-dark-active {
-  background-color: white;
-  white-space: normal;
-  color: black
-}
-
-.q-tab--full{
-  min-height: 8rem;
-}
-</style>

@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 export default defineNuxtConfig({
   devtools: { enabled: true },
   extends: ['nuxt-base', 'nuxt-ui'],
+  css: ['~/assets/css/main.css'],
   ssr: false,
   runtimeConfig: {
     dmsHost: 'localhost',

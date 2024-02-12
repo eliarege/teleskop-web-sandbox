@@ -103,15 +103,3 @@ const pagination = ref({ rowsPerPage: 20 })
     </template>
   </QTable>
 </template>
-
-<style>
-.table-header th {
-  font-weight: bold;
-  color: white;
-  text-decoration: underline;
-  position: sticky;
-  background-color: var(--q-primary);
-  top: 0px;
-  z-index: 1;
-}
-</style>

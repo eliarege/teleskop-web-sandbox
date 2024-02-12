@@ -12,26 +12,33 @@ const props = defineProps({
 const { t } = useI18n()
 const q = useQuasar()
 const tab = ref()
+const buttonDisabled = ref(true)
+
 const machines = ref<Machine[]>([])
+const selectedMachinesInitial = ref<Machine[]>([])
 const selectedMachines = ref<number[]>([])
+
 const materials = ref<Material[]>([])
-const selectedMaterials = ref<Material[]>([])
+const selectedMaterialsInitial = ref<Material[]>([])
+const selectedMaterials = ref([])
 
 watch((tab), async (tab) => {
   if (tab === 'machines') {
     machines.value = await $fetch('/api/machines')
-    const tempSelected: Machine[] = await $fetch(`/api/dispensers/connections/machines/${props.dispenserId}`)
+    selectedMachinesInitial.value = await $fetch(`/api/dispensers/connections/machines/${props.dispenserId}`)
     selectedMachines.value = []
-    tempSelected.forEach(machine =>
+    selectedMachinesInitial.value.forEach(machine =>
       selectedMachines.value.push(machine.machineId),
     )
+    buttonDisabled.value = true
   } else if (tab === 'materials') {
     materials.value = await $fetch('/api/materials')
-    const tempSelected: Material[] = await $fetch(`/api/dispensers/connections/materials/${props.dispenserId}`)
+    selectedMaterialsInitial.value = await $fetch(`/api/dispensers/connections/materials/${props.dispenserId}`)
     selectedMaterials.value = []
-    tempSelected.forEach(material =>
+    selectedMaterialsInitial.value.forEach(material =>
       selectedMaterials.value.push(material),
     )
+    buttonDisabled.value = true
   }
 })
 const groupOptions: MaterialGroup[] = [{
@@ -67,29 +74,114 @@ const materialColumns: (QTableColumn<Material>)[] = [
     align: 'left',
   },
 ]
-function updateSelectedMaterials(selectedRows: any) {
-  selectedMaterials.value = selectedRows
+function onMaterialSelected(selectEvent: any) {
+  if (selectEvent.added) {
+    selectEvent.rows.forEach((row: any) => {
+      selectedMaterials.value.push(row)
+    },
+    )
+  } else {
+    selectEvent.rows.forEach((row: any) => {
+      selectedMaterials.value = selectedMaterials.value.filter(material => material.materialCode !== row.materialCode)
+    })
+  }
+  buttonDisabled.value = false
+}
+function onMachineSelected() {
+  buttonDisabled.value = false
 }
 function getRows(rows: number) {
-  return `${rows} Selected`
+  return t('SelectedMaterials', { count: rows })
 }
 async function handleSubmit() {
-
-}
-async function handleReset() {
   if (tab.value === 'machines') {
-    const tempSelected: Machine[] = await $fetch(`/api/dispensers/connections/machines/${props.dispenserId}`)
+    const added = selectedMachines.value
+      .filter(machineId =>
+        !selectedMachinesInitial.value.some(initialMachine => initialMachine.machineId === machineId))
+      .map(addedMachineId => addedMachineId)
+
+    const deleted = selectedMachinesInitial.value
+      .filter(initialMachine =>
+        !selectedMachines.value.includes(initialMachine.machineId))
+      .map(deletedMachine => deletedMachine.machineId)
+
+    try {
+      buttonDisabled.value = true
+      await $fetch(`/api/dispensers/connections/machines/${props.dispenserId}`, { method: 'POST', body: {
+        added,
+        deleted,
+      } })
+      q.notify({
+        color: 'green-4',
+        textColor: 'white',
+        icon: 'done',
+        message: t('Success'),
+        timeout: 3000,
+      })
+      selectedMachinesInitial.value = selectedMachines.value.map((machineId) => {
+        const machine = machines.value.find(machine => machine.machineId === machineId)
+        return machine ? { ...machine } : []
+      }).filter(Boolean)
+    } catch (e) {
+      q.notify({
+        color: 'red-4',
+        textColor: 'white',
+        icon: 'cancel',
+        message: t('Failed'),
+        timeout: 3000,
+      })
+      buttonDisabled.value = false
+    }
+  }
+  if (tab.value === 'materials') {
+    const added = selectedMaterials.value
+      .filter(material =>
+        !selectedMaterialsInitial.value.some(initialMaterial => initialMaterial.materialCode === material.materialCode))
+      .map(addedMaterial => addedMaterial.materialCode)
+
+    const deleted = selectedMaterialsInitial.value
+      .filter(initialMaterial =>
+        !selectedMaterials.value.some(material => material.materialCode === initialMaterial.materialCode))
+      .map(deletedMaterial => deletedMaterial.materialCode)
+    try {
+      buttonDisabled.value = true
+      await $fetch(`/api/dispensers/connections/materials/${props.dispenserId}`, { method: 'POST', body: {
+        added,
+        deleted,
+      } })
+      q.notify({
+        color: 'green-4',
+        textColor: 'white',
+        icon: 'done',
+        message: t('Success'),
+        timeout: 3000,
+      })
+      selectedMaterialsInitial.value = selectedMaterials.value
+    } catch (e) {
+      q.notify({
+        color: 'red-4',
+        textColor: 'white',
+        icon: 'cancel',
+        message: t('Failed'),
+        timeout: 3000,
+      })
+      buttonDisabled.value = false
+    }
+  }
+}
+function handleReset() {
+  if (tab.value === 'machines') {
     selectedMachines.value = []
-    tempSelected.forEach(machine =>
+    selectedMachinesInitial.value.forEach(machine =>
       selectedMachines.value.push(machine.machineId),
     )
   } else if (tab.value === 'materials') {
-    const tempSelected: Material[] = await $fetch(`/api/dispensers/connections/materials/${props.dispenserId}`)
     selectedMaterials.value = []
-    tempSelected.forEach(material =>
+    selectedMaterialsInitial.value.forEach(material =>
       selectedMaterials.value.push(material),
     )
   }
+  buttonDisabled.value = true
 }
 const pagination = ref({ rowsPerPage: 100 })
 </script>
@@ -124,6 +216,7 @@ const pagination = ref({ rowsPerPage: 100 })
           class="grid-item"
           :label="machine.machineName"
           :val="machine.machineId"
+          @update:model-value="onMachineSelected"
         />
       </div>
     </div>
@@ -131,6 +224,7 @@ const pagination = ref({ rowsPerPage: 100 })
       <QTable
         flat
         bordered
+        class="mt-5"
         table-header-class="table-header"
         table-class="max-h-150"
         separator="cell"
@@ -141,7 +235,7 @@ const pagination = ref({ rowsPerPage: 100 })
         selection="multiple"
         :selected="selectedMaterials"
         :selected-rows-label="getRows"
-        @update:selected="updateSelectedMaterials"
+        @selection="onMaterialSelected"
       >
         <template #body-cell="tableProps">
           <QTd
@@ -158,46 +252,19 @@ const pagination = ref({ rowsPerPage: 100 })
       </QTable>
     </div>
     <div v-if="tab" class="flex-center gap-10 mt-10">
-      <QBtn :label="t('Save')" icon="save" color="primary" @click="handleSubmit" />
+      <QBtn :label="t('Save')" icon="save" color="primary" :disable="buttonDisabled" @click="handleSubmit" />
       <QBtn :label="t('Reset')" icon="refresh" @click="handleReset" />
     </div>
   </div>
 </template>
 
 <style lang="postcss">
-/* Light Theme */
-.tabs-light {
-  background-color: white;
-  white-space: normal;
-  color: black
-}
-
-.tabs-light-active {
-  background-color: black;
-  white-space: normal;
-  color: white
-}
-/* Dark Theme */
-.tabs-dark {
-  background-color: black;
-  white-space: normal;
-  color: white
-}
-
-.tabs-dark-active {
-  background-color: white;
-  white-space: normal;
-  color: black
-}
 .tabs-border {
   border: 1px;
   border-style: solid;
   border-color: rgba(128,128,128,0.5);
 }
-.q-tab .q-tab__label {
-  font-weight: bold;
-  font-size: 1.1rem;
-}
+
 .grid-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* Two columns per row */

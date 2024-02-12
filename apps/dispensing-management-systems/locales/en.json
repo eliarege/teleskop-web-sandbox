@@ -57,6 +57,7 @@
   "Delete": "Delete",
   "Material": "Material",
   "Materials": "Materials",
+  "SelectedMaterials": "{count} Selected",
   "settings": {
     "App": "App Settings",
     "Material": "Material Settings",

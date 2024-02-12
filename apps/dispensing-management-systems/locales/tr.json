@@ -57,6 +57,7 @@
   "Delete": "Sil",
   "Material": "Malzeme",
   "Materials": "Malzemeler",
+  "SelectedMaterials": "{count} Seçili",
   "settings": {
     "App": "Uygulama Ayarları",
     "Material": "Malzeme Ayarları",
