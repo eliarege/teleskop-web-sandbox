@@ -200,5 +200,8 @@
   "waterTypeName": "Su Tipi Adı",
   "counter": "Sayaç",
   "waterSourceIO": "Su Kaynağı - IO",
-  "waterAmountParameter": "Su Miktarı Parametre"
+  "waterAmountParameter": "Su Miktarı Parametre",
+  "machineGroups": "Makine Grupları",
+  "parameterList": "Parametre Listesi",
+  "allMappedParameters": "Tüm Eşlenmiş Parametreler"
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { t } = useI18n()
 const selectedOption = ref()
 const showAddMachineGroupDialog = ref(false)
 const showAddTreatmentParameterDialog = ref(false)
@@ -44,7 +45,7 @@ async function handleAdd() {
     <q-card-section class="flex flex-col justify-between">
       <div class="flex flex-row justify-around">
         <div>
-          <h3>Makine Grupları</h3>
+          <h3>{{ t('machineGroups') }}</h3>
           <q-icon name="add" @click="showAddMachineGroupDialog = true" />
           <q-list separator bordered>
             <q-item
@@ -63,7 +64,7 @@ async function handleAdd() {
           </q-list>
         </div>
         <div>
-          <h3>Parametre Listesi</h3>
+          <h3>{{ t('parameterList') }}</h3>
           <q-icon name="add" @click="showAddTreatmentParameterDialog = true" />
           <q-list bordered separator>
             <q-item
@@ -86,7 +87,7 @@ async function handleAdd() {
           <q-select
             v-model="selectedOption"
             :options="commandParameters"
-            label="ERP Eşleştirme Alanı"
+            :label="t('erpFieldName')"
             filled
             class="w-sm"
             :display-value="`${selectedOption ? `${selectedOption.NAME} - ${selectedOption.PARAMSTRING}` : ''}`"
@@ -100,10 +101,13 @@ async function handleAdd() {
             </template>
           </q-select>
 
-          <q-btn label="Ekle" @click="handleAdd" />
+          <q-btn :label="t('add')" @click="handleAdd" />
         </div>
       </div>
       <div>
+        <h3 class="flex justify-center">
+          {{ t('allMappedParameters') }}
+        </h3>
         <q-table
           :rows="matchedTreatments"
         />

@@ -206,5 +206,8 @@
   "waterTypeName": "Water Type Name",
   "counter": "Counter",
   "waterSourceIO": "Water Source - IO",
-  "waterAmountParameter": "Water Amount Parameter"
+  "waterAmountParameter": "Water Amount Parameter",
+  "machineGroups": "Machine Groups",
+  "parameterList": "Parameter List",
+  "allMappedParameters": "All Mapped Parameters"
 }
