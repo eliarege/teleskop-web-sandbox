@@ -485,8 +485,17 @@ router.get('/driver', defineEventHandler(async () => {
   return result
 }))
 
-router.post('/driver', defineEventHandler(async (event) => {
+router.post('/driver/:DRIVERID', defineEventHandler(async (event) => {
   const body = await readBody(event)
+  if (!event.context.params) {
+    throw new Error('URL parameters are undefined')
+  }
+  const DRIVERID = event.context.params.DRIVERID
+  const isThereDriver = await knex('DYTFCOMDRIVERs')
+    .where('DRIVERID', DRIVERID)
+  if (isThereDriver.length > 0)
+    return { code: 400, error: 'Dispenser with given dispenser id is already exist.' }
+
   await knex('DYTFCOMDRIVERs')
     .insert(body)
   return 1
