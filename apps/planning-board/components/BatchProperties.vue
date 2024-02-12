@@ -6,10 +6,40 @@ const colors = reactive({
   idleBackGround: '#D1D5DB',
   itemBackGround: '#000000',
 })
-const { data: machine } = await useFetch('/api/batchProperties', {
+const { data: machine } = await useFetch('/api/machineList', {
   query: { machineId: props.machineId },
 })
-const a = computed(() => machine.value?.find(a => a.id === props.machineId))
+const { data: erpParams } = await useFetch('/api/tootlipParameters', {
+  query: { machineId: props.machineId, planKey: props.planKey },
+})
+const tree = computed(() => [
+  {
+    label: 'ERP Parametereleri',
+    children: erpParams.value.map(e => ({
+      label: `${e.paramString}: ${e.value}`,
+    })),
+  },
+  {
+    label: 'Süreler',
+    children: erpParams.value.map(e => ({
+      label: `${e.paramString}: ${e.value}`,
+    })),
+  },
+  {
+    label: 'Programlar',
+    children: erpParams.value.map(e => ({
+      label: `${e.paramString}: ${e.value}`,
+    })),
+  },
+  {
+    label: 'Özet',
+    children: erpParams.value.map(e => ({
+      label: `${e.paramString}: ${e.value}`,
+    })),
+  },
+])
+
+const currentMachine = computed(() => machine.value?.find(a => a.id === props.machineId))
 const tab = ref('planParameter')
 function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
   if (currentAlarmStatus === 0) {
@@ -25,11 +55,11 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
 
 <template>
   <div class="batch-wrapper">
-    <div class="side-bar">
+    <div class="side-bar border-solid border-1px p-1 rounded-2xl border-gray-500/50">
       <MachineCard
         class="!h-270px"
         :colors="{
-          backGround: cardBackgroundColor(a.currentAlarmStatus, a.runningBatchStatus),
+          backGround: cardBackgroundColor(currentMachine!.currentAlarmStatus, currentMachine!.runningBatchStatus),
           itemBackGround: colors.itemBackGround,
           activeBackGround: colors.activeBackGround,
           idleBackGround: colors.idleBackGround,
@@ -38,13 +68,20 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         :is-screen-viable="false"
         machine-settings="0"
         :machine-sort="1"
-        :machine="a"
+        :machine="currentMachine || []"
+        :links-active="false"
       />
-      <div class="w-full h-full e-border">
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Totam, earum?
+      <div class="w-full h-full max-h-147 overflow-auto p-3">
+        <QTree
+          :nodes="tree"
+          node-key="label"
+          dense
+          label-key="label"
+          no-connectors
+        />
       </div>
     </div>
-    <div>
+    <div class=" border-solid border-1px p-1 rounded-2xl border-gray-500/50">
       <q-tabs
         v-model="tab"
         ripple="false"
