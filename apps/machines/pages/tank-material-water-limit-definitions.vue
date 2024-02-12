@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import type { Column } from 'nuxt-ui-types'
 import { updateTankMaterialWaterDefinition } from '~/utils'
 
+const { t } = useI18n()
+
 const materialTypeMap = [
-  { id: 1, name: 'kimyasal' },
-  { id: 2, name: 'boya' },
-  { id: 3, name: 'diğer' },
+  { id: 1, name: t('chemical') },
+  { id: 2, name: t('dye') },
+  { id: 3, name: t('other') },
 ]
 
 const columns = [
   {
     name: 'materialGroupNo',
-    label: 'Materyal Tipi',
+    label: t('materialType'),
     field: 'materialGroupNo',
     align: 'left',
     filterable: true,
@@ -19,7 +20,7 @@ const columns = [
   },
   {
     name: 'machineName',
-    label: 'Makine',
+    label: t('machineName'),
     field: 'machineName',
     align: 'left',
     filterable: true,
@@ -27,7 +28,7 @@ const columns = [
   },
   {
     name: 'tankName',
-    label: 'Kazan Adı',
+    label: t('tankName'),
     field: 'tankName',
     align: 'left',
     filterable: true,
@@ -35,7 +36,7 @@ const columns = [
   },
   {
     name: 'materialName',
-    label: 'Materyal',
+    label: t('material'),
     field: 'materialName',
     align: 'left',
     filterable: true,
@@ -43,7 +44,7 @@ const columns = [
   },
   {
     name: 'preWater',
-    label: 'Ön Su',
+    label: t('preWater'),
     field: 'preWater',
     align: 'left',
     filterable: true,
@@ -51,7 +52,7 @@ const columns = [
   },
   {
     name: 'betweenWater',
-    label: 'Orta Su',
+    label: t('betweenWater'),
     field: 'betweenWater',
     align: 'left',
     filterable: true,
@@ -59,7 +60,7 @@ const columns = [
   },
   {
     name: 'postWater',
-    label: 'Son Su',
+    label: t('postWater'),
     field: 'postWater',
     align: 'left',
     filterable: true,

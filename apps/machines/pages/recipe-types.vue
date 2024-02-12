@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const columns = {
   id: {
     label: 'ID',
@@ -10,7 +12,7 @@ const columns = {
     editable: false,
   },
   typeName: {
-    label: 'Reçete Tip Adı',
+    label: t('recipeTypeName'),
     field: 'typeName',
     align: 'left',
     filterable: true,

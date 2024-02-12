@@ -2,6 +2,8 @@
 import { Sortable } from 'sortablejs-vue3'
 import { deleteTankMaterialMap } from '~/utils'
 
+const { t } = useI18n()
+
 /*
 1 kimyasal
 2 boya
@@ -55,7 +57,7 @@ async function deleteItem(tank, materialCode: string) {
   <q-card class="flex flex-row justify-around w-full">
     <q-card-section class="flex flex-row w-full justify-start">
       <div class="mr-4 w-xs">
-        <h3>Makineler</h3>
+        <h3>{{ t('machines') }}</h3>
         <q-list
           bordered
           separator
@@ -76,7 +78,7 @@ async function deleteItem(tank, materialCode: string) {
       </div>
 
       <div class="mr-4 w-sm">
-        <h3>Materyaller</h3>
+        <h3>{{ t('materials') }}</h3>
         <Sortable
           :list="materials"
           item-key="id"

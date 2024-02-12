@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { selectStartingParameterType } from '~/utils'
 
+const { t } = useI18n()
+
 const selectedMachineId = ref()
 
 const fabricWeight = ref()
@@ -14,15 +16,15 @@ const customerOrder = ref()
 const fabricType = ref()
 
 const paramTypeMaps = reactive([
-  { id: 0, name: 'fabricWeight', data: fabricWeight, label: 'Mal (Kumaş) Miktarı - Kilo' },
-  { id: 1, name: 'flotteRatio', data: flotteRatio, label: 'AK Flotte Oranı Parametresi' },
-  { id: 2, name: 'partCount', data: partCount, label: 'Parça Sayısı' },
-  { id: 3, name: 'partyNo', data: partyNo, label: 'Parti Numarası' },
-  { id: 4, name: 'accompanyNo', data: accompanyNo, label: 'Refakat Numarası' },
-  { id: 5, name: 'clothLength', data: clothLength, label: 'Kumaş Uzunluğu' },
-  { id: 6, name: 'customer', data: customer, label: 'Müşteri' },
-  { id: 7, name: 'customerOrder', data: customerOrder, label: 'Sipariş Numarası' },
-  { id: 8, name: 'fabricType', data: fabricType, label: 'Kumaş Tipi' },
+  { id: 0, name: 'fabricWeight', data: fabricWeight, label: t('fabricWeight') },
+  { id: 1, name: 'flotteRatio', data: flotteRatio, label: t('flotteRatio') },
+  { id: 2, name: 'partCount', data: partCount, label: t('partCount') },
+  { id: 3, name: 'partyNo', data: partyNo, label: t('partyNo') },
+  { id: 4, name: 'accompanyNo', data: accompanyNo, label: t('accompanyNo') },
+  { id: 5, name: 'clothLength', data: clothLength, label: t('clothLength') },
+  { id: 6, name: 'customer', data: customer, label: t('customer') },
+  { id: 7, name: 'customerOrder', data: customerOrder, label: t('customerOrder') },
+  { id: 8, name: 'fabricType', data: fabricType, label: t('fabricType') },
 ])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
@@ -33,7 +35,7 @@ const { data: parameterOptions } = useLazyFetch('/api/starting-parameter-types/s
   transform: (parameterOptions) => {
     parameterOptions.unshift({
       paramId: -1,
-      paramString: 'Seçilmedi',
+      paramString: t('notSelected'),
     })
     return parameterOptions
   },
@@ -45,7 +47,7 @@ const { data: parameterTypes } = useLazyFetch('/api/starting-parameter-types/sta
   transform: (parameterTypes) => {
     return parameterTypes.map(t => ({
       ...t,
-      paramName: t.paramId === -1 ? 'Seçilmedi' : t.paramString,
+      paramName: t.paramId === -1 ? t('notSelected') : t.paramString,
     }))
   },
 
@@ -53,7 +55,7 @@ const { data: parameterTypes } = useLazyFetch('/api/starting-parameter-types/sta
 
 watch(parameterTypes, (_newValue, _oldValue) => {
   for (const paramTypeMap of paramTypeMaps) {
-    paramTypeMap.data = parameterTypes.value.find(t => t.paramTypeId === Number(paramTypeMap.id))?.paramString || 'Seçilmedi'
+    paramTypeMap.data = parameterTypes.value.find(t => t.paramTypeId === Number(paramTypeMap.id))?.paramString || t('notSelected')
   }
 })
 
@@ -72,7 +74,7 @@ async function handleOptionChange(paramTypeName: string) {
 <template>
   <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
-      <h3>Makineler</h3>
+      <h3>{{ t('machines') }}</h3>
       <q-list
         bordered
         separator

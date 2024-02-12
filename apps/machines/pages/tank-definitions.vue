@@ -2,6 +2,8 @@
 import { Sortable } from 'sortablejs-vue3'
 import { updateTankDefinitionList } from '~/utils'
 
+const { t } = useI18n()
+
 const selectedMachineId = ref()
 const selectedDefinition = ref()
 const tankNo = ref()
@@ -131,7 +133,7 @@ async function handleDragDrop(e, listName) {
   <q-card class="flex flex-row justify-around">
     <q-card-section class="flex flex-row">
       <div class="mr-8 w-xs">
-        <h3>Makineler</h3>
+        <h3>{{ t('machines') }}</h3>
         <q-list
           bordered
           separator
@@ -154,7 +156,7 @@ async function handleDragDrop(e, listName) {
       </div>
 
       <div class="w-xs mr-8">
-        <h3>Kazan Tanımları</h3>
+        <h3>{{ t('tankDefinitions') }}</h3>
         <q-list
           bordered
           separator
@@ -180,18 +182,18 @@ async function handleDragDrop(e, listName) {
         <div class="grid mb-4">
           <q-input
             v-model="tankNo"
-            label="Kazan no"
+            :label="t('tankNo')"
             filled
           />
           <q-input
             v-model="tankName"
-            label="Kazan Adı"
+            :label="t('tankName')"
             filled
           />
           <q-select
             v-model="highLimit"
             :options="highLimitOptions"
-            label="Üst Limit Makine Sabiti"
+            :label="t('highLimit')"
             option-label="label"
             option-value="value"
             filled
@@ -199,17 +201,17 @@ async function handleDragDrop(e, listName) {
           <q-input
             v-model="machineConstantHighLimit"
             filled
-            label="Üst Limit"
+            :label="t('machineConstantHighLimit')"
           />
           <q-btn
-            label="Ekle"
+            :label="t('add')"
             no-caps
             @click="handleTankDefinitionAdd"
           />
         </div>
         <div class="grid">
           <div>
-            <h3>Komutlar</h3>
+            <h3>{{ t('commands') }}</h3>
             <Sortable
               :list="commands"
               item-key="id"
@@ -231,7 +233,7 @@ async function handleDragDrop(e, listName) {
 
           <div class="grid">
             <div>
-              <h3>Transfer/Dozaj Komutları</h3>
+              <h3>{{ t('transferDosageCommands') }}</h3>
               <Sortable
                 :list="listOfTransferCommands"
                 item-key="id"
@@ -254,7 +256,7 @@ async function handleDragDrop(e, listName) {
               </Sortable>
             </div>
             <div>
-              <h3>İstek Komutları</h3>
+              <h3>{{ t('requestCommands') }}</h3>
               <Sortable
                 :list="listOfRequestCommands"
                 item-key="id"
@@ -277,7 +279,7 @@ async function handleDragDrop(e, listName) {
             </div>
 
             <div>
-              <h3>Sirkülasyonlu Dozaj Komutları</h3>
+              <h3>{{ t('circulationDosageCommands') }}</h3>
               <Sortable
                 :list="listOfCirculationDoSageCommands"
                 item-key="id"
@@ -300,7 +302,7 @@ async function handleDragDrop(e, listName) {
             </div>
 
             <div>
-              <h3>Sirkülasyonlu İstek Komutları</h3>
+              <h3>{{ t('circulationRequestCommands') }}</h3>
               <Sortable
                 :list="listOfCirculationRequestCommands"
                 item-key="id"
