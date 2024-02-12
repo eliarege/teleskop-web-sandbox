@@ -11,11 +11,11 @@ const { t } = useI18n()
 const joborder = ref(props.joborder)
 const plankey = ref(props.plankey)
 
-const parameterCols = [
+const parameterCols = computed(() => [
   { name: 'parameter', label: t('jobOrderParameters.parameterName'), field: 'parameter' },
   { name: 'value', label: t('jobOrderParameters.value'), field: 'value' },
   { name: 'unit', label: t('jobOrderParameters.unit'), field: 'unit' },
-]
+])
 
 const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.value}`)
 </script>

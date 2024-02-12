@@ -15,7 +15,7 @@ const materialGroups = [
   { label: t('settings.other'), materialGroup: 3 },
 ]
 
-const columns: Array<Column> = [
+const columns = computed<Array<Column>>(() => [
   {
     name: 'materialName',
     label: t('settings.materialName'),
@@ -40,7 +40,7 @@ const columns: Array<Column> = [
     optionValue: 'materialGroup',
     selectionOptions: materialGroups,
   },
-]
+])
 
 const materialInfo = ref<{ label: string, value: any, field: string, numeric?: boolean }[]>([
   { label: t('settings.materialCode'), value: '', field: 'materialCode' },

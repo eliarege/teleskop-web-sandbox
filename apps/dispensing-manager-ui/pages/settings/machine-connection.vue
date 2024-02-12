@@ -20,7 +20,7 @@ const controlDevices = [
   { controlDevice: 5, label: 'Tonello' },
 ]
 
-const columns: Array<Column> = [
+const columns = computed<Array<Column>>(() => [
   {
     name: 'machineid',
     label: t('settings.machineCode'),
@@ -48,7 +48,7 @@ const columns: Array<Column> = [
     optionLabel: 'label',
     optionValue: 'controlDevice',
   },
-]
+])
 
 const machineInfo = ref<{ label: string, value: any, field: string }[]>([
   { label: t('settings.machineCode'), value: '', field: 'machineid' },

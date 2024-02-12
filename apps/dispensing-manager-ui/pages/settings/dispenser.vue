@@ -20,7 +20,7 @@ const protocols = ref([
 await getRows()
 await getTypes()
 
-const columns: Array<Column> = [
+const columns = computed<Array<Column>>(() => [
   {
     name: 'dispNo',
     label: t('settings.dispSettings.dispNo'),
@@ -57,7 +57,7 @@ const columns: Array<Column> = [
     optionLabel: 'label',
     optionValue: 'protocol',
   },
-]
+])
 
 const dispenserInfo = ref<{ label: string, value: any, field: string, options?: Array<any> }[]>([
   { label: t('settings.dispSettings.dispNo'), value: '', field: 'dispNo' },
