@@ -209,5 +209,6 @@
   "waterAmountParameter": "Water Amount Parameter",
   "machineGroups": "Machine Groups",
   "parameterList": "Parameter List",
-  "allMappedParameters": "All Mapped Parameters"
+  "allMappedParameters": "All Mapped Parameters",
+  "getDyeHouseDefinitions": "Get Dye House Definitions"
 }

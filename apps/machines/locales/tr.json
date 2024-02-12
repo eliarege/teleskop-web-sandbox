@@ -203,5 +203,6 @@
   "waterAmountParameter": "Su Miktarı Parametre",
   "machineGroups": "Makine Grupları",
   "parameterList": "Parametre Listesi",
-  "allMappedParameters": "Tüm Eşlenmiş Parametreler"
+  "allMappedParameters": "Tüm Eşlenmiş Parametreler",
+  "getDyeHouseDefinitions": "Boyahane Tanımlarını Al"
 }

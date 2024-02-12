@@ -14,6 +14,7 @@ const { t, locale, setLocale } = useI18n()
 const showMachineParameters = ref(false)
 const showMimic = ref(false)
 const showFormulas = ref(false)
+const showGetDyeHouseDefinitions = ref(false)
 const machineId = computed(() => props.selected.machineId)
 
 const { data: version } = useLazyFetch('/api/soap/get-version', {
@@ -25,16 +26,6 @@ const { data: version } = useLazyFetch('/api/soap/get-version', {
 
 async function loadProject() {
   await $fetch('/api/ftp/update-machine', {
-    method: 'GET',
-    query: {
-      machineId: props.selected.machineId,
-      ip: props.selected.ip,
-    },
-  })
-}
-
-async function loadDefinitions() {
-  await $fetch('/api/ftp/update-definitions', {
     method: 'GET',
     query: {
       machineId: props.selected.machineId,
@@ -86,7 +77,7 @@ async function loadDefinitions() {
         no-caps
         color="primary"
         class="mr-4"
-        @click="loadDefinitions"
+        @click="showGetDyeHouseDefinitions = true"
       />
     </q-card-section>
 
@@ -123,5 +114,11 @@ async function loadDefinitions() {
     :show="showFormulas"
     :selected="selected"
     @close="showFormulas = false"
+  />
+  <GetDyeHouseDefinitionsDialog
+    v-if="showGetDyeHouseDefinitions"
+    :show="showGetDyeHouseDefinitions"
+    :selected="selected"
+    @close="showGetDyeHouseDefinitions = false"
   />
 </template>
