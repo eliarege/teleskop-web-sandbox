@@ -15,6 +15,7 @@ const showMachineParameters = ref(false)
 const showMimic = ref(false)
 const showFormulas = ref(false)
 const showGetDyeHouseDefinitions = ref(false)
+const showSetDyeHouseDefinitions = ref(false)
 const machineId = computed(() => props.selected.machineId)
 
 const { data: version } = useLazyFetch('/api/soap/get-version', {
@@ -79,6 +80,13 @@ async function loadProject() {
         class="mr-4"
         @click="showGetDyeHouseDefinitions = true"
       />
+      <q-btn
+        :label="t('setDyeHouseDefinitions')"
+        no-caps
+        color="primary"
+        class="mr-4"
+        @click="showSetDyeHouseDefinitions = true"
+      />
     </q-card-section>
 
     <q-card-section class="flex flex-row items-end mr-8">
@@ -120,5 +128,11 @@ async function loadProject() {
     :show="showGetDyeHouseDefinitions"
     :selected="selected"
     @close="showGetDyeHouseDefinitions = false"
+  />
+  <SetDyeHouseDefinitionsDialog
+    v-if="showSetDyeHouseDefinitions"
+    :show="showSetDyeHouseDefinitions"
+    :selected="selected"
+    @close="showSetDyeHouseDefinitions = false"
   />
 </template>

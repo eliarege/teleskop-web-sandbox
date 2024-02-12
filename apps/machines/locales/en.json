@@ -210,5 +210,7 @@
   "machineGroups": "Machine Groups",
   "parameterList": "Parameter List",
   "allMappedParameters": "All Mapped Parameters",
-  "getDyeHouseDefinitions": "Get Dye House Definitions"
+  "getDyeHouseDefinitions": "Get Dye House Definitions",
+  "users": "Users",
+  "setDyehouseDefinitions": "Set Dye House Definitions"
 }

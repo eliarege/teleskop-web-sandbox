@@ -15,7 +15,7 @@ const options = ref({
 })
 
 async function loadDefinitions() {
-  await $fetch('/api/ftp/update-definitions', {
+  await $fetch('/api/ftp/get-dye-house-definitions', {
     method: 'POST',
     query: {
       machineId: props.selected.machineId,
@@ -44,10 +44,10 @@ function deselectAll() {
         {{ t('getDyeHouseDefinitions') }}
       </h3>
       <div class="grid grid-cols-2 gap-2 mb-4">
-        <q-checkbox v-model="options.users" label="Users" />
-        <q-checkbox v-model="options.manualReasons" label="Manual Reasons" />
-        <q-checkbox v-model="options.machineIdleReasons" label="Machine Idle Reasons" />
-        <q-checkbox v-model="options.machineFinishReasons" label="Machine Finish Reasons" />
+        <q-checkbox v-model="options.users" :label="t('users')" />
+        <q-checkbox v-model="options.manualReasons" :label="t('manualReasons')" />
+        <q-checkbox v-model="options.machineIdleReasons" :label="t('machineIdleReasons')" />
+        <q-checkbox v-model="options.machineFinishReasons" :label="t('machineFinishReasons')" />
       </div>
       <div class="flex flex-row gap-4 justify-end">
         <q-btn no-caps :label="t('Select All')" @click="selectAll" />
