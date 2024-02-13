@@ -178,7 +178,7 @@ async function submit(isPut: boolean) {
   }
   /** If create */
   if (!isPut) {
-    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection${body.machineid}`, {
+    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection/${body.machineid}`, {
       method: 'post',
       body,
     })
@@ -187,7 +187,7 @@ async function submit(isPut: boolean) {
     expandedRow.value = null
   }
   if (isPut) { /** If it is put */
-    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection${body.machineid}`, {
+    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection/${body.machineid}`, {
       method: 'put',
       body,
     })
