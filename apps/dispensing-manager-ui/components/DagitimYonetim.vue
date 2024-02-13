@@ -392,7 +392,7 @@ onBeforeUnmount(() => {
               :props="tableProps"
             >
               <div
-                class="column-group text-override-left-header"
+                class="column-group"
                 :style="col.filterable ? 'cursor: pointer;' : ''"
               >
                 {{ col.label }}
@@ -492,20 +492,8 @@ img.invert-colors {
   justify-content: center;
 }
 
-.text-override-right :deep(.text-right){
-  text-align: right;
-  word-break: normal;
-  white-space: normal;
-}
-.text-override-center :deep(.text-right){
-  text-align: center;
-  word-break: normal;
-  white-space: normal;
-}
 .text-override-left :deep(.text-right){
   text-align: left;
-  word-break: normal;
-  white-space: normal;
 }
 
 .header-class {
