@@ -105,7 +105,7 @@ async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
     await toggleRowExpand(row, index)
   else {
     let canContinue = true
-    if (expandedRow.value !== null) {
+    if (expandedRow.value) {
       canContinue = !isFormChangedComparison()
     }
     if (canContinue)

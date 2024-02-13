@@ -62,9 +62,6 @@ router.post('/dispenser/:dispNo', defineEventHandler(async (event) => {
       throw new Error('URL parameters are undefined')
     }
     const dispNo = event.context.params.dispNo
-    if (dispNo) {
-      return 'DispenserID is required'
-    }
     dispenser = await knex('DYTFDISPENSERSETTINGS')
       .where('DISPENSERID', dispNo)
       .select('DISPENSERID')

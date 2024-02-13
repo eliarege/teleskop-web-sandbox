@@ -121,7 +121,7 @@ async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
     await toggleRowExpand(row, index)
   else {
     let canContinue = true
-    if (expandedRow.value !== null) {
+    if (expandedRow.value) {
       canContinue = !isFormChangedComparison()
     }
     if (canContinue)
@@ -186,14 +186,14 @@ async function submit(isPut: boolean) {
   let keyI18N
   const body = {
     dispNo: dispenserInfo.value[0].value,
-    name: dispenserInfo.value[1].value,
-    dispType: dispenserInfo.value[2].value.type,
-    dispIP: dispenserInfo.value[3].value,
-    fileSystem: dispenserInfo.value[4].value,
-    fileName: dispenserInfo.value[5].value,
+    name: dispenserInfo.value[1]?.value,
+    dispType: dispenserInfo.value[2].value?.type,
+    dispIP: dispenserInfo.value[3]?.value,
+    fileSystem: dispenserInfo.value[4]?.value,
+    fileName: dispenserInfo.value[5]?.value,
     protocol: dispenserInfo.value[6].value?.protocol,
-    dispConsumptionFileName: dispenserInfo.value[7].value,
-    dms: dmsRead.value,
+    dispConsumptionFileName: dispenserInfo.value[7]?.value,
+    dms: dmsRead?.value,
   }
   /** If create */
   if (!isPut) {
