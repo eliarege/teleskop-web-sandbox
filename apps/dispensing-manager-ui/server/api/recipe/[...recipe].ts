@@ -109,7 +109,6 @@ router.get('/joborder', defineEventHandler(async (event) => {
     return 0
   } else
     planKey = planKey[0].PLANKEY
-  console.log(planKey)
   const machineid = (await knex('DYBFBATCHPLAN')
     .select('PLANNEDMACHINE')
     .where('PLANKEY', planKey))[0].PLANNEDMACHINE

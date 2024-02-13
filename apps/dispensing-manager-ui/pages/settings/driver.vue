@@ -32,7 +32,6 @@ function setVariables() {
 async function updateDriverSettings(isPut: boolean) {
   let isSuccess
   let keyI18N
-  console.log(1)
   await $fetch('/api/settings/file-system', {
     method: 'put',
     body: {

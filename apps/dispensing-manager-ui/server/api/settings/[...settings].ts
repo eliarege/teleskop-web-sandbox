@@ -192,7 +192,6 @@ router.post('/machine-dispenser-connection/:machineid', defineEventHandler(async
       MACHINENAME: body.machinename,
       CONTROLLERTYPE: body.controlDevice,
     })
-  console.log(body.disps)
   if (body.disps)
     body.disps.forEach(async (disp) => {
       await knex('DYTFMACHDISPCONNECTION').insert({
