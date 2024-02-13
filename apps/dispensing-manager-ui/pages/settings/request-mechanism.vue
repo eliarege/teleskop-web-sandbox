@@ -29,7 +29,6 @@ const tartimOptionsExtra = ref([
 
 const genericOptions = ref()
 genericOptions.value = await $fetch('/api/settings/material')
-console.log(genericOptions.value)
 
 async function fetchSettings() {
   settingsData.value = await $fetch('/api/settings/request-mechanism-setting')

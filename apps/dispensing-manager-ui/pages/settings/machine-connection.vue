@@ -20,7 +20,7 @@ const controlDevices = [
   { controlDevice: 5, label: 'Tonello' },
 ]
 
-const columns: Array<Column> = [
+const columns = computed<Array<Column>>(() => [
   {
     name: 'machineid',
     label: t('settings.machineCode'),
@@ -48,7 +48,7 @@ const columns: Array<Column> = [
     optionLabel: 'label',
     optionValue: 'controlDevice',
   },
-]
+])
 
 const machineInfo = ref<{ label: string, value: any, field: string }[]>([
   { label: t('settings.machineCode'), value: '', field: 'machineid' },
@@ -105,7 +105,7 @@ async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
     await toggleRowExpand(row, index)
   else {
     let canContinue = true
-    if (expandedRow.value !== null) {
+    if (expandedRow.value) {
       canContinue = !isFormChangedComparison()
     }
     if (canContinue)
@@ -172,13 +172,13 @@ async function submit(isPut: boolean) {
   let keyI18N
   const body = {
     machineid: machineInfo.value[0].value,
-    machinename: machineInfo.value[1].value,
+    machinename: machineInfo.value[1]?.value,
     controlDevice: machineInfo.value[2].value?.controlDevice,
-    disps: machineInfo.value[3].value,
+    disps: machineInfo.value[3]?.value,
   }
   /** If create */
   if (!isPut) {
-    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection${body.machineid}`, {
+    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection/${body.machineid}`, {
       method: 'post',
       body,
     })
@@ -187,7 +187,7 @@ async function submit(isPut: boolean) {
     expandedRow.value = null
   }
   if (isPut) { /** If it is put */
-    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection${body.machineid}`, {
+    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection/${body.machineid}`, {
       method: 'put',
       body,
     })

@@ -94,17 +94,21 @@ router.get('/joborder', defineEventHandler(async (event) => {
   const { recipeJB, correctionNo } = getQuery(event)
   let planKey
   if (Number(correctionNo)) {
-    planKey = knex('DYBFBATCHPLAN')
+    planKey = await knex('DYBFBATCHPLAN')
       .where('JOBORDER', recipeJB)
       .andWhere('CORRECTIONNUMBER', correctionNo)
       .select('PLANKEY')
   } else {
-    planKey = knex('DYBFBATCHPLAN')
+    planKey = await knex('DYBFBATCHPLAN')
       .where('JOBORDER', recipeJB)
       .orderBy('PLANKEY', 'desc')
       .limit(1)
       .select('PLANKEY')
   }
+  if (!planKey.length) {
+    return 0
+  } else
+    planKey = planKey[0].PLANKEY
   const machineid = (await knex('DYBFBATCHPLAN')
     .select('PLANNEDMACHINE')
     .where('PLANKEY', planKey))[0].PLANNEDMACHINE

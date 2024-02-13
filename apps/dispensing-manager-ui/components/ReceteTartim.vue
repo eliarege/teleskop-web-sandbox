@@ -334,6 +334,7 @@ onBeforeUnmount(() => {
           <q-btn
             :label="t('request')"
             icon="search"
+            :disable="!jobordernum"
             class="py-2"
             @click="requestJobOrder()"
           />
@@ -356,6 +357,7 @@ onBeforeUnmount(() => {
           v-model="correctionNoDisplayed"
           class="w-20"
           filled
+          :disabled="!plankey"
           dense
           hide-bottom-space
           :options="correctionNoList"
@@ -367,6 +369,7 @@ onBeforeUnmount(() => {
           <q-btn
             class="ml-5 py-3 w-75 items-start"
             :label="`${t('recipe.changePlannedMachine')}`"
+            :disabled="!plankey"
             icon="published_with_changes"
             @click="showChangeMachineDialog = true"
           />

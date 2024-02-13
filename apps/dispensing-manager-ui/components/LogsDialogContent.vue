@@ -24,7 +24,7 @@ const status = ref([
   { label: t('jobOrderLogs.faultyOther'), status: null },
 ])
 
-const logCols: Column[] = [
+const logCols = computed<Column[]>(() => [
   { name: 'id', label: t('jobOrderLogs.id'), field: 'id', filterable: true, filterType: 'comparison' },
   // { name: 'machineName', label: t('machinename'), field: 'machineName' },
   // { name: 'joborder', label: t('jobOrderLogs.jobOrderCode'), field: 'joborder' },
@@ -64,7 +64,7 @@ const logCols: Column[] = [
     filterType: 'date',
   },
   { name: 'description', label: t('jobOrderLogs.description'), field: 'description' },
-]
+])
 
 const logRows = ref()
 await applyFilters([])

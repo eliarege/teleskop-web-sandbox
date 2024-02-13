@@ -9,7 +9,7 @@ const props = defineProps({
 })
 const { t, d } = useI18n()
 
-const columnsOto = [
+const columnsOto = computed(() => [
   { name: 'processNo', label: t('recipe.processNo'), field: 'processNo' },
   { name: 'machinename', label: t('machinename'), field: 'machinename' },
   { name: 'tankNo', label: t('tankNo'), field: 'tankNo', format: (val, row) => (val === -1) ? '____' : val },
@@ -46,9 +46,9 @@ const columnsOto = [
     },
   },
   { name: 'otoMan', label: t('weighingInformation.otoMan'), field: 'otoMan', format: (val, row) => val ? t('weighingInformation.oto') : t('weighingInformation.man') },
-]
+])
 
-const columnsMan = [
+const columnsMan = computed(() => [
   { name: 'joborder', label: t('joborder'), field: 'joborder' },
   { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo' },
   { name: 'weighingNumber', label: t('weighingInformation.weighingNumber'), field: 'weighingNumber' },
@@ -65,7 +65,7 @@ const columnsMan = [
       return d(val, 'datetime')
     },
   },
-]
+])
 const data = await $fetch(`/api/consumption/theoretical?joborder=${props.joborder}&correctionNo=${props.correctionNo}`)
 const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&correctionNo=${props.correctionNo}`)
 </script>

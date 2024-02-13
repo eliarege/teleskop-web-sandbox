@@ -5,7 +5,6 @@ import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
-const recetetartim = t('dispensingManager.recipeMeasurement')
 const paginationSync = ref(500)
 const paginationPageLeft = ref(1)
 
@@ -20,7 +19,7 @@ const confirmationDialog = ref<ConfirmationDialog>({ vis: false, act: 'cancel' }
 
 const machines = await $fetch('/api/machine/machines')
 const dispensers = await $fetch('/api/settings/dispenser')
-const columnsRecipe: Column[] = [
+const columnsRecipe = computed<Column[]>(() => [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
   {
@@ -90,14 +89,14 @@ const columnsRecipe: Column[] = [
     optionLabel: 'label',
     optionValue: 'status',
   },
-]
-const columnsMaterial = [
+])
+const columnsMaterial = computed<Column[]>(() => [
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
   { name: 'materialCode', label: t('materialCode'), field: 'materialCode' },
   { name: 'name', label: t('dispensingManager.materialDistributor'), field: 'name' },
   { name: 'amount', label: t('recipe.amount'), field: 'amount', format: val => val.toFixed(2) },
   { name: 'status', label: t('statusCodes.text'), field: 'status', format: val => t(`statusCodes.${val}`), style: row => cellRGBColorHandler(row.status) },
-]
+])
 
 // TODO: Will request every 10 seconds to ensure data stream
 const recipe = ref()
@@ -393,7 +392,7 @@ onBeforeUnmount(() => {
               :props="tableProps"
             >
               <div
-                class="column-group text-override-left-header"
+                class="column-group"
                 :style="col.filterable ? 'cursor: pointer;' : ''"
               >
                 {{ col.label }}
@@ -419,7 +418,7 @@ onBeforeUnmount(() => {
         outline
         class=""
         color="black"
-        :label="recetetartim"
+        :label="t('dispensingManager.recipeMeasurement')"
         @click="navigateToPage('recete-tartim')"
       />
       <q-btn
@@ -493,20 +492,8 @@ img.invert-colors {
   justify-content: center;
 }
 
-.text-override-right :deep(.text-right){
-  text-align: right;
-  word-break: normal;
-  white-space: normal;
-}
-.text-override-center :deep(.text-right){
-  text-align: center;
-  word-break: normal;
-  white-space: normal;
-}
 .text-override-left :deep(.text-right){
   text-align: left;
-  word-break: normal;
-  white-space: normal;
 }
 
 .header-class {

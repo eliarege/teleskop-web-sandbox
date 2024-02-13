@@ -21,7 +21,6 @@ export function textAlignOverride(pos: string) {
  * @returns style of the status column for each row respectively
  */
 export function cellRGBColorHandler(val) {
-  console.log(val)
   let temp = 'background-color: '
   if (val === 0) {
     temp += 'white; text-color: black'
@@ -40,7 +39,6 @@ export function cellRGBColorHandler(val) {
       temp += colors.status8
     temp += '; color: white;'
   }
-  console.log(temp)
   temp += 'width: 10rem; border-color: white; border-width: bold; font-weight: bolder; font-size: medium;'
   return temp
 }

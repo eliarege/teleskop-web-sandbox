@@ -62,9 +62,6 @@ router.post('/dispenser/:dispNo', defineEventHandler(async (event) => {
       throw new Error('URL parameters are undefined')
     }
     const dispNo = event.context.params.dispNo
-    if (dispNo) {
-      return 'DispenserID is required'
-    }
     dispenser = await knex('DYTFDISPENSERSETTINGS')
       .where('DISPENSERID', dispNo)
       .select('DISPENSERID')
@@ -195,12 +192,13 @@ router.post('/machine-dispenser-connection/:machineid', defineEventHandler(async
       MACHINENAME: body.machinename,
       CONTROLLERTYPE: body.controlDevice,
     })
-  body.disps.forEach(async (disp) => {
-    await knex('DYTFMACHDISPCONNECTION').insert({
-      DISPENSERID: disp.dispNo,
-      MACHINEID: machineid,
+  if (body.disps)
+    body.disps.forEach(async (disp) => {
+      await knex('DYTFMACHDISPCONNECTION').insert({
+        DISPENSERID: disp.dispNo,
+        MACHINEID: machineid,
+      })
     })
-  })
   return 1 // return 200
 }))
 
@@ -485,8 +483,17 @@ router.get('/driver', defineEventHandler(async () => {
   return result
 }))
 
-router.post('/driver', defineEventHandler(async (event) => {
+router.post('/driver/:DRIVERID', defineEventHandler(async (event) => {
   const body = await readBody(event)
+  if (!event.context.params) {
+    throw new Error('URL parameters are undefined')
+  }
+  const DRIVERID = event.context.params.DRIVERID
+  const isThereDriver = await knex('DYTFCOMDRIVERs')
+    .where('DRIVERID', DRIVERID)
+  if (isThereDriver.length > 0)
+    return { code: 400, error: 'Dispenser with given dispenser id is already exist.' }
+
   await knex('DYTFCOMDRIVERs')
     .insert(body)
   return 1

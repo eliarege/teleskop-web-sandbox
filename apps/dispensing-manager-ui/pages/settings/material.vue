@@ -15,7 +15,7 @@ const materialGroups = [
   { label: t('settings.other'), materialGroup: 3 },
 ]
 
-const columns: Array<Column> = [
+const columns = computed<Array<Column>>(() => [
   {
     name: 'materialName',
     label: t('settings.materialName'),
@@ -40,7 +40,7 @@ const columns: Array<Column> = [
     optionValue: 'materialGroup',
     selectionOptions: materialGroups,
   },
-]
+])
 
 const materialInfo = ref<{ label: string, value: any, field: string, numeric?: boolean }[]>([
   { label: t('settings.materialCode'), value: '', field: 'materialCode' },
@@ -110,7 +110,7 @@ async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
     await toggleRowExpand(row, index)
   else {
     let canContinue = true
-    if (expandedRow.value !== null) {
+    if (expandedRow.value) {
       canContinue = !isFormChangedComparison()
     }
     if (canContinue)
@@ -176,15 +176,15 @@ async function submit(isPut: boolean) {
   let keyI18N
   const body = {
     materialCode: materialInfo.value[0].value,
-    materialName: materialInfo.value[1].value,
+    materialName: materialInfo.value[1]?.value || '',
     materialGroup: materialInfo.value[2].value?.materialGroup,
-    density: materialInfo.value[3].value,
-    ph: materialInfo.value[4].value,
-    source: materialInfo.value[5].value,
-    cost: materialInfo.value[6].value,
-    connectedDisps: materialInfo.value[7].value,
-    directTransfer: materialInfo.value[8].value,
-    rerequestable: materialInfo.value[9].value,
+    density: materialInfo.value[3]?.value,
+    ph: materialInfo.value[4]?.value,
+    source: materialInfo.value[5]?.value,
+    cost: materialInfo.value[6]?.value,
+    connectedDisps: materialInfo.value[7]?.value,
+    directTransfer: materialInfo.value[8]?.value,
+    rerequestable: materialInfo.value[9]?.value,
   }
   /** If create */
   if (!isPut) {

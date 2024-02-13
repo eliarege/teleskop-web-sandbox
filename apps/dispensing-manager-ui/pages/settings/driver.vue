@@ -38,44 +38,44 @@ async function updateDriverSettings(isPut: boolean) {
       path: requestFilteSystemPath.value,
     },
   })
-  console.log(isPut)
+  const body = {
+    DRIVERID: driver.value.DRIVERID,
+    DRIVERNAME: driver.value?.DRIVERNAME,
+    PROTOCOL: protocol.value?.value,
+    REFERENCEID: referenceType.value?.value,
+    DRIVERFILENAME: driver.value.DRIVERFILENAME ? driver.value.DRIVERFILENAME : '',
+    CONTROLTOTALBATCH: radio.value === 0,
+    CONTROLPROGRAMREQUEST: radio.value === 1,
+    CONTROLTOTALREQ: driver.value?.CONTROLTOTALREQ,
+    CONTROLNV5DESC: driver.value?.CONTROLNV5DESC,
+  }
   if (!isPut) {
     isSuccess = await $fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
       method: 'POST',
-      body: {
-        DRIVERID: driver.value.DRIVERID,
-        DRIVERNAME: driver.value.DRIVERNAME,
-        PROTOCOL: protocol.value.value,
-        REFERENCEID: referenceType.value.value,
-        DRIVERFILENAME: driver.value.DRIVERFILENAME,
-        CONTROLTOTALBATCH: radio.value === 0,
-        CONTROLPROGRAMREQUEST: radio.value === 1,
-        CONTROLTOTALREQ: driver.value.CONTROLTOTALREQ,
-        CONTROLNV5DESC: driver.value.CONTROLNV5DESC,
-      },
+      body,
     })
     keyI18N = 'warnings.createResponse'
   } else {
-    console.log(typeof driver.value.DRIVERID)
     isSuccess = await $fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
       method: 'PUT',
-      body: {
-        DRIVERID: driver.value.DRIVERID,
-        DRIVERNAME: driver.value.DRIVERNAME,
-        PROTOCOL: protocol.value.value,
-        REFERENCEID: referenceType.value.value,
-        DRIVERFILENAME: driver.value.DRIVERFILENAME,
-        CONTROLTOTALBATCH: radio.value === 0,
-        CONTROLPROGRAMREQUEST: radio.value === 1,
-        CONTROLTOTALREQ: driver.value.CONTROLTOTALREQ,
-        CONTROLNV5DESC: driver.value.CONTROLNV5DESC,
-      },
+      body,
     })
     keyI18N = 'warnings.changeResponse'
   }
   drivers.value = await $fetch('/api/settings/driver')
-  driver.value.newDriver = false
-  notification(isSuccess, t(keyI18N!, { type: t('warnings.driver'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
+  if (isSuccess && isSuccess?.code !== 400)
+    driver.value.newDriver = false
+  notification(
+    isSuccess && isSuccess?.code !== 400,
+    t(keyI18N!, {
+      type: t('warnings.driver'),
+      result: isSuccess
+        ? isSuccess?.code === 400
+          ? t('warnings.idAlreadyExists', { code: driver.value.DRIVERID, type: t('warnings.driver') })
+          : t('warnings.success')
+        : t('warnings.fail'),
+    }),
+  )
 }
 async function fetchData() {
   requestFilteSystemPath.value = await $fetch('/api/settings/file-system')
