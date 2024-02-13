@@ -233,6 +233,13 @@ function handleKeyUp(event) {
   }
 }
 
+function searchFilterUpdated(evt: any) {
+  if (evt) {
+    material.value = []
+    selectedRow.value = null
+  }
+}
+
 onMounted(() => {
   window.addEventListener('keyup', handleKeyUp)
 })
@@ -255,6 +262,7 @@ onBeforeUnmount(() => {
           :pagination="{ rowsPerPage: paginationSync, page: paginationPageLeft }"
           @update:pagination="(newPag: any) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
           @update-filter-slots="(evt) => applyFilters(evt)"
+          @update-search-filter="(evt) => searchFilterUpdated(evt)"
         >
           <!-- style="width: 55%; height: 100%;" -->
           <template #top-right>

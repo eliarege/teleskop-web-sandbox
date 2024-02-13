@@ -1,5 +1,39 @@
 <script setup lang="ts">
-import type { Column, DateType, FilterSlot } from '../types'
+import type { QTableColumn } from 'quasar'
+
+interface Column extends QTableColumn {
+  filterable?: boolean // If it is flase, no filter will be applied
+  sortable?: boolean
+  filterType?: 'select' | 'multiselect' | 'date' | 'comparison' | 'boolean' | 'equals' | 'includes'
+  selectionOptions?: Array<any> // Necessary if filterType is select or multiselect
+  optionLabel?: string // Necessary if each element of selectionOptions array has more than one attributes
+  optionValue?: string // Returns optionValue on select and multiselect if specified else return the whole object
+  // Optionvalue is not implemented for now
+}
+
+interface DateType {
+  text?: string
+  from: Date
+  to: Date
+}
+
+interface FilterSlot {
+  label: string
+  field: string
+  isOrderFilter?: boolean
+  filterType: string
+  optionValue?: string
+  value: {
+    option?: Array<any>
+    from?: Date
+    to?: Date
+    min?: number
+    max?: number
+    operator?: string
+    number?: number
+    direction?: string
+  }
+}
 
 const props = defineProps({
   rows: {
@@ -39,7 +73,7 @@ const props = defineProps({
     },
   },
 })
-const emit = defineEmits(['rowDblclick', 'updateFilterSlots'])
+const emit = defineEmits(['rowDblclick', 'updateFilterSlots', 'updateSearchFilter'])
 
 const { t, locale } = useI18n({ useScope: 'local' })
 function handleDoubleClick(row: any) {
@@ -203,6 +237,7 @@ function checkForButtonsInsteadOfSelect(col: any) {
 }
 
 function customFilterMethod(rows, terms, cols, cellValue) {
+  emit('updateSearchFilter', terms)
   const lowerTerms = terms ? terms.toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN') : ''
   const result = rows.filter(
     row => cols.some((col) => {
