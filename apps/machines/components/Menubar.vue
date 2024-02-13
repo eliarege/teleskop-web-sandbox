@@ -17,8 +17,12 @@ const showFormulas = ref(false)
 const showGetDyeHouseDefinitions = ref(false)
 const showSetDyeHouseDefinitions = ref(false)
 
+const { data: databaseVersion } = useLazyFetch('/api/machines/database-version', {
+  default: () => '',
+})
+
 async function updateVersions() {
-  await $fetch('/api/soap/get-versions')
+  await $fetch('/api/soap/machine-versions')
   emit('refresh')
 }
 
@@ -88,6 +92,9 @@ async function loadProject() {
     </q-card-section>
 
     <q-card-section class="flex flex-row items-end mr-8">
+      <q-chip>
+        {{ `DB v${databaseVersion}` }}
+      </q-chip>
       <q-option-group
         :model-value="locale"
         type="radio"
