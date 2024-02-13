@@ -1,0 +1,37 @@
+{
+  "name": "machine-status",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "dist/index.mjs",
+  "scripts": {
+    "dev": "NODE_ENV=development tsx -r dotenv/config src/index.ts | pino-pretty",
+    "start": "node dist/index.mjs",
+    "preview": "NODE_ENV=production node -r dotenv/config dist/index.mjs | pino-pretty",
+    "build": "unbuild",
+    "stub": "unbuild --stub",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "typecheck": "tsc --noEmit",
+    "keycloak": "../../keycloak/keycloak.sh"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@tediousjs/connection-string": "^0.5.0",
+    "fastify": "^4.24.3",
+    "kysely": "^0.27.2",
+    "pino": "^8.16.2",
+    "tarn": "^3.0.2",
+    "tedious": "^16.6.1",
+    "utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.6",
+    "build-utils": "workspace:*",
+    "pino-pretty": "^10.2.3",
+    "tsconfig": "workspace:*",
+    "unbuild": "2.0.0"
+  }
+}
