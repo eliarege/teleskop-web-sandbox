@@ -213,5 +213,14 @@
   "chemicalDyeRecipeIsReadFromERP": "Kimyasal/Boya Reçetesi ERP'den Okunur",
   "timeBasedPlanningModeActive": "Zaman Tabanlı Planlama Modu Aktif",
   "processUsageActive": "İşlem Kullanımı Aktif",
-  "dyeHouseLaundryNumber": "Boyahane / Yıkama Numarası"
+  "dyeHouseLaundryNumber": "Boyahane / Yıkama Numarası",
+  "formulaId": "Formül No",
+  "formulaName": "Formül Adı",
+  "formula": "Formül",
+  "commandName": "Komut Adı",
+  "inputOutputName": "Giriş/Çıkış Adı",
+  "analogInputs": "Analog Girişler",
+  "analogOutputs": "Analog Çıkışlar",
+  "otherSettings": "Diğer Ayarlar",
+  "maxReelSpeed": "Maksimum Kule Hızı"
 }

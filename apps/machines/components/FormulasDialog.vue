@@ -9,6 +9,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const { t } = useI18n()
+
 const machineId = computed(() => props.selected.machineId)
 
 const { data: formulas } = useLazyFetch('/api/machines/formulas', {
@@ -21,7 +23,7 @@ const { data: formulas } = useLazyFetch('/api/machines/formulas', {
 const columns: Column[] = [
   {
     name: 'formulaId',
-    label: 'Formül No',
+    label: t('formulaId'),
     field: 'formulaId',
     align: 'left',
     filterable: true,
@@ -29,7 +31,7 @@ const columns: Column[] = [
   },
   {
     name: 'formulaName',
-    label: 'Formül İsmi',
+    label: t('formulaName'),
     field: 'formulaName',
     align: 'left',
     filterable: true,
@@ -37,7 +39,7 @@ const columns: Column[] = [
   },
   {
     name: 'formula',
-    label: 'Formül',
+    label: t('formula'),
     field: 'formula',
     align: 'left',
     filterable: true,
@@ -45,7 +47,7 @@ const columns: Column[] = [
   },
   {
     name: 'commandName',
-    label: 'Komut İsmi',
+    label: t('commandName'),
     field: 'commandName',
     align: 'left',
     filterable: true,
@@ -53,7 +55,7 @@ const columns: Column[] = [
   },
   {
     name: 'parameterName',
-    label: 'Parametre İsmi',
+    label: t('parameterName'),
     field: 'parameterName',
     align: 'left',
     filterable: true,

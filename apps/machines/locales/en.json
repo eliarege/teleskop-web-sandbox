@@ -218,5 +218,14 @@
   "chemicalDyeRecipeIsReadFromERP": "Chemical / Dye Recipe Is Read From ERP",
   "timeBasedPlanningModeActive": "Time Based Planning Mode Is Active",
   "processUsageActive": "Process Usage Is Active",
-  "dyeHouseLaundryNumber": "DyeHouse / Laundry Number"
+  "dyeHouseLaundryNumber": "DyeHouse / Laundry Number",
+  "formulaId": "Formula Id",
+  "formulaName": "Formula Name",
+  "formula": "Formula",
+  "commandName": "Command Name",
+  "inputOutputName": "Input/Output Name",
+  "analogInputs": "Analog Inputs",
+  "analogOutputs": "Analog Outputs",
+  "otherSettings": "Other Settings",
+  "maxReelSpeed": "Max Reel Speed"
 }

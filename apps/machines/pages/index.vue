@@ -205,9 +205,9 @@ const columns = computed(() => ({
     field: 'inUse',
     align: 'left',
     type: 'checkbox',
-    visible: false,
+    visible: true,
     editable: true,
-    format: (val, row) => val ? 'Evet' : 'Hayır',
+    format: (val, row) => val ? t('yes') : t('no'),
     schema: {
       filled: true,
     },
