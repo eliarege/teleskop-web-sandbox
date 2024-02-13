@@ -42,32 +42,32 @@ const { data: setting } = useLazyFetch('/api/machines/teleskop-settings', {
 
 const schema = computed(() => ([
   {
-    label: 'Kullanıcı Kontrol Aktif',
+    label: t('userControlIsActive'),
     name: 'ttbuserManagentActive',
     $formkit: 'checkbox',
   },
   {
-    label: 'Faz Modu Aktif',
+    label: t('phaseModeActive'),
     name: 'ttbphaseModeActive',
     $formkit: 'checkbox',
   },
   {
-    label: 'Kimyasal Boya Reçetesi, ERP’den Okunur',
+    label: t('chemicalDyeRecipeIsReadFromERP'),
     name: 'ttbCustomErpPrmOptimization',
     $formkit: 'checkbox',
   },
   {
-    label: 'Zaman Bazlı Planlama Modu Aktif',
+    label: t('timeBasedPlanningModeActive'),
     name: 'ttbTimeBasedModeActive',
     $formkit: 'checkbox',
   },
   {
-    label: 'İşlem Kullanımı Aktif',
+    label: t('processUsageActive'),
     name: 'ttbProcessUsageActive',
     $formkit: 'checkbox',
   },
   {
-    label: 'Boyahane / Yıkama Numarası',
+    label: t('dyeHouseLaundryNumber'),
     name: 'ttbDyehouseNumber',
     validation: 'required',
     $formkit: 'select',
@@ -97,7 +97,7 @@ async function handleSubmit() {
   >
     <q-card>
       <q-card-section>
-        <h3>Teleskop Settings</h3>
+        <h3>{{ t('teleskopSettings') }}</h3>
         <FormKit
           v-model="formData" :actions="false" type="form" :form-class="formClass" @submit="handleSubmit"
         >

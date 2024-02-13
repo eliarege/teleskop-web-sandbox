@@ -7,7 +7,7 @@ const props = defineProps<{
   selected: Machine
 }>()
 
-const emit = defineEmits(['deleteMachine', 'addMachine'])
+const emit = defineEmits(['refresh'])
 
 const { t, locale, setLocale } = useI18n()
 
@@ -16,14 +16,11 @@ const showMimic = ref(false)
 const showFormulas = ref(false)
 const showGetDyeHouseDefinitions = ref(false)
 const showSetDyeHouseDefinitions = ref(false)
-const machineId = computed(() => props.selected.machineId)
 
-const { data: version } = useLazyFetch('/api/soap/get-version', {
-  default: () => 0,
-  query: {
-    machineId: machineId.value !== -1 ? machineId.value : undefined,
-  },
-})
+async function updateVersions() {
+  await $fetch('/api/soap/get-versions')
+  emit('refresh')
+}
 
 async function loadProject() {
   await $fetch('/api/ftp/update-machine', {
@@ -51,6 +48,7 @@ async function loadProject() {
         no-caps
         color="primary"
         class="mr-4"
+        @click="updateVersions"
       />
       <q-btn
         :label="t('machineConstants')"
@@ -90,9 +88,6 @@ async function loadProject() {
     </q-card-section>
 
     <q-card-section class="flex flex-row items-end mr-8">
-      <q-chip class="mr-4 mb-2">
-        DB v{{ version }}
-      </q-chip>
       <q-option-group
         :model-value="locale"
         type="radio"

@@ -24,6 +24,10 @@ const definitionItems = computed(() => ([
         label: t('machineSettings'),
         items: [
           {
+            label: t('updateMachineSystemSettings'),
+            to: '/update-machine-system-settings',
+          },
+          {
             label: t('controllerOperators'),
             to: '/user-definitions',
           },

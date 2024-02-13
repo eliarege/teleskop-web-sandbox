@@ -212,5 +212,11 @@
   "allMappedParameters": "All Mapped Parameters",
   "getDyeHouseDefinitions": "Get Dye House Definitions",
   "users": "Users",
-  "setDyehouseDefinitions": "Set Dye House Definitions"
+  "setDyehouseDefinitions": "Set Dye House Definitions",
+  "userControlIsActive": "User Control Is Active",
+  "phaseModeActive": "Phase Mode Is Active",
+  "chemicalDyeRecipeIsReadFromERP": "Chemical / Dye Recipe Is Read From ERP",
+  "timeBasedPlanningModeActive": "Time Based Planning Mode Is Active",
+  "processUsageActive": "Process Usage Is Active",
+  "dyeHouseLaundryNumber": "DyeHouse / Laundry Number"
 }

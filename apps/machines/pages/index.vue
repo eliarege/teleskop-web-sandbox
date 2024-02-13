@@ -356,6 +356,7 @@ const columns = computed(() => ({
     },
   },
 }))
+
 const { data: machines, refresh } = useLazyFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
@@ -431,8 +432,7 @@ onBeforeUnmount(() => {
   <Menubar
     :machines="machines"
     :selected="selected"
-    @delete-machine="refresh"
-    @add-machine="refresh"
+    @refresh="refresh"
   />
   <FormTableKit
     :rows="machines" :columns="columns"

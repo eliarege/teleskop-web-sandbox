@@ -206,5 +206,12 @@
   "allMappedParameters": "Tüm Eşlenmiş Parametreler",
   "getDyeHouseDefinitions": "Boyahane Tanımlarını Al",
   "users": "Kullanıcılar",
-  "setDyeHouseDefinitions": "Boyahane Tanımlarını Gönder"
+  "setDyeHouseDefinitions": "Boyahane Tanımlarını Gönder",
+  "updateMachineSystemSettings": "Makine Sistem Ayarlarını Güncelle",
+  "userControlIsActive": "Kullanıcı Kontrol Aktif",
+  "phaseModeActive": "Faz Modu Aktif",
+  "chemicalDyeRecipeIsReadFromERP": "Kimyasal/Boya Reçetesi ERP'den Okunur",
+  "timeBasedPlanningModeActive": "Zaman Tabanlı Planlama Modu Aktif",
+  "processUsageActive": "İşlem Kullanımı Aktif",
+  "dyeHouseLaundryNumber": "Boyahane / Yıkama Numarası"
 }
