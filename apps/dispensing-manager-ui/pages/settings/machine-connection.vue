@@ -172,9 +172,9 @@ async function submit(isPut: boolean) {
   let keyI18N
   const body = {
     machineid: machineInfo.value[0].value,
-    machinename: machineInfo.value[1].value,
+    machinename: machineInfo.value[1]?.value,
     controlDevice: machineInfo.value[2].value?.controlDevice,
-    disps: machineInfo.value[3].value,
+    disps: machineInfo.value[3]?.value,
   }
   /** If create */
   if (!isPut) {
