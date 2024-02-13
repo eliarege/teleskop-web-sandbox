@@ -86,7 +86,11 @@ export default defineEventHandler(async (event) => {
       const materialReq = ({
         material_code: data.materialCode,
         req_no: data.jobId,
-        amount: data.amount,
+        recipe_amount: data.recipeAmount,
+        real_amount: data.realAmount,
+        main_step: data.mainStep,
+        parallel_step: data.parallelStep,
+        dispenser_id: data.dispenserId,
         status: data.status,
       })
       materialReqs.push(materialReq)

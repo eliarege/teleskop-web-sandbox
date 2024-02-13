@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { QTable } from 'quasar'
 import type { QTableColumn } from 'quasar'
 import MaterialRequests from './MaterialRequests.vue'
 import type { JobOrder } from '~/shared/types'
@@ -9,9 +10,10 @@ const { t } = useI18n()
 const q = useQuasar()
 const route = useRoute()
 const colorStore = useColorStore()
+const table = ref<QTable>()
 const searchFilter = ref('')
 const jobOrders = ref()
-
+const selectedRow = ref<JobOrder | null>(null)
 getJobOrders()
 async function getJobOrders() {
   jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${route.query.dispenserId}`)
@@ -95,14 +97,31 @@ const columns: (QTableColumn<JobOrder>)[] = [
     align: 'left',
   },
 ]
-
-function onRowClick(_event: Event, row: JobOrder) {
+const buttonProps = ref([
+  { name: '', label: t('Details'), link: '', icon: 'description' },
+  { name: '', label: t('Details'), link: '', icon: 'description' },
+  { name: '', label: t('Details'), link: '', icon: 'description' },
+])
+function onRowClick(row: JobOrder) {
+  if (selectedRow.value === row)
+    selectedRow.value = null
+  else
+    selectedRow.value = row
+  /*
   q.dialog({
     component: MaterialRequests,
     componentProps: { jobOrder: row },
   })
+  */
 }
 const pagination = ref({ rowsPerPage: 50 })
+watch((searchFilter), () => {
+  // Workaround to wait for filteredSortedRows to update since it is not reactive
+  setTimeout(() => {
+    if (!table.value?.filteredSortedRows.includes(selectedRow.value))
+      selectedRow.value = null
+  }, 100)
+})
 </script>
 
 <template>
@@ -119,6 +138,7 @@ const pagination = ref({ rowsPerPage: 50 })
       </QInput>
     </div>
     <QTable
+      ref="table"
       :card-class="q.dark.isActive ? 'card-dark' : 'card-light'"
       :table-class="q.dark.isActive ? 'table-dark' : 'table-light'"
       :table-header-class="q.dark.isActive ? 'header-dark' : 'header-light'"
@@ -127,27 +147,54 @@ const pagination = ref({ rowsPerPage: 50 })
       :pagination
       :columns
       :rows="jobOrders"
-      separator="none"
+      separator="cell"
       row-key="name"
-      @row-click="onRowClick"
     >
-      <template #body-cell="props">
-        <QTd
+      <template #body="props">
+        <QTr
           :props="props"
-          :style="cellStyle(props.col, props.row, props.pageIndex, q.dark.isActive, colorStore.colors)"
+          style="cursor: pointer;"
+          :class="{ 'selected-row': selectedRow === props.row }"
+          @click="onRowClick(props.row)"
         >
-          <span v-if="props.col.field === 'status'">
-            {{ t(`statusCodes.${props.row.status}`) }}
-          </span>
-          <span v-else-if="props.col.field === 'recipeType'">
-            {{ t(`recipeTypes.${props.row.recipeType}`) }}
-          </span>
-          <span v-else>
-            {{ props.value }}
-          </span>
-        </QTd>
+          <QTd
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+            :style="cellStyle(col, props.row, props.pageIndex, (selectedRow === props.row), q.dark.isActive, colorStore.colors)"
+          >
+            <span v-if="col.field === 'status'">
+              {{ t(`statusCodes.${props.row.status}`) }}
+            </span>
+            <span v-else-if="col.field === 'recipeType'">
+              {{ t(`recipeTypes.${props.row.recipeType}`) }}
+            </span>
+            <span v-else>
+              {{ props.row[col.field] }}
+            </span>
+          </QTd>
+        </QTr>
       </template>
     </QTable>
+    <div
+      v-if="selectedRow"
+      :class="q.dark.isActive ? 'footer-buttons-joborder-dark' : 'footer-buttons-joborder-light'"
+    >
+      <QBtn
+        v-for="button of buttonProps"
+        :key="button.name"
+        class="footer-button"
+        outline
+      >
+        <QIcon
+          class="button-icon"
+          :name="button.icon"
+        />
+        <span class="button-text">
+          {{ button.label }}
+        </span>
+      </QBtn>
+    </div>
   </div>
 </template>
 
@@ -181,7 +228,7 @@ const pagination = ref({ rowsPerPage: 50 })
 }
 /* Light Theme Styles */
 .table-dark, .table-light {
-  max-height: 400px;
+  max-height: 500px;
 }
 .table-light td {
   border: 1px solid blue;
@@ -206,6 +253,16 @@ const pagination = ref({ rowsPerPage: 50 })
 .table-light .status-cell {
   background-color: red;
 }
+.footer-buttons-joborder-light {
+  background-color: white;
+  z-index: 1;
+  display: flex;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  height: 5rem;
+  justify-content: center;
+}
 /* Dark Theme Styles */
 .table-dark td{
   border: 1px solid darkred;
@@ -226,8 +283,28 @@ const pagination = ref({ rowsPerPage: 50 })
 .table-dark td:first-child {
   border-left: none;
 }
+.footer-buttons-joborder-dark {
+  background-color: black;
+  z-index: 1;
+  display: flex;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  height: 5rem;
+  justify-content: center;
+}
+.footer-button{
+  margin: 1rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
 .q-table__control {
   justify-content: center;
   flex: content;
+}
+.selected-row {
+  position: sticky;
+  top: 45px;
+  z-index:1;
 }
 </style>

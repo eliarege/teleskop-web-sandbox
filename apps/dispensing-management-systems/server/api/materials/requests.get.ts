@@ -15,9 +15,13 @@ export default defineEventHandler(async (event) => {
       .select({
         materialName: 'm.material_name',
         materialCode: 'r.material_code',
-        amount: 'r.amount',
+        recipeAmount: 'r.recipe_amount',
+        realAmount: 'r.real_amount',
+        mainStep: 'r.main_step',
+        parallelStep: 'r.parallel_step',
+        dispenserId: 'r.dispenser_id',
         status: 'r.status',
-        unit: 'r.unit'
+        unit: 'r.unit',
       })
     return materialRequests
   } catch (e) {

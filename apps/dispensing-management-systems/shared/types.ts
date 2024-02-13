@@ -72,7 +72,11 @@ export interface MaterialRequest {
   jobId: number
   materialCode: string
   materialName: string
-  amount: number
+  recipeAmount: number
+  realAmount: number
+  mainStep: number
+  parallelStep: number
+  dispenserId: number
   status: number
   unit: number
 }

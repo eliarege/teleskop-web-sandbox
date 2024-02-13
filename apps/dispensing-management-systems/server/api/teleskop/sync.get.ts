@@ -47,7 +47,11 @@ const materialParams = {
 const materialRequestParams = {
   materialCode: 'CHEMCODE',
   jobId: 'REQNUMBER',
-  amount: 'AMOUNT',
+  recipeAmount: 'AMOUNT',
+  realAmount: 'REALAMOUNT',
+  mainStep: 'MAINSTEP',
+  parallelStep: 'PARALLELSTEP',
+  dispenserId: 'DISPENSERID',
   status: 'STATUS',
 }
 const batchPlanParams = {
