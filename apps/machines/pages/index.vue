@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMagicKeys, whenever } from '@vueuse/core'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 
 const { t } = useI18n()
@@ -413,18 +414,10 @@ async function handleDelete(formData) {
 
 const showTeleskopSettings = ref(false)
 
-function handleKeyPress(event) {
-  if (event.altKey && event.shiftKey && event.key === 'T') {
-    showTeleskopSettings.value = !showTeleskopSettings.value
-  }
-}
+const keys = useMagicKeys()
 
-onMounted(() => {
-  window.addEventListener('keydown', handleKeyPress)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeyPress)
+whenever(keys.shift_alt_t, () => {
+  showTeleskopSettings.value = true
 })
 </script>
 
@@ -442,5 +435,5 @@ onBeforeUnmount(() => {
     @select="handleSelection"
     @delete="handleDelete"
   />
-  <TeleskopSettings :show="showTeleskopSettings" form-class="" />
+  <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
 </template>
