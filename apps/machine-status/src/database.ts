@@ -2,11 +2,9 @@ import * as tedious from 'tedious'
 import * as tarn from 'tarn'
 import { DummyDriver, Kysely, MssqlAdapter, MssqlDialect, MssqlIntrospector, MssqlQueryCompiler, ParseJSONResultsPlugin } from 'kysely'
 import { parseConnectionString } from '@tediousjs/connection-string'
-import type { DmExchangeDatabase, TeleskopDatabase } from './types'
-import { config } from './config'
 import { logger } from './logger'
 
-function createKyselyInstance<T>(connectionString: string) {
+export function createKyselyInstance<T>(connectionString: string) {
   const connectionParams = parseConnectionString(connectionString) as Record<string, string>
   let server = connectionParams.server
   let port = '1433'
@@ -46,7 +44,7 @@ function createKyselyInstance<T>(connectionString: string) {
           trustServerCertificate: true,
         },
         server: connectionParams.server,
-      }),
+      }).on('error', err => logger.error(`${err.message} [${server}/${connectionParams.database}]`)),
     },
   })
 
@@ -56,7 +54,7 @@ function createKyselyInstance<T>(connectionString: string) {
   })
 }
 
-function createDummyKyselyInstance<T>() {
+export function createDummyKyselyInstance<T>() {
   return new Kysely<T>({
     dialect: {
       createAdapter: () => new MssqlAdapter(),
@@ -66,25 +64,3 @@ function createDummyKyselyInstance<T>() {
     },
   })
 }
-
-export async function getTeleskopDetails(db: Kysely<TeleskopDatabase>) {
-  const tables = await db.introspection.getTables()
-  const erpParameterDefinitionsMeta = tables
-    .find(t => t.schema === 'dbo' && t.name === 'BFERPPARAMETERDEFINITIONS')
-  if (erpParameterDefinitionsMeta) {
-    const erpParameterDefinitionsHasMachineId = erpParameterDefinitionsMeta.columns.some(col => col.name === 'MACHINEID')
-    console.log(erpParameterDefinitionsHasMachineId)
-  } else {
-    throw new Error('fatal wtf')
-  }
-}
-
-if (!config.dmExchangeUrl) {
-  logger.info(`DMEXCHANGE_URL not configured`)
-}
-
-export const teleskop = createKyselyInstance<TeleskopDatabase>(config.teleskopUrl)
-
-export const dmExchange = config.dmExchangeUrl
-  ? createKyselyInstance<DmExchangeDatabase>(config.dmExchangeUrl)
-  : createDummyKyselyInstance<DmExchangeDatabase>()

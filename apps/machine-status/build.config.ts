@@ -5,7 +5,7 @@ import { workspaceExternals } from 'build-utils'
 const src = join(__dirname, 'src')
 
 export default defineBuildConfig({
-  entries: ['src/index'],
+  entries: ['src/server'],
   clean: true,
   alias: { '~': src },
   outDir: 'dist',

@@ -1,8 +1,10 @@
 import type { FastifyPluginAsync } from 'fastify'
 import { jsonArrayFrom } from 'kysely/helpers/mssql'
+import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
-import { dmExchange, teleskop } from '../database'
 import { config } from '../config'
+import type { DmExchangeDatabase, TeleskopDatabase } from '../types'
+import { memoize } from '../utils'
 
 interface MachineErpMappings {
   machineId: number
@@ -12,7 +14,15 @@ interface MachineErpMappings {
   }[]
 }
 
-async function fetchMachineErpMappings(isLegacy: boolean): Promise<MachineErpMappings[]> {
+interface MachineStatus {
+  id: number
+  runningJobOrder: string | null
+  runningBatchKey: number | null
+  erp: Record<string, unknown> | null
+  [key: string]: any
+}
+
+const fetchMachineErpMappings = memoize(async (teleskop: Kysely<TeleskopDatabase>, isLegacy: boolean): Promise<MachineErpMappings[]> => {
   return await teleskop
     .selectFrom('BFMACHINES as m')
     .select(eb => [
@@ -37,9 +47,11 @@ async function fetchMachineErpMappings(isLegacy: boolean): Promise<MachineErpMap
       eb('m.USEINTELESKOP', '=', true),
     ]))
     .execute() as MachineErpMappings[]
-}
+}, {
+  maxAge: config.machineErpMappingsMaxAge,
+})
 
-async function fetchMachineStatus() {
+const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): Promise<MachineStatus[]> => {
   return await teleskop
     .selectFrom('BFMACHINES as m')
     .leftJoin('TFMACHINESTATUS as s', 'm.MACHINEID', 's.MACHINEID')
@@ -117,26 +129,54 @@ async function fetchMachineStatus() {
       eb('m.USEINTELESKOP', '=', true),
     ]))
     .execute()
-}
+}, {
+  maxAge: config.machineStatusMaxAge,
+})
 
-async function fetchJobOrderErpParameters(jobOrder: string, machineMappings: MachineErpMappings): Promise<Record<string, any>> {
+const fetchJobOrderErpParameters = memoize(async (
+  dmExchange: Kysely<DmExchangeDatabase>,
+  jobOrder: string,
+  machineMappings: MachineErpMappings,
+): Promise<Record<string, any>> => {
   return await dmExchange
     .selectFrom('Dyelots')
     .select(eb => machineMappings.mappings.map(m => eb.ref(m.field as any).as(m.name)))
     .where('Dyelot', '=', jobOrder)
     .executeTakeFirst() || {}
+}, {
+  cacheKey: (_, jobOrder) => jobOrder,
+  maxAge: config.jobOrderErpParametersMaxAge,
+})
+
+/**
+ * `BFERPPARAMETERDEFINITIONS` tablosunda `MACHINEID` sütunu yoksa, veri tabanının legacy (eski) olduğu varsayılır.
+ * Bu özelliğe göre bazı sorgular değişiklik gösterir.
+ */
+async function isLegacyTeleskop(teleskop: Kysely<TeleskopDatabase>): Promise<boolean> {
+  const tables = await teleskop.introspection.getTables()
+  const erpParameterDefinitionsMeta = tables
+    .find(t => t.schema === 'dbo' && t.name === 'BFERPPARAMETERDEFINITIONS')
+  if (erpParameterDefinitionsMeta) {
+    const isLegacy = !erpParameterDefinitionsMeta.columns.some(col => col.name === 'MACHINEID')
+    return isLegacy
+  } else {
+    throw new Error(`Missing BFERPPARAMETERDEFINITIONS table`)
+  }
 }
 
 const route: FastifyPluginAsync = async (fastify) => {
-  fastify.get('/machine_status', async () => {
-    const machineStatuses = await fetchMachineStatus()
-    const machineMappings = await fetchMachineErpMappings(false)
+  const isLegacy = await isLegacyTeleskop(fastify.teleskop)
 
-    if (config.dmExchangeUrl) {
+  fastify.get('/machine_status', async function () {
+    const { teleskop, dmExchange } = this
+    const machineStatuses = await fetchMachineStatus(teleskop)
+    const machineMappings = await fetchMachineErpMappings(teleskop, isLegacy)
+
+    if (config.dmExchangeConnectionString) {
       for (const status of machineStatuses) {
         const mappings = machineMappings.find(m => m.machineId === status.id)
         if (mappings && status.runningJobOrder && status.runningBatchKey && status.runningBatchKey > 0) {
-          status.erp = await fetchJobOrderErpParameters(status.runningJobOrder, mappings)
+          status.erp = await fetchJobOrderErpParameters(dmExchange, status.runningJobOrder, mappings)
         }
       }
     }

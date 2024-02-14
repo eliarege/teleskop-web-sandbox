@@ -1,14 +1,19 @@
-# List of tables
+# Machine Status
 
-- BFMACHINES
-- BFERPPARAMETERDEFINITIONS
-- TFMACHINESTATUS
-- BADATA
-- BACONSUMPTIONPROGRAM
+## Configuration
 
+### SERVER_HOST
+### SERVER_PORT
+### LOG_LEVEL
 
-# -
+### TELESKOP_CONNECTION_STRING
 
-ALTER permission
+Teleskop bağlantı stringi. Syntax: https://learn.microsoft.com/en-us/sql/connect/ado-net/connection-string-syntax?view=sql-server-ver16
 
-MSSQL 2016, COMPATIBILITY_LEVEL = 130
+### DMEXCHANGE_CONNECTION_STRING
+
+DmExchange bağlantı stringi. Syntax: https://learn.microsoft.com/en-us/sql/connect/ado-net/connection-string-syntax?view=sql-server-ver16
+
+### MACHINE_STATUS_MAX_AGE
+### MACHINE_ERP_MAPPINGS_MAX_AGE
+### JOB_ORDER_ERP_PARAMETERS_MAX_AGE

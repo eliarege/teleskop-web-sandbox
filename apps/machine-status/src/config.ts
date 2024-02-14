@@ -81,20 +81,35 @@ export const config = defineConfiguration({
   serverPort: {
     env: 'SERVER_PORT',
     type: 'integer',
-    default: 4000,
+    default: 5000,
   },
-  /** Teleskop bağlantı stringi: https://learn.microsoft.com/en-us/sql/connect/ado-net/connection-string-syntax?view=sql-server-ver16 */
-  teleskopUrl: {
-    env: 'TELESKOP_URL',
+  /** Teleskop bağlantı stringi. Syntax: https://learn.microsoft.com/en-us/sql/connect/ado-net/connection-string-syntax?view=sql-server-ver16 */
+  teleskopConnectionString: {
+    env: 'TELESKOP_CONNECTION_STRING',
     required: true,
   },
-  /** DmExchange bağlantı stringi: https://learn.microsoft.com/en-us/sql/connect/ado-net/connection-string-syntax?view=sql-server-ver16 */
-  dmExchangeUrl: {
-    env: 'DMEXCHANGE_URL',
+  /** DmExchange bağlantı stringi. Syntax: https://learn.microsoft.com/en-us/sql/connect/ado-net/connection-string-syntax?view=sql-server-ver16 */
+  dmExchangeConnectionString: {
+    env: 'DMEXCHANGE_CONNECTION_STRING',
   },
   /** Pino Log Level (debug|info|warn|error|fatal) */
   logLevel: {
     env: 'LOG_LEVEL',
     default: 'info',
+  },
+  machineStatusMaxAge: {
+    env: 'MACHINE_STATUS_MAX_AGE',
+    type: 'integer',
+    default: 10_000,
+  },
+  machineErpMappingsMaxAge: {
+    env: 'MACHINE_ERP_MAPPINGS_MAX_AGE',
+    type: 'integer',
+    default: 3600_000,
+  },
+  jobOrderErpParametersMaxAge: {
+    env: 'JOB_ORDER_ERP_PARAMETERS_MAX_AGE',
+    type: 'integer',
+    default: 60_000,
   },
 })
