@@ -5,14 +5,14 @@ import gracefulShutdown from 'http-graceful-shutdown'
 import type { Kysely } from 'kysely'
 import machineStatus from './api/machine_status'
 import { config } from './config'
-import { createDummyKyselyInstance, createKyselyInstance } from './database'
+import { createKyselyInstance } from './database'
 import type { DmExchangeDatabase, TeleskopDatabase } from './types'
 import { logger } from './logger'
 
 declare module 'fastify' {
   interface FastifyInstance {
     teleskop: Kysely<TeleskopDatabase>
-    dmExchange: Kysely<DmExchangeDatabase>
+    dmExchange: Kysely<DmExchangeDatabase> | null
   }
 }
 
@@ -21,9 +21,9 @@ export async function main() {
   const teleskop = createKyselyInstance<TeleskopDatabase>(config.teleskopConnectionString)
   const dmExchange = config.dmExchangeConnectionString
     ? createKyselyInstance<DmExchangeDatabase>(config.dmExchangeConnectionString)
-    : createDummyKyselyInstance<DmExchangeDatabase>()
+    : null
 
-  if (!config.dmExchangeConnectionString) {
+  if (!dmExchange) {
     logger.info(`DMEXCHANGE_CONNECTION_STRING is not set, ERP values will be null`)
   }
 
@@ -43,7 +43,7 @@ export async function main() {
   gracefulShutdown(fastify.server, {
     async onShutdown() {
       await teleskop.destroy()
-      await dmExchange.destroy()
+      await dmExchange?.destroy()
     },
     finally() {
       logger.info('Server gracefully shut down')

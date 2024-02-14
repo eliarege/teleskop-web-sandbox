@@ -172,7 +172,7 @@ const route: FastifyPluginAsync = async (fastify) => {
     const machineStatuses = await fetchMachineStatus(teleskop)
     const machineMappings = await fetchMachineErpMappings(teleskop, isLegacy)
 
-    if (config.dmExchangeConnectionString) {
+    if (dmExchange) {
       for (const status of machineStatuses) {
         const mappings = machineMappings.find(m => m.machineId === status.id)
         if (mappings && status.runningJobOrder && status.runningBatchKey && status.runningBatchKey > 0) {

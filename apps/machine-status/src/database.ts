@@ -53,14 +53,3 @@ export function createKyselyInstance<T>(connectionString: string) {
     plugins: [new ParseJSONResultsPlugin()],
   })
 }
-
-export function createDummyKyselyInstance<T>() {
-  return new Kysely<T>({
-    dialect: {
-      createAdapter: () => new MssqlAdapter(),
-      createIntrospector: db => new MssqlIntrospector(db),
-      createDriver: () => new DummyDriver(),
-      createQueryCompiler: () => new MssqlQueryCompiler(),
-    },
-  })
-}
