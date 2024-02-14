@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 
-const columns = {
+const columns = computed(() => ({
   id: {
     label: 'ID',
     field: 'id',
@@ -25,7 +25,7 @@ const columns = {
       validation: 'required',
     },
   },
-}
+}))
 
 const { data: recipeTypes, refresh } = useLazyFetch('/api/recipe-types/recipe-types', {
   default: () => [],

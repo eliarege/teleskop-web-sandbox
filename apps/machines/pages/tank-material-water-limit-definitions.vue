@@ -9,7 +9,7 @@ const materialTypeMap = [
   { id: 3, name: t('other') },
 ]
 
-const columns = [
+const columns = computed(() => ([
   {
     name: 'materialGroupNo',
     label: t('materialType'),
@@ -66,7 +66,7 @@ const columns = [
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 const filters = ref([])
 

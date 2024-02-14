@@ -21,7 +21,7 @@ const { data: inputs } = useLazyFetch('/api/io/analog-input', {
   default: () => [],
 })
 
-const inputColumns: Column[] = [
+const inputColumns = computed(() => ([
   {
     name: 'id',
     label: 'ID',
@@ -38,7 +38,7 @@ const inputColumns: Column[] = [
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 const { data: outputs } = useLazyFetch('/api/io/analog-output', {
   body: { machineId: machineId.value },
@@ -46,7 +46,7 @@ const { data: outputs } = useLazyFetch('/api/io/analog-output', {
   default: () => [],
 })
 
-const outputColumns: Column[] = [
+const outputColumns = computed(() => ([
   {
     name: 'id',
     label: 'ID',
@@ -63,7 +63,7 @@ const outputColumns: Column[] = [
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 async function handleFilterSlotsUpdateInputs(updatedValue) {
   inputs.value = await $fetch('/api/io/analog-input', {

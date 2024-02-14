@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 
-const columns = {
+const columns = computed(() => ({
   stopCode: {
     label: `${t('idle')} ID`,
     field: 'stopCode',
@@ -46,7 +46,7 @@ const columns = {
     },
   },
 
-}
+}))
 
 const { data: stopReasons, refresh } = useLazyFetch('/api/stop-reasons/stop-reasons', {
   default: () => [],

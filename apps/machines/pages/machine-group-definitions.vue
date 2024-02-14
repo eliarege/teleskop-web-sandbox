@@ -3,7 +3,7 @@ const { data: machineGroups, pending, refresh } = await useFetch('/api/machines/
 
 const { t } = useI18n()
 
-const columns = [
+const columns = computed(() => ([
   {
     name: 'groupName',
     label: t('group'),
@@ -16,7 +16,7 @@ const columns = [
     field: row => row.groupType,
     align: 'left',
   },
-]
+]))
 
 const machineGroupTypeMapper = {
   0: 'Kumaş HT',

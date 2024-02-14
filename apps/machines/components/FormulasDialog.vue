@@ -20,7 +20,7 @@ const { data: formulas } = useLazyFetch('/api/machines/formulas', {
   body: {},
 })
 
-const columns: Column[] = [
+const columns = computed(() => ([
   {
     name: 'formulaId',
     label: t('formulaId'),
@@ -61,7 +61,7 @@ const columns: Column[] = [
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 async function handleFilterSlotsUpdate(updatedValue) {
   formulas.value = await $fetch('/api/machines/formulas', {

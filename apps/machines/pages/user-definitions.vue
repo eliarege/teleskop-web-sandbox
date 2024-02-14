@@ -5,7 +5,7 @@ const { t } = useI18n()
 
 const userTypeOptions = [{ label: t('Operator'), value: 1 }, { label: t('other'), value: 2 }]
 
-const columns = {
+const columns = computed(() => ({
   userId: {
     label: t('userId'),
     field: 'userId',
@@ -107,7 +107,7 @@ const columns = {
       options: userTypeOptions,
     },
   },
-}
+}))
 
 const { data: users, refresh } = useLazyFetch('/api/user-definitions/user-definitions', {
   default: () => [],

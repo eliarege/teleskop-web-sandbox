@@ -5,7 +5,7 @@ import { addErpParameterField, deleteErpParameterField, updateErpParameterField 
 
 const { t } = useI18n()
 
-const machineColumns: Column[] = [
+const machineColumns = computed(() => ([
   {
     name: 'machineId',
     label: t('machineId'),
@@ -22,9 +22,9 @@ const machineColumns: Column[] = [
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
-const parameterColumns = [
+const parameterColumns = computed(() => ([
   {
     name: 'paramId',
     label: t('parameterId'),
@@ -49,7 +49,7 @@ const parameterColumns = [
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 const paramOptions = [
   'DyelotRefNo',

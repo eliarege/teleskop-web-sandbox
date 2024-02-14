@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 
-const columns = {
+const columns = computed(() => ({
   waterTypeId: {
     label: t('waterTypeId'),
     field: 'waterTypeId',
@@ -28,7 +28,7 @@ const columns = {
     },
   },
 
-}
+}))
 
 const { data: waterTypes, refresh } = useLazyFetch('/api/water-types/water-types', {
   default: () => [],

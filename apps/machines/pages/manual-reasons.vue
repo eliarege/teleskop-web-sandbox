@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const columns = {
+const columns = computed(() => ({
   manualId: {
     label: 'Manual Id',
     field: 'manualId',
@@ -39,7 +39,7 @@ const columns = {
       filled: true,
     },
   },
-}
+}))
 
 const { data: manualReasons, refresh } = useLazyFetch('/api/manual-reasons/manual-reasons', {
   default: () => [],

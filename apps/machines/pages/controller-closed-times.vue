@@ -10,7 +10,7 @@ const closedTimeOptions = ref([
   { label: t('other'), closedType: 3 },
 ])
 
-const columns: Column[] = [
+const columns = computed(() => ([
   {
     name: 'machineId',
     label: t('machineNo'),
@@ -63,7 +63,7 @@ const columns: Column[] = [
     optionLabel: 'label',
     optionValue: 'closedType',
   },
-]
+]))
 
 const { data: times } = useLazyFetch('/api/controller-closed-times/controller-closed-times', {
   default: () => [],

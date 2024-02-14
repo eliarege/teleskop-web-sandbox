@@ -10,7 +10,7 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 
 const { t } = useI18n()
-const columns: Column[] = [
+const columns = computed(() => ([
   {
     name: 'id',
     label: 'Parametre No',
@@ -61,7 +61,7 @@ const columns: Column[] = [
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 const id = computed(() => props.selected.machineId)
 const { data: params } = useLazyFetch('/api/machines/machine-parameters', {

@@ -9,7 +9,7 @@ const accessFailOptions = ref([
   { label: t('wrongControllerDate'), eventCode: 2 },
 ])
 
-const columns: Column[] = [
+const columns = computed(() => ([
   {
     name: 'machineCode',
     label: t('machine'),
@@ -46,7 +46,7 @@ const columns: Column[] = [
     filterable: true,
     filterType: 'date',
   },
-]
+]))
 
 const { data: fails } = useLazyFetch('/api/machine-access-fails/machine-access-fails', {
   default: () => [],

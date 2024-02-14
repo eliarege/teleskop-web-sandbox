@@ -13,7 +13,7 @@ const finishOptions = [
   { label: t('machinePause'), value: 5 },
 ]
 
-const columns = {
+const columns = computed(() => ({
   reasonId: {
     label: 'ID',
     field: 'reasonId',
@@ -54,7 +54,7 @@ const columns = {
       validation: 'required',
     },
   },
-}
+}))
 
 async function handleFilterSlotsUpdate(updatedValue) {
   finishReasons.value = await $fetch('/api/finish-reasons/finish-reasons', {

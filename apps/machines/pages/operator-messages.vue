@@ -9,10 +9,10 @@ const { data: messages } = useLazyFetch('/api/machines/operator-messages', {
   body: {},
 })
 
-const columns: Column[] = [
+const columns = computed(() => ([
   {
     name: 'userId',
-    label: 'User Id',
+    label: t('userId'),
     field: 'userId',
     align: 'left',
     filterable: true,
@@ -58,7 +58,7 @@ const columns: Column[] = [
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 async function handleFilterSlotsUpdate(updatedValue) {
   messages.value = await $fetch('/api/machines/operator-messages', {
