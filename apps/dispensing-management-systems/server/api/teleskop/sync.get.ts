@@ -1,19 +1,20 @@
 import { teleskopDB } from '~/server/connectionPool'
 
 const jobOrderParams = {
-  jobId: 'j.REQNUMBER',
-  batchNo: 'j.BATCHNO',
-  batchCorrectionNo: 'j.BATCHCORRECTIONNO',
-  dispenserId: 'j.DISPENSERID',
-  machineId: 'j.MACHINEID',
-  tankNo: 'j.TANKNO',
-  programNo: 'j.PROGRAMNO',
-  programName: 'p.NAME',
-  recipeType: 'j.ACTUALRECIPETYPE',
-  recipeProcessNo: 'j.RECIPEINDEX',
-  stepNo: 'j.PROGRAMSTEPNO',
-  recipeStepNo: 'j.RECIPESTEPNO',
-  status: 'j.STATUS',
+  jobId: 'REQNUMBER',
+  batchNo: 'BATCHNO',
+  batchCorrectionNo: 'BATCHCORRECTIONNO',
+  dispenserId: 'DISPENSERID',
+  machineId: 'MACHINEID',
+  tankNo: 'TANKNO',
+  programNo: 'PROGRAMNO',
+  recipeType: 'ACTUALRECIPETYPE',
+  recipeProcessNo: 'RECIPEINDEX',
+  stepNo: 'PROGRAMSTEPNO',
+  recipeStepNo: 'RECIPESTEPNO',
+  requestTime: 'REQUESTTIME',
+  completedTime: 'COMPLETEDTIME',
+  status: 'STATUS',
 }
 const dispenserParams = {
   dispenserId: 'DISPENSERID',
@@ -53,6 +54,26 @@ const materialRequestParams = {
   parallelStep: 'PARALLELSTEP',
   dispenserId: 'DISPENSERID',
   status: 'STATUS',
+}
+const dustMaterialParams = {
+  materialCode: 'CODE',
+  reqNo: 'REQNUMBER',
+  recipeAmount: 'AMOUNT',
+  realAmount: 'REALAMOUNT',
+  mainStep: 'MAINSTEP',
+  parallelStep: 'PARALLELSTEP',
+}
+const dustMaterialRequestParams = {
+  reqNo: 'REQNUMBER',
+  batchNo: 'BATCHNO',
+  queueNo: 'QUEUENO',
+  recipeType: 'RECIPETYPE',
+  dispenserId: 'DISPENSERID',
+  requestTime: 'REQUESTTIME',
+  status: 'STATUS',
+  correctionNo: 'CORRECTIONNO',
+  recipeIndex: 'RECIPEINDEX',
+  machineId: 'MACHINEID',
 }
 const batchPlanParams = {
   planKey: 'PLANKEY',
@@ -95,13 +116,6 @@ const dispenserMaterialConnectionParams = {
 }
 export default defineEventHandler(async () => {
   try {
-    const jobOrders = await teleskopDB('dbo.DYTFCHEMREQUESTS as j')
-      .leftJoin('dbo.BFMASTERPRGHEADER as p', (builder) => {
-        builder
-          .on('j.PROGRAMNO', '=', 'p.PROGNO')
-          .andOn('j.MACHINEID', '=', 'p.MACHINEID')
-      })
-      .select(jobOrderParams)
     const dispensers = await teleskopDB('dbo.DYTFDISPENSERSETTINGS')
       .select(dispenserParams)
     const machines = await teleskopDB('dbo.DYTFMACHINES')
@@ -110,10 +124,16 @@ export default defineEventHandler(async () => {
       .select(materialParams)
     const materialReqs = await teleskopDB('dbo.DYTFREQMATERIALS')
       .select(materialRequestParams)
+    const dustMaterials = await teleskopDB('dbo.DYTFDUSTMATERIALS')
+      .select(dustMaterialParams)
+    const dustMaterialReqs = await teleskopDB('dbo.DYTFDUSTMATERIALSREQ')
+      .select(dustMaterialRequestParams)
     const batchPlans = await teleskopDB('dbo.DYBFBATCHPLAN')
       .select(batchPlanParams)
     const programHeaders = await teleskopDB('dbo.BFMASTERPRGHEADER')
       .select(programHeaderParams)
+    const jobOrders = await teleskopDB('dbo.DYTFCHEMREQUESTS')
+      .select(jobOrderParams)
     const batchRecipeSteps = await teleskopDB('dbo.DYBFBATCHORDERRECIPESTEPS as r')
       .select(batchRecipeStepParams)
     const batchHeaders = await teleskopDB('dbo.DYBFBATCHORDERRECIPEHEADER')
@@ -122,18 +142,19 @@ export default defineEventHandler(async () => {
       .select(dispenserMachineConnectionParams)
     const dispenserMaterialConnections = await teleskopDB('dbo.DYTFCHEMDISPCONNECTION')
       .select(dispenserMaterialConnectionParams)
-
-    batchSend(dispensers, 'dispensers')
-    batchSend(machines, 'machines')
-    batchSend(materials, 'materials')
-    batchSend(jobOrders, 'jobOrders')
-    batchSend(materialReqs, 'materialReqs')
-    batchSend(batchPlans, 'batchPlans')
-    batchSend(programHeaders, 'programHeaders')
-    batchSend(batchRecipeSteps, 'batchRecipeSteps')
-    batchSend(batchHeaders, 'batchHeaders')
-    batchSend(dispenserMachineConnections, 'dispenserMachineConnections')
-    batchSend(dispenserMaterialConnections, 'dispenserMaterialConnections')
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { dispensers } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { machines } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { materials } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { jobOrders } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { materialReqs } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { dustMaterials } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { dustMaterialReqs } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { programHeaders } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { batchRecipeSteps } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { batchHeaders } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { batchPlans } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { dispenserMachineConnections } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { dispenserMaterialConnections } })
   } catch (e) {
     console.log(e)
     return e

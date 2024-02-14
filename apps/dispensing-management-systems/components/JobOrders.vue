@@ -72,7 +72,7 @@ const columns: (QTableColumn<JobOrder>)[] = [
     name: 'recipe_type',
     label: t('RecipeType'),
     field: 'recipeType',
-    sortable: false,
+    sortable: true,
     align: 'left',
   },
   {
@@ -98,21 +98,38 @@ const columns: (QTableColumn<JobOrder>)[] = [
   },
 ]
 const buttonProps = ref([
-  { name: '', label: t('Details'), link: '', icon: 'description' },
-  { name: '', label: t('Details'), link: '', icon: 'description' },
-  { name: '', label: t('Details'), link: '', icon: 'description' },
+  { name: 'materialRequests', label: t('MaterialRequests'), link: 'material', icon: 'science' },
+  { name: 'recipeInfo', label: t('recipeFields.Info'), link: 'recipe', icon: 'description' },
+  { name: 'weighingInfo', label: t('weighingFields.Info'), link: 'weighing', icon: 'balance' },
 ])
 function onRowClick(row: JobOrder) {
   if (selectedRow.value === row)
     selectedRow.value = null
   else
     selectedRow.value = row
-  /*
-  q.dialog({
-    component: MaterialRequests,
-    componentProps: { jobOrder: row },
-  })
-  */
+}
+function onButtonClicked(link: string) {
+  const jobOrder = selectedRow.value
+  if (link === 'material') {
+    q.dialog({
+      component: MaterialRequests,
+      componentProps: { jobOrder },
+    })
+  } else if (link === 'recipe') {
+    navigateTo({
+      path: '/recipe',
+      query: {
+        batchNo: jobOrder!.batchNo,
+        correctionNo: jobOrder!.batchCorrectionNo,
+        machineId: jobOrder!.machineId,
+      },
+    })
+  } else if (link === 'weighing') {
+    // q.dialog({
+    // component: WeighingInfo,
+    // componentProps: { jobOrder },
+    // })
+  }
 }
 const pagination = ref({ rowsPerPage: 50 })
 watch((searchFilter), () => {
@@ -185,6 +202,7 @@ watch((searchFilter), () => {
         :key="button.name"
         class="footer-button"
         outline
+        @click="onButtonClicked(button.link)"
       >
         <QIcon
           class="button-icon"
@@ -231,7 +249,7 @@ watch((searchFilter), () => {
   max-height: 500px;
 }
 .table-light td {
-  border: 1px solid blue;
+  border: 1px solid grey;
   border-right: none;
   border-bottom: none;
 }
@@ -265,7 +283,7 @@ watch((searchFilter), () => {
 }
 /* Dark Theme Styles */
 .table-dark td{
-  border: 1px solid darkred;
+  border: 1px solid rgb(100,100,100);
   border-right: none;
   border-bottom: none;
 }
@@ -305,6 +323,7 @@ watch((searchFilter), () => {
 .selected-row {
   position: sticky;
   top: 45px;
+  bottom: 0px;
   z-index:1;
 }
 </style>

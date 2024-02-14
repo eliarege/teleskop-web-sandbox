@@ -47,20 +47,6 @@ async function getRecipe() {
     @hide="onDialogHide"
   >
     <QCard>
-      <div class="flex-center">
-        <QBtn
-          icon="description"
-          @click="getRecipe"
-        >
-          <QTooltip
-            :offset="[10, 10]"
-            anchor="top middle"
-            self="bottom middle"
-          >
-            {{ t('recipeFields.Info') }}
-          </QTooltip>
-        </QBtn>
-      </div>
       <QTable
         flat
         bordered
@@ -72,7 +58,7 @@ async function getRecipe() {
         <template #body-cell="material">
           <QTd
             :props="material"
-            :style="cellStyle(material.col, material.row, material.pageIndex, q.dark.isActive, colorStore.colors)"
+            :style="cellStyle(material.col, material.row, material.pageIndex, false, q.dark.isActive, colorStore.colors)"
           >
             <span v-if="material.col.field === 'status'">
               {{ t(`statusCodes.${material.value}`) }}

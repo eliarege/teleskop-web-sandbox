@@ -57,6 +57,7 @@
   "Delete": "Delete",
   "Material": "Material",
   "Materials": "Materials",
+  "MaterialRequests": "Material Requests",
   "SelectedMaterials": "{count} Selected",
   "settings": {
     "App": "App Settings",
@@ -97,6 +98,9 @@
     "ProcessNo": "Process No",
     "Amount": "Amount",
     "Unit": "Unit"
+  },
+  "weighingFields": {
+    "Info": "Weighing Information"
   },
   "machineFields": {
     "Name": "Machine Name",

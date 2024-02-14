@@ -25,21 +25,20 @@ const selectedMaterials = ref([])
 watch((tab), async (tab) => {
   if (tab === 'machines') {
     machines.value = await $fetch('/api/machines')
-    selectedMachinesInitial.value = await $fetch(`/api/dispensers/connections/machines/${props.dispenserId}`)
+    selectedMachinesInitial.value = await $fetch(`/api/connections/machines/${props.dispenserId}`)
     selectedMachines.value = []
     selectedMachinesInitial.value.forEach(machine =>
       selectedMachines.value.push(machine.machineId),
     )
-    buttonDisabled.value = true
   } else if (tab === 'materials') {
     materials.value = await $fetch('/api/materials')
-    selectedMaterialsInitial.value = await $fetch(`/api/dispensers/connections/materials/${props.dispenserId}`)
+    selectedMaterialsInitial.value = await $fetch(`/api/connections/materials/${props.dispenserId}`)
     selectedMaterials.value = []
     selectedMaterialsInitial.value.forEach(material =>
       selectedMaterials.value.push(material),
     )
-    buttonDisabled.value = true
   }
+  buttonDisabled.value = true
 })
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,

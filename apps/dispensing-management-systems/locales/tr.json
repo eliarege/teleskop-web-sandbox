@@ -57,6 +57,7 @@
   "Delete": "Sil",
   "Material": "Malzeme",
   "Materials": "Malzemeler",
+  "MaterialRequests": "Malzeme İstekleri",
   "SelectedMaterials": "{count} Seçili",
   "settings": {
     "App": "Uygulama Ayarları",
@@ -95,6 +96,9 @@
     "MainStep": "Ana Adım",
     "ParallelStep": "Paralel Adım",
     "ProcessNo": "İşlem Numarası"
+  },
+  "weighingFields": {
+    "Info": "Tartım Bilgisi"
   },
   "machineFields": {
     "Name": "Makine Adı",

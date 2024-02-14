@@ -8,6 +8,8 @@ export default defineEventHandler(async (event) => {
     const jobOrders: any[] = []
     const materials: any[] = []
     const materialReqs: any[] = []
+    const dustMaterials: any[] = []
+    const dustMaterialReqs: any[] = []
     const batchPlans: any[] = []
     const batchRecipeSteps: any[] = []
     const batchHeaders: any[] = []
@@ -57,11 +59,12 @@ export default defineEventHandler(async (event) => {
         machine_id: data.machineId,
         tank_no: data.tankNo,
         program_no: data.programNo,
-        program_name: data.programName,
         recipe_type: data.recipeType,
         recipe_process_no: data.recipeProcessNo,
         recipe_step_no: data.recipeStepNo,
         step_no: data.stepNo,
+        request_time: data.requestTime,
+        completed_time: data.completedTime,
         status: data.status,
       })
       jobOrders.push(jobOrder)
@@ -94,6 +97,32 @@ export default defineEventHandler(async (event) => {
         status: data.status,
       })
       materialReqs.push(materialReq)
+    })
+    teleskopData.dustMaterials?.forEach((data: any) => {
+      const dustMaterial = ({
+        req_no: data.reqNo,
+        material_code: data.materialCode,
+        recipe_amount: data.recipeAmount,
+        real_amount: data.realAmount,
+        main_step: data.mainStep,
+        parallel_step: data.parallelStep,
+      })
+      dustMaterials.push(dustMaterial)
+    })
+    teleskopData.dustMaterialReqs?.forEach((data: any) => {
+      const dustMaterialReq = ({
+        req_no: data.reqNo,
+        batch_no: data.batchNo,
+        queue_no: data.queueNo,
+        correction_no: data.correctionNo,
+        dispenser_id: data.dispenserId,
+        machine_id: data.machineId,
+        recipe_type: data.recipeType,
+        recipe_index: data.recipeIndex,
+        request_time: data.requestTime,
+        status: data.status,
+      })
+      dustMaterialReqs.push(dustMaterialReq)
     })
     teleskopData.batchPlans?.forEach((data: any) => {
       const batchPlan = ({
@@ -144,6 +173,7 @@ export default defineEventHandler(async (event) => {
       dispenserMaterialConnections.push(dispenserMaterialConnection)
     })
     const batchSize = 3000
+    /*
     await dmsDB('JOB_ORDER').del()
     await dmsDB('BATCH_RECIPE_STEP').del()
     await dmsDB('DISPENSER').del()
@@ -155,13 +185,15 @@ export default defineEventHandler(async (event) => {
     await dmsDB('PROGRAM_HEADER').del()
     await dmsDB('DISPENSER_MACHINE_CONNECTION').del()
     await dmsDB('DISPENSER_MATERIAL_CONNECTION').del()
-
+    */
     await batchInsert(dispensers, batchSize, 'DISPENSER')
     await batchInsert(batchRecipeSteps, batchSize, 'BATCH_RECIPE_STEP')
     await batchInsert(machines, batchSize, 'MACHINE')
     await batchInsert(jobOrders, batchSize, 'JOB_ORDER')
     await batchInsert(materials, batchSize, 'MATERIAL')
     await batchInsert(materialReqs, batchSize, 'MATERIAL_REQUEST')
+    await batchInsert(dustMaterials, batchSize, 'DUST_MATERIAL')
+    await batchInsert(dustMaterialReqs, batchSize, 'DUST_MATERIAL_REQUEST')
     await batchInsert(batchPlans, batchSize, 'BATCH_PLAN')
     await batchInsert(batchHeaders, batchSize, 'BATCH_HEADER')
     await batchInsert(programHeaders, batchSize, 'PROGRAM_HEADER')
@@ -176,7 +208,6 @@ export default defineEventHandler(async (event) => {
 async function batchInsert(data: any[], batchSize: number, tableName: string) {
   const totalRows = data.length
   const numBatches = Math.ceil(totalRows / batchSize)
-
   await dmsDB.transaction(async (trx) => {
     for (let i = 0; i < numBatches; i++) {
       const start = i * batchSize

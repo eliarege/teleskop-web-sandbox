@@ -86,7 +86,7 @@ function onLogout() {
         </QMenu>
         <QItemSection avatar>
           <QAvatar
-            icon="check"
+            icon="check_circle"
           />
         </QItemSection>
         <QItemSection>
