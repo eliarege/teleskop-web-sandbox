@@ -3,11 +3,11 @@ import type { Column } from 'nuxt-ui-types'
 
 const { t, d } = useI18n()
 
-const accessFailOptions = ref([
+const accessFailOptions = computed(() => ([
   { label: t('noNetworkConnection'), eventCode: 0 },
   { label: t('noTeleskopCommunication'), eventCode: 1 },
   { label: t('wrongControllerDate'), eventCode: 2 },
-])
+]))
 
 const columns = computed(() => ([
   {
