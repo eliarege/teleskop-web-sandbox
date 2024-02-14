@@ -1,6 +1,6 @@
 import * as tedious from 'tedious'
 import * as tarn from 'tarn'
-import { DummyDriver, Kysely, MssqlAdapter, MssqlDialect, MssqlIntrospector, MssqlQueryCompiler, ParseJSONResultsPlugin } from 'kysely'
+import { Kysely, MssqlDialect, ParseJSONResultsPlugin } from 'kysely'
 import { parseConnectionString } from '@tediousjs/connection-string'
 import { logger } from './logger'
 
