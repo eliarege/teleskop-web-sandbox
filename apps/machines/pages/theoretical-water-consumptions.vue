@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { upsertTheoreticalWaterConsumption } from '~/utils'
 
+const { t } = useI18n()
+
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 
@@ -79,7 +81,7 @@ async function handleSelectionChange(data, columnName) {
 <template>
   <q-card class="flex flex-row justify-around">
     <q-card-section class="w-sm">
-      <h3>Makineler</h3>
+      <h3>{{ t('machines') }}</h3>
       <q-list
         bordered
         separator
@@ -100,7 +102,7 @@ async function handleSelectionChange(data, columnName) {
     </q-card-section>
 
     <q-card-section class="w-sm">
-      <h3>Komutlar</h3>
+      <h3>{{ t('commands') }}</h3>
       <q-list
         bordered
         separator
@@ -122,7 +124,7 @@ async function handleSelectionChange(data, columnName) {
 
     <q-card-section class="w-xs flex flex-col">
       <div class="flex flex-col">
-        <h3>Su Kaynağı - IO</h3>
+        <h3>{{ t('waterSourceIO') }}</h3>
         <q-select
           v-model="waterIO1"
           :options="filteredWaterIO1Options"
@@ -141,7 +143,7 @@ async function handleSelectionChange(data, columnName) {
         />
       </div>
       <div class="w-xs flex flex-col">
-        <h3>Su Miktarı - Parametre</h3>
+        <h3>{{ t('waterAmountParameter') }}</h3>
         <q-select
           v-model="waterParam"
           :options="waterParams"

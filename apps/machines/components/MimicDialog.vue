@@ -9,6 +9,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const { t } = useI18n()
+
 const tab = ref('inputs')
 
 const machineId = computed(() => props.selected.machineId)
@@ -19,7 +21,7 @@ const { data: inputs } = useLazyFetch('/api/io/analog-input', {
   default: () => [],
 })
 
-const inputColumns: Column[] = [
+const inputColumns = computed(() => ([
   {
     name: 'id',
     label: 'ID',
@@ -30,13 +32,13 @@ const inputColumns: Column[] = [
   },
   {
     name: 'name',
-    label: 'Giriş/Çıkış Adı',
+    label: t('inputOutputName'),
     field: 'name',
     align: 'left',
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 const { data: outputs } = useLazyFetch('/api/io/analog-output', {
   body: { machineId: machineId.value },
@@ -44,7 +46,7 @@ const { data: outputs } = useLazyFetch('/api/io/analog-output', {
   default: () => [],
 })
 
-const outputColumns: Column[] = [
+const outputColumns = computed(() => ([
   {
     name: 'id',
     label: 'ID',
@@ -55,13 +57,13 @@ const outputColumns: Column[] = [
   },
   {
     name: 'name',
-    label: 'Giriş/Çıkış Adı',
+    label: t('inputOutputName'),
     field: 'name',
     align: 'left',
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 async function handleFilterSlotsUpdateInputs(updatedValue) {
   inputs.value = await $fetch('/api/io/analog-input', {
@@ -102,9 +104,9 @@ async function handleFilterSlotsUpdateOutputs(updatedValue) {
             align="justify"
             narrow-indicator
           >
-            <q-tab name="inputs" label="Analog Girişler" />
-            <q-tab name="outputs" label="Analog Çıkışlar" />
-            <q-tab name="other" label="Diğer Ayarlar" />
+            <q-tab name="inputs" :label="t('analogInputs')" />
+            <q-tab name="outputs" :label="t('analogOutputs')" />
+            <q-tab name="other" :label="t('otherSettings')" />
           </q-tabs>
 
           <q-separator />
@@ -130,7 +132,7 @@ async function handleFilterSlotsUpdateOutputs(updatedValue) {
 
             <q-tab-panel name="other">
               <div class="h-160">
-                <q-input label="Maksimum Kule Hızı" />
+                <q-input :label="t('maxReelSpeed')" />
               </div>
             </q-tab-panel>
           </q-tab-panels>

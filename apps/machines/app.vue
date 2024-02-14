@@ -3,7 +3,7 @@ import '@formkit/themes/genesis'
 
 const { t } = useI18n()
 
-const definitionItems = [
+const definitionItems = computed(() => ([
   {
     label: t('machine'),
     to: '/',
@@ -23,6 +23,10 @@ const definitionItems = [
       {
         label: t('machineSettings'),
         items: [
+          {
+            label: t('updateMachineSystemSettings'),
+            to: '/update-machine-system-settings',
+          },
           {
             label: t('controllerOperators'),
             to: '/user-definitions',
@@ -166,7 +170,7 @@ const definitionItems = [
 
   },
 
-]
+]))
 </script>
 
 <template>

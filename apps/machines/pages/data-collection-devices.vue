@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const columns = {
+const columns = computed(() => ({
   machineId: {
     label: 'Makine Id',
     field: 'machineId',
@@ -29,7 +29,7 @@ const columns = {
       validation: 'required',
     },
   },
-}
+}))
 
 const { data: machines, refresh } = useLazyFetch('/api/machines/other-machines', {
   default: () => [],

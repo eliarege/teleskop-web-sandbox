@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { t } = useI18n()
 const selectedOption = ref()
 const showAddMachineGroupDialog = ref(false)
 const showAddTreatmentParameterDialog = ref(false)
@@ -18,13 +19,25 @@ const { data: commandParameters } = useLazyFetch('/api/treatment-parameters/comm
   default: () => [],
   immediate: false,
   method: 'POST',
-  body:
-    selectedMachineGroup,
+  body: selectedMachineGroup,
 })
 
-const { data: matchedTreatments } = useLazyFetch('/api/treatment-parameters/treatment-map', {
+const { data: matchedTreatments, refresh } = useLazyFetch('/api/treatment-parameters/treatment-map', {
   default: () => [],
 })
+
+async function handleAdd() {
+  await $fetch('/api/treatment-parameters/treatment-map', {
+    method: 'POST',
+    body: {
+      paramId: selectedParameter.value.id,
+      groupId: selectedMachineGroup.value.id,
+      commandNo: selectedOption.value.COMMANDNO,
+      parameterIndex: selectedOption.value.PARAMETERINDEX,
+    },
+  })
+  await refresh()
+}
 </script>
 
 <template>
@@ -32,7 +45,7 @@ const { data: matchedTreatments } = useLazyFetch('/api/treatment-parameters/trea
     <q-card-section class="flex flex-col justify-between">
       <div class="flex flex-row justify-around">
         <div>
-          <h3>Makine Grupları</h3>
+          <h3>{{ t('machineGroups') }}</h3>
           <q-icon name="add" @click="showAddMachineGroupDialog = true" />
           <q-list separator bordered>
             <q-item
@@ -51,7 +64,7 @@ const { data: matchedTreatments } = useLazyFetch('/api/treatment-parameters/trea
           </q-list>
         </div>
         <div>
-          <h3>Parametre Listesi</h3>
+          <h3>{{ t('parameterList') }}</h3>
           <q-icon name="add" @click="showAddTreatmentParameterDialog = true" />
           <q-list bordered separator>
             <q-item
@@ -74,9 +87,10 @@ const { data: matchedTreatments } = useLazyFetch('/api/treatment-parameters/trea
           <q-select
             v-model="selectedOption"
             :options="commandParameters"
-            label="ERP Eşleştirme Alanı"
+            :label="t('erpFieldName')"
             filled
-            class="w-xs"
+            class="w-sm"
+            :display-value="`${selectedOption ? `${selectedOption.NAME} - ${selectedOption.PARAMSTRING}` : ''}`"
           >
             <template #option="scope">
               <q-item v-bind="scope.itemProps">
@@ -86,9 +100,14 @@ const { data: matchedTreatments } = useLazyFetch('/api/treatment-parameters/trea
               </q-item>
             </template>
           </q-select>
+
+          <q-btn :label="t('add')" @click="handleAdd" />
         </div>
       </div>
       <div>
+        <h3 class="flex justify-center">
+          {{ t('allMappedParameters') }}
+        </h3>
         <q-table
           :rows="matchedTreatments"
         />

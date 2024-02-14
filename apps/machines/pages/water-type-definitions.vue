@@ -1,7 +1,9 @@
 <script setup lang="ts">
-const columns = {
+const { t } = useI18n()
+
+const columns = computed(() => ({
   waterTypeId: {
-    label: 'Su Tipi No',
+    label: t('waterTypeId'),
     field: 'waterTypeId',
     align: 'left',
     filterable: true,
@@ -12,7 +14,7 @@ const columns = {
     editable: true,
   },
   waterTypeName: {
-    label: 'Su Tipi İsmi',
+    label: t('waterTypeName'),
     field: 'waterTypeName',
     align: 'left',
     filterable: true,
@@ -26,7 +28,7 @@ const columns = {
     },
   },
 
-}
+}))
 
 const { data: waterTypes, refresh } = useLazyFetch('/api/water-types/water-types', {
   default: () => [],

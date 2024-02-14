@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMagicKeys, whenever } from '@vueuse/core'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 
 const { t } = useI18n()
@@ -71,7 +72,6 @@ const columns = computed(() => ({
     type: 'select',
     visible: true,
     editable: true,
-    format: (val, row) => tbbModelOptions.find(d => d === val),
     schema: {
       filled: true,
       validation: 'required',
@@ -196,7 +196,6 @@ const columns = computed(() => ({
     type: 'select',
     visible: false,
     editable: true,
-    format: (val, row) => steamUnitOptions.find(d => d === val),
     schema: {
       filled: true,
       options: steamUnitOptions,
@@ -207,9 +206,9 @@ const columns = computed(() => ({
     field: 'inUse',
     align: 'left',
     type: 'checkbox',
-    visible: false,
+    visible: true,
     editable: true,
-    format: (val, row) => val ? 'Evet' : 'Hayır',
+    format: (val, row) => val ? t('yes') : t('no'),
     schema: {
       filled: true,
     },
@@ -358,6 +357,7 @@ const columns = computed(() => ({
     },
   },
 }))
+
 const { data: machines, refresh } = useLazyFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
@@ -411,14 +411,21 @@ async function handleDelete(formData) {
   })
   await refresh()
 }
+
+const showTeleskopSettings = ref(false)
+
+const keys = useMagicKeys()
+
+whenever(keys.shift_alt_t, () => {
+  showTeleskopSettings.value = true
+})
 </script>
 
 <template>
   <Menubar
     :machines="machines"
     :selected="selected"
-    @delete-machine="refresh"
-    @add-machine="refresh"
+    @refresh="refresh"
   />
   <FormTableKit
     :rows="machines" :columns="columns"
@@ -428,4 +435,5 @@ async function handleDelete(formData) {
     @select="handleSelection"
     @delete="handleDelete"
   />
+  <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
 </template>

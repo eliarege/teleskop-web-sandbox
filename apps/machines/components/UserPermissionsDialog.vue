@@ -42,12 +42,12 @@ const permissionsGroup1 = reactive([
   { label: t('changeBatchParameter'), index: 28, value: false },
 ])
 
-const permissionsGroup2 = ref([
+const permissionsGroup2 = computed(() => ([
   { label: t('warningCommandsApprovalAuthority'), index: 0, value: true },
   { label: t('stepChangeAuthority'), index: 1, value: true },
   { label: t('changingMachineAuthority'), index: 2, value: false },
   { label: t('authorityForOperatorInterventionFreePrograms'), index: 3, value: false },
-])
+]))
 const user = computed(() => props.selected)
 watch(user, (_newValue, _oldValue) => {
   if (props.selected && props.selected.userMode)

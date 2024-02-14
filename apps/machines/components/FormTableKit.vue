@@ -141,11 +141,11 @@ watch(showModal, async (newValue, oldValue) => {
       </q-card-actions>
       <q-card-section>
         <FormKit
-          v-model="formData" type="form" :form-class="formClass"
-          @submit="handleSubmit"
+          v-model="formData" :actions="false" type="form" :form-class="formClass" @submit="handleSubmit"
         >
           <FormKitSchema :schema="schema" />
           <slot name="form-content" />
+          <FormKit type="submit" :label="t('submit')" />
         </FormKit>
       </q-card-section>
     </q-card>

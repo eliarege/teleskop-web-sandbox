@@ -3,10 +3,12 @@ import type { Column } from 'nuxt-ui-types'
 import type { ErpParameter, Machine } from '~/types'
 import { addErpParameterField, deleteErpParameterField, updateErpParameterField } from '~/utils'
 
-const machineColumns: Column[] = [
+const { t } = useI18n()
+
+const machineColumns = computed(() => ([
   {
     name: 'machineId',
-    label: 'Makine Id',
+    label: t('machineId'),
     field: 'machineId',
     align: 'left',
     filterable: true,
@@ -14,18 +16,18 @@ const machineColumns: Column[] = [
   },
   {
     name: 'machineCode',
-    label: 'Makine Adı',
+    label: t('machineCode'),
     field: 'machineCode',
     align: 'left',
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
-const parameterColumns = [
+const parameterColumns = computed(() => ([
   {
     name: 'paramId',
-    label: 'Parametre Id',
+    label: t('parameterId'),
     field: 'paramId',
     align: 'left',
     filterable: true,
@@ -33,7 +35,7 @@ const parameterColumns = [
   },
   {
     name: 'paramName',
-    label: 'Parametre Adı',
+    label: t('parameterName'),
     field: 'paramName',
     align: 'left',
     filterable: true,
@@ -41,13 +43,13 @@ const parameterColumns = [
   },
   {
     name: 'erpFieldName',
-    label: 'ERP Eşleştirme Alanı',
+    label: t('erpFieldName'),
     field: 'erpFieldName',
     align: 'left',
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 const paramOptions = [
   'DyelotRefNo',
@@ -257,14 +259,14 @@ async function deleteParam() {
       <div class="flex flex-row justify-start input-field">
         <q-input
           v-model="selectedParam.paramName"
-          label="Parametre İsmi"
+          :label="t('parameterName')"
           filled
           class="w-xs"
         />
         <q-select
           v-model="selectedParam.erpFieldName"
           :options="paramOptions"
-          label="ERP Eşleştirme Alanı"
+          :label="t('erpFieldName')"
           filled
           class="w-xs"
         />
@@ -272,17 +274,17 @@ async function deleteParam() {
 
       <div class="flex flex-row input-field my-8">
         <q-btn
-          label="Ekle"
+          :label="t('add')"
           no-caps
           @click="addParam"
         />
         <q-btn
-          label="Düzenle"
+          :label="t('edit')"
           no-caps
           @click="editParam"
         />
         <q-btn
-          label="Sil"
+          :label="t('delete')"
           no-caps
           @click="deleteParam"
         />

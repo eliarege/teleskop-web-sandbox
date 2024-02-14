@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const selectedMachineId = ref()
 
 const counter1 = ref()
@@ -12,7 +14,7 @@ const { data: counterOptions } = useLazyFetch('/api/consumption-counters/mach-co
   transform: (counterOptions) => {
     counterOptions.unshift({
       id: -1,
-      name: 'Seçilmedi',
+      name: t('notSelected'),
     })
     return counterOptions
   },
@@ -40,7 +42,7 @@ async function handleOptionChange() {
 <template>
   <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
-      <h3>Makineler</h3>
+      <h3>{{ t('machines') }}</h3>
       <q-list
         bordered
         separator
@@ -66,7 +68,7 @@ async function handleOptionChange() {
         :options="counterOptions"
         option-label="name"
         option-value="id"
-        label="Sayaç 1"
+        :label="`${t('counter')} 1`"
         @update:model-value="handleOptionChange()"
       />
       <q-select
@@ -74,7 +76,7 @@ async function handleOptionChange() {
         :options="counterOptions"
         option-label="name"
         option-value="id"
-        label="Sayaç 2"
+        :label="`${t('counter')} 2`"
         @update:model-value="handleOptionChange()"
       />
     </q-card-section>

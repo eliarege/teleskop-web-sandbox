@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import type { Column } from 'nuxt-ui-types'
 
+const { t, d } = useI18n()
+
 const { data: messages } = useLazyFetch('/api/machines/operator-messages', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const columns: Column[] = [
+const columns = computed(() => ([
   {
     name: 'userId',
-    label: 'User Id',
+    label: t('userId'),
     field: 'userId',
     align: 'left',
     filterable: true,
@@ -18,7 +20,7 @@ const columns: Column[] = [
   },
   {
     name: 'operator',
-    label: 'Operatör',
+    label: t('operator'),
     field: 'operator',
     align: 'left',
     filterable: true,
@@ -26,7 +28,7 @@ const columns: Column[] = [
   },
   {
     name: 'machineId',
-    label: 'Makine',
+    label: `${t('machine')} ID`,
     field: 'machineId',
     align: 'left',
     filterable: true,
@@ -34,7 +36,7 @@ const columns: Column[] = [
   },
   {
     name: 'message',
-    label: 'Mesaj',
+    label: t('message'),
     field: 'message',
     align: 'left',
     filterable: true,
@@ -42,7 +44,7 @@ const columns: Column[] = [
   },
   {
     name: 'sentDate',
-    label: 'Gönderim Zamanı',
+    label: t('sentDate'),
     field: 'sentDate',
     align: 'left',
     filterable: true,
@@ -50,13 +52,13 @@ const columns: Column[] = [
   },
   {
     name: 'runningBatchKey',
-    label: 'Çalışan İş Emri',
+    label: t('runningBatchKey'),
     field: 'runningBatchKey',
     align: 'left',
     filterable: true,
     filterType: 'includes',
   },
-]
+]))
 
 async function handleFilterSlotsUpdate(updatedValue) {
   messages.value = await $fetch('/api/machines/operator-messages', {
@@ -76,7 +78,23 @@ async function handleFilterSlotsUpdate(updatedValue) {
         :columns="columns"
         class="overflow-y-auto h-160"
         @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-      />
+      >
+        <template #custombody="fails">
+          <q-tr>
+            <q-td
+              v-for="row in fails.cols"
+              :key="row"
+            >
+              <span v-if="row.field === 'sentDate'">
+                {{ d(row.value, 'datetime') }}
+              </span>
+              <span v-else>
+                {{ row.value }}
+              </span>
+            </q-td>
+          </q-tr>
+        </template>
+      </FilterableTable>
     </q-card-section>
   </q-card>
 </template>

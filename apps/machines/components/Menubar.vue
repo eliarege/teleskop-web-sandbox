@@ -7,38 +7,30 @@ const props = defineProps<{
   selected: Machine
 }>()
 
-const emit = defineEmits(['deleteMachine', 'addMachine'])
+const emit = defineEmits(['refresh'])
 
 const { t, locale, setLocale } = useI18n()
 
 const showMachineParameters = ref(false)
 const showMimic = ref(false)
 const showFormulas = ref(false)
-const machineId = computed(() => props.selected.machineId)
+const showGetDyeHouseDefinitions = ref(false)
+const showSetDyeHouseDefinitions = ref(false)
 
-const { data: version } = useLazyFetch('/api/soap/get-version', {
-  default: () => 0,
-  query: {
-    machineId,
-  },
+const { data: databaseVersion } = useLazyFetch('/api/machines/database-version', {
+  default: () => '',
 })
 
-async function loadProject() {
-  await $fetch('/api/ftp/update-machine', {
-    method: 'GET',
-    query: {
-      machineId: props.selected.machineId,
-      ip: props.selected.ip,
-    },
-  })
+async function updateVersions() {
+  await $fetch('/api/sync/machine-versions')
+  emit('refresh')
 }
 
-async function loadDefinitions() {
-  await $fetch('/api/ftp/update-definitions', {
+async function loadProject() {
+  await $fetch('/api/sync/update-machine', {
     method: 'GET',
     query: {
       machineId: props.selected.machineId,
-      ip: props.selected.ip,
     },
   })
 }
@@ -59,6 +51,7 @@ async function loadDefinitions() {
         no-caps
         color="primary"
         class="mr-4"
+        @click="updateVersions"
       />
       <q-btn
         :label="t('machineConstants')"
@@ -86,13 +79,20 @@ async function loadDefinitions() {
         no-caps
         color="primary"
         class="mr-4"
-        @click="loadDefinitions"
+        @click="showGetDyeHouseDefinitions = true"
+      />
+      <q-btn
+        :label="t('setDyeHouseDefinitions')"
+        no-caps
+        color="primary"
+        class="mr-4"
+        @click="showSetDyeHouseDefinitions = true"
       />
     </q-card-section>
 
     <q-card-section class="flex flex-row items-end mr-8">
-      <q-chip class="mr-4 mb-2">
-        DB v{{ version }}
+      <q-chip>
+        {{ `DB v${databaseVersion}` }}
       </q-chip>
       <q-option-group
         :model-value="locale"
@@ -123,5 +123,17 @@ async function loadDefinitions() {
     :show="showFormulas"
     :selected="selected"
     @close="showFormulas = false"
+  />
+  <GetDyeHouseDefinitionsDialog
+    v-if="showGetDyeHouseDefinitions"
+    :show="showGetDyeHouseDefinitions"
+    :selected="selected"
+    @close="showGetDyeHouseDefinitions = false"
+  />
+  <SetDyeHouseDefinitionsDialog
+    v-if="showSetDyeHouseDefinitions"
+    :show="showSetDyeHouseDefinitions"
+    :selected="selected"
+    @close="showSetDyeHouseDefinitions = false"
   />
 </template>

@@ -4,16 +4,16 @@ import type { Column } from 'nuxt-ui-types'
 const { t, d } = useI18n()
 
 const closedTimeOptions = ref([
-  { label: 'Cihaz yeniden başlatıldı', closedType: 0 },
-  { label: 'Cihaz kapatıldı', closedType: 1 },
-  { label: 'Elektrik kesildi', closedType: 2 },
-  { label: 'Diğer', closedType: 3 },
+  { label: t('controllerRestart'), closedType: 0 },
+  { label: t('controllerShutdown'), closedType: 1 },
+  { label: t('powerCut'), closedType: 2 },
+  { label: t('other'), closedType: 3 },
 ])
 
-const columns: Column[] = [
+const columns = computed(() => ([
   {
     name: 'machineId',
-    label: 'Makine No',
+    label: t('machineNo'),
     field: 'machineId',
     align: 'left',
     filterable: true,
@@ -21,7 +21,7 @@ const columns: Column[] = [
   },
   {
     name: 'machineCode',
-    label: 'Makine',
+    label: t('machine'),
     field: 'machineCode',
     align: 'left',
     filterable: true,
@@ -29,7 +29,7 @@ const columns: Column[] = [
   },
   {
     name: 'startTime',
-    label: 'Başlangıç Tarihi',
+    label: t('startDate'),
     field: 'startTime',
     align: 'left',
     filterable: true,
@@ -38,7 +38,7 @@ const columns: Column[] = [
 
   {
     name: 'endTime',
-    label: 'Bitiş Tarihi',
+    label: t('endDate'),
     field: 'endTime',
     align: 'left',
     filterable: true,
@@ -46,7 +46,7 @@ const columns: Column[] = [
   },
   {
     name: 'duration',
-    label: 'Süre',
+    label: t('duration'),
     field: 'duration',
     align: 'left',
     filterable: true,
@@ -54,7 +54,7 @@ const columns: Column[] = [
   },
   {
     name: 'closedType',
-    label: 'Sebep',
+    label: t('cause'),
     field: 'closedType',
     align: 'left',
     filterable: true,
@@ -63,7 +63,7 @@ const columns: Column[] = [
     optionLabel: 'label',
     optionValue: 'closedType',
   },
-]
+]))
 
 const { data: times } = useLazyFetch('/api/controller-closed-times/controller-closed-times', {
   default: () => [],

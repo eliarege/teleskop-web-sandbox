@@ -1,13 +1,19 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const { data: finishReasons, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const finishOptions = [{ label: 'Bitir', value: 3 }, { label: 'Atla', value: 4 }, { label: 'Makine Duraklatma', value: 5 }]
+const finishOptions = [
+  { label: t('finish'), value: 3 },
+  { label: t('skip'), value: 4 },
+  { label: t('machinePause'), value: 5 },
+]
 
-const columns = {
+const columns = computed(() => ({
   reasonId: {
     label: 'ID',
     field: 'reasonId',
@@ -20,7 +26,7 @@ const columns = {
     editable: true,
   },
   typeId: {
-    label: 'Tip',
+    label: t('type'),
     field: 'typeId',
     align: 'left',
     type: 'select',
@@ -35,7 +41,7 @@ const columns = {
     },
   },
   text: {
-    label: 'Açıklama',
+    label: t('description'),
     field: 'text',
     align: 'left',
     filterable: true,
@@ -48,7 +54,7 @@ const columns = {
       validation: 'required',
     },
   },
-}
+}))
 
 async function handleFilterSlotsUpdate(updatedValue) {
   finishReasons.value = await $fetch('/api/finish-reasons/finish-reasons', {

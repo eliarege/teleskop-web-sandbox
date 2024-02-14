@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const columns = {
+const { t } = useI18n()
+
+const columns = computed(() => ({
   id: {
     label: 'ID',
     field: 'id',
@@ -16,7 +18,7 @@ const columns = {
     },
   },
   reasonText: {
-    label: 'Atlatma Nedeni',
+    label: t('skippingReason'),
     field: 'reasonText',
     align: 'left',
     filterable: true,
@@ -30,7 +32,7 @@ const columns = {
     },
   },
 
-}
+}))
 
 const { data: stepSkippingReasons, refresh } = useLazyFetch('/api/step-skipping-reasons/step-skipping-reasons', {
   default: () => [],
