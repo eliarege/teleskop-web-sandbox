@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   show: boolean
+  selected: Machine
 }>()
 
 const emit = defineEmits(['close'])
@@ -50,10 +51,10 @@ function deselectAll() {
         <q-checkbox v-model="options.machineFinishReasons" :label="t('machineFinishReasons')" />
       </div>
       <div class="flex flex-row gap-4 justify-end">
-        <q-btn no-caps :label="t('Select All')" @click="selectAll" />
-        <q-btn no-caps :label="t('Deselect All')" @click="deselectAll" />
-        <q-btn no-caps :label="t('Cancel')" @click="emit('close')" />
-        <q-btn no-caps :label="t('Get')" @click="loadDefinitions" />
+        <q-btn no-caps :label="t('selectAll')" @click="selectAll" />
+        <q-btn no-caps :label="t('deselectAll')" @click="deselectAll" />
+        <q-btn no-caps :label="t('cancel')" @click="emit('close')" />
+        <q-btn no-caps :label="t('get')" @click="loadDefinitions" />
       </div>
     </q-card>
   </q-dialog>

@@ -222,5 +222,9 @@
   "analogInputs": "Analog Girişler",
   "analogOutputs": "Analog Çıkışlar",
   "otherSettings": "Diğer Ayarlar",
-  "maxReelSpeed": "Maksimum Kule Hızı"
+  "maxReelSpeed": "Maksimum Kule Hızı",
+  "send": "Gönder",
+  "get": "Al",
+  "selectAll": "Hepsini Seç",
+  "deselectAll": "Hepsini Kaldır"
 }
