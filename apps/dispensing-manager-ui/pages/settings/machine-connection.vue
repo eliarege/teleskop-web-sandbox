@@ -15,7 +15,7 @@ const controlDevices = [
   { controlDevice: 0, label: t('settings.noProgramator') }, // TODO:
   { controlDevice: 1, label: 'Eliar' },
   { controlDevice: 2, label: 'Sedo' },
-  { controlDevice: 3, label: 'Setrex' },
+  { controlDevice: 3, label: 'Setex' },
   { controlDevice: 4, label: 'Termo' },
   { controlDevice: 5, label: 'Tonello' },
 ]
@@ -39,14 +39,17 @@ const columns = computed<Array<Column>>(() => [
     optionValue: 'machineid',
   },
   {
-    name: 'controlDevice',
-    label: t('settings.controlMach'),
-    field: 'controlDevice',
-    filterable: true,
-    filterType: 'select',
-    selectionOptions: controlDevices,
-    optionLabel: 'label',
-    optionValue: 'controlDevice',
+    name: 'disps',
+    label: t('settings.connectedDisps'),
+    field: 'disps',
+    format: (val, row) => {
+      return val?.length ? val.map(disp => disp.name).join(', ') : ''
+    },
+    // filterable: true,
+    // filterType: 'multiselect',
+    // selectionOptions: disps.value,
+    // optionLabel: 'name',
+    // optionValue: 'dispNo',
   },
 ])
 
@@ -240,7 +243,7 @@ onBeforeRouteLeave(async (to, from, next) => {
     :columns="columns"
     :is-expandable="true"
     :empty-first-row="true"
-    style="height: 85vh;"
+    style="height: 90vh;"
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"
   >
