@@ -12,7 +12,7 @@ await getDisps()
 const machines = await $fetch('/api/machine/machines')
 
 const controlDevices = [
-  { controlDevice: 0, label: 'Programatörü Yok' }, // TODO:
+  { controlDevice: 0, label: t('settings.noProgramator') }, // TODO:
   { controlDevice: 1, label: 'Eliar' },
   { controlDevice: 2, label: 'Sedo' },
   { controlDevice: 3, label: 'Setrex' },

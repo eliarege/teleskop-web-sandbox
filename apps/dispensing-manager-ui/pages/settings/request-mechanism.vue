@@ -173,7 +173,7 @@ function filterOptions(val, update) {
             <div class="settings-section-header">
               {{ t('settings.orderBasedDyeRequest._') }}
             </div>
-            <div class="m-5">
+            <div class="m-5 flex flex-col">
               <q-checkbox
                 v-model="settingsData.joborderBasedActive"
                 :label="t('settings.orderBasedDyeRequest.active')"
@@ -313,7 +313,7 @@ function filterOptions(val, update) {
             <div class="settings-section-header">
               {{ t('settings.other') }}
             </div>
-            <div class="m-5">
+            <div class="m-5 flex flex-col gap-1">
               <q-checkbox
                 v-model="settingsData.chemTankLevelControl"
                 :label="t('settings.checkTankLevelInChemicalRequests')"
@@ -322,7 +322,6 @@ function filterOptions(val, update) {
                 v-model="settingsData.justRunOnPlannedMachine"
                 :label="t('settings.executeOrderOnlyInPlannedMachine')"
               />
-              <br>
               <q-checkbox
                 v-model="settingsData.coupleMechanismSplit"
                 :label="t('settings.determineCouplingRecipe')"

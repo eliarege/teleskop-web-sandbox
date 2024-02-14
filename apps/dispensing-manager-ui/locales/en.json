@@ -96,6 +96,7 @@
     "rerequestable": "Rerequestable",
     "directlyTransfer": "Direct Transfer",
     "dispListOfMaterial": "Dispenser Material List",
+    "noProgramator": "No programator",
     "find": "Find",
     "clear": "Clear",
     "requestMechanism": {

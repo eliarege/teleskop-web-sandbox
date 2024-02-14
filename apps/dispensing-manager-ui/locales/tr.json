@@ -95,6 +95,7 @@
     "rerequestable": "Yeniden İstenebilir",
     "directlyTransfer": "Doğrudan Transfer",
     "dispListOfMaterial": "Malzeme Listesi Dağıtıcı",
+    "noProgramator": "Programatörü yok",
     "find": "Bul",
     "clear": "Temizle",
     "requestMechanism": {
