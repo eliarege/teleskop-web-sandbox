@@ -25,10 +25,10 @@ export default defineEventHandler(async (event) => {
         await writeFinishReasons(tbb, trx)
       }
       if (options.users) {
-        await writeUsers(tbb, trx)
+        await writeUsers(machineId, tbb, trx)
       }
       if (options.manualReasons) {
-        await WriteManualReasons(tbb, trx)
+        await writeManualReasons(tbb, trx)
       }
       // TODO: add write commandTimeoutReasons
       /*       if (options.commandTimeoutReasons) {

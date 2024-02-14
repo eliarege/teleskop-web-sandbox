@@ -16,9 +16,9 @@ const options = ref({
 })
 
 async function setDefinitions() {
-  await $fetch('/api/ftp/set-dye-house-definitions', {
+  await $fetch('/api/sync/upload-dye-house-definitions', {
     method: 'POST',
-    query: {
+    body: {
       machineId: props.selected.machineId,
       options: options.value,
     },

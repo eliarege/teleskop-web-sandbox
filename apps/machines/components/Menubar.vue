@@ -22,16 +22,15 @@ const { data: databaseVersion } = useLazyFetch('/api/machines/database-version',
 })
 
 async function updateVersions() {
-  await $fetch('/api/soap/machine-versions')
+  await $fetch('/api/sync/machine-versions')
   emit('refresh')
 }
 
 async function loadProject() {
-  await $fetch('/api/ftp/update-machine', {
+  await $fetch('/api/sync/update-machine', {
     method: 'GET',
     query: {
       machineId: props.selected.machineId,
-      ip: props.selected.ip,
     },
   })
 }
