@@ -3,12 +3,12 @@ import type { Column } from 'nuxt-ui-types'
 
 const { t, d } = useI18n()
 
-const closedTimeOptions = ref([
+const closedTimeOptions = computed(() => ([
   { label: t('controllerRestart'), closedType: 0 },
   { label: t('controllerShutdown'), closedType: 1 },
   { label: t('powerCut'), closedType: 2 },
   { label: t('other'), closedType: 3 },
-])
+]))
 
 const columns = computed(() => ([
   {

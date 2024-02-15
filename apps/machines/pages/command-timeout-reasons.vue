@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { addCommandTimeoutReason } from '~/utils'
-
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -10,7 +8,7 @@ const selectedReasonId = ref()
 const { data: machines } = useLazyFetch('/api/machines/active-machines', {
   default: () => [],
 })
-const { data: machineCommands } = useLazyFetch(`/api/command-timeout-reasons/master-commands-timeout`, {
+const { data: machineCommands } = useLazyFetch(`/api/master-commands/master-commands`, {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
@@ -47,7 +45,10 @@ const showEditReasonDialog = ref(false)
 
 const newReasonText = ref('')
 async function handleAddReason() {
-  await addCommandTimeoutReason(newReasonText.value)
+  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+    method: 'POST',
+    body: { reasonText: newReasonText.value },
+  })
   showAddReasonDialog.value = false
   newReasonText.value = ''
   await refreshTimeoutReasons()
