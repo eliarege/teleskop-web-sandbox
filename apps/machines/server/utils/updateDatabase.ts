@@ -2,6 +2,7 @@ import type { Knex } from 'knex'
 import type { TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { calcIONumber } from '.'
+import type { CommandAlarmReason } from '~/types'
 import { AnalogLock, DigitalLock } from '~/types'
 
 async function replaceRecords(knex: Knex, tableName: string, data, whereObject?: Record<string, any>) {
@@ -378,7 +379,6 @@ export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpCl
   )
 
   await trx('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId).del()
-  // await trx('BFCOMMANDTIMEOUTREASONS').del()
   await insertIgnoringDuplicates(trx, 'BFCOMMANDTIMEOUTREASONS', timeoutReasons, ['REASONTEXT', 'GROUPID'])
 
   await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
@@ -743,7 +743,7 @@ export async function writeManualReasons(tbb: TbbFtpClient, trx: Knex) {
       reportToERP: 'ReportToERP',
     })
 
-  await tbb.uploadStopReasons(formulas)
+  await tbb.uploadManualReasons(formulas)
 
   return formulas
 }
@@ -785,4 +785,31 @@ export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, tr
   if (digitalOutputs.length > 0) {
     await replaceRecords(trx, 'BFLOCKSOUTPUTDOUT', digitalOutputs, { MACHINEID: machineId })
   }
+}
+
+export async function writeCommandAlarmReasons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const reasons: CommandAlarmReason[] = await trx('BFCOMMANDTIMEOUTREASONS')
+    .leftJoin('BFCOMMANDTIMEOUTREASONMAP', 'BFCOMMANDTIMEOUTREASONS.ID', 'BFCOMMANDTIMEOUTREASONMAP.REASONID')
+    .where('BFCOMMANDTIMEOUTREASONMAP.MACHINEID', machineId)
+    .select({
+      id: 'ID',
+      reasonText: 'REASONTEXT',
+      groupId: 'GROUPID',
+      machineId: 'MACHINEID',
+      commandNo: 'COMMANDNO',
+    })
+
+  const mergedReasons: CommandAlarmReason[] = reasons.reduce((acc, curr) => {
+    const existingReason = acc.find(reason => reason.machineId === curr.machineId && reason.id === curr.id)
+    if (existingReason) {
+      existingReason.commandNumbers.push(curr.commandNo)
+    } else {
+      acc.push({ ...curr, commandNumbers: [curr.commandNo] })
+    }
+    return acc
+  }, [])
+
+  await tbb.uploadCommandAlarmReasons(mergedReasons)
+
+  return mergedReasons
 }

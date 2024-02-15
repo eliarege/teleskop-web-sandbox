@@ -26,3 +26,8 @@ export function parseCommandAlarmReasons(content: string) {
   }
   return reasons
 }
+
+export function serializeCommandAlarmReasons(reasons: CommandAlarmReason[]): string {
+  const regexStrings = reasons.map(reason => `${reason.id} "${reason.reasonText}" ${reason.commandNumbers.join(',')} ${reason.groupId}`)
+  return regexStrings.join('\n')
+}
