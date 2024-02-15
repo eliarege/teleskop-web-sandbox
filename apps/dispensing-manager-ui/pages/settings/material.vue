@@ -74,7 +74,6 @@ async function getRows() {
   rows.value = await $fetch('/api/settings/material-dispenser-connection-filtered', {
     method: 'POST',
   })
-  console.log(rows.value)
   rows.value.unshift({})
 }
 
