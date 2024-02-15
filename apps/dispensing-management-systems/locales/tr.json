@@ -98,7 +98,20 @@
     "ProcessNo": "İşlem Numarası"
   },
   "weighingFields": {
-    "Info": "Tartım Bilgisi"
+    "Info": "Tartım Bilgisi",
+    "Auto": "Otomatik Tartım Bilgisi",
+    "Manual": "Manuel Tartım Bilgisi",
+    "MainStep": "Ana Adım",
+    "ParallelStep": "Paralel Adım",
+    "RecipeAmount": "Reçete Miktarı",
+    "ActualAmount": "Gerçek Miktar",
+    "RequestTime": "İstek Zamanı",
+    "CompletedTime": "Bitiş Zamanı",
+    "Interval": "Geçen Zaman",
+    "Hour": "Saat",
+    "Minute": "Dakika",
+    "Second": "Saniye",
+    "No": "Tartım Numarası"
   },
   "machineFields": {
     "Name": "Makine Adı",

@@ -100,7 +100,19 @@
     "Unit": "Unit"
   },
   "weighingFields": {
-    "Info": "Weighing Information"
+    "Info": "Weighing Information",
+    "Auto": "Automatic Weighing Info",
+    "MainStep": "Main Step",
+    "ParallelStep": "Parallel Step",
+    "RecipeAmount": "Recipe Amount",
+    "ActualAmount": "Actual Amount",
+    "RequestTime": "Request Time",
+    "CompletedTime": "Completed Time",
+    "Interval": "Time Passed",
+    "Hour": "Hour(s)",
+    "Minute": "Minute(s)",
+    "Second": "Second(s)",
+    "No": "Weighing No"
   },
   "machineFields": {
     "Name": "Machine Name",

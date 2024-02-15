@@ -2,6 +2,7 @@
 import { QTable } from 'quasar'
 import type { QTableColumn } from 'quasar'
 import MaterialRequests from './MaterialRequests.vue'
+import WeighingInfo from './WeighingInfo.vue'
 import type { JobOrder } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { cellStyle } from '~/shared/utils'
@@ -125,10 +126,10 @@ function onButtonClicked(link: string) {
       },
     })
   } else if (link === 'weighing') {
-    // q.dialog({
-    // component: WeighingInfo,
-    // componentProps: { jobOrder },
-    // })
+    q.dialog({
+      component: WeighingInfo,
+      componentProps: { jobOrder },
+    })
   }
 }
 const pagination = ref({ rowsPerPage: 50 })

@@ -82,7 +82,7 @@ export interface MaterialRequest {
 }
 export interface WeighingAuto {
   jobId: number
-  batch: string
+  programNo: string
   machineName: string
   dispenserId: number
   processOrder: number
@@ -96,10 +96,9 @@ export interface WeighingAuto {
   requestTime: Date
   completedTime: Date
   interval: number
-  autoMan: boolean
 }
 export interface WeighingManual {
-  batch: string
+  batchNo: string
   correctionNo: number
   weighingNumber: number
   recipeType: number

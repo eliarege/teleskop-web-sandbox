@@ -51,6 +51,7 @@ async function getRecipe() {
         flat
         bordered
         separator="cell"
+        :title="t('MaterialRequests')"
         :columns="columns"
         :rows="materials"
         row-key="name"
