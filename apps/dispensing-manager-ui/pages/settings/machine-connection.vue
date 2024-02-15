@@ -43,7 +43,7 @@ const columns = computed<Array<Column>>(() => [
     label: t('settings.connectedDisps'),
     field: 'disps',
     format: (val, row) => {
-      return val?.length ? val.map(disp => disp.name).join(', ') : ''
+      return val?.length ? val.map(disp => disps.value.find(dispenser => dispenser.dispNo === disp)?.name).join(', ') : ''
     },
     // filterable: true,
     // filterType: 'multiselect',
@@ -76,7 +76,7 @@ function resetMachineInfo(row?: any) {
     if (mach.field === 'controlDevice') {
       controlDevices.forEach(dev => dev.controlDevice === row[mach.field] ? mach.value = dev : '')
     } else if (mach.field === 'connectedDisps') {
-      mach.value = row.disps
+      mach.value = row.disps ? row.disps : []
     } else {
       mach.value = row[mach.field]
     }
@@ -216,7 +216,7 @@ async function submit(isPut: boolean) {
 
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  const isSuccess = await $fetch(`/api/settings/machine-dispenser-connection${machineInfo.value[0].value}`, {
+  const isSuccess = await $fetch(`/api/settings/machine-dispenser-connection/${machineInfo.value[0].value}`, {
     method: 'delete',
   })
   expandedRow.value = null
@@ -290,32 +290,65 @@ onBeforeRouteLeave(async (to, from, next) => {
 
       <q-tr v-if="props.rowIndex === expandedRow" :props="props">
         <q-td colspan="100%">
-          <div class="flex justify-center pt-5">
-            <div
-              v-for="mach in machineInfo"
-              :key="mach.label"
-              class="flex ml-5 mt-1"
-            >
-              <div class="flex w-70 pl-2 m-1 items-center">
-                {{ mach.label }}
+          <div class="flex flex-row justify-center pt-5">
+            <div class="flex flex-col justify-center">
+              <div
+                v-for="mach in machineInfo.slice(0, -1)"
+                :key="mach.label"
+                class="flex mt-1"
+              >
+                <div v-if="mach.field !== 'connectedDisps'" class="flex w-70 pl-2 m-1 items-center">
+                  {{ mach.label }}
+                </div>
+                <div v-if="mach.field !== 'connectedDisps'" class=" flex w-100 pl-2 m-1 items-center ">
+                  <span v-if="mach.field === 'controlDevice'">
+                    <q-select
+                      v-model="mach.value"
+                      borderless
+                      dense
+                      filled
+                      class="w-70"
+                      options-dense
+                      :options="controlDevices"
+                      option-value="controlDevice"
+                      option-label="label"
+                      style="min-width: 150px"
+                    />
+                  </span>
+                  <span v-else>
+                    <q-input
+                      v-model="mach.value"
+                      dense
+                      class="w-70"
+                      filled
+                      :type="mach.field === 'machineid' ? 'number' : 'text'"
+                      :placeholder="mach.value"
+                      :disable="props.row.machineid > 0 && mach.field === 'machineid'"
+                    />
+
+                  </span>
+                </div>
               </div>
-              <div class=" flex w-100 pl-2 m-1 items-center">
-                <span v-if="mach.field === 'controlDevice'">
-                  <q-select
-                    v-model="mach.value"
-                    borderless
-                    dense
-                    filled
-                    class="w-70"
-                    options-dense
-                    :options="controlDevices"
-                    option-value="controlDevice"
-                    option-label="label"
-                    style="min-width: 150px"
+            </div>
+            <div class="flex justify-center gap-5">
+              <!-- Container for the right side div -->
+              <div v-if="machineInfo[3].field === 'connectedDisps'" class="flex max-h-60 pl-2 items-center ">
+                {{ machineInfo[3].label }}
+              </div>
+              <div
+                class="flex max-h-60 overflow-y-scroll"
+              >
+                <span
+                  class="flex flex-col"
+                >
+                  <q-checkbox
+                    v-for="dispenser in disps"
+                    :key="dispenser.dispNo"
+                    v-model="machineInfo[3].value"
+                    :val="dispenser.dispNo"
+                    :label="dispenser.name"
                   />
-                </span>
-                <span v-else-if="mach.field === 'connectedDisps'">
-                  <q-select
+                  <!-- <q-select
                     v-model="mach.value"
                     borderless
                     multiple
@@ -327,20 +360,8 @@ onBeforeRouteLeave(async (to, from, next) => {
                     option-value="dispNo"
                     option-label="name"
                     style="min-width: 150px"
-                  />
+                  /> -->
                   <!-- :display-value=" mach.value && mach.value.length > 1 ? `${mach.value[0]?.name} + ${mach.value?.length - 1} ${t('more')}` : mach.value[0]?.name" -->
-                </span>
-                <span v-else>
-                  <q-input
-                    v-model="mach.value"
-                    dense
-                    class="w-70"
-                    filled
-                    :type="mach.field === 'machineid' ? 'number' : 'text'"
-                    :placeholder="mach.value"
-                    :disable="props.row.machineid > 0 && mach.field === 'machineid'"
-                  />
-
                 </span>
               </div>
             </div>

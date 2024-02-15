@@ -17,16 +17,17 @@ const materialGroups = [
 
 const columns = computed<Array<Column>>(() => [
   {
-    name: 'materialName',
-    label: t('settings.materialName'),
-    field: 'materialName',
-    filterable: true,
-    filterType: 'includes',
-  },
-  {
     name: 'materialCode',
     label: t('settings.materialCode'),
     field: 'materialCode',
+    filterable: true,
+    filterType: 'includes',
+    headerClasses: 'w-40',
+  },
+  {
+    name: 'materialName',
+    label: t('settings.materialName'),
+    field: 'materialName',
     filterable: true,
     filterType: 'includes',
   },
@@ -40,6 +41,19 @@ const columns = computed<Array<Column>>(() => [
     optionValue: 'materialGroup',
     selectionOptions: materialGroups,
   },
+  {
+    name: 'disps',
+    label: t('settings.connectedDisps'),
+    field: 'disps',
+    format: (val, row) => {
+      return val?.length ? val.map(disp => disps.value.find(dispenser => dispenser.dispNo === disp)?.name).join(', ') : ''
+    },
+    // filterable: true,
+    // filterType: 'multiselect',
+    // selectionOptions: disps.value,
+    // optionLabel: 'name',
+    // optionValue: 'dispNo',
+  },
 ])
 
 const materialInfo = ref<{ label: string, value: any, field: string, numeric?: boolean }[]>([
@@ -50,14 +64,17 @@ const materialInfo = ref<{ label: string, value: any, field: string, numeric?: b
   { label: 'pH', value: '', field: 'ph', numeric: true },
   { label: t('settings.supplySource'), value: '', field: 'source' },
   { label: t('settings.materialKgPrice'), value: '', field: 'cost', numeric: true },
-  { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
   { label: t('settings.rerequestable'), value: '', field: 'rerequestable' },
   { label: t('settings.directlyTransfer'), value: '', field: 'directTransfer' },
+  { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
 
 ])
 
 async function getRows() {
-  rows.value = await $fetch('/api/settings/material')
+  rows.value = await $fetch('/api/settings/material-dispenser-connection-filtered', {
+    method: 'POST',
+  })
+  console.log(rows.value)
   rows.value.unshift({})
 }
 
@@ -66,15 +83,13 @@ async function getDisps() {
 }
 
 async function resetMaterialInfo(row: any) {
-  const mateDispsTemp = await $fetch(`/api/settings/material-connection?chemCode=${row.materialCode}`)
   materialInfo.value.forEach((mate) => {
     if (mate.field === 'materialGroup') {
       materialGroups.forEach(dev => dev.materialGroup === row[mate.field] ? mate.value = dev : '')
-    } else if (mate.field === 'connectedDisps') {
-      mate.value = mateDispsTemp
-      row.connectedDisps = mateDispsTemp
     } else if (mate.field === 'directTransfer' || mate.field === 'rerequestable') {
       row[mate.field] === undefined ? mate.value = false : mate.value = row[mate.field]
+    } else if (mate.field === 'connectedDisps') {
+      mate.value = row.disps ? row.disps : []
     } else {
       mate.value = row[mate.field]
     }
@@ -82,7 +97,7 @@ async function resetMaterialInfo(row: any) {
 }
 
 async function applyFilters(updatedValue: any) {
-  rows.value = await $fetch('/api/settings/filtered-material', {
+  rows.value = await $fetch('/api/settings/material-dispenser-connection-filtered', {
     method: 'POST',
     body: updatedValue,
   })
@@ -129,6 +144,8 @@ function isFormChangedComparison() {
       return (
         actualData![element.field] !== element.value.materialGroup
       )
+    else if (element.field === 'connectedDisps')
+      return actualData.disps !== element.value
     else
       return actualData![element.field] !== element.value
   })
@@ -141,14 +158,10 @@ function customSortMethod(rows, sortBy, descending) {
     return rows
   }
 
-  // Clone the rows array to avoid mutating the original data
   const sortedRows = [...rows]
 
-  // Remove the first row from the sorting process
   const firstRow = sortedRows.shift()
 
-  // Apply your sorting logic here
-  // Example sorting logic (adjust as needed):
   sortedRows.sort((a, b) => {
     if (descending) {
       return a[sortBy] < b[sortBy] ? 1 : -1
@@ -157,7 +170,6 @@ function customSortMethod(rows, sortBy, descending) {
     }
   })
 
-  // Add the first row back at the beginning
   sortedRows.unshift(firstRow)
 
   return sortedRows
@@ -182,9 +194,9 @@ async function submit(isPut: boolean) {
     ph: materialInfo.value[4]?.value,
     source: materialInfo.value[5]?.value,
     cost: materialInfo.value[6]?.value,
-    connectedDisps: materialInfo.value[7]?.value,
+    rerequestable: materialInfo.value[7]?.value,
     directTransfer: materialInfo.value[8]?.value,
-    rerequestable: materialInfo.value[9]?.value,
+    connectedDisps: materialInfo.value[9]?.value,
   }
   /** If create */
   if (!isPut) {
@@ -301,88 +313,89 @@ onBeforeRouteLeave(async (to, from, next) => {
         class="expanded-row"
       >
         <q-td colspan="100%">
-          <div class="flex justify-center pt-5">
-            <div
-              v-for="mate in materialInfo"
-              :key="mate.label"
-              class="flex ml-5 mt-1"
-            >
-              <div class="flex class-w-70 pl-2 m-1 items-center">
-                {{ mate.label }}
+          <div class="flex">
+            <div class="flex pt-5 w-3/4 justify-center">
+              <div
+                v-for="mate in materialInfo.slice(0, -1)"
+                :key="mate.label"
+                class="flex mt-1"
+              >
+                <div class="flex class-w-70 m-1 items-center">
+                  {{ mate.label }}
+                </div>
+                <div class=" flex class-w-100 pl-2 m-1">
+                  <span v-if="mate.field === 'materialGroup'">
+                    <q-select
+                      v-model="mate.value"
+                      borderless
+                      dense
+                      filled
+                      class="class-w-70"
+                      options-dense
+                      :options="materialGroups"
+                      option-value="materialGroup"
+                      option-label="label"
+                      style="min-width: 150px"
+                    />
+                  </span>
+                  <span v-else-if="mate.field === 'directTransfer' || mate.field === 'rerequestable'">
+                    <q-checkbox v-model="mate.value" />
+                  </span>
+                  <span v-else>
+                    <q-input
+                      v-model="mate.value"
+                      dense
+                      class="class-w-70"
+                      filled
+                      :type="mate.numeric ? 'number' : 'text'"
+                      :placeholder="mate.value"
+                      :disable="props.row.materialCode !== undefined && mate.field === 'materialCode'"
+                    />
+                  </span>
+                </div>
               </div>
-              <div class=" flex class-w-100 pl-2 m-1 items-center">
-                <span v-if="mate.field === 'materialGroup'">
-                  <q-select
-                    v-model="mate.value"
-                    borderless
-                    dense
-                    filled
-                    class="class-w-70"
-                    options-dense
-                    :options="materialGroups"
-                    option-value="materialGroup"
-                    option-label="label"
-                    style="min-width: 150px"
-                  />
-                </span>
-                <span v-else-if="mate.field === 'connectedDisps'">
-                  <q-select
-                    v-model="mate.value"
-                    borderless
-                    multiple
-                    dense
-                    filled
-                    class="class-w-70 overflow-hidden"
-                    options-dense
-                    :options="disps"
-                    option-value="dispNo"
-                    option-label="name"
-                    style="min-width: 150px"
-                  />
-                  <!-- :display-value=" mate.value && mate.value.length > 1 ? `${mate.value[0]?.name} + ${mate.value?.length - 1} ${t('more')}` : mate.value[0]?.name" -->
-                </span>
-                <span v-else-if="mate.field === 'directTransfer' || mate.field === 'rerequestable'">
-                  <q-checkbox v-model="mate.value" />
-                </span>
-                <span v-else>
-                  <q-input
-                    v-model="mate.value"
-                    dense
-                    class="class-w-70"
-                    filled
-                    :type="mate.numeric ? 'number' : 'text'"
-                    :placeholder="mate.value"
-                    :disable="props.row.materialCode !== undefined && mate.field === 'materialCode'"
-                  />
+            </div>
 
-                </span>
+            <div class="flex flex-col w-1/4">
+              <div class="flex max-h-60 pl-2 items-center ">
+                {{ materialInfo[materialInfo.length - 1].label }}
               </div>
+              <div class="flex flex-col max-h-60 overflow-y-scroll">
+                <q-checkbox
+                  v-for="dispenser in disps"
+                  :key="dispenser.dispNo"
+                  v-model="materialInfo[materialInfo.length - 1].value"
+                  :val="dispenser.dispNo"
+                  :label="dispenser.name"
+                />
+              </div>
+              <!-- :display-value=" mate.value && mate.value.length > 1 ? `${mate.value[0]?.name} + ${mate.value?.length - 1} ${t('more')}` : mate.value[0]?.name" -->
             </div>
-            <div class="flex items-center justify-center gap-5 py-10 w-full">
-              <q-btn
-                color="black"
-                :label="props.rowIndex || props.row.materialCode ? t('settings.submit') : t('settings.new')"
-                outline
-                :disable="materialInfo[0].value === undefined || materialInfo[0].value === ''"
-                icon="done"
-                @click="submit(props.rowIndex || props.row.dispNo)"
-              />
-              <q-btn
-                color="black"
-                :label="t('settings.cancel')"
-                icon="close"
-                outline
-                @click="toggleRow(props.row, props.rowIndex, true)"
-              />
-              <q-btn
-                v-if="props.rowIndex"
-                color="red"
-                :label="t('settings.delete')"
-                icon="delete"
-                outline
-                @click="cancelDialogVisible = true"
-              />
-            </div>
+          </div>
+          <div class="flex items-center justify-center gap-5 py-10 w-full">
+            <q-btn
+              color="black"
+              :label="props.rowIndex || props.row.materialCode ? t('settings.submit') : t('settings.new')"
+              outline
+              :disable="materialInfo[0].value === undefined || materialInfo[0].value === ''"
+              icon="done"
+              @click="submit(props.rowIndex || props.row.dispNo)"
+            />
+            <q-btn
+              color="black"
+              :label="t('settings.cancel')"
+              icon="close"
+              outline
+              @click="toggleRow(props.row, props.rowIndex, true)"
+            />
+            <q-btn
+              v-if="props.rowIndex"
+              color="red"
+              :label="t('settings.delete')"
+              icon="delete"
+              outline
+              @click="cancelDialogVisible = true"
+            />
           </div>
         </q-td>
       </q-tr>
@@ -451,10 +464,10 @@ onBeforeRouteLeave(async (to, from, next) => {
 
 <style scoped>
 .class-w-70 {
-  width: 18rem;
+  width: 14rem;
 }
 .class-w-100 {
-  width: 20rem;
+  width: 18rem;
 }
 .settings-section-header {
   align-items: center;

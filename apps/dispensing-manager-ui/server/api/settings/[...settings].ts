@@ -139,34 +139,32 @@ router.delete('/dispenser/:dispNo', defineEventHandler(async (event) => {
  */
 
 const machineParameters = {
-  machineid: 'M.MACHINEID',
+  machineid: 'N.MACHINEID',
   dispNo: 'M.DISPENSERID',
-  dispName: 'D.NAME',
   machinename: 'N.MACHINENAME',
   controlDevice: 'N.CONTROLLERTYPE',
 }
 
 router.post('/machine-dispenser-connection-filtered', defineEventHandler(async (event) => {
   const body = await readBody(event)
-  let machines: any = knex('DYTFMACHDISPCONNECTION as M')
+  let machines: any = knex('DYTFMACHINES as N')
     .select(machineParameters)
-    .leftJoin('DYTFDISPENSERSETTINGS as D', 'M.DISPENSERID', 'D.DISPENSERID')
-    .leftJoin('DYTFMACHINES as N', 'N.MACHINEID', 'M.MACHINEID')
-    .orderBy('M.MACHINEID', 'M.DISPENSERID')
+    .leftJoin('DYTFMACHDISPCONNECTION as M', 'N.MACHINEID', 'M.MACHINEID')
+    .orderBy('N.MACHINEID', 'N.DISPENSERID')
   if (body?.length > 0) {
     machines = await filtersToKnex(body, machineParameters, machines)
   } else {
     machines = await machines
   }
-  const result: Array<{ machineid: number, disps: Array<{ dispNo: number, name: string }>, machinename: string, controlDevice: number }> = []
+  const result: Array<{ machineid: number, disps: number[], machinename: string, controlDevice: number }> = []
   let lastID = 0
   machines.forEach((log) => {
     if (lastID === log.machineid)
-      result[result.length - 1].disps.push({ dispNo: log.dispNo, name: log.dispName })
+      result[result.length - 1].disps.push(log.dispNo)
     else {
       result.push({
         machineid: log.machineid,
-        disps: [{ dispNo: log.dispNo, name: log.dispName }],
+        disps: [log.dispNo],
         machinename: log.machinename,
         controlDevice: log.controlDevice,
       })
@@ -195,7 +193,7 @@ router.post('/machine-dispenser-connection/:machineid', defineEventHandler(async
   if (body.disps)
     body.disps.forEach(async (disp) => {
       await knex('DYTFMACHDISPCONNECTION').insert({
-        DISPENSERID: disp.dispNo,
+        DISPENSERID: disp,
         MACHINEID: machineid,
       })
     })
@@ -221,7 +219,7 @@ router.put('/machine-dispenser-connection/:machineid', defineEventHandler(async 
   body.disps.forEach(async (disp) => {
     await knex('DYTFMACHDISPCONNECTION')
       .insert({
-        DISPENSERID: disp.dispNo,
+        DISPENSERID: disp,
         MACHINEID: machineid,
       })
     // .update({
@@ -276,39 +274,52 @@ router.get('/material', defineEventHandler(async () => {
   return dispensers
 }))
 
+// router.post('/filtered-material', defineEventHandler(async (event) => {
+//   const body = await readBody(event)
+//   const materials = knex('DYTFMATERIAL')
+//     .select(selectParametersMaterials)
+//     .orderBy('MATERIALCODE', 'asc')
+//   return await filtersToKnex(body, selectParametersMaterials, materials)
+// }))
+
 const selectParametersMaterials = {
-  materialCode: 'MATERIALCODE',
-  materialName: 'MATERIALNAME',
-  materialLabel: knex.raw('CONCAT(\'(\', MATERIALCODE, \') \', MATERIALNAME)'),
-  materialGroup: 'MADDEGRUPNO',
-  density: 'YOGUNLUK',
-  ph: 'PH',
-  source: 'SOURCE',
-  cost: 'BIRIMMALIYET',
-  rerequestable: 'ReRequestable',
-  directTransfer: 'DirectTransfer',
+  materialCode: 'M.MATERIALCODE',
+  materialName: 'M.MATERIALNAME',
+  materialLabel: knex.raw('CONCAT(\'(\', M.MATERIALCODE, \') \', M.MATERIALNAME)'),
+  materialGroup: 'M.MADDEGRUPNO',
+  density: 'M.YOGUNLUK',
+  ph: 'M.PH',
+  source: 'M.SOURCE',
+  cost: 'M.BIRIMMALIYET',
+  rerequestable: 'M.ReRequestable',
+  directTransfer: 'M.DirectTransfer',
+  dispNo: 'C.DISPENSERID',
 }
 
-router.post('/filtered-material', defineEventHandler(async (event) => {
+router.post('/material-dispenser-connection-filtered', defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const materials = knex('DYTFMATERIAL')
+  let materials: any = knex('DYTFMATERIAL as M')
     .select(selectParametersMaterials)
-    .orderBy('MATERIALCODE', 'asc')
-  return await filtersToKnex(body, selectParametersMaterials, materials)
-}))
+    .leftJoin('DYTFCHEMDISPCONNECTION as C', 'C.CHEMCODE', 'M.MATERIALCODE')
+    .orderBy('M.MATERIALCODE', 'C.DISPENSERID')
+  if (body?.length > 0) {
+    materials = await filtersToKnex(body, selectParametersMaterials, materials)
+  } else {
+    materials = await materials
+  }
 
-router.get('/material-connection', defineEventHandler(async (event) => {
-  const { chemCode } = getQuery(event)
-  const materials = await knex('DYTFCHEMDISPCONNECTION as C')
-    .select({
-      materialCode: 'C.CHEMCODE',
-      dispNo: 'C.DISPENSERID',
-      name: 'D.NAME',
-    })
-    .where('C.CHEMCODE', chemCode)
-    .leftJoin('DYTFDISPENSERSETTINGS as D', 'C.DISPENSERID', 'D.DISPENSERID')
-    .orderBy('C.CHEMCODE', 'asc')
-  return materials
+  const result: Array<any> = []
+  let lastCode = 0
+  materials.forEach((log) => {
+    if (lastCode === log.materialCode)
+      result[result.length - 1].disps.push(log.dispNo)
+    else {
+      log.disps = [log.dispNo]
+      result.push(log)
+      lastCode = log.materialCode
+    }
+  })
+  return result
 }))
 
 router.post('/material-connection/:materialCode', defineEventHandler(async (event) => {
@@ -334,10 +345,10 @@ router.post('/material-connection/:materialCode', defineEventHandler(async (even
       ReRequestable: body.rerequestable,
       DirectTransfer: body.directTransfer,
     })
-  body.connectedDisps.forEach(async (disp) => {
+  body?.connectedDisps.forEach(async (disp) => {
     await knex('DYTFCHEMDISPCONNECTION').insert({
       CHEMCODE: materialCode,
-      DISPENSERID: disp.dispNo,
+      DISPENSERID: disp,
     })
   })
   return 1 // return 200
@@ -369,7 +380,7 @@ router.put('/material-connection/:materialCode', defineEventHandler(async (event
     await knex('DYTFCHEMDISPCONNECTION')
       .insert({
         CHEMCODE: materialCode,
-        DISPENSERID: disp.dispNo,
+        DISPENSERID: disp,
       })
   })
   return 1
