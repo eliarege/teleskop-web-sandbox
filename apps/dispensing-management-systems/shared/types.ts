@@ -46,6 +46,8 @@ export interface Dispenser {
   dipenserPswrd: string
   lastConsumptionControl: Date
   dispenserType: number
+  dispenserBrand: number
+  dispenserBrandName: string
   protocol: string
   readConsumptionFromDMS: boolean
   consumptionFilename: string
@@ -55,6 +57,8 @@ export interface Dispenser {
 export interface DispenserType {
   dispenserTypeId: number
   dispenserTypeName: string
+  dispenserBrandId: number
+  dispenserBrandName: string
 }
 export interface Material {
   materialCode: string
