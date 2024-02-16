@@ -145,22 +145,6 @@ async function applyFilters(updatedValue: any) {
   margin-left: 5px;
   margin-bottom: 5px;
 }
-.custom-checkboxes :deep(.q-checkbox__inner) {
-    font-size: 60px;
-    width: 2rem;
-    min-width: 2rem;
-    height: 2rem;
-    outline: 0;
-    border-radius: 50%;
-}
-.custom-checkboxes :deep(.q-checkbox__bg) {
-    top: 20%;
-    left: 20%;
-    width: 60%;
-    height: 60%;
-    border: 2px solid currentColor;
-    border-radius: 2px;
-}
 .my-sticky-virtscroll-table-recipe {
   height: 410px;
 }

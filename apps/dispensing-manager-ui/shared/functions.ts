@@ -43,7 +43,8 @@ export function cellRGBColorHandler(val) {
   return temp
 }
 /** Returns a database name of the spesific attribute */
-
+// Knex should be the first parameter and make function name operateFiltersOnKnexQuery or smt better
+/** @deprecated */
 export async function filtersToKnex(filters: Array<FilterSlot>, attributes: any, knexInstance: Knex.QueryBuilder) {
   // TODO: knexInstance içine bak belki select parameters kenx objenin içerisinden alınıyordur
   const resultQuery: Knex.QueryBuilder = await knexInstance

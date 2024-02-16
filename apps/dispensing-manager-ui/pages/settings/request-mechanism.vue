@@ -53,25 +53,25 @@ async function changeSettings() {
       reqMechanismOption1: reqMechanism.value === 1 ? 1 : 0,
       reqMechanismOption2: reqMechanism.value === 2 ? 1 : 0,
       reqMechanismOption3: reqMechanism.value === 3 ? 1 : 0,
-      reqMechanismAnswer: reqMechanismAnswer.value.value,
-      archiveKeepTime: settingsData.value.archiveKeepTime,
-      archiveDeletionTime: settingsData.value.archiveDeletionTime,
-      joborderBasedActive: settingsData.value.joborderBasedActive,
-      joborderBasedEqualMachinesRequired: settingsData.value.joborderBasedEqualMachinesRequired,
-      tozBoyaTartim: settingsData.value.tozBoyaTartim,
-      tozBoyaCozme: settingsData.value.tozBoyaCozme,
-      tozChemTartim: settingsData.value.tozChemTartim,
-      manuelMateryalTartim: settingsData.value.manuelMateryalTartim,
-      genericSaltActive: settingsData.value.genericSaltActive,
-      saltCode: settingsData.value.saltCode.materialCode,
-      genericMaterialOneActive: settingsData.value.genericMaterialOneActive,
-      genericMaterialOne: settingsData.value.genericMaterialOne.materialCode,
-      genericMaterialTwoActive: settingsData.value.genericMaterialTwoActive,
-      genericMaterialTwo: settingsData.value.genericMaterialTwo.materialCode,
-      chemTankLevelControl: settingsData.value.chemTankLevelControl,
-      manuelOnlineRequestTankNoControl: settingsData.value.manuelOnlineRequestTankNoControl,
-      coupleMechanismSplit: settingsData.value.coupleMechanismSplit,
-      justRunOnPlannedMachine: settingsData.value.justRunOnPlannedMachine,
+      reqMechanismAnswer: reqMechanismAnswer.value?.value,
+      archiveKeepTime: settingsData.value?.archiveKeepTime,
+      archiveDeletionTime: settingsData.value?.archiveDeletionTime,
+      joborderBasedActive: settingsData.value?.joborderBasedActive,
+      joborderBasedEqualMachinesRequired: settingsData.value?.joborderBasedEqualMachinesRequired,
+      tozBoyaTartim: settingsData.value?.tozBoyaTartim,
+      tozBoyaCozme: settingsData.value?.tozBoyaCozme,
+      tozChemTartim: settingsData.value?.tozChemTartim,
+      manuelMateryalTartim: settingsData.value?.manuelMateryalTartim,
+      genericSaltActive: settingsData.value?.genericSaltActive,
+      saltCode: settingsData.value?.saltCode?.materialCode,
+      genericMaterialOneActive: settingsData.value?.genericMaterialOneActive,
+      genericMaterialOne: settingsData.value?.genericMaterialOne?.materialCode,
+      genericMaterialTwoActive: settingsData.value?.genericMaterialTwoActive,
+      genericMaterialTwo: settingsData.value?.genericMaterialTwo?.materialCode,
+      chemTankLevelControl: settingsData.value?.chemTankLevelControl,
+      manuelOnlineRequestTankNoControl: settingsData.value?.manuelOnlineRequestTankNoControl,
+      coupleMechanismSplit: settingsData.value?.coupleMechanismSplit,
+      justRunOnPlannedMachine: settingsData.value?.justRunOnPlannedMachine,
     },
   })
   notification(isSuccess, t('warnings.changeResponse', { type: t('warnings.reqMechanism'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
@@ -173,7 +173,7 @@ function filterOptions(val, update) {
             <div class="settings-section-header">
               {{ t('settings.orderBasedDyeRequest._') }}
             </div>
-            <div class="m-5">
+            <div class="m-5 flex flex-col">
               <q-checkbox
                 v-model="settingsData.joborderBasedActive"
                 :label="t('settings.orderBasedDyeRequest.active')"
@@ -313,7 +313,7 @@ function filterOptions(val, update) {
             <div class="settings-section-header">
               {{ t('settings.other') }}
             </div>
-            <div class="m-5">
+            <div class="m-5 flex flex-col gap-1">
               <q-checkbox
                 v-model="settingsData.chemTankLevelControl"
                 :label="t('settings.checkTankLevelInChemicalRequests')"
@@ -322,7 +322,6 @@ function filterOptions(val, update) {
                 v-model="settingsData.justRunOnPlannedMachine"
                 :label="t('settings.executeOrderOnlyInPlannedMachine')"
               />
-              <br>
               <q-checkbox
                 v-model="settingsData.coupleMechanismSplit"
                 :label="t('settings.determineCouplingRecipe')"

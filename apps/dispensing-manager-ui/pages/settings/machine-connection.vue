@@ -12,10 +12,10 @@ await getDisps()
 const machines = await $fetch('/api/machine/machines')
 
 const controlDevices = [
-  { controlDevice: 0, label: 'Programatörü Yok' }, // TODO:
+  { controlDevice: 0, label: t('settings.noProgramator') }, // TODO:
   { controlDevice: 1, label: 'Eliar' },
   { controlDevice: 2, label: 'Sedo' },
-  { controlDevice: 3, label: 'Setrex' },
+  { controlDevice: 3, label: 'Setex' },
   { controlDevice: 4, label: 'Termo' },
   { controlDevice: 5, label: 'Tonello' },
 ]
@@ -39,14 +39,17 @@ const columns = computed<Array<Column>>(() => [
     optionValue: 'machineid',
   },
   {
-    name: 'controlDevice',
-    label: t('settings.controlMach'),
-    field: 'controlDevice',
-    filterable: true,
-    filterType: 'select',
-    selectionOptions: controlDevices,
-    optionLabel: 'label',
-    optionValue: 'controlDevice',
+    name: 'disps',
+    label: t('settings.connectedDisps'),
+    field: 'disps',
+    format: (val, row) => {
+      return val?.length ? val.map(disp => disps.value.find(dispenser => dispenser.dispNo === disp)?.name).join(', ') : ''
+    },
+    // filterable: true,
+    // filterType: 'multiselect',
+    // selectionOptions: disps.value,
+    // optionLabel: 'name',
+    // optionValue: 'dispNo',
   },
 ])
 
@@ -73,7 +76,7 @@ function resetMachineInfo(row?: any) {
     if (mach.field === 'controlDevice') {
       controlDevices.forEach(dev => dev.controlDevice === row[mach.field] ? mach.value = dev : '')
     } else if (mach.field === 'connectedDisps') {
-      mach.value = row.disps
+      mach.value = row.disps ? row.disps : []
     } else {
       mach.value = row[mach.field]
     }
@@ -213,7 +216,7 @@ async function submit(isPut: boolean) {
 
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  const isSuccess = await $fetch(`/api/settings/machine-dispenser-connection${machineInfo.value[0].value}`, {
+  const isSuccess = await $fetch(`/api/settings/machine-dispenser-connection/${machineInfo.value[0].value}`, {
     method: 'delete',
   })
   expandedRow.value = null
@@ -221,6 +224,21 @@ async function deleteRow() {
   await getRows()
   expandedRow.value = null
 }
+const givenMachineIdExistsWarning = ref(false)
+const machineIdErrorMessage = ref('')
+async function checkMachineIdExist() {
+  if (machineInfo.value[0]?.value[0] === '0') {
+    givenMachineIdExistsWarning.value = true
+    machineIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.machine') })
+  } else if (machineInfo.value[0].value) {
+    givenMachineIdExistsWarning.value = await $fetch(`/api/settings/check-is-machine-exist/${machineInfo.value[0].value}`)
+    if (givenMachineIdExistsWarning.value)
+      machineIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: machineInfo.value[0].value, type: t('warnings.machine') })
+  } else {
+    givenMachineIdExistsWarning.value = false
+  }
+}
+
 onBeforeRouteLeave(async (to, from, next) => {
   let check = false
   if (expandedRow.value)
@@ -240,7 +258,7 @@ onBeforeRouteLeave(async (to, from, next) => {
     :columns="columns"
     :is-expandable="true"
     :empty-first-row="true"
-    style="height: 85vh;"
+    style="height: 90vh;"
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"
   >
@@ -287,32 +305,78 @@ onBeforeRouteLeave(async (to, from, next) => {
 
       <q-tr v-if="props.rowIndex === expandedRow" :props="props">
         <q-td colspan="100%">
-          <div class="flex justify-center pt-5">
-            <div
-              v-for="mach in machineInfo"
-              :key="mach.label"
-              class="flex ml-5 mt-1"
-            >
-              <div class="flex w-70 pl-2 m-1 items-center">
-                {{ mach.label }}
+          <div class="flex flex-row justify-center pt-5">
+            <div class="flex flex-col justify-center">
+              <div
+                v-for="mach in machineInfo.slice(0, -1)"
+                :key="mach.label"
+                class="flex mt-1"
+              >
+                <div v-if="mach.field !== 'connectedDisps'" class="flex w-70 pl-2 m-1 items-center">
+                  {{ mach.label }}
+                </div>
+                <div v-if="mach.field !== 'connectedDisps'" class=" flex w-100 pl-2 m-1 items-center ">
+                  <span v-if="mach.field === 'controlDevice'">
+                    <q-select
+                      v-model="mach.value"
+                      borderless
+                      dense
+                      filled
+                      class="w-70"
+                      options-dense
+                      :options="controlDevices"
+                      option-value="controlDevice"
+                      option-label="label"
+                      style="min-width: 150px"
+                    />
+                  </span>
+                  <span v-else-if="mach.field === 'machineid'">
+                    <q-input
+                      v-model="mach.value"
+                      dense
+                      class="w-70"
+                      filled
+                      :error="givenMachineIdExistsWarning"
+                      :error-message="machineIdErrorMessage"
+                      type="number"
+                      :placeholder="mach.value"
+                      :disable="props.row.machineid > 0"
+                      @update:model-value="checkMachineIdExist()"
+                    />
+                  </span>
+                  <span v-else>
+                    <q-input
+                      v-model="mach.value"
+                      dense
+                      class="w-70"
+                      filled
+                      type="text"
+                      :placeholder="mach.value"
+                    />
+
+                  </span>
+                </div>
               </div>
-              <div class=" flex w-100 pl-2 m-1 items-center">
-                <span v-if="mach.field === 'controlDevice'">
-                  <q-select
-                    v-model="mach.value"
-                    borderless
-                    dense
-                    filled
-                    class="w-70"
-                    options-dense
-                    :options="controlDevices"
-                    option-value="controlDevice"
-                    option-label="label"
-                    style="min-width: 150px"
+            </div>
+            <div class="flex justify-center gap-5">
+              <!-- Container for the right side div -->
+              <div v-if="machineInfo[3].field === 'connectedDisps'" class="flex max-h-60 pl-2 items-center ">
+                {{ machineInfo[3].label }}
+              </div>
+              <div
+                class="flex max-h-60 overflow-y-scroll"
+              >
+                <span
+                  class="flex flex-col"
+                >
+                  <q-checkbox
+                    v-for="dispenser in disps"
+                    :key="dispenser.dispNo"
+                    v-model="machineInfo[3].value"
+                    :val="dispenser.dispNo"
+                    :label="dispenser.name"
                   />
-                </span>
-                <span v-else-if="mach.field === 'connectedDisps'">
-                  <q-select
+                  <!-- <q-select
                     v-model="mach.value"
                     borderless
                     multiple
@@ -324,20 +388,8 @@ onBeforeRouteLeave(async (to, from, next) => {
                     option-value="dispNo"
                     option-label="name"
                     style="min-width: 150px"
-                  />
+                  /> -->
                   <!-- :display-value=" mach.value && mach.value.length > 1 ? `${mach.value[0]?.name} + ${mach.value?.length - 1} ${t('more')}` : mach.value[0]?.name" -->
-                </span>
-                <span v-else>
-                  <q-input
-                    v-model="mach.value"
-                    dense
-                    class="w-70"
-                    filled
-                    :type="mach.field === 'machineid' ? 'number' : 'text'"
-                    :placeholder="mach.value"
-                    :disable="props.row.machineid > 0 && mach.field === 'machineid'"
-                  />
-
                 </span>
               </div>
             </div>
@@ -347,7 +399,7 @@ onBeforeRouteLeave(async (to, from, next) => {
                 color="black"
                 :label="props.row.machineid || props.rowIndex !== 0 ? t('settings.submit') : t('settings.new')"
                 outline
-                :disable="machineInfo[0].value === undefined || machineInfo[0].value === ''"
+                :disable="machineInfo[0].value === undefined || machineInfo[0].value === '' || givenMachineIdExistsWarning"
                 icon="done"
                 @click="submit(props.rowIndex || props.row.machineid)"
               />
