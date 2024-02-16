@@ -106,3 +106,10 @@ export function notification(isSuccess: any, message: string) {
     position: 'top',
   })
 }
+
+export function removeAnyNonNumerical(param: string | null): number | null {
+  if (param === null)
+    return null
+  const numericOnly = param.toString().replace(/\D/g, '')
+  return numericOnly ? Number.parseInt(numericOnly, 10) : null
+}

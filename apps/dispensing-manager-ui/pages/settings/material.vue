@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
+import { removeAnyNonNumerical } from '~/shared/functions'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
@@ -363,7 +364,7 @@ onBeforeRouteLeave(async (to, from, next) => {
                       filled
                       :error="givenMaterialCodeExistsWarning"
                       :error-message="materialCodeErrorMessage"
-                      :type="mate.numeric ? 'number' : 'text'"
+                      type="text"
                       :placeholder="mate.value"
                       :disable="props.row.materialCode !== undefined && mate.field === 'materialCode'"
                       @update:model-value="checkMaterialCodeExist()"
@@ -375,8 +376,9 @@ onBeforeRouteLeave(async (to, from, next) => {
                       dense
                       class="class-w-70"
                       filled
-                      :type="mate.numeric ? 'number' : 'text'"
+                      type="text"
                       :placeholder="mate.value"
+                      @update:model-value="mate.numeric ? mate.value = removeAnyNonNumerical(mate.value) : {}"
                     />
                     <!-- @update:model-value="evt => mate.value = removeAnyNonNumerical(evt)" -->
                   </span>

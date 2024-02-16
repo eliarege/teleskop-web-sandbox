@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
+import { removeAnyNonNumerical } from '~/shared/functions'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
@@ -255,13 +256,16 @@ async function deleteRow() {
 const givenDispenserIdExistsWarning = ref(false)
 const dispenserIdErrorMessage = ref('')
 async function checkDispenserCodeExist() {
-  if (dispenserInfo.value[0]?.value[0] === '0') {
-    givenDispenserIdExistsWarning.value = true
-    dispenserIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.dispenser') })
-  } else if (dispenserInfo.value[0].value) {
-    givenDispenserIdExistsWarning.value = await $fetch(`/api/settings/check-is-dispenser-exist/${dispenserInfo.value[0].value}`)
-    if (givenDispenserIdExistsWarning.value)
-      dispenserIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: dispenserInfo.value[0].value, type: t('warnings.dispenser') })
+  if (dispenserInfo.value[0].value) {
+    if (dispenserInfo.value[0]?.value[0] === '0') {
+      givenDispenserIdExistsWarning.value = true
+      dispenserIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.dispenser') })
+    } else {
+      dispenserInfo.value[0].value = removeAnyNonNumerical(dispenserInfo.value[0].value)
+      givenDispenserIdExistsWarning.value = await $fetch(`/api/settings/check-is-dispenser-exist/${dispenserInfo.value[0].value}`)
+      if (givenDispenserIdExistsWarning.value)
+        dispenserIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: dispenserInfo.value[0].value, type: t('warnings.dispenser') })
+    }
   } else {
     givenDispenserIdExistsWarning.value = false
   }
@@ -359,11 +363,11 @@ onBeforeRouteLeave(async (to, from, next) => {
                     dense
                     :error="givenDispenserIdExistsWarning"
                     :error-message="dispenserIdErrorMessage"
-                    type="number"
                     filled
                     :placeholder="disp.value"
                     :disable="props.row.dispNo > 0"
                     @update:model-value="checkDispenserCodeExist()"
+                    @input="disp.value = removeAnyNonNumerical(disp.value)"
                   />
                 </span>
                 <span v-else>

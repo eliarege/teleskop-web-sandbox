@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
+import { removeAnyNonNumerical } from '~/shared/functions'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
@@ -227,13 +228,16 @@ async function deleteRow() {
 const givenMachineIdExistsWarning = ref(false)
 const machineIdErrorMessage = ref('')
 async function checkMachineIdExist() {
-  if (machineInfo.value[0]?.value[0] === '0') {
-    givenMachineIdExistsWarning.value = true
-    machineIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.machine') })
-  } else if (machineInfo.value[0].value) {
-    givenMachineIdExistsWarning.value = await $fetch(`/api/settings/check-is-machine-exist/${machineInfo.value[0].value}`)
-    if (givenMachineIdExistsWarning.value)
-      machineIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: machineInfo.value[0].value, type: t('warnings.machine') })
+  if (machineInfo.value[0].value) {
+    if (machineInfo.value[0]?.value[0] === '0') {
+      givenMachineIdExistsWarning.value = true
+      machineIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.machine') })
+    } else {
+      machineInfo.value[0].value = removeAnyNonNumerical(machineInfo.value[0].value)
+      givenMachineIdExistsWarning.value = await $fetch(`/api/settings/check-is-machine-exist/${machineInfo.value[0].value}`)
+      if (givenMachineIdExistsWarning.value)
+        machineIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: machineInfo.value[0].value, type: t('warnings.machine') })
+    }
   } else {
     givenMachineIdExistsWarning.value = false
   }
@@ -338,10 +342,10 @@ onBeforeRouteLeave(async (to, from, next) => {
                       filled
                       :error="givenMachineIdExistsWarning"
                       :error-message="machineIdErrorMessage"
-                      type="number"
                       :placeholder="mach.value"
                       :disable="props.row.machineid > 0"
                       @update:model-value="checkMachineIdExist()"
+                      @input="mach.value = removeAnyNonNumerical(mach.value)"
                     />
                   </span>
                   <span v-else>
