@@ -224,6 +224,21 @@ async function deleteRow() {
   await getRows()
   expandedRow.value = null
 }
+const givenMachineIdExistsWarning = ref(false)
+const machineIdErrorMessage = ref('')
+async function checkMachineIdExist() {
+  if (machineInfo.value[0]?.value[0] === '0') {
+    givenMachineIdExistsWarning.value = true
+    machineIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.machine') })
+  } else if (machineInfo.value[0].value) {
+    givenMachineIdExistsWarning.value = await $fetch(`/api/settings/check-is-machine-exist/${machineInfo.value[0].value}`)
+    if (givenMachineIdExistsWarning.value)
+      machineIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: machineInfo.value[0].value, type: t('warnings.machine') })
+  } else {
+    givenMachineIdExistsWarning.value = false
+  }
+}
+
 onBeforeRouteLeave(async (to, from, next) => {
   let check = false
   if (expandedRow.value)
@@ -315,15 +330,28 @@ onBeforeRouteLeave(async (to, from, next) => {
                       style="min-width: 150px"
                     />
                   </span>
+                  <span v-else-if="mach.field === 'machineid'">
+                    <q-input
+                      v-model="mach.value"
+                      dense
+                      class="w-70"
+                      filled
+                      :error="givenMachineIdExistsWarning"
+                      :error-message="machineIdErrorMessage"
+                      type="number"
+                      :placeholder="mach.value"
+                      :disable="props.row.machineid > 0"
+                      @update:model-value="checkMachineIdExist()"
+                    />
+                  </span>
                   <span v-else>
                     <q-input
                       v-model="mach.value"
                       dense
                       class="w-70"
                       filled
-                      :type="mach.field === 'machineid' ? 'number' : 'text'"
+                      type="text"
                       :placeholder="mach.value"
-                      :disable="props.row.machineid > 0 && mach.field === 'machineid'"
                     />
 
                   </span>
@@ -371,7 +399,7 @@ onBeforeRouteLeave(async (to, from, next) => {
                 color="black"
                 :label="props.row.machineid || props.rowIndex !== 0 ? t('settings.submit') : t('settings.new')"
                 outline
-                :disable="machineInfo[0].value === undefined || machineInfo[0].value === ''"
+                :disable="machineInfo[0].value === undefined || machineInfo[0].value === '' || givenMachineIdExistsWarning"
                 icon="done"
                 @click="submit(props.rowIndex || props.row.machineid)"
               />

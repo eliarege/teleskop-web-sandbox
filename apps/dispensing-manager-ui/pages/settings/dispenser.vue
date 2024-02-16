@@ -252,6 +252,21 @@ async function deleteRow() {
    */
   await getRows()
 }
+const givenDispenserIdExistsWarning = ref(false)
+const dispenserIdErrorMessage = ref('')
+async function checkDispenserCodeExist() {
+  if (dispenserInfo.value[0]?.value[0] === '0') {
+    givenDispenserIdExistsWarning.value = true
+    dispenserIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.dispenser') })
+  } else if (dispenserInfo.value[0].value) {
+    givenDispenserIdExistsWarning.value = await $fetch(`/api/settings/check-is-dispenser-exist/${dispenserInfo.value[0].value}`)
+    if (givenDispenserIdExistsWarning.value)
+      dispenserIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: dispenserInfo.value[0].value, type: t('warnings.dispenser') })
+  } else {
+    givenDispenserIdExistsWarning.value = false
+  }
+}
+
 onBeforeRouteLeave(async (to, from, next) => {
   let check = false
   if (expandedRow.value)
@@ -337,15 +352,28 @@ onBeforeRouteLeave(async (to, from, next) => {
                     style="min-width: 150px"
                   />
                 </span>
+                <span v-else-if="disp.field === 'dispNo'">
+                  <q-input
+                    v-model="disp.value"
+                    class="w-70"
+                    dense
+                    :error="givenDispenserIdExistsWarning"
+                    :error-message="dispenserIdErrorMessage"
+                    type="number"
+                    filled
+                    :placeholder="disp.value"
+                    :disable="props.row.dispNo > 0"
+                    @update:model-value="checkDispenserCodeExist()"
+                  />
+                </span>
                 <span v-else>
                   <q-input
                     v-model="disp.value"
                     class="w-70"
                     dense
-                    :type="disp.field === 'dispNo' ? 'number' : 'text'"
+                    type="text"
                     filled
                     :placeholder="disp.value"
-                    :disable="disp.field === 'dispNo' && props.row.dispNo > 0"
                   />
                 </span>
                 <span v-if="disp.field === 'dispConsumptionFileName'">
@@ -357,7 +385,7 @@ onBeforeRouteLeave(async (to, from, next) => {
               <q-btn
                 color="black"
                 :label="props.rowIndex || props.row.dispNo ? t('settings.submit') : t('settings.new')"
-                :disable="dispenserInfo[0].value === undefined || dispenserInfo[0].value === ''"
+                :disable="dispenserInfo[0].value === undefined || dispenserInfo[0].value === '' || givenDispenserIdExistsWarning"
                 outline
                 icon="done"
                 @click="submit(props.rowIndex || props.row.dispNo)"

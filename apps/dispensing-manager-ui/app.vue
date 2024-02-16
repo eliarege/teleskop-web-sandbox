@@ -15,16 +15,18 @@ setLocale('tr')
 </template>
 
 <style>
-.q-field--filled {
+.q-field--filled .q-field__control {
     border-radius: 4px 4px 0 0;
-    background: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.2);
 }
+
 .q-radio__inner--truthy {
     color: #000000;
 }
 .q-checkbox__inner--truthy, .q-checkbox__inner--indet {
     color: #000000;
 }
+
 ::-webkit-scrollbar {
   width: 0.55rem;
   height: 100%;

@@ -17,6 +17,18 @@ router.get('/dispenser-type', defineEventHandler(async () => {
   return types
 }))
 
+router.get('/check-is-dispenser-exist/:dispenserId', defineEventHandler(async (event) => {
+  if (!event.context.params) {
+    throw new Error('URL parameters are undefined')
+  }
+  const dispenserId = event.context.params.dispenserId
+  const isThereDispenser = await knex('DYTFDISPENSERSETTINGS')
+    .where('DISPENSERID', dispenserId)
+  if (isThereDispenser.length > 0)
+    return true
+  else return false
+}))
+
 router.get('/dispenser', defineEventHandler(async () => {
   const dispensers = await knex('DYTFDISPENSERSETTINGS')
     .select({
@@ -132,6 +144,18 @@ router.delete('/dispenser/:dispNo', defineEventHandler(async (event) => {
   } catch (e) {
     return e
   }
+}))
+
+router.get('/check-is-machine-exist/:machineId', defineEventHandler(async (event) => {
+  if (!event.context.params) {
+    throw new Error('URL parameters are undefined')
+  }
+  const machineId = event.context.params.machineId
+  const isThereMachine = await knex('DYTFMACHINES')
+    .where('MACHINEID', machineId)
+  if (isThereMachine.length > 0)
+    return true
+  else return false
 }))
 
 /**
@@ -272,6 +296,18 @@ router.get('/material', defineEventHandler(async () => {
     })
     .orderBy('MATERIALCODE', 'asc')
   return dispensers
+}))
+
+router.get('/check-is-material-exist/:materialCode', defineEventHandler(async (event) => {
+  if (!event.context.params) {
+    throw new Error('URL parameters are undefined')
+  }
+  const materialCode = event.context.params.materialCode
+  const isThereMaterial = await knex('DYTFMATERIAL')
+    .where('MATERIALCODE', materialCode)
+  if (isThereMaterial.length > 0)
+    return true
+  else return false
 }))
 
 // router.post('/filtered-material', defineEventHandler(async (event) => {

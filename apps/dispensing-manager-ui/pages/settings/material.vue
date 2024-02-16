@@ -242,6 +242,21 @@ async function deleteRow() {
    */
   await getRows()
 }
+const givenMaterialCodeExistsWarning = ref(false)
+const materialCodeErrorMessage = ref('')
+async function checkMaterialCodeExist() {
+  if (materialInfo.value[0]?.value[0] === '0') {
+    givenMaterialCodeExistsWarning.value = true
+    materialCodeErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.material') })
+  } else if (materialInfo.value[0].value) {
+    givenMaterialCodeExistsWarning.value = await $fetch(`/api/settings/check-is-material-exist/${materialInfo.value[0].value}`)
+    if (givenMaterialCodeExistsWarning.value)
+      materialCodeErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: materialInfo.value[0].value, type: t('warnings.material') })
+  } else {
+    givenMaterialCodeExistsWarning.value = false
+  }
+}
+
 onBeforeRouteLeave(async (to, from, next) => {
   let check = false
   if (expandedRow.value)
@@ -340,6 +355,20 @@ onBeforeRouteLeave(async (to, from, next) => {
                   <span v-else-if="mate.field === 'directTransfer' || mate.field === 'rerequestable'">
                     <q-checkbox v-model="mate.value" />
                   </span>
+                  <span v-else-if="mate.field === 'materialCode'">
+                    <q-input
+                      v-model="mate.value"
+                      dense
+                      class="class-w-70"
+                      filled
+                      :error="givenMaterialCodeExistsWarning"
+                      :error-message="materialCodeErrorMessage"
+                      :type="mate.numeric ? 'number' : 'text'"
+                      :placeholder="mate.value"
+                      :disable="props.row.materialCode !== undefined && mate.field === 'materialCode'"
+                      @update:model-value="checkMaterialCodeExist()"
+                    />
+                  </span>
                   <span v-else>
                     <q-input
                       v-model="mate.value"
@@ -348,8 +377,8 @@ onBeforeRouteLeave(async (to, from, next) => {
                       filled
                       :type="mate.numeric ? 'number' : 'text'"
                       :placeholder="mate.value"
-                      :disable="props.row.materialCode !== undefined && mate.field === 'materialCode'"
                     />
+                    <!-- @update:model-value="evt => mate.value = removeAnyNonNumerical(evt)" -->
                   </span>
                 </div>
               </div>
@@ -359,14 +388,16 @@ onBeforeRouteLeave(async (to, from, next) => {
               <div class="flex max-h-60 pl-2 items-center ">
                 {{ materialInfo[materialInfo.length - 1].label }}
               </div>
-              <div class="flex flex-col max-h-60 overflow-y-scroll">
-                <q-checkbox
-                  v-for="dispenser in disps"
-                  :key="dispenser.dispNo"
-                  v-model="materialInfo[materialInfo.length - 1].value"
-                  :val="dispenser.dispNo"
-                  :label="dispenser.name"
-                />
+              <div class="flex max-h-60 overflow-y-scroll">
+                <span class="flex flex-col">
+                  <q-checkbox
+                    v-for="dispenser in disps"
+                    :key="dispenser.dispNo"
+                    v-model="materialInfo[materialInfo.length - 1].value"
+                    :val="dispenser.dispNo"
+                    :label="dispenser.name"
+                  />
+                </span>
               </div>
               <!-- :display-value=" mate.value && mate.value.length > 1 ? `${mate.value[0]?.name} + ${mate.value?.length - 1} ${t('more')}` : mate.value[0]?.name" -->
             </div>
@@ -376,7 +407,7 @@ onBeforeRouteLeave(async (to, from, next) => {
               color="black"
               :label="props.rowIndex || props.row.materialCode ? t('settings.submit') : t('settings.new')"
               outline
-              :disable="materialInfo[0].value === undefined || materialInfo[0].value === ''"
+              :disable="materialInfo[0].value === undefined || materialInfo[0].value === '' || givenMaterialCodeExistsWarning"
               icon="done"
               @click="submit(props.rowIndex || props.row.dispNo)"
             />

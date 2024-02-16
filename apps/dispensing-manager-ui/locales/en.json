@@ -324,6 +324,8 @@
     "tryToChangeWithSameMachine": "Planned machine cannot be the same with previous machine.",
     "noDataLogs": "No data found for joborder {joborder}",
     "formDidnotSubmit": "You have unsaved changes on {type}.",
-    "idAlreadyExists": "failed. {type} with {type} ID {code} already exists."
+    "idAlreadyExists": "failed. {type} with {type} ID {code} already exists.",
+    "idAlreadyExistsOnBlue": "{type} with {type} ID {code} already exists.",
+    "cannotBeZero": "{type} code cannot be 0."
   }
 }
