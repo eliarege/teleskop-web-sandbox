@@ -21,3 +21,12 @@ export function parseSystem(content: string) {
   })
   return res
 }
+
+export function serializeSystem(data: Record<string, string>) {
+  let content = ''
+  for (const key in data) {
+    const value = data[key]
+    content += `${key}=${value}\n`
+  }
+  return content
+}

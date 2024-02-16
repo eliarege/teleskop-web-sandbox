@@ -30,7 +30,7 @@ import { parseGlobalCommandFormulas, serializeGlobalCommandFormulas } from './pa
 import { parseSeperatedLocks } from './parsers/parseLocksInput'
 import { parseBatchParameters } from './parsers/parseBatchParameters'
 import { parseCycleControl } from './parsers/parseCycleControl'
-import { parseSystem } from './parsers/parseSystem'
+import { parseSystem, serializeSystem } from './parsers/parseSystem'
 import { parseLocksOutput } from './parsers/parseLocksOutput'
 
 export interface TbbFtpClientOptions {
@@ -312,6 +312,12 @@ export class TbbFtpClient {
     const content = await download(this.client, remotePath, 'utf8')
     const system = parseSystem(content)
     return system
+  }
+
+  async uploadSystem(system) {
+    const remotePath = '/tbb6500/data/config/sistem'
+    const content = serializeSystem(system)
+    await upload(this.client, remotePath, content)
   }
 
   async uploadMachineParameterValues(values: MachineParameter[]) {

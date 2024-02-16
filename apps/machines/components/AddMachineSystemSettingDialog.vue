@@ -3,12 +3,15 @@ import { FormKitSchema } from '@formkit/vue'
 
 const props = defineProps<{
   show: boolean
+  settings: []
+  tokens: []
 }>()
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'add'])
 
 const { t } = useI18n()
 
+const selectedSetting = ref()
 const option = ref()
 
 const options = [
@@ -17,7 +20,7 @@ const options = [
 ]
 
 function handleAdd() {
-  console.log('add')
+  emit('add', { ...selectedSetting.value, isActive: option.value === 'active' })
 }
 </script>
 
@@ -29,6 +32,21 @@ function handleAdd() {
     <q-card>
       <q-card-section>
         <h3>Select the system settting that will be updated on machine</h3>
+
+        <q-select
+          v-model="selectedSetting"
+          :options="settings"
+          :display-value="`${selectedSetting ? t(`updateMachineSettings.${selectedSetting.caption}`) : ''}`"
+        >
+          <template #option="scope">
+            <q-item v-bind="scope.itemProps">
+              <q-item-section>
+                <q-item-label>{{ t(`updateMachineSettings.${scope.opt.caption}`) }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
+
         <q-option-group
           v-model="option"
           :options="options"
