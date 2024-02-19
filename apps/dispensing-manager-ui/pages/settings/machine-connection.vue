@@ -61,6 +61,9 @@ const machineInfo = ref<{ label: string, value: any, field: string }[]>([
   { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
 ])
 
+const givenMachineIdExistsWarning = ref(false)
+const machineIdErrorMessage = ref('')
+
 async function getRows() {
   rows.value = await $fetch('/api/settings/machine-dispenser-connection-filtered', {
     method: 'POST',
@@ -105,6 +108,7 @@ async function toggleRowExpand(row: any, index: number) {
 }
 
 async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
+  givenMachineIdExistsWarning.value = false
   if (toggleCollapse)
     await toggleRowExpand(row, index)
   else {
@@ -225,8 +229,7 @@ async function deleteRow() {
   await getRows()
   expandedRow.value = null
 }
-const givenMachineIdExistsWarning = ref(false)
-const machineIdErrorMessage = ref('')
+
 async function checkMachineIdExist(mach: { value: number | null }, value: InputEvent) {
   mach.value = value
   if (value) {

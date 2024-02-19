@@ -106,6 +106,8 @@ async function applyFilters(updatedValue: any) {
 
 const expandedRow: Ref<number | null> = ref(null)
 const submitDialog = ref(false)
+const givenMaterialCodeExistsWarning = ref(false)
+const materialCodeErrorMessage = ref('')
 
 async function toggleRowExpand(row: any, index: number) {
   if (expandedRow.value === index) {
@@ -121,6 +123,7 @@ function showSubmitDialog() {
 }
 
 async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
+  givenMaterialCodeExistsWarning.value = false
   if (toggleCollapse)
     await toggleRowExpand(row, index)
   else {
@@ -243,8 +246,7 @@ async function deleteRow() {
    */
   await getRows()
 }
-const givenMaterialCodeExistsWarning = ref(false)
-const materialCodeErrorMessage = ref('')
+
 async function checkMaterialCodeExist() {
   if (materialInfo.value[0]?.value[0] === '0') {
     givenMaterialCodeExistsWarning.value = true

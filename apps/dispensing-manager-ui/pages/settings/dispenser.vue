@@ -82,6 +82,8 @@ async function getRows() {
 }
 
 const dmsRead = ref(false)
+const givenDispenserIdExistsWarning = ref(false)
+const dispenserIdErrorMessage = ref('')
 
 function resetDispenserInfo(row?: any) {
   dispenserInfo.value.forEach((disp) => {
@@ -118,6 +120,7 @@ function showSubmitDialog() {
 }
 
 async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
+  givenDispenserIdExistsWarning.value = false
   if (toggleCollapse)
     await toggleRowExpand(row, index)
   else {
@@ -253,8 +256,7 @@ async function deleteRow() {
    */
   await getRows()
 }
-const givenDispenserIdExistsWarning = ref(false)
-const dispenserIdErrorMessage = ref('')
+
 async function checkDispenserCodeExist(disp: { value: number | null }, value: InputEvent) {
   disp.value = value
   if (value) {
