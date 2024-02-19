@@ -23,7 +23,7 @@ export function textAlignOverride(pos: string) {
 export function cellRGBColorHandler(val) {
   let temp = 'background-color: '
   if (val === 0) {
-    temp += 'white; text-color: black'
+    temp += 'white; text-color: black;'
   } else {
     if (val === 1)
       temp += colors.status1
