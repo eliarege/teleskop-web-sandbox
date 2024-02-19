@@ -325,6 +325,7 @@
     "createFormDidnotSubmit": "Yeni oluşturulan {type} henüz kaydedilmedi.",
     "idAlreadyExists": "başarısız. {type} kodu {code} olan {type} mevcut.",
     "idAlreadyExistsOnBlue": "{type} kodu {code} olan {type} mevcut.",
-    "cannotBeZero": "{type} kodu 0 olamaz."
+    "cannotBeZero": "{type} kodu 0 olamaz.",
+    "deleted": "Silinmiş"
   }
 }

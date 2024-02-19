@@ -29,6 +29,11 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  haveContextMenu: {
+    type: Boolean,
+    default: true,
+    required: false,
+  },
 })
 
 const { t } = useI18n()
@@ -225,7 +230,7 @@ function isCorrectPlankey(param: any) {
       </ElTableColumn>
     </ElTable>
     <div
-      v-if="contextMenuVisible"
+      v-if="contextMenuVisible && props.haveContextMenu"
       ref="tableContainer"
       class="context-menu"
       :style="contextMenuPosition"
