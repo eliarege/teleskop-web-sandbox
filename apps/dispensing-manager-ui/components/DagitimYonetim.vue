@@ -102,6 +102,8 @@ const columnsMaterial = computed<Column[]>(() => [
 const recipe = ref()
 const recipeTypeDecider = ref('ongoing')
 const filters = ref([])
+const selectedRow = ref()
+const material = ref()
 
 const canceledVisible = ref(false)
 
@@ -112,10 +114,10 @@ async function updateRecipe() {
     method: 'post',
     body: filters.value,
   })
+  selectedRow.value = recipe.value[0] ? recipe.value[0] : null
+  await fetchMaterialData(selectedRow.value.reqnumber)
 }
 setInterval(updateRecipe, 10000)
-const material = ref()
-const selectedRow = ref()
 
 async function fetchMaterialData(reqnumber: number) {
   material.value = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
@@ -206,7 +208,6 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
     const isWritten = await $fetch('/api/file/write-dispenser-step', {
       method: 'POST',
       body: {
-        path: 'ozkantest/index.req',
         content: data,
         reqNumber: row.reqnumber,
       },
