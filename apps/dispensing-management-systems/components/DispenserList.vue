@@ -41,12 +41,10 @@ function generateTreeNodes() {
   const types = dataStore.dispenserTypes!
 
   const brandMap = new Map()
+  const typeMap = new Map()
+
   types.forEach((type) => {
     brandMap.set(type.dispenserBrandId, type.dispenserBrandName)
-  })
-
-  const typeMap = new Map()
-  types.forEach((type) => {
     if (!typeMap.has(type.dispenserBrandId)) {
       typeMap.set(type.dispenserBrandId, [])
     }
@@ -60,25 +58,32 @@ function generateTreeNodes() {
       const typeDispensers = dispensers.filter(
         dispenser => dispenser.dispenserType === type.dispenserTypeId,
       )
-      return [
-        {
-          id: `${type.dispenserBrandId},${type.dispenserTypeId}`,
-          label: type.dispenserTypeName,
-          children: typeDispensers.map(dispenser => ({
-            ...dispenser,
-            id: `${type.dispenserBrandId},${type.dispenserTypeId},${dispenser.dispenserId}`,
-            label: dispenser.dispenserName,
-          })),
-        },
-      ]
+      const dispenserNodes = typeDispensers.map(dispenser => ({
+        ...dispenser,
+        id: `${brandId},${type.dispenserTypeId},${dispenser.dispenserId}`,
+        label: dispenser.dispenserName,
+      }))
+      if (dispenserNodes.length === 0) {
+        return null
+      }
+      return [{
+        id: `${brandId},${type.dispenserTypeId}`,
+        label: type.dispenserTypeName,
+        children: dispenserNodes,
+      }]
     })
+
+    const filteredChildren = children.filter(child => child !== null)
+    if (filteredChildren.length === 0) {
+      return null
+    }
 
     return {
       id: `${brandId}`,
       label: brandName,
-      children,
+      children: filteredChildren,
     }
-  })
+  }).filter(node => node !== null)
 }
 
 async function selectItem(selection: Dispenser) {
@@ -122,9 +127,15 @@ function onLogout() {
       label-key="label"
       node-key="id"
       accordion
+      no-connectors
       :default-expand-all="dataStore.selectedDispenser !== undefined"
       @select="selectItem"
     >
+      <template #default-header=" { node }">
+        <span v-if="node.children">
+          {{ node.label }}
+        </span>
+      </template>
       <template #default-body="{ node }">
         <QItem
           v-if="!node.children"

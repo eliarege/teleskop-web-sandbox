@@ -13,10 +13,6 @@ export default defineEventHandler(async (event) => {
       dispenser_type: dispenser.dispenserType,
       protocol: dispenser.protocol,
       last_consumption_control: dispenser.lastConsumptionControl,
-      read_consumption_from_dms: dispenser.readConsumptionFromDMS,
-      consumption_filename: dispenser.consumptionFilename,
-      bdy_requestname: dispenser.fileName,
-      bdy_requestpath: dispenser.filePath,
     })
     return res
   } catch (e) {

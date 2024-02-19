@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
-import type { Dispenser } from '~/shared/types'
+import type { Dispenser, DispenserBrand, DispenserType, Protocol } from '~/shared/types'
 import ipformat from '~/shared/utils'
 
 const props = defineProps({
@@ -13,13 +13,46 @@ const { t } = useI18n()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const dispenser = toRef(props, 'dispenser')
 const editedDispenser = ref({ ...dispenser.value })
-const protocols = ref(['7', '15', 'n', 'n-v2', 'n-v3', 'n-v4', 'n-v5', 'EMTS'])
-const dispenserTypes = ref([])
+const dispenserBrands = ref<DispenserBrand[]>([])
+const dispenserTypes = ref<DispenserType[]>([])
+const brandDispenserTypes = ref<DispenserType[]>([])
+const protocols = ref<Protocol[]>([])
+const brandProtocols = ref<Protocol[]>([])
 
-getTypes()
+getDispenserBrands()
+getDispenserTypes()
+getProtocols()
 
-async function getTypes() {
+async function getDispenserBrands() {
+  dispenserBrands.value = await $fetch('/api/dispensers/brands')
+}
+async function getDispenserTypes() {
   dispenserTypes.value = await $fetch('/api/dispensers/types')
+}
+async function getProtocols() {
+  protocols.value = await $fetch(`/api/protocols`)
+  onBrandSelected()
+}
+
+async function onBrandSelected() {
+  const dispenser = editedDispenser.value
+  let typeValid = false
+  brandDispenserTypes.value = dispenserTypes.value.filter((val) => {
+    if (val.dispenserBrandId === dispenser.dispenserBrandId)
+      typeValid = true
+    return val.dispenserBrandId === dispenser.dispenserBrandId
+  })
+
+  if (!typeValid)
+    editedDispenser.value.dispenserType = null
+  let protocolValid = false
+  brandProtocols.value = protocols.value.filter((val) => {
+    if (val.dispenserBrandId === dispenser.dispenserBrandId)
+      protocolValid = true
+    return val.dispenserBrandId === dispenser.dispenserBrandId
+  })
+  if (!protocolValid)
+    editedDispenser.value.protocol = ''
 }
 async function onSave() {
   if (dispenser.value)
@@ -85,15 +118,22 @@ async function onDelete() {
             </div>
             <div class="row-item">
               <span class="item-label">
-                {{ t('dispenserFields.ConsumptionFile') }}
+                {{ t('dispenserFields.Brand') }}
               </span>
-              <QInput
-                v-model="editedDispenser.consumptionFilename"
-                class="item-input"
+              <QSelect
+                v-model="editedDispenser.dispenserBrandId"
+                borderless
                 dense
-                type="text"
+                class="item-input"
                 filled
-                :placeholder="editedDispenser.consumptionFilename"
+                emit-value
+                map-options
+                options-dense
+                option-value="dispenserBrandId"
+                option-label="dispenserBrandName"
+                :options="dispenserBrands"
+                @update:model-value="onBrandSelected"
+                @new-value="onBrandSelected"
               />
             </div>
             <div class="row-item">
@@ -107,7 +147,8 @@ async function onDelete() {
                 class="item-input"
                 filled
                 options-dense
-                :options="protocols"
+                option-label="protocol"
+                :options="brandProtocols"
               />
             </div>
             <div class="row-item">
@@ -125,7 +166,7 @@ async function onDelete() {
                 options-dense
                 option-value="dispenserTypeId"
                 option-label="dispenserTypeName"
-                :options="dispenserTypes"
+                :options="brandDispenserTypes"
               />
             </div>
             <div class="row-item">
@@ -140,32 +181,6 @@ async function onDelete() {
                 filled
                 :placeholder="editedDispenser.dispenserIP"
                 :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
-              />
-            </div>
-            <div class="row-item">
-              <span class="item-label">
-                {{ t('dispenserFields.FileName') }}
-              </span>
-              <QInput
-                v-model="editedDispenser.fileName"
-                class="item-input"
-                dense
-                type="text"
-                filled
-                :placeholder="editedDispenser.fileName"
-              />
-            </div>
-            <div class="row-item">
-              <span class="item-label">
-                {{ t('dispenserFields.FilePath') }}
-              </span>
-              <QInput
-                v-model="editedDispenser.filePath"
-                class="item-input"
-                dense
-                type="text"
-                filled
-                :placeholder="editedDispenser.filePath"
               />
             </div>
           </div>

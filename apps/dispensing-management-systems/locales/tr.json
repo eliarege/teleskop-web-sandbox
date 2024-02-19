@@ -85,7 +85,8 @@
     "ID": "Dağıtıcı No",
     "Type": "Dağıtıcı Tipi",
     "Protocol": "Protokol",
-    "ConsumptionFile": "Tüketim Dosya Adı"
+    "ConsumptionFile": "Tüketim Dosya Adı",
+    "Brand": "Dağıtıcı Markası"
   },
   "recipeFields": {
     "Info": "Reçete Bilgisi",

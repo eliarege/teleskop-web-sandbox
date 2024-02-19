@@ -10,14 +10,10 @@ export default defineEventHandler(async (event) => {
       dispenserIP: 'd.ip_address',
       dipenserPswrd: 'd.password',
       dispenserType: 'd.dispenser_type',
-      dispenserBrand: 't.dispenser_brand_id',
+      dispenserBrandId: 't.dispenser_brand_id',
       dispenserBrandName: 'b.brand_name',
       protocol: 'd.protocol',
       lastConsumptionControl: 'd.last_consumption_control',
-      readConsumptionFromDMS: 'd.read_consumption_from_dms',
-      consumptionFilename: 'd.consumption_filename',
-      fileName: 'd.bdy_requestname',
-      filePath: 'd.bdy_requestpath',
     })
       .join('DISPENSER_TYPE as t', 't.dispenser_type_id', 'd.dispenser_type')
       .join('DISPENSER_BRAND as b', 't.dispenser_brand_id', 'b.brand_id')

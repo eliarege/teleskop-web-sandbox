@@ -85,7 +85,8 @@
     "ID": "Dispenser ID",
     "Type": "Dispenser Type",
     "Protocol": "Protocol",
-    "ConsumptionFile": "Consumption File Name"
+    "ConsumptionFile": "Consumption File Name",
+    "Brand": "Dispenser Brand"
   },
   "recipeFields": {
     "Info": "Recipe Info",

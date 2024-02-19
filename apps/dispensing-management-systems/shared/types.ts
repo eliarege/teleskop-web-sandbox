@@ -45,20 +45,26 @@ export interface Dispenser {
   dispenserIP: string
   dipenserPswrd: string
   lastConsumptionControl: Date
-  dispenserType: number
-  dispenserBrand: number
+  dispenserType: number | null
+  dispenserBrandId: number
   dispenserBrandName: string
   protocol: string
-  readConsumptionFromDMS: boolean
-  consumptionFilename: string
-  fileName: string
-  filePath: string
+  protocolFields: object
+}
+export interface DispenserBrand {
+  dispenserBrandId: number
+  dispenserBrandName: string
 }
 export interface DispenserType {
   dispenserTypeId: number
   dispenserTypeName: string
   dispenserBrandId: number
   dispenserBrandName: string
+}
+export interface Protocol {
+  dispenserBrandId: number
+  protocol: string
+  fields: string[]
 }
 export interface Material {
   materialCode: string
