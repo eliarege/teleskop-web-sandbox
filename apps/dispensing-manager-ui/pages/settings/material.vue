@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
-import { removeAnyNonNumerical } from '~/shared/functions'
+import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
@@ -376,9 +376,11 @@ onBeforeRouteLeave(async (to, from, next) => {
                       dense
                       class="class-w-70"
                       filled
-                      type="text"
+                      :type="mate.numeric ? 'number' : 'text'"
                       :placeholder="mate.value"
-                      @update:model-value="mate.numeric ? mate.value = removeAnyNonNumerical(mate.value) : {}"
+                      @keydown="(e) => mate.numeric ? onKeydownPreventNonNumerical(e, mate.value) : {}"
+                      @paste="mate.numeric ? onPastePreventNonNumerical : {}"
+                      @drop="mate.numeric ? onDrop : {}"
                     />
                     <!-- @update:model-value="evt => mate.value = removeAnyNonNumerical(evt)" -->
                   </span>

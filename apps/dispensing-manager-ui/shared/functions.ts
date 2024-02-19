@@ -110,6 +110,27 @@ export function notification(isSuccess: any, message: string) {
 export function removeAnyNonNumerical(param: string | null): number | null {
   if (param === null)
     return null
-  const numericOnly = param.toString().replace(/\D/g, '')
+  const numericOnly = param.replace(/\D/g, '')
   return numericOnly ? Number.parseInt(numericOnly, 10) : null
+}
+
+export function onKeydownPreventNonNumerical(event, val) {
+  console.log(event.key)
+  if (!event.ctrlKey && event.key.length === 1 && (!/[\d.]/.test(event.key) || val === '0')) {
+    event.preventDefault()
+  }
+}
+
+export function onPastePreventNonNumerical(event) {
+  if (!event.clipboardData.types.includes('text/plain')) {
+    return event.preventDefault()
+  }
+  const data = event.clipboardData.getData('text/plain')
+  if (!/^[\d.]+$/.test(data)) {
+    return event.preventDefault()
+  }
+}
+
+export function onDrop(event) {
+  event.preventDefault()
 }
