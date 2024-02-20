@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { notification } from '~/shared/functions'
+import { notification, onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 
 const { t } = useI18n()
 
@@ -17,17 +17,22 @@ const protocolOptions = ref([
 
 const driver = ref()
 const drivers = ref()
+const currentDriverName = ref()
 const requestFilteSystemPath = ref()
 const referenceType = ref()
 const protocol = ref()
 const radio = ref()
 const deleteDialogVisible = ref(false)
+const givenDriverIdExistsWarning = ref(false)
+const driverIdErrorMessage = ref('')
 
 await fetchData()
 function setVariables() {
-  referenceType.value = driver.value.REFERENCEID !== undefined ? referenceOptions.value[driver.value.REFERENCEID] : referenceOptions.value[0]
-  protocol.value = driver.value.PROTOCOL !== undefined ? protocolOptions.value[driver.value.PROTOCOL] : protocolOptions.value[0]
-  radio.value = driver.value.CONTROLTOTALBATCH ? 0 : 1
+  referenceType.value = driver.value?.REFERENCEID !== undefined ? referenceOptions.value[driver.value.REFERENCEID] : referenceOptions.value[0]
+  protocol.value = driver.value?.PROTOCOL !== undefined ? protocolOptions.value[driver.value.PROTOCOL] : protocolOptions.value[0]
+  radio.value = driver.value?.CONTROLTOTALBATCH ? 0 : 1
+  currentDriverName.value = driver.value?.DRIVERNAME ? driver.value?.DRIVERNAME : ''
+  givenDriverIdExistsWarning.value = false
 }
 async function updateDriverSettings(isPut: boolean) {
   let isSuccess
@@ -63,8 +68,10 @@ async function updateDriverSettings(isPut: boolean) {
     keyI18N = 'warnings.changeResponse'
   }
   drivers.value = await $fetch('/api/settings/driver')
-  if (isSuccess && isSuccess?.code !== 400)
+  if (isSuccess && isSuccess?.code !== 400) {
+    currentDriverName.value = driver.value?.DRIVERNAME
     driver.value.newDriver = false
+  }
   notification(
     isSuccess && isSuccess?.code !== 400,
     t(keyI18N!, {
@@ -80,13 +87,16 @@ async function updateDriverSettings(isPut: boolean) {
 async function fetchData() {
   requestFilteSystemPath.value = await $fetch('/api/settings/file-system')
   drivers.value = await $fetch('/api/settings/driver')
-  driver.value = drivers.value[0]
-  setVariables()
-  driver.value.newDriver = false
+  if (drivers.value.length) {
+    driver.value = drivers.value[0]
+    driver.value.newDriver = false
+    setVariables()
+  } else
+    addNewDriver()
 }
 
 async function addNewDriver() {
-  driver.value = { DRIVERNAME: t('settings.driverInfo.newDriverName'), CONTROLNV5DESC: false, CONTROLTOTALREQ: false, newDriver: true }
+  driver.value = { CONTROLNV5DESC: false, CONTROLTOTALREQ: false, newDriver: true }
   setVariables()
 }
 
@@ -96,6 +106,22 @@ async function deleteDriver() {
   })
   notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.driver'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
   fetchData()
+}
+async function checkDriverIdExist(driver: { DRIVERID: number | null }, value: InputEvent) {
+  driver.DRIVERID = value
+  if (value) {
+    if (value.startsWith('0')) {
+      givenDriverIdExistsWarning.value = true
+      driverIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.driver') })
+    } else {
+      if (driver.DRIVERID)
+        givenDriverIdExistsWarning.value = drivers.value.some(drv => drv.DRIVERID === Number(driver.DRIVERID))
+      if (givenDriverIdExistsWarning.value)
+        driverIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: driver.DRIVERID, type: t('warnings.driver') })
+    }
+  } else {
+    givenDriverIdExistsWarning.value = false
+  }
 }
 </script>
 
@@ -115,10 +141,20 @@ async function deleteDriver() {
             dense
           />
         </div>
-        <div class="row-item">
+        <div
+          v-if="driver?.newDriver"
+          class="row-item text-6 h-20"
+        >
+          {{ t('settings.driverInfo.createNewDriver') }}
+        </div>
+        <div
+          v-if="!driver.newDriver"
+          class="row-item h-20 flex"
+        >
           <q-select
             v-model="driver"
             :options="drivers"
+            :display-value="currentDriverName"
             option-label="DRIVERNAME"
             class="input-class text-size-xl"
             @update:model-value="setVariables()"
@@ -135,12 +171,17 @@ async function deleteDriver() {
         <div class="row-item">
           {{ t('settings.driverInfo.driverCode') }}
           <q-input
-            v-model="driver.DRIVERID"
+            :model-value="driver.DRIVERID"
             :disable="!driver.newDriver"
             class="input-class"
             filled
-            type="number"
+            :error="givenDriverIdExistsWarning"
+            :error-message="driverIdErrorMessage"
             dense
+            @keydown="(e) => onKeydownPreventNonNumerical(e, driver.DRIVERID)"
+            @paste="onPastePreventNonNumerical"
+            @drop="onDrop"
+            @update:model-value="checkDriverIdExist(driver, $event)"
           />
         </div>
         <div class="row-item">
@@ -207,7 +248,7 @@ async function deleteDriver() {
           color="black"
           :label="t('settings.submit')"
           outline
-          :disable="!driver.DRIVERID"
+          :disable="!driver.DRIVERID || !driver.DRIVERNAME || givenDriverIdExistsWarning"
           class="btn-bottom"
           icon="done"
           @click="updateDriverSettings(!driver.newDriver)"

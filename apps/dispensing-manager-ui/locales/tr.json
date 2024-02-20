@@ -69,7 +69,8 @@
       "recipeIndex": "Reçete Indexi",
       "refNoAllJoborders": "Tüm İş Emri İçinde Referans No",
       "refNoPrgNo": "İş Emri Referans No - Program No",
-      "newDriverName": "Yeni Sürücü İsmi"
+      "newDriverName": "Yeni Sürücü İsmi",
+      "createNewDriver": "Yeni sürücü oluştur"
     },
     "new": "Ekle",
     "edit": "Düzenle",

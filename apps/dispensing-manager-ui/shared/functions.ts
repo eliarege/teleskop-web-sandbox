@@ -115,8 +115,7 @@ export function removeAnyNonNumerical(param: string | null): number | null {
 }
 
 export function onKeydownPreventNonNumerical(event, val) {
-  console.log(event.key)
-  if (!event.ctrlKey && event.key.length === 1 && (!/[\d.]/.test(event.key) || val === '0')) {
+  if (!event.ctrlKey && event.key.length === 1 && (!/[\d.]/.test(event.key) || val === '0' || (event.key === '.' && val.includes('.')))) {
     event.preventDefault()
   }
 }
@@ -129,6 +128,8 @@ export function onPastePreventNonNumerical(event) {
   if (!/^[\d.]+$/.test(data)) {
     return event.preventDefault()
   }
+  if ((data.indexOf('.') !== data.lastIndexOf('.')))
+    return event.preventDefault()
 }
 
 export function onDrop(event) {
