@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { addSeconds, differenceInHours, differenceInMilliseconds, differenceInMinutes, differenceInSeconds, formatDuration } from 'date-fns'
+
 const props = defineProps<{ machineId: number, jobOrder: string, planKey: number }>()
 const colors = reactive({
   activeBackGround: '#4B5563',
@@ -9,33 +11,79 @@ const colors = reactive({
 const { data: machine } = await useFetch('/api/machineList', {
   query: { machineId: props.machineId },
 })
-const { data: erpParams } = await useFetch('/api/tootlipParameters', {
+const { data: batchProperties } = await useFetch('/api/batchProperties', {
   query: { machineId: props.machineId, planKey: props.planKey },
+})
+const time = computed(() => {
+  if (batchProperties.value?.times.startTime) {
+    const startTime = batchProperties.value?.times.startTime
+    let endTime
+    let elapsedTime
+    if (batchProperties.value?.times.endTime) {
+      endTime = batchProperties.value.times.endTime
+      elapsedTime = differenceInMilliseconds(endTime, startTime)
+    } else {
+      endTime = addSeconds(startTime, batchProperties.value?.times.theoreticalDuration)
+    }
+    elapsedTime = differenceInMilliseconds(new Date(), startTime)
+    elapsedTime = useDateFormat(elapsedTime, 'HH:mm:ss')
+
+    return [
+      {
+        label: `Theoretical Duration: ${batchProperties.value?.times.theoreticalDuration}`,
+      },
+      {
+        label: `Start Time: ${useDateFormat(new Date(startTime), 'YYYY-MM-DD HH:mm:ss').value}`,
+      },
+      {
+        label: `End Time: ${useDateFormat(endTime, 'YYYY-MM-DD HH:mm:ss').value}`,
+      },
+      {
+        label: `Elapsed Time: ${elapsedTime.value}`,
+      },
+    ]
+  } else {
+    return [
+      {
+        label: `Theoretical Duration: ${batchProperties.value?.times.theoreticalDuration}`,
+      },
+      {
+        label: `Theoretical Start Time: ${useDateFormat(new Date(batchProperties.value?.times.plannedStartTime), 'YYYY-MM-DD HH:mm:ss').value}`,
+      },
+    ]
+  }
+})
+
+const summary = computed(() => {
+  return [
+    {
+      label: `Plan Key: ${batchProperties.value?.summary.planKey}`,
+    },
+    {
+      label: `Fabric Weight: ${batchProperties.value?.summary.value}`,
+    },
+  ]
 })
 const tree = computed(() => [
   {
     label: 'ERP Parametereleri',
-    children: erpParams.value.map(e => ({
-      label: `${e.paramString}: ${e.value}`,
+    children: batchProperties.value?.erpParameters.map(e => ({
+      label: `${e.paramName}: ${e.value}`,
     })),
   },
   {
     label: 'Süreler',
-    children: erpParams.value.map(e => ({
-      label: `${e.paramString}: ${e.value}`,
-    })),
+    children: time.value,
   },
   {
     label: 'Programlar',
-    children: erpParams.value.map(e => ({
-      label: `${e.paramString}: ${e.value}`,
+    children: batchProperties.value?.programs.map((program, i) => ({
+      label: ` ${i + 1} -> ${program.NAME}`,
     })),
   },
   {
     label: 'Özet',
-    children: erpParams.value.map(e => ({
-      label: `${e.paramString}: ${e.value}`,
-    })),
+    children: summary.value,
   },
 ])
 

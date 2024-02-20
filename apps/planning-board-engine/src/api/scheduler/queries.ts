@@ -143,12 +143,49 @@ export async function getBatchProperties(machineId: number, planKey: number) {
     .andWhere('d.PLANKEY', planKey)
     .groupBy('p.PARAMID', 'b.PARAMNAME', 'd.VALUE')
 
-  const delays = await knex()
-  const programs = await knex()
-  const times = await knex()
-  const summary = await knex()
+  const programs = await knex.raw(`
+    WITH SplitValues AS (
+      SELECT CAST(value AS INT) AS ProgramNo
+      FROM STRING_SPLIT((SELECT LEFT(d.PROGRAMNOLIST, LEN(d.PROGRAMNOLIST) - 1) FROM DYBFBATCHPLAN d WHERE d.PLANKEY = ${planKey}), ',')
+      )
+    SELECT b.PROGNO, b.NAME
+    FROM BFMASTERPRGHEADER b
+    WHERE b.PROGNO IN (SELECT ProgramNo FROM SplitValues)
+    AND b.MACHINEID = ${machineId}
+    GROUP BY b.PROGNO, b.NAME;
+  `)
+  const times = await knex.raw(`
+    SELECT TOP 1
+    d.TheoricalDuration AS theoreticalDuration,
+    d.STARTDATETIME AS startTime,
+    d.PLANNEDSTARTTIME AS plannedStartTime,
+    CASE
+        WHEN b.ENDTIME IS NULL THEN b.CANCELTIME
+    ELSE b.ENDTIME
+  END as endTime
+  FROM
+    DYBFBATCHPLAN AS d
+  LEFT JOIN
+    BADATA AS b ON d.PLANKEY = b.PLANKEY
+  WHERE
+    d.PLANKEY = ${planKey};
+  `)
 
-  return { erpParameters, delays, programs, times, summary }
+  const subquery = knex('BFMACHBATCHPARAMETERTYPES')
+    .select('PARAMID')
+    .where('PARAMTYPEID', '=', 0)
+    .andWhere('MACHINEID', '=', machineId)
+
+  const summary = await knex('PTERPPARAMBYUSER as p')
+    .leftJoin('DYBFBATCHPLANPARAMETERS as c', 'c.BATCHPARAMETERID', 'p.PARAMID')
+    .select('c.PLANKEY as planKey', 'p.PARAMID as paramId', 'c.PARAMSTRING as paramString', 'c.VALUE as value')
+    .whereIn('p.PARAMID', subquery)
+    .andWhere('p.MACHINEID', machineId)
+    .andWhere('c.PLANKEY', planKey)
+    .groupBy('p.PARAMID', 'c.PARAMSTRING', 'c.VALUE', 'c.PLANKEY')
+    .first()
+
+  return { erpParameters, programs, times: times[0], summary }
 }
 export async function getPlanParameters(planKey: number) {
   return await knex({ p: 'dbo.DYBFBATCHPLANPARAMETERS' })

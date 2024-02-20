@@ -136,9 +136,10 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   )
   fastify.get(
     '/planning_board/batch_properties',
-    async (request: FastifyRequest<{}>, reply) => {
+    async (request: FastifyRequest<{ Querystring: { planKey: number, machineId: number } }>, reply) => {
       try {
-        const batchProperties = await getBatchProperties()
+        const { machineId, planKey } = request.query
+        const batchProperties = await getBatchProperties(machineId, planKey)
         return reply.code(200).send(batchProperties)
       } catch (err) {
         fastify.log.error(`An error occured while fetching batch properties: ${err}`)
