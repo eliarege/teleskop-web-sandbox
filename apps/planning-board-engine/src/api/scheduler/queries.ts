@@ -25,6 +25,7 @@ export async function getUnplannedEvents() {
       batchParameterId: 'R.BATCHPARAMETERID',
       theoreticalDuration: 'P.TheoricalDuration',
       isStopped: 'P.ISSTOPPED',
+      color: 'P.Color',
     })
     .leftJoin('dbo.PTBATCHPLANQUEUE as Q', 'Q.PLANKEY', 'P.PLANKEY')
     .leftJoin('dbo.DYBFBATCHPLANPARAMETERS as R', (builder) => {

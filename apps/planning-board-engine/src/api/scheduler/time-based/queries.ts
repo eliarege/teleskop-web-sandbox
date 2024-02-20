@@ -15,6 +15,7 @@ export async function getTimeBasedPlannedEvents() {
       pinned: 'p.PINNED',
       isStarted: 'd.ISSTARTED',
       isStopped: 'd.ISSTOPPED',
+      color: 'd.Color',
     }).whereNotNull('p.STARTTIME')
 }
 export async function getTimeBasedEvents(archiveDays: number) {
@@ -41,6 +42,7 @@ export async function getTimeBasedEvents(archiveDays: number) {
         d.ISDELETED AS isDeleted,
         d.ISSTARTED AS isStarted,
         d.ISSTOPPED AS isStopped,
+        d.Color as color,
         ROW_NUMBER() OVER (PARTITION BY p.PLANKEY ORDER BY p.BATCHREFERENCE DESC) AS RowNum
       FROM
         BADATA AS p
@@ -67,7 +69,8 @@ export async function getTimeBasedEvents(archiveDays: number) {
       note,
       isDeleted,
       isStarted,
-      isStopped
+      isStopped,
+      color
     FROM RankedBatches
     WHERE RowNum = 1
 `)

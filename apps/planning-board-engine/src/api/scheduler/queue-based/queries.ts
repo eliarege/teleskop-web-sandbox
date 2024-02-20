@@ -20,6 +20,7 @@ export async function getQueueBasedPlannedEvents() {
       isStarted: 'd.ISSTARTED',
       isStopped: 'd.ISSTOPPED',
       startDate: 'd.STARTDATETIME',
+      color: 'd.Color',
     })
     .leftJoin({ d: 'DYBFBATCHPLAN' }, 'd.PLANKEY', 'p.PLANKEY')
     .where((builder) => {
@@ -49,6 +50,7 @@ export async function getQueueBasedArchiveEvents(archiveDays: number) {
         d.ISDELETED AS isDeleted,
         d.ISSTARTED AS isStarted,
         d.ISSTOPPED AS isStopped,
+        d.Color as color,
         ROW_NUMBER() OVER (PARTITION BY p.PLANKEY ORDER BY p.BATCHREFERENCE DESC) AS RowNum
       FROM
         BADATA AS p
@@ -74,7 +76,8 @@ export async function getQueueBasedArchiveEvents(archiveDays: number) {
       note,
       isDeleted,
       isStarted,
-      isStopped
+      isStopped,
+      color
     FROM RankedBatches
     WHERE RowNum = 1;
   `)
