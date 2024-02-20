@@ -18,6 +18,7 @@ const dispenserTypes = ref<DispenserType[]>([])
 const brandDispenserTypes = ref<DispenserType[]>([])
 const protocols = ref<Protocol[]>([])
 const brandProtocols = ref<Protocol[]>([])
+const protocolFields = ref<string[]>([])
 
 getDispenserBrands()
 getDispenserTypes()
@@ -32,27 +33,44 @@ async function getDispenserTypes() {
 async function getProtocols() {
   protocols.value = await $fetch(`/api/protocols`)
   onBrandSelected()
+  onProtocolSelected()
 }
 
-async function onBrandSelected() {
-  const dispenser = editedDispenser.value
-  let typeValid = false
+function onBrandSelected() {
+  const dispenserVal = editedDispenser.value
   brandDispenserTypes.value = dispenserTypes.value.filter((val) => {
-    if (val.dispenserBrandId === dispenser.dispenserBrandId)
-      typeValid = true
-    return val.dispenserBrandId === dispenser.dispenserBrandId
+    return val.dispenserBrandId === dispenserVal.dispenserBrandId
   })
-
-  if (!typeValid)
+  if (dispenserVal.dispenserBrandId === dispenser.value.dispenserBrandId)
+    editedDispenser.value.dispenserType = dispenser.value.dispenserType
+  else if (brandDispenserTypes.value.length > 0)
+    editedDispenser.value.dispenserType = brandDispenserTypes.value[0].dispenserTypeId
+  else
     editedDispenser.value.dispenserType = null
-  let protocolValid = false
+
   brandProtocols.value = protocols.value.filter((val) => {
-    if (val.dispenserBrandId === dispenser.dispenserBrandId)
-      protocolValid = true
-    return val.dispenserBrandId === dispenser.dispenserBrandId
+    return val.dispenserBrandId === dispenserVal.dispenserBrandId
   })
-  if (!protocolValid)
+  if (dispenserVal.dispenserBrandId === dispenser.value.dispenserBrandId) {
+    editedDispenser.value.protocol = dispenser.value.protocol
+    onProtocolSelected()
+  } else if (brandProtocols.value.length > 0) {
+    editedDispenser.value.protocol = brandProtocols.value[0].protocol
+    onProtocolSelected()
+  } else {
     editedDispenser.value.protocol = ''
+    protocolFields.value = []
+  }
+}
+function onProtocolSelected() {
+  const selectedProtocol = brandProtocols.value.find(protocol => protocol.protocol === String(editedDispenser.value.protocol))
+  protocolFields.value = selectedProtocol?.fields
+  if (dispenser.value && editedDispenser.value.dispenserBrandId === dispenser.value.dispenserBrandId && editedDispenser.value.protocol === dispenser.value.protocol)
+    editedDispenser.value.protocolFields = dispenser.value.protocolFields
+  else {
+    const emptyProtocolFields = Object.fromEntries(protocolFields.value.map((field: string) => [field, '']))
+    editedDispenser.value.protocolFields = emptyProtocolFields
+  }
 }
 async function onSave() {
   if (dispenser.value)
@@ -118,6 +136,20 @@ async function onDelete() {
             </div>
             <div class="row-item">
               <span class="item-label">
+                {{ t('dispenserFields.IP') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.dispenserIP"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="editedDispenser.dispenserIP"
+                :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
                 {{ t('dispenserFields.Brand') }}
               </span>
               <QSelect
@@ -133,22 +165,6 @@ async function onDelete() {
                 option-label="dispenserBrandName"
                 :options="dispenserBrands"
                 @update:model-value="onBrandSelected"
-                @new-value="onBrandSelected"
-              />
-            </div>
-            <div class="row-item">
-              <span class="item-label">
-                {{ t('dispenserFields.Protocol') }}
-              </span>
-              <QSelect
-                v-model="editedDispenser.protocol"
-                borderless
-                dense
-                class="item-input"
-                filled
-                options-dense
-                option-label="protocol"
-                :options="brandProtocols"
               />
             </div>
             <div class="row-item">
@@ -171,16 +187,31 @@ async function onDelete() {
             </div>
             <div class="row-item">
               <span class="item-label">
-                {{ t('dispenserFields.IP') }}
+                {{ t('dispenserFields.Protocol') }}
               </span>
+              <QSelect
+                v-model="editedDispenser.protocol"
+                borderless
+                dense
+                class="item-input"
+                filled
+                options-dense
+                emit-value
+                option-value="protocol"
+                option-label="protocol"
+                :options="brandProtocols"
+                @update:model-value="onProtocolSelected"
+              />
+            </div>
+            <div v-for="field in protocolFields" :key="field" class="row-item">
+              <span class="item-label">{{ t(`protocolParameters.${field}`) }}</span>
               <QInput
-                v-model="editedDispenser.dispenserIP"
+                v-model="editedDispenser.protocolFields[field]"
                 class="item-input"
                 dense
                 type="text"
                 filled
-                :placeholder="editedDispenser.dispenserIP"
-                :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
+                :placeholder="t(`protocolParameters.${field}`)"
               />
             </div>
           </div>

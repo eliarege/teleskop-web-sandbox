@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
       password: dispenser.dipenserPswrd,
       dispenser_type: dispenser.dispenserType,
       protocol: dispenser.protocol,
+      protocol_fields: dispenser.protocolFields,
       last_consumption_control: dispenser.lastConsumptionControl,
     })
     return res

@@ -80,12 +80,9 @@
   "dispenserFields": {
     "Name": "Dispenser Name",
     "IP": "Dispenser IP",
-    "FileName": "File Name",
-    "FilePath": "File Path",
     "ID": "Dispenser ID",
     "Type": "Dispenser Type",
     "Protocol": "Protocol",
-    "ConsumptionFile": "Consumption File Name",
     "Brand": "Dispenser Brand"
   },
   "recipeFields": {
@@ -119,6 +116,16 @@
     "Name": "Machine Name",
     "No": "Machine No",
     "ControllerType": "Controller Type"
+  },
+  "protocolParameters": {
+    "bodyRequestName": "File Name",
+    "bodyRequestPath": "File Path",
+    "consumptionFileName": "COnsumption File Name",
+    "dbName": "Database Name",
+    "dbHost": "Database Host",
+    "dbUser": "Database User",
+    "dbPort": "Database Port",
+    "dbPassword": "Database Password"
   },
   "statusCodes": {
     "text": "Status",

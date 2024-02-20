@@ -73,7 +73,7 @@ function generateTreeNodes() {
       }]
     })
 
-    const filteredChildren = children.filter(child => child !== null)
+    const filteredChildren = children.filter((child: any) => child !== null)
     if (filteredChildren.length === 0) {
       return null
     }
