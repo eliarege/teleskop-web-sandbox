@@ -1,22 +1,12 @@
 <script setup lang="ts">
 import { matDisplaySettings, matPreview } from '@quasar/extras/material-icons'
-import { useStorage } from '@vueuse/core'
 import { color } from 'd3'
-import { LoadingSpinner } from 'ui'
 import { useSettingStore } from '~/store/settings'
 
 const emits = defineEmits(['updateScheduler'])
 const { t } = useI18n()
 const store = useSettingStore()
-const { data: machines, pending } = await useFetch('/api/machineList')
 const splitterModel = ref('view')
-const erpParameters = ref([] as any[])
-async function getErpParameters(machineId: number) {
-  const res = await $fetch('/api/erpParameters', {
-    query: { machineId },
-  })
-  erpParameters.value = res
-}
 
 function iconColor(bgColor: string) {
   if (bgColor === '') {
@@ -37,11 +27,6 @@ function iconColor(bgColor: string) {
   }
   return (0.2126 * sRGBtoLin(sRGB.r) + 0.7152 * sRGBtoLin(sRGB.g) + 0.0722 * sRGBtoLin(sRGB.b)) > 0.5 ? 'black' : 'white'
 }
-const erpParameterColumns = reactive([
-  { name: 'id', label: t('erp-param-columns.id'), align: 'center', field: 'id' },
-  { name: 'paramName', align: 'center', label: t('erp-param-columns.param-name'), field: 'paramName' },
-  { name: 'erpFieldName', align: 'center', label: t('erp-param-columns.field-name'), field: 'erpFieldName' },
-])
 </script>
 
 <template>
@@ -426,37 +411,7 @@ const erpParameterColumns = reactive([
         </div>
       </q-tab-panel>
       <q-tab-panel name="viewOptions">
-        <div class="view-options">
-          <div class="machine-list relative">
-            <LoadingSpinner v-if="pending" />
-            <q-list v-else dense>
-              <q-item
-                v-for="(item, idx) in machines"
-                :key="idx"
-                v-ripple
-                clickable
-              >
-                <q-item-section @click="getErpParameters(item.id)">
-                  {{ item.name }}
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </div>
-          <div class="erp-parameters">
-            <QTable
-              dense
-              :rows="erpParameters"
-              :columns="erpParameterColumns"
-              :rows-per-page-options="[0]"
-            />
-          </div>
-          <div class="planned-batch">
-            planned-batch
-          </div>
-          <div class="unplanned-batch">
-            unplanned-batch
-          </div>
-        </div>
+        <ViewOptions />
       </q-tab-panel>
     </q-tab-panels>
   </div>
@@ -503,19 +458,9 @@ const erpParameterColumns = reactive([
 }
 </style>
 
-<i18n>
+<i18n lang="json">
   {
   "en": {
-    "erp-param-columns": {
-      "id": "Queue Number",
-      "param-name": "Parameter Name",
-      "field-name": "ERP Matching Area"
-    },
-    "batch-text": {
-      "job-order": "Job Order Number",
-      "party": "Party Number",
-      "customer": "Customer Name"
-    },
     "settings": {
       "main": {
         "view": "View",
@@ -557,16 +502,6 @@ const erpParameterColumns = reactive([
     }
   },
   "tr": {
-    "erp-param-columns": {
-      "id": "Sıra Numarası",
-      "param-name": "Parametre İsmi",
-      "field-name": "ERP Eşleştirme Alanı"
-    },
-    "batch-text": {
-      "job-order": "İş Emri Numarası",
-      "party": "Parti Numarası",
-      "customer": "Müşteri İsmi"
-    },
     "settings": {
       "main": {
         "view": "Görünüm",

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { addSeconds, differenceInHours, differenceInMilliseconds, differenceInMinutes, differenceInSeconds, formatDuration } from 'date-fns'
+
 const props = defineProps<{ machineId: number, jobOrder: string, planKey: number }>()
 const colors = reactive({
   activeBackGround: '#4B5563',
@@ -6,10 +8,86 @@ const colors = reactive({
   idleBackGround: '#D1D5DB',
   itemBackGround: '#000000',
 })
-const { data: machine } = await useFetch('/api/batchProperties', {
+const { data: machine } = await useFetch('/api/machineList', {
   query: { machineId: props.machineId },
 })
-const a = computed(() => machine.value?.find(a => a.id === props.machineId))
+const { data: batchProperties } = await useFetch('/api/batchProperties', {
+  query: { machineId: props.machineId, planKey: props.planKey },
+})
+const time = computed(() => {
+  if (batchProperties.value?.times.startTime) {
+    const startTime = batchProperties.value?.times.startTime
+    let endTime
+    let elapsedTime
+    if (batchProperties.value?.times.endTime) {
+      endTime = batchProperties.value.times.endTime
+      elapsedTime = differenceInMilliseconds(endTime, startTime)
+    } else {
+      endTime = addSeconds(startTime, batchProperties.value?.times.theoreticalDuration)
+    }
+    elapsedTime = differenceInMilliseconds(new Date(), startTime)
+    elapsedTime = useDateFormat(elapsedTime, 'HH:mm:ss')
+
+    return [
+      {
+        label: `Theoretical Duration: ${batchProperties.value?.times.theoreticalDuration}`,
+      },
+      {
+        label: `Start Time: ${useDateFormat(new Date(startTime), 'YYYY-MM-DD HH:mm:ss').value}`,
+      },
+      {
+        label: `End Time: ${useDateFormat(endTime, 'YYYY-MM-DD HH:mm:ss').value}`,
+      },
+      {
+        label: `Elapsed Time: ${elapsedTime.value}`,
+      },
+    ]
+  } else {
+    return [
+      {
+        label: `Theoretical Duration: ${batchProperties.value?.times.theoreticalDuration}`,
+      },
+      {
+        label: `Theoretical Start Time: ${useDateFormat(new Date(batchProperties.value?.times.plannedStartTime), 'YYYY-MM-DD HH:mm:ss').value}`,
+      },
+    ]
+  }
+})
+
+const summary = computed(() => {
+  return [
+    {
+      label: `Plan Key: ${batchProperties.value?.summary.planKey}`,
+    },
+    {
+      label: `Fabric Weight: ${batchProperties.value?.summary.value}`,
+    },
+  ]
+})
+const tree = computed(() => [
+  {
+    label: 'ERP Parametereleri',
+    children: batchProperties.value?.erpParameters.map(e => ({
+      label: `${e.paramName}: ${e.value}`,
+    })),
+  },
+  {
+    label: 'Süreler',
+    children: time.value,
+  },
+  {
+    label: 'Programlar',
+    children: batchProperties.value?.programs.map((program, i) => ({
+      label: ` ${i + 1} -> ${program.NAME}`,
+    })),
+  },
+  {
+    label: 'Özet',
+    children: summary.value,
+  },
+])
+
+const currentMachine = computed(() => machine.value?.find(a => a.id === props.machineId))
 const tab = ref('planParameter')
 function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
   if (currentAlarmStatus === 0) {
@@ -25,11 +103,11 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
 
 <template>
   <div class="batch-wrapper">
-    <div class="side-bar">
+    <div class="side-bar border-solid border-1px p-1 rounded-2xl border-gray-500/50">
       <MachineCard
         class="!h-270px"
         :colors="{
-          backGround: cardBackgroundColor(a.currentAlarmStatus, a.runningBatchStatus),
+          backGround: cardBackgroundColor(currentMachine!.currentAlarmStatus, currentMachine!.runningBatchStatus),
           itemBackGround: colors.itemBackGround,
           activeBackGround: colors.activeBackGround,
           idleBackGround: colors.idleBackGround,
@@ -38,13 +116,20 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         :is-screen-viable="false"
         machine-settings="0"
         :machine-sort="1"
-        :machine="a"
+        :machine="currentMachine || []"
+        :links-active="false"
       />
-      <div class="w-full h-full e-border">
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Totam, earum?
+      <div class="w-full h-full max-h-147 overflow-auto p-3">
+        <QTree
+          :nodes="tree"
+          node-key="label"
+          dense
+          label-key="label"
+          no-connectors
+        />
       </div>
     </div>
-    <div>
+    <div class=" border-solid border-1px p-1 rounded-2xl border-gray-500/50">
       <q-tabs
         v-model="tab"
         ripple="false"

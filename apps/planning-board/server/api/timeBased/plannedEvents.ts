@@ -1,10 +1,12 @@
-import type { PlannedEvents } from '~/shared/types'
+import type { TimeBasedEventStates } from '~/shared/timeBased'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-
+  const { archiveDays } = getQuery(event)
   const url = `${config.planningEngineUrl}/time_based/scheduled_events`
 
-  const plannedEvents = $fetch<PlannedEvents[]>(url)
+  const plannedEvents = await $fetch<TimeBasedEventStates>(url, {
+    query: { archiveDays },
+  })
   return plannedEvents
 })

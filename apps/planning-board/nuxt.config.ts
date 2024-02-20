@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   extends: [
     'nuxt-base',
     'nuxt-machine-card',
+    'nuxt-ui',
   ],
   runtimeConfig: {
     teleskopHost: 'localhost',
@@ -14,7 +15,6 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     planningEngineUrl: 'http://localhost:3500',
-    machineStatusUrl: 'http://machine-status',
     public: {
       kcClientId: 'planning-board',
     },

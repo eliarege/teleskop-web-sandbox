@@ -1,11 +1,10 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const { planKey } = getQuery(event)
-
-  const url = `${config.planningEngineUrl}/time_based/theoretical_duration`
-
-  const theoreticalDuration = $fetch(url, {
+  const url = `${config.planningEngineUrl}/planning_board/unpin_event`
+  const pin = $fetch(url, {
     query: { planKey },
+    method: 'PUT',
   })
-  return theoreticalDuration
+  return pin
 })

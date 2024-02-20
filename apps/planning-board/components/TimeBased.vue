@@ -1,8 +1,9 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { Splitter, Tooltip } from '@bryntum/schedulerpro-trial'
-import { EliarModal } from 'ui'
+import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
+import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro-trial'
+import { EliarModal, LoadingSpinner } from 'ui'
+import { decompressJson } from '~/composables/helper'
 import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
@@ -10,8 +11,8 @@ const currentTime = useNow({ interval: 1000 })
 const { t } = useI18n()
 
 // TODO (BEFORE PRODUCTION): change start/end date!
-const startDate = ref('2022/07/01')
-const endDate = ref('2022/07/07')
+const startDate = ref('2022/01/01')
+const endDate = ref('2024/01/23')
 
 const schedulerDateModel = ref({
   from: startDate.value,
@@ -46,35 +47,31 @@ const showModal = reactive({
   rule: false,
   settings: false,
 })
+const archiveDays = localStorage.getItem('pt-settings')
 
-const { data: machines } = await useFetch('/api/machineList')
+const { data: machines, refresh: machineRefresh } = await useFetch('/api/machineList')
 const { data: events, refresh: plannedRefresh } = await useFetch('/api/timeBased/plannedEvents', {
-  query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
+  query: { archiveDays: JSON.parse(archiveDays || '0').archiveDays ?? 0 },
 })
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
-const modifiedMachines = computed(() => machines.value?.map((m) => {
+const loading = ref(false)
+const allEvents = computed(() => [...events.value!.plannedEventStates, ...events.value!.mergedArchiveStates])
+const schedulerEvents = computed(() => allEvents.value.map((ev) => {
   return {
-    ...m,
-    // TODO?: machine icons
-    // iconCls: 'b-fa b-fa-solid b-fa-play',
-  }
-}))
-const modifiedEvents = computed(() => events.value?.map((ev) => {
-  return {
+    ...ev,
     id: ev.planKey,
     name: ev.jobOrder,
     resourceId: ev.machineId,
-    startDate: new Date(ev.plannedStartTime),
-    endDate: new Date(ev.plannedEndTime),
+    startDate: ev.startTime ?? ev.plannedStartTime,
+    endDate: ev.endTime ?? ev.plannedEndTime,
+    draggable: !ev.isStarted && !ev.pinned,
     resizable: false,
-    draggable: true,
     editable: false,
-    ...ev,
   }
 }))
-const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
+const modifiedUnscheduledEvents = computed(() => decompressJson(unScheduledEvents.value).map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
     id: unp.planKey,
@@ -84,16 +81,37 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((u
     constraintDate: new Date(),
   } as UnplannedEvents
 }))
+let scheduler: SchedulerPro
+let grid: Grid
+const schedulerRefreshInterval = setInterval(async () => {
+  await refreshScheduler()
+}, 60_000)
+onUnmounted(() => {
+  clearInterval(schedulerRefreshInterval)
+})
+async function refreshSchedulerWithLoading() {
+  loading.value = true
+  await plannedRefresh()
+  await unScheduledRefresh()
+  await machineRefresh()
+  loading.value = false
+}
 async function refreshScheduler() {
   await plannedRefresh()
   await unScheduledRefresh()
-  // TODO: render grid rows
+  await machineRefresh()
 }
+watch(events, () => {
+  scheduler.events = schedulerEvents.value
+})
+watch(modifiedUnscheduledEvents, (newVal) => {
+  grid.store.data = newVal
+})
 async function unPlanEvent(planKey: number) {
   await $fetch('/api/unplan', {
     method: 'PUT',
     query: { planKey },
-  }).then(() => refreshScheduler())
+  }).then(() => refreshSchedulerWithLoading())
 }
 async function deleteEvent(planKey: number) {
   await $fetch('api/delete', {
@@ -101,12 +119,70 @@ async function deleteEvent(planKey: number) {
     query: { planKey },
   })
 }
-let scheduler: SchedulerPro
+
 function dateRangeEnd() {
   scheduler.startDate = new Date(schedulerDateModel.value.from)
   scheduler.endDate = new Date(schedulerDateModel.value.to)
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
+}
+async function eventTooltip(eventRecord: any) {
+  const startMonth = DateHelper.format(eventRecord.startDate, 'MMM')
+  const startDay = DateHelper.format(eventRecord.startDate, 'D')
+
+  const endMonth = DateHelper.format(eventRecord.endDate, 'MM')
+  const endDay = DateHelper.format(eventRecord.endDate, 'D')
+  const startMinuteRotation = (eventRecord.startDate.getMinutes() + eventRecord.startDate.getSeconds() / 60) * 6
+  const startHourRotation = (eventRecord.startDate.getHours() % 12 + eventRecord.startDate.getMinutes() / 60) * 30
+
+  const endMinuteRotation = (eventRecord.endDate.getMinutes() + eventRecord.endDate.getSeconds() / 60) * 6
+  const endHourRotation = (eventRecord.endDate.getHours() % 12 + eventRecord.endDate.getMinutes() / 60) * 30
+  const planKey = typeof eventRecord.originalData.planKey === 'string'
+    ? eventRecord.originalData.planKey.replace('P', '')
+    : eventRecord.originalData.planKey
+
+  const parameters = await $fetch('/api/tootlipParameters', {
+    query: { machineId: eventRecord.originalData.machineId, planKey },
+  })
+  const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
+  const notes = await $fetch('/api/note/getNote', {
+    query: { jobOrder: eventRecord.originalData.jobOrder },
+  })
+  const screenNotes = notes.filter(n => n.showOnScreen === true).map(a => a.note)
+  return `
+        <div>
+          ${screenNotes.length !== 0 ? `<div class="b-sch-event-title">Notes: ${screenNotes}</div>` : ''}
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
+            <div class="b-sch-clock">
+              <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">
+                ${startMonth}
+              </div>
+              <div class="b-sch-minute-indicator" style="transform: rotate(${startMinuteRotation}deg);">
+                ${startDay}
+              </div>
+              <div class="b-sch-clock-dot"></div>
+            </div>
+            <span class="b-sch-clock-text">${DateHelper.format(eventRecord.startDate, scheduler.displayDateFormat)}</span>
+          </div>
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-enddate">
+            <div class="b-sch-clock">
+              <div class="b-sch-hour-indicator" style="transform: rotate(${endHourRotation}deg);">
+                ${endMonth}
+              </div>
+              <div class="b-sch-minute-indicator" style="transform: rotate(${endMinuteRotation}deg);">
+                ${endDay}
+              </div>
+              <div class="b-sch-clock-dot"></div>
+            </div>
+            <span class="b-sch-clock-text">${DateHelper.format(eventRecord.endDate, scheduler.displayDateFormat)}</span>
+            </div>
+          <div class="b-sch-event-title">
+            <div class="b-sch-event-title">
+              ${parameterValues}
+            </div>
+          </div>
+        </div>
+`
 }
 onMounted(async () => {
   const schedule: SchedulerPro = scheduler = new TimeSchedule({
@@ -133,8 +209,8 @@ onMounted(async () => {
       eventModelClass: TimeTask,
     },
     eventColor: 'blue',
-    resources: modifiedMachines.value,
-    events: modifiedEvents.value,
+    resources: machines.value,
+    events: schedulerEvents.value,
     listeners: {
       eventSelectionChange({ action }: any) {
         if (action === 'select' || action === 'update') {
@@ -154,31 +230,39 @@ onMounted(async () => {
     },
     eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
-      if (eventRecord.originalData.notStarted) {
-        icons.push('b-fa b-fa-solid b-fa-list-check')
+      if (eventRecord.originalData.hasNote) {
+        icons.push('b-fa b-fa-solid b-fa-message')
       }
-      if (eventRecord.originalData.isDeviation) {
-        icons.push('b-fa b-fa-solid b-fa-clock')
-      }
-      if (eventRecord.originalData.isFinished) {
-        icons.push('b-fa b-fa-solid b-fa-flag-checkered')
-      }
-      // if (eventRecord.originalData.isLocked) {
-      //   icons.push('b-fa b-fa-lock')
-      // }
-      if (eventRecord.originalData.isRunning) {
-        if (eventRecord.originalData.isStopped) {
-          icons.push('b-fa b-fa-solid b-fa-stop')
-        } else {
-          icons.push('b-fa b-fa-solid b-fa-play')
+      if (!eventRecord.originalData.isActual) {
+        icons.push('b-fa b-fa-solid b-fa-calendar-check')
+        if (eventRecord.originalData.pinned) {
+          icons.push('b-fa b-fa-solid b-fa-thumbtack')
         }
-      }
-      if (eventRecord.originalData.isAlarm) {
-        icons.push('b-fa b-fa-solid b-fa-bell')
-      }
-
-      if (eventRecord.originalData.isDeleted) {
-        icons.push('b-fa b-fa-solid b-fa-ban')
+      } else {
+        if (eventRecord.originalData.isActual) {
+          icons.push('b-fa b-fa-solid b-fa-calendar-days')
+        }
+        if (eventRecord.originalData.notStarted) {
+          icons.push('b-fa b-fa-solid b-fa-list-check')
+        }
+        if (eventRecord.originalData.isDeviation) {
+          icons.push('b-fa b-fa-solid b-fa-clock')
+        }
+        if (eventRecord.originalData.isFinished) {
+          icons.push('b-fa b-fa-solid b-fa-flag-checkered')
+        } else {
+          if (eventRecord.originalData.isStopped) {
+            icons.push('b-fa b-fa-solid b-fa-stop')
+          } if (eventRecord.originalData.isStarted) {
+            icons.push('b-fa b-fa-solid b-fa-play')
+          }
+        }
+        if (eventRecord.originalData.isAlarm) {
+          icons.push('b-fa b-fa-solid b-fa-bell')
+        }
+        if (eventRecord.originalData.isDeleted) {
+          icons.push('b-fa b-fa-solid b-fa-ban')
+        }
       }
 
       const iconClass = icons.map(icon => `<i class="${icon}"></i>`).join('')
@@ -190,6 +274,15 @@ onMounted(async () => {
     timeResolution: {
       unit: 'minute',
       increment: 5,
+    },
+    onEventMenuBeforeShow: (a) => {
+      if (a.eventRecord.originalData.pinned) {
+        a.items.pin.hidden = true
+        a.items.unpin.hidden = false
+      } else {
+        a.items.pin.hidden = false
+        a.items.unpin.hidden = true
+      }
     },
     useInitialAnimation: false,
     features: {
@@ -246,6 +339,38 @@ onMounted(async () => {
                 .catch(err => console.error(err))
             },
           },
+          pin: {
+            icon: 'b-fa-solid b-fa-thumbtack',
+            text: t('ctx-menu.pin'),
+            async onItem({ eventRecord }: any) {
+              await $fetch('api/pinEvent', {
+                query: { planKey: eventRecord.originalData.id },
+                method: 'PUT',
+              })
+                .then(async () => {
+                  await refreshSchedulerWithLoading()
+                  schedule.renderRows()
+                  Toast.show('Event succesfuly pinned!')
+                })
+                .catch(err => Toast.show(err))
+            },
+          },
+          unpin: {
+            icon: 'b-fa-solid b-fa-thumbtack',
+            text: t('ctx-menu.unpin'),
+            async onItem({ eventRecord }: any) {
+              await $fetch('api/unpinEvents', {
+                query: { planKey: eventRecord.originalData.id },
+                method: 'PUT',
+              })
+                .then(async () => {
+                  await refreshSchedulerWithLoading()
+                  schedule.renderRows()
+                  Toast.show('Event succesfuly unpinned!')
+                })
+                .catch(err => Toast.show(err))
+            },
+          },
           copyEvent: {
             hidden: true,
           },
@@ -278,6 +403,7 @@ onMounted(async () => {
       timeRanges: {
         showCurrentTimeLine: true,
       },
+      eventTooltip: ({ eventRecord }: any) => eventTooltip(eventRecord),
     },
     tbar: [
       {
@@ -385,14 +511,12 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomOut(),
       },
-      '->',
-      'Time Based',
     ],
   } as Partial<SchedulerProConfig>)
   new Splitter({
     appendTo: 'main',
   })
-  const unplannedGrid = new TimeUnplannedGrid({
+  const unplannedGrid = grid = new TimeUnplannedGrid({
     ref: 'unplanned',
     appendTo: 'main',
     ui: 'toolbar',
@@ -441,6 +565,7 @@ onMounted(async () => {
       autoLoad: true,
     },
   } as Partial<GridConfig>)
+
   new TimeDrag({
     grid: unplannedGrid,
     schedule,
@@ -454,6 +579,9 @@ function updateTaskColor() {
 </script>
 
 <template>
+  <div v-if="loading">
+    <LoadingSpinner />
+  </div>
   <div>
     <EliarModal v-if="showModal.properties.show" @click.stop="showModal.properties.show = false">
       <template #default>
@@ -511,7 +639,10 @@ function updateTaskColor() {
     </EliarModal>
     <EliarModal v-if="showModal.notes.show" @click.stop="showModal.notes.show = false">
       <template #default>
-        <BatchNotes :job-order="showModal.notes.unit.name" />
+        <BatchNotes
+          :job-order="showModal.notes.unit.name"
+          @update-scheduler="refreshSchedulerWithLoading()"
+        />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.rule" @click.stop="showModal.rule = false" />
@@ -578,7 +709,10 @@ div[bgGreen] {
       "task-edit": "Update Job Order",
       "task-delete": "Delete Job Order",
       "remove-plan": "Remove From Plan",
-      "properties": "Job Order Properties"
+      "properties": "Job Order Properties",
+      "pin": "Pin Task",
+      "unpin": "Unpin Task"
+
     }
   },
   "tr": {
@@ -586,9 +720,10 @@ div[bgGreen] {
       "task-edit": "İş Emrini Güncelle",
       "task-delete": "İş Emrini Sil",
       "remove-plan": "Plandan kaldır",
-      "properties": "İş Emri Özellikleri"
+      "properties": "İş Emri Özellikleri",
+      "pin": "İş Emrini Sabitle",
+      "unpin": "İş Emri Sabitlemesini Kaldır"
     }
   }
 }
 </i18n>
-~/lib/timeBased

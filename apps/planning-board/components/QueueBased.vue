@@ -1,10 +1,9 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { Splitter } from '@bryntum/schedulerpro-trial'
-import { addSeconds } from 'date-fns'
+import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro-trial'
+import { addDays, addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
-import { useI18n } from 'vue-i18n'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
 import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
@@ -63,13 +62,12 @@ const modifiedEvents = computed(() => events.value?.map((ev: any) => {
     name: ev.jobOrder,
     resourceId: ev.machineId,
     resizable: false,
-    draggable: !ev.isStarted,
+    draggable: !ev.isStarted && !ev.pinned,
     editable: false,
     endDate: addSeconds(ev.startDate, ev.theoreticalDuration),
     ...ev,
   } as QueueBasedPlannedEvents
 }))
-console.log(modifiedEvents.value?.map(a => a.startDate))
 const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
   return {
     id: ev.planKey,
@@ -85,7 +83,7 @@ const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
 }))
 
 const mergedEvents = computed(() => modifiedEvents.value?.concat(modifiedArchive.value))
-const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((unp: UnplannedEventsRaw) => {
+const modifiedUnscheduledEvents = computed(() => decompressJson(unScheduledEvents.value!).map((unp: UnplannedEventsRaw) => {
   return {
     ...unp,
     id: unp.planKey,
@@ -97,9 +95,12 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value?.map((u
 }))
 let scheduler: SchedulerPro
 let grid: Grid
-setInterval(async () => {
+const schedulerRefreshInterval = setInterval(async () => {
   await refreshScheduler()
 }, 60_000)
+onUnmounted(() => {
+  clearInterval(schedulerRefreshInterval)
+})
 async function refreshScheduler() {
   await plannedRefresh()
   await unScheduledRefresh()
@@ -121,13 +122,65 @@ async function deleteEvent(planKey: number) {
   await $fetch('api/delete', {
     method: 'PUT',
     query: { planKey },
-  })
+  }).then(() => refreshScheduler())
 }
 function dateRangeEnd() {
   scheduler.startDate = new Date(schedulerDateModel.value.from)
   scheduler.endDate = new Date(schedulerDateModel.value.to)
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
+}
+async function eventTooltip(eventRecord: any) {
+  const startMonth = DateHelper.format(eventRecord.startDate, 'MMM')
+  const startDay = DateHelper.format(eventRecord.startDate, 'D')
+
+  const endMonth = DateHelper.format(eventRecord.endDate, 'MM')
+  const endDay = DateHelper.format(eventRecord.endDate, 'D')
+
+  const startMinuteRotation = (eventRecord.startDate.getMinutes() + eventRecord.startDate.getSeconds() / 60) * 6
+  const startHourRotation = (eventRecord.startDate.getHours() % 12 + eventRecord.startDate.getMinutes() / 60) * 30
+
+  const endMinuteRotation = (eventRecord.endDate.getMinutes() + eventRecord.endDate.getSeconds() / 60) * 6
+  const endHourRotation = (eventRecord.endDate.getHours() % 12 + eventRecord.endDate.getMinutes() / 60) * 30
+
+  const parameters = await $fetch('/api/tootlipParameters', {
+    query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
+  })
+  const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
+  return `
+        <div>
+          <div class="b-sch-event-title">${eventRecord.originalData.name}</div>
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
+            <div class="b-sch-clock">
+              <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">
+                ${startMonth}
+              </div>
+              <div class="b-sch-minute-indicator" style="transform: rotate(${startMinuteRotation}deg);">
+                ${startDay}
+              </div>
+              <div class="b-sch-clock-dot"></div>
+            </div>
+            <span class="b-sch-clock-text">${DateHelper.format(eventRecord.startDate, scheduler.displayDateFormat)}</span>
+          </div>
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-enddate">
+            <div class="b-sch-clock">
+              <div class="b-sch-hour-indicator" style="transform: rotate(${endHourRotation}deg);">
+                ${endMonth}
+              </div>
+              <div class="b-sch-minute-indicator" style="transform: rotate(${endMinuteRotation}deg);">
+                ${endDay}
+              </div>
+              <div class="b-sch-clock-dot"></div>
+            </div>
+            <span class="b-sch-clock-text">${DateHelper.format(eventRecord.endDate, scheduler.displayDateFormat)}</span>
+            </div>
+          <div class="b-sch-event-title">
+            <div class="b-sch-event-title">
+              ${parameterValues}
+            </div>
+          </div>
+        </div>
+`
 }
 onMounted(async () => {
   const schedule: SchedulerPro = scheduler = new QueueSchedule({
@@ -136,6 +189,7 @@ onMounted(async () => {
     multiEventSelect: false,
     createEventOnDblClick: false,
     startDate: new Date(),
+    endDate: addDays(new Date(), 7),
     startDateField: {
       label: 'test',
       flex: '1 0 50%',
@@ -176,26 +230,26 @@ onMounted(async () => {
     },
     eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
+      if (eventRecord.originalData.pinned) {
+        icons.push('b-fa b-fa-solid b-fa-thumbtack')
+      }
       if (eventRecord.originalData.isDeviation) {
-        icons.push('b-fa b-fa-solid b-fa-user-clock')
+        icons.push('b-fa b-fa-solid b-fa-clock')
       }
       if (eventRecord.originalData.isFinished) {
         icons.push('b-fa b-fa-solid b-fa-flag-checkered')
-      }
-      if (eventRecord.originalData.isLocked) {
-        icons.push('b-fa b-fa-lock')
-      }
-      if (eventRecord.originalData.isRunning) {
-        if (eventRecord.originalData.isStopped) {
+      } else {
+        if (eventRecord.originalData.isRunning) {
+          icons.push('b-fa b-fa-solid b-fa-play')
+        } else if (eventRecord.originalData.isStopped) {
           icons.push('b-fa b-fa-solid b-fa-stop')
         } else {
-          icons.push('b-fa b-fa-solid b-fa-play')
+          icons.push('b-fa b-fa-solid b-fa-list-check')
         }
       }
       if (eventRecord.originalData.isAlarm) {
         icons.push('b-fa b-fa-solid b-fa-bell')
       }
-
       if (eventRecord.originalData.isDeleted) {
         icons.push('b-fa b-fa-solid b-fa-ban')
       }
@@ -210,7 +264,15 @@ onMounted(async () => {
       unit: 'minute',
       increment: 5,
     },
-
+    onEventMenuBeforeShow: (a) => {
+      if (a.eventRecord.originalData.pinned) {
+        a.items.pin.hidden = true
+        a.items.unpin.hidden = false
+      } else {
+        a.items.pin.hidden = false
+        a.items.unpin.hidden = true
+      }
+    },
     features: {
       scheduleContext: {
         disabled: true,
@@ -263,6 +325,38 @@ onMounted(async () => {
                 .catch(err => console.error(err))
             },
           },
+          pin: {
+            icon: 'b-fa-solid b-fa-thumbtack',
+            text: t('ctx-menu.pin'),
+            async onItem({ eventRecord }: any) {
+              await $fetch('api/pinEvent', {
+                query: { planKey: eventRecord.originalData.id },
+                method: 'PUT',
+              })
+                .then(() => {
+                  refreshScheduler()
+                  schedule.refreshRows()
+                  Toast.show('Event succesfuly pinned!')
+                })
+                .catch(err => Toast.show(err))
+            },
+          },
+          unpin: {
+            icon: 'b-fa-solid b-fa-thumbtack',
+            text: t('ctx-menu.unpin'),
+            async onItem({ eventRecord }: any) {
+              await $fetch('api/unpinEvent', {
+                query: { planKey: eventRecord.originalData.id },
+                method: 'PUT',
+              })
+                .then(() => {
+                  refreshScheduler()
+                  schedule.refreshRows()
+                  Toast.show('Event succesfuly pinned!')
+                })
+                .catch(err => Toast.show(err))
+            },
+          },
           copyEvent: {
             hidden: true,
           },
@@ -295,6 +389,7 @@ onMounted(async () => {
       timeRanges: {
         showCurrentTimeLine: true,
       },
+      eventTooltip: ({ eventRecord }: any) => eventTooltip(eventRecord),
     },
     tbar: [
       {
@@ -597,7 +692,9 @@ div[bgGreen] {
       "task-edit": "Update Job Order",
       "task-delete": "Delete Job Order",
       "remove-plan": "Remove From Plan",
-      "properties": "Job Order Properties"
+      "properties": "Job Order Properties",
+      "pin": "Pin Task",
+      "unpin": "Unpin Task"
     }
   },
   "tr": {
@@ -605,9 +702,10 @@ div[bgGreen] {
       "task-edit": "İş Emrini Güncelle",
       "task-delete": "İş Emrini Sil",
       "remove-plan": "Plandan kaldır",
-      "properties": "İş Emri Özellikleri"
+      "properties": "İş Emri Özellikleri",
+      "pin": "İş Emrini Sabitle",
+      "unpin": "İş Emri Sabitlemesini Kaldır"
     }
   }
 }
 </i18n>
-~/lib/timeBased

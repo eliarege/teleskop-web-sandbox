@@ -15,6 +15,7 @@ interface MachineCardProps {
   isScreenViable: boolean
   machineSort: number
   machineSettings: '0' | '1'
+  linksActive: boolean
 }
 defineProps<MachineCardProps>()
 function textColor(bgColor: string) {
@@ -98,7 +99,7 @@ function reqStatus(params: number) {
     <div class="card-items justify-center">
       <span class="card-items__item">{{ machine.runningStartHour }}</span>
       <NuxtLink
-        :to="machine.runningBatchStatus !== 0 ? `/details/${machine.id}` : '/'"
+        :to="machine.runningBatchStatus !== 0 && linksActive ? `/details/${machine.id}` : '/'"
         class="card-items__item hover:underline hover:text-shadow-lg"
         :class="machine.runningBatchStatus !== 0 ? 'cursor-pointer' : 'cursor-not-allowed'"
       >

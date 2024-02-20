@@ -1,21 +1,48 @@
-import { differenceInSeconds, isBefore } from 'date-fns'
-import type { TimeBasedEventStates, TimeBasedPlannedEventsExtended } from '../../../../types/planning-board'
+import { addSeconds } from 'date-fns'
+import type { TimeBasedArchiveEvents, TimeBasedEventStates, TimeBasedEvents } from '../../../../types/planning-board'
+import { hasNote } from '../../../composables/helper'
 
-export function updateTimeBasedEventStates(ev: TimeBasedPlannedEventsExtended[]): TimeBasedEventStates[] {
-  return ev.map((e) => {
+async function mapEvents(e: TimeBasedArchiveEvents, isPlanned: boolean) {
+  return {
+    batchKey: isPlanned ? `P${e.batchKey}` : e.batchKey,
+    planKey: isPlanned ? `P${e.planKey}` : e.planKey,
+    machineId: e.machineId,
+    jobOrder: e.jobOrder,
+    programNoList: e.programNoList,
+    startTime: isPlanned ? e.plannedStartTime : e.startTime,
+    endTime: isPlanned ? addSeconds(e.plannedStartTime, e.theoreticalDuration) : e.endTime,
+    theoreticalDuration: e.theoreticalDuration,
+    fabricWeight: e.fabricWeight,
+    partyNumber: e.partyNumber,
+    deviation: e.deviation,
+    note: e.note,
+    isDeleted: e.isDeleted,
+    isStarted: e.isStarted,
+    isStopped: e.isStopped,
+    isAlarm: false,
+    isLocked: false,
+    isDeviation: e.deviation !== 0 || e.deviation !== undefined || e.deviation !== null,
+    isFinished: e.isStopped && e.endTime !== null,
+    isActual: !isPlanned,
+    isArchive: true,
+    hasNote: await hasNote(e.jobOrder),
+  }
+}
+export async function updateTimeBasedEventStates(ev: TimeBasedEvents): Promise<TimeBasedEventStates> {
+  const plannedEventStates = await Promise.all(ev.plannedEvents.map(async (e) => {
     return {
       ...e,
-      deviation: e.isStarted
-        ? differenceInSeconds(new Date(), e.plannedStartTime)
-        : 0,
-      // NOTE!: this is only for development! Production build should be like this:
-      // isRunning: e.isStarted && !e.isFinished
-      isRunning: isBefore(e.plannedStartTime, new Date()) && isBefore(new Date(), e.plannedEndTime),
+      plannedEndTime: addSeconds(e.plannedStartTime, e.theoreticalDuration),
       isAlarm: false,
-      // NOTE!: this is only for development! Production build should be like this:
-      // isFinished: e.isStarted ? isBefore(e.plannedEndTime, new Date()) : false,
-      isFinished: isBefore(e.plannedEndTime, new Date()),
       isLocked: false,
+      notStarted: !e.isStarted,
+      hasNote: await hasNote(e.jobOrder),
     }
-  })
+  }))
+
+  const archiveActualEventStates = await Promise.all(ev.archiveEvents.map(async e => mapEvents(e, false)))
+  const archivePlannedEventStates = await Promise.all(ev.archiveEvents.map(async e => mapEvents(e, true)))
+
+  const mergedArchiveStates = [...archiveActualEventStates, ...archivePlannedEventStates]
+  return { plannedEventStates, mergedArchiveStates }
 }
