@@ -2,9 +2,8 @@
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro-trial'
-import { addDays, addHours, addSeconds } from 'date-fns'
+import { addDays, addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
-import { useI18n } from 'vue-i18n'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
 import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
