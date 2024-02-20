@@ -175,7 +175,6 @@ async function requestRow() {
     body: {
       row: selectedRow.value,
       content: data,
-      path: 'ozkantest/index.req',
       materialCodes,
     },
   })
