@@ -1,12 +1,15 @@
-import fs from 'node:fs'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
+import { sambaClient } from '~/server/sambaClient'
 
 const router = createRouter()
 export default useBase('/api/file', router.handler)
 const config = useRuntimeConfig()
 
 router.post('/write-recipe-step', defineEventHandler(async (event) => {
+  // const writePath = path.join(config.writeFilePath, Date.now().toString())
   const body = await readBody(event)
   const arr = await knex('DYTFMATERIAL')
     .whereIn('MATERIALCODE', body.materialCodes)
@@ -48,13 +51,9 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
       return 'Non-rerequestable material cannot be rerequested.'
     } else {
       const contentString = `${body.content.join(',')},\n`
-
-      fs.appendFile(config.reqFilePath, contentString, 'utf8', (err) => {
-        if (err) {
-          return { error: 'Error appending to file' }
-        }
-        return { message: 'Data appended successfully' }
-      })
+      await sambaClient.getFile(config.reqFilePath, config.writeFilePath)
+      await fs.appendFile(config.writeFilePath, contentString, 'utf8')
+      await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
     }
   } else return `Status code ${query[0]?.STATUS} cannot be rerequested.`
 }))
@@ -63,25 +62,7 @@ router.post('/write-dispenser-step', defineEventHandler(async (event) => {
   const body = await readBody(event)
   const contentString = `${body.content.join(',')},\n`
 
-  return new Promise((resolve, reject) => {
-    fs.appendFile(config.reqFilePath, contentString, 'utf8', async (err) => {
-      if (err) {
-        reject(new Error('Error appending to file (main page request).'))
-      } else {
-        return { message: 'Data appended successfully' }
-
-        // try {
-        //   await knex('DYTFCHEMREQUESTS')
-        //     .where('REQNUMBER', body.reqNumber)
-        //     .update({ STATUS: 8 })
-        //   await knex('DYTFREQMATERIALS')
-        //     .where('REQNUMBER', body.reqNumber)
-        //     .update({ STATUS: 8 })
-        //   resolve({ message: 'Data appended and status are set to 8', code: 200 })
-        // } catch (fetchError) {
-        //   reject(new Error('Error during setting to 8'))
-        // }
-      }
-    })
-  })
+  await sambaClient.getFile(config.reqFilePath, config.writeFilePath)
+  await fs.appendFile(config.writeFilePath, contentString, 'utf8')
+  await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
 }))

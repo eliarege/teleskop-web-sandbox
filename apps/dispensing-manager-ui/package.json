@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "knex": "^3.0.1",
-    "mssql": "^10.0.1"
+    "mssql": "^10.0.1",
+    "samba-client": "^7.2.0"
   },
   "devDependencies": {
     "@types/mssql": "^9.1.4",
