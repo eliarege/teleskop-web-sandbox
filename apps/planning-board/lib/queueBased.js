@@ -13,6 +13,7 @@ import {
 } from '@bryntum/schedulerpro-trial'
 import { addMinutes, addSeconds } from 'date-fns'
 import { io } from 'socket.io-client'
+import { integerToHex } from '~/composables/helper'
 
 const trLocalization = {
   Object: {
@@ -378,16 +379,8 @@ export class QueueTask extends EventModel {
       case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning):
         return ongoingBatchBatchSettings.actualBatchFabricColor
 
-      case this.isAlarm:
-        return 'red'
-      case this.isLocked:
-        return 'yellow'
-      case this.isStopped:
-        return 'gray'
-      case this.isDeleted:
-        return 'orange'
       default:
-        return '#03a9f4'
+        return integerToHex(this.originalData.color)
     }
   }
 

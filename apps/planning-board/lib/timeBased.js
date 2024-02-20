@@ -372,16 +372,8 @@ export class TimeTask extends EventModel {
       case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning):
         return ongoingBatchBatchSettings.actualBatchFabricColor
 
-      case this.isAlarm:
-        return 'red'
-      case this.isLocked:
-        return 'yellow'
-      case this.isStopped:
-        return 'gray'
-      case this.isDeleted:
-        return 'orange'
       default:
-        return '#03a9f4'
+        return integerToHex(this.originalData.color)
     }
   }
 
