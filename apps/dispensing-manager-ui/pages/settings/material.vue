@@ -189,12 +189,17 @@ function notification(isSuccess: any, message: string) {
 async function submit(isPut: boolean) {
   let isSuccess
   let keyI18N
+  const ph = materialInfo.value[4]?.value > 14
+    ? 14
+    : materialInfo.value[4]?.value < 1
+      ? 1
+      : materialInfo.value[4]?.value
   const body = {
     materialCode: materialInfo.value[0].value,
     materialName: materialInfo.value[1]?.value || '',
     materialGroup: materialInfo.value[2].value?.materialGroup,
     density: materialInfo.value[3]?.value,
-    ph: materialInfo.value[4]?.value,
+    ph,
     source: materialInfo.value[5]?.value,
     cost: materialInfo.value[6]?.value,
     rerequestable: materialInfo.value[7]?.value,
@@ -379,10 +384,12 @@ onBeforeRouteLeave(async (to, from, next) => {
                       class="class-w-70"
                       filled
                       :type="mate.numeric ? 'number' : 'text'"
+                      :min="mate.field === 'ph' ? 1 : 0"
+                      :max="mate.field === 'ph' ? 14 : ''"
                       :placeholder="mate.value"
                       @keydown="(e) => mate.numeric ? onKeydownPreventNonNumerical(e, mate.value) : {}"
-                      @paste="mate.numeric ? onPastePreventNonNumerical : {}"
-                      @drop="mate.numeric ? onDrop : {}"
+                      @paste="(e) => mate.numeric ? onPastePreventNonNumerical(e) : {}"
+                      @drop="(e) => mate.numeric ? onDrop(e) : {}"
                     />
                     <!-- @update:model-value="evt => mate.value = removeAnyNonNumerical(evt)" -->
                   </span>
