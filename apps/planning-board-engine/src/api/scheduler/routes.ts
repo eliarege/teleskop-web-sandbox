@@ -256,20 +256,20 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.delete<{
     Querystring: { id: number }
   }>(
-    '/planning_board/batch_notes/delete_note',
+    '/planning_board/batch_notes/note',
     async (request: FastifyRequest<{ Querystring: { id: number } }>, reply) => {
       try {
         const { id } = request.query
         await deleteNote(id)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        console.error(`An error occured while deleting batch note: ${err}`)
+        console.error(`An error occured while deleting batch note: `, err)
         return reply.code(500).send({ error: `An error occured while deleting batch note: ${err}` })
       }
     },
   )
   fastify.delete(
-    '/planning_board/erp_parameters/delete_parameter',
+    '/planning_board/erp_parameters/parameter',
     async (request: FastifyRequest<{
       Querystring: { paramId: number, owner: number, machineId: number }
     }>, reply) => {
@@ -278,7 +278,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await deleteErpParameters(paramId, owner, machineId)
         return reply.code(200).send('Succesful')
       } catch (err) {
-        console.error(`An error occured while deleting erp parameter: ${err}`)
+        console.error(`An error occured while deleting erp parameter: `, err)
         return reply.code(500).send({ error: `An error occured while deleting erp parameter: ${err}` })
       }
     },
