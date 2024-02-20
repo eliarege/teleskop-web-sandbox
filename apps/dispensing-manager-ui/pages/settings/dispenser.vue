@@ -350,12 +350,13 @@ onBeforeRouteLeave(async (to, from, next) => {
                     v-model="disp.value"
                     borderless
                     dense
+                    filled
                     class="w-70"
                     options-dense
                     :options="disp.field === 'protocol' ? protocols : types"
                     :option-label="disp.field === 'protocol' ? 'label' : 'name'"
                     :option-value="disp.field === 'protocol' ? 'label' : 'type'"
-                    style="min-width: 150px; border-width: 1px; border-color: black; border-radius: 5px;"
+                    style="min-width: 150px;"
                   />
                 </span>
                 <span v-else-if="disp.field === 'dispNo'">
@@ -363,7 +364,7 @@ onBeforeRouteLeave(async (to, from, next) => {
                     :model-value="disp.value"
                     class="w-70"
                     dense
-                    type="number"
+                    filled
                     :error="givenDispenserIdExistsWarning"
                     :error-message="dispenserIdErrorMessage"
                     :placeholder="disp.value"
@@ -379,8 +380,8 @@ onBeforeRouteLeave(async (to, from, next) => {
                     v-model="disp.value"
                     class="w-70"
                     dense
+                    filled
                     type="text"
-                    style="border-width: 1px; border-color: black; border-radius: 5px;"
                     :placeholder="disp.value"
                   />
                 </span>
