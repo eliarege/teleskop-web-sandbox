@@ -27,7 +27,9 @@ const showChangeMachineDialog = ref(false)
 const correctionNoList = ref([])
 const correctionNoDisplayed = ref(0)
 const isLastCorrectionNo = computed(() => {
-  return correctionNoList?.value[correctionNoList.value.length - 1] === correctionNoDisplayed.value
+  if (correctionNoList.value.length)
+    return correctionNoList?.value[correctionNoList.value.length - 1] === correctionNoDisplayed.value
+  return true
 })
 
 const groupables: Array<{ key: keyof RecipeLatest, index: number }> = [
@@ -166,7 +168,8 @@ async function requestJobOrder() {
   isThereAnyLog.value = await checkIsThereAnyLog(plankey.value)
 }
 
-function clearCorrectionNo() {
+function clearCorrectionNo(event) {
+  jobordernum.value = event
   correctionNoDisplayed.value = 0
 }
 
@@ -325,14 +328,14 @@ onBeforeUnmount(() => {
             style="width: 10%;"
             /> -->
           <q-input
-            v-model="jobordernum"
+            :model-value="jobordernum"
             outlined
             class="joborder-font"
             :label="t('joborderNo')"
             dense
             :error="showJoborderError"
             hide-bottom-space
-            @vue:updated="clearCorrectionNo()"
+            @update:model-value="clearCorrectionNo"
           />
           <q-btn
             :label="t('request')"
