@@ -3,6 +3,7 @@ import path from 'node:path'
 import { createRouter, defineEventHandler, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
 import { sambaClient } from '~/server/sambaClient'
+import { StatusCodes } from '~/shared/constants'
 
 const router = createRouter()
 export default useBase('/api/file', router.handler)
@@ -46,8 +47,8 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
     .andWhere('PROGRAMSTEPNO', body.row.mainStep)
     .select('STATUS')
 
-  if (query[0]?.STATUS === 8 || query[0]?.STATUS === 3) {
-    if (query[0]?.STATUS === 3 && !check) {
+  if (query[0]?.STATUS === StatusCodes.canceled || query[0]?.STATUS === StatusCodes.requestCompleted) {
+    if (query[0]?.STATUS === StatusCodes.requestCompleted && !check) {
       return 'Non-rerequestable material cannot be rerequested.'
     } else {
       const contentString = `${body.content.join(',')},\n`

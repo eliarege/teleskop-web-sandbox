@@ -13,6 +13,7 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
+    "async-mutex": "^0.4.0",
     "knex": "^3.0.1",
     "mssql": "^10.0.1",
     "samba-client": "^7.2.0"

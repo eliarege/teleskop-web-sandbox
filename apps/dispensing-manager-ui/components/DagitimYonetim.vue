@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { cellRGBColorHandler, navigateToPage, textAlignOverride } from '../shared/functions'
-import { colors } from '~/shared/constants'
+import { StatusCodes, colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
@@ -78,13 +78,13 @@ const columnsRecipe = computed<Column[]>(() => [
     filterable: true,
     filterType: 'select',
     selectionOptions: [
-      { label: t('statusCodes.0'), status: 0 },
-      { label: t('statusCodes.1'), status: 1 },
-      { label: t('statusCodes.2'), status: 2 },
-      { label: t('statusCodes.3'), status: 3 },
-      { label: t('statusCodes.4'), status: 4 },
-      { label: t('statusCodes.8'), status: 8 },
-      { label: t('statusCodes.10'), status: 10 },
+      { label: t('statusCodes.0'), status: StatusCodes.newRequest },
+      { label: t('statusCodes.1'), status: StatusCodes.inDispenser },
+      { label: t('statusCodes.2'), status: StatusCodes.inProcess },
+      { label: t('statusCodes.3'), status: StatusCodes.requestCompleted },
+      { label: t('statusCodes.4'), status: StatusCodes.priorityChanged },
+      { label: t('statusCodes.8'), status: StatusCodes.canceled },
+      { label: t('statusCodes.10'), status: StatusCodes.dispenserChanged },
     ],
     optionLabel: 'label',
     optionValue: 'status',
@@ -329,7 +329,7 @@ onBeforeUnmount(() => {
                       v-close-popup
                       clickable
                       @click="
-                        selectedRow.status === 3 || selectedRow.status === 8
+                        selectedRow.status === StatusCodes.requestCompleted || selectedRow.status === StatusCodes.canceled
                           ? processRequest(act, selectedRow)
                           : confirmationDialog = { vis: true, act }
                       "
