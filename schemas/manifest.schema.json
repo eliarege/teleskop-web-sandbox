@@ -19,6 +19,13 @@
         },
         "required": ["name"]
       }
+    },
+    "envDependencies": {
+      "type": "array",
+      "description": "Environment dependencies",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }
