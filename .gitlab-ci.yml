@@ -28,7 +28,9 @@ workflow:
     - if: $CI_COMMIT_TAG =~ /^v/
 
 variables:
-  TARGET_APPS: dispensing-manager-ui dispensing-management-systems machines multi-monitor planning-board planning-board-engine root websockify
+  TARGET_APPS:
+    value: dispensing-manager-ui dispensing-management-systems machine-status machines multi-monitor planning-board planning-board-engine root websockify
+    description: Whitespace seperated list of apps to build/release
 
 prepare:
   image: node:20
