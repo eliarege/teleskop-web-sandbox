@@ -1,13 +1,16 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createRouter, defineEventHandler, useBase } from 'h3'
+import { Mutex, MutexInterface, Semaphore, SemaphoreInterface, withTimeout } from 'async-mutex'
 import { knex } from '~/server/connectionPool'
+
 import { sambaClient } from '~/server/sambaClient'
 import { StatusCodes } from '~/shared/constants'
 
 const router = createRouter()
 export default useBase('/api/file', router.handler)
 const config = useRuntimeConfig()
+const mutex = new Mutex()
 
 router.post('/write-recipe-step', defineEventHandler(async (event) => {
   // const writePath = path.join(config.writeFilePath, Date.now().toString())
@@ -52,9 +55,11 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
       return 'Non-rerequestable material cannot be rerequested.'
     } else {
       const contentString = `${body.content.join(',')},\n`
-      await sambaClient.getFile(config.reqFilePath, config.writeFilePath)
-      await fs.appendFile(config.writeFilePath, contentString, 'utf8')
-      await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
+      await mutex.runExclusive(async () => {
+        await sambaClient.getFile(config.reqFilePath, config.writeFilePath)
+        await fs.appendFile(config.writeFilePath, contentString, 'utf8')
+        await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
+      })
     }
   } else return `Status code ${query[0]?.STATUS} cannot be rerequested.`
 }))
@@ -62,8 +67,9 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
 router.post('/write-dispenser-step', defineEventHandler(async (event) => {
   const body = await readBody(event)
   const contentString = `${body.content.join(',')},\n`
-
-  await sambaClient.getFile(config.reqFilePath, config.writeFilePath)
-  await fs.appendFile(config.writeFilePath, contentString, 'utf8')
-  await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
+  await mutex.runExclusive(async () => {
+    await sambaClient.getFile(config.reqFilePath, config.writeFilePath)
+    await fs.appendFile(config.writeFilePath, contentString, 'utf8')
+    await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
+  })
 }))
