@@ -144,21 +144,21 @@ const logsDialog = ref(false)
 const priority = ref()
 const tankNo = ref()
 const isTankNoRequired = ref()
-let materialCodes: (string | null)[] = []
+let materials: ({ materialCode: string | null, amount: number | null })[] = []
 
 async function checkIsTankNoRequired() {
   requestDialog.value = true
   selectedRow.value.programTotalCount = 0
   props.data.forEach((row) => {
     if (selectedRow.value.ISN === row.ISN)
-      materialCodes.push(row.chemCode)
+      materials.push({ materialCode: row.chemCode, amount: row.amount })
     if (selectedRow.value.programNo === row.programNo && row.parallelStep === 1)
       selectedRow.value.programTotalCount++
   })
   isTankNoRequired.value = await $fetch('/api/recipe/check-tank-no-required', {
     method: 'POST',
     body: {
-      materialCodes,
+      materials,
     },
   })
 }
@@ -169,18 +169,31 @@ const priorityOptions = [
   { label: t('recipe.priorityCritical'), value: 99 },
 ]
 async function requestRow() {
-  const data = [2, priority.value.value, props.machineid, tankNo.value, selectedRow.value.joborder, selectedRow.value.programNo, selectedRow.value.mainStep, selectedRow.value.mainStep, selectedRow.value.programTotalCount, selectedRow.value.recipeType, selectedRow.value.processOrder]
+  const data = [
+    2,
+    priority.value.value,
+    props.machineid,
+    tankNo.value,
+    selectedRow.value.joborder,
+    selectedRow.value.programNo,
+    selectedRow.value.mainStep,
+    selectedRow.value.mainStep,
+    selectedRow.value.programTotalCount,
+    selectedRow.value.recipeType,
+    selectedRow.value.processOrder,
+  ]
+
   await $fetch('/api/file/write-recipe-step', {
     method: 'POST',
     body: {
       row: selectedRow.value,
       content: data,
-      materialCodes,
+      materials,
     },
   })
   tankNo.value = null
   priority.value = null
-  materialCodes = []
+  materials = []
 }
 
 watch(() => props.resetCounter, (newValue, oldValue) => {
@@ -279,7 +292,7 @@ function isCorrectPlankey(param: any) {
             :label="t('settings.cancel')"
             outline
             icon="close"
-            @click="tankNo = null, priority = null, materialCodes = []"
+            @click="tankNo = null, priority = null, materials = []"
           />
           <q-btn
             v-close-popup
@@ -308,7 +321,7 @@ function isCorrectPlankey(param: any) {
             :label="t('no')"
             outline
             icon="close"
-            @click="tankNo = null, priority = null, materialCodes = []"
+            @click="tankNo = null, priority = null, materials = []"
           />
           <q-btn
             v-close-popup

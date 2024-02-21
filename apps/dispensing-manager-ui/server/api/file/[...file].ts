@@ -15,8 +15,9 @@ const mutex = new Mutex()
 router.post('/write-recipe-step', defineEventHandler(async (event) => {
   // const writePath = path.join(config.writeFilePath, Date.now().toString())
   const body = await readBody(event)
+  const materialCodes = body.materials.map(material => material.materialCode)
   const arr = await knex('DYTFMATERIAL')
-    .whereIn('MATERIALCODE', body.materialCodes)
+    .whereIn('MATERIALCODE', materialCodes)
     .select('MATERIALCODE', 'ReRequestable')
   let check = true
   arr.forEach((a) => {
@@ -36,11 +37,11 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
   if (body.checkMaterialDispenser) {
     const materialConnections = await knex('DYTFCHEMDISPCONNECTION as C')
       .select('D.DISPENSERTYPENO', 'C.CHEMCODE')
-      .whereIn('C.CHEMCODE', body.materialCodes)
+      .whereIn('C.CHEMCODE', materialCodes)
       .where('D.DISPENSERTYPENO', body.dispenserType)
       .leftJoin('DYTFDISPENSERSETTINGS as D', 'D.DISPENSERID', 'C.DISPENSERID')
       .leftJoin('DYTFDISPENSERTYPE as T', 'T.DISPENSERTYPENO', 'D.DISPENSERTYPENO')
-    if (materialConnections.length !== body.materialCodes.length)
+    if (materialConnections.length !== materialCodes.length)
       return 'All the materials on the probram have to be connected to related dispenser.'
   }
 
@@ -58,6 +59,9 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
       await mutex.runExclusive(async () => {
         await sambaClient.getFile(config.reqFilePath, config.writeFilePath)
         await fs.appendFile(config.writeFilePath, contentString, 'utf8')
+        body.materialCodes.forEach(async (material) => {
+          await fs.appendFile(config.writeFilePath, `${[material.materialCode, material.amount].join(',')},`, 'utf8')
+        })
         await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
       })
     }
