@@ -44,6 +44,7 @@ docker build \
   --build-arg APP_BUILD_DATE="$BUILD_DATE" \
   --build-arg APP_PORT="$(jq -r .eliar.port $PKG_PATH)" \
   --build-arg APP_OUT_DIR="$(jq -r .eliar.outDir $PKG_PATH)" \
+  --build-arg APP_DEPENDENCIES="$(jq -r '.envDependencies | join(" ")' $MANIFEST_PATH 2> /dev/null || echo '')" \
   --build-arg TURBO_CONFIG="$TURBO_CONFIG" \
   --build-arg TURBO_FORCE="$TURBO_FORCE" \
   --label com.eliar.manifest.name="$APP_NAME" \

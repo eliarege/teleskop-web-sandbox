@@ -62,11 +62,20 @@ WORKDIR /app
 ARG APP_NAME
 ARG APP_PORT=3000
 ARG APP_OUT_DIR=.output
+ARG APP_DEPENDENCIES
 
 ENV NODE_ENV=production
 
 COPY --from=build --chown=node:node /workspace/apps/${APP_NAME}/package.json ./
 COPY --from=build --chown=node:node /workspace/apps/${APP_NAME}/${APP_OUT_DIR} ${APP_OUT_DIR}
+
+# Create a directory for apps to write data in
+# Then install environment dependencies
+RUN mkdir data \
+  && chown node:node data \
+  && if [ -n "${APP_DEPENDENCIES}" ]; then \
+    apk add --no-cache ${APP_DEPENDENCIES}; \
+  fi
 
 EXPOSE ${APP_PORT}
 
