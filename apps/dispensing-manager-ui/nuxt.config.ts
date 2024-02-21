@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
+    sambaPath: '//192.168.16.88/public',
     reqFilePath: 'manual.req',
     writeFilePath: 'tmp/index.req',
     public: {

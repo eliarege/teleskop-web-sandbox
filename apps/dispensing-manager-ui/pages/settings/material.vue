@@ -185,15 +185,15 @@ function notification(isSuccess: any, message: string) {
     position: 'top',
   })
 }
+function clamp(val, min, max) {
+  return Math.max(min, Math.min(max, val))
+}
 
 async function submit(isPut: boolean) {
   let isSuccess
   let keyI18N
-  const ph = materialInfo.value[4]?.value > 14
-    ? 14
-    : materialInfo.value[4]?.value < 1
-      ? 1
-      : materialInfo.value[4]?.value
+
+  const ph = clamp(materialInfo.value[4]?.value, 1, 14)
   const body = {
     materialCode: materialInfo.value[0].value,
     materialName: materialInfo.value[1]?.value || '',
