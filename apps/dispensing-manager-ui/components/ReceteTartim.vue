@@ -25,6 +25,12 @@ const recipeData = ref()
 const jobordernum = ref()
 const showChangeMachineDialog = ref(false)
 const correctionNoList = ref([])
+const correctionNoDisplayed = ref(0)
+const isLastCorrectionNo = computed(() => {
+  if (correctionNoList.value.length)
+    return correctionNoList?.value[correctionNoList.value.length - 1] === correctionNoDisplayed.value
+  return true
+})
 
 const groupables: Array<{ key: keyof RecipeLatest, index: number }> = [
   { key: 'processOrder', index: 0 },
@@ -55,8 +61,8 @@ const buttonProps = ref([
   { name: 'logs', label: t('recipe.logs'), link: 'showLogs', icon: 'description' },
   { name: 'tartim', label: t('recipe.jobOrderMeasurement'), link: 'showConsumptions', icon: 'content_paste_search' },
   { name: 'parameters', label: t('recipe.jobOrderParameters'), link: 'showParameters', icon: 'search' },
-  { name: 'tartimrefresh', label: t('recipe.jobOrderMeasurementRefresh'), link: 'tartimrefresh', icon: 'refresh' },
-  { name: 'solvingrefresh', label: t('recipe.jobOrderSolvingRefresh'), link: 'solvingrefresh', icon: 'refresh' },
+  { name: 'tartimrefresh', label: t('recipe.jobOrderMeasurementRefresh'), link: 'tartimrefresh', icon: 'refresh', isDisabled: true },
+  { name: 'solvingrefresh', label: t('recipe.jobOrderSolvingRefresh'), link: 'solvingrefresh', icon: 'refresh', isDisabled: true },
 ])
 
 async function getCorrectionNOs(parameter: string) {
@@ -72,7 +78,6 @@ async function getCorrectionNOs(parameter: string) {
  * Might to have colors array
  */
 const recipeDataTemp = ref()
-const correctionNoDisplayed = ref(0)
 const machine = ref()
 const currentRecipeJoborder = ref('0')
 
@@ -163,7 +168,8 @@ async function requestJobOrder() {
   isThereAnyLog.value = await checkIsThereAnyLog(plankey.value)
 }
 
-function clearCorrectionNo() {
+function clearCorrectionNo(event) {
+  jobordernum.value = event
   correctionNoDisplayed.value = 0
 }
 
@@ -322,14 +328,14 @@ onBeforeUnmount(() => {
             style="width: 10%;"
             /> -->
           <q-input
-            v-model="jobordernum"
+            :model-value="jobordernum"
             outlined
             class="joborder-font"
             :label="t('joborderNo')"
             dense
             :error="showJoborderError"
             hide-bottom-space
-            @vue:updated="clearCorrectionNo()"
+            @update:model-value="clearCorrectionNo"
           />
           <q-btn
             :label="t('request')"
@@ -339,6 +345,10 @@ onBeforeUnmount(() => {
             @click="requestJobOrder()"
           />
           {{ plankey }}
+          <q-space />
+          <div class="flex text-size-8 mr-5" style="color: red">
+            {{ !isLastCorrectionNo ? t('warnings.deleted') : '' }}
+          </div>
           <q-btn
             class="ml-auto mr-5 py-3 w-75 items-start"
             :label="t('allJobOrders')"
@@ -494,6 +504,7 @@ onBeforeUnmount(() => {
           :title="t('recipe.recipeTable')"
           :machineid="machine?.machineid"
           :reset-counter="resetCounter"
+          :have-context-menu="isLastCorrectionNo"
         />
       </ElScrollbar>
     </div>
@@ -515,7 +526,7 @@ onBeforeUnmount(() => {
         :key="button.name"
         class="footer-button"
         outline
-        :disabled="!plankey"
+        :disabled="!plankey || button.isDisabled"
         color="black"
         @click="buttonAction(button.link)"
       >

@@ -23,7 +23,7 @@ export function textAlignOverride(pos: string) {
 export function cellRGBColorHandler(val) {
   let temp = 'background-color: '
   if (val === 0) {
-    temp += 'white; text-color: black'
+    temp += 'white; text-color: black;'
   } else {
     if (val === 1)
       temp += colors.status1
@@ -105,4 +105,33 @@ export function notification(isSuccess: any, message: string) {
     type: isSuccess ? 'positive' : 'warning',
     position: 'top',
   })
+}
+
+export function removeAnyNonNumerical(param: string | null): number | null {
+  if (param === null)
+    return null
+  const numericOnly = param.replace(/\D/g, '')
+  return numericOnly ? Number.parseInt(numericOnly, 10) : null
+}
+
+export function onKeydownPreventNonNumerical(event, val) {
+  if (!event.ctrlKey && event.key.length === 1 && (!/[\d.]/.test(event.key) || val === '0' || (event.key === '.' && val.includes('.')))) {
+    event.preventDefault()
+  }
+}
+
+export function onPastePreventNonNumerical(event) {
+  if (!event.clipboardData.types.includes('text/plain')) {
+    return event.preventDefault()
+  }
+  const data = event.clipboardData.getData('text/plain')
+  if (!/^[\d.]+$/.test(data)) {
+    return event.preventDefault()
+  }
+  if ((data.indexOf('.') !== data.lastIndexOf('.')))
+    return event.preventDefault()
+}
+
+export function onDrop(event) {
+  event.preventDefault()
 }

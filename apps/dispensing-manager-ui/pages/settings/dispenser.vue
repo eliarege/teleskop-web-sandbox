@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
+import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
@@ -81,6 +82,8 @@ async function getRows() {
 }
 
 const dmsRead = ref(false)
+const givenDispenserIdExistsWarning = ref(false)
+const dispenserIdErrorMessage = ref('')
 
 function resetDispenserInfo(row?: any) {
   dispenserInfo.value.forEach((disp) => {
@@ -117,6 +120,7 @@ function showSubmitDialog() {
 }
 
 async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
+  givenDispenserIdExistsWarning.value = false
   if (toggleCollapse)
     await toggleRowExpand(row, index)
   else {
@@ -252,16 +256,19 @@ async function deleteRow() {
    */
   await getRows()
 }
-const givenDispenserIdExistsWarning = ref(false)
-const dispenserIdErrorMessage = ref('')
-async function checkDispenserCodeExist() {
-  if (dispenserInfo.value[0]?.value[0] === '0') {
-    givenDispenserIdExistsWarning.value = true
-    dispenserIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.dispenser') })
-  } else if (dispenserInfo.value[0].value) {
-    givenDispenserIdExistsWarning.value = await $fetch(`/api/settings/check-is-dispenser-exist/${dispenserInfo.value[0].value}`)
-    if (givenDispenserIdExistsWarning.value)
-      dispenserIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: dispenserInfo.value[0].value, type: t('warnings.dispenser') })
+
+async function checkDispenserCodeExist(disp: { value: number | null }, value: InputEvent) {
+  disp.value = value
+  if (value) {
+    if (value.startsWith('0')) {
+      givenDispenserIdExistsWarning.value = true
+      dispenserIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.dispenser') })
+    } else {
+      if (disp.value)
+        givenDispenserIdExistsWarning.value = await $fetch(`/api/settings/check-is-dispenser-exist/${disp.value}`)
+      if (givenDispenserIdExistsWarning.value)
+        dispenserIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: disp.value, type: t('warnings.dispenser') })
+    }
   } else {
     givenDispenserIdExistsWarning.value = false
   }
@@ -343,27 +350,29 @@ onBeforeRouteLeave(async (to, from, next) => {
                     v-model="disp.value"
                     borderless
                     dense
-                    class="w-70"
                     filled
+                    class="w-70"
                     options-dense
                     :options="disp.field === 'protocol' ? protocols : types"
                     :option-label="disp.field === 'protocol' ? 'label' : 'name'"
                     :option-value="disp.field === 'protocol' ? 'label' : 'type'"
-                    style="min-width: 150px"
+                    style="min-width: 150px;"
                   />
                 </span>
                 <span v-else-if="disp.field === 'dispNo'">
                   <q-input
-                    v-model="disp.value"
+                    :model-value="disp.value"
                     class="w-70"
                     dense
+                    filled
                     :error="givenDispenserIdExistsWarning"
                     :error-message="dispenserIdErrorMessage"
-                    type="number"
-                    filled
                     :placeholder="disp.value"
                     :disable="props.row.dispNo > 0"
-                    @update:model-value="checkDispenserCodeExist()"
+                    @keydown="(e) => onKeydownPreventNonNumerical(e, disp.value)"
+                    @paste="onPastePreventNonNumerical"
+                    @drop="onDrop"
+                    @update:model-value="checkDispenserCodeExist(disp, $event)"
                   />
                 </span>
                 <span v-else>
@@ -371,8 +380,8 @@ onBeforeRouteLeave(async (to, from, next) => {
                     v-model="disp.value"
                     class="w-70"
                     dense
-                    type="text"
                     filled
+                    type="text"
                     :placeholder="disp.value"
                   />
                 </span>

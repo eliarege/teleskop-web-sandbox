@@ -69,7 +69,8 @@
       "recipeIndex": "Recipe Index",
       "refNoAllJoborders": "Reference No in All Job Orders",
       "refNoPrgNo": "Job Order Reference No - Program No",
-      "newDriverName": "New Driver's Name"
+      "newDriverName": "New Driver's Name",
+      "createNewDriver": "Create new driver"
 
     },
     "new": "New",
@@ -326,6 +327,7 @@
     "formDidnotSubmit": "You have unsaved changes on {type}.",
     "idAlreadyExists": "failed. {type} with {type} ID {code} already exists.",
     "idAlreadyExistsOnBlue": "{type} with {type} ID {code} already exists.",
-    "cannotBeZero": "{type} code cannot be 0."
+    "cannotBeZero": "{type} code cannot be 0.",
+    "deleted": "Deleted"
   }
 }

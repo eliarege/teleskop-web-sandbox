@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { colors } from '~/shared/constants'
+import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
@@ -60,6 +61,9 @@ const machineInfo = ref<{ label: string, value: any, field: string }[]>([
   { label: t('settings.connectedDisps'), value: '', field: 'connectedDisps' },
 ])
 
+const givenMachineIdExistsWarning = ref(false)
+const machineIdErrorMessage = ref('')
+
 async function getRows() {
   rows.value = await $fetch('/api/settings/machine-dispenser-connection-filtered', {
     method: 'POST',
@@ -104,6 +108,7 @@ async function toggleRowExpand(row: any, index: number) {
 }
 
 async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
+  givenMachineIdExistsWarning.value = false
   if (toggleCollapse)
     await toggleRowExpand(row, index)
   else {
@@ -224,16 +229,19 @@ async function deleteRow() {
   await getRows()
   expandedRow.value = null
 }
-const givenMachineIdExistsWarning = ref(false)
-const machineIdErrorMessage = ref('')
-async function checkMachineIdExist() {
-  if (machineInfo.value[0]?.value[0] === '0') {
-    givenMachineIdExistsWarning.value = true
-    machineIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.machine') })
-  } else if (machineInfo.value[0].value) {
-    givenMachineIdExistsWarning.value = await $fetch(`/api/settings/check-is-machine-exist/${machineInfo.value[0].value}`)
-    if (givenMachineIdExistsWarning.value)
-      machineIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: machineInfo.value[0].value, type: t('warnings.machine') })
+
+async function checkMachineIdExist(mach: { value: number | null }, value: InputEvent) {
+  mach.value = value
+  if (value) {
+    if (value.startsWith('0')) {
+      givenMachineIdExistsWarning.value = true
+      machineIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.machine') })
+    } else {
+      if (mach.value)
+        givenMachineIdExistsWarning.value = await $fetch(`/api/settings/check-is-machine-exist/${machineInfo.value[0].value}`)
+      if (givenMachineIdExistsWarning.value)
+        machineIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: machineInfo.value[0].value, type: t('warnings.machine') })
+    }
   } else {
     givenMachineIdExistsWarning.value = false
   }
@@ -332,16 +340,19 @@ onBeforeRouteLeave(async (to, from, next) => {
                   </span>
                   <span v-else-if="mach.field === 'machineid'">
                     <q-input
-                      v-model="mach.value"
+                      :model-value="mach.value"
                       dense
                       class="w-70"
                       filled
+                      type="number"
                       :error="givenMachineIdExistsWarning"
                       :error-message="machineIdErrorMessage"
-                      type="number"
                       :placeholder="mach.value"
                       :disable="props.row.machineid > 0"
-                      @update:model-value="checkMachineIdExist()"
+                      @keydown="(e) => onKeydownPreventNonNumerical(e, mach.value)"
+                      @paste="onPastePreventNonNumerical"
+                      @drop="onDrop"
+                      @update:model-value="checkMachineIdExist(mach, $event)"
                     />
                   </span>
                   <span v-else>

@@ -20,8 +20,8 @@ export const colors = {
   status0: '',
   status1: '#61b3ff',
   status2: '#008cff',
-  status3: '#eda72d',
-  status4: '#00ffc8',
+  status3: '#38df4e',
+  status4: '#eda72d',
   status8: '#ff0000',
   status10: '#c95a00',
 }
