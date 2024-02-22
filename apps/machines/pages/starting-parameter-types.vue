@@ -38,7 +38,7 @@ const { data: parameterTypes } = useLazyFetch('/api/starting-parameter-types/sta
 
 watch(parameterTypes, (_newValue, _oldValue) => {
   for (const paramTypeMap of paramTypeMaps) {
-    paramTypeMap.data = parameterTypes.value.find(t => t.paramTypeId === Number(paramTypeMap.id))?.paramString || t('notSelected')
+    paramTypeMap.data = parameterTypes.value.find(t => t.paramTypeId === Number(paramTypeMap.id)) || { paramId: -1, paramString: t('notSelected') }
   }
 })
 
@@ -51,9 +51,32 @@ async function handleOptionChange(paramType: object) {
   const paramId = paramType.data.paramId
   await selectStartingParameterType(selectedMachineId.value, paramTypeId, paramId)
 }
+
+const copy = ref()
+function handleCopy() {
+  copy.value = JSON.parse(JSON.stringify(paramTypeMaps))
+}
+
+async function handlePaste() {
+  for (const paramType of copy.value) {
+    await handleOptionChange(paramType)
+  }
+}
 </script>
 
 <template>
+  <q-btn-group push class="flex flex-row ">
+    <q-btn
+      label="Copy"
+      no-caps
+      @click="handleCopy"
+    />
+    <q-btn
+      label="Paste"
+      no-caps
+      @click="handlePaste"
+    />
+  </q-btn-group>
   <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
       <h3>{{ t('machines') }}</h3>

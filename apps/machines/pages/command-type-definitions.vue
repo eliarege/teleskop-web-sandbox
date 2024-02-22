@@ -90,9 +90,39 @@ async function handleSubmit() {
     body: { commandTypes: commandTypes.value },
   })
 }
+
+const copy = ref()
+
+function handleCopy() {
+  copy.value = JSON.parse(JSON.stringify(commandTypes.value))
+}
+
+async function handlePaste() {
+  await $fetch('/api/commands/command-types', {
+    method: 'PUT',
+    body: {
+      commandTypes: copy.value.map((item: CommandType) => ({
+        ...item,
+        machineId: selectedMachineId.value,
+      })),
+    },
+  })
+}
 </script>
 
 <template>
+  <q-btn-group push class="flex flex-row ">
+    <q-btn
+      label="Copy"
+      no-caps
+      @click="handleCopy"
+    />
+    <q-btn
+      label="Paste"
+      no-caps
+      @click="handlePaste"
+    />
+  </q-btn-group>
   <q-card class="flex flex-row">
     <q-card-section class="w-2xs">
       <h3>Makineler</h3>
@@ -118,7 +148,7 @@ async function handleSubmit() {
       <h3>Seçili Makine Komutları</h3>
       <Sortable
         :list="commands"
-        item-key="id"
+        :item-key="(element) => element.commandNo"
         class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
         :options="{ group: 'group' }"
         @add="(e) => handleDragDropCommands(e)"
@@ -147,7 +177,7 @@ async function handleSubmit() {
         <h3>{{ item.title }}</h3>
         <Sortable
           :list="item.ref"
-          item-key="id"
+          :item-key="(element) => element.commandNo"
           class="q-list q-list--bordered q-list--separator overflow-y-auto h-50"
           :options="{ group: 'group' }"
           @add="(e) => handleDragDrop(e, item)"

@@ -69,6 +69,19 @@ async function handleDeleteReason() {
   await deleteCommandTimeoutReason(selectedReasonId.value)
   await refreshTimeoutReasons()
 }
+
+const copy = ref()
+
+function handleCopy() {
+  copy.value = selectedMachineId.value
+}
+
+async function handlePaste() {
+  await $fetch('/api/command-timeout-reasons/copy', {
+    method: 'POST',
+    body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
+  })
+}
 </script>
 
 <template>
@@ -113,6 +126,18 @@ async function handleDeleteReason() {
   </q-dialog>
 
   <div class="flex justify-end mb-4 mr-4">
+    <q-btn-group push class="flex flex-row ">
+      <q-btn
+        label="Copy"
+        no-caps
+        @click="handleCopy"
+      />
+      <q-btn
+        label="Paste"
+        no-caps
+        @click="handlePaste"
+      />
+    </q-btn-group>
     <q-btn-group push>
       <q-btn
         push

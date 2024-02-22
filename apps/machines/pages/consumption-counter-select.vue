@@ -26,8 +26,13 @@ const { data: counters } = useLazyFetch('/api/consumption-counters/consumption-c
 })
 
 watch(counters, (newValue, oldValue) => {
-  counter1.value = counterOptions.value.find(option => option.id === counters.value.counter1)?.name || ''
-  counter2.value = counterOptions.value.find(option => option.id === counters.value.counter2)?.name || ''
+  if (counterOptions.value && counterOptions.value.length && counters.value && counters.value.counter1 && counters.value.counter2) {
+    counter1.value = counterOptions.value.find(option => option.id === counters.value.counter1)
+    counter2.value = counterOptions.value.find(option => option.id === counters.value.counter2)
+  } else {
+    counter1.value = ''
+    counter2.value = ''
+  }
 })
 
 async function handleMachineClick(machineId: number) {
@@ -37,9 +42,33 @@ async function handleMachineClick(machineId: number) {
 async function handleOptionChange() {
   await selectConsumptionCounter(selectedMachineId.value, counter1.value.id, counter2.value.id)
 }
+
+const copy = ref()
+
+function handleCopy() {
+  copy.value = { counter1: counter1.value, counter2: counter2.value }
+}
+
+async function handlePaste() {
+  counter1.value = copy.value.counter1
+  counter2.value = copy.value.counter2
+  await handleOptionChange()
+}
 </script>
 
 <template>
+  <q-btn-group push class="flex flex-row ">
+    <q-btn
+      label="Copy"
+      no-caps
+      @click="handleCopy"
+    />
+    <q-btn
+      label="Paste"
+      no-caps
+      @click="handlePaste"
+    />
+  </q-btn-group>
   <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
       <h3>{{ t('machines') }}</h3>
