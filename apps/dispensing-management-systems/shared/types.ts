@@ -49,7 +49,7 @@ export interface Dispenser {
   dispenserBrandId: number
   dispenserBrandName: string
   protocol: string
-  protocolFields: object
+  protocolFields: object | null
 }
 export interface DispenserBrand {
   dispenserBrandId: number
@@ -130,4 +130,11 @@ export interface Machine {
 export interface MachineControllerType {
   controllerTypeId: number
   controllerTypeName: string
+}
+export interface DatabaseConnection {
+  user: string
+  password: string
+  database: string
+  host: string
+  port: number
 }

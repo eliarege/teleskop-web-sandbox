@@ -41,7 +41,7 @@ function onBrandSelected() {
   brandDispenserTypes.value = dispenserTypes.value.filter((val) => {
     return val.dispenserBrandId === dispenserVal.dispenserBrandId
   })
-  if (dispenserVal.dispenserBrandId === dispenser.value.dispenserBrandId)
+  if (dispenser.value && dispenserVal.dispenserBrandId === dispenser.value.dispenserBrandId)
     editedDispenser.value.dispenserType = dispenser.value.dispenserType
   else if (brandDispenserTypes.value.length > 0)
     editedDispenser.value.dispenserType = brandDispenserTypes.value[0].dispenserTypeId
@@ -51,7 +51,7 @@ function onBrandSelected() {
   brandProtocols.value = protocols.value.filter((val) => {
     return val.dispenserBrandId === dispenserVal.dispenserBrandId
   })
-  if (dispenserVal.dispenserBrandId === dispenser.value.dispenserBrandId) {
+  if (dispenser.value && dispenserVal.dispenserBrandId === dispenser.value.dispenserBrandId) {
     editedDispenser.value.protocol = dispenser.value.protocol
     onProtocolSelected()
   } else if (brandProtocols.value.length > 0) {
@@ -85,6 +85,11 @@ function onCancel() {
 }
 
 function onReset() {
+  if (!dispenser.value) {
+    brandDispenserTypes.value = []
+    brandProtocols.value = []
+    editedDispenser.value.protocolFields = null
+  }
   editedDispenser.value = { ...dispenser.value }
 }
 
@@ -203,16 +208,18 @@ async function onDelete() {
                 @update:model-value="onProtocolSelected"
               />
             </div>
-            <div v-for="field in protocolFields" :key="field" class="row-item">
-              <span class="item-label">{{ t(`protocolParameters.${field}`) }}</span>
-              <QInput
-                v-model="editedDispenser.protocolFields[field]"
-                class="item-input"
-                dense
-                type="text"
-                filled
-                :placeholder="t(`protocolParameters.${field}`)"
-              />
+            <div v-if="editedDispenser.protocolFields">
+              <div v-for="field in protocolFields" :key="field" class="row-item">
+                <span class="item-label">{{ t(`protocolParameters.${field}`) }}</span>
+                <QInput
+                  v-model="editedDispenser.protocolFields[field]"
+                  class="item-input"
+                  dense
+                  type="text"
+                  filled
+                  :placeholder="t(`protocolParameters.${field}`)"
+                />
+              </div>
             </div>
           </div>
           <div class="flex-center justify-evenly p-10">

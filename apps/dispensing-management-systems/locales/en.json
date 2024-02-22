@@ -62,7 +62,8 @@
   "settings": {
     "App": "App Settings",
     "Material": "Material Settings",
-    "Machine": "Machine Settings"
+    "Machine": "Machine Settings",
+    "Teleskop": "Teleskop Settings"
   },
   "materialFields": {
     "Name": "Material Name",
@@ -123,8 +124,8 @@
     "consumptionFileName": "COnsumption File Name",
     "dbName": "Database Name",
     "dbHost": "Database Host",
-    "dbUser": "Database User",
     "dbPort": "Database Port",
+    "dbUser": "Database User",
     "dbPassword": "Database Password"
   },
   "statusCodes": {

@@ -62,7 +62,8 @@
   "settings": {
     "App": "Uygulama Ayarları",
     "Material": "Malzeme Ayarları",
-    "Machine": "Makine Ayarları"
+    "Machine": "Makine Ayarları",
+    "Teleskop": "Teleskop Ayarları"
   },
   "materialFields": {
     "Name": "Malzeme Adı",
@@ -122,8 +123,8 @@
     "consumptionFileName": "Tüketim Dosyası",
     "dbName": "Veritabanı Adı",
     "dbHost": "Veritabanı Sunucusu",
-    "dbUser": "Veritabanı Kullanıcısı",
     "dbPort": "Veritabanı Portu",
+    "dbUser": "Veritabanı Kullanıcısı",
     "dbPassword": "Veritabanı Şifresi"
   },
   "statusCodes": {

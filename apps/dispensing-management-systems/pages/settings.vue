@@ -10,7 +10,7 @@ const router = useRouter()
 const tab = ref('s1')
 const splitterModel = ref(10)
 const innerWidth = ref(window.innerWidth)
-const minSize = 768
+const minSize = 1100
 
 dataStore.title = t('Settings')
 watch(locale, () => {
@@ -110,7 +110,7 @@ useResizeObserver(document.body, () => {
             name="s5"
             icon="settings"
             :class="tab === 's5' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
-            :label="innerWidth > minSize ? `${t('settings.5')}` : ''"
+            :label="innerWidth > minSize ? `${t('settings.Teleskop')}` : ''"
           />
           <QSeparator />
         </QTabs>
@@ -125,15 +125,15 @@ useResizeObserver(document.body, () => {
           transition-next="jump-up"
         >
           <QTabPanel name="s1">
-            <AppSettings />
+            <SettingsApp />
           </QTabPanel>
 
           <QTabPanel name="s2">
-            <MaterialSettings />
+            <SettingsMaterial />
           </QTabPanel>
 
           <QTabPanel name="s3">
-            <MachineSettings />
+            <SettingsMachine />
           </QTabPanel>
 
           <QTabPanel name="s4">
@@ -141,7 +141,7 @@ useResizeObserver(document.body, () => {
           </QTabPanel>
 
           <QTabPanel name="s5">
-            <!-- Settings Component -->
+            <SettingsTeleskop />
           </QTabPanel>
         </QTabPanels>
       </template>

@@ -1,4 +1,4 @@
-import { teleskopDB } from '~/server/connectionPool'
+import { getTeleskopDB } from '~/server/connectionPool'
 
 const jobOrderParams = {
   jobId: 'REQNUMBER',
@@ -116,6 +116,8 @@ const dispenserMaterialConnectionParams = {
 }
 export default defineEventHandler(async () => {
   try {
+    const teleskopDB = await getTeleskopDB()
+
     const dispensers = await teleskopDB('dbo.DYTFDISPENSERSETTINGS')
       .select(dispenserParams)
     const machines = await teleskopDB('dbo.DYTFMACHINES')

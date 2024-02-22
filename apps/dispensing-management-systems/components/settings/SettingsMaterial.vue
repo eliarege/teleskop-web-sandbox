@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import MaterialInfo from './MaterialInfo.vue'
+import MaterialInfo from '../MaterialInfo.vue'
 import type { Material, MaterialGroup } from '~/shared/types'
 
 const q = useQuasar()
