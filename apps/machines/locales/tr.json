@@ -227,6 +227,11 @@
   "get": "Al",
   "selectAll": "Hepsini Seç",
   "deselectAll": "Hepsini Kaldır",
+  "listOfTransferCommands": "Transfer Komutları Listesi",
+  "listOfCirculationDosageCommands": "List of Circulation Dosage Commands",
+  "listOfCirculationRequestCommands": "List of Circulation Request Commands",
+  "listOfRequestCommands": "List of Request Commands",
+  "commands": "Komutlar",
   "updateMachineSettings": {
     "KIMYASAL_ISTEK_FONKSIYONU": "Kimyasal İstek Fonksiyonu",
     "ICONS_ENABLED": "Menülerde ikonları göster",

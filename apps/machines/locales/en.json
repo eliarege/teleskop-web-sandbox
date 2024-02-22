@@ -228,6 +228,10 @@
   "analogOutputs": "Analog Outputs",
   "otherSettings": "Other Settings",
   "maxReelSpeed": "Max Reel Speed",
+  "listOfTransferCommands": "List of Transfer Commands",
+  "listOfCirculationDosageCommands": "List of Circulation Dosage Commands",
+  "listOfCirculationRequestCommands": "List of Circulation Request Commands",
+  "listOfRequestCommands": "List of Request Commands",
   "updateMachineSettings": {
     "PLCbaudRate57600": "PLC Version Old",
     "KIMYASAL_ISTEK_FONKSIYONU": "Chemical request function",

@@ -145,6 +145,7 @@ export interface FeedbackCommand {
 
 export interface MasterCommand {
   commandNo?: number
+  commandName?: string
   commandType?: number
   x?: string
   y?: string
