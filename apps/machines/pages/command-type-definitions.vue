@@ -2,38 +2,28 @@
 import { Sortable } from 'sortablejs-vue3'
 import type { CommandType } from '~/types'
 
+interface commandTypeMap {
+  ref: CommandType[]
+  value: number
+  title: string
+}
+
 const selectedMachineId = ref()
 
-const cmdTypeChemicalReq = ref<CommandType[]>([])
-const cmdTypeManualChemicalReq = ref<CommandType[]>([])
-const cmdTypeDyeReq = ref<CommandType[]>([])
-const cmdTypeManualDyeReq = ref<CommandType[]>([])
-const cmdTypeCTTransfer = ref<CommandType[]>([])
-const cmdTypeDTTransfer = ref<CommandType[]>([])
-const cmdTypeRTTransfer = ref<CommandType[]>([])
-const cmdTypePhControl = ref<CommandType[]>([])
-const cmdTypeSample = ref<CommandType[]>([])
-const cmdTypeSaltReq = ref<CommandType[]>([])
-const cmdTypeGenericMaterialOneReq = ref<CommandType[]>([])
-const cmdTypeGenericMaterialTwoReq = ref<CommandType[]>([])
-const cmdManuelMeasuredCommands = ref<CommandType[]>([])
-// const cmdOperatorWarningCommands = ref<CommandType[]>([])
-
-const commandTypeMap = reactive([
-  { ref: cmdTypeChemicalReq, label: 'cmdTypeChemicalReq', value: 100, title: 'Kimyasal İstek Komutları' },
-  { ref: cmdTypeManualChemicalReq, label: 'cmdTypeManualChemicalReq', value: 101, title: 'Manuel Kimyasal İstek Komutları' },
-  { ref: cmdTypeDyeReq, label: 'cmdTypeDyeReq', value: 200, title: 'Boya İstek Komutları' },
-  { ref: cmdTypeManualDyeReq, label: 'cmdTypeManualDyeReq', value: 201, title: 'Manuel Boya İstek Komutları' },
-  { ref: cmdTypeCTTransfer, label: 'cmdTypeCTTransfer', value: 300, title: 'Kimyasal Kazanı Transfer Komutları' },
-  { ref: cmdTypeDTTransfer, label: 'cmdTypeDTTransfer', value: 400, title: 'Boya Kazanı Transfer Komutları' },
-  { ref: cmdTypeRTTransfer, label: 'cmdTypeRTTransfer', value: 500, title: 'Rezerve Kazanı Transfer Komutları' },
-  { ref: cmdTypePhControl, label: 'cmdTypePhControl', value: 600, title: 'pH Kontrol' },
-  { ref: cmdTypeSample, label: 'cmdTypeSample', value: 700, title: 'Numune Al' },
-  { ref: cmdTypeSaltReq, label: 'cmdTypeSaltReq', value: 800, title: 'Tuz İstek Komutları' },
-  { ref: cmdTypeGenericMaterialOneReq, label: 'cmdTypeGenericMaterialOneReq', value: 810, title: 'Jenerik Materyal 1 İstek' },
-  { ref: cmdTypeGenericMaterialTwoReq, label: 'cmdTypeGenericMaterialTwoReq', value: 820, title: 'Jenerik Materyal 2 İstek' },
-  { ref: cmdManuelMeasuredCommands, label: 'cmdManuelMeasuredCommands', value: 1000, title: 'Manuel Ölçüm Komutları' },
-  // { ref: cmdOperatorWarningCommands, label: 'cmdOperatorWarningCommands', value: 90, title: null },
+const commandTypeMaps = reactive<commandTypeMap[]>([
+  { ref: [], value: 100, title: 'Kimyasal İstek Komutları' },
+  { ref: [], value: 101, title: 'Manuel Kimyasal İstek Komutları' },
+  { ref: [], value: 200, title: 'Boya İstek Komutları' },
+  { ref: [], value: 201, title: 'Manuel Boya İstek Komutları' },
+  { ref: [], value: 300, title: 'Kimyasal Kazanı Transfer Komutları' },
+  { ref: [], value: 400, title: 'Boya Kazanı Transfer Komutları' },
+  { ref: [], value: 500, title: 'Rezerve Kazanı Transfer Komutları' },
+  { ref: [], value: 600, title: 'pH Kontrol' },
+  { ref: [], value: 700, title: 'Numune Al' },
+  { ref: [], value: 800, title: 'Tuz İstek Komutları' },
+  { ref: [], value: 810, title: 'Jenerik Materyal 1 İstek' },
+  { ref: [], value: 820, title: 'Jenerik Materyal 2 İstek' },
+  { ref: [], value: 1000, title: 'Manuel Ölçüm Komutları' },
 ])
 
 const { data: machines } = useLazyFetch('/api/machines/machines', {
@@ -42,7 +32,7 @@ const { data: machines } = useLazyFetch('/api/machines/machines', {
   body: {},
 })
 
-const { data: commandTypes } = useLazyFetch('/api/commands/command-types', {
+const { data: commands } = useLazyFetch('/api/commands/unused-commands', {
   default: () => [],
   immediate: false,
   query: {
@@ -50,57 +40,55 @@ const { data: commandTypes } = useLazyFetch('/api/commands/command-types', {
   },
 })
 
-watch(commandTypes, (_newCommandTypes) => {
-  for (const cmd of commandTypeMap) {
-    cmd.ref = []
-  }
-
-  commandTypes.value.forEach((command) => {
-    const mapping = commandTypeMap.find(m => m.value === command.commandType)
-    if (mapping)
-      mapping?.ref.push(command)
-  })
-})
-
-const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
+const { data: commandTypes } = useLazyFetch<CommandType[]>('/api/commands/command-types', {
   default: () => [],
   immediate: false,
   query: {
     machineId: selectedMachineId,
   },
-  transform: (commands) => {
-    let commandNos: number[] = []
-    commandTypeMap.forEach((cmd) => {
-      commandNos = [...commandNos, ...cmd.ref.map(commandType => commandType.commandNo)]
+  onResponse: ({ response }) => {
+    const data = response._data
+
+    for (const cmd of commandTypeMaps) {
+      cmd.ref = []
+    }
+
+    data.forEach((commandType: CommandType) => {
+      const mapping = commandTypeMaps.find(m => m.value === commandType.commandType)
+      if (mapping)
+        mapping?.ref.push(commandType)
     })
 
-    return commands.filter(d => !commandNos.includes(d.commandNo))
+    commandTypes.value = data
   },
 })
 
-async function handleMachineClick(machineId: number) {
-  selectedMachineId.value = machineId
+function handleDragDropCommands(e) {
+  const commandNo = e.item.getAttribute('data-command-no')
+  commandTypes.value = commandTypes.value.filter(cmd => cmd.commandNo !== Number(commandNo))
 }
 
-async function handleDragDrop(e, commandType: number) {
-  const text: string = e.item.innerHTML
-  const matches = text.match(/(\d+) (.+)/)
-  if (matches && matches.length) {
-    const commandNo = Number.parseInt(matches[0])
-    // update relevant list in db
-    let action
-    if (e.type === 'add')
-      action = 'add'
-    else if (e.type === 'remove')
-      action = 'remove'
-
-    await updateCommandTypeDefinitions({
+function handleDragDrop(e, commandMap: commandTypeMap) {
+  const commandNo = e.item.getAttribute('data-command-no')
+  const commandName = e.item.getAttribute('data-command-name')
+  const command = commandTypes.value.find(cmd => cmd.commandNo === Number(commandNo))
+  if (command) {
+    command.commandType = commandMap.value
+  } else {
+    commandTypes.value.push({
       machineId: selectedMachineId.value,
-      commandNo,
-      commandType,
-      action,
+      commandNo: Number(commandNo),
+      commandType: commandMap.value,
+      commandName,
     })
   }
+}
+
+async function handleSubmit() {
+  await $fetch('/api/commands/command-types', {
+    method: 'PUT',
+    body: { commandTypes: commandTypes.value },
+  })
 }
 </script>
 
@@ -118,7 +106,7 @@ async function handleDragDrop(e, commandType: number) {
           :key="machine.machineId"
           v-ripple
           clickable
-          @click="handleMachineClick(machine.machineId)"
+          @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>
             {{ machine.machineCode }}
@@ -133,10 +121,13 @@ async function handleDragDrop(e, commandType: number) {
         item-key="id"
         class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
         :options="{ group: 'group' }"
+        @add="(e) => handleDragDropCommands(e)"
       >
         <template #item="{ element, index }">
           <q-item
             :key="element.commandNo"
+            :data-command-no="element.commandNo"
+            :data-command-name="element.commandName"
             class="draggable"
           >
             <q-item-section>
@@ -149,7 +140,7 @@ async function handleDragDrop(e, commandType: number) {
 
     <q-card-section class="inline-grid grid-cols-5 gap-5 ml-8">
       <div
-        v-for="item in commandTypeMap"
+        v-for="item in commandTypeMaps"
         :key="item.value"
         class="w-2xs box"
       >
@@ -159,12 +150,13 @@ async function handleDragDrop(e, commandType: number) {
           item-key="id"
           class="q-list q-list--bordered q-list--separator overflow-y-auto h-50"
           :options="{ group: 'group' }"
-          @add="(e) => handleDragDrop(e, item.value)"
-          @remove="(e) => handleDragDrop(e, item.value)"
+          @add="(e) => handleDragDrop(e, item)"
         >
           <template #item="{ element, index }">
             <q-item
               :key="element.commandNo"
+              :data-command-no="element.commandNo"
+              :data-command-name="element.commandName"
               class="draggable"
             >
               <q-item-section>
@@ -176,6 +168,12 @@ async function handleDragDrop(e, commandType: number) {
       </div>
     </q-card-section>
   </q-card>
+  <q-btn-group>
+    <q-btn @click="handleSubmit">
+      Kaydet
+    </q-btn>
+    <q-btn>İptal</q-btn>
+  </q-btn-group>
 </template>
 
 <style scoped>

@@ -5,9 +5,12 @@ export default defineEventHandler(async (event) => {
   return await knex('BFCOMMANDTYPES')
     .where({
       machineId,
-      MACHINEID: machineId,
     })
-    .leftJoin('BFMASTERCOMMANDS', 'BFMASTERCOMMANDS.COMMANDNO', 'BFCOMMANDTYPES.commandNo')
+    .leftJoin('BFMASTERCOMMANDS', function () {
+      this
+        .on('BFMASTERCOMMANDS.COMMANDNO', 'BFCOMMANDTYPES.commandNo')
+        .andOn('BFMASTERCOMMANDS.MACHINEID', 'BFCOMMANDTYPES.machineId')
+    })
     .select({
       machineId: 'machineId',
       commandType: 'BFCOMMANDTYPES.commandType',
