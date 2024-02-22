@@ -8,7 +8,7 @@
   "main": "dist/server.mjs",
   "scripts": {
     "dev": "NODE_ENV=development tsx -r dotenv/config src/server.ts | pino-pretty",
-    "start": "node -r dotenv/config dist/server.mjs",
+    "start": "node dist/server.mjs",
     "preview": "NODE_ENV=production node -r dotenv/config dist/server.mjs | pino-pretty",
     "build": "unbuild",
     "stub": "unbuild --stub",
