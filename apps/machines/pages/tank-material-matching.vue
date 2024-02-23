@@ -11,7 +11,7 @@ const { t } = useI18n()
 */
 
 const selectedMachineId = ref()
-const copy = ref()
+const tanksClone = ref()
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
 const { data: materials } = useLazyFetch('/api/materials/materials')
@@ -21,7 +21,7 @@ const { data: tanks, refresh: refreshTanks } = useLazyFetch('/api/materials/mate
   default: () => [],
   query: { machineId: selectedMachineId },
   onResponse: ({ response }) => {
-    copy.value = JSON.parse(JSON.stringify(response._data))
+    tanksClone.value = JSON.parse(JSON.stringify(response._data))
     tanks.value = response._data
   },
 })
@@ -31,38 +31,63 @@ function deleteItem(tank, materialCode) {
     .materials = tanks.value.find(t => t.tankNo === tank.tankNo)
       .materials.filter(m => m.materialCode !== materialCode)
 
-  copy.value.find(t => t.tankNo === tank.tankNo)
-    .materials = copy.value.find(t => t.tankNo === tank.tankNo)
+  tanksClone.value.find(t => t.tankNo === tank.tankNo)
+    .materials = tanksClone.value.find(t => t.tankNo === tank.tankNo)
       .materials.filter(m => m.materialCode !== materialCode)
 }
 
 async function handleDragDropMaterials(e, tank) {
   const materialCode = e.item.getAttribute('data-material-code')
-  copy.value.find(t => t.tankNo === tank.tankNo)
+  tanksClone.value.find(t => t.tankNo === tank.tankNo)
     .materials.filter(m => m.materialCode !== materialCode)
 }
 
 async function handleDragDrop(e, tank) {
   const materialCode = e.item.getAttribute('data-material-code')
   const material = materials.value.find(t => t.materialCode === materialCode)
-  console.log('tank, copy', tank, copy.value, material)
-  copy.value.find(t => t.tankNo === tank.tankNo).materials.push(material)
+  console.log('tank, copy', tank, tanksClone.value, material)
+  tanksClone.value.find(t => t.tankNo === tank.tankNo).materials.push(material)
 }
 
-async function handleSubmit(tank, materialCode: string) {
-  console.log('copy', copy.value)
+async function handleSubmit() {
   await $fetch('/api/materials/material-tank-map', {
     method: 'POST',
     body: {
-      tankMap: copy.value,
+      tankMap: tanksClone.value,
     },
   })
+  await refreshTanks()
+}
+const copy = ref()
 
+function handleCopy() {
+  copy.value = JSON.parse(JSON.stringify(tanksClone.value))
+}
+
+async function handlePaste() {
+  await $fetch('/api/materials/material-tank-map', {
+    method: 'POST',
+    body: {
+      tankMap: copy.value.map(t => ({ ...t, machineId: selectedMachineId.value })),
+    },
+  })
   await refreshTanks()
 }
 </script>
 
 <template>
+  <q-btn-group push class="flex flex-row ">
+    <q-btn
+      label="Copy"
+      no-caps
+      @click="handleCopy"
+    />
+    <q-btn
+      label="Paste"
+      no-caps
+      @click="handlePaste"
+    />
+  </q-btn-group>
   <q-card class="flex flex-row justify-around w-full">
     <q-card-section class="flex flex-row w-full justify-start">
       <div class="mr-4 w-xs">
