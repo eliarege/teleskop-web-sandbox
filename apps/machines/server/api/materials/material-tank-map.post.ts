@@ -1,14 +1,21 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  const { machineId, tank, materialCode } = await readBody(event)
+  const { tankMap } = await readBody(event)
 
-  const res = await knex('DYTFMATERIALTANKMAP')
-    .insert({
-      MACHINEID: machineId,
-      MATERIALCODE: materialCode,
-      TANKNO: tank.tankNo,
-    })
-
-  return res
+  for (const tank of tankMap) {
+    await knex('DYTFMATERIALTANKMAP')
+      .where({
+        MACHINEID: tank.machineId,
+        TANKNO: tank.tankNo,
+      }).del()
+    for (const material of tank.materials) {
+      await knex('DYTFMATERIALTANKMAP')
+        .insert({
+          MACHINEID: tank.machineId,
+          MATERIALCODE: material.materialCode,
+          TANKNO: tank.tankNo,
+        })
+    }
+  }
 })

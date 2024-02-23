@@ -11,6 +11,7 @@ const { t } = useI18n()
 */
 
 const selectedMachineId = ref()
+const copy = ref()
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
 const { data: materials } = useLazyFetch('/api/materials/materials')
@@ -19,36 +20,44 @@ const { data: tanks, refresh: refreshTanks } = useLazyFetch('/api/materials/mate
   immediate: false,
   default: () => [],
   query: { machineId: selectedMachineId },
+  onResponse: ({ response }) => {
+    copy.value = JSON.parse(JSON.stringify(response._data))
+    tanks.value = response._data
+  },
 })
 
-async function handleMachineClick(machineId: number) {
-  selectedMachineId.value = machineId
+function deleteItem(tank, materialCode) {
+  tanks.value.find(t => t.tankNo === tank.tankNo)
+    .materials = tanks.value.find(t => t.tankNo === tank.tankNo)
+      .materials.filter(m => m.materialCode !== materialCode)
+
+  copy.value.find(t => t.tankNo === tank.tankNo)
+    .materials = copy.value.find(t => t.tankNo === tank.tankNo)
+      .materials.filter(m => m.materialCode !== materialCode)
+}
+
+async function handleDragDropMaterials(e, tank) {
+  const materialCode = e.item.getAttribute('data-material-code')
+  copy.value.find(t => t.tankNo === tank.tankNo)
+    .materials.filter(m => m.materialCode !== materialCode)
 }
 
 async function handleDragDrop(e, tank) {
-  const text = e.item.innerText
-  const matches = text.split('.')
-  if (matches && matches.length) {
-    const materialCode = matches[0]
-    if (e.type === 'add') {
-      await addTankMaterialMap({
-        machineId: selectedMachineId.value,
-        tank,
-        materialCode,
-      })
-      await refreshTanks()
-    } else if (e.type === 'remove') {
-      deleteItem(tank, materialCode)
-    }
-  }
+  const materialCode = e.item.getAttribute('data-material-code')
+  const material = materials.value.find(t => t.materialCode === materialCode)
+  console.log('tank, copy', tank, copy.value, material)
+  copy.value.find(t => t.tankNo === tank.tankNo).materials.push(material)
 }
 
-async function deleteItem(tank, materialCode: string) {
-  await deleteTankMaterialMap({
-    machineId: selectedMachineId.value,
-    tank,
-    materialCode,
+async function handleSubmit(tank, materialCode: string) {
+  console.log('copy', copy.value)
+  await $fetch('/api/materials/material-tank-map', {
+    method: 'POST',
+    body: {
+      tankMap: copy.value,
+    },
   })
+
   await refreshTanks()
 }
 </script>
@@ -68,7 +77,7 @@ async function deleteItem(tank, materialCode: string) {
             :key="machine.machineId"
             v-ripple
             clickable
-            @click="handleMachineClick(machine.machineId)"
+            @click="selectedMachineId = machine.machineId"
           >
             <q-item-section>
               {{ machine.machineCode }}
@@ -81,14 +90,16 @@ async function deleteItem(tank, materialCode: string) {
         <h3>{{ t('materials') }}</h3>
         <Sortable
           :list="materials"
-          item-key="id"
+          :item-key="item => item.materialCode"
           class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
           :options="{ group: { name: 'group', pull: 'clone', put: false } }"
+          @add="(e) => handleDragDropMaterials(e, tank)"
         >
           <template #item="{ element, index }">
             <q-item
               :key="element.materialCode"
               class="draggable"
+              :data-material-code="element.materialCode"
             >
               <q-item-section>
                 {{ `${element.materialCode}. ${element.materialName}` }}
@@ -103,21 +114,18 @@ async function deleteItem(tank, materialCode: string) {
           <h3>{{ tank.tankName }}</h3>
           <Sortable
             :list="tank.materials"
-            item-key="id"
+            :item-key="tank => tank.tankNo"
             class="q-list q-list--bordered q-list--separator"
             :options="{ group: { name: 'group' } }"
             @add="(e) => handleDragDrop(e, tank)"
-            @remove="(e) => handleDragDrop(e, tank)"
           >
             <template #item="{ element, index }">
               <q-item
-                :key="element.id"
+                :key="element.materialId"
                 class="draggable"
                 :data-material-code="element.materialCode"
               >
-                <q-item-section
-                  :data-material-code="element.materialCode"
-                >
+                <q-item-section>
                   {{ `${element.materialCode}. ${element.materialName}` }}
                 </q-item-section>
                 <q-item-section side>
@@ -135,6 +143,12 @@ async function deleteItem(tank, materialCode: string) {
       </div>
     </q-card-section>
   </q-card>
+  <q-btn-group>
+    <q-btn @click="handleSubmit">
+      Kaydet
+    </q-btn>
+    <q-btn>İptal</q-btn>
+  </q-btn-group>
 </template>
 
 <style scoped>
