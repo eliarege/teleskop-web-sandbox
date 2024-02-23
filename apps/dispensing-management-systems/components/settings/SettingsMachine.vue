@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import MachineInfo from '../MachineInfo.vue'
+import MachineInfo from '../machine/MachineInfo.vue'
 import type { Machine, MachineControllerType } from '~/shared/types'
 
 const q = useQuasar()

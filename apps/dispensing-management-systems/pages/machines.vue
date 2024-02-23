@@ -9,6 +9,6 @@ dataStore.title = t('AddMOD')
 
 <template>
   <div class="q-pa-md flex-center">
-    <MachinesNDispensers />
+    <MachineOverview />
   </div>
 </template>

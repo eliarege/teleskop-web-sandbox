@@ -28,7 +28,7 @@ async function refreshDispensers() {
         no-caps
         icon="note_add"
         color="primary"
-        @click="navigateTo(`/addMachineDispenser`)"
+        @click="navigateTo(`/machines`)"
       >
         <QTooltip :offset="[10, 10]">
           {{ t('New') }}

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { QTable } from 'quasar'
 import type { QTableColumn } from 'quasar'
-import MaterialRequests from './MaterialRequests.vue'
+import MaterialRequests from './material/MaterialRequests.vue'
 import WeighingInfo from './WeighingInfo.vue'
 import type { JobOrder } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'

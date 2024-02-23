@@ -126,7 +126,6 @@ function onLogout() {
       dense
       label-key="label"
       node-key="id"
-      accordion
       no-connectors
       :default-expand-all="dataStore.selectedDispenser !== undefined"
       @select="selectItem"

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { QTableColumn } from 'quasar'
-import EditDispenser from './EditDispenser.vue'
-import AddMachine from './AddMachine.vue'
+import DispenserEdit from '../dispenser/DispenserEdit.vue'
+import MachineAdd from './MachineAdd.vue'
 import { useDataStore } from '~/store/DataStore'
 import type { Dispenser, Machine, MachineControllerType } from '~/shared/types'
 
@@ -51,7 +51,7 @@ const { data: machineRows, refresh: refreshMachines } = await useFetch(`/api/mac
 
 async function handleNewDispenser() {
   q.dialog({
-    component: EditDispenser,
+    component: DispenserEdit,
   }).onOk(() => {
     refreshDispensers()
     q.notify({
@@ -66,7 +66,7 @@ async function handleNewDispenser() {
 
 async function handleNewMachine() {
   q.dialog({
-    component: AddMachine,
+    component: MachineAdd,
   }).onOk(() => {
     refreshMachines()
     q.notify({

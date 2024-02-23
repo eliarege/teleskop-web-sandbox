@@ -58,7 +58,7 @@ watch(() => route.params, () => {
   <QLayout v-if="didInitialise" view="hHh LpR fFf">
     <LoadingSpinner v-if="stateStore.isLoading" />
     <KeepAlive>
-      <Appbar />
+      <NavigationBar />
     </KeepAlive>
     <QDrawer
       v-if="showDrawer && route.path !== '/settings'"

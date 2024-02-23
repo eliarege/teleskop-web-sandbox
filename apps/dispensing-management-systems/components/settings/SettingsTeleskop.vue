@@ -6,7 +6,7 @@ const { t } = useI18n()
 const q = useQuasar()
 const { data: defaultSettings } = await useFetch<DatabaseConnection>('/api/teleskop/parameters')
 const teleskopSettings = ref<DatabaseConnection>()
-teleskopSettings.value = defaultSettings.value
+teleskopSettings.value = { ...defaultSettings.value }
 
 const passwordVisible = ref(false)
 
@@ -34,7 +34,7 @@ async function onSave() {
 }
 
 function onReset() {
-  teleskopSettings.value = defaultSettings.value
+  teleskopSettings.value = { ...defaultSettings.value }
 }
 </script>
 

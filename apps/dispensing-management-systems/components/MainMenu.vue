@@ -38,7 +38,7 @@ function onRefresh() {
         no-caps
         icon="add"
         :label="t('AddNew')"
-        @click="navigateTo(`/addMachineDispenser`)"
+        @click="navigateTo(`/machines`)"
       />
       <QBtn
         class="h-40 w-50 pb-10 pt-10 opacity-75 border border-solid text-5 b-rd-2"
