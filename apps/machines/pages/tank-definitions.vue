@@ -151,9 +151,40 @@ async function handleSubmit() {
 
   await refreshDefinitions()
 }
+
+const copy = ref()
+
+function handleCopy() {
+  copy.value = JSON.parse(JSON.stringify(tankDefinitions.value))
+}
+
+async function handlePaste() {
+  for (const tankDef of copy.value) {
+    await $fetch('/api/tank-definitions/tank-definition-list', {
+      method: 'PUT',
+      body: {
+        ...tankDef,
+        machineId: selectedMachineId.value,
+      },
+    })
+  }
+  await refreshDefinitions()
+}
 </script>
 
 <template>
+  <q-btn-group push class="flex flex-row ">
+    <q-btn
+      label="Copy"
+      no-caps
+      @click="handleCopy"
+    />
+    <q-btn
+      label="Paste"
+      no-caps
+      @click="handlePaste"
+    />
+  </q-btn-group>
   <q-card class="flex flex-row justify-around">
     <q-card-section class="flex flex-row">
       <div class="mr-8 w-xs">
