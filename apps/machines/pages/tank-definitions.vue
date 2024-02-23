@@ -128,21 +128,25 @@ async function handleTankDefinitionAdd() {
   await refreshDefinitions()
 }
 
-async function handleDragDrop(e, listName) {
+async function handleDragDropCommands(e) {
   const commandNo = e.item.getAttribute('data-command-no')
-  let action
+  const listName = e.item.getAttribute('data-list-name') as NumberArrayKeys<TankDefinition>
 
-  if (e.type === 'add')
-    action = 'add'
-  else if (e.type === 'remove')
-    action = 'remove'
+  tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)![listName]
+  = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)![listName].filter(d => d !== Number(commandNo))
+}
 
-  await updateTankDefinitionList({
-    machineId: selectedMachineId.value,
-    tankDefinitionId: selectedDefinition.value,
-    listName,
-    commandNo,
-    action,
+async function handleDragDrop(e, listName: NumberArrayKeys<TankDefinition>) {
+  const commandNo = e.item.getAttribute('data-command-no')
+  tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)![listName].push(Number(commandNo))
+}
+
+async function handleSubmit() {
+  const tankDef = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)!
+
+  await $fetch('/api/tank-definitions/tank-definition-list', {
+    method: 'PUT',
+    body: tankDef,
   })
 
   await refreshDefinitions()
@@ -166,7 +170,7 @@ async function handleDragDrop(e, listName) {
             clickable
             :focused="selectedMachineId === machine.machineId"
             :active="selectedMachineId === machine.machineId"
-            @click="handleMachineClick(machine.machineId)"
+            @click="handleMachineClick(machine.machineId!)"
           >
             <q-item-section>
               {{ machine.machineCode }}
@@ -234,13 +238,15 @@ async function handleDragDrop(e, listName) {
             <h3>{{ t('commands') }}</h3>
             <Sortable
               :list="commands"
-              item-key="id"
+              :item-key="item => item.commandNo"
               class="q-list q-list--bordered q-list--separator overflow-y-auto h-xs"
               :options="{ group: 'group' }"
+              @add="(e) => handleDragDropCommands(e)"
             >
-              <template #item="{ element, index }">
+              <template #item="{ element }">
                 <q-item
                   :key="element.commandNo"
+                  :data-command-no="element.commandNo"
                   class="draggable"
                 >
                   <q-item-section>
@@ -262,14 +268,14 @@ async function handleDragDrop(e, listName) {
                 :item-key="item => item.commandNo"
                 class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
                 :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, 'listOfTransferCommands')"
-                @remove="(e) => handleDragDrop(e, 'listOfTransferCommands')"
+                @add="(e) => handleDragDrop(e, list.name)"
               >
-                <template #item="{ element, index }">
+                <template #item="{ element }">
                   <q-item
                     :key="element.commandNo"
-                    class="draggable"
                     :data-command-no="element.commandNo"
+                    :data-list-name="list.name"
+                    class="draggable"
                   >
                     <q-item-section>
                       {{ `${element.commandNo} ${element.commandName}` }}
@@ -283,6 +289,12 @@ async function handleDragDrop(e, listName) {
       </div>
     </q-card-section>
   </q-card>
+  <q-btn-group>
+    <q-btn @click="handleSubmit">
+      Kaydet
+    </q-btn>
+    <q-btn>İptal</q-btn>
+  </q-btn-group>
 </template>
 
 <style scoped>
