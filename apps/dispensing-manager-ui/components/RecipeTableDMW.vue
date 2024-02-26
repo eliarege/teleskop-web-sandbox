@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TableColumnCtx } from 'element-plus'
 import type { PropType } from 'vue'
+import { notification } from '~/shared/functions'
 import type { RecipeLatest } from '~/shared/types'
 
 const props = defineProps({
@@ -155,10 +156,11 @@ async function checkIsTankNoRequired() {
     if (selectedRow.value.programNo === row.programNo && row.parallelStep === 1)
       selectedRow.value.programTotalCount++
   })
+  const materialCodes = materials.map(material => material.materialCode)
   isTankNoRequired.value = await $fetch('/api/recipe/check-tank-no-required', {
     method: 'POST',
     body: {
-      materials,
+      materialCodes,
     },
   })
 }
@@ -183,7 +185,7 @@ async function requestRow() {
     selectedRow.value.processOrder,
   ]
 
-  await $fetch('/api/file/write-recipe-step', {
+  const response = await $fetch('/api/file/write-recipe-step', {
     method: 'POST',
     body: {
       row: selectedRow.value,
@@ -191,6 +193,10 @@ async function requestRow() {
       materials,
     },
   })
+  const errorMessage = response === 1
+    ? t('warnings.requestSucceedDefault')
+    : t('warnings.requestErrorDefault') + t(`warnings.requestError${response.error}`, { status: response.error === 4 ? t(`statusCodes.${response.status}`) : '' })
+  notification(response === 1, errorMessage)
   tankNo.value = null
   priority.value = null
   materials = []
@@ -299,6 +305,7 @@ function isCorrectPlankey(param: any) {
             outline
             :label="t('submit')"
             icon="check"
+            :disable="isTankNoRequired ? !(tankNo && priority) : !priority"
             @click="confirmationDialog = true"
           />
         </q-card-actions>
