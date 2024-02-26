@@ -235,3 +235,19 @@ export interface DigitalLock {
     state: number | null
   }[]
 }
+export interface Material {
+  materialId: number
+  materialCode: string
+  machineId: number
+  materialName: string
+  materialGroupNo: number
+  preWater: number | null
+  betweenWater: number | null
+  postWater: number | null
+}
+export interface TankDefinition {
+  machineId: number
+  tankName: string
+  tankNo: number
+  materials: Material[]
+}

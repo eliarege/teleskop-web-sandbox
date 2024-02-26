@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
-import { deleteTankMaterialMap } from '~/utils'
+import type { Machine, Material, TankDefinition } from '~/types'
 
 const { t } = useI18n()
 
@@ -11,10 +11,10 @@ const { t } = useI18n()
 */
 
 const selectedMachineId = ref()
-const tanksClone = ref()
+const tanksClone = ref<TankDefinition[]>()
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
-const { data: materials } = useLazyFetch('/api/materials/materials')
+const { data: machines } = useLazyFetch<Machine[]>('/api/machines/active-machines')
+const { data: materials } = useLazyFetch<Material[]>('/api/materials/materials')
 
 const { data: tanks, refresh: refreshTanks } = useLazyFetch('/api/materials/material-tank-map', {
   immediate: false,
@@ -26,27 +26,25 @@ const { data: tanks, refresh: refreshTanks } = useLazyFetch('/api/materials/mate
   },
 })
 
-function deleteItem(tank, materialCode) {
+function deleteItem(tank: TankDefinition, materialCode: string) {
   tanks.value.find(t => t.tankNo === tank.tankNo)
     .materials = tanks.value.find(t => t.tankNo === tank.tankNo)
-      .materials.filter(m => m.materialCode !== materialCode)
+      .materials.filter((m: Material) => m.materialCode !== materialCode)
 
-  tanksClone.value.find(t => t.tankNo === tank.tankNo)
-    .materials = tanksClone.value.find(t => t.tankNo === tank.tankNo)
-      .materials.filter(m => m.materialCode !== materialCode)
+  if (tanksClone.value && tanksClone.value.length) {
+    tanksClone.value.find((t: TankDefinition) => t.tankNo === tank.tankNo)!
+      .materials = tanksClone.value.find((t: TankDefinition) => t.tankNo === tank.tankNo)!
+        .materials.filter((m: Material) => m.materialCode !== materialCode)
+  }
 }
 
-async function handleDragDropMaterials(e, tank) {
+async function handleDragDrop(e: any, tank: TankDefinition) {
   const materialCode = e.item.getAttribute('data-material-code')
-  tanksClone.value.find(t => t.tankNo === tank.tankNo)
-    .materials.filter(m => m.materialCode !== materialCode)
-}
-
-async function handleDragDrop(e, tank) {
-  const materialCode = e.item.getAttribute('data-material-code')
-  const material = materials.value.find(t => t.materialCode === materialCode)
-  console.log('tank, copy', tank, tanksClone.value, material)
-  tanksClone.value.find(t => t.tankNo === tank.tankNo).materials.push(material)
+  if (materials.value && tanksClone.value) {
+    const material = materials.value.find(t => t.materialCode === materialCode)
+    if (material)
+      tanksClone.value.find(t => t.tankNo === tank.tankNo)!.materials.push(material)
+  }
 }
 
 async function handleSubmit() {
@@ -68,7 +66,7 @@ async function handlePaste() {
   await $fetch('/api/materials/material-tank-map', {
     method: 'POST',
     body: {
-      tankMap: copy.value.map(t => ({ ...t, machineId: selectedMachineId.value })),
+      tankMap: copy.value.map((t: TankDefinition) => ({ ...t, machineId: selectedMachineId.value })),
     },
   })
   await refreshTanks()
@@ -114,13 +112,12 @@ async function handlePaste() {
       <div class="mr-4 w-sm">
         <h3>{{ t('materials') }}</h3>
         <Sortable
-          :list="materials"
+          :list="materials!"
           :item-key="item => item.materialCode"
           class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
           :options="{ group: { name: 'group', pull: 'clone', put: false } }"
-          @add="(e) => handleDragDropMaterials(e, tank)"
         >
-          <template #item="{ element, index }">
+          <template #item="{ element }">
             <q-item
               :key="element.materialCode"
               class="draggable"
@@ -144,7 +141,7 @@ async function handlePaste() {
             :options="{ group: { name: 'group' } }"
             @add="(e) => handleDragDrop(e, tank)"
           >
-            <template #item="{ element, index }">
+            <template #item="{ element }">
               <q-item
                 :key="element.materialId"
                 class="draggable"
