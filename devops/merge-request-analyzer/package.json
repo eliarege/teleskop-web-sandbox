@@ -1,5 +1,5 @@
 {
-  "name": "merge-request-analyzer",
+  "name": "@eliarelektronik/merge-request-analyzer",
   "type": "module",
   "version": "1.0.0",
   "description": "",
