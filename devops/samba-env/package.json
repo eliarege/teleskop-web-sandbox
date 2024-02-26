@@ -1,0 +1,24 @@
+{
+  "name": "samba-env",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "main": "dist/index.mjs",
+  "bin": "dist/index.mjs",
+  "scripts": {
+    "build": "unbuild",
+    "stub": "unbuild --stub"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "execa": "^8.0.1",
+    "yaml": "^2.3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.6",
+    "tsconfig": "workspace:*",
+    "typescript": "^5.3.2",
+    "unbuild": "2.0.0"
+  }
+}
