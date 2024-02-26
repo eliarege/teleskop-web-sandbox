@@ -77,6 +77,7 @@ export interface Material {
   unitCost: number
   reRequestable: boolean
   directTransfer: boolean
+  connectedDispensers: Dispenser[]
 }
 export interface MaterialRequest {
   jobId: number

@@ -131,8 +131,7 @@ async function handleSubmit() {
       })
       buttonDisabled.value = false
     }
-  }
-  if (tab.value === 'materials') {
+  } else if (tab.value === 'materials') {
     const added = selectedMaterials.value
       .filter(material =>
         !selectedMaterialsInitial.value.some(initialMaterial => initialMaterial.materialCode === material.materialCode))

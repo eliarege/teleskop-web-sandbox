@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
-import type { Material, MaterialGroup } from '~/shared/types'
+import type { Dispenser, Material, MaterialGroup } from '~/shared/types'
 
 const props = defineProps({
   material: {
@@ -11,20 +11,41 @@ const props = defineProps({
     type: Object as PropType<MaterialGroup[]>,
     required: true,
   },
+  dispensers: {
+    type: Object as PropType<Dispenser[]>,
+    required: true,
+  },
 })
 const { t } = useI18n()
+const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const material = toRef(props, 'material')
-const editedMaterial = ref({ ...material.value })
+const dispensers = toRef(props, 'dispensers')
+const selectedDispensersInitial = ref(material.value.connectedDispensers.map(dispenser => dispenser.dispenserId))
+const selectedDispensers = ref([...selectedDispensersInitial.value])
 
+const editedMaterial = ref({ ...material.value })
+if (!Array.isArray(editedMaterial.value.connectedDispensers)) {
+  editedMaterial.value.connectedDispensers = []
+}
 const unitOptions = ref([
   '---',
   'TL',
   '$',
 ])
-
 async function onSave() {
   try {
+    const added = selectedDispensers.value
+      .filter(dispenser =>
+        !selectedDispensersInitial.value.includes(dispenser))
+
+    const deleted = selectedDispensersInitial.value
+      .filter(initialDispenser =>
+        !selectedDispensers.value.includes(initialDispenser))
+    await $fetch(`/api/connections/materials?materialCode=${material.value.materialCode}`, { method: 'POST', body: {
+      added,
+      deleted,
+    } })
     await $fetch(`/api/materials/${material.value.materialCode}`, { method: 'PUT', body: editedMaterial.value })
     onDialogOK(true)
   } catch (e) {
@@ -38,6 +59,18 @@ function onCancel() {
 
 function onReset() {
   editedMaterial.value = { ...material.value }
+  selectedDispensers.value = selectedDispensersInitial.value
+}
+
+function onCheck(dispenserId: number, isChecked: boolean) {
+  if (isChecked) {
+    selectedDispensers.value.push(dispenserId)
+  } else {
+    const index = selectedDispensers.value.indexOf(dispenserId)
+    if (index !== -1) {
+      selectedDispensers.value.splice(index, 1)
+    }
+  }
 }
 </script>
 
@@ -49,11 +82,11 @@ function onReset() {
   >
     <QCard>
       <QForm @submit.prevent>
-        <div class="flex flex-col pb-10">
-          <div class="text-center pt-5 text-xl">
+        <div class="flex flex-col h-max">
+          <div class="text-center pt-5 text-xl shadow">
             <h2>{{ t('Material') }}</h2>
           </div>
-          <div class="flex flex-row flex-wrap justify-center">
+          <div class="content-section flex flex-row flex-wrap justify-center">
             <div class="row-item">
               <span class="item-label">
                 {{ t('materialFields.Code') }}
@@ -177,26 +210,37 @@ function onReset() {
               </span>
               <QCheckbox v-model="editedMaterial.directTransfer" />
             </div>
+            <div class="row-item">
+              <span class="item-label">{{ t('materialFields.ConnectedDispensers') }}</span>
+              <div v-for="dispenser in dispensers" :key="dispenser.dispenserId">
+                <QCheckbox
+                  :value="dispenser.dispenserId"
+                  :label="dispenser.dispenserName"
+                  :model-value="selectedDispensers.includes(dispenser.dispenserId)"
+                  @update:model-value="value => onCheck(dispenser.dispenserId, value)"
+                />
+              </div>
+            </div>
           </div>
-          <div class="flex-center justify-evenly p-10">
-            <QBtn
-              :label="t('Save')"
-              color="primary"
-              icon="save"
-              @click="onSave"
-            />
-            <QBtn
-              :label="t('Cancel')"
-              color="negative"
-              icon="cancel"
-              @click="onCancel"
-            />
-            <QBtn
-              :label="t('Reset')"
-              icon="refresh"
-              @click="onReset"
-            />
-          </div>
+        </div>
+        <div :class="q.dark.isActive ? 'button-section-dark' : 'button-section-light'">
+          <QBtn
+            :label="t('Save')"
+            color="primary"
+            icon="save"
+            @click="onSave"
+          />
+          <QBtn
+            :label="t('Cancel')"
+            color="negative"
+            icon="cancel"
+            @click="onCancel"
+          />
+          <QBtn
+            :label="t('Reset')"
+            icon="refresh"
+            @click="onReset"
+          />
         </div>
       </QForm>
     </QCard>
@@ -216,5 +260,37 @@ function onReset() {
 
 .item-input {
   width: 27.5 rem;
+}
+.content-section {
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: calc(80vh - 150px);
+}
+
+.button-section-light {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: space-evenly;
+  padding: 0.5rem;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background-color: white;
+  box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.2);
+
+}
+
+.button-section-dark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: space-evenly;
+  padding: 0.5rem;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background-color: var(--q-dark);
+  box-shadow: 0px -1px 5px rgba(128, 128, 128, 0.2);
 }
 </style>

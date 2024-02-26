@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
 import MaterialInfo from '../material/MaterialInfo.vue'
-import type { Material, MaterialGroup } from '~/shared/types'
+import type { Dispenser, Material, MaterialGroup } from '~/shared/types'
+import { useDataStore } from '~/store/DataStore'
 
 const q = useQuasar()
 const { t } = useI18n()
+const dataStore = useDataStore()
 const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials')
+const dispensers = await getDispensers()
 
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,
@@ -39,8 +42,19 @@ const columns: (QTableColumn<Material>)[] = [
     sortable: true,
     align: 'left',
   },
+  {
+    name: 'connectedDispensers',
+    label: t('materialFields.ConnectedDispensers'),
+    field: 'connectedDispensers',
+    align: 'left',
+  },
 ]
-
+async function getDispensers() {
+  if (dataStore.dispensers)
+    return dataStore.dispensers
+  const dispensers = await $fetch<Dispenser[]>(`/api/dispensers`)
+  return dispensers
+}
 async function onRowClick(_event: Event, row: any) {
   const selectedMaterial = await $fetch(`/api/materials/${row.materialCode}`)
   q.dialog({
@@ -48,6 +62,7 @@ async function onRowClick(_event: Event, row: any) {
     componentProps: {
       material: selectedMaterial,
       groupOptions,
+      dispensers,
     },
   }).onOk((payload) => {
     if (payload) {
@@ -95,6 +110,9 @@ const pagination = ref({ rowsPerPage: 20 })
       >
         <span v-if="props.col.field === 'materialGroupNo'">
           {{ groupOptions.at(props.value - 1)?.materialGroupName }}
+        </span>
+        <span v-else-if="props.col.field === 'connectedDispensers'">
+          {{ props.row.connectedDispensers?.map((connection: any) => connection.dispenserName).filter(Boolean).join(', ') || '-' }}
         </span>
         <span v-else>
           {{ props.value }}

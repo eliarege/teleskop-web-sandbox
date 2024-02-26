@@ -76,7 +76,8 @@
     "ReRequestable": "ReRequestable",
     "Source": "Source",
     "DirectTransfer": "Can Transfer Directly",
-    "Amount": "Amount"
+    "Amount": "Amount",
+    "ConnectedDispensers": "Connected Dispensers"
   },
   "dispenserFields": {
     "Name": "Dispenser Name",

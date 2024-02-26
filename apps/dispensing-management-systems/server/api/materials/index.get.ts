@@ -3,13 +3,23 @@ import type { Material } from '~/shared/types'
 
 export default defineEventHandler(async () => {
   try {
-    const materials: Material[] = await dmsDB('MATERIAL')
+    const materials: Material[] = await dmsDB('MATERIAL as m')
       .select({
-        materialName: 'material_name',
-        materialCode: 'material_code',
-        materialGroupNo: 'material_group_no',
+        materialName: 'm.material_name',
+        materialCode: 'm.material_code',
+        materialGroupNo: 'm.material_group_no',
+        connectedDispensers: dmsDB.raw(`
+        ARRAY(
+          SELECT JSON_BUILD_OBJECT('dispenserId', d.dispenser_id, 'dispenserName', d.dispenser_name)
+          FROM "DISPENSER_MATERIAL_CONNECTION" AS dmc
+          JOIN "DISPENSER" AS d ON dmc.dispenser_id = d.dispenser_id
+          WHERE dmc.material_code = m.material_code
+          ORDER BY d.dispenser_id
+        )
+      `),
       })
-      .orderBy('material_code')
+      .orderBy('m.material_code')
+
     return materials
   } catch (e) {
     console.log(e)

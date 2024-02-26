@@ -76,7 +76,8 @@
     "ReRequestable": "Yeniden İstenebilir",
     "Source": "Kaynak",
     "DirectTransfer": "Doğrudan Transfer Edilebilir",
-    "Amount": "Miktar"
+    "Amount": "Miktar",
+    "ConnectedDispensers": "Bağlı Dağıtıcılar"
   },
   "dispenserFields": {
     "Name": "Dağıtıcı Adı",
