@@ -117,6 +117,7 @@ function ensureSambaService(compose: Compose): Service {
   service.network_mode = 'host'
   service.environment ??= {}
   service.environment.AVAHI_DISABLE = 1
+  service.environment.ACCOUNT_eliar = 'eliar:1000:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:3E148D7FB0E57E7647E0463B2483E0FD:[U          ]:LCT-65DC9DCB:'
   return service
 }
 
@@ -129,6 +130,7 @@ function createShareCommand() {
     .description(`create a new share in compose file`)
     .argument('<name>', 'share name')
     .option('--read-only', 'make share readonly', false)
+    .option('--guest-ok', 'make share accessible by guests', false)
     .option('--no-browsable', 'hide share in the list of available shares in a new view and in the browse list')
     .action(async (name, options) => {
       if (isSpecialShare(name)) {
@@ -148,7 +150,7 @@ function createShareCommand() {
           path: join(env.target_root, name),
           readonly: options.readOnly ?? false,
           browseable: options.browsable ?? true,
-          guestok: true,
+          guestok: options.guestOk,
         },
       })
       service.volumes ??= []
