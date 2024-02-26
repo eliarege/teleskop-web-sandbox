@@ -251,3 +251,13 @@ export interface TankDefinition {
   tankNo: number
   materials: Material[]
 }
+export interface WaterIO {
+  machineId: number
+  commandNo: number
+  ioIndex: number
+  ioId: number
+  ioType: number
+  name: string
+  programEditing: boolean
+  commandRun: boolean
+}
