@@ -85,12 +85,51 @@ async function onRowClick(_event: Event, row: any) {
   },
   )
 }
+function addNewMaterial() {
+  q.dialog({
+    component: MaterialInfo,
+    componentProps: {
+      groupOptions,
+      dispensers,
+    },
+  }).onOk((payload) => {
+    if (payload) {
+      q.notify({
+        color: 'green-4',
+        textColor: 'white',
+        icon: 'done',
+        message: t('Success'),
+        timeout: 3000,
+      })
+      refreshMaterials()
+    } else
+      q.notify({
+        color: 'red-4',
+        textColor: 'white',
+        icon: 'cancel',
+        message: t('Failed'),
+        timeout: 3000,
+      })
+  },
+  )
+}
 const pagination = ref({ rowsPerPage: 20 })
 </script>
 
 <template>
   <div class="flex-center text-xl mb-10">
     {{ t('settings.Material') }}
+  </div>
+  <div class="flex-center">
+    <QBtn
+      :label="$t('AddNewMaterial')"
+      no-caps
+      icon="note_add"
+      color="primary"
+      class="mb-4 flex-center"
+      clickable
+      @click="addNewMaterial"
+    />
   </div>
   <QTable
     flat

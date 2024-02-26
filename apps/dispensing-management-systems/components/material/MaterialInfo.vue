@@ -5,7 +5,7 @@ import type { Dispenser, Material, MaterialGroup } from '~/shared/types'
 const props = defineProps({
   material: {
     type: Object as PropType<Material>,
-    required: true,
+    required: false,
   },
   groupOptions: {
     type: Object as PropType<MaterialGroup[]>,
@@ -21,7 +21,7 @@ const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const material = toRef(props, 'material')
 const dispensers = toRef(props, 'dispensers')
-const selectedDispensersInitial = ref(material.value.connectedDispensers.map(dispenser => dispenser.dispenserId))
+const selectedDispensersInitial = material.value ? ref(material.value.connectedDispensers.map(dispenser => dispenser.dispenserId)) : ref([])
 const selectedDispensers = ref([...selectedDispensersInitial.value])
 
 const editedMaterial = ref({ ...material.value })
@@ -42,11 +42,14 @@ async function onSave() {
     const deleted = selectedDispensersInitial.value
       .filter(initialDispenser =>
         !selectedDispensers.value.includes(initialDispenser))
-    await $fetch(`/api/connections/materials?materialCode=${material.value.materialCode}`, { method: 'POST', body: {
+    if (material.value)
+      await $fetch(`/api/materials/${editedMaterial.value.materialCode}`, { method: 'PUT', body: editedMaterial.value })
+    else
+      await $fetch(`/api/materials`, { method: 'POST', body: editedMaterial.value })
+    await $fetch(`/api/connections/materials?materialCode=${editedMaterial.value.materialCode}`, { method: 'POST', body: {
       added,
       deleted,
     } })
-    await $fetch(`/api/materials/${material.value.materialCode}`, { method: 'PUT', body: editedMaterial.value })
     onDialogOK(true)
   } catch (e) {
     onDialogOK(false)
@@ -61,7 +64,15 @@ function onReset() {
   editedMaterial.value = { ...material.value }
   selectedDispensers.value = selectedDispensersInitial.value
 }
-
+async function onDelete() {
+  try {
+    console.log(editedMaterial.value.materialCode)
+    await $fetch(`/api/materials`, { method: 'DELETE', body: { materialCode: editedMaterial.value.materialCode } })
+    onDialogOK(true)
+  } catch (e) {
+    onDialogOK(false)
+  }
+}
 function onCheck(dispenserId: number, isChecked: boolean) {
   if (isChecked) {
     selectedDispensers.value.push(dispenserId)
@@ -97,7 +108,8 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 dense
                 type="text"
                 filled
-                disable
+                :rules="[(val: string) => val && val.length > 0]"
+                :disable="material !== undefined"
                 :placeholder="editedMaterial.materialCode"
               />
             </div>
@@ -232,14 +244,22 @@ function onCheck(dispenserId: number, isChecked: boolean) {
           />
           <QBtn
             :label="t('Cancel')"
-            color="negative"
+            color="warning"
             icon="cancel"
             @click="onCancel"
           />
           <QBtn
             :label="t('Reset')"
+            color="info"
             icon="refresh"
             @click="onReset"
+          />
+          <QBtn
+            v-if="material"
+            :label="t('Delete')"
+            color="negative"
+            icon="delete"
+            @click="onDelete"
           />
         </div>
       </QForm>
