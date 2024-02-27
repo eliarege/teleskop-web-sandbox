@@ -10,7 +10,6 @@ ENV PATH="$PNPM_HOME:$PATH"
 WORKDIR /workspace
 
 RUN corepack enable
-RUN corepack prepare pnpm@latest-8 --activate
 
 FROM workspace as build
 
