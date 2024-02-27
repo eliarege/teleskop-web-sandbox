@@ -138,6 +138,8 @@ const fetchJobOrderErpParameters = memoize(async (
   jobOrder: string,
   machineMappings: MachineErpMappings,
 ): Promise<Record<string, any>> => {
+  if (!machineMappings.mappings.length)
+    return {}
   return await dmExchange
     .selectFrom('Dyelots')
     .select(eb => machineMappings.mappings.map(m => eb.ref(m.field as any).as(m.name)))
