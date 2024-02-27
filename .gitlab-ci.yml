@@ -93,7 +93,7 @@ release-devops-packages:
           jq --arg version "$VERSION" '.version = $version' $PKG_BUILD_PATH/package.json > "$tmp"
           mv "$tmp" $PKG_BUILD_PATH/package.json
         fi
-        pnpm publish $PKG_BUILD_PATH
+        pnpm publish --no-git-checks $PKG_BUILD_PATH
       done
 
 release-apps:
