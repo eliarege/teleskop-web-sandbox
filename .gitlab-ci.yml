@@ -22,32 +22,83 @@ stages:
   - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
 
-workflow:
+.app-rules:
   rules:
     - if: $CI_COMMIT_TAG == "staging"
     - if: $CI_COMMIT_TAG =~ /^v/
+
+.devops-rules:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^devops@/
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
 
 variables:
   TARGET_APPS:
     value: dispensing-manager-ui dispensing-management-systems machine-status machines multi-monitor planning-board planning-board-engine root websockify
     description: Whitespace seperated list of apps to build/release
 
-prepare:
+prepare-apps:
   image: node:20
   stage: prepare
+  extends:
+    - .app-rules
   script:
     - npm install -g turbo
     - |
       for APP_NAME in $TARGET_APPS; do
-        npx turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
+        turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
       done
   artifacts:
     paths:
       - out-*/
 
-release:
+# TODO: Migrate this job to use `changesets`
+release-devops-packages:
+  image: node:20
+  stage: release
+  extends:
+    - .devops-rules
+  script:
+    - apt update && apt-get install jq
+    - corepack enable
+    - npm install -g turbo
+    # Authenticate
+    - echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" >> .npmrc
+    - echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+    # Extract version segment from tag
+    - export VERSION=${CI_COMMIT_TAG:7}
+    # Publish all devops packages
+    - |
+      pnpm list --filter './devops/*' -r --depth -1 --json | jq -Mrc .[] | while read -r PKG; do
+        OUT_DIR=out
+        PKG_NAME=$(echo $PKG | jq -Mr .name)
+        PKG_BASENAME=$(basename "$(echo $PKG | jq -Mr .path)")
+        PKG_VERSION=$(echo $PKG | jq -Mr .version)
+        PKG_BUILD_PATH=$OUT_DIR/devops/$PKG_BASENAME
+
+        turbo prune --scope=$PKG_NAME --out-dir $OUT_DIR
+        pnpm install -C $OUT_DIR
+        pnpm run -C $OUT_DIR build
+        if [[ $PKG_VERSION != $VERSION ]]; then
+          echo ""
+          echo "Version of package '$PKG_NAME' does not match given tag name."
+          echo "Tag version: $VERSION, Package Version: $PKG_VERSION"
+          echo ""
+          tmp=$(mktemp)
+          jq --arg version "$VERSION" '.version = $version' $PKG_BUILD_PATH/package.json > "$tmp"
+          mv "$tmp" $PKG_BUILD_PATH/package.json
+        fi
+        pnpm publish $PKG_BUILD_PATH
+      done
+
+release-apps:
   stage: release
   tags: [docker]
+  extends:
+    - .app-rules
   variables:
     NPM_TOKEN: $CI_JOB_TOKEN
     TURBO_TOKEN: $TURBO_TOKEN
@@ -78,6 +129,8 @@ release:
 deploy:
   image: ubuntu:22.04
   stage: deploy
+  extends:
+    - .app-rules
   environment: staging
   before_script:
     - *prepare-ssh
