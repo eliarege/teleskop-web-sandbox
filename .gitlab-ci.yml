@@ -71,7 +71,7 @@ release-devops-packages:
     - echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" >> .npmrc
     - echo "${CI_API_V4_URL#http*:}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=\${CI_JOB_TOKEN}" >> .npmrc
     # Extract version segment from tag
-    - export VERSION=${CI_COMMIT_TAG:7}
+    - export TAG_VERSION=${CI_COMMIT_TAG:7}
     # Publish all devops packages
     - |
       pnpm list --filter './devops/*' -r --depth -1 --json | grep --invert-match 'Failed to replace env' | jq -Mrc .[] | while read -r PKG; do
@@ -87,18 +87,22 @@ release-devops-packages:
           exit 1
         fi
 
-        turbo prune --scope=$PKG_NAME --out-dir $OUT_DIR
-        pnpm install -C $OUT_DIR
-        pnpm run -C $OUT_DIR build
-        if [[ $PKG_VERSION != $VERSION ]]; then
-          echo "Version of package '$PKG_NAME' does not match given tag name. Modifying published package.json."
-          echo "Tag version: $VERSION, Package Version: $PKG_VERSION"
-          tmp=$(mktemp)
-          jq --arg version "$VERSION" '.version = $version' $PKG_BUILD_PATH/package.json > "$tmp"
-          mv "$tmp" $PKG_BUILD_PATH/package.json
+        if [[ "$(pnpm view ${PKG_NAME} versions)" != *"'${VERSION}'"* ]]; then
+          turbo prune --scope=$PKG_NAME --out-dir $OUT_DIR
+          pnpm install -C $OUT_DIR
+          pnpm run -C $OUT_DIR build
+          if [[ $PKG_VERSION != $TAG_VERSION ]]; then
+            echo "Version of package '$PKG_NAME' does not match given tag name. Modifying published package.json."
+            echo "Tag version: $TAG_VERSION, Package Version: $PKG_VERSION"
+            tmp=$(mktemp)
+            jq --arg version "$TAG_VERSION" '.version = $version' $PKG_BUILD_PATH/package.json > "$tmp"
+            mv "$tmp" $PKG_BUILD_PATH/package.json
+          fi
+          pnpm publish --no-git-checks $PKG_BUILD_PATH
+          rm -r $OUT_DIR
+        else
+          echo "Version ${TAG_VERSION} of ${PKG_NAME} has already been published, skipping."
         fi
-        pnpm publish --no-git-checks $PKG_BUILD_PATH
-        rm -r $OUT_DIR
       done
 
 release-apps:
