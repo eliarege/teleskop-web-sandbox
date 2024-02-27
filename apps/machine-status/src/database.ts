@@ -43,7 +43,7 @@ export function createKyselyInstance<T>(connectionString: string) {
           ),
           trustServerCertificate: true,
         },
-        server: connectionParams.server,
+        server,
       }).on('error', err => logger.error(`${err.message} [${server}/${connectionParams.database}]`)),
     },
   })
