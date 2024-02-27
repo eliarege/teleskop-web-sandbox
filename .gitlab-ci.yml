@@ -62,7 +62,7 @@ release-devops-packages:
   extends:
     - .devops-rules
   script:
-    - apt update && apt-get install jq
+    - apt update && apt-get install -y jq
     - corepack enable
     - npm install -g turbo
     # Authenticate
