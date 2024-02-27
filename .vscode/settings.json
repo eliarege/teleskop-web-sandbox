@@ -61,5 +61,8 @@
         }
       }]
     }
-  }
+  },
+
+  // https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html#reference-tags
+  "yaml.customTags": ["!reference"]
 }
