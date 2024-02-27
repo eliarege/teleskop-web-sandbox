@@ -15,15 +15,13 @@ export default defineEventHandler(async (event) => {
 
   for (const ip of ips) {
     await withTbbFtpClient(ip, async (tbb) => {
-      await knex.transaction(async (trx) => {
-        system = await tbb.fetchSystem()
-        settings.forEach((newSetting) => {
-          if (system[newSetting.caption]) {
-            system[newSetting.caption] = newSetting.isActive ? '1' : '0'
-          }
-        })
-        await tbb.uploadSystem(system)
+      system = await tbb.fetchSystemParams()
+      settings.forEach((newSetting) => {
+        if (system[newSetting.caption]) {
+          system[newSetting.caption] = newSetting.isActive ? '1' : '0'
+        }
       })
+      await tbb.uploadSystemParams(system)
     })
   }
 })

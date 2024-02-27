@@ -8,8 +8,10 @@ export default defineEventHandler(async (event) => {
 
   const numMachineId = Number.parseInt(machineId as string)
   if (Number.isNaN(numMachineId)) {
-    console.log('Invalid machineId:', machineId)
-    return
+    return {
+      statusCode: 400,
+      body: 'Bad Request',
+    }
   }
 
   const ip = await knex('BFMACHINES')
@@ -19,9 +21,7 @@ export default defineEventHandler(async (event) => {
     .then(row => row ? row.IP : null)
 
   await withTbbFtpClient(ip, async (tbb) => {
-    await knex.transaction(async (trx) => {
-      system = await tbb.fetchSystem()
-    })
+    system = await tbb.fetchSystemParams()
   })
 
   return system

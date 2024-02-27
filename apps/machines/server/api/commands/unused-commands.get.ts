@@ -44,5 +44,9 @@ export default defineEventHandler(async (event) => {
       },
     )
 
-  return commands
+  return commands.map(command => ({
+    ...command,
+    dontUseList: (command.dontUseList?.split(',') || []).map(Number),
+    adviceList: (command.adviceList?.split(',') || []).map(Number),
+  }))
 })

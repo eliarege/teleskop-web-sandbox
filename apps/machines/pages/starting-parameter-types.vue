@@ -6,15 +6,15 @@ const { t } = useI18n()
 const selectedMachineId = ref()
 
 const paramTypeMaps = reactive([
-  { id: 0, name: 'fabricWeight', data: undefined, label: t('fabricWeight') },
-  { id: 1, name: 'flotteRatio', data: undefined, label: t('flotteRatio') },
-  { id: 2, name: 'partCount', data: undefined, label: t('partCount') },
-  { id: 3, name: 'partyNo', data: undefined, label: t('partyNo') },
-  { id: 4, name: 'accompanyNo', data: undefined, label: t('accompanyNo') },
-  { id: 5, name: 'clothLength', data: undefined, label: t('clothLength') },
-  { id: 6, name: 'customer', data: undefined, label: t('customer') },
-  { id: 7, name: 'customerOrder', data: undefined, label: t('customerOrder') },
-  { id: 8, name: 'fabricType', data: undefined, label: t('fabricType') },
+  { id: 0, name: 'fabricWeight', data: undefined },
+  { id: 1, name: 'flotteRatio', data: undefined },
+  { id: 2, name: 'partCount', data: undefined },
+  { id: 3, name: 'partyNo', data: undefined },
+  { id: 4, name: 'accompanyNo', data: undefined },
+  { id: 5, name: 'clothLength', data: undefined },
+  { id: 6, name: 'customer', data: undefined },
+  { id: 7, name: 'customerOrder', data: undefined },
+  { id: 8, name: 'fabricType', data: undefined },
 ])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
@@ -54,7 +54,7 @@ async function handleOptionChange(paramType: object) {
 
 const copy = ref()
 function handleCopy() {
-  copy.value = JSON.parse(JSON.stringify(paramTypeMaps))
+  copy.value = structuredClone(paramTypeMaps)
 }
 
 async function handlePaste() {
@@ -106,7 +106,7 @@ async function handlePaste() {
           :options="parameterOptions"
           option-label="paramString"
           option-value="paramId"
-          :label="paramTypeMap.label"
+          :label="t(paramTypeMap.name)"
           @update:model-value="handleOptionChange(paramTypeMap)"
         />
       </div>

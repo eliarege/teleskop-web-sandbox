@@ -1,7 +1,7 @@
-import { TbbFtpClient, withTbbFtpClient } from 'tbb-ftp-client'
-import { EventHandlerRequest, getQuery } from 'h3'
+import { withTbbFtpClient } from 'tbb-ftp-client'
+import { getQuery } from 'h3'
 import { knex } from '~/server/connectionPool'
-import { updateAnalogInputs, updateBatchParameters, updateCommandAlarmReasons, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral, updateLocksOutput, updateSystem, writeFinishReasons, writeGlobalCommandFormulas, writeManualReasons, writeStopReasons, writeUsers } from '~/server/utils/updateDatabase'
+import { updateAnalogInputs, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral, updateLocksOutput, updateSystemParams } from '~/server/utils/updateDatabase'
 
 export default defineEventHandler(async (event) => {
   const { machineId } = getQuery(event)
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
         // cycle_kontrol
         await updateCycleControl(numMachineId, tbb, trx)
         // sistem
-        await updateSystem(numMachineId, tbb, trx)
+        await updateSystemParams(numMachineId, tbb, trx)
         // manuelmodenedenleri
         await updateManualReasons(tbb, trx)
         // analoginput

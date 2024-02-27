@@ -58,8 +58,6 @@ const { data: commandTypes } = useLazyFetch<CommandType[]>('/api/commands/comman
       if (mapping)
         mapping?.ref.push(commandType)
     })
-
-    commandTypes.value = data
   },
 })
 
@@ -94,7 +92,7 @@ async function handleSubmit() {
 const copy = ref()
 
 function handleCopy() {
-  copy.value = JSON.parse(JSON.stringify(commandTypes.value))
+  copy.value = structuredClone(commandTypes.value)
 }
 
 async function handlePaste() {
@@ -111,6 +109,7 @@ async function handlePaste() {
 </script>
 
 <template>
+  <div>{{ commandTypes }}</div>
   <q-btn-group push class="flex flex-row ">
     <q-btn
       label="Copy"

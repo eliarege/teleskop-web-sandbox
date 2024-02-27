@@ -38,7 +38,7 @@ watch(cols, (_newValue, _oldValue) => {
     tableColumns.value.push({ ...column, name: key })
 
     if (column.editable && column.schema) {
-      const deepClonedSchema = JSON.parse(JSON.stringify(column.schema))
+      const deepClonedSchema = structuredClone(column.schema)
       const schemaItem = {
         ...deepClonedSchema,
         name: key,

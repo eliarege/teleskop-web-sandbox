@@ -21,8 +21,7 @@ const { data: tanks, refresh: refreshTanks } = useLazyFetch('/api/materials/mate
   default: () => [],
   query: { machineId: selectedMachineId },
   onResponse: ({ response }) => {
-    tanksClone.value = JSON.parse(JSON.stringify(response._data))
-    tanks.value = response._data
+    tanksClone.value = structuredClone(response._data)
   },
 })
 
@@ -59,7 +58,7 @@ async function handleSubmit() {
 const copy = ref()
 
 function handleCopy() {
-  copy.value = JSON.parse(JSON.stringify(tanksClone.value))
+  copy.value = structuredClone(tanksClone.value)
 }
 
 async function handlePaste() {

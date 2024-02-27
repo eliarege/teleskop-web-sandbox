@@ -3,7 +3,6 @@ import type { TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { calcIONumber } from '.'
 import type { CommandAlarmReason } from '~/types'
-import { AnalogLock, DigitalLock } from '~/types'
 
 async function replaceRecords(knex: Knex, tableName: string, data, whereObject?: Record<string, any>) {
   const chunks = chunk(data, 50)
@@ -597,8 +596,8 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
   return data
 }
 
-export async function updateSystem(machineId: number, tbb: TbbFtpClient, trx: Knex) {
-  const system = await tbb.fetchSystem()
+export async function updateSystemParams(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const system = await tbb.fetchSystemParams()
 
   await trx('BFMACHINESYSTEMPARAMS')
     .where('MachineId', machineId)

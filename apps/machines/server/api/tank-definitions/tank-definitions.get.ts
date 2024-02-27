@@ -18,13 +18,11 @@ export default defineEventHandler(async (event) => {
       listOfRequestCommands: 'LISTOFREQUESTCOMMANDS',
     })
 
-  return machines.map((d) => {
-    return {
-      ...d,
-      listOfTransferCommands: d.listOfTransferCommands ? d.listOfTransferCommands.split(',').map(Number) : [],
-      listOfCirculationDosageCommands: d.listOfCirculationDosageCommands ? d.listOfCirculationDosageCommands.split(',').map(Number) : [],
-      listOfCirculationRequestCommands: d.listOfCirculationRequestCommands ? d.listOfCirculationRequestCommands.split(',').map(Number) : [],
-      listOfRequestCommands: d.listOfRequestCommands ? d.listOfRequestCommands.split(',').map(Number) : [],
-    }
-  })
+  return machines.map(d => ({
+    ...d,
+    listOfTransferCommands: d.listOfTransferCommands?.split(',').map(Number) || [],
+    listOfCirculationDosageCommands: d.listOfCirculationDosageCommands?.split(',').map(Number) || [],
+    listOfCirculationRequestCommands: d.listOfCirculationRequestCommands?.split(',').map(Number) || [],
+    listOfRequestCommands: d.listOfRequestCommands?.split(',').map(Number) || [],
+  }))
 })

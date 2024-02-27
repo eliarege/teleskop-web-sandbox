@@ -307,14 +307,14 @@ export class TbbFtpClient {
     return cycleControl
   }
 
-  async fetchSystem() {
+  async fetchSystemParams() {
     const remotePath = '/tbb6500/data/config/sistem'
     const content = await download(this.client, remotePath, 'utf8')
     const system = parseSystem(content)
     return system
   }
 
-  async uploadSystem(system) {
+  async uploadSystemParams(system) {
     const remotePath = '/tbb6500/data/config/sistem'
     const content = serializeSystem(system)
     await upload(this.client, remotePath, content)

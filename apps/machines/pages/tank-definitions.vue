@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
 import type { Machine, MasterCommand } from '~/types'
-import { updateTankDefinitionList } from '~/utils'
 
 const { t } = useI18n()
 
@@ -96,7 +95,6 @@ const { data: commands, refresh: refreshCommands } = useLazyFetch<MasterCommand[
       })
     })
 
-    commands.value = data
     filterCommandLists()
   },
 })
@@ -132,8 +130,9 @@ async function handleDragDropCommands(e) {
   const commandNo = e.item.getAttribute('data-command-no')
   const listName = e.item.getAttribute('data-list-name') as NumberArrayKeys<TankDefinition>
 
-  tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)![listName]
-  = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)![listName].filter(d => d !== Number(commandNo))
+  const tank = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)
+  if (tank)
+    tank[listName] = tank[listName].filter(d => d !== Number(commandNo))
 }
 
 async function handleDragDrop(e, listName: NumberArrayKeys<TankDefinition>) {
@@ -155,7 +154,7 @@ async function handleSubmit() {
 const copy = ref()
 
 function handleCopy() {
-  copy.value = JSON.parse(JSON.stringify(tankDefinitions.value))
+  copy.value = structuredClone(tankDefinitions.value)
 }
 
 async function handlePaste() {
