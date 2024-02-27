@@ -74,7 +74,7 @@ release-devops-packages:
     - export VERSION=${CI_COMMIT_TAG:7}
     # Publish all devops packages
     - |
-      pnpm list --filter './devops/*' -r --depth -1 --json | jq -Mrc .[] | while read -r PKG; do
+      pnpm list --filter './devops/*' -r --depth -1 --json | grep --invert-match 'Failed to replace env' | jq -Mrc .[] | while read -r PKG; do
         OUT_DIR=out
         PKG_NAME=$(echo $PKG | jq -Mr .name)
         PKG_BASENAME=$(basename "$(echo $PKG | jq -Mr .path)")
