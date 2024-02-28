@@ -307,5 +307,11 @@
     "VERITABANI_ISLEMLERI_AKTIF": "Veri Tabanı İşlemleri Aktif",
     "ISEMRI_NUMARASI_ILLEGAL_KARAKTER_KULLANIMI_AKTIF": "İş Emri Numarası İllegal Karakter Kullanımı Aktif",
     "KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF": "Komut Zaman Aşıldı Sebepleri Aktif"
-  }
+  },
+  "copy": "Kopyala",
+  "paste": "Yapıştır",
+  "selectedMachineCommands": "Seçili Makine Komutları",
+  "copyAll": "Tümünü Kopyala",
+  "copyStartupParameters": "Başlatma Parametrelerini Kopyala",
+  "copyNonStartupParameters": "Başlatma Parametreleri Dışındakileri Kopyala"
 }

@@ -308,5 +308,11 @@
     "VERITABANI_ISLEMLERI_AKTIF": "Database Operations Active",
     "ISEMRI_NUMARASI_ILLEGAL_KARAKTER_KULLANIMI_AKTIF": "Batch number illegal carakter usage active",
     "KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF": "Command Timeout Reasons Active"
-  }
+  },
+  "copy": "Copy",
+  "paste": "Paste",
+  "selectedMachineCommands": "Selected Machine Commands",
+  "copyAll": "Copy All",
+  "copyStartupParameters": "Copy Startup Parameters",
+  "copyNonStartupParameters": "Copy Non-Startup Parameters"
 }

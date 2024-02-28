@@ -186,12 +186,12 @@ async function handlePaste() {
 <template>
   <q-btn-group push class="flex flex-row ">
     <q-btn
-      label="Copy"
+      :label="t('Copy')"
       no-caps
       @click="handleCopy"
     />
     <q-btn
-      label="Paste"
+      :label="t('Paste')"
       no-caps
       @click="handlePaste"
     />
@@ -337,10 +337,8 @@ async function handlePaste() {
     </q-card-section>
   </q-card>
   <q-btn-group>
-    <q-btn @click="handleSubmit">
-      Kaydet
-    </q-btn>
-    <q-btn>İptal</q-btn>
+    <q-btn :label="t('submit')" @click="handleSubmit" />
+    <q-btn :label="t('cancel')" />
   </q-btn-group>
 </template>
 

@@ -333,22 +333,23 @@ async function handlePaste() {
       </div>
       <q-btn-group push class="flex flex-row ">
         <q-btn
-          label="Copy All"
+          :label="t('copyAll')"
+
           no-caps
           @click="handleCopy(1)"
         />
         <q-btn
-          label="Copy Startup"
+          :label="t('copyStartupParameters')"
           no-caps
           @click="handleCopy(2)"
         />
         <q-btn
-          label="Copy Non Startup"
+          :label="t('copyNonStartupParameters')"
           no-caps
           @click="handleCopy(3)"
         />
         <q-btn
-          label="Paste"
+          :label="t('paste')"
           no-caps
           @click="handlePaste"
         />

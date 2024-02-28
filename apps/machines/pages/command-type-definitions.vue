@@ -9,6 +9,8 @@ interface commandTypeMap {
   title: string
 }
 
+const { t } = useI18n()
+
 const selectedMachineId = ref()
 
 const commandTypeMaps = reactive<commandTypeMap[]>([
@@ -113,19 +115,19 @@ async function handlePaste() {
   <div>{{ commandTypes }}</div>
   <q-btn-group push class="flex flex-row ">
     <q-btn
-      label="Copy"
+      :label="t('copy')"
       no-caps
       @click="handleCopy"
     />
     <q-btn
-      label="Paste"
+      :label="t('paste')"
       no-caps
       @click="handlePaste"
     />
   </q-btn-group>
   <q-card class="flex flex-row">
     <q-card-section class="w-2xs">
-      <h3>Makineler</h3>
+      <h3>{{ t('machines') }}</h3>
       <q-list
         bordered
         separator
@@ -145,7 +147,7 @@ async function handlePaste() {
       </q-list>
     </q-card-section>
     <q-card-section class="w-2xs">
-      <h3>Seçili Makine Komutları</h3>
+      <h3>{{ t('selectedMachineCommands') }}</h3>
       <Sortable
         :list="commands"
         :item-key="(element) => element.commandNo"
@@ -199,10 +201,9 @@ async function handlePaste() {
     </q-card-section>
   </q-card>
   <q-btn-group>
-    <q-btn @click="handleSubmit">
-      Kaydet
-    </q-btn>
-    <q-btn>İptal</q-btn>
+    <q-btn :label="t('submit')" @click="handleSubmit" />
+
+    <q-btn :label="t('cancel')" />
   </q-btn-group>
 </template>
 

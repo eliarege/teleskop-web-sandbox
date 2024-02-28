@@ -59,12 +59,12 @@ async function handlePaste() {
 <template>
   <q-btn-group push class="flex flex-row ">
     <q-btn
-      label="Copy"
+      :label="t('copy')"
       no-caps
       @click="handleCopy"
     />
     <q-btn
-      label="Paste"
+      :label="t('paste')"
       no-caps
       @click="handlePaste"
     />
