@@ -50,8 +50,11 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
     .andWhere('PROGRAMNO', body.row.programNo)
     .andWhere('PROGRAMSTEPNO', body.row.mainStep)
     .andWhere('RECIPETYPE', body.row.recipeType)
-  if (query[0]?.STATUS === StatusCodes.canceled || query[0]?.STATUS === StatusCodes.requestCompleted) {
-    if (query[0]?.STATUS === StatusCodes.requestCompleted && !check) {
+
+  const status = query[0]?.STATUS
+
+  if (status === StatusCodes.canceled || status === StatusCodes.requestCompleted) {
+    if (status === StatusCodes.requestCompleted && !check) {
       return { error: 3, message: 'Non-rerequestable material cannot be rerequested.' }
     } else {
       const contentString = `${body.content.join(',')},\n`
@@ -65,8 +68,8 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
       })
       return 1
     }
-  } else if (query[0]?.STATUS !== undefined)
-    return { error: 4, message: `Status code ${query[0]?.STATUS} cannot be rerequested.`, status: query[0]?.STATUS }
+  } else if (status !== undefined)
+    return { error: 4, message: `Status code ${status} cannot be rerequested.`, status }
   else return { error: 5, message: 'Recipe step cannot be found on DYTFCHEMREQUESTS' }
 }))
 
