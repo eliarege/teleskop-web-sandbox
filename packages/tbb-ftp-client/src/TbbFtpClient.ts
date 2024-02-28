@@ -6,7 +6,7 @@ import { parseUser, serializeUser } from './parsers/parseUser'
 import { parseManualReason, serializeManualReason } from './parsers/parseManualReason'
 import { parseStopReason, serializeStopReason } from './parsers/parseStopReason'
 import { parseFinishReason, serializeFinishReason } from './parsers/parseFinishReason'
-import { parseCommandAlarmReasons } from './parsers/parseCommandAlarmReasons'
+import { parseCommandAlarmReasons, serializeCommandAlarmReasons } from './parsers/parseCommandAlarmReasons'
 import { parseMachineParameters } from './parsers/parseMachineParameters'
 import { parseMachineParameterValues, serializeMachineParameterValues } from './parsers/parseMachineParameterValues'
 import { parseControllerModel } from './parsers/parseControllerModel'
@@ -24,13 +24,13 @@ import { parseCommandFeedback } from './parsers/parseCommandFeedback'
 import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
-import type { FinishReason, GlobalCommandFormula, MachineParameter, ManualReason, StopReason, User } from './types'
+import type { CommandAlarmReason, FinishReason, GlobalCommandFormula, MachineParameter, ManualReason, StopReason, User } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas, serializeGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
 import { parseSeperatedLocks } from './parsers/parseLocksInput'
 import { parseBatchParameters } from './parsers/parseBatchParameters'
 import { parseCycleControl } from './parsers/parseCycleControl'
-import { parseSystem } from './parsers/parseSystem'
+import { parseSystem, serializeSystem } from './parsers/parseSystem'
 import { parseLocksOutput } from './parsers/parseLocksOutput'
 
 export interface TbbFtpClientOptions {
@@ -307,11 +307,17 @@ export class TbbFtpClient {
     return cycleControl
   }
 
-  async fetchSystem() {
+  async fetchSystemParams() {
     const remotePath = '/tbb6500/data/config/sistem'
     const content = await download(this.client, remotePath, 'utf8')
     const system = parseSystem(content)
     return system
+  }
+
+  async uploadSystemParams(system) {
+    const remotePath = '/tbb6500/data/config/sistem'
+    const content = serializeSystem(system)
+    await upload(this.client, remotePath, content)
   }
 
   async uploadMachineParameterValues(values: MachineParameter[]) {
@@ -347,6 +353,12 @@ export class TbbFtpClient {
   async uploadManualReasons(reasons: ManualReason[]) {
     const remotePath = '/tbb6500/data/config/manuelmodnedenleri'
     const content = serializeManualReason(reasons)
+    await upload(this.client, remotePath, content)
+  }
+
+  async uploadCommandAlarmReasons(reasons: CommandAlarmReason[]) {
+    const remotePath = '/tbb6500/data/config/commandAlarmReasons'
+    const content = serializeCommandAlarmReasons(reasons)
     await upload(this.client, remotePath, content)
   }
 }

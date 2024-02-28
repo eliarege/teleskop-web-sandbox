@@ -1,64 +1,61 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
-import { updateTankDefinitionList } from '~/utils'
+import { klona } from 'klona'
+import type { Machine, MasterCommand } from '~/types'
 
 const { t } = useI18n()
 
 const selectedMachineId = ref()
 const selectedDefinition = ref()
-const tankNo = ref()
-const tankName = ref()
-const highLimit = ref()
-const machineConstantHighLimit = ref()
 
-const listOfTransferCommands = ref([])
-const listOfCirculationDoSageCommands = ref([])
-const listOfCirculationRequestCommands = ref([])
-const listOfRequestCommands = ref([])
+interface TankDefinition {
+  machineId: number
+  machineName: string
+  tankNo: number
+  name: string
+  highLimit: number
+  machineConstantHighLimit: number
+  listOfTransferCommands: number[]
+  listOfCirculationDosageCommands: number[]
+  listOfCirculationRequestCommands: number[]
+  listOfRequestCommands: number[]
+}
 
-const lists = [
-  { name: 'listOfTransferCommands', ref: listOfTransferCommands },
-  { name: 'listOfCirculationDoSageCommands', ref: listOfCirculationDoSageCommands },
-  { name: 'listOfCirculationRequestCommands', ref: listOfCirculationRequestCommands },
-  { name: 'listOfRequestCommands', ref: listOfRequestCommands },
-]
+type NumberArrayKeys<T> = {
+  [K in keyof T]: T[K] extends number[] ? K : never
+}[keyof T]
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
+interface TankCommand {
+  commandNo: number
+  commandName: string
+  tankNo: number
+}
 
-const { data: tankDefinitions, refresh: refreshDefinitions } = useLazyFetch('/api/tank-definitions/tank-definitions', {
-  immediate: false,
-  default: () => [],
-  query: { machineId: selectedMachineId },
+interface CommandList {
+  name: NumberArrayKeys<TankDefinition>
+  ref: TankCommand[]
+}
+
+const tank = ref<Partial<TankDefinition>>({
+  tankNo: 0,
+  name: '',
+  highLimit: 0,
+  machineConstantHighLimit: 0,
 })
 
-const { data: commands, refresh: refreshCommands } = useLazyFetch('/api/master-commands/master-commands', {
+const commandLists = reactive<CommandList[]>([
+  { name: 'listOfTransferCommands', ref: [] },
+  { name: 'listOfCirculationDosageCommands', ref: [] },
+  { name: 'listOfCirculationRequestCommands', ref: [] },
+  { name: 'listOfRequestCommands', ref: [] },
+])
+
+const { data: machines } = useLazyFetch<Machine[]>('/api/machines/active-machines')
+
+const { data: tankDefinitions, refresh: refreshDefinitions } = useLazyFetch<TankDefinition[]>('/api/tank-definitions/tank-definitions', {
   immediate: false,
-  query: { machineId: selectedMachineId },
   default: () => [],
-  onResponse({ request, response, options }) {
-    const data = response._data
-
-    lists.forEach(list => list.ref.value = [])
-
-    tankDefinitions.value.forEach((tankDef) => {
-      lists.forEach((list) => {
-        tankDef[list.name].forEach((commandNo) => {
-          const commandIndex = data.findIndex(d => tankDef[list.name].includes(d.commandNo))
-          if (commandIndex !== -1) {
-            const command = data.splice(commandIndex, 1)[0]
-            list.ref.value.push({
-              commandNo: command.commandNo,
-              commandName: command.commandName,
-              tankNo: tankDef.tankNo,
-            })
-          }
-        })
-      })
-    })
-
-    commands.value = data
-    filterCommandLists()
-  },
+  query: { machineId: selectedMachineId },
 })
 
 const { data: highLimitOptions } = useLazyFetch('/api/machine-parameters/machine-parameters', {
@@ -73,63 +70,132 @@ const { data: highLimitOptions } = useLazyFetch('/api/machine-parameters/machine
     })
   },
 })
+
+const { data: commands, refresh: refreshCommands } = useLazyFetch<MasterCommand[]>('/api/master-commands/master-commands', {
+  immediate: false,
+  query: { machineId: selectedMachineId },
+  default: () => [],
+  onResponse({ response }) {
+    const data: MasterCommand[] = response._data
+
+    commandLists.forEach(list => list.ref = [])
+
+    tankDefinitions.value.forEach((tankDef) => {
+      commandLists.forEach((list: CommandList) => {
+        tankDef[list.name].forEach((commandNo: number) => {
+          const commandIndex = data.findIndex(d => tankDef[list.name].includes(d.commandNo!))
+          if (commandIndex !== -1) {
+            const command = data.splice(commandIndex, 1)[0]
+            list.ref.push({
+              commandNo,
+              commandName: command.commandName || '',
+              tankNo: tankDef.tankNo,
+            })
+          }
+        })
+      })
+    })
+
+    filterCommandLists()
+  },
+})
+
+function filterCommandLists() {
+  if (tank.value.tankNo === undefined || tank.value.tankNo === 0)
+    tank.value.tankNo = tankDefinitions.value[0].tankNo
+  for (const list of commandLists) {
+    list.ref = list.ref.filter(d => d.tankNo === tank.value.tankNo)
+  }
+}
+
 async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
 }
 
-async function handleTankDefinitionClick(tankDef) {
+async function handleTankDefinitionClick(tankDef: TankDefinition) {
   selectedDefinition.value = tankDef.tankNo
-  tankNo.value = tankDef.tankNo
-  tankName.value = tankDef.name
-  highLimit.value = tankDef.highLimit
-  machineConstantHighLimit.value = tankDef.machineConstantHighLimit
+  tank.value = tankDef
   await refreshCommands()
 }
 
 async function handleTankDefinitionAdd() {
   const tankDef = {
     machineId: selectedMachineId.value,
-    tankNo: tankNo.value,
-    name: tankName.value,
-    highLimit: highLimit.value.value,
-    machineConstantHighLimit: machineConstantHighLimit.value,
+    ...tank.value,
   }
   await addTankDefinition(tankDef)
   await refreshDefinitions()
 }
 
-function filterCommandLists() {
-  if (tankNo.value === undefined)
-    tankNo.value = tankDefinitions.value[0].tankNo
-  for (const list of lists) {
-    list.ref.value = list.ref.value.filter(d => d.tankNo === tankNo.value)
-  }
+async function handleDelete() {
+  await $fetch('/api/tank-definitions/tank-definition', {
+    method: 'DELETE',
+    body: {
+      machineId: selectedMachineId.value,
+      tankNo: tank.value.tankNo,
+    },
+  })
+  await refreshDefinitions()
 }
 
-async function handleDragDrop(e, listName) {
-  const text: string = e.item.innerHTML
-  const matches = text.match(/(\d+) (.+)/)
-  if (matches && matches.length) {
-    const commandNo = Number.parseInt(matches[0])
-    let action
-    if (e.type === 'add')
-      action = 'add'
-    else if (e.type === 'remove')
-      action = 'remove'
+async function handleDragDropCommands(e) {
+  const commandNo = e.item.getAttribute('data-command-no')
+  const listName = e.item.getAttribute('data-list-name') as NumberArrayKeys<TankDefinition>
 
-    await updateTankDefinitionList({
-      machineId: selectedMachineId.value,
-      tankDefinitionId: selectedDefinition.value,
-      listName,
-      commandNo,
-      action,
+  const tank = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)
+  if (tank)
+    tank[listName] = tank[listName].filter(d => d !== Number(commandNo))
+}
+
+async function handleDragDrop(e, listName: NumberArrayKeys<TankDefinition>) {
+  const commandNo = e.item.getAttribute('data-command-no')
+  tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)![listName].push(Number(commandNo))
+}
+
+async function handleSubmit() {
+  const tankDef = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)!
+
+  await $fetch('/api/tank-definitions/tank-definition-list', {
+    method: 'PUT',
+    body: tankDef,
+  })
+
+  await refreshDefinitions()
+}
+
+const copy = ref()
+
+function handleCopy() {
+  copy.value = klona(tankDefinitions.value)
+}
+
+async function handlePaste() {
+  for (const tankDef of copy.value) {
+    await $fetch('/api/tank-definitions/tank-definition-list', {
+      method: 'PUT',
+      body: {
+        ...tankDef,
+        machineId: selectedMachineId.value,
+      },
     })
-    await refreshDefinitions()
   }
+  await refreshDefinitions()
 }
 </script>
 
 <template>
+  <q-btn-group push class="flex flex-row ">
+    <q-btn
+      :label="t('Copy')"
+      no-caps
+      @click="handleCopy"
+    />
+    <q-btn
+      :label="t('Paste')"
+      no-caps
+      @click="handlePaste"
+    />
+  </q-btn-group>
   <q-card class="flex flex-row justify-around">
     <q-card-section class="flex flex-row">
       <div class="mr-8 w-xs">
@@ -146,7 +212,7 @@ async function handleDragDrop(e, listName) {
             clickable
             :focused="selectedMachineId === machine.machineId"
             :active="selectedMachineId === machine.machineId"
-            @click="handleMachineClick(machine.machineId)"
+            @click="handleMachineClick(machine.machineId!)"
           >
             <q-item-section>
               {{ machine.machineCode }}
@@ -179,19 +245,19 @@ async function handleDragDrop(e, listName) {
       </div>
 
       <div class="w-3xl flex flex-col">
-        <div class="grid mb-4">
+        <div class="grid gap-4 mb-4">
           <q-input
-            v-model="tankNo"
+            v-model="tank.tankNo"
             :label="t('tankNo')"
             filled
           />
           <q-input
-            v-model="tankName"
+            v-model="tank.name"
             :label="t('tankName')"
             filled
           />
           <q-select
-            v-model="highLimit"
+            v-model="tank.highLimit"
             :options="highLimitOptions"
             :label="t('highLimit')"
             option-label="label"
@@ -199,7 +265,7 @@ async function handleDragDrop(e, listName) {
             filled
           />
           <q-input
-            v-model="machineConstantHighLimit"
+            v-model="tank.machineConstantHighLimit"
             filled
             :label="t('machineConstantHighLimit')"
           />
@@ -208,19 +274,26 @@ async function handleDragDrop(e, listName) {
             no-caps
             @click="handleTankDefinitionAdd"
           />
+          <q-btn
+            :label="t('delete')"
+            no-caps
+            @click="handleDelete"
+          />
         </div>
-        <div class="grid">
+        <div class="grid gap-4">
           <div>
             <h3>{{ t('commands') }}</h3>
             <Sortable
               :list="commands"
-              item-key="id"
+              :item-key="item => item.commandNo"
               class="q-list q-list--bordered q-list--separator overflow-y-auto h-xs"
               :options="{ group: 'group' }"
+              @add="(e) => handleDragDropCommands(e)"
             >
-              <template #item="{ element, index }">
+              <template #item="{ element }">
                 <q-item
                   :key="element.commandNo"
+                  :data-command-no="element.commandNo"
                   class="draggable"
                 >
                   <q-item-section>
@@ -231,89 +304,24 @@ async function handleDragDrop(e, listName) {
             </Sortable>
           </div>
 
-          <div class="grid">
-            <div>
-              <h3>{{ t('transferDosageCommands') }}</h3>
+          <div class="grid gap-4">
+            <div
+              v-for="list in commandLists"
+              :key="list.name"
+            >
+              <h3>{{ t(list.name) }}</h3>
               <Sortable
-                :list="listOfTransferCommands"
-                item-key="id"
+                :list="list.ref"
+                :item-key="item => item.commandNo"
                 class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
                 :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, 'listOfTransferCommands')"
-                @remove="(e) => handleDragDrop(e, 'listOfTransferCommands')"
+                @add="(e) => handleDragDrop(e, list.name)"
               >
-                <template #item="{ element, index }">
+                <template #item="{ element }">
                   <q-item
                     :key="element.commandNo"
-                    class="draggable"
                     :data-command-no="element.commandNo"
-                  >
-                    <q-item-section>
-                      {{ `${element.commandNo} ${element.commandName}` }}
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </Sortable>
-            </div>
-            <div>
-              <h3>{{ t('requestCommands') }}</h3>
-              <Sortable
-                :list="listOfRequestCommands"
-                item-key="id"
-                class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
-                :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, 'listOfRequestCommands')"
-                @remove="(e) => handleDragDrop(e, 'listOfRequestCommands')"
-              >
-                <template #item="{ element, index }">
-                  <q-item
-                    :key="element.commandNo"
-                    class="draggable"
-                  >
-                    <q-item-section>
-                      {{ `${element.commandNo} ${element.commandName}` }}
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </Sortable>
-            </div>
-
-            <div>
-              <h3>{{ t('circulationDosageCommands') }}</h3>
-              <Sortable
-                :list="listOfCirculationDoSageCommands"
-                item-key="id"
-                class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
-                :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommands')"
-                @remove="(e) => handleDragDrop(e, 'listOfCirculationDoSageCommands')"
-              >
-                <template #item="{ element, index }">
-                  <q-item
-                    :key="element.commandNo"
-                    class="draggable"
-                  >
-                    <q-item-section>
-                      {{ `${element.commandNo} ${element.commandName}` }}
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </Sortable>
-            </div>
-
-            <div>
-              <h3>{{ t('circulationRequestCommands') }}</h3>
-              <Sortable
-                :list="listOfCirculationRequestCommands"
-                item-key="id"
-                class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
-                :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, 'listOfCirculationRequestCommands')"
-                @remove="(e) => handleDragDrop(e, 'listOfCirculationRequestCommands')"
-              >
-                <template #item="{ element, index }">
-                  <q-item
-                    :key="element.commandNo"
+                    :data-list-name="list.name"
                     class="draggable"
                   >
                     <q-item-section>
@@ -328,12 +336,15 @@ async function handleDragDrop(e, listName) {
       </div>
     </q-card-section>
   </q-card>
+  <q-btn-group>
+    <q-btn :label="t('submit')" @click="handleSubmit" />
+    <q-btn :label="t('cancel')" />
+  </q-btn-group>
 </template>
 
 <style scoped>
 .grid {
   grid-template-areas: "1 1"
                        "1 1";
-  gap: 2em;
 }
 </style>

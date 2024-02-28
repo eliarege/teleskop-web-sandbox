@@ -2,6 +2,7 @@
 import { FormKitSchema } from '@formkit/vue'
 import { changeLocale } from '@formkit/i18n'
 import { useQuasar } from 'quasar'
+import { klona } from 'klona'
 
 const props = defineProps<{
   rows: object[]
@@ -38,7 +39,7 @@ watch(cols, (_newValue, _oldValue) => {
     tableColumns.value.push({ ...column, name: key })
 
     if (column.editable && column.schema) {
-      const deepClonedSchema = JSON.parse(JSON.stringify(column.schema))
+      const deepClonedSchema = klona(column.schema)
       const schemaItem = {
         ...deepClonedSchema,
         name: key,

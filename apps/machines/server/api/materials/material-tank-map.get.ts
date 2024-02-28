@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
         select
           ID as materialId,
           DYTFMATERIALTANKMAP.MATERIALCODE as materialCode,
+          DYTFMATERIALTANKMAP.MACHINEID as machineId,
           DYTFMATERIAL.MATERIALNAME as materialName,
           DYTFMATERIAL.MADDEGRUPNO as materialGroupNo,
           PREWATER as preWater,
@@ -21,6 +22,7 @@ export default defineEventHandler(async (event) => {
         from DYTFMATERIALTANKMAP
         left join DYTFMATERIAL on DYTFMATERIAL.MATERIALCODE = DYTFMATERIALTANKMAP.MATERIALCODE
         where DYTFMATERIALTANKMAP.TANKNO = BFMACHINETANKS.TANKNO
+        and  DYTFMATERIALTANKMAP.MACHINEID = BFMACHINETANKS.MACHINEID
         for json path, INCLUDE_NULL_VALUES
       ), '[]')`),
     })

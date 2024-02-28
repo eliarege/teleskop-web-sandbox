@@ -1,14 +1,22 @@
 <script setup lang="ts">
-import { upsertTheoreticalWaterConsumption } from '~/utils'
+import type { WaterIO } from '~/types'
+
+interface Water {
+  waterIO1: WaterIO | null | undefined
+  waterIO2: WaterIO | null | undefined
+  waterParam: any | null
+}
 
 const { t } = useI18n()
 
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 
-const waterIO1 = ref()
-const waterIO2 = ref()
-const waterParam = ref()
+const water = ref<Water>({
+  waterIO1: null,
+  waterIO2: null,
+  waterParam: null,
+})
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
 const { data: machineCommands } = useLazyFetch('/api/master-commands/master-commands', {
@@ -22,7 +30,7 @@ const fetchParams = computed(() => {
     : undefined
 })
 
-const { data: waterIO } = useLazyFetch('/api/io/command-io-all', {
+const { data: waterIO } = useLazyFetch<WaterIO[]>('/api/io/command-io-all', {
   immediate: false,
   query: fetchParams,
 })
@@ -37,48 +45,72 @@ const { data: waterConsumptions } = useLazyFetch('/api/theoretical-water-consump
   query: fetchParams,
 })
 
-watch([waterConsumptions, waterParams], ([newCons, newParams], [oldCons, oldParams]) => {
+watch([waterConsumptions, waterParams], () => {
   if (waterConsumptions.value && waterConsumptions.value.length) {
     const command = waterConsumptions.value[0]
-    waterIO1.value = waterIO.value.find(io => io.ioIndex === command.commandIO)
-    waterIO2.value = waterIO.value.find(io => io.ioIndex === command.commandIO2)
-    waterParam.value = waterParams.value.find(io => io.parameterIndex === command.commandParameter)
+    water.value.waterIO1 = waterIO.value?.find((io: WaterIO) => io.ioIndex === command.commandIO)
+    water.value.waterIO2 = waterIO.value?.find((io: WaterIO) => io.ioIndex === command.commandIO2)
+    water.value.waterParam = waterParams.value?.find(io => io.parameterIndex === command.commandParameter)
   }
 })
-
-async function handleMachineClick(machineId: number) {
-  selectedMachineId.value = machineId
-}
 
 async function handleCommandClick(commandNo: number) {
   selectedCommandNo.value = commandNo
 }
 const filteredWaterIO1Options = computed(() => {
   // Filter waterIO options based on waterIO2 selection
-  return (waterIO.value && waterIO2.value)
-    ? waterIO.value.filter(io => io.ioIndex !== waterIO2.value.ioIndex)
+  return (waterIO.value && water.value.waterIO2)
+    ? waterIO.value.filter(io => io.ioIndex !== water.value.waterIO2?.ioIndex)
     : waterIO.value ? waterIO.value : []
 })
 const filteredWaterIO2Options = computed(() => {
   // Filter waterIO options based on waterIO1 selection
-  return (waterIO.value && waterIO1.value)
-    ? waterIO.value.filter(io => io.ioIndex !== waterIO1.value.ioIndex)
+  return (waterIO.value && water.value.waterIO1)
+    ? waterIO.value.filter(io => io.ioIndex !== water.value.waterIO1?.ioIndex)
     : waterIO.value ? waterIO.value : []
 })
 
-async function handleSelectionChange(data, columnName) {
+async function handleSubmit() {
   const obj = {
     machineId: selectedMachineId.value,
     commandNo: selectedCommandNo.value,
-    commandIO: waterIO1.value ? waterIO1.value.ioIndex : undefined,
-    commandIO2: waterIO2.value ? waterIO2.value.ioIndex : undefined,
-    commandParameter: waterParam.value ? waterParam.value.parameterIndex : undefined,
+    commandIO: water.value.waterIO1 ? water.value.waterIO1.ioIndex : undefined,
+    commandIO2: water.value.waterIO2 ? water.value.waterIO2.ioIndex : undefined,
+    commandParameter: water.value.waterParam ? water.value.waterParam.parameterIndex : undefined,
   }
-  await upsertTheoreticalWaterConsumption(obj)
+  await $fetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+    method: 'POST',
+    body: obj,
+  })
+}
+
+const copy = ref()
+
+function handleCopy() {
+  copy.value = selectedMachineId.value
+}
+
+async function handlePaste() {
+  await $fetch('/api/theoretical-water-consumptions/copy', {
+    method: 'POST',
+    body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
+  })
 }
 </script>
 
 <template>
+  <q-btn-group push class="flex flex-row ">
+    <q-btn
+      :label="t('copy')"
+      no-caps
+      @click="handleCopy"
+    />
+    <q-btn
+      :label="t('paste')"
+      no-caps
+      @click="handlePaste"
+    />
+  </q-btn-group>
   <q-card class="flex flex-row justify-around">
     <q-card-section class="w-sm">
       <h3>{{ t('machines') }}</h3>
@@ -92,7 +124,7 @@ async function handleSelectionChange(data, columnName) {
           :key="machine.machineId"
           v-ripple
           clickable
-          @click="handleMachineClick(machine.machineId)"
+          @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>
             {{ machine.machineCode }}
@@ -126,34 +158,36 @@ async function handleSelectionChange(data, columnName) {
       <div class="flex flex-col">
         <h3>{{ t('waterSourceIO') }}</h3>
         <q-select
-          v-model="waterIO1"
+          v-model="water.waterIO1"
           :options="filteredWaterIO1Options"
           option-label="name"
           option-value="ioIndex"
           class="mb-2"
-          @update:model-value="handleSelectionChange()"
         />
         <q-select
-          v-model="waterIO2"
+          v-model="water.waterIO2"
           :options="filteredWaterIO2Options"
           option-label="name"
           option-value="ioIndex"
           class="mb-2"
-          @update:model-value="handleSelectionChange()"
         />
       </div>
       <div class="w-xs flex flex-col">
         <h3>{{ t('waterAmountParameter') }}</h3>
         <q-select
-          v-model="waterParam"
+          v-model="water.waterParam"
           :options="waterParams"
           option-label="paramString"
           option-value="parameterIndex"
-          @update:model-value="handleSelectionChange()"
         />
       </div>
     </q-card-section>
   </q-card>
+  <q-btn-group>
+    <q-btn :label="t('submit')" @click="handleSubmit" />
+
+    <q-btn :label="t('cancel')" />
+  </q-btn-group>
 </template>
 
 <style scoped>

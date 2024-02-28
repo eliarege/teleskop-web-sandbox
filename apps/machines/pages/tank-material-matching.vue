@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
-import { deleteTankMaterialMap } from '~/utils'
+import { klona } from 'klona'
+import type { Machine, Material, TankDefinition } from '~/types'
 
 const { t } = useI18n()
 
@@ -11,49 +12,81 @@ const { t } = useI18n()
 */
 
 const selectedMachineId = ref()
+const tanksClone = ref<TankDefinition[]>()
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
-const { data: materials } = useLazyFetch('/api/materials/materials')
+const { data: machines } = useLazyFetch<Machine[]>('/api/machines/active-machines')
+const { data: materials } = useLazyFetch<Material[]>('/api/materials/materials')
 
 const { data: tanks, refresh: refreshTanks } = useLazyFetch('/api/materials/material-tank-map', {
   immediate: false,
   default: () => [],
   query: { machineId: selectedMachineId },
+  onResponse: ({ response }) => {
+    tanksClone.value = klona(response._data)
+  },
 })
 
-async function handleMachineClick(machineId: number) {
-  selectedMachineId.value = machineId
-}
+function deleteItem(tank: TankDefinition, materialCode: string) {
+  tanks.value.find(t => t.tankNo === tank.tankNo)
+    .materials = tanks.value.find(t => t.tankNo === tank.tankNo)
+      .materials.filter((m: Material) => m.materialCode !== materialCode)
 
-async function handleDragDrop(e, tank) {
-  const text = e.item.innerText
-  const matches = text.split('.')
-  if (matches && matches.length) {
-    const materialCode = matches[0]
-    if (e.type === 'add') {
-      await addTankMaterialMap({
-        machineId: selectedMachineId.value,
-        tank,
-        materialCode,
-      })
-      await refreshTanks()
-    } else if (e.type === 'remove') {
-      deleteItem(tank, materialCode)
-    }
+  if (tanksClone.value && tanksClone.value.length) {
+    tanksClone.value.find((t: TankDefinition) => t.tankNo === tank.tankNo)!
+      .materials = tanksClone.value.find((t: TankDefinition) => t.tankNo === tank.tankNo)!
+        .materials.filter((m: Material) => m.materialCode !== materialCode)
   }
 }
 
-async function deleteItem(tank, materialCode: string) {
-  await deleteTankMaterialMap({
-    machineId: selectedMachineId.value,
-    tank,
-    materialCode,
+async function handleDragDrop(e: any, tank: TankDefinition) {
+  const materialCode = e.item.getAttribute('data-material-code')
+  if (materials.value && tanksClone.value) {
+    const material = materials.value.find(t => t.materialCode === materialCode)
+    if (material)
+      tanksClone.value.find(t => t.tankNo === tank.tankNo)!.materials.push(material)
+  }
+}
+
+async function handleSubmit() {
+  await $fetch('/api/materials/material-tank-map', {
+    method: 'POST',
+    body: {
+      tankMap: tanksClone.value,
+    },
+  })
+  await refreshTanks()
+}
+const copy = ref()
+
+function handleCopy() {
+  copy.value = klona(tanksClone.value)
+}
+
+async function handlePaste() {
+  await $fetch('/api/materials/material-tank-map', {
+    method: 'POST',
+    body: {
+      tankMap: copy.value.map((t: TankDefinition) => ({ ...t, machineId: selectedMachineId.value })),
+    },
   })
   await refreshTanks()
 }
 </script>
 
 <template>
+  <q-btn-group push class="flex flex-row ">
+    <q-btn
+      :label="t('copy')"
+
+      no-caps
+      @click="handleCopy"
+    />
+    <q-btn
+      :label="t('paste')"
+      no-caps
+      @click="handlePaste"
+    />
+  </q-btn-group>
   <q-card class="flex flex-row justify-around w-full">
     <q-card-section class="flex flex-row w-full justify-start">
       <div class="mr-4 w-xs">
@@ -68,7 +101,7 @@ async function deleteItem(tank, materialCode: string) {
             :key="machine.machineId"
             v-ripple
             clickable
-            @click="handleMachineClick(machine.machineId)"
+            @click="selectedMachineId = machine.machineId"
           >
             <q-item-section>
               {{ machine.machineCode }}
@@ -80,15 +113,16 @@ async function deleteItem(tank, materialCode: string) {
       <div class="mr-4 w-sm">
         <h3>{{ t('materials') }}</h3>
         <Sortable
-          :list="materials"
-          item-key="id"
+          :list="materials!"
+          :item-key="item => item.materialCode"
           class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
           :options="{ group: { name: 'group', pull: 'clone', put: false } }"
         >
-          <template #item="{ element, index }">
+          <template #item="{ element }">
             <q-item
               :key="element.materialCode"
               class="draggable"
+              :data-material-code="element.materialCode"
             >
               <q-item-section>
                 {{ `${element.materialCode}. ${element.materialName}` }}
@@ -103,21 +137,18 @@ async function deleteItem(tank, materialCode: string) {
           <h3>{{ tank.tankName }}</h3>
           <Sortable
             :list="tank.materials"
-            item-key="id"
+            :item-key="tank => tank.tankNo"
             class="q-list q-list--bordered q-list--separator"
             :options="{ group: { name: 'group' } }"
             @add="(e) => handleDragDrop(e, tank)"
-            @remove="(e) => handleDragDrop(e, tank)"
           >
-            <template #item="{ element, index }">
+            <template #item="{ element }">
               <q-item
-                :key="element.id"
+                :key="element.materialId"
                 class="draggable"
                 :data-material-code="element.materialCode"
               >
-                <q-item-section
-                  :data-material-code="element.materialCode"
-                >
+                <q-item-section>
                   {{ `${element.materialCode}. ${element.materialName}` }}
                 </q-item-section>
                 <q-item-section side>
@@ -135,6 +166,10 @@ async function deleteItem(tank, materialCode: string) {
       </div>
     </q-card-section>
   </q-card>
+  <q-btn-group>
+    <q-btn :label="t('submit')" @click="handleSubmit" />
+    <q-btn :label="t('cancel')" />
+  </q-btn-group>
 </template>
 
 <style scoped>

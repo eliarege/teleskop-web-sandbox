@@ -1,30 +1,21 @@
 <script setup lang="ts">
+import { klona } from 'klona'
 import { selectStartingParameterType } from '~/utils'
 
 const { t } = useI18n()
 
 const selectedMachineId = ref()
 
-const fabricWeight = ref()
-const flotteRatio = ref()
-const partCount = ref()
-const partyNo = ref()
-const accompanyNo = ref()
-const clothLength = ref()
-const customer = ref()
-const customerOrder = ref()
-const fabricType = ref()
-
 const paramTypeMaps = reactive([
-  { id: 0, name: 'fabricWeight', data: fabricWeight, label: t('fabricWeight') },
-  { id: 1, name: 'flotteRatio', data: flotteRatio, label: t('flotteRatio') },
-  { id: 2, name: 'partCount', data: partCount, label: t('partCount') },
-  { id: 3, name: 'partyNo', data: partyNo, label: t('partyNo') },
-  { id: 4, name: 'accompanyNo', data: accompanyNo, label: t('accompanyNo') },
-  { id: 5, name: 'clothLength', data: clothLength, label: t('clothLength') },
-  { id: 6, name: 'customer', data: customer, label: t('customer') },
-  { id: 7, name: 'customerOrder', data: customerOrder, label: t('customerOrder') },
-  { id: 8, name: 'fabricType', data: fabricType, label: t('fabricType') },
+  { id: 0, name: 'fabricWeight', data: undefined },
+  { id: 1, name: 'flotteRatio', data: undefined },
+  { id: 2, name: 'partCount', data: undefined },
+  { id: 3, name: 'partyNo', data: undefined },
+  { id: 4, name: 'accompanyNo', data: undefined },
+  { id: 5, name: 'clothLength', data: undefined },
+  { id: 6, name: 'customer', data: undefined },
+  { id: 7, name: 'customerOrder', data: undefined },
+  { id: 8, name: 'fabricType', data: undefined },
 ])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
@@ -44,18 +35,11 @@ const { data: parameterOptions } = useLazyFetch('/api/starting-parameter-types/s
 const { data: parameterTypes } = useLazyFetch('/api/starting-parameter-types/starting-parameter-types', {
   immediate: false,
   query: { machineId: selectedMachineId },
-  transform: (parameterTypes) => {
-    return parameterTypes.map(t => ({
-      ...t,
-      paramName: t.paramId === -1 ? t('notSelected') : t.paramString,
-    }))
-  },
-
 })
 
 watch(parameterTypes, (_newValue, _oldValue) => {
   for (const paramTypeMap of paramTypeMaps) {
-    paramTypeMap.data = parameterTypes.value.find(t => t.paramTypeId === Number(paramTypeMap.id))?.paramString || t('notSelected')
+    paramTypeMap.data = parameterTypes.value.find(t => t.paramTypeId === Number(paramTypeMap.id)) || { paramId: -1, paramString: t('notSelected') }
   }
 })
 
@@ -63,15 +47,37 @@ async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
 }
 
-async function handleOptionChange(paramTypeName: string) {
-  const param = paramTypeMaps.find(p => p.name === paramTypeName)
-  const paramTypeId = param.id
-  const paramId = param.data.paramId
+async function handleOptionChange(paramType: object) {
+  const paramTypeId = paramType.id
+  const paramId = paramType.data.paramId
   await selectStartingParameterType(selectedMachineId.value, paramTypeId, paramId)
+}
+
+const copy = ref()
+function handleCopy() {
+  copy.value = klona(paramTypeMaps)
+}
+
+async function handlePaste() {
+  for (const paramType of copy.value) {
+    await handleOptionChange(paramType)
+  }
 }
 </script>
 
 <template>
+  <q-btn-group push class="flex flex-row ">
+    <q-btn
+      :label="t('copy')"
+      no-caps
+      @click="handleCopy"
+    />
+    <q-btn
+      :label="t('paste')"
+      no-caps
+      @click="handlePaste"
+    />
+  </q-btn-group>
   <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
       <h3>{{ t('machines') }}</h3>
@@ -101,8 +107,8 @@ async function handleOptionChange(paramTypeName: string) {
           :options="parameterOptions"
           option-label="paramString"
           option-value="paramId"
-          :label="paramTypeMap.label"
-          @update:model-value="handleOptionChange(paramTypeMap.name)"
+          :label="t(paramTypeMap.name)"
+          @update:model-value="handleOptionChange(paramTypeMap)"
         />
       </div>
     </q-card-section>

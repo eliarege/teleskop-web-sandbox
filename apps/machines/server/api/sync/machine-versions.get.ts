@@ -14,6 +14,7 @@ export default defineEventHandler(async () => {
       const response = await $fetch(`http://${IP}:8080`, {
         method: 'POST',
         body: soapSchema('GetVersion', '<Dummy>0</Dummy>'),
+        timeout: 1000,
       })
 
       const object = wsdl.xmlToObject(response)

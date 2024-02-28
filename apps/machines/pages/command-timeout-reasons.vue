@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { addCommandTimeoutReason } from '~/utils'
-
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -10,7 +8,7 @@ const selectedReasonId = ref()
 const { data: machines } = useLazyFetch('/api/machines/active-machines', {
   default: () => [],
 })
-const { data: machineCommands } = useLazyFetch(`/api/command-timeout-reasons/master-commands-timeout`, {
+const { data: machineCommands } = useLazyFetch(`/api/master-commands/master-commands`, {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
@@ -47,7 +45,10 @@ const showEditReasonDialog = ref(false)
 
 const newReasonText = ref('')
 async function handleAddReason() {
-  await addCommandTimeoutReason(newReasonText.value)
+  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+    method: 'POST',
+    body: { reasonText: newReasonText.value },
+  })
   showAddReasonDialog.value = false
   newReasonText.value = ''
   await refreshTimeoutReasons()
@@ -67,6 +68,19 @@ async function handleEditReason() {
 async function handleDeleteReason() {
   await deleteCommandTimeoutReason(selectedReasonId.value)
   await refreshTimeoutReasons()
+}
+
+const copy = ref()
+
+function handleCopy() {
+  copy.value = selectedMachineId.value
+}
+
+async function handlePaste() {
+  await $fetch('/api/command-timeout-reasons/copy', {
+    method: 'POST',
+    body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
+  })
 }
 </script>
 
@@ -112,6 +126,18 @@ async function handleDeleteReason() {
   </q-dialog>
 
   <div class="flex justify-end mb-4 mr-4">
+    <q-btn-group push class="flex flex-row ">
+      <q-btn
+        :label="t('copy')"
+        no-caps
+        @click="handleCopy"
+      />
+      <q-btn
+        :label="t('paste')"
+        no-caps
+        @click="handlePaste"
+      />
+    </q-btn-group>
     <q-btn-group push>
       <q-btn
         push

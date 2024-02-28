@@ -145,6 +145,7 @@ export interface FeedbackCommand {
 
 export interface MasterCommand {
   commandNo?: number
+  commandName?: string
   commandType?: number
   x?: string
   y?: string
@@ -233,4 +234,36 @@ export interface DigitalLock {
     outputId: number
     state: number | null
   }[]
+}
+export interface Material {
+  materialId: number
+  materialCode: string
+  machineId: number
+  materialName: string
+  materialGroupNo: number
+  preWater: number | null
+  betweenWater: number | null
+  postWater: number | null
+}
+export interface TankDefinition {
+  machineId: number
+  tankName: string
+  tankNo: number
+  materials: Material[]
+}
+export interface WaterIO {
+  machineId: number
+  commandNo: number
+  ioIndex: number
+  ioId: number
+  ioType: number
+  name: string
+  programEditing: boolean
+  commandRun: boolean
+}
+
+export interface BatchParam {
+  machineId: number
+  paramId: number
+  paramString: string
 }

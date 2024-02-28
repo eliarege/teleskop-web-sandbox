@@ -1,22 +1,20 @@
 import { knex } from '~/server/connectionPool'
-import type { CommandTypeEvent } from '~/types'
 
 export default defineEventHandler(async (event) => {
-  const commandTypeEvent: CommandTypeEvent = await readBody(event)
-  const { machineId, commandNo, commandType, action } = commandTypeEvent
+  const { commandTypes } = await readBody(event)
 
-  if (action === 'add') {
-    return await knex('BFCOMMANDTYPES')
-      .insert({
-        machineId,
-        commandNo,
-        commandType,
-      })
-  } else if (action === 'remove') {
-    return await knex('BFCOMMANDTYPES')
-      .where({
-        machineId,
-        commandNo,
-      }).del()
-  }
+  await knex.transaction(async (trx) => {
+    await trx('BFCOMMANDTYPES')
+      .where('machineId', commandTypes[0].machineId)
+      .del()
+
+    await trx('BFCOMMANDTYPES')
+      .insert(commandTypes.map(commandType => ({
+        machineId: commandType.machineId,
+        commandNo: commandType.commandNo,
+        commandType: commandType.commandType,
+      })))
+  })
+
+  return commandTypes
 })

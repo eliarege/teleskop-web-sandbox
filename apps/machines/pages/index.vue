@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useMagicKeys, whenever } from '@vueuse/core'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
+import type { Machine } from '~/types'
 
 const { t } = useI18n()
 
@@ -406,7 +407,7 @@ async function handleDelete(formData) {
   await $fetch('/api/machines/machine', {
     method: 'DELETE',
     body: {
-      machineIds: formData.map(d => d.machineId),
+      machineIds: formData.map((d: Machine) => d.machineId),
     },
   })
   await refresh()
@@ -419,6 +420,22 @@ const keys = useMagicKeys()
 whenever(keys.shift_alt_t, () => {
   showTeleskopSettings.value = true
 })
+
+const copy = ref()
+
+function handleCopy() {
+  copy.value = selected.value.machineId
+}
+
+async function handlePaste() {
+  await $fetch('/api/io/copy', {
+    method: 'POST',
+    body: {
+      sourceMachineId: copy.value,
+      targetMachineId: selected.value.machineId,
+    },
+  })
+}
 </script>
 
 <template>
@@ -427,6 +444,18 @@ whenever(keys.shift_alt_t, () => {
     :selected="selected"
     @refresh="refresh"
   />
+  <q-btn-group push class="flex flex-row ">
+    <q-btn
+      :label="t('copy')"
+      no-caps
+      @click="handleCopy"
+    />
+    <q-btn
+      :label="t('paste')"
+      no-caps
+      @click="handlePaste"
+    />
+  </q-btn-group>
   <FormTableKit
     :rows="machines" :columns="columns"
     form-class="grid grid-cols-2 gap-4 items-center"
