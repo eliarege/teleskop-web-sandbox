@@ -40,7 +40,8 @@ async function listWorkspacePackages(rootDir: string): Promise<Package[]> {
     '--fail-if-no-match',
     '--filter',
     pkgFilter,
-  ])
+  ]).pipeStdout!(execa('grep', ['--invert-match', 'Failed to replace env']))
+
   return JSON.parse(stdout)
 }
 
@@ -178,5 +179,9 @@ program
       console.log(`Package file at '${output.file}' has changed, lockfile should be updated.`)
     }
   })
+
+program.command('list').action(async () => {
+  console.log(await listWorkspacePackages(await getProjectRoot()))
+})
 
 program.name('merge-request-analyzer').parse()
