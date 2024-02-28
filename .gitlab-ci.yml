@@ -33,17 +33,22 @@ stages:
 
 .merge-request-rules:
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
 
-# Instance level authentication
-.npm-registry-auth: &npm-registry-auth
+# Instance level authentication, sets global `.npmrc`
+.npm-registry-global-auth: &npm-registry-global-auth
+  - echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/packages/npm/" >> $(npm config get userconfig)
+  - echo "${CI_API_V4_URL#http*:}/packages/npm/:_authToken=\${CI_JOB_TOKEN}" >> $(npm config get userconfig)
+
+# Instance level authentication, sets `.npmrc` at current directory
+.npm-registry-local-auth: &npm-registry-local-auth
   - echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/packages/npm/" >> .npmrc
   - echo "${CI_API_V4_URL#http*:}/packages/npm/:_authToken=\${CI_JOB_TOKEN}" >> .npmrc
 
 workflow:
   rules:
     - if: $CI_COMMIT_TAG
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event
 
 variables:
   TARGET_APPS:
@@ -72,9 +77,9 @@ merge-request-summarize:
     - .merge-request-rules
   before_script:
     - apt update && apt install -y jq git
-    - *npm-registry-auth
+    - *npm-registry-global-auth
   script:
-    - git fetch
+    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
     - npm install -g @eliarelektronik/merge-request-analyzer
     - export LATEST_TARGET_BRANCH_SHA=$(git log -n 1 --pretty=format:"%H" origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME)
     - |
