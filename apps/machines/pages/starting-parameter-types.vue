@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { klona } from 'klona'
 import { selectStartingParameterType } from '~/utils'
 
 const { t } = useI18n()
@@ -54,7 +55,7 @@ async function handleOptionChange(paramType: object) {
 
 const copy = ref()
 function handleCopy() {
-  copy.value = structuredClone(paramTypeMaps)
+  copy.value = klona(paramTypeMaps)
 }
 
 async function handlePaste() {

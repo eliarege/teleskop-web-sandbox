@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
+import { klona } from 'klona'
 import type { Machine, Material, TankDefinition } from '~/types'
 
 const { t } = useI18n()
@@ -21,7 +22,7 @@ const { data: tanks, refresh: refreshTanks } = useLazyFetch('/api/materials/mate
   default: () => [],
   query: { machineId: selectedMachineId },
   onResponse: ({ response }) => {
-    tanksClone.value = structuredClone(response._data)
+    tanksClone.value = klona(response._data)
   },
 })
 
@@ -58,7 +59,7 @@ async function handleSubmit() {
 const copy = ref()
 
 function handleCopy() {
-  copy.value = structuredClone(tanksClone.value)
+  copy.value = klona(tanksClone.value)
 }
 
 async function handlePaste() {

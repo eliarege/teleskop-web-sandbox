@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
+import { klona } from 'klona'
 import type { CommandType } from '~/types'
 
 interface commandTypeMap {
@@ -92,7 +93,7 @@ async function handleSubmit() {
 const copy = ref()
 
 function handleCopy() {
-  copy.value = structuredClone(commandTypes.value)
+  copy.value = klona(commandTypes.value)
 }
 
 async function handlePaste() {

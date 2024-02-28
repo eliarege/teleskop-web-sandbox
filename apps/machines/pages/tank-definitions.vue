@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
+import { klona } from 'klona'
 import type { Machine, MasterCommand } from '~/types'
 
 const { t } = useI18n()
@@ -154,7 +155,7 @@ async function handleSubmit() {
 const copy = ref()
 
 function handleCopy() {
-  copy.value = structuredClone(tankDefinitions.value)
+  copy.value = klona(tankDefinitions.value)
 }
 
 async function handlePaste() {
