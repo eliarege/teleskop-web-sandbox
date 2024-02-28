@@ -261,3 +261,9 @@ export interface WaterIO {
   programEditing: boolean
   commandRun: boolean
 }
+
+export interface BatchParam {
+  machineId: number
+  paramId: number
+  paramString: string
+}

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { Column } from 'nuxt-ui-types'
-import type { ErpParameter, Machine } from '~/types'
+import type { BatchParam, ErpParameter, Machine } from '~/types'
 import { addErpParameterField, deleteErpParameterField, updateErpParameterField } from '~/utils'
 
 const { t } = useI18n()
@@ -190,6 +189,8 @@ const selectedParam = ref<Partial<ErpParameter>>({
   paramId: -1,
 })
 
+const showImportBatchParametersDialog = ref(false)
+
 const selectedMachineId = computed(() => selectedMachine.value.machineId)
 
 const { data: machines } = useLazyFetch('/api/machines/machines', {
@@ -251,6 +252,38 @@ async function deleteParam() {
   await deleteErpParameterField(selectedParam.value)
   await refreshParams()
 }
+
+async function addBatchParam(batchParam: BatchParam) {
+  showImportBatchParametersDialog.value = false
+  await $fetch('/api/erp/erp-parameter', {
+    method: 'POST',
+    body: {
+      machineId: selectedMachineId.value,
+      paramId: params.value.length ? Math.max(...params.value.map(p => p.paramId)) + 1 : 1,
+      erpParameter: {
+        paramName: batchParam.paramString,
+        erpFieldName: null,
+      },
+    },
+  })
+  await refreshParams()
+}
+
+const copy = ref()
+
+function handleCopy() {
+  copy.value = selectedMachineId.value
+}
+
+async function handlePaste() {
+  await $fetch('/api/erp/copy', {
+    method: 'POST',
+    body: {
+      sourceMachineId: copy.value,
+      targetMachineId: selectedMachineId.value,
+    },
+  })
+}
 </script>
 
 <template>
@@ -288,6 +321,21 @@ async function deleteParam() {
           no-caps
           @click="deleteParam"
         />
+      </div>
+      <q-btn-group push class="flex flex-row ">
+        <q-btn
+          label="Copy"
+          no-caps
+          @click="handleCopy"
+        />
+        <q-btn
+          label="Paste"
+          no-caps
+          @click="handlePaste"
+        />
+      </q-btn-group>
+      <div class="my-4 flex justify-end w-full">
+        <q-btn no-caps label="Import from batch parameters" @click="showImportBatchParametersDialog = true" />
       </div>
 
       <div class="flex flex-row justify-evenly">
@@ -338,6 +386,12 @@ async function deleteParam() {
       </div>
     </q-card-section>
   </q-card>
+  <ImportBatchParametersDialog
+    v-if="showImportBatchParametersDialog"
+    :show="showImportBatchParametersDialog"
+    @close="showImportBatchParametersDialog = false"
+    @add-batch-param="addBatchParam"
+  />
 </template>
 
 <style scoped>
