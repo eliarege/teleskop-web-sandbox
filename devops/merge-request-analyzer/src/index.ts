@@ -27,11 +27,16 @@ interface Package {
 }
 
 async function listWorkspacePackages(rootDir: string): Promise<Package[]> {
+  const installed = await isPnpmInstalled()
+  if (!installed) {
+    throw throwAndExit(`pnpm is not installed`)
+  }
   const cwd = process.cwd()
   let pkgFilter = relative(cwd, join(rootDir, '(apps|packages|vendor)/*'))
   if (!pkgFilter.startsWith('.')) {
     pkgFilter = `./${pkgFilter}`
   }
+
   const { stdout } = await execa('pnpm', [
     'list',
     '--recursive',
@@ -48,6 +53,11 @@ async function listWorkspacePackages(rootDir: string): Promise<Package[]> {
 function throwAndExit(msg: string) {
   console.error(`error: ${msg}`)
   process.exit(1)
+}
+
+async function isPnpmInstalled() {
+  const { exitCode } = await execa('command', ['-v', 'pnpm'])
+  return exitCode === 0
 }
 
 async function getChangedFiles(from: string, to = 'HEAD'): Promise<string[]> {
