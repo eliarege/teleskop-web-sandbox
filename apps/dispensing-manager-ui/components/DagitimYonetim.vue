@@ -50,6 +50,7 @@ const columnsRecipe = computed<Column[]>(() => [
     field: 'programname',
     filterable: true,
     filterType: 'includes',
+    style: row => 'max-width: 15rem; overflow-x: hidden;',
   },
   { name: 'stepno', label: t('dispensingManager.stepNo'), field: 'stepno', filterable: true, filterType: 'comparison' },
   {
