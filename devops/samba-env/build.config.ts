@@ -5,7 +5,6 @@ export default defineBuildConfig({
   clean: true,
   outDir: 'dist',
   rollup: {
-    emitCJS: true,
     output: {
       banner: '#!/usr/bin/env node',
     },
