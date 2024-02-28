@@ -127,6 +127,17 @@ async function handleTankDefinitionAdd() {
   await refreshDefinitions()
 }
 
+async function handleDelete() {
+  await $fetch('/api/tank-definitions/tank-definition', {
+    method: 'DELETE',
+    body: {
+      machineId: selectedMachineId.value,
+      tankNo: tank.value.tankNo,
+    },
+  })
+  await refreshDefinitions()
+}
+
 async function handleDragDropCommands(e) {
   const commandNo = e.item.getAttribute('data-command-no')
   const listName = e.item.getAttribute('data-list-name') as NumberArrayKeys<TankDefinition>
@@ -262,6 +273,11 @@ async function handlePaste() {
             :label="t('add')"
             no-caps
             @click="handleTankDefinitionAdd"
+          />
+          <q-btn
+            :label="t('delete')"
+            no-caps
+            @click="handleDelete"
           />
         </div>
         <div class="grid gap-4">
