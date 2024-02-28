@@ -21,3 +21,7 @@ export function inferBoolean(value: string | undefined): boolean {
     return false
   throw new TypeError(`Expected boolean value, got ${value}`)
 }
+
+export function isDef<T>(value: T): value is Exclude<T, undefined> {
+  return typeof value !== 'undefined'
+}
