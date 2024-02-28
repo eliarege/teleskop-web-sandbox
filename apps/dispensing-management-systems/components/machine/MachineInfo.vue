@@ -15,6 +15,7 @@ const props = defineProps({
 const { t } = useI18n()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const machine = toRef(props, 'machine')
+const controllerTypes = toRef(props, 'controllerTypes')
 const editedMachine = ref({ ...machine.value })
 
 async function onSave() {
@@ -102,7 +103,7 @@ async function onDelete() {
                 options-dense
                 option-value="controllerTypeId"
                 option-label="controllerTypeName"
-                :options="props.controllerTypes"
+                :options="controllerTypes"
               />
             </div>
           </div>
