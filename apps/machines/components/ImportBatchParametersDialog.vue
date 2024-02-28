@@ -41,7 +41,7 @@ const { data: batchParameters } = useLazyFetch('/api/starting-parameter-types/st
           :options="machines"
           option-label="machineCode"
           option-value="machineId"
-          label="Makine"
+          :label="t('machine')"
           filled
           @update:model-value="(e) => selectedMachineId = e.machineId"
         />
@@ -53,6 +53,7 @@ const { data: batchParameters } = useLazyFetch('/api/starting-parameter-types/st
             v-ripple
             clickable
             :focused="selectedParam?.paramId === param.paramId"
+            :active="selectedParam?.paramId === param.paramId"
             @click="selectedParam = param"
           >
             <q-item-section>
@@ -62,12 +63,12 @@ const { data: batchParameters } = useLazyFetch('/api/starting-parameter-types/st
         </q-list>
         <q-btn-group push class="flex flex-row justify-end w-full">
           <q-btn
-            label="İptal"
+            :label="t('cancel')"
             color="primary"
             @click="emit('close')"
           />
           <q-btn
-            label="Kaydet"
+            :label="t('submit')"
             color="primary"
             @click="emit('addBatchParam', selectedParam)"
           />

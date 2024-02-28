@@ -314,5 +314,6 @@
   "selectedMachineCommands": "Selected Machine Commands",
   "copyAll": "Copy All",
   "copyStartupParameters": "Copy Startup Parameters",
-  "copyNonStartupParameters": "Copy Non-Startup Parameters"
+  "copyNonStartupParameters": "Copy Non-Startup Parameters",
+  "ImportFromBatchParameters": "Import From Batch Parameters"
 }

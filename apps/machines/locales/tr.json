@@ -313,5 +313,6 @@
   "selectedMachineCommands": "Seçili Makine Komutları",
   "copyAll": "Tümünü Kopyala",
   "copyStartupParameters": "Başlatma Parametrelerini Kopyala",
-  "copyNonStartupParameters": "Başlatma Parametreleri Dışındakileri Kopyala"
+  "copyNonStartupParameters": "Başlatma Parametreleri Dışındakileri Kopyala",
+  "ImportFromBatchParameters": "İş Emri Parametrelerinden İçe Aktar"
 }

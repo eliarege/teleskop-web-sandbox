@@ -338,7 +338,7 @@ async function handlePaste() {
   </q-card>
   <q-btn-group>
     <q-btn :label="t('submit')" @click="handleSubmit" />
-    <q-btn :label="t('cancel')" />
+    <q-btn :label="t('cancel')" @click="$router.go(0)" />
   </q-btn-group>
 </template>
 

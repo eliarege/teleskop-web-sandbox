@@ -355,7 +355,7 @@ async function handlePaste() {
         />
       </q-btn-group>
       <div class="my-4 flex justify-end w-full">
-        <q-btn no-caps label="Import from batch parameters" @click="showImportBatchParametersDialog = true" />
+        <q-btn no-caps :label="t('ImportFromBatchParameters')" @click="showImportBatchParametersDialog = true" />
       </div>
 
       <div class="flex flex-row justify-evenly">
