@@ -8,10 +8,10 @@ export default defineEventHandler(async (event) => {
 
   const numMachineId = Number.parseInt(machineId as string)
   if (Number.isNaN(numMachineId)) {
-    return {
+    throw createError({
       statusCode: 400,
-      body: 'Bad Request',
-    }
+      statusMessage: 'Bad Request',
+    })
   }
 
   const ip = await knex('BFMACHINES')
