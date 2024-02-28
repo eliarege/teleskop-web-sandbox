@@ -181,8 +181,4 @@ program
     }
   })
 
-program.command('list').action(async () => {
-  console.log(await listWorkspacePackages(await getProjectRoot()))
-})
-
 program.name('merge-request-analyzer').parse()
