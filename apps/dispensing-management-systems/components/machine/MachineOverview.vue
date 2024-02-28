@@ -1,7 +1,8 @@
 <script lang="ts" setup>
+import { QCardSection } from 'quasar'
 import type { QTableColumn } from 'quasar'
 import DispenserEdit from '../dispenser/DispenserEdit.vue'
-import MachineAdd from './MachineAdd.vue'
+import MachineInfo from './MachineInfo.vue'
 import { useDataStore } from '~/store/DataStore'
 import type { Dispenser, Machine, MachineControllerType } from '~/shared/types'
 
@@ -66,16 +67,30 @@ async function handleNewDispenser() {
 
 async function handleNewMachine() {
   q.dialog({
-    component: MachineAdd,
-  }).onOk(() => {
-    refreshMachines()
-    q.notify({
-      color: 'green-4',
-      textColor: 'white',
-      icon: 'done',
-      message: t('Success'),
-      timeout: 3000,
-    })
+    component: MachineInfo,
+    componentProps: {
+      controllerTypes: controllerTypes.value,
+    },
+  }).onOk((payload) => {
+    if (payload) {
+      q.notify({
+        color: 'green-4',
+        textColor: 'white',
+        icon: 'done',
+        message: t('Success'),
+        timeout: 3000,
+
+      })
+      refreshMachines()
+    } else {
+      q.notify({
+        color: 'red-4',
+        textColor: 'white',
+        icon: 'cancel',
+        message: t('Failed'),
+        timeout: 3000,
+      })
+    }
   })
 }
 async function refreshDispensers() {
@@ -116,9 +131,9 @@ const machinePagination = ref({ rowsPerPage: 20 })
     all:transition-400
   >
     <div class="q-pa-md">
-      <q-card class="flex flex-column justify-between" bordered>
-        <q-card-section class="flex items-center">
-          <q-btn
+      <QCard class="flex flex-column justify-between" bordered>
+        <QCardSection class="flex items-center">
+          <QBtn
             :label="$t('AddNew')"
             no-caps
             icon="note_add"
@@ -127,10 +142,10 @@ const machinePagination = ref({ rowsPerPage: 20 })
             clickable
             @click="handleNewDispenser"
           />
-        </q-card-section>
-      </q-card>
+        </QCardSection>
+      </QCard>
 
-      <q-table
+      <QTable
         v-model:pagination="dispenserPagination"
         :title="t('Dispensers')"
         :rows="dataStore.dispensers"
@@ -142,22 +157,22 @@ const machinePagination = ref({ rowsPerPage: 20 })
         bordered
       >
         <template #header="props">
-          <q-tr :props="props">
-            <q-th auto-width />
-            <q-th
+          <QTr :props="props">
+            <QTh auto-width />
+            <QTh
               v-for="col in props.cols"
               :key="col.name"
               :props="props"
             >
               {{ col.label }}
-            </q-th>
-          </q-tr>
+            </QTh>
+          </QTr>
         </template>
 
         <template #body="props">
-          <q-tr :props="props">
-            <q-td auto-width>
-              <q-btn
+          <QTr :props="props">
+            <QTd auto-width>
+              <QBtn
                 size="sm"
                 color="accent"
                 round
@@ -165,35 +180,35 @@ const machinePagination = ref({ rowsPerPage: 20 })
                 :icon="expandedDispensers.includes(props.rowIndex) ? 'remove' : 'add'"
                 @click="toggleDispenserRow(props.rowIndex)"
               />
-            </q-td>
-            <q-td
+            </QTd>
+            <QTd
               v-for="col in props.cols"
               :key="col.name"
               :props="props"
             >
               {{ col.value }}
-            </q-td>
-          </q-tr>
-          <q-tr
+            </QTd>
+          </QTr>
+          <QTr
             v-if="expandedDispensers.includes(props.rowIndex)"
             :props="props"
           >
-            <q-td colspan="100%">
+            <QTd colspan="100%">
               <div class="text-left">
                 Last Consumption Control: {{ props.row.lastConsumptionControl }},
                 Read Consumption from DMS: {{ props.row.readConsumptionFromDMS }},
                 FileName: {{ props.row.consumptionFilename }},
                 FilePath: {{ props.row.filePath }}
               </div>
-            </q-td>
-          </q-tr>
+            </QTd>
+          </QTr>
         </template>
-      </q-table>
+      </QTable>
     </div>
     <div class="q-pa-md ">
-      <q-card class="flex flex-row justify-between" bordered>
-        <q-card-section class="flex items-center">
-          <q-btn
+      <QCard class="flex flex-row justify-between" bordered>
+        <QCardSection class="flex items-center">
+          <QBtn
             :label="$t('AddNewMac')"
             no-caps
             icon="note_add"
@@ -202,10 +217,10 @@ const machinePagination = ref({ rowsPerPage: 20 })
             clickable
             @click="handleNewMachine"
           />
-        </q-card-section>
-      </q-card>
+        </QCardSection>
+      </QCard>
 
-      <q-table
+      <QTable
         v-model:pagination="machinePagination"
         :title="t('Machines')"
         :rows="machineRows"
@@ -218,22 +233,22 @@ const machinePagination = ref({ rowsPerPage: 20 })
         bordered
       >
         <template #header="props">
-          <q-tr :props="props">
-            <q-th auto-width />
-            <q-th
+          <QTr :props="props">
+            <QTh auto-width />
+            <QTh
               v-for="col in props.cols"
               :key="col.name"
               :props="props"
             >
               {{ col.label }}
-            </q-th>
-          </q-tr>
+            </QTh>
+          </QTr>
         </template>
 
         <template #body="props">
-          <q-tr :props="props">
-            <q-td auto-width>
-              <q-btn
+          <QTr :props="props">
+            <QTd auto-width>
+              <QBtn
                 size="sm"
                 color="accent"
                 round
@@ -241,8 +256,8 @@ const machinePagination = ref({ rowsPerPage: 20 })
                 :icon="expandedMachines.includes(props.rowIndex) ? 'remove' : 'add'"
                 @click="toggleMachineRow(props.rowIndex)"
               />
-            </q-td>
-            <q-td
+            </QTd>
+            <QTd
               v-for="col in props.cols"
               :key="col.name"
               :props="props"
@@ -253,17 +268,17 @@ const machinePagination = ref({ rowsPerPage: 20 })
               <span v-else>
                 {{ col.value }}
               </span>
-            </q-td>
-          </q-tr>
-          <q-tr v-if="expandedMachines.includes(props.rowIndex)">
-            <q-td colspan="100%">
+            </QTd>
+          </QTr>
+          <QTr v-if="expandedMachines.includes(props.rowIndex)">
+            <QTd colspan="100%">
               <div class="text-left">
                 This is expand slot for row above: {{ props.row.name }}.
               </div>
-            </q-td>
-          </q-tr>
+            </QTd>
+          </QTr>
         </template>
-      </q-table>
+      </QTable>
     </div>
   </div>
 </template>

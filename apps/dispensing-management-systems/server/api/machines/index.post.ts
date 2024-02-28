@@ -4,7 +4,6 @@ import type { Machine } from '~/shared/types'
 export default defineEventHandler(async (event) => {
   try {
     const machine: Machine = await readBody(event)
-    console.log(machine)
     const res = await dmsDB('MACHINE').insert({
       machine_id: machine.machineId,
       machine_name: machine.machineName,

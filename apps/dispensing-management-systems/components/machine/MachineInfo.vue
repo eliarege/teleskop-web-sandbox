@@ -5,7 +5,7 @@ import type { Machine, MachineControllerType } from '~/shared/types'
 const props = defineProps({
   machine: {
     type: Object as PropType<Machine>,
-    required: true,
+    required: false,
   },
   controllerTypes: {
     type: Object as PropType<MachineControllerType[]>,
@@ -18,8 +18,15 @@ const machine = toRef(props, 'machine')
 const editedMachine = ref({ ...machine.value })
 
 async function onSave() {
-  await $fetch(`/api/machines/${machine.value.machineId}`, { method: 'PUT', body: editedMachine.value })
-  onDialogOK(true)
+  try {
+    if (machine.value)
+      await $fetch(`/api/machines/${machine.value.machineId}`, { method: 'PUT', body: editedMachine.value })
+    else
+      await $fetch(`/api/machines`, { method: 'POST', body: editedMachine.value })
+    onDialogOK(true)
+  } catch (e) {
+    onDialogOK(false)
+  }
 }
 
 function onCancel() {
@@ -32,7 +39,7 @@ function onReset() {
 
 async function onDelete() {
   try {
-    await $fetch(`/api/machines`, { method: 'DELETE', body: machine.value.machineId })
+    await $fetch(`/api/machines`, { method: 'DELETE', body: machine.value!.machineId })
     onDialogOK(true)
   } catch (e) {
     onDialogOK(false)
@@ -63,7 +70,7 @@ async function onDelete() {
                 dense
                 type="text"
                 filled
-                disable
+                :disable="machine !== undefined"
                 :placeholder="editedMachine.machineId"
               />
             </div>
@@ -118,6 +125,7 @@ async function onDelete() {
               @click="onReset"
             />
             <QBtn
+              v-if="machine"
               :label="t('Delete')"
               color="negative"
               icon="delete"

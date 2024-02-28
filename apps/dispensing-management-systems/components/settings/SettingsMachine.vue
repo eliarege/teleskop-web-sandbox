@@ -61,12 +61,50 @@ async function onRowClick(_event: Event, row: any) {
       })
   })
 }
+function addNewMachine() {
+  q.dialog({
+    component: MachineInfo,
+    componentProps: {
+      controllerTypes,
+    },
+  }).onOk((payload) => {
+    if (payload) {
+      q.notify({
+        color: 'green-4',
+        textColor: 'white',
+        icon: 'done',
+        message: t('Success'),
+        timeout: 3000,
+      })
+      refreshMachines()
+    } else
+      q.notify({
+        color: 'red-4',
+        textColor: 'white',
+        icon: 'cancel',
+        message: t('Failed'),
+        timeout: 3000,
+      })
+  },
+  )
+}
 const pagination = ref({ rowsPerPage: 20 })
 </script>
 
 <template>
   <div class="flex-center text-xl mb-10">
     {{ t('settings.Machine') }}
+  </div>
+  <div class="flex-center">
+    <QBtn
+      :label="$t('AddNewMac')"
+      no-caps
+      icon="note_add"
+      color="primary"
+      class="mb-4 flex-center"
+      clickable
+      @click="addNewMachine"
+    />
   </div>
   <QTable
     flat
