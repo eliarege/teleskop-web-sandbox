@@ -269,10 +269,18 @@ async function addBatchParam(batchParam: BatchParam) {
   await refreshParams()
 }
 
-const copy = ref()
+enum CopyMode {
+  All = 1,
+  Startup = 2,
+  NonStartup = 3,
+}
 
-function handleCopy() {
+const copy = ref()
+const copyMode = ref<CopyMode>()
+
+function handleCopy(mode: CopyMode) {
   copy.value = selectedMachineId.value
+  copyMode.value = mode
 }
 
 async function handlePaste() {
@@ -281,6 +289,7 @@ async function handlePaste() {
     body: {
       sourceMachineId: copy.value,
       targetMachineId: selectedMachineId.value,
+      mode: copyMode.value,
     },
   })
 }
@@ -324,9 +333,19 @@ async function handlePaste() {
       </div>
       <q-btn-group push class="flex flex-row ">
         <q-btn
-          label="Copy"
+          label="Copy All"
           no-caps
-          @click="handleCopy"
+          @click="handleCopy(1)"
+        />
+        <q-btn
+          label="Copy Startup"
+          no-caps
+          @click="handleCopy(2)"
+        />
+        <q-btn
+          label="Copy Non Startup"
+          no-caps
+          @click="handleCopy(3)"
         />
         <q-btn
           label="Paste"
