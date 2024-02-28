@@ -94,7 +94,7 @@ merge-request-summarize:
           then echo true
           else echo false
         fi)
-    - |
+    - >
       jq --null-input
         --arg apps $(merge-request-analyzer list-modified-apps $CI_MERGE_REQUEST_DIFF_BASE_SHA)
         --argjson lockfile $SHOULD_UPDATE_LOCKFILE
