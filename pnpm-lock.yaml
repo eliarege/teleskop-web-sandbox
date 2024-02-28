@@ -66,6 +66,9 @@ importers:
 
   apps/dispensing-manager-ui:
     dependencies:
+      async-mutex:
+        specifier: ^0.4.0
+        version: 0.4.1
       knex:
         specifier: ^3.0.1
         version: 3.1.0(pg@8.11.3)(tedious@16.6.1)
@@ -167,6 +170,9 @@ importers:
       basic-ftp:
         specifier: ^5.0.3
         version: 5.0.4
+      klona:
+        specifier: ^2.0.6
+        version: 2.0.6
       knex:
         specifier: ^3.0.1
         version: 3.1.0(pg@8.11.3)(tedious@16.6.1)
