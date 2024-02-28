@@ -74,6 +74,10 @@ function defineConfiguration<const T extends Record<string, ConfigProps>>(config
   return output as InferConfigObject<T>
 }
 export const config = defineConfiguration({
+  serverPrefix: {
+    env: 'SERVER_PREFIX',
+    default: '/',
+  },
   serverHost: {
     env: 'SERVER_HOST',
     default: '0.0.0.0',

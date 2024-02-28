@@ -1,4 +1,5 @@
 import process from 'node:process'
+import { join } from 'node:path/posix'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import gracefulShutdown from 'http-graceful-shutdown'
@@ -30,9 +31,9 @@ export async function main() {
   fastify.decorate('teleskop', teleskop)
   fastify.decorate('dmExchange', dmExchange)
 
-  fastify.register(cors)
+  fastify.register(cors, { prefix: config.serverPrefix })
   fastify.register(machineStatus, {
-    prefix: '/api/v1',
+    prefix: join(config.serverPrefix, '/api/v1'),
   })
 
   fastify.listen({

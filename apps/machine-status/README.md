@@ -5,6 +5,8 @@
 ### SERVER_HOST
 ### SERVER_PORT
 Default: `5000`
+### SERVER_PREFIX
+Default: `/`
 
 ### LOG_LEVEL
 
