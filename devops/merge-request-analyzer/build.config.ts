@@ -4,4 +4,7 @@ export default defineBuildConfig({
   entries: ['src/index'],
   clean: true,
   outDir: 'dist',
+  rollup: {
+    emitCJS: true,
+  },
 })
