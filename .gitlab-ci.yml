@@ -78,6 +78,7 @@ merge-request-summarize:
   before_script:
     - apt update && apt install -y jq git
     - *npm-registry-global-auth
+    - corepack enable
   script:
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
     - npm install -g @eliarelektronik/merge-request-analyzer
