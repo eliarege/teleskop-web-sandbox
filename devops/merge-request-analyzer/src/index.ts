@@ -27,7 +27,6 @@ interface Package {
 }
 
 async function listWorkspacePackages(rootDir: string): Promise<Package[]> {
-  await assertCommand('pnpm')
   const cwd = process.cwd()
   let pkgFilter = relative(cwd, join(rootDir, '(apps|packages|vendor)/*'))
   if (!pkgFilter.startsWith('.')) {
@@ -50,16 +49,6 @@ async function listWorkspacePackages(rootDir: string): Promise<Package[]> {
 function throwAndExit(msg: string) {
   console.error(`error: ${msg}`)
   process.exit(1)
-}
-
-/**
- * Exits process if given command is not detected/installed
- */
-async function assertCommand(command: string) {
-  const { exitCode } = await execa('command', ['-v', command])
-  if (exitCode !== 0) {
-    throw throwAndExit(`${command} is not installed`)
-  }
 }
 
 async function getChangedFiles(from: string, to = 'HEAD'): Promise<string[]> {
@@ -178,7 +167,6 @@ program
   .command('list-modified-apps <commit>')
   .description('Returns newline seperated list of apps that should be rebuilt for review apps')
   .action(async (commit) => {
-    await assertCommand('git')
     const apps = await listAppsThatShouldBeRebuilt(commit)
     console.log(apps.join('\n'))
   })
@@ -187,7 +175,6 @@ program
   .command('should-update-lockfile <commit>')
   .description('Should update be lockfile before building the review app')
   .action(async (commit) => {
-    await assertCommand('git')
     const output = await shouldLockfileBeUpdated(commit)
     if (output.result) {
       console.log(`Package file at '${output.file}' has changed, lockfile should be updated.`)
