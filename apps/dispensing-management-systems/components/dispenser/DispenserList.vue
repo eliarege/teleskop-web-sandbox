@@ -7,21 +7,30 @@ const emit = defineEmits(['logout'])
 const { t } = useI18n()
 const q = useQuasar()
 const dataStore = useDataStore()
+const route = useRoute()
 
 dataStore.dispensers = await getDispensers()
 dataStore.dispenserTypes = await getDispenserTypes()
 
-const tree = ref<QTree>()
 const treeNodes = ref<any[]>([])
-// TODO: Expand selected dispenser initially
-/*
-onMounted(() => {
+const expanded = ref<string[]>([])
+
+if (dataStore.selectedDispenser) {
+  const selected = dataStore.selectedDispenser
+  expanded.value = [`${selected.dispenserBrandId}`, `${selected.dispenserBrandId},${selected.dispenserType}`, `${selected.dispenserBrandId},${selected.dispenserType},${selected.dispenserId}`]
+}
+watch(() => route.params, () => {
   if (dataStore.selectedDispenser) {
     const selected = dataStore.selectedDispenser
-    tree.value?.setExpanded(`${selected.dispenserBrand},${selected.dispenserType},${selected.dispenserId}`, true)
+    expanded.value = [`${selected.dispenserBrandId}`, `${selected.dispenserBrandId},${selected.dispenserType}`, `${selected.dispenserBrandId},${selected.dispenserType},${selected.dispenserId}`]
+  } else {
+    expanded.value = []
   }
 })
-*/
+
+function onExpand(nodes: any) {
+  expanded.value = nodes
+}
 async function getDispensers() {
   if (dataStore.dispensers)
     return dataStore.dispensers
@@ -98,15 +107,8 @@ function onClickDetails(dispenser: Dispenser) {
     title: t('Details'),
     message: `<ul> <li>${t('ID')}: ${dispenser.dispenserId}</li> <li>${t('Name')}: ${dispenser.dispenserName}</li> </ul>`,
     html: true,
-  }).onOk(() => {
-    console.log(dispenser.dispenserId)
-  }).onCancel(() => {
-    console.log('Cancel')
-  }).onDismiss(() => {
-    console.log('I am triggered on both OK and Cancel')
   })
 }
-
 async function onClickVnc(dispenser: Dispenser) {
   dataStore.selectedDispenser = dispenser
   await navigateTo({
@@ -121,14 +123,13 @@ function onLogout() {
 <template>
   <div>
     <QTree
-      ref="tree"
       :nodes="treeNodes"
       dense
       label-key="label"
       node-key="id"
       no-connectors
-      :default-expand-all="dataStore.selectedDispenser !== undefined"
-      @select="selectItem"
+      :expanded="expanded"
+      @update:expanded="onExpand"
     >
       <template #default-header=" { node }">
         <span v-if="node.children">
