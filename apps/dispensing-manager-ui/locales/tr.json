@@ -327,6 +327,12 @@
     "idAlreadyExists": "başarısız. {type} kodu {code} olan {type} mevcut.",
     "idAlreadyExistsOnBlue": "{type} kodu {code} olan {type} mevcut.",
     "cannotBeZero": "{type} kodu 0 olamaz.",
-    "deleted": "Silinmiş"
+    "deleted": "Silinmiş",
+    "requestErrorDefault": "İstek başarısız. ",
+    "requestSucceedDefault": "İstek başarılı. ",
+    "requestError1": "Makina ilgili dağıtıcıya bağlı değil.",
+    "requestError2": "Programdaki bütün materyaller ilgili dağıtıcıya bağlı olmalı.",
+    "requestError3": "Tekrar istenebilir olmayan maddeler tekrardan istenemez.",
+    "requestError4": "{status} durumundaki adımlar tekrar istenemez."
   }
 }

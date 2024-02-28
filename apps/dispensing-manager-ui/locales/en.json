@@ -328,6 +328,12 @@
     "idAlreadyExists": "failed. {type} with {type} ID {code} already exists.",
     "idAlreadyExistsOnBlue": "{type} with {type} ID {code} already exists.",
     "cannotBeZero": "{type} code cannot be 0.",
-    "deleted": "Deleted"
+    "deleted": "Deleted",
+    "requestErrorDefault": "Request failed. ",
+    "requestSucceedDefault": "Request succeed. ",
+    "requestError1": "Machine is not connected to related dispenser.",
+    "requestError2": "All the materials on the probram have to be connected to related dispenser.",
+    "requestError3": "Non-rerequestable material cannot be rerequested.",
+    "requestError4": "Recipe steps with status {status} cannot be rerequested."
   }
 }

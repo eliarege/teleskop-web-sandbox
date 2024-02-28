@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TableColumnCtx } from 'element-plus'
 import type { PropType } from 'vue'
+import { notification } from '~/shared/functions'
 import type { RecipeLatest } from '~/shared/types'
 
 const props = defineProps({
@@ -144,17 +145,18 @@ const logsDialog = ref(false)
 const priority = ref()
 const tankNo = ref()
 const isTankNoRequired = ref()
-let materialCodes: (string | null)[] = []
+let materials: ({ materialCode: string | null, amount: number | null })[] = []
 
 async function checkIsTankNoRequired() {
   requestDialog.value = true
   selectedRow.value.programTotalCount = 0
   props.data.forEach((row) => {
     if (selectedRow.value.ISN === row.ISN)
-      materialCodes.push(row.chemCode)
+      materials.push({ materialCode: row.chemCode, amount: row.amount })
     if (selectedRow.value.programNo === row.programNo && row.parallelStep === 1)
       selectedRow.value.programTotalCount++
   })
+  const materialCodes = materials.map(material => material.materialCode)
   isTankNoRequired.value = await $fetch('/api/recipe/check-tank-no-required', {
     method: 'POST',
     body: {
@@ -169,18 +171,35 @@ const priorityOptions = [
   { label: t('recipe.priorityCritical'), value: 99 },
 ]
 async function requestRow() {
-  const data = [2, priority.value.value, props.machineid, tankNo.value, selectedRow.value.joborder, selectedRow.value.programNo, selectedRow.value.mainStep, selectedRow.value.mainStep, selectedRow.value.programTotalCount, selectedRow.value.recipeType, selectedRow.value.processOrder]
-  await $fetch('/api/file/write-recipe-step', {
+  const data = [
+    2,
+    priority.value.value,
+    props.machineid,
+    tankNo.value,
+    selectedRow.value.joborder,
+    selectedRow.value.programNo,
+    selectedRow.value.mainStep,
+    selectedRow.value.mainStep,
+    selectedRow.value.programTotalCount,
+    selectedRow.value.recipeType,
+    selectedRow.value.processOrder,
+  ]
+
+  const response = await $fetch('/api/file/write-recipe-step', {
     method: 'POST',
     body: {
       row: selectedRow.value,
       content: data,
-      materialCodes,
+      materials,
     },
   })
+  const errorMessage = response === 1
+    ? t('warnings.requestSucceedDefault')
+    : t('warnings.requestErrorDefault') + t(`warnings.requestError${response.error}`, { status: response.error === 4 ? t(`statusCodes.${response.status}`) : '' })
+  notification(response === 1, errorMessage)
   tankNo.value = null
   priority.value = null
-  materialCodes = []
+  materials = []
 }
 
 watch(() => props.resetCounter, (newValue, oldValue) => {
@@ -279,13 +298,14 @@ function isCorrectPlankey(param: any) {
             :label="t('settings.cancel')"
             outline
             icon="close"
-            @click="tankNo = null, priority = null, materialCodes = []"
+            @click="tankNo = null, priority = null, materials = []"
           />
           <q-btn
             v-close-popup
             outline
             :label="t('submit')"
             icon="check"
+            :disable="isTankNoRequired ? !(tankNo && priority) : !priority"
             @click="confirmationDialog = true"
           />
         </q-card-actions>
@@ -308,7 +328,7 @@ function isCorrectPlankey(param: any) {
             :label="t('no')"
             outline
             icon="close"
-            @click="tankNo = null, priority = null, materialCodes = []"
+            @click="tankNo = null, priority = null, materials = []"
           />
           <q-btn
             v-close-popup
