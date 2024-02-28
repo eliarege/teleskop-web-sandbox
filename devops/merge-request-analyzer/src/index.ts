@@ -26,7 +26,12 @@ interface Package {
   isApp: boolean
 }
 
-async function listWorkspacePackages(): Promise<Package[]> {
+async function listWorkspacePackages(rootDir: string): Promise<Package[]> {
+  const cwd = process.cwd()
+  let pkgFilter = relative(cwd, join(rootDir, '(apps|packages|vendor)/*'))
+  if (!pkgFilter.startsWith('.')) {
+    pkgFilter = `./${pkgFilter}`
+  }
   const { stdout } = await execa('pnpm', [
     'list',
     '--recursive',
@@ -34,7 +39,7 @@ async function listWorkspacePackages(): Promise<Package[]> {
     '--only-projects',
     '--fail-if-no-match',
     '--filter',
-    '../../(apps|packages|vendor)/*',
+    pkgFilter,
   ])
   return JSON.parse(stdout)
 }
@@ -64,7 +69,7 @@ async function getFileAtCommit(commit: string, path: string): Promise<string | n
 async function listAppsThatShouldBeRebuilt(commit: string): Promise<string[]> {
   const rootDir = await getProjectRoot()
   const appDir = join(rootDir, 'apps')
-  const packages = await listWorkspacePackages()
+  const packages = await listWorkspacePackages(rootDir)
   const changedFiles = await getChangedFiles(commit)
 
   for (const pkg of packages) {
@@ -175,11 +180,3 @@ program
   })
 
 program.name('merge-request-analyzer').parse()
-
-/*
-1) Got MR
-2) Detect apps
-3) Build those apps
-4)
-
-*/
