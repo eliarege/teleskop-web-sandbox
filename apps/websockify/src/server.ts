@@ -8,18 +8,12 @@ import { WebSocketServer } from 'ws'
 import type { Logger } from 'pino'
 import type { Machine } from './database'
 import { fetchTeleskopMachine } from './database'
-import { destruct, getPathname, onExitSignal } from './utils'
+import { getPathname, onExitSignal } from './utils'
 import { logger as parentLogger } from './logger'
 import { DESECBCipher } from './crypto/des'
 import { initKcAuth } from './auth'
 import { ClientMessageType, HandshakeError, HandshakeState, createRFBHandshakeProxy, interceptClientMessageType } from './rfb'
-
-const {
-  SERVER_HOST = '0.0.0.0',
-  SERVER_PORT = '6800',
-  TARGET_HOST,
-  TARGET_PORT = '5900',
-} = destruct(process.env)
+import { config } from './config'
 
 interface WebSocketExt extends WebSocket {
   isAlive: boolean
@@ -39,13 +33,13 @@ const MACHINE_PATH_RE = /^\/\d+$/
 const kcAuth = initKcAuth()
 const logger = parentLogger.child({ name: 'server' })
 
-if (process.env.NODE_ENV === 'development' && TARGET_HOST) {
-  logger.info(`TARGET_HOST defined, requests will be forwarded to ${TARGET_HOST}`)
+if (process.env.NODE_ENV === 'development' && config.targetHost) {
+  logger.info(`TARGET_HOST defined, requests will be forwarded to ${config.targetHost}`)
 }
 
 const wss = new WebSocketServer({
-  host: SERVER_HOST,
-  port: Number.parseInt(SERVER_PORT),
+  host: config.serverHost,
+  port: config.serverPort,
 })
 
 // Heartbeat Monitor
@@ -61,7 +55,7 @@ const monitor = setInterval(() => {
 }, HEARTBEAT_INTERVAL)
 
 wss.on('listening', () => {
-  logger.info(`WebSocketServer listening ${SERVER_PORT}`)
+  logger.info(`WebSocketServer listening ${config.serverHost}:${config.serverPort}`)
 })
 
 wss.on('error', (err) => {
@@ -117,7 +111,7 @@ wss.on('connection', async (client: WebSocketExt, request: IncomingMessage) => {
   const pathname = getPathname(request)
   let machine: Machine | null = null
 
-  if (process.env.NODE_ENV === 'production' || !TARGET_HOST) {
+  if (process.env.NODE_ENV === 'production' || !config.targetHost) {
     if (!pathname || pathname === '/')
       return close('Expected machine id')
     if (!MACHINE_PATH_RE.test(pathname))
@@ -131,8 +125,8 @@ wss.on('connection', async (client: WebSocketExt, request: IncomingMessage) => {
   } else {
     machine = {
       name: 'DEV',
-      host: TARGET_HOST,
-      port: Number.parseInt(TARGET_PORT),
+      host: config.targetHost,
+      port: config.targetPort,
     }
   }
 

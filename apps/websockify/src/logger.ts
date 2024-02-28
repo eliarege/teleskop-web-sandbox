@@ -1,6 +1,6 @@
-import process from 'node:process'
 import Pino from 'pino'
+import { config } from './config'
 
 export const logger = Pino({
-  level: process.env.LOG_LEVEL || 'info',
+  level: config.logLevel,
 })

@@ -4,7 +4,8 @@ import { createRemoteJWKSet, jwtVerify } from 'jose'
 import type { WebSocket } from 'ws'
 import { JOSEError } from 'jose/errors'
 import { logger as parentLogger } from './logger'
-import { getEnvOrThrow, inferBoolean } from './utils'
+import { getEnvOrThrow } from './utils'
+import { config } from './config'
 
 const logger = parentLogger.child({ name: 'auth' })
 
@@ -28,8 +29,8 @@ export interface KeycloakConfig {
 }
 
 export type AuthResult<T = any> =
-  | { status: 'success'; payload: T }
-  | { status: 'error'; reason: Error }
+  | { status: 'success', payload: T }
+  | { status: 'error', reason: Error }
 
 export interface AuthPayload {
   name: string
@@ -46,13 +47,6 @@ export type KeycloakAuth =
 
 if (process.env.NODE_ENV === 'development' && process.env.KC_DEV_TOKEN) {
   logger.info(`Using KC_DEV_TOKEN for authentications`)
-}
-
-function isKeycloakEnabled() {
-  const defaultValue = false
-  return process.env.KC_ENABLED
-    ? inferBoolean(process.env.KC_ENABLED)
-    : defaultValue
 }
 
 function getKeycloakEnv(): KeycloakConfig {
@@ -85,9 +79,8 @@ function sendPayload<T>(payload: T): AuthResult<T> {
 }
 
 export function initKcAuth(): KeycloakAuth {
-  const enabled = isKeycloakEnabled()
-  if (!enabled) {
-    return { enabled }
+  if (!config.keycloakEnabled) {
+    return { enabled: false }
   }
   logger.debug('Authentication enabled')
   const { url, realm, clientId } = getKeycloakEnv()
