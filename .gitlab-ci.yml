@@ -72,7 +72,7 @@ merge-request-summarize:
     - .merge-request-rules
   before_script:
     - apt update && apt install -y jq git
-    - *&npm-registry-auth
+    - *npm-registry-auth
   script:
     - git fetch
     - npm install -g @eliarelektronik/merge-request-analyzer
