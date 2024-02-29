@@ -70,6 +70,7 @@ async function handleNewMachine() {
     component: MachineInfo,
     componentProps: {
       controllerTypes: controllerTypes.value,
+      dispensers: dataStore.dispensers,
     },
   }).onOk((payload) => {
     if (payload) {

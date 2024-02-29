@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
-import type { Machine, MachineControllerType } from '~/shared/types'
+import type { Dispenser, Machine, MachineControllerType } from '~/shared/types'
 
 const props = defineProps({
   machine: {
@@ -11,19 +11,38 @@ const props = defineProps({
     type: Object as PropType<MachineControllerType[]>,
     required: true,
   },
+  dispensers: {
+    type: Object as PropType<Dispenser[]>,
+    required: true,
+  },
 })
+
 const { t } = useI18n()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const machine = toRef(props, 'machine')
 const controllerTypes = toRef(props, 'controllerTypes')
 const editedMachine = ref({ ...machine.value })
-
+const dispensers = toRef(props, 'dispensers')
+const selectedDispensersInitial = machine.value ? ref(machine.value.connectedDispensers.map(dispenser => dispenser.dispenserId)) : ref([])
+const selectedDispensers = ref([...selectedDispensersInitial.value])
 async function onSave() {
   try {
+    const added = selectedDispensers.value
+      .filter(dispenser =>
+        !selectedDispensersInitial.value.includes(dispenser))
+
+    const deleted = selectedDispensersInitial.value
+      .filter(initialDispenser =>
+        !selectedDispensers.value.includes(initialDispenser))
+    console.log(deleted)
     if (machine.value)
       await $fetch(`/api/machines/${machine.value.machineId}`, { method: 'PUT', body: editedMachine.value })
     else
       await $fetch(`/api/machines`, { method: 'POST', body: editedMachine.value })
+    await $fetch(`/api/connections/machines?machineId=${editedMachine.value.machineId}`, { method: 'POST', body: {
+      added,
+      deleted,
+    } })
     onDialogOK(true)
   } catch (e) {
     onDialogOK(false)
@@ -36,6 +55,7 @@ function onCancel() {
 
 function onReset() {
   editedMachine.value = { ...machine.value }
+  selectedDispensers.value = [...selectedDispensersInitial.value]
 }
 
 async function onDelete() {
@@ -44,6 +64,16 @@ async function onDelete() {
     onDialogOK(true)
   } catch (e) {
     onDialogOK(false)
+  }
+}
+function onCheck(dispenserId: number, isChecked: boolean) {
+  if (isChecked) {
+    selectedDispensers.value.push(dispenserId)
+  } else {
+    const index = selectedDispensers.value.indexOf(dispenserId)
+    if (index !== -1) {
+      selectedDispensers.value.splice(index, 1)
+    }
   }
 }
 </script>
@@ -105,6 +135,17 @@ async function onDelete() {
                 option-label="controllerTypeName"
                 :options="controllerTypes"
               />
+            </div>
+            <div class="row-item">
+              <span class="item-label">{{ t('materialFields.ConnectedDispensers') }}</span>
+              <div v-for="dispenser in dispensers" :key="dispenser.dispenserId">
+                <QCheckbox
+                  :value="dispenser.dispenserId"
+                  :label="dispenser.dispenserName"
+                  :model-value="selectedDispensers.includes(dispenser.dispenserId)"
+                  @update:model-value="value => onCheck(dispenser.dispenserId, value)"
+                />
+              </div>
             </div>
           </div>
           <div class="flex-center justify-evenly p-10">

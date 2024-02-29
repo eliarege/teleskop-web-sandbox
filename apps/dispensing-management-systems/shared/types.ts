@@ -127,6 +127,7 @@ export interface Machine {
   machineId: number
   machineName: string
   controllerType: number
+  connectedDispensers: Dispenser[]
 }
 export interface MachineControllerType {
   controllerTypeId: number

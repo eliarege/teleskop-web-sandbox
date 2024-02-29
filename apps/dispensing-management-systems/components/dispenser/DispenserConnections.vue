@@ -106,7 +106,7 @@ async function handleSubmit() {
 
     try {
       buttonDisabled.value = true
-      await $fetch(`/api/dispensers/connections/machines/${props.dispenserId}`, { method: 'POST', body: {
+      await $fetch(`/api/connections/machines/${props.dispenserId}`, { method: 'POST', body: {
         added,
         deleted,
       } })
@@ -143,7 +143,7 @@ async function handleSubmit() {
       .map(deletedMaterial => deletedMaterial.materialCode)
     try {
       buttonDisabled.value = true
-      await $fetch(`/api/dispensers/connections/materials/${props.dispenserId}`, { method: 'POST', body: {
+      await $fetch(`/api/connections/materials/${props.dispenserId}`, { method: 'POST', body: {
         added,
         deleted,
       } })

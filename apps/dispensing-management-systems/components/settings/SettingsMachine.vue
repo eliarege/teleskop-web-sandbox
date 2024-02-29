@@ -2,13 +2,14 @@
 import type { QTableColumn } from 'quasar'
 import MachineInfo from '../machine/MachineInfo.vue'
 import type { Machine, MachineControllerType } from '~/shared/types'
+import { useDataStore } from '~/store/DataStore'
 
 const q = useQuasar()
 const { t } = useI18n()
+const dataStore = useDataStore()
+
 const { data: machines, refresh: refreshMachines } = await useFetch<Machine[]>('/api/machines')
-
 const { data: controllerTypes } = await useFetch<MachineControllerType[]>('/api/machines/types')
-
 const columns: (QTableColumn<Machine>)[] = [
   {
     name: 'machineNo',
@@ -31,15 +32,28 @@ const columns: (QTableColumn<Machine>)[] = [
     sortable: true,
     align: 'left',
   },
+  {
+    name: 'connectedDispensers',
+    label: t('materialFields.ConnectedDispensers'),
+    field: 'connectedDispensers',
+    align: 'left',
+  },
 ]
+async function getDispensers() {
+  if (!dataStore.dispensers)
+    dataStore.dispensers = await $fetch('/api/dispensers')
+  return dataStore.dispensers
+}
 
 async function onRowClick(_event: Event, row: any) {
   const selectedMachine = await $fetch(`/api/machines/${row.machineId}`)
+  const dispensers = await getDispensers()
   q.dialog({
     component: MachineInfo,
     componentProps: {
       machine: selectedMachine,
       controllerTypes: controllerTypes.value,
+      dispensers,
     },
   }).onOk((payload) => {
     if (payload) {
@@ -61,11 +75,13 @@ async function onRowClick(_event: Event, row: any) {
       })
   })
 }
-function addNewMachine() {
+async function addNewMachine() {
+  const dispensers = await getDispensers()
   q.dialog({
     component: MachineInfo,
     componentProps: {
       controllerTypes,
+      dispensers,
     },
   }).onOk((payload) => {
     if (payload) {
@@ -124,6 +140,9 @@ const pagination = ref({ rowsPerPage: 20 })
       >
         <span v-if="props.col.field === 'controllerType'">
           {{ controllerTypes?.find(type => type.controllerTypeId === props.value)?.controllerTypeName }}
+        </span>
+        <span v-else-if="props.col.field === 'connectedDispensers'">
+          {{ props.row.connectedDispensers?.map((connection: any) => connection.dispenserName).filter(Boolean).join(', ') || '-' }}
         </span>
         <span v-else>
           {{ props.value }}

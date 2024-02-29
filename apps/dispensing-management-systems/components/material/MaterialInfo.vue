@@ -62,11 +62,10 @@ function onCancel() {
 
 function onReset() {
   editedMaterial.value = { ...material.value }
-  selectedDispensers.value = selectedDispensersInitial.value
+  selectedDispensers.value = [...selectedDispensersInitial.value]
 }
 async function onDelete() {
   try {
-    console.log(editedMaterial.value.materialCode)
     await $fetch(`/api/materials`, { method: 'DELETE', body: { materialCode: editedMaterial.value.materialCode } })
     onDialogOK(true)
   } catch (e) {
