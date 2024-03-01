@@ -166,18 +166,30 @@ const program = new Command()
 program
   .command('list-modified-apps <commit>')
   .description('Returns newline seperated list of apps that should be rebuilt for review apps')
-  .action(async (commit) => {
+  .option('--json', 'Format as json array')
+  .action(async (commit, options) => {
     const apps = await listAppsThatShouldBeRebuilt(commit)
-    console.log(apps.join('\n'))
+    if (options.json) {
+      console.log(JSON.stringify(apps))
+    } else {
+      console.log(apps.join('\n'))
+    }
   })
 
 program
   .command('should-update-lockfile <commit>')
   .description('Should update be lockfile before building the review app')
-  .action(async (commit) => {
+  .option('--json', 'Return JSON boolean')
+  .action(async (commit, options) => {
     const output = await shouldLockfileBeUpdated(commit)
     if (output.result) {
-      console.log(`Package file at '${output.file}' has changed, lockfile should be updated.`)
+      if (options.json) {
+        console.log(true)
+      } else {
+        console.log(`Package file at '${output.file}' has changed, lockfile should be updated.`)
+      }
+    } else if (options.json) {
+      console.log(false)
     }
   })
 
