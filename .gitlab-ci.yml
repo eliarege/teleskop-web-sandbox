@@ -51,6 +51,7 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 variables:
+  NPM_TOKEN: $CI_JOB_TOKEN
   TARGET_APPS:
     value: dispensing-manager-ui dispensing-management-systems machine-status machines multi-monitor planning-board planning-board-engine root websockify
     description: Whitespace seperated list of apps to build/release
@@ -94,8 +95,6 @@ merge-request-summarize:
 release-devops-packages:
   image: node:20
   stage: release
-  variables:
-    NPM_TOKEN: $CI_JOB_TOKEN
   extends:
     - .devops-rules
   script:
@@ -116,7 +115,6 @@ release-apps:
   extends:
     - .app-rules
   variables:
-    NPM_TOKEN: $CI_JOB_TOKEN
     TURBO_TOKEN: $TURBO_TOKEN
   before_script:
     - apk add --no-cache jq
