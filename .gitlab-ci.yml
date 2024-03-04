@@ -83,8 +83,10 @@ merge-request-summarize:
   script:
     - turbo prune @eliarelektronik/merge-request-analyzer --out-dir out && cd out
     - pnpm install
-    - export
-    - pnpm exec merge-request-analyzer $CI_MERGE_REQUEST_DIFF_BASE_SHA --branch $CI_MERGE_REQUEST_TARGET_BRANCH_NAME > $CI_BUILDS_DIR/merge-request.summary.json
+    - |
+      pnpm exec merge-request-analyzer $CI_MERGE_REQUEST_DIFF_BASE_SHA \
+      --branch $CI_MERGE_REQUEST_TARGET_BRANCH_NAME \
+      > $CI_PROJECT_DIR/merge-request.summary.json
   artifacts:
     paths:
       - merge-request.summary.json

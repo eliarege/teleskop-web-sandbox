@@ -17,7 +17,7 @@ if [[ -z "$PUBLISH_VERSION" ]]; then
   exit 1
 fi
 
-if [[ -z "$CI_BUILDS_DIR" ]]; then
+if [[ -z "$CI_PROJECT_DIR" ]]; then
   echo "Should be run via gitlab-ci."
   exit 1
 fi
@@ -44,7 +44,7 @@ if [[ "$PKG_PRIVATE" == true ]]; then
 fi
 
 OUT_DIR=out
-PKG_PATH=$(realpath -q --relative-to=$CI_BUILDS_DIR "$(echo "$PKG" | jq -Mr .path)")
+PKG_PATH=$(realpath -q --relative-to=$CI_PROJECT_DIR "$(echo "$PKG" | jq -Mr .path)")
 PKG_OUT_PATH=$OUT_DIR/$PKG_PATH
 
 if [[ "$(pnpm view ${PKG_NAME} versions)" != *"'${PUBLISH_VERSION}'"* ]]; then
