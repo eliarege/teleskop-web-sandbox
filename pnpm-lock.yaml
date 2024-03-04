@@ -11,6 +11,9 @@ importers:
       '@eliarelektronik/eslint-config':
         specifier: ^2.2.0
         version: 2.2.0(@vue/compiler-sfc@3.4.15)(eslint@8.56.0)(typescript@5.3.3)
+      '@eliarelektronik/merge-request-analyzer':
+        specifier: workspace:*
+        version: link:devops/merge-request-analyzer
       dotenv:
         specifier: ^16.3.1
         version: 16.4.0

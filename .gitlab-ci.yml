@@ -76,32 +76,16 @@ merge-request-summarize:
   extends:
     - .merge-request-rules
   before_script:
-    - apt update && apt install -y jq git
-    - *npm-registry-global-auth
+    - apt update && apt install -y git
+    - npm i -g turbo
     - corepack enable
   script:
-    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
-    - npm install -g @eliarelektronik/merge-request-analyzer
-    - export LATEST_TARGET_BRANCH_SHA=$(git log -n 1 --pretty=format:"%H" origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME)
+    - turbo prune @eliarelektronik/merge-request-analyzer --out-dir out && cd out
+    - pnpm install
     - |
-      export REBASE_REQUIRED=$(
-        if [[ $LATEST_TARGET_BRANCH_SHA != $CI_MERGE_REQUEST_DIFF_BASE_SHA ]];
-          then echo true
-          else echo false
-        fi)
-    - |
-      export SHOULD_UPDATE_LOCKFILE=$(
-        if [[ -n $(merge-request-analyzer should-update-lockfile $CI_MERGE_REQUEST_DIFF_BASE_SHA) ]];
-          then echo true
-          else echo false
-        fi)
-    - |
-      jq --null-input \
-        --arg apps $(merge-request-analyzer list-modified-apps $CI_MERGE_REQUEST_DIFF_BASE_SHA) \
-        --argjson lockfile $SHOULD_UPDATE_LOCKFILE \
-        --argjson rebase $REBASE_REQUIRED \
-        '{ "modified-apps": $apps, "should-update-lockfile": $lockfile, "rebase-required": $rebase }' \
-        > merge-request.summary.json
+      pnpm exec merge-request-analyzer $CI_MERGE_REQUEST_DIFF_BASE_SHA \
+      --branch $CI_MERGE_REQUEST_TARGET_BRANCH_NAME \
+      > $CI_BUILDS_DIR/merge-request.summary.json
   artifacts:
     paths:
       - merge-request.summary.json
@@ -123,38 +107,8 @@ release-devops-packages:
     - echo "${CI_API_V4_URL#http*:}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=\${CI_JOB_TOKEN}" >> .npmrc
     # Extract version segment from tag
     - export TAG_VERSION=${CI_COMMIT_TAG:7}
-    # Publish all devops packages
-    - |
-      pnpm list --filter './devops/*' -r --depth -1 --json | grep --invert-match 'Failed to replace env' | jq -Mrc .[] | while read -r PKG; do
-        OUT_DIR=out
-        PKG_NAME=$(echo $PKG | jq -Mr .name)
-        PKG_BASENAME=$(basename "$(echo $PKG | jq -Mr .path)")
-        PKG_VERSION=$(echo $PKG | jq -Mr .version)
-        PKG_BUILD_PATH=$OUT_DIR/devops/$PKG_BASENAME
-
-        if [[ ! $PKG_NAME =~ ^@$CI_PROJECT_ROOT_NAMESPACE/ ]]; then
-          echo "Invalid package scope! Packages must be scoped in the root namespace of the project, e.g. \"@${CI_PROJECT_ROOT_NAMESPACE}/$PKG_NAME\""
-          echo 'For more information, see https://docs.gitlab.com/ee/user/packages/npm_registry/#package-naming-convention'
-          exit 1
-        fi
-
-        if [[ "$(pnpm view ${PKG_NAME} versions)" != *"'${VERSION}'"* ]]; then
-          turbo prune --scope=$PKG_NAME --out-dir $OUT_DIR
-          pnpm install -C $OUT_DIR
-          pnpm run -C $OUT_DIR build
-          if [[ $PKG_VERSION != $TAG_VERSION ]]; then
-            echo "Version of package '$PKG_NAME' does not match given tag name. Modifying published package.json."
-            echo "Tag version: $TAG_VERSION, Package Version: $PKG_VERSION"
-            tmp=$(mktemp)
-            jq --arg version "$TAG_VERSION" '.version = $version' $PKG_BUILD_PATH/package.json > "$tmp"
-            mv "$tmp" $PKG_BUILD_PATH/package.json
-          fi
-          pnpm publish --no-git-checks $PKG_BUILD_PATH
-          rm -r $OUT_DIR
-        else
-          echo "Version ${TAG_VERSION} of ${PKG_NAME} has already been published, skipping."
-        fi
-      done
+    # Publish devops packages
+    - ./scripts/publish-package @eliarelektronik/samba-env $TAG_VERSION
 
 release-apps:
   stage: release
@@ -175,7 +129,7 @@ release-apps:
         ERR_PATH="release-logs/$APP_NAME.error.log"
         rm -rf out && mv out-$APP_NAME out
         {
-          ./scripts/release.sh $APP_NAME 2>&1 || {
+          ./scripts/release-image $APP_NAME 2>&1 || {
             export CI_ERROR=1
             mv $LOG_PATH $ERR_PATH
           }

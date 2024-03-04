@@ -6,23 +6,20 @@
 
 set -e
 
-throw() {
-  echo "ERROR: $1" >&2
-  exit 1
-}
-
 APP_NAME=$1
 
 if [ -z "$APP_NAME" ]; then
-  throw "App name is not defined"
+  echo "App name is not defined"
 fi
 
 if [ ! -e "apps/$APP_NAME" ]; then
-  throw "App \"$APP_NAME\" does not exist"
+  echo "App \"$APP_NAME\" does not exist"
+  exit 1
 fi
 
 if [ -z "$CI_REGISTRY_IMAGE" ]; then
-  throw "Should be run via gitlab-ci"
+  echo "Should be run via gitlab-ci"
+  exit 1
 fi
 
 IMAGE_TAG=$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_TAG

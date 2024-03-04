@@ -1,3 +1,4 @@
+#!/usr/bin/env tsx
 import { basename, join, relative } from 'node:path'
 import { readFile } from 'node:fs/promises'
 import process from 'node:process'
@@ -27,12 +28,6 @@ interface Package {
 }
 
 async function listWorkspacePackages(rootDir: string): Promise<Package[]> {
-  const cwd = process.cwd()
-  let pkgFilter = relative(cwd, join(rootDir, '(apps|packages|vendor)/*'))
-  if (!pkgFilter.startsWith('.')) {
-    pkgFilter = `./${pkgFilter}`
-  }
-
   const { stdout } = await execa('pnpm', [
     'list',
     '--recursive',
@@ -40,8 +35,10 @@ async function listWorkspacePackages(rootDir: string): Promise<Package[]> {
     '--only-projects',
     '--fail-if-no-match',
     '--filter',
-    pkgFilter,
-  ]).pipeStdout!(execa('grep', ['--invert-match', 'Failed to replace env']))
+    './(apps|packages|vendor)/*',
+  ], {
+    cwd: rootDir,
+  }).pipeStdout!(execa('grep', ['--invert-match', 'Failed to replace env']))
 
   return JSON.parse(stdout)
 }
@@ -68,11 +65,11 @@ async function getFileAtCommit(commit: string, path: string): Promise<string | n
   return stdout || null
 }
 
-async function listAppsThatShouldBeRebuilt(commit: string): Promise<string[]> {
+async function getModifiedApps(mergeRequestDiffBase: string): Promise<string[]> {
   const rootDir = await getProjectRoot()
   const appDir = join(rootDir, 'apps')
   const packages = await listWorkspacePackages(rootDir)
-  const changedFiles = await getChangedFiles(commit)
+  const changedFiles = await getChangedFiles(mergeRequestDiffBase)
 
   for (const pkg of packages) {
     pkg.relativePath = relative(rootDir, pkg.path)
@@ -133,10 +130,10 @@ async function tryReadFile(path: string): Promise<string | null> {
   }
 }
 
-async function comparePackageDependenciesWithCommit(packageJsonPath: string, commit: string): Promise<boolean> {
+async function comparePackageDependenciesWithCommit(packageJsonPath: string, mergeRequestDiffBase: string): Promise<boolean> {
   const rootDir = await getProjectRoot()
   const current = await tryReadFile(join(rootDir, packageJsonPath))
-  const previous = await getFileAtCommit(commit, packageJsonPath)
+  const previous = await getFileAtCommit(mergeRequestDiffBase, packageJsonPath)
   // If `package.json` is created or deleted
   if (!current || !previous) {
     return true
@@ -149,48 +146,41 @@ async function comparePackageDependenciesWithCommit(packageJsonPath: string, com
     && isEqual(currPackage.peerDependencies, prevPackage.peerDependencies)
 }
 
-async function shouldLockfileBeUpdated(commit: string): Promise<{ result: boolean, file: string }> {
-  const changedFiles = await getChangedFiles(commit)
+async function shouldLockfileBeUpdated(mergeRequestDiffBase: string): Promise<boolean> {
+  const changedFiles = await getChangedFiles(mergeRequestDiffBase)
   const packageFiles = changedFiles.filter(file => basename(file) === 'package.json')
   for (const file of packageFiles) {
-    const equal = await comparePackageDependenciesWithCommit(file, commit)
+    const equal = await comparePackageDependenciesWithCommit(file, mergeRequestDiffBase)
     if (!equal) {
-      return { result: true, file }
+      return true
     }
   }
-  return { result: false, file: '' }
+  return false
+}
+
+async function shouldBeRebased(mergeRequestDiffBase: string, mergeRequestTargetBranch: string, remoteName = 'origin') {
+  await execa('git', ['fetch', remoteName, mergeRequestTargetBranch])
+  const { stdout: mergeRequestTargetLatest } = await execa('git', [
+    'log',
+    '-n',
+    '1',
+    '--pretty=format:"%H"',
+    `${remoteName}/${mergeRequestTargetBranch}`,
+  ])
+  return mergeRequestTargetLatest !== mergeRequestDiffBase
 }
 
 const program = new Command()
-
 program
-  .command('list-modified-apps <commit>')
-  .description('Returns newline seperated list of apps that should be rebuilt for review apps')
-  .option('--json', 'Format as json array')
-  .action(async (commit, options) => {
-    const apps = await listAppsThatShouldBeRebuilt(commit)
-    if (options.json) {
-      console.log(JSON.stringify(apps))
-    } else {
-      console.log(apps.join('\n'))
-    }
+  .name('merge-request-analyzer')
+  .argument('<commit>', 'Merge request diff base commit')
+  .option('--branch <branch>', 'Merge request target branch', 'main')
+  .option('--remote <remote>', 'Remote repository name', 'origin')
+  .action(async (commit, { branch, remote }) => {
+    console.log(JSON.stringify({
+      modified_apps: await getModifiedApps(commit),
+      should_update_lockfile: await shouldLockfileBeUpdated(commit),
+      rebase_required: await shouldBeRebased(commit, branch, remote),
+    }))
   })
-
-program
-  .command('should-update-lockfile <commit>')
-  .description('Should update be lockfile before building the review app')
-  .option('--json', 'Return JSON boolean')
-  .action(async (commit, options) => {
-    const output = await shouldLockfileBeUpdated(commit)
-    if (output.result) {
-      if (options.json) {
-        console.log(true)
-      } else {
-        console.log(`Package file at '${output.file}' has changed, lockfile should be updated.`)
-      }
-    } else if (options.json) {
-      console.log(false)
-    }
-  })
-
-program.name('merge-request-analyzer').parse()
+  .parse()

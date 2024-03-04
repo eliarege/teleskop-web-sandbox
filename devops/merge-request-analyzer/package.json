@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "",
   "keywords": [],
-  "bin": "dist/index.mjs",
+  "bin": "src/index.ts",
   "files": ["dist"],
   "scripts": {
     "build": "unbuild",

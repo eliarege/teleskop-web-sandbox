@@ -1,0 +1,67 @@
+#!/bin/bash
+# Dependencies: pnpm, jq, turbo
+# Expects npm registry authorization is already handled
+
+set -e
+
+PKG_NAME="$1"
+PUBLISH_VERSION="$2"
+
+if [[ -z "$PKG_NAME" ]]; then
+  echo "Package name is not defined."
+  exit 1
+fi
+
+if [[ -z "$PUBLISH_VERSION" ]]; then
+  echo "Publish version is not defined."
+  exit 1
+fi
+
+if [[ -z "$CI_BUILDS_DIR" ]]; then
+  echo "Should be run via gitlab-ci."
+  exit 1
+fi
+
+PKG=$(pnpm list --only-projects --filter "$PKG_NAME" --json | jq -Mrc .[0])
+
+if [[ -z "$PKG" ]]; then
+  echo "Package $PKG_NAME not found in current workspace."
+  exit 1
+fi
+
+if [[ ! $PKG_NAME =~ ^@$CI_PROJECT_ROOT_NAMESPACE/ ]]; then
+  echo "Invalid package scope! Packages must be scoped in the root namespace of the project, e.g. \"@${CI_PROJECT_ROOT_NAMESPACE}/$PKG_NAME\""
+  echo 'For more information, see https://docs.gitlab.com/ee/user/packages/npm_registry/#package-naming-convention'
+  exit 1
+fi
+
+PKG_VERSION=$(echo "$PKG" | jq -Mr .version)
+PKG_PRIVATE=$(echo "$PKG" | jq -Mr .private)
+
+if [[ "$PKG_PRIVATE" == true ]]; then
+  echo "Cannot publish $PKG_NAME because it is defined as private."
+  exit 1
+fi
+
+OUT_DIR=out
+PKG_PATH=$(realpath -q --relative-to=$CI_BUILDS_DIR "$(echo "$PKG" | jq -Mr .path)")
+PKG_OUT_PATH=$OUT_DIR/$PKG_PATH
+
+if [[ "$(pnpm view ${PKG_NAME} versions)" != *"'${PUBLISH_VERSION}'"* ]]; then
+  turbo prune --scope=$PKG_NAME --out-dir $OUT_DIR
+  pnpm install -C $OUT_DIR
+  pnpm run -C $OUT_DIR build
+
+  # TODO: Migrate to `changesets`
+  if [[ "$PKG_VERSION" != "$PUBLISH_VERSION" ]]; then
+    echo "Version of package '$PKG_NAME' does not match given tag name. Modifying published package.json."
+    echo "Tag version: $PUBLISH_VERSION, Package Version: $PKG_VERSION"
+    tmp=$(mktemp)
+    jq --arg version "$PUBLISH_VERSION" '.version = $version' $PKG_OUT_PATH/package.json > "$tmp"
+    mv "$tmp" $PKG_OUT_PATH/package.json
+  fi
+  pnpm publish --dry-run --no-git-checks $PKG_OUT_PATH
+  rm -r $OUT_DIR
+else
+  echo "Version ${PUBLISH_VERSION} of ${PKG_NAME} has already been published, skipping."
+fi
