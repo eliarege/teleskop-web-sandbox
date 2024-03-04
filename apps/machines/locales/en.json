@@ -51,6 +51,7 @@
   "machineConstants": "Machine Constants",
   "formulas": "Formulas",
   "getDyehouseDefinitions": "Get Dyehouse Definitions",
+  "setDyehouseDefinitions": "Set Dyehouse Definitions",
   "machineName": "Machine Name",
   "group": "Group",
   "model": "Model",
@@ -210,9 +211,7 @@
   "machineGroups": "Machine Groups",
   "parameterList": "Parameter List",
   "allMappedParameters": "All Mapped Parameters",
-  "getDyeHouseDefinitions": "Get Dye House Definitions",
   "users": "Users",
-  "setDyehouseDefinitions": "Set Dye House Definitions",
   "userControlIsActive": "User Control Is Active",
   "phaseModeActive": "Phase Mode Is Active",
   "chemicalDyeRecipeIsReadFromERP": "Chemical / Dye Recipe Is Read From ERP",
@@ -315,5 +314,12 @@
   "copyAll": "Copy All",
   "copyStartupParameters": "Copy Startup Parameters",
   "copyNonStartupParameters": "Copy Non-Startup Parameters",
-  "ImportFromBatchParameters": "Import From Batch Parameters"
+  "ImportFromBatchParameters": "Import From Batch Parameters",
+  "machinesToUpdate": "Machines To Update",
+  "selectAll": "Select All",
+  "deselectAll": "Deselect All",
+  "settingsToUpdate": "Settings To Update",
+  "machinesOfSelectedGroup": "Machines Of Selected Group",
+  "availableMachines": "Available Machines",
+  "machineGroupName": "Machine Group Name"
 }

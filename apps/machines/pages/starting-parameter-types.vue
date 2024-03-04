@@ -43,10 +43,6 @@ watch(parameterTypes, (_newValue, _oldValue) => {
   }
 })
 
-async function handleMachineClick(machineId: number) {
-  selectedMachineId.value = machineId
-}
-
 async function handleOptionChange(paramType: object) {
   const paramTypeId = paramType.id
   const paramId = paramType.data.paramId
@@ -66,18 +62,20 @@ async function handlePaste() {
 </script>
 
 <template>
-  <q-btn-group push class="flex flex-row ">
-    <q-btn
-      :label="t('copy')"
-      no-caps
-      @click="handleCopy"
-    />
-    <q-btn
-      :label="t('paste')"
-      no-caps
-      @click="handlePaste"
-    />
-  </q-btn-group>
+  <div class="flex w-full justify-end my-4">
+    <q-btn-group push class="flex flex-row mr-4">
+      <q-btn
+        :label="t('copy')"
+        no-caps
+        @click="handleCopy"
+      />
+      <q-btn
+        :label="t('paste')"
+        no-caps
+        @click="handlePaste"
+      />
+    </q-btn-group>
+  </div>
   <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
       <h3>{{ t('machines') }}</h3>
@@ -91,7 +89,9 @@ async function handlePaste() {
           :key="machine.machineId"
           v-ripple
           clickable
-          @click="handleMachineClick(machine.machineId)"
+          :active="selectedMachineId === machine.machineId"
+          :focused="selectedMachineId === machine.machineId"
+          @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>
             {{ machine.machineCode }}

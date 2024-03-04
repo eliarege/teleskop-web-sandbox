@@ -45,9 +45,11 @@ async function handleAdd() {
     <q-card-section class="flex flex-col justify-between">
       <div class="flex flex-row justify-around">
         <div>
-          <h3>{{ t('machineGroups') }}</h3>
-          <q-icon name="add" @click="showAddMachineGroupDialog = true" />
-          <q-list separator bordered>
+          <div class="flex items-center gap-4">
+            <h3>{{ t('machineGroups') }}</h3>
+            <q-icon name="add" size="1.5em" class="cursor-pointer" @click="showAddMachineGroupDialog = true" />
+          </div>
+          <q-list separator bordered class="overflow-y-auto max-h-120">
             <q-item
               v-for="machineGroup in machineGroups"
               :key="machineGroup.groupId"
@@ -64,16 +66,17 @@ async function handleAdd() {
           </q-list>
         </div>
         <div>
-          <h3>{{ t('parameterList') }}</h3>
-          <q-icon name="add" @click="showAddTreatmentParameterDialog = true" />
-          <q-list bordered separator>
+          <div class="flex items-center gap-4">
+            <h3>{{ t('parameterList') }}</h3>
+            <q-icon name="add" size="1.5em" class="cursor-pointer" @click="showAddTreatmentParameterDialog = true" />
+          </div>
+          <q-list bordered separator class="overflow-y-auto max-h-120">
             <q-item
               v-for="param in treatmentParameters"
               :key="param.id"
               v-ripple
               clickable
               :focused="selectedParameter === param"
-
               :active="selectedParameter === param"
               @click="selectedParameter = param"
             >
@@ -83,7 +86,7 @@ async function handleAdd() {
             </q-item>
           </q-list>
         </div>
-        <div>
+        <div class="flex flex-col gap-4">
           <q-select
             v-model="selectedOption"
             :options="commandParameters"
@@ -100,11 +103,10 @@ async function handleAdd() {
               </q-item>
             </template>
           </q-select>
-
-          <q-btn :label="t('add')" @click="handleAdd" />
+          <q-btn :label="t('add')" no-caps @click="handleAdd" />
         </div>
       </div>
-      <div>
+      <div class="mt-20 mb-4 gap-2 flex flex-col">
         <h3 class="flex justify-center">
           {{ t('allMappedParameters') }}
         </h3>

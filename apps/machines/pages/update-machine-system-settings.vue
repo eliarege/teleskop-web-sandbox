@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Machine } from '~/types'
+
 const { t } = useI18n()
 
 const showAddMachineSystemSetting = ref(false)
@@ -171,7 +173,7 @@ const settings = [
   { caption: 'KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF', token: tokens.KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF },
 ]
 
-const { data: machines } = useLazyFetch('/api/machines/machines', {
+const { data: machines } = useLazyFetch<Machine[]>('/api/machines/machines', {
   method: 'POST',
   body: {},
   transform: machines => (
@@ -209,38 +211,48 @@ async function handleSend() {
 <template>
   <q-card>
     <q-card-section>
-      <h3>Settings will be updated on machines</h3>
-      <q-btn label="add" @click="showAddMachineSystemSetting = true" />
-      <q-btn label="delete" @click="handleDelete" />
-      <q-list separator bordered>
-        <q-item
-          v-for="setting in selectedSettings" :key="setting.caption"
-          v-ripple
-          clickable
-          :active="selected === setting"
-          @click="selected = setting"
-        >
-          <q-item-section>
-            {{ `${t(`updateMachineSettings.${setting.caption}`)} ${setting.isActive ? t('active') : t('passive')}` }}
-          </q-item-section>
-        </q-item>
-      </q-list>
+      <div class="flex flex-row justify-around items-center">
+        <div>
+          <h3>{{ t('settingsToUpdate') }}</h3>
+          <div class="flex gap-4 my-4">
+            <q-btn :label="t('add')" no-caps @click="showAddMachineSystemSetting = true" />
+            <q-btn :label="t('delete')" no-caps @click="handleDelete" />
+          </div>
+          <q-list separator bordered class="h-160 overflow-y-auto w-sm">
+            <q-item
+              v-for="setting in selectedSettings" :key="setting.caption"
+              v-ripple
+              clickable
+              :active="selected === setting"
+              @click="selected = setting"
+            >
+              <q-item-section>
+                {{ `${t(`updateMachineSettings.${setting.caption}`)} ${setting.isActive ? t('active') : t('passive')}` }}
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
 
-      <h3>machines that will be updated</h3>
-      <q-btn label="select all" />
-      <q-btn label="deselect all" />
-      <q-list>
-        <q-item
-          v-for="machine in machines"
-          :key="machine.machineId"
-        >
-          <q-checkbox v-model="machine.check" :label="machine.machineCode" />
-        </q-item>
-      </q-list>
+        <div>
+          <h3>{{ t('machinesToUpdate') }}</h3>
+          <div class="flex gap-4 my-4">
+            <q-btn :label="t('selectAll')" no-caps />
+            <q-btn :label="t('deselectAll')" no-caps />
+          </div>
+          <q-list bordered separator class="h-160 overflow-y-auto w-sm">
+            <q-item
+              v-for="machine in machines"
+              :key="machine.machineId"
+            >
+              <q-checkbox v-model="machine.check" :label="machine.machineCode" />
+            </q-item>
+          </q-list>
+        </div>
+      </div>
 
-      <div>
-        <q-btn label="Send" @click="handleSend" />
-        <q-btn label="Cancel" />
+      <div class="flex gap-4 my-4 w-full justify-center">
+        <q-btn :label="t('submit')" no-caps @click="handleSend" />
+        <q-btn :label="t('cancel')" no-caps />
       </div>
     </q-card-section>
   </q-card>

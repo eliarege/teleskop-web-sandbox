@@ -173,6 +173,7 @@ async function handlePaste() {
           v-ripple
           clickable
           :focused="selectedMachineId === machine.machineId"
+          :active="selectedMachineId === machine.machineId"
           @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>

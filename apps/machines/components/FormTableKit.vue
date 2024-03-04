@@ -110,7 +110,7 @@ watch(showModal, async (newValue, oldValue) => {
 
 <template>
   <!-- Actions -->
-  <q-btn-group push class="my-4">
+  <q-btn-group push class="my-4 ml-4">
     <q-btn push :label="t('add')" color="primary" @click="showForm('add')" />
     <q-btn push :label="t('edit')" color="primary" @click="showForm('edit')" />
     <q-btn push :label="t('delete')" color="primary" @click="handleDelete" />

@@ -19,6 +19,7 @@ const water = ref<Water>({
 })
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
+
 const { data: machineCommands } = useLazyFetch('/api/master-commands/master-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
@@ -99,18 +100,20 @@ async function handlePaste() {
 </script>
 
 <template>
-  <q-btn-group push class="flex flex-row ">
-    <q-btn
-      :label="t('copy')"
-      no-caps
-      @click="handleCopy"
-    />
-    <q-btn
-      :label="t('paste')"
-      no-caps
-      @click="handlePaste"
-    />
-  </q-btn-group>
+  <div class="flex w-full justify-end my-4">
+    <q-btn-group push class="flex flex-row mr-4">
+      <q-btn
+        :label="t('copy')"
+        no-caps
+        @click="handleCopy"
+      />
+      <q-btn
+        :label="t('paste')"
+        no-caps
+        @click="handlePaste"
+      />
+    </q-btn-group>
+  </div>
   <q-card class="flex flex-row justify-around">
     <q-card-section class="w-sm">
       <h3>{{ t('machines') }}</h3>
@@ -124,6 +127,8 @@ async function handlePaste() {
           :key="machine.machineId"
           v-ripple
           clickable
+          :active="selectedMachineId === machine.machineId"
+          :focused="selectedMachineId === machine.machineId"
           @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>
@@ -145,6 +150,8 @@ async function handlePaste() {
           :key="command.commandNo"
           v-ripple
           clickable
+          :active="selectedCommandNo === command.commandNo"
+          :focused="selectedCommandNo === command.commandNo"
           @click="handleCommandClick(command.commandNo)"
         >
           <q-item-section>
@@ -183,11 +190,12 @@ async function handlePaste() {
       </div>
     </q-card-section>
   </q-card>
-  <q-btn-group>
-    <q-btn :label="t('submit')" @click="handleSubmit" />
-
-    <q-btn :label="t('cancel')" />
-  </q-btn-group>
+  <div class="flex w-full justify-end">
+    <q-btn-group class="mt-4 mr-4">
+      <q-btn no-caps :label="t('submit')" @click="handleSubmit" />
+      <q-btn no-caps :label="t('cancel')" />
+    </q-btn-group>
+  </div>
 </template>
 
 <style scoped>

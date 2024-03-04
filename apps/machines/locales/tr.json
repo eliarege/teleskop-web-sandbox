@@ -62,7 +62,7 @@
   "machineName": "Makine Adı",
   "tankSettings": "Kazan Ayarları",
   "notificationSettings": "Bildirim Ayarları",
-  "commandTypeParameters": "Komut Tipi ParametGreleri",
+  "commandTypeParameters": "Komut Tipi Parametreleri",
   "stepSkippingReasons": "Adım Atlatma Nedenleri",
   "stepSkippingReasonCommands": "Adım Atlatma Neden Komutları",
   "erpParameterDefinitions": "ERP Parametreleri",
@@ -314,5 +314,10 @@
   "copyAll": "Tümünü Kopyala",
   "copyStartupParameters": "Başlatma Parametrelerini Kopyala",
   "copyNonStartupParameters": "Başlatma Parametreleri Dışındakileri Kopyala",
-  "ImportFromBatchParameters": "İş Emri Parametrelerinden İçe Aktar"
+  "ImportFromBatchParameters": "İş Emri Parametrelerinden İçe Aktar",
+  "machinesToUpdate": "Güncellenecek Makineler",
+  "settingsToUpdate": "Güncellenecek Ayarlar",
+  "machinesOfSelectedGroup": "Seçili Grubun Makineleri",
+  "availableMachines": "Seçilebilir Makineler",
+  "machineGroupName": "Makine Grubu Adı"
 }
