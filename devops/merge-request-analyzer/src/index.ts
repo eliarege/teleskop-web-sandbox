@@ -164,10 +164,10 @@ async function shouldBeRebased(mergeRequestDiffBase: string, mergeRequestTargetB
     'log',
     '-n',
     '1',
-    '--pretty=format:"%H"',
+    '--pretty=format:%H',
     `${remoteName}/${mergeRequestTargetBranch}`,
   ])
-  return mergeRequestTargetLatest !== mergeRequestDiffBase
+  return !mergeRequestTargetLatest.startsWith(mergeRequestDiffBase)
 }
 
 const program = new Command()
