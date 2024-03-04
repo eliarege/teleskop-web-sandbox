@@ -267,3 +267,14 @@ export interface BatchParam {
   paramId: number
   paramString: string
 }
+
+export interface Formula {
+  formulaId: number
+  formulaName: string
+  machineId: number
+  formula: string
+  commandNo: number
+  commandName: string
+  parameterIndex: number
+  parameterName: string
+}
