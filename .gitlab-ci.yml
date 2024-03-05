@@ -80,16 +80,22 @@ merge-request-summarize:
     - apt update && apt install -y git
     - npm i -g turbo
     - corepack enable
+    - pnpm config set store-dir .pnpm-store
   script:
-    - turbo prune @eliarelektronik/merge-request-analyzer --out-dir out && cd out
     - pnpm install
     - |
       pnpm exec merge-request-analyzer $CI_MERGE_REQUEST_DIFF_BASE_SHA \
       --branch $CI_MERGE_REQUEST_TARGET_BRANCH_NAME \
-      > $CI_PROJECT_DIR/merge-request.summary.json
+      > merge-request.summary.json
   artifacts:
     paths:
       - merge-request.summary.json
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
 
 # TODO: Migrate this job to use `changesets`
 release-devops-packages:
