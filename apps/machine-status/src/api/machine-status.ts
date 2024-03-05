@@ -36,6 +36,7 @@ const fetchMachineErpMappings = memoize(async (teleskop: Kysely<TeleskopDatabase
           ])
           .where(eb => eb.and([
             eb('d.ERPFIELDNAME', 'is not', null),
+            eb('d.ERPFIELDNAME', '!=', ''),
             ...(!isLegacy
               ? [eb('m.MACHINEID', '=', eb.ref('d.MACHINEID'))]
               : []),
@@ -142,7 +143,11 @@ const fetchJobOrderErpParameters = memoize(async (
     return {}
   return await dmExchange
     .selectFrom('Dyelots')
-    .select(eb => machineMappings.mappings.map(m => eb.ref(m.field as any).as(m.name)))
+    .select(eb =>
+      machineMappings.mappings
+        .filter(m => m.field)
+        .map(m => eb.ref(m.field as any).as(m.name)),
+    )
     .where('Dyelot', '=', jobOrder)
     .executeTakeFirst() || {}
 }, {
@@ -168,23 +173,26 @@ async function isLegacyTeleskop(teleskop: Kysely<TeleskopDatabase>): Promise<boo
 
 const route: FastifyPluginAsync = async (fastify) => {
   const isLegacy = await isLegacyTeleskop(fastify.teleskop)
+  const aliases = ['/', '/api/v1/machine_status']
 
-  fastify.get('/machine_status', async function () {
-    const { teleskop, dmExchange } = this
-    const machineStatuses = await fetchMachineStatus(teleskop)
-    const machineMappings = await fetchMachineErpMappings(teleskop, isLegacy)
+  aliases.forEach(alias =>
+    fastify.get(alias, async function () {
+      const { teleskop, dmExchange } = this
+      const machineStatuses = await fetchMachineStatus(teleskop)
+      const machineMappings = await fetchMachineErpMappings(teleskop, isLegacy)
 
-    if (dmExchange) {
-      for (const status of machineStatuses) {
-        const mappings = machineMappings.find(m => m.machineId === status.id)
-        if (mappings && status.runningJobOrder && status.runningBatchKey && status.runningBatchKey > 0) {
-          status.erp = await fetchJobOrderErpParameters(dmExchange, status.runningJobOrder, mappings)
+      if (dmExchange) {
+        for (const status of machineStatuses) {
+          const mappings = machineMappings.find(m => m.machineId === status.id)
+          if (mappings && status.runningJobOrder && status.runningBatchKey && status.runningBatchKey > 0) {
+            status.erp = await fetchJobOrderErpParameters(dmExchange, status.runningJobOrder, mappings)
+          }
         }
       }
-    }
 
-    return machineStatuses
-  })
+      return machineStatuses
+    }),
+  )
 }
 
 export default route

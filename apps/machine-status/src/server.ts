@@ -1,10 +1,9 @@
 import process from 'node:process'
-import { join } from 'node:path/posix'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import gracefulShutdown from 'http-graceful-shutdown'
 import type { Kysely } from 'kysely'
-import machineStatus from './api/machine_status'
+import machineStatus from './api/machine-status'
 import { config } from './config'
 import { createKyselyInstance } from './database'
 import type { DmExchangeDatabase, TeleskopDatabase } from './types'
@@ -32,9 +31,7 @@ export async function main() {
   fastify.decorate('dmExchange', dmExchange)
 
   fastify.register(cors, { prefix: config.serverPrefix })
-  fastify.register(machineStatus, {
-    prefix: join(config.serverPrefix, '/api/v1'),
-  })
+  fastify.register(machineStatus, { prefix: config.serverPrefix })
 
   fastify.listen({
     host: config.serverHost,
