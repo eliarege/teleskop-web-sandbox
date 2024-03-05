@@ -20,7 +20,7 @@ const selectedMachines = ref<number[]>([])
 
 const materials = ref<Material[]>([])
 const selectedMaterialsInitial = ref<Material[]>([])
-const selectedMaterials = ref([])
+const selectedMaterials = ref<Material[]>([])
 
 watch((tab), async (tab) => {
   if (tab === 'machines') {

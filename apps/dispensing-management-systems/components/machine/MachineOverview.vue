@@ -15,8 +15,9 @@ const { data } = shouldFetch
   ? await useFetch<Dispenser[]>(`/api/dispensers`)
   : { data: dataStore.dispensers }
 dataStore.dispensers = data
-
 const { data: controllerTypes } = useFetch<MachineControllerType[]>('/api/machines/types')
+const innerWidth = ref(window.innerWidth)
+const minSize = 1400
 
 const dispenserColumns: (QTableColumn<Dispenser>)[] = [
   {
@@ -120,6 +121,33 @@ function toggleMachineRow(id: number) {
   }
 }
 
+async function retrieveMachinesFromTeleskop() {
+  try {
+    await $fetch('/api/teleskop/sync/machines')
+    await refreshMachines()
+    q.notify({
+      color: 'green-4',
+      textColor: 'white',
+      icon: 'done',
+      message: t('Success'),
+      timeout: 3000,
+    })
+  } catch (e) {
+    q.notify({
+      color: 'red-4',
+      textColor: 'white',
+      icon: 'cancel',
+      message: t('Failed'),
+      timeout: 3000,
+    })
+  }
+}
+function handleResize() {
+  innerWidth.value = window.innerWidth
+}
+useResizeObserver(document.body, () => {
+  handleResize()
+})
 const dispenserPagination = ref({ rowsPerPage: 20 })
 const machinePagination = ref({ rowsPerPage: 20 })
 </script>
@@ -207,17 +235,42 @@ const machinePagination = ref({ rowsPerPage: 20 })
       </QTable>
     </div>
     <div class="q-pa-md ">
-      <QCard class="flex flex-row justify-between" bordered>
-        <QCardSection class="flex items-center">
+      <QCard class="flex-center" bordered>
+        <QCardSection class="flex-center items-center">
           <QBtn
-            :label="$t('AddNewMac')"
+            :label="innerWidth > minSize ? $t('AddNewMac') : ''"
             no-caps
             icon="note_add"
             color="primary"
-            class="mr-4 ml-2"
+            class="mr-4 ml-2 h-15 overflow-hidden"
+            style="white-space: nowrap; text-overflow: ellipsis;"
             clickable
             @click="handleNewMachine"
-          />
+          >
+            <QTooltip
+              v-if="innerWidth <= minSize"
+              :offset="[10, 10]"
+            >
+              {{ t('AddNewMac') }}
+            </QTooltip>
+          </QBtn>
+          <QBtn
+            :label="innerWidth > minSize ? $t('SyncData') : ''"
+            no-caps
+            icon="refresh"
+            color="primary"
+            class="mr-2 ml-4 h-15 overflow-hidden"
+            style="white-space: nowrap; text-overflow: ellipsis;"
+            clickable
+            @click="retrieveMachinesFromTeleskop"
+          >
+            <QTooltip
+              v-if="innerWidth <= minSize"
+              :offset="[10, 10]"
+            >
+              {{ t('SyncData') }}
+            </QTooltip>
+          </QBtn>
         </QCardSection>
       </QCard>
 
