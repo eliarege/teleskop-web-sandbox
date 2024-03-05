@@ -19,7 +19,7 @@ interface PackageJSON {
 }
 
 interface ManifestJSON {
-  roles: AppRole[]
+  roles?: AppRole[]
 }
 
 interface EliarMeta {
@@ -106,18 +106,22 @@ function getClientRepresentation(app: App): ClientRepresentation {
       webOrigins: [
         `http://127.0.0.1:${appPort}`,
         `http://localhost:${appPort}`,
-        ...(isDevContainer ? [
+        ...(isDevContainer
+          ? [
           `http://app:${appPort}`,
-          `http://${app.name}:${appPort}`
-        ] : [])
+          `http://${app.name}:${appPort}`,
+            ]
+          : []),
       ],
       redirectUris: [
         `http://127.0.0.1:${appPort}/*`,
         `http://localhost:${appPort}/*`,
-        ...(isDevContainer ? [
+        ...(isDevContainer
+          ? [
           `http://app:${appPort}`,
-          `http://${app.name}:${appPort}`
-        ] : [])
+          `http://${app.name}:${appPort}`,
+            ]
+          : []),
       ],
     }
   } else if (appType === 'node') {
@@ -224,11 +228,11 @@ async function syncClientRoles(admin: KcAdminClient, clientId: string, clientNam
   }
 
   const kcRoles = await admin.clients.listRoles({ id: clientId })
-  return manifest.roles.map(role => ({
+  return manifest.roles?.map(role => ({
     ...role,
     clientId,
     representation: kcRoles.find(kc => kc.name === role.name)!,
-  }))
+  })) || []
 }
 
 async function syncGroupRoleMappings(admin: KcAdminClient, groupName: string, roles: SyncedAppRole[]): Promise<GroupRepresentation> {
