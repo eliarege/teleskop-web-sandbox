@@ -2,6 +2,7 @@ import * as tedious from 'tedious'
 import * as tarn from 'tarn'
 import { Kysely, MssqlDialect, ParseJSONResultsPlugin } from 'kysely'
 import { parseConnectionString } from '@tediousjs/connection-string'
+import { inferBoolean } from 'utils'
 import { logger } from './logger'
 
 export function createKyselyInstance<T>(connectionString: string) {
@@ -15,6 +16,14 @@ export function createKyselyInstance<T>(connectionString: string) {
   } else if (server.includes('\\')) {
     ([server, instanceName] = server.split('\\') as [string, string])
   }
+
+  const trustServerCertificate = connectionParams.trustservercertificate
+    ? inferBoolean(connectionParams.trustservercertificate)
+    : true
+
+  const encrypt = connectionParams.encrypt
+    ? inferBoolean(connectionParams.encrypt)
+    : false
 
   const dialect = new MssqlDialect({
     tarn: {
@@ -41,7 +50,8 @@ export function createKyselyInstance<T>(connectionString: string) {
               ? { instanceName }
               : { port: Number.parseInt(port, 10) }
           ),
-          trustServerCertificate: true,
+          trustServerCertificate,
+          encrypt,
         },
         server,
       }).on('error', err => logger.error(`${err.message} [${server}/${connectionParams.database}]`)),
