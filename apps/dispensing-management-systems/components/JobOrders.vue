@@ -317,10 +317,6 @@ watch((searchFilter), () => {
   margin-bottom: 1rem;
   overflow: hidden;
 }
-.q-table__control {
-  justify-content: center;
-  flex: content;
-}
 .selected-row {
   position: sticky;
   top: 45px;

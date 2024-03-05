@@ -1,8 +1,10 @@
 {
   "New": "Yeni",
-  "AddNew": "Yeni Dağıtıcı Ekle",
-  "AddNewMac": "Yeni Makine Ekle",
+  "AddNew": "Yeni Dağıtıcı / Makine Ekle",
+  "AddNewDispenser": "Yeni Dağıtıcı Ekle",
+  "AddNewMachine": "Yeni Makine Ekle",
   "AddNewMaterial": "Yeni Malzeme Ekle",
+  "SearchJob": "İş Emri Ara",
   "Refresh": "Yenile",
   "SyncData": "Teleskop Verisiyle Senkronize Et",
   "Homepage": "Anasayfa",

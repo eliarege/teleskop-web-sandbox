@@ -14,6 +14,10 @@
 .q-tab--full{
   min-height: 8rem;
 }
+.q-table__control {
+  justify-content: center;
+  flex: content;
+}
 /* Light Theme */
 .tabs-light {
   background-color: white;

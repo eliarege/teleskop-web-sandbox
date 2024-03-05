@@ -5,12 +5,6 @@ export default defineEventHandler(async (event) => {
     const { dispenserId } = getQuery(event)
     const jobOrders = dmsDB('JOB_ORDER as j')
       .leftJoin(
-        'DISPENSER as d',
-        'j.dispenser_id',
-        '=',
-        'd.dispenser_id',
-      )
-      .leftJoin(
         'MACHINE as m',
         'j.machine_id',
         '=',

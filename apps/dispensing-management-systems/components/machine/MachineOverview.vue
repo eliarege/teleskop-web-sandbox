@@ -4,7 +4,7 @@ import type { QTableColumn } from 'quasar'
 import DispenserEdit from '../dispenser/DispenserEdit.vue'
 import MachineInfo from './MachineInfo.vue'
 import { useDataStore } from '~/store/DataStore'
-import type { Dispenser, Machine, MachineControllerType } from '~/shared/types'
+import type { Dispenser, DispenserType, Machine, MachineControllerType } from '~/shared/types'
 
 const { t } = useI18n()
 const q = useQuasar()
@@ -16,6 +16,7 @@ const { data } = shouldFetch
   : { data: dataStore.dispensers }
 dataStore.dispensers = data
 const { data: controllerTypes } = useFetch<MachineControllerType[]>('/api/machines/types')
+const { data: dispenserTypes } = useFetch<DispenserType[]>('/api/dispensers/types')
 const innerWidth = ref(window.innerWidth)
 const minSize = 1400
 
@@ -120,7 +121,71 @@ function toggleMachineRow(id: number) {
     expandedMachines.value.splice(index, 1)
   }
 }
-
+function onDispenserClick(row: any) {
+  q.dialog({
+    component: DispenserEdit,
+    componentProps: { dispenser: row },
+  }).onOk(() => {
+    refreshDispensers()
+    q.notify({
+      color: 'green-4',
+      textColor: 'white',
+      icon: 'done',
+      message: t('Success'),
+      timeout: 3000,
+    })
+  })
+}
+async function onMachineClick(row: any) {
+  const selectedMachine = await $fetch(`/api/machines/${row.machineId}`)
+  q.dialog({
+    component: MachineInfo,
+    componentProps: {
+      machine: selectedMachine,
+      controllerTypes: controllerTypes.value,
+      dispensers: dataStore.dispensers,
+    },
+  }).onOk((payload) => {
+    if (payload) {
+      q.notify({
+        color: 'green-4',
+        textColor: 'white',
+        icon: 'done',
+        message: t('Success'),
+        timeout: 3000,
+      })
+      refreshMachines()
+    } else
+      q.notify({
+        color: 'red-4',
+        textColor: 'white',
+        icon: 'cancel',
+        message: t('Failed'),
+        timeout: 3000,
+      })
+  })
+}
+async function retrieveDispensersFromTeleskop() {
+  try {
+    await $fetch('/api/teleskop/sync/dispensers')
+    await refreshDispensers()
+    q.notify({
+      color: 'green-4',
+      textColor: 'white',
+      icon: 'done',
+      message: t('Success'),
+      timeout: 3000,
+    })
+  } catch (e) {
+    q.notify({
+      color: 'red-4',
+      textColor: 'white',
+      icon: 'cancel',
+      message: t('Failed'),
+      timeout: 3000,
+    })
+  }
+}
 async function retrieveMachinesFromTeleskop() {
   try {
     await $fetch('/api/teleskop/sync/machines')
@@ -160,17 +225,42 @@ const machinePagination = ref({ rowsPerPage: 20 })
     all:transition-400
   >
     <div class="q-pa-md">
-      <QCard class="flex flex-column justify-between" bordered>
-        <QCardSection class="flex items-center">
+      <QCard class="flex-center" bordered>
+        <QCardSection class="flex-center items-center">
           <QBtn
-            :label="$t('AddNew')"
+            :label="innerWidth > minSize ? $t('AddNewDispenser') : ''"
             no-caps
             icon="note_add"
             color="primary"
-            class="mr-4 ml-2"
+            class="mr-4 ml-2 h-12 overflow-hidden"
+            style="white-space: nowrap; text-overflow: ellipsis;"
             clickable
             @click="handleNewDispenser"
-          />
+          >
+            <QTooltip
+              v-if="innerWidth <= minSize"
+              :offset="[10, 10]"
+            >
+              {{ t('AddNew') }}
+            </QTooltip>
+          </QBtn>
+          <QBtn
+            :label="innerWidth > minSize ? $t('SyncData') : ''"
+            no-caps
+            icon="refresh"
+            color="primary"
+            class="mr-2 ml-4 h-12 overflow-hidden"
+            style="white-space: nowrap; text-overflow: ellipsis;"
+            clickable
+            @click="retrieveDispensersFromTeleskop"
+          >
+            <QTooltip
+              v-if="innerWidth <= minSize"
+              :offset="[10, 10]"
+            >
+              {{ t('SyncData') }}
+            </QTooltip>
+          </QBtn>
         </QCardSection>
       </QCard>
 
@@ -199,7 +289,11 @@ const machinePagination = ref({ rowsPerPage: 20 })
         </template>
 
         <template #body="props">
-          <QTr :props="props">
+          <QTr
+            :props="props"
+            style="cursor:pointer"
+            @click="onDispenserClick(props.row)"
+          >
             <QTd auto-width>
               <QBtn
                 size="sm"
@@ -208,6 +302,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
                 dense
                 :icon="expandedDispensers.includes(props.rowIndex) ? 'remove' : 'add'"
                 @click="toggleDispenserRow(props.rowIndex)"
+                @click.stop
               />
             </QTd>
             <QTd
@@ -215,7 +310,12 @@ const machinePagination = ref({ rowsPerPage: 20 })
               :key="col.name"
               :props="props"
             >
-              {{ col.value }}
+              <span v-if="col.field === 'dispenserType'">
+                {{ dispenserTypes?.find(type => type.dispenserTypeId === col.value)?.dispenserTypeName }}
+              </span>
+              <span v-else>
+                {{ col.value }}
+              </span>
             </QTd>
           </QTr>
           <QTr
@@ -238,11 +338,11 @@ const machinePagination = ref({ rowsPerPage: 20 })
       <QCard class="flex-center" bordered>
         <QCardSection class="flex-center items-center">
           <QBtn
-            :label="innerWidth > minSize ? $t('AddNewMac') : ''"
+            :label="innerWidth > minSize ? $t('AddNewMachine') : ''"
             no-caps
             icon="note_add"
             color="primary"
-            class="mr-4 ml-2 h-15 overflow-hidden"
+            class="mr-4 ml-2 h-12 overflow-hidden"
             style="white-space: nowrap; text-overflow: ellipsis;"
             clickable
             @click="handleNewMachine"
@@ -251,7 +351,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
               v-if="innerWidth <= minSize"
               :offset="[10, 10]"
             >
-              {{ t('AddNewMac') }}
+              {{ t('AddNewMachine') }}
             </QTooltip>
           </QBtn>
           <QBtn
@@ -259,7 +359,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
             no-caps
             icon="refresh"
             color="primary"
-            class="mr-2 ml-4 h-15 overflow-hidden"
+            class="mr-2 ml-4 h-12 overflow-hidden"
             style="white-space: nowrap; text-overflow: ellipsis;"
             clickable
             @click="retrieveMachinesFromTeleskop"
@@ -285,6 +385,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
         style="height: 700px"
         flat
         bordered
+        :on-row-click="onMachineClick"
       >
         <template #header="props">
           <QTr :props="props">
@@ -300,7 +401,11 @@ const machinePagination = ref({ rowsPerPage: 20 })
         </template>
 
         <template #body="props">
-          <QTr :props="props">
+          <QTr
+            :props="props"
+            style="cursor:pointer"
+            @click="onMachineClick(props.row)"
+          >
             <QTd auto-width>
               <QBtn
                 size="sm"
@@ -309,6 +414,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
                 dense
                 :icon="expandedMachines.includes(props.rowIndex) ? 'remove' : 'add'"
                 @click="toggleMachineRow(props.rowIndex)"
+                @click.stop
               />
             </QTd>
             <QTd
