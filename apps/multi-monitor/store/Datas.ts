@@ -25,7 +25,6 @@ export const useDataStore = defineStore('datas', () => {
     const response: MachineDataRaw[] = await $fetch('/api/machines')
     machine.value = response
   }
-  fetchMachineData()
   // colors
   const hex = useStorage('card-color', '#4B5563')
 
@@ -35,11 +34,9 @@ export const useDataStore = defineStore('datas', () => {
     const response = await $fetch('/api/settings')
     settings.value = response
   }
+
   fetchSettings()
-  const interval = setInterval(() => {
-    fetchSettings()
-    fetchMachineData()
-  }, 5000)
+  fetchMachineData()
 
   return {
     locale,
@@ -52,7 +49,6 @@ export const useDataStore = defineStore('datas', () => {
     mode,
     machine,
     electricity,
-    interval,
     steam,
     salt,
     water,

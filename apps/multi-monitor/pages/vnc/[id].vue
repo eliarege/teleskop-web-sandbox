@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { MachineDataRaw } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
 
 const store = useDataStore()
@@ -9,7 +8,7 @@ const currentMachine = computed(() => {
 })
 
 useHeadSafe(computed(() => ({
-  title: currentMachine.value?.name || 'Unknown machine',
+  title: currentMachine.value?.name || 'Loading',
 })))
 </script>
 

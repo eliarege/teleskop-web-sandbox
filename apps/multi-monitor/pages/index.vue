@@ -4,6 +4,11 @@ import type { MachineData } from '~/shared/types'
 
 const { t } = useI18n()
 const store = useDataStore()
+
+useIntervalFn(() => {
+  store.fetchMachineData()
+}, 5000)
+
 const machineData = computed(() => {
   return store.machine.map((machine) => {
     return {
