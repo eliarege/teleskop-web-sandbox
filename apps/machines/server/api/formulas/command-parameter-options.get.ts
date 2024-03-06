@@ -1,10 +1,15 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  const { machineId } = getQuery(event)
+  const { machineId, commandNo } = getQuery(event)
 
   const res = await knex('BFCOMMANDPARAMETERS')
-    .where('MACHINEID', machineId)
+    .where({
+      MACHINEID: machineId,
+      COMMANDNO: commandNo,
+      PARAMETERTYPE: 1,
+      USEFORMULA: 1,
+    })
     .select({
       paramString: 'PARAMSTRING',
       defaultValue: 'VALUE',

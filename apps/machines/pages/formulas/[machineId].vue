@@ -5,6 +5,50 @@ import type { Formula } from '~/types'
 const { t } = useI18n()
 const route = useRoute()
 
+const columns = computed(() => ([
+  {
+    name: 'formulaId',
+    label: t('formulaId'),
+    field: 'formulaId',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+  },
+  {
+    name: 'formulaName',
+    label: t('formulaName'),
+    field: 'formulaName',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+  },
+  {
+    name: 'formula',
+    label: t('formula'),
+    field: 'formula',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+  },
+  {
+    name: 'commandName',
+    label: t('commandName'),
+    field: 'commandName',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+  },
+  {
+    name: 'parameterName',
+    label: t('parameterName'),
+    field: 'parameterName',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+  },
+
+]))
+
 const machineId = computed(() => route.params.machineId)
 const formula = ref<Partial<Formula>>({})
 const selectedCommandNo = ref()
@@ -24,13 +68,13 @@ const { data: commandOptions } = useLazyFetch('/api/formulas/command-options', {
     machineId,
   },
   transform: (commandOptions) => {
-    commandOptions.unshift({ label: 'Genel Formül', value: 0 })
-    commandOptions.map(option => ({ label: option.name, value: option.commandNo }))
-    return commandOptions
+    const arr = commandOptions.map(option => ({ label: option.commandName, value: option.commandNo }))
+    arr.unshift({ label: 'Genel Formül', value: 0 })
+    return arr
   },
 })
 
-const { data: commandParameterOptions } = useLazyFetch('/api/formulas/command-parameters', {
+const { data: commandParameterOptions, execute: executeCommandParameterOptions } = useLazyFetch('/api/formulas/command-parameters', {
   immediate: false,
   method: 'GET',
   default: () => [],
@@ -38,83 +82,12 @@ const { data: commandParameterOptions } = useLazyFetch('/api/formulas/command-pa
     machineId,
     commandNo: selectedCommandNo,
   },
+  transform: (commandParameterOptions) => {
+    const arr = commandParameterOptions.map(option => ({ label: option.paramString, value: option.parameterIndex }))
+    arr.unshift({ label: 'Genel Parametre', value: 0 })
+    return arr
+  },
 })
-
-const columns = computed(() => ([
-  {
-    name: 'formulaId',
-    label: t('formulaId'),
-    field: 'formulaId',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    unique: true,
-    type: 'number',
-    visible: true,
-    editable: true,
-    schema: {
-      filled: true,
-      validation: 'required',
-    },
-  },
-  {
-    name: 'formulaName',
-    label: t('formulaName'),
-    field: 'formulaName',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    type: 'text',
-    visible: true,
-    editable: true,
-    schema: {
-      filled: true,
-      validation: 'required',
-    },
-  },
-  {
-    name: 'formula',
-    label: t('formula'),
-    field: 'formula',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    visible: true,
-    editable: false,
-  },
-  {
-    name: 'commandName',
-    label: t('commandName'),
-    field: 'commandName',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    type: 'select',
-    visible: true,
-    editable: true,
-    // format: (val, row) => commandOptions.value.find(d => d.value === val.value)?.label || val,
-    schema: {
-      validation: 'required',
-      options: commandOptions.value,
-    },
-  },
-  {
-    name: 'parameterName',
-    label: t('parameterName'),
-    field: 'parameterName',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    type: 'select',
-    visible: true,
-    editable: true,
-    // format: (val, row) => commandParameterOptions.value.find(d => d.value === val)?.label || val,
-    schema: {
-      options: commandParameterOptions.value,
-    },
-  },
-
-]))
 
 async function handleAdd() {
   await $fetch('/api/formulas/formula', {
@@ -176,6 +149,8 @@ async function handleFormulaSelection(obj: Formula) {
   } else {
     formula.value = obj
     copy.value = klona(obj)
+    selectedCommandNo.value = obj.commandNo
+    await executeCommandParameterOptions()
   }
 }
 
@@ -205,8 +180,8 @@ const showAddFormulaDialog = ref(false)
         <q-select
           :model-value="formula?.parameterIndex"
           :options="commandParameterOptions"
-          option-label="paramString"
-          option-value="parameterIndex"
+          option-label="label"
+          option-value="value"
           :display-value="formula?.parameterName"
           @update:model-value="(e) => handleParamSelect(e)"
         />
@@ -250,6 +225,7 @@ const showAddFormulaDialog = ref(false)
     :machine-id="machineId"
     :formula="formula"
     @close="showAddFormulaDialog = false"
+    @refresh="refreshFormulas"
   />
 </template>
 

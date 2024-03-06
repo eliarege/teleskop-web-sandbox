@@ -8,7 +8,7 @@ const props = defineProps<{
   formula: Partial<Formula>
 }>()
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'refresh'])
 
 const { t } = useI18n()
 
@@ -23,6 +23,14 @@ const { data: machineConstants } = useLazyFetch('/api/formulas/machine-constant-
   default: () => [],
   query: {
     machineId: props.machineId,
+  },
+})
+
+const { data: commandParameters } = useLazyFetch('/api/formulas/command-parameter-options', {
+  default: () => [],
+  query: {
+    machineId: props.machineId,
+    commandNo: props.formula.commandNo,
   },
 })
 
@@ -42,28 +50,55 @@ const scope = computed(() => {
       acc[constantName] = constant.defaultValue
       return acc
     }, {}),
+    ...commandParameters.value.reduce((acc, param) => {
+      const constantName = param.paramString.trim().replace(/\s/g, '_')
+      acc[constantName] = param.defaultValue
+      return acc
+    }, {}),
   }
 })
+
+const errorMessage = ref('')
 
 function evaluateExpression() {
   if (expression.value === '') {
     isValidExpression.value = true
+    errorMessage.value = ''
     return
   }
   try {
     result.value = math.evaluate(expression.value, scope.value)
     if (!Number.isFinite(result.value)) {
       isValidExpression.value = false
+      errorMessage.value = 'Division by zero'
+    } else {
+      isValidExpression.value = true
+      errorMessage.value = ''
     }
-    isValidExpression.value = true
   } catch (err) {
     isValidExpression.value = false
+    errorMessage.value = err.message
   }
 }
 
 function handleOptionClick(option: { paramString: string, defaultValue: number }) {
   expression.value += `${option.paramString.trim().replace(/\s/g, '_')}`
   evaluateExpression()
+}
+
+async function handleSubmit() {
+  if (isValidExpression.value) {
+    await $fetch('/api/formulas/formula', {
+      method: 'PUT',
+      body: {
+        formula: { ...props.formula, formula: expression.value },
+        machineId: props.machineId,
+        oldFormulaId: props.formula.formulaId,
+      },
+    })
+    emit('refresh')
+    emit('close')
+  }
 }
 
 expression.value = props.formula.formula?.split(/([*+/-])/).map((str) => {
@@ -88,10 +123,10 @@ evaluateExpression()
           @update:model-value="evaluateExpression"
         />
         <q-label v-if="!isValidExpression" class="bg-red-400">
-          Invalid expression
+          Invalid expression {{ errorMessage }}
         </q-label>
         <q-label v-else class="bg-teal-300">
-          Valid expression {{ result }}
+          Valid expression
         </q-label>
         <div class="flex flex-row w-full justify-around">
           <div class="flex flex-col">
@@ -128,10 +163,26 @@ evaluateExpression()
           </div>
           <div class="flex flex-col">
             <h3>{{ t('commandParameters') }}</h3>
-            <q-list />
+            <q-list bordered separator class="overflow-y-auto h-120 w-60">
+              <q-item
+                v-for="param in commandParameters"
+                :key="param.paramString"
+                v-ripple
+                clickable
+                @click="handleOptionClick(param)"
+              >
+                <q-item-section>
+                  {{ param.paramString }}
+                </q-item-section>
+              </q-item>
+            </q-list>
           </div>
         </div>
       </q-card-section>
+      <q-btn-group class="flex justify-end w-full m-4">
+        <q-btn :label="t('submit')" @click="handleSubmit" />
+        <q-btn :label="t('cancel')" @click="emit('close')" />
+      </q-btn-group>
     </q-card>
   </q-dialog>
 </template>
