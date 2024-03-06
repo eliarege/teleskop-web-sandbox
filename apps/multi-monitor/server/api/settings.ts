@@ -1,12 +1,13 @@
 import connection from '~/server/connectionPool'
-import teleskopSettingsSql from '~/server/queries/TeleskopSettings.sql'
 
-interface Test {
+interface Setting {
   id: number
-  value: number
+  value: string
 }
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
   await connection.pool.connect()
-  const response = await connection.pool.query<Test>(teleskopSettingsSql)
-  return response.recordset[0].value.toString()
+  const response = await connection.pool.query<Setting>(`\
+SELECT ID as id , VALUE as value
+FROM TFTELESKOPSETTINGS WHERE ID = 2`)
+  return { washing: response.recordset[0].value === '1' }
 })

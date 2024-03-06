@@ -45,7 +45,7 @@ const { data: recipe } = useFetch('/api/recipe', {
   query: {
     recipeJB: props.currentMachine.runningJobOrder,
     recipeID: props.currentMachine.id,
-    teleskopType: store.settings !== '0' ? 'washing' : 'normal',
+    teleskopType: store.settings?.washing ? 'washing' : 'normal',
   },
 })
 

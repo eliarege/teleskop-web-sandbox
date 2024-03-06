@@ -99,7 +99,7 @@ function isScreenViable(screen: number) {
           activeBackGround: colors.cardActiveBg,
           idleBackGround: colors.cardIdleBg,
         }"
-        :machine-settings="store.settings"
+        :washing="store.settings?.washing"
         :machine="element"
         :is-group-visible="store.group"
         :is-screen-viable="isScreenViable(screenWidth)"

@@ -14,10 +14,12 @@ interface MachineCardProps {
   isGroupVisible: boolean
   isScreenViable: boolean
   machineSort: number
-  machineSettings: '0' | '1'
-  linksActive: boolean
+  washing?: boolean
+  linksActive?: boolean
 }
-defineProps<MachineCardProps>()
+withDefaults(defineProps<MachineCardProps>(), {
+  washing: false,
+})
 function textColor(bgColor: string) {
   const colorToRGB = color(bgColor)!.rgb()
   const sRGB = {
@@ -189,7 +191,7 @@ function reqStatus(params: number) {
       </div>
       <!-- PHASE NO/NAME ONLY FOR WASHING -->
       <div
-        v-if="machineSettings !== '0'"
+        v-if="washing"
         v-show="machine.runningBatchStatus === 2"
         :class="
           machine.runningProgramName.length > 50

@@ -114,7 +114,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         }"
         :is-group-visible="true"
         :is-screen-viable="false"
-        machine-settings="0"
+        :washing="false"
         :machine-sort="1"
         :machine="currentMachine || []"
         :links-active="false"

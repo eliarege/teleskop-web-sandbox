@@ -2,6 +2,10 @@ import { defineStore } from 'pinia'
 import { useStorage } from '@vueuse/core'
 import type { MachineDataRaw } from '../shared/types'
 
+interface Settings {
+  washing: boolean
+}
+
 export const useDataStore = defineStore('datas', () => {
   // settings
   const mode = useStorage('layout', true)
@@ -17,26 +21,24 @@ export const useDataStore = defineStore('datas', () => {
   const sortMachines = useStorage('machine-sort', 1)
   const machine = ref([] as MachineDataRaw[])
 
-  async function getMachineData() {
-    const response: MachineDataRaw[] = await $fetch('/api/machines', {
-      method: 'GET',
-    })
+  async function fetchMachineData() {
+    const response: MachineDataRaw[] = await $fetch('/api/machines')
     machine.value = response
   }
-  getMachineData()
+  fetchMachineData()
   // colors
   const hex = useStorage('card-color', '#4B5563')
 
   // settings
-  const settings = ref()
-  async function settingsFetch() {
+  const settings = ref<Settings>()
+  async function fetchSettings() {
     const response = await $fetch('/api/settings')
     settings.value = response
   }
-  settingsFetch()
+  fetchSettings()
   const interval = setInterval(() => {
-    settingsFetch()
-    getMachineData()
+    fetchSettings()
+    fetchMachineData()
   }, 5000)
 
   return {
@@ -54,5 +56,7 @@ export const useDataStore = defineStore('datas', () => {
     steam,
     salt,
     water,
+    fetchSettings,
+    fetchMachineData,
   }
 })

@@ -2,7 +2,6 @@ import connection from '~/server/connectionPool'
 import type { Recipe } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
-  await connection.pool.connect
   const { recipeJB } = getQuery(event)
   const { recipeID } = getQuery(event)
   const { teleskopType } = getQuery(event)
