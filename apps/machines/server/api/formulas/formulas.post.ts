@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
 
   return res.map(r => ({
     ...r,
-    commandName: r.commandName ?? 'general formula',
-    parameterName: r.parameterName ?? 'general for command',
+    commandName: r.commandName ?? null,
+    parameterName: r.parameterName ?? null,
   }))
 })

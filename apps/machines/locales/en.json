@@ -325,5 +325,12 @@
   "startingParameters": "Starting Parameters",
   "commandParameters": "Command Parameters",
   "memoryVariables": "Memory Variables",
-  "addFormula": "Add Formula"
+  "addFormula": "Add Formula",
+  "divisionByZero": "Division By Zero",
+  "validExpression": "Valid Expression",
+  "invalidExpression": "Invalid Expression",
+  "invalidSymbolOrIncompleteExpression": "Invalid Symbol or Incomplete Expression",
+  "generalCommand": "General Command",
+  "generalParameter": "General Parameter",
+  "generalFormula": "General Formula"
 }

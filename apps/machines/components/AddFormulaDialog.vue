@@ -70,14 +70,14 @@ function evaluateExpression() {
     result.value = math.evaluate(expression.value, scope.value)
     if (!Number.isFinite(result.value)) {
       isValidExpression.value = false
-      errorMessage.value = 'Division by zero'
+      errorMessage.value = t('divisionByZero')
     } else {
       isValidExpression.value = true
       errorMessage.value = ''
     }
   } catch (err) {
     isValidExpression.value = false
-    errorMessage.value = err.message
+    errorMessage.value = t('invalidSymbolOrIncompleteExpression')
   }
 }
 
@@ -123,10 +123,10 @@ evaluateExpression()
           @update:model-value="evaluateExpression"
         />
         <q-label v-if="!isValidExpression" class="bg-red-400">
-          Invalid expression {{ errorMessage }}
+          {{ t('invalidExpression') }} {{ errorMessage }}
         </q-label>
         <q-label v-else class="bg-teal-300">
-          Valid expression
+          {{ t('validExpression') }} {{ result }}
         </q-label>
         <div class="flex flex-row w-full justify-around">
           <div class="flex flex-col">

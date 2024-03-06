@@ -59,6 +59,15 @@ const { data: formulas, refresh: refreshFormulas } = useLazyFetch('/api/formulas
   default: () => [],
   method: 'POST',
   body: {},
+  transform: (formulas) => {
+    return formulas.map((formula) => {
+      return {
+        ...formula,
+        commandName: formula.commandName ?? t('generalFormula'),
+        parameterName: formula.parameterName ?? t('generalParameter'),
+      }
+    })
+  },
 })
 
 const { data: commandOptions } = useLazyFetch('/api/formulas/command-options', {
@@ -69,7 +78,7 @@ const { data: commandOptions } = useLazyFetch('/api/formulas/command-options', {
   },
   transform: (commandOptions) => {
     const arr = commandOptions.map(option => ({ label: option.commandName, value: option.commandNo }))
-    arr.unshift({ label: 'Genel Formül', value: 0 })
+    arr.unshift({ label: t('generalFormula'), value: 0 })
     return arr
   },
 })
@@ -84,7 +93,7 @@ const { data: commandParameterOptions, execute: executeCommandParameterOptions }
   },
   transform: (commandParameterOptions) => {
     const arr = commandParameterOptions.map(option => ({ label: option.paramString, value: option.parameterIndex }))
-    arr.unshift({ label: 'Genel Parametre', value: 0 })
+    arr.unshift({ label: t('generalParameter'), value: 0 })
     return arr
   },
 })
@@ -160,29 +169,39 @@ const showAddFormulaDialog = ref(false)
 <template>
   <q-card>
     <q-card-section>
-      <div>
+      <div class="w-full flex flex-row justify-around my-4">
         <q-input
           v-model="formula.formulaId"
+          filled
           :label="t('formulaId')"
+          class="w-1/6"
         />
         <q-input
           v-model="formula.formulaName"
+          filled
           :label="t('formulaName')"
+          class="w-1/6"
         />
         <q-select
           :model-value="formula?.commandNo"
           :options="commandOptions"
+          :label="t('commands')"
+          filled
           option-label="label"
           option-value="value"
           :display-value="formula?.commandName"
+          class="w-1/6"
           @update:model-value="(e) => handleCommandSelect(e)"
         />
         <q-select
           :model-value="formula?.parameterIndex"
           :options="commandParameterOptions"
+          :label="t('commandParameters')"
+          filled
           option-label="label"
           option-value="value"
           :display-value="formula?.parameterName"
+          class="w-1/6"
           @update:model-value="(e) => handleParamSelect(e)"
         />
       </div>

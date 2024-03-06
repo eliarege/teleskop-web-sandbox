@@ -323,5 +323,12 @@
   "startingParameters": "Başlatma Parametreleri",
   "commandParameters": "Komut Parametreleri",
   "memoryVariables": "Hafıza Değişkenleri",
-  "addFormula": "Formül Ekle"
+  "addFormula": "Formül Ekle",
+  "divisionByZero": "Sıfıra Bölme",
+  "validExpression": "Geçerli İfade",
+  "invalidExpression": "Geçersiz İfade",
+  "invalidSymbolOrIncompleteExpression": "Geçersiz Sembol Veya Eksik İfade",
+  "generalCommand": "Genel Komut",
+  "generalParameter": "Genel Parametre",
+  "generalFormula": "Genel Formül"
 }
