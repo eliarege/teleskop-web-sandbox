@@ -1,7 +1,8 @@
 import process from 'node:process'
 import Knex from 'knex'
-import { destruct, onExitSignal } from './utils'
+import { onExitSignal } from './utils'
 import { logger as parentLogger } from './logger'
+import { config } from './config'
 
 export interface Machine {
   name: string
@@ -9,36 +10,20 @@ export interface Machine {
   port: number
 }
 
-const {
-  TELESKOP_HOST = '127.0.0.1',
-  TELESKOP_PORT = '1433',
-  TELESKOP_DATABASE = 'Teleskop',
-  TELESKOP_USER,
-  TELESKOP_PASSWORD,
-  TELESKOP_INSTANCE_NAME,
-} = destruct(process.env)
-
 const logger = parentLogger.child({ name: 'database' })
-
-if (process.env.NODE_ENV === 'production') {
-  if (!TELESKOP_USER)
-    throw new Error('TELESKOP_USER must be defined')
-  if (!TELESKOP_PASSWORD)
-    throw new Error('TELESKOP_PASSWORD must be defined')
-}
 
 const knex = Knex({
   client: 'mssql',
   log: logger,
   connection: {
-    host: TELESKOP_HOST,
-    port: Number.parseInt(TELESKOP_PORT),
-    user: TELESKOP_USER,
-    password: TELESKOP_PASSWORD,
-    database: TELESKOP_DATABASE,
+    host: config.teleskopHost,
+    port: config.teleskopPort,
+    user: config.teleskopUser,
+    password: config.teleskopPassword,
+    database: config.teleskopDatabase,
     options: {
-      appName: process.env.APP_NAME,
-      instanceName: TELESKOP_INSTANCE_NAME,
+      appName: config.appName,
+      instanceName: config.teleskopInstanceName,
     },
   },
 })
@@ -67,9 +52,9 @@ export async function fetchTeleskopMachine(id: number): Promise<Machine | null> 
     return response[0] || null
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
-      if (!TELESKOP_USER)
+      if (!config.teleskopUser)
         logger.warn('TELESKOP_USER is not defined')
-      if (!TELESKOP_PASSWORD)
+      if (!config.teleskopPassword)
         logger.warn('TELESKOP_PASSWORD is not defined')
     }
     logger.error((err as NodeJS.ErrnoException).message)
