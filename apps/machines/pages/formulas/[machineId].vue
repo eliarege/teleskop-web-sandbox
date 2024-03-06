@@ -178,6 +178,8 @@ async function handleFormulaSelection(obj: Formula) {
     copy.value = klona(obj)
   }
 }
+
+const showAddFormulaDialog = ref(false)
 </script>
 
 <template>
@@ -214,6 +216,10 @@ async function handleFormulaSelection(obj: Formula) {
         <q-btn push :label="t('edit')" color="primary" @click="handleEdit" />
         <q-btn push :label="t('delete')" color="primary" @click="handleDelete" />
       </q-btn-group>
+
+      <div class="flex w-full justify-end my-4">
+        <q-btn no-caps push :label="t('addFormula')" color="primary" @click="showAddFormulaDialog = true" />
+      </div>
       <FilterableTable
         :rows="formulas"
         :columns="columns"
@@ -238,6 +244,13 @@ async function handleFormulaSelection(obj: Formula) {
       </FilterableTable>
     </q-card-section>
   </q-card>
+  <AddFormulaDialog
+    v-if="showAddFormulaDialog"
+    :show="showAddFormulaDialog"
+    :machine-id="machineId"
+    :formula="formula"
+    @close="showAddFormulaDialog = false"
+  />
 </template>
 
 <style scoped>

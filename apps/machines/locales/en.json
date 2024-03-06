@@ -321,5 +321,9 @@
   "settingsToUpdate": "Settings To Update",
   "machinesOfSelectedGroup": "Machines Of Selected Group",
   "availableMachines": "Available Machines",
-  "machineGroupName": "Machine Group Name"
+  "machineGroupName": "Machine Group Name",
+  "startingParameters": "Starting Parameters",
+  "commandParameters": "Command Parameters",
+  "memoryVariables": "Memory Variables",
+  "addFormula": "Add Formula"
 }

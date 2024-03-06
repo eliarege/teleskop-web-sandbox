@@ -319,5 +319,9 @@
   "settingsToUpdate": "Güncellenecek Ayarlar",
   "machinesOfSelectedGroup": "Seçili Grubun Makineleri",
   "availableMachines": "Seçilebilir Makineler",
-  "machineGroupName": "Makine Grubu Adı"
+  "machineGroupName": "Makine Grubu Adı",
+  "startingParameters": "Başlatma Parametreleri",
+  "commandParameters": "Komut Parametreleri",
+  "memoryVariables": "Hafıza Değişkenleri",
+  "addFormula": "Formül Ekle"
 }

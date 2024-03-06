@@ -1,0 +1,140 @@
+<script setup lang="ts">
+import * as math from 'mathjs'
+import type { Formula } from '~/types'
+
+const props = defineProps<{
+  show: boolean
+  machineId: number
+  formula: Partial<Formula>
+}>()
+
+const emit = defineEmits(['close'])
+
+const { t } = useI18n()
+
+const { data: startingParameters } = useLazyFetch('/api/formulas/starting-parameter-options', {
+  default: () => [],
+  query: {
+    machineId: props.machineId,
+  },
+})
+
+const { data: machineConstants } = useLazyFetch('/api/formulas/machine-constant-options', {
+  default: () => [],
+  query: {
+    machineId: props.machineId,
+  },
+})
+
+const expression = ref('')
+const isValidExpression = ref(true)
+const result = ref(0)
+
+const scope = computed(() => {
+  return {
+    ...startingParameters.value.reduce((acc, param) => {
+      const paramName = param.paramString.trim().replace(/\s/g, '_')
+      acc[paramName] = param.defaultValue
+      return acc
+    }, {}),
+    ...machineConstants.value.reduce((acc, constant) => {
+      const constantName = constant.paramString.trim().replace(/\s/g, '_')
+      acc[constantName] = constant.defaultValue
+      return acc
+    }, {}),
+  }
+})
+
+function evaluateExpression() {
+  if (expression.value === '') {
+    isValidExpression.value = true
+    return
+  }
+  try {
+    result.value = math.evaluate(expression.value, scope.value)
+    if (!Number.isFinite(result.value)) {
+      isValidExpression.value = false
+    }
+    isValidExpression.value = true
+  } catch (err) {
+    isValidExpression.value = false
+  }
+}
+
+function handleOptionClick(option: { paramString: string, defaultValue: number }) {
+  expression.value += `${option.paramString.trim().replace(/\s/g, '_')}`
+  evaluateExpression()
+}
+
+expression.value = props.formula.formula?.split(/([*+/-])/).map((str) => {
+  return str.trim().replace(/\s/g, '_')
+}).join('') || ''
+
+evaluateExpression()
+</script>
+
+<template>
+  <q-dialog
+    :model-value="props.show"
+    full-width
+    @hide="emit('close')"
+  >
+    <q-card>
+      <q-card-section>
+        <q-input
+          v-model="expression"
+          :label="t('formulaId')"
+          clearable
+          @update:model-value="evaluateExpression"
+        />
+        <q-label v-if="!isValidExpression" class="bg-red-400">
+          Invalid expression
+        </q-label>
+        <q-label v-else class="bg-teal-300">
+          Valid expression {{ result }}
+        </q-label>
+        <div class="flex flex-row w-full justify-around">
+          <div class="flex flex-col">
+            <h3>{{ t('startingParameters') }}</h3>
+            <q-list bordered separator class="overflow-y-auto h-120 w-60">
+              <q-item
+                v-for="param in startingParameters"
+                :key="param.paramString"
+                v-ripple
+                clickable
+                @click="handleOptionClick(param)"
+              >
+                <q-item-section>
+                  {{ param.paramString }}
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </div>
+          <div class="flex flex-col">
+            <h3>{{ t('machineConstants') }}</h3>
+            <q-list bordered separator class="overflow-y-auto h-120 w-60">
+              <q-item
+                v-for="constant in machineConstants"
+                :key="constant.paramString"
+                v-ripple
+                clickable
+                @click="handleOptionClick(constant)"
+              >
+                <q-item-section>
+                  {{ constant.paramString }}
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </div>
+          <div class="flex flex-col">
+            <h3>{{ t('commandParameters') }}</h3>
+            <q-list />
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+</template>
+
+<style scoped>
+</style>
