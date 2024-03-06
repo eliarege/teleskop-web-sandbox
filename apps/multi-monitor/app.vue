@@ -2,11 +2,14 @@
 import { LoadingScreen } from 'ui'
 import { useColorStore } from '~/store/Colors'
 
-useHead({
-  link: [{ rel: 'icon', type: 'image/svg', href: '/logo-dark-raw.svg' }],
-})
 const { t, locale } = useI18n()
 const colors = useColorStore()
+
+useHeadSafe(computed(() => ({
+  title: t('name'),
+  link: [{ rel: 'icon', type: 'image/svg', href: '/logo-dark-raw.svg' }],
+})))
+
 const messages = controlledComputed(locale, () => {
   return { firstMessage: t('load-message'), secondMessage: t('wait-message') }
 })
