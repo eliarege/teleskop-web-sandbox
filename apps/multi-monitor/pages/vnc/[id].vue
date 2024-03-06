@@ -4,7 +4,13 @@ import { useDataStore } from '~/store/Datas'
 
 const store = useDataStore()
 const route = useRoute()
-const currentMachine = computed(() => store.machine.find(machine => machine.id === Number.parseInt(route.params.id as string)) as MachineDataRaw)
+const currentMachine = computed(() => {
+  return store.machine.find(machine => machine.id === Number.parseInt(route.params.id as string))
+})
+
+useHeadSafe(computed(() => ({
+  title: currentMachine.value?.name || 'Unknown machine',
+})))
 </script>
 
 <template>

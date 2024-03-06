@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { withBase } from 'ufo'
 import { NoVnc } from 'ui'
 import type { MachineDataRaw } from '~/shared/types'
 
@@ -84,7 +85,6 @@ const location = window.location.hostname
 function closeTab() {
   window.close()
 }
-const machine = toRef(props, 'currentMachine')
 // #region Keyboard
 interface FnKeys {
   class: string
@@ -93,6 +93,9 @@ interface FnKeys {
 interface OpKeys extends FnKeys {
   img: string
 }
+
+const baseURL = useRuntimeConfig().app.baseURL
+const withBaseURL = (input: string) => withBase(input, baseURL)
 
 const fnKeys = reactive([
   { class: 'f1', key: 'F1' },
@@ -145,12 +148,6 @@ const bottomKeys = reactive([
   { class: 'disp-r', key: 'Home', img: '/keyboard/dispR.svg' },
 ] as OpKeys[])
 // #endregion
-
-onMounted(async () => {
-  useHead({
-    title: machine.value.name,
-  })
-})
 </script>
 
 <template>
@@ -200,7 +197,7 @@ onMounted(async () => {
                   :class="item.class"
                   @click="sendKey(item.key)"
                 >
-                  <img :src="item.img">
+                  <img :src="withBaseURL(item.img)">
                 </div>
               </div>
               <!-- NUMPAD -->
@@ -211,7 +208,7 @@ onMounted(async () => {
                   :class="item.class"
                   @click="sendKey(item.key)"
                 >
-                  <img :src="item.img">
+                  <img :src="withBaseURL(item.img)">
                 </div>
               </div>
               <div class="keys">
@@ -223,7 +220,7 @@ onMounted(async () => {
                     :class="item.class"
                     @click="sendKey(item.key)"
                   >
-                    <img :src="item.img">
+                    <img :src="withBaseURL(item.img)">
                   </div>
                 </div>
               </div>
@@ -236,7 +233,7 @@ onMounted(async () => {
                 :class="item.class"
                 @click="sendKey(item.key)"
               >
-                <img :src="item.img">
+                <img :src="withBaseURL(item.img)">
               </div>
             </div>
           </div>
