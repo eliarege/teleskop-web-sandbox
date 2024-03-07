@@ -5,11 +5,13 @@ import DispenserEdit from '../dispenser/DispenserEdit.vue'
 import MachineInfo from './MachineInfo.vue'
 import { useDataStore } from '~/store/DataStore'
 import type { Dispenser, DispenserType, Machine, MachineControllerType } from '~/shared/types'
+import { useStateStore } from '~/store/State'
 
 const { t } = useI18n()
 const q = useQuasar()
 
 const dataStore = useDataStore()
+const stateStore = useStateStore()
 const shouldFetch = !dataStore.dispensers
 const { data } = shouldFetch
   ? await useFetch<Dispenser[]>(`/api/dispensers`)
@@ -167,6 +169,7 @@ async function onMachineClick(row: any) {
 }
 async function retrieveDispensersFromTeleskop() {
   try {
+    stateStore.isLoading = true
     await $fetch('/api/teleskop/sync/dispensers')
     await refreshDispensers()
     q.notify({
@@ -184,6 +187,8 @@ async function retrieveDispensersFromTeleskop() {
       message: t('Failed'),
       timeout: 3000,
     })
+  } finally {
+    stateStore.isLoading = false
   }
 }
 async function retrieveMachinesFromTeleskop() {
@@ -205,6 +210,8 @@ async function retrieveMachinesFromTeleskop() {
       message: t('Failed'),
       timeout: 3000,
     })
+  } finally {
+    stateStore.isLoading = false
   }
 }
 function handleResize() {
@@ -241,7 +248,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
               v-if="innerWidth <= minSize"
               :offset="[10, 10]"
             >
-              {{ t('AddNew') }}
+              {{ t('AddNewDispenser') }}
             </QTooltip>
           </QBtn>
           <QBtn

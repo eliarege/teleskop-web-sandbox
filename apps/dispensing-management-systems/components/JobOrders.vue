@@ -15,9 +15,14 @@ const table = ref<QTable>()
 const searchFilter = ref('')
 const jobOrders = ref()
 const selectedRow = ref<JobOrder | null>(null)
+const dispenserId = route.query.dispenserId
+
 getJobOrders()
 async function getJobOrders() {
-  jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${route.query.dispenserId}`)
+  if (dispenserId)
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${dispenserId}`)
+  else
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`)
 }
 const columns: (QTableColumn<JobOrder>)[] = [
   {

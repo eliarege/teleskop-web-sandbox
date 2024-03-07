@@ -2,8 +2,7 @@ import { dmsDB } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
   try {
-    const { dispenserId } = getQuery(event)
-    const jobOrders = dmsDB('JOB_ORDER as j')
+    let jobOrders = dmsDB('JOB_ORDER as j')
       .leftJoin(
         'MACHINE as m',
         'j.machine_id',
@@ -35,9 +34,13 @@ export default defineEventHandler(async (event) => {
         status: 'j.status',
       })
       .orderBy('job_id', 'desc')
-      .where('j.dispenser_id', '=', dispenserId)
 
-    jobOrders.limit(1000)
+    const { dispenserId } = getQuery(event)
+    if (dispenserId) {
+      jobOrders = jobOrders.where('j.dispenser_id', '=', dispenserId)
+    }
+
+    jobOrders = jobOrders.limit(1000)
     return await jobOrders
   } catch (e) {
     console.log(e)
