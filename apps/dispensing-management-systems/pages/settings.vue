@@ -54,7 +54,7 @@ useResizeObserver(document.body, () => {
         >
           <QTab
             name="s1"
-            icon="settings"
+            icon="app_settings_alt"
             :class="tab === 's1' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
             :label="innerWidth > minSize ? `${t('settings.App')}` : ''"
           >
@@ -70,7 +70,7 @@ useResizeObserver(document.body, () => {
           <QSeparator />
           <QTab
             name="s2"
-            icon="settings"
+            icon="science"
             :class="tab === 's2' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
             :label="innerWidth > minSize ? `${t('settings.Material')}` : ''"
           >
@@ -108,7 +108,7 @@ useResizeObserver(document.body, () => {
           <QSeparator />
           <QTab
             name="s5"
-            icon="settings"
+            icon="backup"
             :class="tab === 's5' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
             :label="innerWidth > minSize ? `${t('settings.Teleskop')}` : ''"
           />

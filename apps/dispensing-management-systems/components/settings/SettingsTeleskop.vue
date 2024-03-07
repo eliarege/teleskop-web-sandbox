@@ -119,11 +119,13 @@ function onReset() {
           :label="t('Save')"
           color="primary"
           icon="save"
+          mr-2
           @click="onSave"
         />
         <QBtn
           :label="t('Reset')"
           icon="refresh"
+          ml-2
           @click="onReset"
         />
       </div>
