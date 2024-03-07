@@ -249,7 +249,6 @@ function onCheck(dispenserId: number, isChecked: boolean) {
           />
           <QBtn
             :label="t('Reset')"
-            color="info"
             icon="refresh"
             @click="onReset"
           />
