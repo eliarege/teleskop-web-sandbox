@@ -71,13 +71,13 @@ function onClickEdit() {
   q.dialog({
     component: DispenserEdit,
     componentProps: { dispenser },
-  }).onOk((payload) => {
+  }).onOk(async (payload) => {
     if (payload)
       dataStore.selectedDispenser = payload
     else navigateTo({
       path: '/',
     })
-    onRefreshList()
+    await onRefreshList()
     q.notify({
       color: 'green-4',
       textColor: 'white',

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
+import ConfirmationDialog from '../ConfirmationDialog.vue'
 import type { Dispenser, Material, MaterialGroup } from '~/shared/types'
 
 const props = defineProps({
@@ -65,12 +66,28 @@ function onReset() {
   selectedDispensers.value = [...selectedDispensersInitial.value]
 }
 async function onDelete() {
-  try {
-    await $fetch(`/api/materials`, { method: 'DELETE', body: { materialCode: editedMaterial.value.materialCode } })
-    onDialogOK(true)
-  } catch (e) {
-    onDialogOK(false)
-  }
+  q.dialog({
+    component: ConfirmationDialog,
+    componentProps: {
+      bodyText: t('DeleteMaterial'),
+      confirmBtn: {
+        label: t('Delete'),
+        color: 'negative',
+        icon: 'delete',
+      },
+      cancelBtn: {
+        label: t('Cancel'),
+        icon: 'close',
+      },
+    },
+  }).onOk(async () => {
+    try {
+      await $fetch(`/api/materials`, { method: 'DELETE', body: { materialCode: editedMaterial.value.materialCode } })
+      onDialogOK(true)
+    } catch (e) {
+      onDialogOK(false)
+    }
+  })
 }
 function onCheck(dispenserId: number, isChecked: boolean) {
   if (isChecked) {

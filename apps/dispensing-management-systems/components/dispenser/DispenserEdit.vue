@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
+import ConfirmationDialog from '../ConfirmationDialog.vue'
 import type { Dispenser, DispenserBrand, DispenserType, Protocol } from '~/shared/types'
 import ipformat from '~/shared/utils'
 
@@ -10,6 +11,7 @@ const props = defineProps({
   },
 })
 const { t } = useI18n()
+const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const dispenser = toRef(props, 'dispenser')
 const editedDispenser = ref({ ...dispenser.value })
@@ -94,8 +96,24 @@ function onReset() {
 }
 
 async function onDelete() {
-  await $fetch(`/api/dispensers`, { method: 'DELETE', body: dispenser.value.dispenserId })
-  onDialogOK(null)
+  q.dialog({
+    component: ConfirmationDialog,
+    componentProps: {
+      bodyText: t('DeleteDispenser'),
+      confirmBtn: {
+        label: t('Delete'),
+        color: 'negative',
+        icon: 'delete',
+      },
+      cancelBtn: {
+        label: t('Cancel'),
+        icon: 'close',
+      },
+    },
+  }).onOk(async () => {
+    await $fetch(`/api/dispensers`, { method: 'DELETE', body: dispenser.value.dispenserId })
+    onDialogOK(null)
+  })
 }
 </script>
 

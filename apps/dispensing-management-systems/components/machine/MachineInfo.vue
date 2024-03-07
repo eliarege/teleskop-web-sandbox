@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
+import ConfirmationDialog from '../ConfirmationDialog.vue'
 import type { Dispenser, Machine, MachineControllerType } from '~/shared/types'
 
 const props = defineProps({
@@ -18,6 +19,7 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
+const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const machine = toRef(props, 'machine')
 const controllerTypes = toRef(props, 'controllerTypes')
@@ -59,12 +61,28 @@ function onReset() {
 }
 
 async function onDelete() {
-  try {
-    await $fetch(`/api/machines`, { method: 'DELETE', body: machine.value!.machineId })
-    onDialogOK(true)
-  } catch (e) {
-    onDialogOK(false)
-  }
+  q.dialog({
+    component: ConfirmationDialog,
+    componentProps: {
+      bodyText: t('DeleteMachine'),
+      confirmBtn: {
+        label: t('Delete'),
+        color: 'negative',
+        icon: 'delete',
+      },
+      cancelBtn: {
+        label: t('Cancel'),
+        icon: 'close',
+      },
+    },
+  }).onOk(async () => {
+    try {
+      await $fetch(`/api/machines`, { method: 'DELETE', body: machine.value!.machineId })
+      onDialogOK(true)
+    } catch (e) {
+      onDialogOK(false)
+    }
+  })
 }
 function onCheck(dispenserId: number, isChecked: boolean) {
   if (isChecked) {
