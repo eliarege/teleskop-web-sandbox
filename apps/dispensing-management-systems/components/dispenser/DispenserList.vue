@@ -9,9 +9,6 @@ const q = useQuasar()
 const dataStore = useDataStore()
 const route = useRoute()
 
-dataStore.dispensers = await getDispensers()
-dataStore.dispenserTypes = await getDispenserTypes()
-
 const treeNodes = ref<any[]>([])
 const expanded = ref<string[]>([])
 
@@ -31,23 +28,12 @@ watch(() => route.params, () => {
 function onExpand(nodes: any) {
   expanded.value = nodes
 }
-async function getDispensers() {
-  if (dataStore.dispensers)
-    return dataStore.dispensers
-  const dispensers = await $fetch<Dispenser[]>(`/api/dispensers`)
-  return dispensers
-}
-async function getDispenserTypes() {
-  if (dataStore.dispenserTypes)
-    return dataStore.dispenserTypes
-  const types = await $fetch<DispenserType[]>(`/api/dispensers/types`)
-  return types
-}
+
 generateTreeNodes()
 
-function generateTreeNodes() {
-  const dispensers = dataStore.dispensers!
-  const types = dataStore.dispenserTypes!
+async function generateTreeNodes() {
+  const dispensers = await dataStore.getDispensers()
+  const types = await dataStore.getDispenserTypes()
 
   const brandMap = new Map()
   const typeMap = new Map()

@@ -12,11 +12,8 @@ const q = useQuasar()
 
 const dataStore = useDataStore()
 const stateStore = useStateStore()
-const shouldFetch = !dataStore.dispensers
-const { data } = shouldFetch
-  ? await useFetch<Dispenser[]>(`/api/dispensers`)
-  : { data: dataStore.dispensers }
-dataStore.dispensers = data
+
+await dataStore.getDispensers()
 const { data: controllerTypes } = useFetch<MachineControllerType[]>('/api/machines/types')
 const { data: dispenserTypes } = useFetch<DispenserType[]>('/api/dispensers/types')
 const innerWidth = ref(window.innerWidth)

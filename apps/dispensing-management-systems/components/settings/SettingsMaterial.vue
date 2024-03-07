@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
 import MaterialInfo from '../material/MaterialInfo.vue'
-import type { Dispenser, Material, MaterialGroup } from '~/shared/types'
+import type { Material, MaterialGroup } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
 
 const q = useQuasar()
 const { t } = useI18n()
 const dataStore = useDataStore()
 const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials')
-const dispensers = await getDispensers()
+const dispensers = await dataStore.getDispensers()
 
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,
@@ -49,12 +49,6 @@ const columns: (QTableColumn<Material>)[] = [
     align: 'left',
   },
 ]
-async function getDispensers() {
-  if (dataStore.dispensers)
-    return dataStore.dispensers
-  const dispensers = await $fetch<Dispenser[]>(`/api/dispensers`)
-  return dispensers
-}
 async function onRowClick(_event: Event, row: any) {
   const selectedMaterial = await $fetch(`/api/materials/${row.materialCode}`)
   q.dialog({

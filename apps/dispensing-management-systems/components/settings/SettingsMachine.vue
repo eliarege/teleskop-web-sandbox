@@ -39,15 +39,10 @@ const columns: (QTableColumn<Machine>)[] = [
     align: 'left',
   },
 ]
-async function getDispensers() {
-  if (!dataStore.dispensers)
-    dataStore.dispensers = await $fetch('/api/dispensers')
-  return dataStore.dispensers
-}
 
 async function onRowClick(_event: Event, row: any) {
   const selectedMachine = await $fetch(`/api/machines/${row.machineId}`)
-  const dispensers = await getDispensers()
+  const dispensers = await dataStore.getDispensers()
   q.dialog({
     component: MachineInfo,
     componentProps: {
@@ -76,7 +71,7 @@ async function onRowClick(_event: Event, row: any) {
   })
 }
 async function addNewMachine() {
-  const dispensers = await getDispensers()
+  const dispensers = await dataStore.getDispensers()
   q.dialog({
     component: MachineInfo,
     componentProps: {
