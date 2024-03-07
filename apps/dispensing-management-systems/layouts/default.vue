@@ -13,6 +13,7 @@ const stickyUnavailablePaths = ['/settings']
 const showDrawer = ref(true)
 const showSticky = ref(!stickyUnavailablePaths.includes(route.path))
 const { height } = useWindowSize()
+const refreshKey = ref(0)
 
 function goToHomepage() {
   navigateTo({
@@ -20,7 +21,7 @@ function goToHomepage() {
   })
 }
 function onLogout() {
-  onRefresh()
+  onReset()
   q.notify({
     position: 'top',
     color: 'red-4',
@@ -31,11 +32,20 @@ function onLogout() {
   })
   goToHomepage()
 }
-function onRefresh() {
+function onReset() {
   dataStore.$patch({
     title: '',
     selectedDispenser: undefined,
     dispensers: undefined,
+  })
+}
+async function onRefresh() {
+  dataStore.selectedDispenser = undefined
+  dataStore.dispensers = undefined
+  dataStore.getDispensers()
+  refreshKey.value += 1
+  navigateTo({
+    path: '/',
   })
 }
 const DISPENSER_PATH_RE = /^\/dispenser\/\d+$/
@@ -73,9 +83,10 @@ watch(() => route.params, () => {
       >
         <Menubar
           mt-1
-          @refresh="onRefresh"
+          @on-refresh-dispensers="onRefresh"
         />
         <DispenserList
+          :key="refreshKey"
           class="my-1"
           @logout="onLogout"
         />
