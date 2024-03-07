@@ -3,27 +3,30 @@ import { QTable } from 'quasar'
 import type { QTableColumn } from 'quasar'
 import MaterialRequests from './material/MaterialRequests.vue'
 import WeighingInfo from './WeighingInfo.vue'
-import type { JobOrder } from '~/shared/types'
+import type { Dispenser, JobOrder } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { cellStyle } from '~/shared/utils'
+import { useDataStore } from '~/store/DataStore'
 
 const { t } = useI18n()
 const q = useQuasar()
 const route = useRoute()
+const dataStore = useDataStore()
 const colorStore = useColorStore()
 const table = ref<QTable>()
 const searchFilter = ref('')
 const jobOrders = ref()
 const selectedRow = ref<JobOrder | null>(null)
-const dispenserId = route.query.dispenserId
-
+const dispenserId = ref(route.query.dispenserId?.toString())
 getJobOrders()
+const dispensers = await dataStore.getDispensers()
 async function getJobOrders() {
-  if (dispenserId)
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${dispenserId}`)
+  if (dispenserId.value)
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${dispenserId.value}`)
   else
     jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`)
 }
+
 const columns: (QTableColumn<JobOrder>)[] = [
   {
     name: 'job_order',
@@ -138,28 +141,60 @@ function onButtonClicked(link: string) {
   }
 }
 const pagination = ref({ rowsPerPage: 50 })
-watch((searchFilter), () => {
+watch(searchFilter, () => {
   // Workaround to wait for filteredSortedRows to update since it is not reactive
   setTimeout(() => {
     if (!table.value?.filteredSortedRows.includes(selectedRow.value))
       selectedRow.value = null
   }, 100)
 })
+watch(dispenserId, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    selectedRow.value = null
+    navigateTo({
+      path: `/jobOrders`,
+      query: { dispenserId: `${newVal}` },
+    })
+    getJobOrders()
+  }
+})
+function updateDispenserId(val: Dispenser) {
+  dispenserId.value = val.dispenserId.toString()
+  dataStore.title = val.dispenserName
+}
 </script>
 
 <template>
   <div class="q-pa-md ml-9">
-    <div class="flex-center">
-      <QInput
-        v-model="searchFilter"
-        :label="t('Search')"
-        class="mb-10 w-50%"
-      >
-        <template #prepend>
-          <QIcon name="search" />
-        </template>
-      </QInput>
+    <div class="flex-center mb-10">
+      <div class="col items-center mr-1">
+        <QInput
+          v-model="searchFilter"
+          :label="t('Search')"
+          style="min-width: 30vw; max-width: 40%;"
+        >
+          <template #prepend>
+            <QIcon name="search" />
+          </template>
+        </QInput>
+      </div>
+      <div>
+        <QSelect
+          v-model="dataStore.selectedDispenser"
+          borderless
+          dense
+          filled
+          style="min-width: 30vw;"
+          emit-value
+          map-options
+          options-dense
+          option-label="dispenserName"
+          :options="dispensers"
+          @update:model-value="updateDispenserId"
+        />
+      </div>
     </div>
+
     <QTable
       ref="table"
       :card-class="q.dark.isActive ? 'card-dark' : 'card-light'"
