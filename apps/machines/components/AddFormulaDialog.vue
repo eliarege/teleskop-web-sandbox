@@ -51,8 +51,8 @@ const scope = computed(() => {
       return acc
     }, {}),
     ...commandParameters.value.reduce((acc, param) => {
-      const constantName = param.paramString.trim().replace(/\s/g, '_')
-      acc[constantName] = param.defaultValue
+      const paramName = param.paramString.trim().replace(/\s/g, '_')
+      acc[paramName] = param.defaultValue
       return acc
     }, {}),
   }
