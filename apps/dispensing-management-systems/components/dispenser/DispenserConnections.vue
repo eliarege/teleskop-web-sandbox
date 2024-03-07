@@ -40,6 +40,7 @@ watch((tab), async (tab) => {
   }
   buttonDisabled.value = true
 })
+tab.value = 'machines'
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,
   materialGroupName: t('materialTypes.1'),
