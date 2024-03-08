@@ -156,7 +156,7 @@ async function handlePaste() {
         :options="{ group: 'group' }"
         @add="(e) => handleDragDropCommands(e)"
       >
-        <template #item="{ element, index }">
+        <template #item="{ element }">
           <q-item
             :key="element.commandNo"
             :data-command-no="element.commandNo"
@@ -181,11 +181,11 @@ async function handlePaste() {
         <Sortable
           :list="item.ref"
           :item-key="(element) => element.commandNo"
-          class="q-list q-list--bordered q-list--separator overflow-y-auto h-50"
+          class="q-list q-list--bordered q-list--separator overflow-y-auto h-42"
           :options="{ group: 'group' }"
           @add="(e) => handleDragDrop(e, item)"
         >
-          <template #item="{ element, index }">
+          <template #item="{ element }">
             <q-item
               :key="element.commandNo"
               :data-command-no="element.commandNo"
@@ -201,10 +201,12 @@ async function handlePaste() {
       </div>
     </q-card-section>
   </q-card>
-  <q-btn-group>
-    <q-btn :label="t('submit')" @click="handleSubmit" />
-    <q-btn :label="t('cancel')" />
-  </q-btn-group>
+  <div class="w-full flex justify-center my-4">
+    <q-btn-group>
+      <q-btn :label="t('submit')" @click="handleSubmit" />
+      <q-btn :label="t('cancel')" />
+    </q-btn-group>
+  </div>
 </template>
 
 <style scoped>

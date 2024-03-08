@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const columns = computed(() => ({
   manualId: {
     label: 'Manual Id',
@@ -12,7 +14,7 @@ const columns = computed(() => ({
     type: 'number',
   },
   manualReason: {
-    label: 'Manuel Sebebi',
+    label: t('manualReason'),
     field: 'manualReason',
     align: 'left',
     filterable: true,
@@ -26,7 +28,7 @@ const columns = computed(() => ({
     },
   },
   reportToERP: {
-    label: 'ERP Arıza Bildirimi',
+    label: t('reportToERP'),
     field: 'reportToERP',
     align: 'left',
     filterable: true,
@@ -34,7 +36,7 @@ const columns = computed(() => ({
     visible: true,
     type: 'checkbox',
     editable: true,
-    format: (val, row) => val ? 'Evet' : 'Hayır',
+    format: (val, row) => val ? t('yes') : t('no'),
     schema: {
       filled: true,
     },
@@ -90,8 +92,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
     <q-card-section>
       <div class="flex flex-row justify-between">
         <h3>
-          Cihaz versiyonu 3.6 veya daha eski ise ilk 20 manuele alma nedeni
-          cihazda kullanılabilir.
+          {{ t('manualReasonDescription') }}
         </h3>
       </div>
       <FormTableKit

@@ -205,14 +205,13 @@ const showAddFormulaDialog = ref(false)
           @update:model-value="(e) => handleParamSelect(e)"
         />
       </div>
-      <q-btn-group push class="my-4 ml-4">
-        <q-btn push :label="t('add')" color="primary" @click="handleAdd" />
-        <q-btn push :label="t('edit')" color="primary" @click="handleEdit" />
-        <q-btn push :label="t('delete')" color="primary" @click="handleDelete" />
-      </q-btn-group>
-
-      <div class="flex w-full justify-end my-4">
-        <q-btn no-caps push :label="t('addFormula')" color="primary" @click="showAddFormulaDialog = true" />
+      <div class="flex w-full justify-between m-4">
+        <q-btn-group push>
+          <q-btn push :label="t('add')" @click="handleAdd" />
+          <q-btn push :label="t('edit')" @click="handleEdit" />
+          <q-btn push :label="t('delete')" @click="handleDelete" />
+        </q-btn-group>
+        <q-btn no-caps push :label="t('addFormula')" @click="showAddFormulaDialog = true" />
       </div>
       <FilterableTable
         :rows="formulas"

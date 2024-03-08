@@ -332,5 +332,8 @@
   "invalidSymbolOrIncompleteExpression": "Invalid Symbol or Incomplete Expression",
   "generalCommand": "General Command",
   "generalParameter": "General Parameter",
-  "generalFormula": "General Formula"
+  "generalFormula": "General Formula",
+  "manualReasonDescription": "If the device version is 3.6 or older, the first 20 manual reasons are available on the device.",
+  "manualReason": "Manual Reason",
+  "reportToERP": "Report To ERP"
 }

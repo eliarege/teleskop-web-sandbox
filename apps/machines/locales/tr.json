@@ -330,5 +330,8 @@
   "invalidSymbolOrIncompleteExpression": "Geçersiz Sembol Veya Eksik İfade",
   "generalCommand": "Genel Komut",
   "generalParameter": "Genel Parametre",
-  "generalFormula": "Genel Formül"
+  "generalFormula": "Genel Formül",
+  "manualReasonDescription": "Cihaz versiyonu 3.6 veya daha eski ise ilk 20 manuele alma nedeni cihazda kullanılabilir.",
+  "manualReason": "Manual Sebebi",
+  "reportToERP": "ERP Arıza Bildirimi"
 }

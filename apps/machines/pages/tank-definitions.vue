@@ -288,7 +288,7 @@ async function handlePaste() {
             <Sortable
               :list="commands"
               :item-key="item => item.commandNo"
-              class="q-list q-list--bordered q-list--separator overflow-y-auto h-xs"
+              class="q-list q-list--bordered q-list--separator overflow-y-auto h-sm"
               :options="{ group: 'group' }"
               @add="(e) => handleDragDropCommands(e)"
             >
