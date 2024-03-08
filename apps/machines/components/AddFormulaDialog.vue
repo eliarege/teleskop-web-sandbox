@@ -101,11 +101,13 @@ async function handleSubmit() {
   }
 }
 
-expression.value = props.formula.formula?.split(/([*+/-])/).map((str) => {
+expression.value = props.formula.formula?.split(/([*+/()-])/).map((str) => {
   return str.trim().replace(/\s/g, '_')
 }).join('') || ''
 
-evaluateExpression()
+watch(scope, () => {
+  evaluateExpression()
+})
 </script>
 
 <template>
@@ -180,8 +182,8 @@ evaluateExpression()
         </div>
       </q-card-section>
       <q-btn-group class="flex justify-end w-full m-4">
-        <q-btn :label="t('submit')" @click="handleSubmit" />
-        <q-btn :label="t('cancel')" @click="emit('close')" />
+        <q-btn :label="t('submit')" color="teal" no-caps @click="handleSubmit" />
+        <q-btn :label="t('cancel')" color="teal" outline no-caps @click="emit('close')" />
       </q-btn-group>
     </q-card>
   </q-dialog>
