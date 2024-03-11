@@ -1,7 +1,10 @@
 <script lang="ts" setup>
+import languageTR from 'quasar/lang/tr'
+import languageEN from 'quasar/lang/en-US'
 import { useStateStore } from '~/store/State'
 
 const stateStore = useStateStore()
+const q = useQuasar()
 const { t, locale } = useI18n()
 const { dark } = useQuasar()
 
@@ -14,6 +17,11 @@ const themes = ref([
   { value: true, label: t('Dark') },
 ])
 watch(locale, () => {
+  if (locale.value === 'tr')
+    q.lang.set(languageTR)
+  else if (locale.value === 'en') {
+    q.lang.set(languageEN)
+  }
   themes.value = [
     { value: false, label: t('Light') },
     { value: true, label: t('Dark') },

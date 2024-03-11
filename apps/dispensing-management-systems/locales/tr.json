@@ -57,7 +57,7 @@
   "vncError": "{name} Bağlantısı Başarısız Oldu!",
   "Save": "Kaydet",
   "Cancel": "İptal",
-  "Delete": "SİL",
+  "Delete": "Sil",
   "DeleteDispenser": "Bu dağıtıcıyı silmek istediğinizden emin misiniz?",
   "DeleteMachine": "Bu makineyi silmek istediğinizden emin misiniz?",
   "DeleteMaterial": "Bu malzemeyi silmek istediğinizden emin misiniz?",
@@ -68,7 +68,7 @@
   "settings": {
     "App": "Uygulama Ayarları",
     "Material": "Malzeme Ayarları",
-    "Machine": "MAKİNE Ayarları",
+    "Machine": "Makine Ayarları",
     "Teleskop": "Teleskop Ayarları"
   },
   "materialFields": {
