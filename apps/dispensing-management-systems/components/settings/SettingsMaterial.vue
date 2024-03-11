@@ -12,7 +12,8 @@ const stateStore = useStateStore()
 
 const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials')
 const dispensers = await dataStore.getDispensers()
-
+const innerWidth = ref(window.innerWidth)
+const minSize = 800
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,
   materialGroupName: t('materialTypes.1'),
@@ -134,6 +135,12 @@ async function retrieveMaterialsFromTeleskop() {
     stateStore.isLoading = false
   }
 }
+function handleResize() {
+  innerWidth.value = window.innerWidth
+}
+useResizeObserver(document.body, () => {
+  handleResize()
+})
 const pagination = ref({ rowsPerPage: 20 })
 </script>
 
@@ -143,7 +150,7 @@ const pagination = ref({ rowsPerPage: 20 })
   </div>
   <div class="flex-center mb-4">
     <QBtn
-      :label="$t('AddNewMaterial')"
+      :label="innerWidth > minSize ? $t('AddNewMaterial') : ''"
       no-caps
       icon="note_add"
       color="primary"
@@ -151,9 +158,16 @@ const pagination = ref({ rowsPerPage: 20 })
       style="white-space: nowrap; text-overflow: ellipsis;"
       clickable
       @click="addNewMaterial"
-    />
+    >
+      <QTooltip
+        v-if="innerWidth <= minSize"
+        :offset="[10, 10]"
+      >
+        {{ t('AddNewMaterial') }}
+      </QTooltip>
+    </QBtn>
     <QBtn
-      :label="$t('SyncData')"
+      :label="innerWidth > minSize ? $t('SyncData') : ''"
       no-caps
       icon="refresh"
       color="primary"
@@ -161,7 +175,14 @@ const pagination = ref({ rowsPerPage: 20 })
       style="white-space: nowrap; text-overflow: ellipsis;"
       clickable
       @click="retrieveMaterialsFromTeleskop"
-    />
+    >
+      <QTooltip
+        v-if="innerWidth <= minSize"
+        :offset="[10, 10]"
+      >
+        {{ t('SyncData') }}
+      </QTooltip>
+    </QBtn>
   </div>
   <QTable
     flat
