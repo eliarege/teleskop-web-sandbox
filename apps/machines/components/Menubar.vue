@@ -34,6 +34,12 @@ async function loadProject() {
     },
   })
 }
+
+async function navigateToFormulas() {
+  await navigateTo({
+    path: `/formulas/${props.selected.machineId}`,
+  })
+}
 </script>
 
 <template>
@@ -72,7 +78,7 @@ async function loadProject() {
         no-caps
         color="primary"
         class="mr-4"
-        @click="showFormulas = true"
+        @click="navigateToFormulas"
       />
       <q-btn
         :label="t('getDyehouseDefinitions')"
@@ -82,7 +88,7 @@ async function loadProject() {
         @click="showGetDyeHouseDefinitions = true"
       />
       <q-btn
-        :label="t('setDyeHouseDefinitions')"
+        :label="t('setDyehouseDefinitions')"
         no-caps
         color="primary"
         class="mr-4"

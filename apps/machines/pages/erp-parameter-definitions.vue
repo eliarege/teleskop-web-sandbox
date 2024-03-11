@@ -331,31 +331,30 @@ async function handlePaste() {
           @click="deleteParam"
         />
       </div>
-      <q-btn-group push class="flex flex-row ">
-        <q-btn
-          :label="t('copyAll')"
-
-          no-caps
-          @click="handleCopy(1)"
-        />
-        <q-btn
-          :label="t('copyStartupParameters')"
-          no-caps
-          @click="handleCopy(2)"
-        />
-        <q-btn
-          :label="t('copyNonStartupParameters')"
-          no-caps
-          @click="handleCopy(3)"
-        />
-        <q-btn
-          :label="t('paste')"
-          no-caps
-          @click="handlePaste"
-        />
-      </q-btn-group>
-      <div class="my-4 flex justify-end w-full">
-        <q-btn no-caps label="Import from batch parameters" @click="showImportBatchParametersDialog = true" />
+      <div class="my-4 flex justify-between w-full">
+        <q-btn-group push>
+          <q-btn
+            :label="t('copyAll')"
+            no-caps
+            @click="handleCopy(1)"
+          />
+          <q-btn
+            :label="t('copyStartupParameters')"
+            no-caps
+            @click="handleCopy(2)"
+          />
+          <q-btn
+            :label="t('copyNonStartupParameters')"
+            no-caps
+            @click="handleCopy(3)"
+          />
+          <q-btn
+            :label="t('paste')"
+            no-caps
+            @click="handlePaste"
+          />
+        </q-btn-group>
+        <q-btn no-caps :label="t('ImportFromBatchParameters')" @click="showImportBatchParametersDialog = true" />
       </div>
 
       <div class="flex flex-row justify-evenly">

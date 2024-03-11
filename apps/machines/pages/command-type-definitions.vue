@@ -112,19 +112,20 @@ async function handlePaste() {
 </script>
 
 <template>
-  <div>{{ commandTypes }}</div>
-  <q-btn-group push class="flex flex-row ">
-    <q-btn
-      :label="t('copy')"
-      no-caps
-      @click="handleCopy"
-    />
-    <q-btn
-      :label="t('paste')"
-      no-caps
-      @click="handlePaste"
-    />
-  </q-btn-group>
+  <div class="flex justify-start w-full my-4 ml-4">
+    <q-btn-group push class="flex flex-row">
+      <q-btn
+        :label="t('copy')"
+        no-caps
+        @click="handleCopy"
+      />
+      <q-btn
+        :label="t('paste')"
+        no-caps
+        @click="handlePaste"
+      />
+    </q-btn-group>
+  </div>
   <q-card class="flex flex-row">
     <q-card-section class="w-2xs">
       <h3>{{ t('machines') }}</h3>
@@ -155,7 +156,7 @@ async function handlePaste() {
         :options="{ group: 'group' }"
         @add="(e) => handleDragDropCommands(e)"
       >
-        <template #item="{ element, index }">
+        <template #item="{ element }">
           <q-item
             :key="element.commandNo"
             :data-command-no="element.commandNo"
@@ -170,7 +171,7 @@ async function handlePaste() {
       </Sortable>
     </q-card-section>
 
-    <q-card-section class="inline-grid grid-cols-5 gap-5 ml-8">
+    <q-card-section class="inline-grid grid-cols-5 gap-3 ml-8">
       <div
         v-for="item in commandTypeMaps"
         :key="item.value"
@@ -180,11 +181,11 @@ async function handlePaste() {
         <Sortable
           :list="item.ref"
           :item-key="(element) => element.commandNo"
-          class="q-list q-list--bordered q-list--separator overflow-y-auto h-50"
+          class="q-list q-list--bordered q-list--separator overflow-y-auto h-42"
           :options="{ group: 'group' }"
           @add="(e) => handleDragDrop(e, item)"
         >
-          <template #item="{ element, index }">
+          <template #item="{ element }">
             <q-item
               :key="element.commandNo"
               :data-command-no="element.commandNo"
@@ -200,11 +201,12 @@ async function handlePaste() {
       </div>
     </q-card-section>
   </q-card>
-  <q-btn-group>
-    <q-btn :label="t('submit')" @click="handleSubmit" />
-
-    <q-btn :label="t('cancel')" />
-  </q-btn-group>
+  <div class="w-full flex justify-center my-4">
+    <q-btn-group>
+      <q-btn :label="t('submit')" @click="handleSubmit" />
+      <q-btn :label="t('cancel')" />
+    </q-btn-group>
+  </div>
 </template>
 
 <style scoped>

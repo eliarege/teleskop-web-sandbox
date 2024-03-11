@@ -51,10 +51,6 @@ watch(commands, (_newValue, _oldValue) => {
   }
 })
 
-async function handleMachineClick(machineId: number) {
-  selectedMachineId.value = machineId
-}
-
 async function handleOptionChange(commandTypeName) {
   const command = commandTypeMaps.find(c => c.name === commandTypeName)
   const commandTypeId = command.id
@@ -73,7 +69,9 @@ async function handleOptionChange(commandTypeName) {
           :key="machine.machineId"
           v-ripple
           clickable
-          @click="handleMachineClick(machine.machineId)"
+          :active="selectedMachineId === machine.machineId"
+          :focused="selectedMachineId === machine.machineId"
+          @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>
             {{ machine.machineCode }}

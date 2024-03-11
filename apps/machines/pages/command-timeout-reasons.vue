@@ -125,7 +125,7 @@ async function handlePaste() {
     </q-card>
   </q-dialog>
 
-  <div class="flex justify-end mb-4 mr-4">
+  <div class="flex justify-between my-4 mr-4">
     <q-btn-group push class="flex flex-row ">
       <q-btn
         :label="t('copy')"
@@ -173,6 +173,7 @@ async function handlePaste() {
           v-ripple
           clickable
           :focused="selectedMachineId === machine.machineId"
+          :active="selectedMachineId === machine.machineId"
           @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>

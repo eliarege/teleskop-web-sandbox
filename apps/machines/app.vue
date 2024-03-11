@@ -157,7 +157,7 @@ const definitionItems = computed(() => ([
           },
         ],
       },
-      {
+      /*  { // TODO : Implement on later versions
         label: t('notificationSettings'),
         items: [
           {
@@ -165,7 +165,7 @@ const definitionItems = computed(() => ([
             to: 'email-notification-settings',
           },
         ],
-      },
+      }, */
     ],
 
   },

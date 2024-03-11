@@ -444,18 +444,20 @@ async function handlePaste() {
     :selected="selected"
     @refresh="refresh"
   />
-  <q-btn-group push class="flex flex-row ">
-    <q-btn
-      :label="t('copy')"
-      no-caps
-      @click="handleCopy"
-    />
-    <q-btn
-      :label="t('paste')"
-      no-caps
-      @click="handlePaste"
-    />
-  </q-btn-group>
+  <div class="flex justify-end w-full mt-4">
+    <q-btn-group push class="mr-4">
+      <q-btn
+        :label="t('copy')"
+        no-caps
+        @click="handleCopy"
+      />
+      <q-btn
+        :label="t('paste')"
+        no-caps
+        @click="handlePaste"
+      />
+    </q-btn-group>
+  </div>
   <FormTableKit
     :rows="machines" :columns="columns"
     form-class="grid grid-cols-2 gap-4 items-center"

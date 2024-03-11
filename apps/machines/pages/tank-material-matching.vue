@@ -74,19 +74,21 @@ async function handlePaste() {
 </script>
 
 <template>
-  <q-btn-group push class="flex flex-row ">
-    <q-btn
-      :label="t('copy')"
+  <div class="flex w-full justify-end my-4">
+    <q-btn-group push class="flex flex-row mr-4">
+      <q-btn
+        :label="t('copy')"
 
-      no-caps
-      @click="handleCopy"
-    />
-    <q-btn
-      :label="t('paste')"
-      no-caps
-      @click="handlePaste"
-    />
-  </q-btn-group>
+        no-caps
+        @click="handleCopy"
+      />
+      <q-btn
+        :label="t('paste')"
+        no-caps
+        @click="handlePaste"
+      />
+    </q-btn-group>
+  </div>
   <q-card class="flex flex-row justify-around w-full">
     <q-card-section class="flex flex-row w-full justify-start">
       <div class="mr-4 w-xs">
@@ -101,6 +103,8 @@ async function handlePaste() {
             :key="machine.machineId"
             v-ripple
             clickable
+            :active="selectedMachineId === machine.machineId"
+            :focused="selectedMachineId === machine.machineId"
             @click="selectedMachineId = machine.machineId"
           >
             <q-item-section>
@@ -166,10 +170,12 @@ async function handlePaste() {
       </div>
     </q-card-section>
   </q-card>
-  <q-btn-group>
-    <q-btn :label="t('submit')" @click="handleSubmit" />
-    <q-btn :label="t('cancel')" />
-  </q-btn-group>
+  <div class="flex w-full justify-end">
+    <q-btn-group class="mt-4 mr-4">
+      <q-btn no-caps :label="t('submit')" @click="handleSubmit" />
+      <q-btn no-caps :label="t('cancel')" />
+    </q-btn-group>
+  </div>
 </template>
 
 <style scoped>

@@ -41,6 +41,8 @@ async function handleCheckChange(e, command) {
           :key="machine.machineId"
           v-ripple
           clickable
+          :active="selectedMachineId === machine.machineId"
+          :focused="selectedMachineId === machine.machineId"
           @click="selectedMachineId = machine.machineId"
         >
           <q-item-section>

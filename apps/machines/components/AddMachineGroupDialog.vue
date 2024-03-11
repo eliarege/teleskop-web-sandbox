@@ -10,6 +10,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const { t } = useI18n()
+
 const selected = ref<Partial<TreatmentMachineGroup>>({
   id: -1,
   groupName: '',
@@ -32,10 +34,6 @@ const { data: selectedMachines } = useLazyFetch('/api/treatment-parameters/machi
 const { data: machines } = useLazyFetch('/api/treatment-parameters/available-machines', {
   default: () => [],
   watch: [selectedMachines],
-/*   transform: (machines) => {
-    const selectedMachineIds = selectedMachines.value.map(d => d.machineId)
-    return machines.filter(d => !selectedMachineIds.includes(d.machineId))
-  }, */
 })
 
 async function handleDragDrop(e) {
@@ -77,32 +75,31 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
 <template>
   <q-dialog
     :model-value="show"
-    full-width
     @hide="$emit('close')"
   >
-    <q-card>
+    <q-card class="w-2xl">
       <q-card-section class="flex flex-col">
         <div>
           <q-input
             v-model="selected.groupName"
             filled
-            placeholder="Makine Grup Adı"
+            :placeholder="t('machineGroupName')"
             class="w-md"
           />
           <div class="flex gap-4 my-4">
             <q-btn
               no-caps
-              label="Ekle"
+              :label="t('add')"
               @click="handleAdd"
             />
             <q-btn
               no-caps
-              label="Düzenle"
+              :label="t('edit')"
               @click="handleEdit"
             />
             <q-btn
               no-caps
-              label="Sil"
+              :label="t('delete')"
               @click="handleDelete"
             />
           </div>
@@ -110,13 +107,15 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
 
         <div class="flex flex-row gap-x-8">
           <div class="w-60">
-            <h3>Makine Grupları</h3>
+            <h3>{{ t('machineGroups') }}</h3>
             <q-list bordered separator>
               <q-item
                 v-for="machineGroup in machineGroups"
                 :key="machineGroup.id"
                 v-ripple
                 clickable
+                :active="selected === machineGroup"
+                :focused="selected === machineGroup"
                 @click="handleGroupClick(machineGroup)"
               >
                 <q-item-section>
@@ -128,11 +127,11 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
 
           <div class="flex flex-row">
             <div class="mr-8">
-              <h3>Seçilebilir Makineler</h3>
+              <h3>{{ t('availableMachines') }}</h3>
               <Sortable
                 :list="machines"
                 item-key="id"
-                class="q-list q-list--bordered q-list--separator overflow-y-auto h-150 w-60"
+                class="q-list q-list--bordered q-list--separator overflow-y-auto h-120 w-60"
                 :options="{ group: 'group' }"
               >
                 <template #item="{ element, index }">
@@ -148,11 +147,11 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
               </Sortable>
             </div>
             <div>
-              <h3>Seçilmiş Grubun Makineleri</h3>
+              <h3>{{ t('machinesOfSelectedGroup') }}</h3>
               <Sortable
                 :list="selectedMachines"
                 item-key="id"
-                class="q-list q-list--bordered q-list--separator overflow-y-auto h-150 w-60"
+                class="q-list q-list--bordered q-list--separator overflow-y-auto h-120 w-60"
                 :options="{ group: 'group' }"
                 @add="(e) => handleDragDrop(e)"
                 @remove="(e) => handleDragDrop(e)"

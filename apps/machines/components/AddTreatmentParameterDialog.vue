@@ -9,6 +9,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const { t } = useI18n()
+
 const selected = ref<Partial<TreatmentParameter>>({
   id: -1,
   treatmentParameter: '',
@@ -45,41 +47,44 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
 <template>
   <q-dialog
     :model-value="show"
-    full-width
     @hide="$emit('close')"
   >
-    <q-card>
+    <q-card class="w-2xl">
       <q-card-section class="flex flex-col">
-        <div>
+        <div class="flex flex-col gap-4">
           <q-input
             v-model="selected.treatmentParameter"
             filled
             placeholder="Parametre Adı"
           />
-          <q-btn
-            no-caps
-            label="Ekle"
-            @click="handleAdd"
-          />
-          <q-btn
-            no-caps
-            label="Düzenle"
-            @click="handleEdit"
-          />
-          <q-btn
-            no-caps
-            label="Sil"
-            @click="handleDelete"
-          />
+          <div class="flex gap-4">
+            <q-btn
+              no-caps
+              :label="t('add')"
+              @click="handleAdd"
+            />
+            <q-btn
+              no-caps
+              :label="t('edit')"
+              @click="handleEdit"
+            />
+            <q-btn
+              no-caps
+              :label="t('delete')"
+              @click="handleDelete"
+            />
+          </div>
         </div>
-        <div>
-          <h3>Parametre Listesi</h3>
+        <div class="my-4">
+          <h3>{{ t('parameterList') }}</h3>
           <q-list bordered separator>
             <q-item
               v-for="param in params"
               :key="param.id"
               v-ripple
               clickable
+              :active="selected === param"
+              :focused="selected === param"
               @click="handleGroupClick(param)"
             >
               <q-item-section>

@@ -184,18 +184,20 @@ async function handlePaste() {
 </script>
 
 <template>
-  <q-btn-group push class="flex flex-row ">
-    <q-btn
-      :label="t('Copy')"
-      no-caps
-      @click="handleCopy"
-    />
-    <q-btn
-      :label="t('Paste')"
-      no-caps
-      @click="handlePaste"
-    />
-  </q-btn-group>
+  <div class="flex w-full justify-end my-4">
+    <q-btn-group push class="flex flex-row mr-4">
+      <q-btn
+        :label="t('Copy')"
+        no-caps
+        @click="handleCopy"
+      />
+      <q-btn
+        :label="t('Paste')"
+        no-caps
+        @click="handlePaste"
+      />
+    </q-btn-group>
+  </div>
   <q-card class="flex flex-row justify-around">
     <q-card-section class="flex flex-row">
       <div class="mr-8 w-xs">
@@ -286,7 +288,7 @@ async function handlePaste() {
             <Sortable
               :list="commands"
               :item-key="item => item.commandNo"
-              class="q-list q-list--bordered q-list--separator overflow-y-auto h-xs"
+              class="q-list q-list--bordered q-list--separator overflow-y-auto h-sm"
               :options="{ group: 'group' }"
               @add="(e) => handleDragDropCommands(e)"
             >
@@ -336,10 +338,12 @@ async function handlePaste() {
       </div>
     </q-card-section>
   </q-card>
-  <q-btn-group>
-    <q-btn :label="t('submit')" @click="handleSubmit" />
-    <q-btn :label="t('cancel')" />
-  </q-btn-group>
+  <div class="flex w-full justify-end">
+    <q-btn-group class="mt-4 mr-4">
+      <q-btn no-caps :label="t('submit')" @click="handleSubmit" />
+      <q-btn no-caps :label="t('cancel')" @click="$router.go(0)" />
+    </q-btn-group>
+  </div>
 </template>
 
 <style scoped>
