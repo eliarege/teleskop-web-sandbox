@@ -3,10 +3,13 @@ import type { QTableColumn } from 'quasar'
 import MaterialInfo from '../material/MaterialInfo.vue'
 import type { Material, MaterialGroup } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
+import { useStateStore } from '~/store/State'
 
 const q = useQuasar()
 const { t } = useI18n()
 const dataStore = useDataStore()
+const stateStore = useStateStore()
+
 const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials')
 const dispensers = await dataStore.getDispensers()
 
@@ -107,6 +110,30 @@ function addNewMaterial() {
   },
   )
 }
+async function retrieveMaterialsFromTeleskop() {
+  try {
+    stateStore.isLoading = true
+    await $fetch('/api/teleskop/sync/materials')
+    await refreshMaterials()
+    q.notify({
+      color: 'green-4',
+      textColor: 'white',
+      icon: 'done',
+      message: t('Success'),
+      timeout: 3000,
+    })
+  } catch (e) {
+    q.notify({
+      color: 'red-4',
+      textColor: 'white',
+      icon: 'cancel',
+      message: t('Failed'),
+      timeout: 3000,
+    })
+  } finally {
+    stateStore.isLoading = false
+  }
+}
 const pagination = ref({ rowsPerPage: 20 })
 </script>
 
@@ -114,15 +141,26 @@ const pagination = ref({ rowsPerPage: 20 })
   <div class="flex-center text-xl mb-10">
     {{ t('settings.Material') }}
   </div>
-  <div class="flex-center">
+  <div class="flex-center mb-4">
     <QBtn
       :label="$t('AddNewMaterial')"
       no-caps
       icon="note_add"
       color="primary"
-      class="mb-4 flex-center"
+      class="h-12 mr-2"
+      style="white-space: nowrap; text-overflow: ellipsis;"
       clickable
       @click="addNewMaterial"
+    />
+    <QBtn
+      :label="$t('SyncData')"
+      no-caps
+      icon="refresh"
+      color="primary"
+      class="h-12 ml-2"
+      style="white-space: nowrap; text-overflow: ellipsis;"
+      clickable
+      @click="retrieveMaterialsFromTeleskop"
     />
   </div>
   <QTable
