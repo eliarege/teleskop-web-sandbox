@@ -55,14 +55,14 @@ class Context {
     return JSON.parse(stdout)
   }
 
-  throwAndExit(msg: string) {
-    console.error(`error: ${msg}`)
+  throwAndExit(msg: string, ...args: any[]) {
+    console.error(`error: ${msg}`, ...args)
     process.exit(1)
   }
 
   async getChangedFiles(from: string, to = 'HEAD'): Promise<string[]> {
-    const { stdout } = await execa('git', ['diff', '--name-only', from, to]).catch(() => {
-      throw this.throwAndExit(`unknown commit: '${from}' ${to !== 'HEAD' ? ` or '${to}'` : ''}`)
+    const { stdout } = await execa('git', ['diff', '--name-only', from, to]).catch((err) => {
+      throw this.throwAndExit(`unknown commit: '${from}' ${to !== 'HEAD' ? ` or '${to}'` : ''}`, err)
     })
     return stdout?.split('\n') || []
   }
