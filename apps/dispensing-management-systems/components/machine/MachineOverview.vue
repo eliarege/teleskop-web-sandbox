@@ -5,13 +5,11 @@ import DispenserEdit from '../dispenser/DispenserEdit.vue'
 import MachineInfo from './MachineInfo.vue'
 import { useDataStore } from '~/store/DataStore'
 import type { Dispenser, DispenserType, Machine, MachineControllerType } from '~/shared/types'
-import { useStateStore } from '~/store/State'
 
 const { t } = useI18n()
 const q = useQuasar()
 
 const dataStore = useDataStore()
-const stateStore = useStateStore()
 
 await dataStore.getDispensers()
 const { data: controllerTypes } = useFetch<MachineControllerType[]>('/api/machines/types')
@@ -164,54 +162,7 @@ async function onMachineClick(row: any) {
       })
   })
 }
-async function retrieveDispensersFromTeleskop() {
-  try {
-    stateStore.isLoading = true
-    await $fetch('/api/teleskop/sync/dispensers')
-    await refreshDispensers()
-    q.notify({
-      color: 'green-4',
-      textColor: 'white',
-      icon: 'done',
-      message: t('Success'),
-      timeout: 3000,
-    })
-  } catch (e) {
-    q.notify({
-      color: 'red-4',
-      textColor: 'white',
-      icon: 'cancel',
-      message: t('Failed'),
-      timeout: 3000,
-    })
-  } finally {
-    stateStore.isLoading = false
-  }
-}
-async function retrieveMachinesFromTeleskop() {
-  try {
-    stateStore.isLoading = true
-    await $fetch('/api/teleskop/sync/machines')
-    await refreshMachines()
-    q.notify({
-      color: 'green-4',
-      textColor: 'white',
-      icon: 'done',
-      message: t('Success'),
-      timeout: 3000,
-    })
-  } catch (e) {
-    q.notify({
-      color: 'red-4',
-      textColor: 'white',
-      icon: 'cancel',
-      message: t('Failed'),
-      timeout: 3000,
-    })
-  } finally {
-    stateStore.isLoading = false
-  }
-}
+
 function handleResize() {
   innerWidth.value = window.innerWidth
 }
@@ -249,23 +200,12 @@ const machinePagination = ref({ rowsPerPage: 20 })
               {{ t('AddNewDispenser') }}
             </QTooltip>
           </QBtn>
-          <QBtn
-            :label="innerWidth > minSize ? $t('SyncData') : ''"
-            no-caps
-            icon="refresh"
-            color="primary"
-            class="mr-2 ml-4 h-12 overflow-hidden"
-            style="white-space: nowrap; text-overflow: ellipsis;"
-            clickable
-            @click="retrieveDispensersFromTeleskop"
-          >
-            <QTooltip
-              v-if="innerWidth <= minSize"
-              :offset="[10, 10]"
-            >
-              {{ t('SyncData') }}
-            </QTooltip>
-          </QBtn>
+          <TeleskopSyncBtn
+            class="mr-4 ml-2"
+            link="/api/teleskop/sync/materials"
+            :min-size="1400"
+            @click="refreshDispensers"
+          />
         </QCardSection>
       </QCard>
 
@@ -359,23 +299,12 @@ const machinePagination = ref({ rowsPerPage: 20 })
               {{ t('AddNewMachine') }}
             </QTooltip>
           </QBtn>
-          <QBtn
-            :label="innerWidth > minSize ? $t('SyncData') : ''"
-            no-caps
-            icon="refresh"
-            color="primary"
-            class="mr-2 ml-4 h-12 overflow-hidden"
-            style="white-space: nowrap; text-overflow: ellipsis;"
-            clickable
-            @click="retrieveMachinesFromTeleskop"
-          >
-            <QTooltip
-              v-if="innerWidth <= minSize"
-              :offset="[10, 10]"
-            >
-              {{ t('SyncData') }}
-            </QTooltip>
-          </QBtn>
+          <TeleskopSyncBtn
+            class="mr-4 ml-2"
+            link="/api/teleskop/sync/machines"
+            :min-size="1400"
+            @click="refreshMachines"
+          />
         </QCardSection>
       </QCard>
 

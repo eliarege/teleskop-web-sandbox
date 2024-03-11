@@ -3,17 +3,13 @@ import type { QTableColumn } from 'quasar'
 import MaterialInfo from '../material/MaterialInfo.vue'
 import type { Material, MaterialGroup } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
-import { useStateStore } from '~/store/State'
 
 const q = useQuasar()
 const { t } = useI18n()
 const dataStore = useDataStore()
-const stateStore = useStateStore()
 
 const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials')
 const dispensers = await dataStore.getDispensers()
-const innerWidth = ref(window.innerWidth)
-const minSize = 800
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,
   materialGroupName: t('materialTypes.1'),
@@ -111,36 +107,6 @@ function addNewMaterial() {
   },
   )
 }
-async function retrieveMaterialsFromTeleskop() {
-  try {
-    stateStore.isLoading = true
-    await $fetch('/api/teleskop/sync/materials')
-    await refreshMaterials()
-    q.notify({
-      color: 'green-4',
-      textColor: 'white',
-      icon: 'done',
-      message: t('Success'),
-      timeout: 3000,
-    })
-  } catch (e) {
-    q.notify({
-      color: 'red-4',
-      textColor: 'white',
-      icon: 'cancel',
-      message: t('Failed'),
-      timeout: 3000,
-    })
-  } finally {
-    stateStore.isLoading = false
-  }
-}
-function handleResize() {
-  innerWidth.value = window.innerWidth
-}
-useResizeObserver(document.body, () => {
-  handleResize()
-})
 const pagination = ref({ rowsPerPage: 20 })
 </script>
 
@@ -150,7 +116,7 @@ const pagination = ref({ rowsPerPage: 20 })
   </div>
   <div class="flex-center mb-4">
     <QBtn
-      :label="innerWidth > minSize ? $t('AddNewMaterial') : ''"
+      :label="$t('AddNewMaterial')"
       no-caps
       icon="note_add"
       color="primary"
@@ -158,31 +124,13 @@ const pagination = ref({ rowsPerPage: 20 })
       style="white-space: nowrap; text-overflow: ellipsis;"
       clickable
       @click="addNewMaterial"
-    >
-      <QTooltip
-        v-if="innerWidth <= minSize"
-        :offset="[10, 10]"
-      >
-        {{ t('AddNewMaterial') }}
-      </QTooltip>
-    </QBtn>
-    <QBtn
-      :label="innerWidth > minSize ? $t('SyncData') : ''"
-      no-caps
-      icon="refresh"
-      color="primary"
-      class="h-12 ml-2"
-      style="white-space: nowrap; text-overflow: ellipsis;"
-      clickable
-      @click="retrieveMaterialsFromTeleskop"
-    >
-      <QTooltip
-        v-if="innerWidth <= minSize"
-        :offset="[10, 10]"
-      >
-        {{ t('SyncData') }}
-      </QTooltip>
-    </QBtn>
+    />
+    <TeleskopSyncBtn
+      class="ml-2"
+      link="/api/teleskop/sync/materials"
+      :min-size="800"
+      @click="refreshMaterials"
+    />
   </div>
   <QTable
     flat
