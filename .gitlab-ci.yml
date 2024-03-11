@@ -82,7 +82,7 @@ merge-request-summarize:
     - corepack enable
     - pnpm config set store-dir .pnpm-store
   script:
-    - pnpm install
+    - pnpm install --no-frozen-lockfile
     - |
       pnpm exec merge-request-analyzer $CI_MERGE_REQUEST_DIFF_BASE_SHA \
       --branch $CI_MERGE_REQUEST_TARGET_BRANCH_NAME \
