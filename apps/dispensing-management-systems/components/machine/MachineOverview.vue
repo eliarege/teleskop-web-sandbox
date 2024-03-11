@@ -179,6 +179,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
     flex
     place-content-center
     all:transition-400
+    flex-wrap
   >
     <div class="q-pa-md">
       <QCard class="flex-center" bordered>
