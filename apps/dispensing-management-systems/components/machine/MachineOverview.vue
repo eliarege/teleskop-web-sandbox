@@ -190,6 +190,7 @@ async function retrieveDispensersFromTeleskop() {
 }
 async function retrieveMachinesFromTeleskop() {
   try {
+    stateStore.isLoading = true
     await $fetch('/api/teleskop/sync/machines')
     await refreshMachines()
     q.notify({
