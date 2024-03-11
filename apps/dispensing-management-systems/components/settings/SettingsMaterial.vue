@@ -127,7 +127,7 @@ const pagination = ref({ rowsPerPage: 20 })
     />
     <TeleskopSyncBtn
       class="ml-2"
-      link="/api/teleskop/sync/materials"
+      type="Materials"
       :min-size="800"
       @click="refreshMaterials"
     />

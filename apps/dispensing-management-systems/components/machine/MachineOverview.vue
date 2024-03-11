@@ -202,7 +202,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
           </QBtn>
           <TeleskopSyncBtn
             class="mr-4 ml-2"
-            link="/api/teleskop/sync/materials"
+            type="Dispensers"
             :min-size="1400"
             @click="refreshDispensers"
           />
@@ -301,7 +301,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
           </QBtn>
           <TeleskopSyncBtn
             class="mr-4 ml-2"
-            link="/api/teleskop/sync/machines"
+            type="Machines"
             :min-size="1400"
             @click="refreshMachines"
           />
