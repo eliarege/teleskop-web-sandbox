@@ -17,12 +17,12 @@ const table = ref<QTable>()
 const searchFilter = ref('')
 const jobOrders = ref()
 const selectedRow = ref<JobOrder | null>(null)
-const dispenserId = ref(route.query.dispenserId?.toString())
 getJobOrders()
 const dispensers = await dataStore.getDispensers()
 async function getJobOrders() {
-  if (dispenserId.value)
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${dispenserId.value}`)
+  const dispenserId = route.query.dispenserId?.toString()
+  if (dispenserId)
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${dispenserId}`)
   else
     jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`)
 }
@@ -148,19 +148,26 @@ watch(searchFilter, () => {
       selectedRow.value = null
   }, 100)
 })
-watch(dispenserId, (newVal, oldVal) => {
-  if (newVal !== oldVal) {
-    selectedRow.value = null
+watch(() => route.query.dispenserId, (val) => {
+  const dispenser = dataStore.getDispenser(Number(val))
+  updateDispenser(dispenser)
+})
+function updateDispenser(val: Dispenser | undefined) {
+  selectedRow.value = null
+  dataStore.selectedDispenser = val
+  if (val) {
+    dataStore.title = val.dispenserName
     navigateTo({
       path: `/jobOrders`,
-      query: { dispenserId: `${newVal}` },
+      query: { dispenserId: `${val.dispenserId}` },
     })
-    getJobOrders()
+  } else {
+    dataStore.title = ''
+    navigateTo({
+      path: `/jobOrders`,
+    })
   }
-})
-function updateDispenserId(val: Dispenser) {
-  dispenserId.value = val.dispenserId.toString()
-  dataStore.title = val.dispenserName
+  getJobOrders()
 }
 </script>
 
@@ -190,7 +197,7 @@ function updateDispenserId(val: Dispenser) {
           options-dense
           option-label="dispenserName"
           :options="dispensers"
-          @update:model-value="updateDispenserId"
+          @update:model-value="updateDispenser"
         />
       </div>
     </div>

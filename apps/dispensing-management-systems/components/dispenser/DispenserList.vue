@@ -7,7 +7,6 @@ const emit = defineEmits(['logout'])
 const { t } = useI18n()
 const q = useQuasar()
 const dataStore = useDataStore()
-const route = useRoute()
 
 const treeNodes = ref<any[]>([])
 const expanded = ref<string[]>([])
@@ -16,9 +15,8 @@ if (dataStore.selectedDispenser) {
   const selected = dataStore.selectedDispenser
   expanded.value = [`${selected.dispenserBrandId}`, `${selected.dispenserBrandId},${selected.dispenserType}`, `${selected.dispenserBrandId},${selected.dispenserType},${selected.dispenserId}`]
 }
-watch(() => route.params, () => {
-  if (dataStore.selectedDispenser) {
-    const selected = dataStore.selectedDispenser
+watch(() => dataStore.selectedDispenser, (selected) => {
+  if (selected) {
     expanded.value = [`${selected.dispenserBrandId}`, `${selected.dispenserBrandId},${selected.dispenserType}`, `${selected.dispenserBrandId},${selected.dispenserType},${selected.dispenserId}`]
   } else {
     expanded.value = []

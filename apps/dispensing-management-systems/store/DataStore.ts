@@ -3,10 +3,15 @@ import type { Dispenser, DispenserType } from '~/shared/types'
 
 export const useDataStore = defineStore('data', () => {
   const title = ref('')
-  const selectedDispenser = ref<Dispenser>()
+  const selectedDispenser = ref<Dispenser | undefined>()
   const dispensers = ref<Dispenser[]>()
   const dispenserTypes = ref<DispenserType[]>()
-  const getDispensers = async () => {
+  function getDispenser(id: number) {
+    const dispenser = dispensers.value?.find(dispenser => dispenser.dispenserId === id)
+    if (dispenser)
+      return dispenser
+  }
+  async function getDispensers() {
     if (dispensers.value)
       return dispensers.value
     const fetchedDispensers = await $fetch<Dispenser[]>(`/api/dispensers`)
@@ -26,6 +31,7 @@ export const useDataStore = defineStore('data', () => {
     selectedDispenser,
     dispensers,
     dispenserTypes,
+    getDispenser,
     getDispensers,
     getDispenserTypes,
   }
