@@ -13,12 +13,12 @@ export default defineEventHandler(async (event) => {
       d.PROGRAMINDEX as programIndex,
       d.PROGRAMNO as programNo,
       d.RECIPETYPE as recipeType,
-      d.REQUESTPROGRAMINDEX as requestprogramIndex, 
+      d.REQUESTPROGRAMINDEX as requestprogramIndex,
       d.STATUS as status,
       d.EVENTTIME as eventTime,
       d.EXPLANATION as explanation
       FROM DYBFBATCHORDERRECIPESTEPLOGS d
       WHERE d.MACHINEID = ${machineId}`,
   )
-  return res
+  return res.recordset
 })

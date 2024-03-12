@@ -22,31 +22,6 @@ const interventions = computed(() => {
     } as NewInterventions
   })
 })
-const config = useRuntimeConfig()
-const batchLogs = ref([] as BatchLogs[])
-async function getBatchLogs() {
-  if (config.public.teleskopHasLogs === 'true') {
-    batchLogs.value = await $fetch('/api/machine_logs', {
-      query: { machineId: route.params.id },
-    })
-  }
-}
-const refactoredBatchLogs = computed(() => {
-  return batchLogs.value
-    ?.filter(machine => machine.planKey)
-    .map((logs) => {
-      return {
-        ...logs,
-        newTime: logs.eventTime
-          ? logs.eventTime.toString().slice(0, -5).replace('T', ' ')
-          : logs.eventTime,
-      }
-    }) as NewBatchLogs[] || []
-})
-
-onMounted(async () => {
-  await getBatchLogs()
-})
 </script>
 
 <template>
@@ -54,7 +29,6 @@ onMounted(async () => {
     <MachineDetails
       :current-machine="currentMachine!"
       :intervents="interventions"
-      :log-data="refactoredBatchLogs"
     />
   </div>
 </template>

@@ -33,7 +33,6 @@ interface RecipeTableProps {
     key: string
     index: number
   }[]
-  cellClass?: string
 }
 const props = defineProps<RecipeTableProps>()
 defineEmits(['fullscreen'])
@@ -41,7 +40,13 @@ defineEmits(['fullscreen'])
 function last<T>(array: T[]): T | undefined {
   return array[array.length - 1]
 }
-
+function cellClass({ row, columnIndex }: SpanMethodProps): string {
+  // HARDCODED! columnIndex 4 === chemCode --> veri değişirse değiştir!
+  if ((columnIndex === 4 || columnIndex === 5) && row.recType === 1) {
+    return 'green-class'
+  }
+  return 'normal-class'
+}
 function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
   const property = props.groupables.find(prop => prop.index === columnIndex)
   if (!property) {
@@ -130,6 +135,13 @@ function objectSpanMethod({ row, rowIndex, columnIndex }: SpanMethodProps) {
 </template>
 
 <style lang="postcss">
+.normal-class {
+  background: scroll !important;
+}
+
+.green-class {
+  background: rgba(40, 220, 40, 0.6) !important;
+}
 @media (min-width: 735px) and (max-width: 1350px) {
   .el-table--small .el-table__cell {
     padding: 0 !important;
