@@ -280,6 +280,7 @@ const { width: windowWidth } = useWindowSize()
           ]"
           :no-data-label="t('batchLogs.no-data')"
           row-key="name"
+          :rows-per-page-options="[]"
           :rows="sortedLogs"
           :filter="logTableFilter"
         >
