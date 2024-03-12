@@ -161,6 +161,10 @@ function reqStatus(params: number) {
         class="machine-commands_items justify-center"
         :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }"
       >
+        <div class="explanation">
+          ERP
+        </div>
+        <q-separator color="white" vertical class="h-full" spaced />
         <MachineSettings :data="machine" />
       </div>
       <!-- PROG ID/NAME -->
@@ -176,6 +180,12 @@ function reqStatus(params: number) {
         >
           {{ t("machine-card.program-name") }}
         </q-tooltip>
+
+        <div class="explanation">
+          {{ t("machine-card.program-name") }}
+        </div>
+        <q-separator color="white" vertical class="h-full" spaced />
+
         <span
           class="w-full overflow-hidden"
           :class="
@@ -193,12 +203,7 @@ function reqStatus(params: number) {
       <div
         v-if="washing"
         v-show="machine.runningBatchStatus === 2"
-        :class="
-          machine.runningProgramName.length > 50
-            ? 'justify-start'
-            : 'justify-center'
-        "
-        class="machine-commands_items gap-3"
+        class="machine-commands_items"
         :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }"
       >
         <q-tooltip
@@ -208,7 +213,13 @@ function reqStatus(params: number) {
         >
           {{ t("machine-card.phase") }}
         </q-tooltip>
-        <span>
+
+        <div class="explanation">
+          {{ t("machine-card.phase") }}
+        </div>
+        <q-separator color="white" vertical class="h-full" spaced />
+
+        <span class="flex-center w-full">
           {{ machine.runningPhaseNo }}
           <span v-show="machine.runningPhaseName !== ' '">&nbsp;|&nbsp;</span>
           {{ machine.runningPhaseName }}
@@ -217,7 +228,7 @@ function reqStatus(params: number) {
       <!-- STEP NO / COMMAND NO / COMMAND NAME -->
       <div
         v-show="machine.runningBatchStatus === 2"
-        class="machine-commands_items justify-center"
+        class="machine-commands_items"
         :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }"
       >
         <q-tooltip
@@ -227,7 +238,14 @@ function reqStatus(params: number) {
         >
           {{ t("machine-card.command") }}
         </q-tooltip>
-        <span>
+
+        <div class="explanation">
+          <!-- {{ t("machine-card.command") }} -->
+          {{ t("machine-card.command-info") }}
+        </div>
+        <q-separator color="white" vertical class="h-full" spaced />
+
+        <span class="flex-center w-full">
           {{ machine.runningStepNo }}
           <span v-show="machine.runningCommandNo !== null">
             &nbsp;-&nbsp;
@@ -241,7 +259,7 @@ function reqStatus(params: number) {
       </div>
       <!-- STOP REASON (IF THERES ANY) -->
       <div
-        class="machine-commands_items justify-center gap-1"
+        class="machine-commands_items"
         :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }"
       >
         <q-tooltip
@@ -251,14 +269,21 @@ function reqStatus(params: number) {
         >
           {{ t("machine-card.stop-reason") }}
         </q-tooltip>
-        <span>{{ machine.manualReason }}</span>
-        <span>{{ machine.stopReason }}</span>
-        <span v-show="machine.connectionStatus === 2" class="text-red-700">
-          {{ t("machine-card.no-connection") }}
-        </span>
+
+        <div class="explanation">
+          {{ t("machine-card.stop-reason") }}
+        </div>
+        <q-separator color="white" vertical class="h-full" spaced />
+        <div class="flex-center w-full">
+          <span>{{ machine.manualReason }}</span>
+          <span>{{ machine.stopReason }}</span>
+          <span v-show="machine.connectionStatus === 2" class="text-red-700">
+            {{ t("machine-card.no-connection") }}
+          </span>
+        </div>
       </div>
       <div
-        class="machine-commands_items justify-center"
+        class="machine-commands_items"
         :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }"
         :class="
           machine.runningAlarmName === ' '
@@ -277,9 +302,17 @@ function reqStatus(params: number) {
         >
           {{ t("machine-card.alarm-second") }}
         </q-tooltip>
-        {{ machine.runningAlarmNo }}
-        <span v-show="machine.runningAlarmName !== ' '">&nbsp;|&nbsp;</span>
-        {{ machine.runningAlarmName }}
+
+        <div class="explanation">
+          {{ t("machine-card.alarm-second") }}
+        </div>
+        <q-separator color="white" vertical class="h-full" spaced />
+
+        <div class="flex-center w-full">
+          <!-- {{ machine.runningAlarmNo }} -->
+          <!-- <span v-show="machine.runningAlarmName !== ' '">&nbsp;|&nbsp;</span> -->
+          {{ machine.runningAlarmName }}
+        </div>
       </div>
       <div
         v-show="machine.runningBatchStatus === 2"
@@ -367,12 +400,16 @@ function reqStatus(params: number) {
     }
 
     .machine-commands {
-      @apply relative flex flex-col gap-2px px-1 mb-1 h-full justify-end;
+      @apply relative flex flex-col gap-2px h-full justify-end mb-1 mx-1;
+      .explanation {
+        @apply ml-2 w-25 min-w-25;
+      }
       .machine-commands_items {
         @apply w-full h-7 flex text-center items-center rounded-2xl overflow-hidden whitespace-nowrap text-white;
       }
     }
   }
+
 .alarm {
   animation: alarm 10s ease-out infinite;
   transform: translate3d(0);

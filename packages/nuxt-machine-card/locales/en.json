@@ -33,6 +33,7 @@
     "status-finished": "Finished",
     "status-prio": "Priority Changed",
     "status-cancelled": "Cancelled",
-    "command": "Step No - Command No - Command Name"
+    "command": "Step No - Command No - Command Name",
+    "command-info": "Command Info"
   }
 }
