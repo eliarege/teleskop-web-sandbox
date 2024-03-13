@@ -2,6 +2,7 @@
 import type { PropType } from 'vue'
 import { computed } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { QBtn, QList, QMenu } from 'quasar'
 import type { MachineCardData } from '../types'
 
 const props = defineProps({
@@ -23,7 +24,7 @@ const erpLabel = computed(() => {
   if (!props.data.erp)
     return t('no-erp-val')
   if (!erpKey.value)
-    return ''
+    return t('no-erp-val')
   const value = props.data.erp[erpKey.value]
   return typeof value === 'number' && !Number.isInteger(value)
     ? value.toFixed(2)
@@ -32,17 +33,17 @@ const erpLabel = computed(() => {
 </script>
 
 <template>
-  <q-btn
+  <QBtn
     :label="erpLabel"
     rounded
     :disable="!props.data.erp"
   >
-    <q-menu
+    <QMenu
       :auto-close="true"
       transition-show="jump-down"
       transition-hide="jump-up"
     >
-      <q-list>
+      <QList>
         <q-item
           v-for="(item, idx) in data.erp"
           :key="idx"
@@ -56,9 +57,9 @@ const erpLabel = computed(() => {
             </q-item-section>
           </span>
         </q-item>
-      </q-list>
-    </q-menu>
-  </q-btn>
+      </QList>
+    </QMenu>
+  </QBtn>
 </template>
 
 <style scoped>
@@ -67,3 +68,14 @@ const erpLabel = computed(() => {
   font-weight: 600;
 }
 </style>
+
+<i18n lang="json">
+{
+  "en": {
+    "no-erp-val": "NO ERP VALUE"
+  },
+  "tr": {
+  "no-erp-val": "ERP DEĞERİ SEÇİLMEDİ"
+  }
+}
+</i18n>

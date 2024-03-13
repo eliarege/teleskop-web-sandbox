@@ -58,6 +58,7 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
     .leftJoin('TFMACHINESTATUS as s', 'm.MACHINEID', 's.MACHINEID')
     .leftJoin('BFMACHGROUP as g', 'm.GRUPNO', 'g.GROUPID')
     .leftJoin('BADATA as b', 'b.BATCHKEY', 's.RUNNING_BATCHKEY')
+    .leftJoin('BFUSERS as d', 'd.userID', 's.RUNNING_OPRNO')
     .leftJoin(eb => eb
       .selectFrom('BACONSUMPTIONPROGRAM as c')
       .groupBy('c.MACHINEID')
@@ -80,7 +81,7 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
       'b.THEORETICDURAT as theoreticalDuration',
       's.RUNNING_AUTOMANSTATUS as autoManualStatus',
       's.RUNNING_OPRNO as loggedInOperatorNo',
-      's.RUNNING_OPRNAME as loggedInOperatorName',
+      sql<string>`d.userName + ' ' + d.userSurname`.as('loggedInOperatorName'),
       's.RUNNING_JOBORDER as runningJobOrder',
       's.RUNNING_JOBORDERSTARTTIME as runningStartTime',
       's.RUNNING_BATCHKEY as runningBatchKey',

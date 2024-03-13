@@ -33,6 +33,7 @@
     "status-finished": "Bitti",
     "status-prio": "Öncelik Değişti",
     "status-cancelled": "İptal Edildi",
-    "command": "Adım No - Komut No - Komut İsmi"
+    "command": "Adım No - Komut No - Komut İsmi",
+    "command-info": "Komut Bilgileri"
   }
 }

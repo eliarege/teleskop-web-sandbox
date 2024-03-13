@@ -249,6 +249,12 @@ export interface TFMACHINESTATUS {
   UPDATETIME: Date | null
 }
 
+export interface BFUSERS {
+  userID: number
+  userName: string
+  userSurname: string
+}
+
 export interface TeleskopDatabase {
   BACONSUMPTIONPROGRAM: BACONSUMPTIONPROGRAM
   BADATA: BADATA
@@ -256,6 +262,7 @@ export interface TeleskopDatabase {
   BFMACHGROUP: BFMACHGROUP
   BFMACHINES: BFMACHINES
   TFMACHINESTATUS: TFMACHINESTATUS
+  BFUSERS: BFUSERS
 }
 
 export interface DmExchangeDatabase {

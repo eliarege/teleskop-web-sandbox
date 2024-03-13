@@ -11,12 +11,6 @@ import type {
 } from '~/shared/types'
 import { useDataStore } from '~~/store/Datas'
 
-export interface SpanMethodProps {
-  row: Recipe
-  column: TableColumnCtx<Recipe>
-  rowIndex: number
-  columnIndex: number
-}
 const props = defineProps({
   currentMachine: {
     type: Object as PropType<MachineDataRaw>,
@@ -28,10 +22,6 @@ const props = defineProps({
   },
   intervents: {
     type: Array as PropType<NewInterventions[]> | null,
-    required: true,
-  },
-  logData: {
-    type: Array as PropType<NewBatchLogs[]>,
     required: true,
   },
 })
@@ -48,7 +38,35 @@ const { data: recipe } = useFetch('/api/recipe', {
     teleskopType: store.settings?.washing ? 'washing' : 'normal',
   },
 })
-
+const { data: batchLogs } = await useFetch('/api/machine_logs', {
+  query: { machineId: props.currentMachine.id },
+})
+const refactoredBatchLogs = computed(() => {
+  return batchLogs.value
+    ?.filter(machine => machine.planKey)
+    .map((logs) => {
+      return {
+        ...logs,
+        newTime: logs.eventTime
+          ? logs.eventTime.toString().slice(0, -5).replace('T', ' ')
+          : logs.eventTime,
+      }
+    }) as NewBatchLogs[] || []
+})
+const checkedNames = ref()
+const sortedLogs = computed(() => {
+  const activeLogs = refactoredBatchLogs.value.filter(a => a.planKey)
+  if (checkedNames.value === 'Plan Key') {
+    return activeLogs.sort((c, d) => (c.planKey < d.planKey ? -1 : 1))
+  } else if (checkedNames.value === 'ID') {
+    return activeLogs.sort((c, d) => (c.id < d.id ? -1 : 1))
+  } else if (checkedNames.value === 'Event Time') {
+    return activeLogs.sort((c, d) => (c.newTime < d.newTime ? -1 : 1))
+  } else {
+    return activeLogs
+  }
+})
+const logTableFilter = ref()
 const deg = (value: number) => (value / 180) * Math.PI
 const groupables = [
   { key: 'recIndex', index: 0 },
@@ -106,29 +124,8 @@ const erpVal = computed(() => {
 function closeModal() {
   tableShow.value = false
 }
-const checkedNames = ref()
-const sortedLogs = computed(() => {
-  const activeLogs = props.logData.filter(a => a.planKey)
-  if (checkedNames.value === 'Plan Key') {
-    return activeLogs.sort((c, d) => (c.planKey < d.planKey ? -1 : 1))
-  } else if (checkedNames.value === 'ID') {
-    return activeLogs.sort((c, d) => (c.id < d.id ? -1 : 1))
-  } else if (checkedNames.value === 'Event Time') {
-    return activeLogs.sort((c, d) => (c.newTime < d.newTime ? -1 : 1))
-  } else {
-    return activeLogs
-  }
-})
-const logTableFilter = ref()
+
 const { width: windowWidth } = useWindowSize()
-const config = useRuntimeConfig()
-function cellClass({ row, columnIndex }: SpanMethodProps) {
-  // HARDCODED! columnIndex 4 === chemCode --> veri değişirse değiştir!
-  if ((columnIndex === 4 || columnIndex === 5) && row.recType === 1) {
-    return 'green-class'
-  }
-  return 'normal-class'
-}
 </script>
 
 <template>
@@ -154,7 +151,6 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
           is-first
           has-object-span-method
           :full-screen="true"
-          :cell-class="cellClass"
           :full-screen-button-props="{
             buttonText: t('details.btn-open'),
             plain: true,
@@ -282,8 +278,9 @@ function cellClass({ row, columnIndex }: SpanMethodProps) {
             { name: 'requestprogramIndex', label: t('batchLogs.request-program-index'), field: 'requestprogramIndex', align: 'left' },
             { name: 'status', label: t('batchLogs.status'), field: 'status', align: 'left' },
           ]"
-          :no-data-label="config.public.teleskopHasLogs === 'true' ? t('batchLogs.no-data') : t('batchLogs.invalid-version')"
+          :no-data-label="t('batchLogs.no-data')"
           row-key="name"
+          :rows-per-page-options="[]"
           :rows="sortedLogs"
           :filter="logTableFilter"
         >

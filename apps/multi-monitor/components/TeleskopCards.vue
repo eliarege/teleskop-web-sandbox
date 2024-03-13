@@ -106,6 +106,7 @@ function isScreenViable(screen: number) {
         :connection-status="connectionStatus(element.connectionStatus)"
         :req-status="reqStatus(element.reqStatus)"
         :machine-sort="store.sortMachines"
+        :links-active="true"
       />
     </div>
   </div>
