@@ -10,6 +10,7 @@ const stateStore = useStateStore()
 const dataStore = useDataStore()
 const route = useRoute()
 const stickyUnavailablePaths = ['/settings']
+const selectedDispenserUndefinedPaths = ['/', '/machines', '/settings']
 const showDrawer = ref(true)
 const showSticky = ref(!stickyUnavailablePaths.includes(route.path))
 const { height } = useWindowSize()
@@ -51,7 +52,7 @@ async function onRefresh() {
 const DISPENSER_PATH_RE = /^\/dispenser\/\d+$/
 watch(() => route.params, () => {
   showSticky.value = !stickyUnavailablePaths.includes(route.path)
-  if (route.path === '/')
+  if (selectedDispenserUndefinedPaths.includes(route.path))
     dataStore.selectedDispenser = undefined
   else if (DISPENSER_PATH_RE.test(route.path)) {
     const id = Number.parseInt(route.params.id as string)
