@@ -35,8 +35,6 @@ const messages = controlledComputed(locale, () => {
 </template>
 
 <style lang="postcss">
-@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
-
 :root {
   --el-border-color-lighter: rgba(50, 50, 50, 0.2);
 }
