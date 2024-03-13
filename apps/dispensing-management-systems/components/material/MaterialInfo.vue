@@ -24,8 +24,21 @@ const material = toRef(props, 'material')
 const dispensers = toRef(props, 'dispensers')
 const selectedDispensersInitial = material.value ? ref(material.value.connectedDispensers.map(dispenser => dispenser.dispenserId)) : ref([])
 const selectedDispensers = ref([...selectedDispensersInitial.value])
+const defaultMaterial: Material = {
+  materialCode: '',
+  materialName: '',
+  materialGroupNo: 1,
+  density: 1,
+  ph: 1,
+  source: '',
+  costUnit: '',
+  unitCost: 0,
+  reRequestable: false,
+  directTransfer: false,
+  connectedDispensers: [],
+}
 
-const editedMaterial = ref({ ...material.value })
+const editedMaterial = ref(material.value ? { ...material.value } : { ...defaultMaterial })
 if (!Array.isArray(editedMaterial.value.connectedDispensers)) {
   editedMaterial.value.connectedDispensers = []
 }
@@ -62,7 +75,7 @@ function onCancel() {
 }
 
 function onReset() {
-  editedMaterial.value = { ...material.value }
+  editedMaterial.value = material.value ? { ...material.value } : { ...defaultMaterial }
   selectedDispensers.value = [...selectedDispensersInitial.value]
 }
 async function onDelete() {
