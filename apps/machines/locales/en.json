@@ -335,5 +335,7 @@
   "generalFormula": "General Formula",
   "manualReasonDescription": "If the device version is 3.6 or older, the first 20 manual reasons are available on the device.",
   "manualReason": "Manual Reason",
-  "reportToERP": "Report To ERP"
+  "reportToERP": "Report To ERP",
+  "incompleteExpression": "Incomplete Expression",
+  "invalidSymbol": "Invalid Symbol"
 }

@@ -333,5 +333,7 @@
   "generalFormula": "Genel Formül",
   "manualReasonDescription": "Cihaz versiyonu 3.6 veya daha eski ise ilk 20 manuele alma nedeni cihazda kullanılabilir.",
   "manualReason": "Manual Sebebi",
-  "reportToERP": "ERP Arıza Bildirimi"
+  "reportToERP": "ERP Arıza Bildirimi",
+  "incompleteExpression": "Eksik İfade",
+  "invalidSymbol": "Geçersiz Sembol"
 }
