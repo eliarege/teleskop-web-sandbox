@@ -122,9 +122,12 @@ const pagination = ref({ rowsPerPage: 50 })
 </script>
 
 <template>
-  <div class="flex-center text-xl mb-10">
+  <div class="flex-center text-xl">
     {{ t('settings.Material') }}
   </div>
+  <QSeparator
+    class="w-full mt-5 mb-5"
+  />
   <QInput
     v-model="searchFilter"
     :label="t('Search')"

@@ -40,6 +40,9 @@ watch(
     <div class="text-xl">
       {{ t('settings.App') }}
     </div>
+    <QSeparator
+      class="w-full mt-10"
+    />
     <div class="flex-center flex-col gap-5 text-size-4 mt-10 w-full ">
       <div class="row-item">
         {{ t('Language') }}

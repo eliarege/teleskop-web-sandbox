@@ -102,9 +102,12 @@ const pagination = ref({ rowsPerPage: 20 })
 </script>
 
 <template>
-  <div class="flex-center text-xl mb-10">
+  <div class="flex-center text-xl">
     {{ t('settings.Machine') }}
   </div>
+  <QSeparator
+    class="w-full mt-5 mb-5"
+  />
   <div class="flex-center mb-4">
     <QBtn
       :label="$t('AddNewMachine')"
