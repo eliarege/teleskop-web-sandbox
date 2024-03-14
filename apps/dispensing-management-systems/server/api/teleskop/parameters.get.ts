@@ -4,6 +4,8 @@ import type { DatabaseConnection } from '~/shared/types'
 export default defineEventHandler(async () => {
   try {
     const teleskopConnection: DatabaseConnection = await dmsDB('TELESKOP_SETTINGS').select({
+      client: 'client',
+      hostComputer: 'host_computer',
       user: 'user',
       password: 'password',
       host: 'host',

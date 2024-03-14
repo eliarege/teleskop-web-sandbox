@@ -1,4 +1,5 @@
 import Knex from 'knex'
+import type { DatabaseConnection } from '~/shared/types'
 
 const config = useRuntimeConfig()
 // Set up the connection
@@ -17,17 +18,24 @@ let teleskopDB: null | Knex.Knex<any, unknown[]> = null
 
 async function getTeleskopDB() {
   if (teleskopDB === null) {
-    const teleskopConnection = await $fetch('/api/teleskop/parameters')
+    const teleskopConnection = await $fetch<DatabaseConnection>('/api/teleskop/parameters')
     return connectTeleskopDB(teleskopConnection)
   }
   return teleskopDB
 }
-function connectTeleskopDB(connection: any) {
+function connectTeleskopDB(connection: DatabaseConnection) {
   teleskopDB?.destroy()
   teleskopDB = Knex({
-    client: 'mssql',
-    connection,
+    client: connection.client,
+    connection: {
+      user: connection.user,
+      password: connection.password,
+      host: connection.host,
+      port: connection.port,
+      database: connection.database,
+    },
   })
+
   return teleskopDB
 }
 

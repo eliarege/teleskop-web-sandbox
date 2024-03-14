@@ -46,6 +46,30 @@ function onReset() {
       </div>
       <div class="flex-center flex-col gap-5 text-size-4 mt-10 w-full ">
         <div class="row-item">
+          {{ t('protocolParameters.dbClient') }}
+          <QInput
+            v-model="teleskopSettings!.client"
+            dense
+            type="text"
+            filled
+          />
+        </div>
+        <QSeparator
+          class="w-full "
+        />
+        <div class="row-item">
+          {{ t('protocolParameters.dbHostComputer') }}
+          <QInput
+            v-model="teleskopSettings!.hostComputer"
+            dense
+            type="text"
+            filled
+          />
+        </div>
+        <QSeparator
+          class="w-full "
+        />
+        <div class="row-item">
           {{ t('protocolParameters.dbName') }}
           <QInput
             v-model="teleskopSettings!.database"

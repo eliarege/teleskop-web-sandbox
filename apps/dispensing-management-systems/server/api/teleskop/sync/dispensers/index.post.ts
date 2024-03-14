@@ -11,7 +11,6 @@ export default defineEventHandler(async (event) => {
         dispenser_id: data.dispenserId,
         dispenser_name: data.dispenserName,
         ip_address: data.dispenserIP,
-        password: data.dipenserPswrd,
         dispenser_type: data.dispenserType,
         protocol: data.protocol,
         last_consumption_control: data.lastConsumptionControl,

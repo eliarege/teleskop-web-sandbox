@@ -133,7 +133,9 @@
   "protocolParameters": {
     "bodyRequestName": "File Name",
     "bodyRequestPath": "File Path",
-    "consumptionFileName": "COnsumption File Name",
+    "consumptionFileName": "Consumption File Name",
+    "dbClient": "Database Client",
+    "dbHostComputer": "Host Computer",
     "dbName": "Database Name",
     "dbHost": "Database Host",
     "dbPort": "Database Port",

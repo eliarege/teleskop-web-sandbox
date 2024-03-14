@@ -133,6 +133,8 @@
     "bodyRequestName": "Dosya Adı",
     "bodyRequestPath": "Dosya Konumu",
     "consumptionFileName": "Tüketim Dosyası",
+    "dbClient": "Veritabanı İstemcisi",
+    "dbHostComputer": "Sunucu Bilgisayarı",
     "dbName": "Veritabanı Adı",
     "dbHost": "Veritabanı Sunucusu",
     "dbPort": "Veritabanı Portu",

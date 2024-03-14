@@ -136,6 +136,8 @@ export interface MachineControllerType {
   controllerTypeName: string
 }
 export interface DatabaseConnection {
+  client: string
+  hostComputer: string
   user: string
   password: string
   database: string

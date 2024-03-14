@@ -24,9 +24,9 @@ export default defineEventHandler(async () => {
       .select(dispenserTypeParams)
     const dispensers = await teleskopDB('dbo.DYTFDISPENSERSETTINGS')
       .select(dispenserParams)
-    $fetch('/api/teleskop/sync/dispensers', { method: 'POST', body: { dispensers, dispenserTypes } })
+    return $fetch('/api/teleskop/sync/dispensers', { method: 'POST', body: { dispensers, dispenserTypes } })
   } catch (e) {
-    console.log(e)
+    console.error(e)
     return e
   }
 })
