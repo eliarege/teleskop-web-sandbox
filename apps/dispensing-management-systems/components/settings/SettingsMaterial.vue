@@ -10,6 +10,7 @@ const dataStore = useDataStore()
 
 const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials')
 const dispensers = await dataStore.getDispensers()
+const searchFilter = ref('')
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,
   materialGroupName: t('materialTypes.1'),
@@ -107,13 +108,32 @@ function addNewMaterial() {
   },
   )
 }
-const pagination = ref({ rowsPerPage: 20 })
+function customFilter(rows: Material[], terms: string) {
+  terms = terms.toLowerCase()
+  return rows.filter((row) => {
+    const materialCodeMatches = row.materialCode.toLowerCase().includes(terms)
+    const materialNameMatches = row.materialName.toLowerCase().includes(terms)
+    const materialGroupMatches = String(groupOptions.at(row.materialGroupNo - 1)?.materialGroupName).toLowerCase().includes(terms)
+    const connectedDispensersMatches = row.connectedDispensers.some(dispenser => dispenser.dispenserName.toLowerCase().includes(terms))
+    return materialCodeMatches || materialNameMatches || materialGroupMatches || connectedDispensersMatches
+  })
+}
+const pagination = ref({ rowsPerPage: 50 })
 </script>
 
 <template>
   <div class="flex-center text-xl mb-10">
     {{ t('settings.Material') }}
   </div>
+  <QInput
+    v-model="searchFilter"
+    :label="t('Search')"
+    class="ml-10 mr-10 mb-5"
+  >
+    <template #prepend>
+      <QIcon name="search" />
+    </template>
+  </QInput>
   <div class="flex-center mb-4">
     <QBtn
       :label="$t('AddNewMaterial')"
@@ -138,6 +158,8 @@ const pagination = ref({ rowsPerPage: 20 })
     table-header-class="table-header"
     table-class="max-h-150"
     separator="cell"
+    :filter="searchFilter"
+    :filter-method="customFilter"
     :pagination
     :columns
     :rows="materials"
