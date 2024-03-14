@@ -21,6 +21,7 @@ const brandDispenserTypes = ref<DispenserType[]>([])
 const protocols = ref<Protocol[]>([])
 const brandProtocols = ref<Protocol[]>([])
 const protocolFields = ref<string[]>([])
+const passwordVisible = ref(false)
 
 getDispenserBrands()
 getDispenserTypes()
@@ -170,6 +171,51 @@ async function onDelete() {
                 :placeholder="editedDispenser.dispenserIP"
                 :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
               />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.VncUser') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.vncUser"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="editedDispenser.vncUser"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.VncPort') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.vncPort"
+                class="item-input"
+                dense
+                type="number"
+                filled
+                :placeholder="editedDispenser.vncPort"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.VncPassword') }}
+              </span>
+              <QInput
+                v-model="editedDispenser.vncPassword"
+                dense
+                :type="passwordVisible ? 'text' : 'password'"
+                filled
+              >
+                <template #append>
+                  <QIcon
+                    :name="passwordVisible ? 'visibility_off' : 'visibility'"
+                    class="cursor-pointer"
+                    @click="passwordVisible = !passwordVisible"
+                  />
+                </template>
+              </QInput>
             </div>
             <div class="row-item">
               <span class="item-label">

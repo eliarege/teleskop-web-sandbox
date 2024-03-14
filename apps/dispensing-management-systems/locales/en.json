@@ -93,7 +93,10 @@
     "ID": "Dispenser ID",
     "Type": "Dispenser Type",
     "Protocol": "Protocol",
-    "Brand": "Dispenser Brand"
+    "Brand": "Dispenser Brand",
+    "VncUser": "Vnc User",
+    "VncPort": "Vnc Port",
+    "VncPassword": "Vnc Password"
   },
   "recipeFields": {
     "Info": "Recipe Info",

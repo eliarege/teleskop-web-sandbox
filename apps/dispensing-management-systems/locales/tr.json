@@ -93,7 +93,10 @@
     "ID": "Dağıtıcı No",
     "Type": "Dağıtıcı Tipi",
     "Protocol": "Protokol",
-    "Brand": "Dağıtıcı Markası"
+    "Brand": "Dağıtıcı Markası",
+    "VncUser": "Vnc Kullanıcısı",
+    "VncPort": "Vnc Portu",
+    "VncPassword": "Vnc Şifresi"
   },
   "recipeFields": {
     "Info": "Reçete Bilgisi",
