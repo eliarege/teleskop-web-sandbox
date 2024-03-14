@@ -247,7 +247,7 @@ const pagination = ref({ rowsPerPage: 100 })
         bordered
         class="mt-5"
         table-header-class="table-header"
-        table-class="max-h-150"
+        table-class="max-h-140"
         separator="cell"
         :pagination
         :filter="materialSearchFilter"
