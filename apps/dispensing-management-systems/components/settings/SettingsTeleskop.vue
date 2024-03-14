@@ -39,106 +39,112 @@ function onReset() {
 </script>
 
 <template>
-  <QForm @submit.prevent>
-    <div class="flex flex-row align-start justify-center">
-      <div class="text-xl">
-        {{ t('settings.Teleskop') }}
-      </div>
-      <div class="flex-center flex-col gap-5 text-size-4 mt-10 w-full ">
-        <div class="row-item">
-          {{ t('protocolParameters.dbClient') }}
-          <QInput
-            v-model="teleskopSettings!.client"
-            dense
-            type="text"
-            filled
-          />
-        </div>
-        <QSeparator
-          class="w-full "
-        />
-        <div class="row-item">
-          {{ t('protocolParameters.dbHostComputer') }}
-          <QInput
-            v-model="teleskopSettings!.hostComputer"
-            dense
-            type="text"
-            filled
-          />
-        </div>
-        <QSeparator
-          class="w-full "
-        />
-        <div class="row-item">
-          {{ t('protocolParameters.dbName') }}
-          <QInput
-            v-model="teleskopSettings!.database"
-            dense
-            type="text"
-            filled
-          />
-        </div>
-        <QSeparator
-          class="w-full "
-        />
-        <div class="row-item">
-          {{ t('protocolParameters.dbHost') }}
-          <QInput
-            v-model="teleskopSettings!.host"
-            dense
-            type="text"
-            filled
-          />
-        </div>
-        <QSeparator
-          class="w-full "
-        />
-        <div class="row-item">
-          {{ t('protocolParameters.dbPort') }}
-          <QInput
-            v-model="teleskopSettings!.port"
-            dense
-            type="number"
-            filled
-          />
-        </div>
-        <QSeparator
-          class="w-full "
-        />
-        <div class="row-item">
-          {{ t('protocolParameters.dbUser') }}
-          <QInput
-            v-model="teleskopSettings!.user"
-            dense
-            type="text"
-            filled
-          />
-        </div>
-        <QSeparator
-          class="w-full "
-        />
-        <div class="row-item">
-          {{ t('protocolParameters.dbPassword') }}
-          <QInput
-            v-model="teleskopSettings!.password"
-            dense
-            :type="passwordVisible ? 'text' : 'password'"
-            filled
-          >
-            <template #append>
-              <QIcon
-                :name="passwordVisible ? 'visibility_off' : 'visibility'"
-                class="cursor-pointer"
-                @click="passwordVisible = !passwordVisible"
+  <div>
+    <div class="content-section">
+      <QForm @submit.prevent>
+        <div class="flex flex-row align-start justify-center">
+          <div class="text-xl">
+            {{ t('settings.Teleskop') }}
+          </div>
+          <div class="flex-center flex-col gap-5 text-size-4 mt-10 w-full ">
+            <div class="row-item">
+              {{ t('protocolParameters.dbClient') }}
+              <QInput
+                v-model="teleskopSettings!.client"
+                dense
+                type="text"
+                filled
               />
-            </template>
-          </QInput>
+            </div>
+            <QSeparator
+              class="w-full "
+            />
+            <div class="row-item">
+              {{ t('protocolParameters.dbHostComputer') }}
+              <QInput
+                v-model="teleskopSettings!.hostComputer"
+                dense
+                type="text"
+                filled
+              />
+            </div>
+            <QSeparator
+              class="w-full "
+            />
+            <div class="row-item">
+              {{ t('protocolParameters.dbName') }}
+              <QInput
+                v-model="teleskopSettings!.database"
+                dense
+                type="text"
+                filled
+              />
+            </div>
+            <QSeparator
+              class="w-full "
+            />
+            <div class="row-item">
+              {{ t('protocolParameters.dbHost') }}
+              <QInput
+                v-model="teleskopSettings!.host"
+                dense
+                type="text"
+                filled
+              />
+            </div>
+            <QSeparator
+              class="w-full "
+            />
+            <div class="row-item">
+              {{ t('protocolParameters.dbPort') }}
+              <QInput
+                v-model="teleskopSettings!.port"
+                dense
+                type="number"
+                filled
+              />
+            </div>
+            <QSeparator
+              class="w-full "
+            />
+            <div class="row-item">
+              {{ t('protocolParameters.dbUser') }}
+              <QInput
+                v-model="teleskopSettings!.user"
+                dense
+                type="text"
+                filled
+              />
+            </div>
+            <QSeparator
+              class="w-full "
+            />
+            <div class="row-item">
+              {{ t('protocolParameters.dbPassword') }}
+              <QInput
+                v-model="teleskopSettings!.password"
+                dense
+                :type="passwordVisible ? 'text' : 'password'"
+                filled
+              >
+                <template #append>
+                  <QIcon
+                    :name="passwordVisible ? 'visibility_off' : 'visibility'"
+                    class="cursor-pointer"
+                    @click="passwordVisible = !passwordVisible"
+                  />
+                </template>
+              </QInput>
+            </div>
+            <QSeparator
+              class="w-full "
+            />
+          </div>
         </div>
-        <QSeparator
-          class="w-full "
-        />
-      </div>
-      <div class="flex-center justify-evenly p-10">
+      </QForm>
+    </div>
+    <div :class="q.dark.isActive ? 'buttons-section-dark' : 'buttons-section-light'">
+      <div class="flex-center justify-evenly">
         <QBtn
           :label="t('Save')"
           color="primary"
@@ -154,10 +160,42 @@ function onReset() {
         />
       </div>
     </div>
-  </QForm>
+  </div>
 </template>
 
 <style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.content-section {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  margin-bottom: 10vh;
+}
+
+.buttons-section-light {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10vh;
+  position: fixed;
+  bottom: 0;
+  width: 88%;
+  background-color: white;
+}
+.buttons-section-dark {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10vh;
+  position: fixed;
+  bottom: 0;
+  width: 88%;
+  background-color: var(--q-dark);
+}
 .row-item {
   align-items: center;
   gap: 1rem;
