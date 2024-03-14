@@ -21,7 +21,7 @@ const selectedMachines = ref<number[]>([])
 const materials = ref<Material[]>([])
 const selectedMaterialsInitial = ref<Material[]>([])
 const selectedMaterials = ref<Material[]>([])
-
+const materialSearchFilter = ref('')
 watch((tab), async (tab) => {
   if (tab === 'machines') {
     machines.value = await $fetch('/api/machines')
@@ -182,6 +182,16 @@ function handleReset() {
   }
   buttonDisabled.value = true
 }
+function materialFilter(rows: Material[], terms: string) {
+  terms = terms.toLowerCase()
+  return rows.filter((row) => {
+    const materialCodeMatches = row.materialCode.toLowerCase().includes(terms)
+    const materialNameMatches = row.materialName.toLowerCase().includes(terms)
+    const materialGroupMatches = String(groupOptions.at(row.materialGroupNo - 1)?.materialGroupName).toLowerCase().includes(terms)
+    const connectedDispensersMatches = row.connectedDispensers.some(dispenser => dispenser.dispenserName.toLowerCase().includes(terms))
+    return materialCodeMatches || materialNameMatches || materialGroupMatches || connectedDispensersMatches
+  })
+}
 const pagination = ref({ rowsPerPage: 100 })
 </script>
 
@@ -220,6 +230,15 @@ const pagination = ref({ rowsPerPage: 100 })
       </div>
     </div>
     <div v-if="tab === 'materials'">
+      <QInput
+        v-model="materialSearchFilter"
+        :label="t('Search')"
+        class="ml-10 mr-10 mb-5"
+      >
+        <template #prepend>
+          <QIcon name="search" />
+        </template>
+      </QInput>
       <QTable
         flat
         bordered
@@ -228,6 +247,8 @@ const pagination = ref({ rowsPerPage: 100 })
         table-class="max-h-150"
         separator="cell"
         :pagination
+        :filter="materialSearchFilter"
+        :filter-method="materialFilter"
         :columns="materialColumns"
         :rows="materials"
         row-key="materialCode"
