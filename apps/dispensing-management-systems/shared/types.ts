@@ -43,11 +43,13 @@ export interface Dispenser {
   dispenserId: number
   dispenserName: string
   dispenserIP: string
-  dipenserPswrd: string
-  lastConsumptionControl: Date
   dispenserType: number | null
   dispenserBrandId: number
   dispenserBrandName: string
+  vncUser: string
+  vncPassword: string
+  vncPort: number
+  lastConsumptionControl: Date
   protocol: string
   protocolFields: object | null
 }

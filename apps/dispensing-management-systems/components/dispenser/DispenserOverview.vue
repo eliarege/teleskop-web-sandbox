@@ -20,7 +20,7 @@ const dispenser = toRef(props, 'dispenser')
 async function onPing() {
   try {
     stateStore.isLoading = true
-    const ping = await useFetch(`http://${dispenser.value.dispenserIP.split(':')[0]}`, {
+    const ping = await useFetch(`http://${dispenser.value.dispenserIP}`, {
       mode: 'no-cors',
       timeout: 3000,
     })
