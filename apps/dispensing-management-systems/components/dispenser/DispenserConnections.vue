@@ -182,6 +182,9 @@ function handleReset() {
   }
   buttonDisabled.value = true
 }
+function handleExport() {
+
+}
 function materialFilter(rows: Material[], terms: string) {
   terms = terms.toLowerCase()
   return rows.filter((row) => {
@@ -274,6 +277,7 @@ const pagination = ref({ rowsPerPage: 100 })
     <div v-if="tab" class="flex-center gap-10 mt-10">
       <QBtn :label="t('Save')" icon="save" color="primary" :disable="buttonDisabled" @click="handleSubmit" />
       <QBtn :label="t('Reset')" icon="refresh" @click="handleReset" />
+      <QBtn :label="t('ExportConnections')" color="secondary" icon="file_upload" @click="handleExport" />
     </div>
   </div>
 </template>
