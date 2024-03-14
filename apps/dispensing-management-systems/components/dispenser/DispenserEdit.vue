@@ -286,32 +286,32 @@ async function onDelete() {
               </div>
             </div>
           </div>
-          <div class="flex-center justify-evenly p-10">
-            <QBtn
-              :label="t('Save')"
-              color="primary"
-              icon="save"
-              @click="onSave"
-            />
-            <QBtn
-              :label="t('Cancel')"
-              color="warning"
-              icon="cancel"
-              @click="onCancel"
-            />
-            <QBtn
-              :label="t('Reset')"
-              icon="refresh"
-              @click="onReset"
-            />
-            <QBtn
-              v-if="dispenser"
-              :label="t('Delete')"
-              color="negative"
-              icon="delete"
-              @click="onDelete"
-            />
-          </div>
+        </div>
+        <div :class="q.dark.isActive ? 'button-section-dark' : 'button-section-light'">
+          <QBtn
+            :label="t('Save')"
+            color="primary"
+            icon="save"
+            @click="onSave"
+          />
+          <QBtn
+            :label="t('Cancel')"
+            color="warning"
+            icon="cancel"
+            @click="onCancel"
+          />
+          <QBtn
+            :label="t('Reset')"
+            icon="refresh"
+            @click="onReset"
+          />
+          <QBtn
+            v-if="dispenser"
+            :label="t('Delete')"
+            color="negative"
+            icon="delete"
+            @click="onDelete"
+          />
         </div>
       </QForm>
     </QCard>
@@ -331,5 +331,37 @@ async function onDelete() {
 
 .item-input {
   width: 27.5 rem;
+}
+.content-section {
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: calc(80vh - 150px);
+}
+
+.button-section-light {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: space-evenly;
+  padding: 0.5rem;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background-color: white;
+  box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.2);
+
+}
+
+.button-section-dark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: space-evenly;
+  padding: 0.5rem;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background-color: var(--q-dark);
+  box-shadow: 0px -1px 5px rgba(128, 128, 128, 0.2);
 }
 </style>
