@@ -113,6 +113,7 @@ function onLogout() {
       node-key="id"
       no-connectors
       :expanded="expanded"
+      style="font-size: 18px;"
       @update:expanded="onExpand"
     >
       <template #default-header=" { node }">
