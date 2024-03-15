@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
+import ExportConnectionsDialog from '../ExportConnectionsDialog.vue'
 import type { Machine, Material, MaterialGroup } from '~/shared/types'
 
 const props = defineProps({
@@ -183,7 +184,30 @@ function handleReset() {
   buttonDisabled.value = true
 }
 function handleExport() {
-
+  q.dialog({
+    component: ExportConnectionsDialog,
+    componentProps: {
+      type: tab.value,
+      dispenserId: Number(props.dispenserId),
+    },
+  }).onOk((payload) => {
+    if (payload) {
+      q.notify({
+        color: 'green-4',
+        textColor: 'white',
+        icon: 'done',
+        message: t('Success'),
+        timeout: 3000,
+      })
+    } else
+      q.notify({
+        color: 'red-4',
+        textColor: 'white',
+        icon: 'cancel',
+        message: t('Failed'),
+        timeout: 3000,
+      })
+  })
 }
 function materialFilter(rows: Material[], terms: string) {
   terms = terms.toLowerCase()
