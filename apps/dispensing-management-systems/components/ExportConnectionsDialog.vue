@@ -19,7 +19,7 @@ const selected = ref()
 
 async function onConfirm() {
   try {
-    const res = await $fetch(`/api/connections/materials/export?from=${props.dispenserId}&to=${selected.value}`, { method: 'POST' })
+    const res = await $fetch(`/api/connections/${props.type}/export?from=${props.dispenserId}&to=${selected.value}`, { method: 'POST' })
     onDialogOK(res)
   } catch (e: any) {
     onDialogOK(null)
