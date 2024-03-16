@@ -36,6 +36,12 @@ function deselectAll() {
     options.value[key] = false
   })
 }
+
+function reverseSelected() {
+  Object.keys(options.value).forEach((key) => {
+    options.value[key] = !options.value[key]
+  })
+}
 </script>
 
 <template>
@@ -53,6 +59,7 @@ function deselectAll() {
       <div class="flex flex-row gap-4 justify-end">
         <q-btn no-caps :label="t('selectAll')" @click="selectAll" />
         <q-btn no-caps :label="t('deselectAll')" @click="deselectAll" />
+        <q-btn no-caps :label="t('reverseSelected')" @click="reverseSelected" />
         <q-btn no-caps :label="t('cancel')" @click="emit('close')" />
         <q-btn no-caps :label="t('get')" @click="loadDefinitions" />
       </div>
