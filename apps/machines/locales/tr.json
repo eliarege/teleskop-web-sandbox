@@ -49,7 +49,6 @@
   "receiveVersionInfo": "Versiyon Bilgisi Al",
   "machineConstants": "Makine Sabitleri",
   "formulas": "Formüller",
-  "getDyehouseDefinitions": "Boyahane Tanımlarını Al",
   "theoricalCharge": "Teorik Şarj Sayısı",
   "theoricalChargeDuration": "Teorik Şarj Süresi (dk)",
   "nozzleCount": "Düze Sayısı",
@@ -335,5 +334,9 @@
   "manualReason": "Manual Sebebi",
   "reportToERP": "ERP Arıza Bildirimi",
   "incompleteExpression": "Eksik İfade",
-  "invalidSymbol": "Geçersiz Sembol"
+  "invalidSymbol": "Geçersiz Sembol",
+  "pleaseSelectaRowToEdit": "Düzenlemek için bir satır seçiniz",
+  "pleaseSelectaRowToDelete": "Silmek için bir satır seçiniz",
+  "dismiss": "Kapat",
+  "reverseSelected": "Seçilenleri Ters Çevir"
 }

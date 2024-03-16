@@ -50,8 +50,8 @@
   "receiveVersionInfo": "Receive Version Info",
   "machineConstants": "Machine Constants",
   "formulas": "Formulas",
-  "getDyehouseDefinitions": "Get Dyehouse Definitions",
-  "setDyehouseDefinitions": "Set Dyehouse Definitions",
+  "getDyeHouseDefinitions": "Get Dyehouse Definitions",
+  "setDyeHouseDefinitions": "Set Dyehouse Definitions",
   "machineName": "Machine Name",
   "group": "Group",
   "model": "Model",
@@ -337,5 +337,7 @@
   "manualReason": "Manual Reason",
   "reportToERP": "Report To ERP",
   "incompleteExpression": "Incomplete Expression",
-  "invalidSymbol": "Invalid Symbol"
+  "invalidSymbol": "Invalid Symbol",
+  "dismiss": "Dismiss",
+  "reverseSelected": "Reverse Selected"
 }
