@@ -3,7 +3,11 @@ import { useMagicKeys, whenever } from '@vueuse/core'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 import type { Machine } from '~/types'
 
-const { t } = useI18n()
+const { t, locale, setLocale } = useI18n()
+
+const { data: databaseVersion } = useLazyFetch('/api/machines/database-version', {
+  default: () => '',
+})
 
 const { data: machineGroups } = useLazyFetch('/api/machines/machine-groups', {
   default: () => [],
@@ -369,6 +373,11 @@ const selected = ref<Machine>({
   machineId: -1,
 })
 
+const showMachineParameters = ref(false)
+const showMimic = ref(false)
+const showGetDyeHouseDefinitions = ref(false)
+const showSetDyeHouseDefinitions = ref(false)
+
 function handleSelection(formData) {
   if (formData.length)
     selected.value = formData[0]
@@ -383,6 +392,20 @@ async function handleFilterSlotsUpdate(updatedValue) {
     method: 'POST',
     body: {
       filters: updatedValue,
+    },
+  })
+}
+
+async function updateVersions() {
+  await $fetch('/api/sync/machine-versions')
+  await refresh()
+}
+
+async function loadProject() {
+  await $fetch('/api/sync/update-machine', {
+    method: 'GET',
+    query: {
+      machineId: selected.value.machineId,
     },
   })
 }
@@ -423,48 +446,186 @@ whenever(keys.shift_alt_t, () => {
 
 const copy = ref()
 
-function handleCopy() {
-  copy.value = selected.value.machineId
-}
-
-async function handlePaste() {
-  await $fetch('/api/io/copy', {
-    method: 'POST',
-    body: {
-      sourceMachineId: copy.value,
-      targetMachineId: selected.value.machineId,
+const contextMenuOptions = computed(() => [
+  {
+    label: t('copy'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: selected.value.machineId === -1,
+    onClick: (data) => {
+      copy.value = selected.value.machineId
     },
-  })
+  },
+  {
+    label: t('paste'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_paste',
+    disabled: selected.value.machineId === -1,
+    onClick: async () => {
+      await $fetch('/api/io/copy', {
+        method: 'POST',
+        body: {
+          sourceMachineId: copy.value,
+          targetMachineId: selected.value.machineId,
+        },
+      })
+    },
+  },
+  {
+    label: 'Mimic',
+    category: 'edit',
+    disabled: selected.value.machineId === -1,
+    onClick: () => showMimic.value = true,
+  },
+  {
+    label: t('machineConstants'),
+    category: 'edit',
+    disabled: selected.value.machineId === -1,
+    onClick: () => showMachineParameters.value = true,
+  },
+  {
+    label: t('formulas'),
+    category: 'edit',
+    disabled: selected.value.machineId === -1,
+    onClick: async () => {
+      await navigateTo({
+        path: `/formulas/${selected.value.machineId}`,
+      })
+    },
+  },
+  {
+    label: t('setDyeHouseDefinitions'),
+    category: 'edit',
+    disabled: selected.value.machineId === -1,
+    onClick: () => showSetDyeHouseDefinitions.value = true,
+  },
+  {
+    label: t('getDyeHouseDefinitions'),
+    category: 'edit',
+    disabled: selected.value.machineId === -1,
+    onClick: () => showGetDyeHouseDefinitions.value = true,
+  },
+])
+
+let lastcategory = contextMenuOptions.value[0].category
+function addSeparator(key) {
+  if (key !== lastcategory) {
+    lastcategory = key
+    return true
+  } else return false
+}
+function handleClick(event, option) {
+  if (option.disabled)
+    event.preventDefault()
+  else {
+    option.onClick(selected.value)
+  }
 }
 </script>
 
 <template>
-  <Menubar
-    :machines="machines"
-    :selected="selected"
-    @refresh="refresh"
-  />
-  <div class="flex justify-end w-full mt-4">
-    <q-btn-group push class="mr-4">
-      <q-btn
-        :label="t('copy')"
-        no-caps
-        @click="handleCopy"
-      />
-      <q-btn
-        :label="t('paste')"
-        no-caps
-        @click="handlePaste"
-      />
-    </q-btn-group>
+  <q-menu
+    touch-position
+    context-menu
+  >
+    <q-list>
+      <template
+        v-for="option in contextMenuOptions"
+        :key="option.category"
+      >
+        <q-separator v-if="addSeparator(option.category)" />
+        <q-item
+          v-close-popup="!option.disabled"
+          clickable
+          dense
+          :class="option.disabled ? 'text-gray cursor-not-allowed' : ''"
+          @click="event => handleClick(event, option)"
+        >
+          <q-item-section class="flex w-8 justify-center items-center">
+            <q-icon :name="option.icon" />
+          </q-item-section>
+          <q-item-section>
+            {{ option.label }}
+          </q-item-section>
+          <q-space />
+          <q-item-section class="mr-5">
+            {{ option.keybind }}
+          </q-item-section>
+        </q-item>
+      </template>
+    </q-list>
+  </q-menu>
+  <div class="absolute left-63 top-13.2">
+    <q-btn
+      :label="t('loadProject')"
+      no-caps
+      push
+      color="primary"
+      class="mr-4"
+      @click="loadProject"
+    />
+    <q-btn
+      :label="t('receiveVersionInfo')"
+      no-caps
+      push
+      color="primary"
+      class="mr-4"
+      @click="updateVersions"
+    />
+  </div>
+  <div class="flex absolute right-10 top-13.2">
+    <q-chip>
+      {{ `DB v${databaseVersion}` }}
+    </q-chip>
+    <q-option-group
+      :model-value="locale"
+      type="radio"
+      :options="[
+        { label: 'Türkçe', value: 'tr' },
+        { label: 'English', value: 'en' },
+      ]"
+      class="flex"
+      @update:model-value="setLocale($event)"
+    />
   </div>
   <FormTableKit
     :rows="machines" :columns="columns"
-    form-class="grid grid-cols-2 gap-4 items-center"
+    form-class="grid grid-cols-4 gap-4 items-center"
     @add="handleAdd"
     @edit="handleEdit"
     @select="handleSelection"
     @delete="handleDelete"
   />
+
   <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
+  <GetDyeHouseDefinitionsDialog
+    v-if="showGetDyeHouseDefinitions && selected"
+    :show="showGetDyeHouseDefinitions"
+    :selected="selected"
+    @close="showGetDyeHouseDefinitions = false"
+  />
+  <SetDyeHouseDefinitionsDialog
+    v-if="showSetDyeHouseDefinitions && selected"
+    :show="showSetDyeHouseDefinitions"
+    :selected="selected"
+    @close="showSetDyeHouseDefinitions = false"
+  />
+  <MachineParametersDialog
+    v-if="showMachineParameters"
+    :show="showMachineParameters"
+    :selected="selected"
+    @close="showMachineParameters = false"
+  />
+  <MimicDialog
+    v-if="showMimic"
+    :show="showMimic"
+    :selected="selected"
+    @close="showMimic = false"
+  />
 </template>
+
+<!--
+    form-class="grid grid-cols-4 gap-4 items-center"
+-->
