@@ -1,7 +1,10 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async () => {
-  const versions = await knex.raw('SELECT @@VERSION AS version')
-  const version = versions[0].version.split('\n')[0].split(' - ')[1].split(' ')[0]
+  const version = await knex('TFDBVERSION')
+    .select('DBVERSION')
+    .first()
+    .then(row => row?.DBVERSION.toString().trim())
+
   return version
 })
