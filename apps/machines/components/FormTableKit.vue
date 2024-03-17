@@ -151,7 +151,9 @@ watch(showModal, async (newValue, _oldValue) => {
         >
           <FormKitSchema :schema="schema" />
           <slot name="form-content" />
-          <FormKit type="submit" :label="t('submit')" />
+          <q-card-actions align="right" class="col-span-full	">
+            <FormKit type="submit" :label="t('submit')" />
+          </q-card-actions>
         </FormKit>
       </q-card-section>
     </q-card>

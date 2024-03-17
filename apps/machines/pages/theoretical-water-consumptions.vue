@@ -114,88 +114,88 @@ async function handlePaste() {
       />
     </q-btn-group>
   </div>
-  <q-card class="flex flex-row justify-around">
-    <q-card-section class="w-sm">
-      <h3>{{ t('machines') }}</h3>
-      <q-list
-        bordered
-        separator
-        class="overflow-y-auto h-160"
-      >
-        <q-item
-          v-for="machine in machines"
-          :key="machine.machineId"
-          v-ripple
-          clickable
-          :active="selectedMachineId === machine.machineId"
-          :focused="selectedMachineId === machine.machineId"
-          @click="selectedMachineId = machine.machineId"
+  <q-card>
+    <q-card-section class="flex flex-row justify-around">
+      <div class="w-sm">
+        <h3>{{ t('machines') }}</h3>
+        <q-list
+          bordered
+          separator
+          class="overflow-y-auto h-160"
         >
-          <q-item-section>
-            {{ machine.machineCode }}
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-card-section>
-
-    <q-card-section class="w-sm">
-      <h3>{{ t('commands') }}</h3>
-      <q-list
-        bordered
-        separator
-        class="overflow-y-auto h-160"
-      >
-        <q-item
-          v-for="command in machineCommands"
-          :key="command.commandNo"
-          v-ripple
-          clickable
-          :active="selectedCommandNo === command.commandNo"
-          :focused="selectedCommandNo === command.commandNo"
-          @click="handleCommandClick(command.commandNo)"
-        >
-          <q-item-section>
-            {{ command.commandName }}
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-card-section>
-
-    <q-card-section class="w-xs flex flex-col">
-      <div class="flex flex-col">
-        <h3>{{ t('waterSourceIO') }}</h3>
-        <q-select
-          v-model="water.waterIO1"
-          :options="filteredWaterIO1Options"
-          option-label="name"
-          option-value="ioIndex"
-          class="mb-2"
-        />
-        <q-select
-          v-model="water.waterIO2"
-          :options="filteredWaterIO2Options"
-          option-label="name"
-          option-value="ioIndex"
-          class="mb-2"
-        />
+          <q-item
+            v-for="machine in machines"
+            :key="machine.machineId"
+            v-ripple
+            clickable
+            :active="selectedMachineId === machine.machineId"
+            :focused="selectedMachineId === machine.machineId"
+            @click="selectedMachineId = machine.machineId"
+          >
+            <q-item-section>
+              {{ machine.machineCode }}
+            </q-item-section>
+          </q-item>
+        </q-list>
       </div>
+
+      <div class="w-sm">
+        <h3>{{ t('commands') }}</h3>
+        <q-list
+          bordered
+          separator
+          class="overflow-y-auto h-160"
+        >
+          <q-item
+            v-for="command in machineCommands"
+            :key="command.commandNo"
+            v-ripple
+            clickable
+            :active="selectedCommandNo === command.commandNo"
+            :focused="selectedCommandNo === command.commandNo"
+            @click="handleCommandClick(command.commandNo)"
+          >
+            <q-item-section>
+              {{ command.commandName }}
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
+
       <div class="w-xs flex flex-col">
-        <h3>{{ t('waterAmountParameter') }}</h3>
-        <q-select
-          v-model="water.waterParam"
-          :options="waterParams"
-          option-label="paramString"
-          option-value="parameterIndex"
-        />
+        <div class="flex flex-col">
+          <h3>{{ t('waterSourceIO') }}</h3>
+          <q-select
+            v-model="water.waterIO1"
+            :options="filteredWaterIO1Options"
+            option-label="name"
+            option-value="ioIndex"
+            class="mb-2"
+          />
+          <q-select
+            v-model="water.waterIO2"
+            :options="filteredWaterIO2Options"
+            option-label="name"
+            option-value="ioIndex"
+            class="mb-2"
+          />
+        </div>
+        <div class="w-xs flex flex-col">
+          <h3>{{ t('waterAmountParameter') }}</h3>
+          <q-select
+            v-model="water.waterParam"
+            :options="waterParams"
+            option-label="paramString"
+            option-value="parameterIndex"
+          />
+        </div>
       </div>
     </q-card-section>
-  </q-card>
-  <div class="flex w-full justify-end">
-    <q-btn-group class="mt-4 mr-4">
-      <q-btn no-caps :label="t('submit')" @click="handleSubmit" />
+    <q-card-actions align="right" class="m-4">
       <q-btn no-caps :label="t('cancel')" />
-    </q-btn-group>
-  </div>
+      <q-btn color="primary" no-caps :label="t('submit')" @click="handleSubmit" />
+    </q-card-actions>
+  </q-card>
 </template>
 
 <style scoped>

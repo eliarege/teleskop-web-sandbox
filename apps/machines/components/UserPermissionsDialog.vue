@@ -102,31 +102,42 @@ async function savePermissions() {
       :model-value="show"
       @hide="$emit('close')"
     >
-      <q-card>
-        <q-card-section class="flex flex-row">
-          <div class="flex flex-col">
-            <!-- Group 1 -->
-            <div v-for="(permission, key) in permissionsGroup1" :key="key">
-              <q-checkbox
-                v-model="permission.value"
-                :label="permission.label"
-                :disable="permission.disabled"
-              />
-            </div>
-          </div>
-          <div class="flex flex-col">
-            <!-- Group 2 -->
-            <div v-for="(permission, key) in permissionsGroup2" :key="key">
-              <q-checkbox v-model="permission.value" :label="permission.label" />
-            </div>
+      <q-card class="min-w-[1000px]">
+        <q-card-section>
+          <q-icon
+            name="close"
+            class="flex justify-end w-full mb-4 cursor-pointer"
+            size="1.5em"
+            @click="$emit('close')"
+          />
+        </q-card-section>
+        <q-card-section class="grid grid-cols-3">
+          <!-- Group 1 -->
+          <div v-for="(permission, key) in permissionsGroup1" :key="key">
+            <q-checkbox
+              v-model="permission.value"
+              :label="permission.label"
+              :disable="permission.disabled"
+            />
           </div>
         </q-card-section>
-        <q-btn
-          :label="t('save')"
-          no-caps
-          filled
-          @click="savePermissions"
-        />
+        <q-separator />
+        <q-card-section class="grid grid-cols-3">
+          <!-- Group 2 -->
+          <div v-for="(permission, key) in permissionsGroup2" :key="key">
+            <q-checkbox v-model="permission.value" :label="permission.label" />
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn
+            :label="t('save')"
+            no-caps
+            color="primary"
+            filled
+            class="m-4"
+            @click="savePermissions"
+          />
+        </q-card-actions>
       </q-card>
     </q-dialog>
   </div>

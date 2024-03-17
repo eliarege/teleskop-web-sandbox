@@ -89,12 +89,17 @@ async function handleFilterSlotsUpdateOutputs(updatedValue) {
 <template>
   <q-dialog
     :model-value="show"
-    full-width
     @hide="$emit('close')"
   >
-    <q-card>
+    <q-card class="min-w-[1000px]">
       <q-card-section>
-        <q-card>
+        <q-icon
+          name="close"
+          class="flex justify-end w-full mb-4 cursor-pointer"
+          size="1.5em"
+          @click="$emit('close')"
+        />
+        <q-card-section>
           <q-tabs
             v-model="tab"
             dense
@@ -136,7 +141,7 @@ async function handleFilterSlotsUpdateOutputs(updatedValue) {
               </div>
             </q-tab-panel>
           </q-tab-panels>
-        </q-card>
+        </q-card-section>
       </q-card-section>
     </q-card>
   </q-dialog>
