@@ -15,9 +15,8 @@ const dataStore = useDataStore()
 const colorStore = useColorStore()
 const table = ref<QTable>()
 const searchFilter = ref('')
-const jobOrders = ref()
+const jobOrders = ref<JobOrder[]>([])
 const selectedRow = ref<JobOrder | null>(null)
-getJobOrders()
 const dispensers = await dataStore.getDispensers()
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
@@ -26,7 +25,7 @@ async function getJobOrders() {
   else
     jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`)
 }
-
+getJobOrders()
 const columns: (QTableColumn<JobOrder>)[] = [
   {
     name: 'job_order',
@@ -151,6 +150,7 @@ watch(searchFilter, () => {
 watch(() => route.query.dispenserId, (val) => {
   const dispenser = dataStore.getDispenser(Number(val))
   updateDispenser(dispenser)
+  getJobOrders()
 })
 function updateDispenser(val: Dispenser | undefined) {
   selectedRow.value = null
@@ -167,7 +167,6 @@ function updateDispenser(val: Dispenser | undefined) {
       path: `/jobOrders`,
     })
   }
-  getJobOrders()
 }
 </script>
 
