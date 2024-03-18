@@ -421,7 +421,10 @@ async function handleAdd(formData) {
 async function handleEdit(formData) {
   await $fetch('/api/machines/machine', {
     method: 'PUT',
-    body: formData,
+    body: {
+      machine: formData,
+      machineId: selected.value.machineId,
+    },
   })
   await refresh()
 }
@@ -562,6 +565,7 @@ function handleClick(event, option) {
       :label="t('loadProject')"
       no-caps
       push
+      :disable="selected.machineId === -1"
       color="primary"
       class="mr-4"
       @click="loadProject"

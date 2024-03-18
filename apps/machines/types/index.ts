@@ -23,6 +23,7 @@ export interface Machine {
   version?: string
   productModel?: string
   hardwareModel?: string
+  steamValveDo?: number
 }
 
 export interface User {
