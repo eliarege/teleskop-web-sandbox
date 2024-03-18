@@ -338,5 +338,7 @@
   "pleaseSelectaRowToEdit": "Düzenlemek için bir satır seçiniz",
   "pleaseSelectaRowToDelete": "Silmek için bir satır seçiniz",
   "dismiss": "Kapat",
-  "reverseSelected": "Seçilenleri Ters Çevir"
+  "reverseSelected": "Seçilenleri Ters Çevir",
+  "noConnectionToTeleskop": "Teleskop ile bağlantı yok",
+  "pleaseSelectaRow": "Lütfen bir satır seçiniz"
 }

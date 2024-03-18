@@ -401,13 +401,38 @@ async function updateVersions() {
   await refresh()
 }
 
+const q = useQuasar()
+
 async function loadProject() {
-  await $fetch('/api/sync/update-machine', {
+  if (selected.value.machineId === -1) {
+    q.notify({
+      message: t('pleaseSelectaRow'),
+      position: 'top',
+      timeout: 2000,
+      actions: [
+        { label: t('dismiss'), color: 'blue', handler: () => { } },
+      ],
+    })
+    return
+  }
+  const res = await $fetch('/api/sync/update-machine', {
     method: 'GET',
     query: {
       machineId: selected.value.machineId,
     },
   })
+  if (res.success)
+    await refresh()
+  else {
+    q.notify({
+      message: t('noConnectionToTeleskop'),
+      position: 'top',
+      timeout: 2000,
+      actions: [
+        { label: t('dismiss'), color: 'blue', handler: () => { } },
+      ],
+    })
+  }
 }
 
 async function handleAdd(formData) {
@@ -565,7 +590,6 @@ function handleClick(event, option) {
       :label="t('loadProject')"
       no-caps
       push
-      :disable="selected.machineId === -1"
       color="primary"
       class="mr-4"
       @click="loadProject"

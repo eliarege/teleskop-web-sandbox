@@ -339,5 +339,7 @@
   "incompleteExpression": "Incomplete Expression",
   "invalidSymbol": "Invalid Symbol",
   "dismiss": "Dismiss",
-  "reverseSelected": "Reverse Selected"
+  "reverseSelected": "Reverse Selected",
+  "noConnectionToTeleskop": "No Connection To Teleskop",
+  "pleaseSelectaRow": "Please select a row"
 }

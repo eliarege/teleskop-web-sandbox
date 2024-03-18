@@ -104,7 +104,7 @@ function handleDelete() {
       ],
     })
 }
-
+// TODO: fix locale change error
 watch(showModal, async (newValue, _oldValue) => {
   await nextTick()
   if (newValue)
