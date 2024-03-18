@@ -74,6 +74,8 @@ prepare-apps:
 merge-request-summarize:
   image: node:20
   stage: prepare
+  variables:
+    GIT_DEPTH: 0
   extends:
     - .merge-request-rules
   before_script:
