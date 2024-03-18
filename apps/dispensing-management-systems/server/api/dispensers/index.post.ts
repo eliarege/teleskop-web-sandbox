@@ -15,6 +15,8 @@ export default defineEventHandler(async (event) => {
       protocol: dispenser.protocol,
       protocol_fields: dispenser.protocolFields,
       last_consumption_control: dispenser.lastConsumptionControl,
+      is_jdm: dispenser.isJDM,
+      jdm_connections: dispenser.JDMConnections,
     })
     return res
   } catch (e) {

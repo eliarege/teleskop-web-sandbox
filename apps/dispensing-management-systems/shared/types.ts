@@ -52,6 +52,8 @@ export interface Dispenser {
   lastConsumptionControl: Date
   protocol: string
   protocolFields: object | null
+  isJDM: boolean
+  JDMConnections: number[]
 }
 export interface DispenserBrand {
   dispenserBrandId: number

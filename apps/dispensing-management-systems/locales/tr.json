@@ -97,7 +97,9 @@
     "Brand": "Dağıtıcı Markası",
     "VncUser": "Vnc Kullanıcısı",
     "VncPort": "Vnc Portu",
-    "VncPassword": "Vnc Şifresi"
+    "VncPassword": "Vnc Şifresi",
+    "IsJDM": "JDM mi?",
+    "JDMConnections": "JDM Bağlantıları"
   },
   "recipeFields": {
     "Info": "Reçete Bilgisi",

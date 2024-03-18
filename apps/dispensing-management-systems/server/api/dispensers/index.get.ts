@@ -16,6 +16,8 @@ export default defineEventHandler(async () => {
       protocol: 'd.protocol',
       protocolFields: 'd.protocol_fields',
       lastConsumptionControl: 'd.last_consumption_control',
+      isJDM: 'd.is_jdm',
+      JDMConnections: 'd.jdm_connections',
     })
       .join('DISPENSER_TYPE as t', 't.dispenser_type_id', 'd.dispenser_type')
       .join('DISPENSER_BRAND as b', 't.dispenser_brand_id', 'b.brand_id')

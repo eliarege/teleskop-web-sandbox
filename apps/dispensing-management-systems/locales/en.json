@@ -97,7 +97,9 @@
     "Brand": "Dispenser Brand",
     "VncUser": "Vnc User",
     "VncPort": "Vnc Port",
-    "VncPassword": "Vnc Password"
+    "VncPassword": "Vnc Password",
+    "IsJDM": "Is JDM?",
+    "JDMConnections": "JDM Connections"
   },
   "recipeFields": {
     "Info": "Recipe Info",

@@ -1,20 +1,37 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
+import { useDataStore } from '~/store/DataStore'
 import type { Dispenser, DispenserBrand, DispenserType, Protocol } from '~/shared/types'
 import ipformat from '~/shared/utils'
 
 const props = defineProps({
   dispenser: {
     type: Object as PropType<Dispenser>,
-    required: true,
   },
 })
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const dataStore = useDataStore()
 const dispenser = toRef(props, 'dispenser')
-const editedDispenser = ref({ ...dispenser.value })
+const defaultDispenser: Dispenser = {
+  dispenserId: 0,
+  dispenserName: '',
+  dispenserIP: '',
+  dispenserType: null,
+  dispenserBrandId: 1,
+  dispenserBrandName: 'Eliar',
+  vncUser: '',
+  vncPassword: '',
+  vncPort: 5900,
+  lastConsumptionControl: new Date(),
+  protocol: '',
+  protocolFields: null,
+  isJDM: false,
+  JDMConnections: [],
+}
+const editedDispenser = ref(dispenser.value ? { ...dispenser.value } : { ...defaultDispenser })
 const dispenserBrands = ref<DispenserBrand[]>([])
 const dispenserTypes = ref<DispenserType[]>([])
 const brandDispenserTypes = ref<DispenserType[]>([])
@@ -93,7 +110,7 @@ function onReset() {
     brandProtocols.value = []
     editedDispenser.value.protocolFields = null
   }
-  editedDispenser.value = { ...dispenser.value }
+  editedDispenser.value = dispenser.value ? { ...dispenser.value } : { ...defaultDispenser }
 }
 
 async function onDelete() {
@@ -270,6 +287,30 @@ async function onDelete() {
                 option-label="protocol"
                 :options="brandProtocols"
                 @update:model-value="onProtocolSelected"
+              />
+            </div>
+            <div class="row-item pt-5">
+              <span class="item-label">
+                {{ t('dispenserFields.IsJDM') }}
+              </span>
+              <QCheckbox v-model="editedDispenser.isJDM" />
+            </div>
+            <div v-if="editedDispenser.isJDM" class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.JDMConnections') }}
+              </span>
+              <QSelect
+                v-model="editedDispenser.JDMConnections"
+                dense
+                filled
+                multiple
+                emit-value
+                use-chips
+                map-options
+                options-dense
+                option-value="dispenserId"
+                option-label="dispenserName"
+                :options="dataStore.dispensers?.filter(dispenser => dispenser.dispenserId !== editedDispenser.dispenserId)"
               />
             </div>
             <div v-if="editedDispenser.protocolFields">
