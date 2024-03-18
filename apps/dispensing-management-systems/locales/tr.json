@@ -39,6 +39,7 @@
   "Edit": "Düzenle",
   "Connections": "Bağlantılar",
   "ExportConnections": "Bağlantıları Aktar",
+  "ExportConnectionsBody": "{dispenser}'dan {type} bağlantılarını şu dağıtıcıya aktar:",
   "Username": "Kullanıcı Adı",
   "Password": "Şifre",
   "Login": "Giriş",

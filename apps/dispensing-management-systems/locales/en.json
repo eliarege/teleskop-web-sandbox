@@ -39,6 +39,7 @@
   "Edit": "Edit",
   "Connections": "Connections",
   "ExportConnections": "Export Connections",
+  "ExportConnectionsBody": "Export {dispenser}'s {type} connections to selected dispenser:",
   "Username": "Username",
   "Password": "Password",
   "Login": "Login",

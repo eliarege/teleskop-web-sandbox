@@ -34,7 +34,10 @@ async function onConfirm() {
     @hide="onDialogHide"
   >
     <QCard>
-      <div flex-center>
+      <div flex-center flex-col mt-10 text-lg>
+        <div>
+          {{ t('ExportConnectionsBody', { type: t(`${props.type.charAt(0).toUpperCase() + props.type.slice(1)}`), dispenser: dataStore.selectedDispenser?.dispenserName }) }}
+        </div>
         <QSelect
           v-model="selected"
           dense
@@ -65,6 +68,3 @@ async function onConfirm() {
     </QCard>
   </QDialog>
 </template>
-
-<style scoped lang="postcss">
-</style>
