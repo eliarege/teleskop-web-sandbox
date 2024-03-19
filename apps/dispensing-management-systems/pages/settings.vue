@@ -55,7 +55,7 @@ useResizeObserver(document.body, () => {
           <QTab
             name="s1"
             icon="app_settings_alt"
-            :class="tab === 's1' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
+            :class="tab === 's1' ? 'tabs-active' : 'tabs'"
             :label="innerWidth > minSize ? `${t('settings.App')}` : ''"
           >
             <QTooltip
@@ -71,7 +71,7 @@ useResizeObserver(document.body, () => {
           <QTab
             name="s2"
             icon="science"
-            :class="tab === 's2' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
+            :class="tab === 's2' ? 'tabs-active' : 'tabs'"
             :label="innerWidth > minSize ? `${t('settings.Material')}` : ''"
           >
             <QTooltip
@@ -87,7 +87,7 @@ useResizeObserver(document.body, () => {
           <QTab
             name="s3"
             icon="settings"
-            :class="tab === 's3' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
+            :class="tab === 's3' ? 'tabs-active' : 'tabs'"
             :label="innerWidth > minSize ? `${t('settings.Machine')}` : ''"
           />
           <QTooltip
@@ -102,14 +102,14 @@ useResizeObserver(document.body, () => {
           <QTab
             name="s4"
             icon="settings"
-            :class="tab === 's4' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
+            :class="tab === 's4' ? 'tabs-active' : 'tabs'"
             :label="innerWidth > minSize ? `${t('settings.4')}` : ''"
           />
           <QSeparator />
           <QTab
             name="s5"
             icon="backup"
-            :class="tab === 's5' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
+            :class="tab === 's5' ? 'tabs-active' : 'tabs'"
             :label="innerWidth > minSize ? `${t('settings.Teleskop')}` : ''"
           />
           <QSeparator />

@@ -234,12 +234,12 @@ const pagination = ref({ rowsPerPage: 100 })
       >
         <QTab
           name="machines" icon="video_label" :label="t('Machines')" no-caps
-          :class="tab === 'machines' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
+          :class="tab === 'machines' ? 'tabs-active' : 'tabs'"
         />
         <QSeparator vertical />
         <QTab
           name="materials" icon="science" :label="t('Materials')" no-caps
-          :class="tab === 'materials' ? (q.dark.isActive ? 'tabs-dark-active' : 'tabs-light-active') : (q.dark.isActive ? 'tabs-dark' : 'tabs-light')"
+          :class="tab === 'materials' ? 'tabs-active' : 'tabs'"
         />
       </QTabs>
     </div>
