@@ -41,7 +41,7 @@ async function generateTreeNodes() {
     if (!typeMap.has(type.dispenserBrandId)) {
       typeMap.set(type.dispenserBrandId, [])
     }
-    typeMap.get(type.dispenserBrandId)?.push(type)
+    typeMap.get(type.dispenserBrandId)!.push(type)
   })
 
   treeNodes.value = Array.from(brandMap.keys()).map((brandId) => {
