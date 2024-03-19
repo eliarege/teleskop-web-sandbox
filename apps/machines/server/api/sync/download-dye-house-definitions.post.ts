@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
 
   const numMachineId = Number.parseInt(machineId as string)
   if (Number.isNaN(numMachineId)) {
-    console.log('Invalid machineId:', machineId)
+    throw new TypeError('Invalid machineId parameter. Expected number.')
     return
   }
 

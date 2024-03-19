@@ -189,7 +189,6 @@ const selected = ref()
 
 function handleAdd(selectedSetting) {
   showAddMachineSystemSetting.value = false
-  console.log(selectedSetting)
   selectedSettings.value.push(selectedSetting)
 }
 

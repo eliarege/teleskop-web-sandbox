@@ -422,8 +422,16 @@ async function loadProject() {
         machineId: selected.value.machineId,
       },
     })
+
+    q.notify({
+      message: t('connectionSuccessful'),
+      position: 'top',
+      timeout: 2000,
+      actions: [
+        { label: t('dismiss'), color: 'blue', handler: () => { } },
+      ],
+    })
   } catch (error) {
-    console.error(error)
     if (error.statusCode === 504) {
       q.notify({
         message: t('connectionTimeout'),

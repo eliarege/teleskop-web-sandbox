@@ -161,7 +161,6 @@ async function handleDelete(formData) {
 
 async function handleSelect(formData) {
   selected.value = formData[0]
-  console.log('seleced.value = ', selected.value)
 }
 
 async function handleFilterSlotsUpdate(updatedValue) {

@@ -343,5 +343,6 @@
   "noConnectionToTeleskop": "No Connection To Teleskop",
   "pleaseSelectaRow": "Please select a row",
   "connectionTimeout": "Connection Timeout",
-  "checkTeleskopConnection": "Check Teleskop Connection"
+  "checkTeleskopConnection": "Check Teleskop Connection",
+  "connectionSuccessful": "Connection Successful"
 }

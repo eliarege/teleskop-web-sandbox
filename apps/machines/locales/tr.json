@@ -342,5 +342,6 @@
   "noConnectionToTeleskop": "Teleskop ile bağlantı yok",
   "pleaseSelectaRow": "Lütfen bir satır seçiniz",
   "connectionTimeout": "Bağlantı zaman aşımı",
-  "checkTeleskopConnection": "Teleskop Bağlantısını kontrol et"
+  "checkTeleskopConnection": "Teleskop Bağlantısını kontrol et",
+  "connectionSuccessful": "Bağlantı başarılı"
 }
