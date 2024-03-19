@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { LoadingSpinner } from 'ui'
 
+const emit = defineEmits(['updateScheduler'])
 const { t } = useI18n()
 const definitions = ref()
 const plannedDefinitions = ref()
 const unplannedDefinitions = ref()
 const currentMachine = ref()
 const selectedRow = ref()
-
 const { data: machines, pending } = await useFetch('/api/machineList')
 async function getErpParameters(machineId: number) {
   currentMachine.value = machineId
@@ -44,10 +44,29 @@ async function onPlannedCtx() {
   plannedDefinitions.value.push(newParam)
   await addParameter(newParam.paramId, newParam.owner, newParam.machineId)
 }
+const q = useQuasar()
 async function deleteParameter(paramId: number, owner: number, machineId: number) {
-  await $fetch('/api/deleteErpParameters', {
-    method: 'DELETE',
-    query: { paramId, owner, machineId },
+  q.dialog({
+    title: 'Are you sure to delete this parameter?',
+    class: 'e-border',
+    ok: {
+      push: true,
+      label: 'OK',
+      color: 'primary',
+    },
+    cancel: {
+      push: true,
+      label: 'CANCEL',
+      color: 'red',
+    },
+  }).onOk(async () => {
+    await $fetch('/api/deleteErpParameters', {
+      method: 'DELETE',
+      query: { paramId, owner, machineId },
+    }).then(() => {
+      getErpParameters(machineId)
+      emit('updateScheduler')
+    })
   })
 }
 async function onUnplannedCtx() {
@@ -177,7 +196,7 @@ async function onUnplannedCtx() {
             >
               {{ Array.isArray(col.value) ? Object.create(col.value) : col.value }}
             </q-td>
-            <q-td class="flex justify-center items-center">
+            <q-td auto-width>
               <q-icon
                 name="delete"
                 color="red"

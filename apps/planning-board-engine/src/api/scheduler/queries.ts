@@ -289,7 +289,7 @@ export async function getEventTooltipParams(planKey: number, machineId: number) 
     .select('p.PARAMID')
     .leftJoin('BFERPPARAMETERDEFINITIONS as d', 'd.PARAMID', 'p.PARAMID')
     .where('p.MACHINEID', '=', machineId)
-    .andWhere('p.OWNER', '=', 118)
+    .andWhere('p.OWNER', '=', 117)
     .groupBy('p.PARAMID')
   return await knex('DYBFBATCHPLANPARAMETERS as b')
     .select({
