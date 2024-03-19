@@ -12,7 +12,7 @@ const props = defineProps({
 
 const { t } = useI18n()
 const q = useQuasar()
-const tab = ref()
+const tab = ref('machines')
 const buttonDisabled = ref(true)
 
 const machines = ref<Machine[]>([])
@@ -40,8 +40,7 @@ watch((tab), async (tab) => {
     )
   }
   buttonDisabled.value = true
-})
-tab.value = 'machines'
+}, { immediate: true })
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,
   materialGroupName: t('materialTypes.1'),
