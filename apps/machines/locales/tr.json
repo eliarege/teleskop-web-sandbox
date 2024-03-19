@@ -340,5 +340,6 @@
   "dismiss": "Kapat",
   "reverseSelected": "Seçilenleri Ters Çevir",
   "noConnectionToTeleskop": "Teleskop ile bağlantı yok",
-  "pleaseSelectaRow": "Lütfen bir satır seçiniz"
+  "pleaseSelectaRow": "Lütfen bir satır seçiniz",
+  "connectionTimeout": "Bağlantı zaman aşımı"
 }

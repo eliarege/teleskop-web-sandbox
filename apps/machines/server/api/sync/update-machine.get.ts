@@ -6,7 +6,6 @@ import { updateAnalogInputs, updateBatchParameters, updateCommandAlarms, updateC
 export default defineEventHandler(async (event) => {
   const { machineId } = getQuery(event)
   const numMachineId = Number.parseInt(machineId as string)
-  let res
   if (!Number.isNaN(numMachineId)) {
     const ip = await knex('BFMACHINES')
       .where('MACHINEID', numMachineId)
@@ -64,19 +63,13 @@ export default defineEventHandler(async (event) => {
           await updateConsumption(numMachineId, tbb, trx)
         })
       })
-
-      return {
-        success: true,
-        status: 200,
-      }
     } catch (error) {
-      return {
-        success: false,
-        status: 500,
+      console.error(error)
+      if (error.message.includes('Timeout')) {
+        throw createError({ statusMessage: 'MACHINE_CONN_TIMEOUT', statusCode: 504 })
       }
     }
   } else {
-    console.log('typeof machineId = ', typeof machineId)
+    throw new TypeError('Invalid machineId parameter. Expected number.')
   }
-  return res
 })

@@ -415,23 +415,25 @@ async function loadProject() {
     })
     return
   }
-  const res = await $fetch('/api/sync/update-machine', {
-    method: 'GET',
-    query: {
-      machineId: selected.value.machineId,
-    },
-  })
-  if (res.success)
-    await refresh()
-  else {
-    q.notify({
-      message: t('noConnectionToTeleskop'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
+  try {
+    await $fetch('/api/sync/update-machine', {
+      method: 'GET',
+      query: {
+        machineId: selected.value.machineId,
+      },
     })
+  } catch (error) {
+    console.error(error)
+    if (error.statusCode === 504) {
+      q.notify({
+        message: t('connectionTimeout'),
+        position: 'top',
+        timeout: 2000,
+        actions: [
+          { label: t('dismiss'), color: 'blue', handler: () => { } },
+        ],
+      })
+    }
   }
 }
 
