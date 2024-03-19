@@ -1,4 +1,4 @@
-import { dmsDB } from '~/server/connectionPool'
+import type { Knex } from 'knex'
 
 export function cellStyle(col: any, row: any, pageIndex: number, isSelected: boolean, isDarkMode: boolean, colors: any) {
   let style = 'background-color: '
@@ -27,10 +27,10 @@ export function cellStyle(col: any, row: any, pageIndex: number, isSelected: boo
 export function capitalizeFirst(str: string) {
   return `${str.charAt(0).toUpperCase()}${str.slice(1)}`
 }
-export async function batchInsert(data: any[], batchSize: number, tableName: string, colName: string) {
+export async function batchInsert(knex: Knex, data: any[], batchSize: number, tableName: string, colName: string) {
   const totalRows = data.length
   const numBatches = Math.ceil(totalRows / batchSize)
-  await dmsDB.transaction(async (trx) => {
+  await useTransaction(knex, async (trx) => {
     for (let i = 0; i < numBatches; i++) {
       const start = i * batchSize
       const end = Math.min((i + 1) * batchSize, totalRows)
@@ -52,5 +52,13 @@ export async function batchInsert(data: any[], batchSize: number, tableName: str
     }
   })
 }
+function useTransaction(knex: Knex, callback: (...args: any[]) => void) {
+  if (knex.isTransaction) {
+    return callback(knex)
+  } else {
+    return knex.transaction(trx => callback(trx))
+  }
+}
+
 const ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
 export default ipformat

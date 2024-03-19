@@ -1,3 +1,4 @@
+import { dmsDB } from '~/server/connectionPool'
 import { batchInsert } from '~/shared/utils'
 
 export default defineEventHandler(async (event) => {
@@ -23,7 +24,7 @@ export default defineEventHandler(async (event) => {
     })
 
     const batchSize = 3000
-    await batchInsert(materials, batchSize, 'MATERIAL', 'material_code')
+    await batchInsert(dmsDB, materials, batchSize, 'MATERIAL', 'material_code')
   } catch (e) {
     console.error(e)
     return e

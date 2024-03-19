@@ -1,3 +1,4 @@
+import { dmsDB } from '~/server/connectionPool'
 import { batchInsert } from '~/shared/utils'
 
 export default defineEventHandler(async (event) => {
@@ -14,7 +15,7 @@ export default defineEventHandler(async (event) => {
       machines.push(machine)
     })
     const batchSize = 3000
-    await batchInsert(machines, batchSize, 'MACHINE', 'machine_id')
+    await batchInsert(dmsDB, machines, batchSize, 'MACHINE', 'machine_id')
   } catch (e) {
     console.error(e)
     return e
