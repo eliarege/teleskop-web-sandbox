@@ -21,6 +21,7 @@ import {
   removeFromPlan,
   scheduleEvents,
   unpinEvent,
+  updateBatchNote,
 } from './queries'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
@@ -156,6 +157,21 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching theoretical duration: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching theoretical duration: ${err}` })
+      }
+    },
+  )
+  fastify.put<{
+    Body: { noteKey: number, showOnScreen: boolean }
+  }>(
+    '/planning_board/batch_notes/update_note',
+    async (request, reply) => {
+      try {
+        const { noteKey, showOnScreen } = request.body
+        await updateBatchNote(noteKey, showOnScreen)
+        return reply.code(200).send('Succesful!')
+      } catch (err) {
+        fastify.log.error(`An error occured while updating batch note: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating batch note: ${err}` })
       }
     },
   )

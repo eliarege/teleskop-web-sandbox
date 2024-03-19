@@ -374,6 +374,13 @@ export async function deleteErpParameters(paramId: number, owner: number, machin
     .andWhere('OWNER', '=', owner)
     .andWhere('MACHINEID', '=', machineId).del()
 }
+export async function updateBatchNote(noteKey: number, showOnScreen: boolean) {
+  await knex.transaction(async (trx) => {
+    await trx('dbo.PTBATCHNOTES').update({
+      SHOWONSCREEN: showOnScreen,
+    }).where('NOTEKEY', '=', noteKey)
+  })
+}
 export async function updateSchedulerEvents(body: { planKey: number, queueNumber: number, machineId: number }[]) {
   await knex.transaction(async (trx) => {
     const machineIdList = new Set(body.map(a => a.machineId))

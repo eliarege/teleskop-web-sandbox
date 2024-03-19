@@ -147,8 +147,13 @@ async function eventTooltip(eventRecord: any) {
     query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
   })
   const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
+  const notes = await $fetch('/api/note/getNote', {
+    query: { jobOrder: eventRecord.originalData.jobOrder },
+  })
+  const screenNotes = notes.filter(n => n.showOnScreen === true).map(a => a.note)
   return `
         <div>
+          ${screenNotes.length !== 0 ? `<div class="b-sch-event-title">Notes: ${screenNotes}</div>` : ''}
           <div class="b-sch-event-title">${eventRecord.originalData.name}</div>
           <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
             <div class="b-sch-clock">
@@ -567,7 +572,7 @@ onMounted(async () => {
     outerElement: unplannedGrid.element,
   } as Partial<DragHelperConfig>)
 })
-function updateTaskColor() {
+function updateScheduler() {
   scheduler.refreshRows()
 }
 </script>
@@ -599,7 +604,7 @@ function updateTaskColor() {
     </EliarModal>
     <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
       <template #default>
-        <PlanSettings @update-scheduler="updateTaskColor()" />
+        <PlanSettings @update-scheduler="updateScheduler()" />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.planParameters.show" @click.stop="showModal.planParameters.show = false">
@@ -630,7 +635,7 @@ function updateTaskColor() {
     </EliarModal>
     <EliarModal v-if="showModal.notes.show" @click.stop="showModal.notes.show = false">
       <template #default>
-        <BatchNotes :job-order="showModal.notes.unit.name" />
+        <BatchNotes :job-order="showModal.notes.unit.name" @update-scheduler="plannedRefresh()" />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.rule" @click.stop="showModal.rule = false" />

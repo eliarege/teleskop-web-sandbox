@@ -13,6 +13,9 @@ const refactoredBatchNotes = computed(() => batchNotes.value?.map((a) => {
     noteDate: d(a.noteDate, 'datetime'),
   }
 }))
+const search = ref('')
+const searchBatchNotes = ref(refactoredBatchNotes.value?.filter(item => item.jobOrder.includes(search.value)))
+watch(refactoredBatchNotes, newValue => searchBatchNotes.value = newValue?.filter(item => item.jobOrder.includes(search.value)))
 // TODO: format batchNotes date with useI18N.d
 const columns = computed(() => {
   return [
@@ -20,12 +23,13 @@ const columns = computed(() => {
     { name: 'jobOrder', label: t('columns.job-order'), align: 'center', field: 'jobOrder' },
     { name: 'note', label: t('columns.note'), align: 'center', field: 'note' },
     { name: 'noteDate', label: t('columns.date'), align: 'center', field: 'noteDate' },
+    { name: 'showOnScreen', label: t('columns.show-on-screen'), align: 'center', field: 'showOnScreen' },
   ]
 })
 const newNote = reactive({
   jobOrder: props.jobOrder,
   note: '',
-  showOnScreen: false,
+  showOnScreen: true,
   userId: 1, // TODO: ADD USER ID
 })
 function addNote() {
@@ -36,6 +40,17 @@ function addNote() {
     emit('updateScheduler')
     Toast.show(t('toast.succesful'))
     refresh()
+  }).catch((err) => {
+    Toast.show(t('toast.error', err))
+  })
+}
+function updateNote(id: number, showOnScreen: boolean) {
+  $fetch('/api/note/updateNote', {
+    method: 'PUT',
+    body: { noteKey: id, showOnScreen },
+  }).then(() => {
+    Toast.show(t('toast.succesful'))
+    emit('updateScheduler')
   }).catch((err) => {
     Toast.show(t('toast.error', err))
   })
@@ -73,11 +88,19 @@ function deleteNote(id: number) {
 <template>
   <div class="note-wrapper">
     <QTable
-      :rows="refactoredBatchNotes"
+      :rows="searchBatchNotes"
       :columns="columns"
       :rows-per-page-options="[]"
       no-data-label="No Note"
     >
+      <template #top>
+        <q-space />
+        <q-input v-model="search" dense>
+          <template #append>
+            <Icon name="material-symbols:search" />
+          </template>
+        </q-input>
+      </template>
       <template #header="prop">
         <q-tr :props="prop">
           <q-th
@@ -99,9 +122,14 @@ function deleteNote(id: number) {
             :key="col.name"
             :props="prop"
           >
-            {{ Array.isArray(col.value) ? Object.create(col.value) : col.value }}
+            <span v-if="col.name !== 'showOnScreen'">
+              {{ Array.isArray(col.value) ? Object.create(col.value) : col.value }}
+            </span>
+            <span v-else>
+              <q-checkbox v-model="prop.row.showOnScreen" @update:model-value="updateNote(prop.row.id, prop.row.showOnScreen)" />
+            </span>
           </q-td>
-          <q-td class="flex justify-center items-center">
+          <q-td auto-width>
             <q-icon
               name="delete"
               size="30px"
@@ -122,13 +150,6 @@ function deleteNote(id: number) {
     >
       <template #after>
         <div class="flex-center flex-col px-2">
-          <QCheckbox
-            v-model="newNote.showOnScreen"
-            class="text-sm"
-            label="Show on Screen"
-            checked-icon="task_alt"
-            unchecked-icon="highlight_off"
-          />
           <QBtn
             color="primary"
             label="Add Note"
@@ -147,14 +168,15 @@ function deleteNote(id: number) {
 }
 </style>
 
-<i18n>
+<i18n lang="json">
  {
   "en": {
     "columns": {
       "user-name": "User Name",
       "job-order": "Job Order",
       "note": "Note",
-      "date": "Date"
+      "date": "Date",
+      "show-on-screen": "Show On Screen"
     },
     "toast": {
       "succesful": "Note Added succesfuly!",
@@ -178,7 +200,8 @@ function deleteNote(id: number) {
       "user-name": "Kullanıcı Adı",
       "job-order": "İş Emri",
       "note": "Not",
-      "date": "Tarih"
+      "date": "Tarih",
+      "show-on-screen": "Ekranda Göster"
     },
     "toast": {
       "succesful": "Not başarıyla eklendi!",
