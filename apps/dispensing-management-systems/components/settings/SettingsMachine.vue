@@ -6,6 +6,7 @@ import { useDataStore } from '~/store/DataStore'
 
 const q = useQuasar()
 const { t } = useI18n()
+const { notifySuccess, notifyFail } = useNotify()
 const dataStore = useDataStore()
 const { data: machines, refresh: refreshMachines } = await useFetch<Machine[]>('/api/machines')
 const { data: controllerTypes } = await useFetch<MachineControllerType[]>('/api/machines/types')
@@ -51,22 +52,10 @@ async function onRowClick(_event: Event, row: any) {
     },
   }).onOk((payload) => {
     if (payload) {
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
+      notifySuccess(t('Success'))
       refreshMachines()
     } else
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+      notifyFail(t('Failed'))
   })
 }
 async function addNewMachine() {
@@ -79,22 +68,10 @@ async function addNewMachine() {
     },
   }).onOk((payload) => {
     if (payload) {
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
+      notifySuccess(t('Success'))
       refreshMachines()
     } else
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+      notifyFail(t('Failed'))
   },
   )
 }

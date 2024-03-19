@@ -12,6 +12,7 @@ const props = defineProps({
 
 const { t } = useI18n()
 const q = useQuasar()
+const { notifySuccess, notifyFail } = useNotify()
 const tab = ref('machines')
 const buttonDisabled = ref(true)
 
@@ -111,25 +112,13 @@ async function handleSubmit() {
         added,
         deleted,
       } })
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
+      notifySuccess(t('Success'))
       selectedMachinesInitial.value = selectedMachines.value.map((machineId) => {
         const machine = machines.value.find(machine => machine.machineId === machineId)
         return machine ? { ...machine } : []
       }).filter(Boolean)
     } catch (e) {
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+      notifyFail(t('Failed'))
       buttonDisabled.value = false
     }
   } else if (tab.value === 'materials') {
@@ -148,22 +137,10 @@ async function handleSubmit() {
         added,
         deleted,
       } })
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
+      notifySuccess(t('Success'))
       selectedMaterialsInitial.value = selectedMaterials.value
     } catch (e) {
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+      notifyFail(t('Failed'))
       buttonDisabled.value = false
     }
   }
@@ -191,21 +168,9 @@ function handleExport() {
     },
   }).onOk((payload) => {
     if (payload) {
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
+      notifySuccess(t('Success'))
     } else
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+      notifyFail(t('Failed'))
   })
 }
 function materialFilter(rows: Material[], terms: string) {

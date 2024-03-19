@@ -11,7 +11,9 @@ const props = defineProps({
     type: Number,
   },
 })
+
 const emit = defineEmits(['click'])
+const { notifySuccess, notifyFail } = useNotify()
 const innerWidth = ref(window.innerWidth)
 function handleResize() {
   innerWidth.value = window.innerWidth
@@ -42,21 +44,9 @@ async function clickBtn() {
     try {
       stateStore.isLoading = true
       await $fetch(`/api/teleskop/sync/${props.type.toLowerCase()}`)
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
+      notifySuccess(t('Success'))
     } catch (e) {
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+      notifyFail(t('Failed'))
     } finally {
       stateStore.isLoading = false
       emit('click')

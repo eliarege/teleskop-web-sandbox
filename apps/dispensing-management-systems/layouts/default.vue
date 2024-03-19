@@ -4,8 +4,8 @@ import { useStateStore } from '~/store/State'
 import { useDataStore } from '~/store/DataStore'
 
 const { didInitialise } = useKeycloak()
-const q = useQuasar()
 const { t } = useI18n()
+const { notifySuccess } = useNotify()
 const stateStore = useStateStore()
 const dataStore = useDataStore()
 const route = useRoute()
@@ -23,14 +23,7 @@ function goToHomepage() {
 }
 function onLogout() {
   onReset()
-  q.notify({
-    position: 'top',
-    color: 'red-4',
-    textColor: 'white',
-    icon: 'cloud_done',
-    message: t('LoggedOut'),
-    timeout: 3000,
-  })
+  notifySuccess(t('Success'))
   goToHomepage()
 }
 function onReset() {

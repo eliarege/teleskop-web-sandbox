@@ -4,6 +4,7 @@ import { connectTeleskopDB } from '~/server/connectionPool'
 
 const { t } = useI18n()
 const q = useQuasar()
+const { notifySuccess, notifyFail } = useNotify()
 const { data: defaultSettings } = await useFetch<DatabaseConnection>('/api/teleskop/parameters')
 const teleskopSettings = ref<DatabaseConnection>()
 teleskopSettings.value = { ...defaultSettings.value }
@@ -15,21 +16,9 @@ async function onSave() {
     const connection = teleskopSettings.value
     await $fetch(`/api/teleskop/parameters`, { method: 'PUT', body: connection })
     connectTeleskopDB(connection)
-    q.notify({
-      color: 'green-4',
-      textColor: 'white',
-      icon: 'done',
-      message: t('Success'),
-      timeout: 3000,
-    })
+    notifySuccess(t('Success'))
   } catch (e) {
-    q.notify({
-      color: 'red-4',
-      textColor: 'white',
-      icon: 'cancel',
-      message: t('Failed'),
-      timeout: 3000,
-    })
+    notifyFail(t('Failed'))
   }
 }
 

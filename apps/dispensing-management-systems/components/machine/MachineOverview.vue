@@ -8,6 +8,7 @@ import type { Dispenser, DispenserType, Machine, MachineControllerType } from '~
 
 const { t } = useI18n()
 const q = useQuasar()
+const { notifySuccess, notifyFail } = useNotify()
 
 const dataStore = useDataStore()
 
@@ -54,13 +55,7 @@ async function handleNewDispenser() {
     component: DispenserEdit,
   }).onOk(() => {
     refreshDispensers()
-    q.notify({
-      color: 'green-4',
-      textColor: 'white',
-      icon: 'done',
-      message: t('Success'),
-      timeout: 3000,
-    })
+    notifySuccess(t('Success'))
   })
 }
 
@@ -73,23 +68,10 @@ async function handleNewMachine() {
     },
   }).onOk((payload) => {
     if (payload) {
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-
-      })
+      notifySuccess(t('Success'))
       refreshMachines()
     } else {
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+      notifyFail(t('Failed'))
     }
   })
 }
@@ -124,13 +106,7 @@ function onDispenserClick(row: any) {
     componentProps: { dispenser: row },
   }).onOk(() => {
     refreshDispensers()
-    q.notify({
-      color: 'green-4',
-      textColor: 'white',
-      icon: 'done',
-      message: t('Success'),
-      timeout: 3000,
-    })
+    notifySuccess(t('Success'))
   })
 }
 async function onMachineClick(row: any) {
@@ -144,22 +120,10 @@ async function onMachineClick(row: any) {
     },
   }).onOk((payload) => {
     if (payload) {
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
+      notifySuccess(t('Success'))
       refreshMachines()
     } else
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+      notifyFail(t('Failed'))
   })
 }
 

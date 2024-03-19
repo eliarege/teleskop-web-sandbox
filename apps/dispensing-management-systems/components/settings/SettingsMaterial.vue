@@ -6,6 +6,7 @@ import { useDataStore } from '~/store/DataStore'
 
 const q = useQuasar()
 const { t } = useI18n()
+const { notifySuccess, notifyFail } = useNotify()
 const dataStore = useDataStore()
 
 const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials')
@@ -61,22 +62,10 @@ async function onRowClick(_event: Event, row: any) {
     },
   }).onOk((payload) => {
     if (payload) {
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
+      notifySuccess(t('Success'))
       refreshMaterials()
     } else
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+      notifyFail(t('Failed'))
   },
   )
 }
@@ -89,22 +78,10 @@ function addNewMaterial() {
     },
   }).onOk((payload) => {
     if (payload) {
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
+      notifySuccess(t('Success'))
       refreshMaterials()
     } else
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+      notifyFail(t('Failed'))
   },
   )
 }

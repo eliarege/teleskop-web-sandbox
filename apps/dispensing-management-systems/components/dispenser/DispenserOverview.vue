@@ -12,6 +12,7 @@ const props = defineProps({
 })
 const { t } = useI18n()
 const q = useQuasar()
+const { notifySuccess, notifyFail } = useNotify()
 const dataStore = useDataStore()
 const stateStore = useStateStore()
 
@@ -24,22 +25,10 @@ async function onPing() {
       mode: 'no-cors',
       timeout: 3000,
     })
-    q.notify({
-      color: 'green-4',
-      textColor: 'white',
-      icon: 'done',
-      message: t('Success'),
-      timeout: 3000,
-    })
+    notifySuccess(t('Success'))
   } catch (e) {
     console.error(e)
-    q.notify({
-      color: 'red-4',
-      textColor: 'white',
-      icon: 'cancel',
-      message: t('Failed'),
-      timeout: 3000,
-    })
+    notifyFail(t('Failed'))
   } finally {
     stateStore.isLoading = false
   }
@@ -69,13 +58,7 @@ function onClickEdit() {
       path: '/',
     })
     await onRefreshList()
-    q.notify({
-      color: 'green-4',
-      textColor: 'white',
-      icon: 'done',
-      message: t('Success'),
-      timeout: 3000,
-    })
+    notifySuccess(t('Success'))
   })
 }
 

@@ -1,22 +1,14 @@
 <script lang ="ts" setup>
-//REPLACED BY KEYCLOAK
+// REPLACED BY KEYCLOAK
 const { t } = useI18n()
-const q = useQuasar()
-
+const { notifySuccess } = useNotify()
 const name = ref('')
 const password = ref(null)
 const accept = ref(false)
 
 function onSubmit() {
-  q.notify({
-    position: 'top',
-    color: 'green-4',
-    textColor: 'white',
-    icon: 'cloud_done',
-    message: t('LoggedIn'),
-    timeout: 3000,
-  })
-  //dataStore.$patch({ user: { username: name.value } })
+  notifySuccess(t('Success'))
+  // dataStore.$patch({ user: { username: name.value } })
   onReset()
 }
 
