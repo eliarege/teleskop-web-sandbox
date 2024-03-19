@@ -342,5 +342,6 @@
   "reverseSelected": "Reverse Selected",
   "noConnectionToTeleskop": "No Connection To Teleskop",
   "pleaseSelectaRow": "Please select a row",
-  "connectionTimeout": "Connection Timeout"
+  "connectionTimeout": "Connection Timeout",
+  "checkTeleskopConnection": "Check Teleskop Connection"
 }

@@ -553,6 +553,29 @@ function handleClick(event, option) {
     option.onClick(selected.value)
   }
 }
+
+async function checkTeleskopConnection() {
+  try {
+    await $fetch('/api/sync/teleskop-connection', {
+      method: 'GET',
+      query: {
+        machineId: selected.value.machineId,
+      },
+    })
+  } catch (error) {
+    console.error(error)
+    if (error.statusCode === 500) {
+      q.notify({
+        message: t('noConnectionToTeleskop'),
+        position: 'top',
+        timeout: 2000,
+        actions: [
+          { label: t('dismiss'), color: 'blue', handler: () => { } },
+        ],
+      })
+    }
+  }
+}
 </script>
 
 <template>
@@ -627,7 +650,17 @@ function handleClick(event, option) {
     @edit="handleEdit"
     @select="handleSelection"
     @delete="handleDelete"
-  />
+  >
+    <template #form-content>
+      <q-btn
+        :label="t('checkTeleskopConnection')"
+        color="primary"
+        no-caps
+        class="mb-4"
+        @click="checkTeleskopConnection"
+      />
+    </template>
+  </FormTableKit>
 
   <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
   <GetDyeHouseDefinitionsDialog
@@ -655,7 +688,3 @@ function handleClick(event, option) {
     @close="showMimic = false"
   />
 </template>
-
-<!--
-    form-class="grid grid-cols-4 gap-4 items-center"
--->
