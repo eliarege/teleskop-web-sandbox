@@ -24,6 +24,11 @@ export default defineEventHandler(async (event) => {
       .join('DISPENSER_BRAND as b', 't.dispenser_brand_id', 'b.brand_id')
       .where('dispenser_id', id)
       .first()
+    if (!dispenser)
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Not Found',
+      })
     return dispenser
   } catch (e) {
     console.log(e)

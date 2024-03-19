@@ -26,6 +26,11 @@ export default defineEventHandler(async (event) => {
         ORDER BY d.dispenser_id
         )`),
       }).first()
+    if (!material)
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Not Found',
+      })
     return material
   } catch (e) {
     console.log(e)

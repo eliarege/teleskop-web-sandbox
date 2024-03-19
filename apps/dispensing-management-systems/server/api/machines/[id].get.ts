@@ -20,6 +20,11 @@ export default defineEventHandler(async (event) => {
     })
       .where('m.machine_id', id)
       .first()
+    if (!machine)
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Not Found',
+      })
     return machine
   } catch (e) {
     console.log(e)
