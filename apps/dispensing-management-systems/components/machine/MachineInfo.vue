@@ -41,10 +41,10 @@ async function onSave() {
       await $fetch(`/api/machines/${machine.value.machineId}`, { method: 'PUT', body: editedMachine.value })
     else
       await $fetch(`/api/machines`, { method: 'POST', body: editedMachine.value })
-    await $fetch(`/api/connections/machines?machineId=${editedMachine.value.machineId}`, { method: 'POST', body: {
+    await $fetch(`/api/connections/machines`, { method: 'POST', body: {
       added,
       deleted,
-    } })
+    }, query: { machineId: editedMachine.value.machineId } })
     onDialogOK(true)
   } catch (e) {
     onDialogOK(false)

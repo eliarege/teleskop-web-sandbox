@@ -4,9 +4,8 @@ export default defineEventHandler(async (event) => {
   try {
     const { machineId } = getQuery(event)
     const { added, deleted } = await readBody(event)
-    if (deleted.length > 0) {
-      $fetch(`/api/connections/machines?machineId=${machineId}`, { method: 'DELETE', body: deleted })
-    }
+    if (deleted.length > 0)
+      $fetch(`/api/connections/machines`, { method: 'DELETE', body: deleted, query: { machineId } })
     if (added.length > 0) {
       const insertRows = added.map((dispenserId: any) => ({
         machine_id: machineId,

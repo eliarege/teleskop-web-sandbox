@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
     const { materialCode } = getQuery(event)
     const { added, deleted } = await readBody(event)
     if (deleted.length > 0) {
-      $fetch(`/api/connections/materials?materialCode=${materialCode}`, { method: 'DELETE', body: deleted })
+      $fetch(`/api/connections/materials`, { method: 'DELETE', body: deleted, query: { materialCode } })
     }
     if (added.length > 0) {
       const insertRows = added.map((dispenserId: any) => ({

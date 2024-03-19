@@ -21,7 +21,7 @@ const dispensers = await dataStore.getDispensers()
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
   if (dispenserId)
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${dispenserId}`)
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`, { query: { dispenserId } })
   else
     jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`)
 }

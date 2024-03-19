@@ -26,7 +26,7 @@ const columns: (QTableColumn<MaterialRequest>)[] = [
 const materials = ref<MaterialRequest[]>()
 getMaterials()
 async function getMaterials() {
-  materials.value = await $fetch(`/api/materials/requests?jobId=${props.jobOrder.jobId}`)
+  materials.value = await $fetch(`/api/materials/requests`, { query: { jobId: props.jobOrder.jobId } })
 }
 async function getRecipe() {
   navigateTo({

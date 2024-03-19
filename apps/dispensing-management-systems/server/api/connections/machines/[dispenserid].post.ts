@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
     const { dispenserid } = getRouterParams(event)
     const { added, deleted } = await readBody(event)
     if (deleted.length > 0)
-      $fetch(`/api/dispensers/connections/machines/${dispenserid}`, { method: 'DELETE', body: deleted })
+      $fetch(`/api/connections/machines/${dispenserid}`, { method: 'DELETE', body: deleted })
     if (added.length > 0) {
       const insertRows = added.map((machineId: any) => ({
         machine_id: machineId,
