@@ -140,12 +140,10 @@ function onButtonClicked(link: string) {
   }
 }
 const pagination = ref({ rowsPerPage: 50 })
-watch(searchFilter, () => {
-  // Workaround to wait for filteredSortedRows to update since it is not reactive
-  setTimeout(() => {
-    if (!table.value?.filteredSortedRows.includes(selectedRow.value))
-      selectedRow.value = null
-  }, 100)
+watch(searchFilter, async () => {
+  await nextTick()
+  if (!table.value?.filteredSortedRows.includes(selectedRow.value))
+    selectedRow.value = null
 })
 watch(() => route.query.dispenserId, (val) => {
   const dispenser = dataStore.getDispenser(Number(val))
