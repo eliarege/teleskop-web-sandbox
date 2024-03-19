@@ -49,11 +49,11 @@ export interface Dispenser {
   vncUser: string
   vncPassword: string
   vncPort: number
-  lastConsumptionControl: Date
+  lastConsumptionControl: Date | null
   protocol: string
-  protocolFields: object | null
+  protocolFields?: unknown
   isJDM: boolean
-  JDMConnections: number[]
+  JDMConnections: number[] | null
 }
 export interface DispenserBrand {
   dispenserBrandId: number

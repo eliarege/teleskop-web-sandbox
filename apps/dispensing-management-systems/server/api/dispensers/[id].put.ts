@@ -1,8 +1,9 @@
 import { dmsDB } from '~/server/connectionPool'
+import { DispenserSchema } from '~/shared/schemas'
 import type { Dispenser } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
-  const dispenser: Dispenser = await readBody(event)
+  const dispenser: Dispenser = await readValidatedBody(event, DispenserSchema.parse)
   const res = await dmsDB('DISPENSER').where({
     dispenser_id: dispenser.dispenserId,
   }).update({

@@ -20,7 +20,8 @@
     "pg": "^8.11.3",
     "simple-keyboard": "^3.7.36",
     "tedious": "^16.6.1",
-    "ui": "workspace:*"
+    "ui": "workspace:*",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.6",
