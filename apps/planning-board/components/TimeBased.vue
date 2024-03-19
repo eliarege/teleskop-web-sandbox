@@ -511,6 +511,13 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomOut(),
       },
+      {
+        type: 'button',
+        icon: '',
+        tooltip: 'L{resetZoom}',
+        color: 'toolbar-buttons',
+        onAction: () => schedule.zoomLevel = 17,
+      },
     ],
   } as Partial<SchedulerProConfig>)
   new Splitter({

@@ -497,6 +497,13 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomOut(),
       },
+      {
+        type: 'button',
+        icon: 'b-fa b-fa-solid b-fa-arrow-rotate-left',
+        tooltip: 'L{resetZoom}',
+        color: 'toolbar-buttons',
+        onAction: () => schedule.zoomLevel = 17,
+      },
     ],
   } as Partial<SchedulerProConfig>)
   // @ts-expect-error missing type
