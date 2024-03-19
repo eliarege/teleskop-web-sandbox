@@ -20,26 +20,17 @@ const dispenser = toRef(props, 'dispenser')
 async function onPing() {
   try {
     stateStore.isLoading = true
-    const ping = await useFetch(`http://${dispenser.value.dispenserIP}`, {
+    await $fetch(`http://${dispenser.value.dispenserIP}`, {
       mode: 'no-cors',
       timeout: 3000,
     })
-    if (ping.status.value === 'success')
-      q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'done',
-        message: t('Success'),
-        timeout: 3000,
-      })
-    else
-      q.notify({
-        color: 'red-4',
-        textColor: 'white',
-        icon: 'cancel',
-        message: t('Failed'),
-        timeout: 3000,
-      })
+    q.notify({
+      color: 'green-4',
+      textColor: 'white',
+      icon: 'done',
+      message: t('Success'),
+      timeout: 3000,
+    })
   } catch (e) {
     console.error(e)
     q.notify({
