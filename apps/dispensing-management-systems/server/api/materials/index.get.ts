@@ -2,13 +2,12 @@ import { dmsDB } from '~/server/connectionPool'
 import type { Material } from '~/shared/types'
 
 export default defineEventHandler(async () => {
-  try {
-    const materials: Material[] = await dmsDB('MATERIAL as m')
-      .select({
-        materialName: 'm.material_name',
-        materialCode: 'm.material_code',
-        materialGroupNo: 'm.material_group_no',
-        connectedDispensers: dmsDB.raw(`
+  const materials: Material[] = await dmsDB('MATERIAL as m')
+    .select({
+      materialName: 'm.material_name',
+      materialCode: 'm.material_code',
+      materialGroupNo: 'm.material_group_no',
+      connectedDispensers: dmsDB.raw(`
         ARRAY(
           SELECT JSON_BUILD_OBJECT('dispenserId', d.dispenser_id, 'dispenserName', d.dispenser_name)
           FROM "DISPENSER_MATERIAL_CONNECTION" AS dmc
@@ -17,12 +16,8 @@ export default defineEventHandler(async () => {
           ORDER BY d.dispenser_id
         )
       `),
-      })
-      .orderBy('m.material_code')
+    })
+    .orderBy('m.material_code')
 
-    return materials
-  } catch (e) {
-    console.log(e)
-    return e
-  }
+  return materials
 })
