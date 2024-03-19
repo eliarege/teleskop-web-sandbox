@@ -19,25 +19,25 @@
   flex: content;
 }
 /* Light Theme */
-.tabs-light {
+.body--light .tabs {
   background-color: white;
   white-space: normal;
   color: black
 }
 
-.tabs-light-active {
+.body--light .tabs-active {
   background-color: black;
   white-space: normal;
   color: white
 }
 /* Dark Theme */
-.tabs-dark {
+.body--dark .tabs {
   background-color: black;
   white-space: normal;
   color: white
 }
 
-.tabs-dark-active {
+.body--dark .tabs-active {
   background-color: white;
   white-space: normal;
   color: black
