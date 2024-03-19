@@ -24,6 +24,9 @@ export function cellStyle(col: any, row: any, pageIndex: number, isSelected: boo
   }
   return style
 }
+export function capitalizeFirst(str: string) {
+  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`
+}
 export async function batchInsert(data: any[], batchSize: number, tableName: string, colName: string) {
   const totalRows = data.length
   const numBatches = Math.ceil(totalRows / batchSize)

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { capitalizeFirst } from '~/shared/utils'
 import { useDataStore } from '~/store/DataStore'
 
 const props = defineProps({
@@ -36,7 +37,7 @@ async function onConfirm() {
     <QCard>
       <div flex-center flex-col mt-10 text-lg>
         <div>
-          {{ t('ExportConnectionsBody', { type: t(`${props.type.charAt(0).toUpperCase() + props.type.slice(1)}`), dispenser: dataStore.selectedDispenser?.dispenserName }) }}
+          {{ t('ExportConnectionsBody', { type: t(`${capitalizeFirst(props.type)}`), dispenser: dataStore.selectedDispenser?.dispenserName }) }}
         </div>
         <QSelect
           v-model="selected"
