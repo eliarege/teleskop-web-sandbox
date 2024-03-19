@@ -4,7 +4,7 @@ import type { Machine } from '~/shared/types'
 export default defineEventHandler(async (event) => {
   try {
     const { dispenserid } = getRouterParams(event)
-    const connectedMachines: Array<Machine[]> = await dmsDB('DISPENSER_MACHINE_CONNECTION as c').select({
+    const connectedMachines: Array<Machine> = await dmsDB('DISPENSER_MACHINE_CONNECTION as c').select({
       machineId: 'c.machine_id',
       machineName: 'm.machine_name',
     })

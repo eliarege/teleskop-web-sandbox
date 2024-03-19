@@ -4,10 +4,9 @@ import type { Material } from '~/shared/types'
 export default defineEventHandler(async (event) => {
   try {
     const { dispenserid } = getRouterParams(event)
-    const connectedMaterials: Array<Material[]> = await dmsDB('DISPENSER_MATERIAL_CONNECTION as c').select({
+    const connectedMaterials: Array<Material> = await dmsDB('DISPENSER_MATERIAL_CONNECTION as c').select({
       materialCode: 'c.material_code',
       materialName: 'm.material_name',
-
     })
       .where('c.dispenser_id', '=', dispenserid)
       .distinctOn('c.material_code')
