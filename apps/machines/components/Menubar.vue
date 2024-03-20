@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Machine } from '~/types'
-import { deleteMachines } from '~/utils'
 
 const props = defineProps<{
   machines: Machine[]
@@ -13,7 +12,6 @@ const { t, locale, setLocale } = useI18n()
 
 const showMachineParameters = ref(false)
 const showMimic = ref(false)
-const showFormulas = ref(false)
 const showGetDyeHouseDefinitions = ref(false)
 const showSetDyeHouseDefinitions = ref(false)
 
@@ -88,7 +86,7 @@ async function navigateToFormulas() {
         @click="showGetDyeHouseDefinitions = true"
       />
       <q-btn
-        :label="t('setDyehouseDefinitions')"
+        :label="t('setDyeHouseDefinitions')"
         no-caps
         color="primary"
         class="mr-4"
@@ -124,20 +122,14 @@ async function navigateToFormulas() {
     :selected="selected"
     @close="showMimic = false"
   />
-  <FormulasDialog
-    v-if="showFormulas"
-    :show="showFormulas"
-    :selected="selected"
-    @close="showFormulas = false"
-  />
   <GetDyeHouseDefinitionsDialog
-    v-if="showGetDyeHouseDefinitions"
+    v-if="showGetDyeHouseDefinitions && selected"
     :show="showGetDyeHouseDefinitions"
     :selected="selected"
     @close="showGetDyeHouseDefinitions = false"
   />
   <SetDyeHouseDefinitionsDialog
-    v-if="showSetDyeHouseDefinitions"
+    v-if="showSetDyeHouseDefinitions && selected"
     :show="showSetDyeHouseDefinitions"
     :selected="selected"
     @close="showSetDyeHouseDefinitions = false"

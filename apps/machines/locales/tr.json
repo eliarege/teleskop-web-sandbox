@@ -49,7 +49,6 @@
   "receiveVersionInfo": "Versiyon Bilgisi Al",
   "machineConstants": "Makine Sabitleri",
   "formulas": "Formüller",
-  "getDyehouseDefinitions": "Boyahane Tanımlarını Al",
   "theoricalCharge": "Teorik Şarj Sayısı",
   "theoricalChargeDuration": "Teorik Şarj Süresi (dk)",
   "nozzleCount": "Düze Sayısı",
@@ -333,5 +332,16 @@
   "generalFormula": "Genel Formül",
   "manualReasonDescription": "Cihaz versiyonu 3.6 veya daha eski ise ilk 20 manuele alma nedeni cihazda kullanılabilir.",
   "manualReason": "Manual Sebebi",
-  "reportToERP": "ERP Arıza Bildirimi"
+  "reportToERP": "ERP Arıza Bildirimi",
+  "incompleteExpression": "Eksik İfade",
+  "invalidSymbol": "Geçersiz Sembol",
+  "pleaseSelectaRowToEdit": "Düzenlemek için bir satır seçiniz",
+  "pleaseSelectaRowToDelete": "Silmek için bir satır seçiniz",
+  "dismiss": "Kapat",
+  "reverseSelected": "Seçilenleri Ters Çevir",
+  "noConnectionToTeleskop": "Teleskop ile bağlantı yok",
+  "pleaseSelectaRow": "Lütfen bir satır seçiniz",
+  "connectionTimeout": "Bağlantı zaman aşımı",
+  "checkTeleskopConnection": "Teleskop Bağlantısını kontrol et",
+  "connectionSuccessful": "Bağlantı başarılı"
 }

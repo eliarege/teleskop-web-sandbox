@@ -33,8 +33,16 @@ const { data: batchParameters } = useLazyFetch('/api/starting-parameter-types/st
     @hide="emit('close')"
   >
     <q-card
-      class="w-2xl"
+      class="min-w-[1000px]"
     >
+      <q-card-section>
+        <q-icon
+          name="close"
+          class="flex justify-end w-full mb-4 cursor-pointer"
+          size="1.5em"
+          @click="$emit('close')"
+        />
+      </q-card-section>
       <q-card-section class="flex flex-col gap-8">
         <q-select
           :model-value="selectedMachineId"
@@ -46,7 +54,7 @@ const { data: batchParameters } = useLazyFetch('/api/starting-parameter-types/st
           @update:model-value="(e) => selectedMachineId = e.machineId"
         />
 
-        <q-list bordered separator class="overflow-y-auto h-160">
+        <q-list bordered separator class="overflow-y-auto h-140">
           <q-item
             v-for="param in batchParameters"
             :key="param.paramId"
@@ -61,19 +69,18 @@ const { data: batchParameters } = useLazyFetch('/api/starting-parameter-types/st
             </q-item-section>
           </q-item>
         </q-list>
-        <q-btn-group push class="flex flex-row justify-end w-full">
-          <q-btn
-            :label="t('cancel')"
-            color="primary"
-            @click="emit('close')"
-          />
-          <q-btn
-            :label="t('submit')"
-            color="primary"
-            @click="emit('addBatchParam', selectedParam)"
-          />
-        </q-btn-group>
       </q-card-section>
+      <q-card-actions align="right" class="m-4">
+        <q-btn
+          :label="t('cancel')"
+          @click="emit('close')"
+        />
+        <q-btn
+          :label="t('submit')"
+          color="primary"
+          @click="emit('addBatchParam', selectedParam)"
+        />
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>

@@ -189,7 +189,6 @@ const selected = ref()
 
 function handleAdd(selectedSetting) {
   showAddMachineSystemSetting.value = false
-  console.log(selectedSetting)
   selectedSettings.value.push(selectedSetting)
 }
 
@@ -249,12 +248,11 @@ async function handleSend() {
           </q-list>
         </div>
       </div>
-
-      <div class="flex gap-4 my-4 w-full justify-center">
-        <q-btn :label="t('submit')" no-caps @click="handleSend" />
-        <q-btn :label="t('cancel')" no-caps />
-      </div>
     </q-card-section>
+    <q-card-actions align="right" class="flex gap-2 m-4">
+      <q-btn :label="t('cancel')" no-caps />
+      <q-btn :label="t('submit')" color="primary" no-caps @click="handleSend" />
+    </q-card-actions>
   </q-card>
 
   <AddMachineSystemSettingDialog

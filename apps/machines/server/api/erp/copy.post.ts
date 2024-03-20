@@ -2,7 +2,6 @@ import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
   const { sourceMachineId, targetMachineId, mode } = await readBody(event)
-  console.log('mode = ', mode)
 
   await knex.transaction(async (trx) => {
     if (mode === 1) {

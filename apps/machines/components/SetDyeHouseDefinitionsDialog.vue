@@ -37,14 +37,28 @@ function deselectAll() {
     options.value[key] = false
   })
 }
+
+function reverseSelected() {
+  Object.keys(options.value).forEach((key) => {
+    options.value[key] = !options.value[key]
+  })
+}
 </script>
 
 <template>
   <q-dialog :model-value="show" @hide="emit('close')">
-    <q-card class="p-8">
-      <h3 class="flex justify-center mb-4">
-        {{ t('setDyeHouseDefinitions') }}
-      </h3>
+    <q-card class="p-8 min-w-[1000px]">
+      <div class="flex mb-4">
+        <h3 class="flex grow justify-center">
+          {{ t('setDyeHouseDefinitions') }}
+        </h3>
+        <q-icon
+          name="close"
+          class="cursor-pointer"
+          size="1.5em"
+          @click="$emit('close')"
+        />
+      </div>
       <div class="grid grid-cols-2 gap-2 mb-4">
         <q-checkbox v-model="options.users" :label="t('users')" />
         <q-checkbox v-model="options.manualReasons" :label="t('manualReasons')" />
@@ -55,6 +69,7 @@ function deselectAll() {
       <div class="flex flex-row gap-4 justify-end">
         <q-btn no-caps :label="t('selectAll')" @click="selectAll" />
         <q-btn no-caps :label="t('deselectAll')" @click="deselectAll" />
+        <q-btn no-caps :label="t('reverseSelected')" @click="reverseSelected" />
         <q-btn no-caps :label="t('cancel')" @click="emit('close')" />
         <q-btn no-caps :label="t('send')" @click="setDefinitions" />
       </div>

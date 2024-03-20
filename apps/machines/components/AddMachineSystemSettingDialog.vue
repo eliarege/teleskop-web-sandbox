@@ -29,7 +29,7 @@ function handleAdd() {
     :model-value="show"
     @hide="$emit('close')"
   >
-    <q-card>
+    <q-card class="min-w-[1000px]">
       <q-card-section>
         <h3>Select the system settting that will be updated on machine</h3>
 
@@ -52,10 +52,10 @@ function handleAdd() {
           :options="options"
           type="radio"
         />
-        <div class="flex flex-row gap-4 justify-end">
+        <q-card-actions align="right">
           <q-btn :label="t('cancel')" @click="$emit('close')" />
-          <q-btn :label="t('add')" @click="handleAdd" />
-        </div>
+          <q-btn :label="t('add')" color="primary" @click="handleAdd" />
+        </q-card-actions>
       </q-card-section>
     </q-card>
   </q-dialog>

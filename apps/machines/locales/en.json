@@ -50,8 +50,8 @@
   "receiveVersionInfo": "Receive Version Info",
   "machineConstants": "Machine Constants",
   "formulas": "Formulas",
-  "getDyehouseDefinitions": "Get Dyehouse Definitions",
-  "setDyehouseDefinitions": "Set Dyehouse Definitions",
+  "getDyeHouseDefinitions": "Get Dyehouse Definitions",
+  "setDyeHouseDefinitions": "Set Dyehouse Definitions",
   "machineName": "Machine Name",
   "group": "Group",
   "model": "Model",
@@ -335,5 +335,14 @@
   "generalFormula": "General Formula",
   "manualReasonDescription": "If the device version is 3.6 or older, the first 20 manual reasons are available on the device.",
   "manualReason": "Manual Reason",
-  "reportToERP": "Report To ERP"
+  "reportToERP": "Report To ERP",
+  "incompleteExpression": "Incomplete Expression",
+  "invalidSymbol": "Invalid Symbol",
+  "dismiss": "Dismiss",
+  "reverseSelected": "Reverse Selected",
+  "noConnectionToTeleskop": "No Connection To Teleskop",
+  "pleaseSelectaRow": "Please select a row",
+  "connectionTimeout": "Connection Timeout",
+  "checkTeleskopConnection": "Check Teleskop Connection",
+  "connectionSuccessful": "Connection Successful"
 }

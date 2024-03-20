@@ -126,64 +126,36 @@ async function handlePaste() {
       />
     </q-btn-group>
   </div>
-  <q-card class="flex flex-row">
-    <q-card-section class="w-2xs">
-      <h3>{{ t('machines') }}</h3>
-      <q-list
-        bordered
-        separator
-        class="h-160 overflow-y-auto"
-      >
-        <q-item
-          v-for="machine in machines"
-          :key="machine.machineId"
-          v-ripple
-          clickable
-          @click="selectedMachineId = machine.machineId"
+  <q-card>
+    <q-card-section class="flex">
+      <div class="w-2xs">
+        <h3>{{ t('machines') }}</h3>
+        <q-list
+          bordered
+          separator
+          class="h-160 overflow-y-auto"
         >
-          <q-item-section>
-            {{ machine.machineCode }}
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-card-section>
-    <q-card-section class="w-2xs">
-      <h3>{{ t('selectedMachineCommands') }}</h3>
-      <Sortable
-        :list="commands"
-        :item-key="(element) => element.commandNo"
-        class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
-        :options="{ group: 'group' }"
-        @add="(e) => handleDragDropCommands(e)"
-      >
-        <template #item="{ element }">
           <q-item
-            :key="element.commandNo"
-            :data-command-no="element.commandNo"
-            :data-command-name="element.commandName"
-            class="draggable"
+            v-for="machine in machines"
+            :key="machine.machineId"
+            v-ripple
+            clickable
+            @click="selectedMachineId = machine.machineId"
           >
             <q-item-section>
-              {{ `${element.commandNo} ${element.commandName}` }}
+              {{ machine.machineCode }}
             </q-item-section>
           </q-item>
-        </template>
-      </Sortable>
-    </q-card-section>
-
-    <q-card-section class="inline-grid grid-cols-5 gap-3 ml-8">
-      <div
-        v-for="item in commandTypeMaps"
-        :key="item.value"
-        class="w-2xs box"
-      >
-        <h3>{{ item.title }}</h3>
+        </q-list>
+      </div>
+      <div class="w-2xs">
+        <h3>{{ t('selectedMachineCommands') }}</h3>
         <Sortable
-          :list="item.ref"
+          :list="commands"
           :item-key="(element) => element.commandNo"
-          class="q-list q-list--bordered q-list--separator overflow-y-auto h-42"
+          class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
           :options="{ group: 'group' }"
-          @add="(e) => handleDragDrop(e, item)"
+          @add="(e) => handleDragDropCommands(e)"
         >
           <template #item="{ element }">
             <q-item
@@ -199,14 +171,42 @@ async function handlePaste() {
           </template>
         </Sortable>
       </div>
+
+      <q-card-section class="inline-grid grid-cols-5 gap-3 ml-8">
+        <div
+          v-for="item in commandTypeMaps"
+          :key="item.value"
+          class="w-2xs box"
+        >
+          <h3>{{ item.title }}</h3>
+          <Sortable
+            :list="item.ref"
+            :item-key="(element) => element.commandNo"
+            class="q-list q-list--bordered q-list--separator overflow-y-auto h-42"
+            :options="{ group: 'group' }"
+            @add="(e) => handleDragDrop(e, item)"
+          >
+            <template #item="{ element }">
+              <q-item
+                :key="element.commandNo"
+                :data-command-no="element.commandNo"
+                :data-command-name="element.commandName"
+                class="draggable"
+              >
+                <q-item-section>
+                  {{ `${element.commandNo} ${element.commandName}` }}
+                </q-item-section>
+              </q-item>
+            </template>
+          </Sortable>
+        </div>
+      </q-card-section>
     </q-card-section>
-  </q-card>
-  <div class="w-full flex justify-center my-4">
-    <q-btn-group>
-      <q-btn :label="t('submit')" @click="handleSubmit" />
+    <q-card-actions align="right" class="flex gap-2 ">
       <q-btn :label="t('cancel')" />
-    </q-btn-group>
-  </div>
+      <q-btn :label="t('submit')" color="primary" @click="handleSubmit" />
+    </q-card-actions>
+  </q-card>
 </template>
 
 <style scoped>

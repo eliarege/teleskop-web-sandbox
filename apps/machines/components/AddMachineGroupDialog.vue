@@ -77,7 +77,7 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
     :model-value="show"
     @hide="$emit('close')"
   >
-    <q-card class="w-2xl">
+    <q-card class="min-w-[1000px]">
       <q-card-section class="flex flex-col">
         <div>
           <q-input

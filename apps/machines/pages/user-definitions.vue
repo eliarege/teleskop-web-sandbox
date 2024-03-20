@@ -161,7 +161,6 @@ async function handleDelete(formData) {
 
 async function handleSelect(formData) {
   selected.value = formData[0]
-  console.log('seleced.value = ', selected.value)
 }
 
 async function handleFilterSlotsUpdate(updatedValue) {
@@ -177,7 +176,8 @@ async function handleFilterSlotsUpdate(updatedValue) {
 <template>
   <FormTableKit
     :rows="users" :columns="columns"
-    @add="handleAdd" @edit="handleEdit" @delete="handleDelete"
+    form-class="grid grid-cols-2 gap-4 items-center" @add="handleAdd" @edit="handleEdit"
+    @delete="handleDelete"
     @select="handleSelect"
   >
     <template #form-content>

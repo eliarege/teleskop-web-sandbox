@@ -41,7 +41,6 @@ const { data: stepSkippingReasons, refresh } = useLazyFetch('/api/step-skipping-
 })
 
 async function handleAdd(formData) {
-  console.log('formData = ', formData)
   await $fetch('/api/step-skipping-reasons/reason', {
     method: 'POST',
     body: formData,
@@ -50,7 +49,6 @@ async function handleAdd(formData) {
 }
 
 async function handleEdit(formData, old) {
-  console.log('formData = ', formData, old)
   await $fetch('/api/step-skipping-reasons/reason', {
     method: 'PUT',
     body: {

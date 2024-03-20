@@ -198,132 +198,105 @@ async function handlePaste() {
       />
     </q-btn-group>
   </div>
-  <q-card class="flex flex-row justify-around">
-    <q-card-section class="flex flex-row">
-      <div class="mr-8 w-xs">
-        <h3>{{ t('machines') }}</h3>
-        <q-list
-          bordered
-          separator
-          class="overflow-y-auto h-160 w-xs"
-        >
-          <q-item
-            v-for="machine in machines"
-            :key="machine.machineId"
-            v-ripple
-            clickable
-            :focused="selectedMachineId === machine.machineId"
-            :active="selectedMachineId === machine.machineId"
-            @click="handleMachineClick(machine.machineId!)"
+  <q-card>
+    <q-card-section class="flex flex-row justify-around">
+      <div class="flex">
+        <div class="mr-8 w-xs">
+          <h3>{{ t('machines') }}</h3>
+          <q-list
+            bordered
+            separator
+            class="overflow-y-auto h-160 w-xs"
           >
-            <q-item-section>
-              {{ machine.machineCode }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-xs mr-8">
-        <h3>{{ t('tankDefinitions') }}</h3>
-        <q-list
-          bordered
-          separator
-          class="overflow-y-auto h-160 w-xs"
-        >
-          <q-item
-            v-for="def in tankDefinitions"
-            :key="def.tankNo"
-            v-ripple
-            clickable
-            :focused="selectedDefinition === def.tankNo"
-            :active="selectedDefinition === def.tankNo"
-            @click="handleTankDefinitionClick(def)"
-          >
-            <q-item-section>
-              {{ def.name }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-
-      <div class="w-3xl flex flex-col">
-        <div class="grid gap-4 mb-4">
-          <q-input
-            v-model="tank.tankNo"
-            :label="t('tankNo')"
-            filled
-          />
-          <q-input
-            v-model="tank.name"
-            :label="t('tankName')"
-            filled
-          />
-          <q-select
-            v-model="tank.highLimit"
-            :options="highLimitOptions"
-            :label="t('highLimit')"
-            option-label="label"
-            option-value="value"
-            filled
-          />
-          <q-input
-            v-model="tank.machineConstantHighLimit"
-            filled
-            :label="t('machineConstantHighLimit')"
-          />
-          <q-btn
-            :label="t('add')"
-            no-caps
-            @click="handleTankDefinitionAdd"
-          />
-          <q-btn
-            :label="t('delete')"
-            no-caps
-            @click="handleDelete"
-          />
+            <q-item
+              v-for="machine in machines"
+              :key="machine.machineId"
+              v-ripple
+              clickable
+              :focused="selectedMachineId === machine.machineId"
+              :active="selectedMachineId === machine.machineId"
+              @click="handleMachineClick(machine.machineId!)"
+            >
+              <q-item-section>
+                {{ machine.machineCode }}
+              </q-item-section>
+            </q-item>
+          </q-list>
         </div>
-        <div class="grid gap-4">
-          <div>
-            <h3>{{ t('commands') }}</h3>
-            <Sortable
-              :list="commands"
-              :item-key="item => item.commandNo"
-              class="q-list q-list--bordered q-list--separator overflow-y-auto h-sm"
-              :options="{ group: 'group' }"
-              @add="(e) => handleDragDropCommands(e)"
-            >
-              <template #item="{ element }">
-                <q-item
-                  :key="element.commandNo"
-                  :data-command-no="element.commandNo"
-                  class="draggable"
-                >
-                  <q-item-section>
-                    {{ `${element.commandNo} ${element.commandName}` }}
-                  </q-item-section>
-                </q-item>
-              </template>
-            </Sortable>
-          </div>
 
-          <div class="grid gap-4">
-            <div
-              v-for="list in commandLists"
-              :key="list.name"
+        <div class="w-xs mr-8">
+          <h3>{{ t('tankDefinitions') }}</h3>
+          <q-list
+            bordered
+            separator
+            class="overflow-y-auto h-160 w-xs"
+          >
+            <q-item
+              v-for="def in tankDefinitions"
+              :key="def.tankNo"
+              v-ripple
+              clickable
+              :focused="selectedDefinition === def.tankNo"
+              :active="selectedDefinition === def.tankNo"
+              @click="handleTankDefinitionClick(def)"
             >
-              <h3>{{ t(list.name) }}</h3>
+              <q-item-section>
+                {{ def.name }}
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+
+        <div class="w-3xl flex flex-col">
+          <div class="grid gap-4 mb-4">
+            <q-input
+              v-model="tank.tankNo"
+              :label="t('tankNo')"
+              filled
+            />
+            <q-input
+              v-model="tank.name"
+              :label="t('tankName')"
+              filled
+            />
+            <q-select
+              v-model="tank.highLimit"
+              :options="highLimitOptions"
+              :label="t('highLimit')"
+              option-label="label"
+              option-value="value"
+              filled
+            />
+            <q-input
+              v-model="tank.machineConstantHighLimit"
+              filled
+              :label="t('machineConstantHighLimit')"
+            />
+            <q-btn
+              :label="t('add')"
+              no-caps
+              @click="handleTankDefinitionAdd"
+            />
+            <q-btn
+              :label="t('delete')"
+              no-caps
+              @click="handleDelete"
+            />
+          </div>
+          <div class="grid gap-4">
+            <div>
+              <h3>{{ t('commands') }}</h3>
               <Sortable
-                :list="list.ref"
+                :list="commands"
                 :item-key="item => item.commandNo"
-                class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
+                class="q-list q-list--bordered q-list--separator overflow-y-auto h-sm"
                 :options="{ group: 'group' }"
-                @add="(e) => handleDragDrop(e, list.name)"
+                @add="(e) => handleDragDropCommands(e)"
               >
                 <template #item="{ element }">
                   <q-item
                     :key="element.commandNo"
                     :data-command-no="element.commandNo"
-                    :data-list-name="list.name"
                     class="draggable"
                   >
                     <q-item-section>
@@ -333,17 +306,44 @@ async function handlePaste() {
                 </template>
               </Sortable>
             </div>
+
+            <div class="grid gap-4">
+              <div
+                v-for="list in commandLists"
+                :key="list.name"
+              >
+                <h3>{{ t(list.name) }}</h3>
+                <Sortable
+                  :list="list.ref"
+                  :item-key="item => item.commandNo"
+                  class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
+                  :options="{ group: 'group' }"
+                  @add="(e) => handleDragDrop(e, list.name)"
+                >
+                  <template #item="{ element }">
+                    <q-item
+                      :key="element.commandNo"
+                      :data-command-no="element.commandNo"
+                      :data-list-name="list.name"
+                      class="draggable"
+                    >
+                      <q-item-section>
+                        {{ `${element.commandNo} ${element.commandName}` }}
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </Sortable>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </q-card-section>
-  </q-card>
-  <div class="flex w-full justify-end">
-    <q-btn-group class="mt-4 mr-4">
-      <q-btn no-caps :label="t('submit')" @click="handleSubmit" />
+    <q-card-actions align="right" class="mt-4 mr-4">
       <q-btn no-caps :label="t('cancel')" @click="$router.go(0)" />
-    </q-btn-group>
-  </div>
+      <q-btn color="primary" no-caps :label="t('submit')" @click="handleSubmit" />
+    </q-card-actions>
+  </q-card>
 </template>
 
 <style scoped>

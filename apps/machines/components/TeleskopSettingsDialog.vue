@@ -95,7 +95,7 @@ async function handleSubmit() {
     :model-value="show"
     @hide="$emit('close')"
   >
-    <q-card>
+    <q-card class="min-w-[1000px]">
       <q-card-section>
         <h3>{{ t('teleskopSettings') }}</h3>
         <FormKit

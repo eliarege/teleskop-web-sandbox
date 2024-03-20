@@ -70,12 +70,15 @@ function showForm(buttonAction: 'add' | 'edit') {
         position: 'top',
         timeout: 2000,
         actions: [
-          { label: 'Dismiss', color: 'blue', handler: () => { } },
+          { label: t('dismiss'), color: 'blue', handler: () => { } },
         ],
       })
     }
-  } else
+  } else {
+    selected.value = []
+    formData.value = {}
     showModal.value = true
+  }
 }
 
 function handleSubmit(formData: object) {
@@ -83,6 +86,7 @@ function handleSubmit(formData: object) {
     emit('add', formData)
   else if (action.value === 'edit')
     emit('edit', formData, selected.value[0])
+  selected.value = []
   showModal.value = false
 }
 
@@ -96,12 +100,12 @@ function handleDelete() {
       position: 'top',
       timeout: 2000,
       actions: [
-        { label: 'Dismiss', color: 'blue', handler: () => { } },
+        { label: t('dismiss'), color: 'blue', handler: () => { } },
       ],
     })
 }
-
-watch(showModal, async (newValue, oldValue) => {
+// TODO: fix locale change error
+watch(showModal, async (newValue, _oldValue) => {
   await nextTick()
   if (newValue)
     changeLocale(locale.value)
@@ -110,16 +114,17 @@ watch(showModal, async (newValue, oldValue) => {
 
 <template>
   <!-- Actions -->
-  <q-btn-group push class="my-4 ml-4">
-    <q-btn push :label="t('add')" color="primary" @click="showForm('add')" />
-    <q-btn push :label="t('edit')" color="primary" @click="showForm('edit')" />
-    <q-btn push :label="t('delete')" color="primary" @click="handleDelete" />
-  </q-btn-group>
+  <div class="flex gap-4 m-4">
+    <q-btn push no-caps :label="t('add')" color="primary" @click="showForm('add')" />
+    <q-btn push no-caps :label="t('edit')" color="primary" @click="showForm('edit')" />
+    <q-btn push no-caps :label="t('delete')" color="primary" @click="handleDelete" />
+  </div>
   <!-- Table -->
   <q-table
     v-model:selected="selected"
     :rows="rows"
-    :columns="tableColumns" selection="multiple" :row-key="rowKey" :visible-columns="visibleColumns"
+    :hide-bottom="true"
+    :columns="tableColumns" selection="single" :row-key="rowKey" :visible-columns="visibleColumns"
     class="overflow-y-auto	h-160"
     :rows-per-page-options="[0]"
     @update:selected="emit('select', selected)"
@@ -136,17 +141,19 @@ watch(showModal, async (newValue, oldValue) => {
 
   <!-- Form Dialog -->
   <q-dialog v-model="showModal">
-    <q-card>
+    <q-card class="min-w-fit">
       <q-card-actions align="right">
         <q-btn flat icon="close" @click="showModal = false" />
       </q-card-actions>
       <q-card-section>
         <FormKit
-          v-model="formData" :actions="false" type="form" :form-class="formClass" @submit="handleSubmit"
+          v-model="formData" :actions="false" type="form" :form-class="formClass ?? ''" @submit="handleSubmit"
         >
           <FormKitSchema :schema="schema" />
           <slot name="form-content" />
-          <FormKit type="submit" :label="t('submit')" />
+          <q-card-actions align="right" class="col-span-full	">
+            <FormKit type="submit" :label="t('submit')" />
+          </q-card-actions>
         </FormKit>
       </q-card-section>
     </q-card>

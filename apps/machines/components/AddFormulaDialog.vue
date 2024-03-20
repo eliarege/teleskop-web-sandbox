@@ -113,11 +113,16 @@ watch(scope, () => {
 <template>
   <q-dialog
     :model-value="props.show"
-    full-width
     @hide="emit('close')"
   >
-    <q-card>
+    <q-card class="min-w-[1000px]">
       <q-card-section>
+        <q-icon
+          name="close"
+          class="flex w-full justify-end mb-4 cursor-pointer"
+          size="1.5em"
+          @click="$emit('close')"
+        />
         <q-input
           v-model="expression"
           :label="t('formulaId')"
@@ -181,10 +186,10 @@ watch(scope, () => {
           </div>
         </div>
       </q-card-section>
-      <q-btn-group class="flex justify-end w-full m-4">
-        <q-btn :label="t('submit')" color="teal" no-caps @click="handleSubmit" />
-        <q-btn :label="t('cancel')" color="teal" outline no-caps @click="emit('close')" />
-      </q-btn-group>
+      <q-card-actions align="right" class="flex gap-2 m-4">
+        <q-btn :label="t('cancel')" no-caps @click="emit('close')" />
+        <q-btn :label="t('submit')" color="primary" no-caps @click="handleSubmit" />
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
