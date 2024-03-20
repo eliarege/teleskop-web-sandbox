@@ -43,18 +43,32 @@ export interface Dispenser {
   dispenserId: number
   dispenserName: string
   dispenserIP: string
-  dipenserPswrd: string
-  lastConsumptionControl: Date
-  dispenserType: number
+  dispenserType: number | null
+  dispenserBrandId: number
+  dispenserBrandName: string
+  vncUser: string
+  vncPassword: string
+  vncPort: number
+  lastConsumptionControl: Date | null
   protocol: string
-  readConsumptionFromDMS: boolean
-  consumptionFilename: string
-  fileName: string
-  filePath: string
+  protocolFields?: unknown
+  isJDM: boolean
+  JDMConnections: number[] | null
+}
+export interface DispenserBrand {
+  dispenserBrandId: number
+  dispenserBrandName: string
 }
 export interface DispenserType {
   dispenserTypeId: number
   dispenserTypeName: string
+  dispenserBrandId: number
+  dispenserBrandName: string
+}
+export interface Protocol {
+  dispenserBrandId: number
+  protocol: string
+  fields: string[]
 }
 export interface Material {
   materialCode: string
@@ -67,14 +81,47 @@ export interface Material {
   unitCost: number
   reRequestable: boolean
   directTransfer: boolean
+  connectedDispensers: Dispenser[]
 }
 export interface MaterialRequest {
   jobId: number
   materialCode: string
   materialName: string
-  amount: number
+  recipeAmount: number
+  realAmount: number
+  mainStep: number
+  parallelStep: number
+  dispenserId: number
   status: number
   unit: number
+}
+export interface WeighingAuto {
+  jobId: number
+  programNo: string
+  machineName: string
+  dispenserId: number
+  processOrder: number
+  mainStep: number
+  parallelStep: number
+  materialCode: number
+  materialName: string
+  recipeAmount: number
+  actualAmount: number
+  status: number
+  requestTime: Date
+  completedTime: Date
+  interval: number
+}
+export interface WeighingManual {
+  batchNo: string
+  correctionNo: number
+  weighingNumber: number
+  recipeType: number
+  materialCode: string
+  materialName: string
+  actualAmount: number
+  status: number
+  requestTime: Date
 }
 export interface MaterialGroup {
   materialGroupNo: number
@@ -84,8 +131,18 @@ export interface Machine {
   machineId: number
   machineName: string
   controllerType: number
+  connectedDispensers: Dispenser[]
 }
 export interface MachineControllerType {
   controllerTypeId: number
   controllerTypeName: string
+}
+export interface DatabaseConnection {
+  client: string
+  hostComputer: string
+  user: string
+  password: string
+  database: string
+  host: string
+  port: number
 }

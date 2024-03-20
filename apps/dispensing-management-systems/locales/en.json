@@ -1,13 +1,19 @@
 {
   "New": "New",
-  "AddNew": "Add New Dispenser",
-  "AddNewMac": "Add New Machine",
+  "AddNew": "Add New Dispenser / Machine",
+  "AddNewDispenser": "Add New Dispenser",
+  "AddNewMachine": "Add New Machine",
+  "AddNewMaterial": "Add New Material",
+  "SearchJob": "Search Job Order",
   "Refresh": "Refresh",
   "SyncData": "Sync Teleskop Data",
   "Homepage": "Homepage",
   "Settings": "Settings",
   "Theme": "Theme",
   "LogOut": "Log Out",
+  "Dispensers": "Dispensers",
+  "Machines": "Machines",
+  "Machine": "Machine",
   "AddMOD": "Add Machine Or Dispenser",
   "ShowDispenserList": "Show Dispenser List",
   "HideDispenserList": "Hide Dispenser List",
@@ -18,7 +24,6 @@
   "BatchCorrectionNo": "Batch Correction No",
   "MachineName": "Machine Name",
   "TankNo": "Tank No",
-  "DispenserName": "Dispenser Name",
   "ProgramNo": "Program No",
   "ProgramName": "Program Name",
   "StepNo": "Step No",
@@ -32,6 +37,9 @@
   "Screen": "Screen",
   "Name": "Name",
   "Edit": "Edit",
+  "Connections": "Connections",
+  "ExportConnections": "Export Connections",
+  "ExportConnectionsBody": "Export {dispenser}'s {type} connections to selected dispenser:",
   "Username": "Username",
   "Password": "Password",
   "Login": "Login",
@@ -51,10 +59,21 @@
   "vncError": "{name} Connection Failed!",
   "Save": "Save",
   "Cancel": "Cancel",
+  "Delete": "Delete",
+  "DeleteDispenser": "Are you sure you want to delete this dispenser?",
+  "DeleteMachine": "Are you sure you want to delete this machine?",
+  "DeleteMaterial": "Are you sure you want to delete this material?",
+  "SyncDataConfirmation": "Are you sure you want to sync {name} data with Teleskop Database?",
+  "Confirm": "Confirm",
   "Material": "Material",
+  "Materials": "Materials",
+  "MaterialRequests": "Material Requests",
+  "SelectedMaterials": "{count} Selected",
   "settings": {
     "App": "App Settings",
-    "Material": "Material Settings"
+    "Material": "Material Settings",
+    "Machine": "Machine Settings",
+    "Teleskop": "Teleskop Settings"
   },
   "materialFields": {
     "Name": "Material Name",
@@ -67,17 +86,21 @@
     "ReRequestable": "ReRequestable",
     "Source": "Source",
     "DirectTransfer": "Can Transfer Directly",
-    "Amount": "Amount"
+    "Amount": "Amount",
+    "ConnectedDispensers": "Connected Dispensers"
   },
   "dispenserFields": {
     "Name": "Dispenser Name",
     "IP": "Dispenser IP",
-    "FileName": "File Name",
-    "FilePath": "File Path",
     "ID": "Dispenser ID",
     "Type": "Dispenser Type",
     "Protocol": "Protocol",
-    "ConsumptionFile": "Consumption File Name"
+    "Brand": "Dispenser Brand",
+    "VncUser": "Vnc User",
+    "VncPort": "Vnc Port",
+    "VncPassword": "Vnc Password",
+    "IsJDM": "Is JDM?",
+    "JDMConnections": "JDM Connections"
   },
   "recipeFields": {
     "Info": "Recipe Info",
@@ -91,10 +114,37 @@
     "Amount": "Amount",
     "Unit": "Unit"
   },
+  "weighingFields": {
+    "Info": "Weighing Information",
+    "Auto": "Automatic Weighing Info",
+    "MainStep": "Main Step",
+    "ParallelStep": "Parallel Step",
+    "RecipeAmount": "Recipe Amount",
+    "ActualAmount": "Actual Amount",
+    "RequestTime": "Request Time",
+    "CompletedTime": "Completed Time",
+    "Interval": "Time Passed",
+    "Hour": "Hour(s)",
+    "Minute": "Minute(s)",
+    "Second": "Second(s)",
+    "No": "Weighing No"
+  },
   "machineFields": {
     "Name": "Machine Name",
     "No": "Machine No",
     "ControllerType": "Controller Type"
+  },
+  "protocolParameters": {
+    "bodyRequestName": "File Name",
+    "bodyRequestPath": "File Path",
+    "consumptionFileName": "Consumption File Name",
+    "dbClient": "Database Client",
+    "dbHostComputer": "Host Computer",
+    "dbName": "Database Name",
+    "dbHost": "Database Host",
+    "dbPort": "Database Port",
+    "dbUser": "Database User",
+    "dbPassword": "Database Password"
   },
   "statusCodes": {
     "text": "Status",

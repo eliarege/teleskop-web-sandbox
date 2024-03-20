@@ -5,9 +5,10 @@ import { useDataStore } from '~/store/DataStore'
 const dataStore = useDataStore()
 const route = useRoute()
 const load = ref(false)
-if (!dataStore.selectedDispenser) {
-  const { data: dispenser } = await useFetch<Dispenser>(`/api/dispensers/${route.query.dispenserId}`)
-  if (!dispenser.value || dispenser.value?.dispenserId < 0) {
+const id = route.query.dispenserId
+if (!dataStore.selectedDispenser && id) {
+  const { data: dispenser } = await useFetch<Dispenser>(`/api/dispensers/${id}`)
+  if (!dispenser.value || Number.parseInt(id.toString()) < 0) {
     navigateTo({
       path: '/',
     })

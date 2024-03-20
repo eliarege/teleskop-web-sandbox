@@ -1,4 +1,5 @@
 import Knex from 'knex'
+import type { DatabaseConnection } from '~/shared/types'
 
 const config = useRuntimeConfig()
 // Set up the connection
@@ -13,27 +14,37 @@ const dmsDB = Knex({
   },
 })
 
-const teleskopDB = Knex({
-  client: 'mssql',
-  connection: {
-    host: config.teleskopHost,
-    port: Number.parseInt(config.teleskopPort),
-    user: config.teleskopUser,
-    password: config.teleskopPassword,
-    database: config.teleskopDatabase,
-    options: {
-      trustServerCertificate: true,
+let teleskopDB: null | Knex.Knex<any, unknown[]> = null
+
+async function getTeleskopDB() {
+  if (teleskopDB === null) {
+    const teleskopConnection = await $fetch<DatabaseConnection>('/api/teleskop/parameters')
+    return connectTeleskopDB(teleskopConnection)
+  }
+  return teleskopDB
+}
+function connectTeleskopDB(connection: DatabaseConnection) {
+  teleskopDB?.destroy()
+  teleskopDB = Knex({
+    client: connection.client,
+    connection: {
+      user: connection.user,
+      password: connection.password,
+      host: connection.host,
+      port: connection.port,
+      database: connection.database,
     },
-  },
-})
+  })
+
+  return teleskopDB
+}
+
 dmsDB.raw('select 1+1 as result')
   .then(() => console.log('Connected to the SQL Server via knex'))
   .catch((err: any) => console.error('Error connecting to DMS SQL Server:', err))
 
-teleskopDB.raw('select 1+1 as result')
-  .then(() => console.log('Connected to the Teleskop SQL Server via knex'))
-  .catch((err: any) => console.error('Error connecting to Teleskop SQL Server:', err))
 export {
   dmsDB,
-  teleskopDB,
+  getTeleskopDB,
+  connectTeleskopDB,
 }

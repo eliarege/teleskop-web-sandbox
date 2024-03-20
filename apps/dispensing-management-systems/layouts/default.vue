@@ -4,15 +4,17 @@ import { useStateStore } from '~/store/State'
 import { useDataStore } from '~/store/DataStore'
 
 const { didInitialise } = useKeycloak()
-const q = useQuasar()
 const { t } = useI18n()
+const { notifySuccess } = useNotify()
 const stateStore = useStateStore()
 const dataStore = useDataStore()
 const route = useRoute()
 const stickyUnavailablePaths = ['/settings']
+const selectedDispenserUndefinedPaths = ['/', '/machines', '/settings']
 const showDrawer = ref(true)
 const showSticky = ref(!stickyUnavailablePaths.includes(route.path))
 const { height } = useWindowSize()
+const refreshKey = ref(0)
 
 function goToHomepage() {
   navigateTo({
@@ -20,28 +22,30 @@ function goToHomepage() {
   })
 }
 function onLogout() {
-  onRefresh()
-  q.notify({
-    position: 'top',
-    color: 'red-4',
-    textColor: 'white',
-    icon: 'cloud_done',
-    message: t('LoggedOut'),
-    timeout: 3000,
-  })
+  onReset()
+  notifySuccess(t('Success'))
   goToHomepage()
 }
-function onRefresh() {
+function onReset() {
   dataStore.$patch({
     title: '',
     selectedDispenser: undefined,
     dispensers: undefined,
   })
 }
+async function onRefresh() {
+  dataStore.selectedDispenser = undefined
+  dataStore.dispensers = undefined
+  dataStore.getDispensers()
+  refreshKey.value += 1
+  navigateTo({
+    path: '/',
+  })
+}
 const DISPENSER_PATH_RE = /^\/dispenser\/\d+$/
 watch(() => route.params, () => {
   showSticky.value = !stickyUnavailablePaths.includes(route.path)
-  if (route.path === '/')
+  if (selectedDispenserUndefinedPaths.includes(route.path))
     dataStore.selectedDispenser = undefined
   else if (DISPENSER_PATH_RE.test(route.path)) {
     const id = Number.parseInt(route.params.id as string)
@@ -58,7 +62,7 @@ watch(() => route.params, () => {
   <QLayout v-if="didInitialise" view="hHh LpR fFf">
     <LoadingSpinner v-if="stateStore.isLoading" />
     <KeepAlive>
-      <Appbar />
+      <NavigationBar />
     </KeepAlive>
     <QDrawer
       v-if="showDrawer && route.path !== '/settings'"
@@ -73,9 +77,10 @@ watch(() => route.params, () => {
       >
         <Menubar
           mt-1
-          @refresh="onRefresh"
+          @on-refresh-dispensers="onRefresh"
         />
         <DispenserList
+          :key="refreshKey"
           class="my-1"
           @logout="onLogout"
         />

@@ -16,6 +16,8 @@ export const useColorStore = defineStore('colors', () => {
     darkJobOrderCellOdd: 'grey',
     lightJobOrderCellEven: 'white',
     lightJobOrderCellOdd: '#CACACA',
+    selectedRowLight: '#1AAAEA',
+    selectedRowDark: 'var(--q-primary)',
   }
   return {
     colors,

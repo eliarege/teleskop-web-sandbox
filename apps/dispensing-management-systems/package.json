@@ -20,13 +20,15 @@
     "pg": "^8.11.3",
     "simple-keyboard": "^3.7.36",
     "tedious": "^16.6.1",
-    "ui": "workspace:*"
+    "ui": "workspace:*",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.6",
     "@types/pg": "^8.10.9",
     "nuxt": "^3.9.0",
     "nuxt-base": "workspace:*",
+    "nuxt-ui": "workspace:*",
     "unocss-config": "workspace:*",
     "vue": "^3.4.0",
     "vue-router": "^4.2.5"

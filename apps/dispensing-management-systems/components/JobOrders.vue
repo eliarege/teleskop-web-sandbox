@@ -1,21 +1,31 @@
 <script lang="ts" setup>
+import { QTable } from 'quasar'
 import type { QTableColumn } from 'quasar'
-import MaterialRequests from './MaterialRequests.vue'
-import type { JobOrder } from '~/shared/types'
+import MaterialRequests from './material/MaterialRequests.vue'
+import WeighingInfo from './WeighingInfo.vue'
+import type { Dispenser, JobOrder } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { cellStyle } from '~/shared/utils'
+import { useDataStore } from '~/store/DataStore'
 
 const { t } = useI18n()
 const q = useQuasar()
 const route = useRoute()
+const dataStore = useDataStore()
 const colorStore = useColorStore()
+const table = ref<QTable>()
 const searchFilter = ref('')
-const jobOrders = ref()
-
-getJobOrders()
+const jobOrders = ref<JobOrder[]>([])
+const selectedRow = ref<JobOrder | null>(null)
+const dispensers = await dataStore.getDispensers()
 async function getJobOrders() {
-  jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders?dispenserId=${route.query.dispenserId}`)
+  const dispenserId = route.query.dispenserId?.toString()
+  if (dispenserId)
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`, { query: { dispenserId } })
+  else
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`)
 }
+getJobOrders()
 const columns: (QTableColumn<JobOrder>)[] = [
   {
     name: 'job_order',
@@ -70,7 +80,7 @@ const columns: (QTableColumn<JobOrder>)[] = [
     name: 'recipe_type',
     label: t('RecipeType'),
     field: 'recipeType',
-    sortable: false,
+    sortable: true,
     align: 'left',
   },
   {
@@ -95,30 +105,102 @@ const columns: (QTableColumn<JobOrder>)[] = [
     align: 'left',
   },
 ]
-
-function onRowClick(_event: Event, row: JobOrder) {
-  q.dialog({
-    component: MaterialRequests,
-    componentProps: { jobOrder: row },
-  })
+const buttonProps = ref([
+  { name: 'materialRequests', label: t('MaterialRequests'), link: 'material', icon: 'science' },
+  { name: 'recipeInfo', label: t('recipeFields.Info'), link: 'recipe', icon: 'description' },
+  { name: 'weighingInfo', label: t('weighingFields.Info'), link: 'weighing', icon: 'balance' },
+])
+function onRowClick(row: JobOrder) {
+  if (selectedRow.value === row)
+    selectedRow.value = null
+  else
+    selectedRow.value = row
+}
+function onButtonClicked(link: string) {
+  const jobOrder = selectedRow.value
+  if (link === 'material') {
+    q.dialog({
+      component: MaterialRequests,
+      componentProps: { jobOrder },
+    })
+  } else if (link === 'recipe') {
+    navigateTo({
+      path: '/recipe',
+      query: {
+        batchNo: jobOrder!.batchNo,
+        correctionNo: jobOrder!.batchCorrectionNo,
+        machineId: jobOrder!.machineId,
+      },
+    })
+  } else if (link === 'weighing') {
+    q.dialog({
+      component: WeighingInfo,
+      componentProps: { jobOrder },
+    })
+  }
 }
 const pagination = ref({ rowsPerPage: 50 })
+watch(searchFilter, async () => {
+  await nextTick()
+  if (!table.value?.filteredSortedRows.includes(selectedRow.value))
+    selectedRow.value = null
+})
+watch(() => route.query.dispenserId, (val) => {
+  const dispenser = dataStore.getDispenser(Number(val))
+  updateDispenser(dispenser)
+  getJobOrders()
+})
+function updateDispenser(val: Dispenser | undefined) {
+  selectedRow.value = null
+  dataStore.selectedDispenser = val
+  if (val) {
+    dataStore.title = val.dispenserName
+    navigateTo({
+      path: `/jobOrders`,
+      query: { dispenserId: `${val.dispenserId}` },
+    })
+  } else {
+    dataStore.title = ''
+    navigateTo({
+      path: `/jobOrders`,
+    })
+  }
+}
 </script>
 
 <template>
   <div class="q-pa-md ml-9">
-    <div class="flex-center">
-      <QInput
-        v-model="searchFilter"
-        :label="t('Search')"
-        class="mb-10 w-50%"
-      >
-        <template #prepend>
-          <QIcon name="search" />
-        </template>
-      </QInput>
+    <div class="flex-center mb-10">
+      <div class="col items-center mr-1">
+        <QInput
+          v-model="searchFilter"
+          :label="t('Search')"
+          style="min-width: 30vw; max-width: 40%;"
+        >
+          <template #prepend>
+            <QIcon name="search" />
+          </template>
+        </QInput>
+      </div>
+      <div>
+        <QSelect
+          v-model="dataStore.selectedDispenser"
+          borderless
+          dense
+          filled
+          style="min-width: 30vw;"
+          emit-value
+          map-options
+          options-dense
+          option-label="dispenserName"
+          :options="dispensers"
+          @update:model-value="updateDispenser"
+        />
+      </div>
     </div>
+
     <QTable
+      ref="table"
       :card-class="q.dark.isActive ? 'card-dark' : 'card-light'"
       :table-class="q.dark.isActive ? 'table-dark' : 'table-light'"
       :table-header-class="q.dark.isActive ? 'header-dark' : 'header-light'"
@@ -127,27 +209,55 @@ const pagination = ref({ rowsPerPage: 50 })
       :pagination
       :columns
       :rows="jobOrders"
-      separator="none"
+      separator="cell"
       row-key="name"
-      @row-click="onRowClick"
     >
-      <template #body-cell="props">
-        <QTd
+      <template #body="props">
+        <QTr
           :props="props"
-          :style="cellStyle(props.col, props.row, props.pageIndex, q.dark.isActive, colorStore.colors)"
+          style="cursor: pointer;"
+          :class="{ 'selected-row': selectedRow === props.row }"
+          @click="onRowClick(props.row)"
         >
-          <span v-if="props.col.field === 'status'">
-            {{ t(`statusCodes.${props.row.status}`) }}
-          </span>
-          <span v-else-if="props.col.field === 'recipeType'">
-            {{ t(`recipeTypes.${props.row.recipeType}`) }}
-          </span>
-          <span v-else>
-            {{ props.value }}
-          </span>
-        </QTd>
+          <QTd
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+            :style="cellStyle(col, props.row, props.pageIndex, (selectedRow === props.row), q.dark.isActive, colorStore.colors)"
+          >
+            <span v-if="col.field === 'status'">
+              {{ t(`statusCodes.${props.row.status}`) }}
+            </span>
+            <span v-else-if="col.field === 'recipeType'">
+              {{ t(`recipeTypes.${props.row.recipeType}`) }}
+            </span>
+            <span v-else>
+              {{ props.row[col.field] }}
+            </span>
+          </QTd>
+        </QTr>
       </template>
     </QTable>
+    <div
+      v-if="selectedRow"
+      :class="q.dark.isActive ? 'footer-buttons-joborder-dark' : 'footer-buttons-joborder-light'"
+    >
+      <QBtn
+        v-for="button of buttonProps"
+        :key="button.name"
+        class="footer-button"
+        outline
+        @click="onButtonClicked(button.link)"
+      >
+        <QIcon
+          class="button-icon"
+          :name="button.icon"
+        />
+        <span class="button-text">
+          {{ button.label }}
+        </span>
+      </QBtn>
+    </div>
   </div>
 </template>
 
@@ -181,10 +291,10 @@ const pagination = ref({ rowsPerPage: 50 })
 }
 /* Light Theme Styles */
 .table-dark, .table-light {
-  max-height: 400px;
+  max-height: 500px;
 }
 .table-light td {
-  border: 1px solid blue;
+  border: 1px solid grey;
   border-right: none;
   border-bottom: none;
 }
@@ -206,9 +316,19 @@ const pagination = ref({ rowsPerPage: 50 })
 .table-light .status-cell {
   background-color: red;
 }
+.footer-buttons-joborder-light {
+  background-color: white;
+  z-index: 1;
+  display: flex;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  height: 5rem;
+  justify-content: center;
+}
 /* Dark Theme Styles */
 .table-dark td{
-  border: 1px solid darkred;
+  border: 1px solid rgb(100,100,100);
   border-right: none;
   border-bottom: none;
 }
@@ -226,8 +346,25 @@ const pagination = ref({ rowsPerPage: 50 })
 .table-dark td:first-child {
   border-left: none;
 }
-.q-table__control {
+.footer-buttons-joborder-dark {
+  background-color: black;
+  z-index: 1;
+  display: flex;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  height: 5rem;
   justify-content: center;
-  flex: content;
+}
+.footer-button{
+  margin: 1rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.selected-row {
+  position: sticky;
+  top: 45px;
+  bottom: 0px;
+  z-index:1;
 }
 </style>

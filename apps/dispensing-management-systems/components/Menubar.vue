@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { useDataStore } from '~/store/DataStore'
+const emit = defineEmits(['onRefreshDispensers'])
 
-const dataStore = useDataStore()
 const { t } = useI18n()
 
 async function refreshDispensers() {
-  const res = await $fetch(`/api/dispensers`)
-  dataStore.selectedDispenser = undefined
-  dataStore.dispensers = res
-  navigateTo({
-    path: '/',
-  })
+  emit('onRefreshDispensers')
 }
 </script>
 
@@ -28,7 +22,7 @@ async function refreshDispensers() {
         no-caps
         icon="note_add"
         color="primary"
-        @click="navigateTo(`/addMachineDispenser`)"
+        @click="navigateTo(`/machines`)"
       >
         <QTooltip :offset="[10, 10]">
           {{ t('New') }}

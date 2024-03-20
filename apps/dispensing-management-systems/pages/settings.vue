@@ -7,10 +7,10 @@ const { t, locale } = useI18n()
 const q = useQuasar()
 const dataStore = useDataStore()
 const router = useRouter()
-const tab = ref('material')
+const tab = ref('s1')
 const splitterModel = ref(10)
 const innerWidth = ref(window.innerWidth)
-const minSize = 768
+const minSize = 1100
 
 dataStore.title = t('Settings')
 watch(locale, () => {
@@ -54,8 +54,8 @@ useResizeObserver(document.body, () => {
         >
           <QTab
             name="s1"
-            icon="settings"
-            :class="tab === 's1' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            icon="app_settings_alt"
+            :class="tab === 's1' ? 'tabs-active' : 'tabs'"
             :label="innerWidth > minSize ? `${t('settings.App')}` : ''"
           >
             <QTooltip
@@ -70,30 +70,47 @@ useResizeObserver(document.body, () => {
           <QSeparator />
           <QTab
             name="s2"
-            icon="settings"
-            :class="tab === 's2' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            icon="science"
+            :class="tab === 's2' ? 'tabs-active' : 'tabs'"
             :label="innerWidth > minSize ? `${t('settings.Material')}` : ''"
-          />
+          >
+            <QTooltip
+              v-if="innerWidth <= minSize"
+              :offset="[10, 10]"
+              anchor="center right"
+              self="center left"
+            >
+              {{ t('settings.Material') }}
+            </QTooltip>
+          </QTab>
           <QSeparator />
           <QTab
             name="s3"
             icon="settings"
-            :class="tab === 's3' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
-            :label="innerWidth > minSize ? `${t('settings.3')}` : ''"
+            :class="tab === 's3' ? 'tabs-active' : 'tabs'"
+            :label="innerWidth > minSize ? `${t('settings.Machine')}` : ''"
           />
+          <QTooltip
+            v-if="innerWidth <= minSize"
+            :offset="[10, 10]"
+            anchor="center right"
+            self="center left"
+          >
+            {{ t('settings.Machine') }}
+          </QTooltip>
           <QSeparator />
           <QTab
             name="s4"
             icon="settings"
-            :class="tab === 's4' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
+            :class="tab === 's4' ? 'tabs-active' : 'tabs'"
             :label="innerWidth > minSize ? `${t('settings.4')}` : ''"
           />
           <QSeparator />
           <QTab
             name="s5"
-            icon="settings"
-            :class="tab === 's5' ? (q.dark.isActive ? 'settings-dark-active' : 'settings-light-active') : (q.dark.isActive ? 'settings-dark' : 'settings-light')"
-            :label="innerWidth > minSize ? `${t('settings.5')}` : ''"
+            icon="backup"
+            :class="tab === 's5' ? 'tabs-active' : 'tabs'"
+            :label="innerWidth > minSize ? `${t('settings.Teleskop')}` : ''"
           />
           <QSeparator />
         </QTabs>
@@ -108,15 +125,15 @@ useResizeObserver(document.body, () => {
           transition-next="jump-up"
         >
           <QTabPanel name="s1">
-            <AppSettings />
+            <SettingsApp />
           </QTabPanel>
 
           <QTabPanel name="s2">
-            <MaterialSettings />
+            <SettingsMaterial />
           </QTabPanel>
 
           <QTabPanel name="s3">
-            <!-- Settings Component -->
+            <SettingsMachine />
           </QTabPanel>
 
           <QTabPanel name="s4">
@@ -124,41 +141,10 @@ useResizeObserver(document.body, () => {
           </QTabPanel>
 
           <QTabPanel name="s5">
-            <!-- Settings Component -->
+            <SettingsTeleskop />
           </QTabPanel>
         </QTabPanels>
       </template>
     </QSplitter>
   </div>
 </template>
-
-<style scoped>
-/* Light Theme */
-.settings-light {
-  background-color: white;
-  white-space: normal;
-  color: black
-}
-
-.settings-light-active {
-  background-color: black;
-  white-space: normal;
-  color: white
-}
-/* Dark Theme */
-.settings-dark {
-  background-color: black;
-  white-space: normal;
-  color: white
-}
-
-.settings-dark-active {
-  background-color: white;
-  white-space: normal;
-  color: black
-}
-
-.q-tab--full{
-  min-height: 8rem;
-}
-</style>

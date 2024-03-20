@@ -1,0 +1,44 @@
+.table-header th {
+  font-weight: bold;
+  color: white;
+  text-decoration: underline;
+  position: sticky;
+  background-color: var(--q-primary);
+  top: 0px;
+  z-index: 1;
+}
+.q-tab .q-tab__label {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+.q-tab--full{
+  min-height: 8rem;
+}
+.q-table__control {
+  justify-content: center;
+  flex: content;
+}
+/* Light Theme */
+.body--light .tabs {
+  background-color: white;
+  white-space: normal;
+  color: black
+}
+
+.body--light .tabs-active {
+  background-color: black;
+  white-space: normal;
+  color: white
+}
+/* Dark Theme */
+.body--dark .tabs {
+  background-color: black;
+  white-space: normal;
+  color: white
+}
+
+.body--dark .tabs-active {
+  background-color: white;
+  white-space: normal;
+  color: black
+}

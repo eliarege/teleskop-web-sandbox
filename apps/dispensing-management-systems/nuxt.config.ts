@@ -4,7 +4,8 @@ import { resolve } from 'node:path'
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  extends: ['nuxt-base'],
+  extends: ['nuxt-base', 'nuxt-ui'],
+  css: ['~/assets/css/main.css'],
   ssr: false,
   runtimeConfig: {
     dmsHost: 'localhost',
@@ -26,7 +27,7 @@ export default defineNuxtConfig({
     },
   },
   i18n: {
-    lazy: true,
+    lazy: false,
     langDir: './locales',
     locales: [
       { code: 'en', file: 'en.json' },
