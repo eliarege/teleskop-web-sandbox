@@ -37,9 +37,9 @@ export function cellRGBColorHandler(val) {
       temp += colors.status3
     if (val === 8)
       temp += colors.status8
-    temp += '; color: white;'
+    temp += ';'
   }
-  temp += 'width: 10rem; border-color: white; border-width: bold; font-weight: bolder; font-size: medium;'
+  temp += 'width: 10rem; border-color: white; font-size: medium;'
   return temp
 }
 /** Returns a database name of the spesific attribute */

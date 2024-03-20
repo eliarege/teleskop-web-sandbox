@@ -18,12 +18,12 @@ export const colors = {
   black: 'rgb(0, 0, 0)',
   tableGray: 'rgb(0, 0, 0, 0.1)',
   status0: '',
-  status1: '#61b3ff',
-  status2: '#008cff',
-  status3: '#38df4e',
-  status4: '#eda72d',
+  status1: '#ffff00',
+  status2: '#0000ff',
+  status3: '#008000',
+  status4: '#808080',
   status8: '#ff0000',
-  status10: '#c95a00',
+  status10: '#ffa500',
 }
 
 export enum StatusCodes {
