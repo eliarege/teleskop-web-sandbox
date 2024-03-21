@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import { QTable } from 'quasar'
-import type { QTableColumn } from 'quasar'
+import type { QTable } from 'quasar'
 import MaterialRequests from './material/MaterialRequests.vue'
 import WeighingInfo from './WeighingInfo.vue'
 import type { Dispenser, JobOrder } from '~/shared/types'
@@ -26,72 +25,74 @@ async function getJobOrders() {
     jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`)
 }
 getJobOrders()
-const columns: (QTableColumn<JobOrder>)[] = [
+const columns = [
   {
-    name: 'job_order',
+    name: 'batchNo',
     label: t('JobOrder'),
     field: 'batchNo',
     sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
-    name: 'batch_correction_no',
+    name: 'batchCorrectionNo',
     label: t('BatchCorrectionNo'),
     field: 'batchCorrectionNo',
     sortable: true,
     align: 'left',
   },
   {
-    name: 'machine_name',
+    name: 'machineName',
     label: t('MachineName'),
     field: 'machineName',
     sortable: true,
     align: 'left',
   },
   {
-    name: 'tank_no',
+    name: 'tankNo',
     label: t('TankNo'),
     field: 'tankNo',
     sortable: true,
     align: 'left',
   },
   {
-    name: 'program_no',
+    name: 'programNo',
     label: t('ProgramNo'),
     field: 'programNo',
     sortable: true,
     align: 'left',
   },
   {
-    name: 'program_name',
+    name: 'programName',
     label: t('ProgramName'),
     field: 'programName',
     sortable: true,
     align: 'left',
   },
   {
-    name: 'step_no',
+    name: 'stepNo',
     label: t('StepNo'),
     field: 'stepNo',
     sortable: true,
     align: 'left',
   },
   {
-    name: 'recipe_type',
+    name: 'recipeType',
     label: t('RecipeType'),
     field: 'recipeType',
     sortable: true,
     align: 'left',
   },
   {
-    name: 'recipe_process_no',
+    name: 'recipeProcessNo',
     label: t('RecipeProcessNo'),
     field: 'recipeProcessNo',
     sortable: true,
     align: 'left',
   },
   {
-    name: 'recipe_step_no',
+    name: 'recipeStepNo',
     label: t('RecipeStepNo'),
     field: 'recipeStepNo',
     sortable: true,
@@ -105,6 +106,7 @@ const columns: (QTableColumn<JobOrder>)[] = [
     align: 'left',
   },
 ]
+
 const buttonProps = ref([
   { name: 'materialRequests', label: t('MaterialRequests'), link: 'material', icon: 'science' },
   { name: 'recipeInfo', label: t('recipeFields.Info'), link: 'recipe', icon: 'description' },
@@ -139,7 +141,7 @@ function onButtonClicked(link: string) {
     })
   }
 }
-const pagination = ref({ rowsPerPage: 50 })
+//const pagination = ref({ rowsPerPage: 50 })
 watch(searchFilter, async () => {
   await nextTick()
   if (!table.value?.filteredSortedRows.includes(selectedRow.value))
@@ -165,6 +167,9 @@ function updateDispenser(val: Dispenser | undefined) {
       path: `/jobOrders`,
     })
   }
+}
+async function handleFilterSlotsUpdate() {
+
 }
 </script>
 
@@ -198,21 +203,13 @@ function updateDispenser(val: Dispenser | undefined) {
         />
       </div>
     </div>
-
-    <QTable
-      ref="table"
-      :card-class="q.dark.isActive ? 'card-dark' : 'card-light'"
-      :table-class="q.dark.isActive ? 'table-dark' : 'table-light'"
-      :table-header-class="q.dark.isActive ? 'header-dark' : 'header-light'"
-      :title="t('JobOrders')"
-      :filter="searchFilter"
-      :pagination
-      :columns
+    <FilterableTable
       :rows="jobOrders"
-      separator="cell"
-      row-key="name"
+      :columns="columns"
+      class="h-140 custom-filterable-table"
+      @update-filter-slots="handleFilterSlotsUpdate"
     >
-      <template #body="props">
+      <template #custombody="props">
         <QTr
           :props="props"
           style="cursor: pointer;"
@@ -237,7 +234,7 @@ function updateDispenser(val: Dispenser | undefined) {
           </QTd>
         </QTr>
       </template>
-    </QTable>
+    </FilterableTable>
     <div
       v-if="selectedRow"
       :class="q.dark.isActive ? 'footer-buttons-joborder-dark' : 'footer-buttons-joborder-light'"
@@ -261,61 +258,7 @@ function updateDispenser(val: Dispenser | undefined) {
   </div>
 </template>
 
-<style>
-.card-light {
-  background-color: white;
-  text-decoration-color: brown;
-}
-.card-dark {
-  background-color: rgb(43, 41, 41);
-  text-decoration-color: green;
-}
-
-.header-light th {
-  font-weight: bold;
-  padding-right: 5px;
-  text-decoration: underline;
-  position: sticky;
-  background-color: var(--q-primary);
-  top: 0px;
-  z-index: 1;
-}
-.header-dark th {
-  font-weight: bold;
-  padding-right: 5px;
-  text-decoration: underline;
-  position: sticky;
-  background-color: var(--q-dark);
-  top: 0px;
-  z-index: 1;
-}
-/* Light Theme Styles */
-.table-dark, .table-light {
-  max-height: 500px;
-}
-.table-light td {
-  border: 1px solid grey;
-  border-right: none;
-  border-bottom: none;
-}
-
-.table-light th:last-child,
-.table-light td:last-child {
-  border-right: none;
-}
-
-.table-light tbody tr:last-child th,
-.table-light tbody tr:last-child td {
-  border-bottom: none;
-  border-right: none;
-}
-.table-light th:first-child,
-.table-light td:first-child {
-  border-left: none;
-}
-.table-light .status-cell {
-  background-color: red;
-}
+<style scoped>
 .footer-buttons-joborder-light {
   background-color: white;
   z-index: 1;
@@ -325,26 +268,6 @@ function updateDispenser(val: Dispenser | undefined) {
   width: 100%;
   height: 5rem;
   justify-content: center;
-}
-/* Dark Theme Styles */
-.table-dark td{
-  border: 1px solid rgb(100,100,100);
-  border-right: none;
-  border-bottom: none;
-}
-.table-dark th:last-child,
-.table-dark td:last-child {
-  border-right: none;
-}
-
-.table-dark tbody tr:last-child th,
-.table-dark tbody tr:last-child td {
-  border-bottom: none;
-  border-right: none;
-}
-.table-dark th:first-child,
-.table-dark td:first-child {
-  border-left: none;
 }
 .footer-buttons-joborder-dark {
   background-color: black;
@@ -356,15 +279,23 @@ function updateDispenser(val: Dispenser | undefined) {
   height: 5rem;
   justify-content: center;
 }
-.footer-button{
+.footer-button {
   margin: 1rem;
   margin-bottom: 1rem;
   overflow: hidden;
 }
 .selected-row {
   position: sticky;
-  top: 45px;
+  top: 55px;
   bottom: 0px;
   z-index:1;
+}
+.custom-filterable-table {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+::v-deep .my-sticky-virtscroll-table-recipe thead tr:first-child th {
+  background-color: var(--q-primary) !important; /* Deprecated */
 }
 </style>
