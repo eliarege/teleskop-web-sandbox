@@ -518,6 +518,23 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomLevel = 17,
       },
+      {
+        type: 'textfield',
+        placeholder: 'L{search}',
+        inputType: 'text',
+        clearable: true,
+        onInput({ value }: any) {
+          schedule.events.forEach((element) => {
+            element.cls = ''
+          })
+          if (value !== '') {
+            const test = schedule.events.filter(a => a.originalData.name.includes(value))
+            test.forEach((element) => {
+              element.cls = 'custom-focus'
+            })
+          }
+        },
+      },
     ],
   } as Partial<SchedulerProConfig>)
   new Splitter({
@@ -547,20 +564,15 @@ onMounted(async () => {
       },
     },
     tbar: [
+      // https://bryntum.com/products/schedulerpro/docs/api/Grid/feature/Search
       {
         type: 'textfield',
-        label: 'L{search}',
         inputType: 'text',
+        placeholder: 'L{search}',
         clearable: true,
         cls: 'flex justify-center items-center',
-        onChange({ value }: any) {
-          if (value === '') {
-            // @ts-expect-error type error
-            unplannedGrid.data = modifiedUnscheduledEvents.value
-          } else {
-            // @ts-expect-error type error
-            unplannedGrid.data = unplannedGrid.data.filter(a => a.originalData.name.includes(value))
-          }
+        onInput({ value }: any) {
+          grid.features.search.search(value)
         },
       },
     ],

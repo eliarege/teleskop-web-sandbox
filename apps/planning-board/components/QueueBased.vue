@@ -1,7 +1,7 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro-trial'
+import { DateHelper, Splitter, TextField, Toast } from '@bryntum/schedulerpro-trial'
 import { addDays, addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
@@ -284,6 +284,7 @@ onMounted(async () => {
       },
       eventDragSelect: false,
       eventDragCreate: false,
+      // group: 'groupName',
       cellMenu: {
         items: {
           addEvent: {
@@ -480,14 +481,23 @@ onMounted(async () => {
       },
       {
         type: 'button',
-        disabled: true,
-        text: 'L{rules}',
-        icon: 'b-fa b-fa-solid b-fa-list-check',
+        text: 'Operatör Mesajları',
+        icon: 'b-fa b-fa-solid b-fa-person-walking',
         color: 'toolbar-buttons',
         onClick() {
-          showModal.rule = true
+          console.log('OP MSG')
         },
       },
+      // {
+      //   type: 'button',
+      //   disabled: true,
+      //   text: 'L{rules}',
+      //   icon: 'b-fa b-fa-solid b-fa-list-check',
+      //   color: 'toolbar-buttons',
+      //   onClick() {
+      //     showModal.rule = true
+      //   },
+      // },
       {
         type: 'button',
         icon: 'b-icon-search-plus',
@@ -509,6 +519,23 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomLevel = 17,
       },
+      {
+        type: 'textfield',
+        placeholder: 'L{search}',
+        inputType: 'text',
+        clearable: true,
+        onInput({ value }: any) {
+          schedule.events.forEach((element) => {
+            element.cls = ''
+          })
+          if (value !== '') {
+            const test = schedule.events.filter(a => a.originalData.name.includes(value))
+            test.forEach((element) => {
+              element.cls = 'custom-focus'
+            })
+          }
+        },
+      },
     ],
   } as Partial<SchedulerProConfig>)
   // @ts-expect-error missing type
@@ -523,6 +550,13 @@ onMounted(async () => {
     multiEventSelect: false,
     features: {
       cellEdit: false,
+      search: {
+        label: 'Search',
+        icon: 'b-icon b-icon-search',
+        value: 'on',
+        style: 'margin-bottom: 1em',
+        onInput: () => grid.features.search.search(''),
+      },
     },
     collapsible: false,
     eventMenu: {
@@ -540,20 +574,15 @@ onMounted(async () => {
       },
     },
     tbar: [
+      // https://bryntum.com/products/schedulerpro/docs/api/Grid/feature/Search
       {
         type: 'textfield',
-        label: 'L{search}',
         inputType: 'text',
+        placeholder: 'L{search}',
         clearable: true,
         cls: 'flex justify-center items-center',
-        onChange({ value }: any) {
-          if (value === '') {
-            // @ts-expect-error type error
-            unplannedGrid.data = modifiedUnscheduledEvents.value
-          } else {
-            // @ts-expect-error type error
-            unplannedGrid.data = unplannedGrid.data.filter(a => a.originalData.name.includes(value))
-          }
+        onInput({ value }: any) {
+          grid.features.search.search(value)
         },
       },
     ],
@@ -694,6 +723,9 @@ div[bgGreen] {
 
 .b-sch-event-content {
   white-space: normal;
+}
+.custom-focus {
+  filter: invert(60%);
 }
 </style>
 
