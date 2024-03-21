@@ -359,7 +359,7 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-thumbtack',
             text: t('ctx-menu.unpin'),
             async onItem({ eventRecord }: any) {
-              await $fetch('api/unpinEvents', {
+              await $fetch('api/unpinEvent', {
                 query: { planKey: eventRecord.originalData.id },
                 method: 'PUT',
               })
