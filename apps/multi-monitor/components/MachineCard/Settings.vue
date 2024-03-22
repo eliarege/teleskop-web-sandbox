@@ -3,11 +3,11 @@ import type { PropType } from 'vue'
 import { computed } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { QBtn, QList, QMenu } from 'quasar'
-import type { MachineCardData } from '../types'
+import type { MachineData } from '~/shared/types'
 
 const props = defineProps({
   data: {
-    type: Object as PropType<MachineCardData>,
+    type: Object as PropType<MachineData>,
     required: true,
   },
 })

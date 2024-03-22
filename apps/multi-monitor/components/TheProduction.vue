@@ -15,6 +15,6 @@ defineProps({
   <ElBacktop />
   <TeleskopNavbar :formatted="formatted" :machine-data="machineData" />
   <div class="w-full h-full px-2">
-    <TeleskopCards :machine-data="machineData" />
+    <MachineCardMain :machine-data="machineData" />
   </div>
 </template>

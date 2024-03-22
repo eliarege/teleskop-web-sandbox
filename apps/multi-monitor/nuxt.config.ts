@@ -9,7 +9,6 @@ export default defineNuxtConfig({
   extends: [
     'nuxt-base',
     'nuxt-ui',
-    'nuxt-machine-card',
   ],
   spaLoadingTemplate: false,
   ssr: false,
