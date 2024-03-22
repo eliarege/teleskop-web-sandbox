@@ -85,30 +85,19 @@ function reqStatus(params: number) {
         <span v-if="isGroupVisible"> {{ machine.groupName }} &nbsp; </span>
         {{ machine.loggedInOperatorName }}
       </div>
-      <NuxtLink :to="isScreenViable ? '/' : `vnc/${machine.id}`" :target="isScreenViable ? '_self' : '_blank'">
-        <span
-          class="flex w-min whitespace-nowrap text-left"
-          :class="
-            isScreenViable
-              ? 'cursor-not-allowed opacity-70'
-              : 'cursor-pointer hover:(underline text-white)'
-          "
-        >
-          {{ machine.name }}
-        </span>
-      </NuxtLink>
+      <span class="flex w-min whitespace-nowrap text-left">
+        {{ machine.name }}
+      </span>
     </div>
     <div class="card-items justify-center">
       <span class="card-items__item">{{ d(machine.runningStartTime) }}</span>
-      <NuxtLink
-        :to="machine.runningBatchStatus !== 0 && linksActive ? `/details/${machine.id}` : '/'"
-        class="card-items__item hover:underline hover:text-shadow-lg"
-        :class="machine.runningBatchStatus !== 0 ? 'cursor-pointer' : 'cursor-not-allowed'"
+      <div
+        class="card-items__item"
       >
         <span>
           {{ machine.runningJobOrder }}
         </span>
-      </NuxtLink>
+      </div>
     </div>
     <div class="machine-info">
       <div class="thermometer" :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }">
