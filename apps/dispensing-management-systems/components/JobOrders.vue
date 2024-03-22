@@ -2,7 +2,7 @@
 import type { QTable } from 'quasar'
 import MaterialRequests from './material/MaterialRequests.vue'
 import WeighingInfo from './WeighingInfo.vue'
-import type { Dispenser, JobOrder } from '~/shared/types'
+import type { Dispenser, JobOrder, Machine } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { cellStyle } from '~/shared/utils'
 import { useDataStore } from '~/store/DataStore'
@@ -17,6 +17,7 @@ const searchFilter = ref('')
 const jobOrders = ref<JobOrder[]>([])
 const selectedRow = ref<JobOrder | null>(null)
 const dispensers = await dataStore.getDispensers()
+const { data: machines } = useFetch<Machine[]>('/api/machines')
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
   if (dispenserId)
@@ -30,7 +31,6 @@ const columns = [
     name: 'batchNo',
     label: t('JobOrder'),
     field: 'batchNo',
-    sortable: true,
     align: 'left',
     filterable: true,
     filterType: 'comparison',
@@ -39,71 +39,101 @@ const columns = [
     name: 'batchCorrectionNo',
     label: t('BatchCorrectionNo'),
     field: 'batchCorrectionNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
     name: 'machineName',
     label: t('MachineName'),
     field: 'machineName',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: machines.value,
+    optionLabel: 'machineName',
+    optionValue: 'machineId',
   },
   {
     name: 'tankNo',
     label: t('TankNo'),
     field: 'tankNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
     name: 'programNo',
     label: t('ProgramNo'),
     field: 'programNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
     name: 'programName',
     label: t('ProgramName'),
     field: 'programName',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'stepNo',
     label: t('StepNo'),
     field: 'stepNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
     name: 'recipeType',
     label: t('RecipeType'),
     field: 'recipeType',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: [
+      { label: t('recipeTypes.0'), recipeType: 0 },
+      { label: t('recipeTypes.1'), recipeType: 1 },
+    ],
+    optionLabel: 'label',
+    optionValue: 'recipeType',
   },
   {
     name: 'recipeProcessNo',
     label: t('RecipeProcessNo'),
     field: 'recipeProcessNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
     name: 'recipeStepNo',
     label: t('RecipeStepNo'),
     field: 'recipeStepNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
     name: 'status',
     label: t('Status'),
     field: 'status',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: [
+      { label: t('statusCodes.0'), status: 0 },
+      { label: t('statusCodes.1'), status: 1 },
+      { label: t('statusCodes.2'), status: 2 },
+      { label: t('statusCodes.3'), status: 3 },
+      { label: t('statusCodes.4'), status: 4 },
+      { label: t('statusCodes.8'), status: 8 },
+      { label: t('statusCodes.10'), status: 10 },
+    ],
+    optionLabel: 'label',
+    optionValue: 'status',
   },
 ]
 
@@ -141,7 +171,7 @@ function onButtonClicked(link: string) {
     })
   }
 }
-//const pagination = ref({ rowsPerPage: 50 })
+const pagination = ref({ rowsPerPage: 50 })
 watch(searchFilter, async () => {
   await nextTick()
   if (!table.value?.filteredSortedRows.includes(selectedRow.value))
@@ -174,7 +204,7 @@ async function handleFilterSlotsUpdate() {
 </script>
 
 <template>
-  <div class="q-pa-md ml-9">
+  <div class="q-pa-md">
     <div class="flex-center mb-10">
       <div class="col items-center mr-1">
         <QInput
@@ -205,8 +235,10 @@ async function handleFilterSlotsUpdate() {
     </div>
     <FilterableTable
       :rows="jobOrders"
-      :columns="columns"
-      class="h-140 custom-filterable-table"
+      :columns
+      class="h-160 custom-filterable-table"
+      :is-virtual-scroll="false"
+      :pagination
       @update-filter-slots="handleFilterSlotsUpdate"
     >
       <template #custombody="props">
@@ -286,7 +318,7 @@ async function handleFilterSlotsUpdate() {
 }
 .selected-row {
   position: sticky;
-  top: 55px;
+  top: 45px;
   bottom: 0px;
   z-index:1;
 }
@@ -294,8 +326,5 @@ async function handleFilterSlotsUpdate() {
   background-color: #f0f0f0;
   border: 1px solid #ccc;
   border-radius: 5px;
-}
-::v-deep .my-sticky-virtscroll-table-recipe thead tr:first-child th {
-  background-color: var(--q-primary) !important; /* Deprecated */
 }
 </style>
