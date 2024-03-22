@@ -274,11 +274,11 @@ function customFilterMethod(rows, terms, cols, cellValue) {
       <template #top>
         <div class="flex w-full flex-nowrap">
           <div
-            class="flex flex-col gap-5 border-1 border-black p-1 h-12 border-rounded"
+            class="filter-border"
             :style="showVisibilityMenu ? 'width: 40%' : ''"
           >
             <div
-              class="w-10 h-10 flex items-center justify-center color-black cursor-pointer"
+              class="filter-icon"
               @click="showVisibilityMenu = !showVisibilityMenu"
             >
               <q-icon name="filter_alt" size="1.5rem" />
@@ -314,10 +314,7 @@ function customFilterMethod(rows, terms, cols, cellValue) {
             <div
               v-for="(filter, index) in filterSlots"
               :key="index"
-              class="filter-slots"
-              :style="filter.isOrderFilter
-                ? 'background-color: rgba(124, 196, 255, 0.185); color: #509ee3;'
-                : 'background-color: rgba(0, 0, 0, 0.1); color: black;'"
+              :class="filter.isOrderFilter ? 'filter-slots-order' : 'filter-slots'"
             >
               {{ filter.label }} &nbsp;&nbsp;
               <q-icon name="close" @click="removeFilter(index)" />
@@ -498,7 +495,7 @@ function customFilterMethod(rows, terms, cols, cellValue) {
                   <q-btn
                     v-if="col.filterType !== 'date' && col.filterType && !checkForButtonsInsteadOfSelect(col)"
                     class="mt-5 mb-1"
-                    style="color: rgb(0, 0, 0);"
+                    style="add-btn"
                     no-caps
                     @click="pushToFilters(col, index)"
                   >
@@ -540,7 +537,11 @@ function customFilterMethod(rows, terms, cols, cellValue) {
 .my-sticky-virtscroll-table-recipe :deep(thead tr:first-child th) {
   background-color: #ffffff;
 }
-
+.body--dark .my-sticky-virtscroll-table-recipe :deep(.q-table__top),
+.body--dark .my-sticky-virtscroll-table-recipe :deep(.q-table__bottom),
+.body--dark .my-sticky-virtscroll-table-recipe :deep(thead tr:first-child th) {
+  background-color: #000000;
+}
 .my-sticky-virtscroll-table-recipe :deep(thead tr th) {
   position: sticky;
   z-index: 1;
@@ -566,11 +567,22 @@ function customFilterMethod(rows, terms, cols, cellValue) {
   border-radius: 100px;
   background: transparent;
 }
+.body--dark .ordering-buttons {
+  color: rgb(255, 255, 255);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+}
 .ordering-buttons:hover {
   color: rgb(255, 255, 255);
   background-color: rgb(0, 0, 0);
   border-color: rgb(0, 0, 0);
 }
+.body--dark .ordering-buttons:hover {
+  color: rgb(0, 0, 0);
+  background-color: rgb(255, 255, 255);
+  border-color: rgb(255, 255, 255);
+}
+
 .filterable-table {
   border: 1px solid rgb(0, 0, 0);
   border-radius: 5px;
@@ -589,8 +601,27 @@ function customFilterMethod(rows, terms, cols, cellValue) {
   align-items: center;
   cursor: pointer;
   height: 22px;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: black;
 }
-
+.body--dark .filter-slots {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+.filter-slots-order {
+  font-weight: 700;
+  border-radius: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  height: 22px;
+  background-color:  rgba(124, 196, 255, 0.885);
+  color: #509ee3;
+}
+.body--dark .filter-slots-order {
+  color: #307cc1;
+}
 .row-class {
   cursor: pointer;
 }
@@ -603,6 +634,17 @@ function customFilterMethod(rows, terms, cols, cellValue) {
   color: rgb(0, 0, 0);
   font-size: 12.5px;
   font-weight: 700;
+}
+.body--dark .column-group {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  color: white;
+}
+
+.add-btn {
+  color: rgb(0, 0, 0);
+}
+.body--dark .add-btn {
+  color: rgb(255, 255, 255)
 }
 .text-override-center :deep(.text-right){
   text-align: center;
@@ -617,6 +659,37 @@ function customFilterMethod(rows, terms, cols, cellValue) {
   text-align: left;
   /* word-break: normal;
   white-space: normal; */
+}
+.filter-border {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  border: 1px solid black;
+  padding: 0.25rem;
+  height: 3rem;
+  border-radius: 0.25rem;
+  flex-wrap: wrap;
+}
+.body--dark .filter-border {
+  border: 1px solid white;
+}
+.filter-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: black;
+}
+.body--dark .filter-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
 }
 </style>
 
