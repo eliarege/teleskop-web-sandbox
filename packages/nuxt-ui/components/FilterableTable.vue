@@ -72,6 +72,10 @@ const props = defineProps({
         && 'sortBy' in obj && typeof obj.sortBy === 'string'
     },
   },
+  isVirtualScroll: {
+    type: Boolean,
+    default: true,
+  },
 })
 const emit = defineEmits(['rowDblclick', 'updateFilterSlots', 'updateSearchFilter'])
 
@@ -265,7 +269,7 @@ function customFilterMethod(rows, terms, cols, cellValue) {
       :filter="tableFilter"
       flat
       bordered
-      virtual-scroll
+      :virtual-scroll="isVirtualScroll"
       :virtual-scroll-sticky-size-start="48"
       class="text-override-left filterable-table my-sticky-virtscroll-table-recipe"
       column-sort-order="da"
