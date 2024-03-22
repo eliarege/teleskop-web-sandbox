@@ -5,7 +5,6 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   extends: [
     'nuxt-base',
-    'nuxt-machine-card',
     'nuxt-ui',
   ],
   runtimeConfig: {

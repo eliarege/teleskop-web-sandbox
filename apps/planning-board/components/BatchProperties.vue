@@ -48,7 +48,7 @@ const time = computed(() => {
         label: `Theoretical Duration: ${batchProperties.value?.times.theoreticalDuration}`,
       },
       {
-        label: `Theoretical Start Time: ${useDateFormat(new Date(batchProperties.value?.times.plannedStartTime), 'YYYY-MM-DD HH:mm:ss').value}`,
+        label: `Theoretical Start Time: ${useDateFormat(new Date(batchProperties.value?.times.plannedStartTime || ''), 'YYYY-MM-DD HH:mm:ss').value}`,
       },
     ]
   }
@@ -104,7 +104,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
 <template>
   <div class="batch-wrapper">
     <div class="side-bar border-solid border-1px p-1 rounded-2xl border-gray-500/50">
-      <MachineCard
+      <MachineCardMain
         class="!h-270px"
         :colors="{
           backGround: cardBackgroundColor(currentMachine!.currentAlarmStatus, currentMachine!.runningBatchStatus),

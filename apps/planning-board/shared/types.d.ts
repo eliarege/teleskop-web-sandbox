@@ -48,7 +48,14 @@ export interface MachineStatus {
   manualCommandActive: boolean
   totalAlarmCount: number
 }
-
+export interface MachineData extends MachineStatus {
+  runningStartTime: Date
+  stopReasonDateTime: Date
+  manualReasonDateTime: Date
+  newTheoreticalDuration: number
+  runningBatchRatio: number
+  runningStartHour: string
+}
 export interface UnplannedEventsRaw {
   planKey: number
   recordTime: string
