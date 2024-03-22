@@ -28,16 +28,6 @@ getMaterials()
 async function getMaterials() {
   materials.value = await $fetch(`/api/materials/requests`, { query: { jobId: props.jobOrder.jobId } })
 }
-async function getRecipe() {
-  navigateTo({
-    path: '/recipe',
-    query: {
-      batchNo: props.jobOrder.batchNo,
-      correctionNo: props.jobOrder.batchCorrectionNo,
-      machineId: props.jobOrder.machineId,
-    },
-  })
-}
 </script>
 
 <template>
