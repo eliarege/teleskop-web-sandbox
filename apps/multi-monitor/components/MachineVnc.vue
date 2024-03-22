@@ -81,7 +81,6 @@ function onDisconnect(_clean: boolean) {
 function onConnect() {
   // console.log('connected', props.currentMachine.name)
 }
-const location = window.location.hostname
 function closeTab() {
   window.close()
 }
@@ -163,7 +162,7 @@ const bottomKeys = reactive([
               <span class="loader z-1 absolute" />
               <NoVnc
                 ref="vnc"
-                :url="`ws://${location}:${config.public.websockifyPort || '6800'}/${props.currentMachine.id}`"
+                :url="`ws://${config.public.websockifyUrl || 'localhost:6800'}/${props.currentMachine.id}`"
                 :credentials="vncCredentials"
                 :auth="config.public.kcEnabled"
                 :token="token"
