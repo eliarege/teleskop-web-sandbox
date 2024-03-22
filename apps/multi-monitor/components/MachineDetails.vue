@@ -38,7 +38,7 @@ const { data: recipe } = useFetch('/api/recipe', {
     teleskopType: store.settings?.washing ? 'washing' : 'normal',
   },
 })
-const { data: batchLogs } = await useFetch('/api/machine_logs', {
+const { data: batchLogs } = useFetch('/api/machine_logs', {
   query: { machineId: props.currentMachine.id },
 })
 const refactoredBatchLogs = computed(() => {
