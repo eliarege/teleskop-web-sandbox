@@ -14,6 +14,7 @@ const dataStore = useDataStore()
 const colorStore = useColorStore()
 const table = ref<QTable>()
 const searchFilter = ref('')
+const filters = ref([])
 const jobOrders = ref<JobOrder[]>([])
 const selectedRow = ref<JobOrder | null>(null)
 const dispensers = await dataStore.getDispensers()
@@ -21,9 +22,9 @@ const { data: machines } = useFetch<Machine[]>('/api/machines')
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
   if (dispenserId)
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`, { query: { dispenserId } })
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`, { query: { dispenserId }, method: 'POST', body: { filters: filters.value } })
   else
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`)
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`, { method: 'POST', body: { filters: filters.value } })
 }
 getJobOrders()
 const columns = [
@@ -198,8 +199,9 @@ function updateDispenser(val: Dispenser | undefined) {
     })
   }
 }
-async function handleFilterSlotsUpdate() {
-
+async function handleFilterSlotsUpdate(updatedFilters: any) {
+  filters.value = updatedFilters
+  getJobOrders()
 }
 </script>
 
