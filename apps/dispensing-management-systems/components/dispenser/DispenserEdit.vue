@@ -16,22 +16,20 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 const dataStore = useDataStore()
 const dispenser = toRef(props, 'dispenser')
 const defaultDispenser: Dispenser = {
-  dispenserId: 0,
   dispenserName: '',
   dispenserIP: '',
-  dispenserType: null,
+  dispenserType: 1,
   dispenserBrandId: 1,
   dispenserBrandName: 'Eliar',
   vncUser: '',
   vncPassword: '',
   vncPort: 5900,
-  lastConsumptionControl: new Date(),
-  protocol: '',
+  protocol: '7',
   protocolFields: null,
   isJDM: false,
   JDMConnections: [],
 }
-const editedDispenser = ref(dispenser.value ? { ...dispenser.value } : { ...defaultDispenser })
+const editedDispenser = ref(JSON.parse(JSON.stringify(dispenser.value ? dispenser.value : defaultDispenser)))
 const dispenserBrands = ref<DispenserBrand[]>([])
 const dispenserTypes = ref<DispenserType[]>([])
 const brandDispenserTypes = ref<DispenserType[]>([])
@@ -110,9 +108,10 @@ function onReset() {
     brandProtocols.value = []
     editedDispenser.value.protocolFields = null
   }
-  editedDispenser.value = dispenser.value ? { ...dispenser.value } : { ...defaultDispenser }
+  editedDispenser.value = JSON.parse(JSON.stringify(dispenser.value ? dispenser.value : defaultDispenser))
+  onBrandSelected()
+  onProtocolSelected()
 }
-
 async function onDelete() {
   q.dialog({
     component: ConfirmationDialog,
