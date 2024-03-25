@@ -1,21 +1,20 @@
 import { dmsDB } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  try {
-    const { dispenserid } = getRouterParams(event)
-    const { added, deleted } = await readBody(event)
-    if (deleted.length > 0)
-      $fetch(`/api/connections/materials/${dispenserid}`, { method: 'DELETE', body: deleted })
-    if (added.length > 0) {
-      const insertRows = added.map((materialCode: any) => ({
-        material_code: materialCode,
-        dispenser_id: dispenserid,
-      }))
-      const res = await dmsDB('DISPENSER_MATERIAL_CONNECTION').insert(insertRows)
-      return res
-    }
-  } catch (e) {
-    console.log(e)
-    return e
+  const { dispenserid } = getRouterParams(event)
+  const { added, deleted } = await readBody(event)
+  if (deleted.length > 0)
+    await dmsDB('DISPENSER_MATERIAL_CONNECTION')
+      .whereIn('material_code', deleted)
+      .andWhere('dispenser_id', dispenserid)
+      .del()
+  if (added.length > 0) {
+    const insertRows = added.map((materialCode: any) => ({
+      material_code: materialCode,
+      dispenser_id: dispenserid,
+    }))
+    await dmsDB('DISPENSER_MATERIAL_CONNECTION').insert(insertRows)
   }
+  setResponseStatus(event, 200, 'OK')
+  return event.node.res.end()
 })
