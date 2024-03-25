@@ -209,8 +209,10 @@ async function onDelete() {
                 v-model="editedDispenser.vncPort"
                 class="item-input"
                 dense
-                type="number"
                 filled
+                type="number"
+                :rules="[(val: number) => val >= 0]"
+                min="0"
                 :placeholder="editedDispenser.vncPort"
               />
             </div>

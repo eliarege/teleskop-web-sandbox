@@ -92,8 +92,10 @@ function onReset() {
               <QInput
                 v-model="teleskopSettings!.port"
                 dense
-                type="number"
                 filled
+                type="number"
+                :rules="[(val: number) => val >= 0]"
+                min="0"
               />
             </div>
             <QSeparator

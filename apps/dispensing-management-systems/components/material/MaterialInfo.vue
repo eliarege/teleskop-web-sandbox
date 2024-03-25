@@ -163,8 +163,9 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 v-model="editedMaterial.ph"
                 class="item-input"
                 dense
-                type="number"
                 filled
+                type="number"
+                min="0"
                 :rules="[(val: number) => val > 0 && val < 14]"
                 :placeholder="editedMaterial.ph"
               />
@@ -208,8 +209,10 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 v-model="editedMaterial.density"
                 class="item-input"
                 dense
-                type="number"
                 filled
+                type="number"
+                :rules="[(val: number) => val >= 0]"
+                min="0"
                 :placeholder="editedMaterial.density"
               />
             </div>
@@ -221,8 +224,10 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 v-model="editedMaterial.unitCost"
                 class="item-input"
                 dense
-                type="number"
                 filled
+                type="number"
+                :rules="[(val: number) => val >= 0]"
+                min="0"
                 :placeholder="editedMaterial.unitCost"
               />
             </div>
