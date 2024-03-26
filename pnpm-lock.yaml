@@ -261,6 +261,9 @@ importers:
       ui:
         specifier: workspace:*
         version: link:../../packages/ui
+      utils:
+        specifier: workspace:*
+        version: link:../../packages/utils
     devDependencies:
       '@types/animejs':
         specifier: ^3.1.12
@@ -283,9 +286,6 @@ importers:
       nuxt-base:
         specifier: workspace:*
         version: link:../../packages/nuxt-base
-      nuxt-machine-card:
-        specifier: workspace:*
-        version: link:../../packages/nuxt-machine-card
       nuxt-ui:
         specifier: workspace:*
         version: link:../../packages/nuxt-ui
@@ -344,9 +344,6 @@ importers:
       nuxt-base:
         specifier: workspace:*
         version: link:../../packages/nuxt-base
-      nuxt-machine-card:
-        specifier: workspace:*
-        version: link:../../packages/nuxt-machine-card
       rollup-plugin-string:
         specifier: workspace:*
         version: link:../../packages/rollup-plugin-string
@@ -760,31 +757,6 @@ importers:
         specifier: ^4.2.5
         version: 4.2.5(vue@3.4.15)
 
-  packages/nuxt-machine-card:
-    dependencies:
-      d3:
-        specifier: ^7.8.5
-        version: 7.8.5
-      nuxt-base:
-        specifier: workspace:*
-        version: link:../nuxt-base
-      ufo:
-        specifier: ^1.4.0
-        version: 1.4.0
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.6
-        version: 20.11.6
-      nuxt:
-        specifier: ^3.9.0
-        version: 3.9.3(@types/node@20.11.6)(eslint@8.56.0)(typescript@5.3.3)(vite@5.0.12)
-      vue:
-        specifier: ^3.4.0
-        version: 3.4.15(typescript@5.3.3)
-      vue-router:
-        specifier: ^4.2.5
-        version: 4.2.5(vue@3.4.15)
-
   packages/nuxt-ui:
     dependencies:
       nuxt-base:
@@ -888,6 +860,10 @@ importers:
         version: 0.57.7(postcss@8.4.33)(vite@5.0.12)
 
   packages/utils:
+    dependencies:
+      d3-color:
+        specifier: ^3.1.0
+        version: 3.1.0
     devDependencies:
       knex:
         specifier: ^3.0.1
