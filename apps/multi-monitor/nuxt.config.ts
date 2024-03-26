@@ -28,7 +28,7 @@ export default defineNuxtConfig({
       kcClientId: 'multi-monitor',
       isDigitalFactory: 'false',
       teleskopHasLogs: 'true',
-      websockifyUrl: '6800',
+      websockifyUrl: 'ws://localhost:6800',
     },
   },
   i18n: {

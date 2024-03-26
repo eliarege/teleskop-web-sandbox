@@ -162,7 +162,7 @@ const bottomKeys = reactive([
               <span class="loader z-1 absolute" />
               <NoVnc
                 ref="vnc"
-                :url="`ws://${config.public.websockifyUrl || 'localhost:6800'}/${props.currentMachine.id}`"
+                :url="`${config.public.websockifyUrl || 'ws://localhost:6800'}/${props.currentMachine.id}`"
                 :credentials="vncCredentials"
                 :auth="config.public.kcEnabled"
                 :token="token"
