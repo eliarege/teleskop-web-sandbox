@@ -463,30 +463,30 @@ onMounted(async () => {
           showModal.recipe.unit.machineId = schedule.selectedEvents[0]._data.resourceId
         },
       },
-      {
-        type: 'button',
-        disabled: true,
-        ref: 'processButton',
-        text: 'L{process}',
-        icon: 'b-fa b-fa-solid b-fa-receipt',
-        color: 'toolbar-buttons',
-        onClick() {
-          showModal.process.show = true
-          showModal.process.unit.name = schedule.selectedEvents[0].name
-        },
-      },
-      {
-        type: 'button',
-        disabled: true,
-        ref: 'theoreticalButton',
-        text: 'L{theoretical}',
-        icon: 'b-fa b-fa-solid b-fa-file-zipper',
-        color: 'toolbar-buttons',
-        onClick() {
-          showModal.theoreticalProgram.show = true
-          showModal.theoreticalProgram.unit.name = schedule.selectedEvents[0].name
-        },
-      },
+      // {
+      //   type: 'button',
+      //   disabled: true,
+      //   ref: 'processButton',
+      //   text: 'L{process}',
+      //   icon: 'b-fa b-fa-solid b-fa-receipt',
+      //   color: 'toolbar-buttons',
+      //   onClick() {
+      //     showModal.process.show = true
+      //     showModal.process.unit.name = schedule.selectedEvents[0].name
+      //   },
+      // },
+      // {
+      //   type: 'button',
+      //   disabled: true,
+      //   ref: 'theoreticalButton',
+      //   text: 'L{theoretical}',
+      //   icon: 'b-fa b-fa-solid b-fa-file-zipper',
+      //   color: 'toolbar-buttons',
+      //   onClick() {
+      //     showModal.theoreticalProgram.show = true
+      //     showModal.theoreticalProgram.unit.name = schedule.selectedEvents[0].name
+      //   },
+      // },
       {
         type: 'button',
         disabled: true,
