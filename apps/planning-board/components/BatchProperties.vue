@@ -64,25 +64,29 @@ const summary = computed(() => {
     },
   ]
 })
-const tree = computed(() => [
+const tree = reactive([
   {
     label: 'ERP Parametereleri',
+    fold: true,
     children: batchProperties.value?.erpParameters.map(e => ({
       label: `${e.paramName}: ${e.value}`,
     })),
   },
   {
     label: 'Süreler',
+    fold: true,
     children: time.value,
   },
   {
     label: 'Programlar',
+    fold: true,
     children: batchProperties.value?.programs.map((program, i) => ({
       label: ` ${i + 1} -> ${program.NAME}`,
     })),
   },
   {
     label: 'Özet',
+    fold: true,
     children: summary.value,
   },
 ])
@@ -119,14 +123,18 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         :machine="currentMachine || []"
         :links-active="false"
       />
-      <div class="w-full h-full max-h-147 overflow-auto p-3">
-        <QTree
-          :nodes="tree"
-          node-key="label"
-          dense
-          label-key="label"
-          no-connectors
-        />
+      <div class="w-full h-min max-h-140 overflow-auto p-3 !font-100 border-1px border-gray-500/50 rounded">
+        <div v-for="(item, idx) in tree" :key="idx" class="flex-center w-full">
+          <q-expansion-item v-model="item.fold" header-class="font-extrabold" class="w-full max-w-100" :label="item.label" expand-seperator>
+            <q-list v-for="(test, idy) in item.children" :key="idy">
+              <q-item>
+                <q-item-section>
+                  {{ test.label }}
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-expansion-item>
+        </div>
       </div>
     </div>
     <div class=" border-solid border-1px p-1 rounded-2xl border-gray-500/50">
