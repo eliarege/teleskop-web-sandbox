@@ -404,17 +404,6 @@ async function updateVersions() {
 const q = useQuasar()
 
 async function loadProject() {
-  if (selected.value.machineId === -1) {
-    q.notify({
-      message: t('pleaseSelectaRow'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
-    })
-    return
-  }
   try {
     await $fetch('/api/sync/update-machine', {
       method: 'GET',
@@ -562,19 +551,58 @@ function handleClick(event, option) {
   }
 }
 
-async function checkTeleskopConnection() {
+async function checkTeleskopConnection(formData: Machine) {
   try {
     await $fetch('/api/sync/teleskop-connection', {
       method: 'GET',
       query: {
-        machineId: selected.value.machineId,
+        ip: formData.ip,
       },
+    })
+    q.notify({
+      message: t('connectionSuccessful'),
+      position: 'top',
+      timeout: 2000,
+      actions: [
+        { label: t('dismiss'), color: 'blue', handler: () => { } },
+      ],
     })
   } catch (error) {
     console.error(error)
     if (error.statusCode === 500) {
       q.notify({
         message: t('noConnectionToTeleskop'),
+        position: 'top',
+        timeout: 2000,
+        actions: [
+          { label: t('dismiss'), color: 'blue', handler: () => { } },
+        ],
+      })
+    }
+  }
+}
+
+async function checkNetworkConnection(formData: Machine) {
+  try {
+    await $fetch('/api/sync/network-connection', {
+      method: 'GET',
+      query: {
+        ip: formData.ip,
+      },
+    })
+    q.notify({
+      message: t('connectionSuccessful'),
+      position: 'top',
+      timeout: 2000,
+      actions: [
+        { label: t('dismiss'), color: 'blue', handler: () => { } },
+      ],
+    })
+  } catch (error) {
+    console.error(error)
+    if (error.statusCode === 500) {
+      q.notify({
+        message: t('noConnectionToNetwork'),
         position: 'top',
         timeout: 2000,
         actions: [
@@ -624,6 +652,7 @@ async function checkTeleskopConnection() {
       no-caps
       push
       color="primary"
+      :disable="selected.machineId === -1"
       class="mr-4"
       @click="loadProject"
     />
@@ -659,13 +688,20 @@ async function checkTeleskopConnection() {
     @select="handleSelection"
     @delete="handleDelete"
   >
-    <template #form-content>
+    <template #form-content="slotProps">
       <q-btn
         :label="t('checkTeleskopConnection')"
         color="primary"
         no-caps
         class="mb-4"
-        @click="checkTeleskopConnection"
+        @click="checkTeleskopConnection(slotProps.formData)"
+      />
+      <q-btn
+        :label="t('checkNetworkConnection')"
+        color="primary"
+        no-caps
+        class="mb-4"
+        @click="checkNetworkConnection(slotProps.formData)"
       />
     </template>
   </FormTableKit>
