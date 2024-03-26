@@ -6,6 +6,7 @@ import type { Dispenser, JobOrder, Machine } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { cellStyle } from '~/shared/utils'
 import { useDataStore } from '~/store/DataStore'
+import { StatusCodes } from '~/shared/constants'
 
 const { t } = useI18n()
 const q = useQuasar()
@@ -143,8 +144,8 @@ const buttonProps = ref([
   { name: 'recipeInfo', label: t('recipeFields.Info'), link: 'recipe', icon: 'description' },
   { name: 'weighingInfo', label: t('weighingFields.Info'), link: 'weighing', icon: 'balance' },
 ])
-function onRowClick(row: JobOrder) {
-  if (selectedRow.value === row)
+function onRowClick(row: JobOrder, isContextMenu: boolean) {
+  if (selectedRow.value === row && !isContextMenu)
     selectedRow.value = null
   else
     selectedRow.value = row
@@ -203,6 +204,9 @@ async function handleFilterSlotsUpdate(updatedFilters: any) {
   filters.value = updatedFilters
   getJobOrders()
 }
+async function processRequest(action: string, row: JobOrder, showDialog: boolean) {
+
+}
 </script>
 
 <template>
@@ -248,7 +252,8 @@ async function handleFilterSlotsUpdate(updatedFilters: any) {
           :props="props"
           style="cursor: pointer;"
           :class="{ 'selected-row': selectedRow === props.row }"
-          @click="onRowClick(props.row)"
+          @click="onRowClick(props.row, false)"
+          @contextmenu="onRowClick(props.row, true)"
         >
           <QTd
             v-for="col in props.cols"
@@ -265,6 +270,40 @@ async function handleFilterSlotsUpdate(updatedFilters: any) {
             <span v-else>
               {{ props.row[col.field] }}
             </span>
+            <QMenu
+              touch-position
+              context-menu
+            >
+              <QList>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="
+                    processRequest('retry', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                  "
+                >
+                  <QItemSection>{{ t('jobOrderActions.Retry') }}</QItemSection>
+                </QItem>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="
+                    processRequest('cancel', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                  "
+                >
+                  <QItemSection>{{ t('jobOrderActions.Cancel') }}</QItemSection>
+                </QItem>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="
+                    processRequest('complete', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                  "
+                >
+                  <QItemSection>{{ t('jobOrderActions.Complete') }}</QItemSection>
+                </QItem>
+              </QList>
+            </QMenu>
           </QTd>
         </QTr>
       </template>

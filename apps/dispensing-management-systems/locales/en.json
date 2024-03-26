@@ -69,6 +69,11 @@
   "Materials": "Materials",
   "MaterialRequests": "Material Requests",
   "SelectedMaterials": "{count} Selected",
+  "jobOrderActions": {
+    "Retry": "Repeat Selected Request",
+    "Cancel": "Cancel Selected Request",
+    "Complete": "Make Selected Request Completed"
+  },
   "settings": {
     "App": "App Settings",
     "Material": "Material Settings",

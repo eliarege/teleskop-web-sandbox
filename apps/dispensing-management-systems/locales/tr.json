@@ -69,6 +69,11 @@
   "Materials": "Malzemeler",
   "MaterialRequests": "Malzeme İstekleri",
   "SelectedMaterials": "{count} Seçili",
+  "jobOrderActions": {
+    "Retry": "Seçili İsteği Tekrarla",
+    "Cancel": "Seçili İsteği İptal Et",
+    "Complete": "Seçili İsteği Tamamlandı Yap"
+  },
   "settings": {
     "App": "Uygulama Ayarları",
     "Material": "Malzeme Ayarları",
