@@ -582,16 +582,6 @@ export class QueueSchedule extends SchedulerPro {
             )
           },
         },
-        eventMenu: {
-          items: {
-            unassign: {
-              text: 'Unassign',
-              icon: 'b-fa b-fa-user-times',
-              weight: 200,
-              onItem: ({ eventRecord }) => eventRecord.unassign(),
-            },
-          },
-        },
       },
       async onEventDragStart({ context }) {
         context.task = context.eventRecord.originalData
@@ -646,21 +636,6 @@ export class QueueSchedule extends SchedulerPro {
       },
       rowHeight: 50,
       barMargin: 4,
-      columns: [
-        {
-          type: 'resourceInfo',
-          text: 'L{machine}',
-          flex: 1,
-          width: 250,
-          showEventCount: false,
-          showRole: true,
-          showMeta: ({ originalData }) => {
-            return `<div>Total Alarm Count: ${originalData.totalAlarmCount}</div>`
-          },
-          enableCellContextMenu: false,
-          field: 'name',
-        },
-      ],
       viewPreset: {
         base: 'hourAndDay',
         columnLinesFor: 0,

@@ -44,6 +44,12 @@ const showModal = reactive({
     show: false,
     unit: { machineId: 0, jobOrder: '', planKey: 0 },
   },
+  vnc: {
+    show: false,
+    currentMachine: {
+      id: 0,
+    },
+  },
   datePicker: false,
   rule: false,
   settings: false,
@@ -278,6 +284,34 @@ onMounted(async () => {
         a.items.unpin.hidden = true
       }
     },
+    columns: [
+      {
+        type: 'resourceInfo',
+        text: 'L{machine}',
+        flex: 1,
+        width: 250,
+        showEventCount: false,
+        showRole: true,
+        showMeta: ({ originalData }) => {
+          return `<div>Total Alarm Count: ${originalData.totalAlarmCount}</div>`
+        },
+        enableCellContextMenu: true,
+        cellMenuItems: {
+          vnc: {
+            text: 'VNC',
+            icon: 'b-fa b-fa-solid b-fa-ethernet',
+            onItem: (a) => {
+              showModal.vnc.show = !showModal.vnc.show
+              showModal.vnc.currentMachine.id = a.id
+            },
+          },
+        },
+        headerMenuItems: {
+          customItem: { text: 'ASD' },
+        },
+        field: 'name',
+      },
+    ],
     features: {
       scheduleContext: {
         disabled: true,
@@ -300,6 +334,9 @@ onMounted(async () => {
             hidden: true,
           },
           splitEvent: {
+            hidden: true,
+          },
+          removeRow: {
             hidden: true,
           },
         },
@@ -665,6 +702,11 @@ function updateScheduler() {
     <EliarModal v-if="showModal.notes.show" @click.stop="showModal.notes.show = false">
       <template #default>
         <BatchNotes :job-order="showModal.notes.unit.name" @update-scheduler="plannedRefresh()" />
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.vnc.show" @click.stop="showModal.vnc.show = false">
+      <template #default>
+        <MachineVnc :current-machine="showModal.vnc.currentMachine" />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.rule" @click.stop="showModal.rule = false" />

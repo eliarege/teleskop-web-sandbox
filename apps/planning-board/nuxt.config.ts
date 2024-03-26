@@ -16,6 +16,7 @@ export default defineNuxtConfig({
     planningEngineUrl: 'http://localhost:3500',
     public: {
       kcClientId: 'planning-board',
+      websockifyUrl: 'ws://localhost:6800',
     },
   },
   i18n: {
