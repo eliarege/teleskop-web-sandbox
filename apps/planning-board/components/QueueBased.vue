@@ -344,9 +344,10 @@ onMounted(async () => {
       eventMenu: {
         items: {
           taskEdit: {
-            icon: 'b-fa-sharp b-fa-light b-fa-pen-to-square',
-            text: t('ctx-menu.task-edit'),
-            disabled: true,
+            // icon: 'b-fa-sharp b-fa-light b-fa-pen-to-square',
+            // text: t('ctx-menu.task-edit'),
+            // disabled: true,
+            hidden: true,
           },
           delete: {
             icon: 'b-fa-solid b-fa-trash',
