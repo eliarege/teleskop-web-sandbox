@@ -95,11 +95,13 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
             <q-btn
               no-caps
               :label="t('edit')"
+              :disable="selected.id === -1"
               @click="handleEdit"
             />
             <q-btn
               no-caps
               :label="t('delete')"
+              :disable="selected.id === -1"
               @click="handleDelete"
             />
           </div>

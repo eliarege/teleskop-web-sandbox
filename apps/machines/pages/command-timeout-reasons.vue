@@ -149,12 +149,14 @@ async function handlePaste() {
         push
         :label="t('edit')"
         icon="edit"
+        :disable="!selectedReasonId"
         @click="handleEditButton()"
       />
       <q-btn
         push
         :label="t('delete')"
         icon="delete"
+        :disable="!selectedReasonId"
         @click="handleDeleteReason()"
       />
     </q-btn-group>
@@ -174,7 +176,7 @@ async function handlePaste() {
           clickable
           :focused="selectedMachineId === machine.machineId"
           :active="selectedMachineId === machine.machineId"
-          @click="selectedMachineId = machine.machineId"
+          @click="selectedMachineId = machine.machineId;selectedReasonId = null;selectedCommandNo = null"
         >
           <q-item-section>
             {{ machine.machineCode }}
@@ -197,7 +199,7 @@ async function handlePaste() {
           clickable
           :focused="selectedCommandNo === command.commandNo"
           :active="selectedReasonCommands && selectedReasonCommands.length ? selectedReasonCommands.some(r => r.commandNo === command.commandNo) : false"
-          @click="selectedCommandNo = command.commandNo"
+          @click="selectedCommandNo = command.commandNo;selectedReasonId = null"
         >
           <q-item-section>
             {{ command.commandName }}

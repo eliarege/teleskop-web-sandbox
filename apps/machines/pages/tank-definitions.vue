@@ -37,7 +37,7 @@ interface CommandList {
 }
 
 const tank = ref<Partial<TankDefinition>>({
-  tankNo: 0,
+  tankNo: -1,
   name: '',
   highLimit: 0,
   machineConstantHighLimit: 0,
@@ -101,15 +101,11 @@ const { data: commands, refresh: refreshCommands } = useLazyFetch<MasterCommand[
 })
 
 function filterCommandLists() {
-  if (tank.value.tankNo === undefined || tank.value.tankNo === 0)
+  if (tank.value.tankNo === undefined || tank.value.tankNo === -1)
     tank.value.tankNo = tankDefinitions.value[0].tankNo
   for (const list of commandLists) {
     list.ref = list.ref.filter(d => d.tankNo === tank.value.tankNo)
   }
-}
-
-async function handleMachineClick(machineId: number) {
-  selectedMachineId.value = machineId
 }
 
 async function handleTankDefinitionClick(tankDef: TankDefinition) {
@@ -215,7 +211,7 @@ async function handlePaste() {
               clickable
               :focused="selectedMachineId === machine.machineId"
               :active="selectedMachineId === machine.machineId"
-              @click="handleMachineClick(machine.machineId!)"
+              @click="selectedMachineId = machine.machineId"
             >
               <q-item-section>
                 {{ machine.machineCode }}
@@ -280,6 +276,7 @@ async function handlePaste() {
             <q-btn
               :label="t('delete')"
               no-caps
+              :disable="!tank.tankNo || tank.tankNo === -1"
               @click="handleDelete"
             />
           </div>
