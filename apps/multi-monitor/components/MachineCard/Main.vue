@@ -11,11 +11,14 @@ const props = defineProps({
     required: true,
   },
 })
+
 const { t } = useI18n()
 const store = useDataStore()
 const colors = useColorStore()
+
 const baseURL = useRuntimeConfig().app.baseURL
 const withBaseURL = (input: string) => withBase(input, baseURL)
+
 const sortedMachines = computed(() => {
   const filteredGroups = props.machineData.filter(group => !store.filteredGroups.has(group.groupName))
   const filteredMachines = filteredGroups.filter(item => !store.filteredMachines.has(item.id))
@@ -44,6 +47,7 @@ const sortedMachines = computed(() => {
     return [...filteredMachines].sort((a, b) => (a.id < b.id ? -1 : 1))
   }
 })
+
 // #region FUNCTIONS
 function connectionStatus(params: number) {
   if (params === 1) {
@@ -67,7 +71,9 @@ function reqStatus(params: number) {
     return t('teleskop.status-prio')
   } else return t('teleskop.status-cancelled')
 }
+
 const { width: screenWidth } = useWindowSize()
+
 function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
   if (store.sortMachines === 5) {
     if (currentAlarmStatus === 0) {
@@ -80,6 +86,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
     return colors.cardIdleBg
   } else return colors.cardActiveBg
 }
+
 function isScreenViable(screen: number) {
   return screen < 900
 }
@@ -92,7 +99,7 @@ function isScreenViable(screen: number) {
       v-for="element in sortedMachines"
       :key="element.id"
     >
-      <MachineCard
+      <MachineCardLayout
         :colors="{
           backGround: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus),
           itemBackGround: colors.cardItemBg,

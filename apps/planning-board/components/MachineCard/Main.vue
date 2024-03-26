@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { color } from 'd3'
 import { withBase } from 'ufo'
-import type { MachineCardData } from '../types'
+import type { MachineData } from '~/shared/types'
 
 interface MachineCardProps {
   colors: {
@@ -10,7 +10,7 @@ interface MachineCardProps {
     idleBackGround: string
     itemBackGround: string
   }
-  machine: MachineCardData
+  machine: MachineData
   isGroupVisible: boolean
   isScreenViable: boolean
   machineSort: number
@@ -36,7 +36,7 @@ function textColor(bgColor: string) {
   }
   return (0.2126 * sRGBtoLin(sRGB.r) + 0.7152 * sRGBtoLin(sRGB.g) + 0.0722 * sRGBtoLin(sRGB.b)) > 0.5 ? 'black' : 'white'
 }
-const { t } = useI18n()
+const { t, d } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 const withBaseURL = (input: string) => withBase(input, baseURL)
 
@@ -85,30 +85,19 @@ function reqStatus(params: number) {
         <span v-if="isGroupVisible"> {{ machine.groupName }} &nbsp; </span>
         {{ machine.loggedInOperatorName }}
       </div>
-      <NuxtLink :to="isScreenViable ? '/' : `vnc/${machine.id}`" :target="isScreenViable ? '_self' : '_blank'">
-        <span
-          class="flex w-min whitespace-nowrap text-left"
-          :class="
-            isScreenViable
-              ? 'cursor-not-allowed opacity-70'
-              : 'cursor-pointer hover:(underline text-white)'
-          "
-        >
-          {{ machine.name }}
-        </span>
-      </NuxtLink>
+      <span class="flex w-min whitespace-nowrap text-left">
+        {{ machine.name }}
+      </span>
     </div>
     <div class="card-items justify-center">
-      <span class="card-items__item">{{ machine.runningStartHour }}</span>
-      <NuxtLink
-        :to="machine.runningBatchStatus !== 0 && linksActive ? `/details/${machine.id}` : '/'"
-        class="card-items__item hover:underline hover:text-shadow-lg"
-        :class="machine.runningBatchStatus !== 0 ? 'cursor-pointer' : 'cursor-not-allowed'"
+      <span class="card-items__item">{{ d(machine.runningStartTime) }}</span>
+      <div
+        class="card-items__item"
       >
         <span>
           {{ machine.runningJobOrder }}
         </span>
-      </NuxtLink>
+      </div>
     </div>
     <div class="machine-info">
       <div class="thermometer" :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }">
@@ -124,7 +113,7 @@ function reqStatus(params: number) {
           class="relative w-25"
           :class="machine.runningStepNo === 0 ? 'invisible' : 'visible'"
         >
-          <MachineProgressBar
+          <MachineCardProgressBar
             :data="machine"
             :completition-ratio="(machine.elapsedTime! / machine.theoreticalDuration!) * 100"
           />
@@ -165,7 +154,7 @@ function reqStatus(params: number) {
           ERP
         </div>
         <q-separator color="white" vertical class="h-full" spaced />
-        <MachineSettings :data="machine" />
+        <MachineCardSettings :data="machine" />
       </div>
       <!-- PROG ID/NAME -->
       <div
@@ -431,3 +420,86 @@ function reqStatus(params: number) {
   }
 }
 </style>
+
+<i18n lang="json">
+{
+  "en":{
+    "machine-card": {
+      "consumption-electricity": "Last Week Electricity",
+      "consumption-water": "Last Week Water",
+      "consumption-salt": "Last Week Salt",
+      "consumption-steam": "Last Week Steam",
+      "active": "Active",
+      "idle": "Idle",
+      "mode": "Details",
+      "event": "Events",
+      "alarm": "Alarm(s)",
+      "alarm-second": "Alarm",
+      "settings": "Settings",
+      "machine-stop-notification": "Machine Stop",
+      "machine-active-command": "Command",
+      "machine-process": "Process",
+      "machine-step-no": "Step No",
+      "list": "List",
+      "program": "Program",
+      "in-use": "In Use",
+      "empty": "Empty",
+      "no-connection": "NO CONNECTION!",
+      "program-name": "Program Name",
+      "phase": "Phase",
+      "stop-reason": "Stop Reason",
+      "order-index": "Order",
+      "target-recipe": "Recipe",
+      "tank-no": "Tank",
+      "program-no": "Program",
+      "req-status": "Status",
+      "status-new": "New",
+      "status-sent": "Sent to Dispenser",
+      "status-finished": "Finished",
+      "status-prio": "Priority Changed",
+      "status-cancelled": "Cancelled",
+      "command": "Step No - Command No - Command Name",
+      "command-info": "Command Info"
+    }
+  },
+  "tr": {
+    "machine-card": {
+      "consumption-electricity": "Geçen Hafta Elektrik",
+      "consumption-water": "Geçen Hafta Su",
+      "consumption-salt": "Geçen Hafta Tuz",
+      "consumption-steam": "Geçen Hafta Buhar",
+      "active": "Aktif",
+      "idle": "Boş",
+      "mode": "Detaylar",
+      "event": "Bildirimler",
+      "alarm": "Alarmlar",
+      "alarm-second": "Alarm",
+      "settings": "Ayarlar",
+      "machine-stop-notification": "Makine Duruş",
+      "machine-active-command": "Emir",
+      "machine-process": "Süreç",
+      "machine-step-no": "Step No",
+      "list": "Liste",
+      "program": "Program",
+      "in-use": "Kullanımda",
+      "empty": "Boşta",
+      "no-connection": "BAĞLANTI YOK!",
+      "program-name": "Program İsmi",
+      "phase": "Faz",
+      "stop-reason": "Duruş Nedeni",
+      "order-index": "Sıra",
+      "target-recipe": "Reçete",
+      "tank-no": "Tank",
+      "program-no": "Program",
+      "req-status": "Durum",
+      "status-new": "Yeni",
+      "status-sent": "Dağıtıcıya Gönderildi",
+      "status-finished": "Bitti",
+      "status-prio": "Öncelik Değişti",
+      "status-cancelled": "İptal Edildi",
+      "command": "Adım No - Komut No - Komut İsmi",
+      "command-info": "Komut Bilgileri"
+    }
+  }
+}
+</i18n>

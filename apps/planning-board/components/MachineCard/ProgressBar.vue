@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import type { MachineCardData } from '../types'
+import type { MachineData } from '~/shared/types'
 
 defineProps({
   data: {
-    type: Object as PropType<MachineCardData>,
+    type: Object as PropType<MachineData>,
     required: true,
   },
   completitionRatio: Number,

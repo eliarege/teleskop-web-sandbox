@@ -9,7 +9,6 @@ export default defineNuxtConfig({
   extends: [
     'nuxt-base',
     'nuxt-ui',
-    'nuxt-machine-card',
   ],
   spaLoadingTemplate: false,
   ssr: false,
@@ -24,12 +23,12 @@ export default defineNuxtConfig({
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
     machineStatusUrl: 'http://machine-status',
-    isStaging: 'false',
+    isStaging: 'no',
     public: {
       kcClientId: 'multi-monitor',
       isDigitalFactory: 'false',
       teleskopHasLogs: 'true',
-      websockifyPort: '6800',
+      websockifyUrl: 'ws://localhost:6800',
     },
   },
   i18n: {

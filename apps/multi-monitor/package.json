@@ -22,7 +22,8 @@
     "lodash-es": "^4.17.21",
     "mssql": "^10.0.1",
     "ufo": "^1.4.0",
-    "ui": "workspace:*"
+    "ui": "workspace:*",
+    "utils": "workspace:*"
   },
   "devDependencies": {
     "@types/animejs": "^3.1.12",
@@ -32,7 +33,6 @@
     "@types/node": "^20.11.6",
     "nuxt": "^3.9.0",
     "nuxt-base": "workspace:*",
-    "nuxt-machine-card": "workspace:*",
     "nuxt-ui": "workspace:*",
     "rollup-plugin-string": "workspace:*",
     "unocss-config": "workspace:*",
