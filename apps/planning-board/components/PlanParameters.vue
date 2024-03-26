@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 const props = defineProps<{ planKey: number }>()
 
 const { t } = useI18n()
@@ -33,18 +32,6 @@ const columns = computed(() => {
           </q-td>
           <q-td key="paramString" :props="prop">
             {{ prop.row.paramString }}
-            <q-popup-edit
-              v-slot="scope"
-              v-model="prop.row.paramString"
-              buttons
-            >
-              <!-- TODO: @save -->
-              <q-input
-                v-model="scope.value"
-                type="textarea"
-                dense
-              />
-            </q-popup-edit>
           </q-td>
           <q-td key="value" :props="prop">
             {{ prop.row.value }}
