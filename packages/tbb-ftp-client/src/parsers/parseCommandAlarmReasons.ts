@@ -13,12 +13,14 @@ export function parseCommandAlarmReasons(content: string) {
   const reasons = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const commandNumbersArray = match[3].split(',').map(Number)
+    let commandNumbersArray
+    if (match[3])
+      commandNumbersArray = match[3].split(',').map(Number)
 
     const reason: CommandAlarmReason = {
       id: Number.parseInt(match[1]),
       reasonText: match[2],
-      commandNumbers: commandNumbersArray,
+      commandNumbers: commandNumbersArray ?? [],
       groupId: Number.parseInt(match[4]),
     }
     reasons.push(reason)

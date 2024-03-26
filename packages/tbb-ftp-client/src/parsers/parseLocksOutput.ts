@@ -10,8 +10,9 @@
 const pattern = /^(\d+) (\d+) (.+)$/
 
 export function parseLocksOutput(content: string) {
-  const locks = []
   const lines = content.split('\n')
+  if (!lines)
+    return { analogLocks: [], digitalLocks: [] }
 
   const analogLocks = []
   const digitalLocks = []

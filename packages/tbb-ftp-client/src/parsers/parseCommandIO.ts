@@ -16,14 +16,16 @@ export function parseCommandIO(content: string) {
     }
     if (match[3]) {
       const groups = match[3].match(/(\d+,\d+ [01])/g)
-      command.chooseList = groups.map((g) => {
-        const [xy, z] = g.split(' ')
-        const [x, y] = xy.split(',')
-        return { ioType: Number.parseInt(x), ioId: Number.parseInt(y), isDefault: Number.parseInt(z), name: match[2] }
-      })
+      if (groups) {
+        command.chooseList = groups.map((g) => {
+          const [xy, z] = g.split(' ')
+          const [x, y] = xy.split(',')
+          return { ioType: Number.parseInt(x), ioId: Number.parseInt(y), isDefault: Number.parseInt(z), name: match[2] }
+        })
+        commands.push(command)
+      }
     }
 
-    commands.push(command)
     match = pattern.exec(content)
   }
 

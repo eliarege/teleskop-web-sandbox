@@ -11,14 +11,19 @@ const pattern = /^(.+)=(.+)$/
 
 export function parseSystem(content: string) {
   const res = {}
-  content.split('\n').forEach((line) => {
-    const match = line.match(pattern)
-    if (match) {
-      const key = match[1]
-      const value = match[2]
-      res[key] = value
-    }
-  })
+  const lines = content.split('\n')
+
+  if (lines && lines.length) {
+    lines.forEach((line) => {
+      const match = line.match(pattern)
+      if (match) {
+        const key = match[1]
+        const value = match[2]
+        res[key] = value
+      }
+    })
+  }
+
   return res
 }
 

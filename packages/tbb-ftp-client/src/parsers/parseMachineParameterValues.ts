@@ -16,12 +16,14 @@ export function parseMachineParameterValues(content: string) {
     const id = match[1]
     const values = match[2].split(',')
 
-    const parameter: MachineParameter = {
-      machineParameterId: Number.parseInt(id),
-      currentValue: Number.parseInt(values[0]),
+    if (values && values.length) {
+      const parameter: MachineParameter = {
+        machineParameterId: Number.parseInt(id),
+        currentValue: Number.parseInt(values[0]),
+      }
+      machineParameterValues.push(parameter)
     }
 
-    machineParameterValues.push(parameter)
     match = pattern.exec(content)
   }
   return machineParameterValues
