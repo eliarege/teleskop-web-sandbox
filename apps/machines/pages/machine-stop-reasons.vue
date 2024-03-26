@@ -14,7 +14,7 @@ const columns = computed(() => ({
     unique: true,
     schema: {
       filled: true,
-      validation: 'required',
+      validation: 'required|min:1',
     },
   },
   stopName: {

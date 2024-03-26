@@ -343,5 +343,9 @@
   "pleaseSelectaRow": "Lütfen bir satır seçiniz",
   "connectionTimeout": "Bağlantı zaman aşımı",
   "checkTeleskopConnection": "Teleskop Bağlantısını kontrol et",
-  "connectionSuccessful": "Bağlantı başarılı"
+  "connectionSuccessful": "Bağlantı başarılı",
+  "passive": "Pasif",
+  "selectTheSystemSettingThatWillBeUpdatedOnMachine": "Makinede güncellenecek sistem ayarını seçiniz",
+  "noConnectionToNetwork": "Ağ bağlantısı yok",
+  "checkNetworkConnection": "Ağ bağlantısını kontrol et"
 }

@@ -344,5 +344,9 @@
   "pleaseSelectaRow": "Please select a row",
   "connectionTimeout": "Connection Timeout",
   "checkTeleskopConnection": "Check Teleskop Connection",
-  "connectionSuccessful": "Connection Successful"
+  "connectionSuccessful": "Connection Successful",
+  "passive": "Passive",
+  "selectTheSystemSettingThatWillBeUpdatedOnMachine": "Select the system setting that will be updated on machine",
+  "noConnectionToNetwork": "No Connection To Network",
+  "checkNetworkConnection": "Check Network Connection"
 }

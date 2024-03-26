@@ -36,7 +36,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
-      validation: 'required',
+      validation: 'required|min:1',
     },
   },
   machineCode: {
@@ -89,7 +89,7 @@ const columns = computed(() => ({
     align: 'left',
     filterable: true,
     filterType: 'includes',
-    type: 'number',
+    type: 'text',
     visible: true,
     editable: false,
     schema: {
@@ -107,7 +107,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
-      validation: 'required',
+      validation: 'required|min:1',
     },
   },
   reelCount: {
@@ -121,6 +121,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
   ip: {
@@ -163,7 +164,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
-      validation: 'required',
+      validation: 'required|min:1',
     },
   },
   theoricalChargeDuration: {
@@ -177,6 +178,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
   nozzleCount: {
@@ -190,6 +192,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
   steamUnit: {
@@ -320,6 +323,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
   theoreticalSteam: {
@@ -346,6 +350,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
   steamValveDo: {
@@ -359,6 +364,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
 }))
