@@ -3,15 +3,14 @@ import { StatusCodes } from '~/shared/constants'
 
 export const useColorStore = defineStore('colors', () => {
   const jobOrderStatusColors: Record<StatusCodes, string> = {
-    [StatusCodes.newRequest]: '#007BFF',
-    [StatusCodes.inDispenser]: '#64ABFC',
-    [StatusCodes.inProcess]: '#73CECE',
-    [StatusCodes.requestCompleted]: '#4CAF50',
-    [StatusCodes.priorityChanged]: '#7F72FA',
-    [StatusCodes.canceled]: '#FF4B4B',
-    [StatusCodes.dispenserChanged]: '#FFBB00',
+    [StatusCodes.newRequest]: '#FFFFFF',
+    [StatusCodes.inDispenser]: '#FFFF00',
+    [StatusCodes.inProcess]: '#0000FF',
+    [StatusCodes.requestCompleted]: '#008000',
+    [StatusCodes.priorityChanged]: '#808080',
+    [StatusCodes.canceled]: '#FF0000',
+    [StatusCodes.dispenserChanged]: '#FFA500',
   }
-
   const colors = {
     jobOrderStatusColors,
     darkJobOrderCellEven: '#ACACAC',
