@@ -9,6 +9,7 @@ import { useDataStore } from '~/store/DataStore'
 import { StatusCodes } from '~/shared/constants'
 
 const { t } = useI18n()
+const { notifySuccess, notifyFail } = useNotify()
 const q = useQuasar()
 const route = useRoute()
 const dataStore = useDataStore()
@@ -204,8 +205,14 @@ async function handleFilterSlotsUpdate(updatedFilters: any) {
   filters.value = updatedFilters
   getJobOrders()
 }
-async function processRequest(action: string, row: JobOrder, showDialog: boolean) {
-
+async function processRequest(status: number, row: JobOrder, showDialog: boolean) {
+  try {
+    await $fetch('/api/jobOrders/set-status', { method: 'POST', query: { status, reqNo: row.jobId } })
+    notifySuccess(t('Success'))
+    getJobOrders()
+  } catch (e) {
+    notifyFail(t('Failed'))
+  }
 }
 </script>
 
@@ -279,7 +286,7 @@ async function processRequest(action: string, row: JobOrder, showDialog: boolean
                   v-close-popup
                   clickable
                   @click="
-                    processRequest('retry', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                    processRequest(8, selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
                   "
                 >
                   <QItemSection>{{ t('jobOrderActions.Retry') }}</QItemSection>
@@ -288,7 +295,7 @@ async function processRequest(action: string, row: JobOrder, showDialog: boolean
                   v-close-popup
                   clickable
                   @click="
-                    processRequest('cancel', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                    processRequest(8, selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
                   "
                 >
                   <QItemSection>{{ t('jobOrderActions.Cancel') }}</QItemSection>
@@ -297,7 +304,7 @@ async function processRequest(action: string, row: JobOrder, showDialog: boolean
                   v-close-popup
                   clickable
                   @click="
-                    processRequest('complete', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                    processRequest(3, selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
                   "
                 >
                   <QItemSection>{{ t('jobOrderActions.Complete') }}</QItemSection>
