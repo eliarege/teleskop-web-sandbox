@@ -1,6 +1,7 @@
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 
 import { resolve } from 'node:path'
+import process from 'node:process'
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
@@ -18,6 +19,9 @@ export default defineNuxtConfig({
     teleskopPort: '7654',
     teleskopPassword: '12345678tT',
     teleskopDatabase: 'Teleskop',
+    sambaPath: process.env.SAMBA_PATH,
+    sambaUser: process.env.SAMBA_USER,
+    sambaPassword: process.env.SAMBA_PASSWORD,
     public: {
       kcUrl: 'http://localhost:8080',
       kcRealm: 'teleskop-web',

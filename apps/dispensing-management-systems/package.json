@@ -16,6 +16,7 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
+    "async-mutex": "^0.4.0",
     "knex": "^3.1.0",
     "pg": "^8.11.5",
     "simple-keyboard": "^3.7.77",

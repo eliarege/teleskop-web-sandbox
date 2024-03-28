@@ -205,13 +205,45 @@ async function handleFilterSlotsUpdate(updatedFilters: any) {
   filters.value = updatedFilters
   getJobOrders()
 }
-async function processRequest(status: number, row: JobOrder, showDialog: boolean) {
+async function processRequest(status: string, order: JobOrder, showDialog: boolean) {
   try {
-    await $fetch('/api/jobOrders/set-status', { method: 'POST', query: { status, reqNo: row.jobId } })
+    if (showDialog) {
+      // Show Dialog
+    }
+    await handleFile(order, status)
+    await $fetch('/api/jobOrders/set-status', { method: 'POST', query: { status: status === 'complete' ? 3 : 8, reqNo: order.jobId } })
     notifySuccess(t('Success'))
     getJobOrders()
   } catch (e) {
     notifyFail(t('Failed'))
+  }
+}
+async function handleFile(data: any, status: any) {
+  const dispenser = dataStore.getDispenser(data.dispenserId)
+  if (dispenser?.dispenserBrandId === 1) // Eliar
+  {
+    const countInProgram = await $fetch('/api/jobOrders/step-count', {
+      query: {
+        batchNo: data.batchNo,
+        correctionNo: data.batchCorrectionNo,
+        recipeProcessNo: data.recipeProcessNo,
+      },
+    })
+    const content = [
+      status === 'retry' ? 1 : 8,
+      data.priority,
+      data.machineId,
+      data.tankNo,
+      data.batchNo,
+      data.programNo,
+      data.stepNo,
+      data.recipeStepNo,
+      countInProgram,
+      data.recipeType,
+      data.recipeProcessNo,
+      status === 'retry' ? 1 : 0,
+    ]
+    await $fetch('/api/file/write-step', { method: 'POST', body: { content, reqFilePath: '/SiviKimyasal/req' } })
   }
 }
 </script>
@@ -286,7 +318,7 @@ async function processRequest(status: number, row: JobOrder, showDialog: boolean
                   v-close-popup
                   clickable
                   @click="
-                    processRequest(8, selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                    processRequest('retry', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
                   "
                 >
                   <QItemSection>{{ t('jobOrderActions.Retry') }}</QItemSection>
@@ -295,7 +327,7 @@ async function processRequest(status: number, row: JobOrder, showDialog: boolean
                   v-close-popup
                   clickable
                   @click="
-                    processRequest(8, selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                    processRequest('cancel', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
                   "
                 >
                   <QItemSection>{{ t('jobOrderActions.Cancel') }}</QItemSection>
@@ -304,7 +336,7 @@ async function processRequest(status: number, row: JobOrder, showDialog: boolean
                   v-close-popup
                   clickable
                   @click="
-                    processRequest(3, selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                    processRequest('complete', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
                   "
                 >
                   <QItemSection>{{ t('jobOrderActions.Complete') }}</QItemSection>

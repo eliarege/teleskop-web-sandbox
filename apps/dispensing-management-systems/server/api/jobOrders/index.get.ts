@@ -30,6 +30,7 @@ export default defineEventHandler(async (event) => {
       recipeProcessNo: 'j.recipe_process_no',
       stepNo: 'j.step_no',
       recipeStepNo: 'j.recipe_step_no',
+      priority: 'priority',
       status: 'j.status',
     })
     .orderBy('job_id', 'desc')

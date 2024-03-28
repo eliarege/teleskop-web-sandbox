@@ -12,6 +12,7 @@ export interface JobOrder {
   recipeType: string
   recipeProcessNo: number
   recipeStepNo: number
+  priority: number
   status: number
 }
 export interface ProgramHeader {
