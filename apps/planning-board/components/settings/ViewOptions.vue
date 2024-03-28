@@ -8,7 +8,7 @@ const plannedDefinitions = ref()
 const unplannedDefinitions = ref()
 const currentMachine = ref()
 const selectedRow = ref()
-const { data: machines, pending } = await useFetch('/api/machineList')
+const { data: machines, pending } = useFetch('/api/machineList')
 async function getErpParameters(machineId: number) {
   currentMachine.value = machineId
   const res = await $fetch('/api/erpParameters', {
@@ -84,8 +84,8 @@ async function onUnplannedCtx() {
 <template>
   <div class="view-options">
     <div class="machine-list relative">
-      <LoadingSpinner v-if="pending" />
-      <q-list v-else dense>
+      <!-- <LoadingSpinner v-if="pending" /> -->
+      <q-list dense>
         <q-item
           v-for="(item, idx) in machines"
           :key="idx"
@@ -108,10 +108,7 @@ async function onUnplannedCtx() {
       />
       <QMenu context-menu>
         <QList class="flex flex-col p-3 gap-2 bg-gray-300 rounded">
-          <QBtn
-            :disabled="plannedDefinitions.map(a => a.paramName).includes(selectedRow.paramName)"
-            label="Add to planned Batch"
-            class="bg-white"
+          <QBtnmin-h-full
             @click="onPlannedCtx()"
           />
           <QBtn
@@ -166,49 +163,6 @@ async function onUnplannedCtx() {
         </template>
       </QTable>
     </div>
-    <div class="unplanned-batch">
-      <QTable
-        dense
-        :rows="unplannedDefinitions"
-        :columns="[{ name: 'paramName', align: 'center', label: t('erp-param-columns.param-name'), field: 'paramName' }]"
-        :rows-per-page-options="[0]"
-      >
-        <template #header="prop">
-          <q-tr :props="prop">
-            <q-th
-              v-for="col in prop.cols"
-              :key="col.name"
-              :props="prop"
-            >
-              {{ col.label }}
-            </q-th>
-            <q-th auto-width>
-              Delete
-            </q-th>
-          </q-tr>
-        </template>
-        <template #body="prop">
-          <q-tr :props="prop">
-            <q-td
-              v-for="col in prop.cols"
-              :key="col.name"
-              :props="prop"
-            >
-              {{ Array.isArray(col.value) ? Object.create(col.value) : col.value }}
-            </q-td>
-            <q-td auto-width>
-              <q-icon
-                name="delete"
-                color="red"
-                size="sm"
-                class="cursor-pointer"
-                @click="deleteParameter(prop.row.paramId, prop.row.owner, prop.row.machineId)"
-              />
-            </q-td>
-          </q-tr>
-        </template>
-      </QTable>
-    </div>
   </div>
 </template>
 
@@ -222,28 +176,21 @@ async function onUnplannedCtx() {
     grid-area: 1 / 1 / 3 / 2;
     border: 1px solid rgba(0, 0, 0, 0.125);
     border-radius: 0.25rem;
-    @apply max-h-80vh overflow-auto;
+    @apply overflow-auto;
   }
 
   .erp-parameters {
     grid-area: 1 / 2 / 3 / 3;
     border: 1px solid rgba(0, 0, 0, 0.125);
     border-radius: 0.25rem;
-    @apply max-h-80vh overflow-auto;
+    @apply overflow-auto;
   }
 
   .planned-batch {
-    grid-area: 1 / 3 / 2 / 4;
+    grid-area: 1 / 3 / 3 / 4;
     border: 1px solid rgba(0, 0, 0, 0.125);
     border-radius: 0.25rem;
-    @apply max-h-40vh overflow-auto;
-  }
-
-  .unplanned-batch {
-    grid-area: 2 / 3 / 3 / 4;
-    border: 1px solid rgba(0, 0, 0, 0.125);
-    border-radius: 0.25rem;
-    @apply max-h-40vh overflow-auto;
+    @apply overflow-auto;
   }
 }
 </style>

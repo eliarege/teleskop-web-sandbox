@@ -1,7 +1,7 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { DateHelper, Splitter, TextField, Toast } from '@bryntum/schedulerpro-trial'
+import { DateHelper, Splitter, StringHelper, TextField, Toast } from '@bryntum/schedulerpro-trial'
 import { addDays, addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
@@ -88,6 +88,22 @@ const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
   } as QueueBasedArchiveEvents
 }))
 
+function unplannedGridColumns() {
+  return [{
+    type: 'resourceInfo',
+    text: 'L{unassign}',
+    flex: 1,
+    field: 'name',
+    htmlEncode: false,
+    minWidth: 200,
+    renderer: data =>
+      StringHelper.xss`<i class="${data.record.iconCls}"></i>${data.record.name}`,
+  }, {
+    type: 'duration',
+    width: 100,
+    align: 'right',
+  }]
+}
 const mergedEvents = computed(() => modifiedEvents.value?.concat(modifiedArchive.value))
 const modifiedUnscheduledEvents = computed(() => decompressJson(unScheduledEvents.value!).map((unp: UnplannedEventsRaw) => {
   return {
@@ -587,6 +603,7 @@ onMounted(async () => {
     appendTo: 'main',
     ui: 'toolbar',
     multiEventSelect: false,
+    columns: unplannedGridColumns(),
     features: {
       cellEdit: false,
       search: {
@@ -672,7 +689,7 @@ function updateScheduler() {
     </EliarModal>
     <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
       <template #default>
-        <PlanSettings @update-scheduler="updateScheduler()" />
+        <SettingsPlan @update-scheduler="updateScheduler()" />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.planParameters.show" @click.stop="showModal.planParameters.show = false">
