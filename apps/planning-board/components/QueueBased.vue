@@ -313,6 +313,7 @@ onMounted(async () => {
       },
     ],
     features: {
+      dependencies: false,
       scheduleContext: {
         disabled: true,
       },
