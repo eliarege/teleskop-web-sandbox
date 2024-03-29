@@ -4,6 +4,7 @@ import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConf
 import { DateHelper, Splitter, StringHelper, TextField, Toast } from '@bryntum/schedulerpro-trial'
 import { addDays, addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
+import { useDocumentVisibility } from '@vueuse/core'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
 import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
@@ -117,12 +118,18 @@ const modifiedUnscheduledEvents = computed(() => decompressJson(unScheduledEvent
 }))
 let scheduler: SchedulerPro
 let grid: Grid
-const schedulerRefreshInterval = setInterval(async () => {
-  await refreshScheduler()
-}, 60_000)
-onUnmounted(() => {
-  clearInterval(schedulerRefreshInterval)
-})
+
+const visibility = useDocumentVisibility()
+
+async function myInterval(delay: number) {
+  await until(visibility).toBe('visible')
+  refreshScheduler()
+  setTimeout(() => {
+    myInterval(delay)
+  }, delay)
+}
+await myInterval(60_000)
+
 async function refreshScheduler() {
   await plannedRefresh()
   await unScheduledRefresh()
@@ -534,15 +541,15 @@ onMounted(async () => {
           showModal.datePicker = true
         },
       },
-      {
-        type: 'button',
-        text: 'Operatör Mesajları',
-        icon: 'b-fa b-fa-solid b-fa-person-walking',
-        color: 'toolbar-buttons',
-        onClick() {
-          console.log('OP MSG')
-        },
-      },
+      // {
+      //   type: 'button',
+      //   text: 'Operatör Mesajları',
+      //   icon: 'b-fa b-fa-solid b-fa-person-walking',
+      //   color: 'toolbar-buttons',
+      //   onClick() {
+      //     console.log('OP MSG')
+      //   },
+      // },
       // {
       //   type: 'button',
       //   disabled: true,
