@@ -6,7 +6,7 @@ const splitterModel = ref('view')
 </script>
 
 <template>
-  <div class="bg-white min-h-90vh max-h-90vh w-90vw overflow-auto e-border rounded-2xl" @click.stop.prevent>
+  <div class="bg-white w-90vw e-border rounded-2xl" @click.stop.prevent>
     <q-tabs v-model="splitterModel" class="text-blue">
       <q-tab
         name="view"
@@ -32,8 +32,8 @@ const splitterModel = ref('view')
       <q-tab-panel name="viewOptions">
         <SettingsViewOptions />
       </q-tab-panel>
-      <q-tab-panel name>
-        <SettingsUnplannedOptions name="unplannedOptions" />
+      <q-tab-panel name="unplannedOptions">
+        <SettingsUnplannedOptions />
       </q-tab-panel>
     </q-tab-panels>
   </div>

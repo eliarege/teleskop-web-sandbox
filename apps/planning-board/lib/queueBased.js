@@ -681,23 +681,6 @@ export class QueueUnplannedGrid extends Grid {
         sort: 'name',
       },
 
-      columns: [
-        {
-          type: 'resourceInfo',
-          text: 'L{unassign}',
-          flex: 1,
-          field: 'name',
-          htmlEncode: false,
-          minWidth: 200,
-          renderer: data =>
-            StringHelper.xss`<i class="${data.record.iconCls}"></i>${data.record.name}`,
-        },
-        {
-          type: 'duration',
-          width: 100,
-          align: 'right',
-        },
-      ],
       rowHeight: 50,
       disableGridRowModelWarning: true,
       transitionDuration: 0,

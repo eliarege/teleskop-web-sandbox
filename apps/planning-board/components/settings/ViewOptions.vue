@@ -3,15 +3,15 @@ import { LoadingSpinner } from 'ui'
 
 const emit = defineEmits(['updateScheduler'])
 const { t } = useI18n()
+const q = useQuasar()
 const definitions = ref()
 const plannedDefinitions = ref()
 const unplannedDefinitions = ref()
 const currentMachine = ref()
-const selectedRow = ref()
-const { data: machines, pending } = useFetch('/api/machineList')
+const { data: machines } = useFetch('/api/machineList')
 async function getErpParameters(machineId: number) {
   currentMachine.value = machineId
-  const res = await $fetch('/api/erpParameters', {
+  const res = await $fetch('/api/settings/erpParameters/erpParameters', {
     query: { machineId },
   })
   definitions.value = res.definitions
@@ -25,26 +25,22 @@ const erpParameterColumns = reactive([
   { name: 'erpFieldName', align: 'center', label: t('erp-param-columns.field-name'), field: 'erpFieldName' },
 ])
 
-function contextMenu(row: any) {
-  selectedRow.value = row
-}
 async function addParameter(paramId: number, owner: number, machineId: number) {
-  await $fetch('/api/addErpParameters', {
+  await $fetch('/api/settings/erpParameters/addErpParameters', {
     method: 'POST',
     query: { paramId, owner, machineId },
   })
 }
-async function onPlannedCtx() {
+async function onPlannedCtx(row: any) {
   const newParam = {
-    paramId: selectedRow.value.id,
+    paramId: row.id,
     owner: 117,
     machineId: currentMachine.value,
-    paramName: selectedRow.value.paramName,
+    paramName: row.paramName,
   }
   plannedDefinitions.value.push(newParam)
   await addParameter(newParam.paramId, newParam.owner, newParam.machineId)
 }
-const q = useQuasar()
 async function deleteParameter(paramId: number, owner: number, machineId: number) {
   q.dialog({
     title: 'Are you sure to delete this parameter?',
@@ -60,7 +56,7 @@ async function deleteParameter(paramId: number, owner: number, machineId: number
       color: 'red',
     },
   }).onOk(async () => {
-    await $fetch('/api/deleteErpParameters', {
+    await $fetch('/api/settings/erpParameters/deleteErpParameters', {
       method: 'DELETE',
       query: { paramId, owner, machineId },
     }).then(() => {
@@ -69,22 +65,11 @@ async function deleteParameter(paramId: number, owner: number, machineId: number
     })
   })
 }
-async function onUnplannedCtx() {
-  const newParam = {
-    paramId: selectedRow.value.id,
-    owner: 118,
-    machineId: currentMachine.value,
-    paramName: selectedRow.value.paramName,
-  }
-  unplannedDefinitions.value.push(newParam)
-  await addParameter(newParam.paramId, newParam.owner, newParam.machineId)
-}
 </script>
 
 <template>
   <div class="view-options">
     <div class="machine-list relative">
-      <!-- <LoadingSpinner v-if="pending" /> -->
       <q-list dense>
         <q-item
           v-for="(item, idx) in machines"
@@ -103,28 +88,6 @@ async function onUnplannedCtx() {
         dense
         :rows="definitions"
         :columns="erpParameterColumns"
-        :rows-per-page-options="[0]"
-        @row-contextmenu="(evt, row, i) => contextMenu(row)"
-      />
-      <QMenu context-menu>
-        <QList class="flex flex-col p-3 gap-2 bg-gray-300 rounded">
-          <QBtnmin-h-full
-            @click="onPlannedCtx()"
-          />
-          <QBtn
-            :disabled="unplannedDefinitions.map(a => a.paramName).includes(selectedRow.paramName)"
-            label="Add to unplanned Batch"
-            class="bg-white"
-            @click="onUnplannedCtx()"
-          />
-        </QList>
-      </QMenu>
-    </div>
-    <div class="planned-batch">
-      <QTable
-        dense
-        :rows="plannedDefinitions"
-        :columns="[{ name: 'paramName', align: 'center', label: t('erp-param-columns.param-name'), field: 'paramName' }]"
         :rows-per-page-options="[0]"
       >
         <template #header="prop">
@@ -150,18 +113,30 @@ async function onUnplannedCtx() {
             >
               {{ col.value }}
             </q-td>
-            <q-td class="flex justify-center items-center">
-              <q-icon
-                name="delete"
-                color="red"
+            <q-td auto-width>
+              <q-btn
+                icon="add"
+                :disabled="plannedDefinitions.map((a) => a.paramId).includes(prop.row.id)"
+                color="primary"
                 size="sm"
-                class="cursor-pointer"
-                @click="deleteParameter(prop.row.paramId, prop.row.owner, prop.row.machineId)"
+                @click="onPlannedCtx(prop.row)"
               />
             </q-td>
           </q-tr>
         </template>
       </QTable>
+    </div>
+    <div class="planned-batch">
+      <q-list separator bordered dense>
+        <q-item v-for="item in plannedDefinitions" :key="item.id" v-ripple clickable>
+          <q-item-section>
+            {{ item.paramName }}
+          </q-item-section>
+          <q-item-section side>
+            <Icon name="fluent:delete-16-regular" color="red" size="20" @click="deleteParameter(item.paramId, item.owner, item.machineId)" />
+          </q-item-section>
+        </q-item>
+      </q-list>
     </div>
   </div>
 </template>
@@ -170,7 +145,7 @@ async function onUnplannedCtx() {
 .view-options {
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  @apply grid gap-2;
+  @apply grid gap-2 h-80vh;
 
   .machine-list {
     grid-area: 1 / 1 / 3 / 2;
