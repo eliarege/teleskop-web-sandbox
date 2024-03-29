@@ -101,6 +101,14 @@ const batchHeaderParams = {
   recipeNo: 'RECIPENO',
   recipeType: 'RECIPETYPE',
 }
+const batchPlanParameterParams = {
+  planKey: 'PLANKEY',
+  parameter: 'PARAMSTRING',
+  paramId: 'BATCHPARAMETERID',
+  type: 'PARAMETERTYPE',
+  value: 'VALUE',
+  unit: 'UNITCODE',
+}
 const programHeaderParams = {
   machineId: 'MACHINEID',
   programNo: 'PROGNO',
@@ -140,6 +148,8 @@ export default defineEventHandler(async () => {
       .select(batchRecipeStepParams)
     const batchHeaders = await teleskopDB('dbo.DYBFBATCHORDERRECIPEHEADER')
       .select(batchHeaderParams)
+    const batchPlanParameters = await teleskopDB('dbo.DYBFBATCHPLANPARAMETERS')
+      .select(batchPlanParameterParams)
     const dispenserMachineConnections = await teleskopDB('dbo.DYTFMACHDISPCONNECTION')
       .select(dispenserMachineConnectionParams)
     const dispenserMaterialConnections = await teleskopDB('dbo.DYTFCHEMDISPCONNECTION')
@@ -155,6 +165,7 @@ export default defineEventHandler(async () => {
     $fetch('/api/teleskop/sync', { method: 'POST', body: { batchRecipeSteps } })
     $fetch('/api/teleskop/sync', { method: 'POST', body: { batchHeaders } })
     $fetch('/api/teleskop/sync', { method: 'POST', body: { batchPlans } })
+    $fetch('/api/teleskop/sync', { method: 'POST', body: { batchPlanParameters } })
     $fetch('/api/teleskop/sync', { method: 'POST', body: { dispenserMachineConnections } })
     $fetch('/api/teleskop/sync', { method: 'POST', body: { dispenserMaterialConnections } })
   } catch (e) {

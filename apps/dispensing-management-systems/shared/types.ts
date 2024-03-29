@@ -40,6 +40,14 @@ export interface BatchRecipeStep {
   amount: number
   unit: number
 }
+export interface BatchPlanParameter {
+  planKey: number
+  paramId: number
+  paramName: string
+  value: string
+  paramType: number
+  unit: number
+}
 export interface Dispenser {
   dispenserId: number
   dispenserName: string

@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
     const batchPlans: any[] = []
     const batchRecipeSteps: any[] = []
     const batchHeaders: any[] = []
+    const batchPlanParameters: any[] = []
     const programHeaders: any[] = []
     const dispenserMachineConnections: any[] = []
     const dispenserMaterialConnections: any[] = []
@@ -158,6 +159,17 @@ export default defineEventHandler(async (event) => {
       })
       batchRecipeSteps.push(batchRecipeStep)
     })
+    teleskopData.batchPlanParameters?.forEach((data: any) => {
+      const batchPlanParameter = ({
+        plan_key: data.planKey,
+        param_id: data.paramId,
+        param_name: data.parameter,
+        param_type: data.type,
+        value: data.value,
+        unit: data.unit,
+      })
+      batchPlanParameters.push(batchPlanParameter)
+    })
     teleskopData.dispenserMachineConnections?.forEach((data: any) => {
       const dispenserMachineConnection = ({
         dispenser_id: data.dispenserId,
@@ -196,6 +208,7 @@ export default defineEventHandler(async (event) => {
     await batchInsert(dustMaterialReqs, batchSize, 'DUST_MATERIAL_REQUEST')
     await batchInsert(batchPlans, batchSize, 'BATCH_PLAN')
     await batchInsert(batchHeaders, batchSize, 'BATCH_HEADER')
+    await batchInsert(batchPlanParameters, batchSize, 'BATCH_PLAN_PARAMETER')
     await batchInsert(programHeaders, batchSize, 'PROGRAM_HEADER')
     batchInsert(dispenserMachineConnections, batchSize, 'DISPENSER_MACHINE_CONNECTION')
     batchInsert(dispenserMaterialConnections, batchSize, 'DISPENSER_MATERIAL_CONNECTION')
