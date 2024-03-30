@@ -409,22 +409,26 @@ async function updateVersions() {
 
 const q = useQuasar()
 
+const { event, data, close } = useEventSource('/api/sync/sse', ['log'], {
+  autoReconnect: true,
+})
+onBeforeUnmount(() => {
+  close()
+})
+const logs = ref<object[]>([])
+watch(data, (newMessage) => {
+  const msg = JSON.parse(newMessage)
+  logs.value.push(msg.message)
+})
+
 async function loadProject() {
   try {
+    await checkNetworkConnection(selected.value)
     await $fetch('/api/sync/update-machine', {
       method: 'GET',
       query: {
         machineId: selected.value.machineId,
       },
-    })
-
-    q.notify({
-      message: t('connectionSuccessful'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
     })
   } catch (error) {
     if (error.statusCode === 504) {
@@ -711,6 +715,12 @@ async function checkNetworkConnection(formData: Machine) {
       />
     </template>
   </FormTableKit>
+
+  <q-scroll-area style="height: 200px">
+    <div v-for="(log, index) in logs" :key="index">
+      {{ log }}
+    </div>
+  </q-scroll-area>
 
   <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
   <GetDyeHouseDefinitionsDialog

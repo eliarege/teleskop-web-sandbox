@@ -16,6 +16,7 @@
     "@floating-ui/vue": "^1.0.2",
     "@formkit/nuxt": "^1.5.2",
     "@formkit/themes": "^1.5.3",
+    "@types/uuid": "^9.0.8",
     "basic-ftp": "^5.0.3",
     "klona": "^2.0.6",
     "knex": "^3.0.1",
@@ -24,7 +25,8 @@
     "mssql": "^10.0.1",
     "soap": "^1.0.0",
     "sortablejs": "^1.15.1",
-    "sortablejs-vue3": "^1.2.11"
+    "sortablejs-vue3": "^1.2.11",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nuxt": "^3.9.0",

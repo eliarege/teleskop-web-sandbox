@@ -5,20 +5,26 @@ import { updateAnalogInputs, updateBatchParameters, updateCommandAlarms, updateC
 
 export default defineEventHandler(async (event) => {
   const { machineId } = getQuery(event)
+
   const numMachineId = Number.parseInt(machineId as string)
+  const sse = useSSE()
+
   if (!Number.isNaN(numMachineId)) {
     const ip = await knex('BFMACHINES')
       .where('MACHINEID', numMachineId)
       .select('IP')
       .first()
       .then(row => row ? row.IP : null)
+
     try {
       await withTbbFtpClient(ip, async (tbb) => {
         await knex.transaction(async (trx) => {
         // controllerModel
           await updateMachineController(numMachineId, tbb, trx)
+          sse.broadcast(sse.clients[0], 'log', { message: 'controller updated' })
           // baslatmaparametreleri
           await updateBatchParameters(numMachineId, tbb, trx)
+          sse.broadcast(sse.clients[0], 'log', { message: 'batch parameters updated' })
           // commandGroup
           await updateCommandGroups(numMachineId, tbb, trx)
           // cycle_kontrol
@@ -61,15 +67,18 @@ export default defineEventHandler(async (event) => {
           await updateGlobalCommandFormulas(numMachineId, tbb, trx)
           // consumption
           await updateConsumption(numMachineId, tbb, trx)
+          sse.broadcast(sse.clients[0], 'log', { message: 'consumptions updated' })
         })
-      })
+      }, { timeout: 1000 })
     } catch (error) {
       console.error(error)
+      sse.broadcast(sse.clients[0], 'log', { message: error })
       if (error.message.includes('Timeout')) {
         throw createError({ statusMessage: 'MACHINE_CONN_TIMEOUT', statusCode: 504 })
       }
     }
   } else {
+    sse.broadcast(sse.clients[0], 'log', { message: 'Invalid machineId parameter. Expected number.' })
     throw new TypeError('Invalid machineId parameter. Expected number.')
   }
 })
