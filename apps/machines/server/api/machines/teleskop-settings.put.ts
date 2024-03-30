@@ -10,8 +10,18 @@ export default defineEventHandler(async (event) => {
       transformedValue = value === true || value === '1' ? 1 : 0
     }
 
-    await knex('TFTELESKOPSETTINGS')
+    const record = await knex('TFTELESKOPSETTINGS')
       .where('ID', Number.parseInt(key))
-      .update({ VALUE: transformedValue })
+      .first()
+
+    if (!record) {
+      await knex('TFTELESKOPSETTINGS').insert({
+        ID: Number.parseInt(key),
+        VALUE: transformedValue,
+      })
+    } else
+      await knex('TFTELESKOPSETTINGS')
+        .where('ID', Number.parseInt(key))
+        .update({ VALUE: transformedValue })
   }
 })

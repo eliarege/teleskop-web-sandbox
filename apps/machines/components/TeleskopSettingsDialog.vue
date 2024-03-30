@@ -19,6 +19,7 @@ const settingsList = [
   { label: 'ttbTimeBasedModeActive', value: 6 },
   { label: 'ttbDyehouseNumber', value: 7 },
   { label: 'ttbProcessUsageActive', value: 8 },
+  { label: 'ttbSaveIOValuesInDatabase', value: 9 },
 ]
 
 const formData = ref({})
@@ -32,10 +33,15 @@ const { data: setting } = useLazyFetch('/api/machines/teleskop-settings', {
       if (key === 'ttbDyehouseNumber') {
         acc[key] = Number.parseInt(item.value)
       } else if (key) {
-        acc[key] = item.value === '1'
+        acc[key] = item ? item.value === '1' : false
       }
       return acc
     }, {})
+    for (const item of settingsList) {
+      if (!formData.value[item.label]) {
+        formData.value[item.label] = false
+      }
+    }
   },
 
 })
@@ -64,6 +70,11 @@ const schema = computed(() => ([
   {
     label: t('processUsageActive'),
     name: 'ttbProcessUsageActive',
+    $formkit: 'checkbox',
+  },
+  {
+    label: t('ttbSaveIOValuesInDatabase'),
+    name: 'ttbSaveIOValuesInDatabase',
     $formkit: 'checkbox',
   },
   {

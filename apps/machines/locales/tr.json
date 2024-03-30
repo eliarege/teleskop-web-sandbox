@@ -347,5 +347,6 @@
   "passive": "Pasif",
   "selectTheSystemSettingThatWillBeUpdatedOnMachine": "Makinede güncellenecek sistem ayarını seçiniz",
   "noConnectionToNetwork": "Ağ bağlantısı yok",
-  "checkNetworkConnection": "Ağ bağlantısını kontrol et"
+  "checkNetworkConnection": "Ağ bağlantısını kontrol et",
+  "ttbSaveIOValuesInDatabase": "I/O değerlerini veritabanında sakla"
 }
