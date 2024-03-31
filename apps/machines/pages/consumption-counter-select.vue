@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { IContextMenuOption } from '~/components/ContextMenu.vue'
+
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -45,32 +47,34 @@ async function handleOptionChange() {
 
 const copy = ref()
 
-function handleCopy() {
-  copy.value = { counter1: counter1.value, counter2: counter2.value }
-}
-
-async function handlePaste() {
-  counter1.value = copy.value.counter1
-  counter2.value = copy.value.counter2
-  await handleOptionChange()
-}
+const contextMenuOptions = computed(() => [
+  {
+    label: t('copy'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: selectedMachineId.value === -1,
+    onClick: () => {
+      copy.value = { counter1: counter1.value, counter2: counter2.value }
+    },
+  },
+  {
+    label: t('paste'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_paste',
+    disabled: selectedMachineId.value === -1,
+    onClick: async () => {
+      counter1.value = copy.value.counter1
+      counter2.value = copy.value.counter2
+      await handleOptionChange()
+    },
+  },
+])
 </script>
 
 <template>
-  <div class="flex w-full justify-end my-4">
-    <q-btn-group push class="flex flex-row mr-4">
-      <q-btn
-        :label="t('copy')"
-        no-caps
-        @click="handleCopy"
-      />
-      <q-btn
-        :label="t('paste')"
-        no-caps
-        @click="handlePaste"
-      />
-    </q-btn-group>
-  </div>
+  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
   <q-card class="flex flex-row justify-center">
     <q-card-section class="w-sm">
       <h3>{{ t('machines') }}</h3>

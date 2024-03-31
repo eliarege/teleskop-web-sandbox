@@ -2,6 +2,7 @@
 import { Sortable } from 'sortablejs-vue3'
 import { klona } from 'klona'
 import type { Machine, MasterCommand } from '~/types'
+import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
 const { t } = useI18n()
 
@@ -161,39 +162,41 @@ async function handleSubmit() {
 
 const copy = ref()
 
-function handleCopy() {
-  copy.value = klona(tankDefinitions.value)
-}
-
-async function handlePaste() {
-  for (const tankDef of copy.value) {
-    await $fetch('/api/tank-definitions/tank-definition-list', {
-      method: 'PUT',
-      body: {
-        ...tankDef,
-        machineId: selectedMachineId.value,
-      },
-    })
-  }
-  await refreshDefinitions()
-}
+const contextMenuOptions = computed(() => [
+  {
+    label: t('copy'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: selectedMachineId.value === -1,
+    onClick: () => {
+      copy.value = klona(tankDefinitions.value)
+    },
+  },
+  {
+    label: t('paste'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_paste',
+    disabled: selectedMachineId.value === -1,
+    onClick: async () => {
+      for (const tankDef of copy.value) {
+        await $fetch('/api/tank-definitions/tank-definition-list', {
+          method: 'PUT',
+          body: {
+            ...tankDef,
+            machineId: selectedMachineId.value,
+          },
+        })
+      }
+      await refreshDefinitions()
+    },
+  },
+])
 </script>
 
 <template>
-  <div class="flex w-full justify-end my-4">
-    <q-btn-group push class="flex flex-row mr-4">
-      <q-btn
-        :label="t('Copy')"
-        no-caps
-        @click="handleCopy"
-      />
-      <q-btn
-        :label="t('Paste')"
-        no-caps
-        @click="handlePaste"
-      />
-    </q-btn-group>
-  </div>
+  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
   <q-card>
     <q-card-section class="flex flex-row justify-around">
       <div class="flex">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { WaterIO } from '~/types'
 
 interface Water {
@@ -87,33 +88,35 @@ async function handleSubmit() {
 
 const copy = ref()
 
-function handleCopy() {
-  copy.value = selectedMachineId.value
-}
-
-async function handlePaste() {
-  await $fetch('/api/theoretical-water-consumptions/copy', {
-    method: 'POST',
-    body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
-  })
-}
+const contextMenuOptions = computed(() => [
+  {
+    label: t('copy'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: selectedMachineId.value === -1,
+    onClick: () => {
+      copy.value = selectedMachineId.value
+    },
+  },
+  {
+    label: t('paste'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_paste',
+    disabled: selectedMachineId.value === -1,
+    onClick: async () => {
+      await $fetch('/api/theoretical-water-consumptions/copy', {
+        method: 'POST',
+        body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
+      })
+    },
+  },
+])
 </script>
 
 <template>
-  <div class="flex w-full justify-end my-4">
-    <q-btn-group push class="flex flex-row mr-4">
-      <q-btn
-        :label="t('copy')"
-        no-caps
-        @click="handleCopy"
-      />
-      <q-btn
-        :label="t('paste')"
-        no-caps
-        @click="handlePaste"
-      />
-    </q-btn-group>
-  </div>
+  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
   <q-card>
     <q-card-section class="flex flex-row justify-around">
       <div class="w-sm">

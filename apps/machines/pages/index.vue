@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMagicKeys, whenever } from '@vueuse/core'
+import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 import type { Machine } from '~/types'
 
@@ -546,21 +547,6 @@ const contextMenuOptions = computed(() => [
   },
 ])
 
-let lastcategory = contextMenuOptions.value[0].category
-function addSeparator(key) {
-  if (key !== lastcategory) {
-    lastcategory = key
-    return true
-  } else return false
-}
-function handleClick(event, option) {
-  if (option.disabled)
-    event.preventDefault()
-  else {
-    option.onClick(selected.value)
-  }
-}
-
 async function checkTeleskopConnection(formData: Machine) {
   try {
     await $fetch('/api/sync/teleskop-connection', {
@@ -625,37 +611,7 @@ async function checkNetworkConnection(formData: Machine) {
 </script>
 
 <template>
-  <q-menu
-    touch-position
-    context-menu
-  >
-    <q-list>
-      <template
-        v-for="option in contextMenuOptions"
-        :key="option.category"
-      >
-        <q-separator v-if="addSeparator(option.category)" />
-        <q-item
-          v-close-popup="!option.disabled"
-          clickable
-          dense
-          :class="option.disabled ? 'text-gray cursor-not-allowed' : ''"
-          @click="event => handleClick(event, option)"
-        >
-          <q-item-section class="flex w-8 justify-center items-center">
-            <q-icon :name="option.icon" />
-          </q-item-section>
-          <q-item-section>
-            {{ option.label }}
-          </q-item-section>
-          <q-space />
-          <q-item-section class="mr-5">
-            {{ option.keybind }}
-          </q-item-section>
-        </q-item>
-      </template>
-    </q-list>
-  </q-menu>
+  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selected)" />
   <div class="absolute left-63 top-13.2">
     <q-btn
       :label="t('loadProject')"
