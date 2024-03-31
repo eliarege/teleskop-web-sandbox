@@ -2,6 +2,7 @@
 import { Sortable } from 'sortablejs-vue3'
 import { klona } from 'klona'
 import type { CommandType } from '~/types'
+import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
 interface commandTypeMap {
   ref: CommandType[]
@@ -88,44 +89,46 @@ function handleDragDrop(e, commandMap: commandTypeMap) {
 async function handleSubmit() {
   await $fetch('/api/commands/command-types', {
     method: 'PUT',
-    body: { commandTypes: commandTypes.value },
+    body: { machineId: selectedMachineId.value, commandTypes: commandTypes.value },
   })
 }
 
 const copy = ref()
 
-function handleCopy() {
-  copy.value = klona(commandTypes.value)
-}
-
-async function handlePaste() {
-  await $fetch('/api/commands/command-types', {
-    method: 'PUT',
-    body: {
-      commandTypes: copy.value.map((item: CommandType) => ({
-        ...item,
-        machineId: selectedMachineId.value,
-      })),
+const contextMenuOptions = computed(() => [
+  {
+    label: t('copy'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: selectedMachineId.value === -1,
+    onClick: () => {
+      copy.value = klona(commandTypes.value)
     },
-  })
-}
+  },
+  {
+    label: t('paste'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_paste',
+    disabled: selectedMachineId.value === -1,
+    onClick: async () => {
+      await $fetch('/api/commands/command-types', {
+        method: 'PUT',
+        body: {
+          commandTypes: copy.value.map((item: CommandType) => ({
+            ...item,
+            machineId: selectedMachineId.value,
+          })),
+        },
+      })
+    },
+  },
+])
 </script>
 
 <template>
-  <div class="flex justify-start w-full my-4 ml-4">
-    <q-btn-group push class="flex flex-row">
-      <q-btn
-        :label="t('copy')"
-        no-caps
-        @click="handleCopy"
-      />
-      <q-btn
-        :label="t('paste')"
-        no-caps
-        @click="handlePaste"
-      />
-    </q-btn-group>
-  </div>
+  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
   <q-card>
     <q-card-section class="flex">
       <div class="w-2xs">
