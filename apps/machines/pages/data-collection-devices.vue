@@ -12,7 +12,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
-      validation: 'required',
+      validation: 'required|min:1',
     },
   },
   machineCode: {

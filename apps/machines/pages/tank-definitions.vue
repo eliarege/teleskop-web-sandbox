@@ -2,6 +2,7 @@
 import { Sortable } from 'sortablejs-vue3'
 import { klona } from 'klona'
 import type { Machine, MasterCommand } from '~/types'
+import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
 const { t } = useI18n()
 
@@ -37,7 +38,7 @@ interface CommandList {
 }
 
 const tank = ref<Partial<TankDefinition>>({
-  tankNo: 0,
+  tankNo: -1,
   name: '',
   highLimit: 0,
   machineConstantHighLimit: 0,
@@ -101,15 +102,11 @@ const { data: commands, refresh: refreshCommands } = useLazyFetch<MasterCommand[
 })
 
 function filterCommandLists() {
-  if (tank.value.tankNo === undefined || tank.value.tankNo === 0)
+  if (tank.value.tankNo === undefined || tank.value.tankNo === -1)
     tank.value.tankNo = tankDefinitions.value[0].tankNo
   for (const list of commandLists) {
     list.ref = list.ref.filter(d => d.tankNo === tank.value.tankNo)
   }
-}
-
-async function handleMachineClick(machineId: number) {
-  selectedMachineId.value = machineId
 }
 
 async function handleTankDefinitionClick(tankDef: TankDefinition) {
@@ -165,39 +162,41 @@ async function handleSubmit() {
 
 const copy = ref()
 
-function handleCopy() {
-  copy.value = klona(tankDefinitions.value)
-}
-
-async function handlePaste() {
-  for (const tankDef of copy.value) {
-    await $fetch('/api/tank-definitions/tank-definition-list', {
-      method: 'PUT',
-      body: {
-        ...tankDef,
-        machineId: selectedMachineId.value,
-      },
-    })
-  }
-  await refreshDefinitions()
-}
+const contextMenuOptions = computed(() => [
+  {
+    label: t('copy'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: selectedMachineId.value === -1,
+    onClick: () => {
+      copy.value = klona(tankDefinitions.value)
+    },
+  },
+  {
+    label: t('paste'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_paste',
+    disabled: selectedMachineId.value === -1,
+    onClick: async () => {
+      for (const tankDef of copy.value) {
+        await $fetch('/api/tank-definitions/tank-definition-list', {
+          method: 'PUT',
+          body: {
+            ...tankDef,
+            machineId: selectedMachineId.value,
+          },
+        })
+      }
+      await refreshDefinitions()
+    },
+  },
+])
 </script>
 
 <template>
-  <div class="flex w-full justify-end my-4">
-    <q-btn-group push class="flex flex-row mr-4">
-      <q-btn
-        :label="t('Copy')"
-        no-caps
-        @click="handleCopy"
-      />
-      <q-btn
-        :label="t('Paste')"
-        no-caps
-        @click="handlePaste"
-      />
-    </q-btn-group>
-  </div>
+  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
   <q-card>
     <q-card-section class="flex flex-row justify-around">
       <div class="flex">
@@ -215,7 +214,7 @@ async function handlePaste() {
               clickable
               :focused="selectedMachineId === machine.machineId"
               :active="selectedMachineId === machine.machineId"
-              @click="handleMachineClick(machine.machineId!)"
+              @click="selectedMachineId = machine.machineId"
             >
               <q-item-section>
                 {{ machine.machineCode }}
@@ -280,6 +279,7 @@ async function handlePaste() {
             <q-btn
               :label="t('delete')"
               no-caps
+              :disable="!tank.tankNo || tank.tankNo === -1"
               @click="handleDelete"
             />
           </div>

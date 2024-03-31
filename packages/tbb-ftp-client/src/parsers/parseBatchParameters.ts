@@ -55,7 +55,7 @@ export function parseBatchParameters(content: string) {
     const selectionValues = []
     const selectionListDefault = []
 
-    if (list.length) {
+    if (list && list.length) {
       for (let i = 0; i < list.length; i += 3) {
         selectionList.push(list[i])
         selectionValues.push(list[i + 1])

@@ -60,20 +60,9 @@ watch(cols, (_newValue, _oldValue) => {
 
 function showForm(buttonAction: 'add' | 'edit') {
   action.value = buttonAction
-  if (action.value === 'edit') {
-    if (selected.value.length) {
-      formData.value = { ...selected.value[0] }
-      showModal.value = true
-    } else {
-      q.notify({
-        message: t('pleaseSelectaRowToEdit'),
-        position: 'top',
-        timeout: 2000,
-        actions: [
-          { label: t('dismiss'), color: 'blue', handler: () => { } },
-        ],
-      })
-    }
+  if (action.value === 'edit' && selected.value.length) {
+    formData.value = { ...selected.value[0] }
+    showModal.value = true
   } else {
     selected.value = []
     formData.value = {}
@@ -116,8 +105,8 @@ watch(showModal, async (newValue, _oldValue) => {
   <!-- Actions -->
   <div class="flex gap-4 m-4">
     <q-btn push no-caps :label="t('add')" color="primary" @click="showForm('add')" />
-    <q-btn push no-caps :label="t('edit')" color="primary" @click="showForm('edit')" />
-    <q-btn push no-caps :label="t('delete')" color="primary" @click="handleDelete" />
+    <q-btn push no-caps :label="t('edit')" color="primary" :disable="!selected.length" @click="showForm('edit')" />
+    <q-btn push no-caps :label="t('delete')" color="primary" :disable="!selected.length" @click="handleDelete" />
   </div>
   <!-- Table -->
   <q-table
@@ -150,7 +139,7 @@ watch(showModal, async (newValue, _oldValue) => {
           v-model="formData" :actions="false" type="form" :form-class="formClass ?? ''" @submit="handleSubmit"
         >
           <FormKitSchema :schema="schema" />
-          <slot name="form-content" />
+          <slot name="form-content" :form-data="formData" />
           <q-card-actions align="right" class="col-span-full	">
             <FormKit type="submit" :label="t('submit')" />
           </q-card-actions>
@@ -159,3 +148,16 @@ watch(showModal, async (newValue, _oldValue) => {
     </q-card>
   </q-dialog>
 </template>
+
+<style>
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+  appearance: textfield; /* Standard */
+}
+</style>

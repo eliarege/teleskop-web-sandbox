@@ -223,6 +223,9 @@ async function handleMachineSelection(obj: Machine) {
   } else {
     selectedMachine.value = obj
   }
+  selectedParam.value = {
+    paramId: -1,
+  }
 }
 
 async function handleParamSelection(obj: ErpParameter) {
@@ -323,11 +326,13 @@ async function handlePaste() {
         <q-btn
           :label="t('edit')"
           no-caps
+          :disable="selectedParam.paramId === -1"
           @click="editParam"
         />
         <q-btn
           :label="t('delete')"
           no-caps
+          :disable="selectedParam.paramId === -1"
           @click="deleteParam"
         />
       </div>

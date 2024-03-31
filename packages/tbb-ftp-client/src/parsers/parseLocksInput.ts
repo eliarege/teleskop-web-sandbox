@@ -25,7 +25,7 @@ export function parseSeperatedLocks(line: string) {
   const lockId = Number.parseInt(parts[0], 10)
   const inputType = Number.parseInt(parts[1], 10)
   const logicType = Number.parseInt(parts[parts.length - 1], 10)
-  let inputs: any[]
+  let inputs: any[] = []
 
   switch (inputType) {
     case InputType.AnalogInput:

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { FormKitSchema } from '@formkit/vue'
-
 const props = defineProps<{
   show: boolean
   settings: []
@@ -12,11 +10,11 @@ const emit = defineEmits(['close', 'add'])
 const { t } = useI18n()
 
 const selectedSetting = ref()
-const option = ref()
+const option = ref('passive')
 
 const options = [
-  { label: 'active', value: 'active' },
-  { label: 'passive', value: 'passive' },
+  { label: t('active'), value: 'active' },
+  { label: t('passive'), value: 'passive' },
 ]
 
 function handleAdd() {
@@ -31,8 +29,7 @@ function handleAdd() {
   >
     <q-card class="min-w-[1000px]">
       <q-card-section>
-        <h3>Select the system settting that will be updated on machine</h3>
-
+        <h3>{{ t('selectTheSystemSettingThatWillBeUpdatedOnMachine') }}</h3>
         <q-select
           v-model="selectedSetting"
           :options="settings"

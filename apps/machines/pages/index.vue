@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMagicKeys, whenever } from '@vueuse/core'
+import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 import type { Machine } from '~/types'
 
@@ -36,7 +37,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
-      validation: 'required',
+      validation: 'required|min:1',
     },
   },
   machineCode: {
@@ -89,7 +90,7 @@ const columns = computed(() => ({
     align: 'left',
     filterable: true,
     filterType: 'includes',
-    type: 'number',
+    type: 'text',
     visible: true,
     editable: false,
     schema: {
@@ -107,7 +108,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
-      validation: 'required',
+      validation: 'required|min:1',
     },
   },
   reelCount: {
@@ -121,6 +122,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
   ip: {
@@ -163,7 +165,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
-      validation: 'required',
+      validation: 'required|min:1',
     },
   },
   theoricalChargeDuration: {
@@ -177,6 +179,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
   nozzleCount: {
@@ -190,6 +193,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
   steamUnit: {
@@ -320,6 +324,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
   theoreticalSteam: {
@@ -346,6 +351,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
   steamValveDo: {
@@ -359,6 +365,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
+      validation: 'min:1',
     },
   },
 }))
@@ -403,33 +410,26 @@ async function updateVersions() {
 
 const q = useQuasar()
 
+const { event, data, close } = useEventSource('/api/sync/sse', ['log'], {
+  autoReconnect: true,
+})
+onBeforeUnmount(() => {
+  close()
+})
+const logs = ref<object[]>([])
+watch(data, (newMessage) => {
+  const msg = JSON.parse(newMessage)
+  logs.value.push(msg.message)
+})
+
 async function loadProject() {
-  if (selected.value.machineId === -1) {
-    q.notify({
-      message: t('pleaseSelectaRow'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
-    })
-    return
-  }
   try {
+    await checkNetworkConnection(selected.value)
     await $fetch('/api/sync/update-machine', {
       method: 'GET',
       query: {
         machineId: selected.value.machineId,
       },
-    })
-
-    q.notify({
-      message: t('connectionSuccessful'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
     })
   } catch (error) {
     if (error.statusCode === 504) {
@@ -547,28 +547,21 @@ const contextMenuOptions = computed(() => [
   },
 ])
 
-let lastcategory = contextMenuOptions.value[0].category
-function addSeparator(key) {
-  if (key !== lastcategory) {
-    lastcategory = key
-    return true
-  } else return false
-}
-function handleClick(event, option) {
-  if (option.disabled)
-    event.preventDefault()
-  else {
-    option.onClick(selected.value)
-  }
-}
-
-async function checkTeleskopConnection() {
+async function checkTeleskopConnection(formData: Machine) {
   try {
     await $fetch('/api/sync/teleskop-connection', {
       method: 'GET',
       query: {
-        machineId: selected.value.machineId,
+        ip: formData.ip,
       },
+    })
+    q.notify({
+      message: t('connectionSuccessful'),
+      position: 'top',
+      timeout: 2000,
+      actions: [
+        { label: t('dismiss'), color: 'blue', handler: () => { } },
+      ],
     })
   } catch (error) {
     console.error(error)
@@ -584,46 +577,48 @@ async function checkTeleskopConnection() {
     }
   }
 }
+
+async function checkNetworkConnection(formData: Machine) {
+  try {
+    await $fetch('/api/sync/network-connection', {
+      method: 'GET',
+      query: {
+        ip: formData.ip,
+      },
+    })
+    q.notify({
+      message: t('connectionSuccessful'),
+      position: 'top',
+      timeout: 2000,
+      actions: [
+        { label: t('dismiss'), color: 'blue', handler: () => { } },
+      ],
+    })
+  } catch (error) {
+    console.error(error)
+    if (error.statusCode === 500) {
+      q.notify({
+        message: t('noConnectionToNetwork'),
+        position: 'top',
+        timeout: 2000,
+        actions: [
+          { label: t('dismiss'), color: 'blue', handler: () => { } },
+        ],
+      })
+    }
+  }
+}
 </script>
 
 <template>
-  <q-menu
-    touch-position
-    context-menu
-  >
-    <q-list>
-      <template
-        v-for="option in contextMenuOptions"
-        :key="option.category"
-      >
-        <q-separator v-if="addSeparator(option.category)" />
-        <q-item
-          v-close-popup="!option.disabled"
-          clickable
-          dense
-          :class="option.disabled ? 'text-gray cursor-not-allowed' : ''"
-          @click="event => handleClick(event, option)"
-        >
-          <q-item-section class="flex w-8 justify-center items-center">
-            <q-icon :name="option.icon" />
-          </q-item-section>
-          <q-item-section>
-            {{ option.label }}
-          </q-item-section>
-          <q-space />
-          <q-item-section class="mr-5">
-            {{ option.keybind }}
-          </q-item-section>
-        </q-item>
-      </template>
-    </q-list>
-  </q-menu>
+  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selected)" />
   <div class="absolute left-63 top-13.2">
     <q-btn
       :label="t('loadProject')"
       no-caps
       push
       color="primary"
+      :disable="selected.machineId === -1"
       class="mr-4"
       @click="loadProject"
     />
@@ -659,16 +654,29 @@ async function checkTeleskopConnection() {
     @select="handleSelection"
     @delete="handleDelete"
   >
-    <template #form-content>
+    <template #form-content="slotProps">
       <q-btn
         :label="t('checkTeleskopConnection')"
         color="primary"
         no-caps
         class="mb-4"
-        @click="checkTeleskopConnection"
+        @click="checkTeleskopConnection(slotProps.formData)"
+      />
+      <q-btn
+        :label="t('checkNetworkConnection')"
+        color="primary"
+        no-caps
+        class="mb-4"
+        @click="checkNetworkConnection(slotProps.formData)"
       />
     </template>
   </FormTableKit>
+
+  <q-scroll-area style="height: 200px">
+    <div v-for="(log, index) in logs" :key="index">
+      {{ log }}
+    </div>
+  </q-scroll-area>
 
   <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
   <GetDyeHouseDefinitionsDialog

@@ -19,20 +19,21 @@ export function parseMachineParameters(content: string) {
     // machineparameterid, paramstring, defaultValue, dmArea,
     // consScreen, paramlowlimit, paramhighlimit, consFormat,
     // paramNo,consUnit
-
-    const parameter: MachineParameter = {
-      machineParameterId: Number.parseInt(id),
-      paramString: values[0],
-      defaultValue: Number.parseInt(values[1]),
-      dmArea: Number.parseInt(values[2]),
-      consScreen: Number.parseInt(values[3]),
-      paramLowLimit: Number.parseInt(values[4]),
-      paramHighLimit: Number.parseInt(values[5]),
-      consFormat: Number.parseInt(values[6]),
-      consUnit: Number.parseInt(values[8]),
+    if (values && values.length) {
+      const parameter: MachineParameter = {
+        machineParameterId: Number.parseInt(id),
+        paramString: values[0],
+        defaultValue: Number.parseInt(values[1]),
+        dmArea: Number.parseInt(values[2]),
+        consScreen: Number.parseInt(values[3]),
+        paramLowLimit: Number.parseInt(values[4]),
+        paramHighLimit: Number.parseInt(values[5]),
+        consFormat: Number.parseInt(values[6]),
+        consUnit: Number.parseInt(values[8]),
+      }
+      machineParameters.push(parameter)
     }
 
-    machineParameters.push(parameter)
     match = pattern.exec(content)
   }
   return machineParameters

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { IContextMenuOption } from '~/components/ContextMenu.vue'
+
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -72,19 +74,35 @@ async function handleDeleteReason() {
 
 const copy = ref()
 
-function handleCopy() {
-  copy.value = selectedMachineId.value
-}
-
-async function handlePaste() {
-  await $fetch('/api/command-timeout-reasons/copy', {
-    method: 'POST',
-    body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
-  })
-}
+const contextMenuOptions = computed(() => [
+  {
+    label: t('copy'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: selectedMachineId.value === -1,
+    onClick: () => {
+      copy.value = selectedMachineId.value
+    },
+  },
+  {
+    label: t('paste'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_paste',
+    disabled: selectedMachineId.value === -1,
+    onClick: async () => {
+      await $fetch('/api/command-timeout-reasons/copy', {
+        method: 'POST',
+        body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
+      })
+    },
+  },
+])
 </script>
 
 <template>
+  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
   <q-dialog :model-value="showAddReasonDialog" @hide="showAddReasonDialog = false">
     <q-card>
       <q-card-section class="flex flex-col items-center">
@@ -125,19 +143,7 @@ async function handlePaste() {
     </q-card>
   </q-dialog>
 
-  <div class="flex justify-between my-4 mr-4">
-    <q-btn-group push class="flex flex-row ">
-      <q-btn
-        :label="t('copy')"
-        no-caps
-        @click="handleCopy"
-      />
-      <q-btn
-        :label="t('paste')"
-        no-caps
-        @click="handlePaste"
-      />
-    </q-btn-group>
+  <div class="flex justify-end my-4 mr-4">
     <q-btn-group push>
       <q-btn
         push
@@ -149,12 +155,14 @@ async function handlePaste() {
         push
         :label="t('edit')"
         icon="edit"
+        :disable="!selectedReasonId"
         @click="handleEditButton()"
       />
       <q-btn
         push
         :label="t('delete')"
         icon="delete"
+        :disable="!selectedReasonId"
         @click="handleDeleteReason()"
       />
     </q-btn-group>
@@ -174,7 +182,7 @@ async function handlePaste() {
           clickable
           :focused="selectedMachineId === machine.machineId"
           :active="selectedMachineId === machine.machineId"
-          @click="selectedMachineId = machine.machineId"
+          @click="selectedMachineId = machine.machineId;selectedReasonId = null;selectedCommandNo = null"
         >
           <q-item-section>
             {{ machine.machineCode }}
@@ -197,7 +205,7 @@ async function handlePaste() {
           clickable
           :focused="selectedCommandNo === command.commandNo"
           :active="selectedReasonCommands && selectedReasonCommands.length ? selectedReasonCommands.some(r => r.commandNo === command.commandNo) : false"
-          @click="selectedCommandNo = command.commandNo"
+          @click="selectedCommandNo = command.commandNo;selectedReasonId = null"
         >
           <q-item-section>
             {{ command.commandName }}
