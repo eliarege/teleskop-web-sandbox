@@ -79,44 +79,46 @@ const contextMenuOptions = computed(() => [
 </script>
 
 <template>
-  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
-  <q-card class="flex flex-row justify-center">
-    <q-card-section class="w-sm">
-      <h3>{{ t('machines') }}</h3>
-      <q-list
-        bordered
-        separator
-        class="overflow-y-auto h-140"
-      >
-        <q-item
-          v-for="machine in machines"
-          :key="machine.machineId"
-          v-ripple
-          clickable
-          :active="selectedMachineId === machine.machineId"
-          :focused="selectedMachineId === machine.machineId"
-          @click="selectedMachineId = machine.machineId"
+  <div>
+    <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
+    <q-card class="flex flex-row justify-center">
+      <q-card-section class="w-sm">
+        <h3>{{ t('machines') }}</h3>
+        <q-list
+          bordered
+          separator
+          class="overflow-y-auto h-140"
         >
-          <q-item-section>
-            {{ machine.machineCode }}
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-card-section>
+          <q-item
+            v-for="machine in machines"
+            :key="machine.machineId"
+            v-ripple
+            clickable
+            :active="selectedMachineId === machine.machineId"
+            :focused="selectedMachineId === machine.machineId"
+            @click="selectedMachineId = machine.machineId"
+          >
+            <q-item-section>
+              {{ machine.machineCode }}
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </q-card-section>
 
-    <q-card-section class="flex flex-col input-field">
-      <div v-for="paramTypeMap in paramTypeMaps" :key="paramTypeMap.id">
-        <q-select
-          v-model="paramTypeMap.data"
-          :options="parameterOptions"
-          option-label="paramString"
-          option-value="paramId"
-          :label="t(paramTypeMap.name)"
-          @update:model-value="handleOptionChange(paramTypeMap)"
-        />
-      </div>
-    </q-card-section>
-  </q-card>
+      <q-card-section class="flex flex-col input-field">
+        <div v-for="paramTypeMap in paramTypeMaps" :key="paramTypeMap.id">
+          <q-select
+            v-model="paramTypeMap.data"
+            :options="parameterOptions"
+            option-label="paramString"
+            option-value="paramId"
+            :label="t(paramTypeMap.name)"
+            @update:model-value="handleOptionChange(paramTypeMap)"
+          />
+        </div>
+      </q-card-section>
+    </q-card>
+  </div>
 </template>
 
 <style scoped>

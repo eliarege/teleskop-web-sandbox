@@ -299,123 +299,125 @@ async function handlePaste() {
 </script>
 
 <template>
-  <q-card>
-    <q-card-section>
-      <div class="flex flex-row justify-start input-field">
-        <q-input
-          v-model="selectedParam.paramName"
-          :label="t('parameterName')"
-          filled
-          class="w-xs"
-        />
-        <q-select
-          v-model="selectedParam.erpFieldName"
-          :options="paramOptions"
-          :label="t('erpFieldName')"
-          filled
-          class="w-xs"
-        />
-      </div>
+  <div>
+    <q-card>
+      <q-card-section>
+        <div class="flex flex-row justify-start input-field">
+          <q-input
+            v-model="selectedParam.paramName"
+            :label="t('parameterName')"
+            filled
+            class="w-xs"
+          />
+          <q-select
+            v-model="selectedParam.erpFieldName"
+            :options="paramOptions"
+            :label="t('erpFieldName')"
+            filled
+            class="w-xs"
+          />
+        </div>
 
-      <div class="flex flex-row input-field my-8">
-        <q-btn
-          :label="t('add')"
-          no-caps
-          @click="addParam"
-        />
-        <q-btn
-          :label="t('edit')"
-          no-caps
-          :disable="selectedParam.paramId === -1"
-          @click="editParam"
-        />
-        <q-btn
-          :label="t('delete')"
-          no-caps
-          :disable="selectedParam.paramId === -1"
-          @click="deleteParam"
-        />
-      </div>
-      <div class="my-4 flex justify-between w-full">
-        <q-btn-group push>
+        <div class="flex flex-row input-field my-8">
           <q-btn
-            :label="t('copyAll')"
+            :label="t('add')"
             no-caps
-            @click="handleCopy(1)"
+            @click="addParam"
           />
           <q-btn
-            :label="t('copyStartupParameters')"
+            :label="t('edit')"
             no-caps
-            @click="handleCopy(2)"
+            :disable="selectedParam.paramId === -1"
+            @click="editParam"
           />
           <q-btn
-            :label="t('copyNonStartupParameters')"
+            :label="t('delete')"
             no-caps
-            @click="handleCopy(3)"
+            :disable="selectedParam.paramId === -1"
+            @click="deleteParam"
           />
-          <q-btn
-            :label="t('paste')"
-            no-caps
-            @click="handlePaste"
-          />
-        </q-btn-group>
-        <q-btn no-caps :label="t('ImportFromBatchParameters')" @click="showImportBatchParametersDialog = true" />
-      </div>
+        </div>
+        <div class="my-4 flex justify-between w-full">
+          <q-btn-group push>
+            <q-btn
+              :label="t('copyAll')"
+              no-caps
+              @click="handleCopy(1)"
+            />
+            <q-btn
+              :label="t('copyStartupParameters')"
+              no-caps
+              @click="handleCopy(2)"
+            />
+            <q-btn
+              :label="t('copyNonStartupParameters')"
+              no-caps
+              @click="handleCopy(3)"
+            />
+            <q-btn
+              :label="t('paste')"
+              no-caps
+              @click="handlePaste"
+            />
+          </q-btn-group>
+          <q-btn no-caps :label="t('ImportFromBatchParameters')" @click="showImportBatchParametersDialog = true" />
+        </div>
 
-      <div class="flex flex-row justify-evenly">
-        <FilterableTable
-          :rows="machines"
-          :columns="machineColumns"
-          class="overflow-y-auto	h-160 w-xl"
-          @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-        >
-          <template #custombody="machines">
-            <q-tr
-              :class="{ 'selected-row': selectedMachine.machineId === machines.row.machineId }"
-              @click="handleMachineSelection(machines.row)"
-            >
-              <q-td
-                v-for="row in machines.cols"
-                :key="row"
+        <div class="flex flex-row justify-evenly">
+          <FilterableTable
+            :rows="machines"
+            :columns="machineColumns"
+            class="overflow-y-auto	h-160 w-xl"
+            @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+          >
+            <template #custombody="machines">
+              <q-tr
+                :class="{ 'selected-row': selectedMachine.machineId === machines.row.machineId }"
+                @click="handleMachineSelection(machines.row)"
               >
-                <span>
-                  {{ row.value }}
-                </span>
-              </q-td>
-            </q-tr>
-          </template>
-        </FilterableTable>
+                <q-td
+                  v-for="row in machines.cols"
+                  :key="row"
+                >
+                  <span>
+                    {{ row.value }}
+                  </span>
+                </q-td>
+              </q-tr>
+            </template>
+          </FilterableTable>
 
-        <FilterableTable
-          :rows="params"
-          :columns="parameterColumns"
-          class="overflow-y-auto h-160 w-2xl"
-        >
-          <template #custombody="parameters">
-            <q-tr
-              :class="{ 'selected-row': selectedParam.paramId === parameters.row.paramId }"
-              @click="handleParamSelection(parameters.row)"
-            >
-              <q-td
-                v-for="row in parameters.cols"
-                :key="row"
+          <FilterableTable
+            :rows="params"
+            :columns="parameterColumns"
+            class="overflow-y-auto h-160 w-2xl"
+          >
+            <template #custombody="parameters">
+              <q-tr
+                :class="{ 'selected-row': selectedParam.paramId === parameters.row.paramId }"
+                @click="handleParamSelection(parameters.row)"
               >
-                <span>
-                  {{ row.value }}
-                </span>
-              </q-td>
-            </q-tr>
-          </template>
-        </FilterableTable>
-      </div>
-    </q-card-section>
-  </q-card>
-  <ImportBatchParametersDialog
-    v-if="showImportBatchParametersDialog"
-    :show="showImportBatchParametersDialog"
-    @close="showImportBatchParametersDialog = false"
-    @add-batch-param="addBatchParam"
-  />
+                <q-td
+                  v-for="row in parameters.cols"
+                  :key="row"
+                >
+                  <span>
+                    {{ row.value }}
+                  </span>
+                </q-td>
+              </q-tr>
+            </template>
+          </FilterableTable>
+        </div>
+      </q-card-section>
+    </q-card>
+    <ImportBatchParametersDialog
+      v-if="showImportBatchParametersDialog"
+      :show="showImportBatchParametersDialog"
+      @close="showImportBatchParametersDialog = false"
+      @add-batch-param="addBatchParam"
+    />
+  </div>
 </template>
 
 <style scoped>

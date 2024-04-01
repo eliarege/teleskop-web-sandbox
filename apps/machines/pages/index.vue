@@ -611,96 +611,98 @@ async function checkNetworkConnection(formData: Machine) {
 </script>
 
 <template>
-  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selected)" />
-  <div class="absolute left-63 top-13.2">
-    <q-btn
-      :label="t('loadProject')"
-      no-caps
-      push
-      color="primary"
-      :disable="selected.machineId === -1"
-      class="mr-4"
-      @click="loadProject"
-    />
-    <q-btn
-      :label="t('receiveVersionInfo')"
-      no-caps
-      push
-      color="primary"
-      class="mr-4"
-      @click="updateVersions"
-    />
-  </div>
-  <div class="flex absolute right-10 top-13.2">
-    <q-chip>
-      {{ `DB v${databaseVersion}` }}
-    </q-chip>
-    <q-option-group
-      :model-value="locale"
-      type="radio"
-      :options="[
-        { label: 'Türkçe', value: 'tr' },
-        { label: 'English', value: 'en' },
-      ]"
-      class="flex"
-      @update:model-value="setLocale($event)"
-    />
-  </div>
-  <FormTableKit
-    :rows="machines" :columns="columns"
-    form-class="grid grid-cols-4 gap-4 items-center"
-    @add="handleAdd"
-    @edit="handleEdit"
-    @select="handleSelection"
-    @delete="handleDelete"
-  >
-    <template #form-content="slotProps">
+  <div>
+    <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selected)" />
+    <div class="absolute left-63 top-13.2">
       <q-btn
-        :label="t('checkTeleskopConnection')"
-        color="primary"
+        :label="t('loadProject')"
         no-caps
-        class="mb-4"
-        @click="checkTeleskopConnection(slotProps.formData)"
+        push
+        color="primary"
+        :disable="selected.machineId === -1"
+        class="mr-4"
+        @click="loadProject"
       />
       <q-btn
-        :label="t('checkNetworkConnection')"
-        color="primary"
+        :label="t('receiveVersionInfo')"
         no-caps
-        class="mb-4"
-        @click="checkNetworkConnection(slotProps.formData)"
+        push
+        color="primary"
+        class="mr-4"
+        @click="updateVersions"
       />
-    </template>
-  </FormTableKit>
-
-  <q-scroll-area style="height: 200px">
-    <div v-for="(log, index) in logs" :key="index">
-      {{ log }}
     </div>
-  </q-scroll-area>
+    <div class="flex absolute right-10 top-13.2">
+      <q-chip>
+        {{ `DB v${databaseVersion}` }}
+      </q-chip>
+      <q-option-group
+        :model-value="locale"
+        type="radio"
+        :options="[
+          { label: 'Türkçe', value: 'tr' },
+          { label: 'English', value: 'en' },
+        ]"
+        class="flex"
+        @update:model-value="setLocale($event)"
+      />
+    </div>
+    <FormTableKit
+      :rows="machines" :columns="columns"
+      form-class="grid grid-cols-4 gap-4 items-center"
+      @add="handleAdd"
+      @edit="handleEdit"
+      @select="handleSelection"
+      @delete="handleDelete"
+    >
+      <template #form-content="slotProps">
+        <q-btn
+          :label="t('checkTeleskopConnection')"
+          color="primary"
+          no-caps
+          class="mb-4"
+          @click="checkTeleskopConnection(slotProps.formData)"
+        />
+        <q-btn
+          :label="t('checkNetworkConnection')"
+          color="primary"
+          no-caps
+          class="mb-4"
+          @click="checkNetworkConnection(slotProps.formData)"
+        />
+      </template>
+    </FormTableKit>
 
-  <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
-  <GetDyeHouseDefinitionsDialog
-    v-if="showGetDyeHouseDefinitions && selected"
-    :show="showGetDyeHouseDefinitions"
-    :selected="selected"
-    @close="showGetDyeHouseDefinitions = false"
-  />
-  <SetDyeHouseDefinitionsDialog
-    v-if="showSetDyeHouseDefinitions && selected"
-    :show="showSetDyeHouseDefinitions"
-    :selected="selected"
-    @close="showSetDyeHouseDefinitions = false"
-  />
-  <MachineParametersDialog
-    v-if="showMachineParameters"
-    :show="showMachineParameters"
-    :selected="selected"
-    @close="showMachineParameters = false"
-  />
-  <MimicDialog
-    v-if="showMimic"
-    :show="showMimic"
-    :selected="selected"
-    @close="showMimic = false"
-  />
+    <q-scroll-area style="height: 200px">
+      <div v-for="(log, index) in logs" :key="index">
+        {{ log }}
+      </div>
+    </q-scroll-area>
+
+    <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
+    <GetDyeHouseDefinitionsDialog
+      v-if="showGetDyeHouseDefinitions && selected"
+      :show="showGetDyeHouseDefinitions"
+      :selected="selected"
+      @close="showGetDyeHouseDefinitions = false"
+    />
+    <SetDyeHouseDefinitionsDialog
+      v-if="showSetDyeHouseDefinitions && selected"
+      :show="showSetDyeHouseDefinitions"
+      :selected="selected"
+      @close="showSetDyeHouseDefinitions = false"
+    />
+    <MachineParametersDialog
+      v-if="showMachineParameters"
+      :show="showMachineParameters"
+      :selected="selected"
+      @close="showMachineParameters = false"
+    />
+    <MimicDialog
+      v-if="showMimic"
+      :show="showMimic"
+      :selected="selected"
+      @close="showMimic = false"
+    />
+  </div>
 </template>

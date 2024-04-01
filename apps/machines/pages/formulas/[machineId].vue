@@ -167,84 +167,86 @@ const showAddFormulaDialog = ref(false)
 </script>
 
 <template>
-  <q-card>
-    <q-card-section>
-      <div class="w-full flex flex-row justify-around my-4">
-        <q-input
-          v-model="formula.formulaId"
-          filled
-          :label="t('formulaId')"
-          class="w-1/6"
-        />
-        <q-input
-          v-model="formula.formulaName"
-          filled
-          :label="t('formulaName')"
-          class="w-1/6"
-        />
-        <q-select
-          :model-value="formula?.commandNo"
-          :options="commandOptions"
-          :label="t('commands')"
-          filled
-          option-label="label"
-          option-value="value"
-          :display-value="formula?.commandName"
-          class="w-1/6"
-          @update:model-value="(e) => handleCommandSelect(e)"
-        />
-        <q-select
-          :model-value="formula?.parameterIndex"
-          :options="commandParameterOptions"
-          :label="t('commandParameters')"
-          filled
-          option-label="label"
-          option-value="value"
-          :display-value="formula?.parameterName"
-          class="w-1/6"
-          @update:model-value="(e) => handleParamSelect(e)"
-        />
-      </div>
-      <div class="flex w-full justify-between m-4">
-        <q-btn-group push>
-          <q-btn push :label="t('add')" @click="handleAdd" />
-          <q-btn push :label="t('edit')" @click="handleEdit" />
-          <q-btn push :label="t('delete')" @click="handleDelete" />
-        </q-btn-group>
-        <q-btn no-caps push :label="t('addFormula')" @click="showAddFormulaDialog = true" />
-      </div>
-      <FilterableTable
-        :rows="formulas"
-        :columns="columns"
-        class="overflow-y-auto	h-160"
-        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
-      >
-        <template #custombody="formulas">
-          <q-tr
-            :class="{ 'selected-row': formula.formulaId === formulas.row.formulaId }"
-            @click="handleFormulaSelection(formulas.row)"
-          >
-            <q-td
-              v-for="row in formulas.cols"
-              :key="row"
+  <div>
+    <q-card>
+      <q-card-section>
+        <div class="w-full flex flex-row justify-around my-4">
+          <q-input
+            v-model="formula.formulaId"
+            filled
+            :label="t('formulaId')"
+            class="w-1/6"
+          />
+          <q-input
+            v-model="formula.formulaName"
+            filled
+            :label="t('formulaName')"
+            class="w-1/6"
+          />
+          <q-select
+            :model-value="formula?.commandNo"
+            :options="commandOptions"
+            :label="t('commands')"
+            filled
+            option-label="label"
+            option-value="value"
+            :display-value="formula?.commandName"
+            class="w-1/6"
+            @update:model-value="(e) => handleCommandSelect(e)"
+          />
+          <q-select
+            :model-value="formula?.parameterIndex"
+            :options="commandParameterOptions"
+            :label="t('commandParameters')"
+            filled
+            option-label="label"
+            option-value="value"
+            :display-value="formula?.parameterName"
+            class="w-1/6"
+            @update:model-value="(e) => handleParamSelect(e)"
+          />
+        </div>
+        <div class="flex w-full justify-between m-4">
+          <q-btn-group push>
+            <q-btn push :label="t('add')" @click="handleAdd" />
+            <q-btn push :label="t('edit')" @click="handleEdit" />
+            <q-btn push :label="t('delete')" @click="handleDelete" />
+          </q-btn-group>
+          <q-btn no-caps push :label="t('addFormula')" @click="showAddFormulaDialog = true" />
+        </div>
+        <FilterableTable
+          :rows="formulas"
+          :columns="columns"
+          class="overflow-y-auto	h-160"
+          @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+        >
+          <template #custombody="formulas">
+            <q-tr
+              :class="{ 'selected-row': formula.formulaId === formulas.row.formulaId }"
+              @click="handleFormulaSelection(formulas.row)"
             >
-              <span>
-                {{ row.value }}
-              </span>
-            </q-td>
-          </q-tr>
-        </template>
-      </FilterableTable>
-    </q-card-section>
-  </q-card>
-  <AddFormulaDialog
-    v-if="showAddFormulaDialog"
-    :show="showAddFormulaDialog"
-    :machine-id="machineId"
-    :formula="formula"
-    @close="showAddFormulaDialog = false"
-    @refresh="refreshFormulas"
-  />
+              <q-td
+                v-for="row in formulas.cols"
+                :key="row"
+              >
+                <span>
+                  {{ row.value }}
+                </span>
+              </q-td>
+            </q-tr>
+          </template>
+        </FilterableTable>
+      </q-card-section>
+    </q-card>
+    <AddFormulaDialog
+      v-if="showAddFormulaDialog"
+      :show="showAddFormulaDialog"
+      :machine-id="machineId"
+      :formula="formula"
+      @close="showAddFormulaDialog = false"
+      @refresh="refreshFormulas"
+    />
+  </div>
 </template>
 
 <style scoped>

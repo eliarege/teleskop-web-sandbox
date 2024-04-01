@@ -174,25 +174,27 @@ async function handleFilterSlotsUpdate(updatedValue) {
 </script>
 
 <template>
-  <FormTableKit
-    :rows="users" :columns="columns"
-    form-class="grid grid-cols-2 gap-4 items-center" @add="handleAdd" @edit="handleEdit"
-    @delete="handleDelete"
-    @select="handleSelect"
-  >
-    <template #form-content>
-      <q-btn
-        :label="t('permissions')"
-        color="primary"
-        no-caps
-        class="mb-4"
-        @click="showPermissionsDialog = true"
-      />
-    </template>
-  </FormTableKit>
-  <UserPermissionsDialog
-    :show="showPermissionsDialog"
-    :selected="selected"
-    @close="showPermissionsDialog = false"
-  />
+  <div>
+    <FormTableKit
+      :rows="users" :columns="columns"
+      form-class="grid grid-cols-2 gap-4 items-center" @add="handleAdd" @edit="handleEdit"
+      @delete="handleDelete"
+      @select="handleSelect"
+    >
+      <template #form-content>
+        <q-btn
+          :label="t('permissions')"
+          color="primary"
+          no-caps
+          class="mb-4"
+          @click="showPermissionsDialog = true"
+        />
+      </template>
+    </FormTableKit>
+    <UserPermissionsDialog
+      :show="showPermissionsDialog"
+      :selected="selected"
+      @close="showPermissionsDialog = false"
+    />
+  </div>
 </template>

@@ -217,61 +217,63 @@ function deselectAll() {
 </script>
 
 <template>
-  <q-card>
-    <q-card-section>
-      <div class="flex flex-row justify-around items-center">
-        <div>
-          <h3>{{ t('settingsToUpdate') }}</h3>
-          <div class="flex gap-4 my-4">
-            <q-btn :label="t('add')" no-caps @click="showAddMachineSystemSetting = true" />
-            <q-btn :label="t('delete')" no-caps :disable="!selected" @click="handleDelete" />
+  <div>
+    <q-card>
+      <q-card-section>
+        <div class="flex flex-row justify-around items-center">
+          <div>
+            <h3>{{ t('settingsToUpdate') }}</h3>
+            <div class="flex gap-4 my-4">
+              <q-btn :label="t('add')" no-caps @click="showAddMachineSystemSetting = true" />
+              <q-btn :label="t('delete')" no-caps :disable="!selected" @click="handleDelete" />
+            </div>
+            <q-list separator bordered class="h-160 overflow-y-auto w-sm">
+              <q-item
+                v-for="setting in selectedSettings" :key="setting.caption"
+                v-ripple
+                clickable
+                :active="selected === setting"
+                @click="selected = setting"
+              >
+                <q-item-section>
+                  {{ `${t(`updateMachineSettings.${setting.caption}`)} ${setting.isActive ? t('active') : t('passive')}` }}
+                </q-item-section>
+              </q-item>
+            </q-list>
           </div>
-          <q-list separator bordered class="h-160 overflow-y-auto w-sm">
-            <q-item
-              v-for="setting in selectedSettings" :key="setting.caption"
-              v-ripple
-              clickable
-              :active="selected === setting"
-              @click="selected = setting"
-            >
-              <q-item-section>
-                {{ `${t(`updateMachineSettings.${setting.caption}`)} ${setting.isActive ? t('active') : t('passive')}` }}
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </div>
 
-        <div>
-          <h3>{{ t('machinesToUpdate') }}</h3>
-          <div class="flex gap-4 my-4">
-            <q-btn :label="t('selectAll')" no-caps @click="selectAll" />
-            <q-btn :label="t('deselectAll')" no-caps @click="deselectAll" />
+          <div>
+            <h3>{{ t('machinesToUpdate') }}</h3>
+            <div class="flex gap-4 my-4">
+              <q-btn :label="t('selectAll')" no-caps @click="selectAll" />
+              <q-btn :label="t('deselectAll')" no-caps @click="deselectAll" />
+            </div>
+            <q-list bordered separator class="h-160 overflow-y-auto w-sm">
+              <q-item
+                v-for="machine in machines"
+                :key="machine.machineId"
+              >
+                <q-checkbox v-model="machine.check" :label="machine.machineCode" />
+              </q-item>
+            </q-list>
           </div>
-          <q-list bordered separator class="h-160 overflow-y-auto w-sm">
-            <q-item
-              v-for="machine in machines"
-              :key="machine.machineId"
-            >
-              <q-checkbox v-model="machine.check" :label="machine.machineCode" />
-            </q-item>
-          </q-list>
         </div>
-      </div>
-    </q-card-section>
-    <q-card-actions align="right" class="flex gap-2 m-4">
-      <q-btn :label="t('cancel')" no-caps />
-      <q-btn :label="t('submit')" color="primary" no-caps @click="handleSend" />
-    </q-card-actions>
-  </q-card>
+      </q-card-section>
+      <q-card-actions align="right" class="flex gap-2 m-4">
+        <q-btn :label="t('cancel')" no-caps />
+        <q-btn :label="t('submit')" color="primary" no-caps @click="handleSend" />
+      </q-card-actions>
+    </q-card>
 
-  <AddMachineSystemSettingDialog
-    v-if="showAddMachineSystemSetting"
-    :show="showAddMachineSystemSetting"
-    :settings="settings"
-    :tokens="tokens"
-    @close="showAddMachineSystemSetting = false"
-    @add="handleAdd"
-  />
+    <AddMachineSystemSettingDialog
+      v-if="showAddMachineSystemSetting"
+      :show="showAddMachineSystemSetting"
+      :settings="settings"
+      :tokens="tokens"
+      @close="showAddMachineSystemSetting = false"
+      @add="handleAdd"
+    />
+  </div>
 </template>
 
 <style scoped>
