@@ -8,15 +8,15 @@ export default defineEventHandler(async (event) => {
       .where('machineId', machineId)
       .del()
 
-if (commandTypes?.length) {
-    await trx('BFCOMMANDTYPES')
-      .insert(commandTypes.map(commandType => ({
-        machineId: commandType.machineId,
-        commandNo: commandType.commandNo,
-        commandType: commandType.commandType,
-      })))
+    if (commandTypes?.length) {
+      await trx('BFCOMMANDTYPES')
+        .insert(commandTypes.map(commandType => ({
+          machineId: commandType.machineId,
+          commandNo: commandType.commandNo,
+          commandType: commandType.commandType,
+        })))
+    }
   })
-}
 
   return commandTypes
 })
