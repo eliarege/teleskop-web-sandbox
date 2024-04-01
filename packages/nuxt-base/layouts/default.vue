@@ -1,8 +1,9 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const { bottomSheet } = useQuasar()
+const { data: app } = useFetch(`/api/properties`)
 
-function parseAppList(appList: unknown): { name: string; url: string; img: string }[] {
+function parseAppList(appList: unknown): { name: string, url: string, img: string }[] {
   if (typeof appList === 'string') {
     try {
       return JSON.parse(appList || '[]') as any[]
@@ -35,7 +36,7 @@ const bottomSheetActions = appList.map((app) => {
 
 function showBottomsheet() {
   bottomSheet({
-    message: '',
+    message: `Version: ${app.version || 'Unknown'}`,
     dark: true,
     grid: true,
     actions: bottomSheetActions,
