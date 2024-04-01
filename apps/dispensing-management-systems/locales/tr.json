@@ -117,6 +117,14 @@
     "ParallelStep": "Paralel Adım",
     "ProcessNo": "İşlem Numarası"
   },
+  "batchPlanParameterFields": {
+    "Title": "Parametreler",
+    "PlanKey": "Plan Numarası",
+    "ParamID": "Parametre Numarası",
+    "ParamName": "Parametre Adı",
+    "Value": "Değer",
+    "Unit": "Birim"
+  },
   "weighingFields": {
     "Info": "Tartım Bilgisi",
     "Auto": "Otomatik Tartım Bilgisi",

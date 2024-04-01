@@ -119,6 +119,14 @@
     "Amount": "Amount",
     "Unit": "Unit"
   },
+  "batchPlanParameterFields": {
+    "Title": "Batch Plan Parameters",
+    "PlanKey": "Plan Key",
+    "ParamID": "Parameter ID",
+    "ParamName": "Parameter Name",
+    "Value": "Value",
+    "Unit": "Unit"
+  },
   "weighingFields": {
     "Info": "Weighing Information",
     "Auto": "Automatic Weighing Info",

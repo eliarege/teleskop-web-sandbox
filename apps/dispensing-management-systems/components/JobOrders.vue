@@ -2,6 +2,7 @@
 import type { QTable } from 'quasar'
 import MaterialRequests from './material/MaterialRequests.vue'
 import WeighingInfo from './WeighingInfo.vue'
+import BatchParametersInfo from './BatchParametersInfo.vue'
 import type { Dispenser, JobOrder, Machine } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { cellStyle } from '~/shared/utils'
@@ -144,6 +145,7 @@ const buttonProps = ref([
   { name: 'materialRequests', label: t('MaterialRequests'), link: 'material', icon: 'science' },
   { name: 'recipeInfo', label: t('recipeFields.Info'), link: 'recipe', icon: 'description' },
   { name: 'weighingInfo', label: t('weighingFields.Info'), link: 'weighing', icon: 'balance' },
+  { name: 'parameters', label: t('batchPlanParameterFields.Title'), link: 'parameters', icon: 'format_list_numbered' },
 ])
 function onRowClick(row: JobOrder, isContextMenu: boolean) {
   if (selectedRow.value === row && !isContextMenu)
@@ -170,6 +172,11 @@ function onButtonClicked(link: string) {
   } else if (link === 'weighing') {
     q.dialog({
       component: WeighingInfo,
+      componentProps: { jobOrder },
+    })
+  } else if (link === 'parameters') {
+    q.dialog({
+      component: BatchParametersInfo,
       componentProps: { jobOrder },
     })
   }
