@@ -36,7 +36,7 @@ const bottomSheetActions = appList.map((app) => {
 
 function showBottomsheet() {
   bottomSheet({
-    message: `Version: ${app.version || 'Unknown'}`,
+    message: `Version: ${app.value.version || 'Unknown'}`,
     dark: true,
     grid: true,
     actions: bottomSheetActions,
