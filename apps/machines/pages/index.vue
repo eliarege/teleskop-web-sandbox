@@ -70,7 +70,7 @@ const columns = computed(() => ({
     },
   },
   tbbModel: {
-    label: 'model',
+    label: 'Model',
     field: 'tbbModel',
     align: 'left',
     filterable: true,
@@ -126,7 +126,7 @@ const columns = computed(() => ({
     },
   },
   ip: {
-    label: 'ip',
+    label: 'Ip',
     field: 'ip',
     align: 'left',
     filterable: true,
@@ -424,7 +424,14 @@ const { notifySuccess, notifyError } = useNotify()
 
 async function loadProject() {
   try {
-    await checkNetworkConnection(selected.value)
+    await $fetch('/api/sync/network-connection', {
+      method: 'GET',
+      query: {
+        ip: selected.value.ip,
+      },
+    })
+    notifySuccess(t('connectionSuccessful'))
+
     await $fetch('/api/sync/update-machine', {
       method: 'GET',
       query: {
@@ -432,7 +439,9 @@ async function loadProject() {
       },
     })
   } catch (error) {
-    if (error.statusCode === 504) {
+    if (error.statusCode === 500) {
+      notifyError(t('noConnectionToNetwork'))
+    } else if (error.statusCode === 504) {
       notifyError(t('connectionTimeout'))
     }
   }
@@ -540,36 +549,49 @@ const contextMenuOptions = computed(() => [
   },
 ])
 
+const connectionMessage = ref({
+  message: '',
+  color: '',
+})
+
 async function checkTeleskopConnection(formData: Machine) {
   try {
+    connectionMessage.value.message = t('tryingConnection')
+    connectionMessage.value.color = ''
     await $fetch('/api/sync/teleskop-connection', {
       method: 'GET',
       query: {
         ip: formData.ip,
       },
     })
-    notifySuccess(t('connectionSuccessful'))
+    connectionMessage.value.message = t('connectionSuccessful')
+    connectionMessage.value.color = 'text-green'
   } catch (error) {
     console.error(error)
     if (error.statusCode === 500) {
-      notifyError(t('noConnectionToTeleskop'))
+      connectionMessage.value.message = (t('noConnectionToTeleskop'))
+      connectionMessage.value.color = 'text-red'
     }
   }
 }
 
 async function checkNetworkConnection(formData: Machine) {
   try {
+    connectionMessage.value.message = t('tryingConnection')
+    connectionMessage.value.color = ''
     await $fetch('/api/sync/network-connection', {
       method: 'GET',
       query: {
         ip: formData.ip,
       },
     })
-    notifySuccess(t('connectionSuccessful'))
+    connectionMessage.value.message = (t('connectionSuccessful'))
+    connectionMessage.value.color = 'text-green'
   } catch (error) {
     console.error(error)
     if (error.statusCode === 500) {
-      notifyError(t('noConnectionToNetwork'))
+      connectionMessage.value.message = (t('noConnectionToNetwork'))
+      connectionMessage.value.color = 'text-red'
     }
   }
 }
@@ -619,6 +641,7 @@ async function checkNetworkConnection(formData: Machine) {
       @edit="handleEdit"
       @select="handleSelection"
       @delete="handleDelete"
+      @close="connectionMessage = { message: '', color: '' }"
     >
       <template #form-content="slotProps">
         <q-btn
@@ -635,6 +658,9 @@ async function checkNetworkConnection(formData: Machine) {
           class="mb-4"
           @click="checkNetworkConnection(slotProps.formData)"
         />
+        <h3 :class="connectionMessage.color">
+          {{ connectionMessage.message }}
+        </h3>
       </template>
     </FormTableKit>
 

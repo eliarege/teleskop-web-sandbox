@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { FormKitSchema } from '@formkit/vue'
 import { changeLocale } from '@formkit/i18n'
-import { useQuasar } from 'quasar'
 import { klona } from 'klona'
 
 const props = defineProps<{
@@ -15,6 +14,7 @@ const emit = defineEmits<{
   edit: [data: object, oldData: object]
   delete: [data: object[]]
   select: [data: object[]]
+  close: []
 }>()
 
 const { t, locale } = useI18n()
@@ -125,7 +125,7 @@ watch(showModal, async (newValue, _oldValue) => {
   <q-dialog v-model="showModal">
     <q-card class="min-w-fit">
       <q-card-actions align="right">
-        <q-btn flat icon="close" @click="showModal = false" />
+        <q-btn flat icon="close" @click="showModal = false;emit('close')" />
       </q-card-actions>
       <q-card-section>
         <FormKit
