@@ -346,7 +346,7 @@
   "checkTeleskopConnection": "Check Teleskop Connection",
   "connectionSuccessful": "Connection Successful",
   "passive": "Passive",
-  "selectTheSystemSettingThatWillBeUpdatedOnMachine": "Select the system setting that will be updated on machine",
+  "selectSettingToUpdate": "Select the system setting that will be updated on machine",
   "noConnectionToNetwork": "No Connection To Network",
   "checkNetworkConnection": "Check Network Connection",
   "ttbSaveIOValuesInDatabase": "Save I/O Values In Database"

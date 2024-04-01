@@ -29,7 +29,7 @@ function handleAdd() {
   >
     <q-card class="min-w-[1000px]">
       <q-card-section>
-        <h3>{{ t('selectTheSystemSettingThatWillBeUpdatedOnMachine') }}</h3>
+        <h3>{{ t('selectSettingToUpdate') }}</h3>
         <q-select
           v-model="selectedSetting"
           :options="settings"
