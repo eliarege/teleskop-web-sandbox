@@ -70,7 +70,7 @@ const columns = computed(() => ({
     },
   },
   tbbModel: {
-    label: t('model'),
+    label: 'model',
     field: 'tbbModel',
     align: 'left',
     filterable: true,
@@ -126,7 +126,7 @@ const columns = computed(() => ({
     },
   },
   ip: {
-    label: t('ip'),
+    label: 'ip',
     field: 'ip',
     align: 'left',
     filterable: true,
@@ -408,8 +408,6 @@ async function updateVersions() {
   await refresh()
 }
 
-const q = useQuasar()
-
 const { event, data, close } = useEventSource('/api/sync/sse', ['log'], {
   autoReconnect: true,
 })
@@ -422,6 +420,8 @@ watch(data, (newMessage) => {
   logs.value.push(msg.message)
 })
 
+const { notifySuccess, notifyError } = useNotify()
+
 async function loadProject() {
   try {
     await checkNetworkConnection(selected.value)
@@ -433,14 +433,7 @@ async function loadProject() {
     })
   } catch (error) {
     if (error.statusCode === 504) {
-      q.notify({
-        message: t('connectionTimeout'),
-        position: 'top',
-        timeout: 2000,
-        actions: [
-          { label: t('dismiss'), color: 'blue', handler: () => { } },
-        ],
-      })
+      notifyError(t('connectionTimeout'))
     }
   }
 }
@@ -555,25 +548,11 @@ async function checkTeleskopConnection(formData: Machine) {
         ip: formData.ip,
       },
     })
-    q.notify({
-      message: t('connectionSuccessful'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
-    })
+    notifySuccess(t('connectionSuccessful'))
   } catch (error) {
     console.error(error)
     if (error.statusCode === 500) {
-      q.notify({
-        message: t('noConnectionToTeleskop'),
-        position: 'top',
-        timeout: 2000,
-        actions: [
-          { label: t('dismiss'), color: 'blue', handler: () => { } },
-        ],
-      })
+      notifyError(t('noConnectionToTeleskop'))
     }
   }
 }
@@ -586,25 +565,11 @@ async function checkNetworkConnection(formData: Machine) {
         ip: formData.ip,
       },
     })
-    q.notify({
-      message: t('connectionSuccessful'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
-    })
+    notifySuccess(t('connectionSuccessful'))
   } catch (error) {
     console.error(error)
     if (error.statusCode === 500) {
-      q.notify({
-        message: t('noConnectionToNetwork'),
-        position: 'top',
-        timeout: 2000,
-        actions: [
-          { label: t('dismiss'), color: 'blue', handler: () => { } },
-        ],
-      })
+      notifyError(t('noConnectionToNetwork'))
     }
   }
 }

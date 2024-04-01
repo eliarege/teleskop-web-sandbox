@@ -18,7 +18,7 @@ const emit = defineEmits<{
 }>()
 
 const { t, locale } = useI18n()
-const q = useQuasar()
+const { notifyError } = useNotify()
 const showModal = ref(false)
 const selected = ref<object[]>([])
 const formData = ref({})
@@ -84,14 +84,7 @@ function handleDelete() {
     emit('delete', selected.value)
     selected.value = []
   } else
-    q.notify({
-      message: t('pleaseSelectaRowToDelete'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
-    })
+    notifyError(t('pleaseSelectaRowToDelete'))
 }
 // TODO: fix locale change error
 watch(showModal, async (newValue, _oldValue) => {
