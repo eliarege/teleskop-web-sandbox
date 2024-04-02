@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { matChevronLeft, matChevronRight } from '@quasar/extras/material-icons'
 
-const { data: distinctErpParameters } = useFetch('/api/settings/erpParameters/distinctErpParameters')
+const { data: distinctErpParameters } = useFetch<{ paramName: string }[]>('/api/settings/erpParameters/erpParameters', {
+  query: { distinct: true },
+})
 const selected = ref()
 const unplannedParameters = reactive([] as { paramName: string }[])
 
 function addParameter() {
-  if (!unplannedParameters.includes(selected.value)) {
-    const index = distinctErpParameters.value.indexOf(selected.value)
-    distinctErpParameters.value.splice(index, 1)
-    unplannedParameters.push(selected.value)
+  if (distinctErpParameters.value) {
+    if (!unplannedParameters.includes(selected.value)) {
+      const index = distinctErpParameters.value.indexOf(selected.value)
+      distinctErpParameters.value.splice(index, 1)
+      unplannedParameters.push(selected.value)
+    }
   }
 }
 function removeParameter() {
@@ -28,7 +32,9 @@ function removeParameter() {
         v-for="(item, idx) in distinctErpParameters"
         :key="idx"
         v-ripple
+        tabindex="0"
         clickable
+        class="focus:(bg-primary text-white)"
         :active="selected === item"
         active-class="bg-primary text-white"
         @click="selected = item"

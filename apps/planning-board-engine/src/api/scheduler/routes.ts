@@ -8,6 +8,7 @@ import {
   deleteNote,
   getBatchNotes,
   getBatchProperties,
+  getDistinctErpParameters,
   getErpParameters,
   getEventTooltipParams,
   getMachines,
@@ -97,12 +98,16 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-  fastify.get<{ Querystring: { machineId: number } }>(
+  fastify.get<{ Querystring: { machineId?: number, distinct?: boolean } }>(
     '/planning_board/settings/erp_parameters',
     async (request, reply) => {
       try {
-        const { machineId } = request.query
-        return await getErpParameters(machineId)
+        const { machineId, distinct } = request.query
+        if (distinct) {
+          return await getDistinctErpParameters()
+        } else if (machineId) {
+          return await getErpParameters(machineId)
+        } else return fastify.log.error('MISSING QUERIES')
       } catch (err) {
         fastify.log.error(`An error occured while fetching erp parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching erp parameters: ${err}` })

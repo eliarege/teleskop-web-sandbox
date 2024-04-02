@@ -284,6 +284,11 @@ export async function getErpParameters(machineId: number) {
     .groupBy('p.OWNER', 'p.PARAMID', 'd.PARAMNAME', 'p.MACHINEID')
   return { definitions, plannedDefinitions, unplannedDefinitions }
 }
+export async function getDistinctErpParameters() {
+  return await knex({ b: 'BFERPPARAMETERDEFINITIONS' })
+    .select({ paramName: 'b.PARAMNAME' })
+    .distinct()
+}
 export async function getEventTooltipParams(planKey: number, machineId: number) {
   const subquery = await knex('PTERPPARAMBYUSER as p')
     .select('p.PARAMID')
