@@ -31,88 +31,78 @@ function onReset() {
   <div>
     <div class="content-section">
       <QForm @submit.prevent>
-        <div class="flex flex-row align-start justify-center">
-          <div class="text-xl">
+        <div class="align-start justify-center">
+          <div class="text-xl flex flex-center">
             {{ t('settings.Teleskop') }}
           </div>
-          <QSeparator
-            class="w-full mt-10 mb-10"
-          />
-          <div class="flex-center flex-col gap-5 text-size-4 w-full ">
-            <div class="row-item">
-              {{ t('protocolParameters.dbClient') }}
-              <QInput
-                v-model="teleskopSettings!.client"
-                dense
-                type="text"
-                filled
-              />
+          <div class="flex-center flex-col text-size-4 w-full ">
+            <div class="flex flex-row flex-center">
+              <div class="row-item">
+                <span class="w-24">
+                  {{ t('protocolParameters.dbClient') }}
+                </span>
+                <QInput
+                  v-model="teleskopSettings!.client"
+                  dense
+                  type="text"
+                  filled
+                />
+              </div>
+              <div class="row-item">
+                {{ t('protocolParameters.dbHostComputer') }}
+                <QInput
+                  v-model="teleskopSettings!.hostComputer"
+                  dense
+                  type="text"
+                  filled
+                />
+              </div>
             </div>
-            <QSeparator
-              class="w-full "
-            />
-            <div class="row-item">
-              {{ t('protocolParameters.dbHostComputer') }}
-              <QInput
-                v-model="teleskopSettings!.hostComputer"
-                dense
-                type="text"
-                filled
-              />
+            <div class="flex flex-row flex-center">
+              <div class="row-item">
+                {{ t('protocolParameters.dbName') }}
+                <QInput
+                  v-model="teleskopSettings!.database"
+                  dense
+                  type="text"
+                  filled
+                />
+              </div>
+              <div class="row-item">
+                {{ t('protocolParameters.dbHost') }}
+                <QInput
+                  v-model="teleskopSettings!.host"
+                  dense
+                  type="text"
+                  filled
+                />
+              </div>
             </div>
-            <QSeparator
-              class="w-full "
-            />
-            <div class="row-item">
-              {{ t('protocolParameters.dbName') }}
-              <QInput
-                v-model="teleskopSettings!.database"
-                dense
-                type="text"
-                filled
-              />
+            <div class="flex flex-row flex-center">
+              <div class="row-item">
+                {{ t('protocolParameters.dbPort') }}
+                <QInput
+                  v-model="teleskopSettings!.port"
+                  class="select-item"
+                  dense
+                  filled
+                  type="number"
+                  min="0"
+                  hide-bottom-space
+                  :rules="[(val: number) => val >= 0]"
+                />
+              </div>
+
+              <div class="row-item">
+                {{ t('protocolParameters.dbUser') }}
+                <QInput
+                  v-model="teleskopSettings!.user"
+                  dense
+                  type="text"
+                  filled
+                />
+              </div>
             </div>
-            <QSeparator
-              class="w-full "
-            />
-            <div class="row-item">
-              {{ t('protocolParameters.dbHost') }}
-              <QInput
-                v-model="teleskopSettings!.host"
-                dense
-                type="text"
-                filled
-              />
-            </div>
-            <QSeparator
-              class="w-full "
-            />
-            <div class="row-item">
-              {{ t('protocolParameters.dbPort') }}
-              <QInput
-                v-model="teleskopSettings!.port"
-                dense
-                filled
-                type="number"
-                :rules="[(val: number) => val >= 0]"
-                min="0"
-              />
-            </div>
-            <QSeparator
-              class="w-full "
-            />
-            <div class="row-item">
-              {{ t('protocolParameters.dbUser') }}
-              <QInput
-                v-model="teleskopSettings!.user"
-                dense
-                type="text"
-                filled
-              />
-            </div>
-            <QSeparator
-              class="w-full "
-            />
             <div class="row-item">
               {{ t('protocolParameters.dbPassword') }}
               <QInput
@@ -130,14 +120,11 @@ function onReset() {
                 </template>
               </QInput>
             </div>
-            <QSeparator
-              class="w-full "
-            />
           </div>
         </div>
       </QForm>
     </div>
-    <div :class="q.dark.isActive ? 'buttons-section-dark' : 'buttons-section-light'">
+    <div class="buttons-section">
       <div class="flex-center justify-evenly">
         <QBtn
           :label="t('Save')"
@@ -158,41 +145,26 @@ function onReset() {
 </template>
 
 <style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
 .content-section {
-  flex: 1;
+  height: 100vh;
   overflow-y: auto;
-  padding: 10px;
-  margin-bottom: 10vh;
 }
-
-.buttons-section-light {
+.buttons-section {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 10vh;
-  position: fixed;
+  position: sticky;
   bottom: 0;
   width: 88%;
   background-color: white;
 }
-.buttons-section-dark {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 10vh;
-  position: fixed;
-  bottom: 0;
-  width: 88%;
+.body--dark .buttons-section {
   background-color: var(--q-dark);
 }
 .row-item {
   align-items: center;
   gap: 1rem;
-  margin: 1rem;
+  margin: 2rem;
 }
 </style>
