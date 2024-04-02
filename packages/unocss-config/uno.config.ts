@@ -6,6 +6,11 @@ export default defineConfig({
     'flex-center': 'flex items-center justify-center',
     'e-border': 'border-solid border-1px border-black',
   },
+  theme: {
+    colors: {
+      primary: '#1976D2',
+    },
+  },
   presets: [
     presetUno({
       preflight: true,
