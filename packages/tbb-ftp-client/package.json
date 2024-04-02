@@ -12,10 +12,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "basic-ftp": "^5.0.3"
+    "basic-ftp": "^5.0.5"
   },
   "devDependencies": {
     "tsconfig": "workspace:*",
-    "typescript": "^5.3.2"
+    "typescript": "^5.4.5"
   }
 }
