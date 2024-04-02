@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { QTable } from 'quasar'
+import ConfirmationDialog from './ConfirmationDialog.vue'
 import MaterialRequests from './material/MaterialRequests.vue'
 import WeighingInfo from './WeighingInfo.vue'
 import BatchParametersInfo from './BatchParametersInfo.vue'
@@ -212,17 +213,34 @@ async function handleFilterSlotsUpdate(updatedFilters: any) {
   filters.value = updatedFilters
   getJobOrders()
 }
-async function processRequest(status: string, order: JobOrder, showDialog: boolean) {
-  try {
-    if (showDialog) {
-      // Show Dialog
-    }
-    await handleFile(order, status)
-    await $fetch('/api/jobOrders/set-status', { method: 'POST', query: { status: status === 'complete' ? 3 : 8, reqNo: order.jobId } })
-    notifySuccess(t('Success'))
-    getJobOrders()
-  } catch (e) {
-    notifyFail(t('Failed'))
+async function processRequest(status: string, order: JobOrder) {
+  const showDialog = selectedRow.value!.status !== StatusCodes.requestCompleted && selectedRow.value!.status !== StatusCodes.canceled
+  console.log(showDialog)
+  if (showDialog) {
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.AlreadyStartedWarning'),
+        confirmBtn: {
+          label: t('Confirm'),
+          color: 'positive',
+          icon: 'check',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(async () => {
+      try {
+        await handleFile(order, status)
+        await $fetch('/api/jobOrders/set-status', { method: 'POST', query: { status: status === 'complete' ? 3 : 8, reqNo: order.jobId } })
+        notifySuccess(t('Success'))
+        getJobOrders()
+      } catch (e) {
+        notifyFail(t('Failed'))
+      }
+    })
   }
 }
 async function handleFile(data: any, status: any) {
@@ -325,7 +343,7 @@ async function handleFile(data: any, status: any) {
                   v-close-popup
                   clickable
                   @click="
-                    processRequest('retry', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                    processRequest('retry', selectedRow)
                   "
                 >
                   <QItemSection>{{ t('jobOrderActions.Retry') }}</QItemSection>
@@ -334,7 +352,7 @@ async function handleFile(data: any, status: any) {
                   v-close-popup
                   clickable
                   @click="
-                    processRequest('cancel', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                    processRequest('cancel', selectedRow)
                   "
                 >
                   <QItemSection>{{ t('jobOrderActions.Cancel') }}</QItemSection>
@@ -343,7 +361,7 @@ async function handleFile(data: any, status: any) {
                   v-close-popup
                   clickable
                   @click="
-                    processRequest('complete', selectedRow, selectedRow!.status === StatusCodes.requestCompleted || selectedRow!.status === StatusCodes.canceled)
+                    processRequest('complete', selectedRow)
                   "
                 >
                   <QItemSection>{{ t('jobOrderActions.Complete') }}</QItemSection>

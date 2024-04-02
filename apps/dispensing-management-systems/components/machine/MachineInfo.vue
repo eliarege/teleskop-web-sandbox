@@ -64,7 +64,7 @@ async function onDelete() {
   q.dialog({
     component: ConfirmationDialog,
     componentProps: {
-      bodyText: t('DeleteMachine'),
+      bodyText: t('confirmationDialogBody.DeleteMachine'),
       confirmBtn: {
         label: t('Delete'),
         color: 'negative',

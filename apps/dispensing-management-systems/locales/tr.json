@@ -60,10 +60,13 @@
   "Save": "Kaydet",
   "Cancel": "İptal",
   "Delete": "Sil",
-  "DeleteDispenser": "Bu dağıtıcıyı silmek istediğinizden emin misiniz?",
-  "DeleteMachine": "Bu makineyi silmek istediğinizden emin misiniz?",
-  "DeleteMaterial": "Bu malzemeyi silmek istediğinizden emin misiniz?",
-  "SyncDataConfirmation": "Teleskop veritabanıyla {name} verilerini eşitlemek istediğinizden emin misiniz?",
+  "confirmationDialogBody": {
+    "DeleteDispenser": "Bu dağıtıcıyı silmek istediğinizden emin misiniz?",
+    "DeleteMachine": "Bu makineyi silmek istediğinizden emin misiniz?",
+    "DeleteMaterial": "Bu malzemeyi silmek istediğinizden emin misiniz?",
+    "SyncDataConfirmation": "Teleskop veritabanıyla {name} verilerini eşitlemek istediğinizden emin misiniz?",
+    "AlreadyStartedWarning": "İstek çoktan başlatıldı. Devam etmek istediğinize emin misiniz?"
+  },
   "Confirm": "Onayla",
   "Material": "Malzeme",
   "Materials": "Malzemeler",

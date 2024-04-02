@@ -116,7 +116,7 @@ async function onDelete() {
   q.dialog({
     component: ConfirmationDialog,
     componentProps: {
-      bodyText: t('DeleteDispenser'),
+      bodyText: t('confirmationDialogBody.DeleteDispenser'),
       confirmBtn: {
         label: t('Delete'),
         color: 'negative',
