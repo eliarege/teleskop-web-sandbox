@@ -44,7 +44,7 @@ function connectionStatus(params: number) {
         class="relative w-25"
         :class="machine.runningStepNo === 0 ? 'invisible' : 'visible'"
       >
-        <MachineProgressBar
+        <MachineCardProgressBar
           :data="machine"
           :completition-ratio="(machine.elapsedTime! / machine.theoreticalDuration!) * 100"
         />

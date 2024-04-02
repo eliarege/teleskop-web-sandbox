@@ -19,14 +19,14 @@ withDefaults(defineProps<CardInfoProps>(), {
 const { t } = useI18n()
 function reqStatus(params: number) {
   if (params === 0) {
-    return t('machine-card.status-new')
+    return t('teleskop.status-new')
   } else if (params === 1) {
-    return t('machine-card.status-sent')
+    return t('teleskop.status-sent')
   } else if (params === 2) {
-    return t('machine-card.status-finished')
+    return t('teleskop.status-finished')
   } else if (params === 4) {
-    return t('machine-card.status-prio')
-  } else return t('machine-card.status-cancelled')
+    return t('teleskop.status-prio')
+  } else return t('teleskop.status-cancelled')
 }
 </script>
 
@@ -55,11 +55,11 @@ function reqStatus(params: number) {
         class="text-black e-border bg-white"
         :offset="[3, 3]"
       >
-        {{ t("machine-card.program-name") }}
+        {{ t("teleskop.program-name") }}
       </q-tooltip>
 
       <div class="explanation">
-        {{ t("machine-card.program-name") }}
+        {{ t("teleskop.program-name") }}
       </div>
       <q-separator color="white" vertical class="h-full" spaced />
 
@@ -88,11 +88,11 @@ function reqStatus(params: number) {
         class="text-black e-border bg-white"
         :offset="[3, 3]"
       >
-        {{ t("machine-card.phase") }}
+        {{ t("teleskop.phase") }}
       </q-tooltip>
 
       <div class="explanation">
-        {{ t("machine-card.phase") }}
+        {{ t("teleskop.phase") }}
       </div>
       <q-separator color="white" vertical class="h-full" spaced />
 
@@ -113,12 +113,12 @@ function reqStatus(params: number) {
         class="text-black e-border bg-white"
         :offset="[3, 3]"
       >
-        {{ t("machine-card.command") }}
+        {{ t("teleskop.command") }}
       </q-tooltip>
 
       <div class="explanation">
-        <!-- {{ t("machine-card.command") }} -->
-        {{ t("machine-card.command-info") }}
+        <!-- {{ t("teleskop.command") }} -->
+        {{ t("teleskop.command-info") }}
       </div>
       <q-separator color="white" vertical class="h-full" spaced />
 
@@ -144,18 +144,18 @@ function reqStatus(params: number) {
         class="text-black e-border bg-white"
         :offset="[3, 3]"
       >
-        {{ t("machine-card.stop-reason") }}
+        {{ t("teleskop.stop-reason") }}
       </q-tooltip>
 
       <div class="explanation">
-        {{ t("machine-card.stop-reason") }}
+        {{ t("teleskop.stop-reason") }}
       </div>
       <q-separator color="white" vertical class="h-full" spaced />
       <div class="flex-center w-full">
         <span>{{ machine.manualReason }}</span>
         <span>{{ machine.stopReason }}</span>
         <span v-show="machine.connectionStatus === 2" class="text-red-700">
-          {{ t("machine-card.no-connection") }}
+          {{ t("teleskop.no-connection") }}
         </span>
       </div>
     </div>
@@ -177,11 +177,11 @@ function reqStatus(params: number) {
         class="text-black e-border bg-white"
         :offset="[3, 3]"
       >
-        {{ t("machine-card.alarm-second") }}
+        {{ t("teleskop.alarm-second") }}
       </q-tooltip>
 
       <div class="explanation">
-        {{ t("machine-card.alarm-second") }}
+        {{ t("teleskop.alarm-second") }}
       </div>
       <q-separator color="white" vertical class="h-full" spaced />
 
@@ -197,18 +197,18 @@ function reqStatus(params: number) {
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
       <div v-show="machine.reqOrderIndex !== -1" class="overflow-hidden">
-        <span>{{ t("machine-card.order-index") }} - {{ machine.reqOrderIndex }}
+        <span>{{ t("teleskop.order-index") }} - {{ machine.reqOrderIndex }}
         </span>
         |
-        <span>{{ t("machine-card.target-recipe") }} -
+        <span>{{ t("teleskop.target-recipe") }} -
           {{ machine.reqTargetRecipe }}</span>
         <!--  0 kimyasal 1 boya 2 tuz 4 jenerik materyal 1 5 jenerik 2  -->
         |
-        <span>{{ t("machine-card.tank-no") }} - {{ machine.reqTankNo }}</span>
+        <span>{{ t("teleskop.tank-no") }} - {{ machine.reqTankNo }}</span>
         |
-        <span>{{ t("machine-card.program-no") }} - {{ machine.reqProgramNo }}</span>
+        <span>{{ t("teleskop.program-no") }} - {{ machine.reqProgramNo }}</span>
         |
-        <span>{{ t("machine-card.req-status") }} -
+        <span>{{ t("teleskop.req-status") }} -
           {{ reqStatus(machine.reqStatus) }}</span>
       </div>
     </div>
@@ -235,7 +235,7 @@ function reqStatus(params: number) {
       class="machine-commands_items min-h-20 text-center justify-center text-2xl alarm"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
-      {{ t('machine-card.no-connection') }}
+      {{ t('teleskop.no-connection') }}
     </div>
   </div>
 </template>
