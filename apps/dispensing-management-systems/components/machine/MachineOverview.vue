@@ -48,7 +48,7 @@ const machineColumns: (QTableColumn<Machine>)[] = [
   { name: 'controllertype', label: t('machineFields.ControllerType'), align: 'center', field: 'controllerType', sortable: true },
 
 ]
-const { data: machineRows, refresh: refreshMachines } = await useFetch(`/api/machines`)
+const { data: machines, refresh: refreshMachines } = await useFetch(`/api/machines`)
 
 async function handleNewDispenser() {
   q.dialog({
@@ -116,6 +116,7 @@ async function onMachineClick(row: any) {
     componentProps: {
       machine: selectedMachine,
       controllerTypes: controllerTypes.value,
+      machines,
       dispensers: dataStore.dispensers,
     },
   }).onOk((payload) => {
@@ -276,7 +277,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
       <QTable
         v-model:pagination="machinePagination"
         :title="t('Machines')"
-        :rows="machineRows"
+        :rows="machines"
         :columns="machineColumns"
         row-key="name"
         separator="cell"
