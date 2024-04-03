@@ -14,7 +14,7 @@ const props = defineProps({
   },
   machines: {
     type: Object as PropType<Machine[]>,
-    required: true,
+    required: false,
   },
   dispensers: {
     type: Object as PropType<Dispenser[]>,
@@ -174,7 +174,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 />
               </div>
             </div>
-            <div class="row-item">
+            <div v-if="machines" class="row-item">
               <span class="item-label">{{ t('ExportConnections') }} </span>
               <QSelect
                 v-model="selectedMachines"

@@ -48,6 +48,7 @@ async function onRowClick(_event: Event, row: any) {
     componentProps: {
       machine: selectedMachine,
       controllerTypes: controllerTypes.value,
+      machines,
       dispensers,
     },
   }).onOk((payload) => {
