@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import ConfirmationDialog from './ConfirmationDialog.vue'
-import MaterialRequests from './material/MaterialRequests.vue'
-import WeighingInfo from './WeighingInfo.vue'
-import BatchParametersInfo from './BatchParametersInfo.vue'
+import MaterialRequestsDialog from './material/MaterialRequestsDialog.vue'
+import WeighingInfoDialog from './WeighingInfoDialog.vue'
+import BatchParametersInfoDialog from './BatchParametersInfoDialog.vue'
 import type { Dispenser, JobOrder, Machine } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { cellStyle } from '~/shared/utils'
@@ -155,7 +155,7 @@ function onButtonClicked(link: string) {
   const jobOrder = selectedRow.value
   if (link === 'material') {
     q.dialog({
-      component: MaterialRequests,
+      component: MaterialRequestsDialog,
       componentProps: { jobOrder },
     })
   } else if (link === 'recipe') {
@@ -169,12 +169,12 @@ function onButtonClicked(link: string) {
     })
   } else if (link === 'weighing') {
     q.dialog({
-      component: WeighingInfo,
+      component: WeighingInfoDialog,
       componentProps: { jobOrder },
     })
   } else if (link === 'parameters') {
     q.dialog({
-      component: BatchParametersInfo,
+      component: BatchParametersInfoDialog,
       componentProps: { jobOrder },
     })
   }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import MaterialInfo from '../material/MaterialInfo.vue'
+import MaterialInfoDialog from '../material/MaterialInfoDialog.vue'
 import type { Material, MaterialGroup } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
 
@@ -54,7 +54,7 @@ const columns: (QTableColumn<Material>)[] = [
 async function onRowClick(_event: Event, row: any) {
   const selectedMaterial = await $fetch(`/api/materials/${row.materialCode}`)
   q.dialog({
-    component: MaterialInfo,
+    component: MaterialInfoDialog,
     componentProps: {
       material: selectedMaterial,
       groupOptions,
@@ -71,7 +71,7 @@ async function onRowClick(_event: Event, row: any) {
 }
 function addNewMaterial() {
   q.dialog({
-    component: MaterialInfo,
+    component: MaterialInfoDialog,
     componentProps: {
       groupOptions,
       dispensers,
