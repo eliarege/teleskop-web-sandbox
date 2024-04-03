@@ -49,7 +49,7 @@ async function onConfirm() {
           options-dense
           option-value="dispenserId"
           option-label="dispenserName"
-          :options="dispensers"
+          :options="dispensers?.filter(dispenser => dispenser.dispenserId !== dispenserId)"
         />
       </div>
       <div class="flex-center justify-evenly p-10">
