@@ -70,10 +70,6 @@ async function onSave() {
   }
 }
 
-function onCancel() {
-  onDialogCancel()
-}
-
 function onReset() {
   editedMaterial.value = material.value ? { ...material.value } : { ...defaultMaterial }
   selectedDispensers.value = [...selectedDispensersInitial.value]
@@ -165,8 +161,9 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 dense
                 filled
                 type="number"
+                max="14"
                 min="0"
-                :rules="[(val: number) => val > 0 && val < 14]"
+                :rules="[(val: number) => val >= 0 && val <= 14]"
                 :placeholder="editedMaterial.ph"
               />
             </div>
@@ -280,7 +277,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
             :label="t('Cancel')"
             color="warning"
             icon="cancel"
-            @click="onCancel"
+            @click="onDialogCancel"
           />
           <QBtn
             :label="t('Reset')"
