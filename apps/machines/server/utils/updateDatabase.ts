@@ -1,6 +1,7 @@
 import type { Knex } from 'knex'
 import type { TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
+import { DatabaseQueryError } from '../error'
 import { calcIONumber } from '.'
 import type { CommandAlarmReason } from '~/types'
 
@@ -13,9 +14,13 @@ async function replaceRecords(knex: Knex, tableName: string, data, whereObject?:
 
   const insertQuery = knex(tableName)
 
-  await delQuery
-  for (const chunk of chunks) {
-    await insertQuery.insert(chunk)
+  try {
+    await delQuery
+    for (const chunk of chunks) {
+      await insertQuery.insert(chunk)
+    }
+  } catch (error) {
+    throw new DatabaseQueryError(error.message)
   }
 }
 
@@ -156,7 +161,11 @@ export async function updateMachineController(machineId: number, tbb: TbbFtpClie
     hardwareModel,
     plcModel,
   })
-  await updateQuery
+  try {
+    await updateQuery
+  } catch (error) {
+    throw new DatabaseQueryError(error.message)
+  }
 }
 
 export async function updateCommandGroups(machineId: number, tbb: TbbFtpClient, trx: Knex) {
@@ -229,7 +238,11 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
       MAXA: c.maxA,
       B: c.b,
     })
-    await query
+    try {
+      await query
+    } catch (error) {
+      throw new DatabaseQueryError(error.message)
+    }
   }
 
   return commands
@@ -266,7 +279,11 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
       ADVICELIST: (command.adviceList && command.adviceList.length) ? command.adviceList : -1,
       DONTUSELIST: command.dontUseList,
     })
-    await query
+    try {
+      await query
+    } catch (error) {
+      throw new DatabaseQueryError(error.message)
+    }
   }
   return commands
 }
@@ -303,7 +320,11 @@ export async function updateConsumption(machineId: number, tbb: TbbFtpClient, tr
       WATERTYPE_5_DO: consumption.WATERTYPE_5_DO,
       WATERTYPE_6_DO: consumption.WATERTYPE_6_DO,
     })
-  await query
+  try {
+    await query
+  } catch (error) {
+    throw new DatabaseQueryError(error.message)
+  }
 
   return consumption
 }
@@ -377,10 +398,14 @@ export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpCl
     })),
   )
 
-  await trx('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId).del()
-  await insertIgnoringDuplicates(trx, 'BFCOMMANDTIMEOUTREASONS', timeoutReasons, ['REASONTEXT', 'GROUPID'])
+  try {
+    await trx('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId).del()
+    await insertIgnoringDuplicates(trx, 'BFCOMMANDTIMEOUTREASONS', timeoutReasons, ['REASONTEXT', 'GROUPID'])
 
-  await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
+    await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
+  } catch (error) {
+    throw new DatabaseQueryError(error.message)
+  }
 
   return timeoutReasons
 }

@@ -2,6 +2,7 @@ import { withTbbFtpClient } from 'tbb-ftp-client'
 import { getQuery } from 'h3'
 import { knex } from '~/server/connectionPool'
 import { updateAnalogInputs, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral, updateLocksOutput, updateSystemParams } from '~/server/utils/updateDatabase'
+import { DatabaseQueryError } from '~/server/error'
 
 export default defineEventHandler(async (event) => {
   const { machineId } = getQuery(event)
@@ -91,9 +92,9 @@ export default defineEventHandler(async (event) => {
         })
       }, { timeout: 1000 })
     } catch (error) {
-      console.error(error)
-      sse.broadcast(sse.clients[0], 'log', { message: error })
-      if (error.message.includes('Timeout')) {
+      if (useRuntimeConfig().nodeEnv === 'test' && error instanceof DatabaseQueryError) {
+        sse.broadcast(sse.clients[0], 'log', { message: `Error: ${error.message}` })
+      } else if (error.message.includes('Timeout')) {
         throw createError({ statusMessage: 'MACHINE_CONN_TIMEOUT', statusCode: 504 })
       }
     }
