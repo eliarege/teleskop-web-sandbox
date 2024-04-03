@@ -23,9 +23,9 @@ const { data: machines } = useFetch<Machine[]>('/api/machines')
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
   if (dispenserId)
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`, { query: { dispenserId }, method: 'POST', body: { filters: filters.value } })
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/job-orders`, { query: { dispenserId }, method: 'POST', body: { filters: filters.value } })
   else
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`, { method: 'POST', body: { filters: filters.value } })
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/job-orders`, { method: 'POST', body: { filters: filters.value } })
 }
 getJobOrders()
 const columns = [
@@ -226,7 +226,7 @@ async function processRequest(status: string, order: JobOrder) {
     }).onOk(async () => {
       try {
         await handleFile(order, status)
-        await $fetch('/api/jobOrders/set-status', { method: 'POST', query: { status: status === 'complete' ? 3 : 8, reqNo: order.jobId } })
+        await $fetch('/api/job-orders/set-status', { method: 'POST', query: { status: status === 'complete' ? 3 : 8, reqNo: order.jobId } })
         notifySuccess(t('Success'))
         getJobOrders()
       } catch (e) {
@@ -239,7 +239,7 @@ async function handleFile(data: any, status: any) {
   const dispenser = dataStore.getDispenser(data.dispenserId)
   if (dispenser?.dispenserBrandId === 1) // Eliar
   {
-    const countInProgram = await $fetch('/api/jobOrders/step-count', {
+    const countInProgram = await $fetch('/api/job-orders/step-count', {
       query: {
         batchNo: data.batchNo,
         correctionNo: data.batchCorrectionNo,
