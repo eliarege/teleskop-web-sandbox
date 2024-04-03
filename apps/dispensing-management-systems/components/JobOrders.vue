@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { QTable } from 'quasar'
 import ConfirmationDialog from './ConfirmationDialog.vue'
 import MaterialRequests from './material/MaterialRequests.vue'
 import WeighingInfo from './WeighingInfo.vue'
@@ -16,8 +15,6 @@ const q = useQuasar()
 const route = useRoute()
 const dataStore = useDataStore()
 const colorStore = useColorStore()
-const table = ref<QTable>()
-const searchFilter = ref('')
 const filters = ref([])
 const jobOrders = ref<JobOrder[]>([])
 const selectedRow = ref<JobOrder | null>(null)
@@ -183,11 +180,6 @@ function onButtonClicked(link: string) {
   }
 }
 const pagination = ref({ rowsPerPage: 50 })
-watch(searchFilter, async () => {
-  await nextTick()
-  if (!table.value?.filteredSortedRows.includes(selectedRow.value))
-    selectedRow.value = null
-})
 watch(() => route.query.dispenserId, (val) => {
   const dispenser = dataStore.getDispenser(Number(val))
   updateDispenser(dispenser)
@@ -212,6 +204,7 @@ function updateDispenser(val: Dispenser | undefined) {
 async function handleFilterSlotsUpdate(updatedFilters: any) {
   filters.value = updatedFilters
   getJobOrders()
+  selectedRow.value = null
 }
 async function processRequest(status: string, order: JobOrder) {
   const showDialog = selectedRow.value!.status !== StatusCodes.requestCompleted && selectedRow.value!.status !== StatusCodes.canceled
@@ -275,17 +268,6 @@ async function handleFile(data: any, status: any) {
 <template>
   <div class="q-pa-md">
     <div class="flex-center mb-10">
-      <div class="col items-center mr-1">
-        <QInput
-          v-model="searchFilter"
-          :label="t('Search')"
-          style="min-width: 30vw; max-width: 40%;"
-        >
-          <template #prepend>
-            <QIcon name="search" />
-          </template>
-        </QInput>
-      </div>
       <div>
         <QSelect
           v-model="dataStore.selectedDispenser"
