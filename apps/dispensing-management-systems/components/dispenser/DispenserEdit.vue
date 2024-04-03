@@ -329,7 +329,7 @@ async function onDelete() {
             </div>
           </div>
         </div>
-        <div :class="q.dark.isActive ? 'button-section-dark' : 'button-section-light'">
+        <div class="button-section">
           <QBtn
             :label="t('Save')"
             color="primary"
@@ -380,7 +380,7 @@ async function onDelete() {
   max-height: calc(80vh - 150px);
 }
 
-.button-section-light {
+.button-section {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -394,15 +394,7 @@ async function onDelete() {
 
 }
 
-.button-section-dark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  justify-content: space-evenly;
-  padding: 0.5rem;
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
+.body--dark .button-section {
   background-color: var(--q-dark);
   box-shadow: 0px -1px 5px rgba(128, 128, 128, 0.2);
 }

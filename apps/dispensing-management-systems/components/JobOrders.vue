@@ -215,7 +215,6 @@ async function handleFilterSlotsUpdate(updatedFilters: any) {
 }
 async function processRequest(status: string, order: JobOrder) {
   const showDialog = selectedRow.value!.status !== StatusCodes.requestCompleted && selectedRow.value!.status !== StatusCodes.canceled
-  console.log(showDialog)
   if (showDialog) {
     q.dialog({
       component: ConfirmationDialog,
@@ -374,7 +373,7 @@ async function handleFile(data: any, status: any) {
     </FilterableTable>
     <div
       v-if="selectedRow"
-      :class="q.dark.isActive ? 'footer-buttons-joborder-dark' : 'footer-buttons-joborder-light'"
+      class="footer-buttons-joborder"
     >
       <QBtn
         v-for="button of buttonProps"
@@ -396,7 +395,7 @@ async function handleFile(data: any, status: any) {
 </template>
 
 <style scoped>
-.footer-buttons-joborder-light {
+.footer-buttons-joborder {
   background-color: white;
   z-index: 1;
   display: flex;
@@ -406,15 +405,8 @@ async function handleFile(data: any, status: any) {
   height: 5rem;
   justify-content: center;
 }
-.footer-buttons-joborder-dark {
-  background-color: black;
-  z-index: 1;
-  display: flex;
-  position: sticky;
-  bottom: 0;
-  width: 100%;
-  height: 5rem;
-  justify-content: center;
+.body--dark .footer-buttons-joborder {
+  background-color: var(--q-dark);
 }
 .footer-button {
   margin: 1rem;
