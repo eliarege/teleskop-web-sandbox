@@ -34,7 +34,7 @@ async function onConfirm() {
     full-width
     @hide="onDialogHide"
   >
-    <QCard>
+    <QCard class="scroll">
       <div flex-center flex-col mt-10 text-lg>
         <div>
           {{ t('ExportConnectionsBody', { type: t(`${capitalizeFirst(props.type)}`), dispenser: dataStore.selectedDispenser?.dispenserName }) }}

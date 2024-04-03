@@ -120,13 +120,13 @@ function onCheck(dispenserId: number, isChecked: boolean) {
     full-width
     @hide="onDialogHide"
   >
-    <QCard>
+    <QCard class="scroll">
       <QForm @submit.prevent>
-        <div class="flex flex-col h-max">
-          <div class="text-center pt-5 text-xl shadow">
+        <div class="flex flex-col pb-10">
+          <div class="text-center pt-5 text-xl">
             <h2>{{ t('Material') }}</h2>
           </div>
-          <div class="content-section flex flex-row flex-wrap justify-center">
+          <div class="flex flex-row flex-wrap justify-center">
             <div class="row-item">
               <span class="item-label">
                 {{ t('materialFields.Code') }}
