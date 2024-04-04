@@ -225,19 +225,24 @@ async function processRequest(status: string, order: JobOrder) {
           icon: 'close',
         },
       },
-    }).onOk(async () => {
-      try {
-        await handleFile(order, status)
-        await $fetch('/api/job-orders/set-status', { method: 'POST', query: { status: status === 'complete' ? 3 : 8, reqNo: order.jobId } })
-        notifySuccess(t('Success'))
-        getJobOrders()
-      } catch (e) {
-        notifyFail(t('Failed'))
-      }
+    }).onOk(() => {
+      setStatus(status, order)
     })
+  } else {
+    setStatus(status, order)
   }
 }
-async function handleFile(data: any, status: any) {
+async function setStatus(status: string, order: JobOrder) {
+  try {
+    await handleFile(status, order)
+    await $fetch('/api/job-orders/set-status', { method: 'POST', query: { status: status === 'complete' ? 3 : 8, reqNo: order.jobId } })
+    notifySuccess(t('Success'))
+    getJobOrders()
+  } catch (e) {
+    notifyFail(t('Failed'))
+  }
+}
+async function handleFile(status: any, data: any) {
   const dispenser = dataStore.getDispenser(data.dispenserId)
   if (dispenser?.dispenserBrandId === 1) // Eliar
   {
