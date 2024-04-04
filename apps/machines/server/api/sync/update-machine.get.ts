@@ -1,5 +1,6 @@
 import { withTbbFtpClient } from 'tbb-ftp-client'
 import { getQuery } from 'h3'
+import { inferBoolean } from 'utils'
 import { knex } from '~/server/connectionPool'
 import { updateAnalogInputs, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral, updateLocksOutput, updateSystemParams } from '~/server/utils/updateDatabase'
 import { DatabaseQueryError } from '~/server/error'
@@ -92,10 +93,14 @@ export default defineEventHandler(async (event) => {
         })
       }, { timeout: 1000 })
     } catch (error) {
-      if (useRuntimeConfig().nodeEnv === 'test' && error instanceof DatabaseQueryError) {
-        sse.broadcast(sse.clients[0], 'log', { message: `Error: ${error.message}` })
-      } else if (error.message.includes('Timeout')) {
-        throw createError({ statusMessage: 'MACHINE_CONN_TIMEOUT', statusCode: 504 })
+      if (inferBoolean(useRuntimeConfig().sseLoggingEnabled)) {
+        if (error instanceof DatabaseQueryError) {
+          sse.broadcast(sse.clients[0], 'log', { message: `Error: ${error.message}` })
+        } else if (error.message.includes('Timeout')) {
+          throw createError({ statusMessage: 'MACHINE_CONN_TIMEOUT', statusCode: 504 })
+        } else {
+          throw createError({ statusMessage: 'MACHINE_CONN_ERROR', statusCode: 500 })
+        }
       }
     }
   } else {

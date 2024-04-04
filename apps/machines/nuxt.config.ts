@@ -4,7 +4,6 @@ import string from 'rollup-plugin-string'
 export default defineNuxtConfig({
   modules: ['@formkit/nuxt'],
   formkit: {
-    autoImport: true,
   },
   ssr: false,
   devtools: { enabled: true },
@@ -15,7 +14,7 @@ export default defineNuxtConfig({
     teleskopPort: '1433',
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
-    nodeEnv: 'test',
+    sseLoggingEnabled: 'true',
     public: {
       kcClientId: 'machines',
     },
