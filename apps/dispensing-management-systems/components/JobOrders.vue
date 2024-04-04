@@ -19,6 +19,8 @@ const filters = ref([])
 const jobOrders = ref<JobOrder[]>([])
 const selectedRow = ref<JobOrder | null>(null)
 const dispensers = await dataStore.getDispensers()
+const dispenserSelections = [{ dispenserId: -1, dispenserName: t('AllDispensers') }, ...dispensers]
+const selectedDispenser = ref(dataStore.selectedDispenser ? dataStore.selectedDispenser : dispenserSelections[0])
 const { data: machines } = useFetch<Machine[]>('/api/machines')
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
@@ -28,7 +30,7 @@ async function getJobOrders() {
     jobOrders.value = await $fetch<JobOrder[]>(`/api/job-orders`, { method: 'POST', body: { filters: filters.value } })
 }
 getJobOrders()
-const columns = [
+const columns = ref([
   {
     name: 'batchNo',
     label: t('JobOrder'),
@@ -137,7 +139,7 @@ const columns = [
     optionLabel: 'label',
     optionValue: 'status',
   },
-]
+])
 
 const buttonProps = ref([
   { name: 'materialRequests', label: t('MaterialRequests'), link: 'material', icon: 'science' },
@@ -188,7 +190,7 @@ watch(() => route.query.dispenserId, (val) => {
 function updateDispenser(val: Dispenser | undefined) {
   selectedRow.value = null
   dataStore.selectedDispenser = val
-  if (val) {
+  if (val && val.dispenserId !== -1) {
     dataStore.title = val.dispenserName
     navigateTo({
       path: `/jobOrders`,
@@ -270,7 +272,7 @@ async function handleFile(data: any, status: any) {
     <div class="flex-center mb-10">
       <div>
         <QSelect
-          v-model="dataStore.selectedDispenser"
+          v-model="selectedDispenser"
           borderless
           dense
           filled
@@ -279,7 +281,7 @@ async function handleFile(data: any, status: any) {
           map-options
           options-dense
           option-label="dispenserName"
-          :options="dispensers"
+          :options="dispenserSelections"
           @update:model-value="updateDispenser"
         />
       </div>
