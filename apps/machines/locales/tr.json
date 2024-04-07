@@ -349,5 +349,7 @@
   "noConnectionToNetwork": "Ağ bağlantısı yok",
   "checkNetworkConnection": "Ağ bağlantısını kontrol et",
   "ttbSaveIOValuesInDatabase": "I/O değerlerini veritabanında sakla",
-  "tryingConnection": "Bağlantı Kuruluyor..."
+  "tryingConnection": "Bağlantı Kuruluyor...",
+  "updateFinished": "Güncelleme Tamamlandı",
+  "errorLoadingProject": "Proje Yüklenirken Hata Oluştu"
 }

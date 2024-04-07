@@ -350,5 +350,7 @@
   "noConnectionToNetwork": "No Connection To Network",
   "checkNetworkConnection": "Check Network Connection",
   "ttbSaveIOValuesInDatabase": "Save I/O Values In Database",
-  "tryingConnection": "Trying Connection..."
+  "tryingConnection": "Trying Connection...",
+  "updateFinished": "Update Finished",
+  "errorLoadingProject": "Error Loading Project"
 }
