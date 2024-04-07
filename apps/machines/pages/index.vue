@@ -431,6 +431,7 @@ async function loadProject() {
   try {
     await $fetch('/api/sync/network-connection', {
       method: 'GET',
+      retry: false,
       query: {
         ip: selected.value.ip,
       },
@@ -439,6 +440,7 @@ async function loadProject() {
 
     await $fetch('/api/sync/update-machine', {
       method: 'GET',
+      retry: false,
       query: {
         machineId: selected.value.machineId,
       },
@@ -566,6 +568,7 @@ async function checkTeleskopConnection(formData: Machine) {
     connectionMessage.value.color = ''
     await $fetch('/api/sync/teleskop-connection', {
       method: 'GET',
+      retry: false,
       query: {
         ip: formData.ip,
       },
@@ -587,6 +590,7 @@ async function checkNetworkConnection(formData: Machine) {
     connectionMessage.value.color = ''
     await $fetch('/api/sync/network-connection', {
       method: 'GET',
+      retry: false,
       query: {
         ip: formData.ip,
       },

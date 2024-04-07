@@ -14,7 +14,7 @@ export default defineNuxtConfig({
     teleskopPort: '1433',
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
-    sseLoggingEnabled: 'true',
+    sseLoggingEnabled: 'false',
     public: {
       kcClientId: 'machines',
     },

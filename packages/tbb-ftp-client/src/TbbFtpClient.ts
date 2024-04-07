@@ -270,7 +270,7 @@ export class TbbFtpClient {
   }
 
   async fetchGlobalCommandFormulas() {
-    const remotePath = '/tbb6500/yedek/data/config/globalCommandFormulas'
+    const remotePath = '/tbb6500/data/config/globalCommandFormulas'
     const content = await download(this.client, remotePath, 'utf8')
     const formulas = parseGlobalCommandFormulas(content)
     return formulas
@@ -345,7 +345,7 @@ export class TbbFtpClient {
   }
 
   async uploadGlobalCommandFormulas(formulas: GlobalCommandFormula[]) {
-    const remotePath = '/tbb6500/yedek/data/config/globalCommandFormulas'
+    const remotePath = '/tbb6500/data/config/globalCommandFormulas'
     const content = serializeGlobalCommandFormulas(formulas)
     await upload(this.client, remotePath, content)
   }
