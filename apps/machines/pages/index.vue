@@ -70,7 +70,7 @@ const columns = computed(() => ({
     },
   },
   tbbModel: {
-    label: t('model'),
+    label: 'Model',
     field: 'tbbModel',
     align: 'left',
     filterable: true,
@@ -126,7 +126,7 @@ const columns = computed(() => ({
     },
   },
   ip: {
-    label: t('ip'),
+    label: 'Ip',
     field: 'ip',
     align: 'left',
     filterable: true,
@@ -408,8 +408,6 @@ async function updateVersions() {
   await refresh()
 }
 
-const q = useQuasar()
-
 const { event, data, close } = useEventSource('/api/sync/sse', ['log'], {
   autoReconnect: true,
 })
@@ -422,9 +420,18 @@ watch(data, (newMessage) => {
   logs.value.push(msg.message)
 })
 
+const { notifySuccess, notifyError } = useNotify()
+
 async function loadProject() {
   try {
-    await checkNetworkConnection(selected.value)
+    await $fetch('/api/sync/network-connection', {
+      method: 'GET',
+      query: {
+        ip: selected.value.ip,
+      },
+    })
+    notifySuccess(t('connectionSuccessful'))
+
     await $fetch('/api/sync/update-machine', {
       method: 'GET',
       query: {
@@ -432,15 +439,10 @@ async function loadProject() {
       },
     })
   } catch (error) {
-    if (error.statusCode === 504) {
-      q.notify({
-        message: t('connectionTimeout'),
-        position: 'top',
-        timeout: 2000,
-        actions: [
-          { label: t('dismiss'), color: 'blue', handler: () => { } },
-        ],
-      })
+    if (error.statusCode === 500) {
+      notifyError(t('noConnectionToNetwork'))
+    } else if (error.statusCode === 504) {
+      notifyError(t('connectionTimeout'))
     }
   }
 }
@@ -547,160 +549,151 @@ const contextMenuOptions = computed(() => [
   },
 ])
 
+const connectionMessage = ref({
+  message: '',
+  color: '',
+})
+
 async function checkTeleskopConnection(formData: Machine) {
   try {
+    connectionMessage.value.message = t('tryingConnection')
+    connectionMessage.value.color = ''
     await $fetch('/api/sync/teleskop-connection', {
       method: 'GET',
       query: {
         ip: formData.ip,
       },
     })
-    q.notify({
-      message: t('connectionSuccessful'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
-    })
+    connectionMessage.value.message = t('connectionSuccessful')
+    connectionMessage.value.color = 'text-green'
   } catch (error) {
     console.error(error)
     if (error.statusCode === 500) {
-      q.notify({
-        message: t('noConnectionToTeleskop'),
-        position: 'top',
-        timeout: 2000,
-        actions: [
-          { label: t('dismiss'), color: 'blue', handler: () => { } },
-        ],
-      })
+      connectionMessage.value.message = (t('noConnectionToTeleskop'))
+      connectionMessage.value.color = 'text-red'
     }
   }
 }
 
 async function checkNetworkConnection(formData: Machine) {
   try {
+    connectionMessage.value.message = t('tryingConnection')
+    connectionMessage.value.color = ''
     await $fetch('/api/sync/network-connection', {
       method: 'GET',
       query: {
         ip: formData.ip,
       },
     })
-    q.notify({
-      message: t('connectionSuccessful'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
-    })
+    connectionMessage.value.message = (t('connectionSuccessful'))
+    connectionMessage.value.color = 'text-green'
   } catch (error) {
     console.error(error)
     if (error.statusCode === 500) {
-      q.notify({
-        message: t('noConnectionToNetwork'),
-        position: 'top',
-        timeout: 2000,
-        actions: [
-          { label: t('dismiss'), color: 'blue', handler: () => { } },
-        ],
-      })
+      connectionMessage.value.message = (t('noConnectionToNetwork'))
+      connectionMessage.value.color = 'text-red'
     }
   }
 }
 </script>
 
 <template>
-  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selected)" />
-  <div class="absolute left-63 top-13.2">
-    <q-btn
-      :label="t('loadProject')"
-      no-caps
-      push
-      color="primary"
-      :disable="selected.machineId === -1"
-      class="mr-4"
-      @click="loadProject"
-    />
-    <q-btn
-      :label="t('receiveVersionInfo')"
-      no-caps
-      push
-      color="primary"
-      class="mr-4"
-      @click="updateVersions"
-    />
-  </div>
-  <div class="flex absolute right-10 top-13.2">
-    <q-chip>
-      {{ `DB v${databaseVersion}` }}
-    </q-chip>
-    <q-option-group
-      :model-value="locale"
-      type="radio"
-      :options="[
-        { label: 'Türkçe', value: 'tr' },
-        { label: 'English', value: 'en' },
-      ]"
-      class="flex"
-      @update:model-value="setLocale($event)"
-    />
-  </div>
-  <FormTableKit
-    :rows="machines" :columns="columns"
-    form-class="grid grid-cols-4 gap-4 items-center"
-    @add="handleAdd"
-    @edit="handleEdit"
-    @select="handleSelection"
-    @delete="handleDelete"
-  >
-    <template #form-content="slotProps">
+  <div>
+    <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selected)" />
+    <div class="absolute left-63 top-13.2">
       <q-btn
-        :label="t('checkTeleskopConnection')"
-        color="primary"
+        :label="t('loadProject')"
         no-caps
-        class="mb-4"
-        @click="checkTeleskopConnection(slotProps.formData)"
+        push
+        color="primary"
+        :disable="selected.machineId === -1"
+        class="mr-4"
+        @click="loadProject"
       />
       <q-btn
-        :label="t('checkNetworkConnection')"
-        color="primary"
+        :label="t('receiveVersionInfo')"
         no-caps
-        class="mb-4"
-        @click="checkNetworkConnection(slotProps.formData)"
+        push
+        color="primary"
+        class="mr-4"
+        @click="updateVersions"
       />
-    </template>
-  </FormTableKit>
-
-  <q-scroll-area style="height: 200px">
-    <div v-for="(log, index) in logs" :key="index">
-      {{ log }}
     </div>
-  </q-scroll-area>
+    <div class="flex absolute right-10 top-13.2">
+      <q-chip>
+        {{ `DB v${databaseVersion}` }}
+      </q-chip>
+      <q-option-group
+        :model-value="locale"
+        type="radio"
+        :options="[
+          { label: 'Türkçe', value: 'tr' },
+          { label: 'English', value: 'en' },
+        ]"
+        class="flex"
+        @update:model-value="setLocale($event)"
+      />
+    </div>
+    <FormTableKit
+      :rows="machines" :columns="columns"
+      form-class="grid grid-cols-4 gap-4 items-center"
+      @add="handleAdd"
+      @edit="handleEdit"
+      @select="handleSelection"
+      @delete="handleDelete"
+      @close="connectionMessage = { message: '', color: '' }"
+    >
+      <template #form-content="slotProps">
+        <q-btn
+          :label="t('checkTeleskopConnection')"
+          color="primary"
+          no-caps
+          class="mb-4"
+          @click="checkTeleskopConnection(slotProps.formData)"
+        />
+        <q-btn
+          :label="t('checkNetworkConnection')"
+          color="primary"
+          no-caps
+          class="mb-4"
+          @click="checkNetworkConnection(slotProps.formData)"
+        />
+        <h3 :class="connectionMessage.color">
+          {{ connectionMessage.message }}
+        </h3>
+      </template>
+    </FormTableKit>
 
-  <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
-  <GetDyeHouseDefinitionsDialog
-    v-if="showGetDyeHouseDefinitions && selected"
-    :show="showGetDyeHouseDefinitions"
-    :selected="selected"
-    @close="showGetDyeHouseDefinitions = false"
-  />
-  <SetDyeHouseDefinitionsDialog
-    v-if="showSetDyeHouseDefinitions && selected"
-    :show="showSetDyeHouseDefinitions"
-    :selected="selected"
-    @close="showSetDyeHouseDefinitions = false"
-  />
-  <MachineParametersDialog
-    v-if="showMachineParameters"
-    :show="showMachineParameters"
-    :selected="selected"
-    @close="showMachineParameters = false"
-  />
-  <MimicDialog
-    v-if="showMimic"
-    :show="showMimic"
-    :selected="selected"
-    @close="showMimic = false"
-  />
+    <q-scroll-area style="height: 200px">
+      <div v-for="(log, index) in logs" :key="index">
+        {{ log }}
+      </div>
+    </q-scroll-area>
+
+    <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
+    <GetDyeHouseDefinitionsDialog
+      v-if="showGetDyeHouseDefinitions && selected"
+      :show="showGetDyeHouseDefinitions"
+      :selected="selected"
+      @close="showGetDyeHouseDefinitions = false"
+    />
+    <SetDyeHouseDefinitionsDialog
+      v-if="showSetDyeHouseDefinitions && selected"
+      :show="showSetDyeHouseDefinitions"
+      :selected="selected"
+      @close="showSetDyeHouseDefinitions = false"
+    />
+    <MachineParametersDialog
+      v-if="showMachineParameters"
+      :show="showMachineParameters"
+      :selected="selected"
+      @close="showMachineParameters = false"
+    />
+    <MimicDialog
+      v-if="showMimic"
+      :show="showMimic"
+      :selected="selected"
+      @close="showMimic = false"
+    />
+  </div>
 </template>

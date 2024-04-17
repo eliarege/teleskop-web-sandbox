@@ -214,3 +214,16 @@ const definitionItems = computed(() => ([
     </NuxtLayout>
   </div>
 </template>
+
+<style>
+input.formkit-input[type="number"]::-webkit-inner-spin-button,
+input.formkit-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input.formkit-input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+  appearance: textfield; /* Standard */
+}
+</style>

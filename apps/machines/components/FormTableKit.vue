@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { FormKitSchema } from '@formkit/vue'
 import { changeLocale } from '@formkit/i18n'
-import { useQuasar } from 'quasar'
 import { klona } from 'klona'
 
 const props = defineProps<{
@@ -15,10 +14,11 @@ const emit = defineEmits<{
   edit: [data: object, oldData: object]
   delete: [data: object[]]
   select: [data: object[]]
+  close: []
 }>()
 
 const { t, locale } = useI18n()
-const q = useQuasar()
+const { notifyError } = useNotify()
 const showModal = ref(false)
 const selected = ref<object[]>([])
 const formData = ref({})
@@ -84,14 +84,7 @@ function handleDelete() {
     emit('delete', selected.value)
     selected.value = []
   } else
-    q.notify({
-      message: t('pleaseSelectaRowToDelete'),
-      position: 'top',
-      timeout: 2000,
-      actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => { } },
-      ],
-    })
+    notifyError(t('pleaseSelectaRowToDelete'))
 }
 // TODO: fix locale change error
 watch(showModal, async (newValue, _oldValue) => {
@@ -132,7 +125,7 @@ watch(showModal, async (newValue, _oldValue) => {
   <q-dialog v-model="showModal">
     <q-card class="min-w-fit">
       <q-card-actions align="right">
-        <q-btn flat icon="close" @click="showModal = false" />
+        <q-btn flat icon="close" @click="showModal = false;emit('close')" />
       </q-card-actions>
       <q-card-section>
         <FormKit
@@ -148,16 +141,3 @@ watch(showModal, async (newValue, _oldValue) => {
     </q-card>
   </q-dialog>
 </template>
-
-<style>
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield; /* Firefox */
-  appearance: textfield; /* Standard */
-}
-</style>
