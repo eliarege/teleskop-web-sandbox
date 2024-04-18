@@ -23,75 +23,66 @@ export default defineEventHandler(async (event) => {
     try {
       await withTbbFtpClient(ip, async (tbb) => {
         await knex.transaction(async (trx) => {
-        // controllerModel
-          await updateMachineController(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'controller updated' })
-          // baslatmaparametreleri
-          await updateBatchParameters(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'batch parameters updated' })
-          // commandGroup
-          await updateCommandGroups(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'command groups updated' })
-          // cycle_kontrol
-          await updateCycleControl(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'cycle control updated' })
-          // sistem
-          await updateSystemParams(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'system parameters updated' })
-          // manuelmodenedenleri
-          await updateManualReasons(tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'manual reasons updated' })
-          // analoginput
-          await updateAnalogInputs(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'analog inputs updated' })
-          // analogoutput
-          await updateAnalogOutputs(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'analog outputs updated' })
-          // digitalinput
-          await updateDigitalInputs(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'digital inputs updated' })
-          // digitaloutput
-          await updateDigitalOutputs(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'digital outputs updated' })
-          // sayac
-          await updateCounters(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'counters updated' })
-          // commands general
-          await updateCommandsGeneral(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'general commands updated' })
-          // commands params
-          await updateCommandParameters(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'command parameters updated' })
-          // IO
-          await updateCommandIO(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'command IO updated' })
-          // commands feedback
-          await updateCommandFeedback(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'command feedback updated' })
-          // commands function alarms and alarms
-          await updateCommandAlarms(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'command alarms updated' })
-          // commands graphic
-          await updateCommandGraphic(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'command graphic updated' })
-          // commands editing
-          await updateCommandEditing(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'command editing updated' })
-          // lock general
-          await updateLocksGeneral(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'lock general updated' })
-          // locks inputs - buraya kadar
-          await updateLocksInput(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'lock input updated' })
-          // locks outputs
-          await updateLocksOutput(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'lock output updated' })
-          // global command formulas
-          await updateGlobalCommandFormulas(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'global command formulas updated' })
-          // consumption
-          await updateConsumption(numMachineId, tbb, trx)
-          sse.broadcast(sse.clients[0], 'log', { message: 'consumptions updated' })
+          const updateFunctions = [
+            // controllerModel
+            { func: updateMachineController, message: 'controller updated' },
+            // baslatmaparametreleri
+            { func: updateBatchParameters, message: 'batch parameters updated' },
+            // command groups
+            { func: updateCommandGroups, message: 'command groups updated' },
+            // cycle control
+            { func: updateCycleControl, message: 'cycle control updated' },
+            // sistem
+            { func: updateSystemParams, message: 'system parameters updated' },
+            // manuelmodenedenleri
+            { func: updateManualReasons, message: 'manual reasons updated' },
+            // analoginput
+            { func: updateAnalogInputs, message: 'analog inputs updated' },
+            // analogoutput
+            { func: updateAnalogOutputs, message: 'analog outputs updated' },
+            // digitalinput
+            { func: updateDigitalInputs, message: 'digital inputs updated' },
+            // digitaloutput
+            { func: updateDigitalOutputs, message: 'digital outputs updated' },
+            // sayac
+            { func: updateCounters, message: 'counters updated' },
+            // commands general
+            { func: updateCommandsGeneral, message: 'general commands updated' },
+            // commands params
+            { func: updateCommandParameters, message: 'command parameters updated' },
+            // IO
+            { func: updateCommandIO, message: 'command IO updated' },
+            // commands feedback
+            { func: updateCommandFeedback, message: 'command feedback updated' },
+            // commands function alarms and alarms
+            { func: updateCommandAlarms, message: 'command alarms updated' },
+            // commands graphic
+            { func: updateCommandGraphic, message: 'command graphic updated' },
+            // commands editing
+            { func: updateCommandEditing, message: 'command editing updated' },
+            // lock general
+            { func: updateLocksGeneral, message: 'lock general updated' },
+            // locks inputs - buraya kadar
+            { func: updateLocksInput, message: 'lock input updated' },
+            // locks outputs
+            { func: updateLocksOutput, message: 'lock output updated' },
+            // global command formulas
+            { func: updateGlobalCommandFormulas, message: 'global command formulas updated' },
+            // consumption
+            { func: updateConsumption, message: 'consumptions updated' },
+          ]
+
+          for (const { func, message } of updateFunctions) {
+            let res = false
+            if (func === updateManualReasons) {
+              res = await func(tbb, trx)
+            } else {
+              res = await func(numMachineId, tbb, trx)
+            }
+            if (res) {
+              sse.broadcast(sse.clients[0], 'log', { message })
+            }
+          }
 
           sse.broadcast(sse.clients[0], 'log', { message: 'project loaded successfully' })
         })

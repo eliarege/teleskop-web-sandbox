@@ -675,7 +675,7 @@ async function checkNetworkConnection(formData: Machine) {
     </FormTableKit>
 
     <q-scroll-area style="height: 200px">
-      <div v-for="(log, index) in logs" :key="index" :class="log.type === 'error' ? 'text-red container' : 'container'">
+      <div v-for="(log, index) in logs" :key="index" :class="log.type === 'error' ? 'text-red pl-2' : 'pl-2'">
         {{ log.message }}
       </div>
     </q-scroll-area>
