@@ -4,6 +4,7 @@ import ConfirmationDialog from '../ConfirmationDialog.vue'
 import { useDataStore } from '~/store/DataStore'
 import type { Dispenser, DispenserBrand, DispenserType, Protocol } from '~/shared/types'
 import ipformat from '~/shared/utils'
+import { useStateStore } from '~/store/State'
 
 const props = defineProps({
   dispenser: {
@@ -13,7 +14,9 @@ const props = defineProps({
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { notifySuccess, notifyFail } = useNotify()
 const dataStore = useDataStore()
+const stateStore = useStateStore()
 const dispenser = toRef(props, 'dispenser')
 const defaultDispenser: Dispenser = {
   dispenserName: '',
@@ -132,6 +135,21 @@ async function onDelete() {
     onDialogOK(null)
   })
 }
+async function pingAddress() {
+  try {
+    stateStore.isLoading = true
+    await $fetch(`http://${editedDispenser.value.dispenserIP}`, {
+      mode: 'no-cors',
+      timeout: 3000,
+    })
+    notifySuccess(t('Success'))
+  } catch (e) {
+    console.error(e)
+    notifyFail(t('Failed'))
+  } finally {
+    stateStore.isLoading = false
+  }
+}
 </script>
 
 <template>
@@ -186,7 +204,11 @@ async function onDelete() {
                 filled
                 :placeholder="editedDispenser.dispenserIP"
                 :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
-              />
+              >
+                <template #append>
+                  <QBtn round dense flat icon="wifi" @click="pingAddress" />
+                </template>
+              </QInput>
             </div>
             <div class="row-item">
               <span class="item-label">
