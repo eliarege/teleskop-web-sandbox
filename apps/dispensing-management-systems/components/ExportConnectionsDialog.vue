@@ -16,12 +16,12 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 const { t } = useI18n()
 const dataStore = useDataStore()
 const dispensers = dataStore.dispensers
-const selected = ref()
+const selected = ref([])
 
 async function onConfirm() {
   try {
-    const res = await $fetch(`/api/connections/${props.type}/export`, { method: 'POST', query: { from: props.dispenserId, to: selected.value } })
-    onDialogOK(res)
+    await $fetch(`/api/connections/${props.type}/export`, { method: 'POST', query: { from: props.dispenserId }, body: { to: selected.value } })
+    onDialogOK(true)
   } catch (e: any) {
     onDialogOK(null)
   }
@@ -44,6 +44,7 @@ async function onConfirm() {
           dense
           filled
           class="w-50% mt-10"
+          multiple
           emit-value
           map-options
           options-dense
@@ -57,6 +58,7 @@ async function onConfirm() {
           :label="t('Confirm')"
           color="primary"
           icon="file_upload"
+          :disable="selected.length < 1"
           @click="onConfirm"
         />
         <QBtn
