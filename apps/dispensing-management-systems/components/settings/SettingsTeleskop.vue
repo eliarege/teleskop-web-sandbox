@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { DatabaseConnection } from '~/shared/types'
 import { connectTeleskopDB } from '~/server/connectionPool'
+import { useStateStore } from '~/store/State'
+import ipformat from '~/shared/utils'
 
 const { t } = useI18n()
-const q = useQuasar()
 const { notifySuccess, notifyFail } = useNotify()
+const stateStore = useStateStore()
 const { data: defaultSettings } = await useFetch<DatabaseConnection>('/api/teleskop/parameters')
 const teleskopSettings = ref<DatabaseConnection>()
 teleskopSettings.value = { ...defaultSettings.value }
@@ -24,6 +26,21 @@ async function onSave() {
 
 function onReset() {
   teleskopSettings.value = { ...defaultSettings.value }
+}
+async function pingAddress() {
+  try {
+    stateStore.isLoading = true
+    await $fetch(`http://${teleskopSettings.value?.host}`, {
+      mode: 'no-cors',
+      timeout: 3000,
+    })
+    notifySuccess(t('Success'))
+  } catch (e) {
+    console.error(e)
+    notifyFail(t('Failed'))
+  } finally {
+    stateStore.isLoading = false
+  }
 }
 </script>
 
@@ -73,8 +90,14 @@ function onReset() {
                 v-model="teleskopSettings!.host"
                 dense
                 type="text"
+                hide-bottom-space
                 filled
-              />
+                :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
+              >
+                <template #append>
+                  <QBtn round dense flat icon="wifi" @click="pingAddress" />
+                </template>
+              </QInput>
             </div>
           </div>
           <div class="flex flex-row flex-center">
@@ -82,7 +105,6 @@ function onReset() {
               {{ t('protocolParameters.dbPort') }}
               <QInput
                 v-model="teleskopSettings!.port"
-                class="select-item"
                 dense
                 filled
                 type="number"
