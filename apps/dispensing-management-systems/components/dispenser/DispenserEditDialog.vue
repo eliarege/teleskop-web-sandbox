@@ -199,6 +199,7 @@ async function pingAddress() {
                 v-model="editedDispenser.dispenserIP"
                 class="item-input"
                 dense
+                hide-bottom-space
                 type="text"
                 filled
                 :placeholder="editedDispenser.dispenserIP"
@@ -231,6 +232,7 @@ async function pingAddress() {
                 class="item-input"
                 dense
                 filled
+                hide-bottom-space
                 type="number"
                 :rules="[(val: number) => val >= 0]"
                 min="0"
@@ -329,18 +331,16 @@ async function pingAddress() {
                 :options="dataStore.dispensers?.filter(dispenser => dispenser.dispenserId !== editedDispenser.dispenserId)"
               />
             </div>
-            <div v-if="editedDispenser.protocolFields">
-              <div v-for="field in protocolFields" :key="field" class="row-item">
-                <span class="item-label">{{ t(`protocolParameters.${field}`) }}</span>
-                <QInput
-                  v-model="editedDispenser.protocolFields[field]"
-                  class="item-input"
-                  dense
-                  type="text"
-                  filled
-                  :placeholder="t(`protocolParameters.${field}`)"
-                />
-              </div>
+            <div v-for="field in protocolFields" :key="field" class="row-item">
+              <span class="item-label">{{ t(`protocolParameters.${field}`) }}</span>
+              <QInput
+                v-model="editedDispenser.protocolFields[field]"
+                class="item-input"
+                dense
+                type="text"
+                filled
+                :placeholder="t(`protocolParameters.${field}`)"
+              />
             </div>
           </div>
         </div>
@@ -377,8 +377,7 @@ async function pingAddress() {
 
 <style scoped>
 .row-item {
-  gap: 2rem;
-  margin: 1.25rem;
+  margin: 0.75rem;
   width: 40rem;
 }
 
