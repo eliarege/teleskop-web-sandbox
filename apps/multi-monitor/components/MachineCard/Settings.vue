@@ -17,7 +17,6 @@ const erpKey = useStorage<string | null>(
   `machine-${props.data.id}-settings`,
   null,
   localStorage,
-  { mergeDefaults: true },
 )
 
 const erpLabel = computed(() => {

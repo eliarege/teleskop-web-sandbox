@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { determineTextColor } from 'utils/src/color'
+import { useStorage } from '@vueuse/core'
 import type { MachineData } from '~/shared/types'
 
 interface CardInfoProps {
@@ -13,10 +14,16 @@ interface CardInfoProps {
   machineSort: number
   washing?: boolean
 }
-withDefaults(defineProps<CardInfoProps>(), {
+const props = withDefaults(defineProps<CardInfoProps>(), {
   washing: false,
 })
 const { t } = useI18n()
+const erpKey = useStorage<string | null>(
+  `machine-${props.machine.id}-settings`,
+  null,
+  localStorage,
+)
+
 function reqStatus(params: number) {
   if (params === 0) {
     return t('teleskop.status-new')
@@ -39,7 +46,7 @@ function reqStatus(params: number) {
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
       <div class="explanation">
-        ERP
+        {{ erpKey || 'ERP' }}
       </div>
       <q-separator color="white" vertical class="h-full" spaced />
       <MachineCardSettings :data="machine" />
