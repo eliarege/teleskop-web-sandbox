@@ -42,6 +42,18 @@ async function pingAddress() {
     stateStore.isLoading = false
   }
 }
+async function onConnectionCheck() {
+  try {
+    stateStore.isLoading = true
+    await $fetch('/api/teleskop/test-connection')
+    notifySuccess(t('Success'))
+  } catch (e) {
+    console.error(e)
+    notifyFail(t('Failed'))
+  } finally {
+    stateStore.isLoading = false
+  }
+}
 </script>
 
 <template>
@@ -165,6 +177,13 @@ async function pingAddress() {
           icon="refresh"
           ml-2
           @click="onReset"
+        />
+        <QBtn
+          :label="t('ConnectionCheck')"
+          color="secondary"
+          icon="wifi_tethering"
+          ml-2
+          @click="onConnectionCheck"
         />
       </div>
     </div>
