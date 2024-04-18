@@ -17,10 +17,23 @@ export async function withClient(clientOrOptions: AccessOptions | Client, callba
   }
 }
 
-export async function download(client: Client, remotePath: string): Promise<Buffer>
-export async function download(client: Client, remotePath: string, encoding: BufferEncoding): Promise<string>
-export async function download(client: Client, remotePath: string, encoding?: BufferEncoding): Promise<string | Buffer>
-export async function download(client: Client, remotePath: string, encoding?: BufferEncoding): Promise<string | Buffer> {
+export interface DownloadOptionsBase {
+  emptyWhenNotFound?: boolean
+}
+
+export interface DownloadOptionsWithEncoding extends DownloadOptionsBase {
+  encoding: BufferEncoding
+}
+export interface DownloadOptionsWithoutEncoding extends DownloadOptionsBase {
+  encoding?: null | undefined
+}
+
+export type DownloadOptions = DownloadOptionsWithEncoding | DownloadOptionsWithoutEncoding
+
+export async function download(client: Client, remotePath: string, options?: DownloadOptionsWithoutEncoding): Promise<Buffer>
+export async function download(client: Client, remotePath: string, options: DownloadOptionsWithEncoding | BufferEncoding): Promise<string>
+export async function download(client: Client, remotePath: string, options?: DownloadOptions | BufferEncoding): Promise<string | Buffer>
+export async function download(client: Client, remotePath: string, options?: DownloadOptions | BufferEncoding): Promise<string | Buffer> {
   const chunks: Buffer[] = []
   const writableStream = new Writable({
     write(data, _encoding, callback) {
@@ -28,12 +41,19 @@ export async function download(client: Client, remotePath: string, encoding?: Bu
       callback()
     },
   })
+  options = typeof options === 'string' ? { encoding: options } : options || {}
 
-  await client.downloadTo(writableStream, remotePath)
+  await client.downloadTo(writableStream, remotePath).catch((error) => {
+    if (options.emptyWhenNotFound && error.code === 550) {
+      chunks.push(Buffer.alloc(0))
+    } else {
+      throw error
+    }
+  })
 
   const output = Buffer.concat(chunks)
-  return encoding
-    ? output.toString(encoding)
+  return options.encoding
+    ? output.toString(options.encoding)
     : output
 }
 
