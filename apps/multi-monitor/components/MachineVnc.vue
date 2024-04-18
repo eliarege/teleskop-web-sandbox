@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { withBase } from 'ufo'
+import { joinURL, parseURL, withBase, withProtocol } from 'ufo'
 import { NoVnc } from 'ui'
 import type { MachineDataRaw } from '~/shared/types'
 
@@ -96,6 +96,18 @@ interface OpKeys extends FnKeys {
 const baseURL = useRuntimeConfig().app.baseURL
 const withBaseURL = (input: string) => withBase(input, baseURL)
 
+function resolveWebSocketUrl(url: string) {
+  const parsed = parseURL(url)
+  const protocol = parsed.protocol || window.location.protocol
+  const isSecure = protocol === 'https:'
+  return withProtocol(
+    withBase(url, `${window.location.protocol}//${window.location.host}`),
+    isSecure ? `wss://` : `ws://`,
+  )
+}
+
+const websockifyWsUrl = resolveWebSocketUrl(config.public.websockifyUrl)
+
 const fnKeys = reactive([
   { class: 'f1', key: 'F1' },
   { class: 'f2', key: 'F2' },
@@ -162,7 +174,7 @@ const bottomKeys = reactive([
               <span class="loader z-1 absolute" />
               <NoVnc
                 ref="vnc"
-                :url="`${config.public.websockifyUrl || 'ws://localhost:6800'}/${props.currentMachine.id}`"
+                :url="joinURL(websockifyWsUrl, props.currentMachine.id.toString())"
                 :credentials="vncCredentials"
                 :auth="config.public.kcEnabled"
                 :token="token"
