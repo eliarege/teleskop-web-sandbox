@@ -50,10 +50,6 @@ const machineData = computed(() => {
       stopReason: machine.stopReason ? machine.stopReason : ' ',
       manualReason: machine.manualReason ? machine.manualReason : ' ',
       runningAlarmNo: machine.runningAlarmNo ? machine.runningAlarmNo : ' ',
-      runningBatchRatio: Math.round(
-        (machine.theoreticalDuration! / machine.runningTheoreticalDuration!)
-        * 100,
-      ),
     } as MachineData
   })
 })

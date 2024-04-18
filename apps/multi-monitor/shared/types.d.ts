@@ -58,7 +58,6 @@ export interface MachineData extends MachineDataRaw {
   stopReasonDateTime: Date
   manualReasonDateTime: Date
   newTheoreticalDuration: number
-  runningBatchRatio: number
   runningStartHour: string
 }
 
