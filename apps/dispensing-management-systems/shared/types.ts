@@ -61,7 +61,6 @@ export interface Dispenser {
   lastConsumptionControl?: string | null
   protocol: string
   protocolFields?: unknown
-  isJDM: boolean
   JDMConnections: number[] | null
 }
 export interface DispenserBrand {

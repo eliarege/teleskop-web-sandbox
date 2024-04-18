@@ -13,6 +13,5 @@ export const DispenserSchema = z.object({
   lastConsumptionControl: z.string().nullable(),
   protocol: z.string(),
   protocolFields: z.unknown().nullable(),
-  isJDM: z.boolean(),
   JDMConnections: z.array(z.number()).nullable(),
 })

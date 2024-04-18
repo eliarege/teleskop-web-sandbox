@@ -29,7 +29,6 @@ const defaultDispenser: Dispenser = {
   vncPort: 5900,
   protocol: '7',
   protocolFields: null,
-  isJDM: false,
   JDMConnections: [],
 }
 const editedDispenser = ref(JSON.parse(JSON.stringify(dispenser.value ? dispenser.value : defaultDispenser)))
@@ -312,13 +311,7 @@ async function pingAddress() {
                 @update:model-value="onProtocolSelected"
               />
             </div>
-            <div class="row-item pt-5">
-              <span class="item-label">
-                {{ t('dispenserFields.IsJDM') }}
-              </span>
-              <QCheckbox v-model="editedDispenser.isJDM" />
-            </div>
-            <div v-if="editedDispenser.isJDM" class="row-item">
+            <div v-if="editedDispenser.dispenserType === 5" class="row-item">
               <span class="item-label">
                 {{ t('dispenserFields.JDMConnections') }}
               </span>

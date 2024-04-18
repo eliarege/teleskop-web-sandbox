@@ -108,7 +108,6 @@
     "VncUser": "Vnc Kullanıcısı",
     "VncPort": "Vnc Portu",
     "VncPassword": "Vnc Şifresi",
-    "IsJDM": "JDM mi?",
     "JDMConnections": "JDM Bağlantıları"
   },
   "recipeFields": {
