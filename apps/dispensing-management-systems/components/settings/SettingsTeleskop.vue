@@ -59,6 +59,7 @@ async function pingAddress() {
               </span>
               <QInput
                 v-model="teleskopSettings!.client"
+                class="input"
                 dense
                 type="text"
                 filled
@@ -68,6 +69,7 @@ async function pingAddress() {
               {{ t('protocolParameters.dbHostComputer') }}
               <QInput
                 v-model="teleskopSettings!.hostComputer"
+                class="input"
                 dense
                 type="text"
                 filled
@@ -79,6 +81,7 @@ async function pingAddress() {
               {{ t('protocolParameters.dbName') }}
               <QInput
                 v-model="teleskopSettings!.database"
+                class="input"
                 dense
                 type="text"
                 filled
@@ -88,6 +91,7 @@ async function pingAddress() {
               {{ t('protocolParameters.dbHost') }}
               <QInput
                 v-model="teleskopSettings!.host"
+                class="input"
                 dense
                 type="text"
                 hide-bottom-space
@@ -105,6 +109,7 @@ async function pingAddress() {
               {{ t('protocolParameters.dbPort') }}
               <QInput
                 v-model="teleskopSettings!.port"
+                class="input"
                 dense
                 filled
                 type="number"
@@ -118,6 +123,7 @@ async function pingAddress() {
               {{ t('protocolParameters.dbUser') }}
               <QInput
                 v-model="teleskopSettings!.user"
+                class="input"
                 dense
                 type="text"
                 filled
@@ -128,6 +134,7 @@ async function pingAddress() {
             {{ t('protocolParameters.dbPassword') }}
             <QInput
               v-model="teleskopSettings!.password"
+              class="input"
               dense
               :type="passwordVisible ? 'text' : 'password'"
               filled
@@ -184,5 +191,8 @@ async function pingAddress() {
   align-items: center;
   gap: 1rem;
   margin: 2rem;
+}
+.input {
+  width: 25rem;
 }
 </style>
