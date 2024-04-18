@@ -19,9 +19,7 @@ const messages = controlledComputed(locale, () => {
   <Suspense>
     <div :style="{ background: colors.bgColor }">
       <NuxtLayout>
-        <div>
           <NuxtPage />
-        </div>
       </NuxtLayout>
     </div>
     <template #fallback>
