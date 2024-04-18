@@ -10,7 +10,7 @@
 const pattern = /^(.+)=(.+)$/
 
 export function parseSystem(content: string) {
-  const res = {}
+  const res: Record<string, any> = {}
   const lines = content.split('\n')
 
   if (lines && lines.length) {
@@ -18,7 +18,7 @@ export function parseSystem(content: string) {
       const match = line.match(pattern)
       if (match) {
         const key = match[1]
-        const value = match[2]
+        const value: any = match[2]
         res[key] = value
       }
     })

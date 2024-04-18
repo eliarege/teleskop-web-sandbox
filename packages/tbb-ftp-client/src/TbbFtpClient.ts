@@ -323,7 +323,7 @@ export class TbbFtpClient {
     return system
   }
 
-  async uploadSystemParams(system) {
+  async uploadSystemParams(system: Record<string, any>) {
     const remotePath = '/tbb6500/data/config/sistem'
     const content = serializeSystem(system)
     await upload(this.client, remotePath, content)
