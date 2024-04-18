@@ -347,6 +347,7 @@ async function pingAddress() {
         <div class="button-section">
           <QBtn
             :label="t('Save')"
+            type="submit"
             color="primary"
             icon="save"
             @click="onSave"
@@ -359,6 +360,7 @@ async function pingAddress() {
           />
           <QBtn
             :label="t('Reset')"
+            type="reset"
             icon="refresh"
             @click="onReset"
           />
