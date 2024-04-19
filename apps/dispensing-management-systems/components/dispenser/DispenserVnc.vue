@@ -13,6 +13,8 @@ const props = defineProps({
 const { t } = useI18n()
 
 const dispenser = toRef(props, 'dispenser')
+const location = window.location.hostname
+const config = useRuntimeConfig()
 
 const KeyEnum = {
   'A': 65,
@@ -246,7 +248,7 @@ onBeforeUnmount(() => {
                 resize-session
                 clip-viewport
                 drag-viewport
-                url="ws://localhost:5900"
+                :url="`ws://${location}:${config.public.websockifyPort || '6800'}/dispenser/${dispenser.dispenserId}`"
                 class="z-2 absolute h-125 w-200 p-1"
                 @disconnect="onDisconnect"
                 @connect="onConnect"
