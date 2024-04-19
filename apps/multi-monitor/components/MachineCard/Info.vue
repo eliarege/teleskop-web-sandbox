@@ -50,6 +50,13 @@ function reqStatus(params: number) {
       </div>
       <q-separator color="white" vertical class="h-full" spaced />
       <MachineCardSettings :data="machine" />
+      <q-tooltip
+        transition-show="scale"
+        class="text-black e-border bg-white"
+        :offset="[3, 3]"
+      >
+        {{ erpKey || 'ERP' }}
+      </q-tooltip>
     </div>
     <!-- PROG ID/NAME -->
     <div
@@ -248,4 +255,9 @@ function reqStatus(params: number) {
 </template>
 
 <style scoped lang="postcss">
+.explanation {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
 </style>
