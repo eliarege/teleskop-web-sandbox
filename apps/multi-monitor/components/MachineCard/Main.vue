@@ -94,7 +94,11 @@ function isScreenViable(screen: number) {
 </script>
 
 <template>
-  <div class="card-wrapper" :class="store.mode === false ? 'ml-25' : ''">
+  <div
+    class="card-wrapper"
+    :class="store.mode === false ? 'ml-25' : ''"
+    :style="{ zoom: store.zoomLevel }"
+  >
     <div
       v-for="element in sortedMachines"
       :key="element.id"

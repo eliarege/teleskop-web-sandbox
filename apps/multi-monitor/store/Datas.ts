@@ -20,6 +20,16 @@ export const useDataStore = defineStore('datas', () => {
   // machinestatus
   const sortMachines = useStorage('machine-sort', 1)
 
+  const zoomLevel = ref(1)
+  const setZoomLevel = (value: number | string | null) => {
+    if (!value) {
+      value = 1
+    } else if (typeof value === 'string') {
+      value = Number.parseFloat(value)
+      value = Number.isNaN(value) ? 1 : value
+    }
+    zoomLevel.value = Math.min(Math.max(value, 0.7), 1.3)
+  }
   const scrollSpeed = ref(3)
   const scrollSpeedOptions = [
     { speed: 1, frame: 4, delay: 2000 },
@@ -38,6 +48,7 @@ export const useDataStore = defineStore('datas', () => {
   const machines = ref<MachineDataRaw[]>([])
   const fetchMachineStatus = ref<FetchStatus>('idle')
   const fetchMachineError = ref<Error | null>(null)
+
   async function fetchMachineData() {
     fetchMachineStatus.value = 'pending'
     try {
@@ -77,6 +88,8 @@ export const useDataStore = defineStore('datas', () => {
     steam,
     salt,
     water,
+    zoomLevel: readonly(zoomLevel),
+    setZoomLevel,
     scrollSpeed,
     scrollSpeedProps,
     fetchMachineStatus,

@@ -32,6 +32,7 @@ function setDefaultSettings() {
   store.salt = true
   store.water = true
   store.scrollSpeed = 3
+  store.zoomLevel = 1
 }
 
 const machineGroups = computed(() => new Set(store.machines.map(g => g.groupName)))
@@ -190,6 +191,17 @@ const machineGroups = computed(() => new Set(store.machines.map(g => g.groupName
                     ]"
                     class="flex"
                   />
+                  <div class="pb-2">
+                    <q-input
+                      :model-value="store.zoomLevel"
+                      type="number"
+                      dense
+                      filled
+                      label="Zoom"
+                      step="0.1"
+                      @update:model-value="store.setZoomLevel($event)"
+                    />
+                  </div>
                 </div>
               </q-expansion-item>
               <q-expansion-item
