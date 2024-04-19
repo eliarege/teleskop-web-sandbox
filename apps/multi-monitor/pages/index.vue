@@ -22,7 +22,7 @@ watch(() => store.fetchMachineError, (error) => {
       message: t('machine-status-server-unavailable'),
       timeout: 0,
     })
-  } else if (!store.fetchMachineError && dismiss) {
+  } else if (!error && dismiss) {
     dismiss()
     dismiss = null
   }
