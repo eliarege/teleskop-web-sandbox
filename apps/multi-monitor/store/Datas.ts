@@ -21,6 +21,19 @@ export const useDataStore = defineStore('datas', () => {
   const sortMachines = useStorage('machine-sort', 1)
   const machines = ref([] as MachineDataRaw[])
 
+  const scrollSpeed = ref(3)
+  const scrollSpeedOptions = [
+    { speed: 1, frame: 4, delay: 2000 },
+    { speed: 1, frame: 2, delay: 1500 },
+    { speed: 1, frame: 1, delay: 1200 },
+    { speed: 2, frame: 1, delay: 1000 },
+    { speed: 4, frame: 1, delay: 800 },
+  ]
+  const scrollSpeedProps = computed(() => {
+    const value = Math.round(Math.min(Math.max(scrollSpeed.value, 1), 5))
+    return scrollSpeedOptions[value - 1]
+  })
+
   async function fetchMachineData() {
     const response: MachineDataRaw[] = await $fetch('/api/machines')
     machines.value = response
@@ -52,6 +65,8 @@ export const useDataStore = defineStore('datas', () => {
     steam,
     salt,
     water,
+    scrollSpeed,
+    scrollSpeedProps,
     fetchSettings,
     fetchMachineData,
   }

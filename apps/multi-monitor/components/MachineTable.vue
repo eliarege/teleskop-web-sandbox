@@ -23,7 +23,7 @@ const machineTable = computed(() => {
   })
 })
 
-function goTo(event: any, row: any, column: any) {
+function goTo(event: any) {
   router.push(`/details/${event.id}`)
 }
 const filterTableData = computed(() =>
