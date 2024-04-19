@@ -25,60 +25,55 @@ export default defineEventHandler(async (event) => {
         await knex.transaction(async (trx) => {
           const updateFunctions = [
             // controllerModel
-            { func: updateMachineController, message: 'controller updated' },
+            { func: () => updateMachineController(numMachineId, tbb, trx), message: 'controller updated' },
             // baslatmaparametreleri
-            { func: updateBatchParameters, message: 'batch parameters updated' },
+            { func: () => updateBatchParameters(numMachineId, tbb, trx), message: 'batch parameters updated' },
             // command groups
-            { func: updateCommandGroups, message: 'command groups updated' },
+            { func: () => updateCommandGroups(numMachineId, tbb, trx), message: 'command groups updated' },
             // cycle control
-            { func: updateCycleControl, message: 'cycle control updated' },
+            { func: () => updateCycleControl(numMachineId, tbb, trx), message: 'cycle control updated' },
             // sistem
-            { func: updateSystemParams, message: 'system parameters updated' },
+            { func: () => updateSystemParams(numMachineId, tbb, trx), message: 'system parameters updated' },
             // manuelmodenedenleri
-            { func: updateManualReasons, message: 'manual reasons updated' },
+            { func: () => updateManualReasons(tbb, trx), message: 'manual reasons updated' },
             // analoginput
-            { func: updateAnalogInputs, message: 'analog inputs updated' },
+            { func: () => updateAnalogInputs(numMachineId, tbb, trx), message: 'analog inputs updated' },
             // analogoutput
-            { func: updateAnalogOutputs, message: 'analog outputs updated' },
+            { func: () => updateAnalogOutputs(numMachineId, tbb, trx), message: 'analog outputs updated' },
             // digitalinput
-            { func: updateDigitalInputs, message: 'digital inputs updated' },
+            { func: () => updateDigitalInputs(numMachineId, tbb, trx), message: 'digital inputs updated' },
             // digitaloutput
-            { func: updateDigitalOutputs, message: 'digital outputs updated' },
+            { func: () => updateDigitalOutputs(numMachineId, tbb, trx), message: 'digital outputs updated' },
             // sayac
-            { func: updateCounters, message: 'counters updated' },
+            { func: () => updateCounters(numMachineId, tbb, trx), message: 'counters updated' },
             // commands general
-            { func: updateCommandsGeneral, message: 'general commands updated' },
+            { func: () => updateCommandsGeneral(numMachineId, tbb, trx), message: 'general commands updated' },
             // commands params
-            { func: updateCommandParameters, message: 'command parameters updated' },
+            { func: () => updateCommandParameters(numMachineId, tbb, trx), message: 'command parameters updated' },
             // IO
-            { func: updateCommandIO, message: 'command IO updated' },
+            { func: () => updateCommandIO(numMachineId, tbb, trx), message: 'command IO updated' },
             // commands feedback
-            { func: updateCommandFeedback, message: 'command feedback updated' },
+            { func: () => updateCommandFeedback(numMachineId, tbb, trx), message: 'command feedback updated' },
             // commands function alarms and alarms
-            { func: updateCommandAlarms, message: 'command alarms updated' },
+            { func: () => updateCommandAlarms(numMachineId, tbb, trx), message: 'command alarms updated' },
             // commands graphic
-            { func: updateCommandGraphic, message: 'command graphic updated' },
+            { func: () => updateCommandGraphic(numMachineId, tbb, trx), message: 'command graphic updated' },
             // commands editing
-            { func: updateCommandEditing, message: 'command editing updated' },
+            { func: () => updateCommandEditing(numMachineId, tbb, trx), message: 'command editing updated' },
             // lock general
-            { func: updateLocksGeneral, message: 'lock general updated' },
+            { func: () => updateLocksGeneral(numMachineId, tbb, trx), message: 'lock general updated' },
             // locks inputs - buraya kadar
-            { func: updateLocksInput, message: 'lock input updated' },
+            { func: () => updateLocksInput(numMachineId, tbb, trx), message: 'lock input updated' },
             // locks outputs
-            { func: updateLocksOutput, message: 'lock output updated' },
+            { func: () => updateLocksOutput(numMachineId, tbb, trx), message: 'lock output updated' },
             // global command formulas
-            { func: updateGlobalCommandFormulas, message: 'global command formulas updated' },
+            { func: () => updateGlobalCommandFormulas(numMachineId, tbb, trx), message: 'global command formulas updated' },
             // consumption
-            { func: updateConsumption, message: 'consumptions updated' },
+            { func: () => updateConsumption(numMachineId, tbb, trx), message: 'consumptions updated' },
           ]
 
           for (const { func, message } of updateFunctions) {
-            let res = false
-            if (func === updateManualReasons) {
-              res = await func(tbb, trx)
-            } else {
-              res = await func(numMachineId, tbb, trx)
-            }
+            const res = await func()
             if (res) {
               sse.broadcast(sse.clients[0], 'log', { message })
             }
