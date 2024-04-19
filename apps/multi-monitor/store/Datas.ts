@@ -19,7 +19,6 @@ export const useDataStore = defineStore('datas', () => {
   const filteredGroups = useStorage('filtered-groups', new Set<string>())
   // machinestatus
   const sortMachines = useStorage('machine-sort', 1)
-  const machines = ref([] as MachineDataRaw[])
 
   const scrollSpeed = ref(3)
   const scrollSpeedOptions = [
@@ -34,10 +33,23 @@ export const useDataStore = defineStore('datas', () => {
     return scrollSpeedOptions[value - 1]
   })
 
+  type FetchStatus = 'idle' | 'pending' | 'error' | 'success'
+
+  const machines = ref<MachineDataRaw[]>([])
+  const fetchMachineStatus = ref<FetchStatus>('idle')
+  const fetchMachineError = ref<Error | null>(null)
   async function fetchMachineData() {
-    const response: MachineDataRaw[] = await $fetch('/api/machines')
-    machines.value = response
+    fetchMachineStatus.value = 'pending'
+    try {
+      machines.value = await $fetch('/api/machines')
+      fetchMachineStatus.value = 'success'
+      fetchMachineError.value = null
+    } catch (err: any) {
+      fetchMachineStatus.value = 'error'
+      fetchMachineError.value = err
+    }
   }
+
   // colors
   const hex = useStorage('card-color', '#4B5563')
 
@@ -67,6 +79,8 @@ export const useDataStore = defineStore('datas', () => {
     water,
     scrollSpeed,
     scrollSpeedProps,
+    fetchMachineStatus,
+    fetchMachineError,
     fetchSettings,
     fetchMachineData,
   }

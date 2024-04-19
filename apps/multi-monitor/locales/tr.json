@@ -8,6 +8,7 @@
   "error-message-middle": "Lütfen BT ekibinizle irtibata geçiniz,",
   "error-message-last": "ya da biz hatayı çözene kadar bekleyiniz!",
   "no-erp-val": "ERP DEĞERİ SEÇİLMEDİ",
+  "machine-status-server-unavailable": "Makine durum servisinden yanıt gelmiyor",
   "language": "Türkçe",
   "return": "Geri Dön",
   "404": {
@@ -114,6 +115,8 @@
     "sort-idle": "Boş Makineler",
     "sort-group": "Gruba Göre",
     "options": "Seçenekler",
+    "animation": "Animasyon",
+    "scrollSpeed": "Otomatik Sürükleme Hızı",
     "filter": {
       "title": "Makine Filtreleme",
       "group-title": "Grup Filtreleme"

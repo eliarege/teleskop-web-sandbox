@@ -3,12 +3,30 @@ import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
 
 const { t } = useI18n()
+const { notify } = useQuasar()
 const store = useDataStore()
+/* Dismiss notification box */
+let dismiss = null as (() => void) | null
 
 const { start: scheduleNext } = useTimeoutFn(async () => {
   await store.fetchMachineData()
   scheduleNext()
 }, 5000)
+
+watch(() => store.fetchMachineError, (error) => {
+  if (error && !dismiss) {
+    dismiss = notify({
+      position: 'top',
+      color: 'negative',
+      spinner: true,
+      message: t('machine-status-server-unavailable'),
+      timeout: 0,
+    })
+  } else if (!store.fetchMachineError && dismiss) {
+    dismiss()
+    dismiss = null
+  }
+})
 
 const machineData = computed(() => {
   return store.machines.map((machine) => {

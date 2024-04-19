@@ -8,6 +8,7 @@
   "error-message-middle": "Please contact with your IT crew,",
   "error-message-last": "or wait untill we fix the issue!",
   "no-erp-val": "NO ERP VALUE",
+  "machine-status-server-unavailable": "No response from machine status server",
   "language": "English",
   "return": "Go Back",
   "404": {
@@ -114,6 +115,8 @@
     "sort-idle": "Idle Machines",
     "sort-group": "Group",
     "options": "Options",
+    "animation": "Animation",
+    "scrollSpeed": "Auto-Scroll Speed",
     "filter": {
       "title": "Machine Filter",
       "group-title": "Group Filter"
