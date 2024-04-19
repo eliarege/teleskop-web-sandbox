@@ -1,5 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import { Client } from 'basic-ftp'
+import type { DownloadOptions, DownloadOptionsWithEncoding, DownloadOptionsWithoutEncoding } from './utils/ftp'
 import { download, upload } from './utils/ftp'
 import { parseLockGeneral } from './parsers/parseLockGeneral'
 import { parseUser, serializeUser } from './parsers/parseUser'
@@ -85,11 +86,19 @@ export class TbbFtpClient {
    *
    * @param path
    */
-  download(path: string): Promise<Buffer>
-  download(path: string, encoding: BufferEncoding): Promise<string>
-  download(path: string, encoding?: BufferEncoding): Promise<string | Buffer>
-  download(path: string, encoding?: BufferEncoding): Promise<string | Buffer> {
-    return download(this.client, path, encoding)
+  download(path: string, options?: DownloadOptionsWithoutEncoding): Promise<Buffer>
+  download(path: string, options: DownloadOptionsWithEncoding | BufferEncoding): Promise<string>
+  download(path: string, options?: DownloadOptions | BufferEncoding): Promise<string | Buffer>
+  download(path: string, options?: DownloadOptions | BufferEncoding): Promise<string | Buffer> {
+    return download(this.client, path, options)
+  }
+
+  /** Download with defaults */
+  private _download(path: string) {
+    return download(this.client, path, {
+      encoding: 'utf8',
+      emptyWhenNotFound: true,
+    })
   }
 
   /**
@@ -103,182 +112,182 @@ export class TbbFtpClient {
 
   async fetchLocksGeneral() {
     const remotePath = '/tbb6500/data/locks/locks_general'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const locks = parseLockGeneral(content)
     return locks
   }
 
   async fetchUsers() {
     const remotePath = '/tbb6500/data/users/users'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const users = parseUser(content)
     return users
   }
 
   async fetchManualReasons() {
     const remotePath = '/tbb6500/data/config/manuelmodnedenleri'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const manualReasons = parseManualReason(content)
     return manualReasons
   }
 
   async fetchStopReasons() {
     const remotePath = '/tbb6500/data/config/durusnedenleri'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const stopReasons = parseStopReason(content)
     return stopReasons
   }
 
   async fetchFinishReasons() {
     const remotePath = '/tbb6500/data/config/bitirmenedenleri'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const data = parseFinishReason(content)
     return data
   }
 
   async fetchCommandAlarmReasons() {
     const remotePath = '/tbb6500/data/config/commandAlarmReasons'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const commandAlarmReasons = parseCommandAlarmReasons(content)
     return commandAlarmReasons
   }
 
   async fetchMachineParameters() {
     const remotePath = '/tbb6500/data/config/makinesabitleri'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const machineParameters = parseMachineParameters(content)
     return machineParameters
   }
 
   async fetchMachineParameterValues() {
     const remotePath = '/tbb6500/data/config/makinesabitleriDegerler'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const values = parseMachineParameterValues(content)
     return values
   }
 
   async fetchControllerModel() {
     const remotePath = '/var/controllerModel'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const controllerModel = parseControllerModel(content)
     return controllerModel
   }
 
   async fetchAnalogInputs() {
     const remotePath = '/tbb6500/data/io/analoginput'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const analogInputs = parseAnalogInput(content)
     return analogInputs
   }
 
   async fetchAnalogOutputs() {
     const remotePath = '/tbb6500/data/io/analogoutput'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const analogOutputs = parseAnalogOutput(content)
     return analogOutputs
   }
 
   async fetchDigitalInputs() {
     const remotePath = '/tbb6500/data/io/sayisalinput'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const digitalInput = parseDigitalInput(content)
     return digitalInput
   }
 
   async fetchDigitalOutputs() {
     const remotePath = '/tbb6500/data/io/sayisaloutput'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const digitalOutputs = parseDigitalOutput(content)
     return digitalOutputs
   }
 
   async fetchCounters() {
     const remotePath = '/tbb6500/data/io/sayac'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const analogInputs = parseCounter(content)
     return analogInputs
   }
 
   async fetchCommandGroups() {
     const remotePath = '/tbb6500/data/commands/commandGroup'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const commandGroups = parseCommandGroup(content)
     return commandGroups
   }
 
   async fetchCommandsGeneral() {
     const remotePath = '/tbb6500/data/commands/general'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const commands = parseCommandsGeneral(content)
     return commands
   }
 
   async fetchCommandsEditing() {
     const remotePath = '/tbb6500/data/commands/editing'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const commands = parseCommandsEditing(content)
     return commands
   }
 
   async fetchCommandIO() {
     const remotePath = '/tbb6500/data/commands/io'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const commandGroups = parseCommandIO(content)
     return commandGroups
   }
 
   async fetchCommandParams() {
     const remotePath = '/tbb6500/data/commands/params'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const commandGroups = parseCommandParams(content)
     return commandGroups
   }
 
   async fetchCommandFeedback() {
     const remotePath = '/tbb6500/data/commands/feedback'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const commandGroups = parseCommandFeedback(content)
     return commandGroups
   }
 
   async fetchFunctionAlarms() {
     const remotePath = '/tbb6500/data/config/function_alarms'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const commandGroups = parseFunctionAlarms(content)
     return commandGroups
   }
 
   async fetchCommandGraphic() {
     const remotePath = '/tbb6500/data/commands/graphic'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const commandGroups = parseCommandGraphic(content)
     return commandGroups
   }
 
   async fetchCommandAlarms() {
     const remotePath = '/tbb6500/data/commands/alarms'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const commandGroups = parseCommandAlarms(content)
     return commandGroups
   }
 
   async fetchConsumption() {
     const remotePath = '/tbb6500/data/config/consumption'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const consumption = parseConsumption(content)
     return consumption
   }
 
   async fetchGlobalCommandFormulas() {
-    const remotePath = '/tbb6500/yedek/data/config/globalCommandFormulas'
-    const content = await download(this.client, remotePath, 'utf8')
+    const remotePath = '/tbb6500/data/config/globalCommandFormulas'
+    const content = await this._download(remotePath)
     const formulas = parseGlobalCommandFormulas(content)
     return formulas
   }
 
   async fetchLocksInput() {
     const remotePath = '/tbb6500/data/locks/locks_inputs'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
 
     const lines = content.split('\n')
     const parsedData = lines.map(parseSeperatedLocks)
@@ -288,33 +297,33 @@ export class TbbFtpClient {
 
   async fetchLocksOutput() {
     const remotePath = '/tbb6500/data/locks/locks_outputs'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const locks = parseLocksOutput(content)
     return locks
   }
 
   async fetchBatchParameters() {
     const remotePath = '/tbb6500/data/config/baslatmaParametreleri'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const batchParameters = parseBatchParameters(content)
     return batchParameters
   }
 
   async fetchCycleControl() {
     const remotePath = '/tbb6500/data/config/manuel/cycle_kontrol'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const cycleControl = parseCycleControl(content)
     return cycleControl
   }
 
   async fetchSystemParams() {
     const remotePath = '/tbb6500/data/config/sistem'
-    const content = await download(this.client, remotePath, 'utf8')
+    const content = await this._download(remotePath)
     const system = parseSystem(content)
     return system
   }
 
-  async uploadSystemParams(system) {
+  async uploadSystemParams(system: Record<string, any>) {
     const remotePath = '/tbb6500/data/config/sistem'
     const content = serializeSystem(system)
     await upload(this.client, remotePath, content)
@@ -345,7 +354,7 @@ export class TbbFtpClient {
   }
 
   async uploadGlobalCommandFormulas(formulas: GlobalCommandFormula[]) {
-    const remotePath = '/tbb6500/yedek/data/config/globalCommandFormulas'
+    const remotePath = '/tbb6500/data/config/globalCommandFormulas'
     const content = serializeGlobalCommandFormulas(formulas)
     await upload(this.client, remotePath, content)
   }

@@ -45,7 +45,7 @@ const unitMap = [
   'F/min',
   'oz/Feet',
 ]
-const pattern = /^SABIT_(\d+)=(.+), (.+), (.+), (.+), (.+), (.+), (.+), (\[.*\])$/gim
+const pattern = /^SABIT_(\d+)=(.+), (.+), (.+), (.+), (.+), (.+), (.+),(\[.*\])$/gim
 export function parseBatchParameters(content: string) {
   const reasons = []
   let match = pattern.exec(content)

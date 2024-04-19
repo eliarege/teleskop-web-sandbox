@@ -4,6 +4,11 @@ import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 import type { Machine } from '~/types'
 
+interface sseLog {
+  message: string
+  type?: 'info' | 'error'
+}
+
 const { t, locale, setLocale } = useI18n()
 
 const { data: databaseVersion } = useLazyFetch('/api/machines/database-version', {
@@ -414,10 +419,10 @@ const { event, data, close } = useEventSource('/api/sync/sse', ['log'], {
 onBeforeUnmount(() => {
   close()
 })
-const logs = ref<object[]>([])
-watch(data, (newMessage) => {
-  const msg = JSON.parse(newMessage)
-  logs.value.push(msg.message)
+
+const logs = ref<sseLog[]>([])
+watch(data, (newData) => {
+  logs.value.push(JSON.parse(newData))
 })
 
 const { notifySuccess, notifyError } = useNotify()
@@ -426,6 +431,7 @@ async function loadProject() {
   try {
     await $fetch('/api/sync/network-connection', {
       method: 'GET',
+      retry: false,
       query: {
         ip: selected.value.ip,
       },
@@ -434,13 +440,15 @@ async function loadProject() {
 
     await $fetch('/api/sync/update-machine', {
       method: 'GET',
+      retry: false,
       query: {
         machineId: selected.value.machineId,
       },
     })
+    notifySuccess(t('updateFinished'))
   } catch (error) {
     if (error.statusCode === 500) {
-      notifyError(t('noConnectionToNetwork'))
+      notifyError(t('errorLoadingProject'))
     } else if (error.statusCode === 504) {
       notifyError(t('connectionTimeout'))
     }
@@ -560,6 +568,7 @@ async function checkTeleskopConnection(formData: Machine) {
     connectionMessage.value.color = ''
     await $fetch('/api/sync/teleskop-connection', {
       method: 'GET',
+      retry: false,
       query: {
         ip: formData.ip,
       },
@@ -581,6 +590,7 @@ async function checkNetworkConnection(formData: Machine) {
     connectionMessage.value.color = ''
     await $fetch('/api/sync/network-connection', {
       method: 'GET',
+      retry: false,
       query: {
         ip: formData.ip,
       },
@@ -665,8 +675,8 @@ async function checkNetworkConnection(formData: Machine) {
     </FormTableKit>
 
     <q-scroll-area style="height: 200px">
-      <div v-for="(log, index) in logs" :key="index">
-        {{ log }}
+      <div v-for="(log, index) in logs" :key="index" :class="log.type === 'error' ? 'text-red pl-2' : 'pl-2'">
+        {{ log.message }}
       </div>
     </q-scroll-area>
 

@@ -21,7 +21,7 @@ export default function useNotify() {
       position: 'top',
       timeout: 2000,
       actions: [
-        { label: t('dismiss'), color: 'blue', handler: () => {} },
+        { label: t('dismiss'), color: 'red', handler: () => {} },
       ],
     })
   }

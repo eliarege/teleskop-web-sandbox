@@ -14,7 +14,7 @@ export function useSSE() {
       'cache-control': 'no-cache',
       'connection': 'keep-alive',
       'content-type': 'text/event-stream',
-    })
+    } as any)
     setResponseStatus(event, 200)
     clients.push({ id, event })
   }
