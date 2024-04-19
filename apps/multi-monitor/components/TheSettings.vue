@@ -130,7 +130,7 @@ const machineGroups = computed(() => new Set(store.machine.map(g => g.groupName)
                   </span>
                   <div class="grid grid-cols-3">
                     <div
-                      v-for="item in store.machine"
+                    v-for="item in store.machines"
                       :key="item.id"
                       class="max-h-50"
                     >

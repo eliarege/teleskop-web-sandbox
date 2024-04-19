@@ -19,11 +19,11 @@ export const useDataStore = defineStore('datas', () => {
   const filteredGroups = useStorage('filtered-groups', new Set<string>())
   // machinestatus
   const sortMachines = useStorage('machine-sort', 1)
-  const machine = ref([] as MachineDataRaw[])
+  const machines = ref([] as MachineDataRaw[])
 
   async function fetchMachineData() {
     const response: MachineDataRaw[] = await $fetch('/api/machines')
-    machine.value = response
+    machines.value = response
   }
   // colors
   const hex = useStorage('card-color', '#4B5563')
@@ -47,7 +47,7 @@ export const useDataStore = defineStore('datas', () => {
     group,
     sortMachines,
     mode,
-    machine,
+    machines,
     electricity,
     steam,
     salt,

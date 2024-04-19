@@ -10,7 +10,7 @@ useIntervalFn(() => {
 }, 5000)
 
 const machineData = computed(() => {
-  return store.machine.map((machine) => {
+  return store.machines.map((machine) => {
     return {
       ...machine,
       runningStartTime: machine.runningStartTime
