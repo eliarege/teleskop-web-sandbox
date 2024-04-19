@@ -6,7 +6,7 @@ import { useDataStore } from '~/store/Datas'
 const store = useDataStore()
 const route = useRoute()
 
-const currentMachine = computed(() => store.machine.find(machine => machine.id === Number.parseInt(route.params.id as string)) as MachineDataRaw)
+const currentMachine = computed(() => store.machines.find(machine => machine.id === Number.parseInt(route.params.id as string)) as MachineDataRaw)
 
 const { data: intervents } = useFetch('/api/interventions', {
   query: { interventParam: route.params.id },

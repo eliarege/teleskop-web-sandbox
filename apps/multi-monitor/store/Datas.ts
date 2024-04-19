@@ -19,12 +19,48 @@ export const useDataStore = defineStore('datas', () => {
   const filteredGroups = useStorage('filtered-groups', new Set<string>())
   // machinestatus
   const sortMachines = useStorage('machine-sort', 1)
-  const machine = ref([] as MachineDataRaw[])
+
+  const zoomLevel = ref(1)
+  const setZoomLevel = (value: number | string | null) => {
+    if (!value) {
+      value = 1
+    } else if (typeof value === 'string') {
+      value = Number.parseFloat(value)
+      value = Number.isNaN(value) ? 1 : value
+    }
+    zoomLevel.value = Math.min(Math.max(value, 0.7), 1.3)
+  }
+  const scrollSpeed = ref(3)
+  const scrollSpeedOptions = [
+    { speed: 1, frame: 4, delay: 2000 },
+    { speed: 1, frame: 2, delay: 1500 },
+    { speed: 1, frame: 1, delay: 1200 },
+    { speed: 2, frame: 1, delay: 1000 },
+    { speed: 4, frame: 1, delay: 800 },
+  ]
+  const scrollSpeedProps = computed(() => {
+    const value = Math.round(Math.min(Math.max(scrollSpeed.value, 1), 5))
+    return scrollSpeedOptions[value - 1]
+  })
+
+  type FetchStatus = 'idle' | 'pending' | 'error' | 'success'
+
+  const machines = ref<MachineDataRaw[]>([])
+  const fetchMachineStatus = ref<FetchStatus>('idle')
+  const fetchMachineError = ref<Error | null>(null)
 
   async function fetchMachineData() {
-    const response: MachineDataRaw[] = await $fetch('/api/machines')
-    machine.value = response
+    fetchMachineStatus.value = 'pending'
+    try {
+      machines.value = await $fetch('/api/machines')
+      fetchMachineStatus.value = 'success'
+      fetchMachineError.value = null
+    } catch (err: any) {
+      fetchMachineStatus.value = 'error'
+      fetchMachineError.value = err
+    }
   }
+
   // colors
   const hex = useStorage('card-color', '#4B5563')
 
@@ -47,11 +83,17 @@ export const useDataStore = defineStore('datas', () => {
     group,
     sortMachines,
     mode,
-    machine,
+    machines,
     electricity,
     steam,
     salt,
     water,
+    zoomLevel: readonly(zoomLevel),
+    setZoomLevel,
+    scrollSpeed,
+    scrollSpeedProps,
+    fetchMachineStatus,
+    fetchMachineError,
     fetchSettings,
     fetchMachineData,
   }

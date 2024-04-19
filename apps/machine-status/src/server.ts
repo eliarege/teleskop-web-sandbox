@@ -38,6 +38,13 @@ export async function main() {
     port: config.serverPort,
   })
 
+  const defaultErrorHandler = fastify.errorHandler
+  fastify.setErrorHandler((error, request, reply) => {
+    // Kysely MSSQL Adapter sometimes returns errors as array
+    error = Array.isArray(error) ? error[0] : error
+    defaultErrorHandler(error, request, reply)
+  })
+
   gracefulShutdown(fastify.server, {
     async onShutdown() {
       await teleskop.destroy()

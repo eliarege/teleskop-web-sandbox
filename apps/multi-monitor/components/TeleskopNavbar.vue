@@ -280,7 +280,7 @@ const options = {
     overflow: hidden;
     @apply w-full h-full;
     .headerwrapper {
-      @apply flex w-full h-20 font-400 font-bold bg-light-50 text-dark-900 rounded shadow shadow-dark-900 mb-1;
+      @apply flex w-full h-20 font-400 font-bold bg-light-50 text-dark-900 rounded border-b-2 border-gray-400;
       .header {
         @apply flex w-full justify-between;
         .menu {

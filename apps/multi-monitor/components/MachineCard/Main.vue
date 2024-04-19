@@ -94,7 +94,11 @@ function isScreenViable(screen: number) {
 </script>
 
 <template>
-  <div class="card-wrapper" :class="store.mode === false ? 'ml-25' : ''">
+  <div
+    class="card-wrapper"
+    :class="store.mode === false ? 'ml-25' : ''"
+    :style="{ zoom: store.zoomLevel }"
+  >
     <div
       v-for="element in sortedMachines"
       :key="element.id"
@@ -122,7 +126,6 @@ function isScreenViable(screen: number) {
 <style scoped lang="postcss">
 .card-wrapper {
   grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
-  grid-auto-rows: repeat(auto-fill, minmax(370px, 1fr));
   @apply grid gap-x-3 gap-y-2 mt-1 mb-3 overflow-x-hidden font-extrabold;
   .card-container {
     border-radius: 20px;
@@ -132,7 +135,6 @@ function isScreenViable(screen: number) {
 @media screen and (max-width: 735px) {
   .card-wrapper {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    grid-auto-rows: repeat(auto-fill, minmax(300px, 1fr));
     @apply mt-6 ml-0;
   }
 }

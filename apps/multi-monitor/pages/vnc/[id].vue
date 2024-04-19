@@ -4,7 +4,7 @@ import { useDataStore } from '~/store/Datas'
 const store = useDataStore()
 const route = useRoute()
 const currentMachine = computed(() => {
-  return store.machine.find(machine => machine.id === Number.parseInt(route.params.id as string))
+  return store.machines.find(machine => machine.id === Number.parseInt(route.params.id as string))
 })
 
 useHeadSafe(computed(() => ({

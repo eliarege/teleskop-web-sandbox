@@ -17,7 +17,6 @@ const erpKey = useStorage<string | null>(
   `machine-${props.data.id}-settings`,
   null,
   localStorage,
-  { mergeDefaults: true },
 )
 
 const erpLabel = computed(() => {
@@ -43,19 +42,20 @@ const erpLabel = computed(() => {
       transition-show="jump-down"
       transition-hide="jump-up"
     >
-      <QList>
+      <QList class="py-2 max-h-120">
         <q-item
           v-for="(item, idx) in data.erp"
           :key="idx"
           clickable
+          dense
+          class="divide-y"
+          @click="erpKey = idx"
         >
-          <span class="w-full" @click="erpKey = idx">
-            <q-item-section>
-              <q-item-label class="p-3 text-black border-b border-b-gray-200">
-                {{ idx }}
-              </q-item-label>
-            </q-item-section>
-          </span>
+          <q-item-section>
+            <q-item-label class="text-black">
+              {{ idx }}
+            </q-item-label>
+          </q-item-section>
         </q-item>
       </QList>
     </QMenu>
@@ -75,7 +75,7 @@ const erpLabel = computed(() => {
     "no-erp-val": "NO ERP VALUE"
   },
   "tr": {
-  "no-erp-val": "ERP DEĞERİ SEÇİLMEDİ"
+    "no-erp-val": "ERP DEĞERİ SEÇİLMEDİ"
   }
 }
 </i18n>

@@ -7,7 +7,7 @@ const search = ref('')
 const { t } = useI18n()
 const store = useDataStore()
 const machineTable = computed(() => {
-  return store.machine.map((machine) => {
+  return store.machines.map((machine) => {
     return {
       ...machine,
       id: machine.id,
@@ -23,7 +23,7 @@ const machineTable = computed(() => {
   })
 })
 
-function goTo(event: any, row: any, column: any) {
+function goTo(event: any) {
   router.push(`/details/${event.id}`)
 }
 const filterTableData = computed(() =>
