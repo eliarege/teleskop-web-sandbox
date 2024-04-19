@@ -1,13 +1,14 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { DateHelper, Splitter, StringHelper, TextField, Toast } from '@bryntum/schedulerpro-trial'
+import type { DragHelperConfig, Grid, GridColumnConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
+import { DateHelper, Splitter, StringHelper, Toast } from '@bryntum/schedulerpro-trial'
 import { addDays, addSeconds } from 'date-fns'
 import { EliarModal } from 'ui'
 import { useDocumentVisibility } from '@vueuse/core'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
 import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
-import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
+import type { UnplannedEvents } from '~/shared/types'
+import { eventTooltip } from '~/composables/helper'
 
 const currentTime = useNow({ interval: 1000 })
 const { t } = useI18n()
@@ -55,14 +56,15 @@ const showModal = reactive({
   rule: false,
   settings: false,
 })
+
 const archiveDays = localStorage.getItem('pt-settings')
+
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
 const { data: machines, refresh: machineRefresh } = await useFetch('/api/machineList')
 const { data: events, refresh: plannedRefresh } = await useFetch('/api/queueBased/plannedEvents')
 const { data: archiveEvents } = await useFetch('/api/queueBased/archiveEvents', {
   query: { archiveDays: JSON.parse(archiveDays || '0').archiveDays ?? 0 },
 })
-
 const modifiedEvents = computed(() => events.value?.map((ev: any) => {
   return {
     id: ev.planKey,
@@ -88,25 +90,8 @@ const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
     ...ev,
   } as QueueBasedArchiveEvents
 }))
-
-function unplannedGridColumns() {
-  return [{
-    type: 'resourceInfo',
-    text: 'L{unassign}',
-    flex: 1,
-    field: 'name',
-    htmlEncode: false,
-    minWidth: 200,
-    renderer: data =>
-      StringHelper.xss`<i class="${data.record.iconCls}"></i>${data.record.name}`,
-  }, {
-    type: 'duration',
-    width: 100,
-    align: 'right',
-  }]
-}
 const mergedEvents = computed(() => modifiedEvents.value?.concat(modifiedArchive.value))
-const modifiedUnscheduledEvents = computed(() => decompressJson(unScheduledEvents.value!).map((unp: UnplannedEventsRaw) => {
+const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((unp) => {
   return {
     ...unp,
     id: unp.planKey,
@@ -116,6 +101,7 @@ const modifiedUnscheduledEvents = computed(() => decompressJson(unScheduledEvent
     constraintDate: new Date(),
   } as UnplannedEvents
 }))
+
 let scheduler: SchedulerPro
 let grid: Grid
 
@@ -128,19 +114,60 @@ async function myInterval(delay: number) {
     myInterval(delay)
   }, delay)
 }
-await myInterval(60_000)
+
+await myInterval(60000)
 
 async function refreshScheduler() {
   await plannedRefresh()
   await unScheduledRefresh()
   await machineRefresh()
+  scheduler.refreshRows()
 }
 watch(mergedEvents, (newVal: QueueBasedPlannedEvents[]) => {
   scheduler.events = newVal
 })
-watch(modifiedUnscheduledEvents, (newVal) => {
+watch(modifiedUnscheduledEvents, (newVal: UnplannedEvents[]) => {
   grid.store.data = newVal
 })
+function initialGridColumns() {
+  const columnNames = Object.keys(modifiedUnscheduledEvents.value[0].erpParameters)
+  for (let i = 0; i < columnNames.length; i++) {
+    const name = columnNames[i]
+    // @ts-expect-error missing type
+    grid.columns.add({
+      field: `erpParameters.${name}`,
+      text: name,
+      width: 100,
+      align:'center'
+    })
+  }
+  // @ts-expect-error missing type
+  grid.flex = `0 1 ${grid.columns.topColumns.length + 1}00px`
+}
+async function addGridColumn(data: { id: number, parameterId: number, parameterName: string, visible: boolean }) {
+  await unScheduledRefresh().then(() => {
+    // @ts-expect-error missing type
+    grid.columns.add({
+      // find field
+      field: `erpParameters.${data.parameterName}`,
+      text: data.parameterName,
+      width: 100,
+      align: 'center',
+    })
+    // @ts-expect-error missing type
+    grid.flex = `0 1 ${grid.columns.topColumns.length + 1}00px`
+  })
+}
+async function removeGridColumn(data: { id: number, parameterId: number, parameterName: string, visible: boolean }) {
+  await unScheduledRefresh().then(() => {
+    if (modifiedUnscheduledEvents.value) {
+      // @ts-expect-error missing type
+      grid.columns.get(`erpParameters.${data.parameterName}`).remove(data)
+      // @ts-expect-error missing type
+      grid.flex = `0 1 ${grid.columns.topColumns.length + 1}00px`
+    }
+  })
+}
 async function unPlanEvent(planKey: number) {
   await $fetch('/api/unplan', {
     method: 'PUT',
@@ -158,63 +185,6 @@ function dateRangeEnd() {
   scheduler.endDate = new Date(schedulerDateModel.value.to)
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
-}
-async function eventTooltip(eventRecord: any) {
-  const startMonth = DateHelper.format(eventRecord.startDate, 'MMM')
-  const startDay = DateHelper.format(eventRecord.startDate, 'D')
-
-  const endMonth = DateHelper.format(eventRecord.endDate, 'MM')
-  const endDay = DateHelper.format(eventRecord.endDate, 'D')
-
-  const startMinuteRotation = (eventRecord.startDate.getMinutes() + eventRecord.startDate.getSeconds() / 60) * 6
-  const startHourRotation = (eventRecord.startDate.getHours() % 12 + eventRecord.startDate.getMinutes() / 60) * 30
-
-  const endMinuteRotation = (eventRecord.endDate.getMinutes() + eventRecord.endDate.getSeconds() / 60) * 6
-  const endHourRotation = (eventRecord.endDate.getHours() % 12 + eventRecord.endDate.getMinutes() / 60) * 30
-
-  const parameters = await $fetch('/api/tootlipParameters', {
-    query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
-  })
-  const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
-  const notes = await $fetch('/api/note/getNote', {
-    query: { jobOrder: eventRecord.originalData.jobOrder },
-  })
-  const screenNotes = notes.filter(n => n.showOnScreen === true).map(a => a.note)
-  return `
-        <div>
-          ${screenNotes.length !== 0 ? `<div class="b-sch-event-title">Notes: ${screenNotes}</div>` : ''}
-          <div class="b-sch-event-title">${eventRecord.originalData.name}</div>
-          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
-            <div class="b-sch-clock">
-              <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">
-                ${startMonth}
-              </div>
-              <div class="b-sch-minute-indicator" style="transform: rotate(${startMinuteRotation}deg);">
-                ${startDay}
-              </div>
-              <div class="b-sch-clock-dot"></div>
-            </div>
-            <span class="b-sch-clock-text">${DateHelper.format(eventRecord.startDate, scheduler.displayDateFormat)}</span>
-          </div>
-          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-enddate">
-            <div class="b-sch-clock">
-              <div class="b-sch-hour-indicator" style="transform: rotate(${endHourRotation}deg);">
-                ${endMonth}
-              </div>
-              <div class="b-sch-minute-indicator" style="transform: rotate(${endMinuteRotation}deg);">
-                ${endDay}
-              </div>
-              <div class="b-sch-clock-dot"></div>
-            </div>
-            <span class="b-sch-clock-text">${DateHelper.format(eventRecord.endDate, scheduler.displayDateFormat)}</span>
-            </div>
-          <div class="b-sch-event-title">
-            <div class="b-sch-event-title">
-              ${parameterValues}
-            </div>
-          </div>
-        </div>
-`
 }
 onMounted(async () => {
   const schedule: SchedulerPro = scheduler = new QueueSchedule({
@@ -312,8 +282,6 @@ onMounted(async () => {
         type: 'resourceInfo',
         text: 'L{machine}',
         flex: 1,
-        width: 250,
-        showEventCount: false,
         showRole: true,
         showMeta: ({ originalData }) => {
           return `<div>Total Alarm Count: ${originalData.totalAlarmCount}</div>`
@@ -457,7 +425,7 @@ onMounted(async () => {
       timeRanges: {
         showCurrentTimeLine: true,
       },
-      eventTooltip: ({ eventRecord }: any) => eventTooltip(eventRecord),
+      eventTooltip: ({ eventRecord }: any) => eventTooltip(eventRecord, scheduler),
     },
     tbar: [
       {
@@ -610,7 +578,20 @@ onMounted(async () => {
     appendTo: 'main',
     ui: 'toolbar',
     multiEventSelect: false,
-    columns: unplannedGridColumns(),
+    columns: [{
+      type: 'resourceInfo',
+      text: 'L{unassign}',
+      flex: 1,
+      align: 'left',
+      field: 'name',
+      htmlEncode: false,
+      minWidth: 200,
+      renderer: data => `<i class="${data.record.iconCls}"></i>${data.record.name}`,
+    }, {
+      type: 'duration',
+      minWidth: 100,
+      align: 'center',
+    }],
     features: {
       cellEdit: false,
       search: {
@@ -657,6 +638,7 @@ onMounted(async () => {
       autoLoad: true,
     },
   } as Partial<GridConfig>)
+initialGridColumns()
   new QueueDrag({
     grid: unplannedGrid,
     schedule,
@@ -664,9 +646,6 @@ onMounted(async () => {
     outerElement: unplannedGrid.element,
   } as Partial<DragHelperConfig>)
 })
-function updateScheduler() {
-  scheduler.refreshRows()
-}
 </script>
 
 <template>
@@ -696,7 +675,11 @@ function updateScheduler() {
     </EliarModal>
     <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
       <template #default>
-        <SettingsPlan @update-scheduler="updateScheduler()" />
+        <SettingsPlan
+          @update-scheduler="refreshScheduler()"
+          @add-column="(ev) => addGridColumn(ev)"
+          @remove-column="(ev) => removeGridColumn(ev)"
+        />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.planParameters.show" @click.stop="showModal.planParameters.show = false">
@@ -820,4 +803,16 @@ div[bgGreen] {
     }
   }
 }
-</i18n>
+</i18n>{
+      text: columnNames.value[i],
+      field: `erpParameters.${i}.value`,
+      minWidth: 100,
+      align: 'center',
+      type: ''
+    }{
+      text: columnNames.value[i],
+      field: `erpParameters.${i}.value`,
+      minWidth: 100,
+      align: 'center',
+      type: ''
+    }

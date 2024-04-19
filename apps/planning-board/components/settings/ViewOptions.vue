@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { LoadingSpinner } from 'ui'
-
 const emit = defineEmits(['updateScheduler'])
+
 const { t } = useI18n()
 const q = useQuasar()
+
 const definitions = ref()
 const plannedDefinitions = ref()
 const unplannedDefinitions = ref()
 const currentMachine = ref()
+
 const { data: machines } = useFetch('/api/machineList')
+
 async function getErpParameters(machineId: number) {
   currentMachine.value = machineId
   const res = await $fetch('/api/settings/erpParameters/erpParameters', {
@@ -41,6 +43,7 @@ async function onPlannedCtx(row: any) {
   plannedDefinitions.value.push(newParam)
   await addParameter(newParam.paramId, newParam.owner, newParam.machineId)
 }
+
 async function deleteParameter(paramId: number, owner: number, machineId: number) {
   q.dialog({
     title: 'Are you sure to delete this parameter?',

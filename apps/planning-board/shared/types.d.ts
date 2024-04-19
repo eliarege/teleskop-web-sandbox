@@ -64,11 +64,8 @@ export interface UnplannedEventsRaw {
   programCount: number
   plannedStartTime: string
   theoreticalDuration: number
-  fabricWeight?: number
   note: string
-  erpFieldName?: string
-  batchParameterId?: number
-  value?: string
+  erpParameters: Record<string, string>
 }
 
 export interface UnplannedEvents extends UnplannedEventsRaw {

@@ -8,6 +8,7 @@ import {
   deleteNote,
   getBatchNotes,
   getBatchProperties,
+  getColumnData,
   getDistinctErpParameters,
   getErpParameters,
   getEventTooltipParams,
@@ -16,6 +17,7 @@ import {
   getPtStatus,
   getRecipe,
   getTheoreticalDuration,
+  getUnplannedColumns,
   getUnplannedEvents,
   isTaskValid,
   pinEvent,
@@ -23,6 +25,7 @@ import {
   scheduleEvents,
   unpinEvent,
   updateBatchNote,
+  updateUnplannedColumns,
 } from './queries'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
@@ -43,7 +46,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request, reply) => {
       try {
         const unplannedEvents = await getUnplannedEvents()
-        return compressJson(unplannedEvents)
+        return unplannedEvents
       } catch (err) {
         fastify.log.error(`An error occured while fetching unplanned events: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching unplanned events: ${err}` })
@@ -111,6 +114,28 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching erp parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching erp parameters: ${err}` })
+      }
+    },
+  )
+  fastify.get(
+    '/planning_board/columns/unplanned_columns',
+    async (request, reply) => {
+      try {
+        return await getUnplannedColumns()
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching columns: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching columns: ${err}` })
+      }
+    },
+  )
+  fastify.get<{ Querystring: { planKey?: number } }>(
+    '/planning_board/columns/column_data',
+    async (request, reply) => {
+      try {
+        return await getColumnData(request.query.planKey)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching column data: ${err}`)
+        return reply.code(500).send({ error: `An error occured while column data: ${err}` })
       }
     },
   )
@@ -239,6 +264,18 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while scheduling events: ${err}`)
         return reply.code(500).send({ error: `An error occured while scheduling events: ${err}` })
+      }
+    },
+  )
+  fastify.put<{ Body: { id: number, visible: boolean } }>(
+    '/planning_board/columns/unplanned_columns',
+    async (request, reply) => {
+      try {
+        const { id, visible } = request.body
+        await updateUnplannedColumns(id, visible)
+      } catch (err) {
+        fastify.log.error(`An error occured while updating columns: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating columns: ${err}` })
       }
     },
   )

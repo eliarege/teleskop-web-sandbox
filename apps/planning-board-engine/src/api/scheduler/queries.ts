@@ -19,21 +19,20 @@ export async function getUnplannedEvents() {
       programCount: 'P.PRGCOUNT',
       programList: 'P.PROGRAMNOLIST',
       plannedStartTime: 'P.PLANNEDSTARTTIME',
-      fabricWeight: 'R.VALUE',
       note: 'P.NOTE',
-      erpFieldName: 'D.ERPFIELDNAME',
-      batchParameterId: 'R.BATCHPARAMETERID',
       theoreticalDuration: 'P.TheoricalDuration',
       isStopped: 'P.ISSTOPPED',
       color: 'P.Color',
+      erpParameters: knex.raw(`(
+        SELECT v.parameterName as 'paramName', r.VALUE as 'value'
+        FROM DYBFBATCHPLANPARAMETERS r
+        LEFT JOIN PTCOLUMNS v ON v.parameterId = r.BATCHPARAMETERID
+        WHERE r.PLANKEY = P.PLANKEY
+        AND v.visible = 1
+        FOR JSON PATH
+      )`),
     })
     .leftJoin('dbo.PTBATCHPLANQUEUE as Q', 'Q.PLANKEY', 'P.PLANKEY')
-    .leftJoin('dbo.DYBFBATCHPLANPARAMETERS as R', (builder) => {
-      builder.on('R.PLANKEY', 'P.PLANKEY').andOn('R.PARAMSTRING', '=', knex.raw('\'Kilo\''))
-    })
-    .leftJoin('dbo.BFERPPARAMETERDEFINITIONS as D', (builder) => {
-      builder.on('D.MACHINEID', 'P.MACHINEIDLIST').andOn('D.PARAMID', 'R.BATCHPARAMETERID')
-    })
     .where('Q.PLANKEY', null)
     .andWhere('P.ISSTARTED', 0)
     .andWhere((builder) => {
@@ -43,9 +42,18 @@ export async function getUnplannedEvents() {
       builder.whereNull('P.ISDELETESENDTOMANUNITES').orWhere('P.ISDELETESENDTOMANUNITES', 0)
     })
     .andWhere('P.LASTFORJOBORDER', 1)
+    .andWhere((builder) => {
+      builder.where('P.RECORDTIME', '>=', knex.raw(`DATEADD(month, -1, '2023-07-18')`))
+    })
     .orderBy('P.RECORDTIME', 'desc')
-  return events.filter(ev => ev.theoreticalDuration > 0)
+
+  return events.map(ev => ({
+    ...ev,
+    theoreticalDuration: ev.theoreticalDuration === 0 ? 28800 : ev.theoreticalDuration,
+    erpParameters: Object.fromEntries(JSON.parse(ev.erpParameters).map(a => [a.paramName, a.value])),
+  }))
 }
+
 export async function getTheoreticalDuration(planKey: number) {
   return await knex.raw(`
   SELECT b.MACHINEID as machineId ,SUM(B.DURATION) as theoreticalDuration
@@ -284,9 +292,40 @@ export async function getErpParameters(machineId: number) {
     .groupBy('p.OWNER', 'p.PARAMID', 'd.PARAMNAME', 'p.MACHINEID')
   return { definitions, plannedDefinitions, unplannedDefinitions }
 }
+export async function getUnplannedColumns() {
+  return await knex('PTCOLUMNS').select('*')
+}
+export async function getColumnData(planKey?: number) {
+  if (planKey) {
+    return await knex({ p: 'PTCOLUMNS' })
+      .leftJoin(
+        knex.select('*').from('DYBFBATCHPLANPARAMETERS').where('PLANKEY', planKey).as('d'),
+        'p.parameterId',
+        'd.BATCHPARAMETERID',
+      )
+      .select({
+        value: 'd.VALUE',
+        parameterId: 'p.parameterId',
+      })
+      .where('p.visible', true)
+  } else {
+    return await knex({ p: 'PTCOLUMNS' })
+      .leftJoin(
+        knex.select('*').from('DYBFBATCHPLANPARAMETERS').as('d'),
+        'p.parameterId',
+        'd.BATCHPARAMETERID',
+      )
+      .select({
+        planKey: 'd.PLANKEY',
+        value: 'd.VALUE',
+        parameterId: 'p.parameterId',
+      })
+      .where('p.visible', true)
+  }
+}
 export async function getDistinctErpParameters() {
   return await knex({ b: 'BFERPPARAMETERDEFINITIONS' })
-    .select({ paramName: 'b.PARAMNAME' })
+    .select({ paramName: 'b.PARAMNAME', paramId: 'b.PARAMID' })
     .distinct()
 }
 export async function getEventTooltipParams(planKey: number, machineId: number) {
@@ -406,6 +445,13 @@ export async function updateSchedulerEvents(body: { planKey: number, queueNumber
     }
   })
 }
+export async function updateUnplannedColumns(id: number, visible: boolean) {
+  await knex.transaction(async (trx) => {
+    await trx('PTCOLUMNS').update({
+      visible,
+    }).where('id', '=', id)
+  })
+}
 export async function scheduleEvents(body: { planKey: number, queueNumber: number, machineId: number, plannedStartTime: string } []) {
   await knex.transaction(async (trx) => {
     const machineIdList = new Set(body.map(a => a.machineId))
@@ -414,7 +460,6 @@ export async function scheduleEvents(body: { planKey: number, queueNumber: numbe
     await trx('PTBATCHPLANQUEUE').whereIn('PLANKEY', [...planKeyList]).del('PLANKEY')
     for (const ev of body) {
       const theoreticalDuration = (await getTheoreticalDuration(ev.planKey)).find(a => a.machineId === ev.machineId)?.theoreticalDuration || 0
-      console.log(theoreticalDuration)
 
       await trx('PTBATCHPLANQUEUE').where('PLANKEY', '=', ev.planKey).insert({
         PLANKEY: ev.planKey,

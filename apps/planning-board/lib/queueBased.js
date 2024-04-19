@@ -680,7 +680,6 @@ export class QueueUnplannedGrid extends Grid {
         stripe: true,
         sort: 'name',
       },
-
       rowHeight: 50,
       disableGridRowModelWarning: true,
       transitionDuration: 0,

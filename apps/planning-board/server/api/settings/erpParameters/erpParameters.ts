@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   const { machineId, distinct } = getQuery(event)
   const url = `${config.planningEngineUrl}/planning_board/settings/erp_parameters`
   if (distinct) {
-    return await $fetch<{ paramName: string }[]>(url, {
+    return await $fetch<{ paramName: string, paramId: number }[]>(url, {
       query: { distinct },
     })
   } else if (machineId) {

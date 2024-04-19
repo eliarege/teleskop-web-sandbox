@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { matDisplaySettings, matPreview } from '@quasar/extras/material-icons'
 
+const emit = defineEmits(['updateScheduler', 'addColumn', 'removeColumn'])
 const { t } = useI18n()
 const splitterModel = ref('view')
 </script>
@@ -33,7 +34,10 @@ const splitterModel = ref('view')
         <SettingsViewOptions />
       </q-tab-panel>
       <q-tab-panel name="unplannedOptions">
-        <SettingsUnplannedOptions />
+        <SettingsUnplannedOptions
+          @add-column="(ev) => emit('addColumn', ev)"
+          @remove-column="(ev) => emit('removeColumn', ev)"
+        />
       </q-tab-panel>
     </q-tab-panels>
   </div>

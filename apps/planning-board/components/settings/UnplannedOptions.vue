@@ -1,26 +1,38 @@
 <script setup lang="ts">
 import { matChevronLeft, matChevronRight } from '@quasar/extras/material-icons'
 
-const { data: distinctErpParameters } = useFetch<{ paramName: string }[]>('/api/settings/erpParameters/erpParameters', {
-  query: { distinct: true },
-})
+const emit = defineEmits(['addColumn', 'removeColumn'])
+const { data: unplannedColumns } = useFetch('/api/unplannedColumns')
+
 const selected = ref()
-const unplannedParameters = reactive([] as { paramName: string }[])
+
+const sort = computed(() => unplannedColumns.value?.sort((a, b) => a.id > b.id ? 1 : -1))
+const visibleColumns = computed(() => sort.value?.filter(a => a.visible === true))
+const unvisibleColumns = computed(() => sort.value?.filter(a => a.visible !== true))
 
 function addParameter() {
-  if (distinctErpParameters.value) {
-    if (!unplannedParameters.includes(selected.value)) {
-      const index = distinctErpParameters.value.indexOf(selected.value)
-      distinctErpParameters.value.splice(index, 1)
-      unplannedParameters.push(selected.value)
-    }
+  if (sort.value) {
+    const index = sort.value.indexOf(selected.value)
+    sort.value[index].visible = true
+    $fetch('/api/unplannedColumns', {
+      method: 'PUT',
+      body: { id: selected.value.id, visible: true },
+    })
+    emit('addColumn', selected.value)
+    selected.value = sort.value[index + 1]
   }
 }
+
 function removeParameter() {
-  const index = unplannedParameters.indexOf(selected.value)
-  if (index !== -1) {
-    distinctErpParameters.value?.push(selected.value)
-    unplannedParameters.splice(index, 1)
+  if (sort.value) {
+    const index = sort.value.indexOf(selected.value)
+    sort.value[index].visible = false
+    $fetch('/api/unplannedColumns', {
+      method: 'PUT',
+      body: { id: selected.value.id, visible: false },
+    })
+    emit('removeColumn', selected.value)
+    selected.value = sort.value[index + 1]
   }
 }
 </script>
@@ -29,37 +41,39 @@ function removeParameter() {
   <div class="h-80vh unplanned-wrapper">
     <q-list dense bordered separator class="max-h-80vh overflow-auto">
       <q-item
-        v-for="(item, idx) in distinctErpParameters"
+        v-for="(item, idx) in unvisibleColumns"
         :key="idx"
         v-ripple
         tabindex="0"
         clickable
-        class="focus:(bg-primary text-white)"
-        :active="selected === item"
-        active-class="bg-primary text-white"
+        :manual-focus="true"
+        :focused="selected === item"
         @click="selected = item"
+        @focus="selected = item"
       >
         <q-item-section>
-          {{ item.paramName }}
+          {{ item.parameterName }}
         </q-item-section>
       </q-item>
     </q-list>
     <div class="flex-center flex-col gap-10 w-full h-full">
-      <q-btn color="primary" :icon-right="matChevronRight" @click="addParameter" />
-      <q-btn color="primary" :icon="matChevronLeft" @click="removeParameter()" />
+      <q-btn :disabled="visibleColumns?.includes(selected)" color="primary" :icon-right="matChevronRight" @click="addParameter()" />
+      <q-btn :disabled="unvisibleColumns?.includes(selected)" color="primary" :icon="matChevronLeft" @click="removeParameter()" />
     </div>
     <div>
       <q-list dense bordered separator class="max-h-80vh overflow-auto h-full">
         <q-item
-          v-for="(item, idy) in unplannedParameters" :key="idy"
+          v-for="(item, idy) in visibleColumns" :key="idy"
           v-ripple
           clickable
-          :active="selected === item"
-          active-class="bg-primary text-white"
+          tabindex="0"
+          :manual-focus="true"
+          :focused="selected === item"
           @click="selected = item"
+          @focus="selected = item"
         >
           <q-item-section>
-            {{ item.paramName }}
+            {{ item.parameterName }}
           </q-item-section>
         </q-item>
       </q-list>

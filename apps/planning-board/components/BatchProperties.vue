@@ -8,12 +8,14 @@ const colors = reactive({
   idleBackGround: '#D1D5DB',
   itemBackGround: '#000000',
 })
+
 const { data: machine } = await useFetch('/api/machineList', {
   query: { machineId: props.machineId },
 })
 const { data: batchProperties } = await useFetch('/api/batchProperties', {
   query: { machineId: props.machineId, planKey: props.planKey },
 })
+
 const time = computed(() => {
   if (batchProperties.value?.times.startTime) {
     const startTime = batchProperties.value?.times.startTime
