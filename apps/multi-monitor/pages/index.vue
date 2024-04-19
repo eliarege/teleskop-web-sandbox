@@ -5,8 +5,9 @@ import type { MachineData } from '~/shared/types'
 const { t } = useI18n()
 const store = useDataStore()
 
-useIntervalFn(() => {
-  store.fetchMachineData()
+const { start: scheduleNext } = useTimeoutFn(async () => {
+  await store.fetchMachineData()
+  scheduleNext()
 }, 5000)
 
 const machineData = computed(() => {
