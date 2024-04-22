@@ -87,10 +87,10 @@ export async function fetchDMSMachine(id: number): Promise<Machine | null> {
     return response || null
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
-      if (!config.teleskopUser)
-        logger.warn('TELESKOP_USER is not defined')
-      if (!config.teleskopPassword)
-        logger.warn('TELESKOP_PASSWORD is not defined')
+      if (!config.dmsUser)
+        logger.warn('DMS_USER is not defined')
+      if (!config.dmsPassword)
+        logger.warn('DMS_PASSWORD is not defined')
     }
     logger.error((err as NodeJS.ErrnoException).message)
     return null
