@@ -8,8 +8,8 @@ const q = useQuasar()
 const { t } = useI18n()
 const { notifySuccess, notifyFail } = useNotify()
 const dataStore = useDataStore()
-
-const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials')
+const filters = ref([])
+const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials/filtered', { method: 'POST', body: { filters: filters.value } })
 const dispensers = await dataStore.getDispensers()
 const searchFilter = ref('')
 const groupOptions: MaterialGroup[] = [{
@@ -22,36 +22,48 @@ const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 3,
   materialGroupName: t('materialTypes.3'),
 }]
-const columns: (QTableColumn<Material>)[] = [
+const columns = ref([
   {
     name: 'materialCode',
     label: t('materialFields.Code'),
     field: 'materialCode',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'materialName',
     label: t('materialFields.Name'),
     field: 'materialName',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'materialGroupNo',
     label: t('materialFields.Group'),
     field: 'materialGroupNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: groupOptions,
+    optionLabel: 'materialGroupName',
+    optionValue: 'materialGroupNo',
   },
   {
     name: 'connectedDispensers',
     label: t('materialFields.ConnectedDispensers'),
     field: 'connectedDispensers',
     align: 'left',
+    filterable: true,
+    filterType: 'multiselect',
+    selectionOptions: dispensers,
+    optionLabel: 'dispenserName',
+    optionValue: 'dispenserId',
   },
-]
-async function onRowClick(_event: Event, row: any) {
+])
+
+async function onRowClick(row: any) {
   const selectedMaterial = await $fetch(`/api/materials/${row.materialCode}`)
   q.dialog({
     component: MaterialInfoDialog,
@@ -95,6 +107,9 @@ function customFilter(rows: Material[], terms: string) {
     return materialCodeMatches || materialNameMatches || materialGroupMatches || connectedDispensersMatches
   })
 }
+async function handleFilterSlotsUpdate(updatedFilters: any) {
+  filters.value = updatedFilters
+}
 const pagination = ref({ rowsPerPage: 50 })
 </script>
 
@@ -132,34 +147,37 @@ const pagination = ref({ rowsPerPage: 50 })
       @click="refreshMaterials"
     />
   </div>
-  <QTable
-    flat
-    bordered
-    table-header-class="table-header"
-    table-class="max-h-150"
-    separator="cell"
-    :filter="searchFilter"
-    :filter-method="customFilter"
-    :pagination
-    :columns
+  <FilterableTable
     :rows="materials"
-    row-key="name"
-    @row-click="onRowClick"
+    :columns
+    class="h-160 custom-filterable-table"
+    :is-virtual-scroll="false"
+    :pagination
+    @update-filter-slots="handleFilterSlotsUpdate"
   >
-    <template #body-cell="props">
-      <QTd
+    <template #custombody="props">
+      <QTr
         :props="props"
+        style="cursor: pointer;"
+        @click="onRowClick(props.row)"
       >
-        <span v-if="props.col.field === 'materialGroupNo'">
-          {{ groupOptions.at(props.value - 1)?.materialGroupName }}
-        </span>
-        <span v-else-if="props.col.field === 'connectedDispensers'">
-          {{ props.row.connectedDispensers?.map((connection: any) => connection.dispenserName).filter(Boolean).join(', ') || '-' }}
-        </span>
-        <span v-else>
-          {{ props.value }}
-        </span>
-      </QTd>
+        <QTd
+          v-for="col in props.cols"
+
+          :key="col.name"
+          :props="props"
+        >
+          <span v-if="col.field === 'materialGroupNo'">
+            {{ groupOptions.at(props.row[col.field] - 1)?.materialGroupName }}
+          </span>
+          <span v-else-if="col.field === 'connectedDispensers'">
+            {{ props.row.connectedDispensers?.map((connection: any) => connection.dispenserName).filter(Boolean).join(', ') || '-' }}
+          </span>
+          <span v-else>
+            {{ props.row[col.field] }}
+          </span>
+        </QTd>
+      </qtr>
     </template>
-  </QTable>
+  </FilterableTable>
 </template>
