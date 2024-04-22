@@ -23,8 +23,8 @@
     "nuxt": "^3.11.2",
     "nuxt-base": "workspace:*",
     "unocss-config": "workspace:*",
-    "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue": "^3.4.24",
+    "vue-router": "^4.3.2"
   },
   "eliar": {
     "type": "nuxt",

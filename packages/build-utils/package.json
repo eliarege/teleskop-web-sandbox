@@ -10,7 +10,7 @@
     "@vercel/nft": "^0.26.4",
     "consola": "^3.2.3",
     "mlly": "^1.6.1",
-    "pkg-types": "^1.0.3",
+    "pkg-types": "^1.1.0",
     "semver": "^7.6.0"
   },
   "devDependencies": {

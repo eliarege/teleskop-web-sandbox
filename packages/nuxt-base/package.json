@@ -11,27 +11,27 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@element-plus/nuxt": "^1.0.8",
+    "@element-plus/nuxt": "^1.0.9",
     "@nuxtjs/i18n": "^8.3.0",
     "@pinia/nuxt": "^0.5.1",
     "@quasar/extras": "^1.16.11",
-    "@unocss/nuxt": "^0.59.2",
-    "@unocss/reset": "^0.59.2",
+    "@unocss/nuxt": "^0.59.4",
+    "@unocss/reset": "^0.59.4",
     "@vueuse/core": "^10.9.0",
     "@vueuse/nuxt": "^10.9.0",
     "element-plus": "2.6.3",
     "h3-keycloak-adapter": "workspace:*",
-    "keycloak-js": "^24.0.2",
+    "keycloak-js": "^24.0.3",
     "nuxt-icon": "^0.6.10",
     "nuxt-quasar-ui": "^2.0.8",
     "pinia": "^2.1.7",
-    "quasar": "^2.15.2",
-    "unocss": "^0.59.2"
+    "quasar": "^2.15.3",
+    "unocss": "^0.59.4"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
     "nuxt": "^3.11.2",
-    "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue": "^3.4.24",
+    "vue-router": "^4.3.2"
   }
 }

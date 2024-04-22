@@ -18,10 +18,10 @@
   "dependencies": {
     "knex": "^3.1.0",
     "pg": "^8.11.5",
-    "simple-keyboard": "^3.7.76",
+    "simple-keyboard": "^3.7.77",
     "tedious": "^18.1.0",
     "ui": "workspace:*",
-    "zod": "^3.22.4"
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
@@ -30,8 +30,8 @@
     "nuxt-base": "workspace:*",
     "nuxt-ui": "workspace:*",
     "unocss-config": "workspace:*",
-    "vue": "^3.4.23",
-    "vue-router": "^4.3.0"
+    "vue": "^3.4.24",
+    "vue-router": "^4.3.2"
   },
   "eliar": {
     "type": "nuxt",

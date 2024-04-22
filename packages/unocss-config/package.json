@@ -6,6 +6,6 @@
   "license": "UNLICENSED",
   "main": "./uno.config.ts",
   "devDependencies": {
-    "unocss": "^0.59.2"
+    "unocss": "^0.59.4"
   }
 }

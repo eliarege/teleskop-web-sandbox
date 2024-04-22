@@ -23,7 +23,7 @@
     "lodash-es": "^4.17.21",
     "mathjs": "^12.4.1",
     "mssql": "^10.0.2",
-    "soap": "^1.0.0",
+    "soap": "^1.0.1",
     "sortablejs": "^1.15.2",
     "sortablejs-vue3": "^1.2.11",
     "uuid": "^9.0.1"
@@ -38,8 +38,8 @@
     "ui": "workspace:*",
     "unocss-config": "workspace:*",
     "utils": "workspace:*",
-    "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue": "^3.4.24",
+    "vue-router": "^4.3.2"
   },
   "eliar": {
     "type": "nuxt",
