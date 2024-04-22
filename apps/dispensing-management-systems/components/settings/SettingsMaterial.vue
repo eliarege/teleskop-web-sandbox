@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
 import MaterialInfoDialog from '../material/MaterialInfoDialog.vue'
-import type { Material, MaterialGroup } from '~/shared/types'
+import type { Dispenser, Material, MaterialGroup } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
 
 const q = useQuasar()
@@ -97,16 +97,26 @@ function addNewMaterial() {
   )
 }
 async function handleFilterSlotsUpdate(updatedFilters: any) {
-  const connectedDispensers = []
+  const connectedDispensers = new Set()
   const otherFilters = updatedFilters.filter((filter: any) => {
     if (filter.field === 'connectedDispensers') {
-      connectedDispensers.push(filter)
+      filter.value.option.forEach((dispenser: Dispenser) => {
+        connectedDispensers.add(dispenser.dispenserId)
+      })
       return false
     }
     return true
   })
   filters.value = otherFilters
-  materials.value = await $fetch('/api/materials/filtered', { method: 'POST', body: { filters: filters.value } })
+  materials.value = (await $fetch('/api/materials/filtered', { method: 'POST', body: { filters: filters.value } }))
+    .filter((row: any) => {
+      const connectedDispensersArray = Array.from(connectedDispensers)
+      return connectedDispensersArray.every((dispenser: any) => {
+        return row.connectedDispensers.some((connectedDispenser: any) => {
+          return connectedDispenser.dispenserId === dispenser
+        })
+      })
+    })
 }
 const pagination = ref({ rowsPerPage: 50 })
 </script>
