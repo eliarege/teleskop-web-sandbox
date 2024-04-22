@@ -202,7 +202,7 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
         hsNextState = proxy.next({ type: 'client', data }).value as HandshakeState
         // Solve authentication challenge
         if (prevState === HandshakeState.AuthenticationClient && hsChallenge) {
-          const cipher = DESECBCipher.importKey(Buffer.from(TBB_VNC_PASSWORD))
+          const cipher = DESECBCipher.importKey(Buffer.from(machine.password ? machine.password : TBB_VNC_PASSWORD))
           const result = cipher.encrypt(hsChallenge)
           server.write(result || data)
         } else {

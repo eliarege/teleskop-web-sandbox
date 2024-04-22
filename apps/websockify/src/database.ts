@@ -8,6 +8,7 @@ export interface Machine {
   name: string
   host: string
   port: number
+  password?: string
 }
 
 const logger = parentLogger.child({ name: 'database' })
@@ -74,11 +75,11 @@ export async function fetchTeleskopMachine(id: number): Promise<Machine | null> 
 export async function fetchDMSMachine(id: number): Promise<Machine | null> {
   try {
     const response = await dms('DISPENSER')
-
       .select({
         name: 'dispenser_name',
         host: 'ip_address',
         port: 'vnc_port',
+        password: 'vnc_password',
       })
       .where({
         dispenser_id: id,
