@@ -55,9 +55,9 @@ export interface Dispenser {
   dispenserType: number | null
   dispenserBrandId: number
   dispenserBrandName: string
-  vncUser: string
-  vncPassword: string
-  vncPort: number
+  vncUser: string | null
+  vncPassword: string | null
+  vncPort: number | null
   lastConsumptionControl?: string | null
   protocol: string
   protocolFields?: unknown
