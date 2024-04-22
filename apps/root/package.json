@@ -15,8 +15,8 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "ejs": "^3.1.9",
-    "express": "^4.18.2"
+    "ejs": "^3.1.10",
+    "express": "^4.19.2"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

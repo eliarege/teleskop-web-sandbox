@@ -17,24 +17,24 @@
   },
   "dependencies": {
     "@bryntum/schedulerpro-trial": "workspace:*",
-    "d3": "^7.8.5",
-    "date-fns": "^3.0.4",
-    "knex": "^3.0.1",
-    "mssql": "^10.0.1",
+    "d3": "^7.9.0",
+    "date-fns": "^3.6.0",
+    "knex": "^3.1.0",
+    "mssql": "^10.0.2",
     "nuxt-ui": "workspace:*",
-    "socket.io-client": "^4.7.2",
-    "tedious": "^16.6.1",
+    "socket.io-client": "^4.7.5",
+    "tedious": "^18.1.0",
     "ui": "workspace:*",
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "@types/d3": "^7.4.3",
-    "nuxt": "^3.9.0",
+    "nuxt": "^3.11.2",
     "nuxt-base": "workspace:*",
     "rollup-plugin-string": "workspace:*",
     "unocss-config": "workspace:*",
-    "vue": "^3.4.0",
-    "vue-router": "^4.2.5"
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
   },
   "eliar": {
     "type": "nuxt",

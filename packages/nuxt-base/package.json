@@ -11,27 +11,27 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@element-plus/nuxt": "^1.0.7",
-    "@nuxtjs/i18n": "^8.0.0",
+    "@element-plus/nuxt": "^1.0.8",
+    "@nuxtjs/i18n": "^8.3.0",
     "@pinia/nuxt": "^0.5.1",
-    "@quasar/extras": "^1.16.9",
-    "@unocss/nuxt": "^0.57.7",
-    "@unocss/reset": "^0.57.7",
-    "@vueuse/core": "^10.6.1",
-    "@vueuse/nuxt": "^10.6.1",
-    "element-plus": "^2.4.3",
+    "@quasar/extras": "^1.16.11",
+    "@unocss/nuxt": "^0.59.2",
+    "@unocss/reset": "^0.59.2",
+    "@vueuse/core": "^10.9.0",
+    "@vueuse/nuxt": "^10.9.0",
+    "element-plus": "2.6.3",
     "h3-keycloak-adapter": "workspace:*",
-    "keycloak-js": "^23.0.1",
-    "nuxt-icon": "^0.6.8",
-    "nuxt-quasar-ui": "^2.0.6",
+    "keycloak-js": "^24.0.2",
+    "nuxt-icon": "^0.6.10",
+    "nuxt-quasar-ui": "^2.0.8",
     "pinia": "^2.1.7",
-    "quasar": "^2.14.1",
-    "unocss": "^0.57.7"
+    "quasar": "^2.15.2",
+    "unocss": "^0.59.2"
   },
   "devDependencies": {
-    "@types/node": "^20.11.6",
-    "nuxt": "^3.9.0",
-    "vue": "^3.4.0",
-    "vue-router": "^4.2.5"
+    "@types/node": "^20.12.7",
+    "nuxt": "^3.11.2",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
   }
 }

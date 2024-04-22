@@ -13,21 +13,21 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "async-mutex": "^0.4.0",
-    "knex": "^3.0.1",
-    "mssql": "^10.0.1",
+    "async-mutex": "^0.5.0",
+    "knex": "^3.1.0",
+    "mssql": "^10.0.2",
     "samba-client": "^7.2.0"
   },
   "devDependencies": {
-    "@types/mssql": "^9.1.4",
-    "@types/node": "^20.11.6",
-    "nuxt": "^3.9.0",
+    "@types/mssql": "^9.1.5",
+    "@types/node": "^20.12.7",
+    "nuxt": "^3.11.2",
     "nuxt-base": "workspace:*",
     "nuxt-ui": "workspace:*",
     "ui": "workspace:*",
     "unocss-config": "workspace:*",
-    "vue": "^3.4.0",
-    "vue-router": "^4.2.5"
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
   },
   "eliar": {
     "type": "nuxt",

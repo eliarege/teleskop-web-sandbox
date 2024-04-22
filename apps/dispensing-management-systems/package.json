@@ -17,21 +17,21 @@
   },
   "dependencies": {
     "knex": "^3.1.0",
-    "pg": "^8.11.3",
-    "simple-keyboard": "^3.7.36",
-    "tedious": "^16.6.1",
+    "pg": "^8.11.5",
+    "simple-keyboard": "^3.7.76",
+    "tedious": "^18.1.0",
     "ui": "workspace:*",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/node": "^20.11.6",
-    "@types/pg": "^8.10.9",
-    "nuxt": "^3.9.0",
+    "@types/node": "^20.12.7",
+    "@types/pg": "^8.11.5",
+    "nuxt": "^3.11.2",
     "nuxt-base": "workspace:*",
     "nuxt-ui": "workspace:*",
     "unocss-config": "workspace:*",
-    "vue": "^3.4.0",
-    "vue-router": "^4.2.5"
+    "vue": "^3.4.23",
+    "vue-router": "^4.3.0"
   },
   "eliar": {
     "type": "nuxt",

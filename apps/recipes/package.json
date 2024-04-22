@@ -19,12 +19,12 @@
     "ui": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.11.6",
-    "nuxt": "^3.9.0",
+    "@types/node": "^20.12.7",
+    "nuxt": "^3.11.2",
     "nuxt-base": "workspace:*",
     "unocss-config": "workspace:*",
-    "vue": "^3.4.0",
-    "vue-router": "^4.2.5"
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
   },
   "eliar": {
     "type": "nuxt",

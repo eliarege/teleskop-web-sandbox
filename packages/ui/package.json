@@ -11,11 +11,11 @@
   "scripts": {},
   "dependencies": {
     "@novnc/novnc": "^1.4.0",
-    "d3": "^7.8.5"
+    "d3": "^7.9.0"
   },
   "devDependencies": {
     "@types/d3": "^7.4.3",
     "tsconfig": "workspace:*",
-    "vue": "^3.4.0"
+    "vue": "^3.4.21"
   }
 }
