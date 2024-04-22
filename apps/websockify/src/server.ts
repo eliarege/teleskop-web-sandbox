@@ -7,7 +7,7 @@ import type { WebSocket } from 'ws'
 import { WebSocketServer } from 'ws'
 import type { Logger } from 'pino'
 import type { Machine } from './database'
-import { fetchTeleskopMachine } from './database'
+import { fetchDMSMachine, fetchTeleskopMachine } from './database'
 import { getPathname, onExitSignal } from './utils'
 import { logger as parentLogger } from './logger'
 import { DESECBCipher } from './crypto/des'
@@ -29,6 +29,7 @@ const VNC_VIEW_ROLE = 'vnc-view'
 const VNC_INPUT_ROLE = 'vnc-input'
 
 const MACHINE_PATH_RE = /^\/\d+$/
+const DISPENSER_PATH_RE = /^\/dispenser\/\d+$/
 
 const kcAuth = initKcAuth()
 const logger = parentLogger.child({ name: 'server' })
@@ -114,12 +115,11 @@ wss.on('connection', async (client: WebSocketExt, request: IncomingMessage) => {
   if (process.env.NODE_ENV === 'production' || !config.targetHost) {
     if (!pathname || pathname === '/')
       return close('Expected machine id')
-    if (!MACHINE_PATH_RE.test(pathname))
+    const isDMS = DISPENSER_PATH_RE.test(pathname)
+    if (!MACHINE_PATH_RE.test(pathname) && !isDMS)
       return close('Invalid machine id')
-
-    const id = Number.parseInt(pathname.slice(1))
-    machine = await fetchTeleskopMachine(id)
-
+    const id = Number.parseInt(pathname.slice(isDMS ? 11 : 1))
+    machine = isDMS ? await fetchDMSMachine(id) : await fetchTeleskopMachine(id)
     if (!machine)
       return close(`Machine with id ${id} is not found`)
   } else {
