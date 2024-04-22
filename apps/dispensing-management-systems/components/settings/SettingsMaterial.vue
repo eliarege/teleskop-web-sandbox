@@ -11,7 +11,6 @@ const dataStore = useDataStore()
 const filters = ref([])
 const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials/filtered', { method: 'POST', body: { filters: filters.value } })
 const dispensers = await dataStore.getDispensers()
-const searchFilter = ref('')
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,
   materialGroupName: t('materialTypes.1'),
@@ -97,18 +96,17 @@ function addNewMaterial() {
   },
   )
 }
-function customFilter(rows: Material[], terms: string) {
-  terms = terms.toLowerCase()
-  return rows.filter((row) => {
-    const materialCodeMatches = row.materialCode.toLowerCase().includes(terms)
-    const materialNameMatches = row.materialName.toLowerCase().includes(terms)
-    const materialGroupMatches = String(groupOptions.at(row.materialGroupNo - 1)?.materialGroupName).toLowerCase().includes(terms)
-    const connectedDispensersMatches = row.connectedDispensers.some(dispenser => dispenser.dispenserName.toLowerCase().includes(terms))
-    return materialCodeMatches || materialNameMatches || materialGroupMatches || connectedDispensersMatches
-  })
-}
 async function handleFilterSlotsUpdate(updatedFilters: any) {
-  filters.value = updatedFilters
+  const connectedDispensers = []
+  const otherFilters = updatedFilters.filter((filter: any) => {
+    if (filter.field === 'connectedDispensers') {
+      connectedDispensers.push(filter)
+      return false
+    }
+    return true
+  })
+  filters.value = otherFilters
+  materials.value = await $fetch('/api/materials/filtered', { method: 'POST', body: { filters: filters.value } })
 }
 const pagination = ref({ rowsPerPage: 50 })
 </script>
@@ -120,15 +118,6 @@ const pagination = ref({ rowsPerPage: 50 })
   <QSeparator
     class="w-full mt-5 mb-5"
   />
-  <QInput
-    v-model="searchFilter"
-    :label="t('Search')"
-    class="ml-10 mr-10 mb-5"
-  >
-    <template #prepend>
-      <QIcon name="search" />
-    </template>
-  </QInput>
   <div class="flex-center mb-4">
     <QBtn
       :label="$t('AddNewMaterial')"
