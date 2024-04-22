@@ -1,3 +1,3 @@
-import { eliar } from '@eliarelektronik/eslint-config'
+import { workspaceEslintConfig } from 'eslint-config'
 
-export default eliar()
+export default workspaceEslintConfig
