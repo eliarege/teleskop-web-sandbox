@@ -326,9 +326,9 @@ async function pingAddress() {
                 use-chips
                 map-options
                 options-dense
-                option-value="dispenserId"
-                option-label="dispenserName"
-                :options="dataStore.dispensers?.filter(dispenser => dispenser.dispenserId !== editedDispenser.dispenserId)"
+                option-value="dispenserTypeId"
+                option-label="dispenserTypeName"
+                :options="dataStore.dispenserTypes?.filter(dispenser => dispenser.dispenserTypeId !== 5)"
               />
             </div>
             <div v-for="field in protocolFields" :key="field" class="row-item">
