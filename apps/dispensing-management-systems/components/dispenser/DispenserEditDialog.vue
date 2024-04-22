@@ -228,7 +228,7 @@ async function pingAddress() {
                 {{ t('dispenserFields.VncPort') }}
               </span>
               <QInput
-                v-model="editedDispenser.vncPort"
+                v-model.number="editedDispenser.vncPort"
                 class="item-input"
                 dense
                 filled
