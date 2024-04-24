@@ -45,7 +45,14 @@ async function pingAddress() {
 async function onConnectionCheck() {
   try {
     stateStore.isLoading = true
-    await $fetch('/api/teleskop/test-connection')
+    await $fetch('/api/teleskop/test-connection', { method: 'POST', body: { connection: {
+      client: teleskopSettings.value?.client,
+      user: teleskopSettings.value?.user,
+      password: teleskopSettings.value?.password,
+      host: teleskopSettings.value?.host,
+      port: teleskopSettings.value?.port,
+      database: teleskopSettings.value?.database,
+    } } })
     notifySuccess(t('Success'))
   } catch (e) {
     console.error(e)
@@ -120,7 +127,7 @@ async function onConnectionCheck() {
             <div class="row-item">
               {{ t('protocolParameters.dbPort') }}
               <QInput
-                v-model="teleskopSettings!.port"
+                v-model.number="teleskopSettings!.port"
                 class="input"
                 dense
                 filled
