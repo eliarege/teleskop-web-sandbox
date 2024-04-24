@@ -37,5 +37,13 @@ export function useSSE() {
     clients.forEach(client => broadcast(client, eventName, data))
   }
 
-  return { clients, addClient, removeClient, broadcast, broadcasts }
+  const send = (id: string, eventName: string, data: Record<string, any>) => {
+    const client = clients.find(c => c.id === id)
+    if (client) {
+      client.event.node.res.write(`event: ${eventName}\n`)
+      client.event.node.res.write(`data: ${JSON.stringify(data)}\n\n`)
+    }
+  }
+
+  return { clients, addClient, removeClient, broadcast, broadcasts , send }
 }

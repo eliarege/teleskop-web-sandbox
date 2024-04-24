@@ -8,10 +8,14 @@ import { DatabaseQueryError } from '~/server/error'
 const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
 
 export default defineEventHandler(async (event) => {
-  const { machineId } = getQuery(event)
+  const { machineId, id } = getQuery(event)
 
   const numMachineId = Number.parseInt(machineId as string)
   const sse = useSSE()
+  let client: {id: string, event: any} | undefined
+  if(id) {
+    client = sse.clients.find(c => c.id === id)
+  }
 
   if (!Number.isNaN(numMachineId)) {
     const ip = await knex('BFMACHINES')
@@ -72,20 +76,22 @@ export default defineEventHandler(async (event) => {
             { func: () => updateConsumption(numMachineId, tbb, trx), message: 'consumptions updated' },
           ]
 
+          if(client){
           for (const { func, message } of updateFunctions) {
             const res = await func()
             if (res) {
-              sse.broadcast(sse.clients[0], 'log', { message })
+              sse.broadcast(client, 'log', { message })
             }
           }
+          sse.broadcast(client, 'log', { message: 'project loaded successfully' })
+          }
 
-          sse.broadcast(sse.clients[0], 'log', { message: 'project loaded successfully' })
         })
       }, { timeout: 1000 })
     } catch (error: any) {
       console.error(error)
-      if (sseLoggingEnabled && error instanceof DatabaseQueryError) {
-        sse.broadcast(sse.clients[0], 'log', { type: 'error', message: `Error: ${error.message}` })
+      if (sseLoggingEnabled && error instanceof DatabaseQueryError && client) {
+        sse.broadcast(client, 'log', { type: 'error', message: `Error: ${error.message}` })
       }
       if (error.message.includes('Timeout')) {
         throw createError({ statusMessage: 'MACHINE_CONN_TIMEOUT', statusCode: 504 })
@@ -94,7 +100,8 @@ export default defineEventHandler(async (event) => {
       }
     }
   } else {
-    sse.broadcast(sse.clients[0], 'log', { type: 'error', message: 'Error: Invalid machineId parameter. Expected number.' })
+    if(client)
+    sse.broadcast(client, 'log', { type: 'error', message: 'Error: Invalid machineId parameter. Expected number.' })
     throw new TypeError('Invalid machineId parameter. Expected number.')
   }
 })

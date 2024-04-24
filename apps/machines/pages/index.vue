@@ -413,16 +413,25 @@ async function updateVersions() {
   await refresh()
 }
 
-const { event, data, close } = useEventSource('/api/sync/sse', ['log'], {
+const { event, data, close } = useEventSource('/api/sync/sse', ['log', 'uuid'], {
   autoReconnect: true,
 })
+
 onBeforeUnmount(() => {
   close()
 })
 
 const logs = ref<sseLog[]>([])
+const uuid = ref('')
+
 watch(data, (newData) => {
-  logs.value.push(JSON.parse(newData))
+  if (event.value === 'log' && newData) {
+    const parsedData = JSON.parse(newData)
+    logs.value.push(parsedData)
+  } else if (event.value === 'uuid' && newData) {
+    const parsedData = JSON.parse(newData)
+    uuid.value = parsedData.uuid
+  }
 })
 
 const { notifySuccess, notifyError } = useNotify()
@@ -443,6 +452,7 @@ async function loadProject() {
       retry: false,
       query: {
         machineId: selected.value.machineId,
+        id: uuid.value,
       },
     })
     notifySuccess(t('updateFinished'))
