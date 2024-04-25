@@ -3,20 +3,18 @@
 import type { DragHelperConfig, Grid, GridColumnConfig, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { DateHelper, Splitter, StringHelper, Toast } from '@bryntum/schedulerpro-trial'
 import { addDays, addSeconds } from 'date-fns'
-import { EliarModal } from 'ui'
+import { EliarModal, LoadingSpinner } from 'ui'
 import { useDocumentVisibility } from '@vueuse/core'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
 import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
-import type { UnplannedEvents } from '~/shared/types'
+import type { PtLocaleSettings, UnplannedEvents } from '~/shared/types'
 import { eventTooltip } from '~/composables/helper'
 
 const currentTime = useNow({ interval: 1000 })
 const { t } = useI18n()
-
 // TODO (BEFORE PRODUCTION): change start/end date!
 const startDate = ref('2022/01/01')
 const endDate = ref('2023/07/07')
-
 const schedulerDateModel = ref({
   from: startDate.value,
   to: endDate.value,
@@ -57,18 +55,18 @@ const showModal = reactive({
   settings: false,
 })
 
-const archiveDays = localStorage.getItem('pt-settings')
-
-const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
-const { data: machines, refresh: machineRefresh } = await useFetch('/api/machineList')
-const { data: events, refresh: plannedRefresh } = await useFetch('/api/queueBased/plannedEvents')
-const { data: archiveEvents } = await useFetch('/api/queueBased/archiveEvents', {
-  query: { archiveDays: JSON.parse(archiveDays || '0').archiveDays ?? 0 },
+const ptLocaleSettings: PtLocaleSettings = JSON.parse(localStorage.getItem('pt-settings'))
+const { data: unScheduledEvents, refresh: unScheduledRefresh, pending: unplannedPending } = await useFetch('/api/unplannedEvents')
+const { data: machines, refresh: machineRefresh, pending: machinePending } = await useFetch('/api/machineList')
+const { data: events, refresh: plannedRefresh, pending: plannedPending } = await useFetch('/api/queueBased/plannedEvents')
+const { data: archiveEvents, refresh: archiveRefreh, pending: archivePending } = await useFetch('/api/queueBased/archiveEvents', {
+  query: { archiveDays: ptLocaleSettings.archiveDays || '0' },
 })
 const modifiedEvents = computed(() => events.value?.map((ev: any) => {
+  const batchText = ptLocaleSettings?.plannedBatch?.batchText?.value
   return {
     id: ev.planKey,
-    name: ev.jobOrder,
+    name: ev[batchText] || '',
     resourceId: ev.machineId,
     resizable: false,
     draggable: !ev.isStarted && !ev.pinned,
@@ -77,10 +75,13 @@ const modifiedEvents = computed(() => events.value?.map((ev: any) => {
     ...ev,
   } as QueueBasedPlannedEvents
 }))
+
 const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
+  const completedBatchText = ptLocaleSettings?.completedBatch?.batchText?.value
+  const ongoingBatchText = ptLocaleSettings?.ongoingBatch?.batchText?.value
   return {
     id: ev.planKey,
-    name: ev.jobOrder,
+    name: ev.isRunning ? ev[ongoingBatchText] || '' : ev[completedBatchText] || '',
     resourceId: ev.machineId,
     resizable: false,
     draggable: !ev.isStarted,
@@ -90,7 +91,6 @@ const modifiedArchive = computed(() => archiveEvents.value?.map((ev: any) => {
     ...ev,
   } as QueueBasedArchiveEvents
 }))
-const mergedEvents = computed(() => modifiedEvents.value?.concat(modifiedArchive.value))
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((unp) => {
   return {
     ...unp,
@@ -101,6 +101,7 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((u
     constraintDate: new Date(),
   } as UnplannedEvents
 }))
+const mergedEvents = computed(() => modifiedEvents.value?.concat(modifiedArchive.value))
 
 let scheduler: SchedulerPro
 let grid: Grid
@@ -118,10 +119,14 @@ async function myInterval(delay: number) {
 await myInterval(60000)
 
 async function refreshScheduler() {
-  await plannedRefresh()
-  await unScheduledRefresh()
-  await machineRefresh()
+  await Promise.all([
+    unScheduledRefresh(),
+    plannedRefresh(),
+    archiveRefreh(),
+    machineRefresh(),
+  ])
   scheduler.refreshRows()
+  console.log('REFRESH')
 }
 watch(mergedEvents, (newVal: QueueBasedPlannedEvents[]) => {
   scheduler.events = newVal
@@ -138,7 +143,7 @@ function initialGridColumns() {
       field: `erpParameters.${name}`,
       text: name,
       width: 100,
-      align:'center'
+      align: 'center',
     })
   }
   // @ts-expect-error missing type
@@ -638,7 +643,7 @@ onMounted(async () => {
       autoLoad: true,
     },
   } as Partial<GridConfig>)
-initialGridColumns()
+  initialGridColumns()
   new QueueDrag({
     grid: unplannedGrid,
     schedule,
@@ -649,6 +654,7 @@ initialGridColumns()
 </script>
 
 <template>
+  <!-- <LoadingSpinner v-if="unplannedPending || machinePending || plannedPending || archivePending" /> -->
   <div>
     <EliarModal v-if="showModal.properties.show" @click.stop="showModal.properties.show = false">
       <template #default>
@@ -710,7 +716,7 @@ initialGridColumns()
     </EliarModal>
     <EliarModal v-if="showModal.notes.show" @click.stop="showModal.notes.show = false">
       <template #default>
-        <BatchNotes :job-order="showModal.notes.unit.name" @update-scheduler="plannedRefresh()" />
+        <BatchNotes :job-order="showModal.notes.unit.name" @update-scheduler="refreshScheduler()" />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.vnc.show" @click.stop="showModal.vnc.show = false">
@@ -718,7 +724,6 @@ initialGridColumns()
         <MachineVnc :current-machine="showModal.vnc.currentMachine" />
       </template>
     </EliarModal>
-    <EliarModal v-if="showModal.rule" @click.stop="showModal.rule = false" />
     <div class="w-full h-screen">
       <div id="main" class="w-full h-full" />
     </div>

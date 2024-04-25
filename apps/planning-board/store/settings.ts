@@ -22,11 +22,6 @@ export const useSettingStore = defineStore('settings', () => {
       actualBatchFabricColor: '',
       deviationBatchFabricColor: '',
     },
-    batchText: [
-      { id: 1, label: t('pinia.job-order'), value: 'jobOrder' },
-      { id: 2, label: t('pinia.plan-key'), value: 'planKey' },
-      { id: 3, label: t('pinia.customer-name'), value: 'customerName' },
-    ],
     archiveDays: 0,
     showStops: { show: false, color: '' },
   })

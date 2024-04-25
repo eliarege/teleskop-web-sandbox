@@ -67,7 +67,6 @@ export interface UnplannedEventsRaw {
   note: string
   erpParameters: Record<string, string>
 }
-
 export interface UnplannedEvents extends UnplannedEventsRaw {
   id: string | number
   name: string
@@ -99,3 +98,46 @@ export interface Recipe {
   autoRecipe: RecipeRaw[]
   manualRecipe: RecipeRaw[]
 }
+export interface BatchText {
+  id: number
+  label: string
+  value: string
+}
+
+export interface Batch {
+  batchText: BatchText[]
+  archiveDays: string
+  showStops: {
+    show: boolean
+    color: string
+  }
+}
+
+export interface CompletedBatch extends Batch {
+  completedBatch: {
+    batchText: BatchText
+    isBatchFabricColor: boolean
+    actualBatchFabricColor: string
+    deviationBatchFabricColor: string
+  }
+}
+
+export interface OngoingBatch extends Batch {
+  ongoingBatch: {
+    batchText: BatchText
+    isBatchFabricColor: boolean
+    actualBatchFabricColor: string
+    deviationBatchFabricColor: string
+  }
+}
+
+export interface PlannedBatch extends Batch {
+  plannedBatch: {
+    batchText: BatchText
+    isBatchFabricColor: boolean
+    actualBatchFabricColor: string
+    deviationBatchFabricColor: string
+  }
+}
+
+export type PtLocaleSettings = CompletedBatch & OngoingBatch & PlannedBatch

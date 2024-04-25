@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { matDisplaySettings, matPreview } from '@quasar/extras/material-icons'
+import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
 
 const emit = defineEmits(['updateScheduler', 'addColumn', 'removeColumn'])
 const { t } = useI18n()
@@ -28,10 +29,10 @@ const splitterModel = ref('view')
     <q-separator />
     <q-tab-panels v-model="splitterModel" animated>
       <q-tab-panel name="view">
-        <SettingsView />
+        <SettingsView @update-scheduler="emit('updateScheduler')" />
       </q-tab-panel>
       <q-tab-panel name="viewOptions">
-        <SettingsViewOptions />
+        <SettingsViewOptions @update-scheduler="emit('updateScheduler')" />
       </q-tab-panel>
       <q-tab-panel name="unplannedOptions">
         <SettingsUnplannedOptions

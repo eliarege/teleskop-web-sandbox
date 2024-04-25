@@ -3,8 +3,40 @@ import { color } from 'd3'
 import { useSettingStore } from '~/store/settings'
 
 const emits = defineEmits(['updateScheduler'])
+const plannedKeys = computed(() => [
+  { id: 1, label: 'Plan Key', value: 'planKey' },
+  { id: 2, label: 'Machine Id', value: 'machineId' },
+  { id: 3, label: 'Queue Number', value: 'queueNumber' },
+  { id: 4, label: 'Job Order', value: 'jobOrder' },
+  { id: 5, label: 'Program No List', value: 'programNoList' },
+  { id: 6, label: 'Theoretical Duration', value: 'theoreticalDuration' },
+  { id: 7, label: 'Fabric Weight', value: 'fabricWeight' },
+  { id: 8, label: 'Party Number', value: 'partyNumber' },
+  { id: 9, label: 'Note', value: 'note' },
+  { id: 10, label: 'Start Date', value: 'startDate' },
+  { id: 11, label: 'End Date', value: 'endDate' },
+])
+const archiveEvents = computed(() => [
+  { id: 1, label: 'Batch Key', value: 'batchKey' },
+  { id: 2, label: 'Plan Key', value: 'planKey' },
+  { id: 3, label: 'Machine Id', value: 'machineId' },
+  { id: 4, label: 'Job Order', value: 'jobOrder' },
+  { id: 5, label: 'Program No List', value: 'programNoList' },
+  { id: 6, label: 'Start Time', value: 'startTime' },
+  { id: 7, label: 'End Time', value: 'endTime' },
+  { id: 8, label: 'Cancel Time', value: 'cancelTime' },
+  { id: 9, label: 'Theoretical Duration', value: 'theoreticalDuration' },
+  { id: 10, label: 'Fabric Weight', value: 'fabricWeight' },
+  { id: 11, label: 'Party Number', value: 'partyNumber' },
+  { id: 12, label: 'Deviation', value: 'deviation' },
+  { id: 13, label: 'Note', value: 'note' },
+])
 const { t } = useI18n()
 const store = useSettingStore()
+function test() {
+  console.log('TEST')
+  emits('updateScheduler')
+}
 function iconColor(bgColor: string) {
   if (bgColor === '') {
     bgColor = '#FFFFFF'
@@ -42,7 +74,7 @@ function iconColor(bgColor: string) {
                   square
                   dense
                   outlined
-                  :options="store.settings.batchText"
+                  :options="archiveEvents"
                   option-value="value"
                   option-label="label"
                   class="w-200px"
@@ -82,7 +114,6 @@ function iconColor(bgColor: string) {
                               v-model="store.settings.completedBatch.actualBatchFabricColor"
                               no-header
                               no-footer
-                              @change="emits('updateScheduler')"
                             />
                           </q-popup-proxy>
                         </q-icon>
@@ -117,7 +148,6 @@ function iconColor(bgColor: string) {
                               v-model="store.settings.completedBatch.deviationBatchFabricColor"
                               no-header
                               no-footer
-                              @change="emits('updateScheduler')"
                             />
                           </q-popup-proxy>
                         </q-icon>
@@ -142,7 +172,7 @@ function iconColor(bgColor: string) {
                   square
                   dense
                   outlined
-                  :options="store.settings.batchText"
+                  :options="archiveEvents"
                   option-value="value"
                   option-label="label"
                   class="w-200px"
@@ -185,7 +215,6 @@ function iconColor(bgColor: string) {
                               v-model="store.settings.ongoingBatch.actualBatchFabricColor"
                               no-header
                               no-footer
-                              @change="emits('updateScheduler')"
                             />
                           </q-popup-proxy>
                         </q-icon>
@@ -220,7 +249,6 @@ function iconColor(bgColor: string) {
                               v-model="store.settings.ongoingBatch.deviationBatchFabricColor"
                               no-header
                               no-footer
-                              @change="emits('updateScheduler')"
                             />
                           </q-popup-proxy>
                         </q-icon>
@@ -245,7 +273,7 @@ function iconColor(bgColor: string) {
                   square
                   dense
                   outlined
-                  :options="store.settings.batchText"
+                  :options="plannedKeys"
                   option-value="value"
                   option-label="label"
                   class="w-200px"
@@ -285,7 +313,6 @@ function iconColor(bgColor: string) {
                               v-model="store.settings.plannedBatch.actualBatchFabricColor"
                               no-header
                               no-footer
-                              @change="emits('updateScheduler')"
                             />
                           </q-popup-proxy>
                         </q-icon>
@@ -320,7 +347,6 @@ function iconColor(bgColor: string) {
                               v-model="store.settings.plannedBatch.deviationBatchFabricColor"
                               no-header
                               no-footer
-                              @change="emits('updateScheduler')"
                             />
                           </q-popup-proxy>
                         </q-icon>
@@ -338,7 +364,9 @@ function iconColor(bgColor: string) {
       <div class="ml-3">
         <span>{{ t('plan-area.stops.main') }}</span>
         <div class="settings-border ml-5 my-2 flex gap-3">
-          <QCheckbox v-model="store.settings.showStops.show" :label="t('plan-area.stops.title')" />
+          <QCheckbox
+            v-model="store.settings.showStops.show" :label="t('plan-area.stops.title')"
+          />
           <q-input
             v-if="store.settings.showStops.show"
             v-model="store.settings.showStops.color"
@@ -369,7 +397,6 @@ function iconColor(bgColor: string) {
                     v-model="store.settings.showStops.color"
                     no-header
                     no-footer
-                    @change="emits('updateScheduler')"
                   />
                 </q-popup-proxy>
               </q-icon>
@@ -390,6 +417,13 @@ function iconColor(bgColor: string) {
           />
         </div>
       </div>
+    </div>
+    <div>
+      <QBtn
+        label="SUBMIT CHANGES"
+        color="primary"
+        @click="$emit('updateScheduler')"
+      />
     </div>
   </div>
 </template>
