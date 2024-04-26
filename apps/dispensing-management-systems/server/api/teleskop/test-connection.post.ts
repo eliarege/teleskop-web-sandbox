@@ -14,5 +14,6 @@ export default defineEventHandler(async (event) => {
   })
   await teleskopDB.raw('select 1+1 as result').then(() => setResponseStatus(event, 200, 'OK'))
     .catch((err: any) => setResponseStatus(event, 400, err.toString()))
+  await teleskopDB.destroy()
   return event.node.res.end()
 })
