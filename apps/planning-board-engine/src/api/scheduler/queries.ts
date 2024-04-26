@@ -50,7 +50,7 @@ export async function getUnplannedEvents() {
   return events.map(ev => ({
     ...ev,
     theoreticalDuration: ev.theoreticalDuration === 0 ? 28800 : ev.theoreticalDuration,
-    erpParameters: Object.fromEntries(JSON.parse(ev.erpParameters).map(a => [a.paramName, a.value])),
+    erpParameters: ev.erpParameters ? Object.fromEntries(JSON.parse(ev.erpParameters).map(a => [a.paramName, a.value])) : [],
   }))
 }
 
