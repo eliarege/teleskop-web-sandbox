@@ -109,7 +109,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_copy',
-    disabled: selectedMachineId.value === -1,
+    disabled: !selectedMachineId.value,
     onClick: () => {
       copy.value = klona(commandTypes.value)
     },
@@ -119,7 +119,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_paste',
-    disabled: selectedMachineId.value === -1,
+    disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
       await $fetch('/api/commands/command-types', {
         method: 'PUT',

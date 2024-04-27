@@ -520,7 +520,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_paste',
-    disabled: selected.value.machineId === -1,
+    disabled: selected.value.machineId === -1 || !copy.value,
     onClick: async () => {
       await $fetch('/api/io/copy', {
         method: 'POST',
@@ -655,7 +655,8 @@ async function checkNetworkConnection(formData: Machine) {
       />
     </div>
     <FormTableKit
-      :rows="machines" :columns="columns"
+      :rows="machines"
+      :columns="columns"
       form-class="grid grid-cols-4 gap-4 items-center"
       @add="handleAdd"
       @edit="handleEdit"
@@ -685,12 +686,21 @@ async function checkNetworkConnection(formData: Machine) {
     </FormTableKit>
 
     <q-scroll-area style="height: 200px">
-      <div v-for="(log, index) in logs" :key="index" :class="log.type === 'error' ? 'text-red pl-2' : 'pl-2'">
+      <div
+        v-for="(log, index) in logs"
+        :key="index"
+        :class="log.type === 'error' ? 'text-red pl-2' : 'pl-2'"
+      >
         {{ log.message }}
       </div>
     </q-scroll-area>
 
-    <TeleskopSettingsDialog v-if="showTeleskopSettings" :show="showTeleskopSettings" form-class="" @close="showTeleskopSettings = false" />
+    <TeleskopSettingsDialog
+      v-if="showTeleskopSettings"
+      :show="showTeleskopSettings"
+      form-class=""
+      @close="showTeleskopSettings = false"
+    />
     <GetDyeHouseDefinitionsDialog
       v-if="showGetDyeHouseDefinitions && selected"
       :show="showGetDyeHouseDefinitions"

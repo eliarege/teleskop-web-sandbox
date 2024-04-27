@@ -94,7 +94,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_copy',
-    disabled: selectedMachineId.value === -1,
+    disabled: !selectedMachineId.value,
     onClick: () => {
       copy.value = selectedMachineId.value
     },
@@ -104,7 +104,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_paste',
-    disabled: selectedMachineId.value === -1,
+    disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
       await $fetch('/api/theoretical-water-consumptions/copy', {
         method: 'POST',
@@ -197,7 +197,12 @@ const contextMenuOptions = computed(() => [
       </q-card-section>
       <q-card-actions align="right" class="m-4">
         <q-btn no-caps :label="t('cancel')" />
-        <q-btn color="primary" no-caps :label="t('submit')" @click="handleSubmit" />
+        <q-btn
+          color="primary"
+          no-caps
+          :label="t('submit')"
+          @click="handleSubmit"
+        />
       </q-card-actions>
     </q-card>
   </div>

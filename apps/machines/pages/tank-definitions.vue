@@ -176,7 +176,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_copy',
-    disabled: selectedMachineId.value === -1,
+    disabled: !selectedMachineId.value,
     onClick: () => {
       copy.value = klona(tankDefinitions.value)
     },
@@ -186,7 +186,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_paste',
-    disabled: selectedMachineId.value === -1,
+    disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
       for (const tankDef of copy.value) {
         await $fetch('/api/tank-definitions/tank-definition-list', {

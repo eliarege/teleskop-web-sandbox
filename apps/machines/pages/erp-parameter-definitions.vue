@@ -321,7 +321,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_paste',
-    disabled: selectedMachineId.value === -1,
+    disabled: selectedMachineId.value === -1 || !copy.value || !copyMode.value,
     onClick: async () => {
       await $fetch('/api/erp/copy', {
         method: 'POST',

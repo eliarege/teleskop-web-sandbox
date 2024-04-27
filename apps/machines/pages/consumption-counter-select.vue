@@ -53,7 +53,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_copy',
-    disabled: selectedMachineId.value === -1,
+    disabled: !selectedMachineId.value,
     onClick: () => {
       copy.value = { counter1: counter1.value, counter2: counter2.value }
     },
@@ -63,7 +63,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_paste',
-    disabled: selectedMachineId.value === -1,
+    disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
       counter1.value = copy.value.counter1
       counter2.value = copy.value.counter2
