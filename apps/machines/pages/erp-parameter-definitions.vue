@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { BatchParam, ErpParameter, Machine } from '~/types'
 import { addErpParameterField, deleteErpParameterField, updateErpParameterField } from '~/utils'
 
@@ -281,24 +282,62 @@ enum CopyMode {
 const copy = ref()
 const copyMode = ref<CopyMode>()
 
-function handleCopy(mode: CopyMode) {
-  copy.value = selectedMachineId.value
-  copyMode.value = mode
-}
-
-async function handlePaste() {
-  await $fetch('/api/erp/copy', {
-    method: 'POST',
-    body: {
-      sourceMachineId: copy.value,
-      targetMachineId: selectedMachineId.value,
-      mode: copyMode.value,
+const contextMenuOptions = computed(() => [
+  {
+    label: t('copyAll'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: selectedMachineId.value === -1,
+    onClick: () => {
+      copy.value = selectedMachineId.value
+      copyMode.value = 1
     },
-  })
-}
+  },
+  {
+    label: t('copyStartupParameters'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: selectedMachineId.value === -1,
+    onClick: () => {
+      copy.value = selectedMachineId.value
+      copyMode.value = 2
+    },
+  },
+  {
+    label: t('copyNonStartupParameters'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: selectedMachineId.value === -1,
+    onClick: () => {
+      copy.value = selectedMachineId.value
+      copyMode.value = 3
+    },
+  },
+  {
+    label: t('paste'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_paste',
+    disabled: selectedMachineId.value === -1,
+    onClick: async () => {
+      await $fetch('/api/erp/copy', {
+        method: 'POST',
+        body: {
+          sourceMachineId: copy.value,
+          targetMachineId: selectedMachineId.value,
+          mode: copyMode.value,
+        },
+      })
+    },
+  },
+])
 </script>
 
 <template>
+  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
   <div>
     <q-card>
       <q-card-section>
@@ -338,29 +377,11 @@ async function handlePaste() {
           />
         </div>
         <div class="my-4 flex justify-between w-full">
-          <q-btn-group push>
-            <q-btn
-              :label="t('copyAll')"
-              no-caps
-              @click="handleCopy(1)"
-            />
-            <q-btn
-              :label="t('copyStartupParameters')"
-              no-caps
-              @click="handleCopy(2)"
-            />
-            <q-btn
-              :label="t('copyNonStartupParameters')"
-              no-caps
-              @click="handleCopy(3)"
-            />
-            <q-btn
-              :label="t('paste')"
-              no-caps
-              @click="handlePaste"
-            />
-          </q-btn-group>
-          <q-btn no-caps :label="t('ImportFromBatchParameters')" @click="showImportBatchParametersDialog = true" />
+          <q-btn
+            no-caps
+            :label="t('ImportFromBatchParameters')"
+            @click="showImportBatchParametersDialog = true"
+          />
         </div>
 
         <div class="flex flex-row justify-evenly">
