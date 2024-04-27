@@ -115,7 +115,6 @@ async function handlePaste() {
               </q-item>
             </q-list>
           </div>
-
           <div class="mr-4 w-sm">
             <h3>{{ t('materials') }}</h3>
             <Sortable
@@ -174,7 +173,12 @@ async function handlePaste() {
       </q-card-section>
       <q-card-actions align="right" class="m-4">
         <q-btn no-caps :label="t('cancel')" />
-        <q-btn no-caps color="primary" :label="t('submit')" @click="handleSubmit" />
+        <q-btn
+          no-caps
+          color="primary"
+          :label="t('submit')"
+          @click="handleSubmit"
+        />
       </q-card-actions>
     </q-card>
   </div>

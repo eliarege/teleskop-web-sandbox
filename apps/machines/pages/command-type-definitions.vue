@@ -65,6 +65,14 @@ const { data: commandTypes } = useLazyFetch<CommandType[]>('/api/commands/comman
   },
 })
 
+watch(selectedMachineId, (newMachineId, _oldMachineId) => {
+  document.querySelectorAll('.draggable-selected').forEach((el) => {
+    if (el.getAttribute('data-machine-id') !== String(newMachineId)) {
+      el.remove()
+    }
+  })
+})
+
 function handleDragDropCommands(e) {
   const commandNo = e.item.getAttribute('data-command-no')
   commandTypes.value = commandTypes.value.filter(cmd => cmd.commandNo !== Number(commandNo))
@@ -156,7 +164,7 @@ const contextMenuOptions = computed(() => [
           <h3>{{ t('selectedMachineCommands') }}</h3>
           <Sortable
             :list="commands"
-            :item-key="(element) => element.commandNo"
+            :item-key="(element) => `${element.machineId}-${element.commandNo}`"
             class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
             :options="{ group: 'group' }"
             @add="(e) => handleDragDropCommands(e)"
@@ -185,7 +193,7 @@ const contextMenuOptions = computed(() => [
             <h3>{{ item.title }}</h3>
             <Sortable
               :list="item.ref"
-              :item-key="(element) => element.commandNo"
+              :item-key="(element) => `${element.machineId}-${element.commandNo}`"
               class="q-list q-list--bordered q-list--separator overflow-y-auto h-42"
               :options="{ group: 'group' }"
               @add="(e) => handleDragDrop(e, item)"
@@ -195,7 +203,8 @@ const contextMenuOptions = computed(() => [
                   :key="element.commandNo"
                   :data-command-no="element.commandNo"
                   :data-command-name="element.commandName"
-                  class="draggable"
+                  :data-machine-id="element.machineId"
+                  class="draggable-selected"
                 >
                   <q-item-section>
                     {{ `${element.commandNo} ${element.commandName}` }}
@@ -208,7 +217,11 @@ const contextMenuOptions = computed(() => [
       </q-card-section>
       <q-card-actions align="right" class="flex gap-2 ">
         <q-btn :label="t('cancel')" />
-        <q-btn :label="t('submit')" color="primary" @click="handleSubmit" />
+        <q-btn
+          :label="t('submit')"
+          color="primary"
+          @click="handleSubmit"
+        />
       </q-card-actions>
     </q-card>
   </div>
