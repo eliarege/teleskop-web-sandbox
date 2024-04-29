@@ -32,9 +32,10 @@ async function onConfirm() {
   <QDialog
     ref="dialogRef"
     full-width
+    persistent
     @hide="onDialogHide"
   >
-    <QCard class="scroll">
+    <QCard class="scroll border-b-solid border-10px border-grey">
       <div flex-center flex-col mt-10 text-lg>
         <div>
           {{ t('ExportConnectionsBody', { type: t(`${capitalizeFirst(props.type)}`), dispenser: dataStore.selectedDispenser?.dispenserName }) }}
