@@ -155,9 +155,10 @@ async function pingAddress() {
   <QDialog
     ref="dialogRef"
     full-width
+    persistent
     @hide="onDialogHide"
   >
-    <QCard class="scroll">
+    <QCard class="scroll border-b-solid border-10px border-grey">
       <QForm @submit.prevent>
         <div class="flex flex-col pb-10">
           <div class="text-center pt-5 text-xl">
@@ -295,24 +296,6 @@ async function pingAddress() {
                 :options="brandDispenserTypes"
               />
             </div>
-            <div class="row-item">
-              <span class="item-label">
-                {{ t('dispenserFields.Protocol') }}
-              </span>
-              <QSelect
-                v-model="editedDispenser.protocol"
-                borderless
-                dense
-                class="item-input"
-                filled
-                options-dense
-                emit-value
-                option-value="protocol"
-                option-label="protocol"
-                :options="brandProtocols"
-                @update:model-value="onProtocolSelected"
-              />
-            </div>
             <div v-if="editedDispenser.dispenserType === 5" class="row-item">
               <span class="item-label">
                 {{ t('dispenserFields.JDMConnections') }}
@@ -329,6 +312,24 @@ async function pingAddress() {
                 option-value="dispenserTypeId"
                 option-label="dispenserTypeName"
                 :options="dataStore.dispenserTypes?.filter(dispenser => dispenser.dispenserTypeId !== 5)"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.Protocol') }}
+              </span>
+              <QSelect
+                v-model="editedDispenser.protocol"
+                borderless
+                dense
+                class="item-input"
+                filled
+                options-dense
+                emit-value
+                option-value="protocol"
+                option-label="protocol"
+                :options="brandProtocols"
+                @update:model-value="onProtocolSelected"
               />
             </div>
             <div v-for="field in protocolFields" :key="field" class="row-item">

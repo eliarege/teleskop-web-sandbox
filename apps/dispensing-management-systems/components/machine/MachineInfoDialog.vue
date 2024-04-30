@@ -109,9 +109,10 @@ function onCheck(dispenserId: number, isChecked: boolean) {
   <QDialog
     ref="dialogRef"
     full-width
+    persistent
     @hide="onDialogHide"
   >
-    <QCard class="scroll">
+    <QCard class="scroll border-b-solid border-10px border-grey">
       <QForm @submit.prevent>
         <div class="flex flex-col pb-10">
           <div class="text-center pt-5 text-xl">
