@@ -61,7 +61,8 @@ const ptLocaleSettings: PtLocaleSettings = JSON.parse(localStorage.getItem('pt-s
 const store = useSettingStore()
 
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
-const { data: events, refresh: eventRefresh } = await useFetch('/api/queueBased/schedulerEvents', {
+const { data: events, refresh: eventRefresh, pending } = await useFetch('/api/queueBased/schedulerEvents', {
+  immediate: false,
   query: {
     startDate,
     endDate,
@@ -615,10 +616,8 @@ onMounted(async () => {
     constrain: false,
     outerElement: unplannedGrid.element,
   } as Partial<DragHelperConfig>)
-  // await until(pending.value).toBe(false).then(() => {
   startDate.value = schedule.timeAxis.startDate.toISOString()
   endDate.value = schedule.timeAxis.endDate.toISOString()
-  // })
   schedule.eventStore.on({
     async loadDateRange(e: any) {
       if (e.changed) {
