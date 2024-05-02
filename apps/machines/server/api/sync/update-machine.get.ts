@@ -76,13 +76,13 @@ export default defineEventHandler(async (event) => {
             { func: () => updateConsumption(numMachineId, tbb, trx), message: 'consumptions updated' },
           ]
 
-          if (client) {
-            for (const { func, message } of updateFunctions) {
-              const res = await func()
-              if (res) {
-                sse.broadcast(client, 'log', { message })
-              }
+          for (const { func, message } of updateFunctions) {
+            const res = await func()
+            if (res && client) {
+              sse.broadcast(client, 'log', { message })
             }
+          }
+          if (client) {
             sse.broadcast(client, 'log', { message: 'project loaded successfully' })
           }
         })
