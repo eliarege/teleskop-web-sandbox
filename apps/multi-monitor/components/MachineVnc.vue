@@ -1,105 +1,96 @@
 <script setup lang="ts">
-import { joinURL, parseURL, withBase, withProtocol } from 'ufo'
+import { joinURL, parseHost, parseURL, stringifyParsedURL, withBase, withProtocol } from 'ufo'
 import { NoVnc } from 'ui'
 import type { MachineDataRaw } from '~/shared/types'
 
 const props = defineProps({
-  currentMachine: {
+  machine: {
     type: Object as PropType<MachineDataRaw> | null,
     required: true,
   },
 })
 const { t } = useI18n()
-const SymKey = {
-  // https://github.com/D-Programming-Deimos/libX11/blob/master/c/X11/keysymdef.h
-  F1: 0xFFBE, // XK_F1
-  F2: 0xFFBF, // XK_F2
-  F3: 0xFFC0, // XK_F3
-  F4: 0xFFC1, // XK_F4
-  F5: 0xFFC2, // XK_F5
-  F6: 0xFFC3, // XK_F6
-  F7: 0xFFC4, // XK_F7
-  F8: 0xFFC5, // XK_F8
-  F9: 0xFFC6, // XK_F9
-  F10: 0xFFC7, // XK_F10
-  F11: 0xFFC8, // XK_F11
-  F12: 0xFFC9, // XK_F12
-  Backspace: 0xFF08, // XK_BackSpace
-  Tab: 0xFF09, // XK_Tab
-  Enter: 0xFF0D, // XK_Return
-  Escape: 0xFF1B, // XK_Escape
-  ArrowLeft: 0xFF51, // XK_Left
-  ArrowRight: 0xFF53, // XK_Right
-  ArrowUp: 0xFF52, // XK_Up
-  ArrowDown: 0xFF54, // XK_Down
-  ArrowPgDown: 0xFF56, // XK_Page_Down
-  ArrowPgUp: 0xFF55, // XK_KP_Page_Up
-  Zero: 0x0030, // XK_0
-  One: 0x0031, // XK_1
-  Two: 0x0032, // XK_2
-  Three: 0x0033, // XK_3
-  Four: 0x0034, // XK_4
-  Five: 0x0035, // XK_5
-  Six: 0x0036, // XK_6
-  Seven: 0x0037, // XK_7
-  Eight: 0x0038, // XK_8
-  Nine: 0x0039, // XK_9
-  Dot: 0x002E, // XK_period
-  Subtract: 0x002D, // XK_minus
-  Plus: 0xFFAB, // XK_KP_Add
-  Home: 0xFF50, // XK_Home
-  Insert: 0xFF9E, // XK_KP_Insert
-  End: 0xFF9C, // XK_KP_End
-  Delete: 0xFF9D, // XK_KP_Begin
-  Down: 0xFF99, // XK_KP_Down
-  Left: 0xFF96, // XK_KP_Left
-  PgDown: 0xFF9B, // XK_KP_Page_Down
-} as const
 const quasar = useQuasar()
 const config = useRuntimeConfig()
+const { width } = useWindowSize()
 const { token } = useKeycloak()
 const vnc = ref<InstanceType<typeof NoVnc> | null>(null)
-const vncCredentials = {
-  password: '123456',
-}
 
-function sendKey(key: keyof typeof SymKey) {
-  vnc.value!.sendKey(SymKey[key], null)
+const maxFactor = 2.5
+const deviceWidth = 278
+const devicePadding = 8
+const factor = computed(() => Math.min(maxFactor, width.value / (deviceWidth + devicePadding)))
+
+const keysym = {
+  XK_F1: 0xFFBE,
+  XK_F2: 0xFFBF,
+  XK_F3: 0xFFC0,
+  XK_F4: 0xFFC1,
+  XK_F5: 0xFFC2,
+  XK_F6: 0xFFC3,
+  XK_F7: 0xFFC4,
+  XK_F8: 0xFFC5,
+  XK_F9: 0xFFC6,
+  XK_F10: 0xFFC7,
+  XK_F11: 0xFFC8,
+  XK_F12: 0xFFC9,
+  XK_BackSpace: 0xFF08,
+  XK_Tab: 0xFF09,
+  XK_Return: 0xFF0D,
+  XK_Escape: 0xFF1B,
+  XK_Left: 0xFF51,
+  XK_Right: 0xFF53,
+  XK_Up: 0xFF52,
+  XK_Down: 0xFF54,
+  XK_Page_Down: 0xFF56,
+  XK_KP_Page_Up: 0xFF55,
+  XK_0: 0x0030,
+  XK_1: 0x0031,
+  XK_2: 0x0032,
+  XK_3: 0x0033,
+  XK_4: 0x0034,
+  XK_5: 0x0035,
+  XK_6: 0x0036,
+  XK_7: 0x0037,
+  XK_8: 0x0038,
+  XK_9: 0x0039,
+  XK_Period: 0x002E,
+  XK_Minus: 0x002D,
+  XK_KP_Add: 0xFFAB,
+  XK_Home: 0xFF50,
+  XK_KP_Insert: 0xFF9E,
+  XK_KP_End: 0xFF9C,
+  XK_KP_Begin: 0xFF9D,
+  XK_KP_Down: 0xFF99,
+  XK_KP_Left: 0xFF96,
+  XK_KP_Page_Down: 0xFF9B,
+} as const
+
+function sendKey(key: keyof typeof keysym) {
+  vnc.value!.sendKey(keysym[key], null)
 }
 
 function onDisconnect(_clean: boolean) {
   quasar.notify({
-    message: t('vnc-error', { name: props.currentMachine.name }),
+    message: t('vnc-error', { name: props.machine.name }),
     timeout: 4000,
     position: 'top',
     color: 'negative',
   })
-  // setTimeout(() => {
-  //   window.close()
-  // }, 5000)
 }
-function onConnect() {
-  // console.log('connected', props.currentMachine.name)
-}
-function closeTab() {
-  window.close()
-}
-// #region Keyboard
-interface FnKeys {
-  class: string
-  key: keyof typeof SymKey
-}
-interface OpKeys extends FnKeys {
-  img: string
-}
-
-const baseURL = useRuntimeConfig().app.baseURL
-const withBaseURL = (input: string) => withBase(input, baseURL)
 
 function resolveWebSocketUrl(url: string) {
   const parsed = parseURL(url)
   const protocol = parsed.protocol || window.location.protocol
   const isSecure = protocol === 'https:'
+
+  if (parsed.host) {
+    const host = parseHost(parsed.host)
+    if (host.hostname === '$host') {
+      parsed.host = host.port ? `${window.location.hostname}:${host.port}` : window.location.hostname
+      url = stringifyParsedURL(parsed)
+    }
+  }
   return withProtocol(
     withBase(url, `${window.location.protocol}//${window.location.host}`),
     isSecure ? `wss://` : `ws://`,
@@ -107,147 +98,289 @@ function resolveWebSocketUrl(url: string) {
 }
 
 const websockifyWsUrl = resolveWebSocketUrl(config.public.websockifyUrl)
-
-const fnKeys = reactive([
-  { class: 'f1', key: 'F1' },
-  { class: 'f2', key: 'F2' },
-  { class: 'f3', key: 'F3' },
-  { class: 'f4', key: 'F4' },
-  { class: 'f5', key: 'F5' },
-  { class: 'f6', key: 'F6' },
-  { class: 'f7', key: 'F7' },
-  { class: 'f8', key: 'F8' },
-] as FnKeys[])
-const opKeys = reactive([
-  { class: 'start', key: 'F9', img: '/keyboard/start.svg' },
-  { class: 'stop', key: 'F9', img: '/keyboard/stop.svg' },
-] as OpKeys[])
-const numpad = reactive([
-  { class: 'one', key: 'One', img: '/keyboard/1.svg' },
-  { class: 'two', key: 'Two', img: '/keyboard/2.svg' },
-  { class: 'three', key: 'Three', img: '/keyboard/3.svg' },
-  { class: 'four', key: 'Four', img: '/keyboard/4.svg' },
-  { class: 'five', key: 'Five', img: '/keyboard/5.svg' },
-  { class: 'six', key: 'Six', img: '/keyboard/6.svg' },
-  { class: 'seven', key: 'Seven', img: '/keyboard/7.svg' },
-  { class: 'eight', key: 'Eight', img: '/keyboard/8.svg' },
-  { class: 'nine', key: 'Nine', img: '/keyboard/9.svg' },
-  { class: 'plus', key: 'Plus', img: '/keyboard/plusminus.svg' },
-  { class: 'zero', key: 'Zero', img: '/keyboard/0.svg' },
-  { class: 'dot', key: 'Dot', img: '/keyboard/dot.svg' },
-] as OpKeys[])
-const arrowKeys = reactive([
-  { class: 'arrow-down', key: 'ArrowDown', img: '/keyboard/down.svg' },
-  { class: 'arrow-up', key: 'ArrowUp', img: '/keyboard/up.svg' },
-  { class: 'arrow-left', key: 'ArrowLeft', img: '/keyboard/left.svg' },
-  { class: 'arrow-ok', key: 'Enter', img: '/keyboard/ok.svg' },
-  { class: 'arrow-right', key: 'ArrowRight', img: '/keyboard/right.svg' },
-  { class: 'arrow-tab', key: 'Tab', img: '/keyboard/tab.svg' },
-  { class: 'arrow-del', key: 'Backspace', img: '/keyboard/delete.svg' },
-  { class: 'arrow-lock', key: 'F12', img: '/keyboard/lock.svg' },
-  { class: 'arrow-esc', key: 'Escape', img: '/keyboard/esc.svg' },
-  { class: 'arrow-pg-up', key: 'ArrowPgUp', img: '/keyboard/pageup.svg' },
-  { class: 'arrow-pg-down', key: 'ArrowPgDown', img: '/keyboard/pagedown.svg' },
-] as OpKeys[])
-const bottomKeys = reactive([
-  { class: 'alarms', key: 'Insert', img: '/keyboard/alarms.svg' },
-  { class: 'mimic', key: 'End', img: '/keyboard/mimic.svg' },
-  { class: 'disp-l', key: 'Delete', img: '/keyboard/disp.svg' },
-  { class: 'cycle', key: 'Down', img: '/keyboard/cycle.svg' },
-  { class: 'man-cmd', key: 'PgDown', img: '/keyboard/man_cmd.svg' },
-  { class: 'man-ctrl', key: 'Left', img: '/keyboard/man_ctrl.svg' },
-  { class: 'disp-r', key: 'Home', img: '/keyboard/dispR.svg' },
-] as OpKeys[])
-// #endregion
 </script>
 
 <template>
-  <div class="w-min m-auto overflow-hidden">
-    <div class="modal-wrapper cursor-default">
-      <div class="modal-container">
-        <div class="wrapper" @click.stop.prevent>
-          <div class="machine-screen">
-            <span class="cursor-pointer absolute border border-gray-300" @click="closeTab()">
-              <Icon name="material-symbols:close" color="white" />
-            </span>
-            <div class="screen">
-              <span class="loader z-1 absolute" />
-              <NoVnc
-                ref="vnc"
-                :url="joinURL(websockifyWsUrl, props.currentMachine.id.toString())"
-                :credentials="vncCredentials"
-                :auth="config.public.kcEnabled"
-                :token="token"
-                drag-viewport
-                resize-session
-                class="z-2 absolute"
-                @disconnect="onDisconnect"
-                @connect="onConnect"
+  <div class="t7-container" :style="{ '--factor': factor }">
+    <div class="t7-inner-container">
+      <div class="t7-header">
+        <div class="t7-eliar-logo">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 760.9 213.3"
+            version="1.1"
+          >
+            <g>
+              <g>
+                <g>
+                  <g>
+                    <path d="m39.8,186.6c18.4,15.9 42.5,25.5 68.7,25.5c46.7,0 86.2,-30.2 100.2,-72.2l-149.1,0l-19.8,46.7z" />
+                    <path d="m120.4,1.8l-54.6,127.4l145.7,0c1.6,-7.3 2.5,-14.8 2.5,-22.5c0.1,-54.3 -40.9,-98.9 -93.6,-104.9z" />
+                    <path d="m108.5,1.1c-58.2,0 -105.5,47.2 -105.5,105.5c0,28.3 11.3,54.1 29.4,73l76.5,-178.6c-0.1,0.1 -0.2,0.1 -0.4,0.1z" />
+                  </g>
+                  <path d="m734.1,118.6c14.6,-4.2 22,-14.3 22,-29.8c0,-9.7 -3.2,-17.4 -9.5,-23.2c-6.3,-5.8 -14.8,-8.6 -25.2,-8.6l-78,0l0,98l22.5,0l0,-34.5l43.4,0l24.6,34.5l26.2,0l-26,-36.4zm-15.4,-18.8l-52.8,0l0,-22.2l51.7,0c14,0 15.7,6.5 15.7,11.5c-0.1,4.6 -1.7,10.7 -14.6,10.7z" />
+                  <path d="m281.7,114.4l55.1,0l0,-20.7l-55.1,0l0,-16.1l79.3,0l0,-20.6l-101.8,0l0,76c0.5,11.7 9.7,21 21.2,22l84,0l0,-20.6l-82.7,0l0,-20z" />
+                  <path d="m572.9,56.9c-9.3,0.2 -13.9,3.2 -18.8,10.9l-47.5,87.2l24.9,0l10.8,-20.2l60.6,0l10.8,20.2l24.9,0l-53.4,-98.1l-12.3,0zm-19.2,57.3l19,-35.1l18.9,35.1l-37.9,0z" />
+                  <g>
+                    <rect
+                      height="18.2"
+                      width="22.5"
+                      y="56.9"
+                      x="479.3"
+                    />
+                    <rect
+                      height="70.7"
+                      width="22.5"
+                      y="84.3"
+                      x="479.3"
+                    />
+                  </g>
+                  <path d="m398.9,56.9l-22.5,0l0,77.9c1.5,11.4 11.3,20.2 23,20.2l0,0l72,0l0,-20.6l-72.5,0l0,-77.5l0,0z" />
+                </g>
+              </g>
+            </g>
+          </svg>
+        </div>
+        <div id="status" />
+        <div style="width: 100%">
+          <!-- Put logo -->
+        </div>
+      </div>
+      <div class="t7-screen-casing">
+        <div class="t7-screen">
+          <NoVnc
+            ref="vnc"
+            :url="joinURL(websockifyWsUrl, machine.id.toString())"
+            :auth="config.public.kcEnabled"
+            :token="token"
+            scale-viewport
+            class="w-full h-full z-2 absolute"
+            @disconnect="onDisconnect"
+          />
+        </div>
+      </div>
+      <div class="t7-keyboard">
+        <div class="t7-function-row">
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/f1.svg);"
+            @click="sendKey('XK_F1')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/f2.svg);"
+            @click="sendKey('XK_F2')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/f3.svg);"
+            @click="sendKey('XK_F3')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/f4.svg);"
+            @click="sendKey('XK_F4')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/f5.svg);"
+            @click="sendKey('XK_F5')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/f6.svg);"
+            @click="sendKey('XK_F6')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/f7.svg);"
+            @click="sendKey('XK_F7')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/f8.svg);"
+            @click="sendKey('XK_F8')"
+          />
+        </div>
+        <div class="t7-panel-row">
+          <div class="t7-panel-grid t7-startstop-grid">
+            <div class="t7-keyinput-container">
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/start.svg);"
+                @click="sendKey('XK_F9')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/stop.svg);"
+                @click="sendKey('XK_F10')"
               />
             </div>
           </div>
-          <div class="machine-keys">
-            <!-- FN KEYS  -->
-            <div class="fn-keys">
+          <div class="t7-panel-grid t7-numpad-grid">
+            <div class="t7-keyinput-container">
               <div
-                v-for="(item, idx) in fnKeys"
-                :key="idx"
-                :class="item.class"
-                @click="sendKey(item.key)"
-              >
-                {{ item.key }}
-              </div>
-            </div>
-            <!-- KEYBOARD  -->
-            <div class="middle-keys">
-              <!-- START/STOP -->
-              <div class="op-keys">
-                <div
-                  v-for="(item, idx) in opKeys"
-                  :key="idx"
-                  :class="item.class"
-                  @click="sendKey(item.key)"
-                >
-                  <img :src="withBaseURL(item.img)">
-                </div>
-              </div>
-              <!-- NUMPAD -->
-              <div class="nums">
-                <div
-                  v-for="(item, idx) in numpad"
-                  :key="idx"
-                  :class="item.class"
-                  @click="sendKey(item.key)"
-                >
-                  <img :src="withBaseURL(item.img)">
-                </div>
-              </div>
-              <div class="keys">
-                <!-- ARROW KEYS -->
-                <div class="arrow-keys">
-                  <div
-                    v-for="(item, idx) in arrowKeys"
-                    :key="idx"
-                    :class="item.class"
-                    @click="sendKey(item.key)"
-                  >
-                    <img :src="withBaseURL(item.img)">
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- BOTTOM KEYS  -->
-            <div class="bottom-keys">
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/1.svg);"
+                @click="sendKey('XK_1')"
+              />
               <div
-                v-for="(item, idx) in bottomKeys"
-                :key="idx"
-                :class="item.class"
-                @click="sendKey(item.key)"
-              >
-                <img :src="withBaseURL(item.img)">
-              </div>
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/2.svg);"
+                @click="sendKey('XK_2')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/3.svg);"
+                @click="sendKey('XK_3')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/4.svg);"
+                @click="sendKey('XK_4')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/5.svg);"
+                @click="sendKey('XK_5')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/6.svg);"
+                @click="sendKey('XK_6')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/7.svg);"
+                @click="sendKey('XK_7')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/8.svg);"
+                @click="sendKey('XK_8')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/9.svg);"
+                @click="sendKey('XK_9')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/plusminus.svg);"
+                @click="sendKey('XK_KP_Add')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/0.svg);"
+                @click="sendKey('XK_0')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/dot.svg);"
+                @click="sendKey('XK_Period')"
+              />
             </div>
           </div>
+          <div class="t7-panel-grid t7-arrowpad-grid">
+            <div class="t7-keyinput-container">
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/tab.svg);"
+                @click="sendKey('XK_Tab')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/up.svg);"
+                @click="sendKey('XK_Up')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/delete.svg);"
+                @click="sendKey('XK_BackSpace')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/left.svg);"
+                @click="sendKey('XK_Left')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/ok.svg);"
+                @click="sendKey('XK_Return')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/right.svg);"
+                @click="sendKey('XK_Right')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/esc.svg);"
+                @click="sendKey('XK_Escape')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/down.svg);"
+                @click="sendKey('XK_Down')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/lock.svg);"
+                @click="sendKey('XK_F12')"
+              />
+            </div>
+          </div>
+          <div class="t7-panel-grid t7-updown-grid">
+            <div class="t7-keyinput-container">
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/pageup.svg);"
+                @click="sendKey('XK_KP_Page_Up')"
+              />
+              <div
+                class="t7-keyinput"
+                style="background-image: url(/keyboard/pagedown.svg);"
+                @click="sendKey('XK_Page_Down')"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="t7-shortcut-row">
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/alarms.svg);"
+            @click="sendKey('XK_KP_Insert')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/mimic.svg);"
+            @click="sendKey('XK_KP_End')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/disp.svg);"
+            @click="sendKey('XK_KP_Begin')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/cycle.svg);"
+            @click="sendKey('XK_KP_Down')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/man_cmd.svg);"
+            @click="sendKey('XK_KP_Page_Down')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/man_ctrl.svg);"
+            @click="sendKey('XK_KP_Left')"
+          />
+          <div
+            class="t7-keyinput"
+            style="background-image: url(/keyboard/dispR.svg);"
+            @click="sendKey('XK_Home')"
+          />
         </div>
       </div>
     </div>
@@ -255,327 +388,155 @@ const bottomKeys = reactive([
 </template>
 
 <style scoped lang="postcss">
-* {
-  @apply font-extrabold text-gray-900;
+.t7-container {
+  --factor: 1.2;
+  left: 0;
+  top: 0;
+  display: inline-block;
+  width: calc(278px * var(--factor));
+  min-width: calc(278px * var(--factor));
+  height: calc(354px * var(--factor));
+  padding: calc(0.5rem * var(--factor));
+  border-radius: calc(3px * var(--factor));
+  background-color: #adb5bd;
+  position: relative;
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
 }
 
-.modal-wrapper {
-  @apply flex justify-center h-screen w-auto;
-
-  .modal-container {
-    width: 100%;
-    background-color: rgb(50, 50, 50);
-    @apply h-auto min-h-990px m-auto;
-  }
+.t7-inner-container {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  padding: calc(0.5rem * var(--factor));
+  padding-top: 0;
+  padding-bottom: calc(0.1rem * var(--factor));
+  position: relative;
+  display: grid;
+  border-radius: calc(3px * var(--factor));
+  background-color: hsl(0, 5%, 24%);
+  grid-template-rows: calc(1rem * var(--factor)) 16.7fr 14.2fr;
 }
 
-.wrapper {
-  grid-template-columns: auto;
-  grid-auto-rows: repeat(auto-fill, minmax(800px, 1fr));
-  @apply w-full h-full grid;
-
-  .machine-screen {
-    @apply w-full h-full;
-
-    .screen {
-      @apply flex justify-center items-center w-800px h-600px mx-7 my-2 border border-gray-300 border-3px rounded;
-    }
-  }
-
-  .machine-keys {
-    grid-template-rows: 0.1fr 1fr 0.1fr;
-    @apply grid w-full h-full gap-3;
-
-    .fn-keys {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      grid-template-rows: 1fr;
-      grid-template-areas: "f1 f2 f3 f4 f5 f6 f7 f8";
-      @apply w-full h-14 justify-items-center px-10 gap-5;
-
-      .f1 {
-        grid-area: f1;
-        background: #b2b7b5;
-        border-radius: 15px 0 15px 0;
-        color: #3f3939;
-        @apply flex cursor-pointer w-full h-full text-center items-center justify-center;
-      }
-
-      .f2 {
-        grid-area: f2;
-        background: #b2b7b5;
-        border-radius: 15px 0 15px 0;
-        color: #3f3939;
-        @apply flex cursor-pointer w-full h-full text-center items-center justify-center;
-      }
-
-      .f3 {
-        grid-area: f3;
-        background: #b2b7b5;
-        border-radius: 15px 0 15px 0;
-        color: #3f3939;
-        @apply flex cursor-pointer w-full h-full text-center items-center justify-center;
-      }
-
-      .f4 {
-        grid-area: f4;
-        background: #b2b7b5;
-        border-radius: 15px 0 15px 0;
-        color: #3f3939;
-        @apply flex cursor-pointer w-full h-full text-center items-center justify-center;
-      }
-
-      .f5 {
-        grid-area: f5;
-        background: #b2b7b5;
-        border-radius: 15px 0 15px 0;
-        color: #3f3939;
-        @apply flex cursor-pointer w-full h-full text-center items-center justify-center;
-      }
-
-      .f6 {
-        grid-area: f6;
-        background: #b2b7b5;
-        border-radius: 15px 0 15px 0;
-        color: #3f3939;
-        @apply flex cursor-pointer w-full h-full text-center items-center justify-center;
-      }
-
-      .f7 {
-        grid-area: f7;
-        background: #b2b7b5;
-        border-radius: 15px 0 15px 0;
-        color: #3f3939;
-        @apply flex cursor-pointer w-full h-full text-center items-center justify-center;
-      }
-
-      .f8 {
-        grid-area: f8;
-        background: #b2b7b5;
-        border-radius: 15px 0 15px 0;
-        color: #3f3939;
-        @apply flex cursor-pointer w-full h-full text-center items-center justify-center;
-      }
-    }
-
-    .middle-keys {
-      grid-template-columns: 0.2fr 250px 1fr;
-      grid-template-rows: 210px;
-      grid-template-areas: "start-stop numpad keys";
-      justify-content: center;
-      align-content: center;
-      justify-items: center;
-      align-items: center;
-      @apply grid h-full;
-
-      .op-keys {
-        grid-area: start-stop;
-        display: grid;
-        grid-template-columns: 1fr;
-        grid-template-rows: repeat(2, 1fr);
-        grid-template-areas:
-          "START"
-          "STOP";
-        @apply gap-y-9 w-full flex flex-col justify-center items-center;
-
-        .start {
-          grid-area: START;
-          @apply cursor-pointer w-full flex justify-center;
-        }
-
-        .stop {
-          grid-area: STOP;
-          @apply cursor-pointer w-full flex justify-center;
-        }
-      }
-
-      .nums {
-        grid-area: numpad;
-        display: grid;
-        grid-template-columns: repeat(3, 60px);
-        grid-template-rows: repeat(4, 50px);
-        gap: 0px 0px;
-        grid-template-areas:
-          "one two three"
-          "four five six"
-          "seven eight nine"
-          "plus zero dot";
-        justify-content: center;
-        justify-items: center;
-        align-items: center;
-        @apply gap-x-3 gap-y-1 ml-7;
-
-        .one,
-        .two,
-        .three,
-        .four,
-        .five,
-        .six,
-        .seven,
-        .eight,
-        .nine,
-        .plus,
-        .zero,
-        .dot {
-          @apply cursor-pointer w-full flex justify-center items-center h-full;
-        }
-      }
-
-      .arrow-keys {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr) 0.1fr 1fr;
-        grid-template-rows: repeat(3, 1fr);
-        gap: 0px 7px;
-        grid-template-areas:
-          "tab up del . pg-up"
-          "left ok right . ."
-          "esc down lock . pgdown";
-        @apply place-items-center;
-
-        .arrow-down {
-          grid-area: down;
-          @apply cursor-pointer;
-        }
-
-        .arrow-up {
-          grid-area: up;
-          @apply cursor-pointer;
-        }
-
-        .arrow-ok {
-          grid-area: ok;
-          @apply cursor-pointer;
-        }
-
-        .arrow-left {
-          grid-area: left;
-          @apply cursor-pointer;
-        }
-
-        .arrow-right {
-          grid-area: right;
-          @apply cursor-pointer;
-        }
-
-        .arrow-tab {
-          grid-area: tab;
-          @apply cursor-pointer;
-        }
-
-        .arrow-del {
-          grid-area: del;
-          @apply cursor-pointer;
-        }
-
-        .arrow-lock {
-          grid-area: lock;
-          @apply cursor-pointer;
-        }
-
-        .arrow-esc {
-          grid-area: esc;
-          @apply cursor-pointer;
-        }
-
-        .arrow-pg-up {
-          grid-area: pg-up;
-          @apply cursor-pointer;
-        }
-
-        .arrow-pg-down {
-          grid-area: pgdown;
-          /* border-radius: 10px 4px 4px 10px; */
-          @apply cursor-pointer overflow-hidden;
-        }
-      }
-    }
-
-    .bottom-keys {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: 60px;
-      grid-template-areas: "alarms mimic disp-l cycle man-cmd man-ctrl disp-r";
-      justify-content: center;
-      align-content: center;
-      justify-items: center;
-      align-items: center;
-      @apply;
-
-      .alarms {
-        grid-area: alarms;
-        @apply cursor-pointer w-full h-full flex justify-center;
-      }
-
-      .mimic {
-        grid-area: mimic;
-        @apply cursor-pointer w-full h-full flex justify-center;
-      }
-
-      .disp-l {
-        grid-area: disp-l;
-        @apply cursor-pointer w-full h-full flex justify-center;
-      }
-
-      .cycle {
-        grid-area: cycle;
-        @apply cursor-pointer w-full h-full flex justify-center;
-      }
-
-      .man-cmd {
-        grid-area: man-cmd;
-        @apply cursor-pointer w-full h-full flex justify-center;
-      }
-
-      .man-ctrl {
-        grid-area: man-ctrl;
-        @apply cursor-pointer w-full h-full flex justify-center;
-      }
-
-      .disp-r {
-        grid-area: disp-r;
-        @apply cursor-pointer w-full h-full flex justify-center;
-      }
-    }
-  }
+.t7-screen-casing {
+  width: 100%;
+  height: 100%;
+  border-radius: calc(2px * var(--factor));
+  padding: calc(2px * var(--factor));
+  position: relative;
+  background-color: #adb5bd;
 }
 
-.loader {
-  border-color: #FFFFFF #FFFFFF transparent transparent;
-  animation: rotation 1s linear infinite;
-  @apply w-48px h-48px rounded-1/2 inline-block relative border-3px box-border;
+.t7-screen {
+  width: 100%;
+  aspect-ratio: 4/3;
+  position: relative;
+  background-color: black;
 }
 
-.loader::after,
-.loader::before {
-  border-color: transparent transparent #0d94fc #0d94fc;
-  animation: rotationBack 0.5s linear infinite;
-  transform-origin: center center;
-  @apply absolute left-0 right-0 top-0 bottom-0 m-auto border-3px box-border w-40px h-40px rounded-1/2 content-open-quote;
+.t7-keyboard {
+  width: 100%;
+  height: 100%;
+  padding: calc(0.4rem * var(--factor));
+
+  display: grid;
+  grid-template-rows: 18fr 66fr 15fr;
+  grid-row-gap: 1%;
 }
 
-.loader::before {
-  border-color: #FFFFFF #FFFFFF transparent transparent;
-  animation: rotation 1.5s linear infinite;
-  @apply w-32px h-32px;
+.t7-keyinput {
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 
-@keyframes rotation {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+.t7-keyinput:hover {
+  filter: brightness(1.2);
 }
 
-@keyframes rotationBack {
-  0% {
-    transform: rotate(0deg);
-  }
+.t7-keyinput:active {
+  filter: brightness(1.3);
+}
 
-  100% {
-    transform: rotate(-360deg);
-  }
+.t7-function-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-column-gap: 1%;
+}
+
+.t7-panel-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3fr 10fr 10fr 3fr;
+}
+
+.t7-panel-grid {
+  width: 100%;
+  height: 100%;
+}
+
+.t7-keyinput-container {
+  display: grid;
+  position: relative;
+  height: 80%;
+  top: 10%;
+}
+
+.t7-startstop-grid .t7-keyinput-container {
+  grid-template-rows: 1fr 1fr;
+  grid-row-gap: 18%;
+  width: 90%;
+  left: 0%;
+}
+
+.t7-numpad-grid .t7-keyinput-container {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  grid-gap: 5% 8%;
+  width: 60%;
+  left: 20%;
+}
+
+.t7-arrowpad-grid .t7-keyinput-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  grid-gap: 4%;
+  width: 70%;
+  left: 15%;
+}
+
+.t7-updown-grid .t7-keyinput-container {
+  grid-template-rows: 1fr 1fr;
+  grid-row-gap: 25%;
+  width: 70%;
+  left: 30%;
+}
+
+.t7-shortcut-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-column-gap: 2.5%;
+}
+
+.t7-header {
+  display: flex;
+}
+
+.t7-eliar-logo {
+  width: 100%;
+  text-align: left;
+}
+
+.t7-eliar-logo svg {
+  height: 100%;
+  padding: calc(4px * var(--factor));
+  fill: white;
 }
 </style>

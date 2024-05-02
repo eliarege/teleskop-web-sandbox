@@ -13,7 +13,7 @@ useHeadSafe(computed(() => ({
 </script>
 
 <template>
-  <div v-if="currentMachine">
-    <MachineVnc :current-machine="currentMachine" />
+  <div v-if="currentMachine" class="text-center pt-4">
+    <MachineVnc class="inline" :machine="currentMachine" />
   </div>
 </template>
