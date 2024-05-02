@@ -111,6 +111,7 @@ function removeAttributes(element, pattern) {
 function getResourceRow(resource) {
   return document.querySelector(`div[data-id="${resource.id}"]`)
 }
+
 export class QueueDrag extends DragHelper {
   static get configurable() {
     return {
@@ -402,148 +403,148 @@ export class TaskStore extends EventStore {
   }
 
   // use this if you want to re-schedule a first event
-  async scheduleFirstEvent(previousResource, targetResource) {
-    if (previousResource !== targetResource) {
-      if (archiveEvents(previousResource.events).length > 1) {
-        const previousResourceEvents = sortEventsByDateDesc(previousResource.events)
-        const previousFirstEvent = previousResourceEvents[0]
-        if (!previousFirstEvent.originalData.isStarted) {
-          previousFirstEvent.startDate = new Date()
-          previousFirstEvent.endDate = addSeconds(previousFirstEvent.startDate, previousFirstEvent.theoreticalDuration)
-        } else {
-          previousFirstEvent.startDate = previousFirstEvent.originalData.startDate
-          previousFirstEvent.endDate = previousFirstEvent.originalData.endDate
-        }
-        const previousFutureEvents = []
-        previousResourceEvents.forEach((event) => {
-          if (event !== previousFirstEvent) {
-            if (event.startDate >= previousFirstEvent.startDate) {
-              previousFutureEvents.push(event)
-            }
-          }
-        })
-        previousFutureEvents.forEach((ev, i, all) => {
-          const prev = all[i - 1] || previousFirstEvent
-          ev.startDate = addMinutes(prev.endDate, 5)
-          ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
-        })
-      }
-      const targetResourceEvents = sortEventsByDateDesc(targetResource.events)
-      const targetFirstEvent = targetResourceEvents[0]
-      if (!targetFirstEvent.originalData.isStarted) {
-        targetFirstEvent.startDate = new Date()
-        targetFirstEvent.endDate = addSeconds(targetFirstEvent.startDate, targetFirstEvent.theoreticalDuration)
-      } else {
-        targetFirstEvent.startDate = targetFirstEvent.originalData.startDate
-        targetFirstEvent.endDate = targetFirstEvent.originalData.endDate
-      }
+  // async scheduleFirstEvent(previousResource, targetResource) {
+  //   if (previousResource !== targetResource) {
+  //     if (archiveEvents(previousResource.events).length > 1) {
+  //       const previousResourceEvents = sortEventsByDateDesc(previousResource.events)
+  //       const previousFirstEvent = previousResourceEvents[0]
+  //       if (!previousFirstEvent.originalData.isStarted) {
+  //         previousFirstEvent.startDate = new Date()
+  //         previousFirstEvent.endDate = addSeconds(previousFirstEvent.startDate, previousFirstEvent.theoreticalDuration)
+  //       } else {
+  //         previousFirstEvent.startDate = previousFirstEvent.originalData.startDate
+  //         previousFirstEvent.endDate = previousFirstEvent.originalData.endDate
+  //       }
+  //       const previousFutureEvents = []
+  //       previousResourceEvents.forEach((event) => {
+  //         if (event !== previousFirstEvent) {
+  //           if (event.startDate >= previousFirstEvent.startDate) {
+  //             previousFutureEvents.push(event)
+  //           }
+  //         }
+  //       })
+  //       previousFutureEvents.forEach((ev, i, all) => {
+  //         const prev = all[i - 1] || previousFirstEvent
+  //         ev.startDate = addMinutes(prev.endDate, 5)
+  //         ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
+  //       })
+  //     }
+  //     const targetResourceEvents = sortEventsByDateDesc(targetResource.events)
+  //     const targetFirstEvent = targetResourceEvents[0]
+  //     if (!targetFirstEvent.originalData.isStarted) {
+  //       targetFirstEvent.startDate = new Date()
+  //       targetFirstEvent.endDate = addSeconds(targetFirstEvent.startDate, targetFirstEvent.theoreticalDuration)
+  //     } else {
+  //       targetFirstEvent.startDate = targetFirstEvent.originalData.startDate
+  //       targetFirstEvent.endDate = targetFirstEvent.originalData.endDate
+  //     }
 
-      const targetFutureEvents = []
+  //     const targetFutureEvents = []
 
-      targetResourceEvents.forEach((event) => {
-        if (event !== targetFirstEvent) {
-          if (event.startDate >= targetFirstEvent.startDate) {
-            targetFutureEvents.push(event)
-          }
-        }
-      })
+  //     targetResourceEvents.forEach((event) => {
+  //       if (event !== targetFirstEvent) {
+  //         if (event.startDate >= targetFirstEvent.startDate) {
+  //           targetFutureEvents.push(event)
+  //         }
+  //       }
+  //     })
 
-      targetFutureEvents.forEach((ev, i, all) => {
-        const prev = all[i - 1] || targetFirstEvent
-        ev.startDate = addMinutes(prev.endDate, 5)
-        ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
-      })
-    } else {
-      const resourceEvents = sortEventsByDateDesc(targetResource.events)
-      const firstEvent = resourceEvents[0]
-      firstEvent.startDate = new Date()
-      firstEvent.endDate = addSeconds(firstEvent.startDate, firstEvent.theoreticalDuration)
-      const futureEvents = []
-      resourceEvents.forEach((event) => {
-        if (event !== firstEvent) {
-          if (event.startDate >= firstEvent.startDate) {
-            futureEvents.push(event)
-          }
-        }
-      })
-      futureEvents.forEach((ev, i, all) => {
-        const prev = all[i - 1] || firstEvent
-        ev.startDate = addMinutes(prev.endDate, 5)
-        ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
-      })
-    }
-    await this.finalizeRescheduling(targetResource, previousResource)
-  }
+  //     targetFutureEvents.forEach((ev, i, all) => {
+  //       const prev = all[i - 1] || targetFirstEvent
+  //       ev.startDate = addMinutes(prev.endDate, 5)
+  //       ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
+  //     })
+  //   } else {
+  //     const resourceEvents = sortEventsByDateDesc(targetResource.events)
+  //     const firstEvent = resourceEvents[0]
+  //     firstEvent.startDate = new Date()
+  //     firstEvent.endDate = addSeconds(firstEvent.startDate, firstEvent.theoreticalDuration)
+  //     const futureEvents = []
+  //     resourceEvents.forEach((event) => {
+  //       if (event !== firstEvent) {
+  //         if (event.startDate >= firstEvent.startDate) {
+  //           futureEvents.push(event)
+  //         }
+  //       }
+  //     })
+  //     futureEvents.forEach((ev, i, all) => {
+  //       const prev = all[i - 1] || firstEvent
+  //       ev.startDate = addMinutes(prev.endDate, 5)
+  //       ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
+  //     })
+  //   }
+  //   await this.finalizeRescheduling(targetResource, previousResource)
+  // }
 
-  // TODO: don't touch started events!
-  // use this if you want to re-schedule any event
-  async rescheduleEvents(eventRecord, previousResource, targetResource) {
-    const futureEvents = []
-    const firstEvent = sortEventsByDateDesc(eventRecord.resource.events)[0]
-    if (firstEvent.originalData.isStarted) {
-      firstEvent.startDate = firstEvent.originalData.startDate
-      firstEvent.endDate = firstEvent.originalData.endDate
-    } else {
-      firstEvent.startDate = new Date()
-      firstEvent.endDate = addSeconds(firstEvent.startDate, firstEvent.theoreticalDuration)
-    }
-    eventRecord.resource.events.forEach((event) => {
-      if (event !== firstEvent) {
-        if (event.startDate >= firstEvent.startDate) {
-          futureEvents.push(event)
-        }
-      }
-    })
-    sortEventsByDateDesc(futureEvents)
-    futureEvents.forEach((ev, i, all) => {
-      const prev = all[i - 1] || firstEvent
-      ev.startDate = addMinutes(prev.endDate, 5)
-      ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
-    })
-    await this.finalizeRescheduling(targetResource, previousResource)
-  }
+  // // TODO: don't touch started events!
+  // // use this if you want to re-schedule any event
+  // async rescheduleEvents(eventRecord, previousResource, targetResource) {
+  //   const futureEvents = []
+  //   const firstEvent = sortEventsByDateDesc(eventRecord.resource.events)[0]
+  //   if (firstEvent.originalData.isStarted) {
+  //     firstEvent.startDate = firstEvent.originalData.startDate
+  //     firstEvent.endDate = firstEvent.originalData.endDate
+  //   } else {
+  //     firstEvent.startDate = new Date()
+  //     firstEvent.endDate = addSeconds(firstEvent.startDate, firstEvent.theoreticalDuration)
+  //   }
+  //   eventRecord.resource.events.forEach((event) => {
+  //     if (event !== firstEvent) {
+  //       if (event.startDate >= firstEvent.startDate) {
+  //         futureEvents.push(event)
+  //       }
+  //     }
+  //   })
+  //   sortEventsByDateDesc(futureEvents)
+  //   futureEvents.forEach((ev, i, all) => {
+  //     const prev = all[i - 1] || firstEvent
+  //     ev.startDate = addMinutes(prev.endDate, 5)
+  //     ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
+  //   })
+  //   await this.finalizeRescheduling(targetResource, previousResource)
+  // }
 
-  async finalizeRescheduling(targetResource, previousResource) {
-    const targetResourceEvents = sortEventsByDateDesc(targetResource.events)
-    const previousResourceEvents = sortEventsByDateDesc(previousResource.events)
+  // async finalizeRescheduling(targetResource, previousResource) {
+  //   const targetResourceEvents = sortEventsByDateDesc(targetResource.events)
+  //   const previousResourceEvents = sortEventsByDateDesc(previousResource.events)
 
-    targetResourceEvents.forEach((event, i) => {
-      event.originalData.queueNumber = i + 1
-      event.resource = targetResource
-      event.resourceId = targetResource.id
-      event.originalData.resourceId = targetResource.id
-    })
-    previousResourceEvents.forEach((event, i) => {
-      event.originalData.queueNumber = i + 1
-    })
-    const updatedEvents = targetResourceEvents.concat(previousResourceEvents).map(a => ({
-      queueNumber: a.originalData.queueNumber,
-      machineId: a.originalData.resourceId,
-      planKey: a.originalData.id,
-      plannedStartTime: a.startDate,
-    }))
-    await $fetch('/api/planningBoardUpdate', {
-      method: 'PUT',
-      body: updatedEvents,
-    })
-  }
+  //   targetResourceEvents.forEach((event, i) => {
+  //     event.originalData.queueNumber = i + 1
+  //     event.resource = targetResource
+  //     event.resourceId = targetResource.id
+  //     event.originalData.resourceId = targetResource.id
+  //   })
+  //   previousResourceEvents.forEach((event, i) => {
+  //     event.originalData.queueNumber = i + 1
+  //   })
+  //   const updatedEvents = targetResourceEvents.concat(previousResourceEvents).map(a => ({
+  //     queueNumber: a.originalData.queueNumber,
+  //     machineId: a.originalData.resourceId,
+  //     planKey: a.originalData.id,
+  //     plannedStartTime: a.startDate,
+  //   }))
+  //   await $fetch('/api/planningBoardUpdate', {
+  //     method: 'PUT',
+  //     body: updatedEvents,
+  //   })
+  // }
 
-  async rescheduleOverlappingTasks(eventRecord, targetResource, previousResource) {
-    if (this.autoRescheduleTasks && !this.isRescheduling) {
-      const isFirstEvent = eventRecord.resource.events[eventRecord.resource.events.length - 1] === eventRecord
-      if (eventRecord.resource) {
-        this.isRescheduling = true
-        this.beginBatch()
-        if (isFirstEvent) {
-          await this.scheduleFirstEvent(previousResource, targetResource)
-        } else {
-          await this.rescheduleEvents(eventRecord, previousResource, targetResource)
-        }
-        this.isRescheduling = false
-        this.endBatch()
-      }
-    }
-  }
+  // async rescheduleOverlappingTasks(eventRecord, targetResource, previousResource) {
+  //   if (this.autoRescheduleTasks && !this.isRescheduling) {
+  //     const isFirstEvent = eventRecord.resource.events[eventRecord.resource.events.length - 1] === eventRecord
+  //     if (eventRecord.resource) {
+  //       this.isRescheduling = true
+  //       this.beginBatch()
+  //       if (isFirstEvent) {
+  //         await this.scheduleFirstEvent(previousResource, targetResource)
+  //       } else {
+  //         await this.rescheduleEvents(eventRecord, previousResource, targetResource)
+  //       }
+  //       this.isRescheduling = false
+  //       this.endBatch()
+  //     }
+  //   }
+  // }
 }
 
 export class QueueSchedule extends SchedulerPro {
@@ -566,6 +567,7 @@ export class QueueSchedule extends SchedulerPro {
           flex: 2,
         },
       },
+      infiniteScroll: true,
       autoRescheduleTasks: true,
       useInitialAnimation: false,
       features: {
