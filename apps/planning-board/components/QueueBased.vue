@@ -86,7 +86,6 @@ const modifiedEvents = computed(() => events.value?.map((ev: any) => {
     editable: false,
   }
 }))
-console.log(modifiedEvents.value)
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((unp) => {
   return {
     ...unp,
