@@ -38,7 +38,7 @@ export interface AuthPayload {
 }
 
 export interface KeycloakAuthMethods {
-  authenticate(socket: WebSocket): Promise<AuthResult<AuthPayload>>
+  authenticate: (socket: WebSocket) => Promise<AuthResult<AuthPayload>>
 }
 
 export type KeycloakAuth =

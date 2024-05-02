@@ -27,6 +27,14 @@ export enum HandshakeState {
   TightTunnelClient,
   /** TightVNC Only: Client picks auth type */
   TightSecurityClient,
+  /** VeNCrypt Only: Server sends highest version of VeNCrypt it can support. Two versions exists: 0.1 and 0.2. Only 0.2 is supported. */
+  VeNCryptVersionServer,
+  /** VeNCrypt Only: Client sends selected version */
+  VeNCryptVersionClient,
+  /** VeNCrypt Only: Server acknowledgement, subtype list length and array of subtypes */
+  VeNCryptAck,
+  /** VeNCrypt Only: Client sends selected VeNCrypt subtype */
+  VeNCryptSelectSubtype,
   /** Server sends authentication challenge */
   AuthenticationServer,
   /** Client sends authentication response */
@@ -70,6 +78,7 @@ const supportedSecurityTypes = [
   SecurityType.None,
   SecurityType.VNCAuth,
   SecurityType.Tight,
+  SecurityType.VeNCrypt,
 ]
 
 const logger = parentLogger.child({ name: 'proxy' })
@@ -161,6 +170,19 @@ export function* createRFBHandshakeProxy(): Generator<HandshakeState, boolean, M
     } else {
       securityType = SecurityType.None
     }
+  }
+
+  // VeNCrypt Security Type
+  // Read more: https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#vencrypt
+  if (securityType === SecurityType.VeNCrypt) {
+    expectServer(yield HandshakeState.VeNCryptVersionServer, 'Server sent highest VeNCrypt version it can support')
+    const version = expectClient(yield HandshakeState.VeNCryptVersionClient, 'Client sent highest VeNCrypt version it can support')
+    const minorVersion = version.data.readUInt8(1)
+    if (minorVersion !== 2) {
+      throw new HandshakeError(`Unsupported VeNCrypt version: 0.${minorVersion}`)
+    }
+    expectServer(yield HandshakeState.VeNCryptAck, 'Server sent acknowledgment')
+    securityType = expectClient(yield HandshakeState.VeNCryptSelectSubtype, 'Client selected subtype').data.readUInt32BE(0)
   }
 
   // VNC Authentication
