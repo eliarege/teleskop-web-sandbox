@@ -12,8 +12,8 @@ export default defineEventHandler(async (event) => {
 
   const numMachineId = Number.parseInt(machineId as string)
   const sse = useSSE()
-  let client: {id: string, event: any} | undefined
-  if(id) {
+  let client: { id: string, event: any } | undefined
+  if (id) {
     client = sse.clients.find(c => c.id === id)
   }
 
@@ -76,16 +76,15 @@ export default defineEventHandler(async (event) => {
             { func: () => updateConsumption(numMachineId, tbb, trx), message: 'consumptions updated' },
           ]
 
-          if(client){
-          for (const { func, message } of updateFunctions) {
-            const res = await func()
-            if (res) {
-              sse.broadcast(client, 'log', { message })
+          if (client) {
+            for (const { func, message } of updateFunctions) {
+              const res = await func()
+              if (res) {
+                sse.broadcast(client, 'log', { message })
+              }
             }
+            sse.broadcast(client, 'log', { message: 'project loaded successfully' })
           }
-          sse.broadcast(client, 'log', { message: 'project loaded successfully' })
-          }
-
         })
       }, { timeout: 1000 })
     } catch (error: any) {
@@ -100,8 +99,8 @@ export default defineEventHandler(async (event) => {
       }
     }
   } else {
-    if(client)
-    sse.broadcast(client, 'log', { type: 'error', message: 'Error: Invalid machineId parameter. Expected number.' })
+    if (client)
+      sse.broadcast(client, 'log', { type: 'error', message: 'Error: Invalid machineId parameter. Expected number.' })
     throw new TypeError('Invalid machineId parameter. Expected number.')
   }
 })
