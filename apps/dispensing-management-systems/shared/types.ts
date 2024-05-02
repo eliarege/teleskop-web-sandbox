@@ -139,7 +139,7 @@ export interface Machine {
   machineId: number
   machineName: string
   controllerType: number
-  connectedDispensers: Dispenser[]
+  connectedDispensers: Dispenser[] | null
 }
 export interface MachineControllerType {
   controllerTypeId: number

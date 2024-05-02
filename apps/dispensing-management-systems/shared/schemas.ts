@@ -15,3 +15,10 @@ export const DispenserSchema = z.object({
   protocolFields: z.unknown().nullable(),
   JDMConnections: z.array(z.number()).nullable(),
 })
+
+export const MachineSchema = z.object({
+  machineId: z.number(),
+  machineName: z.string(),
+  controllerType: z.number(),
+  connectedDispensers: z.array(z.any()).nullable()
+})
