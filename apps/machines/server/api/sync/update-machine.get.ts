@@ -8,13 +8,13 @@ import { DatabaseQueryError } from '~/server/error'
 const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
 
 export default defineEventHandler(async (event) => {
-  const { machineId, id } = getQuery(event)
+  const { machineId, sseId } = getQuery(event)
 
   const numMachineId = Number.parseInt(machineId as string)
   const sse = useSSE()
   let client: { id: string, event: any } | undefined
-  if (id) {
-    client = sse.clients.find(c => c.id === id)
+  if (sseId) {
+    client = sse.clients.find(c => c.id === sseId)
   }
 
   if (!Number.isNaN(numMachineId)) {

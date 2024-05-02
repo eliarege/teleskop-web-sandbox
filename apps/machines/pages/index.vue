@@ -452,7 +452,7 @@ async function loadProject() {
       retry: false,
       query: {
         machineId: selected.value.machineId,
-        id: uuid.value,
+        sseId: uuid.value,
       },
     })
     notifySuccess(t('updateFinished'))
