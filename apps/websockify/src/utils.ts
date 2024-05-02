@@ -40,7 +40,7 @@ export function getPathname(request: IncomingMessage) {
   return request.url.match(PATH_RE)?.[0] || ''
 }
 
-/** When exit signal is received */
+/** When exit signal is received. It is the responsibility of the callback to handle process exit. */
 export function onExitSignal(callback: () => void) {
   process.on('SIGINT', callback)
   process.on('SIGTERM', callback)

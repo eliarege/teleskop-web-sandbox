@@ -263,5 +263,7 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
 }
 
 onExitSignal(() => {
+  wss.clients.forEach(c => c.terminate())
   wss.close()
+  process.exit(0)
 })
