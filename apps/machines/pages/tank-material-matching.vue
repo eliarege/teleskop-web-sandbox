@@ -2,6 +2,7 @@
 import { Sortable } from 'sortablejs-vue3'
 import { klona } from 'klona'
 import type { Machine, Material, TankDefinition } from '~/types'
+import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
 const { t } = useI18n()
 
@@ -58,38 +59,39 @@ async function handleSubmit() {
 }
 const copy = ref()
 
-function handleCopy() {
-  copy.value = klona(tanksClone.value)
-}
-
-async function handlePaste() {
-  await $fetch('/api/materials/material-tank-map', {
-    method: 'POST',
-    body: {
-      tankMap: copy.value.map((t: TankDefinition) => ({ ...t, machineId: selectedMachineId.value })),
+const contextMenuOptions = computed(() => [
+  {
+    label: t('copy'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_copy',
+    disabled: !selectedMachineId.value,
+    onClick: () => {
+      copy.value = klona(tanksClone.value)
     },
-  })
-  await refreshTanks()
-}
+  },
+  {
+    label: t('paste'),
+    category: 'copy',
+    keybind: '',
+    icon: 'content_paste',
+    disabled: !selectedMachineId.value || !copy.value,
+    onClick: async () => {
+      await $fetch('/api/materials/material-tank-map', {
+        method: 'POST',
+        body: {
+          tankMap: copy.value.map((t: TankDefinition) => ({ ...t, machineId: selectedMachineId.value })),
+        },
+      })
+      await refreshTanks()
+    },
+  },
+])
 </script>
 
 <template>
+  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
   <div>
-    <div class="flex w-full justify-end my-4">
-      <q-btn-group push class="flex flex-row mr-4">
-        <q-btn
-          :label="t('copy')"
-
-          no-caps
-          @click="handleCopy"
-        />
-        <q-btn
-          :label="t('paste')"
-          no-caps
-          @click="handlePaste"
-        />
-      </q-btn-group>
-    </div>
     <q-card>
       <q-card-section class="flex flex-row justify-around w-full">
         <div class="flex flex-row w-full justify-start">
@@ -115,7 +117,6 @@ async function handlePaste() {
               </q-item>
             </q-list>
           </div>
-
           <div class="mr-4 w-sm">
             <h3>{{ t('materials') }}</h3>
             <Sortable
@@ -174,7 +175,12 @@ async function handlePaste() {
       </q-card-section>
       <q-card-actions align="right" class="m-4">
         <q-btn no-caps :label="t('cancel')" />
-        <q-btn no-caps color="primary" :label="t('submit')" @click="handleSubmit" />
+        <q-btn
+          no-caps
+          color="primary"
+          :label="t('submit')"
+          @click="handleSubmit"
+        />
       </q-card-actions>
     </q-card>
   </div>

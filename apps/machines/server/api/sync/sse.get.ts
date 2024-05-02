@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
     }
     sse.addClient(client)
 
+    sse.send(client.id, 'uuid', { uuid: client.id })
     sse.broadcast(client, 'connection', { message: 'Connected' })
 
     event.node.res.on('close', () => {

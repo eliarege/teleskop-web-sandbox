@@ -83,12 +83,12 @@ const { data: commands, refresh: refreshCommands } = useLazyFetch<MasterCommand[
 
     tankDefinitions.value.forEach((tankDef) => {
       commandLists.forEach((list: CommandList) => {
-        tankDef[list.name].forEach((commandNo: number) => {
+        tankDef[list.name].forEach(() => {
           const commandIndex = data.findIndex(d => tankDef[list.name].includes(d.commandNo!))
           if (commandIndex !== -1) {
             const command = data.splice(commandIndex, 1)[0]
             list.ref.push({
-              commandNo,
+              commandNo: command.commandNo!,
               commandName: command.commandName || '',
               tankNo: tankDef.tankNo,
             })
@@ -99,6 +99,14 @@ const { data: commands, refresh: refreshCommands } = useLazyFetch<MasterCommand[
 
     filterCommandLists()
   },
+})
+
+watch([selectedMachineId, selectedDefinition], ([newMachineId, _oldMachineId], [_newDef, _oldDef]) => {
+  document.querySelectorAll('.draggable-selected').forEach((el) => {
+    if (el.getAttribute('data-machine-id') !== String(newMachineId)) {
+      el.remove()
+    }
+  })
 })
 
 function filterCommandLists() {
@@ -168,7 +176,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_copy',
-    disabled: selectedMachineId.value === -1,
+    disabled: !selectedMachineId.value,
     onClick: () => {
       copy.value = klona(tankDefinitions.value)
     },
@@ -178,7 +186,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_paste',
-    disabled: selectedMachineId.value === -1,
+    disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
       for (const tankDef of copy.value) {
         await $fetch('/api/tank-definitions/tank-definition-list', {
@@ -289,7 +297,7 @@ const contextMenuOptions = computed(() => [
                 <h3>{{ t('commands') }}</h3>
                 <Sortable
                   :list="commands"
-                  :item-key="item => item.commandNo"
+                  :item-key="(element) => `${element.machineId}-${element.commandNo}`"
                   class="q-list q-list--bordered q-list--separator overflow-y-auto h-sm"
                   :options="{ group: 'group' }"
                   @add="(e) => handleDragDropCommands(e)"
@@ -316,7 +324,7 @@ const contextMenuOptions = computed(() => [
                   <h3>{{ t(list.name) }}</h3>
                   <Sortable
                     :list="list.ref"
-                    :item-key="item => item.commandNo"
+                    :item-key="(element) => `${element.machineId}-${element.commandNo}`"
                     class="q-list q-list--bordered q-list--separator h-40 overflow-y-auto"
                     :options="{ group: 'group' }"
                     @add="(e) => handleDragDrop(e, list.name)"
@@ -326,7 +334,8 @@ const contextMenuOptions = computed(() => [
                         :key="element.commandNo"
                         :data-command-no="element.commandNo"
                         :data-list-name="list.name"
-                        class="draggable"
+                        :data-machine-id="element.machineId"
+                        class="draggable-selected"
                       >
                         <q-item-section>
                           {{ `${element.commandNo} ${element.commandName}` }}
@@ -341,8 +350,17 @@ const contextMenuOptions = computed(() => [
         </div>
       </q-card-section>
       <q-card-actions align="right" class="mt-4 mr-4">
-        <q-btn no-caps :label="t('cancel')" @click="$router.go(0)" />
-        <q-btn color="primary" no-caps :label="t('submit')" @click="handleSubmit" />
+        <q-btn
+          no-caps
+          :label="t('cancel')"
+          @click="$router.go(0)"
+        />
+        <q-btn
+          color="primary"
+          no-caps
+          :label="t('submit')"
+          @click="handleSubmit"
+        />
       </q-card-actions>
     </q-card>
   </div>
