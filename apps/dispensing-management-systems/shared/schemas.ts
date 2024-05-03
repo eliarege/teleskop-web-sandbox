@@ -22,3 +22,17 @@ export const MachineSchema = z.object({
   controllerType: z.number(),
   connectedDispensers: z.array(z.any()).nullable()
 })
+
+export const MaterialSchema = z.object({
+  materialCode: z.string(),
+  materialName: z.string(),
+  materialGroupNo: z.number(),
+  density: z.number(),
+  ph: z.number(),
+  source: z.string().nullable(),
+  costUnit: z.string().nullable(),
+  unitCost: z.number().nullable(),
+  reRequestable: z.boolean(),
+  directTransfer: z.boolean(),
+  connectedDispensers: z.array(z.any()).nullable()
+})

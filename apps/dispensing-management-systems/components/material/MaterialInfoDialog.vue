@@ -157,7 +157,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 {{ t('materialFields.PH') }}
               </span>
               <QInput
-                v-model="editedMaterial.ph"
+                v-model.number="editedMaterial.ph"
                 class="item-input"
                 dense
                 filled
@@ -204,7 +204,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 {{ t('materialFields.Density') }}
               </span>
               <QInput
-                v-model="editedMaterial.density"
+                v-model.number="editedMaterial.density"
                 class="item-input"
                 dense
                 filled
@@ -219,7 +219,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 {{ t('materialFields.UnitCost') }}
               </span>
               <QInput
-                v-model="editedMaterial.unitCost"
+                v-model.number="editedMaterial.unitCost"
                 class="item-input"
                 dense
                 filled

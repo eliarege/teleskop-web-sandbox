@@ -84,12 +84,12 @@ export interface Material {
   materialGroupNo: number
   density: number
   ph: number
-  source: string
-  costUnit: string
-  unitCost: number
+  source: string | null
+  costUnit: string| null
+  unitCost: number | null
   reRequestable: boolean
   directTransfer: boolean
-  connectedDispensers: Dispenser[]
+  connectedDispensers: Dispenser[] | null
 }
 export interface MaterialRequest {
   jobId: number
