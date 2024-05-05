@@ -34,6 +34,7 @@ async function handleSubmit() {
     method: 'PUT',
     body: { changedCommands: changedCommands.value },
   })
+  changedCommands.value = []
 }
 </script>
 

@@ -44,10 +44,24 @@ watch(parameterTypes, (_newValue, _oldValue) => {
   }
 })
 
-async function handleOptionChange(paramType: object) {
-  const paramTypeId = paramType.id
-  const paramId = paramType.data.paramId
-  await selectStartingParameterType(selectedMachineId.value, paramTypeId, paramId)
+interface ParamType {
+  id: number
+  paramId: number
+  machineId: number
+}
+
+const changedParameterTypes = ref<ParamType[]>([])
+
+function handleOptionChange(paramType: object) {
+  changedParameterTypes.value.push({ id: paramType.id, paramId: paramType.data.paramId, machineId: selectedMachineId.value })
+}
+
+async function handleSubmit() {
+  await $fetch('/api/starting-parameter-types/starting-parameter-types', {
+    method: 'PUT',
+    body: { changedParameterTypes: changedParameterTypes.value },
+  })
+  changedParameterTypes.value = []
 }
 
 const copy = ref()
@@ -71,8 +85,9 @@ const contextMenuOptions = computed(() => [
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
       for (const paramType of copy.value) {
-        await handleOptionChange(paramType)
+        handleOptionChange(paramType)
       }
+      await handleSubmit()
     },
   },
 ])
@@ -81,42 +96,58 @@ const contextMenuOptions = computed(() => [
 <template>
   <div>
     <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
-    <q-card class="flex flex-row justify-center">
-      <q-card-section class="w-sm">
-        <h3>{{ t('machines') }}</h3>
-        <q-list
-          bordered
-          separator
-          class="overflow-y-auto h-140"
-        >
-          <q-item
-            v-for="machine in machines"
-            :key="machine.machineId"
-            v-ripple
-            clickable
-            :active="selectedMachineId === machine.machineId"
-            :focused="selectedMachineId === machine.machineId"
-            @click="selectedMachineId = machine.machineId"
+    <q-card>
+      <q-card-section class="flex flex-row justify-center gap-8">
+        <div class="w-sm">
+          <h3>{{ t('machines') }}</h3>
+          <q-list
+            bordered
+            separator
+            class="overflow-y-auto h-140"
           >
-            <q-item-section>
-              {{ machine.machineCode }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
+            <q-item
+              v-for="machine in machines"
+              :key="machine.machineId"
+              v-ripple
+              clickable
+              :active="selectedMachineId === machine.machineId"
+              :focused="selectedMachineId === machine.machineId"
+              @click="selectedMachineId = machine.machineId"
+            >
+              <q-item-section>
+                {{ machine.machineCode }}
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
 
-      <q-card-section class="flex flex-col input-field">
-        <div v-for="paramTypeMap in paramTypeMaps" :key="paramTypeMap.id">
-          <q-select
-            v-model="paramTypeMap.data"
-            :options="parameterOptions"
-            option-label="paramString"
-            option-value="paramId"
-            :label="t(paramTypeMap.name)"
-            @update:model-value="handleOptionChange(paramTypeMap)"
-          />
+        <div class="flex flex-col input-field">
+          <div v-for="paramTypeMap in paramTypeMaps" :key="paramTypeMap.id">
+            <q-select
+              v-model="paramTypeMap.data"
+              :options="parameterOptions"
+              option-label="paramString"
+              option-value="paramId"
+              :label="t(paramTypeMap.name)"
+              @update:model-value="handleOptionChange(paramTypeMap)"
+            />
+          </div>
         </div>
       </q-card-section>
+
+      <q-card-actions align="right" class="mt-4 mr-4">
+        <q-btn
+          no-caps
+          :label="t('cancel')"
+          @click="$router.go(0)"
+        />
+        <q-btn
+          color="primary"
+          no-caps
+          :label="t('submit')"
+          @click="handleSubmit"
+        />
+      </q-card-actions>
     </q-card>
   </div>
 </template>
