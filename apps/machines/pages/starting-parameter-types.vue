@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { klona } from 'klona'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
-import { selectStartingParameterType } from '~/utils'
 
 const { t } = useI18n()
 

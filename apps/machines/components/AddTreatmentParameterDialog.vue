@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
 import type { TreatmentMachineGroup, TreatmentParameter } from '~/types'
-import { addTreatmentMachineGroup, addTreatmentParameter, deleteTreatmentMachineGroup, deleteTreatmentParameter, editTreatmentMachineGroup, editTreatmentParameter, updateMachineGroupMachines } from '~/utils'
+import { addTreatmentParameter, deleteTreatmentParameter, editTreatmentParameter } from '~/utils'
 
 const props = defineProps<{
   show: boolean

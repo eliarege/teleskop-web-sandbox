@@ -66,14 +66,20 @@ function handleEditButton() {
 }
 
 async function handleEditReason() {
-  await editCommandTimeoutReason(selectedReasonId.value, newReasonText.value)
+  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+    method: 'PUT',
+    body: { reasonText: newReasonText.value, id: selectedReasonId.value },
+  })
   showEditReasonDialog.value = false
   newReasonText.value = ''
   await refreshTimeoutReasons()
 }
 
 async function handleDeleteReason() {
-  await deleteCommandTimeoutReason(selectedReasonId.value)
+  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+    method: 'DELETE',
+    body: { id: selectedReasonId.value },
+  })
   await refreshTimeoutReasons()
 }
 

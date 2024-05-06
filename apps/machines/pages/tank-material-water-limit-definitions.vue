@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { updateTankMaterialWaterDefinition } from '~/utils'
-
 const { t } = useI18n()
 
 const materialTypeMap = [
@@ -88,7 +86,10 @@ async function handleFilterSlotsUpdate(updatedValue) {
 async function popupUpdate(value, rowName, props) {
   const tankDefinition = tankMaterialDefinitions.value[props.rowIndex]
   tankDefinition[rowName] = value
-  await updateTankMaterialWaterDefinition({ tankDefinition, rowName, value })
+  return await $fetch('/api/materials/material-tank-water-definition', {
+    method: 'POST',
+    body: { tankDefinition, rowName, value },
+  })
 }
 </script>
 
