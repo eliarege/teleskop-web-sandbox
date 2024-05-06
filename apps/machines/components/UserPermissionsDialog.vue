@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { User } from '~/types'
-import { updateUserPermissions } from '~/utils'
 
 const props = defineProps<{
   show: boolean
@@ -92,7 +91,10 @@ async function savePermissions() {
   const hexadecimalValueGroup1 = `0x${combinedPermissionValueGroup1.toString(16).padStart(8, '0')}`
   const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
 
-  await updateUserPermissions({ userId: user.value.userId, userMode: hexadecimalValueGroup1, userMode2: hexadecimalValueGroup2 })
+  return await $fetch('/api/user-definitions/user-definition', {
+    method: 'PUT',
+    body: { userId: user.value.userId, userMode: hexadecimalValueGroup1, userMode2: hexadecimalValueGroup2 },
+  })
 }
 </script>
 

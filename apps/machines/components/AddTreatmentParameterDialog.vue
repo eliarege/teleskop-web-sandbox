@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { Sortable } from 'sortablejs-vue3'
 import type { TreatmentMachineGroup, TreatmentParameter } from '~/types'
-import { addTreatmentParameter, deleteTreatmentParameter, editTreatmentParameter } from '~/utils'
 
 const props = defineProps<{
   show: boolean
@@ -23,15 +21,24 @@ const { data: params, refresh: refreshParams } = useLazyFetch('/api/treatment-pa
 })
 
 async function handleAdd() {
-  await addTreatmentParameter(selected.value)
+  await $fetch('/api/treatment-parameters/treatment-parameter', {
+    method: 'POST',
+    body: selected.value,
+  })
   await refreshParams()
 }
 async function handleEdit() {
-  await editTreatmentParameter(selected.value)
+  await $fetch('/api/treatment-parameters/treatment-parameter', {
+    method: 'PUT',
+    body: selected.value,
+  })
   await refreshParams()
 }
 async function handleDelete() {
-  await deleteTreatmentParameter(selected.value)
+  await $fetch('/api/treatment-parameters/treatment-parameter', {
+    method: 'DELETE',
+    body: selected.value,
+  })
   await refreshParams()
   selected.value = {
     id: -1,

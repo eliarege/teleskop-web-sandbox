@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
 import type { TreatmentMachineGroup } from '~/types'
-import { addTreatmentMachineGroup, deleteTreatmentMachineGroup, editTreatmentMachineGroup, updateMachineGroupMachines } from '~/utils'
 
 const props = defineProps<{
   show: boolean
@@ -42,24 +41,36 @@ async function handleDragDrop(e) {
   if (matches && matches.length) {
     const machineId = Number.parseInt(matches[0])
 
-    await updateMachineGroupMachines({
-      machineId,
-      groupId: selectedGroupId.value,
-      action: e.type,
+    await $fetch('/api/treatment-parameters/machine-group-machines', {
+      method: 'PUT',
+      body: {
+        machineId,
+        groupId: selectedGroupId.value,
+        action: e.type,
+      },
     })
   }
 }
 
 async function handleAdd() {
-  await addTreatmentMachineGroup(selected.value)
+  await $fetch('/api/treatment-parameters/machine-group', {
+    method: 'POST',
+    body: selected.value,
+  })
   await refreshGroups()
 }
 async function handleEdit() {
-  await editTreatmentMachineGroup(selected.value)
+  await $fetch('/api/treatment-parameters/machine-group', {
+    method: 'PUT',
+    body: selected.value,
+  })
   await refreshGroups()
 }
 async function handleDelete() {
-  await deleteTreatmentMachineGroup(selected.value)
+  await $fetch('/api/treatment-parameters/machine-group', {
+    method: 'DELETE',
+    body: selected.value,
+  })
   await refreshGroups()
   selected.value = {
     id: -1,
