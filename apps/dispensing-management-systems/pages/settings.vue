@@ -101,9 +101,9 @@ useResizeObserver(document.body, () => {
           <QSeparator />
           <QTab
             name="s4"
-            icon="settings"
+            icon="assignment"
             :class="tab === 's4' ? 'tabs-active' : 'tabs'"
-            :label="innerWidth > minSize ? `${t('settings.4')}` : ''"
+            :label="innerWidth > minSize ? `${t('settings.Recipe')}` : ''"
           />
           <QSeparator />
           <QTab
@@ -137,7 +137,7 @@ useResizeObserver(document.body, () => {
           </QTabPanel>
 
           <QTabPanel name="s4">
-            <!-- Settings Component -->
+            <SettingsRecipe />
           </QTabPanel>
 
           <QTabPanel name="s5">

@@ -82,6 +82,7 @@
     "App": "Uygulama Ayarları",
     "Material": "Malzeme Ayarları",
     "Machine": "Makine Ayarları",
+    "Recipe": "Reçete Ayarları",
     "Teleskop": "Teleskop Ayarları"
   },
   "materialFields": {

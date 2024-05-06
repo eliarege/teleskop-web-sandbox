@@ -82,6 +82,7 @@
     "App": "App Settings",
     "Material": "Material Settings",
     "Machine": "Machine Settings",
+    "Recipe": "Recipe Settings",
     "Teleskop": "Teleskop Settings"
   },
   "materialFields": {
