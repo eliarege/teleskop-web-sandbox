@@ -145,6 +145,19 @@ export interface MachineControllerType {
   controllerTypeId: number
   controllerTypeName: string
 }
+export interface RecipeMaster {
+  recipeId: number
+  recipeName: string
+  recipeGroup: number
+  recipeType: number
+  comment: string
+  prepTime: Date
+  lastUpdate: Date
+  stepNo: number
+  programNo: number
+  machineId: number
+  isPassive: boolean
+}
 export interface DatabaseConnection {
   client: string
   hostComputer: string
