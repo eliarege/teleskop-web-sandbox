@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     MTTEMPIO: machine.MTTempIo,
     STEAMKGPERHOUR: machine.steamKgPerHour,
     STEAMVALVEDO: machine.steamValveDo,
-    PORT: -1,
+    PORT: 8080,
   })
   return res
 })
