@@ -63,6 +63,21 @@ export default defineNuxtConfig({
       cookieKey: 'teleskop_locale',
     },
   },
+  vite: {
+    vue: {
+      template: {
+        // Nuxt layers break merging strategy of vite configurations.
+        // It breaks url transformations on projects that has their own configurations like `multi-monitor`
+        transformAssetUrls: {
+          video: ['src', 'poster'],
+          source: ['src'],
+          img: ['src'],
+          image: ['xlink:href', 'href'],
+          use: ['xlink:href', 'href'],
+        },
+      },
+    },
+  },
   hooks: {
     'schema:extend': (schemas) => {
       schemas.push({

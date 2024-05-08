@@ -26,6 +26,7 @@
     "soap": "^1.0.1",
     "sortablejs": "^1.15.2",
     "sortablejs-vue3": "^1.2.11",
+    "ufo": "^1.5.3",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

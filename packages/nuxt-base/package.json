@@ -26,6 +26,7 @@
     "nuxt-quasar-ui": "^2.1.0",
     "pinia": "^2.1.7",
     "quasar": "^2.15.3",
+    "ufo": "^1.5.3",
     "unocss": "^0.59.4"
   },
   "devDependencies": {

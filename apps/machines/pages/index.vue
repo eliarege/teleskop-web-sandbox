@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMagicKeys, whenever } from '@vueuse/core'
+import { withBase } from 'ufo'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 import type { Machine } from '~/types'
@@ -10,6 +11,7 @@ interface sseLog {
 }
 
 const { t, locale, setLocale } = useI18n()
+const baseURL = useRuntimeConfig().app.baseURL
 
 const { data: databaseVersion } = useLazyFetch('/api/machines/database-version', {
   default: () => '',
@@ -413,7 +415,7 @@ async function updateVersions() {
   await refresh()
 }
 
-const { event, data, close } = useEventSource('/api/sync/sse', ['log', 'uuid'], {
+const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid'], {
   autoReconnect: true,
 })
 

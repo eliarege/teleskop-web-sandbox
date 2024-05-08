@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { withBase } from 'ufo'
+
 const config = useRuntimeConfig()
 const { bottomSheet } = useQuasar()
 const { data: app } = useFetch(`/api/properties`)
@@ -30,13 +32,13 @@ const bottomSheetActions = appList.map((app) => {
   return {
     label: app.name,
     url: withHost(app.url),
-    img: `/app-icons/${app.img}`,
+    img: withBase(`/app-icons/${app.img}`, config.app.baseURL),
   }
 })
 
 function showBottomsheet() {
   bottomSheet({
-    message: `Version: ${app.value.version || 'Unknown'}`,
+    message: `Version: ${app.value?.version || 'Unknown'}`,
     dark: true,
     grid: true,
     actions: bottomSheetActions,
