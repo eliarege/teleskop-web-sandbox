@@ -3,7 +3,7 @@ import type { TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { DatabaseQueryError } from '../error'
 import { calcIONumber } from '.'
-import type { CommandAlarmReason } from '~/types'
+import type { CommandAlarmReason, FunctionAlarm } from '~/types'
 
 async function replaceRecords(knex: Knex, tableName: string, data: any[], whereObject?: Record<string, any>): Promise<boolean> {
   const chunks = chunk(data, 50)
@@ -230,25 +230,23 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
   if (!commands.length)
     return false
 
-  for (const c of commands) {
-    const query = trx('BFMASTERCOMMANDS').where({
-      COMMANDNO: c.commandNo,
-      MACHINEID: machineId,
-    }).update({
-      ISTEMPERATURE: !!((c.type === 2 || c.type === 6)),
-      ISUNLOAD: !!((c.type === 4 || c.type === 6)),
-      X: c.x,
-      Y: c.y,
-      A: c.a,
-      MAXA: c.maxA,
-      B: c.b,
-    })
-    try {
-      await query
-      return true
-    } catch (error: any) {
-      throw new DatabaseQueryError(error.message)
+  try {
+    for (const c of commands) {
+      await trx('BFMASTERCOMMANDS').where({
+        COMMANDNO: c.commandNo,
+        MACHINEID: machineId,
+      }).update({
+        ISTEMPERATURE: !!((c.type === 2 || c.type === 6)),
+        ISUNLOAD: !!((c.type === 4 || c.type === 6)),
+        X: c.x,
+        Y: c.y,
+        A: c.a,
+        MAXA: c.maxA,
+        B: c.b,
+      })
     }
+  } catch (error: any) {
+    throw new DatabaseQueryError(error.message)
   }
 }
 
@@ -277,20 +275,18 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
   if (!commands.length)
     return false
 
-  for (const command of commands) {
-    const query = trx('BFMASTERCOMMANDS').where({
-      COMMANDNO: command.commandNo,
-      MACHINEID: machineId,
-    }).update({
-      ADVICELIST: (command.adviceList && command.adviceList.length) ? command.adviceList : -1,
-      DONTUSELIST: command.dontUseList,
-    })
-    try {
-      await query
-      return true
-    } catch (error: any) {
-      throw new DatabaseQueryError(error.message)
+  try {
+    for (const command of commands) {
+      await trx('BFMASTERCOMMANDS').where({
+        COMMANDNO: command.commandNo,
+        MACHINEID: machineId,
+      }).update({
+        ADVICELIST: (command.adviceList && command.adviceList.length) ? command.adviceList : -1,
+        DONTUSELIST: command.dontUseList,
+      })
     }
+  } catch (error: any) {
+    throw new DatabaseQueryError(error.message)
   }
 }
 
@@ -438,7 +434,7 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
 
     if (alarmObj) {
       const alarmTypeIndex = Object.keys(alarmObj)
-        .findIndex(key => alarmObj[key]?.includes(c.alarmNo)) + 1
+        .findIndex(key => alarmObj[key as keyof FunctionAlarm]?.includes(c.alarmNo)) + 1
 
       commandsAlarmsInserts.push({
         MACHINEID: machineId,
