@@ -14,7 +14,6 @@ defineProps({
 const container = ref<HTMLElement>()
 const data = useDataStore()
 const { y, arrivedState } = useScroll(container)
-const scrollAnimationActive = ref(false)
 
 let abortAnimation: () => void = () => {}
 
@@ -49,7 +48,7 @@ function startAnimation() {
   }
 }
 
-watch(scrollAnimationActive, (enabled) => {
+watch(() => data.scrollAnimationActive, (enabled) => {
   if (enabled) {
     abortAnimation = startAnimation()
   } else {
@@ -65,7 +64,7 @@ onScopeDispose(() => {
 onKeyStroke(['P', 'p'], (ev) => {
   if (ev.ctrlKey) {
     ev.preventDefault()
-    scrollAnimationActive.value = !scrollAnimationActive.value
+    data.scrollAnimationActive = !data.scrollAnimationActive
   }
 })
 </script>
@@ -79,13 +78,6 @@ onKeyStroke(['P', 'p'], (ev) => {
   >
     <MachineCardMain :machine-data="machineData" />
   </div>
-  <Teleport to="body">
-    <div
-      v-if="scrollAnimationActive"
-      class="absolute inset-0 z-100"
-      @click="scrollAnimationActive = false"
-    />
-  </Teleport>
 </template>
 
 <style lang="postcss" scoped>

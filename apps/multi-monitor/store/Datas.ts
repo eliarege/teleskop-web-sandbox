@@ -8,6 +8,7 @@ interface Settings {
 
 export const useDataStore = defineStore('datas', () => {
   // settings
+  const scrollAnimationActive = ref(false)
   const mode = useStorage('layout', true)
   const electricity = useStorage('electricity', true)
   const steam = useStorage('steam', true)
@@ -75,6 +76,7 @@ export const useDataStore = defineStore('datas', () => {
   fetchMachineData()
 
   return {
+    scrollAnimationActive,
     locale,
     hex,
     filteredMachines,
