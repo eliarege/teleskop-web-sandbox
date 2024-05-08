@@ -20,5 +20,7 @@ export function parseControllerModel(content: string) {
     }
     pattern.lastIndex = 0
     return controllerModel
+  } else {
+    throw new TypeError(`Failed to parse controllerModel`)
   }
 }
