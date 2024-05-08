@@ -1,8 +1,10 @@
+import type { TbbFtpClient } from 'tbb-ftp-client'
 import { withTbbFtpClient } from 'tbb-ftp-client'
 import { getQuery } from 'h3'
 import { inferBoolean } from 'utils'
+import type { Knex } from 'knex'
 import { knex } from '~/server/connectionPool'
-import { updateAnalogInputs, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral, updateLocksOutput, updateSystemParams } from '~/server/utils/updateDatabase'
+import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateGlobalCommandFormulas, updateLocksGeneral, updateLocksOutput, updateSystemParams } from '~/server/utils/updateDatabase'
 import { DatabaseQueryError } from '~/server/error'
 
 const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
@@ -74,6 +76,8 @@ export default defineEventHandler(async (event) => {
             { func: () => updateGlobalCommandFormulas(numMachineId, tbb, trx), message: 'global command formulas updated' },
             // consumption
             { func: () => updateConsumption(numMachineId, tbb, trx), message: 'consumptions updated' },
+            // archives
+            { func: () => updateArchives(numMachineId, tbb, trx), message: 'archives updated' },
           ]
 
           for (const { func, message } of updateFunctions) {
