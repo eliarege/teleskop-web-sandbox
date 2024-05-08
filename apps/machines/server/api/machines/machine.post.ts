@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
 
     VERSION: machine.version,
     NOZZLECOUNT: machine.nozzleCount,
-    PLCMODEL: machine.plcModel,
     theoricalChargeDuration: machine.theoricalChargeDuration,
     REELCOUNT: machine.reelCount,
     STEAMUNIT: machine.steamUnit,

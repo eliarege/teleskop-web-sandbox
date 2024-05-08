@@ -154,7 +154,7 @@ const columns = computed(() => ({
     filterType: 'includes',
     type: 'text',
     visible: true,
-    editable: true,
+    editable: false,
     schema: {
       filled: true,
     },
@@ -667,6 +667,7 @@ async function checkNetworkConnection(formData: Machine) {
       @close="connectionMessage = { message: '', color: '' }"
     >
       <template #form-content="slotProps">
+        <br>
         <q-btn
           :label="t('checkTeleskopConnection')"
           color="primary"
