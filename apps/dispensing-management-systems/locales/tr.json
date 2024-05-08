@@ -4,6 +4,7 @@
   "AddNewDispenser": "Yeni Dağıtıcı Ekle",
   "AddNewMachine": "Yeni Makine Ekle",
   "AddNewMaterial": "Yeni Malzeme Ekle",
+  "AddNewRecipe": "Yeni Reçete Ekle",
   "SearchJob": "İş Emri Ara",
   "Refresh": "Yenile",
   "SyncData": "Teleskop Verisiyle Senkronize Et",
@@ -119,7 +120,9 @@
     "ISN": "ISN",
     "MainStep": "Ana Adım",
     "ParallelStep": "Paralel Adım",
-    "ProcessNo": "İşlem Numarası"
+    "ProcessNo": "İşlem Numarası",
+    "ID": "Reçete No",
+    "Name": "Reçete Adı"
   },
   "batchPlanParameterFields": {
     "Title": "Parametreler",

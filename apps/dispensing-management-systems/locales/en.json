@@ -4,6 +4,7 @@
   "AddNewDispenser": "Add New Dispenser",
   "AddNewMachine": "Add New Machine",
   "AddNewMaterial": "Add New Material",
+  "AddNewRecipe": "Add New Recipe",
   "SearchJob": "Search Job Order",
   "Refresh": "Refresh",
   "SyncData": "Sync Teleskop Data",
@@ -121,7 +122,9 @@
     "ParallelStep": "Parallel Step",
     "ProcessNo": "Process No",
     "Amount": "Amount",
-    "Unit": "Unit"
+    "Unit": "Unit",
+    "ID": "Recipe ID",
+    "Name": "Recipe Name"
   },
   "batchPlanParameterFields": {
     "Title": "Batch Plan Parameters",
