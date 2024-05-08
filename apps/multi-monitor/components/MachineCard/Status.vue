@@ -54,19 +54,17 @@ function connectionStatus(params: number) {
     <div class="machine-icons">
       <img
         v-if="machine.runningBatchStatus !== 0"
-        :src="
-          machine.runningBatchStatus === 1
-            ? withBaseURL('/icons/is-emri-off.png')
-            : withBaseURL('/icons/is-emri-on.png')
-        "
+        :src="withBaseURL(machine.runningBatchStatus === 1 ? '/icons/is-emri-off.png' : '/icons/is-emri-on.png')"
       >
       <img :src="connectionStatus(machine.connectionStatus)">
       <img
         v-if="machine.autoManualStatus === 0"
         src="/icons/auto.png"
-        alt=""
       >
-      <img v-if="machine.autoManualStatus === 1" src="/icons/manual.png">
+      <img
+        v-if="machine.autoManualStatus === 1"
+        src="/icons/manual.png"
+      >
       <img
         v-if="machine.isSynchronizing === true"
         src="/icons/bilgi-esitleme.png"

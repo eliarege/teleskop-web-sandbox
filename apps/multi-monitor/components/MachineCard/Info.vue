@@ -48,7 +48,12 @@ function reqStatus(params: number) {
       <div class="explanation">
         {{ erpKey || 'ERP' }}
       </div>
-      <q-separator color="white" vertical class="h-full" spaced />
+      <q-separator
+        color="white"
+        vertical
+        class="h-full"
+        spaced
+      />
       <MachineCardSettings :data="machine" />
       <q-tooltip
         transition-show="scale"
@@ -75,7 +80,12 @@ function reqStatus(params: number) {
       <div class="explanation">
         {{ t("teleskop.program-name") }}
       </div>
-      <q-separator color="white" vertical class="h-full" spaced />
+      <q-separator
+        color="white"
+        vertical
+        class="h-full"
+        spaced
+      />
 
       <span
         class="w-full overflow-hidden"
@@ -108,7 +118,12 @@ function reqStatus(params: number) {
       <div class="explanation">
         {{ t("teleskop.phase") }}
       </div>
-      <q-separator color="white" vertical class="h-full" spaced />
+      <q-separator
+        color="white"
+        vertical
+        class="h-full"
+        spaced
+      />
 
       <span class="flex-center w-full">
         {{ machine.runningPhaseNo }}
@@ -134,7 +149,12 @@ function reqStatus(params: number) {
         <!-- {{ t("teleskop.command") }} -->
         {{ t("teleskop.command-info") }}
       </div>
-      <q-separator color="white" vertical class="h-full" spaced />
+      <q-separator
+        color="white"
+        vertical
+        class="h-full"
+        spaced
+      />
 
       <span class="flex-center w-full">
         {{ machine.runningStepNo }}
@@ -164,7 +184,12 @@ function reqStatus(params: number) {
       <div class="explanation">
         {{ t("teleskop.stop-reason") }}
       </div>
-      <q-separator color="white" vertical class="h-full" spaced />
+      <q-separator
+        color="white"
+        vertical
+        class="h-full"
+        spaced
+      />
       <div class="flex-center w-full">
         <span>{{ machine.manualReason }}</span>
         <span>{{ machine.stopReason }}</span>
@@ -197,7 +222,12 @@ function reqStatus(params: number) {
       <div class="explanation">
         {{ t("teleskop.alarm-second") }}
       </div>
-      <q-separator color="white" vertical class="h-full" spaced />
+      <q-separator
+        color="white"
+        vertical
+        class="h-full"
+        spaced
+      />
 
       <div class="flex-center w-full">
         <!-- {{ machine.runningAlarmNo }} -->
