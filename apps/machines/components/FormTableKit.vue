@@ -97,16 +97,39 @@ watch(showModal, async (newValue, _oldValue) => {
 <template>
   <!-- Actions -->
   <div class="flex gap-4 m-4">
-    <q-btn push no-caps :label="t('add')" color="primary" @click="showForm('add')" />
-    <q-btn push no-caps :label="t('edit')" color="primary" :disable="!selected.length" @click="showForm('edit')" />
-    <q-btn push no-caps :label="t('delete')" color="primary" :disable="!selected.length" @click="handleDelete" />
+    <q-btn
+      push
+      no-caps
+      :label="t('add')"
+      color="primary"
+      @click="showForm('add')"
+    />
+    <q-btn
+      push
+      no-caps
+      :label="t('edit')"
+      color="primary"
+      :disable="!selected.length"
+      @click="showForm('edit')"
+    />
+    <q-btn
+      push
+      no-caps
+      :label="t('delete')"
+      color="primary"
+      :disable="!selected.length"
+      @click="handleDelete"
+    />
   </div>
   <!-- Table -->
   <q-table
     v-model:selected="selected"
     :rows="rows"
     :hide-bottom="true"
-    :columns="tableColumns" selection="single" :row-key="rowKey" :visible-columns="visibleColumns"
+    :columns="tableColumns"
+    selection="single"
+    :row-key="rowKey"
+    :visible-columns="visibleColumns"
     class="overflow-y-auto	h-160"
     :rows-per-page-options="[0]"
     @update:selected="emit('select', selected)"
@@ -122,14 +145,22 @@ watch(showModal, async (newValue, _oldValue) => {
   </q-table>
 
   <!-- Form Dialog -->
-  <q-dialog v-model="showModal">
+  <q-dialog v-model="showModal" @hide="emit('close')">
     <q-card class="min-w-fit">
       <q-card-actions align="right">
-        <q-btn flat icon="close" @click="showModal = false;emit('close')" />
+        <q-btn
+          flat
+          icon="close"
+          @click="showModal = false;emit('close')"
+        />
       </q-card-actions>
       <q-card-section>
         <FormKit
-          v-model="formData" :actions="false" type="form" :form-class="formClass ?? ''" @submit="handleSubmit"
+          v-model="formData"
+          :actions="false"
+          type="form"
+          :form-class="formClass ?? ''"
+          @submit="handleSubmit"
         >
           <FormKitSchema :schema="schema" />
           <slot name="form-content" :form-data="formData" />
