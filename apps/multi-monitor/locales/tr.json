@@ -116,6 +116,8 @@
     "sort-group": "Gruba Göre",
     "options": "Seçenekler",
     "animation": "Animasyon",
+    "animation-start": "Animasyonu Başlat",
+    "animation-end": "Animasyonu Bitir",
     "scrollSpeed": "Otomatik Sürükleme Hızı",
     "filter": {
       "title": "Makine Filtreleme",

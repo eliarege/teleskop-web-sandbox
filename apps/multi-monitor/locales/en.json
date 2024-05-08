@@ -116,6 +116,8 @@
     "sort-group": "Group",
     "options": "Options",
     "animation": "Animation",
+    "animation-start": "Start Animation",
+    "animation-end": "Finish Animation",
     "scrollSpeed": "Auto-Scroll Speed",
     "filter": {
       "title": "Machine Filter",
