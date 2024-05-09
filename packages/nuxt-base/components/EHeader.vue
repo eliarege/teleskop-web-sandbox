@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import type { TopBarItem, TopBarItemStyle } from '../types/topbar'
-import TopbarMenuBlock from '../layout-components/TopbarMenuBlock.vue'
-import NavigationTopRightButtons from '../layout-components/NavigationTopRightButtons.vue'
-import EliarIcon from '../layout-components/EliarIcon.vue'
+import TopbarMenuBlock from '../components/TopbarMenuBlock.vue'
+import NavigationTopRightButtons from '../components/NavigationTopRightButtons.vue'
+import EliarIcon from '../components/EliarIcon.vue'
 
 import { useRoute } from '#imports'
 
 const props = defineProps<{
   items: Array<TopBarItem>
-  useNavbar?: boolean | false
+  useNavbar?: boolean
   customItemStyle?: TopBarItemStyle
   customItemClass?: string
   customSelectedItemClass?: string
   customTopbarClass?: string
   customTopbarStyle?: string
-
 }>()
 const route = useRoute()
 
@@ -47,7 +46,11 @@ function topBarStyleHandler(isSelected: boolean) {
 </script>
 
 <template>
-  <div class="bg-black flex items-center" :class="customTopbarClass" :style="customTopbarStyle">
+  <div
+    class="bg-black flex items-center"
+    :class="customTopbarClass"
+    :style="customTopbarStyle"
+  >
     <slot name="left">
       <EliarIcon v-if="props.useNavbar" />
     </slot>
