@@ -6,13 +6,15 @@ const props = defineProps({
   joborder: String,
   programNo: Number,
   programStepNo: Number,
+  data: Array<any>,
 })
+defineEmits([
+  ...useDialogPluginComponent.emits,
+])
+const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
 const { t, d } = useI18n()
-const data = await $fetch('/api/recipe/previous-requests', {
-  method: 'POST',
-  body: props,
-})
+
 const rerequestedStepCols = computed(() => [
   { name: 'joborder', label: t('joborder'), field: 'joborder' },
   { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo' },
@@ -24,7 +26,11 @@ const rerequestedStepCols = computed(() => [
 </script>
 
 <template>
-  <div>
+  <q-dialog
+    ref="dialogRef"
+    class="prev-logs-class"
+    persistent
+  >
     <q-card>
       <q-card-section class="flex flex-col">
         <span class="text-h5"> {{ t('dispensingManager._') }} - {{ t('recipe.previousRequests') }}</span>
@@ -58,8 +64,9 @@ const rerequestedStepCols = computed(() => [
           :label="t('close')"
           outline
           icon="close"
+          @click="onDialogCancel"
         />
       </q-card-actions>
     </q-card>
-  </div>
+  </q-dialog>
 </template>

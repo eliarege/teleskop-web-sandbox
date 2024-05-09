@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TableColumnCtx } from 'element-plus'
 import type { PropType } from 'vue'
+import RecipeStepPreviousRequestsContent from './RecipeStepPreviousRequestsContent.vue'
 import { notification } from '~/shared/functions'
 import type { RecipeLatest } from '~/shared/types'
 
@@ -36,7 +37,7 @@ const props = defineProps({
     required: false,
   },
 })
-
+const $q = useQuasar()
 const { t } = useI18n()
 interface SpanMethodProps {
   row: RecipeLatest
@@ -141,7 +142,6 @@ async function changeRow() {
   selectedRow.value.amount = changeValue.value
   changeValue.value = null
 }
-const logsDialog = ref(false)
 const priority = ref()
 const tankNo = ref()
 const isTankNoRequired = ref()
@@ -208,8 +208,27 @@ watch(() => props.resetCounter, (newValue, oldValue) => {
   }
 })
 
-function isCorrectPlankey(param: any) {
-  // TODO: Global function that checks if it is the last correction no or highest plankey
+async function showLogsOfSelectedStep() {
+  if (selectedRow.value) {
+    const { joborder, programNo, programStepNo } = selectedRow.value
+    const data = await $fetch('/api/recipe/previous-requests', {
+      method: 'POST',
+      body: { joborder, programNo, programStepNo },
+    })
+    if (!data.length)
+      notification(false, t('warnings.noPreviousStepLogs'))
+    else {
+      $q.dialog({
+        component: RecipeStepPreviousRequestsContent,
+        componentProps: {
+          joborder,
+          programNo,
+          programStepNo,
+          data,
+        },
+      })
+    }
+  }
 }
 </script>
 
@@ -254,7 +273,6 @@ function isCorrectPlankey(param: any) {
       :style="contextMenuPosition"
     >
       <ElMenu
-        default-active="2"
         class="el-menu-vertical-demo"
         @click="handleMenuClick"
       >
@@ -264,7 +282,7 @@ function isCorrectPlankey(param: any) {
         <ElMenuItem index="2" @click="changeDialog = true">
           {{ t('recipe.changeSelectedStepAmount') }}
         </ElMenuItem>
-        <ElMenuItem index="3" @click="logsDialog = true">
+        <ElMenuItem index="3" @click="showLogsOfSelectedStep">
           {{ t('recipe.showLogsSelectedStep') }}
         </ElMenuItem>
       </ElMenu>
