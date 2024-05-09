@@ -669,7 +669,7 @@ function handleClose() {
     <FormTableKit
       :rows="machines"
       :columns="columns"
-      form-class="grid grid-cols-5 gap-4 grid-rows-7 items-center"
+      form-class="grid grid-cols-5 gap-4 grid-rows-7 h-160"
       @add="handleAdd"
       @edit="handleEdit"
       @select="handleSelection"

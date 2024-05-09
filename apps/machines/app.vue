@@ -226,4 +226,9 @@ input.formkit-input[type="number"] {
   -moz-appearance: textfield; /* Firefox */
   appearance: textfield; /* Standard */
 }
+
+[data-type="checkbox"].formkit-outer {
+  display: grid;
+  align-self: center;
+}
 </style>

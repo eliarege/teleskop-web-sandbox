@@ -159,12 +159,12 @@ watch(showModal, async (newValue, _oldValue) => {
           v-model="formData"
           :actions="false"
           type="form"
-          :form-class="formClass ?? ''"
+          :form-class="`${formClass ?? 'grid items-baseline'} grid-items-baseline`"
           @submit="handleSubmit"
         >
           <FormKitSchema :schema="schema" />
           <slot name="form-content" :form-data="formData" />
-          <q-card-actions align="right" class="col-span-full	">
+          <q-card-actions align="right" class="col-span-full">
             <FormKit type="submit" :label="t('submit')" />
           </q-card-actions>
         </FormKit>
