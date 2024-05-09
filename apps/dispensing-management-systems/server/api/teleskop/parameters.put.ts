@@ -1,4 +1,4 @@
-import { dmsDB } from '~/server/connectionPool'
+import { connectTeleskopDB, dmsDB } from '~/server/connectionPool'
 import type { DatabaseConnection } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
@@ -12,5 +12,6 @@ export default defineEventHandler(async (event) => {
     host: settings.host,
     port: settings.port,
   })
+  connectTeleskopDB(settings)
   return teleskopConnection
 })

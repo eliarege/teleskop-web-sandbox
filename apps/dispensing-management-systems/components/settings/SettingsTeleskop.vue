@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { DatabaseConnection } from '~/shared/types'
-import { connectTeleskopDB } from '~/server/connectionPool'
 import { useStateStore } from '~/store/State'
 import ipformat from '~/shared/utils'
 
@@ -17,7 +16,6 @@ async function onSave() {
   try {
     const connection = teleskopSettings.value
     await $fetch(`/api/teleskop/parameters`, { method: 'PUT', body: connection })
-    connectTeleskopDB(connection)
     notifySuccess(t('Success'))
   } catch (e) {
     notifyFail(t('Failed'))
