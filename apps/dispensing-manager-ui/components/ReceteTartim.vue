@@ -192,7 +192,7 @@ if (route.query.correctionNo && route.query.joborder) {
     if (isThereAnyLog.value)
       showLogsDialog.value = true
     else
-      notification(false, t('warnings.noDataLogs', { joborder: jobordernum.value }))
+      notification(false, t('warnings.noJobOrderLogs', { joborder: jobordernum.value }))
   }
 }
 
@@ -204,7 +204,7 @@ function buttonAction(link: string) {
     if (link === 'showLogs') {
       showLogsDialog.value = true
       if (!isThereAnyLog.value) {
-        notification(false, t('warnings.noDataLogs', { joborder: jobordernum.value }))
+        notification(false, t('warnings.noJobOrderLogs', { joborder: jobordernum.value }))
       }
     }
     if (link === 'showConsumptions') {

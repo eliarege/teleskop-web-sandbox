@@ -100,23 +100,26 @@ const columnsMaterial = computed<Column[]>(() => [
 ])
 
 // TODO: Will request every 10 seconds to ensure data stream
-const recipe = ref()
+const recipe = ref([])
 const recipeTypeDecider = ref('ongoing')
 const filters = ref([])
 const selectedRow = ref()
-const material = ref()
+const material = ref([])
 
 const canceledVisible = ref(false)
 
-await updateRecipe()
+updateRecipe()
 
 async function updateRecipe() {
   recipe.value = await $fetch(`/api/dispenser/joborderlogs?isCanceled=${canceledVisible.value}`, {
     method: 'post',
     body: filters.value,
   })
-  selectedRow.value = recipe.value[0] ? recipe.value[0] : null
-  await fetchMaterialData(selectedRow.value.reqnumber)
+  if (recipe.value?.length) {
+    selectedRow.value = recipe.value[0]
+    await fetchMaterialData(selectedRow.value.reqnumber)
+  } else
+    selectedRow.value = null
 }
 setInterval(updateRecipe, 10000)
 
