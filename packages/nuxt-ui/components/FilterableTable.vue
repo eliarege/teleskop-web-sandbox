@@ -498,8 +498,7 @@ function customFilterMethod(rows, terms, cols, cellValue) {
                 <div class="flex justify-end">
                   <q-btn
                     v-if="col.filterType !== 'date' && col.filterType && !checkForButtonsInsteadOfSelect(col)"
-                    class="mt-5 mb-1"
-                    style="add-btn"
+                    class="add-btn"
                     no-caps
                     @click="pushToFilters(col, index)"
                   >
@@ -645,6 +644,8 @@ function customFilterMethod(rows, terms, cols, cellValue) {
 }
 
 .add-btn {
+  margin-top: 1.25rem;
+  margin-bottom: 0.25rem;
   color: rgb(0, 0, 0);
 }
 .body--dark .add-btn {
