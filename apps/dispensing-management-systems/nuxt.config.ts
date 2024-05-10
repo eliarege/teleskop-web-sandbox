@@ -27,7 +27,7 @@ export default defineNuxtConfig({
       kcRealm: 'teleskop-web',
       kcClientId: 'dispensing-management-systems',
       kcEnabled: true,
-      websockifyPort: '6800',
+      websockifyUrl: 'ws://localhost:6800',
     },
   },
   i18n: {
