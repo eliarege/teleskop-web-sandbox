@@ -208,25 +208,28 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
       row.recipeProcessNo,
       type === 'retry' ? 1 : 0,
     ]
-    const isWritten = await $fetch('/api/file/write-dispenser-step', {
-      method: 'POST',
-      body: {
-        content: data,
-        reqNumber: row.reqnumber,
-      },
-    })
-    if (isWritten?.code === 200)
+
+    try {
+      await $fetch('/api/file/write-dispenser-step', {
+        method: 'POST',
+        body: {
+          content: data,
+          reqNumber: row.reqnumber,
+        },
+      })
       Notify.create({
         message: t(`dispensingManager.${type}RequestSent`),
         type: 'positive',
         position: 'top',
       })
-    else
+    }
+    catch (err) {
       Notify.create({
         message: t(`dispensingManager.${type}RequestDidNotSend`),
         type: 'warning',
         position: 'top',
       })
+    }
   }
 }
 

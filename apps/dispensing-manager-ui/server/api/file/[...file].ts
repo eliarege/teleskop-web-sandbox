@@ -78,22 +78,17 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
 }))
 
 router.post('/write-dispenser-step', defineEventHandler(async (event) => {
-  try {
-    const body = await readBody(event)
-    const contentString = `${body.content.join(',')},\n`
-    await mutex.runExclusive(async () => {
-      const doesTheFileExist = await doesTheFileExistOnSamba(config.reqFilePath, config.writeFilePath)
-      if (doesTheFileExist) {
-        await fs.appendFile(config.writeFilePath, contentString, 'utf8')
-      } else {
-        await fs.writeFile(config.writeFilePath, contentString, 'utf8')
-      }
-      await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
-    })
-    return { code: 200 }
-  } catch (e) {
-    return e
-  }
+  const body = await readBody(event)
+  const contentString = `${body.content.join(',')},\n`
+  await mutex.runExclusive(async () => {
+    const doesTheFileExist = await doesTheFileExistOnSamba(config.reqFilePath, config.writeFilePath)
+    if (doesTheFileExist) {
+      await fs.appendFile(config.writeFilePath, contentString, 'utf8')
+    } else {
+      await fs.writeFile(config.writeFilePath, contentString, 'utf8')
+    }
+    await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
+  })
 }))
 
 async function doesTheFileExistOnSamba(reqFilePath: string, writeFilePath: string) {
