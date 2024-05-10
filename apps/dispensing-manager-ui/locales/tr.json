@@ -170,6 +170,7 @@
     "recipeDeletedWarning": "Reçete silinmiş olduğu için işleme devam edilemiyor.",
     "alreadyStartedWarning": "İstek çoktan başlatıldı. Devam etmek istediğinize emin misiniz?",
     "requestSent": "İstek gönderildi.",
+    "requestDidNotSend": "İstek gönderilemedi",
     "retryRequestSent": "Adımı tekrarlama isteği göderildi.",
     "cancelRequestSent": "Adımı iptal etme isteği göderildi."
   },
@@ -334,6 +335,7 @@
     "requestError1": "Makina ilgili dağıtıcıya bağlı değil.",
     "requestError2": "Programdaki bütün materyaller ilgili dağıtıcıya bağlı olmalı.",
     "requestError3": "Tekrar istenebilir olmayan maddeler tekrardan istenemez.",
-    "requestError4": "{status} durumundaki adımlar tekrar istenemez."
+    "requestError4": "{status} durumundaki adımlar tekrar istenemez.",
+    "requestError5": "Reçete adımı ilgili tabloda bulunamadı. (DYTFCHEMREQUESTS)"
   }
 }

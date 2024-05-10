@@ -171,6 +171,7 @@
     "recipeDeletedWarning": "The process cannot continue because the recipe has been deleted.",
     "alreadyStartedWarning": "The request has already been initiated. Are you sure you want to continue?",
     "requestSent": "Request sent.",
+    "requestDidNotSend": "Request did not send.",
     "retryRequestSent": "Retry request sent.",
     "cancelRequestSent": "Delete request sent."
   },
@@ -335,6 +336,7 @@
     "requestError1": "Machine is not connected to related dispenser.",
     "requestError2": "All the materials on the probram have to be connected to related dispenser.",
     "requestError3": "Non-rerequestable material cannot be rerequested.",
-    "requestError4": "Recipe steps with status {status} cannot be rerequested."
+    "requestError4": "Recipe steps with status {status} cannot be rerequested.",
+    "requestError5": "Recipe step cannot be found on DYTFCHEMREQUESTS."
   }
 }

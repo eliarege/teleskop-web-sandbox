@@ -215,7 +215,6 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
         reqNumber: row.reqnumber,
       },
     })
-    console.log(isWritten)
     if (isWritten?.code === 200)
       Notify.create({
         message: t(`dispensingManager.${type}RequestSent`),
