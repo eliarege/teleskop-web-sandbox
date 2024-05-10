@@ -22,13 +22,13 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
-    machineStatusUrl: 'http://machine-status',
+    machineStatusUrl: 'http://localhost:5000',
     isStaging: 'no',
     public: {
       kcClientId: 'multi-monitor',
       isDigitalFactory: 'false',
       teleskopHasLogs: 'true',
-      websockifyUrl: 'ws://localhost:6800',
+      websockifyUrl: 'http://localhost:6800',
     },
   },
   i18n: {
@@ -52,6 +52,7 @@ export default defineNuxtConfig({
       template: {
         transformAssetUrls: {
           LoadingScreen: ['image'],
+          MachineVncKey: ['img'],
         },
       },
     },

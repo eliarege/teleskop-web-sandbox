@@ -161,224 +161,184 @@ const websockifyWsUrl = resolveWebSocketUrl(config.public.websockifyUrl)
       </div>
       <div class="t7-keyboard">
         <div class="t7-function-row">
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/f1.svg);"
+          <MachineVncKey
+            img="/keyboard/f1.svg"
             @click="sendKey('XK_F1')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/f2.svg);"
+          <MachineVncKey
+            img="/keyboard/f2.svg"
             @click="sendKey('XK_F2')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/f3.svg);"
+          <MachineVncKey
+            img="/keyboard/f3.svg"
             @click="sendKey('XK_F3')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/f4.svg);"
+          <MachineVncKey
+            img="/keyboard/f4.svg"
             @click="sendKey('XK_F4')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/f5.svg);"
+          <MachineVncKey
+            img="/keyboard/f5.svg"
             @click="sendKey('XK_F5')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/f6.svg);"
+          <MachineVncKey
+            img="/keyboard/f6.svg"
             @click="sendKey('XK_F6')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/f7.svg);"
+          <MachineVncKey
+            img="/keyboard/f7.svg"
             @click="sendKey('XK_F7')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/f8.svg);"
+          <MachineVncKey
+            img="/keyboard/f8.svg"
             @click="sendKey('XK_F8')"
           />
         </div>
         <div class="t7-panel-row">
           <div class="t7-panel-grid t7-startstop-grid">
             <div class="t7-keyinput-container">
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/start.svg);"
+              <MachineVncKey
+                img="/keyboard/start.svg"
                 @click="sendKey('XK_F9')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/stop.svg);"
+              <MachineVncKey
+                img="/keyboard/stop.svg"
                 @click="sendKey('XK_F10')"
               />
             </div>
           </div>
           <div class="t7-panel-grid t7-numpad-grid">
             <div class="t7-keyinput-container">
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/1.svg);"
+              <MachineVncKey
+                img="/keyboard/1.svg"
                 @click="sendKey('XK_1')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/2.svg);"
+              <MachineVncKey
+                img="/keyboard/2.svg"
                 @click="sendKey('XK_2')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/3.svg);"
+              <MachineVncKey
+                img="/keyboard/3.svg"
                 @click="sendKey('XK_3')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/4.svg);"
+              <MachineVncKey
+                img="/keyboard/4.svg"
                 @click="sendKey('XK_4')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/5.svg);"
+              <MachineVncKey
+                img="/keyboard/5.svg"
                 @click="sendKey('XK_5')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/6.svg);"
+              <MachineVncKey
+                img="/keyboard/6.svg"
                 @click="sendKey('XK_6')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/7.svg);"
+              <MachineVncKey
+                img="/keyboard/7.svg"
                 @click="sendKey('XK_7')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/8.svg);"
+              <MachineVncKey
+                img="/keyboard/8.svg"
                 @click="sendKey('XK_8')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/9.svg);"
+              <MachineVncKey
+                img="/keyboard/9.svg"
                 @click="sendKey('XK_9')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/plusminus.svg);"
+              <MachineVncKey
+                img="/keyboard/plusminus.svg"
                 @click="sendKey('XK_KP_Add')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/0.svg);"
+              <MachineVncKey
+                img="/keyboard/0.svg"
                 @click="sendKey('XK_0')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/dot.svg);"
+              <MachineVncKey
+                img="/keyboard/dot.svg"
                 @click="sendKey('XK_Period')"
               />
             </div>
           </div>
           <div class="t7-panel-grid t7-arrowpad-grid">
             <div class="t7-keyinput-container">
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/tab.svg);"
+              <MachineVncKey
+                img="/keyboard/tab.svg"
                 @click="sendKey('XK_Tab')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/up.svg);"
+              <MachineVncKey
+                img="/keyboard/up.svg"
                 @click="sendKey('XK_Up')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/delete.svg);"
+              <MachineVncKey
+                img="/keyboard/delete.svg"
                 @click="sendKey('XK_BackSpace')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/left.svg);"
+              <MachineVncKey
+                img="/keyboard/left.svg"
                 @click="sendKey('XK_Left')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/ok.svg);"
+              <MachineVncKey
+                img="/keyboard/ok.svg"
                 @click="sendKey('XK_Return')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/right.svg);"
+              <MachineVncKey
+                img="/keyboard/right.svg"
                 @click="sendKey('XK_Right')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/esc.svg);"
+              <MachineVncKey
+                img="/keyboard/esc.svg"
                 @click="sendKey('XK_Escape')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/down.svg);"
+              <MachineVncKey
+                img="/keyboard/down.svg"
                 @click="sendKey('XK_Down')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/lock.svg);"
+              <MachineVncKey
+                img="/keyboard/lock.svg"
                 @click="sendKey('XK_F12')"
               />
             </div>
           </div>
           <div class="t7-panel-grid t7-updown-grid">
             <div class="t7-keyinput-container">
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/pageup.svg);"
+              <MachineVncKey
+                img="/keyboard/pageup.svg"
                 @click="sendKey('XK_KP_Page_Up')"
               />
-              <div
-                class="t7-keyinput"
-                style="background-image: url(/keyboard/pagedown.svg);"
+              <MachineVncKey
+                img="/keyboard/pagedown.svg"
                 @click="sendKey('XK_Page_Down')"
               />
             </div>
           </div>
         </div>
         <div class="t7-shortcut-row">
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/alarms.svg);"
+          <MachineVncKey
+            img="/keyboard/alarms.svg"
             @click="sendKey('XK_KP_Insert')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/mimic.svg);"
+          <MachineVncKey
+            img="/keyboard/mimic.svg"
             @click="sendKey('XK_KP_End')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/disp.svg);"
+          <MachineVncKey
+            img="/keyboard/disp.svg"
             @click="sendKey('XK_KP_Begin')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/cycle.svg);"
+          <MachineVncKey
+            img="/keyboard/cycle.svg"
             @click="sendKey('XK_KP_Down')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/man_cmd.svg);"
+          <MachineVncKey
+            img="/keyboard/man_cmd.svg"
             @click="sendKey('XK_KP_Page_Down')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/man_ctrl.svg);"
+          <MachineVncKey
+            img="/keyboard/man_ctrl.svg"
             @click="sendKey('XK_KP_Left')"
           />
-          <div
-            class="t7-keyinput"
-            style="background-image: url(/keyboard/dispR.svg);"
+          <MachineVncKey
+            img="/keyboard/dispR.svg"
             @click="sendKey('XK_Home')"
           />
         </div>
@@ -442,24 +402,6 @@ const websockifyWsUrl = resolveWebSocketUrl(config.public.websockifyUrl)
   display: grid;
   grid-template-rows: 18fr 66fr 15fr;
   grid-row-gap: 1%;
-}
-
-.t7-keyinput {
-  cursor: pointer;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-}
-
-.t7-keyinput:hover {
-  filter: brightness(1.2);
-}
-
-.t7-keyinput:active {
-  filter: brightness(1.3);
 }
 
 .t7-function-row {
