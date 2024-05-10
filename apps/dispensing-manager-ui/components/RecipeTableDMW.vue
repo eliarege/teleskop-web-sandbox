@@ -2,7 +2,7 @@
 import type { TableColumnCtx } from 'element-plus'
 import type { PropType } from 'vue'
 import RecipeStepPreviousRequestsContent from './RecipeStepPreviousRequestsContent.vue'
-import { notification } from '~/shared/functions'
+import { notification, onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical } from '~/shared/functions'
 import type { RecipeLatest } from '~/shared/types'
 
 const props = defineProps({
@@ -305,8 +305,10 @@ async function showLogsOfSelectedStep() {
         <q-card-section v-if="isTankNoRequired">
           <q-input
             v-model="tankNo"
-            type="number"
             filled
+            @keydown="(e) => onKeydownPreventNonNumerical(e, tankNo)"
+            @paste="onPastePreventNonNumerical"
+            @drop="onDrop"
           />
         </q-card-section>
 
@@ -366,10 +368,12 @@ async function showLogsOfSelectedStep() {
         <q-card-section>
           <q-input
             v-model="changeValue"
-            type="number"
             class="mx-5"
             filled
             :label="t('recipe.newAmount')"
+            @keydown="(e) => onKeydownPreventNonNumerical(e, changeValue)"
+            @paste="onPastePreventNonNumerical"
+            @drop="onDrop"
           />
         </q-card-section>
 
