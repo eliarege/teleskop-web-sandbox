@@ -9,9 +9,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   ssr: false,
   runtimeConfig: {
-    dmsHost: 'localhost',
-    dmsUser: 'postgres',
-    dmsPort: '5432',
+    dmsHost: '192.168.18.69',
+    dmsUser: 'username',
+    dmsPort: '5433',
     dmsPassword: '123456',
     dmsDatabase: 'test',
     teleskopHost: '192.168.16.87',
