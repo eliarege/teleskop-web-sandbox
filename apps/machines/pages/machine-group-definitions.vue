@@ -76,10 +76,17 @@ const machineGroupTypeOptions = [
   },
 ]
 
+const changedGroups = ref([])
+
 async function handleMachineGroupSelect(e, group) {
   group.groupType = e.groupType
-  await editMachineGroupType(group)
+  changedGroups.value.push(group)
+}
+
+async function handleSubmit() {
+  await $fetch('/api/machines/machine-group-types', { method: 'PUT', body: { changedGroups: changedGroups.value } })
   await refresh()
+  changedGroups.value = []
 }
 </script>
 
@@ -110,6 +117,19 @@ async function handleMachineGroupSelect(e, group) {
         </template>
       </q-table>
     </q-card-section>
+    <q-card-actions align="right" class="mt-4 mr-4">
+      <q-btn
+        no-caps
+        :label="t('cancel')"
+        @click="$router.go(0)"
+      />
+      <q-btn
+        color="primary"
+        no-caps
+        :label="t('submit')"
+        @click="handleSubmit"
+      />
+    </q-card-actions>
   </q-card>
 </template>
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { BatchParam, ErpParameter, Machine } from '~/types'
-import { addErpParameterField, deleteErpParameterField, updateErpParameterField } from '~/utils'
 
 const { t } = useI18n()
 
@@ -242,18 +241,27 @@ async function handleParamSelection(obj: ErpParameter) {
 async function addParam() {
   if (params.value.length) {
     const paramId = Math.max(...params.value.map(p => p.paramId)) + 1
-    await addErpParameterField(paramId, selectedMachineId.value, selectedParam.value)
+    await $fetch('/api/erp/erp-parameter', {
+      method: 'POST',
+      body: { paramId, machineId: selectedMachineId.value, erpParameter: selectedParam.value },
+    })
     await refreshParams()
   }
 }
 
 async function editParam() {
-  await updateErpParameterField(selectedParam.value)
+  await $fetch('/api/erp/erp-parameter', {
+    method: 'PUT',
+    body: { erpParameter: selectedParam.value },
+  })
   await refreshParams()
 }
 
 async function deleteParam() {
-  await deleteErpParameterField(selectedParam.value)
+  return await $fetch('/api/erp/erp-parameter', {
+    method: 'DELETE',
+    body: { erpParameter: selectedParam.value },
+  })
   await refreshParams()
 }
 

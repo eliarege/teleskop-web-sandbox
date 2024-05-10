@@ -6,6 +6,7 @@ const { t } = useI18n()
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 const selectedReasonId = ref()
+const changedReasons = ref([])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines', {
   default: () => [],
@@ -34,14 +35,18 @@ const { data: selectedReasonCommands } = useLazyFetch('/api/command-timeout-reas
   query: { machineId: selectedMachineId, reasonId: selectedReasonId },
 })
 
-async function handleCheckChange(e, reason) {
+function handleCheckChange(e, reason) {
   reason.machineId = selectedMachineId.value
   reason.commandNo = selectedCommandNo.value
-  if (e)
-    await checkTimeoutReason(reason)
-  else if (!e)
-    await uncheckTimeoutReason(reason)
+  reason.checked = e
+  changedReasons.value.push(reason)
 }
+
+async function handleSubmit() {
+  await $fetch('/api/command-timeout-reasons/command-timeout-reasons', { method: 'PUT', body: { changedReasons: changedReasons.value } })
+  changedReasons.value = []
+}
+
 const showAddReasonDialog = ref(false)
 const showEditReasonDialog = ref(false)
 
@@ -61,14 +66,20 @@ function handleEditButton() {
 }
 
 async function handleEditReason() {
-  await editCommandTimeoutReason(selectedReasonId.value, newReasonText.value)
+  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+    method: 'PUT',
+    body: { reasonText: newReasonText.value, id: selectedReasonId.value },
+  })
   showEditReasonDialog.value = false
   newReasonText.value = ''
   await refreshTimeoutReasons()
 }
 
 async function handleDeleteReason() {
-  await deleteCommandTimeoutReason(selectedReasonId.value)
+  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+    method: 'DELETE',
+    body: { id: selectedReasonId.value },
+  })
   await refreshTimeoutReasons()
 }
 
@@ -168,75 +179,92 @@ const contextMenuOptions = computed(() => [
         />
       </q-btn-group>
     </div>
-    <q-card class="flex flex-row justify-around">
-      <q-card-section class="w-sm">
-        <h3>{{ t('machines') }}</h3>
-        <q-list
-          bordered
-          separator
-          class="overflow-y-auto h-160"
-        >
-          <q-item
-            v-for="machine in machines"
-            :key="machine.machineId"
-            v-ripple
-            clickable
-            :focused="selectedMachineId === machine.machineId"
-            :active="selectedMachineId === machine.machineId"
-            @click="selectedMachineId = machine.machineId;selectedReasonId = null;selectedCommandNo = null"
+
+    <q-card>
+      <q-card-section class="flex flex-row justify-around">
+        <div class="w-sm">
+          <h3>{{ t('machines') }}</h3>
+          <q-list
+            bordered
+            separator
+            class="overflow-y-auto h-160"
           >
-            <q-item-section>
-              {{ machine.machineCode }}
-            </q-item-section>
-          </q-item>
-        </q-list>
+            <q-item
+              v-for="machine in machines"
+              :key="machine.machineId"
+              v-ripple
+              clickable
+              :focused="selectedMachineId === machine.machineId"
+              :active="selectedMachineId === machine.machineId"
+              @click="selectedMachineId = machine.machineId;selectedReasonId = null;selectedCommandNo = null"
+            >
+              <q-item-section>
+                {{ machine.machineCode }}
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+
+        <div class="w-sm">
+          <h3>{{ t('commands') }}</h3>
+          <q-list
+            bordered
+            separator
+            class="overflow-y-auto h-160"
+          >
+            <q-item
+              v-for="command in machineCommands"
+              :key="command.commandNo"
+              v-ripple
+              clickable
+              :focused="selectedCommandNo === command.commandNo"
+              :active="selectedReasonCommands && selectedReasonCommands.length ? selectedReasonCommands.some(r => r.commandNo === command.commandNo) : false"
+              @click="selectedCommandNo = command.commandNo;selectedReasonId = null"
+            >
+              <q-item-section>
+                {{ command.commandName }}
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+
+        <div class="w-sm">
+          <h3>{{ t('reasons') }}</h3>
+          <q-list
+            bordered
+            separator
+            class="overflow-y-auto h-160"
+          >
+            <q-item
+              v-for="reason in timeoutReasons"
+              :key="reason.id"
+              v-ripple
+              clickable
+              :focused="selectedReasonId === reason.id"
+              @click="selectedReasonId = reason.id"
+            >
+              <q-checkbox v-model:model-value="reason.checked" @update:model-value="(e) => handleCheckChange(e, reason)" />
+              <q-item-section>
+                {{ reason.reasonText }}
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
       </q-card-section>
 
-      <q-card-section class="w-sm">
-        <h3>{{ t('commands') }}</h3>
-        <q-list
-          bordered
-          separator
-          class="overflow-y-auto h-160"
-        >
-          <q-item
-            v-for="command in machineCommands"
-            :key="command.commandNo"
-            v-ripple
-            clickable
-            :focused="selectedCommandNo === command.commandNo"
-            :active="selectedReasonCommands && selectedReasonCommands.length ? selectedReasonCommands.some(r => r.commandNo === command.commandNo) : false"
-            @click="selectedCommandNo = command.commandNo;selectedReasonId = null"
-          >
-            <q-item-section>
-              {{ command.commandName }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
-
-      <q-card-section class="w-sm">
-        <h3>{{ t('reasons') }}</h3>
-        <q-list
-          bordered
-          separator
-          class="overflow-y-auto h-160"
-        >
-          <q-item
-            v-for="reason in timeoutReasons"
-            :key="reason.id"
-            v-ripple
-            clickable
-            :focused="selectedReasonId === reason.id"
-            @click="selectedReasonId = reason.id"
-          >
-            <q-checkbox v-model:model-value="reason.checked" @update:model-value="(e) => handleCheckChange(e, reason)" />
-            <q-item-section>
-              {{ reason.reasonText }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
+      <q-card-actions align="right" class="mt-4 mr-4">
+        <q-btn
+          no-caps
+          :label="t('cancel')"
+          @click="$router.go(0)"
+        />
+        <q-btn
+          color="primary"
+          no-caps
+          :label="t('submit')"
+          @click="handleSubmit"
+        />
+      </q-card-actions>
     </q-card>
   </div>
 </template>
