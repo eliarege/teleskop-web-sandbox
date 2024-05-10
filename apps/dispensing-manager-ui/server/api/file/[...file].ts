@@ -59,8 +59,12 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
     } else {
       const contentString = `${body.content.join(',')},\n`
       await mutex.runExclusive(async () => {
-        await sambaClient.getFile(config.reqFilePath, config.writeFilePath)
-        await fs.appendFile(config.writeFilePath, contentString, 'utf8')
+        const doesTheFileExist = await doesTheFileExistOnSamba(config.reqFilePath, config.writeFilePath)
+        if (doesTheFileExist) {
+          await fs.appendFile(config.writeFilePath, contentString, 'utf8')
+        } else {
+          await fs.writeFile(config.writeFilePath, contentString, 'utf8')
+        }
         body.materials.forEach(async (material) => {
           await fs.appendFile(config.writeFilePath, `${[material.materialCode, material.amount].join(',')},\n`, 'utf8')
         })
@@ -74,11 +78,29 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
 }))
 
 router.post('/write-dispenser-step', defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const contentString = `${body.content.join(',')},\n`
-  await mutex.runExclusive(async () => {
-    await sambaClient.getFile(config.reqFilePath, config.writeFilePath)
-    await fs.appendFile(config.writeFilePath, contentString, 'utf8')
-    await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
-  })
+  try {
+    const body = await readBody(event)
+    const contentString = `${body.content.join(',')},\n`
+    await mutex.runExclusive(async () => {
+      const doesTheFileExist = await doesTheFileExistOnSamba(config.reqFilePath, config.writeFilePath)
+      if (doesTheFileExist) {
+        await fs.appendFile(config.writeFilePath, contentString, 'utf8')
+      } else {
+        await fs.writeFile(config.writeFilePath, contentString, 'utf8')
+      }
+      await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
+    })
+    return { code: 200 }
+  } catch (e) {
+    return e
+  }
 }))
+
+async function doesTheFileExistOnSamba(reqFilePath: string, writeFilePath: string) {
+  try {
+    await sambaClient.getFile(reqFilePath, writeFilePath)
+    return true
+  } catch (e) {
+    return false
+  }
+}
