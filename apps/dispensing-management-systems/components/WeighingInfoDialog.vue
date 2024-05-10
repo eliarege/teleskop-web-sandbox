@@ -71,8 +71,8 @@ const columnsManual: (QTableColumn<WeighingManual>[]) = [
     },
   },
 ]
-const autoData = ref<WeighingAuto[]>()
-const manualData = ref<WeighingManual[]>()
+const autoData = ref<WeighingAuto[]>([])
+const manualData = ref<WeighingManual[]>([])
 getData()
 async function getData() {
   autoData.value = await $fetch(`/api/weighing/auto?batchNo=${props.jobOrder.batchNo}&correctionNo=${props.jobOrder.batchCorrectionNo}`)
