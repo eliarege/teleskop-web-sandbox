@@ -8,6 +8,5 @@ export default defineEventHandler(async (event) => {
   await dmsDB('MATERIAL_REQUEST')
     .where('req_no', reqNo)
     .update({ status })
-  setResponseStatus(event, 200)
-  return event.node.res.end()
+  return null
 })

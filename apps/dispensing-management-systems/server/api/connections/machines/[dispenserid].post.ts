@@ -16,6 +16,5 @@ export default defineEventHandler(async (event) => {
     }))
     await dmsDB('DISPENSER_MACHINE_CONNECTION').insert(insertRows)
   }
-  setResponseStatus(event, 200, 'OK')
-  return event.node.res.end()
+  return null
 })

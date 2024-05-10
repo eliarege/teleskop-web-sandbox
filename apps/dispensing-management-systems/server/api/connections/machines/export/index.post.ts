@@ -14,7 +14,6 @@ export default defineEventHandler(async (event) => {
       return res
     })
     await Promise.all(promises)
-    setResponseStatus(event, 200)
-    return event.node.res.end()
+    return null
   }
 })
