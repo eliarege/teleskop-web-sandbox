@@ -14,7 +14,6 @@ const props = defineProps({
 const { t } = useI18n()
 
 const dispenser = toRef(props, 'dispenser')
-const location = window.location.hostname
 const config = useRuntimeConfig()
 
 const KeyEnum = {
