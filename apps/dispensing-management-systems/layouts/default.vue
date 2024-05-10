@@ -59,17 +59,16 @@ watch(() => route.params, () => {
 </script>
 
 <template>
-  <QLayout v-if="didInitialise" view="hHh LpR fFf">
+  <QLayout v-show="didInitialise" view="hHh LpR fFf">
     <LoadingSpinner v-if="stateStore.isLoading" />
-    <KeepAlive>
-      <NavigationBar />
-    </KeepAlive>
+    <NavigationBar />
     <QDrawer
-      v-if="showDrawer && route.path !== '/settings'"
+      v-if="route.path !== '/settings'"
       show-if-above
       bordered
       persistent
       behavior="desktop"
+      v-model="showDrawer"
     >
       <QScrollArea
         class="px-1"
@@ -96,7 +95,7 @@ watch(() => route.params, () => {
         round
         color="primary"
         :icon="showDrawer ? 'chevron_left' : 'chevron_right'"
-        @click="() => { showDrawer = !showDrawer }"
+        @click="showDrawer = !showDrawer"
       >
         <QTooltip
           :offset="[10, 10]"
