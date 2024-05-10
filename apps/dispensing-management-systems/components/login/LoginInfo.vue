@@ -12,7 +12,7 @@ function onLogout() {
 </script>
 
 <template>
-  <div class="q-pa-md">
+  <div v-if=userProfile class="q-pa-md">
     <div class="welcome-message">
       {{ `${t('Welcome')}, ${userProfile?.username}` }}
     </div>
