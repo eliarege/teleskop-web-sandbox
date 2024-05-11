@@ -56,13 +56,15 @@ export function parseSeperatedLocks(line: string) {
 function parseAnalogInputs(parts: string[]) {
   const inputs = []
   for (let i = 0; i < parts.length; i += 5) {
-    inputs.push({
-      id: Number.parseInt(parts[i], 10),
-      r1min: (parts[i + 1]),
-      r2max: (parts[i + 2]),
-      histerisis: (parts[i + 3]),
-      state: (parts[i + 4]),
-    })
+    if (Number.parseInt(parts[i], 10) !== -1) {
+      inputs.push({
+        id: Number.parseInt(parts[i], 10),
+        r1min: (parts[i + 1]),
+        r2max: (parts[i + 2]),
+        histerisis: (parts[i + 3]),
+        state: (parts[i + 4]),
+      })
+    }
   }
   return inputs
 }
