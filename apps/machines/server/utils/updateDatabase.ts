@@ -461,25 +461,26 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
   for (const [index, command] of commands.entries()) {
     for (const [i, c] of command.chooseList.entries()) {
       const commonData = {
-        IOINDEX: i,
+        IOINDEX: c.ioIndex,
         MACHINEID: Number.parseInt(machineId),
         COMMANDNO: command.commandNo,
         IOID: Number.parseInt(c.ioId),
       }
-
-      inputsOutputs.push({
-        ...commonData,
-        NAME: c.name.length ? c.name : 'bos',
-        IOTYPE: (c.ioType <= 4 && c.ioType >= 0 && c.name.length > 0) ? 5 : Number.parseInt(c.ioType),
-        PROGRAMEDITING: false,
-        COMMANDRUN: false,
-      })
+      if (c.selectIndex === 0) {
+        inputsOutputs.push({
+          ...commonData,
+          NAME: c.name.length ? c.name : c.ioType !== 5 ? await getIOName(machineId, c.ioType, c.ioId, trx) : '',
+          IOTYPE: c.isChoosableIO ? 5 : Number.parseInt(c.ioType),
+          PROGRAMEDITING: false,
+          COMMANDRUN: false,
+        })
+      }
 
       selectionList.push({
         ...commonData,
-        SELECTINDEX: index,
+        SELECTINDEX: c.selectIndex,
         IOTYPE: c.ioType,
-        NAME: (c.name && c.name.length) ? c.name : c.ioType !== 5 ? await getIOName(machineId, c.ioType, c.ioId, trx) : '',
+        NAME: c.ioType !== 5 ? await getIOName(machineId, c.ioType, c.ioId, trx) : '',
         SELECTEDIOID: c.ioId,
         ISDEFAULT: c.isDefault,
         MODEL: 'MODEL',
