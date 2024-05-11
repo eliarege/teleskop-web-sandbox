@@ -4,6 +4,7 @@ import string from 'rollup-plugin-string'
 export default defineNuxtConfig({
   modules: ['@formkit/nuxt'],
   formkit: {
+    autoImport: true,
   },
   ssr: false,
   devtools: { enabled: true },

@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@floating-ui/vue": "^1.0.6",
+    "@formkit/i18n": "^1.6.2",
     "@formkit/nuxt": "^1.6.2",
     "@formkit/themes": "^1.6.2",
     "@types/uuid": "^9.0.8",
