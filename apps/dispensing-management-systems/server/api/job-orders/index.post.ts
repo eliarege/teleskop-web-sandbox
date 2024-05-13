@@ -1,4 +1,4 @@
-import { filtersToKnex } from '~/../../packages/utils/src/index'
+import { filtersToKnex } from 'utils/src/index'
 import { dmsDB } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {

@@ -22,6 +22,7 @@
     "simple-keyboard": "^3.7.77",
     "tedious": "^18.1.0",
     "ui": "workspace:*",
+    "utils": "workspace:*",
     "zod": "^3.23.0"
   },
   "devDependencies": {
