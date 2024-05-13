@@ -10,7 +10,5 @@ async function runMigrations() {
     console.log('Migrations ran successfully.')
   } catch (error) {
     console.error('Error running migrations:', error)
-  } finally {
-    await dmsDB.destroy()
   }
 }
