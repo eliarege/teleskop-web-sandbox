@@ -20,7 +20,7 @@ const selected = ref([])
 
 async function onConfirm() {
   try {
-    await $fetch(`/api/connections/${props.type}/export`, { method: 'POST', query: { from: props.dispenserId }, body: { to: selected.value } })
+    await $fetch(`/api/connections/${props.type}/export`, { method: 'POST', body: { from: props.dispenserId, to: selected.value } })
     onDialogOK(true)
   } catch (e: any) {
     onDialogOK(null)

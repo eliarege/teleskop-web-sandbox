@@ -1,8 +1,7 @@
 import { dmsDB } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  const { from } = getQuery(event)
-  const { to } = await readBody(event)
+  const { from, to } = await readBody(event)
   if (Array.isArray(to)) {
     const promises = to.map((dispenserId) => {
       const res = dmsDB.raw(`
