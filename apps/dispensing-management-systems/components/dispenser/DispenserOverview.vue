@@ -17,14 +17,10 @@ const dataStore = useDataStore()
 const stateStore = useStateStore()
 
 const dispenser = toRef(props, 'dispenser')
-// Placeholder ping method
 async function onPing() {
   try {
     stateStore.isLoading = true
-    await $fetch(`http://${dispenser.value.dispenserIP}`, {
-      mode: 'no-cors',
-      timeout: 3000,
-    })
+    await $fetch('/api/ping', { method: 'POST', body: { address: dispenser.value.dispenserIP }})
     notifySuccess(t('Success'))
   } catch (e) {
     console.error(e)

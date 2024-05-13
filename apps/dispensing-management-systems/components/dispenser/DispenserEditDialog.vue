@@ -137,10 +137,7 @@ async function onDelete() {
 async function pingAddress() {
   try {
     stateStore.isLoading = true
-    await $fetch(`http://${editedDispenser.value.dispenserIP}`, {
-      mode: 'no-cors',
-      timeout: 3000,
-    })
+    await $fetch('/api/ping', { method: 'POST', body: { address: editedDispenser.value.dispenserIP }})
     notifySuccess(t('Success'))
   } catch (e) {
     console.error(e)

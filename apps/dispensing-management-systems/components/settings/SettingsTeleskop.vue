@@ -28,10 +28,7 @@ function onReset() {
 async function pingAddress() {
   try {
     stateStore.isLoading = true
-    await $fetch(`http://${teleskopSettings.value?.host}`, {
-      mode: 'no-cors',
-      timeout: 3000,
-    })
+    await $fetch('/api/ping', { method: 'POST', body: { address: teleskopSettings.value?.host }})
     notifySuccess(t('Success'))
   } catch (e) {
     console.error(e)
