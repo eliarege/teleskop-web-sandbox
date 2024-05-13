@@ -82,11 +82,11 @@ export default defineEventHandler(async (event) => {
 
           for (const { func, message } of updateFunctions) {
             const res = await func()
-            if (res && client) {
+            if (sseLoggingEnabled && res && client) {
               sse.broadcast(client, 'log', { message })
             }
           }
-          if (client) {
+          if (sseLoggingEnabled && client) {
             sse.broadcast(client, 'log', { message: 'project loaded successfully' })
           }
         })
