@@ -95,7 +95,7 @@ async function doesTheFileExistOnSamba(reqFilePath: string, writeFilePath: strin
   try {
     await sambaClient.getFile(reqFilePath, writeFilePath)
     return true
-  } catch (e) {
+  } catch {
     return false
   }
 }
