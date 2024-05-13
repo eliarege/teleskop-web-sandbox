@@ -12,6 +12,11 @@ const dmsDB = Knex({
     password: config.dmsPassword,
     database: config.dmsDatabase,
   },
+    migrations: {
+      directory: 'server/migrations',
+      tableName: 'knex_migrations',
+      schemaName: 'public',
+    },
 })
 
 let teleskopDB: null | Knex.Knex<any, unknown[]> = null
