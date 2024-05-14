@@ -1,4 +1,5 @@
 import Knex from 'knex'
+import CustomMigrationSource from './migrations/migrationSource'
 import type { DatabaseConnection } from '~/shared/types'
 
 const config = useRuntimeConfig()
@@ -13,9 +14,7 @@ const dmsDB = Knex({
     database: config.dmsDatabase,
   },
     migrations: {
-      directory: 'server/migrations',
-      tableName: 'knex_migrations',
-      schemaName: 'public',
+      migrationSource: new CustomMigrationSource()
     },
 })
 
