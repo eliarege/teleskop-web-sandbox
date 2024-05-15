@@ -170,6 +170,9 @@ importers:
       '@floating-ui/vue':
         specifier: ^1.0.6
         version: 1.0.6(vue@3.4.24(typescript@5.4.5))
+      '@formkit/i18n':
+        specifier: ^1.6.2
+        version: 1.6.2
       '@formkit/nuxt':
         specifier: ^1.6.2
         version: 1.6.2(rollup@4.16.2)(unocss@0.59.4(@unocss/webpack@0.59.4(rollup@4.16.2)(webpack@5.91.0))(postcss@8.4.38)(rollup@4.16.2)(vite@5.2.10(@types/node@20.12.7)(terser@5.30.4)))(vite@5.2.10(@types/node@20.12.7)(terser@5.30.4))(vue@3.4.24(typescript@5.4.5))(webpack@5.91.0)
