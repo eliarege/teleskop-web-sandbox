@@ -469,8 +469,8 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
       if (c.selectIndex === 0) {
         inputsOutputs.push({
           ...commonData,
-          NAME: c.name.length ? c.name : c.ioType !== 5 ? await getIOName(machineId, c.ioType, c.ioId, trx) : '',
-          IOTYPE: c.isChoosableIO ? 5 : Number.parseInt(c.ioType),
+          NAME: c.name.length ? c.name : c.ioType !== 5 ? await getIOName(machineId, c.ioType - 1, c.ioId, trx) : '',
+          IOTYPE: c.isChoosableIO ? 5 : c.ioType - 1,
           PROGRAMEDITING: false,
           COMMANDRUN: false,
         })
@@ -479,8 +479,8 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
       selectionList.push({
         ...commonData,
         SELECTINDEX: c.selectIndex,
-        IOTYPE: c.ioType,
-        NAME: c.ioType !== 5 ? await getIOName(machineId, c.ioType, c.ioId, trx) : '',
+        IOTYPE: c.ioType - 1,
+        NAME: c.ioType !== 5 ? await getIOName(machineId, c.ioType - 1, c.ioId, trx) : '',
         SELECTEDIOID: c.ioId,
         ISDEFAULT: c.isDefault,
         MODEL: 'MODEL',
