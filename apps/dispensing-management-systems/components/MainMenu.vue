@@ -39,14 +39,14 @@ function onRefresh() {
     </div>
     <div class="flex justify-evenly items-center w-full mt-15 ">
       <QBtn
-        class="h-50 w-60 pb-15 pt-15 mt-2 opacity-75 border border-solid text-5 b-rd-2"
+        class="h-50 w-60 pb-15 pt-15 mt-2 mr-2 opacity-75 border border-solid text-5 b-rd-2"
         no-caps
         icon="add"
         :label="t('AddNew')"
         @click="navigateTo(`/machines`)"
       />
       <QBtn
-        class="h-50 w-60 pb-15 pt-15 pl-15 pr-15 mt-2 opacity-75 border border-solid text-5 b-rd-2"
+        class="h-50 w-60 pb-15 pt-15 pl-15 pr-15 mt-2 ml-2 opacity-75 border border-solid text-5 b-rd-2"
         no-caps
         icon="search"
         :label="t('SearchJob')"
