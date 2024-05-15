@@ -103,8 +103,12 @@ async function handleFilterSlotsUpdate(updatedValue) {
         </h3>
       </div>
       <FormTableKit
-        :rows="stopReasons" :columns="columns"
-        @add="handleAdd" @edit="handleEdit" @delete="handleDelete"
+        :rows="stopReasons"
+        :columns="columns"
+        form-class="grid grid-cols-1 grid-rows-2 h-70 w-80"
+        @add="handleAdd"
+        @edit="handleEdit"
+        @delete="handleDelete"
       />
     </q-card-section>
   </q-card>

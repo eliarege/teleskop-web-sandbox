@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
       THEORICALCHARGE: -1,
       MACHINECAPACITY: -1,
       IP: '',
-      PORT: -1,
+      PORT: 8080,
     })
   return res
 })

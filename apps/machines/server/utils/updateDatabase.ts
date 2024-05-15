@@ -461,25 +461,26 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
   for (const [index, command] of commands.entries()) {
     for (const [i, c] of command.chooseList.entries()) {
       const commonData = {
-        IOINDEX: i,
+        IOINDEX: c.ioIndex,
         MACHINEID: Number.parseInt(machineId),
         COMMANDNO: command.commandNo,
         IOID: Number.parseInt(c.ioId),
       }
-
-      inputsOutputs.push({
-        ...commonData,
-        NAME: c.name.length ? c.name : 'bos',
-        IOTYPE: (c.ioType <= 4 && c.ioType >= 0 && c.name.length > 0) ? 5 : Number.parseInt(c.ioType),
-        PROGRAMEDITING: false,
-        COMMANDRUN: false,
-      })
+      if (c.selectIndex === 0) {
+        inputsOutputs.push({
+          ...commonData,
+          NAME: c.name.length ? c.name : c.ioType !== 5 ? await getIOName(machineId, c.ioType - 1, c.ioId, trx) : '',
+          IOTYPE: c.isChoosableIO ? 5 : c.ioType - 1,
+          PROGRAMEDITING: false,
+          COMMANDRUN: false,
+        })
+      }
 
       selectionList.push({
         ...commonData,
-        SELECTINDEX: index,
-        IOTYPE: c.ioType,
-        NAME: (c.name && c.name.length) ? c.name : c.ioType !== 5 ? await getIOName(machineId, c.ioType, c.ioId, trx) : '',
+        SELECTINDEX: c.selectIndex,
+        IOTYPE: c.ioType - 1,
+        NAME: c.ioType !== 5 ? await getIOName(machineId, c.ioType - 1, c.ioId, trx) : '',
         SELECTEDIOID: c.ioId,
         ISDEFAULT: c.isDefault,
         MODEL: 'MODEL',
@@ -859,4 +860,87 @@ export async function writeCommandAlarmReasons(machineId: number, tbb: TbbFtpCli
   await tbb.uploadCommandAlarmReasons(mergedReasons)
 
   return mergedReasons
+}
+
+export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  let maxVersion = -1
+  const trxTime = trx.fn.now()
+  const version = await trx('BAMASTERCOMMANDS').where('MACHINEID', machineId).max('MACHINECOMMANDSETNO as maxVersion')
+
+  maxVersion = version[0].maxVersion || 0
+
+  maxVersion++
+
+  try {
+    await trx('BAMASTERCOMMANDS')
+      .update({ RELEASEENDDATE: trxTime })
+      .where('MACHINEID', machineId)
+      .andWhere('MACHINECOMMANDSETNO', maxVersion)
+
+    await trx('BAMASTERCOMMANDS')
+      .insert(function () {
+        this.select(machineId, maxVersion, trxTime, trx.raw('NULL'), 'COMMANDNO', 'FUNCTIONID', 'TBBFUNTIONNAME', 'BFMASTERCOMMANDS.NAME as NAME', 'ACTIVATED', 'ADVICELIST', 'DONTUSELIST', 'ISRUNMANUAL', 'COMMANDTYPE', 'MOVEPARALLEL', 'TBBCHANGETIME', 'X', 'Y', 'A', 'B', 'MAXA', 'ISTEMPERATURE', 'ISUNLOAD', 'BFMASTERCOMMANDS.ICON', 'BFMASTERCOMMANDS.GROUPID')
+          .from('BFMASTERCOMMANDS')
+          .where('MACHINEID', '=', machineId)
+      })
+
+    await trx('BAMASTERCOMMANDSALARMS')
+      .insert(function () {
+        this.select(machineId, maxVersion, 'COMMANDNO', 'ALARMINDEX', 'ALARMNO', 'ALARM', 'UNIVERSALALARMNO')
+          .from('BFMASTERCOMMANDSALARMS')
+          .where('MACHINEID', '=', machineId)
+      })
+
+    await trx('BAMASTERCOMMANDRETURNVALUES')
+      .insert(function () {
+        this.select(machineId, maxVersion, 'COMMANDNO', 'RETURNVALUEINDEX', 'RETURNVALUENAME', 'CANSHOW', 'SPRELATION')
+          .from('BFMASTERCOMMANDRETURNVALUES')
+          .where('MACHINEID', '=', machineId)
+      })
+
+    await trx('BACOMMANDINPUTOUTPUTS')
+      .insert(function () {
+        this.select(machineId, maxVersion, 'COMMANDNO', 'IOINDEX', 'IOID', 'IOTYPE', 'NAME')
+          .from('BFCOMMANDINPUTOUTPUTS')
+          .where('MACHINEID', '=', machineId)
+      })
+
+    await trx('BACOMMANDSELECTIONLIST')
+      .insert(function () {
+        this.select(machineId, maxVersion, 'COMMANDNO', 'IOINDEX', 'SELECTINDEX', 'IOTYPE', 'IOID', 'NAME', 'SELECTEDIOID', 'ISDEFAULT')
+          .from('BFCOMMANDSELECTIONLIST')
+          .where('MACHINEID', '=', machineId)
+      })
+
+    await trx('BACOMMANDPARAMETERS')
+      .insert(function () {
+        this.select(machineId, maxVersion, 'COMMANDNO', 'PARAMETERINDEX', 'PARAMSTRING', 'VALUE', 'PARAMETERTYPE', 'SELECTIONLIST', 'SELECTIONVALUES', 'UNITCODE', 'PARAMLOWLIMIT', 'PARAMHIGHLIMIT', 'CONTAINSVARIABLE', 'TEMPERATURE', 'USEDEFAULT', 'ISCOMMANDVARIABLE', 'TBBFORMUL', 'USEFORMULA')
+          .from('BFCOMMANDPARAMETERS')
+          .where('MACHINEID', '=', machineId)
+      })
+
+    return true
+  } catch (error: any) {
+    throw new DatabaseQueryError(error.message)
+  }
+}
+
+export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  try {
+    await trx('BFERPPARAMETERDEFINITIONS')
+      .where('MACHINEID', machineId)
+      .del()
+
+    await trx.raw(`
+  INSERT INTO BFERPPARAMETERDEFINITIONS (PARAMID, PARAMNAME, PARAMTYPE, MACHINEID) SELECT (SELECT ISNULL(MAX(PARAMID), 0)
+   FROM BFERPPARAMETERDEFINITIONS WHERE MACHINEID = P.MACHINEID) + ROW_NUMBER() OVER(ORDER BY P.BATCHPARAMETERID ASC)
+   AS BATCHPARAMETERID, P.PARAMSTRING, P.PARAMETERTYPE, P.MACHINEID   FROM BFMACHBATCHPARAMETERS P
+   LEFT OUTER JOIN BFERPPARAMETERDEFINITIONS E ON (E.MACHINEID = P.MACHINEID AND P.PARAMSTRING = E.PARAMNAME)
+    WHERE P.MACHINEID = ${machineId} AND E.PARAMNAME IS NULL ORDER BY P.BATCHPARAMETERID ASC
+  `)
+
+    return true
+  } catch (error: any) {
+    throw new DatabaseQueryError(error.message)
+  }
 }

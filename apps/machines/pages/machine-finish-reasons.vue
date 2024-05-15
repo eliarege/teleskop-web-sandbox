@@ -100,8 +100,12 @@ async function handleDelete(formData) {
     class="p-2"
   >
     <FormTableKit
-      :rows="finishReasons" :columns="columns"
-      @add="handleAdd" @edit="handleEdit" @delete="handleDelete"
+      :rows="finishReasons"
+      :columns="columns"
+      form-class="grid grid-cols-1 grid-rows-2 h-70 w-80"
+      @add="handleAdd"
+      @edit="handleEdit"
+      @delete="handleDelete"
     />
   </div>
 </template>

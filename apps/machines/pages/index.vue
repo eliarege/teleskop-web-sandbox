@@ -154,7 +154,7 @@ const columns = computed(() => ({
     filterType: 'includes',
     type: 'text',
     visible: true,
-    editable: true,
+    editable: false,
     schema: {
       filled: true,
     },
@@ -569,15 +569,20 @@ const contextMenuOptions = computed(() => [
   },
 ])
 
-const connectionMessage = ref({
+const teleskopConnectionMessage = ref({
+  message: '',
+  color: '',
+})
+
+const networkConnectionMessage = ref({
   message: '',
   color: '',
 })
 
 async function checkTeleskopConnection(formData: Machine) {
   try {
-    connectionMessage.value.message = t('tryingConnection')
-    connectionMessage.value.color = ''
+    teleskopConnectionMessage.value.message = t('tryingConnection')
+    teleskopConnectionMessage.value.color = ''
     await $fetch('/api/sync/teleskop-connection', {
       method: 'GET',
       retry: false,
@@ -585,21 +590,21 @@ async function checkTeleskopConnection(formData: Machine) {
         ip: formData.ip,
       },
     })
-    connectionMessage.value.message = t('connectionSuccessful')
-    connectionMessage.value.color = 'text-green'
+    teleskopConnectionMessage.value.message = t('connectionSuccessful')
+    teleskopConnectionMessage.value.color = 'text-green'
   } catch (error) {
     console.error(error)
     if (error.statusCode === 500) {
-      connectionMessage.value.message = (t('noConnectionToTeleskop'))
-      connectionMessage.value.color = 'text-red'
+      teleskopConnectionMessage.value.message = (t('noConnectionToTeleskop'))
+      teleskopConnectionMessage.value.color = 'text-red'
     }
   }
 }
 
 async function checkNetworkConnection(formData: Machine) {
   try {
-    connectionMessage.value.message = t('tryingConnection')
-    connectionMessage.value.color = ''
+    networkConnectionMessage.value.message = t('tryingConnection')
+    networkConnectionMessage.value.color = ''
     await $fetch('/api/sync/network-connection', {
       method: 'GET',
       retry: false,
@@ -607,15 +612,20 @@ async function checkNetworkConnection(formData: Machine) {
         ip: formData.ip,
       },
     })
-    connectionMessage.value.message = (t('connectionSuccessful'))
-    connectionMessage.value.color = 'text-green'
+    networkConnectionMessage.value.message = (t('connectionSuccessful'))
+    networkConnectionMessage.value.color = 'text-green'
   } catch (error) {
     console.error(error)
     if (error.statusCode === 500) {
-      connectionMessage.value.message = (t('noConnectionToNetwork'))
-      connectionMessage.value.color = 'text-red'
+      networkConnectionMessage.value.message = (t('noConnectionToNetwork'))
+      networkConnectionMessage.value.color = 'text-red'
     }
   }
+}
+
+function handleClose() {
+  teleskopConnectionMessage.value = { message: '', color: '' }
+  networkConnectionMessage.value = { message: '', color: '' }
 }
 </script>
 
@@ -659,30 +669,33 @@ async function checkNetworkConnection(formData: Machine) {
     <FormTableKit
       :rows="machines"
       :columns="columns"
-      form-class="grid grid-cols-4 gap-4 items-center"
+      form-class="grid grid-cols-5 gap-4 grid-rows-7 h-160"
       @add="handleAdd"
       @edit="handleEdit"
       @select="handleSelection"
       @delete="handleDelete"
-      @close="connectionMessage = { message: '', color: '' }"
+      @close="handleClose"
     >
       <template #form-content="slotProps">
         <q-btn
           :label="t('checkTeleskopConnection')"
           color="primary"
           no-caps
-          class="mb-4"
+          class="row-start-6"
           @click="checkTeleskopConnection(slotProps.formData)"
         />
         <q-btn
           :label="t('checkNetworkConnection')"
           color="primary"
           no-caps
-          class="mb-4"
+          class="row-start-6"
           @click="checkNetworkConnection(slotProps.formData)"
         />
-        <h3 :class="connectionMessage.color">
-          {{ connectionMessage.message }}
+        <h3 :class="teleskopConnectionMessage.color" class="row-start-7">
+          {{ teleskopConnectionMessage.message }}
+        </h3>
+        <h3 :class="networkConnectionMessage.color" class="row-start-7">
+          {{ networkConnectionMessage.message }}
         </h3>
       </template>
     </FormTableKit>

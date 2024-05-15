@@ -176,8 +176,11 @@ async function handleFilterSlotsUpdate(updatedValue) {
 <template>
   <div>
     <FormTableKit
-      :rows="users" :columns="columns"
-      form-class="grid grid-cols-2 gap-4 items-center" @add="handleAdd" @edit="handleEdit"
+      :rows="users"
+      :columns="columns"
+      form-class="grid grid-cols-2 grid-rows-4 gap-4 items-center w-120 h-160"
+      @add="handleAdd"
+      @edit="handleEdit"
       @delete="handleDelete"
       @select="handleSelect"
     >
@@ -186,7 +189,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
           :label="t('permissions')"
           color="primary"
           no-caps
-          class="mb-4"
+          class="row-start-5"
           @click="showPermissionsDialog = true"
         />
       </template>
