@@ -1,14 +1,15 @@
 import { defineStore } from 'pinia'
+import { StatusCodes } from '~/shared/constants'
 
 export const useColorStore = defineStore('colors', () => {
-  const jobOrderStatusColors: Record<number, string> = {
-    0: '#007BFF',
-    1: '#64ABFC',
-    2: '#73CECE',
-    3: '#4CAF50',
-    4: '#7F72FA',
-    8: '#FF4B4B',
-    10: '#FFBB00',
+  const jobOrderStatusColors: Record<StatusCodes, string> = {
+    [StatusCodes.newRequest]: '#FFFFFF',
+    [StatusCodes.inDispenser]: '#FFFF00',
+    [StatusCodes.inProcess]: '#0000FF',
+    [StatusCodes.requestCompleted]: '#008000',
+    [StatusCodes.priorityChanged]: '#808080',
+    [StatusCodes.canceled]: '#FF0000',
+    [StatusCodes.dispenserChanged]: '#FFA500',
   }
   const colors = {
     jobOrderStatusColors,

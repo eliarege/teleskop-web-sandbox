@@ -4,6 +4,7 @@ import ConfirmationDialog from '../ConfirmationDialog.vue'
 import { useDataStore } from '~/store/DataStore'
 import type { Dispenser, DispenserBrand, DispenserType, Protocol } from '~/shared/types'
 import ipformat from '~/shared/utils'
+import { useStateStore } from '~/store/State'
 
 const props = defineProps({
   dispenser: {
@@ -13,25 +14,24 @@ const props = defineProps({
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { notifySuccess, notifyFail } = useNotify()
 const dataStore = useDataStore()
+const stateStore = useStateStore()
 const dispenser = toRef(props, 'dispenser')
 const defaultDispenser: Dispenser = {
-  dispenserId: 0,
   dispenserName: '',
   dispenserIP: '',
-  dispenserType: null,
+  dispenserType: 1,
   dispenserBrandId: 1,
   dispenserBrandName: 'Eliar',
   vncUser: '',
   vncPassword: '',
   vncPort: 5900,
-  lastConsumptionControl: new Date(),
-  protocol: '',
+  protocol: '7',
   protocolFields: null,
-  isJDM: false,
   JDMConnections: [],
 }
-const editedDispenser = ref(dispenser.value ? { ...dispenser.value } : { ...defaultDispenser })
+const editedDispenser = ref(JSON.parse(JSON.stringify(dispenser.value ? dispenser.value : defaultDispenser)))
 const dispenserBrands = ref<DispenserBrand[]>([])
 const dispenserTypes = ref<DispenserType[]>([])
 const brandDispenserTypes = ref<DispenserType[]>([])
@@ -110,14 +110,15 @@ function onReset() {
     brandProtocols.value = []
     editedDispenser.value.protocolFields = null
   }
-  editedDispenser.value = dispenser.value ? { ...dispenser.value } : { ...defaultDispenser }
+  editedDispenser.value = JSON.parse(JSON.stringify(dispenser.value ? dispenser.value : defaultDispenser))
+  onBrandSelected()
+  onProtocolSelected()
 }
-
 async function onDelete() {
   q.dialog({
     component: ConfirmationDialog,
     componentProps: {
-      bodyText: t('DeleteDispenser'),
+      bodyText: t('confirmationDialogBody.DeleteDispenser'),
       confirmBtn: {
         label: t('Delete'),
         color: 'negative',
@@ -133,15 +134,28 @@ async function onDelete() {
     onDialogOK(null)
   })
 }
+async function pingAddress() {
+  try {
+    stateStore.isLoading = true
+    await $fetch('/api/ping', { method: 'POST', body: { address: editedDispenser.value.dispenserIP }})
+    notifySuccess(t('Success'))
+  } catch (e) {
+    console.error(e)
+    notifyFail(t('Failed'))
+  } finally {
+    stateStore.isLoading = false
+  }
+}
 </script>
 
 <template>
   <QDialog
     ref="dialogRef"
     full-width
+    persistent
     @hide="onDialogHide"
   >
-    <QCard>
+    <QCard class="scroll border-b-solid border-10px border-grey">
       <QForm @submit.prevent>
         <div class="flex flex-col pb-10">
           <div class="text-center pt-5 text-xl">
@@ -183,11 +197,16 @@ async function onDelete() {
                 v-model="editedDispenser.dispenserIP"
                 class="item-input"
                 dense
+                hide-bottom-space
                 type="text"
                 filled
                 :placeholder="editedDispenser.dispenserIP"
                 :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
-              />
+              >
+                <template #append>
+                  <QBtn round dense flat icon="wifi" @click="pingAddress" />
+                </template>
+              </QInput>
             </div>
             <div class="row-item">
               <span class="item-label">
@@ -207,11 +226,14 @@ async function onDelete() {
                 {{ t('dispenserFields.VncPort') }}
               </span>
               <QInput
-                v-model="editedDispenser.vncPort"
+                v-model.number="editedDispenser.vncPort"
                 class="item-input"
                 dense
-                type="number"
                 filled
+                hide-bottom-space
+                type="number"
+                :rules="[(val: number) => val >= 0]"
+                min="0"
                 :placeholder="editedDispenser.vncPort"
               />
             </div>
@@ -271,6 +293,24 @@ async function onDelete() {
                 :options="brandDispenserTypes"
               />
             </div>
+            <div v-if="editedDispenser.dispenserType === 5" class="row-item">
+              <span class="item-label">
+                {{ t('dispenserFields.JDMConnections') }}
+              </span>
+              <QSelect
+                v-model="editedDispenser.JDMConnections"
+                dense
+                filled
+                multiple
+                emit-value
+                use-chips
+                map-options
+                options-dense
+                option-value="dispenserTypeId"
+                option-label="dispenserTypeName"
+                :options="dataStore.dispenserTypes?.filter(dispenser => dispenser.dispenserTypeId !== 5)"
+              />
+            </div>
             <div class="row-item">
               <span class="item-label">
                 {{ t('dispenserFields.Protocol') }}
@@ -289,48 +329,23 @@ async function onDelete() {
                 @update:model-value="onProtocolSelected"
               />
             </div>
-            <div class="row-item pt-5">
-              <span class="item-label">
-                {{ t('dispenserFields.IsJDM') }}
-              </span>
-              <QCheckbox v-model="editedDispenser.isJDM" />
-            </div>
-            <div v-if="editedDispenser.isJDM" class="row-item">
-              <span class="item-label">
-                {{ t('dispenserFields.JDMConnections') }}
-              </span>
-              <QSelect
-                v-model="editedDispenser.JDMConnections"
+            <div v-for="field in protocolFields" :key="field" class="row-item">
+              <span class="item-label">{{ t(`protocolParameters.${field}`) }}</span>
+              <QInput
+                v-model="editedDispenser.protocolFields[field]"
+                class="item-input"
                 dense
+                type="text"
                 filled
-                multiple
-                emit-value
-                use-chips
-                map-options
-                options-dense
-                option-value="dispenserId"
-                option-label="dispenserName"
-                :options="dataStore.dispensers?.filter(dispenser => dispenser.dispenserId !== editedDispenser.dispenserId)"
+                :placeholder="t(`protocolParameters.${field}`)"
               />
-            </div>
-            <div v-if="editedDispenser.protocolFields">
-              <div v-for="field in protocolFields" :key="field" class="row-item">
-                <span class="item-label">{{ t(`protocolParameters.${field}`) }}</span>
-                <QInput
-                  v-model="editedDispenser.protocolFields[field]"
-                  class="item-input"
-                  dense
-                  type="text"
-                  filled
-                  :placeholder="t(`protocolParameters.${field}`)"
-                />
-              </div>
             </div>
           </div>
         </div>
-        <div :class="q.dark.isActive ? 'button-section-dark' : 'button-section-light'">
+        <div class="button-section">
           <QBtn
             :label="t('Save')"
+            type="submit"
             color="primary"
             icon="save"
             @click="onSave"
@@ -343,6 +358,7 @@ async function onDelete() {
           />
           <QBtn
             :label="t('Reset')"
+            type="reset"
             icon="refresh"
             @click="onReset"
           />
@@ -361,8 +377,7 @@ async function onDelete() {
 
 <style scoped>
 .row-item {
-  gap: 2rem;
-  margin: 1.25rem;
+  margin: 0.75rem;
   width: 40rem;
 }
 
@@ -379,7 +394,7 @@ async function onDelete() {
   max-height: calc(80vh - 150px);
 }
 
-.button-section-light {
+.button-section {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -393,15 +408,7 @@ async function onDelete() {
 
 }
 
-.button-section-dark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  justify-content: space-evenly;
-  padding: 0.5rem;
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
+.body--dark .button-section {
   background-color: var(--q-dark);
   box-shadow: 0px -1px 5px rgba(128, 128, 128, 0.2);
 }

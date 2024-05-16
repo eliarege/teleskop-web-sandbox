@@ -4,7 +4,7 @@ export function cellStyle(col: any, row: any, pageIndex: number, isSelected: boo
   let style = 'background-color: '
   if (col.field === 'status') {
     style += colors.jobOrderStatusColors[row.status] || '#FFFFFF'
-    style += '; color: white; font-weight: bolder; font-size: medium'
+    style += '; color: black; font-size: medium'
   } else if (isDarkMode) {
     if (isSelected) {
       style += colors.selectedRowDark

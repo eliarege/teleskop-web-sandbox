@@ -1,6 +1,10 @@
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
+import { basename, extname, resolve } from 'node:path'
+import { readdirSync } from 'node:fs'
+import virtual from '@rollup/plugin-virtual'
 
-import { resolve } from 'node:path'
+const migrations = readdirSync('./server/migrations').sort()
+const getMigrationName = (name: string) => `_${basename(name, extname(name))}`
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
@@ -8,9 +12,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   ssr: false,
   runtimeConfig: {
-    dmsHost: 'localhost',
-    dmsUser: 'postgres',
-    dmsPort: '5432',
+    dmsHost: '192.168.18.69',
+    dmsUser: 'username',
+    dmsPort: '5433',
     dmsPassword: '123456',
     dmsDatabase: 'test',
     teleskopHost: '192.168.16.87',
@@ -18,12 +22,15 @@ export default defineNuxtConfig({
     teleskopPort: '7654',
     teleskopPassword: '12345678tT',
     teleskopDatabase: 'Teleskop',
+    sambaPath: '//192.168.19.13/Dms',
+    sambaUser: 'root',
+    sambaPassword: '1422',
     public: {
       kcUrl: 'http://localhost:8080',
       kcRealm: 'teleskop-web',
       kcClientId: 'dispensing-management-systems',
       kcEnabled: true,
-      websockifyPort: '6800',
+      websockifyUrl: 'ws://localhost:6800',
     },
   },
   i18n: {
@@ -41,6 +48,36 @@ export default defineNuxtConfig({
           resolve(__dirname, '../../packages/ui/components/MachineCard.vue'),
         ],
       },
+    },
+  },
+  nitro: {
+    rollupConfig: {
+      // @ts-expect-error Infinite
+      plugins: [
+        virtual({
+          '#migration-source': `\
+${migrations.map((mig) => {
+  return `import * as ${getMigrationName(mig)} from '~/server/migrations/${mig}'`
+}).join('\n')}
+const migrations = { ${migrations.map(getMigrationName)} }
+
+export const MigrationSource = {
+  getMigrations() {
+    // Return a list of migration file names
+    return Promise.resolve(Object.keys(migrations));
+  },
+
+  getMigrationName(migration) {
+    return migration;
+  },
+
+  getMigration(migration) {
+    return migrations[migration];
+  }
+}
+`,
+        }),
+      ],
     },
   },
 })

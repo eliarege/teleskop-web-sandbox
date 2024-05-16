@@ -23,20 +23,10 @@ const columns: (QTableColumn<MaterialRequest>)[] = [
   { name: 'status', label: t('statusCodes.text'), field: 'status', align: 'left' },
 ]
 
-const materials = ref<MaterialRequest[]>()
+const materials = ref<MaterialRequest[]>([])
 getMaterials()
 async function getMaterials() {
   materials.value = await $fetch(`/api/materials/requests`, { query: { jobId: props.jobOrder.jobId } })
-}
-async function getRecipe() {
-  navigateTo({
-    path: '/recipe',
-    query: {
-      batchNo: props.jobOrder.batchNo,
-      correctionNo: props.jobOrder.batchCorrectionNo,
-      machineId: props.jobOrder.machineId,
-    },
-  })
 }
 </script>
 

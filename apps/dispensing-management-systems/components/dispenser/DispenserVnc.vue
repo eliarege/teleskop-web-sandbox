@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
+import { joinURL, parseURL, withBase, withProtocol } from 'ufo'
 import { NoVnc } from 'ui'
 import type { Dispenser } from '~/shared/types'
 
@@ -13,6 +14,7 @@ const props = defineProps({
 const { t } = useI18n()
 
 const dispenser = toRef(props, 'dispenser')
+const config = useRuntimeConfig()
 
 const KeyEnum = {
   'A': 65,
@@ -175,9 +177,19 @@ const vnc = ref<InstanceType<typeof NoVnc> | null>(null)
 const isFullScreen = ref(false)
 const vncCredentials = {
   username: dispenser.value.vncUser,
-  target: `ws://${dispenser.value.dispenserIP}`,
   password: dispenser.value.vncPassword,
 }
+
+function resolveWebSocketUrl(url: string) {
+  const parsed = parseURL(url)
+  const protocol = parsed.protocol || window.location.protocol
+  const isSecure = protocol === 'https:'
+  return withProtocol(
+    withBase(url, `${window.location.protocol}//${window.location.host}`),
+    isSecure ? `wss://` : `ws://`,
+  )
+}
+const websockifyWsUrl = resolveWebSocketUrl(config.public.websockifyUrl)
 function onDisconnect() {
   quasar.notify({
     message: t('vncError', { name: dispenser.value.dispenserName }),
@@ -243,10 +255,10 @@ onBeforeUnmount(() => {
               <NoVnc
                 ref="vnc"
                 :credentials="vncCredentials"
+                :url="joinURL(websockifyWsUrl, 'dispenser', dispenser.dispenserId.toString())"
                 resize-session
                 clip-viewport
                 drag-viewport
-                url="ws://localhost:5900"
                 class="z-2 absolute h-125 w-200 p-1"
                 @disconnect="onDisconnect"
                 @connect="onConnect"

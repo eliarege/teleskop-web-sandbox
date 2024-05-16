@@ -1,117 +1,154 @@
 <script lang="ts" setup>
-import { QTable } from 'quasar'
-import type { QTableColumn } from 'quasar'
-import MaterialRequests from './material/MaterialRequests.vue'
-import WeighingInfo from './WeighingInfo.vue'
-import type { Dispenser, JobOrder } from '~/shared/types'
+import ConfirmationDialog from './ConfirmationDialog.vue'
+import MaterialRequestsDialog from './material/MaterialRequestsDialog.vue'
+import WeighingInfoDialog from './WeighingInfoDialog.vue'
+import BatchParametersInfoDialog from './BatchParametersInfoDialog.vue'
+import type { Dispenser, JobOrder, Machine } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { cellStyle } from '~/shared/utils'
 import { useDataStore } from '~/store/DataStore'
+import { StatusCodes } from '~/shared/constants'
 
 const { t } = useI18n()
+const { notifySuccess, notifyFail } = useNotify()
 const q = useQuasar()
 const route = useRoute()
 const dataStore = useDataStore()
 const colorStore = useColorStore()
-const table = ref<QTable>()
-const searchFilter = ref('')
+const filters = ref([])
 const jobOrders = ref<JobOrder[]>([])
 const selectedRow = ref<JobOrder | null>(null)
 const dispensers = await dataStore.getDispensers()
+const dispenserSelections = [{ dispenserId: -1, dispenserName: t('AllDispensers') }, ...dispensers]
+const selectedDispenser = ref(dataStore.selectedDispenser ? dataStore.selectedDispenser : dispenserSelections[0])
+const { data: machines } = useFetch<Machine[]>('/api/machines')
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
   if (dispenserId)
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`, { query: { dispenserId } })
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/job-orders`, { query: { dispenserId }, method: 'POST', body: { filters: filters.value } })
   else
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/jobOrders`)
+    jobOrders.value = await $fetch<JobOrder[]>(`/api/job-orders`, { method: 'POST', body: { filters: filters.value } })
 }
 getJobOrders()
-const columns: (QTableColumn<JobOrder>)[] = [
+const columns = ref([
   {
-    name: 'job_order',
+    name: 'batchNo',
     label: t('JobOrder'),
     field: 'batchNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
-    name: 'batch_correction_no',
+    name: 'batchCorrectionNo',
     label: t('BatchCorrectionNo'),
     field: 'batchCorrectionNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
-    name: 'machine_name',
+    name: 'machineName',
     label: t('MachineName'),
     field: 'machineName',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: machines.value,
+    optionLabel: 'machineName',
+    optionValue: 'machineId',
   },
   {
-    name: 'tank_no',
+    name: 'tankNo',
     label: t('TankNo'),
     field: 'tankNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
-    name: 'program_no',
+    name: 'programNo',
     label: t('ProgramNo'),
     field: 'programNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
-    name: 'program_name',
+    name: 'programName',
     label: t('ProgramName'),
     field: 'programName',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
-    name: 'step_no',
+    name: 'stepNo',
     label: t('StepNo'),
     field: 'stepNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
-    name: 'recipe_type',
+    name: 'recipeType',
     label: t('RecipeType'),
     field: 'recipeType',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: [
+      { label: t('recipeTypes.0'), recipeType: 0 },
+      { label: t('recipeTypes.1'), recipeType: 1 },
+    ],
+    optionLabel: 'label',
+    optionValue: 'recipeType',
   },
   {
-    name: 'recipe_process_no',
+    name: 'recipeProcessNo',
     label: t('RecipeProcessNo'),
     field: 'recipeProcessNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
-    name: 'recipe_step_no',
+    name: 'recipeStepNo',
     label: t('RecipeStepNo'),
     field: 'recipeStepNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'comparison',
   },
   {
     name: 'status',
     label: t('Status'),
     field: 'status',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: [
+      { label: t('statusCodes.0'), status: 0 },
+      { label: t('statusCodes.1'), status: 1 },
+      { label: t('statusCodes.2'), status: 2 },
+      { label: t('statusCodes.3'), status: 3 },
+      { label: t('statusCodes.4'), status: 4 },
+      { label: t('statusCodes.8'), status: 8 },
+      { label: t('statusCodes.10'), status: 10 },
+    ],
+    optionLabel: 'label',
+    optionValue: 'status',
   },
-]
+])
+
 const buttonProps = ref([
   { name: 'materialRequests', label: t('MaterialRequests'), link: 'material', icon: 'science' },
   { name: 'recipeInfo', label: t('recipeFields.Info'), link: 'recipe', icon: 'description' },
   { name: 'weighingInfo', label: t('weighingFields.Info'), link: 'weighing', icon: 'balance' },
+  { name: 'parameters', label: t('batchPlanParameterFields.Title'), link: 'parameters', icon: 'format_list_numbered' },
 ])
-function onRowClick(row: JobOrder) {
-  if (selectedRow.value === row)
+function onRowClick(row: JobOrder, isContextMenu: boolean) {
+  if (selectedRow.value === row && !isContextMenu)
     selectedRow.value = null
   else
     selectedRow.value = row
@@ -120,7 +157,7 @@ function onButtonClicked(link: string) {
   const jobOrder = selectedRow.value
   if (link === 'material') {
     q.dialog({
-      component: MaterialRequests,
+      component: MaterialRequestsDialog,
       componentProps: { jobOrder },
     })
   } else if (link === 'recipe') {
@@ -134,17 +171,17 @@ function onButtonClicked(link: string) {
     })
   } else if (link === 'weighing') {
     q.dialog({
-      component: WeighingInfo,
+      component: WeighingInfoDialog,
+      componentProps: { jobOrder },
+    })
+  } else if (link === 'parameters') {
+    q.dialog({
+      component: BatchParametersInfoDialog,
       componentProps: { jobOrder },
     })
   }
 }
 const pagination = ref({ rowsPerPage: 50 })
-watch(searchFilter, async () => {
-  await nextTick()
-  if (!table.value?.filteredSortedRows.includes(selectedRow.value))
-    selectedRow.value = null
-})
 watch(() => route.query.dispenserId, (val) => {
   const dispenser = dataStore.getDispenser(Number(val))
   updateDispenser(dispenser)
@@ -153,7 +190,7 @@ watch(() => route.query.dispenserId, (val) => {
 function updateDispenser(val: Dispenser | undefined) {
   selectedRow.value = null
   dataStore.selectedDispenser = val
-  if (val) {
+  if (val && val.dispenserId !== -1) {
     dataStore.title = val.dispenserName
     navigateTo({
       path: `/jobOrders`,
@@ -166,25 +203,81 @@ function updateDispenser(val: Dispenser | undefined) {
     })
   }
 }
+async function handleFilterSlotsUpdate(updatedFilters: any) {
+  filters.value = updatedFilters
+  getJobOrders()
+  selectedRow.value = null
+}
+async function processRequest(status: string, order: JobOrder) {
+  const showDialog = selectedRow.value!.status !== StatusCodes.requestCompleted && selectedRow.value!.status !== StatusCodes.canceled
+  if (showDialog) {
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.AlreadyStartedWarning'),
+        confirmBtn: {
+          label: t('Confirm'),
+          color: 'positive',
+          icon: 'check',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(() => {
+      setStatus(status, order)
+    })
+  } else {
+    setStatus(status, order)
+  }
+}
+async function setStatus(status: string, order: JobOrder) {
+  try {
+    await handleFile(status, order)
+    await $fetch('/api/job-orders/set-status', { method: 'POST', query: { status: status === 'complete' ? 3 : 8, reqNo: order.jobId } })
+    notifySuccess(t('Success'))
+    getJobOrders()
+  } catch (e) {
+    notifyFail(t('Failed'))
+  }
+}
+async function handleFile(status: any, data: any) {
+  const dispenser = dataStore.getDispenser(data.dispenserId)
+  if (dispenser?.dispenserBrandId === 1) // Eliar
+  {
+    const countInProgram = await $fetch('/api/job-orders/step-count', {
+      query: {
+        batchNo: data.batchNo,
+        correctionNo: data.batchCorrectionNo,
+        recipeProcessNo: data.recipeProcessNo,
+      },
+    })
+    const content = [
+      status === 'retry' ? 1 : 8,
+      data.priority,
+      data.machineId,
+      data.tankNo,
+      data.batchNo,
+      data.programNo,
+      data.stepNo,
+      data.recipeStepNo,
+      countInProgram,
+      data.recipeType,
+      data.recipeProcessNo,
+      status === 'retry' ? 1 : 0,
+    ]
+    await $fetch('/api/file/write-step', { method: 'POST', body: { content, reqFilePath: '/SiviKimyasal/req' } })
+  }
+}
 </script>
 
 <template>
-  <div class="q-pa-md ml-9">
+  <div class="q-pa-md">
     <div class="flex-center mb-10">
-      <div class="col items-center mr-1">
-        <QInput
-          v-model="searchFilter"
-          :label="t('Search')"
-          style="min-width: 30vw; max-width: 40%;"
-        >
-          <template #prepend>
-            <QIcon name="search" />
-          </template>
-        </QInput>
-      </div>
       <div>
         <QSelect
-          v-model="dataStore.selectedDispenser"
+          v-model="selectedDispenser"
           borderless
           dense
           filled
@@ -193,31 +286,26 @@ function updateDispenser(val: Dispenser | undefined) {
           map-options
           options-dense
           option-label="dispenserName"
-          :options="dispensers"
+          :options="dispenserSelections"
           @update:model-value="updateDispenser"
         />
       </div>
     </div>
-
-    <QTable
-      ref="table"
-      :card-class="q.dark.isActive ? 'card-dark' : 'card-light'"
-      :table-class="q.dark.isActive ? 'table-dark' : 'table-light'"
-      :table-header-class="q.dark.isActive ? 'header-dark' : 'header-light'"
-      :title="t('JobOrders')"
-      :filter="searchFilter"
-      :pagination
-      :columns
+    <FilterableTable
       :rows="jobOrders"
-      separator="cell"
-      row-key="name"
+      :columns
+      class="h-160 custom-filterable-table"
+      :is-virtual-scroll="false"
+      :pagination
+      @update-filter-slots="handleFilterSlotsUpdate"
     >
-      <template #body="props">
+      <template #custombody="props">
         <QTr
           :props="props"
           style="cursor: pointer;"
           :class="{ 'selected-row': selectedRow === props.row }"
-          @click="onRowClick(props.row)"
+          @click="onRowClick(props.row, false)"
+          @contextmenu="onRowClick(props.row, true)"
         >
           <QTd
             v-for="col in props.cols"
@@ -234,13 +322,47 @@ function updateDispenser(val: Dispenser | undefined) {
             <span v-else>
               {{ props.row[col.field] }}
             </span>
+            <QMenu
+              touch-position
+              context-menu
+            >
+              <QList>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="
+                    processRequest('retry', selectedRow)
+                  "
+                >
+                  <QItemSection>{{ t('jobOrderActions.Retry') }}</QItemSection>
+                </QItem>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="
+                    processRequest('cancel', selectedRow)
+                  "
+                >
+                  <QItemSection>{{ t('jobOrderActions.Cancel') }}</QItemSection>
+                </QItem>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="
+                    processRequest('complete', selectedRow)
+                  "
+                >
+                  <QItemSection>{{ t('jobOrderActions.Complete') }}</QItemSection>
+                </QItem>
+              </QList>
+            </QMenu>
           </QTd>
         </QTr>
       </template>
-    </QTable>
+    </FilterableTable>
     <div
       v-if="selectedRow"
-      :class="q.dark.isActive ? 'footer-buttons-joborder-dark' : 'footer-buttons-joborder-light'"
+      class="footer-buttons-joborder"
     >
       <QBtn
         v-for="button of buttonProps"
@@ -261,102 +383,21 @@ function updateDispenser(val: Dispenser | undefined) {
   </div>
 </template>
 
-<style>
-.card-light {
+<style scoped>
+.footer-buttons-joborder {
   background-color: white;
-  text-decoration-color: brown;
-}
-.card-dark {
-  background-color: rgb(43, 41, 41);
-  text-decoration-color: green;
-}
-
-.header-light th {
-  font-weight: bold;
-  padding-right: 5px;
-  text-decoration: underline;
-  position: sticky;
-  background-color: var(--q-primary);
-  top: 0px;
   z-index: 1;
-}
-.header-dark th {
-  font-weight: bold;
-  padding-right: 5px;
-  text-decoration: underline;
+  display: flex;
   position: sticky;
+  bottom: 0;
+  width: 100%;
+  height: 5rem;
+  justify-content: center;
+}
+.body--dark .footer-buttons-joborder {
   background-color: var(--q-dark);
-  top: 0px;
-  z-index: 1;
 }
-/* Light Theme Styles */
-.table-dark, .table-light {
-  max-height: 500px;
-}
-.table-light td {
-  border: 1px solid grey;
-  border-right: none;
-  border-bottom: none;
-}
-
-.table-light th:last-child,
-.table-light td:last-child {
-  border-right: none;
-}
-
-.table-light tbody tr:last-child th,
-.table-light tbody tr:last-child td {
-  border-bottom: none;
-  border-right: none;
-}
-.table-light th:first-child,
-.table-light td:first-child {
-  border-left: none;
-}
-.table-light .status-cell {
-  background-color: red;
-}
-.footer-buttons-joborder-light {
-  background-color: white;
-  z-index: 1;
-  display: flex;
-  position: sticky;
-  bottom: 0;
-  width: 100%;
-  height: 5rem;
-  justify-content: center;
-}
-/* Dark Theme Styles */
-.table-dark td{
-  border: 1px solid rgb(100,100,100);
-  border-right: none;
-  border-bottom: none;
-}
-.table-dark th:last-child,
-.table-dark td:last-child {
-  border-right: none;
-}
-
-.table-dark tbody tr:last-child th,
-.table-dark tbody tr:last-child td {
-  border-bottom: none;
-  border-right: none;
-}
-.table-dark th:first-child,
-.table-dark td:first-child {
-  border-left: none;
-}
-.footer-buttons-joborder-dark {
-  background-color: black;
-  z-index: 1;
-  display: flex;
-  position: sticky;
-  bottom: 0;
-  width: 100%;
-  height: 5rem;
-  justify-content: center;
-}
-.footer-button{
+.footer-button {
   margin: 1rem;
   margin-bottom: 1rem;
   overflow: hidden;
@@ -366,5 +407,10 @@ function updateDispenser(val: Dispenser | undefined) {
   top: 45px;
   bottom: 0px;
   z-index:1;
+}
+.custom-filterable-table {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 </style>

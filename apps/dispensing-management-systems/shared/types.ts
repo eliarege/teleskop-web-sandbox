@@ -12,6 +12,7 @@ export interface JobOrder {
   recipeType: string
   recipeProcessNo: number
   recipeStepNo: number
+  priority: number
   status: number
 }
 export interface ProgramHeader {
@@ -39,6 +40,14 @@ export interface BatchRecipeStep {
   amount: number
   unit: number
 }
+export interface BatchPlanParameter {
+  planKey: number
+  paramId: number
+  paramName: string
+  value: string
+  paramType: number
+  unit: number
+}
 export interface Dispenser {
   dispenserId: number
   dispenserName: string
@@ -46,13 +55,12 @@ export interface Dispenser {
   dispenserType: number | null
   dispenserBrandId: number
   dispenserBrandName: string
-  vncUser: string
-  vncPassword: string
-  vncPort: number
-  lastConsumptionControl: Date | null
+  vncUser: string | null
+  vncPassword: string | null
+  vncPort: number | null
+  lastConsumptionControl?: string | null
   protocol: string
   protocolFields?: unknown
-  isJDM: boolean
   JDMConnections: number[] | null
 }
 export interface DispenserBrand {
@@ -76,12 +84,12 @@ export interface Material {
   materialGroupNo: number
   density: number
   ph: number
-  source: string
-  costUnit: string
-  unitCost: number
+  source: string | null
+  costUnit: string| null
+  unitCost: number | null
   reRequestable: boolean
   directTransfer: boolean
-  connectedDispensers: Dispenser[]
+  connectedDispensers: Dispenser[] | null
 }
 export interface MaterialRequest {
   jobId: number
@@ -131,11 +139,24 @@ export interface Machine {
   machineId: number
   machineName: string
   controllerType: number
-  connectedDispensers: Dispenser[]
+  connectedDispensers: Dispenser[] | null
 }
 export interface MachineControllerType {
   controllerTypeId: number
   controllerTypeName: string
+}
+export interface RecipeMaster {
+  recipeId: number
+  recipeName: string
+  recipeGroup: number
+  recipeType: number
+  comment: string
+  prepTime: Date
+  lastUpdate: Date
+  stepNo: number
+  programNo: number
+  machineId: number
+  isPassive: boolean
 }
 export interface DatabaseConnection {
   client: string

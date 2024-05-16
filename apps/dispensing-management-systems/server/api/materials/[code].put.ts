@@ -1,8 +1,9 @@
 import { dmsDB } from '~/server/connectionPool'
+import { MaterialSchema } from '~/shared/schemas'
 import type { Material } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
-  const material: Material = await readBody(event)
+  const material: Material = await readValidatedBody(event, MaterialSchema.parse)
   const res = await dmsDB('MATERIAL')
     .where('material_code', material.materialCode)
     .update({

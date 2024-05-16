@@ -4,6 +4,7 @@
   "AddNewDispenser": "Yeni Dağıtıcı Ekle",
   "AddNewMachine": "Yeni Makine Ekle",
   "AddNewMaterial": "Yeni Malzeme Ekle",
+  "AddNewRecipe": "Yeni Reçete Ekle",
   "SearchJob": "İş Emri Ara",
   "Refresh": "Yenile",
   "SyncData": "Teleskop Verisiyle Senkronize Et",
@@ -13,6 +14,7 @@
   "LogOut": "Çıkış Yap",
   "AddMOD": "Makine Veya Dağıtıcı Ekle",
   "Dispensers": "Dağıtıcılar",
+  "AllDispensers": "Tüm Dağıtıcılar",
   "Machines": "Makineler",
   "Machine": "Makine",
   "ShowDispenserList": "Dağıtıcı Listesini Göster",
@@ -60,19 +62,28 @@
   "Save": "Kaydet",
   "Cancel": "İptal",
   "Delete": "Sil",
-  "DeleteDispenser": "Bu dağıtıcıyı silmek istediğinizden emin misiniz?",
-  "DeleteMachine": "Bu makineyi silmek istediğinizden emin misiniz?",
-  "DeleteMaterial": "Bu malzemeyi silmek istediğinizden emin misiniz?",
-  "SyncDataConfirmation": "Teleskop veritabanıyla {name} verilerini eşitlemek istediğinizden emin misiniz?",
+  "confirmationDialogBody": {
+    "DeleteDispenser": "Bu dağıtıcıyı silmek istediğinizden emin misiniz?",
+    "DeleteMachine": "Bu makineyi silmek istediğinizden emin misiniz?",
+    "DeleteMaterial": "Bu malzemeyi silmek istediğinizden emin misiniz?",
+    "SyncDataConfirmation": "Teleskop veritabanıyla {name} verilerini eşitlemek istediğinizden emin misiniz?",
+    "AlreadyStartedWarning": "İstek çoktan başlatıldı. Devam etmek istediğinize emin misiniz?"
+  },
   "Confirm": "Onayla",
   "Material": "Malzeme",
   "Materials": "Malzemeler",
   "MaterialRequests": "Malzeme İstekleri",
   "SelectedMaterials": "{count} Seçili",
+  "jobOrderActions": {
+    "Retry": "Seçili İsteği Tekrarla",
+    "Cancel": "Seçili İsteği İptal Et",
+    "Complete": "Seçili İsteği Tamamlandı Yap"
+  },
   "settings": {
     "App": "Uygulama Ayarları",
     "Material": "Malzeme Ayarları",
     "Machine": "Makine Ayarları",
+    "Recipe": "Reçete Ayarları",
     "Teleskop": "Teleskop Ayarları"
   },
   "materialFields": {
@@ -99,7 +110,6 @@
     "VncUser": "Vnc Kullanıcısı",
     "VncPort": "Vnc Portu",
     "VncPassword": "Vnc Şifresi",
-    "IsJDM": "JDM mi?",
     "JDMConnections": "JDM Bağlantıları"
   },
   "recipeFields": {
@@ -110,7 +120,17 @@
     "ISN": "ISN",
     "MainStep": "Ana Adım",
     "ParallelStep": "Paralel Adım",
-    "ProcessNo": "İşlem Numarası"
+    "ProcessNo": "İşlem Numarası",
+    "ID": "Reçete No",
+    "Name": "Reçete Adı"
+  },
+  "batchPlanParameterFields": {
+    "Title": "Parametreler",
+    "PlanKey": "Plan Numarası",
+    "ParamID": "Parametre Numarası",
+    "ParamName": "Parametre Adı",
+    "Value": "Değer",
+    "Unit": "Birim"
   },
   "weighingFields": {
     "Info": "Tartım Bilgisi",

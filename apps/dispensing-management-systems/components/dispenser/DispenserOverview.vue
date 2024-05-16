@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import DispenserEdit from './DispenserEdit.vue'
+import DispenserEditDialog from './DispenserEditDialog.vue'
 import type { Dispenser } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
 import { useStateStore } from '~/store/State'
@@ -17,14 +17,10 @@ const dataStore = useDataStore()
 const stateStore = useStateStore()
 
 const dispenser = toRef(props, 'dispenser')
-// Placeholder ping method
 async function onPing() {
   try {
     stateStore.isLoading = true
-    await $fetch(`http://${dispenser.value.dispenserIP}`, {
-      mode: 'no-cors',
-      timeout: 3000,
-    })
+    await $fetch('/api/ping', { method: 'POST', body: { address: dispenser.value.dispenserIP }})
     notifySuccess(t('Success'))
   } catch (e) {
     console.error(e)
@@ -49,7 +45,7 @@ function onClickScreen() {
 
 function onClickEdit() {
   q.dialog({
-    component: DispenserEdit,
+    component: DispenserEditDialog,
     componentProps: { dispenser },
   }).onOk(async (payload) => {
     if (payload)

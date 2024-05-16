@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import MaterialInfo from '../material/MaterialInfo.vue'
-import type { Material, MaterialGroup } from '~/shared/types'
+import MaterialInfoDialog from '../material/MaterialInfoDialog.vue'
+import type { Dispenser, Material, MaterialGroup } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
 
 const q = useQuasar()
 const { t } = useI18n()
 const { notifySuccess, notifyFail } = useNotify()
 const dataStore = useDataStore()
-
-const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials')
+const filters = ref([])
+const { data: materials, refresh: refreshMaterials } = await useFetch<Material[]>('/api/materials/filtered', { method: 'POST', body: { filters: filters.value } })
 const dispensers = await dataStore.getDispensers()
-const searchFilter = ref('')
 const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 1,
   materialGroupName: t('materialTypes.1'),
@@ -22,39 +21,51 @@ const groupOptions: MaterialGroup[] = [{
   materialGroupNo: 3,
   materialGroupName: t('materialTypes.3'),
 }]
-const columns: (QTableColumn<Material>)[] = [
+const columns = ref([
   {
     name: 'materialCode',
     label: t('materialFields.Code'),
     field: 'materialCode',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'materialName',
     label: t('materialFields.Name'),
     field: 'materialName',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'materialGroupNo',
     label: t('materialFields.Group'),
     field: 'materialGroupNo',
-    sortable: true,
     align: 'left',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: groupOptions,
+    optionLabel: 'materialGroupName',
+    optionValue: 'materialGroupNo',
   },
   {
     name: 'connectedDispensers',
     label: t('materialFields.ConnectedDispensers'),
     field: 'connectedDispensers',
     align: 'left',
+    filterable: true,
+    filterType: 'multiselect',
+    selectionOptions: dispensers,
+    optionLabel: 'dispenserName',
+    optionValue: 'dispenserId',
   },
-]
-async function onRowClick(_event: Event, row: any) {
+])
+
+async function onRowClick(row: any) {
   const selectedMaterial = await $fetch(`/api/materials/${row.materialCode}`)
   q.dialog({
-    component: MaterialInfo,
+    component: MaterialInfoDialog,
     componentProps: {
       material: selectedMaterial,
       groupOptions,
@@ -71,7 +82,7 @@ async function onRowClick(_event: Event, row: any) {
 }
 function addNewMaterial() {
   q.dialog({
-    component: MaterialInfo,
+    component: MaterialInfoDialog,
     componentProps: {
       groupOptions,
       dispensers,
@@ -85,15 +96,27 @@ function addNewMaterial() {
   },
   )
 }
-function customFilter(rows: Material[], terms: string) {
-  terms = terms.toLowerCase()
-  return rows.filter((row) => {
-    const materialCodeMatches = row.materialCode.toLowerCase().includes(terms)
-    const materialNameMatches = row.materialName.toLowerCase().includes(terms)
-    const materialGroupMatches = String(groupOptions.at(row.materialGroupNo - 1)?.materialGroupName).toLowerCase().includes(terms)
-    const connectedDispensersMatches = row.connectedDispensers.some(dispenser => dispenser.dispenserName.toLowerCase().includes(terms))
-    return materialCodeMatches || materialNameMatches || materialGroupMatches || connectedDispensersMatches
+async function handleFilterSlotsUpdate(updatedFilters: any) {
+  const connectedDispensers = new Set()
+  const otherFilters = updatedFilters.filter((filter: any) => {
+    if (filter.field === 'connectedDispensers') {
+      filter.value.option.forEach((dispenser: Dispenser) => {
+        connectedDispensers.add(dispenser.dispenserId)
+      })
+      return false
+    }
+    return true
   })
+  filters.value = otherFilters
+  materials.value = (await $fetch('/api/materials/filtered', { method: 'POST', body: { filters: filters.value } }))
+    .filter((row: any) => {
+      const connectedDispensersArray = Array.from(connectedDispensers)
+      return connectedDispensersArray.every((dispenser: any) => {
+        return row.connectedDispensers.some((connectedDispenser: any) => {
+          return connectedDispenser.dispenserId === dispenser
+        })
+      })
+    })
 }
 const pagination = ref({ rowsPerPage: 50 })
 </script>
@@ -105,15 +128,6 @@ const pagination = ref({ rowsPerPage: 50 })
   <QSeparator
     class="w-full mt-5 mb-5"
   />
-  <QInput
-    v-model="searchFilter"
-    :label="t('Search')"
-    class="ml-10 mr-10 mb-5"
-  >
-    <template #prepend>
-      <QIcon name="search" />
-    </template>
-  </QInput>
   <div class="flex-center mb-4">
     <QBtn
       :label="$t('AddNewMaterial')"
@@ -132,34 +146,37 @@ const pagination = ref({ rowsPerPage: 50 })
       @click="refreshMaterials"
     />
   </div>
-  <QTable
-    flat
-    bordered
-    table-header-class="table-header"
-    table-class="max-h-150"
-    separator="cell"
-    :filter="searchFilter"
-    :filter-method="customFilter"
-    :pagination
-    :columns
+  <FilterableTable
     :rows="materials"
-    row-key="name"
-    @row-click="onRowClick"
+    :columns
+    class="h-160 custom-filterable-table"
+    :is-virtual-scroll="false"
+    :pagination
+    @update-filter-slots="handleFilterSlotsUpdate"
   >
-    <template #body-cell="props">
-      <QTd
+    <template #custombody="props">
+      <QTr
         :props="props"
+        style="cursor: pointer;"
+        @click="onRowClick(props.row)"
       >
-        <span v-if="props.col.field === 'materialGroupNo'">
-          {{ groupOptions.at(props.value - 1)?.materialGroupName }}
-        </span>
-        <span v-else-if="props.col.field === 'connectedDispensers'">
-          {{ props.row.connectedDispensers?.map((connection: any) => connection.dispenserName).filter(Boolean).join(', ') || '-' }}
-        </span>
-        <span v-else>
-          {{ props.value }}
-        </span>
-      </QTd>
+        <QTd
+          v-for="col in props.cols"
+
+          :key="col.name"
+          :props="props"
+        >
+          <span v-if="col.field === 'materialGroupNo'">
+            {{ groupOptions.at(props.row[col.field] - 1)?.materialGroupName }}
+          </span>
+          <span v-else-if="col.field === 'connectedDispensers'">
+            {{ props.row.connectedDispensers?.map((connection: any) => connection.dispenserName).filter(Boolean).join(', ') || '-' }}
+          </span>
+          <span v-else>
+            {{ props.row[col.field] }}
+          </span>
+        </QTd>
+      </qtr>
     </template>
-  </QTable>
+  </FilterableTable>
 </template>

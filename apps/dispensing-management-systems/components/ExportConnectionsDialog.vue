@@ -16,12 +16,12 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 const { t } = useI18n()
 const dataStore = useDataStore()
 const dispensers = dataStore.dispensers
-const selected = ref()
+const selected = ref([])
 
 async function onConfirm() {
   try {
-    const res = await $fetch(`/api/connections/${props.type}/export`, { method: 'POST', query: { from: props.dispenserId, to: selected.value } })
-    onDialogOK(res)
+    await $fetch(`/api/connections/${props.type}/export`, { method: 'POST', body: { from: props.dispenserId, to: selected.value } })
+    onDialogOK(true)
   } catch (e: any) {
     onDialogOK(null)
   }
@@ -32,9 +32,10 @@ async function onConfirm() {
   <QDialog
     ref="dialogRef"
     full-width
+    persistent
     @hide="onDialogHide"
   >
-    <QCard>
+    <QCard class="scroll border-b-solid border-10px border-grey">
       <div flex-center flex-col mt-10 text-lg>
         <div>
           {{ t('ExportConnectionsBody', { type: t(`${capitalizeFirst(props.type)}`), dispenser: dataStore.selectedDispenser?.dispenserName }) }}
@@ -44,12 +45,13 @@ async function onConfirm() {
           dense
           filled
           class="w-50% mt-10"
+          multiple
           emit-value
           map-options
           options-dense
           option-value="dispenserId"
           option-label="dispenserName"
-          :options="dispensers"
+          :options="dispensers?.filter(dispenser => dispenser.dispenserId !== dispenserId)"
         />
       </div>
       <div class="flex-center justify-evenly p-10">
@@ -57,6 +59,7 @@ async function onConfirm() {
           :label="t('Confirm')"
           color="primary"
           icon="file_upload"
+          :disable="selected.length < 1"
           @click="onConfirm"
         />
         <QBtn

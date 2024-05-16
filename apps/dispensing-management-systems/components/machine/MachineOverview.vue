@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { QCardSection } from 'quasar'
 import type { QTableColumn } from 'quasar'
-import DispenserEdit from '../dispenser/DispenserEdit.vue'
-import MachineInfo from './MachineInfo.vue'
+import DispenserEditDialog from '../dispenser/DispenserEditDialog.vue'
+import MachineInfoDialog from './MachineInfoDialog.vue'
 import { useDataStore } from '~/store/DataStore'
 import type { Dispenser, DispenserType, Machine, MachineControllerType } from '~/shared/types'
 
@@ -48,11 +48,11 @@ const machineColumns: (QTableColumn<Machine>)[] = [
   { name: 'controllertype', label: t('machineFields.ControllerType'), align: 'center', field: 'controllerType', sortable: true },
 
 ]
-const { data: machineRows, refresh: refreshMachines } = await useFetch(`/api/machines`)
+const { data: machines, refresh: refreshMachines } = await useFetch(`/api/machines`)
 
 async function handleNewDispenser() {
   q.dialog({
-    component: DispenserEdit,
+    component: DispenserEditDialog,
   }).onOk(() => {
     refreshDispensers()
     notifySuccess(t('Success'))
@@ -61,7 +61,7 @@ async function handleNewDispenser() {
 
 async function handleNewMachine() {
   q.dialog({
-    component: MachineInfo,
+    component: MachineInfoDialog,
     componentProps: {
       controllerTypes: controllerTypes.value,
       dispensers: dataStore.dispensers,
@@ -102,7 +102,7 @@ function toggleMachineRow(id: number) {
 }
 function onDispenserClick(row: any) {
   q.dialog({
-    component: DispenserEdit,
+    component: DispenserEditDialog,
     componentProps: { dispenser: row },
   }).onOk(() => {
     refreshDispensers()
@@ -112,10 +112,11 @@ function onDispenserClick(row: any) {
 async function onMachineClick(row: any) {
   const selectedMachine = await $fetch(`/api/machines/${row.machineId}`)
   q.dialog({
-    component: MachineInfo,
+    component: MachineInfoDialog,
     componentProps: {
       machine: selectedMachine,
       controllerTypes: controllerTypes.value,
+      machines,
       dispensers: dataStore.dispensers,
     },
   }).onOk((payload) => {
@@ -276,7 +277,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
       <QTable
         v-model:pagination="machinePagination"
         :title="t('Machines')"
-        :rows="machineRows"
+        :rows="machines"
         :columns="machineColumns"
         row-key="name"
         separator="cell"

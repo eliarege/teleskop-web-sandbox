@@ -47,6 +47,30 @@ export const config = defineConfiguration({
     type: 'string',
     env: 'TELESKOP_INSTANCE_NAME',
   },
+  dmsHost: {
+    type: 'string',
+    default: 'localhost',
+    env: 'DMS_HOST',
+  },
+  dmsPort: {
+    type: 'integer',
+    default: 5432,
+    env: 'DMS_PORT',
+  },
+  dmsUser: {
+    type: 'string',
+    required: process.env.NODE_ENV === 'production',
+    env: 'DMS_USER',
+  },
+  dmsPassword: {
+    type: 'string',
+    env: 'DMS_PASSWORD',
+    required: process.env.NODE_ENV === 'production',
+  },
+  dmsDatabase: {
+    type: 'string',
+    env: 'DMS_DATABASE',
+  },
   /** Pino Log Level (debug|info|warn|error|fatal) */
   logLevel: {
     type: 'string',

@@ -70,10 +70,6 @@ async function onSave() {
   }
 }
 
-function onCancel() {
-  onDialogCancel()
-}
-
 function onReset() {
   editedMaterial.value = material.value ? { ...material.value } : { ...defaultMaterial }
   selectedDispensers.value = [...selectedDispensersInitial.value]
@@ -82,7 +78,7 @@ async function onDelete() {
   q.dialog({
     component: ConfirmationDialog,
     componentProps: {
-      bodyText: t('DeleteMaterial'),
+      bodyText: t('confirmationDialogBody.DeleteMaterial'),
       confirmBtn: {
         label: t('Delete'),
         color: 'negative',
@@ -118,15 +114,16 @@ function onCheck(dispenserId: number, isChecked: boolean) {
   <QDialog
     ref="dialogRef"
     full-width
+    persistent
     @hide="onDialogHide"
   >
-    <QCard>
+    <QCard class="scroll border-b-solid border-10px border-grey">
       <QForm @submit.prevent>
-        <div class="flex flex-col h-max">
-          <div class="text-center pt-5 text-xl shadow">
+        <div class="flex flex-col pb-10">
+          <div class="text-center pt-5 text-xl">
             <h2>{{ t('Material') }}</h2>
           </div>
-          <div class="content-section flex flex-row flex-wrap justify-center">
+          <div class="flex flex-row flex-wrap justify-center">
             <div class="row-item">
               <span class="item-label">
                 {{ t('materialFields.Code') }}
@@ -160,12 +157,14 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 {{ t('materialFields.PH') }}
               </span>
               <QInput
-                v-model="editedMaterial.ph"
+                v-model.number="editedMaterial.ph"
                 class="item-input"
                 dense
-                type="number"
                 filled
-                :rules="[(val: number) => val > 0 && val < 14]"
+                type="number"
+                max="14"
+                min="0"
+                :rules="[(val: number) => val >= 0 && val <= 14]"
                 :placeholder="editedMaterial.ph"
               />
             </div>
@@ -205,11 +204,13 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 {{ t('materialFields.Density') }}
               </span>
               <QInput
-                v-model="editedMaterial.density"
+                v-model.number="editedMaterial.density"
                 class="item-input"
                 dense
-                type="number"
                 filled
+                type="number"
+                :rules="[(val: number) => val >= 0]"
+                min="0"
                 :placeholder="editedMaterial.density"
               />
             </div>
@@ -218,11 +219,13 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 {{ t('materialFields.UnitCost') }}
               </span>
               <QInput
-                v-model="editedMaterial.unitCost"
+                v-model.number="editedMaterial.unitCost"
                 class="item-input"
                 dense
-                type="number"
                 filled
+                type="number"
+                :rules="[(val: number) => val >= 0]"
+                min="0"
                 :placeholder="editedMaterial.unitCost"
               />
             </div>
@@ -264,7 +267,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
             </div>
           </div>
         </div>
-        <div :class="q.dark.isActive ? 'button-section-dark' : 'button-section-light'">
+        <div class="button-section">
           <QBtn
             :label="t('Save')"
             color="primary"
@@ -275,7 +278,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
             :label="t('Cancel')"
             color="warning"
             icon="cancel"
-            @click="onCancel"
+            @click="onDialogCancel"
           />
           <QBtn
             :label="t('Reset')"
@@ -315,7 +318,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
   max-height: calc(80vh - 150px);
 }
 
-.button-section-light {
+.button-section {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -329,15 +332,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
 
 }
 
-.button-section-dark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  justify-content: space-evenly;
-  padding: 0.5rem;
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
+.body--dark .button-section {
   background-color: var(--q-dark);
   box-shadow: 0px -1px 5px rgba(128, 128, 128, 0.2);
 }

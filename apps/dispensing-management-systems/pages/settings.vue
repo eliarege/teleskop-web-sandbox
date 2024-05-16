@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useQuasar } from 'quasar'
-import { useRouter } from '#vue-router'
+import { useRouter } from '#imports'
 import { useDataStore } from '~/store/DataStore'
 
 const { t, locale } = useI18n()
@@ -101,17 +101,35 @@ useResizeObserver(document.body, () => {
           <QSeparator />
           <QTab
             name="s4"
-            icon="settings"
+            icon="assignment"
             :class="tab === 's4' ? 'tabs-active' : 'tabs'"
-            :label="innerWidth > minSize ? `${t('settings.4')}` : ''"
-          />
+            :label="innerWidth > minSize ? `${t('settings.Recipe')}` : ''"
+          >
+          <QTooltip
+            v-if="innerWidth <= minSize"
+            :offset="[10, 10]"
+            anchor="center right"
+            self="center left"
+          >
+            {{ t('settings.Recipe') }}
+          </QTooltip>
+          </QTab>
           <QSeparator />
           <QTab
             name="s5"
             icon="backup"
             :class="tab === 's5' ? 'tabs-active' : 'tabs'"
             :label="innerWidth > minSize ? `${t('settings.Teleskop')}` : ''"
-          />
+          >
+          <QTooltip
+            v-if="innerWidth <= minSize"
+            :offset="[10, 10]"
+            anchor="center right"
+            self="center left"
+          >
+            {{ t('settings.Teleskop') }}
+          </QTooltip>
+          </QTab>
           <QSeparator />
         </QTabs>
       </template>
@@ -137,7 +155,7 @@ useResizeObserver(document.body, () => {
           </QTabPanel>
 
           <QTabPanel name="s4">
-            <!-- Settings Component -->
+            <SettingsRecipe />
           </QTabPanel>
 
           <QTabPanel name="s5">

@@ -4,6 +4,7 @@
   "AddNewDispenser": "Add New Dispenser",
   "AddNewMachine": "Add New Machine",
   "AddNewMaterial": "Add New Material",
+  "AddNewRecipe": "Add New Recipe",
   "SearchJob": "Search Job Order",
   "Refresh": "Refresh",
   "SyncData": "Sync Teleskop Data",
@@ -12,6 +13,7 @@
   "Theme": "Theme",
   "LogOut": "Log Out",
   "Dispensers": "Dispensers",
+  "AllDispensers": "All Dispensers",
   "Machines": "Machines",
   "Machine": "Machine",
   "AddMOD": "Add Machine Or Dispenser",
@@ -60,19 +62,28 @@
   "Save": "Save",
   "Cancel": "Cancel",
   "Delete": "Delete",
-  "DeleteDispenser": "Are you sure you want to delete this dispenser?",
-  "DeleteMachine": "Are you sure you want to delete this machine?",
-  "DeleteMaterial": "Are you sure you want to delete this material?",
-  "SyncDataConfirmation": "Are you sure you want to sync {name} data with Teleskop Database?",
+  "confirmationDialogBody": {
+    "DeleteDispenser": "Are you sure you want to delete this dispenser?",
+    "DeleteMachine": "Are you sure you want to delete this machine?",
+    "DeleteMaterial": "Are you sure you want to delete this material?",
+    "SyncDataConfirmation": "Are you sure you want to sync {name} data with Teleskop Database?",
+    "AlreadyStartedWarning": "The request has already been initiated. Are you sure you want to continue?"
+  },
   "Confirm": "Confirm",
   "Material": "Material",
   "Materials": "Materials",
   "MaterialRequests": "Material Requests",
   "SelectedMaterials": "{count} Selected",
+  "jobOrderActions": {
+    "Retry": "Repeat Selected Request",
+    "Cancel": "Cancel Selected Request",
+    "Complete": "Make Selected Request Completed"
+  },
   "settings": {
     "App": "App Settings",
     "Material": "Material Settings",
     "Machine": "Machine Settings",
+    "Recipe": "Recipe Settings",
     "Teleskop": "Teleskop Settings"
   },
   "materialFields": {
@@ -99,7 +110,6 @@
     "VncUser": "Vnc User",
     "VncPort": "Vnc Port",
     "VncPassword": "Vnc Password",
-    "IsJDM": "Is JDM?",
     "JDMConnections": "JDM Connections"
   },
   "recipeFields": {
@@ -112,6 +122,16 @@
     "ParallelStep": "Parallel Step",
     "ProcessNo": "Process No",
     "Amount": "Amount",
+    "Unit": "Unit",
+    "ID": "Recipe ID",
+    "Name": "Recipe Name"
+  },
+  "batchPlanParameterFields": {
+    "Title": "Batch Plan Parameters",
+    "PlanKey": "Plan Key",
+    "ParamID": "Parameter ID",
+    "ParamName": "Parameter Name",
+    "Value": "Value",
     "Unit": "Unit"
   },
   "weighingFields": {

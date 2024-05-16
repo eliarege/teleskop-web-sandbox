@@ -29,7 +29,7 @@ async function clickBtn() {
   q.dialog({
     component: ConfirmationDialog,
     componentProps: {
-      bodyText: t('SyncDataConfirmation', { name: t(`${props.type}`).toLowerCase() }),
+      bodyText: t('confirmationDialogBody.SyncDataConfirmation', { name: t(`${props.type}`).toLowerCase() }),
       confirmBtn: {
         label: t('Confirm'),
         color: 'primary',

@@ -12,6 +12,10 @@ const props = defineProps({
     type: Object as PropType<MachineControllerType[]>,
     required: true,
   },
+  machines: {
+    type: Object as PropType<Machine[]>,
+    required: false,
+  },
   dispensers: {
     type: Object as PropType<Dispenser[]>,
     required: true,
@@ -22,6 +26,8 @@ const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const machine = toRef(props, 'machine')
+const machines = toRef(props, 'machines')
+const selectedMachines = ref([])
 const controllerTypes = toRef(props, 'controllerTypes')
 const editedMachine = ref({ ...machine.value })
 const dispensers = toRef(props, 'dispensers')
@@ -36,15 +42,18 @@ async function onSave() {
     const deleted = selectedDispensersInitial.value
       .filter(initialDispenser =>
         !selectedDispensers.value.includes(initialDispenser))
-    console.log(deleted)
-    if (machine.value)
+    if (machine.value) {
       await $fetch(`/api/machines/${machine.value.machineId}`, { method: 'PUT', body: editedMachine.value })
-    else
+    } else {
       await $fetch(`/api/machines`, { method: 'POST', body: editedMachine.value })
+    }
     await $fetch(`/api/connections/machines`, { method: 'POST', body: {
       added,
       deleted,
     }, query: { machineId: editedMachine.value.machineId } })
+    if (selectedMachines.value.length > 0) {
+      await $fetch('/api/connections/machines/export/machine', { method: 'POST', query: { from: machine.value?.machineId }, body: { to: selectedMachines.value } })
+    }
     onDialogOK(true)
   } catch (e) {
     onDialogOK(false)
@@ -64,7 +73,7 @@ async function onDelete() {
   q.dialog({
     component: ConfirmationDialog,
     componentProps: {
-      bodyText: t('DeleteMachine'),
+      bodyText: t('confirmationDialogBody.DeleteMachine'),
       confirmBtn: {
         label: t('Delete'),
         color: 'negative',
@@ -100,9 +109,10 @@ function onCheck(dispenserId: number, isChecked: boolean) {
   <QDialog
     ref="dialogRef"
     full-width
+    persistent
     @hide="onDialogHide"
   >
-    <QCard>
+    <QCard class="scroll border-b-solid border-10px border-grey">
       <QForm @submit.prevent>
         <div class="flex flex-col pb-10">
           <div class="text-center pt-5 text-xl">
@@ -164,6 +174,21 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                   @update:model-value="value => onCheck(dispenser.dispenserId, value)"
                 />
               </div>
+            </div>
+            <div v-if="machines" class="row-item">
+              <span class="item-label">{{ t('ExportConnections') }} </span>
+              <QSelect
+                v-model="selectedMachines"
+                multiple
+                dense
+                filled
+                emit-value
+                map-options
+                options-dense
+                option-value="machineId"
+                option-label="machineName"
+                :options="machines.filter(m => m.machineId !== machine?.machineId)"
+              />
             </div>
           </div>
           <div class="flex-center justify-evenly p-10">

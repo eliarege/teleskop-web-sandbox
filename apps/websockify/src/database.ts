@@ -8,6 +8,7 @@ export interface Machine {
   name: string
   host: string
   port: number
+  password?: string
 }
 
 const logger = parentLogger.child({ name: 'database' })
@@ -27,7 +28,17 @@ const knex = Knex({
     },
   },
 })
-
+const dms = Knex({
+  client: 'pg',
+  log: logger,
+  connection: {
+    host: config.dmsHost,
+    port: config.dmsPort,
+    user: config.dmsUser,
+    password: config.dmsPassword,
+    database: config.dmsDatabase,
+  },
+})
 export async function fetchTeleskopMachine(id: number): Promise<Machine | null> {
   try {
     const response = await knex
@@ -61,7 +72,31 @@ export async function fetchTeleskopMachine(id: number): Promise<Machine | null> 
     return null
   }
 }
+export async function fetchDMSMachine(id: number): Promise<Machine | null> {
+  try {
+    const response = await dms('DISPENSER')
+      .select({
+        name: 'dispenser_name',
+        host: 'ip_address',
+        port: 'vnc_port',
+        password: 'vnc_password',
+      })
+      .where({
+        dispenser_id: id,
+      }).first()
 
+    return response || null
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      if (!config.dmsUser)
+        logger.warn('DMS_USER is not defined')
+      if (!config.dmsPassword)
+        logger.warn('DMS_PASSWORD is not defined')
+    }
+    logger.error((err as NodeJS.ErrnoException).message)
+    return null
+  }
+}
 onExitSignal(async () => {
   await knex.destroy()
 })

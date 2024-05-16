@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import MachineInfo from '../machine/MachineInfo.vue'
+import MachineInfoDialog from '../machine/MachineInfoDialog.vue'
 import type { Machine, MachineControllerType } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
 
@@ -44,10 +44,11 @@ async function onRowClick(_event: Event, row: any) {
   const selectedMachine = await $fetch(`/api/machines/${row.machineId}`)
   const dispensers = await dataStore.getDispensers()
   q.dialog({
-    component: MachineInfo,
+    component: MachineInfoDialog,
     componentProps: {
       machine: selectedMachine,
       controllerTypes: controllerTypes.value,
+      machines,
       dispensers,
     },
   }).onOk((payload) => {
@@ -61,7 +62,7 @@ async function onRowClick(_event: Event, row: any) {
 async function addNewMachine() {
   const dispensers = await dataStore.getDispensers()
   q.dialog({
-    component: MachineInfo,
+    component: MachineInfoDialog,
     componentProps: {
       controllerTypes,
       dispensers,
