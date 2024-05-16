@@ -1,7 +1,10 @@
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
+import { basename, extname, resolve } from 'node:path'
+import { readdirSync } from 'node:fs'
+import virtual from '@rollup/plugin-virtual'
 
-import { resolve } from 'node:path'
-import process from 'node:process'
+const migrations = readdirSync('./server/migrations').sort()
+const getMigrationName = (name: string) => `_${basename(name, extname(name))}`
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
@@ -45,6 +48,36 @@ export default defineNuxtConfig({
           resolve(__dirname, '../../packages/ui/components/MachineCard.vue'),
         ],
       },
+    },
+  },
+  nitro: {
+    rollupConfig: {
+      // @ts-expect-error Infinite
+      plugins: [
+        virtual({
+          '#migration-source': `\
+${migrations.map((mig) => {
+  return `import * as ${getMigrationName(mig)} from '~/server/migrations/${mig}'`
+}).join('\n')}
+const migrations = { ${migrations.map(getMigrationName)} }
+
+export const MigrationSource = {
+  getMigrations() {
+    // Return a list of migration file names
+    return Promise.resolve(Object.keys(migrations));
+  },
+
+  getMigrationName(migration) {
+    return migration;
+  },
+
+  getMigration(migration) {
+    return migrations[migration];
+  }
+}
+`,
+        }),
+      ],
     },
   },
 })

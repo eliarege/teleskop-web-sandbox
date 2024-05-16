@@ -1,5 +1,5 @@
 import Knex from 'knex'
-import CustomMigrationSource from './migrations/migrationSource'
+import { MigrationSource } from '#migration-source'
 import type { DatabaseConnection } from '~/shared/types'
 
 const config = useRuntimeConfig()
@@ -13,9 +13,9 @@ const dmsDB = Knex({
     password: config.dmsPassword,
     database: config.dmsDatabase,
   },
-    migrations: {
-      migrationSource: new CustomMigrationSource()
-    },
+  migrations: {
+    migrationSource: MigrationSource,
+  },
 })
 
 let teleskopDB: null | Knex.Knex<any, unknown[]> = null
