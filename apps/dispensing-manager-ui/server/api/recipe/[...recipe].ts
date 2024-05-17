@@ -170,11 +170,11 @@ router.put('/change-recipe-amount', defineEventHandler(async (event) => {
 }))
 
 router.post('/previous-requests', defineEventHandler(async (event) => {
-  const { joborder, programNo, programStepNo } = await readBody(event)
+  const { joborder, programNo, mainStep } = await readBody(event)
   const query = await knex('DYTFCHEMREQUESTS')
     .where('BATCHNO', joborder)
     .andWhere('PROGRAMNO', programNo)
-    .andWhere('PROGRAMSTEPNO', programStepNo)
+    .andWhere('PROGRAMSTEPNO', mainStep)
     .select({
       joborder: 'BATCHNO',
       correctionNo: 'BATCHCORRECTIONNO',

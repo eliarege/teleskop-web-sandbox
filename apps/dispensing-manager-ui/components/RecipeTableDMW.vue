@@ -210,10 +210,10 @@ watch(() => props.resetCounter, (newValue, oldValue) => {
 
 async function showLogsOfSelectedStep() {
   if (selectedRow.value) {
-    const { joborder, programNo, programStepNo } = selectedRow.value
+    const { joborder, programNo, mainStep } = selectedRow.value
     const data = await $fetch('/api/recipe/previous-requests', {
       method: 'POST',
-      body: { joborder, programNo, programStepNo },
+      body: { joborder, programNo, mainStep },
     })
     if (!data.length)
       notification(false, t('warnings.noPreviousStepLogs'))
@@ -223,7 +223,7 @@ async function showLogsOfSelectedStep() {
         componentProps: {
           joborder,
           programNo,
-          programStepNo,
+          mainStep,
           data,
         },
       })
