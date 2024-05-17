@@ -55,6 +55,10 @@
       "dispConsumptionFileName": "Tüketim Dosya Adı",
       "readFromDMS": "DMS'den Oku"
     },
+    "appSettings": "Uygulama Ayarları",
+    "deleteExpiredJobOrders": "Eski iş emirlerini sil",
+    "deleteExpiredJobOrdersTime": "Beklenecek süre (Gün)",
+    "deleteExpiredJobOrdersTimeMetric": "Gün",
     "driverInfo": {
       "_": "Sürücü Ayarları",
       "driverCode": "Sürücü Kodu",

@@ -25,7 +25,8 @@ const radio = ref()
 const deleteDialogVisible = ref(false)
 const givenDriverIdExistsWarning = ref(false)
 const driverIdErrorMessage = ref('')
-
+const deleteExpiredJobOrdersActivated = ref()
+const deleteExpiredJobOrdersTime = ref()
 await fetchData()
 function setVariables() {
   referenceType.value = driver.value?.REFERENCEID !== undefined ? referenceOptions.value[driver.value.REFERENCEID] : referenceOptions.value[0]
@@ -126,151 +127,163 @@ async function checkDriverIdExist(driver: { DRIVERID: number | null }, value: In
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center h-full">
-    <div class=" flex flex-col items-center justify-center text-size-4 w-full ">
-      <div class="items-center justify-center flex">
-        <div class="settings-section-header">
-          {{ t('settings.driverInfo._') }}
-        </div>
-        <div class="row-item ">
-          {{ t('settings.requestFileSystem') }}
-          <q-input
-            v-model="requestFilteSystemPath"
-            class="input-class"
-            filled
-            dense
-          />
-        </div>
-        <div
-          v-if="driver?.newDriver"
-          class="row-item text-6 h-20"
-        >
-          {{ t('settings.driverInfo.createNewDriver') }}
-        </div>
-        <div
-          v-if="!driver.newDriver"
-          class="row-item h-20 flex"
-        >
-          <q-select
-            v-model="driver"
-            :options="drivers"
-            :display-value="currentDriverName"
-            option-label="DRIVERNAME"
-            class="input-class text-size-xl"
-            @update:model-value="setVariables()"
-          />
-          <q-btn
-            color="black"
-            :label="t('settings.new')"
-            outline
-            class="btn-bottom"
-            icon="add"
-            @click="addNewDriver()"
-          />
-        </div>
-        <div class="row-item">
-          {{ t('settings.driverInfo.driverCode') }}
-          <q-input
-            :model-value="driver.DRIVERID"
-            :disable="!driver.newDriver"
-            class="input-class"
-            filled
-            :error="givenDriverIdExistsWarning"
-            :error-message="driverIdErrorMessage"
-            dense
-            @keydown="(e) => onKeydownPreventNonNumerical(e, driver.DRIVERID)"
-            @paste="onPastePreventNonNumerical"
-            @drop="onDrop"
-            @update:model-value="checkDriverIdExist(driver, $event)"
-          />
-        </div>
-        <div class="row-item">
-          {{ t('settings.driverInfo.driverName') }}
-          <q-input
-            v-model="driver.DRIVERNAME"
-            class="input-class"
-            filled
-            dense
-          />
-        </div>
-        <div class="row-item">
-          {{ t('settings.driverInfo.driverFileName') }}
-          <q-input
-            v-model="driver.DRIVERFILENAME"
-            class="input-class"
-            filled
-            dense
-          />
-        </div>
-        <div class="row-item">
-          {{ t('settings.driverInfo.referenceType') }}
-          <q-select
-            v-model="referenceType"
-            :options="referenceOptions"
-            class="input-class"
-            filled
-            dense
-          />
-        </div>
-        <div class="row-item">
-          {{ t('settings.driverInfo.protocol') }}
-          <q-select
-            v-model="protocol"
-            :options="protocolOptions"
-            class="input-class"
-            filled
-            dense
-          />
-        </div>
-        <div class="row-item-bottom">
-          <q-checkbox v-model="driver.CONTROLNV5DESC" :label="t('settings.driverInfo.n-v5')" />
-        </div>
-        <div class="row-item-bottom">
-          <q-checkbox v-model="driver.CONTROLTOTALREQ" :label="t('settings.driverInfo.control')" />
-        </div>
-        <div class="row-item-bottom">
-          <q-radio
-            v-model="radio"
-            :val="0"
-            :label="t('settings.driverInfo.allBatchRequests')"
-          />
-        </div>
-        <div class="row-item-bottom">
-          <q-radio
-            v-model="radio"
-            :val="1"
-            :label="t('settings.driverInfo.totalRequest')"
-          />
-        </div>
+  <div class=" flex items-center justify-center w-full h-200 overflow-y-auto text-size-4 ">
+    <div class="items-center justify-center flex ">
+      <div class="settings-section-header">
+        {{ t('settings.appSettings') }}
       </div>
-      <div class="flex gap-5 mt-5">
-        <q-btn
-          color="black"
-          :label="t('settings.submit')"
-          outline
-          :disable="!driver.DRIVERID || !driver.DRIVERNAME || givenDriverIdExistsWarning"
-          class="btn-bottom"
-          icon="done"
-          @click="updateDriverSettings(!driver.newDriver)"
+      <div class="row-item ">
+        {{ t('settings.requestFileSystem') }}
+        <q-input
+          v-model="requestFilteSystemPath"
+          class="input-class"
+          filled
+          dense
+        />
+      </div>
+      <div class="row-item ">
+        <q-checkbox v-model="deleteExpiredJobOrdersActivated" :label="t('settings.deleteExpiredJobOrders')" />
+        <q-input
+          v-model="deleteExpiredJobOrdersTime"
+          class="input-class"
+          :label="t('settings.deleteExpiredJobOrdersTime')"
+          :suffix="t('settings.deleteExpiredJobOrdersTimeMetric')"
+          filled
+          dense
+        />
+      </div>
+      <div class="settings-section-header">
+        {{ t('settings.driverInfo._') }}
+      </div>
+      <div
+        v-if="driver?.newDriver"
+        class="row-item text-6 h-20"
+      >
+        {{ t('settings.driverInfo.createNewDriver') }}
+      </div>
+      <div
+        v-if="!driver.newDriver"
+        class="row-item h-20 flex"
+      >
+        <q-select
+          v-model="driver"
+          :options="drivers"
+          :display-value="currentDriverName"
+          option-label="DRIVERNAME"
+          class="input-class text-size-xl"
+          @update:model-value="setVariables()"
         />
         <q-btn
           color="black"
-          :label="t('settings.cancel')"
-          class="btn-bottom"
-          icon="close"
-          outline
-          @click="fetchData"
-        />
-        <q-btn
-          v-if="!driver.newDriver"
-          color="red"
-          :label="t('settings.delete')"
+          :label="t('settings.new')"
           outline
           class="btn-bottom"
-          icon="delete"
-          @click="deleteDialogVisible = true"
+          icon="add"
+          @click="addNewDriver()"
         />
       </div>
+      <div class="row-item">
+        {{ t('settings.driverInfo.driverCode') }}
+        <q-input
+          :model-value="driver.DRIVERID"
+          :disable="!driver.newDriver"
+          class="input-class"
+          filled
+          :error="givenDriverIdExistsWarning"
+          :error-message="driverIdErrorMessage"
+          dense
+          @keydown="(e) => onKeydownPreventNonNumerical(e, driver.DRIVERID)"
+          @paste="onPastePreventNonNumerical"
+          @drop="onDrop"
+          @update:model-value="checkDriverIdExist(driver, $event)"
+        />
+      </div>
+      <div class="row-item">
+        {{ t('settings.driverInfo.driverName') }}
+        <q-input
+          v-model="driver.DRIVERNAME"
+          class="input-class"
+          filled
+          dense
+        />
+      </div>
+      <div class="row-item">
+        {{ t('settings.driverInfo.driverFileName') }}
+        <q-input
+          v-model="driver.DRIVERFILENAME"
+          class="input-class"
+          filled
+          dense
+        />
+      </div>
+      <div class="row-item">
+        {{ t('settings.driverInfo.referenceType') }}
+        <q-select
+          v-model="referenceType"
+          :options="referenceOptions"
+          class="input-class"
+          filled
+          dense
+        />
+      </div>
+      <div class="row-item">
+        {{ t('settings.driverInfo.protocol') }}
+        <q-select
+          v-model="protocol"
+          :options="protocolOptions"
+          class="input-class"
+          filled
+          dense
+        />
+      </div>
+      <div class="row-item-bottom">
+        <q-checkbox v-model="driver.CONTROLNV5DESC" :label="t('settings.driverInfo.n-v5')" />
+      </div>
+      <div class="row-item-bottom">
+        <q-checkbox v-model="driver.CONTROLTOTALREQ" :label="t('settings.driverInfo.control')" />
+      </div>
+      <div class="row-item-bottom">
+        <q-radio
+          v-model="radio"
+          :val="0"
+          :label="t('settings.driverInfo.allBatchRequests')"
+        />
+      </div>
+      <div class="row-item-bottom">
+        <q-radio
+          v-model="radio"
+          :val="1"
+          :label="t('settings.driverInfo.totalRequest')"
+        />
+      </div>
+    </div>
+    <div class="flex gap-5 my-5">
+      <q-btn
+        color="black"
+        :label="t('settings.submit')"
+        outline
+        :disable="!driver.DRIVERID || !driver.DRIVERNAME || givenDriverIdExistsWarning"
+        class="btn-bottom"
+        icon="done"
+        @click="updateDriverSettings(!driver.newDriver)"
+      />
+      <q-btn
+        color="black"
+        :label="t('settings.cancel')"
+        class="btn-bottom"
+        icon="close"
+        outline
+        @click="fetchData"
+      />
+      <q-btn
+        v-if="!driver.newDriver"
+        color="red"
+        :label="t('settings.delete')"
+        outline
+        class="btn-bottom"
+        icon="delete"
+        @click="deleteDialogVisible = true"
+      />
     </div>
   </div>
   <q-dialog v-model="deleteDialogVisible" persistent>

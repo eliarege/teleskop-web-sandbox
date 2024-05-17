@@ -13,11 +13,7 @@ about.value = await $fetch('/api/properties')
     <span class="h-1 m-1 text-size-5">
       {{ about.version }}
     </span>
-    <img
-      src="/eliarname.png"
-      class="invert-colors"
-      style="display: flex; height: 3rem; width: 3rem;"
-    >
+    <NavigationButton type="settings" />
   </span>
   <DagitimYonetim />
 </template>

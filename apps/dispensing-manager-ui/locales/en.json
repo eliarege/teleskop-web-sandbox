@@ -55,6 +55,10 @@
       "dispConsumptionFileName": "Consumption File Name",
       "readFromDMS": "Read from DMS"
     },
+    "appSettings": "Application Settings",
+    "deleteExpiredJobOrders": "Delete expired job orders",
+    "deleteExpiredJobOrdersTime": "Wait for before delete (day)",
+    "deleteExpiredJobOrdersTimeMetric": "Day",
     "driverInfo": {
       "_": "Driver Settings",
       "driverCode": "Driver Code",

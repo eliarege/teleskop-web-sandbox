@@ -222,8 +222,7 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
         type: 'positive',
         position: 'top',
       })
-    }
-    catch (err) {
+    } catch (err) {
       Notify.create({
         message: t(`dispensingManager.${type}RequestDidNotSend`),
         type: 'warning',
@@ -442,14 +441,14 @@ onBeforeUnmount(() => {
         :label="t('dispensingManager.recipeMeasurement')"
         @click="navigateToPage('recete-tartim')"
       />
-      <q-btn
+      <!-- <q-btn
         outline
         class=""
         color="black"
         icon="settings"
         :label="t('settings._')"
         @click="navigateToPage('settings')"
-      />
+      /> -->
     </div>
   </div>
 </template>
