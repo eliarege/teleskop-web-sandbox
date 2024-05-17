@@ -345,7 +345,11 @@ const contextMenuOptions = computed(() => [
 </script>
 
 <template>
-  <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
+  <ContextMenu
+    :context-menu-options="contextMenuOptions"
+    target=".q-table"
+    @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)"
+  />
   <div>
     <q-card>
       <q-card-section>
