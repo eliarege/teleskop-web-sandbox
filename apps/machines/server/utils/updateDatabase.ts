@@ -139,11 +139,18 @@ export async function updateFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   return await replaceRecords(trx, 'BFDYLOTFINISHREASONS', finishReasons, undefined)
 }
 
-export async function updateManualReasons(tbb: TbbFtpClient, trx: Knex) {
+export async function updateManualReasons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const manualReasons = await tbb.fetchManualReasons()
   if (!manualReasons)
     return false
-  return await replaceRecords(trx, 'BFMANUALREASONSGENERAL', manualReasons, undefined)
+  const data = manualReasons.map((d) => {
+    return {
+      MACHINEID: machineId,
+      MANUALCODE: d.manualCode,
+      MANUALNAME: d.manualName,
+    }
+  })
+  return await replaceRecords(trx, 'BFMANUALREASONS', data, { MACHINEID: machineId })
 }
 
 export async function updateStopReasons(tbb: TbbFtpClient, trx: Knex) {
@@ -805,7 +812,7 @@ export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, tr
     lock.analogOutputs.forEach((output, index) => {
       analogOutputs.push({
         MACHINEID: machineId,
-        LOCKNO: lock.lockNo,
+        LOCKNO: lock.lockNo + 1,
         LOCKAOUTINDEX: index,
         ID: output.outputId + 1,
         PERCENTAGE: output.percentage,
@@ -817,7 +824,7 @@ export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, tr
     lock.digitalOutputs.forEach((output, index) => {
       digitalOutputs.push({
         MACHINEID: machineId,
-        LOCKNO: lock.lockNo,
+        LOCKNO: lock.lockNo + 1,
         LOCKDOUTINDEX: index,
         ID: output.outputId + 1,
         STATE: output.state,

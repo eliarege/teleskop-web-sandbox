@@ -93,8 +93,8 @@ export interface StopReason {
 }
 
 export interface ManualReason {
-  manualId: number
-  manualString: string
+  manualCode: number
+  manualName: string
   reportToERP?: boolean
 }
 

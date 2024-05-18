@@ -14,8 +14,8 @@ export function parseManualReason(content: string) {
   let match = pattern.exec(content)
   while (match !== null) {
     const reason: ManualReason = {
-      manualId: Number.parseInt(match[1]),
-      manualString: match[2],
+      manualCode: Number.parseInt(match[1]),
+      manualName: match[2],
     }
     reasons.push(reason)
     match = pattern.exec(content)
@@ -25,7 +25,7 @@ export function parseManualReason(content: string) {
 
 export function serializeManualReason(reasons: ManualReason[]): string {
   const lines = reasons.map((reason) => {
-    return `${reason.manualId} "${reason.manualString}"`
+    return `${reason.manualCode} "${reason.manualName}"`
   })
 
   return lines.join('\n')

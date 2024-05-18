@@ -26,11 +26,11 @@ export function parseLocksOutput(content: string) {
 
     if (outputType === 2) {
       // Parse analog output
-      const analogOutputs = parseAnalogOutputs(line)
+      const analogOutputs = parseAnalogOutputs(lineMatch[3])
       analogLocks.push({ lockNo, analogOutputs })
     } else if (outputType === 3) {
       // Parse digital output
-      const digitalOutputs = parseDigitalOutputs(line)
+      const digitalOutputs = parseDigitalOutputs(lineMatch[3])
       digitalLocks.push({ lockNo, digitalOutputs })
     }
   }
@@ -54,7 +54,7 @@ function parseAnalogOutputs(line: string) {
 }
 
 function parseDigitalOutputs(line: string) {
-  const digitalOutputPattern = /(\d+)\s+(-?\d+)/g
+  const digitalOutputPattern = /(-?\d+)\s+(-?\d+)/g
   let match
   const outputs = []
 
