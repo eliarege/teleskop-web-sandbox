@@ -1,0 +1,11 @@
+.q-item-avatar-dense > .q-item__section--avatar {
+  min-width: unset;
+}
+
+.q-bottom-sheet__item {
+  text-align: center;
+
+  & img {
+    display: inline-block;
+  }
+}

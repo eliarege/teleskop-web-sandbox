@@ -3,8 +3,8 @@ import { withBase } from 'ufo'
 
 const config = useRuntimeConfig()
 const { bottomSheet } = useQuasar()
-const { data: app } = useFetch(`/api/properties`)
 
+// TODO: Applications should be fetched from an external meta service
 function parseAppList(appList: unknown): { name: string, url: string, img: string }[] {
   if (typeof appList === 'string') {
     try {
@@ -22,8 +22,8 @@ function parseAppList(appList: unknown): { name: string, url: string, img: strin
   }
 }
 
-function withHost(url: string) {
-  return url.replace('$host', window.location.hostname)
+function withHostname(url: string) {
+  return url.replace('$hostname', window.location.hostname)
 }
 
 const appList = parseAppList(config.public.appList)
@@ -31,45 +31,36 @@ const appList = parseAppList(config.public.appList)
 const bottomSheetActions = appList.map((app) => {
   return {
     label: app.name,
-    url: withHost(app.url),
+    url: withHostname(app.url),
     img: withBase(`/app-icons/${app.img}`, config.app.baseURL),
   }
 })
 
 function showBottomsheet() {
   bottomSheet({
-    message: `Version: ${app.value?.version || 'Unknown'}`,
     dark: true,
     grid: true,
     actions: bottomSheetActions,
   }).onOk((action) => {
     if (action.url) {
-      const host = new URL(action.url).host
-      if (window.location.host !== host)
-        window.location.href = action.url
+      navigateTo(action.url, {
+        external: true,
+      })
     }
   })
 }
 </script>
 
 <template>
-  <div>
-    <img
-      v-show="appList.length"
-      src="/eliar.svg"
-      class="z-1 w-full h-10 fixed -bottom-1 flex-center transition-all duration-400 bg-transparent opacity-50 hover:(opacity-100)"
+  <QPageSticky position="bottom">
+    <QBtn
+      rounded
+      flat
+      class="!p-0 opacity-20 hover:opacity-100 hover:bg-transparent"
+      transition="opacity duration-200"
       @click="showBottomsheet"
     >
-    <slot />
-  </div>
+      <Icon name="IconEliar" size="2.5rem" />
+    </QBtn>
+  </QPageSticky>
 </template>
-
-<style>
-.q-bottom-sheet__item {
-  text-align: center;
-
-  & img {
-    display: inline-block;
-  }
-}
-</style>

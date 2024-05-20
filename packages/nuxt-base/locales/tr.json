@@ -1,0 +1,13 @@
+{
+  "base": {
+    "about": "Hakkında",
+    "aboutApp": "Uygulama hakkında",
+    "buildDate": "Build tarihi",
+    "commitHash": "Commit Hash",
+    "login": "Giriş yap",
+    "logout": "Çıkış yap",
+    "name": "İsim",
+    "nodeVersion": "Node versiyonu",
+    "version": "Versiyon"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "base": {
+    "about": "About",
+    "aboutApp": "About Application",
+    "buildDate": "Build date",
+    "commitHash": "Commit hash",
+    "guest": "Guest",
+    "login": "Login",
+    "logout": "Logout",
+    "name": "Name",
+    "nodeVersion": "Node version",
+    "version": "Version"
+  }
+}

@@ -5,6 +5,7 @@
   "private": true,
   "license": "UNLICENSED",
   "main": "./nuxt.config.ts",
+  "typings": "./types/index.d.ts",
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
@@ -23,9 +24,9 @@
     "h3-keycloak-adapter": "workspace:*",
     "keycloak-js": "^24.0.3",
     "nuxt-icon": "^0.6.10",
-    "nuxt-quasar-ui": "^2.1.0",
+    "nuxt-quasar-ui": "^2.1.2",
     "pinia": "^2.1.7",
-    "quasar": "^2.15.3",
+    "quasar": "^2.16.2",
     "ufo": "^1.5.3",
     "unocss": "^0.59.4"
   },

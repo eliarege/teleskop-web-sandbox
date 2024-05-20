@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import process from 'node:process'
 
 const appMetaVars = {
@@ -19,7 +20,10 @@ export default defineNuxtConfig({
       kcEnabled: false,
     },
   },
-  css: ['@unocss/reset/tailwind.css'],
+  css: [
+    '@unocss/reset/tailwind.css',
+    resolve(__dirname, './assets/global.css'),
+  ],
   modules: [
     '@unocss/nuxt',
     '@vueuse/nuxt',
@@ -51,6 +55,14 @@ export default defineNuxtConfig({
       'Dialog',
       'Notify',
     ],
+    components: {
+      defaults: {
+        QBtn: {
+          // @ts-expect-error Ripple is fine
+          ripple: false,
+        },
+      },
+    },
   },
   elementPlus: {
     icon: false,
@@ -62,6 +74,12 @@ export default defineNuxtConfig({
       useCookie: true,
       cookieKey: 'teleskop_locale',
     },
+    langDir: './locales',
+    locales: [
+      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'tr', name: 'Türkçe', file: 'tr.json' },
+      { code: 'pt', name: 'Português', file: 'pt.json' },
+    ],
   },
   vite: {
     vue: {
