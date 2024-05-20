@@ -5,6 +5,7 @@ import { Splitter, Toast } from '@bryntum/schedulerpro-trial'
 import { addDays, addHours } from 'date-fns'
 import { EliarModal } from 'ui'
 import { useDocumentVisibility } from '@vueuse/core'
+import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
 import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
 import type { PtLocaleSettings, UnplannedEvents } from '~/shared/types'
@@ -70,9 +71,9 @@ const { data: events, refresh: eventRefresh, pending } = await useFetch('/api/qu
 })
 
 const modifiedEvents = computed(() => events.value?.map((ev: any) => {
-  const batchText = ptLocaleSettings?.plannedBatch?.batchText?.value
-  const completedBatchText = ptLocaleSettings?.completedBatch?.batchText?.value
-  const ongoingBatchText = ptLocaleSettings?.ongoingBatch?.batchText?.value
+  const batchText = ptLocaleSettings?.plannedBatch?.batchText?.value || 'jobOrder'
+  const completedBatchText = ptLocaleSettings?.completedBatch?.batchText?.value || 'jobOrder'
+  const ongoingBatchText = ptLocaleSettings?.ongoingBatch?.batchText?.value || 'jobOrder'
   return {
     ...ev,
     id: ev.planKey,
@@ -296,7 +297,7 @@ onMounted(async () => {
           },
           machineSort: {
             text: 'Machine Sort',
-            icon: '',
+            icon: 'b-fa b-fa-solid b-fa-list',
             onItem: () => {
               showModal.machineSort.show = !showModal.machineSort.show
             },
@@ -623,7 +624,6 @@ onMounted(async () => {
       if (e.changed) {
         startDate.value = new Date(e.new.startDate).toISOString()
         endDate.value = new Date(e.new.endDate).toISOString()
-        Toast.show('DATA CHANGED')
       }
     },
   })
@@ -632,8 +632,9 @@ onMounted(async () => {
 </script>
 
 <template>
+  <LoadingSpinner v-if="pending" :has-background="false" />
   <div>
-    <div class="w-full h-screen">
+    <div class="w-full h-screen relative">
       <div id="main" class="w-full h-full" />
     </div>
     <EliarModal v-if="showModal.properties.show" @click.stop="showModal.properties.show = false">

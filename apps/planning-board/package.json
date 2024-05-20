@@ -23,9 +23,12 @@
     "mssql": "^10.0.2",
     "nuxt-ui": "workspace:*",
     "socket.io-client": "^4.7.5",
+    "sortablejs": "^1.15.1",
+    "sortablejs-vue3": "^1.2.11",
     "tedious": "^18.1.0",
     "ui": "workspace:*",
-    "uuidv4": "^6.2.13"
+    "uuidv4": "^6.2.13",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@types/d3": "^7.4.3",

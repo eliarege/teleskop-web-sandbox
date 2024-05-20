@@ -33,10 +33,7 @@ const archiveEvents = computed(() => [
 ])
 const { t } = useI18n()
 const store = useSettingStore()
-function test() {
-  console.log('TEST')
-  emits('updateScheduler')
-}
+
 function iconColor(bgColor: string) {
   if (bgColor === '') {
     bgColor = '#FFFFFF'
@@ -59,7 +56,7 @@ function iconColor(bgColor: string) {
 </script>
 
 <template>
-  <div class="h-80vh">
+  <div class="h-80vh flex flex-col">
     <div class="settings-border">
       <div class="ml-3">
         <span>{{ t('plan-area.title') }}</span>
@@ -405,20 +402,9 @@ function iconColor(bgColor: string) {
         </div>
       </div>
     </div>
-    <div class="settings-border">
-      <div class="ml-3">
-        <span>{{ t('plan-area.archive.title') }}</span>
-        <div class="settings-border ml-5 my-2 flex items-center gap-3">
-          <span>{{ t('plan-area.archive.text') }}</span>
-          <q-input
-            v-model="store.settings.archiveDays"
-            type="number"
-            mask="##"
-          />
-        </div>
-      </div>
-    </div>
-    <div>
+    <q-space />
+    <div class="flex w-full">
+      <q-space />
       <QBtn
         label="SUBMIT CHANGES"
         color="primary"

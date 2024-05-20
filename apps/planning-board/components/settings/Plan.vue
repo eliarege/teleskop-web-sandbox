@@ -8,7 +8,7 @@ const splitterModel = ref('view')
 </script>
 
 <template>
-  <div class="bg-white w-90vw e-border rounded-2xl" @click.stop.prevent>
+  <div class="bg-white w-90vw e-border rounded-2xl overflow-hidden" @click.stop.prevent>
     <q-tabs v-model="splitterModel" class="text-blue">
       <q-tab
         name="view"
