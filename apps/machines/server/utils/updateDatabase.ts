@@ -47,7 +47,7 @@ export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, t
 
   const analogInputs = inputs?.map(d => ({
     MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel),
+    ID: calcIONumber(d, controllerModel, 'analog input'),
     CARD: d.card,
     CANAL: d.channel,
     NAME: d.name,
@@ -65,7 +65,7 @@ export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, 
   const controllerModel = await tbb.fetchControllerModel()
   const analogOutputs = outputs?.map(d => ({
     MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel),
+    ID: calcIONumber(d, controllerModel, 'analog output'),
     CARD: d.card,
     CANAL: d.channel,
     NAME: d.name,
@@ -84,7 +84,7 @@ export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, 
   const controllerModel = await tbb.fetchControllerModel()
   const digitalInputs = inputs?.map(d => ({
     MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel),
+    ID: calcIONumber(d, controllerModel, 'digital input'),
     CARD: d.card,
     CANAL: d.channel,
     NAME: d.name,
@@ -102,7 +102,7 @@ export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient,
   const controllerModel = await tbb.fetchControllerModel()
   const digitalOutputs = outputs?.map(d => ({
     MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel),
+    ID: calcIONumber(d, controllerModel, 'digital output'),
     CARD: d.card,
     CANAL: d.channel,
     NAME: d.name,
@@ -121,7 +121,7 @@ export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx: 
   const controllerModel = await tbb.fetchControllerModel()
   const data = counters?.map(d => ({
     MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel),
+    ID: calcIONumber(d, controllerModel, 'counter'),
     CARD: d.card,
     CANAL: d.channel,
     NAME: d.name,
@@ -487,7 +487,7 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
         ...commonData,
         SELECTINDEX: c.selectIndex,
         IOTYPE: c.ioType - 1,
-        NAME: c.ioType !== 5 ? await getIOName(machineId, c.ioType - 1, c.ioId, trx) : '',
+        NAME: await getIOName(machineId, c.ioType - 1, c.ioId, trx),
         SELECTEDIOID: c.ioId,
         ISDEFAULT: c.isDefault,
         MODEL: 'MODEL',
@@ -873,7 +873,6 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
   let maxVersion = -1
   const trxTime = trx.fn.now()
   const version = await trx('BAMASTERCOMMANDS').where('MACHINEID', machineId).max('MACHINECOMMANDSETNO as maxVersion')
-
   maxVersion = version[0].maxVersion || 0
 
   maxVersion++
