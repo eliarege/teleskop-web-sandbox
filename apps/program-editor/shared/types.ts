@@ -1,0 +1,251 @@
+export interface ProgramFilter {
+  programNo?: number
+  programName?: string
+  processType?: { value: number, label: string }
+  clearOnChange: boolean
+}
+
+export interface MachineInfo {
+  id: number
+  name: string
+  groupId: number
+}
+
+export interface MachineGroup {
+  groupId: number
+  name: string
+  type: number
+  visible: boolean
+  machines: MachineInfo[]
+}
+
+export interface MachineCommand {
+  machineId: number
+  commandNo: number
+  name: string
+  icon: string
+  dontUseList: number[]
+  commandType: number
+  moveParallel: number
+  durations: string
+  temperature: string
+  parameters: CommandParameters[]
+  ioList: CommandIO[]
+}
+
+export interface CommandParameters {
+  index: number
+  name: string
+  editable: boolean
+  type: string
+  format: string
+  defaultValue: number
+  minValue: number
+  maxValue: number
+  selections: ParameterSelections[]
+}
+
+export interface ParameterSelections {
+  name: string
+  value: number
+}
+
+export interface CommandIO {
+  index: number
+  physicalId: number
+  selectable: boolean
+  name: string
+  selections: CommandIOSelection[]
+}
+
+export interface CommandIOSelection {
+  index: number
+  type: number
+  name: string
+  defaultValue: boolean
+  physicalId: number
+}
+
+export interface ioItem {
+  id: number
+  index: number
+  commandNo: number
+  type: number
+  name: string
+  programEditing: number
+  commandRun: number
+}
+
+export interface ProgramHeader {
+  name: string
+  author: string | null
+  comment: string | null
+  typeId: number
+  createdAt: Date | null
+  updatedAt: Date | null
+  steps: ProgramStep[]
+  updatedAtTBB: string | null
+  programState: number | null
+  isChanged: boolean | null
+  tbbProgramChangedEvent: boolean | null
+}
+
+export interface Program extends ProgramHeader {
+  icon: string | null
+  programNo: number
+  typeName: string
+  machineId: number
+  machineName: string
+}
+
+export interface ProgramStep {
+  stepId: number
+  mainCommand: ProgramStepCommand
+  parallelCommands: ProgramStepCommand[]
+}
+
+export interface ProgramStepCommand {
+  commandId: number
+  commandNo: number
+  parameters: ParameterItem[]
+  ioList: ioListItem[]
+}
+
+export interface ParameterItem {
+  value: number
+  index: number
+}
+
+export interface ioListItem {
+  ioId: number
+  ioIndex: number
+  value: [number, number][]
+}
+
+export interface StepItem {
+  MACHINEID: number
+  PROGNO: number
+  MAINSTEP: number
+  PARALELSTEP: number
+  COMMANDNO: number
+  ISCONDITIONAL: number
+  CONDITIONSTR: string
+  ERRORS: number
+  THEORETICDURATION: number
+}
+
+export interface StepArchiveItem {
+  MACHINEID: number
+  MACHINEPRGVERSIONNO: number
+  PROGNO: number
+  MAINSTEP: number
+  PARALELSTEP: number
+  COMMANDNO: number
+  ISCONDITIONAL: number
+  CONDITIONSTR: string
+  THEORETICDURATION: number
+}
+
+export interface StepParameter {
+  PROGNO: number
+  MAINSTEP: number
+  PARALELSTEP: number
+  PARAMETERINDEX: number
+  MACHINEID: number
+  VALUE: number
+  CONTAINSVARIABLE: number
+  OPTIMIZEDVALUE: string
+  ERRORWARNING: number
+  OPTIMIZED: number
+}
+
+export interface StepArchiveParameter {
+  MACHINEID: number
+  MACHINEPRGVERSIONNO: number
+  PROGNO: number
+  MAINSTEP: number
+  PARALELSTEP: number
+  PARAMETERINDEX: number
+  VALUE: number
+  CONTAINSVARIABLE: number
+  ERRORWARNING: number
+  OPTIMIZED: number
+}
+
+export interface StepInputOutput {
+  PROGNO: number
+  MAINSTEP: number
+  PARALELSTEP: number
+  IOINDEX: number
+  MACHINEID: number
+  IOID: number
+  IOTYPE: number
+  ERRORWARNING: number
+}
+
+export interface StepArchiveInputOutput {
+  MACHINEID: number
+  MACHINEPRGVERSIONNO: number
+  PROGNO: number
+  MAINSTEP: number
+  PARALELSTEP: number
+  IOINDEX: number
+  IOID: number
+  IOTYPE: number
+}
+
+export interface SelectionList {
+  SELECTIONINDEX: number
+  PROGNO: number
+  MAINSTEP: number
+  PARALELSTEP: number
+  IOINDEX: number
+  MACHINEID: number
+  SELECTEDIOID: number
+  IOTYPE: number
+}
+
+export interface SelectionArchiveList {
+  MACHINEID: number
+  MACHINEPRGVERSIONNO: number
+  SELECTIONINDEX: number
+  PROGNO: number
+  MAINSTEP: number
+  PARALELSTEP: number
+  IOINDEX: number
+  SELECTEDIOID: number
+  IOTYPE: number
+}
+
+export interface Machine {
+  id: number
+  name: string
+  commands: MachineCommand[]
+}
+
+export interface CommandItem {
+  MACHINEID: number
+  COMMANDNO: number
+  FUNCTIONID: number
+  TBBFUNTIONNAME: string
+  NAME: string
+  ACTIVATED: boolean
+  ADVICELIST: string
+  DONTUSELIST: string
+  ISRUNMANUAL: boolean
+  COMMANDTYPE: number
+  MOVEPARALLEL: number
+  CHANGETIME: string
+  TBBCHANGETIME: string
+  ISDELETED: boolean
+  ISCHANGED: boolean
+  X: string
+  Y: string
+  A: string
+  B: string
+  MAXA: string
+  ISTEMPERATURE: boolean
+  ISUNLOAD: boolean
+  ICON: string
+  GROUPID: number
+}

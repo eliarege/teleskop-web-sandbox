@@ -110,6 +110,22 @@ export class TbbFtpClient {
     return upload(this.client, path, data)
   }
 
+  /**
+   * Delete file at path via FTP
+   */
+  async remove(remotePath: string): Promise<void> {
+    await this.client.remove(remotePath)
+  }
+
+  /**
+   * Fetch program list on path via FTP
+   */
+  async fetchProgramList(): Promise<number[]> {
+    const programFiles = await this.client.list('/tbb6500/data/programs/program')
+    const programNoList = programFiles.map(item => Number.parseInt(item.name))
+    return programNoList
+  }
+
   async fetchLocksGeneral() {
     const remotePath = '/tbb6500/data/locks/locks_general'
     const content = await this._download(remotePath)

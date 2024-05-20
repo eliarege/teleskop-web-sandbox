@@ -13,6 +13,7 @@ function _withFTP<This extends { ftp: TbbFtpClient }, Args extends any[], Return
     let ref = ftpRefMap.get(this)
     if (!ref) {
       ref = { count: 1 }
+      ftpRefMap.set(this, ref)
     } else {
       ref.count++
     }
@@ -39,6 +40,7 @@ function _withTransaction<This extends { trx: Knex.Transaction }, Args extends a
     let ref = trxRefMap.get(this)
     if (!ref) {
       ref = { count: 1, failed: false }
+      trxRefMap.set(this, ref)
     } else {
       ref.count++
     }
@@ -73,6 +75,7 @@ export function withFTP<This extends { ftp: TbbFtpClient }>(target: This, proper
     let ref = ftpRefMap.get(this)
     if (!ref) {
       ref = { count: 1 }
+      ftpRefMap.set(this, ref)
     } else {
       ref.count++
     }
@@ -100,6 +103,7 @@ export function withTransaction<This extends { trx: Knex.Transaction }>(target: 
     let ref = trxRefMap.get(this)
     if (!ref) {
       ref = { count: 1, failed: false }
+      trxRefMap.set(this, ref)
     } else {
       ref.count++
     }

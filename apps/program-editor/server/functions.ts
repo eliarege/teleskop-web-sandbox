@@ -1,97 +1,39 @@
-import type { TbbFtpClient, withTbbFtpClient } from 'tbb-ftp-client'
 import type { Knex } from 'knex'
-import { ErrorCode, PError } from './error'
+import type { Machine, MachineGroup, MachineInfo, ParameterItem, Program, ioListItem } from '../shared/types'
+import { PError } from './error'
 import { db } from './database'
-import type { Machine, MachineCommand, Program, ProgramHeader } from './types'
 
 interface TransactionOptions {
   trx?: Knex.Transaction
 }
 
-interface FileTransferOptions {
-  ftp?: TbbFtpClient
+/**
+ * Verilen machineId'ye sahip makinenin veritabanında olup olmadığını kontrol eder
+ * @param machineId - Makine Id
+ * @returns {Promise<MachineInfo>} - Makine
+ */
+export async function hasMachine(machineId: number): Promise<MachineInfo> {
+  const machine = await db('BFMACHINES').where('MACHINEID', machineId).first('MACHINEID')
+
+  if (!machine)
+    throw new PError('MACHINE_NOT_FOUND', { machineId })
+
+  return machine
 }
 
 /**
- *
- * Veritabanı üzerinden makinenin adresi alınır.
- *
- * @throws Makine yok
- *
- * @param machineId
+ * Belirtilen makinenin id numarasına göre makinenin IP adresini alır
+ * @param machineId - Makinenin id numarası
+ * @returns {Promise<string>} - Makinenin IP adresi
+ * @throws {PError} Makine IP adresi bulunamazsa error döner.
  */
 export async function getMachineHost(machineId: number): Promise<string> {
-  //
-}
+  const host = (await db('BFMACHINES').where('MACHINEID', machineId).first('IP')).IP
 
-export async function getRemoteProgramList(machineId: number, options?: FileTransferOptions) {
+  if (!host)
+    throw new PError('MACHINE_IP_NOT_FOUND', { machineId })
 
-}
-
-/**
- * Makinedeki programı yükler.
- *
- * @throws Makine veya program yok
- * @throws Makineye erişim yok
- *
- * @param machineId Makinenin teleskop veritabanındaki ID'si
- * @param programNo Yüklenecek programın numarası
- */
-export async function downloadProgramFromMachine(machineId: number, programNo: number): Promise<Program> {
-
-}
-
-export async function uploadProgramToMachine(machineId: number, program: Program): Promise<void> {
-
-}
-
-/**
- * Veritabanında tüm makineleri verir.
- */
-export async function fetchAllMachines(): Promise<Machine[]> {
-
-}
-
-/**
- * Makinenin tüm programları veri tabanından alır.
- *
- * @throws Makine Yok
- */
-export async function fetchAllProgramHeaders(machineId: number): Promise<ProgramHeader[]> {
-
-}
-
-/**
- * Veritabanında id'si verilen makineyi verir.
- *
- * @throws A
- *
- * @param machineId
- */
-export async function fetchMachine(machineId: number): Promise<Machine[]> {
-
-}
-
-/**
- * Veritabanından makine için tanımlı komutları alır.
- *
- * @throws Makine yok
- *
- * @param machineId
- */
-export async function fetchCommands(machineId: number): Promise<MachineCommand[]> {
-
-}
-
-/**
- *
- * Veritabanından ilgili programı alır.
- *
- * @param machineId
- * @param programNo
- */
-export async function fetchProgram(machineId: number, programNo: number): Promise<Program> {
-
+  return host
 }
 
 export interface InsertProgramOptions extends TransactionOptions {
@@ -99,98 +41,82 @@ export interface InsertProgramOptions extends TransactionOptions {
 }
 
 /**
- *
- * Veritabanına verilen programı yazar.
- *
- * @throws Makine yok
- * @throws Geçersiz program
- * @throws Program zaten var (force: true ise bu hata gelmemeli)
- *
- *
- * @param machineId
- * @param program
+ * Makine gruplarının listesini getirir
+ * @returns {Promise<MachineGroup[]>} Makine grup dizisi içeren bir Promise
  */
-export async function insertProgram(machineId: number, program: Program, options?: InsertProgramOptions): Promise<void> {
-
+export async function getMachineGroup(): Promise<MachineGroup[]> {
+  const machineGroups: MachineGroup[] = await db
+    .select(
+      'GROUPID as groupId',
+      'GROUPNAME as name',
+      'GROUPTYPE as type',
+      'MMVisible as visible', // ?
+    )
+    .from('BFMACHGROUP')
+  return machineGroups
 }
 
 /**
- * Veritabanından ilgili programı siler.
- *
- * @throws Makine Yok
- * @throws Program Yok
+ * Kullanımda olan ve teleskop kullanımına izin verilen tüm makinelerin listesini getirir
+ * @returns {Promise<MachineInfo[]>} Makine dizisi içeren bir Promise
  */
-export function deleteProgramFromDatabase(machineId: number, programNo: number, options?: TransactionOptions) {
+export async function getMachines(): Promise<MachineInfo[]> {
+  const machines: MachineInfo[] = await db('BFMACHINES')
+    .select('MACHINEID AS id', 'MACHINECODE AS name', 'GRUPNO AS groupId')
+    .where('INUSE', 1)
+    .andWhere('USEINTELESKOP', 1)
 
+  return machines
+}
+
+export async function getMachinesAsList(): Promise<{ name: string, value: number, label: string }[]> {
+  const machines: { name: string, value: number, label: string }[] = await db('BFMACHINES')
+    .select('MACHINEID AS value', 'MACHINECODE AS name', 'GRUPNO AS groupId')
+    .where('INUSE', 1)
+    .andWhere('USEINTELESKOP', 1)
+  return machines.map(machine => ({
+    name: machine.name,
+    value: machine.value,
+    label: `${machine.value}. ${machine.name}`,
+  }))
 }
 
 /**
- * Makineden ilgili programı siler.
- *
- * @throws Makine Yok
- * @throws Makineye erişim yok
- * @throws Program Yok
+ * Kullanımda olan ve teleskop kullanımına izin verilen tüm makinelerin listesini getirir
+ * @returns {Promise<MachineGroup[]>} Makine grup dizisi içeren bir Promise
  */
-export function deleteProgramFromMachine(machineId: number, programNo: number, options?: FileTransferOptions) {
+export async function groupMachinesByGroup(): Promise<MachineGroup[]> {
+  const machines: MachineInfo[] = await getMachines()
+  const groups: MachineGroup[] = await getMachineGroup()
 
+  return groups.map(group => ({
+    ...group,
+    machines: machines.filter(machine => machine.groupId === group.groupId),
+  }))
 }
 
 /**
- * Makinenin tüm arşivli programlarını database'den alır. (Adımları almaz)
+ * Return all process types
+ * @returns {Promise<{label: string, value: number}[]>}
  */
-export function fetchAllArchivedProgramHeader(machineId: number, programNo: number) {
-
+export async function fetchProcessTypes(): Promise<{ label: string, value: number }[]> {
+  return await db
+    .select({
+      value: 'PROCESSCODE',
+      label: 'PROCESSNAME',
+    })
+    .from('BFPROCESSTYPES')
 }
 
-/**
- * Arşivli programı veri tabanından alır.
- */
-export function fetchArchivedProgram(machineId: number, programNo: number, versionNo: number) {
-
-}
-
-/**
- * Arşivli programı yükler. Eğer aktif program versiyonu verilirse, fonksiyon birşey yapmamalı, ama hatada dönmemeli.
- *
- * @throws Makine Yok
- * @throws Program Yok
- * @throws Arşivli Program Yok
- */
-export function loadArchivedProgram(machineId: number, programNo: number, versionNo: number, options?: TransactionOptions) {
-
-}
-
-/**
- * Aktif programı arşivler. Yeni Programı Ekler, eskisiyle değiştirir. (Full replace)
- *
- * @throws Makine Yok
- * @throws Program Yok
- * @throws Program Invalid
- */
-export async function updateProgram(machineId: number, programNo: Program, program: Program): Promise<void> {
-
-}
-
-/**
- * Programın veritabanında arşivlendiğinden emin olur.
- *
- * Arşivlenmemişse veya hatalı arşivlenmişse, düzeltir.
- *
- */
-export function ensureProgramIsArchived(machineId: number, programNo: number) {
-
-}
-
-/**
- * İki programı karşılaştırır. İlk farklılıkta cevap döner.
- */
-export function comparePrograms(programA: Program, programB: Program): boolean {
-
-}
-
-/**
- * İki programı karşılaştırır. Tüm farkları döner.
- */
-export function compareProgramsInDetail(programA: Program, programB: Program): unknown {
-
+export async function getMachineBatchParameters(machineId: number): Promise<any[]> {
+  const parameters = await db('BFMACHBATCHPARAMETERS')
+    .where('MACHINEID', machineId)
+    .select({
+      name: 'PARAMSTRING',
+      id: 'BATCHPARAMETERID',
+      min: 'PARAMLOWLIMIT',
+      max: 'PARAMHIGHLIMIT',
+      value: 'DEFAULTVALUE',
+    })
+  return parameters
 }

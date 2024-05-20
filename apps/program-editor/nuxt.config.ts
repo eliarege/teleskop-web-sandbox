@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  extends: ['nuxt-base'],
+  extends: ['nuxt-base', 'nuxt-ui'],
   runtimeConfig: {
     teleskopHost: 'localhost',
     teleskopUser: '',
@@ -17,8 +17,8 @@ export default defineNuxtConfig({
     lazy: true,
     langDir: './locales',
     locales: [
-      { code: 'en', file: 'en.json' },
-      { code: 'tr', file: 'tr.json' },
+      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'tr', name: 'Türkçe', file: 'tr.json' },
     ],
   },
   nitro: {
