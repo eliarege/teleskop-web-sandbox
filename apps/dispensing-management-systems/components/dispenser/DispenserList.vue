@@ -112,6 +112,7 @@ function onLogout() {
       label-key="label"
       node-key="id"
       no-connectors
+      no-nodes-label=" "
       :expanded="expanded"
       style="font-size: 18px;"
       @update:expanded="onExpand"
@@ -151,11 +152,6 @@ function onLogout() {
               </QItem>
             </QList>
           </QMenu>
-          <QItemSection avatar>
-            <QAvatar
-              icon="check_circle"
-            />
-          </QItemSection>
           <QItemSection>
             <QItemLabel>{{ node.label }}</QItemLabel>
           </QItemSection>
