@@ -1,1 +1,202 @@
-{}
+{
+  "operator": "Operator can be used to change the program",
+  "required": "{field} cannot be empty.",
+  "en": "English",
+  "tr": "Turkish",
+  "english": "English",
+  "turkish": "Turkish",
+  "welcome": "Welcome",
+  "search": "Search",
+  "searchCommand": "Search Command",
+  "valueOutOfRange": "Value must be between {minValue} and {maxValue}",
+  "programStatusInfo": {
+    "_": "Program Status Colors",
+    "onlyOnController": "Program only exists on controller",
+    "onlyOnTeleskop": "New program (Program only exists on Teleskop)",
+    "changedOnMachine": "Program has changed on controller",
+    "changedOnTeleskop": "Program has changed on Teleskop",
+    "noChanges": "Program is the same on both"
+  },
+  "menu": {
+    "system": "System",
+    "print": "Print",
+    "programList": "Program List",
+    "program": "Program",
+    "exportToExcel": "Export to Excel",
+    "exit": "Exit",
+    "edit": "Edit",
+    "cut": "Cut",
+    "copy": "Copy",
+    "paste": "Paste",
+    "refresh": "Refresh",
+    "save": "Save",
+    "reset": "Reset",
+    "findReplace": "Find - Replace",
+    "filter": "Filter",
+    "tools": "Tools",
+    "newProgram": "New Program",
+    "newStep": "New Step",
+    "newParallelStep": "New Parallel Step",
+    "deleteStep": "Delete Step",
+    "deleteParallelStep": "Delete Parallel Step",
+    "editProgram": "Edit Program",
+    "deleteProgram": "Delete Program",
+    "sendProgram": "Send Program",
+    "getProgram": "Get Program",
+    "getAllPrograms": "Get All Programs",
+    "sendAllPrograms": "Send All Programs",
+    "rename": "Rename",
+    "settings": "Settings",
+    "help": "Help",
+    "about": "About"
+  },
+  "program": {
+    "name": "Program Name",
+    "programNo": "Program No",
+    "programState": "Proccess Type",
+    "stepCount": "Step Count",
+    "type": "Type",
+    "updated": "Updated",
+    "processType": "Proccess Type"
+  },
+  "saveProgram": {
+    "success": "Program saved",
+    "fail": "Program could not be saved",
+    "incorrect": "You entered the wrong value"
+  },
+  "selectAll": "Select all",
+  "dropAll": "Drop all",
+  "selectReverse": "Reverse selection",
+  "yes": "Yes",
+  "no": "No",
+  "cancel": "Cancel",
+  "create": "Create",
+  "delete": "Delete",
+  "change": "Change",
+  "apply": "Apply",
+  "topbar": {
+    "programFilter": {
+      "_": "Filter Programs",
+      "programNo": "Program No",
+      "programName": "Program Name",
+      "processType": "Proccess Type",
+      "clearFilter": "Clear Filter",
+      "clearFilterOnChange": "Clear filter when machine changed."
+    }
+  },
+  "printProgramListDialog": {
+    "printOptions": "Printing Options",
+    "machineList": "Machine List",
+    "machine": "Machine",
+    "selectedMachine": "Selected Machine",
+    "all": "All",
+    "printer": "Printer",
+    "print": "Print",
+    "preview": "Preview",
+    "cancel": "Cancel",
+    "send": "Send"
+  },
+  "printProgramDialog": {
+    "programPrintOptions": "Program Printing Options",
+    "selectMachine": "Select a machine that wanted to print machine's programs",
+    "selectPrograms": "Select programs that wanted to print",
+    "selectCommands": "Select command that will be on print",
+    "selectPrinter": "Select printer"
+  },
+  "changeNameDialog": {
+    "_": "Change program name",
+    "enterNewName": "Enter the new name of the program."
+  },
+  "contextMenu": {
+    "copy": "Copy",
+    "paste": "Paste",
+    "newProgram": "New Program",
+    "editProgram": "Edit Program",
+    "deleteProgram": "Delete Program",
+    "deleteProgramsFromMachine": "Delete Program(s) From Machine",
+    "concatPrograms": "Concatenate Programs",
+    "changeName": "Change Name",
+    "changeProcessType": "Change Process Type",
+    "sendProgram": "Send Program",
+    "copyToMachinesAndSend": "Copy To Machines And Send",
+    "getProgram": "Get Program",
+    "programVersion": "Program Version",
+    "addToComparison": "Add To Comparison List",
+    "compareWith": "Compare With",
+    "pasteDuplicateKeyWarning": "Programs with given program numbers exists. Please provide a new program number for programs below.",
+    "deleteProgramDialog": {
+      "warning": "Program {name} will be deleted! Are you sure you want to continue?",
+      "deleteFromBoth": "Delete program from both machine and Teleskop",
+      "deleteFromTeleskop": "Delete program from Teleskop",
+      "deleteFromMachine": "Delete program from machine"
+    },
+    "concatenateProgramsDialog": {
+      "warning": "Re-order programs by dragging.",
+      "concatenate": "Concatenate programs",
+      "header": "Program Info",
+      "programNo": "Program No",
+      "name": "Program Name",
+      "processType": "Proccess Type",
+      "operatorCanInterrupt": "Operator can interrupt",
+      "creationTime": "Creation Time",
+      "programList": "Program List",
+      "warningNoPK": "Program no cannot be empty.",
+      "warningDuplicatePK": "Program no already exists."
+    },
+    "version": {
+      "_": "Version",
+      "header": "Version Information",
+      "programName": "Program Name",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "stepCount": "Step Count",
+      "time": "Time",
+      "showInEditor": "Show in Editor",
+      "compare": "Compare",
+      "makeDefault": "Make Default"
+    },
+    "send": {
+      "success": "Sending program {name} is succeed.",
+      "fail": "An error occured while sending program {name}."
+    },
+    "get": {
+      "success": "Taking program {name} is succeed.",
+      "fail": "An error occured while taking program {name}."
+    },
+    "delete": {
+      "success": "Deleting program {name} with program no {programNo} is succeed.",
+      "fail": "An error occured while deleting program {name} with program no {programNo}."
+    },
+    "getInMachine": {
+      "success": "Taking program {name} in machine {machine} is succeed.",
+      "fail": "An error occured while taking program {name} in machine {machine}."
+    },
+    "copyAndSend": {
+      "machineSelection": "Machine Selection",
+      "selectMachine": "Select machines that you want to paste the programs.",
+      "operate": "Send"
+    },
+    "deleteFromMultiMachine": {
+      "selectMachine": "Select machines that you want to delete the programs.",
+      "operate": "Delete"
+    },
+    "pasteNotification": {
+      "success": "Program {name} is successfully saved with program no {programNo}."
+    },
+    "changeNameNotification": {
+      "success": "Change name operation is succeed for program with program no {programNo}.",
+      "fail": "Change name operation is failed for program with program no {programNo}."
+    },
+    "changeProcessTypeNotification": {
+      "success": "Change process type operation is succeed for program with program no {programNo}.",
+      "fail": "Change process type operation is failed for program with program no {programNo}."
+    },
+    "deleteFromMultiMachineNotification": {
+      "success": "Deleting program {name} with program no {programNo} from machine {machineId} is succeed.",
+      "fail": "An error occured while taking program {name} with program no {programNo} from machine {machineId}."
+    },
+    "deleteVersionDialog": {
+      "warning": "Version(s) {code} will be deleted! Are you sure you want to continue?"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+:root {
+  --menubar-button: white;
+  --menubar-bg: white;
+  --menubar-text: black;
+  --menubar-border: black;
+
+  --menuProgram: white;
+  --commandList: white;
+  --selectedStep: white;
+  --selectedParallelStep: white;
+  --hoverStep: white;
+  --hoverParallelStep: white;
+}
+
+
+:root.dark {
+  --menubar-button: black;
+  --menubar-bg: black;
+  --menubar-text: black;
+  --menubar-border: black;
+
+  --menuProgram: black;
+  --commandList: black;
+  --selectedStep: black;
+  --selectedParallelStep: black;
+  --hoverStep: black;
+  --hoverParallelStep: black;
+}
+

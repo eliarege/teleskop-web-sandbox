@@ -1,10 +1,12 @@
 export type ErrorCode =
-| 'MACHINE_NOT_FOUND'
-| 'MACHINE_UNAVAILABLE'
-| 'PROGRAM_NOT_FOUND'
-| 'PROGRAM_EXISTS'
-| 'PROGRAM_INVALID'
-| 'PROGRAM_ARCHIVE_NOT_FOUND'
+  | 'MACHINE_NOT_FOUND'
+  | 'MACHINE_UNAVAILABLE'
+  | 'MACHINE_IP_NOT_FOUND'
+  | 'PROGRAM_NOT_FOUND'
+  | 'PROGRAM_EXISTS'
+  | 'PROGRAM_INVALID'
+  | 'PROGRAM_ARCHIVE_NOT_FOUND'
+  | 'PROGRAM_FAILED_TO_LOAD'
 
 export interface ErrorMachineDetail {
   machineId: number
@@ -37,6 +39,11 @@ export interface ErrorMachineUnavailable extends PError {
   detail: ErrorMachineDetail
 }
 
+export interface ErrorMachineIpNotFound extends PError {
+  code: 'MACHINE_IP_NOT_FOUND'
+  detail: ErrorMachineDetail
+}
+
 export interface ErrorProgramNotFound extends PError {
   code: 'PROGRAM_NOT_FOUND'
   detail: ErrorProgramDetail
@@ -57,6 +64,11 @@ export interface ErrorProgramArchiveNotFound extends PError {
   detail: ErrorProgramArchiveDetail
 }
 
+export interface ErrorProgramLoad extends PError {
+  code: 'PROGRAM_FAILED_TO_LOAD'
+  detail: ErrorProgramDetail
+}
+
 export type AnyError =
   | ErrorMachineNotFound
   | ErrorMachineUnavailable
@@ -70,10 +82,12 @@ export class PError extends Error {
 
   constructor(code: 'MACHINE_NOT_FOUND', detail: ErrorMachineDetail)
   constructor(code: 'MACHINE_UNAVAILABLE', detail: ErrorMachineDetail)
+  constructor(code: 'MACHINE_IP_NOT_FOUND', detail: ErrorMachineDetail)
   constructor(code: 'PROGRAM_NOT_FOUND', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_EXISTS', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_INVALID', detail: ErrorProgramInvalidDetail)
   constructor(code: 'PROGRAM_ARCHIVE_NOT_FOUND', detail: ErrorProgramArchiveNotFound)
+  constructor(code: 'PROGRAM_FAILED_TO_LOAD', detail: ErrorProgramDetail)
   constructor(code: ErrorCode, detail?: any) {
     super(code)
     this.code = code

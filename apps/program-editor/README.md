@@ -4,9 +4,6 @@
 
 - Makineye programları aktarırken, makinede olup teleskopda olmayan programlar, makineden silinir mi?
 
-
-
-
 ## Tablolar:
 
 ### Makine Tabloları

@@ -8,7 +8,7 @@ export const db = Knex({
     host: config.teleskopHost,
     port: Number.parseInt(config.teleskopPort),
     user: config.teleskopUser,
-    password: config.teleskopPassword,
+    password: String(config.teleskopPassword),
     database: config.teleskopDatabase,
     options: {
       instanceName: config.teleskopInstanceName || undefined,

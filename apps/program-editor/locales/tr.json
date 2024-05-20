@@ -1,1 +1,203 @@
-{}
+{
+  "operator": "Operatör müdahale edebilir",
+  "required": "{field} boş olamaz.",
+  "tr": "Türkçe",
+  "en": "İngilizce",
+  "turkish": "Türkçe",
+  "english": "İngilizce",
+  "welcome": "Hoşgeldiniz",
+  "search": "Ara",
+  "searchCommand": "Komut Ara",
+  "valueOutOfRange": "{minValue} ile {maxValue} arasında bir değer giriniz",
+  "programStatusInfo": {
+    "_": "Program Durum Renkleri",
+    "onlyOnController": "Program sadece cihazda",
+    "onlyOnTeleskop": "Yeni program (Program sadece Teleskop'ta)",
+    "changedOnMachine": "Program cihazda değiştirildi",
+    "changedOnTeleskop": "Program Teleskop'ta değiştirildi",
+    "noChanges": "Program iki tarafta da aynı"
+  },
+  "menu": {
+    "system": "Sistem",
+    "print": "Yazdır",
+    "programList": "Program Listesi",
+    "program": "Program",
+    "exportToExcel": "Excel'e aktar",
+    "exit": "Çıkış",
+    "edit": "Düzenle",
+    "cut": "Kes",
+    "copy": "Kopyala",
+    "paste": "Yapıştır",
+    "refresh": "Yenile",
+    "save": "Kaydet",
+    "reset": "Sıfırla",
+    "findReplace": "Bul - Değiştir",
+    "filter": "Filtrele",
+    "tools": "Araçlar",
+    "newProgram": "Yeni Program",
+    "newStep": "Yeni Adım",
+    "newParallelStep": "Yeni Paralel Adım",
+    "deleteStep": "Adımı Sil",
+    "deleteParallelStep": "Paralel Adımı Sil",
+    "editProgram": "Programı Düzenle",
+    "deleteProgram": "Programı Sil",
+    "sendProgram": "Programı Gönder",
+    "getProgram": "Programı Al",
+    "getAllPrograms": "Tüm Programları Al",
+    "sendAllPrograms": "Tüm Programları Gönder",
+    "rename": "Yeniden Adlandır",
+    "settings": "Ayarlar",
+    "help": "Yardım",
+    "about": "Hakkında"
+  },
+  "program": {
+    "name": "Program Adı",
+    "programNo": "Program Numarası",
+    "programState": "Proccess Tipi",
+    "stepCount": "Adım Sayısı",
+    "type": "Tip",
+    "updated": "Güncellenme Tarihi",
+    "processType": "Proccess Tipi"
+  },
+  "saveProgram": {
+    "success": "Program kaydedildi",
+    "fail": "Program kaydedilirken hata oluştu",
+    "incorrect": "Hatalı değer girdiniz"
+  },
+  "selectAll": "Tümünü seç",
+  "dropAll": "Tümünü bırak",
+  "selectReverse": "Seçimi ters çevir",
+  "yes": "Evet",
+  "no": "Hayır",
+  "cancel": "İptal",
+  "create": "Oluştur",
+  "delete": "Sil",
+  "change": "Değiştir",
+  "send": "Gönder",
+  "apply": "Uygula",
+  "topbar": {
+    "programFilter": {
+      "_": "Program Filtrele",
+      "programNo": "Program No",
+      "programName": "Program İsmi",
+      "processType": "Proses Tipi",
+      "clearFilter": "Filtreleri Temizle",
+      "clearFilterOnChange": "Makine seçimi değiştiğinde filtreleri temizle."
+    }
+  },
+  "printProgramListDialog": {
+    "printOptions": "Yazdırma Seçenekleri",
+    "machineList": "Makine Listesi",
+    "machine": "Makine",
+    "selectedMachine": "Seçili Makine",
+    "all": "Hepsi",
+    "printer": "Yazıcı",
+    "print": "Yazdır",
+    "preview": "Önizleme",
+    "cancel": "İptal"
+  },
+  "printProgramDialog": {
+    "programPrintOptions": "Program Yazdırma Seçenekleri",
+    "selectMachine": "Programlarını yazdırmak istediğiniz makineyi seçiniz",
+    "selectPrograms": "Yazdırmak istediğiniz programları seçiniz",
+    "selectCommands": "Çıktıda görünmesini istediğiniz komutları seçiniz",
+    "selectPrinter": "Yazıcı seçiniz"
+  },
+  "changeNameDialog": {
+    "_": "Program Adı Değiştir",
+    "enterNewName": "Programın yeni adını giriniz."
+  },
+  "contextMenu": {
+    "copy": "Kopyala",
+    "paste": "Yapıştır",
+    "newProgram": "Yeni Program",
+    "editProgram": "Programı Düzenle",
+    "deleteProgram": "Programı Sil",
+    "deleteProgramsFromMachine": "Program(lar)ı Makinelerden Sil",
+    "concatPrograms": "Programları Birleştir",
+    "changeName": "Ad Değiştir",
+    "changeProcessType": "Process Tipini Değiştir",
+    "sendProgram": "Programı Yolla",
+    "copyToMachinesAndSend": "Makinelere Kopyala ve Yolla",
+    "getProgram": "Programı Al",
+    "programVersion": "Program Versiyonları",
+    "addToComparison": "Karşılaştırma Listesine Ekle",
+    "compareWith": "Bununla Karşılaştır",
+    "pasteDuplicateKeyWarning": "Yapıştırılmak istenilen programların numaraları bu makinede mevcut. Lütfen yeni program numaralarını giriniz.",
+    "deleteProgramDialog": {
+      "warning": "Program {name} silinecek! Devam etmek istediğinize emin misiniz?",
+      "deleteFromBoth": "Programı Teleskop'tan ve cihazdan sil",
+      "deleteFromTeleskop": "Programı sadece Teleskop'tan sil",
+      "deleteFromMachine": "Programı sadece cihazdan sil"
+    },
+    "concatenateProgramsDialog": {
+      "warning": "Programları fare ile taşıyarak sıralayınız.",
+      "concatenate": "Programları birleştir",
+      "header": "Program Bilgileri",
+      "programNo": "Program Numarası",
+      "name": "Program Adı",
+      "processType": "Proccess Tipi",
+      "operatorCanInterrupt": "Operatör müdahale edebilir",
+      "creationTime": "Oluşturma Zamanı",
+      "programList": "Program Listesi",
+      "warningNoPK": "Program numarası boş olamaz.",
+      "warningDuplicatePK": "Program numarası mevcut."
+    },
+    "version": {
+      "_": "Versiyon",
+      "header": "Versiyon Bilgileri",
+      "programName": "Program İsmi",
+      "startDate": "Başlangıç Tarihi",
+      "endDate": "Bitiş Tarihi",
+      "stepCount": "Adım Sayısı",
+      "time": "Süre",
+      "showInEditor": "Editörde Göster",
+      "compare": "Karşılaştır",
+      "makeDefault": "Geçerli Sürüm Yap"
+    },
+    "send": {
+      "success": "{name} programı makineye başarıyla gönderildi.",
+      "fail": "{name} programını gönderirken hata oluştu."
+    },
+    "get": {
+      "success": "{name} programı başarıyla alındı.",
+      "fail": "{name} programını alınırken hata oluştu."
+    },
+    "delete": {
+      "success": "{programNo} numaralı {name} programı başarıyla silindi.",
+      "fail": "{programNo} numaralı {name} programı silinirken hata oluştu."
+    },
+    "getInMachine": {
+      "success": "{name} programı {machine} makinesine başarıyla alındı.",
+      "fail": "{name} programı {machine} makinesine alınırken hata oluştu."
+    },
+    "copyAndSend": {
+      "machineSelection": "Makine Seçimi",
+      "selectMachine": "Program(lar)ın yapıştırılacağı makineleri seçiniz.",
+      "operate": "Gönder"
+    },
+    "deleteFromMultiMachine": {
+      "selectMachine": "Program(lar)ın silineceği makineleri seçiniz.",
+      "operate": "Sil"
+    },
+    "pasteNotification": {
+      "success": "{name} programı {programNo} numarasıyla kaydedildi."
+    },
+    "changeNameNotification": {
+      "success": "{programNo} numaralı programın ismi başarıyla değiştirildi.",
+      "fail": "{programNo} numaralı programın ismini değiştirme işlemi başarısız."
+    },
+    "changeProcessTypeNotification": {
+      "success": "{programNo} numaralı programın process tipi başarıyla değiştirildi.",
+      "fail": "{programNo} numaralı programın process tipini değiştirme işlemi başarısız."
+    },
+    "deleteFromMultiMachineNotification": {
+      "success": "{programNo} numaralı {name} programı {machineId} makinesinden başarıyla silindi.",
+      "fail": "{programNo} numaralı {name} programı {machineId} makinesinden silinirken hata oluştu."
+    },
+    "deleteVersionDialog": {
+      "warning": "Version {code} silinecek! Devam etmek istediğinize emin misiniz?"
+    }
+  }
+
+}
