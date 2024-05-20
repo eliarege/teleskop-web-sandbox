@@ -53,7 +53,7 @@ workflow:
 variables:
   NPM_TOKEN: $CI_JOB_TOKEN
   TARGET_APPS:
-    value: dispensing-manager-ui dispensing-management-systems machine-status machines multi-monitor planning-board planning-board-engine root websockify
+    value: dispensing-manager-ui dispensing-management-systems machine-status machines multi-monitor planning-board planning-board-engine root websockify program-editor
     description: Whitespace seperated list of apps to build/release
 
 prepare-apps:
