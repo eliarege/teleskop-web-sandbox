@@ -27,7 +27,7 @@
     "sortablejs": "^1.15.2",
     "sortablejs-vue3": "^1.2.11",
     "tbb-ftp-client": "workspace:*",
-    "tedious": "^16.6.1",
+    "tedious": "^18.1.0",
     "ui": "workspace:*"
   },
   "devDependencies": {
