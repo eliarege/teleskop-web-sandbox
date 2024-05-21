@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
         await updateUsers(tbb, trx)
       }
       if (options.manualReasons) {
-        await updateManualReasons(tbb, trx)
+        await updateManualReasons(numMachineId, tbb, trx)
       }
     })
   })

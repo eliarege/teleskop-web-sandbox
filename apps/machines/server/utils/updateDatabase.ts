@@ -136,7 +136,7 @@ export async function updateFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   const finishReasons = await tbb.fetchFinishReasons()
   if (!finishReasons.length)
     return false
-  return await replaceRecords(trx, 'BFDYLOTFINISHREASONS', finishReasons, undefined)
+  return await replaceRecords(trx, 'BFDYLOTFINISHREASONS', finishReasons)
 }
 
 export async function updateManualReasons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
@@ -157,7 +157,7 @@ export async function updateStopReasons(tbb: TbbFtpClient, trx: Knex) {
   const stopReasons = await tbb.fetchStopReasons()
   if (!stopReasons.length)
     return false
-  return await replaceRecords(trx, 'BFSTOPREASONS', stopReasons, undefined)
+  return await replaceRecords(trx, 'BFSTOPREASONS', stopReasons)
 }
 
 export async function updateMachineController(machineId: number, tbb: TbbFtpClient, trx: Knex) {
@@ -206,7 +206,7 @@ export async function updateUsers(tbb: TbbFtpClient, trx: Knex) {
       userType: d.userType,
     }
   })
-  return await replaceRecords(trx, 'BFUSERS', data, undefined)
+  return await replaceRecords(trx, 'BFUSERS', data)
 }
 
 export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex) {
@@ -223,7 +223,7 @@ export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient
     MOVEPARALLEL: d.moveParallel,
     GROUPID: d.groupId,
     MACHINEID: machineId,
-    ACTIVATED: (d.activated === '1' && d.machineConstantId && d.machineConstantId !== -1) ? 1 : 0,
+    ACTIVATED: (d.activated === 1 && d.machineConstantId && d.machineConstantId !== -1) ? 1 : 0,
     ISDELETED: 0,
     ISCHANGED: 1,
     FUNCTIONID: 0,
