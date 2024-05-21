@@ -25,7 +25,7 @@ async function replaceRecords(knex: Knex, tableName: string, data: any[], whereO
   }
 }
 
-async function insertIgnoringDuplicates(trx, tableName, data, uniqueColumns) {
+async function insertIgnoringDuplicates(trx: Knex, tableName: string, data: any[], uniqueColumns: string[]) {
   for (const item of data) {
     const exists = await trx(tableName)
       .select('*')
@@ -441,7 +441,7 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
 
     if (alarmObj) {
       const alarmTypeIndex = Object.keys(alarmObj)
-        .findIndex(key => alarmObj[key as keyof FunctionAlarm]?.includes(c.alarmNo)) + 1
+        .findIndex(key => alarmObj[key as keyof FunctionAlarm]?.includes(String(c.alarmNo))) + 1
 
       commandsAlarmsInserts.push({
         MACHINEID: machineId,
@@ -465,13 +465,13 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
   const inputsOutputs = []
   const selectionList = []
 
-  for (const [index, command] of commands.entries()) {
-    for (const [i, c] of command.chooseList.entries()) {
+  for (const [_index, command] of commands.entries()) {
+    for (const [_i, c] of command.chooseList.entries()) {
       const commonData = {
         IOINDEX: c.ioIndex,
-        MACHINEID: Number.parseInt(machineId),
+        MACHINEID: machineId,
         COMMANDNO: command.commandNo,
-        IOID: Number.parseInt(c.ioId),
+        IOID: c.ioId,
       }
       if (c.selectIndex === 0) {
         inputsOutputs.push({
