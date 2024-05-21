@@ -1,3 +1,4 @@
+import { PLANNED_CODE } from '../../contants'
 import { knex } from '../../knexConfig'
 
 export async function getPtStatus() {
@@ -278,7 +279,7 @@ export async function getErpParameters(machineId: number) {
       owner: 'p.OWNER',
       machineId: 'p.MACHINEID',
       paramName: 'd.PARAMNAME',
-    }).where('p.OWNER', '=', 117).andWhere('p.MACHINEID', '=', machineId)
+    }).where('p.OWNER', '=', PLANNED_CODE).andWhere('p.MACHINEID', '=', machineId)
     .groupBy('p.OWNER', 'p.PARAMID', 'd.PARAMNAME', 'p.MACHINEID')
 
   const unplannedDefinitions = await knex({ p: 'dbo.PTERPPARAMBYUSER' })
@@ -333,7 +334,7 @@ export async function getEventTooltipParams(planKey: number, machineId: number) 
     .select('p.PARAMID')
     .leftJoin('BFERPPARAMETERDEFINITIONS as d', 'd.PARAMID', 'p.PARAMID')
     .where('p.MACHINEID', '=', machineId)
-    .andWhere('p.OWNER', '=', 117)
+    .andWhere('p.OWNER', '=', PLANNED_CODE)
     .groupBy('p.PARAMID')
   return await knex('DYBFBATCHPLANPARAMETERS as b')
     .select({
