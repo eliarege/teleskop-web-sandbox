@@ -455,13 +455,12 @@ function handleRowColor(row: ProgramHeader) {
             v-for="column in columns"
             :key="column.name"
             :props="props"
-            :class="{ 'e-selected': isRowSelected(props.row) }"
-            :style="{ color: `${handleRowColor(props.row)}` }"
           >
             <q-menu
               v-if="keycloak.authenticated"
               touch-position
               context-menu
+              :transition-duration="0"
             >
               <q-list
                 style="min-width: 300px;"
