@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
             // sistem
             { func: () => updateSystemParams(numMachineId, tbb, trx), message: 'system parameters updated' },
             // manuelmodenedenleri
-            { func: () => updateManualReasons(tbb, trx), message: 'manual reasons updated' },
+            { func: () => updateManualReasons(numMachineId, tbb, trx), message: 'manual reasons updated' },
             // analoginput
             { func: () => updateAnalogInputs(numMachineId, tbb, trx), message: 'analog inputs updated' },
             // analogoutput
@@ -76,6 +76,8 @@ export default defineEventHandler(async (event) => {
             { func: () => updateConsumption(numMachineId, tbb, trx), message: 'consumptions updated' },
             // erp params
             { func: () => updateERPParams(numMachineId, tbb, trx), message: 'ERP params updated' },
+            // machine params
+            { func: () => updateMachineParameters(numMachineId, tbb, trx), message: 'machine params updated' },
             // archives
             { func: () => updateArchives(numMachineId, tbb, trx), message: 'archives updated' },
           ]

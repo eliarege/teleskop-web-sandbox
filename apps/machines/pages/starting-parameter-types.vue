@@ -94,7 +94,11 @@ const contextMenuOptions = computed(() => [
 
 <template>
   <div>
-    <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
+    <ContextMenu
+      :context-menu-options="contextMenuOptions"
+      target=".q-list"
+      @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)"
+    />
     <q-card>
       <q-card-section class="flex flex-row justify-center gap-8">
         <div class="w-sm">

@@ -10,6 +10,7 @@ export interface IContextMenuOption {
 
 const props = defineProps<{
   contextMenuOptions: IContextMenuOption[]
+  target: string | boolean | Element | undefined
 }>()
 
 const emit = defineEmits(['click'])
@@ -27,6 +28,8 @@ function handleClick(event, option: IContextMenuOption) {
   <q-menu
     touch-position
     context-menu
+    class="whitespace-nowrap w-fit pr-12"
+    :target="target ?? true"
   >
     <q-list>
       <template

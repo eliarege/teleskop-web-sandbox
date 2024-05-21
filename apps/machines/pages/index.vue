@@ -132,6 +132,20 @@ const columns = computed(() => ({
       validation: 'min:1',
     },
   },
+  nozzleCount: {
+    label: t('nozzleCount'),
+    field: 'nozzleCount',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+    type: 'number',
+    visible: false,
+    editable: true,
+    schema: {
+      filled: true,
+      validation: 'min:1',
+    },
+  },
   ip: {
     label: 'Ip',
     field: 'ip',
@@ -178,20 +192,6 @@ const columns = computed(() => ({
   theoricalChargeDuration: {
     label: t('theoricalChargeDuration'),
     field: 'theoricalChargeDuration',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    type: 'number',
-    visible: false,
-    editable: true,
-    schema: {
-      filled: true,
-      validation: 'min:1',
-    },
-  },
-  nozzleCount: {
-    label: t('nozzleCount'),
-    field: 'nozzleCount',
     align: 'left',
     filterable: true,
     filterType: 'includes',
@@ -631,7 +631,11 @@ function handleClose() {
 
 <template>
   <div>
-    <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selected)" />
+    <ContextMenu
+      :context-menu-options="contextMenuOptions"
+      target=".q-table"
+      @click="(option: IContextMenuOption) => option.onClick(selected)"
+    />
     <div class="absolute left-63 top-13.2">
       <q-btn
         :label="t('loadProject')"

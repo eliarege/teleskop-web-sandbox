@@ -47,7 +47,7 @@ export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, t
 
   const analogInputs = inputs?.map(d => ({
     MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel),
+    ID: calcIONumber(d, controllerModel, 'analog input'),
     CARD: d.card,
     CANAL: d.channel,
     NAME: d.name,
@@ -65,7 +65,7 @@ export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, 
   const controllerModel = await tbb.fetchControllerModel()
   const analogOutputs = outputs?.map(d => ({
     MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel),
+    ID: calcIONumber(d, controllerModel, 'analog output'),
     CARD: d.card,
     CANAL: d.channel,
     NAME: d.name,
@@ -84,7 +84,7 @@ export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, 
   const controllerModel = await tbb.fetchControllerModel()
   const digitalInputs = inputs?.map(d => ({
     MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel),
+    ID: calcIONumber(d, controllerModel, 'digital input'),
     CARD: d.card,
     CANAL: d.channel,
     NAME: d.name,
@@ -102,7 +102,7 @@ export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient,
   const controllerModel = await tbb.fetchControllerModel()
   const digitalOutputs = outputs?.map(d => ({
     MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel),
+    ID: calcIONumber(d, controllerModel, 'digital output'),
     CARD: d.card,
     CANAL: d.channel,
     NAME: d.name,
@@ -121,7 +121,7 @@ export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx: 
   const controllerModel = await tbb.fetchControllerModel()
   const data = counters?.map(d => ({
     MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel),
+    ID: calcIONumber(d, controllerModel, 'counter'),
     CARD: d.card,
     CANAL: d.channel,
     NAME: d.name,
@@ -136,21 +136,28 @@ export async function updateFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   const finishReasons = await tbb.fetchFinishReasons()
   if (!finishReasons.length)
     return false
-  return await replaceRecords(trx, 'BFDYLOTFINISHREASONS', finishReasons, undefined)
+  return await replaceRecords(trx, 'BFDYLOTFINISHREASONS', finishReasons)
 }
 
-export async function updateManualReasons(tbb: TbbFtpClient, trx: Knex) {
+export async function updateManualReasons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const manualReasons = await tbb.fetchManualReasons()
   if (!manualReasons)
     return false
-  return await replaceRecords(trx, 'BFMANUALREASONSGENERAL', manualReasons, undefined)
+  const data = manualReasons.map((d) => {
+    return {
+      MACHINEID: machineId,
+      MANUALCODE: d.manualCode,
+      MANUALNAME: d.manualName,
+    }
+  })
+  return await replaceRecords(trx, 'BFMANUALREASONS', data, { MACHINEID: machineId })
 }
 
 export async function updateStopReasons(tbb: TbbFtpClient, trx: Knex) {
   const stopReasons = await tbb.fetchStopReasons()
   if (!stopReasons.length)
     return false
-  return await replaceRecords(trx, 'BFSTOPREASONS', stopReasons, undefined)
+  return await replaceRecords(trx, 'BFSTOPREASONS', stopReasons)
 }
 
 export async function updateMachineController(machineId: number, tbb: TbbFtpClient, trx: Knex) {
@@ -199,7 +206,7 @@ export async function updateUsers(tbb: TbbFtpClient, trx: Knex) {
       userType: d.userType,
     }
   })
-  return await replaceRecords(trx, 'BFUSERS', data, undefined)
+  return await replaceRecords(trx, 'BFUSERS', data)
 }
 
 export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex) {
@@ -216,7 +223,7 @@ export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient
     MOVEPARALLEL: d.moveParallel,
     GROUPID: d.groupId,
     MACHINEID: machineId,
-    ACTIVATED: (d.activated === '1' && d.machineConstantId && d.machineConstantId !== -1) ? 1 : 0,
+    ACTIVATED: (d.activated === 1 && d.machineConstantId && d.machineConstantId !== -1) ? 1 : 0,
     ISDELETED: 0,
     ISCHANGED: 1,
     FUNCTIONID: 0,
@@ -480,7 +487,7 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
         ...commonData,
         SELECTINDEX: c.selectIndex,
         IOTYPE: c.ioType - 1,
-        NAME: c.ioType !== 5 ? await getIOName(machineId, c.ioType - 1, c.ioId, trx) : '',
+        NAME: await getIOName(machineId, c.ioType - 1, c.ioId, trx),
         SELECTEDIOID: c.ioId,
         ISDEFAULT: c.isDefault,
         MODEL: 'MODEL',
@@ -805,7 +812,7 @@ export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, tr
     lock.analogOutputs.forEach((output, index) => {
       analogOutputs.push({
         MACHINEID: machineId,
-        LOCKNO: lock.lockNo,
+        LOCKNO: lock.lockNo + 1,
         LOCKAOUTINDEX: index,
         ID: output.outputId + 1,
         PERCENTAGE: output.percentage,
@@ -817,7 +824,7 @@ export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, tr
     lock.digitalOutputs.forEach((output, index) => {
       digitalOutputs.push({
         MACHINEID: machineId,
-        LOCKNO: lock.lockNo,
+        LOCKNO: lock.lockNo + 1,
         LOCKDOUTINDEX: index,
         ID: output.outputId + 1,
         STATE: output.state,
@@ -866,7 +873,6 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
   let maxVersion = -1
   const trxTime = trx.fn.now()
   const version = await trx('BAMASTERCOMMANDS').where('MACHINEID', machineId).max('MACHINECOMMANDSETNO as maxVersion')
-
   maxVersion = version[0].maxVersion || 0
 
   maxVersion++

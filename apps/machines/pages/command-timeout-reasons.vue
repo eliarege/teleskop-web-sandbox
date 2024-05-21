@@ -114,7 +114,11 @@ const contextMenuOptions = computed(() => [
 
 <template>
   <div>
-    <ContextMenu :context-menu-options="contextMenuOptions" @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)" />
+    <ContextMenu
+      :context-menu-options="contextMenuOptions"
+      target=".q-list"
+      @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)"
+    />
     <q-dialog :model-value="showAddReasonDialog" @hide="showAddReasonDialog = false">
       <q-card>
         <q-card-section class="flex flex-col items-center">
