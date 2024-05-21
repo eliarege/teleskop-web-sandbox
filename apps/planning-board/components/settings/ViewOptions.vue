@@ -4,16 +4,16 @@ const emit = defineEmits(['updateScheduler'])
 const { t } = useI18n()
 const q = useQuasar()
 
-const definitions = ref()
-const plannedDefinitions = ref()
-const unplannedDefinitions = ref()
-const currentMachine = ref()
+const definitions = ref([] as any[])
+const plannedDefinitions = ref([] as any[])
+const unplannedDefinitions = ref([] as any[])
+const currentMachine = ref([] as any[])
 
 const { data: machines } = useFetch('/api/machineList')
 
 async function getErpParameters(machineId: number) {
   currentMachine.value = machineId
-  const res = await $fetch('/api/settings/erpParameters/erpParameters', {
+  const res = await $fetch('/api/settings/erpParameters', {
     query: { machineId },
   })
   definitions.value = res.definitions
@@ -130,13 +130,27 @@ async function deleteParameter(paramId: number, owner: number, machineId: number
       </QTable>
     </div>
     <div class="planned-batch">
-      <q-list separator bordered dense>
-        <q-item v-for="item in plannedDefinitions" :key="item.id" v-ripple clickable>
+      <q-list
+        separator
+        bordered
+        dense
+      >
+        <q-item
+          v-for="item in plannedDefinitions"
+          :key="item.id"
+          v-ripple
+          clickable
+        >
           <q-item-section>
             {{ item.paramName }}
           </q-item-section>
           <q-item-section side>
-            <Icon name="fluent:delete-16-regular" color="red" size="20" @click="deleteParameter(item.paramId, item.owner, item.machineId)" />
+            <Icon
+              name="fluent:delete-16-regular"
+              color="red"
+              size="20"
+              @click="deleteParameter(item.paramId, item.owner, item.machineId)"
+            />
           </q-item-section>
         </q-item>
       </q-list>
