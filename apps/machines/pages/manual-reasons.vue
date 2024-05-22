@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ManualReason } from '~/types'
+
 const { t } = useI18n()
 
 const columns = computed(() => ({
@@ -36,19 +38,19 @@ const columns = computed(() => ({
     visible: true,
     type: 'checkbox',
     editable: true,
-    format: (val, row) => val ? t('yes') : t('no'),
+    format: (val: boolean) => val ? t('yes') : t('no'),
     schema: {
       filled: true,
     },
   },
 }))
 
-const { data: manualReasons, refresh } = useLazyFetch('/api/manual-reasons/manual-reasons', {
+const { data: manualReasons, refresh } = useLazyFetch<ManualReason[]>('/api/manual-reasons/manual-reasons', {
   default: () => [],
   method: 'POST',
   body: {},
 })
-async function handleAdd(formData) {
+async function handleAdd(formData: ManualReason) {
   await $fetch('/api/manual-reasons/manual-reason', {
     method: 'POST',
     body: {
@@ -60,7 +62,7 @@ async function handleAdd(formData) {
   await refresh()
 }
 
-async function handleEdit(formData) {
+async function handleEdit(formData: ManualReason) {
   await $fetch('/api/manual-reasons/manual-reason', {
     method: 'PUT',
     body: formData,
@@ -68,7 +70,7 @@ async function handleEdit(formData) {
   await refresh()
 }
 
-async function handleDelete(formData) {
+async function handleDelete(formData: ManualReason[]) {
   await $fetch('/api/manual-reasons/manual-reasons', {
     method: 'DELETE',
     body: {
@@ -76,14 +78,6 @@ async function handleDelete(formData) {
     },
   })
   await refresh()
-}
-async function handleFilterSlotsUpdate(updatedValue) {
-  manualReasons.value = await $fetch('/api/manual-reasons/manual-reasons', {
-    method: 'POST',
-    body: {
-      filters: updatedValue,
-    },
-  })
 }
 </script>
 

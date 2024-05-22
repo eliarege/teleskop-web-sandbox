@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import type { FinishReason } from '~/types'
+
 const { t } = useI18n()
 
-const { data: finishReasons, refresh } = useLazyFetch('/api/finish-reasons/finish-reasons', {
+const { data: finishReasons, refresh } = useLazyFetch<FinishReason[]>('/api/finish-reasons/finish-reasons', {
   default: () => [],
   method: 'POST',
   body: {},
@@ -30,7 +32,7 @@ const columns = computed(() => ({
     field: 'typeId',
     align: 'left',
     type: 'select',
-    format: (val, row) => finishOptions.find(d => d.value === val)?.label || val,
+    format: (val: number) => finishOptions.find(d => d.value === val)?.label || val,
     filterable: true,
     filterType: 'includes',
     editable: true,
@@ -56,16 +58,7 @@ const columns = computed(() => ({
   },
 }))
 
-async function handleFilterSlotsUpdate(updatedValue) {
-  finishReasons.value = await $fetch('/api/finish-reasons/finish-reasons', {
-    method: 'POST',
-    body: {
-      filters: updatedValue,
-    },
-  })
-}
-
-async function handleAdd(formData) {
+async function handleAdd(formData: FinishReason) {
   await $fetch('/api/finish-reasons/finish-reason', {
     method: 'POST',
     body: {
@@ -76,7 +69,7 @@ async function handleAdd(formData) {
   await refresh()
 }
 
-async function handleEdit(formData) {
+async function handleEdit(formData: FinishReason) {
   await $fetch('/api/finish-reasons/finish-reason', {
     method: 'PUT',
     body: formData,
@@ -84,7 +77,7 @@ async function handleEdit(formData) {
   await refresh()
 }
 
-async function handleDelete(formData) {
+async function handleDelete(formData: FinishReason[]) {
   await $fetch('/api/finish-reasons/finish-reasons', {
     method: 'DELETE',
     body: {

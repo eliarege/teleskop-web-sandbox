@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FilterableTableColumn } from 'nuxt-base'
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
 
 const { t, d } = useI18n()
 
@@ -9,7 +9,7 @@ const accessFailOptions = computed(() => ([
   { label: t('wrongControllerDate'), eventCode: 2 },
 ]))
 
-const columns = computed(() => ([
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'machineCode',
     label: t('machine'),
@@ -54,7 +54,7 @@ const { data: fails } = useLazyFetch('/api/machine-access-fails/machine-access-f
   body: {},
 })
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
   fails.value = await $fetch('/api/machine-access-fails/machine-access-fails', {
     method: 'POST',
     body: {

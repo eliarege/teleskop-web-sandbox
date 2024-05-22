@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FilterableTableColumn } from 'nuxt-base'
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
 
 const { t, d } = useI18n()
 
@@ -10,7 +10,7 @@ const closedTimeOptions = computed(() => ([
   { label: t('other'), closedType: 3 },
 ]))
 
-const columns = computed(() => ([
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'machineId',
     label: t('machineNo'),
@@ -71,7 +71,7 @@ const { data: times } = useLazyFetch('/api/controller-closed-times/controller-cl
   body: {},
 })
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
   times.value = await $fetch('/api/controller-closed-times/controller-closed-times', {
     method: 'POST',
     body: {

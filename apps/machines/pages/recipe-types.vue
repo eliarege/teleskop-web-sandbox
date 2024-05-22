@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { RecipeType } from '~/types'
+
 const { t } = useI18n()
 
 const columns = computed(() => ({
@@ -27,13 +29,13 @@ const columns = computed(() => ({
   },
 }))
 
-const { data: recipeTypes, refresh } = useLazyFetch('/api/recipe-types/recipe-types', {
+const { data: recipeTypes, refresh } = useLazyFetch<RecipeType[]>('/api/recipe-types/recipe-types', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-async function handleAdd(formData) {
+async function handleAdd(formData: RecipeType) {
   await $fetch('/api/recipe-types/recipe-type', {
     method: 'POST',
     body: formData,
@@ -41,7 +43,7 @@ async function handleAdd(formData) {
   await refresh()
 }
 
-async function handleEdit(formData) {
+async function handleEdit(formData: RecipeType) {
   await $fetch('/api/recipe-types/recipe-type', {
     method: 'PUT',
     body: formData,
@@ -49,7 +51,7 @@ async function handleEdit(formData) {
   await refresh()
 }
 
-async function handleDelete(formData) {
+async function handleDelete(formData: RecipeType[]) {
   await $fetch('/api/recipe-types/recipe-types', {
     method: 'DELETE',
     body: {
@@ -57,15 +59,6 @@ async function handleDelete(formData) {
     },
   })
   await refresh()
-}
-
-async function handleFilterSlotsUpdate(updatedValue) {
-  recipeTypes.value = await $fetch('/api/recipe-types/recipe-types', {
-    method: 'POST',
-    body: {
-      filters: updatedValue,
-    },
-  })
 }
 </script>
 

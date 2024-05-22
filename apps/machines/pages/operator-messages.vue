@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FilterableTableColumn } from 'nuxt-base'
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
 
 const { t, d } = useI18n()
 
@@ -9,7 +9,7 @@ const { data: messages } = useLazyFetch('/api/machines/operator-messages', {
   body: {},
 })
 
-const columns = computed(() => ([
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'userId',
     label: t('userId'),
@@ -60,7 +60,7 @@ const columns = computed(() => ([
   },
 ]))
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
   messages.value = await $fetch('/api/machines/operator-messages', {
     method: 'POST',
     body: {

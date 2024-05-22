@@ -1,19 +1,21 @@
 <script setup lang="ts">
-const { data: machineGroups, pending, refresh } = await useFetch('/api/machines/machine-groups')
+import type { MachineGroup } from '~/types'
 
 const { t } = useI18n()
+
+const { data: machineGroups, pending, refresh } = await useFetch<MachineGroup[]>('/api/machines/machine-groups')
 
 const columns = computed(() => ([
   {
     name: 'groupName',
     label: t('group'),
-    field: row => row.groupName,
+    field: (row: MachineGroup) => row.groupName,
     align: 'left',
   },
   {
     name: 'groupType',
     label: t('groupType'),
-    field: row => row.groupType,
+    field: (row: MachineGroup) => row.groupType,
     align: 'left',
   },
 ]))
