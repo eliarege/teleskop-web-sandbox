@@ -100,9 +100,6 @@ async function onSave() {
   dataStore.refreshDispensers++
   onDialogOK(editedDispenser.value)
 }
-function onCancel() {
-  onDialogCancel()
-}
 
 function onReset() {
   if (!dispenser.value) {
@@ -131,7 +128,7 @@ async function onDelete() {
     },
   }).onOk(async () => {
     await $fetch(`/api/dispensers`, { method: 'DELETE', body: dispenser.value.dispenserId })
-    dataStore.refresh++
+    dataStore.refreshDispensers++
     onDialogOK(null)
   })
 }
@@ -360,7 +357,7 @@ async function pingAddress() {
             :label="t('Cancel')"
             color="warning"
             icon="cancel"
-            @click="onCancel"
+            @click="onDialogCancel"
           />
           <QBtn
             :label="t('Reset')"
