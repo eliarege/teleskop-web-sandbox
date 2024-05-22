@@ -10,7 +10,7 @@ const unplannedDefinitions = ref([] as any[])
 const currentMachine = ref([] as any[])
 
 const { data: machines } = useFetch('/api/machineList')
-
+const activeMachine = ref(0)
 async function getErpParameters(machineId: number) {
   currentMachine.value = machineId
   const res = await $fetch('/api/settings/erpParameters', {
@@ -78,7 +78,9 @@ async function deleteParameter(paramId: number, owner: number, machineId: number
           v-for="(item, idx) in machines"
           :key="idx"
           v-ripple
+          :active="activeMachine === idx"
           clickable
+          @click="activeMachine = idx"
         >
           <q-item-section @click="getErpParameters(item.id)">
             {{ item.name }}
