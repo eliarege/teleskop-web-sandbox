@@ -9,13 +9,12 @@ const machineSettings = useStorage('machine-sort', store.machines)
 
 function moveItem<T>(array: T[], from: number, to: number) {
   const item = array.splice(from, 1)[0]
-  // nextTick(() => array.splice(to, 0, item))
   array.splice(to, 0, item)
 }
 
 function onEnd(ev) {
-  moveItem(store.machines, ev.oldIndex, ev.newIndex)
-  emit('updateScheduler')
+  moveItem(machineSettings.value, ev.oldIndex, ev.newIndex)
+  nextTick(() => emit('updateScheduler'))
 }
 </script>
 
