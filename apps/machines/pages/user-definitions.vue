@@ -73,7 +73,7 @@ const columns = computed(() => ({
     type: 'checkbox',
     visible: true,
     editable: true,
-    format: (val, row) => val ? t('yes') : t('no'),
+    format: (val: boolean) => val ? t('yes') : t('no'),
     schema: {
       filled: true,
       validation: 'required',
@@ -101,7 +101,7 @@ const columns = computed(() => ({
     type: 'select',
     visible: true,
     editable: true,
-    format: (val, row) => userTypeOptions.find(d => d.value === val) ? userTypeOptions.find(d => d.value === val).label : val,
+    format: (val: number) => userTypeOptions.find(d => d.value === val) ? userTypeOptions.find(d => d.value === val)?.label : val,
     schema: {
       validation: 'required',
       options: userTypeOptions,
@@ -128,7 +128,7 @@ const selected = ref<Partial<User>>({
   userMode2: '',
 })
 
-async function handleAdd(formData) {
+async function handleAdd(formData: Partial<User>) {
   formData.userMode = selected.value.userMode
   formData.userMode2 = selected.value.userMode2
   await $fetch('/api/user-definitions/user-definition', {
@@ -138,7 +138,7 @@ async function handleAdd(formData) {
   await refresh()
 }
 
-async function handleEdit(formData) {
+async function handleEdit(formData: Partial<User>) {
   formData.userMode = selected.value.userMode
   formData.userMode2 = selected.value.userMode2
   await $fetch('/api/user-definitions/user-definition', {
@@ -149,7 +149,7 @@ async function handleEdit(formData) {
   await refresh()
 }
 
-async function handleDelete(formData) {
+async function handleDelete(formData: Partial<User>[]) {
   await $fetch('/api/user-definitions/user-definition', {
     method: 'DELETE',
     body: {
@@ -159,17 +159,8 @@ async function handleDelete(formData) {
   await refresh()
 }
 
-async function handleSelect(formData) {
+async function handleSelect(formData: Partial<User>[]) {
   selected.value = formData[0]
-}
-
-async function handleFilterSlotsUpdate(updatedValue) {
-  users.value = await $fetch('/api/user-definitions/user-definitions', {
-    method: 'POST',
-    body: {
-      filters: updatedValue,
-    },
-  })
 }
 </script>
 
