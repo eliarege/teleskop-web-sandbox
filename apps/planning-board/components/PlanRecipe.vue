@@ -42,7 +42,7 @@ const columns = computed(() => [
 
 <template>
   <div v-show="pending">
-    <LoadingSpinner />
+    <LoadingSpinner has-background />
   </div>
   <div>
     <div class="w-full h-full">
