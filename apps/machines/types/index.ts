@@ -1,29 +1,29 @@
 export interface Machine {
-  machineId?: number
-  machineCode?: string
-  groupName?: string
-  groupId?: number
-  tbbModel?: string
-  plcModel?: string
-  ip?: string
-  theoricalCharge?: string
-  theoricalChargeDuration?: string
-  machineCapacity?: string
-  reelCount?: number
-  nozzleCount?: number
-  steamUnit?: string
-  steamKgPerHour?: number
-  additionalTank1?: boolean
-  additionalTank2?: boolean
-  additionalTank3?: boolean
-  additionalTank4?: boolean
-  reserveTank?: boolean
-  inUse?: boolean
-  MTTempIo?: string[]
-  version?: string
-  productModel?: string
-  hardwareModel?: string
-  steamValveDo?: number
+  machineId: number
+  machineCode: string
+  groupName: string
+  groupId: number
+  tbbModel: string
+  plcModel: string
+  ip: string
+  theoricalCharge: string
+  theoricalChargeDuration: string
+  machineCapacity: string
+  reelCount: number
+  nozzleCount: number
+  steamUnit: string
+  steamKgPerHour: number
+  additionalTank1: boolean
+  additionalTank2: boolean
+  additionalTank3: boolean
+  additionalTank4: boolean
+  reserveTank: boolean
+  inUse: boolean
+  MTTempIo: string[]
+  version: string
+  productModel: string
+  hardwareModel: string
+  steamValveDo: number
 }
 
 export interface User {
@@ -31,8 +31,8 @@ export interface User {
   userName: string
   userSurname: string
   userPass: string
-  userInfo?: string
-  userActive?: number
+  userInfo: string
+  userActive: number
   userMode: string
   userMode2: string
   userType: number
@@ -42,20 +42,20 @@ export interface User {
 export interface StopReason {
   stopCode: number
   stopName: string
-  reportToERP?: boolean
+  reportToERP: boolean
 }
 
 export interface ManualReason {
   manualId: number
   manualReason: string
-  reportToERP?: boolean
+  reportToERP: boolean
 }
 
 export interface FinishReason {
   reasonId: string
   typeId: number
   text: string
-  reportToERP?: number
+  reportToERP: number
 }
 
 export interface StepReason {
@@ -100,22 +100,22 @@ export interface CommandAlarmReason {
 }
 
 export interface MachineParameter {
-  machineParameterId?: number
-  paramString?: string
-  defaultValue?: number
-  dmArea?: number
-  consScreen?: number
-  paramLowLimit?: number
-  paramHighLimit?: number
-  consFormat?: number
-  paramNo?: number
-  consUnit?: number
-  currentValue?: number
-  parameterType?: number
-  selectionList?: string
-  unitCode?: number
-  selectionValues?: string
-  isDeleted?: number
+  machineParameterId: number
+  paramString: string
+  defaultValue: number
+  dmArea: number
+  consScreen: number
+  paramLowLimit: number
+  paramHighLimit: number
+  consFormat: number
+  paramNo: number
+  consUnit: number
+  currentValue: number
+  parameterType: number
+  selectionList: string
+  unitCode: number
+  selectionValues: string
+  isDeleted: number
 }
 
 export interface IO {
@@ -145,31 +145,32 @@ export interface FeedbackCommand {
 }
 
 export interface MasterCommand {
-  commandNo?: number
-  commandName?: string
-  commandType?: number
-  x?: string
-  y?: string
-  a?: string
-  maxA?: string
-  b?: string
-  adviceList?: string
-  dontUseList?: string
-  functionId?: number
-  tbbFunctionName?: string
-  name?: string
-  activated?: number
-  isRunManual?: number
-  moveParallel?: number
-  changeTime?: Date
-  tbbChangeTime?: Date
-  isDeleted?: number
-  isChanged?: number
-  isTemperature?: number
-  isUnload?: number
-  icon?: string
-  groupId?: number
-  type?: number
+  commandNo: number
+  commandName: string
+  commandType: number
+  x: string
+  y: string
+  a: string
+  maxA: string
+  b: string
+  adviceList: string
+  dontUseList: string
+  functionId: number
+  tbbFunctionName: string
+  name: string
+  activated: number
+  isRunManual: number
+  moveParallel: number
+  changeTime: Date
+  tbbChangeTime: Date
+  isDeleted: number
+  isChanged: number
+  isTemperature: number
+  isUnload: number
+  icon: string
+  groupId: number
+  type: number
+  machineConstantId: number
 }
 
 export interface CommandGroup {
@@ -201,11 +202,11 @@ export interface CommandType {
   machineId: number
   commandNo: number
   commandType: number
-  commandName?: string
+  commandName: string
 }
 
 export interface CommandTypeEvent extends CommandType {
-  action?: string
+  action: string
 }
 
 export interface TreatmentParameter {
@@ -278,4 +279,10 @@ export interface Formula {
   commandName: string
   parameterIndex: number
   parameterName: string
+}
+
+export interface MachineGroup {
+  groupId: number
+  groupName: string
+  groupType: string
 }

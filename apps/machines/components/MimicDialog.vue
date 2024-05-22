@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import type { FilterableTableColumn } from 'nuxt-base'
 import type { Machine } from '~/types'
 
 const props = defineProps<{
   show: boolean
-  selected: Machine
+  selected: Partial<Machine>
 }>()
 
 const emit = defineEmits(['close'])

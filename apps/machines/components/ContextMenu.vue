@@ -9,13 +9,13 @@ export interface IContextMenuOption {
 }
 
 const props = defineProps<{
-  contextMenuOptions: IContextMenuOption[]
+  contextMenuOptions: Partial<IContextMenuOption>[]
   target: string | boolean | Element | undefined
 }>()
 
 const emit = defineEmits(['click'])
 
-function handleClick(event, option: IContextMenuOption) {
+function handleClick(event: Event, option: Partial<IContextMenuOption>) {
   if (option.disabled)
     event.preventDefault()
   else {

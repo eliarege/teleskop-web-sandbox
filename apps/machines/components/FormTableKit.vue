@@ -1,27 +1,27 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends object">
 import { FormKitSchema } from '@formkit/vue'
 import { changeLocale } from '@formkit/i18n'
 import { klona } from 'klona'
 
 const props = defineProps<{
-  rows: object[]
+  rows: T[]
   columns: object
   formClass: string
 }>()
 
 const emit = defineEmits<{
-  add: [data: object]
-  edit: [data: object, oldData: object]
-  delete: [data: object[]]
-  select: [data: object[]]
+  add: [data: T]
+  edit: [data: T, oldData: T]
+  delete: [data: T[]]
+  select: [data: T[]]
   close: []
 }>()
 
 const { t, locale } = useI18n()
 const { notifyError } = useNotify()
 const showModal = ref(false)
-const selected = ref<object[]>([])
-const formData = ref({})
+const selected = ref<T[]>([])
+const formData = ref<T>({})
 const action = ref<'add' | 'edit'>()
 const tableColumns = ref([])
 const schema = ref([])
@@ -70,7 +70,7 @@ function showForm(buttonAction: 'add' | 'edit') {
   }
 }
 
-function handleSubmit(formData: object) {
+function handleSubmit(formData: T) {
   if (action.value === 'add')
     emit('add', formData)
   else if (action.value === 'edit')
