@@ -123,7 +123,7 @@ function deleteNote(id: number) {
             :props="prop"
           >
             <span v-if="col.name !== 'showOnScreen'">
-              {{ Array.isArray(col.value) ? Object.create(col.value) : col.value }}
+              {{ col.value }}
             </span>
             <span v-else>
               <q-checkbox v-model="prop.row.showOnScreen" @update:model-value="updateNote(prop.row.id, prop.row.showOnScreen)" />
