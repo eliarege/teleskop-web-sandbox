@@ -176,6 +176,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
       </QCard>
 
       <QTable
+        v-if="dataStore.dispensers"
         v-model:pagination="dispenserPagination"
         :title="t('Dispensers')"
         :rows="dataStore.dispensers"

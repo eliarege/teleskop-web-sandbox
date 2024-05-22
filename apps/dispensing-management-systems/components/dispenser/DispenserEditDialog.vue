@@ -97,9 +97,9 @@ async function onSave() {
     await $fetch(`/api/dispensers/${dispenser.value.dispenserId}`, { method: 'PUT', body: editedDispenser.value })
   else
     await $fetch(`/api/dispensers`, { method: 'POST', body: editedDispenser.value })
+  dataStore.refreshDispensers++
   onDialogOK(editedDispenser.value)
 }
-
 function onCancel() {
   onDialogCancel()
 }
@@ -131,6 +131,7 @@ async function onDelete() {
     },
   }).onOk(async () => {
     await $fetch(`/api/dispensers`, { method: 'DELETE', body: dispenser.value.dispenserId })
+    dataStore.refresh++
     onDialogOK(null)
   })
 }
@@ -204,7 +205,12 @@ async function pingAddress() {
                 :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
               >
                 <template #append>
-                  <QBtn round dense flat icon="wifi" @click="pingAddress" />
+                  <QBtn
+                    round
+                    dense
+                    flat
+                    icon="wifi"
+                    @click="pingAddress" />
                 </template>
               </QInput>
             </div>

@@ -65,8 +65,7 @@ function onClickConnections() {
   })
 }
 async function onRefreshList() {
-  const dispensers = await $fetch<Dispenser[]>(`/api/dispensers`)
-  dataStore.dispensers = dispensers
+  dataStore.refreshDispensers++
 }
 watch((dispenser), () => {
   dataStore.title = dispenser.value.dispenserName

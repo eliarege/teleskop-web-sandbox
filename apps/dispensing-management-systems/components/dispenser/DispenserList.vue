@@ -22,7 +22,10 @@ watch(() => dataStore.selectedDispenser, (selected) => {
     expanded.value = []
   }
 })
-
+watch(() => dataStore.refreshDispensers, () => {
+  dataStore.dispensers = undefined
+  generateTreeNodes()
+})
 function onExpand(nodes: any) {
   expanded.value = nodes
 }
