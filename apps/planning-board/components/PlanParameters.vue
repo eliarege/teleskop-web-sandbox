@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import { LoadingSpinner } from 'ui'
+
 const props = defineProps<{ planKey: number }>()
 
 const { t } = useI18n()
 
-const { data: planParameters } = await useFetch('/api/planParameters', {
+const { data: planParameters, pending } = useFetch('/api/planParameters', {
   query: { planKey: props.planKey },
+})
+const parameterData = ref([] as { id: number, paramString: string, value: string | number }[])
+watch(planParameters, (newParams) => {
+  parameterData.value = newParams
 })
 const columns = computed(() => {
   return [
@@ -15,13 +21,14 @@ const columns = computed(() => {
 </script>
 
 <template>
+  <LoadingSpinner v-if="pending" has-background />
   <div class="max-h-200 overflow-auto bg-white px-5">
     <h3 class="text-center font-extrabold ">
       Plan Parameters
     </h3>
     <QTable
       class="my-sticky-header-table"
-      :rows="planParameters"
+      :rows="parameterData"
       :columns="columns"
       hide-pagination
       dense
