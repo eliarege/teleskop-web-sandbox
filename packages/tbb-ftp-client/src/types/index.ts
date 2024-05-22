@@ -240,3 +240,19 @@ export interface GlobalCommandFormula {
   commandParameterNo: number
   formulaName: string
 }
+
+export interface LockOutput {
+  MACHINEID: number
+  LOCKNO: number
+  ID: number
+}
+
+export interface LockOutputAnalog extends LockOutput {
+  LOCKAOUTINDEX: number
+  PERCENTAGE: number
+}
+
+export interface LockOutputDigital extends LockOutput {
+  LOCKDOUTINDEX: number
+  STATE: number
+}

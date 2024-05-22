@@ -40,30 +40,32 @@ export function parseLocksOutput(content: string) {
 
 function parseAnalogOutputs(line: string) {
   const analogOutputPattern = /(-?\d+)\s+(-?\d+)/g
-  let match
   const outputs = []
+  let match = analogOutputPattern.exec(line)
 
-  while ((match = analogOutputPattern.exec(line))) {
+  while (match) {
     if (Number(match[1]) !== -1)
       outputs.push({
         outputId: Number(match[1]),
         percentage: Number(match[2]),
       })
+    match = analogOutputPattern.exec(line)
   }
   return outputs
 }
 
 function parseDigitalOutputs(line: string) {
   const digitalOutputPattern = /(-?\d+)\s+(-?\d+)/g
-  let match
   const outputs = []
+  let match = digitalOutputPattern.exec(line)
 
-  while ((match = digitalOutputPattern.exec(line))) {
+  while (match) {
     if (Number(match[1]) !== -1)
       outputs.push({
         outputId: Number(match[1]),
         state: Number(match[2]),
       })
+    match = digitalOutputPattern.exec(line)
   }
   return outputs
 }

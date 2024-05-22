@@ -1,6 +1,8 @@
 import type { Knex } from 'knex'
 import type { TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
+import type { LockOutputAnalog, LockOutputDigital } from 'tbb-ftp-client/src/types'
+import { LockOutput } from 'tbb-ftp-client/src/types'
 import { DatabaseQueryError } from '../error'
 import { calcIONumber } from '.'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'
@@ -805,8 +807,8 @@ export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, tr
   if (!analogLocks.length && !digitalLocks.length)
     return false
 
-  const analogOutputs = []
-  const digitalOutputs = []
+  const analogOutputs: LockOutputAnalog[] = []
+  const digitalOutputs: LockOutputDigital[] = []
 
   analogLocks.forEach((lock) => {
     lock.analogOutputs.forEach((output, index) => {
@@ -885,7 +887,7 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
 
     await trx('BAMASTERCOMMANDS')
       .insert(function () {
-        this.select(machineId, maxVersion, trxTime, trx.raw('NULL'), 'COMMANDNO', 'FUNCTIONID', 'TBBFUNTIONNAME', 'BFMASTERCOMMANDS.NAME as NAME', 'ACTIVATED', 'ADVICELIST', 'DONTUSELIST', 'ISRUNMANUAL', 'COMMANDTYPE', 'MOVEPARALLEL', 'TBBCHANGETIME', 'X', 'Y', 'A', 'B', 'MAXA', 'ISTEMPERATURE', 'ISUNLOAD', 'BFMASTERCOMMANDS.ICON', 'BFMASTERCOMMANDS.GROUPID')
+        this.select('MACHINEID', maxVersion, trxTime, trx.raw('NULL'), 'COMMANDNO', 'FUNCTIONID', 'TBBFUNTIONNAME', 'BFMASTERCOMMANDS.NAME as NAME', 'ACTIVATED', 'ADVICELIST', 'DONTUSELIST', 'ISRUNMANUAL', 'COMMANDTYPE', 'MOVEPARALLEL', 'TBBCHANGETIME', 'X', 'Y', 'A', 'B', 'MAXA', 'ISTEMPERATURE', 'ISUNLOAD', 'BFMASTERCOMMANDS.ICON', 'BFMASTERCOMMANDS.GROUPID')
           .from('BFMASTERCOMMANDS')
           .where('MACHINEID', '=', machineId)
       })
@@ -919,7 +921,7 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
       })
 
     await trx('BACOMMANDPARAMETERS')
-      .insert(function () {
+      .insert(function (this: any) {
         this.select(machineId, maxVersion, 'COMMANDNO', 'PARAMETERINDEX', 'PARAMSTRING', 'VALUE', 'PARAMETERTYPE', 'SELECTIONLIST', 'SELECTIONVALUES', 'UNITCODE', 'PARAMLOWLIMIT', 'PARAMHIGHLIMIT', 'CONTAINSVARIABLE', 'TEMPERATURE', 'USEDEFAULT', 'ISCOMMANDVARIABLE', 'TBBFORMUL', 'USEFORMULA')
           .from('BFCOMMANDPARAMETERS')
           .where('MACHINEID', '=', machineId)
@@ -938,12 +940,17 @@ export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx:
       .del()
 
     await trx.raw(`
-  INSERT INTO BFERPPARAMETERDEFINITIONS (PARAMID, PARAMNAME, PARAMTYPE, MACHINEID) SELECT (SELECT ISNULL(MAX(PARAMID), 0)
-   FROM BFERPPARAMETERDEFINITIONS WHERE MACHINEID = P.MACHINEID) + ROW_NUMBER() OVER(ORDER BY P.BATCHPARAMETERID ASC)
-   AS BATCHPARAMETERID, P.PARAMSTRING, P.PARAMETERTYPE, P.MACHINEID   FROM BFMACHBATCHPARAMETERS P
-   LEFT OUTER JOIN BFERPPARAMETERDEFINITIONS E ON (E.MACHINEID = P.MACHINEID AND P.PARAMSTRING = E.PARAMNAME)
-    WHERE P.MACHINEID = ${machineId} AND E.PARAMNAME IS NULL ORDER BY P.BATCHPARAMETERID ASC
-  `)
+    INSERT INTO BFERPPARAMETERDEFINITIONS (PARAMID, PARAMNAME, PARAMTYPE, MACHINEID)
+    SELECT (SELECT ISNULL(MAX(PARAMID), 0)
+    FROM BFERPPARAMETERDEFINITIONS
+    WHERE MACHINEID = P.MACHINEID) + ROW_NUMBER() OVER(ORDER BY P.BATCHPARAMETERID ASC)
+    AS BATCHPARAMETERID, P.PARAMSTRING, P.PARAMETERTYPE, P.MACHINEID
+    FROM BFMACHBATCHPARAMETERS P
+    LEFT OUTER JOIN BFERPPARAMETERDEFINITIONS E
+    ON (E.MACHINEID = P.MACHINEID AND P.PARAMSTRING = E.PARAMNAME)
+      WHERE P.MACHINEID = (?) AND E.PARAMNAME IS NULL
+      ORDER BY P.BATCHPARAMETERID ASC
+    `, [machineId])
 
     return true
   } catch (error: any) {
