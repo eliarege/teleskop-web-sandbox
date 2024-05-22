@@ -8,7 +8,6 @@ const { data: planParameters } = await useFetch('/api/planParameters', {
 })
 const columns = computed(() => {
   return [
-    { name: 'id', label: t('id'), align: 'center', field: 'id' },
     { name: 'paramString', label: t('param-string'), align: 'center', field: 'paramString' },
     { name: 'value', label: t('value'), align: 'center', field: 'value' },
   ]
@@ -16,11 +15,16 @@ const columns = computed(() => {
 </script>
 
 <template>
-  <div class="max-h-200 overflow-auto bg-white">
+  <div class="max-h-200 overflow-auto bg-white px-5">
+    <h3 class="text-center font-extrabold ">
+      Plan Parameters
+    </h3>
     <QTable
       class="my-sticky-header-table"
       :rows="planParameters"
       :columns="columns"
+      hide-pagination
+      dense
       :rows-per-page-options="[0]"
       no-data-label="No Parameter"
     >
@@ -43,7 +47,6 @@ const columns = computed(() => {
               <!-- TODO: @save -->
               <q-input
                 v-model="scope.value"
-                type="textarea"
                 dense
                 autofocus
               />
