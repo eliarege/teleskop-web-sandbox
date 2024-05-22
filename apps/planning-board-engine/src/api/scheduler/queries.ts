@@ -1,4 +1,4 @@
-import { PLANNED_CODE } from '../../contants'
+import { PLANNED_CODE, UNPLANNED_CODE } from '../../contants'
 import { knex } from '../../knexConfig'
 
 export async function getPtStatus() {
@@ -148,8 +148,7 @@ export async function getBatchProperties(machineId: number, planKey: number) {
     .select('p.PARAMID as paramId', 'b.PARAMNAME as paramName', 'd.VALUE as value')
     .leftJoin('BFERPPARAMETERDEFINITIONS as b', 'b.PARAMID', 'p.PARAMID')
     .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'p.PARAMID')
-    .where('p.OWNER', 118)
-    .andWhere('p.MACHINEID', machineId)
+    .where('p.MACHINEID', machineId)
     .andWhere('d.PLANKEY', planKey)
     .groupBy('p.PARAMID', 'b.PARAMNAME', 'd.VALUE')
 
@@ -181,21 +180,7 @@ export async function getBatchProperties(machineId: number, planKey: number) {
     d.PLANKEY = ${planKey};
   `)
 
-  const subquery = knex('BFMACHBATCHPARAMETERTYPES')
-    .select('PARAMID')
-    .where('PARAMTYPEID', '=', 0)
-    .andWhere('MACHINEID', '=', machineId)
-
-  const summary = await knex('PTERPPARAMBYUSER as p')
-    .leftJoin('DYBFBATCHPLANPARAMETERS as c', 'c.BATCHPARAMETERID', 'p.PARAMID')
-    .select('c.PLANKEY as planKey', 'p.PARAMID as paramId', 'c.PARAMSTRING as paramString', 'c.VALUE as value')
-    .whereIn('p.PARAMID', subquery)
-    .andWhere('p.MACHINEID', machineId)
-    .andWhere('c.PLANKEY', planKey)
-    .groupBy('p.PARAMID', 'c.PARAMSTRING', 'c.VALUE', 'c.PLANKEY')
-    .first()
-
-  return { erpParameters, programs, times: times[0], summary }
+  return { erpParameters, programs, times: times[0] }
 }
 export async function getPlanParameters(planKey: number) {
   return await knex({ p: 'dbo.DYBFBATCHPLANPARAMETERS' })
@@ -289,7 +274,7 @@ export async function getErpParameters(machineId: number) {
       owner: 'p.OWNER',
       machineId: 'p.MACHINEID',
       paramName: 'd.PARAMNAME',
-    }).where('p.OWNER', '=', 118).andWhere('p.MACHINEID', '=', machineId)
+    }).where('p.OWNER', '=', UNPLANNED_CODE).andWhere('p.MACHINEID', '=', machineId)
     .groupBy('p.OWNER', 'p.PARAMID', 'd.PARAMNAME', 'p.MACHINEID')
   return { definitions, plannedDefinitions, unplannedDefinitions }
 }
