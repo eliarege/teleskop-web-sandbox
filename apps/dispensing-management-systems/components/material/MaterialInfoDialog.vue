@@ -22,7 +22,7 @@ const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const material = toRef(props, 'material')
 const dispensers = toRef(props, 'dispensers')
-const selectedDispensersInitial = material.value ? ref(material.value.connectedDispensers.map(dispenser => dispenser.dispenserId)) : ref([])
+const selectedDispensersInitial = material.value ? ref(material.value.connectedDispensers!.map(dispenser => dispenser.dispenserId)) : ref([])
 const selectedDispensers = ref([...selectedDispensersInitial.value])
 const defaultMaterial: Material = {
   materialCode: '',

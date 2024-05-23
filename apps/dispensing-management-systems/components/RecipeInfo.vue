@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { BatchRecipeStep } from '~/shared/types';
+
 const props = defineProps({
   batchNo: {
     type: String,
@@ -16,7 +18,7 @@ const props = defineProps({
 
 const { t } = useI18n()
 
-const recipeData = ref([])
+const recipeData = ref<BatchRecipeStep[]>([])
 const recipeDataTemp = ref()
 const plankey = ref()
 getRecipe()
@@ -26,7 +28,7 @@ async function getRecipe() {
     recipeData.value = []
   else {
     recipeData.value = recipeDataTemp.value
-    recipeData.value.forEach((row) => {
+    recipeData.value.forEach((row: any) => {
       row.unit = t(`units.${row.unit}`)
       row.recipeTypeText = t(`recipeTypes.${row.recipeType - 1}`)
     })

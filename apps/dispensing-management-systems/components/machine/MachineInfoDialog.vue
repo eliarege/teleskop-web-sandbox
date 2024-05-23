@@ -31,7 +31,7 @@ const selectedMachines = ref([])
 const controllerTypes = toRef(props, 'controllerTypes')
 const editedMachine = ref({ ...machine.value })
 const dispensers = toRef(props, 'dispensers')
-const selectedDispensersInitial = machine.value ? ref(machine.value.connectedDispensers.map(dispenser => dispenser.dispenserId)) : ref([])
+const selectedDispensersInitial = machine.value ? ref(machine.value.connectedDispensers!.map(dispenser => dispenser.dispenserId)) : ref([])
 const selectedDispensers = ref([...selectedDispensersInitial.value])
 async function onSave() {
   try {
@@ -58,10 +58,6 @@ async function onSave() {
   } catch (e) {
     onDialogOK(false)
   }
-}
-
-function onCancel() {
-  onDialogCancel()
 }
 
 function onReset() {
@@ -202,7 +198,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
               :label="t('Cancel')"
               color="warning"
               icon="cancel"
-              @click="onCancel"
+              @click="onDialogCancel"
             />
             <QBtn
               :label="t('Reset')"

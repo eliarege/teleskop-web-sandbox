@@ -32,7 +32,7 @@ const columnsAuto: (QTableColumn<WeighingAuto>)[] = [
     name: 'requestTime',
     label: t('weighingFields.RequestTime'),
     field: 'requestTime',
-    format: (val, row) => {
+    format: (val) => {
       return val ? d(val, 'datetime') : '_'.repeat(4)
     },
   },
@@ -40,7 +40,7 @@ const columnsAuto: (QTableColumn<WeighingAuto>)[] = [
     name: 'completedTime',
     label: t('weighingFields.CompletedTime'),
     field: 'completedTime',
-    format: (val, row) => {
+    format: (val) => {
       return val ? d(val, 'datetime') : '_'.repeat(4)
     },
   },
@@ -48,7 +48,7 @@ const columnsAuto: (QTableColumn<WeighingAuto>)[] = [
     name: 'interval',
     label: t('weighingFields.Interval'),
     field: 'interval',
-    format: (val, row) => {
+    format: (val) => {
       return !val ? '____' : `${Math.floor(val / 3600)} ${t('weighingFields.Hour')} ${Math.floor(val / 60)} ${t('weighingFields.Minute')} ${val % 60} ${t('weighingFields.Second')}`
     },
   },
@@ -66,7 +66,7 @@ const columnsManual: (QTableColumn<WeighingManual>[]) = [
     name: 'requestTime',
     label: t('weighingFields.RequestTime'),
     field: 'requestTime',
-    format: (val, row) => {
+    format: (val) => {
       return d(val, 'datetime')
     },
   },

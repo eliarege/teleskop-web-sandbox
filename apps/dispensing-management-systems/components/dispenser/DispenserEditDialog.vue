@@ -19,6 +19,7 @@ const dataStore = useDataStore()
 const stateStore = useStateStore()
 const dispenser = toRef(props, 'dispenser')
 const defaultDispenser: Dispenser = {
+  dispenserId: -1,
   dispenserName: '',
   dispenserIP: '',
   dispenserType: 1,
@@ -84,7 +85,7 @@ function onBrandSelected() {
 }
 function onProtocolSelected() {
   const selectedProtocol = brandProtocols.value.find(protocol => protocol.protocol === String(editedDispenser.value.protocol))
-  protocolFields.value = selectedProtocol?.fields
+  protocolFields.value = selectedProtocol!.fields
   if (dispenser.value && editedDispenser.value.dispenserBrandId === dispenser.value.dispenserBrandId && editedDispenser.value.protocol === dispenser.value.protocol)
     editedDispenser.value.protocolFields = dispenser.value.protocolFields
   else {

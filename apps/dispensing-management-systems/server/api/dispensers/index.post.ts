@@ -4,7 +4,6 @@ import type { Dispenser } from '~/shared/types'
 export default defineEventHandler(async (event) => {
   const dispenser: Dispenser = await readBody(event)
   const res = await dmsDB('DISPENSER').insert({
-    dispenser_id: dispenser.dispenserId,
     dispenser_name: dispenser.dispenserName,
     ip_address: dispenser.dispenserIP,
     vnc_user: dispenser.vncUser,

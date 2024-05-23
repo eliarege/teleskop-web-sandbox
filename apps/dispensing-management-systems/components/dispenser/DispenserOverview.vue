@@ -47,7 +47,7 @@ function onClickEdit() {
   q.dialog({
     component: DispenserEditDialog,
     componentProps: { dispenser },
-  }).onOk(async (payload) => {
+  }).onOk(async (payload: any) => {
     if (payload)
       dataStore.selectedDispenser = payload
     else navigateTo({
