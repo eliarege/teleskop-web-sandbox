@@ -1,21 +1,18 @@
 <script setup lang="ts">
+import { isNaN } from 'lodash-es'
 import type { QInput } from 'quasar'
 
 const props = withDefaults(defineProps<{
-  label: string
-  minValue: number
-  maxValue: number
   hideArrows?: boolean
-  integer?: boolean
+  type?: 'decimal' | 'integer' | 'positive-integer' | 'negative-integer'
 }>(), {
   hideArrows: true,
-  integer: false,
+  type: 'decimal',
 })
 
 const model = defineModel<number>()
 const editor = useEditorStore()
 const id = useId()
-const { t } = useI18n()
 const input = ref<QInput>()
 
 watch(() => input.value?.hasError, (value) => {
@@ -30,40 +27,42 @@ onUnmounted(() => {
   editor.errorIds.delete(id)
 })
 
-const rules = computed(() => {
-  const errorMessage = t('valueOutOfRange', {
-    minValue: props.minValue,
-    maxValue: props.maxValue,
-  })
-
-  return [
-    (v: string) => {
-      const parsedValue = Number.parseInt(v)
-      if (!Number.isNaN(parsedValue) && between(parsedValue, props.minValue, props.maxValue)) {
-        return true
-      } else {
-        return errorMessage
-      }
-    },
-  ]
-})
-
 function onKeydownPreventNonNumerical(event: KeyboardEvent) {
   if (!event.target || !(event.target instanceof HTMLInputElement)) {
     return
   }
 
-  if (!event.ctrlKey && event.key.length === 1 && !/[\d.]/.test(event.key)) {
+  const value = event.target.value
+
+  if (props.type === 'positive-integer' && event.key === '-') {
     return event.preventDefault()
   }
 
-  if (props.integer && event.key === '.') {
+  if (event.key === '-') {
+    if (value.includes('-') || event.target.selectionStart !== 0) {
+      return event.preventDefault()
+    }
+  }
+
+  if (/[\d.-]/.test(event.key)) {
+    if (value.includes('-') && event.target.selectionStart === 0) {
+      return event.preventDefault()
+    }
+  }
+
+  if (!event.ctrlKey && event.key.length === 1 && !/[\d.-]/.test(event.key)) {
     return event.preventDefault()
   }
 
-  if (event.key === '0' && event.target.value === '0') {
+  if (props.type === 'decimal' && event.key === '.') {
+    if (value.includes('.')) {
+      return event.preventDefault()
+    }
+  }
+
+  if (event.key === '0' && value === '0') {
     return event.preventDefault()
-  } else if (event.target.value.length === 1 && event.target.value[0] === '0') {
+  } else if (value.length === 1 && value[0] === '0' && event.key !== '.' && event.key !== 'Backspace') {
     event.target.value = ''
   }
 }
@@ -77,18 +76,47 @@ function onPastePreventNonNumerical(event: ClipboardEvent) {
   }
 
   const data = event.clipboardData.getData('text/plain')
-  event.clipboardData.setData('text/plain', data.replace(/^0+([1-9])/, ''))
-
   if (!/^[\d.]+$/.test(data)) {
     return event.preventDefault()
   }
 
-  if (props.integer && (data.indexOf('.') !== data.lastIndexOf('.')))
+  if (props.type === 'decimal' && (data.indexOf('.') !== data.lastIndexOf('.')))
     return event.preventDefault()
 }
 
 function onDrop(event: DragEvent) {
   event.preventDefault()
+}
+
+function onBlur(event: FocusEvent) {
+  if (!event.target || !(event.target instanceof HTMLInputElement)) {
+    return
+  }
+
+  let value = event.target.value
+  if (props.type === 'decimal') {
+    if (value.startsWith('.')) {
+      value = `0${value}`
+    }
+
+    if (value.startsWith('-.')) {
+      value = `-0${value.substring(1)}`
+    }
+
+    if (value === '-') {
+      value = '0'
+    }
+
+    const parsedValue = Number.parseFloat(value)
+    if (!isNaN(parsedValue)) {
+      model.value = parsedValue
+    } else {
+      model.value = 0
+    }
+
+    event.target.value = value
+  }
+  input.value?.validate()
 }
 </script>
 
@@ -97,11 +125,8 @@ function onDrop(event: DragEvent) {
     ref="input"
     v-model="model"
     class="input-number"
-    :class="{ 'hide-arrows': hideArrows, 'integer': integer }"
+    :class="{ 'hide-arrows': hideArrows }"
     :for="id"
-    type="number"
-    :label="props.label"
-    :rules="rules"
     bottom-slots
     no-error-icon
     hide-bottom-space
@@ -112,12 +137,12 @@ function onDrop(event: DragEvent) {
       <input
         :id="id"
         v-model="model"
+        type="text"
         class="q-field__native q-placeholder"
-        :aria-label="props.label"
-        maxlength="10"
         @keydown="onKeydownPreventNonNumerical"
         @paste="onPastePreventNonNumerical"
         @drop="onDrop"
+        @blur="onBlur"
       >
     </template>
   </QField>
