@@ -1,15 +1,21 @@
 <script lang="ts" setup>
 import InputDuration from './InputDuration.vue'
 import InputNumber from './InputNumber.vue'
-import type { CommandParameters, ParameterItem, ParameterSelections } from '~/shared/types'
+import type { CommandParameters, ParameterItem } from '~/shared/types'
 
 const props = defineProps<{
   path: string
   parameter: CommandParameters
 }>()
 
+const { t } = useI18n()
 const editor = useEditorStore()
 const programParameter: ParameterItem = editor.getPathElement(props.path)
+
+const rules = [
+  (value: any) => !!value || t('input.required', { field: t('program.parameter') }),
+  (value: any) => (value >= props.parameter.minValue && value <= props.parameter.maxValue) || t('valueOutOfRange', { minValue: props.parameter.minValue, maxValue: props.parameter.maxValue }),
+]
 </script>
 
 <template>
@@ -24,9 +30,10 @@ const programParameter: ParameterItem = editor.getPathElement(props.path)
     <InputNumber
       v-else
       v-model="programParameter.value"
+      :rules="rules"
       :label="parameter.name"
-      :min-value="parameter.minValue"
-      :max-value="parameter.maxValue"
+      type="integer"
+      :maxlength="10"
     />
   </template>
   <QSelect
