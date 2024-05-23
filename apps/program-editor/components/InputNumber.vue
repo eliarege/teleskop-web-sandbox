@@ -4,10 +4,12 @@ import type { QInput } from 'quasar'
 
 const props = withDefaults(defineProps<{
   hideArrows?: boolean
-  type?: 'decimal' | 'integer' | 'positive-integer' | 'negative-integer'
+  type?: 'decimal' | 'integer' | 'positive-integer'
+  maxlength?: number
 }>(), {
   hideArrows: true,
   type: 'decimal',
+  maxlength: 10,
 })
 
 const model = defineModel<number>()
@@ -45,12 +47,12 @@ function onKeydownPreventNonNumerical(event: KeyboardEvent) {
   }
 
   if (/[\d.-]/.test(event.key)) {
-    if (value.includes('-') && event.target.selectionStart === 0 && value.includes('.')) {
+    if (value.includes('-') && event.target.selectionStart === 0) {
       return event.preventDefault()
     }
   }
 
-  if (props.type === 'integer' && event.key === '.') {
+  if (props.type !== 'decimal' && event.key === '.') {
     return event.preventDefault()
   }
 
@@ -98,26 +100,25 @@ function onBlur(event: FocusEvent) {
   }
 
   let value = event.target.value
-  if (props.type === 'decimal') {
-    if (value.startsWith('.')) {
-      value = `0${value}`
-    }
-
-    if (value.startsWith('-.')) {
-      value = `-0${value.substring(1)}`
-    }
-
-    if (value === '-') {
-      value = ''
-    }
-
-    const parsedValue = Number.parseFloat(value)
-    if (!isNaN(parsedValue)) {
-      model.value = parsedValue
-    }
-
-    event.target.value = value
+  if (value.startsWith('.')) {
+    value = `0${value}`
   }
+
+  if (value.startsWith('-.')) {
+    value = `-0${value.substring(1)}`
+  }
+
+  if (value === '-') {
+    value = ''
+  }
+
+  const parsedValue = Number.parseFloat(value)
+  if (!isNaN(parsedValue)) {
+    model.value = parsedValue
+  }
+
+  event.target.value = value
+
   input.value?.validate()
 }
 </script>
@@ -140,6 +141,7 @@ function onBlur(event: FocusEvent) {
         :id="id"
         v-model="model"
         type="text"
+        :maxlength="maxlength"
         class="q-field__native q-placeholder"
         @keydown="onKeydownPreventNonNumerical"
         @paste="onPastePreventNonNumerical"
