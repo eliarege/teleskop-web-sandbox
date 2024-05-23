@@ -5,7 +5,6 @@ const showAddMachineGroupDialog = ref(false)
 const showAddTreatmentParameterDialog = ref(false)
 const selectedMachineGroup = ref()
 const selectedParameter = ref()
-const options = []
 
 const { data: machineGroups } = useLazyFetch('/api/treatment-parameters/machine-groups', {
   default: () => [],
@@ -48,9 +47,18 @@ async function handleAdd() {
           <div>
             <div class="flex items-center gap-4">
               <h3>{{ t('machineGroups') }}</h3>
-              <q-icon name="add" size="1.5em" class="cursor-pointer" @click="showAddMachineGroupDialog = true" />
+              <q-icon
+                name="add"
+                size="1.5em"
+                class="cursor-pointer"
+                @click="showAddMachineGroupDialog = true"
+              />
             </div>
-            <q-list separator bordered class="overflow-y-auto max-h-120">
+            <q-list
+              separator
+              bordered
+              class="overflow-y-auto max-h-120"
+            >
               <q-item
                 v-for="machineGroup in machineGroups"
                 :key="machineGroup.groupId"
@@ -69,9 +77,18 @@ async function handleAdd() {
           <div>
             <div class="flex items-center gap-4">
               <h3>{{ t('parameterList') }}</h3>
-              <q-icon name="add" size="1.5em" class="cursor-pointer" @click="showAddTreatmentParameterDialog = true" />
+              <q-icon
+                name="add"
+                size="1.5em"
+                class="cursor-pointer"
+                @click="showAddTreatmentParameterDialog = true"
+              />
             </div>
-            <q-list bordered separator class="overflow-y-auto max-h-120">
+            <q-list
+              bordered
+              separator
+              class="overflow-y-auto max-h-120"
+            >
               <q-item
                 v-for="param in treatmentParameters"
                 :key="param.id"
@@ -104,7 +121,11 @@ async function handleAdd() {
                 </q-item>
               </template>
             </q-select>
-            <q-btn :label="t('add')" no-caps @click="handleAdd" />
+            <q-btn
+              :label="t('add')"
+              no-caps
+              @click="handleAdd"
+            />
           </div>
         </div>
         <div class="mt-20 mb-4 gap-2 flex flex-col">

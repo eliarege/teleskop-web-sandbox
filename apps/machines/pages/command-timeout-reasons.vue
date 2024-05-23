@@ -1,25 +1,26 @@
 <script setup lang="ts">
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
+import type { CommandTimeoutReason, Machine, MasterCommand } from '~/types'
 
 const { t } = useI18n()
 
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 const selectedReasonId = ref()
-const changedReasons = ref([])
+const changedReasons = ref<CommandTimeoutReason[]>([])
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines', {
+const { data: machines } = useLazyFetch<Machine[]>('/api/machines/active-machines', {
   default: () => [],
 })
-const { data: machineCommands } = useLazyFetch(`/api/master-commands/master-commands`, {
+const { data: machineCommands } = useLazyFetch<MasterCommand[]>(`/api/master-commands/master-commands`, {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
-const { data: selectedCommandReasons } = useLazyFetch('/api/command-timeout-reasons/selected-command-reasons', {
+const { data: selectedCommandReasons } = useLazyFetch<CommandTimeoutReason[]>('/api/command-timeout-reasons/selected-command-reasons', {
   immediate: false,
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })
-const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useLazyFetch('/api/command-timeout-reasons/timeout-reasons', {
+const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useLazyFetch<CommandTimeoutReason[]>('/api/command-timeout-reasons/timeout-reasons', {
   immediate: false,
   watch: [selectedCommandReasons],
   transform: (timeoutReasons) => {
@@ -35,7 +36,7 @@ const { data: selectedReasonCommands } = useLazyFetch('/api/command-timeout-reas
   query: { machineId: selectedMachineId, reasonId: selectedReasonId },
 })
 
-function handleCheckChange(e, reason) {
+function handleCheckChange(e: boolean, reason: CommandTimeoutReason) {
   reason.machineId = selectedMachineId.value
   reason.commandNo = selectedCommandNo.value
   reason.checked = e
@@ -61,8 +62,13 @@ async function handleAddReason() {
   await refreshTimeoutReasons()
 }
 function handleEditButton() {
-  newReasonText.value = timeoutReasons.value.find(d => d.id === selectedReasonId.value).reasonText
-  showEditReasonDialog.value = true
+  if (timeoutReasons.value && timeoutReasons.value.length) {
+    const reasonText = timeoutReasons.value.find(d => d.id === selectedReasonId.value)?.reasonText
+    if (reasonText) {
+      newReasonText.value = reasonText
+      showEditReasonDialog.value = true
+    }
+  }
 }
 
 async function handleEditReason() {

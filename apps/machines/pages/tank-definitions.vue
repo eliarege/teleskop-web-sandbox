@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
 import { klona } from 'klona'
+import type { SortableEvent } from 'sortablejs'
 import type { Machine, MasterCommand } from '~/types'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
@@ -68,7 +69,7 @@ const { data: highLimitOptions } = useLazyFetch('/api/machine-parameters/machine
         label: `${p.paramString} (${p.paramHighLimit})`,
         value: p.paramHighLimit,
       }
-    })
+    }) as readonly { label: string, value: number }[]
   },
 })
 
@@ -128,7 +129,10 @@ async function handleTankDefinitionAdd() {
     machineId: selectedMachineId.value,
     ...tank.value,
   }
-  await addTankDefinition(tankDef)
+  await $fetch('/api/tank-definitions/tank-definition', {
+    method: 'POST',
+    body: tankDef,
+  })
   await refreshDefinitions()
 }
 
@@ -143,7 +147,7 @@ async function handleDelete() {
   await refreshDefinitions()
 }
 
-async function handleDragDropCommands(e) {
+async function handleDragDropCommands(e: SortableEvent) {
   const commandNo = e.item.getAttribute('data-command-no')
   const listName = e.item.getAttribute('data-list-name') as NumberArrayKeys<TankDefinition>
 
@@ -152,7 +156,7 @@ async function handleDragDropCommands(e) {
     tank[listName] = tank[listName].filter(d => d !== Number(commandNo))
 }
 
-async function handleDragDrop(e, listName: NumberArrayKeys<TankDefinition>) {
+async function handleDragDrop(e: SortableEvent, listName: NumberArrayKeys<TankDefinition>) {
   const commandNo = e.item.getAttribute('data-command-no')
   tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)![listName].push(Number(commandNo))
 }
@@ -273,7 +277,7 @@ const contextMenuOptions = computed(() => [
               />
               <q-select
                 v-model="tank.highLimit"
-                :options="highLimitOptions"
+                :options="highLimitOptions || []"
                 :label="t('highLimit')"
                 option-label="label"
                 option-value="value"

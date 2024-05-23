@@ -7,6 +7,11 @@ interface ConsumptionCounter {
   counterId2: number
 }
 
+interface CounterOption {
+  id: number
+  name: string
+}
+
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -26,7 +31,7 @@ const { data: counterOptions } = useLazyFetch('/api/consumption-counters/mach-co
       id: -1,
       name: t('notSelected'),
     })
-    return counterOptions
+    return counterOptions as readonly CounterOption[]
   },
 })
 
@@ -122,7 +127,7 @@ const contextMenuOptions = computed(() => [
           </q-list>
         </div>
 
-        <div class="flex flex-col input-field">
+        <div v-if="counterOptions" class="flex flex-col input-field">
           <q-select
             v-model="counter1"
             :options="counterOptions"

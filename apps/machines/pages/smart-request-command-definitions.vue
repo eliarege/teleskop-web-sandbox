@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { MasterCommand } from '~/types'
+
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -9,9 +11,16 @@ interface CommandType {
   commandNo: number
 }
 
+interface CommandTypeMap {
+  id: number
+  name: string
+  data: CommandType | null
+  label: string
+}
+
 const changedCommandTypes = ref<CommandType[]>([])
 
-const commandTypeMaps = reactive([
+const commandTypeMaps = reactive<CommandTypeMap[]>([
   { id: 101, name: 'tank1Request', data: null, label: t('tank1Request') },
   { id: 102, name: 'tank1Dosage1', data: null, label: t('tank1Dosage1') },
   { id: 103, name: 'tank1Dosage2', data: null, label: t('tank1Dosage2') },
@@ -32,7 +41,7 @@ const { data: commandOptions } = useLazyFetch('/api/master-commands/master-comma
       commandNo: -1,
       commandName: t('Empty'),
     })
-    return commandOptions
+    return commandOptions as readonly MasterCommand[]
   },
 })
 
@@ -43,7 +52,7 @@ const { data: commands } = useLazyFetch('/api/smart-request-commands/smart-reque
 
 watch(commands, (_newValue, _oldValue) => {
   for (const commandTypeMap of commandTypeMaps) {
-    commandTypeMap.data = commands.value.find(t => t.commandType === Number(commandTypeMap.id))?.commandName || t('Empty')
+    commandTypeMap.data = commands.value?.find(t => t.commandType === Number(commandTypeMap.id))?.commandName || t('Empty')
   }
 })
 
@@ -84,7 +93,7 @@ async function handleSubmit() {
         </q-list>
       </div>
 
-      <div class="w-xs flex flex-col">
+      <div v-if="commandOptions" class="w-xs flex flex-col">
         <div
           v-for="commandMap in commandTypeMaps"
           :key="commandMap.id"

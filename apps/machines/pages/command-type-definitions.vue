@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
 import { klona } from 'klona'
+import type { SortableEvent } from 'sortablejs'
 import type { CommandType } from '~/types'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
@@ -73,12 +74,12 @@ watch(selectedMachineId, (newMachineId, _oldMachineId) => {
   })
 })
 
-function handleDragDropCommands(e) {
+function handleDragDropCommands(e: SortableEvent) {
   const commandNo = e.item.getAttribute('data-command-no')
   commandTypes.value = commandTypes.value.filter(cmd => cmd.commandNo !== Number(commandNo))
 }
 
-function handleDragDrop(e, commandMap: commandTypeMap) {
+function handleDragDrop(e: SortableEvent, commandMap: commandTypeMap) {
   const commandNo = e.item.getAttribute('data-command-no')
   const commandName = e.item.getAttribute('data-command-name')
   const command = commandTypes.value.find(cmd => cmd.commandNo === Number(commandNo))
@@ -89,7 +90,7 @@ function handleDragDrop(e, commandMap: commandTypeMap) {
       machineId: selectedMachineId.value,
       commandNo: Number(commandNo),
       commandType: commandMap.value,
-      commandName,
+      commandName: commandName ?? '',
     })
   }
 }

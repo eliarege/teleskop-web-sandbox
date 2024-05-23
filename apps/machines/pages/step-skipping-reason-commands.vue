@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import type { MasterCommand } from '~/types'
+
 const { t } = useI18n()
 
 const selectedMachineId = ref()
-const changedCommands = ref([])
+const changedCommands = ref<{ command: MasterCommand, checked: boolean }[]>([])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
 
@@ -15,7 +17,7 @@ const { data: commands } = useLazyFetch('/api/master-commands/master-commands', 
   immediate: false,
   query: { machineId: selectedMachineId },
   watch: [selectedCommands],
-  transform: (commands) => {
+  transform: (commands: MasterCommand[]) => {
     return commands.map(command => ({
       ...command,
       checked: selectedCommands.value ? selectedCommands.value.some(selectedCommand => selectedCommand.commandNo === command.commandNo) : false,
@@ -23,7 +25,7 @@ const { data: commands } = useLazyFetch('/api/master-commands/master-commands', 
   },
 })
 
-async function handleCheckChange(e, command) {
+async function handleCheckChange(e: boolean, command: MasterCommand) {
   command.machineId = selectedMachineId.value
 
   changedCommands.value.push({ command, checked: e })

@@ -145,6 +145,7 @@ export interface FeedbackCommand {
 }
 
 export interface MasterCommand {
+  machineId: number
   commandNo: number
   commandName: string
   commandType: number
@@ -285,4 +286,17 @@ export interface MachineGroup {
   groupId: number
   groupName: string
   groupType: string
+}
+
+export interface CommandTimeoutReason {
+  id: number
+  machineId?: number
+  commandNo?: number
+  reasonText: string
+  checked?: boolean
+}
+
+export interface StartingParameter {
+  paramId: number
+  paramString: string
 }

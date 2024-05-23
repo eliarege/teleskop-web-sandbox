@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import type { Column, FilterSlot } from 'nuxt-ui-types'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { BatchParam, ErpParameter, Machine } from '~/types'
 
 const { t } = useI18n()
 
-const machineColumns = computed(() => ([
+const machineColumns = computed<Column[]>(() => ([
   {
     name: 'machineId',
     label: t('machineId'),
@@ -23,7 +24,7 @@ const machineColumns = computed(() => ([
   },
 ]))
 
-const parameterColumns = computed(() => ([
+const parameterColumns = computed<Column[]>(() => ([
   {
     name: 'paramId',
     label: t('parameterId'),
@@ -181,7 +182,7 @@ const paramOptions = [
 
 ]
 
-const selectedMachine = ref<Machine>({
+const selectedMachine = ref<Partial<Machine>>({
   machineId: -1,
 })
 
@@ -199,14 +200,14 @@ const { data: machines } = useLazyFetch('/api/machines/machines', {
   body: {},
 })
 
-const { data: params, refresh: refreshParams } = useLazyFetch('/api/erp/erp-parameters', {
+const { data: params, refresh: refreshParams } = useLazyFetch<ErpParameter[]>('/api/erp/erp-parameters', {
   default: () => [],
   immediate: false,
   method: 'POST',
   body: { machineId: selectedMachineId },
 })
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: FilterSlot[]) {
   machines.value = await $fetch('/api/machines/machines', {
     method: 'POST',
     body: {
