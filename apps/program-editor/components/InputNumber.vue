@@ -45,9 +45,13 @@ function onKeydownPreventNonNumerical(event: KeyboardEvent) {
   }
 
   if (/[\d.-]/.test(event.key)) {
-    if (value.includes('-') && event.target.selectionStart === 0) {
+    if (value.includes('-') && event.target.selectionStart === 0 && value.includes('.')) {
       return event.preventDefault()
     }
+  }
+
+  if (props.type === 'integer' && event.key === '.') {
+    return event.preventDefault()
   }
 
   if (!event.ctrlKey && event.key.length === 1 && !/[\d.-]/.test(event.key)) {
@@ -104,14 +108,12 @@ function onBlur(event: FocusEvent) {
     }
 
     if (value === '-') {
-      value = '0'
+      value = ''
     }
 
     const parsedValue = Number.parseFloat(value)
     if (!isNaN(parsedValue)) {
       model.value = parsedValue
-    } else {
-      model.value = 0
     }
 
     event.target.value = value
