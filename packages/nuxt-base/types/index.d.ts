@@ -7,13 +7,19 @@ export interface TopbarMenuProps {
   cover?: boolean
   offset?: [number, number]
   items: TopbarMenuItem[][]
+  itemClass?: VueClassProp
+  itemStyle?: VueStyleProp
 }
 
 export interface TopbarMenuItem {
-  label: string
+  label: MaybeRef<string>
+  to?: MaybeRef<string>
+  icon?: MaybeRef<string>
   class?: VueClassProp
+  active?: MaybeRef<boolean>
+  shortcut?: string
   style?: VueStyleProp
-  disabled?: boolean
+  disabled?: MaybeRef<boolean>
   onClick?: () => void
   subMenu?: TopbarMenuProps
 }

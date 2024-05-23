@@ -7,7 +7,7 @@ defineProps<{
 
 <template>
   <QBtn
-    class="px-2"
+    class="px-3 h-10"
     :icon
     dense
     :label

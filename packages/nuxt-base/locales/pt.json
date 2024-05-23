@@ -5,10 +5,18 @@
     "buildDate": "Build date",
     "commitHash": "Commit hash",
     "guest": "Guest",
+    "locale": "Locale",
     "login": "Login",
     "logout": "Logout",
     "name": "Name",
     "nodeVersion": "Node version",
+    "sendFeedback": "Send Feedback",
+    "theme": {
+      "_": "Theme",
+      "dark": "Dark Theme",
+      "light": "Light Theme",
+      "device": "Device Theme"
+    },
     "version": "Version"
   }
 }

@@ -1,10 +1,31 @@
 <script setup lang="ts">
-import type { TopbarMenuProps } from '~/types'
+import type { TopbarMenuItem, TopbarMenuProps } from '~/types'
 
-withDefaults(defineProps<TopbarMenuProps>(), {
+const props = withDefaults(defineProps<TopbarMenuProps>(), {
   anchor: 'bottom left',
   self: 'top start',
 })
+const key = '__parentMenuItem__'
+
+const parentItem = inject<Pick<TopbarMenuProps, 'itemClass' | 'itemStyle'>>(key, {
+  itemClass: undefined,
+  itemStyle: undefined,
+})
+const itemClass = computed(() => [parentItem.itemClass, props.itemClass])
+const itemStyle = computed(() => [parentItem.itemStyle, props.itemClass])
+
+function computeItemClass(item: TopbarMenuItem) {
+  return [itemClass.value, unref(item.class)]
+}
+
+function computeItemStyle(item: TopbarMenuItem) {
+  return [itemStyle.value, unref(item.style)]
+}
+
+provide(key, reactive({
+  itemStyle,
+  itemClass,
+}))
 </script>
 
 <template>
@@ -15,45 +36,14 @@ withDefaults(defineProps<TopbarMenuProps>(), {
     :cover
     :offset
     :transition-duration="0"
+    class="select-none"
   >
-    <QList>
-      <template v-for="(group, index) in items" :key="index">
-        <QItem
-          v-for="(item, subIndex) in group"
-          :key="`${index}-${subIndex}`"
-          v-close-popup="!isDefined(item.subMenu)"
-          clickable
-          dense
-          class="q-item-avatar-dense"
-          :style="item.style"
-          :class="item.class"
-          :disable="item.disabled"
-          @click="item.onClick"
-        >
-          <QItemSection>
-            <QItemLabel>{{ item.label }}</QItemLabel>
-          </QItemSection>
-          <QItemSection
-            side
-            avatar
-          >
-            <QIcon
-              v-show="item.subMenu"
-              name="arrow_right"
-            />
-          </QItemSection>
-          <TopbarMenu
-            v-if="item.subMenu && !item.disabled"
-            anchor="top right"
-            :offset="[-1, 0]"
-            v-bind="item.subMenu"
-          />
-        </QItem>
-        <QSeparator
-          v-if="index !== items.length - 1"
-          class="my-1"
-        />
-      </template>
-    </QList>
+    <TopbarMenuGroup v-slot="{ item }" :items="items">
+      <TopbarMenuItem
+        :item="item"
+        :style="computeItemStyle(item)"
+        :class="computeItemClass(item)"
+      />
+    </TopbarMenuGroup>
   </QMenu>
 </template>
