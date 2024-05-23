@@ -86,7 +86,10 @@ export default defineNuxtPlugin(() => {
   const onTokenExpired = createEventHook()
   const onActionUpdate = createEventHook<'success' | 'cancelled' | 'error'>()
 
-  keycloak.onReady = auth => onReady.trigger(auth)
+  keycloak.onReady = (auth) => {
+    ready.value = true
+    onReady.trigger(auth)
+  }
   keycloak.onAuthSuccess = () => {
     authenticated.value = true
     token.value = keycloak.token

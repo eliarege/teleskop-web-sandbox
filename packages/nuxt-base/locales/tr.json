@@ -1,0 +1,22 @@
+{
+  "base": {
+    "about": "About",
+    "aboutApp": "Uygulama Hakkında",
+    "buildDate": "Build date",
+    "commitHash": "Commit hash",
+    "guest": "Guest",
+    "locale": "Dil",
+    "login": "Login",
+    "logout": "Logout",
+    "name": "Name",
+    "nodeVersion": "Node version",
+    "sendFeedback": "Geri bildirim gönder",
+    "theme": {
+      "_": "Tema",
+      "dark": "Koyu Tema",
+      "light": "Açık Tema",
+      "device": "Cihaz Teması"
+    },
+    "version": "Version"
+  }
+}
