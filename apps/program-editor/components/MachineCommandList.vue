@@ -2,14 +2,36 @@
 import { Sortable } from 'sortablejs-vue3'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
-import type { SortableOptions } from 'sortablejs'
+import type { SortableEvent, SortableOptions } from 'sortablejs'
+import { isDef } from 'utils'
 import { PRG_STATE_COLORS } from '~/shared/constants'
 import { useEditorStore } from '~/composables/editor'
 import type { MachineCommand } from '~/shared/types'
 
-const editor: EditorStore = useEditorStore()
+export interface MachineCommandListProps {
+  machineId: number
+}
+
+const route = useRoute()
+
+const editor = useEditorStore()
 const { t } = useI18n()
 const { dark } = useQuasar()
+
+const { data: commands } = useFetch(() => `/api/machine/${route.params.machine_id}/commands`, {
+  key: 'Machine Commands',
+  transform: markRaw,
+})
+
+const sortableOptions = computed<SortableOptions>(() => ({
+  disabled: !editor.isDragging,
+  sort: false,
+  group: {
+    name: 'machine-command-list',
+    pull: 'clone',
+    put: false,
+  },
+}))
 
 const searchQuery = ref('')
 const filteredCommands = computed(() => {
@@ -28,6 +50,43 @@ const programStatus = [
   { label: t('programStatusInfo.changedOnTeleskop'), color: PRG_STATE_COLORS.CHANGED_ON_TELESKOP },
   { label: t('programStatusInfo.changedOnMachine'), color: PRG_STATE_COLORS.CHANGED_ON_MACHINE },
 ]
+
+let draggedCommand: any | null = null
+
+function onDragStart(event: SortableEvent) {
+  // isDef - Değer var mı? (true/false)
+  if (isDef(event.oldIndex)) {
+    draggedCommand = commands.value?.[event.oldIndex] as MachineCommand
+  }
+}
+
+function onDragEnd(event: SortableEvent) {
+  if (event.pullMode === 'clone' && isDef(event.newIndex) && event.to !== event.from && draggedCommand) {
+    const parent = event.item.parentElement!
+    parent.removeChild(event.item)
+
+    const isParallelCommand = parent.classList.contains('parallel-commands') || false
+    if (isParallelCommand) {
+      const index = Number.parseInt(parent.getAttribute('data-index') || '-1')
+      if (index > -1) {
+        editor.newParallelStep()
+      }
+    } else {
+      editor.newStep(draggedCommand.commandNo)
+    }
+
+    draggedCommand = null
+  }
+}
+
+watch(() => dark.isActive, () => {
+  // Trigger re-render of command list since we lose control over cloned sortable elements after drag-end
+  const cmd = commands.value
+  commands.value = []
+  nextTick(() => {
+    commands.value = cmd
+  })
+})
 </script>
 
 <template>
@@ -40,11 +99,16 @@ const programStatus = [
       dense
       outlined
     />
-    <div class="machine-command-list">
-      <div class="px-5 e-div-y machine-command-list">
+    <Sortable
+      :list="filteredCommands"
+      class="px-5 e-div-y machine-command-list"
+      :item-key="item => item.commandNo"
+      :options="sortableOptions"
+      @start="onDragStart"
+      @end="onDragEnd"
+    >
+      <template #item="{ element: command }: { element: any }">
         <QItem
-          v-for="command in filteredCommands"
-          :key="command.commandNo"
           class="machine-command"
           dense
           tag="span"
@@ -55,9 +119,13 @@ const programStatus = [
             </QItemLabel>
           </QItemSection>
         </QItem>
-      </div>
-    </div>
-    <div class="w-full bottom-0 p-3" :class="dark.isActive ? 'bg-dark-1' : 'bg-white'">
+      </template>
+    </Sortable>
+    <div
+      v-if="!editor.machineCommands.size"
+      class="w-full bottom-0 p-3"
+      :class="dark.isActive ? 'bg-dark-1' : 'bg-white'"
+    >
       <div v-for="stat in programStatus" :key="stat.color">
         <div :style="{ color: stat.color }">
           {{ stat.label }}
