@@ -2,13 +2,13 @@
 import { matChevronLeft, matChevronRight } from '@quasar/extras/material-icons'
 
 const emit = defineEmits(['addColumn', 'removeColumn'])
-const { data: unplannedColumns } = useFetch('/api/unplannedColumns')
+const { data: unplannedColumns } = useFetch('/api/unplannedColumns', { default: () => [] })
 
 const selected = ref()
 
-const sort = computed(() => unplannedColumns.value?.sort((a, b) => a.id > b.id ? 1 : -1))
-const visibleColumns = computed(() => sort.value?.filter(a => a.visible === true))
-const unvisibleColumns = computed(() => sort.value?.filter(a => a.visible !== true))
+const sort = computed(() => unplannedColumns.value.toSorted((a, b) => a.id > b.id ? 1 : -1))
+const visibleColumns = computed(() => sort..filter(a => a.visible === true))
+const invisibleColumns = computed(() => sort.value.filter(a => a.visible !== true))
 
 function addParameter() {
   if (sort.value) {
@@ -41,7 +41,7 @@ function removeParameter() {
   <div class="h-80vh unplanned-wrapper">
     <q-list dense bordered separator class="max-h-80vh overflow-auto">
       <q-item
-        v-for="(item, idx) in unvisibleColumns"
+        v-for="(item, idx) in invisibleColumns"
         :key="idx"
         v-ripple
         tabindex="0"
@@ -57,8 +57,8 @@ function removeParameter() {
       </q-item>
     </q-list>
     <div class="flex-center flex-col gap-10 w-full h-full">
-      <q-btn :disabled="visibleColumns?.includes(selected)" color="primary" :icon-right="matChevronRight" @click="addParameter()" />
-      <q-btn :disabled="unvisibleColumns?.includes(selected)" color="primary" :icon="matChevronLeft" @click="removeParameter()" />
+      <q-btn :disabled="visibleColumns.includes(selected)" color="primary" :icon-right="matChevronRight" @click="addParameter()" />
+      <q-btn :disabled="invisibleColumns.includes(selected)" color="primary" :icon="matChevronLeft" @click="removeParameter()" />
     </div>
     <div>
       <q-list dense bordered separator class="max-h-80vh overflow-auto h-full">
