@@ -17,7 +17,7 @@ interface MachineCardProps {
   washing?: boolean
   linksActive?: boolean
 }
-withDefaults(defineProps<MachineCardProps>(), {
+const props = withDefaults(defineProps<MachineCardProps>(), {
   washing: false,
 })
 function textColor(bgColor: string) {
@@ -90,7 +90,7 @@ function reqStatus(params: number) {
       </span>
     </div>
     <div class="card-items justify-center">
-      <span class="card-items__item">{{ d(machine.runningStartTime) }}</span>
+      <span class="card-items__item">{{ machine.runningStartTime ? d(machine.runningStartTime) : ' - ' }}</span>
       <div
         class="card-items__item"
       >
@@ -153,7 +153,12 @@ function reqStatus(params: number) {
         <div class="explanation">
           ERP
         </div>
-        <q-separator color="white" vertical class="h-full" spaced />
+        <q-separator
+          color="white"
+          vertical
+          class="h-full"
+          spaced
+        />
         <MachineCardSettings :data="machine" />
       </div>
       <!-- PROG ID/NAME -->
@@ -173,7 +178,12 @@ function reqStatus(params: number) {
         <div class="explanation">
           {{ t("machine-card.program-name") }}
         </div>
-        <q-separator color="white" vertical class="h-full" spaced />
+        <q-separator
+          color="white"
+          vertical
+          class="h-full"
+          spaced
+        />
 
         <span
           class="w-full overflow-hidden"
@@ -206,7 +216,12 @@ function reqStatus(params: number) {
         <div class="explanation">
           {{ t("machine-card.phase") }}
         </div>
-        <q-separator color="white" vertical class="h-full" spaced />
+        <q-separator
+          color="white"
+          vertical
+          class="h-full"
+          spaced
+        />
 
         <span class="flex-center w-full">
           {{ machine.runningPhaseNo }}
@@ -232,7 +247,12 @@ function reqStatus(params: number) {
           <!-- {{ t("machine-card.command") }} -->
           {{ t("machine-card.command-info") }}
         </div>
-        <q-separator color="white" vertical class="h-full" spaced />
+        <q-separator
+          color="white"
+          vertical
+          class="h-full"
+          spaced
+        />
 
         <span class="flex-center w-full">
           {{ machine.runningStepNo }}
@@ -262,7 +282,12 @@ function reqStatus(params: number) {
         <div class="explanation">
           {{ t("machine-card.stop-reason") }}
         </div>
-        <q-separator color="white" vertical class="h-full" spaced />
+        <q-separator
+          color="white"
+          vertical
+          class="h-full"
+          spaced
+        />
         <div class="flex-center w-full">
           <span>{{ machine.manualReason }}</span>
           <span>{{ machine.stopReason }}</span>
@@ -295,7 +320,12 @@ function reqStatus(params: number) {
         <div class="explanation">
           {{ t("machine-card.alarm-second") }}
         </div>
-        <q-separator color="white" vertical class="h-full" spaced />
+        <q-separator
+          color="white"
+          vertical
+          class="h-full"
+          spaced
+        />
 
         <div class="flex-center w-full">
           <!-- {{ machine.runningAlarmNo }} -->
