@@ -74,9 +74,9 @@ const { data: events, refresh: eventRefresh, pending } = await useFetch('/api/qu
 })
 
 const modifiedEvents = computed(() => events.value?.map((ev: any) => {
-  const batchText = ptLocaleSettings?.plannedBatch?.batchText?.value || 'jobOrder'
-  const completedBatchText = ptLocaleSettings?.completedBatch?.batchText?.value || 'jobOrder'
-  const ongoingBatchText = ptLocaleSettings?.ongoingBatch?.batchText?.value || 'jobOrder'
+  const batchText = store.settings.plannedBatch.batchText?.value || 'jobOrder'
+  const completedBatchText = store.settings.completedBatch.batchText?.value || 'jobOrder'
+  const ongoingBatchText = store.settings.ongoingBatch.batchText?.value || 'jobOrder'
   return {
     ...ev,
     id: ev.planKey,

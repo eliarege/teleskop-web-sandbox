@@ -16,25 +16,26 @@ export const useSettingStore = defineStore('settings', () => {
   }, 60_000)
   const settings = useStorage('pt-settings', {
     completedBatch: {
-      batchText: '',
+      batchText: null,
       isBatchFabricColor: false,
       actualBatchFabricColor: '',
       deviationBatchFabricColor: '',
     },
     ongoingBatch: {
-      batchText: '',
+      batchText: null,
       isBatchFabricColor: false,
       actualBatchFabricColor: '',
       deviationBatchFabricColor: '',
     },
     plannedBatch: {
-      batchText: '',
+      batchText: null,
       isBatchFabricColor: false,
       actualBatchFabricColor: '',
       deviationBatchFabricColor: '',
     },
     archiveDays: 0,
     showStops: { show: false, color: '' },
+    batchText: [],
   })
   return { machines: machine, settings, interval }
 })

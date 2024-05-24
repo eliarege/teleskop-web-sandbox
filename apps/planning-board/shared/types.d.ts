@@ -106,7 +106,7 @@ export interface BatchText {
 
 export interface Batch {
   batchText: BatchText[]
-  archiveDays: string
+  archiveDays: number
   showStops: {
     show: boolean
     color: string
@@ -115,7 +115,7 @@ export interface Batch {
 
 export interface CompletedBatch extends Batch {
   completedBatch: {
-    batchText: BatchText
+    batchText: BatchText | null
     isBatchFabricColor: boolean
     actualBatchFabricColor: string
     deviationBatchFabricColor: string
@@ -124,7 +124,7 @@ export interface CompletedBatch extends Batch {
 
 export interface OngoingBatch extends Batch {
   ongoingBatch: {
-    batchText: BatchText
+    batchText: BatchText | null
     isBatchFabricColor: boolean
     actualBatchFabricColor: string
     deviationBatchFabricColor: string
@@ -133,7 +133,7 @@ export interface OngoingBatch extends Batch {
 
 export interface PlannedBatch extends Batch {
   plannedBatch: {
-    batchText: BatchText
+    batchText: BatchText | null
     isBatchFabricColor: boolean
     actualBatchFabricColor: string
     deviationBatchFabricColor: string
