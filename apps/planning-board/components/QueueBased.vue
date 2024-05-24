@@ -1,11 +1,12 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { Splitter, Toast } from '@bryntum/schedulerpro-trial'
+import type { DragHelperConfig, Grid, GridConfig, SchedulerEventModel, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
+import { Combo, DateHelper, EventStore, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
 import { addDays, addHours } from 'date-fns'
 import { EliarModal } from 'ui'
-import { useDocumentVisibility } from '@vueuse/core'
+import { useDocumentVisibility, useStorage } from '@vueuse/core'
 import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
+import { debounce } from 'quasar'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
 import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
 import type { PtLocaleSettings, UnplannedEvents } from '~/shared/types'
@@ -20,6 +21,9 @@ const schedulerDateModel = ref({
   from: startDate.value,
   to: endDate.value,
 })
+const store = useSettingStore()
+
+const sortedMachines = useStorage('machine-sort', store.machines)
 const showModal = reactive({
   planParameters: {
     show: false,
@@ -43,7 +47,7 @@ const showModal = reactive({
   },
   properties: {
     show: false,
-    unit: { machineId: 0, jobOrder: '', planKey: 0 },
+    unit: { machineId: 0, jobOrder: '', planKey: 0, fabricWeight: 0, theoreticalDuration: 0 },
   },
   vnc: {
     show: false,
@@ -59,7 +63,6 @@ const showModal = reactive({
   settings: false,
 })
 const ptLocaleSettings: PtLocaleSettings = JSON.parse(localStorage.getItem('pt-settings') || '')
-const store = useSettingStore()
 
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
 const { data: events, refresh: eventRefresh, pending } = await useFetch('/api/queueBased/schedulerEvents', {
@@ -88,9 +91,11 @@ const modifiedEvents = computed(() => events.value?.map((ev: any) => {
     editable: false,
   }
 }))
+
 const scrollStore = new EventStore({
   data: modifiedEvents.value,
 })
+
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((unp) => {
   return {
     ...unp,
@@ -109,7 +114,11 @@ const visibility = useDocumentVisibility()
 
 async function myInterval(delay: number) {
   await until(visibility).toBe('visible')
-  refreshScheduler()
+  try {
+    refreshScheduler()
+  } catch (err) {
+    Toast.show('Failed to Refresh')
+  }
   setTimeout(() => {
     myInterval(delay)
   }, delay)
@@ -124,7 +133,7 @@ async function refreshScheduler() {
 }
 
 async function machineReload() {
-  scheduler.resourceStore.loadDataAsync(store.machines)
+  scheduler.resourceStore.loadDataAsync(sortedMachines.value)
   await eventRefresh()
   scheduler.refreshRows()
 }
@@ -193,6 +202,18 @@ function dateRangeEnd() {
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
 }
+watch(pending, () => {
+  if (pending.value) {
+    scheduler.mask({
+      text: 'Loading in progress',
+      progress: 0,
+      maxProgress: 100,
+    })
+  } else {
+    scheduler.unmask()
+  }
+})
+
 onMounted(async () => {
   const schedule: SchedulerPro = scheduler = new QueueSchedule({
     ref: 'schedule',
@@ -212,7 +233,7 @@ onMounted(async () => {
       autoLoad: true,
       eventModelClass: QueueTask,
     },
-    resources: store.machines,
+    resources: sortedMachines.value,
     events: modifiedEvents.value,
     listeners: {
       eventSelectionChange({ action }: any) {
@@ -306,9 +327,6 @@ onMounted(async () => {
               showModal.machineSort.show = !showModal.machineSort.show
             },
           },
-        },
-        headerMenuItems: {
-          customItem: { text: 'ASD' },
         },
         field: 'name',
       },
@@ -423,6 +441,8 @@ onMounted(async () => {
               showModal.properties.unit.planKey = eventRecord.originalData.id
               showModal.properties.unit.jobOrder = eventRecord.originalData.name
               showModal.properties.unit.machineId = assignmentRecord.originalData.resourceId
+              showModal.properties.unit.fabricWeight = eventRecord.originalData.fabricWeight
+              showModal.properties.unit.theoreticalDuration = eventRecord.originalData.theoreticalDuration
             },
           },
         },
@@ -433,7 +453,11 @@ onMounted(async () => {
         showHeaderElements: true,
         showCurrentTimeLine: true,
       },
-      eventTooltip: ({ eventRecord }: any) => eventTooltip(eventRecord, scheduler),
+      eventTooltip: {
+        hoverDelay: 800,
+        hideDelay: 500,
+        template: data => eventTooltip(data.eventRecord, scheduler),
+      },
     },
     tbar: [
       {
@@ -536,28 +560,12 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onAction: () => schedule.zoomLevel = 17,
       },
-      {
-        type: 'textfield',
-        placeholder: 'L{search}',
-        inputType: 'text',
-        clearable: true,
-        onInput({ value }: any) {
-          schedule.events.forEach((element) => {
-            element.cls = ''
-          })
-          if (value !== '') {
-            // @ts-expect-error type error
-            const test = schedule.events.filter(a => a.originalData.name.includes(value))
-            test.forEach((element) => {
-              element.cls = 'custom-focus'
-            })
-          }
-        },
-      },
     ],
   } as Partial<SchedulerProConfig>)
-  // @ts-expect-error missing type
-  window.sch = schedule
+  if (import.meta.dev) {
+    // @ts-expect-error missing type
+    window.sch = schedule
+  }
   new Splitter({
     appendTo: 'main',
   })
@@ -582,6 +590,16 @@ onMounted(async () => {
     }],
     features: {
       cellEdit: false,
+      cellMenu: {
+        items: {
+          removeRow: false,
+          delete: false,
+          copy: false,
+          cut: false,
+          search: false,
+          paste: false,
+        },
+      },
       search: {
         label: 'Search',
         icon: 'b-icon b-icon-search',
@@ -614,7 +632,7 @@ onMounted(async () => {
         clearable: true,
         cls: 'flex justify-center items-center',
         onInput({ value }: any) {
-          grid.features.search.search(value)
+          grid.features.search.search(value, false)
         },
       },
     ],
@@ -626,15 +644,19 @@ onMounted(async () => {
       autoLoad: true,
     },
   } as Partial<GridConfig>)
+
   initialGridColumns()
+
   new QueueDrag({
     grid: unplannedGrid,
     schedule,
     constrain: false,
     outerElement: unplannedGrid.element,
   } as Partial<DragHelperConfig>)
+
   startDate.value = schedule.timeAxis.startDate.toISOString()
   endDate.value = schedule.timeAxis.endDate.toISOString()
+
   schedule.eventStore.on({
     async loadDateRange(e: any) {
       if (e.changed) {
@@ -648,7 +670,6 @@ onMounted(async () => {
 </script>
 
 <template>
-  <LoadingSpinner v-if="pending" :has-background="false" />
   <div>
     <div class="w-full h-screen relative">
       <div id="main" class="w-full h-full" />
@@ -656,22 +677,33 @@ onMounted(async () => {
     <EliarModal v-if="showModal.properties.show" @click.stop="showModal.properties.show = false">
       <template #default>
         <BatchProperties
-          :plan-key="showModal.properties.unit.planKey" :machine-id="showModal.properties.unit.machineId"
+          :plan-key="showModal.properties.unit.planKey"
+          :machine-id="showModal.properties.unit.machineId"
           :job-order="showModal.properties.unit.jobOrder"
+          :fabric-weight="showModal.properties.unit.fabricWeight"
+          :theoretical-duration="showModal.properties.unit.theoreticalDuration"
         />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.datePicker" @click.stop="showModal.datePicker = false">
       <template #default>
         <div class="flex justify-center w-min m-auto rounded" @click.stop.prevent>
-          <QDate v-model="schedulerDateModel" range dark landscape @click.stop.prevent @range-end="dateRangeEnd()" />
+          <QDate
+            v-model="schedulerDateModel"
+            range
+            dark
+            landscape
+            @click.stop.prevent
+            @range-end="dateRangeEnd()"
+          />
         </div>
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
       <template #default>
         <SettingsPlan
-          @update-scheduler="refreshScheduler()" @add-column="(ev: any) => addGridColumn(ev)"
+          @update-scheduler="refreshScheduler()"
+          @add-column="(ev: any) => addGridColumn(ev)"
           @remove-column="(ev: any) => removeGridColumn(ev)"
         />
       </template>
