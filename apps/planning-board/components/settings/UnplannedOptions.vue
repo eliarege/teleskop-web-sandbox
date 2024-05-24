@@ -7,7 +7,7 @@ const { data: unplannedColumns } = useFetch('/api/unplannedColumns', { default: 
 const selected = ref()
 
 const sort = computed(() => unplannedColumns.value.toSorted((a, b) => a.id > b.id ? 1 : -1))
-const visibleColumns = computed(() => sort..filter(a => a.visible === true))
+const visibleColumns = computed(() => sort.value.filter(a => a.visible === true))
 const invisibleColumns = computed(() => sort.value.filter(a => a.visible !== true))
 
 function addParameter() {
