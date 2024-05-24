@@ -1,4 +1,4 @@
-import { PLANNED_CODE, UNPLANNED_CODE } from '../../contants'
+import { PLANNED_CODE, UNPLANNED_CODE } from '../../constants'
 import { knex } from '../../knexConfig'
 
 export async function getPtStatus() {
