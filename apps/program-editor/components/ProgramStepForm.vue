@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { Sortable } from 'sortablejs-vue3'
+import type { SortableOptions } from 'sortablejs'
 import ProgramStepCommandForm from './ProgramStepCommandForm.vue'
 import type { ProgramStep } from '~/shared/types'
 
@@ -17,6 +19,17 @@ function toggle() {
   if (editor.selectedStep === stepIndex.value)
     editor.changeSelection(stepIndex.value)
   expanded.value = !expanded.value
+}
+
+const sortableOptions: SortableOptions = {
+
+  sort: false,
+  handle: '.__no-handle__',
+  group: {
+    name: 'parallel-command',
+    pull: false,
+    put: true,
+  },
 }
 
 // function onDragEnter() {}
@@ -38,30 +51,41 @@ function toggle() {
         :path="`${props.path}.mainCommand`"
       />
     </div>
-    <div v-show="expanded" class="e-border-color border-(y x-0) mt-2px mb-2 pl-12">
-      <div class="parallel-commands">
-        <div
-          v-for="(command, index) in step.parallelCommands"
-          :key="command.commandId"
-          class="step-parallel-command"
-          :class="{ __selected: editor.selectedStep === stepIndex && editor.selectedParallelStep === index }"
-          @click="editor.changeSelection(stepIndex, index)"
-        >
-          <span class="!text-(white opacity-20)">{{ step.parallelCommands[index].commandId }}</span>
-          <div class="program-step-command">
-            <ProgramStepCommandForm :path="`${props.path}.parallelCommands.${index}`" />
+    <div v-show="expanded" class="e-border-color border-(y x-0) mt-2px mb-2 pl-12 ">
+      <Sortable
+        :list="step.parallelCommands"
+        item-key="commandId"
+        :options="sortableOptions"
+        class="parallel-commands"
+        :data-index="stepIndex"
+      >
+        <template #header>
+          <span
+            v-if="step.parallelCommands.length === 0"
+            class="py-3 inline-block e-text-dim"
+          >Paralel Adım Yok</span>
+        </template>
+        <template #item="{ index }: {index: number}">
+          <div
+            class="step-parallel-command "
+            :class="{ __selected: editor.selectedStep === stepIndex && editor.selectedParallelStep === index }"
+            @click="editor.changeSelection(stepIndex, index)"
+          >
+            <div class="program-step-command ">
+              <ProgramStepCommandForm :path="`${props.path}.parallelCommands.${index}`" />
+            </div>
+            <QSpace />
+            <QBtn
+              v-if="editor.selectedStep === stepIndex && editor.selectedParallelStep === index"
+              class="delete-btn"
+              icon="close"
+              flat
+              dense
+              @click="editor.deleteParallelStep(stepIndex, index)"
+            />
           </div>
-          <QSpace />
-          <QBtn
-            v-if="editor.selectedStep === stepIndex && editor.selectedParallelStep === index"
-            class="!dark:(text-(white opacity-60)) ml-2"
-            icon="close"
-            flat
-            dense
-            @click="editor.deleteParallelStep(stepIndex, index)"
-          />
-        </div>
-      </div>
+        </template>
+      </Sortable>
     </div>
   </div>
 </template>
@@ -70,6 +94,7 @@ function toggle() {
 .parallel-commands .program-step-command:not(:last-of-type) {
   @apply border-b border-black border-opacity-20;
   @apply dark:(border-b border-white border-opacity-20);
+
 }
 
 .step-parallel-command.__selected {
@@ -81,6 +106,10 @@ function toggle() {
 }
 
 .expand-btn {
+  @apply !text-(black opacity-60) !dark:(text-(white opacity-60))
+}
+
+.delete-btn {
   @apply !text-(black opacity-60) !dark:(text-(white opacity-60))
 }
 </style>
