@@ -88,6 +88,9 @@ const modifiedEvents = computed(() => events.value?.map((ev: any) => {
     editable: false,
   }
 }))
+const scrollStore = new EventStore({
+  data: modifiedEvents.value,
+})
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((unp) => {
   return {
     ...unp,
@@ -128,6 +131,7 @@ async function machineReload() {
 // @ts-expect-error ???
 watch(modifiedEvents, (newVal: QueueBasedPlannedEvents[]) => {
   scheduler.events = newVal
+  scrollStore.data = newVal
 })
 watch(modifiedUnscheduledEvents, (newVal: UnplannedEvents[]) => {
   grid.store.data = newVal
@@ -433,17 +437,25 @@ onMounted(async () => {
     },
     tbar: [
       {
-        type: 'dropdown',
+        type: 'combo',
         ref: 'scrollToEvent',
         placeholder: 'Scroll to event',
-        editable: false,
-        store: 'events',
-        displayField: 'name',
-        onAction: ({ record: event }: any) => {
-          scheduler.scrollEventIntoView(event, {
-            highlight: true,
-            animate: false,
-          })
+        editable: true,
+        store: scrollStore,
+        displayField: 'jobOrder',
+        valueField: 'id',
+        onAction: ({ record }: any) => {
+          const event: any = schedule.events.find(item => item.id === record.id)
+          if (event) {
+            event.cls = 'custom-focus'
+            setTimeout(() => {
+              event.cls = ''
+            }, 1000)
+            scheduler.scrollEventIntoView(event, {
+              highlight: true,
+              animate: false,
+            })
+          }
         },
       },
       {

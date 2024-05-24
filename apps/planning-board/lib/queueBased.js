@@ -644,6 +644,7 @@ export class QueueSchedule extends SchedulerPro {
           flex: 2,
         },
       },
+      onDeleteKey: () => {},
       infiniteScroll: true,
       autoRescheduleTasks: true,
       useInitialAnimation: false,
