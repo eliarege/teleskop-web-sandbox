@@ -6,16 +6,35 @@ const props = withDefaults(defineProps<{
   hideArrows?: boolean
   type?: 'decimal' | 'integer' | 'positive-integer'
   maxlength?: number
+  outlined?: boolean
+  dense?: boolean
 }>(), {
   hideArrows: true,
   type: 'decimal',
   maxlength: 10,
+  outlined: false,
+  dense: false,
 })
 
 const model = defineModel<number>()
 const editor = useEditorStore()
 const id = useId()
 const input = ref<QInput>()
+
+const DECIMAL_RE = /[\d.-]/
+const INTEGER_RE = /[\d-]/
+const POSITIVE_INTEGER_RE = /\d/
+
+const charRe = computed(() => {
+  switch (props.type) {
+    case 'integer':
+      return INTEGER_RE
+    case 'positive-integer':
+      return POSITIVE_INTEGER_RE
+    default:
+      return DECIMAL_RE
+  }
+})
 
 watch(() => input.value?.hasError, (value) => {
   if (value) {
@@ -29,51 +48,57 @@ onUnmounted(() => {
   editor.errorIds.delete(id)
 })
 
+function getValueOutsideSelection(input: HTMLInputElement) {
+  if (input.selectionStart !== null && input.selectionEnd !== null) {
+    return input.value.slice(0, input.selectionStart) + input.value.slice(input.selectionEnd)
+  } else {
+    return input.value
+  }
+}
+
 function onKeydownPreventNonNumerical(event: KeyboardEvent) {
   if (!event.target || !(event.target instanceof HTMLInputElement)) {
     return
   }
+  const isValidChar = charRe.value.test(event.key)
 
-  const value = event.target.value
-
-  if (props.type === 'positive-integer' && event.key === '-') {
+  // Kullanıcı geçerli bir karaktere bastı mı
+  if (!event.ctrlKey && event.key.length === 1 && !isValidChar) {
     return event.preventDefault()
   }
 
-  if (event.key === '-') {
-    if (value.includes('-') || event.target.selectionStart !== 0) {
-      return event.preventDefault()
-    }
-  }
+  // Kullanıcı tarafından seçilen alanın dışındaki text'i al
+  const value = getValueOutsideSelection(event.target)
 
-  if (/[\d.-]/.test(event.key)) {
-    if (value.includes('-') && event.target.selectionStart === 0) {
-      return event.preventDefault()
-    }
-  }
-
-  if (props.type !== 'decimal' && event.key === '.') {
+  // Sadece başa eksi yazılabilir, eksi varsa bir daha eksi yazılamaz
+  if (event.key === '-' && (value.includes('-') || event.target.selectionStart !== 0)) {
     return event.preventDefault()
   }
 
-  if (!event.ctrlKey && event.key.length === 1 && !/[\d.-]/.test(event.key)) {
+  // Eksiden önce karakter gelemez
+  if (isValidChar && value.includes('-') && event.target.selectionStart === 0) {
     return event.preventDefault()
   }
 
-  if (props.type === 'decimal' && event.key === '.') {
-    if (value.includes('.')) {
-      return event.preventDefault()
-    }
+  // Nokta varsa yeniden ekleme
+  if (event.key === '.' && value.includes('.')) {
+    return event.preventDefault()
   }
 
-  if (event.key === '0' && value === '0') {
-    return event.preventDefault()
-  } else if (value.length === 1 && value[0] === '0' && event.key !== '.' && event.key !== 'Backspace') {
-    event.target.value = ''
-  }
+  // if (event.key === '0' && value.length && event.target.selectionStart === 0) {
+  //   return event.preventDefault()
+  // }
+
+  // if (value === '0' && event.key !== '.') {
+  //   event.target.value = ''
+  // }
 }
 
 function onPastePreventNonNumerical(event: ClipboardEvent) {
+  if (!event.target || !(event.target instanceof HTMLInputElement)) {
+    return
+  }
+
   if (!event.clipboardData)
     return
 
@@ -82,12 +107,28 @@ function onPastePreventNonNumerical(event: ClipboardEvent) {
   }
 
   const data = event.clipboardData.getData('text/plain')
-  if (!/^[\d.]+$/.test(data)) {
-    return event.preventDefault()
+  const input = event.target
+
+  const handlePaste = (text: string) => {
+    event.preventDefault()
+    input.value = input.value.slice(0, input.selectionStart!) + text + input.value.slice(input.selectionEnd!)
   }
 
-  if (props.type === 'decimal' && (data.indexOf('.') !== data.lastIndexOf('.')))
-    return event.preventDefault()
+  handlePaste(data)
+  //   const value = input.value
+  //   const hasMinus = value.includes('-')
+  //   const hasDot = value.includes('.')
+  //   if (hasMinus)
+  //     text.replaceAll('-', '')
+  //   if (hasDot)
+  //     text.replaceAll('.', '')
+
+  // if (!/^[\d.]+$/.test(data)) {
+  //   return event.preventDefault()
+  // }
+
+  // if (props.type === 'decimal' && (data.indexOf('.') !== data.lastIndexOf('.')))
+  //   return event.preventDefault()
 }
 
 function onDrop(event: DragEvent) {
@@ -133,8 +174,8 @@ function onBlur(event: FocusEvent) {
     bottom-slots
     no-error-icon
     hide-bottom-space
-    outlined
-    dense
+    :outlined="outlined"
+    :dense="dense"
   >
     <template #control="{ id }">
       <input
