@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Machine } from '~/types'
+
 const props = defineProps<{
   show: boolean
   selected: Machine
@@ -27,19 +29,19 @@ async function loadDefinitions() {
 
 function selectAll() {
   Object.keys(options.value).forEach((key) => {
-    options.value[key] = true
+    options.value[key as keyof typeof options.value] = true
   })
 }
 
 function deselectAll() {
   Object.keys(options.value).forEach((key) => {
-    options.value[key] = false
+    options.value[key as keyof typeof options.value] = false
   })
 }
 
 function reverseSelected() {
   Object.keys(options.value).forEach((key) => {
-    options.value[key] = !options.value[key]
+    options.value[key as keyof typeof options.value] = !options.value[key as keyof typeof options.value]
   })
 }
 </script>

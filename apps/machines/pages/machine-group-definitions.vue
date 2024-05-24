@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import type { Column } from 'nuxt-ui-types'
 import type { MachineGroup } from '~/types'
 
 const { t } = useI18n()
 
-const { data: machineGroups, pending, refresh } = await useFetch<MachineGroup[]>('/api/machines/machine-groups')
+const { data: machineGroups, pending, refresh } = await useFetch<readonly MachineGroup[]>('/api/machines/machine-groups', {
+  default: () => [],
+})
 
-const columns = computed(() => ([
+const columns = computed<Column[]>(() => ([
   {
     name: 'groupName',
     label: t('group'),
@@ -78,9 +81,9 @@ const machineGroupTypeOptions = [
   },
 ]
 
-const changedGroups = ref([])
+const changedGroups = ref<MachineGroup[]>([])
 
-async function handleMachineGroupSelect(e, group) {
+async function handleMachineGroupSelect(e: Exclude<MachineGroup, 'groupId'>, group: MachineGroup) {
   group.groupType = e.groupType
   changedGroups.value.push(group)
 }
@@ -109,7 +112,7 @@ async function handleSubmit() {
         <template #body-cell-groupType="props">
           <q-td :props="props">
             <q-select
-              :model-value="machineGroupTypeMapper[props.row.groupType]"
+              :model-value="machineGroupTypeMapper[props.row.groupType as keyof typeof machineGroupTypeMapper]"
               :options="machineGroupTypeOptions"
               option-label="groupName"
               option-value="groupType"

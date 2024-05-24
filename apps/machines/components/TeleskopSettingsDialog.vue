@@ -10,6 +10,10 @@ const emit = defineEmits(['close'])
 
 const { t } = useI18n()
 
+type Label = 'ttbuserManagentActive' | 'ttbphaseModeActive' | 'ttbCustomErpPrmOptimization' | 'ttbAllowedCharsForJobOrder'
+  | 'ttbRecipeEnterActive' | 'ttbTimeBasedModeActive' | 'ttbDyehouseNumber' | 'ttbProcessUsageActive' | 'ttbSaveIOValuesInDatabase'
+type Setting = Record<Label, number | boolean>
+
 const settingsList = [
   { label: 'ttbuserManagentActive', value: 1 },
   { label: 'ttbphaseModeActive', value: 2 },
@@ -22,24 +26,24 @@ const settingsList = [
   { label: 'ttbSaveIOValuesInDatabase', value: 9 },
 ]
 
-const formData = ref({})
+const formData = ref<Partial<Setting>>({})
 
 const { data: _setting } = useLazyFetch('/api/machines/teleskop-settings', {
   default: () => ({}),
   onResponse: (res) => {
     const data = res.response._data
-    formData.value = data.reduce((acc, item) => {
+    formData.value = data.reduce((acc: Setting, item: { id: number, value: string }) => {
       const key = settingsList.find(d => d.value === item.id)?.label
       if (key === 'ttbDyehouseNumber') {
         acc[key] = Number.parseInt(item.value)
       } else if (key) {
-        acc[key] = item ? item.value === '1' : false
+        acc[key as Label] = item ? item.value === '1' : false
       }
       return acc
     }, {})
     for (const item of settingsList) {
-      if (!formData.value[item.label]) {
-        formData.value[item.label] = false
+      if (!formData.value[item.label as Label]) {
+        formData.value[item.label as Label] = false
       }
     }
   },
@@ -87,7 +91,7 @@ const schema = computed(() => ([
 ]))
 
 async function handleSubmit() {
-  const submitData = {}
+  const submitData: Record<number, number | boolean> = {}
   for (const [key, value] of Object.entries(formData.value)) {
     const setting = settingsList.find(d => d.label === key)
     if (setting) {

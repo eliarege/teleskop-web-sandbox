@@ -1,7 +1,7 @@
 import type { Knex } from 'knex'
 
 export function calcIONumber(ioObject, controllerModel, ioName: string) {
-  const { productModel, hardwareModel, plcModel } = controllerModel
+  const { productModel, plcModel } = controllerModel
   let channelSum
   if (plcModel.includes('RIO'))
     return ioObject.id

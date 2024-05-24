@@ -122,7 +122,7 @@ async function handleFilterSlotsUpdateOutputs(updatedValue: FilterSlot[]) {
                 :rows="inputs"
                 :columns="inputColumns"
                 class="overflow-y-auto h-160"
-                @update-filter-slots="evt => handleFilterSlotsUpdateInputs(evt)"
+                @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdateInputs(evt)"
               />
             </q-tab-panel>
 
@@ -131,7 +131,7 @@ async function handleFilterSlotsUpdateOutputs(updatedValue: FilterSlot[]) {
                 :rows="outputs"
                 :columns="outputColumns"
                 class="overflow-y-auto h-160"
-                @update-filter-slots="evt => handleFilterSlotsUpdateOutputs(evt)"
+                @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdateOutputs(evt)"
               />
             </q-tab-panel>
 

@@ -719,13 +719,13 @@ function handleClose() {
     <GetDyeHouseDefinitionsDialog
       v-if="showGetDyeHouseDefinitions && selected"
       :show="showGetDyeHouseDefinitions"
-      :selected="selected"
+      :selected="selected as Machine"
       @close="showGetDyeHouseDefinitions = false"
     />
     <SetDyeHouseDefinitionsDialog
       v-if="showSetDyeHouseDefinitions && selected"
       :show="showSetDyeHouseDefinitions"
-      :selected="selected"
+      :selected="selected as Machine"
       @close="showSetDyeHouseDefinitions = false"
     />
     <MachineParametersDialog

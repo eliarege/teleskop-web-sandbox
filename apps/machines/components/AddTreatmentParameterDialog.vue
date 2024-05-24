@@ -45,7 +45,7 @@ async function handleDelete() {
     treatmentParameter: '',
   }
 }
-async function handleGroupClick(obj: TreatmentMachineGroup) {
+async function handleGroupClick(obj: TreatmentParameter) {
   selected.value = obj
   selectedGroupId.value = obj.id
 }

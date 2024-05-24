@@ -86,7 +86,7 @@ async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
     :rows="times"
     :columns="columns"
     class="overflow-y-auto	h-220"
-    @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+    @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdate(evt)"
   >
     <template #custombody="times">
       <q-tr>

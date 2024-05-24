@@ -243,7 +243,7 @@ const showAddFormulaDialog = ref(false)
           :rows="formulas"
           :columns="columns"
           class="overflow-y-auto	h-160"
-          @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+          @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdate(evt)"
         >
           <template #custombody="formulas">
             <q-tr

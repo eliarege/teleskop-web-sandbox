@@ -402,7 +402,7 @@ const contextMenuOptions = computed(() => [
             :rows="machines"
             :columns="machineColumns"
             class="overflow-y-auto	h-160 w-xl"
-            @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+            @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdate(evt)"
           >
             <template #custombody="machines">
               <q-tr
