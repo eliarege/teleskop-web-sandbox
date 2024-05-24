@@ -1,1 +1,7 @@
-{}
+{
+  "pinia": {
+    "job-order": "Job Order",
+    "plan-key": "Plan Key",
+    "customer-name": "Customer Name"
+  }
+}

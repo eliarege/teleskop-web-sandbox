@@ -21,18 +21,10 @@ export default defineEventHandler(async (event) => {
     plannedStartTime: Date | null
   }
 
-  interface SummaryItem {
-    planKey: number
-    paramId: number
-    paramString: string
-    value: string
-  }
-
   interface ApiResponse {
     erpParameters: ErpParameter[]
     programs: Program[]
     times: Time
-    summary: SummaryItem
   }
 
   const batchProperties = await $fetch<ApiResponse>(url, {

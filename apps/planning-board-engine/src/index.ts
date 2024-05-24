@@ -9,6 +9,7 @@ import * as timeBased from './api/scheduler/time-based/routes'
 import { generateClientId } from './composables/helper'
 import { getAllTasks } from './composables/socket'
 import { knex } from './knexConfig'
+import { createPtColumnsTable, createPtMachineErpTable } from './composables/table'
 
 const logger = pino()
 const app = Fastify({ logger })
@@ -32,6 +33,9 @@ const clientTasks: Record<string, string[]> = {}
 const DB_NAME = process.env.TELESKOP_DATABASE
 app.ready().then(async () => {
   await knex.raw(`ALTER DATABASE ${DB_NAME} SET COMPATIBILITY_LEVEL = 130`)
+
+  await createPtColumnsTable(knex)
+  await createPtMachineErpTable(knex)
 
   app.io.on('connection', async (socket) => {
     console.log('User connected!')

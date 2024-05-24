@@ -1,15 +1,19 @@
 <script setup lang="ts">
+import { LoadingSpinner } from 'ui'
 
 const props = defineProps<{ planKey: number }>()
 
 const { t } = useI18n()
 
-const { data: planParameters } = await useFetch('/api/planParameters', {
+const { data: planParameters, pending } = useFetch('/api/planParameters', {
   query: { planKey: props.planKey },
+})
+const parameterData = ref([] as { id: number, paramString: string, value: string | number }[])
+watch(planParameters, (newParams) => {
+  parameterData.value = newParams
 })
 const columns = computed(() => {
   return [
-    { name: 'id', label: t('id'), align: 'center', field: 'id' },
     { name: 'paramString', label: t('param-string'), align: 'center', field: 'paramString' },
     { name: 'value', label: t('value'), align: 'center', field: 'value' },
   ]
@@ -17,11 +21,17 @@ const columns = computed(() => {
 </script>
 
 <template>
-  <div class="max-h-200 overflow-auto bg-white">
+  <LoadingSpinner v-if="pending" has-background />
+  <div class="max-h-200 overflow-auto bg-white px-5">
+    <h3 class="text-center font-extrabold ">
+      Plan Parameters
+    </h3>
     <QTable
       class="my-sticky-header-table"
-      :rows="planParameters"
+      :rows="parameterData"
       :columns="columns"
+      hide-pagination
+      dense
       :rows-per-page-options="[0]"
       no-data-label="No Parameter"
     >
@@ -33,18 +43,6 @@ const columns = computed(() => {
           </q-td>
           <q-td key="paramString" :props="prop">
             {{ prop.row.paramString }}
-            <q-popup-edit
-              v-slot="scope"
-              v-model="prop.row.paramString"
-              buttons
-            >
-              <!-- TODO: @save -->
-              <q-input
-                v-model="scope.value"
-                type="textarea"
-                dense
-              />
-            </q-popup-edit>
           </q-td>
           <q-td key="value" :props="prop">
             {{ prop.row.value }}
@@ -56,7 +54,6 @@ const columns = computed(() => {
               <!-- TODO: @save -->
               <q-input
                 v-model="scope.value"
-                type="textarea"
                 dense
                 autofocus
               />

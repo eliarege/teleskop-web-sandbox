@@ -16,6 +16,7 @@ export interface UnscheduledTasks {
 
 export interface QueueBasedPlannedEventsRaw {
   planKey: number
+  plannedStartDate: string | Date
   machineId: number
   queueNumber: number
   jobOrder: string

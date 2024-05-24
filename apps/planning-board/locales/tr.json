@@ -1,1 +1,7 @@
-{}
+{
+  "pinia": {
+    "job-order": "İş Emri",
+    "plan-key": "Plan No",
+    "customer-name": "Müşteri İsmi"
+  }
+}

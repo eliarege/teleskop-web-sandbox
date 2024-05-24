@@ -3,11 +3,12 @@ import { compressJson } from '../../composables/helper'
 import {
   addBatchNote,
   addErpParameters,
-  deleteErpParameters,
   deleteEvent,
   deleteNote,
   getBatchNotes,
   getBatchProperties,
+  getColumnData,
+  getDistinctErpParameters,
   getErpParameters,
   getEventTooltipParams,
   getMachines,
@@ -15,12 +16,16 @@ import {
   getPtStatus,
   getRecipe,
   getTheoreticalDuration,
+  getUnplannedColumns,
   getUnplannedEvents,
   isTaskValid,
   pinEvent,
+  removeErpParameter,
   removeFromPlan,
   scheduleEvents,
   unpinEvent,
+  updateBatchNote,
+  updateUnplannedColumns,
 } from './queries'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
@@ -41,7 +46,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request, reply) => {
       try {
         const unplannedEvents = await getUnplannedEvents()
-        return compressJson(unplannedEvents)
+        return unplannedEvents
       } catch (err) {
         fastify.log.error(`An error occured while fetching unplanned events: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching unplanned events: ${err}` })
@@ -96,15 +101,41 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-  fastify.get<{ Querystring: { machineId: number } }>(
+  fastify.get<{ Querystring: { machineId?: number, distinct?: boolean } }>(
     '/planning_board/settings/erp_parameters',
     async (request, reply) => {
       try {
-        const { machineId } = request.query
-        return await getErpParameters(machineId)
+        const { machineId, distinct } = request.query
+        if (distinct) {
+          return await getDistinctErpParameters()
+        } else if (machineId) {
+          return await getErpParameters(machineId)
+        } else return fastify.log.error('MISSING QUERIES')
       } catch (err) {
         fastify.log.error(`An error occured while fetching erp parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching erp parameters: ${err}` })
+      }
+    },
+  )
+  fastify.get(
+    '/planning_board/columns/unplanned_columns',
+    async (request, reply) => {
+      try {
+        return await getUnplannedColumns()
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching columns: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching columns: ${err}` })
+      }
+    },
+  )
+  fastify.get<{ Querystring: { planKey?: number } }>(
+    '/planning_board/columns/column_data',
+    async (request, reply) => {
+      try {
+        return await getColumnData(request.query.planKey)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching column data: ${err}`)
+        return reply.code(500).send({ error: `An error occured while column data: ${err}` })
       }
     },
   )
@@ -156,6 +187,21 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching theoretical duration: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching theoretical duration: ${err}` })
+      }
+    },
+  )
+  fastify.put<{
+    Body: { noteKey: number, showOnScreen: boolean }
+  }>(
+    '/planning_board/batch_notes/update_note',
+    async (request, reply) => {
+      try {
+        const { noteKey, showOnScreen } = request.body
+        await updateBatchNote(noteKey, showOnScreen)
+        return reply.code(200).send('Succesful!')
+      } catch (err) {
+        fastify.log.error(`An error occured while updating batch note: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating batch note: ${err}` })
       }
     },
   )
@@ -221,6 +267,18 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
+  fastify.put<{ Body: { id: number, visible: boolean } }>(
+    '/planning_board/columns/unplanned_columns',
+    async (request, reply) => {
+      try {
+        const { id, visible } = request.body
+        await updateUnplannedColumns(id, visible)
+      } catch (err) {
+        fastify.log.error(`An error occured while updating columns: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating columns: ${err}` })
+      }
+    },
+  )
 
   fastify.post<{
     Body: { jobOrder: string, note: string, showOnScreen: boolean, userId: number }
@@ -238,13 +296,13 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     },
   )
   fastify.post<{
-    Body: { paramId: number, owner: number, machineId: number }
+    Body: { id: number, machineId: number }
   }>(
     '/planning_board/erp_parameters/add_parameter',
     async (request, reply) => {
       try {
-        const { machineId, owner, paramId } = request.body
-        await addErpParameters(paramId, owner, machineId)
+        const { machineId, id } = request.body
+        await addErpParameters(id, machineId)
         return reply.code(200).send('Succesful')
       } catch (err) {
         fastify.log.error(`An error occured while adding erp parameter: ${err}`)
@@ -268,14 +326,14 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-  fastify.delete(
+  fastify.put(
     '/planning_board/erp_parameters/parameter',
     async (request: FastifyRequest<{
-      Querystring: { paramId: number, owner: number, machineId: number }
+      Querystring: { id: number, machineId: number }
     }>, reply) => {
       try {
-        const { paramId, owner, machineId } = request.query
-        await deleteErpParameters(paramId, owner, machineId)
+        const { id, machineId } = request.query
+        await removeErpParameter(id, machineId)
         return reply.code(200).send('Succesful')
       } catch (err) {
         console.error(`An error occured while deleting erp parameter: `, err)

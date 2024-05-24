@@ -1,20 +1,26 @@
 <script setup lang="ts">
 import '../stylesheets/animations.css'
+
+withDefaults(defineProps<{ hasBackground: boolean }>(), {
+  hasBackground: true,
+})
 </script>
 
 <template>
-  <div class="spinner-wrapper">
-      <span class="loader" />
+  <div class="spinner-wrapper" :class="hasBackground ? 'custom-bg' : 'bg-inherit'">
+    <span class="loader" />
   </div>
 </template>
 
 <style scoped lang="postcss">
+.custom-bg{
+  background-color: rgba(60, 60, 60, 0.3);
+}
 .spinner-wrapper {
   width: 100%;
   height: 100%;
   position: absolute;
   z-index: 10000;
-  background-color: rgba(60, 60, 60, 0.3);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -58,5 +64,4 @@ import '../stylesheets/animations.css'
   width: 32px;
   height: 32px;
 }
-
 </style>

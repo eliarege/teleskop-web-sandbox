@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { addSeconds, differenceInHours, differenceInMilliseconds, differenceInMinutes, differenceInSeconds, formatDuration } from 'date-fns'
 
-const props = defineProps<{ machineId: number, jobOrder: string, planKey: number }>()
+const props = defineProps<{ machineId: number, jobOrder: string, planKey: number, fabricWeight: number | string, theoreticalDuration: number }>()
 const colors = reactive({
   activeBackGround: '#4B5563',
   backGround: '#4B5563',
   idleBackGround: '#D1D5DB',
   itemBackGround: '#000000',
 })
-const { data: machine } = await useFetch('/api/machineList', {
-  query: { machineId: props.machineId },
-})
+
+const { data: machine } = await useFetch('/api/machineList')
 const { data: batchProperties } = await useFetch('/api/batchProperties', {
   query: { machineId: props.machineId, planKey: props.planKey },
 })
+
 const time = computed(() => {
   if (batchProperties.value?.times.startTime) {
     const startTime = batchProperties.value?.times.startTime
@@ -23,14 +23,14 @@ const time = computed(() => {
       endTime = batchProperties.value.times.endTime
       elapsedTime = differenceInMilliseconds(endTime, startTime)
     } else {
-      endTime = addSeconds(startTime, batchProperties.value?.times.theoreticalDuration)
+      endTime = addSeconds(startTime, props.theoreticalDuration)
     }
     elapsedTime = differenceInMilliseconds(new Date(), startTime)
     elapsedTime = useDateFormat(elapsedTime, 'HH:mm:ss')
 
     return [
       {
-        label: `Theoretical Duration: ${batchProperties.value?.times.theoreticalDuration}`,
+        label: `Theoretical Duration: ${props.theoreticalDuration}`,
       },
       {
         label: `Start Time: ${useDateFormat(new Date(startTime), 'YYYY-MM-DD HH:mm:ss').value}`,
@@ -45,7 +45,7 @@ const time = computed(() => {
   } else {
     return [
       {
-        label: `Theoretical Duration: ${batchProperties.value?.times.theoreticalDuration}`,
+        label: `Theoretical Duration: ${props.theoreticalDuration}`,
       },
       {
         label: `Theoretical Start Time: ${useDateFormat(new Date(batchProperties.value?.times.plannedStartTime || ''), 'YYYY-MM-DD HH:mm:ss').value}`,
@@ -57,32 +57,36 @@ const time = computed(() => {
 const summary = computed(() => {
   return [
     {
-      label: `Plan Key: ${batchProperties.value?.summary.planKey}`,
+      label: `Plan Key: ${props.planKey}`,
     },
     {
-      label: `Fabric Weight: ${batchProperties.value?.summary.value}`,
+      label: `Fabric Weight: ${props.fabricWeight}`,
     },
   ]
 })
-const tree = computed(() => [
+const tree = reactive([
   {
     label: 'ERP Parametereleri',
+    fold: true,
     children: batchProperties.value?.erpParameters.map(e => ({
       label: `${e.paramName}: ${e.value}`,
     })),
   },
   {
     label: 'Süreler',
+    fold: true,
     children: time.value,
   },
   {
     label: 'Programlar',
+    fold: true,
     children: batchProperties.value?.programs.map((program, i) => ({
       label: ` ${i + 1} -> ${program.NAME}`,
     })),
   },
   {
     label: 'Özet',
+    fold: true,
     children: summary.value,
   },
 ])
@@ -119,14 +123,28 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         :machine="currentMachine || []"
         :links-active="false"
       />
-      <div class="w-full h-full max-h-147 overflow-auto p-3">
-        <QTree
-          :nodes="tree"
-          node-key="label"
-          dense
-          label-key="label"
-          no-connectors
-        />
+      <div class="w-full h-min max-h-140 overflow-auto p-3 !font-100 border-1px border-gray-500/50 rounded">
+        <div
+          v-for="(item, idx) in tree"
+          :key="idx"
+          class="flex-center w-full"
+        >
+          <q-expansion-item
+            v-model="item.fold"
+            header-class="font-extrabold"
+            class="w-full max-w-100"
+            :label="item.label"
+            expand-seperator
+          >
+            <q-list v-for="(child, idy) in item.children" :key="idy">
+              <q-item>
+                <q-item-section>
+                  {{ child.label }}
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-expansion-item>
+        </div>
       </div>
     </div>
     <div class=" border-solid border-1px p-1 rounded-2xl border-gray-500/50">
