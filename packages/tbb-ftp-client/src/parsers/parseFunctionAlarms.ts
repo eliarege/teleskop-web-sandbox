@@ -22,7 +22,7 @@ export function parseFunctionAlarms(content: string) {
       s: match[3],
       e: match[4],
       o,
-      m,
+      m: m || '',
     }
     alarms.push(alarm)
     match = pattern.exec(content)

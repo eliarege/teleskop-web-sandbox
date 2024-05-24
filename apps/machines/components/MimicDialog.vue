@@ -14,6 +14,7 @@ const { t } = useI18n()
 const tab = ref('inputs')
 
 const machineId = computed(() => props.selected.machineId)
+const maxReelSpeed = ref(0)
 
 const { data: inputs } = useLazyFetch('/api/io/analog-input', {
   body: { machineId: machineId.value },
@@ -84,6 +85,16 @@ async function handleFilterSlotsUpdateOutputs(updatedValue: FilterSlot[]) {
     },
   })
 }
+
+async function handleSubmit() {
+  await $fetch('/api/machine/max-reel-speed', {
+    method: 'PUT',
+    body: {
+      machineId: machineId.value,
+      maxReelSpeed: maxReelSpeed.value,
+    },
+  })
+}
 </script>
 
 <template>
@@ -136,8 +147,14 @@ async function handleFilterSlotsUpdateOutputs(updatedValue: FilterSlot[]) {
             </q-tab-panel>
 
             <q-tab-panel name="other">
-              <div class="h-160">
-                <q-input :label="t('maxReelSpeed')" />
+              <div class="h-160 flex flex-col gap-4">
+                <q-input v-model="maxReelSpeed" :label="t('maxReelSpeed')" />
+                <q-btn
+                  :label="t('submit')"
+                  color="primary"
+                  class="w-32 self-end"
+                  @click="handleSubmit"
+                />
               </div>
             </q-tab-panel>
           </q-tab-panels>
