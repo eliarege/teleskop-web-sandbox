@@ -11,6 +11,10 @@ const myForm = ref<any>(null)
 
 await editor.fetchMachineCommands()
 await editor.fetchProgram()
+
+/*
+  TODO: Save, Reset, NewStep, NewParallelStep, DeleteStep, DeleteParallelStep
+*/
 </script>
 
 <template>
@@ -37,7 +41,7 @@ await editor.fetchProgram()
             }"
           />
         </div>
-        <div>
+        <div class="mb-130">
           <ProgramEditor />
         </div>
       </QForm>
