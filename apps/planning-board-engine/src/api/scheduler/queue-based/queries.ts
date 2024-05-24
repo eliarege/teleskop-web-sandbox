@@ -62,6 +62,7 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
     ...ev,
     startDate: ev.plannedStartDate,
     endDate: addSeconds(ev.plannedStartDate, ev.theoreticalDuration),
+    percentDone: 0,
   })))
 }
 
@@ -121,6 +122,7 @@ export async function getQueueBasedArchiveEvents(startDate: string | Date, endDa
     ...ev,
     endDate: ev.endTime ? ev.endTime : ev.cancelTime,
     startDate: ev.startTime,
+    percentDone: ev.deviation > 0 ? 100 - ((ev.deviation / ev.theoreticalDuration) * 100) : 0,
   })))
 }
 export async function checkMachineLastTaskQueue(machineId: number) {

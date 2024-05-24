@@ -310,6 +310,10 @@ onMounted(async () => {
       },
     ],
     features: {
+      percentBar: {
+        allowResize: false,
+        showPercentage: false,
+      },
       dependencies: false,
       scheduleContext: {
         disabled: true,
