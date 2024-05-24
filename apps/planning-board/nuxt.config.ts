@@ -8,11 +8,6 @@ export default defineNuxtConfig({
     'nuxt-ui',
   ],
   runtimeConfig: {
-    teleskopHost: 'localhost',
-    teleskopUser: '',
-    teleskopPort: '1433',
-    teleskopPassword: '',
-    teleskopDatabase: 'Teleskop',
     planningEngineUrl: 'http://localhost:3500',
     public: {
       kcClientId: 'planning-board',
