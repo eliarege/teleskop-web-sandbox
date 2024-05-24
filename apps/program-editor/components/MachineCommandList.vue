@@ -51,10 +51,9 @@ const programStatus = [
   { label: t('programStatusInfo.changedOnMachine'), color: PRG_STATE_COLORS.CHANGED_ON_MACHINE },
 ]
 
-let draggedCommand: any | null = null
+let draggedCommand: any = null
 
 function onDragStart(event: SortableEvent) {
-  // isDef - Değer var mı? (true/false)
   if (isDef(event.oldIndex)) {
     draggedCommand = commands.value?.[event.oldIndex] as MachineCommand
   }
@@ -69,10 +68,10 @@ function onDragEnd(event: SortableEvent) {
     if (isParallelCommand) {
       const index = Number.parseInt(parent.getAttribute('data-index') || '-1')
       if (index > -1) {
-        editor.newParallelStep()
+        editor.newParallelStepCommand(draggedCommand.commandNo, index)
       }
     } else {
-      editor.newStep(draggedCommand.commandNo)
+      editor.newStepCommand(draggedCommand.commandNo, event.newIndex - 1)
     }
 
     draggedCommand = null
