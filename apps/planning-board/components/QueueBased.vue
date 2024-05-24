@@ -140,7 +140,12 @@ async function refreshScheduler() {
     unScheduledRefresh(),
     eventRefresh(),
   ])
-  scheduler.refreshRows()
+  try {
+    // FIX: Cycle during synchronous computation
+    scheduler.refreshRows()
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 async function machineReload() {
