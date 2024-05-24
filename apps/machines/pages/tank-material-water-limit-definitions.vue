@@ -85,7 +85,7 @@ async function handleFilterSlotsUpdate(updatedValue: FilterSlot[]) {
   await execute()
 }
 
-async function popupUpdate(value, rowName, props) {
+async function popupUpdate(value: string, rowName: string, props) {
   const tankDefinition = tankMaterialDefinitions.value[props.rowIndex]
   tankDefinition[rowName] = value
   return await $fetch('/api/materials/material-tank-water-definition', {

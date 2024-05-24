@@ -94,6 +94,8 @@ export interface WaterType {
 
 export interface CommandAlarmReason {
   id: number
+  machineId: number
+  commandNo: number
   reasonText: string
   commandNumbers: number[]
   groupId: number
@@ -118,15 +120,19 @@ export interface MachineParameter {
   isDeleted: number
 }
 
-export interface IO {
+export interface CommandIO {
   id: number
+  commandNo: number
   card: number
   channel: number
   name: string
   enabled: number
+  plcIO: number
+  icon: string
+  chooseList: []
 }
 
-export interface IOOutput extends IO {
+export interface IOOutput extends CommandIO {
   defaultValue: number
 }
 

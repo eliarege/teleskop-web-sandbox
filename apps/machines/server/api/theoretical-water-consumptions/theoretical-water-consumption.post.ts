@@ -1,9 +1,17 @@
 import { knex } from '~/server/connectionPool'
 
+interface TheoreticalWaterConsumption {
+  MACHINEID: number
+  COMMANDNO: number
+  COMMANDIO?: number
+  COMMANDIO2?: number
+  COMMANDPRM?: number
+}
+
 export default defineEventHandler(async (event) => {
   const { machineId, commandNo, commandIO, commandIO2, commandParameter } = await readBody(event)
 
-  const insertData = {}
+  const insertData: Partial<TheoreticalWaterConsumption> = {}
   if (commandIO !== undefined)
     insertData.COMMANDIO = commandIO
   if (commandIO2 !== undefined)

@@ -1,6 +1,8 @@
 import type { Knex } from 'knex'
+import type { CommandIO } from 'tbb-ftp-client/src/types'
+import type { IOOutput, Machine } from '~/types'
 
-export function calcIONumber(ioObject, controllerModel, ioName: string) {
+export function calcIONumber(ioObject: IOOutput | CommandIO, controllerModel: Pick<Machine, 'productModel' | 'hardwareModel' | 'plcModel'>, ioName: string) {
   const { productModel, plcModel } = controllerModel
   let channelSum
   if (plcModel.includes('RIO'))
@@ -38,7 +40,7 @@ export function calcIONumber(ioObject, controllerModel, ioName: string) {
   return res
 }
 
-export async function getIOName(machineId, type, id, trx: Knex) {
+export async function getIOName(machineId: number, type: number, id: number, trx: Knex) {
   let tableName
   switch (type) {
     case 0: tableName = 'BFMACHAIN'; break

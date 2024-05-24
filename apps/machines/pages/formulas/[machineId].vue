@@ -6,6 +6,11 @@ import type { Formula } from '~/types'
 const { t } = useI18n()
 const route = useRoute()
 
+interface Option {
+  value: number
+  label: string
+}
+
 const columns = computed<Column[]>(() => ([
   {
     name: 'formulaId',
@@ -139,13 +144,13 @@ async function handleDelete() {
   })
   await refreshFormulas()
 }
-function handleCommandSelect(e: { value: number, label: string }) {
+function handleCommandSelect(e: Option) {
   selectedCommandNo.value = e.value
   formula.value.commandNo = e.value
   formula.value.commandName = e.label
 }
 
-function handleParamSelect(e: { value: number, label: string }) {
+function handleParamSelect(e: Option) {
   formula.value.parameterIndex = e.value
   formula.value.parameterName = e.label
 }
@@ -200,7 +205,7 @@ const showAddFormulaDialog = ref(false)
             option-value="value"
             :display-value="formula?.commandName"
             class="w-1/6"
-            @update:model-value="(e) => handleCommandSelect(e)"
+            @update:model-value="(e: Option) => handleCommandSelect(e)"
           />
           <q-select
             :model-value="formula?.parameterIndex"
@@ -211,7 +216,7 @@ const showAddFormulaDialog = ref(false)
             option-value="value"
             :display-value="formula?.parameterName"
             class="w-1/6"
-            @update:model-value="(e) => handleParamSelect(e)"
+            @update:model-value="(e: Option) => handleParamSelect(e)"
           />
         </div>
         <div class="flex w-full justify-between m-4">

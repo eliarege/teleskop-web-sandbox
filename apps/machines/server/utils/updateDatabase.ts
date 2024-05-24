@@ -2,7 +2,6 @@ import type { Knex } from 'knex'
 import type { TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import type { LockOutputAnalog, LockOutputDigital } from 'tbb-ftp-client/src/types'
-import { LockOutput } from 'tbb-ftp-client/src/types'
 import { DatabaseQueryError } from '../error'
 import { calcIONumber } from '.'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'
@@ -856,7 +855,7 @@ export async function writeCommandAlarmReasons(machineId: number, tbb: TbbFtpCli
       commandNo: 'COMMANDNO',
     })
 
-  const mergedReasons: CommandAlarmReason[] = reasons.reduce((acc, curr) => {
+  const mergedReasons: CommandAlarmReason[] = reasons.reduce((acc: CommandAlarmReason[], curr) => {
     const existingReason = acc.find(reason => reason.machineId === curr.machineId && reason.id === curr.id)
     if (existingReason) {
       existingReason.commandNumbers.push(curr.commandNo)
