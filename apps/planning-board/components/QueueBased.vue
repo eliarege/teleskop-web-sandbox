@@ -13,6 +13,8 @@ import { eventTooltip } from '~/composables/helper'
 import { useSettingStore } from '~/store/settings'
 
 const { t } = useI18n()
+const visibility = useDocumentVisibility()
+const refreshInterval = 60_000
 const today = new Date()
 const startDate = ref(today.toISOString())
 const endDate = ref(addDays(today, 3).toISOString())
@@ -66,8 +68,9 @@ const { data: machines, refresh: machineRefresh, pending: machinesPending } = aw
   transform: unsortedMachines => sortMachines(unsortedMachines),
 })
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
-const { data: events, refresh: eventRefresh, pending } = await useFetch('/api/queueBased/schedulerEvents', {
+const { data: events, refresh: eventRefresh, pending: eventsPending } = await useFetch<QueueBasedPlannedEvents[]>('/api/queueBased/schedulerEvents', {
   immediate: false,
+  default: () => [],
   query: {
     startDate,
     endDate,
@@ -82,26 +85,28 @@ function sortMachines(machines: MachineStatus[]) {
   })
 }
 
-const modifiedEvents = computed(() => events.value?.map((ev: any) => {
-  const batchText = store.settings.plannedBatch.batchText?.value || 'jobOrder'
-  const completedBatchText = store.settings.completedBatch.batchText?.value || 'jobOrder'
-  const ongoingBatchText = store.settings.ongoingBatch.batchText?.value || 'jobOrder'
-  return {
-    ...ev,
-    id: ev.planKey,
-    name: !ev.isStarted
-      ? ev[batchText]
-      : ev.isRunning
-        ? ev[ongoingBatchText]
-        : ev[completedBatchText],
-    resourceId: ev.machineId,
-    resizable: false,
-    draggable: !ev.isStarted && !ev.pinned,
-    editable: false,
-  }
-}))
+const modifiedEvents = computed(() => {
+  return events.value.map((event) => {
+    const batchText = store.settings.plannedBatch.batchText?.value || 'jobOrder'
+    const completedBatchText = store.settings.completedBatch.batchText?.value || 'jobOrder'
+    const ongoingBatchText = store.settings.ongoingBatch.batchText?.value || 'jobOrder'
+    return {
+      ...event,
+      id: event.planKey,
+      name: !event.isStarted
+        ? event[batchText]
+        : event.isRunning
+          ? event[ongoingBatchText]
+          : event[completedBatchText],
+      resourceId: event.machineId,
+      resizable: false,
+      draggable: !event.isStarted && !event.pinned,
+      editable: false,
+    }
+  })
+})
 
-const scrollStore = new EventStore({
+const scrollStore = new Store({
   data: modifiedEvents.value,
 })
 
@@ -118,9 +123,6 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((u
 
 let scheduler: SchedulerPro
 let grid: Grid
-
-const visibility = useDocumentVisibility()
-const refreshInterval = 60_000
 
 async function scheduleDataRefresh() {
   await until(visibility).toBe('visible')
@@ -147,7 +149,7 @@ async function machineReload() {
   await eventRefresh()
   scheduler.refreshRows()
 }
-// @ts-expect-error ???
+
 watch(modifiedEvents, (newVal: QueueBasedPlannedEvents[]) => {
   scheduler.events = newVal
   scrollStore.data = newVal
@@ -212,8 +214,8 @@ function dateRangeEnd() {
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
 }
-watch(pending, () => {
-  if (pending.value) {
+watch(eventsPending, () => {
+  if (eventsPending.value) {
     scheduler.mask({
       text: 'Loading in progress',
     })

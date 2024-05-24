@@ -14,6 +14,7 @@ export interface QueueBasedPlannedEvents {
   isRunning: boolean
   startDate: string
   endDate: string
+  pinned: boolean
 }
 
 export interface QueueBasedArchiveEvents {
