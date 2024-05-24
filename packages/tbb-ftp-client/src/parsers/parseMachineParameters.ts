@@ -10,7 +10,7 @@ const pattern = /^SABIT_(\d+)=(.+)$/gim
  * ```
  */
 export function parseMachineParameters(content: string) {
-  const machineParameters: MachineParameter[] = []
+  const machineParameters: Partial<MachineParameter>[] = []
   let match = pattern.exec(content)
   while (match !== null) {
     const id = match[1]
@@ -20,7 +20,7 @@ export function parseMachineParameters(content: string) {
     // consScreen, paramlowlimit, paramhighlimit, consFormat,
     // paramNo,consUnit
     if (values && values.length) {
-      const parameter: MachineParameter = {
+      const parameter: Partial<MachineParameter> = {
         machineParameterId: Number.parseInt(id),
         paramString: values[0],
         defaultValue: Number.parseInt(values[1]),

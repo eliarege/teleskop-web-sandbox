@@ -169,7 +169,7 @@ export interface CommandIO {
   enabled: number
   plcIO: number
   icon: string
-  chooseList:
+  chooseList: []
 }
 
 export interface IOOutput extends CommandIO {

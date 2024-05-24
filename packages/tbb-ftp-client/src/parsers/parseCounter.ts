@@ -1,4 +1,4 @@
-import type { IO } from '../types'
+import type { CommandIO } from '../types'
 
 const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (\d+) (\d+)(?: "([^"]+)")?$/gim
 /**
@@ -13,7 +13,7 @@ export function parseCounter(content: string) {
   const inputs = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const input: IO = {
+    const input: Partial<CommandIO> = {
       id: Number.parseInt(match[1]),
       card: Number.parseInt(match[2]),
       channel: Number.parseInt(match[3]),

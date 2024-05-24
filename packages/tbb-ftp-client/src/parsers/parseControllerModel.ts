@@ -13,7 +13,7 @@ const pattern = /^(.+)-(.+)-(.+)$/gim
 export function parseControllerModel(content: string) {
   const match = pattern.exec(content)
   if (match) {
-    const controllerModel: Machine = {
+    const controllerModel: Partial<Machine> = {
       productModel: match[1],
       hardwareModel: match[2],
       plcModel: match[3],
