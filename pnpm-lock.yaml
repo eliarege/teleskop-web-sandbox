@@ -349,6 +349,12 @@ importers:
       socket.io-client:
         specifier: ^4.7.5
         version: 4.7.5
+      sortablejs:
+        specifier: ^1.15.1
+        version: 1.15.2
+      sortablejs-vue3:
+        specifier: ^1.2.11
+        version: 1.2.11(sortablejs@1.15.2)(vue@3.4.24(typescript@5.4.5))
       tedious:
         specifier: ^18.1.0
         version: 18.1.0
@@ -792,14 +798,14 @@ importers:
         specifier: ^0.6.10
         version: 0.6.10(nuxt@3.11.2(@parcel/watcher@2.4.1)(@types/node@20.12.7)(@unocss/reset@0.59.4)(async-validator@4.2.5)(axios@1.6.8)(encoding@0.1.13)(eslint@8.57.0)(floating-vue@5.2.2(@nuxt/kit@3.11.2(rollup@4.16.2))(vue@3.4.24(typescript@5.4.5)))(fuse.js@7.0.0)(ioredis@5.4.1)(jwt-decode@4.0.0)(optionator@0.9.3)(rollup@4.16.2)(sortablejs@1.15.2)(terser@5.30.4)(typescript@5.4.5)(unocss@0.59.4(@unocss/webpack@0.59.4(rollup@4.16.2)(webpack@5.91.0))(postcss@8.4.38)(rollup@4.16.2)(vite@5.2.10(@types/node@20.12.7)(terser@5.30.4)))(vite@5.2.10(@types/node@20.12.7)(terser@5.30.4)))(rollup@4.16.2)(vite@5.2.10(@types/node@20.12.7)(terser@5.30.4))(vue@3.4.24(typescript@5.4.5))
       nuxt-quasar-ui:
-        specifier: ^2.1.0
-        version: 2.1.0(@quasar/extras@1.16.11)(quasar@2.15.3)(rollup@4.16.2)
+        specifier: ^2.1.2
+        version: 2.1.2(@quasar/extras@1.16.11)(quasar@2.16.4)(rollup@4.16.2)
       pinia:
         specifier: ^2.1.7
         version: 2.1.7(typescript@5.4.5)(vue@3.4.24(typescript@5.4.5))
       quasar:
-        specifier: ^2.15.3
-        version: 2.15.3
+        specifier: ^2.16.2
+        version: 2.16.4
       ufo:
         specifier: ^1.5.3
         version: 1.5.3
@@ -5689,14 +5695,11 @@ packages:
   nuxt-icon@0.6.10:
     resolution: {integrity: sha512-S9zHVA66ox4ZSpMWvCjqKZC4ZogC0s2z3vZs+M4D95YXGPEXwxDZu+insMKvkbe8+k7gvEmtTk0eq3KusKlxiw==}
 
-  nuxt-quasar-ui@2.1.0:
-    resolution: {integrity: sha512-HqkOyMeJbNUvtJgstqwLritiYgLdwhQpEFNNKeO0GhSrWrogopWmCGqKCaGUL0nXhm/QCcEeH+e66QZL3ANzVg==}
+  nuxt-quasar-ui@2.1.2:
+    resolution: {integrity: sha512-ohxKlTBSgWqxcDr3IFTy7TZH0Iamq1YPuh7wtpptpEJfwraYOr25PXCsiyIMC0PmzW+Mr23Zxu34hVxdsrhzAg==}
     peerDependencies:
       '@quasar/extras': ^1
       quasar: ^2.8.0
-    peerDependenciesMeta:
-      '@quasar/extras':
-        optional: true
 
   nuxt@3.11.2:
     resolution: {integrity: sha512-Be1d4oyFo60pdF+diBolYDcfNemoMYM3R8PDjhnGrs/w3xJoDH1YMUVWHXXY8WhSmYZI7dyBehx/6kTfGFliVA==}
@@ -6292,8 +6295,8 @@ packages:
     resolution: {integrity: sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==}
     engines: {node: '>=0.6'}
 
-  quasar@2.15.3:
-    resolution: {integrity: sha512-+6g6D1t/O95dhuov4b6SwR3asowr01xwV1A2JWh5cVQc1hTmolXzgQNPbrOApLjGX7N1cQ119DWajJ/G8KzXPQ==}
+  quasar@2.16.4:
+    resolution: {integrity: sha512-ICntco9uZ4PeyLgzVckjK3fsS+LG7+rOUmRyR7Gq3XpfeCADs1edIRjlxsPpWBBJvK/9AHLGPO6XNmnJmdJm0A==}
     engines: {node: '>= 10.18.1', npm: '>= 6.13.4', yarn: '>= 1.21.1'}
 
   queue-microtask@1.2.3:
@@ -13544,16 +13547,15 @@ snapshots:
       - vite
       - vue
 
-  nuxt-quasar-ui@2.1.0(@quasar/extras@1.16.11)(quasar@2.15.3)(rollup@4.16.2):
+  nuxt-quasar-ui@2.1.2(@quasar/extras@1.16.11)(quasar@2.16.4)(rollup@4.16.2):
     dependencies:
       '@nuxt/kit': 3.11.2(rollup@4.16.2)
+      '@quasar/extras': 1.16.11
       defu: 6.1.4
       magic-string: 0.30.10
       p-memoize: 7.1.1
-      quasar: 2.15.3
+      quasar: 2.16.4
       semver: 7.6.0
-    optionalDependencies:
-      '@quasar/extras': 1.16.11
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -14363,7 +14365,7 @@ snapshots:
     dependencies:
       side-channel: 1.0.6
 
-  quasar@2.15.3: {}
+  quasar@2.16.4: {}
 
   queue-microtask@1.2.3: {}
 
