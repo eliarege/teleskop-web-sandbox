@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { klona } from 'klona/lite'
-import type { MachineCommand, ParameterItem, Program, ProgramStep, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { CommandIO, MachineCommand, ParameterItem, Program, ProgramStep, ProgramStepCommand, ioListItem } from '~/shared/types'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
@@ -16,14 +16,16 @@ export const useEditorStore = defineStore('editor', () => {
   let isLoading = false
   let isCommandLoading = false
   const isIncorrectInput = ref<number>(0)
-  const isDragging = false
+  const isDragging = true
 
+  const { t } = useI18n()
   const errorIds = ref(new Set<string>())
+  const { notifySuccess, notifyError } = useNotify()
 
   function createEmptyStep() {
     return {
       stepId: lastStepId++,
-      mainCommand: {} as ProgramStepCommand,
+      mainCommand: createEmptyCommand(),
       parallelCommands: [] as ProgramStepCommand[],
     }
   }
@@ -31,14 +33,15 @@ export const useEditorStore = defineStore('editor', () => {
   function createEmptyCommand() {
     return {
       commandId: lastCommandId++,
-      commandNo: 0,
+      commandNo: null,
       parameters: [] as ParameterItem[],
       ioList: [] as ioListItem[],
     }
   }
 
   function newStep() {
-    const step = createEmptyStep()
+    const emptyStep = createEmptyStep()
+
     let index = 0
     if (selectedStep.value !== -1) {
       index = selectedStep.value
@@ -47,19 +50,96 @@ export const useEditorStore = defineStore('editor', () => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
     }
 
-    step.parallelCommands = index > 0 ? klona(program.value.steps[index].parallelCommands) : []
-    for (const command of step.parallelCommands) {
+    emptyStep.parallelCommands = index > 0 ? klona(program.value.steps[index].parallelCommands) : []
+    for (const command of emptyStep.parallelCommands) {
       command.commandId = lastCommandId++
     }
-    program.value.steps.splice(index + 1, 0, step)
+
+    program.value.steps.splice(index + 1, 0, emptyStep)
     selectedParallelStep.value = -1
     selectedStep.value = index + 1
+  }
+
+  function newStepCommand(commandNo: number, stepIndex: number) {
+    const newStep = createEmptyStep()
+    updateCommand(newStep.mainCommand, commandNo)
+
+    newStep.parallelCommands = stepIndex > 0 ? klona(program.value.steps[stepIndex].parallelCommands) : []
+    for (const command of newStep.parallelCommands) {
+      command.commandId = lastCommandId++
+    }
+    program.value.steps.splice(stepIndex + 1, 0, newStep)
+    selectedParallelStep.value = -1
+    selectedStep.value = stepIndex + 1
   }
 
   function newParallelStep() {
     const index = selectedStep.value !== -1 ? selectedStep.value : program.value.steps.length
     const parallelIndex = selectedParallelStep.value !== -1 ? selectedParallelStep.value : program.value.steps[index].parallelCommands.length
     program.value.steps[index].parallelCommands.splice(parallelIndex + 1, 0, createEmptyCommand())
+  }
+
+  function newParallelStepCommand(commandNo: number, stepIndex: number) {
+    const newCommand = createEmptyCommand()
+    updateCommand(newCommand, commandNo)
+    program.value.steps[stepIndex].parallelCommands.push(newCommand)
+  }
+
+  function updateCommand(command: ProgramStepCommand, commandNo: number) {
+    console.log(commandNo)
+
+    const machineCommand = machineCommands.value.get(commandNo)
+
+    if (!machineCommand) {
+      throw new Error('Machine Command Not Found!')
+    }
+
+    command.commandNo = machineCommand.commandNo
+
+    command.parameters = machineCommand.parameters
+      .filter(parameter => parameter.editable)
+      .map(parameter => ({
+        index: parameter.index,
+        value: parameter.defaultValue,
+      }))
+
+    command.ioList = machineCommand.ioList
+      .filter(io => io.selectable)
+      .map(io => ({
+        ioId: io.physicalId,
+        ioIndex: io.index,
+        value: io.selections
+          .filter(selection => selection.defaultValue)
+          .map(selection => [selection.type, selection.physicalId]),
+      }))
+  }
+
+  async function onSubmit() {
+    const firstId = errorIds.value.values().next().value
+    if (firstId) {
+      const el = document.getElementById(firstId)
+      const parentEl = el?.closest('.q-item__section--main')
+      const button = parentEl?.querySelector('button')
+
+      if (button?.children[1].children[0].innerHTML === 'expand_more')
+        button.click()
+
+      setTimeout(() => {
+        el?.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
+      }, 100)
+
+      notifyError(t('saveProgram.incorrect'))
+    } else {
+      if (await updateProgram()) {
+        notifySuccess(t('saveProgram.success'))
+      } else {
+        notifyError(t('saveProgram.fail'))
+      }
+    }
+  }
+
+  function onReset() {
+    window.location.reload()
   }
 
   function deleteStep(stepIndex?: number) {
@@ -234,10 +314,15 @@ export const useEditorStore = defineStore('editor', () => {
     fetchPrograms,
     createProgram,
     updateProgram,
+    onSubmit,
+    onReset,
     insertProgram,
     insertStep,
     newStep,
+    newStepCommand,
     newParallelStep,
+    newParallelStepCommand,
+    updateCommand,
     deleteStep,
     deleteParallelStep,
     changeSelection,
