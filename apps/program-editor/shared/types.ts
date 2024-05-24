@@ -1,3 +1,13 @@
+export interface ProgramInfo {
+  programNo: number
+  name: string
+  type: number
+  updatedAt: Date
+  updatedAtTBB: Date | null
+  programState: number
+  isChanged: boolean
+}
+
 export interface ProgramFilter {
   programNo?: number
   programName?: string
@@ -106,7 +116,7 @@ export interface ProgramStep {
 
 export interface ProgramStepCommand {
   commandId: number
-  commandNo: number
+  commandNo: number | null
   parameters: ParameterItem[]
   ioList: ioListItem[]
 }
