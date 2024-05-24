@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import type { Machine } from '~/types'
+import type { Machine, Setting } from '~/types'
 
 const { t } = useI18n()
 
 const showAddMachineSystemSetting = ref(false)
+
+interface MachineSetting extends Machine {
+  check: boolean
+}
 
 const tokens = {
   ICONS_ENABLED: 'ICONS_ENABLED',
@@ -96,7 +100,7 @@ const tokens = {
   KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF: 'KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF',
 }
 
-const settings = [
+const settings: Setting[] = [
   { caption: 'ICONS_ENABLED', token: tokens.ICONS_ENABLED },
   { caption: 'SIDETEXT_ENABLED', token: tokens.SIDETEXT_ENABLED },
   { caption: 'KILITLEMELER_AKTIF', token: tokens.KILITLEMELER_AKTIF },
@@ -173,21 +177,21 @@ const settings = [
   { caption: 'KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF', token: tokens.KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF },
 ]
 
-const { data: machines } = useLazyFetch<Machine[]>('/api/machines/machines', {
+const { data: machines } = useLazyFetch('/api/machines/machines', {
   method: 'POST',
   body: {},
-  transform: machines => (
-    machines.map(machine => ({
+  transform: (machines: Machine[]) => {
+    return machines.map(machine => ({
       ...machine,
-      check: ref(false),
-    }))
-  ),
+      check: false,
+    })) as MachineSetting[]
+  },
 })
 
-const selectedSettings = ref([])
+const selectedSettings = ref<Setting[]>([])
 const selected = ref()
 
-function handleAdd(selectedSetting) {
+function handleAdd(selectedSetting: Setting) {
   showAddMachineSystemSetting.value = false
   selectedSettings.value.push(selectedSetting)
 }
@@ -202,17 +206,17 @@ async function handleSend() {
     method: 'POST',
     body: {
       settings: selectedSettings.value,
-      machines: machines.value.filter(machine => machine.check).map(machine => machine.machineId),
+      machines: machines.value?.filter(machine => machine.check).map(machine => machine.machineId),
     },
   })
 }
 
 function selectAll() {
-  machines.value.forEach(machine => machine.check = true)
+  machines.value?.forEach(machine => machine.check = true)
 }
 
 function deselectAll() {
-  machines.value.forEach(machine => machine.check = false)
+  machines.value?.forEach(machine => machine.check = false)
 }
 </script>
 
@@ -224,12 +228,26 @@ function deselectAll() {
           <div>
             <h3>{{ t('settingsToUpdate') }}</h3>
             <div class="flex gap-4 my-4">
-              <q-btn :label="t('add')" no-caps @click="showAddMachineSystemSetting = true" />
-              <q-btn :label="t('delete')" no-caps :disable="!selected" @click="handleDelete" />
+              <q-btn
+                :label="t('add')"
+                no-caps
+                @click="showAddMachineSystemSetting = true"
+              />
+              <q-btn
+                :label="t('delete')"
+                no-caps
+                :disable="!selected"
+                @click="handleDelete"
+              />
             </div>
-            <q-list separator bordered class="h-160 overflow-y-auto w-sm">
+            <q-list
+              separator
+              bordered
+              class="h-160 overflow-y-auto w-sm"
+            >
               <q-item
-                v-for="setting in selectedSettings" :key="setting.caption"
+                v-for="setting in selectedSettings"
+                :key="setting.caption"
                 v-ripple
                 clickable
                 :active="selected === setting"
@@ -245,10 +263,22 @@ function deselectAll() {
           <div>
             <h3>{{ t('machinesToUpdate') }}</h3>
             <div class="flex gap-4 my-4">
-              <q-btn :label="t('selectAll')" no-caps @click="selectAll" />
-              <q-btn :label="t('deselectAll')" no-caps @click="deselectAll" />
+              <q-btn
+                :label="t('selectAll')"
+                no-caps
+                @click="selectAll"
+              />
+              <q-btn
+                :label="t('deselectAll')"
+                no-caps
+                @click="deselectAll"
+              />
             </div>
-            <q-list bordered separator class="h-160 overflow-y-auto w-sm">
+            <q-list
+              bordered
+              separator
+              class="h-160 overflow-y-auto w-sm"
+            >
               <q-item
                 v-for="machine in machines"
                 :key="machine.machineId"
@@ -261,7 +291,12 @@ function deselectAll() {
       </q-card-section>
       <q-card-actions align="right" class="flex gap-2 m-4">
         <q-btn :label="t('cancel')" no-caps />
-        <q-btn :label="t('submit')" color="primary" no-caps @click="handleSend" />
+        <q-btn
+          :label="t('submit')"
+          color="primary"
+          no-caps
+          @click="handleSend"
+        />
       </q-card-actions>
     </q-card>
 

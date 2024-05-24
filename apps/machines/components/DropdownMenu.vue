@@ -25,7 +25,7 @@ const props = withDefaults(defineProps<DropdownProps>(), {
 })
 const emit = defineEmits(['close'])
 defineSlots<{
-  default(props: { active: boolean; item: DropdownItem; depth: number }): any
+  default: (props: { active: boolean, item: DropdownItem, depth: number }) => any
 }>()
 const router = useRouter()
 const open = ref(false)

@@ -24,7 +24,7 @@ const settingsList = [
 
 const formData = ref({})
 
-const { data: setting } = useLazyFetch('/api/machines/teleskop-settings', {
+const { data: _setting } = useLazyFetch('/api/machines/teleskop-settings', {
   default: () => ({}),
   onResponse: (res) => {
     const data = res.response._data
@@ -103,14 +103,18 @@ async function handleSubmit() {
 
 <template>
   <q-dialog
-    :model-value="show"
-    @hide="$emit('close')"
+    :model-value="props.show"
+    @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
       <q-card-section>
         <h3>{{ t('teleskopSettings') }}</h3>
         <FormKit
-          v-model="formData" :actions="false" type="form" :form-class="formClass" @submit="handleSubmit"
+          v-model="formData"
+          :actions="false"
+          type="form"
+          :form-class="formClass"
+          @submit="handleSubmit"
         >
           <FormKitSchema :schema="schema" />
           <slot name="form-content" />

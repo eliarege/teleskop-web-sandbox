@@ -16,7 +16,7 @@ const selected = ref<Partial<TreatmentParameter>>({
 
 const selectedGroupId = ref(-1)
 
-const { data: params, refresh: refreshParams } = useLazyFetch('/api/treatment-parameters/treatment-parameters', {
+const { data: params, refresh: refreshParams } = useLazyFetch<TreatmentParameter[]>('/api/treatment-parameters/treatment-parameters', {
   default: () => [],
 })
 
@@ -53,8 +53,8 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
 
 <template>
   <q-dialog
-    :model-value="show"
-    @hide="$emit('close')"
+    :model-value="props.show"
+    @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
       <q-card-section class="flex flex-col">

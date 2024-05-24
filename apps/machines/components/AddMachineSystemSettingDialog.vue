@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import type { Setting } from '~/types'
+
 const props = defineProps<{
   show: boolean
-  settings: []
-  tokens: []
+  settings: Setting[]
+  tokens: object
 }>()
 
 const emit = defineEmits(['close', 'add'])
@@ -32,7 +34,7 @@ function handleAdd() {
         <h3>{{ t('selectSettingToUpdate') }}</h3>
         <q-select
           v-model="selectedSetting"
-          :options="settings"
+          :options="props.settings"
           :display-value="`${selectedSetting ? t(`updateMachineSettings.${selectedSetting.caption}`) : ''}`"
         >
           <template #option="scope">
@@ -51,7 +53,11 @@ function handleAdd() {
         />
         <q-card-actions align="right">
           <q-btn :label="t('cancel')" @click="$emit('close')" />
-          <q-btn :label="t('add')" color="primary" @click="handleAdd" />
+          <q-btn
+            :label="t('add')"
+            color="primary"
+            @click="handleAdd"
+          />
         </q-card-actions>
       </q-card-section>
     </q-card>

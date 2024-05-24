@@ -84,7 +84,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
 <template>
   <q-dialog
     :model-value="show"
-    @hide="$emit('close')"
+    @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
       <q-card-section>

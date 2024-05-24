@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Column, FilterSlot } from 'nuxt-ui-types'
+
 const { t } = useI18n()
 
 const materialTypeMap = [
@@ -7,7 +9,7 @@ const materialTypeMap = [
   { id: 3, name: t('other') },
 ]
 
-const columns = computed(() => ([
+const columns = computed<Column[]>(() => ([
   {
     name: 'materialGroupNo',
     label: t('materialType'),
@@ -66,7 +68,7 @@ const columns = computed(() => ([
   },
 ]))
 
-const filters = ref([])
+const filters = ref<FilterSlot[]>([])
 
 const { data: tankMaterialDefinitions, execute } = useLazyFetch('/api/materials/material-tank-water-definitions', {
   method: 'POST',
@@ -74,10 +76,10 @@ const { data: tankMaterialDefinitions, execute } = useLazyFetch('/api/materials/
   default: () => [],
 })
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: FilterSlot[]) {
   filters.value = updatedValue.map((filter) => {
     if (filter.field === 'materialGroupNo')
-      filter.value = materialTypeMap.find(m => m.name === filter.value).id
+      filter.value = materialTypeMap.find(m => m.name === filter.value)!.id
     return filter
   })
   await execute()
@@ -109,7 +111,7 @@ async function popupUpdate(value, rowName, props) {
               :key="col"
             >
               <span v-if="col.field === 'materialGroupNo'">
-                {{ materialTypeMap.find(m => m.id === col.value).name }}
+                {{ materialTypeMap.find(m => m.id === col.value)?.name ?? '' }}
               </span>
 
               <span v-else-if="col.field === 'preWater' || col.field === 'betweenWater' || col.field === 'postWater'">

@@ -300,3 +300,35 @@ export interface StartingParameter {
   paramId: number
   paramString: string
 }
+
+export interface CommandParameter {
+  machineId: number
+  commandNo: number
+  parameterIndex: number
+  paramString: string
+  commandDefinition: string
+  programEditing: boolean
+  batchPlanning: boolean
+  batchStart: boolean
+  commandRun: boolean
+  recipe: string
+  value: string
+  parameterType: string
+  selectionList: string
+  selectionValues: string
+  unitCode: string
+  paramLowLimit: number
+  paramHighLimit: number
+  containsVariable: boolean
+  temperature: boolean
+  useDefault: boolean
+  isCommandVariable: boolean
+  tbbFormul: string
+  useFormula: boolean
+}
+
+export interface Setting {
+  caption: string
+  token: string | number
+  isActive?: boolean
+}

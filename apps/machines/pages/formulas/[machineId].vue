@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { klona } from 'klona'
+import type { Column, FilterSlot } from 'nuxt-ui-types'
 import type { Formula } from '~/types'
 
 const { t } = useI18n()
 const route = useRoute()
 
-const columns = computed(() => ([
+const columns = computed<Column[]>(() => ([
   {
     name: 'formulaId',
     label: t('formulaId'),
@@ -49,7 +50,14 @@ const columns = computed(() => ([
 
 ]))
 
-const machineId = computed(() => route.params.machineId)
+const machineId = computed(() => {
+  const id = route.params.machineId
+  if (typeof id === 'string') {
+    return Number.parseInt(id)
+  } else {
+    return -1
+  }
+})
 const formula = ref<Partial<Formula>>({})
 const selectedCommandNo = ref()
 const copy = ref()
@@ -142,7 +150,7 @@ function handleParamSelect(e: { value: number, label: string }) {
   formula.value.parameterName = e.label
 }
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: FilterSlot[]) {
   formulas.value = await $fetch('/api/formulas/formulas', {
     method: 'POST',
     body: {
@@ -208,11 +216,28 @@ const showAddFormulaDialog = ref(false)
         </div>
         <div class="flex w-full justify-between m-4">
           <q-btn-group push>
-            <q-btn push :label="t('add')" @click="handleAdd" />
-            <q-btn push :label="t('edit')" @click="handleEdit" />
-            <q-btn push :label="t('delete')" @click="handleDelete" />
+            <q-btn
+              push
+              :label="t('add')"
+              @click="handleAdd"
+            />
+            <q-btn
+              push
+              :label="t('edit')"
+              @click="handleEdit"
+            />
+            <q-btn
+              push
+              :label="t('delete')"
+              @click="handleDelete"
+            />
           </q-btn-group>
-          <q-btn no-caps push :label="t('addFormula')" @click="showAddFormulaDialog = true" />
+          <q-btn
+            no-caps
+            push
+            :label="t('addFormula')"
+            @click="showAddFormulaDialog = true"
+          />
         </div>
         <FilterableTable
           :rows="formulas"

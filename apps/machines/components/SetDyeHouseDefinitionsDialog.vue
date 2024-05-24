@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Machine } from '~/types'
+
 const props = defineProps<{
   show: boolean
   selected: Machine
@@ -28,19 +30,19 @@ async function setDefinitions() {
 
 function selectAll() {
   Object.keys(options.value).forEach((key) => {
-    options.value[key] = true
+    options.value[key as keyof typeof options.value] = true
   })
 }
 
 function deselectAll() {
   Object.keys(options.value).forEach((key) => {
-    options.value[key] = false
+    options.value[key as keyof typeof options.value] = false
   })
 }
 
 function reverseSelected() {
   Object.keys(options.value).forEach((key) => {
-    options.value[key] = !options.value[key]
+    options.value[key as keyof typeof options.value] = !options.value[key as keyof typeof options.value]
   })
 }
 </script>
@@ -67,11 +69,31 @@ function reverseSelected() {
         <q-checkbox v-model="options.commandTimeoutReasons" :label="t('commandTimeoutReasons')" />
       </div>
       <div class="flex flex-row gap-4 justify-end">
-        <q-btn no-caps :label="t('selectAll')" @click="selectAll" />
-        <q-btn no-caps :label="t('deselectAll')" @click="deselectAll" />
-        <q-btn no-caps :label="t('reverseSelected')" @click="reverseSelected" />
-        <q-btn no-caps :label="t('cancel')" @click="emit('close')" />
-        <q-btn no-caps :label="t('send')" @click="setDefinitions" />
+        <q-btn
+          no-caps
+          :label="t('selectAll')"
+          @click="selectAll"
+        />
+        <q-btn
+          no-caps
+          :label="t('deselectAll')"
+          @click="deselectAll"
+        />
+        <q-btn
+          no-caps
+          :label="t('reverseSelected')"
+          @click="reverseSelected"
+        />
+        <q-btn
+          no-caps
+          :label="t('cancel')"
+          @click="emit('close')"
+        />
+        <q-btn
+          no-caps
+          :label="t('send')"
+          @click="setDefinitions"
+        />
       </div>
     </q-card>
   </q-dialog>

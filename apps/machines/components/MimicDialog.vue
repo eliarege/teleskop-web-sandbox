@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Column, FilterSlot } from 'nuxt-ui-types'
 import type { Machine } from '~/types'
 
 const props = defineProps<{
@@ -20,7 +21,7 @@ const { data: inputs } = useLazyFetch('/api/io/analog-input', {
   default: () => [],
 })
 
-const inputColumns = computed(() => ([
+const inputColumns = computed<Column[]>(() => ([
   {
     name: 'id',
     label: 'ID',
@@ -45,7 +46,7 @@ const { data: outputs } = useLazyFetch('/api/io/analog-output', {
   default: () => [],
 })
 
-const outputColumns = computed(() => ([
+const outputColumns = computed<Column[]>(() => ([
   {
     name: 'id',
     label: 'ID',
@@ -64,7 +65,7 @@ const outputColumns = computed(() => ([
   },
 ]))
 
-async function handleFilterSlotsUpdateInputs(updatedValue) {
+async function handleFilterSlotsUpdateInputs(updatedValue: FilterSlot[]) {
   inputs.value = await $fetch('/api/io/analog-input', {
     method: 'POST',
     body: {
@@ -74,7 +75,7 @@ async function handleFilterSlotsUpdateInputs(updatedValue) {
   })
 }
 
-async function handleFilterSlotsUpdateOutputs(updatedValue) {
+async function handleFilterSlotsUpdateOutputs(updatedValue: FilterSlot[]) {
   outputs.value = await $fetch('/api/io/analog-output', {
     method: 'POST',
     body: {
@@ -88,7 +89,7 @@ async function handleFilterSlotsUpdateOutputs(updatedValue) {
 <template>
   <q-dialog
     :model-value="show"
-    @hide="$emit('close')"
+    @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
       <q-card-section>

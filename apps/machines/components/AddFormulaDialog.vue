@@ -138,7 +138,11 @@ watch(scope, () => {
         <div class="flex flex-row w-full justify-around">
           <div class="flex flex-col">
             <h3>{{ t('startingParameters') }}</h3>
-            <q-list bordered separator class="overflow-y-auto h-120 w-60">
+            <q-list
+              bordered
+              separator
+              class="overflow-y-auto h-120 w-60"
+            >
               <q-item
                 v-for="param in startingParameters"
                 :key="param.paramString"
@@ -154,7 +158,11 @@ watch(scope, () => {
           </div>
           <div class="flex flex-col">
             <h3>{{ t('machineConstants') }}</h3>
-            <q-list bordered separator class="overflow-y-auto h-120 w-60">
+            <q-list
+              bordered
+              separator
+              class="overflow-y-auto h-120 w-60"
+            >
               <q-item
                 v-for="constant in machineConstants"
                 :key="constant.paramString"
@@ -170,7 +178,11 @@ watch(scope, () => {
           </div>
           <div class="flex flex-col">
             <h3>{{ t('commandParameters') }}</h3>
-            <q-list bordered separator class="overflow-y-auto h-120 w-60">
+            <q-list
+              bordered
+              separator
+              class="overflow-y-auto h-120 w-60"
+            >
               <q-item
                 v-for="param in commandParameters"
                 :key="param.paramString"
@@ -187,8 +199,17 @@ watch(scope, () => {
         </div>
       </q-card-section>
       <q-card-actions align="right" class="flex gap-2 m-4">
-        <q-btn :label="t('cancel')" no-caps @click="emit('close')" />
-        <q-btn :label="t('submit')" color="primary" no-caps @click="handleSubmit" />
+        <q-btn
+          :label="t('cancel')"
+          no-caps
+          @click="emit('close')"
+        />
+        <q-btn
+          :label="t('submit')"
+          color="primary"
+          no-caps
+          @click="handleSubmit"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>
