@@ -539,18 +539,6 @@ const router = useRouter()
 </template>
 
 <style lang="postcss">
-.q-item__label {
-  padding-left: .5rem;
-}
-.q-item--dense {
-  padding: 2px 0px !important;
-}
-.q-item__section--main {
-  flex: none;
-}
-.q-item__section--main + .q-item__section--main {
-  margin-left: 0px;
-}
 body {
   user-select: none;
 }

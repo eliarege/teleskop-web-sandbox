@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { ParameterItem, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { QSelect } from 'quasar'
+import type { ProgramStepCommand } from '~/shared/types'
 
 const props = defineProps<{
   path: string
@@ -22,45 +23,29 @@ const options = computed(() => (
     }))
 ))
 
-function updateCommand() {
-  const machineCommand = editor.machineCommands.get(programCommand.commandNo)
-
-  if (machineCommand) {
-    programCommand.commandNo = machineCommand.commandNo
-
-    programCommand.parameters = machineCommand.parameters
-      .filter(parameter => parameter.editable)
-      .map(parameter => ({
-        index: parameter.index,
-        value: parameter.defaultValue,
-      }))
-
-    programCommand.ioList = machineCommand.ioList
-      .filter(io => io.selectable)
-      .map(io => ({
-        ioId: io.physicalId,
-        ioIndex: io.index,
-        value: io.selections
-          .filter(selection => selection.defaultValue)
-          .map(selection => [selection.type, selection.physicalId]),
-      }))
-  }
-}
+const label = computed(() => {
+  return !programCommand.commandNo ? 'Komut Seçiniz' : undefined
+})
+const rules = [
+  (value: string) => Number.isNaN(value) || 'Komut Seçiniz',
+]
 </script>
 
 <template>
   <div class="pt-2 pb-2">
     <QSelect
-      v-model="programCommand.commandNo"
+      :model-value="programCommand.commandNo"
       :options="options"
       map-options
+      :label="label"
       emit-value
       style="width: 250px"
       options-dense
       outlined
       dense
       auto-close
-      @update:model-value="updateCommand"
+      :rules="rules"
+      @update:model-value="editor.updateCommand(programCommand, $event)"
     >
       <template #no-option>
         <QItem>
