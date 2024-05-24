@@ -44,4 +44,5 @@ export default defineEventHandler(async (event) => {
     // }
     return machine.updateProgram(body.program)
   }
+  return await machine.getProgramHeadersAsList()
 })
