@@ -31,9 +31,11 @@ const rules = [
       v-else
       v-model="programParameter.value"
       :rules="rules"
-      :label="parameter.name"
-      type="integer"
+      :label="parameter.name.charAt(0).toUpperCase() + parameter.name.slice(1)"
+      type="decimal"
       :maxlength="10"
+      outlined
+      dense
     />
   </template>
   <QSelect
