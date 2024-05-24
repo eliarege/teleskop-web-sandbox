@@ -128,10 +128,10 @@ function onLogout() {
       <template #default-body="{ node }">
         <QItem
           v-if="!node.children"
-          :class="q.dark.isActive ? 'border-solid border-1 b-rd-2' : 'border-solid border-1 b-rd-2 border-black text-black'"
+          class="item"
           clickable
           :active="dataStore.selectedDispenser?.dispenserId === node.dispenserId"
-          :active-class="q.dark.isActive ? 'text-white opacity-50' : 'text-black opacity-50'"
+          active-class="active-item"
           @click="selectItem(node)"
         >
           <QMenu
@@ -171,3 +171,25 @@ function onLogout() {
     />
   </div>
 </template>
+
+<style scoped>
+.item {
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 0.5rem;
+  border-color: black;
+  color: black;
+}
+.body--dark .item {
+  border-color: grey;
+  color: white;
+}
+.active-item {
+  color: dark;
+  opacity: 0.5;
+}
+
+.body--dark .active-item {
+  color: white;
+}
+</style>
