@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
       query: { distinct },
     })
   } else if (machineId) {
-    return await $fetch<{ definitions: any[], plannedDefinitions: any[], unplannedDefinitions: any[] }>(url, {
+    return await $fetch<{ definitions: any[], plannedDefinitions: any[] }>(url, {
       query: { machineId },
     })
   } else throw createError({ statusCode: 400, statusMessage: 'MISSING QUERY' })

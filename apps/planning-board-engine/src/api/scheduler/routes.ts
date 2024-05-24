@@ -3,7 +3,6 @@ import { compressJson } from '../../composables/helper'
 import {
   addBatchNote,
   addErpParameters,
-  deleteErpParameters,
   deleteEvent,
   deleteNote,
   getBatchNotes,
@@ -21,6 +20,7 @@ import {
   getUnplannedEvents,
   isTaskValid,
   pinEvent,
+  removeErpParameter,
   removeFromPlan,
   scheduleEvents,
   unpinEvent,
@@ -296,13 +296,13 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     },
   )
   fastify.post<{
-    Body: { paramId: number, owner: number, machineId: number }
+    Body: { id: number, machineId: number }
   }>(
     '/planning_board/erp_parameters/add_parameter',
     async (request, reply) => {
       try {
-        const { machineId, owner, paramId } = request.body
-        await addErpParameters(paramId, owner, machineId)
+        const { machineId, id } = request.body
+        await addErpParameters(id, machineId)
         return reply.code(200).send('Succesful')
       } catch (err) {
         fastify.log.error(`An error occured while adding erp parameter: ${err}`)
@@ -326,14 +326,14 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-  fastify.delete(
+  fastify.put(
     '/planning_board/erp_parameters/parameter',
     async (request: FastifyRequest<{
-      Querystring: { paramId: number, owner: number, machineId: number }
+      Querystring: { id: number, machineId: number }
     }>, reply) => {
       try {
-        const { paramId, owner, machineId } = request.query
-        await deleteErpParameters(paramId, owner, machineId)
+        const { id, machineId } = request.query
+        await removeErpParameter(id, machineId)
         return reply.code(200).send('Succesful')
       } catch (err) {
         console.error(`An error occured while deleting erp parameter: `, err)

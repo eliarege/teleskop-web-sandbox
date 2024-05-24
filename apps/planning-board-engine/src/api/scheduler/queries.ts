@@ -43,9 +43,9 @@ export async function getUnplannedEvents() {
       builder.whereNull('P.ISDELETESENDTOMANUNITES').orWhere('P.ISDELETESENDTOMANUNITES', 0)
     })
     .andWhere('P.LASTFORJOBORDER', 1)
-    .andWhere((builder) => {
-      builder.where('P.RECORDTIME', '>=', knex.raw(`DATEADD(month, -1, '2023-07-18')`))
-    })
+    // .andWhere((builder) => {
+    //   builder.where('P.RECORDTIME', '>=', knex.raw(`DATEADD(month, -1, '2023-07-18')`))
+    // })
     .orderBy('P.RECORDTIME', 'desc')
 
   return events.map(ev => ({
@@ -54,7 +54,6 @@ export async function getUnplannedEvents() {
     erpParameters: ev.erpParameters ? Object.fromEntries(JSON.parse(ev.erpParameters).map(a => [a.paramName, a.value])) : [],
   }))
 }
-
 export async function getTheoreticalDuration(planKey: number) {
   return await knex.raw(`
   SELECT b.MACHINEID as machineId ,SUM(B.DURATION) as theoreticalDuration
@@ -250,33 +249,12 @@ export async function getMachines() {
     .andWhere('m.USEINTELESKOP', '=', 1)
 }
 export async function getErpParameters(machineId: number) {
-  const definitions = await knex({ p: 'dbo.BFERPPARAMETERDEFINITIONS' })
-    .select({
-      id: 'p.PARAMID',
-      paramName: 'p.PARAMNAME',
-      erpFieldName: 'p.ERPFIELDNAME',
-    }).where('p.MACHINEID', '=', machineId)
+  const definitions = await knex({ p: 'dbo.PTMACHINEERP' })
+    .select('*')
+    .where('p.machineId', '=', machineId)
 
-  const plannedDefinitions = await knex({ p: 'dbo.PTERPPARAMBYUSER' })
-    .leftJoin('dbo.BFERPPARAMETERDEFINITIONS as d', 'd.PARAMID', 'p.PARAMID')
-    .select({
-      paramId: 'p.PARAMID',
-      owner: 'p.OWNER',
-      machineId: 'p.MACHINEID',
-      paramName: 'd.PARAMNAME',
-    }).where('p.OWNER', '=', PLANNED_CODE).andWhere('p.MACHINEID', '=', machineId)
-    .groupBy('p.OWNER', 'p.PARAMID', 'd.PARAMNAME', 'p.MACHINEID')
-
-  const unplannedDefinitions = await knex({ p: 'dbo.PTERPPARAMBYUSER' })
-    .leftJoin('dbo.BFERPPARAMETERDEFINITIONS as d', 'd.PARAMID', 'p.PARAMID')
-    .select({
-      paramId: 'p.PARAMID',
-      owner: 'p.OWNER',
-      machineId: 'p.MACHINEID',
-      paramName: 'd.PARAMNAME',
-    }).where('p.OWNER', '=', UNPLANNED_CODE).andWhere('p.MACHINEID', '=', machineId)
-    .groupBy('p.OWNER', 'p.PARAMID', 'd.PARAMNAME', 'p.MACHINEID')
-  return { definitions, plannedDefinitions, unplannedDefinitions }
+  const plannedDefinitions = definitions.filter(param => param.visible === true)
+  return { definitions, plannedDefinitions }
 }
 export async function getUnplannedColumns() {
   return await knex('PTCOLUMNS').select('*')
@@ -380,14 +358,11 @@ export async function addBatchNote(jobOrder: string, note: string, userId: numbe
     SHOWONSCREEN: showOnScreen,
   })
 }
-export async function addErpParameters(paramId: number, owner: number, machineId: number) {
-  await knex('PTERPPARAMBYUSER').insert({
-    USERID: 0,
-    ORDERID: 0,
-    PARAMID: paramId,
-    OWNER: owner,
-    MACHINEID: machineId,
-  })
+export async function addErpParameters(id: number, machineId: number) {
+  await knex('PTMACHINEERP').update({ visible: true }).where('machineId', machineId).andWhere('id', id)
+}
+export async function removeErpParameter(id: number, machineId: number) {
+  await knex('PTMACHINEERP').update({ visible: false }).where('id', id).andWhere('machineId', machineId)
 }
 export async function pinEvent(planKey: number) {
   await knex('dbo.PTBATCHPLANQUEUE').update({ PINNED: 1 }).where('PLANKEY', '=', planKey)
@@ -397,12 +372,6 @@ export async function unpinEvent(planKey: number) {
 }
 export async function deleteNote(id: number) {
   await knex('PTBATCHNOTES').where('NOTEKEY', '=', id).delete()
-}
-export async function deleteErpParameters(paramId: number, owner: number, machineId: number) {
-  await knex('PTERPPARAMBYUSER')
-    .where('PARAMID', '=', paramId)
-    .andWhere('OWNER', '=', owner)
-    .andWhere('MACHINEID', '=', machineId).del()
 }
 export async function updateBatchNote(noteKey: number, showOnScreen: boolean) {
   await knex.transaction(async (trx) => {

@@ -6,45 +6,37 @@ const q = useQuasar()
 
 const definitions = ref([] as any[])
 const plannedDefinitions = ref([] as any[])
-const unplannedDefinitions = ref([] as any[])
-const currentMachine = ref([] as any[])
+const currentMachine = ref(-1)
 
 const { data: machines } = useFetch('/api/machineList')
-const activeMachine = ref(0)
+const activeMachine = ref(-1)
+
 async function getErpParameters(machineId: number) {
   currentMachine.value = machineId
-  const res = await $fetch('/api/settings/erpParameters', {
+  const res = await $fetch<{ definitions: any[], plannedDefinitions: any[] }>('/api/settings/erpParameters', {
     query: { machineId },
   })
   definitions.value = res.definitions
-  plannedDefinitions.value = res.plannedDefinitions.sort((a, b) => a.paramName < b.paramName ? -1 : 1)
-  unplannedDefinitions.value = res.unplannedDefinitions.sort((a, b) => a.paramName < b.paramName ? -1 : 1)
+  plannedDefinitions.value = res.plannedDefinitions.sort((a, b) => a.paramId < b.paramId ? -1 : 1)
 }
 
 const erpParameterColumns = reactive([
-  { name: 'id', label: t('erp-param-columns.id'), align: 'center', field: 'id' },
+  { name: 'paramId', label: t('erp-param-columns.id'), align: 'center', field: 'paramId' },
   { name: 'paramName', align: 'center', label: t('erp-param-columns.param-name'), field: 'paramName' },
-  { name: 'erpFieldName', align: 'center', label: t('erp-param-columns.field-name'), field: 'erpFieldName' },
 ])
 
-async function addParameter(paramId: number, owner: number, machineId: number) {
+async function addParameter(id: number, machineId: number) {
   await $fetch('/api/settings/erpParameters/addErpParameters', {
-    method: 'POST',
-    query: { paramId, owner, machineId },
+    method: 'PUT',
+    query: { id, machineId },
   })
 }
 async function onPlannedCtx(row: any) {
-  const newParam = {
-    paramId: row.id,
-    owner: 117,
-    machineId: currentMachine.value,
-    paramName: row.paramName,
-  }
-  plannedDefinitions.value.push(newParam)
-  await addParameter(newParam.paramId, newParam.owner, newParam.machineId)
+  plannedDefinitions.value.push(row)
+  await addParameter(row.id, row.machineId)
 }
 
-async function deleteParameter(paramId: number, owner: number, machineId: number) {
+async function deleteParameter(id: number, machineId: number) {
   q.dialog({
     title: 'Are you sure to delete this parameter?',
     class: 'e-border',
@@ -60,8 +52,8 @@ async function deleteParameter(paramId: number, owner: number, machineId: number
     },
   }).onOk(async () => {
     await $fetch('/api/settings/erpParameters/deleteErpParameters', {
-      method: 'DELETE',
-      query: { paramId, owner, machineId },
+      method: 'PUT',
+      query: { id, machineId },
     }).then(() => {
       getErpParameters(machineId)
       emit('updateScheduler')
@@ -105,7 +97,7 @@ async function deleteParameter(paramId: number, owner: number, machineId: number
               {{ col.label }}
             </q-th>
             <q-th auto-width>
-              Delete
+              Add
             </q-th>
           </q-tr>
         </template>
@@ -121,7 +113,7 @@ async function deleteParameter(paramId: number, owner: number, machineId: number
             <q-td auto-width>
               <q-btn
                 icon="add"
-                :disabled="plannedDefinitions.map((a) => a.paramId).includes(prop.row.id)"
+                :disabled="plannedDefinitions.map((a) => a.id).includes(prop.row.id)"
                 color="primary"
                 size="sm"
                 @click="onPlannedCtx(prop.row)"
@@ -151,7 +143,7 @@ async function deleteParameter(paramId: number, owner: number, machineId: number
               name="fluent:delete-16-regular"
               color="red"
               size="20"
-              @click="deleteParameter(item.paramId, item.owner, item.machineId)"
+              @click="deleteParameter(item.id, item.machineId)"
             />
           </q-item-section>
         </q-item>
