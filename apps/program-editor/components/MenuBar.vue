@@ -6,7 +6,6 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 const { locale, locales } = useI18n()
 const { dark } = useQuasar()
-const editor = useEditorStore()
 
 const menuItems = computed(() => [
   {
