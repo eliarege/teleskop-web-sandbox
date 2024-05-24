@@ -6,16 +6,20 @@ const emit = defineEmits(['updateScheduler'])
 const { t, d } = useI18n()
 const { data: batchNotes, refresh } = await useFetch('/api/note/getNote', {
   query: { jobOrder: props.jobOrder },
+  default: () => []
 })
-const refactoredBatchNotes = computed(() => batchNotes.value?.map((a) => {
+const refactoredBatchNotes = computed(() => batchNotes.value.map((a) => {
   return {
     ...a,
     noteDate: d(a.noteDate, 'datetime'),
   }
 }))
 const search = ref('')
-const searchBatchNotes = ref(refactoredBatchNotes.value?.filter(item => item.jobOrder.includes(search.value)))
-watch(refactoredBatchNotes, newValue => searchBatchNotes.value = newValue?.filter(item => item.jobOrder.includes(search.value)))
+const searchBatchNotes = ref([])
+watch(refactoredBatchNotes, notes => {
+  searchBatchNotes.value = notes.filter(item => item.jobOrder.includes(search.value))
+}, { immediate: true })
+
 // TODO: format batchNotes date with useI18N.d
 const columns = computed(() => {
   return [
