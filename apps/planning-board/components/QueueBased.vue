@@ -206,8 +206,6 @@ watch(pending, () => {
   if (pending.value) {
     scheduler.mask({
       text: 'Loading in progress',
-      progress: 0,
-      maxProgress: 100,
     })
   } else {
     scheduler.unmask()
