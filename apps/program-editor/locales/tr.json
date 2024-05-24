@@ -2,7 +2,6 @@
   "app": {
     "name": "Program Editörü"
   },
-  "operator": "Operatör müdahale edebilir",
   "required": "{field} boş olamaz.",
   "tr": "Türkçe",
   "en": "İngilizce",
@@ -12,6 +11,12 @@
   "search": "Ara",
   "searchCommand": "Komut Ara",
   "valueOutOfRange": "{minValue} ile {maxValue} arasında bir değer giriniz",
+  "operator": "Operatör müdahale edebilir",
+  "input": {
+    "required": "{field} boş olamaz.",
+    "unique": "{field} benzersiz olmalıdır.",
+    "invalid": "{field} geçersiz."
+  },
   "programStatusInfo": {
     "_": "Program Durum Renkleri",
     "onlyOnController": "Program sadece cihazda",
@@ -60,7 +65,8 @@
     "stepCount": "Adım Sayısı",
     "type": "Tip",
     "updated": "Güncellenme Tarihi",
-    "processType": "Proccess Tipi"
+    "processType": "Proccess Tipi",
+    "parameters": "Parametre"
   },
   "saveProgram": {
     "success": "Program kaydedildi",

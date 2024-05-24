@@ -2,7 +2,6 @@
   "app": {
     "name": "Program Editor"
   },
-  "operator": "Operator can be used to change the program",
   "required": "{field} cannot be empty.",
   "en": "English",
   "tr": "Turkish",
@@ -12,6 +11,12 @@
   "search": "Search",
   "searchCommand": "Search Command",
   "valueOutOfRange": "Value must be between {minValue} and {maxValue}",
+  "operator": "Operator can be used to change the program",
+  "input": {
+    "required": "{field} cannot be empty.",
+    "unique": "{field} must be unique.",
+    "invalid": "{field} is invalid."
+  },
   "programStatusInfo": {
     "_": "Program Status Colors",
     "onlyOnController": "Program only exists on controller",
@@ -60,7 +65,8 @@
     "stepCount": "Step Count",
     "type": "Type",
     "updated": "Updated",
-    "processType": "Proccess Type"
+    "processType": "Proccess Type",
+    "parameter": "Parameter"
   },
   "saveProgram": {
     "success": "Program saved",
