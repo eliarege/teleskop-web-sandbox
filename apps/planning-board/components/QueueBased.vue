@@ -6,10 +6,9 @@ import { addDays, addHours } from 'date-fns'
 import { EliarModal } from 'ui'
 import { useDocumentVisibility, useStorage } from '@vueuse/core'
 import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
-import { debounce } from 'quasar'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
 import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
-import type { PtLocaleSettings, UnplannedEvents } from '~/shared/types'
+import type { MachineStatus, PtLocaleSettings, UnplannedEvents } from '~/shared/types'
 import { eventTooltip } from '~/composables/helper'
 import { useSettingStore } from '~/store/settings'
 
@@ -23,7 +22,6 @@ const schedulerDateModel = ref({
 })
 const store = useSettingStore()
 
-const sortedMachines = useStorage('machine-sort', store.machines)
 const showModal = reactive({
   planParameters: {
     show: false,
@@ -62,8 +60,11 @@ const showModal = reactive({
   rule: false,
   settings: false,
 })
-const ptLocaleSettings: PtLocaleSettings = JSON.parse(localStorage.getItem('pt-settings') || '')
 
+const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatus[]>('/api/machineList', {
+  default: () => [],
+  transform: unsortedMachines => sortMachines(unsortedMachines),
+})
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
 const { data: events, refresh: eventRefresh, pending } = await useFetch('/api/queueBased/schedulerEvents', {
   immediate: false,
@@ -72,6 +73,14 @@ const { data: events, refresh: eventRefresh, pending } = await useFetch('/api/qu
     endDate,
   },
 })
+
+function sortMachines(machines: MachineStatus[]) {
+  return machines.sort((a, b) => {
+    const indexA = store.machineOrdering.indexOf(a.id)
+    const indexB = store.machineOrdering.indexOf(b.id)
+    return indexA > indexB ? 1 : (indexA < indexB ? -1 : 0)
+  })
+}
 
 const modifiedEvents = computed(() => events.value?.map((ev: any) => {
   const batchText = store.settings.plannedBatch.batchText?.value || 'jobOrder'
@@ -111,21 +120,21 @@ let scheduler: SchedulerPro
 let grid: Grid
 
 const visibility = useDocumentVisibility()
+const refreshInterval = 60_000
 
-async function myInterval(delay: number) {
+async function scheduleDataRefresh() {
   await until(visibility).toBe('visible')
   try {
-    refreshScheduler()
+    await refreshScheduler()
   } catch (err) {
     Toast.show('Failed to Refresh')
   }
-  setTimeout(() => {
-    myInterval(delay)
-  }, delay)
+  setTimeout(scheduleDataRefresh, refreshInterval)
 }
 
 async function refreshScheduler() {
   await Promise.all([
+    machineRefresh(),
     unScheduledRefresh(),
     eventRefresh(),
   ])
@@ -133,7 +142,8 @@ async function refreshScheduler() {
 }
 
 async function machineReload() {
-  scheduler.resourceStore.loadDataAsync(sortedMachines.value)
+  sortMachines(machines.value)
+  scheduler.resourceStore.loadDataAsync(machines.value)
   await eventRefresh()
   scheduler.refreshRows()
 }
@@ -213,6 +223,7 @@ watch(pending, () => {
 })
 
 onMounted(async () => {
+  await until(machinesPending).toBe(false)
   const schedule: SchedulerPro = scheduler = new QueueSchedule({
     ref: 'schedule',
     appendTo: 'main',
@@ -231,7 +242,7 @@ onMounted(async () => {
       autoLoad: true,
       eventModelClass: QueueTask,
     },
-    resources: sortedMachines.value,
+    resources: machines.value,
     events: modifiedEvents.value,
     listeners: {
       eventSelectionChange({ action }: any) {
@@ -454,7 +465,7 @@ onMounted(async () => {
       eventTooltip: {
         hoverDelay: 800,
         hideDelay: 500,
-        template: data => eventTooltip(data.eventRecord, scheduler),
+        template: (data: any) => eventTooltip(data.eventRecord, scheduler),
       },
     },
     tbar: [
@@ -663,7 +674,7 @@ onMounted(async () => {
       }
     },
   })
-  await myInterval(60000)
+  await scheduleDataRefresh()
 })
 </script>
 
@@ -744,7 +755,7 @@ onMounted(async () => {
     </EliarModal>
     <EliarModal v-if="showModal.machineSort.show" @click.stop="showModal.machineSort.show = false">
       <template #default>
-        <MachineSort @update-scheduler="machineReload()" />
+        <MachineSort :machines="machines" @update-scheduler="machineReload()" />
       </template>
     </EliarModal>
   </div>

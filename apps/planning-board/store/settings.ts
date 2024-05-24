@@ -1,20 +1,11 @@
 import { useStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
-import type { MachineStatus } from '~/shared/types'
+import type { PtLocaleSettings } from '~/shared/types'
 
 export const useSettingStore = defineStore('settings', () => {
-  // const machine = useStorage('machine-settings', [] as MachineStatus[])
-  const machine = ref([] as MachineStatus[])
-  async function getMachines() {
-    const res: MachineStatus[] = await $fetch('/api/machineList')
-    machine.value = res
-  }
+  const machineOrdering = useStorage<number[]>('pt-machineOrdering', [])
 
-  getMachines()
-  const interval = setInterval(() => {
-    getMachines()
-  }, 60_000)
-  const settings = useStorage('pt-settings', {
+  const settings = useStorage<PtLocaleSettings>('pt-settings', {
     completedBatch: {
       batchText: null,
       isBatchFabricColor: false,
@@ -37,5 +28,9 @@ export const useSettingStore = defineStore('settings', () => {
     showStops: { show: false, color: '' },
     batchText: [],
   })
-  return { machines: machine, settings, interval }
+
+  return {
+    settings,
+    machineOrdering,
+  }
 })
