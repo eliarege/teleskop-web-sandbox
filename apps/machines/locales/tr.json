@@ -354,5 +354,18 @@
   "ttbSaveIOValuesInDatabase": "I/O değerlerini veritabanında sakla",
   "tryingConnection": "Bağlantı Kuruluyor...",
   "updateFinished": "Güncelleme Tamamlandı",
-  "errorLoadingProject": "Proje Yüklenirken Hata Oluştu"
+  "errorLoadingProject": "Proje Yüklenirken Hata Oluştu",
+  "chemicalRequestCommands": "Kimyasal İstek Komutları",
+  "manualChemicalRequestCommands": "Manuel Kimyasal İstek Komutları",
+  "paintRequestCommands": "Boya İstek Komutları",
+  "manualPaintRequestCommands": "Manuel Boya İstek Komutları",
+  "chemicalTankTransferCommands": "Kimyasal Kazanı Transfer Komutları",
+  "paintTankTransferCommands": "Boya Kazanı Transfer Komutları",
+  "reserveTankTransferCommands": "Rezerve Kazanı Transfer Komutları",
+  "pHControl": "pH Kontrol",
+  "takeSample": "Numune Al",
+  "saltRequestCommands": "Tuz İstek Komutlarıj",
+  "genericMaterial1Request": "Jenerik Materyal 1 İstek",
+  "genericMaterial2Request": "Jenerik Materyal 2 İstek",
+  "manualMeasurementCommands": "Manuel Ölçüm Komutları"
 }

@@ -16,19 +16,19 @@ const { t } = useI18n()
 const selectedMachineId = ref()
 
 const commandTypeMaps = reactive<commandTypeMap[]>([
-  { ref: [], value: 100, title: 'Kimyasal İstek Komutları' },
-  { ref: [], value: 101, title: 'Manuel Kimyasal İstek Komutları' },
-  { ref: [], value: 200, title: 'Boya İstek Komutları' },
-  { ref: [], value: 201, title: 'Manuel Boya İstek Komutları' },
-  { ref: [], value: 300, title: 'Kimyasal Kazanı Transfer Komutları' },
-  { ref: [], value: 400, title: 'Boya Kazanı Transfer Komutları' },
-  { ref: [], value: 500, title: 'Rezerve Kazanı Transfer Komutları' },
-  { ref: [], value: 600, title: 'pH Kontrol' },
-  { ref: [], value: 700, title: 'Numune Al' },
-  { ref: [], value: 800, title: 'Tuz İstek Komutları' },
-  { ref: [], value: 810, title: 'Jenerik Materyal 1 İstek' },
-  { ref: [], value: 820, title: 'Jenerik Materyal 2 İstek' },
-  { ref: [], value: 1000, title: 'Manuel Ölçüm Komutları' },
+  { ref: [], value: 100, title: t('chemicalRequestCommands') },
+  { ref: [], value: 101, title: t('manualChemicalRequestCommands') },
+  { ref: [], value: 200, title: t('paintRequestCommands') },
+  { ref: [], value: 201, title: t('manualPaintRequestCommands') },
+  { ref: [], value: 300, title: t('chemicalTankTransferCommands') },
+  { ref: [], value: 400, title: t('paintTankTransferCommands') },
+  { ref: [], value: 500, title: t('reserveTankTransferCommands') },
+  { ref: [], value: 600, title: t('pHControl') },
+  { ref: [], value: 700, title: t('takeSample') },
+  { ref: [], value: 800, title: t('saltRequestCommands') },
+  { ref: [], value: 810, title: t('genericMaterial1Request') },
+  { ref: [], value: 820, title: t('genericMaterial2Request') },
+  { ref: [], value: 1000, title: t('manualMeasurementCommands') },
 ])
 
 const { data: machines } = useLazyFetch('/api/machines/machines', {
@@ -221,9 +221,10 @@ const contextMenuOptions = computed(() => [
         </q-card-section>
       </q-card-section>
       <q-card-actions align="right" class="flex gap-2 ">
-        <q-btn :label="t('cancel')" />
+        <q-btn no-caps :label="t('cancel')" />
         <q-btn
           :label="t('submit')"
+          no-caps
           color="primary"
           @click="handleSubmit"
         />
