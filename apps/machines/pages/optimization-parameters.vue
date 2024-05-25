@@ -6,11 +6,11 @@ const showAddTreatmentParameterDialog = ref(false)
 const selectedMachineGroup = ref()
 const selectedParameter = ref()
 
-const { data: machineGroups } = useLazyFetch('/api/treatment-parameters/machine-groups', {
+const { data: machineGroups, refresh: refreshMachineGroups } = useLazyFetch('/api/treatment-parameters/machine-groups', {
   default: () => [],
 })
 
-const { data: treatmentParameters } = useLazyFetch('/api/treatment-parameters/treatment-parameters', {
+const { data: treatmentParameters, refresh: refreshTreatmentParameters } = useLazyFetch('/api/treatment-parameters/treatment-parameters', {
   default: () => [],
 })
 
@@ -142,13 +142,13 @@ async function handleAdd() {
       v-if="showAddMachineGroupDialog"
       :show="showAddMachineGroupDialog"
       :selected="selectedMachineGroup"
-      @close="showAddMachineGroupDialog = false"
+      @close="showAddMachineGroupDialog = false; refreshMachineGroups()"
     />
 
     <AddTreatmentParameterDialog
       v-if="showAddTreatmentParameterDialog"
       :show="showAddTreatmentParameterDialog"
-      @close="showAddTreatmentParameterDialog = false"
+      @close="showAddTreatmentParameterDialog = false; refreshTreatmentParameters()"
     />
   </div>
 </template>

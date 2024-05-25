@@ -148,10 +148,10 @@ const definitionItems = computed(() => ([
       {
         label: t('applicationSettings'),
         items: [
-          {
+          /*           {
             label: t('teleskopSettings'),
             to: '/teleskop-settings',
-          },
+          }, */
           {
             label: t('projectViewLanguage'),
           },
