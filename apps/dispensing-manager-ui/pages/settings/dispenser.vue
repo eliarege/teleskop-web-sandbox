@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
+import { outlinedCancel, outlinedCheckCircle } from '@quasar/extras/material-icons-outlined'
 import { colors } from '~/shared/constants'
-import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
+import { getDispenserConnectionStatus, onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
@@ -20,6 +21,8 @@ const protocols = ref([
 
 await getRows()
 await getTypes()
+const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/dispenser-connection-status', { default: () => [] })
+setTimeout(refreshConnectionStatus, 10000)
 
 const columns = computed<Array<Column>>(() => [
   {
@@ -57,6 +60,11 @@ const columns = computed<Array<Column>>(() => [
     selectionOptions: protocols.value,
     optionLabel: 'label',
     optionValue: 'protocol',
+  },
+  {
+    name: 'connectionStatus',
+    label: t('settings.dispSettings.connectionStatus'),
+    field: 'connectionStatus',
   },
 ])
 
@@ -329,7 +337,23 @@ onBeforeRouteLeave(async (to, from, next) => {
           class="cursor-pointer"
           @click="toggleRow(props.row, props.rowIndex, false)"
         >
-          {{ col.value }}
+          <span v-if="col.name === 'connectionStatus' && props.rowIndex">
+            <q-icon
+              v-if="connectionStatus.find(stat => stat.dispNo === props.row.dispNo)?.status === 'Online'"
+              :name="outlinedCheckCircle"
+              size="sm"
+              color="green"
+            />
+            <q-icon
+              v-else
+              :name="outlinedCancel"
+              size="sm"
+              color="red"
+            />
+          </span>
+          <span v-else>
+            {{ col.value }}
+          </span>
         </q-td>
       </q-tr>
 

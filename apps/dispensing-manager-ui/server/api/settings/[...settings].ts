@@ -1,4 +1,5 @@
 import { createRouter, defineEventHandler, useBase } from 'h3'
+import { execa } from 'execa'
 import { knex } from '~/server/connectionPool'
 import { filtersToKnex } from '~/shared/functions'
 
@@ -44,6 +45,42 @@ router.get('/dispenser', defineEventHandler(async () => {
     })
     .orderBy('DISPENSERID', 'asc')
   return dispensers
+}))
+
+// router.get('/ping/:dispNo', defineEventHandler(async (event) => {
+//   const { dispNo } = getRouterParams(event)
+//   const dispenser = await knex('DYTFDISPENSERSETTINGS')
+//     .first({
+//       dispNo: 'DISPENSERID',
+//       fileSystem: 'BDYREQUESTPATH',
+//       dispIP: 'IP',
+//     })
+//     .where('DISPENSERID', dispNo)
+//   if (dispenser)
+//     const { stdout } = await execa('ping', [host, '-c', '4']) // Ping command for UNIX-based systems
+//   return dispenser
+// }))
+
+router.get('/dispenser-connection-status', defineEventHandler(async (event) => {
+  const dispensers = await knex('DYTFDISPENSERSETTINGS')
+    .select({
+      dispNo: 'DISPENSERID',
+      fileSystem: 'BDYREQUESTPATH',
+      dispIP: 'IP',
+    })
+  const statusPromises = dispensers.map((dispenser) => {
+    return execa('ping', ['-c', '1', '-W', '1', dispenser.dispIP])
+      .then(() => ({
+        ...dispenser,
+        status: true,
+      }))
+      .catch(() => ({
+        ...dispenser,
+        status: false,
+      }))
+  })
+
+  return await Promise.all(statusPromises)
 }))
 
 const dispenserParameters = {
@@ -419,10 +456,6 @@ router.delete('/material/:materialCode', defineEventHandler(async (event) => {
 
 router.get('/request-mechanism-setting', defineEventHandler(async () => {
   const sett = await knex('DYTFDYSETTINGS')
-  // saltText: '',
-  // reqMechanismAnswerOptions: '',
-  // genericMaterialTwoText: '',
-  // genericMaterialOneText: '',
     .select({
       reqMechanismOption1: 'DYREQMECHANISM',
       reqMechanismOption2: 'repeatRequestIfLastcompleted',
@@ -489,6 +522,21 @@ router.put('/request-mechanism-setting', defineEventHandler(async (event) => {
   // saltText: '',
   // genericMaterialOneText: '',
   // genericMaterialTwoText: '',
+  return 1
+}))
+
+router.get('/delete-old-batch-time', defineEventHandler(async (event) => {
+  const days = await knex('DYTFDYSETTINGS')
+    .first('DELETEOLDBATCHES')
+  return days.DELETEOLDBATCHES
+}))
+
+router.put('/delete-old-batch-time', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  await knex('DYTFDYSETTINGS')
+    .update({
+      DELETEOLDBATCHES: body.days,
+    })
   return 1
 }))
 

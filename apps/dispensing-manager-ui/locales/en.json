@@ -53,7 +53,8 @@
       "dispFileName": "Dispenser File Name",
       "dispProtocol": "Dispenser Protocol",
       "dispConsumptionFileName": "Consumption File Name",
-      "readFromDMS": "Read from DMS"
+      "readFromDMS": "Read from DMS",
+      "connectionStatus": "Connection Status"
     },
     "appSettings": "Application Settings",
     "deleteExpiredJobOrders": "Delete expired job orders",

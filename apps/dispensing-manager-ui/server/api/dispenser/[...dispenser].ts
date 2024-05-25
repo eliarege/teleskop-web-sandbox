@@ -23,6 +23,7 @@ const selectParameters = {
   status: 'r.STATUS',
   priority: 'r.PRIORTY',
   plankey: 'r.PLANKEY',
+  terminal: 'r.TERMINAL',
 }
 
 router.post('/joborderlogs', defineEventHandler(async (event) => {

@@ -53,7 +53,8 @@
       "dispFileName": "Dağıtıcı Dosya Adı",
       "dispProtocol": "Dağıtıcı Protokolü",
       "dispConsumptionFileName": "Tüketim Dosya Adı",
-      "readFromDMS": "DMS'den Oku"
+      "readFromDMS": "DMS'den Oku",
+      "connectionStatus": "Bağlantı Durumu"
     },
     "appSettings": "Uygulama Ayarları",
     "deleteExpiredJobOrders": "Eski iş emirlerini sil",

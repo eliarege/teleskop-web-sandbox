@@ -25,8 +25,9 @@ const radio = ref()
 const deleteDialogVisible = ref(false)
 const givenDriverIdExistsWarning = ref(false)
 const driverIdErrorMessage = ref('')
-const deleteExpiredJobOrdersActivated = ref()
-const deleteExpiredJobOrdersTime = ref()
+const { data: deleteExpiredJobOrdersTime, refresh: refreshDeleteExpiredJobOrderDays } = await useFetch('/api/settings/delete-old-batch-time')
+const deleteExpiredJobOrdersActivated = ref(deleteExpiredJobOrdersTime.value > 0)
+
 await fetchData()
 function setVariables() {
   referenceType.value = driver.value?.REFERENCEID !== undefined ? referenceOptions.value[driver.value.REFERENCEID] : referenceOptions.value[0]
@@ -44,6 +45,13 @@ async function updateDriverSettings(isPut: boolean) {
       path: requestFilteSystemPath.value,
     },
   })
+  await $fetch('/api/settings/delete-old-batch-time', {
+    method: 'put',
+    body: {
+      days: deleteExpiredJobOrdersActivated.value ? deleteExpiredJobOrdersTime.value : 0,
+    },
+  })
+  refreshDeleteExpiredJobOrderDays()
   const body = {
     DRIVERID: driver.value.DRIVERID,
     DRIVERNAME: driver.value?.DRIVERNAME,
@@ -144,12 +152,17 @@ async function checkDriverIdExist(driver: { DRIVERID: number | null }, value: In
       <div class="row-item ">
         <q-checkbox v-model="deleteExpiredJobOrdersActivated" :label="t('settings.deleteExpiredJobOrders')" />
         <q-input
-          v-model="deleteExpiredJobOrdersTime"
+          :model-value="deleteExpiredJobOrdersTime"
           class="input-class"
+          :disable="!deleteExpiredJobOrdersActivated"
           :label="t('settings.deleteExpiredJobOrdersTime')"
           :suffix="t('settings.deleteExpiredJobOrdersTimeMetric')"
           filled
           dense
+          @keydown="(e) => onKeydownPreventNonNumerical(e, deleteExpiredJobOrdersTime)"
+          @paste="onPastePreventNonNumerical"
+          @drop="onDrop"
+          @update:model-value="(e) => deleteExpiredJobOrdersTime = e"
         />
       </div>
       <div class="settings-section-header">
