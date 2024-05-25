@@ -215,6 +215,8 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
         body: {
           content: data,
           reqNumber: row.reqnumber,
+          terminal: row.terminal,
+          type,
         },
       })
       Notify.create({
