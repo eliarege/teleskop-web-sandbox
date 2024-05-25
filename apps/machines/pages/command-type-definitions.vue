@@ -45,7 +45,7 @@ const { data: commands } = useLazyFetch('/api/commands/unused-commands', {
   },
 })
 
-const { data: commandTypes } = useLazyFetch<CommandType[]>('/api/commands/command-types', {
+const { data: commandTypes, refresh } = useLazyFetch<CommandType[]>('/api/commands/command-types', {
   default: () => [],
   immediate: false,
   query: {
@@ -66,11 +66,10 @@ const { data: commandTypes } = useLazyFetch<CommandType[]>('/api/commands/comman
   },
 })
 
-watch(selectedMachineId, (newMachineId, _oldMachineId) => {
-  document.querySelectorAll('.draggable-selected').forEach((el) => {
-    if (el.getAttribute('data-machine-id') !== String(newMachineId)) {
-      el.remove()
-    }
+watch(selectedMachineId, (_newMachineId, _oldMachineId) => {
+  const elements = document.querySelectorAll('[data-command-no]')
+  elements.forEach((el) => {
+    el.remove()
   })
 })
 
@@ -125,12 +124,14 @@ const contextMenuOptions = computed(() => [
       await $fetch('/api/commands/command-types', {
         method: 'PUT',
         body: {
+          machineId: selectedMachineId.value,
           commandTypes: copy.value.map((item: CommandType) => ({
             ...item,
             machineId: selectedMachineId.value,
           })),
         },
       })
+      await refresh()
     },
   },
 ])
