@@ -86,8 +86,6 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function updateCommand(command: ProgramStepCommand, commandNo: number) {
-    console.log(commandNo)
-
     const machineCommand = machineCommands.value.get(commandNo)
 
     if (!machineCommand) {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { QSelect } from 'quasar'
 import type { ProgramStepCommand } from '~/shared/types'
+import { useEditorStore } from '~~/composables/editor'
 
 const props = defineProps<{
   path: string
@@ -9,6 +10,19 @@ const props = defineProps<{
 const editor = useEditorStore()
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
 const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? 0 : 3
+
+const select = ref<QSelect>()
+const id = useId()
+
+const { t } = useI18n()
+
+watch(() => select.value?.modelValue, () => {
+  if (programCommand.commandNo === null) {
+    editor.errorIds.add(id)
+  } else {
+    editor.errorIds.delete(id)
+  }
+})
 
 const options = computed(() => (
   Array.from(editor.machineCommands.values())
@@ -24,27 +38,25 @@ const options = computed(() => (
 ))
 
 const label = computed(() => {
-  return !programCommand.commandNo ? 'Komut Seçiniz' : undefined
+  return !programCommand.commandNo ? t('selectCommand') : undefined
 })
-const rules = [
-  (value: string) => Number.isNaN(value) || 'Komut Seçiniz',
-]
 </script>
 
 <template>
   <div class="pt-2 pb-2">
     <QSelect
+      ref="select"
       :model-value="programCommand.commandNo"
       :options="options"
-      map-options
       :label="label"
+      :for="id"
+      map-options
       emit-value
       style="width: 250px"
       options-dense
       outlined
       dense
       auto-close
-      :rules="rules"
       @update:model-value="editor.updateCommand(programCommand, $event)"
     >
       <template #no-option>
