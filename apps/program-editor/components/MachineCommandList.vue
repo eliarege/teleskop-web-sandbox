@@ -8,20 +8,9 @@ import { PRG_STATE_COLORS } from '~/shared/constants'
 import { useEditorStore } from '~/composables/editor'
 import type { MachineCommand } from '~/shared/types'
 
-export interface MachineCommandListProps {
-  machineId: number
-}
-
-const route = useRoute()
-
 const editor = useEditorStore()
 const { t } = useI18n()
 const { dark } = useQuasar()
-
-const { data: commands } = useFetch(() => `/api/machine/${route.params.machine_id}/commands`, {
-  key: 'Machine Commands',
-  transform: markRaw,
-})
 
 const sortableOptions = computed<SortableOptions>(() => ({
   disabled: !editor.isDragging,
@@ -55,7 +44,7 @@ let draggedCommand: any = null
 
 function onDragStart(event: SortableEvent) {
   if (isDef(event.oldIndex)) {
-    draggedCommand = commands.value?.[event.oldIndex] as MachineCommand
+    draggedCommand = editor.machineCommands.get(event.oldIndex + 1)
   }
 }
 
@@ -77,15 +66,6 @@ function onDragEnd(event: SortableEvent) {
     draggedCommand = null
   }
 }
-
-watch(() => dark.isActive, () => {
-  // Trigger re-render of command list since we lose control over cloned sortable elements after drag-end
-  const cmd = commands.value
-  commands.value = []
-  nextTick(() => {
-    commands.value = cmd
-  })
-})
 </script>
 
 <template>
