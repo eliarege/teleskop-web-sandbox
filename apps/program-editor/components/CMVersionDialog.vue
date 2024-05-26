@@ -43,7 +43,7 @@ async function onRowClick(row: any, isRightClick?: boolean) {
 </script>
 
 <template>
-  <div class="w-full h-full bg-white">
+  <div class="w-full h-full">
     <q-card>
       <q-card-section class="row items-center">
         <span class="q-ml-sm"> {{ t('contextMenu.version.header') }}</span>

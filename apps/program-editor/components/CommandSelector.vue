@@ -48,7 +48,7 @@ const label = computed(() => {
 </script>
 
 <template>
-  <div class="pt-2 pb-2">
+  <div>
     <QSelect
       ref="select"
       :model-value="programCommand.commandNo"
@@ -69,7 +69,7 @@ const label = computed(() => {
       <template #no-option>
         <QItem>
           <QItemSection>
-            No results
+            {{ t('selectCommand') }}
           </QItemSection>
         </QItem>
       </template>
