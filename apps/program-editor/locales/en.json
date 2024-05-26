@@ -12,6 +12,7 @@
   "searchCommand": "Search Command",
   "valueOutOfRange": "Value must be between {minValue} and {maxValue}",
   "operator": "Operator can be used to change the program",
+  "selectCommand": "Select Command",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",
@@ -66,7 +67,8 @@
     "type": "Type",
     "updated": "Updated",
     "processType": "Proccess Type",
-    "parameter": "Parameter"
+    "parameter": "Parameter",
+    "command": "Program Command"
   },
   "saveProgram": {
     "success": "Program saved",

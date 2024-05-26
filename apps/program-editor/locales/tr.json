@@ -12,6 +12,7 @@
   "searchCommand": "Komut Ara",
   "valueOutOfRange": "{minValue} ile {maxValue} arasında bir değer giriniz",
   "operator": "Operatör müdahale edebilir",
+  "selectCommand": "Komut Seçiniz",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",
@@ -66,7 +67,8 @@
     "type": "Tip",
     "updated": "Güncellenme Tarihi",
     "processType": "Proccess Tipi",
-    "parameters": "Parametre"
+    "parameters": "Parametre",
+    "command": "Program Komutu"
   },
   "saveProgram": {
     "success": "Program kaydedildi",
