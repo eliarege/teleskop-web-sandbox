@@ -19,10 +19,15 @@ const { t } = useI18n()
 watch(() => select.value?.modelValue, () => {
   if (programCommand.commandNo === null) {
     editor.errorIds.add(id)
+    select.value?.focus()
   } else {
     editor.errorIds.delete(id)
   }
 })
+
+const rules = [
+  (value: any) => !!value,
+]
 
 const options = computed(() => (
   Array.from(editor.machineCommands.values())
@@ -49,8 +54,10 @@ const label = computed(() => {
       :model-value="programCommand.commandNo"
       :options="options"
       :label="label"
+      :rules="rules"
       :for="id"
       map-options
+      hide-bottom-space
       emit-value
       style="width: 250px"
       options-dense
