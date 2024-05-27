@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
+import { useTimeoutPoll } from '@vueuse/core'
 import { cellRGBColorHandler, navigateToPage, textAlignOverride } from '../shared/functions'
 import { StatusCodes, colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
@@ -17,7 +18,7 @@ interface ConfirmationDialog {
 const actions = ref<Action[]>(['retry', 'cancel'])
 const confirmationDialog = ref<ConfirmationDialog>({ vis: false, act: 'cancel' })
 const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/dispenser-connection-status', { default: () => [] })
-setTimeout(refreshConnectionStatus, 10000)
+useTimeoutPoll(refreshConnectionStatus, 10000)
 const machines = await $fetch('/api/machine/machines')
 const dispensers = await $fetch('/api/settings/dispenser')
 const columnsRecipe = computed<Column[]>(() => [
