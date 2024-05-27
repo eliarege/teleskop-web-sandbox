@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useStorage } from '@vueuse/core'
 import type { SortableEvent } from 'sortablejs'
 import { Sortable } from 'sortablejs-vue3'
 import type { MachineStatus } from '~/shared/types'
@@ -10,23 +9,24 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['updateScheduler'])
 const store = useSettingStore()
-const sortableMachines = ref([] as string[])
+const sortableMachines = ref([] as { name: string, index: number }[])
 
-watch(() => props.machines, () => {
-  // Remove non-existing machine id's
-  store.machineOrdering = store.machineOrdering.filter((id) => {
-    return props.machines.some(m => m.id === id)
-  })
+watch(() => props.machines, (machines) => {
   // Add missing machine id's
-  for (const machine of props.machines) {
+  for (const machine of machines) {
     if (!store.machineOrdering.includes(machine.id)) {
       store.machineOrdering.push(machine.id)
     }
   }
 
   // Create the array for Sortable component
-  sortableMachines.value = store.machineOrdering.map((id) => {
-    return props.machines.find(machine => machine.id === id)!.name
+  sortableMachines.value = machines.map((machine) => {
+    return {
+      index: store.machineOrdering.indexOf(machine.id),
+      name: machine.name,
+    }
+  }).sort((a, b) => {
+    return a.index - b.index
   })
 }, { immediate: true })
 
@@ -63,7 +63,7 @@ function onEnd(ev: SortableEvent) {
       <template #item="{ element }">
         <div class="w-full h-full flex justify-start items-center whitespace-nowrap p-1 border-1px border-gray-500/50 rounded m-1 hover:(bg-blue-3 text-white)">
           <Icon name="ic:twotone-list" size="30" />
-          {{ element }}
+          {{ element.name }}
         </div>
       </template>
     </Sortable>
