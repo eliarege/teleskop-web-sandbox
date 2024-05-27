@@ -5,8 +5,8 @@ import type { User } from '~/types'
 interface Permission {
   label: string
   index: number
-  value: boolean
-  disabled?: boolean
+  value: MaybeRef<boolean>
+  disabled?: MaybeRef<boolean>
 }
 
 const props = defineProps<{
@@ -22,7 +22,7 @@ const menuAccessPermission = ref(false)
 
 const { t } = useI18n()
 
-const permissionsGroup1 = reactive([
+const permissionsGroup1 = reactive<Permission[]>([
   { label: t('createProgram'), index: 0, value: false },
   { label: t('modifyProgram'), index: 1, value: false },
   { label: t('copyProgram'), index: 2, value: false },

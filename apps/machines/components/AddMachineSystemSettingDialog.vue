@@ -4,7 +4,7 @@ import type { Setting } from '~/types'
 const props = defineProps<{
   show: boolean
   settings: Setting[]
-  tokens: object
+  tokens: Record<string, string>
 }>()
 
 const emit = defineEmits(['close', 'add'])

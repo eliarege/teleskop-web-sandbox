@@ -10,7 +10,7 @@ const emit = defineEmits(['close'])
 
 const { t } = useI18n()
 
-const options = ref({
+const options = ref<Record<string, boolean>>({
   users: false,
   manualReasons: false,
   machineIdleReasons: false,
@@ -29,19 +29,19 @@ async function loadDefinitions() {
 
 function selectAll() {
   Object.keys(options.value).forEach((key) => {
-    options.value[key as keyof typeof options.value] = true
+    options.value[key] = true
   })
 }
 
 function deselectAll() {
   Object.keys(options.value).forEach((key) => {
-    options.value[key as keyof typeof options.value] = false
+    options.value[key] = false
   })
 }
 
 function reverseSelected() {
   Object.keys(options.value).forEach((key) => {
-    options.value[key as keyof typeof options.value] = !options.value[key as keyof typeof options.value]
+    options.value[key] = !options.value[key]
   })
 }
 </script>

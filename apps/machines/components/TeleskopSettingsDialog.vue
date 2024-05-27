@@ -10,8 +10,7 @@ const emit = defineEmits(['close'])
 
 const { t } = useI18n()
 
-type Label = 'ttbuserManagentActive' | 'ttbphaseModeActive' | 'ttbCustomErpPrmOptimization' | 'ttbAllowedCharsForJobOrder'
-  | 'ttbRecipeEnterActive' | 'ttbTimeBasedModeActive' | 'ttbDyehouseNumber' | 'ttbProcessUsageActive' | 'ttbSaveIOValuesInDatabase'
+type Label = (typeof settingsList)[number]['label']
 type Setting = Record<Label, number | boolean>
 
 const settingsList = [
@@ -24,7 +23,7 @@ const settingsList = [
   { label: 'ttbDyehouseNumber', value: 7 },
   { label: 'ttbProcessUsageActive', value: 8 },
   { label: 'ttbSaveIOValuesInDatabase', value: 9 },
-]
+] as const
 
 const formData = ref<Partial<Setting>>({})
 
@@ -37,7 +36,7 @@ const { data: _setting } = useLazyFetch('/api/machines/teleskop-settings', {
       if (key === 'ttbDyehouseNumber') {
         acc[key] = Number.parseInt(item.value)
       } else if (key) {
-        acc[key as Label] = item ? item.value === '1' : false
+        acc[key] = item ? item.value === '1' : false
       }
       return acc
     }, {})

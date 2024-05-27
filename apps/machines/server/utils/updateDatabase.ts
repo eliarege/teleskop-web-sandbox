@@ -885,36 +885,36 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
       .andWhere('MACHINECOMMANDSETNO', maxVersion)
 
     await trx('BAMASTERCOMMANDS')
-      .insert(function () {
-        this.select('MACHINEID', maxVersion, trxTime, trx.raw('NULL'), 'COMMANDNO', 'FUNCTIONID', 'TBBFUNTIONNAME', 'BFMASTERCOMMANDS.NAME as NAME', 'ACTIVATED', 'ADVICELIST', 'DONTUSELIST', 'ISRUNMANUAL', 'COMMANDTYPE', 'MOVEPARALLEL', 'TBBCHANGETIME', 'X', 'Y', 'A', 'B', 'MAXA', 'ISTEMPERATURE', 'ISUNLOAD', 'BFMASTERCOMMANDS.ICON', 'BFMASTERCOMMANDS.GROUPID')
+      .insert(function (this: Knex) {
+        this.select('MACHINEID', trx.raw(maxVersion), trxTime, trx.raw('NULL'), 'COMMANDNO', 'FUNCTIONID', 'TBBFUNTIONNAME', 'BFMASTERCOMMANDS.NAME as NAME', 'ACTIVATED', 'ADVICELIST', 'DONTUSELIST', 'ISRUNMANUAL', 'COMMANDTYPE', 'MOVEPARALLEL', 'TBBCHANGETIME', 'X', 'Y', 'A', 'B', 'MAXA', 'ISTEMPERATURE', 'ISUNLOAD', 'BFMASTERCOMMANDS.ICON', 'BFMASTERCOMMANDS.GROUPID')
           .from('BFMASTERCOMMANDS')
           .where('MACHINEID', '=', machineId)
       })
 
     await trx('BAMASTERCOMMANDSALARMS')
-      .insert(function () {
-        this.select(machineId, maxVersion, 'COMMANDNO', 'ALARMINDEX', 'ALARMNO', 'ALARM', 'UNIVERSALALARMNO')
+      .insert(function (this: Knex) {
+        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'ALARMINDEX', 'ALARMNO', 'ALARM', 'UNIVERSALALARMNO')
           .from('BFMASTERCOMMANDSALARMS')
           .where('MACHINEID', '=', machineId)
       })
 
     await trx('BAMASTERCOMMANDRETURNVALUES')
-      .insert(function () {
-        this.select(machineId, maxVersion, 'COMMANDNO', 'RETURNVALUEINDEX', 'RETURNVALUENAME', 'CANSHOW', 'SPRELATION')
+      .insert(function (this: Knex) {
+        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'RETURNVALUEINDEX', 'RETURNVALUENAME', 'CANSHOW', 'SPRELATION')
           .from('BFMASTERCOMMANDRETURNVALUES')
           .where('MACHINEID', '=', machineId)
       })
 
     await trx('BACOMMANDINPUTOUTPUTS')
-      .insert(function () {
-        this.select(machineId, maxVersion, 'COMMANDNO', 'IOINDEX', 'IOID', 'IOTYPE', 'NAME')
+      .insert(function (this: Knex) {
+        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'IOINDEX', 'IOID', 'IOTYPE', 'NAME')
           .from('BFCOMMANDINPUTOUTPUTS')
           .where('MACHINEID', '=', machineId)
       })
 
     await trx('BACOMMANDSELECTIONLIST')
-      .insert(function () {
-        this.select(machineId, maxVersion, 'COMMANDNO', 'IOINDEX', 'SELECTINDEX', 'IOTYPE', 'IOID', 'NAME', 'SELECTEDIOID', 'ISDEFAULT')
+      .insert(function (this: Knex) {
+        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'IOINDEX', 'SELECTINDEX', 'IOTYPE', 'IOID', 'NAME', 'SELECTEDIOID', 'ISDEFAULT')
           .from('BFCOMMANDSELECTIONLIST')
           .where('MACHINEID', '=', machineId)
       })
