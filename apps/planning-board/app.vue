@@ -4,11 +4,7 @@ import '@bryntum/schedulerpro-trial/locales/schedulerpro.locale.En'
 import '@bryntum/schedulerpro-trial/locales/schedulerpro.locale.Tr'
 import { LoadingScreen } from 'ui'
 
-const { locale, t } = useI18n()
-
-useHead({
-  title: () => t('app.name'),
-})
+const { locale } = useI18n()
 
 watch(() => locale.value, (newLocale: string) => {
   if (newLocale === 'tr') {

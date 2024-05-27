@@ -4,10 +4,6 @@ import { useColorStore } from '~/store/Colors'
 
 const { t } = useI18n()
 const colors = useColorStore()
-
-useHead({
-  title: () => t('app.name'),
-})
 </script>
 
 <template>

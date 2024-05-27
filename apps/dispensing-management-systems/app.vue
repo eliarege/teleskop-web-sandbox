@@ -4,11 +4,7 @@ import { useStateStore } from '~/store/State'
 
 const q = useQuasar()
 const state = useStateStore()
-const { setLocale, t } = useI18n()
-
-useHead({
-  title: () => t('app.name'),
-})
+const { setLocale } = useI18n()
 
 setLocale(state.locale)
 

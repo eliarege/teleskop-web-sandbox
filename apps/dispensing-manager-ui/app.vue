@@ -1,11 +1,4 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
-import languageTR from 'quasar/lang/tr'
-
-const { t } = useI18n()
-useHead({
-  title: () => t('app.name'),
-})
 </script>
 
 <template>

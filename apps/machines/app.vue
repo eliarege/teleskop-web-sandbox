@@ -3,10 +3,6 @@ import '@formkit/themes/genesis'
 
 const { t } = useI18n()
 
-useHead({
-  title: () => t('app.name'),
-})
-
 const definitionItems = computed(() => ([
   {
     label: t('machine'),
