@@ -63,7 +63,11 @@ const showModal = reactive({
   settings: false,
 })
 
-const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatus[]>('/api/machineList', {
+const sortIndex = Symbol('sortIndex')
+
+type MachineStatusWithSortIndex = MachineStatus & { [sortIndex]: number }
+
+const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatusWithSortIndex[]>('/api/machineList', {
   default: () => [],
   transform: unsortedMachines => sortMachines(unsortedMachines),
 })
@@ -77,11 +81,22 @@ const { data: events, refresh: eventRefresh, pending: eventsPending } = await us
   },
 })
 
-function sortMachines(machines: MachineStatus[]) {
+function sortMachines(machines: MachineStatusWithSortIndex[]): MachineStatusWithSortIndex[] {
+  for (const machine of machines) {
+    machine[sortIndex] = store.machineOrdering.indexOf(machine.id)
+  }
+
   return machines.sort((a, b) => {
-    const indexA = store.machineOrdering.indexOf(a.id)
-    const indexB = store.machineOrdering.indexOf(b.id)
-    return indexA > indexB ? 1 : (indexA < indexB ? -1 : 0)
+    const aIndex = a[sortIndex]
+    const bIndex = b[sortIndex]
+    if (aIndex === bIndex)
+      return 0
+    if (aIndex === -1)
+      return 1
+    if (bIndex === -1)
+      return -1
+
+    return aIndex - bIndex
   })
 }
 
