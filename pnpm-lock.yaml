@@ -90,6 +90,9 @@ importers:
       async-mutex:
         specifier: ^0.5.0
         version: 0.5.0
+      execa:
+        specifier: ^9.1.0
+        version: 9.1.0
       knex:
         specifier: ^3.1.0
         version: 3.1.0(pg@8.11.5)(tedious@18.1.0)
