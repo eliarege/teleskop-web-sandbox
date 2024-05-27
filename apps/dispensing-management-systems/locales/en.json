@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Dispensing Management Systems"
+  },
   "New": "New",
   "AddNew": "Add New Dispenser / Machine",
   "AddNewDispenser": "Add New Dispenser",

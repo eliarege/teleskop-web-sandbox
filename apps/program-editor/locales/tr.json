@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Program Editörü"
+  },
   "operator": "Operatör müdahale edebilir",
   "required": "{field} boş olamaz.",
   "tr": "Türkçe",

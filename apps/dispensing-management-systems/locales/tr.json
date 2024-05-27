@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Dağıtım Yönetim Sistemleri"
+  },
   "New": "Yeni",
   "AddNew": "Yeni Dağıtıcı / Makine Ekle",
   "AddNewDispenser": "Yeni Dağıtıcı Ekle",

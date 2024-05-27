@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Planlama Tahtası"
+  },
   "pinia": {
     "job-order": "İş Emri",
     "plan-key": "Plan No",

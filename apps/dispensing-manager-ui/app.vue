@@ -2,10 +2,10 @@
 import { useQuasar } from 'quasar'
 import languageTR from 'quasar/lang/tr'
 
-const $q = useQuasar()
-$q.lang.set(languageTR)
-const { setLocale } = useI18n()
-setLocale('tr')
+const { t } = useI18n()
+useHead({
+  title: () => t('app.name'),
+})
 </script>
 
 <template>

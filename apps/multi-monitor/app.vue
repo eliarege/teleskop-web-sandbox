@@ -2,16 +2,11 @@
 import { LoadingScreen } from 'ui'
 import { useColorStore } from '~/store/Colors'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const colors = useColorStore()
 
-useHeadSafe(computed(() => ({
-  title: t('name'),
-  link: [{ rel: 'icon', type: 'image/svg', href: '/logo-dark-raw.svg' }],
-})))
-
-const messages = controlledComputed(locale, () => {
-  return { firstMessage: t('load-message'), secondMessage: t('wait-message') }
+useHead({
+  title: () => t('app.name'),
 })
 </script>
 
@@ -25,8 +20,8 @@ const messages = controlledComputed(locale, () => {
     <template #fallback>
       <LoadingScreen
         image="/eliarkurumsal.png"
-        :first-message="messages.firstMessage"
-        :second-message="messages.secondMessage"
+        :first-message="t('load-message')"
+        :second-message="t('wait-message')"
       />
     </template>
   </Suspense>

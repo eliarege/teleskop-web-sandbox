@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Dağıtım Yöneticisi"
+  },
   "allJobOrders": "Tüm İş Emirlerini Göster",
   "close": "Kapat",
   "joborders": "İş Emirleri",

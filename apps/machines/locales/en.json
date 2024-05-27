@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Machines"
+  },
   "machine": "Machine",
   "new": "New",
   "properties": "Properties",

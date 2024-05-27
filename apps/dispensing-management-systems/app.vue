@@ -4,7 +4,12 @@ import { useStateStore } from '~/store/State'
 
 const q = useQuasar()
 const state = useStateStore()
-const { setLocale } = useI18n()
+const { setLocale, t } = useI18n()
+
+useHead({
+  title: () => t('app.name'),
+})
+
 setLocale(state.locale)
 
 if (state.locale === 'tr')

@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Dispensing Manager"
+  },
   "allJobOrders": "Show All Job Orders",
   "close": "Close",
   "correctionNo": "Correction Number",

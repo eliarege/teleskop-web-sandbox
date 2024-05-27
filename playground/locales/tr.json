@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Test Alanı"
+  },
   "menu": {
     "home": "Ana Sayfa",
     "system": "Sistem",

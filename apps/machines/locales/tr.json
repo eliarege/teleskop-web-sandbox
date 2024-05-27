@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Makineler"
+  },
   "machine": "Makine",
   "machineStopReasons": "Makine Duruş Sebepleri",
   "loadProject": "Proje Yükle",

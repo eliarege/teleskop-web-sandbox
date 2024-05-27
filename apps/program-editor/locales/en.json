@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Program Editor"
+  },
   "operator": "Operator can be used to change the program",
   "required": "{field} cannot be empty.",
   "en": "English",

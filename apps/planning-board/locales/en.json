@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Planning Board"
+  },
   "pinia": {
     "job-order": "Job Order",
     "plan-key": "Plan Key",

@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Playground"
+  },
   "menu": {
     "home": "Home",
     "system": "System",

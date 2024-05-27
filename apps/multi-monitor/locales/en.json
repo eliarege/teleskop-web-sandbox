@@ -1,5 +1,7 @@
 {
-  "name": "Multi Monitor",
+  "app": {
+    "name": "Multi Monitor"
+  },
   "home": "Home",
   "vnc-error": "{name} Connection Failed!",
   "load-message": "App is loading",
