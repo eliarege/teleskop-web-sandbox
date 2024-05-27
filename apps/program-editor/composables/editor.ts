@@ -128,11 +128,13 @@ export const useEditorStore = defineStore('editor', () => {
 
       notifyError(t('saveProgram.incorrect'))
     } else {
+      isLoading = true
       if (await updateProgram()) {
         notifySuccess(t('saveProgram.success'))
       } else {
         notifyError(t('saveProgram.fail'))
       }
+      isLoading = false
     }
   }
 
@@ -165,9 +167,10 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   // TODO: await
-  async function fetchProgram() {
+  async function fetchProgram(machineId: number, programNo: number) {
+    selectedStep.value = -1
     isLoading = true
-    const programData = await $fetch<Program>(`/api/machine/${route.params.machine_id}/program/${route.params.program_no}`)
+    const programData = await $fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
     for (const step of programData.steps) {
       step.stepId = lastStepId++
       for (const command of step.parallelCommands) {
@@ -178,9 +181,9 @@ export const useEditorStore = defineStore('editor', () => {
     isLoading = false
   }
 
-  async function fetchMachineCommands() {
+  async function fetchMachineCommands(machineId: number) {
     isCommandLoading = true
-    const machineCommandsData = await $fetch<MachineCommand[]>(`/api/machine/${route.params.machine_id}/commands?editable=true`)
+    const machineCommandsData = await $fetch<MachineCommand[]>(`/api/machine/${machineId}/commands?editable=true`)
     machineCommands.value.clear()
     for (const command of machineCommandsData) {
       machineCommands.value.set(command.commandNo, command)

@@ -31,7 +31,7 @@ function toggleRightDrawer() {
 
 <template>
   <QLayout view="hHh LpR fFf">
-    <QHeader :class="dark.isActive ? 'bg-dark-1' : 'bg-gray-1'" class="text-white">
+    <QHeader :class="dark.isActive ? 'bg-dark-1' : 'bg-white'" class="text-white">
       <MenuBar />
     </QHeader>
 
@@ -39,14 +39,14 @@ function toggleRightDrawer() {
       v-model="leftDrawerOpen"
       show-if-above
       side="left"
-      bordered
-      :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-2'"
+      borderless
+      :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
     >
       <MachineList />
     </QDrawer>
 
-    <QPageContainer class="bg-gray-3">
-      <div :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-2'" class="flex sticky top-10 z-10">
+    <QPageContainer>
+      <div :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'" class="flex sticky top-10.5 z-10">
         <QBtn
           dense
           flat
@@ -63,8 +63,8 @@ function toggleRightDrawer() {
         />
       </div>
 
-      <div class="" :class="dark.isActive ? 'bg-dark-8' : 'bg-gray-3'">
-        <NuxtPage class="overflow-auto" />
+      <div :class="dark.isActive ? 'bg-dark-8' : 'bg-white'">
+        <NuxtPage />
       </div>
     </QPageContainer>
 
@@ -72,8 +72,8 @@ function toggleRightDrawer() {
       v-model="rightDrawerOpen"
       show-if-above
       side="right"
-      bordered
-      :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-2'"
+      borderless
+      :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
     >
       <MachineCommandList />
     </QDrawer>
