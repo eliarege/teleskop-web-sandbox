@@ -61,15 +61,6 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
 
 <template>
   <div class="outer-div">
-    <div class="header-class">
-      <NavigationButton type="back" />
-      &nbsp;&nbsp;
-      {{ t('joborders') }}
-      <span class="right-home">
-        <NavigationButton type="settings" />
-        <NavigationButton type="home" />
-      </span>
-    </div>
     <div class="gap-5">
       <div v-if="visibleLoading" class="absolute w-full h-full top-1/2 left-1/2 transform -translate-1/2 z-10">
         <LoadingSpinner />

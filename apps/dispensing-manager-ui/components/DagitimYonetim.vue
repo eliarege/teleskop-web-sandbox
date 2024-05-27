@@ -440,23 +440,6 @@ onBeforeUnmount(() => {
         </template>
       </q-table>
     </div>
-    <div class="flex justify-end w-full gap-5 pr-5 pb-5 ">
-      <q-btn
-        outline
-        class=""
-        color="black"
-        :label="t('dispensingManager.recipeMeasurement')"
-        @click="navigateToPage('recete-tartim')"
-      />
-      <!-- <q-btn
-        outline
-        class=""
-        color="black"
-        icon="settings"
-        :label="t('settings._')"
-        @click="navigateToPage('settings')"
-      /> -->
-    </div>
   </div>
 </template>
 
@@ -526,12 +509,12 @@ img.invert-colors {
 .header-class {
   background-color: rgb(0, 0, 0);
   color: white;
-  font-size: x-large;
+  font-size: large;
   width: 100%;
   display: flex;
   align-items: center;
   padding-left: 1rem;
-  height: 3rem;
+  height: 2.5rem;
 }
 
 .status-class::after {

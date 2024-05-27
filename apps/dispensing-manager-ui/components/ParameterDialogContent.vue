@@ -38,14 +38,14 @@ const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.
         :rows="parameterRows"
         style="width: 100%; height: 100%;"
       >
-        <template #custombody="props">
+        <template #custombody="bodyProps">
           <q-tr
-            :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
+            :style="bodyProps.rowIndex % 2 ? `background-color: ${colors.tableGray}` : ''"
           >
             <q-td
-              v-for="col in props.cols"
+              v-for="col in bodyProps.cols"
               :key="col.name"
-              :props="props"
+              :props="bodyProps"
             >
               <span v-if="col.field === 'type'">
                 {{ t(`recipeTypes.${col.value}`) }}

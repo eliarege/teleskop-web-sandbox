@@ -22,14 +22,6 @@ const settings = [
 </script>
 
 <template>
-  <span class="header-class">
-    <NavigationButton type="back" />
-    &nbsp;&nbsp;
-    Eliar - {{ t('dispensingManager._') }} - {{ t('settings._') }}
-    <span class="right-home">
-      <NavigationButton type="home" />
-    </span>
-  </span>
   <div>
     <q-splitter
       v-model="splitterModel"

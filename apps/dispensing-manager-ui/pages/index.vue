@@ -1,20 +1,4 @@
-<script setup lang="ts">
-import { colors } from '~/shared/constants'
-
-const { t } = useI18n()
-const about = ref()
-about.value = await $fetch('/api/properties')
-</script>
-
 <template>
-  <span class="header-class">
-    Eliar - {{ t('dispensingManager._') }}
-    <q-space />
-    <span class="h-1 m-1 text-size-5">
-      {{ about.version }}
-    </span>
-    <NavigationButton type="settings" />
-  </span>
   <DagitimYonetim />
 </template>
 
