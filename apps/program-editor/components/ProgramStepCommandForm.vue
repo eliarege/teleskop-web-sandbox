@@ -21,7 +21,9 @@ const machineCommand = computed(() => {
 
 <template>
   <div class="pl-1 py-1">
-    <CommandSelector :path="props.path" />
+    <div class="pb-2">
+      <CommandSelector :path="props.path" />
+    </div>
     <div class="flex flex-wrap gap-x-2 gap-y-1">
       <ProgramStepCommandParameterInput
         v-for="(parameter, index) in machineCommand.editableParameters"

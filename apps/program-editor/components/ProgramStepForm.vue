@@ -98,11 +98,11 @@ const sortableOptions: SortableOptions = {
 }
 
 .step-parallel-command.__selected {
-  @apply bg-gray-3 dark:bg-dark-1;
+  @apply bg-gray-2 dark:bg-dark-1;
 }
 
 .step-parallel-command {
-  @apply flex w-full hover:(bg-gray-3 dark:bg-dark-1)
+  @apply flex w-full hover:(bg-gray-2 dark:bg-dark-1)
 }
 
 .expand-btn {
