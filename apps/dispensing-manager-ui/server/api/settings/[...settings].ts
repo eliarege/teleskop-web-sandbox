@@ -1,4 +1,5 @@
 import { createRouter, defineEventHandler, useBase } from 'h3'
+import { execa } from 'execa'
 import { knex } from '~/server/connectionPool'
 import { filtersToKnex } from '~/shared/functions'
 
@@ -46,6 +47,42 @@ router.get('/dispenser', defineEventHandler(async () => {
   return dispensers
 }))
 
+// router.get('/ping/:dispNo', defineEventHandler(async (event) => {
+//   const { dispNo } = getRouterParams(event)
+//   const dispenser = await knex('DYTFDISPENSERSETTINGS')
+//     .first({
+//       dispNo: 'DISPENSERID',
+//       fileSystem: 'BDYREQUESTPATH',
+//       dispIP: 'IP',
+//     })
+//     .where('DISPENSERID', dispNo)
+//   if (dispenser)
+//     const { stdout } = await execa('ping', [host, '-c', '4']) // Ping command for UNIX-based systems
+//   return dispenser
+// }))
+
+router.get('/dispenser-connection-status', defineEventHandler(async (event) => {
+  const dispensers = await knex('DYTFDISPENSERSETTINGS')
+    .select({
+      dispNo: 'DISPENSERID',
+      fileSystem: 'BDYREQUESTPATH',
+      dispIP: 'IP',
+    })
+  const statusPromises = dispensers.map((dispenser) => {
+    return execa('ping', ['-c', '1', '-W', '1', dispenser.dispIP])
+      .then(() => ({
+        ...dispenser,
+        status: true,
+      }))
+      .catch(() => ({
+        ...dispenser,
+        status: false,
+      }))
+  })
+
+  return await Promise.all(statusPromises)
+}))
+
 const dispenserParameters = {
   dispNo: 'DISPENSERID',
   name: 'NAME',
@@ -67,83 +104,71 @@ router.post('/filtered-dispenser', defineEventHandler(async (event) => {
 }))
 
 router.post('/dispenser/:dispNo', defineEventHandler(async (event) => {
-  try {
-    let dispenser
-    const body = await readBody(event)
-    if (!event.context.params) {
-      throw new Error('URL parameters are undefined')
-    }
-    const dispNo = event.context.params.dispNo
-    dispenser = await knex('DYTFDISPENSERSETTINGS')
-      .where('DISPENSERID', dispNo)
-      .select('DISPENSERID')
-    if (dispenser.length)
-      return { code: 400, error: 'Dispenser with given dispenser ID is already exist.' }
-    dispenser = await knex('DYTFDISPENSERSETTINGS')
-      .where('DISPENSERID', dispNo)
-      .insert({
-        DISPENSERID: dispNo,
-        NAME: body?.name,
-        DISPENSERTYPENO: body?.dispType,
-        BDYREQUESTNAME: body?.fileName,
-        BDYREQUESTPATH: body?.fileSystem,
-        PROTOCOL: body?.protocol,
-        IP: body?.dispIP,
-        CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
-        READCONSUMPTIONFROMDMS: body?.dms,
-      })
-    return dispenser
-  } catch (e) {
-    return e
+  let dispenser
+  const body = await readBody(event)
+  if (!event.context.params) {
+    throw new Error('URL parameters are undefined')
   }
+  const dispNo = event.context.params.dispNo
+  dispenser = await knex('DYTFDISPENSERSETTINGS')
+    .where('DISPENSERID', dispNo)
+    .select('DISPENSERID')
+  if (dispenser.length)
+    return { code: 400, error: 'Dispenser with given dispenser ID is already exist.' }
+  dispenser = await knex('DYTFDISPENSERSETTINGS')
+    .where('DISPENSERID', dispNo)
+    .insert({
+      DISPENSERID: dispNo,
+      NAME: body?.name,
+      DISPENSERTYPENO: body?.dispType,
+      BDYREQUESTNAME: body?.fileName,
+      BDYREQUESTPATH: body?.fileSystem,
+      PROTOCOL: body?.protocol,
+      IP: body?.dispIP,
+      CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
+      READCONSUMPTIONFROMDMS: body?.dms,
+    })
+  return dispenser
 }))
 
 router.put('/dispenser/:dispNo', defineEventHandler(async (event) => {
-  try {
-    const body = await readBody(event)
-    if (!event.context.params) {
-      throw new Error('URL parameters are undefined')
-    }
-    const dispNo = event.context.params.dispNo
-
-    const dispenser = await knex('DYTFDISPENSERSETTINGS')
-      .where('DISPENSERID', dispNo)
-      .update({
-        NAME: body?.name,
-        DISPENSERTYPENO: body?.dispType,
-        BDYREQUESTNAME: body?.fileName,
-        BDYREQUESTPATH: body?.fileSystem,
-        PROTOCOL: body?.protocol,
-        IP: body?.dispIP,
-        CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
-        READCONSUMPTIONFROMDMS: body?.dms,
-      })
-    return dispenser
-  } catch (e) {
-    return e
+  const body = await readBody(event)
+  if (!event.context.params) {
+    throw new Error('URL parameters are undefined')
   }
+  const dispNo = event.context.params.dispNo
+
+  const dispenser = await knex('DYTFDISPENSERSETTINGS')
+    .where('DISPENSERID', dispNo)
+    .update({
+      NAME: body?.name,
+      DISPENSERTYPENO: body?.dispType,
+      BDYREQUESTNAME: body?.fileName,
+      BDYREQUESTPATH: body?.fileSystem,
+      PROTOCOL: body?.protocol,
+      IP: body?.dispIP,
+      CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
+      READCONSUMPTIONFROMDMS: body?.dms,
+    })
+  return dispenser
 }))
 
 router.delete('/dispenser/:dispNo', defineEventHandler(async (event) => {
-  try {
-    if (!event.context.params) {
-      throw new Error('URL parameters are undefined')
-    }
-    const dispNo = event.context.params.dispNo
-    const conenctedMachines = await knex('DYTFMACHDISPCONNECTION')
-      .where('DISPENSERID', dispNo)
-    const connectedMaterials = await knex('DYTFCHEMDISPCONNECTION')
-      .where('DISPENSERID', dispNo)
-    if (conenctedMachines.length || connectedMaterials.length) {
-      return { isConnectedMaterialExist: !!connectedMaterials.length, isConnectedMachineExist: !!conenctedMachines.length }
-    }
-    await knex('DYTFDISPENSERSETTINGS')
-      .where('DISPENSERID', dispNo)
-      .del()
-    return 1
-  } catch (e) {
-    return e
+  if (!event.context.params) {
+    throw new Error('URL parameters are undefined')
   }
+  const dispNo = event.context.params.dispNo
+  const conenctedMachines = await knex('DYTFMACHDISPCONNECTION')
+    .where('DISPENSERID', dispNo)
+  const connectedMaterials = await knex('DYTFCHEMDISPCONNECTION')
+    .where('DISPENSERID', dispNo)
+  if (conenctedMachines.length || connectedMaterials.length) {
+    return { isConnectedMaterialExist: !!connectedMaterials.length, isConnectedMachineExist: !!conenctedMachines.length }
+  }
+  await knex('DYTFDISPENSERSETTINGS')
+    .where('DISPENSERID', dispNo)
+    .del()
+  return 1
 }))
 
 router.get('/check-is-machine-exist/:machineId', defineEventHandler(async (event) => {
@@ -310,14 +335,6 @@ router.get('/check-is-material-exist/:materialCode', defineEventHandler(async (e
   else return false
 }))
 
-// router.post('/filtered-material', defineEventHandler(async (event) => {
-//   const body = await readBody(event)
-//   const materials = knex('DYTFMATERIAL')
-//     .select(selectParametersMaterials)
-//     .orderBy('MATERIALCODE', 'asc')
-//   return await filtersToKnex(body, selectParametersMaterials, materials)
-// }))
-
 const selectParametersMaterials = {
   materialCode: 'M.MATERIALCODE',
   materialName: 'M.MATERIALNAME',
@@ -439,10 +456,6 @@ router.delete('/material/:materialCode', defineEventHandler(async (event) => {
 
 router.get('/request-mechanism-setting', defineEventHandler(async () => {
   const sett = await knex('DYTFDYSETTINGS')
-  // saltText: '',
-  // reqMechanismAnswerOptions: '',
-  // genericMaterialTwoText: '',
-  // genericMaterialOneText: '',
     .select({
       reqMechanismOption1: 'DYREQMECHANISM',
       reqMechanismOption2: 'repeatRequestIfLastcompleted',
@@ -509,6 +522,21 @@ router.put('/request-mechanism-setting', defineEventHandler(async (event) => {
   // saltText: '',
   // genericMaterialOneText: '',
   // genericMaterialTwoText: '',
+  return 1
+}))
+
+router.get('/delete-old-batch-time', defineEventHandler(async (event) => {
+  const days = await knex('DYTFDYSETTINGS')
+    .first('DELETEOLDBATCHES')
+  return days.DELETEOLDBATCHES
+}))
+
+router.put('/delete-old-batch-time', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  await knex('DYTFDYSETTINGS')
+    .update({
+      DELETEOLDBATCHES: body.days,
+    })
   return 1
 }))
 

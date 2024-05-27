@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
+import { useTimeoutPoll } from '@vueuse/core'
 import { cellRGBColorHandler, navigateToPage, textAlignOverride } from '../shared/functions'
 import { StatusCodes, colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
@@ -16,7 +17,8 @@ interface ConfirmationDialog {
 
 const actions = ref<Action[]>(['retry', 'cancel'])
 const confirmationDialog = ref<ConfirmationDialog>({ vis: false, act: 'cancel' })
-
+const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/dispenser-connection-status', { default: () => [] })
+useTimeoutPoll(refreshConnectionStatus, 10000, { immediate: true })
 const machines = await $fetch('/api/machine/machines')
 const dispensers = await $fetch('/api/settings/dispenser')
 const columnsRecipe = computed<Column[]>(() => [
@@ -42,6 +44,10 @@ const columnsRecipe = computed<Column[]>(() => [
     selectionOptions: dispensers,
     optionLabel: 'name',
     optionValue: 'dispNo',
+    classes(row) {
+      const status = connectionStatus.value?.find(status => status.dispNo === row.dispNo)?.status
+      return ['status-class', status ? 'success-class' : 'fail-class'].join(' ')
+    },
   }, // TODO: Dispenserşarı dönen endpoint
   { name: 'programno', label: t('programNo'), field: 'programno', filterable: true, filterType: 'comparison' },
   {
@@ -215,6 +221,8 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
         body: {
           content: data,
           reqNumber: row.reqnumber,
+          terminal: row.terminal,
+          type,
         },
       })
       Notify.create({
@@ -222,8 +230,7 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
         type: 'positive',
         position: 'top',
       })
-    }
-    catch (err) {
+    } catch (err) {
       Notify.create({
         message: t(`dispensingManager.${type}RequestDidNotSend`),
         type: 'warning',
@@ -256,7 +263,6 @@ function searchFilterUpdated(evt: any) {
 onMounted(() => {
   window.addEventListener('keyup', handleKeyUp)
 })
-
 onBeforeUnmount(() => {
   window.removeEventListener('keyup', handleKeyUp)
 })
@@ -434,23 +440,6 @@ onBeforeUnmount(() => {
         </template>
       </q-table>
     </div>
-    <div class="flex justify-end w-full gap-5 pr-5 pb-5 ">
-      <q-btn
-        outline
-        class=""
-        color="black"
-        :label="t('dispensingManager.recipeMeasurement')"
-        @click="navigateToPage('recete-tartim')"
-      />
-      <q-btn
-        outline
-        class=""
-        color="black"
-        icon="settings"
-        :label="t('settings._')"
-        @click="navigateToPage('settings')"
-      />
-    </div>
   </div>
 </template>
 
@@ -520,11 +509,29 @@ img.invert-colors {
 .header-class {
   background-color: rgb(0, 0, 0);
   color: white;
-  font-size: x-large;
+  font-size: large;
   width: 100%;
   display: flex;
   align-items: center;
   padding-left: 1rem;
-  height: 3rem;
+  height: 2.5rem;
+}
+
+.status-class::after {
+  font-family: 'Material Icons';
+  display: inline-block;
+  font-size: 1rem;
+  position: relative;
+  padding-left: 0.25rem;
+  vertical-align: sub;
+  background-color: transparent;
+}
+.status-class.success-class::after {
+  color: green;
+  content: 'check_circle';
+}
+.status-class.fail-class::after {
+  content: 'cancel';
+  @apply text-gray-800;
 }
 </style>

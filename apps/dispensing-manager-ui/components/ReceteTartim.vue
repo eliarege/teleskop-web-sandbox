@@ -309,18 +309,9 @@ onBeforeUnmount(() => {
 
   <div class="outer-div">
     <div class="content flex flex-col gap-5">
-      <span class="header-class-recipe">
-        <NavigationButton type="back" />
-        &nbsp;&nbsp;
-        {{ t('dispensingManager._') }} - {{ t('recipe.header') }}
-        <span class="right-home">
-          <NavigationButton type="settings" />
-          <NavigationButton type="home" />
-        </span>
-      </span>
       <div class="ml-5">
         <!-- {{ t('recipe.infoText') }} -->
-        <div class="flex flex-row items-center gap-5">
+        <div class="flex flex-row items-center gap-5 pt-5">
           <!-- {{ t('joborderNo') }}
           <q-input
             v-model="jobordernum"
@@ -589,11 +580,11 @@ onBeforeUnmount(() => {
 .header-class-recipe {
   background-color: rgb(0, 0, 0);
   color: white;
-  font-size: x-large;
+  font-size: large;
   width: 100%;
   display: flex;
   align-items: center;
-  height: 3rem;
+  height: 2.5rem;
 }
 
 .right-home {

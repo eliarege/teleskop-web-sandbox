@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '../types'
 
+defineProps<{
+  disableTheme?: boolean
+}>()
 const keycloak = useKeycloak()
 const { t } = useI18n()
 const { didInitialise, authenticated } = keycloak
@@ -43,7 +46,7 @@ const logoutButton: TopbarMenuItem = {
       <QSeparator class="my-1" />
       <TopbarMenuItem :item="logoutButton" />
       <QSeparator class="my-1" />
-      <TopbarCommonSettings />
+      <TopbarCommonSettings :disable-theme />
     </QMenu>
   </TopbarButton>
 </template>

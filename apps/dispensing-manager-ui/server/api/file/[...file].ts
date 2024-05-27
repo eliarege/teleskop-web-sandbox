@@ -3,9 +3,8 @@ import path from 'node:path'
 import { createRouter, defineEventHandler, useBase } from 'h3'
 import { Mutex, MutexInterface, Semaphore, SemaphoreInterface, withTimeout } from 'async-mutex'
 import { knex } from '~/server/connectionPool'
-
 import { sambaClient } from '~/server/sambaClient'
-import { StatusCodes } from '~/shared/constants'
+import { EOL, StatusCodes } from '~/shared/constants'
 
 const router = createRouter()
 export default useBase('/api/file', router.handler)
@@ -57,7 +56,7 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
     if (status === StatusCodes.requestCompleted && !check) {
       return { error: 3, message: 'Non-rerequestable material cannot be rerequested.' }
     } else {
-      const contentString = `${body.content.join(',')},\n`
+      const contentString = `${body.content.join(',')},${EOL.windows}`
       await mutex.runExclusive(async () => {
         const doesTheFileExist = await doesTheFileExistOnSamba(config.reqFilePath, config.writeFilePath)
         if (doesTheFileExist) {
@@ -65,9 +64,9 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
         } else {
           await fs.writeFile(config.writeFilePath, contentString, 'utf8')
         }
-        body.materials.forEach(async (material) => {
-          await fs.appendFile(config.writeFilePath, `${[material.materialCode, material.amount].join(',')},\n`, 'utf8')
-        })
+        // body.materials.forEach(async (material) => {
+        //   await fs.appendFile(config.writeFilePath, `${[material.materialCode, material.amount].join(',')},${EOL.windows}`, 'utf8')
+        // })
         await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
       })
       return 1
@@ -79,15 +78,16 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
 
 router.post('/write-dispenser-step', defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const contentString = `${body.content.join(',')},\n`
+  const contentString = `${body.content.join(',')},${EOL.windows}`
+  const reqFilePath = body.terminal === 'cancel' ? config.reqFilePath : `${body.terminal}.req`
   await mutex.runExclusive(async () => {
-    const doesTheFileExist = await doesTheFileExistOnSamba(config.reqFilePath, config.writeFilePath)
+    const doesTheFileExist = await doesTheFileExistOnSamba(reqFilePath, config.writeFilePath)
     if (doesTheFileExist) {
       await fs.appendFile(config.writeFilePath, contentString, 'utf8')
     } else {
       await fs.writeFile(config.writeFilePath, contentString, 'utf8')
     }
-    await sambaClient.sendFile(config.writeFilePath, config.reqFilePath)
+    await sambaClient.sendFile(config.writeFilePath, reqFilePath)
   })
 }))
 
@@ -95,7 +95,7 @@ async function doesTheFileExistOnSamba(reqFilePath: string, writeFilePath: strin
   try {
     await sambaClient.getFile(reqFilePath, writeFilePath)
     return true
-  } catch (e) {
+  } catch {
     return false
   }
 }

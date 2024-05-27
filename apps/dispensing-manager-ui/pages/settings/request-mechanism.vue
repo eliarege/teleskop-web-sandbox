@@ -94,264 +94,262 @@ function filterOptions(val, update) {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center">
-    <div class=" flex items-center justify-center w-full h-200 overflow-y-auto">
-      <div class="grid-container">
-        <div
-          v-for="n in 10"
-          :key="n"
-          class="grid-item settings-section"
-        >
-          <div v-if="n === 1">
-            <div class="settings-section-header">
-              {{ t('settings.requestMechanism._') }}
-            </div>
-            <div class="flex flex-col">
-              <q-option-group
-                v-model="reqMechanism"
-                :options="reqMechOptions"
-                type="radio"
-                @update:model-value="reqMechanism !== 3 ? reqMechanismNotCompletedOption = false : '' "
-              />
-              <q-checkbox
-                v-model="reqMechanismNotCompletedOption"
-                :disable="reqMechanism !== 3"
-                :label="t('settings.requestMechanism.requestCheckBox')"
-              />
-              <div class="flex py-5 gap-5">
-                <span style="white-space: normal; width: 40%;">
-                  {{ t('settings.requestMechanism.answer') }}
-                </span>
-                <span style="width: 12rem; ">
-                  <q-select
-                    v-model="reqMechanismAnswer"
-                    :options="reqMechanismAnswerOptions"
-                    option-value="value"
-                    option-label="label"
-                    filled
-                  />
-                </span>
-              </div>
-            </div>
+  <div class=" flex items-center justify-center w-full h-200 overflow-y-auto">
+    <div class="grid-container">
+      <div
+        v-for="n in 10"
+        :key="n"
+        class="grid-item settings-section"
+      >
+        <div v-if="n === 1">
+          <div class="settings-section-header">
+            {{ t('settings.requestMechanism._') }}
           </div>
-          <div v-if="n === 2">
-            <div
-              class="items-center pt-5"
-              style="white-space: normal;"
-            >
-              {{ t(`settings.requestMechanism.infoText${reqMechanism}`) }}
-            </div>
-          </div>
-          <div v-if="n === 3">
-            <div class="settings-section-header">
-              {{ t('settings.archiveRetentionPeriod') }}
-            </div>
-            <div class="flex  gap-5 m-5">
-              <div class="flex gap-15 items-center">
-                <span class="w-80">
-                  {{ `${t('settings.archiveRetentionDayCount')}:` }}
-                </span>
-                <q-input
-                  v-model="settingsData.archiveKeepTime"
+          <div class="flex flex-col">
+            <q-option-group
+              v-model="reqMechanism"
+              :options="reqMechOptions"
+              type="radio"
+              @update:model-value="reqMechanism !== 3 ? reqMechanismNotCompletedOption = false : '' "
+            />
+            <q-checkbox
+              v-model="reqMechanismNotCompletedOption"
+              :disable="reqMechanism !== 3"
+              :label="t('settings.requestMechanism.requestCheckBox')"
+            />
+            <div class="flex py-5 gap-5">
+              <span style="white-space: normal; width: 40%;">
+                {{ t('settings.requestMechanism.answer') }}
+              </span>
+              <span style="width: 12rem; ">
+                <q-select
+                  v-model="reqMechanismAnswer"
+                  :options="reqMechanismAnswerOptions"
+                  option-value="value"
+                  option-label="label"
                   filled
-                  class="w-20"
                 />
-              </div>
-              <div class="flex gap-15 items-center">
-                <span class="w-80">
-                  {{ t('settings.oldRequestInfoDelete') }}
-                </span>
-                <q-input
-                  v-model="settingsData.archiveDeletionTime"
-                  filled
-                  class="w-20"
-                />
-              </div>
+              </span>
             </div>
           </div>
-          <div v-if="n === 4">
-            <div class="settings-section-header">
-              {{ t('settings.orderBasedDyeRequest._') }}
-            </div>
-            <div class="m-5 flex flex-col">
-              <q-checkbox
-                v-model="settingsData.joborderBasedActive"
-                :label="t('settings.orderBasedDyeRequest.active')"
-                @update:model-value="!settingsData.joborderBasedActive ? settingsData.joborderBasedEqualMachinesRequired = false : ''"
-              />
-              <q-checkbox
-                v-model="settingsData.joborderBasedEqualMachinesRequired"
-                class="ml-8"
-                :disable="!settingsData.joborderBasedActive"
-                :label="t('settings.orderBasedDyeRequest.required')"
-              />
-            </div>
+        </div>
+        <div v-if="n === 2">
+          <div
+            class="items-center pt-5"
+            style="white-space: normal;"
+          >
+            {{ t(`settings.requestMechanism.infoText${reqMechanism}`) }}
           </div>
-
-          <div v-if="n === 5">
-            <div class="settings-section-header">
-              {{ t('settings.powderDye.sendPowderDyeInformationWhen') }}
-            </div>
-            <div class="p-5">
-              <q-option-group
-                v-model="settingsData.tozBoyaTartim"
-                :options="tartimOptions"
-                type="radio"
-              />
-            </div>
+        </div>
+        <div v-if="n === 3">
+          <div class="settings-section-header">
+            {{ t('settings.archiveRetentionPeriod') }}
           </div>
-
-          <div v-if="n === 6">
-            <div class="settings-section-header">
-              {{ t('settings.powderDye.sendPowderDyeDissolvingInformationWhen') }}
-            </div>
-            <div class="p-5">
-              <q-option-group
-                v-model="settingsData.tozBoyaCozme"
-                :options="tartimOptionsExtra"
-                type="radio"
+          <div class="flex  gap-5 m-5">
+            <div class="flex gap-15 items-center">
+              <span class="w-80">
+                {{ `${t('settings.archiveRetentionDayCount')}:` }}
+              </span>
+              <q-input
+                v-model="settingsData.archiveKeepTime"
+                filled
+                class="w-20"
               />
             </div>
-          </div>
-
-          <div v-if="n === 7">
-            <div class="settings-section-header">
-              {{ t('settings.powderDye.sendPowderChemicalWeighingInformationWhen') }}
-            </div>
-            <div class="p-5">
-              <q-option-group
-                v-model="settingsData.tozChemTartim"
-                :options="tartimOptions"
-                type="radio"
-              />
-            </div>
-          </div>
-
-          <div v-if="n === 8">
-            <div class="settings-section-header">
-              {{ t('settings.powderDye.sendManualMaterialWeighingInformationWhen') }}
-            </div>
-            <div class="p-5">
-              <q-option-group
-                v-model="settingsData.manuelMateryalTartim"
-                :options="tartimOptions"
-                type="radio"
-              />
-            </div>
-          </div>
-
-          <div v-if="n === 9" class="mb-20">
-            <div class="settings-section-header">
-              {{ t('settings.genericRequests') }}
-            </div>
-            <div class="flex m-5 gap-15">
-              <div class="flex flex-col w-full">
-                <div class="flex flex-row justify-between">
-                  <q-checkbox
-                    v-model="settingsData.genericSaltActive"
-                    class="m-3"
-                    :label="t('settings.activeSaltRequest')"
-                  />
-                  <q-select
-                    v-model="settingsData.saltCode"
-                    :options="filteredOptions"
-                    :disable="!settingsData.genericSaltActive"
-                    class="m-3 w-50"
-                    option-label="materialLabel"
-                    dense
-                    clearable
-                    filled
-                    use-input
-                    @filter="filterOptions"
-                  />
-                </div>
-                <div class="flex flex-row justify-between">
-                  <q-checkbox
-                    v-model="settingsData.genericMaterialOneActive"
-                    class="m-3"
-                    :label="t('settings.activeGenericMaterial1')"
-                  />
-                  <q-select
-                    v-model="settingsData.genericMaterialOne"
-                    :options="filteredOptions"
-                    :disable="!settingsData.genericMaterialOneActive"
-                    class="m-3 w-50"
-                    option-label="materialLabel"
-                    dense
-                    clearable
-                    filled
-                    use-input
-                    @filter="filterOptions"
-                  />
-                </div>
-                <div class="flex flex-row justify-between">
-                  <q-checkbox
-                    v-model="settingsData.genericMaterialTwoActive"
-                    class="m-3"
-                    :label="t('settings.activeGenericMaterial2')"
-                  />
-                  <q-select
-                    v-model="settingsData.genericMaterialTwo"
-                    :options="filteredOptions"
-                    :disable="!settingsData.genericMaterialTwoActive"
-                    class="m-3 w-50"
-                    option-label="materialLabel"
-                    clearable
-                    dense
-                    use-input
-                    filled
-                    @filter="filterOptions"
-                  />
-                </div>
-              </div>
-              <div class="flex flex-col">
-                <!-- TODO: Make the selection menu more solid and add searchbar also it should not go all the page long -->
-              </div>
-            </div>
-          </div>
-          <div v-if="n === 10" class="mb-20">
-            <div class="settings-section-header">
-              {{ t('settings.other') }}
-            </div>
-            <div class="m-5 flex flex-col gap-1">
-              <q-checkbox
-                v-model="settingsData.chemTankLevelControl"
-                :label="t('settings.checkTankLevelInChemicalRequests')"
-              />
-              <q-checkbox
-                v-model="settingsData.justRunOnPlannedMachine"
-                :label="t('settings.executeOrderOnlyInPlannedMachine')"
-              />
-              <q-checkbox
-                v-model="settingsData.coupleMechanismSplit"
-                :label="t('settings.determineCouplingRecipe')"
-              />
-              <q-checkbox
-                v-model="settingsData.manuelOnlineRequestTankNoControl"
-                :label="t('settings.checkTankNumberWhenMakingManualOnlineRequest')"
+            <div class="flex gap-15 items-center">
+              <span class="w-80">
+                {{ t('settings.oldRequestInfoDelete') }}
+              </span>
+              <q-input
+                v-model="settingsData.archiveDeletionTime"
+                filled
+                class="w-20"
               />
             </div>
           </div>
         </div>
+        <div v-if="n === 4">
+          <div class="settings-section-header">
+            {{ t('settings.orderBasedDyeRequest._') }}
+          </div>
+          <div class="m-5 flex flex-col">
+            <q-checkbox
+              v-model="settingsData.joborderBasedActive"
+              :label="t('settings.orderBasedDyeRequest.active')"
+              @update:model-value="!settingsData.joborderBasedActive ? settingsData.joborderBasedEqualMachinesRequired = false : ''"
+            />
+            <q-checkbox
+              v-model="settingsData.joborderBasedEqualMachinesRequired"
+              class="ml-8"
+              :disable="!settingsData.joborderBasedActive"
+              :label="t('settings.orderBasedDyeRequest.required')"
+            />
+          </div>
+        </div>
+
+        <div v-if="n === 5">
+          <div class="settings-section-header">
+            {{ t('settings.powderDye.sendPowderDyeInformationWhen') }}
+          </div>
+          <div class="p-5">
+            <q-option-group
+              v-model="settingsData.tozBoyaTartim"
+              :options="tartimOptions"
+              type="radio"
+            />
+          </div>
+        </div>
+
+        <div v-if="n === 6">
+          <div class="settings-section-header">
+            {{ t('settings.powderDye.sendPowderDyeDissolvingInformationWhen') }}
+          </div>
+          <div class="p-5">
+            <q-option-group
+              v-model="settingsData.tozBoyaCozme"
+              :options="tartimOptionsExtra"
+              type="radio"
+            />
+          </div>
+        </div>
+
+        <div v-if="n === 7">
+          <div class="settings-section-header">
+            {{ t('settings.powderDye.sendPowderChemicalWeighingInformationWhen') }}
+          </div>
+          <div class="p-5">
+            <q-option-group
+              v-model="settingsData.tozChemTartim"
+              :options="tartimOptions"
+              type="radio"
+            />
+          </div>
+        </div>
+
+        <div v-if="n === 8">
+          <div class="settings-section-header">
+            {{ t('settings.powderDye.sendManualMaterialWeighingInformationWhen') }}
+          </div>
+          <div class="p-5">
+            <q-option-group
+              v-model="settingsData.manuelMateryalTartim"
+              :options="tartimOptions"
+              type="radio"
+            />
+          </div>
+        </div>
+
+        <div v-if="n === 9" class="mb-20">
+          <div class="settings-section-header">
+            {{ t('settings.genericRequests') }}
+          </div>
+          <div class="flex m-5 gap-15">
+            <div class="flex flex-col w-full">
+              <div class="flex flex-row justify-between">
+                <q-checkbox
+                  v-model="settingsData.genericSaltActive"
+                  class="m-3"
+                  :label="t('settings.activeSaltRequest')"
+                />
+                <q-select
+                  v-model="settingsData.saltCode"
+                  :options="filteredOptions"
+                  :disable="!settingsData.genericSaltActive"
+                  class="m-3 w-50"
+                  option-label="materialLabel"
+                  dense
+                  clearable
+                  filled
+                  use-input
+                  @filter="filterOptions"
+                />
+              </div>
+              <div class="flex flex-row justify-between">
+                <q-checkbox
+                  v-model="settingsData.genericMaterialOneActive"
+                  class="m-3"
+                  :label="t('settings.activeGenericMaterial1')"
+                />
+                <q-select
+                  v-model="settingsData.genericMaterialOne"
+                  :options="filteredOptions"
+                  :disable="!settingsData.genericMaterialOneActive"
+                  class="m-3 w-50"
+                  option-label="materialLabel"
+                  dense
+                  clearable
+                  filled
+                  use-input
+                  @filter="filterOptions"
+                />
+              </div>
+              <div class="flex flex-row justify-between">
+                <q-checkbox
+                  v-model="settingsData.genericMaterialTwoActive"
+                  class="m-3"
+                  :label="t('settings.activeGenericMaterial2')"
+                />
+                <q-select
+                  v-model="settingsData.genericMaterialTwo"
+                  :options="filteredOptions"
+                  :disable="!settingsData.genericMaterialTwoActive"
+                  class="m-3 w-50"
+                  option-label="materialLabel"
+                  clearable
+                  dense
+                  use-input
+                  filled
+                  @filter="filterOptions"
+                />
+              </div>
+            </div>
+            <div class="flex flex-col">
+              <!-- TODO: Make the selection menu more solid and add searchbar also it should not go all the page long -->
+            </div>
+          </div>
+        </div>
+        <div v-if="n === 10" class="mb-20">
+          <div class="settings-section-header">
+            {{ t('settings.other') }}
+          </div>
+          <div class="m-5 flex flex-col gap-1">
+            <q-checkbox
+              v-model="settingsData.chemTankLevelControl"
+              :label="t('settings.checkTankLevelInChemicalRequests')"
+            />
+            <q-checkbox
+              v-model="settingsData.justRunOnPlannedMachine"
+              :label="t('settings.executeOrderOnlyInPlannedMachine')"
+            />
+            <q-checkbox
+              v-model="settingsData.coupleMechanismSplit"
+              :label="t('settings.determineCouplingRecipe')"
+            />
+            <q-checkbox
+              v-model="settingsData.manuelOnlineRequestTankNoControl"
+              :label="t('settings.checkTankNumberWhenMakingManualOnlineRequest')"
+            />
+          </div>
+        </div>
       </div>
-      <div class="bottom-buttons fixed bottom-0 flex justify-center bg-white gap-10 w-full h-20">
-        <q-btn
-          color="black"
-          :label="t('settings.submit')"
-          outline
-          class="border-width-2 my-5"
-          icon="done"
-          @click="changeSettings"
-        />
-        <q-btn
-          color="red"
-          class="my-5 border-width-2"
-          :label="t('settings.cancel')"
-          icon="close"
-          outline
-          @click="fetchSettings"
-        />
-      </div>
+    </div>
+    <div class="bottom-buttons fixed bottom-0 flex justify-center bg-white gap-10 w-full h-20">
+      <q-btn
+        color="black"
+        :label="t('settings.submit')"
+        outline
+        class="border-width-2 my-5"
+        icon="done"
+        @click="changeSettings"
+      />
+      <q-btn
+        color="red"
+        class="my-5 border-width-2"
+        :label="t('settings.cancel')"
+        icon="close"
+        outline
+        @click="fetchSettings"
+      />
     </div>
   </div>
 </template>

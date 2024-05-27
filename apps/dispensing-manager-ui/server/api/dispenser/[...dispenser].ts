@@ -23,85 +23,74 @@ const selectParameters = {
   status: 'r.STATUS',
   priority: 'r.PRIORTY',
   plankey: 'r.PLANKEY',
+  terminal: 'r.TERMINAL',
 }
 
 router.post('/joborderlogs', defineEventHandler(async (event) => {
   const { isCanceled } = getQuery(event)
   const body = await readBody(event)
-  try {
-    const result = knex('dbo.DYTFCHEMREQUESTS as r')
-      .join('dbo.DYTFMACHINES as m', 'r.MACHINEID', 'm.MACHINEID')
-      .leftJoin('dbo.DYTFDISPENSERSETTINGS as d', 'r.DISPENSERID', 'd.DISPENSERID')
-      .leftJoin('dbo.BFMASTERPRGHEADER as p', function () {
-        this
-          .on('r.PROGRAMNO', '=', 'p.PROGNO')
-          .andOn('r.MACHINEID', '=', 'p.MACHINEID')
-      })
-      // TODO: There are no duplicates but this is not the way how its done for sure
-      .select(selectParameters)
-      .limit(500)
-      .orderBy('r.REQNUMBER', 'desc')
-      .where((builder) => {
-        if (isCanceled && isCanceled === 'true') {
-          builder.where('r.STATUS', 3)
-            .orWhere('r.STATUS', 8)
-        } else {
-          builder.whereNot('r.STATUS', 3)
-            .andWhereNot('r.STATUS', 8)
-        }
-      })
-    if (isCanceled === 'false') {
-      result.rightJoin('TFMACHINESTATUS as s', function () {
-        this
-          .on('r.BATCHNO', '=', 's.RUNNING_JOBORDER')
-          .andOn('m.MACHINEID', '=', 's.MACHINEID')
-      })
-    }
-    if (body.length > 0) {
-      return await filtersToKnex(body, selectParameters, result)
-    } else {
-      return await result
-    }
-  } catch (e) {
-    return e
+
+  const result = knex('dbo.DYTFCHEMREQUESTS as r')
+    .join('dbo.DYTFMACHINES as m', 'r.MACHINEID', 'm.MACHINEID')
+    .leftJoin('dbo.DYTFDISPENSERSETTINGS as d', 'r.DISPENSERID', 'd.DISPENSERID')
+    .leftJoin('dbo.BFMASTERPRGHEADER as p', function () {
+      this
+        .on('r.PROGRAMNO', '=', 'p.PROGNO')
+        .andOn('r.MACHINEID', '=', 'p.MACHINEID')
+    })
+  // TODO: There are no duplicates but this is not the way how its done for sure
+    .select(selectParameters)
+    .limit(500)
+    .orderBy('r.REQNUMBER', 'desc')
+    .where((builder) => {
+      if (isCanceled && isCanceled === 'true') {
+        builder.where('r.STATUS', 3)
+          .orWhere('r.STATUS', 8)
+      } else {
+        builder.whereNot('r.STATUS', 3)
+          .andWhereNot('r.STATUS', 8)
+      }
+    })
+  if (isCanceled === 'false') {
+    result.rightJoin('TFMACHINESTATUS as s', function () {
+      this
+        .on('r.BATCHNO', '=', 's.RUNNING_JOBORDER')
+        .andOn('m.MACHINEID', '=', 's.MACHINEID')
+    })
+  }
+  if (body.length > 0) {
+    return await filtersToKnex(body, selectParameters, result)
+  } else {
+    return await result
   }
 }))
 
 router.get('/requestmaterials', defineEventHandler(async (event) => {
-  let result
   const { reqnumber } = getQuery(event)
-  try {
-    result = await knex('dbo.DYTFREQMATERIALS as r')
-      .join('dbo.DYTFMATERIAL as m', function () {
-        this
-          .on('m.MATERIALCODE', '=', 'r.CHEMCODE')
-      })
-      .leftJoin('dbo.DYTFDISPENSERSETTINGS as d', 'r.DISPENSERID', 'd.DISPENSERID')
-      .where('r.REQNUMBER', '=', Number(reqnumber))
-      .select({
-        materialName: 'm.MATERIALNAME',
-        materialCode: 'r.CHEMCODE',
-        name: 'd.NAME',
-        amount: 'r.AMOUNT',
-        status: 'r.STATUS',
-      })
+  const result = await knex('dbo.DYTFREQMATERIALS as r')
+    .join('dbo.DYTFMATERIAL as m', function () {
+      this
+        .on('m.MATERIALCODE', '=', 'r.CHEMCODE')
+    })
+    .leftJoin('dbo.DYTFDISPENSERSETTINGS as d', 'r.DISPENSERID', 'd.DISPENSERID')
+    .where('r.REQNUMBER', '=', Number(reqnumber))
+    .select({
+      materialName: 'm.MATERIALNAME',
+      materialCode: 'r.CHEMCODE',
+      name: 'd.NAME',
+      amount: 'r.AMOUNT',
+      status: 'r.STATUS',
+    })
 
-    return result
-  } catch (e) {
-    return e
-  }
+  return result
 }))
 
 router.put('/complete-program', defineEventHandler(async (event) => {
   const body = await readBody(event)
-  try {
-    const result = await knex('DYTFCHEMREQUESTS')
-      .where('REQNUMBER', body.reqNumber)
-      .update({ STATUS: 3 })
-    return result
-  } catch (e) {
-    return e
-  }
+  const result = await knex('DYTFCHEMREQUESTS')
+    .where('REQNUMBER', body.reqNumber)
+    .update({ STATUS: 3 })
+  return result
 }))
 
 router.post('/check-status', defineEventHandler(async (event) => {

@@ -6,56 +6,50 @@ export default useBase('/api/recipe', router.handler)
 router.get('/test', defineEventHandler(async (event) => {
   const { recipeJB, recipeID, teleskopType } = getQuery(event)
 
-  try {
-    const planKeySubquery = knex('DYBFBATCHPLAN')
-      .where('JOBORDER', recipeJB)
-      .orderBy('PLANKEY', 'desc')
-      .limit(1)
-      .select('PLANKEY')
+  const planKeySubquery = knex('DYBFBATCHPLAN')
+    .where('JOBORDER', recipeJB)
+    .orderBy('PLANKEY', 'desc')
+    .limit(1)
+    .select('PLANKEY')
 
-    const query = knex
-      .select({
-        recIndex: 'p.RCPINDEX',
-        recNo: 'p.RECIPENO',
-        name: 'h.NAME',
-        reqNumber: 'DYEREQUESTNUMBER',
-        mainStep: 'MAINSTEP',
-        parallelStep: 'PARALLELSTEP',
-        recType: 'r.RECIPETYPE',
-        chemCode: 'CHEMCODE',
-        materialName: 'm.MATERIALNAME',
-        amount: 'AMOUNT',
-        reqBatchNo: 'REQNO_BATCH',
-        reqProgNo: 'REQNO_PROG',
-        phaseNo: 'PHASENO',
-        phaseIndex: 'PHASEINDEX',
-        unit: 'otherUnit',
-      })
-      .from('DYBFBATCHORDERRECIPESTEPS as r')
-      .rightJoin('DYBFBATCHORDERRECIPEHEADER as p', function () {
-        this.on('r.PLANKEY', '=', 'p.PLANKEY')
-          .andOn('r.RCPINDEX', '=', 'p.RCPINDEX')
-          .andOn('r.RECIPETYPE', '=', 'p.RECIPETYPE')
-      })
-      .leftJoin('BFMASTERPRGHEADER as h', function () {
-        this.on('p.RECIPENO', '=', 'h.PROGNO')
-          .andOn('h.MACHINEID', '=', recipeID)
-      })
-      .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
-      .where('p.PLANKEY', '=', planKeySubquery)
-      .whereNotNull('REQNO_BATCH')
-      .orderBy(['p.RCPINDEX', 'DYEREQUESTNUMBER', 'PARALLELSTEP'])
+  const query = knex
+    .select({
+      recIndex: 'p.RCPINDEX',
+      recNo: 'p.RECIPENO',
+      name: 'h.NAME',
+      reqNumber: 'DYEREQUESTNUMBER',
+      mainStep: 'MAINSTEP',
+      parallelStep: 'PARALLELSTEP',
+      recType: 'r.RECIPETYPE',
+      chemCode: 'CHEMCODE',
+      materialName: 'm.MATERIALNAME',
+      amount: 'AMOUNT',
+      reqBatchNo: 'REQNO_BATCH',
+      reqProgNo: 'REQNO_PROG',
+      phaseNo: 'PHASENO',
+      phaseIndex: 'PHASEINDEX',
+      unit: 'otherUnit',
+    })
+    .from('DYBFBATCHORDERRECIPESTEPS as r')
+    .rightJoin('DYBFBATCHORDERRECIPEHEADER as p', function () {
+      this.on('r.PLANKEY', '=', 'p.PLANKEY')
+        .andOn('r.RCPINDEX', '=', 'p.RCPINDEX')
+        .andOn('r.RECIPETYPE', '=', 'p.RECIPETYPE')
+    })
+    .leftJoin('BFMASTERPRGHEADER as h', function () {
+      this.on('p.RECIPENO', '=', 'h.PROGNO')
+        .andOn('h.MACHINEID', '=', recipeID)
+    })
+    .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
+    .where('p.PLANKEY', '=', planKeySubquery)
+    .whereNotNull('REQNO_BATCH')
+    .orderBy(['p.RCPINDEX', 'DYEREQUESTNUMBER', 'PARALLELSTEP'])
 
-    if (teleskopType !== 'washing') {
-      const result = await query
-      return result
-    } else {
-      // Adjust your code here for the 'washing' condition.
-    }
-  } catch (error) {
-    console.error(error)
-    // Consider returning an error response or rethrowing the error.
-    throw error
+  if (teleskopType !== 'washing') {
+    const result = await query
+    return result
+  } else {
+    // Adjust your code here for the 'washing' condition.
   }
 }))
 
@@ -149,46 +143,38 @@ router.get('/joborder', defineEventHandler(async (event) => {
 }))
 
 router.put('/change-planned-machine', defineEventHandler(async (event) => {
-  try {
-    const body = await readBody(event)
-    const query = knex('DYBFBATCHPLAN')
-      .where('PLANKEY', body.plankey)
+  const body = await readBody(event)
+  const query = knex('DYBFBATCHPLAN')
+    .where('PLANKEY', body.plankey)
+  query.update({
+    PLANNEDMACHINE: body.newPlannedMachine,
+  })
+  if (body.isCoupled) {
     query.update({
-      PLANNEDMACHINE: body.newPlannedMachine,
+      SLAVEMACHINEID: body.newCoupledMachine,
     })
-    if (body.isCoupled) {
-      query.update({
-        SLAVEMACHINEID: body.newCoupledMachine,
-      })
-    }
-    return await query
-  } catch (e) {
-    return e
   }
+  return await query
 }))
 
 router.put('/change-recipe-amount', defineEventHandler(async (event) => {
-  try {
-    const body = await readBody(event)
-    const query = await knex('DYBFBATCHORDERRECIPESTEPS')
-      .where('PLANKEY', body.planKey)
-      .andWhere('REQNO_BATCH', body.ISN)
-      .andWhere('CHEMCODE', body.chemCode)
-      .update({
-        AMOUNT: body.newAmount,
-      })
-    return query
-  } catch (e) {
-    return e
-  }
+  const body = await readBody(event)
+  const query = await knex('DYBFBATCHORDERRECIPESTEPS')
+    .where('PLANKEY', body.planKey)
+    .andWhere('REQNO_BATCH', body.ISN)
+    .andWhere('CHEMCODE', body.chemCode)
+    .update({
+      AMOUNT: body.newAmount,
+    })
+  return query
 }))
 
 router.post('/previous-requests', defineEventHandler(async (event) => {
-  const { joborder, programNo, programStepNo } = await readBody(event)
+  const { joborder, programNo, mainStep } = await readBody(event)
   const query = await knex('DYTFCHEMREQUESTS')
     .where('BATCHNO', joborder)
     .andWhere('PROGRAMNO', programNo)
-    .andWhere('PROGRAMSTEPNO', programStepNo)
+    .andWhere('PROGRAMSTEPNO', mainStep)
     .select({
       joborder: 'BATCHNO',
       correctionNo: 'BATCHCORRECTIONNO',
@@ -215,36 +201,6 @@ router.post('/check-tank-no-required', defineEventHandler(async (event) => {
 
   return check
 }))
-
-// router.post('/programs-with-materials', defineEventHandler(async (event) => {
-//   const body = await readBody(event)
-//   const steps = await knex('DYBFBATCHORDERRECIPESTEPS as S')
-//     .select({
-//       planKey: 'S.PLANKEY',
-//       joborder: 'S.JOBORDER',
-//       recipeType: 'S.RECIPETYPE',
-//       processOrder: 'S.RCPINDEX',
-//       ISN: 'S.REQNO_BATCH',
-//       mainStep: 'S.MAINSTEP',
-//       parallelStep: 'S.PARALLELSTEP',
-//       materialCode: 'S.CHEMCODE',
-//       materialName: 'M.MATERIALNAME',
-//       programProcessNo: 'S.REQNO_PROG',
-//       amount: 'S.AMOUNT',
-//       unit: 'S.otherUnit',
-//       programNo: 'H.RECIPENO',
-//     })
-//     .where('S.PLANKEY', body.plankey)
-//     .leftJoin('DYBFBATCHORDERRECIPEHEADER as H', function () {
-//       this.on('S.PLANKEY', '=', 'H.PLANKEY')
-//         .andOn('S.RCPINDEX', '=', 'H.RCPINDEX')
-//         .andOn('S.RECIPETYPE', '=', 'H.RECIPETYPE')
-//     })
-//     .leftJoin('DYTFMATERIAL as M', 'M.MATERIALCODE', '=', 'S.CHEMCODE')
-//     .orderBy(['S.RCPINDEX', 'S.REQNO_PROG', 'S.PARALLELSTEP'])
-
-//   return steps
-// }))
 
 router.post('/programs-by-plankey', defineEventHandler(async (event) => {
   const body = await readBody(event)

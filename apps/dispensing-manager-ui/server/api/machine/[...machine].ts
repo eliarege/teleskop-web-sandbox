@@ -5,18 +5,14 @@ const router = createRouter()
 export default useBase('/api/machine', router.handler)
 
 router.get('/machines', defineEventHandler(async (event) => {
-  try {
-    const machines = await knex('DYTFMACHINES')
-      .select({
-        machinename: 'MACHINENAME',
-        machineid: 'MACHINEID',
-        controllerType: 'CONTROLLERTYPE',
-      })
-      .orderBy('MACHINEID')
-    return machines
-  } catch (e) {
-    return e
-  }
+  const machines = await knex('DYTFMACHINES')
+    .select({
+      machinename: 'MACHINENAME',
+      machineid: 'MACHINEID',
+      controllerType: 'CONTROLLERTYPE',
+    })
+    .orderBy('MACHINEID')
+  return machines
 }))
 
 router.get('/machine', defineEventHandler(async (event) => {

@@ -1,5 +1,9 @@
 import type { Column } from './types'
 
+export const EOL = {
+  windows: '\r\n',
+  linux: '\n',
+}
 export const breakpoints = {
   laptop: 768,
 }
