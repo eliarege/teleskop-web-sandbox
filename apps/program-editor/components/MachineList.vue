@@ -54,7 +54,7 @@ const thumbStyle = { opacity: 0 }
             v-if="group.machines && group.machines.length > 0"
             :label="group.name"
             default-opened
-            header-class="bg-gray-3 text-black"
+            header-class="bg-gray-2 text-black"
             borderless
             dense
           >
@@ -63,7 +63,7 @@ const thumbStyle = { opacity: 0 }
               :key="machine.id"
               v-ripple
               :active="route.params.machine_id === `${machine.id}`"
-              active-class="bg-primary text-white"
+              active-class="bg-blue-3 text-black"
               borderless
               clickable
               dense

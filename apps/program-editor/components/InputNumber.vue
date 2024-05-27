@@ -8,12 +8,14 @@ const props = withDefaults(defineProps<{
   maxlength?: number
   outlined?: boolean
   dense?: boolean
+  hideBottomSpace?: boolean
 }>(), {
   hideArrows: true,
   type: 'decimal',
   maxlength: 10,
   outlined: false,
   dense: false,
+  hideBottomSpace: false,
 })
 
 const model = defineModel<number>()
@@ -173,7 +175,7 @@ function onBlur(event: FocusEvent) {
     :for="id"
     bottom-slots
     no-error-icon
-    hide-bottom-space
+    :hide-bottom-space="hideBottomSpace"
     :outlined="outlined"
     :dense="dense"
   >
@@ -183,6 +185,7 @@ function onBlur(event: FocusEvent) {
         v-model="model"
         type="text"
         :maxlength="maxlength"
+        autocomplete="off"
         class="q-field__native q-placeholder"
         @keydown="onKeydownPreventNonNumerical"
         @paste="onPastePreventNonNumerical"
