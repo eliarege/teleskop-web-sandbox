@@ -8,6 +8,9 @@ const appMetaVars = {
   buildDate: process.env.APP_BUILD_DATE || '',
 }
 
+const darkThemeMedia = '(prefers-color-scheme: dark)'
+const lightThemeMedia = '(prefers-color-scheme: light)'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: false,
@@ -18,6 +21,19 @@ export default defineNuxtConfig({
       kcRealm: 'teleskop-web',
       kcClientId: 'nuxt-client',
       kcEnabled: false,
+    },
+  },
+  app: {
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/png', media: lightThemeMedia, sizes: '32x32', href: '/favicon-light-32x32.png' },
+        { rel: 'icon', type: 'image/png', media: lightThemeMedia, sizes: '16x16', href: '/favicon-light-16x16.png' },
+        { rel: 'icon', type: 'image/png', media: darkThemeMedia, sizes: '32x32', href: '/favicon-dark-32x32.png' },
+        { rel: 'icon', type: 'image/png', media: darkThemeMedia, sizes: '16x16', href: '/favicon-dark-16x16.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/site.webmanifest' },
+        { rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#1c1917' },
+      ],
     },
   },
   css: [
