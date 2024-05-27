@@ -8,9 +8,13 @@ import { useEditorStore } from '~/composables/editor'
 const editor = useEditorStore()
 const { dark } = useQuasar()
 const myForm = ref<any>(null)
+const route = useRoute()
 
-await editor.fetchMachineCommands()
-await editor.fetchProgram()
+const machineId = Number(route.params.machine_id)
+const programNo = Number(route.params.program_no)
+
+await editor.fetchMachineCommands(machineId)
+await editor.fetchProgram(machineId, programNo)
 
 /*
   TODO: Save, Reset, NewStep, NewParallelStep, DeleteStep, DeleteParallelStep
@@ -29,8 +33,7 @@ await editor.fetchProgram()
       >
         <div
           class="p-3 rounded-lg flex justify-center items-center"
-          style="font-size: x-small"
-          :class="dark.isActive ? 'bg-dark-2' : 'bg-gray-2'"
+          :class="dark.isActive ? 'bg-dark-2' : 'bg-gray-1'"
         >
           <ProgramTitle
             :program="{
