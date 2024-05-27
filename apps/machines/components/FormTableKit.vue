@@ -120,6 +120,7 @@ watch(showModal, async (newValue, _oldValue) => {
       :disable="!selected.length"
       @click="handleDelete"
     />
+    <slot name="actions" />
   </div>
   <!-- Table -->
   <q-table

@@ -632,40 +632,6 @@ function handleClose() {
       target=".q-table"
       @click="(option: IContextMenuOption) => option.onClick(selected)"
     />
-    <div class="absolute left-63 top-13.2">
-      <q-btn
-        :label="t('loadProject')"
-        no-caps
-        push
-        color="primary"
-        :disable="selected.machineId === -1"
-        class="mr-4"
-        @click="loadProject"
-      />
-      <q-btn
-        :label="t('receiveVersionInfo')"
-        no-caps
-        push
-        color="primary"
-        class="mr-4"
-        @click="updateVersions"
-      />
-    </div>
-    <div class="flex absolute right-10 top-13.2">
-      <q-chip>
-        {{ `DB v${databaseVersion}` }}
-      </q-chip>
-      <q-option-group
-        :model-value="locale"
-        type="radio"
-        :options="[
-          { label: 'Türkçe', value: 'tr' },
-          { label: 'English', value: 'en' },
-        ]"
-        class="flex"
-        @update:model-value="setLocale($event)"
-      />
-    </div>
     <FormTableKit
       :rows="machines"
       :columns="columns"
@@ -676,6 +642,32 @@ function handleClose() {
       @delete="handleDelete"
       @close="handleClose"
     >
+      <template #actions>
+        <div class="flex justify-between items-center grow">
+          <div class="flex">
+            <q-btn
+              :label="t('loadProject')"
+              no-caps
+              push
+              color="primary"
+              :disable="selected.machineId === -1"
+              class="mr-4"
+              @click="loadProject"
+            />
+            <q-btn
+              :label="t('receiveVersionInfo')"
+              no-caps
+              push
+              color="primary"
+              class="mr-4"
+              @click="updateVersions"
+            />
+          </div>
+          <q-chip class="self-end">
+            {{ `DB v${databaseVersion}` }}
+          </q-chip>
+        </div>
+      </template>
       <template #form-content="slotProps">
         <q-btn
           :label="t('checkTeleskopConnection')"
