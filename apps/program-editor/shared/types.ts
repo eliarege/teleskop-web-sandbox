@@ -15,6 +15,17 @@ export interface ProgramFilter {
   clearOnChange: boolean
 }
 
+export interface ProgramTable {
+  isChanged: boolean
+  name: string
+  programNo: number
+  programState: number
+  stepCount: number
+  type: string
+  updatedAt: Date
+  updatedAtTBB: Date
+}
+
 export interface MachineInfo {
   id: number
   name: string
