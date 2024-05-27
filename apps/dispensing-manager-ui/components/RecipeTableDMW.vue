@@ -395,17 +395,6 @@ async function showLogsOfSelectedStep() {
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-dialog
-      v-model="logsDialog"
-      persistent
-      class="prev-logs-class flex"
-    >
-      <RecipeStepPreviousRequestsContent
-        :joborder="selectedRow?.joborder"
-        :program-no="selectedRow?.programNo"
-        :program-step-no="selectedRow?.mainStep"
-      />
-    </q-dialog>
   </div>
 </template>
 
