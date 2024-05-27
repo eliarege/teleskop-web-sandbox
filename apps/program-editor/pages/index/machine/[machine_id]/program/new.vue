@@ -70,61 +70,61 @@ const rules = [
 </script>
 
 <template>
-  <div class="pt-10 row justify-center content-center">
-    <QCard class="q-pa-md" style="width: 500px">
-      <QCardSection>
-        <div class="text-h6 text-center">
-          {{ t('menu.newProgram') }} - {{ machineName }}
-        </div>
-      </QCardSection>
+  <div class="pt-10 flex justify-center">
+    <QForm @submit="onSubmit" @reset="onCancel">
+      <QCard class="q-pa-lg rounded-2xl" style="width: 500px">
+        <QCardSection>
+          <div class="text-h6 text-center">
+            {{ t('menu.newProgram') }} - {{ machineName }}
+          </div>
+        </QCardSection>
 
-      <QCardSection class="q-pt-none">
-        <InputNumber
-          v-model="programNo"
-          type="positive-integer"
-          :label="t('program.programNo')"
-          :maxlength="10"
-          :rules="rules"
-          :dense="false"
-          :outlined="false"
-          @keyup.enter="onSubmit"
-          @keyup.esc="onCancel"
-        />
-        <QInput
-          v-model="programName"
-          :label="t('program.name')"
-          :rules="[val => !!val || t('input.required', { field: t('program.name') })]"
-        />
-        <QSelect
-          v-model="processType"
-          :options="allProcessTypes"
-          :label="t('program.programState')"
-          options-dense
-          :rules="[val => !!val || t('input.required', { field: t('program.programState') })]"
-          map-options
-          emit-value
-        />
-        <QCheckbox
-          v-model="operator"
-          style="padding-top: 10px;"
-          :label="t('operator')"
-        />
-      </QCardSection>
+        <QCardSection>
+          <InputNumber
+            v-model="programNo"
+            type="positive-integer"
+            :label="t('program.programNo')"
+            :maxlength="10"
+            :rules="rules"
+          />
+          <QInput
+            v-model="programName"
+            :label="t('program.name')"
+            :rules="[val => !!val || t('input.required', { field: t('program.name') })]"
+          />
+          <QSelect
+            v-model="processType"
+            :options="allProcessTypes"
+            :label="t('program.programState')"
+            options-dense
+            :rules="[val => !!val || t('input.required', { field: t('program.programState') })]"
+            map-options
+            emit-value
+          />
+          <QCheckbox
+            v-model="operator"
+            :label="t('operator')"
+          />
+        </QCardSection>
 
-      <QCardActions align="right">
-        <QBtn
-          flat
-          :label="t('cancel')"
-          @click="onCancel"
-        />
-        <QBtn
-          flat
-          :label="t('create')"
-          color="primary"
-          @click="onSubmit"
-        />
-      </QCardActions>
-    </QCard>
+        <QCardActions align="right">
+          <QBtn
+            flat
+            :label="t('cancel')"
+            class="q-mr-sm"
+            type="reset"
+          />
+          <QBtn
+            flat
+            :label="t('create')"
+            class=" bg-primary text-white"
+            type="submit"
+            :loading="editor.isloading"
+            :disable="editor.isloading"
+          />
+        </QCardActions>
+      </QCard>
+    </QForm>
   </div>
 </template>
 
