@@ -52,6 +52,7 @@ const itemsMobile = [
             <Icon
               name="IconEliar"
               size="2.5rem"
+              class="p-1"
             />
           </QToolbarTitle>
           <NuxtLink
