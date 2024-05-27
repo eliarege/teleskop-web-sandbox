@@ -2,6 +2,9 @@
 import type { TopbarMenuItem } from '../types'
 import AppAboutDialog from './AppAboutDialog.vue'
 
+const props = defineProps<{
+  disableTheme?: boolean
+}>()
 const { dark, dialog } = useQuasar()
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
@@ -25,6 +28,7 @@ const items = [
     {
       label: tt('base.theme._'),
       icon: 'palette',
+      disabled: props.disableTheme,
       subMenu: {
         offset: [2, 0],
         items: [[

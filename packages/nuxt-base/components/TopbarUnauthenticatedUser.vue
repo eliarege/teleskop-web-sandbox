@@ -1,4 +1,7 @@
 <script setup lang="ts">
+defineProps<{
+  disableTheme?: boolean
+}>()
 const keycloak = useKeycloak()
 const { didInitialise, authenticated } = keycloak
 </script>
@@ -14,7 +17,7 @@ const { didInitialise, authenticated } = keycloak
       :transition-duration="0"
       self="top middle"
     >
-      <TopbarCommonSettings />
+      <TopbarCommonSettings :disable-theme />
     </QMenu>
   </TopbarButton>
 </template>
