@@ -3,7 +3,7 @@ import { Notify } from 'quasar'
 import { outlinedCancel, outlinedCheckCircle } from '@quasar/extras/material-icons-outlined'
 import { useTimeoutPoll } from '@vueuse/core'
 import { colors } from '~/shared/constants'
-import { getDispenserConnectionStatus, onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
+import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
@@ -23,7 +23,7 @@ const protocols = ref([
 await getRows()
 await getTypes()
 const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/dispenser-connection-status', { default: () => [] })
-useTimeoutPoll(refreshConnectionStatus, 10000)
+useTimeoutPoll(refreshConnectionStatus, 10000, { immediate: true })
 
 const columns = computed<Array<Column>>(() => [
   {
