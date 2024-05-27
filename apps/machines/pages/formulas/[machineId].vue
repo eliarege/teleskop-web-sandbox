@@ -250,13 +250,13 @@ const showAddFormulaDialog = ref(false)
           class="overflow-y-auto	h-160"
           @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdate(evt)"
         >
-          <template #custombody="formulas">
+          <template #custombody="props">
             <q-tr
-              :class="{ 'selected-row': formula.formulaId === formulas.row.formulaId }"
-              @click="handleFormulaSelection(formulas.row)"
+              :class="{ 'selected-row': formula.formulaId === props.row.formulaId }"
+              @click="handleFormulaSelection(props.row)"
             >
               <q-td
-                v-for="row in formulas.cols"
+                v-for="row in props.cols"
                 :key="row"
               >
                 <span>

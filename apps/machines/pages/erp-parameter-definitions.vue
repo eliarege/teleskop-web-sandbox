@@ -404,13 +404,13 @@ const contextMenuOptions = computed(() => [
             class="overflow-y-auto	h-160 w-xl"
             @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdate(evt)"
           >
-            <template #custombody="machines">
+            <template #custombody="props">
               <q-tr
-                :class="{ 'selected-row': selectedMachine.machineId === machines.row.machineId }"
-                @click="handleMachineSelection(machines.row)"
+                :class="{ 'selected-row': selectedMachine.machineId === props.row.machineId }"
+                @click="handleMachineSelection(props.row)"
               >
                 <q-td
-                  v-for="row in machines.cols"
+                  v-for="row in props.cols"
                   :key="row"
                 >
                   <span>
@@ -426,13 +426,13 @@ const contextMenuOptions = computed(() => [
             :columns="parameterColumns"
             class="overflow-y-auto h-160 w-2xl"
           >
-            <template #custombody="parameters">
+            <template #custombody="props">
               <q-tr
-                :class="{ 'selected-row': selectedParam.paramId === parameters.row.paramId }"
-                @click="handleParamSelection(parameters.row)"
+                :class="{ 'selected-row': selectedParam.paramId === props.row.paramId }"
+                @click="handleParamSelection(props.row)"
               >
                 <q-td
-                  v-for="row in parameters.cols"
+                  v-for="row in props.cols"
                   :key="row"
                 >
                   <span>

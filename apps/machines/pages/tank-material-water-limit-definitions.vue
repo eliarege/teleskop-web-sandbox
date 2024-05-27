@@ -104,10 +104,10 @@ async function popupUpdate(value: string, rowName: string, props) {
         class="overflow-y-auto h-160"
         @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdate(evt)"
       >
-        <template #custombody="tankMaterialDefinitions">
-          <q-tr :props="tankMaterialDefinitions">
+        <template #custombody="props">
+          <q-tr :props="props">
             <q-td
-              v-for="col in tankMaterialDefinitions.cols"
+              v-for="col in props.cols"
               :key="col"
             >
               <span v-if="col.field === 'materialGroupNo'">
@@ -121,7 +121,7 @@ async function popupUpdate(value: string, rowName: string, props) {
                   :model-value="col.value"
                   :title="`${col.label}`"
                   buttons
-                  @update:model-value="(e) => popupUpdate(e, col.name, tankMaterialDefinitions)"
+                  @update:model-value="(e) => popupUpdate(e, col.name, props)"
                 >
                   <q-input
                     v-model="scope.value"

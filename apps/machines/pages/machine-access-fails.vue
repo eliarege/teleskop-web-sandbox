@@ -71,10 +71,10 @@ async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
     class="overflow-y-auto	h-220"
     @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
   >
-    <template #custombody="fails">
+    <template #custombody="props">
       <q-tr>
         <q-td
-          v-for="row in fails.cols"
+          v-for="row in props.cols"
           :key="row"
         >
           <span v-if="row.field === 'eventCode'">
