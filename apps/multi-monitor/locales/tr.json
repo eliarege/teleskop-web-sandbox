@@ -3,6 +3,7 @@
     "name": "Çoklu İzleme"
   },
   "home": "Anasayfa",
+  "loading": "Yükleniyor",
   "vnc-error": "{name} Bağlantısı Başarısız Oldu!",
   "load-message": "Uygulama Yükleniyor",
   "wait-message": "Lütfen Bekleyiniz...",

@@ -2,14 +2,15 @@
 import { useDataStore } from '~/store/Datas'
 
 const store = useDataStore()
+const { t } = useI18n()
 const route = useRoute()
 const currentMachine = computed(() => {
   return store.machines.find(machine => machine.id === Number.parseInt(route.params.id as string))
 })
 
-useHeadSafe(computed(() => ({
-  title: currentMachine.value?.name || 'Loading',
-})))
+useHead({
+  title: () => currentMachine.value?.name || `${t('loading')}...`,
+})
 </script>
 
 <template>

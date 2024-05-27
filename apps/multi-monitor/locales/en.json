@@ -3,6 +3,7 @@
     "name": "Multi Monitor"
   },
   "home": "Home",
+  "loading": "Loading",
   "vnc-error": "{name} Connection Failed!",
   "load-message": "App is loading",
   "wait-message": "Please Wait...",
