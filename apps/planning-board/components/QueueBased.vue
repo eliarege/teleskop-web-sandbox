@@ -58,6 +58,9 @@ const showModal = reactive({
   machineSort: {
     show: false,
   },
+  machineRule: {
+    show: false,
+  },
   datePicker: false,
   rule: false,
   settings: false,
@@ -363,6 +366,7 @@ onMounted(async () => {
       },
     ],
     features: {
+      sort: false,
       percentBar: {
         allowResize: false,
         showPercentage: false,
@@ -568,6 +572,15 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onClick() {
           showModal.datePicker = true
+        },
+      },
+      {
+        type: 'button',
+        text: 'L{machineRule}',
+        icon: 'b-fa b-fa-solid b-fa-gear',
+        color: 'toolbar-buttons',
+        onClick() {
+          showModal.machineRule.show = true
         },
       },
       {
@@ -778,6 +791,11 @@ onMounted(async () => {
     <EliarModal v-if="showModal.machineSort.show" @click.stop="showModal.machineSort.show = false">
       <template #default>
         <MachineSort :machines="machines" @update-scheduler="machineReload()" />
+      </template>
+    </EliarModal>
+    <EliarModal v-if="showModal.machineRule.show" @click.stop="showModal.machineRule.show = false">
+      <template #default>
+        <MachineRuleMain @update-scheduler="machineReload()" />
       </template>
     </EliarModal>
   </div>
