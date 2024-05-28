@@ -200,13 +200,16 @@ const itemsMobile = [
           <TopbarButton
             v-for="(item, index) in items"
             :key="index"
-            :label="unref(item.label)"
+            :label="item.subMenu ? unref(item.label) : ''"
             :disable="unref(item.disabled)"
           >
             <TopbarMenu
               v-if="item.subMenu"
               v-bind="item.subMenu"
             />
+            <NuxtLink v-else :to="unref(item.to)">
+              {{ unref(item.label) }}
+            </NuxtLink>
           </TopbarButton>
         </template>
         <TopbarButton
