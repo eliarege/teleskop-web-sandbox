@@ -518,31 +518,6 @@ importers:
         specifier: ^4.3.2
         version: 4.3.2(vue@3.4.24(typescript@5.4.5))
 
-  apps/recipes:
-    dependencies:
-      ui:
-        specifier: workspace:*
-        version: link:../../packages/ui
-    devDependencies:
-      '@types/node':
-        specifier: ^20.12.7
-        version: 20.12.7
-      nuxt:
-        specifier: ^3.11.2
-        version: 3.11.2(@parcel/watcher@2.4.1)(@types/node@20.12.7)(@unocss/reset@0.59.4)(async-validator@4.2.5)(axios@1.6.8)(encoding@0.1.13)(eslint@8.57.0)(floating-vue@5.2.2(@nuxt/kit@3.11.2(rollup@4.16.2))(vue@3.4.24(typescript@5.4.5)))(fuse.js@7.0.0)(ioredis@5.4.1)(jwt-decode@4.0.0)(optionator@0.9.3)(rollup@4.16.2)(sortablejs@1.15.2)(terser@5.30.4)(typescript@5.4.5)(unocss@0.59.4(@unocss/webpack@0.59.4(rollup@4.16.2))(postcss@8.4.38)(rollup@4.16.2)(vite@5.2.10(@types/node@20.12.7)(terser@5.30.4)))(vite@5.2.10(@types/node@20.12.7)(terser@5.30.4))
-      nuxt-base:
-        specifier: workspace:*
-        version: link:../../packages/nuxt-base
-      unocss-config:
-        specifier: workspace:*
-        version: link:../../packages/unocss-config
-      vue:
-        specifier: ^3.4.24
-        version: 3.4.24(typescript@5.4.5)
-      vue-router:
-        specifier: ^4.3.2
-        version: 4.3.2(vue@3.4.24(typescript@5.4.5))
-
   apps/root:
     dependencies:
       ejs:
