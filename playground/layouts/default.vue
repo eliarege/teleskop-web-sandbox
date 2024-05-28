@@ -6,7 +6,7 @@ const { t } = useI18n()
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
 
-const tt = (key: string) => toRef(() => t(key))
+const tt = (key: string) => () => t(key)
 
 const items = [
   {
@@ -105,8 +105,8 @@ const itemsMobile = [
           <TopbarButton
             v-for="(item, index) in items"
             :key="index"
-            :label="unref(item.label)"
-            :disable="unref(item.disabled)"
+            :label="toValue(item.label)"
+            :disable="toValue(item.disabled)"
           >
             <TopbarMenu
               v-if="item.subMenu"
