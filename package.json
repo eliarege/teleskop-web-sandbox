@@ -19,7 +19,7 @@
     "eslint": "^8.57.0",
     "eslint-config": "workspace:*",
     "tsx": "^4.7.2",
-    "turbo": "^1.13.2"
+    "turbo": "^1.13.3"
   },
   "pnpm": {
     "peerDependencyRules": {

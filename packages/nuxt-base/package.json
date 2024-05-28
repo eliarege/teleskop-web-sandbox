@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@element-plus/nuxt": "^1.0.9",
-    "@nuxtjs/i18n": "^8.3.0",
+    "@nuxtjs/i18n": "^8.3.1",
     "@pinia/nuxt": "^0.5.1",
     "@quasar/extras": "^1.16.11",
     "@unocss/nuxt": "^0.59.4",
@@ -22,7 +22,7 @@
     "@vueuse/nuxt": "^10.9.0",
     "element-plus": "2.6.3",
     "h3-keycloak-adapter": "workspace:*",
-    "keycloak-js": "^24.0.3",
+    "keycloak-js": "^24.0.4",
     "nuxt-icon": "^0.6.10",
     "nuxt-quasar-ui": "^2.1.2",
     "pinia": "^2.1.7",
@@ -31,9 +31,9 @@
     "unocss": "^0.59.4"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.12",
     "nuxt": "^3.11.2",
-    "vue": "^3.4.24",
+    "vue": "^3.4.27",
     "vue-router": "^4.3.2"
   }
 }

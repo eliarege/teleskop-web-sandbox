@@ -14,7 +14,7 @@
     "tedious": "^18.1.0"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.12",
     "tsconfig": "workspace:*",
     "typescript": "^5.4.5"
   }

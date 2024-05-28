@@ -29,7 +29,7 @@
     "tedious": "^18.1.0"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.12",
     "@types/ws": "^8.5.10",
     "build-utils": "workspace:*",
     "pino-pretty": "^11.0.0",

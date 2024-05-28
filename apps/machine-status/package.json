@@ -30,7 +30,7 @@
     "utils": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.12",
     "build-utils": "workspace:*",
     "pino-pretty": "^11.0.0",
     "tsconfig": "workspace:*",

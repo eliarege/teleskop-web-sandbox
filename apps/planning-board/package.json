@@ -34,7 +34,7 @@
     "nuxt-base": "workspace:*",
     "rollup-plugin-string": "workspace:*",
     "unocss-config": "workspace:*",
-    "vue": "^3.4.24",
+    "vue": "^3.4.27",
     "vue-router": "^4.3.2"
   },
   "eliar": {

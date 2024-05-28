@@ -23,7 +23,7 @@
     "@rollup/pluginutils": "^5.1.0"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.12",
     "rollup": "^4.16.2",
     "tsconfig": "workspace:*",
     "typescript": "^5.4.5"

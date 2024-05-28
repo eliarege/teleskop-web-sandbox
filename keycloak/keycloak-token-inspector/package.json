@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "highlight.js": "^11.9.0",
-    "keycloak-js": "^24.0.3"
+    "keycloak-js": "^24.0.4"
   },
   "devDependencies": {
     "tsconfig": "workspace:*",
-    "vite": "^5.2.10"
+    "vite": "^5.2.12"
   }
 }
