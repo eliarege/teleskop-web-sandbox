@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '../types'
-import AppAboutDialog from './AppAboutDialog.vue'
+import AppAboutDialog from '../AppAboutDialog.vue'
 
 const props = defineProps<{
   disableTheme?: boolean
