@@ -32,7 +32,6 @@
     "@types/pg": "^8.11.5",
     "nuxt": "^3.11.2",
     "nuxt-base": "workspace:*",
-    "nuxt-ui": "workspace:*",
     "unocss-config": "workspace:*",
     "vue": "^3.4.24",
     "vue-router": "^4.3.2"

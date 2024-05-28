@@ -21,7 +21,6 @@
     "date-fns": "^3.6.0",
     "knex": "^3.1.0",
     "mssql": "^10.0.2",
-    "nuxt-ui": "workspace:*",
     "socket.io-client": "^4.7.5",
     "sortablejs": "^1.15.1",
     "sortablejs-vue3": "^1.2.11",

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Column } from 'nuxt-ui-types'
+import type { FilterableTableColumn } from 'nuxt-base'
 import type { Machine } from '~/types'
 
 const props = defineProps<{

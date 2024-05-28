@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Column } from 'nuxt-ui-types'
+import type { FilterableTableColumn } from 'nuxt-base'
 
 const { t, d } = useI18n()
 

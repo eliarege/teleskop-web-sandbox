@@ -8,7 +8,7 @@ const getMigrationName = (name: string) => `_${basename(name, extname(name))}`
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  extends: ['nuxt-base', 'nuxt-ui'],
+  extends: ['nuxt-base'],
   css: ['~/assets/css/main.css'],
   ssr: false,
   runtimeConfig: {

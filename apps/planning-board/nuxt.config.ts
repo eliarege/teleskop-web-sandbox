@@ -3,10 +3,7 @@ import string from 'rollup-plugin-string'
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
-  extends: [
-    'nuxt-base',
-    'nuxt-ui',
-  ],
+  extends: ['nuxt-base'],
   runtimeConfig: {
     planningEngineUrl: 'http://localhost:3500',
     public: {
