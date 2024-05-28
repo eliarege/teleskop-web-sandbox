@@ -340,7 +340,7 @@ onBeforeRouteLeave(async (to, from, next) => {
         >
           <span v-if="col.name === 'connectionStatus' && props.rowIndex">
             <q-icon
-              v-if="connectionStatus.find(stat => stat.dispNo === props.row.dispNo)?.status === 'Online'"
+              v-if="connectionStatus.find(stat => stat.dispNo === props.row.dispNo)?.status"
               :name="outlinedCheckCircle"
               size="sm"
               color="green"
