@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { klona } from 'klona'
-import type { Column, FilterSlot } from 'nuxt-ui-types'
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
 import type { Formula } from '~/types'
 
 const { t } = useI18n()
@@ -11,7 +11,7 @@ interface Option {
   label: string
 }
 
-const columns = computed<Column[]>(() => ([
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'formulaId',
     label: t('formulaId'),
@@ -155,7 +155,7 @@ function handleParamSelect(e: Option) {
   formula.value.parameterName = e.label
 }
 
-async function handleFilterSlotsUpdate(updatedValue: FilterSlot[]) {
+async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
   formulas.value = await $fetch('/api/formulas/formulas', {
     method: 'POST',
     body: {
@@ -248,7 +248,7 @@ const showAddFormulaDialog = ref(false)
           :rows="formulas"
           :columns="columns"
           class="overflow-y-auto	h-160"
-          @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdate(evt)"
+          @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
         >
           <template #custombody="props">
             <q-tr

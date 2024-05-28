@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Column, FilterSlot } from 'nuxt-ui-types'
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
 
 const { t } = useI18n()
 
@@ -9,7 +9,7 @@ const materialTypeMap = [
   { id: 3, name: t('other') },
 ]
 
-const columns = computed<Column[]>(() => ([
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'materialGroupNo',
     label: t('materialType'),
@@ -68,7 +68,7 @@ const columns = computed<Column[]>(() => ([
   },
 ]))
 
-const filters = ref<FilterSlot[]>([])
+const filters = ref<FilterableTableFilter[]>([])
 
 const { data: tankMaterialDefinitions, execute } = useLazyFetch('/api/materials/material-tank-water-definitions', {
   method: 'POST',
@@ -76,7 +76,7 @@ const { data: tankMaterialDefinitions, execute } = useLazyFetch('/api/materials/
   default: () => [],
 })
 
-async function handleFilterSlotsUpdate(updatedValue: FilterSlot[]) {
+async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
   filters.value = updatedValue.map((filter) => {
     if (filter.field === 'materialGroupNo')
       filter.value = materialTypeMap.find(m => m.name === filter.value)!.id
@@ -102,7 +102,7 @@ async function popupUpdate(value: string, rowName: string, props) {
         :rows="tankMaterialDefinitions"
         :columns="columns"
         class="overflow-y-auto h-160"
-        @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdate(evt)"
+        @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
       >
         <template #custombody="props">
           <q-tr :props="props">

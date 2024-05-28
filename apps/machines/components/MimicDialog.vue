@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Column, FilterSlot } from 'nuxt-ui-types'
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
 import type { Machine } from '~/types'
 
 const props = defineProps<{
@@ -22,7 +22,7 @@ const { data: inputs } = useLazyFetch('/api/io/analog-input', {
   default: () => [],
 })
 
-const inputColumns = computed<Column[]>(() => ([
+const inputColumns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'id',
     label: 'ID',
@@ -47,7 +47,7 @@ const { data: outputs } = useLazyFetch('/api/io/analog-output', {
   default: () => [],
 })
 
-const outputColumns = computed<Column[]>(() => ([
+const outputColumns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'id',
     label: 'ID',
@@ -66,7 +66,7 @@ const outputColumns = computed<Column[]>(() => ([
   },
 ]))
 
-async function handleFilterSlotsUpdateInputs(updatedValue: FilterSlot[]) {
+async function handleFilterSlotsUpdateInputs(updatedValue: FilterableTableFilter[]) {
   inputs.value = await $fetch('/api/io/analog-input', {
     method: 'POST',
     body: {
@@ -76,7 +76,7 @@ async function handleFilterSlotsUpdateInputs(updatedValue: FilterSlot[]) {
   })
 }
 
-async function handleFilterSlotsUpdateOutputs(updatedValue: FilterSlot[]) {
+async function handleFilterSlotsUpdateOutputs(updatedValue: FilterableTableFilter[]) {
   outputs.value = await $fetch('/api/io/analog-output', {
     method: 'POST',
     body: {
@@ -133,7 +133,7 @@ async function handleSubmit() {
                 :rows="inputs"
                 :columns="inputColumns"
                 class="overflow-y-auto h-160"
-                @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdateInputs(evt)"
+                @update-filter-slots="(evt) => handleFilterSlotsUpdateInputs(evt)"
               />
             </q-tab-panel>
 
@@ -142,7 +142,7 @@ async function handleSubmit() {
                 :rows="outputs"
                 :columns="outputColumns"
                 class="overflow-y-auto h-160"
-                @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdateOutputs(evt)"
+                @update-filter-slots="(evt) => handleFilterSlotsUpdateOutputs(evt)"
               />
             </q-tab-panel>
 

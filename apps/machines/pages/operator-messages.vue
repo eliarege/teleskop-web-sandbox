@@ -77,7 +77,7 @@ async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
         :rows="messages"
         :columns="columns"
         class="overflow-y-auto h-160"
-        @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdate(evt)"
+        @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
       >
         <template #custombody="props">
           <q-tr>

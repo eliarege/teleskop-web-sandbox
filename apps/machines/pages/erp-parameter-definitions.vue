@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { Column, FilterSlot } from 'nuxt-ui-types'
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { BatchParam, ErpParameter, Machine } from '~/types'
 
 const { t } = useI18n()
 
-const machineColumns = computed<Column[]>(() => ([
+const machineColumns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'machineId',
     label: t('machineId'),
@@ -24,7 +24,7 @@ const machineColumns = computed<Column[]>(() => ([
   },
 ]))
 
-const parameterColumns = computed<Column[]>(() => ([
+const parameterColumns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'paramId',
     label: t('parameterId'),
@@ -207,7 +207,7 @@ const { data: params, refresh: refreshParams } = useLazyFetch<ErpParameter[]>('/
   body: { machineId: selectedMachineId },
 })
 
-async function handleFilterSlotsUpdate(updatedValue: FilterSlot[]) {
+async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
   machines.value = await $fetch('/api/machines/machines', {
     method: 'POST',
     body: {
@@ -402,7 +402,7 @@ const contextMenuOptions = computed(() => [
             :rows="machines"
             :columns="machineColumns"
             class="overflow-y-auto	h-160 w-xl"
-            @update-filter-slots="(evt:FilterSlot[]) => handleFilterSlotsUpdate(evt)"
+            @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
           >
             <template #custombody="props">
               <q-tr

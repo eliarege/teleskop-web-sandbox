@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Column } from 'nuxt-ui-types'
+import type { FilterableTableColumn } from 'nuxt-base'
 import type { MachineGroup } from '~/types'
 
 const { t } = useI18n()
@@ -8,7 +8,7 @@ const { data: machineGroups, pending, refresh } = await useFetch<readonly Machin
   default: () => [],
 })
 
-const columns = computed<Column[]>(() => ([
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'groupName',
     label: t('group'),
