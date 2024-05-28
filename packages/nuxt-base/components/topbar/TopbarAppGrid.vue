@@ -45,7 +45,7 @@ const appList = parseAppList(config.public.appList).map((app) => {
     <QTooltip>
       {{ t('base.apps') }}
     </QTooltip>
-    <QMenu :offset="[0, 5]">
+    <QMenu :transition-duration="0">
       <div class="grid grid-cols-3 p-2">
         <QBtn
           v-for="(app, index) in appList"
