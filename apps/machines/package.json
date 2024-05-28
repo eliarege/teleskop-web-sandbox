@@ -27,17 +27,17 @@
     "soap": "^1.0.1",
     "sortablejs": "^1.15.2",
     "sortablejs-vue3": "^1.2.11",
+    "tbb-ftp-client": "workspace:*",
     "ufo": "^1.5.3",
+    "ui": "workspace:*",
+    "utils": "workspace:*",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nuxt": "^3.11.2",
     "nuxt-base": "workspace:*",
     "rollup-plugin-string": "workspace:*",
-    "tbb-ftp-client": "workspace:*",
-    "ui": "workspace:*",
     "unocss-config": "workspace:*",
-    "utils": "workspace:*",
     "vue": "^3.4.24",
     "vue-router": "^4.3.2"
   },
