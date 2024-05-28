@@ -1,7 +1,8 @@
 #!/bin/sh
 # This script:
-#  - assumes 'out' directory contains the build output
+#  - assumes 'out' directory to contain the build output
 #  - expects to be run in gitlab ci environment
+#  - expects to be executed at workspace root
 #  - uses busybox date function
 
 set -e
