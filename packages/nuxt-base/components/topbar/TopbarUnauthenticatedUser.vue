@@ -13,10 +13,7 @@ const { didInitialise, authenticated } = keycloak
     class="h-unset"
     round
   >
-    <QMenu
-      :transition-duration="0"
-      self="top middle"
-    >
+    <QMenu :transition-duration="0">
       <TopbarCommonSettings :disable-theme />
     </QMenu>
   </TopbarButton>
