@@ -15,11 +15,11 @@ const itemClass = computed(() => [parentItem.itemClass, props.itemClass])
 const itemStyle = computed(() => [parentItem.itemStyle, props.itemClass])
 
 function computeItemClass(item: TopbarMenuItem) {
-  return [itemClass.value, unref(item.class)]
+  return [itemClass.value, toValue(item.class)]
 }
 
 function computeItemStyle(item: TopbarMenuItem) {
-  return [itemStyle.value, unref(item.style)]
+  return [itemStyle.value, toValue(item.style)]
 }
 
 provide(key, reactive({

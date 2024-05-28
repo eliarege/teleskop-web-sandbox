@@ -12,14 +12,14 @@ export interface TopbarMenuProps {
 }
 
 export interface TopbarMenuItem {
-  label: MaybeRef<string>
-  to?: MaybeRef<string>
-  icon?: MaybeRef<string>
+  label: MaybeRefOrGetter<string>
+  to?: MaybeRefOrGetter<string>
+  icon?: MaybeRefOrGetter<string>
   class?: VueClassProp
-  active?: MaybeRef<boolean>
+  active?: MaybeRefOrGetter<boolean>
   shortcut?: string
   style?: VueStyleProp
-  disabled?: MaybeRef<boolean>
+  disabled?: MaybeRefOrGetter<boolean>
   onClick?: () => void
   subMenu?: TopbarMenuProps
 }

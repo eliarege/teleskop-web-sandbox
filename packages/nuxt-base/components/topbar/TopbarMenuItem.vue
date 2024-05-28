@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TopbarMenuItem } from '../types'
+import type { TopbarMenuItem } from '../../types'
 
 const props = defineProps<{
   item: Omit<TopbarMenuItem, 'style' | 'class'>
@@ -9,9 +9,9 @@ const isDef = (value: unknown) => value != null
 
 const leftIcon = computed(() => {
   if (isDef(props.item.active)) {
-    return unref(props.item.active) ? 'check' : undefined
+    return toValue(props.item.active) ? 'check' : undefined
   } else {
-    return unref(props.item.icon)
+    return toValue(props.item.icon)
   }
 })
 </script>
@@ -22,7 +22,7 @@ const leftIcon = computed(() => {
     clickable
     dense
     class="q-item-avatar-dense px-2.5 whitespace-nowrap"
-    :disable="unref(item.disabled)"
+    :disable="toValue(item.disabled)"
     :to="item.to"
     @click="item.onClick"
   >
@@ -30,7 +30,7 @@ const leftIcon = computed(() => {
       <QIcon size="1rem" :name="leftIcon" />
     </QItemSection>
     <QItemSection class="flex-1">
-      <QItemLabel>{{ unref(item.label) }}</QItemLabel>
+      <QItemLabel>{{ toValue(item.label) }}</QItemLabel>
     </QItemSection>
     <QItemSection
       side
