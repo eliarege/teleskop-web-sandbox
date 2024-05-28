@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { QCheckbox, QInput, QSelect } from 'quasar'
+import InputNumber from './InputNumber.vue'
 import type { ProgramFilter } from '~/shared/types'
 
 const props = defineProps({
@@ -23,40 +25,43 @@ function clearFilters() {
 
 <template>
   <q-dialog ref="dialogRef" persistent>
-    <q-card>
-      <q-card-section class="row items-center">
-        <span class="q-ml-sm"> {{ t('topbar.programFilter._') }}</span>
+    <q-card style="min-width: 400px">
+      <q-card-section class="bg-gray-1 text-center">
+        <div>
+          {{ t('topbar.programFilter._') }}
+        </div>
       </q-card-section>
       <q-card-section>
-        <div class="flex flex-col gap-5 m-5">
-          <q-input
+        <div class="q-pa-md justify-center">
+          <InputNumber
             v-model="filter.programNo"
-            dense
-            filled
+            type="positive-integer"
             :label="t('topbar.programFilter.programNo')"
+            dense
           />
-          <q-input
+          <QInput
             v-model="filter.programName"
             dense
-            filled
             :label="t('topbar.programFilter.programName')"
           />
-          <q-select
+          <QSelect
             v-model="filter.processType"
+            class="q-mt-md"
             dense
+            options-dense
             :options="processTypes"
-            filled
             :label="t('topbar.programFilter.processType')"
           />
-          <q-checkbox
+          <QCheckbox
             v-model="filter.clearOnChange"
+            class="q-mt-md"
             color="black"
             :label="t('topbar.programFilter.clearFilterOnChange')"
           />
         </div>
       </q-card-section>
 
-      <q-card-actions align="right">
+      <q-card-actions class="bg-gray-1" align="right">
         <q-btn
           v-close-popup
           :label="t('cancel')"

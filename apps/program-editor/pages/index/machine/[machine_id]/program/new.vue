@@ -72,14 +72,14 @@ const rules = [
 <template>
   <div class="pt-10 flex justify-center">
     <QForm @submit="onSubmit" @reset="onCancel">
-      <QCard class="q-pa-lg rounded-2xl" style="width: 500px">
+      <QCard class="rounded-2xl" style="width: 500px">
         <QCardSection>
           <div class="text-h6 text-center">
             {{ t('menu.newProgram') }} - {{ machineName }}
           </div>
         </QCardSection>
 
-        <QCardSection>
+        <QCardSection class="q-pa-lg ">
           <InputNumber
             v-model="programNo"
             type="positive-integer"
@@ -107,7 +107,7 @@ const rules = [
           />
         </QCardSection>
 
-        <QCardActions align="right">
+        <QCardActions align="right" class="q-pa-md bg-gray-1">
           <QBtn
             flat
             :label="t('cancel')"
