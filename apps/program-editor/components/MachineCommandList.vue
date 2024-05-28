@@ -26,9 +26,11 @@ const searchQuery = ref('')
 const filteredCommands = computed(() => {
   const query = searchQuery.value.toLowerCase()
   const commandsArray = Array.from(editor.machineCommands.values())
-  return commandsArray.filter(command =>
+  return commandsArray.filter(command => (
     command.commandNo.toString().includes(query)
-    || command.name.toLowerCase().includes(query),
+    || command.name.toLowerCase().includes(query)
+  )
+  && command.commandType === 0,
   ) as MachineCommand[]
 })
 
@@ -44,7 +46,7 @@ let draggedCommand: any = null
 
 function onDragStart(event: SortableEvent) {
   if (isDef(event.oldIndex)) {
-    draggedCommand = editor.machineCommands.get(event.oldIndex + 1)
+    draggedCommand = editor.machineCommands.get(Number(event.item.id))
   }
 }
 
@@ -80,7 +82,7 @@ function onDragEnd(event: SortableEvent) {
     />
     <Sortable
       :list="filteredCommands"
-      class="px-5 e-div-y machine-command-list"
+      class="px-5 pb-10 e-div-y machine-command-list"
       :item-key="item => item.commandNo"
       :options="sortableOptions"
       @start="onDragStart"
@@ -88,6 +90,7 @@ function onDragEnd(event: SortableEvent) {
     >
       <template #item="{ element: command }: { element: any }">
         <QItem
+          :id="command.commandNo"
           class="machine-command"
           dense
           tag="span"
@@ -137,6 +140,7 @@ function onDragEnd(event: SortableEvent) {
   @apply h-full;
   @apply flex flex-col;
   @apply relative;
+  @apply overflow-auto;
 }
 .machine-command-list {
   @apply flex-1;
