@@ -49,7 +49,11 @@ const props = defineProps({
     default: true,
   },
 })
-const emit = defineEmits(['rowDblclick', 'updateFilterSlots', 'updateSearchFilter'])
+const emit = defineEmits<{
+  rowDblclick: [row: any]
+  updateFilterSlots: [filters: FilterableTableFilter[]]
+  updateSearchFilter: [terms: any]
+}>()
 
 const { t, locale } = useI18n({ useScope: 'local' })
 function handleDoubleClick(row: any) {
