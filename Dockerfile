@@ -17,15 +17,13 @@ COPY out/json/pnpm-*.yaml out/json/.npmrc ./
 
 RUN \
   --mount=type=cache,id=pnpm,target=/pnpm/store \
-  --mount=type=secret,id=NPM_TOKEN,required=true \
-  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm fetch --frozen-lockfile
+  pnpm fetch --frozen-lockfile
 
 COPY out/json/ ./
 
 RUN \
   --mount=type=cache,id=pnpm,target=/pnpm/store \
-  --mount=type=secret,id=NPM_TOKEN,required=true \
-  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) pnpm install --offline --frozen-lockfile --ignore-scripts=false
+  pnpm install --offline --frozen-lockfile --ignore-scripts=false
 
 COPY out/full ./
 
@@ -48,9 +46,7 @@ ENV TURBO_FORCE=${TURBO_FORCE}
 RUN mkdir -p .turbo && echo "$TURBO_CONFIG" > .turbo/config.json
 
 RUN \
-  --mount=type=secret,id=NPM_TOKEN,required=true \
   --mount=type=secret,id=TURBO_TOKEN \
-  NPM_TOKEN=$(cat /run/secrets/NPM_TOKEN) \
   TURBO_TOKEN=$(cat /run/secrets/TURBO_TOKEN) \
   pnpx turbo build --filter ${APP_NAME} --remote-only
 

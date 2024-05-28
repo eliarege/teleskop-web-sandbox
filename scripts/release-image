@@ -49,7 +49,6 @@ docker build \
   --label com.eliar.manifest.roles="$(jq -Mc .roles $MANIFEST_PATH 2> /dev/null || echo '[]')" \
   --label com.eliar.manifest.build.commit_hash="$CI_COMMIT_SHA" \
   --label com.eliar.manifest.build.date="$BUILD_DATE" \
-  --secret id=NPM_TOKEN \
   --secret id=TURBO_TOKEN \
   -t $IMAGE_TAG -t $IMAGE_SHA .
 

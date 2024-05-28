@@ -13,7 +13,6 @@ docker build \
   --build-arg APP_PORT=$(jq -r .eliar.port $PKG_PATH) \
   --build-arg APP_OUT_DIR=$(jq -r .eliar.outDir $PKG_PATH) \
   --build-arg APP_DEPENDENCIES="$(jq -r '.envDependencies | join(" ")' $MANIFEST_PATH 2> /dev/null | echo '')" \
-  --secret id=NPM_TOKEN \
   --secret id=TURBO_TOKEN \
   --progress plain \
   -t registry.gitlab.com/eliarelektronik/dijital_boyahane/teleskop-web/$APP_NAME:test $PROJECT_ROOT
