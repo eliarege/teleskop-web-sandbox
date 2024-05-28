@@ -1,38 +1,10 @@
 <script setup lang="ts">
-import type { QTableColumn } from 'quasar'
-
-interface Column extends QTableColumn {
-  filterable?: boolean // If it is flase, no filter will be applied
-  sortable?: boolean
-  filterType?: 'select' | 'multiselect' | 'date' | 'comparison' | 'boolean' | 'equals' | 'includes'
-  selectionOptions?: Array<any> // Necessary if filterType is select or multiselect
-  optionLabel?: string // Necessary if each element of selectionOptions array has more than one attributes
-  optionValue?: string // Returns optionValue on select and multiselect if specified else return the whole object
-  // Optionvalue is not implemented for now
-}
+import type { FilterableTableColumn, FilterableTableFilter } from '../types'
 
 interface DateType {
   text?: string
   from: Date
   to: Date
-}
-
-interface FilterSlot {
-  label: string
-  field: string
-  isOrderFilter?: boolean
-  filterType: string
-  optionValue?: string
-  value: {
-    option?: Array<any>
-    from?: Date
-    to?: Date
-    min?: number
-    max?: number
-    operator?: string
-    number?: number
-    direction?: string
-  }
 }
 
 const props = defineProps({
@@ -41,7 +13,7 @@ const props = defineProps({
     default: () => [],
   },
   columns: {
-    type: Array<Column>,
+    type: Array<FilterableTableColumn>,
     required: true,
   },
   isExpandable: Boolean,
@@ -50,7 +22,7 @@ const props = defineProps({
     required: false,
   },
   filterSlots: {
-    type: Array<FilterSlot>,
+    type: Array<FilterableTableFilter>,
     required: false,
   },
   emptyFirstRow: {
@@ -135,7 +107,7 @@ const dateOptions = ref<DateType[]>([
   { text: 'Custom', from: new Date(), to: new Date() },
 ])
 
-const filterSlots = props.filterSlots ? ref<FilterSlot[]>(props.filterSlots) : ref<FilterSlot[]>([])
+const filterSlots = props.filterSlots ? ref<FilterableTableFilter[]>(props.filterSlots) : ref<FilterableTableFilter[]>([])
 
 const dateTabPanel = ref('intervals')
 
@@ -160,7 +132,7 @@ function contains(list: Array<any>, elem: any) {
   return contains
 }
 
-function pushToFilters(col: Column, index: number, orderByType?: string) {
+function pushToFilters(col: FilterableTableColumn, index: number, orderByType?: string) {
   let temp
   if (orderByType) { // FIXME: Now its guaranteed that filterType is exist but if the column is not ilterable and wanted to order it will not possible
     temp = { label: `${col.label} ${t('in')} ${orderByType} ${t('order')}`, field: col.field, isOrderFilter: true, value: { direction: orderByType === t('ascending') ? 'asc' : 'desc' }, filterType: col.filterType }
@@ -224,7 +196,7 @@ function comparisonOptionInit(index: number) {
   if (!selectedOptions.value[index])
     selectedOptions.value[index] = { operator: { text: 'equals', symbol: '=' } }
 }
-function updateSortOrder(col: Column, index: number, isDescending: boolean) {
+function updateSortOrder(col: FilterableTableColumn, index: number, isDescending: boolean) {
   tablePagination.value.sortBy = col.field
   tablePagination.value.descending = isDescending
   pushToFilters(col, index, isDescending ? t('descending') : t('ascending'))

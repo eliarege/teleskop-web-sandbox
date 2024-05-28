@@ -1,7 +1,26 @@
-import type { FilterSlot } from 'nuxt-ui-types'
 import type { Knex } from 'knex'
 
-export async function filtersToKnex(filters: Array<FilterSlot>, attributes: any, knexInstance: Knex.QueryBuilder) {
+// Should mirror `FilterableTableFilter` from `nuxt-base/types`
+interface Filter {
+  label: string
+  field: string
+  isOrderFilter?: boolean
+  filterType: string
+  optionValue?: string
+  value: {
+    option?: Array<any>
+    from?: Date
+    to?: Date
+    min?: number
+    max?: number
+    operator?: string
+    number?: number
+    direction?: string
+  }
+}
+
+// TODO: Knex should be the first parameter and make function name operateFiltersOnKnexQuery or smt better
+export async function filtersToKnex(filters: Filter[], attributes: any, knexInstance: Knex.QueryBuilder) {
   // TODO: knexInstance içine bak belki select parameters kenx objenin içerisinden alınıyordur
   const resultQuery: Knex.QueryBuilder = await knexInstance
     .where((builder) => {

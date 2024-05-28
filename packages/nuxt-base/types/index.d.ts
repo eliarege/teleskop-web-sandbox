@@ -33,13 +33,7 @@ export interface FilterableTableColumn extends QTableColumn {
   optionValue?: string
 }
 
-export interface DateType {
-  text?: string
-  from: Date
-  to: Date
-}
-
-export interface FilterSlot {
+export interface FilterableTableFilter {
   label: string
   field: string
   isOrderFilter?: boolean
