@@ -25,7 +25,10 @@
     "peerDependencyRules": {
       "allowedVersions": {
         "@azure/identity": "3"
-      }
+      },
+      "ignoreMissing": [
+        "webpack"
+      ]
     }
   }
 }
