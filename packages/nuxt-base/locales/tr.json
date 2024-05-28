@@ -1,6 +1,7 @@
 {
   "base": {
     "about": "About",
+    "apps": "Uygulamalar",
     "aboutApp": "Uygulama Hakkında",
     "buildDate": "Build date",
     "commitHash": "Commit hash",

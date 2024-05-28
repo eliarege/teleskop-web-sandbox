@@ -2,6 +2,7 @@
 import { withBase } from 'ufo'
 
 const config = useRuntimeConfig()
+const { t } = useI18n()
 
 // TODO: Applications should be fetched from an external meta service
 function parseAppList(appList: unknown): { name: string, url: string, img: string }[] {
@@ -41,6 +42,9 @@ const appList = parseAppList(config.public.appList).map((app) => {
     class="h-unset"
     round
   >
+    <QTooltip>
+      {{ t('base.apps') }}
+    </QTooltip>
     <QMenu :offset="[0, 5]">
       <div class="grid grid-cols-3 p-2">
         <QBtn
