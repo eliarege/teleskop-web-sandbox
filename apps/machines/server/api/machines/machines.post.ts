@@ -1,6 +1,5 @@
-import { filtersToKnex } from 'utils/src/index'
+import { filtersToKnex } from 'utils'
 import { knex } from '~/server/connectionPool'
-import type { Machine } from '~/types'
 
 export default defineEventHandler(async (event) => {
   const { filters } = await readBody(event)

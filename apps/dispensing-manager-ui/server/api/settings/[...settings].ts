@@ -1,7 +1,7 @@
 import { createRouter, defineEventHandler, useBase } from 'h3'
 import { execa } from 'execa'
+import { filtersToKnex } from 'utils'
 import { knex } from '~/server/connectionPool'
-import { filtersToKnex } from '~/shared/functions'
 
 const router = createRouter()
 export default useBase('/api/settings', router.handler)

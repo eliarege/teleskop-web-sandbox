@@ -1,4 +1,3 @@
-import { filtersToKnex } from 'utils/index'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {

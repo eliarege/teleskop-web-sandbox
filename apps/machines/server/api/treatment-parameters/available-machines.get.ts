@@ -1,4 +1,4 @@
-import { filtersToKnex } from 'utils/src/index'
+import { filtersToKnex } from 'utils'
 import { knex } from '~/server/connectionPool'
 import type { Machine } from '~/types'
 
