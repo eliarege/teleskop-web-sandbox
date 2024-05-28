@@ -1,6 +1,9 @@
 // plugins/test.ts
 import { execa } from 'execa'
+import { withBase } from 'ufo'
 import { knex } from '~/server/connectionPool'
+
+const config = useRuntimeConfig()
 
 export default defineNitroPlugin((nitroApp) => {
   let status = [] as any[]
@@ -9,8 +12,9 @@ export default defineNitroPlugin((nitroApp) => {
     setTimeout(fetchData, 10000)
   }
   fetchData()
+
   nitroApp.h3App.stack.unshift({
-    route: '/api/dispenser-connection-status',
+    route: withBase(`/api/dispenser-connection-status`, config.app.baseURL),
     handler: defineEventHandler(() => {
       return status
     }),
