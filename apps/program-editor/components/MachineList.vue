@@ -35,13 +35,12 @@ async function onUpdateSelected(selection: string) {
   }
 }
 
-const thumbStyle = { opacity: 0 }
+const thumbStyle = { opacity: '0' }
 </script>
 
 <template>
   <div class="q-pa-md">
     <QScrollArea
-      horizontal
       :thumb-style="thumbStyle"
       style="height: calc(100vh - 80px); max-width: 400px;"
     >
