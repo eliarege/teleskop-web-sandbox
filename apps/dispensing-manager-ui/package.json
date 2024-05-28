@@ -20,14 +20,15 @@
     "knex": "^3.1.0",
     "mssql": "^10.0.2",
     "samba-client": "^7.2.0",
-    "ufo": "^1.5.3"
+    "ufo": "^1.5.3",
+    "ui": "workspace:*",
+    "utils": "workspace:*"
   },
   "devDependencies": {
     "@types/mssql": "^9.1.5",
     "@types/node": "^20.12.7",
     "nuxt": "^3.11.2",
     "nuxt-base": "workspace:*",
-    "ui": "workspace:*",
     "unocss-config": "workspace:*",
     "vue": "^3.4.24",
     "vue-router": "^4.3.2"

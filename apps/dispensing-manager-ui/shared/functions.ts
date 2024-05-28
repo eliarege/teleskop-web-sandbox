@@ -42,47 +42,6 @@ export function cellRGBColorHandler(val) {
   temp += 'width: 10rem; border-color: white; font-size: medium;'
   return temp
 }
-/** Returns a database name of the spesific attribute */
-// Knex should be the first parameter and make function name operateFiltersOnKnexQuery or smt better
-/** @deprecated */
-export async function filtersToKnex(filters: Array<FilterSlot>, attributes: any, knexInstance: Knex.QueryBuilder) {
-  // TODO: knexInstance içine bak belki select parameters kenx objenin içerisinden alınıyordur
-  const resultQuery: Knex.QueryBuilder = await knexInstance
-    .where((builder) => {
-      filters.forEach((filter) => {
-        const attName = filter.optionValue ? filter.optionValue : filter.field
-        const DBName = attributes[attName]
-
-        if (filter.isOrderFilter) {
-          // Ordering is an optional for backend. Its not implemented right now.
-        } else if (filter.filterType === 'select' || filter.filterType === 'multiselect') {
-          builder.andWhere((innerBuilder) => {
-            filter.value.option.forEach((opt) => {
-              innerBuilder.orWhere(DBName, '=', opt[attName])
-            })
-          })
-        } else if (filter.filterType === 'comparison') {
-          if (filter.value.max && filter.value.min) {
-            builder.andWhere(DBName, '<', filter.value.max)
-            builder.andWhere(DBName, '>=', filter.value.min)
-          } else if (filter.value.number && filter.value.operator) {
-            builder.andWhere(DBName, filter.value.operator, filter.value.number)
-          }
-        } else if (filter.filterType === 'date') {
-          builder.andWhere(DBName, '<', filter.value.to)
-          builder.andWhere(DBName, '>=', filter.value.from)
-        } else if (filter.filterType === 'boolean') {
-          builder.andWhere(DBName, filter.value.option[0])
-        } else if (filter.filterType === 'includes') {
-          builder.andWhere(DBName, 'like', `%${filter.value}%`)
-        } else if (filter.filterType === 'equals') {
-          builder.andWhere(DBName, `${filter.value}`)
-        }
-      })
-    })
-
-  return resultQuery
-}
 
 // else if (filter.filterType === 'boolean') {
 //   const value: boolean = filter.value.option[0]
