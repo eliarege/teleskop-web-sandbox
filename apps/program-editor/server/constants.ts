@@ -14,3 +14,6 @@ export const PROCESS_CODE = 'PROCESSCODE'
 
 export const START_TAGS = 'START_TAGS'
 export const END_TAGS = 'END_TAGS'
+export const MSSQL_ERROR = {
+  DUPLICATE_PK: 2627,
+}
