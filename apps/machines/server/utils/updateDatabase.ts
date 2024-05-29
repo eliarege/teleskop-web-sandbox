@@ -1,7 +1,6 @@
 import type { Knex } from 'knex'
-import type { TbbFtpClient } from 'tbb-ftp-client'
+import type { LockOutputAnalog, LockOutputDigital, TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
-import type { LockOutputAnalog, LockOutputDigital } from 'tbb-ftp-client/src/types'
 import { DatabaseQueryError } from '../error'
 import { calcIONumber } from '.'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'

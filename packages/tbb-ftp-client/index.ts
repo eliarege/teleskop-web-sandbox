@@ -3,6 +3,8 @@ import { TbbFtpClient } from './src/TbbFtpClient'
 
 export { TbbFtpClient }
 
+export type * from './src/types'
+
 export async function withTbbFtpClient(
   host: string,
   callback: (client: TbbFtpClient) => Promise<void> | void,
