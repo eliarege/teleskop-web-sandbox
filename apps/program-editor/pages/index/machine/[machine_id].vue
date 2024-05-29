@@ -14,9 +14,7 @@ import { deleteProgramCommand, pasteProgramCommand } from '~/composables/new.com
 import { filterToQuery, getExistingFilter } from '~/composables/utils'
 import { commandManager, contextMenuStore } from '~/shared/utils'
 
-const { t } = useI18n()
-const { locale } = useI18n()
-
+const { t, locale } = useI18n()
 const $q = useQuasar()
 const route = useRoute()
 const keycloak = useKeycloak()
