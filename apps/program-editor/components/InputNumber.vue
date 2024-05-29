@@ -5,6 +5,7 @@ import type { QInput } from 'quasar'
 const props = withDefaults(defineProps<{
   hideArrows?: boolean
   type?: 'decimal' | 'integer' | 'positive-integer'
+  rules: any
   maxlength?: number
   outlined?: boolean
   dense?: boolean
@@ -12,6 +13,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   hideArrows: true,
   type: 'decimal',
+  rules: () => [],
   maxlength: 10,
   outlined: false,
   dense: false,
@@ -173,6 +175,7 @@ function onBlur(event: FocusEvent) {
     class="input-number"
     :class="{ 'hide-arrows': hideArrows }"
     :for="id"
+    :rules="rules"
     bottom-slots
     no-error-icon
     :hide-bottom-space="hideBottomSpace"
