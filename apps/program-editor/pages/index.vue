@@ -9,6 +9,7 @@ import MenuProgram from '~/components/MenuProgram.vue'
 import MenuBar from '~/components/MenuBar.vue'
 
 const { dark } = useQuasar()
+const route = useRoute()
 const leftDrawerOpen = ref(false)
 const rightDrawerOpen = ref(false)
 const printProgramDialog = ref(false)
@@ -53,8 +54,8 @@ function toggleRightDrawer() {
           icon="menu"
           @click="toggleLeftDrawer"
         />
-        <MenuProgram v-if="$route.path.includes('program')" class="flex-grow-1" />
-        <QSpace v-else />
+        <MenuProgram :vis="true" :type="route.params.program_no ? 'editor' : 'programs'" />
+
         <QBtn
           dense
           flat
