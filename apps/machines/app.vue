@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import '@formkit/themes/genesis'
 import { breakpointsTailwind } from '@vueuse/core'
-import type { TopbarMenuItem } from '../../packages/nuxt-base/types'
+import type { TopbarMenuItem } from 'nuxt-base'
 
 const { t } = useI18n()
 
@@ -9,7 +9,7 @@ const tt = (key: string) => toRef(() => t(key))
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
 
-const items = computed(() => ([
+const items = [
   {
     label: tt('machine'),
     to: '/',
@@ -166,8 +166,7 @@ const items = computed(() => ([
       ]],
     },
   },
-
-] as TopbarMenuItem[]))
+] as TopbarMenuItem[]
 
 const itemsMobile = [
   [
@@ -194,6 +193,7 @@ const itemsMobile = [
               <Icon
                 name="IconEliar"
                 size="2.5rem"
+                class="p-1"
               />
             </NuxtLink>
           </QToolbarTitle>
