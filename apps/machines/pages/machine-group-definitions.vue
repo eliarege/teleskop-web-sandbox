@@ -1,19 +1,24 @@
 <script setup lang="ts">
-const { data: machineGroups, pending, refresh } = await useFetch('/api/machines/machine-groups')
+import type { FilterableTableColumn } from 'nuxt-base'
+import type { MachineGroup } from '~/types'
 
 const { t } = useI18n()
 
-const columns = computed(() => ([
+const { data: machineGroups, pending, refresh } = await useFetch<readonly MachineGroup[]>('/api/machines/machine-groups', {
+  default: () => [],
+})
+
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'groupName',
     label: t('group'),
-    field: row => row.groupName,
+    field: (row: MachineGroup) => row.groupName,
     align: 'left',
   },
   {
     name: 'groupType',
     label: t('groupType'),
-    field: row => row.groupType,
+    field: (row: MachineGroup) => row.groupType,
     align: 'left',
   },
 ]))
@@ -76,9 +81,9 @@ const machineGroupTypeOptions = [
   },
 ]
 
-const changedGroups = ref([])
+const changedGroups = ref<MachineGroup[]>([])
 
-async function handleMachineGroupSelect(e, group) {
+async function handleMachineGroupSelect(e: Omit<MachineGroup, 'groupId'>, group: MachineGroup) {
   group.groupType = e.groupType
   changedGroups.value.push(group)
 }
@@ -107,7 +112,7 @@ async function handleSubmit() {
         <template #body-cell-groupType="props">
           <q-td :props="props">
             <q-select
-              :model-value="machineGroupTypeMapper[props.row.groupType]"
+              :model-value="machineGroupTypeMapper[props.row.groupType as keyof typeof machineGroupTypeMapper]"
               :options="machineGroupTypeOptions"
               option-label="groupName"
               option-value="groupType"

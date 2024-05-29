@@ -14,7 +14,7 @@ export function parseLockGeneral(content: string) {
   const locks = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const lock: LockGeneral = {
+    const lock: Partial<LockGeneral> = {
       lockNo: Number.parseInt(match[1]),
       lockName: match[2],
       logicType: Number.parseInt(match[3]),

@@ -54,7 +54,11 @@ const { data: batchParameters } = useLazyFetch('/api/starting-parameter-types/st
           @update:model-value="(e) => selectedMachineId = e.machineId"
         />
 
-        <q-list bordered separator class="overflow-y-auto h-140">
+        <q-list
+          bordered
+          separator
+          class="overflow-y-auto h-140"
+        >
           <q-item
             v-for="param in batchParameters"
             :key="param.paramId"

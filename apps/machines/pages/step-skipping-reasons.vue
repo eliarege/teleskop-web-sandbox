@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { StepReason } from '~/types'
+
 const { t } = useI18n()
 
 const columns = computed(() => ({
@@ -34,13 +36,13 @@ const columns = computed(() => ({
 
 }))
 
-const { data: stepSkippingReasons, refresh } = useLazyFetch('/api/step-skipping-reasons/step-skipping-reasons', {
+const { data: stepSkippingReasons, refresh } = useLazyFetch<StepReason[]>('/api/step-skipping-reasons/step-skipping-reasons', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-async function handleAdd(formData) {
+async function handleAdd(formData: StepReason) {
   await $fetch('/api/step-skipping-reasons/reason', {
     method: 'POST',
     body: formData,
@@ -48,7 +50,7 @@ async function handleAdd(formData) {
   await refresh()
 }
 
-async function handleEdit(formData, old) {
+async function handleEdit(formData: StepReason, old: StepReason) {
   await $fetch('/api/step-skipping-reasons/reason', {
     method: 'PUT',
     body: {
@@ -59,7 +61,7 @@ async function handleEdit(formData, old) {
   await refresh()
 }
 
-async function handleDelete(formData) {
+async function handleDelete(formData: StepReason[]) {
   await $fetch('/api/step-skipping-reasons/step-skipping-reasons', {
     method: 'DELETE',
     body: {
@@ -67,14 +69,6 @@ async function handleDelete(formData) {
     },
   })
   await refresh()
-}
-async function handleFilterSlotsUpdate(updatedValue) {
-  stepSkippingReasons.value = await $fetch('/api/step-skipping-reasons/step-skipping-reasons', {
-    method: 'POST',
-    body: {
-      filters: updatedValue,
-    },
-  })
 }
 </script>
 

@@ -10,6 +10,9 @@ const emit = defineEmits(['close'])
 
 const { t } = useI18n()
 
+type Label = (typeof settingsList)[number]['label']
+type Setting = Record<Label, number | boolean>
+
 const settingsList = [
   { label: 'ttbuserManagentActive', value: 1 },
   { label: 'ttbphaseModeActive', value: 2 },
@@ -20,15 +23,15 @@ const settingsList = [
   { label: 'ttbDyehouseNumber', value: 7 },
   { label: 'ttbProcessUsageActive', value: 8 },
   { label: 'ttbSaveIOValuesInDatabase', value: 9 },
-]
+] as const
 
-const formData = ref({})
+const formData = ref<Partial<Setting>>({})
 
-const { data: setting } = useLazyFetch('/api/machines/teleskop-settings', {
+const { data: _setting } = useLazyFetch('/api/machines/teleskop-settings', {
   default: () => ({}),
   onResponse: (res) => {
     const data = res.response._data
-    formData.value = data.reduce((acc, item) => {
+    formData.value = data.reduce((acc: Setting, item: { id: number, value: string }) => {
       const key = settingsList.find(d => d.value === item.id)?.label
       if (key === 'ttbDyehouseNumber') {
         acc[key] = Number.parseInt(item.value)
@@ -38,8 +41,8 @@ const { data: setting } = useLazyFetch('/api/machines/teleskop-settings', {
       return acc
     }, {})
     for (const item of settingsList) {
-      if (!formData.value[item.label]) {
-        formData.value[item.label] = false
+      if (!formData.value[item.label as Label]) {
+        formData.value[item.label as Label] = false
       }
     }
   },
@@ -87,7 +90,7 @@ const schema = computed(() => ([
 ]))
 
 async function handleSubmit() {
-  const submitData = {}
+  const submitData: Record<number, number | boolean> = {}
   for (const [key, value] of Object.entries(formData.value)) {
     const setting = settingsList.find(d => d.label === key)
     if (setting) {
@@ -103,14 +106,18 @@ async function handleSubmit() {
 
 <template>
   <q-dialog
-    :model-value="show"
-    @hide="$emit('close')"
+    :model-value="props.show"
+    @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
       <q-card-section>
         <h3>{{ t('teleskopSettings') }}</h3>
         <FormKit
-          v-model="formData" :actions="false" type="form" :form-class="formClass" @submit="handleSubmit"
+          v-model="formData"
+          :actions="false"
+          type="form"
+          :form-class="formClass"
+          @submit="handleSubmit"
         >
           <FormKitSchema :schema="schema" />
           <slot name="form-content" />

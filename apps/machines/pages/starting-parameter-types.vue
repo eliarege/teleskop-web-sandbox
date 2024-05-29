@@ -1,34 +1,41 @@
 <script setup lang="ts">
 import { klona } from 'klona'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
+import type { StartingParameter } from '~/types'
 
 const { t } = useI18n()
 
 const selectedMachineId = ref()
 
-const paramTypeMaps = reactive([
-  { id: 0, name: 'fabricWeight', data: undefined },
-  { id: 1, name: 'flotteRatio', data: undefined },
-  { id: 2, name: 'partCount', data: undefined },
-  { id: 3, name: 'partyNo', data: undefined },
-  { id: 4, name: 'accompanyNo', data: undefined },
-  { id: 5, name: 'clothLength', data: undefined },
-  { id: 6, name: 'customer', data: undefined },
-  { id: 7, name: 'customerOrder', data: undefined },
-  { id: 8, name: 'fabricType', data: undefined },
+interface ParamTypeMap {
+  id: number
+  name: string
+  data: StartingParameter | null
+}
+
+const paramTypeMaps = reactive<ParamTypeMap[]>([
+  { id: 0, data: null, name: 'fabricWeight' },
+  { id: 1, data: null, name: 'flotteRatio' },
+  { id: 2, data: null, name: 'partCount' },
+  { id: 3, data: null, name: 'partyNo' },
+  { id: 4, data: null, name: 'accompanyNo' },
+  { id: 5, data: null, name: 'clothLength' },
+  { id: 6, data: null, name: 'customer' },
+  { id: 7, data: null, name: 'customerOrder' },
+  { id: 8, data: null, name: 'fabricType' },
 ])
 
 const { data: machines } = useLazyFetch('/api/machines/active-machines')
 
 const { data: parameterOptions } = useLazyFetch('/api/starting-parameter-types/starting-parameters', {
-  immediate: false,
   query: { machineId: selectedMachineId },
+  immediate: false,
   transform: (parameterOptions) => {
     parameterOptions.unshift({
       paramId: -1,
       paramString: t('notSelected'),
     })
-    return parameterOptions
+    return parameterOptions as readonly StartingParameter[]
   },
 })
 
@@ -39,7 +46,7 @@ const { data: parameterTypes } = useLazyFetch('/api/starting-parameter-types/sta
 
 watch(parameterTypes, (_newValue, _oldValue) => {
   for (const paramTypeMap of paramTypeMaps) {
-    paramTypeMap.data = parameterTypes.value.find(t => t.paramTypeId === Number(paramTypeMap.id)) || { paramId: -1, paramString: t('notSelected') }
+    paramTypeMap.data = parameterTypes.value?.find(t => t.paramTypeId === Number(paramTypeMap.id)) || { paramId: -1, paramString: t('notSelected') }
   }
 })
 
@@ -51,8 +58,10 @@ interface ParamType {
 
 const changedParameterTypes = ref<ParamType[]>([])
 
-function handleOptionChange(paramType: object) {
-  changedParameterTypes.value.push({ id: paramType.id, paramId: paramType.data.paramId, machineId: selectedMachineId.value })
+function handleOptionChange(paramType: ParamTypeMap) {
+  if (paramType.data) {
+    changedParameterTypes.value.push({ id: paramType.id, paramId: paramType.data.paramId, machineId: selectedMachineId.value })
+  }
 }
 
 async function handleSubmit() {
@@ -124,7 +133,7 @@ const contextMenuOptions = computed(() => [
           </q-list>
         </div>
 
-        <div class="flex flex-col input-field">
+        <div v-if="parameterOptions" class="flex flex-col input-field">
           <div v-for="paramTypeMap in paramTypeMaps" :key="paramTypeMap.id">
             <q-select
               v-model="paramTypeMap.data"

@@ -15,7 +15,7 @@ export function parseCommandsEditing(content: string) {
   const commands = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const command: MasterCommand = {
+    const command: Partial<MasterCommand> = {
       commandNo: Number.parseInt(match[1]),
       adviceList: match[2],
       dontUseList: match[3],

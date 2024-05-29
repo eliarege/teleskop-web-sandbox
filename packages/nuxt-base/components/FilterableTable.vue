@@ -49,7 +49,11 @@ const props = defineProps({
     default: true,
   },
 })
-const emit = defineEmits(['rowDblclick', 'updateFilterSlots', 'updateSearchFilter'])
+const emit = defineEmits<{
+  rowDblclick: [row: any]
+  updateFilterSlots: [filters: FilterableTableFilter[]]
+  updateSearchFilter: [terms: any]
+}>()
 
 const { t, locale } = useI18n({ useScope: 'local' })
 function handleDoubleClick(row: any) {
@@ -202,9 +206,9 @@ function updateSortOrder(col: FilterableTableColumn, index: number, isDescending
   pushToFilters(col, index, isDescending ? t('descending') : t('ascending'))
 }
 
-watch(filterSlots.value, (newValue) => {
+watch(filterSlots, (newValue) => {
   emit('updateFilterSlots', newValue)
-})
+}, { deep: true })
 
 function checkForButtonsInsteadOfSelect(col: any) {
   if (col.selectionOptions !== undefined && col.filterType !== undefined)

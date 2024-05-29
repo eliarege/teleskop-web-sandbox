@@ -10,14 +10,14 @@ const pattern = /^SABIT_(\d+)=(\d+).(\d+)$/gim
  * ```
  */
 export function parseMachineParameterValues(content: string) {
-  const machineParameterValues: MachineParameter[] = []
+  const machineParameterValues: Partial<MachineParameter>[] = []
   let match = pattern.exec(content)
   while (match !== null) {
     const id = match[1]
     const values = match[2].split(',')
 
     if (values && values.length) {
-      const parameter: MachineParameter = {
+      const parameter: Partial<MachineParameter> = {
         machineParameterId: Number.parseInt(id),
         currentValue: Number.parseInt(values[0]),
       }

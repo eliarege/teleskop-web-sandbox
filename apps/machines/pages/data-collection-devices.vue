@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Machine } from '~/types'
+
 const columns = computed(() => ({
   machineId: {
     label: 'Makine Id',
@@ -31,13 +33,13 @@ const columns = computed(() => ({
   },
 }))
 
-const { data: machines, refresh } = useLazyFetch('/api/machines/other-machines', {
+const { data: machines, refresh } = useLazyFetch<Machine[]>('/api/machines/other-machines', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-async function handleAdd(formData) {
+async function handleAdd(formData: Machine) {
   await $fetch('/api/machines/other-machine', {
     method: 'POST',
     body: formData,
@@ -45,7 +47,7 @@ async function handleAdd(formData) {
   await refresh()
 }
 
-async function handleEdit(formData, old) {
+async function handleEdit(formData: Machine, old: Machine) {
   await $fetch('/api/machines/other-machine', {
     method: 'PUT',
     body: {
@@ -56,7 +58,7 @@ async function handleEdit(formData, old) {
   await refresh()
 }
 
-async function handleDelete(formData) {
+async function handleDelete(formData: Machine[]) {
   await $fetch('/api/machines/other-machine', {
     method: 'DELETE',
     body: {
@@ -64,15 +66,6 @@ async function handleDelete(formData) {
     },
   })
   await refresh()
-}
-
-async function handleFilterSlotsUpdate(updatedValue) {
-  machines.value = await $fetch('/api/machines/other-machines', {
-    method: 'POST',
-    body: {
-      filters: updatedValue,
-    },
-  })
 }
 </script>
 

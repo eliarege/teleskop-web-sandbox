@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
-import type { WaterIO } from '~/types'
+import type { CommandParameter, WaterIO } from '~/types'
 
 interface Water {
   waterIO1: WaterIO | null | undefined
@@ -37,7 +37,7 @@ const { data: waterIO } = useLazyFetch<WaterIO[]>('/api/io/command-io-all', {
   query: fetchParams,
 })
 
-const { data: waterParams } = useLazyFetch('/api/commands/command-parameters', {
+const { data: waterParams } = useLazyFetch<readonly CommandParameter[]>('/api/commands/command-parameters', {
   immediate: false,
   query: fetchParams,
 })
@@ -192,7 +192,7 @@ const contextMenuOptions = computed(() => [
             <h3>{{ t('waterAmountParameter') }}</h3>
             <q-select
               v-model="water.waterParam"
-              :options="waterParams"
+              :options="waterParams || []"
               option-label="paramString"
               option-value="parameterIndex"
             />

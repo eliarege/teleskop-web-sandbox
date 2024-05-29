@@ -13,7 +13,7 @@ export function parseCommandGraphic(content: string) {
   const groups = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const group: MasterCommand = {
+    const group: Partial<MasterCommand> = {
       commandNo: Number.parseInt(match[1]),
       type: Number.parseInt(match[2]),
       x: match[3],

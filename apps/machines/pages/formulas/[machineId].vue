@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { klona } from 'klona'
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
 import type { Formula } from '~/types'
 
 const { t } = useI18n()
 const route = useRoute()
 
-const columns = computed(() => ([
+interface Option {
+  value: number
+  label: string
+}
+
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'formulaId',
     label: t('formulaId'),
@@ -49,7 +55,14 @@ const columns = computed(() => ([
 
 ]))
 
-const machineId = computed(() => route.params.machineId)
+const machineId = computed(() => {
+  const id = route.params.machineId
+  if (typeof id === 'string') {
+    return Number.parseInt(id)
+  } else {
+    return -1
+  }
+})
 const formula = ref<Partial<Formula>>({})
 const selectedCommandNo = ref()
 const copy = ref()
@@ -131,18 +144,18 @@ async function handleDelete() {
   })
   await refreshFormulas()
 }
-function handleCommandSelect(e: { value: number, label: string }) {
+function handleCommandSelect(e: Option) {
   selectedCommandNo.value = e.value
   formula.value.commandNo = e.value
   formula.value.commandName = e.label
 }
 
-function handleParamSelect(e: { value: number, label: string }) {
+function handleParamSelect(e: Option) {
   formula.value.parameterIndex = e.value
   formula.value.parameterName = e.label
 }
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
   formulas.value = await $fetch('/api/formulas/formulas', {
     method: 'POST',
     body: {
@@ -192,7 +205,7 @@ const showAddFormulaDialog = ref(false)
             option-value="value"
             :display-value="formula?.commandName"
             class="w-1/6"
-            @update:model-value="(e) => handleCommandSelect(e)"
+            @update:model-value="(e: Option) => handleCommandSelect(e)"
           />
           <q-select
             :model-value="formula?.parameterIndex"
@@ -203,30 +216,47 @@ const showAddFormulaDialog = ref(false)
             option-value="value"
             :display-value="formula?.parameterName"
             class="w-1/6"
-            @update:model-value="(e) => handleParamSelect(e)"
+            @update:model-value="(e: Option) => handleParamSelect(e)"
           />
         </div>
         <div class="flex w-full justify-between m-4">
           <q-btn-group push>
-            <q-btn push :label="t('add')" @click="handleAdd" />
-            <q-btn push :label="t('edit')" @click="handleEdit" />
-            <q-btn push :label="t('delete')" @click="handleDelete" />
+            <q-btn
+              push
+              :label="t('add')"
+              @click="handleAdd"
+            />
+            <q-btn
+              push
+              :label="t('edit')"
+              @click="handleEdit"
+            />
+            <q-btn
+              push
+              :label="t('delete')"
+              @click="handleDelete"
+            />
           </q-btn-group>
-          <q-btn no-caps push :label="t('addFormula')" @click="showAddFormulaDialog = true" />
+          <q-btn
+            no-caps
+            push
+            :label="t('addFormula')"
+            @click="showAddFormulaDialog = true"
+          />
         </div>
         <FilterableTable
           :rows="formulas"
           :columns="columns"
           class="overflow-y-auto	h-160"
-          @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+          @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
         >
-          <template #custombody="formulas">
+          <template #custombody="props">
             <q-tr
-              :class="{ 'selected-row': formula.formulaId === formulas.row.formulaId }"
-              @click="handleFormulaSelection(formulas.row)"
+              :class="{ 'selected-row': formula.formulaId === props.row.formulaId }"
+              @click="handleFormulaSelection(props.row)"
             >
               <q-td
-                v-for="row in formulas.cols"
+                v-for="row in props.cols"
                 :key="row"
               >
                 <span>

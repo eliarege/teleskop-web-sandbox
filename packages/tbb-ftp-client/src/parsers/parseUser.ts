@@ -14,7 +14,7 @@ export function parseUser(content: string) {
   const users = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const user: User = {
+    const user: Partial<User> = {
       userId: Number.parseInt(match[1]),
       userPass: match[2],
       userName: match[3],

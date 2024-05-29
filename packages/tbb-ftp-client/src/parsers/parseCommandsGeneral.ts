@@ -13,7 +13,7 @@ export function parseCommandsGeneral(content: string) {
   const groups = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const group: MasterCommand = {
+    const group: Partial<MasterCommand> = {
       commandNo: Number.parseInt(match[1]),
       activated: Number.parseInt(match[2]),
       name: match[3],
@@ -23,7 +23,7 @@ export function parseCommandsGeneral(content: string) {
       isRunManual: Number.parseInt(match[7]),
       moveParallel: Number.parseInt(match[9]),
       groupId: Number.parseInt(match[10]),
-      // machineConstantId: Number.parseInt(match[11]),
+      machineConstantId: match[11] ? Number.parseInt(match[11]) : -1,
     }
     groups.push(group)
     match = pattern.exec(content)

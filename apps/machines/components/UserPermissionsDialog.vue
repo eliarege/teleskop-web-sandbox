@@ -2,9 +2,16 @@
 import { ref } from 'vue'
 import type { User } from '~/types'
 
+interface Permission {
+  label: string
+  index: number
+  value: MaybeRef<boolean>
+  disabled?: MaybeRef<boolean>
+}
+
 const props = defineProps<{
   show: boolean
-  selected: User
+  selected: Partial<User>
 }>()
 
 const emit = defineEmits(['close'])
@@ -15,7 +22,7 @@ const menuAccessPermission = ref(false)
 
 const { t } = useI18n()
 
-const permissionsGroup1 = reactive([
+const permissionsGroup1 = reactive<Permission[]>([
   { label: t('createProgram'), index: 0, value: false },
   { label: t('modifyProgram'), index: 1, value: false },
   { label: t('copyProgram'), index: 2, value: false },
@@ -49,11 +56,11 @@ const permissionsGroup2 = computed(() => ([
 ]))
 const user = computed(() => props.selected)
 watch(user, (_newValue, _oldValue) => {
-  if (props.selected && props.selected.userMode)
+  if (props.selected.userMode && props.selected.userMode2)
     updatePermissionsFromHex(props.selected.userMode, props.selected.userMode2)
 })
 
-function updatePermissionsFromHex(hexStringGroup1, hexStringGroup2) {
+function updatePermissionsFromHex(hexStringGroup1: string, hexStringGroup2: string) {
   const binaryStringGroup1 = Number.parseInt(hexStringGroup1.slice(2), 16).toString(2).padStart(32, '0')
   const binaryStringGroup2 = Number.parseInt(hexStringGroup2.slice(2), 16).toString(2).padStart(32, '0')
 
@@ -75,7 +82,7 @@ async function savePermissions() {
   let combinedPermissionValueGroup2 = 0
 
   // Group 1
-  permissionsGroup1.value.forEach((permission) => {
+  permissionsGroup1.forEach((permission: Permission) => {
     if (permission.value) {
       combinedPermissionValueGroup1 |= 1 << (permission.index)
     }
@@ -102,7 +109,7 @@ async function savePermissions() {
   <div>
     <q-dialog
       :model-value="show"
-      @hide="$emit('close')"
+      @hide="emit('close')"
     >
       <q-card class="min-w-[1000px]">
         <q-card-section>
@@ -110,7 +117,7 @@ async function savePermissions() {
             name="close"
             class="flex justify-end w-full mb-4 cursor-pointer"
             size="1.5em"
-            @click="$emit('close')"
+            @click="emit('close')"
           />
         </q-card-section>
         <q-card-section class="grid grid-cols-3">

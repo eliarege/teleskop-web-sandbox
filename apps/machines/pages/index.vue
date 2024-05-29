@@ -3,11 +3,16 @@ import { useMagicKeys, whenever } from '@vueuse/core'
 import { withBase } from 'ufo'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
-import type { Machine } from '~/types'
+import type { Machine, MachineGroup } from '~/types'
 
 interface sseLog {
   message: string
   type?: 'info' | 'error'
+}
+
+interface Option {
+  label: string
+  value: number
 }
 
 const { t, locale, setLocale } = useI18n()
@@ -19,8 +24,8 @@ const { data: databaseVersion } = useLazyFetch('/api/machines/database-version',
 
 const { data: machineGroups } = useLazyFetch('/api/machines/machine-groups', {
   default: () => [],
-  transform: (machineGroups) => {
-    const options = []
+  transform: (machineGroups: MachineGroup[]) => {
+    const options: Option[] = []
     machineGroups.forEach((group) => {
       options.push({
         label: group.groupName,
@@ -70,7 +75,7 @@ const columns = computed(() => ({
     type: 'select',
     visible: true,
     editable: true,
-    format: (val, row) => machineGroups.value.find(d => d.value === val)?.label || val,
+    format: (val: number) => machineGroups.value.find(d => d.value === val)?.label || val,
     schema: {
       validation: 'required',
       options: machineGroups.value,
@@ -224,7 +229,7 @@ const columns = computed(() => ({
     type: 'checkbox',
     visible: true,
     editable: true,
-    format: (val, row) => val ? t('yes') : t('no'),
+    format: (val: boolean) => val ? t('yes') : t('no'),
     schema: {
       filled: true,
     },
@@ -377,13 +382,13 @@ const columns = computed(() => ({
   },
 }))
 
-const { data: machines, refresh } = useLazyFetch('/api/machines/machines', {
+const { data: machines, refresh } = useLazyFetch<Machine[]>('/api/machines/machines', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const selected = ref<Machine>({
+const selected = ref<Partial<Machine>>({
   machineId: -1,
 })
 
@@ -392,22 +397,13 @@ const showMimic = ref(false)
 const showGetDyeHouseDefinitions = ref(false)
 const showSetDyeHouseDefinitions = ref(false)
 
-function handleSelection(formData) {
+function handleSelection(formData: Machine[]) {
   if (formData.length)
     selected.value = formData[0]
   else
     selected.value = {
       machineId: -1,
     }
-}
-
-async function handleFilterSlotsUpdate(updatedValue) {
-  machines.value = await $fetch('/api/machines/machines', {
-    method: 'POST',
-    body: {
-      filters: updatedValue,
-    },
-  })
 }
 
 async function updateVersions() {
@@ -441,9 +437,9 @@ const { notifySuccess, notifyError } = useNotify()
 async function loadProject() {
   try {
     await $fetch('/api/sync/network-connection', {
-      method: 'GET',
+      method: 'POST',
       retry: false,
-      query: {
+      body: {
         ip: selected.value.ip,
       },
     })
@@ -458,7 +454,7 @@ async function loadProject() {
       },
     })
     notifySuccess(t('updateFinished'))
-  } catch (error) {
+  } catch (error: any) {
     if (error.statusCode === 500) {
       notifyError(t('errorLoadingProject'))
     } else if (error.statusCode === 504) {
@@ -467,7 +463,7 @@ async function loadProject() {
   }
 }
 
-async function handleAdd(formData) {
+async function handleAdd(formData: Machine) {
   await $fetch('/api/machines/machine', {
     method: 'POST',
     body: formData,
@@ -475,7 +471,7 @@ async function handleAdd(formData) {
   await refresh()
 }
 
-async function handleEdit(formData) {
+async function handleEdit(formData: Machine) {
   await $fetch('/api/machines/machine', {
     method: 'PUT',
     body: {
@@ -486,7 +482,7 @@ async function handleEdit(formData) {
   await refresh()
 }
 
-async function handleDelete(formData) {
+async function handleDelete(formData: Machine[]) {
   await $fetch('/api/machines/machine', {
     method: 'DELETE',
     body: {
@@ -506,14 +502,14 @@ whenever(keys.shift_alt_t, () => {
 
 const copy = ref()
 
-const contextMenuOptions = computed(() => [
+const contextMenuOptions = computed<Partial<IContextMenuOption>[]>(() => [
   {
     label: t('copy'),
     category: 'copy',
     keybind: '',
     icon: 'content_copy',
     disabled: selected.value.machineId === -1,
-    onClick: (data) => {
+    onClick: () => {
       copy.value = selected.value.machineId
     },
   },
@@ -592,7 +588,7 @@ async function checkTeleskopConnection(formData: Machine) {
     })
     teleskopConnectionMessage.value.message = t('connectionSuccessful')
     teleskopConnectionMessage.value.color = 'text-green'
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
     if (error.statusCode === 500) {
       teleskopConnectionMessage.value.message = (t('noConnectionToTeleskop'))
@@ -606,15 +602,15 @@ async function checkNetworkConnection(formData: Machine) {
     networkConnectionMessage.value.message = t('tryingConnection')
     networkConnectionMessage.value.color = ''
     await $fetch('/api/sync/network-connection', {
-      method: 'GET',
+      method: 'POST',
       retry: false,
-      query: {
+      body: {
         ip: formData.ip,
       },
     })
     networkConnectionMessage.value.message = (t('connectionSuccessful'))
     networkConnectionMessage.value.color = 'text-green'
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
     if (error.statusCode === 500) {
       networkConnectionMessage.value.message = (t('noConnectionToNetwork'))
@@ -636,40 +632,6 @@ function handleClose() {
       target=".q-table"
       @click="(option: IContextMenuOption) => option.onClick(selected)"
     />
-    <div class="absolute left-63 top-13.2">
-      <q-btn
-        :label="t('loadProject')"
-        no-caps
-        push
-        color="primary"
-        :disable="selected.machineId === -1"
-        class="mr-4"
-        @click="loadProject"
-      />
-      <q-btn
-        :label="t('receiveVersionInfo')"
-        no-caps
-        push
-        color="primary"
-        class="mr-4"
-        @click="updateVersions"
-      />
-    </div>
-    <div class="flex absolute right-10 top-13.2">
-      <q-chip>
-        {{ `DB v${databaseVersion}` }}
-      </q-chip>
-      <q-option-group
-        :model-value="locale"
-        type="radio"
-        :options="[
-          { label: 'Türkçe', value: 'tr' },
-          { label: 'English', value: 'en' },
-        ]"
-        class="flex"
-        @update:model-value="setLocale($event)"
-      />
-    </div>
     <FormTableKit
       :rows="machines"
       :columns="columns"
@@ -680,6 +642,32 @@ function handleClose() {
       @delete="handleDelete"
       @close="handleClose"
     >
+      <template #actions>
+        <div class="flex justify-between items-center grow">
+          <div class="flex">
+            <q-btn
+              :label="t('loadProject')"
+              no-caps
+              push
+              color="primary"
+              :disable="selected.machineId === -1"
+              class="mr-4"
+              @click="loadProject"
+            />
+            <q-btn
+              :label="t('receiveVersionInfo')"
+              no-caps
+              push
+              color="primary"
+              class="mr-4"
+              @click="updateVersions"
+            />
+          </div>
+          <q-chip class="self-end">
+            {{ `DB v${databaseVersion}` }}
+          </q-chip>
+        </div>
+      </template>
       <template #form-content="slotProps">
         <q-btn
           :label="t('checkTeleskopConnection')"
@@ -723,13 +711,13 @@ function handleClose() {
     <GetDyeHouseDefinitionsDialog
       v-if="showGetDyeHouseDefinitions && selected"
       :show="showGetDyeHouseDefinitions"
-      :selected="selected"
+      :selected="selected as Machine"
       @close="showGetDyeHouseDefinitions = false"
     />
     <SetDyeHouseDefinitionsDialog
       v-if="showSetDyeHouseDefinitions && selected"
       :show="showSetDyeHouseDefinitions"
-      :selected="selected"
+      :selected="selected as Machine"
       @close="showSetDyeHouseDefinitions = false"
     />
     <MachineParametersDialog

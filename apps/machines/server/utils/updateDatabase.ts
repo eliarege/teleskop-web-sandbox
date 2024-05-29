@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type { TbbFtpClient } from 'tbb-ftp-client'
+import type { LockOutputAnalog, LockOutputDigital, TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { DatabaseQueryError } from '../error'
 import { calcIONumber } from '.'
@@ -25,7 +25,7 @@ async function replaceRecords(knex: Knex, tableName: string, data: any[], whereO
   }
 }
 
-async function insertIgnoringDuplicates(trx, tableName, data, uniqueColumns) {
+async function insertIgnoringDuplicates(trx: Knex, tableName: string, data: any[], uniqueColumns: string[]) {
   for (const item of data) {
     const exists = await trx(tableName)
       .select('*')
@@ -441,7 +441,7 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
 
     if (alarmObj) {
       const alarmTypeIndex = Object.keys(alarmObj)
-        .findIndex(key => alarmObj[key as keyof FunctionAlarm]?.includes(c.alarmNo)) + 1
+        .findIndex(key => alarmObj[key as keyof FunctionAlarm]?.includes(String(c.alarmNo))) + 1
 
       commandsAlarmsInserts.push({
         MACHINEID: machineId,
@@ -465,13 +465,13 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
   const inputsOutputs = []
   const selectionList = []
 
-  for (const [index, command] of commands.entries()) {
-    for (const [i, c] of command.chooseList.entries()) {
+  for (const [_index, command] of commands.entries()) {
+    for (const [_i, c] of command.chooseList.entries()) {
       const commonData = {
         IOINDEX: c.ioIndex,
-        MACHINEID: Number.parseInt(machineId),
+        MACHINEID: machineId,
         COMMANDNO: command.commandNo,
-        IOID: Number.parseInt(c.ioId),
+        IOID: c.ioId,
       }
       if (c.selectIndex === 0) {
         inputsOutputs.push({
@@ -805,8 +805,8 @@ export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, tr
   if (!analogLocks.length && !digitalLocks.length)
     return false
 
-  const analogOutputs = []
-  const digitalOutputs = []
+  const analogOutputs: LockOutputAnalog[] = []
+  const digitalOutputs: LockOutputDigital[] = []
 
   analogLocks.forEach((lock) => {
     lock.analogOutputs.forEach((output, index) => {
@@ -854,7 +854,7 @@ export async function writeCommandAlarmReasons(machineId: number, tbb: TbbFtpCli
       commandNo: 'COMMANDNO',
     })
 
-  const mergedReasons: CommandAlarmReason[] = reasons.reduce((acc, curr) => {
+  const mergedReasons: CommandAlarmReason[] = reasons.reduce((acc: CommandAlarmReason[], curr) => {
     const existingReason = acc.find(reason => reason.machineId === curr.machineId && reason.id === curr.id)
     if (existingReason) {
       existingReason.commandNumbers.push(curr.commandNo)
@@ -884,43 +884,43 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
       .andWhere('MACHINECOMMANDSETNO', maxVersion)
 
     await trx('BAMASTERCOMMANDS')
-      .insert(function () {
-        this.select(machineId, maxVersion, trxTime, trx.raw('NULL'), 'COMMANDNO', 'FUNCTIONID', 'TBBFUNTIONNAME', 'BFMASTERCOMMANDS.NAME as NAME', 'ACTIVATED', 'ADVICELIST', 'DONTUSELIST', 'ISRUNMANUAL', 'COMMANDTYPE', 'MOVEPARALLEL', 'TBBCHANGETIME', 'X', 'Y', 'A', 'B', 'MAXA', 'ISTEMPERATURE', 'ISUNLOAD', 'BFMASTERCOMMANDS.ICON', 'BFMASTERCOMMANDS.GROUPID')
+      .insert(function (this: Knex) {
+        this.select('MACHINEID', trx.raw(maxVersion), trxTime, trx.raw('NULL'), 'COMMANDNO', 'FUNCTIONID', 'TBBFUNTIONNAME', 'BFMASTERCOMMANDS.NAME as NAME', 'ACTIVATED', 'ADVICELIST', 'DONTUSELIST', 'ISRUNMANUAL', 'COMMANDTYPE', 'MOVEPARALLEL', 'TBBCHANGETIME', 'X', 'Y', 'A', 'B', 'MAXA', 'ISTEMPERATURE', 'ISUNLOAD', 'BFMASTERCOMMANDS.ICON', 'BFMASTERCOMMANDS.GROUPID')
           .from('BFMASTERCOMMANDS')
           .where('MACHINEID', '=', machineId)
       })
 
     await trx('BAMASTERCOMMANDSALARMS')
-      .insert(function () {
-        this.select(machineId, maxVersion, 'COMMANDNO', 'ALARMINDEX', 'ALARMNO', 'ALARM', 'UNIVERSALALARMNO')
+      .insert(function (this: Knex) {
+        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'ALARMINDEX', 'ALARMNO', 'ALARM', 'UNIVERSALALARMNO')
           .from('BFMASTERCOMMANDSALARMS')
           .where('MACHINEID', '=', machineId)
       })
 
     await trx('BAMASTERCOMMANDRETURNVALUES')
-      .insert(function () {
-        this.select(machineId, maxVersion, 'COMMANDNO', 'RETURNVALUEINDEX', 'RETURNVALUENAME', 'CANSHOW', 'SPRELATION')
+      .insert(function (this: Knex) {
+        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'RETURNVALUEINDEX', 'RETURNVALUENAME', 'CANSHOW', 'SPRELATION')
           .from('BFMASTERCOMMANDRETURNVALUES')
           .where('MACHINEID', '=', machineId)
       })
 
     await trx('BACOMMANDINPUTOUTPUTS')
-      .insert(function () {
-        this.select(machineId, maxVersion, 'COMMANDNO', 'IOINDEX', 'IOID', 'IOTYPE', 'NAME')
+      .insert(function (this: Knex) {
+        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'IOINDEX', 'IOID', 'IOTYPE', 'NAME')
           .from('BFCOMMANDINPUTOUTPUTS')
           .where('MACHINEID', '=', machineId)
       })
 
     await trx('BACOMMANDSELECTIONLIST')
-      .insert(function () {
-        this.select(machineId, maxVersion, 'COMMANDNO', 'IOINDEX', 'SELECTINDEX', 'IOTYPE', 'IOID', 'NAME', 'SELECTEDIOID', 'ISDEFAULT')
+      .insert(function (this: Knex) {
+        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'IOINDEX', 'SELECTINDEX', 'IOTYPE', 'IOID', 'NAME', 'SELECTEDIOID', 'ISDEFAULT')
           .from('BFCOMMANDSELECTIONLIST')
           .where('MACHINEID', '=', machineId)
       })
 
     await trx('BACOMMANDPARAMETERS')
-      .insert(function () {
-        this.select(machineId, maxVersion, 'COMMANDNO', 'PARAMETERINDEX', 'PARAMSTRING', 'VALUE', 'PARAMETERTYPE', 'SELECTIONLIST', 'SELECTIONVALUES', 'UNITCODE', 'PARAMLOWLIMIT', 'PARAMHIGHLIMIT', 'CONTAINSVARIABLE', 'TEMPERATURE', 'USEDEFAULT', 'ISCOMMANDVARIABLE', 'TBBFORMUL', 'USEFORMULA')
+      .insert(function (this: Knex) {
+        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'PARAMETERINDEX', 'PARAMSTRING', 'VALUE', 'PARAMETERTYPE', 'SELECTIONLIST', 'SELECTIONVALUES', 'UNITCODE', 'PARAMLOWLIMIT', 'PARAMHIGHLIMIT', 'CONTAINSVARIABLE', 'TEMPERATURE', 'USEDEFAULT', 'ISCOMMANDVARIABLE', 'TBBFORMUL', 'USEFORMULA')
           .from('BFCOMMANDPARAMETERS')
           .where('MACHINEID', '=', machineId)
       })
@@ -938,12 +938,17 @@ export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx:
       .del()
 
     await trx.raw(`
-  INSERT INTO BFERPPARAMETERDEFINITIONS (PARAMID, PARAMNAME, PARAMTYPE, MACHINEID) SELECT (SELECT ISNULL(MAX(PARAMID), 0)
-   FROM BFERPPARAMETERDEFINITIONS WHERE MACHINEID = P.MACHINEID) + ROW_NUMBER() OVER(ORDER BY P.BATCHPARAMETERID ASC)
-   AS BATCHPARAMETERID, P.PARAMSTRING, P.PARAMETERTYPE, P.MACHINEID   FROM BFMACHBATCHPARAMETERS P
-   LEFT OUTER JOIN BFERPPARAMETERDEFINITIONS E ON (E.MACHINEID = P.MACHINEID AND P.PARAMSTRING = E.PARAMNAME)
-    WHERE P.MACHINEID = ${machineId} AND E.PARAMNAME IS NULL ORDER BY P.BATCHPARAMETERID ASC
-  `)
+    INSERT INTO BFERPPARAMETERDEFINITIONS (PARAMID, PARAMNAME, PARAMTYPE, MACHINEID)
+    SELECT (SELECT ISNULL(MAX(PARAMID), 0)
+    FROM BFERPPARAMETERDEFINITIONS
+    WHERE MACHINEID = P.MACHINEID) + ROW_NUMBER() OVER(ORDER BY P.BATCHPARAMETERID ASC)
+    AS BATCHPARAMETERID, P.PARAMSTRING, P.PARAMETERTYPE, P.MACHINEID
+    FROM BFMACHBATCHPARAMETERS P
+    LEFT OUTER JOIN BFERPPARAMETERDEFINITIONS E
+    ON (E.MACHINEID = P.MACHINEID AND P.PARAMSTRING = E.PARAMNAME)
+      WHERE P.MACHINEID = (?) AND E.PARAMNAME IS NULL
+      ORDER BY P.BATCHPARAMETERID ASC
+    `, [machineId])
 
     return true
   } catch (error: any) {

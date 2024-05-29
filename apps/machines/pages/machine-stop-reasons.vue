@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { StopReason } from '~/types'
+
 const { t } = useI18n()
 
 const columns = computed(() => ({
@@ -40,7 +42,7 @@ const columns = computed(() => ({
     type: 'checkbox',
     visible: true,
     editable: true,
-    format: (val, row) => val ? t('yes') : t('no'),
+    format: (val: boolean) => val ? t('yes') : t('no'),
     schema: {
       filled: true,
     },
@@ -48,13 +50,13 @@ const columns = computed(() => ({
 
 }))
 
-const { data: stopReasons, refresh } = useLazyFetch('/api/stop-reasons/stop-reasons', {
+const { data: stopReasons, refresh } = useLazyFetch<StopReason[]>('/api/stop-reasons/stop-reasons', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-async function handleEdit(formData) {
+async function handleEdit(formData: StopReason) {
   await $fetch('/api/stop-reasons/stop-reason', {
     method: 'PUT',
     body: formData,
@@ -62,7 +64,7 @@ async function handleEdit(formData) {
   await refresh()
 }
 
-async function handleAdd(formData) {
+async function handleAdd(formData: StopReason) {
   await $fetch('/api/stop-reasons/stop-reason', {
     method: 'POST',
     body: {
@@ -74,7 +76,7 @@ async function handleAdd(formData) {
   await refresh()
 }
 
-async function handleDelete(formData) {
+async function handleDelete(formData: StopReason[]) {
   await $fetch('/api/stop-reasons/stop-reasons', {
     method: 'DELETE',
     body: {
@@ -82,15 +84,6 @@ async function handleDelete(formData) {
     },
   })
   await refresh()
-}
-
-async function handleFilterSlotsUpdate(updatedValue) {
-  stopReasons.value = await $fetch('/api/stop-reasons/stop-reasons', {
-    method: 'POST',
-    body: {
-      filters: updatedValue,
-    },
-  })
 }
 </script>
 

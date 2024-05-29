@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { WaterType } from '~/types'
+
 const { t } = useI18n()
 
 const columns = computed(() => ({
@@ -30,13 +32,13 @@ const columns = computed(() => ({
 
 }))
 
-const { data: waterTypes, refresh } = useLazyFetch('/api/water-types/water-types', {
+const { data: waterTypes, refresh } = useLazyFetch<WaterType[]>('/api/water-types/water-types', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-async function handleAdd(formData) {
+async function handleAdd(formData: WaterType) {
   await $fetch('/api/water-types/water-type', {
     method: 'POST',
     body: formData,
@@ -44,7 +46,7 @@ async function handleAdd(formData) {
   await refresh()
 }
 
-async function handleEdit(formData) {
+async function handleEdit(formData: WaterType) {
   await $fetch('/api/water-types/water-type', {
     method: 'PUT',
     body: formData,
@@ -52,21 +54,12 @@ async function handleEdit(formData) {
   await refresh()
 }
 
-async function handleDelete(formData) {
+async function handleDelete(formData: WaterType[]) {
   await $fetch('/api/water-types/water-types', {
     method: 'DELETE',
     body: formData.map(d => d.waterTypeId),
   })
   await refresh()
-}
-
-async function handleFilterSlotsUpdate(updatedValue) {
-  waterTypes.value = await $fetch('/api/water-types/water-types', {
-    method: 'POST',
-    body: {
-      filters: updatedValue,
-    },
-  })
 }
 </script>
 

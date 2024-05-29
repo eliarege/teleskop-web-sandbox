@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { SortableEvent } from 'sortablejs'
 import { Sortable } from 'sortablejs-vue3'
 import type { TreatmentMachineGroup } from '~/types'
 
@@ -35,7 +36,7 @@ const { data: machines } = useLazyFetch('/api/treatment-parameters/available-mac
   watch: [selectedMachines],
 })
 
-async function handleDragDrop(e) {
+async function handleDragDrop(e: SortableEvent) {
   const text: string = e.item.innerHTML
   const matches = text.match(/(\d+) (.+)/)
   if (matches && matches.length) {
@@ -85,8 +86,8 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
 
 <template>
   <q-dialog
-    :model-value="show"
-    @hide="$emit('close')"
+    :model-value="props.show"
+    @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
       <q-card-section class="flex flex-col">
@@ -147,7 +148,7 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
                 class="q-list q-list--bordered q-list--separator overflow-y-auto h-120 w-60"
                 :options="{ group: 'group' }"
               >
-                <template #item="{ element, index }">
+                <template #item="{ element }">
                   <q-item
                     :key="element.machineId"
                     class="draggable"
@@ -169,7 +170,7 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
                 @add="(e) => handleDragDrop(e)"
                 @remove="(e) => handleDragDrop(e)"
               >
-                <template #item="{ element, index }">
+                <template #item="{ element }">
                   <q-item
                     :key="element"
                     class="draggable"

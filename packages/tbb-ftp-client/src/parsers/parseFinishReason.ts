@@ -20,7 +20,7 @@ export function parseFinishReason(content: string) {
   const reasons = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const reason: FinishReason = {
+    const reason: Partial<FinishReason> = {
       reasonId: match[1],
       text: match[2],
       typeId: Number.parseInt(match[3]),

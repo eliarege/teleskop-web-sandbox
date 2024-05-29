@@ -1,4 +1,5 @@
 import { knex } from '~/server/connectionPool'
+import type { CommandType } from '~/types'
 
 export default defineEventHandler(async (event) => {
   const { machineId, commandTypes } = await readBody(event)
@@ -10,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
     if (commandTypes?.length) {
       await trx('BFCOMMANDTYPES')
-        .insert(commandTypes.map(commandType => ({
+        .insert(commandTypes.map((commandType: CommandType) => ({
           machineId: commandType.machineId,
           commandNo: commandType.commandNo,
           commandType: commandType.commandType,

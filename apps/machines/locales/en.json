@@ -355,5 +355,18 @@
   "ttbSaveIOValuesInDatabase": "Save I/O Values In Database",
   "tryingConnection": "Trying Connection...",
   "updateFinished": "Update Finished",
-  "errorLoadingProject": "Error Loading Project"
+  "errorLoadingProject": "Error Loading Project",
+  "chemicalRequestCommands": "Chemical Request Commands",
+  "manualChemicalRequestCommands": "Manual Chemical Request Commands",
+  "paintRequestCommands": "Paint Request Commands",
+  "manualPaintRequestCommands": "Manual Paint Request Commands",
+  "chemicalTankTransferCommands": "Chemical Tank Transfer Commands",
+  "paintTankTransferCommands": "Paint Tank Transfer Commands",
+  "reserveTankTransferCommands": "Reserve Tank Transfer Commands",
+  "pHControl": "pH Control",
+  "takeSample": "Take Sample",
+  "saltRequestCommands": "Salt Request Commands",
+  "genericMaterial1Request": "Generic Material 1 Request",
+  "genericMaterial2Request": "Generic Material 2 Request",
+  "manualMeasurementCommands": "Manual Measurement Commands"
 }

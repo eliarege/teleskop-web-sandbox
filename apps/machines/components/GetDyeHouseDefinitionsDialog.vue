@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Machine } from '~/types'
+
 const props = defineProps<{
   show: boolean
   selected: Machine
@@ -8,7 +10,7 @@ const emit = defineEmits(['close'])
 
 const { t } = useI18n()
 
-const options = ref({
+const options = ref<Record<string, boolean>>({
   users: false,
   manualReasons: false,
   machineIdleReasons: false,
@@ -65,11 +67,31 @@ function reverseSelected() {
         <q-checkbox v-model="options.machineFinishReasons" :label="t('machineFinishReasons')" />
       </div>
       <div class="flex flex-row gap-4 justify-end">
-        <q-btn no-caps :label="t('selectAll')" @click="selectAll" />
-        <q-btn no-caps :label="t('deselectAll')" @click="deselectAll" />
-        <q-btn no-caps :label="t('reverseSelected')" @click="reverseSelected" />
-        <q-btn no-caps :label="t('cancel')" @click="emit('close')" />
-        <q-btn no-caps :label="t('get')" @click="loadDefinitions" />
+        <q-btn
+          no-caps
+          :label="t('selectAll')"
+          @click="selectAll"
+        />
+        <q-btn
+          no-caps
+          :label="t('deselectAll')"
+          @click="deselectAll"
+        />
+        <q-btn
+          no-caps
+          :label="t('reverseSelected')"
+          @click="reverseSelected"
+        />
+        <q-btn
+          no-caps
+          :label="t('cancel')"
+          @click="emit('close')"
+        />
+        <q-btn
+          no-caps
+          :label="t('get')"
+          @click="loadDefinitions"
+        />
       </div>
     </q-card>
   </q-dialog>

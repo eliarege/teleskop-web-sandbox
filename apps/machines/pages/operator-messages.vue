@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FilterableTableColumn } from 'nuxt-base'
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
 
 const { t, d } = useI18n()
 
@@ -9,7 +9,7 @@ const { data: messages } = useLazyFetch('/api/machines/operator-messages', {
   body: {},
 })
 
-const columns = computed(() => ([
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'userId',
     label: t('userId'),
@@ -60,7 +60,7 @@ const columns = computed(() => ([
   },
 ]))
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
   messages.value = await $fetch('/api/machines/operator-messages', {
     method: 'POST',
     body: {
@@ -77,12 +77,12 @@ async function handleFilterSlotsUpdate(updatedValue) {
         :rows="messages"
         :columns="columns"
         class="overflow-y-auto h-160"
-        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+        @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
       >
-        <template #custombody="fails">
+        <template #custombody="props">
           <q-tr>
             <q-td
-              v-for="row in fails.cols"
+              v-for="row in props.cols"
               :key="row"
             >
               <span v-if="row.field === 'sentDate'">

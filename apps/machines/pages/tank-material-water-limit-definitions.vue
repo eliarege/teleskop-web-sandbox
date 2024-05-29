@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
+
 const { t } = useI18n()
 
 const materialTypeMap = [
@@ -7,7 +9,7 @@ const materialTypeMap = [
   { id: 3, name: t('other') },
 ]
 
-const columns = computed(() => ([
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'materialGroupNo',
     label: t('materialType'),
@@ -66,7 +68,7 @@ const columns = computed(() => ([
   },
 ]))
 
-const filters = ref([])
+const filters = ref<FilterableTableFilter[]>([])
 
 const { data: tankMaterialDefinitions, execute } = useLazyFetch('/api/materials/material-tank-water-definitions', {
   method: 'POST',
@@ -74,16 +76,16 @@ const { data: tankMaterialDefinitions, execute } = useLazyFetch('/api/materials/
   default: () => [],
 })
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
   filters.value = updatedValue.map((filter) => {
     if (filter.field === 'materialGroupNo')
-      filter.value = materialTypeMap.find(m => m.name === filter.value).id
+      filter.value = materialTypeMap.find(m => m.name === filter.value)!.id
     return filter
   })
   await execute()
 }
 
-async function popupUpdate(value, rowName, props) {
+async function popupUpdate(value: string, rowName: string, props) {
   const tankDefinition = tankMaterialDefinitions.value[props.rowIndex]
   tankDefinition[rowName] = value
   return await $fetch('/api/materials/material-tank-water-definition', {
@@ -100,16 +102,16 @@ async function popupUpdate(value, rowName, props) {
         :rows="tankMaterialDefinitions"
         :columns="columns"
         class="overflow-y-auto h-160"
-        @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+        @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
       >
-        <template #custombody="tankMaterialDefinitions">
-          <q-tr :props="tankMaterialDefinitions">
+        <template #custombody="props">
+          <q-tr :props="props">
             <q-td
-              v-for="col in tankMaterialDefinitions.cols"
+              v-for="col in props.cols"
               :key="col"
             >
               <span v-if="col.field === 'materialGroupNo'">
-                {{ materialTypeMap.find(m => m.id === col.value).name }}
+                {{ materialTypeMap.find(m => m.id === col.value)?.name ?? '' }}
               </span>
 
               <span v-else-if="col.field === 'preWater' || col.field === 'betweenWater' || col.field === 'postWater'">
@@ -119,7 +121,7 @@ async function popupUpdate(value, rowName, props) {
                   :model-value="col.value"
                   :title="`${col.label}`"
                   buttons
-                  @update:model-value="(e) => popupUpdate(e, col.name, tankMaterialDefinitions)"
+                  @update:model-value="(e) => popupUpdate(e, col.name, props)"
                 >
                   <q-input
                     v-model="scope.value"

@@ -13,7 +13,7 @@ export function parseDigitalOutput(content: string) {
   const outputs = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const output: IOOutput = {
+    const output: Partial<IOOutput> = {
       id: Number.parseInt(match[1]),
       card: Number.parseInt(match[2]),
       channel: Number.parseInt(match[3]),

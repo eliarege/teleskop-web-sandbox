@@ -27,6 +27,6 @@ export default defineEventHandler(async (event) => {
   Select cmd.COMMANDNO, cmd.NAME, prm.PARAMETERINDEX, prm.PARAMSTRING From BFCOMMANDPARAMETERS prm
    LEFT JOIN BFMASTERCOMMANDS cmd
    ON prm.MACHINEID = cmd.MACHINEID AND prm.COMMANDNO = cmd.COMMANDNO
-   WHERE prm.MACHINEID = ${machineId} AND prm.USEDEFAULT = 0
-  `)
+   WHERE prm.MACHINEID = (?) AND prm.USEDEFAULT = 0
+  `, [machineId])
 })

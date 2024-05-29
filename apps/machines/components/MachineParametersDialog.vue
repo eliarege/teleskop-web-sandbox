@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { FilterableTableColumn } from 'nuxt-base'
+import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
 import type { Machine } from '~/types'
 
 const props = defineProps<{
   show: boolean
-  selected: Machine
+  selected: Partial<Machine>
 }>()
 
 const emit = defineEmits(['close'])
 
 const { t } = useI18n()
-const columns = computed(() => ([
+const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'id',
     label: 'Parametre No',
@@ -70,7 +70,7 @@ const { data: params } = useLazyFetch('/api/machines/machine-parameters', {
   body: { machineId: id.value },
 })
 
-async function handleFilterSlotsUpdate(updatedValue) {
+async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
   params.value = await $fetch('/api/machines/machine-parameters', {
     method: 'POST',
     body: {
@@ -84,7 +84,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
 <template>
   <q-dialog
     :model-value="show"
-    @hide="$emit('close')"
+    @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
       <q-card-section>
@@ -98,7 +98,7 @@ async function handleFilterSlotsUpdate(updatedValue) {
           :rows="params"
           :columns="columns"
           class="overflow-y-auto h-160"
-          @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
+          @update-filter-slots="(evt: FilterableTableFilter) => handleFilterSlotsUpdate(evt)"
         />
       </q-card-section>
     </q-card>

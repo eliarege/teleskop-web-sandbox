@@ -13,7 +13,7 @@ export function parseManualReason(content: string) {
   const reasons = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const reason: ManualReason = {
+    const reason: Partial<ManualReason> = {
       manualCode: Number.parseInt(match[1]),
       manualName: match[2],
     }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
 import { klona } from 'klona'
+import type { SortableEvent } from 'sortablejs'
 import type { CommandType } from '~/types'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
@@ -15,19 +16,19 @@ const { t } = useI18n()
 const selectedMachineId = ref()
 
 const commandTypeMaps = reactive<commandTypeMap[]>([
-  { ref: [], value: 100, title: 'Kimyasal İstek Komutları' },
-  { ref: [], value: 101, title: 'Manuel Kimyasal İstek Komutları' },
-  { ref: [], value: 200, title: 'Boya İstek Komutları' },
-  { ref: [], value: 201, title: 'Manuel Boya İstek Komutları' },
-  { ref: [], value: 300, title: 'Kimyasal Kazanı Transfer Komutları' },
-  { ref: [], value: 400, title: 'Boya Kazanı Transfer Komutları' },
-  { ref: [], value: 500, title: 'Rezerve Kazanı Transfer Komutları' },
-  { ref: [], value: 600, title: 'pH Kontrol' },
-  { ref: [], value: 700, title: 'Numune Al' },
-  { ref: [], value: 800, title: 'Tuz İstek Komutları' },
-  { ref: [], value: 810, title: 'Jenerik Materyal 1 İstek' },
-  { ref: [], value: 820, title: 'Jenerik Materyal 2 İstek' },
-  { ref: [], value: 1000, title: 'Manuel Ölçüm Komutları' },
+  { ref: [], value: 100, title: t('chemicalRequestCommands') },
+  { ref: [], value: 101, title: t('manualChemicalRequestCommands') },
+  { ref: [], value: 200, title: t('paintRequestCommands') },
+  { ref: [], value: 201, title: t('manualPaintRequestCommands') },
+  { ref: [], value: 300, title: t('chemicalTankTransferCommands') },
+  { ref: [], value: 400, title: t('paintTankTransferCommands') },
+  { ref: [], value: 500, title: t('reserveTankTransferCommands') },
+  { ref: [], value: 600, title: t('pHControl') },
+  { ref: [], value: 700, title: t('takeSample') },
+  { ref: [], value: 800, title: t('saltRequestCommands') },
+  { ref: [], value: 810, title: t('genericMaterial1Request') },
+  { ref: [], value: 820, title: t('genericMaterial2Request') },
+  { ref: [], value: 1000, title: t('manualMeasurementCommands') },
 ])
 
 const { data: machines } = useLazyFetch('/api/machines/machines', {
@@ -44,7 +45,7 @@ const { data: commands } = useLazyFetch('/api/commands/unused-commands', {
   },
 })
 
-const { data: commandTypes } = useLazyFetch<CommandType[]>('/api/commands/command-types', {
+const { data: commandTypes, refresh } = useLazyFetch<CommandType[]>('/api/commands/command-types', {
   default: () => [],
   immediate: false,
   query: {
@@ -65,20 +66,19 @@ const { data: commandTypes } = useLazyFetch<CommandType[]>('/api/commands/comman
   },
 })
 
-watch(selectedMachineId, (newMachineId, _oldMachineId) => {
-  document.querySelectorAll('.draggable-selected').forEach((el) => {
-    if (el.getAttribute('data-machine-id') !== String(newMachineId)) {
-      el.remove()
-    }
+watch(selectedMachineId, (_newMachineId, _oldMachineId) => {
+  const elements = document.querySelectorAll('[data-command-no]')
+  elements.forEach((el) => {
+    el.remove()
   })
 })
 
-function handleDragDropCommands(e) {
+function handleDragDropCommands(e: SortableEvent) {
   const commandNo = e.item.getAttribute('data-command-no')
   commandTypes.value = commandTypes.value.filter(cmd => cmd.commandNo !== Number(commandNo))
 }
 
-function handleDragDrop(e, commandMap: commandTypeMap) {
+function handleDragDrop(e: SortableEvent, commandMap: commandTypeMap) {
   const commandNo = e.item.getAttribute('data-command-no')
   const commandName = e.item.getAttribute('data-command-name')
   const command = commandTypes.value.find(cmd => cmd.commandNo === Number(commandNo))
@@ -89,7 +89,7 @@ function handleDragDrop(e, commandMap: commandTypeMap) {
       machineId: selectedMachineId.value,
       commandNo: Number(commandNo),
       commandType: commandMap.value,
-      commandName,
+      commandName: commandName ?? '',
     })
   }
 }
@@ -124,12 +124,14 @@ const contextMenuOptions = computed(() => [
       await $fetch('/api/commands/command-types', {
         method: 'PUT',
         body: {
+          machineId: selectedMachineId.value,
           commandTypes: copy.value.map((item: CommandType) => ({
             ...item,
             machineId: selectedMachineId.value,
           })),
         },
       })
+      await refresh()
     },
   },
 ])
@@ -220,9 +222,10 @@ const contextMenuOptions = computed(() => [
         </q-card-section>
       </q-card-section>
       <q-card-actions align="right" class="flex gap-2 ">
-        <q-btn :label="t('cancel')" />
+        <q-btn no-caps :label="t('cancel')" />
         <q-btn
           :label="t('submit')"
+          no-caps
           color="primary"
           @click="handleSubmit"
         />
