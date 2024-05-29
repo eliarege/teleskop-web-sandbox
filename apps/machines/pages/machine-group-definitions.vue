@@ -83,7 +83,7 @@ const machineGroupTypeOptions = [
 
 const changedGroups = ref<MachineGroup[]>([])
 
-async function handleMachineGroupSelect(e: Exclude<MachineGroup, 'groupId'>, group: MachineGroup) {
+async function handleMachineGroupSelect(e: Omit<MachineGroup, 'groupId'>, group: MachineGroup) {
   group.groupType = e.groupType
   changedGroups.value.push(group)
 }
