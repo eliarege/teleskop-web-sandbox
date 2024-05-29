@@ -5,7 +5,7 @@ import soapSchema from '~/utils/soapSchema'
 const wsdl = new WSDL(WSDL_CONTENT, '', {})
 
 export default defineEventHandler(async (event) => {
-  const { ip } = getQuery(event)
+  const { ip } = await readBody(event)
 
   try {
     await $fetch(`http://${ip}:8080`, {

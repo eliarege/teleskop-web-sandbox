@@ -437,9 +437,9 @@ const { notifySuccess, notifyError } = useNotify()
 async function loadProject() {
   try {
     await $fetch('/api/sync/network-connection', {
-      method: 'GET',
+      method: 'POST',
       retry: false,
-      query: {
+      body: {
         ip: selected.value.ip,
       },
     })
@@ -602,9 +602,9 @@ async function checkNetworkConnection(formData: Machine) {
     networkConnectionMessage.value.message = t('tryingConnection')
     networkConnectionMessage.value.color = ''
     await $fetch('/api/sync/network-connection', {
-      method: 'GET',
+      method: 'POST',
       retry: false,
-      query: {
+      body: {
         ip: formData.ip,
       },
     })
