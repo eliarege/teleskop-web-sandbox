@@ -8,6 +8,9 @@ import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vu
 import { commandManager, contextMenuStore } from '~/shared/utils'
 import TBProgramFilterDialog from '~/components/TBProgramFilterDialog.vue'
 import type { ProgramFilter } from '~/shared/types'
+import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
+import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
+import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => boolean
 
@@ -245,3 +248,38 @@ export const filterProgramsCommand: AppCommand = defineAppCommand(() => {
     },
   }
 })
+
+export const printProgramCommand: AppCommand = defineAppCommand(() => {
+  return {
+    name: 'printProgram',
+    async execute(ctx: any) {
+      const machines = await $fetch('/api/machine')
+      console.log(machines)
+      ctx.$q.dialog({
+        component: TBPrintProgramDialog,
+        componentProps: {
+          machines,
+        },
+      })
+      return true
+    },
+  }
+})
+
+export const printProgramListCommand: AppCommand = defineAppCommand(() => {
+  return {
+    name: 'printProgramList',
+    async execute(ctx: any) {
+      const machines = await $fetch('/api/machine')
+      console.log(machines)
+      ctx.$q.dialog({
+        component: TBPrintProgramListDialog,
+        componentProps: {
+          machines,
+        },
+      })
+      return true
+    },
+  }
+})
+
