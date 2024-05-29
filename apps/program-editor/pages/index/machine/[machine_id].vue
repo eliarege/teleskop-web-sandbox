@@ -394,8 +394,6 @@ function handleRowColor(row: ProgramHeader) {
     }
   }
 }
-
-const router = useRouter()
 </script>
 
 <template>
