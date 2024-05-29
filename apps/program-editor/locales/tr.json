@@ -56,6 +56,7 @@
     "sendAllPrograms": "Tüm Programları Gönder",
     "rename": "Yeniden Adlandır",
     "settings": "Ayarlar",
+    "programTypes": "Program Tipleri",
     "help": "Yardım",
     "about": "Hakkında"
   },
@@ -82,6 +83,7 @@
   "no": "Hayır",
   "cancel": "İptal",
   "create": "Oluştur",
+  "submit": "Kaydet",
   "delete": "Sil",
   "change": "Değiştir",
   "send": "Gönder",
@@ -117,6 +119,25 @@
   "changeNameDialog": {
     "_": "Program Adı Değiştir",
     "enterNewName": "Programın yeni adını giriniz."
+  },
+  "changeProcessTypeDialog": {
+    "_": "Program Tipi Düzenleme",
+    "processTypeNo": "Program Tipi Numarası",
+    "processTypeName": "Program Tipi Adı",
+    "note": "Not",
+    "deletionWarning": "Program tipi {type} silinecek! Devam etmek istediğinize emin misiniz?",
+    "createProcessType": {
+      "success": "{no} - {name} program tipi başarıyla oluşturuldu.",
+      "fail": "Program tipi oluşturulamadı."
+    },
+    "deleteProcessType": {
+      "success": "{no} - {name} program tipi başarıyla silindi.",
+      "fail": "Program tipi silinirken hata oluştu."
+    },
+    "updateProcessTypes": {
+      "success": "Program tipleri başarıyla güncellendi.",
+      "fail": "Program tipleri güncellenirken hata oluştu."
+    }
   },
   "contextMenu": {
     "copy": "Kopyala",

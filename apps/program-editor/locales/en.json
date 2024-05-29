@@ -56,6 +56,7 @@
     "sendAllPrograms": "Send All Programs",
     "rename": "Rename",
     "settings": "Settings",
+    "programTypes": "Program Types",
     "help": "Help",
     "about": "About"
   },
@@ -83,6 +84,7 @@
   "cancel": "Cancel",
   "create": "Create",
   "delete": "Delete",
+  "submit": "Submit",
   "change": "Change",
   "apply": "Apply",
   "topbar": {
@@ -117,6 +119,25 @@
   "changeNameDialog": {
     "_": "Change program name",
     "enterNewName": "Enter the new name of the program."
+  },
+  "changeProcessTypeDialog": {
+    "_": "Edit Process Types",
+    "processTypeNo": "Process Type No",
+    "processTypeName": "Process Type Name",
+    "note": "Note",
+    "deletionWarning": "Program type {type} will be deleted! Are you sure you want to continue?",
+    "createProcessType": {
+      "success": "Process type {no} - {name} is created successfully.",
+      "fail": "An error occured while creating process type."
+    },
+    "deleteProcessType": {
+      "success": "Process type {no} - {name} is deleted successfully.",
+      "fail": "An error occured while deleting process type."
+    },
+    "updateProcessTypes": {
+      "success": "Process types updated successfully.",
+      "fail": "An error occured while updating process types."
+    }
   },
   "contextMenu": {
     "copy": "Copy",
