@@ -30,8 +30,8 @@ const columns: QTableProps['columns'] = [
 
 <template>
   <QDialog ref="dialogRef" @hide="onDialogHide">
-    <QCard>
-      <QCardSection class="w-80 flex items-center pb-0">
+    <QCard class="min-w-80">
+      <QCardSection class="flex items-center pb-0">
         <div class="text-6">
           About
         </div>
