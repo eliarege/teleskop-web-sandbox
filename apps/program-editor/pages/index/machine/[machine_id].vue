@@ -11,7 +11,7 @@ import type { ProgramFilter, ProgramHeader, ProgramTable } from '~/shared/types'
 import { PRG_STATE_COLORS, ProgramStatus } from '~/shared/constants'
 import type { AppCommand } from '~/composables/new.commands'
 import { deleteProgramCommand, pasteProgramCommand } from '~/composables/new.commands'
-import { filterToQuery, getExistingFilter } from '~/composables/utils'
+import { clearFilter, filterToQuery, getExistingFilter } from '~/composables/utils'
 import { commandManager, contextMenuStore } from '~/shared/utils'
 
 const { t, locale } = useI18n()
@@ -20,7 +20,7 @@ const route = useRoute()
 const router = useRouter()
 const keycloak = useKeycloak()
 const machineId = Number(route.params.machine_id)
-
+const isProgramFilterExists = ref(getExistingFilter())
 const programs = ref([] as ProgramHeader[])
 async function fetchPrograms(filter?: ProgramFilter) {
   let query
@@ -294,7 +294,12 @@ const contextMenuOptions = computed(() => [
 const ctrl = useKeyModifier('Control')
 
 function handleFilterClick() {
-  commandManager.executeCommand(filterProgramsCommand, { $q, fetchPrograms }, machineId)
+  commandManager.executeCommand(filterProgramsCommand, { $q, fetchPrograms, isProgramFilterExists }, machineId)
+}
+function handleClearFilterClick() {
+  clearFilter()
+  isProgramFilterExists.value = false
+  fetchPrograms()
 }
 
 const filter = ref('')
@@ -435,10 +440,10 @@ function handleRowColor(row: ProgramHeader) {
           />
           <QSpace />
           <QBtn
-            icon="filter_alt"
+            :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt' "
             color="black"
             outline
-            @click="handleFilterClick"
+            @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
           />
         </div>
       </template>

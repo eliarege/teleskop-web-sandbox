@@ -13,12 +13,7 @@ const filter: ProgramFilter = ref({ clearOnChange: false })
 const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 function clearFilters() {
-  setExistingFilter({
-    programNo: 1,
-    programName: '',
-    processType: { value: 1, label: '' },
-    clearOnChange: true,
-  })
+  clearFilter()
   onDialogOK(filter)
 }
 </script>
@@ -70,12 +65,12 @@ function clearFilters() {
           icon="close"
           @click="onDialogCancel"
         />
-        <q-btn
+        <!-- <q-btn
           v-close-popup
           outline
           :label="t('topbar.programFilter.clearFilter')"
           @click="clearFilters"
-        />
+        /> -->
         <q-btn
           v-close-popup
           outline

@@ -240,6 +240,8 @@ export const filterProgramsCommand: AppCommand = defineAppCommand(() => {
         },
       }).onOk(async (filter: ProgramFilter) => {
         await ctx.fetchPrograms(filter)
+        if (ctx?.isProgramFilterExists)
+          ctx.isProgramFilterExists.value = true
         return true
       }).onCancel(() => {
         return false
@@ -283,3 +285,14 @@ export const printProgramListCommand: AppCommand = defineAppCommand(() => {
   }
 })
 
+export const editProgramTypesCommand: AppCommand = defineAppCommand(() => {
+  return {
+    name: 'editProgramTypes',
+    async execute(ctx: any) {
+      ctx.$q.dialog({
+        component: TBEditProgramTypes,
+      })
+      return true
+    },
+  }
+})
