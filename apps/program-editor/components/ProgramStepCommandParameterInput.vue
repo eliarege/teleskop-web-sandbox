@@ -14,8 +14,8 @@ const programParameter: ParameterItem = editor.getPathElement(props.path)
 const model = ref(Number(programParameter.value))
 
 const rules = [
-  (value: any) => !!value || t('input.required', { field: t('program.parameter') }),
-  (value: any) => (value >= props.parameter.minValue && value <= props.parameter.maxValue) || t('valueOutOfRange', { minValue: props.parameter.minValue, maxValue: props.parameter.maxValue }),
+  (value: number | string) => value !== '' || t('input.required', { field: t('program.parameter') }),
+  (value: number | string) => (Number(value) >= props.parameter.minValue && Number(value) <= props.parameter.maxValue) || t('valueOutOfRange', { minValue: props.parameter.minValue, maxValue: props.parameter.maxValue }),
 ]
 
 const options = computed(() => props.parameter.selections || [])
