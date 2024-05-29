@@ -1,12 +1,94 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import TBProgramListDialog from '~/components/TBProgramListDialog.vue'
+import type { TopbarMenuItem } from 'nuxt-base'
+import { breakpointsTailwind } from '@vueuse/core'
 import MachineCommandList from '~/components/MachineCommandList.vue'
 import MachineList from '~/components/MachineList.vue'
-import TBProgramDialog from '~/components/TBProgramDialog.vue'
 import MenuProgram from '~/components/MenuProgram.vue'
 import MenuBar from '~/components/MenuBar.vue'
+import { commandManager, contextMenuStore } from '~/shared/utils'
+
+const { t } = useI18n()
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const sm = breakpoints.greaterOrEqual('sm')
+const $q = useQuasar()
+const route = useRoute()
+const machineId = computed(() => Number(route.params.machine_id))
+
+const tt = (key: string) => toRef(() => t(key))
+
+const items = [
+  {
+    label: tt('menu.system'),
+    subMenu: {
+      items: [[
+        {
+          label: tt('menu.print'),
+          icon: 'print',
+          subMenu: {
+            items: [[
+              { label: tt('menu.programList'), onClick() {
+                commandManager.executeCommand(printProgramListCommand, { $q })
+              } },
+              { label: tt('menu.program'), onClick() {
+                commandManager.executeCommand(printProgramCommand, { $q })
+              } },
+            ]],
+          },
+        },
+        {
+          label: tt('menu.exportToExcel'),
+        },
+      ]],
+    },
+  },
+  { label: tt('menu.tools'), disabled: true },
+  {
+    label: tt('menu.program'),
+    disabled: computed(() => !machineId.value),
+    subMenu: {
+      items: [
+        [
+          {
+            label: tt('menu.newProgram'),
+            icon: 'copyright',
+            shortcut: 'Ctrl+N',
+            onClick() {
+              navigateTo(`/machine/${machineId.value}/program/new`)
+            },
+          },
+        ],
+        [
+          { label: tt('menu.getAllPrograms'), icon: 'download' },
+          { label: tt('menu.sendAllPrograms'), icon: 'upload' },
+        ],
+      ],
+    },
+  },
+  {
+    label: tt('menu.settings'),
+    subMenu: {
+      items: [[
+        { label: tt('menu.programTypes'), onClick() {
+          commandManager.executeCommand(editProgramTypesCommand, { $q })
+        } },
+      ],
+      ],
+    },
+  },
+] as TopbarMenuItem[]
+
+const itemsMobile = [
+  [
+    {
+      label: tt('menu.home'),
+      icon: 'home',
+      to: '/',
+    },
+  ],
+  items,
+] as TopbarMenuItem[][]
 
 const { dark } = useQuasar()
 const route = useRoute()
@@ -14,13 +96,6 @@ const leftDrawerOpen = ref(false)
 const rightDrawerOpen = ref(false)
 const printProgramDialog = ref(false)
 const printProgramListDialog = ref(false)
-// const cookie = useCookie<'auto' | boolean>('dark')
-
-// dark.set(cookie.value ?? 'auto')
-// watch(
-//   () => dark.mode,
-//   mode => cookie.value = mode,
-// )
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
@@ -32,8 +107,47 @@ function toggleRightDrawer() {
 
 <template>
   <QLayout view="hHh LpR fFf">
-    <QHeader :class="dark.isActive ? 'bg-dark-1' : 'bg-white'" class="text-white">
-      <MenuBar />
+    <QHeader
+      bordered
+      class="bg-white text-black !dark:(bg-dark text-white) select-none"
+    >
+      <QToolbar class="min-h-unset">
+        <template v-if="sm">
+          <QToolbarTitle shrink>
+            <NuxtLink to="/">
+              <Icon
+                name="IconEliar"
+                size="2.5rem"
+                class="p-1"
+              />
+            </NuxtLink>
+          </QToolbarTitle>
+          <TopbarButton
+            v-for="(item, index) in items"
+            :key="index"
+            :label="unref(item.label)"
+            :disable="unref(item.disabled)"
+          >
+            <TopbarMenu
+              v-if="item.subMenu"
+              v-bind="item.subMenu"
+            />
+          </TopbarButton>
+        </template>
+        <TopbarButton
+          v-else
+          icon="menu"
+        >
+          <TopbarMenu :items="itemsMobile" />
+        </TopbarButton>
+        <QSpace />
+        <div class="space-x-1">
+          <TopbarAppGrid />
+          <TopbarAuthenticatedUser />
+          <TopbarUnauthenticatedUser />
+          <TopbarLoginButton />
+        </div>
+      </QToolbar>
     </QHeader>
 
     <QDrawer
@@ -79,10 +193,7 @@ function toggleRightDrawer() {
       <MachineCommandList />
     </QDrawer>
   </QLayout>
-  <div>
-    <TBProgramListDialog :vis="printProgramListDialog" @update:vis="e => printProgramListDialog = e" />
-    <TBProgramDialog :vis="printProgramDialog" @update:vis="e => printProgramDialog = e" />
-  </div>
+  <div />
 </template>
 
 <style lang="postcss" scoped>
