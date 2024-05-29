@@ -1,13 +1,36 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
+import { QBtn } from 'quasar'
 import { useEditorStore } from '~/composables/editor'
+
+const props = defineProps<{
+  vis: boolean
+  type?: string
+}>()
 
 const { t } = useI18n()
 const editor = useEditorStore()
+const route = useRoute()
+const router = useRouter()
 </script>
 
 <template>
-  <div>
+  <div v-if="props.vis && props.type === 'programs'">
+    <QBtn
+      :label="t('menu.newProgram')"
+      flat
+      @click="router.push(`/machine/${route.params.machine_id}/program/new`)"
+    />
+    <QBtn
+      :label="t('menu.editProgram')"
+      flat
+      :disable="editor.selectedRows.length <= 0"
+      @click="router.push(`/machine/${route.params.machine_id}/program/${editor.selectedRows[0].programNo}`)"
+    />
+  </div>
+
+  <div v-if="props.vis && props.type === 'editor'">
     <QBtn
       :label="t('menu.save')"
       flat
@@ -42,6 +65,7 @@ const editor = useEditorStore()
       @click="editor.deleteParallelStep()"
     />
   </div>
+  <QSpace else />
 </template>
 
 <style scoped>
