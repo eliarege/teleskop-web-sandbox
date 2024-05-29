@@ -11,7 +11,7 @@ export interface ProgramInfo {
 export interface ProgramFilter {
   programNo?: number
   programName?: string
-  processType?: { value: number, label: string }
+  processType?: ProcessType
   clearOnChange: boolean
 }
 
@@ -26,6 +26,11 @@ export interface ProgramTable {
   updatedAtTBB: Date
 }
 
+export interface ProcessType {
+  label: string
+  value: number
+  description: string
+}
 export interface MachineInfo {
   id: number
   name: string
