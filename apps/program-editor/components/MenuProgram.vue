@@ -25,9 +25,9 @@ const router = useRouter()
     <QBtn
       :label="t('menu.editProgram')"
       flat
-      :disable="editor.selectedRows.length <= 0"
-      @click="router.push(`/machine/${route.params.machine_id}/program/${editor.selectedRows[0].programNo}`)"
     />
+    <!-- :disable="editor.selectedRows.length <= 0"
+      @click="router.push(`/machine/${route.params.machine_id}/program/${editor.selectedRows[0].programNo}`)" -->
   </div>
 
   <div v-if="props.vis && props.type === 'editor'">

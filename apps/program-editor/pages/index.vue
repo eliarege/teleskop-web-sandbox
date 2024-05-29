@@ -91,11 +91,8 @@ const itemsMobile = [
 ] as TopbarMenuItem[][]
 
 const { dark } = useQuasar()
-const route = useRoute()
 const leftDrawerOpen = ref(false)
 const rightDrawerOpen = ref(false)
-const printProgramDialog = ref(false)
-const printProgramListDialog = ref(false)
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
