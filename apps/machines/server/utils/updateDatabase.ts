@@ -919,8 +919,8 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
       })
 
     await trx('BACOMMANDPARAMETERS')
-      .insert(function (this: any) {
-        this.select(machineId, maxVersion, 'COMMANDNO', 'PARAMETERINDEX', 'PARAMSTRING', 'VALUE', 'PARAMETERTYPE', 'SELECTIONLIST', 'SELECTIONVALUES', 'UNITCODE', 'PARAMLOWLIMIT', 'PARAMHIGHLIMIT', 'CONTAINSVARIABLE', 'TEMPERATURE', 'USEDEFAULT', 'ISCOMMANDVARIABLE', 'TBBFORMUL', 'USEFORMULA')
+      .insert(function (this: Knex) {
+        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'PARAMETERINDEX', 'PARAMSTRING', 'VALUE', 'PARAMETERTYPE', 'SELECTIONLIST', 'SELECTIONVALUES', 'UNITCODE', 'PARAMLOWLIMIT', 'PARAMHIGHLIMIT', 'CONTAINSVARIABLE', 'TEMPERATURE', 'USEDEFAULT', 'ISCOMMANDVARIABLE', 'TBBFORMUL', 'USEFORMULA')
           .from('BFCOMMANDPARAMETERS')
           .where('MACHINEID', '=', machineId)
       })
