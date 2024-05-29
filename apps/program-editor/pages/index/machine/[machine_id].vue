@@ -17,6 +17,7 @@ import { commandManager, contextMenuStore } from '~/shared/utils'
 const { t, locale } = useI18n()
 const $q = useQuasar()
 const route = useRoute()
+const router = useRouter()
 const keycloak = useKeycloak()
 const machineId = Number(route.params.machine_id)
 
