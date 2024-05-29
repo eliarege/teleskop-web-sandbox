@@ -67,7 +67,7 @@
     "type": "Tip",
     "updated": "Güncellenme Tarihi",
     "processType": "Proccess Tipi",
-    "parameters": "Parametre",
+    "parameter": "Parametre",
     "command": "Program Komutu"
   },
   "saveProgram": {
