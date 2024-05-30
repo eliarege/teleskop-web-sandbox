@@ -6,17 +6,73 @@ import { useEditorStore } from '~/composables/editor'
 
 const props = defineProps<{
   vis: boolean
-  type?: string
+  path?: string
 }>()
 
 const { t } = useI18n()
 const editor = useEditorStore()
 const route = useRoute()
 const router = useRouter()
+const isDisable = ref(false)
+
+const type = computed(() => props.path?.split('/')[props.path.split('/').length - 2])
+
+const buttons = [
+  { label: 'menu.save', action: 'save' },
+  { label: 'menu.reset', action: 'reset' },
+  { label: 'menu.newStep', action: 'newStep' },
+  { label: 'menu.newParallelStep', action: 'newParallelStep', condition: 'selectedStep' },
+  { label: 'menu.deleteStep', action: 'deleteStep', condition: 'selectedStep' },
+  { label: 'menu.deleteParallelStep', action: 'deleteParallelStep', condition: 'selectedParallelStep' },
+]
+
+function getDisableStatus(button: { label: string, action: string, condition?: string }) {
+  if (isDisable.value) {
+    return true
+  }
+  if (button.condition) {
+    if (button.condition === 'selectedStep') {
+      return editor.selectedStep === -1
+    }
+    if (button.condition === 'selectedParallelStep') {
+      return editor.selectedParallelStep === -1
+    }
+  }
+  return false
+}
+
+function handleButton(btn: string) {
+  isDisable.value = true
+
+  switch (btn) {
+    case 'save':
+      editor.onSubmit()
+      break
+    case 'reset':
+      editor.onReset()
+      break
+    case 'newStep':
+      editor.newStep()
+      break
+    case 'newParallelStep':
+      editor.newParallelStep()
+      break
+    case 'deleteStep':
+      editor.deleteStep()
+      break
+    case 'deleteParallelStep':
+      editor.deleteParallelStep()
+      break
+  }
+
+  setTimeout(() => {
+    isDisable.value = false
+  }, 1000)
+}
 </script>
 
 <template>
-  <div v-if="props.vis && props.type === 'programs'">
+  <div v-if="props.vis && type === 'machine'">
     <QBtn
       :label="t('menu.newProgram')"
       flat
@@ -30,40 +86,15 @@ const router = useRouter()
       @click="router.push(`/machine/${route.params.machine_id}/program/${editor.selectedRows[0].programNo}`)" -->
   </div>
 
-  <div v-if="props.vis && props.type === 'editor'">
-    <QBtn
-      :label="t('menu.save')"
-      flat
-      @click="editor.onSubmit"
-    />
-    <QBtn
-      :label="t('menu.reset')"
-      flat
-      @click="editor.onReset"
-    />
-    <QBtn
-      :label="t('menu.newStep')"
-      flat
-      @click="editor.newStep"
-    />
-    <QBtn
-      :label="t('menu.newParallelStep')"
-      flat
-      :disabled="editor.selectedStep === -1"
-      @click="editor.newParallelStep"
-    />
-    <QBtn
-      :label="t('menu.deleteStep')"
-      flat
-      :disabled="editor.selectedStep === -1"
-      @click="editor.deleteStep()"
-    />
-    <QBtn
-      :label="t('menu.deleteParallelStep')"
-      flat
-      :disable="editor.selectedParallelStep === -1"
-      @click="editor.deleteParallelStep()"
-    />
+  <div v-if="props.vis && type === 'program'" class="flex">
+    <div v-for="(button, index) in buttons" :key="index">
+      <QBtn
+        :label="t(button.label)"
+        flat
+        :disable="getDisableStatus(button)"
+        @click="handleButton(button.action)"
+      />
+    </div>
   </div>
   <QSpace else />
 </template>
