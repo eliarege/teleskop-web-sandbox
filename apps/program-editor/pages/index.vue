@@ -158,14 +158,14 @@ function toggleRightDrawer() {
     </QDrawer>
 
     <QPageContainer>
-      <div :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'" class="flex sticky top-10.5 z-10">
+      <div :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'" class="flex sticky top-10.2 z-10">
         <QBtn
           dense
           flat
           icon="menu"
           @click="toggleLeftDrawer"
         />
-        <MenuProgram :vis="true" :type="route.params.program_no ? 'editor' : 'programs'" />
+        <MenuProgram :vis="true" :path="route.path" />
 
         <QBtn
           dense
