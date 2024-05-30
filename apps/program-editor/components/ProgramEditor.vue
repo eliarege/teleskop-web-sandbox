@@ -7,11 +7,8 @@ import ProgramStepForm from './ProgramStepForm.vue'
 import { useEditorStore } from '~~/composables/editor'
 import type { ProgramStep } from '~/shared/types'
 
-const emit = defineEmits<{
-  (event: 'stepMove', from: number, to: number): void
-}>()
 const editor = useEditorStore()
-let dragged: any | null = null
+let dragged: ProgramStep | null = null
 
 const sortableOptions: SortableOptions & AutoScrollOptions = {
   handle: '.command-drag-handle',
@@ -31,7 +28,8 @@ function onDragStart(event: SortableEvent) {
 
 function onDragEnd(event: SortableEvent) {
   if (isDef(event.newIndex) && isDef(event.oldIndex) && dragged) {
-    emit('stepMove', event.oldIndex, event.newIndex)
+    editor.program.steps.splice(event.oldIndex, 1)
+    editor.program.steps.splice(event.newIndex, 0, dragged)
     dragged = null
   }
 }

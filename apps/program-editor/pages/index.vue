@@ -190,7 +190,6 @@ function toggleRightDrawer() {
       <MachineCommandList />
     </QDrawer>
   </QLayout>
-  <div />
 </template>
 
 <style lang="postcss" scoped>
