@@ -33,7 +33,7 @@ export const useEditorStore = defineStore('editor', () => {
   function createEmptyCommand() {
     return {
       commandId: lastCommandId++,
-      commandNo: 0,
+      commandNo: null,
       parameters: [] as ParameterItem[],
       ioList: [] as ioListItem[],
     }

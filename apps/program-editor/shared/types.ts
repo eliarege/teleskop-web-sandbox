@@ -132,7 +132,7 @@ export interface ProgramStep {
 
 export interface ProgramStepCommand {
   commandId: number
-  commandNo: number
+  commandNo: number | null
   parameters: ParameterItem[]
   ioList: ioListItem[]
 }
