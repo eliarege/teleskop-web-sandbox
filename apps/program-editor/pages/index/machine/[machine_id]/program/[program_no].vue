@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
+import { QForm, useQuasar } from 'quasar'
 import { LoadingSpinner } from 'ui'
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import ProgramTitle from '~/components/ProgramTitle.vue'
 import { useEditorStore } from '~/composables/editor'
 
 const editor = useEditorStore()
+const { locale } = useI18n()
 const { dark } = useQuasar()
-const myForm = ref<any>(null)
+const form = ref<QForm>()
 const route = useRoute()
 
 const machineId = Number(route.params.machine_id)
 const programNo = Number(route.params.program_no)
+
+watch(locale, () => {
+  form.value?.validate()
+})
 
 await editor.fetchMachineCommands(machineId)
 await editor.fetchProgram(machineId, programNo)
@@ -28,7 +33,7 @@ await editor.fetchProgram(machineId, programNo)
     </div>
     <div>
       <QForm
-        ref="myForm"
+        ref="form"
         class="q-gutter-md"
       >
         <div
