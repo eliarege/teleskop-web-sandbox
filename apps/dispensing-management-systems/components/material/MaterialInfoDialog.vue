@@ -267,7 +267,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
             </div>
           </div>
         </div>
-        <div class="button-section">
+        <div class="dialog-button-section">
           <QBtn
             :label="t('Save')"
             color="primary"
@@ -316,24 +316,5 @@ function onCheck(dispenserId: number, isChecked: boolean) {
   flex-grow: 1;
   overflow-y: auto;
   max-height: calc(80vh - 150px);
-}
-
-.button-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  justify-content: space-evenly;
-  padding: 0.5rem;
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
-  background-color: white;
-  box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.2);
-
-}
-
-.body--dark .button-section {
-  background-color: var(--q-dark);
-  box-shadow: 0px -1px 5px rgba(128, 128, 128, 0.2);
 }
 </style>

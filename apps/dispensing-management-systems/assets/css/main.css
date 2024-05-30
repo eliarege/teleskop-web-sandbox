@@ -42,3 +42,22 @@
   white-space: normal;
   color: black
 }
+
+.dialog-button-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: space-evenly;
+  padding: 0.5rem;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background-color: white;
+  box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.2);
+
+}
+
+.body--dark .dialog-button-section {
+  background-color: var(--q-dark);
+  box-shadow: 0px -1px 5px rgba(128, 128, 128, 0.2);
+}
