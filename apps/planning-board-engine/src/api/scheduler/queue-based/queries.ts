@@ -1,8 +1,8 @@
-import { STATUS_CODES } from 'node:http'
-import { addSeconds } from 'date-fns'
-import type { QueueBasedPlannedEventsRaw } from '../../../../types/planning-board'
+import type { QueueBasedActualEventsRaw, QueueBasedPlannedEventsRaw } from '../../../../types/planning-board'
+import { queueBasedEventStatus } from '../../../composables/helper'
 import { knex } from '../../../knexConfig'
-import { updateArchiveQueueEventStates, updateRawQueueEventStates } from './helper'
+import { getMachineIds, getMachines } from '../queries'
+import { mergeEvents } from './helper'
 
 export interface EventReschedule {
   planKey: number
@@ -10,25 +10,29 @@ export interface EventReschedule {
   queueNumber: number
 }
 // GET
-export async function getEvents(startDate: string, endDate: string) {
-  const plannedEvents = updateRawQueueEventStates(await getQueueBasedPlannedEvents(startDate, endDate))
-  const archiveEvents = updateArchiveQueueEventStates(await getQueueBasedArchiveEvents(startDate, endDate))
-  return [...plannedEvents, ...archiveEvents]
+export async function getQueueBasedEvents(startDate: string, endDate: string) {
+  const plannedEvents = await getQueueBasedPlannedEvents(startDate, endDate)
+  const actualEvents = await getQueueBasedActualEvents(startDate, endDate)
+
+  const machines = await getMachineIds()
+
+  return queueBasedEventStatus(mergeEvents(plannedEvents, actualEvents), machines)
 }
-export async function getQueueBasedPlannedEvents(startDate: string, endDate: string) {
-  const events: QueueBasedPlannedEventsRaw[] = await knex.raw(`
+
+export async function getQueueBasedPlannedEvents(startDate: string, endDate: string): Promise<QueueBasedPlannedEventsRaw[]> {
+  return await knex.raw(`
   SELECT *
   FROM (
       SELECT
           p.PLANKEY AS planKey,
           p.MACHINEID AS machineId,
           CASE
-              WHEN p.QUEUENUMBER = 1 THEN CURRENT_TIMESTAMP
+              WHEN p.QUEUENUMBER = 1 THEN GETUTCDATE()
               ELSE DATEADD(second, COALESCE(
               SUM(CASE
                   WHEN d.TheoricalDuration = 0 THEN 28800
                   ELSE d.TheoricalDuration
-              END + 300) OVER (PARTITION BY d.MACHINEIDLIST ORDER BY p.QUEUENUMBER ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0), CURRENT_TIMESTAMP)
+              END + 300) OVER (PARTITION BY d.MACHINEIDLIST ORDER BY p.QUEUENUMBER ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0), GETUTCDATE())
           END as plannedStartDate,
           p.QUEUENUMBER AS queueNumber,
           d.JOBORDER AS jobOrder,
@@ -45,7 +49,8 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
           d.ISSTARTED AS isStarted,
           d.ISSTOPPED AS isStopped,
           d.STARTDATETIME AS startDate,
-          d.Color AS color
+          d.Color AS color,
+          CAST(1 as bit) as 'isPlanned'
       FROM
           PTBATCHPLANQUEUE p
       LEFT JOIN
@@ -58,16 +63,10 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
   ORDER BY
       machineId, queueNumber
   `, [startDate, endDate])
-  return updateRawQueueEventStates(events.map(ev => ({
-    ...ev,
-    startDate: ev.plannedStartDate,
-    endDate: addSeconds(ev.plannedStartDate, ev.theoreticalDuration),
-    percentDone: 0,
-  })))
 }
 
-export async function getQueueBasedArchiveEvents(startDate: string | Date, endDate: string | Date) {
-  const events = await knex.raw(`
+export async function getQueueBasedActualEvents(startDate: string, endDate: string): Promise<QueueBasedActualEventsRaw[]> {
+  return await knex.raw(`
   WITH RankedBatches AS (
     SELECT
       p.BATCHKEY as batchKey,
@@ -76,8 +75,10 @@ export async function getQueueBasedArchiveEvents(startDate: string | Date, endDa
       p.JOBORDER AS jobOrder,
       p.PROGRAMNOLIST AS programNoList,
       p.STARTTIME AS startTime,
-      p.ENDTIME as endTime,
-      p.CANCELTIME as cancelTime,
+      CASE
+      	WHEN p.ENDTIME IS NOT NULL THEN p.ENDTIME
+      	ELSE p.CANCELTIME
+      END AS endTime,
       p.THEORETICDURAT AS theoreticalDuration,
       p.FABRIC_WEIGHT AS fabricWeight,
       p.PARTYNUMBER AS partyNumber,
@@ -87,13 +88,12 @@ export async function getQueueBasedArchiveEvents(startDate: string | Date, endDa
       d.ISSTARTED AS isStarted,
       d.ISSTOPPED AS isStopped,
       d.Color as color,
+      CAST(0 as bit) as 'isPlanned',
       ROW_NUMBER() OVER (PARTITION BY p.PLANKEY ORDER BY p.BATCHREFERENCE DESC) AS RowNum
     FROM
       BADATA AS p
       LEFT JOIN DYBFBATCHPLAN d ON d.PLANKEY = p.PLANKEY
-    WHERE
-      p.STARTTIME BETWEEN ? AND ?
-      AND (d.ISDELETED IS NULL OR d.ISDELETED = 0)
+    WHERE (d.ISDELETED IS NULL OR d.ISDELETED = 0)
       AND d.ISSTARTED = 1
   )
   SELECT
@@ -104,7 +104,6 @@ export async function getQueueBasedArchiveEvents(startDate: string | Date, endDa
     programNoList,
     startTime,
     endTime,
-    cancelTime,
     theoreticalDuration,
     fabricWeight,
     partyNumber,
@@ -113,18 +112,15 @@ export async function getQueueBasedArchiveEvents(startDate: string | Date, endDa
     isDeleted,
     isStarted,
     isStopped,
+    isPlanned,
     color
   FROM RankedBatches
-  WHERE RowNum = 1;
-  `, [startDate, endDate])
-
-  return updateArchiveQueueEventStates(events.map(ev => ({
-    ...ev,
-    endDate: ev.endTime ? ev.endTime : ev.cancelTime,
-    startDate: ev.startTime,
-    percentDone: ev.deviation > 0 ? 100 - ((ev.deviation / ev.theoreticalDuration) * 100) : 0,
-  })))
+  WHERE RowNum = 1
+  AND startTime >= ?
+  OR (endTime BETWEEN ? AND ? OR endTime IS NULL)
+  `, [startDate, startDate, endDate])
 }
+
 export async function checkMachineLastTaskQueue(machineId: number) {
   return await knex({ p: 'PTBATCHPLANQUEUE' })
     .select({
