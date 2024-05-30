@@ -140,21 +140,42 @@ export async function updateEventQueue(previousEventData: EventReschedule, newEv
     await trx('PTBATCHPLANQUEUE')
       .where('PLANKEY', previousEventData.planKey)
       .update({
-        QUEUENUMBER: -1,
-      })
-    await trx('PTBATCHPLANQUEUE')
-      .where('MACHINEID', newEventData.machineId)
-      .andWhere('QUEUENUMBER', '>=', newEventData.queueNumber)
-      .update({
-        QUEUENUMBER: trx.raw('?? + 1', ['QUEUENUMBER']),
+        QUEUENUMBER: 0,
       })
 
-    await trx('PTBATCHPLANQUEUE')
-      .where('MACHINEID', previousEventData.machineId)
-      .andWhere('QUEUENUMBER', '>=', previousEventData.queueNumber)
-      .update({
-        QUEUENUMBER: trx.raw('?? - 1', ['QUEUENUMBER']),
-      })
+    if (newEventData.machineId !== previousEventData.machineId) {
+      await trx('PTBATCHPLANQUEUE')
+        .where('MACHINEID', newEventData.machineId)
+        .andWhere('QUEUENUMBER', '>=', newEventData.queueNumber)
+        .update({
+          QUEUENUMBER: trx.raw('?? + 1', ['QUEUENUMBER']),
+        })
+
+      await trx('PTBATCHPLANQUEUE')
+        .where('MACHINEID', previousEventData.machineId)
+        .andWhere('QUEUENUMBER', '>=', previousEventData.queueNumber)
+        .update({
+          QUEUENUMBER: trx.raw('?? - 1', ['QUEUENUMBER']),
+        })
+    } else {
+      if (previousEventData.queueNumber > newEventData.queueNumber) {
+        await trx('PTBATCHPLANQUEUE')
+          .where('MACHINEID', previousEventData.machineId)
+          .andWhere('QUEUENUMBER', '>=', newEventData.queueNumber)
+          .andWhere('QUEUENUMBER', '<', previousEventData.queueNumber)
+          .update({
+            QUEUENUMBER: trx.raw('?? + 1', ['QUEUENUMBER']),
+          })
+      } else {
+        await trx('PTBATCHPLANQUEUE')
+          .where('MACHINEID', previousEventData.machineId)
+          .andWhere('QUEUENUMBER', '>', previousEventData.queueNumber)
+          .andWhere('QUEUENUMBER', '<=', newEventData.queueNumber)
+          .update({
+            QUEUENUMBER: trx.raw('?? - 1 ', ['QUEUENUMBER']),
+          })
+      }
+    }
 
     await trx('PTBATCHPLANQUEUE')
       .where('PLANKEY', previousEventData.planKey)
