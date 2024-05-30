@@ -1,0 +1,64 @@
+#!/bin/bash
+set -e
+
+DIR=$(dirname $0)
+ROOT_DIR=$(realpath $DIR/..)
+TARGET_DIR="$ROOT_DIR/apps"
+
+APP_NAME=$1
+APP_DIR=$TARGET_DIR/$APP_NAME
+
+if [ -z "$APP_NAME" ]; then
+  echo "App name is not defined"
+fi
+
+echo "Creating Nuxt app $APP_NAME"
+pnpm dlx nuxi@latest init \
+  --no-install \
+  --package-manager pnpm \
+  --no-git-init \
+  --cwd $TARGET_DIR $APP_NAME
+
+## Remove unnecessary files
+cd $APP_DIR
+rm .gitignore README.md public/favicon.ico
+
+## package.json
+tmp=$(mktemp)
+jq --arg name $APP_NAME '
+  .name = $name
+| .dependencies["nuxt-base"] = "workspace:*"
+| .dependencies["unocss-config"] = "workspace:*"
+| .eliar.type = "nuxt"
+| .eliar.outDir = ".output"
+| .eliar.port = 3000
+' package.json > $tmp && mv $tmp package.json
+
+## Add `nuxt-base` to nuxt.config
+node -e "$(cat <<EOF
+const { loadFile, writeFile } = require('magicast')
+const { getDefaultExportOptions } = require('magicast/helpers')
+
+;(async () => {
+  const configMod = await loadFile('./nuxt.config.ts')
+  const config = getDefaultExportOptions(configMod)
+  config.extends = ['nuxt-base']
+  await writeFile(configMod, './nuxt.config.ts')
+})()
+EOF
+)"
+
+## uno.config.ts
+cat << EOF > uno.config.ts
+import { mergeConfigs } from 'unocss'
+import sharedConfig from 'unocss-config'
+
+export default mergeConfigs([sharedConfig])
+EOF
+
+
+pnpm install --ignore-scripts
+pnpm exec nuxt prepare
+
+cd $ROOT_DIR
+pnpm exec eslint --fix ./apps/$APP_NAME
