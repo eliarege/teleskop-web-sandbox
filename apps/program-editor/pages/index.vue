@@ -6,8 +6,8 @@ import { breakpointsTailwind } from '@vueuse/core'
 import MachineCommandList from '~/components/MachineCommandList.vue'
 import MachineList from '~/components/MachineList.vue'
 import MenuProgram from '~/components/MenuProgram.vue'
-import MenuBar from '~/components/MenuBar.vue'
 import { commandManager, contextMenuStore } from '~/shared/utils'
+import ProgramTitle from '~/components/ProgramTitle.vue'
 
 const { t } = useI18n()
 const breakpoints = useBreakpoints(breakpointsTailwind)
@@ -28,12 +28,18 @@ const items = [
           icon: 'print',
           subMenu: {
             items: [[
-              { label: tt('menu.programList'), onClick() {
-                commandManager.executeCommand(printProgramListCommand, { $q })
-              } },
-              { label: tt('menu.program'), onClick() {
-                commandManager.executeCommand(printProgramCommand, { $q })
-              } },
+              {
+                label: tt('menu.programList'),
+                onClick() {
+                  commandManager.executeCommand(printProgramListCommand, { $q })
+                },
+              },
+              {
+                label: tt('menu.program'),
+                onClick() {
+                  commandManager.executeCommand(printProgramCommand, { $q })
+                },
+              },
             ]],
           },
         },
@@ -70,9 +76,12 @@ const items = [
     label: tt('menu.settings'),
     subMenu: {
       items: [[
-        { label: tt('menu.programTypes'), onClick() {
-          commandManager.executeCommand(editProgramTypesCommand, { $q })
-        } },
+        {
+          label: tt('menu.programTypes'),
+          onClick() {
+            commandManager.executeCommand(editProgramTypesCommand, { $q })
+          },
+        },
       ],
       ],
     },
@@ -82,7 +91,7 @@ const items = [
 const itemsMobile = [
   [
     {
-      label: tt('menu.home'),
+      label: tt('base.home'),
       icon: 'home',
       to: '/',
     },
@@ -122,8 +131,8 @@ function toggleRightDrawer() {
           <TopbarButton
             v-for="(item, index) in items"
             :key="index"
-            :label="unref(item.label)"
-            :disable="unref(item.disabled)"
+            :label="toValue(item.label)"
+            :disable="toValue(item.disabled)"
           >
             <TopbarMenu
               v-if="item.subMenu"
@@ -137,6 +146,11 @@ function toggleRightDrawer() {
         >
           <TopbarMenu :items="itemsMobile" />
         </TopbarButton>
+        <div
+          class="flex-grow-2 text-center text-bold"
+        >
+          <ProgramTitle />
+        </div>
         <QSpace />
         <div class="space-x-1">
           <TopbarAppGrid />
