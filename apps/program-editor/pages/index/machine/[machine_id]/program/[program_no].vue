@@ -7,7 +7,6 @@ import { useEditorStore } from '~/composables/editor'
 
 const editor = useEditorStore()
 const { locale } = useI18n()
-const { dark } = useQuasar()
 const form = ref<QForm>()
 const route = useRoute()
 
@@ -36,19 +35,6 @@ await editor.fetchProgram(machineId, programNo)
         ref="form"
         class="q-gutter-md"
       >
-        <div
-          class="p-3 rounded-lg flex justify-center items-center"
-          :class="dark.isActive ? 'bg-dark-2' : 'bg-gray-1'"
-        >
-          <ProgramTitle
-            :program="{
-              machineId: editor.program?.machineId || 0,
-              machineName: editor.program?.machineName || '',
-              programNo: editor.program?.programNo || 0,
-              name: editor.program?.name || '',
-            }"
-          />
-        </div>
         <div class="mb-130">
           <ProgramEditor />
         </div>
