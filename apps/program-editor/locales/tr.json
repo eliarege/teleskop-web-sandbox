@@ -2,7 +2,6 @@
   "app": {
     "name": "Program Editörü"
   },
-  "operator": "Operatör müdahale edebilir",
   "required": "{field} boş olamaz.",
   "tr": "Türkçe",
   "en": "İngilizce",
@@ -12,6 +11,13 @@
   "search": "Ara",
   "searchCommand": "Komut Ara",
   "valueOutOfRange": "{minValue} ile {maxValue} arasında bir değer giriniz",
+  "operator": "Operatör müdahale edebilir",
+  "selectCommand": "Komut Seçiniz",
+  "input": {
+    "required": "{field} boş olamaz.",
+    "unique": "{field} benzersiz olmalıdır.",
+    "invalid": "{field} geçersiz."
+  },
   "programStatusInfo": {
     "_": "Program Durum Renkleri",
     "onlyOnController": "Program sadece cihazda",
@@ -50,6 +56,7 @@
     "sendAllPrograms": "Tüm Programları Gönder",
     "rename": "Yeniden Adlandır",
     "settings": "Ayarlar",
+    "programTypes": "Program Tipleri",
     "help": "Yardım",
     "about": "Hakkında"
   },
@@ -60,7 +67,9 @@
     "stepCount": "Adım Sayısı",
     "type": "Tip",
     "updated": "Güncellenme Tarihi",
-    "processType": "Proccess Tipi"
+    "processType": "Proccess Tipi",
+    "parameter": "Parametre",
+    "command": "Program Komutu"
   },
   "saveProgram": {
     "success": "Program kaydedildi",
@@ -74,6 +83,7 @@
   "no": "Hayır",
   "cancel": "İptal",
   "create": "Oluştur",
+  "submit": "Kaydet",
   "delete": "Sil",
   "change": "Değiştir",
   "send": "Gönder",
@@ -109,6 +119,25 @@
   "changeNameDialog": {
     "_": "Program Adı Değiştir",
     "enterNewName": "Programın yeni adını giriniz."
+  },
+  "changeProcessTypeDialog": {
+    "_": "Program Tipi Düzenleme",
+    "processTypeNo": "Program Tipi Numarası",
+    "processTypeName": "Program Tipi Adı",
+    "note": "Not",
+    "deletionWarning": "Program tipi {type} silinecek! Devam etmek istediğinize emin misiniz?",
+    "createProcessType": {
+      "success": "{no} - {name} program tipi başarıyla oluşturuldu.",
+      "fail": "Program tipi oluşturulamadı."
+    },
+    "deleteProcessType": {
+      "success": "{no} - {name} program tipi başarıyla silindi.",
+      "fail": "Program tipi silinirken hata oluştu."
+    },
+    "updateProcessTypes": {
+      "success": "Program tipleri başarıyla güncellendi.",
+      "fail": "Program tipleri güncellenirken hata oluştu."
+    }
   },
   "contextMenu": {
     "copy": "Kopyala",

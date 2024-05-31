@@ -7,22 +7,20 @@ import { useFuse } from '@vueuse/integrations/useFuse'
 import { EliarModal, LoadingSpinner } from 'ui'
 import { useQuasar } from 'quasar'
 import { capitalize } from '~/server/utils'
-import type { ProgramFilter, ProgramHeader } from '~/shared/types'
+import type { ProgramFilter, ProgramHeader, ProgramTable } from '~/shared/types'
 import { PRG_STATE_COLORS, ProgramStatus } from '~/shared/constants'
 import type { AppCommand } from '~/composables/new.commands'
 import { deleteProgramCommand, pasteProgramCommand } from '~/composables/new.commands'
-import { filterToQuery, getExistingFilter } from '~/composables/utils'
+import { clearFilter, filterToQuery, getExistingFilter } from '~/composables/utils'
 import { commandManager, contextMenuStore } from '~/shared/utils'
 
-const { t } = useI18n()
-const { locale } = useI18n()
-const editor = useEditorStore()
-
+const { t, locale } = useI18n()
 const $q = useQuasar()
 const route = useRoute()
+const router = useRouter()
 const keycloak = useKeycloak()
 const machineId = Number(route.params.machine_id)
-
+const isProgramFilterExists = ref(getExistingFilter())
 const programs = ref([] as ProgramHeader[])
 async function fetchPrograms(filter?: ProgramFilter) {
   let query
@@ -35,6 +33,9 @@ async function fetchPrograms(filter?: ProgramFilter) {
   }
   programs.value = await $fetch(`/api/machine/${machineId}/program?${query || ''}`)
 }
+
+const editor = useEditorStore()
+editor.program = editor.createProgram()
 
 contextMenuStore.setCtx({
   t,
@@ -161,7 +162,6 @@ const contextMenuOptions = computed(() => [
   {
     label: t('contextMenu.deleteProgramsFromMachine'),
     category: 'edit',
-    keybind: '',
     icon: '',
     disabled: false,
     onClick: () => {
@@ -297,7 +297,12 @@ const contextMenuOptions = computed(() => [
 const ctrl = useKeyModifier('Control')
 
 function handleFilterClick() {
-  commandManager.executeCommand(filterProgramsCommand, { $q, fetchPrograms }, machineId)
+  commandManager.executeCommand(filterProgramsCommand, { $q, fetchPrograms, isProgramFilterExists }, machineId)
+}
+function handleClearFilterClick() {
+  clearFilter()
+  isProgramFilterExists.value = false
+  fetchPrograms()
 }
 
 const filter = ref('')
@@ -307,7 +312,7 @@ const PATH_RE = /^\/machine\/([^/]+?)\/?$/
 
 const fullMatch = computed(() => PATH_RE.test(route.path))
 
-const { results: filterResults } = useFuse(debouncedFilter, programs as Ref<any[]>, {
+const { results: filterResults } = useFuse(debouncedFilter, programs as Ref<ProgramTable[]>, {
   matchAllWhenSearchEmpty: true,
   fuseOptions: {
     keys: ['name', 'type'],
@@ -398,31 +403,30 @@ function handleRowColor(row: ProgramHeader) {
     }
   }
 }
-
-const router = useRouter()
 </script>
 
 <template>
-  <QPage class="m-4">
+  <QPage class="q-pa-md">
     <LoadingSpinner v-if="showSpinner" />
     <!-- :loading="pending" -->
     <QTable
       v-if="fullMatch"
       dense
-      :rows="programs"
+      :rows="filteredPrograms"
       :columns="columns"
       row-key="id"
       :pagination="{ rowsPerPage: 24 }"
+      flat
     >
       <template #top>
         <div class="flex justify-between p-2 w-full">
           <QInput
             v-model="filter"
-            class="inline"
             dense
             outlined
             debounce="100"
             icon
+            autocomplete="false"
             :placeholder="t('search')"
           >
             <template #prepend>
@@ -433,16 +437,16 @@ const router = useRouter()
           <QBtn
             icon="add"
             color="black"
-            label="New Program"
+            :label="t('menu.newProgram')"
             outline
             @click="router.push(`/machine/${machineId}/program/new`)"
           />
           <QSpace />
           <QBtn
-            icon="filter_alt"
+            :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt' "
             color="black"
             outline
-            @click="handleFilterClick"
+            @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
           />
         </div>
       </template>
@@ -459,16 +463,12 @@ const router = useRouter()
             v-for="column in columns"
             :key="column.name"
             :props="props"
-            :class="{ 'e-selected': isRowSelected(props.row) }"
-            :style="{ color: `${handleRowColor(props.row)}` }"
-            @click="onRowClick(props.row)"
-            @dblclick="onRowDoubleClick(props.row)"
-            @contextmenu="onRowClick(props.row, true)"
           >
             <q-menu
               v-if="keycloak.authenticated"
               touch-position
               context-menu
+              :transition-duration="0"
             >
               <q-list
                 style="min-width: 300px;"
@@ -482,17 +482,17 @@ const router = useRouter()
                     v-close-popup="!option.disabled"
                     clickable
                     dense
-                    :class="option.disabled ? 'text-gray cursor-not-allowed' : ''"
+                    :disable="option.disabled"
                     @click="event => handleClick(event, option)"
                   >
-                    <q-item-section class="flex w-8 justify-center items-center">
-                      <q-icon :name="option.icon" />
+                    <q-item-section avatar>
+                      <q-icon size="1rem" :name="option.icon" />
                     </q-item-section>
-                    <q-item-section>
+                    <q-item-section class="whitespace-nowrap">
                       {{ option.label }}
                     </q-item-section>
                     <q-space />
-                    <q-item-section class="mr-5">
+                    <q-item-section side>
                       {{ option.keybind }}
                     </q-item-section>
                   </q-item>
@@ -539,18 +539,6 @@ const router = useRouter()
 </template>
 
 <style lang="postcss">
-.q-item__label {
-  padding-left: .5rem;
-}
-.q-item--dense {
-  padding: 2px 0px !important;
-}
-.q-item__section--main {
-  flex: none;
-}
-.q-item__section--main + .q-item__section--main {
-  margin-left: 0px;
-}
 body {
   user-select: none;
 }

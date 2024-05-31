@@ -1,7 +1,8 @@
 import type { Knex } from 'knex'
-import type { Machine, MachineGroup, MachineInfo, ParameterItem, Program, ioListItem } from '../shared/types'
+import type { Machine, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, ioListItem } from '../shared/types'
 import { PError } from './error'
 import { db } from './database'
+import { MSSQL_ERROR } from './constants'
 
 interface TransactionOptions {
   trx?: Knex.Transaction
@@ -97,14 +98,48 @@ export async function groupMachinesByGroup(): Promise<MachineGroup[]> {
 
 /**
  * Return all process types
- * @returns {Promise<{label: string, value: number}[]>}
+ * @returns {Promise<{label: string, value: number, description: string}[]>}
  */
-export async function fetchProcessTypes(): Promise<{ label: string, value: number }[]> {
+export async function fetchProcessTypes(): Promise<ProcessType[]> {
   return await db
     .select({
       value: 'PROCESSCODE',
       label: 'PROCESSNAME',
+      description: 'NOTE',
     })
+    .from('BFPROCESSTYPES')
+}
+export async function createProcessType(type: ProcessType): Promise<any> {
+  try {
+    return await db('BFPROCESSTYPES')
+      .insert({
+        PROCESSCODE: type.value,
+        PROCESSNAME: type.label,
+        NOTE: type.description,
+        BOYAPRGMI: 1,
+      })
+  } catch (e: any) {
+    if (e.number === MSSQL_ERROR.DUPLICATE_PK)
+      throw createError({ statusCode: 400, data: { messageCode: 'PROCESS_TYPE_EXISTS', key: type.value } })
+    throw e
+  }
+}
+export async function updateProcessTypes(types: ProcessType[]): Promise<any> {
+  types.forEach(async (type) => {
+    await db('BFPROCESSTYPES')
+      .update({
+        PROCESSCODE: type.value,
+        PROCESSNAME: type.label,
+        NOTE: type.description,
+      })
+      .where('PROCESSCODE', type.value)
+  })
+  return true
+}
+export async function deleteProcessType(processCode: number): Promise<any> {
+  return await db
+    .del()
+    .where('PROCESSCODE', processCode)
     .from('BFPROCESSTYPES')
 }
 

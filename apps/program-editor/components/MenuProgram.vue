@@ -1,77 +1,102 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
+import { QBtn } from 'quasar'
 import { useEditorStore } from '~/composables/editor'
-import { useNotify } from '~/composables/notify'
+
+const props = defineProps<{
+  vis: boolean
+  path?: string
+}>()
 
 const { t } = useI18n()
 const editor = useEditorStore()
-const { notifySuccess, notifyError } = useNotify()
+const route = useRoute()
+const router = useRouter()
+const isDisable = ref(false)
 
-async function onSubmit() {
-  const firstId = [...editor.errorIds][0]
-  if (firstId) {
-    const el = document.getElementById(firstId)
-    const parentEl = el?.closest('.q-item__section--main')
-    const button = parentEl?.querySelector('button')
+const type = computed(() => props.path?.split('/')[props.path.split('/').length - 2])
 
-    if (button?.children[1].children[0].innerHTML === 'expand_more')
-      button.click()
+const buttons = [
+  { label: 'menu.save', action: 'save' },
+  { label: 'menu.reset', action: 'reset' },
+  { label: 'menu.newStep', action: 'newStep' },
+  { label: 'menu.newParallelStep', action: 'newParallelStep', condition: 'selectedStep' },
+  { label: 'menu.deleteStep', action: 'deleteStep', condition: 'selectedStep' },
+  { label: 'menu.deleteParallelStep', action: 'deleteParallelStep', condition: 'selectedParallelStep' },
+]
 
-    setTimeout(() => {
-      el?.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
-    }, 100)
-
-    notifyError(t('saveProgram.incorrect'))
-  } else {
-    if (await editor.updateProgram()) {
-      notifySuccess(t('saveProgram.success'))
-    } else {
-      notifyError(t('saveProgram.fail'))
+function getDisableStatus(button: { label: string, action: string, condition?: string }) {
+  if (isDisable.value) {
+    return true
+  }
+  if (button.condition) {
+    if (button.condition === 'selectedStep') {
+      return editor.selectedStep === -1
+    }
+    if (button.condition === 'selectedParallelStep') {
+      return editor.selectedParallelStep === -1
     }
   }
+  return false
 }
 
-function onReset() {
-  window.location.reload()
+function handleButton(btn: string) {
+  isDisable.value = true
+
+  switch (btn) {
+    case 'save':
+      editor.onSubmit()
+      break
+    case 'reset':
+      editor.onReset()
+      break
+    case 'newStep':
+      editor.newStep()
+      break
+    case 'newParallelStep':
+      editor.newParallelStep()
+      break
+    case 'deleteStep':
+      editor.deleteStep()
+      break
+    case 'deleteParallelStep':
+      editor.deleteParallelStep()
+      break
+  }
+
+  setTimeout(() => {
+    isDisable.value = false
+  }, 1000)
 }
 </script>
 
 <template>
-  <div>
+  <div v-if="props.vis && type === 'machine'">
     <QBtn
-      :label="t('menu.save')"
+      :label="t('menu.newProgram')"
       flat
-      @click="onSubmit"
+      @click="router.push(`/machine/${route.params.machine_id}/program/new`)"
     />
     <QBtn
-      :label="t('menu.reset')"
+      :label="t('menu.editProgram')"
       flat
-      @click="onReset"
     />
-    <QBtn
-      :label="t('menu.newStep')"
-      flat
-      @click="editor.newStep"
-    />
-    <QBtn
-      :label="t('menu.newParallelStep')"
-      flat
-      :disabled="editor.selectedStep === -1"
-      @click="editor.newParallelStep"
-    />
-    <QBtn
-      :label="t('menu.deleteStep')"
-      flat
-      :disabled="editor.selectedStep === -1"
-      @click="editor.deleteStep()"
-    />
-    <QBtn
-      :label="t('menu.deleteParallelStep')"
-      flat
-      :disable="editor.selectedParallelStep === -1"
-      @click="editor.deleteParallelStep()"
-    />
+    <!-- :disable="editor.selectedRows.length <= 0"
+      @click="router.push(`/machine/${route.params.machine_id}/program/${editor.selectedRows[0].programNo}`)" -->
   </div>
+
+  <div v-if="props.vis && type === 'program'" class="flex">
+    <div v-for="(button, index) in buttons" :key="index">
+      <QBtn
+        :label="t(button.label)"
+        flat
+        :disable="getDisableStatus(button)"
+        @click="handleButton(button.action)"
+      />
+    </div>
+  </div>
+  <QSpace else />
 </template>
 
 <style scoped>

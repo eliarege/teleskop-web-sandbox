@@ -4,9 +4,8 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const { locale, locales } = useI18n()
+const { locale, locales, setLocale } = useI18n()
 const { dark } = useQuasar()
-const editor = useEditorStore()
 
 const menuItems = computed(() => [
   {
@@ -120,7 +119,7 @@ const menuItems = computed(() => [
               clickable
               dense
               :active="locale === lang.code"
-              @click="locale = lang.code"
+              @click="setLocale(lang.code)"
             >
               <QItemSection> {{ t(lang.code) }} </QItemSection>
             </QItem>

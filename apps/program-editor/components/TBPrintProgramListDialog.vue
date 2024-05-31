@@ -1,23 +1,21 @@
 <script setup lang="ts">
 const props = defineProps({
-  vis: Boolean,
+  machines: Array,
 })
-const emit = defineEmits(['update:vis'])
-
+defineEmits([
+  ...useDialogPluginComponent.emits,
+])
 const { t } = useI18n()
-function closeDialog() {
-  emit('update:vis', false)
-}
+
+const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 const selectedOption = ref('selectedMachine')
-const machines = ref([])
-machines.value = await $fetch('/api/machine')
 const selectedMachine = ref()
 const selectedPrinter = ref()
 const printers = ref([1, 2, 3, 4, 5])
 </script>
 
 <template>
-  <q-dialog :model-value="props.vis" persistent>
+  <q-dialog ref="dialogRef" persistent>
     <q-card>
       <q-card-section class="row items-center">
         <div class="text-h6">
@@ -30,7 +28,7 @@ const printers = ref([1, 2, 3, 4, 5])
           flat
           round
           dense
-          @click="closeDialog"
+          @click="onDialogCancel"
         />
       </q-card-section>
 
@@ -72,7 +70,7 @@ const printers = ref([1, 2, 3, 4, 5])
         <q-btn :label="t('printProgramListDialog.print')" />
         <q-btn :label="t('printProgramListDialog.preview')" />
         <q-space />
-        <q-btn :label="t('printProgramListDialog.cancel')" @click="closeDialog" />
+        <q-btn :label="t('printProgramListDialog.cancel')" @click="onDialogCancel" />
       </q-card-section>
     </q-card>
   </q-dialog>

@@ -63,6 +63,7 @@ const rules = [
     :label="props.label"
     :rules="rules"
     hide-bottom-space
+    autocomplete="off"
     outlined
     dense
     suffix="min"

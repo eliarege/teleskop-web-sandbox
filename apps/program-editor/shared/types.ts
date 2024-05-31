@@ -1,10 +1,36 @@
+export interface ProgramInfo {
+  programNo: number
+  name: string
+  type: number
+  updatedAt: Date
+  updatedAtTBB: Date | null
+  programState: number
+  isChanged: boolean
+}
+
 export interface ProgramFilter {
   programNo?: number
   programName?: string
-  processType?: { value: number, label: string }
+  processType?: ProcessType
   clearOnChange: boolean
 }
 
+export interface ProgramTable {
+  isChanged: boolean
+  name: string
+  programNo: number
+  programState: number
+  stepCount: number
+  type: string
+  updatedAt: Date
+  updatedAtTBB: Date
+}
+
+export interface ProcessType {
+  label: string
+  value: number
+  description: string
+}
 export interface MachineInfo {
   id: number
   name: string
@@ -106,7 +132,7 @@ export interface ProgramStep {
 
 export interface ProgramStepCommand {
   commandId: number
-  commandNo: number
+  commandNo: number | null
   parameters: ParameterItem[]
   ioList: ioListItem[]
 }
@@ -220,7 +246,7 @@ export interface SelectionArchiveList {
 export interface Machine {
   id: number
   name: string
-  commands: MachineCommand[]
+  commands: Map<number, MachineCommand>
 }
 
 export interface CommandItem {

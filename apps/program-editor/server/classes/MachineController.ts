@@ -85,7 +85,8 @@ export class MachineController {
               FROM (values (1)) t(x)
               JOIN STRING_SPLIT(REPLACE(P.SELECTIONLIST, '" "', '"&"'), '&', 1) l on 1=1
               JOIN STRING_SPLIT(REPLACE(P.SELECTIONVALUES, '" "', '"&"'), '&', 1) v on l.ordinal = v.ordinal
-              WHERE P.PARAMETERTYPE = 1
+              WHERE P.PARAMETERTYPE = 1 AND P.SELECTIONLIST != '' AND P.SELECTIONVALUES != ''
+              ${typeof editable === 'boolean' ? `AND P.PROGRAMEDITING = ${editable ? 1 : 0}` : ''}
               FOR JSON AUTO, INCLUDE_NULL_VALUES
             ), '[]')
           FROM BFCOMMANDPARAMETERS P
@@ -120,7 +121,7 @@ export class MachineController {
               FOR JSON AUTO, INCLUDE_NULL_VALUES
             ), '[]')
           FROM BFCOMMANDINPUTOUTPUTS IO
-          WHERE C.COMMANDNO = IO.COMMANDNO AND C.MACHINEID = IO.MACHINEID
+          WHERE C.COMMANDNO = IO.COMMANDNO AND C.MACHINEID = IO.MACHINEID AND IO.IOTYPE = 5
           FOR JSON AUTO, INCLUDE_NULL_VALUES
         ), '[]')
       `),
@@ -527,13 +528,13 @@ export class MachineController {
    * @returns {Promise<MachineInfo>} - Makine bilgilerini içeren bir Promise
    */
   @withTransaction
-  async getMachineInfo(): Promise<Machine> {
+  async getMachineInfo(editable?: boolean): Promise<Machine> {
     await hasMachine(this.id)
     const [{ name }] = await this.trx
       .select('MACHINECODE as name')
       .from('BFMACHINES')
       .where('MACHINEID', this.id)
-    const commands = await this.fetchCommands()
+    const commands = await this.fetchCommands(editable)
     return { id: this.id, name, commands }
   }
 

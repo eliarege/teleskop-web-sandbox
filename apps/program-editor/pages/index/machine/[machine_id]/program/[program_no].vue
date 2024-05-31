@@ -1,16 +1,28 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
+import { QForm, useQuasar } from 'quasar'
 import { LoadingSpinner } from 'ui'
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import ProgramTitle from '~/components/ProgramTitle.vue'
 import { useEditorStore } from '~/composables/editor'
 
 const editor = useEditorStore()
-const { dark } = useQuasar()
-const myForm = ref<any>(null)
+const { locale } = useI18n()
+const form = ref<QForm>()
+const route = useRoute()
 
-await editor.fetchMachineCommands()
-await editor.fetchProgram()
+const machineId = Number(route.params.machine_id)
+const programNo = Number(route.params.program_no)
+
+watch(locale, () => {
+  form.value?.validate()
+})
+
+await editor.fetchMachineCommands(machineId)
+await editor.fetchProgram(machineId, programNo)
+
+/*
+  TODO: Save, Reset, NewStep, NewParallelStep, DeleteStep, DeleteParallelStep
+*/
 </script>
 
 <template>
@@ -20,24 +32,10 @@ await editor.fetchProgram()
     </div>
     <div>
       <QForm
-        ref="myForm"
+        ref="form"
         class="q-gutter-md"
       >
-        <div
-          class="p-3 rounded-lg flex justify-center items-center"
-          style="font-size: x-small"
-          :class="dark.isActive ? 'bg-dark-2' : 'bg-gray-2'"
-        >
-          <ProgramTitle
-            :program="{
-              machineId: editor.program?.machineId || 0,
-              machineName: editor.program?.machineName || '',
-              programNo: editor.program?.programNo || 0,
-              name: editor.program?.name || '',
-            }"
-          />
-        </div>
-        <div>
+        <div class="mb-130">
           <ProgramEditor />
         </div>
       </QForm>

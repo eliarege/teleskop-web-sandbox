@@ -84,7 +84,7 @@ export function getMachineCommand(commandNo: number, parameterOrIoList?: 'parame
   MachineCommand | CommandParameters | CommandIO | ParameterSelections | CommandIOSelection | MachineCommand[] | CommandParameters[] | CommandIO[] | ParameterSelections[] | CommandIOSelection[] | undefined {
   const editor = useEditorStore()
 
-  const command: MachineCommand | undefined = editor.machineCommands.get(commandNo)
+  const command: MachineCommand | undefined = editor.machine.commands.get(commandNo)
 
   if (!command)
     return undefined
@@ -228,23 +228,26 @@ export function compareProgram(programA: Program, programB: Program, noEmitOnDif
   return true
 }
 
-let existingFilter: ProgramFilter = {
+let existingFilter: ProgramFilter | null = {
   programNo: 1,
   programName: '',
   processType: { value: 1, label: '' },
   clearOnChange: true,
 }
 
-export function setExistingFilter(filter: ProgramFilter) {
+export function setExistingFilter(filter: ProgramFilter | null) {
   existingFilter = filter
 }
 
 export function getExistingFilter() {
-  if (existingFilter.clearOnChange)
+  if (existingFilter && existingFilter.clearOnChange)
     return false
   return existingFilter
 }
 
+export function clearFilter() {
+  setExistingFilter(null)
+}
 export function filterToQuery(filter: ProgramFilter): string {
   let query = ''
   if (filter.programNo)

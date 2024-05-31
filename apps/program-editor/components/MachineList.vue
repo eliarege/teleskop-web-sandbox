@@ -1,89 +1,83 @@
 <script lang="ts" setup>
-import type { QTreeNode } from 'quasar'
-
-const props = defineProps({
-  isTicked: {
-    required: false,
-    type: Boolean,
-    default: false,
-  },
-})
-const emit = defineEmits(['update:ticked'])
+import type { QList } from 'quasar'
+import type { MachineGroup, MachineInfo } from '~/shared/types'
 
 const route = useRoute()
+const editor = useEditorStore()
 
-const { data: machineGroup } = useFetch('/api/machine-group', { key: 'Machine Groups', transform: markRaw })
-const { data: allMachine } = useFetch('/api/machine', { key: 'Machines', transform: markRaw })
+const { data: machineGroups } = useFetch<MachineGroup[]>('/api/machine-group')
+const { data: machines } = useFetch<MachineInfo[]>('/api/machine')
 
-const ticked = ref([])
+const machineGroupsWithMachines = computed(() => {
+  if (!machineGroups.value || !machines.value)
+    return []
 
-const MACHINE_PATH_RE = /^\/machine\/\d+$/
-
-const nodes = computed(() =>
-  machineGroup.value
-    ?.filter(group => group.machines.length > 0)
-    .map<QTreeNode>(group => ({
-      id: group.groupId,
-      label: group.name,
-      selectable: false,
-      children: group.machines
-        .map<QTreeNode>(machine => ({
-          id: `${group.groupId}-${machine.id}`,
-          label: machine.name,
-          selectable: true,
-          machineId: machine.id,
-          children: [],
-        })),
-    })) || [],
-)
-
-const expanded = ref([] as (number | string)[])
-
-watchOnce(nodes, () => {
-  expanded.value = nodes.value.map(node => node.id)
+  return machineGroups.value.map(group => ({
+    ...group,
+    machines: machines.value!.filter(machine => machine.groupId === group.groupId),
+  }))
 })
 
-const selected = computed(() => {
-  if (route.path.startsWith('/machine') && typeof route.params.machine_id === 'string') {
-    const id = Number.parseInt(route.params.machine_id)
-    const machine = allMachine.value?.find(m => m.id === id)
-    if (machine) {
-      return `${machine.groupId}-${machine.id}`
-    }
+watch(() => [machineGroupsWithMachines.value.length, route.path], () => {
+  if (route.path === '/') {
+    const firstMachine = machineGroupsWithMachines.value.find(group => group.machines.length)?.machines[0]
+    if (firstMachine)
+      editor.changeMachine(firstMachine.id, firstMachine.name)
   }
-  return null
-})
+}, { immediate: true })
+
 async function onUpdateSelected(selection: string) {
-  const editor = useEditorStore()
-  editor.machineCommands.clear()
+  editor.program = editor.createProgram()
+
   if (selection) {
     const id = Number.parseInt(selection.split('-')[1])
-    // Replace only if navigating from /machine/:id
-    const replace = MACHINE_PATH_RE.test(route.path)
-    await navigateTo({
-      path: `/machine/${id}`,
-      replace,
-    })
+    const name = machines.value?.find(machine => machine.id === id)?.name || ''
+    editor.changeMachine(id, name)
   } else {
     await navigateTo('/')
   }
 }
+
+const thumbStyle = { opacity: '0' }
 </script>
 
 <template>
-  <QTree
-    v-model:expanded="expanded"
-    v-model:ticked="ticked"
-    :tick-strategy="props.isTicked ? 'leaf' : 'none'"
-    class="q-pa-lg"
-    :selected="selected"
-    :nodes="nodes"
-    node-key="id"
-    dense
-    no-selection-unset
-    selected-color="primary"
-    no-nodes-label="No machines available"
-    @update:ticked="e => emit('update:ticked', e)"
-    @update:selected="e => props.isTicked ? '' : onUpdateSelected(e)"
-  />
+  <div class="q-pa-md">
+    <QScrollArea
+      :thumb-style="thumbStyle"
+      style="height: calc(100vh - 80px); max-width: 400px;"
+    >
+      <QList
+        dense
+        borderless
+      >
+        <template v-for="group in machineGroupsWithMachines" :key="group.groupId">
+          <QExpansionItem
+            v-if="group.machines && group.machines.length > 0"
+            :label="group.name"
+            default-opened
+            header-class="bg-gray-2 text-black"
+            borderless
+            dense
+          >
+            <QItem
+              v-for="machine in group.machines"
+              :key="machine.id"
+              v-ripple
+              :active="route.params.machine_id === `${machine.id}`"
+              active-class="bg-blue-3 text-black"
+              borderless
+              clickable
+              dense
+              @click="onUpdateSelected(`${machine.groupId}-${machine.id}`)"
+            >
+              <QItemSection dense>
+                {{ machine.name }}
+              </QItemSection>
+            </QItem>
+          </QExpansionItem>
+        </template>
+      </QList>
+    </QScrollArea>
+  </div>
 </template>

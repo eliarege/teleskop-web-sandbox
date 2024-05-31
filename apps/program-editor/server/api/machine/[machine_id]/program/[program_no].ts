@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
     return program
   } else if (event.method === 'DELETE') {
     const body = await readBody(event)
+    // TODO: Refactor selectedOption, dont change backend code based on frontend
     if ([1, 2].includes(body.selectedOption))
       return await machine.deleteProgramFromDatabase(programNo)
     if ([1, 3].includes(body.selectedOption))

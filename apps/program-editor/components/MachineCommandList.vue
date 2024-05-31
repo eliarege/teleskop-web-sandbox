@@ -2,22 +2,35 @@
 import { Sortable } from 'sortablejs-vue3'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
-import type { SortableOptions } from 'sortablejs'
+import type { SortableEvent, SortableOptions } from 'sortablejs'
+import { isDef } from 'utils'
 import { PRG_STATE_COLORS } from '~/shared/constants'
 import { useEditorStore } from '~/composables/editor'
 import type { MachineCommand } from '~/shared/types'
 
-const editor: EditorStore = useEditorStore()
+const editor = useEditorStore()
 const { t } = useI18n()
 const { dark } = useQuasar()
+
+const sortableOptions = computed<SortableOptions>(() => ({
+  disabled: !editor.isDragging,
+  sort: false,
+  group: {
+    name: 'machine-command-list',
+    pull: 'clone',
+    put: false,
+  },
+}))
 
 const searchQuery = ref('')
 const filteredCommands = computed(() => {
   const query = searchQuery.value.toLowerCase()
-  const commandsArray = Array.from(editor.machineCommands.values())
-  return commandsArray.filter(command =>
+  const commandsArray = editor.machine?.commands ? Array.from(editor.machine?.commands.values()) : []
+  return commandsArray.filter(command => (
     command.commandNo.toString().includes(query)
-    || command.name.toLowerCase().includes(query),
+    || command.name.toLowerCase().includes(query)
+  )
+  && command.commandType === 0,
   ) as MachineCommand[]
 })
 
@@ -28,23 +41,56 @@ const programStatus = [
   { label: t('programStatusInfo.changedOnTeleskop'), color: PRG_STATE_COLORS.CHANGED_ON_TELESKOP },
   { label: t('programStatusInfo.changedOnMachine'), color: PRG_STATE_COLORS.CHANGED_ON_MACHINE },
 ]
+
+let draggedCommand: any = null
+
+function onDragStart(event: SortableEvent) {
+  if (isDef(event.oldIndex)) {
+    draggedCommand = editor.machine?.commands.get(Number(event.item.id))
+  }
+}
+
+function onDragEnd(event: SortableEvent) {
+  if (event.pullMode === 'clone' && isDef(event.newIndex) && event.to !== event.from && draggedCommand) {
+    const parent = event.item.parentElement!
+    parent.removeChild(event.item)
+
+    const isParallelCommand = parent.classList.contains('parallel-commands') || false
+    if (isParallelCommand) {
+      const index = Number.parseInt(parent.getAttribute('data-index') || '-1')
+      if (index > -1) {
+        editor.newParallelStepCommand(draggedCommand.commandNo, index)
+      }
+    } else {
+      editor.newStepCommand(draggedCommand.commandNo, event.newIndex - 1)
+    }
+
+    draggedCommand = null
+  }
+}
 </script>
 
 <template>
   <div class="machine-command-list-container">
     <QInput
-      v-if="editor.machineCommands.size"
+      v-if="editor.machine?.commands.size"
       v-model="searchQuery"
       :label="t('searchCommand')"
       class="px-5 pt-5 pb-5 sticky-input"
       dense
       outlined
     />
-    <div class="machine-command-list">
-      <div class="px-5 e-div-y machine-command-list">
+    <Sortable
+      :list="filteredCommands"
+      class="px-5 pb-10 e-div-y machine-command-list"
+      :item-key="item => item.commandNo"
+      :options="sortableOptions"
+      @start="onDragStart"
+      @end="onDragEnd"
+    >
+      <template #item="{ element: command }: { element: any }">
         <QItem
-          v-for="command in filteredCommands"
-          :key="command.commandNo"
+          :id="command.commandNo"
           class="machine-command"
           dense
           tag="span"
@@ -55,9 +101,13 @@ const programStatus = [
             </QItemLabel>
           </QItemSection>
         </QItem>
-      </div>
-    </div>
-    <div class="w-full bottom-0 p-3" :class="dark.isActive ? 'bg-dark-1' : 'bg-white'">
+      </template>
+    </Sortable>
+    <div
+      v-if="!editor.machine?.commands.size"
+      class="w-full bottom-0 p-3"
+      :class="dark.isActive ? 'bg-dark-1' : 'bg-white'"
+    >
       <div v-for="stat in programStatus" :key="stat.color">
         <div :style="{ color: stat.color }">
           {{ stat.label }}
@@ -90,6 +140,7 @@ const programStatus = [
   @apply h-full;
   @apply flex flex-col;
   @apply relative;
+  @apply overflow-auto;
 }
 .machine-command-list {
   @apply flex-1;

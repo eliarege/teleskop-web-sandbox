@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import type { ParameterItem, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { QSelect } from 'quasar'
+import type { ProgramStepCommand } from '~/shared/types'
+import { useEditorStore } from '~~/composables/editor'
 
 const props = defineProps<{
   path: string
@@ -9,8 +11,26 @@ const editor = useEditorStore()
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
 const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? 0 : 3
 
+const select = ref<QSelect>()
+const id = useId()
+
+const { t } = useI18n()
+
+watch(() => select.value?.modelValue, () => {
+  if (programCommand.commandNo === null) {
+    editor.errorIds.add(id)
+    select.value?.focus()
+  } else {
+    editor.errorIds.delete(id)
+  }
+})
+
+const rules = [
+  (value: any) => !!value,
+]
+
 const options = computed(() => (
-  Array.from(editor.machineCommands.values())
+  Array.from(editor.machine.commands.values())
     .filter(({ commandType }) =>
       (isMainCommand === 0 && commandType === 0)
       || (isMainCommand === 3 && commandType === 0)
@@ -22,50 +42,34 @@ const options = computed(() => (
     }))
 ))
 
-function updateCommand() {
-  const machineCommand = editor.machineCommands.get(programCommand.commandNo)
-
-  if (machineCommand) {
-    programCommand.commandNo = machineCommand.commandNo
-
-    programCommand.parameters = machineCommand.parameters
-      .filter(parameter => parameter.editable)
-      .map(parameter => ({
-        index: parameter.index,
-        value: parameter.defaultValue,
-      }))
-
-    programCommand.ioList = machineCommand.ioList
-      .filter(io => io.selectable)
-      .map(io => ({
-        ioId: io.physicalId,
-        ioIndex: io.index,
-        value: io.selections
-          .filter(selection => selection.defaultValue)
-          .map(selection => [selection.type, selection.physicalId]),
-      }))
-  }
-}
+const label = computed(() => {
+  return !programCommand.commandNo ? t('selectCommand') : undefined
+})
 </script>
 
 <template>
-  <div class="pt-2 pb-2">
+  <div>
     <QSelect
-      v-model="programCommand.commandNo"
+      ref="select"
+      :model-value="programCommand.commandNo"
       :options="options"
+      :label="label"
+      :rules="rules"
+      :for="id"
       map-options
+      hide-bottom-space
       emit-value
       style="width: 250px"
       options-dense
       outlined
       dense
       auto-close
-      @update:model-value="updateCommand"
+      @update:model-value="editor.updateCommand(programCommand, $event)"
     >
       <template #no-option>
         <QItem>
           <QItemSection>
-            No results
+            {{ t('selectCommand') }}
           </QItemSection>
         </QItem>
       </template>

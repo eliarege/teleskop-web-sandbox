@@ -1,53 +1,81 @@
 <script setup lang="ts">
-import type { QInputProps } from 'quasar'
-
-const props = defineProps<{ config: QInputProps }>()
-const emit = defineEmits(['update:config'])
-
-function onKeydownPreventNonNumerical(event, val) {
-  if (!event.ctrlKey && event.key.length === 1 && (!/[\d.]/.test(event.key) || val === '0' || (event.key === '.' && val.includes('.')))) {
-    event.preventDefault()
+const props = withDefaults(defineProps<{
+  hideArrows?: boolean
+  integer?: boolean
+}>(), {
+  hideArrows: true,
+  integer: false,
+})
+const model = defineModel()
+function onKeydownPreventNonNumerical(event: KeyboardEvent) {
+  if (!event.ctrlKey && event.key.length === 1 && !/[\d.]/.test(event.key)) {
+    return event.preventDefault()
   }
+
+  if (props.integer && event.key === '.') {
+    return event.preventDefault()
+  }
+  removeLeadingZeros(event)
 }
 
-function onPastePreventNonNumerical(event) {
+function onPastePreventNonNumerical(event: ClipboardEvent) {
+  if (!event.clipboardData)
+    return
+
   if (!event.clipboardData.types.includes('text/plain')) {
     return event.preventDefault()
   }
+
   const data = event.clipboardData.getData('text/plain')
+  event.clipboardData.setData('text/plain', data.replace(/^0+([1-9])/, ''))
+
   if (!/^[\d.]+$/.test(data)) {
     return event.preventDefault()
   }
-  if ((data.indexOf('.') !== data.lastIndexOf('.')))
+
+  if (props.integer && (data.indexOf('.') !== data.lastIndexOf('.')))
     return event.preventDefault()
 }
 
-function onDrop(event) {
-  event.preventDefault()
+function removeLeadingZeros(event: KeyboardEvent) {
+  const target: EventTarget = event.target
+  if (event.key === '0' && target.value === '0') {
+    return event.preventDefault()
+  } else if (target.value.length === 1 && target.value[0] === '0') {
+    target.value = ''
+  }
 }
 
-// import type { QInputProps } from 'quasar'
-// import { NumberInput } from 'ui'
-
-// const config = ref({
-//   modelValue: 1,
-// } as QInputProps)
+function onDrop(event: DragEvent) {
+  event.preventDefault()
+}
 </script>
-<!--
-<template>
-  <NumberInput :config="config" @update:config="c => config = c" />
-</template> -->
 
 <template>
-  <div>
-    <q-input
-      v-bind="config"
-      type="number"
-      :min="0"
-      @keydown="(e) => onKeydownPreventNonNumerical(e, config.modelValue)"
-      @paste="onPastePreventNonNumerical"
-      @drop="onDrop"
-      @update:model-value="emit('update:config', config)"
-    />
-  </div>
+  <q-input
+    v-model="model"
+    class="input-number"
+    :class="{ 'hide-arrows': hideArrows, 'integer': integer }"
+    type="number"
+    @keydown="onKeydownPreventNonNumerical"
+    @paste="onPastePreventNonNumerical"
+    @drop="onDrop"
+  />
 </template>
+
+<style lang="postcss">
+.input-number.hide-arrows  {
+  /* Chrome, Safari, Edge, Opera */
+  & input::-webkit-outer-spin-button,
+  & input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  & input[type=number] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+}
+</style>

@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import InputNumber from '~/components/InputNumber.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useNotify } from '~/composables/notify'
-
-const keycloak = useKeycloak()
-console.log(keycloak)
+import type { ProgramInfo } from '~/shared/types'
 
 const { t } = useI18n()
 const editor = useEditorStore()
 const { notifySuccess, notifyError } = useNotify()
 const { $router } = useNuxtApp()
-const machineId = Number(useRoute().params.machine_id)
 const allProcessTypes: any = ref([])
-allProcessTypes.value = await editor.fetchAllProcessTypes()
 const machineName = ref<string>()
+const allProgram = ref<ProgramInfo[]>([])
+
+const machineId = Number(useRoute().params.machine_id)
+allProgram.value = await $fetch(`/api/machine/${machineId}/program`)
+allProcessTypes.value = await editor.fetchAllProcessTypes()
 machineName.value = await editor.fetchAllMachine().then(machines => machines.find(machine => machine.id === machineId)?.name)
 
 const programNo = ref<number>()
@@ -40,13 +42,13 @@ async function onSubmit() {
     isChanged: false,
     tbbProgramChangedEvent: false,
   }
-  console.log(processType.value)
+
   if (!programNo.value) {
-    notifyError(t('required', { field: t('program.programNo') }))
+    notifyError(t('input.required', { field: t('program.programNo') }))
   } else if (!programName.value) {
-    notifyError(t('required', { field: t('program.name') }))
+    notifyError(t('input.required', { field: t('program.name') }))
   } else if (processType.value === null || processType.value === undefined) {
-    notifyError(t('required', { field: t('program.processType') }))
+    notifyError(t('input.required', { field: t('program.processType') }))
   } else {
     if (await editor.insertProgram()) {
       notifySuccess(t('saveProgram.success'))
@@ -60,58 +62,69 @@ async function onSubmit() {
 function onCancel() {
   $router.push(`/machine/${machineId}/`)
 }
+
+const rules = [
+  (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
+  (val: string) => allProgram.value.findIndex(prg => prg.programNo === Number(val)) === -1 || t('input.unique', { field: t('program.programNo') }),
+]
 </script>
 
 <template>
-  <div class="pt-10 row justify-center content-center">
-    <QCard class="q-pa-md" style="width: 500px">
-      <QCardSection>
-        <div class="text-h6">
-          {{ t('menu.newProgram') }}
-        </div>
-      </QCardSection>
+  <div class="pt-10 flex justify-center">
+    <QForm @submit="onSubmit" @reset="onCancel">
+      <QCard class="rounded-2xl" style="width: 500px">
+        <QCardSection>
+          <div class="text-h6 text-center">
+            {{ t('menu.newProgram') }} - {{ machineName }}
+          </div>
+        </QCardSection>
 
-      <QCardSection class="q-pt-none">
-        <QInput
-          v-model="programNo"
-          type="number"
-          :label="t('program.programNo')"
-          :rules="[val => !!val || t('required', { field: t('program.programNo') })]"
-        />
-        <QInput
-          v-model="programName"
-          :label="t('program.name')"
-          :rules="[val => !!val || t('required', { field: t('program.name') })]"
-        />
-        <QSelect
-          v-model="processType"
-          :options="allProcessTypes"
-          :label="t('program.programState')"
-          options-dense
-          map-options
-          emit-value
-        />
-        <QCheckbox
-          v-model="operator"
-          style="padding-top: 10px;"
-          :label="t('operator')"
-        />
-      </QCardSection>
+        <QCardSection class="q-pa-lg ">
+          <InputNumber
+            v-model="programNo"
+            type="positive-integer"
+            :label="t('program.programNo')"
+            :maxlength="10"
+            :rules="rules"
+          />
+          <QInput
+            v-model="programName"
+            :label="t('program.name')"
+            :rules="[val => !!val || t('input.required', { field: t('program.name') })]"
+          />
+          <QSelect
+            v-model="processType"
+            :options="allProcessTypes"
+            :label="t('program.programState')"
+            options-dense
+            :rules="[val => !!val || t('input.required', { field: t('program.programState') })]"
+            map-options
+            emit-value
+          />
+          <QCheckbox
+            v-model="operator"
+            :label="t('operator')"
+          />
+        </QCardSection>
 
-      <QCardActions align="right">
-        <QBtn
-          flat
-          :label="t('cancel')"
-          @click="onCancel"
-        />
-        <QBtn
-          flat
-          :label="t('create')"
-          color="primary"
-          @click="onSubmit"
-        />
-      </QCardActions>
-    </QCard>
+        <QCardActions align="right" class="q-pa-md bg-gray-1">
+          <QBtn
+            flat
+            :label="t('cancel')"
+            class="q-mr-sm"
+            type="reset"
+          />
+          <QBtn
+            flat
+            :label="t('create')"
+            class=" bg-primary text-white"
+            type="submit"
+            :loading="editor.isloading"
+            :disable="editor.isloading"
+          />
+        </QCardActions>
+      </QCard>
+    </QForm>
   </div>
 </template>
 

@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { klona } from 'klona/lite'
-import type { MachineCommand, ParameterItem, Program, ProgramStep, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { CommandIO, Machine, MachineCommand, MachineInfo, ParameterItem, Program, ProgramStep, ProgramStepCommand, ioListItem } from '~/shared/types'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
 export const useEditorStore = defineStore('editor', () => {
   const program = ref<Program>(createProgram())
-  const machineCommands = ref<Map<number, MachineCommand>>(new Map())
+  const machine = ref<Machine>(createMachine())
   const selectedStep = ref<number>(-1)
   const selectedParallelStep = ref<number>(-1)
   const route = useRoute()
@@ -16,14 +16,31 @@ export const useEditorStore = defineStore('editor', () => {
   let isLoading = false
   let isCommandLoading = false
   const isIncorrectInput = ref<number>(0)
-  const isDragging = false
+  const isDragging = true
 
+  const { t } = useI18n()
   const errorIds = ref(new Set<string>())
+  const { notifySuccess, notifyError } = useNotify()
+
+  async function changeMachine(id: number, name: string) {
+    const MACHINE_PATH_RE = /^\/machine\/\d+$/
+    machine.value = {
+      id,
+      name,
+      commands: new Map(),
+    }
+    // Replace only if navigating from /machine/:id
+    const replace = MACHINE_PATH_RE.test(route.path)
+    await navigateTo({
+      path: `/machine/${id}`,
+      replace,
+    })
+  }
 
   function createEmptyStep() {
     return {
       stepId: lastStepId++,
-      mainCommand: {} as ProgramStepCommand,
+      mainCommand: createEmptyCommand(),
       parallelCommands: [] as ProgramStepCommand[],
     }
   }
@@ -31,14 +48,15 @@ export const useEditorStore = defineStore('editor', () => {
   function createEmptyCommand() {
     return {
       commandId: lastCommandId++,
-      commandNo: 0,
+      commandNo: null,
       parameters: [] as ParameterItem[],
       ioList: [] as ioListItem[],
     }
   }
 
   function newStep() {
-    const step = createEmptyStep()
+    const emptyStep = createEmptyStep()
+
     let index = 0
     if (selectedStep.value !== -1) {
       index = selectedStep.value
@@ -47,19 +65,96 @@ export const useEditorStore = defineStore('editor', () => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
     }
 
-    step.parallelCommands = index > 0 ? klona(program.value.steps[index].parallelCommands) : []
-    for (const command of step.parallelCommands) {
+    emptyStep.parallelCommands = index > 0 ? klona(program.value.steps[index].parallelCommands) : []
+    for (const command of emptyStep.parallelCommands) {
       command.commandId = lastCommandId++
     }
-    program.value.steps.splice(index + 1, 0, step)
+
+    program.value.steps.splice(index + 1, 0, emptyStep)
     selectedParallelStep.value = -1
     selectedStep.value = index + 1
+  }
+
+  function newStepCommand(commandNo: number, stepIndex: number) {
+    const newStep = createEmptyStep()
+    updateCommand(newStep.mainCommand, commandNo)
+
+    newStep.parallelCommands = stepIndex > 0 ? klona(program.value.steps[stepIndex].parallelCommands) : []
+    for (const command of newStep.parallelCommands) {
+      command.commandId = lastCommandId++
+    }
+    program.value.steps.splice(stepIndex + 1, 0, newStep)
+    selectedParallelStep.value = -1
+    selectedStep.value = stepIndex + 1
   }
 
   function newParallelStep() {
     const index = selectedStep.value !== -1 ? selectedStep.value : program.value.steps.length
     const parallelIndex = selectedParallelStep.value !== -1 ? selectedParallelStep.value : program.value.steps[index].parallelCommands.length
     program.value.steps[index].parallelCommands.splice(parallelIndex + 1, 0, createEmptyCommand())
+  }
+
+  function newParallelStepCommand(commandNo: number, stepIndex: number) {
+    const newCommand = createEmptyCommand()
+    updateCommand(newCommand, commandNo)
+    program.value.steps[stepIndex].parallelCommands.push(newCommand)
+  }
+
+  function updateCommand(command: ProgramStepCommand, commandNo: number) {
+    const machineCommand = machine.value?.commands.get(commandNo)
+
+    if (!machineCommand) {
+      throw new Error('Machine Command Not Found!')
+    }
+
+    command.commandNo = machineCommand.commandNo
+
+    command.parameters = machineCommand.parameters
+      .filter(parameter => parameter.editable)
+      .map(parameter => ({
+        index: parameter.index,
+        value: parameter.defaultValue,
+      }))
+
+    command.ioList = machineCommand.ioList
+      .filter(io => io.selectable)
+      .map(io => ({
+        ioId: io.physicalId,
+        ioIndex: io.index,
+        value: io.selections
+          .filter(selection => selection.defaultValue)
+          .map(selection => [selection.type, selection.physicalId]),
+      }))
+  }
+
+  async function onSubmit() {
+    const firstId = errorIds.value.values().next().value
+    if (firstId) {
+      const el = document.getElementById(firstId)
+      const parentEl = el?.closest('.q-item__section--main')
+      const button = parentEl?.querySelector('button')
+
+      if (button?.children[1].children[0].innerHTML === 'expand_more')
+        button.click()
+
+      setTimeout(() => {
+        el?.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
+      }, 100)
+
+      notifyError(t('saveProgram.incorrect'))
+    } else {
+      isLoading = true
+      if (await updateProgram()) {
+        notifySuccess(t('saveProgram.success'))
+      } else {
+        notifyError(t('saveProgram.fail'))
+      }
+      isLoading = false
+    }
+  }
+
+  function onReset() {
+    window.location.reload()
   }
 
   function deleteStep(stepIndex?: number) {
@@ -87,9 +182,10 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   // TODO: await
-  async function fetchProgram() {
+  async function fetchProgram(machineId: number, programNo: number) {
+    selectedStep.value = -1
     isLoading = true
-    const programData = await $fetch<Program>(`/api/machine/${route.params.machine_id}/program/${route.params.program_no}`)
+    const programData = await $fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
     for (const step of programData.steps) {
       step.stepId = lastStepId++
       for (const command of step.parallelCommands) {
@@ -100,12 +196,14 @@ export const useEditorStore = defineStore('editor', () => {
     isLoading = false
   }
 
-  async function fetchMachineCommands() {
+  async function fetchMachineCommands(machineId: number) {
     isCommandLoading = true
-    const machineCommandsData = await $fetch<MachineCommand[]>(`/api/machine/${route.params.machine_id}/commands?editable=true`)
-    machineCommands.value.clear()
-    for (const command of machineCommandsData) {
-      machineCommands.value.set(command.commandNo, command)
+    const machineCommandsData = await $fetch<MachineCommand[]>(`/api/machine/${machineId}/commands?editable=true`)
+    if (machine.value) {
+      machine.value.commands.clear()
+      for (const command of machineCommandsData) {
+        machine.value?.commands.set(command.commandNo, command)
+      }
     }
     isCommandLoading = false
   }
@@ -124,6 +222,14 @@ export const useEditorStore = defineStore('editor', () => {
 
   async function fetchAllProcessTypes() {
     return await $fetch(`/api/process`)
+  }
+
+  function createMachine() {
+    return {
+      id: 0,
+      name: '',
+      commands: new Map<number, MachineCommand>(),
+    }
   }
 
   function createProgram() {
@@ -218,8 +324,9 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   return {
+    changeMachine,
     program,
-    machineCommands,
+    machine,
     selectedStep,
     selectedParallelStep,
     isLoading,
@@ -234,10 +341,15 @@ export const useEditorStore = defineStore('editor', () => {
     fetchPrograms,
     createProgram,
     updateProgram,
+    onSubmit,
+    onReset,
     insertProgram,
     insertStep,
     newStep,
+    newStepCommand,
     newParallelStep,
+    newParallelStepCommand,
+    updateCommand,
     deleteStep,
     deleteParallelStep,
     changeSelection,

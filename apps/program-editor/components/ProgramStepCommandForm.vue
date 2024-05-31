@@ -12,7 +12,7 @@ const editor = useEditorStore()
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
 
 const machineCommand = computed(() => {
-  const command = editor.machineCommands.get(programCommand.commandNo)
+  const command = editor.machine?.commands.get(programCommand.commandNo)
   const editableParameters = command?.parameters.filter(parameter => parameter.editable) || []
   const selectableIOs = command?.ioList.filter(io => io.selectable) || []
   return { editableParameters, selectableIOs }
@@ -21,7 +21,9 @@ const machineCommand = computed(() => {
 
 <template>
   <div class="pl-1 py-1">
-    <CommandSelector :path="props.path" />
+    <div class="pb-2">
+      <CommandSelector :path="props.path" />
+    </div>
     <div class="flex flex-wrap gap-x-2 gap-y-1">
       <ProgramStepCommandParameterInput
         v-for="(parameter, index) in machineCommand.editableParameters"
