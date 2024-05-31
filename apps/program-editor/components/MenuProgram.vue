@@ -81,9 +81,8 @@ function handleButton(btn: string) {
     <QBtn
       :label="t('menu.editProgram')"
       flat
+      @click="router.push(`/machine/${route.params.machine_id}/program/${editor.selectedRow}`)"
     />
-    <!-- :disable="editor.selectedRows.length <= 0"
-      @click="router.push(`/machine/${route.params.machine_id}/program/${editor.selectedRows[0].programNo}`)" -->
   </div>
 
   <div v-if="props.vis && type === 'program'" class="flex">
