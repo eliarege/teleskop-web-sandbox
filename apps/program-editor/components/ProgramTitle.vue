@@ -1,25 +1,17 @@
 <script lang="ts" setup>
-const props = defineProps<{
-  program: {
-    machineId: number
-    machineName: string
-    programNo: number
-    name: string
-  }
-}>()
+const editor = useEditorStore()
 </script>
 
 <template>
-  <div v-if="props.program && props.program.name && props.program.name.length > 0" class="space-x-3 text-sm">
-    <span>{{ props.program.machineId }}</span>
+  <div v-if="editor.machine.id" class="space-x-3 text-sm">
+    <span>{{ editor.machine.id }}</span>
     <span>-</span>
-    <span>{{ props.program.machineName }}</span>
-    <span>|</span>
-    <span>{{ props.program.programNo }}</span>
-    <span>-</span>
-    <span>{{ props.program.name }}</span>
-  </div>
-  <div v-else>
-    Program bilgileri yüklenemedi.
+    <span>{{ editor.machine.name }}</span>
+    <span v-if="editor.program.programNo" class="space-x-3 text-sm">
+      <span>|</span>
+      <span>{{ editor.program.programNo }}</span>
+      <span>-</span>
+      <span>{{ editor.program.name }}</span>
+    </span>
   </div>
 </template>
