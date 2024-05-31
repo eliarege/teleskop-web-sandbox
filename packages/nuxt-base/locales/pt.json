@@ -1,11 +1,12 @@
 {
   "base": {
     "about": "About",
-    "apps": "Apps",
     "aboutApp": "About Application",
+    "apps": "Apps",
     "buildDate": "Build date",
     "commitHash": "Commit hash",
     "guest": "Guest",
+    "home": "Home",
     "locale": "Locale",
     "login": "Login",
     "logout": "Logout",
@@ -15,8 +16,8 @@
     "theme": {
       "_": "Theme",
       "dark": "Dark Theme",
-      "light": "Light Theme",
-      "device": "Device Theme"
+      "device": "Device Theme",
+      "light": "Light Theme"
     },
     "version": "Version"
   }

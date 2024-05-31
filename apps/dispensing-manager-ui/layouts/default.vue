@@ -31,7 +31,7 @@ const items = [
 const itemsMobile = [
   [
     {
-      label: tt('menu.home'),
+      label: tt('base.home'),
       icon: 'home',
       to: '/',
     },

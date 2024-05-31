@@ -1,11 +1,12 @@
 {
   "base": {
     "about": "About",
-    "apps": "Uygulamalar",
     "aboutApp": "Uygulama Hakkında",
+    "apps": "Uygulamalar",
     "buildDate": "Build date",
     "commitHash": "Commit hash",
     "guest": "Guest",
+    "home": "Ana sayfa",
     "locale": "Dil",
     "login": "Login",
     "logout": "Logout",
@@ -15,8 +16,8 @@
     "theme": {
       "_": "Tema",
       "dark": "Koyu Tema",
-      "light": "Açık Tema",
-      "device": "Cihaz Teması"
+      "device": "Cihaz Teması",
+      "light": "Açık Tema"
     },
     "version": "Version"
   }
