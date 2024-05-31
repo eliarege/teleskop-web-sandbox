@@ -348,6 +348,7 @@ async function onRowClick(row: any, isRightClick?: boolean) {
       selectedRows.value.push(row)
   } else if (!(isRowSelected(row) && isRightClick))
     selectedRows.value = [row]
+  editor.selectedRow = row.programNo
 }
 
 async function onRowDoubleClick(row: any) {
@@ -434,18 +435,18 @@ function handleRowColor(row: ProgramHeader) {
             </template>
           </QInput>
           <QSpace />
-          <QBtn
+          <!-- <QBtn
             icon="add"
-            color="black"
-            :label="t('menu.newProgram')"
+            color="grey-8"
             outline
+            :label="t('menu.newProgram')"
             @click="router.push(`/machine/${machineId}/program/new`)"
-          />
+          /> -->
           <QSpace />
           <QBtn
             :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt' "
-            color="black"
-            outline
+            color="grey-8"
+            flat
             @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
           />
         </div>
