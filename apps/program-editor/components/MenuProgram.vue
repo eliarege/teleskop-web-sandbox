@@ -15,7 +15,15 @@ const route = useRoute()
 const router = useRouter()
 const isDisable = ref(false)
 
-const type = computed(() => props.path?.split('/')[props.path.split('/').length - 2])
+const type = computed(() => props.path?.split('/').reverse().find((x) => {
+  if (x === 'new')
+    return 'new'
+  if (x === 'program')
+    return 'program'
+  if (x === 'machine')
+    return 'machine'
+  return undefined
+}))
 
 const buttons = [
   { label: 'menu.save', action: 'save' },
@@ -81,9 +89,9 @@ function handleButton(btn: string) {
     <QBtn
       :label="t('menu.editProgram')"
       flat
+      :disable="editor.selectedRow === -1"
+      @click="router.push(`/machine/${route.params.machine_id}/program/${editor.selectedRow}`)"
     />
-    <!-- :disable="editor.selectedRows.length <= 0"
-      @click="router.push(`/machine/${route.params.machine_id}/program/${editor.selectedRows[0].programNo}`)" -->
   </div>
 
   <div v-if="props.vis && type === 'program'" class="flex">

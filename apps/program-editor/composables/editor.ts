@@ -8,6 +8,7 @@ export type EditorStore = ReturnType<typeof useEditorStore>
 export const useEditorStore = defineStore('editor', () => {
   const program = ref<Program>(createProgram())
   const machine = ref<Machine>(createMachine())
+  const selectedRow = ref<number>(-1)
   const selectedStep = ref<number>(-1)
   const selectedParallelStep = ref<number>(-1)
   const route = useRoute()
@@ -23,6 +24,7 @@ export const useEditorStore = defineStore('editor', () => {
   const { notifySuccess, notifyError } = useNotify()
 
   async function changeMachine(id: number, name: string) {
+    selectedRow.value = -1
     const MACHINE_PATH_RE = /^\/machine\/\d+$/
     machine.value = {
       id,
@@ -327,6 +329,7 @@ export const useEditorStore = defineStore('editor', () => {
     changeMachine,
     program,
     machine,
+    selectedRow,
     selectedStep,
     selectedParallelStep,
     isLoading,

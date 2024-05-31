@@ -11,6 +11,7 @@ import type { ProgramFilter } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
+import TBExportExcelDialog from '~/components/TBExportExcelDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => boolean
 
@@ -291,6 +292,22 @@ export const editProgramTypesCommand: AppCommand = defineAppCommand(() => {
     async execute(ctx: any) {
       ctx.$q.dialog({
         component: TBEditProgramTypes,
+      })
+      return true
+    },
+  }
+})
+
+export const exportToexcelCommand: AppCommand = defineAppCommand(() => {
+  return {
+    name: 'exportToExcel',
+    async execute(ctx: any) {
+      const machines = await $fetch('/api/machine?asList=true')
+      ctx.$q.dialog({
+        component: TBExportExcelDialog,
+        componentProps: {
+          machines,
+        },
       })
       return true
     },

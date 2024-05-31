@@ -3,23 +3,17 @@ import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
 
 const props = defineProps({
-  vis: Boolean,
+  machines: Array<{ name: string, value: number, label: string }>,
 })
-const emit = defineEmits(['update:vis'])
-
+const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
 
-const machines = ref([] as { name: string, value: number, label: string }[])
 const selectedMachines = ref([] as number[])
-machines.value = await $fetch('/api/machine?asList=true')
 
-function closeDialog() {
-  emit('update:vis', false)
-}
 const fields = ref([
   { label: t('exportExcelDialog.commandList'), value: 1 },
   { label: t('exportExcelDialog.detailedCommandList'), value: 2 },
-  { label: t('exportExcelDialog.machineConstansList'), value: 3 },
+  { label: t('exportExcelDialog.machineConstantsList'), value: 3 },
   { label: t('exportExcelDialog.startParametersList'), value: 4 },
 ])
 const selectedFields = ref([1, 2, 3, 4] as number[])
@@ -72,7 +66,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
     }
 
     for (const machine of selectedMachines.value) {
-      const machineObject = machines.value.find(mach => mach.value === machine)
+      const machineObject = props.machines?.find(mach => mach.value === machine)
       if (field === 1) {
         const commands = await $fetch(`/api/machine/${machine}/commands?asList=true`)
         commands.forEach((command) => {
@@ -170,7 +164,7 @@ function downloadExcelFile(fileName, buffer) {
 </script>
 
 <template>
-  <q-dialog :model-value="vis" persistent>
+  <q-dialog ref="dialogRef" persistent>
     <q-card>
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">
@@ -183,7 +177,7 @@ function downloadExcelFile(fileName, buffer) {
           flat
           round
           dense
-          @click="closeDialog"
+          @click="onDialogCancel"
         />
       </q-card-section>
       <q-card-section>
@@ -221,7 +215,7 @@ function downloadExcelFile(fileName, buffer) {
       </q-card-section>
       <q-card-section>
         <q-btn
-          :label="t('exportExcelDialog.submit')"
+          :label="t('submit')"
           :disable="!(selectedFields.length && selectedMachines.length)"
           @click="exportExcel"
         />

@@ -45,6 +45,9 @@ const items = [
         },
         {
           label: tt('menu.exportToExcel'),
+          onClick() {
+            commandManager.executeCommand(exportToexcelCommand, { $q })
+          },
         },
       ]],
     },
