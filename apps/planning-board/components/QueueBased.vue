@@ -7,7 +7,7 @@ import { EliarModal } from 'ui'
 import { useDocumentVisibility, useStorage } from '@vueuse/core'
 import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
-import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
+import type { QueueBasedEvents } from '~/shared/queueBased'
 import type { MachineStatus, PtLocaleSettings, UnplannedEvents } from '~/shared/types'
 import { eventTooltip } from '~/composables/helper'
 import { useSettingStore } from '~/store/settings'
@@ -24,6 +24,19 @@ const schedulerDateModel = ref({
 })
 const store = useSettingStore()
 
+const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatus[]>('/api/machineList', {
+  default: () => [],
+  transform: unsortedMachines => sortMachines(unsortedMachines),
+})
+const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
+const { data: events, refresh: eventRefresh, pending: eventsPending } = await useFetch<QueueBasedPlannedEvents[]>('/api/queueBased/schedulerEvents', {
+  immediate: false,
+  default: () => [],
+  query: {
+    startDate,
+    endDate,
+  },
+})
 const showModal = reactive({
   planParameters: {
     show: false,
@@ -70,25 +83,10 @@ const sortIndex = Symbol('sortIndex')
 
 type MachineStatusWithSortIndex = MachineStatus & { [sortIndex]: number }
 
-const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatusWithSortIndex[]>('/api/machineList', {
-  default: () => [],
-  transform: unsortedMachines => sortMachines(unsortedMachines),
-})
-const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
-const { data: events, refresh: eventRefresh, pending: eventsPending } = await useFetch<QueueBasedPlannedEvents[]>('/api/queueBased/schedulerEvents', {
-  immediate: false,
-  default: () => [],
-  query: {
-    startDate,
-    endDate,
-  },
-})
-
 function sortMachines(machines: MachineStatusWithSortIndex[]): MachineStatusWithSortIndex[] {
   for (const machine of machines) {
     machine[sortIndex] = store.machineOrdering.indexOf(machine.id)
   }
-
   return machines.sort((a, b) => {
     const aIndex = a[sortIndex]
     const bIndex = b[sortIndex]
@@ -104,18 +102,19 @@ function sortMachines(machines: MachineStatusWithSortIndex[]): MachineStatusWith
 }
 
 const modifiedEvents = computed(() => {
-  return events.value.map((event) => {
+  return events.value.map((event: QueueBasedEvents) => {
     const batchText = store.settings.plannedBatch.batchText?.value || 'jobOrder'
     const completedBatchText = store.settings.completedBatch.batchText?.value || 'jobOrder'
     const ongoingBatchText = store.settings.ongoingBatch.batchText?.value || 'jobOrder'
     return {
       ...event,
-      id: event.planKey,
+      startDate: event.isPlanned ? event.plannedStartDate : event.startTime,
+      id: event.isPlanned ? event.planKey : event.batchKey,
       name: !event.isStarted
         ? event[batchText]
-        : event.isRunning
-          ? event[ongoingBatchText]
-          : event[completedBatchText],
+        : !event.isFinished
+            ? event[ongoingBatchText]
+            : event[completedBatchText],
       resourceId: event.machineId,
       resizable: false,
       draggable: !event.isStarted && !event.pinned,
@@ -237,15 +236,6 @@ function dateRangeEnd() {
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
 }
-watch(eventsPending, () => {
-  if (eventsPending.value) {
-    scheduler.mask({
-      text: 'Loading in progress',
-    })
-  } else {
-    scheduler.unmask()
-  }
-})
 
 onMounted(async () => {
   await until(machinesPending).toBe(false)
@@ -576,15 +566,6 @@ onMounted(async () => {
       },
       {
         type: 'button',
-        text: 'L{machineRule}',
-        icon: 'b-fa b-fa-solid b-fa-gear',
-        color: 'toolbar-buttons',
-        onClick() {
-          showModal.machineRule.show = true
-        },
-      },
-      {
-        type: 'button',
         icon: 'b-icon-search-plus',
         tooltip: 'L{zoomin}',
         color: 'toolbar-buttons',
@@ -714,6 +695,7 @@ onMounted(async () => {
 </script>
 
 <template>
+  <LoadingSpinner v-if="eventsPending" :has-background="false" />
   <div>
     <div class="w-full h-screen relative">
       <div id="main" class="w-full h-full" />
@@ -791,11 +773,6 @@ onMounted(async () => {
     <EliarModal v-if="showModal.machineSort.show" @click.stop="showModal.machineSort.show = false">
       <template #default>
         <MachineSort :machines="machines" @update-scheduler="machineReload()" />
-      </template>
-    </EliarModal>
-    <EliarModal v-if="showModal.machineRule.show" @click.stop="showModal.machineRule.show = false">
-      <template #default>
-        <MachineRuleMain @update-scheduler="machineReload()" />
       </template>
     </EliarModal>
   </div>
