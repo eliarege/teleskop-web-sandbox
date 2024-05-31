@@ -1,6 +1,6 @@
 import { addSeconds } from 'date-fns'
 import { v4 } from 'uuid'
-import type { UnscheduledTasks } from '../../types/planning-board'
+import type { QueueBasedMergedEvents, QueueBasedModifiedMergedEvents, QueueBasedPlannedEventsRaw, UnscheduledTasks } from '../../types/planning-board'
 import { knex } from '../knexConfig'
 
 export function generateClientId() {
@@ -9,7 +9,6 @@ export function generateClientId() {
 export function calculateDeviation(actualStartTime: string, plannedStartTime: string) {
   return new Date(actualStartTime).getTime() - new Date(plannedStartTime).getTime()
 }
-
 export function generateEventDates(events: any[]): Event[] {
   const updatedEvents: Event[] = []
 
@@ -68,4 +67,47 @@ export async function hasNote(jobOrder: string): Promise<boolean> {
       showOnScreen: 'p.SHOWONSCREEN',
     }).where('JOBORDER', '=', jobOrder)
   return note.some(i => i.showOnScreen === true)
+}
+
+export async function queueBasedEventStatus(events: QueueBasedMergedEvents[], machines: number[]) {
+  const modifiedEvents: QueueBasedModifiedMergedEvents[] = events.map((event) => {
+    const elapsedTime = event.isPlanned ? 0 : event.isStarted ? (new Date().getTime() - new Date(event.startTime).getTime()) / 1000 : 0
+
+    const isFinished = event.isPlanned
+      ? false
+      : event.isStarted
+        ? event.endTime !== null
+        : false
+    const isRunning = !event.isPlanned && !isFinished
+
+    const endDate = event.isPlanned
+      ? addSeconds(event.plannedStartDate, event.theoreticalDuration)
+      : event.endTime === null
+        ? addSeconds(event.startTime, event.theoreticalDuration) < new Date() ? new Date() : addSeconds(event.startTime, event.theoreticalDuration)
+        : event.endTime
+    return {
+      ...event,
+      isRunning,
+      isFinished,
+      endDate,
+      remainingTime: event.isPlanned ? 0 : Math.max((event.theoreticalDuration - elapsedTime) + 300, 300),
+    }
+  })
+  for (const machineId of machines) {
+    const runningEvent = modifiedEvents.find(ev => ev.machineId === machineId && ev.isRunning)
+    if (runningEvent) {
+      for (const event of modifiedEvents) {
+        if (event.isPlanned && machineId === event.machineId) {
+          postponeEvent(event, runningEvent.remainingTime)
+        }
+      }
+    }
+  }
+  return modifiedEvents
+}
+
+export function postponeEvent(event: QueueBasedModifiedMergedEvents & { isPlanned: true }, remainingTime: number) {
+  event.plannedStartDate = addSeconds(event.plannedStartDate, remainingTime)
+  event.endDate = addSeconds(event.plannedStartDate, event.theoreticalDuration)
+  return event
 }

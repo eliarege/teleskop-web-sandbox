@@ -14,42 +14,48 @@ export interface UnscheduledTasks {
   isStopped: boolean
 }
 
-export interface QueueBasedPlannedEventsRaw {
+/**
+ ------------------ ------------------ ------------------ ------------------
+ */
+
+export interface QueueBasedEventsBase {
   planKey: number
-  plannedStartDate: string | Date
   machineId: number
-  queueNumber: number
   jobOrder: string
   programNoList: string
   theoreticalDuration: number
-  fabricWeight: string
-  partyNumber: string
+  fabricWeight: number
   note: string
+  color: string
   isDeleted: boolean
   isStarted: boolean
   isStopped: boolean
 }
-export interface QueueBasedPlannedEventsExtended extends QueueBasedPlannedEventsRaw {
-  // isDeviaiton: boolean
-  isRunning: boolean
+export interface QueueBasedPlannedEventsRaw extends QueueBasedEventsBase {
+  isPlanned: true
+  plannedStartDate: string | Date
+  queueNumber: number
+  pinned: boolean
 }
 
-export interface QueueBasedArchiveEvents extends QueueBasedPlannedEventsRaw {
+export interface QueueBasedActualEventsRaw extends QueueBasedEventsBase {
+  isPlanned: false
   batchKey: number
-  startTime: Date | string
-  endTime: Date | string
-  cancelTime: Date | string
+  startTime: string | Date
+  endTime: string | Date
   deviation: number
 }
 
-export interface ArchiveEventStates extends QueueBasedArchiveEvents {
-  isDeviation: boolean
+export type QueueBasedMergedEvents = (QueueBasedPlannedEventsRaw | QueueBasedActualEventsRaw)
+export type QueueBasedModifiedMergedEvents = QueueBasedMergedEvents & {
   isRunning: boolean
   isFinished: boolean
-  isLocked: boolean
-  isAlarm: boolean
+  endDate: string | Date
+  remainingTime: number
 }
-
+/**
+ ------------------ ------------------ ------------------ ------------------
+ */
 export interface TimeBasedArchiveEvents {
   batchKey: number
   planKey: number

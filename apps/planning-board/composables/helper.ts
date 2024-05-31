@@ -15,6 +15,8 @@ export function integerToHex(int: number) {
   return `#${hex}`
 }
 export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
+  const { $i18n } = useNuxtApp()
+
   const startMonth = DateHelper.format(eventRecord.startDate, 'MMM')
   const startDay = DateHelper.format(eventRecord.startDate, 'D')
 
@@ -37,7 +39,7 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
   const screenNotes = notes.filter(n => n.showOnScreen === true).map(a => a.note)
   return `
         <div>
-          ${screenNotes.length !== 0 ? `<div class="b-sch-event-title">Notes: ${screenNotes}</div>` : ''}
+          ${screenNotes.length !== 0 ? `<div class="b-sch-event-title">${$i18n.t('tooltip.note')}: ${screenNotes}</div>` : ''}
           <div class="b-sch-event-title">${eventRecord.originalData.name}</div>
           <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
             <div class="b-sch-clock">

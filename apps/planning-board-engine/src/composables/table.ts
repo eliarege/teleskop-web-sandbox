@@ -16,13 +16,14 @@ export async function createPtColumnsTable(knex: Knex) {
         table.integer('parameterId')
         table.string('parameterName')
         table.boolean('visible')
+      }).then(async () => {
+        console.log('Table PTCOLUMNS created successfully')
+        await knex.transaction(async (trx) => {
+          for (const row of values) {
+            await trx('PTCOLUMNS').insert({ parameterId: row.BATCHPARAMETERID, parameterName: row.PARAMSTRING, visible: false })
+          }
+        }).then(() => console.log('Values inserted into PTCOLUMNS')).catch(err => console.error('An error occured while inserting values into PTCOLUMNS', err))
       })
-      await knex.transaction(async (trx) => {
-        for (const row of values) {
-          await trx('PTCOLUMNS').insert({ parameterId: row.BATCHPARAMETERID, parameterName: row.PARAMSTRING, visible: false })
-        }
-      })
-      console.log('Table PTCOLUMNS created and data inserted successfully')
     } else {
       console.log('Table PTCOLUMNS already exists, no data inserted')
     }
@@ -43,7 +44,7 @@ export async function createPtMachineErpTable(knex: Knex) {
         table.string('paramName')
         table.boolean('visible')
       }).then(async () => {
-        console.log('Table PTMACHINEERP created')
+        console.log('Table PTMACHINEERP created successfully')
         const values = await knex('BFMACHBATCHPARAMETERS').select({
           paramId: 'BATCHPARAMETERID',
           machineId: 'MACHINEID',

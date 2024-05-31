@@ -24,7 +24,7 @@ const columns = computed(() => {
   <LoadingSpinner v-if="pending" has-background />
   <div class="max-h-200 overflow-auto bg-white px-5">
     <h3 class="text-center font-extrabold ">
-      Plan Parameters
+      {{ t('title') }}
     </h3>
     <QTable
       class="my-sticky-header-table"
@@ -65,14 +65,16 @@ const columns = computed(() => {
   </div>
 </template>
 
-<i18n>
+<i18n lang="json">
   {
   "en": {
+    "title": "Plan Parameters",
     "id": "Parameter ID",
     "param-string": "Parameter",
     "value": "Value"
   },
   "tr": {
+    "title": "Plan Parametreleri",
     "id": "Parametre ID",
     "param-string": "Parametre",
     "value": "Değer"

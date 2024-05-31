@@ -2,6 +2,7 @@
 import { addSeconds, differenceInHours, differenceInMilliseconds, differenceInMinutes, differenceInSeconds, formatDuration } from 'date-fns'
 
 const props = defineProps<{ machineId: number, jobOrder: string, planKey: number, fabricWeight: number | string, theoreticalDuration: number }>()
+const { t } = useI18n()
 const colors = reactive({
   activeBackGround: '#4B5563',
   backGround: '#4B5563',
@@ -30,25 +31,25 @@ const time = computed(() => {
 
     return [
       {
-        label: `Theoretical Duration: ${props.theoreticalDuration}`,
+        label: `${t('time.theoretical-duration')}: ${props.theoreticalDuration}`,
       },
       {
-        label: `Start Time: ${useDateFormat(new Date(startTime), 'YYYY-MM-DD HH:mm:ss').value}`,
+        label: `${t('time.start-time')}: ${useDateFormat(new Date(startTime), 'YYYY-MM-DD HH:mm:ss').value}`,
       },
       {
-        label: `End Time: ${useDateFormat(endTime, 'YYYY-MM-DD HH:mm:ss').value}`,
+        label: `${t('time.end-time')}: ${useDateFormat(endTime, 'YYYY-MM-DD HH:mm:ss').value}`,
       },
       {
-        label: `Elapsed Time: ${elapsedTime.value}`,
+        label: `${t('time.elapsed-time')}: ${elapsedTime.value}`,
       },
     ]
   } else {
     return [
       {
-        label: `Theoretical Duration: ${props.theoreticalDuration}`,
+        label: `${t('time.theoretical-duration')}: ${props.theoreticalDuration}`,
       },
       {
-        label: `Theoretical Start Time: ${useDateFormat(new Date(batchProperties.value?.times.plannedStartTime || ''), 'YYYY-MM-DD HH:mm:ss').value}`,
+        label: `${t('time.theoretical-start-time')}: ${useDateFormat(new Date(batchProperties.value?.times.plannedStartTime || ''), 'YYYY-MM-DD HH:mm:ss').value}`,
       },
     ]
   }
@@ -57,35 +58,35 @@ const time = computed(() => {
 const summary = computed(() => {
   return [
     {
-      label: `Plan Key: ${props.planKey}`,
+      label: `${t('summary.plan-key')}: ${props.planKey}`,
     },
     {
-      label: `Fabric Weight: ${props.fabricWeight}`,
+      label: `${t('summary.fabric-weight')}: ${props.fabricWeight}`,
     },
   ]
 })
 const tree = reactive([
   {
-    label: 'ERP Parametereleri',
+    label: t('tree.erp-params'),
     fold: true,
     children: batchProperties.value?.erpParameters.map(e => ({
       label: `${e.paramName}: ${e.value}`,
     })),
   },
   {
-    label: 'Süreler',
+    label: t('tree.time'),
     fold: true,
     children: time.value,
   },
   {
-    label: 'Programlar',
+    label: t('tree.programs'),
     fold: true,
     children: batchProperties.value?.programs.map((program, i) => ({
       label: ` ${i + 1} -> ${program.NAME}`,
     })),
   },
   {
-    label: 'Özet',
+    label: t('tree.summary'),
     fold: true,
     children: summary.value,
   },
@@ -187,3 +188,46 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
     }
 }
 </style>
+
+<i18n lang="json">
+{
+  "en": {
+    "time": {
+      "theoretical-duration": "Theoretical Duration",
+      "start-time": "Start Time",
+      "theoretical-start-time": "Theoretical Start Time",
+      "end-time": "End Time",
+      "elapsed-time": "Elapsed Time"
+    },
+    "summary": {
+      "plan-key": "Plan Key",
+      "fabric-weight": "Fabric Weight"
+    },
+    "tree": {
+      "erp-params": "ERP Parameters",
+      "time": "Times",
+      "programs": "Programs",
+      "summary": "Summary"
+    }
+  },
+  "tr": {
+    "time": {
+      "theoretical-duration": "Teorik Süre",
+      "start-time": "Başlangıç Saati",
+      "theoretical-start-time": "Teorik Başlangıç Saati",
+      "end-time": "Bitiş Saati",
+      "elapsed-time": "Geçen Süre"
+    },
+    "summary": {
+      "plan-key": "Plan No",
+      "fabric-weight": "Kumaş Ağırlığı"
+    },
+    "tree": {
+      "erp-params": "ERP Parametreleri",
+      "time": "Süreler",
+      "programs": "Programlar",
+      "summary": "Özet"
+    }
+  }
+}
+</i18n>

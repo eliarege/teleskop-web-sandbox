@@ -97,7 +97,7 @@ async function deleteParameter(id: number, machineId: number) {
               {{ col.label }}
             </q-th>
             <q-th auto-width>
-              Add
+              {{ t('erp-param-columns.add') }}
             </q-th>
           </q-tr>
         </template>
@@ -187,7 +187,8 @@ async function deleteParameter(id: number, machineId: number) {
     "erp-param-columns": {
       "id": "Queue Number",
       "param-name": "Parameter Name",
-      "field-name": "ERP Matching Area"
+      "field-name": "ERP Matching Area",
+      "add": "Add"
     },
     "batch-text": {
       "job-order": "Job Order Number",
@@ -199,7 +200,8 @@ async function deleteParameter(id: number, machineId: number) {
     "erp-param-columns": {
       "id": "Sıra Numarası",
       "param-name": "Parametre İsmi",
-      "field-name": "ERP Eşleştirme Alanı"
+      "field-name": "ERP Eşleştirme Alanı",
+      "add": "Ekle"
     },
     "batch-text": {
       "job-order": "İş Emri Numarası",

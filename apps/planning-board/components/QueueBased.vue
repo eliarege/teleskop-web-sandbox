@@ -1,18 +1,18 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerEventModel, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { Combo, DateHelper, EventStore, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
+import { Combo, DateHelper, EventStore, LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
 import { addDays, addHours } from 'date-fns'
 import { EliarModal } from 'ui'
 import { useDocumentVisibility, useStorage } from '@vueuse/core'
 import LoadingSpinner from 'ui/components/LoadingSpinner.vue'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
-import type { QueueBasedArchiveEvents, QueueBasedPlannedEvents } from '~/shared/queueBased'
+import type { QueueBasedEvents } from '~/shared/queueBased'
 import type { MachineStatus, PtLocaleSettings, UnplannedEvents } from '~/shared/types'
 import { eventTooltip } from '~/composables/helper'
 import { useSettingStore } from '~/store/settings'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const visibility = useDocumentVisibility()
 const refreshInterval = 60_000
 const today = new Date()
@@ -24,6 +24,20 @@ const schedulerDateModel = ref({
 })
 const store = useSettingStore()
 
+const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatus[]>('/api/machineList', {
+  lazy: true,
+  default: () => [],
+  transform: unsortedMachines => sortMachines(unsortedMachines),
+})
+const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
+const { data: events, refresh: eventRefresh, pending: eventsPending } = await useFetch<QueueBasedEvents[]>('/api/queueBased/schedulerEvents', {
+  immediate: false,
+  default: () => [],
+  query: {
+    startDate,
+    endDate,
+  },
+})
 const showModal = reactive({
   planParameters: {
     show: false,
@@ -58,6 +72,9 @@ const showModal = reactive({
   machineSort: {
     show: false,
   },
+  machineRule: {
+    show: false,
+  },
   datePicker: false,
   rule: false,
   settings: false,
@@ -65,30 +82,15 @@ const showModal = reactive({
 
 const sortIndex = Symbol('sortIndex')
 
-type MachineStatusWithSortIndex = MachineStatus & { [sortIndex]: number }
-
-const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatusWithSortIndex[]>('/api/machineList', {
-  default: () => [],
-  transform: unsortedMachines => sortMachines(unsortedMachines),
-})
-const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
-const { data: events, refresh: eventRefresh, pending: eventsPending } = await useFetch<QueueBasedPlannedEvents[]>('/api/queueBased/schedulerEvents', {
-  immediate: false,
-  default: () => [],
-  query: {
-    startDate,
-    endDate,
-  },
-})
+type MachineStatusWithSortIndex = MachineStatus & { [sortIndex]?: number }
 
 function sortMachines(machines: MachineStatusWithSortIndex[]): MachineStatusWithSortIndex[] {
   for (const machine of machines) {
     machine[sortIndex] = store.machineOrdering.indexOf(machine.id)
   }
-
   return machines.sort((a, b) => {
-    const aIndex = a[sortIndex]
-    const bIndex = b[sortIndex]
+    const aIndex = a[sortIndex]!
+    const bIndex = b[sortIndex]!
     if (aIndex === bIndex)
       return 0
     if (aIndex === -1)
@@ -99,20 +101,20 @@ function sortMachines(machines: MachineStatusWithSortIndex[]): MachineStatusWith
     return aIndex - bIndex
   })
 }
-
 const modifiedEvents = computed(() => {
-  return events.value.map((event) => {
+  return events.value.map((event: QueueBasedEvents) => {
     const batchText = store.settings.plannedBatch.batchText?.value || 'jobOrder'
     const completedBatchText = store.settings.completedBatch.batchText?.value || 'jobOrder'
     const ongoingBatchText = store.settings.ongoingBatch.batchText?.value || 'jobOrder'
     return {
       ...event,
-      id: event.planKey,
+      startDate: event.isPlanned ? event.plannedStartDate : event.startTime,
+      id: event.isPlanned ? event.planKey : event.batchKey,
       name: !event.isStarted
         ? event[batchText]
-        : event.isRunning
-          ? event[ongoingBatchText]
-          : event[completedBatchText],
+        : !event.isFinished
+            ? event[ongoingBatchText]
+            : event[completedBatchText],
       resourceId: event.machineId,
       resizable: false,
       draggable: !event.isStarted && !event.pinned,
@@ -170,7 +172,7 @@ async function machineReload() {
   scheduler.refreshRows()
 }
 
-watch(modifiedEvents, (newVal: QueueBasedPlannedEvents[]) => {
+watch(modifiedEvents, (newVal: QueueBasedEvents[]) => {
   scheduler.events = newVal
   scrollStore.data = newVal
 })
@@ -234,16 +236,12 @@ function dateRangeEnd() {
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
 }
-watch(eventsPending, () => {
-  if (eventsPending.value) {
-    scheduler.mask({
-      text: 'Loading in progress',
-    })
-  } else {
-    scheduler.unmask()
-  }
+watch(locale, () => {
+  document.querySelectorAll('.totalAlarmCount').forEach((ev) => {
+    const count = ev.textContent?.split(':')[1]
+    ev.textContent = `${t('total-alarm-count')}:${count}`
+  })
 })
-
 onMounted(async () => {
   await until(machinesPending).toBe(false)
   const schedule: SchedulerPro = scheduler = new QueueSchedule({
@@ -336,7 +334,7 @@ onMounted(async () => {
             <dt role="presentation">${data.record.name}</dt>
             <dd class="b-resource-role" role="presentation"></dd>
             <dd class="b-resource-meta" role="presentation">
-              <div>Total Alarm Count: ${data.record.totalAlarmCount}</div>
+              <div class="totalAlarmCount">${t('total-alarm-count')}: ${data.record.totalAlarmCount}</div>
             </dd>
           </dl>
         </div>
@@ -363,6 +361,7 @@ onMounted(async () => {
       },
     ],
     features: {
+      sort: false,
       percentBar: {
         allowResize: false,
         showPercentage: false,
@@ -494,7 +493,7 @@ onMounted(async () => {
       {
         type: 'combo',
         ref: 'scrollToEvent',
-        placeholder: 'Scroll to event',
+        placeholder: 'L{scrollToEvent}',
         editable: true,
         store: scrollStore,
         displayField: 'jobOrder',
@@ -698,9 +697,14 @@ onMounted(async () => {
   })
   await scheduleDataRefresh()
 })
+function capitalizeFirstLetter(text: string) {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
 </script>
 
 <template>
+  <LoadingSpinner v-if="eventsPending" :has-background="false" />
   <div>
     <div class="w-full h-screen relative">
       <div id="main" class="w-full h-full" />
@@ -842,6 +846,7 @@ div[bgGreen] {
 <i18n lang="json">
 {
   "en": {
+    "total-alarm-count": "Total Alarm Count",
     "ctx-menu": {
       "task-edit": "Update Job Order",
       "task-delete": "Delete Job Order",
@@ -852,6 +857,7 @@ div[bgGreen] {
     }
   },
   "tr": {
+    "total-alarm-count": "Toplam Alarm",
     "ctx-menu": {
       "task-edit": "İş Emrini Güncelle",
       "task-delete": "İş Emrini Sil",

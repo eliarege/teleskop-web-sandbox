@@ -15,7 +15,7 @@ const items = [
       label: tt('base.locale'),
       icon: 'translate',
       subMenu: {
-        offset: [2, 0],
+        offset: [0.5, 0],
         items: [locales.value.map((l) => {
           return {
             label: l.name,
@@ -30,7 +30,7 @@ const items = [
       icon: 'palette',
       disabled: props.disableTheme,
       subMenu: {
-        offset: [2, 0],
+        offset: [0.5, 0],
         items: [[
           {
             label: t('base.theme.device'),

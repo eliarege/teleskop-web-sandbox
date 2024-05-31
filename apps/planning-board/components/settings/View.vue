@@ -3,35 +3,35 @@ import { color } from 'd3'
 import { useSettingStore } from '~/store/settings'
 
 const emits = defineEmits(['updateScheduler'])
+const { t } = useI18n()
 const plannedKeys = computed(() => [
-  { id: 1, label: 'Plan Key', value: 'planKey' },
-  { id: 2, label: 'Machine Id', value: 'machineId' },
-  { id: 3, label: 'Queue Number', value: 'queueNumber' },
-  { id: 4, label: 'Job Order', value: 'jobOrder' },
-  { id: 5, label: 'Program No List', value: 'programNoList' },
-  { id: 6, label: 'Theoretical Duration', value: 'theoreticalDuration' },
-  { id: 7, label: 'Fabric Weight', value: 'fabricWeight' },
-  { id: 8, label: 'Party Number', value: 'partyNumber' },
-  { id: 9, label: 'Note', value: 'note' },
-  { id: 10, label: 'Start Date', value: 'startDate' },
-  { id: 11, label: 'End Date', value: 'endDate' },
+  { id: 1, label: t('plan-area.dropDown.planKey'), value: 'planKey' },
+  { id: 2, label: t('plan-area.dropDown.machineId'), value: 'machineId' },
+  { id: 3, label: t('plan-area.dropDown.queueNumber'), value: 'queueNumber' },
+  { id: 4, label: t('plan-area.dropDown.jobOrder'), value: 'jobOrder' },
+  { id: 5, label: t('plan-area.dropDown.programNoList'), value: 'programNoList' },
+  { id: 6, label: t('plan-area.dropDown.theoreticalDuration'), value: 'theoreticalDuration' },
+  { id: 7, label: t('plan-area.dropDown.fabricWeight'), value: 'fabricWeight' },
+  { id: 8, label: t('plan-area.dropDown.partyNumber'), value: 'partyNumber' },
+  { id: 9, label: t('plan-area.dropDown.note'), value: 'note' },
+  { id: 10, label: t('plan-area.dropDown.startDate'), value: 'startDate' },
+  { id: 11, label: t('plan-area.dropDown.endDate'), value: 'endDate' },
 ])
 const archiveEvents = computed(() => [
-  { id: 1, label: 'Batch Key', value: 'batchKey' },
-  { id: 2, label: 'Plan Key', value: 'planKey' },
-  { id: 3, label: 'Machine Id', value: 'machineId' },
-  { id: 4, label: 'Job Order', value: 'jobOrder' },
-  { id: 5, label: 'Program No List', value: 'programNoList' },
-  { id: 6, label: 'Start Time', value: 'startTime' },
-  { id: 7, label: 'End Time', value: 'endTime' },
-  { id: 8, label: 'Cancel Time', value: 'cancelTime' },
-  { id: 9, label: 'Theoretical Duration', value: 'theoreticalDuration' },
-  { id: 10, label: 'Fabric Weight', value: 'fabricWeight' },
-  { id: 11, label: 'Party Number', value: 'partyNumber' },
-  { id: 12, label: 'Deviation', value: 'deviation' },
-  { id: 13, label: 'Note', value: 'note' },
+  { id: 1, label: t('plan-area.dropDown.batchKey'), value: 'batchKey' },
+  { id: 2, label: t('plan-area.dropDown.planKey'), value: 'planKey' },
+  { id: 3, label: t('plan-area.dropDown.machineId'), value: 'machineId' },
+  { id: 4, label: t('plan-area.dropDown.jobOrder'), value: 'jobOrder' },
+  { id: 5, label: t('plan-area.dropDown.programNoList'), value: 'programNoList' },
+  { id: 6, label: t('plan-area.dropDown.startTime'), value: 'startTime' },
+  { id: 7, label: t('plan-area.dropDown.endTime'), value: 'endTime' },
+  { id: 8, label: t('plan-area.dropDown.cancelTime'), value: 'cancelTime' },
+  { id: 9, label: t('plan-area.dropDown.theoreticalDuration'), value: 'theoreticalDuration' },
+  { id: 10, label: t('plan-area.dropDown.fabricWeight'), value: 'fabricWeight' },
+  { id: 11, label: t('plan-area.dropDown.partyNumber'), value: 'partyNumber' },
+  { id: 12, label: t('plan-area.dropDown.deviation'), value: 'deviation' },
+  { id: 13, label: t('plan-area.dropDown.note'), value: 'note' },
 ])
-const { t } = useI18n()
 const store = useSettingStore()
 
 function iconColor(bgColor: string) {
@@ -362,7 +362,8 @@ function iconColor(bgColor: string) {
         <span>{{ t('plan-area.stops.main') }}</span>
         <div class="settings-border ml-5 my-2 flex gap-3">
           <QCheckbox
-            v-model="store.settings.showStops.show" :label="t('plan-area.stops.title')"
+            v-model="store.settings.showStops.show"
+            :label="t('plan-area.stops.title')"
           />
           <q-input
             v-if="store.settings.showStops.show"
@@ -455,7 +456,26 @@ function iconColor(bgColor: string) {
       "archive": {
         "title": "History view in planning field",
         "text": "Number of days to display archive work orders (Day)"
+      },
+      "dropDown": {
+        "planKey": "Plan Key",
+        "machineId": "Machine Id",
+        "queueNumber": "Queue Number",
+        "jobOrder": "Job Order",
+        "programNoList": "Program List",
+        "theoreticalDuration": "Theoretical Duration",
+        "fabricWeight": "Fabric Weight",
+        "partyNumber": "Party Number",
+        "note": "Note",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "batchKey": "Batch Key",
+        "startTime": "Start Time",
+        "endTime": "End Time",
+        "cancelTime": "Cancel Time",
+        "deviation": "Deviation"
       }
+
     }
   },
   "tr": {
@@ -490,7 +510,25 @@ function iconColor(bgColor: string) {
         "archive": {
           "title": "Planlama Alanında Geçmiş Görünümü",
           "text": "Arşiv iş emri gösterme gün sayısı (Gün)"
-        }
+        },
+        "dropDown": {
+        "planKey": "Plan No",
+        "machineId": "Makine ID",
+        "queueNumber": "Sıra No",
+        "jobOrder": "İş Emri",
+        "programNoList": "Program Listesi",
+        "theoreticalDuration": "Teorik Süre",
+        "fabricWeight": "Kumaş Ağırlığı",
+        "partyNumber": "Parti No",
+        "note": "Not",
+        "startDate": "Başlangıç Tarihi",
+        "endDate": "Bitiş Tarihi",
+        "batchKey": "Batch No",
+        "startTime": "Başlangıç Tarihi",
+        "endTime": "Bitiş Tarihi",
+        "cancelTime": "İptal Tarihi",
+        "deviation": "Gecikme"
+      }
       }
   }
 }
