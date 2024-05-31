@@ -34,6 +34,9 @@ async function fetchPrograms(filter?: ProgramFilter) {
   programs.value = await $fetch(`/api/machine/${machineId}/program?${query || ''}`)
 }
 
+const editor = useEditorStore()
+editor.program = editor.createProgram()
+
 contextMenuStore.setCtx({
   t,
 })
