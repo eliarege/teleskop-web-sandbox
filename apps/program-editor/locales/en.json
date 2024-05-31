@@ -230,5 +230,25 @@
     "deleteVersionDialog": {
       "warning": "Version(s) {code} will be deleted! Are you sure you want to continue?"
     }
+  },
+  "exportExcelDialog": {
+    "_": "Export To Excel",
+    "machineList": "Machine List",
+    "fields": "Fields",
+    "commandList": "Command List",
+    "detailedCommandList": "Detailed Command List",
+    "machineConstantsList": "Machine Constants List",
+    "startParametersList": "Start Parameters List",
+    "required": "Required",
+    "machine": "Machine",
+    "commandNo": "Command No",
+    "commandName": "Command Name",
+    "value": "Value",
+    "min": "Min",
+    "max": "Max",
+    "parameter": "Parameter",
+    "commandIOName": "Command IO Name",
+    "IOName": "IO Name",
+    "default": "Default"
   }
 }

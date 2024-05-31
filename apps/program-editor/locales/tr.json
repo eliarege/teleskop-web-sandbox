@@ -230,6 +230,26 @@
     "deleteVersionDialog": {
       "warning": "Version {code} silinecek! Devam etmek istediğinize emin misiniz?"
     }
+  },
+  "exportExcelDialog": {
+    "_": "Excele Aktar",
+    "machineList": "Makine Listesi",
+    "fields": "Alanlar",
+    "commandList": "Komut Listesi",
+    "detailedCommandList": "Detaylı Komut Listesi",
+    "machineConstantsList": "Makine Sabitleri Listesi",
+    "startParametersList": "Başlangıç Parametreleri Listesi",
+    "required": "Zorunlu",
+    "machine": "Makine",
+    "commandNo": "Komut Numarası",
+    "commandName": "Komut İsmi",
+    "value": "Değer",
+    "min": "Min",
+    "max": "Max",
+    "parameter": "Parametre",
+    "commandIOName": "Komut IO ismi",
+    "IOName": "IO ismi",
+    "default": "Varsayılan"
   }
 
 }
