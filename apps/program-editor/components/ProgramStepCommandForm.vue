@@ -12,7 +12,7 @@ const editor = useEditorStore()
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
 
 const machineCommand = computed(() => {
-  const command = editor.machineCommands.get(programCommand.commandNo)
+  const command = editor.machine?.commands.get(programCommand.commandNo)
   const editableParameters = command?.parameters.filter(parameter => parameter.editable) || []
   const selectableIOs = command?.ioList.filter(io => io.selectable) || []
   return { editableParameters, selectableIOs }

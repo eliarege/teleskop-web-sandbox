@@ -30,7 +30,7 @@ const rules = [
 ]
 
 const options = computed(() => (
-  Array.from(editor.machineCommands.values())
+  Array.from(editor.machine.commands.values())
     .filter(({ commandType }) =>
       (isMainCommand === 0 && commandType === 0)
       || (isMainCommand === 3 && commandType === 0)

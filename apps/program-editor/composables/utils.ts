@@ -84,7 +84,7 @@ export function getMachineCommand(commandNo: number, parameterOrIoList?: 'parame
   MachineCommand | CommandParameters | CommandIO | ParameterSelections | CommandIOSelection | MachineCommand[] | CommandParameters[] | CommandIO[] | ParameterSelections[] | CommandIOSelection[] | undefined {
   const editor = useEditorStore()
 
-  const command: MachineCommand | undefined = editor.machineCommands.get(commandNo)
+  const command: MachineCommand | undefined = editor.machine.commands.get(commandNo)
 
   if (!command)
     return undefined

@@ -7,7 +7,7 @@ export type EditorStore = ReturnType<typeof useEditorStore>
 
 export const useEditorStore = defineStore('editor', () => {
   const program = ref<Program>(createProgram())
-  const machineCommands = ref<Map<number, MachineCommand>>(new Map())
+  const machine = ref<Machine>(createMachine())
   const selectedStep = ref<number>(-1)
   const selectedParallelStep = ref<number>(-1)
   const route = useRoute()
@@ -86,7 +86,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function updateCommand(command: ProgramStepCommand, commandNo: number) {
-    const machineCommand = machineCommands.value.get(commandNo)
+    const machineCommand = machine.value?.commands.get(commandNo)
 
     if (!machineCommand) {
       throw new Error('Machine Command Not Found!')
@@ -184,9 +184,11 @@ export const useEditorStore = defineStore('editor', () => {
   async function fetchMachineCommands(machineId: number) {
     isCommandLoading = true
     const machineCommandsData = await $fetch<MachineCommand[]>(`/api/machine/${machineId}/commands?editable=true`)
-    machineCommands.value.clear()
-    for (const command of machineCommandsData) {
-      machineCommands.value.set(command.commandNo, command)
+    if (machine.value) {
+      machine.value.commands.clear()
+      for (const command of machineCommandsData) {
+        machine.value?.commands.set(command.commandNo, command)
+      }
     }
     isCommandLoading = false
   }
@@ -205,6 +207,14 @@ export const useEditorStore = defineStore('editor', () => {
 
   async function fetchAllProcessTypes() {
     return await $fetch(`/api/process`)
+  }
+
+  function createMachine() {
+    return {
+      id: 0,
+      name: '',
+      commands: new Map<number, MachineCommand>(),
+    }
   }
 
   function createProgram() {
@@ -300,7 +310,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   return {
     program,
-    machineCommands,
+    machine,
     selectedStep,
     selectedParallelStep,
     isLoading,

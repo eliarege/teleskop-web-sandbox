@@ -246,7 +246,7 @@ export interface SelectionArchiveList {
 export interface Machine {
   id: number
   name: string
-  commands: MachineCommand[]
+  commands: Map<number, MachineCommand>
 }
 
 export interface CommandItem {

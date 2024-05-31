@@ -25,7 +25,7 @@ const sortableOptions = computed<SortableOptions>(() => ({
 const searchQuery = ref('')
 const filteredCommands = computed(() => {
   const query = searchQuery.value.toLowerCase()
-  const commandsArray = Array.from(editor.machineCommands.values())
+  const commandsArray = editor.machine?.commands ? Array.from(editor.machine?.commands.values()) : []
   return commandsArray.filter(command => (
     command.commandNo.toString().includes(query)
     || command.name.toLowerCase().includes(query)
@@ -46,7 +46,7 @@ let draggedCommand: any = null
 
 function onDragStart(event: SortableEvent) {
   if (isDef(event.oldIndex)) {
-    draggedCommand = editor.machineCommands.get(Number(event.item.id))
+    draggedCommand = editor.machine?.commands.get(Number(event.item.id))
   }
 }
 
@@ -73,7 +73,7 @@ function onDragEnd(event: SortableEvent) {
 <template>
   <div class="machine-command-list-container">
     <QInput
-      v-if="editor.machineCommands.size"
+      v-if="editor.machine?.commands.size"
       v-model="searchQuery"
       :label="t('searchCommand')"
       class="px-5 pt-5 pb-5 sticky-input"
@@ -104,7 +104,7 @@ function onDragEnd(event: SortableEvent) {
       </template>
     </Sortable>
     <div
-      v-if="!editor.machineCommands.size"
+      v-if="!editor.machine?.commands.size"
       class="w-full bottom-0 p-3"
       :class="dark.isActive ? 'bg-dark-1' : 'bg-white'"
     >
