@@ -25,11 +25,12 @@ const schedulerDateModel = ref({
 const store = useSettingStore()
 
 const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatus[]>('/api/machineList', {
+  lazy: true,
   default: () => [],
   transform: unsortedMachines => sortMachines(unsortedMachines),
 })
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
-const { data: events, refresh: eventRefresh, pending: eventsPending } = await useFetch<QueueBasedPlannedEvents[]>('/api/queueBased/schedulerEvents', {
+const { data: events, refresh: eventRefresh, pending: eventsPending } = await useFetch<QueueBasedEvents[]>('/api/queueBased/schedulerEvents', {
   immediate: false,
   default: () => [],
   query: {
@@ -81,15 +82,15 @@ const showModal = reactive({
 
 const sortIndex = Symbol('sortIndex')
 
-type MachineStatusWithSortIndex = MachineStatus & { [sortIndex]: number }
+type MachineStatusWithSortIndex = MachineStatus & { [sortIndex]?: number }
 
 function sortMachines(machines: MachineStatusWithSortIndex[]): MachineStatusWithSortIndex[] {
   for (const machine of machines) {
     machine[sortIndex] = store.machineOrdering.indexOf(machine.id)
   }
   return machines.sort((a, b) => {
-    const aIndex = a[sortIndex]
-    const bIndex = b[sortIndex]
+    const aIndex = a[sortIndex]!
+    const bIndex = b[sortIndex]!
     if (aIndex === bIndex)
       return 0
     if (aIndex === -1)
@@ -100,7 +101,6 @@ function sortMachines(machines: MachineStatusWithSortIndex[]): MachineStatusWith
     return aIndex - bIndex
   })
 }
-
 const modifiedEvents = computed(() => {
   return events.value.map((event: QueueBasedEvents) => {
     const batchText = store.settings.plannedBatch.batchText?.value || 'jobOrder'
@@ -172,7 +172,7 @@ async function machineReload() {
   scheduler.refreshRows()
 }
 
-watch(modifiedEvents, (newVal: QueueBasedPlannedEvents[]) => {
+watch(modifiedEvents, (newVal: QueueBasedEvents[]) => {
   scheduler.events = newVal
   scrollStore.data = newVal
 })
@@ -238,7 +238,9 @@ function dateRangeEnd() {
 }
 
 onMounted(async () => {
+  console.log(machinesPending.value)
   await until(machinesPending).toBe(false)
+  console.log(machines.value)
   const schedule: SchedulerPro = scheduler = new QueueSchedule({
     ref: 'schedule',
     appendTo: 'main',
