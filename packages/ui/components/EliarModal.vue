@@ -17,7 +17,7 @@ defineEmits(['close'])
 <style scoped lang="postcss">
 .modal-mask {
   background-color: rgba(0, 0, 0, 0.5);
-  @apply fixed top-0 left-0 w-full h-100vh flex z-100 justify-center items-center self-center m-auto select-none overflow-hidden;
+  @apply fixed top-0 left-0 w-full h-100vh flex z-2001 justify-center items-center self-center m-auto select-none overflow-hidden;
   .modal-wrapper {
     @apply flex justify-center h-100vh w-full;
     .modal-container {
