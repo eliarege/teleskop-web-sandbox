@@ -1,4 +1,4 @@
-import type { QueueBasedPlannedEvents } from './queueBased'
+import type { QueueBasedEvents, QueueBasedPlannedEvents } from './queueBased'
 
 export interface MachineStatus {
   id: number
@@ -103,7 +103,7 @@ export interface Recipe {
 export interface BatchText {
   id: number
   label: string
-  value: keyof QueueBasedPlannedEvents
+  value: keyof QueueBasedEvents
 }
 
 export interface Batch {
