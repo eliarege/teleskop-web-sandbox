@@ -24,6 +24,7 @@ export const useEditorStore = defineStore('editor', () => {
   const { notifySuccess, notifyError } = useNotify()
 
   async function changeMachine(id: number, name: string) {
+    selectedRow.value = -1
     const MACHINE_PATH_RE = /^\/machine\/\d+$/
     machine.value = {
       id,
