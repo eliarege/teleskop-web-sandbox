@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { klona } from 'klona/lite'
-import type { CommandIO, MachineCommand, ParameterItem, Program, ProgramStep, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { CommandIO, Machine, MachineCommand, MachineInfo, ParameterItem, Program, ProgramStep, ProgramStepCommand, ioListItem } from '~/shared/types'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
@@ -21,6 +21,21 @@ export const useEditorStore = defineStore('editor', () => {
   const { t } = useI18n()
   const errorIds = ref(new Set<string>())
   const { notifySuccess, notifyError } = useNotify()
+
+  async function changeMachine(id: number, name: string) {
+    const MACHINE_PATH_RE = /^\/machine\/\d+$/
+    machine.value = {
+      id,
+      name,
+      commands: new Map(),
+    }
+    // Replace only if navigating from /machine/:id
+    const replace = MACHINE_PATH_RE.test(route.path)
+    await navigateTo({
+      path: `/machine/${id}`,
+      replace,
+    })
+  }
 
   function createEmptyStep() {
     return {
@@ -309,6 +324,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   return {
+    changeMachine,
     program,
     machine,
     selectedStep,
