@@ -168,9 +168,10 @@ export class QueueDrag extends DragHelper {
     theoreticalDuration = await $fetch('api/theoreticalDuration', {
       query: { planKey: context.task.originalData.id },
     })
-    const isValid = await $fetch('/api/isValid', {
-      query: { planKey: context.task.originalData.id },
-    })
+    // const isValid = await $fetch('/api/isValid', {
+    //   query: { planKey: context.task.originalData.id },
+    // })
+    const isValid = []
 
     context.isValid = isValid
     context.relatedElements = selectedRecords
@@ -298,12 +299,10 @@ export class QueueDrag extends DragHelper {
           machineId: machine.id,
           queueNumber: targetEventRecord.queueNumber + 1 || 1,
         }
-        console.log(targetEventRecord)
         task.startDate = addMinutes(targetEventRecord.endDate, 5)
         task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
         const futureEvents = currentEvents.filter(a => a.startDate >= targetEventRecord.endDate && a !== task)
         sortEventsByDateDesc(futureEvents).forEach((ev, i, all) => {
-          console.log(ev.name)
           const prevEvent = all[i - 1] || task
           ev.startDate = addMinutes(prevEvent.endDate, 5)
           ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
@@ -315,7 +314,6 @@ export class QueueDrag extends DragHelper {
             a.startDate <= task.startDate
             && a.endDate >= task.startDate,
           ))
-          console.log(sideEvents[0])
           task.startDate = addMinutes(sideEvents[0].endDate, 5)
           task.endDate = addSeconds(task.startDate, task.originalData.theoreticalDuration)
           newEvent = {
@@ -332,7 +330,6 @@ export class QueueDrag extends DragHelper {
         } else {
           if (currentEvents.length > 0) {
             const lastEvent = currentEvents[currentEvents.length - 1]
-            console.log(lastEvent)
             task.startDate = addMinutes(lastEvent.endDate, 5)
             task.endDate = addSeconds(task.startDate, task.originalData.theoreticalDuration)
             newEvent = {
@@ -465,7 +462,6 @@ export class TaskStore extends EventStore {
     } else {
       if (grabbedEvent.queueNumber > targetEvent.queueNumber || 0) {
         const target = targetMachine.events.filter(ev => ev.queueNumber > (targetEvent.queueNumber || 0) && ev.queueNumber < grabbedEvent.queueNumber)
-        console.log(target)
         target.forEach((ev) => {
           this.postponeEvent(ev, (grabbedEvent.theoreticalDuration + 300))
         })
@@ -489,9 +485,7 @@ export class TaskStore extends EventStore {
     grabbedEvent.endDate = addSeconds(grabbedEvent.startDate, grabbedEvent.theoreticalDuration)
 
     oldQueueNumber = grabbedEvent.queueNumber
-    console.log('AMK:', grabbedEvent.isRemoved)
     if (grabbedEvent.isRemoved) {
-      console.log('AMK:', grabbedEvent)
       this.add(grabbedEvent)
     }
     this.setQueueNumber(oldQueueNumber, newQueueNumber, targetMachine, previousMachine, grabbedEvent)
@@ -546,11 +540,8 @@ export class TaskStore extends EventStore {
       createdEvent.machineId = targetMachine.id
       createdEvent.resourceId = targetMachine.id
       grabbedEvent = createdEvent
-      console.log(grabbedEvent.isRemoved)
-      console.log(createdEvent)
     }
     if (targetEvent) {
-      console.log(grabbedEvent)
       this.scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine)
     } else {
       const { previousEvent } = this.createTargetEvent(targetMachine, grabbedEvent)
@@ -615,6 +606,7 @@ export class QueueSchedule extends SchedulerPro {
         // const isValid = await $fetch('/api/isValid', {
         //   query: { planKey },
         // })
+        const isValid = []
         // console.log('isValid', isValid)
         // context.isValid = isValid
         context.theoreticalDuration = theoreticalDuration
