@@ -3,33 +3,36 @@ import type { QList } from 'quasar'
 import type { MachineGroup, MachineInfo } from '~/shared/types'
 
 const route = useRoute()
+const editor = useEditorStore()
 
-const { data: machineGroup } = useFetch<MachineGroup[]>('/api/machine-group')
-const { data: allMachine } = useFetch<MachineInfo[]>('/api/machine')
+const { data: machineGroups } = useFetch<MachineGroup[]>('/api/machine-group')
+const { data: machines } = useFetch<MachineInfo[]>('/api/machine')
 
-const MACHINE_PATH_RE = /^\/machine\/\d+$/
-
-const machineGroups = computed(() => {
-  if (!machineGroup.value || !allMachine.value)
+const machineGroupsWithMachines = computed(() => {
+  if (!machineGroups.value || !machines.value)
     return []
 
-  return machineGroup.value.map(group => ({
+  return machineGroups.value.map(group => ({
     ...group,
-    machines: allMachine.value?.filter(machine => machine.groupId === group.groupId),
+    machines: machines.value!.filter(machine => machine.groupId === group.groupId),
   }))
 })
 
+watch(() => [machineGroupsWithMachines.value.length, route.path], () => {
+  if (route.path === '/') {
+    const firstMachine = machineGroupsWithMachines.value.find(group => group.machines.length)?.machines[0]
+    if (firstMachine)
+      editor.changeMachine(firstMachine.id, firstMachine.name)
+  }
+}, { immediate: true })
+
 async function onUpdateSelected(selection: string) {
-  const editor = useEditorStore()
-  editor.machineCommands.clear()
+  editor.program = editor.createProgram()
+
   if (selection) {
     const id = Number.parseInt(selection.split('-')[1])
-    // Replace only if navigating from /machine/:id
-    const replace = MACHINE_PATH_RE.test(route.path)
-    await navigateTo({
-      path: `/machine/${id}`,
-      replace,
-    })
+    const name = machines.value?.find(machine => machine.id === id)?.name || ''
+    editor.changeMachine(id, name)
   } else {
     await navigateTo('/')
   }
@@ -48,7 +51,7 @@ const thumbStyle = { opacity: '0' }
         dense
         borderless
       >
-        <template v-for="group in machineGroups" :key="group.groupId">
+        <template v-for="group in machineGroupsWithMachines" :key="group.groupId">
           <QExpansionItem
             v-if="group.machines && group.machines.length > 0"
             :label="group.name"
