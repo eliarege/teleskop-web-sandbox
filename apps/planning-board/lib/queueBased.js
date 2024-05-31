@@ -89,11 +89,10 @@ socket.on('dropResponse', async (res) => {
 })
 let theoreticalDuration
 let endDate
-const eventData = {
-  previousEventData: {},
-  newEventData: {},
-}
+
+let oldQueueNumber
 let newQueueNumber
+
 let prevMachineId
 function removeAttributes(element, pattern) {
   if (element) {
@@ -292,17 +291,19 @@ export class QueueDrag extends DragHelper {
     let newEvent
     if (target) {
       task.originalData.machineId = machine.id
-      const currentEvents = sortEventsByDateDesc(machine.events)
+      const currentEvents = sortEventsByDateDesc(machine.events.filter((ev => ev.isPlanned)))
       if (targetEventRecord) {
         newEvent = {
           planKey: task.id,
           machineId: machine.id,
-          queueNumber: targetEventRecord.queueNumber + 1,
+          queueNumber: targetEventRecord.queueNumber + 1 || 1,
         }
+        console.log(targetEventRecord)
         task.startDate = addMinutes(targetEventRecord.endDate, 5)
         task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
-        const futureEvents = currentEvents.filter(a => a.startDate >= task.startDate)
+        const futureEvents = currentEvents.filter(a => a.startDate >= targetEventRecord.endDate && a !== task)
         sortEventsByDateDesc(futureEvents).forEach((ev, i, all) => {
+          console.log(ev.name)
           const prevEvent = all[i - 1] || task
           ev.startDate = addMinutes(prevEvent.endDate, 5)
           ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
@@ -314,12 +315,13 @@ export class QueueDrag extends DragHelper {
             a.startDate <= task.startDate
             && a.endDate >= task.startDate,
           ))
+          console.log(sideEvents[0])
           task.startDate = addMinutes(sideEvents[0].endDate, 5)
           task.endDate = addSeconds(task.startDate, task.originalData.theoreticalDuration)
           newEvent = {
             planKey: task.id,
             machineId: machine.id,
-            queueNumber: sideEvents[0].queueNumber + 1,
+            queueNumber: sideEvents[0].queueNumber + 1 || 1,
           }
           const futureEvents = currentEvents.filter(a => a.startDate >= task.startDate && a !== task)
           futureEvents.forEach((el, i, all) => {
@@ -330,12 +332,13 @@ export class QueueDrag extends DragHelper {
         } else {
           if (currentEvents.length > 0) {
             const lastEvent = currentEvents[currentEvents.length - 1]
+            console.log(lastEvent)
             task.startDate = addMinutes(lastEvent.endDate, 5)
             task.endDate = addSeconds(task.startDate, task.originalData.theoreticalDuration)
             newEvent = {
               planKey: task.id,
               machineId: machine.id,
-              queueNumber: lastEvent.queueNumber + 1,
+              queueNumber: lastEvent.queueNumber + 1 || 1,
             }
           } else {
             task.startDate = new Date()
@@ -415,6 +418,7 @@ export class QueueTask extends EventModel {
     }
   }
 }
+
 export class TaskStore extends EventStore {
   static $name = 'TaskStore'
 
@@ -424,256 +428,134 @@ export class TaskStore extends EventStore {
     }
   }
 
-  async scheduleOnEmptyCell(grabbedEvent, targetMachine, previousMachine, context) {
-    const targetEvents = sortEventsByDateDesc(targetMachine.events.filter(ev => ev.isPlanned === true))
-    if (targetEvents.filter(a => a.startDate <= grabbedEvent.startDate && a.endDate >= grabbedEvent.startDate).length > 0) {
-      const sideEvents = sortEventsByDateDesc(targetEvents.filter(a =>
-        a.startDate <= grabbedEvent.startDate
-        && a.endDate >= grabbedEvent.startDate,
-      ))
-      grabbedEvent.startDate = addMinutes(sideEvents[0].endDate, 5)
-      grabbedEvent.endDate = addSeconds(grabbedEvent.startDate, grabbedEvent.originalData.theoreticalDuration)
-      newQueueNumber = sideEvents[0].queueNumber
-      const futureEvents = targetEvents.filter(a => a.startDate >= grabbedEvent.startDate && a !== grabbedEvent)
-      futureEvents.forEach((el, i, all) => {
-        const prev = all[i - 1] || grabbedEvent
-        el.startDate = addMinutes(prev.endDate, 5)
-        el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-      })
-
-      const previousMachineEvents = sortEventsByDateDesc(previousMachine.events.filter(ev => ev.isPlanned === true))
-
-      if (context.isFirst) {
-        previousMachineEvents.forEach((el, i) => {
-          if (i === 0) {
-            el.startDate = context.origStart
-            el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-          } else {
-            el.startDate = addMinutes(previousMachineEvents[i - 1].endDate, 5)
-            el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-          }
-        })
-      } else {
-        previousMachineEvents.forEach((el, i) => {
-          if (i > 0) {
-            el.startDate = addMinutes(previousMachineEvents[i - 1].endDate, 5)
-            el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-          }
-        })
-      }
-    } else {
-      if (targetMachine.events.filter(ev => ev.isPlanned === true).length > 1) {
-        const lastEvent = targetMachine.events[targetMachine.events.length - 2]
-        grabbedEvent.startDate = addMinutes(lastEvent.endDate, 5)
-        grabbedEvent.endDate = addSeconds(grabbedEvent.startDate, grabbedEvent.originalData.theoreticalDuration)
-        newQueueNumber = lastEvent.queueNumber + 1
-      } else {
-        const actualEvents = targetMachine.events.filter(ev => ev.isPlanned === false)
-        const lastActualEvent = actualEvents[actualEvents.length - 1]
-        if (lastActualEvent.isFinished) {
-          grabbedEvent.startDate = new Date()
-          grabbedEvent.endDate = addSeconds(grabbedEvent.startDate, grabbedEvent.originalData.theoreticalDuration)
-        } else if (new Date(lastActualEvent.endDate) > new Date()) {
-          grabbedEvent.startDate = addMinutes(lastActualEvent.endDate, 5)
-          grabbedEvent.endDate = addSeconds(grabbedEvent.startDate, grabbedEvent.originalData.theoreticalDuration)
-        } else {
-          grabbedEvent.startDate = addMinutes(new Date(), 5)
-          grabbedEvent.endDate = addSeconds(grabbedEvent.startDate, grabbedEvent.originalData.theoreticalDuration)
-        }
-        newQueueNumber = 1
-      }
-      if (previousMachine.id !== targetMachine.id) {
-        if (context.isFirst) {
-          previousMachine.events.forEach((el, i) => {
-            if (i === 0) {
-              el.startDate = context.origStart
-              el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-            } else {
-              el.startDate = addMinutes(previousMachine.events[i - 1].endDate, 5)
-              el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-            }
-          })
-        } else {
-          previousMachine.events.forEach((el, i) => {
-            if (i > 0) {
-              el.startDate = addMinutes(previousMachine.events[i - 1].endDate, 5)
-              el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-            }
-          })
-        }
-      }
-    }
-    const newEvent = {
-      planKey: context.eventRecord.originalData.planKey,
-      machineId: grabbedEvent.resourceId,
-      queueNumber: newQueueNumber,
-    }
-    eventData.previousEventData = context.originalTaskData
-    eventData.newEventData = newEvent
-  }
-
-  async scheduleOnTarget(targetEvent, grabbedEvent, targetMachine, previousMachine, context) {
-    const targetEvents = sortEventsByDateDesc(targetMachine.events).filter(ev => ev.isPlanned === true)
-    const firstEvent = targetEvents[0]
-    if (context.isFirst) {
-      firstEvent.startDate = context.origStart
-      firstEvent.endDate = addSeconds(firstEvent.startDate, firstEvent.originalData.theoreticalDuration)
-    }
-    if (firstEvent === grabbedEvent) {
-      const runningEvents = sortEventsByDateDesc(targetMachine.events).filter(ev => ev.isPlanned === false)
-      const lastRunningEvent = runningEvents[runningEvents.length - 1]
-      if (new Date(lastRunningEvent.endDate) >= new Date()) {
-        grabbedEvent.startDate = addMinutes(lastRunningEvent.endDate, 5)
-      } else {
-        grabbedEvent.startDate = addSeconds(new Date(), 10)
-      }
-      newQueueNumber = 1
-    } else {
-      grabbedEvent.startDate = addMinutes(targetEvent.endDate, 5)
-      newQueueNumber = targetEvent.queueNumber
-    }
-    grabbedEvent.endDate = addSeconds(grabbedEvent.startDate, grabbedEvent.originalData.theoreticalDuration)
-
-    targetEvents.forEach((el, i) => {
-      if (i > 0) {
-        el.startDate = addMinutes(targetEvents[i - 1].endDate, 5)
-        el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-      }
-    })
-
+  setQueueNumber(oldQueueNumber, newQueueNumber, targetMachine, previousMachine, grabbedEvent) {
+    grabbedEvent.queueNumber = newQueueNumber
     if (targetMachine.id !== previousMachine.id) {
-      const previousMachinePlannedEvents = previousMachine.events.filter(ev => ev.isPlanned === true)
-      if (context.isFirst) {
-        previousMachinePlannedEvents.forEach((el, i) => {
-          if (i === 0) {
-            el.startDate = context.origStart
-            el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-          } else {
-            el.startDate = addMinutes(previousMachinePlannedEvents[i - 1].endDate, 5)
-            el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-          }
-        })
-      } else {
-        const sortedEvents = sortEventsByDateDesc(previousMachinePlannedEvents)
-        sortedEvents.forEach((el, i) => {
-          if (i > 0) {
-            el.startDate = addMinutes(sortedEvents[i - 1].endDate, 5)
-            el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-          }
-        })
-      }
-    }
-    const newEvent = {
-      planKey: context.eventRecord.originalData.planKey,
-      machineId: grabbedEvent.resourceId,
-      queueNumber: newQueueNumber,
-    }
-    eventData.previousEventData = context.originalTaskData
-    eventData.previousEventData.queueNumber = grabbedEvent.queueNumber
-    eventData.newEventData = newEvent
-  }
-
-  expediteEvents(events, duration) {
-    events.forEach((ev) => {
-      ev.startDate = addSeconds(ev.startDate, -duration)
-      ev.endDate = addSeconds(ev.startDate, ev.originalData.theoreticalDuration)
-    })
-  }
-
-  postponeEvents(events, duration) {
-    events.forEach((ev) => {
-      ev.startDate = addSeconds(ev.startDate, duration)
-      ev.endDate = addSeconds(ev.startDate, ev.originalData.theoreticalDuration)
-    })
-  }
-
-  async scheduleRemovedEvent(grabbedEvent, targetEvent, previousMachine, targetMachine, context) {
-    const createdEvent = grabbedEvent.originalData
-
-    createdEvent.resourceId = targetMachine.id
-    createdEvent.machineId = targetMachine.id
-    createdEvent.queueNumber = targetEvent.queueNumber
-    createdEvent.startDate = addMinutes(targetEvent.endDate, 5)
-    createdEvent.endDate = addSeconds(createdEvent.startDate, createdEvent.theoreticalDuration)
-    if (context.isOld) {
-      this.expediteEvents(previousMachine.events, createdEvent.theoreticalDuration)
-    }
-    this.add(createdEvent)
-
-    const futureEvents = targetMachine.events.filter(a => a.startDate >= createdEvent.startDate && a.id !== createdEvent.id)
-    futureEvents.forEach((ev, i, all) => {
-      const prev = all[i - 1] || createdEvent
-
-      ev.startDate = addMinutes(prev.endDate, 5)
-      ev.endDate = addSeconds(ev.startDate, ev.originalData.theoreticalDuration)
-    })
-
-    const oldEvent = {
-      planKey: grabbedEvent.planKey,
-      machineId: grabbedEvent.resourceId,
-      queueNumber: grabbedEvent.queueNumber,
-    }
-    const newEvent = {
-      planKey: createdEvent.planKey,
-      machineId: createdEvent.resourceId,
-      queueNumber: createdEvent.queueNumber,
-    }
-    eventData.previousEventData = oldEvent
-    eventData.newEventData = newEvent
-  }
-
-  setQueueNumber(oldQueueNumber, newQueueNumber, targetMachine, previousMachine) {
-    if (targetMachine.id !== previousMachine.id) {
-      const futureEvents = targetMachine.events.filter(ev => ev.isPlanned && ev.queueNumber >= newQueueNumber)
-      const previousEvents = previousMachine.events.filter(ev => ev.isPlanned && ev.queueNumber > oldQueueNumber)
-
-      futureEvents.forEach((ev, i) => {
-        ev.queueNumber = newQueueNumber + i + 1
-      })
-      previousEvents.forEach((ev) => {
+      previousMachine.events.filter(ev => ev.queueNumber > oldQueueNumber && ev !== grabbedEvent).forEach((ev) => {
         ev.queueNumber--
       })
+
+      targetMachine.events.filter(ev => ev.queueNumber >= newQueueNumber && ev !== grabbedEvent).forEach((ev) => {
+        ev.queueNumber++
+      })
     } else {
-      if (oldQueueNumber < newQueueNumber) {
-        const events = targetMachine.events.filter(ev => ev.isPlanned && ev.queueNumber >= oldQueueNumber && ev.queueNumber < newQueueNumber)
-        events.forEach((ev) => {
+      if (oldQueueNumber > newQueueNumber) {
+        targetMachine.events.filter(ev => ev.queueNumber >= newQueueNumber && ev.queueNumber < oldQueueNumber && ev !== grabbedEvent).forEach((ev) => {
           ev.queueNumber++
         })
       } else {
-        const events = targetMachine.events.filter(ev => ev.isPlanned && ev.queueNumber > newQueueNumber && ev.queueNumber <= oldQueueNumber)
-        events.forEach((ev) => {
+        targetMachine.events.filter(ev => ev.queueNumber > oldQueueNumber && ev.queueNumber <= newQueueNumber && ev !== grabbedEvent).forEach((ev) => {
           ev.queueNumber--
         })
       }
     }
   }
 
-  async finalizeRescheduling(previousEventData, newEventData) {
-    await $fetch('/api/queueBased/scheduleEvents', {
-      method: 'PUT',
-      body: { previousEventData, newEventData },
+  scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine) {
+    const futureEvents = targetMachine.events.filter(ev => ev.isPlanned && ev.queueNumber > (targetEvent.queueNumber || 0) && ev !== grabbedEvent)
+    let previousEvents
+
+    if (previousMachine.id !== targetMachine.id) {
+      newQueueNumber = targetEvent.queueNumber + 1 || 1
+
+      previousEvents = previousMachine.events.filter(ev => ev.isPlanned && ev.queueNumber >= grabbedEvent.queueNumber && ev !== grabbedEvent)
+      futureEvents.forEach((ev) => {
+        this.postponeEvent(ev, (grabbedEvent.theoreticalDuration + 300))
+      })
+    } else {
+      if (grabbedEvent.queueNumber > targetEvent.queueNumber || 0) {
+        const target = targetMachine.events.filter(ev => ev.queueNumber > (targetEvent.queueNumber || 0) && ev.queueNumber < grabbedEvent.queueNumber)
+        console.log(target)
+        target.forEach((ev) => {
+          this.postponeEvent(ev, (grabbedEvent.theoreticalDuration + 300))
+        })
+        newQueueNumber = targetEvent.queueNumber + 1 || 1
+      } else {
+        if (!targetEvent.queueNumber) {
+          const target = targetMachine.events.filter(ev => ev.isPlanned && ev.queueNumber < grabbedEvent.queueNumber)
+          target.forEach((ev) => {
+            this.postponeEvent(ev, (grabbedEvent.theoreticalDuration + 300))
+          })
+        }
+        newQueueNumber = targetEvent.queueNumber || 1
+      }
+      previousEvents = targetMachine.events.filter(ev => ev.isPlanned && ev.queueNumber <= targetEvent.queueNumber && ev !== grabbedEvent && ev.queueNumber > grabbedEvent.queueNumber)
+    }
+    previousEvents.forEach((ev) => {
+      this.expediteEvent(ev, (grabbedEvent.theoreticalDuration + 300))
     })
+
+    grabbedEvent.startDate = addMinutes(targetEvent.endDate, 5)
+    grabbedEvent.endDate = addSeconds(grabbedEvent.startDate, grabbedEvent.theoreticalDuration)
+
+    oldQueueNumber = grabbedEvent.queueNumber
+    console.log('AMK:', grabbedEvent.isRemoved)
+    if (grabbedEvent.isRemoved) {
+      console.log('AMK:', grabbedEvent)
+      this.add(grabbedEvent)
+    }
+    this.setQueueNumber(oldQueueNumber, newQueueNumber, targetMachine, previousMachine, grabbedEvent)
+  }
+
+  createTargetEvent(targetMachine, grabbedEvent) {
+    const targetMachineEvents = targetMachine.events.filter(ev => ev.id !== grabbedEvent.id)
+    const sortedEvents = targetMachineEvents.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+
+    let previousEvent = null
+    let nextEvent = null
+
+    for (let i = 0; i < sortedEvents.length - 1; i++) {
+      const currentEvent = sortedEvents[i]
+      const nextEventCandidate = sortedEvents[i + 1]
+
+      if (new Date(currentEvent.startDate) <= new Date(grabbedEvent.startDate)
+        && new Date(grabbedEvent.startDate) < new Date(nextEventCandidate.startDate)) {
+        previousEvent = currentEvent
+        nextEvent = nextEventCandidate
+        break
+      }
+    }
+
+    if (!previousEvent && !nextEvent) {
+      if (new Date(grabbedEvent.startDate) < new Date(sortedEvents[0].startDate)) {
+        nextEvent = sortedEvents[0]
+      } else if (new Date(grabbedEvent.startDate) >= new Date(sortedEvents[sortedEvents.length - 1].startDate)) {
+        previousEvent = sortedEvents[sortedEvents.length - 1]
+      }
+    }
+
+    return { previousEvent, nextEvent }
+  }
+
+  expediteEvent(event, duration) {
+    event.startDate = addSeconds(event.startDate, -duration)
+    event.endDate = addSeconds(event.endDate, -duration)
+  }
+
+  postponeEvent(event, duration) {
+    event.startDate = addSeconds(event.startDate, duration)
+    event.endDate = addSeconds(event.startDate, event.theoreticalDuration)
   }
 
   async rescheduleOverlappingTasks(grabbedEvent, targetEvent, previousMachine, targetMachine, context) {
     this.isRescheduling = true
     this.beginBatch()
-    if (!grabbedEvent.isRemoved) {
-      if (targetEvent) {
-        await this.scheduleOnTarget(targetEvent, grabbedEvent, targetMachine, previousMachine, context)
-      } else {
-        await this.scheduleOnEmptyCell(grabbedEvent, targetMachine, previousMachine, context)
-      }
-    } else {
-      await this.scheduleRemovedEvent(grabbedEvent, targetEvent, previousMachine, targetMachine, context)
+    if (grabbedEvent.isRemoved) {
+      const createdEvent = grabbedEvent.originalData
+      createdEvent.isRemoved = true
+      createdEvent.machineId = targetMachine.id
+      createdEvent.resourceId = targetMachine.id
+      grabbedEvent = createdEvent
+      console.log(grabbedEvent.isRemoved)
+      console.log(createdEvent)
     }
-    this.setQueueNumber(grabbedEvent.queueNumber, newQueueNumber, targetMachine, previousMachine)
-    await this.finalizeRescheduling(eventData.previousEventData, eventData.newEventData)
-    grabbedEvent.queueNumber = newQueueNumber
     if (targetEvent) {
-      targetEvent.queueNumber--
+      console.log(grabbedEvent)
+      this.scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine)
+    } else {
+      const { previousEvent } = this.createTargetEvent(targetMachine, grabbedEvent)
+      this.scheduleEventOnTarget(grabbedEvent, previousEvent, previousMachine, targetMachine)
     }
-    newQueueNumber = 0
     this.isRescheduling = false
     this.endBatch()
   }
@@ -718,6 +600,7 @@ export class QueueSchedule extends SchedulerPro {
         },
       },
       async onEventDragStart({ context, resourceRecord, eventRecords }) {
+        context.isDrag = true
         context.task = context.eventRecord.originalData
         context.originalTaskData = {
           planKey: context.eventRecord.originalData.planKey,
@@ -765,6 +648,8 @@ export class QueueSchedule extends SchedulerPro {
         // && (isValid?.length > 0 ? isValid.find(a => a.machineId === machine.id).programs : true)
       },
       async onEventDrop({ eventRecords, context, targetEventRecord, resourceRecord, targetResourceRecord }) {
+        context.isDrag = false
+
         context.isOld = new Date(context.origStart) <= new Date(this.timeAxis.endDate)
         for (let i = 0; i < this.resources.length; i++) {
           const element = this.resources[i]
