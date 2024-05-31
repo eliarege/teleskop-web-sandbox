@@ -1,7 +1,7 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerEventModel, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { Combo, DateHelper, EventStore, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
+import { Combo, DateHelper, EventStore, LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
 import { addDays, addHours } from 'date-fns'
 import { EliarModal } from 'ui'
 import { useDocumentVisibility, useStorage } from '@vueuse/core'
@@ -12,7 +12,7 @@ import type { MachineStatus, PtLocaleSettings, UnplannedEvents } from '~/shared/
 import { eventTooltip } from '~/composables/helper'
 import { useSettingStore } from '~/store/settings'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const visibility = useDocumentVisibility()
 const refreshInterval = 60_000
 const today = new Date()
@@ -236,11 +236,14 @@ function dateRangeEnd() {
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
 }
-
+watch(locale, () => {
+  document.querySelectorAll('.totalAlarmCount').forEach((ev) => {
+    const count = ev.textContent?.split(':')[1]
+    ev.textContent = `${t('total-alarm-count')}:${count}`
+  })
+})
 onMounted(async () => {
-  console.log(machinesPending.value)
   await until(machinesPending).toBe(false)
-  console.log(machines.value)
   const schedule: SchedulerPro = scheduler = new QueueSchedule({
     ref: 'schedule',
     appendTo: 'main',
@@ -331,7 +334,7 @@ onMounted(async () => {
             <dt role="presentation">${data.record.name}</dt>
             <dd class="b-resource-role" role="presentation"></dd>
             <dd class="b-resource-meta" role="presentation">
-              <div>Total Alarm Count: ${data.record.totalAlarmCount}</div>
+              <div class="totalAlarmCount">${t('total-alarm-count')}: ${data.record.totalAlarmCount}</div>
             </dd>
           </dl>
         </div>
@@ -490,7 +493,7 @@ onMounted(async () => {
       {
         type: 'combo',
         ref: 'scrollToEvent',
-        placeholder: 'Scroll to event',
+        placeholder: 'L{scrollToEvent}',
         editable: true,
         store: scrollStore,
         displayField: 'jobOrder',
@@ -694,6 +697,10 @@ onMounted(async () => {
   })
   await scheduleDataRefresh()
 })
+function capitalizeFirstLetter(text: string) {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
 </script>
 
 <template>
@@ -839,6 +846,7 @@ div[bgGreen] {
 <i18n lang="json">
 {
   "en": {
+    "total-alarm-count": "Total Alarm Count",
     "ctx-menu": {
       "task-edit": "Update Job Order",
       "task-delete": "Delete Job Order",
@@ -849,6 +857,7 @@ div[bgGreen] {
     }
   },
   "tr": {
+    "total-alarm-count": "Toplam Alarm",
     "ctx-menu": {
       "task-edit": "İş Emrini Güncelle",
       "task-delete": "İş Emrini Sil",

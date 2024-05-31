@@ -6,6 +6,7 @@ import {
   EventStore,
   Grid,
   LocaleHelper,
+  LocaleManager,
   SchedulerPro,
   ScrollManager,
   Scroller,
@@ -37,6 +38,8 @@ const trLocalization = {
     unassign: 'Planlanmamış İş Emirleri',
     machine: 'Makine İsmi',
     unassign: 'Planlanmamış İş Emirleri',
+    scrollToEvent: 'İş Emrine Git',
+    test: 'AMK',
   },
 }
 const enLocalization = {
@@ -59,6 +62,8 @@ const enLocalization = {
     unassign: 'Unassigned Job Orders',
     machine: 'Machine Name',
     unassign: 'Unassigned Job Orders',
+    scrollToEvent: 'Scroll To Job Order',
+    test: 'AMK',
   },
 }
 function sortEventsByDateDesc(events) {
@@ -67,7 +72,6 @@ function sortEventsByDateDesc(events) {
 function sortEventsByDateAsc(events) {
   return [...events].sort((a, b) => a.startDate < b.startDate ? 1 : -1)
 }
-
 LocaleHelper.publishLocale('Tr', trLocalization)
 LocaleHelper.publishLocale('En', enLocalization)
 const serverUrl = `ws://$192.168.18.240:3500`
@@ -106,7 +110,6 @@ function removeAttributes(element, pattern) {
 function getResourceRow(resource) {
   return document.querySelector(`div[data-id="${resource.id}"]`)
 }
-
 export class QueueDrag extends DragHelper {
   static get configurable() {
     return {
