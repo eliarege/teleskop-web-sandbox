@@ -248,6 +248,9 @@ export async function getMachines() {
     .where('m.INUSE', '=', 1)
     .andWhere('m.USEINTELESKOP', '=', 1)
 }
+export async function getMachineIds(): Promise<number[]> {
+  return (await knex('BFMACHINES').select('MACHINEID as id').where('INUSE', true).andWhere('USEINTELESKOP', true)).map(m => m.id)
+}
 export async function getErpParameters(machineId: number) {
   const definitions = await knex({ p: 'dbo.PTMACHINEERP' })
     .select('*')
