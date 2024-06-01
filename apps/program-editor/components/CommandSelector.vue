@@ -25,6 +25,10 @@ watch(() => select.value?.modelValue, () => {
   }
 })
 
+onUnmounted(() => {
+  editor.errorIds.delete(id)
+})
+
 const rules = [
   (value: any) => !!value,
 ]
