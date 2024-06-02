@@ -10,6 +10,7 @@ export async function createPtColumnsTable(knex: Knex) {
         .where('PARAMSTRING', '<>', '')
         .select()
         .orderBy('BATCHPARAMETERID', 'asc')
+        .timeout(30_000)
 
       await knex.schema.createTable('PTCOLUMNS', (table) => {
         table.increments('id')
@@ -18,11 +19,18 @@ export async function createPtColumnsTable(knex: Knex) {
         table.boolean('visible')
       }).then(async () => {
         console.log('Table PTCOLUMNS created successfully')
+        // TODO: Bulk insert
         await knex.transaction(async (trx) => {
           for (const row of values) {
-            await trx('PTCOLUMNS').insert({ parameterId: row.BATCHPARAMETERID, parameterName: row.PARAMSTRING, visible: false })
+            await trx('PTCOLUMNS').insert({
+              parameterId: row.BATCHPARAMETERID,
+              parameterName: row.PARAMSTRING,
+              visible: false,
+            })
           }
-        }).then(() => console.log('Values inserted into PTCOLUMNS')).catch(err => console.error('An error occured while inserting values into PTCOLUMNS', err))
+        })
+          .then(() => console.log('Values inserted into PTCOLUMNS'))
+          .catch(err => console.error('An error occured while inserting values into PTCOLUMNS', err))
       })
     } else {
       console.log('Table PTCOLUMNS already exists, no data inserted')
@@ -43,20 +51,29 @@ export async function createPtMachineErpTable(knex: Knex) {
         table.integer('machineId')
         table.string('paramName')
         table.boolean('visible')
-      }).then(async () => {
-        console.log('Table PTMACHINEERP created successfully')
-        const values = await knex('BFMACHBATCHPARAMETERS').select({
-          paramId: 'BATCHPARAMETERID',
-          machineId: 'MACHINEID',
-          paramName: 'PARAMSTRING',
-        })
-        await knex.transaction(async (trx) => {
-          for (const row of values) {
-            await trx('PTMACHINEERP').insert({ paramId: row.paramId, machineId: row.machineId, paramName: row.paramName, visible: false })
-          }
-        }).then(() => console.log('Values inserted into PTMACHINEERP')).catch(err => console.error('An error occured while inserting values into PTMACHINEERP', err))
       })
-    } else console.log('Table PTMACHINEERP already exists, no data inserted')
+      console.log('Table PTMACHINEERP created successfully')
+      const values = await knex('BFMACHBATCHPARAMETERS').select({
+        paramId: 'BATCHPARAMETERID',
+        machineId: 'MACHINEID',
+        paramName: 'PARAMSTRING',
+      })
+      // TODO: Bulk insert
+      await knex.transaction(async (trx) => {
+        for (const row of values) {
+          await trx('PTMACHINEERP').insert({
+            paramId: row.paramId,
+            machineId: row.machineId,
+            paramName: row.paramName,
+            visible: false,
+          })
+        }
+      })
+        .then(() => console.log('Values inserted into PTMACHINEERP'))
+        .catch(err => console.error('An error occured while inserting values into PTMACHINEERP', err))
+    } else {
+      console.log('Table PTMACHINEERP already exists, no data inserted')
+    }
   } catch (err) {
     console.error('error:', err)
   }
