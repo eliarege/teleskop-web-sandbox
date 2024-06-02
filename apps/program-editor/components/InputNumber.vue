@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { isNaN } from 'lodash-es'
 import type { QInput } from 'quasar'
 
 const props = withDefaults(defineProps<{
@@ -158,7 +157,7 @@ function onBlur(event: FocusEvent) {
   }
 
   const parsedValue = Number.parseFloat(value)
-  if (!isNaN(parsedValue)) {
+  if (!Number.isNaN(parsedValue)) {
     model.value = parsedValue
   }
 
