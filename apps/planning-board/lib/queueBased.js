@@ -451,7 +451,7 @@ export class TaskStore extends EventStore {
     }
   }
 
-  scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine) {
+  async scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine) {
     const futureEvents = targetMachine.events.filter(ev => ev.isPlanned && ev.queueNumber > (targetEvent.queueNumber || 0) && ev !== grabbedEvent)
     let previousEvents
 
@@ -492,6 +492,21 @@ export class TaskStore extends EventStore {
       this.add(grabbedEvent)
     }
     this.setQueueNumber(oldQueueNumber, newQueueNumber, targetMachine, previousMachine, grabbedEvent)
+    const previousEventData = {
+      planKey: grabbedEvent.id,
+      machineId: previousMachine.id,
+      queueNumber: oldQueueNumber,
+    }
+    const newEventData = {
+      planKey: grabbedEvent.id,
+      machineId: targetMachine.id,
+      queueNumber: newQueueNumber,
+    }
+
+    await $fetch('/api/queueBased/scheduleEvents', {
+      method: 'PUT',
+      body: { previousEventData, newEventData },
+    })
   }
 
   createTargetEvent(targetMachine, grabbedEvent) {
@@ -545,11 +560,12 @@ export class TaskStore extends EventStore {
       grabbedEvent = createdEvent
     }
     if (targetEvent) {
-      this.scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine)
+      await this.scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine)
     } else {
       const { previousEvent } = this.createTargetEvent(targetMachine, grabbedEvent)
-      this.scheduleEventOnTarget(grabbedEvent, previousEvent, previousMachine, targetMachine)
+      await this.scheduleEventOnTarget(grabbedEvent, previousEvent, previousMachine, targetMachine)
     }
+
     this.isRescheduling = false
     this.endBatch()
   }
