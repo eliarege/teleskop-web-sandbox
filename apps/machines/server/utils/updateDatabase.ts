@@ -734,6 +734,24 @@ export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient
   return await replaceRecords(trx, 'BFMACHBATCHPARAMETERS', data, { MACHINEID: machineId })
 }
 
+export async function updateIcons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const icons = await tbb.fetchIcons()
+
+  if (!icons.length)
+    return false
+
+  const data = icons.map((d) => {
+    return {
+      MACHINEID: machineId,
+      ICONTYPE: d.type,
+      ICONNAME: d.name,
+      ICONDATA: trx.raw('CONVERT(varbinary(max), ?)', d.data),
+    }
+  })
+
+  return await replaceRecords(trx, 'BFCUSTOMCOMMANDICONS', data, { MACHINEID: machineId })
+}
+
 export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   const finishReasons = await trx('BFDYLOTFINISHREASONS').select({
     reasonId: 'REASONID',

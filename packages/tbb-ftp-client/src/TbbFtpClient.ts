@@ -1,7 +1,8 @@
 import type { Buffer } from 'node:buffer'
+import type { FileInfo } from 'basic-ftp'
 import { Client } from 'basic-ftp'
 import type { DownloadOptions, DownloadOptionsWithEncoding, DownloadOptionsWithoutEncoding } from './utils/ftp'
-import { download, upload } from './utils/ftp'
+import { download, listDirContents, upload } from './utils/ftp'
 import { parseLockGeneral } from './parsers/parseLockGeneral'
 import { parseUser, serializeUser } from './parsers/parseUser'
 import { parseManualReason, serializeManualReason } from './parsers/parseManualReason'
@@ -115,6 +116,14 @@ export class TbbFtpClient {
    */
   async remove(remotePath: string): Promise<void> {
     await this.client.remove(remotePath)
+  }
+
+  /**
+   * Fetch directory contents via FTP
+   * @param path
+   */
+  async fetchDirContents(path: string): Promise<FileInfo[]> {
+    return await listDirContents(this.client, path)
   }
 
   /**
@@ -337,6 +346,42 @@ export class TbbFtpClient {
     const content = await this._download(remotePath)
     const system = parseSystem(content)
     return system
+  }
+
+  async fetchIcons() {
+    // 'function_icons_big': 1,
+    // 'function_icons_big/paralel': 2,
+    // 'function_disable_icons_big': 3,
+    // 'function_disable_icons_big/paralel': 4,
+
+    const remotePath = '/tbb6500/data/pics'
+    const dirContents = await this.fetchDirContents(remotePath)
+    const icons = []
+
+    const fetchIconsRecursively = async (path: string) => {
+      const subDirContents = await this.fetchDirContents(path)
+      for (const item of subDirContents) {
+        const itemPath = `${path}/${item.name}`
+        if (item.isDirectory) {
+          await fetchIconsRecursively(itemPath)
+        } else {
+          const type = itemPath.includes('disable') && itemPath.includes('paralel') ? 4 : itemPath.includes('disable') ? 3 : itemPath.includes('paralel') ? 2 : 1
+          icons.push({ type, name: item.name, data: await this.download(itemPath, { encoding: 'binary' }) })
+        }
+      }
+    }
+
+    for (const item of dirContents) {
+      const itemPath = `${remotePath}/${item.name}`
+      if (item.isDirectory) {
+        await fetchIconsRecursively(itemPath)
+      } else {
+        const type = itemPath.includes('disable') && itemPath.includes('paralel') ? 4 : itemPath.includes('disable') ? 3 : itemPath.includes('paralel') ? 2 : 1
+        icons.push({ type, name: item.name, data: await this.download(itemPath, { encoding: 'binary' }) })
+      }
+    }
+
+    return icons
   }
 
   async uploadSystemParams(system: Record<string, any>) {
