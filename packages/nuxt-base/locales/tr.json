@@ -1,10 +1,14 @@
 {
   "base": {
     "about": "About",
-    "aboutApp": "Uygulama Hakkında",
+    "aboutApp": "Uygulama hakkında",
     "apps": "Uygulamalar",
     "buildDate": "Build date",
     "commitHash": "Commit hash",
+    "fullscreen": {
+      "enter": "Tam ekran yap",
+      "exit": "Tam ekrandan çık"
+    },
     "guest": "Guest",
     "home": "Ana sayfa",
     "locale": "Dil",
@@ -15,9 +19,9 @@
     "sendFeedback": "Geri bildirim gönder",
     "theme": {
       "_": "Tema",
-      "dark": "Koyu Tema",
-      "device": "Cihaz Teması",
-      "light": "Açık Tema"
+      "dark": "Koyu tema",
+      "device": "Cihaz teması",
+      "light": "Açık tema"
     },
     "version": "Version"
   }

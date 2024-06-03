@@ -1,10 +1,14 @@
 {
   "base": {
     "about": "About",
-    "aboutApp": "About Application",
+    "aboutApp": "About application",
     "apps": "Apps",
     "buildDate": "Build date",
     "commitHash": "Commit hash",
+    "fullscreen": {
+      "enter": "Enter fullscreen",
+      "exit": "Exit fullscreen"
+    },
     "guest": "Guest",
     "home": "Home",
     "locale": "Locale",
@@ -12,12 +16,12 @@
     "logout": "Logout",
     "name": "Name",
     "nodeVersion": "Node version",
-    "sendFeedback": "Send Feedback",
+    "sendFeedback": "Send feedback",
     "theme": {
       "_": "Theme",
-      "dark": "Dark Theme",
-      "device": "Device Theme",
-      "light": "Light Theme"
+      "dark": "Dark theme",
+      "device": "Device theme",
+      "light": "Light theme"
     },
     "version": "Version"
   }
