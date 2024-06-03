@@ -1,5 +1,6 @@
 import { withTbbFtpClient } from 'tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
+import { updateManualReasonsGeneral } from '~/server/utils/updateDatabase'
 
 export default defineEventHandler(async (event) => {
   const { machineId, options } = await readBody(event)
@@ -7,7 +8,6 @@ export default defineEventHandler(async (event) => {
   const numMachineId = Number.parseInt(machineId as string)
   if (Number.isNaN(numMachineId)) {
     throw new TypeError('Invalid machineId parameter. Expected number.')
-    return
   }
 
   const ip = await knex('BFMACHINES')
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
         await updateUsers(tbb, trx)
       }
       if (options.manualReasons) {
-        await updateManualReasons(numMachineId, tbb, trx)
+        await updateManualReasonsGeneral(tbb, trx)
       }
     })
   })

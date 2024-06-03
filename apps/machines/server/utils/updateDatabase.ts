@@ -139,6 +139,7 @@ export async function updateFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   return await replaceRecords(trx, 'BFDYLOTFINISHREASONS', finishReasons)
 }
 
+// used in project load only
 export async function updateManualReasons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   const manualReasons = await tbb.fetchManualReasons()
   if (!manualReasons)
@@ -151,6 +152,22 @@ export async function updateManualReasons(machineId: number, tbb: TbbFtpClient, 
     }
   })
   return await replaceRecords(trx, 'BFMANUALREASONS', data, { MACHINEID: machineId })
+}
+
+// used in download dye house definitions only
+export async function updateManualReasonsGeneral(tbb: TbbFtpClient, trx: Knex) {
+  const manualReasons = await tbb.fetchManualReasons()
+  if (!manualReasons)
+    return false
+
+  const data = manualReasons.map((d) => {
+    return {
+      manualID: d.manualCode,
+      manualString: d.manualName,
+    }
+  })
+
+  return await replaceRecords(trx, 'BFMANUALREASONSGENERAL', data)
 }
 
 export async function updateStopReasons(tbb: TbbFtpClient, trx: Knex) {
@@ -476,7 +493,7 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
       if (c.selectIndex === 0) {
         inputsOutputs.push({
           ...commonData,
-          NAME: c.name.length ? c.name : c.ioType !== 5 ? await getIOName(machineId, c.ioType - 1, c.ioId, trx) : '',
+          NAME: c.name.length ? c.name : await getIOName(machineId, c.ioType - 1, c.ioId, trx),
           IOTYPE: c.isChoosableIO ? 5 : c.ioType - 1,
           PROGRAMEDITING: false,
           COMMANDRUN: false,
@@ -787,12 +804,12 @@ export async function writeGlobalCommandFormulas(machineId: number, tbb: TbbFtpC
   return formulas
 }
 
-export async function writeManualReasons(tbb: TbbFtpClient, trx: Knex) {
+// used in upload dye house definitions
+export async function writeManualReasonsGeneral(tbb: TbbFtpClient, trx: Knex) {
   const formulas = await trx('BFMANUALREASONSGENERAL')
     .select({
-      manualId: 'manualID',
-      manualReason: 'manualString',
-      reportToERP: 'ReportToERP',
+      manualCode: 'manualID',
+      manualName: 'manualString',
     })
 
   await tbb.uploadManualReasons(formulas)
