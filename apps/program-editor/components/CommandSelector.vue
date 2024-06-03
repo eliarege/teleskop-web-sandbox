@@ -2,6 +2,7 @@
 import type { QSelect } from 'quasar'
 import type { ProgramStepCommand } from '~/shared/types'
 import { useEditorStore } from '~~/composables/editor'
+import { COMMAND_TYPE } from '~/shared/constants'
 
 const props = defineProps<{
   path: string
@@ -36,9 +37,9 @@ const rules = [
 const options = computed(() => (
   Array.from(editor.machine.commands.values())
     .filter(({ commandType }) =>
-      (isMainCommand === 0 && commandType === 0)
-      || (isMainCommand === 3 && commandType === 0)
-      || (isMainCommand === 3 && commandType === 3),
+      (isMainCommand === COMMAND_TYPE.MAIN && commandType === COMMAND_TYPE.MAIN)
+      || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.MAIN)
+      || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.PARALLEL),
     )
     .map(({ commandNo, name }) => ({
       label: `${commandNo} ${name}`,

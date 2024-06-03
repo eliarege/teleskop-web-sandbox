@@ -11,3 +11,8 @@ export enum ProgramStatus {
   EXISTS_ONLY_ON_DATABASE = 1,
   EXISTS_ON_BOTH = 2,
 }
+
+export const COMMAND_TYPE = {
+  MAIN: 0,
+  PARALLEL: 3,
+}
