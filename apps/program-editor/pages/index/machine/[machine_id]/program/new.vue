@@ -24,6 +24,8 @@ const processType = ref<number>()
 const operator = ref<boolean>(false)
 const { dark } = useQuasar()
 
+await editor.fetchMachineCommands(machineId)
+
 async function onSubmit() {
   editor.program = {
     icon: '',
@@ -43,6 +45,9 @@ async function onSubmit() {
     isChanged: false,
     tbbProgramChangedEvent: false,
   }
+
+  const firstCommand: MachineCommand = editor.machine.commands.values().next().value
+  editor.newStepCommand(firstCommand.commandNo, 0)
 
   if (!programNo.value) {
     notifyError(t('input.required', { field: t('program.programNo') }))
