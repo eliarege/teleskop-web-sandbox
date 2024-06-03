@@ -156,6 +156,7 @@ function toggleRightDrawer() {
         </div>
         <QSpace />
         <div class="space-x-1">
+          <TopbarFullscreenButton />
           <TopbarAppGrid />
           <TopbarAuthenticatedUser />
           <TopbarUnauthenticatedUser />

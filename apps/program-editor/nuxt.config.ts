@@ -17,8 +17,8 @@ export default defineNuxtConfig({
     lazy: true,
     langDir: './locales',
     locales: [
-      { code: 'en', name: 'English', file: 'en.json' },
-      { code: 'tr', name: 'Türkçe', file: 'tr.json' },
+      { code: 'en', file: 'en.json' },
+      { code: 'tr', file: 'tr.json' },
     ],
   },
   nitro: {

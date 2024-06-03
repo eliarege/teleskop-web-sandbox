@@ -75,6 +75,7 @@ const itemsMobile = [
         </TopbarButton>
         <QSpace />
         <div class="space-x-1">
+          <TopbarFullscreenButton />
           <TopbarAppGrid />
           <TopbarAuthenticatedUser disable-theme />
           <TopbarUnauthenticatedUser disable-theme />
