@@ -12,7 +12,7 @@ import type { MachineStatus, PtLocaleSettings, UnplannedEvents } from '~/shared/
 import { eventTooltip } from '~/composables/helper'
 import { useSettingStore } from '~/store/settings'
 
-const { t, locale } = useI18n()
+const { t, locale } = useI18n({ useScope: 'local' })
 const visibility = useDocumentVisibility()
 const refreshInterval = 60_000
 const today = new Date()
