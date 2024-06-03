@@ -9,6 +9,7 @@ export default defineNitroPlugin(async (nitro) => {
   const { baseURL } = useRuntimeConfig().app
   const head = createHead()
   head.push({
+    title: 'Teleskop Web',
     link: [
       { rel: 'icon', type: 'image/png', media: lightThemeMedia, sizes: '32x32', href: withBase('/favicon-light-32x32.png', baseURL) },
       { rel: 'icon', type: 'image/png', media: lightThemeMedia, sizes: '16x16', href: withBase('/favicon-light-16x16.png', baseURL) },
