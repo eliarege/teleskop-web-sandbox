@@ -14,7 +14,8 @@ const editor = useEditorStore()
 const route = useRoute()
 const router = useRouter()
 const isDisable = ref(false)
-
+const isMoreThanOneRowSelected = computed(() => editor.selectedRows.length > 1)
+const selectedRow = computed(() => editor.selectedRows.at(0))
 const type = computed(() => props.path?.split('/').reverse().find((x) => {
   if (x === 'new')
     return 'new'
@@ -89,8 +90,8 @@ function handleButton(btn: string) {
     <QBtn
       :label="t('menu.editProgram')"
       flat
-      :disable="editor.selectedRow === -1"
-      @click="router.push(`/machine/${route.params.machine_id}/program/${editor.selectedRow}`)"
+      :disable="isMoreThanOneRowSelected"
+      @click="router.push(`/machine/${route.params.machine_id}/program/${selectedRow?.programNo}`)"
     />
   </div>
 
