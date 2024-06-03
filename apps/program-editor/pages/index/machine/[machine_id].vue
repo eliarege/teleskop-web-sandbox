@@ -399,7 +399,7 @@ function handleRowColor(row: ProgramHeader) {
       else
         return PRG_STATE_COLORS.CHANGED_ON_TELESKOP // Program changed on teleskop
     } else {
-      return PRG_STATE_COLORS.NO_CHANGES
+      return dark.isActive ? PRG_STATE_COLORS.NO_CHANGES_DARK : PRG_STATE_COLORS.NO_CHANGES
     }
   }
 }

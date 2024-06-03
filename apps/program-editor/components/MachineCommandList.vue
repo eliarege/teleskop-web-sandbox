@@ -34,13 +34,13 @@ const filteredCommands = computed(() => {
   ) as MachineCommand[]
 })
 
-const programStatus = [
-  { label: t('programStatusInfo.noChanges'), color: PRG_STATE_COLORS.NO_CHANGES },
+const programStatus = computed(() => [
+  { label: t('programStatusInfo.noChanges'), color: dark.isActive ? PRG_STATE_COLORS.NO_CHANGES_DARK : PRG_STATE_COLORS.NO_CHANGES },
   { label: t('programStatusInfo.onlyOnTeleskop'), color: PRG_STATE_COLORS.EXISTS_ONLY_ON_DATABASE },
   { label: t('programStatusInfo.onlyOnController'), color: PRG_STATE_COLORS.EXISTS_ONLY_ON_CONTROLLER },
   { label: t('programStatusInfo.changedOnTeleskop'), color: PRG_STATE_COLORS.CHANGED_ON_TELESKOP },
   { label: t('programStatusInfo.changedOnMachine'), color: PRG_STATE_COLORS.CHANGED_ON_MACHINE },
-]
+])
 
 let draggedCommand: any = null
 

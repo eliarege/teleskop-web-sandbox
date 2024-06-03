@@ -1,9 +1,10 @@
 export const PRG_STATE_COLORS = {
-  EXISTS_ONLY_ON_CONTROLLER: 'silver',
+  EXISTS_ONLY_ON_CONTROLLER: 'gray',
   EXISTS_ONLY_ON_DATABASE: 'green',
   CHANGED_ON_TELESKOP: 'blue',
   CHANGED_ON_MACHINE: 'fuchsia',
-  NO_CHANGES: 'black',
+  NO_CHANGES: 'gray-3',
+  NO_CHANGES_DARK: 'gray-8',
 }
 
 export enum ProgramStatus {
