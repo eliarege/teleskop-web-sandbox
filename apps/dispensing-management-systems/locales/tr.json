@@ -43,8 +43,8 @@
   "Name": "İsim",
   "Edit": "Düzenle",
   "Connections": "Bağlantılar",
-  "ExportConnections": "Bağlantıları Aktar",
-  "ExportConnectionsBody": "{dispenser}'dan {type} bağlantılarını şu dağıtıcıya aktar:",
+  "CopyConnections": "Bağlantıları Kopyala",
+  "CopyConnectionsBody": "{dispenser}'dan {type} bağlantılarını şu dağıtıcıya kopyala:",
   "Username": "Kullanıcı Adı",
   "Password": "Şifre",
   "Login": "Giriş",
@@ -69,6 +69,7 @@
     "DeleteDispenser": "Bu dağıtıcıyı silmek istediğinizden emin misiniz?",
     "DeleteMachine": "Bu makineyi silmek istediğinizden emin misiniz?",
     "DeleteMaterial": "Bu malzemeyi silmek istediğinizden emin misiniz?",
+    "DeleteRecipe": "Bu reçeteyi silmek istediğinizden emin misiniz?",
     "SyncDataConfirmation": "Teleskop veritabanıyla {name} verilerini eşitlemek istediğinizden emin misiniz?",
     "AlreadyStartedWarning": "İstek çoktan başlatıldı. Devam etmek istediğinize emin misiniz?"
   },

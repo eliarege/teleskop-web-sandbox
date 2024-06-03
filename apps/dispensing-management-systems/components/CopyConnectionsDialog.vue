@@ -38,7 +38,7 @@ async function onConfirm() {
     <QCard class="scroll border-b-solid border-10px border-grey">
       <div flex-center flex-col mt-10 text-lg>
         <div>
-          {{ t('ExportConnectionsBody', { type: t(`${capitalizeFirst(props.type)}`), dispenser: dataStore.selectedDispenser?.dispenserName }) }}
+          {{ t('CopyConnectionsBody', { type: t(`${capitalizeFirst(props.type)}`), dispenser: dataStore.selectedDispenser?.dispenserName }) }}
         </div>
         <QSelect
           v-model="selected"
@@ -58,7 +58,7 @@ async function onConfirm() {
         <QBtn
           :label="t('Confirm')"
           color="primary"
-          icon="file_upload"
+          icon="done"
           :disable="selected.length < 1"
           @click="onConfirm"
         />

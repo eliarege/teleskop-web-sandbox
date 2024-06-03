@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import ExportConnectionsDialog from '../ExportConnectionsDialog.vue'
+import CopyConnectionsDialog from '../CopyConnectionsDialog.vue'
 import type { Machine, Material, MaterialGroup } from '~/shared/types'
 
 const props = defineProps({
@@ -159,9 +159,9 @@ function handleReset() {
   }
   buttonDisabled.value = true
 }
-function handleExport() {
+function handleCopy() {
   q.dialog({
-    component: ExportConnectionsDialog,
+    component: CopyConnectionsDialog,
     componentProps: {
       type: tab.value,
       dispenserId: Number(props.dispenserId),
@@ -282,10 +282,10 @@ const pagination = ref({ rowsPerPage: 100 })
         @click="handleReset"
       />
       <QBtn
-        :label="t('ExportConnections')"
+        :label="t('CopyConnections')"
         color="secondary"
-        icon="file_upload"
-        @click="handleExport"
+        icon="link"
+        @click="handleCopy"
       />
     </div>
   </div>

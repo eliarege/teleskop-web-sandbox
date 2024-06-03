@@ -43,8 +43,8 @@
   "Name": "Name",
   "Edit": "Edit",
   "Connections": "Connections",
-  "ExportConnections": "Export Connections",
-  "ExportConnectionsBody": "Export {dispenser}'s {type} connections to selected dispenser:",
+  "CopyConnections": "Copy Connections",
+  "CopyConnectionsBody": "Copy {dispenser}'s {type} connections to selected dispenser:",
   "Username": "Username",
   "Password": "Password",
   "Login": "Login",
@@ -69,6 +69,7 @@
     "DeleteDispenser": "Are you sure you want to delete this dispenser?",
     "DeleteMachine": "Are you sure you want to delete this machine?",
     "DeleteMaterial": "Are you sure you want to delete this material?",
+    "DeleteRecipe": "Are you sure you want to delete this recipe?",
     "SyncDataConfirmation": "Are you sure you want to sync {name} data with Teleskop Database?",
     "AlreadyStartedWarning": "The request has already been initiated. Are you sure you want to continue?"
   },
