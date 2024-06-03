@@ -14,7 +14,12 @@ const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
 const $q = useQuasar()
 const route = useRoute()
-const machineId = computed(() => Number(route.params.machine_id))
+const { dark } = useQuasar()
+const leftDrawerOpen = ref(false)
+const rightDrawerOpen = ref(false)
+
+const editor = useEditorStore()
+editor.machine = editor.createMachine()
 
 const tt = (key: string) => toRef(() => t(key))
 
@@ -55,7 +60,7 @@ const items = [
   { label: tt('menu.tools'), disabled: true },
   {
     label: tt('menu.program'),
-    disabled: computed(() => !machineId.value),
+    disabled: computed(() => !editor.machine.id),
     subMenu: {
       items: [
         [
@@ -64,7 +69,7 @@ const items = [
             icon: 'copyright',
             shortcut: 'Ctrl+N',
             onClick() {
-              navigateTo(`/machine/${machineId.value}/program/new`)
+              navigateTo(`/machine/${editor.machine.id}/program/new`)
             },
           },
         ],
@@ -101,10 +106,6 @@ const itemsMobile = [
   ],
   items,
 ] as TopbarMenuItem[][]
-
-const { dark } = useQuasar()
-const leftDrawerOpen = ref(false)
-const rightDrawerOpen = ref(false)
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value

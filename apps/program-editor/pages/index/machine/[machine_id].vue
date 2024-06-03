@@ -18,6 +18,7 @@ const { t, locale } = useI18n()
 const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
+const editor = useEditorStore()
 const keycloak = useKeycloak()
 const machineId = Number(route.params.machine_id)
 const isProgramFilterExists = ref(getExistingFilter())
@@ -34,7 +35,7 @@ async function fetchPrograms(filter?: ProgramFilter) {
   programs.value = await $fetch(`/api/machine/${machineId}/program?${query || ''}`)
 }
 
-const editor = useEditorStore()
+await editor.fetchMachine(machineId)
 editor.program = editor.createProgram()
 
 contextMenuStore.setCtx({
