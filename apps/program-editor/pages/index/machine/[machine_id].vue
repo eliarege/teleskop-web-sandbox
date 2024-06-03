@@ -466,7 +466,6 @@ function handleRowColor(row: ProgramHeader) {
             :props="props"
           >
             <q-menu
-              v-if="keycloak.authenticated"
               touch-position
               context-menu
               :transition-duration="0"
@@ -486,7 +485,7 @@ function handleRowColor(row: ProgramHeader) {
                     :disable="option.disabled"
                     @click="event => handleClick(event, option)"
                   >
-                    <q-item-section avatar>
+                    <q-item-section avatar class="menu-icon-class">
                       <q-icon size="1rem" :name="option.icon" />
                     </q-item-section>
                     <q-item-section class="whitespace-nowrap">
@@ -539,8 +538,11 @@ function handleRowColor(row: ProgramHeader) {
   </QPage>
 </template>
 
-<style lang="postcss">
+<style lang="postcss" scoped>
 body {
   user-select: none;
+}
+.menu-icon-class.q-item__section--avatar {
+  min-width: auto;
 }
 </style>
