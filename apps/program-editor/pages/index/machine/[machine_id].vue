@@ -15,6 +15,7 @@ import { clearFilter, filterToQuery, getExistingFilter } from '~/composables/uti
 import { commandManager, contextMenuStore } from '~/shared/utils'
 
 const { t, locale } = useI18n()
+const { dark } = useQuasar()
 const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()

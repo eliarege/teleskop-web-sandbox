@@ -118,8 +118,8 @@ function toggleRightDrawer() {
 <template>
   <QLayout view="hHh LpR fFf">
     <QHeader
-      bordered
-      class="bg-white text-black !dark:(bg-dark text-white) select-none"
+      borderless
+      class="bg-gray-2 text-black !dark:(bg-dark-1 text-gray-1) select-none"
     >
       <QToolbar class="min-h-unset">
         <template v-if="sm">
@@ -177,11 +177,12 @@ function toggleRightDrawer() {
     </QDrawer>
 
     <QPageContainer>
-      <div :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'" class="flex sticky top-10.2 z-10">
+      <div :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'" class="flex sticky top-10 z-10">
         <QBtn
           dense
           flat
           icon="menu"
+          class="text-gray-6 dark:text-gray-3"
           @click="toggleLeftDrawer"
         />
         <MenuProgram :vis="true" :path="route.path" />
@@ -190,12 +191,14 @@ function toggleRightDrawer() {
           dense
           flat
           icon="menu"
-          @click="toggleRightDrawer"
+          class="text-gray-6 dark:text-gray-3"
+          @click="
+            toggleRightDrawer"
         />
       </div>
 
-      <div :class="dark.isActive ? 'bg-dark-8' : 'bg-white'">
-        <NuxtPage />
+      <div :class="dark.isActive ? 'bg-dark' : 'bg-white'">
+        <NuxtPage :dark="dark.isActive" />
       </div>
     </QPageContainer>
 

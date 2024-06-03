@@ -81,6 +81,7 @@ function onDragEnd(event: SortableEvent) {
       outlined
     />
     <Sortable
+      v-if="editor.machine?.commands.size"
       :list="filteredCommands"
       class="px-5 pb-10 e-div-y machine-command-list"
       :item-key="item => item.commandNo"
@@ -105,8 +106,8 @@ function onDragEnd(event: SortableEvent) {
     </Sortable>
     <div
       v-if="!editor.machine?.commands.size"
-      class="w-full bottom-0 p-3"
-      :class="dark.isActive ? 'bg-dark-1' : 'bg-white'"
+      class="w-full bottom-0 p-3 absolute"
+      :class="dark.isActive ? 'bg-dark-2' : 'bg-white'"
     >
       <div v-for="stat in programStatus" :key="stat.color">
         <div :style="{ color: stat.color }">

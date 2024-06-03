@@ -22,6 +22,7 @@ const programNo = ref<number>()
 const programName = ref<string>()
 const processType = ref<number>()
 const operator = ref<boolean>(false)
+const { dark } = useQuasar()
 
 async function onSubmit() {
   editor.program = {
@@ -107,7 +108,11 @@ const rules = [
           />
         </QCardSection>
 
-        <QCardActions align="right" class="q-pa-md bg-gray-1">
+        <QCardActions
+          align="right"
+          class="q-pa-md"
+          :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+        >
           <QBtn
             flat
             :label="t('cancel')"

@@ -4,6 +4,7 @@ import type { MachineGroup, MachineInfo } from '~/shared/types'
 
 const route = useRoute()
 const editor = useEditorStore()
+const { dark } = useQuasar()
 
 const { data: machineGroups } = useFetch<MachineGroup[]>('/api/machine-group')
 const { data: machines } = useFetch<MachineInfo[]>('/api/machine')
@@ -56,7 +57,7 @@ const thumbStyle = { opacity: '0' }
             v-if="group.machines && group.machines.length > 0"
             :label="group.name"
             default-opened
-            header-class="bg-gray-2 text-black"
+            :header-class="dark.isActive ? 'bg-grey-9 text-white' : 'bg-gray-2 text-black'"
             borderless
             dense
           >
@@ -66,6 +67,7 @@ const thumbStyle = { opacity: '0' }
               v-ripple
               :active="route.params.machine_id === `${machine.id}`"
               active-class="bg-blue-3 text-black"
+              :class="dark.isActive ? ' text-gray-3' : 'text-gray-8'"
               borderless
               clickable
               dense
