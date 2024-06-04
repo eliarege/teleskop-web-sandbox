@@ -18,14 +18,21 @@ const options = ref<Record<string, boolean>>({
   commandTimeoutReasons: false,
 })
 
+const { notifySuccess, notifyError } = useNotify()
+
 async function setDefinitions() {
-  await $fetch('/api/sync/upload-dye-house-definitions', {
-    method: 'POST',
-    body: {
-      machineId: props.selected.machineId,
-      options: options.value,
-    },
-  })
+  try {
+    await $fetch('/api/sync/upload-dye-house-definitions', {
+      method: 'POST',
+      body: {
+        machineId: props.selected.machineId,
+        options: options.value,
+      },
+    })
+    notifySuccess(t('definitionsUploaded'))
+  } catch (error) {
+    notifyError(t('errorDuringProcess'))
+  }
 }
 
 function selectAll() {

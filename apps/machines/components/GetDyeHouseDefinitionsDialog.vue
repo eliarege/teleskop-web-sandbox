@@ -17,14 +17,21 @@ const options = ref<Record<string, boolean>>({
   machineFinishReasons: false,
 })
 
+const { notifySuccess, notifyError } = useNotify()
+
 async function loadDefinitions() {
-  await $fetch('/api/sync/download-dye-house-definitions', {
-    method: 'POST',
-    body: {
-      machineId: props.selected.machineId,
-      options: options.value,
-    },
-  })
+  try {
+    await $fetch('/api/sync/download-dye-house-definitions', {
+      method: 'POST',
+      body: {
+        machineId: props.selected.machineId,
+        options: options.value,
+      },
+    })
+    notifySuccess(t('definitionsDownloaded'))
+  } catch (error) {
+    notifyError(t('errorDuringProcess'))
+  }
 }
 
 function selectAll() {
