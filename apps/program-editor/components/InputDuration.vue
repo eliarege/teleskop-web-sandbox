@@ -25,16 +25,6 @@ onUnmounted(() => {
   editor.errorIds.delete(id)
 })
 
-// function encode(value: ParameterItem) {
-//   if (!value)
-//     return 0
-//   return (value.value / 60)
-// }
-
-// function decode(value: number) {
-//   return (value * 60)
-// }
-
 const rules = [
   (value: number) => {
     if (
@@ -53,12 +43,25 @@ const rules = [
     }
   },
 ]
+
+const minutes = computed({
+  get() {
+    return model.value ? (model.value / 60).toString() : ''
+  },
+  set(value) {
+    model.value = Number.parseFloat(value) * 60
+  },
+})
+
+function updateModel() {
+  emit('update:modelValue', model.value)
+}
 </script>
 
 <template>
   <QInput
     ref="input"
-    v-model="model"
+    v-model="minutes"
     :for="id"
     :label="props.label"
     :rules="rules"
@@ -68,6 +71,7 @@ const rules = [
     dense
     suffix="min"
     input-class="text-right w-30"
+    @blur="updateModel"
   />
 </template>
 

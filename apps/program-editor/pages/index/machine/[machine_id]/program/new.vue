@@ -22,6 +22,9 @@ const programNo = ref<number>()
 const programName = ref<string>()
 const processType = ref<number>()
 const operator = ref<boolean>(false)
+const { dark } = useQuasar()
+
+await editor.fetchMachineCommands(machineId)
 
 async function onSubmit() {
   editor.program = {
@@ -42,6 +45,9 @@ async function onSubmit() {
     isChanged: false,
     tbbProgramChangedEvent: false,
   }
+
+  const firstCommand: MachineCommand = editor.machine.commands.values().next().value
+  editor.newStepCommand(firstCommand.commandNo, 0)
 
   if (!programNo.value) {
     notifyError(t('input.required', { field: t('program.programNo') }))
@@ -107,7 +113,11 @@ const rules = [
           />
         </QCardSection>
 
-        <QCardActions align="right" class="q-pa-md bg-gray-1">
+        <QCardActions
+          align="right"
+          class="q-pa-md"
+          :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+        >
           <QBtn
             flat
             :label="t('cancel')"

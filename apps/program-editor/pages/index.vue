@@ -14,7 +14,12 @@ const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
 const $q = useQuasar()
 const route = useRoute()
-const machineId = computed(() => Number(route.params.machine_id))
+const { dark } = useQuasar()
+const leftDrawerOpen = ref(false)
+const rightDrawerOpen = ref(false)
+
+const editor = useEditorStore()
+editor.machine = editor.createMachine()
 
 const tt = (key: string) => toRef(() => t(key))
 
@@ -55,7 +60,7 @@ const items = [
   { label: tt('menu.tools'), disabled: true },
   {
     label: tt('menu.program'),
-    disabled: computed(() => !machineId.value),
+    disabled: computed(() => !editor.machine.id),
     subMenu: {
       items: [
         [
@@ -64,7 +69,7 @@ const items = [
             icon: 'copyright',
             shortcut: 'Ctrl+N',
             onClick() {
-              navigateTo(`/machine/${machineId.value}/program/new`)
+              navigateTo(`/machine/${editor.machine.id}/program/new`)
             },
           },
         ],
@@ -102,10 +107,6 @@ const itemsMobile = [
   items,
 ] as TopbarMenuItem[][]
 
-const { dark } = useQuasar()
-const leftDrawerOpen = ref(false)
-const rightDrawerOpen = ref(false)
-
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
@@ -117,8 +118,8 @@ function toggleRightDrawer() {
 <template>
   <QLayout view="hHh LpR fFf">
     <QHeader
-      bordered
-      class="bg-white text-black !dark:(bg-dark text-white) select-none"
+      borderless
+      class="bg-gray-2 text-black !dark:(bg-dark-1 text-gray-1) select-none"
     >
       <QToolbar class="min-h-unset">
         <template v-if="sm">
@@ -176,11 +177,12 @@ function toggleRightDrawer() {
     </QDrawer>
 
     <QPageContainer>
-      <div :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'" class="flex sticky top-10.2 z-10">
+      <div :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'" class="flex sticky top-10 z-10">
         <QBtn
           dense
           flat
           icon="menu"
+          class="text-gray-6 dark:text-gray-3"
           @click="toggleLeftDrawer"
         />
         <MenuProgram :vis="true" :path="route.path" />
@@ -189,12 +191,14 @@ function toggleRightDrawer() {
           dense
           flat
           icon="menu"
-          @click="toggleRightDrawer"
+          class="text-gray-6 dark:text-gray-3"
+          @click="
+            toggleRightDrawer"
         />
       </div>
 
-      <div :class="dark.isActive ? 'bg-dark-8' : 'bg-white'">
-        <NuxtPage />
+      <div :class="dark.isActive ? 'bg-dark' : 'bg-white'">
+        <NuxtPage :dark="dark.isActive" />
       </div>
     </QPageContainer>
 

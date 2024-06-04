@@ -27,3 +27,12 @@
   --hoverParallelStep: black;
 }
 
+text {
+  color: 'gray-3';
+}
+
+text.dark {
+  color: 'gray-8';
+}
+
+

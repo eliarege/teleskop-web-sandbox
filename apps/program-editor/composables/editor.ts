@@ -8,7 +8,7 @@ export type EditorStore = ReturnType<typeof useEditorStore>
 export const useEditorStore = defineStore('editor', () => {
   const program = ref<Program>(createProgram())
   const machine = ref<Machine>(createMachine())
-  const selectedRow = ref<number>(-1)
+  const selectedRows = ref([])
   const selectedStep = ref<number>(-1)
   const selectedParallelStep = ref<number>(-1)
   const route = useRoute()
@@ -24,7 +24,7 @@ export const useEditorStore = defineStore('editor', () => {
   const { notifySuccess, notifyError } = useNotify()
 
   async function changeMachine(id: number, name: string) {
-    selectedRow.value = -1
+    selectedRows.value = []
     const MACHINE_PATH_RE = /^\/machine\/\d+$/
     machine.value = {
       id,
@@ -198,10 +198,21 @@ export const useEditorStore = defineStore('editor', () => {
     isLoading = false
   }
 
+  async function fetchMachine(machineId: number) {
+    isLoading = true
+    const machineData = await $fetch<Machine>(`/api/machine/${machineId}`)
+    machine.value = machineData
+    isLoading = false
+  }
+
   async function fetchMachineCommands(machineId: number) {
     isCommandLoading = true
     const machineCommandsData = await $fetch<MachineCommand[]>(`/api/machine/${machineId}/commands?editable=true`)
     if (machine.value) {
+      if (!(machine.value.commands instanceof Map)) {
+        machine.value.commands = new Map()
+      }
+
       machine.value.commands.clear()
       for (const command of machineCommandsData) {
         machine.value?.commands.set(command.commandNo, command)
@@ -329,7 +340,7 @@ export const useEditorStore = defineStore('editor', () => {
     changeMachine,
     program,
     machine,
-    selectedRow,
+    selectedRows,
     selectedStep,
     selectedParallelStep,
     isLoading,
@@ -338,10 +349,12 @@ export const useEditorStore = defineStore('editor', () => {
     isDragging,
     errorIds,
     fetchProgram,
+    fetchMachine,
     fetchMachineCommands,
     fetchAllMachine,
     fetchMachineGroup,
     fetchPrograms,
+    createMachine,
     createProgram,
     updateProgram,
     onSubmit,

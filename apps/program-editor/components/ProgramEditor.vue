@@ -81,12 +81,12 @@ function onDragEnd(event: SortableEvent) {
 
 <style lang="postcss" scoped>
 .program-step {
-  @apply hover:(bg-gray-1 dark:bg-dark-1);
+  @apply hover:(bg-gray-1 dark:bg-dark);
   @apply transition-none;
 }
 
 .program-step.__selected {
-  @apply bg-gray-1 dark:bg-dark-3;
+  @apply bg-gray-2 dark:bg-dark-3;
 }
 
 .icon {

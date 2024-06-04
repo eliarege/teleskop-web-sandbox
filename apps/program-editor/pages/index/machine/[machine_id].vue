@@ -15,9 +15,11 @@ import { clearFilter, filterToQuery, getExistingFilter } from '~/composables/uti
 import { commandManager, contextMenuStore } from '~/shared/utils'
 
 const { t, locale } = useI18n()
+const { dark } = useQuasar()
 const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
+const editor = useEditorStore()
 const keycloak = useKeycloak()
 const machineId = Number(route.params.machine_id)
 const isProgramFilterExists = ref(getExistingFilter())
@@ -34,14 +36,13 @@ async function fetchPrograms(filter?: ProgramFilter) {
   programs.value = await $fetch(`/api/machine/${machineId}/program?${query || ''}`)
 }
 
-const editor = useEditorStore()
+await editor.fetchMachine(machineId)
 editor.program = editor.createProgram()
 
 contextMenuStore.setCtx({
   t,
 })
 await fetchPrograms()
-const selectedRows = ref([])
 const versionDialogVisible = ref(false)
 const comparisonDialogVisible = ref(false)
 const showSpinner = ref(false)
@@ -52,7 +53,7 @@ function resume() {
   showSpinner.value = false
 }
 const versions = ref([] as Array<any>)
-const isMoreThanOneRowSelected = computed(() => selectedRows.value.length > 1)
+const isMoreThanOneRowSelected = computed(() => editor.selectedRows.length > 1)
 
 function format(date: any) {
   if (!(date instanceof Date)) {
@@ -141,7 +142,7 @@ const contextMenuOptions = computed(() => [
     icon: 'edit',
     disabled: isMoreThanOneRowSelected.value,
     onClick: () => {
-      onRowDoubleClick(selectedRows.value[0])
+      onRowDoubleClick(editor.selectedRows[0])
     },
   },
   {
@@ -154,7 +155,7 @@ const contextMenuOptions = computed(() => [
       commandManager.executeCommand(
         deleteProgramCommand,
         { $q, fetchPrograms },
-        selectedRows.value,
+        editor.selectedRows,
         machineId,
       )
     },
@@ -168,7 +169,7 @@ const contextMenuOptions = computed(() => [
       commandManager.executeCommand(
         deleteProgramFromMultiMachineCommand,
         { $q, fetchPrograms },
-        selectedRows.value,
+        editor.selectedRows,
       )
     },
   },
@@ -182,7 +183,7 @@ const contextMenuOptions = computed(() => [
       commandManager.executeCommand(
         concatenateProgramsCommand,
         { $q, fetchPrograms },
-        selectedRows.value,
+        editor.selectedRows,
         machineId,
       )
     },
@@ -192,12 +193,12 @@ const contextMenuOptions = computed(() => [
     category: 'edit',
     keybind: '',
     icon: 'edit_note',
-    disabled: isMoreThanOneRowSelected.value || selectedRows.value.find(row => row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER),
+    disabled: isMoreThanOneRowSelected.value || editor.selectedRows.find(row => row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER),
     onClick: () => {
       commandManager.executeCommand(
         changeNameCommand,
         { $q, fetchPrograms },
-        selectedRows.value,
+        editor.selectedRows,
         machineId,
       )
     },
@@ -212,7 +213,7 @@ const contextMenuOptions = computed(() => [
       commandManager.executeCommand(
         changeProcessTypeCommand,
         { $q, fetchPrograms },
-        selectedRows.value,
+        editor.selectedRows,
         machineId,
       )
     },
@@ -228,7 +229,7 @@ const contextMenuOptions = computed(() => [
       commandManager.executeCommand(
         sendProgramCommand,
         { $q, fetchPrograms },
-        selectedRows.value,
+        editor.selectedRows,
         machineId,
       )
     },
@@ -243,7 +244,7 @@ const contextMenuOptions = computed(() => [
       commandManager.executeCommand(
         copyAndSendCommand,
         { $q, fetchPrograms },
-        selectedRows.value,
+        editor.selectedRows,
         machineId,
       )
     },
@@ -255,7 +256,7 @@ const contextMenuOptions = computed(() => [
     icon: '',
     disabled: false,
     onClick: async () => {
-      commandManager.executeCommand(fetchProgramFromMachineCommand, { fetchPrograms }, selectedRows.value, machineId)
+      commandManager.executeCommand(fetchProgramFromMachineCommand, { fetchPrograms }, editor.selectedRows, machineId)
     },
   },
   {
@@ -265,7 +266,7 @@ const contextMenuOptions = computed(() => [
     icon: 'playlist_add',
     disabled: false,
     onClick: () => {
-      contextMenuStore.addToComparisonBasket(selectedRows.value)
+      contextMenuStore.addToComparisonBasket(editor.selectedRows)
     },
   },
   {
@@ -275,7 +276,7 @@ const contextMenuOptions = computed(() => [
     icon: 'compare_arrows',
     disabled: !contextMenuStore.comparisonBasketLength(),
     onClick: () => {
-      contextMenuStore.addToComparisonBasket(selectedRows.value)
+      contextMenuStore.addToComparisonBasket(editor.selectedRows)
       comparisonDialogVisible.value = true
       contextMenuStore.comparison()
     },
@@ -288,7 +289,7 @@ const contextMenuOptions = computed(() => [
     disabled: isMoreThanOneRowSelected.value,
     onClick: async () => {
       wait()
-      versions.value = await contextMenuStore.fetchVersions(selectedRows.value[0].programNo, machineId)
+      versions.value = await contextMenuStore.fetchVersions(editor.selectedRows[0].programNo, machineId)
       resume()
       versionDialogVisible.value = true
     },
@@ -334,10 +335,10 @@ const filteredPrograms = computed(() => {
 })
 
 function isRowSelected(row: any) {
-  return selectedRows.value.includes(row)
+  return editor.selectedRows.includes(row)
 }
 function removeSelection(row: any) {
-  selectedRows.value = selectedRows.value.filter(r => r !== row)
+  editor.selectedRows = editor.selectedRows.filter(r => r !== row)
 }
 async function onRowClick(row: any, isRightClick?: boolean) {
   if (ctrl.value) {
@@ -345,10 +346,10 @@ async function onRowClick(row: any, isRightClick?: boolean) {
       if (!isRightClick)
         removeSelection(row)
     } else
-      selectedRows.value.push(row)
+      editor.selectedRows.push(row)
   } else if (!(isRowSelected(row) && isRightClick))
-    selectedRows.value = [row]
-  editor.selectedRow = row.programNo
+    editor.selectedRows = [row]
+  // editor.selectedRow = row.programNo
 }
 
 async function onRowDoubleClick(row: any) {
@@ -358,8 +359,8 @@ function handleClick(event: { preventDefault: () => void }, option: { disabled: 
   if (option.disabled)
     event.preventDefault()
   else {
-    // commandManager.executeCommand(option, selectedRows.value)
-    option.onClick(selectedRows.value)
+    // commandManager.executeCommand(option, editor.selectedRows)
+    option.onClick(editor.selectedRows)
   }
 }
 
@@ -375,7 +376,7 @@ async function handleVersionDelete(deleteVersions: any[]) {
   wait()
   await contextMenuStore.deleteVersion(deleteVersions, machineId)
   await fetchPrograms()
-  versions.value = await contextMenuStore.fetchVersions(selectedRows.value[0].programNo, machineId)
+  versions.value = await contextMenuStore.fetchVersions(editor.selectedRows[0].programNo, machineId)
   resume()
 }
 function handleRowColor(row: ProgramHeader) {
@@ -400,7 +401,7 @@ function handleRowColor(row: ProgramHeader) {
       else
         return PRG_STATE_COLORS.CHANGED_ON_TELESKOP // Program changed on teleskop
     } else {
-      return PRG_STATE_COLORS.NO_CHANGES
+      return dark.isActive ? PRG_STATE_COLORS.NO_CHANGES_DARK : PRG_STATE_COLORS.NO_CHANGES
     }
   }
 }
@@ -466,7 +467,6 @@ function handleRowColor(row: ProgramHeader) {
             :props="props"
           >
             <q-menu
-              v-if="keycloak.authenticated"
               touch-position
               context-menu
               :transition-duration="0"
@@ -486,7 +486,7 @@ function handleRowColor(row: ProgramHeader) {
                     :disable="option.disabled"
                     @click="event => handleClick(event, option)"
                   >
-                    <q-item-section avatar>
+                    <q-item-section avatar class="menu-icon-class">
                       <q-icon size="1rem" :name="option.icon" />
                     </q-item-section>
                     <q-item-section class="whitespace-nowrap">
@@ -521,7 +521,7 @@ function handleRowColor(row: ProgramHeader) {
         <CMVersionDialog
           :rows="versions"
           :machine-id="machineId"
-          :program-no="selectedRows[0].programNo"
+          :program-no="editor.selectedRows[0].programNo"
           @update:vis="e => versionDialogVisible = e"
           @on-delete-click="e => handleVersionDelete(e)"
         />
@@ -539,8 +539,11 @@ function handleRowColor(row: ProgramHeader) {
   </QPage>
 </template>
 
-<style lang="postcss">
+<style lang="postcss" scoped>
 body {
   user-select: none;
+}
+.menu-icon-class.q-item__section--avatar {
+  min-width: auto;
 }
 </style>
