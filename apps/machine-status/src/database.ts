@@ -35,6 +35,7 @@ export function createKyselyInstance<T>(connectionString: string) {
     },
     tedious: {
       ...tedious,
+      // @ts-expect-error Minor type difference between kysely's `TediousConnection` interface and `tedious`'s own `Connection` interface
       connectionFactory: () => new tedious.Connection({
         authentication: {
           options: {
