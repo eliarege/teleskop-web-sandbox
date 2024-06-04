@@ -2,7 +2,7 @@ import type { Knex } from 'knex'
 import type { LockOutputAnalog, LockOutputDigital, TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { DatabaseQueryError } from '../error'
-import { calcIONumber } from '.'
+import { calcIONumber, getIONames } from '.'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'
 
 async function replaceRecords(knex: Knex, tableName: string, data: any[], whereObject?: Record<string, any>): Promise<boolean> {
@@ -479,8 +479,11 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
   const commands = await tbb.fetchCommandIO()
   if (!commands.length)
     return false
+
   const inputsOutputs = []
   const selectionList = []
+
+  const ioNames = await getIONames(machineId, trx)
 
   for (const [_index, command] of commands.entries()) {
     for (const [_i, c] of command.chooseList.entries()) {
@@ -490,10 +493,12 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
         COMMANDNO: command.commandNo,
         IOID: c.ioId,
       }
+      const ioName = ioNames[c.ioType - 1].find(d => d.id === c.ioId)?.name
+
       if (c.selectIndex === 0) {
         inputsOutputs.push({
           ...commonData,
-          NAME: c.name.length ? c.name : await getIOName(machineId, c.ioType - 1, c.ioId, trx),
+          NAME: c.name.length ? c.name : ioName,
           IOTYPE: c.isChoosableIO ? 5 : c.ioType - 1,
           PROGRAMEDITING: false,
           COMMANDRUN: false,
@@ -504,7 +509,7 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
         ...commonData,
         SELECTINDEX: c.selectIndex,
         IOTYPE: c.ioType - 1,
-        NAME: await getIOName(machineId, c.ioType - 1, c.ioId, trx),
+        NAME: ioName,
         SELECTEDIOID: c.ioId,
         ISDEFAULT: c.isDefault,
         MODEL: 'MODEL',
