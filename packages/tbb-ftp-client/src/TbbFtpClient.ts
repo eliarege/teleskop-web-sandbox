@@ -1,4 +1,5 @@
 import type { Buffer } from 'node:buffer'
+import path from 'node:path'
 import type { FileInfo } from 'basic-ftp'
 import { Client } from 'basic-ftp'
 import type { DownloadOptions, DownloadOptionsWithEncoding, DownloadOptionsWithoutEncoding } from './utils/ftp'
@@ -26,7 +27,7 @@ import { parseCommandFeedback } from './parsers/parseCommandFeedback'
 import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
-import type { CommandAlarmReason, FinishReason, GlobalCommandFormula, MachineParameter, ManualReason, StopReason, User } from './types'
+import type { CommandAlarmReason, FinishReason, GlobalCommandFormula, Icon, MachineParameter, ManualReason, StopReason, User } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas, serializeGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
 import { parseSeperatedLocks } from './parsers/parseLocksInput'
@@ -122,8 +123,8 @@ export class TbbFtpClient {
    * Fetch directory contents via FTP
    * @param path
    */
-  async fetchDirContents(path: string): Promise<FileInfo[]> {
-    return await listDirContents(this.client, path)
+  async list(path: string): Promise<FileInfo[]> {
+    return await this.client.list(path)
   }
 
   /**
@@ -349,37 +350,38 @@ export class TbbFtpClient {
   }
 
   async fetchIcons() {
-    // 'function_icons_big': 1,
-    // 'function_icons_big/paralel': 2,
-    // 'function_disable_icons_big': 3,
-    // 'function_disable_icons_big/paralel': 4,
+    enum IconType {
+      FunctionIconsBig = 1,
+      FunctionIconsBigParalel = 2,
+      FunctionDisableIconsBig = 3,
+      FunctionDisableIconsBigParalel = 4,
+    }
 
     const remotePath = '/tbb6500/data/pics'
-    const dirContents = await this.fetchDirContents(remotePath)
-    const icons = []
+    const icons: Icon[] = []
 
-    const fetchIconsRecursively = async (path: string) => {
-      const subDirContents = await this.fetchDirContents(path)
+    const fetchIconsRecursively = async (pathName: string) => {
+      const subDirContents = await this.list(pathName)
       for (const item of subDirContents) {
-        const itemPath = `${path}/${item.name}`
+        const itemPath = path.join(pathName, item.name)
         if (item.isDirectory) {
           await fetchIconsRecursively(itemPath)
         } else {
-          const type = itemPath.includes('disable') && itemPath.includes('paralel') ? 4 : itemPath.includes('disable') ? 3 : itemPath.includes('paralel') ? 2 : 1
+          let type: IconType
+          if (itemPath.includes('disable') && itemPath.includes('paralel')) {
+            type = IconType.FunctionDisableIconsBigParalel
+          } else if (itemPath.includes('disable')) {
+            type = IconType.FunctionDisableIconsBig
+          } else if (itemPath.includes('paralel')) {
+            type = IconType.FunctionIconsBigParalel
+          } else {
+            type = IconType.FunctionIconsBig
+          }
           icons.push({ type, name: item.name, data: await this.download(itemPath, { encoding: 'binary' }) })
         }
       }
     }
-
-    for (const item of dirContents) {
-      const itemPath = `${remotePath}/${item.name}`
-      if (item.isDirectory) {
-        await fetchIconsRecursively(itemPath)
-      } else {
-        const type = itemPath.includes('disable') && itemPath.includes('paralel') ? 4 : itemPath.includes('disable') ? 3 : itemPath.includes('paralel') ? 2 : 1
-        icons.push({ type, name: item.name, data: await this.download(itemPath, { encoding: 'binary' }) })
-      }
-    }
+    await fetchIconsRecursively(remotePath)
 
     return icons
   }

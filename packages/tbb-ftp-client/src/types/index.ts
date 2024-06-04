@@ -256,3 +256,9 @@ export interface LockOutputDigital extends LockOutput {
   LOCKDOUTINDEX: number
   STATE: number
 }
+
+export interface Icon {
+  type: number
+  name: string
+  data: string
+}

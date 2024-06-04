@@ -66,7 +66,3 @@ export async function upload(client: Client, remotePath: string, content: string
   })
   await client.uploadFrom(readableStream, remotePath)
 }
-
-export async function listDirContents(client: Client, path: string): Promise<FileInfo[]> {
-  return await client.list(path)
-}
