@@ -1,5 +1,6 @@
-import { PLANNED_CODE, UNPLANNED_CODE } from '../../constants'
-import { knex } from '../../knexConfig'
+import { config } from '~/config'
+import { PLANNED_CODE, UNPLANNED_CODE } from '~/constants'
+import { knex } from '~/knexConfig'
 
 export async function getPtStatus() {
   const res = await knex('dbo.TFTELESKOPSETTINGS as P')
@@ -163,21 +164,18 @@ export async function getBatchProperties(machineId: number, planKey: number) {
     GROUP BY b.PROGNO, b.NAME;
   `)
   const times = await knex.raw(`
-    SELECT TOP 1
+  SELECT TOP 1
     d.TheoricalDuration AS theoreticalDuration,
     d.STARTDATETIME AS startTime,
-    d.PLANNEDSTARTTIME AS plannedStartTime,
-    CASE
-        WHEN b.ENDTIME IS NULL THEN b.CANCELTIME
-    ELSE b.ENDTIME
-  END as endTime
+    DATEADD(MINUTE, ?, d.PLANNEDSTARTTIME) AS plannedStartTime,
+    DATEADD(MINUTE, ?, IIF(b.ENDTIME IS NULL, b.CANCELTIME, b.ENDTIME)) AS endTime
   FROM
     DYBFBATCHPLAN AS d
   LEFT JOIN
     BADATA AS b ON d.PLANKEY = b.PLANKEY
   WHERE
-    d.PLANKEY = ${planKey};
-  `)
+    d.PLANKEY = ?;
+  `, [config.teleskopTimezoneOffset, config.teleskopTimezoneOffset, planKey])
 
   return { erpParameters, programs, times: times[0] }
 }
@@ -201,7 +199,7 @@ export async function getMachines() {
       machineCapacity: 'm.MACHINECAPACITY',
       machineIpAddress: 'm.IP',
       groupName: 'g.GROUPNAME',
-      elapsedTime: knex.raw('DATEDIFF(SECOND, b.STARTTIME, GETDATE())'),
+      elapsedTime: knex.raw('DATEDIFF(SECOND, DATEADD(MINUTE, ?, b.STARTTIME), GETDATE())', [config.teleskopTimezoneOffset]),
       theoreticalDuration: 'b.THEORETICDURAT',
       autoManualStatus: 's.RUNNING_AUTOMANSTATUS',
       loggedInOperatorNo: 's.RUNNING_OPRNO',

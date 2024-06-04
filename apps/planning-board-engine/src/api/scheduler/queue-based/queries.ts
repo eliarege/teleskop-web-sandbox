@@ -3,6 +3,7 @@ import { queueBasedEventStatus } from '../../../composables/helper'
 import { knex } from '../../../knexConfig'
 import { getMachineIds, getMachines } from '../queries'
 import { mergeEvents } from './helper'
+import { config } from '~/config'
 
 export interface EventReschedule {
   planKey: number
@@ -74,11 +75,8 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
       p.MACHINEID AS machineId,
       p.JOBORDER AS jobOrder,
       p.PROGRAMNOLIST AS programNoList,
-      p.STARTTIME AS startTime,
-      CASE
-      	WHEN p.ENDTIME IS NOT NULL THEN p.ENDTIME
-      	ELSE p.CANCELTIME
-      END AS endTime,
+      DATEADD(MINUTE, ?, p.STARTTIME) AS startTime,
+      DATEADD(MINUTE, ?, IIF(p.ENDTIME IS NULL, p.CANCELTIME, p.ENDTIME)) AS endTime,
       p.THEORETICDURAT AS theoreticalDuration,
       p.FABRIC_WEIGHT AS fabricWeight,
       p.PARTYNUMBER AS partyNumber,
@@ -118,7 +116,7 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
   WHERE RowNum = 1
   AND startTime >= ?
   OR (endTime BETWEEN ? AND ? OR endTime IS NULL)
-  `, [startDate, startDate, endDate])
+  `, [config.teleskopTimezoneOffset, config.teleskopTimezoneOffset, startDate, startDate, endDate])
 }
 
 export async function checkMachineLastTaskQueue(machineId: number) {

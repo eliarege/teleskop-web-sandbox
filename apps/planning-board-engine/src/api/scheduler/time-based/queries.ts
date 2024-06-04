@@ -1,4 +1,5 @@
 import { knex } from '../../../knexConfig'
+import { config } from '~/config'
 
 // GET
 export async function getTimeBasedPlannedEvents() {
@@ -27,11 +28,8 @@ export async function getTimeBasedEvents(archiveDays: number) {
         p.MACHINEID AS machineId,
         p.JOBORDER AS jobOrder,
         p.PROGRAMNOLIST AS programNoList,
-        p.STARTTIME AS startTime,
-        CASE
-          WHEN p.ENDTIME IS NULL THEN p.CANCELTIME
-          ELSE p.ENDTIME
-        END as endTime,
+        DATEADD(MINUTE, ?, p.STARTTIME) AS startTime,
+        DATEADD(MINUTE, ?, IIF(p.ENDTIME IS NULL, p.CANCELTIME, p.ENDTIME)) AS endTime,
         p.THEORETICDURAT AS theoreticalDuration,
         p.FABRIC_WEIGHT AS fabricWeight,
         p.PARTYNUMBER AS partyNumber,
@@ -48,7 +46,7 @@ export async function getTimeBasedEvents(archiveDays: number) {
         BADATA AS p
         LEFT JOIN DYBFBATCHPLAN d ON d.PLANKEY = P.PLANKEY
       WHERE
-        p.STARTTIME BETWEEN DATEADD(DAY, -${archiveDays}, GETDATE()) AND GETDATE()
+        p.STARTTIME BETWEEN DATEADD(DAY, ?, GETDATE()) AND GETDATE()
         AND (d.ISDELETED IS NULL OR d.ISDELETED = 0)
         AND d.ISSTARTED = 1
     )
@@ -73,5 +71,5 @@ export async function getTimeBasedEvents(archiveDays: number) {
       color
     FROM RankedBatches
     WHERE RowNum = 1
-`)
+`, [config.teleskopTimezoneOffset, config.teleskopTimezoneOffset, -archiveDays])
 }
