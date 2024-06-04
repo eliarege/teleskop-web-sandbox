@@ -1,9 +1,9 @@
 import { dmsDB } from '~/server/connectionPool'
 import type { RecipeMaster } from '~/shared/types'
 
-export default defineEventHandler(async () => {
-  const recipes: Array<RecipeMaster> = await dmsDB('RECIPE_MASTER').select({
-    recipeId: 'recipe_id',
+export default defineEventHandler(async (event) => {
+  const { recipeId } = getRouterParams(event)
+  const recipe: Array<RecipeMaster> = await dmsDB('RECIPE_MASTER').select({
     recipeName: 'recipe_name',
     recipeGroup: 'recipe_group',
     recipeType: 'recipe_type',
@@ -14,6 +14,6 @@ export default defineEventHandler(async () => {
     programNo: 'program_no',
     machineId: 'machine_id',
     isPassive: 'is_passive'
-  })
-  return recipes
+  }).where('recipe_id', recipeId).first()
+  return recipe
 })
