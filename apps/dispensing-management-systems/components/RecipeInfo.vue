@@ -23,7 +23,7 @@ const recipeDataTemp = ref()
 const plankey = ref()
 getRecipe()
 async function getRecipe() {
-  recipeDataTemp.value = await $fetch(`/api/recipes/recipe`, { query: { batchNo: props.batchNo, correctionNo: props.correctionNo } })
+  recipeDataTemp.value = await $fetch(`/api/recipes`, { query: { batchNo: props.batchNo, correctionNo: props.correctionNo } })
   if (!recipeDataTemp.value)
     recipeData.value = []
   else {
