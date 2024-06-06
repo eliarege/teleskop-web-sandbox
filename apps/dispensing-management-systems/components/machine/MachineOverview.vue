@@ -66,7 +66,7 @@ async function handleNewMachine() {
       controllerTypes: controllerTypes.value,
       dispensers: dataStore.dispensers,
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
       refreshMachines()
@@ -119,7 +119,7 @@ async function onMachineClick(row: any) {
       machines,
       dispensers: dataStore.dispensers,
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
       refreshMachines()

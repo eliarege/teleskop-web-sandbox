@@ -71,7 +71,7 @@ async function onRowClick(row: any) {
       groupOptions,
       dispensers,
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
       refreshMaterials()
@@ -87,7 +87,7 @@ function addNewMaterial() {
       groupOptions,
       dispensers,
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
       refreshMaterials()

@@ -51,7 +51,7 @@ async function onRowClick(_event: Event, row: any) {
       machines,
       dispensers,
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
       refreshMachines()
@@ -67,7 +67,7 @@ async function addNewMachine() {
       controllerTypes,
       dispensers,
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
       refreshMachines()
