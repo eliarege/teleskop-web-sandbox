@@ -493,7 +493,7 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
         COMMANDNO: command.commandNo,
         IOID: c.ioId,
       }
-      const ioName = ioNames[c.ioType - 1].find(d => d.id === c.ioId)?.name
+      const ioName = ioNames[c.ioType - 1].find(d => d.id === c.ioId)?.name || ''
 
       if (c.selectIndex === 0) {
         inputsOutputs.push({

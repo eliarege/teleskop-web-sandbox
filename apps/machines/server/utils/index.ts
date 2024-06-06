@@ -52,10 +52,10 @@ export async function getIONames(machineId: number, trx: Knex) {
   const ioNames: Record<number, { id: number, name: string }[]> = {}
 
   for (const table of tables) {
-    const result = await trx(table.name).where({ MACHINEID: machineId }).select({ id: 'ID', name: 'NAME' })
-    if (result.length > 0) {
-      ioNames[table.type] = result
-    }
+    ioNames[table.type] = await trx
+      .from(table.name)
+      .select({ id: 'ID', name: 'NAME' })
+      .where({ MACHINEID: machineId })
   }
 
   return ioNames

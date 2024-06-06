@@ -363,7 +363,7 @@ export class TbbFtpClient {
     const fetchIconsRecursively = async (pathName: string) => {
       const subDirContents = await this.list(pathName)
       for (const item of subDirContents) {
-        const itemPath = path.join(pathName, item.name)
+        const itemPath = path.posix.join(pathName, item.name)
         if (item.isDirectory) {
           await fetchIconsRecursively(itemPath)
         } else {
