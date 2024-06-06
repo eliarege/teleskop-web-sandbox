@@ -1,6 +1,6 @@
 import { withTbbFtpClient } from 'tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
-import { writeCommandAlarmReasons } from '~/server/utils/updateDatabase'
+import { writeCommandAlarmReasons, writeManualReasonsGeneral } from '~/server/utils/updateDatabase'
 
 export default defineEventHandler(async (event) => {
   const { machineId, options } = await readBody(event)
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
         await writeUsers(machineId, tbb, trx)
       }
       if (options.manualReasons) {
-        await writeManualReasons(tbb, trx)
+        await writeManualReasonsGeneral(tbb, trx)
       }
       if (options.commandTimeoutReasons) {
         await writeCommandAlarmReasons(machineId, tbb, trx)

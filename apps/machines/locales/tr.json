@@ -367,5 +367,8 @@
   "saltRequestCommands": "Tuz İstek Komutlarıj",
   "genericMaterial1Request": "Jenerik Materyal 1 İstek",
   "genericMaterial2Request": "Jenerik Materyal 2 İstek",
-  "manualMeasurementCommands": "Manuel Ölçüm Komutları"
+  "manualMeasurementCommands": "Manuel Ölçüm Komutları",
+  "definitionsDownloaded": "Tanımlar İndirildi",
+  "definitionsUploaded": "Tanımlar Yüklendi",
+  "errorDuringProcess": "İşlem Sırasında Hata Oluştu"
 }

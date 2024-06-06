@@ -1,7 +1,9 @@
 import type { Buffer } from 'node:buffer'
+import path from 'node:path'
+import type { FileInfo } from 'basic-ftp'
 import { Client } from 'basic-ftp'
 import type { DownloadOptions, DownloadOptionsWithEncoding, DownloadOptionsWithoutEncoding } from './utils/ftp'
-import { download, upload } from './utils/ftp'
+import { download, listDirContents, upload } from './utils/ftp'
 import { parseLockGeneral } from './parsers/parseLockGeneral'
 import { parseUser, serializeUser } from './parsers/parseUser'
 import { parseManualReason, serializeManualReason } from './parsers/parseManualReason'
@@ -25,7 +27,7 @@ import { parseCommandFeedback } from './parsers/parseCommandFeedback'
 import { parseFunctionAlarms } from './parsers/parseFunctionAlarms'
 import { parseCommandGraphic } from './parsers/parseCommandGraphic'
 import { parseCommandAlarms } from './parsers/parseCommandAlarms'
-import type { CommandAlarmReason, FinishReason, GlobalCommandFormula, MachineParameter, ManualReason, StopReason, User } from './types'
+import type { CommandAlarmReason, FinishReason, GlobalCommandFormula, Icon, MachineParameter, ManualReason, StopReason, User } from './types'
 import { parseConsumption } from './parsers/parseConsumption'
 import { parseGlobalCommandFormulas, serializeGlobalCommandFormulas } from './parsers/parseGlobalCommandFormulas'
 import { parseSeperatedLocks } from './parsers/parseLocksInput'
@@ -115,6 +117,14 @@ export class TbbFtpClient {
    */
   async remove(remotePath: string): Promise<void> {
     await this.client.remove(remotePath)
+  }
+
+  /**
+   * Fetch directory contents via FTP
+   * @param path
+   */
+  async list(path: string): Promise<FileInfo[]> {
+    return await this.client.list(path)
   }
 
   /**
@@ -337,6 +347,43 @@ export class TbbFtpClient {
     const content = await this._download(remotePath)
     const system = parseSystem(content)
     return system
+  }
+
+  async fetchIcons() {
+    enum IconType {
+      FunctionIconsBig = 1,
+      FunctionIconsBigParalel = 2,
+      FunctionDisableIconsBig = 3,
+      FunctionDisableIconsBigParalel = 4,
+    }
+
+    const remotePath = '/tbb6500/data/pics'
+    const icons: Icon[] = []
+
+    const fetchIconsRecursively = async (pathName: string) => {
+      const subDirContents = await this.list(pathName)
+      for (const item of subDirContents) {
+        const itemPath = path.posix.join(pathName, item.name)
+        if (item.isDirectory) {
+          await fetchIconsRecursively(itemPath)
+        } else {
+          let type: IconType
+          if (itemPath.includes('disable') && itemPath.includes('paralel')) {
+            type = IconType.FunctionDisableIconsBigParalel
+          } else if (itemPath.includes('disable')) {
+            type = IconType.FunctionDisableIconsBig
+          } else if (itemPath.includes('paralel')) {
+            type = IconType.FunctionIconsBigParalel
+          } else {
+            type = IconType.FunctionIconsBig
+          }
+          icons.push({ type, name: item.name, data: await this.download(itemPath, { encoding: 'binary' }) })
+        }
+      }
+    }
+    await fetchIconsRecursively(remotePath)
+
+    return icons
   }
 
   async uploadSystemParams(system: Record<string, any>) {

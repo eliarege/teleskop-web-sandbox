@@ -368,5 +368,8 @@
   "saltRequestCommands": "Salt Request Commands",
   "genericMaterial1Request": "Generic Material 1 Request",
   "genericMaterial2Request": "Generic Material 2 Request",
-  "manualMeasurementCommands": "Manual Measurement Commands"
+  "manualMeasurementCommands": "Manual Measurement Commands",
+  "definitionsDownloaded": "Definitions Downloaded",
+  "definitionsUploaded": "Definitions Uploaded",
+  "errorDuringProcess": "Error During Process"
 }

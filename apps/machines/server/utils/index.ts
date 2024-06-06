@@ -40,17 +40,23 @@ export function calcIONumber(ioObject: IOOutput | CommandIO, controllerModel: Pi
   return res
 }
 
-export async function getIOName(machineId: number, type: number, id: number, trx: Knex) {
-  let tableName
-  switch (type) {
-    case 0: tableName = 'BFMACHAIN'; break
-    case 1: tableName = 'BFMACHAOUT'; break
-    case 2: tableName = 'BFMACHDIN'; break
-    case 3: tableName = 'BFMACHDOUT'; break
-    case 4: tableName = 'BFMACHCOUNTER'; break
-    default: throw new Error(`Invalid type: ${type}`)
+export async function getIONames(machineId: number, trx: Knex) {
+  const tables = [
+    { name: 'BFMACHAIN', type: 0 },
+    { name: 'BFMACHAOUT', type: 1 },
+    { name: 'BFMACHDIN', type: 2 },
+    { name: 'BFMACHDOUT', type: 3 },
+    { name: 'BFMACHCOUNTER', type: 4 },
+  ] as const
+
+  const ioNames: Record<number, { id: number, name: string }[]> = {}
+
+  for (const table of tables) {
+    ioNames[table.type] = await trx
+      .from(table.name)
+      .select({ id: 'ID', name: 'NAME' })
+      .where({ MACHINEID: machineId })
   }
 
-  const result = await trx(tableName).where({ MACHINEID: machineId, ID: id }).select('NAME')
-  return result.length > 0 ? result[0].NAME : ''
+  return ioNames
 }

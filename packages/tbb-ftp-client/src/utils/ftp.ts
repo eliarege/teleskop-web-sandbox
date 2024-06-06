@@ -1,6 +1,6 @@
 import { Readable, Writable } from 'node:stream'
 import { Buffer } from 'node:buffer'
-import type { AccessOptions } from 'basic-ftp'
+import type { AccessOptions, FileInfo } from 'basic-ftp'
 import { Client } from 'basic-ftp'
 
 export async function withClient(clientOrOptions: AccessOptions | Client, callback: (client: Client) => any) {
