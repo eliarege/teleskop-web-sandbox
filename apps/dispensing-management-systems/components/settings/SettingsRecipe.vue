@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
+import RecipeEditDialog from '../RecipeEditDialog.vue';
 import type { RecipeMaster } from '~/shared/types';
 
 const { t } = useI18n()
+const { notifySuccess, notifyFail } = useNotify()
+const q = useQuasar()
 const { data: recipes, refresh: refreshRecipes } = await useFetch<RecipeMaster[]>('/api/recipes/master')
   const columns: (QTableColumn<RecipeMaster>)[] = [
   {
@@ -21,8 +24,20 @@ const { data: recipes, refresh: refreshRecipes } = await useFetch<RecipeMaster[]
   }
 ]
 
-async function onRowClick(_event: Event, row: any) {
-
+async function onRowClick(_event: Event, row: RecipeMaster) {
+  q.dialog({
+    component: RecipeEditDialog,
+    componentProps: {
+      recipeNo: row.recipeId,
+    },
+  }).onOk((payload: any) => {
+    if (payload) {
+      notifySuccess(t('Success'))
+      refreshRecipes()
+    } else
+      notifyFail(t('Failed'))
+  },
+  )
 }
 async function addNewRecipe() {
 

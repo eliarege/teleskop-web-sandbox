@@ -25,6 +25,7 @@
     "tedious": "^18.1.0",
     "ui": "workspace:*",
     "utils": "workspace:*",
+    "vuedraggable": "^4.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
