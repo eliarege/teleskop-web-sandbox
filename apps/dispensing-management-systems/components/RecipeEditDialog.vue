@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useDialogPluginComponent } from 'quasar'
-import draggable from "vuedraggable";
+import { useDialogPluginComponent, useQuasar } from 'quasar'
+import draggable from 'vuedraggable'
 import ConfirmationDialog from './ConfirmationDialog.vue'
 import type { Material, RecipeMaster } from '~/shared/types'
 
@@ -14,18 +14,14 @@ const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { data: recipe } = useFetch<RecipeMaster>(`/api/recipes/master/${props.recipeNo}`)
 const { data: materials } = useFetch<Material[]>('/api/materials')
-const enabled = ref(true)
-const dragging = ref(false)
-function checkMove(element: any) {
-  console.log(`Future index: ${element.draggedContext.futureIndex}`)
-}
-async function onSave() {
+const recipeSteps = ref<Material[]>([{ materialCode: 'ABC', materialName: 'ABC KİMYASALI' }, { materialCode: 'XYZ', materialName: 'XYZ BOYASI' }])
 
+async function onSave() {
 }
 
 function onReset() {
-
 }
+
 async function onDelete() {
   q.dialog({
     component: ConfirmationDialog,
@@ -46,6 +42,29 @@ async function onDelete() {
     onDialogOK(null)
   })
 }
+
+function log(e: any) {
+  console.log(e)
+}
+
+function onAdd(event: any) {
+  const newItem = { ...event.item }
+  recipeSteps.value.push(newItem)
+}
+
+function onRemove(event: any) {
+  const index = recipeSteps.value.indexOf(event.item)
+  if (index > -1) {
+    recipeSteps.value.splice(index, 1)
+  }
+}
+
+function onMoveFromMaterials(event: any) {
+  if (event.to === event.from) {
+    return false
+  }
+  return true
+}
 </script>
 
 <template>
@@ -56,20 +75,41 @@ async function onDelete() {
   >
     <QCard>
       <div class="row">
-        <div class="col-6 flex-center">
+        <div class="col-3">
+          <h3>{{ t('Recipe') }}</h3>
           <draggable
-            :list="materials"
-            :disabled="!enabled"
-            item-key="name"
-            class="list-group"
+            v-model="recipeSteps"
+            class="draggable"
+            group="materials"
+            item-key="materialCode"
             ghost-class="ghost"
-            :move="checkMove"
-            @start="dragging = true"
-            @end="dragging = false"
+            @change="log"
+            @remove="onRemove"
           >
-            <template #item="{ element }">
-              <div class="list-group-item" :class="{ 'not-draggable': !enabled }">
-                {{ element.materialName }}
+            <template #item="{ element, index }">
+              <div class="list-group-item">
+                {{ index }} - {{ element.materialName }}
+              </div>
+            </template>
+          </draggable>
+        </div>
+
+        <div class="col-3">
+          <h3>{{ t('Materials') }}</h3>
+          <draggable
+            v-model="materials"
+            class="draggable"
+            item-key="materialCode"
+            ghost-class="ghost"
+            :group="{ name: 'materials', pull: 'clone', put: false }"
+            :clone="(item: any) => ({ ...item })"
+            :move="onMoveFromMaterials"
+            @change="log"
+            @add="onAdd"
+          >
+            <template #item="{ element, index }">
+              <div class="list-group-item">
+                {{ index }} - {{ element.materialName }}
               </div>
             </template>
           </draggable>
@@ -77,8 +117,14 @@ async function onDelete() {
 
         <rawDisplayer
           class="col-3"
+          :value="recipeSteps"
+          title="List 1"
+        />
+
+        <rawDisplayer
+          class="col-3"
           :value="materials"
-          :title="t('Materials')"
+          title="List 2"
         />
       </div>
       <div class="dialog-button-section">
@@ -102,7 +148,7 @@ async function onDelete() {
           @click="onReset"
         />
         <QBtn
-          v-if="recipe"
+          v-if="recipeNo"
           :label="t('Delete')"
           color="negative"
           icon="delete"
@@ -123,6 +169,9 @@ async function onDelete() {
   background: #c8ebfb;
 }
 
+.draggable {
+  cursor: pointer;
+}
 .not-draggable {
   cursor: no-drop;
 }
