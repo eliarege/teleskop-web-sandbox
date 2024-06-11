@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import type { FilterableTableColumn } from 'nuxt-base'
+import ConnectMultiDispenserDialog from '~/components/ConnectMultiDispenserDialog.vue'
 import { colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 
 const { t } = useI18n()
 const rows = ref([])
 const disps = ref([])
+const $q = useQuasar()
 
 await getRows()
 await getDisps()
@@ -246,6 +248,34 @@ async function checkMachineIdExist(mach: { value: number | null }, value: InputE
     givenMachineIdExistsWarning.value = false
   }
 }
+async function handleMultiEdit() {
+  console.log(machines)
+  const dispensers = disps.value.map((disp) => {
+    return { label: `${disp.dispNo} - ${disp.name}`, value: disp.dispNo }
+  })
+  console.log(disps.value)
+  $q.dialog({
+    component: ConnectMultiDispenserDialog,
+    componentProps: {
+      objectList: machines,
+      objectKey: 'machinename',
+      objectValue: 'machineid',
+      dispensers,
+    },
+  }).onOk(async (response: MultiDispenserDialogResponseType) => {
+    const body = {
+      machineList: response.selectedObjects.map(mach => mach.machineid),
+      dispenserList: response.selectedDispensers,
+    }
+    const operation = response.isReplace ? 'replace' : 'add'
+    const status = await $fetch(`/api/settings/${operation}-machine-dispenser-connection`, {
+      method: 'POST',
+      body,
+    })
+    await getRows()
+    notification(status, status ? t('multiEditDialog.successWarning') : t('multiEditDialog.failWarning'))
+  })
+}
 
 onBeforeRouteLeave(async (to, from, next) => {
   let check = false
@@ -270,6 +300,22 @@ onBeforeRouteLeave(async (to, from, next) => {
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"
   >
+    <template #top-right>
+      <div class="items-center flex justify-center h-full">
+        <q-btn
+          outline
+          class="p-2"
+          icon="edit"
+          @click="handleMultiEdit"
+        >
+          <q-tooltip
+            class="text-body2"
+          >
+            {{ t('multiEditDialog.tooltip') }}
+          </q-tooltip>
+        </q-btn>
+      </div>
+    </template>
     <template #custombody="props">
       <q-tr :props="props">
         <q-td
