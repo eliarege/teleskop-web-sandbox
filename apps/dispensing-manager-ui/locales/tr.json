@@ -39,6 +39,10 @@
   "more": "fazlası",
   "yes": "Evet",
   "no": "Hayır",
+  "add": "Ekle",
+  "replace": "Değiştir",
+  "selectAll": "Tümünü Seç",
+  "cancel": "İptal",
   "settings": {
     "_": "Ayarlar",
     "requestFileSystem": "İstek dosyalarının dizini",
@@ -345,5 +349,15 @@
     "requestError3": "Tekrar istenebilir olmayan maddeler tekrardan istenemez.",
     "requestError4": "{status} durumundaki adımlar tekrar istenemez.",
     "requestError5": "Reçete adımı ilgili tabloda bulunamadı. (DYTFCHEMREQUESTS)"
+  },
+  "multiEditDialog": {
+    "_": "Toplu {type} Düzenleme",
+    "tooltip": "Toplu Dağıtıcı Bağlantısı Düzenleme",
+    "machines": "makineleri",
+    "materials": "materyalleri",
+    "selectObjectsWantToChange": "Düzenlemek istediğiniz {type} seçiniz.",
+    "selectDispensers": "Eklemek-Değiştirmek istediğiniz dağıtıcıları seçiniz.",
+    "successWarning": "Dağıtıcı bağlantısı düzenleme işlemi başarılı.",
+    "failWarning": "Dağıtıcı bağlantısı düzenleme işlemi başarısız."
   }
 }

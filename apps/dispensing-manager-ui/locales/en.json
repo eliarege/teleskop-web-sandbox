@@ -39,6 +39,10 @@
   "more": "more",
   "yes": "Yes",
   "no": "No",
+  "add": "Add",
+  "replace": "Replace",
+  "selectAll": "Select All",
+  "cancel": "İptal",
   "settings": {
     "_": "Settings",
     "requestFileSystem": "Request files directory",
@@ -346,5 +350,16 @@
     "requestError3": "Non-rerequestable material cannot be rerequested.",
     "requestError4": "Recipe steps with status {status} cannot be rerequested.",
     "requestError5": "Recipe step cannot be found on DYTFCHEMREQUESTS."
+  },
+  "multiEditDialog": {
+    "_": "Multiple {type} Edit",
+    "tooltip": "Edit Multiple Dispenser Connections",
+    "machines": "machines",
+    "materials": "materials",
+    "selectObjectsWantToChange": "Select the {type} you want to edit.",
+    "selectDispensers": "Select the dispensers you want to add-replace.",
+    "successWarning": "Dispenser connections successfully edited.",
+    "failWarning": "An error occured during editing dispenser connections."
+
   }
 }
