@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
+import type { FilterableTableColumn } from 'nuxt-base'
 import { colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
-import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref([])
@@ -21,7 +21,7 @@ const controlDevices = [
   { controlDevice: 5, label: 'Tonello' },
 ]
 
-const columns = computed<Array<Column>>(() => [
+const columns = computed<Array<FilterableTableColumn>>(() => [
   {
     name: 'machineid',
     label: t('settings.machineCode'),

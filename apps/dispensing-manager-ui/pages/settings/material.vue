@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
+import type { FilterableTableColumn } from 'nuxt-base'
 import { colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
-import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref<any[]>([])
@@ -16,7 +16,7 @@ const materialGroups = [
   { label: t('settings.other'), materialGroup: 3 },
 ]
 
-const columns = computed<Array<Column>>(() => [
+const columns = computed<Array<FilterableTableColumn>>(() => [
   {
     name: 'materialCode',
     label: t('settings.materialCode'),

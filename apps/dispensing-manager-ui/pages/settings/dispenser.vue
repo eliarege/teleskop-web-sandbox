@@ -2,9 +2,9 @@
 import { Notify } from 'quasar'
 import { outlinedCancel, outlinedCheckCircle } from '@quasar/extras/material-icons-outlined'
 import { useTimeoutPoll } from '@vueuse/core'
+import type { FilterableTableColumn } from 'nuxt-base'
 import { colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
-import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref([])
@@ -25,7 +25,7 @@ await getTypes()
 const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/dispenser-connection-status', { default: () => [] })
 useTimeoutPoll(refreshConnectionStatus, 10000, { immediate: true })
 
-const columns = computed<Array<Column>>(() => [
+const columns = computed<Array<FilterableTableColumn>>(() => [
   {
     name: 'dispNo',
     label: t('settings.dispSettings.dispNo'),
