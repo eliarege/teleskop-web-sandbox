@@ -279,6 +279,47 @@ router.put('/machine-dispenser-connection/:machineid', defineEventHandler(async 
   return 1
 }))
 
+router.post('/add-machine-dispenser-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  if (!body || !body.machineList || !body.dispenserList) {
+    throw new Error('Machines and dispensers are required!')
+  }
+  const insertArray = []
+  for (const machineid of body.machineList)
+    for (const dispNo of body.dispenserList) {
+      if (!(await knex('DYTFMACHDISPCONNECTION').where('DISPENSERID', dispNo).andWhere('MACHINEID', machineid)).length) {
+        insertArray.push({
+          DISPENSERID: dispNo,
+          MACHINEID: machineid,
+        })
+      }
+    }
+  if (insertArray.length)
+    await knex('DYTFMACHDISPCONNECTION')
+      .insert(insertArray)
+  return 1
+}))
+router.post('/replace-machine-dispenser-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  if (!body || !body.machineList || !body.dispenserList) {
+    throw new Error('Machines and dispensers are required!')
+  }
+  const insertArray = []
+  for (const machineid of body.machineList) {
+    await knex('DYTFMACHDISPCONNECTION').delete().where('MACHINEID', machineid)
+    for (const dispNo of body.dispenserList) {
+      insertArray.push({
+        DISPENSERID: dispNo,
+        MACHINEID: machineid,
+      })
+    }
+  }
+  if (insertArray.length)
+    await knex('DYTFMACHDISPCONNECTION')
+      .insert(insertArray)
+  return 1
+}))
+
 router.delete('/machine-dispenser-connection/:machineid', defineEventHandler(async (event) => {
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
@@ -348,6 +389,53 @@ const selectParametersMaterials = {
   directTransfer: 'M.DirectTransfer',
   dispNo: 'C.DISPENSERID',
 }
+
+router.get('/materials-key-value', defineEventHandler(async (event) => {
+  return await knex('DYTFMATERIAL as M')
+    .select({ materialCode: 'M.MATERIALCODE', materialLabel: knex.raw('CONCAT(\'(\', M.MATERIALCODE, \') \', M.MATERIALNAME)') })
+    .orderBy('M.MATERIALCODE')
+}))
+
+router.post('/add-material-dispenser-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  if (!body || !body.materialList || !body.dispenserList) {
+    throw new Error('Materials and dispensers are required!')
+  }
+  const insertArray = []
+  for (const materialCode of body.materialList)
+    for (const dispNo of body.dispenserList) {
+      if (!(await knex('DYTFCHEMDISPCONNECTION').where('DISPENSERID', dispNo).andWhere('CHEMCODE', materialCode)).length) {
+        insertArray.push({
+          DISPENSERID: dispNo,
+          CHEMCODE: materialCode,
+        })
+      }
+    }
+  if (insertArray.length)
+    await knex('DYTFCHEMDISPCONNECTION')
+      .insert(insertArray)
+  return 1
+}))
+router.post('/replace-material-dispenser-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  if (!body || !body.materialList || !body.dispenserList) {
+    throw new Error('Materials and dispensers are required!')
+  }
+  const insertArray = []
+  for (const materialCode of body.materialList) {
+    await knex('DYTFCHEMDISPCONNECTION').delete().where('CHEMCODE', materialCode)
+    for (const dispNo of body.dispenserList) {
+      insertArray.push({
+        DISPENSERID: dispNo,
+        CHEMCODE: materialCode,
+      })
+    }
+  }
+  if (insertArray.length)
+    await knex('DYTFCHEMDISPCONNECTION')
+      .insert(insertArray)
+  return 1
+}))
 
 router.post('/material-dispenser-connection-filtered', defineEventHandler(async (event) => {
   const body = await readBody(event)
