@@ -17,9 +17,11 @@ const { data: materials } = useFetch<Material[]>('/api/materials')
 const recipeSteps = ref<Material[]>([{ materialCode: 'ABC', materialName: 'ABC KİMYASALI' }, { materialCode: 'XYZ', materialName: 'XYZ BOYASI' }])
 
 async function onSave() {
+
 }
 
 function onReset() {
+
 }
 
 async function onDelete() {
@@ -74,20 +76,20 @@ function onMoveFromMaterials(event: any) {
     @hide="onDialogHide"
   >
     <QCard>
-      <div class="row">
-        <div class="col-3">
-          <h3>{{ t('Recipe') }}</h3>
+      <div class="row justify-center">
+        <div class="col-4">
+          <h3 flex-center>{{ t('Recipe') }}</h3>
           <draggable
             v-model="recipeSteps"
             class="draggable"
-            group="materials"
+            group="materials mr-2"
             item-key="materialCode"
             ghost-class="ghost"
             @change="log"
             @remove="onRemove"
           >
             <template #item="{ element, index }">
-              <div class="list-group-item">
+              <div class="item">
                 {{ index }} - {{ element.materialName }}
               </div>
             </template>
@@ -95,37 +97,24 @@ function onMoveFromMaterials(event: any) {
         </div>
 
         <div class="col-3">
-          <h3>{{ t('Materials') }}</h3>
+          <h3 flex-center>{{ t('Materials') }}</h3>
           <draggable
             v-model="materials"
-            class="draggable"
+            class="draggable ml-2"
             item-key="materialCode"
             ghost-class="ghost"
             :group="{ name: 'materials', pull: 'clone', put: false }"
             :clone="(item: any) => ({ ...item })"
             :move="onMoveFromMaterials"
             @change="log"
-            @add="onAdd"
           >
             <template #item="{ element, index }">
-              <div class="list-group-item">
+              <div class="item">
                 {{ index }} - {{ element.materialName }}
               </div>
             </template>
           </draggable>
         </div>
-
-        <rawDisplayer
-          class="col-3"
-          :value="recipeSteps"
-          title="List 1"
-        />
-
-        <rawDisplayer
-          class="col-3"
-          :value="materials"
-          title="List 2"
-        />
       </div>
       <div class="dialog-button-section">
         <QBtn
@@ -174,5 +163,24 @@ function onMoveFromMaterials(event: any) {
 }
 .not-draggable {
   cursor: no-drop;
+}
+
+.item {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 8px;
+  background-color: #f9f9f9;
+}
+
+.body--dark .item {
+  border: 1px solid grey;
+  background-color: #020202;
+}
+.item:hover {
+  background-color: #f1f1f1;
+}
+.body--dark .item:hover {
+  background-color: #a1a1a1;
 }
 </style>
