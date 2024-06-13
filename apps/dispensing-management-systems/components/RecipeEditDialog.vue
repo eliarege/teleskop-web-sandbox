@@ -13,7 +13,6 @@ const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { data: recipe } = useFetch<RecipeMaster>(`/api/recipes/master/${props.recipeNo}`)
-const { data: materials } = useFetch<Material[]>('/api/materials')
 const recipeSteps = ref<Material[]>([{ materialCode: 'ABC', materialName: 'ABC KİMYASALI' }, { materialCode: 'XYZ', materialName: 'XYZ BOYASI' }])
 
 async function onSave() {
@@ -49,11 +48,6 @@ function log(e: any) {
   console.log(e)
 }
 
-function onAdd(event: any) {
-  const newItem = { ...event.item }
-  recipeSteps.value.push(newItem)
-}
-
 function onRemove(event: any) {
   const index = recipeSteps.value.indexOf(event.item)
   if (index > -1) {
@@ -61,12 +55,6 @@ function onRemove(event: any) {
   }
 }
 
-function onMoveFromMaterials(event: any) {
-  if (event.to === event.from) {
-    return false
-  }
-  return true
-}
 </script>
 
 <template>
@@ -81,40 +69,25 @@ function onMoveFromMaterials(event: any) {
           <h3 flex-center>{{ t('Recipe') }}</h3>
           <draggable
             v-model="recipeSteps"
-            class="draggable"
-            group="materials mr-2"
+            class="draggable-area mr-2"
+            group="materials"
             item-key="materialCode"
-            ghost-class="ghost"
+            ghost-class="material-ghost"
             @change="log"
             @remove="onRemove"
           >
             <template #item="{ element, index }">
-              <div class="item">
-                {{ index }} - {{ element.materialName }}
+              <div class="material-item">
+                {{ index + 1 }} - {{ element.materialName }}
               </div>
             </template>
           </draggable>
         </div>
-
         <div class="col-3">
           <h3 flex-center>{{ t('Materials') }}</h3>
-          <draggable
-            v-model="materials"
-            class="draggable ml-2"
-            item-key="materialCode"
-            ghost-class="ghost"
-            :group="{ name: 'materials', pull: 'clone', put: false }"
-            :clone="(item: any) => ({ ...item })"
-            :move="onMoveFromMaterials"
-            @change="log"
-          >
-            <template #item="{ element, index }">
-              <div class="item">
-                {{ index }} - {{ element.materialName }}
-              </div>
-            </template>
-          </draggable>
+          <MaterialList/>
         </div>
+
       </div>
       <div class="dialog-button-section">
         <QBtn
@@ -151,36 +124,5 @@ function onMoveFromMaterials(event: any) {
 <style scoped>
 .buttons {
   margin-top: 35px;
-}
-
-.ghost {
-  opacity: 0.5;
-  background: #c8ebfb;
-}
-
-.draggable {
-  cursor: pointer;
-}
-.not-draggable {
-  cursor: no-drop;
-}
-
-.item {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 8px;
-  background-color: #f9f9f9;
-}
-
-.body--dark .item {
-  border: 1px solid grey;
-  background-color: #020202;
-}
-.item:hover {
-  background-color: #f1f1f1;
-}
-.body--dark .item:hover {
-  background-color: #a1a1a1;
 }
 </style>
