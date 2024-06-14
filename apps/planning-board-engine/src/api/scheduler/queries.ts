@@ -190,6 +190,7 @@ export async function getPlanParameters(planKey: number) {
       id: 'p.BATCHPARAMETERID',
       paramString: 'p.PARAMSTRING',
       value: 'p.VALUE',
+      unitCode: 'p.UNITCODE',
     })
     .where('p.PLANKEY', '=', planKey)
 }

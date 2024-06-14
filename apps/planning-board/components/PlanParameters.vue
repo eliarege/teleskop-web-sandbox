@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { LoadingSpinner } from 'ui'
+import { getUnitById } from '~/shared/enums'
 
 const props = defineProps<{ planKey: number }>()
 
@@ -58,7 +59,7 @@ const columns = computed(() => {
             {{ prop.row.paramString }}
           </q-td>
           <q-td key="value" :props="prop">
-            {{ prop.row.value }}
+            {{ prop.row.value }} {{ getUnitById(prop.row.unitCode) }}
             <q-popup-edit
               v-slot="scope"
               v-model="prop.row.value"
