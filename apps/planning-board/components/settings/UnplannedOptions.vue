@@ -35,11 +35,31 @@ function removeParameter() {
     selected.value = sort.value[index + 1]
   }
 }
+function onDoubleClick(item: {
+  id: number
+  parameterId: number
+  parameterName: string
+  visible: boolean
+}) {
+  console.log('DBL CLICK')
+  console.log(item.visible)
+  selected.value = item
+  if (item.visible) {
+    removeParameter()
+  } else {
+    addParameter()
+  }
+}
 </script>
 
 <template>
   <div class="h-80vh unplanned-wrapper">
-    <q-list dense bordered separator class="max-h-80vh overflow-auto">
+    <q-list
+      dense
+      bordered
+      separator
+      class="max-h-80vh overflow-auto"
+    >
       <q-item
         v-for="(item, idx) in invisibleColumns"
         :key="idx"
@@ -50,6 +70,7 @@ function removeParameter() {
         :focused="selected === item"
         @click="selected = item"
         @focus="selected = item"
+        @dblclick="onDoubleClick(item)"
       >
         <q-item-section>
           {{ item.parameterName }}
@@ -57,13 +78,29 @@ function removeParameter() {
       </q-item>
     </q-list>
     <div class="flex-center flex-col gap-10 w-full h-full">
-      <q-btn :disabled="visibleColumns.includes(selected)" color="primary" :icon-right="matChevronRight" @click="addParameter()" />
-      <q-btn :disabled="invisibleColumns.includes(selected)" color="primary" :icon="matChevronLeft" @click="removeParameter()" />
+      <q-btn
+        :disabled="visibleColumns.includes(selected)"
+        color="primary"
+        :icon-right="matChevronRight"
+        @click="addParameter()"
+      />
+      <q-btn
+        :disabled="invisibleColumns.includes(selected)"
+        color="primary"
+        :icon="matChevronLeft"
+        @click="removeParameter()"
+      />
     </div>
     <div>
-      <q-list dense bordered separator class="max-h-80vh overflow-auto h-full">
+      <q-list
+        dense
+        bordered
+        separator
+        class="max-h-80vh overflow-auto h-full"
+      >
         <q-item
-          v-for="(item, idy) in visibleColumns" :key="idy"
+          v-for="(item, idy) in visibleColumns"
+          :key="idy"
           v-ripple
           clickable
           tabindex="0"
@@ -71,6 +108,7 @@ function removeParameter() {
           :focused="selected === item"
           @click="selected = item"
           @focus="selected = item"
+          @dblclick="onDoubleClick(item)"
         >
           <q-item-section>
             {{ item.parameterName }}
