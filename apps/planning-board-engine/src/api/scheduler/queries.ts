@@ -25,6 +25,7 @@ export async function getUnplannedEvents() {
       theoreticalDuration: 'P.TheoricalDuration',
       isStopped: 'P.ISSTOPPED',
       color: 'P.Color',
+      customer: 'P.CUSTOMERNAME',
       erpParameters: knex.raw(`(
         SELECT v.parameterName as 'paramName', r.VALUE as 'value'
         FROM DYBFBATCHPLANPARAMETERS r

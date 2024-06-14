@@ -50,6 +50,7 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
           d.ISSTARTED AS isStarted,
           d.ISSTOPPED AS isStopped,
           d.STARTDATETIME AS startDate,
+          d.CUSTOMERNAME AS customerName,
           d.Color AS color,
           CAST(1 as bit) as 'isPlanned'
       FROM
@@ -86,6 +87,7 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
       d.ISSTARTED AS isStarted,
       d.ISSTOPPED AS isStopped,
       d.Color as color,
+      d.CUSTOMERNAME AS customerName,
       CAST(0 as bit) as 'isPlanned',
       ROW_NUMBER() OVER (PARTITION BY p.PLANKEY ORDER BY p.BATCHREFERENCE DESC) AS RowNum
     FROM
