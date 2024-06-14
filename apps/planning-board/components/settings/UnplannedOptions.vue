@@ -41,8 +41,6 @@ function onDoubleClick(item: {
   parameterName: string
   visible: boolean
 }) {
-  console.log('DBL CLICK')
-  console.log(item.visible)
   selected.value = item
   if (item.visible) {
     removeParameter()
