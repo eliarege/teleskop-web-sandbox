@@ -745,7 +745,9 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
     </EliarModal>
     <EliarModal v-if="showModal.planParameters.show" @click.stop="showModal.planParameters.show = false">
       <template #default>
-        <PlanParameters :plan-key="showModal.planParameters.unit.name" />
+        <div class="w-full h-98vh overflow-auto">
+          <PlanParameters :plan-key="showModal.planParameters.unit.name" />
+        </div>
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.recipe.show" @click.stop="showModal.recipe.show = false">

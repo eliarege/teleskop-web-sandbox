@@ -144,13 +144,18 @@ export async function getBatchNotes(jobOrder: string) {
     }).where('JOBORDER', '=', jobOrder)
 }
 export async function getBatchProperties(machineId: number, planKey: number) {
-  const erpParameters = await knex('PTERPPARAMBYUSER as p')
-    .select('p.PARAMID as paramId', 'b.PARAMNAME as paramName', 'd.VALUE as value')
-    .leftJoin('BFERPPARAMETERDEFINITIONS as b', 'b.PARAMID', 'p.PARAMID')
-    .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'p.PARAMID')
-    .where('p.MACHINEID', machineId)
+  const erpParameters = await knex('PTMACHINEERP as p')
+    .select({
+      paramId: 'p.paramId',
+      paramName: 'p.paramName',
+      value: 'd.VALUE',
+    })
+    .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'p.paramId')
+    .where('p.machineId', machineId)
+    .andWhere('p.visible', true)
     .andWhere('d.PLANKEY', planKey)
-    .groupBy('p.PARAMID', 'b.PARAMNAME', 'd.VALUE')
+    .groupBy('p.paramId', 'p.paramName', 'd.VALUE')
+    .orderBy('p.paramId')
 
   const programs = await knex.raw(`
     WITH SplitValues AS (

@@ -22,12 +22,13 @@ const columns = computed(() => {
 
 <template>
   <LoadingSpinner v-if="pending" has-background />
-  <div class="max-h-200 overflow-auto bg-white px-5">
-    <h3 class="text-center font-extrabold ">
-      {{ t('title') }}
-    </h3>
+  <div class="bg-white px-5">
     <QTable
-      class="my-sticky-header-table"
+      :title="t('title')"
+      class="border-solid border-1px border-gray-500/50"
+      title-class="!font-extrabold"
+      table-header-class="!font-extrabold"
+      flat
       :rows="parameterData"
       :columns="columns"
       hide-pagination
@@ -35,6 +36,18 @@ const columns = computed(() => {
       :rows-per-page-options="[0]"
       no-data-label="No Parameter"
     >
+      <template #header="prop">
+        <q-tr :props="prop">
+          <q-th
+            v-for="col in prop.cols"
+            :key="col.name"
+            :props="prop"
+            class="!font-extrabold"
+          >
+            {{ col.label }}
+          </q-th>
+        </q-tr>
+      </template>
       <template #body="prop">
         <!-- TODO: v-if="!batch.isStarted" -->
         <q-tr :props="prop">
