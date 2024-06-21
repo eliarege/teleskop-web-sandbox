@@ -14,6 +14,8 @@ import { useSettingStore } from '~/store/settings'
 
 const { t, locale } = useI18n({ useScope: 'local' })
 const visibility = useDocumentVisibility()
+const config = useRuntimeConfig()
+
 const refreshInterval = 60_000
 const today = new Date()
 const startDate = ref(today.toISOString())
@@ -67,6 +69,7 @@ const showModal = reactive({
     show: false,
     currentMachine: {
       id: 0,
+      name: '',
     },
   },
   machineSort: {
@@ -348,6 +351,7 @@ onMounted(async () => {
             onItem: (a: any) => {
               showModal.vnc.show = !showModal.vnc.show
               showModal.vnc.currentMachine.id = a.id
+              showModal.vnc.currentMachine.name = a.name
             },
           },
           machineSort: {
@@ -786,7 +790,11 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
     </EliarModal>
     <EliarModal v-if="showModal.vnc.show" @click.stop="showModal.vnc.show = false">
       <template #default>
-        <MachineVnc :current-machine="showModal.vnc.currentMachine" />
+        <MachineVnc
+          :machine-name="showModal.vnc.currentMachine.name"
+          :machine-id="showModal.vnc.currentMachine.id"
+          :websockify-url="config.public.websockifyUrl"
+        />
       </template>
     </EliarModal>
     <EliarModal v-if="showModal.machineSort.show" @click.stop="showModal.machineSort.show = false">

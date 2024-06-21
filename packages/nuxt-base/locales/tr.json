@@ -23,6 +23,7 @@
       "device": "Cihaz teması",
       "light": "Açık tema"
     },
-    "version": "Version"
+    "version": "Version",
+    "vncError": "{name} Bağlantısı Başarısız Oldu!"
   }
 }

@@ -1,0 +1,18 @@
+<svg width="69" height="83" xmlns="http://www.w3.org/2000/svg">
+ <style type="text/css">.st1{fill:#FFFFFF;}
+	.st2{fill-rule:evenodd;clip-rule:evenodd;fill:#3F3939;}</style>
+
+ <g>
+  <title>background</title>
+  <rect x="-1" y="-1" width="71" height="85" id="canvas_background" fill="none"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <g stroke="null" id="svg_16">
+   <path transform="rotate(89.68022918701172 34.18795394897461,41.19471740722657) " stroke="null" fill="#3b9f3a" class="st0" d="m17.181149,7.235082l34.037601,0c13.240842,0 23.97504,7.371787 23.97504,16.465029l0,51.454246l-57.964667,0c-13.276823,0 -24.047001,-7.396496 -24.047001,-16.514449l0,-26.68669l0,-24.718136l23.999027,0z" id="svg_9"/>
+   <path transform="rotate(89.68022918701172 35.89190673828125,27.332799911499023) " stroke="null" fill="#5fbf00" class="st1" d="m35.89191,38.812802c-6.33,0 -11.48,-5.15 -11.48,-11.48s5.15,-11.48 11.48,-11.48s11.48,5.15 11.48,11.48s-5.15,11.48 -11.48,11.48zm0,-21.26c-5.39,0 -9.78,4.39 -9.78,9.78s4.39,9.78 9.78,9.78s9.78,-4.39 9.78,-9.78s-4.39,-9.78 -9.78,-9.78z" id="svg_10"/>
+   <path transform="rotate(-48.7951545715332 45.762916564941406,23.793539047241214) " stroke="null" id="svg_17" d="m41.503608,28.730035l0,-9.872993l8.518625,9.872993l-8.518625,0z" stroke-opacity="null" stroke-width="null" fill="#ffffff"/>
+   <text stroke="null" transform="matrix(1.0394805948399444,0,0,1.5735096631620564,-3.252789081680982,-38.785778198562774) " font-weight="bold" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="8" id="svg_21" y="60.255242" x="24.675679" fill-opacity="null" stroke-opacity="null" stroke-width="0" fill="#3f3939">START</text>
+  </g>
+ </g>
+</svg>

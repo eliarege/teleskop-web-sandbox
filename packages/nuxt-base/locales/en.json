@@ -23,6 +23,7 @@
       "device": "Device theme",
       "light": "Light theme"
     },
-    "version": "Version"
+    "version": "Version",
+    "vncError": "{name} Connection Failed!"
   }
 }
