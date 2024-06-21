@@ -21,7 +21,7 @@ export async function getQueueBasedEvents(startDate: string, endDate: string) {
 }
 
 export async function getQueueBasedPlannedEvents(startDate: string, endDate: string): Promise<QueueBasedPlannedEventsRaw[]> {
-  return await knex.raw(`
+  const events = await knex.raw(`
   SELECT *
   FROM (
       SELECT
@@ -65,10 +65,15 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
   ORDER BY
       machineId, queueNumber
   `, [startDate, endDate])
+
+  return events.map(ev => ({
+    ...ev,
+    percentDone: 0,
+  }))
 }
 
 export async function getQueueBasedActualEvents(startDate: string, endDate: string): Promise<QueueBasedActualEventsRaw[]> {
-  return await knex.raw(`
+  const events = await knex.raw(`
   WITH RankedBatches AS (
     SELECT
       p.BATCHKEY as batchKey,
@@ -119,6 +124,11 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
   AND startTime >= ?
   OR (endTime BETWEEN ? AND ? OR endTime IS NULL)
   `, [config.teleskopTimezoneOffset, config.teleskopTimezoneOffset, startDate, startDate, endDate])
+
+  return events.map(ev => ({
+    ...ev,
+    percentDone: ev.deviation > 0 ? 100 - ((ev.deviation / ev.theoreticalDuration) * 100) : 0,
+  }))
 }
 
 export async function checkMachineLastTaskQueue(machineId: number) {

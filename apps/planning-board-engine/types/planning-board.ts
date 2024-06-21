@@ -2,11 +2,11 @@ export interface UnscheduledTasks {
   planKey: number
   recordTime: string
   jobOrder: string
+  fabricWeight: number
   plannedMachineId: number
   programCount: number
   programList: string
   plannedStartTime: string
-  fabricWeight: string
   note: string
   erpFieldName: string | null
   batchParameterId: number
@@ -30,6 +30,7 @@ export interface QueueBasedEventsBase {
   isDeleted: boolean
   isStarted: boolean
   isStopped: boolean
+  percentDone: number
 }
 export interface QueueBasedPlannedEventsRaw extends QueueBasedEventsBase {
   isPlanned: true

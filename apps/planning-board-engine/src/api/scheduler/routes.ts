@@ -18,14 +18,15 @@ import {
   getTheoreticalDuration,
   getUnplannedColumns,
   getUnplannedEvents,
-  isTaskValid,
   pinEvent,
   removeErpParameter,
   removeFromPlan,
   scheduleEvents,
+  taskValid,
   unpinEvent,
   updateBatchNote,
   updateUnplannedColumns,
+  validateTaskPrograms,
 } from './queries'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
@@ -141,10 +142,10 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   )
   fastify.get(
     '/planning_board/valid',
-    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
+    async (request: FastifyRequest<{ Querystring: { planKey: number, fabricWeight: number } }>, reply) => {
       try {
-        const { planKey } = request.query
-        const isValid = await isTaskValid(planKey)
+        const { planKey, fabricWeight } = request.query
+        const isValid = await taskValid(planKey, fabricWeight)
         return reply.code(200).send(isValid)
       } catch (err) {
         fastify.log.error(`An error occured while fetching valid status: ${err}`)
