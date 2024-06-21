@@ -81,8 +81,8 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
       p.MACHINEID AS machineId,
       p.JOBORDER AS jobOrder,
       p.PROGRAMNOLIST AS programNoList,
-      DATEADD(MINUTE, ?, p.STARTTIME) AS startTime,
-      DATEADD(MINUTE, ?, IIF(p.ENDTIME IS NULL, p.CANCELTIME, p.ENDTIME)) AS endTime,
+      DATEADD(MINUTE, :timezoneOffset, p.STARTTIME) AS startTime,
+      DATEADD(MINUTE, :timezoneOffset, IIF(p.ENDTIME IS NULL, p.CANCELTIME, p.ENDTIME)) AS endTime,
       p.THEORETICDURAT AS theoreticalDuration,
       p.FABRIC_WEIGHT AS fabricWeight,
       p.PARTYNUMBER AS partyNumber,
@@ -121,9 +121,9 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
     color
   FROM RankedBatches
   WHERE RowNum = 1
-  AND startTime >= ?
-  OR (endTime BETWEEN ? AND ? OR endTime IS NULL)
-  `, [config.teleskopTimezoneOffset, config.teleskopTimezoneOffset, startDate, startDate, endDate])
+  AND startTime >= :startDate
+  OR (endTime BETWEEN :startDate AND :endDate OR endTime IS NULL)
+  `, { timezoneOffset: config.teleskopTimezoneOffset, startDate, endDate })
 
   return events.map(ev => ({
     ...ev,
