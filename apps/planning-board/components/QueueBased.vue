@@ -148,6 +148,7 @@ async function scheduleDataRefresh() {
   } catch (err) {
     Toast.show('Failed to Refresh')
   }
+
   setTimeout(scheduleDataRefresh, refreshInterval)
 }
 
@@ -239,7 +240,7 @@ function dateRangeEnd() {
 watch(locale, () => {
   document.querySelectorAll('.totalAlarmCount').forEach((ev) => {
     const count = ev.textContent?.split(':')[1]
-    ev.textContent = `${t('total-alarm-count')}:${count}`
+    ev.textContent = `${t('alarm-count')}:${count}`
   })
 })
 onMounted(async () => {
@@ -334,7 +335,7 @@ onMounted(async () => {
             <dt role="presentation">${data.record.name}</dt>
             <dd class="b-resource-role" role="presentation"></dd>
             <dd class="b-resource-meta" role="presentation">
-              <div class="totalAlarmCount">${t('total-alarm-count')}: ${data.record.totalAlarmCount}</div>
+              <div class="totalAlarmCount">${t('alarm-count')}: ${data.record.totalAlarmCount}</div>
             </dd>
           </dl>
         </div>
@@ -449,6 +450,13 @@ onMounted(async () => {
                   Toast.show('Event succesfuly pinned!')
                 })
                 .catch(err => Toast.show(err))
+            },
+          },
+          changeColor: {
+            icon: 'b-fa-solid b-fa-palette',
+            text: t('ctx-menu.change-color'),
+            async onItem() {
+              console.log('COLOR PICKER')
             },
           },
           copyEvent: {
@@ -843,30 +851,35 @@ div[bgGreen] {
 .custom-focus {
   filter: invert(60%);
 }
+.b-task-percent-bar-outer {
+  @apply !rounded-9px !overflow-hidden;
+}
 </style>
 
 <i18n lang="json">
 {
   "en": {
-    "total-alarm-count": "Total Alarm Count",
+    "alarm-count": "Total Alarm Count",
     "ctx-menu": {
       "task-edit": "Update Job Order",
       "task-delete": "Delete Job Order",
       "remove-plan": "Remove From Plan",
       "properties": "Job Order Properties",
       "pin": "Pin Task",
-      "unpin": "Unpin Task"
+      "unpin": "Unpin Task",
+      "change-color": "Change Job Order Color"
     }
   },
   "tr": {
-    "total-alarm-count": "Toplam Alarm",
+    "alarm-count": "Toplam Alarm",
     "ctx-menu": {
       "task-edit": "İş Emrini Güncelle",
       "task-delete": "İş Emrini Sil",
-      "remove-plan": "Plandan kaldır",
+      "remove-plan": "Plandan Kaldır",
       "properties": "İş Emri Özellikleri",
       "pin": "İş Emrini Sabitle",
-      "unpin": "İş Emri Sabitlemesini Kaldır"
+      "unpin": "İş Emri Sabitlemesini Kaldır",
+      "change-color": "İş Emri Rengini Değiştir"
     }
   }
 }
