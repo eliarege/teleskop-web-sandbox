@@ -14,7 +14,7 @@ const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { data: recipe } = useFetch<RecipeMaster>(`/api/recipes/master/${props.recipeNo}`)
 const recipeSteps = ref<BatchRecipeStep[]>([{ materialCode: 'ABC', materialName: 'ABC KİMYASALI', mainStep: 1, parallelStep: 1, amount: 1.5000, unit: 3 }, { materialCode: 'XYZ', materialName: 'XYZ BOYASI', mainStep: 2, parallelStep: 1, amount: 2.5000, unit: 3 }])
-
+const units = [{id: 0, name: t('units.0')}, {id: 1, name: t('units.1')}, {id: 2, name: t('units.2')}, {id: 3, name: t('units.3')}, {id: 4, name: t('units.4')}, {id: 5, name: t('units.5')}, {id: 6, name: t('units.6')}]
 async function onSave() {
 
 }
@@ -66,7 +66,6 @@ function onRemove(event: any) {
     recipeSteps.value.splice(index, 1)
   }
 }
-
 </script>
 
 <template>
@@ -162,14 +161,17 @@ function onRemove(event: any) {
                     />
                   </td>
                   <td>
-                    <QInput
+                    <QSelect
                       v-model="element.unit"
+                      borderless
                       dense
-                      type="number"
-                      :rules="[(val: number) => val >= 0 && val <= 6]"
-                      min="0"
-                      max="6"
-                      hide-bottom-space
+                      filled
+                      emit-value
+                      map-options
+                      options-dense
+                      option-value="id"
+                      option-label="name"
+                      :options="units"
                     />
                   </td>
                 </tr>
