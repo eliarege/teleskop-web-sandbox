@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import draggable from 'vuedraggable'
 import { useI18n } from 'vue-i18n'
 import type { Material } from '~/shared/types'
 
 const { t } = useI18n()
 
-const materials = ref<Material[][]>([
-  { materialCode: 'ABC', materialName: 'ABC KİMYASALI' },
-  { materialCode: 'XYZ', materialName: 'XYZ BOYASI' },
-  { materialCode: 'DEF', materialName: 'DEF BOYASI' },
-])
+const { data: materials } = useFetch<Material[]>('/api/materials')
 
 const columns = [
   {
@@ -41,26 +36,29 @@ function cloneMaterial(material: Material) {
     :rows="materials"
     :columns
     row-key="materialCode"
-    flat
+    hide-header
+    mb-2
   >
     <template #body="props">
       <draggable
         :list="[props.row]"
-        item-key="materialCode"
         :group="{ name: 'materials', pull: 'clone', put: false }"
         :clone="cloneMaterial"
         :sort="false"
         ghost-class="material-ghost"
       >
-        <template #item>
-          <q-tr :props="props">
+        <template #item="{ element }">
+          <q-tr>
+            <q-td key="drag-handle">
+              <q-icon name="drag_handle" class="drag-handle" />
+            </q-td>
             <q-td
-              v-for="col in props.cols"
+              v-for="col in columns"
               :key="col.name"
-              class="drag-handle"
-              :props="props"
+              :props
+              class="cursor-pointer"
             >
-              {{ col.value }}
+              {{ element[col.name] }}
             </q-td>
           </q-tr>
         </template>
