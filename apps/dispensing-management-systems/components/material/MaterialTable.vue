@@ -6,6 +6,7 @@ import type { Material } from '~/shared/types'
 const { t } = useI18n()
 
 const { data: materials } = useFetch<Material[]>('/api/materials')
+const materialSearchFilter = ref('')
 
 const columns = [
   {
@@ -32,13 +33,25 @@ function cloneMaterial(material: Material) {
 </script>
 
 <template>
-  <q-table
-    :rows="materials"
+  <QTable
     :columns
+    :rows="materials"
+    :filter="materialSearchFilter"
     row-key="materialCode"
-    hide-header
+    h-95
     mb-2
   >
+    <template #header="props">
+      <QInput
+        v-model="materialSearchFilter"
+        :label="t('Search')"
+        class="mx-5 mb-5"
+      >
+        <template #prepend>
+          <QIcon name="search" />
+        </template>
+      </QInput>
+    </template>
     <template #body="props">
       <draggable
         :list="[props.row]"
@@ -48,23 +61,23 @@ function cloneMaterial(material: Material) {
         ghost-class="material-ghost"
       >
         <template #item="{ element }">
-          <q-tr>
-            <q-td key="drag-handle">
-              <q-icon name="drag_handle" class="drag-handle" />
-            </q-td>
-            <q-td
+          <QTr>
+            <QTd key="drag-handle">
+              <QIcon name="drag_handle" class="drag-handle" />
+            </QTd>
+            <QTd
               v-for="col in columns"
               :key="col.name"
               :props
               class="cursor-pointer"
             >
               {{ element[col.name] }}
-            </q-td>
-          </q-tr>
+            </QTd>
+          </QTr>
         </template>
       </draggable>
     </template>
-  </q-table>
+  </QTable>
 </template>
 
 <style scoped>
