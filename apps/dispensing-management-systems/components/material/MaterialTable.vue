@@ -70,6 +70,7 @@ function cloneMaterial(material: Material) {
               :key="col.name"
               :props
               class="cursor-pointer"
+              :style="col.name === 'materialCode' ? 'width: 100px;' : ''"
             >
               {{ element[col.name] }}
             </QTd>
