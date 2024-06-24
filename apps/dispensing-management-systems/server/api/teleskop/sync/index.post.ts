@@ -152,7 +152,7 @@ export default defineEventHandler(async (event) => {
         parallel_step: data.parallelStep,
         req_no_batch: data.ISN,
         process_order: data.processOrder,
-        chem_code: data.chemCode,
+        material_code: data.materialCode,
         prog_proc_no: data.programProcessNo,
         amount: data.amount,
         unit: data.unit,

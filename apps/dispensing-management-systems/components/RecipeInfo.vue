@@ -43,7 +43,7 @@ const columns = [
   { label: t('recipeFields.ISN'), prop: 'ISN' },
   { label: t('recipeFields.MainStep'), prop: 'mainStep' },
   { label: t('recipeFields.ParallelStep'), prop: 'parallelStep' },
-  { label: t('materialFields.Code'), prop: 'chemCode' },
+  { label: t('materialFields.Code'), prop: 'materialCode' },
   { label: t('materialFields.Name'), prop: 'materialName' },
   { label: t('recipeFields.ProcessNo'), prop: 'programProcessNo' },
   { label: t('Amount'), prop: 'amount' },

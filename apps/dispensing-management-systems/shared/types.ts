@@ -35,7 +35,7 @@ export interface BatchRecipeStep {
   recipeType: number
   ISN: number
   processOrder: number
-  chemCode: string
+  materialCode: string
   programProcessNo: number
   amount: number
   unit: number
