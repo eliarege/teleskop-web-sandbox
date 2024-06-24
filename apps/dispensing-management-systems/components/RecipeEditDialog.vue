@@ -54,7 +54,6 @@ function onRemove(event: any) {
     recipeSteps.value.splice(index, 1)
   }
 }
-
 </script>
 
 <template>
@@ -83,9 +82,9 @@ function onRemove(event: any) {
             </template>
           </draggable>
         </div>
-        <div class="col-3">
+        <div class="col-4">
           <h3 flex-center>{{ t('Materials') }}</h3>
-          <MaterialList/>
+          <MaterialTable/>
         </div>
 
       </div>
