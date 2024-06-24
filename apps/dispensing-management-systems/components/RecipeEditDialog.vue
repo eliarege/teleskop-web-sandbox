@@ -50,13 +50,13 @@ function log(e: any) {
 function onAdd(event: any) {
   const item = event.item._underlying_vm_
   const index = event.newDraggableIndex
-  const mainStep = index > 0? recipeSteps.value.at(index-1)?.mainStep : 1
+  const mainStep = index > 0 ? recipeSteps.value.at(index - 1)?.mainStep : 1
   item.mainStep = mainStep
-  item.parallelStep = index > 0? recipeSteps.value.at(index-1)?.parallelStep + 1 : 1
+  item.parallelStep = index > 0 ? recipeSteps.value.at(index - 1)?.parallelStep + 1 : 1
   recipeSteps.value = [...recipeSteps.value]
-  let i = index+1
-  while (i<recipeSteps.value.length && recipeSteps.value.at(i)?.mainStep === mainStep) {
-    recipeSteps.value.at(i).parallelStep = recipeSteps.value.at(i).parallelStep+1
+  let i = index + 1
+  while (i < recipeSteps.value.length && recipeSteps.value.at(i)?.mainStep === mainStep) {
+    recipeSteps.value.at(i).parallelStep = recipeSteps.value.at(i).parallelStep + 1
     i++
   }
 }
@@ -66,6 +66,7 @@ function onRemove(event: any) {
     recipeSteps.value.splice(index, 1)
   }
 }
+
 </script>
 
 <template>
@@ -76,7 +77,7 @@ function onRemove(event: any) {
   >
     <QCard>
       <div class="row justify-center">
-        <div class="col-6 mr-2">
+        <div class="col-7 mr-2">
           <h3 flex-center>
             {{ t('Recipe') }}
           </h3>
@@ -115,42 +116,63 @@ function onRemove(event: any) {
               @add="onAdd"
               @remove="onRemove"
             >
-            <template #item="{ element }">
-              <tr>
-                <td>
-                  <q-icon name="drag_handle" />
-                </td>
-                <td>
-                  <span>
-                    {{ element.mainStep }}
-                  </span>
-                </td>
-                <td>
-                  <span>
-                    {{ element.parallelStep }}
-                  </span>
-                </td>
-                <td>
-                  <span>
-                    {{ element.materialCode }}
-                  </span>
-                </td>
-                <td>
-                  <span>
-                    {{ element.materialName }}
-                  </span>
-                </td>
-                <td>
-                  <span>
-                    {{ element.amount }}
-                  </span>
-                </td>
-                <td>
-                  <span>
-                    {{ element.unit }}
-                  </span>
-                </td>
-              </tr>
+              <template #item="{ element }">
+                <tr>
+                  <td>
+                    <QIcon name="drag_handle" />
+                  </td>
+                  <td>
+                    <QInput
+                      v-model="element.mainStep"
+                      dense
+                      type="number"
+                      :rules="[(val: number) => val >= 0]"
+                      min="1"
+                      hide-bottom-space
+                    />
+                  </td>
+                  <td>
+                    <QInput
+                      v-model="element.parallelStep"
+                      dense
+                      type="number"
+                      :rules="[(val: number) => val >= 0]"
+                      min="1"
+                      hide-bottom-space
+                    />
+                  </td>
+                  <td>
+                    <span>
+                      {{ element.materialCode }}
+                    </span>
+                  </td>
+                  <td>
+                    <span>
+                      {{ element.materialName }}
+                    </span>
+                  </td>
+                  <td w-auto>
+                    <QInput
+                      v-model="element.amount"
+                      dense
+                      type="number"
+                      :rules="[(val: number) => val >= 0]"
+                      min="0"
+                      hide-bottom-space
+                    />
+                  </td>
+                  <td>
+                    <QInput
+                      v-model="element.unit"
+                      dense
+                      type="number"
+                      :rules="[(val: number) => val >= 0 && val <= 6]"
+                      min="0"
+                      max="6"
+                      hide-bottom-space
+                    />
+                  </td>
+                </tr>
               </template>
             </draggable>
           </QMarkupTable>
