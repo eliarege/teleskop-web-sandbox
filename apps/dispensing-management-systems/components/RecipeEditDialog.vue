@@ -47,6 +47,19 @@ async function onDelete() {
 function log(e: any) {
   console.log(e)
 }
+function onAdd(event: any) {
+  const item = event.item._underlying_vm_
+  const index = event.newDraggableIndex
+  const mainStep = index > 0? recipeSteps.value.at(index-1)?.mainStep : 1
+  item.mainStep = mainStep
+  item.parallelStep = index > 0? recipeSteps.value.at(index-1)?.parallelStep + 1 : 1
+  recipeSteps.value = [...recipeSteps.value]
+  let i = index+1
+  while (i<recipeSteps.value.length && recipeSteps.value.at(i)?.mainStep === mainStep) {
+    recipeSteps.value.at(i).parallelStep = recipeSteps.value.at(i).parallelStep+1
+    i++
+  }
+}
 function onRemove(event: any) {
   const index = recipeSteps.value.indexOf(event.item)
   if (index > -1) {
@@ -63,11 +76,11 @@ function onRemove(event: any) {
   >
     <QCard>
       <div class="row justify-center">
-        <div class="col-4">
+        <div class="col-6 mr-2">
           <h3 flex-center>
             {{ t('Recipe') }}
           </h3>
-          <QMarkupTable class="col-12">
+          <QMarkupTable>
             <thead>
               <tr>
                 <th class="text-left" />
@@ -93,12 +106,13 @@ function onRemove(event: any) {
             </thead>
             <draggable
               v-model="recipeSteps"
-              class="draggable-area mr-2 w-100"
+              class="draggable-area"
               group="materials"
               item-key="materialCode"
               ghost-class="material-ghost"
               tag="tbody"
               @change="log"
+              @add="onAdd"
               @remove="onRemove"
             >
             <template #item="{ element }">
