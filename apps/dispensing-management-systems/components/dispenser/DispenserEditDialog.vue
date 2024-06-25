@@ -19,7 +19,8 @@ const dataStore = useDataStore()
 const stateStore = useStateStore()
 const dispenser = toRef(props, 'dispenser')
 const defaultDispenser: Dispenser = {
-  dispenserId: -1,
+  //Set the default dispenserId to highest one + 1, 1 if there isn't any
+  dispenserId: dataStore.dispensers && dataStore.dispensers.length > 0? dataStore.dispensers.at(dataStore.dispensers.length-1)!.dispenserId + 1 : 1,
   dispenserName: '',
   dispenserIP: '',
   dispenserType: 1,
@@ -161,7 +162,7 @@ async function pingAddress() {
             <h2>{{ t('Edit') }}</h2>
           </div>
           <div class="flex flex-row flex-wrap justify-center">
-            <div v-if="dispenser" class="row-item">
+            <div class="row-item">
               <span class="item-label">
                 {{ t('dispenserFields.ID') }}
               </span>
@@ -171,7 +172,7 @@ async function pingAddress() {
                 dense
                 type="text"
                 filled
-                disable
+                :disable="dispenser !== undefined"
                 :placeholder="editedDispenser.dispenserId"
               />
             </div>

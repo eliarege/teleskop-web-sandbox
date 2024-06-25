@@ -64,6 +64,7 @@ async function handleNewMachine() {
     component: MachineInfoDialog,
     componentProps: {
       controllerTypes: controllerTypes.value,
+      machines,
       dispensers: dataStore.dispensers,
     },
   }).onOk((payload: any) => {

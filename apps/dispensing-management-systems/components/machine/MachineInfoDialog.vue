@@ -15,7 +15,7 @@ const props = defineProps({
   },
   machines: {
     type: Object as PropType<Machine[]>,
-    required: false,
+    required: true,
   },
   dispensers: {
     type: Object as PropType<Dispenser[]>,
@@ -26,20 +26,21 @@ const props = defineProps({
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const machine = toRef(props, 'machine')
+const machines = toRef(props, 'machines')
 const defaultMachine: Machine = {
-  machineId: 0,
+  //Set the default machineId to highest one + 1, 1 if there isn't any
+  machineId: machines.value && machines.value.length > 0? machines.value.at(machines.value.length-1)!.machineId + 1 : 1,
   machineName: '',
   controllerType: 1,
   connectedDispensers: null
 }
-const machine = toRef(props, 'machine')
-const machines = toRef(props, 'machines')
 const selectedMachines = ref([])
 const controllerTypes = toRef(props, 'controllerTypes')
-const editedMachine = ref({ ...machine.value })
+const editedMachine = machine.value ? ref(klona(machine.value)) : ref(klona(defaultMachine))
 const dispensers = toRef(props, 'dispensers')
 const selectedDispensersInitial = machine.value ? ref(machine.value.connectedDispensers!.map(dispenser => dispenser.dispenserId)) : ref([])
-const selectedDispensers = ref([...selectedDispensersInitial.value])
+const selectedDispensers = ref(klona(selectedDispensersInitial.value))
 async function onSave() {
   try {
     const added = selectedDispensers.value
@@ -178,7 +179,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 />
               </div>
             </div>
-            <div v-if="machines" class="row-item">
+            <div v-if="machine" class="row-item">
               <span class="item-label">{{ t('CopyConnections') }} </span>
               <QSelect
                 v-model="selectedMachines"
