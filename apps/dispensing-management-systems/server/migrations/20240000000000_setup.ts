@@ -213,6 +213,15 @@ export async function up(knex: Knex): Promise<void> {
     table.boolean('is_passive')
   })
 
+  await knex.schema.createTable('RECIPE_MASTER_STEP', (table) => {
+    table.integer('recipe_id').notNullable().primary()
+    table.foreign('recipe_master_id', 'recipe_master_step_fk').references('recipe_id').inTable('RECIPE_MASTER')
+    table.integer('main_step')
+    table.integer('parallel_step')
+    table.integer('unit').defaultTo(3)
+    table.integer('amount')
+  })
+
   await knex.schema.createTable('TELESKOP_SETTINGS', (table) => {
     table.text('user')
     table.text('password')
@@ -387,6 +396,9 @@ export async function down(knex: Knex): Promise<void> {
 
   await knex.schema.alterTable('RECIPE_MASTER', (table) => {
     table.dropForeign(['machine_id'], 'recipe_master_machine_id_foreign')
+  })
+  await knex.schema.alterTable('RECIPE_MASTER_STEP', (table) => {
+    table.dropForeign(['recipe_master_id'], 'recipe_master_step_fk')
   })
   await knex.schema.dropTableIfExists('knex_migrations_lock')
   await knex.schema.dropTableIfExists('knex_migrations')

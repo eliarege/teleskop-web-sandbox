@@ -85,7 +85,7 @@ export interface Material {
   density: number
   ph: number
   source: string | null
-  costUnit: string| null
+  costUnit: string | null
   unitCost: number | null
   reRequestable: boolean
   directTransfer: boolean
@@ -157,6 +157,13 @@ export interface RecipeMaster {
   programNo: number
   machineId: number
   isPassive: boolean
+}
+export interface RecipeMasterStep {
+  recipeId: number
+  mainStep: number
+  parallelStep: number
+  amount: number
+  unit: number
 }
 export interface DatabaseConnection {
   client: string
