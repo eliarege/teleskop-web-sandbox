@@ -275,6 +275,7 @@ async function handleMultiEdit() {
   $q.dialog({
     component: ConnectMultiDispenserDialog,
     componentProps: {
+      toEdit: 'materials',
       objectList: materials,
       objectKey: 'materialLabel',
       objectValue: 'materialCode',
