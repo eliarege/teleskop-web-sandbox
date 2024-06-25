@@ -82,6 +82,9 @@ export default defineNuxtConfig({
     ],
   },
   vite: {
+    build: {
+      assetsInlineLimit: 0,
+    },
     vue: {
       template: {
         // Nuxt layers break merging strategy of vite configurations.

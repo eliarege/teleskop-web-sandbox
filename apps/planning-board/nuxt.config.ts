@@ -29,9 +29,6 @@ export default defineNuxtConfig({
   },
   css: ['@bryntum/schedulerpro-trial/schedulerpro.classic.css'],
   vite: {
-    build: {
-      assetsInlineLimit: 0,
-    },
     vue: {
       template: {
         transformAssetUrls: {
