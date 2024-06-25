@@ -21,7 +21,7 @@ export async function getQueueBasedEvents(startDate: string, endDate: string) {
 }
 
 export async function getQueueBasedPlannedEvents(startDate: string, endDate: string): Promise<QueueBasedPlannedEventsRaw[]> {
-  return await knex.raw(`
+  const events = await knex.raw(`
   SELECT *
   FROM (
       SELECT
@@ -50,6 +50,7 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
           d.ISSTARTED AS isStarted,
           d.ISSTOPPED AS isStopped,
           d.STARTDATETIME AS startDate,
+          d.CUSTOMERNAME AS customerName,
           d.Color AS color,
           CAST(1 as bit) as 'isPlanned'
       FROM
@@ -64,10 +65,15 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
   ORDER BY
       machineId, queueNumber
   `, [startDate, endDate])
+
+  return events.map(ev => ({
+    ...ev,
+    percentDone: 0,
+  }))
 }
 
 export async function getQueueBasedActualEvents(startDate: string, endDate: string): Promise<QueueBasedActualEventsRaw[]> {
-  return await knex.raw(`
+  const events = await knex.raw(`
   WITH RankedBatches AS (
     SELECT
       p.BATCHKEY as batchKey,
@@ -75,8 +81,8 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
       p.MACHINEID AS machineId,
       p.JOBORDER AS jobOrder,
       p.PROGRAMNOLIST AS programNoList,
-      DATEADD(MINUTE, ?, p.STARTTIME) AS startTime,
-      DATEADD(MINUTE, ?, IIF(p.ENDTIME IS NULL, p.CANCELTIME, p.ENDTIME)) AS endTime,
+      DATEADD(MINUTE, :timezoneOffset, p.STARTTIME) AS startTime,
+      DATEADD(MINUTE, :timezoneOffset, IIF(p.ENDTIME IS NULL, p.CANCELTIME, p.ENDTIME)) AS endTime,
       p.THEORETICDURAT AS theoreticalDuration,
       p.FABRIC_WEIGHT AS fabricWeight,
       p.PARTYNUMBER AS partyNumber,
@@ -86,6 +92,7 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
       d.ISSTARTED AS isStarted,
       d.ISSTOPPED AS isStopped,
       d.Color as color,
+      d.CUSTOMERNAME AS customerName,
       CAST(0 as bit) as 'isPlanned',
       ROW_NUMBER() OVER (PARTITION BY p.PLANKEY ORDER BY p.BATCHREFERENCE DESC) AS RowNum
     FROM
@@ -111,12 +118,18 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
     isStarted,
     isStopped,
     isPlanned,
+    customerName,
     color
   FROM RankedBatches
   WHERE RowNum = 1
-  AND startTime >= ?
-  OR (endTime BETWEEN ? AND ? OR endTime IS NULL)
-  `, [config.teleskopTimezoneOffset, config.teleskopTimezoneOffset, startDate, startDate, endDate])
+  AND startTime >= :startDate
+  OR (endTime BETWEEN :startDate AND :endDate OR endTime IS NULL)
+  `, { timezoneOffset: config.teleskopTimezoneOffset, startDate, endDate })
+
+  return events.map(ev => ({
+    ...ev,
+    percentDone: ev.deviation > 0 ? 100 - ((ev.deviation / ev.theoreticalDuration) * 100) : 0,
+  }))
 }
 
 export async function checkMachineLastTaskQueue(machineId: number) {

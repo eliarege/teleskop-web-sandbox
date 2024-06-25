@@ -148,29 +148,12 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
         </div>
       </div>
     </div>
-    <div class=" border-solid border-1px p-1 rounded-2xl border-gray-500/50">
-      <q-tabs
-        v-model="tab"
-        ripple="false"
-      >
-        <q-tab name="planParameter" label="Plan Parametreleri" />
-        <q-tab name="recipe" label="Reçete" />
-      </q-tabs>
-
-      <q-separator />
-
-      <q-tab-panels
-        v-model="tab"
-        animated
-        class="max-h-90vh overflow-auto"
-      >
-        <q-tab-panel name="planParameter">
-          <PlanParameters :plan-key="planKey" />
-        </q-tab-panel>
-        <q-tab-panel name="recipe">
-          <PlanRecipe :job-order="jobOrder" :machine-id="machineId" />
-        </q-tab-panel>
-      </q-tab-panels>
+    <div class="border-solid border-1px p-1 rounded-2xl border-gray-500/50">
+      <Panel
+        :machine-id
+        :job-order
+        :plan-key
+      />
     </div>
   </div>
 </template>

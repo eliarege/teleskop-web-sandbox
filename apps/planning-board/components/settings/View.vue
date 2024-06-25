@@ -16,6 +16,7 @@ const plannedKeys = computed(() => [
   { id: 9, label: t('plan-area.dropDown.note'), value: 'note' },
   { id: 10, label: t('plan-area.dropDown.startDate'), value: 'startDate' },
   { id: 11, label: t('plan-area.dropDown.endDate'), value: 'endDate' },
+  { id: 12, label: t('plan-area.dropDown.customerName'), value: 'customerName' },
 ])
 const archiveEvents = computed(() => [
   { id: 1, label: t('plan-area.dropDown.batchKey'), value: 'batchKey' },
@@ -31,6 +32,7 @@ const archiveEvents = computed(() => [
   { id: 11, label: t('plan-area.dropDown.partyNumber'), value: 'partyNumber' },
   { id: 12, label: t('plan-area.dropDown.deviation'), value: 'deviation' },
   { id: 13, label: t('plan-area.dropDown.note'), value: 'note' },
+  { id: 14, label: t('plan-area.dropDown.customerName'), value: 'customerName' },
 ])
 const store = useSettingStore()
 
@@ -473,7 +475,8 @@ function iconColor(bgColor: string) {
         "startTime": "Start Time",
         "endTime": "End Time",
         "cancelTime": "Cancel Time",
-        "deviation": "Deviation"
+        "deviation": "Deviation",
+        "customerName": "Customer Name"
       }
 
     }
@@ -527,7 +530,8 @@ function iconColor(bgColor: string) {
         "startTime": "Başlangıç Tarihi",
         "endTime": "Bitiş Tarihi",
         "cancelTime": "İptal Tarihi",
-        "deviation": "Gecikme"
+        "deviation": "Gecikme",
+        "customerName": "Müşteri İsmi"
       }
       }
   }

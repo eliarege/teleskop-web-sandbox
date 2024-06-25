@@ -6,11 +6,9 @@ import {
   EventStore,
   Grid,
   LocaleHelper,
-  LocaleManager,
   SchedulerPro,
-  ScrollManager,
-  Scroller,
   StringHelper,
+  TimelineDateMapper,
   Toast,
   Tooltip,
 } from '@bryntum/schedulerpro-trial'
@@ -32,7 +30,7 @@ const trLocalization = {
     zoomout: 'Uzaklaştır',
     resetZoom: 'Yakınlaştırmayı sıfırla',
     search: 'İş Emri Arama',
-    overlap: 'Etkinlik, bu kaynaktaki başka bir Etkinlikle çakışıyor!',
+    scheduleConflict: 'Bu iş emrini bu makineye planlayamazsın!',
     beforeNow: 'İş emrini güncel zamandan önceye planlayamazsın!',
     program: 'Programlar eşleşmiyor!',
     unassign: 'Planlanmamış İş Emirleri',
@@ -56,7 +54,7 @@ const enLocalization = {
     zoomout: 'Zoom Out',
     resetZoom: 'Reset Zoom',
     search: 'Job Order Search',
-    overlap: 'Event overlaps existing event for this resource!',
+    scheduleConflict: 'Event can\'t be scheduled on this machine!',
     beforeNow: 'You can not schedule this event before current time!',
     program: 'Programs does not match',
     unassign: 'Unassigned Job Orders',
@@ -157,6 +155,7 @@ export class QueueDrag extends DragHelper {
     let totalDuration = 0
     grid.selectedRecords.forEach(task => (totalDuration += task.duration))
     context.totalDuration = totalDuration
+    context.isDropped = false
     return proxy
   }
 
@@ -168,15 +167,17 @@ export class QueueDrag extends DragHelper {
     const { selectedRecords, store } = grid
     onDragStartSocket(selectedRecords[0].originalData.id)
     context.task = grid.getRecordFromElement(context.grabbed)
-    theoreticalDuration = await $fetch('api/theoreticalDuration', {
-      query: { planKey: context.task.originalData.id },
-    })
-    // const isValid = await $fetch('/api/isValid', {
-    //   query: { planKey: context.task.originalData.id },
-    // })
-    const isValid = []
 
-    context.isValid = isValid
+    const planKey = context.task.id
+    const fabricWeight = context.task.fabricWeight
+    context.isValidating = true
+    const isValid = await $fetch('/api/isValid', {
+      query: { planKey, fabricWeight },
+    })
+
+    context.validation = isValid
+    context.isValidating = false
+
     context.relatedElements = selectedRecords
       .sort((r1, r2) => store.indexOf(r1) - store.indexOf(r2))
       .map(
@@ -198,7 +199,7 @@ export class QueueDrag extends DragHelper {
     if (context.grabbed) {
       for (let i = 0; i < isValid.length; i++) {
         const currentRow = document.querySelector(`div[data-id="${isValid[i].machineId}"]`)
-        if (isValid[i].programs) {
+        if (isValid[i].valid) {
           currentRow?.setAttribute('bgGreen', '')
         } else {
           currentRow?.setAttribute('bgRed', '')
@@ -207,9 +208,9 @@ export class QueueDrag extends DragHelper {
     }
   }
 
-  async onDrag({ event, context }) {
-    const { schedule } = this
-    const { task } = context
+  onDrag({ event, context }) {
+    const { schedule, grid } = this
+    const { task, isValidating, validation } = context
     const coordinate = DomHelper[`getTranslate${schedule.isHorizontal ? 'X' : 'Y'}`](context.element)
     const machine = context.target && schedule.resolveResourceRecord(context.target, [
       event.offsetX,
@@ -226,12 +227,37 @@ export class QueueDrag extends DragHelper {
       prevMachineId = currentMachineId
       endDate = startDate && DateHelper.add(startDate, task.originalData.theoreticalDuration, 'seconds')
     }
-    const isValid = context.isValid
-    // TODO: Machine capacity and program comparison for context.valid
-    context.valid = Boolean(startDate && machine)
+    const eventStartDate = schedule.getDateFromCoordinate(context.clientX, 'round', false)
+    const targetMachineEvents = machine.events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+
+    let previousEvent = null
+    let nextEvent = null
+
+    for (let i = 0; i < targetMachineEvents.length - 1; i++) {
+      const currentEvent = targetMachineEvents[i]
+      const nextEventCandidate = targetMachineEvents[i + 1]
+
+      if (new Date(currentEvent.startDate) <= new Date(eventStartDate)
+        && new Date(eventStartDate) < new Date(nextEventCandidate.startDate)) {
+        previousEvent = currentEvent
+        nextEvent = nextEventCandidate
+        break
+      }
+    }
+    if (!previousEvent && !nextEvent) {
+      if (new Date(eventStartDate) < new Date(targetMachineEvents[0].startDate)) {
+        nextEvent = targetMachineEvents[0]
+      } else if (new Date(eventStartDate) >= new Date(targetMachineEvents[targetMachineEvents.length - 1].startDate)) {
+        previousEvent = targetMachineEvents[targetMachineEvents.length - 1]
+      }
+    }
+    const target = schedule.resolveEventRecord(context.target) || previousEvent
+    context.isValid = !isValidating
+    && Boolean(startDate && machine)
     && !(startDate < new Date())
-    && (schedule.allowOverlap || schedule.isDateRangeAvailable(startDate, endDate, null, machine))
-    && (isValid.length > 0 ? isValid.find(a => a.machineId === machine.id).programs : true)
+    && target
+    && (validation.length > 0 ? validation.find(a => a.machineId === machine.id).valid : true)
+
     task.startDate = startDate
     task.endDate = endDate
 
@@ -269,16 +295,18 @@ export class QueueDrag extends DragHelper {
           ${this.tip.L(text)}
         </div>
             `
-      if (!context.valid) {
-        if (!schedule.isDateRangeAvailable(startDate, endDate, null, machine)) {
-          this.tip.html = timeDisplay('overlap')
-          this.tip.showBy(context.element)
-        } else if (!isValid.find(a => a.machineId === machine.id).valid) {
-          this.tip.html = timeDisplay('program')
-        } else {
-          this.tip.html = timeDisplay('beforeNow')
-          this.tip.showBy(context.element)
-        }
+      if (!context.isValid) {
+        this.tip.html = timeDisplay('scheduleConflict')
+        // TODO: set schedule conflict messaging
+        // if (!schedule.isDateRangeAvailable(startDate, endDate, null, machine)) {
+        //   this.tip.html = timeDisplay('overlap')
+        //   this.tip.showBy(context.element)
+        // } else if (!isValid.find(a => a.machineId === machine.id).valid) {
+        //   this.tip.html = timeDisplay('program')
+        // } else {
+        //   this.tip.html = timeDisplay('beforeNow')
+        //   this.tip.showBy(context.element)
+        // }
       }
       if (context.valid) {
         this.tip.html = timeDisplay('')
@@ -289,11 +317,11 @@ export class QueueDrag extends DragHelper {
 
   async onDrop({ context }) {
     const { schedule, grid } = this
-    const { task, valid, target, machine } = context
+    const { task, isValid: valid, target, machine } = context
     schedule.disableScrollingCloseToEdges(schedule.timeAxisSubGrid)
     const targetEventRecord = schedule.resolveEventRecord(target)
     let newEvent
-    if (target) {
+    if (target && valid) {
       task.originalData.machineId = machine.id
       const currentEvents = sortEventsByDateDesc(machine.events.filter((ev => ev.isPlanned)))
       if (targetEventRecord) {
@@ -366,7 +394,7 @@ export class QueueDrag extends DragHelper {
         }).catch(err => Toast.show(`Scheduling Failed: ${err}`))
     }
     schedule.features.eventTooltip.disabled = true
-
+    context.isDropped = true
     for (let i = 0; i < schedule.resources.length; i++) {
       const element = schedule.resources[i]
       const currentRow = getResourceRow(element)
@@ -610,6 +638,7 @@ export class QueueSchedule extends SchedulerPro {
         },
       },
       async onEventDragStart({ context, resourceRecord, eventRecords }) {
+        context.isDropped = false
         context.isDrag = true
         context.task = context.eventRecord.originalData
         context.originalTaskData = {
@@ -617,31 +646,30 @@ export class QueueSchedule extends SchedulerPro {
           machineId: context.eventRecord.originalData.machineId,
           queueNumber: context.eventRecord.originalData.queueNumber,
         }
+
         context.isFirst = resourceRecord.events[0].name === eventRecords[0].name
         const planKey = context.task.id
-        theoreticalDuration = await $fetch('api/theoreticalDuration', {
-          query: { planKey },
+        const fabricWeight = context.task.fabricWeight
+
+        context.isValidating = true
+        const isValid = await $fetch('/api/isValid', {
+          query: { planKey, fabricWeight },
         })
-        // const isValid = await $fetch('/api/isValid', {
-        //   query: { planKey },
-        // })
-        const isValid = []
-        // console.log('isValid', isValid)
-        // context.isValid = isValid
-        context.theoreticalDuration = theoreticalDuration
-        if (context.context.grabbed) {
+        if (context.context.grabbed && !context.isDropped) {
           for (let i = 0; i < isValid.length; i++) {
             const currentRow = document.querySelector(`div[data-id="${isValid[i].machineId}"]`)
-            if (isValid[i].programs) {
+            if (isValid[i].valid) {
               currentRow?.setAttribute('bgGreen', '')
             } else {
               currentRow?.setAttribute('bgRed', '')
             }
           }
         }
+        context.validation = isValid
+        context.isValidating = false
       },
       onEventDrag({ context, event }) {
-        const { startDate } = context
+        const { startDate, validation, isValidating } = context
         const machine = context.context.target && this.resolveResourceRecord(context.context.target, [
           event.offsetX,
           event.offsetY,
@@ -652,25 +680,28 @@ export class QueueSchedule extends SchedulerPro {
           prevMachineId = currentMachineId
           endDate = addSeconds(startDate, theoreticalDuration || 28800)
         }
-        // const isValid = context.isValid
-        context.valid = Boolean(startDate && machine)
+        context.valid = !isValidating
+        && Boolean(startDate && machine)
         && (context.targetEventRecord === null ? !(startDate < new Date()) : true)
         && (this.allowOverlap || this.isDateRangeAvailable(startDate, endDate, null, machine))
-        // && (isValid?.length > 0 ? isValid.find(a => a.machineId === machine.id).programs : true)
+        && (validation?.length > 0 ? validation.find(a => a.machineId === machine.id).valid : true)
       },
       async onEventDrop({ eventRecords, context, targetEventRecord, resourceRecord, targetResourceRecord }) {
         context.isDrag = false
-
         context.isOld = new Date(context.origStart) <= new Date(this.timeAxis.endDate)
-        for (let i = 0; i < this.resources.length; i++) {
-          const element = this.resources[i]
-          const currentRow = getResourceRow(element)
-          removeAttributes(currentRow, /^bg/)
-        }
+
         const { valid } = context
         const { target } = context.context
         if (valid && target) {
           await this.project.eventStore.rescheduleOverlappingTasks(eventRecords[0], targetEventRecord, resourceRecord, targetResourceRecord, context)
+        }
+      },
+      onAfterEventDrop({ context }) {
+        context.isDropped = true
+        for (let i = 0; i < this.resources.length; i++) {
+          const element = this.resources[i]
+          const currentRow = getResourceRow(element)
+          removeAttributes(currentRow, /^bg/)
         }
       },
       rowHeight: 50,

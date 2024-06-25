@@ -17,6 +17,7 @@ export async function getUnplannedEvents() {
       planKey: 'P.PLANKEY',
       recordTime: 'P.RECORDTIME',
       jobOrder: 'P.JOBORDER',
+      fabricWeight: 'D.VALUE',
       plannedMachineId: 'P.PLANNEDMACHINE',
       programCount: 'P.PRGCOUNT',
       programList: 'P.PROGRAMNOLIST',
@@ -25,6 +26,7 @@ export async function getUnplannedEvents() {
       theoreticalDuration: 'P.TheoricalDuration',
       isStopped: 'P.ISSTOPPED',
       color: 'P.Color',
+      customer: 'P.CUSTOMERNAME',
       erpParameters: knex.raw(`(
         SELECT v.parameterName as 'paramName', r.VALUE as 'value'
         FROM DYBFBATCHPLANPARAMETERS r
@@ -35,8 +37,10 @@ export async function getUnplannedEvents() {
       )`),
     })
     .leftJoin('dbo.PTBATCHPLANQUEUE as Q', 'Q.PLANKEY', 'P.PLANKEY')
+    .leftJoin('dbo.DYBFBATCHPLANPARAMETERS as D', 'P.PLANKEY', 'D.PLANKEY')
     .where('Q.PLANKEY', null)
     .andWhere('P.ISSTARTED', 0)
+    .andWhere('D.BATCHPARAMETERID', 0)
     .andWhere((builder) => {
       builder.whereNull('P.ISDELETED').orWhere('P.ISDELETED', 0)
     })
@@ -144,13 +148,18 @@ export async function getBatchNotes(jobOrder: string) {
     }).where('JOBORDER', '=', jobOrder)
 }
 export async function getBatchProperties(machineId: number, planKey: number) {
-  const erpParameters = await knex('PTERPPARAMBYUSER as p')
-    .select('p.PARAMID as paramId', 'b.PARAMNAME as paramName', 'd.VALUE as value')
-    .leftJoin('BFERPPARAMETERDEFINITIONS as b', 'b.PARAMID', 'p.PARAMID')
-    .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'p.PARAMID')
-    .where('p.MACHINEID', machineId)
+  const erpParameters = await knex('PTMACHINEERP as p')
+    .select({
+      paramId: 'p.paramId',
+      paramName: 'p.paramName',
+      value: 'd.VALUE',
+    })
+    .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'p.paramId')
+    .where('p.machineId', machineId)
+    .andWhere('p.visible', true)
     .andWhere('d.PLANKEY', planKey)
-    .groupBy('p.PARAMID', 'b.PARAMNAME', 'd.VALUE')
+    .groupBy('p.paramId', 'p.paramName', 'd.VALUE')
+    .orderBy('p.paramId')
 
   const programs = await knex.raw(`
     WITH SplitValues AS (
@@ -185,6 +194,7 @@ export async function getPlanParameters(planKey: number) {
       id: 'p.BATCHPARAMETERID',
       paramString: 'p.PARAMSTRING',
       value: 'p.VALUE',
+      unitCode: 'p.UNITCODE',
     })
     .where('p.PLANKEY', '=', planKey)
 }
@@ -308,7 +318,17 @@ export async function getEventTooltipParams(planKey: number, machineId: number) 
     .whereIn('b.BATCHPARAMETERID', subquery.map(item => item.PARAMID.toString()))
     .andWhere('b.PLANKEY', '=', planKey)
 }
-export async function isTaskValid(planKey: number) {
+export async function taskValid(planKey: number, fabricWeight) {
+  const [taskPrograms, taskCapacityAgainstMachines] = await Promise.all([
+    validateTaskPrograms(planKey),
+    validateTaskCapacityAgainstMachines(fabricWeight),
+  ])
+  return taskCapacityAgainstMachines.map(({ machineId, valid }) => ({
+    machineId,
+    valid: valid && taskPrograms.some(tp => tp.machineId === machineId && tp.valid),
+  }))
+}
+export async function validateTaskPrograms(planKey: number) {
   const taskPrgList: Set<number> = new Set(
     (
       await knex({ p: 'dbo.DYBFBATCHPLAN' })
@@ -332,15 +352,32 @@ export async function isTaskValid(planKey: number) {
       .where('p.INUSE', '=', true)
       .andWhere('p.USEINTELESKOP', '=', true)
   )
-  const isValid = machinePrgList.map((machine: any) => {
+  const machineProgramAvailability = machinePrgList.map((machine: any) => {
     const prgList: any[] = JSON.parse(machine.programs)
     return {
       machineId: machine.machineId,
-      programs: [...taskPrgList].every(a => prgList[0].list.includes(a)),
+      valid: [...taskPrgList].every(a => prgList[0].list.includes(a)),
     }
   })
 
-  return isValid
+  return machineProgramAvailability
+}
+export async function validateTaskCapacityAgainstMachines(fabricWeight: number) {
+  const capacity = await knex('BFMACHINES as b')
+    .select({
+      machineId: 'b.MACHINEID',
+      valid: knex.raw(
+        `CASE WHEN b.MACHINECAPACITY >= ? THEN 1 ELSE 0 END`,
+        [fabricWeight],
+      ),
+    },
+    )
+    .where('b.INUSE', 1)
+    .andWhere('b.USEINTELESKOP', 1)
+  return capacity.map(c => ({
+    ...c,
+    valid: c.valid !== 0,
+  }))
 }
 export async function removeFromPlan(planKey: number) {
   await knex('dbo.DYBFBATCHPLAN').update({ MACHINEIDLIST: 0, PLANNEDMACHINE: 0, PLANNEDSTARTTIME: '2019-03-22 00:00:00.000' }).where('PLANKEY', '=', planKey)

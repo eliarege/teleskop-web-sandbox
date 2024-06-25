@@ -1,6 +1,5 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import { generateEventDates } from '../../../composables/helper'
-import { isTaskValid } from '../queries'
 import type {
   EventReschedule,
 } from './queries'
@@ -39,34 +38,6 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching planned events: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching planned events: ${err}` })
-      }
-    },
-  )
-  // fastify.get(
-  //   '/queue_based/archive_events',
-  //   async (request: FastifyRequest<{
-  //     Querystring: { startDate: string, endDate: string }
-  //   }>, reply) => {
-  //     try {
-  //       const { startDate, endDate } = request.query
-  //       const plannedEvents = await getQueueBasedArchiveEvents(startDate, endDate)
-  //       return reply.code(200).send(plannedEvents)
-  //     } catch (err) {
-  //       fastify.log.error(`An error occured while fetching archive events: ${err}`)
-  //       return reply.code(500).send({ error: `An error occured while fetching archive events: ${err}` })
-  //     }
-  //   },
-  // )
-  fastify.get(
-    '/queue_based/valid',
-    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
-      try {
-        const { planKey } = request.query
-        const isValid = await isTaskValid(planKey)
-        return reply.code(200).send(isValid)
-      } catch (err) {
-        fastify.log.error(`An error occured while fetching valid status: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching valid status: ${err}` })
       }
     },
   )

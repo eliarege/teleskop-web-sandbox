@@ -49,7 +49,6 @@ export default defineNuxtConfig({
       template: {
         transformAssetUrls: {
           LoadingScreen: ['image'],
-          MachineVncKey: ['img'],
         },
       },
     },
