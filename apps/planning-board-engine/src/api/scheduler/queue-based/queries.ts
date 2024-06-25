@@ -118,6 +118,7 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
     isStarted,
     isStopped,
     isPlanned,
+    customerName,
     color
   FROM RankedBatches
   WHERE RowNum = 1
