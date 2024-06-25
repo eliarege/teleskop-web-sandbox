@@ -29,6 +29,3 @@ const tab = ref('planParameter')
     </q-tab-panels>
   </div>
 </template>
-
-<style scoped lang="postcss">
-</style>

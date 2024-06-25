@@ -115,9 +115,6 @@ const tree = reactive([
   </div>
 </template>
 
-<style scoped lang="postcss">
-</style>
-
 <i18n lang="json">
   {
     "en": {
