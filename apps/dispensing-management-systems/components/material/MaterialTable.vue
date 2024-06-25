@@ -4,8 +4,11 @@ import { useI18n } from 'vue-i18n'
 import type { Material } from '~/shared/types'
 
 const { t } = useI18n()
-
-const { data: materials } = useFetch<Material[]>('/api/materials')
+const materials = ref<Material[]>([])
+getMaterials()
+async function getMaterials() {
+  materials.value = await $fetch('/api/materials')
+}
 const materialSearchFilter = ref('')
 
 const columns = [
@@ -41,7 +44,7 @@ function cloneMaterial(material: Material) {
     h-95
     mb-2
   >
-    <template #header="props">
+    <template #header>
       <QInput
         v-model="materialSearchFilter"
         :label="t('Search')"
