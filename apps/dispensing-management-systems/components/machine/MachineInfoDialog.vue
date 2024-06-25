@@ -179,7 +179,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
               </div>
             </div>
             <div v-if="machines" class="row-item">
-              <span class="item-label">{{ t('ExportConnections') }} </span>
+              <span class="item-label">{{ t('CopyConnections') }} </span>
               <QSelect
                 v-model="selectedMachines"
                 multiple

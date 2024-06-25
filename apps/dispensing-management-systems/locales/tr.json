@@ -126,6 +126,8 @@
     "MainStep": "Ana Adım",
     "ParallelStep": "Paralel Adım",
     "ProcessNo": "İşlem Numarası",
+    "Amount": "Miktar",
+    "Unit": "Birim",
     "ID": "Reçete No",
     "Name": "Reçete Adı"
   },
