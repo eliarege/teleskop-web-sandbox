@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
+import { klona } from 'klona'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
 import type { Dispenser, Material, MaterialGroup } from '~/shared/types'
 
@@ -38,7 +39,7 @@ const defaultMaterial: Material = {
   connectedDispensers: [],
 }
 
-const editedMaterial = ref(material.value ? { ...material.value } : { ...defaultMaterial })
+const editedMaterial = ref(material.value ? klona(material.value) : klona(defaultMaterial))
 if (!Array.isArray(editedMaterial.value.connectedDispensers)) {
   editedMaterial.value.connectedDispensers = []
 }
@@ -71,8 +72,8 @@ async function onSave() {
 }
 
 function onReset() {
-  editedMaterial.value = material.value ? { ...material.value } : { ...defaultMaterial }
-  selectedDispensers.value = [...selectedDispensersInitial.value]
+  editedMaterial.value = material.value ? klona(material.value) : klona(defaultMaterial)
+  selectedDispensers.value = klona(selectedDispensersInitial.value)
 }
 async function onDelete() {
   q.dialog({

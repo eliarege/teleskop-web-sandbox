@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
+import { klona } from 'klona'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
 import type { Dispenser, Machine, MachineControllerType } from '~/shared/types'
 
@@ -25,6 +26,12 @@ const props = defineProps({
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const defaultMachine: Machine = {
+  machineId: 0,
+  machineName: '',
+  controllerType: 1,
+  connectedDispensers: null
+}
 const machine = toRef(props, 'machine')
 const machines = toRef(props, 'machines')
 const selectedMachines = ref([])
@@ -61,8 +68,8 @@ async function onSave() {
 }
 
 function onReset() {
-  editedMachine.value = { ...machine.value }
-  selectedDispensers.value = [...selectedDispensersInitial.value]
+  editedMachine.value = machine.value? klona(machine.value) : klona(defaultMachine)
+  selectedDispensers.value = klona(selectedDispensersInitial.value)
 }
 
 async function onDelete() {
