@@ -7,3 +7,9 @@ export enum StatusCodes {
   canceled = 8,
   dispenserChanged = 10,
 }
+
+export enum ErrorCodes {
+  notNull = "23502",
+  foreignKey = "23503",
+  unique = "23505"
+}
