@@ -66,6 +66,13 @@ function onRemove(event: any) {
     recipeSteps.value.splice(index, 1)
   }
 }
+function moveItem(from: number, to: number) {
+  const item = recipeSteps.value.at(from)!;
+  [item.mainStep, recipeSteps.value[to].mainStep] = [recipeSteps.value[to].mainStep, item.mainStep];
+  [item.parallelStep, recipeSteps.value[to].parallelStep] = [recipeSteps.value[to].parallelStep, item.parallelStep]
+  recipeSteps.value.splice(from, 1)
+  recipeSteps.value.splice(to, 0, item)
+}
 function onRemoveStep(index: number) {
   recipeSteps.value.splice(index, 1)
 }
@@ -86,6 +93,7 @@ function onRemoveStep(index: number) {
           <QMarkupTable>
             <thead>
               <tr>
+                <th class="text-left" />
                 <th class="text-left" />
                 <th class="text-left">
                   {{ t('recipeFields.MainStep') }}
@@ -119,11 +127,34 @@ function onRemoveStep(index: number) {
             >
               <template #item="{ element, index }">
                 <tr>
-                  <td>
+                  <td class="no-padding">
                     <QBtn
-                      icon="close"
-                      @click="onRemoveStep(index)"
-                    />
+                        icon="close"
+                        flat
+                        @click="onRemoveStep(index)"
+                        pl-2
+                        pr-0
+                        op-70
+                        size="sm"
+                      />
+                  </td>
+                  <td class="no-padding">
+                    <div class="column">
+                      <QBtn
+                        icon="keyboard_arrow_up"
+                        :disabled="index === 0"
+                        flat
+                        @click="moveItem(index - 1, index)"
+                        p-0
+                      />
+                      <QBtn
+                        icon="keyboard_arrow_down"
+                        :disabled="index === recipeSteps.length - 1"
+                        flat
+                        @click="moveItem(index, index + 1)"
+                        p-0
+                      />
+                    </div>
                   </td>
                   <td>
                     <QInput
@@ -155,7 +186,7 @@ function onRemoveStep(index: number) {
                       {{ element.materialName }}
                     </span>
                   </td>
-                  <td w-auto>
+                  <td>
                     <QInput
                       v-model="element.amount"
                       dense
@@ -224,6 +255,10 @@ function onRemoveStep(index: number) {
 </template>
 
 <style scoped>
+
+.no-padding {
+  padding: 0 !important;
+}
 .buttons {
   margin-top: 35px;
 }
