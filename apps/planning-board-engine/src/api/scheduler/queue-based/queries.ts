@@ -68,7 +68,7 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
 
   return events.map(ev => ({
     ...ev,
-    percentDone: 0,
+    percentDone: 100,
   }))
 }
 
@@ -128,7 +128,7 @@ export async function getQueueBasedActualEvents(startDate: string, endDate: stri
 
   return events.map(ev => ({
     ...ev,
-    percentDone: ev.deviation > 0 ? 100 - ((ev.deviation / ev.theoreticalDuration) * 100) : 0,
+    percentDone: ev.deviation > 0 ? 100 - ((ev.deviation / ev.theoreticalDuration) * 100) : 100,
   }))
 }
 
