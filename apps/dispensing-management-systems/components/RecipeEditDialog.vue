@@ -52,11 +52,11 @@ function onAdd(event: any) {
   const index = event.newDraggableIndex
   const mainStep = index > 0 ? recipeSteps.value.at(index - 1)?.mainStep : 1
   item.mainStep = mainStep
-  item.parallelStep = index > 0 ? recipeSteps.value.at(index - 1)?.parallelStep + 1 : 1
+  item.parallelStep = index > 0 ? recipeSteps.value.at(index - 1)!.parallelStep + 1 : 1
   recipeSteps.value = [...recipeSteps.value]
   let i = index + 1
   while (i < recipeSteps.value.length && recipeSteps.value.at(i)?.mainStep === mainStep) {
-    recipeSteps.value.at(i).parallelStep = recipeSteps.value.at(i).parallelStep + 1
+    recipeSteps.value.at(i)!.parallelStep = recipeSteps.value.at(i)!.parallelStep + 1
     i++
   }
 }
