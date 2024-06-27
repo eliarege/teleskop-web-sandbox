@@ -61,7 +61,7 @@ prepare-apps:
   extends:
     - .app-rules
   script:
-    - npm install -g turbo
+    - npm install -g turbo@^1
     - |
       for APP_NAME in $TARGET_APPS; do
         turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
@@ -79,7 +79,7 @@ merge-request-summarize:
     - .merge-request-rules
   before_script:
     - apt update && apt install -y git
-    - npm i -g turbo
+    - npm install -g turbo@^1
     - corepack enable
     - pnpm config set store-dir .pnpm-store
   script:
@@ -107,7 +107,7 @@ release-devops-packages:
   script:
     - apt update && apt install -y jq
     - corepack enable
-    - npm install -g turbo
+    - npm install -g turbo@^1
     # Authenticate
     - echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" >> .npmrc
     - echo "${CI_API_V4_URL#http*:}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=\${CI_JOB_TOKEN}" >> .npmrc
