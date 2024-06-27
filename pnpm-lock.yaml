@@ -407,6 +407,9 @@ importers:
       tedious:
         specifier: ^18.1.0
         version: 18.1.0
+      utils:
+        specifier: workspace:*
+        version: link:../../packages/utils
     devDependencies:
       '@types/node':
         specifier: ^20.12.12
