@@ -48,7 +48,7 @@ RUN mkdir -p .turbo && echo "$TURBO_CONFIG" > .turbo/config.json
 RUN \
   --mount=type=secret,id=TURBO_TOKEN \
   TURBO_TOKEN=$(cat /run/secrets/TURBO_TOKEN) \
-  pnpx turbo build --filter ${APP_NAME} --remote-only
+  pnpm exec turbo build --filter ${APP_NAME} --remote-only
 
 FROM base
 
