@@ -5,11 +5,7 @@ import { workspaceExternals } from 'build-utils'
 const src = join(__dirname, 'src')
 
 export default defineBuildConfig({
-  entries: [{
-    builder: 'mkdist',
-    input: 'src/',
-    outDir: 'dist/',
-  }],
+  entries: ['src/index'],
   clean: true,
   alias: { '~': src },
   hooks: {
