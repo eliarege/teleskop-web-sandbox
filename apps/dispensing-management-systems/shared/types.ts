@@ -160,6 +160,8 @@ export interface RecipeMaster {
 }
 export interface RecipeMasterStep {
   recipeId: number
+  materialCode: string
+  materialName: string
   mainStep: number
   parallelStep: number
   amount: number

@@ -215,7 +215,9 @@ export async function up(knex: Knex): Promise<void> {
 
   await knex.schema.createTable('RECIPE_MASTER_STEP', (table) => {
     table.integer('recipe_id').notNullable().primary()
-    table.foreign('recipe_master_id', 'recipe_master_step_fk').references('recipe_id').inTable('RECIPE_MASTER')
+    table.foreign('recipe_master_id', 'fk_recipe_master').references('recipe_id').inTable('RECIPE_MASTER')
+    table.integer('material_code').notNullable()
+    table.foreign('material_code', 'fk_material_code').references('material_code').inTable('MATERIAL')
     table.integer('main_step')
     table.integer('parallel_step')
     table.integer('unit').defaultTo(3)
