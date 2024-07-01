@@ -221,7 +221,7 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('main_step')
     table.integer('parallel_step')
     table.integer('unit').defaultTo(3)
-    table.integer('amount')
+    table.double('amount')
   })
 
   await knex.schema.createTable('TELESKOP_SETTINGS', (table) => {

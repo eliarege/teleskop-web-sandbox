@@ -3,7 +3,7 @@ import type { RecipeMaster } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const recipe: Array<RecipeMaster> = await dmsDB('RECIPE_MASTER').select({
+  const recipe: RecipeMaster = await dmsDB('RECIPE_MASTER').select({
     recipeName: 'recipe_name',
     recipeGroup: 'recipe_group',
     recipeType: 'recipe_type',
