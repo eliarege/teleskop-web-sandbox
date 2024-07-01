@@ -13,18 +13,25 @@ const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { data: recipe } = useFetch<RecipeMaster>(`/api/recipes/master/${props.recipeId}`)
+const defaultSteps = ref<RecipeMasterStep[]>([])
 const recipeSteps = ref<RecipeMasterStep[]>([])
 const units = [{ id: 0, name: t('units.0') }, { id: 1, name: t('units.1') }, { id: 2, name: t('units.2') }, { id: 3, name: t('units.3') }, { id: 4, name: t('units.4') }, { id: 5, name: t('units.5') }, { id: 6, name: t('units.6') }]
 getRecipeSteps()
 async function getRecipeSteps() {
   recipeSteps.value = await $fetch(`/api/recipes/master/steps/${props.recipeId}`)
+  defaultSteps.value = recipeSteps.value
 }
 async function onSave() {
-
+  try {
+    await $fetch(`/api/recipes/master/steps/${props.recipeId}`, { method: 'POST', body: { steps: recipeSteps.value } })
+    onDialogOK(true)
+  } catch (e) {
+    onDialogOK(false)
+  }
 }
 
 function onReset() {
-
+  recipeSteps.value = defaultSteps.value
 }
 
 async function onDelete() {
@@ -55,8 +62,16 @@ function onAdd(event: any) {
   const item = event.item._underlying_vm_
   const index = event.newDraggableIndex
   const mainStep = index > 0 ? recipeSteps.value.at(index - 1)?.mainStep : 1
-  item.mainStep = mainStep
-  item.parallelStep = index > 0 ? recipeSteps.value.at(index - 1)!.parallelStep + 1 : 1
+  const newItem: RecipeMasterStep = {
+    recipeId: props.recipeId,
+    materialCode: item.materialCode,
+    materialName: item.materialName,
+    amount: item.amount || 0,
+    unit: item.unit || 3,
+    mainStep,
+    parallelStep: index > 0 ? recipeSteps.value.at(index - 1)!.parallelStep + 1 : 1,
+  }
+  recipeSteps.value.splice(index, 1, newItem)
   recipeSteps.value = [...recipeSteps.value]
   let i = index + 1
   while (i < recipeSteps.value.length && recipeSteps.value.at(i)?.mainStep === mainStep) {
@@ -247,7 +262,7 @@ function onRemoveStep(index: number) {
           @click="onReset"
         />
         <QBtn
-          v-if="recipeNo"
+          v-if="recipeId"
           :label="t('Delete')"
           color="negative"
           icon="delete"
