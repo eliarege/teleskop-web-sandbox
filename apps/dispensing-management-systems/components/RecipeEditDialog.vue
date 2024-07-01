@@ -2,19 +2,23 @@
 import { useDialogPluginComponent, useQuasar } from 'quasar'
 import draggable from 'vuedraggable'
 import ConfirmationDialog from './ConfirmationDialog.vue'
-import type { BatchRecipeStep, RecipeMaster } from '~/shared/types'
+import type { RecipeMaster, RecipeMasterStep } from '~/shared/types'
 
 const props = defineProps({
-  recipeNo: {
+  recipeId: {
     type: Number,
   },
 })
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
-const { data: recipe } = useFetch<RecipeMaster>(`/api/recipes/master/${props.recipeNo}`)
-const recipeSteps = ref<BatchRecipeStep[]>([{ materialCode: 'ABC', materialName: 'ABC KİMYASALI', mainStep: 1, parallelStep: 1, amount: 1.5000, unit: 3 }, { materialCode: 'XYZ', materialName: 'XYZ BOYASI', mainStep: 2, parallelStep: 1, amount: 2.5000, unit: 3 }])
+const { data: recipe } = useFetch<RecipeMaster>(`/api/recipes/master/${props.recipeId}`)
+const recipeSteps = ref<RecipeMasterStep[]>([])
 const units = [{ id: 0, name: t('units.0') }, { id: 1, name: t('units.1') }, { id: 2, name: t('units.2') }, { id: 3, name: t('units.3') }, { id: 4, name: t('units.4') }, { id: 5, name: t('units.5') }, { id: 6, name: t('units.6') }]
+getRecipeSteps()
+async function getRecipeSteps() {
+  recipeSteps.value = await $fetch(`/api/recipes/master/steps/${props.recipeId}`)
+}
 async function onSave() {
 
 }
@@ -39,7 +43,7 @@ async function onDelete() {
       },
     },
   }).onOk(async () => {
-    await $fetch(`/api/recipes/master/${props.recipeNo}`, { method: 'DELETE', body: { recipeNo: recipe.value?.recipeId } })
+    await $fetch(`/api/recipes/master/${props.recipeId}`, { method: 'DELETE', body: { recipeNo: recipe.value?.recipeId } })
     onDialogOK(null)
   })
 }
@@ -129,14 +133,14 @@ function onRemoveStep(index: number) {
                 <tr>
                   <td class="no-padding">
                     <QBtn
-                        icon="close"
-                        flat
-                        @click="onRemoveStep(index)"
-                        pl-2
-                        pr-0
-                        op-70
-                        size="sm"
-                      />
+                      icon="close"
+                      flat
+                      pl-2
+                      pr-0
+                      op-70
+                      size="sm"
+                      @click="onRemoveStep(index)"
+                    />
                   </td>
                   <td class="no-padding">
                     <div class="column">
@@ -144,15 +148,15 @@ function onRemoveStep(index: number) {
                         icon="keyboard_arrow_up"
                         :disabled="index === 0"
                         flat
-                        @click="moveItem(index - 1, index)"
                         p-0
+                        @click="moveItem(index - 1, index)"
                       />
                       <QBtn
                         icon="keyboard_arrow_down"
                         :disabled="index === recipeSteps.length - 1"
                         flat
-                        @click="moveItem(index, index + 1)"
                         p-0
+                        @click="moveItem(index, index + 1)"
                       />
                     </div>
                   </td>
@@ -255,7 +259,6 @@ function onRemoveStep(index: number) {
 </template>
 
 <style scoped>
-
 .no-padding {
   padding: 0 !important;
 }

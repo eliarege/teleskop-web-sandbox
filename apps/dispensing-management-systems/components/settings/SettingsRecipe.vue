@@ -28,7 +28,7 @@ async function onRowClick(_event: Event, row: RecipeMaster) {
   q.dialog({
     component: RecipeEditDialog,
     componentProps: {
-      recipeNo: row.recipeId,
+      recipeId: row.recipeId,
     },
   }).onOk((payload: any) => {
     if (payload) {
