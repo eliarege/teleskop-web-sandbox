@@ -21,7 +21,7 @@ const selectedRow = ref<JobOrder | null>(null)
 const dispensers = await dataStore.getDispensers()
 const dispenserSelections = [{ dispenserId: -1, dispenserName: t('AllDispensers') }, ...dispensers]
 const selectedDispenser = ref(dataStore.selectedDispenser ? dataStore.selectedDispenser : dispenserSelections[0])
-const { data: machines } = useFetch<Machine[]>('/api/machines')
+const { data: machines } = await useFetch<Machine[]>('/api/machines')
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
   if (dispenserId)
