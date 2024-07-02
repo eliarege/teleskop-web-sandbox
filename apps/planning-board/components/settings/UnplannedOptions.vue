@@ -10,11 +10,11 @@ const sort = computed(() => unplannedColumns.value.toSorted((a, b) => a.id > b.i
 const visibleColumns = computed(() => sort.value.filter(a => a.visible === true))
 const invisibleColumns = computed(() => sort.value.filter(a => a.visible !== true))
 
-function addParameter() {
+async function addParameter() {
   if (sort.value) {
     const index = sort.value.indexOf(selected.value)
     sort.value[index].visible = true
-    $fetch('/api/unplannedColumns', {
+    await $fetch('/api/unplannedColumns', {
       method: 'PUT',
       body: { id: selected.value.id, visible: true },
     })
@@ -23,11 +23,11 @@ function addParameter() {
   }
 }
 
-function removeParameter() {
+async function removeParameter() {
   if (sort.value) {
     const index = sort.value.indexOf(selected.value)
     sort.value[index].visible = false
-    $fetch('/api/unplannedColumns', {
+    await $fetch('/api/unplannedColumns', {
       method: 'PUT',
       body: { id: selected.value.id, visible: false },
     })
@@ -35,7 +35,7 @@ function removeParameter() {
     selected.value = sort.value[index + 1]
   }
 }
-function onDoubleClick(item: {
+async function onDoubleClick(item: {
   id: number
   parameterId: number
   parameterName: string
@@ -43,9 +43,9 @@ function onDoubleClick(item: {
 }) {
   selected.value = item
   if (item.visible) {
-    removeParameter()
+    await removeParameter()
   } else {
-    addParameter()
+    await addParameter()
   }
 }
 </script>

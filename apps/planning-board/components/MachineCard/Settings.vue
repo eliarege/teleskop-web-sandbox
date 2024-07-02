@@ -22,9 +22,9 @@ const erpKey = useStorage<string | null>(
 
 const erpLabel = computed(() => {
   if (!props.data.erp)
-    return t('no-erp-val')
+    return t('machine-card.settings.no-erp-val')
   if (!erpKey.value)
-    return t('no-erp-val')
+    return t('machine-card.settings.no-erp-val')
   const value = props.data.erp[erpKey.value]
   return typeof value === 'number' && !Number.isInteger(value)
     ? value.toFixed(2)

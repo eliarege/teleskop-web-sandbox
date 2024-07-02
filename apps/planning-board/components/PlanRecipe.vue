@@ -30,13 +30,13 @@ const groupables = [
   { key: 'mainStep', index: 3 },
 ] as { key: keyof RecipeRaw, index: number }[]
 const columns = computed(() => [
-  { label: t('index'), prop: 'recIndex', align: 'center', showOverflowTooltip: true },
-  { label: t('program'), prop: 'program', align: 'center', showOverflowTooltip: true },
-  { label: t('number'), prop: 'reqNumber', align: 'center', showOverflowTooltip: true },
-  { label: t('main-step'), prop: 'mainStep', align: 'center', showOverflowTooltip: true },
-  { label: t('chem-code'), prop: 'chemCode', align: 'center', showOverflowTooltip: true },
-  { label: t('material-name'), prop: 'materialName', align: 'center', showOverflowTooltip: true },
-  { label: t('amount'), prop: 'newAmount', align: 'center', showOverflowTooltip: true },
+  { label: t('plan-recipe.index'), prop: 'recIndex', align: 'center', showOverflowTooltip: true },
+  { label: t('plan-recipe.program'), prop: 'program', align: 'center', showOverflowTooltip: true },
+  { label: t('plan-recipe.number'), prop: 'reqNumber', align: 'center', showOverflowTooltip: true },
+  { label: t('plan-recipe.main-step'), prop: 'mainStep', align: 'center', showOverflowTooltip: true },
+  { label: t('plan-recipe.chem-code'), prop: 'chemCode', align: 'center', showOverflowTooltip: true },
+  { label: t('plan-recipe.material-name'), prop: 'materialName', align: 'center', showOverflowTooltip: true },
+  { label: t('plan-recipe.amount'), prop: 'newAmount', align: 'center', showOverflowTooltip: true },
 ] as { label: string, prop: string, align: 'left' | 'right' | 'start' | 'end' | 'center', showOverflowTooltip: boolean }[])
 </script>
 
@@ -48,7 +48,7 @@ const columns = computed(() => [
     <div class="w-full h-full">
       <RecipeTable
         show
-        :title="t('title')"
+        :title="t('plan-recipe.title')"
         is-first
         has-object-span-method
         :full-screen="false"
@@ -56,21 +56,21 @@ const columns = computed(() => [
         :rows="recipeData?.autoRecipe || []"
         :columns="columns"
         :cell-class="cellClass"
-        :empty-text="t('empty-text')"
+        :empty-text="t('plan-recipe.empty-text')"
         chem-class="green-class"
         dyeing-class="normal-class"
       />
       <div v-if="recipeData?.manualRecipe?.length">
         <RecipeTable
           show
-          :title="t('manuel.title')"
+          :title="t('plan-recipe.manuel.title')"
           :is-first="false"
           has-object-span-method
           :full-screen="false"
           :groupables="groupables"
           :rows="recipeData?.manualRecipe || []"
           :columns="columns"
-          :empty-text="t('manuel.empty-text')"
+          :empty-text="t('plan-recipe.manuel.empty-text')"
           chem-class="green-class"
           dyeing-class="normal-class"
         />
@@ -89,7 +89,7 @@ const columns = computed(() => [
 }
 </style>
 
-<i18n>
+<i18n lang="json">
   {
   "en": {
     "title": "Automatic Recipe",

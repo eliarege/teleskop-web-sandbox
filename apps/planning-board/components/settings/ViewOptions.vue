@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { MachineStatus } from '~/shared/types'
 
+const { t } = useI18n()
 const { data: machines } = await useFetch('/api/machineList', {
   default: () => [],
 })
@@ -130,7 +131,7 @@ async function saveParameters() {
     <q-space />
     <q-btn
       color="primary"
-      label="Save"
+      :label="t('settings.save')"
       @click="saveParameters()"
     />
   </div>

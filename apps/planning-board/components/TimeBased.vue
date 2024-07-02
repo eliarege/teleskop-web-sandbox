@@ -8,7 +8,7 @@ import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeB
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
 const currentTime = useNow({ interval: 1000 })
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 
 // TODO (BEFORE PRODUCTION): change start/end date!
 const startDate = ref('2022/01/01')

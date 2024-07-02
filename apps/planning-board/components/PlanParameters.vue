@@ -15,8 +15,8 @@ watch(planParameters, (newParams) => {
 })
 const columns = computed(() => {
   return [
-    { name: 'paramString', label: t('param-string'), align: 'center', field: 'paramString' },
-    { name: 'value', label: t('value'), align: 'center', field: 'value' },
+    { name: 'paramString', label: t('plan-parameters.param-string'), align: 'center', field: 'paramString' },
+    { name: 'value', label: t('plan-parameters.value'), align: 'center', field: 'value' },
   ]
 })
 </script>
@@ -25,7 +25,7 @@ const columns = computed(() => {
   <LoadingSpinner v-if="pending" has-background />
   <div class="bg-white px-5">
     <QTable
-      :title="t('title')"
+      :title="t('plan-parameters.title')"
       class="border-solid border-1px border-gray-500/50"
       title-class="!font-extrabold"
       table-header-class="!font-extrabold"
@@ -78,20 +78,3 @@ const columns = computed(() => {
     </QTable>
   </div>
 </template>
-
-<i18n lang="json">
-  {
-  "en": {
-    "title": "Plan Parameters",
-    "id": "Parameter ID",
-    "param-string": "Parameter",
-    "value": "Value"
-  },
-  "tr": {
-    "title": "Plan Parametreleri",
-    "id": "Parametre ID",
-    "param-string": "Parametre",
-    "value": "Değer"
-  }
-}
-</i18n>

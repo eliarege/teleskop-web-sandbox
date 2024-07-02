@@ -11,7 +11,7 @@ import type { MachineStatus, PtLocaleSettings, UnplannedEvents } from '~/shared/
 import { eventTooltip } from '~/composables/helper'
 import { useSettingStore } from '~/store/settings'
 
-const { t, locale } = useI18n({ useScope: 'local' })
+const { t, locale, d } = useI18n()
 const visibility = useDocumentVisibility()
 const config = useRuntimeConfig()
 
@@ -242,7 +242,7 @@ function dateRangeEnd() {
 watch(locale, () => {
   document.querySelectorAll('.totalAlarmCount').forEach((ev) => {
     const count = ev.textContent?.split(':')[1]
-    ev.textContent = `${t('alarm-count')}:${count}`
+    ev.textContent = `${t('queue-based.alarm-count')}:${count}`
   })
 })
 onMounted(async () => {
@@ -337,7 +337,7 @@ onMounted(async () => {
             <dt role="presentation">${data.record.name}</dt>
             <dd class="b-resource-role" role="presentation"></dd>
             <dd class="b-resource-meta" role="presentation">
-              <div class="totalAlarmCount">${t('alarm-count')}: ${data.record.totalAlarmCount}</div>
+              <div class="totalAlarmCount">${t('queue-based.alarm-count')}: ${data.record.totalAlarmCount}</div>
             </dd>
           </dl>
         </div>
@@ -405,7 +405,7 @@ onMounted(async () => {
           },
           delete: {
             icon: 'b-fa-solid b-fa-trash',
-            text: t('ctx-menu.task-delete'),
+            text: t('queue-based.ctx-menu.task-delete'),
             onItem({ eventRecord }: any) {
               deleteEvent(eventRecord.originalData.id)
                 .then(() => eventRecord.unassign())
@@ -414,7 +414,7 @@ onMounted(async () => {
           },
           unplan: {
             icon: 'b-fa-solid b-fa-calendar-xmark',
-            text: t('ctx-menu.remove-plan'),
+            text: t('queue-based.ctx-menu.remove-plan'),
             onItem({ eventRecord }: any) {
               unPlanEvent(eventRecord.originalData.id)
                 .then(() => {
@@ -425,7 +425,7 @@ onMounted(async () => {
           },
           pin: {
             icon: 'b-fa-solid b-fa-thumbtack',
-            text: t('ctx-menu.pin'),
+            text: t('queue-based.ctx-menu.pin'),
             async onItem({ eventRecord }: any) {
               await $fetch('api/pinEvent', {
                 query: { planKey: eventRecord.originalData.id },
@@ -441,7 +441,7 @@ onMounted(async () => {
           },
           unpin: {
             icon: 'b-fa-solid b-fa-thumbtack',
-            text: t('ctx-menu.unpin'),
+            text: t('queue-based.ctx-menu.unpin'),
             async onItem({ eventRecord }: any) {
               await $fetch('api/unpinEvent', {
                 query: { planKey: eventRecord.originalData.id },
@@ -457,7 +457,7 @@ onMounted(async () => {
           },
           changeColor: {
             icon: 'b-fa-solid b-fa-palette',
-            text: t('ctx-menu.change-color'),
+            text: t('queue-based.ctx-menu.change-color'),
             async onItem() {
               console.log('COLOR PICKER')
             },
@@ -476,7 +476,7 @@ onMounted(async () => {
           },
           properties: {
             icon: 'b-fa-solid b-fa-calendar-xmark',
-            text: t('ctx-menu.properties'),
+            text: t('queue-based.ctx-menu.properties'),
             onItem({ eventRecord, assignmentRecord }: any) {
               showModal.properties.show = true
               showModal.properties.unit.planKey = eventRecord.originalData.id
