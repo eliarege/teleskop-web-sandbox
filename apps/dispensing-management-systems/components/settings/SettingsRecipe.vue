@@ -41,7 +41,20 @@ async function onRowClick(_event: Event, row: RecipeMaster) {
   )
 }
 async function addNewRecipe() {
-
+  q.dialog({
+    component: RecipeEditDialog,
+    componentProps: {
+      recipeId: recipes.value? Math.max(...recipes.value.map(obj => obj.recipeId)) + 1 : 1,
+      isNew: true
+    },
+  }).onOk((payload: any) => {
+    if (payload) {
+      notifySuccess(t('Success'))
+      refreshRecipes()
+    } else
+      notifyFail(t('Failed'))
+  },
+  )
 }
 const pagination = ref({ rowsPerPage: 20 })
 </script>

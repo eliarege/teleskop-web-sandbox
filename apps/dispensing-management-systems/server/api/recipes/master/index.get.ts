@@ -5,6 +5,6 @@ export default defineEventHandler(async () => {
   const recipes: Array<RecipeMaster> = await dmsDB('RECIPE_MASTER').select({
     recipeId: 'recipe_id',
     recipeName: 'recipe_name',
-  })
+  }).orderBy('recipe_id')
   return recipes
 })

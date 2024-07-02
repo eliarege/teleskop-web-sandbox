@@ -8,6 +8,7 @@ import type { RecipeMaster, RecipeMasterStep } from '~/shared/types'
 const props = defineProps({
   recipeId: {
     type: Number,
+    required: true,
   },
   isNew: {
     type: Boolean,
@@ -23,7 +24,7 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 const recipe = ref<RecipeMaster>()
 const editedRecipe = ref<RecipeMaster>()
 const defaultRecipe: RecipeMaster = {
-  recipeId: props.recipeId!,
+  recipeId: props.recipeId,
   recipeName: '',
   recipeGroup: 0,
   recipeType: 0,
@@ -45,8 +46,9 @@ async function getRecipe() {
   if (!props.isNew) {
     recipe.value = await $fetch(`/api/recipes/master/${props.recipeId}`)
     editedRecipe.value = klona(recipe.value)
-  } else
+  } else {
     editedRecipe.value = klona(defaultRecipe)
+  }
 }
 async function getRecipeSteps() {
   recipeSteps.value = await $fetch(`/api/recipes/master/steps/${props.recipeId}`)
@@ -54,7 +56,11 @@ async function getRecipeSteps() {
 }
 async function onSave() {
   try {
-    await $fetch(`/api/recipes/master/${props.recipeId}`, { method: 'POST', body: { recipe: editedRecipe.value } })
+    if (props.isNew) {
+      await $fetch(`/api/recipes/master`, { method: 'PUT', body: { recipe: editedRecipe.value } })
+    } else {
+      await $fetch(`/api/recipes/master/${props.recipeId}`, { method: 'POST', body: { recipe: editedRecipe.value } })
+    }
     await $fetch(`/api/recipes/master/steps/${props.recipeId}`, { method: 'POST', body: { steps: recipeSteps.value } })
     onDialogOK(true)
   } catch (e) {
@@ -84,7 +90,7 @@ async function onDelete() {
     },
   }).onOk(async () => {
     await $fetch(`/api/recipes/master/${props.recipeId}`, { method: 'DELETE' })
-    onDialogOK(null)
+    onDialogOK(true)
   })
 }
 
