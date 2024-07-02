@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { capitalizeFirst } from '~/shared/utils'
 import { useDataStore } from '~/store/DataStore'
 
 const props = defineProps({
@@ -36,7 +35,12 @@ async function onConfirm() {
     @hide="onDialogHide"
   >
     <QCard class="scroll border-b-solid border-10px border-grey">
-      <div flex-center flex-col mt-10 text-lg>
+      <div
+        flex-center
+        flex-col
+        mt-10
+        text-lg
+      >
         <div>
           {{ t('CopyConnectionsBody', { type: t(`${capitalizeFirst(props.type)}`), dispenser: dataStore.selectedDispenser?.dispenserName }) }}
         </div>

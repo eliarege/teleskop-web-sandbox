@@ -5,7 +5,6 @@ import WeighingInfoDialog from './WeighingInfoDialog.vue'
 import BatchParametersInfoDialog from './BatchParametersInfoDialog.vue'
 import type { Dispenser, JobOrder, Machine } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
-import { cellStyle } from '~/shared/utils'
 import { useDataStore } from '~/store/DataStore'
 import { StatusCodes } from '~/shared/constants'
 

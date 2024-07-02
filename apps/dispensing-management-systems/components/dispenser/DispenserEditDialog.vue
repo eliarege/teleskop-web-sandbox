@@ -3,7 +3,6 @@ import { useDialogPluginComponent } from 'quasar'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
 import { useDataStore } from '~/store/DataStore'
 import type { Dispenser, DispenserBrand, DispenserType, Protocol } from '~/shared/types'
-import ipformat from '~/shared/utils'
 import { useStateStore } from '~/store/State'
 
 const props = defineProps({
@@ -19,8 +18,8 @@ const dataStore = useDataStore()
 const stateStore = useStateStore()
 const dispenser = toRef(props, 'dispenser')
 const defaultDispenser: Dispenser = {
-  //Set the default dispenserId to highest one + 1, 1 if there isn't any
-  dispenserId: dataStore.dispensers && dataStore.dispensers.length > 0? dataStore.dispensers.at(dataStore.dispensers.length-1)!.dispenserId + 1 : 1,
+  // Set the default dispenserId to highest one + 1, 1 if there isn't any
+  dispenserId: dataStore.dispensers && dataStore.dispensers.length > 0 ? dataStore.dispensers.at(dataStore.dispensers.length - 1)!.dispenserId + 1 : 1,
   dispenserName: '',
   dispenserIP: '',
   dispenserType: 1,
@@ -137,7 +136,7 @@ async function onDelete() {
 async function pingAddress() {
   try {
     stateStore.isLoading = true
-    await $fetch('/api/ping', { method: 'POST', body: { address: editedDispenser.value.dispenserIP }})
+    await $fetch('/api/ping', { method: 'POST', body: { address: editedDispenser.value.dispenserIP } })
     notifySuccess(t('Success'))
   } catch (e) {
     console.error(e)
@@ -209,7 +208,8 @@ async function pingAddress() {
                     dense
                     flat
                     icon="wifi"
-                    @click="pingAddress" />
+                    @click="pingAddress"
+                  />
                 </template>
               </QInput>
             </div>
@@ -334,7 +334,11 @@ async function pingAddress() {
                 @update:model-value="onProtocolSelected"
               />
             </div>
-            <div v-for="field in protocolFields" :key="field" class="row-item">
+            <div
+              v-for="field in protocolFields"
+              :key="field"
+              class="row-item"
+            >
               <span class="item-label">{{ t(`protocolParameters.${field}`) }}</span>
               <QInput
                 v-model="editedDispenser.protocolFields[field]"

@@ -1,5 +1,4 @@
 import { dmsDB } from '~/server/connectionPool'
-import { batchInsert } from '~/shared/utils'
 
 export default defineEventHandler(async (event) => {
   try {
