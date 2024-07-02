@@ -198,8 +198,8 @@ export async function getPlanParameters(planKey: number) {
     })
     .where('p.PLANKEY', '=', planKey)
 }
-export async function getMachines() {
-  return await knex('dbo.BFMACHINES as m')
+export async function getMachines(idList?: number[]) {
+  const baseQuery = knex('dbo.BFMACHINES as m')
     .leftJoin('dbo.TFMACHINESTATUS as s', 'm.MACHINEID', 's.MACHINEID')
     .leftJoin('dbo.BFMACHGROUP as g', 'm.GRUPNO', 'g.GROUPID')
     .leftJoin('dbo.BADATA as b', 'b.BATCHKEY', 's.RUNNING_BATCHKEY')
@@ -255,17 +255,28 @@ export async function getMachines() {
     })
     .where('m.INUSE', '=', 1)
     .andWhere('m.USEINTELESKOP', '=', 1)
+  if (idList) {
+    return await baseQuery.whereIn('m.MACHINEID', idList)
+  } else return await baseQuery
 }
 export async function getMachineIds(): Promise<number[]> {
   return (await knex('BFMACHINES').select('MACHINEID as id').where('INUSE', true).andWhere('USEINTELESKOP', true)).map(m => m.id)
 }
-export async function getErpParameters(machineId: number) {
-  const definitions = await knex({ p: 'dbo.PTMACHINEERP' })
+export async function getErpParameters(paramName: string) {
+  const erpParams = await knex({ p: 'dbo.PTMACHINEERP' })
     .select('*')
-    .where('p.machineId', '=', machineId)
+    .where('p.paramName', '=', paramName)
 
-  const plannedDefinitions = definitions.filter(param => param.visible === true)
-  return { definitions, plannedDefinitions }
+  return erpParams.filter(e => e.visible === true).map(e => e.machineId)
+}
+export async function getMachinesByErpParameter(paramString: string) {
+  const idList = await knex({ b: 'BFMACHBATCHPARAMETERS' })
+    .select({
+      machineId: 'b.MACHINEID',
+    })
+    .where('b.PARAMSTRING', paramString)
+
+  return await getMachines(idList.map(id => id.machineId))
 }
 export async function getUnplannedColumns() {
   return await knex('PTCOLUMNS').select('*')
@@ -318,7 +329,7 @@ export async function getEventTooltipParams(planKey: number, machineId: number) 
     .whereIn('b.BATCHPARAMETERID', subquery.map(item => item.PARAMID.toString()))
     .andWhere('b.PLANKEY', '=', planKey)
 }
-export async function taskValid(planKey: number, fabricWeight) {
+export async function taskValid(planKey: number, fabricWeight: number) {
   const [taskPrograms, taskCapacityAgainstMachines] = await Promise.all([
     validateTaskPrograms(planKey),
     validateTaskCapacityAgainstMachines(fabricWeight),
@@ -399,6 +410,33 @@ export async function addBatchNote(jobOrder: string, note: string, userId: numbe
 export async function addErpParameters(id: number, machineId: number) {
   await knex('PTMACHINEERP').update({ visible: true }).where('machineId', machineId).andWhere('id', id)
 }
+export async function bulkAddErpParameter(paramString: string, machines: number[]) {
+  const trx = await knex.transaction()
+
+  try {
+    if (machines.length > 0) {
+      await trx('PTMACHINEERP')
+        .update({ visible: false })
+        .where('paramName', paramString)
+      for (const machine of machines) {
+        await trx('PTMACHINEERP')
+          .update({ visible: true })
+          .where('paramName', paramString)
+          .andWhere('machineId', machine)
+      }
+    } else {
+      await trx('PTMACHINEERP')
+        .update({ visible: false })
+        .where('paramName', paramString)
+    }
+
+    await trx.commit()
+  } catch (error) {
+    await trx.rollback()
+    throw error
+  }
+}
+
 export async function removeErpParameter(id: number, machineId: number) {
   await knex('PTMACHINEERP').update({ visible: false }).where('id', id).andWhere('machineId', machineId)
 }

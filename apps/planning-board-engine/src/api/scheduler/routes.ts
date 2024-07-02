@@ -3,6 +3,7 @@ import { compressJson } from '../../composables/helper'
 import {
   addBatchNote,
   addErpParameters,
+  bulkAddErpParameter,
   deleteEvent,
   deleteNote,
   getBatchNotes,
@@ -12,6 +13,7 @@ import {
   getErpParameters,
   getEventTooltipParams,
   getMachines,
+  getMachinesByErpParameter,
   getPlanParameters,
   getPtStatus,
   getRecipe,
@@ -102,19 +104,31 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-  fastify.get<{ Querystring: { machineId?: number, distinct?: boolean } }>(
+  fastify.get<{ Querystring: { paramString?: string, distinct?: boolean } }>(
     '/planning_board/settings/erp_parameters',
     async (request, reply) => {
       try {
-        const { machineId, distinct } = request.query
+        const { paramString, distinct } = request.query
         if (distinct) {
           return await getDistinctErpParameters()
-        } else if (machineId) {
-          return await getErpParameters(machineId)
+        } else if (paramString) {
+          return await getErpParameters(paramString)
         } else return fastify.log.error('MISSING QUERIES')
       } catch (err) {
         fastify.log.error(`An error occured while fetching erp parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching erp parameters: ${err}` })
+      }
+    },
+  )
+  fastify.get <{ Querystring: { paramString: string } }>(
+    '/planning_board/settings/machines_by_erp_parameter',
+    async (request, reply) => {
+      try {
+        const { paramString } = request.query
+        return await getMachinesByErpParameter(paramString)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching machines: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching machines: ${err}` })
       }
     },
   )
@@ -304,6 +318,22 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         const { machineId, id } = request.body
         await addErpParameters(id, machineId)
+        return reply.code(200).send('Succesful')
+      } catch (err) {
+        fastify.log.error(`An error occured while adding erp parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occured while adding erp parameter: ${err}` })
+      }
+    },
+  )
+
+  fastify.put<{
+    Body: { paramString: string, machines: number[] }
+  }>(
+    '/planning_board/erp_parameters/bulk_add_parameter',
+    async (request, reply) => {
+      try {
+        const { paramString, machines } = request.body
+        await bulkAddErpParameter(paramString, machines)
         return reply.code(200).send('Succesful')
       } catch (err) {
         fastify.log.error(`An error occured while adding erp parameter: ${err}`)
