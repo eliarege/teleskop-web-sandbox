@@ -155,7 +155,6 @@ export interface RecipeMaster {
   lastUpdate: Date
   stepNo: number
   programNo: number
-  machineId: number
   isPassive: boolean
 }
 export interface RecipeMasterStep {

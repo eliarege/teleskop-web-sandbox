@@ -206,10 +206,6 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamp('last_update', { precision: 6, useTz: true })
     table.integer('step_no')
     table.integer('program_no')
-    table.integer('machine_id')
-    table.foreign('machine_id', 'recipe_master_machine_id_foreign')
-      .references('machine_id')
-      .inTable('MACHINE')
     table.boolean('is_passive')
   })
 

@@ -12,7 +12,6 @@ export default defineEventHandler(async (event) => {
     lastUpdate: 'last_update',
     stepNo: 'step_no',
     programNo: 'program_no',
-    machineId: 'machine_id',
     isPassive: 'is_passive'
   }).where('recipe_id', id).first()
   return recipe
