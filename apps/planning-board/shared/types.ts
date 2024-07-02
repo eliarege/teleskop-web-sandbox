@@ -100,46 +100,17 @@ export interface Recipe {
   autoRecipe: RecipeRaw[]
   manualRecipe: RecipeRaw[]
 }
-export interface BatchText {
-  id: number
-  label: string
-  value: keyof QueueBasedEvents
-}
 
-export interface Batch {
-  batchText: BatchText[]
-  archiveDays: number
-  showStops: {
-    show: boolean
-    color: string
-  }
+export interface PtLocaleSettings {
+  deviationColor: string
+  completedBatchColor: string
+  completedBatchText: keyof QueueBasedEvents
+  completedBatchFabricColor: boolean
+  ongoingBatchColor: string
+  ongoingBatchText: keyof QueueBasedEvents
+  ongoingBatchFabricColor: boolean
+  plannedBatchColor: string
+  plannedBatchText: keyof QueueBasedEvents
+  plannedBatchFabricColor: boolean
+  showStops: { show: boolean, color: string }
 }
-
-export interface CompletedBatch extends Batch {
-  completedBatch: {
-    batchText: BatchText | null
-    isBatchFabricColor: boolean
-    actualBatchFabricColor: string
-    deviationBatchFabricColor: string
-  }
-}
-
-export interface OngoingBatch extends Batch {
-  ongoingBatch: {
-    batchText: BatchText | null
-    isBatchFabricColor: boolean
-    actualBatchFabricColor: string
-    deviationBatchFabricColor: string
-  }
-}
-
-export interface PlannedBatch extends Batch {
-  plannedBatch: {
-    batchText: BatchText | null
-    isBatchFabricColor: boolean
-    actualBatchFabricColor: string
-    deviationBatchFabricColor: string
-  }
-}
-
-export type PtLocaleSettings = CompletedBatch & OngoingBatch & PlannedBatch

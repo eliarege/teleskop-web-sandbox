@@ -6,7 +6,7 @@ export interface QueueBasedEvents {
   theoreticalDuration: number
   fabricWeight: number
   note: string
-  color: string
+  color: number
   isDeleted: boolean
   isStarted: boolean
   isStopped: boolean
