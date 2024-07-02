@@ -414,32 +414,6 @@ export class QueueDrag extends DragHelper {
 export class QueueTask extends EventModel {
   static $name = 'Task'
 
-  get eventColor() {
-    const ptSettings = JSON.parse(localStorage.getItem('pt-settings'))
-    const completedBatchSettings = ptSettings.completedBatch
-    const ongoingBatchBatchSettings = ptSettings.ongoingBatch
-    const plannedBatchBatchSettings = ptSettings.plannedBatch
-    switch (true) {
-      case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished && this.originalData.isDeviation):
-        return completedBatchSettings.deviationBatchFabricColor
-      case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished):
-        return completedBatchSettings.actualBatchFabricColor
-
-      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.originalData.isRunning && this.originalData.isDeviation):
-        return plannedBatchBatchSettings.deviationBatchFabricColor
-      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.originalData.isRunning):
-        return plannedBatchBatchSettings.actualBatchFabricColor
-
-      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning && this.originalData.isDeviation):
-        return ongoingBatchBatchSettings.deviationBatchFabricColor
-      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning):
-        return ongoingBatchBatchSettings.actualBatchFabricColor
-
-      default:
-        return integerToHex(this.originalData.color)
-    }
-  }
-
   static get defaults() {
     return {
       durationUnit: 'h',

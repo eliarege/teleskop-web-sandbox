@@ -747,7 +747,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
     </EliarModal>
     <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
       <template #default>
-        <SettingsPlan
+        <SettingsMain
           @update-scheduler="refreshScheduler()"
           @add-column="(ev: any) => addGridColumn(ev)"
           @remove-column="(ev: any) => removeGridColumn(ev)"
