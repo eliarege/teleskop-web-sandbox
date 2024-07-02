@@ -60,24 +60,17 @@ function log(e: any) {
 }
 function onAdd(event: any) {
   const item = event.item._underlying_vm_
+  item.recipeId = props.recipeId
   const index = event.newDraggableIndex
   const mainStep = index > 0 ? recipeSteps.value.at(index - 1)?.mainStep : 1
-  const newItem: RecipeMasterStep = {
-    recipeId: props.recipeId,
-    materialCode: item.materialCode,
-    materialName: item.materialName,
-    amount: item.amount || 0,
-    unit: item.unit || 3,
-    mainStep,
-    parallelStep: index > 0 ? recipeSteps.value.at(index - 1)!.parallelStep + 1 : 1,
-  }
-  recipeSteps.value.splice(index, 1, newItem)
-  recipeSteps.value = [...recipeSteps.value]
+  item.mainStep = mainStep
+  item.parallelStep = index > 0 ? recipeSteps.value.at(index - 1)!.parallelStep + 1 : 1
   let i = index + 1
   while (i < recipeSteps.value.length && recipeSteps.value.at(i)?.mainStep === mainStep) {
     recipeSteps.value.at(i)!.parallelStep = recipeSteps.value.at(i)!.parallelStep + 1
     i++
   }
+  recipeSteps.value = [...recipeSteps.value]
 }
 function onRemove(event: any) {
   const index = recipeSteps.value.indexOf(event.item)

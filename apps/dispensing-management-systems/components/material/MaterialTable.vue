@@ -30,8 +30,15 @@ const columns = [
   },
 ]
 
-function cloneMaterial(material: Material) {
-  return { ...material }
+function cloneMaterial(item: Material) {
+  return {
+    materialCode: item.materialCode,
+    materialName: item.materialName,
+    amount: 0,
+    unit: 3,
+    mainStep: 1,
+    parallelStep: 1
+  }
 }
 </script>
 
