@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import RecipeEditDialog from '../RecipeEditDialog.vue';
+import RecipeEditDialog from '../recipe/RecipeEditDialog.vue';
 import type { RecipeMaster } from '~/shared/types';
 
 const { t } = useI18n()

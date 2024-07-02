@@ -2,7 +2,7 @@
 import { useDialogPluginComponent, useQuasar } from 'quasar'
 import draggable from 'vuedraggable'
 import { klona } from 'klona'
-import ConfirmationDialog from './ConfirmationDialog.vue'
+import ConfirmationDialog from '../ConfirmationDialog.vue'
 import type { RecipeMaster, RecipeMasterStep } from '~/shared/types'
 
 const props = defineProps({
