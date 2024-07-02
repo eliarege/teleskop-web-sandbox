@@ -4,11 +4,13 @@ import View from './View.vue'
 import ViewOptions from './ViewOptions.vue'
 import UnplannedOptions from './UnplannedOptions.vue'
 
+const emits = defineEmits(['addColumn', 'removeColumn'])
+const { t } = useI18n()
 // TODO: add emits
 const settingItems = reactive([
-  { name: 'planningArea', caption: 'Planlama Alanı - İş Emri Görünümleri', component: View, icon: matDisplaySettings },
-  { name: 'viewOptions', caption: 'Görünüm Seçenekleri', component: ViewOptions, icon: matPreview },
-  { name: 'unplannedOptions', caption: 'Bekleyen İş Emirleri', component: UnplannedOptions, icon: matPreview },
+  { name: 'planningArea', caption: () => t('settings.plan-area._'), component: View, icon: matDisplaySettings },
+  { name: 'viewOptions', caption: () => t('settings.view-options'), component: ViewOptions, icon: matPreview },
+  { name: 'unplannedOptions', caption: () => t('settings.unplanned-options'), component: UnplannedOptions, icon: matPreview },
 ])
 </script>
 
@@ -21,10 +23,14 @@ const settingItems = reactive([
         group="accordion"
         expand-seperator
         :icon="item.icon"
-        :caption="item.caption"
+        :caption="toValue(item.caption)"
         class="overflow-auto"
       >
-        <component :is="item.component" />
+        <component
+          :is="item.component"
+          @add-column="(ev) => emits('addColumn', ev)"
+          @remove-column="(ev) => emits('removeColumn', ev)"
+        />
       </q-expansion-item>
     </q-list>
   </div>

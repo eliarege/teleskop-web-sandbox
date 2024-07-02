@@ -51,57 +51,20 @@ function onDoubleClick(item: {
 </script>
 
 <template>
-  <div class="h-80vh unplanned-wrapper">
-    <q-list
-      dense
-      bordered
-      separator
-      class="max-h-80vh overflow-auto"
-    >
-      <q-item
-        v-for="(item, idx) in invisibleColumns"
-        :key="idx"
-        v-ripple
-        tabindex="0"
-        clickable
-        :manual-focus="true"
-        :focused="selected === item"
-        @click="selected = item"
-        @focus="selected = item"
-        @dblclick="onDoubleClick(item)"
-      >
-        <q-item-section>
-          {{ item.parameterName }}
-        </q-item-section>
-      </q-item>
-    </q-list>
-    <div class="flex-center flex-col gap-10 w-full h-full">
-      <q-btn
-        :disabled="visibleColumns.includes(selected)"
-        color="primary"
-        :icon-right="matChevronRight"
-        @click="addParameter()"
-      />
-      <q-btn
-        :disabled="invisibleColumns.includes(selected)"
-        color="primary"
-        :icon="matChevronLeft"
-        @click="removeParameter()"
-      />
-    </div>
-    <div>
+  <div class="h-70vh w-full">
+    <div class="unplanned-wrapper">
       <q-list
         dense
         bordered
         separator
-        class="max-h-80vh overflow-auto h-full"
+        class="max-h-70vh overflow-auto"
       >
         <q-item
-          v-for="(item, idy) in visibleColumns"
-          :key="idy"
+          v-for="(item, idx) in invisibleColumns"
+          :key="idx"
           v-ripple
-          clickable
           tabindex="0"
+          clickable
           :manual-focus="true"
           :focused="selected === item"
           @click="selected = item"
@@ -113,6 +76,45 @@ function onDoubleClick(item: {
           </q-item-section>
         </q-item>
       </q-list>
+      <div class="flex-center flex-col gap-10 w-full h-full">
+        <q-btn
+          :disabled="visibleColumns.includes(selected)"
+          color="primary"
+          :icon-right="matChevronRight"
+          @click="addParameter()"
+        />
+        <q-btn
+          :disabled="invisibleColumns.includes(selected)"
+          color="primary"
+          :icon="matChevronLeft"
+          @click="removeParameter()"
+        />
+      </div>
+      <div>
+        <q-list
+          dense
+          bordered
+          separator
+          class="max-h-80vh overflow-auto h-full"
+        >
+          <q-item
+            v-for="(item, idy) in visibleColumns"
+            :key="idy"
+            v-ripple
+            clickable
+            tabindex="0"
+            :manual-focus="true"
+            :focused="selected === item"
+            @click="selected = item"
+            @focus="selected = item"
+            @dblclick="onDoubleClick(item)"
+          >
+            <q-item-section>
+              {{ item.parameterName }}
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
     </div>
   </div>
 </template>
