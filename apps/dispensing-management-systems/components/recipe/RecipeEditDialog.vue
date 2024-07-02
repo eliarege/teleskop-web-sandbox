@@ -42,7 +42,7 @@ const groups: OptionMap[] = []
 getRecipe()
 getRecipeSteps()
 async function getRecipe() {
-  if (props.isNew) {
+  if (!props.isNew) {
     recipe.value = await $fetch(`/api/recipes/master/${props.recipeId}`)
     editedRecipe.value = klona(recipe.value)
   } else
@@ -54,6 +54,7 @@ async function getRecipeSteps() {
 }
 async function onSave() {
   try {
+    await $fetch(`/api/recipes/master/${props.recipeId}`, { method: 'POST', body: { recipe: editedRecipe.value } })
     await $fetch(`/api/recipes/master/steps/${props.recipeId}`, { method: 'POST', body: { steps: recipeSteps.value } })
     onDialogOK(true)
   } catch (e) {
