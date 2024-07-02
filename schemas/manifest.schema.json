@@ -44,7 +44,7 @@
     },
     "envDependencies": {
       "type": "array",
-      "description": "Environment dependencies",
+      "description": "Environment dependencies that should be installed via apk",
       "items": {
         "type": "string"
       }
