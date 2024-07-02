@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useDialogPluginComponent, useQuasar } from 'quasar'
 import draggable from 'vuedraggable'
+import { klona } from 'klona'
 import ConfirmationDialog from './ConfirmationDialog.vue'
 import type { RecipeMaster, RecipeMasterStep } from '~/shared/types'
 
@@ -8,15 +9,37 @@ const props = defineProps({
   recipeId: {
     type: Number,
   },
+  isNew: {
+    type: Boolean,
+  },
 })
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
-const { data: recipe } = useFetch<RecipeMaster>(`/api/recipes/master/${props.recipeId}`)
+const recipe = ref<RecipeMaster>()
+const editedRecipe = ref<RecipeMaster>()
+const defaultRecipe: RecipeMaster = {
+  recipeId: props.recipeId,
+  recipeName: '',
+  recipeGroup: 0,
+  recipeType: 0,
+  comment: '',
+  stepNo: 0,
+  programNo: 0,
+  isPassive: false,
+}
 const defaultSteps = ref<RecipeMasterStep[]>([])
 const recipeSteps = ref<RecipeMasterStep[]>([])
 const units = [{ id: 0, name: t('units.0') }, { id: 1, name: t('units.1') }, { id: 2, name: t('units.2') }, { id: 3, name: t('units.3') }, { id: 4, name: t('units.4') }, { id: 5, name: t('units.5') }, { id: 6, name: t('units.6') }]
+getRecipe()
 getRecipeSteps()
+async function getRecipe() {
+  if (props.isNew) {
+    recipe.value = await $fetch(`/api/recipes/master/${props.recipeId}`)
+    editedRecipe.value = klona(recipe.value)
+  } else
+    editedRecipe.value = klona(defaultRecipe)
+}
 async function getRecipeSteps() {
   recipeSteps.value = await $fetch(`/api/recipes/master/steps/${props.recipeId}`)
   defaultSteps.value = recipeSteps.value
@@ -32,6 +55,7 @@ async function onSave() {
 
 function onReset() {
   recipeSteps.value = defaultSteps.value
+  editedRecipe.value = klona(props.isNew ? defaultRecipe : recipe.value)
 }
 
 async function onDelete() {
@@ -97,6 +121,21 @@ function onRemoveStep(index: number) {
     @hide="onDialogHide"
   >
     <QCard>
+      <div v-if="editedRecipe" class="flex flex-row flex-wrap justify-center">
+        <div class="row-item">
+          <span class="item-label">
+            {{ t('recipeFields.ID') }}
+          </span>
+          <QInput
+            v-model="editedRecipe.recipeId"
+            class="item-input"
+            dense
+            type="text"
+            filled
+            :disable="!isNew"
+          />
+        </div>
+      </div>
       <div class="row justify-center">
         <div class="col-7 mr-2">
           <h3 flex-center>
@@ -255,7 +294,7 @@ function onRemoveStep(index: number) {
           @click="onReset"
         />
         <QBtn
-          v-if="recipeId"
+          v-if="!isNew"
           :label="t('Delete')"
           color="negative"
           icon="delete"
@@ -267,6 +306,10 @@ function onRemoveStep(index: number) {
 </template>
 
 <style scoped>
+.row-item {
+  margin: 0.75rem;
+  width: 40rem;
+}
 .no-padding {
   padding: 0 !important;
 }

@@ -29,6 +29,7 @@ async function onRowClick(_event: Event, row: RecipeMaster) {
     component: RecipeEditDialog,
     componentProps: {
       recipeId: row.recipeId,
+      isNew: false
     },
   }).onOk((payload: any) => {
     if (payload) {
