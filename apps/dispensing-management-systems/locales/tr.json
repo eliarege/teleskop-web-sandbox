@@ -129,7 +129,10 @@
     "Amount": "Miktar",
     "Unit": "Birim",
     "ID": "Reçete No",
-    "Name": "Reçete Adı"
+    "Name": "Reçete Adı",
+    "Type": "Reçete Türü",
+    "Group": "Reçete Grubu",
+    "Desc": "Reçete Açıklaması"
   },
   "batchPlanParameterFields": {
     "Title": "Parametreler",

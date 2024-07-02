@@ -129,7 +129,10 @@
     "Amount": "Amount",
     "Unit": "Unit",
     "ID": "Recipe ID",
-    "Name": "Recipe Name"
+    "Name": "Recipe Name",
+    "Type": "Recipe Type",
+    "Group": "Recipe Group",
+    "Desc": "Recipe Description"
   },
   "batchPlanParameterFields": {
     "Title": "Batch Plan Parameters",

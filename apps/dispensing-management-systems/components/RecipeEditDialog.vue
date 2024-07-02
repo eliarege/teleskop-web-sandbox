@@ -31,6 +31,8 @@ const defaultRecipe: RecipeMaster = {
 const defaultSteps = ref<RecipeMasterStep[]>([])
 const recipeSteps = ref<RecipeMasterStep[]>([])
 const units = [{ id: 0, name: t('units.0') }, { id: 1, name: t('units.1') }, { id: 2, name: t('units.2') }, { id: 3, name: t('units.3') }, { id: 4, name: t('units.4') }, { id: 5, name: t('units.5') }, { id: 6, name: t('units.6') }]
+const types = [{ id: 0, name: t('recipeTypes.0') }, { id: 1, name: t('recipeTypes.1') }]
+const groups = []
 getRecipe()
 getRecipeSteps()
 async function getRecipe() {
@@ -133,6 +135,64 @@ function onRemoveStep(index: number) {
             type="text"
             filled
             :disable="!isNew"
+          />
+        </div>
+        <div class="row-item">
+          <span class="item-label">
+            {{ t('recipeFields.Name') }}
+          </span>
+          <QInput
+            v-model="editedRecipe.recipeName"
+            class="item-input"
+            dense
+            type="text"
+            filled
+          />
+        </div>
+        <div class="row-item">
+          <span class="item-label">
+            {{ t('recipeFields.Type') }}
+          </span>
+          <QSelect
+            v-model="editedRecipe.recipeType"
+            borderless
+            dense
+            filled
+            emit-value
+            map-options
+            options-dense
+            option-value="id"
+            option-label="name"
+            :options="types"
+          />
+        </div>
+        <div class="row-item">
+          <span class="item-label">
+            {{ t('recipeFields.Group') }}
+          </span>
+          <QSelect
+            v-model="editedRecipe.recipeGroup"
+            borderless
+            dense
+            filled
+            emit-value
+            map-options
+            options-dense
+            option-value="id"
+            option-label="name"
+            :options="groups"
+          />
+        </div>
+        <div class="row-item">
+          <span class="item-label">
+            {{ t('recipeFields.Desc') }}
+          </span>
+          <QInput
+            v-model="editedRecipe.comment"
+            class="item-input"
+            dense
+            type="textarea"
+            filled
           />
         </div>
       </div>
