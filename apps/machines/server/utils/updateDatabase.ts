@@ -255,7 +255,7 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
     return false
 
   try {
-    for (const c of commands) {
+    const updatePromises = commands.map(async (c) => {
       await trx('BFMASTERCOMMANDS').where({
         COMMANDNO: c.commandNo,
         MACHINEID: machineId,
@@ -268,7 +268,9 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
         MAXA: c.maxA,
         B: c.b,
       })
-    }
+    })
+
+    await Promise.all(updatePromises)
   } catch (error: any) {
     throw new DatabaseQueryError(error.message)
   }
@@ -300,7 +302,7 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
     return false
 
   try {
-    for (const command of commands) {
+    const updatePromises = commands.map(async (command) => {
       await trx('BFMASTERCOMMANDS').where({
         COMMANDNO: command.commandNo,
         MACHINEID: machineId,
@@ -308,7 +310,9 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
         ADVICELIST: (command.adviceList && command.adviceList.length) ? command.adviceList : -1,
         DONTUSELIST: command.dontUseList,
       })
-    }
+    })
+
+    await Promise.all(updatePromises)
   } catch (error: any) {
     throw new DatabaseQueryError(error.message)
   }
@@ -374,7 +378,7 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
   if (!commands.length && !formulas.length)
     return false
 
-  const promises = commands.map(async (c) => {
+  const data = commands.map((c) => {
     const globalCommandFormula = formulas.findIndex(f => f.commandNo === c.commandNo)
 
     return {
@@ -403,8 +407,6 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
       PARAMETERINDEX: Number.parseInt(c.name.split(' ')[1]),
     }
   })
-
-  const data = await Promise.all(promises)
 
   return await replaceRecords(trx, 'BFCOMMANDPARAMETERS', data, { MACHINEID: machineId })
 }
@@ -672,17 +674,12 @@ export async function updateSystemParams(machineId: number, tbb: TbbFtpClient, t
       .where('MachineId', machineId)
       .del()
 
-    for (const key in system) {
-      if (Object.prototype.hasOwnProperty.call(system, key)) {
-        const value = system[key as keyof typeof system]
-        await trx('BFMACHINESYSTEMPARAMS')
-          .insert({
-            MachineId: machineId,
-            ParamToken: key,
-            ParamValue: value,
-          })
-      }
-    }
+    const systemParams = Object.entries(system).map(([key, value]) => ({
+      MachineId: machineId,
+      ParamToken: key,
+      ParamValue: value,
+    }))
+    await trx('BFMACHINESYSTEMPARAMS').insert(systemParams)
 
     return true
   } catch (error: any) {
