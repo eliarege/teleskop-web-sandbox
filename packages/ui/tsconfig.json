@@ -1,5 +1,5 @@
 {
-  "extends": "tsconfig/vue",
+  "extends": "@teleskop/tsconfig/vue",
   "include": ["**/*.vue", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { QForm } from 'quasar'
+import { LoadingSpinner } from '@teleskop/ui'
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'

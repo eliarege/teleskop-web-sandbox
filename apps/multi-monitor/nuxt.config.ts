@@ -1,4 +1,4 @@
-import string from 'rollup-plugin-string'
+import string from '@teleskop/rollup-plugin-string'
 
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 
@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   devtools: {
     enabled: false,
   },
-  extends: ['nuxt-base'],
+  extends: ['@teleskop/nuxt-base'],
   spaLoadingTemplate: false,
   ssr: false,
   typescript: {

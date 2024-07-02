@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { withBase } from 'ufo'
-import { determineTextColor } from 'utils/src/color'
+import { determineTextColor } from '@teleskop/utils'
 import type { MachineData } from '~/shared/types'
 
 interface MachineStautsProps {

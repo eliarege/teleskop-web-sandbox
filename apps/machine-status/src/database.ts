@@ -2,7 +2,7 @@ import * as tedious from 'tedious'
 import * as tarn from 'tarn'
 import { Kysely, MssqlDialect, ParseJSONResultsPlugin } from 'kysely'
 import { parseConnectionString } from '@tediousjs/connection-string'
-import { inferBoolean } from 'utils'
+import { inferBoolean } from '@teleskop/utils'
 import { logger } from './logger'
 
 export function createKyselyInstance<T>(connectionString: string) {

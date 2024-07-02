@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type { CommandIO } from 'tbb-ftp-client'
+import type { CommandIO } from '@teleskop/tbb-ftp-client'
 import type { IOOutput, Machine } from '~/types'
 
 export function calcIONumber(ioObject: IOOutput | CommandIO, controllerModel: Pick<Machine, 'productModel' | 'hardwareModel' | 'plcModel'>, ioName: string) {

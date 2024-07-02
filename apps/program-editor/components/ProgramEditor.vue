@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
 import type { SortableEvent, SortableOptions } from 'sortablejs'
-import { isDef } from 'utils'
+import { isDef } from '@teleskop/utils'
 import type { AutoScrollOptions } from 'sortablejs/plugins'
 import ProgramStepForm from './ProgramStepForm.vue'
 import { useEditorStore } from '~~/composables/editor'

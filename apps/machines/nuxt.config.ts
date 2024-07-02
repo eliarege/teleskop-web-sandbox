@@ -1,4 +1,4 @@
-import string from 'rollup-plugin-string'
+import string from '@teleskop/rollup-plugin-string'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   },
   ssr: false,
   devtools: { enabled: true },
-  extends: ['nuxt-base'],
+  extends: ['@teleskop/nuxt-base'],
   runtimeConfig: {
     teleskopHost: 'localhost',
     teleskopUser: 'EliarClient',

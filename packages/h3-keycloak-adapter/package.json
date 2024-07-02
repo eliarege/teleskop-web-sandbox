@@ -1,11 +1,18 @@
 {
-  "name": "h3-keycloak-adapter",
+  "name": "@teleskop/h3-keycloak-adapter",
   "version": "1.0.0",
   "private": true,
   "description": "",
-  "license": "ISC",
-  "keywords": [],
-  "main": "src/adapter.ts",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/adapter.ts"
+  },
+  "main": "./src/adapter.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "typecheck": "tsc --noEmit"
+  },
   "peerDependencies": {
     "h3": "^1.9.0"
   },
@@ -14,7 +21,9 @@
     "jose": "^5.2.4"
   },
   "devDependencies": {
+    "@teleskop/tsconfig": "workspace:*",
+    "eslint": "^9.6.0",
     "h3": "^1.11.1",
-    "tsconfig": "workspace:*"
+    "typescript": "^5.5.2"
   }
 }

@@ -68,7 +68,6 @@ export async function getWorkspaceDependencies(
   return dependencies
 }
 
-/* eslint-disable antfu/no-cjs-exports */
 function applyProductionCondition(exports: PackageJson['exports']) {
   if (!exports || typeof exports === 'string') {
     return
@@ -170,7 +169,7 @@ async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'optio
 
   interface TracedFile {
     path: string
-    subpath: string
+    subpath?: string
     parents: string[]
     pkgPath: string
     pkgName: string
@@ -438,5 +437,21 @@ export function workspaceExternals(ctx: BuildContext, options?: CopyNodeExternal
   ctx.hooks.hook('build:done', async (ctx) => {
     consola.info(`Copying externals`)
     await copyNodeExternals(ctx, options)
+  })
+}
+
+/**
+ * `unbuild` plugin. Injects itself to `unbuild` build process. Should be called in `build:prepare`.
+ *
+ * Inlines workspace dependencies.
+ */
+export function inlineWorkspaceDependencies(ctx: BuildContext) {
+  ctx.hooks.hook('build:before', async (ctx) => {
+    // Inline workspace dependencies
+    const workspaceDependencies = await getWorkspaceDependencies()
+    ctx.options.rollup.inlineDependencies = true
+    ctx.options.externals = ctx.options.externals.filter(e =>
+      typeof e === 'string' && !workspaceDependencies.includes(e),
+    )
   })
 }

@@ -4,7 +4,6 @@
   "private": true,
   "description": "",
   "license": "UNLICENSED",
-  "keywords": [],
   "scripts": {
     "dev": "vite --port 8082 --strictPort",
     "build": "vite build",
@@ -15,7 +14,7 @@
     "keycloak-js": "^24.0.4"
   },
   "devDependencies": {
-    "tsconfig": "workspace:*",
+    "@teleskop/tsconfig": "workspace:*",
     "vite": "^5.2.12"
   }
 }

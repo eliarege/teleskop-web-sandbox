@@ -10,10 +10,14 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
+    "typecheck": "nuxt typecheck",
     "start": "node .output/server/index.mjs",
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
+    "@teleskop/tbb-ftp-client": "workspace:*",
+    "@teleskop/ui": "workspace:*",
+    "@teleskop/utils": "workspace:*",
     "@vueuse/integrations": "^10.8.0",
     "date-fns": "^3.0.4",
     "exceljs": "^4.4.0",
@@ -27,25 +31,20 @@
     "nearley": "^2.20.1",
     "sortablejs": "^1.15.2",
     "sortablejs-vue3": "^1.2.11",
-    "tbb-ftp-client": "workspace:*",
-    "tedious": "^18.1.0",
-    "ui": "workspace:*",
-    "utils": "workspace:*"
+    "tedious": "^18.1.0"
   },
   "devDependencies": {
+    "@teleskop/nuxt-base": "workspace:*",
+    "@teleskop/unocss-config": "workspace:*",
     "@types/lodash-es": "^4.17.12",
     "@types/moo": "^0.5.9",
     "@types/nearley": "^2.11.5",
     "@types/sortablejs": "^1.15.8",
+    "eslint": "^9.6.0",
     "nuxt": "^3.11.2",
-    "nuxt-base": "workspace:*",
-    "unocss-config": "workspace:*",
+    "typescript": "^5.5.2",
     "vue": "^3.4.27",
-    "vue-router": "^4.3.2"
-  },
-  "eliar": {
-    "type": "nuxt",
-    "port": 3000,
-    "outDir": ".output"
+    "vue-router": "^4.3.2",
+    "vue-tsc": "^2.0.24"
   }
 }

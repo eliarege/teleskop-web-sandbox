@@ -1,4 +1,4 @@
-import { keycloakAdapter } from 'h3-keycloak-adapter'
+import { keycloakAdapter } from '@teleskop/h3-keycloak-adapter'
 
 const config = useRuntimeConfig()
 

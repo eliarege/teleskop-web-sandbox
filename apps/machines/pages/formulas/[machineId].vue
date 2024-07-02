@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { klona } from 'klona'
-import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
+import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nuxt-base'
 import type { Formula } from '~/types'
 
 const { t } = useI18n()

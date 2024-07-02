@@ -1,4 +1,4 @@
-import sharedConfig from 'unocss-config'
+import sharedConfig from '@teleskop/unocss-config'
 import { mergeConfigs } from 'unocss'
 
 export default mergeConfigs([

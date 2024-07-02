@@ -1,4 +1,4 @@
-import { defineConfiguration } from 'utils'
+import { defineConfiguration } from '@teleskop/utils'
 
 export const config = defineConfiguration({
   serverPrefix: {

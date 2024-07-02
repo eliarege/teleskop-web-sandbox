@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from 'tbb-ftp-client'
+import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { DatabaseQueryError } from '../error'
 import { calcIONumber, getIONames } from '.'

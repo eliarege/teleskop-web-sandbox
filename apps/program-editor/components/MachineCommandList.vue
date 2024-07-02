@@ -2,7 +2,7 @@
 import { Sortable } from 'sortablejs-vue3'
 import { useQuasar } from 'quasar'
 import type { SortableEvent, SortableOptions } from 'sortablejs'
-import { isDef } from 'utils'
+import { isDef } from '@teleskop/utils'
 import { ProgramStateColors } from '~/shared/constants'
 import { useEditorStore } from '~/composables/editor'
 import type { MachineCommand, ProgramStep, ProgramStepCommand } from '~/shared/types'

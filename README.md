@@ -1,5 +1,8 @@
 # Teleskop Web
 
+## TODO
+
+- Turbo Generator for new projects
 
 ## VSCode Profile
 
@@ -274,7 +277,7 @@ export default defineAuthEventHandler((event) => {
 
 ```ts
 import Fastify from 'fastify'
-import { keycloakAdapter } from 'fastify-keycloak-adapter'
+import { keycloakAdapter } from '@teleskop/fastify-keycloak-adapter'
 
 const app = Fastify()
 

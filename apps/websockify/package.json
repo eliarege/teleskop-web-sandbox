@@ -5,7 +5,7 @@
   "private": true,
   "description": "NoVNC için WebSocket Proxy. Teleskopta tanımlanmış cihazlardaki VNC sunucularına WebSocket trafiğini yönlendirir.",
   "license": "UNLICENSED",
-  "main": "dist/server.mjs",
+  "files": ["dist"],
   "scripts": {
     "dev": "NODE_ENV=development tsx -r dotenv/config --import ./dev/clipboard.js src/server.ts | pino-pretty",
     "start": "node dist/server.mjs",
@@ -18,27 +18,23 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
+    "@teleskop/utils": "workspace:*",
     "jose": "^5.2.4",
     "knex": "^3.1.0",
     "pino": "^8.20.0",
     "tedious": "^18.1.0",
-    "utils": "workspace:*",
     "ws": "^8.16.0"
   },
   "devDependencies": {
+    "@teleskop/build-utils": "workspace:*",
+    "@teleskop/tsconfig": "workspace:*",
     "@types/node": "^20.12.12",
     "@types/ws": "^8.5.10",
-    "build-utils": "workspace:*",
     "clipboardy": "^4.0.0",
+    "eslint": "^9.6.0",
     "pino-pretty": "^11.0.0",
-    "tsconfig": "workspace:*",
     "tsx": "^4.7.2",
     "typescript": "^5.4.5",
     "unbuild": "2.0.0"
-  },
-  "eliar": {
-    "type": "node",
-    "port": 6800,
-    "outDir": "dist"
   }
 }

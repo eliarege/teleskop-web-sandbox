@@ -1,4 +1,4 @@
 {
   "extends": "@teleskop/tsconfig/node",
-  "include": ["./bin/*.ts"]
+  "files": ["./uno.config.ts"]
 }

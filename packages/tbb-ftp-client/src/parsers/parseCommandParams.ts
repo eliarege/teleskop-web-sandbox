@@ -34,7 +34,7 @@ export function parseCommandParams(content: string) {
 }
 
 function processSelectionList(list: string[]) {
-  const processedList: { name: string; value: number }[] = []
+  const processedList: { name: string, value: number }[] = []
   for (let i = 0; i < list.length; i += 2) {
     processedList.push({ name: list[i], value: Number(list[i + 1]) })
   }

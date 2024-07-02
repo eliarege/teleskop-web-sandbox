@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "start": "node .output/server/index.mjs",
+    "typecheck": "nuxt typecheck",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -17,6 +18,8 @@
   },
   "dependencies": {
     "@rollup/plugin-virtual": "^3.0.2",
+    "@teleskop/ui": "workspace:*",
+    "@teleskop/utils": "workspace:*",
     "async-mutex": "^0.4.0",
     "execa": "^9.0.2",
     "klona": "^2.0.6",
@@ -24,23 +27,18 @@
     "pg": "^8.11.5",
     "simple-keyboard": "^3.7.83",
     "tedious": "^18.1.0",
-    "ui": "workspace:*",
-    "utils": "workspace:*",
     "vuedraggable": "^4.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@teleskop/nuxt-base": "workspace:*",
+    "@teleskop/unocss-config": "workspace:*",
     "@types/node": "^20.12.12",
     "@types/pg": "^8.11.6",
     "nuxt": "^3.11.2",
-    "nuxt-base": "workspace:*",
-    "unocss-config": "workspace:*",
+    "typescript": "^5.5.2",
     "vue": "^3.4.27",
-    "vue-router": "^4.3.2"
-  },
-  "eliar": {
-    "type": "nuxt",
-    "port": 3000,
-    "outDir": ".output"
+    "vue-router": "^4.3.2",
+    "vue-tsc": "^2.0.24"
   }
 }

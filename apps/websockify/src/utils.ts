@@ -1,7 +1,7 @@
 import type { IncomingMessage } from 'node:http'
 import process from 'node:process'
 
-export { inferBoolean } from 'utils'
+export { inferBoolean } from '@teleskop/utils'
 
 /**
  * Makes it possible to safely destruct properties with defaults.

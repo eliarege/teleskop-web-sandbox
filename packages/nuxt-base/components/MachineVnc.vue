@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { joinURL, parseHost, parseURL, stringifyParsedURL, withBase, withProtocol } from 'ufo'
-import { NoVnc } from 'ui'
+import { NoVnc } from '@teleskop/ui'
 import Key0 from '../assets/keyboard/0.svg'
 import Key1 from '../assets/keyboard/1.svg'
 import Key2 from '../assets/keyboard/2.svg'

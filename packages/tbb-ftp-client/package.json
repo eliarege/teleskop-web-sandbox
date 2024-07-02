@@ -1,22 +1,27 @@
 {
-  "name": "tbb-ftp-client",
+  "name": "@teleskop/tbb-ftp-client",
   "type": "module",
   "version": "1.0.0",
   "private": true,
   "description": "",
-  "license": "ISC",
-  "keywords": [],
-  "main": "src/index.ts",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "./src/index.ts",
   "scripts": {
     "dev": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "basic-ftp": "^5.0.5"
   },
   "devDependencies": {
-    "tsconfig": "workspace:*",
-    "typescript": "^5.4.5",
+    "@teleskop/tsconfig": "workspace:*",
+    "eslint": "^9.6.0",
+    "typescript": "^5.5.2",
     "vitest": "^1.5.0"
   }
 }

@@ -1,4 +1,4 @@
-import { inferBoolean } from 'utils'
+import { inferBoolean } from '@teleskop/utils'
 import connection from '~/server/connectionPool'
 import query from '~/server/queries/TrendData.sql'
 import trendDataSql from '~/server/queries/TrendDataMock.sql'

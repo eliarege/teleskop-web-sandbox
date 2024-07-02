@@ -5,8 +5,7 @@
   "private": true,
   "description": "Planlama Tahtası Motoru",
   "license": "UNLICENSED",
-  "keywords": [],
-  "main": "dist/index.mjs",
+  "files": ["dist"],
   "scripts": {
     "dev": "NODE_ENV=development tsx -r dotenv/config src/index.ts | pino-pretty",
     "start": "node dist/index.mjs",
@@ -19,6 +18,7 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
+    "@teleskop/utils": "workspace:*",
     "async-mutex": "^0.5.0",
     "date-fns": "^3.6.0",
     "fastify": "^4.26.2",
@@ -26,23 +26,18 @@
     "knex": "^3.1.0",
     "pino": "^8.20.0",
     "socket.io": "^4.7.5",
-    "tedious": "^18.1.0",
-    "utils": "workspace:*"
+    "tedious": "^18.1.0"
   },
   "devDependencies": {
+    "@teleskop/build-utils": "workspace:*",
+    "@teleskop/tsconfig": "workspace:*",
     "@types/node": "^20.12.12",
     "@types/ws": "^8.5.10",
-    "build-utils": "workspace:*",
+    "eslint": "^9.6.0",
     "pino-pretty": "^11.0.0",
-    "tsconfig": "workspace:*",
     "tsx": "^4.7.2",
     "typescript": "^5.4.5",
     "unbuild": "2.0.0",
     "vitest": "^1.5.0"
-  },
-  "eliar": {
-    "type": "node",
-    "port": 3500,
-    "outDir": "dist"
   }
 }

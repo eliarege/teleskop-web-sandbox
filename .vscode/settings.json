@@ -1,6 +1,6 @@
 {
   // Enable the ESlint flat config support
-  "eslint.experimental.useFlatConfig": true,
+  "eslint.useFlatConfig": true,
 
   // Disable the default formatter, use eslint instead
   "prettier.enable": false,
@@ -17,10 +17,6 @@
       "fileMatch": ["apps/*/manifest.json"],
       "url": "./schemas/manifest.schema.json"
     },
-    {
-      "fileMatch": ["apps/*/package.json"],
-      "url": "./schemas/package.schema.json"
-    }
   ],
 
   // Silent the stylistic rules in you IDE, but still auto fix them

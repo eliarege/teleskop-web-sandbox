@@ -3,8 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "description": "",
-  "keywords": [],
-  "bin": "src/index.ts",
+    "bin": "src/index.ts",
   "files": [
     "dist"
   ],
@@ -18,7 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
-    "tsconfig": "workspace:*",
+    "@teleskop/tsconfig": "workspace:*",
     "typescript": "^5.4.5",
     "unbuild": "2.0.0"
   }

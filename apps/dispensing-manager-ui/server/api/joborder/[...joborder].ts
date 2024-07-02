@@ -1,6 +1,6 @@
 import { createRouter, defineEventHandler, useBase } from 'h3'
 import type { Knex } from 'knex'
-import { filtersToKnex } from 'utils'
+import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()

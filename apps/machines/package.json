@@ -9,6 +9,9 @@
     "start": "node .output/server/index.mjs",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "typecheck": "nuxt typecheck",
     "postinstall": "nuxt prepare",
     "keycloak": "../../keycloak/keycloak.sh"
   },
@@ -17,6 +20,9 @@
     "@formkit/i18n": "^1.6.4",
     "@formkit/nuxt": "^1.6.4",
     "@formkit/themes": "^1.6.4",
+    "@teleskop/tbb-ftp-client": "workspace:*",
+    "@teleskop/ui": "workspace:*",
+    "@teleskop/utils": "workspace:*",
     "@types/uuid": "^9.0.8",
     "basic-ftp": "^5.0.5",
     "klona": "^2.0.6",
@@ -27,23 +33,18 @@
     "soap": "^1.0.3",
     "sortablejs": "^1.15.2",
     "sortablejs-vue3": "^1.2.11",
-    "tbb-ftp-client": "workspace:*",
     "ufo": "^1.5.3",
-    "ui": "workspace:*",
-    "utils": "workspace:*",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@teleskop/nuxt-base": "workspace:*",
+    "@teleskop/rollup-plugin-string": "workspace:*",
+    "@teleskop/unocss-config": "workspace:*",
+    "eslint": "^9.6.0",
     "nuxt": "^3.11.2",
-    "nuxt-base": "workspace:*",
-    "rollup-plugin-string": "workspace:*",
-    "unocss-config": "workspace:*",
+    "typescript": "^5.5.2",
     "vue": "^3.4.27",
-    "vue-router": "^4.3.2"
-  },
-  "eliar": {
-    "type": "nuxt",
-    "port": 3000,
-    "outDir": ".output"
+    "vue-router": "^4.3.2",
+    "vue-tsc": "^2.0.24"
   }
 }

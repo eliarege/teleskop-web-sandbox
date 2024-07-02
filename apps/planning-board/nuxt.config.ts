@@ -1,9 +1,9 @@
-import string from 'rollup-plugin-string'
+import string from '@teleskop/rollup-plugin-string'
 
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
-  extends: ['nuxt-base'],
+  extends: ['@teleskop/nuxt-base'],
   runtimeConfig: {
     planningEngineUrl: 'http://localhost:3500',
     public: {

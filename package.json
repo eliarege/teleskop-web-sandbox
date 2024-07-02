@@ -6,26 +6,21 @@
   "packageManager": "pnpm@9.4.0",
   "description": "",
   "license": "UNLICENSED",
-  "keywords": [],
   "scripts": {
     "build": "turbo build",
     "lint": "turbo lint",
-    "clean": "turbo clean",
+    "typecheck": "turbo typecheck",
     "keycloak": "./keycloak/keycloak.sh"
   },
   "devDependencies": {
-    "@eliarelektronik/merge-request-analyzer": "workspace:*",
-    "dotenv": "^16.4.5",
-    "eslint": "^8.57.0",
     "@teleskop/eslint-config": "workspace:*",
-    "magicast": "^0.3.4",
-    "tsx": "^4.7.2",
-    "turbo": "^2.0.5"
+    "turbo": "^2.0.6"
   },
   "pnpm": {
     "peerDependencyRules": {
       "allowedVersions": {
-        "@azure/identity": "3"
+        "@azure/identity": "3",
+        "eslint": "9"
       },
       "ignoreMissing": [
         "webpack"

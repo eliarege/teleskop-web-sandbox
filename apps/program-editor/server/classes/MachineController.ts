@@ -1,4 +1,4 @@
-import { TbbFtpClient } from 'tbb-ftp-client'
+import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { Knex } from 'knex'
 import { isDef } from 'utils'
 import { ensureTreatmentGroups, fetchTreatmentSettings, getGroupIdByMachineId, getMachineHost, hasMachine, logEditorOperation } from '../functions'

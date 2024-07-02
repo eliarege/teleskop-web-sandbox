@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FilterableTableColumn } from 'nuxt-base'
+import type { FilterableTableColumn } from '@teleskop/nuxt-base'
 import type { MachineGroup } from '~/types'
 
 const { t } = useI18n()

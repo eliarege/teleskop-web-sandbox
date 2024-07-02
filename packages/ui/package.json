@@ -1,12 +1,11 @@
 {
-  "name": "ui",
+  "name": "@teleskop/ui",
   "type": "module",
   "version": "1.0.0",
   "private": true,
   "description": "",
   "license": "UNLICENSED",
-  "keywords": [],
-  "main": "index.js",
+    "main": "index.js",
   "types": "index.d.ts",
   "scripts": {},
   "dependencies": {
@@ -14,8 +13,8 @@
     "d3": "^7.9.0"
   },
   "devDependencies": {
+    "@teleskop/tsconfig": "workspace:*",
     "@types/d3": "^7.4.3",
-    "tsconfig": "workspace:*",
     "vue": "^3.4.27"
   }
 }

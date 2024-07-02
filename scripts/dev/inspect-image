@@ -1,5 +1,12 @@
-APP_NAME=root
+#!/bin/bash
+
+APP_NAME=$1
+
+if [[ -z $APP_NAME ]]; then
+  echo "App name is not provided"
+  exit 1
+fi
 
 docker run -it --rm \
   --entrypoint '' \
-  registry.gitlab.com/eliarelektronik/dijital_boyahane/teleskop-web/$APP_NAME:test /bin/sh
+  registry.gitlab.com/eliarelektronik/dijital_boyahane/teleskop-web/$APP_NAME:local /bin/sh

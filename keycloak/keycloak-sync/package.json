@@ -4,7 +4,6 @@
   "private": true,
   "description": "",
   "license": "UNLICENSED",
-  "keywords": [],
   "scripts": {
     "sync": "tsx bin/sync.ts"
   },
@@ -15,8 +14,8 @@
     "object-hash": "^3.0.0"
   },
   "devDependencies": {
+    "@teleskop/tsconfig": "workspace:*",
     "@types/object-hash": "^3.0.6",
-    "tsconfig": "workspace:*",
     "tsx": "^4.7.2"
   }
 }

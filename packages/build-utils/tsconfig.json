@@ -1,4 +1,4 @@
 {
-  "extends": "tsconfig/node",
-  "include": ["**/*.ts"]
+  "extends": "@teleskop/tsconfig/node",
+  "include": ["src/**/*"]
 }

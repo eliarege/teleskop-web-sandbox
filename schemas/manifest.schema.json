@@ -1,6 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "definitions": {
+    "port": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    }
+  },
   "properties": {
     "roles": {
       "type": "array",
@@ -18,6 +25,21 @@
           }
         },
         "required": ["name"]
+      }
+    },
+    "ports": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "$ref": "#/definitions/port" },
+          {
+            "type": "object",
+            "properties": {
+              "protocol": { "enum": ["tcp", "udp"] },
+              "port": { "$ref": "#/definitions/port" }
+            }
+          }
+        ]
       }
     },
     "envDependencies": {
