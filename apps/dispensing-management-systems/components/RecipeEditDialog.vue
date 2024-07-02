@@ -50,7 +50,7 @@ async function onDelete() {
       },
     },
   }).onOk(async () => {
-    await $fetch(`/api/recipes/master/${props.recipeId}`, { method: 'DELETE', body: { recipeNo: recipe.value?.recipeId } })
+    await $fetch(`/api/recipes/master/${props.recipeId}`, { method: 'DELETE' })
     onDialogOK(null)
   })
 }
