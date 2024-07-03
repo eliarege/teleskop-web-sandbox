@@ -262,3 +262,16 @@ export interface Icon {
   name: string
   data: string
 }
+
+export interface CalibrationAnalogInput {
+  id: number
+  calibType: number
+  format: number
+  hat_rl?: number
+  lowerLimitFormula: string
+  upperLimitFormula: string
+  unit: string
+  measureValue?: number
+  measureValues?: { level: number, value: number }[]
+  calibrationAlarmTasks?: number
+}

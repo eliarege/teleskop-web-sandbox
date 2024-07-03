@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type { LockOutputAnalog, LockOutputDigital, TbbFtpClient } from 'tbb-ftp-client'
+import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { DatabaseQueryError } from '../error'
 import { calcIONumber, getIONames } from '.'
@@ -43,17 +43,27 @@ export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, t
   const inputs = await tbb.fetchAnalogInputs()
   if (!inputs.length)
     return false
-  const controllerModel = await tbb.fetchControllerModel()
 
-  const analogInputs = inputs?.map(d => ({
-    MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel, 'analog input'),
-    CARD: d.card,
-    CANAL: d.channel,
-    NAME: d.name,
-    ENABLED: d.enabled,
-    ISDELETED: false,
-  }))
+  const controllerModel = await tbb.fetchControllerModel()
+  const calibrations: CalibrationAnalogInput[] = await tbb.fetchCalibrationAnalogInput()
+
+  const analogInputs = inputs?.map((d) => {
+    const calib = calibrations.find(c => c.id === d.id)
+    const calibMaxValue = calib?.calibType === 0 ? 150 : Math.max(...calib?.measureValues?.map(m => m.value) ?? [0]) * 1.2
+
+    return {
+      MACHINEID: machineId,
+      ID: calcIONumber(d, controllerModel, 'analog input'),
+      CARD: d.card,
+      CANAL: d.channel,
+      NAME: d.name,
+      ENABLED: d.enabled,
+      ISDELETED: false,
+      CALIBTYPE: calib!.calibType,
+      CALIBMAXVALUE: calibMaxValue,
+      CALIBUNIT: calib!.unit,
+    }
+  })
 
   return await replaceRecords(trx, 'BFMACHAIN', analogInputs, { MACHINEID: machineId })
 }
@@ -118,7 +128,10 @@ export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx: 
   const counters = await tbb.fetchCounters()
   if (!counters.length)
     return false
+
   const controllerModel = await tbb.fetchControllerModel()
+  const calibCounters = await tbb.fetchCalibrationCounters()
+
   const data = counters?.map(d => ({
     MACHINEID: machineId,
     ID: calcIONumber(d, controllerModel, 'counter'),
@@ -127,6 +140,7 @@ export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx: 
     NAME: d.name,
     ENABLED: d.enabled,
     ISDELETED: false,
+    CALIBUNIT: calibCounters.find(c => c.id === d.id)?.unit ?? '',
   }))
 
   return await replaceRecords(trx, 'BFMACHCOUNTER', data, { MACHINEID: machineId })
