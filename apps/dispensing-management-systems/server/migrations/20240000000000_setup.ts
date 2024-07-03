@@ -40,6 +40,20 @@ export async function up(knex: Knex): Promise<void> {
     table.text('batch_order')
   })
 
+  await knex.schema.createTable('MACHINE', (table) => {
+    table.integer('machine_id').notNullable().primary().defaultTo(knex.raw('nextval(\'"machine_id_seq"\'::regclass)'))
+    table.text('machine_name')
+    table.integer('controller_type')
+  })
+
+  await knex.schema.createTable('COMMAND_TYPE', (table) => {
+    table.integer('machine_id')
+    table.foreign('machine_id', 'fk_machine')
+      .references('machine_id')
+      .inTable('MACHINE')
+    table.integer('command_type')
+    table.integer('command_no')
+  })
   await knex.schema.createTable('DISPENSER', (table) => {
     table.integer('dispenser_id').notNullable().primary().defaultTo(knex.raw('nextval(\'"DISPENSER_dispenser_id_seq"\'::regclass)'))
     table.text('dispenser_name')
@@ -142,12 +156,6 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('priority').defaultTo(50)
   })
 
-  await knex.schema.createTable('MACHINE', (table) => {
-    table.integer('machine_id').notNullable().primary().defaultTo(knex.raw('nextval(\'"machine_id_seq"\'::regclass)'))
-    table.text('machine_name')
-    table.integer('controller_type')
-  })
-
   await knex.schema.createTable('MACHINE_CONTROLLER_TYPE', (table) => {
     table.integer('controller_type_id')
     table.text('controller_type_name')
@@ -180,7 +188,14 @@ export async function up(knex: Knex): Promise<void> {
       .references('dispenser_id')
       .inTable('DISPENSER')
   })
-
+  await knex.schema.createTable('MASTER_COMMAND', (table) => {
+    table.integer('machine_id')
+    table.foreign('machine_id', 'fk_machine')
+      .references('machine_id')
+      .inTable('MACHINE')
+    table.integer('command_no')
+    table.text('command_name')
+  })
   await knex.schema.createTable('PROGRAM_HEADER', (table) => {
     table.integer('machine_id')
     table.integer('program_no')
