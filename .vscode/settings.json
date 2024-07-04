@@ -17,6 +17,10 @@
       "fileMatch": ["apps/*/manifest.json"],
       "url": "./schemas/manifest.schema.json"
     },
+    {
+      "fileMatch": [".syncpackrc"],
+      "url": "https://unpkg.com/syncpack@12.3.3/dist/schema.json"
+    }
   ],
 
   // Silent the stylistic rules in you IDE, but still auto fix them
@@ -57,6 +61,10 @@
         }
       }]
     }
+  },
+
+  "files.associations": {
+    ".syncpackrc": "json"
   },
 
   // https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html#reference-tags

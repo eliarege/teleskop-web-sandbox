@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "@teleskop/eslint-config": "workspace:*",
+    "syncpack": "^12.3.3",
     "turbo": "^2.0.6"
   },
   "pnpm": {
