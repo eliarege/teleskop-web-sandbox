@@ -3,8 +3,10 @@ import { createRemoteJWKSet, jwtVerify } from 'jose'
 import { createError, defineEventHandler, getHeader } from 'h3'
 import type { EventHandlerRequest, EventHandlerResponse, H3Event } from 'h3'
 import { type LogLevel, createConsola } from 'consola'
+import type { KeycloakScope } from '../types'
+import { isBearer } from '../utils'
 
-export interface KeycloakAdapterConfig {
+export interface H3AdapterConfig {
   url: string
   realm: string
   clientId: string
@@ -16,27 +18,12 @@ export interface KeycloakAuthOptions {
   roles?: string[]
 }
 
-export interface KeycloakScope {
-  scope?: string
-  name?: string
-  preferred_username?: string
-  session_state?: string
-  realm_access?: {
-    roles: string[]
-  }
-  resource_access?: Record<string, {
-    roles: string[]
-  }>
-}
-
 export type KeycloakPayload = KeycloakScope & JWTPayload
-
-const BEARER_RE = /^[Bb]earer$/
 
 function getBearerToken(event: H3Event): string | null {
   const auth = getHeader(event, 'Authorization')
   const [type, token] = auth?.split(' ') || ''
-  return BEARER_RE.test(type) ? token : null
+  return isBearer(type) ? token : null
 }
 
 export type H3AuthEvent<Request extends EventHandlerRequest> = H3Event<Request> & {
@@ -53,7 +40,7 @@ export interface AuthEventHandlerObject<T extends EventHandlerRequest, D> {
   handler: AuthEventHandler<T, D>
 }
 
-export function keycloakAdapter(config: KeycloakAdapterConfig) {
+export function h3Adapter(config: H3AdapterConfig) {
   /** JSON Web Key Set. Read more: https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-sets */
   const logger = createConsola({
     level: config.logger ? config.logLevel : -999,

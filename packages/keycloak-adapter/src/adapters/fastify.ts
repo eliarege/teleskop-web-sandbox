@@ -2,8 +2,10 @@ import type { FastifyReply, FastifyRequest, RouteOptions, onRequestHookHandler }
 import fp from 'fastify-plugin'
 import type { JWTPayload } from 'jose'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
+import type { KeycloakScope } from '../types'
+import { isBearer } from '../utils'
 
-export interface KeycloakPluginConfig {
+export interface FastifyAdapterConfig {
   url: string
   realm: string
   clientId: string
@@ -11,19 +13,6 @@ export interface KeycloakPluginConfig {
 
 export interface KeycloakAuthOptions {
   roles?: string[]
-}
-
-export interface KeycloakScope {
-  scope?: string
-  name?: string
-  preferred_username?: string
-  session_state?: string
-  realm_access?: {
-    roles: string[]
-  }
-  resource_access?: Record<string, {
-    roles: string[]
-  }>
 }
 
 declare module 'fastify' {
@@ -35,11 +24,9 @@ declare module 'fastify' {
   }
 }
 
-const BEARER_RE = /^[Bb]earer$/
-
 function getBearerToken(request: FastifyRequest): string | null {
   const [type, token] = request.headers.authorization?.split(' ') || ''
-  return BEARER_RE.test(type) ? token : null
+  return isBearer(type) ? token : null
 }
 
 function addRequestHook(options: RouteOptions, hook: onRequestHookHandler) {
@@ -62,7 +49,7 @@ function callUnauthorized(reply: FastifyReply) {
   return reply.status(403).send('Unauthorized')
 }
 
-export const keycloakAdapter = fp<KeycloakPluginConfig>((fastify, config, done) => {
+export const fastifyAdapter = fp<FastifyAdapterConfig>((fastify, config, done) => {
   /** JSON Web Key Set. Read more: https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-sets */
   const JWKS = createRemoteJWKSet(new URL(`${config.url}/realms/${config.realm}/protocol/openid-connect/certs`))
 

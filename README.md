@@ -277,7 +277,7 @@ export default defineAuthEventHandler((event) => {
 
 ```ts
 import Fastify from 'fastify'
-import { keycloakAdapter } from '@teleskop/fastify-keycloak-adapter'
+import { keycloakAdapter } from '@teleskop/keycloak-adapter/fastify'
 
 const app = Fastify()
 
