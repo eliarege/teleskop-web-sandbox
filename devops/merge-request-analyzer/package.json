@@ -1,24 +1,21 @@
 {
-  "name": "@eliarelektronik/merge-request-analyzer",
+  "name": "@teleskop/merge-request-analyzer",
   "type": "module",
   "version": "1.0.0",
   "description": "",
   "bin": "src/index.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "unbuild",
-    "stub": "unbuild --stub"
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "commander": "^12.0.0",
     "execa": "^9.1.0"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
     "@teleskop/tsconfig": "workspace:*",
-    "typescript": "^5.5.2",
-    "unbuild": "2.0.0"
+    "@types/node": "^20.12.12",
+    "typescript": "^5.5.2"
   }
 }

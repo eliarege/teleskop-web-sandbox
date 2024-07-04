@@ -50,7 +50,7 @@ class Context {
       './(apps|packages|vendor)/*',
     ], {
       cwd: rootDir,
-    }).pipeStdout!(execa('grep', ['--invert-match', 'Failed to replace env']))
+    }).pipe('grep', ['--invert-match', 'Failed to replace env'])
 
     return JSON.parse(stdout)
   }
@@ -178,7 +178,7 @@ class Context {
       'ls-remote',
       remoteName,
       mergeRequestTargetBranch,
-    ]).pipeStdout!(execa('awk', ['{print $1}']))
+    ]).pipe('awk', ['{print $1}'])
     this.debug(`Latest commit in ${mergeRequestTargetBranch} is ${mergeRequestTargetLatest}`)
     return !mergeRequestTargetLatest.startsWith(mergeRequestDiffBase)
   }
