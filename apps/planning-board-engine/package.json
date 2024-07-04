@@ -5,7 +5,9 @@
   "private": true,
   "description": "Planlama Tahtası Motoru",
   "license": "UNLICENSED",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "NODE_ENV=development tsx -r dotenv/config src/index.ts | pino-pretty",
     "start": "node dist/index.mjs",
@@ -36,7 +38,7 @@
     "eslint": "^9.6.0",
     "pino-pretty": "^11.0.0",
     "tsx": "^4.7.2",
-    "typescript": "^5.4.5",
+    "typescript": "^5.5.2",
     "unbuild": "2.0.0",
     "vitest": "^1.5.0"
   }

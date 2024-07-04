@@ -5,7 +5,9 @@
   "private": true,
   "description": "",
   "license": "UNLICENSED",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "NODE_ENV=development tsx -r dotenv/config src/server.ts | pino-pretty",
     "start": "node dist/server.mjs",
@@ -34,7 +36,7 @@
     "@types/node": "^20.12.12",
     "eslint": "^9.6.0",
     "pino-pretty": "^11.0.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.5.2",
     "unbuild": "2.0.0"
   }
 }

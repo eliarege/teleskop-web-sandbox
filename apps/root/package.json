@@ -5,7 +5,9 @@
   "private": true,
   "description": "",
   "license": "UNLICENSED",
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "scripts": {
     "dev": "node -r dotenv/config src/index.js",
     "build": "/bin/true",

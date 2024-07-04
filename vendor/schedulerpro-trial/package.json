@@ -20,11 +20,9 @@
   "engines": {
     "node": ">=0.10.0"
   },
-  "scripts": {},
   "dependencies": {
     "@bryntum/schedulerpro-trial-lib": "workspace:*"
   },
-  "devDependencies": {},
   "browserslist": [
     "last 2 versions"
   ]

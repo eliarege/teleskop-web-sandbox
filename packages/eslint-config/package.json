@@ -7,7 +7,6 @@
     ".": "./config.js"
   },
   "main": "./config.js",
-  "scripts": {},
   "dependencies": {
     "@antfu/eslint-config": "^2.15.0"
   }
