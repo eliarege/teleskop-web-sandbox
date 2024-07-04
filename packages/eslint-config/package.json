@@ -9,5 +9,8 @@
   "main": "./config.js",
   "dependencies": {
     "@antfu/eslint-config": "^2.15.0"
+  },
+  "devDependencies": {
+    "eslint-plugin-format": "^0.1.2"
   }
 }
