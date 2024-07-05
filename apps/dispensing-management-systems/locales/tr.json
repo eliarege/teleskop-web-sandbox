@@ -134,6 +134,19 @@
     "Group": "Reçete Grubu",
     "Desc": "Reçete Açıklaması"
   },
+  "commandTypes": {
+    "ChemicalRequest": "Kimyasal İstek Komutları",
+    "ManualChemicalRequest": "Manuel Kimyasal İstek Komutları",
+    "PaintRequest": "Boya İstek Komutları",
+    "ManualPaintRequest": "Manuel Boya İstek Komutları",
+    "ChemicalTankTransfer": "Kimyasal Kazanı Transfer Komutları",
+    "PaintTankTransfer": "Boya Kazanı Transfer Komutları",
+    "ReserveTankTransfer": "Rezerve Kazanı Transfer Komutları",
+    "SaltRequest": "Tuz İstek Komutlarıj",
+    "GenericMaterial1Request": "Jenerik Materyal 1 İstek",
+    "GenericMaterial2Request": "Jenerik Materyal 2 İstek",
+    "ManualMeasurement": "Manuel Ölçüm Komutları"
+  },
   "batchPlanParameterFields": {
     "Title": "Parametreler",
     "PlanKey": "Plan Numarası",

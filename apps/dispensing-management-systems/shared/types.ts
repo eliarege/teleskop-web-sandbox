@@ -166,6 +166,12 @@ export interface RecipeMasterStep {
   amount: number
   unit: number
 }
+export interface CommandType {
+  machineId: number
+  commandNo: number
+  commandType: number
+  commandName: string
+}
 export interface DatabaseConnection {
   client: string
   hostComputer: string

@@ -134,6 +134,19 @@
     "Group": "Recipe Group",
     "Desc": "Recipe Description"
   },
+  "commandTypes": {
+    "ChemicalRequest": "Chemical Request Commands",
+    "ManualChemicalRequest": "Manual Chemical Request Commands",
+    "PaintRequest": "Paint Request Commands",
+    "ManualPaintRequest": "Manual Paint Request Commands",
+    "ChemicalTankTransfer": "Chemical Tank Transfer Commands",
+    "PaintTankTransfer": "Paint Tank Transfer Commands",
+    "ReserveTankTransfer": "Reserve Tank Transfer Commands",
+    "SaltRequest": "Salt Request Commands",
+    "GenericMaterial1Request": "Generic Material 1 Request",
+    "GenericMaterial2Request": "Generic Material 2 Request",
+    "ManualMeasurement": "Manual Measurement Commands",
+  },
   "batchPlanParameterFields": {
     "Title": "Batch Plan Parameters",
     "PlanKey": "Plan Key",
