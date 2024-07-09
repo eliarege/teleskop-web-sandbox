@@ -17,7 +17,7 @@ interface MachineCardProps {
   washing?: boolean
   linksActive?: boolean
 }
-const props = withDefaults(defineProps<MachineCardProps>(), {
+withDefaults(defineProps<MachineCardProps>(), {
   washing: false,
 })
 function textColor(bgColor: string) {
