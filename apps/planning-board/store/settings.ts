@@ -5,19 +5,19 @@ import type { PtLocaleSettings } from '~/shared/types'
 export const useSettingStore = defineStore('settings', () => {
   const machineOrdering = useStorage<number[]>('pt-machineOrdering', [])
 
-  const settings = useStorage<PtLocaleSettings>('pt-settings', {
-    deviationColor: '#000000',
-    completedBatchColor: '#000000',
+  const settings = useStorage('pt-settings', {
+    deviationColor: '',
+    completedBatchColor: '',
     completedBatchText: 'jobOrder',
     completedBatchFabricColor: false,
-    ongoingBatchColor: '#000000',
+    ongoingBatchColor: '',
     ongoingBatchText: 'jobOrder',
     ongoingBatchFabricColor: false,
-    plannedBatchColor: '#000000',
+    plannedBatchColor: '',
     plannedBatchText: 'jobOrder',
     plannedBatchFabricColor: false,
-    showStops: { show: false, color: '#000000' },
-  })
+    showStops: { show: false, color: '' },
+  } as PtLocaleSettings)
 
   return {
     settings,

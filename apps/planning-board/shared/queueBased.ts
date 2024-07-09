@@ -1,25 +1,47 @@
-export interface QueueBasedEvents {
+export interface QueueBasedEventsBase extends BaseEvent {
+  eventType: 'planned' | 'finished'
   planKey: number
-  machineId: number
   jobOrder: string
   programNoList: string
   theoreticalDuration: number
   fabricWeight: number
-  note: string
-  color: number
+  fabricColor: number
+  isPlanned: boolean
   isDeleted: boolean
   isStarted: boolean
   isStopped: boolean
-  isPlanned: boolean
-  isFinished: boolean
+}
+export interface QueueBasedPlannedEventRaw extends QueueBasedEventsBase {
+  eventType: 'planned'
+  queueNumber: number
+  pinned: boolean
+}
+
+export interface QueueBasedActualEventRaw extends QueueBasedEventsBase {
+  eventType: 'finished'
+  batchKey: number
+  deviation: number
+}
+export interface QueueBasedStopEventRaw extends BaseEvent {
+  eventType: 'stop'
+  stopNumber: number
+  stopReason: number
+}
+
+export interface BaseEvent {
+  eventType: 'finished' | 'planned' | 'stop'
+  machineId: number
+  startTime: string
+  endTime: string
+  note: string
+}
+
+export type QueueBasedAnyEventRaw =
+  | QueueBasedPlannedEventRaw
+  | QueueBasedActualEventRaw
+  | QueueBasedStopEventRaw
+
+export type QueueBasedAnyEvent = QueueBasedAnyEventRaw & {
   isRunning: boolean
-  remainingTime: number
-  plannedStartDate?: string | Date
-  queueNumber?: number
-  pinned?: boolean
-  batchKey?: number
-  startTime?: string | Date
-  endTime?: string | Date
-  cancelTime?: string | Date
-  deviation?: number
+  isFinished: boolean
 }

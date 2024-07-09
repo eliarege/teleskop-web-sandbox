@@ -1,4 +1,4 @@
-import type { QueueBasedEvents, QueueBasedPlannedEvents } from './queueBased'
+import type { QueueBasedEventsBase } from './queueBased'
 
 export interface MachineStatus {
   id: number
@@ -104,13 +104,13 @@ export interface Recipe {
 export interface PtLocaleSettings {
   deviationColor: string
   completedBatchColor: string
-  completedBatchText: keyof QueueBasedEvents
+  completedBatchText: keyof QueueBasedEventsBase
   completedBatchFabricColor: boolean
   ongoingBatchColor: string
-  ongoingBatchText: keyof QueueBasedEvents
+  ongoingBatchText: keyof QueueBasedEventsBase
   ongoingBatchFabricColor: boolean
   plannedBatchColor: string
-  plannedBatchText: keyof QueueBasedEvents
+  plannedBatchText: keyof QueueBasedEventsBase
   plannedBatchFabricColor: boolean
   showStops: { show: boolean, color: string }
 }

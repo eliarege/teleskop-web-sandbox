@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ModelRef, PropType } from 'vue'
-import type { QueueBasedEvents } from '~/shared/queueBased'
+import type { QueueBasedAnyEvent } from '~/shared/queueBased'
 import { useSettingStore } from '~/store/settings'
 
 interface SettingsItemProps {
@@ -8,7 +8,7 @@ interface SettingsItemProps {
   dropdownOptions?: {
     id: number
     label: string
-    value: keyof QueueBasedEvents
+    value: keyof QueueBasedAnyEvent
   }[]
   checkboxText?: string
   isDeviation?: boolean
@@ -17,7 +17,7 @@ interface SettingsItemProps {
 interface Dropdown {
   id: number
   label: string
-  value: keyof QueueBasedEvents
+  value: keyof QueueBasedAnyEvent
 }
 defineProps<SettingsItemProps>()
 const store = useSettingStore()

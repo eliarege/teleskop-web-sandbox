@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { QueueBasedEvents } from '~/shared/queueBased'
+import type { QueueBasedAnyEvent } from '~/shared/queueBased'
 import { useSettingStore } from '~/store/settings'
 
 const { t } = useI18n()
@@ -23,7 +23,7 @@ const actualEventsDropdown = computed(() => [
 ] as {
   id: number
   label: string
-  value: keyof QueueBasedEvents
+  value: keyof QueueBasedAnyEvent
 }[])
 
 const plannedEventsDropdown = computed(() => [
@@ -42,7 +42,7 @@ const plannedEventsDropdown = computed(() => [
 ] as {
   id: number
   label: string
-  value: keyof QueueBasedEvents
+  value: keyof QueueBasedAnyEvent
 }[])
 </script>
 

@@ -18,41 +18,52 @@ export interface UnscheduledTasks {
  ------------------ ------------------ ------------------ ------------------
  */
 
-export interface QueueBasedEventsBase {
+export interface QueueBasedEventsBase extends BaseEvent {
+  eventType: 'planned' | 'finished'
   planKey: number
-  machineId: number
   jobOrder: string
   programNoList: string
   theoreticalDuration: number
   fabricWeight: number
-  note: string
-  color: string
+  fabricColor: string
+  isPlanned: boolean
   isDeleted: boolean
   isStarted: boolean
   isStopped: boolean
-  percentDone: number
 }
-export interface QueueBasedPlannedEventsRaw extends QueueBasedEventsBase {
-  isPlanned: true
-  plannedStartDate: string | Date
+export interface QueueBasedPlannedEventRaw extends QueueBasedEventsBase {
+  eventType: 'planned'
   queueNumber: number
   pinned: boolean
 }
 
-export interface QueueBasedActualEventsRaw extends QueueBasedEventsBase {
-  isPlanned: false
+export interface QueueBasedActualEventRaw extends QueueBasedEventsBase {
+  eventType: 'finished'
   batchKey: number
-  startTime: string | Date
-  endTime: string | Date
   deviation: number
 }
+export interface QueueBasedStopEventRaw extends BaseEvent {
+  eventType: 'stop'
+  stopNumber: number | string
+  stopReason: number | string
+}
 
-export type QueueBasedMergedEvents = (QueueBasedPlannedEventsRaw | QueueBasedActualEventsRaw)
-export type QueueBasedModifiedMergedEvents = QueueBasedMergedEvents & {
+export interface BaseEvent {
+  eventType: 'finished' | 'planned' | 'stop'
+  machineId: number
+  startTime: string
+  endTime: string
+  note: string
+}
+
+export type QueueBasedAnyEventRaw =
+  | QueueBasedPlannedEventRaw
+  | QueueBasedActualEventRaw
+  | QueueBasedStopEventRaw
+
+export type QueueBasedAnyEvent = QueueBasedAnyEventRaw & {
   isRunning: boolean
   isFinished: boolean
-  endDate: string | Date
-  remainingTime: number
 }
 /**
  ------------------ ------------------ ------------------ ------------------
