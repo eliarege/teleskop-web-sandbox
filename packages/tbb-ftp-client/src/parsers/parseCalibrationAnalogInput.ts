@@ -3,8 +3,8 @@ import type { CalibrationAnalogInput } from '../types'
 const generalPattern = /^(\d+) (\d+) (\d+) (.+)$/gm
 
 // typeZeroPattern is for if the calibration type is 0 only
-const typeZeroPattern = /^(\S+) ("[^"]*") ("[^"]*") (\S+) (d+)$/gm
-const typeNonZeroPattern = /^("[^"]*") ("[^"]*") (\S+) (.+)$/gm
+const typeZeroPattern = /^(\S+) ("[^"]*") ("[^"]*") (\S+) (.+)$/
+const typeNonZeroPattern = /^("[^"]*") ("[^"]*") (\S+) (.+)$/
 
 /**
  * **Path**: `/tbb6500/data/kalibrasyon/aikalibrasyon`
@@ -19,8 +19,7 @@ const typeNonZeroPattern = /^("[^"]*") ("[^"]*") (\S+) (.+)$/gm
  */
 export function parseCalibrationAnalogInput(content: string) {
   const inputs = []
-  let match
-  match = generalPattern.exec(content)
+  let match = generalPattern.exec(content)
 
   while (match !== null) {
     const id = Number.parseInt(match[1])
@@ -33,8 +32,8 @@ export function parseCalibrationAnalogInput(content: string) {
         const hat_rl = Number.parseInt(zeroMatches[1])
         const lowerLimitFormula = zeroMatches[2].replace(/"/g, '')
         const upperLimitFormula = zeroMatches[3].replace(/"/g, '')
-        const unit = match[4]
-        const measureValue = Number.parseInt(match[5])
+        const unit = zeroMatches[4]
+        const measureValue = Number.parseInt(zeroMatches[5])
 
         const input: CalibrationAnalogInput = {
           id,
@@ -52,10 +51,10 @@ export function parseCalibrationAnalogInput(content: string) {
     } else {
       const nonZeroMatches = typeNonZeroPattern.exec(match[4])
       if (nonZeroMatches !== null) {
-        const lowerLimitFormula = match[5].replace(/"/g, '')
-        const upperLimitFormula = match[6].replace(/"/g, '')
-        const unit = match[7]
-        const [calibrationAlarmTasks, ...rest] = match[8].split(/\s+/)
+        const lowerLimitFormula = nonZeroMatches[1]
+        const upperLimitFormula = nonZeroMatches[2]
+        const unit = nonZeroMatches[3]
+        const [calibrationAlarmTasks, ...rest] = nonZeroMatches[4].split(/\s+/)
 
         const input: CalibrationAnalogInput = {
           id,
