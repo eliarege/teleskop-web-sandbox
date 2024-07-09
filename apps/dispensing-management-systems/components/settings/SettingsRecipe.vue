@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
+import RecipeCommandsDialog from '../recipe/RecipeCommandsDialog.vue'
 import RecipeEditDialog from '../recipe/RecipeEditDialog.vue'
 import type { RecipeMaster } from '~/shared/types'
 
@@ -58,7 +59,19 @@ async function addNewRecipe() {
   )
 }
 async function onCommandsClick(row: RecipeMaster) {
-
+  q.dialog({
+    component: RecipeCommandsDialog,
+    componentProps: {
+      programNo: row.programNo,
+    },
+  }).onOk((payload: any) => {
+    if (payload) {
+      notifySuccess(t('Success'))
+      refreshRecipes()
+    } else
+      notifyFail(t('Failed'))
+  },
+  )
 }
 
 const pagination = ref({ rowsPerPage: 20 })

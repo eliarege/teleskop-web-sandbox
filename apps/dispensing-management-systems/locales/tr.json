@@ -66,6 +66,7 @@
   "Save": "Kaydet",
   "Cancel": "İptal",
   "Delete": "Sil",
+  "Other": "Diğer",
   "confirmationDialogBody": {
     "DeleteDispenser": "Bu dağıtıcıyı silmek istediğinizden emin misiniz?",
     "DeleteMachine": "Bu makineyi silmek istediğinizden emin misiniz?",
@@ -142,7 +143,9 @@
     "ChemicalTankTransfer": "Kimyasal Kazanı Transfer Komutları",
     "PaintTankTransfer": "Boya Kazanı Transfer Komutları",
     "ReserveTankTransfer": "Rezerve Kazanı Transfer Komutları",
-    "SaltRequest": "Tuz İstek Komutlarıj",
+    "PHControl": "pH Kontrol",
+    "TakeSample": "Numune Al",
+    "SaltRequest": "Tuz İstek Komutları",
     "GenericMaterial1Request": "Jenerik Materyal 1 İstek",
     "GenericMaterial2Request": "Jenerik Materyal 2 İstek",
     "ManualMeasurement": "Manuel Ölçüm Komutları"
