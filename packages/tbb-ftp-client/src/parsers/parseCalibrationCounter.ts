@@ -15,7 +15,7 @@ export function parseCalibrationCounter(content: string) {
     const input = {
       id: Number.parseInt(match[1]),
       format: Number.parseInt(match[2]),
-      unit: Number.parseInt(match[3]),
+      unit: match[3],
       pulse: Number.parseInt(match[4]),
     }
     inputs.push(input)
