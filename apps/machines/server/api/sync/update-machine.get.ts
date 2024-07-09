@@ -50,6 +50,8 @@ export default defineEventHandler(async (event) => {
             { func: () => updateDigitalOutputs(numMachineId, tbb, trx), message: 'digital outputs updated' },
             // sayac
             { func: () => updateCounters(numMachineId, tbb, trx), message: 'counters updated' },
+            // machine params
+            { func: () => updateMachineParameters(numMachineId, tbb, trx), message: 'machine params updated' },
             // commands general
             { func: () => updateCommandsGeneral(numMachineId, tbb, trx), message: 'general commands updated' },
             // commands params
@@ -76,8 +78,6 @@ export default defineEventHandler(async (event) => {
             { func: () => updateConsumption(numMachineId, tbb, trx), message: 'consumptions updated' },
             // erp params
             { func: () => updateERPParams(numMachineId, tbb, trx), message: 'ERP params updated' },
-            // machine params
-            { func: () => updateMachineParameters(numMachineId, tbb, trx), message: 'machine params updated' },
             // icons
             { func: () => updateIcons(numMachineId, tbb, trx), message: 'icons updated' },
             // archives

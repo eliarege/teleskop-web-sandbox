@@ -244,21 +244,37 @@ export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient
   const commands = await tbb.fetchCommandsGeneral()
   if (!commands.length)
     return false
-  const data = commands.map(d => ({
-    COMMANDNO: d.commandNo,
-    NAME: d.name,
-    TBBFUNTIONNAME: d.tbbFunctionName,
-    ICON: d.icon,
-    COMMANDTYPE: d.commandType,
-    ISRUNMANUAL: d.isRunManual,
-    MOVEPARALLEL: d.moveParallel,
-    GROUPID: d.groupId,
-    MACHINEID: machineId,
-    ACTIVATED: (d.activated === 1 && d.machineConstantId && d.machineConstantId !== -1) ? 1 : 0,
-    ISDELETED: 0,
-    ISCHANGED: 1,
-    FUNCTIONID: 0,
-  }))
+
+  const paramValues = await trx('BFMACHPARAMETERS')
+    .select({
+      machineParameterId: 'MACHINEPARAMETERID',
+      currentValue: 'currentValue',
+    })
+    .where('MACHINEID', machineId)
+
+  const data = commands.map((d) => {
+    const activated = (d.activated === 1 && d.machineConstantId && d.machineConstantId !== -1)
+      ? paramValues.find(p => p.machineParameterId === d.machineConstantId)?.currentValue
+      : 0
+
+    return {
+      COMMANDNO: d.commandNo,
+      NAME: d.name,
+      TBBFUNTIONNAME: d.tbbFunctionName,
+      ICON: d.icon,
+      COMMANDTYPE: d.commandType,
+      ISRUNMANUAL: d.isRunManual,
+      MOVEPARALLEL: d.moveParallel,
+      GROUPID: d.groupId,
+      MACHINEID: machineId,
+      ACTIVATED: activated,
+      ISDELETED: 0,
+      ISCHANGED: 1,
+      FUNCTIONID: 0,
+      CHANGETIME: trx.fn.now(),
+      TBBCHANGETIME: trx.fn.now(),
+    }
+  })
 
   return await replaceRecords(trx, 'BFMASTERCOMMANDS', data, { MACHINEID: machineId })
 }
@@ -294,17 +310,21 @@ export async function updateMachineParameters(machineId: number, tbb: TbbFtpClie
   const parameters = await tbb.fetchMachineParameters()
   if (!parameters.length)
     return false
+
+  const paramValues = await tbb.fetchMachineParameterValues()
+
   const machineParameters = parameters?.map(d => ({
     MACHINEID: machineId,
     MACHINEPARAMETERID: d.machineParameterId,
     PARAMSTRING: d.paramString,
     DEFAULTVALUE: d.defaultValue,
-    dmArea: 9100,
-    consScreen: 1,
+    dmArea: d.dmArea,
+    consScreen: d.consScreen,
     PARAMLOWLIMIT: d.paramLowLimit,
     PARAMHIGHLIMIT: d.paramHighLimit,
-    consFormat: 0,
-    consUnit: 0,
+    consFormat: d.consFormat,
+    consUnit: d.consUnit,
+    currentValue: paramValues.find(p => p.machineParameterId === d.machineParameterId)?.currentValue,
   }))
 
   return await replaceRecords(trx, 'BFMACHPARAMETERS', machineParameters, { MACHINEID: machineId })
@@ -342,7 +362,7 @@ export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient
     RETURNVALUEINDEX: Number.parseInt(c.pvNo.split(' ')[1]) - 1,
     RETURNVALUENAME: c.returnValueName,
     CANSHOW: c.canShow,
-    SPRELATION: c.SPRelation,
+    SPRELATION: c.SPRelation - 1,
   }))
 
   return await replaceRecords(trx, 'BFMASTERCOMMANDRETURNVALUES', data, { MACHINEID: machineId })
@@ -418,7 +438,7 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
       ISCOMMANDVARIABLE: false,
       TBBFORMUL: !!c.paramFormula,
       USEFORMULA: c.binding === 5,
-      PARAMETERINDEX: Number.parseInt(c.name.split(' ')[1]),
+      PARAMETERINDEX: Number.parseInt(c.name.split(' ')[1]) - 1,
     }
   })
 
