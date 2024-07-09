@@ -473,8 +473,26 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
     const alarmObj = functionAlarms.find(a => a.f === functionName)
 
     if (alarmObj) {
-      const alarmTypeIndex = Object.keys(alarmObj)
-        .findIndex(key => alarmObj[key as keyof FunctionAlarm]?.includes(String(c.alarmNo))) + 1
+      const alarmType = Object.keys(alarmObj)
+        .find(key => alarmObj[key as keyof FunctionAlarm]?.includes(String(c.alarmNo)))
+
+      let alarmTypeIndex
+      switch (alarmType) {
+        case 's':
+          alarmTypeIndex = 0
+          break
+        case 'e':
+          alarmTypeIndex = 1
+          break
+        case 'o':
+          alarmTypeIndex = 2
+          break
+        case 'm':
+          alarmTypeIndex = 3
+          break
+        default:
+          break
+      }
 
       commandsAlarmsInserts.push({
         MACHINEID: machineId,
