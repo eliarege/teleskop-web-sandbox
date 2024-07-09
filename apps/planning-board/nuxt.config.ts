@@ -2,7 +2,7 @@ import string from '@teleskop/rollup-plugin-string'
 
 export default defineNuxtConfig({
   ssr: false,
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   extends: ['@teleskop/nuxt-base'],
   runtimeConfig: {
     planningEngineUrl: 'http://localhost:3500',
