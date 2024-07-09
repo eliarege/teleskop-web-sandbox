@@ -567,7 +567,7 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
         SELECTEDIOID: c.ioId,
         ISDEFAULT: c.isDefault,
         MODEL: 'MODEL',
-        EXTENTION: 'EXTENTION',
+        EXTENTION: 'EXTENSION',
       })
     }
   }
@@ -771,9 +771,9 @@ export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient
       FORMAT: d.format,
       UNITTEXT: d.unitText,
       PARAMETERID: d.parameterId,
-      SELECTIONLIST: JSON.stringify(d.selectionList),
-      SELECTIONVALUES: JSON.stringify(d.selectionValues),
-      SELECTIONLISTDEFAULT: JSON.stringify(d.selectionListDefault),
+      SELECTIONLIST: d.selectionList.length ? JSON.stringify(d.selectionList) : 'YOK',
+      SELECTIONVALUES: d.selectionValues.length ? JSON.stringify(d.selectionValues) : 'YOK',
+      SELECTIONLISTDEFAULT: d.selectionListDefault.length ? JSON.stringify(d.selectionListDefault) : null,
       BATCHPLANNING: false,
       BATCHSTART: true,
       RECIPE: false,
