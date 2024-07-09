@@ -1,7 +1,8 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, Grid, GridConfig, SchedulerEventModel, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { Combo, DateHelper, EventStore, LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
+import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
+import { LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
+import { useDocumentVisibility } from '@vueuse/core'
 import { addDays, addHours } from 'date-fns'
 import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import { useDocumentVisibility, useStorage } from '@vueuse/core'
@@ -9,12 +10,14 @@ import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } fr
 import type { QueueBasedEvents } from '~/shared/queueBased'
 import type { MachineStatus, PtLocaleSettings, UnplannedEvents } from '~/shared/types'
 import { eventTooltip } from '~/composables/helper'
+import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
+import type { QueueBasedAnyEvent } from '~/shared/queueBased'
+import type { MachineStatus, UnplannedEvents } from '~/shared/types'
 import { useSettingStore } from '~/store/settings'
 
 const { t, locale, d } = useI18n()
 const visibility = useDocumentVisibility()
 const config = useRuntimeConfig()
-
 const refreshInterval = 60_000
 const today = new Date()
 const startDate = ref(today.toISOString())
@@ -24,19 +27,19 @@ const schedulerDateModel = ref({
   to: endDate.value,
 })
 const store = useSettingStore()
-
 const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatus[]>('/api/machineList', {
   lazy: true,
   default: () => [],
   transform: unsortedMachines => sortMachines(unsortedMachines),
 })
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
-const { data: events, refresh: eventRefresh, pending: eventsPending } = await useFetch<QueueBasedEvents[]>('/api/queueBased/schedulerEvents', {
+const { data: events, refresh: eventRefresh, pending: eventsPending } = await useFetch<QueueBasedAnyEvent[]>('/api/queueBased/schedulerEvents', {
   immediate: false,
   default: () => [],
   query: {
     startDate,
     endDate,
+    includeStops: store.settings.showStops.show,
   },
 })
 const showModal = reactive({
@@ -81,7 +84,6 @@ const showModal = reactive({
   rule: false,
   settings: false,
 })
-
 const sortIndex = Symbol('sortIndex')
 
 type MachineStatusWithSortIndex = MachineStatus & { [sortIndex]?: number }
@@ -103,24 +105,84 @@ function sortMachines(machines: MachineStatusWithSortIndex[]): MachineStatusWith
     return aIndex - bIndex
   })
 }
+function setFabricColor(event: QueueBasedAnyEvent) {
+  const {
+    plannedBatchFabricColor,
+    ongoingBatchFabricColor,
+    completedBatchFabricColor,
+    plannedBatchColor,
+    ongoingBatchColor,
+    completedBatchColor,
+    showStops,
+  } = store.settings
+  if (event.eventType === 'planned') {
+    return plannedBatchFabricColor ? integerToHex(event.fabricColor) : plannedBatchColor
+  }
+  if (event.eventType === 'finished') {
+    if (event.isRunning) {
+      return ongoingBatchFabricColor ? integerToHex(event.fabricColor) : ongoingBatchColor
+    } return completedBatchFabricColor ? integerToHex(event.fabricColor) : completedBatchColor
+  }
+  return showStops.color
+}
+
+type Values<T> = T[keyof T]
+
+function isDate(value: any): boolean | any {
+  if (/^\d+$/.test(value)) {
+    return false
+  }
+  if (typeof value === 'string') {
+    const date = new Date(value)
+    return !Number.isNaN(date.getTime())
+  }
+  return value instanceof Date && !Number.isNaN(value.getTime())
+}
+
+function setEventName(event: QueueBasedAnyEvent): Values<QueueBasedAnyEvent> {
+  const plannedBatchText = store.settings.plannedBatchText || 'jobOrder'
+  const completedBatchText = store.settings.completedBatchText || 'jobOrder'
+  const ongoingBatchText = store.settings.ongoingBatchText || 'jobOrder'
+
+  if (event.eventType === 'planned') {
+    const formattedText = isDate(event[plannedBatchText]) ? d(event[plannedBatchText], 'datetime') : event[plannedBatchText]
+    return formattedText
+  }
+  if (event.eventType === 'finished') {
+    if (event.isStarted && !event.isFinished) {
+      const formattedText = isDate(event[ongoingBatchText]) ? d(event[ongoingBatchText], 'datetime') : event[ongoingBatchText]
+      return formattedText
+    } else {
+      const formattedText = isDate(event[completedBatchText]) ? d(event[completedBatchText], 'datetime') : event[completedBatchText]
+      return formattedText
+    }
+  } else {
+    return ' '
+  }
+}
+function setId(event: QueueBasedAnyEvent) {
+  switch (event.eventType) {
+    case 'finished':
+      return event.batchKey
+    case 'planned':
+      return event.planKey
+    case 'stop':
+      return `stop-${event.stopNumber}`
+  }
+}
 const modifiedEvents = computed(() => {
-  return events.value.map((event: QueueBasedEvents) => {
-    const batchText = store.settings.plannedBatch.batchText?.value || 'jobOrder'
-    const completedBatchText = store.settings.completedBatch.batchText?.value || 'jobOrder'
-    const ongoingBatchText = store.settings.ongoingBatch.batchText?.value || 'jobOrder'
+  return events.value.map((ev) => {
     return {
-      ...event,
-      startDate: event.isPlanned ? event.plannedStartDate : event.startTime,
-      id: event.isPlanned ? event.planKey : event.batchKey,
-      name: !event.isStarted
-        ? event[batchText]
-        : !event.isFinished
-            ? event[ongoingBatchText]
-            : event[completedBatchText],
-      resourceId: event.machineId,
+      ...ev,
+      startDate: ev.startTime,
+      endDate: ev.endTime,
+      resourceId: ev.machineId,
       resizable: false,
-      draggable: !event.isStarted && !event.pinned,
+      draggable: ev.eventType === 'planned' && !ev.pinned,
       editable: false,
+      name: setEventName(ev),
+      id: setId(ev),
+      eventColor: setFabricColor(ev),
     }
   })
 })
@@ -128,7 +190,6 @@ const modifiedEvents = computed(() => {
 const scrollStore = new Store({
   data: modifiedEvents.value,
 })
-
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((unp) => {
   return {
     ...unp,
@@ -175,12 +236,15 @@ async function machineReload() {
   scheduler.refreshRows()
 }
 
-watch(modifiedEvents, (newVal: QueueBasedEvents[]) => {
+watch(modifiedEvents, (newVal: QueueBasedAnyEvent[]) => {
   scheduler.events = newVal
   scrollStore.data = newVal
 })
 watch(modifiedUnscheduledEvents, (newVal: UnplannedEvents[]) => {
   grid.store.data = newVal
+})
+watch(() => store.settings.showStops.show, async (newVal: boolean) => {
+  await refreshScheduler()
 })
 function initialGridColumns() {
   const columnNames = Object.keys(modifiedUnscheduledEvents.value[0].erpParameters)
@@ -282,28 +346,30 @@ onMounted(async () => {
     },
     eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
-      if (eventRecord.originalData.pinned) {
-        icons.push('b-fa b-fa-solid b-fa-thumbtack')
-      }
-      if (eventRecord.originalData.isDeviation) {
-        icons.push('b-fa b-fa-solid b-fa-clock')
-      }
-      if (eventRecord.originalData.isFinished) {
-        icons.push('b-fa b-fa-solid b-fa-flag-checkered')
-      } else {
-        if (eventRecord.originalData.isRunning) {
-          icons.push('b-fa b-fa-solid b-fa-play')
-        } else if (eventRecord.originalData.isStopped) {
-          icons.push('b-fa b-fa-solid b-fa-stop')
-        } else {
-          icons.push('b-fa b-fa-solid b-fa-list-check')
+      if (eventRecord.originalData.eventType !== 'stop') {
+        if (eventRecord.originalData.pinned) {
+          icons.push('b-fa b-fa-solid b-fa-thumbtack')
         }
-      }
-      if (eventRecord.originalData.isAlarm) {
-        icons.push('b-fa b-fa-solid b-fa-bell')
-      }
-      if (eventRecord.originalData.isDeleted) {
-        icons.push('b-fa b-fa-solid b-fa-ban')
+        if (eventRecord.originalData.isDeviation) {
+          icons.push('b-fa b-fa-solid b-fa-clock')
+        }
+        if (eventRecord.originalData.isFinished) {
+          icons.push('b-fa b-fa-solid b-fa-flag-checkered')
+        } else {
+          if (eventRecord.originalData.isRunning) {
+            icons.push('b-fa b-fa-solid b-fa-play')
+          } else if (eventRecord.originalData.isStopped) {
+            icons.push('b-fa b-fa-solid b-fa-stop')
+          } else {
+            icons.push('b-fa b-fa-solid b-fa-list-check')
+          }
+        }
+        if (eventRecord.originalData.isAlarm) {
+          icons.push('b-fa b-fa-solid b-fa-bell')
+        }
+        if (eventRecord.originalData.isDeleted) {
+          icons.push('b-fa b-fa-solid b-fa-ban')
+        }
       }
 
       const iconClass = icons.map(icon => `<i class="${icon}"></i>`).join('')
@@ -366,6 +432,7 @@ onMounted(async () => {
     ],
     features: {
       sort: false,
+      stripe: true,
       percentBar: {
         allowResize: false,
         showPercentage: false,
@@ -826,8 +893,8 @@ div[bgGreen] {
 .b-selected {
   background-color: inherit !important;
   opacity: 1 !important;
+  @apply !rounded-9px;
 }
-
 #main {
   display: flex;
   flex-direction: row;
@@ -837,57 +904,19 @@ div[bgGreen] {
 #main .b-resourceheader {
   height: 100%;
 }
-
+.b-sch-event{
+  @apply !rounded-9px;
+}
 .b-timeline-subgrid .b-sch-current-time {
   border: 1px solid red !important
 }
-
-.b-sch-event-wrap.b-nested-events-parent[data-level="1"]>.b-sch-event:hover>.b-nested-events-container {
-  border-color: #555;
-  background-color: rgba(0, 0, 0, 0.0666666667);
-}
-
-.b-sch-event {
-  border-radius: 9px !important;
-}
-
-.b-sch-event-content {
-  white-space: normal;
-}
-
+/*.b-sch-event:not(.b-sch-event-selected) .b-sch-event-content{
+  filter:brightness(0.8);
+}*/
 .custom-focus {
   filter: invert(60%);
 }
 .b-task-percent-bar-outer {
-  @apply !rounded-9px !overflow-hidden;
+  @apply !rounded-9px !overflow-hidden e-border;
 }
 </style>
-
-<i18n lang="json">
-{
-  "en": {
-    "alarm-count": "Total Alarm Count",
-    "ctx-menu": {
-      "task-edit": "Update Job Order",
-      "task-delete": "Delete Job Order",
-      "remove-plan": "Remove From Plan",
-      "properties": "Job Order Properties",
-      "pin": "Pin Task",
-      "unpin": "Unpin Task",
-      "change-color": "Change Job Order Color"
-    }
-  },
-  "tr": {
-    "alarm-count": "Toplam Alarm",
-    "ctx-menu": {
-      "task-edit": "İş Emrini Güncelle",
-      "task-delete": "İş Emrini Sil",
-      "remove-plan": "Plandan Kaldır",
-      "properties": "İş Emri Özellikleri",
-      "pin": "İş Emrini Sabitle",
-      "unpin": "İş Emri Sabitlemesini Kaldır",
-      "change-color": "İş Emri Rengini Değiştir"
-    }
-  }
-}
-</i18n>

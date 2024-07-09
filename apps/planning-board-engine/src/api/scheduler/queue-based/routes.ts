@@ -1,5 +1,4 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import { generateEventDates } from '../../../composables/helper'
 import type {
   EventReschedule,
 } from './queries'
@@ -14,11 +13,12 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
     '/queue_based/scheduler_events',
     async (request: FastifyRequest<{
-      Querystring: { startDate: string, endDate: string }
+      Querystring: { startDate: string, endDate: string, includeStops: string }
     }>, reply) => {
       try {
-        const { startDate, endDate } = request.query
-        const plannedEvents = (await getQueueBasedEvents(startDate, endDate))
+        const { startDate, endDate, includeStops } = request.query
+        const stopsIncluded: boolean = JSON.parse(includeStops.toLowerCase())
+        const plannedEvents = (await getQueueBasedEvents(startDate, endDate, stopsIncluded))
         return reply.code(200).send(plannedEvents)
       } catch (err) {
         fastify.log.error(`An error occured while fetching planned events: ${err}`)

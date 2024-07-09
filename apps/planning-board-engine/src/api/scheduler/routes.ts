@@ -1,5 +1,4 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import { compressJson } from '../../composables/helper'
 import {
   addBatchNote,
   addErpParameters,
@@ -21,6 +20,7 @@ import {
   getUnplannedColumns,
   getUnplannedEvents,
   pinEvent,
+  planningBoardStops,
   removeErpParameter,
   removeFromPlan,
   scheduleEvents,
@@ -41,6 +41,17 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching pt status: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching pt status: ${err}` })
+      }
+    },
+  )
+  fastify.get(
+    '/planning_board/stops',
+    async (request: FastifyRequest<{ Querystring: { startDate: string, endDate: string } }>, reply) => {
+      try {
+        const { startDate, endDate } = request.query
+        return await planningBoardStops(startDate, endDate)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching stops:`, err)
       }
     },
   )

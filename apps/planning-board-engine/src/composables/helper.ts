@@ -1,6 +1,6 @@
-import { addSeconds } from 'date-fns'
+import { addMinutes, addSeconds } from 'date-fns'
 import { v4 } from 'uuid'
-import type { QueueBasedMergedEvents, QueueBasedModifiedMergedEvents, QueueBasedPlannedEventsRaw, UnscheduledTasks } from '../../types/planning-board'
+import type { QueueBasedAnyEvent, QueueBasedAnyEventRaw, QueueBasedStopEventRaw, UnscheduledTasks } from '../../types/planning-board'
 import { knex } from '../knexConfig'
 
 export function generateClientId() {
@@ -8,51 +8,6 @@ export function generateClientId() {
 }
 export function calculateDeviation(actualStartTime: string, plannedStartTime: string) {
   return new Date(actualStartTime).getTime() - new Date(plannedStartTime).getTime()
-}
-export function generateEventDates(events: any[]): Event[] {
-  const updatedEvents: Event[] = []
-
-  for (let i = 0; i < events.length; i++) {
-    const event = events[i]
-
-    let startDate: Date
-    let endDate: Date
-
-    if (event.queueNumber === 1 || i === 0 || event.machineId !== events[i - 1].machineId) {
-      // NOTE: Acil test gerekli. Bir task başladığı zaman tam olarak neler olduğunu
-      // bilmediğim için doğru yapamamış olma ihtimalim yüksek!
-      // Özellikle task bittikten sonra hala daha planlanmış eventler içinde gözükebilir.
-      // Buda archive durumunu karıştırır.
-      if (event.isStarted) {
-        startDate = event.startDate
-        if (event.isFinished) {
-          endDate = event.endDate
-        } else {
-          endDate = addSeconds(startDate, event.theoreticalDuration)
-          if (endDate.getTime() < new Date().getTime()) {
-            endDate = new Date()
-          }
-        }
-      } else {
-        startDate = new Date()
-        endDate = addSeconds(startDate, event.theoreticalDuration)
-      }
-    } else {
-      const previousEndDate = updatedEvents[updatedEvents.length - 1].endDate
-      startDate = new Date(previousEndDate.getTime() + 5 * 60 * 1000)
-      endDate = addSeconds(startDate, event.theoreticalDuration)
-    }
-
-    const updatedEvent: Event = {
-      ...event,
-      startDate,
-      endDate,
-    }
-
-    updatedEvents.push(updatedEvent)
-  }
-
-  return updatedEvents
 }
 export async function compressJson(data: UnscheduledTasks[]) {
   const columns = Object.keys(data[0])
@@ -68,46 +23,125 @@ export async function hasNote(jobOrder: string): Promise<boolean> {
     }).where('JOBORDER', '=', jobOrder)
   return note.some(i => i.showOnScreen === true)
 }
+export function a(events: QueueBasedAnyEventRaw[], machines: number[], includeStops: boolean): QueueBasedAnyEvent[] {
+  const modifiedEvents = setStopTimes(events).map((event) => {
+    const isRunning = event.eventType !== 'stop' && (event.isStarted && !event.isStopped)
+    const isFinished = event.eventType === 'finished' && (event.isStarted && event.isStopped)
+    const isPlanned = event.eventType === 'planned'
+    if (includeStops && event.eventType === 'stop') {
+      return {
+        ...event,
+        isPlanned,
+        isRunning: false,
+        isFinished: false,
+      } as QueueBasedAnyEvent
+    }
+    return {
+      ...event,
+      isPlanned,
+      isRunning,
+      isFinished,
+    } as QueueBasedAnyEvent
+  })
 
-export async function queueBasedEventStatus(events: QueueBasedMergedEvents[], machines: number[]) {
-  const modifiedEvents: QueueBasedModifiedMergedEvents[] = events.map((event) => {
-    const elapsedTime = event.isPlanned ? 0 : event.isStarted ? (new Date().getTime() - new Date(event.startTime).getTime()) / 1000 : 0
+  const runningEvents = events.filter(ev => ev.eventType !== 'stop' && (ev.isStarted && !ev.isStopped))
+  for (const event of runningEvents) {
+    addSeconds(event.endTime, -30)
+    addSeconds(event.endTime, -30)
+  }
+  return modifiedEvents
+}
+export function queueBasedEventStatus(events: QueueBasedAnyEventRaw[], includeStops: boolean): QueueBasedAnyEvent[] {
+  if (includeStops) {
+    const stops = events.filter(ev => ev.eventType === 'stop')
+    const modifiedEvents = setStopTimes(events, stops)
+    return modifiedEvents.map((event) => {
+      const isRunning = event.eventType !== 'stop' && (event.isStarted && !event.isStopped)
+      const isFinished = event.eventType === 'finished' && (event.isStarted && event.isStopped)
+      const isPlanned = event.eventType === 'planned'
 
-    const isFinished = event.isPlanned
-      ? false
-      : event.isStarted
-        ? event.endTime !== null
-        : false
-    const isRunning = !event.isPlanned && !isFinished
+      if (event.eventType === 'stop') {
+        return {
+          ...event,
+          isPlanned,
+          isRunning: false,
+          isFinished: false,
+        } as QueueBasedAnyEvent
+      }
+      return {
+        ...event,
+        isPlanned,
+        isRunning,
+        isFinished,
+      } as QueueBasedAnyEvent
+    })
+  }
 
-    const endDate = event.isPlanned
-      ? addSeconds(event.plannedStartDate, event.theoreticalDuration)
-      : event.endTime === null
-        ? addSeconds(event.startTime, event.theoreticalDuration) < new Date() ? new Date() : addSeconds(event.startTime, event.theoreticalDuration)
-        : event.endTime
+  const runningEvents = events.filter(ev => ev.eventType !== 'stop' && (ev.isStarted && !ev.isStopped))
+  for (const event of runningEvents) {
+    addSeconds(event.endTime, -30)
+    addSeconds(event.endTime, -30)
+  }
+  return events.map((event) => {
+    const isRunning = event.eventType !== 'stop' && (event.isStarted && !event.isStopped)
+    const isFinished = event.eventType === 'finished' && (event.isStarted && event.isStopped)
+    const isPlanned = event.eventType === 'planned'
+
     return {
       ...event,
       isRunning,
       isFinished,
-      endDate,
-      remainingTime: event.isPlanned ? 0 : Math.max((event.theoreticalDuration - elapsedTime) + 300, 300),
-    }
+      isPlanned,
+    } as QueueBasedAnyEvent
   })
-  for (const machineId of machines) {
-    const runningEvent = modifiedEvents.find(ev => ev.machineId === machineId && ev.isRunning)
-    if (runningEvent) {
-      for (const event of modifiedEvents) {
-        if (event.isPlanned && machineId === event.machineId) {
-          postponeEvent(event, runningEvent.remainingTime)
+}
+export function setStopTimes(events: QueueBasedAnyEventRaw[], stops: QueueBasedAnyEventRaw[]): QueueBasedAnyEventRaw[] {
+  const nonStopEvents = events.filter(ev => ev.eventType !== 'stop')
+  const stopEvents: QueueBasedStopEventRaw[] = []
+
+  nonStopEvents.sort((a, b) => {
+    if (a.machineId === b.machineId) {
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    }
+    return a.machineId - b.machineId
+  })
+
+  let stopCounter = 1
+
+  for (let i = 0; i < nonStopEvents.length - 1; i++) {
+    const currentEvent = nonStopEvents[i]
+    const nextEvent = nonStopEvents[i + 1]
+
+    if (currentEvent.machineId === nextEvent.machineId) {
+      const currentEndTime = new Date(currentEvent.endTime)
+      const nextStartTime = new Date(nextEvent.startTime)
+      if ((nextStartTime.getTime() - currentEndTime.getTime()) > 300000) {
+        if (currentEndTime < nextStartTime) {
+          const inBetweenStops = stops.filter(s =>
+            s.machineId === currentEvent.machineId
+            && new Date(s.startTime) >= currentEndTime
+            && new Date(s.endTime) <= nextStartTime,
+          )
+
+          let note = 'Auto-generated stop event'
+          if (inBetweenStops.length > 0) {
+            note = inBetweenStops.map(s => s.note).join(', ')
+          }
+
+          stopEvents.push({
+            eventType: 'stop',
+            machineId: currentEvent.machineId,
+            stopNumber: `generated-${stopCounter}`,
+            stopReason: `generated-${stopCounter}`,
+            startTime: currentEvent.endTime,
+            endTime: nextEvent.startTime,
+            note,
+          })
+          stopCounter++
         }
       }
     }
   }
-  return modifiedEvents
-}
 
-export function postponeEvent(event: QueueBasedModifiedMergedEvents & { isPlanned: true }, remainingTime: number) {
-  event.plannedStartDate = addSeconds(event.plannedStartDate, remainingTime)
-  event.endDate = addSeconds(event.plannedStartDate, event.theoreticalDuration)
-  return event
+  return [...nonStopEvents, ...stopEvents]
 }

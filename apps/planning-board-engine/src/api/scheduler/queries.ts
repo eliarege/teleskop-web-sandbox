@@ -11,6 +11,23 @@ export async function getPtStatus() {
     return res[0].value
   }
 }
+export async function planningBoardStops(startDate: string, endDate: string) {
+  const stops = await knex({ b: 'BASTOPS' }).select({
+    machineId: 'b.MACHINEID',
+    stopNumber: 'b.STOPNUMBER',
+    stopReason: 'b.STOPREASON',
+    startTime: 'b.STARTTIME',
+    endTime: 'b.ENDTIME',
+    note: 'b.EXPLANATION',
+  }).whereBetween('b.STARTTIME', [startDate, endDate])
+
+  return stops.map(st => ({
+    ...st,
+    id: `stop-${st.stopNumber}`,
+    isStop: true,
+    eventType: 'stop',
+  })).filter(stop => stop.stopReason >= 0)
+}
 export async function getUnplannedEvents() {
   const events = await knex('dbo.DYBFBATCHPLAN as P')
     .select({
