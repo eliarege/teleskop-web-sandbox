@@ -1,6 +1,6 @@
-import type { Knex } from "knex"
+import type { Knex } from 'knex'
 
-export async function batchInsert(knex: Knex, data: any[], batchSize: number, tableName: string, colName: string) {
+export async function batchInsert(knex: Knex, data: any[], batchSize: number, tableName: string, colName?: string) {
   const totalRows = data.length
   const numBatches = Math.ceil(totalRows / batchSize)
   await useTransaction(knex, async (trx) => {
@@ -9,19 +9,19 @@ export async function batchInsert(knex: Knex, data: any[], batchSize: number, ta
       const end = Math.min((i + 1) * batchSize, totalRows)
       const batch = data.slice(start, end)
 
-      // Generate the SQL query for batch insertion with ON CONFLICT DO UPDATE
       const insertQuery = trx(tableName)
         .insert(batch)
         .toQuery()
+      if (colName) {
+        const conflictUpdateFields = Object.keys(batch[0])
+          .map(key => `"${key}" = EXCLUDED."${key}"`)
+          .join(', ')
 
-      const conflictUpdateFields = Object.keys(batch[0])
-        .map(key => `"${key}" = EXCLUDED."${key}"`) // Map each field to "field = EXCLUDED.field"
-        .join(', ')
-
-      const onConflictUpdateQuery = `${insertQuery} ON CONFLICT (${colName}) DO UPDATE SET ${conflictUpdateFields}`
-
-      // Execute the query
-      await trx.raw(onConflictUpdateQuery)
+        const onConflictUpdateQuery = `${insertQuery} ON CONFLICT (${colName}) DO UPDATE SET ${conflictUpdateFields}`
+        await trx.raw(onConflictUpdateQuery)
+      } else {
+        await trx.raw(insertQuery)
+      }
     }
   })
 }

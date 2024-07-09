@@ -15,6 +15,13 @@ const commandTypeParams = {
   commandType: 'commandType',
   commandNo: 'commandNo'
 }
+const commandStepParams = {
+  machineId: 'MACHINEID',
+  programNo: 'PROGNO',
+  mainStep: 'MAINSTEP',
+  parallelStep: 'PARALELSTEP',
+  commandNo: 'COMMANDNO'
+}
 
 export default defineEventHandler(async () => {
   try {
@@ -26,7 +33,9 @@ export default defineEventHandler(async () => {
       .select(masterCommandParams)
     const commandTypes = await teleskopDB('dbo.BFCOMMANDTYPES')
       .select(commandTypeParams)
-    $fetch('/api/teleskop/sync/machines', { method: 'POST', body: { machines, masterCommands, commandTypes } })
+    const commandSteps = await teleskopDB('dbo.BFMASTERSTEPS')
+      .select(commandStepParams)
+    $fetch('/api/teleskop/sync/machines', { method: 'POST', body: { machines, masterCommands, commandTypes, commandSteps } })
   } catch (e) {
     console.log(e)
     return e
