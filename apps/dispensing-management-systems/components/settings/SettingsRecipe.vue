@@ -63,6 +63,7 @@ async function onCommandsClick(row: RecipeMaster) {
     component: RecipeCommandsDialog,
     componentProps: {
       programNo: row.programNo,
+      recipeName: row.recipeName
     },
   }).onOk((payload: any) => {
     if (payload) {

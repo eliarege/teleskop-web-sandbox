@@ -2,6 +2,9 @@
 import type { CommandType } from '~/shared/types'
 
 const props = defineProps({
+  recipeName: {
+    type: String,
+  },
   programNo: {
     type: Number,
     required: true,
@@ -70,7 +73,10 @@ async function getCommands() {
     full-width
     @hide="onDialogHide"
   >
-    <QCard flex>
+    <QCard flex flex-col>
+      <div class="text-center pt-5 text-xl">
+        <h2>{{ $props.recipeName }}</h2>
+      </div>
       <QCardSection class="inline-grid grid-cols-5 gap-3 ml-8">
         <div
           v-for="item in commandTypeMaps"
@@ -84,11 +90,9 @@ async function getCommands() {
             <QItem
               v-for="(element) in item.ref"
               :key="element.commandNo"
-              :data-command-no="element.commandNo"
-              :data-command-name="element.commandName"
             >
               <QItemSection>
-                {{ `${element.commandNo} ${element.commandName}` }}
+                {{ `${element.commandNo} - ${element.commandName}` }}
               </QItemSection>
             </QItem>
           </QList>
