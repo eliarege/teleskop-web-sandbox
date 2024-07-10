@@ -12,58 +12,12 @@ import {
   Toast,
   Tooltip,
 } from '@bryntum/schedulerpro-trial'
+
 import { addMinutes, addSeconds } from 'date-fns'
 import { io } from 'socket.io-client'
+import { enLocalization, trLocalization } from './localization'
 import { integerToHex } from '~/composables/helper'
 
-const trLocalization = {
-  Object: {
-    planparam: 'Plan Parametreleri',
-    recipe: 'Reçete',
-    process: 'Prosess Bilgileri',
-    theoretical: 'Teorik Program',
-    settings: 'Ayarlar',
-    note: 'Notlar',
-    datepicker: 'Tarih',
-    rules: 'Kurallar',
-    zoomin: 'Yakınlaştır',
-    zoomout: 'Uzaklaştır',
-    resetZoom: 'Yakınlaştırmayı sıfırla',
-    search: 'İş Emri Arama',
-    scheduleConflict: 'Bu iş emrini bu makineye planlayamazsın!',
-    beforeNow: 'İş emrini güncel zamandan önceye planlayamazsın!',
-    program: 'Programlar eşleşmiyor!',
-    unassign: 'Planlanmamış İş Emirleri',
-    machine: 'Makine İsmi',
-    unassign: 'Planlanmamış İş Emirleri',
-    scrollToEvent: 'İş Emrine Git',
-    test: 'AMK',
-  },
-}
-const enLocalization = {
-  Object: {
-    planparam: 'Plan Parameters',
-    recipe: 'Recipe',
-    process: 'Process Information',
-    theoretical: 'Theoretical Program',
-    settings: 'Settings',
-    note: 'Notes',
-    datepicker: 'Date Picker',
-    rules: 'Rules',
-    zoomin: 'Zoom in',
-    zoomout: 'Zoom Out',
-    resetZoom: 'Reset Zoom',
-    search: 'Job Order Search',
-    scheduleConflict: 'Event can\'t be scheduled on this machine!',
-    beforeNow: 'You can not schedule this event before current time!',
-    program: 'Programs does not match',
-    unassign: 'Unassigned Job Orders',
-    machine: 'Machine Name',
-    unassign: 'Unassigned Job Orders',
-    scrollToEvent: 'Scroll To Job Order',
-    test: 'AMK',
-  },
-}
 function sortEventsByDateDesc(events) {
   return [...events].sort((a, b) => a.startDate < b.startDate ? -1 : 1)
 }
