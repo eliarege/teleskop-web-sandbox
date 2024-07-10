@@ -332,19 +332,17 @@ export async function getDistinctErpParameters() {
     .distinct()
 }
 export async function getEventTooltipParams(planKey: number, machineId: number) {
-  const subquery = await knex('PTERPPARAMBYUSER as p')
-    .select('p.PARAMID')
-    .leftJoin('BFERPPARAMETERDEFINITIONS as d', 'd.PARAMID', 'p.PARAMID')
-    .where('p.MACHINEID', '=', machineId)
-    .andWhere('p.OWNER', '=', PLANNED_CODE)
-    .groupBy('p.PARAMID')
-  return await knex('DYBFBATCHPLANPARAMETERS as b')
+  return await knex({ p: 'PTMACHINEERP' })
+    .leftJoin('BFERPPARAMETERDEFINITIONS as b', 'b.PARAMID', 'p.paramId')
+    .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'b.PARAMID')
     .select({
-      paramString: 'b.PARAMSTRING',
-      value: 'b.VALUE',
+      paramName: 'p.paramName',
+      value: 'd.VALUE',
     })
-    .whereIn('b.BATCHPARAMETERID', subquery.map(item => item.PARAMID.toString()))
-    .andWhere('b.PLANKEY', '=', planKey)
+    .where('p.machineId', machineId)
+    .andWhere('d.PLANKEY', planKey)
+    .andWhere('p.visible', true)
+    .groupBy(['p.paramName', 'd.VALUE'])
 }
 export async function taskValid(planKey: number, fabricWeight: number) {
   const [taskPrograms, taskCapacityAgainstMachines] = await Promise.all([

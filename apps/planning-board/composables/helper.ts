@@ -34,7 +34,7 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
     const parameters: any[] = await $fetch('/api/tootlipParameters', {
       query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
     })
-    const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
+    const parameterValues = parameters.map(param => `${param.paramName}: ${param.value}`).join('<br>')
     const notes = await $fetch('/api/note/getNote', {
       query: { jobOrder: eventRecord.originalData.jobOrder },
     })
