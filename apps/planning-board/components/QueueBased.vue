@@ -1,14 +1,11 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
+import type { DragHelperConfig, EventModelConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
 import { useDocumentVisibility } from '@vueuse/core'
 import { addDays, addHours } from 'date-fns'
 import { EliarModal, LoadingSpinner } from '@teleskop/ui'
-import { useDocumentVisibility, useStorage } from '@vueuse/core'
-import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
-import type { QueueBasedEvents } from '~/shared/queueBased'
-import type { MachineStatus, PtLocaleSettings, UnplannedEvents } from '~/shared/types'
+import { determineTextColor } from '@teleskop/utils'
 import { eventTooltip } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
 import type { QueueBasedAnyEvent } from '~/shared/queueBased'
@@ -170,6 +167,9 @@ function setId(event: QueueBasedAnyEvent) {
       return `stop-${event.stopNumber}`
   }
 }
+function setTextColor(bgColor: string): string {
+  return determineTextColor(bgColor) === 'black' ? 'text-black' : 'text-white'
+}
 const modifiedEvents = computed(() => {
   return events.value.map((ev) => {
     return {
@@ -183,6 +183,7 @@ const modifiedEvents = computed(() => {
       name: setEventName(ev),
       id: setId(ev),
       eventColor: setFabricColor(ev),
+      cls: setTextColor(setFabricColor(ev)),
     }
   })
 })
@@ -331,6 +332,7 @@ onMounted(async () => {
     },
     resources: machines.value,
     events: modifiedEvents.value,
+    eventStyle: null,
     listeners: {
       eventSelectionChange({ action }: any) {
         if (action === 'select' || action === 'update') {

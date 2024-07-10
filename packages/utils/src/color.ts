@@ -22,6 +22,6 @@ export function calculateLuminance(color: string) {
 /**
  * Determines the appropriate text color for a given background color.
  */
-export function determineTextColor(bgColor: string) {
+export function determineTextColor(bgColor: string): string {
   return calculateLuminance(bgColor) > 0.5 ? 'black' : 'white'
 }
