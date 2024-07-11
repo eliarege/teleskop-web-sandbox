@@ -1,6 +1,7 @@
 import type { MasterCommand } from '../types'
 
-const pattern = /^(\d+) ((?:\d+(?:,\d+)*,)*\d?) ((?:\d+(?:,\d+)*,)*\d?)$/gim
+const pattern = /^(\d+)( (.*) )?((.*) (.*))?$/gim
+// /^(\d+)((.*) (.*))?$/gim
 /**
  * **Path**: `/tbb6500/data/commands/editing`
  *
@@ -17,8 +18,9 @@ export function parseCommandsEditing(content: string) {
   while (match !== null) {
     const command: Partial<MasterCommand> = {
       commandNo: Number.parseInt(match[1]),
-      adviceList: match[2],
-      dontUseList: match[3].replace(/,$/, ''), // Remove trailing comma
+      adviceList: match[3] ? match[3].replace(/,$/, '').trim() : '-1',
+      dontUseList: match[5] ? match[5].replace(/,$/, '').trim() : null,
+      dontUseListCounter: match[6] ? match[6].replace(/,$/, '').trim() : null,
     }
     commands.push(command)
     match = pattern.exec(content)

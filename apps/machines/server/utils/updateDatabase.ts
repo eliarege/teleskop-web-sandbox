@@ -275,9 +275,12 @@ export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient
     .where('MACHINEID', machineId)
 
   const data = commands.map((d) => {
-    const activated = (d.activated === 1 && d.machineConstantId && d.machineConstantId !== -1)
-      ? paramValues.find(p => p.machineParameterId === d.machineConstantId)?.currentValue
-      : 0
+    let activated = 0
+    if (d.activated === 1 && d.machineConstantId !== -1) {
+      const currentValue = paramValues.find(p => p.machineParameterId === d.machineConstantId)?.currentValue
+      if (currentValue && currentValue !== 0)
+        activated = 1
+    }
 
     return {
       COMMANDNO: d.commandNo,
@@ -363,7 +366,7 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
         COMMANDNO: command.commandNo,
         MACHINEID: machineId,
       }).update({
-        ADVICELIST: (command.adviceList && command.adviceList.length) ? command.adviceList : -1,
+        ADVICELIST: command.adviceList ? command.adviceList : -1,
         DONTUSELIST: command.dontUseList,
       })
     })

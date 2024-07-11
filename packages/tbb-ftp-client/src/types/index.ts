@@ -199,8 +199,9 @@ export interface MasterCommand {
   a: string
   maxA: string
   b: string
-  adviceList: string
-  dontUseList: string
+  adviceList: string | null
+  dontUseList: string | null
+  dontUseListCounter?: string | null
   functionId: number
   tbbFunctionName: string
   name: string
