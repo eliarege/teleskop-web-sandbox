@@ -2,7 +2,7 @@ import { withTbbFtpClient } from 'tbb-ftp-client'
 import { getQuery } from 'h3'
 import { inferBoolean } from 'utils'
 import { knex } from '~/server/connectionPool'
-import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIcons, updateLocksGeneral, updateLocksOutput, updateSystemParams } from '~/server/utils/updateDatabase'
+import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIOChangedEvent, updateIcons, updateLocksGeneral, updateLocksOutput, updateSystemParams } from '~/server/utils/updateDatabase'
 import { DatabaseQueryError } from '~/server/error'
 
 const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
@@ -78,6 +78,8 @@ export default defineEventHandler(async (event) => {
             { func: () => updateConsumption(numMachineId, tbb, trx), message: 'consumptions updated' },
             // erp params
             { func: () => updateERPParams(numMachineId, tbb, trx), message: 'ERP params updated' },
+            // IO changed event
+            { func: () => updateIOChangedEvent(numMachineId, tbb, trx), message: 'IO change events updated' },
             // icons
             { func: () => updateIcons(numMachineId, tbb, trx), message: 'icons updated' },
             // archives

@@ -275,3 +275,11 @@ export interface CalibrationAnalogInput {
   measureValues?: { level: number, value: number }[]
   calibrationAlarmTasks?: number
 }
+
+export interface IOChangedEvent {
+  ioType: number | null
+  ioIndex: number | null
+  difference: number | null
+  period: number | null
+  minPeriod: number | null
+}

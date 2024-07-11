@@ -37,6 +37,7 @@ import { parseSystem, serializeSystem } from './parsers/parseSystem'
 import { parseLocksOutput } from './parsers/parseLocksOutput'
 import { parseCalibrationCounter } from './parsers/parseCalibrationCounter'
 import { parseCalibrationAnalogInput } from './parsers/parseCalibrationAnalogInput'
+import { parseIOChangedEvent } from './parsers/parseIOChangedEvent'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -262,6 +263,13 @@ export class TbbFtpClient {
     const content = await this._download(remotePath)
     const commands = parseCommandsGeneral(content)
     return commands
+  }
+
+  async fetchIOChangedEvent() {
+    const remotePath = '/tbb6500/data/config/io_changed_event'
+    const content = await this._download(remotePath)
+    const inputs = parseIOChangedEvent(content)
+    return inputs
   }
 
   async fetchCommandsEditing() {

@@ -222,6 +222,28 @@ export async function updateCommandGroups(machineId: number, tbb: TbbFtpClient, 
   })
   return await replaceRecords(trx, 'BFCOMMANDGROUP', data, { MACHINEID: machineId })
 }
+
+export async function updateIOChangedEvent(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const inputs = await tbb.fetchIOChangedEvent()
+  if (!inputs.length)
+    return false
+  const data = inputs.map((d) => {
+    const period = d.ioType === 1 || d.ioType === 2 ? d.period : 0
+    const processed = d.ioType === 1 || d.ioType === 2 ? true : d.difference === 1
+
+    return {
+      MACHINEID: machineId,
+      IOID: d.ioType,
+      IOINDEX: d.ioIndex,
+      DIFFERENCE: d.difference,
+      PERIOD: period,
+      PROCESSED: processed,
+    }
+  })
+
+  return await replaceRecords(trx, 'BFIOCHANGEDEVENT', data, { MACHINEID: machineId })
+}
+
 export async function updateUsers(tbb: TbbFtpClient, trx: Knex) {
   const users = await tbb.fetchUsers()
   if (!users.length)
