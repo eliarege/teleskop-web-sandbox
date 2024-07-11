@@ -451,7 +451,7 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
       COMMANDRUN: false,
       RECIPE: false,
       VALUE: c.paramFormula ? c.paramFormula : (c.defaultValue).toString(),
-      PARAMETERTYPE: ((c.selectionList && c.selectionList.length) || globalCommandFormula) ? 1 : 0,
+      PARAMETERTYPE: ((c.selectionList && c.selectionList.length) || globalCommandFormula !== -1) ? 1 : 0,
       SELECTIONLIST: (c.selectionList && c.selectionList.length) ? c.selectionList.map(d => d.name).join(' ') : '',
       SELECTIONVALUES: (c.selectionList && c.selectionList.length) ? c.selectionList.map(d => d.value).join(' ') : '',
       UNITCODE: 0,
@@ -536,6 +536,7 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
           alarmTypeIndex = 3
           break
         default:
+          alarmTypeIndex = null
           break
       }
 
@@ -546,7 +547,7 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
         ALARMNO: c.alarmNo,
         UNIVERSALALARMNO: c.alarmNo,
         ALARM: c.alarm,
-        ALARMTYPE: alarmTypeIndex || null,
+        ALARMTYPE: alarmTypeIndex,
       })
     }
   }
@@ -709,7 +710,7 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
 
   const data = locks.map(d => ({
     MACHINEID: machineId,
-    LOCKNO: d.lockNo + 1,
+    LOCKNO: d.lockNo! + 1,
     LOCKNAME: d.lockName,
     LOGICTYPE: d.logicType,
     STOPDYEING: d.stopDyeing,
@@ -730,12 +731,13 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
 
   for (const d of data) {
     const filtered = locksInput.filter(l => l.lockId === d.LOCKNO)
-    d.AINLOGICTYPE = filtered.find(l => l.logicType === 0)?.logicType ?? 0
-    d.DINLOGICTYPE = filtered.find(l => l.logicType === 1)?.logicType ?? 0
-    d.COMMANDLOGICTYPE = filtered.find(l => l.logicType === 4)?.logicType ?? 0
-    d.LOCKLOGICTYPE = filtered.find(l => l.logicType === 5)?.logicType ?? 0
-    d.DOUTLOGICTYPE = filtered.find(l => l.logicType === 7)?.logicType ?? 0
-    d.VINLOGICTYPE = filtered.find(l => l.logicType === 8)?.logicType ?? 0
+
+    d.AINLOGICTYPE = filtered.find(l => l.inputType === 0)?.logicType ?? 0
+    d.DINLOGICTYPE = filtered.find(l => l.inputType === 1)?.logicType ?? 0
+    d.COMMANDLOGICTYPE = filtered.find(l => l.inputType === 4)?.logicType ?? 0
+    d.LOCKLOGICTYPE = filtered.find(l => l.inputType === 5)?.logicType ?? 0
+    d.DOUTLOGICTYPE = filtered.find(l => l.inputType === 7)?.logicType ?? 0
+    d.VINLOGICTYPE = filtered.find(l => l.inputType === 8)?.logicType ?? 0
   }
 
   return await replaceRecords(trx, 'BFLOCKSGENERAL', data, { MACHINEID: machineId })

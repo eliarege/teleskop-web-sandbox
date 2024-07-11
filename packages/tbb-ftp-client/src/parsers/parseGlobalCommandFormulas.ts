@@ -2,7 +2,7 @@ import type { GlobalCommandFormula } from '../types'
 
 const pattern = /^(?:.+=)(.+),(\d+),(\d+),(\d+),(.+)$/gim
 /**
- *   /tbb6500/data/yedek/globalCommandFormulas
+ *   /tbb6500/data/config/globalCommandFormulas
  * example: GLOBAL_FORMULA_2=Kilo*(AK Boya Oran-Kumastaki Su)-(Soda+Tuz+Boya+Sülfat+Alkali),2,1,0,Boya Suyu
  */
 export function parseGlobalCommandFormulas(content: string) {
