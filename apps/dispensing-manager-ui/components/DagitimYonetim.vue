@@ -8,7 +8,7 @@ import type { Column } from '~/shared/types'
 const { t } = useI18n()
 const paginationSync = ref(500)
 const paginationPageLeft = ref(1)
-
+const selectedRow = ref()
 type Action = 'retry' | 'cancel'
 interface ConfirmationDialog {
   vis: boolean
@@ -109,7 +109,6 @@ const columnsMaterial = computed<Column[]>(() => [
 const recipe = ref([])
 const recipeTypeDecider = ref('ongoing')
 const filters = ref([])
-const selectedRow = ref()
 const material = ref([])
 
 const canceledVisible = ref(false)
@@ -150,11 +149,11 @@ async function updateRecipeTable() {
     material.value = []
 }
 
-async function selectRow(rowIndex: any) {
-  selectedRow.value = recipe.value[rowIndex]
-  selectedRow.value.rowIndex = rowIndex
-  await fetchMaterialData(selectedRow.value.reqnumber)
-}
+// async function selectRow(rowIndex: any) {
+//   selectedRow.value = recipe.value[rowIndex]
+//   selectedRow.value.rowIndex = rowIndex
+//   await fetchMaterialData(selectedRow.value.reqnumber)
+// }
 
 async function clickShowRecipe(row: any, isLogs: string) {
   const params = new URLSearchParams({ joborder: row.joborder, correctionNo: row.batchCorrectionNo, isLogs })
@@ -240,18 +239,18 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
   }
 }
 
-function handleKeyUp(event) {
-  if (event.key === 'ArrowUp') {
-    if (selectedRow.value.rowIndex) {
-      selectRow(selectedRow.value.rowIndex - 1)
-    }
-  } else if (event.key === 'ArrowDown') {
-    if (selectedRow.value.rowIndex !== undefined && recipe.value[selectedRow.value.rowIndex + 1]) {
-      event.preventDefault()
-      selectRow(selectedRow.value.rowIndex + 1)
-    }
-  }
-}
+// function handleKeyUp(event) {
+//   if (event.key === 'ArrowUp') {
+//     if (selectedRow.value.rowIndex) {
+//       selectRow(selectedRow.value.rowIndex - 1)
+//     }
+//   } else if (event.key === 'ArrowDown') {
+//     if (selectedRow.value.rowIndex !== undefined && recipe.value[selectedRow.value.rowIndex + 1]) {
+//       event.preventDefault()
+//       selectRow(selectedRow.value.rowIndex + 1)
+//     }
+//   }
+// }
 
 function searchFilterUpdated(evt: any) {
   if (evt) {
@@ -259,13 +258,18 @@ function searchFilterUpdated(evt: any) {
     selectedRow.value = null
   }
 }
+async function updateSelectedRow(evt: any) {
+  // console.log(evt)
+  selectedRow.value = evt
+  await fetchMaterialData(evt.reqnumber)
+}
 
-onMounted(() => {
-  window.addEventListener('keyup', handleKeyUp)
-})
-onBeforeUnmount(() => {
-  window.removeEventListener('keyup', handleKeyUp)
-})
+// onMounted(() => {
+//   window.addEventListener('keyup', handleKeyUp)
+// })
+// onBeforeUnmount(() => {
+//   window.removeEventListener('keyup', handleKeyUp)
+// })
 </script>
 
 <template>
@@ -278,10 +282,13 @@ onBeforeUnmount(() => {
           :rows="recipe"
           :columns="columnsRecipe"
           class="h-120"
+          row-key="reqnumber"
+          :enable-key-strokes="true"
           :pagination="{ rowsPerPage: paginationSync, page: paginationPageLeft }"
           @update:pagination="(newPag: any) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
           @update-filter-slots="(evt) => applyFilters(evt)"
           @update-search-filter="(evt) => searchFilterUpdated(evt)"
+          @update-selected="evt => updateSelectedRow(evt)"
         >
           <!-- style="width: 55%; height: 100%;" -->
           <template #top-right>
@@ -301,70 +308,50 @@ onBeforeUnmount(() => {
               />
             </div>
           </template>
-          <template #custombody="recipe">
-            <q-tr
-              :class="{ 'selected-row': selectedRow === recipe.row }"
-              style="cursor: pointer;"
-              :style="selectedRow === recipe.row
-                ? 'background-color: #cce8ff;'
-                : recipe.rowIndex % 2
-                  ? `background-color: ${colors.tableGray}`
-                  : '' "
-              @click="selectRow(recipe.rowIndex)"
-              @contextmenu="selectRow(recipe.rowIndex)"
+          <template #contextmenu>
+            <q-menu
+              touch-position
+              context-menu
             >
-              <!-- @right="" -->
-              <q-td
-                v-for="row in recipe.cols"
-                :key="row.name"
-                :props="recipe"
-              >
-                {{ row.value }}
-                <q-menu
-                  touch-position
-                  context-menu
+              <!-- FIXME: min width should not be 300px -->
+              <q-list style="min-width: 300px;">
+                <q-item
+                  v-close-popup
+                  clickable
+                  @click="clickShowRecipe(selectedRow, 'true')"
                 >
-                  <!-- FIXME: min width should not be 300px -->
-                  <q-list style="min-width: 300px;">
-                    <q-item
-                      v-close-popup
-                      clickable
-                      @click="clickShowRecipe(recipe.row, 'true')"
-                    >
-                      <q-item-section>{{ t('dispensingManager.rcMenu.showLogs') }}</q-item-section>
-                    </q-item>
-                    <q-item
-                      v-close-popup
-                      clickable
-                      @click="clickShowRecipe(recipe.row, 'false')"
-                    >
-                      <q-item-section>{{ t('dispensingManager.rcMenu.showRecipe') }}</q-item-section>
-                    </q-item>
-                    <q-separator />
-                    <q-item
-                      v-for="act in actions"
-                      :key="act"
-                      v-close-popup
-                      clickable
-                      @click="
-                        selectedRow.status === StatusCodes.requestCompleted || selectedRow.status === StatusCodes.canceled
-                          ? processRequest(act, selectedRow)
-                          : confirmationDialog = { vis: true, act }
-                      "
-                    >
-                      <q-item-section>{{ t(`dispensingManager.rcMenu.${act}`) }}</q-item-section>
-                    </q-item>
-                    <q-item
-                      v-close-popup
-                      clickable
-                      @click="completeProgram(selectedRow)"
-                    >
-                      <q-item-section>{{ t('dispensingManager.rcMenu.complete') }}</q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-menu>
-              </q-td>
-            </q-tr>
+                  <q-item-section>{{ t('dispensingManager.rcMenu.showLogs') }}</q-item-section>
+                </q-item>
+                <q-item
+                  v-close-popup
+                  clickable
+                  @click="clickShowRecipe(selectedRow, 'false')"
+                >
+                  <q-item-section>{{ t('dispensingManager.rcMenu.showRecipe') }}</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item
+                  v-for="act in actions"
+                  :key="act"
+                  v-close-popup
+                  clickable
+                  @click="
+                    selectedRow.status === StatusCodes.requestCompleted || selectedRow.status === StatusCodes.canceled
+                      ? processRequest(act, selectedRow)
+                      : confirmationDialog = { vis: true, act }
+                  "
+                >
+                  <q-item-section>{{ t(`dispensingManager.rcMenu.${act}`) }}</q-item-section>
+                </q-item>
+                <q-item
+                  v-close-popup
+                  clickable
+                  @click="completeProgram(selectedRow)"
+                >
+                  <q-item-section>{{ t('dispensingManager.rcMenu.complete') }}</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </template>
         </FilterableTable>
       </div>
@@ -493,9 +480,7 @@ img.invert-colors {
   word-break: keep-all;
   white-space: nowrap;
 }
-.selected-row {
-  background-color: #cce8ff;
-}
+
 .dialog-class {
   height: 100%;
   width: 100%;
