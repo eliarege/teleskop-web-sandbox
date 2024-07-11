@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { QTableProps } from 'quasar'
 import type { FilterableTableColumn, FilterableTableFilter } from '../types'
 
 interface DateType {
@@ -36,7 +37,7 @@ const props = defineProps({
       page: 1,
       rowsPerPage: 20,
       sortBy: '',
-    }),
+    } as QTableProps['pagination']),
     validator: (obj: any): boolean => {
       return 'descending' in obj && typeof obj.descending === 'boolean'
         && 'page' in obj && typeof obj.page === 'number'
@@ -48,11 +49,20 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  enableKeyStrokes: {
+    type: Boolean,
+    default: false,
+  },
+  rowKey: {
+    type: String,
+    required: true,
+  },
 })
 const emit = defineEmits<{
   rowDblclick: [row: any]
   updateFilterSlots: [filters: FilterableTableFilter[]]
   updateSearchFilter: [terms: any]
+  updateSelected: any
 }>()
 
 const { t, locale } = useI18n({ useScope: 'local' })
@@ -77,7 +87,7 @@ const comparisonOperations = [
   { text: 'between', symbol: t('between') },
 ]
 
-const tablePagination = ref(props.pagination)
+// const tablePagination = ref(props.pagination)
 
 const today = new Date()
 const startOfToday = new Date(today)
@@ -215,7 +225,6 @@ function checkForButtonsInsteadOfSelect(col: any) {
     return (col.selectionOptions.length < 6 && col.filterType === 'select')
   return false
 }
-
 function customFilterMethod(rows, terms, cols, cellValue) {
   emit('updateSearchFilter', terms)
   const lowerTerms = terms ? terms.toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN') : ''
@@ -231,10 +240,63 @@ function customFilterMethod(rows, terms, cols, cellValue) {
   }
   return result
 }
+const tablePagination = ref({} as QTableProps['pagination'])
+const selectedId = ref(null)
+
+const sorting = computed(() => {
+  return { field: tablePagination.value?.sortBy, order: tablePagination.value?.descending ? 'desc' : 'asc' }
+})
+
+const sortedRows = computed(() => {
+  return [...props.rows].sort((a, b) => {
+    const field = sorting.value.field
+    const multiplier = sorting.value.order === 'asc' ? 1 : -1
+    return (a[field] === b[field] ? 0 : a[field] > b[field] ? 1 : -1) * multiplier
+  })
+})
+
+const selectedRow = computed(() => {
+  return sortedRows.value.find(row => row[props.rowKey] === selectedId.value)
+})
+async function selectRow(row: any) {
+  // selectedRow.value = props.rows[rowIndex]
+  selectedId.value = row[props.rowKey]
+  // selectedRow.value.rowIndex = rowIndex
+  emit('updateSelected', selectedRow.value)
+}
+function updateSelectedIndex(delta) {
+  const currentIndex = sortedRows.value.findIndex(row => row[props.rowKey] === selectedId.value)
+  let newIndex = currentIndex
+  if (currentIndex + delta < sortedRows.value.length)
+    newIndex += delta
+  tablePagination.value!.page = Math.floor((newIndex / tablePagination.value!.rowsPerPage!) + 1)
+  if (newIndex >= 0 && newIndex < sortedRows.value.length) {
+    selectedId.value = sortedRows.value[newIndex][props.rowKey]
+  }
+}
+function handleKeyEvents(event) {
+  switch (event.key) {
+    case 'ArrowUp':
+      updateSelectedIndex(-1)
+      break
+    case 'ArrowDown':
+      updateSelectedIndex(1)
+      break
+  }
+}
+if (props.enableKeyStrokes) {
+  onMounted(() => {
+    window.addEventListener('keydown', handleKeyEvents)
+  })
+
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeyEvents)
+  })
+}
 </script>
 
 <template>
-  <div>
+  <div tabindex="0">
     <q-table
       v-model:pagination="tablePagination"
       :rows="rows"
@@ -488,7 +550,18 @@ function customFilterMethod(rows, terms, cols, cellValue) {
       </template>
       <template #body="bodyProps">
         <slot name="custombody" v-bind="bodyProps">
-          <q-tr :props="bodyProps">
+          <q-tr
+            :props="bodyProps"
+            :class="{ 'selected-row': selectedRow === bodyProps.row }"
+            style="cursor: pointer;"
+            :style="selectedRow === bodyProps.row
+              ? 'background-color: #cce8ff;'
+              : bodyProps.rowIndex % 2
+                ? `background-color: rgb(0, 0, 0, 0.1)`
+                : '' "
+            @click="selectRow(bodyProps.row)"
+            @contextmenu="selectRow(bodyProps.row)"
+          >
             <q-td
               v-for="col in bodyProps.cols"
               :key="col.name"
@@ -497,6 +570,7 @@ function customFilterMethod(rows, terms, cols, cellValue) {
               @dblclick="handleDoubleClick(bodyProps.row)"
             >
               {{ col.value }}
+              <slot name="contextmenu" />
             </q-td>
           </q-tr>
         </slot>
@@ -506,6 +580,9 @@ function customFilterMethod(rows, terms, cols, cellValue) {
 </template>
 
 <style scoped>
+.selected-row {
+  background-color: #cce8ff;
+}
 .my-sticky-virtscroll-table-recipe {
   height: 100%;
   min-height: 50vh;
