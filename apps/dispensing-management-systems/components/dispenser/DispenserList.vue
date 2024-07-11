@@ -116,7 +116,7 @@ function onLogout() {
       node-key="id"
       no-connectors
       no-nodes-label=" "
-      :expanded="expanded"
+      :expanded
       style="font-size: 18px;"
       @update:expanded="onExpand"
     >

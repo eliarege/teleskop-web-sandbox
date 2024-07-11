@@ -41,7 +41,7 @@ async function getMaterials() {
         bordered
         separator="cell"
         :title="t('MaterialRequests')"
-        :columns="columns"
+        :columns
         :rows="materials"
         row-key="name"
       >

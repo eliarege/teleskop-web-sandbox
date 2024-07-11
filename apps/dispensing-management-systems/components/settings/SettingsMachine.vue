@@ -111,7 +111,7 @@ const pagination = ref({ rowsPerPage: 20 })
     table-class="max-h-150"
     separator="cell"
     :pagination
-    :columns="columns"
+    :columns
     :rows="machines"
     row-key="name"
     @row-click="onRowClick"

@@ -68,7 +68,7 @@ const groupables = [
       :title="t('recipeFields.Details', { batch: props.batchNo })"
       :is-first="false"
       has-object-span-method
-      :groupables="groupables"
+      :groupables
       :rows="recipeData"
       chem-class="bg-green"
       dyeing-class="bg-scroll"
