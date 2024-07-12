@@ -63,7 +63,7 @@ async function onCommandsClick(row: RecipeMaster) {
     component: RecipeCommandsDialog,
     componentProps: {
       programNo: row.programNo,
-      recipeName: row.recipeName
+      recipeName: row.recipeName,
     },
   }).onOk((payload: any) => {
     if (payload) {
@@ -136,7 +136,14 @@ const pagination = ref({ rowsPerPage: 20 })
             icon="edit"
             flat
             @click="onEditClick(props.row)"
-          />
+          >
+            <QTooltip
+              :offset="[0, 30]"
+              anchor="top middle"
+            >
+              {{ t('Edit') }}
+            </QTooltip>
+          </QBtn>
         </QTd>
         <QTd auto-width>
           <QBtn
@@ -144,7 +151,14 @@ const pagination = ref({ rowsPerPage: 20 })
             icon="description"
             flat
             @click="onCommandsClick(props.row)"
-          />
+          >
+            <QTooltip
+              :offset="[0, 30]"
+              anchor="top middle"
+            >
+              {{ t('Commands') }}
+            </QTooltip>
+          </QBtn>
         </QTd>
       </QTr>
     </template>
