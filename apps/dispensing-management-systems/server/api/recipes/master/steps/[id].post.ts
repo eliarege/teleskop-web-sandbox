@@ -26,6 +26,6 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Internal Server Error',
       message: 'An unexpected error occurred.'
     }
-    return sendError(event, createError(error))
+    throw createError(error)
   }
 })
