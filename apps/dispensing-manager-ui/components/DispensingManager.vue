@@ -122,14 +122,17 @@ async function updateRecipe() {
   })
   if (recipe.value?.length) {
     selectedRow.value = recipe.value[0]
-    await fetchMaterialData(selectedRow.value.reqnumber)
+    // await fetchMaterialData(selectedRow.value.reqnumber)
   } else
     selectedRow.value = null
 }
 setInterval(updateRecipe, 10000)
 
 async function fetchMaterialData(reqnumber: number) {
-  material.value = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
+  if (reqnumber)
+    material.value = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
+  else
+    material.value = []
 }
 
 async function applyFilters(updatedValue: any) {
@@ -143,12 +146,10 @@ async function updateRecipeTable() {
   canceledVisible.value = !canceledVisible.value
   await updateRecipe()
   selectedRow.value = recipe.value[0] ? recipe.value[0] : null
-  if (selectedRow.value?.reqnumber)
-    await fetchMaterialData(selectedRow.value.reqnumber)
-  else
-    material.value = []
 }
-
+watch(selectedRow, async (newSelected) => {
+  await fetchMaterialData(newSelected?.reqnumber)
+})
 async function clickShowRecipe(row: any, isLogs: string) {
   const params = new URLSearchParams({ joborder: row.joborder, correctionNo: row.batchCorrectionNo, isLogs })
   await navigateToPage(`recipe?${params}`)
@@ -252,6 +253,7 @@ async function updateSelectedRow(evt: any) {
         class="responsive-table"
       >
         <FilterableTable
+          v-model:selected="selectedRow"
           :rows="recipe"
           :columns="columnsRecipe"
           class="h-120"
@@ -261,8 +263,8 @@ async function updateSelectedRow(evt: any) {
           @update:pagination="(newPag: any) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
           @update-filter-slots="(evt) => applyFilters(evt)"
           @update-search-filter="(evt) => searchFilterUpdated(evt)"
-          @update-selected="evt => updateSelectedRow(evt)"
         >
+          <!-- @update-selected="evt => updateSelectedRow(evt)" -->
           <template #top-right>
             <q-space />
             <div class="mt-2 top-r-class">

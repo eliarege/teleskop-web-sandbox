@@ -58,13 +58,14 @@ const props = defineProps({
     required: true,
   },
 })
+
 const emit = defineEmits<{
   rowDblclick: [row: any]
   updateFilterSlots: [filters: FilterableTableFilter[]]
   updateSearchFilter: [terms: any]
   updateSelected: any
 }>()
-
+const selected = defineModel('selected')
 const { t, locale } = useI18n({ useScope: 'local' })
 function handleDoubleClick(row: any) {
   emit('rowDblclick', row)
@@ -255,14 +256,18 @@ const sortedRows = computed(() => {
   })
 })
 
-const selectedRow = computed(() => {
-  return sortedRows.value.find(row => row[props.rowKey] === selectedId.value)
+// const selectedRow = computed(() => {
+//   return sortedRows.value.find(row => row[props.rowKey] === selectedId.value)
+// })
+
+watch([sorting, selectedId], ([, newId]) => {
+  selected.value = sortedRows.value.find(row => row[props.rowKey] === newId)
 })
 async function selectRow(row: any) {
   // selectedRow.value = props.rows[rowIndex]
   selectedId.value = row[props.rowKey]
   // selectedRow.value.rowIndex = rowIndex
-  emit('updateSelected', selectedRow.value)
+  // emit('updateSelected', selectedRow.value)
 }
 function updateSelectedIndex(delta) {
   const currentIndex = sortedRows.value.findIndex(row => row[props.rowKey] === selectedId.value)
@@ -552,9 +557,9 @@ if (props.enableKeyStrokes) {
         <slot name="custombody" v-bind="bodyProps">
           <q-tr
             :props="bodyProps"
-            :class="{ 'selected-row': selectedRow === bodyProps.row }"
+            :class="{ 'selected-row': selected === bodyProps.row }"
             style="cursor: pointer;"
-            :style="selectedRow === bodyProps.row
+            :style="selected === bodyProps.row
               ? 'background-color: #cce8ff;'
               : bodyProps.rowIndex % 2
                 ? `background-color: rgb(0, 0, 0, 0.1)`
@@ -570,7 +575,6 @@ if (props.enableKeyStrokes) {
               @dblclick="handleDoubleClick(bodyProps.row)"
             >
               {{ col.value }}
-              <slot name="contextmenu" />
             </q-td>
           </q-tr>
         </slot>
