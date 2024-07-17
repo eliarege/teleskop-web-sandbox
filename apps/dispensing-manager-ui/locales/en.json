@@ -154,7 +154,8 @@
     "checkTankLevelInChemicalRequests": "Check Tank Level in Chemical Requests",
     "executeOrderOnlyInPlannedMachine": "Execute Order Only in Planned Machine",
     "determineCouplingRecipe": "Determine Coupling Recipe",
-    "checkTankNumberWhenMakingManualOnlineRequest": "Check Tank Number When Making a Manual Online Request"
+    "checkTankNumberWhenMakingManualOnlineRequest": "Check Tank Number When Making a Manual Online Request",
+    "showRecipeAmount": "Show original amount for materials with recalculated amount"
   },
   "dispensingManager": {
     "_": "Distribution Processor",

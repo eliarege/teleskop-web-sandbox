@@ -72,6 +72,7 @@ async function changeSettings() {
       manuelOnlineRequestTankNoControl: settingsData.value?.manuelOnlineRequestTankNoControl,
       coupleMechanismSplit: settingsData.value?.coupleMechanismSplit,
       justRunOnPlannedMachine: settingsData.value?.justRunOnPlannedMachine,
+      showRecipeAmount: settingsData.value?.showRecipeAmount,
     },
   })
   notification(isSuccess, t('warnings.changeResponse', { type: t('warnings.reqMechanism'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
@@ -328,6 +329,10 @@ function filterOptions(val, update) {
             <q-checkbox
               v-model="settingsData.manuelOnlineRequestTankNoControl"
               :label="t('settings.checkTankNumberWhenMakingManualOnlineRequest')"
+            />
+            <q-checkbox
+              v-model="settingsData.showRecipeAmount"
+              :label="t('settings.showRecipeAmount')"
             />
           </div>
         </div>

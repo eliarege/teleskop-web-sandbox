@@ -567,6 +567,7 @@ router.get('/request-mechanism-setting', defineEventHandler(async () => {
       manuelOnlineRequestTankNoControl: 'DYMANUALTANKMECH',
       coupleMechanismSplit: 'DYCOUPLEMECHANISM',
       justRunOnPlannedMachine: 'DYMACHCONTROLMECH',
+      showRecipeAmount: 'SHOWRECIPEAMOUNT',
     })
   return sett[0]
 }))
@@ -597,6 +598,7 @@ router.put('/request-mechanism-setting', defineEventHandler(async (event) => {
       DYMANUALTANKMECH: body.manuelOnlineRequestTankNoControl,
       DYCOUPLEMECHANISM: body.coupleMechanismSplit,
       DYMACHCONTROLMECH: body.justRunOnPlannedMachine,
+      SHOWRECIPEAMOUNT: body.showRecipeAmount,
     })
 
   // reqMechanismAnswerOptions: '',

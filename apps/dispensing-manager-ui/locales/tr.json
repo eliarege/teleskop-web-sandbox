@@ -153,7 +153,8 @@
     "checkTankLevelInChemicalRequests": "Kimyasal İsteklerde Tank Seviyesini Kontrol Et",
     "executeOrderOnlyInPlannedMachine": "İş Emrini Sadece Planlanan Makinede Çalışsın",
     "determineCouplingRecipe": "Aküple Reçetesi Bölünsün",
-    "checkTankNumberWhenMakingManualOnlineRequest": "Manuel Online İstek Yapılırken Tank Numarasını Kontrolünü Yapsın"
+    "checkTankNumberWhenMakingManualOnlineRequest": "Manuel Online İstek Yapılırken Tank Numarasını Kontrolünü Yapsın",
+    "showRecipeAmount": "Miktarı yeniden hesaplanan materyaller için orijinal miktarı göster"
   },
   "dispensingManager": {
     "_": "Dağıtım Yöneticisi",
