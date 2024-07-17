@@ -128,7 +128,7 @@ async function onDelete() {
       },
     },
   }).onOk(async () => {
-    await $fetch(`/api/dispensers`, { method: 'DELETE', body: { dispenserId: dispenser.value!.dispenserId } })
+    await $fetch(`/api/dispensers/${dispenser.value!.dispenserId}`, { method: 'DELETE' })
     dataStore.refreshDispensers++
     onDialogOK(null)
   })

@@ -29,11 +29,11 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginC
 const machine = toRef(props, 'machine')
 const machines = toRef(props, 'machines')
 const defaultMachine: Machine = {
-  //Set the default machineId to highest one + 1, 1 if there isn't any
-  machineId: machines.value && machines.value.length > 0? machines.value.at(machines.value.length-1)!.machineId + 1 : 1,
+  // Set the default machineId to highest one + 1, 1 if there isn't any
+  machineId: machines.value && machines.value.length > 0 ? machines.value.at(machines.value.length - 1)!.machineId + 1 : 1,
   machineName: '',
   controllerType: 1,
-  connectedDispensers: null
+  connectedDispensers: null,
 }
 const selectedMachines = ref([])
 const controllerTypes = toRef(props, 'controllerTypes')
@@ -69,7 +69,7 @@ async function onSave() {
 }
 
 function onReset() {
-  editedMachine.value = machine.value? klona(machine.value) : klona(defaultMachine)
+  editedMachine.value = machine.value ? klona(machine.value) : klona(defaultMachine)
   selectedDispensers.value = klona(selectedDispensersInitial.value)
 }
 
@@ -90,7 +90,7 @@ async function onDelete() {
     },
   }).onOk(async () => {
     try {
-      await $fetch(`/api/machines`, { method: 'DELETE', body: { machineId: machine.value!.machineId } })
+      await $fetch(`/api/machines/${machine.value!.machineId}`, { method: 'DELETE' })
       onDialogOK(true)
     } catch (e) {
       onDialogOK(false)

@@ -92,7 +92,7 @@ async function onDelete() {
     },
   }).onOk(async () => {
     try {
-      await $fetch(`/api/materials`, { method: 'DELETE', body: { materialCode: editedMaterial.value.materialCode } })
+      await $fetch(`/api/materials/${material.value!.materialCode}`, { method: 'DELETE' })
       onDialogOK(true)
     } catch (e) {
       onDialogOK(false)
