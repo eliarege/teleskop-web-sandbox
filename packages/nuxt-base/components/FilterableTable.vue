@@ -575,6 +575,7 @@ if (props.enableKeyStrokes) {
               @dblclick="handleDoubleClick(bodyProps.row)"
             >
               {{ col.value }}
+              <slot name="contextmenu" />
             </q-td>
           </q-tr>
         </slot>
