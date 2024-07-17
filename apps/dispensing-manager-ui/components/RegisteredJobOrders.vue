@@ -45,7 +45,7 @@ const columns = computed(() => [
 ] as Column[])
 
 async function handleRowDblClick(row: any) {
-  await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.correctionNo}`)
+  await navigateToPage(`recipe?joborder=${row.joborder}&correctionNo=${row.correctionNo}`)
 }
 
 async function handleFilterSlotsUpdate(updatedValue: any) {

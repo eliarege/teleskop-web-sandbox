@@ -1,3 +1,3 @@
 <template>
-  <ReceteTartim />
+  <Recipe />
 </template>

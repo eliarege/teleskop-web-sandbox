@@ -571,13 +571,6 @@ router.get('/request-mechanism-setting', defineEventHandler(async () => {
   return sett[0]
 }))
 
-// DirectTransferActive
-// DirectTransferAllMaterial
-// OPTIMIZATIONUSED
-// DYREQMECHANISM first on first
-// repeatRequestIfLastcompleted //second on first
-// no third on first
-
 router.put('/request-mechanism-setting', defineEventHandler(async (event) => {
   const body = await readBody(event)
   const settings = await knex('DYTFDYSETTINGS')
