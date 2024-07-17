@@ -4,9 +4,9 @@ import { ipformat } from '~/utils/utils'
 export default defineEventHandler(async (event) => {
   try {
     const { address } = await readBody(event)
-    if (!ipformat.test(address)) {
+    if (typeof address === 'string' && !ipformat.test(address)) {
       setResponseStatus(event, 400, 'Invalid IP address')
-      event.node.res.end()
+      return event.node.res.end()
     }
     const { stdout } = await execa`ping -c 1 ${address}`
     return stdout
