@@ -249,11 +249,9 @@ async function checkMachineIdExist(mach: { value: number | null }, value: InputE
   }
 }
 async function handleMultiEdit() {
-  console.log(machines)
   const dispensers = disps.value.map((disp) => {
     return { label: `${disp.dispNo} - ${disp.name}`, value: disp.dispNo }
   })
-  console.log(disps.value)
   $q.dialog({
     component: ConnectMultiDispenserDialog,
     componentProps: {

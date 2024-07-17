@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { useTimeoutPoll } from '@vueuse/core'
+import type { FilterableTableColumn } from 'nuxt-base'
 import { cellRGBColorHandler, navigateToPage, textAlignOverride } from '../shared/functions'
 import { StatusCodes, colors } from '~/shared/constants'
-import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const paginationSync = ref(500)
@@ -21,7 +21,7 @@ const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFe
 useTimeoutPoll(refreshConnectionStatus, 10000, { immediate: true })
 const machines = await $fetch('/api/machine/machines')
 const dispensers = await $fetch('/api/settings/dispenser')
-const columnsRecipe = computed<Column[]>(() => [
+const columnsRecipe = computed<Array<FilterableTableColumn>>(() => [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
   {
@@ -48,7 +48,7 @@ const columnsRecipe = computed<Column[]>(() => [
       const status = connectionStatus.value?.find(status => status.dispNo === row.dispNo)?.status
       return ['status-class', status ? 'success-class' : 'fail-class'].join(' ')
     },
-  }, // TODO: Dispenserşarı dönen endpoint
+  },
   { name: 'programno', label: t('programNo'), field: 'programno', filterable: true, filterType: 'comparison' },
   {
     name: 'programname',
@@ -97,7 +97,7 @@ const columnsRecipe = computed<Column[]>(() => [
     optionValue: 'status',
   },
 ])
-const columnsMaterial = computed<Column[]>(() => [
+const columnsMaterial = computed<Array<FilterableTableColumn>>(() => [
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
   { name: 'materialCode', label: t('materialCode'), field: 'materialCode' },
   { name: 'name', label: t('dispensingManager.materialDistributor'), field: 'name' },
@@ -149,15 +149,9 @@ async function updateRecipeTable() {
     material.value = []
 }
 
-// async function selectRow(rowIndex: any) {
-//   selectedRow.value = recipe.value[rowIndex]
-//   selectedRow.value.rowIndex = rowIndex
-//   await fetchMaterialData(selectedRow.value.reqnumber)
-// }
-
 async function clickShowRecipe(row: any, isLogs: string) {
   const params = new URLSearchParams({ joborder: row.joborder, correctionNo: row.batchCorrectionNo, isLogs })
-  await navigateToPage(`recete-tartim?${params}`)
+  await navigateToPage(`recipe?${params}`)
 }
 
 async function completeProgram(row) {
@@ -239,19 +233,6 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
   }
 }
 
-// function handleKeyUp(event) {
-//   if (event.key === 'ArrowUp') {
-//     if (selectedRow.value.rowIndex) {
-//       selectRow(selectedRow.value.rowIndex - 1)
-//     }
-//   } else if (event.key === 'ArrowDown') {
-//     if (selectedRow.value.rowIndex !== undefined && recipe.value[selectedRow.value.rowIndex + 1]) {
-//       event.preventDefault()
-//       selectRow(selectedRow.value.rowIndex + 1)
-//     }
-//   }
-// }
-
 function searchFilterUpdated(evt: any) {
   if (evt) {
     material.value = []
@@ -259,17 +240,9 @@ function searchFilterUpdated(evt: any) {
   }
 }
 async function updateSelectedRow(evt: any) {
-  // console.log(evt)
   selectedRow.value = evt
   await fetchMaterialData(evt.reqnumber)
 }
-
-// onMounted(() => {
-//   window.addEventListener('keyup', handleKeyUp)
-// })
-// onBeforeUnmount(() => {
-//   window.removeEventListener('keyup', handleKeyUp)
-// })
 </script>
 
 <template>
@@ -290,7 +263,6 @@ async function updateSelectedRow(evt: any) {
           @update-search-filter="(evt) => searchFilterUpdated(evt)"
           @update-selected="evt => updateSelectedRow(evt)"
         >
-          <!-- style="width: 55%; height: 100%;" -->
           <template #top-right>
             <q-space />
             <div class="mt-2 top-r-class">
@@ -299,8 +271,6 @@ async function updateSelectedRow(evt: any) {
                 class="table-header-toggle"
                 toggle-color="black"
                 :options="[
-                  // { label: t('chemical'), value: 'chem' },
-                  // { label: t('dye'), value: 'dye' },
                   { label: t('ongoingJoborders'), value: 'ongoing' },
                   { label: t('canceledJobOrdersTable'), value: 'cancel' },
                 ]"
@@ -313,7 +283,6 @@ async function updateSelectedRow(evt: any) {
               touch-position
               context-menu
             >
-              <!-- FIXME: min width should not be 300px -->
               <q-list style="min-width: 300px;">
                 <q-item
                   v-close-popup
@@ -388,7 +357,6 @@ async function updateSelectedRow(evt: any) {
     </span>
 
     <div class="ml-5 mr-5" style="width: 100%;">
-      <!-- Job order's requested materials table -->
       <q-table
         flat
         bordered

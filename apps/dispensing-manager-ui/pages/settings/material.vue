@@ -271,7 +271,6 @@ async function handleMultiEdit() {
   const dispensers = disps.value.map((disp) => {
     return { label: `${disp.dispNo} - ${disp.name}`, value: disp.dispNo }
   })
-  console.log(materials)
   $q.dialog({
     component: ConnectMultiDispenserDialog,
     componentProps: {
