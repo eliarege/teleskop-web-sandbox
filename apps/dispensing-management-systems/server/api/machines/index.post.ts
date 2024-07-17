@@ -1,6 +1,6 @@
 import { dmsDB } from '~/server/connectionPool'
 import type { Machine } from '~/shared/types'
-import { ErrorCodes } from '~/shared/constants'
+import { PostgreSQLErrorCodes } from '~/shared/constants'
 
 export default defineEventHandler(async (event) => {
   const machine: Machine = await readBody(event)
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     })
     return res
   } catch (e: any) {
-    if (e.code === ErrorCodes.unique) {
+    if (e.code === PostgreSQLErrorCodes.unique) {
       setResponseStatus(event, 403, 'A Machine with that ID already exists.')
       event.node.res.end()
     }

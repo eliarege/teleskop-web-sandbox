@@ -1,5 +1,5 @@
 import { dmsDB } from '~/server/connectionPool'
-import { ErrorCodes } from '~/shared/constants'
+import { PostgreSQLErrorCodes } from '~/shared/constants'
 import type { Material } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
       })
     return res
   } catch (e: any) {
-    if (e.code === ErrorCodes.unique) {
+    if (e.code === PostgreSQLErrorCodes.unique) {
       setResponseStatus(event, 403, 'A Material with that code already exists.')
       event.node.res.end()
     }
