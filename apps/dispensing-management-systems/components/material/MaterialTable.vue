@@ -72,8 +72,8 @@ function cloneMaterial(item: Material) {
       >
         <template #item="{ element }">
           <QTr>
-            <QTd key="drag-handle">
-              <QIcon name="drag_handle" class="drag-handle" />
+            <QTd>
+              <QIcon name="drag_handle" class="cursor-move" />
             </QTd>
             <QTd
               v-for="col in columns"
@@ -92,10 +92,6 @@ function cloneMaterial(item: Material) {
 </template>
 
 <style scoped>
-.drag-handle {
-  cursor: move;
-}
-
 .material-ghost {
   opacity: 0.5;
   background: #c8ebfb;

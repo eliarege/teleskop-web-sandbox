@@ -251,7 +251,7 @@ function onRemoveStep(index: number) {
             >
               <template #item="{ element, index }">
                 <tr>
-                  <td class="no-padding">
+                  <td important-p-0>
                     <QBtn
                       icon="close"
                       flat
@@ -262,7 +262,7 @@ function onRemoveStep(index: number) {
                       @click="onRemoveStep(index)"
                     />
                   </td>
-                  <td class="no-padding">
+                  <td important-p-0>
                     <div class="column">
                       <QBtn
                         icon="keyboard_arrow_up"
@@ -382,9 +382,6 @@ function onRemoveStep(index: number) {
 .row-item {
   margin: 0.75rem;
   width: 40rem;
-}
-.no-padding {
-  padding: 0 !important;
 }
 .buttons {
   margin-top: 35px;
