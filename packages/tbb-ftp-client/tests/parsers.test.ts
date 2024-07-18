@@ -18,6 +18,17 @@ import { parseControllerModel } from '../src/parsers/parseControllerModel'
 import { parseCycleControl } from '../src/parsers/parseCycleControl'
 import { parseFinishReason } from '../src/parsers/parseFinishReason'
 import { parseFunctionAlarms } from '../src/parsers/parseFunctionAlarms'
+import { parseGlobalCommandFormulas } from '../src/parsers/parseGlobalCommandFormulas'
+import { parseIOChangedEvent } from '../src/parsers/parseIOChangedEvent'
+import { parseLockGeneral } from '../src/parsers/parseLockGeneral'
+import { parseSeperatedLocks } from '../src/parsers/parseLocksInput'
+import { parseLocksOutput } from '../src/parsers/parseLocksOutput'
+import { parseMachineParameters } from '../src/parsers/parseMachineParameters'
+import { parseMachineParameterValues } from '../src/parsers/parseMachineParameterValues'
+import { parseManualReason } from '../src/parsers/parseManualReason'
+import { parseStopReason } from '../src/parsers/parseStopReason'
+import { parseSystem } from '../src/parsers/parseSystem'
+import { parseUser } from '../src/parsers/parseUser'
 
 it('parseCommandsEditing', () => {
   const contents = `
@@ -685,6 +696,645 @@ f7 S= E=100,101,102,103,104,105,106 O=
   const results = [
     { f: 'f6', s: '100', e: '101', o: '', m: '' },
     { f: 'f7', s: '', e: '100,101,102,103,104,105,106', o: '', m: '' },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseGlobalCommandFormulas', () => {
+  const contents = `
+GLOBAL_FORMULA_1=Kilo*(AK Yikama Oran-Kumastaki Su),1,1,0,Yikama Suyu
+GLOBAL_FORMULA_2=Kilo*(AK Boya Oran-Kumastaki Su)-(Soda+Tuz+Boya+Sülfat+Alkali),2,1,0,Boya Suyu
+`
+
+  const output = parseGlobalCommandFormulas(contents)
+
+  const results = [
+    {
+      formula: 'Kilo*(AK Yikama Oran-Kumastaki Su)',
+      formulaId: 1,
+      commandNo: 1,
+      commandParameterNo: 0,
+      formulaName: 'Yikama Suyu',
+    },
+    {
+      formula: 'Kilo*(AK Boya Oran-Kumastaki Su)-(Soda+Tuz+Boya+Sülfat+Alkali)',
+      formulaId: 2,
+      commandNo: 1,
+      commandParameterNo: 0,
+      formulaName: 'Boya Suyu',
+    },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseIOChangedEvent', () => {
+  const contents = `
+1 13 10 60 60
+2 0 10 60
+5 2 60
+`
+
+  const output = parseIOChangedEvent(contents)
+
+  const results = [
+    {
+      ioType: 1,
+      ioIndex: 13,
+      difference: 10,
+      period: 60,
+      minPeriod: 60,
+    },
+    {
+      ioType: 2,
+      ioIndex: 0,
+      difference: 10,
+      period: 60,
+      minPeriod: null,
+    },
+    {
+      ioType: 5,
+      ioIndex: 2,
+      difference: 60,
+      period: null,
+      minPeriod: null,
+    },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseLockGeneral', () => {
+  const contents = `
+0 "Otomatik" 0 0 0 0 "0" "0" 0 "" 1
+88 "Kapaklar Acik 2" 0 0 0 130 "3" "0" 1 "DIKKAT! Kapaklar Acik" 1
+182 "4.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "4.Kule Kumas Koptu" 1
+`
+  const output = parseLockGeneral(contents)
+
+  const results = [
+    {
+      lockNo: 0,
+      lockName: 'Otomatik',
+      logicType: 0,
+      stopDyeing: 0,
+      jumpStep: 0,
+      alarm: 0,
+      onDelay: '0',
+      stepDelay: '0',
+      giveMessage: 0,
+      messageString: '',
+      active: 1,
+    },
+
+    {
+      lockNo: 88,
+      lockName: 'Kapaklar Acik 2',
+      logicType: 0,
+      stopDyeing: 0,
+      jumpStep: 0,
+      alarm: 130,
+      onDelay: '3',
+      stepDelay: '0',
+      giveMessage: 1,
+      messageString: 'DIKKAT! Kapaklar Acik',
+      active: 1,
+    },
+
+    {
+      lockNo: 182,
+      lockName: '4.Kule Kumas Koptu',
+      logicType: 0,
+      stopDyeing: 0,
+      jumpStep: 0,
+      alarm: 130,
+      onDelay: 'Kumas Koptu sn',
+      stepDelay: '0',
+      giveMessage: 1,
+      messageString: '4.Kule Kumas Koptu',
+      active: 1,
+    },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseLocksInput', () => {
+  const contents = `
+6 8 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 0
+7 0 0 "Dozaj Sicaklik" "0" 0.0 3 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 0
+`
+
+  const lines = contents.split('\n').filter(line => line.length > 0)
+  const output = lines.map(parseSeperatedLocks)
+
+  const results = [
+    {
+      lockId: 6,
+      inputType: 8,
+      inputs: [],
+      logicType: 0,
+    },
+    {
+      lockId: 7,
+      inputType: 0,
+      inputs: [
+        {
+          id: 0,
+          r1min: 'Dozaj Sicaklik',
+          r2max: '0',
+          histerisis: '0.0',
+          state: '3',
+        },
+      ],
+      logicType: 0,
+    },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseLocksOutput', () => {
+  const contents = `
+172 2 9 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 -1 -1
+6 3 62 0 30 1 63 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0
+7 2 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 -1 -1
+`
+
+  const output = parseLocksOutput(contents)
+
+  const results = {
+    analogLocks: [
+      {
+        lockNo: 172,
+        analogOutputs: [
+          {
+            outputId: 9,
+            percentage: 0,
+          },
+        ],
+      },
+      {
+        lockNo: 7,
+        analogOutputs: [
+        ],
+      },
+    ],
+    digitalLocks: [
+      {
+        lockNo: 6,
+        digitalOutputs: [
+          {
+            outputId: 62,
+            state: 0,
+          },
+          {
+            outputId: 30,
+            state: 1,
+          },
+          {
+            outputId: 63,
+            state: 0,
+          },
+        ],
+      },
+    ],
+  }
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseMachineParameters', () => {
+  const contents = `
+SABIT_0=AK Ust,15000.000,9100,1,0.000,15000.000,0,1,0
+SABIT_80=Kumas gir minumum,7500.000,9101,1,7500.000,8000.000,0,81,0
+`
+
+  const output = parseMachineParameters(contents)
+
+  const results = [
+    {
+      machineParameterId: 0,
+      paramString: 'AK Ust',
+      defaultValue: 15000.000,
+      dmArea: 9100,
+      consScreen: 1,
+      paramLowLimit: 0.000,
+      paramHighLimit: 15000.000,
+      consFormat: 0,
+      consUnit: 0,
+    },
+    {
+      machineParameterId: 80,
+      paramString: 'Kumas gir minumum',
+      defaultValue: 7500.000,
+      dmArea: 9101,
+      consScreen: 1,
+      paramLowLimit: 7500.000,
+      paramHighLimit: 8000.000,
+      consFormat: 0,
+      consUnit: 0,
+    },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseMachineParameterValues', () => {
+  const contents = `
+SABIT_0=15000.000000
+SABIT_1=1500.000000
+`
+
+  const output = parseMachineParameterValues(contents)
+
+  const results = [
+    {
+      currentValue: 15000.000000,
+      machineParameterId: 0,
+    },
+    {
+      currentValue: 1500.000000,
+      machineParameterId: 1,
+    },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseManualReason', () => {
+  const contents = `
+1 "Kumaş kontrol"
+2 "Kumaş koptu-sardı"
+3 "Onay bekliyor"
+4 "İlaveye girecek"
+5 "Arıza"
+6 "Kumaş çıkış"
+7 "Kumaş Giriş"
+8 "Buhar yok"
+9 "Su yok"
+`
+
+  const output = parseManualReason(contents)
+
+  const results = [
+    {
+      manualCode: 1,
+      manualName: 'Kumaş kontrol',
+    },
+    {
+      manualCode: 2,
+      manualName: 'Kumaş koptu-sardı',
+    },
+    {
+      manualCode: 3,
+      manualName: 'Onay bekliyor',
+    },
+    {
+      manualCode: 4,
+      manualName: 'İlaveye girecek',
+    },
+    {
+      manualCode: 5,
+      manualName: 'Arıza',
+    },
+    {
+      manualCode: 6,
+      manualName: 'Kumaş çıkış',
+    },
+    {
+      manualCode: 7,
+      manualName: 'Kumaş Giriş',
+    },
+    {
+      manualCode: 8,
+      manualName: 'Buhar yok',
+    },
+    {
+      manualCode: 9,
+      manualName: 'Su yok',
+    },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseStopReason', () => {
+  const contents = `
+1 "Mal Yok(sipariş yok)"
+2 "Araba Yok"
+3 "Rpt Bekliyor"
+4 "Arıza"
+5 "K.Hazır Değil(açma+fikse+gaze)"
+6 "Kumaş Girilecek"
+7 "Filtre Temizliği"
+`
+
+  const output = parseStopReason(contents)
+
+  const results = [
+    {
+      stopCode: 1,
+      stopName: 'Mal Yok(sipariş yok)',
+    },
+    {
+      stopCode: 2,
+      stopName: 'Araba Yok',
+    },
+
+    {
+      stopCode: 3,
+      stopName: 'Rpt Bekliyor',
+    },
+    {
+      stopCode: 4,
+      stopName: 'Arıza',
+    },
+    {
+      stopCode: 5,
+      stopName: 'K.Hazır Değil(açma+fikse+gaze)',
+    },
+    {
+      stopCode: 6,
+      stopName: 'Kumaş Girilecek',
+    },
+    {
+      stopCode: 7,
+      stopName: 'Filtre Temizliği',
+    },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseSystem', () => {
+  const contents = `
+FROM_PROJECT_LANGUAGE=0
+DIL=TR
+ICONS_ENABLED=1
+SIDETEXT_ENABLED=1
+KILITLEMELER_AKTIF=1
+TEST_PLC_EKRANINDA_KILITLEMELER_AKTIF=0
+EXTERNAL_BUTTONS_ENABLED=0
+BATCH_NO_DIGIT_COUNT=0
+KEEP_PROGRAMS=1
+PANEL_REEL_PUMP_TUNE=0
+BARCODE_READER_ENABLED=1
+PANEL_KLAPE_TUNE=0
+MANUEL_MOD_GECIS_SEBEP_SOR=1
+PROGRAM_IZLEME_ADIM_GECIS=1
+PROGRAM_YAZMA_DEFAULT=1
+PROGRAM_YAZARKEN_ONER=1
+BATCH_NO_NUMERIK=0
+HAVALI_MAKINE=0
+SIKMA_KONTROLLU_MAKINE=0
+DUZE_KONTROL_AKTIF=1
+UZAKTAN_KONTROL_AKTIF=1
+REAKTOR_KONTROL=0
+OPERATOR_BATCH_BASLATAMASIN=0
+KULLANICI_LOGOFF=1
+OPTIM_AKTIF=0
+POMPA_KULE_DURMASIN=1
+KOMUT_GRUP_AKTIF=0
+MCS_MAKINE=0
+BOBIN_BOYAMA_MAKINE=0
+JIGGER_MAKINE=0
+PROJE_LOGOSU_KULLAN=0
+MODBUS_MODE=0
+PLC_OK_PROGRAM_OK=0
+PLC_RECOVER_IOS=1
+PLC_ENABLED=0
+PISA_GUI_ENABLED=0
+BATCH_NO_OTOMATIK=0
+BIG_GUI_ENABLED=1
+BATCH_NO_DIGIT_COUNT_VALUE=7
+DIGITAL_IO_EVENT_TIME=60
+DURUS_SEBEBI_ZORUNLU=1
+PROJE_DIL_HAVUZUNU_KULLAN=1
+PROJECT_NAME=CANLAR MAKINA 2016
+PROJECT_DATE=0.0
+DOKUNMATIK_EKRAN=0
+KULLANICI_LOGOFF_PASSWORD=0
+PLC_BAUD_RATE_57600=0
+ILAVEDE_SADECE_ILAVE_PROSESLER=0
+HAVALI_MAKINE_CMS=0
+PLC_COUNTER_TYPE=0
+HAZIR_IS_EMRI_BASLATMA_PARAMETRESI_SOR=1
+ASK_BATCH_PARAMETERS_COUPLED_MODE=0
+DO_NOT_RESTART_RUNNING_STEP=0
+PREVENT_DISABLED_COMMAND=0
+MAX_REMOTE_BATCH_COUNT=500
+IS_EMRI_BASLATILIRKEN_TUM_PARAMETRELERI_SOR=0
+OTOMATIK_GUNCELLEME=0
+TELESKOP_IS_EMRI_BASLATMA_ONAYI=0
+CODESYS_V32=0
+TELESKOP_HAZIR_IS_EMRI_INDIREBILME=1
+IO_SIRA_NUMARASI_GOSTERILSIN=1
+FONKSIYON_HAVUZU=0
+KULE_DEGERI_YUZDELIK_GOSTERILSIN=1
+FARK_BASINC_FONKSIYONU=0
+KIMYASAL_ISTEK_FONKSIYONU=0
+IS_EMRI_BITISINDE_DURUS_SEBEBI_GOSTERILSIN=1
+ISLEM_DURDURULDU_SEBEP_SOR=1
+ISEMRI_IPTAL_EDILDIGINDE_SEBEP_SOR=0
+KIMYASAL_BOYA_BILGILERINI_GOSTER=1
+T8_RIO_SLOT=0
+ALARM_REPEAT_TIME=30
+SECOND_PLC_ACTIVE=0
+DURUS_SEBEBI_SURESI=0
+DURUS_ALARM_GOREVLERI=130
+DUZE_KONTROLU_YAPILSIN=1
+TO_PROJECT_LANGUAGE=0
+PROGRAM_FINISHED_WINDOW=1
+SOFT_RESTART_TIME=-1
+REEL_DI_ENABLED=0
+AZAMI_BATCH_SAYISI=20
+AZAMI_DOSYA_BOYUTU=10485760
+CALCULATE_INTERLOCK_FORMULAS=0
+KIMYASAL_ISTEK_FONKSIYONU_DURUM_PARAMETRESI=1
+FARK_BASINC_FONKSIYONU_ISLEM_PARAMETRESI=4
+VACUUM=604800
+UYGULAMA_LOG=0
+PLC_DEBUG=0
+TELESKOP_ONAYI_BEKLEME_SURESI=120000
+PARCA_KURUTMA_MAKINASI=0
+MIMIC_FINE_TUNING_X=0
+MIMIC_FINE_TUNING_Y=0
+T7_RIO_SLOT=0
+SONLANDIRMA_SECENEGI_SORULSUN=1
+MIMIK_ANIMASYON_AKTIF=0
+OTOMATIK_REBOOT_SAYISI=0
+SMARTEX_MANUEL_SCADA=0
+SMARTEX_PLC_5U=0
+YIKAMA_FAZ_BILGISI_AKTIF=0
+SOFT_PANO_BUTON_AKTIF=0
+ALARM_KALKINCA_BATCH_OTOMATIK_BASLAMASIN=0
+MENU_DILI_KISAYOL_AKTIF=0
+KULLANICI_ISLEMLERINI_YONET=0
+HAZIR_IS_EMRINI_MANUEL_YUKLE=0
+ILK_ADIMDAN_BASLATMA_ZORUNLU=0
+OTOMATIK_BATCH_BASLATMA=0
+KULLANICI_ALARMI_KALKINCA_BATCH_BASLAMASIN=0
+KILITLEME_KALKINCA_BATCH_BASLAMASIN=0
+DURUS_SEBEBINI_BATCH_BASLARKEN_SOR=1
+KIMYASAL_ISTEKLER_ISEMRI_BAZINDA=0
+WEBVISU_AKTIF=0
+ADIM_ATLAMA_SEBEBI_AKTIF=0
+VERITABANI_ISLEMLERI_AKTIF=0
+ISEMRI_NUMARASI_ILLEGAL_KARAKTER_KULLANIMI_AKTIF=0
+KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF=0
+`
+
+  const output = parseSystem(contents)
+
+  const results = {
+    FROM_PROJECT_LANGUAGE: '0',
+    DIL: 'TR',
+    ICONS_ENABLED: '1',
+    SIDETEXT_ENABLED: '1',
+    KILITLEMELER_AKTIF: '1',
+    TEST_PLC_EKRANINDA_KILITLEMELER_AKTIF: '0',
+    EXTERNAL_BUTTONS_ENABLED: '0',
+    BATCH_NO_DIGIT_COUNT: '0',
+    KEEP_PROGRAMS: '1',
+    PANEL_REEL_PUMP_TUNE: '0',
+    BARCODE_READER_ENABLED: '1',
+    PANEL_KLAPE_TUNE: '0',
+    MANUEL_MOD_GECIS_SEBEP_SOR: '1',
+    PROGRAM_IZLEME_ADIM_GECIS: '1',
+    PROGRAM_YAZMA_DEFAULT: '1',
+    PROGRAM_YAZARKEN_ONER: '1',
+    BATCH_NO_NUMERIK: '0',
+    HAVALI_MAKINE: '0',
+    SIKMA_KONTROLLU_MAKINE: '0',
+    DUZE_KONTROL_AKTIF: '1',
+    UZAKTAN_KONTROL_AKTIF: '1',
+    REAKTOR_KONTROL: '0',
+    OPERATOR_BATCH_BASLATAMASIN: '0',
+    KULLANICI_LOGOFF: '1',
+    OPTIM_AKTIF: '0',
+    POMPA_KULE_DURMASIN: '1',
+    KOMUT_GRUP_AKTIF: '0',
+    MCS_MAKINE: '0',
+    BOBIN_BOYAMA_MAKINE: '0',
+    JIGGER_MAKINE: '0',
+    PROJE_LOGOSU_KULLAN: '0',
+    MODBUS_MODE: '0',
+    PLC_OK_PROGRAM_OK: '0',
+    PLC_RECOVER_IOS: '1',
+    PLC_ENABLED: '0',
+    PISA_GUI_ENABLED: '0',
+    BATCH_NO_OTOMATIK: '0',
+    BIG_GUI_ENABLED: '1',
+    BATCH_NO_DIGIT_COUNT_VALUE: '7',
+    DIGITAL_IO_EVENT_TIME: '60',
+    DURUS_SEBEBI_ZORUNLU: '1',
+    PROJE_DIL_HAVUZUNU_KULLAN: '1',
+    PROJECT_NAME: 'CANLAR MAKINA 2016',
+    PROJECT_DATE: '0.0',
+    DOKUNMATIK_EKRAN: '0',
+    KULLANICI_LOGOFF_PASSWORD: '0',
+    PLC_BAUD_RATE_57600: '0',
+    ILAVEDE_SADECE_ILAVE_PROSESLER: '0',
+    HAVALI_MAKINE_CMS: '0',
+    PLC_COUNTER_TYPE: '0',
+    HAZIR_IS_EMRI_BASLATMA_PARAMETRESI_SOR: '1',
+    ASK_BATCH_PARAMETERS_COUPLED_MODE: '0',
+    DO_NOT_RESTART_RUNNING_STEP: '0',
+    PREVENT_DISABLED_COMMAND: '0',
+    MAX_REMOTE_BATCH_COUNT: '500',
+    IS_EMRI_BASLATILIRKEN_TUM_PARAMETRELERI_SOR: '0',
+    OTOMATIK_GUNCELLEME: '0',
+    TELESKOP_IS_EMRI_BASLATMA_ONAYI: '0',
+    CODESYS_V32: '0',
+    TELESKOP_HAZIR_IS_EMRI_INDIREBILME: '1',
+    IO_SIRA_NUMARASI_GOSTERILSIN: '1',
+    FONKSIYON_HAVUZU: '0',
+    KULE_DEGERI_YUZDELIK_GOSTERILSIN: '1',
+    FARK_BASINC_FONKSIYONU: '0',
+    KIMYASAL_ISTEK_FONKSIYONU: '0',
+    IS_EMRI_BITISINDE_DURUS_SEBEBI_GOSTERILSIN: '1',
+    ISLEM_DURDURULDU_SEBEP_SOR: '1',
+    ISEMRI_IPTAL_EDILDIGINDE_SEBEP_SOR: '0',
+    KIMYASAL_BOYA_BILGILERINI_GOSTER: '1',
+    T8_RIO_SLOT: '0',
+    ALARM_REPEAT_TIME: '30',
+    SECOND_PLC_ACTIVE: '0',
+    DURUS_SEBEBI_SURESI: '0',
+    DURUS_ALARM_GOREVLERI: '130',
+    DUZE_KONTROLU_YAPILSIN: '1',
+    TO_PROJECT_LANGUAGE: '0',
+    PROGRAM_FINISHED_WINDOW: '1',
+    SOFT_RESTART_TIME: '-1',
+    REEL_DI_ENABLED: '0',
+    AZAMI_BATCH_SAYISI: '20',
+    AZAMI_DOSYA_BOYUTU: '10485760',
+    CALCULATE_INTERLOCK_FORMULAS: '0',
+    KIMYASAL_ISTEK_FONKSIYONU_DURUM_PARAMETRESI: '1',
+    FARK_BASINC_FONKSIYONU_ISLEM_PARAMETRESI: '4',
+    VACUUM: '604800',
+    UYGULAMA_LOG: '0',
+    PLC_DEBUG: '0',
+    TELESKOP_ONAYI_BEKLEME_SURESI: '120000',
+    PARCA_KURUTMA_MAKINASI: '0',
+    MIMIC_FINE_TUNING_X: '0',
+    MIMIC_FINE_TUNING_Y: '0',
+    T7_RIO_SLOT: '0',
+    SONLANDIRMA_SECENEGI_SORULSUN: '1',
+    MIMIK_ANIMASYON_AKTIF: '0',
+    OTOMATIK_REBOOT_SAYISI: '0',
+    SMARTEX_MANUEL_SCADA: '0',
+    SMARTEX_PLC_5U: '0',
+    YIKAMA_FAZ_BILGISI_AKTIF: '0',
+    SOFT_PANO_BUTON_AKTIF: '0',
+    ALARM_KALKINCA_BATCH_OTOMATIK_BASLAMASIN: '0',
+    MENU_DILI_KISAYOL_AKTIF: '0',
+    KULLANICI_ISLEMLERINI_YONET: '0',
+    HAZIR_IS_EMRINI_MANUEL_YUKLE: '0',
+    ILK_ADIMDAN_BASLATMA_ZORUNLU: '0',
+    OTOMATIK_BATCH_BASLATMA: '0',
+    KULLANICI_ALARMI_KALKINCA_BATCH_BASLAMASIN: '0',
+    KILITLEME_KALKINCA_BATCH_BASLAMASIN: '0',
+    DURUS_SEBEBINI_BATCH_BASLARKEN_SOR: '1',
+    KIMYASAL_ISTEKLER_ISEMRI_BAZINDA: '0',
+    WEBVISU_AKTIF: '0',
+    ADIM_ATLAMA_SEBEBI_AKTIF: '0',
+    VERITABANI_ISLEMLERI_AKTIF: '0',
+    ISEMRI_NUMARASI_ILLEGAL_KARAKTER_KULLANIMI_AKTIF: '0',
+    KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF: '0',
+  }
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseUser', () => {
+  const contents = `
+100 1984 GECICI KULLANICI 0x1313ffff 0x00000003 2
+9999 9999 DENEME KULLANICISI 0x13110000 0x00000003 1
+`
+
+  const output = parseUser(contents)
+
+  const results = [
+    {
+      userId: 100,
+      userPass: '1984',
+      userName: 'GECICI',
+      userSurname: 'KULLANICI',
+      userMode: '0x1313ffff',
+      userMode2: '0x00000003',
+      userType: 2,
+    },
+    {
+      userId: 9999,
+      userPass: '9999',
+      userName: 'DENEME',
+      userSurname: 'KULLANICISI',
+      userMode: '0x13110000',
+      userMode2: '0x00000003',
+      userType: 1,
+    },
   ]
 
   expect(output).toStrictEqual(results)
