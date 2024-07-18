@@ -99,7 +99,6 @@ async function handleSubmit() {
     const added = selectedMachines.value
       .filter(machineId =>
         !selectedMachinesInitial.value.some(initialMachine => initialMachine.machineId === machineId))
-      .map(addedMachineId => addedMachineId)
 
     const deleted = selectedMachinesInitial.value
       .filter(initialMachine =>

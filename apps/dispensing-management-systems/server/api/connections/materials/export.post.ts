@@ -9,6 +9,7 @@ export default defineEventHandler(async (event) => {
     SELECT DISTINCT "material_code", CAST(? AS INTEGER) as "dispenser_id"
     FROM "DISPENSER_MATERIAL_CONNECTION"
     WHERE "dispenser_id" = ?
+    ON CONFLICT ("dispenser_id", "material_code") DO NOTHING
   `, [dispenserId, from])
       return res
     })
