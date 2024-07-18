@@ -338,8 +338,7 @@ export class TbbFtpClient {
   async fetchLocksInput() {
     const remotePath = '/tbb6500/data/locks/locks_inputs'
     const content = await this._download(remotePath)
-
-    const lines = content.split('\n')
+    const lines = content.split('\n').filter(line => line.length > 0)
     const parsedData = lines.map(parseSeperatedLocks)
 
     return parsedData
