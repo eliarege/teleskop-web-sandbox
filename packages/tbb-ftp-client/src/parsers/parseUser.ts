@@ -1,6 +1,6 @@
 import type { User } from '../types'
 
-const pattern = /^(\d+) (\d+) ([a-z]+) ([a-z]+) (0x\d+) (0x\d+) (\d+)$/gim
+const pattern = /^(\d+) (\d+) (.+) (.+) (0x.+) (0x.+) (\d+)$/gim
 
 /**
  * **Path**: `/tbb6500/data/users/users`
