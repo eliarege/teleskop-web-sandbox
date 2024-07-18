@@ -156,5 +156,10 @@ deploy:
   before_script:
     - *prepare-ssh
   script:
-    - ssh eliar@$STAGING_HOST "docker compose --project-directory $STAGING_PROJECT_DIR pull"
-    - ssh eliar@$STAGING_HOST "docker compose --project-directory $STAGING_PROJECT_DIR up -d"
+    - |
+      ssh eliar@$STAGING_HOST <<EOF
+      cd $STAGING_PROJECT_DIR;
+      ./compose-environment staging pull;
+      ./compose-environment staging up -d;
+      ./compose-environment testing up -d;
+      EOF
