@@ -10,12 +10,11 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('BATCH_PLAN', (table) => {
-    table.integer('plan_key').notNullable()
+    table.increments('plan_key')
     table.text('batch')
     table.integer('batch_correction_no')
     table.integer('planned_machine')
     table.timestamp('planned_start_date', { useTz: true })
-    table.primary(['plan_key'])
   })
 
   await knex.schema.createTable('BATCH_PLAN_PARAMETER', (table) => {
@@ -41,7 +40,7 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('MACHINE', (table) => {
-    table.integer('machine_id').notNullable().primary().defaultTo(knex.raw('nextval(\'"machine_id_seq"\'::regclass)'))
+    table.increments('machine_id')
     table.text('machine_name')
     table.integer('controller_type')
   })
@@ -55,7 +54,7 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('command_no')
   })
   await knex.schema.createTable('DISPENSER', (table) => {
-    table.integer('dispenser_id').notNullable().primary().defaultTo(knex.raw('nextval(\'"DISPENSER_dispenser_id_seq"\'::regclass)'))
+    table.increments('dispenser_id')
     table.text('dispenser_name')
     table.text('ip_address')
     table.text('vnc_password')
@@ -69,7 +68,7 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('DISPENSER_BRAND', (table) => {
-    table.integer('brand_id').notNullable().primary().defaultTo(knex.raw('nextval(\'"DISPENSER_BRAND_brand_id_seq"\'::regclass)'))
+    table.increments('brand_id')
     table.text('brand_name')
   })
 
@@ -82,6 +81,7 @@ export async function up(knex: Knex): Promise<void> {
     table.foreign('machine_id', 'fk_machine')
       .references('machine_id')
       .inTable('MACHINE')
+    table.primary(['dispenser_id', 'machine_id'])
   })
 
   await knex.schema.createTable('DISPENSER_MATERIAL_CONNECTION', (table) => {
@@ -93,10 +93,11 @@ export async function up(knex: Knex): Promise<void> {
     table.foreign('material_code', 'material')
       .references('material_code')
       .inTable('MATERIAL')
+    table.primary(['dispenser_id', 'material_code'])
   })
 
   await knex.schema.createTable('DISPENSER_TYPE', (table) => {
-    table.integer('dispenser_type_id').notNullable().primary()
+    table.increments('dispenser_type_id')
     table.text('dispenser_type_name')
     table.integer('dispenser_brand_id')
   })
@@ -114,7 +115,7 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('DUST_MATERIAL_REQUEST', (table) => {
-    table.integer('req_no').notNullable().primary()
+    table.increments('req_no')
     table.text('batch_no')
     table.integer('queue_no')
     table.integer('recipe_type')
@@ -138,13 +139,13 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('program_no')
     table.integer('recipe_process_no')
     table.integer('recipe_step_no')
-    table.integer('job_id').notNullable().primary().defaultTo(knex.raw('nextval(\'"JOB_ORDER_job_id_seq"\'::regclass)'))
+    table.increments('job_id')
     table.integer('step_no')
     table.integer('dispenser_id')
     table.foreign('dispenser_id', 'fk_dispenser')
       .references('dispenser_id')
       .inTable('DISPENSER')
-    table.integer('machine_id').notNullable().defaultTo(knex.raw('nextval(\'"JOB_ORDER_machine_id_seq"\'::regclass)'))
+    table.integer('machine_id')
     table.foreign('machine_id', 'fk_machine')
       .references('machine_id')
       .inTable('MACHINE')
@@ -212,7 +213,7 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('RECIPE_MASTER', (table) => {
-    table.integer('recipe_id').notNullable().primary()
+    table.increments('recipe_id')
     table.text('recipe_name')
     table.integer('recipe_group')
     table.text('recipe_comment')
@@ -225,7 +226,7 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('RECIPE_MASTER_STEP', (table) => {
-    table.integer('recipe_master_id').notNullable().primary()
+    table.increments('recipe_master_id')
     table.foreign('recipe_master_id', 'fk_recipe_master').references('recipe_id').inTable('RECIPE_MASTER')
     table.integer('material_code').notNullable()
     table.foreign('material_code', 'fk_material_code').references('material_code').inTable('MATERIAL')
@@ -245,94 +246,16 @@ export async function up(knex: Knex): Promise<void> {
     table.text('host_computer')
   })
 
-  await knex.schema.createTable('knex_migrations', (table) => {
-    table.integer('id').notNullable().primary().defaultTo(knex.raw('nextval(\'"knex_migrations_id_seq"\'::regclass)'))
-    table.string('name', 255)
-    table.integer('batch')
-    table.timestamp('migration_time', { useTz: true })
-  })
-
-  await knex.schema.createTable('knex_migrations_lock', (table) => {
-    table.integer('index').notNullable().primary().defaultTo(knex.raw('nextval(\'"knex_migrations_lock_index_seq"\'::regclass)'))
-    table.integer('is_locked')
-  })
-  // Sequences
-  await knex.raw(`
-    CREATE SEQUENCE IF NOT EXISTS "DISPENSER_dispenser_id_seq" START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-    ALTER TABLE "DISPENSER" ALTER COLUMN dispenser_id ADD GENERATED BY DEFAULT AS IDENTITY (SEQUENCE NAME "DISPENSER_dispenser_id_seq");
-
-    CREATE SEQUENCE IF NOT EXISTS "DISPENSER_BRAND_brand_id_seq" START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-    ALTER TABLE "DISPENSER_BRAND" ALTER COLUMN brand_id ADD GENERATED BY DEFAULT AS IDENTITY (SEQUENCE NAME "DISPENSER_BRAND_brand_id_seq");
-
-    CREATE SEQUENCE IF NOT EXISTS "JOB_ORDER_job_id_seq" START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-    ALTER TABLE "JOB_ORDER" ALTER COLUMN job_id ADD GENERATED BY DEFAULT AS IDENTITY (SEQUENCE NAME "JOB_ORDER_job_id_seq");
-
-    CREATE SEQUENCE IF NOT EXISTS "JOB_ORDER_machine_id_seq" START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-    ALTER TABLE "JOB_ORDER" ALTER COLUMN machine_id ADD GENERATED BY DEFAULT AS IDENTITY (SEQUENCE NAME "JOB_ORDER_machine_id_seq");
-
-    CREATE SEQUENCE IF NOT EXISTS "machine_id_seq" START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-    ALTER TABLE "MACHINE" ALTER COLUMN machine_id ADD GENERATED BY DEFAULT AS IDENTITY (SEQUENCE NAME "machine_id_seq");
-
-    CREATE SEQUENCE IF NOT EXISTS "knex_migrations_id_seq" START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-    ALTER TABLE "knex_migrations" ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (SEQUENCE NAME "knex_migrations_id_seq");
-
-    CREATE SEQUENCE IF NOT EXISTS "knex_migrations_lock_index_seq" START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-    ALTER TABLE "knex_migrations_lock" ALTER COLUMN index ADD GENERATED BY DEFAULT AS IDENTITY (SEQUENCE NAME "knex_migrations_lock_index_seq");
-  `)
   // Functions
-  await knex.raw(`
-    CREATE FUNCTION public.before_insert_machine_trigger() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-    BEGIN
-      -- Check if the combination of dispenser_id and machine_id already exists
-      IF EXISTS (
-        SELECT 1
-        FROM "DISPENSER_MACHINE_CONNECTION"
-        WHERE dispenser_id = NEW.dispenser_id
-        AND machine_id = NEW.machine_id
-      ) THEN
-        -- If it exists, do nothing (ignore the insertion)
-        RETURN NULL;
-      END IF;
-
-      -- Otherwise, allow the insertion to proceed
-      RETURN NEW;
-    END;
-    $$;
-  `)
-
-  await knex.raw(`
-    CREATE FUNCTION public.before_insert_trigger() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-    BEGIN
-      -- Check if the combination of dispenser_id and material_code already exists
-      IF EXISTS (
-        SELECT 1
-        FROM "DISPENSER_MATERIAL_CONNECTION"
-        WHERE dispenser_id = NEW.dispenser_id
-        AND material_code = NEW.material_code
-      ) THEN
-        -- If it exists, do nothing (ignore the insertion)
-        RETURN NULL;
-      END IF;
-
-      -- Otherwise, allow the insertion to proceed
-      RETURN NEW;
-    END;
-    $$;
-  `)
-
   await knex.raw(`
     CREATE FUNCTION public.trg_adjust_dispenser_id_seq() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
     BEGIN
-        PERFORM nextval('dispenser_id_seq');
+        PERFORM nextval('DISPENSER_dispenser_id_seq');
 
-        IF NEW.dispenser_id >= currval('dispenser_id_seq') THEN
-            PERFORM setval('dispenser_id_seq', NEW.dispenser_id + 1);
+        IF NEW.dispenser_id >= currval('DISPENSER_dispenser_id_seq') THEN
+            PERFORM setval('DISPENSER_dispenser_id_seq', NEW.dispenser_id + 1);
         END IF;
 
         RETURN NEW;
@@ -345,29 +268,13 @@ export async function up(knex: Knex): Promise<void> {
     LANGUAGE plpgsql
     AS $$
     BEGIN
-        -- Ensure that the sequence has been advanced at least once in this session
-        PERFORM nextval('machine_id_seq');
+        PERFORM nextval('MACHINE_machine_id_seq');
 
-        -- Check if the new machine_id is greater than or equal to the current sequence value
-        IF NEW.machine_id >= currval('machine_id_seq') THEN
-            -- Adjust the sequence value to be greater than the new machine_id
-            PERFORM setval('machine_id_seq', NEW.machine_id + 1);
+        IF NEW.machine_id >= currval('MACHINE_machine_id_seq') THEN
+            PERFORM setval('MACHINE_machine_id_seq', NEW.machine_id + 1);
         END IF;
 
         -- Return the new row for insertion
-        RETURN NEW;
-    END;
-    $$;
-  `)
-
-  await knex.raw(`
-    CREATE FUNCTION public.update_machine_id_seq() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-    BEGIN
-        IF NEW.machine_id >= currval('machine_id_seq') THEN
-            PERFORM setval('machine_id_seq', NEW.machine_id + 1);
-        END IF;
         RETURN NEW;
     END;
     $$;
@@ -413,8 +320,6 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.alterTable('RECIPE_MASTER_STEP', (table) => {
     table.dropForeign(['recipe_master_id'], 'recipe_master_step_fk')
   })
-  await knex.schema.dropTableIfExists('knex_migrations_lock')
-  await knex.schema.dropTableIfExists('knex_migrations')
   await knex.schema.dropTableIfExists('TELESKOP_SETTINGS')
   await knex.schema.dropTableIfExists('RECIPE_MASTER')
   await knex.schema.dropTableIfExists('PROTOCOL')
@@ -437,22 +342,10 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists('BATCH_HEADER')
 
   await knex.raw(`
-    DROP FUNCTION IF EXISTS public.before_insert_machine_trigger();
-  `)
-
-  await knex.raw(`
-    DROP FUNCTION IF EXISTS public.before_insert_trigger();
-  `)
-
-  await knex.raw(`
     DROP FUNCTION IF EXISTS public.trg_adjust_dispenser_id_seq();
   `)
 
   await knex.raw(`
     DROP FUNCTION IF EXISTS public.trg_adjust_machine_id_seq();
-  `)
-
-  await knex.raw(`
-    DROP FUNCTION IF EXISTS public.update_machine_id_seq();
   `)
 }
