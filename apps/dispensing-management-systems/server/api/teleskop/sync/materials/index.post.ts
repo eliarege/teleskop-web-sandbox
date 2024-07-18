@@ -1,29 +1,26 @@
-import { dmsDB } from '~/server/connectionPool'
+import { dmsDB, getTeleskopDB } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+const materialParams = {
+  material_code: 'MATERIALCODE',
+  material_name: 'MATERIALNAME',
+  material_group_no: 'MADDEGRUPNO',
+  density: 'YOGUNLUK',
+  ph: 'PH',
+  source: 'SOURCE',
+  cost_unit: 'MALIYETBIRIMI',
+  unit_cost: 'BIRIMMALIYET',
+  re_requestable: 'ReRequestable',
+  direct_transfer: 'DirectTransfer',
+}
+
+export default defineEventHandler(async () => {
   try {
-    const teleskopData = await readBody(event)
-
-    const materials: any[] = []
-
-    teleskopData.materials?.forEach((data: any) => {
-      const material = ({
-        material_code: data.materialCode,
-        material_name: data.materialName,
-        material_group_no: data.materialGroupNo,
-        density: data.density,
-        ph: data.ph,
-        source: data.source,
-        cost_unit: data.costUnit,
-        unit_cost: data.unitCost,
-        re_requestable: data.reRequestable,
-        direct_transfer: data.directTransfer,
-      })
-      materials.push(material)
-    })
-
+    const teleskopDB = await getTeleskopDB()
+    const materials = await teleskopDB('dbo.DYTFMATERIAL')
+      .select(materialParams)
     const batchSize = 3000
-    await batchInsert(dmsDB, materials, batchSize, 'MATERIAL', 'material_code')
+    await batchInsert(dmsDB, materials, batchSize, 'MATERIAL', ['material_code'])
+    return ''
   } catch (e) {
     console.error(e)
     return e

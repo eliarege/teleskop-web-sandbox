@@ -43,7 +43,7 @@ async function clickBtn() {
   }).onOk(async () => {
     try {
       stateStore.isLoading = true
-      await $fetch(`/api/teleskop/sync/${props.type.toLowerCase()}`)
+      await $fetch(`/api/teleskop/sync/${props.type.toLowerCase()}`, { method: 'POST' })
       notifySuccess(t('Success'))
     } catch (e) {
       notifyFail(t('Failed'))

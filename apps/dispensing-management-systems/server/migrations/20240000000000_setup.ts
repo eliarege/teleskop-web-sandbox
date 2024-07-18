@@ -196,6 +196,7 @@ export async function up(knex: Knex): Promise<void> {
       .inTable('MACHINE')
     table.integer('command_no')
     table.text('command_name')
+    table.primary(['machine_id', 'command_no'])
   })
   await knex.schema.createTable('PROGRAM_HEADER', (table) => {
     table.integer('machine_id')

@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
     })
     return res
   } catch (e: any) {
+    console.error(e)
     if (e.code === PostgreSQLErrorCodes.unique) {
       setResponseStatus(event, 403, 'A Dispenser with that ID already exists.')
       event.node.res.end()

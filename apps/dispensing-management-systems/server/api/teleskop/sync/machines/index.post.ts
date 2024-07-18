@@ -1,50 +1,44 @@
-import { dmsDB } from '~/server/connectionPool'
+import { dmsDB, getTeleskopDB } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+const machineParams = {
+  machine_name: 'MACHINENAME',
+  machine_id: 'MACHINEID',
+  controller_type: 'CONTROLLERTYPE',
+}
+const masterCommandParams = {
+  machine_id: 'MACHINEID',
+  command_no: 'COMMANDNO',
+  command_name: 'NAME',
+}
+const commandTypeParams = {
+  machine_id: 'machineId',
+  command_type: 'commandType',
+  command_no: 'commandNo',
+}
+const commandStepParams = {
+  machine_id: 'MACHINEID',
+  program_no: 'PROGNO',
+  main_step: 'MAINSTEP',
+  parallel_step: 'PARALELSTEP',
+  command_no: 'COMMANDNO',
+}
+
+export default defineEventHandler(async () => {
   try {
-    const teleskopData = await readBody(event)
-    const machines: any[] = []
-    const masterCommands: any[] = []
-    const commandTypes: any[] = []
-    const commandSteps: any[] = []
+    const teleskopDB = await getTeleskopDB()
 
-    teleskopData.machines?.forEach((data: any) => {
-      const machine = {
-        machine_id: data.machineId,
-        machine_name: data.machineName,
-        controller_type: data.controllerType,
-      }
-      machines.push(machine)
-    })
-    teleskopData.commandTypes?.forEach((data: any) => {
-      const commandType = {
-        machine_id: data.machineId,
-        command_type: data.commandType,
-        command_no: data.commandNo,
-      }
-      commandTypes.push(commandType)
-    })
-    teleskopData.masterCommands?.forEach((data: any) => {
-      const masterCommand = {
-        machine_id: data.machineId,
-        command_no: data.commandNo,
-        command_name: data.commandName,
-      }
-      masterCommands.push(masterCommand)
-    })
-    teleskopData.commandSteps?.forEach((data: any) => {
-      const commandStep = {
-        machine_id: data.machineId,
-        main_step: data.mainStep,
-        parallel_step: data.parallelStep,
-        program_no: data.programNo,
-        command_no: data.commandNo,
-      }
-      commandSteps.push(commandStep)
-    })
+    const machines = await teleskopDB('dbo.DYTFMACHINES')
+      .select(machineParams)
+    const masterCommands = await teleskopDB('dbo.BAMASTERCOMMANDS')
+      .select(masterCommandParams)
+    const commandTypes = await teleskopDB('dbo.BFCOMMANDTYPES')
+      .select(commandTypeParams)
+    const commandSteps = await teleskopDB('dbo.BFMASTERSTEPS')
+      .select(commandStepParams)
+
     const batchSize = 3000
-    await batchInsert(dmsDB, machines, batchSize, 'MACHINE', 'machine_id')
-    await batchInsert(dmsDB, masterCommands, batchSize, 'MASTER_COMMAND')
+    await batchInsert(dmsDB, machines, batchSize, 'MACHINE', ['machine_id'])
+    await batchInsert(dmsDB, masterCommands, batchSize, 'MASTER_COMMAND', ['machine_id', 'command_no'])
     await batchInsert(dmsDB, commandTypes, batchSize, 'COMMAND_TYPE')
     await batchInsert(dmsDB, commandSteps, batchSize, 'COMMAND_STEP')
   } catch (e) {

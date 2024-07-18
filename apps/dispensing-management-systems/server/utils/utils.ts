@@ -1,27 +1,19 @@
 import type { Knex } from 'knex'
 
-export async function batchInsert(knex: Knex, data: any[], batchSize: number, tableName: string, colName?: string) {
+export async function batchInsert(knex: Knex, data: any[], batchSize: number, tableName: string, conflictColumns?: string[]) {
   const totalRows = data.length
   const numBatches = Math.ceil(totalRows / batchSize)
-  await useTransaction(knex, async (trx) => {
+  await useTransaction(knex, async (trx: Knex) => {
     for (let i = 0; i < numBatches; i++) {
       const start = i * batchSize
       const end = Math.min((i + 1) * batchSize, totalRows)
       const batch = data.slice(start, end)
 
-      const insertQuery = trx(tableName)
-        .insert(batch)
-        .toQuery()
-      if (colName) {
-        const conflictUpdateFields = Object.keys(batch[0])
-          .map(key => `"${key}" = EXCLUDED."${key}"`)
-          .join(', ')
-
-        const onConflictUpdateQuery = `${insertQuery} ON CONFLICT (${colName}) DO UPDATE SET ${conflictUpdateFields}`
-        await trx.raw(onConflictUpdateQuery)
-      } else {
-        await trx.raw(insertQuery)
+      const query = trx(tableName).insert(batch)
+      if (conflictColumns) {
+        query.onConflict(conflictColumns).merge()
       }
+      await query
     }
   })
 }
