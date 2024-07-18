@@ -310,7 +310,7 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
     return false
 
   try {
-    const updatePromises = commands.map(async (c) => {
+    for (const c of commands) {
       await trx('BFMASTERCOMMANDS').where({
         COMMANDNO: c.commandNo,
         MACHINEID: machineId,
@@ -323,9 +323,7 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
         MAXA: c.maxA,
         B: c.b,
       })
-    })
-
-    await Promise.all(updatePromises)
+    }
   } catch (error: any) {
     throw new DatabaseQueryError(error.message)
   }
@@ -361,7 +359,7 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
     return false
 
   try {
-    const updatePromises = commands.map(async (command) => {
+    for (const command of commands) {
       await trx('BFMASTERCOMMANDS').where({
         COMMANDNO: command.commandNo,
         MACHINEID: machineId,
@@ -369,9 +367,7 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
         ADVICELIST: command.adviceList ? command.adviceList : -1,
         DONTUSELIST: command.dontUseList,
       })
-    })
-
-    await Promise.all(updatePromises)
+    }
   } catch (error: any) {
     throw new DatabaseQueryError(error.message)
   }
