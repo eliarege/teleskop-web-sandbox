@@ -134,6 +134,7 @@
     "Name": "Recipe Name",
     "Type": "Recipe Type",
     "Group": "Recipe Group",
+    "Program": "Program",
     "Desc": "Recipe Description"
   },
   "commandTypes": {

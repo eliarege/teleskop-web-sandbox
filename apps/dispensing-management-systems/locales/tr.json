@@ -134,6 +134,7 @@
     "Name": "Reçete Adı",
     "Type": "Reçete Türü",
     "Group": "Reçete Grubu",
+    "Program": "Program",
     "Desc": "Reçete Açıklaması"
   },
   "commandTypes": {

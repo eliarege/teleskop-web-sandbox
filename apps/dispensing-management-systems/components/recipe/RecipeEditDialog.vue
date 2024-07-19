@@ -3,7 +3,7 @@ import { useDialogPluginComponent, useQuasar } from 'quasar'
 import draggable from 'vuedraggable'
 import { klona } from 'klona'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
-import type { RecipeMaster, RecipeMasterStep } from '~/shared/types'
+import type { ProgramHeader, RecipeMaster, RecipeMasterStep } from '~/shared/types'
 
 const props = defineProps({
   recipeId: {
@@ -40,8 +40,10 @@ const recipeSteps = ref<RecipeMasterStep[]>([])
 const units: OptionMap[] = [{ id: 0, name: t('units.0') }, { id: 1, name: t('units.1') }, { id: 2, name: t('units.2') }, { id: 3, name: t('units.3') }, { id: 4, name: t('units.4') }, { id: 5, name: t('units.5') }, { id: 6, name: t('units.6') }]
 const types: OptionMap[] = [{ id: 0, name: t('recipeTypes.0') }, { id: 1, name: t('recipeTypes.1') }]
 const groups: OptionMap[] = []
+const programs = ref<ProgramHeader[]>([])
 getRecipe()
 getRecipeSteps()
+getPrograms()
 async function getRecipe() {
   if (!props.isNew) {
     recipe.value = await $fetch(`/api/recipes/master/${props.recipeId}`)
@@ -53,6 +55,13 @@ async function getRecipe() {
 async function getRecipeSteps() {
   recipeSteps.value = await $fetch(`/api/recipes/master/steps/${props.recipeId}`)
   defaultSteps.value = recipeSteps.value
+}
+async function getPrograms() {
+  // Default machine_id = 3
+  programs.value = await $fetch(`/api/programs/3`)
+}
+function getProgramName(program: ProgramHeader) {
+  return `${program.programNo} - ${program.programName}`
 }
 async function onSave() {
   try {
@@ -194,6 +203,23 @@ function onRemoveStep(index: number) {
             option-value="id"
             option-label="name"
             :options="groups"
+          />
+        </div>
+        <div class="row-item">
+          <span class="item-label">
+            {{ t('recipeFields.Program') }}
+          </span>
+          <QSelect
+            v-model="editedRecipe.programNo"
+            borderless
+            dense
+            filled
+            emit-value
+            map-options
+            options-dense
+            option-value="programNo"
+            :option-label=getProgramName
+            :options="programs"
           />
         </div>
         <div class="row-item">
