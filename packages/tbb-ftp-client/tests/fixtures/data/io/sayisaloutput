@@ -1,0 +1,87 @@
+0 1 1 "Ana Pompa" 0 1 0
+1 1 2 "Karistiri Pompa" 0 1 1
+2 1 3 "Alarm Lambasi" 0 1 2
+3 1 4 "Alarm Sireni" 0 1 3
+4 1 5 "Pompa Start Lamba" 0 1 4
+5 1 6 "Otomatik Flitre" 0 1 5
+6 1 7 "Kule Start" 0 1 6
+7 1 8 "Makine Aydinlatma" 0 1 7
+8 1 9 "AK Isitma" 0 1 8
+9 1 10 "AK Sogutma" 0 1 9
+10 1 11 "AK Isitma Donusu" 0 1 10
+11 1 12 "AK Sogutma Donusu" 0 1 11
+12 1 13 "Makineye Sogutma" 0 1 12
+13 1 14 "AK Esanjor Bosalt" 0 1 13
+14 1 15 "Hizli Dozaj Vanasi" 0 1 14
+15 1 16 "Yavas Dozaj Vanasi" 0 1 15
+16 2 1 "Soguk Su" 0 1 16
+17 2 2 "Sıcak Su" 0 1 17
+18 2 3 "Ozmoz Su" 0 1 18
+19 2 4 "Tuzlu Su" 0 1 19
+20 2 5 "AK Su Girisi" 0 1 20
+21 2 6 "Soguk Bosaltma" 0 1 21
+22 2 7 "Sıcak Bosaltma" 0 1 22
+23 2 8 "Dip Blof" 0 1 23
+24 2 9 "Tasar Bosaltma" 0 1 24
+25 2 10 "HT Bosaltma Vana" 0 1 25
+26 2 11 "HT Sogutma Suyu" 0 1 26
+27 2 12 "Makine Ici Yikama" 0 1 27
+28 2 13 "Pompali AK Bosaltma" 0 1 28
+29 2 14 "Kapak Kilitleri" 0 1 29
+30 2 15 "Basinc Lambasi" 0 1 30
+31 2 16 "PH Kontrol Otomatik" 0 1 31
+32 3 1 "RK Su Girisi" 0 1 32
+33 3 2 "RK Bosalt" 0 1 33
+34 3 3 "RK Pompasi" 0 1 34
+35 3 4 "RK Isit" 0 1 35
+36 3 5 "RK Esanjor Bosalt" 0 1 36
+37 3 6 "RK AK Transfer" 0 1 37
+38 3 7 "BK1 RK'dan Doldur" 0 1 38
+39 3 8 "BK1'den BK2'e Dozaj" 0 1 39
+40 3 9 "BK1 Hattan Doldur" 0 1 40
+41 3 10 "BK1 AK'dan Doldur" 0 1 41
+42 3 11 "BK1 Ikaz Lambasi" 0 1 42
+43 3 12 "BK1 Dozaj Pompasi" 0 1 43
+44 3 13 "BK1 Mikser" 0 1 44
+45 3 14 "BK1 Karistirma Vana" 0 1 45
+46 3 15 "BK1 Irtibat" 0 1 46
+47 3 16 "BK1 Isıt" 0 1 47
+48 4 1 "BK2 Hattan Doldur" 0 1 48
+49 4 2 "BK2 AK'dan Doldur" 0 1 49
+50 4 3 "BK2 Ikaz Lambası" 0 1 50
+51 4 4 "BK2 Dozaj Pompasi" 0 1 51
+52 4 5 "BK2 Mikser" 0 1 52
+53 4 6 "BK2 Karistirma Vana" 0 1 53
+54 4 7 "BK2 Irtibat" 0 1 54
+55 4 8 "BK2 Isit" 0 1 55
+56 4 9 "BK1_2  Bosalt" 0 1 56
+57 4 10 "BK1_2  RK Dozaj" 0 1 57
+58 4 11 "Sogutma Donusu RK ya" 0 1 58
+59 4 12 "Basinclandirma" 0 1 59
+60 4 13 "RK Sirkulasyon Vana" 0 1 60
+61 4 14 "BK2'den BK1'e Dozaj" 0 1 61
+62 4 15 "Kucuk Basinc Tahl." 0 1 62
+63 4 16 "Buyuk Basinc Tahl." 0 1 63
+64 5 1 "Ht Doldur" 0 1 64
+65 5 2 "Ht Blof" 0 1 65
+66 5 3 "Ht Basinc Tahliye" 0 1 66
+68 5 5 "BK Soda Vanası" 0 1 68
+69 5 6 "BK Tuz Vanasi" 0 1 69
+70 5 7 "RK'dan Duze Yika" 0 1 70
+71 5 8 "Kasar pH" 0 1 71
+72 5 9 "Enzim pH" 0 1 72
+73 5 10 "Reaktif By" 0 1 73
+74 5 11 "Pes Boya" 0 1 74
+75 5 12 "1.Soda" 0 1 75
+76 5 13 "2.Soda" 0 1 76
+77 5 14 "Yikama Asid" 0 1 77
+78 5 15 "Yikama Sabun" 0 1 78
+80 6 1 "Pes 130 C" 0 1 80
+81 6 2 "Yumusatma" 0 1 81
+83 6 4 "Pompa Klape" 0 1 83
+112 8 1 "Dozaj Hattı" 0 1 112
+113 8 2 "AKRK" 0 1 113
+114 8 3 "Rezerveye Dozaj " 0 1 114
+115 8 4 "AK Doldurma Hattı" 0 1 115
+116 8 5 "Kaplar Blof Hattı" 0 1 116
+117 8 6 "Dozaj Vana Hattı" 0 1 117
