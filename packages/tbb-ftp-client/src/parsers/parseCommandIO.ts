@@ -33,11 +33,12 @@ export function parseCommandIO(content: string) {
       commandNo: Number.parseInt(match[1]),
     }
     if (match) {
-      const groups = match[3].match(/(\d+,\d+ [01])/g)
+      const groups = match[3].match(/(-?\d+),(-?\d+) (-?\d+)/g)
       if (groups) {
         command.chooseList = groups.map((g, selectIndex) => {
           const [xy, z] = g.split(' ')
           const [x, y] = xy.split(',')
+
           return {
             selectIndex,
             ioType: Number.parseInt(x),

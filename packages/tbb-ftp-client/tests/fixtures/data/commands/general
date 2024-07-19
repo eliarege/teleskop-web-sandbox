@@ -1,0 +1,83 @@
+5 1 "RK Boya Suyu Al" "f22.3" "RK_Boya_Suyu_Al.gif" 0 1 -1 1 0
+6 1 "RK Litreli Doldur" "f22.3" "RK_Litreli_Doldur.gif" 0 1 -1 1 0
+7 1 "RK Oransal Doldur" "f22.3" "RK_Oransal_Doldur.gif" 3 1 -1 1 0
+8 1 "BK1 Litreli Doldur" "f22.3" "BK_Litreli_Doldur.gif" 0 1 -1 2 0
+9 1 "BK2 Litreli Doldur" "f22.3" "KK_Litreli_Doldur.gif" 0 1 -1 2 0
+10 1 "BK1 Oransal Doldur" "f22.3" "BK_Oransal_Doldur.gif" 0 1 -1 2 0
+11 1 "BK2 Oransal Doldur" "f22.3" "KK_Oransal_Doldur.gif" 0 1 -1 2 0
+12 1 "BK1 RK Transfer" "f23.5" "BK_RK_Transfer.gif" 0 1 -1 2 0
+13 1 "BK2 RK Transfer" "f23.5" "BK_RK_Transfer.gif" 0 1 -1 2 0
+14 1 "Makine Ici Yikama" "f26.1" "Makina_Yikama.gif" 3 1 -1 1 0
+18 1 "RK Isit" "f2" "RK_Isit.gif" 0 1 -1 1 0
+19 1 "BK1 AK Transfer" "f23.5" "BK_AK_Transfer.gif" 0 1 -1 2 0
+20 1 "BK2 AK Transfer" "f23.5" "KK_AK_Transfer.gif" 0 1 -1 2 0
+21 1 "BK1 AK Dozaj" "f9.14" "BK_AK_Dozaj.gif" 0 1 -1 2 0
+23 1 "BK1 RK Sirkulasyon" "f20.4" "BK_RK_Sirkulasyon.gif" 0 1 -1 2 0
+24 1 "Sicaklik Kontrol 2" "f14.8" "Sicaklik_Kontrol.gif" 0 1 -1 2 0
+25 1 "BK1 Isit " "f2" "BK_Isit.gif" 0 1 -1 2 0
+26 1 "BK2 Isit" "f2" "KK_Isit.gif" 0 1 -1 2 0
+27 1 "BK1 AK Sirkulasyon" "f20.4" "BK_AK_Sirkulasyon.gif" 0 1 -1 2 0
+28 1 "BK2 AK Sirkulasyon" "f20.4" "KK_AK_Sirkulasyon.gif" 0 1 -1 2 0
+29 1 "RK Bosalt/Yika" "f23.5" "RK_Bosalt.gif" 0 1 -1 2 0
+30 1 "AK Bosalt" "f31" "AK_Bosalt.gif" 0 1 -1 2 0
+31 1 "Tasar Yikama" "f13" "Tasar_yikama.gif" 0 1 -1 2 0
+32 1 "Sicak Tasar" "f13" "Sicak_Tasar.gif" 0 1 -1 2 0
+33 1 "Litreli Tasar Yikama" "f13.7" "Tasar_yikama.gif" 0 1 -1 2 0
+34 0 "BSD Sogutma" "f19" "RCR_Sogutma.gif" 0 0 -1 2 0
+35 1 "RK Karistir" "f18" "RK_Karistir.gif" 3 1 -1 1 0
+36 1 "BK1 Karistir" "f18" "BK_Mikser.gif" 3 1 -1 2 0
+37 1 "BK2 Karistir" "f18" "KK_Mikser.gif" 3 1 -1 2 0
+38 1 "Basinclandirma" "f26.1" "Basinc_Artir.gif" 3 1 -1 1 0
+39 1 "Basinc Tahliye" "f1" "bobin_Basinc_Dusur.gif" 0 1 -1 2 0
+40 1 "Kontinu CMS" "f35" "RK_AK_Transfer.gif" 0 1 -1 2 0
+42 1 "Pompa" "f18.3" "Pompa.gif" 3 1 -1 0 0
+43 1 "Kule" "f12.5" "Haspel.gif" 3 1 -1 0 0
+44 1 "Duze" "f27" "Duze.gif" 3 0 -1 1 0
+45 1 "Tur Suresi Kontrolu" "f8.4" "Haspel.gif" 3 1 -1 0 0
+46 1 "Kumas Yukle" "f21" "Kumas_Yukle.gif" 0 1 -1 2 0
+48 1 "pH Kontrol" "f21" "Ph_Kontrol.gif" 0 1 -1 2 0
+49 1 "Numune Al" "f21" "Numune_Al.gif" 0 1 -1 2 0
+50 1 "BK1 Hazirla" "f21" "BK_Hazirla.gif" 0 1 -1 2 0
+51 1 "BK2 Hazirla" "f21" "KK_Hazirla.gif" 0 1 -1 2 0
+52 1 "Boya Ver" "f21" "KK_Boya_ver.gif" 0 1 -1 2 0
+53 1 "Tuz Ver" "f21" "BK_Tuz_ver.gif" 0 1 -1 2 0
+54 1 "Soda Ver" "f21" "KK_Soda_ver.gif" 0 1 -1 2 0
+55 1 "Peroksit Kontrol" "f21" "Numune_Al.gif" 0 1 -1 2 0
+56 1 "Online Kimyasal" "f15" "Kimyasal_Iste.gif" 0 0 -1 1 0
+58 1 "Duze" "f27" "Duze.gif" 3 0 -1 1 0
+59 1 "BK2 Sirk Istek" "f15.20" "Kimyasal_Iste.gif" 0 0 -1 2 0
+60 1 "BK2'den BK1'e Dozaj" "f25" "KK_AK_Dozaj.gif" 0 0 -1 2 0
+61 1 "AK Poly Yika Suyu Al" "f2" "AK_Boya_Suyu_Al.gif" 0 1 -1 2 0
+62 1 "BK1 Karistir Sirk" "f18" "BK_Mikser.gif" 3 1 -1 2 0
+63 1 "BK2 Karistir Sirk" "f18" "KK_Mikser.gif" 3 1 -1 2 0
+67 1 "RK Yikama Suyu Al" "f22.3" "RK_Boya_Suyu_Al.gif" 0 1 -1 1 0
+69 1 "RK Yumusatma Suyu Al" "f22.3" "RK_Boya_Suyu_Al.gif" 0 1 -1 1 0
+70 1 "AK Yumusatma Suyu Al" "f2" "AK_Boya_Suyu_Al.gif" 0 1 -1 2 0
+73 1 "AK Poly Boya Suyu Al" "f2" "AK_Boya_Suyu_Al.gif" 0 1 -1 2 0
+74 1 "RK Polyester Suyu Al" "f22.3" "RK_Boya_Suyu_Al.gif" 0 1 -1 1 0
+75 1 "BK2 Istek Yap" "f15" "Boya_Iste.gif" 0 1 -1 1 0
+76 1 "AK Seviyeli Bosaltma" "f31" "AK_Bosalt.gif" 0 1 -1 2 0
+77 1 "HT Sogutma" "f19" "RCR_Sogutma.gif" 0 1 -1 2 0
+78 1 "pH Kontrol Auto" "f21" "Ph_Kontrol.gif" 0 1 -1 2 0
+79 1 "BK1 Litreli Soda 1" "f22.3" "BK_Litreli_Doldur.gif" 0 1 -1 2 0
+80 1 "BK1 Litreli Tuz Al" "f22.3" "BK_Litreli_Doldur.gif" 0 1 -1 2 0
+81 1 "BK1 Litreli Soda 2" "f22.3" "BK_Litreli_Doldur.gif" 0 1 -1 2 0
+83 1 "AK Ikinci Litre" "f2" "bobin_RK_Litreli_Doldur.gif" 3 1 -1 2 0
+84 1 "AK Litreli Tuz Al" "f2" "AK_Litreli_Doldur.gif" 0 1 -1 2 0
+85 1 "RK Litreli Tuz Al" "f2" "bobin_RK_Litreli_Doldur.gif" 0 1 -1 2 0
+82 1 "RK Ikinci Litre" "f22.3" "bobin_RK_Litreli_Doldur.gif" 0 1 -1 1 0
+22 1 "BK2 AK Dozaj" "f9.14" "KK_AK_Dozaj.gif" 0 1 -1 2 0
+72 1 "RK AK Duze Yikama" "f13" "Tasar_Yikama.gif" 0 1 -1 2 0
+17 1 "Bekle" "f1" "Bekle.gif" 0 1 -1 2 0
+87 1 "DUZE_TEMIZLIK" "f1" "Bekle.gif" 0 1 -1 0 0
+47 1 "Kumas Cikart" "f21" "Kumas_Cikart.gif" 0 1 -1 2 0
+86 1 "BK1'den BK2'e Dozaj" "f25" "KK_AK_Dozaj.gif" 0 0 -1 2 0
+57 1 "Sirkulasyonlu Istek" "f15.20" "Kimyasal_Iste.gif" 0 0 -1 2 0
+2 1 "AK Oransal Doldur" "f2" "AK_Oransal_Doldur.gif" 0 1 -1 2 0
+1 1 "AK Birinci Litre" "f2" "AK_Litreli_Doldur.gif" 0 1 -1 2 0
+3 1 "AK Boya Suyu Al" "f2" "AK_Boya_Suyu_Al.gif" 0 1 -1 2 0
+95 1 "Yogunluk Kontrol" "f21" "Ph_Kontrol.gif" 0 1 -1 2 0
+15 1 "Sicaklik Kontrol" "f14.8" "Sicaklik_Kontrol.gif" 0 1 -1 2 0
+16 1 "PID" "f14.8" "PID.gif" 3 1 -1 1 0
+4 1 "RK AK Transfer" "f23" "RK_AK_Transfer.gif" 0 1 -1 2 0
+68 1 "AK Yikama Suyu Al" "f2" "AK_Boya_Suyu_Al.gif" 0 1 -1 2 0

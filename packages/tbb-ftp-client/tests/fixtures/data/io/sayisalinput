@@ -1,0 +1,79 @@
+0 1 1 "Basinc Tahliye Acik" 1 0
+1 1 2 "Pompa Calisiyor" 1 1
+2 1 3 "Pompa 2 Calisiyor " 1 2
+3 1 4 "Kule Inverteri Arıza" 1 3
+4 1 5 "Pompa Inv.Ariza" 1 4
+5 1 6 "RK Pompa Ariza" 1 5
+6 1 7 "BK1 Pompa Ariza" 1 6
+7 1 8 "BK2 Pompa Ariza" 1 7
+8 1 9 "BK1 Mikser Ariza" 1 8
+9 1 10 "BK2 Mikser Ariza" 1 9
+10 1 11 "Start Stop" 1 10
+11 1 12 "Alarm Stop" 1 11
+12 1 13 "Acil Stop" 1 12
+13 1 14 "Otomatik" 1 13
+14 1 15 "Mak Aydinlatma" 1 14
+15 1 16 "Kumas Koptu Al Iptal" 1 15
+16 1 17 "85C Alti Girisi" 1 16
+17 1 18 "AK Isit" 1 17
+18 1 19 "AK Sogut" 1 18
+19 1 20 "AK Doldur" 1 19
+20 1 21 "AK Bosalt" 1 20
+21 1 22 "Rez Doldur" 1 21
+22 1 23 "Rez Bosalt" 1 22
+23 1 24 "BK1 Doldur" 1 23
+24 1 25 "BK1 Bosalt" 1 24
+25 1 26 "AK BK1 Transfer" 1 25
+26 1 27 "BK1 AK Transfer" 1 26
+27 1 28 "BK1 Mikser Motorlu" 1 27
+28 1 29 "BK1 Hazir" 1 28
+29 1 30 "BK1 Isıt" 1 29
+30 1 31 "Bos" 1 30
+31 1 32 "Akuple Hazir" 1 31
+32 2 1 "BK2 Doldur" 1 32
+33 2 2 "BK2 Bosalt" 1 33
+34 2 3 "AK BK2 Transfer" 1 34
+35 2 4 "BK2 AK Transfer" 1 35
+36 2 5 "BK2 Mikser Motorlu" 1 36
+37 2 6 "BK2 Hazir" 1 37
+38 2 7 "BK 2 Isit" 1 38
+39 2 8 "1.Goz Uc Bul Sen" 1 39
+40 2 9 "1.Kule Kumas Sardi" 1 40
+41 2 10 "1.Kule Kapak Sensoru" 1 41
+42 2 11 "2.Goz Uc Bul Sensoru" 1 42
+43 2 12 "2.Kule Kumas Sardi" 1 43
+44 2 13 "2.Kule Kapak Sensoru" 1 44
+45 2 14 "3.Goz Uc Bul Sensoru" 1 45
+46 2 15 "3.Kule Kumas Sardi" 1 46
+47 2 16 "3.Kule Kapak Sensoru" 1 47
+48 2 17 "4.Goz Uc Bul Sensor" 1 48
+49 2 18 "4.Kule Kumas Sardi" 1 49
+50 2 19 "4.Kule Kapak Sensoru" 1 50
+51 2 20 "5.Goz Uc Bul Sensor" 1 51
+52 2 21 "5.Kule Kumas Sardi" 1 52
+53 2 22 "5.Kule Kapak Sensoru" 1 53
+54 2 23 "6.Goz Uc Bul Sensor" 1 54
+55 2 24 "6.Kule Kumas Sardi" 1 55
+56 2 25 "6.Kule Kapak Sensoru" 1 56
+57 2 26 "7.Goz Uc Bul Sensor" 1 57
+58 2 27 "7.Kule Kumas Sardi" 1 58
+59 2 28 "7.Kule Kapak Sensoru" 1 59
+60 2 29 "8.Goz Uc Bul Sensor" 1 60
+61 2 30 "8.Kule Kumas Sardi" 1 61
+62 2 31 "8.Kule Kapak Sensoru" 1 62
+64 3 1 "Hiz Auto-Manuel" 1 64
+65 3 2 "BK1 Mikser Pompalı" 1 65
+66 3 3 "BK2 Mikser Pompalı" 1 66
+67 3 4 "AK Hazir" 1 67
+68 3 5 "BK RK Transfer" 1 68
+69 3 6 "9.Kule Kumas Sardi" 1 69
+70 3 7 "10.Kule Kumas Sardi" 1 70
+71 3 8 "Kule 1 ileri" 1 71
+72 3 9 "Kule 2 Ileri" 1 72
+73 3 10 "Kule 3 Ileri" 1 73
+74 3 11 "Kule 4 Ileri" 1 74
+75 3 12 "Kule 5 Ileri" 1 75
+76 3 13 "Kule 6 Ileri" 1 76
+77 3 14 "Kule 7 Ileri" 1 77
+78 3 15 "Kule 8 Ileri" 1 78
+79 3 16 "Kapaklar Kapali" 1 79

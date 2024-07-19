@@ -1,11 +1,3 @@
-/**
- * **Path**: `/tbb6500/data/config/baslatmaParametreleri`
- *
- * **Example**:
- * ```
- * SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600,[]"
- * ```
- */
 const unitMap = [
   '---',
   'Kg',
@@ -45,12 +37,22 @@ const unitMap = [
   'F/min',
   'oz/Feet',
 ]
-const pattern = /^SABIT_(\d+)=(.+), (.+), (.+), (.+), (.+), (.+), (.+),(\[.*\])$/gim
+
+const pattern = /^SABIT_(\d+)=(.+), (.+), (.+), (.+), (.+), (.+), ([^,]*),(?:([^,]*),)?(\[.*\])$/gim
+
+/**
+ * **Path**: `/tbb6500/data/config/baslatmaParametreleri`
+ *
+ * **Example**:
+ * ```
+ * SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600,[]"
+ * ```
+ */
 export function parseBatchParameters(content: string) {
   const reasons = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const list = JSON.parse(match[9])
+    const list = JSON.parse(match[10])
     const selectionList = []
     const selectionValues = []
     const selectionListDefault = []
@@ -73,7 +75,7 @@ export function parseBatchParameters(content: string) {
       unitCode: Number.parseInt(match[7]),
       unitText: unitMap[Number.parseInt(match[7])],
       parameterId: Number.parseInt(match[8]),
-      dmArea: Number.parseInt(match[9]),
+      dmArea: match[9] ? Number.parseInt(match[9]) : null,
       selectionList,
       selectionValues,
       selectionListDefault,

@@ -35,6 +35,9 @@ import { parseBatchParameters } from './parsers/parseBatchParameters'
 import { parseCycleControl } from './parsers/parseCycleControl'
 import { parseSystem, serializeSystem } from './parsers/parseSystem'
 import { parseLocksOutput } from './parsers/parseLocksOutput'
+import { parseCalibrationCounter } from './parsers/parseCalibrationCounter'
+import { parseCalibrationAnalogInput } from './parsers/parseCalibrationAnalogInput'
+import { parseIOChangedEvent } from './parsers/parseIOChangedEvent'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -230,8 +233,22 @@ export class TbbFtpClient {
   async fetchCounters() {
     const remotePath = '/tbb6500/data/io/sayac'
     const content = await this._download(remotePath)
-    const analogInputs = parseCounter(content)
-    return analogInputs
+    const counters = parseCounter(content)
+    return counters
+  }
+
+  async fetchCalibrationCounters() {
+    const remotePath = '/tbb6500/data/kalibrasyon/sayackalibrasyon'
+    const content = await this._download(remotePath)
+    const calibrationCounters = parseCalibrationCounter(content)
+    return calibrationCounters
+  }
+
+  async fetchCalibrationAnalogInput() {
+    const remotePath = '/tbb6500/data/kalibrasyon/aikalibrasyon'
+    const content = await this._download(remotePath)
+    const calibrations = parseCalibrationAnalogInput(content)
+    return calibrations
   }
 
   async fetchCommandGroups() {
@@ -246,6 +263,13 @@ export class TbbFtpClient {
     const content = await this._download(remotePath)
     const commands = parseCommandsGeneral(content)
     return commands
+  }
+
+  async fetchIOChangedEvent() {
+    const remotePath = '/tbb6500/data/config/io_changed_event'
+    const content = await this._download(remotePath)
+    const inputs = parseIOChangedEvent(content)
+    return inputs
   }
 
   async fetchCommandsEditing() {
@@ -314,8 +338,7 @@ export class TbbFtpClient {
   async fetchLocksInput() {
     const remotePath = '/tbb6500/data/locks/locks_inputs'
     const content = await this._download(remotePath)
-
-    const lines = content.split('\n')
+    const lines = content.split('\n').filter(line => line.length > 0)
     const parsedData = lines.map(parseSeperatedLocks)
 
     return parsedData

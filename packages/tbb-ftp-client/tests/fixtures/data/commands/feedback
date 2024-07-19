@@ -1,0 +1,260 @@
+5 0 "PV 1" "Sıcaklık" 1 3
+5 0 "PV 2" "Seviye" 1 2
+5 0 "PV 3" "Süre" 1 1
+5 0 "PV 4" "Stabilize Zamanı" 0 11
+6 0 "PV 1" "Sıcaklık" 1 3
+6 0 "PV 2" "Seviye" 1 2
+6 0 "PV 3" "Süre" 1 1
+6 0 "PV 4" "Stabilize Zamanı" 0 11
+7 0 "PV 1" "Sıcaklık" 1 3
+7 0 "PV 2" "Seviye" 1 2
+7 0 "PV 3" "Süre" 1 1
+7 0 "PV 4" "Stabilize Zamanı" 0 11
+8 0 "PV 1" "Sıcaklık" 0 3
+8 0 "PV 2" "Seviye" 1 2
+8 0 "PV 3" "Süre" 1 1
+8 0 "PV 4" "Stabilize Zamanı" 0 11
+9 0 "PV 1" "Sıcaklık" 1 3
+9 0 "PV 2" "Seviye" 1 2
+9 0 "PV 3" "Süre" 1 1
+9 0 "PV 4" "Stabilize Zamanı" 0 11
+10 0 "PV 1" "Sıcaklık" 0 3
+10 0 "PV 2" "Seviye" 1 2
+10 0 "PV 3" "Süre" 1 1
+10 0 "PV 4" "Stabilize Zamanı" 0 11
+11 0 "PV 1" "Sıcaklık" 1 3
+11 0 "PV 2" "Seviye" 1 2
+11 0 "PV 3" "Süre" 1 1
+11 0 "PV 4" "Stabilize Zamanı" 0 11
+12 0 "PV 1" "Süre" 1 1
+12 0 "PV 2" "Seviye" 1 2
+13 0 "PV 1" "Süre" 1 1
+13 0 "PV 2" "Seviye" 1 2
+14 0 "PV 1" "Süre" 0 1
+14 0 "PV 2" "Pasaj Sayısı" 0 2
+18 0 "PV 1" "Seviye" 1 1
+18 0 "PV 2" "Süre" 1 5
+18 0 "PV 3" "Stabilize Zamanı" 0 1
+19 0 "PV 1" "Süre" 1 1
+19 0 "PV 2" "Seviye" 1 2
+20 0 "PV 1" "Süre" 1 1
+20 0 "PV 2" "Seviye" 1 2
+21 0 "PV 1" "Süre" 1 4
+21 0 "PV 2" "Seviye" 1 0
+21 0 "PV 3" "Hedef" 1 0
+21 0 "PV 4" "Pasaj Sayısı" 0 17
+21 0 "PV 5" "Alarm Suresi" 1 0
+23 0 "PV 1" "Süre" 1 1
+23 0 "PV 2" "Seviye" 1 2
+23 0 "PV 3" "Pasaj Sayısı" 0 13
+23 0 "PV 4" "Yıkama Sayısı" 0 1
+24 0 "PV 1" "Süre" 1 1
+24 1 "PV 2" "Sıcaklık" 1 3
+24 1 "PV 3" "Hedef" 1 0
+24 0 "PV 4" "Bekleme Zamanı" 1 7
+24 0 "PV 5" "Pasaj Sayısı" 0 16
+25 0 "PV 1" "Seviye" 1 1
+25 0 "PV 2" "Süre" 1 5
+25 0 "PV 3" "Stabilize Zamanı" 0 6
+26 0 "PV 1" "Seviye" 1 1
+26 0 "PV 2" "Süre" 1 5
+26 0 "PV 3" "Stabilize Zamanı" 0 6
+27 0 "PV 1" "Süre" 1 1
+27 0 "PV 2" "Seviye" 1 2
+27 0 "PV 3" "Pasaj Sayısı" 0 13
+28 0 "PV 1" "Süre" 1 1
+28 0 "PV 2" "Seviye" 1 2
+28 0 "PV 3" "Pasaj Sayısı" 0 13
+29 0 "PV 1" "Süre" 1 1
+29 0 "PV 2" "Seviye" 1 2
+30 0 "PV 1" "Süre" 1 3
+30 0 "PV 2" "Seviye" 1 1
+30 0 "PV 3" "Sıcaklık" 1 2
+30 0 "PV 4" "Süzülme Süresi" 1 5
+31 0 "PV 1" "Süre" 1 5
+31 0 "PV 2" "Seviye" 1 1
+31 0 "PV 3" "Flowmetre" 0 7
+31 0 "PV 4" "Sıcaklık" 0 6
+31 0 "PV 5" "Hedef" 0 0
+32 0 "PV 1" "Süre" 1 5
+32 0 "PV 2" "Seviye" 1 1
+32 0 "PV 3" "Flowmetre" 0 7
+32 0 "PV 4" "Sıcaklık" 1 6
+32 0 "PV 5" "Hedef" 0 0
+33 0 "PV 1" "Süre" 1 5
+33 0 "PV 2" "Seviye" 0 0
+33 0 "PV 3" "Flowmetre" 1 0
+33 0 "PV 4" "Sıcaklık" 0 6
+33 0 "PV 5" "Hedef" 1 0
+33 0 "PV 6" "Pasaj Sayısı" 0 0
+33 0 "PV 7" "Rezerve Seviye" 0 0
+33 0 "PV 8" "Taşar Alt Seviye" 1 0
+33 0 "PV 9" "Taşar Üst Seviye" 1 0
+33 0 "PV 10" "Boşalt Bekleme" 1 17
+34 0 "PV 1" "Süre" 1 3
+34 0 "PV 2" "Seviye" 1 10
+34 1 "PV 3" "Sıcaklık" 1 2
+34 1 "PV 4" "Hedef Sıcaklık" 1 0
+34 0 "PV 5" "Pasaj Sayısı" 0 7
+35 0 "PV 1" "Süre" 1 0
+35 0 "PV 2" "Pompa AO" 0 1
+36 0 "PV 1" "Süre" 1 0
+36 0 "PV 2" "Pompa AO" 0 1
+37 0 "PV 1" "Süre" 1 0
+37 0 "PV 2" "Pompa AO" 0 1
+38 0 "PV 1" "Süre" 1 1
+38 0 "PV 2" "Pasaj Sayısı" 1 3
+39 0 "PV 1" "Süre" 1 1
+39 0 "PV 2" "Tur Sayısı" 0 2
+40 0 "PV 1" "Süre" 1 1
+40 0 "PV 2" "RK Seviye" 1 0
+40 0 "PV 3" "RK Sıcaklık" 1 2
+40 0 "PV 4" "AK Seviye" 1 4
+40 0 "PV 5" "AK Sıcaklık" 1 2
+42 0 "PV 1" "Süre" 0 0
+42 0 "PV 2" "Pompa AO" 1 1
+42 0 "PV 3" "Pompa Durum" 0 5
+43 0 "PV 1" "Kule1 Hız" 1 1
+43 0 "PV 2" "Kule2 Hız" 0 0
+44 0 "PV 1" "Duze" 1 1
+45 0 "PV 1" "Ortalama Hız" 1 0
+45 0 "PV 2" "Süre" 0 0
+45 0 "PV 3" "Ort. Tur Süresi" 0 0
+45 0 "PV 4" "Ort. Tur Sayısı" 0 0
+45 0 "PV 5" "Plater Hızı" 0 0
+46 0 "PV 1" "Süre" 1 1
+48 0 "PV 1" "Süre" 1 1
+49 0 "PV 1" "Süre" 1 1
+50 0 "PV 1" "Süre" 1 1
+51 0 "PV 1" "Süre" 1 1
+52 0 "PV 1" "Süre" 1 1
+53 0 "PV 1" "Süre" 1 1
+54 0 "PV 1" "Süre" 1 1
+55 0 "PV 1" "Süre" 1 1
+56 0 "PV 1" "Süre" 1 1
+56 0 "PV 2" "Durum" 1 6
+58 0 "PV 1" "Duze" 1 1
+59 0 "PV 1" "Süre" 1 1
+59 0 "PV 2" "Durum" 1 20
+59 0 "PV 3" "Pasaj Sayisi" 0 0
+59 0 "PV 4" "Yikama Sayisi" 0 0
+59 0 "PV 5" "Tank Seviye " 1 2
+59 0 "PV 6" "Sirk.Devam Sure" 1 19
+60 0 "PV 1" "Süre" 1 3
+60 1 "PV 2" "T1 Değer" 1 0
+60 1 "PV 3" "T2 Değer" 1 0
+60 1 "PV 4" "Hedef" 1 0
+60 0 "PV 5" "Pasaj Sayısı" 1 11
+61 0 "PV 1" "Seviye" 1 1
+61 0 "PV 2" "Süre" 1 5
+61 0 "PV 3" "Stabilize Zamanı" 0 6
+62 0 "PV 1" "Süre" 1 0
+62 0 "PV 2" "Pompa AO" 0 1
+63 0 "PV 1" "Süre" 1 0
+63 0 "PV 2" "Pompa AO" 0 1
+67 0 "PV 1" "Sıcaklık" 1 3
+67 0 "PV 2" "Seviye" 1 2
+67 0 "PV 3" "Süre" 1 1
+67 0 "PV 4" "Stabilize Zamanı" 0 11
+69 0 "PV 1" "Sıcaklık" 1 3
+69 0 "PV 2" "Seviye" 1 2
+69 0 "PV 3" "Süre" 1 1
+69 0 "PV 4" "Stabilize Zamanı" 0 11
+70 0 "PV 1" "Seviye" 1 1
+70 0 "PV 2" "Süre" 1 5
+70 0 "PV 3" "Stabilize Zamanı" 0 6
+73 0 "PV 1" "Seviye" 1 1
+73 0 "PV 2" "Süre" 1 5
+73 0 "PV 3" "Stabilize Zamanı" 0 6
+74 0 "PV 1" "Sıcaklık" 1 3
+74 0 "PV 2" "Seviye" 1 2
+74 0 "PV 3" "Süre" 1 1
+74 0 "PV 4" "Stabilize Zamanı" 0 11
+75 0 "PV 1" "Süre" 1 1
+75 0 "PV 2" "Durum" 1 6
+76 0 "PV 1" "Süre" 1 3
+76 0 "PV 2" "Seviye" 1 1
+76 0 "PV 3" "Sıcaklık" 0 2
+76 0 "PV 4" "Süzülme Süresi" 0 5
+77 0 "PV 1" "Süre" 1 3
+77 0 "PV 2" "Seviye" 1 10
+77 1 "PV 3" "Sıcaklık" 1 2
+77 1 "PV 4" "Hedef Sıcaklık" 1 0
+77 0 "PV 5" "Pasaj Sayısı" 1 7
+78 0 "PV 1" "Süre" 1 1
+79 0 "PV 1" "Sıcaklık" 0 3
+79 0 "PV 2" "Seviye" 0 2
+79 0 "PV 3" "Süre" 1 1
+79 0 "PV 4" "Stabilize Zamanı" 0 11
+80 0 "PV 1" "Sıcaklık" 0 3
+80 0 "PV 2" "Seviye" 0 2
+80 0 "PV 3" "Süre" 1 1
+80 0 "PV 4" "Stabilize Zamanı" 0 11
+81 0 "PV 1" "Sıcaklık" 0 3
+81 0 "PV 2" "Seviye" 0 2
+81 0 "PV 3" "Süre" 1 1
+81 0 "PV 4" "Stabilize Zamanı" 0 11
+83 0 "PV 1" "Seviye" 1 1
+83 0 "PV 2" "Süre" 1 5
+83 0 "PV 3" "Stabilize Zamanı" 0 6
+84 0 "PV 1" "Seviye" 1 1
+84 0 "PV 2" "Süre" 1 5
+84 0 "PV 3" "Stabilize Zamanı" 0 6
+85 0 "PV 1" "Seviye" 1 1
+85 0 "PV 2" "Süre" 1 5
+85 0 "PV 3" "Stabilize Zamanı" 0 6
+82 0 "PV 1" "Sıcaklık" 0 3 0
+82 0 "PV 2" "Seviye" 1 2 0
+82 0 "PV 3" "Süre" 1 1 0
+82 0 "PV 4" "Stabilize Zamanı" 0 11 0
+22 0 "PV 1" "Süre" 1 4 0
+22 0 "PV 2" "Seviye" 1 0 0
+22 0 "PV 3" "Hedef" 1 0 0
+22 0 "PV 4" "Pasaj Sayısı" 0 17 0
+22 0 "PV 5" "Alarm Suresi" 0 0 0
+72 0 "PV 1" "Süre" 1 5 0
+72 0 "PV 2" "Seviye" 1 1 0
+72 0 "PV 3" "Flowmetre" 0 7 0
+72 0 "PV 4" "Sıcaklık" 0 6 0
+72 0 "PV 5" "Hedef" 0 0 0
+17 0 "PV 1" "Süre" 1 1 0
+17 0 "PV 2" "Tur Sayısı" 0 2 0
+87 0 "PV 1" "Çalisma Süresi" 1 1 0
+87 0 "PV 2" "Pasaj" 0 2 0
+47 0 "PV 1" "Süre" 1 1 0
+86 0 "PV 1" "Süre" 1 3 0
+86 1 "PV 2" "T1 Değer" 1 0 0
+86 1 "PV 3" "T2 Değer" 1 0 0
+86 1 "PV 4" "Hedef" 1 0 0
+86 0 "PV 5" "Pasaj Sayısı" 1 11 0
+57 0 "PV 1" "Süre" 1 1 0
+57 0 "PV 2" "Durum" 1 20 0
+57 0 "PV 3" "Pasaj Sayisi" 0 0 0
+57 0 "PV 4" "Yikama Sayisi" 0 0 0
+57 0 "PV 5" "Tank Seviye " 1 2 0
+57 0 "PV 6" "Sirk.Devam Sure" 1 19 0
+2 0 "PV 1" "Seviye" 1 1 0
+2 0 "PV 2" "Süre" 1 5 0
+2 0 "PV 3" "Stabilize Zamanı" 0 6 0
+1 0 "PV 1" "Seviye" 1 1 0
+1 0 "PV 2" "Süre" 1 5 0
+1 0 "PV 3" "Stabilize Zamanı" 0 6 0
+3 0 "PV 1" "Seviye" 1 1 0
+3 0 "PV 2" "Süre" 1 5 0
+3 0 "PV 3" "Stabilize Zamanı" 0 6 0
+95 0 "PV 1" "Süre" 1 1 0
+15 0 "PV 1" "Süre" 1 1 0
+15 1 "PV 2" "Sıcaklık" 1 3 0
+15 1 "PV 3" "Hedef" 1 0 0
+15 0 "PV 4" "Bekleme Zamanı" 1 7 0
+15 0 "PV 5" "Pasaj Sayısı" 0 16 0
+16 0 "PV 1" "Süre" 1 1 0
+16 1 "PV 2" "Sıcaklık" 1 3 0
+16 1 "PV 3" "Hedef" 1 0 0
+16 0 "PV 4" "Bekleme Zamanı" 0 7 0
+16 0 "PV 5" "Pasaj Sayısı" 0 16 0
+4 0 "PV 1" "Süre" 1 1 0
+4 0 "PV 2" "Seviye" 1 0 0
+68 0 "PV 1" "Seviye" 1 1 0
+68 0 "PV 2" "Süre" 1 5 0
+68 0 "PV 3" "Stabilize Zamanı" 0 6 0

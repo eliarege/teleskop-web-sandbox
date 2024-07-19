@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type { LockOutputAnalog, LockOutputDigital, TbbFtpClient } from 'tbb-ftp-client'
+import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from 'tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { DatabaseQueryError } from '../error'
 import { calcIONumber, getIONames } from '.'
@@ -43,17 +43,27 @@ export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, t
   const inputs = await tbb.fetchAnalogInputs()
   if (!inputs.length)
     return false
-  const controllerModel = await tbb.fetchControllerModel()
 
-  const analogInputs = inputs?.map(d => ({
-    MACHINEID: machineId,
-    ID: calcIONumber(d, controllerModel, 'analog input'),
-    CARD: d.card,
-    CANAL: d.channel,
-    NAME: d.name,
-    ENABLED: d.enabled,
-    ISDELETED: false,
-  }))
+  const controllerModel = await tbb.fetchControllerModel()
+  const calibrations: CalibrationAnalogInput[] = await tbb.fetchCalibrationAnalogInput()
+
+  const analogInputs = inputs?.map((d) => {
+    const calib = calibrations.find(c => c.id === d.id)
+    const calibMaxValue = calib?.calibType === 0 ? 150 : Math.max(...calib?.measureValues?.map(m => m.value) ?? [0]) * 1.2
+
+    return {
+      MACHINEID: machineId,
+      ID: calcIONumber(d, controllerModel, 'analog input'),
+      CARD: d.card,
+      CANAL: d.channel,
+      NAME: d.name,
+      ENABLED: d.enabled,
+      ISDELETED: false,
+      CALIBTYPE: calib!.calibType,
+      CALIBMAXVALUE: calibMaxValue,
+      CALIBUNIT: calib!.unit,
+    }
+  })
 
   return await replaceRecords(trx, 'BFMACHAIN', analogInputs, { MACHINEID: machineId })
 }
@@ -118,7 +128,10 @@ export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx: 
   const counters = await tbb.fetchCounters()
   if (!counters.length)
     return false
+
   const controllerModel = await tbb.fetchControllerModel()
+  const calibCounters = await tbb.fetchCalibrationCounters()
+
   const data = counters?.map(d => ({
     MACHINEID: machineId,
     ID: calcIONumber(d, controllerModel, 'counter'),
@@ -127,6 +140,7 @@ export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx: 
     NAME: d.name,
     ENABLED: d.enabled,
     ISDELETED: false,
+    CALIBUNIT: calibCounters.find(c => c.id === d.id)?.unit ?? '',
   }))
 
   return await replaceRecords(trx, 'BFMACHCOUNTER', data, { MACHINEID: machineId })
@@ -208,6 +222,28 @@ export async function updateCommandGroups(machineId: number, tbb: TbbFtpClient, 
   })
   return await replaceRecords(trx, 'BFCOMMANDGROUP', data, { MACHINEID: machineId })
 }
+
+export async function updateIOChangedEvent(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+  const inputs = await tbb.fetchIOChangedEvent()
+  if (!inputs.length)
+    return false
+  const data = inputs.map((d) => {
+    const period = d.ioType === 1 || d.ioType === 2 ? d.period : 0
+    const processed = d.ioType === 1 || d.ioType === 2 ? true : d.difference === 1
+
+    return {
+      MACHINEID: machineId,
+      IOID: d.ioType,
+      IOINDEX: d.ioIndex,
+      DIFFERENCE: d.difference,
+      PERIOD: period,
+      PROCESSED: processed,
+    }
+  })
+
+  return await replaceRecords(trx, 'BFIOCHANGEDEVENT', data, { MACHINEID: machineId })
+}
+
 export async function updateUsers(tbb: TbbFtpClient, trx: Knex) {
   const users = await tbb.fetchUsers()
   if (!users.length)
@@ -230,21 +266,40 @@ export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient
   const commands = await tbb.fetchCommandsGeneral()
   if (!commands.length)
     return false
-  const data = commands.map(d => ({
-    COMMANDNO: d.commandNo,
-    NAME: d.name,
-    TBBFUNTIONNAME: d.tbbFunctionName,
-    ICON: d.icon,
-    COMMANDTYPE: d.commandType,
-    ISRUNMANUAL: d.isRunManual,
-    MOVEPARALLEL: d.moveParallel,
-    GROUPID: d.groupId,
-    MACHINEID: machineId,
-    ACTIVATED: (d.activated === 1 && d.machineConstantId && d.machineConstantId !== -1) ? 1 : 0,
-    ISDELETED: 0,
-    ISCHANGED: 1,
-    FUNCTIONID: 0,
-  }))
+
+  const paramValues = await trx('BFMACHPARAMETERS')
+    .select({
+      machineParameterId: 'MACHINEPARAMETERID',
+      currentValue: 'currentValue',
+    })
+    .where('MACHINEID', machineId)
+
+  const data = commands.map((d) => {
+    let activated = 0
+    if (d.activated === 1 && d.machineConstantId !== -1) {
+      const currentValue = paramValues.find(p => p.machineParameterId === d.machineConstantId)?.currentValue
+      if (currentValue && currentValue !== 0)
+        activated = 1
+    }
+
+    return {
+      COMMANDNO: d.commandNo,
+      NAME: d.name,
+      TBBFUNTIONNAME: d.tbbFunctionName,
+      ICON: d.icon,
+      COMMANDTYPE: d.commandType,
+      ISRUNMANUAL: d.isRunManual,
+      MOVEPARALLEL: d.moveParallel,
+      GROUPID: d.groupId,
+      MACHINEID: machineId,
+      ACTIVATED: activated,
+      ISDELETED: 0,
+      ISCHANGED: 1,
+      FUNCTIONID: 0,
+      CHANGETIME: trx.fn.now(),
+      TBBCHANGETIME: trx.fn.now(),
+    }
+  })
 
   return await replaceRecords(trx, 'BFMASTERCOMMANDS', data, { MACHINEID: machineId })
 }
@@ -278,17 +333,21 @@ export async function updateMachineParameters(machineId: number, tbb: TbbFtpClie
   const parameters = await tbb.fetchMachineParameters()
   if (!parameters.length)
     return false
+
+  const paramValues = await tbb.fetchMachineParameterValues()
+
   const machineParameters = parameters?.map(d => ({
     MACHINEID: machineId,
     MACHINEPARAMETERID: d.machineParameterId,
     PARAMSTRING: d.paramString,
     DEFAULTVALUE: d.defaultValue,
-    dmArea: 9100,
-    consScreen: 1,
+    dmArea: d.dmArea,
+    consScreen: d.consScreen,
     PARAMLOWLIMIT: d.paramLowLimit,
     PARAMHIGHLIMIT: d.paramHighLimit,
-    consFormat: 0,
-    consUnit: 0,
+    consFormat: d.consFormat,
+    consUnit: d.consUnit,
+    currentValue: paramValues.find(p => p.machineParameterId === d.machineParameterId)?.currentValue,
   }))
 
   return await replaceRecords(trx, 'BFMACHPARAMETERS', machineParameters, { MACHINEID: machineId })
@@ -305,7 +364,7 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
         COMMANDNO: command.commandNo,
         MACHINEID: machineId,
       }).update({
-        ADVICELIST: (command.adviceList && command.adviceList.length) ? command.adviceList : -1,
+        ADVICELIST: command.adviceList ? command.adviceList : -1,
         DONTUSELIST: command.dontUseList,
       })
     }
@@ -324,7 +383,7 @@ export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient
     RETURNVALUEINDEX: Number.parseInt(c.pvNo.split(' ')[1]) - 1,
     RETURNVALUENAME: c.returnValueName,
     CANSHOW: c.canShow,
-    SPRELATION: c.SPRelation,
+    SPRELATION: c.SPRelation - 1,
   }))
 
   return await replaceRecords(trx, 'BFMASTERCOMMANDRETURNVALUES', data, { MACHINEID: machineId })
@@ -374,7 +433,7 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
   if (!commands.length && !formulas.length)
     return false
 
-  const promises = commands.map(async (c) => {
+  const data = commands.map((c) => {
     const globalCommandFormula = formulas.findIndex(f => f.commandNo === c.commandNo)
 
     return {
@@ -388,7 +447,7 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
       COMMANDRUN: false,
       RECIPE: false,
       VALUE: c.paramFormula ? c.paramFormula : (c.defaultValue).toString(),
-      PARAMETERTYPE: ((c.selectionList && c.selectionList.length) || globalCommandFormula) ? 1 : 0,
+      PARAMETERTYPE: ((c.selectionList && c.selectionList.length) || globalCommandFormula !== -1) ? 1 : 0,
       SELECTIONLIST: (c.selectionList && c.selectionList.length) ? c.selectionList.map(d => d.name).join(' ') : '',
       SELECTIONVALUES: (c.selectionList && c.selectionList.length) ? c.selectionList.map(d => d.value).join(' ') : '',
       UNITCODE: 0,
@@ -400,11 +459,9 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
       ISCOMMANDVARIABLE: false,
       TBBFORMUL: !!c.paramFormula,
       USEFORMULA: c.binding === 5,
-      PARAMETERINDEX: Number.parseInt(c.name.split(' ')[1]),
+      PARAMETERINDEX: Number.parseInt(c.name.split(' ')[1]) - 1,
     }
   })
-
-  const data = await Promise.all(promises)
 
   return await replaceRecords(trx, 'BFCOMMANDPARAMETERS', data, { MACHINEID: machineId })
 }
@@ -457,8 +514,27 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
     const alarmObj = functionAlarms.find(a => a.f === functionName)
 
     if (alarmObj) {
-      const alarmTypeIndex = Object.keys(alarmObj)
-        .findIndex(key => alarmObj[key as keyof FunctionAlarm]?.includes(String(c.alarmNo))) + 1
+      const alarmType = Object.keys(alarmObj)
+        .find(key => alarmObj[key as keyof FunctionAlarm]?.includes(String(c.alarmNo)))
+
+      let alarmTypeIndex
+      switch (alarmType) {
+        case 's':
+          alarmTypeIndex = 0
+          break
+        case 'e':
+          alarmTypeIndex = 1
+          break
+        case 'o':
+          alarmTypeIndex = 2
+          break
+        case 'm':
+          alarmTypeIndex = 3
+          break
+        default:
+          alarmTypeIndex = null
+          break
+      }
 
       commandsAlarmsInserts.push({
         MACHINEID: machineId,
@@ -467,7 +543,7 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
         ALARMNO: c.alarmNo,
         UNIVERSALALARMNO: c.alarmNo,
         ALARM: c.alarm,
-        ALARMTYPE: alarmTypeIndex || null,
+        ALARMTYPE: alarmTypeIndex,
       })
     }
   }
@@ -513,7 +589,7 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
         SELECTEDIOID: c.ioId,
         ISDEFAULT: c.isDefault,
         MODEL: 'MODEL',
-        EXTENTION: 'EXTENTION',
+        EXTENTION: 'EXTENSION',
       })
     }
   }
@@ -630,7 +706,7 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
 
   const data = locks.map(d => ({
     MACHINEID: machineId,
-    LOCKNO: d.lockNo + 1,
+    LOCKNO: d.lockNo! + 1,
     LOCKNAME: d.lockName,
     LOGICTYPE: d.logicType,
     STOPDYEING: d.stopDyeing,
@@ -651,12 +727,13 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
 
   for (const d of data) {
     const filtered = locksInput.filter(l => l.lockId === d.LOCKNO)
-    d.AINLOGICTYPE = filtered.find(l => l.logicType === 0)?.logicType ?? 0
-    d.DINLOGICTYPE = filtered.find(l => l.logicType === 1)?.logicType ?? 0
-    d.COMMANDLOGICTYPE = filtered.find(l => l.logicType === 4)?.logicType ?? 0
-    d.LOCKLOGICTYPE = filtered.find(l => l.logicType === 5)?.logicType ?? 0
-    d.DOUTLOGICTYPE = filtered.find(l => l.logicType === 7)?.logicType ?? 0
-    d.VINLOGICTYPE = filtered.find(l => l.logicType === 8)?.logicType ?? 0
+
+    d.AINLOGICTYPE = filtered.find(l => l.inputType === 0)?.logicType ?? 0
+    d.DINLOGICTYPE = filtered.find(l => l.inputType === 1)?.logicType ?? 0
+    d.COMMANDLOGICTYPE = filtered.find(l => l.inputType === 4)?.logicType ?? 0
+    d.LOCKLOGICTYPE = filtered.find(l => l.inputType === 5)?.logicType ?? 0
+    d.DOUTLOGICTYPE = filtered.find(l => l.inputType === 7)?.logicType ?? 0
+    d.VINLOGICTYPE = filtered.find(l => l.inputType === 8)?.logicType ?? 0
   }
 
   return await replaceRecords(trx, 'BFLOCKSGENERAL', data, { MACHINEID: machineId })
@@ -672,17 +749,12 @@ export async function updateSystemParams(machineId: number, tbb: TbbFtpClient, t
       .where('MachineId', machineId)
       .del()
 
-    for (const key in system) {
-      if (Object.prototype.hasOwnProperty.call(system, key)) {
-        const value = system[key as keyof typeof system]
-        await trx('BFMACHINESYSTEMPARAMS')
-          .insert({
-            MachineId: machineId,
-            ParamToken: key,
-            ParamValue: value,
-          })
-      }
-    }
+    const systemParams = Object.entries(system).map(([key, value]) => ({
+      MachineId: machineId,
+      ParamToken: key,
+      ParamValue: value,
+    }))
+    await trx('BFMACHINESYSTEMPARAMS').insert(systemParams)
 
     return true
   } catch (error: any) {
@@ -722,9 +794,9 @@ export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient
       FORMAT: d.format,
       UNITTEXT: d.unitText,
       PARAMETERID: d.parameterId,
-      SELECTIONLIST: JSON.stringify(d.selectionList),
-      SELECTIONVALUES: JSON.stringify(d.selectionValues),
-      SELECTIONLISTDEFAULT: JSON.stringify(d.selectionListDefault),
+      SELECTIONLIST: d.selectionList.length ? JSON.stringify(d.selectionList) : 'YOK',
+      SELECTIONVALUES: d.selectionValues.length ? JSON.stringify(d.selectionValues) : 'YOK',
+      SELECTIONLISTDEFAULT: d.selectionListDefault.length ? JSON.stringify(d.selectionListDefault) : null,
       BATCHPLANNING: false,
       BATCHSTART: true,
       RECIPE: false,

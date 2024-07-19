@@ -199,8 +199,9 @@ export interface MasterCommand {
   a: string
   maxA: string
   b: string
-  adviceList: string
-  dontUseList: string
+  adviceList: string | null
+  dontUseList: string | null
+  dontUseListCounter?: string | null
   functionId: number
   tbbFunctionName: string
   name: string
@@ -261,4 +262,25 @@ export interface Icon {
   type: number
   name: string
   data: string
+}
+
+export interface CalibrationAnalogInput {
+  id: number
+  calibType: number
+  format: number
+  hat_rl?: number
+  lowerLimitFormula: string
+  upperLimitFormula: string
+  unit: string
+  measureValue?: number
+  measureValues?: { level: number, value: number }[]
+  calibrationAlarmTasks?: number
+}
+
+export interface IOChangedEvent {
+  ioType: number | null
+  ioIndex: number | null
+  difference: number | null
+  period: number | null
+  minPeriod: number | null
 }

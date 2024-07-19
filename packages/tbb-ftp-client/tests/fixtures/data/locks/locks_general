@@ -1,0 +1,172 @@
+0 "Otomatik" 0 0 0 0 "0" "0" 0 "" 1
+1 "Basinclandirma 1" 0 0 0 0 "0" "5" 0 "" 1
+2 "Basinclandirma 2" 0 0 0 0 "0" "0" 0 "" 1
+3 "Basinclandirma Devre" 0 0 0 0 "0" "0" 0 "" 1
+4 "BK1 Pompa On Delay" 0 0 0 0 "0" "4" 0 "" 1
+5 "BK2 Pompa On Delay" 0 0 0 0 "0" "4" 0 "" 1
+6 "85C Emniyeti" 0 0 0 0 "0" "0" 0 "" 1
+7 "Dozaj Emniyeti" 0 0 0 0 "0" "10" 0 "" 1
+8 "AK Alt Seviye" 0 0 0 0 "5" "0" 0 "" 1
+9 "AK Pompa Start Seviy" 0 0 0 0 "10" "0" 0 "" 1
+10 "AK Doldur" 0 0 0 0 "0" "0" 0 "" 1
+11 "AK Blof" 0 0 0 0 "0" "0" 0 "" 1
+12 "AK Ust Seviye" 0 0 0 0 "0" "10" 0 "" 1
+13 "RK Alt Seviye" 0 0 0 0 "0" "10" 0 "" 1
+14 "RK Orta Seviye" 0 0 0 0 "0" "10" 0 "" 1
+15 "RK Ust Seviye" 0 0 0 0 "0" "10" 0 "" 1
+16 "Tank1 Alt Seviye" 0 0 0 0 "10" "0" 0 "" 1
+17 "Tank1 Orta Seviye" 0 0 0 0 "0" "0" 0 "" 1
+18 "Tank1 Ust Seviye" 0 0 0 0 "0" "10" 0 "" 1
+19 "Tank2 Alt Seviye" 0 0 0 0 "15" "0" 0 "" 1
+20 "Tank2 Orta Seviye" 0 0 0 0 "0" "1" 0 "" 1
+21 "Tank2 Ust Seviye" 0 0 0 0 "0" "0" 0 "" 1
+22 "130C Kilidi" 0 0 0 0 "0" "10" 0 "" 1
+23 "135C Kilidi" 0 0 0 0 "0" "60" 0 "" 1
+24 "BK2 Yavas Dozaj Vanası" 0 0 0 0 "2" "0" 0 "" 1
+25 "Buyuk Tahliye Kapali" 0 0 0 0 "0" "75" 0 "" 1
+26 "Buyuk B. Tahliye Emn" 0 0 0 0 "0" "60" 0 "" 1
+27 "KAPAK_RESET" 0 0 0 0 "0" "10" 0 "" 1
+29 "Kule Calisma Suresi" 0 0 0 0 "40" "0" 0 "" 1
+30 "Kule Ileri Calis" 0 0 0 0 "0" "0" 0 "" 1
+31 "Vanalar Emniyeti 1" 0 0 0 0 "0" "75" 0 "" 1
+32 "Vanalar Emniyeti 2" 0 0 0 0 "0" "0" 0 "" 1
+33 "Basınçta Lambası" 0 0 0 0 "0" "0" 0 "" 1
+34 "Bos 35" 0 0 0 0 "0" "0" 0 "" 0
+35 "PH Kontrol Otomatik" 0 0 0 0 "0" "0" 0 "" 1
+36 "Makine Aydinlatma" 0 0 0 0 "0" "0" 0 "" 1
+37 "Aydinlatma Suresi" 0 0 0 0 "1800" "0" 0 "" 1
+38 "Acil Stop" 0 0 0 130 "0" "0" 1 "Acil Stop Basili" 1
+39 "BK1 RK'dan Doldur" 0 0 0 0 "1" "0" 0 "" 1
+40 "Basinc Tahliye Acik" 0 0 0 0 "0" "0" 0 "" 1
+41 "RK Pompasi Ariza" 0 0 0 130 "20" "0" 1 "DIKKAT! Rezerve Pomp" 1
+42 "BK1 Pompa Ariza" 0 0 0 130 "0" "0" 1 "DIKKAT! BK1 Dozaj Po" 1
+43 "BK1 Mikser Ariza" 0 0 0 130 "0" "0" 1 "DIKKAT!  Mikser 1 Arıza " 1
+44 "BK2 Pompa Ariza" 0 0 0 130 "0" "0" 1 "DIKKAT! BK2 Dozaj Po" 1
+45 "Man RK Doldur" 0 0 0 0 "0" "0" 0 "" 1
+46 "Man RK Bosalt" 0 0 0 0 "0" "0" 0 "" 1
+47 "Yumusatma pH Uygun" 0 0 0 0 "10" "0" 1 "pH Uygun" 1
+48 "Yumusatma pH Uygun Degil" 0 0 0 0 "10" "0" 1 "pH Uygun degil" 1
+50 "Sayac Reset 1" 1 0 0 0 "0" "1" 0 "" 1
+52 "Start Stop" 0 0 0 0 "0" "0" 0 "" 1
+53 "Start Stop 2" 0 0 0 0 "0" "2" 0 "" 1
+54 "Pompa Start Lambası" 0 0 0 0 "0" "0" 0 "" 1
+55 "BK1 Isit" 0 0 0 0 "0" "0" 0 "" 1
+56 "BK2 Isit" 0 0 0 0 "0" "0" 0 "" 1
+57 "AK Bosaltma Sicaklig" 0 0 0 0 "5" "0" 0 "" 1
+59 "AK Soguk Bosaltma" 0 0 0 0 "5" "0" 0 "" 1
+60 "AK Sicak Bosaltma" 0 0 0 0 "05" "0" 0 "" 1
+61 "OTO_IP CEVIRICI" 0 0 0 0 "0" "60" 0 "" 1
+62 "BK1 Pompa Komutlari" 1 0 0 0 "0" "0" 0 "" 1
+63 "BK2 Pompa Komutlari" 1 0 0 0 "0" "0" 0 "" 1
+64 "BK1 Genel Komutlar" 1 0 0 0 "0" "0" 0 "" 1
+65 "BK2 Genel Komutlar" 1 0 0 0 "0" "0" 0 "" 1
+66 "BK1 Alt Seviye Iptal" 0 0 0 0 "0" "30" 0 "" 1
+67 "BK2 Alt Seviye Iptal" 0 0 0 0 "0" "30" 0 "" 1
+68 "Manuel Isitma" 0 0 0 0 "2" "0" 0 "" 1
+71 "Manuel Sogutma" 0 0 0 0 "2" "0" 0 "" 1
+72 "Oransal Vana Ilk Acilis" 0 0 0 0 "0" "0" 0 "" 0
+73 "Oransal Vana 2. Acilis" 0 0 0 0 "60" "0" 0 "" 0
+74 "BK1 AK Transfer" 0 0 0 0 "0" "0" 0 "" 1
+75 "BK1 Bosalt" 0 0 0 0 "0" "0" 0 "" 1
+76 "BK2 AK Transfer" 0 0 0 0 "0" "0" 0 "" 1
+77 "BK2 Bosalt" 0 0 0 0 "0" "0" 0 "" 1
+78 "BK1 Doldur" 0 0 0 0 "0" "0" 0 "" 1
+79 "AK BK1 Transfer" 0 0 0 0 "0" "0" 0 "" 1
+80 "BK1 Mikser" 0 0 0 0 "0" "0" 0 "" 1
+81 "BK2 Doldur" 0 0 0 0 "0" "0" 0 "" 1
+82 "AK BK2 Transfer" 0 0 0 0 "0" "0" 0 "" 1
+83 "BK 2 Mikser" 0 0 0 0 "0" "0" 0 "" 1
+85 "Bosaltmada Kule" 0 0 0 0 "0" "5" 0 "" 1
+87 "Kapaklar Acik 1" 0 0 0 130 "3" "0" 1 "DIKKAT! Kapaklar Acik" 1
+88 "Kapaklar Acik 2" 0 0 0 130 "3" "0" 1 "DIKKAT! Kapaklar Acik" 1
+89 "Otomatik Suzulme 1" 0 0 0 0 "0" "0" 0 "" 1
+90 "Otomatik Suzulme 2" 0 0 0 0 "10" "0" 0 "" 1
+91 "Kumas Yukle / Bosalt" 0 0 0 0 "0" "0" 0 "" 1
+92 "Kumas Yukle / Bosalt" 0 0 0 0 "0" "0" 0 "" 1
+93 "Kapak Kilitleri" 0 0 0 0 "0" "0" 0 "" 1
+95 "BSD Kapali 1" 0 0 0 0 "0" "0" 0 "" 1
+96 "BSD Kapali 2" 0 0 0 0 "0" "0" 0 "" 1
+97 "BSD3" 0 0 0 0 "0" "0" 0 "" 1
+98 "BSD4" 0 0 0 0 "2" "0" 0 "" 1
+99 "85 Alti BSD" 0 0 0 0 "0" "10" 0 "" 1
+100 "BSD Alt Seviye" 0 0 0 0 "0" "10" 0 "" 1
+101 "PH Kontrol Start" 0 0 0 0 "pH Olcum suresi" "0" 0 "" 1
+103 "Kapak Acma Zamanı" 0 0 0 0 "Kapak Açama Zamanı" "0" 0 "" 1
+104 "Akuple Kilidi 2" 0 0 0 0 "0" "0" 0 "" 1
+107 "RK AK Trans Pompa" 0 0 0 0 "3" "0" 0 "" 1
+108 "RK AK Trans Kule Stop" 0 0 0 0 "0" "0" 0 "" 1
+110 "RK AK Pompa Emis Klepe" 0 0 0 0 "5" "0" 0 "" 1
+112 "Su Almada Pompa Stop" 0 0 0 0 "0" "5" 0 "" 1
+113 "HT Bosaltma Kapalı" 0 0 0 0 "0" "0" 0 "" 1
+114 "HT Sogutma Suyu" 0 0 0 0 "0" "0" 0 "" 1
+116 "BK1 Karıstır Vana" 0 0 0 0 "0" "0" 0 "" 1
+117 "BK2 Karıstır Vana" 0 0 0 0 "0" "0" 0 "" 1
+118 "SOGUTMA_ACIK" 0 0 0 0 "0" "0" 0 "" 1
+119 "Sogutma Acıldı" 0 0 0 0 "0" "1" 0 "" 1
+121 "AK Esanjor Bosaltma" 0 0 0 0 "60" "30" 0 "" 1
+125 "AK Onay 1" 0 0 0 0 "0" "0" 0 "" 1
+126 "AK Onay 2" 0 0 1 0 "3" "0" 0 "" 1
+128 "ORANSAL DOZAJ POMPASI" 0 0 0 0 "0" "0" 0 "" 1
+130 "Bos131" 0 0 0 0 "0" "0" 0 "" 0
+132 "RK Isitmada RK Pompa" 0 0 0 0 "0" "30" 0 "" 1
+133 "Oransal Dozaj Vanası" 0 0 0 0 "0" "0" 0 "" 1
+139 "Kasar pH uygun" 0 0 0 0 "10" "0" 1 "pH Uyqun" 1
+140 "Kasar pH Uygun degil" 0 0 0 0 "0" "0" 1 "pH Uygun Degil" 1
+141 "Enzim pH Uygun" 0 0 0 0 "10" "0" 0 "pH Uygun" 1
+142 "Enzim pH Uygun Degil" 0 0 0 0 "10" "0" 1 "pH Uygun Degil" 1
+143 "Reaktif By pH uygun" 0 0 0 0 "10" "0" 1 "pH Uygun" 1
+144 "Reaktif By Uygun Degil" 0 0 0 0 "10" "0" 1 "pH Uygun degil" 1
+145 "Polyester By pH Uygun" 0 0 0 0 "10" "0" 1 "pH Uygun" 1
+146 "Polyester By pH Uygun degil" 0 0 0 0 "10" "0" 1 "pH Uygun degil" 1
+147 "1.Soda pH Uygun" 0 0 0 0 "10" "0" 1 "pH Uygun" 1
+149 "1.Soda pH Uygun Degil" 0 0 0 0 "10" "0" 1 "pH Uygun degil" 1
+150 "2.Soda pH Uygun" 0 0 0 0 "10" "0" 1 "pH Uygun" 1
+151 "2.Soda pH Uygun Degil" 0 0 0 0 "20" "0" 1 "pH Uygun degil" 1
+152 "Yıkama Asit pH Uygun" 0 0 0 0 "10" "0" 0 "pH Uygun" 1
+153 "Yikama Asit pH Uygun Degil" 0 0 0 0 "10" "0" 1 "pH Uygun degil" 1
+154 "Yikama Sabun pH Uygun" 0 0 0 0 "10" "0" 1 "pH Uygun" 1
+158 "Yikama Sabun pH Uygun Degil" 0 0 0 0 "10" "0" 1 "pH Uygun degil" 1
+159 "Pes 130 C ph Uygun" 0 0 0 0 "10" "0" 1 "pH Uygun" 1
+160 "Pes 130 C pH Uygun Degil" 0 0 0 0 "10" "0" 1 "pH Uygun degil" 1
+161 "Otomatik Flitre Start" 0 0 0 0 "2" "0" 0 "" 1
+163 "RK Esanjor Blof" 0 0 0 0 "90" "10" 0 "" 1
+164 "Sogutma Donusu Rk ya" 0 0 0 0 "0" "0" 0 "" 1
+165 "Dozaj Hattı" 0 0 0 0 "0" "0" 0 "" 1
+166 "ISITMA ACIK" 0 0 0 0 "0" "30" 0 "" 1
+167 "SOGUTMA BEKLEME" 0 0 0 0 "0" "0" 0 "" 1
+168 "AK Doldurma Hattı" 0 0 0 0 "0" "0" 0 "" 1
+169 "1.Kule Kumas Sardi" 0 0 0 130 "0" "2" 1 "1.Kule Kumas Sardi" 1
+170 "2.Kule Kumas Sardi" 0 0 0 130 "0" "2" 1 "2.Kulede Kumas Sardi" 1
+171 "3.Kule Kumas Sardi" 0 0 0 130 "0" "2" 1 "3.Kule Kumas Sardi" 1
+172 "4.Kule Kumas Sardi" 0 0 0 130 "0" "2" 1 "4.Kule Kumas Sardi" 1
+173 "5.Kule Kumas Sardi" 0 0 0 130 "0" "2" 1 "5.Kule Kumas Sardi" 1
+174 "6.Kule Kumas Sardi" 0 0 0 130 "0" "2" 1 "6.Kule Kumas Sardi" 1
+175 "7.Kule Kumas Sardi" 0 0 0 130 "0" "2" 1 "7.Kule Kumas Sardi" 0
+176 "8.Kule Kumas Sardi" 0 0 0 130 "0" "2" 1 "8.Kule Kumas Sardi" 0
+177 "9.Kule Kumas Sardi" 0 0 0 130 "0" "2" 1 "9.Kule Kumas Sardi" 0
+178 "10.Kule Kumas Sardi" 0 0 0 130 "0" "2" 1 "10.Kule Kumas Sardi" 0
+179 "1.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "1.Kule Kumas Koptu" 1
+180 "2.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "2.Kule Kumas Koptu" 1
+181 "3.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "3.Kule Kumas Koptu" 1
+182 "4.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "4.Kule Kumas Koptu" 1
+183 "5.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "5.Kule Kumas Koptu" 1
+184 "6.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "6.Kule Kumas Koptu" 1
+185 "7.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "7.Kule Kumas Koptu" 0
+186 "8.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "8.Kule Kumas Koptu" 0
+187 "9.Kule Kumas Koptu" 0 0 0 0 "0" "0" 0 "" 0
+188 "10.Kule Kumas Koptu" 0 0 0 0 "0" "0" 0 "" 0
+189 "Kule Inverteri Arıza" 0 0 0 130 "0" "0" 1 "Kule Inverteri Arıza" 1
+190 "BK2 Mikser Arıza" 0 0 0 130 "0" "0" 1 "Dikkat BK2 Mikser Arıza" 1
+191 "Makinada Basınc Yok" 0 0 0 0 "0" "2" 0 "" 1
+192 "Ana Pompa Arıza" 0 1 0 130 "0" "0" 1 "Ana Pompa Arıza" 1
+193 "Ana Pompa Calisiyor" 0 0 0 0 "2" "0" 0 "" 1
+194 "Pompa 2 Calisiyor" 0 0 0 0 "2" "0" 0 "" 1
+195 "Pompa 2 Arıza" 0 0 0 130 "0" "0" 1 "Pompa 2 Arıza" 0
+196 "Sayac Reset 2" 0 0 0 0 "0" "1" 0 "" 1
+197 "Kapak Piston Sensorleri" 0 0 0 0 "0" "0" 0 "" 1
+199 "Rk Doldurma Hattı" 0 0 0 0 "0" "0" 0 "" 1
+28 "BK DOZAJ" 0 0 0 0 "" "" 0 "" 1
+49 "DUZE+TEMIZLIK" 0 0 0 0 "" "" 0 "" 1
+51 "DUZE_BASINC_ARIZA" 0 0 0 130 "10" "2" 1 "DUZE_BASINC_ARIZA" 1
+58 "DUZE_BASINC_EMNIYET" 0 0 0 0 "" "" 0 "" 1
+69 "AK Ssogut" 0 0 0 0 "" "" 0 "" 1

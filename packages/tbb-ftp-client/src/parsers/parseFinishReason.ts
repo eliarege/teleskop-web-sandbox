@@ -1,13 +1,5 @@
 import type { FinishReason } from '../types'
 
-/**
- * **Path**: `/tbb6500/data/config/bitirmenedenleri`
- *
- * **Example**:
- * ```txt
- * 1 "Renk OK" 3 "Bitir"
- * ```
- */
 const typeIdMap = {
   3: 'Bitir',
   4: 'Atla',
@@ -16,6 +8,14 @@ const typeIdMap = {
 
 const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
 
+/**
+ * **Path**: `/tbb6500/data/config/bitirmenedenleri`
+ *
+ * **Example**:
+ * ```txt
+ * 1 "Renk OK" 3 "Bitir"
+ * ```
+ */
 export function parseFinishReason(content: string) {
   const reasons = []
   let match = pattern.exec(content)

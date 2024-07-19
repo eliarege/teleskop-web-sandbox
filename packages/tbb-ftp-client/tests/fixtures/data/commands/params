@@ -1,0 +1,906 @@
+5 0 "SP 1" "Süre" "" 3 3600 0 3600 2
+5 0 "SP 2" "Seviye" "Kilo*(AK Boya Orani+Flotte Duzeltme Oran-Kumastaki Su)-(Birinci Soda+Ikinci Soda+Boya+Tuz+Bikarbonat+Alkali+Sulfat+(Dozaj Sayisi*Online Gonderim Suyu))" 3 0 0 8400 0
+5 0 "SP 3" "Sıcaklık" "" 1 0 0 60 1
+5 0 "SP 4" "Mixer Seviyesi" "RK Mixer Sev" 3 0 0 10000 0
+5 0 "SP 5" "Isıtma Seviyesi" "RK Isit Sev" 3 0 0 60000 0
+5 0 "SP 6" "Hedef Tol. Seviye" "" 3 20 0 100 0
+5 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 2 0 10 0
+5 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+5 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+5 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+5 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+5 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+5 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+5 1 "SP 14" "RT Oran" "" 3 6 0 13 0
+5 0 "SP 15" "Flotte Duzeltme Oran" "" 1 0 -5 5 0
+5 0 "SP 16" "Dozaj Sayisi" "" 1 0 0 20 0
+6 0 "SP 1" "Süre" "" 3 3600 0 3600 2
+6 0 "SP 2" "Seviye" "RK Litre" 3 0 0 7000 0
+6 0 "SP 3" "Sıcaklık" "" 1 0 0 80 1
+6 0 "SP 4" "Mixer Seviyesi" "RK Mixer Sev" 3 0 0 10000 0
+6 0 "SP 5" "Isıtma Seviyesi" "RK Isit Sev" 3 0 0 60000 0
+6 0 "SP 6" "Hedef Tol. Seviye" "" 3 0 0 100 0
+6 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 2 0 10 0
+6 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+6 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+6 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+6 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+6 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+6 0 "SP 13" "Mikser" "" 3 0 0 1 0 ["Calisma","0","Calis","1"]
+6 1 "SP 14" "RT Oran" "" 3 6 0 8 0
+7 0 "SP 1" "Süre" "" 3 3600 0 3600 2
+7 0 "SP 2" "Seviye" "Kilo*(RK Oran-Kumastaki Su)" 3 0 0 8400 0
+7 0 "SP 3" "Sıcaklık" "" 1 0 0 90 1
+7 0 "SP 4" "Mixer Seviyesi" "RK Mixer Sev" 3 0 0 10000 0
+7 0 "SP 5" "Isıtma Seviyesi" "RK Isit Sev" 3 0 0 60000 0
+7 0 "SP 6" "Hedef Tol. Seviye" "" 3 10 0 75 0
+7 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 2 0 10 0
+7 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+7 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+7 0 "SP 10" "Pompa Ondelay" "" 3 0 0 10 2
+7 0 "SP 11" "Stabilize Zamanı" "" 3 15 0 60 2
+7 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+7 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+7 1 "SP 14" "RT Oran" "" 3 6 0 13 0
+8 0 "SP 1" "Süre" "" 3 120 0 3600 2
+8 0 "SP 2" "Seviye" "" 1 0 0 100 0
+8 0 "SP 3" "Sıcaklık" "" 3 0 0 90 1
+8 0 "SP 4" "Mixer Seviyesi" "BK1 Mixer Sev" 3 30 0 1000 0
+8 0 "SP 5" "Isıtma Seviyesi" "BK1 Isit Sev" 3 30 0 6000 0
+8 0 "SP 6" "Hedef Tol. Seviye" "" 3 2 0 100 0
+8 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 1 0 10 0
+8 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+8 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+8 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+8 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+8 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+8 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+8 1 "SP 14" "RT Oran" "" 3 25 0 100 0
+9 0 "SP 1" "Süre" "" 3 120 0 3600 2
+9 0 "SP 2" "Seviye" "" 1 0 0 100 0
+9 0 "SP 3" "Sıcaklık" "" 1 0 0 90 1
+9 0 "SP 4" "Mixer Seviyesi" "BK2 Mixer Sev" 3 20 0 1000 0
+9 0 "SP 5" "Isıtma Seviyesi" "BK2 Isit Sev" 3 20 0 6000 0
+9 0 "SP 6" "Hedef Tol. Seviye" "" 3 2 0 100 0
+9 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 1 0 10 0
+9 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+9 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+9 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+9 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+9 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+9 0 "SP 13" "Mikser" "" 3 0 0 1 0 ["Calisma","0","Calis","1"]
+9 1 "SP 14" "RT Oran" "" 3 25 0 100 0
+10 0 "SP 1" "Süre" "" 3 120 0 3600 2
+10 0 "SP 2" "Seviye" "RT Oran*BK1 Ust/100" 3 0 0 1000 0
+10 0 "SP 3" "Sıcaklık" "" 3 0 0 90 1
+10 0 "SP 4" "Mixer Seviyesi" "BK1 Mixer Sev" 3 30 0 1000 0
+10 0 "SP 5" "Isıtma Seviyesi" "BK1 Isit Sev" 3 30 0 6000 0
+10 0 "SP 6" "Hedef Tol. Seviye" "" 3 2 0 100 0
+10 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 1 0 10 0
+10 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+10 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+10 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+10 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+10 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+10 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+10 1 "SP 14" "RT Oran" "" 1 25 0 100 0
+11 0 "SP 1" "Süre" "" 3 120 0 3600 2
+11 0 "SP 2" "Seviye" "RT Oran*BK2 Ust/100" 3 0 0 1000 0
+11 0 "SP 3" "Sıcaklık" "" 1 0 0 90 1
+11 0 "SP 4" "Mixer Seviyesi" "BK2 Mixer Sev" 3 20 0 1000 0
+11 0 "SP 5" "Isıtma Seviyesi" "BK2 Isit Sev" 3 20 0 6000 0
+11 0 "SP 6" "Hedef Tol. Seviye" "" 3 2 0 100 0
+11 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 1 0 10 0
+11 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+11 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+11 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+11 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+11 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+11 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+11 1 "SP 14" "RT Oran" "" 1 25 0 100 0
+12 0 "SP 1" "Süre" "" 1 120 0 3600 2
+12 0 "SP 2" "Tank Alt Seviye" "BK1 Alt Sev" 3 5 0 50 0
+12 0 "SP 3" "Pompa Delay" "" 3 0 0 10 2
+12 0 "SP 4" "Ölü Bölge Süre" "BK1 Dozaj Sonu" 3 15 0 60 2
+12 0 "SP 5" "Yıkama Süresi" "BK1 Yikama sn." 3 2 0 100 2
+12 0 "SP 6" "Yıkama Sayısı" "" 3 0 0 3 0 ["Yok","0","Bir Kere","1","Iki Kez","2","Kanala Yika","3"]
+12 0 "SP 7" "Pom. İrtibat V.Durum" "" 3 1 0 1 0 ["Kapali","0","Acik","1"]
+12 0 "SP 8" "2.Yıkama Süpürme" "BK1 Disari sn." 3 20 0 120 2
+12 0 "SP 9" "1.Yıkama Süpürme" "BK1 1.Iceri sn" 3 30 0 120 2
+12 0 "SP 10" "1.Yıkama Litre" "BK1 Yikama lt." 3 5 0 50 0
+12 0 "SP 11" "2.Yıkama Litre" "BK1 Yikama lt.+5" 3 10 0 50 0
+12 0 "SP 12" "Transfer Onay" "" 3 0 0 2 0 ["Yok","0","Var","1"]
+13 0 "SP 1" "Süre" "" 1 120 0 3600 2
+13 0 "SP 2" "Tank Alt Seviye" "BK2 Alt Sev" 3 5 0 50 0
+13 0 "SP 3" "Pompa Delay" "" 3 0 0 10 2
+13 0 "SP 4" "Ölü Bölge Süre" "BK2 Dozaj Sonu" 3 15 0 60 2
+13 0 "SP 5" "Yıkama Süresi" "" 3 2 0 100 2
+13 0 "SP 6" "Yıkama Sayısı" "" 3 0 0 3 0 ["Yok","0","Bir Kere","1","Iki Kez","2","Kanala Yika","3"]
+13 0 "SP 7" "Pom. İrtibat V.Durum" "" 3 1 0 1 0 ["Kapali","0","Acik","1"]
+13 0 "SP 8" "2.Yıkama Süpürme" "BK2 Disari sn" 3 20 0 120 2
+13 0 "SP 9" "1.Yıkama Süpürme" "BK2 Iceri sn" 3 30 0 120 2
+13 0 "SP 10" "1.Yıkama Litre" "BK2 Yikama lt" 3 5 0 50 0
+13 0 "SP 11" "2.Yıkama Litre" "BK2 Yikama lt+5" 3 10 0 50 0
+13 0 "SP 12" "Transfer Onay" "" 3 0 0 2 0 ["Yok","0","Var","1"]
+14 0 "SP 1" "Süre" "" 3 14000 0 15000 2
+14 0 "SP 2" "AO Çıkış" "" 3 0 0 100 0
+14 0 "SP 3" "Pasaj Sayısı" "" 3 0 0 100 0
+14 0 "SP 4" "Sürekli Var" "" 3 0 0 1 0
+18 0 "SP 1" "Seviye" "" 1 0 0 85 1
+18 0 "SP 2" "Alarm Toleransı" "" 3 0 0 5 0
+18 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0","Artan","1"]
+18 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0","Dara Al","1"]
+18 0 "SP 5" "Süre" "" 3 3600 0 6000 2
+18 0 "SP 6" "Stabilize Zamanı" "" 3 15 0 60 2
+18 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+18 0 "SP 8" "Period" "" 3 10 0 100 0
+18 0 "SP 9" "Hedef Toleransı" "" 3 2 0 10 0
+18 0 "SP 10" "Kontrol Şekli" "" 3 1 0 1 0
+19 0 "SP 1" "Süre" "" 3 180 0 3600 2
+19 0 "SP 2" "Tank Alt Seviye" "BK1 Alt Sev" 3 5 0 50 0
+19 0 "SP 3" "Pompa Delay" "" 3 0 0 10 2
+19 0 "SP 4" "Ölü Bölge Süre" "BK1 Dozaj Sonu" 3 15 0 60 2
+19 0 "SP 5" "Yıkama Süresi" "BK1 Yikama sn." 3 2 0 100 2
+19 0 "SP 6" "Yıkama Sayısı" "" 1 0 0 3 0 ["Yok","0","Bir Kere","1","Iki Kez","2","Kanala Yika","3"]
+19 0 "SP 7" "Pom. İrtibat V.Durum" "" 3 1 0 1 0 ["Kapali","0","Acik","1"]
+19 0 "SP 8" "2.Yıkama Süpürme" "BK1 Disari sn." 3 20 0 120 2
+19 0 "SP 9" "1.Yıkama Süpürme" "BK1 1.Iceri sn" 3 30 0 120 2
+19 0 "SP 10" "1.Yıkama Litre" "BK1 Yikama lt." 3 5 0 50 0
+19 0 "SP 11" "2.Yıkama Litre" "BK1 Yikama lt.+5" 3 10 0 50 0
+19 0 "SP 12" "Transfer Onay" "" 3 0 0 1 0 ["Yok","0","Var","1"]
+20 0 "SP 1" "Süre" "" 3 180 0 3600 2
+20 0 "SP 2" "Tank Alt Seviye" "BK2 Alt Sev" 3 5 0 50 0
+20 0 "SP 3" "Pompa Delay" "" 3 0 0 10 2
+20 0 "SP 4" "Ölü Bölge Süre" "BK2 Dozaj Sonu" 3 15 0 60 2
+20 0 "SP 5" "Yıkama Süresi" "BK2 Yikama sn." 3 2 0 100 2
+20 0 "SP 6" "Yıkama Sayısı" "" 1 0 0 3 0 ["Yok","0","Bir Kere","1","Iki Kez","2","Kanala Yika","3"]
+20 0 "SP 7" "Pom. İrtibat V.Durum" "" 3 1 0 1 0 ["Kapali","0","Acik","1"]
+20 0 "SP 8" "2.Yıkama Süpürme" "BK2 Disari sn" 3 20 0 120 2
+20 0 "SP 9" "1.Yıkama Süpürme" "BK2 Iceri sn" 3 30 0 120 2
+20 0 "SP 10" "1.Yıkama Litre" "BK2 Yikama lt" 3 5 0 50 0
+20 0 "SP 11" "2.Yıkama Litre" "BK2 Yikama lt+5" 3 10 0 50 0
+20 0 "SP 12" "Transfer Onay" "" 3 0 0 1 0 ["Yok","0","Var","1"]
+21 0 "SP 1" "Dozaj Tipi" "" 3 0 0 1 0 ["Seviye","0","Flowmetre","1"]
+21 0 "SP 2" "Dozaj Oran" "" 1 100 0 100 0
+21 0 "SP 3" "Eğri" "" 1 0 -4 4 0 ["-4","-4","-3","-3","-2","-2","-1","-1","Lineer","0","1","1","2","2","3","3","4","4"]
+21 0 "SP 4" "Süre" "" 1 60 0 3600 2
+21 0 "SP 5" "Pompa Ondelay" "" 3 0 0 100 2
+21 0 "SP 6" "Ölü Bölge Süre" "BK1 Dozaj Sonu" 3 15 0 100 2
+21 0 "SP 7" "Period" "" 3 5 0 100 0
+21 0 "SP 8" "Kazanç" "" 3 10 0 100 0
+21 0 "SP 9" "Tolerans" "" 3 15 0 100 0
+21 0 "SP 10" "1.Yıkama Litresi" "BK1 Yikama lt." 3 2 0 10 0
+21 0 "SP 11" "Yıkama Sayısı" "" 1 0 0 3 0 ["Yok","0","Bir Kere","1","Iki Kez","2","Kanala Yika","3"]
+21 0 "SP 12" "2.Süpürme zamanı" "BK1 Disari sn." 3 30 0 100 2
+21 0 "SP 13" "1.Süpürme Zamanı" "BK1 1.Iceri sn" 3 30 0 100 2
+21 0 "SP 14" "Komut On Delay" "" 3 10 0 100 2
+21 0 "SP 15" "Pom. İrtibat V.Durum" "" 3 1 0 1 0 ["Kapali","0","Acik","1"]
+21 0 "SP 16" "Alarm Vana Durumu" "" 3 1 0 100 0
+21 0 "SP 17" "Pasaj Sayısı" "" 3 0 0 100 0
+21 0 "SP 18" "Tank Alt Seviye" "BK1 Alt Sev" 3 5 0 100 0
+21 0 "SP 19" "Max DM Litre" "" 3 0 0 0 0
+21 0 "SP 20" "2.Yıkama Litresi" "BK1 Yikama lt.+5" 3 0 0 0 0
+23 0 "SP 1" "Süre" "" 1 60 0 3600 2
+23 0 "SP 2" "Tank Üst Sev." "BK1 Sirk Ust" 3 0 0 700 0
+23 0 "SP 3" "Tank Orta Seviye" "BK1 Sirk Orta" 3 0 0 300 0
+23 0 "SP 4" "Tank Alt Seviye" "BK1 Alt Sev" 3 5 0 50 0
+23 0 "SP 5" "Tank Sev. Tol." "" 3 0 0 100 0
+23 0 "SP 6" "Dozaj Pompa On Delay" "" 3 0 0 100 2
+23 0 "SP 7" "Ana Pompa Gecikme" "" 3 0 0 100 2
+23 0 "SP 8" "V1 Çalışma Gecikme" "" 3 3 0 10 2
+23 0 "SP 9" "Ölü Bölge Süre" "BK1 Dzj Off del" 3 15 0 100 2
+23 0 "SP 10" "AK Alt Seviye" "RK Alt Sev" 3 0 0 100 0
+23 0 "SP 11" "Yıkama Süresi" "BK1 Yikama sn." 3 2 0 100 2
+23 0 "SP 12" "Yıkama Sayısı" "" 1 0 0 2 0 ["Yok","0","Bir Kere","1","Iki Kez","2","Kanala Yika","3"]
+23 0 "SP 13" "Pasaj Sayısı" "" 3 0 0 100 0
+23 0 "SP 14" "Pom. İrtibat V.Durum" "" 3 1 0 1 0 ["Kapali","0","Acik","1"]
+23 0 "SP 15" "1 Yikama Bekle Süre" "BK1 1.Iceri sn" 3 10 0 100 2
+23 0 "SP 16" "2 Yikama Bekle Süre" "BK1 Disari sn." 3 10 0 100 2
+23 0 "SP 17" "1 Yıkama Litre" "BK1 Yikama lt." 3 5 0 100 0
+23 0 "SP 18" "2 Yıkama Litre" "BK1 Yikama lt." 3 5 0 100 0
+23 0 "SP 19" "Sirkülasyon Seviye" "" 3 0 0 1 0 ["Ust Sev.Altinda Basl","0","Nor Sev.Altinda Basl","1"]
+24 0 "SP 1" "Süre" "" 3 0 0 7200 2
+24 0 "SP 2" "Period" "" 3 10 0 100 0
+24 0 "SP 3" "Sıcaklık" "" 1 0 0 135 1
+24 0 "SP 4" "Komut On Delay" "" 3 20 0 60 0
+24 0 "SP 5" "Kondens Zamanı" "Pid Kondens sn" 3 30 0 30 0
+24 1 "SP 6" "Gradyan" "" 1 0 0 10 1
+24 0 "SP 7" "Bekleme Zamanı" "" 1 0 0 7200 2
+24 0 "SP 8" "Tolerans" "" 3 5 0 10 1
+24 0 "SP 9" "Kazanç" "" 3 25 0 200 0
+24 0 "SP 10" "Integral Katsayı" "" 3 300 0 6000 0
+24 0 "SP 11" "Integral Üst Limit" "" 3 60 0 100 0
+24 0 "SP 12" "İntegral Alt Limit" "" 3 -50 -100 0 0
+24 0 "SP 13" "Oransal Kontrol" "" 3 1 0 1 0 ["Yok","0","Var","1"]
+24 0 "SP 14" "PID Bimodular" "Pid Bimoduler sn" 3 0 0 60 0
+24 0 "SP 15" "PWM Ontime" "" 3 10 0 100 0
+24 0 "SP 16" "Pasaj Sayısı" "" 3 0 0 100 0
+24 1 "SP 17" "Hedef Toleransı" "" 3 0.8 0 3 0
+24 1 "SP 18" "Ölü Bölge" "Sogutma Bandi" 3 1 0 3 0
+25 0 "SP 1" "Seviye" "" 1 0 0 90 1
+25 0 "SP 2" "Alarm Toleransı" "" 3 0 0 5 0
+25 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0","Artan","1"]
+25 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0","Dara Al","1"]
+25 0 "SP 5" "Süre" "" 3 300 0 6000 2
+25 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+25 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+25 0 "SP 8" "Period" "" 3 10 0 100 0
+25 0 "SP 9" "Hedef Toleransı" "" 3 7 0 10 0
+25 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+26 0 "SP 1" "Seviye" "" 1 0 0 90 1
+26 0 "SP 2" "Alarm Toleransı" "" 3 0 0 5 0
+26 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0","Artan","1"]
+26 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0","Dara Al","1"]
+26 0 "SP 5" "Süre" "" 3 300 0 6000 2
+26 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+26 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+26 0 "SP 8" "Period" "" 3 10 0 100 0
+26 0 "SP 9" "Hedef Toleransı" "" 3 7 0 10 0
+26 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+27 0 "SP 1" "Süre" "" 1 120 0 3600 2
+27 0 "SP 2" "Tank Üst Sev." "BK1 Sirk Ust" 3 0 0 700 0
+27 0 "SP 3" "Tank Orta Seviye" "BK1 Sirk Orta" 3 0 0 300 0
+27 0 "SP 4" "Tank Alt Seviye" "BK1 Alt Sev" 3 5 0 50 0
+27 0 "SP 5" "Tank Sev. Tol." "" 3 5 0 100 0
+27 0 "SP 6" "Dozaj Pompa On Delay" "" 3 0 0 100 2
+27 0 "SP 7" "Ana Pompa Gecikme" "" 3 0 0 100 2
+27 0 "SP 8" "V1 Çalışma Gecikme" "" 3 3 0 10 2
+27 0 "SP 9" "Ölü Bölge Süre" "BK1 Dozaj Sonu" 3 15 0 100 2
+27 0 "SP 10" "AK Alt Seviye" "AK Alt Sev" 3 0 0 100 0
+27 0 "SP 11" "Yıkama Süresi" "BK1 Yikama sn." 3 2 0 100 2
+27 0 "SP 12" "Yıkama Sayısı" "" 1 0 0 3 0 ["Yok","0","Bir Kere","1","Iki Kez","2","Kanala Yika","3"]
+27 0 "SP 13" "Pasaj Sayısı" "" 3 0 0 100 0
+27 0 "SP 14" "Pom. İrtibat V.Durum" "" 3 1 0 1 0 ["Kapali","0","Acik","1"]
+27 0 "SP 15" "Iceri Supurme" "BK1 1.Iceri sn" 3 0 0 100 2
+27 0 "SP 16" "Disari Supurme" "BK1 Disari sn." 3 0 0 100 2
+27 0 "SP 17" "1.Yikama lt" "BK1 Yikama lt." 3 0 0 100 0
+27 0 "SP 18" "2.Yikama lt" "BK1 Yikama lt." 3 0 0 100 0
+27 0 "SP 19" "Sirkulasyon Sarti" "" 3 0 0 1 0 ["Sev.arasi sirk.","0","Sirk.Yok","1"]
+28 0 "SP 1" "Süre" "" 1 300 0 3600 2
+28 0 "SP 2" "Tank Üst Sev." "BK2 Sirk Ust" 3 0 0 700 0
+28 0 "SP 3" "Tank Orta Seviye" "BK2 Sirk Orta" 3 0 0 300 0
+28 0 "SP 4" "Tank Alt Seviye" "BK2 Alt Sev" 3 5 0 50 0
+28 0 "SP 5" "Tank Sev. Tol." "" 3 0 0 100 0
+28 0 "SP 6" "Dozaj Pompa On Delay" "" 3 0 0 100 2
+28 0 "SP 7" "Ana Pompa Gecikme" "" 3 0 0 100 2
+28 0 "SP 8" "V1 Çalışma Gecikme" "" 3 3 0 10 2
+28 0 "SP 9" "Ölü Bölge Süre" "BK2 Dozaj Sonu" 3 15 0 100 2
+28 0 "SP 10" "AK Alt Seviye" "AK Alt Sev" 3 0 0 100 0
+28 0 "SP 11" "Yıkama Süresi" "BK2 Yikama sn." 3 2 0 100 2
+28 0 "SP 12" "Yıkama Sayısı" "" 1 0 0 3 0 ["Yok","0","Bir Kere","1","Iki Kez","2","Kanala Yika","3"]
+28 0 "SP 13" "Pasaj Sayısı" "" 3 0 0 100 0
+28 0 "SP 14" "Pom. İrtibat V.Durum" "" 3 1 0 1 0 ["Kapali","0","Acik","1"]
+28 0 "SP 15" "Iceri Supurme" "BK2 Iceri sn" 3 0 0 100 2
+28 0 "SP 16" "Disari Supurme" "BK2 Disari sn" 3 0 0 100 2
+28 0 "SP 17" "1.Yikama lt" "BK2 Yikama lt" 3 0 0 100 0
+28 0 "SP 18" "2.Yikama lt" "BK2 Yikama lt" 3 0 0 100 0
+28 0 "SP 19" "Sirkulasyon Sarti" "" 3 0 0 1 0 ["Sirk Var","0","Sirk.Yok","1"]
+29 0 "SP 1" "Süre" "" 3 240 0 3600 2
+29 0 "SP 2" "Tank Alt Seviye" "RK Alt Sev" 3 5 0 50 0
+29 0 "SP 3" "Pompa Delay" "" 3 0 0 10 2
+29 0 "SP 4" "Ölü Bölge Süre" "RK Dozaj Sonu" 3 30 0 60 2
+29 0 "SP 5" "Yıkama Süresi" "" 3 120 0 120 2
+29 0 "SP 6" "Yıkama Sayısı" "" 1 0 0 3 0 ["Yok","0","Bir Kere","1","Iki Kez","2","Kanala Yika","3"]
+29 0 "SP 7" "Pom. İrtibat V.Durum" "" 3 1 0 1 0 ["Kapali","0","Acik","1"]
+29 0 "SP 8" "2.Yıkama Süpürme" "" 3 30 0 120 2
+29 0 "SP 9" "1.Yıkama Süpürme" "" 3 30 0 120 2
+29 0 "SP 10" "1.Yıkama Litre" "" 3 50 0 50 0
+29 0 "SP 11" "2.Yıkama Litre" "" 3 35 0 50 0
+29 0 "SP 12" "Transfer Onay" "" 3 0 0 2 0 ["Yok","0","Var","1"]
+30 0 "SP 1" "Tank Alt Seviye" "AK Alt Sev" 3 300 0 3600 0
+30 0 "SP 2" "Boşaltma Sıcaklık" "Blof Sicaklik" 3 60 0 140 1
+30 0 "SP 3" "Süre" "" 3 240 0 600 2
+30 0 "SP 4" "Hızlı Blof Off Delay" "" 3 0 0 60 2
+30 0 "SP 5" "Süzülme Süresi" "" 1 120 0 300 2
+30 0 "SP 6" "Pompa Devri" "" 3 20 0 100 0
+30 0 "SP 7" "Blof Offdelay" "" 3 0 0 600 2
+30 0 "SP 8" "Komut off del" "" 3 0 0 600 2
+30 0 "SP 9" "Pompa Ondelay" "" 3 2 0 60 2
+31 0 "SP 1" "Taşar Alt Seviye" "Tasar Alt" 3 0 0 10000 0
+31 0 "SP 2" "Calışma Şekli" "" 3 0 0 2 0 ["Sure","0","Flowmetre","1","Sicaklik","2"]
+31 0 "SP 3" "Flowmetre Değer" "" 3 0 0 15000 0
+31 0 "SP 4" "Taşma Toleransı" "Tasar Tol" 3 0 0 6000 0
+31 0 "SP 5" "Süre" "" 1 300 0 7200 2
+31 0 "SP 6" "Sıcaklık" "" 3 0 0 80 1
+31 0 "SP 7" "FM Litre" "" 3 0 0 1500 0
+31 0 "SP 8" "FM Akış Toleransı" "" 3 10 0 100 0
+31 0 "SP 9" "Kazanç" "" 3 5 0 100 0
+31 0 "SP 10" "Period" "" 3 10 0 100 0
+31 0 "SP 11" "Pasaj Sayısı" "" 3 0 0 600 0
+32 0 "SP 1" "Taşar Alt Seviye" "Tasar Alt" 3 0 0 10000 0
+32 0 "SP 2" "Calışma Şekli" "" 3 2 0 2 0 ["Sure","0","Flowmetre","1","Sicaklik","2"]
+32 0 "SP 3" "Flowmetre Değer" "" 3 0 0 15000 0
+32 0 "SP 4" "Taşma Toleransı" "Tasar Tol" 3 0 0 6000 0
+32 0 "SP 5" "Süre" "" 3 0 0 7200 2
+32 0 "SP 6" "Sıcaklık" "" 1 0 0 80 1
+32 0 "SP 7" "FM Litre" "" 3 0 0 1500 0
+32 0 "SP 8" "FM Akış Toleransı" "" 3 10 0 100 0
+32 0 "SP 9" "Kazanç" "" 3 5 0 100 0
+32 0 "SP 10" "Period" "" 3 10 0 100 0
+32 0 "SP 11" "Pasaj Sayısı" "" 3 0 0 600 0
+33 0 "SP 1" "Taşar Alt Sevıye" "Tasar Alt" 3 0 0 10000 0
+33 0 "SP 2" "Calışma Şekli" "" 3 2 0 2 0 ["Sure","0","Flowmetre","1","Sicaklik","2","Rezerveden","4","MMS Tasar","4"]
+33 0 "SP 3" "Flowmetre Değer" "" 3 0 0 15000 0
+33 0 "SP 4" "Taşma Toleransı" "Tasar Tol" 3 0 0 6000 0
+33 0 "SP 5" "Süre" "" 1 300 0 7200 2
+33 0 "SP 6" "Sıcaklık" "" 3 0 0 80 1
+33 0 "SP 7" "FM Litre" "" 1 0 0 1500 0
+33 0 "SP 8" "FM Akış Toleransı" "" 3 20 0 100 0
+33 0 "SP 9" "Kazanç" "" 3 2 0 100 0
+33 0 "SP 10" "Period" "" 3 10 0 100 0
+33 0 "SP 11" "Taşar Alt Seviye" "" 3 50 0 600 0
+33 0 "SP 12" "Pasaj Sayısı" "" 3 0 0 100 0
+33 0 "SP 13" "Sıcaklık Hedefi" "" 3 0 0 100 0
+33 0 "SP 14" "Sıcaklık Toleransı" "" 3 0 0 10 0
+33 0 "SP 15" "Bombe Toleransı" "" 3 800 0 4500 0
+33 0 "SP 16" "Bombe Ek Litre" "" 3 1200 0 2500 0
+33 0 "SP 17" "Bombe Boşalt Bekleme" "" 3 20 0 600 2
+34 0 "SP 1" "Calışma Şekli" "" 3 1 0 1 0 ["Sureye Gore","0","Sicakliga Gore","1"]
+34 0 "SP 2" "Sıcaklık" "" 1 80 0 110 1
+34 0 "SP 3" "Süre" "" 3 0 0 7200 2
+34 0 "SP 4" "Tüp Doldurma Süre" "" 3 3 0 30 2
+34 0 "SP 5" "Blof Açık Kalma Süre" "" 3 3 0 30 2
+34 0 "SP 6" "Tüp Tahliye Süre" "" 3 3 0 30 2
+34 0 "SP 7" "Pasaj Sayısı" "" 3 0 0 100 0
+34 0 "SP 8" "Tumu kapanma Sn." "" 3 4 0 30 2
+34 0 "SP 9" "Tekrar Başlama Sn." "" 3 5 0 30 2
+34 0 "SP 10" "RCR Alt Seviye" "Bsd Alt Sev" 3 0 0 50000 0
+34 0 "SP 11" "RCR Tolerans" "Bsd Tolerans" 3 0 0 5000 0
+34 0 "SP 12" "Gradyan" "" 3 2 0 100 0
+34 1 "SP 13" "Kazanç" "" 1 0 0 10 1
+34 0 "SP 14" "Integral Katsayı" "" 3 100 0 100 0
+34 0 "SP 15" "Integral Üst Limit" "" 3 600 0 1000 0
+34 0 "SP 16" "İntegral Alt Limit" "" 3 50 0 100 0
+34 0 "SP 17" "Perıod" "" 3 -50 -100 0 0
+34 0 "SP 18" "Period" "" 3 10 0 100 0
+34 0 "SP 19" "RCR Üst S." "" 3 2100 0 6000 0
+35 0 "SP 1" "Pompa AO" "" 3 100 0 100 0
+35 0 "SP 2" "Flotte Minimum" "RK Mixer Sev" 3 0 0 15000 0
+35 0 "SP 3" "Pompa Ondelay" "" 3 0 0 100 2
+35 0 "SP 4" "Flotte Güvenlik" "RK Mixer Sev" 3 0 0 15000 0
+36 0 "SP 1" "Pompa AO" "" 3 100 0 100 0
+36 0 "SP 2" "Flotte Minimum" "BK1 Mixer Sev" 3 0 0 1500 0
+36 0 "SP 3" "Pompa Ondelay" "" 3 0 0 100 2
+36 0 "SP 4" "Flotte Güvenlik" "BK1 Mixer Sev" 3 0 0 15000 0
+37 0 "SP 1" "Pompa AO" "" 3 100 0 100 0
+37 0 "SP 2" "Flotte Minimum" "BK2 Mixer Sev" 3 0 0 500 0
+37 0 "SP 3" "Pompa Ondelay" "" 3 0 0 100 2
+37 0 "SP 4" "Flotte Güvenlik" "BK2 Mixer Sev" 3 0 0 15000 0
+38 0 "SP 1" "Süre" "" 3 7200 0 7200 2
+38 0 "SP 2" "AO Çıkış" "" 3 0 0 100 0
+38 0 "SP 3" "Pasaj Sayısı" "" 3 0 0 100 0
+38 0 "SP 4" "Sürekli Var" "" 3 0 0 1 0
+39 0 "SP 1" "Süre" "" 3 120 0 280 2
+39 0 "SP 2" "Pasaj" "" 3 0 0 0 0
+40 0 "SP 1" "Süre" "" 1 600 0 7000 2
+40 0 "SP 2" "Sıcaklık" "" 1 0 0 80 1
+40 0 "SP 3" "Calışma Şekli" "" 1 0 0 3 0 ["RK Isit","0","AK Isitma","1","RK+AK Isit","2","Isitma Yok","3"]
+40 0 "SP 4" "AK Alt Seviye" "Kontinu Alt Sev" 3 0 0 15000 0
+40 0 "SP 5" "RK Üst Seviye" "RK Ust" 3 0 0 64000 0
+40 0 "SP 6" "RK Orta Seviye" "RK Mixer Sev" 3 0 0 18000 0
+40 0 "SP 7" "RK Alt Seviye" "RK Alt Sev" 3 0 0 600 0
+40 0 "SP 8" "Transfer Miktari" "" 3 250 0 1000 0
+40 0 "SP 9" "RK Period" "" 3 5 0 10 0
+40 0 "SP 10" "RK Kazanç" "" 3 100 0 100 0
+40 0 "SP 11" "AK Kazanç" "" 3 80 0 100 0
+40 0 "SP 12" "Integral Katsayı" "" 3 600 0 1000 0
+40 0 "SP 13" "Integral Üst Limit" "" 3 50 0 100 0
+40 0 "SP 14" "İntegral Alt Limit" "" 3 -50 -100 0 0
+40 1 "SP 15" "Sıcaklık Toleransı" "" 3 1 0 10 0
+40 0 "SP 16" "Klape Gecikme" "" 3 1 0 60 2
+42 0 "SP 1" "Pompa AO" "Pompa Hizi" 3 100 50 100 0
+42 0 "SP 2" "Flotte Minimum" "Pompa Sev" 3 800 0 6000 0
+42 0 "SP 3" "Pompa Ondelay" "" 3 10 0 100 0
+42 0 "SP 4" "Flotte Güvenlik" "Pompa Sev" 3 200 100 2500 0
+42 0 "SP 5" "Oto Manuel Durum" "" 3 0 0 1 0
+42 0 "SP 6" "Sürekli Var" "" 3 0 0 1 0
+43 0 "SP 1" "Kule Hızı" "Kule Hizi" 3 0 0 100 0
+43 0 "SP 2" "Oto Manuel Durum" "" 3 0 0 1 0
+43 0 "SP 3" "Sürekli Var" "" 3 0 0 1 0
+43 0 "SP 4" "Plater Çıkışı" "Kule Hizi" 3 0 0 100 0
+44 0 "SP 1" "Duze %" "Duze" 3 0 0 100 0
+44 0 "SP 2" "Tolerans" "" 3 2 0 2 0
+45 0 "SP 1" "Kule İlk Hız" "" 3 30 0 100 0
+45 1 "SP 2" "Boş1" "" 3 4.5 0 5 0
+45 0 "SP 3" "Boş2" "" 3 15 0 100 0
+45 0 "SP 4" "Kule Max Hız" "" 3 100 0 100 0
+45 0 "SP 5" "Kule Min Hız" "" 3 10 0 100 0
+45 0 "SP 6" "Boş3" "" 3 5 0 10 0
+45 0 "SP 7" "Boş4" "" 3 4 0 5 0
+45 0 "SP 8" "Kontrol Tolerans" "" 3 5 0 10 0
+45 0 "SP 9" "Man. Giriş Durumu" "" 3 0 0 1 0
+45 0 "SP 10" "Calışma Şekli" "" 3 0 0 2 0
+45 0 "SP 11" "Tur Zamanı" "Tur Suresi" 3 120 0 800 2
+45 0 "SP 12" "Platter" "" 3 1 0 1 0
+45 0 "SP 13" "Plater Hızı" "" 3 0 0 100 0
+45 0 "SP 14" "Plater Katsayı" "" 3 0 0 20 0
+46 0 "SP 1" "Süre" "" 1 600 0 7200 2
+46 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+46 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+46 0 "SP 4" "On Delay Süresi" "" 3 0 0 10 2
+46 0 "SP 5" "Tanım" "" 3 0 0 0 0
+48 0 "SP 1" "Süre" "" 1 60 0 7200 2
+48 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+48 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+48 0 "SP 4" "On Delay Süresi" "" 3 0 0 1 2
+48 0 "SP 5" "Tanım" "" 3 0 0 0 0
+49 0 "SP 1" "Süre" "" 1 60 0 7200 2
+49 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+49 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+49 0 "SP 4" "On Delay Süresi" "" 3 0 0 10 2
+49 0 "SP 5" "Tanım" "" 3 0 0 0 0
+50 0 "SP 1" "Süre" "" 1 60 0 7200 2
+50 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+50 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+50 0 "SP 4" "On Delay Süresi" "" 3 0 0 10 2
+50 0 "SP 5" "Tanım" "" 3 0 0 0 0
+51 0 "SP 1" "Süre" "" 1 60 0 7200 2
+51 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+51 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+51 0 "SP 4" "On Delay Süresi" "" 3 0 0 10 2
+51 0 "SP 5" "Tanım" "" 3 0 0 0 0
+52 0 "SP 1" "Süre" "" 1 60 0 7200 2
+52 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+52 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+52 0 "SP 4" "On Delay Süresi" "" 3 0 0 10 2
+52 0 "SP 5" "Tanım" "" 3 0 0 2 0
+53 0 "SP 1" "Süre" "" 1 60 0 7200 2
+53 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+53 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+53 0 "SP 4" "On Delay Süresi" "" 3 0 0 10 2
+53 0 "SP 5" "Tanım" "" 3 0 0 0 0
+54 0 "SP 1" "Süre" "" 1 60 0 7200 2
+54 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+54 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+54 0 "SP 4" "On Delay Süresi" "" 3 0 0 10 2
+54 0 "SP 5" "Tanım" "" 3 0 0 0 2
+55 0 "SP 1" "Süre" "" 1 60 0 7200 2
+55 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+55 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+55 0 "SP 4" "On Delay Süresi" "" 3 0 0 10 2
+55 0 "SP 5" "Tanım" "" 3 0 0 0 0
+56 0 "SP 1" "Süre" "" 3 300 0 3600 2
+56 0 "SP 2" "Operasyon Kodu" "" 3 2 0 8 0 ["Kimyasak Istek","2","Oncelik Degisim","4","Istek Iptal","8"]
+56 0 "SP 3" "Reçete Tipi" "" 3 0 0 1 0
+56 0 "SP 4" "Tank No" "" 3 0 0 1 0
+56 0 "SP 5" "Öncelik" "" 3 50 0 100 0
+56 0 "SP 6" "Durum" "" 3 0 0 8 0 ["Teleskopa Iletildi","0","Dagiticiya Iletildi","1","Dagitim Basladi","2","Dagitim Tamamlandi","3","Oncelik Degisti","4","Istek Iptal","8"]
+58 0 "SP 1" "Duze %" "Duze" 3 0 0 100 0
+58 0 "SP 2" "Tolerans" "" 3 2 0 2 0
+59 0 "SP 1" "Süre" "" 3 600 0 3600 2
+59 0 "SP 2" "Tank üst seviye " "BK2 Sirk Ust" 3 0 0 1000 0
+59 0 "SP 3" "Reçete türü" "" 3 0 0 1 0 ["Kimyasal","0","Boya","1","Tuz","2","Soda","3"]
+59 0 "SP 4" "Tank alt seviye   " "BK2 Alt Sev" 3 0 0 1000 0
+59 0 "SP 5" "Tank seviye toleras" "" 3 5 0 100 0
+59 0 "SP 6" "Dozaj Pompa On Delay" "" 3 0 0 20 2
+59 0 "SP 7" "Öncelik" "" 3 50 0 100 0 [" normal","9"," acil","19"," cok acil","99"]
+59 0 "SP 8" "Vana 1 on delay sn" "" 3 0 0 10 2
+59 0 "SP 9" "Dozaj Sonu Sn" "BK2 Dozaj Sonu" 3 3 0 100 2
+59 0 "SP 10" "AK alt seviye" "" 3 0 0 1000 0
+59 0 "SP 11" "Mixer seviyesi" "BK2 Mixer Sev" 3 0 0 1000 0
+59 0 "SP 12" "Yıkama sayısı " "" 1 0 0 2 0 ["Yok","0","Bir Kere","1","Iki Kere","2"]
+59 0 "SP 13" "Tank orta seviye" "BK2 Sirk Orta" 3 0 0 1000 0
+59 0 "SP 14" "2.Yikama dzj.pompa " "" 3 0 0 1 0 ["pompa dursun","0","pompa durmasin","1"]
+59 0 "SP 15" "İceri Supurme sn" "BK2 Iceri sn" 3 0 0 100 2
+59 0 "SP 16" "Disari Supurme sn" "BK2 Disari sn" 3 0 0 100 2
+59 0 "SP 17" "1.Yikama Lt" "BK2 Yikama lt" 3 0 0 10 0
+59 0 "SP 18" "2.Yikama Lt" "BK2 Yikama lt*2" 3 0 0 10 0
+59 0 "SP 19" "Sirk.Devam Süresi" "" 1 120 0 32000 2
+59 0 "SP 20" "Durum" "" 3 0 0 8 0 [" Teleskopa iletildi","0","dagiticiya iletildi","1","dagitim basladi","2","dagitim tamamlandi","3","oncelik degisti","4","iptal edildi","8"]
+60 0 "SP 1" "Dozaj Oran" "" 1 100 0 100 0
+60 0 "SP 2" "Eğri" "" 1 -2 -4 4 0 ["-4","-4","-3","-3","-2","-2","-1","-1","Lineer","0","1","1","2","2","3","3","4","4"]
+60 0 "SP 3" "Süre" "" 1 10 0 3600 2
+60 0 "SP 4" "Pompa Delay" "" 3 5 0 10 2
+60 0 "SP 5" "Dozaj Off Delay" "BK1 Dzj Off del" 3 20 0 20 2
+60 0 "SP 6" "Period" "" 3 5 0 10 2
+60 0 "SP 7" "Kazanç" "" 3 25 0 100 0
+60 0 "SP 8" "Tolerans" "" 3 20 0 50 0
+60 0 "SP 9" "Yıkama Süresi" "BK1 Yikama sn." 3 3 0 5 2
+60 0 "SP 10" "On Delay Süresi" "" 3 5 0 10 2
+60 0 "SP 11" "Pasaj Sayısı" "" 1 0 0 100 0
+60 0 "SP 12" "Yıkama Sayısı1" "" 1 1 0 2 0 ["Yok","0","Bir Kere","1","Iki Kez","2"]
+60 0 "SP 13" "Yıkama Sayısı2" "" 1 1 0 2 0 ["Yok","0","Bir Kere","1","Iki Kez","2"]
+60 0 "SP 14" "T1 Alt Seviye" "BK1 Alt Sev" 3 5 0 100 0
+60 0 "SP 15" "T1 Orta Seviye" "BK1 Sirk Orta" 3 0 0 2000 0
+60 0 "SP 16" "T1 Üst Seviye" "BK1 Sirk Ust" 3 0 0 1000 0
+60 0 "SP 17" "Tank Step Delay" "" 3 20 0 250 2
+60 0 "SP 18" "Dozaj Buton Var mı" "" 3 0 0 0 0
+60 0 "SP 19" "V1 Gecikmesi" "" 3 5 0 100 0
+60 0 "SP 20" "T2 Mikser Seviye" "BK2 Mixer Sev" 3 0 0 500 0
+61 0 "SP 1" "Seviye" "(Kilo*(AK Poly Yikama Orani+Flotte Duzeltme Oran)-(Dozaj Sayisi*Online Gonderim Suyu))" 3 0 0 12000 0
+61 0 "SP 2" "Alarm Toleransı" "" 3 0 0 500 0
+61 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0","Artan","1"]
+61 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0","Dara Al","1"]
+61 0 "SP 5" "Süre" "" 3 180 0 6000 2
+61 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+61 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+61 0 "SP 8" "Period" "" 3 10 0 100 0
+61 0 "SP 9" "Hedef Toleransı" "" 3 20 0 1000 0
+61 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+61 1 "SP 11" "AK Oranı" "" 3 6 0 13 0
+61 0 "SP 12" "Flotte Duzeltme Oran" "" 1 0 -5 5 0
+61 0 "SP 13" "Dozaj Sayisi" "" 1 0 0 20 0
+62 0 "SP 1" "Pompa AO" "" 3 100 0 100 0
+62 0 "SP 2" "Flotte Minimum" "BK1 Mixer Sev" 3 0 0 1500 0
+62 0 "SP 3" "Pompa Ondelay" "" 3 0 0 100 2
+62 0 "SP 4" "Flotte Güvenlik" "BK1 Mixer Sev" 3 0 0 15000 0
+63 0 "SP 1" "Pompa AO" "" 3 100 0 100 0
+63 0 "SP 2" "Flotte Minimum" "BK2 Mixer Sev" 3 0 0 500 0
+63 0 "SP 3" "Pompa Ondelay" "" 3 0 0 100 2
+63 0 "SP 4" "Flotte Güvenlik" "BK2 Mixer Sev" 3 0 0 15000 0
+67 0 "SP 1" "Süre" "" 3 3600 0 3600 2
+67 0 "SP 2" "Seviye" "Kilo*(AK Yikama Orani+Flotte Duzeltme Oran-Kumastaki Su)-(Dozaj Sayisi*Online Gonderim Suyu)" 3 0 0 8400 0
+67 0 "SP 3" "Sıcaklık" "" 1 0 0 60 1
+67 0 "SP 4" "Mixer Seviyesi" "RK Mixer Sev" 3 0 0 10000 0
+67 0 "SP 5" "Isıtma Seviyesi" "RK Isit Sev" 3 0 0 60000 0
+67 0 "SP 6" "Hedef Tol. Seviye" "" 3 20 0 100 0
+67 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 2 0 10 0
+67 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+67 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+67 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+67 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+67 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+67 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+67 1 "SP 14" "RT Oran" "" 3 6 0 13 0
+67 0 "SP 15" "Flotte Duzeltme Oran" "" 1 0 -5 5 0
+67 0 "SP 16" "Dozaj Sayisi" "" 1 0 0 20 0
+69 0 "SP 1" "Süre" "" 3 3600 0 3600 2
+69 0 "SP 2" "Seviye" "Kilo*(AK Yumusatma Orani+Flotte Duzeltme Oran-Kumastaki Su)-Dozaj Sayisi*Online Gonderim Suyu" 3 0 0 8400 0
+69 0 "SP 3" "Sıcaklık" "" 1 0 0 60 1
+69 0 "SP 4" "Mixer Seviyesi" "RK Mixer Sev" 3 0 0 10000 0
+69 0 "SP 5" "Isıtma Seviyesi" "RK Isit Sev" 3 0 0 60000 0
+69 0 "SP 6" "Hedef Tol. Seviye" "" 3 20 0 100 0
+69 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 2 0 10 0
+69 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+69 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+69 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+69 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+69 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+69 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+69 1 "SP 14" "RT Oran" "" 3 6 0 13 0
+69 0 "SP 15" "Flotte Duzeltme Oran" "" 1 0 -5 5 0
+69 0 "SP 16" "Dozaj Sayisi" "" 1 0 0 20 0
+70 0 "SP 1" "Seviye" "(Kilo*(AK Yumusatma Orani+Flotte Duzeltme Oran)-(Dozaj Sayisi*Online Gonderim Suyu))" 3 0 0 12000 0
+70 0 "SP 2" "Alarm Toleransı" "" 3 0 0 500 0
+70 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0","Artan","1"]
+70 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0","Dara Al","1"]
+70 0 "SP 5" "Süre" "" 3 180 0 6000 2
+70 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+70 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+70 0 "SP 8" "Period" "" 3 10 0 100 0
+70 0 "SP 9" "Hedef Toleransı" "" 3 20 0 1000 0
+70 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+70 1 "SP 11" "AK Oranı" "" 3 6 0 13 0
+70 0 "SP 12" "Flotte Duzeltme Oran" "" 1 0 -5 5 0
+70 0 "SP 13" "Dozaj Sayisi" "" 1 0 0 20 0
+73 0 "SP 1" "Seviye" "(Kilo*(AK Poly Boya Orani+Flotte Duzeltme Oran)-(Boya+(Dozaj Sayisi*Online Gonderim Suyu)))" 3 0 0 12000 0
+73 0 "SP 2" "Alarm Toleransı" "" 3 0 0 500 0
+73 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0","Artan","1"]
+73 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0","Dara Al","1"]
+73 0 "SP 5" "Süre" "" 3 180 0 6000 2
+73 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+73 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+73 0 "SP 8" "Period" "" 3 10 0 100 0
+73 0 "SP 9" "Hedef Toleransı" "" 3 20 0 1000 0
+73 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+73 1 "SP 11" "AK Oranı" "" 3 6 0 13 0
+73 0 "SP 12" "Flotte Duzeltme Oran" "" 1 0 -5 5 0
+73 0 "SP 13" "Dozaj Sayisi" "" 1 0 0 20 0
+74 0 "SP 1" "Süre" "" 3 3600 0 3600 2
+74 0 "SP 2" "Seviye" "Kilo*(AK Boya Orani+Flotte Duzeltme Oran-Kumastaki Su)-(Boya+(Dozaj Sayisi*Online Gonderim Suyu))" 3 0 0 8400 0
+74 0 "SP 3" "Sıcaklık" "" 1 0 0 60 1
+74 0 "SP 4" "Mixer Seviyesi" "RK Mixer Sev" 3 0 0 10000 0
+74 0 "SP 5" "Isıtma Seviyesi" "RK Isit Sev" 3 0 0 60000 0
+74 0 "SP 6" "Hedef Tol. Seviye" "" 3 20 0 100 0
+74 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 2 0 10 0
+74 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+74 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+74 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+74 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+74 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+74 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+74 1 "SP 14" "RT Oran" "" 3 6 0 13 0
+74 0 "SP 15" "Flotte Duzeltme Oran" "" 1 0 -5 5 0
+74 0 "SP 16" "Dozaj Sayisi" "" 1 0 0 20 0
+75 0 "SP 1" "Süre" "" 3 300 0 3600 2
+75 0 "SP 2" "Operasyon Kodu" "" 3 2 0 8 0 ["Kimyasak Istek","2","Oncelik Degisim","4","Istek Iptal","8"]
+75 0 "SP 3" "Reçete Tipi" "" 3 1 0 1 0
+75 0 "SP 4" "Tank No" "" 3 0 0 1 0
+75 0 "SP 5" "Öncelik" "" 3 50 0 100 0
+75 0 "SP 6" "Durum" "" 3 0 0 8 0 ["Teleskopa Iletildi","0","Dagiticiya Iletildi","1","Dagitim Basladi","2","Dagitim Tamamlandi","3","Oncelik Degisti","4","Istek Iptal","8"]
+76 0 "SP 1" "Tank Alt Seviye" "Tasar Alt" 3 300 0 3600 0
+76 0 "SP 2" "Boşaltma Sıcaklık" "Blof Sicaklik" 3 60 0 140 1
+76 0 "SP 3" "Süre" "" 3 240 0 600 2
+76 0 "SP 4" "Hızlı Blof Off Delay" "" 3 0 0 60 2
+76 0 "SP 5" "Süzülme Süresi" "" 3 0 0 300 2
+76 0 "SP 6" "Pompa Devri" "" 3 60 0 100 0
+76 0 "SP 7" "Blof Offdelay" "" 3 0 0 600 2
+76 0 "SP 8" "Komut off del" "" 3 0 0 600 2
+76 0 "SP 9" "Pompa Ondelay" "" 3 2 0 60 2
+77 0 "SP 1" "Calışma Şekli" "" 3 1 0 1 0 ["Sureye Gore","0","Sicakliga Gore","1"]
+77 0 "SP 2" "Sıcaklık" "" 1 80 0 110 1
+77 0 "SP 3" "Süre" "" 3 0 0 7200 2
+77 0 "SP 4" "Tüp Doldurma Süre" "" 3 20 0 3600 2
+77 0 "SP 5" "Blof Açık Kalma Süre" "" 3 20 0 30 2
+77 0 "SP 6" "Tüp Tahliye Süre" "" 3 20 0 30 2
+77 0 "SP 7" "Pasaj Sayısı" "" 3 0 0 100 0
+77 0 "SP 8" "Tumu kapanma Sn." "" 3 20 0 30 2
+77 0 "SP 9" "Tekrar Başlama Sn." "" 3 5 0 30 2
+77 0 "SP 10" "RCR Alt Seviye" "Bsd Alt Sev" 3 0 0 50000 0
+77 0 "SP 11" "RCR Tolerans" "Bsd Tolerans" 3 0 0 5000 0
+77 0 "SP 12" "Gradyan" "" 3 1 0 100 0
+77 1 "SP 13" "Kazanç" "" 1 0 0 10 1
+77 0 "SP 14" "Integral Katsayı" "" 3 100 0 100 0
+77 0 "SP 15" "Integral Üst Limit" "" 3 600 0 1000 0
+77 0 "SP 16" "İntegral Alt Limit" "" 3 50 0 100 0
+77 0 "SP 17" "Perıod" "" 3 -50 -100 0 0
+77 0 "SP 18" "Period" "" 3 10 0 100 0
+77 0 "SP 19" "RCR Üst S." "" 3 5000 0 6000 0
+78 0 "SP 1" "Süre" "" 1 240 0 7200 2
+78 0 "SP 2" "Calışma Şekli" "" 3 0 0 1 0
+78 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+78 0 "SP 4" "On Delay Süresi" "" 3 0 0 1 2
+78 0 "SP 5" "Tanım" "" 3 0 0 0 0
+79 0 "SP 1" "Süre" "" 3 120 0 3600 2
+79 0 "SP 2" "Seviye" "Birinci Soda/(BK1 Ust/100)" 3 0 0 100 0
+79 0 "SP 3" "Sıcaklık" "" 3 0 0 90 1
+79 0 "SP 4" "Mixer Seviyesi" "BK1 Mixer Sev" 3 30 0 1000 0
+79 0 "SP 5" "Isıtma Seviyesi" "BK1 Isit Sev" 3 30 0 6000 0
+79 0 "SP 6" "Hedef Tol. Seviye" "" 3 2 0 100 0
+79 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 1 0 10 0
+79 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+79 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+79 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+79 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+79 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+79 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+79 1 "SP 14" "RT Oran" "" 3 25 0 100 0
+80 0 "SP 1" "Süre" "" 3 120 0 3600 2
+80 0 "SP 2" "Seviye" "Tuz/(BK1 Ust/100)" 3 0 0 100 0
+80 0 "SP 3" "Sıcaklık" "" 3 0 0 90 1
+80 0 "SP 4" "Mixer Seviyesi" "BK1 Mixer Sev" 3 30 0 1000 0
+80 0 "SP 5" "Isıtma Seviyesi" "BK1 Isit Sev" 3 30 0 6000 0
+80 0 "SP 6" "Hedef Tol. Seviye" "" 3 2 0 100 0
+80 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 1 0 10 0
+80 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+80 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+80 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+80 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+80 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+80 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+80 1 "SP 14" "RT Oran" "" 3 25 0 100 0
+81 0 "SP 1" "Süre" "" 3 120 0 3600 2
+81 0 "SP 2" "Seviye" "Tuz/(BK1 Ust/100)" 3 0 0 100 0
+81 0 "SP 3" "Sıcaklık" "" 3 0 0 90 1
+81 0 "SP 4" "Mixer Seviyesi" "BK1 Mixer Sev" 3 30 0 1000 0
+81 0 "SP 5" "Isıtma Seviyesi" "BK1 Isit Sev" 3 30 0 6000 0
+81 0 "SP 6" "Hedef Tol. Seviye" "" 3 2 0 100 0
+81 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 1 0 10 0
+81 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+81 0 "SP 9" "Alarm Sıcaklığı Tol." "" 3 0 0 10 1
+81 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+81 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+81 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+81 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+81 1 "SP 14" "RT Oran" "" 3 25 0 100 0
+83 0 "SP 1" "Seviye" "AK Litre" 3 0 0 12000 0
+83 0 "SP 2" "Alarm Toleransı" "" 3 20 0 500 0
+83 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0","Artan","1"]
+83 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0","Dara Al","1"]
+83 0 "SP 5" "Süre" "" 3 180 0 6000 2
+83 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+83 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+83 0 "SP 8" "Period" "" 3 10 0 100 0
+83 0 "SP 9" "Hedef Toleransı" "" 3 30 0 1000 0
+83 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+84 0 "SP 1" "Seviye" "Tuz" 3 0 0 3000 0
+84 0 "SP 2" "Alarm Toleransı" "" 3 0 0 500 0
+84 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0","Artan","1"]
+84 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0","Dara Al","1"]
+84 0 "SP 5" "Süre" "" 3 240 0 6000 2
+84 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+84 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+84 0 "SP 8" "Period" "" 3 10 0 100 0
+84 0 "SP 9" "Hedef Toleransı" "" 3 20 0 1000 0
+84 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+85 0 "SP 1" "Seviye" "Tuz" 3 0 0 5000 0
+85 0 "SP 2" "Alarm Toleransı" "" 3 0 0 500 0
+85 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0","Artan","1"]
+85 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0","Dara Al","1"]
+85 0 "SP 5" "Süre" "" 3 240 0 6000 2
+85 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+85 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+85 0 "SP 8" "Period" "" 3 10 0 100 0
+85 0 "SP 9" "Hedef Toleransı" "" 3 20 0 1000 0
+85 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+82 0 "SP 1" "Süre" "" 3 180 0 3600 2
+82 0 "SP 2" "Seviye" "RK Litre" 3 0 0 6000 0
+82 0 "SP 3" "Sıcaklık" "" 3 0 0 85 1
+82 0 "SP 4" "Mixer Seviyesi" "RK Mixer Sev" 3 0 0 10000 0
+82 0 "SP 5" "Isıtma Seviyesi" "RK Isit Sev" 3 0 0 60000 0
+82 0 "SP 6" "Hedef Tol. Seviye" "" 3 0 0 100 0
+82 0 "SP 7" "Hedef Tol. Sıcaklık" "" 3 7 0 10 0
+82 0 "SP 8" "Alarm Seviyesi Tol." "" 3 0 0 100 0
+82 0 "SP 9" "Alarm Sıcaklığı T" "" 3 0 0 10 1
+82 0 "SP 10" "Pompa Ondelay" "" 3 5 0 10 2
+82 0 "SP 11" "Stabilize Zamanı" "" 3 0 0 60 2
+82 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
+82 0 "SP 13" "Mikser" "" 3 0 0 1 0 ["Calisma","0.00","Calis","1.00"]
+82 1 "SP 14" "RT Oran" "" 3 6.0 0.0 8.0 0
+22 0 "SP 1" "Dozaj Tipi" "" 3 0 0 1 0 ["Seviye","0.00","Flowmetre","1.00"]
+22 0 "SP 2" "Dozaj Oran" "" 1 100 0 100 0
+22 0 "SP 3" "Eğri" "" 1 0 -4 4 0 ["-4","-4.00","-3","-3.00","-2","-2.00","-1","-1.00","Lineer","0.00","1","1.00","2","2.00","3","3.00","4","4.00"]
+22 0 "SP 4" "Süre" "" 1 60 0 3600 2
+22 0 "SP 5" "Pompa Ondelay" "" 3 0 0 100 2
+22 0 "SP 6" "Ölü Bölge Süre" "BK2 Dozaj Sonu" 3 15 0 100 2
+22 0 "SP 7" "Period" "" 3 7 0 100 0
+22 0 "SP 8" "Kazanç" "" 3 40 0 100 0
+22 0 "SP 9" "Tolerans" "" 3 7 0 100 0
+22 0 "SP 10" "1.Yıkama Litresi" "BK2 Yikama lt" 3 3 0 10 0
+22 0 "SP 11" "Yıkama Sayısı" "" 1 0 0 3 0 ["Yok","0.00","Bir Kere","1.00","Iki Kez","2.00","Kanala Yika","3.00"]
+22 0 "SP 12" "2.Süpürme zamanı" "BK2 Disari sn" 3 30 0 100 2
+22 0 "SP 13" "1.Süpürme Zamanı" "BK2 Iceri sn" 3 30 0 100 2
+22 0 "SP 14" "Komut On Delay" "" 3 10 0 100 0
+22 0 "SP 15" "Pom. İrtibat V.Durum" "" 3 1 0 1 0 ["Kapali","0.00","Acik","1.00"]
+22 0 "SP 16" "Alarm Vana Durumu" "" 3 1 0 100 0
+22 0 "SP 17" "Pasaj Sayısı" "" 3 0 0 100 0
+22 0 "SP 18" "Tank Alt Seviye" "BK2 Alt Sev" 3 5 0 100 0
+22 0 "SP 19" "Max DM Litre" "" 3 0 0 0 0
+22 0 "SP 20" "2.Yıkama Litresi" "BK2 Yikama lt+5" 3 0 0 0 0
+72 0 "SP 1" "Taşar Alt Seviye" "Tasar Alt" 3 0 0 10000 0
+72 0 "SP 2" "Calışma Şekli" "" 3 0 0 2 0 ["Sure","0.00","Flowmetre","1.00","Sicaklik","2.00"]
+72 0 "SP 3" "Flowmetre Değer" "" 3 0 0 15000 0
+72 0 "SP 4" "Taşma Toleransı" "Tasar Tol" 3 0 0 6000 0
+72 0 "SP 5" "Süre" "" 1 300 0 7200 2
+72 0 "SP 6" "Sıcaklık" "" 3 0 0 80 1
+72 0 "SP 7" "FM Litre" "" 3 0 0 1500 0
+72 0 "SP 8" "FM Akış Toleransı" "" 3 10 0 100 0
+72 0 "SP 9" "Kazanç" "" 3 5 0 100 0
+72 0 "SP 10" "Period" "" 3 10 0 100 0
+72 0 "SP 11" "Pasaj Sayısı" "" 3 0 0 600 0
+17 0 "SP 1" "Süre" "" 1 300 0 7200 2
+17 0 "SP 2" "Pasaj" "" 3 0 0 100 0
+87 0 "SP 1" "Bekleme Süresi" "" 1 0 0 7200 2
+87 0 "SP 2" "Pasaj" "" 3 0 0 100 0
+47 0 "SP 1" "Süre" "" 1 600 0 7200 2
+47 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+47 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+47 0 "SP 4" "On Delay Süresi" "" 3 0 0 10 2
+47 0 "SP 5" "Tanım" "" 3 0 0 0 0
+86 0 "SP 1" "Dozaj Oran" "" 1 100 0 100 0
+86 0 "SP 2" "Eğri" "" 1 -2 -4 4 0 ["-4","-4.00","-3","-3.00","-2","-2.00","-1","-1.00","Lineer","0.00","1","1.00","2","2.00","3","3.00","4","4.00"]
+86 0 "SP 3" "Süre" "" 1 10 0 3600 2
+86 0 "SP 4" "Pompa Delay" "" 3 5 0 10 2
+86 0 "SP 5" "Dozaj Off Delay" "BK2 Dzj Off del" 3 20 0 20 2
+86 0 "SP 6" "Period" "" 3 5 0 10 2
+86 0 "SP 7" "Kazanç" "" 3 25 0 100 0
+86 0 "SP 8" "Tolerans" "" 3 20 0 50 0
+86 0 "SP 9" "Yıkama Süresi" "BK1 Yikama sn." 3 3 0 5 2
+86 0 "SP 10" "On Delay Süresi" "" 3 5 0 10 2
+86 0 "SP 11" "Pasaj Sayısı" "" 1 0 0 100 0
+86 0 "SP 12" "Yıkama Sayısı1" "" 1 1 0 2 0 ["Yok","0.00","Bir Kere","1.00","Iki Kez","2.00"]
+86 0 "SP 13" "Yıkama Sayısı2" "" 1 1 0 2 0 ["Yok","0.00","Bir Kere","1.00","Iki Kez","2.00"]
+86 0 "SP 14" "T2_Alt_Seviye" "BK2 Alt Sev" 3 5 0 100 0
+86 0 "SP 15" "T2_Orta_Seviye" "BK2 Sirk Orta" 3 0 0 2000 0
+86 0 "SP 16" "T2_Ust_Seviye" "BK2 Sirk Ust" 3 0 0 1000 0
+86 0 "SP 17" "Tank Step Delay" "" 3 20 0 250 2
+86 0 "SP 18" "Dozaj Buton Var mı" "" 3 0 0 0 0
+86 0 "SP 19" "V1 Gecikmesi" "" 3 10 0 100 0
+86 0 "SP 20" "T1_Mikser_Seviye" "BK1 Mixer Sev" 3 0 0 500 0
+57 0 "SP 1" "Süre" "" 3 600 0 3600 2
+57 0 "SP 2" "Tank üst seviye " "BK1 Sirk Ust" 3 0 0 1000 0
+57 0 "SP 3" "Reçete türü" "" 3 0 0 1 0 ["Kimyasal","0.00","Boya","1.00","Tuz","2.00","Soda","3.00"]
+57 0 "SP 4" "Tank alt seviye   " "BK1 Alt Sev" 3 0 0 1000 0
+57 0 "SP 5" "Tank seviye toleras" "" 3 5 0 100 0
+57 0 "SP 6" "Dozaj Pompa On Delay" "" 3 0 0 20 2
+57 0 "SP 7" "Öncelik" "" 3 50 0 100 0 [" normal","9.00"," acil","19.00"," cok acil","99.00"]
+57 0 "SP 8" "Vana 1 on delay sn" "" 3 0 0 10 2
+57 0 "SP 9" "Dozaj Sonu Sn" "BK1 Dozaj Sonu" 3 3 0 100 2
+57 0 "SP 10" "AK alt seviye" "" 3 0 0 1000 0
+57 0 "SP 11" "Mixer seviyesi" "BK1 Mixer Sev" 3 0 0 1000 0
+57 0 "SP 12" "Yıkama sayısı " "" 1 0 0 2 0 ["Yok","0.00","Bir Kere","1.00","Iki Kere","2.00"]
+57 0 "SP 13" "Tank orta seviye" "BK1 Sirk Orta" 3 0 0 1000 0
+57 0 "SP 14" "2.Yikama dzj.pompa " "" 3 0 0 1 0 ["pompa dursun","0.00","pompa durmasin","1.00"]
+57 0 "SP 15" "İceri Supurme sn" "BK1 1.Iceri sn" 3 0 0 100 2
+57 0 "SP 16" "Disari Supurme sn" "BK1 Disari sn." 3 0 0 100 2
+57 0 "SP 17" "1.Yikama Lt" "BK1 Yikama lt." 3 0 0 10 0
+57 0 "SP 18" "2.Yikama Lt" "BK1 Yikama lt.*2" 3 0 0 10 0
+57 0 "SP 19" "Sirk.Devam Süresi" "" 1 120 0 32000 2
+57 0 "SP 20" "Durum" "" 3 0 0 8 0 [" Teleskopa iletildi","0.00","dagiticiya iletildi","1.00","dagitim basladi","2.00","dagitim tamamlandi","3.00","oncelik degisti","4.00","iptal edildi","8.00"]
+2 0 "SP 1" "Seviye" "Kilo*(AK Oran+Flotte Duzeltme Oran)-Online Gonderim Suyu*Dozaj Sayisi" 3 0 0 12000 0
+2 0 "SP 2" "Alarm Toleransı" "" 3 0 0 500 0
+2 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0.00","Artan","1.00"]
+2 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0.00","Dara Al","1.00"]
+2 0 "SP 5" "Süre" "" 3 240 0 6000 2
+2 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+2 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+2 0 "SP 8" "Period" "" 3 10 0 100 0
+2 0 "SP 9" "Hedef Toleransı" "" 3 20 0 1000 0
+2 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+2 1 "SP 11" "AK Oranı" "" 3 6.0 0.0 13.0 0
+2 0 "SP 12" "Flotte Duzeltme Oran" "" 1 0 -5 5 0
+2 0 "SP 13" "Dozaj Sayisi" "" 1 0 0 20 0
+1 0 "SP 1" "Seviye" "Kumas gir minumum" 3 0 0 12000 0
+1 0 "SP 2" "Alarm Toleransı" "" 3 0 0 500 0
+1 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0.00","Artan","1.00"]
+1 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0.00","Dara Al","1.00"]
+1 0 "SP 5" "Süre" "" 3 240 0 6000 2
+1 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+1 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+1 0 "SP 8" "Period" "" 3 10 0 100 0
+1 0 "SP 9" "Hedef Toleransı" "" 3 20 0 1000 0
+1 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+3 0 "SP 1" "Seviye" "(Kilo*(AK Boya Orani+Flotte Duzeltme Oran)-(Birinci Soda+Ikinci Soda+Boya+Tuz+Bikarbonat+Alkali+Sulfat+(Dozaj Sayisi*Online Gonderim Suyu)))" 3 0 0 12000 0
+3 0 "SP 2" "Alarm Toleransı" "" 3 0 0 500 0
+3 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0.00","Artan","1.00"]
+3 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0.00","Dara Al","1.00"]
+3 0 "SP 5" "Süre" "" 3 180 0 6000 2
+3 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+3 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+3 0 "SP 8" "Period" "" 3 10 0 100 0
+3 0 "SP 9" "Hedef Toleransı" "" 3 20 0 1000 0
+3 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+3 1 "SP 11" "AK Oranı" "" 3 6.0 0.0 13.0 0
+3 0 "SP 12" "Flotte Duzeltme Oran" "" 1 0 -5 5 0
+3 0 "SP 13" "Dozaj Sayisi" "" 1 0 0 20 0
+95 0 "SP 1" "Süre" "" 1 60 0 7200 2
+95 0 "SP 2" "Calışma Şekli" "" 3 1 0 1 0
+95 0 "SP 3" "İşlem Süresi" "" 3 0 0 3600 2
+95 0 "SP 4" "On Delay Süresi" "" 3 0 0 1 2
+95 0 "SP 5" "Tanım" "" 3 0 0 0 0
+15 0 "SP 1" "Süre" "" 3 0 0 7200 2
+15 0 "SP 2" "Period" "" 3 10 0 100 0
+15 0 "SP 3" "Sıcaklık" "" 1 0 0 135 1
+15 0 "SP 4" "Komut On Delay" "" 3 20 0 60 0
+15 0 "SP 5" "Kondens Zamanı" "Pid Kondens sn" 3 30 0 30 0
+15 1 "SP 6" "Gradyan" "" 1 0.0 0.0 10.0 1
+15 0 "SP 7" "Bekleme Zamanı" "" 1 0 0 7200 2
+15 0 "SP 8" "Tolerans" "" 3 5 0 10 1
+15 0 "SP 9" "Kazanç" "" 3 30 0 200 0
+15 0 "SP 10" "Integral Katsayı" "" 3 300 0 6000 0
+15 0 "SP 11" "Integral Üst Limit" "" 3 70 0 100 0
+15 0 "SP 12" "İntegral Alt Limit" "" 3 -50 -100 0 0
+15 0 "SP 13" "Oransal Kontrol" "" 3 1 0 1 0 ["Yok","0.00","Var","1.00"]
+15 0 "SP 14" "PID Bimodular" "Pid Bimoduler sn" 3 60 0 120 0
+15 0 "SP 15" "PWM Ontime" "" 3 10 0 100 0
+15 0 "SP 16" "Pasaj Sayısı" "" 3 0 0 100 0
+15 1 "SP 17" "Hedef Toleransı" "" 3 0.8 0.0 3.0 0
+15 1 "SP 18" "Ölü Bölge" "Sogutma Bandi" 3 1.0 0.0 3.0 0
+16 0 "SP 1" "Süre" "" 3 0 0 7200 2
+16 0 "SP 2" "Period" "" 3 10 0 100 0
+16 0 "SP 3" "Sıcaklık" "" 1 0 0 135 1
+16 0 "SP 4" "Komut On Delay" "" 3 15 0 60 0
+16 0 "SP 5" "Kondens Zamanı" "Pid Kondens sn" 3 30 0 30 0
+16 1 "SP 6" "Gradyan" "" 3 0.0 0.0 10.0 1
+16 0 "SP 7" "Bekleme Zamanı" "" 3 0 0 7200 2
+16 0 "SP 8" "Tolerans" "" 3 5 0 10 1
+16 0 "SP 9" "Kazanç" "" 3 25 0 200 0
+16 0 "SP 10" "Integral Katsayı" "" 3 300 0 6000 0
+16 0 "SP 11" "Integral Üst Limit" "" 3 50 0 100 0
+16 0 "SP 12" "İntegral Alt Limit" "" 3 -50 -100 0 0
+16 0 "SP 13" "Oransal Kontrol" "" 3 1 0 1 0 ["Yok","0.00","Var","1.00"]
+16 0 "SP 14" "PID Bimodular" "Pid Bimoduler sn" 3 60 0 120 0
+16 0 "SP 15" "PWM Ontime" "" 3 10 0 100 0
+16 0 "SP 16" "Pasaj Sayısı" "" 3 0 0 100 0
+16 1 "SP 17" "Hedef Toleransı" "" 3 0.8 0.0 1.0 0
+16 1 "SP 18" "Olu bolge" "Sogutma Bandi" 3 1.0 0.0 3.0 0
+4 0 "SP 1" "Süre" "" 3 180 0 600 2
+4 0 "SP 2" "Tank Alt Seviye" "RK Alt Sev" 3 100 0 800 0
+4 0 "SP 3" "Pompa Delay" "" 3 10 0 10 2
+4 0 "SP 4" "Ölü Bölge Süre" "" 3 10 0 60 2
+4 0 "SP 5" "Yıkama Süresi" "" 3 10 0 20 2
+4 0 "SP 6" "Yıkama Sayısı" "" 1 0 0 1 0 ["Yok","0.00","Bir Kere","1.00"]
+4 0 "SP 7" "Pom. İrtibat V.Durum" "" 3 0 0 0 0
+68 0 "SP 1" "Seviye" "(Kilo*(AK Yikama Orani+Flotte Duzeltme Oran)-(Dozaj Sayisi*Online Gonderim Suyu))" 3 0 0 12000 0
+68 0 "SP 2" "Alarm Toleransı" "" 3 0 0 500 0
+68 0 "SP 3" "Artan Azalan" "" 3 1 0 1 0 ["Azalan","0.00","Artan","1.00"]
+68 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0.00","Dara Al","1.00"]
+68 0 "SP 5" "Süre" "" 3 180 0 6000 2
+68 0 "SP 6" "Stabilize Zamanı" "" 3 0 0 60 2
+68 0 "SP 7" "Kazanç" "" 3 100 0 100 0
+68 0 "SP 8" "Period" "" 3 10 0 100 0
+68 0 "SP 9" "Hedef Toleransı" "" 3 20 0 1000 0
+68 0 "SP 10" "Kontrol Şekli" "" 3 0 0 1 0
+68 1 "SP 11" "AK Oranı" "" 3 6.0 0.0 13.0 0
+68 0 "SP 12" "Flotte Duzeltme Oran" "" 1 0 -5 5 0
+68 0 "SP 13" "Dozaj Sayisi" "" 1 0 0 20 0
