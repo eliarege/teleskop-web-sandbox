@@ -31,20 +31,22 @@ import { parseSystem } from '../src/parsers/parseSystem'
 import { parseUser } from '../src/parsers/parseUser'
 
 it('parseCommandsEditing', () => {
-  const contents = `
-8  12,19,21,23,27,40,60 1,1,1,1,1,1,1
-87
-47  43,14, 1,1,
-32  16 1
-`
+  const contents = `${[
+    '76  14,16,38 1,1,1',
+    '77  16 1',
+    '83  5,6,7,14,16,38,45 1,1,1,1,1,1,1',
+    '22  13,20,28,37,75, 1,1,1,1,1,',
+    '17   ',
+  ].join('\n')}\n`
 
   const output = parseCommandsEditing(contents)
 
   const results = [
-    { commandNo: 8, adviceList: '-1', dontUseList: '12,19,21,23,27,40,60', dontUseListCounter: '1,1,1,1,1,1,1' },
-    { commandNo: 87, adviceList: '-1', dontUseList: null, dontUseListCounter: null },
-    { commandNo: 47, adviceList: '-1', dontUseList: '43,14', dontUseListCounter: '1,1' },
-    { commandNo: 32, adviceList: '-1', dontUseList: '16', dontUseListCounter: '1' },
+    { commandNo: 76, adviceList: '-1', dontUseList: '14,16,38', dontUseListCounter: '1,1,1' },
+    { commandNo: 77, adviceList: '-1', dontUseList: '16', dontUseListCounter: '1' },
+    { commandNo: 83, adviceList: '-1', dontUseList: '5,6,7,14,16,38,45', dontUseListCounter: '1,1,1,1,1,1,1' },
+    { commandNo: 22, adviceList: '-1', dontUseList: '13,20,28,37,75', dontUseListCounter: '1,1,1,1,1' },
+    { commandNo: 17, adviceList: '-1', dontUseList: null, dontUseListCounter: null },
   ]
 
   expect(output).toStrictEqual(results)
