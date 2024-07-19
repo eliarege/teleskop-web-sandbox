@@ -30,28 +30,6 @@ import { parseStopReason } from '../src/parsers/parseStopReason'
 import { parseSystem } from '../src/parsers/parseSystem'
 import { parseUser } from '../src/parsers/parseUser'
 
-it('parseCommandsEditing', () => {
-  const contents = `${[
-    '76  14,16,38 1,1,1',
-    '77  16 1',
-    '83  5,6,7,14,16,38,45 1,1,1,1,1,1,1',
-    '22  13,20,28,37,75, 1,1,1,1,1,',
-    '17   ',
-  ].join('\n')}\n`
-
-  const output = parseCommandsEditing(contents)
-
-  const results = [
-    { commandNo: 76, adviceList: '-1', dontUseList: '14,16,38', dontUseListCounter: '1,1,1' },
-    { commandNo: 77, adviceList: '-1', dontUseList: '16', dontUseListCounter: '1' },
-    { commandNo: 83, adviceList: '-1', dontUseList: '5,6,7,14,16,38,45', dontUseListCounter: '1,1,1,1,1,1,1' },
-    { commandNo: 22, adviceList: '-1', dontUseList: '13,20,28,37,75', dontUseListCounter: '1,1,1,1,1' },
-    { commandNo: 17, adviceList: '-1', dontUseList: null, dontUseListCounter: null },
-  ]
-
-  expect(output).toStrictEqual(results)
-})
-
 it('parseAnalogInput', () => {
   const contents = `
 0 1 1 "AK Sicakligi" 1 0 "anakazan_sicaklik.gif"
@@ -82,49 +60,60 @@ it('parseAnalogOutput', () => {
   expect(output).toStrictEqual(results)
 })
 
-it('parseDigitalInput', () => {
+it('parseBatchParameters', () => {
   const contents = `
-0 1 1 "Basinc Tahliye Acik" 1 0
-2 1 3 "Pompa 2 Calisiyor " 1 2
+SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600,[]
+SABIT_2=Ikinci Soda, 0, 0, 5000, 0, 2, 4,[]
 `
-  const output = parseDigitalInput(contents)
+
+  const output = parseBatchParameters(contents)
 
   const results = [
-    { id: 0, card: 1, channel: 1, name: 'Basinc Tahliye Acik', enabled: 1, plcIO: 0, icon: '' },
-    { id: 2, card: 1, channel: 3, name: 'Pompa 2 Calisiyor ', enabled: 1, plcIO: 2, icon: '' },
+    {
+      batchParameterId: 0,
+      paramString: 'Kilo',
+      format: '1',
+      min: 0,
+      max: 2000,
+      default: -9999,
+      unitCode: 1,
+      unitText: 'Kg',
+      parameterId: 1,
+      dmArea: 9600,
+      selectionList: [],
+      selectionValues: [],
+      selectionListDefault: [],
+    },
+    {
+      batchParameterId: 2,
+      paramString: 'Ikinci Soda',
+      format: '0',
+      min: 0,
+      max: 5000,
+      default: 0,
+      unitCode: 2,
+      unitText: 'lt',
+      parameterId: 4,
+      dmArea: null,
+      selectionList: [],
+      selectionValues: [],
+      selectionListDefault: [],
+    },
   ]
 
   expect(output).toStrictEqual(results)
 })
 
-it('parseDigitalOutput', () => {
-  const contents = `
-0 1 1 "Ana Pompa" 0 1 0
-2 1 3 "Alarm Lambasi" 0 1 2
-`
-  const output = parseDigitalOutput(contents)
+it.todo('parseCalibrationAnalogInput', () => {
 
-  const results = [
-    { id: 0, card: 1, channel: 1, name: 'Ana Pompa', defaultValue: 0, enabled: 1, plcIO: 0, icon: '' },
-    { id: 2, card: 1, channel: 3, name: 'Alarm Lambasi', defaultValue: 0, enabled: 1, plcIO: 2, icon: '' },
-  ]
-
-  expect(output).toStrictEqual(results)
 })
 
-it('parseCounter', () => {
-  const contents = `
-2 1 3 "Elektrik Sayaci" 1 2
-3 1 4 "Su Sayaci" 1 3
-`
-  const output = parseCounter(contents)
+it.todo('parseCalibrationCounter', () => {
 
-  const results = [
-    { id: 2, card: 1, channel: 3, name: 'Elektrik Sayaci', enabled: 1, plcIO: 2, icon: '' },
-    { id: 3, card: 1, channel: 4, name: 'Su Sayaci', enabled: 1, plcIO: 3, icon: '' },
-  ]
+})
 
-  expect(output).toStrictEqual(results)
+it.todo('parseCommandAlarmReasons', () => {
+
 })
 
 it('parseCommandAlarms', () => {
@@ -255,50 +244,6 @@ it('parseCommandIO', () => {
   expect(output).toStrictEqual(results)
 })
 
-it('parseBatchParameters', () => {
-  const contents = `
-SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600,[]
-SABIT_2=Ikinci Soda, 0, 0, 5000, 0, 2, 4,[]
-`
-
-  const output = parseBatchParameters(contents)
-
-  const results = [
-    {
-      batchParameterId: 0,
-      paramString: 'Kilo',
-      format: '1',
-      min: 0,
-      max: 2000,
-      default: -9999,
-      unitCode: 1,
-      unitText: 'Kg',
-      parameterId: 1,
-      dmArea: 9600,
-      selectionList: [],
-      selectionValues: [],
-      selectionListDefault: [],
-    },
-    {
-      batchParameterId: 2,
-      paramString: 'Ikinci Soda',
-      format: '0',
-      min: 0,
-      max: 5000,
-      default: 0,
-      unitCode: 2,
-      unitText: 'lt',
-      parameterId: 4,
-      dmArea: null,
-      selectionList: [],
-      selectionValues: [],
-      selectionListDefault: [],
-    },
-  ]
-
-  expect(output).toStrictEqual(results)
-})
-
 it('parseCommandParams', () => {
   const contents = `
 5 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
@@ -340,6 +285,28 @@ it('parseCommandParams', () => {
         },
       ],
     },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseCommandsEditing', () => {
+  const contents = `${[
+    '76  14,16,38 1,1,1',
+    '77  16 1',
+    '83  5,6,7,14,16,38,45 1,1,1,1,1,1,1',
+    '22  13,20,28,37,75, 1,1,1,1,1,',
+    '17   ',
+  ].join('\n')}\n`
+
+  const output = parseCommandsEditing(contents)
+
+  const results = [
+    { commandNo: 76, adviceList: '-1', dontUseList: '14,16,38', dontUseListCounter: '1,1,1' },
+    { commandNo: 77, adviceList: '-1', dontUseList: '16', dontUseListCounter: '1' },
+    { commandNo: 83, adviceList: '-1', dontUseList: '5,6,7,14,16,38,45', dontUseListCounter: '1,1,1,1,1,1,1' },
+    { commandNo: 22, adviceList: '-1', dontUseList: '13,20,28,37,75', dontUseListCounter: '1,1,1,1,1' },
+    { commandNo: 17, adviceList: '-1', dontUseList: null, dontUseListCounter: null },
   ]
 
   expect(output).toStrictEqual(results)
@@ -414,6 +381,21 @@ T7700-Giada-TBBPLC
   expect(output).toStrictEqual(results)
 })
 
+it('parseCounter', () => {
+  const contents = `
+2 1 3 "Elektrik Sayaci" 1 2
+3 1 4 "Su Sayaci" 1 3
+`
+  const output = parseCounter(contents)
+
+  const results = [
+    { id: 2, card: 1, channel: 3, name: 'Elektrik Sayaci', enabled: 1, plcIO: 2, icon: '' },
+    { id: 3, card: 1, channel: 4, name: 'Su Sayaci', enabled: 1, plcIO: 3, icon: '' },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
 it('parseCycleControl', () => {
   const contents = `
 CYCLE_GOZ_SAYISI=6
@@ -424,6 +406,36 @@ CYCLE_GOZ_SAYISI=6
     {
       reelCount: 6,
     },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseDigitalInput', () => {
+  const contents = `
+0 1 1 "Basinc Tahliye Acik" 1 0
+2 1 3 "Pompa 2 Calisiyor " 1 2
+`
+  const output = parseDigitalInput(contents)
+
+  const results = [
+    { id: 0, card: 1, channel: 1, name: 'Basinc Tahliye Acik', enabled: 1, plcIO: 0, icon: '' },
+    { id: 2, card: 1, channel: 3, name: 'Pompa 2 Calisiyor ', enabled: 1, plcIO: 2, icon: '' },
+  ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseDigitalOutput', () => {
+  const contents = `
+0 1 1 "Ana Pompa" 0 1 0
+2 1 3 "Alarm Lambasi" 0 1 2
+`
+  const output = parseDigitalOutput(contents)
+
+  const results = [
+    { id: 0, card: 1, channel: 1, name: 'Ana Pompa', defaultValue: 0, enabled: 1, plcIO: 0, icon: '' },
+    { id: 2, card: 1, channel: 3, name: 'Alarm Lambasi', defaultValue: 0, enabled: 1, plcIO: 2, icon: '' },
   ]
 
   expect(output).toStrictEqual(results)
