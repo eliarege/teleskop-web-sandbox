@@ -147,3 +147,11 @@ export interface TimeBasedEventStates {
     hasNote: boolean
   }[]
 }
+export interface PlanParameters {
+  planKey: number
+  machineId: number
+  paramString: string
+  value: number | string
+  paramHighLimit: number
+  paramLowLimit: number
+}

@@ -2,6 +2,7 @@
 import type { QTableColumn } from 'quasar'
 import { determineTextColor } from 'utils'
 import { getUnitById, setParameterColor } from '~/shared/enums'
+import type { PlanParameters } from '~/shared/types'
 
 defineProps<{ parameterData: any[], editable: boolean }>()
 const { t } = useI18n()
@@ -15,15 +16,7 @@ const columns = computed(() => {
 
 const validateError = ref(false)
 const validateErrorMessage = ref('')
-function editValidation(parameterData: {
-  machineId: number
-  paramHighLimit: number
-  paramLowLimit: number
-  paramStatus: number
-  paramString: string
-  planKey: number
-  value: number | string
-}, value: number): boolean {
+function editValidation(parameterData: PlanParameters, value: number): boolean {
   if ((value >= parameterData.paramLowLimit) && (value <= parameterData.paramHighLimit)) {
     validateError.value = false
     return true
