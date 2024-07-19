@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Toast } from '@bryntum/schedulerpro-trial'
 import type { MachineStatus } from '~/shared/types'
 
 const { t } = useI18n()
@@ -83,10 +84,18 @@ async function customModelValue(group: string) {
     groups.value.push(group)
   }
 }
+const loading = ref(false)
+
 async function saveParameters() {
+  loading.value = true
+  // wait 0.3 seconds to animate loading?
+  await new Promise(resolve => setTimeout(resolve, 300))
   await $fetch('/api/settings/erpParameters/bulkAddErpParameters', {
     body: { paramString: selected.value, machines: selectedMachines.value },
     method: 'PUT',
+  }).finally(() => {
+    loading.value = false
+    Toast.show('Succesfully Saved!')
   })
 }
 </script>
@@ -132,8 +141,13 @@ async function saveParameters() {
     <q-btn
       color="primary"
       :label="t('settings.save')"
+      :loading="loading"
       @click="saveParameters()"
-    />
+    >
+      <template #loading>
+        <q-spinner-facebook />
+      </template>
+    </q-btn>
   </div>
 </template>
 
