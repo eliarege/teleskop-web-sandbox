@@ -23,7 +23,7 @@ const itemsMobile = [
 </script>
 
 <template>
-  <QLayout view="hHh lpR fFf">
+  <QLayout view="hhh lpR fFf">
     <QHeader
       bordered
       class="text-white bryntum-tbar-bg select-none border-b-3"

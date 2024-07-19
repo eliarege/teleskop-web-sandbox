@@ -41,7 +41,15 @@
     "title": "Plan Parametreleri",
     "id": "Parametre ID",
     "param-string": "Parametre",
-    "value": "Değer"
+    "value": "Değer",
+    "param-low-limit": "Alt Limit",
+    "param-high-limit": "Üst Limit",
+    "validation-error": "Parametreler {paramLowLimit} ve {paramHighLimit} aralığında olmalıdır.",
+    "legend": {
+      "default": "Varsayılan değer ile sonradan eklenmiş parametre",
+      "non-start": "Başlatma parametresi değil",
+      "value-invalid": "Değer hatalı"
+    }
   },
   "batch-notes": {
     "columns": {

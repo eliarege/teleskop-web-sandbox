@@ -1,0 +1,128 @@
+<script setup lang="ts">
+import type { QTableColumn } from 'quasar'
+import { determineTextColor } from 'utils'
+import { getUnitById, setParameterColor } from '~/shared/enums'
+
+defineProps<{ parameterData: any[], editable: boolean }>()
+const { t } = useI18n()
+
+const columns = computed(() => {
+  return [
+    { name: 'paramString', label: t('plan-parameters.param-string'), align: 'center', field: 'paramString' },
+    { name: 'value', label: t('plan-parameters.value'), align: 'center', field: 'value' },
+  ] as QTableColumn[]
+})
+
+const validateError = ref(false)
+const validateErrorMessage = ref('')
+function editValidation(parameterData: {
+  machineId: number
+  paramHighLimit: number
+  paramLowLimit: number
+  paramStatus: number
+  paramString: string
+  planKey: number
+  value: number | string
+}, value: number): boolean {
+  if ((value >= parameterData.paramLowLimit) && (value <= parameterData.paramHighLimit)) {
+    validateError.value = false
+    return true
+  }
+  validateErrorMessage.value = t('plan-parameters.validation-error', { paramLowLimit: parameterData.paramLowLimit, paramHighLimit: parameterData.paramHighLimit })
+  validateError.value = true
+  return false
+}
+async function saveParameter(value: number, planKey: number, paramString: string) {
+  console.log(value, planKey, paramString)
+
+  await $fetch('/api/planParameters', {
+    method: 'PUT',
+    query: { planKey, value, paramString },
+  })
+
+  validateError.value = false
+  validateErrorMessage.value = ''
+}
+</script>
+
+<template>
+  <div class="w-full h-full bg-white overflow-auto">
+    <div class="p-3">
+      <QTable
+        class="border-solid border-1px border-gray-500/50"
+        flat
+        :rows="parameterData"
+        :columns="columns"
+        hide-pagination
+        dense
+        :rows-per-page-options="[0]"
+        no-data-label="No Parameter"
+      >
+        <template #top>
+          <div class="flex-center font-extrabold w-full">
+            <span>
+              {{ t('plan-parameters.title') }}
+            </span>
+          </div>
+          <div>
+            <PlanParametersLegend />
+          </div>
+        </template>
+        <template #header="prop">
+          <q-tr :props="prop">
+            <q-th
+              v-for="col in prop.cols"
+              :key="col.name"
+              :props="prop"
+              class="!font-extrabold"
+            >
+              {{ col.label }}
+            </q-th>
+          </q-tr>
+        </template>
+        <template #body="prop">
+          <q-tr
+            :props="prop"
+            :class="setParameterColor(prop.row.paramStatus)"
+          >
+            <q-td key="id" :props="prop">
+              {{ prop.row.id }}
+            </q-td>
+            <q-td key="paramString" :props="prop">
+              {{ prop.row.paramString }}
+            </q-td>
+            <q-td
+              key="value"
+              :props="prop"
+            >
+              {{ prop.row.value }} {{ getUnitById(prop.row.unitCode) }}
+              <q-popup-edit
+                v-if="editable && prop.row.paramStatus !== 3"
+                v-slot="scope"
+                v-model="prop.row.value"
+                :validate="(val) => editValidation(prop.row, val)"
+                persistent
+                buttons
+                @save="(value) => saveParameter(value, prop.row.planKey, prop.row.paramString)"
+                @hide="() => { validateErrorMessage = ''; validateError = false }"
+                @before-show="() => { validateErrorMessage = ''; validateError = false }"
+              >
+                {{ t('plan-parameters.param-low-limit') }} - {{ prop.row.paramLowLimit }} / {{ t('plan-parameters.param-high-limit') }} - {{ prop.row.paramHighLimit }}
+                <q-input
+                  v-model="scope.value"
+                  dense
+                  autofocus
+                  :error="validateError"
+                  :error-message="validateErrorMessage"
+                />
+              </q-popup-edit>
+            </q-td>
+          </q-tr>
+        </template>
+      </QTable>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="postcss">
+</style>

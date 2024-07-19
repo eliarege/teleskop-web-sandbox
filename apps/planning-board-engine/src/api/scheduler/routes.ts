@@ -92,15 +92,31 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-  fastify.get<{ Querystring: { planKey: number } }>(
+  fastify.get(
     '/planning_board/plan_parameters',
-    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
+    async (request: FastifyRequest<{
+      Querystring: { planKey: number, machineId: number }
+    }>, reply) => {
       try {
-        const { planKey } = request.query
-        return await getPlanParameters(planKey)
+        const { planKey, machineId } = request.query
+        return await getPlanParameters(planKey, machineId)
       } catch (err) {
         fastify.log.error(`An error occured while fetching plan parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching plan parameters: ${err}` })
+      }
+    },
+  )
+  fastify.put(
+    '/planning_board/plan_parameters',
+    async (request: FastifyRequest<{
+      Querystring: { planKey: number, value: number, paramString: string }
+    }>, reply) => {
+      try {
+        const { planKey, value, paramString } = request.query
+        return await updatePlanParameter(planKey, value, paramString)
+      } catch (err) {
+        fastify.log.error(`An error occured while updating plan parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating plan parameter: ${err}` })
       }
     },
   )

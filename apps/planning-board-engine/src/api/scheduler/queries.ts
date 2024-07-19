@@ -532,3 +532,44 @@ export async function scheduleEvents(body: { planKey: number, queueNumber: numbe
     }
   })
 }
+function resolveParamStatus(param: PlanParameters) {
+  if ((param.paramHighLimit === undefined || param.paramHighLimit === null) && (param.paramLowLimit === undefined || param.paramLowLimit === null)) {
+    return 3
+    // @ts-expect-error TODO: fix types
+  } else if (param.value > param.paramHighLimit || param.value < param.paramLowLimit) {
+    return 1
+  } else return 0
+}
+export async function getPlanParameters(planKey: number, machineId: number) {
+  const parameters: PlanParameters[] = await knex({ d: 'DYBFBATCHPLANPARAMETERS' })
+    .leftJoin('BFMACHBATCHPARAMETERS as b', (builder) => {
+      builder.on('b.PARAMSTRING', 'd.PARAMSTRING')
+        .andOn('b.MACHINEID', knex.raw('?', [machineId]))
+    })
+    .select({
+      planKey: 'd.PLANKEY',
+      machineId: 'b.MACHINEID',
+      paramString: 'd.PARAMSTRING',
+      value: 'd.VALUE',
+      paramHighLimit: 'b.PARAMHIGHLIMIT',
+      paramLowLimit: 'b.PARAMLOWLIMIT',
+    })
+    .where('d.PLANKEY', planKey)
+
+  // BFMACHBATCHPARAMETERS olan ama DYBFBATCHPLANPARAMETERS olmayanların paramStatusu 2
+
+  return parameters.map(param => ({
+    paramStatus: resolveParamStatus(param),
+    ...param,
+  }))
+}
+
+export async function updatePlanParameter(planKey: number, value: number, paramString: string) {
+  await knex.transaction(async (trx) => {
+    await trx('DYBFBATCHPLANPARAMETERS').update({
+      VALUE: value,
+    })
+      .where('PLANKEY', planKey)
+      .andWhere('PARAMSTRING', paramString)
+  })
+}
