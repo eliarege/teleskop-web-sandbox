@@ -1,9 +1,9 @@
-import type { TbbFtpClientOptions } from './src/TbbFtpClient'
-import { TbbFtpClient } from './src/TbbFtpClient'
+import type { TbbFtpClientOptions } from './TbbFtpClient'
+import { TbbFtpClient } from './TbbFtpClient'
 
 export { TbbFtpClient }
 
-export type * from './src/types'
+export type * from './types'
 
 export async function withTbbFtpClient(
   host: string,
