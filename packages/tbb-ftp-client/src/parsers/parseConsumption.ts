@@ -1,9 +1,12 @@
 import type { Consumption } from '../types'
 
 /**
- * /tbb6500/data/config/consumption
+ * **Path**:  `/tbb6500/data/config/consumption`
  *
- * example:WATERTYPE_5_DO=-1
+ * **Example**:
+ * ```txt
+ * WATERTYPE_5_DO=-1
+ * ```
  */
 export function parseConsumption(content: string) {
   const consumption: Record<string, string | number> = {}

@@ -1,11 +1,3 @@
-/**
- * **Path**: `/tbb6500/data/config/baslatmaParametreleri`
- *
- * **Example**:
- * ```
- * SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600,[]"
- * ```
- */
 const unitMap = [
   '---',
   'Kg',
@@ -48,6 +40,14 @@ const unitMap = [
 
 const pattern = /^SABIT_(\d+)=(.+), (.+), (.+), (.+), (.+), (.+), ([^,]*),(?:([^,]*),)?(\[.*\])$/gim
 
+/**
+ * **Path**: `/tbb6500/data/config/baslatmaParametreleri`
+ *
+ * **Example**:
+ * ```
+ * SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600,[]"
+ * ```
+ */
 export function parseBatchParameters(content: string) {
   const reasons = []
   let match = pattern.exec(content)

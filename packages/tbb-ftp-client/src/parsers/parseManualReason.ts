@@ -1,6 +1,7 @@
 import type { ManualReason } from '../types'
 
 const pattern = /^(\d+) "([^"]+)"$/gim
+
 /**
  * **Path**: `/tbb6500/data/config/manuelmodnedenleri`
  *

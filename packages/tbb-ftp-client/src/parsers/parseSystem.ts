@@ -1,3 +1,5 @@
+const pattern = /^(.+)=(.+)$/
+
 /**
  * **Path**: `/tbb6500/data/config/sistem`
  *
@@ -6,9 +8,6 @@
  * BATCH_NO_DIGIT_COUNT=0
  * ```
  */
-
-const pattern = /^(.+)=(.+)$/
-
 export function parseSystem(content: string) {
   const res: Record<string, any> = {}
   const lines = content.split('\n')

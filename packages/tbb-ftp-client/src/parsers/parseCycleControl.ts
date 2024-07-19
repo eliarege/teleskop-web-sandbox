@@ -1,3 +1,5 @@
+const pattern = /^CYCLE_GOZ_SAYISI=(\d+)$/gim
+
 /**
  * **Path**: `/tbb6500/data/config/manuel/cycle_kontrol`
  *
@@ -6,9 +8,6 @@
  * CYCLE_GOZ_SAYISI=3
  * ```
  */
-
-const pattern = /^CYCLE_GOZ_SAYISI=(\d+)$/gim
-
 export function parseCycleControl(content: string) {
   const reasons = []
   let match = pattern.exec(content)
