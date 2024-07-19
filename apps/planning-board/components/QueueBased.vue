@@ -43,6 +43,10 @@ const showModal = reactive({
   planParameters: {
     show: false,
     unit: { name: 0 },
+    planKey: 0,
+    machineId: 0,
+    progNoList: '',
+    isBatchStarted: false,
   },
   recipe: {
     show: false,
@@ -601,8 +605,16 @@ onMounted(async () => {
         color: 'toolbar-buttons',
         onClick() {
           showModal.planParameters.show = true
-          // @ts-expect-error type is always number, not string | number
-          showModal.planParameters.unit.name = schedule.selectedEvents[0].id
+          let program: string = schedule.selectedEvents[0].originalData.programNoList
+          const planKey: number = schedule.selectedEvents[0].originalData.planKey
+          const machineId: number = schedule.selectedEvents[0].resourceId
+          if (program.endsWith(',')) {
+            program = program.slice(0, -1)
+          }
+          showModal.planParameters.machineId = machineId
+          showModal.planParameters.progNoList = program
+          showModal.planParameters.planKey = planKey
+          showModal.planParameters.isBatchStarted = schedule.selectedEvents[0].originalData.isStarted
         },
       },
       {
@@ -826,7 +838,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
     <EliarModal v-if="showModal.planParameters.show" @click.stop="showModal.planParameters.show = false">
       <template #default>
         <div class="w-full h-98vh overflow-auto">
-          <PlanParameters :plan-key="showModal.planParameters.unit.name" />
+          <PlanParameters v-bind="showModal.planParameters" />
         </div>
       </template>
     </EliarModal>
