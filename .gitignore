@@ -32,4 +32,5 @@ tmp
 apps/machines/server/data
 
 # CI/CD
+release-logs
 release-errors
