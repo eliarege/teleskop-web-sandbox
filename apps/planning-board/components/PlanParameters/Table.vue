@@ -4,7 +4,20 @@ import { determineTextColor } from 'utils'
 import { getUnitById, setParameterColor } from '~/shared/enums'
 import type { PlanParameters } from '~/shared/types'
 
-defineProps<{ parameterData: any[], editable: boolean, machineId: number, isSendMachine: boolean }>()
+interface PlanParameterProps {
+  parameterData: any[]
+  editable: boolean
+  machineId: number
+  isSendMachine: boolean
+  machineUploadData?: {
+    program: string
+    machineId: number
+    planKey: number
+    jobOrder: string
+    machineIp: string
+  }
+}
+const props = defineProps<PlanParameterProps>()
 const { t } = useI18n()
 const columns = computed(() => {
   return [
@@ -39,6 +52,12 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
 
   validateError.value = false
   validateErrorMessage.value = ''
+}
+async function uploadToMachine() {
+  await $fetch('/api/machineUpload', {
+    method: 'PUT',
+    query: props.machineUploadData,
+  })
 }
 </script>
 
@@ -123,7 +142,7 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
             color="primary"
             label="resend"
             :disable="parameterData.some(e => e.value === null)"
-            @click="() => console.log('SEND MACHINE', parameterData)"
+            @click="uploadToMachine()"
           />
         </template>
       </QTable>

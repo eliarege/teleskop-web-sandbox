@@ -56,6 +56,7 @@ const showModal = reactive({
     isBatchStarted: false,
     missingParams: [] as PlanParameters[],
     isSendMachine: false,
+    uploadData: {},
   },
   recipe: {
     show: false,
@@ -597,6 +598,13 @@ onMounted(async () => {
                 showModal.planParameters.isBatchStarted = eventRecord.originalData.isStarted
                 showModal.planParameters.missingParams = missingParams
                 showModal.planParameters.isSendMachine = true
+                showModal.planParameters.uploadData = {
+                  program,
+                  machineId,
+                  planKey,
+                  machineIp,
+                  jobOrder,
+                }
               } else Toast.show(t('job-order-upload'))
             },
           },

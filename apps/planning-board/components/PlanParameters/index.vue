@@ -7,6 +7,13 @@ interface PlanParameterProps {
   machineId: number
   missingParams: PlanParameters[]
   isSendMachine: boolean
+  uploadData?: {
+    program: string
+    machineId: number
+    planKey: number
+    jobOrder: string
+    machineIp: string
+  }
 }
 
 const props = defineProps<PlanParameterProps>()
@@ -24,6 +31,7 @@ const modifiedParameters = computed(() => [...planParameters.value, ...props.mis
       :machine-id
       :editable="!isBatchStarted"
       :is-send-machine
+      :machine-upload-data="uploadData"
     />
   </div>
 </template>
