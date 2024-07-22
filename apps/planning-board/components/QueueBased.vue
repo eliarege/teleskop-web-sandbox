@@ -9,7 +9,7 @@ import { determineTextColor } from '@teleskop/utils'
 import { eventTooltip } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
 import type { QueueBasedAnyEvent } from '~/shared/queueBased'
-import type { MachineStatus, UnplannedEvents } from '~/shared/types'
+import type { MachineStatus, PlanParameters, UnplannedEvents } from '~/shared/types'
 import { useSettingStore } from '~/store/settings'
 
 const { t, locale, d } = useI18n()
@@ -30,7 +30,14 @@ const { data: machines, refresh: machineRefresh, pending: machinesPending } = aw
   transform: unsortedMachines => sortMachines(unsortedMachines),
 })
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
-const { data: events, refresh: eventRefresh, pending: eventsPending } = await useFetch<QueueBasedAnyEvent[]>('/api/queueBased/schedulerEvents', {
+const events = ref([] as QueueBasedAnyEvent[])
+const res = $fetch.create({
+  onResponse(arg) {
+    events.value = arg.response._data
+  },
+})
+const { data: _events, refresh: eventRefresh, status: eventStatus, execute } = await useFetch<QueueBasedAnyEvent[]>('/api/queueBased/schedulerEvents', {
+  $fetch: res,
   immediate: false,
   default: () => [],
   query: {
@@ -47,6 +54,8 @@ const showModal = reactive({
     machineId: 0,
     progNoList: '',
     isBatchStarted: false,
+    missingParams: [] as PlanParameters[],
+    isSendMachine: false,
   },
   recipe: {
     show: false,
@@ -191,7 +200,6 @@ const modifiedEvents = computed(() => {
     }
   })
 })
-
 const scrollStore = new Store({
   data: modifiedEvents.value,
 })
@@ -225,6 +233,7 @@ async function refreshScheduler() {
     machineRefresh(),
     unScheduledRefresh(),
     eventRefresh(),
+    execute(),
   ])
   try {
     // FIX: Cycle during synchronous computation
@@ -419,10 +428,10 @@ onMounted(async () => {
           vnc: {
             text: 'VNC',
             icon: 'b-fa b-fa-solid b-fa-ethernet',
-            onItem: (a: any) => {
+            onItem: (arg: any) => {
               showModal.vnc.show = !showModal.vnc.show
-              showModal.vnc.currentMachine.id = a.id
-              showModal.vnc.currentMachine.name = a.name
+              showModal.vnc.currentMachine.id = arg.record.id
+              showModal.vnc.currentMachine.name = arg.record.name
             },
           },
           machineSort: {
@@ -557,6 +566,38 @@ onMounted(async () => {
               showModal.properties.unit.machineId = assignmentRecord.originalData.resourceId
               showModal.properties.unit.fabricWeight = eventRecord.originalData.fabricWeight
               showModal.properties.unit.theoreticalDuration = eventRecord.originalData.theoreticalDuration
+            },
+          },
+          sendToMachine: {
+            icon: 'b-fa-solid b-fa-calendar-xmark',
+            text: 'SEND TO MACHINE',
+            async onItem({ eventRecord, resourceRecord }) {
+              // program, machineId, planKey
+              let program: string = eventRecord.originalData.programNoList
+              const planKey: number = eventRecord.originalData.planKey
+              const machineId: number = resourceRecord.originalData.id
+              const machineIp: string = resourceRecord.originalData.machineIpAddress
+              const jobOrder: string = eventRecord.originalData.jobOrder
+              if (program.endsWith(',')) {
+                program = program.slice(0, -1)
+              }
+              const res: PlanParameters[] | string = await $fetch('/api/machineUpload', {
+                method: 'PUT',
+                query: { program, machineId, planKey, machineIp, jobOrder },
+              })
+              if (res === 'NO PROGRAM') {
+                Toast.show('NO PROGRAM')
+              }
+              if (typeof res !== 'string' && res.some(f => f.value === null)) {
+                const missingParams = res.filter(f => f.value === null)
+                showModal.planParameters.show = true
+                showModal.planParameters.machineId = machineId
+                showModal.planParameters.progNoList = program
+                showModal.planParameters.planKey = planKey
+                showModal.planParameters.isBatchStarted = eventRecord.originalData.isStarted
+                showModal.planParameters.missingParams = missingParams
+                showModal.planParameters.isSendMachine = true
+              } else Toast.show('DONE!')
             },
           },
         },
@@ -796,7 +837,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
 </script>
 
 <template>
-  <LoadingSpinner v-if="eventsPending" :has-background="false" />
+  <LoadingSpinner v-if="eventStatus === 'idle'" :has-background="false" />
   <div>
     <div class="w-full h-screen relative">
       <div id="main" class="w-full h-full" />
@@ -873,7 +914,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
         <MachineVnc
           :machine-name="showModal.vnc.currentMachine.name"
           :machine-id="showModal.vnc.currentMachine.id"
-          :websockify-url="config.public.websockifyUrl"
+          websockify-url="ws://192.168.16.88:3000/websockify"
         />
       </template>
     </EliarModal>
@@ -909,6 +950,7 @@ div[bgGreen] {
   opacity: 1 !important;
   @apply !rounded-9px;
 }
+
 #main {
   display: flex;
   flex-direction: row;
@@ -918,18 +960,22 @@ div[bgGreen] {
 #main .b-resourceheader {
   height: 100%;
 }
-.b-sch-event{
+
+.b-sch-event {
   @apply !rounded-9px;
 }
+
 .b-timeline-subgrid .b-sch-current-time {
   border: 1px solid red !important
 }
+
 /*.b-sch-event:not(.b-sch-event-selected) .b-sch-event-content{
   filter:brightness(0.8);
 }*/
 .custom-focus {
   filter: invert(60%);
 }
+
 .b-task-percent-bar-outer {
   @apply !rounded-9px !overflow-hidden e-border;
 }

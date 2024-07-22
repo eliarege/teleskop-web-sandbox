@@ -3,19 +3,23 @@ import {
   addBatchNote,
   addErpParameters,
   bulkAddErpParameter,
+  createPlanParameter,
   deleteEvent,
   deleteNote,
   getBatchNotes,
   getBatchProperties,
   getColumnData,
+  getDetailedProgram,
   getDistinctErpParameters,
   getErpParameters,
   getEventTooltipParams,
+  getFormula,
   getMachines,
   getMachinesByErpParameter,
   getPlanParameters,
   getPtStatus,
   getRecipe,
+  getStartingParametersWithValues,
   getTheoreticalDuration,
   getUnplannedColumns,
   getUnplannedEvents,
@@ -27,7 +31,9 @@ import {
   taskValid,
   unpinEvent,
   updateBatchNote,
+  updatePlanParameter,
   updateUnplannedColumns,
+  uploadToMachine,
   validateTaskPrograms,
 } from './queries'
 
@@ -117,6 +123,27 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while updating plan parameter: ${err}`)
         return reply.code(500).send({ error: `An error occured while updating plan parameter: ${err}` })
+      }
+    },
+  )
+  fastify.post(
+    '/planning_board/plan_parameters',
+    async (request: FastifyRequest<{
+      Body: { parameter: {
+        paramString: string
+        value?: number | string
+        planKey: string
+        paramLowLimit: number
+        paramHighLimit: number
+        paramStatus: number
+      }, value: number | string, machineId: number }
+    }>, reply) => {
+      try {
+        const { parameter, value, machineId } = request.body
+        return await createPlanParameter(parameter, value, machineId)
+      } catch (err) {
+        fastify.log.error(`An error occured while creating plan parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occured while creating plan parameter: ${err}` })
       }
     },
   )
@@ -229,6 +256,19 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching theoretical duration: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching theoretical duration: ${err}` })
+      }
+    },
+  )
+
+  fastify.get(
+    '/planning_board/program_details',
+    async (request: FastifyRequest<{ Querystring: { programNo: number, machineId: number } }>, reply) => {
+      try {
+        const { programNo, machineId } = request.query
+        return await getDetailedProgram(programNo, machineId)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching detailed program: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching detailed program: ${err}` })
       }
     },
   )
@@ -396,6 +436,38 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         console.error(`An error occured while deleting erp parameter: `, err)
         return reply.code(500).send({ error: `An error occured while deleting erp parameter: ${err}` })
+      }
+    },
+  )
+  /* ------------------------------------------------------------------------------------------------------------------------ */
+
+  fastify.put(
+    '/planning_board/upload_joborder',
+    async (request: FastifyRequest<{
+      Querystring: { program: string, machineId: number, planKey: string, machineIp: string, jobOrder: string }
+    }>, reply) => {
+      try {
+        const { program, machineId, planKey, machineIp, jobOrder } = request.query
+        const formula = await getFormula(program, machineId)
+        if (formula.length > 0) {
+          // @ts-expect-error ???
+          const startingParameterValues: {
+            machineId: number
+            paramString: string
+            value: string | number
+            paramLowLimit: number
+            paramHighLimit: number
+          }[] = await getStartingParametersWithValues(formula, planKey)
+          const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
+          if (!requestedStartingParameters || requestedStartingParameters.length === 0) {
+            // write to machine
+            await uploadToMachine(machineIp, startingParameterValues, program, jobOrder)
+            return reply.code(200).send('DONE')
+          }
+          return reply.code(200).send(requestedStartingParameters)
+        } else return reply.code(200).send('NO PROGRAM')
+      } catch (err) {
+        console.error(err)
       }
     },
   )

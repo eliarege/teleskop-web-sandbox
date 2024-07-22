@@ -4,9 +4,8 @@ import { determineTextColor } from 'utils'
 import { getUnitById, setParameterColor } from '~/shared/enums'
 import type { PlanParameters } from '~/shared/types'
 
-defineProps<{ parameterData: any[], editable: boolean }>()
+defineProps<{ parameterData: any[], editable: boolean, machineId: number, isSendMachine: boolean }>()
 const { t } = useI18n()
-
 const columns = computed(() => {
   return [
     { name: 'paramString', label: t('plan-parameters.param-string'), align: 'center', field: 'paramString' },
@@ -25,12 +24,17 @@ function editValidation(parameterData: PlanParameters, value: number): boolean {
   validateError.value = true
   return false
 }
-async function saveParameter(value: number, planKey: number, paramString: string) {
-  console.log(value, planKey, paramString)
-
+async function saveParameter(value: number, parameter: PlanParameters, machineId: number) {
+  if (parameter.paramStatus === 2) {
+    console.log('machineId', machineId)
+    await $fetch('/api/planParameters', {
+      method: 'POST',
+      body: { parameter, value, machineId },
+    })
+  }
   await $fetch('/api/planParameters', {
     method: 'PUT',
-    query: { planKey, value, paramString },
+    query: { planKey: parameter.planKey, value, paramString: parameter.paramString },
   })
 
   validateError.value = false
@@ -96,7 +100,7 @@ async function saveParameter(value: number, planKey: number, paramString: string
                 :validate="(val) => editValidation(prop.row, val)"
                 persistent
                 buttons
-                @save="(value) => saveParameter(value, prop.row.planKey, prop.row.paramString)"
+                @save="(value) => saveParameter(value, prop.row, machineId)"
                 @hide="() => { validateErrorMessage = ''; validateError = false }"
                 @before-show="() => { validateErrorMessage = ''; validateError = false }"
               >
@@ -111,6 +115,16 @@ async function saveParameter(value: number, planKey: number, paramString: string
               </q-popup-edit>
             </q-td>
           </q-tr>
+        </template>
+        <template #bottom>
+          <q-space />
+          <q-btn
+            v-if="isSendMachine"
+            color="primary"
+            label="resend"
+            :disable="parameterData.some(e => e.value === null)"
+            @click="() => console.log('SEND MACHINE', parameterData)"
+          />
         </template>
       </QTable>
     </div>

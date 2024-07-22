@@ -36,6 +36,13 @@ enum Units {
   FahrenheitPerMinute = 35, // °F/min
   OuncePerFoot = 36, // oz/ft
 }
+
+export enum StartingParameters {
+  Correct = 0,
+  Invalid = 1,
+  Changed = 2,
+  NonStartingParameter = 3,
+}
 export function getUnitById(id: number): string {
   // TODO: I18N!
   switch (id) {
@@ -113,5 +120,19 @@ export function getUnitById(id: number): string {
       return 'oz/ft'
     default:
       return ''
+  }
+}
+
+// @unocss-include
+export function setParameterColor(paramStatus: 0 | 1 | 2 | 3) {
+  switch (paramStatus) {
+    case StartingParameters.Correct:
+      return ''
+    case StartingParameters.Changed:
+      return 'bg-blue-600'
+    case StartingParameters.Invalid:
+      return 'bg-red-600'
+    case StartingParameters.NonStartingParameter:
+      return 'bg-green-600'
   }
 }

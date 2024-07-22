@@ -114,3 +114,60 @@ export interface PtLocaleSettings {
   plannedBatchFabricColor: boolean
   showStops: { show: boolean, color: string }
 }
+
+export interface ProgramHeader {
+  name: string
+  author: string | null
+  comment: string | null
+  typeId: number
+  createdAt: Date | null
+  updatedAt: Date | null
+  steps: ProgramStep[]
+  updatedAtTBB: string | null
+  programState: number | null
+  isChanged: boolean | null
+  tbbProgramChangedEvent: boolean | null
+}
+
+export interface Program extends ProgramHeader {
+  icon: string | null
+  programNo: number
+  typeName: string
+  machineId: number
+  machineName: string
+}
+export interface ProgramStep {
+  stepId: number
+  mainCommand: ProgramStepCommand
+  parallelCommands: ProgramStepCommand[]
+}
+export interface ProgramStepCommand {
+  commandId: number
+  commandNo: number | null
+  parameters: ParameterItem[]
+  ioList: ioListItem[]
+}
+export interface ParameterItem {
+  value: number
+  index: number
+}
+export interface ioListItem {
+  ioId: number
+  ioIndex: number
+  value: [number, number][]
+}
+
+export interface PlanParameters {
+  id: number
+  planKey: number
+  machineId: number
+  paramString: string
+  paramHighLimit: number
+  paramLowLimit: number
+  value: string | number
+  unitCode: number
+  status: '0' |
+  '1' |
+  '2' |
+  '3'
+}
