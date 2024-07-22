@@ -1,0 +1,99 @@
+<script setup lang="ts">
+import draggable from 'vuedraggable'
+import { useI18n } from 'vue-i18n'
+import type { Material } from '~/shared/types'
+
+const { t } = useI18n()
+const materials = ref<Material[]>([])
+getMaterials()
+async function getMaterials() {
+  materials.value = await $fetch('/api/materials')
+}
+const materialSearchFilter = ref('')
+
+const columns = [
+  {
+    name: 'materialCode',
+    required: true,
+    label: t('materialFields.Code'),
+    align: 'left',
+    field: 'materialCode',
+    sortable: true,
+  },
+  {
+    name: 'materialName',
+    required: true,
+    label: t('materialFields.Name'),
+    align: 'left',
+    field: 'materialName',
+    sortable: true,
+  },
+]
+
+function cloneMaterial(item: Material) {
+  return {
+    materialCode: item.materialCode,
+    materialName: item.materialName,
+    amount: 0,
+    unit: 3,
+    mainStep: 1,
+    parallelStep: 1
+  }
+}
+</script>
+
+<template>
+  <QTable
+    :columns
+    :rows="materials"
+    :filter="materialSearchFilter"
+    row-key="materialCode"
+    h-95
+    mb-2
+  >
+    <template #header>
+      <QInput
+        v-model="materialSearchFilter"
+        :label="t('Search')"
+        class="mx-5 mb-5"
+      >
+        <template #prepend>
+          <QIcon name="search" />
+        </template>
+      </QInput>
+    </template>
+    <template #body="props">
+      <draggable
+        :list="[props.row]"
+        :group="{ name: 'materials', pull: 'clone', put: false }"
+        :clone="cloneMaterial"
+        :sort="false"
+        ghost-class="material-ghost"
+      >
+        <template #item="{ element }">
+          <QTr>
+            <QTd>
+              <QIcon name="drag_handle" class="cursor-move" />
+            </QTd>
+            <QTd
+              v-for="col in columns"
+              :key="col.name"
+              :props
+              class="cursor-pointer"
+              :style="col.name === 'materialCode' ? 'width: 100px;' : ''"
+            >
+              {{ element[col.name] }}
+            </QTd>
+          </QTr>
+        </template>
+      </draggable>
+    </template>
+  </QTable>
+</template>
+
+<style scoped>
+.material-ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+</style>

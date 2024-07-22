@@ -6,6 +6,7 @@ export const useDataStore = defineStore('data', () => {
   const selectedDispenser = ref<Dispenser | undefined>()
   const dispensers = ref<Dispenser[]>()
   const dispenserTypes = ref<DispenserType[]>()
+  const refreshDispensers = ref(0)
   function getDispenser(id: number) {
     const dispenser = dispensers.value?.find(dispenser => dispenser.dispenserId === id)
     if (dispenser)
@@ -34,5 +35,6 @@ export const useDataStore = defineStore('data', () => {
     getDispenser,
     getDispensers,
     getDispenserTypes,
+    refreshDispensers
   }
 })

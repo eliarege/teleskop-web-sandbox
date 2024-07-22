@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
       ISN: 'r.req_no_batch',
       mainStep: 'r.main_step',
       parallelStep: 'r.parallel_step',
-      chemCode: 'r.chem_code',
+      materialCode: 'r.material_code',
       materialName: 'm.material_name',
       programProcessNo: 'r.prog_proc_no',
       amount: 'r.amount',
@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
         .on('h.recipe_no', '=', 'p.program_no')
         .andOn('p.machine_id', '=', machineId)
     })
-    .leftJoin('MATERIAL as m', 'm.material_code', '=', 'r.chem_code')
+    .leftJoin('MATERIAL as m', 'm.material_code', '=', 'r.material_code')
     .whereNotNull('req_no_batch')
     .orderBy(['r.process_order', 'r.prog_proc_no', 'r.parallel_step'])
 

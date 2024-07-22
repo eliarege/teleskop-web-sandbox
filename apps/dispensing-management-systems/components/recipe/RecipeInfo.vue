@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { BatchRecipeStep } from '~/shared/types';
+
 const props = defineProps({
   batchNo: {
     type: String,
@@ -16,17 +18,17 @@ const props = defineProps({
 
 const { t } = useI18n()
 
-const recipeData = ref([])
+const recipeData = ref<BatchRecipeStep[]>([])
 const recipeDataTemp = ref()
 const plankey = ref()
 getRecipe()
 async function getRecipe() {
-  recipeDataTemp.value = await $fetch(`/api/recipes/recipe`, { query: { batchNo: props.batchNo, correctionNo: props.correctionNo } })
+  recipeDataTemp.value = await $fetch(`/api/recipes`, { query: { batchNo: props.batchNo, correctionNo: props.correctionNo } })
   if (!recipeDataTemp.value)
     recipeData.value = []
   else {
     recipeData.value = recipeDataTemp.value
-    recipeData.value.forEach((row) => {
+    recipeData.value.forEach((row: any) => {
       row.unit = t(`units.${row.unit}`)
       row.recipeTypeText = t(`recipeTypes.${row.recipeType - 1}`)
     })
@@ -41,7 +43,7 @@ const columns = [
   { label: t('recipeFields.ISN'), prop: 'ISN' },
   { label: t('recipeFields.MainStep'), prop: 'mainStep' },
   { label: t('recipeFields.ParallelStep'), prop: 'parallelStep' },
-  { label: t('materialFields.Code'), prop: 'chemCode' },
+  { label: t('materialFields.Code'), prop: 'materialCode' },
   { label: t('materialFields.Name'), prop: 'materialName' },
   { label: t('recipeFields.ProcessNo'), prop: 'programProcessNo' },
   { label: t('Amount'), prop: 'amount' },
@@ -66,7 +68,7 @@ const groupables = [
       :title="t('recipeFields.Details', { batch: props.batchNo })"
       :is-first="false"
       has-object-span-method
-      :groupables="groupables"
+      :groupables
       :rows="recipeData"
       chem-class="bg-green"
       dyeing-class="bg-scroll"

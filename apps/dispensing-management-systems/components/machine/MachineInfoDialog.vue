@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
+import { klona } from 'klona'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
 import type { Dispenser, Machine, MachineControllerType } from '~/shared/types'
 
@@ -14,7 +15,7 @@ const props = defineProps({
   },
   machines: {
     type: Object as PropType<Machine[]>,
-    required: false,
+    required: true,
   },
   dispensers: {
     type: Object as PropType<Dispenser[]>,
@@ -27,12 +28,19 @@ const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const machine = toRef(props, 'machine')
 const machines = toRef(props, 'machines')
+const defaultMachine: Machine = {
+  // Set the default machineId to highest one + 1, 1 if there isn't any
+  machineId: machines.value && machines.value.length > 0 ? machines.value.at(machines.value.length - 1)!.machineId + 1 : 1,
+  machineName: '',
+  controllerType: 1,
+  connectedDispensers: null,
+}
 const selectedMachines = ref([])
 const controllerTypes = toRef(props, 'controllerTypes')
-const editedMachine = ref({ ...machine.value })
+const editedMachine = machine.value ? ref(klona(machine.value)) : ref(klona(defaultMachine))
 const dispensers = toRef(props, 'dispensers')
-const selectedDispensersInitial = machine.value ? ref(machine.value.connectedDispensers.map(dispenser => dispenser.dispenserId)) : ref([])
-const selectedDispensers = ref([...selectedDispensersInitial.value])
+const selectedDispensersInitial = machine.value ? ref(machine.value.connectedDispensers!.map(dispenser => dispenser.dispenserId)) : ref([])
+const selectedDispensers = ref(klona(selectedDispensersInitial.value))
 async function onSave() {
   try {
     const added = selectedDispensers.value
@@ -60,13 +68,9 @@ async function onSave() {
   }
 }
 
-function onCancel() {
-  onDialogCancel()
-}
-
 function onReset() {
-  editedMachine.value = { ...machine.value }
-  selectedDispensers.value = [...selectedDispensersInitial.value]
+  editedMachine.value = machine.value ? klona(machine.value) : klona(defaultMachine)
+  selectedDispensers.value = klona(selectedDispensersInitial.value)
 }
 
 async function onDelete() {
@@ -86,7 +90,7 @@ async function onDelete() {
     },
   }).onOk(async () => {
     try {
-      await $fetch(`/api/machines`, { method: 'DELETE', body: machine.value!.machineId })
+      await $fetch(`/api/machines/${machine.value!.machineId}`, { method: 'DELETE' })
       onDialogOK(true)
     } catch (e) {
       onDialogOK(false)
@@ -175,8 +179,8 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 />
               </div>
             </div>
-            <div v-if="machines" class="row-item">
-              <span class="item-label">{{ t('ExportConnections') }} </span>
+            <div v-if="machine" class="row-item">
+              <span class="item-label">{{ t('CopyConnections') }} </span>
               <QSelect
                 v-model="selectedMachines"
                 multiple
@@ -202,7 +206,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
               :label="t('Cancel')"
               color="warning"
               icon="cancel"
-              @click="onCancel"
+              @click="onDialogCancel"
             />
             <QBtn
               :label="t('Reset')"

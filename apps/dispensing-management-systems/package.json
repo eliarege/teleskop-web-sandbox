@@ -19,12 +19,14 @@
     "@rollup/plugin-virtual": "^3.0.2",
     "async-mutex": "^0.4.0",
     "execa": "^9.0.2",
+    "klona": "^2.0.6",
     "knex": "^3.1.0",
     "pg": "^8.11.5",
     "simple-keyboard": "^3.7.83",
     "tedious": "^18.1.0",
     "ui": "workspace:*",
     "utils": "workspace:*",
+    "vuedraggable": "^4.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

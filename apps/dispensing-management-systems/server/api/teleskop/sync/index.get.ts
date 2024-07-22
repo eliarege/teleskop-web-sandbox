@@ -90,7 +90,7 @@ const batchRecipeStepParams = {
   ISN: 'r.REQNO_BATCH',
   mainStep: 'r.MAINSTEP',
   parallelStep: 'r.PARALLELSTEP',
-  chemCode: 'r.CHEMCODE',
+  materialCode: 'r.CHEMCODE',
   programProcessNo: 'r.REQNO_PROG',
   amount: 'r.AMOUNT',
   unit: 'r.otherUnit',

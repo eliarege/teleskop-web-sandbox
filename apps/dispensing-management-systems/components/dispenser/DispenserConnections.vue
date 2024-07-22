@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import ExportConnectionsDialog from '../ExportConnectionsDialog.vue'
+import CopyConnectionsDialog from '../CopyConnectionsDialog.vue'
 import type { Machine, Material, MaterialGroup } from '~/shared/types'
 
 const props = defineProps({
@@ -99,7 +99,6 @@ async function handleSubmit() {
     const added = selectedMachines.value
       .filter(machineId =>
         !selectedMachinesInitial.value.some(initialMachine => initialMachine.machineId === machineId))
-      .map(addedMachineId => addedMachineId)
 
     const deleted = selectedMachinesInitial.value
       .filter(initialMachine =>
@@ -159,14 +158,14 @@ function handleReset() {
   }
   buttonDisabled.value = true
 }
-function handleExport() {
+function handleCopy() {
   q.dialog({
-    component: ExportConnectionsDialog,
+    component: CopyConnectionsDialog,
     componentProps: {
       type: tab.value,
       dispenserId: Number(props.dispenserId),
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
     } else
@@ -179,7 +178,7 @@ function materialFilter(rows: Material[], terms: string) {
     const materialCodeMatches = row.materialCode.toLowerCase().includes(terms)
     const materialNameMatches = row.materialName.toLowerCase().includes(terms)
     const materialGroupMatches = String(groupOptions.at(row.materialGroupNo - 1)?.materialGroupName).toLowerCase().includes(terms)
-    const connectedDispensersMatches = row.connectedDispensers.some(dispenser => dispenser.dispenserName.toLowerCase().includes(terms))
+    const connectedDispensersMatches = row.connectedDispensers?.some(dispenser => dispenser.dispenserName.toLowerCase().includes(terms))
     return materialCodeMatches || materialNameMatches || materialGroupMatches || connectedDispensersMatches
   })
 }
@@ -197,12 +196,18 @@ const pagination = ref({ rowsPerPage: 100 })
         :breakpoint="0"
       >
         <QTab
-          name="machines" icon="video_label" :label="t('Machines')" no-caps
+          name="machines"
+          icon="video_label"
+          :label="t('Machines')"
+          no-caps
           :class="tab === 'machines' ? 'tabs-active' : 'tabs'"
         />
         <QSeparator vertical />
         <QTab
-          name="materials" icon="science" :label="t('Materials')" no-caps
+          name="materials"
+          icon="science"
+          :label="t('Materials')"
+          no-caps
           :class="tab === 'materials' ? 'tabs-active' : 'tabs'"
         />
       </QTabs>
@@ -263,9 +268,24 @@ const pagination = ref({ rowsPerPage: 100 })
       </QTable>
     </div>
     <div v-if="tab" class="flex-center gap-10 mt-10">
-      <QBtn :label="t('Save')" icon="save" color="primary" :disable="buttonDisabled" @click="handleSubmit" />
-      <QBtn :label="t('Reset')" icon="refresh" @click="handleReset" />
-      <QBtn :label="t('ExportConnections')" color="secondary" icon="file_upload" @click="handleExport" />
+      <QBtn
+        :label="t('Save')"
+        icon="save"
+        color="primary"
+        :disable="buttonDisabled"
+        @click="handleSubmit"
+      />
+      <QBtn
+        :label="t('Reset')"
+        icon="refresh"
+        @click="handleReset"
+      />
+      <QBtn
+        :label="t('CopyConnections')"
+        color="secondary"
+        icon="link"
+        @click="handleCopy"
+      />
     </div>
   </div>
 </template>

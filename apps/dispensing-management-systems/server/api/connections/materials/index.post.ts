@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
       dispenser_id: dispenserId,
     }))
     await dmsDB('DISPENSER_MATERIAL_CONNECTION').insert(insertRows)
+      .onConflict(['dispenser_id', 'material_code']).ignore()
   }
   return null
 })

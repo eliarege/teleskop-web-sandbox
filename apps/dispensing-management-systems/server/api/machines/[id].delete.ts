@@ -1,7 +1,7 @@
 import { dmsDB } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {
-  const machineId = await readBody(event)
-  const res = await dmsDB('MACHINE').where('machine_id', machineId).del()
+  const { id } = getRouterParams(event)
+  const res = await dmsDB('MACHINE').where('machine_id', id).del()
   return res
 })

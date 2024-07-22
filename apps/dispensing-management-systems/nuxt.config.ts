@@ -12,7 +12,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   ssr: false,
   runtimeConfig: {
-    dmsHost: '192.168.18.69',
+    dmsHost: 'localhost',
     dmsUser: 'username',
     dmsPort: '5433',
     dmsPassword: '123456',
@@ -29,7 +29,7 @@ export default defineNuxtConfig({
       kcUrl: 'http://localhost:8080',
       kcRealm: 'teleskop-web',
       kcClientId: 'dispensing-management-systems',
-      kcEnabled: true,
+      kcEnabled: false,
       websockifyUrl: 'ws://localhost:6800',
     },
   },

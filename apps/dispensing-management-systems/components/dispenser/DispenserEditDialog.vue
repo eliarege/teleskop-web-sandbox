@@ -3,7 +3,6 @@ import { useDialogPluginComponent } from 'quasar'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
 import { useDataStore } from '~/store/DataStore'
 import type { Dispenser, DispenserBrand, DispenserType, Protocol } from '~/shared/types'
-import ipformat from '~/shared/utils'
 import { useStateStore } from '~/store/State'
 
 const props = defineProps({
@@ -19,6 +18,8 @@ const dataStore = useDataStore()
 const stateStore = useStateStore()
 const dispenser = toRef(props, 'dispenser')
 const defaultDispenser: Dispenser = {
+  // Set the default dispenserId to highest one + 1, 1 if there isn't any
+  dispenserId: dataStore.dispensers && dataStore.dispensers.length > 0 ? dataStore.dispensers.at(dataStore.dispensers.length - 1)!.dispenserId + 1 : 1,
   dispenserName: '',
   dispenserIP: '',
   dispenserType: 1,
@@ -84,7 +85,7 @@ function onBrandSelected() {
 }
 function onProtocolSelected() {
   const selectedProtocol = brandProtocols.value.find(protocol => protocol.protocol === String(editedDispenser.value.protocol))
-  protocolFields.value = selectedProtocol?.fields
+  protocolFields.value = selectedProtocol!.fields
   if (dispenser.value && editedDispenser.value.dispenserBrandId === dispenser.value.dispenserBrandId && editedDispenser.value.protocol === dispenser.value.protocol)
     editedDispenser.value.protocolFields = dispenser.value.protocolFields
   else {
@@ -97,11 +98,8 @@ async function onSave() {
     await $fetch(`/api/dispensers/${dispenser.value.dispenserId}`, { method: 'PUT', body: editedDispenser.value })
   else
     await $fetch(`/api/dispensers`, { method: 'POST', body: editedDispenser.value })
+  dataStore.refreshDispensers++
   onDialogOK(editedDispenser.value)
-}
-
-function onCancel() {
-  onDialogCancel()
 }
 
 function onReset() {
@@ -130,14 +128,15 @@ async function onDelete() {
       },
     },
   }).onOk(async () => {
-    await $fetch(`/api/dispensers`, { method: 'DELETE', body: dispenser.value.dispenserId })
+    await $fetch(`/api/dispensers/${dispenser.value!.dispenserId}`, { method: 'DELETE' })
+    dataStore.refreshDispensers++
     onDialogOK(null)
   })
 }
 async function pingAddress() {
   try {
     stateStore.isLoading = true
-    await $fetch('/api/ping', { method: 'POST', body: { address: editedDispenser.value.dispenserIP }})
+    await $fetch('/api/ping', { method: 'POST', body: { address: editedDispenser.value.dispenserIP } })
     notifySuccess(t('Success'))
   } catch (e) {
     console.error(e)
@@ -162,7 +161,7 @@ async function pingAddress() {
             <h2>{{ t('Edit') }}</h2>
           </div>
           <div class="flex flex-row flex-wrap justify-center">
-            <div v-if="dispenser" class="row-item">
+            <div class="row-item">
               <span class="item-label">
                 {{ t('dispenserFields.ID') }}
               </span>
@@ -172,7 +171,7 @@ async function pingAddress() {
                 dense
                 type="text"
                 filled
-                disable
+                :disable="dispenser !== undefined"
                 :placeholder="editedDispenser.dispenserId"
               />
             </div>
@@ -204,7 +203,13 @@ async function pingAddress() {
                 :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
               >
                 <template #append>
-                  <QBtn round dense flat icon="wifi" @click="pingAddress" />
+                  <QBtn
+                    round
+                    dense
+                    flat
+                    icon="wifi"
+                    @click="pingAddress"
+                  />
                 </template>
               </QInput>
             </div>
@@ -329,7 +334,11 @@ async function pingAddress() {
                 @update:model-value="onProtocolSelected"
               />
             </div>
-            <div v-for="field in protocolFields" :key="field" class="row-item">
+            <div
+              v-for="field in protocolFields"
+              :key="field"
+              class="row-item"
+            >
               <span class="item-label">{{ t(`protocolParameters.${field}`) }}</span>
               <QInput
                 v-model="editedDispenser.protocolFields[field]"
@@ -342,7 +351,7 @@ async function pingAddress() {
             </div>
           </div>
         </div>
-        <div class="button-section">
+        <div class="dialog-button-section">
           <QBtn
             :label="t('Save')"
             type="submit"
@@ -354,7 +363,7 @@ async function pingAddress() {
             :label="t('Cancel')"
             color="warning"
             icon="cancel"
-            @click="onCancel"
+            @click="onDialogCancel"
           />
           <QBtn
             :label="t('Reset')"
@@ -392,24 +401,5 @@ async function pingAddress() {
   flex-grow: 1;
   overflow-y: auto;
   max-height: calc(80vh - 150px);
-}
-
-.button-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  justify-content: space-evenly;
-  padding: 0.5rem;
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
-  background-color: white;
-  box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.2);
-
-}
-
-.body--dark .button-section {
-  background-color: var(--q-dark);
-  box-shadow: 0px -1px 5px rgba(128, 128, 128, 0.2);
 }
 </style>

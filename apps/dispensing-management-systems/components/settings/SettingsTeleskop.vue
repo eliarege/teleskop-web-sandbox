@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import { klona } from 'klona'
 import type { DatabaseConnection } from '~/shared/types'
 import { useStateStore } from '~/store/State'
-import ipformat from '~/shared/utils'
 
 const { t } = useI18n()
 const { notifySuccess, notifyFail } = useNotify()
 const stateStore = useStateStore()
 const { data: defaultSettings } = await useFetch<DatabaseConnection>('/api/teleskop/parameters')
 const teleskopSettings = ref<DatabaseConnection>()
-teleskopSettings.value = { ...defaultSettings.value }
+teleskopSettings.value = klona(defaultSettings.value)
 
 const passwordVisible = ref(false)
 
@@ -23,12 +23,12 @@ async function onSave() {
 }
 
 function onReset() {
-  teleskopSettings.value = { ...defaultSettings.value }
+  teleskopSettings.value = klona(defaultSettings.value)
 }
 async function pingAddress() {
   try {
     stateStore.isLoading = true
-    await $fetch('/api/ping', { method: 'POST', body: { address: teleskopSettings.value?.host }})
+    await $fetch('/api/ping', { method: 'POST', body: { address: teleskopSettings.value?.host } })
     notifySuccess(t('Success'))
   } catch (e) {
     console.error(e)
@@ -113,7 +113,13 @@ async function onConnectionCheck() {
                 :rules="[(val: string) => val !== null && val.match(ipformat) && val !== '' || '']"
               >
                 <template #append>
-                  <QBtn round dense flat icon="wifi" @click="pingAddress" />
+                  <QBtn
+                    round
+                    dense
+                    flat
+                    icon="wifi"
+                    @click="pingAddress"
+                  />
                 </template>
               </QInput>
             </div>

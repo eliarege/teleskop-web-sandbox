@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import type { RecipeMaster } from '~/shared/types';
+import RecipeCommandsDialog from '../recipe/RecipeCommandsDialog.vue'
+import RecipeEditDialog from '../recipe/RecipeEditDialog.vue'
+import type { RecipeMaster } from '~/shared/types'
 
 const { t } = useI18n()
+const { notifySuccess, notifyFail } = useNotify()
+const q = useQuasar()
 const { data: recipes, refresh: refreshRecipes } = await useFetch<RecipeMaster[]>('/api/recipes/master')
-  const columns: (QTableColumn<RecipeMaster>)[] = [
+const columns: (QTableColumn<RecipeMaster>)[] = [
   {
     name: 'recipeId',
     label: t('recipeFields.ID'),
@@ -18,15 +22,59 @@ const { data: recipes, refresh: refreshRecipes } = await useFetch<RecipeMaster[]
     field: 'recipeName',
     sortable: true,
     align: 'left',
-  }
+  },
 ]
 
-async function onRowClick(_event: Event, row: any) {
-
+async function onEditClick(row: RecipeMaster) {
+  q.dialog({
+    component: RecipeEditDialog,
+    componentProps: {
+      recipeId: row.recipeId,
+      isNew: false,
+    },
+  }).onOk((payload: any) => {
+    if (payload) {
+      notifySuccess(t('Success'))
+      refreshRecipes()
+    } else
+      notifyFail(t('Failed'))
+  },
+  )
 }
+
 async function addNewRecipe() {
-
+  q.dialog({
+    component: RecipeEditDialog,
+    componentProps: {
+      recipeId: recipes.value ? Math.max(...recipes.value.map(obj => obj.recipeId)) + 1 : 1,
+      isNew: true,
+    },
+  }).onOk((payload: any) => {
+    if (payload) {
+      notifySuccess(t('Success'))
+      refreshRecipes()
+    } else
+      notifyFail(t('Failed'))
+  },
+  )
 }
+async function onCommandsClick(row: RecipeMaster) {
+  q.dialog({
+    component: RecipeCommandsDialog,
+    componentProps: {
+      programNo: row.programNo,
+      recipeName: row.recipeName,
+    },
+  }).onOk((payload: any) => {
+    if (payload) {
+      notifySuccess(t('Success'))
+      refreshRecipes()
+    } else
+      notifyFail(t('Failed'))
+  },
+  )
+}
+
 const pagination = ref({ rowsPerPage: 20 })
 </script>
 
@@ -52,15 +100,69 @@ const pagination = ref({ rowsPerPage: 20 })
   <QTable
     flat
     bordered
-    table-header-class="table-header"
     table-class="max-h-150"
-    separator="cell"
     :pagination
-    :columns="columns"
+    :columns
     :rows="recipes"
     row-key="name"
-    @row-click="onRowClick"
-  />
+  >
+    <template #header="props">
+      <QTr :props class="table-header">
+        <QTh
+          v-for="col in props.cols"
+          :key="col.name"
+          :props
+        >
+          {{ col.label }}
+        </QTh>
+        <QTh auto-width />
+        <QTh auto-width />
+      </QTr>
+    </template>
+    <template #body="props">
+      <QTr
+        :props
+      >
+        <QTd
+          v-for="col in props.cols"
+          :key="col.name"
+          :props
+        >
+          {{ props.row[col.field] }}
+        </QTd>
+        <QTd auto-width>
+          <QBtn
+            class="cursor-pointer"
+            icon="edit"
+            flat
+            @click="onEditClick(props.row)"
+          >
+            <QTooltip
+              :offset="[0, 30]"
+              anchor="top middle"
+            >
+              {{ t('Edit') }}
+            </QTooltip>
+          </QBtn>
+        </QTd>
+        <QTd auto-width>
+          <QBtn
+            class="cursor-pointer"
+            icon="description"
+            flat
+            @click="onCommandsClick(props.row)"
+          >
+            <QTooltip
+              :offset="[0, 30]"
+              anchor="top middle"
+            >
+              {{ t('Commands') }}
+            </QTooltip>
+          </QBtn>
+        </QTd>
+      </QTr>
+    </template>
+  </QTable>
 </template>
 
 <style scoped lang="postcss">

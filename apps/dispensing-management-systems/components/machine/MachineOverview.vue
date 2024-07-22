@@ -64,9 +64,10 @@ async function handleNewMachine() {
     component: MachineInfoDialog,
     componentProps: {
       controllerTypes: controllerTypes.value,
+      machines,
       dispensers: dataStore.dispensers,
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
       refreshMachines()
@@ -119,7 +120,7 @@ async function onMachineClick(row: any) {
       machines,
       dispensers: dataStore.dispensers,
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
       refreshMachines()
@@ -176,6 +177,7 @@ const machinePagination = ref({ rowsPerPage: 20 })
       </QCard>
 
       <QTable
+        v-if="dataStore.dispensers"
         v-model:pagination="dispenserPagination"
         :title="t('Dispensers')"
         :rows="dataStore.dispensers"

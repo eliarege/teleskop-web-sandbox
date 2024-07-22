@@ -35,7 +35,7 @@ export interface BatchRecipeStep {
   recipeType: number
   ISN: number
   processOrder: number
-  chemCode: string
+  materialCode: string
   programProcessNo: number
   amount: number
   unit: number
@@ -85,7 +85,7 @@ export interface Material {
   density: number
   ph: number
   source: string | null
-  costUnit: string| null
+  costUnit: string | null
   unitCost: number | null
   reRequestable: boolean
   directTransfer: boolean
@@ -155,8 +155,22 @@ export interface RecipeMaster {
   lastUpdate: Date
   stepNo: number
   programNo: number
-  machineId: number
   isPassive: boolean
+}
+export interface RecipeMasterStep {
+  recipeId: number
+  materialCode: string
+  materialName: string
+  mainStep: number
+  parallelStep: number
+  amount: number
+  unit: number
+}
+export interface CommandType {
+  machineId: number
+  commandNo: number
+  commandType: number
+  commandName: string
 }
 export interface DatabaseConnection {
   client: string

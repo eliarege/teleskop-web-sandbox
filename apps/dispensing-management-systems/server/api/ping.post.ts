@@ -1,7 +1,18 @@
 import { execa } from 'execa'
+import { ipformat } from '~/utils/utils'
 
 export default defineEventHandler(async (event) => {
-  const { address } = await readBody(event)
-  const { stdout } = await execa`ping -c 1 ${address}`;
-  return stdout
+  try {
+    const { address } = await readBody(event)
+    if (typeof address === 'string' && !ipformat.test(address)) {
+      setResponseStatus(event, 400, 'Invalid IP address')
+      return event.node.res.end()
+    }
+    const { stdout } = await execa`ping -c 1 ${address}`
+    return stdout
+  }
+  catch(e) {
+    setResponseStatus(event, 404, 'Target Unreachable')
+    event.node.res.end()
+  }
 })

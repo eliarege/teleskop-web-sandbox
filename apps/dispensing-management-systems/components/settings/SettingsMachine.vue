@@ -51,7 +51,7 @@ async function onRowClick(_event: Event, row: any) {
       machines,
       dispensers,
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
       refreshMachines()
@@ -67,7 +67,7 @@ async function addNewMachine() {
       controllerTypes,
       dispensers,
     },
-  }).onOk((payload) => {
+  }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
       refreshMachines()
@@ -111,7 +111,7 @@ const pagination = ref({ rowsPerPage: 20 })
     table-class="max-h-150"
     separator="cell"
     :pagination
-    :columns="columns"
+    :columns
     :rows="machines"
     row-key="name"
     @row-click="onRowClick"

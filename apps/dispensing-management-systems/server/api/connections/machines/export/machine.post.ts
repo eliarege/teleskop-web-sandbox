@@ -11,7 +11,9 @@ export default defineEventHandler(async (event) => {
         SELECT DISTINCT "dispenser_id", CAST(? AS INTEGER) as "machine_id"
         FROM "DISPENSER_MACHINE_CONNECTION"
         WHERE "machine_id" = ?
+        ON CONFLICT ("dispenser_id", "machine_id") DO NOTHING
       `, [machineId, from])
+
       return res
     })
     await Promise.all(promises)

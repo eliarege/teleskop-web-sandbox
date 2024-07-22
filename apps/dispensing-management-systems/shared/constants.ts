@@ -7,3 +7,9 @@ export enum StatusCodes {
   canceled = 8,
   dispenserChanged = 10,
 }
+/** https://www.postgresql.org/docs/current/errcodes-appendix.html */
+export enum PostgreSQLErrorCodes {
+  notNull = "23502",
+  foreignKey = "23503",
+  unique = "23505"
+}

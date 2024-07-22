@@ -2,7 +2,6 @@
 import type { QTableColumn } from 'quasar'
 import { useDialogPluginComponent } from 'quasar'
 import type { JobOrder, MaterialRequest } from '~/shared/types'
-import { cellStyle } from '~/shared/utils'
 import { useColorStore } from '~/store/Colors'
 
 const props = defineProps({
@@ -42,7 +41,7 @@ async function getMaterials() {
         bordered
         separator="cell"
         :title="t('MaterialRequests')"
-        :columns="columns"
+        :columns
         :rows="materials"
         row-key="name"
       >

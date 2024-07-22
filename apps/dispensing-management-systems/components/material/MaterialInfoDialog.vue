@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useDialogPluginComponent } from 'quasar'
+import { klona } from 'klona'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
 import type { Dispenser, Material, MaterialGroup } from '~/shared/types'
 
@@ -22,7 +23,7 @@ const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const material = toRef(props, 'material')
 const dispensers = toRef(props, 'dispensers')
-const selectedDispensersInitial = material.value ? ref(material.value.connectedDispensers.map(dispenser => dispenser.dispenserId)) : ref([])
+const selectedDispensersInitial = material.value ? ref(material.value.connectedDispensers!.map(dispenser => dispenser.dispenserId)) : ref([])
 const selectedDispensers = ref([...selectedDispensersInitial.value])
 const defaultMaterial: Material = {
   materialCode: '',
@@ -38,7 +39,7 @@ const defaultMaterial: Material = {
   connectedDispensers: [],
 }
 
-const editedMaterial = ref(material.value ? { ...material.value } : { ...defaultMaterial })
+const editedMaterial = ref(material.value ? klona(material.value) : klona(defaultMaterial))
 if (!Array.isArray(editedMaterial.value.connectedDispensers)) {
   editedMaterial.value.connectedDispensers = []
 }
@@ -71,8 +72,8 @@ async function onSave() {
 }
 
 function onReset() {
-  editedMaterial.value = material.value ? { ...material.value } : { ...defaultMaterial }
-  selectedDispensers.value = [...selectedDispensersInitial.value]
+  editedMaterial.value = material.value ? klona(material.value) : klona(defaultMaterial)
+  selectedDispensers.value = klona(selectedDispensersInitial.value)
 }
 async function onDelete() {
   q.dialog({
@@ -91,7 +92,7 @@ async function onDelete() {
     },
   }).onOk(async () => {
     try {
-      await $fetch(`/api/materials`, { method: 'DELETE', body: { materialCode: editedMaterial.value.materialCode } })
+      await $fetch(`/api/materials/${material.value!.materialCode}`, { method: 'DELETE' })
       onDialogOK(true)
     } catch (e) {
       onDialogOK(false)
@@ -267,7 +268,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
             </div>
           </div>
         </div>
-        <div class="button-section">
+        <div class="dialog-button-section">
           <QBtn
             :label="t('Save')"
             color="primary"
@@ -316,24 +317,5 @@ function onCheck(dispenserId: number, isChecked: boolean) {
   flex-grow: 1;
   overflow-y: auto;
   max-height: calc(80vh - 150px);
-}
-
-.button-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  justify-content: space-evenly;
-  padding: 0.5rem;
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
-  background-color: white;
-  box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.2);
-
-}
-
-.body--dark .button-section {
-  background-color: var(--q-dark);
-  box-shadow: 0px -1px 5px rgba(128, 128, 128, 0.2);
 }
 </style>
