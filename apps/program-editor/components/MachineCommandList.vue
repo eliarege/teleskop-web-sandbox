@@ -13,7 +13,6 @@ const { t } = useI18n()
 const { dark } = useQuasar()
 
 const sortableOptions = computed<SortableOptions>(() => ({
-  disabled: !editor.isDragging,
   sort: false,
   group: {
     name: 'machine-command-list',
@@ -21,17 +20,18 @@ const sortableOptions = computed<SortableOptions>(() => ({
     put: false,
   },
 }))
-
+const route = useRoute()
+const isProgramPage = computed(() => route.path.includes('program'))
 const searchQuery = ref('')
 const filteredCommands = computed(() => {
   const query = searchQuery.value.toLowerCase()
-  const commandsArray = editor.machine?.commands ? Array.from(editor.machine?.commands.values()) : []
+  const commandsArray: MachineCommand[] = editor.machine?.commands ? Array.from(editor.machine?.commands.values()) : []
   return commandsArray.filter(command => (
     command.commandNo.toString().includes(query)
     || command.name.toLowerCase().includes(query)
+  ),
+  // && command.commandType === 0,
   )
-  && command.commandType === 0,
-  ) as MachineCommand[]
 })
 
 const programStatus = computed(() => [
@@ -46,7 +46,7 @@ let draggedCommand: any = null
 
 function onDragStart(event: SortableEvent) {
   if (isDef(event.oldIndex)) {
-    draggedCommand = editor.machine?.commands.get(Number(event.item.id))
+    draggedCommand = filteredCommands.value[event.oldIndex]
   }
 }
 
@@ -71,9 +71,9 @@ function onDragEnd(event: SortableEvent) {
 </script>
 
 <template>
-  <div class="machine-command-list-container">
+  <div class="machine-command-list-container select-none">
     <QInput
-      v-if="editor.machine?.commands.size"
+      v-if="isProgramPage"
       v-model="searchQuery"
       :label="t('searchCommand')"
       class="px-5 pt-5 pb-5 sticky-input"
@@ -81,7 +81,7 @@ function onDragEnd(event: SortableEvent) {
       outlined
     />
     <Sortable
-      v-if="editor.machine?.commands.size"
+      v-if="isProgramPage"
       :list="filteredCommands"
       class="px-5 pb-10 e-div-y machine-command-list"
       :item-key="item => item.commandNo"
@@ -91,10 +91,11 @@ function onDragEnd(event: SortableEvent) {
     >
       <template #item="{ element: command }: { element: any }">
         <QItem
-          :id="command.commandNo"
           class="machine-command"
           dense
           tag="span"
+          clickable
+          @dblclick="editor.newStepCommand(command.commandNo, editor.program.steps.length - 1)"
         >
           <QItemSection>
             <QItemLabel>
@@ -105,7 +106,7 @@ function onDragEnd(event: SortableEvent) {
       </template>
     </Sortable>
     <div
-      v-if="!editor.machine?.commands.size"
+      v-if="!isProgramPage"
       class="w-full bottom-0 p-3 absolute"
       :class="dark.isActive ? 'bg-dark-2' : 'bg-white'"
     >

@@ -1,5 +1,3 @@
-import CommandManager, { type CommandManagerType } from '~/composables/command-manager'
-
 export const as = <T>(value: T) => value as T
 
 export const isDef = <T = any>(val?: T): val is T => typeof val !== 'undefined'
@@ -67,4 +65,3 @@ export function measure<Fn extends (...args: any[]) => any>(cb: Fn): Fn {
 }
 
 export const contextMenuStore = useContextMenuStore()
-export const commandManager: CommandManagerType = new CommandManager()

@@ -7,6 +7,7 @@ export type ErrorCode =
   | 'PROGRAM_INVALID'
   | 'PROGRAM_ARCHIVE_NOT_FOUND'
   | 'PROGRAM_FAILED_TO_LOAD'
+  | 'PROGRAM_INSERT_FAILED'
 
 export interface ErrorMachineDetail {
   machineId: number
@@ -69,12 +70,20 @@ export interface ErrorProgramLoad extends PError {
   detail: ErrorProgramDetail
 }
 
+export interface ErrorProgramInsert extends PError {
+  code: 'PROGRAM_INSERT_FAILED'
+  detail: ErrorProgramDetail
+}
+
 export type AnyError =
   | ErrorMachineNotFound
   | ErrorMachineUnavailable
   | ErrorProgramExists
   | ErrorProgramInvalid
   | ErrorProgramNotFound
+  | ErrorProgramArchiveNotFound
+  | ErrorProgramLoad
+  | ErrorProgramInsert
 
 export class PError extends Error {
   code: ErrorCode
@@ -88,6 +97,7 @@ export class PError extends Error {
   constructor(code: 'PROGRAM_INVALID', detail: ErrorProgramInvalidDetail)
   constructor(code: 'PROGRAM_ARCHIVE_NOT_FOUND', detail: ErrorProgramArchiveNotFound)
   constructor(code: 'PROGRAM_FAILED_TO_LOAD', detail: ErrorProgramDetail)
+  constructor(code: 'PROGRAM_INSERT_FAILED', detail: ErrorProgramDetail)
   constructor(code: ErrorCode, detail?: any) {
     super(code)
     this.code = code

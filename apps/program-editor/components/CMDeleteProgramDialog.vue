@@ -9,11 +9,11 @@ defineEmits([
 ])
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
-const selectedOption = ref(1)
+const selectedOption = ref('db-machine')
 const options = [
-  { label: t('contextMenu.deleteProgramDialog.deleteFromBoth'), value: 1 },
-  { label: t('contextMenu.deleteProgramDialog.deleteFromTeleskop'), value: 2 },
-  { label: t('contextMenu.deleteProgramDialog.deleteFromMachine'), value: 3 },
+  { label: t('contextMenu.deleteProgramDialog.deleteFromBoth'), value: 'db-machine' },
+  { label: t('contextMenu.deleteProgramDialog.deleteFromTeleskop'), value: 'db' },
+  { label: t('contextMenu.deleteProgramDialog.deleteFromMachine'), value: 'machine' },
 ]
 </script>
 

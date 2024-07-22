@@ -6,6 +6,7 @@ import { withFTP, withTransaction } from '../decorators'
 import { sql } from '../sql'
 import { stringifyProgram } from '../stringify'
 import { parseProgramString } from '../parse'
+import { PError } from '../error'
 import type { CommandIO, Machine, MachineCommand, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 
@@ -42,14 +43,16 @@ export class MachineController {
    * @returns {Promise<Array<MachineCommand>>} - MachineCommand dizisi
    */
   @withTransaction
-  async fetchCommands(editable?: boolean): Promise<MachineCommand[]> {
+  async fetchCommands(editable?: boolean, selectable?: boolean): Promise<MachineCommand[]> {
     const commandsOutput = await this.trx
       .select({
         machineId: 'C.MACHINEID',
         commandNo: 'C.COMMANDNO',
         name: 'C.NAME',
         icon: 'C.ICON',
+        adviceList: this.trx.raw(sql`(C.ADVICELIST)`),
         dontUseList: this.trx.raw(sql`(NULLIF (C.DONTUSELIST , '-1'))`),
+        isRunManual: 'C.ISRUNMANUAL',
         commandType: 'C.COMMANDTYPE',
         moveParallel: 'C.MOVEPARALLEL',
         durations: 'C.X',
@@ -86,12 +89,11 @@ export class MachineController {
               JOIN STRING_SPLIT(REPLACE(P.SELECTIONLIST, '" "', '"&"'), '&', 1) l on 1=1
               JOIN STRING_SPLIT(REPLACE(P.SELECTIONVALUES, '" "', '"&"'), '&', 1) v on l.ordinal = v.ordinal
               WHERE P.PARAMETERTYPE = 1 AND P.SELECTIONLIST != '' AND P.SELECTIONVALUES != ''
-              ${typeof editable === 'boolean' ? `AND P.PROGRAMEDITING = ${editable ? 1 : 0}` : ''}
               FOR JSON AUTO, INCLUDE_NULL_VALUES
             ), '[]')
           FROM BFCOMMANDPARAMETERS P
           WHERE C.COMMANDNO = P.COMMANDNO AND C.MACHINEID = P.MACHINEID
-          ${typeof editable === 'boolean' ? `AND P.PROGRAMEDITING = ${editable ? 1 : 0}` : ''}
+          ${typeof editable === 'boolean' ? `${editable ? 'AND P.PROGRAMEDITING = 1' : ''}` : ''}
           ORDER BY P.PARAMETERINDEX
           FOR JSON AUTO, INCLUDE_NULL_VALUES
         ), '[]')
@@ -101,6 +103,7 @@ export class MachineController {
           SELECT
             IO.IOINDEX as [index],
             IO.IOID as [physicalId],
+            IO.IOTYPE as [type],
             selectable =
               CAST(
                 CASE IO.IOTYPE
@@ -121,7 +124,7 @@ export class MachineController {
               FOR JSON AUTO, INCLUDE_NULL_VALUES
             ), '[]')
           FROM BFCOMMANDINPUTOUTPUTS IO
-          WHERE C.COMMANDNO = IO.COMMANDNO AND C.MACHINEID = IO.MACHINEID AND IO.IOTYPE = 5
+          WHERE C.COMMANDNO = IO.COMMANDNO AND C.MACHINEID = IO.MACHINEID ${selectable ? 'AND IO.IOTYPE = 5' : ''}
           FOR JSON AUTO, INCLUDE_NULL_VALUES
         ), '[]')
       `),
@@ -157,14 +160,18 @@ export class MachineController {
    */
   @withTransaction
   async fetchAllProgramHeaders(query?: any): Promise<ProgramHeader[]> {
-    return await this.trx
+    const config = useRuntimeConfig()
+
+    const headers = await this.trx
       .select({
         programNo: 'H.PROGNO',
         name: 'H.NAME',
+        duration: 'H.DURATION',
         stepCount: 'H.TOTALSTEP',
         type: 'T.PROCESSNAME',
-        updatedAt: 'H.CHANGEDATE',
-        updatedAtTBB: 'H.TBBCHANGEDATE',
+        operator: 'H.TBBPRGCHANGEDEVENT',
+        updatedAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.CHANGEDATE)`),
+        updatedAtTBB: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.TBBCHANGEDATE)`),
         programState: 'H.PRGSTATE',
         isChanged: 'H.ISCHANGED',
       })
@@ -179,10 +186,16 @@ export class MachineController {
         if (query?.processType)
           builder.where('H.PROCESSCODE', Number(query.processType))
       })
+
+    return headers
   }
 
+  /**
+   * Makinenin tüm programlarının headers'larını getirir
+   * @returns {Promise<Array<[string, string]>>} - Header dizisi
+   */
   @withTransaction
-  async getProgramHeadersAsList(): Promise<any[]> {
+  async getProgramHeadersAsList(): Promise<Array<[string, string]>[]> {
     return await this.trx
       .select({
         value: 'H.PROGNO',
@@ -226,7 +239,10 @@ export class MachineController {
    */
   @withTransaction
   async fetchProgram(programNo: number): Promise<Program> {
-    await this.hasProgram(programNo)
+    const exists = await this.hasProgram(programNo)
+    if (!exists) {
+      throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
+    }
 
     const [program] = await this.trx
       .select({
@@ -239,7 +255,11 @@ export class MachineController {
         typeName: 'T.PROCESSNAME',
         machineId: 'M.MACHINEID',
         programState: 'P.PRGSTATE',
+        createdAt: 'P.CREATIONDATE',
+        updatedAt: 'P.CHANGEDATE',
+        updatedAtTBB: 'P.TBBCHANGEDATE',
         machineName: 'M.MACHINECODE',
+        tbbProgramChangedEvent: this.trx.raw(sql`CASE P.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
         steps: this.trx.raw(sql`ISNULL((
         SELECT commands = ISNULL((
           SELECT s2.COMMANDNO AS commandNo,
@@ -319,7 +339,10 @@ export class MachineController {
    */
   @withTransaction
   async fetchArchivedProgram(programNo: number, versionNo: number): Promise<Program> {
-    await this.hasProgram(programNo)
+    const exists = await this.hasProgram(programNo)
+    if (!exists) {
+      throw new PError('PROGRAM_FAILED_TO_LOAD', { machineId: this.id, programNo })
+    }
 
     const [archivedProgram] = await this.trx
       .select({
@@ -490,9 +513,10 @@ export class MachineController {
    */
   @withFTP
   @withTransaction
-  async fetchRemoteProgram(programNo: number): Promise<Program | boolean | null> {
-    if (!(await this.doesMachineHaveProgram(programNo))) {
-      return null // Program does not exists
+  async fetchRemoteProgram(programNo: number): Promise<Program | null> {
+    const exists = await this.doesMachineHaveProgram(programNo)
+    if (!exists) {
+      throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
     }
 
     const programString = await this.ftp.download(`/tbb6500/data/programs/program/${programNo}`, 'utf-8')
@@ -507,6 +531,11 @@ export class MachineController {
       typeName: '',
       programState: ProgramStatus.EXISTS_ON_BOTH,
       icon: '',
+      isChanged: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      updatedAtTBB: null,
+      tbbProgramChangedEvent: 0,
     }
     await this.updateProgram(program)
     return program
@@ -589,7 +618,7 @@ export class MachineController {
    * @returns {Promise<number>} - Belirtilen program numarasına ait son versiyon numarasını içeren bir Promise
    */
   @withTransaction
-  async getLastVersion(programNo: number) {
+  async getLastVersion(programNo: number): Promise<number | null> {
     const program = await this.trx
       .from('BAMASTERPRGHEADER')
       .select('MACHINEPRGVERSIONNO as version')
@@ -624,8 +653,11 @@ export class MachineController {
   @withTransaction
   async insertProgramToArchive(program: Program): Promise<void> {
     const lastVersion = await this.updateLastProgramDate(program.programNo)
-    const commands = await this.fetchCommands()
-    const dateNow = this.getTimezoneDate()
+    const commands: MachineCommand[] = await this.fetchCommands()
+
+    const config = useRuntimeConfig()
+    const timezone = Number(config.teleskopTimezoneOffset)
+    const date = new Date(new Date().getTime() - timezone * 60000).toISOString()
 
     const stepsArchive: StepArchiveItem[] = []
     const parametersArchive: StepArchiveParameter[] = []
@@ -636,20 +668,20 @@ export class MachineController {
     const headerArchive = [{
       MACHINEID: program.machineId,
       MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
-      RELEASEDATE: dateNow,
+      RELEASEDATE: date,
       RELEASEENDDATE: null,
       PROGNO: program.programNo,
       PROCESSCODE: program.typeId,
       NAME: program.name,
       DURATION: 0,
       TOTALSTEP: program.steps.length,
-      CHANGEDATE: dateNow,
+      CHANGEDATE: date,
       TBBCHANGESOURCE: '',
-      TBBCHANGEDATE: dateNow,
-      CREATIONDATE: dateNow,
+      TBBCHANGEDATE: '',
+      CREATIONDATE: date,
       USERCOMMENT: program.comment,
       USERNAME: program.author, // ?
-      CHANGETIME: dateNow, // ?
+      CHANGETIME: date, // ?
       WHATCHANGE: '', // ?
       PRGSOURCE: 0, // ?
       TotalChemReq: 0,
@@ -809,8 +841,15 @@ export class MachineController {
    */
   @withTransaction
   async insertProgram(program: Program): Promise<void> {
+    const exists = await this.hasProgram(program.programNo)
+    if (exists) {
+      throw new PError('PROGRAM_EXISTS', { machineId: program.machineId, programNo: program.programNo })
+    }
+
     const commands: MachineCommand[] = await this.fetchCommands()
-    const dateNow = this.getTimezoneDate()
+    const config = useRuntimeConfig()
+    const timezone = Number(config.teleskopTimezoneOffset)
+    const date = new Date(new Date().getTime() - timezone * 60000).toISOString()
 
     const steps: StepItem[] = []
     const parameters: StepParameter[] = []
@@ -825,16 +864,16 @@ export class MachineController {
       NAME: program.name,
       DURATION: 0, // ?
       TOTALSTEP: program.steps.length,
-      CHANGEDATE: dateNow,
+      CHANGEDATE: date,
       TBBCHANGESOURCE: '',
-      TBBCHANGEDATE: dateNow,
+      TBBCHANGEDATE: '',
       LOCKEDBY: '',
-      CREATIONDATE: dateNow,
+      CREATIONDATE: date,
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
       PRGSTATE: program.programState === undefined ? ProgramStatus.EXISTS_ONLY_ON_DATABASE : program.programState,
-      TBBPRGCHANGEDEVENT: 0,
+      TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
       TotalChemReq: 0,
       TotalDyeReq: 0,

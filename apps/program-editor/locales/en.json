@@ -39,6 +39,7 @@
     "paste": "Paste",
     "refresh": "Refresh",
     "save": "Save",
+    "saveAs": "Save As",
     "reset": "Reset",
     "findReplace": "Find - Replace",
     "filter": "Filter",
@@ -58,7 +59,18 @@
     "settings": "Settings",
     "programTypes": "Program Types",
     "help": "Help",
-    "about": "About"
+    "about": "About",
+    "projectInfo": "Project Info",
+    "allCommandList": "All Command List",
+    "commandList": "Command List",
+    "commandInfo": "Command Detail",
+    "show": "Show",
+    "close": "Close",
+    "general": "General",
+    "parameter": "Parameter",
+    "io": "IO",
+    "graphic": "Graphic",
+    "formula": "Formula"
   },
   "program": {
     "name": "Program Name",
@@ -68,17 +80,78 @@
     "type": "Type",
     "updated": "Updated",
     "processType": "Proccess Type",
+    "opMud": "Op. ch.",
+    "theoreticalDuration": "Theoretical Duration",
     "parameter": "Parameter",
     "command": "Program Command"
+  },
+  "command": {
+    "icon": "Icon",
+    "no": "Command No",
+    "name": "Command Name",
+    "type": "Command Type",
+    "createDate": "Create Date",
+    "transportType": "Transport Type",
+    "canWorkManually": "Can Work Manually",
+    "suggestionList": "Suggestion List",
+    "nonParallelCommands": "Non Parallel Commands",
+    "parameter": {
+      "name": "Parameter Adı",
+      "type": "Parameter Type",
+      "defaultValue": "Default Value",
+      "lowerLimit": "Lower Limit",
+      "upperLimit": "Upper Limit",
+      "unit": "Unit",
+      "visibilityLevel": "Visibility Level",
+      "containsFormula": "Contains Formula",
+      "temp/time": "Temp/Time",
+      "isDefault": "Is Default?",
+      "belongsToFunction": "Belongs to Function?",
+      "selectableList": "Selectable List",
+      "operationTime": "Operation Time",
+      "liter": "Liter",
+      "temperature": "Temperature",
+      "mixerLevel": "Mixer Level",
+      "heatingLevel": "Heating Level",
+      "levelTolerance": "Level Tolerance",
+      "temperatureTolerance": "Temperature Tolerance",
+      "levelAlarm": "Level Alarm",
+      "temperatureAlarm": "Temperature Alarm",
+      "mixerOnDelay": "Mixer On Delay",
+      "stabilizationTime": "Stabilization Time",
+      "mixerOffDelay": "Mixer Off Delay",
+      "mixer": "Mixer",
+      "BK2Ratio": "BK2 Ratio"
+    },
+    "graphic": {
+      "x": "X (s)",
+      "y": "Y (C)",
+      "a": "A (slope)",
+      "maxA": "Max A",
+      "b": "B (waiting)",
+      "temperatureAffected": "Temperature Affected",
+      "discharge": "Discharge"
+    },
+    "io": {
+      "name": "IO Name",
+      "index": "IO Index",
+      "physicalId": "Physical Id",
+      "type": "IO Type",
+      "selections": "IO Selectable List"
+    }
   },
   "saveProgram": {
     "success": "Program saved",
     "fail": "Program could not be saved",
     "incorrect": "You entered the wrong value"
   },
+  "error": {
+    "machineCommandNotFound": "{commandNo} number command {machineId} machine not found"
+  },
   "selectAll": "Select all",
   "dropAll": "Drop all",
   "selectReverse": "Reverse selection",
+  "selectRange": "{count} records selected of {total}",
   "yes": "Yes",
   "no": "No",
   "cancel": "Cancel",
@@ -96,6 +169,10 @@
       "clearFilter": "Clear Filter",
       "clearFilterOnChange": "Clear filter when machine changed."
     }
+  },
+  "message": {
+    "delete_program": "Delete program from Teleskop",
+    "program_not_deleted": "Program could not be deleted from Teleskop"
   },
   "printProgramListDialog": {
     "printOptions": "Printing Options",

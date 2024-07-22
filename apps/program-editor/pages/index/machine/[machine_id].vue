@@ -2,28 +2,147 @@
 import { formatDistanceToNow } from 'date-fns'
 import { enGB, tr } from 'date-fns/locale'
 import { useI18n } from 'vue-i18n'
-import type { QTableColumn } from 'quasar'
 import { useFuse } from '@vueuse/integrations/useFuse'
 import { EliarModal, LoadingSpinner } from 'ui'
+import type { QTableColumn } from 'quasar'
 import { useQuasar } from 'quasar'
+import { onKeyStroke } from '@vueuse/core'
+import type { TopbarMenuItem } from 'nuxt-base'
 import { capitalize } from '~/server/utils'
 import type { ProgramFilter, ProgramHeader, ProgramTable } from '~/shared/types'
 import { PRG_STATE_COLORS, ProgramStatus } from '~/shared/constants'
 import type { AppCommand } from '~/composables/new.commands'
-import { deleteProgramCommand, pasteProgramCommand } from '~/composables/new.commands'
-import { clearFilter, filterToQuery, getExistingFilter } from '~/composables/utils'
-import { commandManager, contextMenuStore } from '~/shared/utils'
+import { clearFilter, filterToQuery, formatDuration, getExistingFilter } from '~/composables/utils'
+import { contextMenuStore } from '~/shared/utils'
+import { useContextBar } from '~/composables/useContextBar'
+import { useEditorStore } from '~/composables/editor'
+import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
 
+const { $commandManager } = useNuxtApp()
 const { t, locale } = useI18n()
 const { dark } = useQuasar()
 const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
 const editor = useEditorStore()
-const keycloak = useKeycloak()
 const machineId = Number(route.params.machine_id)
 const isProgramFilterExists = ref(getExistingFilter())
 const programs = ref([] as ProgramHeader[])
+const tt = (key: string) => toRef(() => t(key))
+
+onKeyStroke('F2', (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (!route.params.program_no)
+    editor.popupNewProgramVisible = true
+  else
+    editor.newStep()
+})
+
+onKeyStroke('F3', (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (route.params.program_no)
+    editor.newParallelStep()
+})
+
+onKeyStroke('F4', (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (editor.selectedPrograms.length === 1)
+    router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
+})
+
+onKeyStroke('F5', (event: KeyboardEvent) => {
+  event.preventDefault()
+  fetchPrograms()
+})
+
+onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
+  if (event.ctrlKey) {
+    event.preventDefault()
+  }
+})
+
+onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (event.ctrlKey)
+    $commandManager.executeCommand('printProgram', { $q })
+})
+
+onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (event.ctrlKey)
+    $commandManager.executeCommand('printProgramList', { $q })
+})
+
+onKeyStroke(['s', 'S'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (event.ctrlKey)
+    editor.onSubmit()
+})
+
+onKeyStroke(['r', 'R'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (event.ctrlKey)
+    editor.onReset()
+})
+
+onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (event.ctrlKey)
+    editor.popupNewProgramVisible = true
+})
+
+onKeyStroke(['Enter'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (!route.params.program_no) {
+    if (editor.selectedPrograms.length === 1)
+      router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
+  } else {
+    editor.scrollPage(editor.selectedStep, true)
+  }
+})
+
+onKeyStroke(['Delete'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (route.params.program_no) {
+    if (event.ctrlKey)
+      editor.deleteParallelStep()
+    else
+      editor.deleteStep()
+  }
+})
+
+onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (route.params.program_no) {
+    if (event.shiftKey) {
+      if (between(editor.selectedParallelStep + 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
+        editor.selectedParallelStep = editor.selectedParallelStep + 1
+      }
+    } else {
+      if (between(editor.selectedStep + 1, 0, editor.program.steps.length - 1)) {
+        editor.selectedStep = editor.selectedStep + 1
+      }
+    }
+    editor.scrollPage(editor.selectedStep)
+  }
+})
+
+onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (route.params.program_no) {
+    if (event.shiftKey) {
+      if (between(editor.selectedParallelStep - 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
+        editor.selectedParallelStep = editor.selectedParallelStep - 1
+      }
+    } else {
+      if (between(editor.selectedStep - 1, 0, editor.program.steps.length - 1)) {
+        editor.selectedStep = editor.selectedStep - 1
+      }
+    }
+    editor.scrollPage(editor.selectedStep)
+  }
+})
+
 async function fetchPrograms(filter?: ProgramFilter) {
   let query
   const checkAnyExistingFilter = getExistingFilter()
@@ -33,37 +152,67 @@ async function fetchPrograms(filter?: ProgramFilter) {
   if (filter) {
     query = filterToQuery(filter)
   }
-  programs.value = await $fetch(`/api/machine/${machineId}/program?${query || ''}`)
+  programs.value = await $fetch<ProgramHeader[]>(`/api/machine/${machineId}/program?${query || ''}`)
 }
 
-await editor.fetchMachine(machineId)
+editor.isLoading = true
+await editor.fetchMachine(Number(route.params.machine_id))
+await editor.fetchAllPrograms(Number(route.params.machine_id))
+await fetchPrograms().then(() => {
+  editor.isLoading = false
+})
 editor.program = editor.createProgram()
 
-contextMenuStore.setCtx({
-  t,
-})
-await fetchPrograms()
 const versionDialogVisible = ref(false)
 const comparisonDialogVisible = ref(false)
-const showSpinner = ref(false)
-function wait() {
-  showSpinner.value = true
-}
-function resume() {
-  showSpinner.value = false
-}
 const versions = ref([] as Array<any>)
-const isMoreThanOneRowSelected = computed(() => editor.selectedRows.length > 1)
+const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length > 1)
 
-function format(date: any) {
+const buttons = computed(() => [
+  { label: t('menu.newProgram'), originalLabel: t('menu.newProgram'), tooltip: t('menu.newProgram'), shortcut: 'F2', icon: 'add_circle_outline', onClick() {
+    editor.popupNewProgramVisible = true
+  } },
+  { label: t('menu.editProgram'), originalLabel: t('menu.editProgram'), tooltip: t('menu.editProgram'), shortcut: 'F3', icon: 'edit', disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length, onClick() {
+    router.push(`/machine/${machineId}/program/${editor.selectedPrograms[0]?.programNo}`)
+  } },
+  { label: t('menu.deleteProgram'), originalLabel: t('menu.deleteProgram'), tooltip: t('menu.deleteProgram'), shortcut: 'Ctrl+Del', icon: 'delete', disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length, onClick() {
+    $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, Number(machineId))
+  } },
+  { label: t('menu.copy'), originalLabel: t('menu.copy'), tooltip: t('menu.copy'), shortcut: 'Ctrl+C', icon: 'content_copy', onClick() {
+    contextMenuStore.copy(editor.selectedPrograms, machineId)
+  } },
+  { label: t('menu.paste'), originalLabel: t('menu.paste'), tooltip: t('menu.paste'), shortcut: 'Ctrl+V', icon: 'content_paste', onClick() {
+    $commandManager.executeCommand('pasteProgram', { $q, fetchPrograms }, Number(machineId))
+  } },
+  { label: t('menu.refresh'), originalLabel: t('menu.refresh'), tooltip: t('menu.refresh'), shortcut: 'F5', icon: 'refresh', onClick() {
+    $commandManager.executeCommand('refresh', { $q, fetchPrograms }, Number(machineId))
+  } },
+])
+useContextBar(buttons)
+
+function format(date: Date): string {
   if (!(date instanceof Date)) {
     date = new Date(date)
   }
-  const modifiedDate: Date = new Date(date.getTime() - (3 * 60 * 60 * 1000)) // timezone
-  return capitalize(formatDistanceToNow(modifiedDate, { addSuffix: true, locale: locale.value === 'tr' ? tr : enGB }))
+  return capitalize(formatDistanceToNow(date, { addSuffix: true, locale: locale.value === 'tr' ? tr : enGB }))
 }
 
-const columns = computed(() => [
+function tooltip(value: Date): string {
+  const date = new Date(value)
+  return date.toLocaleString(locale.value)
+}
+
+interface ProgramTableColumn extends Omit<QTableColumn, 'label'> {
+  name: string
+  label: string | Readonly<Ref<string>>
+  field: keyof ProgramTable | ((row: ProgramTable) => any)
+  sortable?: boolean
+  align?: 'left' | 'right' | 'center'
+  format?: (value: Date, row: ProgramTable) => string
+  tooltip?: (value: Date, row: ProgramTable) => string
+}
+
+const columns = ref<ProgramTableColumn[]>([
   {
     name: 'no',
     label: '#',
@@ -73,232 +222,254 @@ const columns = computed(() => [
   },
   {
     name: 'name',
-    label: t('program.name'),
+    label: tt('program.name'),
     field: 'name',
     sortable: true,
     align: 'left',
   },
   {
+    name: 'duration',
+    label: tt('program.theoreticalDuration'),
+    field:
+      (value: { duration: number }) => {
+        return formatDuration(value.duration)
+      },
+    sortable: true,
+    align: 'center',
+  },
+  {
     name: 'step_count',
-    label: t('program.stepCount'),
+    label: tt('program.stepCount'),
     field: 'stepCount',
     sortable: true,
-    align: 'right',
+    align: 'center',
   },
   {
     name: 'type',
-    label: t('program.type'),
+    label: tt('program.type'),
     field: 'type',
     sortable: true,
-    align: 'right',
+    align: 'center',
+  },
+  {
+    name: 'operator',
+    label: tt('program.opMud'),
+    field: 'operator',
+    sortable: true,
+    align: 'center',
   },
   {
     name: 'updated_at',
-    label: t('program.updated'),
+    label: tt('program.updated'),
     field: 'updatedAt',
     sortable: true,
+    align: 'right',
     format,
-    tooltip: (date: Date) => new Date(date).toLocaleString(locale.value),
+    tooltip,
   },
 ])
 
 const contextMenuOptions = computed(() => [
-  {
-    label: t('contextMenu.copy'),
-    category: 'copy',
-    keybind: '',
-    icon: 'content_copy',
-    disabled: false,
-    onClick: (data: any) => {
-      contextMenuStore.copy(data, machineId)
+  [
+    {
+      label: tt('contextMenu.copy'),
+      shortcut: '',
+      icon: 'content_copy',
+      disabled: false,
+      onClick: () => {
+        contextMenuStore.copy(editor.selectedPrograms, machineId)
+      },
     },
-  },
-  {
-    label: t('contextMenu.paste'),
-    category: 'copy',
-    keybind: '',
-    icon: 'content_paste',
-    disabled: !contextMenuStore.isThereCopiedValue(),
-    onClick: () => {
-      commandManager.executeCommand(
-        pasteProgramCommand,
-        { $q, fetchPrograms },
-        machineId,
-      )
+    {
+      label: tt('contextMenu.paste'),
+      shortcut: '',
+      icon: 'content_paste',
+      disabled: !contextMenuStore.isThereCopiedValue(),
+      onClick: () => {
+        $commandManager.executeCommand(
+          'pasteProgram',
+          { $q, fetchPrograms },
+          machineId,
+        )
+      },
     },
-  },
-  {
-    label: t('contextMenu.newProgram'),
-    category: 'edit',
-    keybind: 'F2',
-    icon: 'add',
-    disabled: false,
-    onClick: () => {},
-  },
-  {
-    label: t('contextMenu.editProgram'),
-    category: 'edit',
-    keybind: 'F3',
-    icon: 'edit',
-    disabled: isMoreThanOneRowSelected.value,
-    onClick: () => {
-      onRowDoubleClick(editor.selectedRows[0])
+  ],
+  [
+    {
+      label: tt('contextMenu.newProgram'),
+      category: 'edit',
+      shortcut: 'F2',
+      icon: 'add',
+      disabled: false,
+      onClick: () => {
+        editor.popupNewProgramVisible = true
+      },
     },
-  },
-  {
-    label: t('contextMenu.deleteProgram'),
-    category: 'edit',
-    keybind: 'Ctrl+Del',
-    icon: 'delete',
-    disabled: false,
-    onClick: () => {
-      commandManager.executeCommand(
-        deleteProgramCommand,
-        { $q, fetchPrograms },
-        editor.selectedRows,
-        machineId,
-      )
+    {
+      label: tt('contextMenu.editProgram'),
+      shortcut: 'F3',
+      icon: 'edit',
+      disabled: isMoreThanOneRowSelected.value,
+      onClick: async () => {
+        await navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0]}`)
+      },
     },
-  },
-  {
-    label: t('contextMenu.deleteProgramsFromMachine'),
-    category: 'edit',
-    icon: '',
-    disabled: false,
-    onClick: () => {
-      commandManager.executeCommand(
-        deleteProgramFromMultiMachineCommand,
-        { $q, fetchPrograms },
-        editor.selectedRows,
-      )
+    {
+      label: tt('contextMenu.deleteProgram'),
+      shortcut: 'Ctrl+Del',
+      icon: 'delete',
+      disabled: false,
+      onClick: () => {
+        $commandManager.executeCommand(
+          'deleteProgram',
+          { $q, fetchPrograms },
+          editor.selectedPrograms,
+          machineId,
+        )
+      },
     },
-  },
-  {
-    label: t('contextMenu.concatPrograms'),
-    category: 'edit',
-    keybind: '',
-    icon: '',
-    disabled: !isMoreThanOneRowSelected.value,
-    onClick: () => {
-      commandManager.executeCommand(
-        concatenateProgramsCommand,
-        { $q, fetchPrograms },
-        editor.selectedRows,
-        machineId,
-      )
+    {
+      label: tt('contextMenu.deleteProgramsFromMachine'),
+      icon: '',
+      disabled: false,
+      onClick: () => {
+        $commandManager.executeCommand(
+          'deleteProgramFromMultiMachine',
+          { $q, fetchPrograms },
+          editor.selectedPrograms,
+        )
+      },
     },
-  },
-  {
-    label: t('contextMenu.changeName'),
-    category: 'edit',
-    keybind: '',
-    icon: 'edit_note',
-    disabled: isMoreThanOneRowSelected.value || editor.selectedRows.find(row => row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER),
-    onClick: () => {
-      commandManager.executeCommand(
-        changeNameCommand,
-        { $q, fetchPrograms },
-        editor.selectedRows,
-        machineId,
-      )
+    {
+      label: tt('contextMenu.concatPrograms'),
+      shortcut: '',
+      icon: '',
+      disabled: !isMoreThanOneRowSelected.value,
+      onClick: () => {
+        $commandManager.executeCommand(
+          'concatenatePrograms',
+          { $q, fetchPrograms },
+          editor.selectedPrograms,
+          machineId,
+        )
+      },
     },
-  },
-  {
-    label: t('contextMenu.changeProcessType'),
-    category: 'edit',
-    keybind: '',
-    icon: '',
-    disabled: false,
-    onClick: () => {
-      commandManager.executeCommand(
-        changeProcessTypeCommand,
-        { $q, fetchPrograms },
-        editor.selectedRows,
-        machineId,
-      )
+    {
+      label: tt('contextMenu.changeName'),
+      shortcut: '',
+      icon: 'edit_note',
+      disabled: isMoreThanOneRowSelected.value
+      || !!editor.selectedPrograms.find(
+        (row: any) =>
+          row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+      ),
+      onClick: async () => {
+        $commandManager.executeCommand(
+          'changeName',
+          { $q, fetchPrograms },
+          editor.selectedPrograms,
+          machineId,
+        )
+        // await fetchPrograms()
+      },
     },
-  },
-  {
-    label: t('contextMenu.sendProgram'),
-    category: 'send',
-    keybind: '',
-    icon: 'send',
-    disabled: false,
-    onClick: async () => {
-      console.log('contextmenuclick')
-      commandManager.executeCommand(
-        sendProgramCommand,
-        { $q, fetchPrograms },
-        editor.selectedRows,
-        machineId,
-      )
+    {
+      label: tt('contextMenu.changeProcessType'),
+      shortcut: '',
+      icon: '',
+      disabled: false,
+      onClick: () => {
+        $commandManager.executeCommand(
+          'changeProcessType',
+          { $q, fetchPrograms },
+          editor.selectedPrograms,
+          machineId,
+        )
+      },
     },
-  },
-  {
-    label: t('contextMenu.copyToMachinesAndSend'),
-    category: 'send',
-    keybind: '',
-    icon: '',
-    disabled: false,
-    onClick: () => {
-      commandManager.executeCommand(
-        copyAndSendCommand,
-        { $q, fetchPrograms },
-        editor.selectedRows,
-        machineId,
-      )
+  ],
+  [
+
+    {
+      label: tt('contextMenu.sendProgram'),
+      shortcut: '',
+      icon: 'send',
+      disabled: false,
+      onClick: async () => {
+        $commandManager.executeCommand(
+          'sendProgram',
+          { $q, fetchPrograms },
+          editor.selectedPrograms,
+          machineId,
+        )
+      },
     },
-  },
-  {
-    label: t('contextMenu.getProgram'),
-    category: 'send',
-    keybind: '',
-    icon: '',
-    disabled: false,
-    onClick: async () => {
-      commandManager.executeCommand(fetchProgramFromMachineCommand, { fetchPrograms }, editor.selectedRows, machineId)
+    {
+      label: tt('contextMenu.copyToMachinesAndSend'),
+      shortcut: '',
+      icon: '',
+      disabled: false,
+      onClick: () => {
+        $commandManager.executeCommand(
+          'copyAndSend',
+          { $q, fetchPrograms },
+          editor.selectedPrograms,
+          machineId,
+        )
+      },
     },
-  },
-  {
-    label: t('contextMenu.addToComparison'),
-    category: 'comparison',
-    keybind: '',
-    icon: 'playlist_add',
-    disabled: false,
-    onClick: () => {
-      contextMenuStore.addToComparisonBasket(editor.selectedRows)
+    {
+      label: tt('contextMenu.getProgram'),
+      shortcut: '',
+      icon: '',
+      disabled: false,
+      onClick: async () => {
+        $commandManager.executeCommand('fetchProgram', { fetchPrograms }, editor.selectedPrograms, machineId)
+      },
     },
-  },
-  {
-    label: t('contextMenu.compareWith'),
-    category: 'comparison',
-    keybind: '',
-    icon: 'compare_arrows',
-    disabled: !contextMenuStore.comparisonBasketLength(),
-    onClick: () => {
-      contextMenuStore.addToComparisonBasket(editor.selectedRows)
-      comparisonDialogVisible.value = true
-      contextMenuStore.comparison()
+  ],
+  [
+
+    {
+      label: tt('contextMenu.addToComparison'),
+      shortcut: '',
+      icon: 'playlist_add',
+      disabled: false,
+      onClick: () => {
+        contextMenuStore.addToComparisonBasket(editor.selectedPrograms)
+      },
     },
-  },
-  {
-    label: t('contextMenu.programVersion'),
-    category: 'version',
-    keybind: '',
-    icon: 'info',
-    disabled: isMoreThanOneRowSelected.value,
-    onClick: async () => {
-      wait()
-      versions.value = await contextMenuStore.fetchVersions(editor.selectedRows[0].programNo, machineId)
-      resume()
-      versionDialogVisible.value = true
+    {
+      label: tt('contextMenu.compareWith'),
+      shortcut: '',
+      icon: 'compare_arrows',
+      disabled: !contextMenuStore.comparisonBasketLength(),
+      onClick: () => {
+        contextMenuStore.addToComparisonBasket(editor.selectedPrograms)
+        // comparisonDialogVisible.value = true
+        contextMenuStore.comparison()
+      },
     },
-  },
-] as AppCommand[])
+  ],
+  [
+
+    {
+      label: tt('contextMenu.programVersion'),
+      shortcut: '',
+      icon: 'info',
+      disabled: isMoreThanOneRowSelected.value,
+      onClick: async () => {
+        versions.value = await contextMenuStore.fetchVersions(editor.selectedPrograms[0].programNo, machineId)
+        versionDialogVisible.value = true
+      },
+    },
+  ],
+
+] as TopbarMenuItem[][])
 const ctrl = useKeyModifier('Control')
 
 function handleFilterClick() {
-  commandManager.executeCommand(filterProgramsCommand, { $q, fetchPrograms, isProgramFilterExists }, machineId)
+  $commandManager.executeCommand('filterPrograms', { $q, fetchPrograms, isProgramFilterExists }, machineId)
 }
 function handleClearFilterClick() {
   clearFilter()
@@ -316,7 +487,7 @@ const fullMatch = computed(() => PATH_RE.test(route.path))
 const { results: filterResults } = useFuse(debouncedFilter, programs as Ref<ProgramTable[]>, {
   matchAllWhenSearchEmpty: true,
   fuseOptions: {
-    keys: ['name', 'type'],
+    keys: ['programNo', 'name', 'type'],
   },
 })
 
@@ -335,10 +506,10 @@ const filteredPrograms = computed(() => {
 })
 
 function isRowSelected(row: any) {
-  return editor.selectedRows.includes(row)
+  return editor.selectedPrograms.includes(row)
 }
 function removeSelection(row: any) {
-  editor.selectedRows = editor.selectedRows.filter(r => r !== row)
+  editor.selectedPrograms = editor.selectedPrograms.filter(r => r !== row)
 }
 async function onRowClick(row: any, isRightClick?: boolean) {
   if (ctrl.value) {
@@ -346,38 +517,28 @@ async function onRowClick(row: any, isRightClick?: boolean) {
       if (!isRightClick)
         removeSelection(row)
     } else
-      editor.selectedRows.push(row)
+      editor.selectedPrograms.push(row)
   } else if (!(isRowSelected(row) && isRightClick))
-    editor.selectedRows = [row]
-  // editor.selectedRow = row.programNo
+    editor.selectedPrograms = [row]
 }
 
 async function onRowDoubleClick(row: any) {
   await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
 }
-function handleClick(event: { preventDefault: () => void }, option: { disabled: any, onClick: (arg0: never[]) => void }) {
+function handleClick(event: { preventDefault: () => void }, option: AppCommand) {
   if (option.disabled)
     event.preventDefault()
   else {
-    // commandManager.executeCommand(option, editor.selectedRows)
-    option.onClick(editor.selectedRows)
+    option.execute()
   }
 }
 
-let lastcategory = contextMenuOptions.value[0].category
-function addSeparator(key: string | Function | undefined) {
-  if (key !== lastcategory) {
-    lastcategory = key
-    return true
-  } else return false
-}
-
 async function handleVersionDelete(deleteVersions: any[]) {
-  wait()
+  editor.isLoading = true
   await contextMenuStore.deleteVersion(deleteVersions, machineId)
   await fetchPrograms()
-  versions.value = await contextMenuStore.fetchVersions(editor.selectedRows[0].programNo, machineId)
-  resume()
+  versions.value = await contextMenuStore.fetchVersions(editor.selectedPrograms[0].programNo, machineId)
+  editor.isLoading = false
 }
 function handleRowColor(row: ProgramHeader) {
   if (0) { // User is not logged in
@@ -408,17 +569,21 @@ function handleRowColor(row: ProgramHeader) {
 </script>
 
 <template>
-  <QPage class="q-pa-md">
-    <LoadingSpinner v-if="showSpinner" />
-    <!-- :loading="pending" -->
+  <div class="custom-page select-none relative">
+    <div v-if="editor.isLoading" class="loading-container ">
+      <LoadingSpinner :has-background="false" />
+    </div>
     <QTable
       v-if="fullMatch"
       dense
+      virtual-scroll
       :rows="filteredPrograms"
       :columns="columns"
       row-key="id"
-      :pagination="{ rowsPerPage: 24 }"
+      :pagination="{ rowsPerPage: 25 }"
+      :rows-per-page-options="[25, 50, 75, 100, 0]"
       flat
+      class="no-selected h-80vh"
     >
       <template #top>
         <div class="flex justify-between p-2 w-full">
@@ -471,6 +636,15 @@ function handleRowColor(row: ProgramHeader) {
               context-menu
               :transition-duration="0"
             >
+              <ProgramContextMenu
+                :items="contextMenuOptions"
+              />
+            </q-menu>
+            <!-- <q-menu
+              touch-position
+              context-menu
+              :transition-duration="0"
+            >
               <q-list
                 style="min-width: 300px;"
               >
@@ -499,51 +673,75 @@ function handleRowColor(row: ProgramHeader) {
                   </q-item>
                 </template>
               </q-list>
-            </q-menu>
+            </q-menu> -->
 
-            {{ formatValue(props.row, column) }}
-            <QTooltip
-              v-if="column.tooltip"
-              class="bg-white text-black e-border text-sm"
-              :transition-duration="0"
-              :delay="500"
-            >
-              {{ formatTooltip(props.row, column) }}
-            </QTooltip>
+            <template v-if="column.name === 'operator'">
+              <QIcon
+                v-if="props.row.operator"
+                name="check"
+                color="positive"
+                size="1rem"
+              />
+            </template>
+            <template v-else>
+              {{ formatValue(props.row, column) }}
+              <QTooltip
+                v-if="column.tooltip"
+                class="bg-white text-black e-border text-sm"
+                :transition-duration="0"
+                :delay="500"
+              >
+                {{ formatTooltip(props.row, column) }}
+              </QTooltip>
+            </template>
           </QTd>
         </QTr>
       </template>
     </QTable>
+    <!-- <p>{{ t('selectRange', { count: editor.selectedPrograms.length, total: programs.length }) }}</p> -->
     <NuxtPage v-else />
+  </div>
+  <EliarModal v-if="versionDialogVisible">
+    <CMVersionDialog
+      :rows="versions"
+      :machine-id="machineId"
+      :program-no="editor.selectedPrograms[0].programNo"
+      @close="versionDialogVisible = false"
+      @delete="e => handleVersionDelete(e)"
+    />
+  </EliarModal>
 
-    <EliarModal v-if="versionDialogVisible">
-      <template #default>
-        <CMVersionDialog
-          :rows="versions"
-          :machine-id="machineId"
-          :program-no="editor.selectedRows[0].programNo"
-          @update:vis="e => versionDialogVisible = e"
-          @on-delete-click="e => handleVersionDelete(e)"
-        />
-      </template>
-    </EliarModal>
+  <EliarModal v-if="comparisonDialogVisible">
+    <CMComparisonDialog
+      type="comparison"
+      @close="comparisonDialogVisible = false"
+    />
+  </EliarModal>
 
-    <EliarModal v-if="comparisonDialogVisible">
-      <template #default>
-        <CMComparisonDialog
-          type="comparison"
-          @update:vis="e => comparisonDialogVisible = e"
-        />
-      </template>
-    </EliarModal>
-  </QPage>
+  <EliarModal v-if="editor.popupNewProgramVisible">
+    <CMNewProgramDialog />
+  </EliarModal>
 </template>
 
 <style lang="postcss" scoped>
-body {
-  user-select: none;
-}
 .menu-icon-class.q-item__section--avatar {
   min-width: auto;
+}
+.custom-page {
+  margin: 20px;
+  min-height: fit-content !important;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  background-color: rgb(229, 231, 235, 0.2);
 }
 </style>

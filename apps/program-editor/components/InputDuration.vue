@@ -26,10 +26,10 @@ onUnmounted(() => {
 })
 
 const rules = [
-  (value: number) => {
+  (value: string) => {
     if (
       !Number.isNaN(value) && between(
-        value,
+        parseDuration(value),
         props.minValue,
         props.maxValue,
       )
@@ -37,47 +37,38 @@ const rules = [
       return true
     } else {
       return t('valueOutOfRange', {
-        minValue: props.minValue,
-        maxValue: props.maxValue,
+        minValue: formatDuration(props.minValue),
+        maxValue: formatDuration(props.maxValue),
       })
     }
   },
 ]
 
-const minutes = computed({
+const time = computed({
   get() {
-    return model.value ? (model.value / 60).toString() : ''
+    if (!model.value) {
+      return '00:00:00'
+    }
+    return formatDuration(model.value)
   },
   set(value) {
-    model.value = Number.parseFloat(value) * 60
+    model.value = parseDuration(value)
   },
 })
-
-function updateModel() {
-  emit('update:modelValue', model.value)
-}
 </script>
 
 <template>
   <QInput
     ref="input"
-    v-model="minutes"
+    v-model="time"
     :for="id"
-    :label="props.label"
+    :label="label"
     :rules="rules"
+    mask="fulltime"
+    input-class="text-right"
     hide-bottom-space
-    autocomplete="off"
+    no-error-icon
     outlined
     dense
-    suffix="min"
-    input-class="text-right w-30"
-    @blur="updateModel"
   />
 </template>
-
-<style scoped>
-.inline-suffix {
-  font-size: 14px;
-  line-height: 18px;
-}
-</style>

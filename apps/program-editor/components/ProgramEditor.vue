@@ -37,7 +37,7 @@ function onDragEnd(event: SortableEvent) {
 
 <template>
   <Sortable
-    class="program-editor e-div-y"
+    class="program-editor e-div-y pb-120 "
     :list="// eslint-disable-next-line vue/no-extra-parens
       (editor.program?.steps as ProgramStep[])"
     item-key="stepId"
@@ -51,13 +51,13 @@ function onDragEnd(event: SortableEvent) {
         class="program-step"
         :class="{ __selected: editor.selectedStep === index }"
       >
-        <QItemSection side class="w-4 pr-4">
+        <QItemSection side>
           <QItemLabel>
             {{ index + 1 }}
           </QItemLabel>
         </QItemSection>
         <QItemSection class="pl-2">
-          <div @click="editor.changeSelection(index)">
+          <div :id="`step-${index}`" @click="editor.changeSelection(index)">
             <ProgramStepForm :path="`steps.${index}`" />
           </div>
         </QItemSection>
@@ -69,7 +69,6 @@ function onDragEnd(event: SortableEvent) {
             @click="editor.deleteStep(index)"
           />
           <QIcon
-            v-if="editor.isDragging"
             class="icon command-drag-handle mt-7 cursor-move"
             name="drag_handle"
           />
@@ -81,12 +80,14 @@ function onDragEnd(event: SortableEvent) {
 
 <style lang="postcss" scoped>
 .program-step {
-  @apply hover:(bg-gray-1 dark:bg-dark);
   @apply transition-none;
+  @apply hover:(bg-gray-1 text-black);
+  @apply dark:(hover:(bg-dark-4 text-white));
 }
 
 .program-step.__selected {
-  @apply bg-gray-2 dark:bg-dark-3;
+  @apply bg-blue-1 text-black;
+  @apply dark:(bg-dark-2 text-white);
 }
 
 .icon {

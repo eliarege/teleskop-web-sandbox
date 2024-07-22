@@ -16,13 +16,15 @@ export interface ProgramFilter {
 }
 
 export interface ProgramTable {
-  isChanged: boolean
-  name: string
   programNo: number
-  programState: number
+  name: string
+  duration: number
   stepCount: number
   type: string
+  operator: boolean
   updatedAt: Date
+  programState: number
+  isChanged: boolean
   updatedAtTBB: Date
 }
 
@@ -50,7 +52,9 @@ export interface MachineCommand {
   commandNo: number
   name: string
   icon: string
+  adviceList: string
   dontUseList: number[]
+  isRunManual: boolean
   commandType: number
   moveParallel: number
   durations: string
@@ -103,17 +107,18 @@ export interface ioItem {
 }
 
 export interface ProgramHeader {
+  programNo: number
   name: string
   author: string | null
   comment: string | null
   typeId: number
-  createdAt: Date | null
+  createdAt: Date
   updatedAt: Date | null
   steps: ProgramStep[]
   updatedAtTBB: string | null
   programState: number | null
   isChanged: boolean | null
-  tbbProgramChangedEvent: boolean | null
+  tbbProgramChangedEvent: number | null
 }
 
 export interface Program extends ProgramHeader {

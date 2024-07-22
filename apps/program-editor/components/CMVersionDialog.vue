@@ -4,7 +4,7 @@ const props = defineProps({
   machineId: Number,
   programNo: Number,
 })
-const emit = defineEmits(['update:vis', 'onDeleteClick'])
+const emit = defineEmits(['close', 'delete'])
 const deleteVersionDialogVis = ref(false)
 const selectedRows = ref([])
 const isMoreThanOneRowSelected = computed(() => selectedRows.value.length > 1)
@@ -17,10 +17,10 @@ const columns = [
 ]
 
 function closeDialog() {
-  emit('update:vis', false)
+  emit('close')
 }
 async function handleDelete() {
-  emit('onDeleteClick', selectedRows.value)
+  emit('delete', selectedRows.value)
 }
 
 const ctrl = useKeyModifier('Control')

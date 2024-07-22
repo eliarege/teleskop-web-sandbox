@@ -39,6 +39,7 @@
     "paste": "Yapıştır",
     "refresh": "Yenile",
     "save": "Kaydet",
+    "saveAs": "Farklı Kaydet",
     "reset": "Sıfırla",
     "findReplace": "Bul - Değiştir",
     "filter": "Filtrele",
@@ -58,7 +59,18 @@
     "settings": "Ayarlar",
     "programTypes": "Program Tipleri",
     "help": "Yardım",
-    "about": "Hakkında"
+    "about": "Hakkında",
+    "projectInfo": "Proje Bilgileri",
+    "allCommandList": "Tüm Komut Listesi",
+    "commandList": "Komut Listesi",
+    "commandInfo": "Komut Bilgileri",
+    "show": "Göster",
+    "close": "Kapat",
+    "general": "Genel",
+    "parameter": "Parametre",
+    "io": "IO",
+    "graphic": "Grafik",
+    "formula": "Formül"
   },
   "program": {
     "name": "Program Adı",
@@ -66,19 +78,80 @@
     "programState": "Proccess Tipi",
     "stepCount": "Adım Sayısı",
     "type": "Tip",
+    "opMud": "Op. Müd.",
+    "theoreticalDuration": "Teorik Süre",
     "updated": "Güncellenme Tarihi",
     "processType": "Proccess Tipi",
     "parameter": "Parametre",
     "command": "Program Komutu"
+  },
+  "command": {
+    "icon": "İkon",
+    "no": "Komut Numarası",
+    "name": "Komut Adı",
+    "type": "Komut Tipi",
+    "createDate": "Oluşturma Tarihi",
+    "transportType": "Taşıma Tipi",
+    "canWorkManually": "Manuel Çalışabilir",
+    "suggestionList": "Öneri Listesi",
+    "nonParallelCommands": "Paralel Çalışmayan Komutlar",
+    "parameter": {
+      "name": "Parametre Adı",
+      "type": "Parametre Tipi",
+      "defaultValue": "Varsayılan Değer",
+      "lowerLimit": "Alt Sınır",
+      "upperLimit": "Üst Sınır",
+      "unit": "Birim",
+      "visibilityLevel": "Belli Olma Seviyesi",
+      "containsFormula": "Formül İçeriyor mu?",
+      "temp/time": "Sıcaklık/Zaman",
+      "isDefault": "Varsayılan mı?",
+      "belongsToFunction": "Fonksiyona mı ait?",
+      "selectableOptions": "Seçilebilir Listesi",
+      "operationTime": "Çalışma Süresi",
+      "liter": "Litre",
+      "temperature": "Sıcaklık",
+      "mixerLevel": "Mikser Seviyesi",
+      "heatingLevel": "Isıtma Seviyesi",
+      "levelTolerance": "Seviye Tolerans",
+      "temperatureTolerance": "Sıcaklık Tolerans",
+      "levelAlarm": "Seviye Alarm",
+      "temperatureAlarm": "Sıcaklık Alarm",
+      "mixerOnDelay": "Mikser On Delay",
+      "stabilizationTime": "Stabilize Zamanı",
+      "mixerOffDelay": "Mikser Off Delay",
+      "mixer": "Mikser",
+      "BK2Ratio": "BK2 Oran"
+    },
+    "graphic": {
+      "x": "X (s)",
+      "y": "Y (C)",
+      "a": "A (eğim)",
+      "maxA": "Max A",
+      "b": "B (bekleme)",
+      "temperatureAffected": "Sıcaklık Etkilenir",
+      "discharge": "Boşaltma"
+    },
+    "io": {
+      "name": "IO Adı",
+      "index": "IO Numarası",
+      "physicalId": "Fiziksel Id",
+      "type": "IO Tipi",
+      "selections": "Seçilebilir Listesi"
+    }
   },
   "saveProgram": {
     "success": "Program kaydedildi",
     "fail": "Program kaydedilirken hata oluştu",
     "incorrect": "Hatalı değer girdiniz"
   },
+  "error": {
+    "machineCommandNotFound": "{commandNo} numaralı komut {machineId} numaralı makinede bulunamadı"
+  },
   "selectAll": "Tümünü seç",
   "dropAll": "Tümünü bırak",
   "selectReverse": "Seçimi ters çevir",
+  "selectRange": "{count} kayıt seçildi, {total} kayıt toplamı",
   "yes": "Evet",
   "no": "Hayır",
   "cancel": "İptal",
@@ -97,6 +170,10 @@
       "clearFilter": "Filtreleri Temizle",
       "clearFilterOnChange": "Makine seçimi değiştiğinde filtreleri temizle."
     }
+  },
+  "message": {
+    "delete_program": "Program Teleskop'tan silindi",
+    "program_not_deleted": "Program Teleskop'tan silinemedi"
   },
   "printProgramListDialog": {
     "printOptions": "Yazdırma Seçenekleri",

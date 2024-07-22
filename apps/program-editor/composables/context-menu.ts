@@ -76,7 +76,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     data.forEach((program) => {
       copiedValues.push({ machine: fromMachine, program })
     })
-    console.log(copiedValues)
   }
 
   async function paste(machineId: number, directPasteValues?: Array<{ machine: number, program: any, newProgramNo?: number }>) {
@@ -108,12 +107,10 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function deleteProgram(selectedRows: any[], selectedOption: number, machineId: number) {
+    const query = `source=${selectedOption}`
     for (const program of selectedRows) {
-      const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}`, {
+      const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
         method: 'DELETE',
-        body: {
-          selectedOption,
-        },
       })
       const status = check ? 'success' : 'fail'
       notification(check, t(`contextMenu.delete.${status}`, { programNo: program.programNo, name: program.name }))
@@ -213,7 +210,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function deleteVersion(versions: Array<any>, machineId: number) {
     for (const version of versions) {
-      const check = await $fetch(`/api/machine/${machineId}/program/${version.programNo}/${version.version}`, {
+      const check = await $fetch(`/api/machine/${machineId}/program/${version.programNo}/archive/${version.version}`, {
         method: 'DELETE',
       })
       const status = check ? 'success' : 'fail'
@@ -226,7 +223,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function concatenatePrograms(programs, details, machineId: number) {
-    console.log('Don\'t know how to concatenate programs. Will steps added ent-to-end or is there any other logic on that?')
+    // console.log('Don\'t know how to concatenate programs. Will steps added ent-to-end or is there any other logic on that?')
     const concatedProgram: Program = {
       icon: null,
       programNo: details.programNo,

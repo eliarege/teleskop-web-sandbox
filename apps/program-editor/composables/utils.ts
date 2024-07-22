@@ -259,3 +259,31 @@ export function filterToQuery(filter: ProgramFilter): string {
   setExistingFilter(filter)
   return query
 }
+
+/**
+ * Düzenlenen saniyeyi 00:00:00 formatına dönüştürür
+ * @param duration Saniye
+ * @returns {string} 00:00:00
+ */
+export function formatDuration(duration: number): string {
+  if (!duration) {
+    return '00:00:00'
+  }
+  const hour = Math.floor(duration / 3600)
+  const minute = Math.floor((duration % 3600) / 60)
+  const second = duration % 60
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
+}
+
+/**
+ * 00:00:00 formatını saniyeye dönüştürür
+ * @param duration string
+ * @returns {number} Saniye
+ */
+export function parseDuration(duration: string): number {
+  if (duration.includes(':')) {
+    const [hour, minute, second] = duration.split(':')
+    return Number(hour) * 3600 + Number(minute) * 60 + Number(second)
+  }
+  return Number(duration) * 36000
+}

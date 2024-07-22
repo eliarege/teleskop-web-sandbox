@@ -1,6 +1,7 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import type { Program } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
+import { PError } from '~/server/error'
 
 export default defineEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
@@ -17,24 +18,29 @@ export default defineEventHandler(async (event) => {
   } else if (event.method === 'POST') {
     const body = await readBody(event)
     const programNoToCheck = body.newProgramNo ?? body.programNo ?? body.program?.programNo
-    const hasPrg = await machine.hasProgram(programNoToCheck)
 
-    if (hasPrg)
-      return 0 // Show dialog
-    else {
-      let program: Program
-      if (body.program) {
-        program = body.program
-      } else {
-        const machineOfCopiedProgram = await machineStore.get(body.machineIdOfCopiedProgram)
-        program = await machineOfCopiedProgram.fetchProgram(body.programNo)
-        program.programState = ProgramStatus.EXISTS_ONLY_ON_DATABASE
-        program.machineId = machineId
-        program.programNo = programNoToCheck
-      }
-      await machine.insertProgram(program)
-      return 1
+    let program: Program
+    if (body.program) {
+      program = body.program
+    } else {
+      const machineOfCopiedProgram = await machineStore.get(body.machineIdOfCopiedProgram)
+      program = await machineOfCopiedProgram.fetchProgram(body.programNo)
+      program.programState = ProgramStatus.EXISTS_ONLY_ON_DATABASE
+      program.machineId = machineId
+      program.programNo = programNoToCheck
     }
+
+    try {
+      return await machine.insertProgram(program)
+    } catch (error) {
+      if (error instanceof PError) {
+        if (error.code === 'PROGRAM_EXISTS') {
+          throw createError({ statusCode: 409, data: { code: error.code, detail: error.detail } })
+        }
+      }
+    }
+
+    return 1
   } else if (event.method === 'PUT') {
     const body = await readBody(event)
     // const hasPrg = await machine.hasProgram(body.program.parogramNo)

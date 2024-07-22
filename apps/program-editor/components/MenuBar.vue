@@ -102,8 +102,6 @@ const menuItems = computed(() => [
           </QItem>
         </QMenu>
       </QBtn>
-      <QSpace />
-      <!-- <QToggle v-model="editor.isDragging" icon="pan_tool" /> -->
       <div>
         <QBtn
           :color="dark.isActive ? 'white' : 'grey-8'"

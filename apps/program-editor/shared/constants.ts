@@ -17,3 +17,13 @@ export const COMMAND_TYPE = {
   MAIN: 0,
   PARALLEL: 3,
 }
+
+export const IO_TYPE: { [key: string]: string } = {
+  '0': 'Analog Input',
+  '1': 'Analog Input',
+  '2': 'Analog Output',
+  '3': 'Digital Input',
+  '4': 'Digital Output',
+  '5': 'Counter',
+  '-1': 'Seçilmemiş',
+}

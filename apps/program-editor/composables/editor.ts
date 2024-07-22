@@ -1,30 +1,38 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { klona } from 'klona/lite'
-import type { CommandIO, Machine, MachineCommand, MachineInfo, ParameterItem, Program, ProgramStep, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, ioListItem } from '~/shared/types'
+import { capitalize } from '~/server/utils'
+import { PError } from '~/server/error'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
 export const useEditorStore = defineStore('editor', () => {
   const program = ref<Program>(createProgram())
   const machine = ref<Machine>(createMachine())
-  const selectedRows = ref([])
+  const selectedPrograms = ref<ProgramTable[]>([])
+  const allProcessType = ref<ProcessType[]>([])
+  const allPrograms = ref<ProgramHeader[]>([])
+  const selectedCommand = ref<MachineCommand | null>(null)
   const selectedStep = ref<number>(-1)
   const selectedParallelStep = ref<number>(-1)
-  const route = useRoute()
+  const isLoading = ref<boolean>(false)
+  const popupNewProgramVisible = ref(false)
+  const popupCommandListVisible = ref(false)
+  const popupCommandDetailVisible = ref(false)
+  const newVersionDialog = ref(false)
+  const leftDrawerOpen = ref(false)
+  const rightDrawerOpen = ref(false)
   let lastStepId = 0
   let lastCommandId = 0
-  let isLoading = false
-  let isCommandLoading = false
-  const isIncorrectInput = ref<number>(0)
-  const isDragging = true
 
   const { t } = useI18n()
+  const route = useRoute()
   const errorIds = ref(new Set<string>())
   const { notifySuccess, notifyError } = useNotify()
 
   async function changeMachine(id: number, name: string) {
-    selectedRows.value = []
+    selectedPrograms.value = []
     const MACHINE_PATH_RE = /^\/machine\/\d+$/
     machine.value = {
       id,
@@ -58,23 +66,19 @@ export const useEditorStore = defineStore('editor', () => {
 
   function newStep() {
     const emptyStep = createEmptyStep()
+    const stepIndex = selectedStep.value !== -1 ? selectedStep.value : program.value.steps.length - 1
 
-    let index = 0
-    if (selectedStep.value !== -1) {
-      index = selectedStep.value
-    } else {
-      index = program.value.steps.length - 1
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
-    }
-
-    emptyStep.parallelCommands = index > 0 ? klona(program.value.steps[index].parallelCommands) : []
+    emptyStep.parallelCommands = stepIndex > 0 ? klona(program.value.steps[stepIndex].parallelCommands) : []
     for (const command of emptyStep.parallelCommands) {
       command.commandId = lastCommandId++
     }
 
-    program.value.steps.splice(index + 1, 0, emptyStep)
+    program.value.steps.splice(stepIndex + 1, 0, emptyStep)
     selectedParallelStep.value = -1
-    selectedStep.value = index + 1
+    selectedStep.value = stepIndex + 1
+    nextTick(() => {
+      scrollPage(stepIndex + 1, true)
+    })
   }
 
   function newStepCommand(commandNo: number, stepIndex: number) {
@@ -88,12 +92,41 @@ export const useEditorStore = defineStore('editor', () => {
     program.value.steps.splice(stepIndex + 1, 0, newStep)
     selectedParallelStep.value = -1
     selectedStep.value = stepIndex + 1
+    nextTick(() => {
+      scrollPage(stepIndex + 1, true)
+    })
+  }
+
+  /**
+   * Belirtilen stepIndex'taki step'i scroll eder.
+   * @param stepIndex - Step index
+   * @param isExpanded - Parallel stepleri göster
+   * @returns {void}
+   */
+  function scrollPage(stepIndex: number, isExpanded?: boolean): void {
+    const el = document.getElementById(`step-${stepIndex}`)
+    if (!el)
+      return
+
+    el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
+    const button = el.querySelector('.expand-btn') as HTMLElement | null
+    if (!button)
+      return
+
+    const icon = button.querySelector('.material-icons')
+    if (isExpanded && icon && icon.textContent === 'expand_more') {
+      button.click()
+    }
   }
 
   function newParallelStep() {
-    const index = selectedStep.value !== -1 ? selectedStep.value : program.value.steps.length
+    const index = selectedStep.value !== -1 ? selectedStep.value : program.value.steps.length - 1
     const parallelIndex = selectedParallelStep.value !== -1 ? selectedParallelStep.value : program.value.steps[index].parallelCommands.length
     program.value.steps[index].parallelCommands.splice(parallelIndex + 1, 0, createEmptyCommand())
+
+    nextTick(() => {
+      scrollPage(index, true)
+    })
   }
 
   function newParallelStepCommand(commandNo: number, stepIndex: number) {
@@ -106,7 +139,7 @@ export const useEditorStore = defineStore('editor', () => {
     const machineCommand = machine.value?.commands.get(commandNo)
 
     if (!machineCommand) {
-      throw new Error('Machine Command Not Found!')
+      return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
     }
 
     command.commandNo = machineCommand.commandNo
@@ -130,6 +163,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function onSubmit() {
+    isLoading.value = true
     const firstId = errorIds.value.values().next().value
     if (firstId) {
       const el = document.getElementById(firstId)
@@ -145,18 +179,26 @@ export const useEditorStore = defineStore('editor', () => {
 
       notifyError(t('saveProgram.incorrect'))
     } else {
-      isLoading = true
       if (await updateProgram()) {
         notifySuccess(t('saveProgram.success'))
       } else {
         notifyError(t('saveProgram.fail'))
       }
-      isLoading = false
     }
+    isLoading.value = false
   }
 
   function onReset() {
     window.location.reload()
+  }
+
+  async function deleteProgram(machineId: number, programNo: number) {
+    await $fetch(`/api/machine/${machineId}/program/${programNo}`, {
+      method: 'DELETE',
+      body: {
+        programNo,
+      },
+    })
   }
 
   function deleteStep(stepIndex?: number) {
@@ -172,10 +214,10 @@ export const useEditorStore = defineStore('editor', () => {
 
   function deleteParallelStep(stepIndex?: number, parallelIndex?: number) {
     if (stepIndex !== undefined && parallelIndex !== undefined) {
-      program.value.steps[stepIndex].parallelCommands.splice(parallelIndex, 1)
+      program.value.steps[stepIndex]?.parallelCommands.splice(parallelIndex, 1)
     } else {
-      if (selectedStep.value !== -1 && program.value.steps.length > 1) {
-        if (program.value.steps[selectedStep.value].parallelCommands.length > 1) {
+      if (selectedStep.value !== -1 && program.value.steps.length > 0) {
+        if (program.value.steps[selectedStep.value].parallelCommands.length > 0) {
           program.value.steps[selectedStep.value].parallelCommands.splice(selectedParallelStep.value, 1)
         }
       }
@@ -183,31 +225,36 @@ export const useEditorStore = defineStore('editor', () => {
     selectedParallelStep.value = -1
   }
 
-  // TODO: await
   async function fetchProgram(machineId: number, programNo: number) {
-    selectedStep.value = -1
-    isLoading = true
-    const programData = await $fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
-    for (const step of programData.steps) {
-      step.stepId = lastStepId++
-      for (const command of step.parallelCommands) {
-        command.commandId = lastCommandId++
+    try {
+      selectedStep.value = -1
+      selectedParallelStep.value = -1
+      lastStepId = 0
+      lastCommandId = 0
+      program.value = await $fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
+      for (const step of program.value.steps) {
+        step.stepId = lastStepId++
+        for (const command of step.parallelCommands) {
+          command.commandId = lastCommandId++
+        }
+        lastCommandId = 0
+      }
+    } catch (err) {
+      if (err instanceof PError) {
+        if (err.code === 'PROGRAM_NOT_FOUND') {
+          throw createError({ statusCode: 404, data: { code: err.code, detail: err.detail } })
+        }
       }
     }
-    program.value = programData
-    isLoading = false
   }
 
   async function fetchMachine(machineId: number) {
-    isLoading = true
     const machineData = await $fetch<Machine>(`/api/machine/${machineId}`)
     machine.value = machineData
-    isLoading = false
   }
 
-  async function fetchMachineCommands(machineId: number) {
-    isCommandLoading = true
-    const machineCommandsData = await $fetch<MachineCommand[]>(`/api/machine/${machineId}/commands?editable=true`)
+  async function fetchMachineCommands(machineId: number, editable?: boolean) {
+    const machineCommandsData = await $fetch<MachineCommand[]>(`/api/machine/${machineId}/commands${editable ? '?editable=true' : ''}`)
     if (machine.value) {
       if (!(machine.value.commands instanceof Map)) {
         machine.value.commands = new Map()
@@ -218,7 +265,6 @@ export const useEditorStore = defineStore('editor', () => {
         machine.value?.commands.set(command.commandNo, command)
       }
     }
-    isCommandLoading = false
   }
 
   async function fetchAllMachine() {
@@ -229,12 +275,23 @@ export const useEditorStore = defineStore('editor', () => {
     return await $fetch('/api/machine-group')
   }
 
-  async function fetchPrograms() {
-    return await $fetch(`/api/machine/${route.params.machine_id}/program`)
+  async function fetchAllPrograms(machineId: number) {
+    try {
+      allPrograms.value = await $fetch<ProgramHeader[]>(`/api/machine/${machineId}/program`)
+    } catch (err) {
+      if (err instanceof PError) {
+        if (err.code === 'PROGRAM_NOT_FOUND') {
+          throw createError({ statusCode: 404, data: { code: err.code, detail: err.detail } })
+        }
+      }
+    }
   }
 
   async function fetchAllProcessTypes() {
-    return await $fetch(`/api/process`)
+    allProcessType.value = (await $fetch<ProcessType[]>('/api/process')).map(type => ({
+      ...type,
+      label: capitalize(type.label),
+    }))
   }
 
   function createMachine() {
@@ -260,8 +317,8 @@ export const useEditorStore = defineStore('editor', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       isChanged: false,
-      tbbProgramChangedEvent: false,
-      programState: 0,
+      tbbProgramChangedEvent: 0,
+      programState: 1,
       updatedAtTBB: null,
     }
   }
@@ -276,12 +333,23 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function insertProgram() {
-    return await $fetch(`/api/machine/${route.params.machine_id}/program`, {
-      method: 'POST',
-      body: {
-        program: program.value,
-      },
-    })
+    try {
+      await $fetch(`/api/machine/${route.params.machine_id}/program`, {
+        method: 'POST',
+        body: {
+          program: program.value,
+        },
+      })
+
+      notifySuccess(t('saveProgram.success'))
+      return true
+    } catch (error) {
+      if (error.status === 409) {
+        notifyError(t('input.unique', { field: t('program.programNo') }))
+      } else {
+        throw new PError('PROGRAM_INSERT_FAILED', { machineId: Number(route.params.machine_id), programNo: program.value.programNo })
+      }
+    }
   }
 
   function insertStep(program: Program, index: number, step: ProgramStep) {
@@ -340,20 +408,28 @@ export const useEditorStore = defineStore('editor', () => {
     changeMachine,
     program,
     machine,
-    selectedRows,
+    selectedPrograms,
     selectedStep,
     selectedParallelStep,
     isLoading,
-    isCommandLoading,
-    isIncorrectInput,
-    isDragging,
     errorIds,
+    newVersionDialog,
+    allProcessType,
+    allPrograms,
+    selectedCommand,
+    lastStepId,
+    lastCommandId,
+    popupNewProgramVisible,
+    popupCommandListVisible,
+    popupCommandDetailVisible,
+    leftDrawerOpen,
+    rightDrawerOpen,
     fetchProgram,
     fetchMachine,
     fetchMachineCommands,
     fetchAllMachine,
     fetchMachineGroup,
-    fetchPrograms,
+    fetchAllPrograms,
     createMachine,
     createProgram,
     updateProgram,
@@ -366,6 +442,7 @@ export const useEditorStore = defineStore('editor', () => {
     newParallelStep,
     newParallelStepCommand,
     updateCommand,
+    deleteProgram,
     deleteStep,
     deleteParallelStep,
     changeSelection,

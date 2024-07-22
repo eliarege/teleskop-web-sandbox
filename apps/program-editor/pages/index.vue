@@ -3,20 +3,26 @@ import { ref } from 'vue'
 import { useQuasar } from 'quasar'
 import type { TopbarMenuItem } from 'nuxt-base'
 import { breakpointsTailwind } from '@vueuse/core'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import EliarModal from 'ui/components/EliarModal.vue'
 import MachineCommandList from '~/components/MachineCommandList.vue'
 import MachineList from '~/components/MachineList.vue'
-import MenuProgram from '~/components/MenuProgram.vue'
-import { commandManager, contextMenuStore } from '~/shared/utils'
+import { contextMenuStore } from '~/shared/utils'
 import ProgramTitle from '~/components/ProgramTitle.vue'
+import ContextBar from '~/components/ContextBar.vue'
+import { useEditorStore } from '~/composables/editor'
+import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
+
+const { $commandManager } = useNuxtApp()
 
 const { t } = useI18n()
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
 const $q = useQuasar()
 const route = useRoute()
+const router = useRouter()
 const { dark } = useQuasar()
-const leftDrawerOpen = ref(false)
-const rightDrawerOpen = ref(false)
 
 const editor = useEditorStore()
 editor.machine = editor.createMachine()
@@ -36,13 +42,13 @@ const items = [
               {
                 label: tt('menu.programList'),
                 onClick() {
-                  commandManager.executeCommand(printProgramListCommand, { $q })
+                  $commandManager.executeCommand('printProgramList', { $q })
                 },
               },
               {
                 label: tt('menu.program'),
                 onClick() {
-                  commandManager.executeCommand(printProgramCommand, { $q })
+                  $commandManager.executeCommand('printProgram', { $q })
                 },
               },
             ]],
@@ -51,7 +57,7 @@ const items = [
         {
           label: tt('menu.exportToExcel'),
           onClick() {
-            commandManager.executeCommand(exportToexcelCommand, { $q })
+            $commandManager.executeCommand('exportToExcel', { $q })
           },
         },
       ]],
@@ -66,16 +72,49 @@ const items = [
         [
           {
             label: tt('menu.newProgram'),
-            icon: 'copyright',
-            shortcut: 'Ctrl+N',
+            icon: 'add_circle_outline',
+            shortcut: 'F2',
             onClick() {
-              navigateTo(`/machine/${editor.machine.id}/program/new`)
+              editor.popupNewProgramVisible = true
+            },
+          },
+          {
+            label: tt('menu.editProgram'),
+            icon: 'edit',
+            shortcut: 'F3',
+            onClick() {
+              if (editor.selectedPrograms.length > 0) {
+                router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
+              } else {
+                router.push(`/machine/${editor.machine.id}/program/${editor.allPrograms[0].programNo}`)
+              }
+            },
+          },
+          {
+            label: tt('menu.deleteProgram'),
+            icon: 'delete',
+            shortcut: 'Ctrl+Del',
+            onClick() {
+              if (editor.selectedPrograms.length > 0) {
+                $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
+              }
             },
           },
         ],
         [
           { label: tt('menu.getAllPrograms'), icon: 'download' },
           { label: tt('menu.sendAllPrograms'), icon: 'upload' },
+        ],
+        [
+          {
+            label: tt('menu.rename'),
+            icon: 'edit',
+            onClick() {
+              if (editor.selectedPrograms.length > 0) {
+                $commandManager.executeCommand('changeName', { $q }, editor.selectedPrograms, editor.machine.id)
+              }
+            },
+          },
         ],
       ],
     },
@@ -87,11 +126,26 @@ const items = [
         {
           label: tt('menu.programTypes'),
           onClick() {
-            commandManager.executeCommand(editProgramTypesCommand, { $q })
+            $commandManager.executeCommand('editProgramTypes', { $q })
           },
         },
       ],
       ],
+    },
+  },
+  {
+    label: tt('menu.projectInfo'),
+    disabled: computed(() => !editor.machine.commands.size),
+    subMenu: {
+      items: [[
+        {
+          label: tt('menu.allCommandList'),
+          disable: route.params.program_no === undefined,
+          onClick() {
+            editor.popupCommandListVisible = true
+          },
+        },
+      ]],
     },
   },
 ] as TopbarMenuItem[]
@@ -106,17 +160,10 @@ const itemsMobile = [
   ],
   items,
 ] as TopbarMenuItem[][]
-
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value
-}
-function toggleRightDrawer() {
-  rightDrawerOpen.value = !rightDrawerOpen.value
-}
 </script>
 
 <template>
-  <QLayout view="hHh LpR fFf">
+  <QLayout view="hHh LpR fFf" :class="dark.isActive ? 'bg-dark' : 'bg-white'">
     <QHeader
       borderless
       class="bg-gray-2 text-black !dark:(bg-dark-1 text-gray-1) select-none"
@@ -167,7 +214,7 @@ function toggleRightDrawer() {
     </QHeader>
 
     <QDrawer
-      v-model="leftDrawerOpen"
+      v-model="editor.leftDrawerOpen"
       show-if-above
       side="left"
       borderless
@@ -177,33 +224,21 @@ function toggleRightDrawer() {
     </QDrawer>
 
     <QPageContainer>
-      <div :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'" class="flex sticky top-10 z-10">
-        <QBtn
-          dense
-          flat
-          icon="menu"
-          class="text-gray-6 dark:text-gray-3"
-          @click="toggleLeftDrawer"
-        />
-        <MenuProgram :vis="true" :path="route.path" />
-
-        <QBtn
-          dense
-          flat
-          icon="menu"
-          class="text-gray-6 dark:text-gray-3"
-          @click="
-            toggleRightDrawer"
-        />
-      </div>
-
-      <div :class="dark.isActive ? 'bg-dark' : 'bg-white'">
-        <NuxtPage :dark="dark.isActive" />
-      </div>
+      <QPage>
+        <div
+          :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+          class="flex sticky top-10 z-10"
+        >
+          <ContextBar />
+        </div>
+        <div>
+          <NuxtPage />
+        </div>
+      </QPage>
     </QPageContainer>
 
     <QDrawer
-      v-model="rightDrawerOpen"
+      v-model="editor.rightDrawerOpen"
       show-if-above
       side="right"
       borderless
@@ -212,6 +247,14 @@ function toggleRightDrawer() {
       <MachineCommandList />
     </QDrawer>
   </QLayout>
+
+  <EliarModal v-if="editor.popupCommandListVisible">
+    <TBAllCommandsDialog />
+  </EliarModal>
+
+  <EliarModal v-if="editor.popupCommandDetailVisible">
+    <TBCommandDetailDialog />
+  </EliarModal>
 </template>
 
 <style lang="postcss" scoped>

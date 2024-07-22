@@ -2,15 +2,14 @@
 import type { QInput } from 'quasar'
 
 const props = withDefaults(defineProps<{
-  hideArrows?: boolean
   type?: 'decimal' | 'integer' | 'positive-integer'
   rules: any
   maxlength?: number
   outlined?: boolean
   dense?: boolean
   hideBottomSpace?: boolean
+  format?: string
 }>(), {
-  hideArrows: true,
   type: 'decimal',
   rules: () => [],
   maxlength: 10,
@@ -66,7 +65,7 @@ function onKeydownPreventNonNumerical(event: KeyboardEvent) {
   const isValidChar = charRe.value.test(event.key)
 
   // Kullanıcı geçerli bir karaktere bastı mı
-  if (!event.ctrlKey && event.key.length === 1 && !isValidChar) {
+  if (!(event.ctrlKey || event.metaKey) && event.key.length === 1 && !isValidChar) {
     return event.preventDefault()
   }
 
@@ -172,7 +171,6 @@ function onBlur(event: FocusEvent) {
     ref="input"
     v-model="model"
     class="input-number"
-    :class="{ 'hide-arrows': hideArrows }"
     :for="id"
     :rules="rules"
     bottom-slots
@@ -180,6 +178,7 @@ function onBlur(event: FocusEvent) {
     :hide-bottom-space="hideBottomSpace"
     :outlined="outlined"
     :dense="dense"
+    :suffix="format === 'DURATION' ? 'min' : ''"
   >
     <template #control="{ id }">
       <input
@@ -189,6 +188,7 @@ function onBlur(event: FocusEvent) {
         :maxlength="maxlength"
         autocomplete="off"
         class="q-field__native q-placeholder"
+        :class="format === 'DURATION' ? 'text-right' : ''"
         @keydown="onKeydownPreventNonNumerical"
         @paste="onPastePreventNonNumerical"
         @drop="onDrop"

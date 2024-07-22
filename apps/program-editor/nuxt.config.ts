@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   extends: ['nuxt-base'],
   runtimeConfig: {
     teleskopHost: 'localhost',
@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
+    teleskopTimezoneOffset: -180,
     public: {
       kcClientId: 'program-editor',
     },

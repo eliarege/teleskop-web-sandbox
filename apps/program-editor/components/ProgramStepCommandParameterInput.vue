@@ -42,6 +42,7 @@ watch(() => model.value, (newValue) => {
       type="decimal"
       :maxlength="10"
       :hide-bottom-space="true"
+      :format="parameter.format"
       outlined
       dense
     />
