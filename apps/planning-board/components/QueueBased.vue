@@ -586,7 +586,7 @@ onMounted(async () => {
                 query: { program, machineId, planKey, machineIp, jobOrder },
               })
               if (res === 'NO PROGRAM') {
-                Toast.show('NO PROGRAM')
+                Toast.show(t('no-program'))
               }
               if (typeof res !== 'string' && res.some(f => f.value === null)) {
                 const missingParams = res.filter(f => f.value === null)
@@ -597,7 +597,7 @@ onMounted(async () => {
                 showModal.planParameters.isBatchStarted = eventRecord.originalData.isStarted
                 showModal.planParameters.missingParams = missingParams
                 showModal.planParameters.isSendMachine = true
-              } else Toast.show('DONE!')
+              } else Toast.show(t('job-order-upload'))
             },
           },
         },

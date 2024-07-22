@@ -1,4 +1,6 @@
 {
+  "job-order-upload": "Joborder upload succesfuly completed",
+  "no-program": "This machine does not have required programs",
   "app": {
     "name": "Planning Board"
   },

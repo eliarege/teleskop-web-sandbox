@@ -1,4 +1,6 @@
 {
+  "job-order-upload": "İş emri yükleme başarıyla tamamlandı",
+  "no-program": "Bu cihazda gerekli programlar yok",
   "app": {
     "name": "Planlama Tahtası"
   },
