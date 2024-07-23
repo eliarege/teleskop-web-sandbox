@@ -30,21 +30,6 @@ const props = defineProps({
     type: Boolean,
     required: false,
   },
-  pagination: {
-    type: Object,
-    default: () => ({
-      descending: false,
-      page: 1,
-      rowsPerPage: 20,
-      sortBy: '',
-    } as QTableProps['pagination']),
-    validator: (obj: any): boolean => {
-      return 'descending' in obj && typeof obj.descending === 'boolean'
-        && 'page' in obj && typeof obj.page === 'number'
-        && 'rowsPerPage' in obj && typeof obj.rowsPerPage === 'number'
-        && 'sortBy' in obj && typeof obj.sortBy === 'string'
-    },
-  },
   isVirtualScroll: {
     type: Boolean,
     default: true,
@@ -66,6 +51,7 @@ const emit = defineEmits<{
   updateSelected: any
 }>()
 const selected = defineModel('selected')
+const tablePagination: Ref<QTableProps['pagination']> = defineModel('pagination')
 const { t, locale } = useI18n({ useScope: 'local' })
 function handleDoubleClick(row: any) {
   emit('rowDblclick', row)
@@ -89,6 +75,7 @@ const comparisonOperations = [
 ]
 
 // const tablePagination = ref(props.pagination)
+// const tablePagination = ref({} as QTableProps['pagination'])
 
 const today = new Date()
 const startOfToday = new Date(today)
@@ -241,7 +228,6 @@ function customFilterMethod(rows, terms, cols, cellValue) {
   }
   return result
 }
-const tablePagination = ref({} as QTableProps['pagination'])
 const selectedId = ref(null)
 
 const sorting = computed(() => {

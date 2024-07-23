@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { QTableProps } from 'quasar'
 import ConfirmationDialog from './ConfirmationDialog.vue'
 import MaterialRequestsDialog from './material/MaterialRequestsDialog.vue'
 import WeighingInfoDialog from './WeighingInfoDialog.vue'
@@ -180,7 +181,7 @@ function onButtonClicked(link: string) {
     })
   }
 }
-const pagination = ref({ rowsPerPage: 50 })
+const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
 watch(() => route.query.dispenserId, (val) => {
   const dispenser = dataStore.getDispenser(Number(val))
   updateDispenser(dispenser)
@@ -291,11 +292,11 @@ async function handleFile(status: any, data: any) {
       </div>
     </div>
     <FilterableTable
+      v-model:pagination="pagination"
       :rows="jobOrders"
       :columns
       class="h-160 custom-filterable-table"
       :is-virtual-scroll="false"
-      :pagination
       @update-filter-slots="handleFilterSlotsUpdate"
     >
       <template #custombody="props">

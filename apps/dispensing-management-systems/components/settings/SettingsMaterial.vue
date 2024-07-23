@@ -118,7 +118,7 @@ async function handleFilterSlotsUpdate(updatedFilters: any) {
       })
     })
 }
-const pagination = ref({ rowsPerPage: 50 })
+const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
 </script>
 
 <template>
@@ -147,11 +147,11 @@ const pagination = ref({ rowsPerPage: 50 })
     />
   </div>
   <FilterableTable
+    v-model:pagination="pagination"
     :rows="materials"
     :columns
     class="h-160 custom-filterable-table"
     :is-virtual-scroll="false"
-    :pagination
     @update-filter-slots="handleFilterSlotsUpdate"
   >
     <template #custombody="props">

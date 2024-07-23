@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { useTimeoutPoll } from '@vueuse/core'
+import type { QTableProps } from 'quasar'
 import type { FilterableTableColumn } from 'nuxt-base'
 import { cellRGBColorHandler, navigateToPage, textAlignOverride } from '../shared/functions'
 import { StatusCodes, colors } from '~/shared/constants'
 
 const { t } = useI18n()
-const paginationSync = ref(500)
-const paginationPageLeft = ref(1)
 const selectedRow = ref()
 type Action = 'retry' | 'cancel'
 interface ConfirmationDialog {
@@ -254,13 +253,12 @@ async function updateSelectedRow(evt: any) {
       >
         <FilterableTable
           v-model:selected="selectedRow"
+          v-model:pagination="pagination"
           :rows="recipe"
           :columns="columnsRecipe"
           class="h-120"
           row-key="reqnumber"
           :enable-key-strokes="true"
-          :pagination="{ rowsPerPage: paginationSync, page: paginationPageLeft }"
-          @update:pagination="(newPag: any) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
           @update-filter-slots="(evt) => applyFilters(evt)"
           @update-search-filter="(evt) => searchFilterUpdated(evt)"
         >

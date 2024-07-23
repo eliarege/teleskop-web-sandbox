@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
+import type { QTableProps } from 'quasar'
 import { LoadingSpinner } from 'ui'
 import { onMounted } from 'vue'
 import { navigateToPage } from '../shared/functions'
@@ -57,6 +58,7 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
   // sessionStorage.setItem('filterSlots', JSON.stringify(externalFilterSlots.value))
   // filtersToKnex(externalFilterSlots.value, null)
 }
+const pagination = ref({ rowsPerPage: 20 } as QTableProps['pagination'])
 </script>
 
 <template>
@@ -70,12 +72,11 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
       </span>
       <div class="responsive-flex-container">
         <FilterableTable
-
+          v-model:pagination="pagination"
           class="responsive-table"
           :rows="joborders"
           :columns="columns"
           :filter-slots="externalFilterSlots"
-          :pagination="{ rowsPerPage: 20 }"
           @row-dblclick="row => handleRowDblClick(row)"
           @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
         >
