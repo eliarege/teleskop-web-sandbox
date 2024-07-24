@@ -40,7 +40,8 @@ const props = defineProps({
   },
   rowKey: {
     type: String,
-    required: true,
+    required: false, // TODO: custom type and default and validator to outside then this binding can be accomplished ask for any other implementation
+    // rowKey is required if enebleKeyStrokes is set 'true'
   },
 })
 
@@ -49,6 +50,7 @@ const emit = defineEmits<{
   updateFilterSlots: [filters: FilterableTableFilter[]]
   updateSearchFilter: [terms: any]
   updateSelected: any
+  updatePagination: [QTableProps['pagination']]
 }>()
 const selected = defineModel('selected')
 const tablePagination: Ref<QTableProps['pagination']> = defineModel('pagination')
@@ -245,10 +247,10 @@ const sortedRows = computed(() => {
 // const selectedRow = computed(() => {
 //   return sortedRows.value.find(row => row[props.rowKey] === selectedId.value)
 // })
-
-watch([sorting, selectedId], ([, newId]) => {
-  selected.value = sortedRows.value.find(row => row[props.rowKey] === newId)
-})
+if (props.rowKey)
+  watch([sorting, selectedId], ([, newId]) => {
+    selected.value = sortedRows.value.find(row => row[props.rowKey] === newId)
+  })
 async function selectRow(row: any) {
   // selectedRow.value = props.rows[rowIndex]
   selectedId.value = row[props.rowKey]
@@ -284,6 +286,9 @@ if (props.enableKeyStrokes) {
     window.removeEventListener('keydown', handleKeyEvents)
   })
 }
+function onRequest(pagination: QTableProps['pagination']) {
+  emit('updatePagination', pagination)
+}
 </script>
 
 <template>
@@ -303,12 +308,13 @@ if (props.enableKeyStrokes) {
       class="text-override-left filterable-table my-sticky-virtscroll-table-recipe"
       column-sort-order="da"
       :visible-columns="visibleColumns"
+      @request="(reqProp) => onRequest(reqProp.pagination)"
     >
       <template #top>
         <div class="flex w-full flex-nowrap">
           <div
-            class="filter-border"
-            :style="showVisibilityMenu ? 'width: 40%' : ''"
+            class="filter-border flex-center"
+            :class="showVisibilityMenu ? '' : ''"
           >
             <div
               class="filter-icon"
@@ -317,16 +323,16 @@ if (props.enableKeyStrokes) {
               <q-icon name="filter_alt" size="1.5rem" />
             </div>
             <div
-              v-if="showVisibilityMenu"
+              v-show="showVisibilityMenu"
               class="flex"
             >
-              <q-input
+              <!-- <q-input
                 v-model="tableFilter"
                 borderless
                 dense
                 debounce="300"
                 :placeholder="t('search')"
-              />
+              /> -->
               <!-- TODO: If the section would be settings this displayment is much better -->
               <q-select
                 v-model="visibleColumns"
@@ -339,7 +345,6 @@ if (props.enableKeyStrokes) {
                 map-options
                 :options="columns"
                 option-value="name"
-                style="min-width: 150px"
               />
             </div>
           </div>
@@ -561,9 +566,9 @@ if (props.enableKeyStrokes) {
               @dblclick="handleDoubleClick(bodyProps.row)"
             >
               {{ col.value }}
-              <slot name="contextmenu" />
             </q-td>
           </q-tr>
+          <slot name="contextmenu" />
         </slot>
       </template>
     </q-table>
@@ -710,14 +715,12 @@ if (props.enableKeyStrokes) {
   white-space: normal; */
 }
 .filter-border {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
   border: 1px solid black;
-  padding: 0.25rem;
   height: 3rem;
+  gap: 1.25rem;
+  padding: 0.25rem;
   border-radius: 0.25rem;
-  flex-wrap: wrap;
+  width: max-content;
 }
 .body--dark .filter-border {
   border: 1px solid white;
