@@ -172,9 +172,8 @@ function clearCorrectionNo(event) {
 }
 
 async function checkIsThereAnyLog(plankey) {
-  const check = await $fetch('/api/logs/check-if-log-exists', {
-    method: 'post',
-    body: {
+  const check = await $fetch('/api/stepLogs/check-if-log-exists', {
+    query: {
       plankey,
     },
   })
@@ -200,9 +199,10 @@ function buttonAction(link: string) {
       showParameterDialog.value = true
     }
     if (link === 'showLogs') {
-      showLogsDialog.value = true
       if (!isThereAnyLog.value) {
         notification(false, t('warnings.noJobOrderLogs', { joborder: jobordernum.value }))
+      } else {
+        showLogsDialog.value = true
       }
     }
     if (link === 'showConsumptions') {
