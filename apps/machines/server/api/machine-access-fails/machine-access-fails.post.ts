@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     .leftJoin('BFMACHINES', 'BFMACHINES.MACHINEID', 'BFMachineAccessFails.MachineId')
     .select(selectParams)
   if (filters)
-    return await filtersToKnex(filters, selectParams, query)
+    filtersToKnex(filters, selectParams, query)
 
   return await query
 })

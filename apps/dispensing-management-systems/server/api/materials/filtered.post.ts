@@ -22,6 +22,6 @@ export default defineEventHandler(async (event) => {
     .orderBy('m.material_code')
 
   if (filters)
-    return await filtersToKnex(filters, selectParams, materials)
+    filtersToKnex(filters, selectParams, materials)
   return await materials
 })

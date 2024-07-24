@@ -27,11 +27,10 @@ export default defineEventHandler(async (event) => {
         .andOn('BFCOMMANDPARAMETERS.PARAMETERINDEX', 'BFCOMMANDFORMULAS.commandParameterNo')
         .andOn('BFCOMMANDPARAMETERS.MACHINEID', 'BFCOMMANDFORMULAS.machineId')
     })
-  let res
   if (filters)
-    res = filtersToKnex(filters, selectParams, query)
+    filtersToKnex(filters, selectParams, query)
 
-  res = await query
+  const res = await query
 
   return res.map(r => ({
     ...r,

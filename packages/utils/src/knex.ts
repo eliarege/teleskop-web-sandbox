@@ -20,9 +20,9 @@ interface Filter {
 }
 
 // TODO: Knex should be the first parameter and make function name operateFiltersOnKnexQuery or smt better
-export async function filtersToKnex(filters: Filter[], attributes: any, knexInstance: Knex.QueryBuilder) {
-  // TODO: knexInstance içine bak belki select parameters kenx objenin içerisinden alınıyordur
-  const resultQuery: Knex.QueryBuilder = await knexInstance
+export function filtersToKnex(filters: Filter[], attributes: any, knexInstance: Knex.QueryBuilder) {
+  // TODO: knexInstance içine bak belki select parameters knex objenin içerisinden alınıyordur
+  return knexInstance
     .where((builder) => {
       filters.forEach((filter) => {
         const attName = filter.optionValue ? filter.optionValue : filter.field
@@ -55,6 +55,4 @@ export async function filtersToKnex(filters: Filter[], attributes: any, knexInst
         }
       })
     })
-
-  return resultQuery
 }
