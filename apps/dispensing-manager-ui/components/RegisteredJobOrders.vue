@@ -30,7 +30,6 @@ async function fetchData() {
 }
 
 watch(pagination, async (newPagination) => {
-  console.log(pagination.value)
   visibleLoading.value = true
   await fetchData()
   visibleLoading.value = false
@@ -103,6 +102,7 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
         <FilterableTable
           v-model:pagination="pagination"
           class="responsive-table"
+          disable-search-filter
           :rows="joborders"
           :columns="columns"
           :filter-slots="externalFilterSlots"

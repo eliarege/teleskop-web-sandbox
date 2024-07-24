@@ -23,7 +23,6 @@ const selectParameters = {
 }
 router.get('/check-if-log-exists', defineEventHandler(async (event) => {
   const { plankey } = getQuery(event)
-  console.log(123)
   const parameters = await knex('DYBFBATCHORDERRECIPESTEPLOGS as L')
     .where('PLANKEY', Number(plankey))
   return !!parameters.length

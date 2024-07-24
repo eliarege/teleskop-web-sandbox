@@ -43,6 +43,11 @@ const props = defineProps({
     required: false, // TODO: custom type and default and validator to outside then this binding can be accomplished ask for any other implementation
     // rowKey is required if enebleKeyStrokes is set 'true'
   },
+  disableSearchFilter: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
 })
 
 const emit = defineEmits<{
@@ -322,31 +327,29 @@ function onRequest(pagination: QTableProps['pagination']) {
             >
               <q-icon name="filter_alt" size="1.5rem" />
             </div>
-            <div
+            <q-input
               v-show="showVisibilityMenu"
-              class="flex"
-            >
-              <!-- <q-input
-                v-model="tableFilter"
-                borderless
-                dense
-                debounce="300"
-                :placeholder="t('search')"
-              /> -->
-              <!-- TODO: If the section would be settings this displayment is much better -->
-              <q-select
-                v-model="visibleColumns"
-                multiple
-                borderless
-                dense
-                options-dense
-                :display-value="$q.lang.table.columns"
-                emit-value
-                map-options
-                :options="columns"
-                option-value="name"
-              />
-            </div>
+              v-if="!props.disableSearchFilter"
+              v-model="tableFilter"
+              borderless
+              dense
+              debounce="300"
+              :placeholder="t('search')"
+            />
+            <!-- TODO: If the section would be settings this displayment is much better -->
+            <q-select
+              v-show="showVisibilityMenu"
+              v-model="visibleColumns"
+              multiple
+              borderless
+              dense
+              options-dense
+              :display-value="$q.lang.table.columns"
+              emit-value
+              map-options
+              :options="columns"
+              option-value="name"
+            />
           </div>
           <div class="flex gap-x-5 gap-y-1 px-5 w-full">
             <div
