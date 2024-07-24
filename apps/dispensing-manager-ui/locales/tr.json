@@ -58,7 +58,9 @@
       "dispProtocol": "Dağıtıcı Protokolü",
       "dispConsumptionFileName": "Tüketim Dosya Adı",
       "readFromDMS": "DMS'den Oku",
-      "connectionStatus": "Bağlantı Durumu"
+      "connectionStatus": "Bağlantı Durumu",
+      "exportFileName": "Dışa Aktarım Dosya İsmi",
+      "exportIrrelevantConsumptions": "İlişkili Olmayan Tüketimleri Dışa Aktar"
     },
     "appSettings": "Uygulama Ayarları",
     "deleteExpiredJobOrders": "Eski iş emirlerini sil",
@@ -360,5 +362,11 @@
     "selectDispensers": "Eklemek-Değiştirmek istediğiniz dağıtıcıları seçiniz.",
     "successWarning": "Dağıtıcı bağlantısı düzenleme işlemi başarılı.",
     "failWarning": "Dağıtıcı bağlantısı düzenleme işlemi başarısız."
+  },
+  "dispenserConnectionStatus": {
+    "0": "Bağlandı",
+    "1": "Dağıtıcıya bağlantı yok",
+    "2": "Dağıtıcı erişim yoluna ulaşılamıyor",
+    "3": "Dağıtım servisi çalışmıyor"
   }
 }

@@ -58,7 +58,9 @@
       "dispProtocol": "Dispenser Protocol",
       "dispConsumptionFileName": "Consumption File Name",
       "readFromDMS": "Read from DMS",
-      "connectionStatus": "Connection Status"
+      "connectionStatus": "Connection Status",
+      "exportFileName": "Export Path",
+      "exportIrrelevantConsumptions": "Export Unrealted Consumptions"
     },
     "appSettings": "Application Settings",
     "deleteExpiredJobOrders": "Delete expired job orders",
@@ -361,6 +363,11 @@
     "selectDispensers": "Select the dispensers you want to add-replace.",
     "successWarning": "Dispenser connections successfully edited.",
     "failWarning": "An error occured during editing dispenser connections."
-
+  },
+  "dispenserConnectionStatus": {
+    "0": "Connected",
+    "1": "No connection",
+    "2": "Dispener's path is not accesible",
+    "3": "Dispensing manager service is not working."
   }
 }
