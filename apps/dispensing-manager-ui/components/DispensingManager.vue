@@ -4,7 +4,7 @@ import { useTimeoutPoll } from '@vueuse/core'
 import type { QTableProps } from 'quasar'
 import type { FilterableTableColumn } from 'nuxt-base'
 import { cellRGBColorHandler, navigateToPage, textAlignOverride } from '../shared/functions'
-import { StatusCodes, colors } from '~/shared/constants'
+import { DispenserConnectionStatus, StatusCodes, colors } from '~/shared/constants'
 
 const { t } = useI18n()
 const selectedRow = ref()
@@ -16,10 +16,10 @@ interface ConfirmationDialog {
 
 const actions = ref<Action[]>(['retry', 'cancel'])
 const confirmationDialog = ref<ConfirmationDialog>({ vis: false, act: 'cancel' })
-const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/dispenser-connection-status', { default: () => [] })
-useTimeoutPoll(refreshConnectionStatus, 10000, { immediate: true })
+const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/settings/dispenser-connection-status', { default: () => [] })
+useTimeoutPoll(refreshConnectionStatus, 120000, { immediate: true })
 const machines = await $fetch('/api/machine/machines')
-const dispensers = await $fetch('/api/settings/dispenser')
+// const dispensers = await $fetch('/api/settings/dispenser')
 const columnsRecipe = computed<Array<FilterableTableColumn>>(() => [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
@@ -40,12 +40,20 @@ const columnsRecipe = computed<Array<FilterableTableColumn>>(() => [
     field: 'name',
     filterable: true,
     filterType: 'select',
-    selectionOptions: dispensers,
+    // selectionOptions: dispensers,
     optionLabel: 'name',
     optionValue: 'dispNo',
     classes(row) {
-      const status = connectionStatus.value?.find(status => status.dispNo === row.dispNo)?.status
-      return ['status-class', status ? 'success-class' : 'fail-class'].join(' ')
+      const status = connectionStatus.value?.find(status => status.dispNo === row.dispNo)?.connectionStatus
+      return ['dispenser-status-class', status === DispenserConnectionStatus.connected
+        ? 'connected-class'
+        : status === DispenserConnectionStatus.notConnected
+          ? 'not-connected-class'
+          : status === DispenserConnectionStatus.pathNotAccesible
+            ? 'path-not-accesible-class'
+            : status === DispenserConnectionStatus.serviceUnaccesible
+              ? 'service-unaccesible-class'
+              : ''].join(' ')
     },
   },
   { name: 'programno', label: t('programNo'), field: 'programno', filterable: true, filterType: 'comparison' },
@@ -243,6 +251,7 @@ async function updateSelectedRow(evt: any) {
   selectedRow.value = evt
   await fetchMaterialData(evt.reqnumber)
 }
+const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
 </script>
 
 <template>
@@ -468,23 +477,5 @@ img.invert-colors {
   align-items: center;
   padding-left: 1rem;
   height: 2.5rem;
-}
-
-.status-class::after {
-  font-family: 'Material Icons';
-  display: inline-block;
-  font-size: 1rem;
-  position: relative;
-  padding-left: 0.25rem;
-  vertical-align: sub;
-  background-color: transparent;
-}
-.status-class.success-class::after {
-  color: green;
-  content: 'check_circle';
-}
-.status-class.fail-class::after {
-  content: 'cancel';
-  @apply text-gray-800;
 }
 </style>

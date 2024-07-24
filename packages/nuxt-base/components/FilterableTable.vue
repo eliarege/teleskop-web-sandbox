@@ -740,6 +740,32 @@ if (props.enableKeyStrokes) {
   cursor: pointer;
   color: white;
 }
+/* FIXME: This should never be the case. This part is all about dispensing manager but I cannot handle css on dy for now.*/
+.dispenser-status-class::after {
+  font-family: 'Material Icons';
+  display: inline-block;
+  font-size: 1rem;
+  position: relative;
+  padding-left: 0.25rem;
+  vertical-align: sub;
+  background-color: transparent;
+}
+.dispenser-status-class.connected-class::after {
+  color: green;
+  content: 'check_circle';
+}
+.dispenser-status-class.not-connected-class::after {
+  color: red;
+  content: 'cancel';
+}
+.dispenser-status-class.path-not-accesible-class::after {
+  color: orange;
+  content: 'warning';
+}
+.dispenser-status-class.service-unaccesible-class::after {
+  content: 'signal_wifi_connected_no_internet_4_bar';
+  color: black;
+}
 </style>
 
 <i18n lang="json">

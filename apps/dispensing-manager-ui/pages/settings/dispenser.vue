@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
-import { outlinedCancel, outlinedCheckCircle } from '@quasar/extras/material-icons-outlined'
+import { outlinedCancel, outlinedCheckCircle, outlinedSignalWifiConnectedNoInternet4, outlinedWarning } from '@quasar/extras/material-icons-outlined'
 import { useTimeoutPoll } from '@vueuse/core'
 import type { FilterableTableColumn } from 'nuxt-base'
-import { colors } from '~/shared/constants'
+import { DispenserConnectionStatus, colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 
 const { t } = useI18n()
 const rows = ref([])
 const types = ref([])
-const protocols = ref([
+const protocols = [
   { label: '7', protocol: '7' },
   { label: '15', protocol: '15' },
   { label: 'n', protocol: 'n' },
@@ -18,12 +18,12 @@ const protocols = ref([
   { label: 'n-v4', protocol: 'n-v4' },
   { label: 'n-v5', protocol: 'n-v5' },
   { label: 'EMTS', protocol: 'EMTS' },
-])
+]
 
 await getRows()
 await getTypes()
-const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/dispenser-connection-status', { default: () => [] })
-useTimeoutPoll(refreshConnectionStatus, 10000, { immediate: true })
+const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/settings/dispenser-connection-status', { default: () => [] })
+useTimeoutPoll(refreshConnectionStatus, 120000, { immediate: true })
 
 const columns = computed<Array<FilterableTableColumn>>(() => [
   {
@@ -58,7 +58,7 @@ const columns = computed<Array<FilterableTableColumn>>(() => [
     field: 'protocol',
     filterable: true,
     filterType: 'select',
-    selectionOptions: protocols.value,
+    selectionOptions: protocols,
     optionLabel: 'label',
     optionValue: 'protocol',
   },
@@ -69,16 +69,18 @@ const columns = computed<Array<FilterableTableColumn>>(() => [
   },
 ])
 
-const dispenserInfo = ref<{ label: string, value: any, field: string, options?: Array<any> }[]>([
-  { label: t('settings.dispSettings.dispNo'), value: '', field: 'dispNo' },
-  { label: t('settings.dispSettings.dispName'), value: '', field: 'name' },
-  { label: t('settings.dispSettings.dispType'), value: '', field: 'dispType' },
-  { label: t('settings.dispSettings.dispIP'), value: '', field: 'dispIP' },
-  { label: t('settings.dispSettings.dispFileSystem'), value: '', field: 'fileSystem' },
-  { label: t('settings.dispSettings.dispFileName'), value: '', field: 'fileName' },
-  { label: t('settings.dispSettings.dispProtocol'), value: '', field: 'protocol' },
-  { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'dispConsumptionFileName' },
-  { label: t('settings.dispSettings.readFromDMS'), value: '', field: 'dms' },
+const dispenserInfo = ref<{ label: string, value: any, field: string, options?: Array<any>, controller: 'checkbox' | 'select' | 'input' }[]>([
+  { label: t('settings.dispSettings.dispNo'), value: '', field: 'dispNo', controller: 'input' },
+  { label: t('settings.dispSettings.dispName'), value: '', field: 'name', controller: 'input' },
+  { label: t('settings.dispSettings.dispType'), value: '', field: 'dispType', controller: 'select' },
+  { label: t('settings.dispSettings.dispIP'), value: '', field: 'dispIP', controller: 'input' },
+  { label: t('settings.dispSettings.dispFileSystem'), value: '', field: 'fileSystem', controller: 'input' },
+  { label: t('settings.dispSettings.dispFileName'), value: '', field: 'fileName', controller: 'input' },
+  { label: t('settings.dispSettings.dispProtocol'), value: '', field: 'protocol', controller: 'select' },
+  { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'dispConsumptionFileName', controller: 'input' },
+  { label: t('settings.dispSettings.exportIrrelevantConsumptions'), value: '', field: 'exportIrrelevantConsumptions', controller: 'checkbox' },
+  { label: t('settings.dispSettings.readFromDMS'), value: '', field: 'dms', controller: 'checkbox' },
+  { label: t('settings.dispSettings.exportFileName'), value: '', field: 'exportFileName', controller: 'input' },
 ])
 
 async function getTypes() {
@@ -90,7 +92,7 @@ async function getRows() {
   rows.value.unshift({})
 }
 
-const dmsRead = ref(false)
+// const dmsRead = ref(false)
 const givenDispenserIdExistsWarning = ref(false)
 const dispenserIdErrorMessage = ref('')
 
@@ -98,8 +100,8 @@ function resetDispenserInfo(row?: any) {
   dispenserInfo.value.forEach((disp) => {
     disp.field === 'dispType'
       ? types.value.forEach((type: { type: number, name: string }) => type.type === row[disp.field] ? disp.value = type : '')
-      : disp.field === 'dms'
-        ? dmsRead.value = row[disp.field] !== undefined ? row[disp.field] : false
+      : disp.controller === 'checkbox'
+        ? disp.value = row[disp.field] !== undefined ? row[disp.field] : false
         : disp.value = row[disp.field]
   })
 }
@@ -145,7 +147,7 @@ async function toggleRow(row: any, index: number, toggleCollapse: boolean) {
 }
 
 function isFormChangedComparison() {
-  const actualData = rows.value.find(el => el.dispNo === dispenserInfo.value[0].value)
+  const actualData = rows.value.find(el => el.dispNo === dispenserInfo.value.find(el => el.field === 'dispNo')?.value)
   if (!actualData?.dispNo)
     return false
   const isThereAnyChange = dispenserInfo.value.some((element) => {
@@ -153,11 +155,7 @@ function isFormChangedComparison() {
       return (
         actualData![element.field] !== element.value.type
       )
-    else if (element.field === 'dms') {
-      return (
-        actualData![element.field] !== dmsRead.value
-      )
-    } else
+    else
       return actualData![element.field] !== element.value
   })
   return isThereAnyChange
@@ -197,17 +195,17 @@ function notification(isSuccess: any, message: string) {
 async function submit(isPut: boolean) {
   let isSuccess
   let keyI18N
+
+  const dispenserValues: any = dispenserInfo.value.reduce((acc, curr) => {
+    acc[curr.field] = curr.value
+    return acc
+  }, {})
   const body = {
-    dispNo: dispenserInfo.value[0].value,
-    name: dispenserInfo.value[1]?.value,
-    dispType: dispenserInfo.value[2].value?.type,
-    dispIP: dispenserInfo.value[3]?.value,
-    fileSystem: dispenserInfo.value[4]?.value,
-    fileName: dispenserInfo.value[5]?.value,
-    protocol: dispenserInfo.value[6].value?.protocol,
-    dispConsumptionFileName: dispenserInfo.value[7]?.value,
-    dms: dmsRead?.value,
+    ...dispenserValues,
+    protocol: dispenserValues.protocol.protocol,
+    dispType: dispenserValues.dispType.type,
   }
+  console.log(dispenserValues)
   /** If create */
   if (!isPut) {
     isSuccess = await $fetch(`/api/settings/dispenser/${body.dispNo}`, {
@@ -229,7 +227,7 @@ async function submit(isPut: boolean) {
       type: t('warnings.dispenser'),
       result: isSuccess
         ? isSuccess?.code === 400
-          ? t('warnings.idAlreadyExists', { code: dispenserInfo.value[0].value, type: t('warnings.dispenser') })
+          ? t('warnings.idAlreadyExists', { code: dispenserValues.dispNo, type: t('warnings.dispenser') })
           : t('warnings.success')
         : t('warnings.fail'),
     }),
@@ -294,11 +292,16 @@ onBeforeRouteLeave(async (to, from, next) => {
     next()
   }
 })
+
+function getConnectionStatus(dispNo: number) {
+  return connectionStatus.value.find(stat => stat.dispNo === dispNo)?.connectionStatus
+}
 </script>
 
 <template>
   <FilterableTable
     :rows="rows"
+    row-key="name"
     :columns="columns"
     :is-expandable="true"
     :empty-first-row="true"
@@ -340,17 +343,13 @@ onBeforeRouteLeave(async (to, from, next) => {
         >
           <span v-if="col.name === 'connectionStatus' && props.rowIndex">
             <q-icon
-              v-if="connectionStatus.find(stat => stat.dispNo === props.row.dispNo)?.status"
-              :name="outlinedCheckCircle"
+              v-bind="getConnectionStatusIcon(getConnectionStatus(props.row.dispNo))"
               size="sm"
-              color="green"
-            />
-            <q-icon
-              v-else
-              :name="outlinedCancel"
-              size="sm"
-              color="red"
-            />
+            >
+              <q-tooltip class="text-sm">
+                {{ t(`dispenserConnectionStatus.${getConnectionStatus(props.row.dispNo)}`) }}
+              </q-tooltip>
+            </q-icon>
           </span>
           <span v-else>
             {{ col.value }}
@@ -366,11 +365,11 @@ onBeforeRouteLeave(async (to, from, next) => {
               :key="disp.label"
               class="flex flex-row"
             >
-              <div v-if="disp.field !== 'dms'" class="flex w-70 pl-2 m-1 items-center">
-                {{ disp.label }}
+              <div class="flex w w-70 pl-2 m-1 items-center">
+                {{ disp.controller !== 'checkbox' ? disp.label : '' }}
               </div>
-              <div v-if="disp.field !== 'dms'" class=" flex w-100 pl-2 m-1 items-center">
-                <span v-if="disp.field === 'protocol' || disp.field === 'dispType'">
+              <div class="flex w-100 pl-2 m-1 items-center">
+                <span v-if="disp.controller === 'select'">
                   <q-select
                     v-model="disp.value"
                     borderless
@@ -400,18 +399,19 @@ onBeforeRouteLeave(async (to, from, next) => {
                     @update:model-value="checkDispenserCodeExist(disp, $event)"
                   />
                 </span>
-                <span v-else>
+                <span v-else-if="disp.controller === 'input'">
                   <q-input
                     v-model="disp.value"
                     class="w-70"
                     dense
                     filled
+                    :disable="disp.field === 'exportFileName' ? dispenserInfo.find(el => el.field === 'exportIrrelevantConsumptions')!.value : false"
                     type="text"
                     :placeholder="disp.value"
                   />
                 </span>
-                <span v-if="disp.field === 'dispConsumptionFileName'">
-                  <q-checkbox v-model="dmsRead" :label="t('settings.dispSettings.readFromDMS')" />
+                <span v-if="disp.controller === 'checkbox'">
+                  <q-checkbox v-model="disp.value" :label="disp.label" />
                 </span>
               </div>
             </div>
