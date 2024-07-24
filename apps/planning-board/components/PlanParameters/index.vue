@@ -1,22 +1,8 @@
 <script setup lang="ts">
-import type { PlanParameters } from '~/shared/types'
-
-interface PlanParameterProps {
-  planKey: number
-  isBatchStarted: boolean
-  machineId: number
-  missingParams: PlanParameters[]
-  isSendMachine: boolean
-  uploadData?: {
-    program: string
-    machineId: number
-    planKey: number
-    jobOrder: string
-    machineIp: string
-  }
-}
+import type { PlanParameterProps } from '~/shared/types'
 
 const props = defineProps<PlanParameterProps>()
+const emit = defineEmits(['uploadMachine'])
 const { data: planParameters } = useFetch('/api/planParameters', {
   default: () => [],
   query: { planKey: props.planKey, machineId: props.machineId },
@@ -32,6 +18,7 @@ const modifiedParameters = computed(() => [...planParameters.value, ...props.mis
       :editable="!isBatchStarted"
       :is-send-machine
       :machine-upload-data="uploadData"
+      @upload-machine="(ev) => emit('uploadMachine', ev)"
     />
   </div>
 </template>

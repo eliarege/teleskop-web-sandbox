@@ -166,8 +166,22 @@ export interface PlanParameters {
   paramLowLimit: number
   value: string | number
   unitCode: number
-  status: '0' |
-  '1' |
-  '2' |
-  '3'
+  paramStatus: 0 |
+  1 |
+  2 |
+  3
+}
+export interface PlanParameterProps {
+  planKey: number
+  isBatchStarted: boolean
+  machineId: number
+  missingParams: PlanParameters[]
+  isSendMachine: boolean
+  uploadData?: {
+    program: string
+    machineId: number
+    planKey: number
+    jobOrder: string
+    machineIp: string
+  }
 }

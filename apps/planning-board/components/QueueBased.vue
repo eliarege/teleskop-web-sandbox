@@ -1,6 +1,6 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, EventModelConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
+import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
 import { useDocumentVisibility } from '@vueuse/core'
 import { addDays, addHours } from 'date-fns'
@@ -15,10 +15,15 @@ import { useSettingStore } from '~/store/settings'
 const { t, locale, d } = useI18n()
 const visibility = useDocumentVisibility()
 const config = useRuntimeConfig()
+
+let scheduler: SchedulerPro
+let grid: Grid
+
 const refreshInterval = 60_000
 const today = new Date()
 const startDate = ref(today.toISOString())
 const endDate = ref(addDays(today, 3).toISOString())
+const jobOrderUploadLoading = ref(false)
 const schedulerDateModel = ref({
   from: startDate.value,
   to: endDate.value,
@@ -46,55 +51,133 @@ const { data: _events, refresh: eventRefresh, status: eventStatus, execute } = a
     includeStops: store.settings.showStops.show,
   },
 })
-const showModal = reactive({
-  planParameters: {
-    show: false,
-    unit: { name: 0 },
-    planKey: 0,
-    machineId: 0,
-    progNoList: '',
-    isBatchStarted: false,
-    missingParams: [] as PlanParameters[],
-    isSendMachine: false,
-    uploadData: {},
-  },
-  recipe: {
-    show: false,
-    unit: { machineId: 0, jobOrder: '' },
-  },
-  process: {
-    show: false,
-    unit: { name: '' },
-  },
-  theoreticalProgram: {
-    show: false,
-    unit: { name: '' },
-  },
-  notes: {
-    show: false,
-    unit: { name: '' },
-  },
-  properties: {
-    show: false,
-    unit: { machineId: 0, jobOrder: '', planKey: 0, fabricWeight: 0, theoreticalDuration: 0 },
-  },
-  vnc: {
-    show: false,
-    currentMachine: {
-      id: 0,
-      name: '',
-    },
-  },
-  machineSort: {
-    show: false,
-  },
-  machineRule: {
-    show: false,
-  },
-  datePicker: false,
-  rule: false,
-  settings: false,
+// #region MODALS
+async function uploadJobOrder(planKey: number) {
+  const event: any = scheduler.events.find(e => e.id === planKey)
+  const machine: any = scheduler.resources.find(e => e.id === event.resourceId)
+
+  let program = event.originalData.programNoList
+  if (program.endsWith(',')) {
+    program = program.slice(0, -1)
+  }
+
+  const machineId = machine.originalData.id
+  const machineIp = machine.originalData.machineIpAddress
+  const jobOrder = event.originalData.jobOrder
+  const batchStart = event.originalData.isStarted
+
+  jobOrderUploadLoading.value = true
+
+  const controller = new AbortController()
+  const timeout = 5000
+
+  const timeoutId = setTimeout(() => {
+    controller.abort(new DOMException(t('upload-joborder.fail'), 'TimeoutError'))
+  }, timeout)
+
+  try {
+    const res: PlanParameters[] | string = await $fetch('/api/machineUpload', {
+      method: 'PUT',
+      query: { program, machineId, planKey, machineIp, jobOrder },
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeoutId)
+
+    if (res === 'NO PROGRAM') {
+      Toast.show(t('upload-joborder.no-program'))
+    } else if (typeof res !== 'string' && res.some(f => f.value === null)) {
+      const uploadData = {
+        program,
+        machineId,
+        planKey,
+        machineIp,
+        jobOrder,
+      }
+
+      const missingParams = res.filter(f => f.value === null)
+      setPlanParameters(true, planKey, machineId, program, batchStart, missingParams, true, uploadData)
+    } else Toast.show(t('job-order.upload-succes'))
+  } catch (err) {
+    Toast.show(t('upload-joborder.fail'))
+  }
+  jobOrderUploadLoading.value = false
+}
+const planParametersModal = reactive({
+  show: false,
+  planKey: 0,
+  machineId: 0,
+  progNoList: '',
+  isBatchStarted: false,
+  missingParams: [] as PlanParameters[],
+  isSendMachine: false,
 })
+function setPlanParameters(show: boolean, planKey: number, machineId: number, progNoList: string, isBatchStarted: boolean, missingParams: PlanParameters[], isSendMachine: boolean, uploadData?: any) {
+  planParametersModal.show = show
+  planParametersModal.machineId = machineId
+  planParametersModal.progNoList = progNoList
+  planParametersModal.planKey = planKey
+  planParametersModal.isBatchStarted = isBatchStarted
+  planParametersModal.missingParams = missingParams
+  planParametersModal.isSendMachine = isSendMachine
+  if (uploadData) {
+    planParametersModal.uploadData = uploadData
+  }
+}
+const recipeModal = reactive({
+  show: false,
+  machineId: 0,
+  jobOrder: '',
+})
+function setRecipe(machineId: number, jobOrder: string) {
+  recipeModal.show = true
+  recipeModal.jobOrder = jobOrder
+  recipeModal.machineId = machineId
+}
+const notesModal = reactive({
+  show: false,
+  name: '',
+})
+function setNotes(name: string) {
+  notesModal.show = true
+  notesModal.name = name
+}
+const propertiesModal = reactive({
+  show: false,
+  machineId: 0,
+  jobOrder: '',
+  planKey: 0,
+  fabricWeight: 0,
+  theoreticalDuration: 0,
+  planParameters: {},
+})
+function setProperties(machineId: number, jobOrder: string, planKey: number, fabricWeight: number, theoreticalDuration: number, program: string, isBatchStarted: boolean) {
+  propertiesModal.show = true
+  propertiesModal.planKey = planKey
+  propertiesModal.jobOrder = jobOrder
+  propertiesModal.machineId = machineId
+  propertiesModal.fabricWeight = fabricWeight
+  propertiesModal.theoreticalDuration = theoreticalDuration
+
+  setPlanParameters(false, planKey, machineId, program, isBatchStarted, [], false)
+}
+const vncModal = reactive({
+  show: false,
+  currentMachine: {
+    id: 0,
+    name: '',
+  },
+})
+function setVnc(id: number, name: string) {
+  vncModal.show = true
+  vncModal.currentMachine.id = id
+  vncModal.currentMachine.name = name
+}
+const datePickerModal = ref(false)
+const machineSortModal = ref(false)
+const settingsModal = ref(false)
+// #endregion
+
 const sortIndex = Symbol('sortIndex')
 
 type MachineStatusWithSortIndex = MachineStatus & { [sortIndex]?: number }
@@ -214,9 +297,6 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((u
     constraintDate: new Date(),
   } as UnplannedEvents
 }))
-
-let scheduler: SchedulerPro
-let grid: Grid
 
 async function scheduleDataRefresh() {
   await until(visibility).toBe('visible')
@@ -430,16 +510,16 @@ onMounted(async () => {
             text: 'VNC',
             icon: 'b-fa b-fa-solid b-fa-ethernet',
             onItem: (arg: any) => {
-              showModal.vnc.show = !showModal.vnc.show
-              showModal.vnc.currentMachine.id = arg.record.id
-              showModal.vnc.currentMachine.name = arg.record.name
+              const id = arg.record.id
+              const name = arg.record.name
+              setVnc(id, name)
             },
           },
           machineSort: {
             text: 'Machine Sort',
             icon: 'b-fa b-fa-solid b-fa-list',
             onItem: () => {
-              showModal.machineSort.show = !showModal.machineSort.show
+              machineSortModal.value = !machineSortModal.value
             },
           },
         },
@@ -561,51 +641,26 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-calendar-xmark',
             text: t('queue-based.ctx-menu.properties'),
             onItem({ eventRecord, assignmentRecord }: any) {
-              showModal.properties.show = true
-              showModal.properties.unit.planKey = eventRecord.originalData.id
-              showModal.properties.unit.jobOrder = eventRecord.originalData.name
-              showModal.properties.unit.machineId = assignmentRecord.originalData.resourceId
-              showModal.properties.unit.fabricWeight = eventRecord.originalData.fabricWeight
-              showModal.properties.unit.theoreticalDuration = eventRecord.originalData.theoreticalDuration
+              const planKey = eventRecord.originalData.id
+              const jobOrder = eventRecord.originalData.name
+              const machineId = assignmentRecord.originalData.resourceId
+              const fabricWeight = eventRecord.originalData.fabricWeight
+              const theoreticalDuration = eventRecord.originalData.theoreticalDuration
+              let program: string = eventRecord.originalData.programNoList
+              if (program.endsWith(',')) {
+                program = program.slice(0, -1)
+              }
+              const isBatchStarted = eventRecord.originalData.isStarted
+              setProperties(machineId, jobOrder, planKey, fabricWeight, theoreticalDuration, program, isBatchStarted)
             },
           },
           sendToMachine: {
             icon: 'b-fa-solid b-fa-calendar-xmark',
-            text: 'SEND TO MACHINE',
+            text: t('upload-joborder._'),
             async onItem({ eventRecord, resourceRecord }) {
-              // program, machineId, planKey
-              let program: string = eventRecord.originalData.programNoList
               const planKey: number = eventRecord.originalData.planKey
-              const machineId: number = resourceRecord.originalData.id
-              const machineIp: string = resourceRecord.originalData.machineIpAddress
-              const jobOrder: string = eventRecord.originalData.jobOrder
-              if (program.endsWith(',')) {
-                program = program.slice(0, -1)
-              }
-              const res: PlanParameters[] | string = await $fetch('/api/machineUpload', {
-                method: 'PUT',
-                query: { program, machineId, planKey, machineIp, jobOrder },
-              })
-              if (res === 'NO PROGRAM') {
-                Toast.show(t('no-program'))
-              }
-              if (typeof res !== 'string' && res.some(f => f.value === null)) {
-                const missingParams = res.filter(f => f.value === null)
-                showModal.planParameters.show = true
-                showModal.planParameters.machineId = machineId
-                showModal.planParameters.progNoList = program
-                showModal.planParameters.planKey = planKey
-                showModal.planParameters.isBatchStarted = eventRecord.originalData.isStarted
-                showModal.planParameters.missingParams = missingParams
-                showModal.planParameters.isSendMachine = true
-                showModal.planParameters.uploadData = {
-                  program,
-                  machineId,
-                  planKey,
-                  machineIp,
-                  jobOrder,
-                }
-              } else Toast.show(t('job-order-upload'))
+              await uploadJobOrder(planKey)
+              jobOrderUploadLoading.value = false
             },
           },
         },
@@ -653,17 +708,16 @@ onMounted(async () => {
         icon: 'b-fa b-fa-solid b-fa-sliders',
         color: 'toolbar-buttons',
         onClick() {
-          showModal.planParameters.show = true
           let program: string = schedule.selectedEvents[0].originalData.programNoList
-          const planKey: number = schedule.selectedEvents[0].originalData.planKey
-          const machineId: number = schedule.selectedEvents[0].resourceId
           if (program.endsWith(',')) {
             program = program.slice(0, -1)
           }
-          showModal.planParameters.machineId = machineId
-          showModal.planParameters.progNoList = program
-          showModal.planParameters.planKey = planKey
-          showModal.planParameters.isBatchStarted = schedule.selectedEvents[0].originalData.isStarted
+
+          const planKey: number = schedule.selectedEvents[0].originalData.planKey
+          const machineId: number = schedule.selectedEvents[0].resourceId
+          const isBatchStarted = schedule.selectedEvents[0].originalData.isStarted
+
+          setPlanParameters(true, planKey, machineId, program, isBatchStarted, [], false)
         },
       },
       {
@@ -674,10 +728,9 @@ onMounted(async () => {
         icon: 'b-fa b-fa-solid b-fa-flask-vial',
         color: 'toolbar-buttons',
         onClick() {
-          showModal.recipe.show = true
-          showModal.recipe.unit.jobOrder = schedule.selectedEvents[0].name
-          // @ts-expect-error type error
-          showModal.recipe.unit.machineId = schedule.selectedEvents[0]._data.resourceId
+          const jobOrder: string = schedule.selectedEvents[0].name
+          const machineId: number = schedule.selectedEvents[0].resourceId
+          setRecipe(machineId, jobOrder)
         },
       },
       {
@@ -688,8 +741,8 @@ onMounted(async () => {
         icon: 'b-fa b-fa-solid b-fa-note-sticky',
         color: 'toolbar-buttons',
         onClick() {
-          showModal.notes.show = true
-          showModal.notes.unit.name = schedule.selectedEvents[0].name
+          const name = schedule.selectedEvents[0].name
+          setNotes(name)
         },
       },
       {
@@ -698,7 +751,7 @@ onMounted(async () => {
         icon: 'b-fa b-fa-solid b-fa-gear',
         color: 'toolbar-buttons',
         onClick() {
-          showModal.settings = true
+          settingsModal.value = true
         },
       },
       {
@@ -707,7 +760,7 @@ onMounted(async () => {
         icon: 'b-fa b-fa-solid b-fa-calendar-days',
         color: 'toolbar-buttons',
         onClick() {
-          showModal.datePicker = true
+          datePickerModal.value = true
         },
       },
       {
@@ -846,22 +899,24 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
 
 <template>
   <LoadingSpinner v-if="eventStatus === 'idle'" :has-background="false" />
+  <LoadingSpinner v-if="jobOrderUploadLoading" :has-background="true" />
   <div>
     <div class="w-full h-screen relative">
       <div id="main" class="w-full h-full" />
     </div>
-    <EliarModal v-if="showModal.properties.show" @click.stop="showModal.properties.show = false">
+    <EliarModal v-if="propertiesModal.show" @click.stop="propertiesModal.show = false">
       <template #default>
         <BatchProperties
-          :plan-key="showModal.properties.unit.planKey"
-          :machine-id="showModal.properties.unit.machineId"
-          :job-order="showModal.properties.unit.jobOrder"
-          :fabric-weight="showModal.properties.unit.fabricWeight"
-          :theoretical-duration="showModal.properties.unit.theoreticalDuration"
+          :plan-key="propertiesModal.planKey"
+          :machine-id="propertiesModal.machineId"
+          :job-order="propertiesModal.jobOrder"
+          :fabric-weight="propertiesModal.fabricWeight"
+          :theoretical-duration="propertiesModal.theoreticalDuration"
+          :plan-parameters="planParametersModal"
         />
       </template>
     </EliarModal>
-    <EliarModal v-if="showModal.datePicker" @click.stop="showModal.datePicker = false">
+    <EliarModal v-if="datePickerModal" @click.stop="datePickerModal = false">
       <template #default>
         <div class="flex justify-center w-min m-auto rounded" @click.stop.prevent>
           <QDate
@@ -875,7 +930,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
         </div>
       </template>
     </EliarModal>
-    <EliarModal v-if="showModal.settings" @click.stop="showModal.settings = false">
+    <EliarModal v-if="settingsModal" @click.stop="settingsModal = false">
       <template #default>
         <SettingsMain
           @update-scheduler="refreshScheduler()"
@@ -884,49 +939,35 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
         />
       </template>
     </EliarModal>
-    <EliarModal v-if="showModal.planParameters.show" @click.stop="showModal.planParameters.show = false">
+    <EliarModal v-if="planParametersModal.show" @click.stop="planParametersModal.show = false">
       <template #default>
         <div class="w-full h-98vh overflow-auto">
-          <PlanParameters v-bind="showModal.planParameters" />
+          <PlanParameters v-bind="planParametersModal" @upload-machine="uploadJobOrder" />
         </div>
       </template>
     </EliarModal>
-    <EliarModal v-if="showModal.recipe.show" @click.stop="showModal.recipe.show = false">
+    <EliarModal v-if="recipeModal.show" @click.stop="recipeModal.show = false">
       <template #default>
         <div class="!w-80vw !h-full">
-          <PlanRecipe :machine-id="showModal.recipe.unit.machineId" :job-order="showModal.recipe.unit.jobOrder" />
+          <PlanRecipe :machine-id="recipeModal.machineId" :job-order="recipeModal.jobOrder" />
         </div>
       </template>
     </EliarModal>
-    <EliarModal v-if="showModal.process.show" @click.stop="showModal.process.show = false">
+    <EliarModal v-if="notesModal.show" @click.stop="notesModal.show = false">
       <template #default>
-        <div class="w-full bg-white e-border p-3">
-          process: {{ showModal.process.unit.name }}
-        </div>
+        <BatchNotes :job-order="notesModal.name" @update-scheduler="refreshScheduler()" />
       </template>
     </EliarModal>
-    <EliarModal v-if="showModal.theoreticalProgram.show" @click.stop="showModal.theoreticalProgram.show = false">
-      <template #default>
-        <div class="w-full bg-white e-border p-3">
-          theoreticalProgram: {{ showModal.theoreticalProgram.unit.name }}
-        </div>
-      </template>
-    </EliarModal>
-    <EliarModal v-if="showModal.notes.show" @click.stop="showModal.notes.show = false">
-      <template #default>
-        <BatchNotes :job-order="showModal.notes.unit.name" @update-scheduler="refreshScheduler()" />
-      </template>
-    </EliarModal>
-    <EliarModal v-if="showModal.vnc.show" @click.stop="showModal.vnc.show = false">
+    <EliarModal v-if="vncModal.show" @click.stop="vncModal.show = false">
       <template #default>
         <MachineVnc
-          :machine-name="showModal.vnc.currentMachine.name"
-          :machine-id="showModal.vnc.currentMachine.id"
+          :machine-name="vncModal.currentMachine.name"
+          :machine-id="vncModal.currentMachine.id"
           websockify-url="ws://192.168.16.88:3000/websockify"
         />
       </template>
     </EliarModal>
-    <EliarModal v-if="showModal.machineSort.show" @click.stop="showModal.machineSort.show = false">
+    <EliarModal v-if="machineSortModal" @click.stop="machineSortModal = false">
       <template #default>
         <MachineSort :machines="machines" @update-scheduler="machineReload()" />
       </template>

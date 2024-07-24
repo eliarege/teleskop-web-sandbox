@@ -18,6 +18,7 @@ interface PlanParameterProps {
   }
 }
 const props = defineProps<PlanParameterProps>()
+const emit = defineEmits(['uploadMachine'])
 const { t } = useI18n()
 const columns = computed(() => {
   return [
@@ -52,12 +53,6 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
 
   validateError.value = false
   validateErrorMessage.value = ''
-}
-async function uploadToMachine() {
-  await $fetch('/api/machineUpload', {
-    method: 'PUT',
-    query: props.machineUploadData,
-  })
 }
 </script>
 
@@ -142,7 +137,7 @@ async function uploadToMachine() {
             color="primary"
             label="resend"
             :disable="parameterData.some(e => e.value === null)"
-            @click="uploadToMachine()"
+            @click="emit('uploadMachine', parameterData[0].planKey)"
           />
         </template>
       </QTable>

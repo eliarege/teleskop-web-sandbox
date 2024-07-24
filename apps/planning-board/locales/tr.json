@@ -1,6 +1,10 @@
 {
-  "job-order-upload": "İş emri yükleme başarıyla tamamlandı",
-  "no-program": "Bu cihazda gerekli programlar yok",
+  "upload-joborder": {
+    "_": "Makineye gönder",
+    "upload-succes": "İş emri yükleme başarıyla tamamlandı",
+    "no-program": "Bu cihazda gerekli programlar yok",
+    "fail": "Makineye erişim sağlanamadı!"
+  },
   "app": {
     "name": "Planlama Tahtası"
   },

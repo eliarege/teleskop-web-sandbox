@@ -1,6 +1,10 @@
 {
-  "job-order-upload": "Joborder upload succesfuly completed",
-  "no-program": "This machine does not have required programs",
+  "upload-joborder": {
+    "_": "Send to machine",
+    "upload-succes": "Joborder upload succesfuly completed",
+    "no-program": "This machine does not have required programs",
+    "fail": "Could not access the machine!"
+  },
   "app": {
     "name": "Planning Board"
   },

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const props = defineProps<{ planKey: number, jobOrder: string, machineId: number }>()
+import type { PlanParameterProps } from '~/shared/types'
+
+defineProps<{ planParameters: PlanParameterProps, jobOrder: string, machineId: number }>()
 
 const tab = ref('planParameter')
 </script>
@@ -21,7 +23,7 @@ const tab = ref('planParameter')
       animated
     >
       <q-tab-panel name="planParameter">
-        <PlanParameters :plan-key="planKey" />
+        <PlanParameters v-bind="planParameters" />
       </q-tab-panel>
       <q-tab-panel name="recipe">
         <PlanRecipe :job-order="jobOrder" :machine-id="machineId" />

@@ -1,6 +1,14 @@
 <script setup lang="ts">
-const props = defineProps<{ machineId: number, jobOrder: string, planKey: number, fabricWeight: number | string, theoreticalDuration: number }>()
+import type { PlanParameterProps } from '~/shared/types'
 
+const props = defineProps<{
+  machineId: number
+  jobOrder: string
+  planKey: number
+  fabricWeight: number | string
+  theoreticalDuration: number
+  planParameters: PlanParameterProps
+}>()
 const colors = reactive({
   activeBackGround: '#4B5563',
   backGround: '#4B5563',
@@ -10,7 +18,6 @@ const colors = reactive({
 
 const { data: machine } = await useFetch('/api/machineList')
 const currentMachine = computed(() => machine.value?.find(a => a.id === props.machineId))
-
 function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
   if (currentAlarmStatus === 0) {
     return '#FF3030'
@@ -55,9 +62,9 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
     </div>
     <div class="w-full h-full overflow-auto border-solid border-1px p-1 rounded-2xl border-gray-500/50">
       <BatchPropertiesPanel
+        :plan-parameters
         :machine-id
         :job-order
-        :plan-key
       />
     </div>
   </div>
