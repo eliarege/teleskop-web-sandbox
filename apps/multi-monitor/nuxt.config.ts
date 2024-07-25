@@ -4,7 +4,7 @@ import string from 'rollup-plugin-string'
 
 export default defineNuxtConfig({
   devtools: {
-    enabled: true,
+    enabled: false,
   },
   extends: ['nuxt-base'],
   spaLoadingTemplate: false,
