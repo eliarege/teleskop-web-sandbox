@@ -3,7 +3,7 @@ import type { TopbarMenuItem } from '../../types'
 import AppAboutDialog from '../AppAboutDialog.vue'
 
 const props = defineProps<{
-  optionalItems?: TopbarMenuItem[]
+  extraItems?: TopbarMenuItem[]
   disableTheme?: boolean
 }>()
 const { dark, dialog } = useQuasar()
@@ -11,7 +11,7 @@ const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
 
 const items = [
-  [...props.optionalItems ?? []],
+  [...props.extraItems ?? []],
   [
     {
       label: tt('base.locale'),

@@ -2,7 +2,7 @@
 import type { TopbarMenuItem } from '../../types'
 
 defineProps<{
-  optionalItems?: TopbarMenuItem[]
+  extraItems?: TopbarMenuItem[]
   disableTheme?: boolean
 }>()
 const keycloak = useKeycloak()
@@ -47,7 +47,7 @@ const logoutButton: TopbarMenuItem = {
       <QSeparator class="my-1" />
       <TopbarMenuItem :item="logoutButton" />
       <QSeparator class="my-1" />
-      <TopbarCommonSettings :disable-theme :optional-items />
+      <TopbarCommonSettings :disable-theme :extra-items />
     </QMenu>
   </TopbarButton>
 </template>

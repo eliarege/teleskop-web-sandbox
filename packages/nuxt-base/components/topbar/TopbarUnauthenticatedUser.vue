@@ -2,7 +2,7 @@
 import type { TopbarMenuItem } from '~/types'
 
 defineProps<{
-  optionalItems?: TopbarMenuItem[]
+  extraItems?: TopbarMenuItem[]
   disableTheme?: boolean
 }>()
 const keycloak = useKeycloak()
@@ -17,7 +17,7 @@ const { didInitialise, authenticated } = keycloak
     round
   >
     <QMenu :transition-duration="0">
-      <TopbarCommonSettings :disable-theme :optional-items />
+      <TopbarCommonSettings :disable-theme :extra-items />
     </QMenu>
   </TopbarButton>
 </template>

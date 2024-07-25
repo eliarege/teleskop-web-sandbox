@@ -122,8 +122,8 @@ const machineData = computed(() => {
         <QSpace />
         <div class="space-x-1">
           <TopbarAppGrid />
-          <TopbarAuthenticatedUser disable-theme :optional-items="commonSettingsItems" />
-          <TopbarUnauthenticatedUser disable-theme :optional-items="commonSettingsItems" />
+          <TopbarAuthenticatedUser disable-theme :extra-items="commonSettingsItems" />
+          <TopbarUnauthenticatedUser disable-theme :extra-items="commonSettingsItems" />
           <TopbarLoginButton />
         </div>
       </QToolbar>
