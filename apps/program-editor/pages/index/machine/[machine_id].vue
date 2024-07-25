@@ -29,7 +29,7 @@ const machineId = Number(route.params.machine_id)
 const isProgramFilterExists = ref(getExistingFilter())
 const programs = ref([] as ProgramHeader[])
 const tt = (key: string) => toRef(() => t(key))
-
+contextMenuStore.setCtx({ t })
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
   if (!route.params.program_no)
@@ -153,6 +153,7 @@ async function fetchPrograms(filter?: ProgramFilter) {
     query = filterToQuery(filter)
   }
   programs.value = await $fetch<ProgramHeader[]>(`/api/machine/${machineId}/program?${query || ''}`)
+  console.log(programs.value)
 }
 
 editor.isLoading = true
@@ -176,12 +177,12 @@ const buttons = computed(() => [
     router.push(`/machine/${machineId}/program/${editor.selectedPrograms[0]?.programNo}`)
   } },
   { label: t('menu.deleteProgram'), originalLabel: t('menu.deleteProgram'), tooltip: t('menu.deleteProgram'), shortcut: 'Ctrl+Del', icon: 'delete', disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length, onClick() {
-    $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, Number(machineId))
+    $commandManager.executeCommand('deleteProgram', { $q, fetchPrograms }, editor.selectedPrograms, Number(machineId))
   } },
-  { label: t('menu.copy'), originalLabel: t('menu.copy'), tooltip: t('menu.copy'), shortcut: 'Ctrl+C', icon: 'content_copy', onClick() {
+  { label: t('menu.copy'), originalLabel: t('menu.copy'), tooltip: t('menu.copy'), shortcut: 'Ctrl+C', icon: 'content_copy', disable: !editor.selectedPrograms.length, onClick() {
     contextMenuStore.copy(editor.selectedPrograms, machineId)
   } },
-  { label: t('menu.paste'), originalLabel: t('menu.paste'), tooltip: t('menu.paste'), shortcut: 'Ctrl+V', icon: 'content_paste', onClick() {
+  { label: t('menu.paste'), originalLabel: t('menu.paste'), tooltip: t('menu.paste'), shortcut: 'Ctrl+V', disable: !contextMenuStore.isThereCopiedValue.value, icon: 'content_paste', onClick() {
     $commandManager.executeCommand('pasteProgram', { $q, fetchPrograms }, Number(machineId))
   } },
   { label: t('menu.refresh'), originalLabel: t('menu.refresh'), tooltip: t('menu.refresh'), shortcut: 'F5', icon: 'refresh', onClick() {
@@ -284,7 +285,7 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.paste'),
       shortcut: '',
       icon: 'content_paste',
-      disabled: !contextMenuStore.isThereCopiedValue(),
+      disabled: !contextMenuStore.isThereCopiedValue.value,
       onClick: () => {
         $commandManager.executeCommand(
           'pasteProgram',
@@ -311,7 +312,7 @@ const contextMenuOptions = computed(() => [
       icon: 'edit',
       disabled: isMoreThanOneRowSelected.value,
       onClick: async () => {
-        await navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0]}`)
+        await navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
       },
     },
     {
@@ -469,7 +470,7 @@ const contextMenuOptions = computed(() => [
 const ctrl = useKeyModifier('Control')
 
 function handleFilterClick() {
-  $commandManager.executeCommand('filterPrograms', { $q, fetchPrograms, isProgramFilterExists }, machineId)
+  $commandManager.executeCommand('filterPrograms', { $q, fetchPrograms, isProgramFilterExists })
 }
 function handleClearFilterClick() {
   clearFilter()
@@ -541,7 +542,7 @@ async function handleVersionDelete(deleteVersions: any[]) {
   editor.isLoading = false
 }
 function handleRowColor(row: ProgramHeader) {
-  if (0) { // User is not logged in
+  if (0) { // User is not logged in //FIXME:
     return 'grey'
   } else if (row.isChanged)
     return PRG_STATE_COLORS.CHANGED_ON_TELESKOP
@@ -553,7 +554,8 @@ function handleRowColor(row: ProgramHeader) {
     const changeDate = (new Date(row.updatedAt || 0)).getTime()
     const changeDateTBB = (new Date(row.updatedAtTBB || 0)).getTime()
     const interval = changeDateTBB - changeDate
-    if (interval > 60 || interval < -60) {
+
+    if (interval > 600 || interval < -600) {
       if (row.tbbProgramChangedEvent) {
         // change info came with mm Idk what does it mean
       }
