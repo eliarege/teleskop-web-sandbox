@@ -8,7 +8,7 @@ interface ProgramHeader {
   programNo: number
   name: string
 }
-interface ContextMenuStore {
+export interface ContextMenuStore {
   getCopiedValues: () => Array<{ machine: number, program: Program, newProgramNo?: number }>
   comparisonBasketLength: () => number
   copy: (data: Array<{ program: Program }>, fromMachine: number) => void
@@ -29,11 +29,11 @@ interface ContextMenuStore {
   comparison: () => void
   addToComparisonBasket: (elements: any[]) => void
   clearComparisonBasket: () => void
-  isThereCopiedValue: () => boolean
+  isThereCopiedValue: ComputedRef<boolean>
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
-  let copiedValues = [] as Array<{ machine: number, program: any, newProgramNo?: number }>
+  const copiedValues = ref([] as Array<{ machine: number, program: any, newProgramNo?: number }>)
   let comparsionBasket = [] as Array<any>
   // const machineId = Number(route.params.machine_id)
   let t = function (param: string, ...args: any[]) {
@@ -44,12 +44,12 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   function getCopiedValues() {
-    return copiedValues
+    return copiedValues.value
   }
 
-  function isThereCopiedValue() {
-    return !!copiedValues.length
-  }
+  const isThereCopiedValue = computed(() => {
+    return !!copiedValues.value.length
+  })
 
   function clearComparisonBasket() {
     comparsionBasket = []
@@ -72,14 +72,14 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   function copy(data: any, fromMachine: number) {
-    copiedValues = []
+    copiedValues.value = []
     data.forEach((program) => {
-      copiedValues.push({ machine: fromMachine, program })
+      copiedValues.value.push({ machine: fromMachine, program })
     })
   }
 
   async function paste(machineId: number, directPasteValues?: Array<{ machine: number, program: any, newProgramNo?: number }>) {
-    const operationValues = directPasteValues || copiedValues
+    const operationValues = directPasteValues || copiedValues.value
     const remains: { machine: number, program: any }[] = []
     const pastedValues: { machine: number, program: any }[] = []
     for (const val of operationValues) {
@@ -175,7 +175,9 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     for (const machine of machines) {
       const m_id = getMachineId(machine)
       for (const program of programs) {
-        const check = await $fetch(`/api/machine/${getMachineId(machine)}/program/${program.programNo}/upload`, { method: 'POST' })
+        // TODO: Maybe do not need to call machines * programs much endpoint machines can be taken through body and then for of loop on backend for faster runtime
+        // but think about notification logic on each paste operation maybe bulk notification can be shown for each machine idk ...later.
+        const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: m_id } })
         const status = check?.statusCode === 'ECONNREFUSED' ? 'failedToConnectMachine' : check ? 'success' : 'fail'
         notification(check, t(`contextMenu.getInMachine.${status}`, { name: program.name, machine: m_id }))
       }
