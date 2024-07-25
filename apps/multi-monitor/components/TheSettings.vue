@@ -46,27 +46,6 @@ const machineGroups = computed(() => new Set(store.machines.map(g => g.groupName
           <div class="flex flex-col w-full items-center justify-center self-center bg-white overflow-auto">
             <q-list class="w-full pb-8">
               <q-expansion-item
-                v-if="JSON.parse(config.public.isDigitalFactory) === false"
-                class="text-black"
-                expand-separator
-                :icon="sharpLanguage"
-                :label="t('settings.language-settings')"
-                :caption="t('language')"
-              >
-                <div class="flex justify-center">
-                  <q-option-group
-                    :model-value="locale"
-                    type="radio"
-                    :options="[
-                      { label: 'Türkçe', value: 'tr' },
-                      { label: 'English', value: 'en' },
-                    ]"
-                    class="flex"
-                    @update:model-value="setLocale($event)"
-                  />
-                </div>
-              </q-expansion-item>
-              <q-expansion-item
                 class="text-black"
                 expand-separator
                 :icon="sharpGrid3x3"
@@ -269,9 +248,6 @@ const machineGroups = computed(() => new Set(store.machines.map(g => g.groupName
 </template>
 
 <style scoped lang="postcss">
-* {
-  z-index: 10;
-}
 .modal-mask {
   background-color: rgba(0, 0, 0, 0.5);
   @apply fixed top-0 left-0 w-full h-screen overflow-auto flex z-100 justify-center items-center self-center m-auto select-none;

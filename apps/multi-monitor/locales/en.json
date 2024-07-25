@@ -97,6 +97,7 @@
   "settings": {
     "tr": "Turkish",
     "en": "English",
+    "zoom": "Zoom Level",
     "color-picker": "Color Picker",
     "current-color": "Current Color",
     "electricity": "Electricity",
@@ -109,6 +110,8 @@
     "default": "Default Settings",
     "close": "Close",
     "color": "Reset Color",
+    "active-color": "Active Machine Color",
+    "inactive-color": "Inactive Machine Color",
     "group": "Group",
     "language-settings": "Language Settings",
     "visual-config": "Visual Configuration",

@@ -71,7 +71,6 @@ onKeyStroke(['P', 'p'], (ev) => {
 
 <template>
   <ElBacktop />
-  <TeleskopNavbar :formatted="formatted" :machine-data="machineData" />
   <div
     ref="container"
     class="main-container"
@@ -85,7 +84,7 @@ onKeyStroke(['P', 'p'], (ev) => {
   .main-container {
     padding: 0 0.5rem;
     width: 100%;
-    height: calc(100vh - 5rem);
+    height: 100vh;
     overflow: auto;
   }
 }

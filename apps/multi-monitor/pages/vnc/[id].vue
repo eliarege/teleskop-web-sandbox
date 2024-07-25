@@ -12,6 +12,7 @@ const currentMachine = computed(() => {
 useHead({
   title: () => currentMachine.value?.name || `${t('loading')}...`,
 })
+setPageLayout('vnc')
 </script>
 
 <template>

@@ -35,7 +35,7 @@ const pieArcs = computed(() =>
 
 <template>
   <svg
-    class="sm:(h-1/3) md:(h-full) w-full max-w-15 h-15 min-h-10"
+    class="sm:(h-1/3) md:(h-full) w-13 max-w-13 h-13 min-h-10"
     :viewBox="`
       ${viewBox.width / -2}
       ${viewBox.height / -2}
