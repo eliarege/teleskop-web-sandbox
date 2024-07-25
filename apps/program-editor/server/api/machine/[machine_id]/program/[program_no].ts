@@ -22,7 +22,9 @@ export default defineEventHandler(async (event) => {
     if (query?.source) {
       const source = query.source.toString()
       if (source.includes('machine')) {
-        await machine.deleteRemoteProgram(programNo)
+        try {
+          await machine.deleteRemoteProgram(programNo)
+        } catch (e) {}
       }
       if (source.includes('db')) {
         return await machine.deleteProgramFromDatabase(programNo)

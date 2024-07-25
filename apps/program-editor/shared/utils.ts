@@ -1,3 +1,5 @@
+import type { ContextMenuStore } from '~/composables/context-menu'
+
 export const as = <T>(value: T) => value as T
 
 export const isDef = <T = any>(val?: T): val is T => typeof val !== 'undefined'
@@ -64,4 +66,4 @@ export function measure<Fn extends (...args: any[]) => any>(cb: Fn): Fn {
   }) as Fn
 }
 
-export const contextMenuStore = useContextMenuStore()
+export const contextMenuStore: ContextMenuStore = useContextMenuStore()

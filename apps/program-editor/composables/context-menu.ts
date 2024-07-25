@@ -22,7 +22,7 @@ export interface ContextMenuStore {
   sendProgram: (programs: Array<ProgramHeader>, machineId: number) => Promise<void>
   getRemoteProgram: (programs: Array<{ programNo: number, programState: string, name: string }>, machineId: number) => Promise<void>
   sendProgramToMachines: (programs: Array<ProgramHeader>, machines: Array<any>, machineId: number) => Promise<void>
-  deleteProgramFromMachine: (programs: Array<ProgramHeader>, machines: Array<any>) => Promise<void>
+  deleteProgramFromMachine: (programs: Array<ProgramHeader>, machines: Array<any>, source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
   concatenatePrograms: (programs: Array<{ programNo: number }>, details: { programNo: number, processType: { label: string, value: number }, name: string, creationTime: Date }, machineId: number) => Promise<void>
@@ -184,14 +184,14 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function deleteProgramFromMachine(programs: Array<any>, machines: Array<any>) {
+  async function deleteProgramFromMachine(programs: Array<any>, machines: Array<any>, source: string) {
     for (const machine of machines) {
       const m_id = getMachineId(machine)
       for (const program of programs) {
         const check = await $fetch(`/api/machine/${m_id}/program/${program.programNo}`, {
           method: 'DELETE',
-          body: {
-            selectedOption: 1,
+          query: {
+            source,
           },
         })
         const status = check ? 'success' : 'fail'

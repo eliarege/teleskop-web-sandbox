@@ -35,7 +35,8 @@ export default defineEventHandler(async (event) => {
     } catch (error) {
       if (error instanceof PError) {
         if (error.code === 'PROGRAM_EXISTS') {
-          throw createError({ statusCode: 409, data: { code: error.code, detail: error.detail } })
+          return 0
+          // return createError({ statusCode: 409, data: { code: error.code, detail: error.detail } })
         }
       }
     }

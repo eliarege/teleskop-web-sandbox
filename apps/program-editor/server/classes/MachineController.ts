@@ -479,13 +479,16 @@ export class MachineController {
       // FIXME:
       // Code below line does not give error in the case that teleskop has not have program but machine has program.
       // It should return false 'cause program already exists on machine so it cannot be uploaded to machine
-
+      const exists = await this.hasProgram(program.programNo)
+      if (exists)
+        await this.deleteProgramFromDatabase(program.programNo)
+      program.programState = ProgramStatus.EXISTS_ON_BOTH
+      program.updatedAtTBB = this.getTimezoneDate()
+      program.updatedAt = this.getTimezoneDate()
+      await this.insertProgram(program)
+      // TODO: Look again. hasProgram() not looks that good.
       await this.ftp.upload(`/tbb6500/data/programs/program/${program.programNo}`, stringifyProgram(program))
-      const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
-      if (isDeleted) {
-        program.programState = ProgramStatus.EXISTS_ON_BOTH
-        await this.insertProgram(program)
-      }
+
       return true
     } catch (err) {
       if (isError(err)) {
@@ -532,9 +535,9 @@ export class MachineController {
       programState: ProgramStatus.EXISTS_ON_BOTH,
       icon: '',
       isChanged: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      updatedAtTBB: null,
+      createdAt: this.getTimezoneDate(),
+      updatedAt: this.getTimezoneDate(),
+      updatedAtTBB: this.getTimezoneDate(),
       tbbProgramChangedEvent: 0,
     }
     await this.updateProgram(program)
@@ -666,7 +669,7 @@ export class MachineController {
 
     // BAMASTERPRGHEADER
     const headerArchive = [{
-      MACHINEID: program.machineId,
+      MACHINEID: this.id,
       MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
       RELEASEDATE: date,
       RELEASEENDDATE: null,
@@ -705,7 +708,7 @@ export class MachineController {
 
       // BAMASTERSTEPS
       stepsArchive.push({
-        MACHINEID: program.machineId,
+        MACHINEID: this.id,
         MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
         PROGNO: program.programNo,
         MAINSTEP: i,
@@ -718,7 +721,7 @@ export class MachineController {
       // BAMASTERSTEPPARAMS
       step.mainCommand.parameters.forEach((parameter) => {
         parametersArchive.push({
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
           PROGNO: program.programNo,
           MAINSTEP: i,
@@ -734,7 +737,7 @@ export class MachineController {
       step.mainCommand.ioList.forEach((io, k) => {
         // BAMASTERSTEPINPUTOUTPUTS
         stepIOArchive.push({
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
           PROGNO: program.programNo,
           MAINSTEP: i,
@@ -746,7 +749,7 @@ export class MachineController {
         // BAMASTERSTEPSELECTIONLIST
         io.value.forEach((ioValue: any, n) => {
           ioSelectionArchive.push({
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
             SELECTIONINDEX: n,
             PROGNO: program.programNo,
@@ -762,7 +765,7 @@ export class MachineController {
       step.parallelCommands.forEach((command, j) => {
         // BAMASTERSTEPS
         stepsArchive.push({
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
           PROGNO: program.programNo,
           MAINSTEP: i,
@@ -775,7 +778,7 @@ export class MachineController {
         // BAMASTERSTEPPARAMS
         command.parameters.forEach((parameter) => {
           parametersArchive.push({
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
             PROGNO: program.programNo,
             MAINSTEP: i,
@@ -792,7 +795,7 @@ export class MachineController {
         command.ioList.forEach((io, m) => {
           // BAMASTERSTEPINPUTOUTPUTS
           stepIOArchive.push({
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
             PROGNO: program.programNo,
             MAINSTEP: i,
@@ -805,7 +808,7 @@ export class MachineController {
           // BAMASTERSTEPSELECTIONLIST
           io.value.forEach((ioValue: any, n) => {
             ioSelectionArchive.push({
-              MACHINEID: program.machineId,
+              MACHINEID: this.id,
               MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
               SELECTIONINDEX: n,
               PROGNO: program.programNo,
@@ -843,9 +846,8 @@ export class MachineController {
   async insertProgram(program: Program): Promise<void> {
     const exists = await this.hasProgram(program.programNo)
     if (exists) {
-      throw new PError('PROGRAM_EXISTS', { machineId: program.machineId, programNo: program.programNo })
+      throw new PError('PROGRAM_EXISTS', { machineId: this.id, programNo: program.programNo })
     }
-
     const commands: MachineCommand[] = await this.fetchCommands()
     const config = useRuntimeConfig()
     const timezone = Number(config.teleskopTimezoneOffset)
@@ -858,7 +860,7 @@ export class MachineController {
 
     // BFMASTERPRGHEADER
     const header = [{
-      MACHINEID: program.machineId,
+      MACHINEID: this.id,
       PROGNO: program.programNo,
       PROCESSCODE: program.typeId,
       NAME: program.name,
@@ -866,7 +868,7 @@ export class MachineController {
       TOTALSTEP: program.steps.length,
       CHANGEDATE: date,
       TBBCHANGESOURCE: '',
-      TBBCHANGEDATE: '',
+      TBBCHANGEDATE: program.updatedAtTBB ? program.updatedAtTBB : '',
       LOCKEDBY: '',
       CREATIONDATE: date,
       USERCOMMENT: program.comment,
@@ -896,7 +898,7 @@ export class MachineController {
 
       // BFMASTERSTEPS
       steps.push({
-        MACHINEID: program.machineId,
+        MACHINEID: this.id,
         PROGNO: program.programNo,
         MAINSTEP: i,
         PARALELSTEP: 0,
@@ -913,7 +915,7 @@ export class MachineController {
           MAINSTEP: i,
           PARALELSTEP: 0,
           PARAMETERINDEX: parameter.index,
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           VALUE: parameter.value,
           CONTAINSVARIABLE: 0,
           OPTIMIZEDVALUE: '',
@@ -929,7 +931,7 @@ export class MachineController {
           MAINSTEP: i,
           PARALELSTEP: 0,
           IOINDEX: mainIOList[k]?.index,
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           IOID: mainIOList[k]?.physicalId,
           IOTYPE: 5,
           ERRORWARNING: 0,
@@ -942,7 +944,7 @@ export class MachineController {
             MAINSTEP: i,
             PARALELSTEP: 0,
             IOINDEX: mainIOList[k]?.index,
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             SELECTEDIOID: ioValue[1],
             IOTYPE: ioValue[0] - 1,
           })
@@ -952,7 +954,7 @@ export class MachineController {
       step.parallelCommands.forEach((command, j) => {
         // BFMASTERSTEPS
         steps.push({
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: j + 1,
@@ -969,7 +971,7 @@ export class MachineController {
             MAINSTEP: i,
             PARALELSTEP: j + 1,
             PARAMETERINDEX: parameter.index,
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             VALUE: parameter.value,
             CONTAINSVARIABLE: 0,
             OPTIMIZEDVALUE: '',
@@ -986,7 +988,7 @@ export class MachineController {
             MAINSTEP: i,
             PARALELSTEP: j + 1,
             IOINDEX: paralelIOList[m]?.index,
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             IOID: paralelIOList[m]?.physicalId,
             IOTYPE: 5,
             ERRORWARNING: 0,
@@ -1000,7 +1002,7 @@ export class MachineController {
               MAINSTEP: i,
               PARALELSTEP: j + 1,
               IOINDEX: paralelIOList[m]?.index,
-              MACHINEID: program.machineId,
+              MACHINEID: this.id,
               SELECTEDIOID: ioValue[1],
               IOTYPE: ioValue[0] - 1,
             })

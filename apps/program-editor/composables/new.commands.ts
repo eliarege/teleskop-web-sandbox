@@ -138,9 +138,18 @@ registerCommand(() => {
           type: 'deleteFromMultiMachine',
         },
       }).onOk(async (machines) => {
-        await contextMenuStore.deleteProgramFromMachine(selectedRows, machines)
-        await ctx.fetchPrograms()
-        return true
+        ctx.$q.dialog({
+          component: CMDeleteProgramDialog,
+          componentProps: {
+            programNames: selectedRows.map(r => r.name),
+          },
+        }).onOk(async (option: string) => {
+          await contextMenuStore.deleteProgramFromMachine(selectedRows, machines, option)
+          await ctx.fetchPrograms()
+          return true
+        }).onCancel(() => {
+          return false
+        })
       }).onCancel(() => {
         return false
       })
