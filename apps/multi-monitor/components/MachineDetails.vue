@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import type { TableColumnCtx } from 'element-plus'
 import { LoadingSpinner } from 'ui'
 import type {
   MachineDataRaw,
