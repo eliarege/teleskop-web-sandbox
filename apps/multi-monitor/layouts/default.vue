@@ -91,7 +91,7 @@ const machineData = computed(() => {
     >
       <QToolbar class="min-h-unset">
         <template v-if="sm">
-          <QToolbarTitle shrink>
+          <QToolbarTitle class="text-clip" shrink>
             <NuxtLink to="/">
               <Icon
                 name="IconEliar"
