@@ -58,7 +58,7 @@ const emit = defineEmits<{
   updatePagination: [QTableProps['pagination']]
 }>()
 const selected = defineModel('selected')
-const tablePagination: Ref<QTableProps['pagination']> = defineModel('pagination')
+const tablePagination = defineModel<QTableProps['pagination']>('pagination', { required: false, default: () => ({}) })
 const { t, locale } = useI18n({ useScope: 'local' })
 function handleDoubleClick(row: any) {
   emit('rowDblclick', row)
@@ -313,6 +313,7 @@ function onRequest(pagination: QTableProps['pagination']) {
       class="text-override-left filterable-table my-sticky-virtscroll-table-recipe"
       column-sort-order="da"
       :visible-columns="visibleColumns"
+      @update:pagination="e => tablePagination = e"
       @request="(reqProp) => onRequest(reqProp.pagination)"
     >
       <template #top>
