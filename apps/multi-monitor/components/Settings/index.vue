@@ -18,25 +18,25 @@ const store = useDataStore()
 const colors = useColorStore()
 const expansionItems = [
   {
-    label: 'Görsel Ayarlar',
+    label: t('settings.visual-config'),
     icon: sharpGrid3x3,
     cls: 'text-black',
     component: () => h(Visual),
   },
   {
-    label: 'Renk Seçici',
+    label: t('settings.color-picker'),
     icon: sharpFormatColorFill,
     cls: 'text-black',
     component: () => h(ColorPicker),
   },
   {
-    label: 'Makine Filtreleme',
+    label: t('settings.machine-filter'),
     icon: sharpDashboard,
     cls: 'text-black',
     component: () => h(MachineFilter),
   },
   {
-    label: 'Animasyon',
+    label: t('settings.animation'),
     icon: sharpSlowMotionVideo,
     cls: 'text-black',
     component: () => h(Animation),
