@@ -130,19 +130,6 @@ const { width: windowWidth } = useWindowSize()
 
 <template>
   <div class="wrapper">
-    <div class="header">
-      <div>
-        <Icon
-          name="iconamoon:home-duotone"
-          :size="windowWidth > 1350 ? '30' : '20'"
-          class="cursor-pointer"
-          @click="router.push('/')"
-        />
-        <QTooltip>
-          {{ t('home') }}
-        </QTooltip>
-      </div>
-    </div>
     <ElScrollbar class="table-wrapper e-border">
       <div class="table-body">
         <RecipeTable
@@ -389,18 +376,12 @@ const { width: windowWidth } = useWindowSize()
 .wrapper {
   display: grid;
   grid-template-columns: 0.5fr 1fr 1fr 0.5fr;
-  grid-template-rows: 35px repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
   grid-template-areas:
-    "header header header header"
     "operator table table info"
     "operator table table info"
     "operator logs logs chart";
   @apply grid gap-x-3 gap-y-1 w-full h-screen text-center max-w-1920px px-2 pb-2 text-black;
-}
-
-.header {
-  grid-area: header;
-  @apply w-full flex justify-center items-center mt-1;
 }
 
 .table-wrapper {
