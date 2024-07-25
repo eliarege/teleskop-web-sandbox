@@ -82,6 +82,35 @@ registerCommand(() => {
   }
 })
 
+async function openDialogonPaste(ctx: any, remainsFromPaste: any, machineId: number) {
+  let remains = remainsFromPaste
+  if (remains.length) {
+    ctx.$q.dialog({
+      component: CMChangeProgramNoOnPasteDialog,
+      componentProps: {
+        remains,
+      },
+    }).onOk(async (newIds) => {
+      remains.forEach((val, index: number) => {
+        val.newProgramNo = newIds[index]
+      })
+      remains = await contextMenuStore.paste(machineId, remains)
+      await openDialogonPaste(ctx, remains, machineId)
+      await ctx.fetchPrograms()
+      /**
+     TODO: This has to be done through commandManager.executeCommand 'cause
+      commandManager will handle undo redo operations and paste is not a single paste operation
+      it can be done in multiple steps and each ctrl+z should go back to previous step
+      not cancel the whole paste operation
+      // $commandManager.executeCommand('pasteProgram', ctx, machineId, remainsFromPaste)
+       */
+      return true
+    }).onCancel(() => {
+      return false
+    })
+  }
+}
+
 registerCommand(() => {
   let remainsFromPaste = [] as Array<any>
 
@@ -92,30 +121,8 @@ registerCommand(() => {
         remainsFromPaste = await contextMenuStore.paste(machineId)
         await ctx.fetchPrograms()
       }
-      if (remainsFromPaste.length) {
-        ctx.$q.dialog({
-          component: CMChangeProgramNoOnPasteDialog,
-          componentProps: {
-            remains: remainsFromPaste,
-          },
-        }).onOk(async (newIds) => {
-          remainsFromPaste.forEach((val, index: number) => {
-            val.newProgramNo = newIds[index]
-          })
-          remainsFromPaste = await contextMenuStore.paste(machineId, remainsFromPaste)
-          /**
-           TODO: This has to be done through commandManager.executeCommand 'cause
-            commandManager will handle undo redo operations and paste is not a single paste operation
-            it can be done in multiple steps and each ctrl+z should go back to previous step
-            not cancel the whole paste operation
-            // $commandManager.executeCommand('pasteProgram', ctx, machineId, remainsFromPaste)
-           */
-          return true
-        }).onCancel(() => {
-          return false
-        })
-      }
-      await ctx.fetchPrograms()
+      if (remainsFromPaste.length)
+        await openDialogonPaste(ctx, remainsFromPaste, machineId)
       return true
     },
   }
