@@ -78,44 +78,44 @@ const items = [
               editor.popupNewProgramVisible = true
             },
           },
-          {
-            label: tt('menu.editProgram'),
-            icon: 'edit',
-            shortcut: 'F3',
-            onClick() {
-              if (editor.selectedPrograms.length > 0) {
-                router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
-              } else {
-                router.push(`/machine/${editor.machine.id}/program/${editor.allPrograms[0].programNo}`)
-              }
-            },
-          },
-          {
-            label: tt('menu.deleteProgram'),
-            icon: 'delete',
-            shortcut: 'Ctrl+Del',
-            onClick() {
-              if (editor.selectedPrograms.length > 0) {
-                $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
-              }
-            },
-          },
+          // {
+          //   label: tt('menu.editProgram'),
+          //   icon: 'edit',
+          //   shortcut: 'F3',
+          //   onClick() {
+          //     if (editor.selectedPrograms.length > 0) {
+          //       router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
+          //     } else {
+          //       router.push(`/machine/${editor.machine.id}/program/${editor.allPrograms[0].programNo}`)
+          //     }
+          //   },
+          // },
+          // {
+          //   label: tt('menu.deleteProgram'),
+          //   icon: 'delete',
+          //   shortcut: 'Ctrl+Del',
+          //   onClick() {
+          //     if (editor.selectedPrograms.length > 0) {
+          //       $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
+          //     }
+          //   },
+          // },
         ],
         [
           { label: tt('menu.getAllPrograms'), icon: 'download' },
           { label: tt('menu.sendAllPrograms'), icon: 'upload' },
         ],
-        [
-          {
-            label: tt('menu.rename'),
-            icon: 'edit',
-            onClick() {
-              if (editor.selectedPrograms.length > 0) {
-                $commandManager.executeCommand('changeName', { $q }, editor.selectedPrograms, editor.machine.id)
-              }
-            },
-          },
-        ],
+        // [
+        //   {
+        //     label: tt('menu.rename'),
+        //     icon: 'edit',
+        //     onClick() {
+        //       if (editor.selectedPrograms.length > 0) {
+        //         $commandManager.executeCommand('changeName', { $q }, editor.selectedPrograms, editor.machine.id)
+        //       }
+        //     },
+        //   },
+        // ],
       ],
     },
   },
