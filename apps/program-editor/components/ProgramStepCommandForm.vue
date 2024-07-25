@@ -35,7 +35,7 @@ const machineCommand = computed(() => {
           :key="`pr-${programCommand.commandNo}-${index}`"
           :path="`${props.path}.parameters.${index}`"
           :parameter="parameter"
-          :commandno="programCommand.commandNo"
+          :command-no="programCommand.commandNo"
         />
         <ProgramStepCommandIoInput
           v-for="(io, index) in machineCommand.selectableIOs"

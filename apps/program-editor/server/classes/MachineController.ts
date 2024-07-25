@@ -275,7 +275,7 @@ export class MachineController {
         SELECT commands = ISNULL((
           SELECT s2.COMMANDNO AS commandNo,
           parameters = ISNULL((
-            SELECT TRY_CAST(REPLACE(sp.VALUE, ',', '.')  AS FLOAT) AS value, sp.PARAMETERINDEX AS [index]
+            SELECT TRY_CAST(REPLACE(sp.VALUE, ',', '.')  AS FLOAT) AS value, sp.PARAMETERINDEX AS [index], sp.OPTIMIZED as optimized
             FROM BFMASTERSTEPPARAMS sp
             WHERE s2.MACHINEID = sp.MACHINEID
               AND s2.PROGNO = sp.PROGNO
@@ -771,7 +771,7 @@ export class MachineController {
           VALUE: parameter.value,
           CONTAINSVARIABLE: 0,
           ERRORWARNING: 0,
-          OPTIMIZED: 0,
+          OPTIMIZED: parameter.optimized ? 1 : 0,
         })
       })
 
@@ -828,7 +828,7 @@ export class MachineController {
             VALUE: parameter.value,
             CONTAINSVARIABLE: 0,
             ERRORWARNING: 0,
-            OPTIMIZED: 0,
+            OPTIMIZED: parameter.optimized ? 1 : 0,
           })
         })
 
@@ -967,7 +967,7 @@ export class MachineController {
           CONTAINSVARIABLE: 0,
           OPTIMIZEDVALUE: '',
           ERRORWARNING: 0,
-          OPTIMIZED: 0,
+          OPTIMIZED: parameter.optimized ? 1 : 0,
         })
       })
 
@@ -1023,7 +1023,7 @@ export class MachineController {
             CONTAINSVARIABLE: 0,
             OPTIMIZEDVALUE: '',
             ERRORWARNING: 0,
-            OPTIMIZED: 0,
+            OPTIMIZED: parameter.optimized ? 1 : 0,
           })
         })
 

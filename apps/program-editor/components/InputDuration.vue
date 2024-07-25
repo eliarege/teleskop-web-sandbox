@@ -43,5 +43,8 @@ onUnmounted(() => {
     <template #control>
       <InputDurationRaw :id="id" v-model="model" />
     </template>
+    <template #append>
+      <slot name="optimized" />
+    </template>
   </QField>
 </template>

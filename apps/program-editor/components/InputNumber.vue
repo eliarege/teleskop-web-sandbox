@@ -210,6 +210,9 @@ onMounted(() => {
         @blur="onBlur"
       >
     </template>
+    <template #append>
+      <slot name="optimized" />
+    </template>
   </QField>
 </template>
 

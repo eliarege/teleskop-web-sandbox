@@ -6,7 +6,7 @@ import type { CommandFormula, CommandParameter, ParameterItem } from '~/shared/t
 const props = defineProps<{
   path: string
   parameter: CommandParameter
-  commandno: number
+  commandNo: number
 }>()
 
 const { t } = useI18n()
@@ -42,7 +42,17 @@ watch(() => model.value, (newValue: number) => {
       outlined
       :label="parameter.name"
       :rules="rules"
-    />
+    >
+      <template #optimized>
+        <div class="ml-3 flex-center h-full">
+          <QCheckbox
+            v-model="programParameter.optimized"
+            size="sm"
+            dense
+          />
+        </div>
+      </template>
+    </InputDuration>
     <InputNumber
       v-else
       v-model="model"
@@ -54,7 +64,17 @@ watch(() => model.value, (newValue: number) => {
       :format="parameter.format"
       outlined
       dense
-    />
+    >
+      <template #optimized>
+        <div class="ml-3 flex-center h-full">
+          <QCheckbox
+            v-model="programParameter.optimized"
+            size="sm"
+            dense
+          />
+        </div>
+      </template>
+    </InputNumber>
   </template>
   <QSelect
     v-else-if="parameter.type === 'SELECT'"

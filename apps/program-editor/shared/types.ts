@@ -155,6 +155,7 @@ export interface ProgramStepCommand {
 export interface ParameterItem {
   value: number
   index: number
+  optimized: boolean
 }
 
 export interface ioListItem {
