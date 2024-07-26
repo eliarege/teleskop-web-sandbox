@@ -18,9 +18,7 @@ const showJoborderError = ref(false)
 const resetCounter = ref(0)
 const showWeiRequestDialog = ref(false)
 const materialRows = ref([])
-// TODO: Job<Typeof Joborder> with plankey joborder correctiion no can be stored
 const machines = await $fetch('/api/machine/machines')
-// const { data: recipeData, pending: waitingForData } = useFetch('/api/recipe?recipeJB=11428&recipeID=3&teleskopType=normal')
 const recipeData = ref()
 const jobordernum = ref()
 const showChangeMachineDialog = ref(false)
@@ -174,9 +172,8 @@ function clearCorrectionNo(event) {
 }
 
 async function checkIsThereAnyLog(plankey) {
-  const check = await $fetch('/api/logs/check-if-log-exists', {
-    method: 'post',
-    body: {
+  const check = await $fetch('/api/stepLogs/check-if-log-exists', {
+    query: {
       plankey,
     },
   })
@@ -202,9 +199,10 @@ function buttonAction(link: string) {
       showParameterDialog.value = true
     }
     if (link === 'showLogs') {
-      showLogsDialog.value = true
       if (!isThereAnyLog.value) {
         notification(false, t('warnings.noJobOrderLogs', { joborder: jobordernum.value }))
+      } else {
+        showLogsDialog.value = true
       }
     }
     if (link === 'showConsumptions') {

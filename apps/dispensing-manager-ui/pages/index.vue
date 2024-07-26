@@ -1,5 +1,5 @@
 <template>
-  <DagitimYonetim />
+  <DispensingManager />
 </template>
 
 <style scoped lang="postcss">

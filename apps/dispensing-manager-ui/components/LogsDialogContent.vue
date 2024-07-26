@@ -26,8 +26,8 @@ const status = ref([
 
 const logCols = computed<Column[]>(() => [
   { name: 'id', label: t('jobOrderLogs.id'), field: 'id', filterable: true, filterType: 'comparison' },
-  // { name: 'machineName', label: t('machinename'), field: 'machineName' },
-  // { name: 'joborder', label: t('jobOrderLogs.jobOrderCode'), field: 'joborder' },
+  { name: 'machineName', label: t('machinename'), field: 'machineName' },
+  { name: 'joborder', label: t('jobOrderLogs.jobOrderCode'), field: 'joborder' },
   { name: 'programIndex', label: t('jobOrderLogs.programIndex'), field: 'programIndex', filterable: true, filterType: 'comparison' },
   { name: 'programNo', label: t('programNo'), field: 'programNo', filterable: true, filterType: 'comparison' },
   { name: 'programName', label: t('programName'), field: 'programName' },
@@ -35,7 +35,7 @@ const logCols = computed<Column[]>(() => [
     name: 'recipeType',
     label: t('recipeType'),
     field: 'recipeType',
-    format: (val, row) => t(`recipeTypes.${val}`),
+    format: (val, row) => val ? t(`recipeTypes.${val}`) : '',
     filterable: true,
     filterType: 'select',
     selectionOptions: [{ label: t('chemical'), recipeType: 0 }, { label: t('dye'), recipeType: 1 }],
@@ -47,7 +47,7 @@ const logCols = computed<Column[]>(() => [
     name: 'status',
     label: t('status'),
     field: 'status',
-    format: (val, row) => t(`statusCodes.${val}`),
+    format: (val, row) => val ? t(`statusCodes.${val}`) : '',
     style: row => cellRGBColorHandler(row.status),
     filterable: true,
     filterType: 'multiselect',
@@ -69,7 +69,7 @@ const logCols = computed<Column[]>(() => [
 const logRows = ref()
 await applyFilters([])
 async function applyFilters(updatedValue: any) {
-  const tempFilteredLogs = await $fetch('/api/logs/filtered-logs', {
+  const tempFilteredLogs = await $fetch('/api/stepLogs/filtered-logs', {
     method: 'post',
     body: {
       filters: updatedValue,

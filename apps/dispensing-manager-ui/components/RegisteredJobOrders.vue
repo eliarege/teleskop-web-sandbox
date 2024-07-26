@@ -1,61 +1,91 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
+import type { QTableProps } from 'quasar'
 import { LoadingSpinner } from 'ui'
 import { onMounted } from 'vue'
+import type { FilterableTableColumn } from 'nuxt-base'
 import { navigateToPage } from '../shared/functions'
 import { colors } from '~/shared/constants'
-import type { Column } from '~/shared/types'
 
 // Call fetchData when component is mounted.
 // For this, we can use the onMounted hook from 'vue'
 
 const { t, d } = useI18n()
 
-const machines = ref([])
-
-const joborders = ref()
-const visibleLoading = ref(true)
-
-// const externalFilterSlots = ref([])
-// const tempFilterSlots = sessionStorage.getItem('filterSlots')
 const externalFilterSlots = useStorage('filterSlots', [], sessionStorage)
-// if (tempFilterSlots)
-//   externalFilterSlots.value = JSON.parse(tempFilterSlots)
-
+// const machines = ref([])
+const { data: machines } = await useFetch('/api/machine/machines')
+const rowsNumber = await $fetch('/api/joborder/joborder-count')
+const pagination = ref({ rowsPerPage: 10, page: 1, rowsNumber } as QTableProps['pagination'])
+const visibleLoading = ref(true)
+const joborders = ref([])
 async function fetchData() {
-  try {
-    machines.value = await $fetch('/api/machine/machines') // FIXME: useFetc better $fetch may cause page to fail
-    if (externalFilterSlots.value.length) {
-      await handleFilterSlotsUpdate(externalFilterSlots.value)
-    } else {
-      joborders.value = await $fetch('/api/joborder/joborders')
-    }
-  } finally {
-    visibleLoading.value = false
-  }
+  visibleLoading.value = true
+  const response = await $fetch('/api/joborder/joborders', {
+    method: 'POST',
+    body: { pagination: pagination.value, filters: externalFilterSlots.value },
+  }).finally(() => visibleLoading.value = false)
+  joborders.value = response.rows
+  pagination.value!.rowsNumber = response.count
 }
-onMounted(fetchData)
+
+watch(pagination, async (newPagination) => {
+  visibleLoading.value = true
+  await fetchData()
+  visibleLoading.value = false
+})
+// onMounted(async () => await fetchData(pagination.value, externalFilterSlots.value))
 
 const columns = computed(() => [
-  { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
-  { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo', filterable: true, filterType: 'comparison' },
-  { name: 'plannedMachineName', label: t('plannedMachine'), field: 'plannedMachineName', filterable: true, filterType: 'select', selectionOptions: machines.value, optionLabel: 'machinename', optionValue: 'machineid' },
-  { name: 'programList', label: t('registeredJobOrders.programList'), field: 'programList', format: val => val.slice(0, -1), filterable: true, filterType: 'includes' },
-  { name: 'plannedStartTime', label: t('registeredJobOrders.scheduledStartTime'), field: 'plannedStartTime', filterable: true, filterType: 'date' },
-] as Column[])
+  {
+    name: 'joborder',
+    label: t('joborder'),
+    field: 'joborder',
+    filterable: true,
+    filterType: 'comparison',
+  },
+  {
+    name: 'correctionNo',
+    label: t('correctionNo'),
+    field: 'correctionNo',
+    filterable: true,
+    filterType: 'comparison',
+  },
+  {
+    name: 'plannedMachineName',
+    label: t('plannedMachine'),
+    field: 'plannedMachineName',
+    filterable: true,
+    filterType: 'select',
+    selectionOptions: machines.value,
+    optionLabel: 'machinename',
+    optionValue: 'machineid',
+  },
+  {
+    name: 'programList',
+    label: t('registeredJobOrders.programList'),
+    field: 'programList',
+    format: val => val.slice(0, -1),
+    filterable: true,
+    filterType: 'includes',
+  },
+  {
+    name: 'plannedStartTime',
+    label: t('registeredJobOrders.scheduledStartTime'),
+    field: 'plannedStartTime',
+    filterable: true,
+    filterType: 'date',
+    format: val => d(val, 'datetime'),
+  },
+] as FilterableTableColumn[])
 
 async function handleRowDblClick(row: any) {
-  await navigateToPage(`recete-tartim?joborder=${row.joborder}&correctionNo=${row.correctionNo}`)
+  await navigateToPage(`recipe?joborder=${row.joborder}&correctionNo=${row.correctionNo}`)
 }
 
 async function handleFilterSlotsUpdate(updatedValue: any) {
   externalFilterSlots.value = updatedValue
-  joborders.value = await $fetch('/api/joborder/filtered-joborders', {
-    method: 'post',
-    body: externalFilterSlots.value,
-  })
-  // sessionStorage.setItem('filterSlots', JSON.stringify(externalFilterSlots.value))
-  // filtersToKnex(externalFilterSlots.value, null)
+  await fetchData()
 }
 </script>
 
@@ -70,16 +100,17 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
       </span>
       <div class="responsive-flex-container">
         <FilterableTable
-
+          v-model:pagination="pagination"
           class="responsive-table"
+          disable-search-filter
           :rows="joborders"
           :columns="columns"
           :filter-slots="externalFilterSlots"
-          :pagination="{ rowsPerPage: 20 }"
           @row-dblclick="row => handleRowDblClick(row)"
           @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
+          @update-pagination="pgn => pagination = pgn"
         >
-          <template #custombody="props">
+          <!-- <template #custombody="props">
             <q-tr
               :props="props"
               style="cursor: pointer;"
@@ -99,7 +130,7 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
                 </span>
               </q-td>
             </q-tr>
-          </template>
+          </template> -->
         </FilterableTable>
       </div>
     </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { QTableProps } from 'quasar'
 import type { FilterableTableColumn, FilterableTableFilter } from '../types'
 
 interface DateType {
@@ -29,32 +30,35 @@ const props = defineProps({
     type: Boolean,
     required: false,
   },
-  pagination: {
-    type: Object,
-    default: () => ({
-      descending: false,
-      page: 1,
-      rowsPerPage: 20,
-      sortBy: '',
-    }),
-    validator: (obj: any): boolean => {
-      return 'descending' in obj && typeof obj.descending === 'boolean'
-        && 'page' in obj && typeof obj.page === 'number'
-        && 'rowsPerPage' in obj && typeof obj.rowsPerPage === 'number'
-        && 'sortBy' in obj && typeof obj.sortBy === 'string'
-    },
-  },
   isVirtualScroll: {
     type: Boolean,
     default: true,
   },
+  enableKeyStrokes: {
+    type: Boolean,
+    default: false,
+  },
+  rowKey: {
+    type: String,
+    required: false, // TODO: custom type and default and validator to outside then this binding can be accomplished ask for any other implementation
+    // rowKey is required if enebleKeyStrokes is set 'true'
+  },
+  disableSearchFilter: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
 })
+
 const emit = defineEmits<{
   rowDblclick: [row: any]
   updateFilterSlots: [filters: FilterableTableFilter[]]
   updateSearchFilter: [terms: any]
+  updateSelected: any
+  updatePagination: [QTableProps['pagination']]
 }>()
-
+const selected = defineModel('selected')
+const tablePagination = defineModel<QTableProps['pagination']>('pagination', { required: false, default: () => ({}) })
 const { t, locale } = useI18n({ useScope: 'local' })
 function handleDoubleClick(row: any) {
   emit('rowDblclick', row)
@@ -77,7 +81,8 @@ const comparisonOperations = [
   { text: 'between', symbol: t('between') },
 ]
 
-const tablePagination = ref(props.pagination)
+// const tablePagination = ref(props.pagination)
+// const tablePagination = ref({} as QTableProps['pagination'])
 
 const today = new Date()
 const startOfToday = new Date(today)
@@ -215,7 +220,6 @@ function checkForButtonsInsteadOfSelect(col: any) {
     return (col.selectionOptions.length < 6 && col.filterType === 'select')
   return false
 }
-
 function customFilterMethod(rows, terms, cols, cellValue) {
   emit('updateSearchFilter', terms)
   const lowerTerms = terms ? terms.toLocaleLowerCase(locale.value === 'tr' ? 'tr-TR' : 'en-EN') : ''
@@ -231,10 +235,69 @@ function customFilterMethod(rows, terms, cols, cellValue) {
   }
   return result
 }
+const selectedId = ref(null)
+
+const sorting = computed(() => {
+  return { field: tablePagination.value?.sortBy, order: tablePagination.value?.descending ? 'desc' : 'asc' }
+})
+
+const sortedRows = computed(() => {
+  return [...props.rows].sort((a, b) => {
+    const field = sorting.value.field
+    const multiplier = sorting.value.order === 'asc' ? 1 : -1
+    return (a[field] === b[field] ? 0 : a[field] > b[field] ? 1 : -1) * multiplier
+  })
+})
+
+// const selectedRow = computed(() => {
+//   return sortedRows.value.find(row => row[props.rowKey] === selectedId.value)
+// })
+if (props.rowKey)
+  watch([sorting, selectedId], ([, newId]) => {
+    selected.value = sortedRows.value.find(row => row[props.rowKey] === newId)
+  })
+async function selectRow(row: any) {
+  // selectedRow.value = props.rows[rowIndex]
+  selectedId.value = row[props.rowKey]
+  // selectedRow.value.rowIndex = rowIndex
+  // emit('updateSelected', selectedRow.value)
+}
+function updateSelectedIndex(delta) {
+  const currentIndex = sortedRows.value.findIndex(row => row[props.rowKey] === selectedId.value)
+  let newIndex = currentIndex
+  if (currentIndex + delta < sortedRows.value.length)
+    newIndex += delta
+  tablePagination.value!.page = Math.floor((newIndex / tablePagination.value!.rowsPerPage!) + 1)
+  if (newIndex >= 0 && newIndex < sortedRows.value.length) {
+    selectedId.value = sortedRows.value[newIndex][props.rowKey]
+  }
+}
+function handleKeyEvents(event) {
+  switch (event.key) {
+    case 'ArrowUp':
+      updateSelectedIndex(-1)
+      break
+    case 'ArrowDown':
+      updateSelectedIndex(1)
+      break
+  }
+}
+if (props.enableKeyStrokes) {
+  onMounted(() => {
+    window.addEventListener('keydown', handleKeyEvents)
+  })
+
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeyEvents)
+  })
+}
+function onRequest(pagination: QTableProps['pagination']) {
+  emit('updatePagination', pagination)
+}
 </script>
 
 <template>
-  <div>
+  <div tabindex="0">
     <q-table
       v-model:pagination="tablePagination"
       :rows="rows"
@@ -250,12 +313,14 @@ function customFilterMethod(rows, terms, cols, cellValue) {
       class="text-override-left filterable-table my-sticky-virtscroll-table-recipe"
       column-sort-order="da"
       :visible-columns="visibleColumns"
+      @update:pagination="e => tablePagination = e"
+      @request="(reqProp) => onRequest(reqProp.pagination)"
     >
       <template #top>
         <div class="flex w-full flex-nowrap">
           <div
-            class="filter-border"
-            :style="showVisibilityMenu ? 'width: 40%' : ''"
+            class="filter-border flex-center"
+            :class="showVisibilityMenu ? '' : ''"
           >
             <div
               class="filter-icon"
@@ -263,32 +328,29 @@ function customFilterMethod(rows, terms, cols, cellValue) {
             >
               <q-icon name="filter_alt" size="1.5rem" />
             </div>
-            <div
-              v-if="showVisibilityMenu"
-              class="flex"
-            >
-              <q-input
-                v-model="tableFilter"
-                borderless
-                dense
-                debounce="300"
-                :placeholder="t('search')"
-              />
-              <!-- TODO: If the section would be settings this displayment is much better -->
-              <q-select
-                v-model="visibleColumns"
-                multiple
-                borderless
-                dense
-                options-dense
-                :display-value="$q.lang.table.columns"
-                emit-value
-                map-options
-                :options="columns"
-                option-value="name"
-                style="min-width: 150px"
-              />
-            </div>
+            <q-input
+              v-show="showVisibilityMenu"
+              v-if="!props.disableSearchFilter"
+              v-model="tableFilter"
+              borderless
+              dense
+              debounce="300"
+              :placeholder="t('search')"
+            />
+            <!-- TODO: If the section would be settings this displayment is much better -->
+            <q-select
+              v-show="showVisibilityMenu"
+              v-model="visibleColumns"
+              multiple
+              borderless
+              dense
+              options-dense
+              :display-value="$q.lang.table.columns"
+              emit-value
+              map-options
+              :options="columns"
+              option-value="name"
+            />
           </div>
           <div class="flex gap-x-5 gap-y-1 px-5 w-full">
             <div
@@ -488,7 +550,18 @@ function customFilterMethod(rows, terms, cols, cellValue) {
       </template>
       <template #body="bodyProps">
         <slot name="custombody" v-bind="bodyProps">
-          <q-tr :props="bodyProps">
+          <q-tr
+            :props="bodyProps"
+            :class="{ 'selected-row': selected === bodyProps.row }"
+            style="cursor: pointer;"
+            :style="selected === bodyProps.row
+              ? 'background-color: #cce8ff;'
+              : bodyProps.rowIndex % 2
+                ? `background-color: rgb(0, 0, 0, 0.1)`
+                : '' "
+            @click="selectRow(bodyProps.row)"
+            @contextmenu="selectRow(bodyProps.row)"
+          >
             <q-td
               v-for="col in bodyProps.cols"
               :key="col.name"
@@ -499,6 +572,7 @@ function customFilterMethod(rows, terms, cols, cellValue) {
               {{ col.value }}
             </q-td>
           </q-tr>
+          <slot name="contextmenu" />
         </slot>
       </template>
     </q-table>
@@ -506,35 +580,38 @@ function customFilterMethod(rows, terms, cols, cellValue) {
 </template>
 
 <style scoped>
-.my-sticky-virtscroll-table-recipe {
+.selected-row {
+  background-color: #cce8ff;
+}
+.virtual-scroll {
   height: 100%;
   min-height: 50vh;
 }
 
-.my-sticky-virtscroll-table-recipe :deep(.q-table__top),
-.my-sticky-virtscroll-table-recipe :deep(.q-table__bottom),
-.my-sticky-virtscroll-table-recipe :deep(thead tr:first-child th) {
+.virtual-scroll :deep(.q-table__top),
+.virtual-scroll :deep(.q-table__bottom),
+.virtual-scroll :deep(thead tr:first-child th) {
   background-color: #ffffff;
 }
-.body--dark .my-sticky-virtscroll-table-recipe :deep(.q-table__top),
-.body--dark .my-sticky-virtscroll-table-recipe :deep(.q-table__bottom),
-.body--dark .my-sticky-virtscroll-table-recipe :deep(thead tr:first-child th) {
+.body--dark .virtual-scroll :deep(.q-table__top),
+.body--dark .virtual-scroll :deep(.q-table__bottom),
+.body--dark .virtual-scroll :deep(thead tr:first-child th) {
   background-color: #000000;
 }
-.my-sticky-virtscroll-table-recipe :deep(thead tr th) {
+.virtual-scroll :deep(thead tr th) {
   position: sticky;
   z-index: 1;
 }
 
-.my-sticky-virtscroll-table-recipe :deep(thead tr:last-child th) {
+.virtual-scroll :deep(thead tr:last-child th) {
   top: 48px;
 }
 
-.my-sticky-virtscroll-table-recipe :deep(thead tr:first-child th) {
+.virtual-scroll :deep(thead tr:first-child th) {
   top: 0;
 }
 
-.my-sticky-virtscroll-table-recipe :deep(tbody) {
+.virtual-scroll :deep(tbody) {
   scroll-margin-top: 48px;
 }
 .ordering-buttons {
@@ -642,14 +719,12 @@ function customFilterMethod(rows, terms, cols, cellValue) {
   white-space: normal; */
 }
 .filter-border {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
   border: 1px solid black;
-  padding: 0.25rem;
   height: 3rem;
+  gap: 1.25rem;
+  padding: 0.25rem;
   border-radius: 0.25rem;
-  flex-wrap: wrap;
+  width: max-content;
 }
 .body--dark .filter-border {
   border: 1px solid white;
@@ -671,6 +746,32 @@ function customFilterMethod(rows, terms, cols, cellValue) {
   justify-content: center;
   cursor: pointer;
   color: white;
+}
+/* FIXME: This should never be the case. This part is all about dispensing manager but I cannot handle css on dy for now.*/
+.dispenser-status-class::after {
+  font-family: 'Material Icons';
+  display: inline-block;
+  font-size: 1rem;
+  position: relative;
+  padding-left: 0.25rem;
+  vertical-align: sub;
+  background-color: transparent;
+}
+.dispenser-status-class.connected-class::after {
+  color: green;
+  content: 'check_circle';
+}
+.dispenser-status-class.not-connected-class::after {
+  color: red;
+  content: 'cancel';
+}
+.dispenser-status-class.path-not-accesible-class::after {
+  color: orange;
+  content: 'warning';
+}
+.dispenser-status-class.service-unaccesible-class::after {
+  content: 'signal_wifi_connected_no_internet_4_bar';
+  color: black;
 }
 </style>
 

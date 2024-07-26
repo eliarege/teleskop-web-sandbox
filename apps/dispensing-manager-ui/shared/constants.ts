@@ -39,3 +39,10 @@ export enum StatusCodes {
   canceled = 8,
   dispenserChanged = 10,
 }
+
+export enum DispenserConnectionStatus {
+  connected = 0,
+  notConnected = 1,
+  pathNotAccesible = 2,
+  serviceUnaccesible = 3,
+}

@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
 import { useTimeoutPoll } from '@vueuse/core'
+import type { QTableProps } from 'quasar'
+import type { FilterableTableColumn } from 'nuxt-base'
 import { cellRGBColorHandler, navigateToPage, textAlignOverride } from '../shared/functions'
-import { StatusCodes, colors } from '~/shared/constants'
-import type { Column } from '~/shared/types'
+import { DispenserConnectionStatus, StatusCodes, colors } from '~/shared/constants'
 
 const { t } = useI18n()
-const paginationSync = ref(500)
-const paginationPageLeft = ref(1)
-
+const selectedRow = ref()
 type Action = 'retry' | 'cancel'
 interface ConfirmationDialog {
   vis: boolean
@@ -17,11 +16,11 @@ interface ConfirmationDialog {
 
 const actions = ref<Action[]>(['retry', 'cancel'])
 const confirmationDialog = ref<ConfirmationDialog>({ vis: false, act: 'cancel' })
-const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/dispenser-connection-status', { default: () => [] })
-useTimeoutPoll(refreshConnectionStatus, 10000, { immediate: true })
+const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/settings/dispenser-connection-status', { default: () => [] })
+useTimeoutPoll(refreshConnectionStatus, 120000, { immediate: true })
 const machines = await $fetch('/api/machine/machines')
-const dispensers = await $fetch('/api/settings/dispenser')
-const columnsRecipe = computed<Column[]>(() => [
+// const dispensers = await $fetch('/api/settings/dispenser')
+const columnsRecipe = computed<Array<FilterableTableColumn>>(() => [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
   {
@@ -41,14 +40,22 @@ const columnsRecipe = computed<Column[]>(() => [
     field: 'name',
     filterable: true,
     filterType: 'select',
-    selectionOptions: dispensers,
+    // selectionOptions: dispensers,
     optionLabel: 'name',
     optionValue: 'dispNo',
     classes(row) {
-      const status = connectionStatus.value?.find(status => status.dispNo === row.dispNo)?.status
-      return ['status-class', status ? 'success-class' : 'fail-class'].join(' ')
+      const status = connectionStatus.value?.find(status => status.dispNo === row.dispNo)?.connectionStatus
+      return ['dispenser-status-class', status === DispenserConnectionStatus.connected
+        ? 'connected-class'
+        : status === DispenserConnectionStatus.notConnected
+          ? 'not-connected-class'
+          : status === DispenserConnectionStatus.pathNotAccesible
+            ? 'path-not-accesible-class'
+            : status === DispenserConnectionStatus.serviceUnaccesible
+              ? 'service-unaccesible-class'
+              : ''].join(' ')
     },
-  }, // TODO: Dispenserşarı dönen endpoint
+  },
   { name: 'programno', label: t('programNo'), field: 'programno', filterable: true, filterType: 'comparison' },
   {
     name: 'programname',
@@ -97,7 +104,7 @@ const columnsRecipe = computed<Column[]>(() => [
     optionValue: 'status',
   },
 ])
-const columnsMaterial = computed<Column[]>(() => [
+const columnsMaterial = computed<Array<FilterableTableColumn>>(() => [
   { name: 'materialName', label: t('materialName'), field: 'materialName' },
   { name: 'materialCode', label: t('materialCode'), field: 'materialCode' },
   { name: 'name', label: t('dispensingManager.materialDistributor'), field: 'name' },
@@ -109,7 +116,6 @@ const columnsMaterial = computed<Column[]>(() => [
 const recipe = ref([])
 const recipeTypeDecider = ref('ongoing')
 const filters = ref([])
-const selectedRow = ref()
 const material = ref([])
 
 const canceledVisible = ref(false)
@@ -123,14 +129,17 @@ async function updateRecipe() {
   })
   if (recipe.value?.length) {
     selectedRow.value = recipe.value[0]
-    await fetchMaterialData(selectedRow.value.reqnumber)
+    // await fetchMaterialData(selectedRow.value.reqnumber)
   } else
     selectedRow.value = null
 }
 setInterval(updateRecipe, 10000)
 
 async function fetchMaterialData(reqnumber: number) {
-  material.value = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
+  if (reqnumber)
+    material.value = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
+  else
+    material.value = []
 }
 
 async function applyFilters(updatedValue: any) {
@@ -144,21 +153,13 @@ async function updateRecipeTable() {
   canceledVisible.value = !canceledVisible.value
   await updateRecipe()
   selectedRow.value = recipe.value[0] ? recipe.value[0] : null
-  if (selectedRow.value?.reqnumber)
-    await fetchMaterialData(selectedRow.value.reqnumber)
-  else
-    material.value = []
 }
-
-async function selectRow(rowIndex: any) {
-  selectedRow.value = recipe.value[rowIndex]
-  selectedRow.value.rowIndex = rowIndex
-  await fetchMaterialData(selectedRow.value.reqnumber)
-}
-
+watch(selectedRow, async (newSelected) => {
+  await fetchMaterialData(newSelected?.reqnumber)
+})
 async function clickShowRecipe(row: any, isLogs: string) {
   const params = new URLSearchParams({ joborder: row.joborder, correctionNo: row.batchCorrectionNo, isLogs })
-  await navigateToPage(`recete-tartim?${params}`)
+  await navigateToPage(`recipe?${params}`)
 }
 
 async function completeProgram(row) {
@@ -240,32 +241,17 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
   }
 }
 
-function handleKeyUp(event) {
-  if (event.key === 'ArrowUp') {
-    if (selectedRow.value.rowIndex) {
-      selectRow(selectedRow.value.rowIndex - 1)
-    }
-  } else if (event.key === 'ArrowDown') {
-    if (selectedRow.value.rowIndex !== undefined && recipe.value[selectedRow.value.rowIndex + 1]) {
-      event.preventDefault()
-      selectRow(selectedRow.value.rowIndex + 1)
-    }
-  }
-}
-
 function searchFilterUpdated(evt: any) {
   if (evt) {
     material.value = []
     selectedRow.value = null
   }
 }
-
-onMounted(() => {
-  window.addEventListener('keyup', handleKeyUp)
-})
-onBeforeUnmount(() => {
-  window.removeEventListener('keyup', handleKeyUp)
-})
+async function updateSelectedRow(evt: any) {
+  selectedRow.value = evt
+  await fetchMaterialData(evt.reqnumber)
+}
+const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
 </script>
 
 <template>
@@ -275,15 +261,17 @@ onBeforeUnmount(() => {
         class="responsive-table"
       >
         <FilterableTable
+          v-model:selected="selectedRow"
+          v-model:pagination="pagination"
           :rows="recipe"
           :columns="columnsRecipe"
           class="h-120"
-          :pagination="{ rowsPerPage: paginationSync, page: paginationPageLeft }"
-          @update:pagination="(newPag: any) => { paginationSync = newPag.rowsPerPage, paginationPageLeft = newPag.page }"
+          row-key="reqnumber"
+          :enable-key-strokes="true"
           @update-filter-slots="(evt) => applyFilters(evt)"
           @update-search-filter="(evt) => searchFilterUpdated(evt)"
         >
-          <!-- style="width: 55%; height: 100%;" -->
+          <!-- @update-selected="evt => updateSelectedRow(evt)" -->
           <template #top-right>
             <q-space />
             <div class="mt-2 top-r-class">
@@ -292,8 +280,6 @@ onBeforeUnmount(() => {
                 class="table-header-toggle"
                 toggle-color="black"
                 :options="[
-                  // { label: t('chemical'), value: 'chem' },
-                  // { label: t('dye'), value: 'dye' },
                   { label: t('ongoingJoborders'), value: 'ongoing' },
                   { label: t('canceledJobOrdersTable'), value: 'cancel' },
                 ]"
@@ -301,70 +287,49 @@ onBeforeUnmount(() => {
               />
             </div>
           </template>
-          <template #custombody="recipe">
-            <q-tr
-              :class="{ 'selected-row': selectedRow === recipe.row }"
-              style="cursor: pointer;"
-              :style="selectedRow === recipe.row
-                ? 'background-color: #cce8ff;'
-                : recipe.rowIndex % 2
-                  ? `background-color: ${colors.tableGray}`
-                  : '' "
-              @click="selectRow(recipe.rowIndex)"
-              @contextmenu="selectRow(recipe.rowIndex)"
+          <template #contextmenu>
+            <q-menu
+              touch-position
+              context-menu
             >
-              <!-- @right="" -->
-              <q-td
-                v-for="row in recipe.cols"
-                :key="row.name"
-                :props="recipe"
-              >
-                {{ row.value }}
-                <q-menu
-                  touch-position
-                  context-menu
+              <q-list style="min-width: 300px;">
+                <q-item
+                  v-close-popup
+                  clickable
+                  @click="clickShowRecipe(selectedRow, 'true')"
                 >
-                  <!-- FIXME: min width should not be 300px -->
-                  <q-list style="min-width: 300px;">
-                    <q-item
-                      v-close-popup
-                      clickable
-                      @click="clickShowRecipe(recipe.row, 'true')"
-                    >
-                      <q-item-section>{{ t('dispensingManager.rcMenu.showLogs') }}</q-item-section>
-                    </q-item>
-                    <q-item
-                      v-close-popup
-                      clickable
-                      @click="clickShowRecipe(recipe.row, 'false')"
-                    >
-                      <q-item-section>{{ t('dispensingManager.rcMenu.showRecipe') }}</q-item-section>
-                    </q-item>
-                    <q-separator />
-                    <q-item
-                      v-for="act in actions"
-                      :key="act"
-                      v-close-popup
-                      clickable
-                      @click="
-                        selectedRow.status === StatusCodes.requestCompleted || selectedRow.status === StatusCodes.canceled
-                          ? processRequest(act, selectedRow)
-                          : confirmationDialog = { vis: true, act }
-                      "
-                    >
-                      <q-item-section>{{ t(`dispensingManager.rcMenu.${act}`) }}</q-item-section>
-                    </q-item>
-                    <q-item
-                      v-close-popup
-                      clickable
-                      @click="completeProgram(selectedRow)"
-                    >
-                      <q-item-section>{{ t('dispensingManager.rcMenu.complete') }}</q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-menu>
-              </q-td>
-            </q-tr>
+                  <q-item-section>{{ t('dispensingManager.rcMenu.showLogs') }}</q-item-section>
+                </q-item>
+                <q-item
+                  v-close-popup
+                  clickable
+                  @click="clickShowRecipe(selectedRow, 'false')"
+                >
+                  <q-item-section>{{ t('dispensingManager.rcMenu.showRecipe') }}</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item
+                  v-for="act in actions"
+                  :key="act"
+                  v-close-popup
+                  clickable
+                  @click="
+                    selectedRow.status === StatusCodes.requestCompleted || selectedRow.status === StatusCodes.canceled
+                      ? processRequest(act, selectedRow)
+                      : confirmationDialog = { vis: true, act }
+                  "
+                >
+                  <q-item-section>{{ t(`dispensingManager.rcMenu.${act}`) }}</q-item-section>
+                </q-item>
+                <q-item
+                  v-close-popup
+                  clickable
+                  @click="completeProgram(selectedRow)"
+                >
+                  <q-item-section>{{ t('dispensingManager.rcMenu.complete') }}</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </template>
         </FilterableTable>
       </div>
@@ -401,7 +366,6 @@ onBeforeUnmount(() => {
     </span>
 
     <div class="ml-5 mr-5" style="width: 100%;">
-      <!-- Job order's requested materials table -->
       <q-table
         flat
         bordered
@@ -493,9 +457,7 @@ img.invert-colors {
   word-break: keep-all;
   white-space: nowrap;
 }
-.selected-row {
-  background-color: #cce8ff;
-}
+
 .dialog-class {
   height: 100%;
   width: 100%;
@@ -515,23 +477,5 @@ img.invert-colors {
   align-items: center;
   padding-left: 1rem;
   height: 2.5rem;
-}
-
-.status-class::after {
-  font-family: 'Material Icons';
-  display: inline-block;
-  font-size: 1rem;
-  position: relative;
-  padding-left: 0.25rem;
-  vertical-align: sub;
-  background-color: transparent;
-}
-.status-class.success-class::after {
-  color: green;
-  content: 'check_circle';
-}
-.status-class.fail-class::after {
-  content: 'cancel';
-  @apply text-gray-800;
 }
 </style>

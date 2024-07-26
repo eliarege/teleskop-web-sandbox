@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     .where('MACHINEID', machineId)
 
   if (filters)
-    return await filtersToKnex(filters, selectParams, query)
+    filtersToKnex(filters, selectParams, query)
 
   return await query
 })

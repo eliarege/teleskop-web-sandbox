@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
+import type { FilterableTableColumn } from 'nuxt-base'
+import ConnectMultiDispenserDialog from '~/components/ConnectMultiDispenserDialog.vue'
 import { colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
-import type { Column } from '~/shared/types'
 
 const { t } = useI18n()
 const rows = ref<any[]>([])
 const disps = ref([])
+const $q = useQuasar()
 
 await getRows()
 await getDisps()
@@ -16,7 +18,7 @@ const materialGroups = [
   { label: t('settings.other'), materialGroup: 3 },
 ]
 
-const columns = computed<Array<Column>>(() => [
+const columns = computed<Array<FilterableTableColumn>>(() => [
   {
     name: 'materialCode',
     label: t('settings.materialCode'),
@@ -264,7 +266,33 @@ async function checkMaterialCodeExist() {
     givenMaterialCodeExistsWarning.value = false
   }
 }
-
+async function handleMultiEdit() {
+  const materials = await $fetch('/api/settings/materials-key-value')
+  const dispensers = disps.value.map((disp) => {
+    return { label: `${disp.dispNo} - ${disp.name}`, value: disp.dispNo }
+  })
+  $q.dialog({
+    component: ConnectMultiDispenserDialog,
+    componentProps: {
+      toEdit: 'materials',
+      objectList: materials,
+      objectKey: 'materialLabel',
+      objectValue: 'materialCode',
+      dispensers,
+    },
+  }).onOk(async (response: MultiDispenserDialogResponseType) => {
+    const body = {
+      materialList: response.selectedObjects.map(mate => mate.materialCode),
+      dispenserList: response.selectedDispensers,
+    }
+    const operation = response.isReplace ? 'replace' : 'add'
+    const status = await $fetch(`/api/settings/${operation}-material-dispenser-connection`, {
+      method: 'POST',
+      body,
+    })
+    await getRows()
+  })
+}
 onBeforeRouteLeave(async (to, from, next) => {
   let check = false
   if (expandedRow.value)
@@ -288,6 +316,22 @@ onBeforeRouteLeave(async (to, from, next) => {
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"
   >
+    <template #top-right>
+      <div class="items-center flex justify-center h-full">
+        <q-btn
+          outline
+          class="p-2"
+          icon="edit"
+          @click="handleMultiEdit"
+        >
+          <q-tooltip
+            class="text-body2"
+          >
+            {{ t('multiEditDialog.tooltip') }}
+          </q-tooltip>
+        </q-btn>
+      </div>
+    </template>
     <template #custombody="props">
       <q-tr :props="props">
         <q-td

@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     .select(selectParams)
     .orderBy('MACHINEID')
   if (filters)
-    return await filtersToKnex(filters, selectParams, query)
+    filtersToKnex(filters, selectParams, query)
 
   return await query
 })

@@ -59,10 +59,9 @@ router.post('/joborderlogs', defineEventHandler(async (event) => {
     })
   }
   if (body.length > 0) {
-    return await filtersToKnex(body, selectParameters, result)
-  } else {
-    return await result
+    filtersToKnex(body, selectParameters, result)
   }
+  return await result
 }))
 
 router.get('/requestmaterials', defineEventHandler(async (event) => {

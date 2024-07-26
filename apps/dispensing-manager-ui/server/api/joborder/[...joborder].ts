@@ -6,20 +6,20 @@ import { knex } from '~/server/connectionPool'
 const router = createRouter()
 export default useBase('/api/joborder', router.handler)
 
-router.get('/joborders', defineEventHandler(async (event) => {
-  const orders = await knex('DYBFBATCHPLAN as b')
-    .select({
-      joborder: 'b.JOBORDER',
-      correctionNo: 'b.CORRECTIONNUMBER',
-      plannedMachineName: 'm.MACHINENAME',
-      plannedMachineID: 'b.PLANNEDMACHINE',
-      programList: 'b.PROGRAMNOLIST',
-      plannedStartTime: 'b.PLANNEDSTARTTIME',
-    })
-    .join('dbo.DYTFMACHINES as m', 'b.PLANNEDMACHINE', 'm.MACHINEID')
-    .orderBy('b.PLANNEDSTARTTIME', 'desc')
-  return orders
-}))
+// router.get('/joborders', defineEventHandler(async (event) => {
+//   const orders = await knex('DYBFBATCHPLAN as b')
+//     .select({
+//       joborder: 'b.JOBORDER',
+//       correctionNo: 'b.CORRECTIONNUMBER',
+//       plannedMachineName: 'm.MACHINENAME',
+//       plannedMachineID: 'b.PLANNEDMACHINE',
+//       programList: 'b.PROGRAMNOLIST',
+//       plannedStartTime: 'b.PLANNEDSTARTTIME',
+//     })
+//     .join('dbo.DYTFMACHINES as m', 'b.PLANNEDMACHINE', 'm.MACHINEID')
+//     .orderBy('b.PLANNEDSTARTTIME', 'desc')
+//   return orders
+// }))
 
 const selectParameters = {
   joborder: 'b.JOBORDER',
@@ -29,14 +29,35 @@ const selectParameters = {
   programList: 'b.PROGRAMNOLIST',
   plannedStartTime: 'b.PLANNEDSTARTTIME',
 }
-router.post('/filtered-joborders', defineEventHandler(async (event) => {
+
+router.get('/joborder-count', defineEventHandler(async (event) => {
+  return (await knex('DYBFBATCHPLAN')
+    .count('* as count').first())!.count
+}))
+router.post('/joborders', defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const ordersKnex: any = knex('DYBFBATCHPLAN as b')
+  const knexInstance: any = knex('DYBFBATCHPLAN as b')
     .join('dbo.DYTFMACHINES as m', 'b.PLANNEDMACHINE', 'm.MACHINEID')
-    .orderBy('b.JOBORDER', 'b.CORRECTIONNUMBER')
-    .select(selectParameters)
-  if (body.length > 0)
-    return await filtersToKnex(body, selectParameters, ordersKnex)
-  else
-    return await ordersKnex
+
+  if (body.filters && body.filters?.length > 0) {
+    filtersToKnex(body.filters, selectParameters, knexInstance)
+  }
+
+  const countQuery = knexInstance.clone().count('* as count').first()
+  const count = (await countQuery).count
+
+  knexInstance.select(selectParameters)
+
+  if (body.pagination) {
+    if (body.pagination.sortBy)
+      knexInstance.orderBy(selectParameters[body.pagination.sortBy], body.pagination.descending ? 'desc' : 'asc')
+    else
+      knexInstance.orderBy('b.JOBORDER', 'b.CORRECTIONNUMBER')
+    if (body.pagination.page && body.pagination.rowsPerPage) {
+      const offset = (body.pagination.page - 1) * body.pagination.rowsPerPage
+      knexInstance.limit(body.pagination.rowsPerPage).offset(offset)
+    }
+  }
+
+  return { rows: await knexInstance, count }
 }))

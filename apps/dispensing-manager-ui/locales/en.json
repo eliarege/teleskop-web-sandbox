@@ -39,6 +39,10 @@
   "more": "more",
   "yes": "Yes",
   "no": "No",
+  "add": "Add",
+  "replace": "Replace",
+  "selectAll": "Select All",
+  "cancel": "İptal",
   "settings": {
     "_": "Settings",
     "requestFileSystem": "Request files directory",
@@ -54,7 +58,9 @@
       "dispProtocol": "Dispenser Protocol",
       "dispConsumptionFileName": "Consumption File Name",
       "readFromDMS": "Read from DMS",
-      "connectionStatus": "Connection Status"
+      "connectionStatus": "Connection Status",
+      "exportFileName": "Export Path",
+      "exportIrrelevantConsumptions": "Export Unrealted Consumptions"
     },
     "appSettings": "Application Settings",
     "deleteExpiredJobOrders": "Delete expired job orders",
@@ -150,7 +156,8 @@
     "checkTankLevelInChemicalRequests": "Check Tank Level in Chemical Requests",
     "executeOrderOnlyInPlannedMachine": "Execute Order Only in Planned Machine",
     "determineCouplingRecipe": "Determine Coupling Recipe",
-    "checkTankNumberWhenMakingManualOnlineRequest": "Check Tank Number When Making a Manual Online Request"
+    "checkTankNumberWhenMakingManualOnlineRequest": "Check Tank Number When Making a Manual Online Request",
+    "showRecipeAmount": "Show original amount for materials with recalculated amount"
   },
   "dispensingManager": {
     "_": "Distribution Processor",
@@ -346,5 +353,21 @@
     "requestError3": "Non-rerequestable material cannot be rerequested.",
     "requestError4": "Recipe steps with status {status} cannot be rerequested.",
     "requestError5": "Recipe step cannot be found on DYTFCHEMREQUESTS."
+  },
+  "multiEditDialog": {
+    "_": "Multiple {type} Edit",
+    "tooltip": "Edit Multiple Dispenser Connections",
+    "machines": "machines",
+    "materials": "materials",
+    "selectObjectsWantToChange": "Select the {type} you want to edit.",
+    "selectDispensers": "Select the dispensers you want to add-replace.",
+    "successWarning": "Dispenser connections successfully edited.",
+    "failWarning": "An error occured during editing dispenser connections."
+  },
+  "dispenserConnectionStatus": {
+    "0": "Connected",
+    "1": "No connection",
+    "2": "Dispener's path is not accesible",
+    "3": "Dispensing manager service is not working."
   }
 }

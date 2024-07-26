@@ -46,6 +46,6 @@ export default defineEventHandler(async (event) => {
 
   jobOrders = jobOrders.limit(1000)
   if (filters)
-    return await filtersToKnex(filters, selectParams, jobOrders)
+    filtersToKnex(filters, selectParams, jobOrders)
   return await jobOrders
 })

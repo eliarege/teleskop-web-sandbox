@@ -15,7 +15,7 @@ const items = [
   },
   {
     label: tt('dispensingManager.recipeMeasurement'),
-    to: '/recete-tartim',
+    to: '/recipe',
   },
   {
     label: tt('registeredJobOrders._'),

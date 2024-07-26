@@ -1,5 +1,4 @@
 import { createRouter, defineEventHandler, useBase } from 'h3'
-import { execa } from 'execa'
 import { filtersToKnex } from 'utils'
 import { knex } from '~/server/connectionPool'
 
@@ -30,19 +29,25 @@ router.get('/check-is-dispenser-exist/:dispenserId', defineEventHandler(async (e
   else return false
 }))
 
+const dispenserParameters = {
+  dispNo: 'DISPENSERID',
+  name: 'NAME',
+  dispType: 'DISPENSERTYPENO',
+  fileName: 'BDYREQUESTNAME',
+  fileSystem: 'BDYREQUESTPATH',
+  protocol: 'PROTOCOL',
+  dispIP: 'IP',
+  dispConsumptionFileName: 'CONSUMPTIONFILENAME',
+  dms: 'READCONSUMPTIONFROMDMS',
+  exportIrrelevantConsumptions: 'EXPORTIRRELEVANTCONSUMPTION',
+  exportFileName: 'EXPORTFILENAME',
+  connectionControlDate: 'CONNECTIONCONTROLDATE',
+  connectionStatus: 'CONNECTIONSTATUS',
+}
+
 router.get('/dispenser', defineEventHandler(async () => {
   const dispensers = await knex('DYTFDISPENSERSETTINGS')
-    .select({
-      dispNo: 'DISPENSERID',
-      name: 'NAME',
-      dispType: 'DISPENSERTYPENO',
-      fileName: 'BDYREQUESTNAME',
-      fileSystem: 'BDYREQUESTPATH',
-      protocol: 'PROTOCOL',
-      dispIP: 'IP',
-      dispConsumptionFileName: 'CONSUMPTIONFILENAME',
-      dms: 'READCONSUMPTIONFROMDMS',
-    })
+    .select(dispenserParameters)
     .orderBy('DISPENSERID', 'asc')
   return dispensers
 }))
@@ -67,40 +72,39 @@ router.get('/dispenser-connection-status', defineEventHandler(async (event) => {
       dispNo: 'DISPENSERID',
       fileSystem: 'BDYREQUESTPATH',
       dispIP: 'IP',
+      connectionControlDate: 'CONNECTIONCONTROLDATE',
+      connectionStatus: 'CONNECTIONSTATUS',
     })
-  const statusPromises = dispensers.map((dispenser) => {
-    return execa('ping', ['-c', '1', '-W', '1', dispenser.dispIP])
-      .then(() => ({
-        ...dispenser,
-        status: true,
-      }))
-      .catch(() => ({
-        ...dispenser,
-        status: false,
-      }))
+  const now = new Date()
+  return dispensers.map((disp) => {
+    if ((now.getTime() - new Date(disp.connectionControlDate).getTime()) > 120000) {
+      return {
+        ...disp,
+        connectionStatus: 3,
+      }
+    } else return disp
   })
-
-  return await Promise.all(statusPromises)
+  // const statusPromises = dispensers.map((dispenser) => {
+  //   return execa('ping', ['-c', '1', '-W', '1', dispenser.dispIP])
+  //     .then(() => ({
+  //       ...dispenser,
+  //       status: true,
+  //     }))
+  //     .catch(() => ({
+  //       ...dispenser,
+  //       status: false,
+  //     }))
+  // })
+  // return await Promise.all(statusPromises)
 }))
-
-const dispenserParameters = {
-  dispNo: 'DISPENSERID',
-  name: 'NAME',
-  dispType: 'DISPENSERTYPENO',
-  fileName: 'BDYREQUESTNAME',
-  fileSystem: 'BDYREQUESTPATH',
-  protocol: 'PROTOCOL',
-  dispIP: 'IP',
-  dispConsumptionFileName: 'CONSUMPTIONFILENAME',
-  dms: 'READCONSUMPTIONFROMDMS',
-}
 
 router.post('/filtered-dispenser', defineEventHandler(async (event) => {
   const body = await readBody(event)
   const dispensers = knex('DYTFDISPENSERSETTINGS')
     .select(dispenserParameters)
     .orderBy('DISPENSERID', 'asc')
-  return await filtersToKnex(body, dispenserParameters, dispensers)
+  filtersToKnex(body, dispenserParameters, dispensers)
+  return await dispensers
 }))
 
 router.post('/dispenser/:dispNo', defineEventHandler(async (event) => {
@@ -127,6 +131,8 @@ router.post('/dispenser/:dispNo', defineEventHandler(async (event) => {
       IP: body?.dispIP,
       CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
       READCONSUMPTIONFROMDMS: body?.dms,
+      EXPORTIRRELEVANTCONSUMPTION: body?.exportIrrelevantConsumptions,
+      EXPORTFILENAME: body?.exportFileName,
     })
   return dispenser
 }))
@@ -149,6 +155,8 @@ router.put('/dispenser/:dispNo', defineEventHandler(async (event) => {
       IP: body?.dispIP,
       CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
       READCONSUMPTIONFROMDMS: body?.dms,
+      EXPORTIRRELEVANTCONSUMPTION: body?.exportIrrelevantConsumptions,
+      EXPORTFILENAME: body?.exportFileName,
     })
   return dispenser
 }))
@@ -201,10 +209,9 @@ router.post('/machine-dispenser-connection-filtered', defineEventHandler(async (
     .leftJoin('DYTFMACHDISPCONNECTION as M', 'N.MACHINEID', 'M.MACHINEID')
     .orderBy('N.MACHINEID', 'N.DISPENSERID')
   if (body?.length > 0) {
-    machines = await filtersToKnex(body, machineParameters, machines)
-  } else {
-    machines = await machines
+    filtersToKnex(body, machineParameters, machines)
   }
+  machines = await machines
   const result: Array<{ machineid: number, disps: number[], machinename: string, controlDevice: number }> = []
   let lastID = 0
   machines.forEach((log) => {
@@ -279,6 +286,47 @@ router.put('/machine-dispenser-connection/:machineid', defineEventHandler(async 
   return 1
 }))
 
+router.post('/add-machine-dispenser-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  if (!body || !body.machineList || !body.dispenserList) {
+    throw new Error('Machines and dispensers are required!')
+  }
+  const insertArray = []
+  for (const machineid of body.machineList)
+    for (const dispNo of body.dispenserList) {
+      if (!(await knex('DYTFMACHDISPCONNECTION').where('DISPENSERID', dispNo).andWhere('MACHINEID', machineid)).length) {
+        insertArray.push({
+          DISPENSERID: dispNo,
+          MACHINEID: machineid,
+        })
+      }
+    }
+  if (insertArray.length)
+    await knex('DYTFMACHDISPCONNECTION')
+      .insert(insertArray)
+  return 1
+}))
+router.post('/replace-machine-dispenser-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  if (!body || !body.machineList || !body.dispenserList) {
+    throw new Error('Machines and dispensers are required!')
+  }
+  const insertArray = []
+  for (const machineid of body.machineList) {
+    await knex('DYTFMACHDISPCONNECTION').delete().where('MACHINEID', machineid)
+    for (const dispNo of body.dispenserList) {
+      insertArray.push({
+        DISPENSERID: dispNo,
+        MACHINEID: machineid,
+      })
+    }
+  }
+  if (insertArray.length)
+    await knex('DYTFMACHDISPCONNECTION')
+      .insert(insertArray)
+  return 1
+}))
+
 router.delete('/machine-dispenser-connection/:machineid', defineEventHandler(async (event) => {
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
@@ -349,6 +397,53 @@ const selectParametersMaterials = {
   dispNo: 'C.DISPENSERID',
 }
 
+router.get('/materials-key-value', defineEventHandler(async (event) => {
+  return await knex('DYTFMATERIAL as M')
+    .select({ materialCode: 'M.MATERIALCODE', materialLabel: knex.raw('CONCAT(\'(\', M.MATERIALCODE, \') \', M.MATERIALNAME)') })
+    .orderBy('M.MATERIALCODE')
+}))
+
+router.post('/add-material-dispenser-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  if (!body || !body.materialList || !body.dispenserList) {
+    throw new Error('Materials and dispensers are required!')
+  }
+  const insertArray = []
+  for (const materialCode of body.materialList)
+    for (const dispNo of body.dispenserList) {
+      if (!(await knex('DYTFCHEMDISPCONNECTION').where('DISPENSERID', dispNo).andWhere('CHEMCODE', materialCode)).length) {
+        insertArray.push({
+          DISPENSERID: dispNo,
+          CHEMCODE: materialCode,
+        })
+      }
+    }
+  if (insertArray.length)
+    await knex('DYTFCHEMDISPCONNECTION')
+      .insert(insertArray)
+  return 1
+}))
+router.post('/replace-material-dispenser-connection', defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  if (!body || !body.materialList || !body.dispenserList) {
+    throw new Error('Materials and dispensers are required!')
+  }
+  const insertArray = []
+  for (const materialCode of body.materialList) {
+    await knex('DYTFCHEMDISPCONNECTION').delete().where('CHEMCODE', materialCode)
+    for (const dispNo of body.dispenserList) {
+      insertArray.push({
+        DISPENSERID: dispNo,
+        CHEMCODE: materialCode,
+      })
+    }
+  }
+  if (insertArray.length)
+    await knex('DYTFCHEMDISPCONNECTION')
+      .insert(insertArray)
+  return 1
+}))
+
 router.post('/material-dispenser-connection-filtered', defineEventHandler(async (event) => {
   const body = await readBody(event)
   let materials: any = knex('DYTFMATERIAL as M')
@@ -356,10 +451,9 @@ router.post('/material-dispenser-connection-filtered', defineEventHandler(async 
     .leftJoin('DYTFCHEMDISPCONNECTION as C', 'C.CHEMCODE', 'M.MATERIALCODE')
     .orderBy('M.MATERIALCODE', 'C.DISPENSERID')
   if (body?.length > 0) {
-    materials = await filtersToKnex(body, selectParametersMaterials, materials)
-  } else {
-    materials = await materials
+    filtersToKnex(body, selectParametersMaterials, materials)
   }
+  materials = await materials
 
   const result: Array<any> = []
   let lastCode = 0
@@ -479,16 +573,10 @@ router.get('/request-mechanism-setting', defineEventHandler(async () => {
       manuelOnlineRequestTankNoControl: 'DYMANUALTANKMECH',
       coupleMechanismSplit: 'DYCOUPLEMECHANISM',
       justRunOnPlannedMachine: 'DYMACHCONTROLMECH',
+      showRecipeAmount: 'SHOWRECIPEAMOUNT',
     })
   return sett[0]
 }))
-
-// DirectTransferActive
-// DirectTransferAllMaterial
-// OPTIMIZATIONUSED
-// DYREQMECHANISM first on first
-// repeatRequestIfLastcompleted //second on first
-// no third on first
 
 router.put('/request-mechanism-setting', defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -516,6 +604,7 @@ router.put('/request-mechanism-setting', defineEventHandler(async (event) => {
       DYMANUALTANKMECH: body.manuelOnlineRequestTankNoControl,
       DYCOUPLEMECHANISM: body.coupleMechanismSplit,
       DYMACHCONTROLMECH: body.justRunOnPlannedMachine,
+      SHOWRECIPEAMOUNT: body.showRecipeAmount,
     })
 
   // reqMechanismAnswerOptions: '',
