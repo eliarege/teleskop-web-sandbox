@@ -16,3 +16,18 @@ export const db = Knex({
     },
   },
 })
+
+export const dmExchange = Knex({
+  client: 'mssql',
+  connection: {
+    host: config.dmexchangeHost,
+    port: Number.parseInt(config.dmexchangePort),
+    user: config.dmexchangeUser,
+    password: String(config.dmexchangePassword),
+    database: config.dmexchangeDatabase,
+    options: {
+      instanceName: config.dmexchangeInstanceName || undefined,
+      trustServerCertificate: true,
+    },
+  },
+})

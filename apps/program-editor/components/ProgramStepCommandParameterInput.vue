@@ -18,7 +18,6 @@ const rules = [
   (value: number | string) => value !== '' || t('input.required', { field: t('program.parameter') }),
   (value: number | string) => (Number(value) >= props.parameter.minValue && Number(value) <= props.parameter.maxValue) || t('valueOutOfRange', { minValue: props.parameter.minValue, maxValue: props.parameter.maxValue }),
 ]
-
 const options = computed(() => props.parameter.selections || [])
 const formulaOptions = computed(() =>
   editor.machine.commandFormulas.filter((f: CommandFormula) => f.commandNo === props.commandno).map((f: CommandFormula) => ({

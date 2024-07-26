@@ -969,6 +969,23 @@ export class MachineController {
           ERRORWARNING: 0,
           OPTIMIZED: parameter.optimized ? 1 : 0,
         })
+        const programNo = program.programNo
+        const machineId = program.machineId
+        const commandNo = step.mainCommand.commandNo
+        const paramIndex = parameter.index
+        const optimized = parameter.optimized
+        const parallelStep = 0
+        const mainStep = i
+
+        this.updateTreatmentParameters(
+          programNo,
+          machineId,
+          commandNo,
+          paramIndex,
+          optimized,
+          parallelStep,
+          mainStep,
+        )
       })
 
       step.mainCommand.ioList.forEach((io, k) => {

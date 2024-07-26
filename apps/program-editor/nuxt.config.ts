@@ -12,6 +12,14 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
+
+    dmexchangeHost: 'localhost',
+    dmexchangeUser: '',
+    dmexchangePort: '1433',
+    dmexchangePassword: '',
+    dmexchangeDatabase: 'DmExchange',
+    dmexchangeInstanceName: '',
+
     teleskopTimezoneOffset: -180,
     public: {
       kcClientId: 'program-editor',
