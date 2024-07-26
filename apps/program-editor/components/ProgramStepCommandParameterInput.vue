@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import InputDuration from './InputDuration.vue'
+import DurationInput from './DurationInput.vue'
 import InputNumber from './InputNumber.vue'
 import type { CommandFormula, CommandParameter, ParameterItem } from '~/shared/types'
 
@@ -35,12 +35,11 @@ watch(() => model.value, (newValue: number) => {
 
 <template>
   <template v-if="parameter.type === 'NUMBER'">
-    <InputDuration
+    <DurationInput
       v-if="parameter.format === 'DURATION'"
       v-model="model"
       :label="parameter.name"
-      :min-value="parameter.minValue"
-      :max-value="parameter.maxValue"
+      :rules="rules"
     />
     <InputNumber
       v-else

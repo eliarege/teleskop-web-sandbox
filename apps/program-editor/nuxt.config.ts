@@ -33,6 +33,7 @@ export default defineNuxtConfig({
     typescript: {
       tsConfig: {
         compilerOptions: {
+          allowJs: true,
           experimentalDecorators: true,
         },
       },
