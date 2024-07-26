@@ -583,35 +583,35 @@ function onRequest(pagination: QTableProps['pagination']) {
 .selected-row {
   background-color: #cce8ff;
 }
-.my-sticky-virtscroll-table-recipe {
+.virtual-scroll {
   height: 100%;
   min-height: 50vh;
 }
 
-.my-sticky-virtscroll-table-recipe :deep(.q-table__top),
-.my-sticky-virtscroll-table-recipe :deep(.q-table__bottom),
-.my-sticky-virtscroll-table-recipe :deep(thead tr:first-child th) {
+.virtual-scroll :deep(.q-table__top),
+.virtual-scroll :deep(.q-table__bottom),
+.virtual-scroll :deep(thead tr:first-child th) {
   background-color: #ffffff;
 }
-.body--dark .my-sticky-virtscroll-table-recipe :deep(.q-table__top),
-.body--dark .my-sticky-virtscroll-table-recipe :deep(.q-table__bottom),
-.body--dark .my-sticky-virtscroll-table-recipe :deep(thead tr:first-child th) {
+.body--dark .virtual-scroll :deep(.q-table__top),
+.body--dark .virtual-scroll :deep(.q-table__bottom),
+.body--dark .virtual-scroll :deep(thead tr:first-child th) {
   background-color: #000000;
 }
-.my-sticky-virtscroll-table-recipe :deep(thead tr th) {
+.virtual-scroll :deep(thead tr th) {
   position: sticky;
   z-index: 1;
 }
 
-.my-sticky-virtscroll-table-recipe :deep(thead tr:last-child th) {
+.virtual-scroll :deep(thead tr:last-child th) {
   top: 48px;
 }
 
-.my-sticky-virtscroll-table-recipe :deep(thead tr:first-child th) {
+.virtual-scroll :deep(thead tr:first-child th) {
   top: 0;
 }
 
-.my-sticky-virtscroll-table-recipe :deep(tbody) {
+.virtual-scroll :deep(tbody) {
   scroll-margin-top: 48px;
 }
 .ordering-buttons {
