@@ -38,6 +38,8 @@ watch(() => model.value, (newValue: number) => {
     <DurationInput
       v-if="parameter.format === 'DURATION'"
       v-model="model"
+      dense
+      outlined
       :label="parameter.name"
       :rules="rules"
     />

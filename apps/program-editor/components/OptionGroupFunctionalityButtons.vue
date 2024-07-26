@@ -6,20 +6,25 @@ const props = defineProps({
   options: Array<{ value: any }>,
 })
 const emit = defineEmits(['update:model'])
-
 const { t } = useI18n()
+const buttons = [
+  { icon: 'check', tooltip: t('selectAll'), onClick: () => emit('update:model', selectAllCheckboxOnOptionGroup(props.options!)) },
+  { icon: 'remove', tooltip: t('dropAll'), onClick: () => emit('update:model', removeAllCheckboxOnOptionGroup()) },
+  { icon: 'sync_alt', tooltip: t('selectReverse'), onClick: () => emit('update:model', reverseAllCheckboxOnOptionGroup(props.options!, props.model!)) },
+]
 </script>
 
 <template>
   <div>
-    <q-btn icon="check" dense class="p-2" @click="emit('update:model', selectAllCheckboxOnOptionGroup(props.options!))">
+    <q-btn
+      v-for="(button, index) in buttons"
+      :key="index"
+      dense
+      flat
+      @click="button.onClick()"
+    >
+      <q-icon :name="button.icon" size="xs" />
       <q-tooltip> {{ t('selectAll') }}</q-tooltip>
-    </q-btn>
-    <q-btn icon="remove" dense class="p-2" @click="emit('update:model', removeAllCheckboxOnOptionGroup())">
-      <q-tooltip> {{ t('dropAll') }}</q-tooltip>
-    </q-btn>
-    <q-btn icon="sync_alt" dense class="p-2" @click="emit('update:model', reverseAllCheckboxOnOptionGroup(props.options!, props.model!))">
-      <q-tooltip> {{ t('selectReverse') }}</q-tooltip>
     </q-btn>
   </div>
 </template>

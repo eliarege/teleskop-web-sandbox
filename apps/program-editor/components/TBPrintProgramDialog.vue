@@ -10,8 +10,6 @@ const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
 const selectedMachine = ref()
 const programGroup = ref([])
-const selectedPrinter = ref()
-const printers = ref([1, 2, 3, 4, 5])
 const programOptions = ref([] as any[])
 const commandGroup = ref([])
 const commandOptions = ref([] as any[])
@@ -34,7 +32,7 @@ async function machineSelected(e) {
 
 <template>
   <q-dialog ref="dialogRef" persistent>
-    <q-card>
+    <q-card class="min-h-40 min-w-120">
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">
           {{ t('printProgramDialog.programPrintOptions') }}
@@ -60,9 +58,10 @@ async function machineSelected(e) {
           @update:model-value="machineSelected"
         />
       </q-card-section>
-      <q-card-section>
-        <div>
+      <q-card-section v-if="programOptions.length">
+        <div class="flex">
           {{ t('printProgramDialog.selectPrograms') }}
+          <q-space />
           <OptionGroupFunctionalityButtons
             :model="programGroup"
             :options="programOptions"
@@ -79,9 +78,10 @@ async function machineSelected(e) {
           />
         </div>
       </q-card-section>
-      <q-card-section>
-        <div>
+      <q-card-section v-if="commandOptions.length">
+        <div class="flex">
           {{ t('printProgramDialog.selectCommands') }}
+          <q-space />
           <OptionGroupFunctionalityButtons
             :model="commandGroup"
             :options="commandOptions"
@@ -98,16 +98,12 @@ async function machineSelected(e) {
           />
         </div>
       </q-card-section>
-      <q-card-section>
-        <div>
-          {{ t('printProgramDialog.selectPrinter') }}
-          <div class="m-5">
-            <q-select
-              v-model="selectedPrinter"
-              dense
-              :options="printers"
-            />
-          </div>
+      <q-card-section v-if="programOptions.length && commandOptions.length">
+        <div class="flex">
+          <q-space />
+          <q-btn
+            :label="t('submit')"
+          />
         </div>
       </q-card-section>
     </q-card>
