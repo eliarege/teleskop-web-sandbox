@@ -52,10 +52,9 @@ function getCursorSelection(event, hideSeconds) {
 
 /**
  * Set the 'data-adjustment-factor' attribute for a picker
- * @param {*} inputBox
  * @param {3600 | 60 | 1} adjustmentFactor
  */
-function updateActiveAdjustmentFactor(inputBox, adjustmentFactor) {
+function updateActiveAdjustmentFactor(adjustmentFactor) {
   _adjustmentFactor = adjustmentFactor
 }
 
@@ -100,19 +99,19 @@ function handleClickFocus(event) {
   const cursorAdjustmentFactor = hideSeconds ? 3 : 0
   switch (cursorSelection) {
     case 'hours':
-      updateActiveAdjustmentFactor(inputBox, 3600)
+      updateActiveAdjustmentFactor(3600)
       event.target.setSelectionRange(0, hourMarker)
       return
     case 'minutes':
-      updateActiveAdjustmentFactor(inputBox, 60)
+      updateActiveAdjustmentFactor(60)
       event.target.setSelectionRange(hourMarker + 1, minuteMarker + cursorAdjustmentFactor)
       return
     case 'seconds':
-      updateActiveAdjustmentFactor(inputBox, 1)
+      updateActiveAdjustmentFactor(1)
       event.target.setSelectionRange(minuteMarker + 1, minuteMarker + 3)
       return
     default:
-      updateActiveAdjustmentFactor(inputBox, 1)
+      updateActiveAdjustmentFactor(1)
       event.target.setSelectionRange(minuteMarker + 1, minuteMarker + 3)
   }
 }
@@ -213,7 +212,7 @@ function getAdjustmentFactor(_inputBox) {
 function changeValueByArrowKeys(inputBox, direction) {
   const adjustmentFactor = getAdjustmentFactor(inputBox)
   let secondsValue = durationToSeconds(inputBox.value)
-
+  console.log(adjustmentFactor)
   switch (direction) {
     case 'up':
       secondsValue += adjustmentFactor
@@ -507,7 +506,7 @@ function insertAndApplyValidations(event) {
 /**
  * Handles all key down event in the picker. It will also apply validation
  * and block unsupported keys like alphabetic characters
- * @param {*} event
+ * @param {KeyboardEvent} event
  * @return {void}
  */
 function handleKeydown(event) {
@@ -517,14 +516,16 @@ function handleKeydown(event) {
   if (changeValueKeys.includes(event.key)) {
     switch (event.key) {
       // use up and down arrow keys to increase value;
-      // case 'ArrowDown':
-      //   changeValueByArrowKeys(event.target, 'down')
-      //   highlightTimeUnitArea(event.target, adjustmentFactor)
-      //   break
-      // case 'ArrowUp':
-      //   changeValueByArrowKeys(event.target, 'up')
-      //   highlightTimeUnitArea(event.target, adjustmentFactor)
-      //   break
+      case 'ArrowDown':
+        event.stopPropagation()
+        changeValueByArrowKeys(event.target, 'down')
+        highlightTimeUnitArea(event.target, adjustmentFactor)
+        break
+      case 'ArrowUp':
+        event.stopPropagation()
+        changeValueByArrowKeys(event.target, 'up')
+        highlightTimeUnitArea(event.target, adjustmentFactor)
+        break
       // use left and right arrow keys to shift focus;
       case 'ArrowLeft':
         shiftTimeUnitAreaFocus(event.target, 'left')

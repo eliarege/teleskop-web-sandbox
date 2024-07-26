@@ -15,15 +15,15 @@ const id = useId()
 
 <template>
   <q-field
-    :id="id"
+    :id
     v-model="model"
-    :dense="dense"
-    :clearable="clearable"
-    :label="label"
+    :dense
+    :clearable
+    :label
     :for="id"
-    :filled="filled"
-    :outlined="outlined"
-    :rules="rules"
+    :filled
+    :outlined
+    :rules
   >
     <template #control>
       <DurationInputRaw :id="id" v-model="model" />
