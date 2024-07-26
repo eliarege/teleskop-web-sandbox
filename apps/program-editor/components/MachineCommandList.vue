@@ -3,7 +3,7 @@ import { Sortable } from 'sortablejs-vue3'
 import { useQuasar } from 'quasar'
 import type { SortableEvent, SortableOptions } from 'sortablejs'
 import { isDef } from 'utils'
-import { PRG_STATE_COLORS } from '~/shared/constants'
+import { ProgramStateColors } from '~/shared/constants'
 import { useEditorStore } from '~/composables/editor'
 import type { MachineCommand } from '~/shared/types'
 
@@ -34,11 +34,11 @@ const filteredCommands = computed(() => {
 })
 
 const programStatus = computed(() => [
-  { label: t('programStatusInfo.noChanges'), color: dark.isActive ? PRG_STATE_COLORS.NO_CHANGES_DARK : PRG_STATE_COLORS.NO_CHANGES },
-  { label: t('programStatusInfo.onlyOnTeleskop'), color: PRG_STATE_COLORS.EXISTS_ONLY_ON_DATABASE },
-  { label: t('programStatusInfo.onlyOnController'), color: PRG_STATE_COLORS.EXISTS_ONLY_ON_CONTROLLER },
-  { label: t('programStatusInfo.changedOnTeleskop'), color: PRG_STATE_COLORS.CHANGED_ON_TELESKOP },
-  { label: t('programStatusInfo.changedOnMachine'), color: PRG_STATE_COLORS.CHANGED_ON_MACHINE },
+  { label: t('programStatusInfo.noChanges'), color: dark.isActive ? ProgramStateColors.NO_CHANGES_DARK : ProgramStateColors.NO_CHANGES },
+  { label: t('programStatusInfo.onlyOnTeleskop'), color: ProgramStateColors.EXISTS_ONLY_ON_DATABASE },
+  { label: t('programStatusInfo.onlyOnController'), color: ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER },
+  { label: t('programStatusInfo.changedOnTeleskop'), color: ProgramStateColors.CHANGED_ON_TELESKOP },
+  { label: t('programStatusInfo.changedOnMachine'), color: ProgramStateColors.CHANGED_ON_MACHINE },
 ])
 
 let draggedCommand: any = null
