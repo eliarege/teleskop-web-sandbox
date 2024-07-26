@@ -10,6 +10,7 @@
   "welcome": "Welcome",
   "search": "Search",
   "searchCommand": "Search Command",
+  "optimized-parameter": "Optimized Parameter",
   "valueOutOfRange": "Value must be between {minValue} and {maxValue}",
   "operator": "Operator can be used to change the program",
   "selectCommand": "Select Command",

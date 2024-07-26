@@ -10,6 +10,7 @@
   "welcome": "Hoşgeldiniz",
   "search": "Ara",
   "searchCommand": "Komut Ara",
+  "optimized-parameter": "Optimize Parametresi",
   "valueOutOfRange": "{minValue} ile {maxValue} arasında bir değer giriniz",
   "operator": "Operatör müdahale edebilir",
   "selectCommand": "Komut Seçiniz",
