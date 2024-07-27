@@ -60,6 +60,9 @@ watch([width, parentWidth, defaultWidth], () => {
       </div>
     </div>
   </div>
+  <div v-if="editor.program.programNo" class="flex items-center">
+    {{ editor.theoricDuration }}
+  </div>
   <QBtn
     class="text-gray-6 dark:text-gray-3"
     icon="menu"

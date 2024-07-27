@@ -33,6 +33,8 @@ export const useEditorStore = defineStore('editor', () => {
   const errorIds = ref(new Set<string>())
   const { notifySuccess, notifyError } = useNotify()
 
+  const theoricDuration = computed(() => formatDuration(calculateProgramDuration(program.value, machine.value)))
+
   async function changeMachine(id: number, name: string) {
     selectedPrograms.value = []
     const MACHINE_PATH_RE = /^\/machine\/\d+$/
@@ -315,6 +317,7 @@ export const useEditorStore = defineStore('editor', () => {
       name: '',
       icon: '',
       programNo: 0,
+      duration: 0,
       author: '',
       comment: '',
       typeId: 0,
@@ -432,6 +435,7 @@ export const useEditorStore = defineStore('editor', () => {
     popupCommandDetailVisible,
     leftDrawerOpen,
     rightDrawerOpen,
+    theoricDuration,
     fetchProgram,
     fetchMachine,
     fetchMachineCommands,

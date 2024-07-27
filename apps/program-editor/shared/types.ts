@@ -57,9 +57,14 @@ export interface MachineCommand {
   isRunManual: boolean
   commandType: number
   moveParallel: number
-  durations: string
-  temperature: string
-  parameters: CommandParameters[]
+  x: string
+  y: string
+  a: string
+  maxA: string
+  b: string
+  isTemperature: number
+  isUnload: number
+  parameters: CommandParameter[]
   ioList: CommandIO[]
 }
 
@@ -86,6 +91,7 @@ export interface ParameterSelections {
 export interface CommandIO {
   index: number
   physicalId: number
+  type: number
   selectable: boolean
   name: string
   selections: CommandIOSelection[]
@@ -112,6 +118,7 @@ export interface ioItem {
 export interface ProgramHeader {
   programNo: number
   name: string
+  duration: number
   author: string | null
   comment: string | null
   typeId: number

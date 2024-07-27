@@ -13,6 +13,7 @@
   "valueOutOfRange": "{minValue} ile {maxValue} arasında bir değer giriniz",
   "operator": "Operatör müdahale edebilir",
   "selectCommand": "Komut Seçiniz",
+  "programNotUpdated": "Program güncellenemedi",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",

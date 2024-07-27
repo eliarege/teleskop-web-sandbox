@@ -81,7 +81,7 @@ export function assertIndex(index: number, max: number): void {
  * @returns - Komut bilgileri
  */
 export function getMachineCommand(commandNo: number, parameterOrIoList?: 'parameters' | 'ioList', index?: number, selectionIndex?: number):
-  MachineCommand | CommandParameters | CommandIO | ParameterSelections | CommandIOSelection | MachineCommand[] | CommandParameters[] | CommandIO[] | ParameterSelections[] | CommandIOSelection[] | undefined {
+  MachineCommand | CommandParameter | CommandIO | ParameterSelections | CommandIOSelection | MachineCommand[] | CommandParameter[] | CommandIO[] | ParameterSelections[] | CommandIOSelection[] | undefined {
   const editor = useEditorStore()
 
   const command: MachineCommand | undefined = editor.machine.commands.get(commandNo)

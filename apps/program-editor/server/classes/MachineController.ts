@@ -9,6 +9,7 @@ import { parseProgramString } from '../parse'
 import { PError } from '../error'
 import type { BatchParameter, CommandFormula, CommandIO, Machine, MachineCommand, MachineConstant, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
+import { calculateProgramDuration } from '~/shared/formula'
 
 export class MachineController {
   readonly id: number
@@ -55,8 +56,13 @@ export class MachineController {
         isRunManual: 'C.ISRUNMANUAL',
         commandType: 'C.COMMANDTYPE',
         moveParallel: 'C.MOVEPARALLEL',
-        durations: 'C.X',
-        temperature: 'C.Y',
+        x: 'C.X',
+        y: 'C.Y',
+        a: 'C.A',
+        maxA: 'C.MAXA',
+        b: 'C.B',
+        isTemperature: 'C.ISTEMPERATURE',
+        isUnload: 'C.ISUNLOAD',
         parameters: this.trx.raw(sql`
         ISNULL((
           SELECT
@@ -78,9 +84,12 @@ export class MachineController {
                 ELSE 'DURATION'
               END
             , '[]'),
-            P.VALUE as defaultValue,
+            P.VALUE as [value],
             P.PARAMLOWLIMIT as minValue,
             P.PARAMHIGHLIMIT as maxValue,
+            P.CONTAINSVARIABLE as containsVariable,
+            P.USEDEFAULT as useDefault,
+            P.USEFORMULA as useFormula,
             selections = ISNULL((
               SELECT
                 TRIM(SUBSTRING(l.value, 2, LEN(l.value) - 2)) as name,
@@ -249,6 +258,7 @@ export class MachineController {
         name: 'P.NAME',
         icon: this.trx.raw('CASE P.ICONNAME WHEN \'\' THEN \'null\' END'),
         programNo: 'P.PROGNO',
+        duration: 'P.DURATION',
         author: 'P.LOCKEDBY',
         comment: 'P.USERCOMMENT',
         typeId: 'T.PROCESSCODE',
@@ -531,6 +541,7 @@ export class MachineController {
       machineId: this.id,
       machineName: machine.name,
       programNo,
+      duration: 0,
       typeName: '',
       programState: ProgramStatus.EXISTS_ON_BOTH,
       icon: '',
