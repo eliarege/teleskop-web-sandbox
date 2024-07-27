@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import InputDuration from './InputDuration.vue'
 import InputNumber from './InputNumber.vue'
-import type { CommandParameters, ParameterItem } from '~/shared/types'
+import type { CommandFormula, CommandParameter, ParameterItem } from '~/shared/types'
 
 const props = defineProps<{
   path: string
@@ -20,8 +20,15 @@ const rules = [
 ]
 
 const options = computed(() => props.parameter.selections || [])
+const formulaOptions = computed(() =>
+  editor.machine.commandFormulas.filter((f: CommandFormula) => f.commandNo === props.commandno).map((f: CommandFormula) => ({
+    label: f.formulaName,
+    value: f.formulaId,
+    formula: f.formula,
+  })),
+)
 
-watch(() => model.value, (newValue) => {
+watch(() => model.value, (newValue: number) => {
   programParameter.value = newValue
 })
 </script>
@@ -62,4 +69,38 @@ watch(() => model.value, (newValue) => {
     dense
     style="width: 150px;"
   />
+  <div v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
+    <QSelect
+      v-model="model"
+      :label="parameter.name"
+      :options="formulaOptions"
+      option-label="label"
+      option-value="value"
+      options-dense
+      map-options
+      emit-value
+      outlined
+      dense
+      style="width: 200px;"
+    >
+      <template #option="scope">
+        <QItem
+          v-close-popup
+          dense
+          clickable
+          :active="model === scope.opt.value"
+          active-class="bg-blue-1"
+          @click="model = scope.opt.value"
+        >
+          <QItemSection>
+            {{ scope.opt.label }}
+            <q-tooltip>{{ scope.opt.formula }}</q-tooltip>
+          </QItemSection>
+        </QItem>
+      </template>
+    </QSelect>
+    <q-tooltip>
+      {{ formulaOptions.find((f) => f.value === model)?.formula }}
+    </q-tooltip>
+  </div>
 </template>

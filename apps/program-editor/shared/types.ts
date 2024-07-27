@@ -63,15 +63,18 @@ export interface MachineCommand {
   ioList: CommandIO[]
 }
 
-export interface CommandParameters {
+export interface CommandParameter {
   index: number
   name: string
   editable: boolean
   type: string
   format: string
-  defaultValue: number
+  value: string
   minValue: number
   maxValue: number
+  containsVariable: boolean
+  useDefault: boolean
+  useFormula: boolean
   selections: ParameterSelections[]
 }
 
