@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { QForm } from 'quasar'
-import { useI18n } from 'vue-i18n'
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
@@ -10,8 +9,8 @@ const form = ref<QForm>()
 const { t, locale } = useI18n()
 const route = useRoute()
 const $q = useQuasar()
-
 const { $commandManager } = useNuxtApp()
+
 const buttons = computed(() => [
   {
     label: t('menu.print'),
@@ -125,9 +124,3 @@ await editor.fetchProgram(machineId, programNo).then(() => {
     </QForm>
   </div>
 </template>
-
-<style lang="postcss" scoped>
-body {
-  user-select: none;
-}
-</style>

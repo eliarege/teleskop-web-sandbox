@@ -62,11 +62,3 @@ const { t } = useI18n()
     </q-tab-panels>
   </q-card>
 </template>
-
-<style lang="postcss" scoped>
-  td, th {
-    padding: 5px;
-    min-width: 200px;
-    vertical-align: baseline;
-  }
-</style>

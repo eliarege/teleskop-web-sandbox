@@ -1,0 +1,5 @@
+.tab-panel-class td, .tab-panel-class th {
+  padding: 5px;
+  min-width: 200px;
+  vertical-align: baseline;
+}

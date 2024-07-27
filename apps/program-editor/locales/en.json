@@ -13,6 +13,7 @@
   "valueOutOfRange": "Value must be between {minValue} and {maxValue}",
   "operator": "Operator can be used to change the program",
   "selectCommand": "Select Command",
+  "noParallelStep": "No Parallel Step",
   "programNotUpdated": "Program has not been updated",
   "input": {
     "required": "{field} cannot be empty.",
@@ -88,7 +89,9 @@
   },
   "command": {
     "icon": "Icon",
-    "no": "Command No",
+    "commandNo": "Command No",
+    "yes": "Yes",
+    "no": "No",
     "name": "Command Name",
     "type": "Command Type",
     "createDate": "Create Date",
@@ -99,7 +102,7 @@
     "parameter": {
       "name": "Parameter Adı",
       "type": "Parameter Type",
-      "defaultValue": "Default Value",
+      "value": "Value",
       "lowerLimit": "Lower Limit",
       "upperLimit": "Upper Limit",
       "unit": "Unit",
@@ -130,8 +133,8 @@
       "a": "A (slope)",
       "maxA": "Max A",
       "b": "B (waiting)",
-      "temperatureAffected": "Temperature Affected",
-      "discharge": "Discharge"
+      "isTemperature": "Temperature Affected",
+      "isUnload": "Discharge"
     },
     "io": {
       "name": "IO Name",
@@ -147,7 +150,8 @@
     "incorrect": "You entered the wrong value"
   },
   "error": {
-    "machineCommandNotFound": "{commandNo} number command {machineId} machine not found"
+    "machineCommandNotFound": "{commandNo} number command {machineId} machine not found",
+    "cannotMainCommand": "{commandNo} number command cannot be main command"
   },
   "selectAll": "Select all",
   "dropAll": "Drop all",

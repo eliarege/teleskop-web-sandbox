@@ -13,6 +13,7 @@
   "valueOutOfRange": "{minValue} ile {maxValue} arasında bir değer giriniz",
   "operator": "Operatör müdahale edebilir",
   "selectCommand": "Komut Seçiniz",
+  "noParallelStep": "Paralel Adım Yok",
   "programNotUpdated": "Program güncellenemedi",
   "input": {
     "required": "{field} boş olamaz.",
@@ -88,7 +89,9 @@
   },
   "command": {
     "icon": "İkon",
-    "no": "Komut Numarası",
+    "commandNo": "Komut Numarası",
+    "yes": "Evet",
+    "no": "Hayır",
     "name": "Komut Adı",
     "type": "Komut Tipi",
     "createDate": "Oluşturma Tarihi",
@@ -99,7 +102,7 @@
     "parameter": {
       "name": "Parametre Adı",
       "type": "Parametre Tipi",
-      "defaultValue": "Varsayılan Değer",
+      "value": "Değer",
       "lowerLimit": "Alt Sınır",
       "upperLimit": "Üst Sınır",
       "unit": "Birim",
@@ -130,8 +133,8 @@
       "a": "A (eğim)",
       "maxA": "Max A",
       "b": "B (bekleme)",
-      "temperatureAffected": "Sıcaklık Etkilenir",
-      "discharge": "Boşaltma"
+      "isTemperature": "Sıcaklık Etkilenir",
+      "isUnload": "Boşaltma"
     },
     "io": {
       "name": "IO Adı",
@@ -147,7 +150,8 @@
     "incorrect": "Hatalı değer girdiniz"
   },
   "error": {
-    "machineCommandNotFound": "{commandNo} numaralı komut {machineId} numaralı makinede bulunamadı"
+    "machineCommandNotFound": "{commandNo} numaralı komut {machineId} numaralı makinede bulunamadı",
+    "cannotMainCommand": "{commandNo} numaralı komut ana komut olamaz"
   },
   "selectAll": "Tümünü seç",
   "dropAll": "Tümünü bırak",
