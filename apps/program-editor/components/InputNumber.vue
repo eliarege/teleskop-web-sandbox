@@ -3,7 +3,7 @@ import type { QInput } from 'quasar'
 
 const props = withDefaults(defineProps<{
   type?: 'decimal' | 'integer' | 'positive-integer'
-  rules: any
+  rules?: any
   maxlength?: number
   outlined?: boolean
   dense?: boolean

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { QSelect } from 'quasar'
-import { defineProps } from 'vue'
 import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 import { useEditorStore } from '~~/composables/editor'
 import { COMMAND_TYPE } from '~/shared/constants'

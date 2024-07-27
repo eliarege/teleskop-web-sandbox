@@ -1,4 +1,4 @@
-import { Grammar, Parser } from 'nearley'
+import nearley from 'nearley'
 // @ts-expect-error TODO: Add shims for nearley files
 import grammar from './grammar.ne'
 import { ParameterType } from './constants'
@@ -87,6 +87,7 @@ function _calculateProgramStepDuration(step: ProgramStep, context: CalculationCo
   return duration
 }
 
+const { Grammar, Parser } = nearley
 const parseCache = new Map<string, any>()
 
 export function calculateFormula(step: ProgramStep, commandNo: number, formula: string, machine: Machine): number {

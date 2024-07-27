@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs'
-import { Grammar, Parser } from 'nearley'
+import nearley from 'nearley'
 import compile from 'nearley/lib/compile'
 import generate from 'nearley/lib/generate'
 import nearleyGrammar from 'nearley/lib/nearley-language-bootstrapped'
 
+const { Grammar, Parser } = nearley
 const grammar = Grammar.fromCompiled(nearleyGrammar)
 
 /**
