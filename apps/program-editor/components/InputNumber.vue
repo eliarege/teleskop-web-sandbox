@@ -164,12 +164,19 @@ function onBlur(event: FocusEvent) {
 
   input.value?.validate()
 }
+
+function onInput(event: Event) {
+  const { value } = event.target as HTMLInputElement
+  if (value !== '') {
+    model.value = Number.parseFloat(value)
+  }
+}
 </script>
 
 <template>
   <QField
     ref="input"
-    v-model="model"
+    :model-value="model"
     class="input-number"
     :for="id"
     :rules="rules"
@@ -183,7 +190,7 @@ function onBlur(event: FocusEvent) {
     <template #control="{ id }">
       <input
         :id="id"
-        v-model="model"
+        :value="model"
         type="text"
         :maxlength="maxlength"
         autocomplete="off"
@@ -192,6 +199,7 @@ function onBlur(event: FocusEvent) {
         @keydown="onKeydownPreventNonNumerical"
         @paste="onPastePreventNonNumerical"
         @drop="onDrop"
+        @input="onInput"
         @blur="onBlur"
       >
     </template>
