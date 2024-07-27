@@ -30,23 +30,27 @@ const programs = ref([] as ProgramHeader[])
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t })
 onKeyStroke('F2', (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (!route.params.program_no)
+  if (!route.params.program_no) {
+    event.preventDefault()
     editor.popupNewProgramVisible = true
-  else
+  } else {
+    event.preventDefault()
     editor.newStep()
+  }
 })
 
 onKeyStroke('F3', (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (route.params.program_no)
+  if (route.params.program_no) {
+    event.preventDefault()
     editor.newParallelStep()
+  }
 })
 
 onKeyStroke('F4', (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (editor.selectedPrograms.length === 1)
+  if (editor.selectedPrograms.length === 1) {
+    event.preventDefault()
     router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
+  }
 })
 
 onKeyStroke('F5', (event: KeyboardEvent) => {
@@ -54,40 +58,39 @@ onKeyStroke('F5', (event: KeyboardEvent) => {
   fetchPrograms()
 })
 
-onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
+onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
+    $commandManager.executeCommand('printProgram', { $q })
   }
 })
 
-onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (event.ctrlKey)
-    $commandManager.executeCommand('printProgram', { $q })
-})
-
 onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (event.ctrlKey)
+  if (event.ctrlKey) {
+    event.preventDefault()
     $commandManager.executeCommand('printProgramList', { $q })
+  }
 })
 
 onKeyStroke(['s', 'S'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (event.ctrlKey)
+  if (event.ctrlKey) {
+    event.preventDefault()
     editor.onSubmit()
+  }
 })
 
 onKeyStroke(['r', 'R'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (event.ctrlKey)
+  if (event.ctrlKey) {
+    event.preventDefault()
     editor.onReset()
+  }
 })
 
 onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (event.ctrlKey)
+  if (event.ctrlKey) {
+    event.preventDefault()
     editor.popupNewProgramVisible = true
+  }
 })
 
 onKeyStroke(['Enter'], (event: KeyboardEvent) => {
@@ -621,7 +624,7 @@ function handleRowColor(row: ProgramHeader) {
       <template #body="props">
         <QTr
           :props="props"
-          :class="{ 'e-selected': isRowSelected(props.row) }"
+          :class="[isRowSelected(props.row) ? 'e-selected' : '']"
           :style="{ color: `${handleRowColor(props.row)}` }"
           @click="onRowClick(props.row)"
           @dblclick="onRowDoubleClick(props.row)"

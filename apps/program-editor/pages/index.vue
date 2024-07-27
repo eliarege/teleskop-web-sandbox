@@ -37,12 +37,14 @@ const items = [
             items: [[
               {
                 label: tt('menu.programList'),
+                shortcut: 'Ctrl+L',
                 onClick() {
                   $commandManager.executeCommand('printProgramList', { $q })
                 },
               },
               {
                 label: tt('menu.program'),
+                shortcut: 'Ctrl+P',
                 onClick() {
                   $commandManager.executeCommand('printProgram', { $q })
                 },
