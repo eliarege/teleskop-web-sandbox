@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useQuasar } from 'quasar'
-import { useI18n } from 'vue-i18n'
-
 const { t } = useI18n()
 const { locale, locales, setLocale } = useI18n()
 const { dark } = useQuasar()

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-
 const editor = useEditorStore()
 const { t } = useI18n()
 const parameterTab = ref(0)
@@ -28,6 +26,7 @@ const parameterTab = ref(0)
         v-for="parameter in editor.selectedCommand?.parameters"
         :key="parameter.index"
         :name="parameter.index"
+        class="tab-panel-class"
       >
         <table>
           <tr>
@@ -39,8 +38,8 @@ const parameterTab = ref(0)
             <td>{{ editor.selectedCommand?.parameters[parameter.index].type }}</td>
           </tr>
           <tr>
-            <td>{{ t('command.parameter.defaultValue') }}</td>
-            <td>{{ editor.selectedCommand?.parameters[parameter.index].defaultValue }}</td>
+            <td>{{ t('command.parameter.value') }}</td>
+            <td>{{ editor.selectedCommand?.parameters[parameter.index].value }}</td>
           </tr>
           <tr>
             <td>{{ t('command.parameter.lowerLimit') }}</td>
@@ -87,11 +86,3 @@ const parameterTab = ref(0)
     </q-tab-panels>
   </q-card>
 </template>
-
-<style lang="postcss" scoped>
-  td, th {
-    padding: 5px;
-    min-width: 200px;
-    vertical-align: baseline;
-  }
-</style>

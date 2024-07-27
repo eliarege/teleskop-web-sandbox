@@ -1,36 +1,43 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-
 const editor = useEditorStore()
 const { t } = useI18n()
 </script>
 
 <template>
-  <div class="flex flex-row gap-5 p-5">
-    <div class="space-y-2">
-      <div>{{ t('command.commandNo') }}: </div>
-      <div>{{ t('command.name') }}: </div>
-      <div>{{ t('command.type') }}: </div>
-      <div>{{ t('command.createDate') }}: </div>
-      <div>{{ t('command.transportType') }}: </div>
-      <div>{{ t('command.canWorkManually') }}: </div>
-      <div>{{ t('command.suggestionList') }}: </div>
-      <div> {{ t('command.nonParallelCommands') }}:</div>
-    </div>
-    <div class="space-y-2">
-      <div> {{ editor.selectedCommand?.commandNo }}</div>
-      <div> {{ editor.selectedCommand?.name }}</div>
-      <div> {{ editor.selectedCommand?.commandType }} </div>
-      <div> - </div> <!-- TODO: Create Date -->
-      <div> - </div> <!-- TODO: Transport Type -->
-      <div> {{ editor.selectedCommand?.isRunManual ? t('command.yes') : t('command.no') }} </div>
-      <div> {{ editor.selectedCommand?.adviceList }} </div>
-      <div> {{ editor.selectedCommand?.dontUseList }} </div>
-    </div>
-    <QSpace />
-    <div class="space-y-2">
-      <div> {{ t('command.icon') }}:</div>
-    </div>
-    <QSpace />
-  </div>
+  <q-tab-panel name="general" class="tab-panel-class">
+    <table>
+      <tr>
+        <td>{{ t('command.commandNo') }}</td>
+        <td>{{ editor.selectedCommand?.commandNo }}</td>
+      </tr>
+      <tr>
+        <td>{{ t('command.name') }}</td>
+        <td>{{ editor.selectedCommand?.name }}</td>
+      </tr>
+      <tr>
+        <td>{{ t('command.type') }}</td>
+        <td>{{ editor.selectedCommand?.commandType }}</td>
+      </tr>
+      <tr>
+        <td>{{ t('command.createDate') }}</td>
+        <td>{{ "" }}</td>
+      </tr>
+      <tr>
+        <td>{{ t('command.transportType') }}</td>
+        <td>{{ "" }}</td>
+      </tr>
+      <tr>
+        <td>{{ t('command.canWorkManually') }}</td>
+        <td>{{ editor.selectedCommand?.isRunManual }}</td>
+      </tr>
+      <tr>
+        <td>{{ t('command.suggestionList') }}</td>
+        <td>{{ editor.selectedCommand?.adviceList }}</td>
+      </tr>
+      <tr>
+        <td>{{ t('command.nonParallelCommands') }}</td>
+        <td>{{ editor.selectedCommand?.dontUseList }}</td>
+      </tr>
+    </table>
+  </q-tab-panel>
 </template>

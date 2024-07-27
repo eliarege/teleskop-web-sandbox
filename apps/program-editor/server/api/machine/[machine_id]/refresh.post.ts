@@ -1,5 +1,4 @@
 import { machineStore } from '~/server/classes/MachineStore'
-import type { Program } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { db } from '~/server/database'
 

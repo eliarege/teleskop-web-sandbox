@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { Sortable } from 'sortablejs-vue3'
-import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import type { SortableEvent, SortableOptions } from 'sortablejs'
 import { isDef } from 'utils'

@@ -1,6 +1,6 @@
 import isEqual from 'fast-deep-equal'
 import { useEditorStore } from './editor'
-import type { CommandIO, CommandIOSelection, CommandParameters, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]

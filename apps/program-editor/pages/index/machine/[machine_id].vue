@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { formatDistanceToNow } from 'date-fns'
 import { enGB, tr } from 'date-fns/locale'
-import { useI18n } from 'vue-i18n'
 import { useFuse } from '@vueuse/integrations/useFuse'
 import { EliarModal, LoadingSpinner } from 'ui'
 import type { QTableColumn } from 'quasar'

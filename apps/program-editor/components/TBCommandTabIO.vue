@@ -28,6 +28,7 @@ const { t } = useI18n()
         v-for="io in editor.selectedCommand?.ioList"
         :key="io.index"
         :name="io.index"
+        class="tab-panel-class"
       >
         <table>
           <tr>

@@ -5,7 +5,8 @@ import type { CommandParameters, ParameterItem } from '~/shared/types'
 
 const props = defineProps<{
   path: string
-  parameter: CommandParameters
+  parameter: CommandParameter
+  commandno: number
 }>()
 
 const { t } = useI18n()

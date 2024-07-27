@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { klona } from 'klona/lite'
-import type { Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, ioListItem } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineCommand, MachineConstant, ParameterItem, ParameterSelections, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, ioListItem } from '~/shared/types'
 import { capitalize } from '~/server/utils'
 import { PError } from '~/server/error'
+import { COMMAND_TYPE } from '~/shared/constants'
+import { calculateProgramDuration } from '~/shared/formula'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 

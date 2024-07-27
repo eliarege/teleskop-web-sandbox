@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const editor = useEditorStore()
 const devMode = import.meta.dev
+const { t } = useI18n()
 const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
 
@@ -31,12 +32,19 @@ const sortableOptions: SortableOptions = {
     put: true,
   },
 }
+
+// Step Duration
+// const index = computed(() => Number(props.path.split('.').pop()))
+// const duration = computed(() => formatDuration(
+//   calculateProgramStepDuration(editor.program, editor.machine, index.value),
+// ))
 </script>
 
 <template>
   <div>
     <div class="flex">
-      <span v-if="devMode" class="color-gray-5">{{ step.stepId }}</span>
+      <!-- <span v-if="devMode" class="color-gray-5">{{ step.stepId }}</span> -->
+      <!-- <span>{{ duration }}</span> -->
       <QBtn
         class="expand-btn"
         :icon="expandIcon"
@@ -60,10 +68,10 @@ const sortableOptions: SortableOptions = {
         <template #header>
           <span
             v-if="step.parallelCommands.length === 0"
-            class="py-3 inline-block e-text-dim"
-          >Paralel Adım Yok</span>
+            class="py-10 inline-block e-text-dim"
+          >{{ t('noParallelStep') }}</span>
         </template>
-        <template #item="{ index }: {index: number}">
+        <template #item="{ index }">
           <div
             class="step-parallel-command"
             :class="{ __selected: editor.selectedStep === stepIndex && editor.selectedParallelStep === index }"

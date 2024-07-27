@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { QSelect } from 'quasar'
-import type { ProgramStepCommand } from '~/shared/types'
+import { defineProps } from 'vue'
+import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 import { useEditorStore } from '~~/composables/editor'
 import { COMMAND_TYPE } from '~/shared/constants'
 
@@ -10,7 +11,7 @@ const props = defineProps<{
 
 const editor = useEditorStore()
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
-const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? 0 : 3
+const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? COMMAND_TYPE.MAIN : COMMAND_TYPE.PARALLEL
 
 const select = ref<QSelect>()
 const id = useId()
@@ -34,17 +35,17 @@ const rules = [
   (value: any) => !!value,
 ]
 
-const options = computed(() => (
-  Array.from(editor.machine.commands.values())
-    .filter(({ commandType }) =>
-      (isMainCommand === COMMAND_TYPE.MAIN && commandType === COMMAND_TYPE.MAIN)
-      || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.MAIN)
-      || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.PARALLEL),
-    )
-    .map(({ commandNo, name }) => ({
-      label: `${commandNo} ${name}`,
-      value: commandNo,
-    }))
+const options = computed(() => ((
+  Array.from(editor.machine.commands.values()) as MachineCommand[])
+  .filter(({ commandType }) =>
+    (isMainCommand === COMMAND_TYPE.MAIN && commandType === COMMAND_TYPE.MAIN)
+    || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.MAIN)
+    || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.PARALLEL),
+  )
+  .map(({ commandNo, name }) => ({
+    label: `${commandNo} ${name}`,
+    value: commandNo,
+  }))
 ))
 
 const label = computed(() => {
@@ -56,7 +57,7 @@ const label = computed(() => {
   <div>
     <QSelect
       ref="select"
-      :model-value="programCommand.commandNo"
+      v-model="programCommand.commandNo"
       :options="options"
       :label="label"
       :rules="rules"

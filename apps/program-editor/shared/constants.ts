@@ -27,3 +27,10 @@ export const IO_TYPE: { [key: string]: string } = {
   '5': 'Counter',
   '-1': 'Seçilmemiş',
 }
+
+export const ParameterType = {
+  NUMBER: 'NUMBER',
+  SELECT: 'SELECT',
+  MACHINE_FORMULA: 'MACHINE_FORMULA',
+  SELECTABLE_FORMULA: 'SELECTABLE_FORMULA',
+} as const

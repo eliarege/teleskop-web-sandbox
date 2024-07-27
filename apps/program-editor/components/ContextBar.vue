@@ -51,9 +51,8 @@ watch([width, parentWidth, defaultWidth], () => {
           <QIcon
             :name="button.icon"
             size="1.2rem"
-            class="pr-2"
           />
-          {{ button.label }}
+          <span class="pl-1">{{ button.label }}</span>
           <QTooltip>
             {{ button.label !== '' ? button.shortcut : `${button.tooltip} (${button.shortcut})` }}
           </QTooltip>
