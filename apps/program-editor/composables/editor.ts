@@ -90,6 +90,16 @@ export const useEditorStore = defineStore('editor', () => {
 
   function newStepCommand(commandNo: number, stepIndex: number) {
     const newStep = createEmptyStep()
+    const machineCommand = machine.value?.commands.get(commandNo)
+
+    if (!machineCommand) {
+      return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
+    }
+
+    if (machineCommand.commandType === COMMAND_TYPE.PARALLEL) {
+      return notifyError(t('error.cannotMainCommand', { commandNo }))
+    }
+
     updateCommand(newStep.mainCommand, commandNo)
 
     newStep.parallelCommands = stepIndex > 0 ? klona(program.value.steps[stepIndex].parallelCommands) : []
@@ -137,6 +147,11 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function newParallelStepCommand(commandNo: number, stepIndex: number) {
+    const machineCommand = machine.value?.commands.get(commandNo)
+    if (!machineCommand) {
+      return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
+    }
+
     const newCommand = createEmptyCommand()
     updateCommand(newCommand, commandNo)
     program.value.steps[stepIndex].parallelCommands.push(newCommand)
@@ -144,7 +159,6 @@ export const useEditorStore = defineStore('editor', () => {
 
   function updateCommand(command: ProgramStepCommand, commandNo: number) {
     const machineCommand = machine.value?.commands.get(commandNo)
-
     if (!machineCommand) {
       return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
     }
@@ -152,10 +166,11 @@ export const useEditorStore = defineStore('editor', () => {
     command.commandNo = machineCommand.commandNo
 
     command.parameters = machineCommand.parameters
-      .filter(parameter => parameter.editable)
+      .filter(parameter => parameter.editable || parameter.useFormula)
       .map(parameter => ({
         index: parameter.index,
-        value: parameter.defaultValue,
+        value: Number(parameter.value),
+        optimized: 0,
       }))
 
     command.ioList = machineCommand.ioList
@@ -216,7 +231,7 @@ export const useEditorStore = defineStore('editor', () => {
         program.value.steps.splice(selectedStep.value, 1)
       }
     }
-    selectedStep.value = -1
+    // selectedStep.value = -1
   }
 
   function deleteParallelStep(stepIndex?: number, parallelIndex?: number) {
@@ -229,7 +244,7 @@ export const useEditorStore = defineStore('editor', () => {
         }
       }
     }
-    selectedParallelStep.value = -1
+    // selectedParallelStep.value = -1
   }
 
   async function fetchProgram(machineId: number, programNo: number) {
@@ -335,12 +350,21 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function updateProgram() {
-    return await $fetch(`/api/machine/${route.params.machine_id}/program`, {
-      method: 'PUT',
-      body: {
-        program: program.value,
-      },
-    })
+    try {
+      await $fetch(`/api/machine/${route.params.machine_id}/program`, {
+        method: 'PUT',
+        body: {
+          program: program.value,
+        },
+      })
+      return true
+    } catch (error: any) {
+      if (error.status === 409) {
+        notifyError(t('programNotUpdated', { field: t('program.programNo') }))
+      } else {
+        throw new PError('PROGRAM_UPDATE_FAILED', { machineId: Number(route.params.machine_id), programNo: program.value.programNo })
+      }
+    }
   }
 
   async function insertProgram() {
@@ -354,7 +378,7 @@ export const useEditorStore = defineStore('editor', () => {
 
       notifySuccess(t('saveProgram.success'))
       return true
-    } catch (error) {
+    } catch (error: any) {
       if (error.status === 409) {
         notifyError(t('input.unique', { field: t('program.programNo') }))
       } else {
@@ -416,7 +440,6 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   return {
-    changeMachine,
     program,
     machine,
     selectedPrograms,
@@ -436,6 +459,7 @@ export const useEditorStore = defineStore('editor', () => {
     leftDrawerOpen,
     rightDrawerOpen,
     theoricDuration,
+    changeMachine,
     fetchProgram,
     fetchMachine,
     fetchMachineCommands,
@@ -460,5 +484,6 @@ export const useEditorStore = defineStore('editor', () => {
     changeSelection,
     getPathElement,
     fetchAllProcessTypes,
+    scrollPage,
   }
 })
