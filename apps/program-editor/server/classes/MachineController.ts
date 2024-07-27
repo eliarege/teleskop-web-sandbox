@@ -7,7 +7,7 @@ import { sql } from '../sql'
 import { stringifyProgram } from '../stringify'
 import { parseProgramString } from '../parse'
 import { PError } from '../error'
-import type { CommandIO, Machine, MachineCommand, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, Machine, MachineCommand, MachineConstant, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 
 export class MachineController {
@@ -557,17 +557,20 @@ export class MachineController {
 
   /**
    * Makine bilgilerini getirir
-   * @returns {Promise<MachineInfo>} - Makine bilgilerini içeren bir Promise
+   * @returns {Promise<Machine>} - Makine bilgilerini içeren bir Promise
    */
   @withTransaction
-  async getMachineInfo(editable?: boolean): Promise<Machine> {
+  async getMachineInfo(_editable?: boolean): Promise<Omit<Machine, 'commands'> & { commands: MachineCommand[] }> {
     await hasMachine(this.id)
     const [{ name }] = await this.trx
       .select('MACHINECODE as name')
       .from('BFMACHINES')
       .where('MACHINEID', this.id)
-    const commands = await this.fetchCommands(editable)
-    return { id: this.id, name, commands }
+    const commands = await this.fetchCommands()
+    const batchParameters = await this.fetchBatchParameters()
+    const constants = await this.fetchMachineConstants()
+    const commandFormulas = await this.fetchCommandFormulas()
+    return { id: this.id, name, commands, constants, commandFormulas, batchParameters }
   }
 
   /**
@@ -1166,5 +1169,83 @@ export class MachineController {
       }
     }
     return true
+  }
+
+  /**
+   * Makine sabitlerini getirir.
+   * @param machineId - Makine Id
+   * @returns {Promise<MachineConstant[]>} - Makinenin sabitlerinin listesi
+   */
+  @withTransaction
+  async fetchMachineConstants(): Promise<MachineConstant[]> {
+    return await this.trx('BFMACHPARAMETERS').select({
+      machineParameterId: 'MACHINEPARAMETERID',
+      machineId: 'MACHINEID',
+      paramString: 'PARAMSTRING',
+      paramLowLimit: 'PARAMLOWLIMIT',
+      paramHighLimit: 'PARAMHIGHLIMIT',
+      paramType: 'PARAMETERTYPE',
+      selectionList: 'SELECTIONLIST',
+      unitCode: 'UNITCODE',
+      selectionValues: 'SELECTIONVALUES',
+      isDeleted: 'ISDELETED',
+      tbbChangeTime: 'TBBCHANGETIME',
+      changeTime: 'CHANGETIME',
+      defaultValue: 'DEFAULTVALUE',
+      dmArea: 'dmArea',
+      consScreen: 'consScreen',
+      consFormat: 'consFormat',
+      consUnit: 'consUnit',
+      currentValue: 'currentValue',
+    }).where('MACHINEID', this.id)
+  }
+
+  /**
+   * Başlatma parametrelerini getirir.
+   * @param machineId - Makine Id
+   * @returns {Promise<BatchParameter[]>} - Makinenin parametrelerinin listesi
+   */
+  @withTransaction
+  async fetchBatchParameters(): Promise<BatchParameter[]> {
+    return await this.trx('BFMACHBATCHPARAMETERS').select({
+      batchParameterId: 'BATCHPARAMETERID',
+      machineId: 'MACHINEID',
+      paramString: 'PARAMSTRING',
+      paramLowLimit: 'PARAMLOWLIMIT',
+      paramHighLimit: 'PARAMHIGHLIMIT',
+      batchPlanning: 'BATCHPLANNING',
+      batchStart: 'BATCHSTART',
+      recipe: 'RECIPE',
+      defaultValue: 'DEFAULTVALUE',
+      parameterType: 'PARAMETERTYPE',
+      selectionList: 'SELECTIONLIST',
+      unitCode: 'UNITCODE',
+      selectionValues: 'SELECTIONVALUES',
+      isDeleted: 'ISDELETED',
+      tbbChangeTime: 'TBBCHANGETIME',
+      changeTime: 'CHANGETIME',
+      format: 'FORMAT',
+      parameterId: 'PARAMETERID',
+      unitText: 'UNITTEXT',
+      paramStringEn: 'PARAMSTRINGEN',
+      selectionListDefault: 'SELECTIONLISTDEFAULT',
+    }).where('MACHINEID', this.id)
+  }
+
+  /**
+   * Komut formüllerini getirir.
+   * @param machineId - Makine Id
+   * @returns {Promise<CommandFormula[]>} - Komut parametrelerinin listesi
+   */
+  @withTransaction
+  async fetchCommandFormulas(): Promise<CommandFormula[]> {
+    return await this.trx('BFCOMMANDFORMULAS').select(
+      'machineId',
+      'formulaId',
+      'formula',
+      'commandNo',
+      'commandParameterNo',
+      'formulaName',
+    ).where('machineId', this.id)
   }
 }

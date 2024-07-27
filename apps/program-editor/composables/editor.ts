@@ -40,6 +40,9 @@ export const useEditorStore = defineStore('editor', () => {
       id,
       name,
       commands: new Map(),
+      batchParameters: [],
+      commandFormulas: [],
+      constants: [],
     }
     // Replace only if navigating from /machine/:id
     const replace = MACHINE_PATH_RE.test(route.path)
@@ -296,11 +299,14 @@ export const useEditorStore = defineStore('editor', () => {
     }))
   }
 
-  function createMachine() {
+  function createMachine(): Machine {
     return {
       id: 0,
       name: '',
       commands: new Map<number, MachineCommand>(),
+      batchParameters: [],
+      commandFormulas: [],
+      constants: [],
     }
   }
 

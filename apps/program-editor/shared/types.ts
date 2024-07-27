@@ -252,6 +252,9 @@ export interface Machine {
   id: number
   name: string
   commands: Map<number, MachineCommand>
+  commandFormulas: CommandFormula[]
+  constants: MachineConstant[]
+  batchParameters: BatchParameter[]
 }
 
 export interface CommandItem {
@@ -279,4 +282,58 @@ export interface CommandItem {
   ISUNLOAD: boolean
   ICON: string
   GROUPID: number
+}
+
+export interface MachineConstant {
+  machineParameterId: number
+  machineId: number
+  paramString: string
+  paramLowLimit: number
+  paramHighLimit: number
+  paramType: number
+  selectionList: string
+  unitCode: string
+  selectionValues: string
+  isDeleted: boolean
+  tbbChangeTime: string
+  changeTime: string
+  defaultValue: number
+  dmArea: number
+  consScreen: number
+  consFormat: number
+  consUnit: number
+  currentValue: number
+}
+
+export interface BatchParameter {
+  batchParameterId: number
+  machineId: number
+  paramString: string
+  paramLowLimit: number
+  paramHighLimit: number
+  batchPlanning: number
+  batchStart: number
+  recipe: string
+  defaultValue: number
+  parameterType: number
+  selectionList: string
+  unitCode: string
+  selectionValues: string
+  isDeleted: boolean
+  tbbChangeTime: string
+  changeTime: string
+  format: string
+  parameterId: number
+  unitText: string
+  paramStringEn: string
+  selectionListDefault: string
+}
+
+export interface CommandFormula {
+  machineId: number
+  formulaId: number
+  formula: string
+  commandNo: number
+  commandParameterNo: number
+  formulaName: string
 }
