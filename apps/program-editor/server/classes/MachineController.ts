@@ -690,7 +690,7 @@ export class MachineController {
       PROGNO: program.programNo,
       PROCESSCODE: program.typeId,
       NAME: program.name,
-      DURATION: 0,
+      DURATION: program.duration,
       TOTALSTEP: program.steps.length,
       CHANGEDATE: date,
       TBBCHANGESOURCE: '',
@@ -851,6 +851,14 @@ export class MachineController {
         await this.trx.insert(item).into(table.toString())
   }
 
+  private arrayToMap(commands: MachineCommand[]): Map<number, MachineCommand> {
+    const map = new Map<number, MachineCommand>()
+    commands.forEach((command) => {
+      map.set(command.commandNo, command)
+    })
+    return map
+  }
+
   /**
    * Programı veritabanına ekler
    * @param program - Program objesi
@@ -878,7 +886,7 @@ export class MachineController {
       PROGNO: program.programNo,
       PROCESSCODE: program.typeId,
       NAME: program.name,
-      DURATION: 0, // ?
+      DURATION: program.duration,
       TOTALSTEP: program.steps.length,
       CHANGEDATE: date,
       TBBCHANGESOURCE: '',
