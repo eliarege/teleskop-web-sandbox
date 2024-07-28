@@ -22,6 +22,7 @@ const model = defineModel<number>()
 const editor = useEditorStore()
 const id = useId()
 const input = ref<QInput>()
+const numberInput = ref<HTMLElement | null>(null)
 
 const DECIMAL_RE = /[\d.-]/
 const INTEGER_RE = /[\d-]/
@@ -171,6 +172,11 @@ function onInput(event: Event) {
     model.value = Number.parseFloat(value)
   }
 }
+
+onMounted(() => {
+  if (numberInput.value)
+    numberInput.value.focus()
+})
 </script>
 
 <template>
@@ -190,6 +196,7 @@ function onInput(event: Event) {
     <template #control="{ id }">
       <input
         :id="id"
+        ref="numberInput"
         :value="model"
         type="text"
         :maxlength="maxlength"
