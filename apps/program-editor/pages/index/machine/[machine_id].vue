@@ -145,6 +145,19 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
   }
 })
 
+onKeyStroke('Escape', (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (route.params.program_no) {
+    editor.selectedStep = -1
+    editor.selectedParallelStep = -1
+  } else {
+    editor.selectedPrograms = []
+    editor.popupCommandDetailVisible = false
+    editor.popupCommandListVisible = false
+    editor.popupNewProgramVisible = false
+  }
+})
+
 async function fetchPrograms(filter?: ProgramFilter) {
   let query
   const checkAnyExistingFilter = getExistingFilter()
