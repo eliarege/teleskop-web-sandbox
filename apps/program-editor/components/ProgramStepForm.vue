@@ -104,7 +104,11 @@ const sortableOptions: SortableOptions = {
 
 .step-parallel-command {
   @apply flex w-full pl-4;
-  @apply hover:(bg-blue-2  dark:bg-dark-1)
+  @apply hover:( dark:bg-dark-1)
+}
+
+.step-parallel-command:hover {
+  background-color : #d1e4fa;
 }
 
 .step-parallel-command.__selected {

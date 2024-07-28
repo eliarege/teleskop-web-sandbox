@@ -21,6 +21,7 @@ const sortableOptions: SortableOptions & AutoScrollOptions = {
 
 function onDragStart(event: SortableEvent) {
   editor.selectedStep = -1
+  editor.selectedParallelStep = -1
   if (isDef(event.oldIndex)) {
     dragged = editor.program?.steps[event.oldIndex] || null
   }

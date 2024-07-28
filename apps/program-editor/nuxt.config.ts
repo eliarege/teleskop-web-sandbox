@@ -1,7 +1,10 @@
+import Nearley from './vite/nearley'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: false },
   extends: ['nuxt-base'],
+  css: ['./assets/stylesheets/global.css'],
   runtimeConfig: {
     teleskopHost: 'localhost',
     teleskopUser: '',
@@ -23,6 +26,10 @@ export default defineNuxtConfig({
     ],
   },
   nitro: {
+    rollupConfig: {
+      // @ts-expect-error Infinite type inference
+      plugins: [Nearley()],
+    },
     typescript: {
       tsConfig: {
         compilerOptions: {
@@ -39,5 +46,10 @@ export default defineNuxtConfig({
         },
       },
     },
+  },
+  vite: {
+    plugins: [
+      Nearley(),
+    ],
   },
 })
