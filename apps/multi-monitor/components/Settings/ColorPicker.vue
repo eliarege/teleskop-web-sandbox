@@ -27,6 +27,6 @@ const { t } = useI18n()
 
 <style scoped lang="postcss">
   .color-picker {
-    @apply flex-center text-black font-extrabold w-full h-full;
+    @apply at-lg:(flex-center text-black font-extrabold w-full h-full) lt-sm:(w-100vw flex-center gap-3);
   }
 </style>

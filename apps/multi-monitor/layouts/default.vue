@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from 'nuxt-base'
-import { breakpointsTailwind } from '@vueuse/core'
+import { breakpointsTailwind, useWindowSize } from '@vueuse/core'
 import { matSettings } from '@quasar/extras/material-icons'
 import { EliarModal } from 'ui'
 import { useDataStore } from '~/store/Datas'
@@ -11,21 +11,13 @@ const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
 const store = useDataStore()
 const showSettings = ref(false)
+const burgerMenu = ref(false)
 
+const { width } = useWindowSize()
+const isMobile = computed(() => width.value <= 767)
 const tt = (key: string) => () => t(key)
 
 const items = [] as TopbarMenuItem[]
-
-const itemsMobile = [
-  [
-    {
-      label: tt('menu.home'),
-      icon: 'home',
-      to: '/',
-    },
-  ],
-  items,
-] as TopbarMenuItem[][]
 const commonSettingsItems: TopbarMenuItem[] = [
   {
     label: tt('teleskop.settings'),
@@ -112,13 +104,30 @@ const machineData = computed(() => {
             />
           </TopbarButton>
         </template>
+
+        <NavBar
+          v-if="!isMobile"
+          :formatted
+          :machine-data
+        />
+
         <TopbarButton
           v-else
           icon="menu"
+          @click="burgerMenu = !burgerMenu"
+        />
+        <div
+          v-if="isMobile"
+          class="flex-center w-full"
         >
-          <TopbarMenu :items="itemsMobile" />
-        </TopbarButton>
-        <NavBar :formatted :machine-data />
+          <NuxtLink to="/">
+            <Icon
+              name="IconEliar"
+              size="2rem"
+              class="mr-2"
+            />
+          </NuxtLink>
+        </div>
         <QSpace />
         <div class="space-x-1">
           <TopbarAppGrid />
@@ -131,11 +140,20 @@ const machineData = computed(() => {
 
     <QPageContainer>
       <slot />
-      <EliarModal v-if="showSettings" @click.stop="showSettings = false">
-        <template #default>
-          <Settings @close="showSettings = false" />
-        </template>
-      </EliarModal>
+      <q-dialog
+        v-if="showSettings"
+        v-model="showSettings"
+        :position="isMobile ? 'top' : 'standard' "
+      >
+        <Settings @close="showSettings = false" />
+      </q-dialog>
+      <q-dialog
+        v-if="isMobile"
+        v-model="burgerMenu"
+        position="top"
+      >
+        <NavBarHamburger :machine-data @close="burgerMenu = false" />
+      </q-dialog>
     </QPageContainer>
   </QLayout>
 </template>

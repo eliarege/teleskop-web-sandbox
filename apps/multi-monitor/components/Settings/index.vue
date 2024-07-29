@@ -60,7 +60,7 @@ function setDefaultSettings() {
 </script>
 
 <template>
-  <div class="bg-white gap-5 w-125 h-auto max-h-90vh overflow-auto cursor-default p-2 rounded border-3 border-gray-400 rounded-2xl">
+  <div class="bg-white gap-5 w-125 lt-sm:(w-100vw) h-auto max-h-90vh overflow-auto cursor-default p-2 rounded border-3 border-gray-400 rounded-2xl">
     <SettingsExpansionItem
       v-for="(item, idx) in expansionItems"
       :key="idx"
@@ -86,9 +86,7 @@ function setDefaultSettings() {
         plain
         @click="emit('close')"
       >
-        {{
-          t("settings.close")
-        }}
+        {{ t("settings.close") }}
       </ElButton>
     </div>
   </div>

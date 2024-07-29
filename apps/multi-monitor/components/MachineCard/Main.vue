@@ -95,8 +95,7 @@ function isScreenViable(screen: number) {
 
 <template>
   <div
-    class="card-wrapper"
-    :class="store.mode === false ? 'ml-25' : ''"
+    class="card-wrapper lt-sm:(px-2)"
     :style="{ zoom: store.zoomLevel }"
   >
     <div
@@ -135,7 +134,7 @@ function isScreenViable(screen: number) {
 @media screen and (max-width: 735px) {
   .card-wrapper {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    @apply mt-6 ml-0;
+    @apply;
   }
 }
 .alarm {

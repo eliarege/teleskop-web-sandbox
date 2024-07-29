@@ -35,7 +35,7 @@ const inActive = computed(() => {
 </script>
 
 <template>
-  <div class="flex-center gap-9">
+  <div class="flex-center gap-9 lt-sm:(text-center) md:(text-center)">
     <div class="flex-center font-extrabold">
       <d-pie
         v-bind="pieOptions"

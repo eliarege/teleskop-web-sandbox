@@ -7,9 +7,9 @@ const store = useDataStore()
 </script>
 
 <template>
-  <div class="flex-center flex-col w-full">
+  <div class="flex-center flex-col w-full lt-sm:(w-90vw) !overflow-x-hidden">
     <span>{{ t("settings.sort-by") }}</span>
-    <div>
+    <div class="flex-center flex-col lt-sm:(text-center)">
       <q-option-group
         v-model="store.sortMachines"
         type="radio"
@@ -22,7 +22,7 @@ const store = useDataStore()
           { label: t('settings.sort-group'), value: 4 },
           { label: 'Alarm', value: 5 },
         ]"
-        class="flex-center"
+        class="lg:(flex-center) lt-sm:(text-start)"
       />
 
       <q-separator spaced />
