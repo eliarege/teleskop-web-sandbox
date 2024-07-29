@@ -47,7 +47,7 @@ watch(() => model.value, (newValue: number) => {
       v-else
       v-model="model"
       :rules="rules"
-      :label="parameter.name.charAt(0).toUpperCase() + parameter.name.slice(1)"
+      :label="parameter.name"
       type="decimal"
       :maxlength="10"
       :hide-bottom-space="true"
