@@ -493,9 +493,11 @@ export class MachineController {
       const exists = await this.hasProgram(program.programNo)
       if (exists)
         await this.deleteProgramFromDatabase(program.programNo)
+
+      const currentTimestamp = this.getCurrentTimestamp()
       program.programState = ProgramStatus.EXISTS_ON_BOTH
-      program.updatedAtTBB = this.getTimezoneDate()
-      program.updatedAt = this.getTimezoneDate()
+      program.updatedAtTBB = currentTimestamp
+      program.updatedAt = currentTimestamp
       await this.insertProgram(program)
       // TODO: Look again. hasProgram() not looks that good.
       await this.ftp.upload(`/tbb6500/data/programs/program/${program.programNo}`, stringifyProgram(program))
@@ -537,6 +539,7 @@ export class MachineController {
     await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${program.programNo}`)
     const machine = await this.getMachineInfo()
     const rawProgram = parseProgramString(programString, machine)
+    const currentTimestamp = this.getCurrentTimestamp()
     const program: Program = {
       ...rawProgram,
       machineId: this.id,
@@ -547,9 +550,9 @@ export class MachineController {
       programState: ProgramStatus.EXISTS_ON_BOTH,
       icon: '',
       isChanged: false,
-      createdAt: this.getTimezoneDate(),
-      updatedAt: this.getTimezoneDate(),
-      updatedAtTBB: this.getTimezoneDate(),
+      createdAt: currentTimestamp,
+      updatedAt: currentTimestamp,
+      updatedAtTBB: currentTimestamp,
       tbbProgramChangedEvent: 0,
     }
     await this.updateProgram(program)
@@ -626,8 +629,9 @@ export class MachineController {
    * Zaman dilimine göre tarih ve saat döndürür
    * @returns {Date} - Zaman dilimine göre tarih ve saat
    */
-  getTimezoneDate(): Date {
-    return new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000)
+  private getCurrentTimestamp(): Date {
+    const config = useRuntimeConfig()
+    return new Date(new Date().getTime() - config.teleskopTimezoneOffset * 60_000)
   }
 
   /**
@@ -645,7 +649,7 @@ export class MachineController {
         .where('MACHINEID', this.id)
         .andWhere('PROGNO', programNo)
         .andWhere('MACHINEPRGVERSIONNO', version)
-        .update({ RELEASEENDDATE: this.getTimezoneDate() })
+        .update({ RELEASEENDDATE: this.getCurrentTimestamp() })
       return version
     } else {
       return null
