@@ -511,7 +511,7 @@ export class MachineController {
           })
         }
       }
-      console.log('An error occured during sending program(s) to machine')
+      console.error('An error occured during sending program(s) to machine', err)
       return false
     }
   }
