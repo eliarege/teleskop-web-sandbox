@@ -35,6 +35,15 @@ export const useEditorStore = defineStore('editor', () => {
 
   const theoricDuration = computed(() => formatDuration(calculateProgramDuration(program.value, machine.value)))
 
+  const treatmentSettings = ref<{ optimizedEnable: boolean }>({
+    optimizedEnable: false,
+  })
+  async function fetchTreatmentSettings() {
+    treatmentSettings.value = await $fetch('/api/treatment-settings')
+  }
+
+  fetchTreatmentSettings()
+
   async function changeMachine(id: number, name: string) {
     selectedPrograms.value = []
     const MACHINE_PATH_RE = /^\/machine\/\d+$/
@@ -461,6 +470,7 @@ export const useEditorStore = defineStore('editor', () => {
     leftDrawerOpen,
     rightDrawerOpen,
     theoricDuration,
+    treatmentSettings,
     changeMachine,
     fetchProgram,
     fetchMachine,
