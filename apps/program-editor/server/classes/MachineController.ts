@@ -878,16 +878,20 @@ export class MachineController {
 
     const chunkSize = 50
     const baTables = [
-      ['BAMASTERPRGHEADER', headerArchive],
+      ['BAMASTERPRGHEADER', [headerArchive]],
       ['BAMASTERSTEPS', this.chunkArray(stepsArchive, chunkSize)],
       ['BAMASTERSTEPPARAMS', this.chunkArray(parametersArchive, chunkSize)],
       ['BAMASTERSTEPINPUTOUTPUTS', this.chunkArray(stepIOArchive, chunkSize)],
       ['BAMASTERSTEPSELECTIONLIST', this.chunkArray(ioSelectionArchive, chunkSize)],
-    ]
+    ] as [string, any[][]][]
 
-    for (const [table, array] of baTables)
-      for (const item of array)
-        await this.trx.insert(item).into(table.toString())
+    for (const [table, array] of baTables) {
+      for (const item of array) {
+        if (item.length) {
+          await this.trx.insert(item).into(table)
+        }
+      }
+    }
   }
 
   private commandArrayToMap(commands: MachineCommand[]): Map<number, MachineCommand> {
@@ -1078,17 +1082,20 @@ export class MachineController {
 
     const chunkSize = 50
     const bfTables = [
-      ['BFMASTERPRGHEADER', header],
+      ['BFMASTERPRGHEADER', [header]],
       ['BFMASTERSTEPS', this.chunkArray(steps, chunkSize)],
       ['BFMASTERSTEPPARAMS', this.chunkArray(parameters, chunkSize)],
       ['BFMASTERSTEPINPUTOUTPUTS', this.chunkArray(stepIO, chunkSize)],
       ['BFMASTERSTEPSELECTIONLIST', this.chunkArray(ioSelection, chunkSize)],
-    ]
+    ] as [string, any[][]][]
 
-    for (const [table, array] of bfTables)
+    for (const [table, array] of bfTables) {
       for (const item of array) {
-        await this.trx.insert(item).into(table.toString())
+        if (item.length) {
+          await this.trx.insert(item).into(table.toString())
+        }
       }
+    }
 
     await this.insertProgramToArchive(program)
     await this.upsertTreatments(program)
@@ -1335,6 +1342,12 @@ export class MachineController {
       }
     })
 
+    const erpTreatmentParameters = await dmExchange('Treatment_Parameter')
+      .select({
+        paramNo: 'TreatmentParaNo',
+        paramName: 'TreatmentParaName',
+      }) as { paramNo: number, paramName: string }[]
+
     const treatmentRefs = [] as { counter: number, parameterNo: number }[]
 
     let totalOptimizeCount = 0
@@ -1357,7 +1370,7 @@ export class MachineController {
           totalOptimizeCount++
           treatmentRefs.push({
             counter: tp.counter,
-            parameterNo: (tp.paramId - 1) * settings.optimizedLimit + tp.counter,
+            parameterNo: erpTreatmentParameters.find(etp => `${tp.paramName}_${tp.counter}` === etp.paramName)?.paramNo || 0,
           })
         }
       }
@@ -1423,17 +1436,18 @@ export class MachineController {
           .where('TreatmentNo', program.programNo)
           .del()
       }
-
-      await trx('Treatment_Parameter_Ref').insert(
-        treatmentRefs.map((ref, index) => {
-          return {
-            TreatmentNo: program.programNo,
-            TreatmentParaCounter: index + 1,
-            TreatmentParaNo: ref.parameterNo,
-            ImportState: 1,
-          }
-        }),
-      )
+      if (treatmentRefs.length) {
+        await trx('Treatment_Parameter_Ref').insert(
+          treatmentRefs.map((ref, index) => {
+            return {
+              TreatmentNo: program.programNo,
+              TreatmentParaCounter: index + 1,
+              TreatmentParaNo: ref.parameterNo,
+              ImportState: 1,
+            }
+          }),
+        )
+      }
     })
   }
 
@@ -1451,14 +1465,16 @@ export class MachineController {
   }
 
   async fetchTreatmentParameters(): Promise<TreatmentParameter[]> {
-    return await db('BFTREATMENTPARAMGROUPMAP as TP')
+    return await db('BFTREATMENTPARAMGROUPMAP as PGM')
       .select({
-        paramId: 'TP.PARAMID',
-        groupId: 'TP.GROUPID',
-        commandNo: 'TP.COMMANDNO',
-        parameterIndex: 'TP.PARAMETERINDEX',
+        paramId: 'PGM.PARAMID',
+        paramName: 'PT.TREATMENTPARAMETER',
+        groupId: 'PGM.GROUPID',
+        commandNo: 'PGM.COMMANDNO',
+        parameterIndex: 'PGM.PARAMETERINDEX',
       })
-      .join('BFTREATMENTPARAMETERGROUPMACHINES as MG', 'TP.GROUPID', 'MG.GROUPID')
+      .join('BFTREATMENTPARAMETERGROUPMACHINES as MG', 'PGM.GROUPID', 'MG.GROUPID')
+      .join('BFTREATMENTPARAMETERS as PT', 'PT.ID', 'PGM.PARAMID')
       .where('MG.MACHINEID', this.id)
   }
 }

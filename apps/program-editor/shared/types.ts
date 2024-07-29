@@ -360,6 +360,7 @@ export interface TreatmentGroup {
 
 export interface TreatmentParameter {
   paramId: number
+  paramName: string
   groupId: number
   commandNo: number
   parameterIndex: number
