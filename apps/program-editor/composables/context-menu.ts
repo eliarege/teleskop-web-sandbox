@@ -237,8 +237,13 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       comment: null,
       typeId: details.processType.value,
       createdAt: details.creationTime,
-      updatedAt: null,
+      updatedAt: details.creationTime,
       steps: [],
+      duration: 0,
+      updatedAtTBB: null,
+      programState: ProgramStatus.EXISTS_ONLY_ON_DATABASE,
+      isChanged: false,
+      tbbProgramChangedEvent: null,
     }
     // await deleteProgram(programs, 1)
     for (const program of programs) {

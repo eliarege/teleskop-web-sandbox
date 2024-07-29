@@ -40,9 +40,8 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-      const result = await machine.insertProgram(program)
+      await machine.insertProgram(program)
       await logEditorOperation(actCode, act1, act2)
-      return result
     } catch (error) {
       if (error instanceof PError) {
         if (error.code === 'PROGRAM_EXISTS') {

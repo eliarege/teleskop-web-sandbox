@@ -718,7 +718,7 @@ export class MachineController {
       CHANGEDATE: date,
       TBBCHANGESOURCE: '',
       TBBCHANGEDATE: '',
-      CREATIONDATE: program.createdAt ? program.createdAt : date,
+      CREATIONDATE: program.createdAt ? new Date((new Date(program.createdAt)).getTime() - timezone * 60000).toISOString() : date,
       USERCOMMENT: program.comment,
       USERNAME: program.author, // ?
       CHANGETIME: date, // ?
@@ -902,7 +902,6 @@ export class MachineController {
     const parameters: StepParameter[] = []
     const stepIO: StepInputOutput[] = []
     const ioSelection: SelectionList[] = []
-
     // BFMASTERPRGHEADER
     const header = [{
       MACHINEID: this.id,
@@ -915,7 +914,7 @@ export class MachineController {
       TBBCHANGESOURCE: '',
       TBBCHANGEDATE: program.updatedAtTBB ? program.updatedAtTBB : '',
       LOCKEDBY: '',
-      CREATIONDATE: program.createdAt ? program.createdAt : date,
+      CREATIONDATE: program.createdAt ? new Date((new Date(program.createdAt)).getTime() - timezone * 60000).toISOString() : date,
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
@@ -937,7 +936,6 @@ export class MachineController {
       PHASEVERSION: 1,
       INTERVENTIONFREEPROGRAM: 0,
     }]
-
     program.steps.forEach((step, i) => {
       const mainIOList = this.getSelectableIO(step.mainCommand.commandNo, commands)
 

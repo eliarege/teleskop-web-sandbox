@@ -6,8 +6,13 @@ export default defineEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
   const machineId = Number.parseInt(machine_id)
   const machine = await machineStore.get(machineId)
-  const body = await readBody(event)
-  const remotePrograms = await machine.fetchRemoteProgramList()
+  let remotePrograms: Array<number> = []
+  try {
+    remotePrograms = await machine.fetchRemoteProgramList()
+  } catch (e) {
+    console.log('An error occurred during connecting to device')
+    return 1
+  }
   const teleskopPrograms = await db.select('PROGNO', 'PRGSTATE')
     .from('BFMASTERPRGHEADER')
     .where('MACHINEID', machineId)

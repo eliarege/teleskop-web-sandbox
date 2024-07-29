@@ -11,7 +11,7 @@ defineEmits([
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
 const details = ref({
-  programNo: '',
+  programNo: 1,
   name: '',
   processType: props.processTypes[0],
   operatorCanInterrupt: false,
@@ -36,9 +36,10 @@ async function updateModelValue(val) {
         <span class="q-ml-sm"> {{ t('contextMenu.concatenateProgramsDialog.header') }}</span>
       </q-card-section>
       <q-card-section>
-        <q-input
+        <InputNumber
           :model-value="details.programNo"
-          type="number"
+          type="positive-integer"
+          :min="1"
           :error="!details.programNo || isProgramNoExist"
           :error-message="!details.programNo ? (t('contextMenu.concatenateProgramsDialog.warningNoPK')) : (t('contextMenu.concatenateProgramsDialog.warningDuplicatePK'))"
           :label="t('contextMenu.concatenateProgramsDialog.programNo')"
