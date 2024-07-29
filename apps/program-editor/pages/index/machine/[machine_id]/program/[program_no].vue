@@ -12,17 +12,17 @@ const $q = useQuasar()
 const { $commandManager } = useNuxtApp()
 
 const buttons = computed(() => [
-  {
-    label: t('menu.print'),
-    originalLabel: t('menu.print'),
-    tooltip: t('menu.print'),
-    shortcut: 'Ctrl+P',
-    icon: 'print',
-    disable: editor.isLoading,
-    onClick() {
-      $commandManager.executeCommand('printProgram', { $q })
-    },
-  },
+  // {
+  //   label: t('menu.print'),
+  //   originalLabel: t('menu.print'),
+  //   tooltip: t('menu.print'),
+  //   shortcut: 'Ctrl+P',
+  //   icon: 'print',
+  //   disable: editor.isLoading,
+  //   onClick() {
+  //     $commandManager.executeCommand('printProgram', { $q })
+  //   },
+  // },
   {
     label: t('menu.save'),
     originalLabel: t('menu.save'),
