@@ -570,7 +570,7 @@ function handleRowColor(row: ProgramHeader) {
   } else {
     const changeDate = (new Date(row.updatedAt || 0)).getTime()
     const changeDateTBB = (new Date(row.updatedAtTBB || 0)).getTime()
-    const interval = changeDateTBB - changeDate
+    const interval = (changeDateTBB - changeDate) / 1000
 
     if (interval > 600 || interval < -600) {
       if (row.tbbProgramChangedEvent) {
