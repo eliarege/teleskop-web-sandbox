@@ -41,6 +41,7 @@ const items = [
                 onClick() {
                   $commandManager.executeCommand('printProgramList', { $q })
                 },
+                disabled: true,
               },
               {
                 label: tt('menu.program'),
@@ -48,6 +49,8 @@ const items = [
                 onClick() {
                   $commandManager.executeCommand('printProgram', { $q })
                 },
+                disabled: true,
+
               },
             ]],
           },
@@ -100,8 +103,8 @@ const items = [
           // },
         ],
         [
-          { label: tt('menu.getAllPrograms'), icon: 'download' },
-          { label: tt('menu.sendAllPrograms'), icon: 'upload' },
+          { label: tt('menu.getAllPrograms'), icon: 'download', disabled: true },
+          { label: tt('menu.sendAllPrograms'), icon: 'upload', disabled: true },
         ],
         // [
         //   {
