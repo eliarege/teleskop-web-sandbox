@@ -695,7 +695,7 @@ export class MachineController {
       CHANGEDATE: date,
       TBBCHANGESOURCE: '',
       TBBCHANGEDATE: '',
-      CREATIONDATE: date,
+      CREATIONDATE: program.createdAt ? program.createdAt : date,
       USERCOMMENT: program.comment,
       USERNAME: program.author, // ?
       CHANGETIME: date, // ?
@@ -892,7 +892,7 @@ export class MachineController {
       TBBCHANGESOURCE: '',
       TBBCHANGEDATE: program.updatedAtTBB ? program.updatedAtTBB : '',
       LOCKEDBY: '',
-      CREATIONDATE: date,
+      CREATIONDATE: program.createdAt ? program.createdAt : date,
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
