@@ -1269,7 +1269,6 @@ export class MachineController {
 
   /**
    * Başlatma parametrelerini getirir.
-   * @param machineId - Makine Id
    * @returns {Promise<BatchParameter[]>} - Makinenin parametrelerinin listesi
    */
   @withTransaction
@@ -1301,7 +1300,6 @@ export class MachineController {
 
   /**
    * Komut formüllerini getirir.
-   * @param machineId - Makine Id
    * @returns {Promise<CommandFormula[]>} - Komut parametrelerinin listesi
    */
   @withTransaction
@@ -1316,7 +1314,7 @@ export class MachineController {
     ).where('machineId', this.id)
   }
 
-  /*
+  /**
    * Yeni oluşturulan programı Treatments tablosuna ekler.
    * @param program - Program
    * @returns {Promise<void>}
@@ -1355,7 +1353,7 @@ export class MachineController {
             limit: settings.optimizedLimit,
           })
         }
-        if (parameter.optimized) {
+        if (!settings.optimizedEnable || (settings.optimizedEnable && parameter.optimized)) {
           totalOptimizeCount++
           treatmentRefs.push({
             counter: tp.counter,
