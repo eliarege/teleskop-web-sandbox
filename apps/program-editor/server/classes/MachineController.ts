@@ -1,12 +1,13 @@
 import { TbbFtpClient } from 'tbb-ftp-client'
 import type { Knex } from 'knex'
-import { getMachineHost, hasMachine } from '../functions'
+import { getMachineHost, hasMachine, logEditorOperation } from '../functions'
 import { db } from '../database'
 import { withFTP, withTransaction } from '../decorators'
 import { sql } from '../sql'
 import { stringifyProgram } from '../stringify'
 import { parseProgramString } from '../parse'
 import { PError } from '../error'
+import { ProgramEditorActivityCodes } from '../constants'
 import type { BatchParameter, CommandFormula, CommandIO, Machine, MachineCommand, MachineConstant, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
@@ -498,7 +499,7 @@ export class MachineController {
       await this.insertProgram(program)
       // TODO: Look again. hasProgram() not looks that good.
       await this.ftp.upload(`/tbb6500/data/programs/program/${program.programNo}`, stringifyProgram(program))
-
+      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `Program ${program.programNo}`)
       return true
     } catch (err) {
       if (isError(err)) {
@@ -533,8 +534,8 @@ export class MachineController {
     }
 
     const programString = await this.ftp.download(`/tbb6500/data/programs/program/${programNo}`, 'utf-8')
+    await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${program.programNo}`)
     const machine = await this.getMachineInfo()
-
     const rawProgram = parseProgramString(programString, machine)
     const program: Program = {
       ...rawProgram,
@@ -595,8 +596,30 @@ export class MachineController {
       if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
         program.isChanged = true
       await this.insertProgram(program)
+      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMCHANGED, `Makine ${this.id}`, program.name)
     }
     return isDeleted
+  }
+
+  @withTransaction
+  async changeName(program: Program, newName: string) {
+    const config = useRuntimeConfig()
+    const date = new Date(new Date().getTime() - Number(config.teleskopTimezoneOffset) * 60000).toISOString()
+    if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+      program.isChanged = true
+    const result = await this.trx
+      .from('BFMASTERPRGHEADER')
+      .where('PROGNO', program.programNo)
+      .andWhere('MACHINEID', this.id)
+      .update({
+        ISCHANGED: program.isChanged,
+        CHANGEDATE: date,
+        NAME: newName,
+      })
+    if (result)
+      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMNAMECHANGED, `Makine ${this.id}`, `Program İsmi ${newName}`)
+
+    return result
   }
 
   /**
@@ -1103,6 +1126,7 @@ export class MachineController {
   @withFTP
   async deleteRemoteProgram(programNo: number): Promise<void> {
     await this.ftp.remove(`/tbb6500/data/programs/program/${programNo}`)
+    await logEditorOperation(ProgramEditorActivityCodes.PROGRAMDELETED_CONTROLLER, this.host, `Program No ${programNo}`)
   }
 
   /**

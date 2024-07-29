@@ -155,3 +155,19 @@ export async function getMachineBatchParameters(machineId: number): Promise<any[
     })
   return parameters
 }
+
+/**
+ *
+ * @param activityCode { 1 | 2 | 102 | 103 | 104 | 105 | 106 | 107 | 108 | 109 | 110 }
+ * @param exp1 Mostly 'Makine ' + machineId, on Program Paste 'Kaynak Makine/Program machineId/programNo
+ * @param exp2 Mostly 'Program ' + programNo, on Program Paste 'Hedef Makine/Program machineId/programNo
+ */
+export async function logEditorOperation(activityCode: number, exp1: string, exp2: string | number) {
+  await db('TFTeleskopUserActivities').insert({
+    actUserId: 1,
+    actAppId: 3, // 3 is the value of ProgramEditor
+    actEventCode: activityCode,
+    actExplanation1: exp1,
+    actExplanation2: exp2,
+  })
+}

@@ -1,5 +1,7 @@
 import { machineStore } from '~/server/classes/MachineStore'
+import { ProgramEditorActivityCodes } from '~/server/constants'
 import { type ErrorProgramDetail, PError } from '~/server/error'
+import { logEditorOperation } from '~/server/functions'
 
 export default defineEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
@@ -27,6 +29,7 @@ export default defineEventHandler(async (event) => {
         } catch (e) {}
       }
       if (source.includes('db')) {
+        await logEditorOperation(ProgramEditorActivityCodes.PROGRAMDELETED, `Makine ${machineId}`, `Program No ${programNo}`)
         return await machine.deleteProgramFromDatabase(programNo)
       }
       return 1

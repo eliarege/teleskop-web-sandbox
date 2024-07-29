@@ -11,9 +11,24 @@ export const UPDATED_AT_TIME = 'DEGISIKLIKSAAT'
 export const AUTHOR = 'YAZAR'
 export const COMMENT = 'YORUMLAR'
 export const PROCESS_CODE = 'PROCESSCODE'
-
 export const START_TAGS = 'START_TAGS'
 export const END_TAGS = 'END_TAGS'
+
 export const MSSQL_ERROR = {
   DUPLICATE_PK: 2627,
 }
+
+export const ProgramEditorActivityCodes = {
+  LOGGEDIN: 1,
+  LOGGEDOUT: 2,
+  PROGRAMSENT: 102, //
+  PROGRAMRECEIVED: 103, //
+  PROGRAMCREATED: 104, //
+  PROGRAMDELETED: 105, //
+  PROGRAMCHANGED: 106, //
+  PROGRAMCOPIED: 107, //
+  PROGRAMDELETED_CONTROLLER: 108, //
+  PROGRAMNOCHANGED: 109,
+  PROGRAMNAMECHANGED: 110, //
+
+} as const

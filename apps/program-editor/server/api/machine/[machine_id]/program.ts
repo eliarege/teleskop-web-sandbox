@@ -2,6 +2,8 @@ import { machineStore } from '~/server/classes/MachineStore'
 import type { Program } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { PError } from '~/server/error'
+import { ProgramEditorActivityCodes } from '~/server/constants'
+import { logEditorOperation } from '~/server/functions'
 
 export default defineEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
@@ -20,18 +22,27 @@ export default defineEventHandler(async (event) => {
     const programNoToCheck = body.newProgramNo ?? body.programNo ?? body.program?.programNo
 
     let program: Program
+    let actCode, act1, act2
     if (body.program) {
       program = body.program
+      actCode = ProgramEditorActivityCodes.PROGRAMCREATED
+      act1 = `Makine ${machineId}`
+      act2 = program.programNo
     } else {
       const machineOfCopiedProgram = await machineStore.get(body.machineIdOfCopiedProgram)
       program = await machineOfCopiedProgram.fetchProgram(body.programNo)
       program.programState = ProgramStatus.EXISTS_ONLY_ON_DATABASE
       program.machineId = machineId
       program.programNo = programNoToCheck
+      actCode = ProgramEditorActivityCodes.PROGRAMCOPIED
+      act1 = `Kaynak Makine/Program ${body.machineIdOfCopiedProgram},${body.programNo}`
+      act2 = `Hedef Makine/Program ${machineId},${program.programNo}`
     }
 
     try {
-      return await machine.insertProgram(program)
+      const result = await machine.insertProgram(program)
+      await logEditorOperation(actCode, act1, act2)
+      return result
     } catch (error) {
       if (error instanceof PError) {
         if (error.code === 'PROGRAM_EXISTS') {

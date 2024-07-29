@@ -123,10 +123,10 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function changeName(programParam: any, newName: string, machineId: number) {
     const program = await getProgram(programParam.programNo, machineId)
     program.name = newName
-    const check = await $fetch(`/api/machine/${machineId}/program`, {
+    const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}/update-name`, {
       method: 'PUT',
       body: {
-        program,
+        newName,
       },
     })
     const status = check ? 'success' : 'fail'
