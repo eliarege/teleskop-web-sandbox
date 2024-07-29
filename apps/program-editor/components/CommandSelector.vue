@@ -34,18 +34,36 @@ const rules = [
   (value: any) => !!value,
 ]
 
-const options = computed(() => ((
-  Array.from(editor.machine.commands.values()) as MachineCommand[])
-  .filter(({ commandType }) =>
-    (isMainCommand === COMMAND_TYPE.MAIN && commandType === COMMAND_TYPE.MAIN)
-    || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.MAIN)
-    || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.PARALLEL),
-  )
-  .map(({ commandNo, name }) => ({
-    label: `${commandNo} ${name}`,
-    value: commandNo,
-  }))
-))
+const stepIndex = computed(() => Number(props.path.split('.')[1]))
+
+const filteredCommands = computed(() => {
+  const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
+
+  return commandsArray
+    .filter(({ commandType }) =>
+      (isMainCommand === COMMAND_TYPE.MAIN && commandType === COMMAND_TYPE.MAIN)
+      || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.MAIN)
+      || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.PARALLEL),
+    )
+    .filter(({ commandNo }) => {
+      const step = editor.program.steps[stepIndex.value]
+
+      if (isMainCommand === COMMAND_TYPE.MAIN) {
+        return step.mainCommand.commandNo
+      }
+      if (isMainCommand === COMMAND_TYPE.PARALLEL) {
+        return commandNo === programCommand.commandNo
+          || !step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === commandNo)
+      }
+
+      return true
+    })
+
+    .map((command: MachineCommand) => ({
+      label: `${command.commandNo} ${command.name}`,
+      value: command.commandNo,
+    }))
+})
 
 const label = computed(() => {
   return !programCommand.commandNo ? t('selectCommand') : undefined
@@ -56,8 +74,8 @@ const label = computed(() => {
   <div>
     <QSelect
       ref="select"
-      v-model="programCommand.commandNo"
-      :options="options"
+      :model-value="programCommand.commandNo"
+      :options="filteredCommands"
       :label="label"
       :rules="rules"
       :for="id"

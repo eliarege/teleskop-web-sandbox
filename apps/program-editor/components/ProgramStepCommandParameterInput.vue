@@ -20,12 +20,18 @@ const rules = [
 ]
 const options = computed(() => props.parameter.selections || [])
 const formulaOptions = computed(() =>
-  editor.machine.commandFormulas.filter((f: CommandFormula) => f.commandNo === props.commandno).map((f: CommandFormula) => ({
+  editor.machine.commandFormulas.filter((f: CommandFormula) => f.commandNo === props.commandNo).map((f: CommandFormula) => ({
     label: f.formulaName,
     value: f.formulaId,
     formula: f.formula,
   })),
 )
+
+const isOptimizable = computed(() => {
+  return editor.machine.treatmentParameters.find((tp) => {
+    return tp.commandNo === props.commandNo && tp.parameterIndex === props.parameter.index
+  })
+})
 
 watch(() => model.value, (newValue: number) => {
   programParameter.value = newValue
@@ -43,7 +49,7 @@ watch(() => model.value, (newValue: number) => {
       :rules="rules"
     >
       <template #optimized>
-        <div class="ml-3 flex-center h-full">
+        <div v-if="isOptimizable" class="ml-3 flex-center h-full">
           <QCheckbox
             v-model="programParameter.optimized"
             size="sm"
@@ -65,7 +71,7 @@ watch(() => model.value, (newValue: number) => {
       dense
     >
       <template #optimized>
-        <div class="ml-3 flex-center h-full">
+        <div v-if="isOptimizable" class="ml-3 flex-center h-full">
           <QCheckbox
             v-model="programParameter.optimized"
             size="sm"
@@ -114,13 +120,13 @@ watch(() => model.value, (newValue: number) => {
         >
           <QItemSection>
             {{ scope.opt.label }}
-            <q-tooltip>{{ scope.opt.formula }}</q-tooltip>
+            <QTooltip>{{ scope.opt.formula }}</QTooltip>
           </QItemSection>
         </QItem>
       </template>
     </QSelect>
-    <q-tooltip>
+    <QTooltip>
       {{ formulaOptions.find((f) => f.value === model)?.formula }}
-    </q-tooltip>
+    </QTooltip>
   </div>
 </template>

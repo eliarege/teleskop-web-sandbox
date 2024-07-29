@@ -1,14 +1,15 @@
 import { TbbFtpClient } from 'tbb-ftp-client'
 import type { Knex } from 'knex'
-import { getMachineHost, hasMachine, logEditorOperation } from '../functions'
-import { db } from '../database'
+import { isDef } from 'utils'
+import { ensureTreatmentGroups, fetchTreatmentSettings, getGroupIdByMachineId, getMachineHost, hasMachine, logEditorOperation } from '../functions'
+import { db, dmExchange } from '../database'
 import { withFTP, withTransaction } from '../decorators'
 import { sql } from '../sql'
 import { stringifyProgram } from '../stringify'
 import { parseProgramString } from '../parse'
 import { PError } from '../error'
-import { ProgramEditorActivityCodes } from '../constants'
-import type { BatchParameter, CommandFormula, CommandIO, Machine, MachineCommand, MachineConstant, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter } from '~/shared/types'
+import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
+import type { BatchParameter, CommandFormula, CommandIO, Machine, MachineCommand, MachineConstant, MachineGroup, ParameterItem, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 
@@ -536,7 +537,9 @@ export class MachineController {
     }
 
     const programString = await this.ftp.download(`/tbb6500/data/programs/program/${programNo}`, 'utf-8')
-    await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${program.programNo}`)
+
+    await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${programNo}`)
+
     const machine = await this.getMachineInfo()
     const rawProgram = parseProgramString(programString, machine)
     const currentTimestamp = this.getCurrentTimestamp()
@@ -585,7 +588,16 @@ export class MachineController {
     const batchParameters = await this.fetchBatchParameters()
     const constants = await this.fetchMachineConstants()
     const commandFormulas = await this.fetchCommandFormulas()
-    return { id: this.id, name, commands, constants, commandFormulas, batchParameters }
+    const treatmentParameters = await this.fetchTreatmentParameters()
+    return {
+      id: this.id,
+      name,
+      commands,
+      constants,
+      commandFormulas,
+      batchParameters,
+      treatmentParameters,
+    }
   }
 
   /**
@@ -768,7 +780,7 @@ export class MachineController {
           MAINSTEP: i,
           PARALELSTEP: 0,
           PARAMETERINDEX: parameter.index,
-          VALUE: parameter.value,
+          VALUE: `${parameter.value}`.replace('.', ','),
           CONTAINSVARIABLE: 0,
           ERRORWARNING: 0,
           OPTIMIZED: parameter.optimized ? 1 : 0,
@@ -788,7 +800,7 @@ export class MachineController {
           IOTYPE: 5,
         })
         // BAMASTERSTEPSELECTIONLIST
-        io.value.forEach((ioValue: any, n) => {
+        io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue: any, n) => {
           ioSelectionArchive.push({
             MACHINEID: this.id,
             MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
@@ -825,7 +837,7 @@ export class MachineController {
             MAINSTEP: i,
             PARALELSTEP: j + 1,
             PARAMETERINDEX: parameter.index,
-            VALUE: parameter.value,
+            VALUE: `${parameter.value}`.replace('.', ','),
             CONTAINSVARIABLE: 0,
             ERRORWARNING: 0,
             OPTIMIZED: parameter.optimized ? 1 : 0,
@@ -847,7 +859,7 @@ export class MachineController {
           })
 
           // BAMASTERSTEPSELECTIONLIST
-          io.value.forEach((ioValue: any, n) => {
+          io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue: any, n) => {
             ioSelectionArchive.push({
               MACHINEID: this.id,
               MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
@@ -878,7 +890,7 @@ export class MachineController {
         await this.trx.insert(item).into(table.toString())
   }
 
-  private arrayToMap(commands: MachineCommand[]): Map<number, MachineCommand> {
+  private commandArrayToMap(commands: MachineCommand[]): Map<number, MachineCommand> {
     const map = new Map<number, MachineCommand>()
     commands.forEach((command) => {
       map.set(command.commandNo, command)
@@ -897,10 +909,16 @@ export class MachineController {
     if (exists) {
       throw new PError('PROGRAM_EXISTS', { machineId: this.id, programNo: program.programNo })
     }
-    const commands: MachineCommand[] = await this.fetchCommands()
+    const machine = await this.getMachineInfo()
+    const commands = machine.commands
     const config = useRuntimeConfig()
     const timezone = Number(config.teleskopTimezoneOffset)
     const date = new Date(new Date().getTime() - timezone * 60000).toISOString()
+
+    program.duration = calculateProgramDuration(program, {
+      ...machine,
+      commands: this.commandArrayToMap(machine.commands),
+    })
 
     const steps: StepItem[] = []
     const parameters: StepParameter[] = []
@@ -963,29 +981,12 @@ export class MachineController {
           PARALELSTEP: 0,
           PARAMETERINDEX: parameter.index,
           MACHINEID: this.id,
-          VALUE: parameter.value,
+          VALUE: `${parameter.value}`.replace('.', ','),
           CONTAINSVARIABLE: 0,
           OPTIMIZEDVALUE: '',
           ERRORWARNING: 0,
           OPTIMIZED: parameter.optimized ? 1 : 0,
         })
-        const programNo = program.programNo
-        const machineId = program.machineId
-        const commandNo = step.mainCommand.commandNo
-        const paramIndex = parameter.index
-        const optimized = parameter.optimized
-        const parallelStep = 0
-        const mainStep = i
-
-        this.updateTreatmentParameters(
-          programNo,
-          machineId,
-          commandNo,
-          paramIndex,
-          optimized,
-          parallelStep,
-          mainStep,
-        )
       })
 
       step.mainCommand.ioList.forEach((io, k) => {
@@ -1001,7 +1002,7 @@ export class MachineController {
           ERRORWARNING: 0,
         })
         // BFMASTERSTEPSELECTIONLIST
-        io.value.forEach((ioValue, n) => {
+        io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue, n) => {
           ioSelection.push({
             SELECTIONINDEX: n,
             PROGNO: program.programNo,
@@ -1036,7 +1037,7 @@ export class MachineController {
             PARALELSTEP: j + 1,
             PARAMETERINDEX: parameter.index,
             MACHINEID: this.id,
-            VALUE: parameter.value,
+            VALUE: `${parameter.value}`.replace('.', ','),
             CONTAINSVARIABLE: 0,
             OPTIMIZEDVALUE: '',
             ERRORWARNING: 0,
@@ -1059,7 +1060,7 @@ export class MachineController {
           })
 
           // BFMASTERSTEPSELECTIONLIST
-          io.value.forEach((ioValue, n) => {
+          io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue, n) => {
             ioSelection.push({
               SELECTIONINDEX: n,
               PROGNO: program.programNo,
@@ -1090,6 +1091,7 @@ export class MachineController {
       }
 
     await this.insertProgramToArchive(program)
+    await this.upsertTreatments(program)
   }
 
   /**
@@ -1114,7 +1116,10 @@ export class MachineController {
     const tables = ['BFMASTERPRGHEADER', 'BFMASTERSTEPS', 'BFMASTERSTEPPARAMS', 'BFMASTERSTEPINPUTOUTPUTS', 'BFMASTERSTEPSELECTIONLIST']
 
     for (const table of tables) {
-      deletedCount += await this.trx(table).where('MACHINEID', this.id).andWhere('PROGNO', programNo).del()
+      deletedCount += await this.trx(table)
+        .where('MACHINEID', this.id)
+        .andWhere('PROGNO', programNo)
+        .del()
     }
 
     return deletedCount > 0
@@ -1309,5 +1314,153 @@ export class MachineController {
       'commandParameterNo',
       'formulaName',
     ).where('machineId', this.id)
+  }
+
+  /*
+   * Yeni oluşturulan programı Treatments tablosuna ekler.
+   * @param program - Program
+   * @returns {Promise<void>}
+   */
+  async upsertTreatments(program: Program): Promise<void> {
+    const config = useRuntimeConfig()
+    if (!config.dmexchangeEnabled)
+      return
+
+    await ensureTreatmentGroups()
+
+    const settings = await fetchTreatmentSettings()
+
+    const treatmentParameters = (await this.fetchTreatmentParameters()).map((parameter) => {
+      return {
+        ...parameter,
+        counter: 0,
+      }
+    })
+
+    const treatmentRefs = [] as { counter: number, parameterNo: number }[]
+
+    let totalOptimizeCount = 0
+
+    const handleParameter = (command: ProgramStepCommand, parameter: ParameterItem) => {
+      const tp = treatmentParameters.find((tp) => {
+        return tp.commandNo === command.commandNo && tp.parameterIndex === parameter.index
+      })
+      if (tp) {
+        tp.counter++
+        if (tp.counter >= settings.optimizedLimit) {
+          throw new PError('PROGRAM_TREATMENT_COMMAND_LIMIT', {
+            machineId: this.id,
+            programNo: program.programNo,
+            commandNo: command.commandNo!,
+            limit: settings.optimizedLimit,
+          })
+        }
+        if (parameter.optimized) {
+          totalOptimizeCount++
+          treatmentRefs.push({
+            counter: tp.counter,
+            parameterNo: (tp.paramId - 1) * settings.optimizedLimit + tp.counter,
+          })
+        }
+      }
+    }
+
+    for (const step of program.steps) {
+      // Main command
+      for (const parameter of step.mainCommand.parameters) {
+        handleParameter(step.mainCommand, parameter)
+      }
+      // Parallel Commands
+      for (const parallelCommand of step.parallelCommands) {
+        for (const parameter of parallelCommand.parameters) {
+          handleParameter(parallelCommand, parameter)
+        }
+      }
+    }
+
+    const groupNo = (await db('BFMACHINES')
+      .first({ groupNo: 'GRUPNO' })
+      .where('MACHINEID', this.id))?.groupNo
+
+    // Not expected
+    if (!isDef(groupNo)) {
+      throw new Error(`Machine ${this.id} not found`)
+    }
+
+    await dmExchange.transaction(async (trx) => {
+      // Handle Treatment Machine Groups
+
+      const treatment = await trx('Treatments')
+        .where('TreatmentNo', program.programNo)
+        .andWhere('TreatmentType', 0)
+        .first('*')
+
+      if (!treatment) {
+        await trx('Treatments').insert({
+          TreatmentNo: program.programNo,
+          TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
+          TreatmentName: program.name,
+          TreatmentParaCount: totalOptimizeCount,
+          ImportState: 1,
+          TreatmentType: 0,
+        })
+
+        await trx('Treatment_MGroups').insert({
+          TreatmentNo: program.programNo,
+          MGroupNo: groupNo,
+          ImportState: 1,
+        })
+      } else {
+        await trx('Treatments').update({
+          TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
+          TreatmentName: program.name,
+          TreatmentParaCount: totalOptimizeCount,
+          ImportState: 1,
+          TreatmentType: 0,
+        })
+          .where('TreatmentNo', program.programNo)
+          .andWhere('TreatmentType', 0)
+
+        await trx('Treatment_Parameter_Ref')
+          .where('TreatmentNo', program.programNo)
+          .del()
+      }
+
+      await trx('Treatment_Parameter_Ref').insert(
+        treatmentRefs.map((ref, index) => {
+          return {
+            TreatmentNo: program.programNo,
+            TreatmentParaCounter: index + 1,
+            TreatmentParaNo: ref.parameterNo,
+            ImportState: 1,
+          }
+        }),
+      )
+    })
+  }
+
+  async deleteTreatments(programNo: number): Promise<void> {
+    await dmExchange.transaction(async (trx) => {
+      await trx('Treatments')
+        .where('TreatmentNo', programNo)
+        .andWhere('TreatmentType', 0)
+        .del()
+
+      await trx('Treatment_Parameter_Ref')
+        .where('TreatmentNo', programNo)
+        .del()
+    })
+  }
+
+  async fetchTreatmentParameters(): Promise<TreatmentParameter[]> {
+    return await db('BFTREATMENTPARAMGROUPMAP as TP')
+      .select({
+        paramId: 'TP.PARAMID',
+        groupId: 'TP.GROUPID',
+        commandNo: 'TP.COMMANDNO',
+        parameterIndex: 'TP.PARAMETERINDEX',
+      })
+      .join('BFTREATMENTPARAMETERGROUPMACHINES as MG', 'TP.GROUPID', 'MG.GROUPID')
+      .where('MG.MACHINEID', this.id)
   }
 }

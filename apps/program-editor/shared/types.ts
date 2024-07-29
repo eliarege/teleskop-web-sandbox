@@ -1,3 +1,5 @@
+import type { COMMAND_TYPE } from './constants'
+
 export interface ProgramInfo {
   programNo: number
   name: string
@@ -55,7 +57,7 @@ export interface MachineCommand {
   adviceList: string
   dontUseList: number[]
   isRunManual: boolean
-  commandType: number
+  commandType: COMMAND_TYPE
   moveParallel: number
   x: string
   y: string
@@ -153,7 +155,7 @@ export interface ProgramStepCommand {
 }
 
 export interface ParameterItem {
-  value: number
+  value: number | string
   index: number
   optimized: boolean
 }
@@ -266,6 +268,7 @@ export interface Machine {
   commandFormulas: CommandFormula[]
   constants: MachineConstant[]
   batchParameters: BatchParameter[]
+  treatmentParameters: TreatmentParameter[]
 }
 
 export interface CommandItem {
@@ -347,4 +350,17 @@ export interface CommandFormula {
   commandNo: number
   commandParameterNo: number
   formulaName: string
+}
+
+export interface TreatmentGroup {
+  TreatmentGroupNo: number
+  TreatmentGroupName: string
+  ImportState: number
+}
+
+export interface TreatmentParameter {
+  paramId: number
+  groupId: number
+  commandNo: number
+  parameterIndex: number
 }

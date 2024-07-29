@@ -9,6 +9,7 @@ export type ErrorCode =
   | 'PROGRAM_FAILED_TO_LOAD'
   | 'PROGRAM_INSERT_FAILED'
   | 'PROGRAM_UPDATE_FAILED'
+  | 'PROGRAM_TREATMENT_COMMAND_LIMIT'
 
 export interface ErrorMachineDetail {
   machineId: number
@@ -29,6 +30,13 @@ export interface ErrorProgramInvalidDetail {
   machineId: number
   programNo: number
   reason: any
+}
+
+export interface ErrorTreatmentLimitDetail {
+  machineId: number
+  programNo: number
+  commandNo: number
+  limit: number
 }
 
 export interface ErrorMachineNotFound extends PError {
@@ -81,6 +89,11 @@ export interface ErrorProgramUpdate extends PError {
   detail: ErrorProgramDetail
 }
 
+export interface ErrorTreatmentLimit extends PError {
+  code: 'PROGRAM_TREATMENT_COMMAND_LIMIT'
+  detail: ErrorTreatmentLimitDetail
+}
+
 export type AnyError =
   | ErrorMachineNotFound
   | ErrorMachineUnavailable
@@ -91,6 +104,7 @@ export type AnyError =
   | ErrorProgramLoad
   | ErrorProgramInsert
   | ErrorProgramUpdate
+  | ErrorTreatmentLimit
 
 export class PError extends Error {
   code: ErrorCode
@@ -106,6 +120,7 @@ export class PError extends Error {
   constructor(code: 'PROGRAM_FAILED_TO_LOAD', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_INSERT_FAILED', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_UPDATE_FAILED', detail: ErrorProgramDetail)
+  constructor(code: 'PROGRAM_TREATMENT_COMMAND_LIMIT', detail: ErrorTreatmentLimitDetail)
   constructor(code: ErrorCode, detail?: any) {
     super(code)
     this.code = code

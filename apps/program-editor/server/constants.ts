@@ -30,5 +30,7 @@ export const ProgramEditorActivityCodes = {
   PROGRAMDELETED_CONTROLLER: 108, //
   PROGRAMNOCHANGED: 109,
   PROGRAMNAMECHANGED: 110, //
-
 } as const
+
+// Treatmentlarda bir grup kullanılır.
+export const GENERAL_TREATMENT_GROUPNO = 1

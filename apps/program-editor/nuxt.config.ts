@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
 
+    dmexchangeEnabled: true,
     dmexchangeHost: 'localhost',
     dmexchangeUser: '',
     dmexchangePort: '1433',

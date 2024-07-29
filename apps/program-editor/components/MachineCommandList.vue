@@ -5,7 +5,7 @@ import type { SortableEvent, SortableOptions } from 'sortablejs'
 import { isDef } from 'utils'
 import { ProgramStateColors } from '~/shared/constants'
 import { useEditorStore } from '~/composables/editor'
-import type { MachineCommand } from '~/shared/types'
+import type { MachineCommand, ProgramStep, ProgramStepCommand } from '~/shared/types'
 
 const editor = useEditorStore()
 const { t } = useI18n()
@@ -22,15 +22,19 @@ const sortableOptions = computed<SortableOptions>(() => ({
 const route = useRoute()
 const isProgramPage = computed(() => route.path.includes('program'))
 const searchQuery = ref('')
+const { notifySuccess, notifyError } = useNotify()
+
 const filteredCommands = computed(() => {
   const query = searchQuery.value.toLowerCase()
-  const commandsArray: MachineCommand[] = editor.machine?.commands ? Array.from(editor.machine?.commands.values()) : []
-  return commandsArray.filter(command => (
-    command.commandNo.toString().includes(query)
-    || command.name.toLowerCase().includes(query)
-  ),
-  // && command.commandType === 0,
-  )
+  const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
+
+  return commandsArray
+    .filter(({ commandNo, name }) => (
+      commandNo.toString().includes(query)
+      || name.toLowerCase().includes(query)
+    ),
+      // && command.commandType === 0,
+    )
 })
 
 const programStatus = computed(() => [
@@ -58,7 +62,11 @@ function onDragEnd(event: SortableEvent) {
     if (isParallelCommand) {
       const index = Number.parseInt(parent.getAttribute('data-index') || '-1')
       if (index > -1) {
-        editor.newParallelStepCommand(draggedCommand.commandNo, index)
+        const res = validateParallelCommands(index)
+        if (!res)
+          editor.newParallelStepCommand(draggedCommand.commandNo, index)
+        else
+          notifyError(t('error.notSameCommand', { command: draggedCommand.name }))
       }
     } else {
       editor.newStepCommand(draggedCommand.commandNo, event.newIndex - 1)
@@ -66,6 +74,11 @@ function onDragEnd(event: SortableEvent) {
 
     draggedCommand = null
   }
+}
+
+function validateParallelCommands(stepIndex: number): boolean {
+  const step = editor.program.steps[stepIndex]
+  return step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === draggedCommand.commandNo)
 }
 </script>
 

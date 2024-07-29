@@ -111,7 +111,6 @@ watch(locale, () => {
 })
 
 editor.isLoading = true
-await editor.getTreatmentParams()
 await editor.fetchMachineCommands(machineId)
 await editor.fetchProgram(machineId, programNo).then(() => {
   editor.isLoading = false

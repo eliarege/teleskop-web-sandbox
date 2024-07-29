@@ -42,12 +42,18 @@ export default defineEventHandler(async (event) => {
     try {
       await machine.insertProgram(program)
       await logEditorOperation(actCode, act1, act2)
-    } catch (error) {
-      if (error instanceof PError) {
-        if (error.code === 'PROGRAM_EXISTS') {
-          return 0
-          // return createError({ statusCode: 409, data: { code: error.code, detail: error.detail } })
-        }
+    } catch (err) {
+      if (err instanceof PError) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Invalid program',
+          data: {
+            code: err.code,
+            detail: err.detail,
+          },
+        })
+      } else {
+        throw err
       }
     }
 
@@ -59,7 +65,22 @@ export default defineEventHandler(async (event) => {
     //   return 0 // Program with spesified programNo has exist on machine
     // else {
     // }
-    return machine.updateProgram(body.program)
+    try {
+      return await machine.updateProgram(body.program)
+    } catch (err) {
+      if (err instanceof PError) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Invalid program',
+          data: {
+            code: err.code,
+            detail: err.detail,
+          },
+        })
+      } else {
+        throw err
+      }
+    }
   }
   return await machine.getProgramHeadersAsList()
 })

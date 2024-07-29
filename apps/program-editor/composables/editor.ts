@@ -45,6 +45,7 @@ export const useEditorStore = defineStore('editor', () => {
       batchParameters: [],
       commandFormulas: [],
       constants: [],
+      treatmentParameters: [],
     }
     // Replace only if navigating from /machine/:id
     const replace = MACHINE_PATH_RE.test(route.path)
@@ -169,8 +170,8 @@ export const useEditorStore = defineStore('editor', () => {
       .filter(parameter => parameter.editable || parameter.useFormula)
       .map(parameter => ({
         index: parameter.index,
-        value: Number(parameter.value),
-        optimized: 0,
+        value: parameter.value,
+        optimized: false,
       }))
 
     command.ioList = machineCommand.ioList
@@ -298,15 +299,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function fetchAllPrograms(machineId: number) {
-    try {
-      allPrograms.value = await $fetch<ProgramHeader[]>(`/api/machine/${machineId}/program`)
-    } catch (err) {
-      if (err instanceof PError) {
-        if (err.code === 'PROGRAM_NOT_FOUND') {
-          throw createError({ statusCode: 404, data: { code: err.code, detail: err.detail } })
-        }
-      }
-    }
+    allPrograms.value = await $fetch<ProgramHeader[]>(`/api/machine/${machineId}/program`)
   }
 
   async function fetchAllProcessTypes() {
@@ -324,6 +317,7 @@ export const useEditorStore = defineStore('editor', () => {
       batchParameters: [],
       commandFormulas: [],
       constants: [],
+      treatmentParameters: [],
     }
   }
 
@@ -359,31 +353,39 @@ export const useEditorStore = defineStore('editor', () => {
       })
       return true
     } catch (error: any) {
-      if (error.status === 409) {
-        notifyError(t('programNotUpdated', { field: t('program.programNo') }))
-      } else {
-        throw new PError('PROGRAM_UPDATE_FAILED', { machineId: Number(route.params.machine_id), programNo: program.value.programNo })
+      if (error.statusCode === 400) {
+        if (error.data.data.code === 'PROGRAM_TREATMENT_COMMAND_LIMIT') {
+          notifyError(t('treatmentParameterLimitReached', {
+            limit: error.data.data.detail.limit,
+            commandNo: error.data.data.detail.commandNo,
+          }))
+        }
       }
+      return false
     }
   }
 
-  async function insertProgram() {
+  async function insertProgram(getProgram?: Program) {
     try {
       await $fetch(`/api/machine/${route.params.machine_id}/program`, {
         method: 'POST',
         body: {
-          program: program.value,
+          program: getProgram || program.value,
         },
       })
 
       notifySuccess(t('saveProgram.success'))
       return true
     } catch (error: any) {
-      if (error.status === 409) {
-        notifyError(t('input.unique', { field: t('program.programNo') }))
-      } else {
-        throw new PError('PROGRAM_INSERT_FAILED', { machineId: Number(route.params.machine_id), programNo: program.value.programNo })
+      if (error.statusCode === 400) {
+        if (error.data.data.code === 'PROGRAM_TREATMENT_COMMAND_LIMIT') {
+          notifyError(t('treatmentParameterLimitReached', {
+            limit: error.data.detail.limit,
+            commandNo: error.data.data.detail.commandNo,
+          }))
+        }
       }
+      return false
     }
   }
 

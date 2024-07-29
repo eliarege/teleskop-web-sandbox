@@ -10,12 +10,13 @@
   "welcome": "Welcome",
   "search": "Search",
   "searchCommand": "Search Command",
-  "optimized-parameter": "Optimized Parameter",
   "valueOutOfRange": "Value must be between {minValue} and {maxValue}",
   "operator": "Operator can be used to change the program",
   "selectCommand": "Select Command",
   "noParallelStep": "No Parallel Step",
+  "programNotSaved": "Error occured while trying to save program",
   "programNotUpdated": "Program has not been updated",
+  "treatmentParameterLimitReached": "Command {commandNo} cannot be used more than {limit}",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",
@@ -152,7 +153,8 @@
   },
   "error": {
     "machineCommandNotFound": "{commandNo} number command {machineId} machine not found",
-    "cannotMainCommand": "{commandNo} number command cannot be main command"
+    "cannotMainCommand": "{commandNo} number command cannot be main command",
+    "notSameCommand": "Cannot have the same command in one step"
   },
   "selectAll": "Select all",
   "dropAll": "Drop all",

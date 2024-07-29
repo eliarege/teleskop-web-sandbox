@@ -10,12 +10,13 @@
   "welcome": "Hoşgeldiniz",
   "search": "Ara",
   "searchCommand": "Komut Ara",
-  "optimized-parameter": "Optimize Parametresi",
   "valueOutOfRange": "{minValue} ile {maxValue} arasında bir değer giriniz",
   "operator": "Operatör müdahale edebilir",
   "selectCommand": "Komut Seçiniz",
   "noParallelStep": "Paralel Adım Yok",
+  "programNotSaved": "Program güncellenirken hata oluştu",
   "programNotUpdated": "Program güncellenemedi",
+  "treatmentParameterLimitReached": "{commandNo} numaralı komut {limit}'den fazla kullanılamaz",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",
@@ -152,7 +153,8 @@
   },
   "error": {
     "machineCommandNotFound": "{commandNo} numaralı komut {machineId} numaralı makinede bulunamadı",
-    "cannotMainCommand": "{commandNo} numaralı komut ana komut olamaz"
+    "cannotMainCommand": "{commandNo} numaralı komut ana komut olamaz",
+    "notSameCommand": "Bir adımda aynı komut iki kere kullanılamaz"
   },
   "selectAll": "Tümünü seç",
   "dropAll": "Tümünü bırak",
