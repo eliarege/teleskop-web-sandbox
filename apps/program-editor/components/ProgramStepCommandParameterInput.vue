@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import DurationInput from './DurationInput.vue'
+import InputDuration from './InputDuration.vue'
 import InputNumber from './InputNumber.vue'
 import type { CommandFormula, CommandParameter, ParameterItem } from '~/shared/types'
 
@@ -35,7 +35,7 @@ watch(() => model.value, (newValue: number) => {
 
 <template>
   <template v-if="parameter.type === 'NUMBER'">
-    <DurationInput
+    <InputDuration
       v-if="parameter.format === 'DURATION'"
       v-model="model"
       dense

@@ -338,12 +338,12 @@ function validateValue(value, hideSeconds, _constraints) {
       return '00:00' // fallback to default
     }
     // if hour (hh) input is not a number or negative set it to 0
-    if (isNaN(sectioned[0])) {
+    if (Number.isNaN(sectioned[0])) {
       sectioned[0] = '00'
       mustUpdateValue = true
     }
     // if hour (mm) input is not a number or negative set it to 0
-    if (isNaN(sectioned[1]) || sectioned[1] < 0) {
+    if (Number.isNaN(sectioned[1]) || sectioned[1] < 0) {
       sectioned[1] = '00'
       mustUpdateValue = true
     }
@@ -560,7 +560,7 @@ function handleKeydown(event) {
 
   // The following keys will be accepted when the input field is selected
   const acceptedKeys = ['Backspace', 'ArrowDown', 'ArrowUp', 'Tab']
-  if (isNaN(event.key) && !acceptedKeys.includes(event.key)) {
+  if (Number.isNaN(event.key) && !acceptedKeys.includes(event.key)) {
     event.preventDefault()
     return false
   }

@@ -193,9 +193,9 @@ onMounted(() => {
     :dense="dense"
     :suffix="format === 'DURATION' ? 'min' : ''"
   >
-    <template #control="{ id }">
+    <template #control="{ id: inputId }">
       <input
-        :id="id"
+        :id="inputId"
         ref="numberInput"
         :value="model"
         type="text"

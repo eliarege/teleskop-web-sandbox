@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import type { QInput } from 'quasar'
+import type { ModelRef } from 'vue'
+import type { QField } from 'quasar'
 
-const props = defineProps<{
-  label: string
-  minValue: number
-  maxValue: number
+defineProps<{
+  label?: string
+  rules?: Array<any>
+  outlined?: boolean
+  dense?: boolean
+  filled?: boolean
+  clearable?: boolean
 }>()
-
-const model = defineModel<number>()
-const editor = useEditorStore()
+const model: ModelRef<number | undefined, string> = defineModel()
 const id = useId()
-const { t } = useI18n()
-const input = ref<QInput>()
+const editor = useEditorStore()
+const input = ref<QField>()
 
 watch(() => input.value?.hasError, (value) => {
   if (value) {
@@ -24,51 +26,22 @@ watch(() => input.value?.hasError, (value) => {
 onUnmounted(() => {
   editor.errorIds.delete(id)
 })
-
-const rules = [
-  (value: string) => {
-    if (
-      !Number.isNaN(value) && between(
-        parseDuration(value),
-        props.minValue,
-        props.maxValue,
-      )
-    ) {
-      return true
-    } else {
-      return t('valueOutOfRange', {
-        minValue: formatDuration(props.minValue),
-        maxValue: formatDuration(props.maxValue),
-      })
-    }
-  },
-]
-
-const time = computed({
-  get() {
-    if (!model.value) {
-      return '00:00:00'
-    }
-    return formatDuration(model.value)
-  },
-  set(value) {
-    model.value = parseDuration(value)
-  },
-})
 </script>
 
 <template>
-  <QInput
-    ref="input"
-    v-model="time"
+  <QField
+    :id
+    v-model="model"
+    :dense
+    :clearable
+    :label
     :for="id"
-    :label="label"
-    :rules="rules"
-    mask="fulltime"
-    input-class="text-right"
-    hide-bottom-space
-    no-error-icon
-    outlined
-    dense
-  />
+    :filled
+    :outlined
+    :rules
+  >
+    <template #control>
+      <InputDurationRaw :id="id" v-model="model" />
+    </template>
+  </QField>
 </template>
