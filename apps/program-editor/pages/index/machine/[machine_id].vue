@@ -498,7 +498,10 @@ const debouncedFilter = refDebounced(filter, 250)
 const PATH_RE = /^\/machine\/([^/]+?)\/?$/
 
 const fullMatch = computed(() => PATH_RE.test(route.path))
-
+watch(fullMatch, async () => {
+  if (fullMatch.value)
+    await fetchPrograms()
+})
 const { results: filterResults } = useFuse(debouncedFilter, programs as Ref<ProgramTable[]>, {
   matchAllWhenSearchEmpty: true,
   fuseOptions: {
