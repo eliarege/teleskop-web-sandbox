@@ -7,5 +7,5 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const machine = await machineStore.get(machineId)
   const program = await machine.fetchProgram(programNo)
-  return await machine.changeName(program, body.newName)
+  return await machine.changeName(program, body.name)
 })
