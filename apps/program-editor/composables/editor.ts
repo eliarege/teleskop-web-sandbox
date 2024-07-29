@@ -374,12 +374,12 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  async function insertProgram(getProgram?: Program) {
+  async function insertProgram() {
     try {
       await $fetch(`/api/machine/${route.params.machine_id}/program`, {
         method: 'POST',
         body: {
-          program: getProgram || program.value,
+          program: program.value,
         },
       })
 

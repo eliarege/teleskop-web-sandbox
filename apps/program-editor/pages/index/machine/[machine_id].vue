@@ -740,10 +740,6 @@ function handleRowColor(row: ProgramHeader) {
   <EliarModal v-if="editor.popupNewProgramVisible">
     <CMNewProgramDialog />
   </EliarModal>
-
-  <EliarModal v-if="editor.popupSaveAsProgramVisible">
-    <CMNewProgramDialog />
-  </EliarModal>
 </template>
 
 <style lang="postcss" scoped>
