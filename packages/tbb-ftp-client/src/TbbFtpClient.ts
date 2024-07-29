@@ -111,8 +111,8 @@ export class TbbFtpClient {
    *
    * @param path
    */
-  upload(path: string, data: string | Uint8Array | Buffer) {
-    return upload(this.client, path, data)
+  upload(path: string, data: string | Uint8Array | Buffer, mode?: string | number) {
+    return upload(this.client, path, data, mode)
   }
 
   /**
