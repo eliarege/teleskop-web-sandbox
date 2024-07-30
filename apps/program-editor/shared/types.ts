@@ -1,4 +1,4 @@
-import type { COMMAND_TYPE } from './constants'
+import type { CommandType, ParameterType } from './constants'
 
 export interface ProgramInfo {
   programNo: number
@@ -57,7 +57,7 @@ export interface MachineCommand {
   adviceList: string
   dontUseList: number[]
   isRunManual: boolean
-  commandType: COMMAND_TYPE
+  commandType: CommandType
   moveParallel: number
   x: string
   y: string
@@ -74,7 +74,7 @@ export interface CommandParameter {
   index: number
   name: string
   editable: boolean
-  type: string
+  type: ParameterType
   format: string
   value: string
   minValue: number

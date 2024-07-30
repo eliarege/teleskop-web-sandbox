@@ -2,7 +2,7 @@
 import type { QSelect } from 'quasar'
 import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 import { useEditorStore } from '~~/composables/editor'
-import { COMMAND_TYPE } from '~/shared/constants'
+import { CommandType } from '~/shared/constants'
 
 const props = defineProps<{
   path: string
@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const editor = useEditorStore()
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
-const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? COMMAND_TYPE.MAIN : COMMAND_TYPE.PARALLEL
+const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? CommandType.MAIN : CommandType.PARALLEL
 
 const select = ref<QSelect>()
 const id = useId()
@@ -41,17 +41,17 @@ const filteredCommands = computed(() => {
 
   return commandsArray
     .filter(({ commandType }) =>
-      (isMainCommand === COMMAND_TYPE.MAIN && commandType === COMMAND_TYPE.MAIN)
-      || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.MAIN)
-      || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.PARALLEL),
+      (isMainCommand === CommandType.MAIN && commandType === CommandType.MAIN)
+      || (isMainCommand === CommandType.PARALLEL && commandType === CommandType.MAIN)
+      || (isMainCommand === CommandType.PARALLEL && commandType === CommandType.PARALLEL),
     )
     .filter(({ commandNo }) => {
       const step = editor.program.steps[stepIndex.value]
 
-      if (isMainCommand === COMMAND_TYPE.MAIN) {
+      if (isMainCommand === CommandType.MAIN) {
         return step.mainCommand.commandNo
       }
-      if (isMainCommand === COMMAND_TYPE.PARALLEL) {
+      if (isMainCommand === CommandType.PARALLEL) {
         return commandNo === programCommand.commandNo
           || !step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === commandNo)
       }

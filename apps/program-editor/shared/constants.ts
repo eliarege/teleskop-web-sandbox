@@ -13,10 +13,10 @@ export enum ProgramStatus {
   EXISTS_ON_BOTH = 2,
 }
 
-export const COMMAND_TYPE = {
-  MAIN: 0,
-  PARALLEL: 3,
-} as const
+export enum CommandType {
+  MAIN = 0,
+  PARALLEL = 3,
+}
 
 export const IO_TYPE: { [key: string]: string } = {
   '0': 'Analog Input',
@@ -28,9 +28,9 @@ export const IO_TYPE: { [key: string]: string } = {
   '-1': 'Seçilmemiş',
 }
 
-export const ParameterType = {
-  NUMBER: 'NUMBER',
-  SELECT: 'SELECT',
-  MACHINE_FORMULA: 'MACHINE_FORMULA',
-  SELECTABLE_FORMULA: 'SELECTABLE_FORMULA',
-} as const
+export enum ParameterType {
+  NUMBER = 'NUMBER',
+  SELECT = 'SELECT',
+  MACHINE_FORMULA = 'MACHINE_FORMULA',
+  SELECTABLE_FORMULA = 'SELECTABLE_FORMULA',
+}

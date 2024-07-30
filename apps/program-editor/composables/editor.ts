@@ -4,7 +4,7 @@ import { klona } from 'klona/lite'
 import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineCommand, MachineConstant, ParameterItem, ParameterSelections, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, ioListItem } from '~/shared/types'
 import { capitalize } from '~/server/utils'
 import { PError } from '~/server/error'
-import { COMMAND_TYPE } from '~/shared/constants'
+import { CommandType } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
@@ -106,7 +106,7 @@ export const useEditorStore = defineStore('editor', () => {
       return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
     }
 
-    if (machineCommand.commandType === COMMAND_TYPE.PARALLEL) {
+    if (machineCommand.commandType === CommandType.PARALLEL) {
       return notifyError(t('error.cannotMainCommand', { commandNo }))
     }
 

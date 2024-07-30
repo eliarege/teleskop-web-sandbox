@@ -501,7 +501,9 @@ export class MachineController {
       program.updatedAt = currentTimestamp
       await this.insertProgram(program)
       // TODO: Look again. hasProgram() not looks that good.
-      await this.ftp.upload(`/tbb6500/data/programs/program/${program.programNo}`, stringifyProgram(program))
+      await this.ftp.upload(`/tbb6500/data/programs/program/${program.programNo}`, stringifyProgram(program, {
+        commands: this.commandArrayToMap(await this.fetchCommands()),
+      }))
       await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `Program ${program.programNo}`)
       return true
     } catch (err) {
@@ -540,13 +542,16 @@ export class MachineController {
 
     await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${programNo}`)
 
-    const machine = await this.getMachineInfo()
-    const rawProgram = parseProgramString(programString, machine)
+    const { name } = await this.trx.from('BFMACHINES').first({ name: 'MACHINECODE' }).where('MACHINEID', this.id)!
+    const commands = await this.fetchCommands()
+    const rawProgram = parseProgramString(programString, {
+      commands: this.commandArrayToMap(commands),
+    })
     const currentTimestamp = this.getCurrentTimestamp()
     const program: Program = {
       ...rawProgram,
       machineId: this.id,
-      machineName: machine.name,
+      machineName: name,
       programNo,
       duration: 0,
       typeName: '',
