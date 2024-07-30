@@ -96,14 +96,21 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function createProgramOnPaste(copiedValue: { machine?: number, program: Program, newProgramNo?: number }, machineId: number): Promise<number> {
-    return await $fetch(`/api/machine/${machineId}/program`, {
-      method: 'POST',
-      body: {
-        newProgramNo: Number(copiedValue.newProgramNo),
-        programNo: Number(copiedValue.program.programNo),
-        machineIdOfCopiedProgram: copiedValue.machine,
-      },
-    })
+    try {
+      return await $fetch(`/api/machine/${machineId}/program`, {
+        method: 'POST',
+        body: {
+          newProgramNo: Number(copiedValue.newProgramNo),
+          programNo: Number(copiedValue.program.programNo),
+          machineIdOfCopiedProgram: copiedValue.machine,
+        },
+      })
+    } catch (e: any) {
+      if (e.data.data.code === 'PROGRAM_EXISTS') {
+        return 0
+      }
+      throw e
+    }
   }
 
   async function deleteProgram(selectedRows: any[], selectedOption: number, machineId: number) {
@@ -141,14 +148,18 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     for (const row of selectedRows) {
       const program = await getProgram(row.programNo, machineId)
       program.typeId = newType
-      const check = await $fetch(`/api/machine/${machineId}/program`, {
-        method: 'PUT',
-        body: {
-          program,
-        },
-      })
-      const status = check ? 'success' : 'fail'
-      notification(!!check, t(`contextMenu.changeProcessTypeNotification.${status}`, { programNo: program.programNo }))
+      try {
+        const check = await $fetch(`/api/machine/${machineId}/program`, {
+          method: 'PUT',
+          body: {
+            program,
+          },
+        })
+        const status = check ? 'success' : 'fail'
+        notification(!!check, t(`contextMenu.changeProcessTypeNotification.${status}`, { programNo: program.programNo }))
+      } catch (e) {
+        notification(false, t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
+      }
     }
   }
 
@@ -259,13 +270,17 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function createProgram(program: Program, machineId: number): Promise<number> {
-    return await $fetch(`/api/machine/${machineId}/program`, {
-      method: 'POST',
-      body: {
-        programNo: program.programNo,
-        program,
-      },
-    })
+    try {
+      return await $fetch(`/api/machine/${machineId}/program`, {
+        method: 'POST',
+        body: {
+          programNo: program.programNo,
+          program,
+        },
+      })
+    } catch (e) {
+      return 0
+    }
   }
 
   return {
