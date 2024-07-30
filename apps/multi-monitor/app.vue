@@ -36,7 +36,7 @@ const colors = useColorStore()
 
 html {
   font-family: "Roboto", sans-serif;
-  @apply text-light-600;
+  /* @apply text-light-600; */
 }
 
 ::-webkit-scrollbar {

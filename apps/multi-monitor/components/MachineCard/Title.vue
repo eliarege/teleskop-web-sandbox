@@ -14,6 +14,12 @@ interface CardTitleProps {
   isScreenViable: boolean
 }
 defineProps<CardTitleProps>()
+const router = useRouter()
+function handleRouting(batchStatus: number, id: number) {
+  if (batchStatus !== 0) {
+    router.push(`/details/${id}`)
+  }
+}
 </script>
 
 <template>
@@ -47,14 +53,14 @@ defineProps<CardTitleProps>()
   </div>
   <div class="card-items justify-center">
     <span class="card-items__item">{{ machine.runningStartHour }}</span>
-    <NuxtLink
-      :to="machine.runningBatchStatus !== 0 ? `/details/${machine.id}` : '/'"
+    <div
       class="card-items__item hover:underline hover:text-shadow-lg"
       :class="machine.runningBatchStatus !== 0 ? 'cursor-pointer' : 'cursor-not-allowed'"
+      @click="handleRouting(machine.runningBatchStatus, machine.id)"
     >
       <span>
         {{ machine.runningJobOrder }}
       </span>
-    </NuxtLink>
+    </div>
   </div>
 </template>

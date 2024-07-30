@@ -26,9 +26,19 @@ withDefaults(defineProps<MachineCardProps>(), {
     class="card-container"
     :style="{ background: colors.backGround, color: determineTextColor(colors.backGround) }"
   >
-    <MachineCardTitle :colors :machine :is-group-visible :is-screen-viable />
+    <MachineCardTitle
+      :colors
+      :machine
+      :is-group-visible
+      :is-screen-viable
+    />
     <MachineCardStatus :colors :machine />
-    <MachineCardInfo :colors :machine :machine-sort :washing />
+    <MachineCardInfo
+      :colors
+      :machine
+      :machine-sort
+      :washing
+    />
   </div>
 </template>
 

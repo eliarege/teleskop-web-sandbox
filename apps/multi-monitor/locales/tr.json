@@ -97,7 +97,9 @@
   "settings": {
     "en": "İngilizce",
     "tr": "Türkçe",
+    "zoom": "Yakınlaştırma Seviyesi",
     "color-picker": "Renk Seçici",
+    "machine-filter": "Makine Filtreleme",
     "current-color": "Aktif Renk",
     "electricity": "Elektrik",
     "steam": "Buhar",
@@ -109,6 +111,8 @@
     "default": "Varsayılan Ayarlar",
     "close": "Kapat",
     "color": "Rengi Sıfırla",
+    "active-color": "Çalışan Makine Rengi",
+    "inactive-color": "Çalışmayan Makine Rengi",
     "group": "Grup",
     "language-settings": "Dil Seçenekleri",
     "visual-config": "Görsel Ayarlar",

@@ -3,11 +3,11 @@ WITH
     AS
     (
         SELECT
-            SUM(c.WaterTotal) as currentWeekTotalWater,
-            SUM(c.ELECTRICITY) as currentWeekElectricity,
-            SUM(c.FM1VALUE) AS currentWeekFM,
-            SUM(c.SALT) AS currentWeekSalt,
-            SUM(c.STEAM) AS currentWeekSteam
+            COALESCE(SUM(c.WaterTotal), 0) as currentWeekTotalWater,
+            COALESCE(SUM(c.ELECTRICITY), 0) as currentWeekElectricity,
+            COALESCE(SUM(c.FM1VALUE), 0) AS currentWeekFM,
+            COALESCE(SUM(c.SALT), 0) AS currentWeekSalt,
+            COALESCE(SUM(c.STEAM), 0) AS currentWeekSteam
         FROM BACONSUMPTION c
             INNER JOIN (SELECT
                 r.BATCHKEY ,
@@ -25,18 +25,18 @@ WITH
     AS
     (
         SELECT
-            SUM(c.WaterTotal) as lastWeekTotalWater,
-            SUM(c.ELECTRICITY) as lastWeekElectricity,
-            SUM(c.FM1VALUE) AS lastWeekFM,
-            SUM(c.SALT) AS lastWeekSalt,
-            SUM(c.STEAM) AS lastWeekSteam
+            COALESCE(SUM(c.WaterTotal), 0) as lastWeekTotalWater,
+            COALESCE(SUM(c.ELECTRICITY), 0) as lastWeekElectricity,
+            COALESCE(SUM(c.FM1VALUE), 0) AS lastWeekFM,
+            COALESCE(SUM(c.SALT), 0) AS lastWeekSalt,
+            COALESCE(SUM(c.STEAM), 0) AS lastWeekSteam
         FROM BACONSUMPTION c
             INNER JOIN (SELECT
                 r.BATCHKEY,
                 r.STARTTIME
             FROM BADATA r
   )AS r ON c.BATCHKEY = r.BATCHKEY
-        WHERE 
+        WHERE
   r.STARTTIME
   BETWEEN
   dateadd(day,(2 - datepart(weekday, dateadd(week, -1, getdate()))),cast(dateadd(week, -1, getdate()) AS date))

@@ -4,7 +4,7 @@ import string from 'rollup-plugin-string'
 
 export default defineNuxtConfig({
   devtools: {
-    enabled: true,
+    enabled: false,
   },
   extends: ['nuxt-base'],
   spaLoadingTemplate: false,
@@ -19,7 +19,7 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
-    machineStatusUrl: 'http://localhost:5000',
+    machineStatusUrl: 'http://localhost:3050',
     isStaging: 'no',
     public: {
       kcClientId: 'multi-monitor',
