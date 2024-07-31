@@ -599,8 +599,7 @@ function handleRowColor(row: ProgramHeader) {
       :rows="filteredPrograms"
       :columns="columns"
       row-key="id"
-      :pagination="{ rowsPerPage: 25 }"
-      :rows-per-page-options="[25, 50, 75, 100, 0]"
+      :rows-per-page-options="[0]"
       flat
       class="no-selected h-80vh"
     >

@@ -35,34 +35,26 @@ const rules = [
 ]
 
 const stepIndex = computed(() => Number(props.path.split('.')[1]))
-
 const filteredCommands = computed(() => {
   const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
 
-  return commandsArray
+  let filteredArray = commandsArray
     .filter(({ commandType }) =>
-      (isMainCommand === CommandType.MAIN && commandType === CommandType.MAIN)
-      || (isMainCommand === CommandType.PARALLEL && commandType === CommandType.MAIN)
-      || (isMainCommand === CommandType.PARALLEL && commandType === CommandType.PARALLEL),
+      !(isMainCommand === CommandType.MAIN && commandType === CommandType.PARALLEL),
     )
-    .filter(({ commandNo }) => {
-      const step = editor.program.steps[stepIndex.value]
+  filteredArray = filteredArray.filter(({ commandNo }) => {
+    const step = editor.program.steps[stepIndex.value]
 
-      if (isMainCommand === CommandType.MAIN) {
-        return step.mainCommand.commandNo
-      }
-      if (isMainCommand === CommandType.PARALLEL) {
-        return commandNo === programCommand.commandNo
-          || !step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === commandNo)
-      }
-
-      return true
-    })
-
-    .map((command: MachineCommand) => ({
-      label: `${command.commandNo} ${command.name}`,
-      value: command.commandNo,
-    }))
+    return commandNo === programCommand.commandNo
+      || (
+        step.mainCommand.commandNo !== commandNo
+        && !step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === commandNo,
+        ))
+  })
+  return filteredArray.map((command: MachineCommand) => ({
+    label: `${command.commandNo} ${command.name}`,
+    value: command.commandNo,
+  }))
 })
 
 const label = computed(() => {
@@ -79,6 +71,8 @@ const label = computed(() => {
       :label="label"
       :rules="rules"
       :for="id"
+      option-label="label"
+      option-value="value"
       map-options
       hide-bottom-space
       emit-value
