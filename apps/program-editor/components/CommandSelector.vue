@@ -39,6 +39,18 @@ const stepIndex = computed(() => Number(props.path.split('.')[1]))
 const filteredCommands = computed(() => {
   const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
 
+  if (!programCommand.commandNo)
+    return commandsArray
+      .filter(({ commandType }) =>
+        (isMainCommand === CommandType.MAIN && commandType === CommandType.MAIN)
+        || (isMainCommand === CommandType.PARALLEL && commandType === CommandType.MAIN)
+        || (isMainCommand === CommandType.PARALLEL && commandType === CommandType.PARALLEL),
+      )
+      .map((command: MachineCommand) => ({
+        label: `${command.commandNo} ${command.name}`,
+        value: command.commandNo,
+      }))
+
   return commandsArray
     .filter(({ commandType }) =>
       (isMainCommand === CommandType.MAIN && commandType === CommandType.MAIN)
