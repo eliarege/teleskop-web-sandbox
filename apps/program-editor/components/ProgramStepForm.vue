@@ -9,6 +9,8 @@ const props = defineProps<{
 }>()
 
 const editor = useEditorStore()
+const devMode = import.meta.dev
+const { t } = useI18n()
 const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
 
@@ -22,7 +24,6 @@ function toggle() {
 }
 
 const sortableOptions: SortableOptions = {
-
   sort: false,
   handle: '.__no-handle__',
   group: {
@@ -32,13 +33,18 @@ const sortableOptions: SortableOptions = {
   },
 }
 
-// function onDragEnter() {}
-// function onDragLeave() {}
+// Step Duration
+// const index = computed(() => Number(props.path.split('.').pop()))
+// const duration = computed(() => formatDuration(
+//   calculateProgramStepDuration(editor.program, editor.machine, index.value),
+// ))
 </script>
 
 <template>
   <div>
     <div class="flex">
+      <!-- <span v-if="devMode" class="color-gray-5">{{ step.stepId }}</span> -->
+      <!-- <span>{{ duration }}</span> -->
       <QBtn
         class="expand-btn"
         :icon="expandIcon"
@@ -51,7 +57,7 @@ const sortableOptions: SortableOptions = {
         :path="`${props.path}.mainCommand`"
       />
     </div>
-    <div v-show="expanded" class="e-border-color border-(y x-0) mt-2px mb-2 pl-12 ">
+    <div v-show="expanded" class="e-border-color border-(y x-0) mt-2px mb-2 pl-16">
       <Sortable
         :list="step.parallelCommands"
         item-key="commandId"
@@ -62,12 +68,12 @@ const sortableOptions: SortableOptions = {
         <template #header>
           <span
             v-if="step.parallelCommands.length === 0"
-            class="py-3 inline-block e-text-dim"
-          >Paralel Adım Yok</span>
+            class="py-10 inline-block e-text-dim"
+          >{{ t('noParallelStep') }}</span>
         </template>
-        <template #item="{ index }: {index: number}">
+        <template #item="{ index }">
           <div
-            class="step-parallel-command "
+            class="step-parallel-command"
             :class="{ __selected: editor.selectedStep === stepIndex && editor.selectedParallelStep === index }"
             @click="editor.changeSelection(stepIndex, index)"
           >
@@ -94,15 +100,19 @@ const sortableOptions: SortableOptions = {
 .parallel-commands .program-step-command:not(:last-of-type) {
   @apply border-b border-black border-opacity-20;
   @apply dark:(border-b border-white border-opacity-20);
-
-}
-
-.step-parallel-command.__selected {
-  @apply bg-gray-2 dark:bg-dark-1;
 }
 
 .step-parallel-command {
-  @apply flex w-full hover:(bg-gray-2 dark:bg-dark-1)
+  @apply flex w-full pl-4;
+  @apply hover:( dark:bg-dark-1)
+}
+
+.step-parallel-command:hover {
+  background-color : #d1e4fa;
+}
+
+.step-parallel-command.__selected {
+  @apply bg-blue-2 dark:bg-dark-1;
 }
 
 .expand-btn {

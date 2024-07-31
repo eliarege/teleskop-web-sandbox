@@ -1,4 +1,4 @@
-import CommandManager, { type CommandManagerType } from '~/composables/command-manager'
+import type { ContextMenuStore } from '~/composables/context-menu'
 
 export const as = <T>(value: T) => value as T
 
@@ -66,5 +66,4 @@ export function measure<Fn extends (...args: any[]) => any>(cb: Fn): Fn {
   }) as Fn
 }
 
-export const contextMenuStore = useContextMenuStore()
-export const commandManager: CommandManagerType = new CommandManager()
+export const contextMenuStore: ContextMenuStore = useContextMenuStore()

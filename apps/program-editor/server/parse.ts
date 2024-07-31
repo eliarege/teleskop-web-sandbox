@@ -1,7 +1,7 @@
 import { set as setTimestamp } from 'date-fns'
+import type { Machine, MachineCommand, ParameterItem, ProgramHeader, ioListItem } from '../shared/types'
 import { BEGIN_HEADER, BEGIN_PROGRAM, FIRST_COMMAND_NO, LAST_COMMAND_NO } from './constants'
 import { readLineStrict, skipLine } from './utils'
-import type { Machine, MachineCommand, ParameterItem, ProgramHeader, ioListItem } from './types'
 
 const NAME_RE = /^ISIM=(.+)?$/
 /** Capture groups: 1) isSet?, 2) date, 3) month, 4) year (20XX) */
@@ -102,7 +102,7 @@ function readProcessCode(it: IterableIterator<string>): number {
   return match[1] ? Number.parseInt(match[1]) : 0
 }
 
-export function parseProgramString(programString: string, machine: Machine): ProgramHeader {
+export function parseProgramString(programString: string, machine: Pick<Machine, 'commands'>): ProgramHeader {
   const program: ProgramHeader = {
     name: '',
     author: null,
@@ -141,7 +141,7 @@ export function parseProgramString(programString: string, machine: Machine): Pro
       throw new Error(`Invalid command defined at program ${program.name}: '${line}'`)
 
     const commandNo = Number.parseInt(match[1])
-    const command = machine.commands.find(cmd => cmd.commandNo === commandNo)
+    const command = machine.commands.get(commandNo)
     if (!command)
       throw new Error(`unknown command ${commandNo} at machine ${machine.id}`)
 
@@ -150,18 +150,21 @@ export function parseProgramString(programString: string, machine: Machine): Pro
     if (stepIndex !== lastStepIndex) {
       lastStepIndex = stepIndex
       program.steps[stepIndex] = {
+        stepId: 0,
         mainCommand: {
+          commandId: 0,
           commandNo,
           ioList: parseCommandIOList(match[7], command),
-          parameters: parseCommandParameters(match[8]),
+          parameters: parseCommandParameters(match[8], command),
         },
         parallelCommands: [],
       }
     } else {
       program.steps[stepIndex].parallelCommands.push({
+        commandId: 0,
         commandNo,
         ioList: parseCommandIOList(match[7], command),
-        parameters: parseCommandParameters(match[8]),
+        parameters: parseCommandParameters(match[8], command),
       })
     }
   }
@@ -172,8 +175,15 @@ export function parseProgramString(programString: string, machine: Machine): Pro
   return program
 }
 
-function parseCommandParameters(parameter: string): ParameterItem[] {
-  return parameter ? parameter.split(' ').map(item => ({ value: Number.parseFloat(item) })) : []
+function parseCommandParameters(parameter: string, command: MachineCommand): ParameterItem[] {
+  const editableParameters = command.parameters.filter(p => p.editable)
+  return parameter
+    ? parameter.split(' ').map((item, index) => ({
+      index: editableParameters[index].index,
+      value: Number.parseFloat(item),
+      optimized: false,
+    }))
+    : []
 }
 
 function parseCommandIOList(list: string, command: MachineCommand): ioListItem[] {

@@ -8,7 +8,7 @@ interface ProgramHeader {
   programNo: number
   name: string
 }
-interface ContextMenuStore {
+export interface ContextMenuStore {
   getCopiedValues: () => Array<{ machine: number, program: Program, newProgramNo?: number }>
   comparisonBasketLength: () => number
   copy: (data: Array<{ program: Program }>, fromMachine: number) => void
@@ -22,18 +22,18 @@ interface ContextMenuStore {
   sendProgram: (programs: Array<ProgramHeader>, machineId: number) => Promise<void>
   getRemoteProgram: (programs: Array<{ programNo: number, programState: string, name: string }>, machineId: number) => Promise<void>
   sendProgramToMachines: (programs: Array<ProgramHeader>, machines: Array<any>, machineId: number) => Promise<void>
-  deleteProgramFromMachine: (programs: Array<ProgramHeader>, machines: Array<any>) => Promise<void>
+  deleteProgramFromMachine: (programs: Array<ProgramHeader>, machines: Array<any>, source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
   concatenatePrograms: (programs: Array<{ programNo: number }>, details: { programNo: number, processType: { label: string, value: number }, name: string, creationTime: Date }, machineId: number) => Promise<void>
   comparison: () => void
   addToComparisonBasket: (elements: any[]) => void
   clearComparisonBasket: () => void
-  isThereCopiedValue: () => boolean
+  isThereCopiedValue: ComputedRef<boolean>
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
-  let copiedValues = [] as Array<{ machine: number, program: any, newProgramNo?: number }>
+  const copiedValues = ref([] as Array<{ machine: number, program: any, newProgramNo?: number }>)
   let comparsionBasket = [] as Array<any>
   // const machineId = Number(route.params.machine_id)
   let t = function (param: string, ...args: any[]) {
@@ -44,12 +44,12 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   function getCopiedValues() {
-    return copiedValues
+    return copiedValues.value
   }
 
-  function isThereCopiedValue() {
-    return !!copiedValues.length
-  }
+  const isThereCopiedValue = computed(() => {
+    return !!copiedValues.value.length
+  })
 
   function clearComparisonBasket() {
     comparsionBasket = []
@@ -72,15 +72,14 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   function copy(data: any, fromMachine: number) {
-    copiedValues = []
+    copiedValues.value = []
     data.forEach((program) => {
-      copiedValues.push({ machine: fromMachine, program })
+      copiedValues.value.push({ machine: fromMachine, program })
     })
-    console.log(copiedValues)
   }
 
   async function paste(machineId: number, directPasteValues?: Array<{ machine: number, program: any, newProgramNo?: number }>) {
-    const operationValues = directPasteValues || copiedValues
+    const operationValues = directPasteValues || copiedValues.value
     const remains: { machine: number, program: any }[] = []
     const pastedValues: { machine: number, program: any }[] = []
     for (const val of operationValues) {
@@ -97,23 +96,28 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function createProgramOnPaste(copiedValue: { machine?: number, program: Program, newProgramNo?: number }, machineId: number): Promise<number> {
-    return await $fetch(`/api/machine/${machineId}/program`, {
-      method: 'POST',
-      body: {
-        newProgramNo: Number(copiedValue.newProgramNo),
-        programNo: Number(copiedValue.program.programNo),
-        machineIdOfCopiedProgram: copiedValue.machine,
-      },
-    })
+    try {
+      return await $fetch(`/api/machine/${machineId}/program`, {
+        method: 'POST',
+        body: {
+          newProgramNo: Number(copiedValue.newProgramNo),
+          programNo: Number(copiedValue.program.programNo),
+          machineIdOfCopiedProgram: copiedValue.machine,
+        },
+      })
+    } catch (e: any) {
+      if (e.data.data.code === 'PROGRAM_EXISTS') {
+        return 0
+      }
+      throw e
+    }
   }
 
   async function deleteProgram(selectedRows: any[], selectedOption: number, machineId: number) {
+    const query = `source=${selectedOption}`
     for (const program of selectedRows) {
-      const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}`, {
+      const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
         method: 'DELETE',
-        body: {
-          selectedOption,
-        },
       })
       const status = check ? 'success' : 'fail'
       notification(check, t(`contextMenu.delete.${status}`, { programNo: program.programNo, name: program.name }))
@@ -126,10 +130,10 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function changeName(programParam: any, newName: string, machineId: number) {
     const program = await getProgram(programParam.programNo, machineId)
     program.name = newName
-    const check = await $fetch(`/api/machine/${machineId}/program`, {
+    const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}/update-name`, {
       method: 'PUT',
       body: {
-        program,
+        name: newName,
       },
     })
     const status = check ? 'success' : 'fail'
@@ -144,14 +148,18 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     for (const row of selectedRows) {
       const program = await getProgram(row.programNo, machineId)
       program.typeId = newType
-      const check = await $fetch(`/api/machine/${machineId}/program`, {
-        method: 'PUT',
-        body: {
-          program,
-        },
-      })
-      const status = check ? 'success' : 'fail'
-      notification(!!check, t(`contextMenu.changeProcessTypeNotification.${status}`, { programNo: program.programNo }))
+      try {
+        const check = await $fetch(`/api/machine/${machineId}/program`, {
+          method: 'PUT',
+          body: {
+            program,
+          },
+        })
+        const status = check ? 'success' : 'fail'
+        notification(!!check, t(`contextMenu.changeProcessTypeNotification.${status}`, { programNo: program.programNo }))
+      } catch (e) {
+        notification(false, t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
+      }
     }
   }
 
@@ -178,21 +186,23 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     for (const machine of machines) {
       const m_id = getMachineId(machine)
       for (const program of programs) {
-        const check = await $fetch(`/api/machine/${getMachineId(machine)}/program/${program.programNo}/upload`, { method: 'POST' })
+        // TODO: Maybe do not need to call machines * programs much endpoint machines can be taken through body and then for of loop on backend for faster runtime
+        // but think about notification logic on each paste operation maybe bulk notification can be shown for each machine idk ...later.
+        const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: m_id } })
         const status = check?.statusCode === 'ECONNREFUSED' ? 'failedToConnectMachine' : check ? 'success' : 'fail'
         notification(check, t(`contextMenu.getInMachine.${status}`, { name: program.name, machine: m_id }))
       }
     }
   }
 
-  async function deleteProgramFromMachine(programs: Array<any>, machines: Array<any>) {
+  async function deleteProgramFromMachine(programs: Array<any>, machines: Array<any>, source: string) {
     for (const machine of machines) {
       const m_id = getMachineId(machine)
       for (const program of programs) {
         const check = await $fetch(`/api/machine/${m_id}/program/${program.programNo}`, {
           method: 'DELETE',
-          body: {
-            selectedOption: 1,
+          query: {
+            source,
           },
         })
         const status = check ? 'success' : 'fail'
@@ -213,7 +223,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function deleteVersion(versions: Array<any>, machineId: number) {
     for (const version of versions) {
-      const check = await $fetch(`/api/machine/${machineId}/program/${version.programNo}/${version.version}`, {
+      const check = await $fetch(`/api/machine/${machineId}/program/${version.programNo}/archive/${version.version}`, {
         method: 'DELETE',
       })
       const status = check ? 'success' : 'fail'
@@ -226,7 +236,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function concatenatePrograms(programs, details, machineId: number) {
-    console.log('Don\'t know how to concatenate programs. Will steps added ent-to-end or is there any other logic on that?')
+    // console.log('Don\'t know how to concatenate programs. Will steps added ent-to-end or is there any other logic on that?')
     const concatedProgram: Program = {
       icon: null,
       programNo: details.programNo,
@@ -238,8 +248,13 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       comment: null,
       typeId: details.processType.value,
       createdAt: details.creationTime,
-      updatedAt: null,
+      updatedAt: details.creationTime,
       steps: [],
+      duration: 0,
+      updatedAtTBB: null,
+      programState: ProgramStatus.EXISTS_ONLY_ON_DATABASE,
+      isChanged: false,
+      tbbProgramChangedEvent: null,
     }
     // await deleteProgram(programs, 1)
     for (const program of programs) {
@@ -255,13 +270,17 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function createProgram(program: Program, machineId: number): Promise<number> {
-    return await $fetch(`/api/machine/${machineId}/program`, {
-      method: 'POST',
-      body: {
-        programNo: program.programNo,
-        program,
-      },
-    })
+    try {
+      return await $fetch(`/api/machine/${machineId}/program`, {
+        method: 'POST',
+        body: {
+          programNo: program.programNo,
+          program,
+        },
+      })
+    } catch (e) {
+      return 0
+    }
   }
 
   return {

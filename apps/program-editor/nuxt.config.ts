@@ -1,7 +1,10 @@
+import Nearley from './vite/nearley'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   extends: ['nuxt-base'],
+  css: ['./assets/stylesheets/global.css'],
   runtimeConfig: {
     teleskopHost: 'localhost',
     teleskopUser: '',
@@ -9,6 +12,16 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
+
+    dmexchangeEnabled: false,
+    dmexchangeHost: 'localhost',
+    dmexchangeUser: '',
+    dmexchangePort: '1433',
+    dmexchangePassword: '',
+    dmexchangeDatabase: 'DmExchange',
+    dmexchangeInstanceName: '',
+
+    teleskopTimezoneOffset: -180,
     public: {
       kcClientId: 'program-editor',
     },
@@ -22,9 +35,14 @@ export default defineNuxtConfig({
     ],
   },
   nitro: {
+    rollupConfig: {
+      // @ts-expect-error Infinite type inference
+      plugins: [Nearley()],
+    },
     typescript: {
       tsConfig: {
         compilerOptions: {
+          allowJs: true,
           experimentalDecorators: true,
         },
       },
@@ -38,5 +56,10 @@ export default defineNuxtConfig({
         },
       },
     },
+  },
+  vite: {
+    plugins: [
+      Nearley(),
+    ],
   },
 })

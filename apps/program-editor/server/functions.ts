@@ -1,7 +1,7 @@
 import type { Knex } from 'knex'
-import type { Machine, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, ioListItem } from '../shared/types'
+import type { Machine, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, TreatmentGroup, ioListItem } from '../shared/types'
 import { PError } from './error'
-import { db } from './database'
+import { db, dmExchange } from './database'
 import { MSSQL_ERROR } from './constants'
 
 interface TransactionOptions {
@@ -47,13 +47,14 @@ export interface InsertProgramOptions extends TransactionOptions {
  */
 export async function getMachineGroup(): Promise<MachineGroup[]> {
   const machineGroups: MachineGroup[] = await db
-    .select(
-      'GROUPID as groupId',
-      'GROUPNAME as name',
-      'GROUPTYPE as type',
-      'MMVisible as visible', // ?
-    )
+    .select({
+      groupId: 'GROUPID',
+      name: 'GROUPNAME',
+      type: 'GROUPTYPE',
+      visible: 'MMVisible', // ?
+    })
     .from('BFMACHGROUP')
+
   return machineGroups
 }
 
@@ -154,4 +155,85 @@ export async function getMachineBatchParameters(machineId: number): Promise<any[
       value: 'DEFAULTVALUE',
     })
   return parameters
+}
+
+/**
+ *
+ * @param activityCode { 1 | 2 | 102 | 103 | 104 | 105 | 106 | 107 | 108 | 109 | 110 }
+ * @param exp1 Mostly 'Makine ' + machineId, on Program Paste 'Kaynak Makine/Program machineId/programNo
+ * @param exp2 Mostly 'Program ' + programNo, on Program Paste 'Hedef Makine/Program machineId/programNo
+ */
+export async function logEditorOperation(activityCode: number, exp1: string, exp2: string | number) {
+  await db('TFTeleskopUserActivities').insert({
+    actUserId: 1,
+    actAppId: 3, // 3 is the value of ProgramEditor
+    actEventCode: activityCode,
+    actExplanation1: exp1,
+    actExplanation2: exp2,
+  })
+}
+
+export async function getTreatmentParams(): Promise<any[]> {
+  const treatmentParams = await db('BFTREATMENTPARAMGROUPMAP')
+    .select({
+      commandNo: 'COMMANDNO',
+      parameterIndex: 'PARAMETERINDEX',
+    })
+  return treatmentParams
+}
+
+export async function getGroupIdByMachineId(machineId: number): Promise<number | undefined> {
+  const groups = await groupMachinesByGroup()
+  for (const group of groups) {
+    for (const machine of group.machines) {
+      if (machine.id === machineId) {
+        return group.groupId
+      }
+    }
+  }
+  return undefined
+}
+
+export async function ensureTreatmentGroups(): Promise<TreatmentGroup[]> {
+  const config = useRuntimeConfig()
+  if (!config.dmexchangeEnabled)
+    return []
+
+  const treatmentGroups = await dmExchange('Treatment_Groups')
+    .select({
+      TreatmentGroupNo: 'TreatmentGroupNo',
+      TreatmentGroupName: 'TreatmentGroupName',
+      ImportState: 'ImportState',
+    })
+
+  const hasGeneralGroup = treatmentGroups.find(treatmentGroup => treatmentGroup.TreatmentGroupNo === 1)
+  if (!hasGeneralGroup) {
+    await dmExchange('Treatment_Groups').insert({
+      TreatmentGroupNo: 1,
+      TreatmentGroupName: 'General Program Group',
+      ImportState: 1,
+    })
+  }
+
+  return treatmentGroups
+}
+
+interface TreatmentSettings {
+  optimizedEnable: boolean
+  optimizedLimit: number
+}
+
+export async function fetchTreatmentSettings(): Promise<TreatmentSettings> {
+  const settings = await db('TFTELESKOPSETTINGS').select({ id: 'ID', value: 'VALUE' })
+
+  // Program yazarken optimize edilsin
+  const optimizedEnable = settings.find(s => s.id === 3)?.value === '1'
+
+  // Optimize edilebilen parametre sayısı (yoksa 10 alınacak)
+  const optimizedLimit = settings.find(s => s.id === 11)?.value ?? 10
+
+  return {
+    optimizedEnable,
+    optimizedLimit,
+  }
 }

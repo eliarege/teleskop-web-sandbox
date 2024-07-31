@@ -1,3 +1,5 @@
+import type { CommandType, ParameterType } from './constants'
+
 export interface ProgramInfo {
   programNo: number
   name: string
@@ -16,13 +18,15 @@ export interface ProgramFilter {
 }
 
 export interface ProgramTable {
-  isChanged: boolean
-  name: string
   programNo: number
-  programState: number
+  name: string
+  duration: number
   stepCount: number
   type: string
+  operator: boolean
   updatedAt: Date
+  programState: number
+  isChanged: boolean
   updatedAtTBB: Date
 }
 
@@ -50,24 +54,34 @@ export interface MachineCommand {
   commandNo: number
   name: string
   icon: string
+  adviceList: string
   dontUseList: number[]
-  commandType: number
+  isRunManual: boolean
+  commandType: CommandType
   moveParallel: number
-  durations: string
-  temperature: string
-  parameters: CommandParameters[]
+  x: string
+  y: string
+  a: string
+  maxA: string
+  b: string
+  isTemperature: number
+  isUnload: number
+  parameters: CommandParameter[]
   ioList: CommandIO[]
 }
 
-export interface CommandParameters {
+export interface CommandParameter {
   index: number
   name: string
   editable: boolean
-  type: string
+  type: ParameterType
   format: string
-  defaultValue: number
+  value: string
   minValue: number
   maxValue: number
+  containsVariable: boolean
+  useDefault: boolean
+  useFormula: boolean
   selections: ParameterSelections[]
 }
 
@@ -79,6 +93,7 @@ export interface ParameterSelections {
 export interface CommandIO {
   index: number
   physicalId: number
+  type: number
   selectable: boolean
   name: string
   selections: CommandIOSelection[]
@@ -103,17 +118,19 @@ export interface ioItem {
 }
 
 export interface ProgramHeader {
+  programNo: number
   name: string
+  duration: number
   author: string | null
   comment: string | null
   typeId: number
-  createdAt: Date | null
+  createdAt: Date
   updatedAt: Date | null
   steps: ProgramStep[]
   updatedAtTBB: string | null
   programState: number | null
   isChanged: boolean | null
-  tbbProgramChangedEvent: boolean | null
+  tbbProgramChangedEvent: number | null
 }
 
 export interface Program extends ProgramHeader {
@@ -138,8 +155,9 @@ export interface ProgramStepCommand {
 }
 
 export interface ParameterItem {
-  value: number
+  value: number | string
   index: number
+  optimized: boolean
 }
 
 export interface ioListItem {
@@ -247,6 +265,10 @@ export interface Machine {
   id: number
   name: string
   commands: Map<number, MachineCommand>
+  commandFormulas: CommandFormula[]
+  constants: MachineConstant[]
+  batchParameters: BatchParameter[]
+  treatmentParameters: TreatmentParameter[]
 }
 
 export interface CommandItem {
@@ -274,4 +296,72 @@ export interface CommandItem {
   ISUNLOAD: boolean
   ICON: string
   GROUPID: number
+}
+
+export interface MachineConstant {
+  machineParameterId: number
+  machineId: number
+  paramString: string
+  paramLowLimit: number
+  paramHighLimit: number
+  paramType: number
+  selectionList: string
+  unitCode: string
+  selectionValues: string
+  isDeleted: boolean
+  tbbChangeTime: string
+  changeTime: string
+  defaultValue: number
+  dmArea: number
+  consScreen: number
+  consFormat: number
+  consUnit: number
+  currentValue: number
+}
+
+export interface BatchParameter {
+  batchParameterId: number
+  machineId: number
+  paramString: string
+  paramLowLimit: number
+  paramHighLimit: number
+  batchPlanning: number
+  batchStart: number
+  recipe: string
+  defaultValue: number
+  parameterType: number
+  selectionList: string
+  unitCode: string
+  selectionValues: string
+  isDeleted: boolean
+  tbbChangeTime: string
+  changeTime: string
+  format: string
+  parameterId: number
+  unitText: string
+  paramStringEn: string
+  selectionListDefault: string
+}
+
+export interface CommandFormula {
+  machineId: number
+  formulaId: number
+  formula: string
+  commandNo: number
+  commandParameterNo: number
+  formulaName: string
+}
+
+export interface TreatmentGroup {
+  TreatmentGroupNo: number
+  TreatmentGroupName: string
+  ImportState: number
+}
+
+export interface TreatmentParameter {
+  paramId: number
+  paramName: string
+  groupId: number
+  commandNo: number
+  parameterIndex: number
 }

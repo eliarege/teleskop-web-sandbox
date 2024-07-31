@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import type { QInput } from 'quasar'
+import type { ModelRef } from 'vue'
+import type { QField } from 'quasar'
 
-const props = defineProps<{
-  label: string
-  minValue: number
-  maxValue: number
+defineProps<{
+  label?: string
+  rules?: Array<any>
+  outlined?: boolean
+  dense?: boolean
+  filled?: boolean
+  clearable?: boolean
 }>()
-
-const model = defineModel<number>()
-const editor = useEditorStore()
+const model: ModelRef<number | undefined, string> = defineModel()
 const id = useId()
-const { t } = useI18n()
-const input = ref<QInput>()
+const editor = useEditorStore()
+const input = ref<QField>()
 
 watch(() => input.value?.hasError, (value) => {
   if (value) {
@@ -24,60 +26,25 @@ watch(() => input.value?.hasError, (value) => {
 onUnmounted(() => {
   editor.errorIds.delete(id)
 })
-
-const rules = [
-  (value: number) => {
-    if (
-      !Number.isNaN(value) && between(
-        value,
-        props.minValue,
-        props.maxValue,
-      )
-    ) {
-      return true
-    } else {
-      return t('valueOutOfRange', {
-        minValue: props.minValue,
-        maxValue: props.maxValue,
-      })
-    }
-  },
-]
-
-const minutes = computed({
-  get() {
-    return model.value ? (model.value / 60).toString() : ''
-  },
-  set(value) {
-    model.value = Number.parseFloat(value) * 60
-  },
-})
-
-function updateModel() {
-  emit('update:modelValue', model.value)
-}
 </script>
 
 <template>
-  <QInput
-    ref="input"
-    v-model="minutes"
+  <QField
+    :id
+    v-model="model"
+    :dense
+    :clearable
+    :label
     :for="id"
-    :label="props.label"
-    :rules="rules"
-    hide-bottom-space
-    autocomplete="off"
-    outlined
-    dense
-    suffix="min"
-    input-class="text-right w-30"
-    @blur="updateModel"
-  />
+    :filled
+    :outlined
+    :rules
+  >
+    <template #control>
+      <InputDurationRaw :id="id" v-model="model" />
+    </template>
+    <template #append>
+      <slot name="optimized" />
+    </template>
+  </QField>
 </template>
-
-<style scoped>
-.inline-suffix {
-  font-size: 14px;
-  line-height: 18px;
-}
-</style>

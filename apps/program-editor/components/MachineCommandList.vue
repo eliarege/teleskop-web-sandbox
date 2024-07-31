@@ -1,19 +1,17 @@
 <script lang="ts" setup>
 import { Sortable } from 'sortablejs-vue3'
-import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import type { SortableEvent, SortableOptions } from 'sortablejs'
 import { isDef } from 'utils'
-import { PRG_STATE_COLORS } from '~/shared/constants'
+import { ProgramStateColors } from '~/shared/constants'
 import { useEditorStore } from '~/composables/editor'
-import type { MachineCommand } from '~/shared/types'
+import type { MachineCommand, ProgramStep, ProgramStepCommand } from '~/shared/types'
 
 const editor = useEditorStore()
 const { t } = useI18n()
 const { dark } = useQuasar()
 
 const sortableOptions = computed<SortableOptions>(() => ({
-  disabled: !editor.isDragging,
   sort: false,
   group: {
     name: 'machine-command-list',
@@ -21,32 +19,37 @@ const sortableOptions = computed<SortableOptions>(() => ({
     put: false,
   },
 }))
-
+const route = useRoute()
+const isProgramPage = computed(() => route.path.includes('program'))
 const searchQuery = ref('')
+const { notifySuccess, notifyError } = useNotify()
+
 const filteredCommands = computed(() => {
   const query = searchQuery.value.toLowerCase()
-  const commandsArray = editor.machine?.commands ? Array.from(editor.machine?.commands.values()) : []
-  return commandsArray.filter(command => (
-    command.commandNo.toString().includes(query)
-    || command.name.toLowerCase().includes(query)
-  )
-  && command.commandType === 0,
-  ) as MachineCommand[]
+  const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
+
+  return commandsArray
+    .filter(({ commandNo, name }) => (
+      commandNo.toString().includes(query)
+      || name.toLowerCase().includes(query)
+    ),
+      // && command.commandType === 0,
+    )
 })
 
 const programStatus = computed(() => [
-  { label: t('programStatusInfo.noChanges'), color: dark.isActive ? PRG_STATE_COLORS.NO_CHANGES_DARK : PRG_STATE_COLORS.NO_CHANGES },
-  { label: t('programStatusInfo.onlyOnTeleskop'), color: PRG_STATE_COLORS.EXISTS_ONLY_ON_DATABASE },
-  { label: t('programStatusInfo.onlyOnController'), color: PRG_STATE_COLORS.EXISTS_ONLY_ON_CONTROLLER },
-  { label: t('programStatusInfo.changedOnTeleskop'), color: PRG_STATE_COLORS.CHANGED_ON_TELESKOP },
-  { label: t('programStatusInfo.changedOnMachine'), color: PRG_STATE_COLORS.CHANGED_ON_MACHINE },
+  { label: t('programStatusInfo.noChanges'), color: dark.isActive ? ProgramStateColors.NO_CHANGES_DARK : ProgramStateColors.NO_CHANGES },
+  { label: t('programStatusInfo.onlyOnTeleskop'), color: ProgramStateColors.EXISTS_ONLY_ON_DATABASE },
+  { label: t('programStatusInfo.onlyOnController'), color: ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER },
+  { label: t('programStatusInfo.changedOnTeleskop'), color: ProgramStateColors.CHANGED_ON_TELESKOP },
+  { label: t('programStatusInfo.changedOnMachine'), color: ProgramStateColors.CHANGED_ON_MACHINE },
 ])
 
 let draggedCommand: any = null
 
 function onDragStart(event: SortableEvent) {
   if (isDef(event.oldIndex)) {
-    draggedCommand = editor.machine?.commands.get(Number(event.item.id))
+    draggedCommand = filteredCommands.value[event.oldIndex]
   }
 }
 
@@ -59,7 +62,11 @@ function onDragEnd(event: SortableEvent) {
     if (isParallelCommand) {
       const index = Number.parseInt(parent.getAttribute('data-index') || '-1')
       if (index > -1) {
-        editor.newParallelStepCommand(draggedCommand.commandNo, index)
+        const res = validateParallelCommands(index)
+        if (!res)
+          editor.newParallelStepCommand(draggedCommand.commandNo, index)
+        else
+          notifyError(t('error.notSameCommand', { command: draggedCommand.name }))
       }
     } else {
       editor.newStepCommand(draggedCommand.commandNo, event.newIndex - 1)
@@ -68,12 +75,17 @@ function onDragEnd(event: SortableEvent) {
     draggedCommand = null
   }
 }
+
+function validateParallelCommands(stepIndex: number): boolean {
+  const step = editor.program.steps[stepIndex]
+  return step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === draggedCommand.commandNo)
+}
 </script>
 
 <template>
-  <div class="machine-command-list-container">
+  <div class="machine-command-list-container select-none">
     <QInput
-      v-if="editor.machine?.commands.size"
+      v-if="isProgramPage"
       v-model="searchQuery"
       :label="t('searchCommand')"
       class="px-5 pt-5 pb-5 sticky-input"
@@ -81,7 +93,7 @@ function onDragEnd(event: SortableEvent) {
       outlined
     />
     <Sortable
-      v-if="editor.machine?.commands.size"
+      v-if="isProgramPage"
       :list="filteredCommands"
       class="px-5 pb-10 e-div-y machine-command-list"
       :item-key="item => item.commandNo"
@@ -91,10 +103,11 @@ function onDragEnd(event: SortableEvent) {
     >
       <template #item="{ element: command }: { element: any }">
         <QItem
-          :id="command.commandNo"
           class="machine-command"
           dense
           tag="span"
+          clickable
+          @dblclick="editor.newStepCommand(command.commandNo, editor.program.steps.length - 1)"
         >
           <QItemSection>
             <QItemLabel>
@@ -105,7 +118,7 @@ function onDragEnd(event: SortableEvent) {
       </template>
     </Sortable>
     <div
-      v-if="!editor.machine?.commands.size"
+      v-if="!isProgramPage"
       class="w-full bottom-0 p-3 absolute"
       :class="dark.isActive ? 'bg-dark-2' : 'bg-white'"
     >

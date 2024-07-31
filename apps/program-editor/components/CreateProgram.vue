@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { useEditorStore } from '~/composables/editor'
-import { useNotify } from '~/composables/notify'
 
 const { t } = useI18n()
 const editor = useEditorStore()

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { QSelect } from 'quasar'
-import type { ProgramStepCommand } from '~/shared/types'
+import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 import { useEditorStore } from '~~/composables/editor'
-import { COMMAND_TYPE } from '~/shared/constants'
+import { CommandType } from '~/shared/constants'
 
 const props = defineProps<{
   path: string
@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const editor = useEditorStore()
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
-const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? 0 : 3
+const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? CommandType.MAIN : CommandType.PARALLEL
 
 const select = ref<QSelect>()
 const id = useId()
@@ -34,18 +34,28 @@ const rules = [
   (value: any) => !!value,
 ]
 
-const options = computed(() => (
-  Array.from(editor.machine.commands.values())
+const stepIndex = computed(() => Number(props.path.split('.')[1]))
+const filteredCommands = computed(() => {
+  const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
+
+  let filteredArray = commandsArray
     .filter(({ commandType }) =>
-      (isMainCommand === COMMAND_TYPE.MAIN && commandType === COMMAND_TYPE.MAIN)
-      || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.MAIN)
-      || (isMainCommand === COMMAND_TYPE.PARALLEL && commandType === COMMAND_TYPE.PARALLEL),
+      !(isMainCommand === CommandType.MAIN && commandType === CommandType.PARALLEL),
     )
-    .map(({ commandNo, name }) => ({
-      label: `${commandNo} ${name}`,
-      value: commandNo,
-    }))
-))
+  filteredArray = filteredArray.filter(({ commandNo }) => {
+    const step = editor.program.steps[stepIndex.value]
+
+    return commandNo === programCommand.commandNo
+      || (
+        step.mainCommand.commandNo !== commandNo
+        && !step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === commandNo,
+        ))
+  })
+  return filteredArray.map((command: MachineCommand) => ({
+    label: `${command.commandNo} ${command.name}`,
+    value: command.commandNo,
+  }))
+})
 
 const label = computed(() => {
   return !programCommand.commandNo ? t('selectCommand') : undefined
@@ -57,10 +67,12 @@ const label = computed(() => {
     <QSelect
       ref="select"
       :model-value="programCommand.commandNo"
-      :options="options"
+      :options="filteredCommands"
       :label="label"
       :rules="rules"
       :for="id"
+      option-label="label"
+      option-value="value"
       map-options
       hide-bottom-space
       emit-value

@@ -43,7 +43,7 @@ const thumbStyle = { opacity: '0' }
 </script>
 
 <template>
-  <div class="q-pa-md">
+  <div class="q-pa-md select-none">
     <QScrollArea
       :thumb-style="thumbStyle"
       style="height: calc(100vh - 80px); max-width: 400px;"
@@ -66,7 +66,7 @@ const thumbStyle = { opacity: '0' }
               :key="machine.id"
               v-ripple
               :active="route.params.machine_id === `${machine.id}`"
-              active-class="bg-blue-3 text-black"
+              active-class="e-selected"
               :class="dark.isActive ? ' text-gray-3' : 'text-gray-8'"
               borderless
               clickable

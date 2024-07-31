@@ -1,6 +1,6 @@
 import { Readable, Writable } from 'node:stream'
 import { Buffer } from 'node:buffer'
-import type { AccessOptions, FileInfo } from 'basic-ftp'
+import type { AccessOptions } from 'basic-ftp'
 import { Client } from 'basic-ftp'
 
 export async function withClient(clientOrOptions: AccessOptions | Client, callback: (client: Client) => any) {
@@ -57,7 +57,7 @@ export async function download(client: Client, remotePath: string, options?: Dow
     : output
 }
 
-export async function upload(client: Client, remotePath: string, content: string | Buffer | Uint8Array): Promise<void> {
+export async function upload(client: Client, remotePath: string, content: string | Buffer | Uint8Array, mode: number | string = 777): Promise<void> {
   const readableStream = new Readable({
     read() {
       this.push(content)
@@ -65,4 +65,7 @@ export async function upload(client: Client, remotePath: string, content: string
     },
   })
   await client.uploadFrom(readableStream, remotePath)
+  if (mode) {
+    await client.send(`SITE CHMOD ${mode} ${remotePath}`)
+  }
 }

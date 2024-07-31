@@ -181,8 +181,9 @@ function downloadExcelFile(fileName, buffer) {
         />
       </q-card-section>
       <q-card-section>
-        <div>
+        <div class="flex">
           {{ t('exportExcelDialog.machineList') }}
+          <q-space />
           <OptionGroupFunctionalityButtons
             :model="selectedMachines"
             :options="machines"

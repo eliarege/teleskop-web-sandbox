@@ -1,13 +1,17 @@
 import { TbbFtpClient } from 'tbb-ftp-client'
 import type { Knex } from 'knex'
-import { getMachineHost, hasMachine } from '../functions'
-import { db } from '../database'
+import { isDef } from 'utils'
+import { ensureTreatmentGroups, fetchTreatmentSettings, getGroupIdByMachineId, getMachineHost, hasMachine, logEditorOperation } from '../functions'
+import { db, dmExchange } from '../database'
 import { withFTP, withTransaction } from '../decorators'
 import { sql } from '../sql'
 import { stringifyProgram } from '../stringify'
 import { parseProgramString } from '../parse'
-import type { CommandIO, Machine, MachineCommand, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter } from '~/shared/types'
+import { PError } from '../error'
+import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
+import type { BatchParameter, CommandFormula, CommandIO, Machine, MachineCommand, MachineConstant, MachineGroup, ParameterItem, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
+import { calculateProgramDuration } from '~/shared/formula'
 
 export class MachineController {
   readonly id: number
@@ -42,18 +46,25 @@ export class MachineController {
    * @returns {Promise<Array<MachineCommand>>} - MachineCommand dizisi
    */
   @withTransaction
-  async fetchCommands(editable?: boolean): Promise<MachineCommand[]> {
+  async fetchCommands(editable?: boolean, selectable?: boolean): Promise<MachineCommand[]> {
     const commandsOutput = await this.trx
       .select({
         machineId: 'C.MACHINEID',
         commandNo: 'C.COMMANDNO',
         name: 'C.NAME',
         icon: 'C.ICON',
+        adviceList: this.trx.raw(sql`(C.ADVICELIST)`),
         dontUseList: this.trx.raw(sql`(NULLIF (C.DONTUSELIST , '-1'))`),
+        isRunManual: 'C.ISRUNMANUAL',
         commandType: 'C.COMMANDTYPE',
         moveParallel: 'C.MOVEPARALLEL',
-        durations: 'C.X',
-        temperature: 'C.Y',
+        x: 'C.X',
+        y: 'C.Y',
+        a: 'C.A',
+        maxA: 'C.MAXA',
+        b: 'C.B',
+        isTemperature: 'C.ISTEMPERATURE',
+        isUnload: 'C.ISUNLOAD',
         parameters: this.trx.raw(sql`
         ISNULL((
           SELECT
@@ -75,9 +86,12 @@ export class MachineController {
                 ELSE 'DURATION'
               END
             , '[]'),
-            P.VALUE as defaultValue,
+            P.VALUE as [value],
             P.PARAMLOWLIMIT as minValue,
             P.PARAMHIGHLIMIT as maxValue,
+            P.CONTAINSVARIABLE as containsVariable,
+            P.USEDEFAULT as useDefault,
+            P.USEFORMULA as useFormula,
             selections = ISNULL((
               SELECT
                 TRIM(SUBSTRING(l.value, 2, LEN(l.value) - 2)) as name,
@@ -86,12 +100,11 @@ export class MachineController {
               JOIN STRING_SPLIT(REPLACE(P.SELECTIONLIST, '" "', '"&"'), '&', 1) l on 1=1
               JOIN STRING_SPLIT(REPLACE(P.SELECTIONVALUES, '" "', '"&"'), '&', 1) v on l.ordinal = v.ordinal
               WHERE P.PARAMETERTYPE = 1 AND P.SELECTIONLIST != '' AND P.SELECTIONVALUES != ''
-              ${typeof editable === 'boolean' ? `AND P.PROGRAMEDITING = ${editable ? 1 : 0}` : ''}
               FOR JSON AUTO, INCLUDE_NULL_VALUES
             ), '[]')
           FROM BFCOMMANDPARAMETERS P
           WHERE C.COMMANDNO = P.COMMANDNO AND C.MACHINEID = P.MACHINEID
-          ${typeof editable === 'boolean' ? `AND P.PROGRAMEDITING = ${editable ? 1 : 0}` : ''}
+          ${typeof editable === 'boolean' ? `${editable ? 'AND P.PROGRAMEDITING = 1' : ''}` : ''}
           ORDER BY P.PARAMETERINDEX
           FOR JSON AUTO, INCLUDE_NULL_VALUES
         ), '[]')
@@ -101,6 +114,7 @@ export class MachineController {
           SELECT
             IO.IOINDEX as [index],
             IO.IOID as [physicalId],
+            IO.IOTYPE as [type],
             selectable =
               CAST(
                 CASE IO.IOTYPE
@@ -121,7 +135,7 @@ export class MachineController {
               FOR JSON AUTO, INCLUDE_NULL_VALUES
             ), '[]')
           FROM BFCOMMANDINPUTOUTPUTS IO
-          WHERE C.COMMANDNO = IO.COMMANDNO AND C.MACHINEID = IO.MACHINEID AND IO.IOTYPE = 5
+          WHERE C.COMMANDNO = IO.COMMANDNO AND C.MACHINEID = IO.MACHINEID ${selectable ? 'AND IO.IOTYPE = 5' : ''}
           FOR JSON AUTO, INCLUDE_NULL_VALUES
         ), '[]')
       `),
@@ -157,14 +171,18 @@ export class MachineController {
    */
   @withTransaction
   async fetchAllProgramHeaders(query?: any): Promise<ProgramHeader[]> {
-    return await this.trx
+    const config = useRuntimeConfig()
+
+    const headers = await this.trx
       .select({
         programNo: 'H.PROGNO',
         name: 'H.NAME',
+        duration: 'H.DURATION',
         stepCount: 'H.TOTALSTEP',
         type: 'T.PROCESSNAME',
-        updatedAt: 'H.CHANGEDATE',
-        updatedAtTBB: 'H.TBBCHANGEDATE',
+        operator: 'H.TBBPRGCHANGEDEVENT',
+        updatedAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.CHANGEDATE)`),
+        updatedAtTBB: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.TBBCHANGEDATE)`),
         programState: 'H.PRGSTATE',
         isChanged: 'H.ISCHANGED',
       })
@@ -179,10 +197,16 @@ export class MachineController {
         if (query?.processType)
           builder.where('H.PROCESSCODE', Number(query.processType))
       })
+
+    return headers
   }
 
+  /**
+   * Makinenin tüm programlarının headers'larını getirir
+   * @returns {Promise<Array<[string, string]>>} - Header dizisi
+   */
   @withTransaction
-  async getProgramHeadersAsList(): Promise<any[]> {
+  async getProgramHeadersAsList(): Promise<Array<[string, string]>[]> {
     return await this.trx
       .select({
         value: 'H.PROGNO',
@@ -226,25 +250,33 @@ export class MachineController {
    */
   @withTransaction
   async fetchProgram(programNo: number): Promise<Program> {
-    await this.hasProgram(programNo)
+    const exists = await this.hasProgram(programNo)
+    if (!exists) {
+      throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
+    }
 
     const [program] = await this.trx
       .select({
         name: 'P.NAME',
         icon: this.trx.raw('CASE P.ICONNAME WHEN \'\' THEN \'null\' END'),
         programNo: 'P.PROGNO',
+        duration: 'P.DURATION',
         author: 'P.LOCKEDBY',
         comment: 'P.USERCOMMENT',
         typeId: 'T.PROCESSCODE',
         typeName: 'T.PROCESSNAME',
         machineId: 'M.MACHINEID',
         programState: 'P.PRGSTATE',
+        createdAt: 'P.CREATIONDATE',
+        updatedAt: 'P.CHANGEDATE',
+        updatedAtTBB: 'P.TBBCHANGEDATE',
         machineName: 'M.MACHINECODE',
+        tbbProgramChangedEvent: this.trx.raw(sql`CASE P.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
         steps: this.trx.raw(sql`ISNULL((
         SELECT commands = ISNULL((
           SELECT s2.COMMANDNO AS commandNo,
           parameters = ISNULL((
-            SELECT TRY_CAST(REPLACE(sp.VALUE, ',', '.')  AS FLOAT) AS value, sp.PARAMETERINDEX AS [index]
+            SELECT TRY_CAST(REPLACE(sp.VALUE, ',', '.')  AS FLOAT) AS value, sp.PARAMETERINDEX AS [index], sp.OPTIMIZED as optimized
             FROM BFMASTERSTEPPARAMS sp
             WHERE s2.MACHINEID = sp.MACHINEID
               AND s2.PROGNO = sp.PROGNO
@@ -319,7 +351,10 @@ export class MachineController {
    */
   @withTransaction
   async fetchArchivedProgram(programNo: number, versionNo: number): Promise<Program> {
-    await this.hasProgram(programNo)
+    const exists = await this.hasProgram(programNo)
+    if (!exists) {
+      throw new PError('PROGRAM_FAILED_TO_LOAD', { machineId: this.id, programNo })
+    }
 
     const [archivedProgram] = await this.trx
       .select({
@@ -456,13 +491,20 @@ export class MachineController {
       // FIXME:
       // Code below line does not give error in the case that teleskop has not have program but machine has program.
       // It should return false 'cause program already exists on machine so it cannot be uploaded to machine
+      const exists = await this.hasProgram(program.programNo)
+      if (exists)
+        await this.deleteProgramFromDatabase(program.programNo)
 
-      await this.ftp.upload(`/tbb6500/data/programs/program/${program.programNo}`, stringifyProgram(program))
-      const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
-      if (isDeleted) {
-        program.programState = ProgramStatus.EXISTS_ON_BOTH
-        await this.insertProgram(program)
-      }
+      const currentTimestamp = this.getCurrentTimestamp()
+      program.programState = ProgramStatus.EXISTS_ON_BOTH
+      program.updatedAtTBB = currentTimestamp
+      program.updatedAt = currentTimestamp
+      await this.insertProgram(program)
+      // TODO: Look again. hasProgram() not looks that good.
+      await this.ftp.upload(`/tbb6500/data/programs/program/${program.programNo}`, stringifyProgram(program, {
+        commands: this.commandArrayToMap(await this.fetchCommands()),
+      }))
+      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `Program ${program.programNo}`)
       return true
     } catch (err) {
       if (isError(err)) {
@@ -474,7 +516,7 @@ export class MachineController {
           })
         }
       }
-      console.log('An error occured during sending program(s) to machine')
+      console.error('An error occured during sending program(s) to machine', err)
       return false
     }
   }
@@ -490,23 +532,36 @@ export class MachineController {
    */
   @withFTP
   @withTransaction
-  async fetchRemoteProgram(programNo: number): Promise<Program | boolean | null> {
-    if (!(await this.doesMachineHaveProgram(programNo))) {
-      return null // Program does not exists
+  async fetchRemoteProgram(programNo: number): Promise<Program | null> {
+    const exists = await this.doesMachineHaveProgram(programNo)
+    if (!exists) {
+      throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
     }
 
     const programString = await this.ftp.download(`/tbb6500/data/programs/program/${programNo}`, 'utf-8')
-    const machine = await this.getMachineInfo()
 
-    const rawProgram = parseProgramString(programString, machine)
+    await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${programNo}`)
+
+    const { name } = await this.trx.from('BFMACHINES').first({ name: 'MACHINECODE' }).where('MACHINEID', this.id)!
+    const commands = await this.fetchCommands()
+    const rawProgram = parseProgramString(programString, {
+      commands: this.commandArrayToMap(commands),
+    })
+    const currentTimestamp = this.getCurrentTimestamp()
     const program: Program = {
       ...rawProgram,
       machineId: this.id,
-      machineName: machine.name,
+      machineName: name,
       programNo,
+      duration: 0,
       typeName: '',
       programState: ProgramStatus.EXISTS_ON_BOTH,
       icon: '',
+      isChanged: false,
+      createdAt: currentTimestamp,
+      updatedAt: currentTimestamp,
+      updatedAtTBB: currentTimestamp,
+      tbbProgramChangedEvent: 0,
     }
     await this.updateProgram(program)
     return program
@@ -525,17 +580,29 @@ export class MachineController {
 
   /**
    * Makine bilgilerini getirir
-   * @returns {Promise<MachineInfo>} - Makine bilgilerini içeren bir Promise
+   * @returns {Promise<Machine>} - Makine bilgilerini içeren bir Promise
    */
   @withTransaction
-  async getMachineInfo(editable?: boolean): Promise<Machine> {
+  async getMachineInfo(_editable?: boolean): Promise<Omit<Machine, 'commands'> & { commands: MachineCommand[] }> {
     await hasMachine(this.id)
     const [{ name }] = await this.trx
       .select('MACHINECODE as name')
       .from('BFMACHINES')
       .where('MACHINEID', this.id)
-    const commands = await this.fetchCommands(editable)
-    return { id: this.id, name, commands }
+    const commands = await this.fetchCommands()
+    const batchParameters = await this.fetchBatchParameters()
+    const constants = await this.fetchMachineConstants()
+    const commandFormulas = await this.fetchCommandFormulas()
+    const treatmentParameters = await this.fetchTreatmentParameters()
+    return {
+      id: this.id,
+      name,
+      commands,
+      constants,
+      commandFormulas,
+      batchParameters,
+      treatmentParameters,
+    }
   }
 
   /**
@@ -549,16 +616,39 @@ export class MachineController {
       if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
         program.isChanged = true
       await this.insertProgram(program)
+      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMCHANGED, `Makine ${this.id}`, program.name)
     }
     return isDeleted
+  }
+
+  @withTransaction
+  async changeName(program: Program, newName: string) {
+    const config = useRuntimeConfig()
+    const date = new Date(new Date().getTime() - Number(config.teleskopTimezoneOffset) * 60000).toISOString()
+    if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+      program.isChanged = true
+    const result = await this.trx
+      .from('BFMASTERPRGHEADER')
+      .where('PROGNO', program.programNo)
+      .andWhere('MACHINEID', this.id)
+      .update({
+        ISCHANGED: program.isChanged,
+        CHANGEDATE: date,
+        NAME: newName,
+      })
+    if (result)
+      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMNAMECHANGED, `Makine ${this.id}`, `Program İsmi ${newName}`)
+
+    return result
   }
 
   /**
    * Zaman dilimine göre tarih ve saat döndürür
    * @returns {Date} - Zaman dilimine göre tarih ve saat
    */
-  getTimezoneDate(): Date {
-    return new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000)
+  private getCurrentTimestamp(): Date {
+    const config = useRuntimeConfig()
+    return new Date(new Date().getTime() - config.teleskopTimezoneOffset * 60_000)
   }
 
   /**
@@ -576,7 +666,7 @@ export class MachineController {
         .where('MACHINEID', this.id)
         .andWhere('PROGNO', programNo)
         .andWhere('MACHINEPRGVERSIONNO', version)
-        .update({ RELEASEENDDATE: this.getTimezoneDate() })
+        .update({ RELEASEENDDATE: this.getCurrentTimestamp() })
       return version
     } else {
       return null
@@ -589,7 +679,7 @@ export class MachineController {
    * @returns {Promise<number>} - Belirtilen program numarasına ait son versiyon numarasını içeren bir Promise
    */
   @withTransaction
-  async getLastVersion(programNo: number) {
+  async getLastVersion(programNo: number): Promise<number | null> {
     const program = await this.trx
       .from('BAMASTERPRGHEADER')
       .select('MACHINEPRGVERSIONNO as version')
@@ -624,8 +714,11 @@ export class MachineController {
   @withTransaction
   async insertProgramToArchive(program: Program): Promise<void> {
     const lastVersion = await this.updateLastProgramDate(program.programNo)
-    const commands = await this.fetchCommands()
-    const dateNow = this.getTimezoneDate()
+    const commands: MachineCommand[] = await this.fetchCommands()
+
+    const config = useRuntimeConfig()
+    const timezone = Number(config.teleskopTimezoneOffset)
+    const date = new Date(new Date().getTime() - timezone * 60000).toISOString()
 
     const stepsArchive: StepArchiveItem[] = []
     const parametersArchive: StepArchiveParameter[] = []
@@ -634,22 +727,22 @@ export class MachineController {
 
     // BAMASTERPRGHEADER
     const headerArchive = [{
-      MACHINEID: program.machineId,
+      MACHINEID: this.id,
       MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
-      RELEASEDATE: dateNow,
+      RELEASEDATE: date,
       RELEASEENDDATE: null,
       PROGNO: program.programNo,
       PROCESSCODE: program.typeId,
       NAME: program.name,
-      DURATION: 0,
+      DURATION: program.duration,
       TOTALSTEP: program.steps.length,
-      CHANGEDATE: dateNow,
+      CHANGEDATE: date,
       TBBCHANGESOURCE: '',
-      TBBCHANGEDATE: dateNow,
-      CREATIONDATE: dateNow,
+      TBBCHANGEDATE: '',
+      CREATIONDATE: program.createdAt ? new Date((new Date(program.createdAt)).getTime() - timezone * 60000).toISOString() : date,
       USERCOMMENT: program.comment,
       USERNAME: program.author, // ?
-      CHANGETIME: dateNow, // ?
+      CHANGETIME: date, // ?
       WHATCHANGE: '', // ?
       PRGSOURCE: 0, // ?
       TotalChemReq: 0,
@@ -673,7 +766,7 @@ export class MachineController {
 
       // BAMASTERSTEPS
       stepsArchive.push({
-        MACHINEID: program.machineId,
+        MACHINEID: this.id,
         MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
         PROGNO: program.programNo,
         MAINSTEP: i,
@@ -686,23 +779,23 @@ export class MachineController {
       // BAMASTERSTEPPARAMS
       step.mainCommand.parameters.forEach((parameter) => {
         parametersArchive.push({
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: 0,
           PARAMETERINDEX: parameter.index,
-          VALUE: parameter.value,
+          VALUE: `${parameter.value}`.replace('.', ','),
           CONTAINSVARIABLE: 0,
           ERRORWARNING: 0,
-          OPTIMIZED: 0,
+          OPTIMIZED: parameter.optimized ? 1 : 0,
         })
       })
 
       step.mainCommand.ioList.forEach((io, k) => {
         // BAMASTERSTEPINPUTOUTPUTS
         stepIOArchive.push({
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
           PROGNO: program.programNo,
           MAINSTEP: i,
@@ -712,9 +805,9 @@ export class MachineController {
           IOTYPE: 5,
         })
         // BAMASTERSTEPSELECTIONLIST
-        io.value.forEach((ioValue: any, n) => {
+        io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue: any, n) => {
           ioSelectionArchive.push({
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
             SELECTIONINDEX: n,
             PROGNO: program.programNo,
@@ -730,7 +823,7 @@ export class MachineController {
       step.parallelCommands.forEach((command, j) => {
         // BAMASTERSTEPS
         stepsArchive.push({
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
           PROGNO: program.programNo,
           MAINSTEP: i,
@@ -743,16 +836,16 @@ export class MachineController {
         // BAMASTERSTEPPARAMS
         command.parameters.forEach((parameter) => {
           parametersArchive.push({
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: j + 1,
             PARAMETERINDEX: parameter.index,
-            VALUE: parameter.value,
+            VALUE: `${parameter.value}`.replace('.', ','),
             CONTAINSVARIABLE: 0,
             ERRORWARNING: 0,
-            OPTIMIZED: 0,
+            OPTIMIZED: parameter.optimized ? 1 : 0,
           })
         })
 
@@ -760,7 +853,7 @@ export class MachineController {
         command.ioList.forEach((io, m) => {
           // BAMASTERSTEPINPUTOUTPUTS
           stepIOArchive.push({
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
             PROGNO: program.programNo,
             MAINSTEP: i,
@@ -771,9 +864,9 @@ export class MachineController {
           })
 
           // BAMASTERSTEPSELECTIONLIST
-          io.value.forEach((ioValue: any, n) => {
+          io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue: any, n) => {
             ioSelectionArchive.push({
-              MACHINEID: program.machineId,
+              MACHINEID: this.id,
               MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
               SELECTIONINDEX: n,
               PROGNO: program.programNo,
@@ -790,16 +883,28 @@ export class MachineController {
 
     const chunkSize = 50
     const baTables = [
-      ['BAMASTERPRGHEADER', headerArchive],
+      ['BAMASTERPRGHEADER', [headerArchive]],
       ['BAMASTERSTEPS', this.chunkArray(stepsArchive, chunkSize)],
       ['BAMASTERSTEPPARAMS', this.chunkArray(parametersArchive, chunkSize)],
       ['BAMASTERSTEPINPUTOUTPUTS', this.chunkArray(stepIOArchive, chunkSize)],
       ['BAMASTERSTEPSELECTIONLIST', this.chunkArray(ioSelectionArchive, chunkSize)],
-    ]
+    ] as [string, any[][]][]
 
-    for (const [table, array] of baTables)
-      for (const item of array)
-        await this.trx.insert(item).into(table.toString())
+    for (const [table, array] of baTables) {
+      for (const item of array) {
+        if (item.length) {
+          await this.trx.insert(item).into(table)
+        }
+      }
+    }
+  }
+
+  private commandArrayToMap(commands: MachineCommand[]): Map<number, MachineCommand> {
+    const map = new Map<number, MachineCommand>()
+    commands.forEach((command) => {
+      map.set(command.commandNo, command)
+    })
+    return map
   }
 
   /**
@@ -809,32 +914,43 @@ export class MachineController {
    */
   @withTransaction
   async insertProgram(program: Program): Promise<void> {
-    const commands: MachineCommand[] = await this.fetchCommands()
-    const dateNow = this.getTimezoneDate()
+    const exists = await this.hasProgram(program.programNo)
+    if (exists) {
+      throw new PError('PROGRAM_EXISTS', { machineId: this.id, programNo: program.programNo })
+    }
+    const machine = await this.getMachineInfo()
+    const commands = machine.commands
+    const config = useRuntimeConfig()
+    const timezone = Number(config.teleskopTimezoneOffset)
+    const date = new Date(new Date().getTime() - timezone * 60000).toISOString()
+
+    program.duration = calculateProgramDuration(program, {
+      ...machine,
+      commands: this.commandArrayToMap(machine.commands),
+    })
 
     const steps: StepItem[] = []
     const parameters: StepParameter[] = []
     const stepIO: StepInputOutput[] = []
     const ioSelection: SelectionList[] = []
-
     // BFMASTERPRGHEADER
     const header = [{
-      MACHINEID: program.machineId,
+      MACHINEID: this.id,
       PROGNO: program.programNo,
       PROCESSCODE: program.typeId,
       NAME: program.name,
-      DURATION: 0, // ?
+      DURATION: program.duration,
       TOTALSTEP: program.steps.length,
-      CHANGEDATE: dateNow,
+      CHANGEDATE: date,
       TBBCHANGESOURCE: '',
-      TBBCHANGEDATE: dateNow,
+      TBBCHANGEDATE: program.updatedAtTBB ? program.updatedAtTBB : '',
       LOCKEDBY: '',
-      CREATIONDATE: dateNow,
+      CREATIONDATE: program.createdAt ? new Date((new Date(program.createdAt)).getTime() - timezone * 60000).toISOString() : date,
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
       PRGSTATE: program.programState === undefined ? ProgramStatus.EXISTS_ONLY_ON_DATABASE : program.programState,
-      TBBPRGCHANGEDEVENT: 0,
+      TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
       TotalChemReq: 0,
       TotalDyeReq: 0,
@@ -851,13 +967,12 @@ export class MachineController {
       PHASEVERSION: 1,
       INTERVENTIONFREEPROGRAM: 0,
     }]
-
     program.steps.forEach((step, i) => {
       const mainIOList = this.getSelectableIO(step.mainCommand.commandNo, commands)
 
       // BFMASTERSTEPS
       steps.push({
-        MACHINEID: program.machineId,
+        MACHINEID: this.id,
         PROGNO: program.programNo,
         MAINSTEP: i,
         PARALELSTEP: 0,
@@ -874,12 +989,12 @@ export class MachineController {
           MAINSTEP: i,
           PARALELSTEP: 0,
           PARAMETERINDEX: parameter.index,
-          MACHINEID: program.machineId,
-          VALUE: parameter.value,
+          MACHINEID: this.id,
+          VALUE: `${parameter.value}`.replace('.', ','),
           CONTAINSVARIABLE: 0,
           OPTIMIZEDVALUE: '',
           ERRORWARNING: 0,
-          OPTIMIZED: 0,
+          OPTIMIZED: parameter.optimized ? 1 : 0,
         })
       })
 
@@ -890,20 +1005,20 @@ export class MachineController {
           MAINSTEP: i,
           PARALELSTEP: 0,
           IOINDEX: mainIOList[k]?.index,
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           IOID: mainIOList[k]?.physicalId,
           IOTYPE: 5,
           ERRORWARNING: 0,
         })
         // BFMASTERSTEPSELECTIONLIST
-        io.value.forEach((ioValue, n) => {
+        io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue, n) => {
           ioSelection.push({
             SELECTIONINDEX: n,
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: 0,
             IOINDEX: mainIOList[k]?.index,
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             SELECTEDIOID: ioValue[1],
             IOTYPE: ioValue[0] - 1,
           })
@@ -913,7 +1028,7 @@ export class MachineController {
       step.parallelCommands.forEach((command, j) => {
         // BFMASTERSTEPS
         steps.push({
-          MACHINEID: program.machineId,
+          MACHINEID: this.id,
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: j + 1,
@@ -930,12 +1045,12 @@ export class MachineController {
             MAINSTEP: i,
             PARALELSTEP: j + 1,
             PARAMETERINDEX: parameter.index,
-            MACHINEID: program.machineId,
-            VALUE: parameter.value,
+            MACHINEID: this.id,
+            VALUE: `${parameter.value}`.replace('.', ','),
             CONTAINSVARIABLE: 0,
             OPTIMIZEDVALUE: '',
             ERRORWARNING: 0,
-            OPTIMIZED: 0,
+            OPTIMIZED: parameter.optimized ? 1 : 0,
           })
         })
 
@@ -947,21 +1062,21 @@ export class MachineController {
             MAINSTEP: i,
             PARALELSTEP: j + 1,
             IOINDEX: paralelIOList[m]?.index,
-            MACHINEID: program.machineId,
+            MACHINEID: this.id,
             IOID: paralelIOList[m]?.physicalId,
             IOTYPE: 5,
             ERRORWARNING: 0,
           })
 
           // BFMASTERSTEPSELECTIONLIST
-          io.value.forEach((ioValue, n) => {
+          io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue, n) => {
             ioSelection.push({
               SELECTIONINDEX: n,
               PROGNO: program.programNo,
               MAINSTEP: i,
               PARALELSTEP: j + 1,
               IOINDEX: paralelIOList[m]?.index,
-              MACHINEID: program.machineId,
+              MACHINEID: this.id,
               SELECTEDIOID: ioValue[1],
               IOTYPE: ioValue[0] - 1,
             })
@@ -972,19 +1087,23 @@ export class MachineController {
 
     const chunkSize = 50
     const bfTables = [
-      ['BFMASTERPRGHEADER', header],
+      ['BFMASTERPRGHEADER', [header]],
       ['BFMASTERSTEPS', this.chunkArray(steps, chunkSize)],
       ['BFMASTERSTEPPARAMS', this.chunkArray(parameters, chunkSize)],
       ['BFMASTERSTEPINPUTOUTPUTS', this.chunkArray(stepIO, chunkSize)],
       ['BFMASTERSTEPSELECTIONLIST', this.chunkArray(ioSelection, chunkSize)],
-    ]
+    ] as [string, any[][]][]
 
-    for (const [table, array] of bfTables)
+    for (const [table, array] of bfTables) {
       for (const item of array) {
-        await this.trx.insert(item).into(table.toString())
+        if (item.length) {
+          await this.trx.insert(item).into(table.toString())
+        }
       }
+    }
 
     await this.insertProgramToArchive(program)
+    await this.upsertTreatments(program)
   }
 
   /**
@@ -1009,7 +1128,10 @@ export class MachineController {
     const tables = ['BFMASTERPRGHEADER', 'BFMASTERSTEPS', 'BFMASTERSTEPPARAMS', 'BFMASTERSTEPINPUTOUTPUTS', 'BFMASTERSTEPSELECTIONLIST']
 
     for (const table of tables) {
-      deletedCount += await this.trx(table).where('MACHINEID', this.id).andWhere('PROGNO', programNo).del()
+      deletedCount += await this.trx(table)
+        .where('MACHINEID', this.id)
+        .andWhere('PROGNO', programNo)
+        .del()
     }
 
     return deletedCount > 0
@@ -1040,6 +1162,7 @@ export class MachineController {
   @withFTP
   async deleteRemoteProgram(programNo: number): Promise<void> {
     await this.ftp.remove(`/tbb6500/data/programs/program/${programNo}`)
+    await logEditorOperation(ProgramEditorActivityCodes.PROGRAMDELETED_CONTROLLER, this.host, `Program No ${programNo}`)
   }
 
   /**
@@ -1125,5 +1248,238 @@ export class MachineController {
       }
     }
     return true
+  }
+
+  /**
+   * Makine sabitlerini getirir.
+   * @param machineId - Makine Id
+   * @returns {Promise<MachineConstant[]>} - Makinenin sabitlerinin listesi
+   */
+  @withTransaction
+  async fetchMachineConstants(): Promise<MachineConstant[]> {
+    return await this.trx('BFMACHPARAMETERS').select({
+      machineParameterId: 'MACHINEPARAMETERID',
+      machineId: 'MACHINEID',
+      paramString: 'PARAMSTRING',
+      paramLowLimit: 'PARAMLOWLIMIT',
+      paramHighLimit: 'PARAMHIGHLIMIT',
+      paramType: 'PARAMETERTYPE',
+      selectionList: 'SELECTIONLIST',
+      unitCode: 'UNITCODE',
+      selectionValues: 'SELECTIONVALUES',
+      isDeleted: 'ISDELETED',
+      tbbChangeTime: 'TBBCHANGETIME',
+      changeTime: 'CHANGETIME',
+      defaultValue: 'DEFAULTVALUE',
+      dmArea: 'dmArea',
+      consScreen: 'consScreen',
+      consFormat: 'consFormat',
+      consUnit: 'consUnit',
+      currentValue: 'currentValue',
+    }).where('MACHINEID', this.id)
+  }
+
+  /**
+   * Başlatma parametrelerini getirir.
+   * @returns {Promise<BatchParameter[]>} - Makinenin parametrelerinin listesi
+   */
+  @withTransaction
+  async fetchBatchParameters(): Promise<BatchParameter[]> {
+    return await this.trx('BFMACHBATCHPARAMETERS').select({
+      batchParameterId: 'BATCHPARAMETERID',
+      machineId: 'MACHINEID',
+      paramString: 'PARAMSTRING',
+      paramLowLimit: 'PARAMLOWLIMIT',
+      paramHighLimit: 'PARAMHIGHLIMIT',
+      batchPlanning: 'BATCHPLANNING',
+      batchStart: 'BATCHSTART',
+      recipe: 'RECIPE',
+      defaultValue: 'DEFAULTVALUE',
+      parameterType: 'PARAMETERTYPE',
+      selectionList: 'SELECTIONLIST',
+      unitCode: 'UNITCODE',
+      selectionValues: 'SELECTIONVALUES',
+      isDeleted: 'ISDELETED',
+      tbbChangeTime: 'TBBCHANGETIME',
+      changeTime: 'CHANGETIME',
+      format: 'FORMAT',
+      parameterId: 'PARAMETERID',
+      unitText: 'UNITTEXT',
+      paramStringEn: 'PARAMSTRINGEN',
+      selectionListDefault: 'SELECTIONLISTDEFAULT',
+    }).where('MACHINEID', this.id)
+  }
+
+  /**
+   * Komut formüllerini getirir.
+   * @returns {Promise<CommandFormula[]>} - Komut parametrelerinin listesi
+   */
+  @withTransaction
+  async fetchCommandFormulas(): Promise<CommandFormula[]> {
+    return await this.trx('BFCOMMANDFORMULAS').select(
+      'machineId',
+      'formulaId',
+      'formula',
+      'commandNo',
+      'commandParameterNo',
+      'formulaName',
+    ).where('machineId', this.id)
+  }
+
+  /**
+   * Yeni oluşturulan programı Treatments tablosuna ekler.
+   * @param program - Program
+   * @returns {Promise<void>}
+   */
+  async upsertTreatments(program: Program): Promise<void> {
+    const config = useRuntimeConfig()
+    if (!config.dmexchangeEnabled)
+      return
+
+    await ensureTreatmentGroups()
+
+    const settings = await fetchTreatmentSettings()
+
+    const treatmentParameters = (await this.fetchTreatmentParameters()).map((parameter) => {
+      return {
+        ...parameter,
+        counter: 0,
+      }
+    })
+
+    const erpTreatmentParameters = await dmExchange('Treatment_Parameter')
+      .select({
+        paramNo: 'TreatmentParaNo',
+        paramName: 'TreatmentParaName',
+      }) as { paramNo: number, paramName: string }[]
+
+    const treatmentRefs = [] as { counter: number, parameterNo: number }[]
+
+    let totalOptimizeCount = 0
+
+    const handleParameter = (command: ProgramStepCommand, parameter: ParameterItem) => {
+      const tp = treatmentParameters.find((tp) => {
+        return tp.commandNo === command.commandNo && tp.parameterIndex === parameter.index
+      })
+      if (tp) {
+        tp.counter++
+        if (tp.counter >= settings.optimizedLimit) {
+          throw new PError('PROGRAM_TREATMENT_COMMAND_LIMIT', {
+            machineId: this.id,
+            programNo: program.programNo,
+            commandNo: command.commandNo!,
+            limit: settings.optimizedLimit,
+          })
+        }
+        if (!settings.optimizedEnable || (settings.optimizedEnable && parameter.optimized)) {
+          totalOptimizeCount++
+          treatmentRefs.push({
+            counter: tp.counter,
+            parameterNo: erpTreatmentParameters.find(etp => `${tp.paramName}_${tp.counter}` === etp.paramName)?.paramNo || 0,
+          })
+        }
+      }
+    }
+
+    for (const step of program.steps) {
+      // Main command
+      for (const parameter of step.mainCommand.parameters) {
+        handleParameter(step.mainCommand, parameter)
+      }
+      // Parallel Commands
+      for (const parallelCommand of step.parallelCommands) {
+        for (const parameter of parallelCommand.parameters) {
+          handleParameter(parallelCommand, parameter)
+        }
+      }
+    }
+
+    const groupNo = (await db('BFMACHINES')
+      .first({ groupNo: 'GRUPNO' })
+      .where('MACHINEID', this.id))?.groupNo
+
+    // Not expected
+    if (!isDef(groupNo)) {
+      throw new Error(`Machine ${this.id} not found`)
+    }
+
+    await dmExchange.transaction(async (trx) => {
+      // Handle Treatment Machine Groups
+
+      const treatment = await trx('Treatments')
+        .where('TreatmentNo', program.programNo)
+        .andWhere('TreatmentType', 0)
+        .first('*')
+
+      if (!treatment) {
+        await trx('Treatments').insert({
+          TreatmentNo: program.programNo,
+          TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
+          TreatmentName: program.name,
+          TreatmentParaCount: totalOptimizeCount,
+          ImportState: 1,
+          TreatmentType: 0,
+        })
+
+        await trx('Treatment_MGroups').insert({
+          TreatmentNo: program.programNo,
+          MGroupNo: groupNo,
+          ImportState: 1,
+        })
+      } else {
+        await trx('Treatments').update({
+          TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
+          TreatmentName: program.name,
+          TreatmentParaCount: totalOptimizeCount,
+          ImportState: 1,
+          TreatmentType: 0,
+        })
+          .where('TreatmentNo', program.programNo)
+          .andWhere('TreatmentType', 0)
+
+        await trx('Treatment_Parameter_Ref')
+          .where('TreatmentNo', program.programNo)
+          .del()
+      }
+      if (treatmentRefs.length) {
+        await trx('Treatment_Parameter_Ref').insert(
+          treatmentRefs.map((ref, index) => {
+            return {
+              TreatmentNo: program.programNo,
+              TreatmentParaCounter: index + 1,
+              TreatmentParaNo: ref.parameterNo,
+              ImportState: 1,
+            }
+          }),
+        )
+      }
+    })
+  }
+
+  async deleteTreatments(programNo: number): Promise<void> {
+    await dmExchange.transaction(async (trx) => {
+      await trx('Treatments')
+        .where('TreatmentNo', programNo)
+        .andWhere('TreatmentType', 0)
+        .del()
+
+      await trx('Treatment_Parameter_Ref')
+        .where('TreatmentNo', programNo)
+        .del()
+    })
+  }
+
+  async fetchTreatmentParameters(): Promise<TreatmentParameter[]> {
+    return await db('BFTREATMENTPARAMGROUPMAP as PGM')
+      .select({
+        paramId: 'PGM.PARAMID',
+        paramName: 'PT.TREATMENTPARAMETER',
+        groupId: 'PGM.GROUPID',
+        commandNo: 'PGM.COMMANDNO',
+        parameterIndex: 'PGM.PARAMETERINDEX',
+      })
+      .join('BFTREATMENTPARAMETERGROUPMACHINES as MG', 'PGM.GROUPID', 'MG.GROUPID')
+      .join('BFTREATMENTPARAMETERS as PT', 'PT.ID', 'PGM.PARAMID')
+      .where('MG.MACHINEID', this.id)
   }
 }

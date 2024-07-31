@@ -5,34 +5,58 @@ import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOn
 import CMConcatenateProgramDetails from '~/components/CMConcatenateProgramDetails.vue'
 import CMChangeNameDialog from '~/components/CMChangeNameDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
-import { commandManager, contextMenuStore } from '~/shared/utils'
+import { contextMenuStore } from '~/shared/utils'
 import TBProgramFilterDialog from '~/components/TBProgramFilterDialog.vue'
 import type { ProgramFilter } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
 import TBExportExcelDialog from '~/components/TBExportExcelDialog.vue'
+import hooks from '~/utils/hooks'
 
-type CommandFunction = (ctx?: Function, ...args: any) => boolean
+type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
+// const { $commandManager } = useNuxtApp()
 export interface AppCommand {
   name: string
   keybind?: string
-  label?: string | Function
-  category?: string | Function
-  description?: string | Function
-  icon?: string | Function
-  disabled?: boolean | Function
-  visible?: boolean | Function
+  label?: MaybeRefOrGetter<string>
+  category?: MaybeRefOrGetter<string>
+  description?: MaybeRefOrGetter<string>
+  icon?: MaybeRefOrGetter<string>
+  disabled?: MaybeRefOrGetter<boolean>
+  visible?: MaybeRefOrGetter<boolean>
   execute: CommandFunction
   undo?: CommandFunction
 }
 
 export function defineAppCommand(setup: () => AppCommand): AppCommand {
-  return setup()
+  const command = setup()
+  return command
 }
-
-export const deleteProgramCommand: AppCommand = defineAppCommand(() => {
+export function registerCommand(command: () => AppCommand) {
+  hooks.hook('register', (ctx: any) => {
+    ctx.register(command)
+  })
+}
+export interface RegisteredCommands {
+  deleteProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
+  pasteProgram: [ctx: any, machineId: number, remains?: any]
+  deleteProgramFromMultiMachine: [ctx: any, selectedRows: Array<any>]
+  concatenatePrograms: [ctx: any, selectedRows: Array<any>, machineId: number]
+  changeName: [ctx: any, selectedRows: Array<any>, machineId: number]
+  changeProcessType: [ctx: any, selectedRows: Array<any>, machineId: number]
+  sendProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
+  copyAndSend: [ctx: any, selectedRows: Array<any>, machineId: number]
+  fetchProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
+  filterPrograms: [ctx: any]
+  printProgram: [ctx: any]
+  printProgramList: [ctx: any]
+  editProgramTypes: [ctx: any]
+  exportToExcel: [ctx: any]
+  refresh: [ctx: any, machineId: number]
+}
+registerCommand(() => {
   return {
     name: 'deleteProgram',
     execute(ctx: any, selectedRows: Array<any>, machineId: number) {
@@ -41,8 +65,13 @@ export const deleteProgramCommand: AppCommand = defineAppCommand(() => {
         componentProps: {
           programNames: selectedRows.map(r => r.name),
         },
-      }).onOk(async (option) => {
-        await contextMenuStore.deleteProgram(selectedRows, option, machineId)
+      }).onOk(async (option: string) => {
+        const query = `source=${option}`
+        for (const program of selectedRows)
+          await $fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
+            method: 'DELETE',
+          })
+        // await contextMenuStore.deleteProgram(selectedRows, option, machineId)
         await ctx.fetchPrograms()
         return true
       }).onCancel(() => {
@@ -53,8 +82,38 @@ export const deleteProgramCommand: AppCommand = defineAppCommand(() => {
   }
 })
 
-export const pasteProgramCommand: AppCommand = defineAppCommand(() => {
+async function openDialogonPaste(ctx: any, remainsFromPaste: any, machineId: number) {
+  let remains = remainsFromPaste
+  if (remains.length) {
+    ctx.$q.dialog({
+      component: CMChangeProgramNoOnPasteDialog,
+      componentProps: {
+        remains,
+      },
+    }).onOk(async (newIds) => {
+      remains.forEach((val, index: number) => {
+        val.newProgramNo = newIds[index]
+      })
+      remains = await contextMenuStore.paste(machineId, remains)
+      await openDialogonPaste(ctx, remains, machineId)
+      await ctx.fetchPrograms()
+      /**
+     TODO: This has to be done through commandManager.executeCommand 'cause
+      commandManager will handle undo redo operations and paste is not a single paste operation
+      it can be done in multiple steps and each ctrl+z should go back to previous step
+      not cancel the whole paste operation
+      // $commandManager.executeCommand('pasteProgram', ctx, machineId, remainsFromPaste)
+       */
+      return true
+    }).onCancel(() => {
+      return false
+    })
+  }
+}
+
+registerCommand(() => {
   let remainsFromPaste = [] as Array<any>
+
   return {
     name: 'pasteProgram',
     async execute(ctx: any, machineId: number, remains?) {
@@ -62,30 +121,14 @@ export const pasteProgramCommand: AppCommand = defineAppCommand(() => {
         remainsFromPaste = await contextMenuStore.paste(machineId)
         await ctx.fetchPrograms()
       }
-      if (remainsFromPaste.length) {
-        ctx.$q.dialog({
-          component: CMChangeProgramNoOnPasteDialog,
-          componentProps: {
-            remains: remainsFromPaste,
-          },
-        }).onOk(async (newIds) => {
-          remainsFromPaste.forEach((val, index: number) => {
-            val.newProgramNo = newIds[index]
-          })
-          remainsFromPaste = await contextMenuStore.paste(machineId, remainsFromPaste)
-          commandManager.executeCommand(pasteProgramCommand, ctx, machineId, remainsFromPaste)
-          return true
-        }).onCancel(() => {
-          return false
-        })
-      }
-      await ctx.fetchPrograms()
+      if (remainsFromPaste.length)
+        await openDialogonPaste(ctx, remainsFromPaste, machineId)
       return true
     },
   }
 })
 
-export const deleteProgramFromMultiMachineCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'deleteProgramFromMultiMachine',
     execute(ctx: any, selectedRows) {
@@ -95,9 +138,18 @@ export const deleteProgramFromMultiMachineCommand: AppCommand = defineAppCommand
           type: 'deleteFromMultiMachine',
         },
       }).onOk(async (machines) => {
-        await contextMenuStore.deleteProgramFromMachine(selectedRows, machines)
-        await ctx.fetchPrograms()
-        return true
+        ctx.$q.dialog({
+          component: CMDeleteProgramDialog,
+          componentProps: {
+            programNames: selectedRows.map(r => r.name),
+          },
+        }).onOk(async (option: string) => {
+          await contextMenuStore.deleteProgramFromMachine(selectedRows, machines, option)
+          await ctx.fetchPrograms()
+          return true
+        }).onCancel(() => {
+          return false
+        })
       }).onCancel(() => {
         return false
       })
@@ -106,7 +158,7 @@ export const deleteProgramFromMultiMachineCommand: AppCommand = defineAppCommand
   }
 })
 // // TODO: Make this function that return promise not inline code
-export const concatenateProgramsCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'concatenatePrograms',
     async execute(ctx: any, selectedRows, machineId) {
@@ -145,7 +197,7 @@ export const concatenateProgramsCommand: AppCommand = defineAppCommand(() => {
   }
 })
 
-export const changeNameCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'changeName',
     execute(ctx: any, selectedRows, machineId) {
@@ -166,7 +218,7 @@ export const changeNameCommand: AppCommand = defineAppCommand(() => {
   }
 })
 
-export const changeProcessTypeCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'changeProcessType',
     async execute(ctx: any, selectedRows, machineId) {
@@ -187,7 +239,7 @@ export const changeProcessTypeCommand: AppCommand = defineAppCommand(() => {
     },
   }
 })
-export const sendProgramCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'sendProgram',
     async execute(ctx: any, selectedRows, machineId) {
@@ -198,7 +250,7 @@ export const sendProgramCommand: AppCommand = defineAppCommand(() => {
   }
 })
 
-export const copyAndSendCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'copyAndSend',
     execute(ctx: any, selectedRows, machineId) {
@@ -219,7 +271,7 @@ export const copyAndSendCommand: AppCommand = defineAppCommand(() => {
     },
   }
 })
-export const fetchProgramFromMachineCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'fetchProgram',
     async execute(ctx: any, selectedRows, machineId) {
@@ -229,7 +281,7 @@ export const fetchProgramFromMachineCommand: AppCommand = defineAppCommand(() =>
     },
   }
 })
-export const filterProgramsCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'filterPrograms',
     async execute(ctx: any) {
@@ -252,12 +304,11 @@ export const filterProgramsCommand: AppCommand = defineAppCommand(() => {
   }
 })
 
-export const printProgramCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'printProgram',
     async execute(ctx: any) {
       const machines = await $fetch('/api/machine')
-      console.log(machines)
       ctx.$q.dialog({
         component: TBPrintProgramDialog,
         componentProps: {
@@ -269,12 +320,11 @@ export const printProgramCommand: AppCommand = defineAppCommand(() => {
   }
 })
 
-export const printProgramListCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'printProgramList',
     async execute(ctx: any) {
       const machines = await $fetch('/api/machine')
-      console.log(machines)
       ctx.$q.dialog({
         component: TBPrintProgramListDialog,
         componentProps: {
@@ -286,7 +336,7 @@ export const printProgramListCommand: AppCommand = defineAppCommand(() => {
   }
 })
 
-export const editProgramTypesCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'editProgramTypes',
     async execute(ctx: any) {
@@ -298,7 +348,7 @@ export const editProgramTypesCommand: AppCommand = defineAppCommand(() => {
   }
 })
 
-export const exportToexcelCommand: AppCommand = defineAppCommand(() => {
+registerCommand(() => {
   return {
     name: 'exportToExcel',
     async execute(ctx: any) {
@@ -309,6 +359,23 @@ export const exportToexcelCommand: AppCommand = defineAppCommand(() => {
           machines,
         },
       })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'refresh',
+    async execute(ctx: any, machineId: number) {
+      const editor = useEditorStore()
+
+      editor.isLoading = true
+      await $fetch(`/api/machine/${machineId}/refresh`, {
+        method: 'POST',
+      })
+      await ctx.fetchPrograms()
+      editor.isLoading = false
       return true
     },
   }

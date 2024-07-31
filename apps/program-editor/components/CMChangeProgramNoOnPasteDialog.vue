@@ -27,9 +27,9 @@ const isOKDisabled = computed(() => {
           :key="index"
           class="flex gap-10 ml-5 items-center"
         >
-          <q-input
+          <InputNumber
             v-model="newIds[index]"
-            type="number"
+            type="positive-integer"
             dense
             class="w-20"
           />

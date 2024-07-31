@@ -1,6 +1,6 @@
 import isEqual from 'fast-deep-equal'
 import { useEditorStore } from './editor'
-import type { CommandIO, CommandIOSelection, CommandParameters, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -81,7 +81,7 @@ export function assertIndex(index: number, max: number): void {
  * @returns - Komut bilgileri
  */
 export function getMachineCommand(commandNo: number, parameterOrIoList?: 'parameters' | 'ioList', index?: number, selectionIndex?: number):
-  MachineCommand | CommandParameters | CommandIO | ParameterSelections | CommandIOSelection | MachineCommand[] | CommandParameters[] | CommandIO[] | ParameterSelections[] | CommandIOSelection[] | undefined {
+  MachineCommand | CommandParameter | CommandIO | ParameterSelections | CommandIOSelection | MachineCommand[] | CommandParameter[] | CommandIO[] | ParameterSelections[] | CommandIOSelection[] | undefined {
   const editor = useEditorStore()
 
   const command: MachineCommand | undefined = editor.machine.commands.get(commandNo)
@@ -258,4 +258,32 @@ export function filterToQuery(filter: ProgramFilter): string {
     query += `processType=${filter.processType.value}&`
   setExistingFilter(filter)
   return query
+}
+
+/**
+ * Düzenlenen saniyeyi 00:00:00 formatına dönüştürür
+ * @param duration Saniye
+ * @returns {string} 00:00:00
+ */
+export function formatDuration(duration: number): string {
+  if (!duration) {
+    return '00:00:00'
+  }
+  const hour = Math.floor(duration / 3600)
+  const minute = Math.floor((duration % 3600) / 60)
+  const second = duration % 60
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
+}
+
+/**
+ * 00:00:00 formatını saniyeye dönüştürür
+ * @param duration string
+ * @returns {number} Saniye
+ */
+export function parseDuration(duration: string): number {
+  if (duration.includes(':')) {
+    const [hour, minute, second] = duration.split(':')
+    return Number(hour) * 3600 + Number(minute) * 60 + Number(second)
+  }
+  return Number(duration) * 36000
 }
