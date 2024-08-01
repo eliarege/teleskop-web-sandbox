@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { defineConfiguration } from '@teleskop/utils'
+import { defineConfiguration, inferBoolean } from '@teleskop/utils'
 
 export const config = defineConfiguration({
   appName: {
@@ -47,6 +47,11 @@ export const config = defineConfiguration({
     type: 'string',
     env: 'TELESKOP_INSTANCE_NAME',
   },
+  dmsEnabled: {
+    type: 'boolean',
+    default: false,
+    env: 'DMS_ENABLED',
+  },
   dmsHost: {
     type: 'string',
     default: 'localhost',
@@ -59,13 +64,13 @@ export const config = defineConfiguration({
   },
   dmsUser: {
     type: 'string',
-    required: process.env.NODE_ENV === 'production',
+    required: process.env.NODE_ENV === 'production' && inferBoolean(process.env.DMS_ENABLED),
     env: 'DMS_USER',
   },
   dmsPassword: {
     type: 'string',
     env: 'DMS_PASSWORD',
-    required: process.env.NODE_ENV === 'production',
+    required: process.env.NODE_ENV === 'production' && inferBoolean(process.env.DMS_ENABLED),
   },
   dmsDatabase: {
     type: 'string',
