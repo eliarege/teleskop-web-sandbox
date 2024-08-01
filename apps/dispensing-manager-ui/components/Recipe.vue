@@ -2,9 +2,10 @@
 import { Notify } from 'quasar'
 import { navigateToPage, notification } from '../shared/functions'
 import type { RecipeLatest } from '~/shared/types'
+import RefreshConfirmationDialog from '~/components/RefreshConfirmationDialog.vue'
 
 const { t } = useI18n()
-
+const $q = useQuasar()
 const plannedMachineChangeVal = ref()
 const coupledMachineChangeVal = ref()
 const isCoupled = ref(false)
@@ -16,7 +17,6 @@ const lastJobOrder = ref()
 const plankey = ref()
 const showJoborderError = ref(false)
 const resetCounter = ref(0)
-const showWeiRequestDialog = ref(false)
 const materialRows = ref([])
 const machines = await $fetch('/api/machine/machines')
 const recipeData = ref()
@@ -57,10 +57,10 @@ const columns = [
 
 const buttonProps = ref([
   { name: 'logs', label: t('recipe.logs'), link: 'showLogs', icon: 'description' },
-  { name: 'tartim', label: t('recipe.jobOrderMeasurement'), link: 'showConsumptions', icon: 'content_paste_search' },
+  { name: 'weighing', label: t('recipe.jobOrderMeasurement'), link: 'showConsumptions', icon: 'content_paste_search' },
   { name: 'parameters', label: t('recipe.jobOrderParameters'), link: 'showParameters', icon: 'search' },
-  { name: 'tartimrefresh', label: t('recipe.jobOrderMeasurementRefresh'), link: 'tartimrefresh', icon: 'refresh', isDisabled: true },
-  { name: 'solvingrefresh', label: t('recipe.jobOrderSolvingRefresh'), link: 'solvingrefresh', icon: 'refresh', isDisabled: true },
+  { name: 'weighingRefresh', label: t('recipe.jobOrderMeasurementRefresh'), link: 'weighingRefresh', icon: 'refresh' },
+  { name: 'solvingRefresh', label: t('recipe.jobOrderSolvingRefresh'), link: 'solvingRefresh', icon: 'refresh' },
 ])
 
 async function getCorrectionNOs(parameter: string) {
@@ -208,12 +208,26 @@ function buttonAction(link: string) {
     if (link === 'showConsumptions') {
       showConsumptionDialog.value = true
     }
-    if (link === 'tartimrefresh') {
-      showWeiRequestDialog.value = true
+    if (link === 'weighingRefresh') {
+      handleRefresh('weighing')
+    }
+    if (link === 'solvingRefresh') {
+      handleRefresh('solving')
     }
   }
 }
-
+function handleRefresh(refreshType: 'solving' | 'weighing') {
+  console.log(refreshType)
+  $q.dialog({
+    component: RefreshConfirmationDialog,
+    componentProps: {
+      refreshType,
+    },
+  }).onOk(async () => {
+    const res = await $fetch(`/api/recipe/refresh-${refreshType}-requests/${plankey.value}`, { method: 'POST' })
+    notification(res, t(`recipe.refresh.${refreshType}.${res ? 'success' : 'fail'}`))
+  })
+}
 async function submitCoupleMachine() {
   const check = await $fetch('/api/recipe/change-planned-machine', {
     method: 'put',
@@ -226,58 +240,6 @@ async function submitCoupleMachine() {
   })
   if (check)
     machine.value = plannedMachineChangeVal.value
-}
-
-const programs = ref()
-
-async function rerequestWei() {
-  // TODO: Daha düzgün bir implementasyon bul.
-  programs.value = await $fetch('/api/recipe/programs-by-plankey', {
-    method: 'POST',
-    body: {
-      plankey: plankey.value,
-    },
-  })
-  programs.value.forEach((program) => {
-    recipeData.value.forEach((row) => {
-      if (program.programNo === row.programNo && program.recipeType === row.recipeType) {
-        if (!program.materialCodes)
-          program.materialCodes = []
-        program.materialCodes.push(row.chemCode)
-        program.row = row
-      }
-    })
-  })
-
-  programs.value.forEach(async (program) => {
-    if (program.materialCodes.length) {
-      const data = [
-        2,
-        50,
-        machine.value.machineid,
-        0,
-        program.row.joborder,
-        program.row.programNo,
-        program.row.mainStep,
-        program.row.mainStep,
-        program.materialCodes.length,
-        program.row.recipeType,
-        program.row.processOrder,
-      ]
-      await $fetch('/api/file/write-recipe-step', {
-        method: 'POST',
-        body: {
-          machineid: machine.value.machineid,
-          materialCodes: ['BAKR01', 'BAKR02', 'BAKR03'],
-          checkMachineDispenser: true,
-          checkMaterialDispenser: true,
-          dispenserType: 2,
-          content: data,
-          row: program.row,
-        },
-      })
-    }
-  })
 }
 
 const isCoupledTheSame = computed(() => {
@@ -457,33 +419,6 @@ onBeforeUnmount(() => {
           :correction-no="correctionNoDisplayed"
         />
       </q-dialog>
-      <q-dialog v-model="showWeiRequestDialog" persistent>
-        <q-card>
-          <q-card-section class="row items-center">
-            <q-avatar
-              icon="help"
-              color="white"
-            />
-            {{ t('recipe.weiRerequest') }}
-          </q-card-section>
-
-          <q-card-actions align="right">
-            <q-btn
-              v-close-popup
-              :label="t('no')"
-              outline
-              icon="close"
-            />
-            <q-btn
-              v-close-popup
-              outline
-              :label="t('yes')"
-              icon="check"
-              @click="rerequestWei()"
-            />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
       <ElScrollbar class="table-wrapper-recipe">
         <RecipeTableDMW
           :data="recipeData"
@@ -508,7 +443,7 @@ onBeforeUnmount(() => {
         dyeing-class="text-black"
       />
     </div>
-
+    <q-space />
     <div class="footer-buttons-recipe">
       <q-btn
         v-for="button of buttonProps"
@@ -611,8 +546,7 @@ onBeforeUnmount(() => {
   justify-content: center;
 }
 .content{
-  flex: 1;
-  padding-bottom: 1rem;
+  padding-bottom: 2rem;
 }
 .outer-div{
   display: flex;
