@@ -155,6 +155,7 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
     editor.popupCommandDetailVisible = false
     editor.popupCommandListVisible = false
     editor.popupNewProgramVisible = false
+    editor.popupSaveAsProgramVisible = false
   }
 })
 
@@ -738,6 +739,10 @@ function handleRowColor(row: ProgramHeader) {
 
   <EliarModal v-if="editor.popupNewProgramVisible">
     <CMNewProgramDialog />
+  </EliarModal>
+
+  <EliarModal v-if="editor.popupSaveAsProgramVisible">
+    <CMSaveAsProgramDialog />
   </EliarModal>
 </template>
 

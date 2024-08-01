@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import type { MachineCommand } from '~/shared/types'
+import type { Program } from '~/shared/types'
 
 const editor = useEditorStore()
 const router = useRouter()
 const { t } = useI18n()
-const { notifyError } = useNotify()
 const allProcessTypes: any = ref([])
 const machineName = ref<string>()
 
@@ -18,40 +17,21 @@ const processType = ref<number>(editor.program.typeId)
 const operator = ref<boolean>(editor.program.tbbProgramChangedEvent === 1)
 const { dark } = useQuasar()
 
+const newProgram = computed<Program>(() => {
+  return {
+    ...editor.program,
+    programNo: programNo.value,
+    name: programName.value,
+    typeId: processType.value,
+    tbbProgramChangedEvent: operator.value ? 1 : 0,
+  }
+})
+
 editor.isLoading = true
 await editor.fetchMachineCommands(editor.machine.id)
 await editor.fetchAllProcessTypes().then(() => {
   editor.isLoading = false
 })
-
-async function onSaveAs() {
-  editor.program = {
-    ...editor.program,
-    machineId,
-    programNo: programNo.value || 0,
-    name: programName.value || '',
-    typeId: processType.value || 0,
-    tbbProgramChangedEvent: operator.value ? 1 : 0,
-    programState: 1,
-  }
-
-  const firstCommand: MachineCommand = editor.machine.commands.values().next().value
-  editor.newStepCommand(firstCommand.commandNo, 0)
-
-  if (!programNo.value) {
-    notifyError(t('input.required', { field: t('program.programNo') }))
-  } else if (!programName.value) {
-    notifyError(t('input.required', { field: t('program.name') }))
-  } else if (processType.value === null || processType.value === undefined) {
-    notifyError(t('input.required', { field: t('program.processType') }))
-  } else {
-    const result = await editor.insertProgram()
-    if (result) {
-      editor.popupNewProgramVisible = false
-      router.push(`/machine/${editor.machine.id}/program/${programNo.value}`)
-    }
-  }
-}
 
 function onCancel() {
   router.push(`/machine/${editor.machine.id}/`)
@@ -61,7 +41,7 @@ function onCancel() {
 <template>
   <div class="w-full h-full">
     <QCard>
-      <QForm @submit="onSaveAs" @reset="onCancel">
+      <QForm @submit="editor.onSubmit(newProgram)" @reset="onCancel">
         <QCard style="width: 500px">
           <QCardSection>
             <div class="text-h6 text-center">
@@ -106,7 +86,7 @@ function onCancel() {
               :label="t('cancel')"
               class="q-mr-sm"
               type="reset"
-              @click="editor.popupNewProgramVisible = false"
+              @click="editor.popupSaveAsProgramVisible = false"
             />
             <QBtn
               flat
@@ -115,7 +95,7 @@ function onCancel() {
               type="submit"
               :loading="editor.isLoading"
               :disable="editor.isLoading"
-              @click="onSaveAs"
+              @click="editor.onSubmit(newProgram)"
             />
           </QCardActions>
         </QCard>

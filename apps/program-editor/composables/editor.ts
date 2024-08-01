@@ -20,6 +20,7 @@ export const useEditorStore = defineStore('editor', () => {
   const selectedParallelStep = ref<number>(-1)
   const isLoading = ref<boolean>(false)
   const popupNewProgramVisible = ref(false)
+  const popupSaveAsProgramVisible = ref(false)
   const popupCommandListVisible = ref(false)
   const popupCommandDetailVisible = ref(false)
   const newVersionDialog = ref(false)
@@ -129,7 +130,10 @@ export const useEditorStore = defineStore('editor', () => {
     if (!el)
       return
 
-    el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
+    setTimeout(() => {
+      el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
+    }, 100)
+
     const button = el.querySelector('.expand-btn') as HTMLElement | null
     if (!button)
       return
@@ -188,21 +192,45 @@ export const useEditorStore = defineStore('editor', () => {
       }))
   }
 
-  async function onSubmit() {
+  async function onSubmit(newProgram?: Program) {
     isLoading.value = true
     const firstId = errorIds.value.values().next().value
     if (firstId) {
       const el = document.getElementById(firstId)
       const parentEl = el?.closest('.q-item__section--main')
-      const button = parentEl?.querySelector('button')
+      const stepIndex = parentEl?.children[0].id?.split('-').pop()
 
-      if (button?.children[1].children[0].innerHTML === 'expand_more')
-        button.click()
+      scrollPage(Number(stepIndex), true)
+      notifyError(t('saveProgram.incorrect'))
+    } else {
+      if (newProgram) {
+        if (await insertProgram(newProgram)) {
+          notifySuccess(t('saveProgram.success'))
+        } else {
+          notifyError(t('saveProgram.fail'))
+        }
+      } else {
+        if (await updateProgram()) {
+          notifySuccess(t('saveProgram.success'))
+        } else {
+          notifyError(t('saveProgram.fail'))
+        }
+      }
+    }
+    popupNewProgramVisible.value = false
+    popupSaveAsProgramVisible.value = false
+    isLoading.value = false
+  }
 
-      setTimeout(() => {
-        el?.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
-      }, 100)
+  async function onSaveAs() {
+    isLoading.value = true
+    const firstId = errorIds.value.values().next().value
+    if (firstId) {
+      const el = document.getElementById(firstId)
+      const parentEl = el?.closest('.q-item__section--main')
+      const stepIndex = parentEl?.children[0].id?.split('-').pop()
 
+      scrollPage(Number(stepIndex), true)
       notifyError(t('saveProgram.incorrect'))
     } else {
       if (await updateProgram()) {
@@ -368,16 +396,16 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  async function insertProgram() {
+  async function insertProgram(newProgram: Program) {
     try {
-      await $fetch(`/api/machine/${route.params.machine_id}/program`, {
+      await $fetch(`/api/machine/${newProgram.machineId}/program`, {
         method: 'POST',
         body: {
-          program: program.value,
+          program: newProgram,
         },
       })
 
-      notifySuccess(t('saveProgram.success'))
+      navigateTo(`/machine/${newProgram.machineId}/program/${newProgram.programNo}`)
       return true
     } catch (error: any) {
       if (error.statusCode === 400) {
@@ -459,6 +487,7 @@ export const useEditorStore = defineStore('editor', () => {
     lastStepId,
     lastCommandId,
     popupNewProgramVisible,
+    popupSaveAsProgramVisible,
     popupCommandListVisible,
     popupCommandDetailVisible,
     leftDrawerOpen,
@@ -476,6 +505,7 @@ export const useEditorStore = defineStore('editor', () => {
     createProgram,
     updateProgram,
     onSubmit,
+    onSaveAs,
     onReset,
     insertProgram,
     insertStep,

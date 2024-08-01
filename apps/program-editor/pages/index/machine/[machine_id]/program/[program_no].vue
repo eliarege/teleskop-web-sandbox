@@ -43,7 +43,7 @@ const buttons = computed(() => [
     icon: 'save_as',
     disable: editor.isLoading,
     onClick() {
-      editor.popupNewProgramVisible = true
+      editor.popupSaveAsProgramVisible = true
     },
   },
   {
