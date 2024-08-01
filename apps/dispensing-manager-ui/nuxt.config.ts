@@ -17,6 +17,7 @@ export default defineNuxtConfig({
     writeFilePath: 'tmp/index.req',
     public: {
       kcClientId: 'dispensing-manager-ui',
+      websockifyUrl: 'ws://localhost:6800',
     },
   },
   i18n: {
