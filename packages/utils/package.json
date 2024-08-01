@@ -14,12 +14,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "d3-color": "^3.1.0"
+    "d3-color": "3.1.0"
   },
   "devDependencies": {
     "@teleskop/tsconfig": "workspace:*",
-    "eslint": "^9.6.0",
-    "knex": "^3.1.0",
-    "typescript": "^5.5.2"
+    "eslint": "9.6.0",
+    "knex": "3.1.0",
+    "typescript": "5.5.2"
   }
 }

@@ -15,8 +15,8 @@
   },
   "devDependencies": {
     "@teleskop/tsconfig": "workspace:*",
-    "eslint": "^9.6.0",
-    "typescript": "^5.5.2",
-    "unocss": "^0.59.4"
+    "eslint": "9.6.0",
+    "typescript": "5.5.2",
+    "unocss": "0.59.4"
   }
 }

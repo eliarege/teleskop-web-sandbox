@@ -16,12 +16,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "basic-ftp": "^5.0.5"
+    "basic-ftp": "5.0.5"
   },
   "devDependencies": {
     "@teleskop/tsconfig": "workspace:*",
-    "eslint": "^9.6.0",
-    "typescript": "^5.5.2",
-    "vitest": "^1.5.0"
+    "eslint": "9.6.0",
+    "typescript": "5.5.2",
+    "vitest": "1.5.0"
   }
 }
