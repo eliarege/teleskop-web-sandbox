@@ -1,4 +1,4 @@
-// #!/usr/bin/env tsx
+#!/usr/bin/env tsx
 import fsp from 'node:fs/promises'
 import fs from 'node:fs'
 import process from 'node:process'
