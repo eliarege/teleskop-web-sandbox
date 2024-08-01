@@ -1,7 +1,7 @@
 # Teleskop Web
 
 - [Commit Formats](#commit-formats)
-- [VSCode Profile][#vscode-profile]
+- [VSCode Profile](#vscode-profile)
 - [Implementing Authentication](./docs/authentication.md)
 
 ## Commit Formats
@@ -50,8 +50,6 @@ The `scope` provides additional contextual information.
 - **PE**: `program-editor`
 
 Other apps and packages should always use full name for scopes.
-
-#### Scopes used for packages
 
 ### Breaking Changes Indicator
 
