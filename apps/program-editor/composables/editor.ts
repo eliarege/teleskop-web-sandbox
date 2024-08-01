@@ -44,17 +44,11 @@ export const useEditorStore = defineStore('editor', () => {
 
   fetchTreatmentSettings()
 
-  async function changeMachine(id: number, name: string) {
+  async function changeMachine(id: number) {
     selectedPrograms.value = []
     const MACHINE_PATH_RE = /^\/machine\/\d+$/
-    machine.value = {
-      id,
-      name,
-      commands: new Map(),
-      batchParameters: [],
-      commandFormulas: [],
-      constants: [],
-      treatmentParameters: [],
+    if (machine.value.id !== id) {
+      machine.value = createMachine()
     }
     // Replace only if navigating from /machine/:id
     const replace = MACHINE_PATH_RE.test(route.path)

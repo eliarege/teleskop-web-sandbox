@@ -23,7 +23,7 @@ watch(() => [machineGroupsWithMachines.value.length, route.path], () => {
   if (route.path === '/') {
     const firstMachine = machineGroupsWithMachines.value.find(group => group.machines.length)?.machines[0]
     if (firstMachine)
-      editor.changeMachine(firstMachine.id, firstMachine.name)
+      editor.changeMachine(firstMachine.id)
   }
 }, { immediate: true })
 
@@ -32,8 +32,7 @@ async function onUpdateSelected(selection: string) {
 
   if (selection) {
     const id = Number.parseInt(selection.split('-')[1])
-    const name = machines.value?.find(machine => machine.id === id)?.name || ''
-    editor.changeMachine(id, name)
+    editor.changeMachine(id)
   } else {
     await navigateTo('/')
   }
