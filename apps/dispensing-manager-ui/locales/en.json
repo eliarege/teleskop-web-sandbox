@@ -239,7 +239,7 @@
     "jobOrderMeasurement": "Show Job Order Weighings",
     "jobOrderMeasurementRefresh": "Refresh Job Order Weighing Requests",
     "jobOrderParameters": "Show Job Order Parameters",
-    "jobOrderSolvingRefresh": "Refresh Job Order Resolve Requests",
+    "jobOrderSolvingRefresh": "Refresh Job Order Solving Requests",
     "logs": "Show Logs",
     "machineCode": "Machine Code",
     "mainStep": "Main Step",
@@ -268,9 +268,20 @@
     "priorityHigh": "High",
     "priorityCritical": "Very High",
     "inputTankNo": "Please enter a tank no as 'integer'!",
-    "weiRerequest": "Are you sure you want to rerequest weighing requests?",
-    "solvingRerequest": "Are you sure you want to rerequest solving requests?",
-    "manuelMaterials": "Manuel Materials"
+    "manuelMaterials": "Manuel Materials",
+    "refresh": {
+      "_": "Refresh",
+      "solving": {
+        "_": "Are you sure you want to refresh solving requests?",
+        "success": "Solving requests refreshed successfully.",
+        "fail": "An error occured during refreshing solving requests."
+      },
+      "weighing": {
+        "_": "Are you sure you want to refresh weighing requests?",
+        "success": "Weighing requests refreshed successfully.",
+        "fail": "An error occured during refreshing weighing requests."
+      }
+    }
 
   },
   "registeredJobOrders": {

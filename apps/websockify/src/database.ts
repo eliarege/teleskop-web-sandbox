@@ -1,6 +1,6 @@
 import process from 'node:process'
 import Knex from 'knex'
-import { onExitSignal } from './utils'
+import { inferBoolean, onExitSignal } from './utils'
 import { logger as parentLogger } from './logger'
 import { config } from './config'
 
@@ -74,18 +74,29 @@ export async function fetchTeleskopMachine(id: number): Promise<Machine | null> 
 }
 export async function fetchDMSMachine(id: number): Promise<Machine | null> {
   try {
-    const response = await dms('DISPENSER')
-      .select({
-        name: 'dispenser_name',
-        host: 'ip_address',
-        port: 'vnc_port',
-        password: 'vnc_password',
-      })
-      .where({
-        dispenser_id: id,
-      }).first()
+    if (inferBoolean(process.env.DMS_ENABLED)) {
+      const response = await dms('DISPENSER')
+        .select({
+          name: 'dispenser_name',
+          host: 'ip_address',
+          port: 'vnc_port',
+          password: 'vnc_password',
+        })
+        .where({
+          dispenser_id: id,
+        }).first()
 
-    return response || null
+      return response || null
+    } else {
+      return await knex
+        .from('DYTFDISPENSERSETTINGS')
+        .select({
+          name: 'NAME',
+          host: 'IP',
+          port: 'VNCPORT',
+          password: 'VNCPASSWORD',
+        })
+    }
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
       if (!config.dmsUser)

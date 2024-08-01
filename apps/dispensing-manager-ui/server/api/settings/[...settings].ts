@@ -52,6 +52,13 @@ router.get('/dispenser', defineEventHandler(async () => {
   return dispensers
 }))
 
+router.get('/dispenser/:id', defineEventHandler(async (event) => {
+  const { id } = getRouterParams(event)
+  return (await knex('DYTFDISPENSERSETTINGS')
+    .select(dispenserParameters)
+    .where('DISPENSERID', id)).at(0)
+}))
+
 // router.get('/ping/:dispNo', defineEventHandler(async (event) => {
 //   const { dispNo } = getRouterParams(event)
 //   const dispenser = await knex('DYTFDISPENSERSETTINGS')
@@ -72,6 +79,7 @@ router.get('/dispenser-connection-status', defineEventHandler(async (event) => {
       dispNo: 'DISPENSERID',
       fileSystem: 'BDYREQUESTPATH',
       dispIP: 'IP',
+      name: 'NAME',
       connectionControlDate: 'CONNECTIONCONTROLDATE',
       connectionStatus: 'CONNECTIONSTATUS',
     })

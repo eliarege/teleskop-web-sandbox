@@ -3,56 +3,6 @@ import { knex } from '~/server/connectionPool'
 const router = createRouter()
 export default useBase('/api/recipe', router.handler)
 
-router.get('/test', defineEventHandler(async (event) => {
-  const { recipeJB, recipeID, teleskopType } = getQuery(event)
-
-  const planKeySubquery = knex('DYBFBATCHPLAN')
-    .where('JOBORDER', recipeJB)
-    .orderBy('PLANKEY', 'desc')
-    .limit(1)
-    .select('PLANKEY')
-
-  const query = knex
-    .select({
-      recIndex: 'p.RCPINDEX',
-      recNo: 'p.RECIPENO',
-      name: 'h.NAME',
-      reqNumber: 'DYEREQUESTNUMBER',
-      mainStep: 'MAINSTEP',
-      parallelStep: 'PARALLELSTEP',
-      recType: 'r.RECIPETYPE',
-      chemCode: 'CHEMCODE',
-      materialName: 'm.MATERIALNAME',
-      amount: 'AMOUNT',
-      reqBatchNo: 'REQNO_BATCH',
-      reqProgNo: 'REQNO_PROG',
-      phaseNo: 'PHASENO',
-      phaseIndex: 'PHASEINDEX',
-      unit: 'otherUnit',
-    })
-    .from('DYBFBATCHORDERRECIPESTEPS as r')
-    .rightJoin('DYBFBATCHORDERRECIPEHEADER as p', function () {
-      this.on('r.PLANKEY', '=', 'p.PLANKEY')
-        .andOn('r.RCPINDEX', '=', 'p.RCPINDEX')
-        .andOn('r.RECIPETYPE', '=', 'p.RECIPETYPE')
-    })
-    .leftJoin('BFMASTERPRGHEADER as h', function () {
-      this.on('p.RECIPENO', '=', 'h.PROGNO')
-        .andOn('h.MACHINEID', '=', recipeID)
-    })
-    .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
-    .where('p.PLANKEY', '=', planKeySubquery)
-    .whereNotNull('REQNO_BATCH')
-    .orderBy(['p.RCPINDEX', 'DYEREQUESTNUMBER', 'PARALLELSTEP'])
-
-  if (teleskopType !== 'washing') {
-    const result = await query
-    return result
-  } else {
-    // Adjust your code here for the 'washing' condition.
-  }
-}))
-
 router.get('/correction-number-by-parameter', defineEventHandler(async (event) => {
   const { parameter } = getQuery(event)
   const { searchBy } = getQuery(event)
@@ -249,4 +199,36 @@ router.post('/recipe-manuals', defineEventHandler(async (event) => {
       // 'C.STARTEDMACHINEID'
     })
   return result
+}))
+
+router.post('/refresh-weighing-requests/:plankey', defineEventHandler(async (event) => {
+  const { plankey } = getRouterParams(event)
+  const record = await knex('DYBFBATCHPLAN')
+    .where('PLANKEY', Number(plankey))
+    .select('PLANKEY', 'lastForJoborder', 'ISDELETED')
+    .first()
+  if (record && record.lastForJoborder && !record.ISDELETED) {
+    try {
+      await knex('DYBFBATCHPLAN').where('PLANKEY', Number(plankey)).update({
+        REFRESHWEIGHINGREQUESTS: true,
+      })
+      return 1
+    } catch (e) {
+      return 0
+    }
+  } else return 0
+}))
+router.post('/refresh-solving-requests/:plankey', defineEventHandler(async (event) => {
+  const { plankey } = getRouterParams(event)
+  const record = await knex('DYBFBATCHPLAN').where('PLANKEY', Number(plankey)).first()
+  if (record && record.lastForJoborder && !record.ISDELETED) {
+    try {
+      await knex('DYBFBATCHPLAN').where('PLANKEY', Number(plankey)).update({
+        REFRESHSOLVINGREQUESTS: true,
+      })
+      return 1
+    } catch (e) {
+      return 0
+    }
+  } else return 0
 }))

@@ -267,9 +267,20 @@
     "priorityHigh": "Acil",
     "priorityCritical": "Çok Acil",
     "inputTankNo": "Lütfen tank numarasını 'sayı' olarak giriniz!",
-    "weiRerequest": "İş emri tartım isteklerini yenilemek istediğinize emin misiniz?",
-    "solvingRerequest": "İş emri çözme isteklerini isteklerini yenilemek istediğinize emin misiniz?",
-    "manuelMaterials": "Manuel Materyaller"
+    "manuelMaterials": "Manuel Materyaller",
+    "refresh": {
+      "_": "Yenile",
+      "solving": {
+        "_": "Çözme isteklerini yenilemek istediğinize emin misiniz?",
+        "success": "Çözme istekleri başarıyla yenilendi.",
+        "fail": "Çözme isteklerini yenilerken hata oluştu."
+      },
+      "weighing": {
+        "_": "Tartım isteklerini yenilemek istediğinize emin misiniz?",
+        "success": "Tartım istekleri başarıyla yenilendi.",
+        "fail": "Tartım isteklerini yenilerken hata oluştu."
+      }
+    }
   },
   "registeredJobOrders": {
     "_": "Kayıtlı İş Emirleri",

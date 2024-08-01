@@ -202,7 +202,7 @@ async function submit(isPut: boolean) {
   }, {})
   const body = {
     ...dispenserValues,
-    protocol: dispenserValues.protocol.protocol,
+    protocol: dispenserValues?.protocol?.protocol ? dispenserValues.protocol.protocol : protocols[0].protocol,
     dispType: dispenserValues.dispType.type,
   }
   console.log(dispenserValues)
@@ -296,10 +296,12 @@ onBeforeRouteLeave(async (to, from, next) => {
 function getConnectionStatus(dispNo: number) {
   return connectionStatus.value.find(stat => stat.dispNo === dispNo)?.connectionStatus
 }
+const pagination = ref({ rowsPerPage: 0 })
 </script>
 
 <template>
   <FilterableTable
+    v-model:pagination="pagination"
     :rows="rows"
     row-key="name"
     :columns="columns"

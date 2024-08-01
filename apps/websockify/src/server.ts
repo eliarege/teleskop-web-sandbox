@@ -118,7 +118,7 @@ wss.on('connection', async (client: WebSocketExt, request: IncomingMessage) => {
     const isDMS = DISPENSER_PATH_RE.test(pathname)
     if (!MACHINE_PATH_RE.test(pathname) && !isDMS)
       return close('Invalid machine id')
-    const id = Number.parseInt(pathname.slice(isDMS ? 11 : 1))
+    const id = Number.parseInt(pathname.slice(isDMS ? '/dispenser/'.length : 1))
     machine = isDMS ? await fetchDMSMachine(id) : await fetchTeleskopMachine(id)
     if (!machine)
       return close(`Machine with id ${id} is not found`)

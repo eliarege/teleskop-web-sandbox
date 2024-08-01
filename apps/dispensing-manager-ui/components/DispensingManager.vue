@@ -405,6 +405,7 @@ const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
       </q-table>
     </div>
   </div>
+  <DispenserStatusBar :dispenser-connection-statuses="connectionStatus" />
 </template>
 
 <style scoped>

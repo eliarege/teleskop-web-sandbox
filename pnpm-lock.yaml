@@ -826,6 +826,9 @@ importers:
       quasar:
         specifier: 2.16.2
         version: 2.16.2
+      simple-keyboard:
+        specifier: 3.7.83
+        version: 3.7.83
       ufo:
         specifier: 1.5.3
         version: 1.5.3
@@ -10876,6 +10879,10 @@ snapshots:
     dependencies:
       acorn: 8.11.3
 
+  acorn-import-assertions@1.9.0(acorn@8.12.1):
+    dependencies:
+      acorn: 8.12.1
+
   acorn-import-attributes@1.9.5(acorn@8.11.3):
     dependencies:
       acorn: 8.11.3
@@ -16552,8 +16559,8 @@ snapshots:
       '@webassemblyjs/ast': 1.12.1
       '@webassemblyjs/wasm-edit': 1.12.1
       '@webassemblyjs/wasm-parser': 1.12.1
-      acorn: 8.11.3
-      acorn-import-assertions: 1.9.0(acorn@8.11.3)
+      acorn: 8.12.1
+      acorn-import-assertions: 1.9.0(acorn@8.12.1)
       browserslist: 4.23.0
       chrome-trace-event: 1.0.3
       enhanced-resolve: 5.16.1
