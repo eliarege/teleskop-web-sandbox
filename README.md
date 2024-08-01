@@ -1,8 +1,120 @@
 # Teleskop Web
 
-## TODO
+- [Commit Formats](#commit-formats)
+- [VSCode Profile][#vscode-profile]
+- [Implementing Authentication](./docs/authentication.md)
 
-- Turbo Generator for new projects
+## Commit Formats
+
+### Default
+
+<pre>
+<b><a href="#types">&lt;type&gt;</a></b></font>(<b><a href="#scopes">&lt;optional scope&gt;</a></b>): <b><a href="#subject">&lt;subject&gt;</a></b>
+<sub>empty separator line</sub>
+<b><a href="#body">&lt;optional body&gt;</a></b>
+<sub>empty separator line</sub>
+<b><a href="#footer">&lt;optional footer&gt;</a></b>
+</pre>
+
+### Types
+
+- API relevant changes
+  - `feat` Commits, that adds a new feature
+  - `fix` Commits, that fixes a bug
+- `refactor` Commits, that rewrite/restructure your code, however does not change any behaviour
+  - `perf` Commits are special `refactor` commits, that improve performance
+- `style` Commits, that do not affect the meaning (white-space, formatting, missing semi-colons, etc)
+- `test` Commits, that add missing tests or correcting existing tests
+- `docs` Commits, that affect documentation only
+- `build` Commits, that affect build components like build tool, ci pipeline, dependencies, project version, ...
+- `ops` Commits, that affect operational components like infrastructure, deployment, backup, recovery, ...
+- `chore` Miscellaneous commits e.g. modifying `.gitignore`
+- `revert` Commits, that reverts previous commit
+
+### Scopes
+
+The `scope` provides additional contextual information.
+
+- Allowed Scopes depends on the specific project
+- Don't use issue identifiers as scopes
+
+#### Scopes used for apps
+
+- **DMS**: `dispensing-management-systems`
+- **DM**: `dispensing-manager-ui`
+- **MS**: `machine-status`
+- **MA**: `machines`
+- **MM**: `multi-monitor`
+- **PB**: `planning-board`
+- **PBE**: `planning-board-engine`
+- **PE**: `program-editor`
+
+Other apps and packages should always use full name for scopes.
+
+#### Scopes used for packages
+
+### Breaking Changes Indicator
+
+Breaking changes should be indicated by an `!` before the `:` in the subject line e.g. `feat(api)!: remove status endpoint`
+
+- Is an **optional** part of the format
+
+### Subject
+
+The `subject` contains a succinct description of the change.
+
+- Is a **mandatory** part of the format
+- Use the imperative, present tense: "change" not "changed" nor "changes"
+  - Think of `This commit will <subject>`
+- Don't capitalize the first letter
+- No dot (.) at the end
+
+### Body
+
+The `body` should include the motivation for the change and contrast this with previous behavior.
+
+- Is an **optional** part of the format
+- Use the imperative, present tense: "change" not "changed" nor "changes"
+- This is the place to mention issue identifiers and their relations
+
+### Footer
+
+The `footer` should contain any information about **Breaking Changes** and is also the place to **reference Issues** that this commit refers to.
+
+- Is an **optional** part of the format
+- **optionally** reference an issue by its id.
+- **Breaking Changes** should start with the word `BREAKING CHANGES:` followed by space or two newlines. The rest of the commit message is then used for this.
+
+### Examples
+
+- ```
+  feat(shopping cart): add the amazing button
+  ```
+- ```
+  feat: remove ticket list endpoint
+
+  refers to JIRA-1337
+  BREAKING CHANGES: ticket enpoints no longer supports list all entites.
+  ```
+
+- ```
+  fix: add missing parameter to service call
+
+  The error occurred because of <reasons>.
+  ```
+
+- ```
+  build(release): bump version to 1.0.0
+  ```
+- ```
+  build: update dependencies
+  ```
+- ```
+  refactor: implement calculation method as recursion
+  ```
+- ```
+  style: remove empty line
+  ```
 
 ## VSCode Profile
 
@@ -19,287 +131,6 @@ https://code.visualstudio.com/assets/docs/editor/profiles/create-profile-via-man
 
 More details about profiles: https://code.visualstudio.com/docs/editor/profiles
 
-## Keycloak
+## TODO
 
-### Setup
-
-```sh
-# At workspace root or in any app directory
-pnpm keycloak up
-# Wait until initialised (5-10 seconds)
-pnpm keycloak sync
-```
-
-### Details
-
-When keycloak is ready, you can access it from http://localhost:8080.
-
-Admin credentials are:
-
-- Username: admin
-- Password: password
-
-`teleskop-web` realm is created.
-
-In this realm, there are:
-
-- Two groups, `admin` and `user`
-- Two users, `admin` and `user` mapped to their respective groups. (Their credentials are `password`)
-- Clients named after the `apps`
-- Clients with roles that are defined via `manifest.json`
-
-Everytime you run `pnpm keycloak sync`, client and role information is updated to the current state of files.
-
-
-
-## Integrating Apps to Keycloak
-
-Define application roles (or permissions) in `manifest.json`
-```jsonc
-// manifest.json
-{
-  "roles": [
-    { "name": "access-vnc" },
-    { "name": "manage-vnc" }
-  ]
-}
-```
-
-## Nuxt Keycloak Integration
-
-### Runtime Configuration
-
-```ts
-// nuxt.config.ts
-export default defineNuxtConfig({
-  runtimeConfig: {
-    public: {
-      kcUrl: 'http://keycloak:8080',
-      kcRealm: 'teleskop-web',
-      kcClientId: 'nuxt-client',
-      kcEnabled: true
-    }
-  }
-})
-```
-
-#### `kcUrl`
-
-Configurable via `NUXT_PUBLIC_KC_URL` environment variable. Keycloak URL.
-
-#### `kcRealm`
-
-Configurable via `NUXT_PUBLIC_KC_REALM` environment variable. Keycloak Realm, default is `teleskop-web`.
-
-#### `kcClientId`
-
-Configurable via `NUXT_PUBLIC_KC_CLIENT_ID` environment variable. Keycloak Client ID, should be same as app name.
-
-#### `kcEnabled`
-
-Configurable via `NUXT_PUBLIC_KC_ENABLED` environment variable. Enables Keycloak Integration, default `false`.
-
-### App Configuration
-
-```ts
-// app.config.ts
-export default defineAppConfig({
-  keycloak: {
-    globalMiddleware: true,
-    loginRequired: false,
-    minimumTokenValidity: 30,
-    enableLogging: import.meta.env.DEV
-  }
-})
-```
-
-#### `minimumTokenValidity`
-
-Access tokens are refreshed if it expires within `minimumTokenValidity` seconds.
-
-#### `globalMiddleware`
-
-Adds `auth` middleware as global middleware. Meaning every page in app requires authentication. See middlewares for more details.
-
-#### `loginRequired`
-
-Redirects user to login page if the user is not logged in. Default: `false`.
-
-#### `enableLogging`
-
-Enables logging of `keycloak-js`
-
-### Features
-
-#### Composables
-
-##### `useAuthFetch`
-
-Wrapper around `useFetch` that sets `Authorization` header for configured keycloak server.
-
-##### `useKeycloak`
-
-Returns keycloak composition API.
-
-```ts
-interface KeycloakPlugin {
-  fetch: typeof $fetch
-  enabled: boolean
-  ready: Readonly<Ref<boolean>>
-  /** Did keycloak initialise? */
-  didInitialise: Readonly<Ref<boolean>>
-  /** Access Token */
-  token: Readonly<Ref<string | undefined>>
-  tokenParsed: Readonly<Ref<KeycloakTokenParsed | undefined>>
-  /** Is user authenticated */
-  authenticated: Readonly<Ref<boolean>>
-  userProfile: Readonly<Ref<KeycloakProfile | undefined>>
-  userInfo: Readonly<Ref<Record<string, any> | undefined>>
-  /** Redirects to login form. */
-  login: () => void
-  /** Redirects to logout. */
-  logout: () => void
-  /** Redirects to registration form. */
-  register: () => void
-  /** Called when keycloak is initialised */
-  onReady: EventHookOn<boolean>
-  /** Called when a user is successfully authenticated. */
-  onAuthSuccess: EventHookOn
-  /** Called if there was an error during authentication. */
-  onAuthError: EventHookOn<KeycloakError>
-  /** Called when the token is refreshed. */
-  onAuthRefreshSuccess: EventHookOn
-  /** Called if there was an error while trying to refresh the token. */
-  onAuthRefreshError: EventHookOn
-  /** Called if the user is logged out (will only be called if the session status iframe is enabled. */
-  onAuthLogout: EventHookOn
-  /** Called when the access token is expired. If a refresh token is available the token can be refreshed with updateToken, or in cases where it is not (that is, with implicit flow) you can redirect to the login screen to obtain a new access token. */
-  onTokenExpired: EventHookOn
-  /** Called when a AIA has been requested by the application. */
-  onActionUpdate: EventHookOn<'success' | 'cancelled' | 'error'>
-  /** Returns true if the token has the given realm role. */
-  hasRealmRole: Keycloak['hasRealmRole']
-  /** Returns true if the token has the given role for the resource (resource is optional, if not specified clientId is used). */
-  hasResourceRole: Keycloak['hasResourceRole']
-  /** Returns true if the token has less than minValidity seconds left before it expires (minValidity is optional, if not specified 0 is used). */
-  isTokenExpired: Keycloak['isTokenExpired']
-  /** If the token expires within minValidity seconds (minValidity is optional, if not specified 5 is used) the token is refreshed. If -1 is passed as the minValidity, the token will be forcibly refreshed. If the session status iframe is enabled, the session status is also checked. */
-  updateToken: Keycloak['updateToken']
-  /**
-   * Clear authentication state, including tokens. This can be useful if application has detected the session was expired, for example if updating token fails.
-   *
-   * Invoking this results in onAuthLogout callback listener being invoked.
-   */
-  clearToken: Keycloak['clearToken']
-  /** Loads the users info. Updates `userInfo` ref */
-  loadUserInfo: () => void
-  /** Loads the users profile. Updates `userProfile` ref */
-  loadUserProfile: () => void
-}
-```
-
-
-#### Middlewares
-
-##### `auth`
-
-```ts
-// pages/example.vue
-definePageMeta({
-  middleware: ['auth'],
-  roles: ['client-role']
-})
-```
-
-Use `auth` middleware to enforce user to be authenticated. Will redirect to login page if not logged in.
-It is also possible to define what roles the user should have to access the page.
-If the user does not have the required roles, user will be redirected to `unauthorized` page.
-
-You can set `globalAuthMiddleware` to `true` to add this middleware to every page. If `globalAuthMiddleware` is enabled and you want to disable the middleware for only select pages, you can use the `noAuth` option in `definePageMeta`.
-
-```ts
-// pages/example.vue
-definePageMeta({
-  noAuth: true
-})
-```
-
-#### Pages
-
-##### `/unauthorized`
-
-Unauthorized requests should be redirected to this page.
-
-#### Server
-
-##### `/api/properties`
-
-Returns app properties in production.
-
-##### `/api/check-sso`
-
-Used to silently check if user is logged via `keycloak-js`.
-
-Details: https://www.keycloak.org/docs/23.0.1/securing_apps/#using-the-adapter
-
-#### Server Utils
-
-##### `defineAuthEventHandler`
-
-Created authorized endpoints in nuxt
-
-```ts
-export default defineAuthEventHandler(() => {
-  return 'Hello User'
-})
-```
-
-```ts
-export default defineAuthEventHandler({
-  roles: ['priviledged-access'],
-  handler() {
-    return 'Hello Admin'
-  }
-})
-```
-
-
-```ts
-export default defineAuthEventHandler((event) => {
-  // Access authenticated user details
-  event.context.kauth.name
-})
-```
-
-## Fastify Keycloak Integration
-
-#### Usage
-
-```ts
-import Fastify from 'fastify'
-import { keycloakAdapter } from '@teleskop/keycloak-adapter/fastify'
-
-const app = Fastify()
-
-await app.register(keycloakAdapter, {
-  url: 'http://localhost:8080',
-  realm: 'teleskop-web',
-  clientId: 'fastify-client',
-  global: true, // TODO
-})
-
-app.get('/authenticated-request', {
-  auth: true,
-}, () => {
-  return 'Authenticated'
-})
-
-app.get('/authorized-request', {
-  auth: {
-    roles: ['client-role']
-  },
-}, (req) => {
-  req.kauth.name // Authenticated user details
-  return 'Authorized'
-})
-```
+- Turbo Generator for new projects
