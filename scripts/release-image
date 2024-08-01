@@ -1,5 +1,6 @@
 #!/bin/sh
 # This script:
+#  - assumes `jq` is installed
 #  - assumes 'out' directory to contain the build output
 #  - expects to be run in gitlab ci environment
 #  - expects to be executed at workspace root
@@ -23,25 +24,38 @@ if [ -z "$CI_REGISTRY_IMAGE" ]; then
   exit 1
 fi
 
-IMAGE_TAG=$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_TAG
-IMAGE_SHA=$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_SHA
-IMAGE_LATEST=$CI_REGISTRY_IMAGE/$APP_NAME:latest
+if ! jq -e .scripts.start apps/$APP_NAME/package.json > /dev/null; then
+  echo "Start script missing from 'package.json'"
+  exit 1
+fi
+
+app_type() {
+  local app_name=$1
+  if ls ./apps/$app_name | grep -qE "^nuxt\.config\.(m?j|t)s$"; then
+    echo "nuxt"
+  else
+    echo "node"
+  fi
+}
 
 BUILD_DATE=$(date -u -Iseconds)
 PKG_PATH=apps/$APP_NAME/package.json
 MANIFEST_PATH=apps/$APP_NAME/manifest.json
 
+IMAGE_TAG=$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_TAG
+IMAGE_SHA=$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_SHA
+IMAGE_LATEST=$CI_REGISTRY_IMAGE/$APP_NAME:latest
+
 echo "Building $APP_NAME"
 
 docker pull $IMAGE_LATEST || true
 docker build \
+  --target $(app_type $APP_NAME) \
   --cache-from $IMAGE_LATEST \
   --build-arg APP_NAME="$APP_NAME" \
   --build-arg APP_VERSION="$CI_COMMIT_TAG" \
   --build-arg APP_COMMIT_HASH="$CI_COMMIT_SHA" \
   --build-arg APP_BUILD_DATE="$BUILD_DATE" \
-  --build-arg APP_PORT="$(jq -r .eliar.port $PKG_PATH)" \
-  --build-arg APP_OUT_DIR="$(jq -r .eliar.outDir $PKG_PATH)" \
   --build-arg APP_DEPENDENCIES="$(jq -r '.envDependencies | join(" ")' $MANIFEST_PATH 2> /dev/null || echo '')" \
   --build-arg TURBO_CONFIG="$TURBO_CONFIG" \
   --build-arg TURBO_FORCE="$TURBO_FORCE" \

@@ -3,24 +3,29 @@
   "type": "module",
   "version": "1.0.0",
   "description": "",
-  "keywords": [],
-  "bin": "dist/index.mjs",
+  "bin": "src/index.ts",
+  "publishConfig": {
+    "bin": "dist/index.mjs"
+  },
   "files": [
     "dist"
   ],
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "typecheck": "tsc --noEmit",
     "build": "unbuild",
     "stub": "unbuild --stub"
   },
   "dependencies": {
-    "commander": "^12.0.0",
-    "execa": "^8.0.1",
-    "yaml": "^2.4.2"
+    "commander": "12.0.0",
+    "execa": "9.1.0",
+    "yaml": "2.4.2"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
-    "tsconfig": "workspace:*",
-    "typescript": "^5.4.5",
+    "@teleskop/tsconfig": "workspace:*",
+    "@types/node": "20.12.12",
+    "typescript": "5.5.2",
     "unbuild": "2.0.0"
   }
 }

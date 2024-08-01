@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TopbarMenuItem } from 'nuxt-base'
+import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import EliarModal from 'ui/components/EliarModal.vue'

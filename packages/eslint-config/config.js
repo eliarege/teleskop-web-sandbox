@@ -6,6 +6,7 @@ export const workspaceEslintConfig = antfu(
       indent: 2,
     },
     markdown: false,
+    formatters: true,
     overrides: {
       vue: {
         'vue/max-attributes-per-line': ['warn', {

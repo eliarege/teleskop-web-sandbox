@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { defineConfiguration } from 'utils'
+import { defineConfiguration } from '@teleskop/utils'
 
 export const config = defineConfiguration({
   appName: {

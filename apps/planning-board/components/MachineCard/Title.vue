@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { determineTextColor } from 'utils/src/color'
+import { determineTextColor } from '@teleskop/utils'
 import type { MachineData } from '~/shared/types'
 
 interface CardTitleProps {

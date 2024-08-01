@@ -1,17 +1,21 @@
-FROM node:20.11-alpine as base
+###############
+## Base Image
+###############
+FROM node:20.15-alpine AS base
 
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache gcompat
 
-FROM base as workspace
+##########################
+## Standard Build Stage
+##########################
+FROM base AS build
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-WORKDIR /workspace
-
 RUN corepack enable
 
-FROM workspace as build
+WORKDIR /opt/build
 
 COPY out/json/pnpm-*.yaml out/json/.npmrc ./
 
@@ -27,17 +31,6 @@ RUN \
 
 COPY out/full ./
 
-ARG APP_NAME
-ARG APP_VERSION
-ARG APP_BUILD_DATE
-ARG APP_COMMIT_HASH
-
-# Build environment
-ENV APP_NAME=${APP_NAME}
-ENV APP_VERSION=${APP_VERSION}
-ENV APP_BUILD_DATE=${APP_BUILD_DATE}
-ENV APP_COMMIT_HASH=${APP_COMMIT_HASH}
-
 ARG TURBO_CONFIG={}
 ARG TURBO_FORCE=false
 
@@ -45,35 +38,95 @@ ENV TURBO_FORCE=${TURBO_FORCE}
 
 RUN mkdir -p .turbo && echo "$TURBO_CONFIG" > .turbo/config.json
 
+ARG APP_NAME
+
 RUN \
   --mount=type=secret,id=TURBO_TOKEN \
   TURBO_TOKEN=$(cat /run/secrets/TURBO_TOKEN) \
   pnpm exec turbo build --filter ${APP_NAME} --remote-only
 
-FROM base
+##########################
+## Nuxt Apps
+##########################
+FROM base AS nuxt
 
-WORKDIR /app
+WORKDIR /opt/app
 
 ARG APP_NAME
-ARG APP_PORT=3000
-ARG APP_OUT_DIR=.output
+ARG APP_VERSION
+ARG APP_BUILD_DATE
+ARG APP_COMMIT_HASH
 ARG APP_DEPENDENCIES
 
 ENV NODE_ENV=production
+ENV NUXT_TW_NAME=${APP_NAME}
+ENV NUXT_TW_VERSION=${APP_VERSION}
+ENV NUXT_TW_BUILD_DATE=${APP_BUILD_DATE}
+ENV NUXT_TW_COMMIT_HASH=${APP_COMMIT_HASH}
 
-COPY --from=build --chown=node:node /workspace/apps/${APP_NAME}/package.json ./
-COPY --from=build --chown=node:node /workspace/apps/${APP_NAME}/${APP_OUT_DIR} ${APP_OUT_DIR}
-
-# Create a directory for apps to write data in
-# Then install environment dependencies
-RUN mkdir data \
-  && chown node:node data \
-  && if [ -n "${APP_DEPENDENCIES}" ]; then \
+# Install environment dependencies
+RUN \
+  if [ -n "${APP_DEPENDENCIES}" ]; then \
     apk add --no-cache ${APP_DEPENDENCIES}; \
   fi
 
-EXPOSE ${APP_PORT}
+RUN chown -R node:node /opt/app
+
+COPY --from=build /opt/build/apps/${APP_NAME}/.output ./
+
+EXPOSE 3000
 
 USER node
-RUN npm config set update-notifier false
-ENTRYPOINT [ "npm", "start" ]
+
+CMD [ "node", "./server/index.mjs" ]
+
+########################################
+## Extended Build Stage for Node Apps
+########################################
+FROM build AS deploy-node
+
+WORKDIR /opt/build
+
+ARG APP_NAME
+
+RUN \
+  --mount=type=cache,id=pnpm,target=/pnpm/store \
+  pnpm deploy --filter=${APP_NAME} --prod /opt/deploy
+
+WORKDIR /opt/deploy
+
+RUN node -e "console.log('#!/bin/sh\nexec ' + require('./package.json').scripts.start)" > ./start \
+  && chmod +x ./start
+
+###############
+## Node Apps
+###############
+FROM base AS node
+
+WORKDIR /opt/app
+
+ARG APP_NAME
+ARG APP_VERSION
+ARG APP_BUILD_DATE
+ARG APP_COMMIT_HASH
+ARG APP_DEPENDENCIES
+
+ENV NODE_ENV=production
+ENV APP_NAME=${APP_NAME}
+ENV APP_VERSION=${APP_VERSION}
+ENV APP_BUILD_DATE=${APP_BUILD_DATE}
+ENV APP_COMMIT_HASH=${APP_COMMIT_HASH}
+
+# Install environment dependencies
+RUN \
+  if [ -n "${APP_DEPENDENCIES}" ]; then \
+    apk add --no-cache ${APP_DEPENDENCIES}; \
+  fi
+
+RUN chown -R node:node /opt/app
+
+COPY --from=deploy-node /opt/deploy /opt/app
+
+USER node
+
+ENTRYPOINT [ "/opt/app/start" ]

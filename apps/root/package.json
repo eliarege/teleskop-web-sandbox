@@ -4,28 +4,21 @@
   "version": "1.0.0",
   "private": true,
   "description": "",
-  "author": "",
-  "license": "ISC",
-  "keywords": [],
-  "main": "index.js",
+  "license": "UNLICENSED",
+  "files": [
+    "src"
+  ],
   "scripts": {
-    "dev": "node -r dotenv/config index.js",
-    "build": "unbuild",
-    "start": "node dist/index.mjs",
+    "dev": "node -r dotenv/config src/index.js",
+    "build": "/bin/true",
+    "start": "node src/index.js",
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "ejs": "^3.1.10",
-    "express": "^4.19.2"
+    "ejs": "3.1.10",
+    "express": "4.19.2"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "build-utils": "workspace:*",
-    "unbuild": "2.0.0"
-  },
-  "eliar": {
-    "type": "node",
-    "port": 4000,
-    "outDir": "dist"
+    "@types/express": "4.17.21"
   }
 }

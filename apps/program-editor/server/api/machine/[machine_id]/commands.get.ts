@@ -1,4 +1,4 @@
-import { inferBoolean } from 'utils'
+import { inferBoolean } from '@teleskop/utils'
 import { machineStore } from '~/server/classes/MachineStore'
 
 export default defineEventHandler(async (event) => {

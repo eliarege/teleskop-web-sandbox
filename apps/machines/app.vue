@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import '@formkit/themes/genesis'
 import { breakpointsTailwind } from '@vueuse/core'
-import type { TopbarMenuItem } from 'nuxt-base'
+import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 
 const { t } = useI18n()
 

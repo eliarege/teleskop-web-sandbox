@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
 import type { QTableProps } from 'quasar'
-import { LoadingSpinner } from 'ui'
+import { LoadingSpinner } from '@teleskop/ui'
 import { onMounted } from 'vue'
 import type { FilterableTableColumn } from 'nuxt-base'
 import { navigateToPage } from '../shared/functions'

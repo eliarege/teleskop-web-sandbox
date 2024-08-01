@@ -27,11 +27,8 @@ rm .gitignore README.md public/favicon.ico
 tmp=$(mktemp)
 jq --arg name $APP_NAME '
   .name = $name
-| .dependencies["nuxt-base"] = "workspace:*"
-| .dependencies["unocss-config"] = "workspace:*"
-| .eliar.type = "nuxt"
-| .eliar.outDir = ".output"
-| .eliar.port = 3000
+| .dependencies["@teleskop/nuxt-base"] = "workspace:*"
+| .dependencies["@teleskop/unocss-config"] = "workspace:*"
 ' package.json > $tmp && mv $tmp package.json
 
 ## Add `nuxt-base` to nuxt.config
@@ -42,7 +39,7 @@ const { getDefaultExportOptions } = require('magicast/helpers')
 ;(async () => {
   const configMod = await loadFile('./nuxt.config.ts')
   const config = getDefaultExportOptions(configMod)
-  config.extends = ['nuxt-base']
+  config.extends = ['@teleskop/nuxt-base']
   await writeFile(configMod, './nuxt.config.ts')
 })()
 EOF
@@ -51,7 +48,7 @@ EOF
 ## uno.config.ts
 cat << EOF > uno.config.ts
 import { mergeConfigs } from 'unocss'
-import sharedConfig from 'unocss-config'
+import sharedConfig from '@teleskop/unocss-config'
 
 export default mergeConfigs([sharedConfig])
 EOF

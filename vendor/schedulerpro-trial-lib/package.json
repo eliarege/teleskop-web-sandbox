@@ -12,8 +12,5 @@
     "url": "https://bryntum.com"
   },
   "license": "Commercial",
-  "main": "build.js",
-  "dependencies": {},
-  "devDependencies": {}
+  "main": "build.js"
 }
-

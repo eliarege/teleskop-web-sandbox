@@ -1,0 +1,13 @@
+{
+  "dependencyTypes": ["dev", "prod", "peer"],
+  "lintFormatting": false,
+  "semverGroups": [
+    {
+      "label": "use exact version numbers",
+      "packages": ["**"],
+      "dependencyTypes": ["dev", "prod"],
+      "dependencies": ["**"],
+      "range": ""
+    }
+  ]
+}

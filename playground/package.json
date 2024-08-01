@@ -2,8 +2,6 @@
   "name": "playground",
   "version": "0.1.0",
   "description": "",
-  "author": "Ege İliklier <ege.iliklier@eliarge.com>",
-  "keywords": [],
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -16,11 +14,11 @@
     "keycloak": "../keycloak/keycloak.sh"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
-    "nuxt": "^3.11.2",
-    "nuxt-base": "workspace:*",
-    "unocss-config": "workspace:*",
-    "vue": "^3.4.27",
-    "vue-router": "^4.3.2"
+    "@teleskop/nuxt-base": "workspace:*",
+    "@teleskop/unocss-config": "workspace:*",
+    "@types/node": "20.12.12",
+    "nuxt": "3.11.2",
+    "vue": "3.4.27",
+    "vue-router": "4.3.2"
   }
 }

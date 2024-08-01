@@ -1,0 +1,4 @@
+{
+  "extends": "@teleskop/tsconfig/base",
+  "include": ["src/**/*"]
+}

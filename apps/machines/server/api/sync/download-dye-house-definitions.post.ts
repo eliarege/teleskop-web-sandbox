@@ -1,4 +1,4 @@
-import { withTbbFtpClient } from 'tbb-ftp-client'
+import { withTbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 import { updateManualReasonsGeneral } from '~/server/utils/updateDatabase'
 

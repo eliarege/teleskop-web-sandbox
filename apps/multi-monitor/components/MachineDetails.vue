@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { LoadingSpinner } from 'ui'
+import { LoadingSpinner } from '@teleskop/ui'
 import type {
   MachineDataRaw,
   NewBatchLogs,

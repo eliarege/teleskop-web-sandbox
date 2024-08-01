@@ -1,21 +1,13 @@
 {
-  "name": "tsconfig",
+  "name": "@teleskop/tsconfig",
   "version": "1.0.0",
   "private": true,
   "description": "Shared tsconfig.json files",
   "license": "UNLICENSED",
   "exports": {
-    ".": {
-      "import": "./tsconfig.json",
-      "require": "./tsconfig.json"
-    },
-    "./node": {
-      "import": "./node.json",
-      "require": "./node.json"
-    },
-    "./vue": {
-      "import": "./vue.json",
-      "require": "./vue.json"
-    }
+    ".": "./base.json",
+    "./base": "./base.json",
+    "./node": "./node.json",
+    "./vue": "./vue.json"
   }
 }

@@ -3,7 +3,7 @@ export default defineNuxtConfig({
     enabled: true,
     componentInspector: false,
   },
-  extends: ['nuxt-base'],
+  extends: ['@teleskop/nuxt-base'],
   ssr: false,
   i18n: {
     langDir: './locales',

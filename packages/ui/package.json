@@ -1,21 +1,19 @@
 {
-  "name": "ui",
+  "name": "@teleskop/ui",
   "type": "module",
   "version": "1.0.0",
   "private": true,
   "description": "",
   "license": "UNLICENSED",
-  "keywords": [],
   "main": "index.js",
   "types": "index.d.ts",
-  "scripts": {},
   "dependencies": {
-    "@novnc/novnc": "^1.4.0",
-    "d3": "^7.9.0"
+    "@novnc/novnc": "1.4.0",
+    "d3": "7.9.0"
   },
   "devDependencies": {
-    "@types/d3": "^7.4.3",
-    "tsconfig": "workspace:*",
-    "vue": "^3.4.27"
+    "@teleskop/tsconfig": "workspace:*",
+    "@types/d3": "7.4.3",
+    "vue": "3.4.27"
   }
 }

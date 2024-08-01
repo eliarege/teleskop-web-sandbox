@@ -1,6 +1,6 @@
-import { withTbbFtpClient } from 'tbb-ftp-client'
+import { withTbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { getQuery } from 'h3'
-import { inferBoolean } from 'utils'
+import { inferBoolean } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIOChangedEvent, updateIcons, updateLocksGeneral, updateLocksOutput, updateSystemParams } from '~/server/utils/updateDatabase'
 import { DatabaseQueryError } from '~/server/error'

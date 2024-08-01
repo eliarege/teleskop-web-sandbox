@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "private": true,
   "description": "",
-  "license": "ISC",
-  "keywords": [],
-  "main": "dist/server.mjs",
+  "license": "UNLICENSED",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "NODE_ENV=development tsx -r dotenv/config src/server.ts | pino-pretty",
     "start": "node dist/server.mjs",
@@ -19,27 +20,23 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "@fastify/cors": "^9.0.1",
-    "@tediousjs/connection-string": "^0.5.0",
-    "fastify": "^4.26.2",
-    "http-graceful-shutdown": "^3.1.13",
-    "kysely": "^0.27.3",
-    "pino": "^8.20.0",
-    "tarn": "^3.0.2",
-    "tedious": "^18.1.0",
-    "utils": "workspace:*"
+    "@fastify/cors": "9.0.1",
+    "@tediousjs/connection-string": "0.5.0",
+    "@teleskop/utils": "workspace:*",
+    "fastify": "4.26.2",
+    "http-graceful-shutdown": "3.1.13",
+    "kysely": "0.27.3",
+    "pino": "8.20.0",
+    "tarn": "3.0.2",
+    "tedious": "18.1.0"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
-    "build-utils": "workspace:*",
-    "pino-pretty": "^11.0.0",
-    "tsconfig": "workspace:*",
-    "typescript": "^5.4.5",
+    "@teleskop/build-utils": "workspace:*",
+    "@teleskop/tsconfig": "workspace:*",
+    "@types/node": "20.12.12",
+    "eslint": "9.6.0",
+    "pino-pretty": "11.0.0",
+    "typescript": "5.5.2",
     "unbuild": "2.0.0"
-  },
-  "eliar": {
-    "type": "node",
-    "outDir": "dist",
-    "port": 5000
   }
 }

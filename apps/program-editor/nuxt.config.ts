@@ -3,7 +3,7 @@ import Nearley from './vite/nearley'
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: false },
-  extends: ['nuxt-base'],
+  extends: ['@teleskop/nuxt-base'],
   css: ['./assets/stylesheets/global.css'],
   runtimeConfig: {
     teleskopHost: 'localhost',

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LoadingScreen } from 'ui'
+import { LoadingScreen } from '@teleskop/ui'
 import { useColorStore } from '~/store/Colors'
 
 const { t } = useI18n()

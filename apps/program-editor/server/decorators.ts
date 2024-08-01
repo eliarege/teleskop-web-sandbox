@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type { TbbFtpClient } from 'tbb-ftp-client'
+import type { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { db } from './database'
 
 const ftpRefMap = new WeakMap<any, { count: number }>()

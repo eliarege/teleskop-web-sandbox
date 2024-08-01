@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LoadingSpinner } from 'ui'
+import { LoadingSpinner } from '@teleskop/ui'
 import { getUnitById } from '~/shared/enums'
 
 const props = defineProps<{ planKey: number }>()

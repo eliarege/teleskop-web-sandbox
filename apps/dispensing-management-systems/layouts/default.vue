@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { LoadingSpinner } from 'ui'
+import { LoadingSpinner } from '@teleskop/ui'
 import { useStateStore } from '~/store/State'
 import { useDataStore } from '~/store/DataStore'
 

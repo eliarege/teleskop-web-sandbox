@@ -1,12 +1,4 @@
 import { resolve } from 'node:path'
-import process from 'node:process'
-
-const appMetaVars = {
-  name: process.env.APP_NAME || '',
-  version: process.env.APP_VERSION || '',
-  commitHash: process.env.APP_COMMIT_HASH || '',
-  buildDate: process.env.APP_BUILD_DATE || '',
-}
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -19,6 +11,10 @@ export default defineNuxtConfig({
       kcClientId: 'nuxt-client',
       kcEnabled: false,
     },
+    twName: '',
+    twVersion: '',
+    twBuildDate: '',
+    twCommitHash: '',
   },
   css: [
     '@unocss/reset/tailwind.css',
@@ -33,22 +29,6 @@ export default defineNuxtConfig({
     'nuxt-quasar-ui',
     'nuxt-icon',
   ],
-  nitro: {
-    replace: {
-      ...Object.fromEntries(
-        Object.entries(appMetaVars).map(([key, val]) => [
-          `import.meta.app.${key}`,
-          JSON.stringify(val),
-        ]),
-      ),
-      ...Object.fromEntries(
-        Object.entries(appMetaVars).map(([key, val]) => [
-          `process.app.${key}`,
-          JSON.stringify(val),
-        ]),
-      ),
-    },
-  },
   quasar: {
     plugins: [
       'BottomSheet',

@@ -15,19 +15,11 @@ import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/us
 interface PackageJSON {
   name: string
   description?: string
-  eliar: EliarMeta
 }
 
 interface ManifestJSON {
   roles?: AppRole[]
 }
-
-interface EliarMeta {
-  type: 'nuxt' | 'node'
-  port: number
-  outDir: string
-}
-
 interface AppRole {
   name: string
   description?: string
@@ -40,6 +32,7 @@ interface SyncedAppRole extends AppRole {
 
 interface App {
   name: string
+  type: 'nuxt' | 'node'
   clientId: string
   roles: SyncedAppRole[]
   pkg: PackageJSON
@@ -64,6 +57,8 @@ const USER_GROUP = 'user'
 const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const APP_DIR = resolve(ROOT_DIR, 'apps')
 const SCHEMA_DIR = resolve(ROOT_DIR, 'schemas')
+
+const NUXT_CONFIG_RE = /^nuxt\.config\.(m?j|t)s$/
 
 async function readJSON(path: string, { strict } = { strict: true }) {
   return JSON.parse(await readFile(path, 'utf-8').catch((e) => {
@@ -91,12 +86,14 @@ function getPackageJson(appName: string): Promise<PackageJSON> {
   return readJSON(join(APP_DIR, appName, 'package.json'))
 }
 
+async function isNuxtApp(appName: string): Promise<boolean> {
+  const files = await readdir(join(APP_DIR, appName))
+  return files.some(f => NUXT_CONFIG_RE.test(f))
+}
+
 function getClientRepresentation(app: App): ClientRepresentation {
-  const appType = app.pkg.eliar.type
-  if (!appType) {
-    throw new Error(`"eliar" key undefined in "apps/${app.name}"`)
-  } else if (appType === 'nuxt') {
-    const appPort = app.pkg.eliar.port || 3000
+  if (app.type === 'nuxt') {
+    const appPort = 3000
     return {
       clientId: app.name,
       enabled: true,
@@ -124,7 +121,7 @@ function getClientRepresentation(app: App): ClientRepresentation {
           : []),
       ],
     }
-  } else if (appType === 'node') {
+  } else if (app.type === 'node') {
     return {
       clientId: app.name,
       enabled: true,
@@ -134,7 +131,7 @@ function getClientRepresentation(app: App): ClientRepresentation {
       bearerOnly: true,
     }
   } else {
-    throw new Error(`Unknown app type defined at "apps/${app.name}": ${appType}`)
+    throw new Error(`Unknown app type defined at "apps/${app.name}": ${app.type}`)
   }
 }
 
@@ -316,9 +313,7 @@ async function main() {
     },
   })
   const manifestSchema = await readJSON(join(SCHEMA_DIR, 'manifest.schema.json'))
-  const packageSchema = await readJSON(join(SCHEMA_DIR, 'package.schema.json'))
   const validateManifest = ajv.compile(manifestSchema)
-  const validatePackage = ajv.compile(packageSchema)
   const admin = new KcAdminClient({
     baseUrl: KEYCLOAK_URL,
   })
@@ -338,12 +333,18 @@ async function main() {
   for (const name of appNames) {
     const pkg = await getPackageJson(name)
     const manifest = await getManifestJson(name)
-    if (!validatePackage(pkg)) {
-      consola.error(`App "${name}" has invalid "package.json" file:\n`, serializeAjvErrors(validatePackage.errors!))
-    } else if (manifest && !validateManifest(manifest)) {
+    const isNuxt = await isNuxtApp(name)
+    if (manifest && !validateManifest(manifest)) {
       consola.error(`App "${name}" has invalid "manifest.json" file:\n`, serializeAjvErrors(validateManifest.errors!))
     } else {
-      apps.set(name, { name, pkg, manifest, clientId: '', roles: [] })
+      apps.set(name, {
+        name,
+        type: isNuxt ? 'nuxt' : 'node',
+        pkg,
+        manifest,
+        clientId: '',
+        roles: [],
+      })
     }
   }
 

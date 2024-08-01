@@ -2,5 +2,6 @@
   "roles": [
     { "name": "vnc-view" },
     { "name": "vnc-input" }
-  ]
+  ],
+  "ports": [6800]
 }

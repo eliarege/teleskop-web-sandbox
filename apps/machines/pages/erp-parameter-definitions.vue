@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FilterableTableColumn, FilterableTableFilter } from 'nuxt-base'
+import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nuxt-base'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { BatchParam, ErpParameter, Machine } from '~/types'
 

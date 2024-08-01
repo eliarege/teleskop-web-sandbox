@@ -1,4 +1,4 @@
-import { filtersToKnex } from 'utils'
+import { filtersToKnex } from '@teleskop/utils'
 import { dmsDB } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {

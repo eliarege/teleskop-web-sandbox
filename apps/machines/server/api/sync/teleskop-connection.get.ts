@@ -1,4 +1,4 @@
-import { TbbFtpClient, withTbbFtpClient } from 'tbb-ftp-client'
+import { TbbFtpClient, withTbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 
 export default defineEventHandler(async (event) => {

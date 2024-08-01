@@ -1,12 +1,16 @@
 {
-  "name": "eslint-config",
+  "name": "@teleskop/eslint-config",
   "type": "module",
   "version": "1.0.0",
   "description": "",
-  "keywords": [],
-  "main": "config.js",
-  "scripts": {},
+  "exports": {
+    ".": "./config.js"
+  },
+  "main": "./config.js",
   "dependencies": {
-    "@antfu/eslint-config": "^2.15.0"
+    "@antfu/eslint-config": "2.15.0"
+  },
+  "devDependencies": {
+    "eslint-plugin-format": "0.1.2"
   }
 }
