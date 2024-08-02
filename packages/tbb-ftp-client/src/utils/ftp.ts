@@ -66,6 +66,7 @@ export async function upload(client: Client, remotePath: string, content: string
   })
   await client.uploadFrom(readableStream, remotePath)
   if (mode) {
-    await client.send(`SITE CHMOD ${mode} ${remotePath}`)
+    // Device (root user) might have claimed ownership of the file.
+    await client.send(`SITE CHMOD ${mode} ${remotePath}`).catch(() => {})
   }
 }
