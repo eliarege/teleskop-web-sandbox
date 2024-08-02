@@ -24,6 +24,8 @@ const selectParameters = {
   priority: 'r.PRIORTY',
   plankey: 'r.PLANKEY',
   terminal: 'r.TERMINAL',
+  requestTime: 'r.REQUESTTIME',
+  completionTime: 'r.COMPLETEDTIME',
 }
 
 router.post('/joborderlogs', defineEventHandler(async (event) => {
@@ -41,14 +43,15 @@ router.post('/joborderlogs', defineEventHandler(async (event) => {
   // TODO: There are no duplicates but this is not the way how its done for sure
     .select(selectParameters)
     .limit(500)
-    .orderBy('r.REQNUMBER', 'desc')
     .where((builder) => {
       if (isCanceled && isCanceled === 'true') {
         builder.where('r.STATUS', 3)
           .orWhere('r.STATUS', 8)
+          .orderBy('r.COMPLETEDTIME', 'desc')
       } else {
         builder.whereNot('r.STATUS', 3)
           .andWhereNot('r.STATUS', 8)
+          .orderBy('r.REQUESTTIME', 'desc')
       }
     })
   if (isCanceled === 'false') {
