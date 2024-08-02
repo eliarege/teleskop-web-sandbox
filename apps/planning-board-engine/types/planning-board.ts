@@ -1,70 +1,42 @@
-export interface UnscheduledTasks {
-  planKey: number
-  recordTime: string
-  jobOrder: string
-  fabricWeight: number
-  plannedMachineId: number
-  programCount: number
-  programList: string
-  plannedStartTime: string
-  note: string
-  erpFieldName: string | null
-  batchParameterId: number
-  theoreticalDuration: number
-  isStopped: boolean
-}
-
-/**
- ------------------ ------------------ ------------------ ------------------
- */
-
-export interface QueueBasedEventsBase extends BaseEvent {
-  eventType: 'planned' | 'finished'
-  planKey: number
-  jobOrder: string
-  programNoList: string
-  theoreticalDuration: number
-  fabricWeight: number
-  fabricColor: string
-  isPlanned: boolean
-  isDeleted: boolean
-  isStarted: boolean
-  isStopped: boolean
-}
-export interface QueueBasedPlannedEventRaw extends QueueBasedEventsBase {
-  eventType: 'planned'
-  queueNumber: number
-  pinned: boolean
-}
-
-export interface QueueBasedActualEventRaw extends QueueBasedEventsBase {
-  eventType: 'finished'
-  batchKey: number
-  deviation: number
-}
-export interface QueueBasedStopEventRaw extends BaseEvent {
-  eventType: 'stop'
-  stopNumber: number | string
-  stopReason: number | string
-}
-
-export interface BaseEvent {
-  eventType: 'finished' | 'planned' | 'stop'
+export interface QueueBasedBaseEventRaw {
+  eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'stop' | 'unplanned'
   machineId: number
   startTime: string
   endTime: string
+}
+export interface QueueBasedEventStop extends QueueBasedBaseEventRaw {
+  eventType: 'stop'
+  stopNumber: number
+  stopReason: string
+}
+export interface QueueBasedBaseEvent extends QueueBasedBaseEventRaw {
+  eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'unplanned'
+  planKey: number
+  jobOrder: string
+  programNoList: string
+  programCount: number
+  theoreticalDuration: number
+  fabricWeight: number
+  fabricColor: number
   note: string
 }
-
-export type QueueBasedAnyEventRaw =
-  | QueueBasedPlannedEventRaw
-  | QueueBasedActualEventRaw
-  | QueueBasedStopEventRaw
-
-export type QueueBasedAnyEvent = QueueBasedAnyEventRaw & {
-  isRunning: boolean
-  isFinished: boolean
+export interface QueueBasedActualEvent extends QueueBasedBaseEvent {
+  eventType: 'finished' | 'ongoing' | 'manual'
+  batchKey: number
+  deviation: number
 }
+export interface QueueBasedNonActualEvent extends QueueBasedBaseEvent {
+  eventType: 'planned' | 'unplanned'
+  queueNumber: number
+  pinned: boolean
+  erpParameters: string
+}
+
+export type QueueBasedEvent =
+  QueueBasedNonActualEvent |
+  QueueBasedActualEvent |
+  QueueBasedEventStop
+
 /**
  ------------------ ------------------ ------------------ ------------------
  */

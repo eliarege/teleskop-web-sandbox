@@ -208,9 +208,11 @@ export class QueueDrag extends DragHelper {
     const target = schedule.resolveEventRecord(context.target) || previousEvent
     context.isValid = !isValidating
     && Boolean(startDate && machine)
-    && !(startDate < new Date())
     && target
-    && (validation.length > 0 ? validation.find(a => a.machineId === machine.id).valid : true)
+    && target !== null
+      ? !target.isFinished
+      : !(startDate < new Date())
+      && (validation.length > 0 ? validation.find(a => a.machineId === machine.id).valid : true)
 
     task.startDate = startDate
     task.endDate = endDate
@@ -228,7 +230,7 @@ export class QueueDrag extends DragHelper {
       const endMinuteRotation = (endDate.getMinutes() + endDate.getSeconds() / 60) * 6
       const endHourRotation = (endDate.getHours() % 12 + endDate.getMinutes() / 60) * 30
 
-      const timeDisplay = text => `
+      const timeDisplay = () => `
       <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
                 <div class="b-sch-clock">
                     <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">${startMonth}</div>
@@ -246,11 +248,11 @@ export class QueueDrag extends DragHelper {
                 <span class="b-sch-clock-text">${DateHelper.format(endDate, schedule.displayDateFormat)}</span>
             </div>
             <div class="b-sch-event-title" style="color: #E07D80 !important">
-          ${this.tip.L(text)}
+          ${this.tip.L(context.isValid ? '' : 'scheduleConflict')}
         </div>
             `
       if (!context.isValid) {
-        this.tip.html = timeDisplay('scheduleConflict')
+        this.tip.html = timeDisplay()
         // TODO: set schedule conflict messaging
         // if (!schedule.isDateRangeAvailable(startDate, endDate, null, machine)) {
         //   this.tip.html = timeDisplay('overlap')
@@ -263,7 +265,7 @@ export class QueueDrag extends DragHelper {
         // }
       }
       if (context.valid) {
-        this.tip.html = timeDisplay('')
+        this.tip.html = timeDisplay()
         this.tip.showBy(context.element)
       }
     }

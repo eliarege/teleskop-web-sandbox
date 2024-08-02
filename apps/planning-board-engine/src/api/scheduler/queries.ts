@@ -1,9 +1,8 @@
-import type { PlanParameters, ProgramStep, ProgramStepCommand } from 'types/planning-board'
-import type { Program } from 'typescript'
 import moo from 'moo'
 import { TbbFtpClient } from 'tbb-ftp-client'
+import type { PlanParameters, QueueBasedEventStop } from 'types/planning-board'
+import type { Program } from 'typescript'
 import { config } from '~/config'
-import { PLANNED_CODE, UNPLANNED_CODE } from '~/constants'
 import { knex } from '~/knexConfig'
 
 export async function getPtStatus() {
@@ -15,8 +14,9 @@ export async function getPtStatus() {
     return res[0].value
   }
 }
-export async function planningBoardStops(startDate: string, endDate: string) {
-  const stops = await knex({ b: 'BASTOPS' }).select({
+export async function planningBoardStops(startDate: string, endDate: string): Promise<QueueBasedEventStop[]> {
+  return await knex({ b: 'BASTOPS' }).select({
+    eventType: 'stop',
     machineId: 'b.MACHINEID',
     stopNumber: 'b.STOPNUMBER',
     stopReason: 'b.STOPREASON',
@@ -24,13 +24,6 @@ export async function planningBoardStops(startDate: string, endDate: string) {
     endTime: 'b.ENDTIME',
     note: 'b.EXPLANATION',
   }).whereBetween('b.STARTTIME', [startDate, endDate])
-
-  return stops.map(st => ({
-    ...st,
-    id: `stop-${st.stopNumber}`,
-    isStop: true,
-    eventType: 'stop',
-  })).filter(stop => stop.stopReason >= 0)
 }
 export async function getUnplannedEvents() {
   const events = await knex('dbo.DYBFBATCHPLAN as P')
@@ -58,10 +51,12 @@ export async function getUnplannedEvents() {
       )`),
     })
     .leftJoin('dbo.PTBATCHPLANQUEUE as Q', 'Q.PLANKEY', 'P.PLANKEY')
-    .leftJoin('dbo.DYBFBATCHPLANPARAMETERS as D', 'P.PLANKEY', 'D.PLANKEY')
+    .leftJoin('dbo.DYBFBATCHPLANPARAMETERS as D', (builder) => {
+      builder.on('P.PLANKEY', 'D.PLANKEY')
+        .andOn('D.PARAMSTRING', knex.raw('?', ['Kilo']))
+    })
     .where('Q.PLANKEY', null)
     .andWhere('P.ISSTARTED', 0)
-    .andWhere('D.BATCHPARAMETERID', 0)
     .andWhere((builder) => {
       builder.whereNull('P.ISDELETED').orWhere('P.ISDELETED', 0)
     })
@@ -69,9 +64,6 @@ export async function getUnplannedEvents() {
       builder.whereNull('P.ISDELETESENDTOMANUNITES').orWhere('P.ISDELETESENDTOMANUNITES', 0)
     })
     .andWhere('P.LASTFORJOBORDER', 1)
-    // .andWhere((builder) => {
-    //   builder.where('P.RECORDTIME', '>=', knex.raw(`DATEADD(month, -1, '2023-07-18')`))
-    // })
     .orderBy('P.RECORDTIME', 'desc')
 
   return events.map(ev => ({

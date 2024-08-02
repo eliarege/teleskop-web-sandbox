@@ -2,7 +2,6 @@ import process from 'node:process'
 import { Mutex } from 'async-mutex'
 import Fastify from 'fastify'
 import fastifyIO from 'fastify-socket.io'
-import pino from 'pino'
 import * as planningBoard from './api/scheduler/routes'
 import * as queueBased from './api/scheduler/queue-based/routes'
 import * as timeBased from './api/scheduler/time-based/routes'
@@ -10,8 +9,8 @@ import { generateClientId } from './composables/helper'
 import { getAllTasks } from './composables/socket'
 import { knex } from './knexConfig'
 import { createPtColumnsTable, createPtMachineErpTable } from './composables/table'
+import { logger } from './composables/logger'
 
-const logger = pino()
 const app = Fastify({ logger })
 const port = Number.parseInt(process.env.SERVER_PORT || '3500')
 app.register(fastifyIO, {

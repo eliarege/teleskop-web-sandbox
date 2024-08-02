@@ -29,20 +29,8 @@ const schedulerDateModel = ref({
   to: endDate.value,
 })
 const store = useSettingStore()
-const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatus[]>('/api/machineList', {
-  lazy: true,
-  default: () => [],
-  transform: unsortedMachines => sortMachines(unsortedMachines),
-})
-const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
-const events = ref([] as QueueBasedAnyEvent[])
-const res = $fetch.create({
-  onResponse(arg) {
-    events.value = arg.response._data
-  },
-})
-const { data: _events, refresh: eventRefresh, status: eventStatus, execute } = await useFetch<QueueBasedAnyEvent[]>('/api/queueBased/schedulerEvents', {
-  $fetch: res,
+
+const { data: events, refresh: eventRefresh, pending: eventPending } = await useFetch<QueueBasedAnyEvent[]>('/api/queueBased/schedulerEvents', {
   immediate: false,
   default: () => [],
   query: {
@@ -51,6 +39,12 @@ const { data: _events, refresh: eventRefresh, status: eventStatus, execute } = a
     includeStops: store.settings.showStops.show,
   },
 })
+const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatus[]>('/api/machineList', {
+  lazy: true,
+  default: () => [],
+  transform: unsortedMachines => sortMachines(unsortedMachines),
+})
+const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
 // #region MODALS
 async function uploadJobOrder(planKey: number) {
   const event: any = scheduler.events.find(e => e.id === planKey)
@@ -314,7 +308,6 @@ async function refreshScheduler() {
     machineRefresh(),
     unScheduledRefresh(),
     eventRefresh(),
-    execute(),
   ])
   try {
     // FIX: Cycle during synchronous computation
@@ -868,7 +861,6 @@ onMounted(async () => {
       autoLoad: true,
     },
   } as Partial<GridConfig>)
-
   initialGridColumns()
 
   new QueueDrag({
@@ -898,7 +890,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
 </script>
 
 <template>
-  <LoadingSpinner v-if="eventStatus === 'idle'" :has-background="false" />
+  <LoadingSpinner v-if="eventPending" :has-background="false" />
   <LoadingSpinner v-if="jobOrderUploadLoading" :has-background="true" />
   <div>
     <div class="w-full h-screen relative">

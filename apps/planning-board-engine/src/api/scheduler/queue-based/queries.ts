@@ -1,8 +1,7 @@
-import { start } from 'node:repl'
-import type { QueueBasedActualEventRaw, QueueBasedEventsBase, QueueBasedPlannedEventRaw } from '../../../../types/planning-board'
+import type { QueueBasedActualEvent, QueueBasedNonActualEvent } from '../../../../types/planning-board'
 import { queueBasedEventStatus } from '../../../composables/helper'
 import { knex } from '../../../knexConfig'
-import { getMachineIds, planningBoardStops } from '../queries'
+import { planningBoardStops } from '../queries'
 import { config } from '~/config'
 
 export interface EventReschedule {
@@ -14,104 +13,124 @@ export interface EventReschedule {
 export async function getQueueBasedEvents(startDate: string, endDate: string, includeStops: boolean) {
   const plannedEvents = await getQueueBasedPlannedEvents(startDate, endDate)
   const actualEvents = await getQueueBasedActualEvents(startDate, endDate)
-  const machines = await getMachineIds()
+
   if (includeStops) {
     const stops = await planningBoardStops(startDate, endDate)
-    const merged = [...actualEvents, ...stops]
-    return queueBasedEventStatus([...plannedEvents, ...merged], includeStops)
-  } else return queueBasedEventStatus([...plannedEvents, ...actualEvents], includeStops)
+    return await queueBasedEventStatus([...plannedEvents, ...actualEvents, ...stops])
+  } else return await queueBasedEventStatus([...plannedEvents, ...actualEvents])
 }
 
-export async function getQueueBasedPlannedEvents(startDate: string, endDate: string): Promise<QueueBasedPlannedEventRaw[]> {
-  return await knex.raw(`
-      select *, DATEADD(second, theoreticalDuration, startTime) as endTime from (
-      select
-        'planned' as eventType,
-        p.MACHINEID as machineId,
+export async function getQueueBasedPlannedEvents(startDate: string, endDate: string): Promise<QueueBasedNonActualEvent[]> {
+  const events = await knex.raw(`
+  With nonActualEvents as (
+    SELECT
+      CASE
+        WHEN queueNumber IS NULL THEN 'unplanned'
+        ELSE 'planned'
+      END	as 'eventType',
+      DATEADD(second, theoreticalDuration, startTime) as endTime,
+      *
+    FROM (
+      SELECT
+        d.PLANKEY AS planKey,
+        d.RECORDTIME as recordTime,
+        d.JOBORDER as jobOrder,
+        c.VALUE as fabricWeight,
+        d.PLANNEDMACHINE as machineId,
+        d.PRGCOUNT as programCount,
+        d.PROGRAMNOLIST as programList,
         CASE
-          WHEN p.QUEUENUMBER = 1 THEN GETUTCDATE()
-          ELSE DATEADD(second, COALESCE(
-                SUM(CASE
-              WHEN d.TheoricalDuration = 0 THEN 28800
-            ELSE d.TheoricalDuration
-          END + 300) OVER (PARTITION BY d.MACHINEIDLIST ORDER BY p.QUEUENUMBER ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0), GETUTCDATE())
+          WHEN p.PLANKEY IS NULL THEN d.PLANNEDSTARTTIME
+          ELSE CASE
+                WHEN p.QUEUENUMBER = 1 THEN GETUTCDATE()
+                ELSE DATEADD(second, COALESCE(
+                      SUM(CASE
+                    WHEN d.TheoricalDuration = 0 THEN 28800
+                  ELSE d.TheoricalDuration
+                END + 300) OVER (PARTITION BY d.MACHINEIDLIST ORDER BY p.QUEUENUMBER ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0), GETUTCDATE())
+              END
         END as startTime,
         d.NOTE as note,
-        p.PLANKEY as planKey,
-        d.JOBORDER as jobOrder,
-        d.PROGRAMNOLIST as programNoList,
-        CASE
-          WHEN d.TheoricalDuration = 0 THEN 28800
-              ELSE d.TheoricalDuration
-        END as theoreticalDuration,
-        (SELECT r.VALUE FROM DYBFBATCHPLANPARAMETERS r WHERE r.PARAMSTRING = 'Kilo' AND r.PLANKEY = p.PLANKEY) AS fabricWeight,
+        d.TheoricalDuration as theoreticalDuration,
         d.Color as fabricColor,
-        CAST(1 as bit) as isPlanned,
-        d.ISDELETED as isDeleted,
-        d.ISSTARTED as isStarted,
-        d.ISSTOPPED as isStopped,
+        d.CUSTOMERNAME as customer,
         p.QUEUENUMBER as queueNumber,
         p.PINNED as pinned
-      from PTBATCHPLANQUEUE p
-      left join DYBFBATCHPLAN d ON p.PLANKEY = d.PLANKEY
-        WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
-      ) as subquery
-        WHERE
-            startTime BETWEEN ? AND ?
-        ORDER BY
-            machineId, queueNumber
+      FROM DYBFBATCHPLAN d
+      LEFT JOIN PTBATCHPLANQUEUE p ON p.PLANKEY = d.PLANKEY
+      LEFT JOIN DYBFBATCHPLANPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.PARAMSTRING = 'Kilo'
+      WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
+    ) as subquery
+  ) SELECT * FROM nonActualEvents
+  WHERE eventType = 'planned' and startTime BETWEEN ? AND ?
+  ORDER BY machineId, queueNumber
   `, [startDate, endDate])
+
+  return events.map(ev => ({
+    ...ev,
+    theoreticalDuration: ev.theoreticalDuration === 0 ? 28800 : ev.theoreticalDuration,
+    erpParameters: ev.erpParameters ? Object.fromEntries(JSON.parse(ev.erpParameters).map(a => [a.paramName, a.value])) : [],
+  }))
 }
 
-export async function getQueueBasedActualEvents(startTime: string, endTime: string): Promise<QueueBasedActualEventRaw[]> {
+export async function getQueueBasedActualEvents(startTime: string, endTime: string): Promise<QueueBasedActualEvent[]> {
   return await knex.raw(`
-        WITH RankedBatches AS (
-      select
-        'finished' as eventType,
-        b.MACHINEID as machineId,
-        DATEADD(MINUTE, :timezoneOffset, b.STARTTIME) as startTime,
-        DATEADD(MINUTE, :timezoneOffset, COALESCE(b.ENDTIME, b.CANCELTIME, CURRENT_TIMESTAMP)) as endTime,
-        d.NOTE as note,
-        b.PLANKEY as planKey,
-        b.JOBORDER as jobOrder,
-        b.PROGRAMNOLIST as programNoList,
-        b.THEORETICDURAT AS theoreticalDuration,
-        b.FABRIC_WEIGHT AS fabricWeight,
-        d.Color as fabricColor,
-        CAST(0 as bit) as isPlanned,
-        d.ISDELETED as isDeleted,
-          d.ISSTARTED as isStarted,
-          d.ISSTOPPED as isStopped,
-          b.BATCHKEY as batchKey,
-          b.DEVIATION as deviation,
-          ROW_NUMBER() OVER (PARTITION BY b.PLANKEY ORDER BY b.BATCHREFERENCE DESC) AS rowNum
-      from BADATA b
-      left join DYBFBATCHPLAN d ON d.PLANKEY = b.PLANKEY
-    )
-      SELECT
-        eventType,
-        machineId,
-        startTime,
-        endTime,
-        note,
-        planKey,
-        jobOrder,
-        programNoList,
-        theoreticalDuration,
-        fabricWeight,
-        fabricColor,
-        isPlanned,
-        isDeleted,
-        isStarted,
-        isStopped,
-        batchKey,
-        deviation,
-        rowNum
-      FROM RankedBatches
-        WHERE rowNum = 1
-        AND startTime >= :startTime
-        OR (endTime BETWEEN :startTime AND :endTime OR endTime IS NULL)
-  `, { timezoneOffset: config.teleskopTimezoneOffset, startTime, endTime })
+      WITH ActualEvent AS (
+        SELECT
+          CASE
+            WHEN planKey IS NULL THEN 'manual'
+            WHEN endTime IS NULL AND cancelTime IS NULL then 'ongoing'
+            WHEN endTime IS NOT NULL OR cancelTime IS NOT NULL then 'finished'
+          END as eventType,
+          DATEADD(MINUTE, :timezoneOffset, startTime) as startTime,
+          DATEADD(MINUTE, :timezoneOffset, COALESCE(endTime, cancelTime,
+            IIF(
+              DATEADD(SECOND, theoreticalDuration, startTime) > DATEADD(MINUTE, :timezoneOffset, GETUTCDATE()),
+              DATEADD(SECOND, theoreticalDuration, startTime),
+              DATEADD(MINUTE, :timezoneOffset, GETUTCDATE())
+            )
+          )) as endTime,
+          machineId,
+          note,
+          planKey,
+          jobOrder,
+          programNoList,
+          theoreticalDuration,
+          fabricWeight,
+          fabricColor,
+          isDeleted,
+          isStarted,
+          isStopped,
+          batchKey,
+          deviation
+        FROM (
+          select
+              b.MACHINEID as machineId,
+              b.STARTTIME as startTime,
+              b.CANCELTIME as cancelTime,
+              b.ENDTIME as endTime,
+              d.NOTE as note,
+              b.PLANKEY as planKey,
+              b.JOBORDER as jobOrder,
+              b.PROGRAMNOLIST as programNoList,
+              b.THEORETICDURAT AS theoreticalDuration,
+              b.FABRIC_WEIGHT AS fabricWeight,
+              d.Color as fabricColor,
+              d.ISDELETED as isDeleted,
+              d.ISSTARTED as isStarted,
+              d.ISSTOPPED as isStopped,
+              b.BATCHKEY as batchKey,
+              b.DEVIATION as deviation,
+              ROW_NUMBER() OVER (PARTITION BY b.PLANKEY ORDER BY b.BATCHREFERENCE DESC) AS rowNumber
+          from BADATA b
+          left join DYBFBATCHPLAN d ON d.PLANKEY = b.PLANKEY
+        ) as subquery
+        WHERE rowNumber = 1
+      )
+      SELECT * FROM ActualEvent
+      WHERE (startTime > CAST(? AS DATETIME)
+      OR (endTime BETWEEN CAST(? AS DATETIME) AND CAST(? AS DATETIME) OR endTime IS NULL))
+  `, [{ timezoneOffset: config.teleskopTimezoneOffset, startTime, endTime }])
 }
 
 export async function checkMachineLastTaskQueue(machineId: number) {
