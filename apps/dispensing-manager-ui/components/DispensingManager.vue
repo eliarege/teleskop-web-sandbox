@@ -127,13 +127,22 @@ async function updateRecipe() {
     method: 'post',
     body: filters.value,
   })
-  if (recipe.value?.length) {
-    selectedRow.value = recipe.value[0]
-    // await fetchMaterialData(selectedRow.value.reqnumber)
-  } else
-    selectedRow.value = null
+  const isRowStillExist = recipe.value.find((row: any) => selectedRow.value.reqnumber === row.reqnumber)
+  if(!isRowStillExist) {
+    if (recipe.value?.length) {
+      selectedRow.value = recipe.value[0]
+      // await fetchMaterialData(selectedRow.value.reqnumber)
+    } else {
+      selectedRow.value = null
+    }
+  } else {
+    selectedRow.value = isRowStillExist
+  }
 }
-setInterval(updateRecipe, 10000)
+const updateRecipeInterval = setInterval(updateRecipe, 10000)
+onUnmounted(() => {
+  clearInterval(updateRecipeInterval)
+})
 
 async function fetchMaterialData(reqnumber: number) {
   if (reqnumber)
@@ -267,6 +276,7 @@ const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
           :columns="columnsRecipe"
           class="h-120"
           row-key="reqnumber"
+          :is-virtual-scroll="true"
           :enable-key-strokes="true"
           @update-filter-slots="(evt) => applyFilters(evt)"
           @update-search-filter="(evt) => searchFilterUpdated(evt)"
