@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import type { TopbarMenuItem } from 'nuxt-base'
+import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind, useWindowSize } from '@vueuse/core'
 import { matSettings } from '@quasar/extras/material-icons'
-import { EliarModal } from 'ui'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Notify } from 'quasar'
-import type { FilterableTableColumn } from 'nuxt-base'
+import type { FilterableTableColumn } from '@teleskop/nuxt-base'
 import ConnectMultiDispenserDialog from '~/components/ConnectMultiDispenserDialog.vue'
 import { colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'

@@ -2,7 +2,7 @@
 import { Notify } from 'quasar'
 import { useTimeoutPoll } from '@vueuse/core'
 import type { QTableProps } from 'quasar'
-import type { FilterableTableColumn } from 'nuxt-base'
+import type { FilterableTableColumn } from '@teleskop/nuxt-base'
 import { cellRGBColorHandler, navigateToPage, textAlignOverride } from '../shared/functions'
 import { DispenserConnectionStatus, StatusCodes, colors } from '~/shared/constants'
 

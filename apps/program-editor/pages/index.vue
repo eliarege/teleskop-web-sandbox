@@ -2,7 +2,7 @@
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind } from '@vueuse/core'
 import { useRouter } from 'vue-router'
-import EliarModal from 'ui/components/EliarModal.vue'
+import { EliarModal } from '@teleskop/ui'
 import MachineCommandList from '~/components/MachineCommandList.vue'
 import MachineList from '~/components/MachineList.vue'
 import ProgramTitle from '~/components/ProgramTitle.vue'

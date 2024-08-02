@@ -2,7 +2,7 @@
 import { Notify } from 'quasar'
 import { outlinedCancel, outlinedCheckCircle, outlinedSignalWifiConnectedNoInternet4, outlinedWarning } from '@quasar/extras/material-icons-outlined'
 import { useTimeoutPoll } from '@vueuse/core'
-import type { FilterableTableColumn } from 'nuxt-base'
+import type { FilterableTableColumn } from '@teleskop/nuxt-base'
 import { DispenserConnectionStatus, colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 

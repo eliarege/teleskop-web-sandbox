@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
 import { joinURL, parseURL, withBase, withProtocol } from 'ufo'
-import { NoVnc } from 'ui'
+import { NoVnc } from '@teleskop/ui'
 
 const props = defineProps({
   id: {
@@ -325,7 +325,7 @@ onBeforeUnmount(() => {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       grid-template-rows: 1fr;
-      grid-template-areas: "ctrl ctrl-alt-del lwin file-transfer full-screen";
+      grid-template-areas: 'ctrl ctrl-alt-del lwin file-transfer full-screen';
       @apply w-full h-14 justify-items-center px-10 gap-5;
 
       .lwin {
@@ -379,7 +379,7 @@ onBeforeUnmount(() => {
 }
 
 .loader {
-  border-color: #FFFFFF #FFFFFF transparent transparent;
+  border-color: #ffffff #ffffff transparent transparent;
   animation: rotation 1s linear infinite;
   @apply w-48px h-48px rounded-1/2 inline-block relative border-3px box-border;
 }
@@ -393,7 +393,7 @@ onBeforeUnmount(() => {
 }
 
 .loader::before {
-  border-color: #FFFFFF #FFFFFF transparent transparent;
+  border-color: #ffffff #ffffff transparent transparent;
   animation: rotation 1.5s linear infinite;
   @apply w-32px h-32px;
 }

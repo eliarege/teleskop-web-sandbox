@@ -3,7 +3,7 @@ import { useStorage } from '@vueuse/core'
 import type { QTableProps } from 'quasar'
 import { LoadingSpinner } from '@teleskop/ui'
 import { onMounted } from 'vue'
-import type { FilterableTableColumn } from 'nuxt-base'
+import type { FilterableTableColumn } from '@teleskop/nuxt-base'
 import { navigateToPage } from '../shared/functions'
 import { colors } from '~/shared/constants'
 

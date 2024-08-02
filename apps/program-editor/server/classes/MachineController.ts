@@ -1,6 +1,6 @@
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { Knex } from 'knex'
-import { isDef } from 'utils'
+import { isDef } from '@teleskop/utils'
 import { ensureTreatmentGroups, fetchTreatmentSettings, getGroupIdByMachineId, getMachineHost, hasMachine, logEditorOperation } from '../functions'
 import { db, dmExchange } from '../database'
 import { withFTP, withTransaction } from '../decorators'
