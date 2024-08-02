@@ -310,7 +310,7 @@ function onRequest(pagination: QTableProps['pagination']) {
       bordered
       :virtual-scroll="isVirtualScroll"
       :virtual-scroll-sticky-size-start="48"
-      class="text-override-left filterable-table my-sticky-virtscroll-table-recipe"
+      class="text-override-left filterable-table virtual-scroll"
       column-sort-order="da"
       :visible-columns="visibleColumns"
       @update:pagination="e => tablePagination = e"
