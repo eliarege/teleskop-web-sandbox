@@ -1408,7 +1408,7 @@ export class MachineController {
 
       const treatment = await trx('Treatments')
         .where('TreatmentNo', program.programNo)
-        // .andWhere('TreatmentType', 0)
+        .andWhere('TreatmentType', 0)
         .first('*')
 
       if (!treatment) {
@@ -1435,7 +1435,7 @@ export class MachineController {
           TreatmentType: 0,
         })
           .where('TreatmentNo', program.programNo)
-          // .andWhere('TreatmentType', 0)
+          .andWhere('TreatmentType', 0)
 
         await trx('Treatment_Parameter_Ref')
           .where('TreatmentNo', program.programNo)
@@ -1460,7 +1460,7 @@ export class MachineController {
     await dmExchange.transaction(async (trx) => {
       await trx('Treatments')
         .where('TreatmentNo', programNo)
-        // .andWhere('TreatmentType', 0)
+        .andWhere('TreatmentType', 0)
         .del()
 
       await trx('Treatment_Parameter_Ref')
