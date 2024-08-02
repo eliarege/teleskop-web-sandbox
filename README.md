@@ -40,14 +40,16 @@ The `scope` provides additional contextual information.
 
 #### Scopes used for apps
 
-- **DMS**: `dispensing-management-systems`
-- **DM**: `dispensing-manager-ui`
-- **MS**: `machine-status`
-- **MA**: `machines`
-- **MM**: `multi-monitor`
-- **PB**: `planning-board`
-- **PBE**: `planning-board-engine`
-- **PE**: `program-editor`
+| Scope | Application                     |
+| ----- | ------------------------------- |
+| DMS   | `dispensing-management-systems` |
+| DM    | `dispensing-manager-ui`         |
+| MS    | `machine-status`                |
+| MA    | `machines`                      |
+| MM    | `multi-monitor`                 |
+| PB    | `planning-board`                |
+| PBE   | `planning-board-engine`         |
+| PE    | `program-editor`                |
 
 Other apps and packages should always use full name for scopes.
 
