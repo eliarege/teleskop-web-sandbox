@@ -286,6 +286,7 @@ onBeforeRouteLeave(async (to, from, next) => {
     next()
   }
 })
+const pagination = ref({ rowsPerPage: 0 })
 </script>
 
 <template>
@@ -294,6 +295,7 @@ onBeforeRouteLeave(async (to, from, next) => {
     :columns="columns"
     :is-expandable="true"
     :empty-first-row="true"
+    v-model:pagination="pagination"
     style="height: 90vh;"
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"

@@ -60,7 +60,9 @@
       "readFromDMS": "DMS'den Oku",
       "connectionStatus": "Bağlantı Durumu",
       "exportFileName": "Dışa Aktarım Dosya İsmi",
-      "exportIrrelevantConsumptions": "İlişkili Olmayan Tüketimleri Dışa Aktar"
+      "exportIrrelevantConsumptions": "İlişkili Olmayan Tüketimleri Dışa Aktar",
+      "vncPort": "Dağıtıcı VNC Port'u",
+      "vncPassword": "Dağıtıcı VNC Şifresi"
     },
     "appSettings": "Uygulama Ayarları",
     "deleteExpiredJobOrders": "Eski iş emirlerini sil",

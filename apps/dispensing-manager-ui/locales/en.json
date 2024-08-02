@@ -60,7 +60,9 @@
       "readFromDMS": "Read from DMS",
       "connectionStatus": "Connection Status",
       "exportFileName": "Export Path",
-      "exportIrrelevantConsumptions": "Export Unrealted Consumptions"
+      "exportIrrelevantConsumptions": "Export Unrealted Consumptions",
+      "vncPort": "Dispenser VNC Port",
+      "vncPassword": "Dispenser VNC Password"
     },
     "appSettings": "Application Settings",
     "deleteExpiredJobOrders": "Delete expired job orders",

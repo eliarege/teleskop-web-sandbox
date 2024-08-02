@@ -69,18 +69,21 @@ const columns = computed<Array<FilterableTableColumn>>(() => [
   },
 ])
 
-const dispenserInfo = ref<{ label: string, value: any, field: string, options?: Array<any>, controller: 'checkbox' | 'select' | 'input' }[]>([
+const dispenserInfo = ref<{ label: string, value: any, field: string, options?: Array<any>, controller: 'checkbox' | 'select' | 'input' | '' }[]>([
   { label: t('settings.dispSettings.dispNo'), value: '', field: 'dispNo', controller: 'input' },
   { label: t('settings.dispSettings.dispName'), value: '', field: 'name', controller: 'input' },
   { label: t('settings.dispSettings.dispType'), value: '', field: 'dispType', controller: 'select' },
   { label: t('settings.dispSettings.dispIP'), value: '', field: 'dispIP', controller: 'input' },
   { label: t('settings.dispSettings.dispFileSystem'), value: '', field: 'fileSystem', controller: 'input' },
+  { label: t('settings.dispSettings.vncPassword'), value: '', field: 'vncPassword', controller: 'input' },
   { label: t('settings.dispSettings.dispFileName'), value: '', field: 'fileName', controller: 'input' },
+  { label: t('settings.dispSettings.vncPort'), value: '', field: 'vncPort', controller: 'input' },
   { label: t('settings.dispSettings.dispProtocol'), value: '', field: 'protocol', controller: 'select' },
   { label: t('settings.dispSettings.dispConsumptionFileName'), value: '', field: 'dispConsumptionFileName', controller: 'input' },
-  { label: t('settings.dispSettings.exportIrrelevantConsumptions'), value: '', field: 'exportIrrelevantConsumptions', controller: 'checkbox' },
-  { label: t('settings.dispSettings.readFromDMS'), value: '', field: 'dms', controller: 'checkbox' },
   { label: t('settings.dispSettings.exportFileName'), value: '', field: 'exportFileName', controller: 'input' },
+  { label: t('settings.dispSettings.readFromDMS'), value: '', field: 'dms', controller: 'checkbox' },
+  { label: '', value: '', field: '', controller: '' },
+  { label: t('settings.dispSettings.exportIrrelevantConsumptions'), value: '', field: 'exportIrrelevantConsumptions', controller: 'checkbox' },
 ])
 
 async function getTypes() {
@@ -202,10 +205,9 @@ async function submit(isPut: boolean) {
   }, {})
   const body = {
     ...dispenserValues,
-    protocol: dispenserValues?.protocol?.protocol ? dispenserValues.protocol.protocol : protocols[0].protocol,
+    protocol: dispenserValues?.protocol ? dispenserValues.protocol.protocol : protocols[0].protocol,
     dispType: dispenserValues.dispType.type,
   }
-  console.log(dispenserValues)
   /** If create */
   if (!isPut) {
     isSuccess = await $fetch(`/api/settings/dispenser/${body.dispNo}`, {
