@@ -88,14 +88,15 @@ export async function fetchDMSMachine(id: number): Promise<Machine | null> {
 
       return response || null
     } else {
-      return await knex
+      const teleskopDispenser = await knex
         .from('DYTFDISPENSERSETTINGS')
         .select({
           name: 'NAME',
           host: 'IP',
           port: 'VNCPORT',
           password: 'VNCPASSWORD',
-        })
+        }).where('DISPENSERID', id).first()
+        return teleskopDispenser || null
     }
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
