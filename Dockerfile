@@ -78,7 +78,7 @@ EXPOSE 3000
 
 USER node
 
-CMD [ "node", "./server/index.mjs" ]
+ENTRYPOINT [ "node", "./server/index.mjs" ]
 
 ########################################
 ## Extended Build Stage for Node Apps
