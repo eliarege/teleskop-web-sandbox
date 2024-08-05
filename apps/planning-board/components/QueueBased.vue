@@ -8,8 +8,8 @@ import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import { determineTextColor } from '@teleskop/utils'
 import { eventTooltip } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
-import type { QueueBasedAnyEvent } from '~/shared/queueBased'
-import type { MachineStatus, PlanParameters, UnplannedEvents } from '~/shared/types'
+import type { QueueBasedEvent, QueueBasedUnplannedEvent } from '~/shared/queueBased'
+import type { MachineStatus, PlanParameters } from '~/shared/types'
 import { useSettingStore } from '~/store/settings'
 
 const { t, locale, d } = useI18n()
@@ -30,7 +30,7 @@ const schedulerDateModel = ref({
 })
 const store = useSettingStore()
 
-const { data: events, refresh: eventRefresh, pending: eventPending } = await useFetch<QueueBasedAnyEvent[]>('/api/queueBased/schedulerEvents', {
+const { data: events, refresh: eventRefresh, pending: eventPending } = await useFetch<QueueBasedEvent[]>('/api/queueBased/schedulerEvents', {
   immediate: false,
   default: () => [],
   query: {
@@ -193,7 +193,8 @@ function sortMachines(machines: MachineStatusWithSortIndex[]): MachineStatusWith
     return aIndex - bIndex
   })
 }
-function setFabricColor(event: QueueBasedAnyEvent) {
+
+function setFabricColor(event: QueueBasedEvent) {
   const {
     plannedBatchFabricColor,
     ongoingBatchFabricColor,
@@ -204,12 +205,19 @@ function setFabricColor(event: QueueBasedAnyEvent) {
     showStops,
   } = store.settings
   if (event.eventType === 'planned') {
-    return plannedBatchFabricColor ? integerToHex(event.fabricColor) : plannedBatchColor
+    return plannedBatchFabricColor && event.fabricColor ? integerToHex(event.fabricColor) : plannedBatchColor
   }
   if (event.eventType === 'finished') {
-    if (event.isRunning) {
-      return ongoingBatchFabricColor ? integerToHex(event.fabricColor) : ongoingBatchColor
-    } return completedBatchFabricColor ? integerToHex(event.fabricColor) : completedBatchColor
+    return completedBatchFabricColor && event.fabricColor ? integerToHex(event.fabricColor) : completedBatchColor
+  }
+  if (event.eventType === 'ongoing') {
+    return ongoingBatchFabricColor && event.fabricColor ? integerToHex(event.fabricColor) : ongoingBatchColor
+  }
+  if (event.eventType === 'manual') {
+    if (new Date(event.endTime) < new Date()) {
+      return completedBatchFabricColor && event.fabricColor ? integerToHex(event.fabricColor) : completedBatchColor
+    }
+    return ongoingBatchFabricColor && event.fabricColor ? integerToHex(event.fabricColor) : ongoingBatchColor
   }
   return showStops.color
 }
@@ -227,7 +235,7 @@ function isDate(value: any): boolean | any {
   return value instanceof Date && !Number.isNaN(value.getTime())
 }
 
-function setEventName(event: QueueBasedAnyEvent): Values<QueueBasedAnyEvent> {
+function setEventName(event: QueueBasedEvent): Values<QueueBasedEvent> {
   const plannedBatchText = store.settings.plannedBatchText || 'jobOrder'
   const completedBatchText = store.settings.completedBatchText || 'jobOrder'
   const ongoingBatchText = store.settings.ongoingBatchText || 'jobOrder'
@@ -236,23 +244,27 @@ function setEventName(event: QueueBasedAnyEvent): Values<QueueBasedAnyEvent> {
     const formattedText = isDate(event[plannedBatchText]) ? d(event[plannedBatchText], 'datetime') : event[plannedBatchText]
     return formattedText
   }
-  if (event.eventType === 'finished') {
-    if (event.isStarted && !event.isFinished) {
-      const formattedText = isDate(event[ongoingBatchText]) ? d(event[ongoingBatchText], 'datetime') : event[ongoingBatchText]
-      return formattedText
-    } else {
-      const formattedText = isDate(event[completedBatchText]) ? d(event[completedBatchText], 'datetime') : event[completedBatchText]
-      return formattedText
-    }
+  if (event.eventType === 'finished' || event.eventType === 'manual') {
+    const formattedText = isDate(event[ongoingBatchText]) ? d(event[ongoingBatchText], 'datetime') : event[ongoingBatchText]
+    return formattedText
+  } else if (event.eventType === 'ongoing') {
+    const formattedText = isDate(event[completedBatchText]) ? d(event[completedBatchText], 'datetime') : event[completedBatchText]
+    return formattedText
   } else {
     return ' '
   }
 }
-function setId(event: QueueBasedAnyEvent) {
+function setId(event: QueueBasedEvent) {
   switch (event.eventType) {
     case 'finished':
       return event.batchKey
+    case 'manual':
+      return event.batchKey
+    case 'ongoing':
+      return event.batchKey
     case 'planned':
+      return event.planKey
+    case 'unplanned':
       return event.planKey
     case 'stop':
       return `stop-${event.stopNumber}`
@@ -289,7 +301,7 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((u
     duration: (unp.theoreticalDuration / 60) / 60,
     durationUnit: 'hour',
     constraintDate: new Date(),
-  } as UnplannedEvents
+  }
 }))
 
 async function scheduleDataRefresh() {
@@ -324,11 +336,12 @@ async function machineReload() {
   scheduler.refreshRows()
 }
 
-watch(modifiedEvents, (newVal: QueueBasedAnyEvent[]) => {
+watch(modifiedEvents, (newVal: QueueBasedEvent[]) => {
+  console.log('newVal', newVal)
   scheduler.events = newVal
   scrollStore.data = newVal
 })
-watch(modifiedUnscheduledEvents, (newVal: UnplannedEvents[]) => {
+watch(modifiedUnscheduledEvents, (newVal: QueueBasedUnplannedEvent[]) => {
   grid.store.data = newVal
 })
 watch(() => store.settings.showStops.show, async (newVal: boolean) => {
@@ -420,6 +433,9 @@ onMounted(async () => {
     resources: machines.value,
     events: modifiedEvents.value,
     eventStyle: null,
+    onEventClick({ eventRecord }) {
+      console.log(eventRecord.originalData)
+    },
     listeners: {
       eventSelectionChange({ action }: any) {
         if (action === 'select' || action === 'update') {
@@ -442,16 +458,22 @@ onMounted(async () => {
         if (eventRecord.originalData.isDeviation) {
           icons.push('b-fa b-fa-solid b-fa-clock')
         }
-        if (eventRecord.originalData.isFinished) {
+
+        if (eventRecord.originalData.eventType === 'finished') {
           icons.push('b-fa b-fa-solid b-fa-flag-checkered')
-        } else {
-          if (eventRecord.originalData.isRunning) {
-            icons.push('b-fa b-fa-solid b-fa-play')
-          } else if (eventRecord.originalData.isStopped) {
-            icons.push('b-fa b-fa-solid b-fa-stop')
+        } else if (eventRecord.originalData.eventType === 'ongoing') {
+          icons.push('b-fa b-fa-solid b-fa-play')
+        } else if (eventRecord.originalData.eventType === 'manual') {
+          if (eventRecord.originalData.endDate < new Date()) {
+            icons.push('b-fa b-fa-solid b-fa-flag-checkered')
           } else {
-            icons.push('b-fa b-fa-solid b-fa-list-check')
+            icons.push('b-fa b-fa-solid b-fa-play')
           }
+          icons.push('b-fa b-fa-solid b-fa-m')
+        } else if (eventRecord.originalData.isStopped) {
+          icons.push('b-fa b-fa-solid b-fa-stop')
+        } else {
+          icons.push('b-fa b-fa-solid b-fa-list-check')
         }
         if (eventRecord.originalData.isAlarm) {
           icons.push('b-fa b-fa-solid b-fa-bell')
@@ -978,7 +1000,7 @@ div[bgGreen] {
 
 .toolbar-buttons {
   color: white;
-  background-color: #03A9F4;
+  background-color: #03a9f4;
   @apply rounded;
 }
 
@@ -1007,7 +1029,7 @@ div[bgGreen] {
 }
 
 .b-timeline-subgrid .b-sch-current-time {
-  border: 1px solid red !important
+  border: 1px solid red !important;
 }
 
 /*.b-sch-event:not(.b-sch-event-selected) .b-sch-event-content{

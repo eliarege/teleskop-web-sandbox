@@ -1,4 +1,4 @@
-import type { QueueBasedEventsBase } from './queueBased'
+import type { QueueBasedBaseEvent } from './queueBased'
 
 export interface MachineStatus {
   id: number
@@ -58,24 +58,6 @@ export interface MachineData extends MachineStatus {
   runningBatchRatio: number
   runningStartHour: string
 }
-export interface UnplannedEventsRaw {
-  planKey: number
-  recordTime: string
-  jobOrder: string
-  plannedMachineId: number
-  programCount: number
-  plannedStartTime: string
-  theoreticalDuration: number
-  note: string
-  erpParameters: Record<string, string>
-}
-export interface UnplannedEvents extends UnplannedEventsRaw {
-  id: string | number
-  name: string
-  duration: number
-  durationUnit: 'millisecond' | 'second' | 'minute' | 'hour' | 'day'
-  constraintDate: string | Date
-}
 export interface RecipeRaw {
   planKey: number | null
   recIndex: number | null
@@ -104,13 +86,13 @@ export interface Recipe {
 export interface PtLocaleSettings {
   deviationColor: string
   completedBatchColor: string
-  completedBatchText: keyof QueueBasedEventsBase
+  completedBatchText: keyof QueueBasedBaseEvent
   completedBatchFabricColor: boolean
   ongoingBatchColor: string
-  ongoingBatchText: keyof QueueBasedEventsBase
+  ongoingBatchText: keyof QueueBasedBaseEvent
   ongoingBatchFabricColor: boolean
   plannedBatchColor: string
-  plannedBatchText: keyof QueueBasedEventsBase
+  plannedBatchText: keyof QueueBasedBaseEvent
   plannedBatchFabricColor: boolean
   showStops: { show: boolean, color: string }
 }

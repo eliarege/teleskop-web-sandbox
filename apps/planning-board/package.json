@@ -19,6 +19,7 @@
   "dependencies": {
     "@bryntum/schedulerpro-trial": "workspace:*",
     "@teleskop/ui": "workspace:*",
+    "@teleskop/utils": "workspace:*",
     "d3": "7.9.0",
     "date-fns": "3.6.0",
     "knex": "3.1.0",

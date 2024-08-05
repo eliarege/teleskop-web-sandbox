@@ -3,10 +3,11 @@ export interface QueueBasedBaseEventRaw {
   machineId: number
   startTime: string
   endTime: string
+  note: string
 }
 export interface QueueBasedEventStop extends QueueBasedBaseEventRaw {
   eventType: 'stop'
-  stopNumber: number
+  stopNumber: number | string
   stopReason: string
 }
 export interface QueueBasedBaseEvent extends QueueBasedBaseEventRaw {

@@ -279,7 +279,7 @@ export class QueueDrag extends DragHelper {
     let newEvent
     if (target && valid) {
       task.originalData.machineId = machine.id
-      const currentEvents = sortEventsByDateDesc(machine.events.filter((ev => ev.isPlanned)))
+      const currentEvents = sortEventsByDateDesc(machine.events.filter((ev => ev.eventType === 'planned')))
       if (targetEventRecord) {
         newEvent = {
           planKey: task.id,
@@ -410,13 +410,13 @@ export class TaskStore extends EventStore {
   }
 
   async scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine) {
-    const futureEvents = targetMachine.events.filter(ev => ev.isPlanned && ev.originalData.queueNumber > (targetEvent.originalData.queueNumber || 0) && ev !== grabbedEvent)
+    const futureEvents = targetMachine.events.filter(ev => ev.eventType === 'planned' && ev.originalData.queueNumber > (targetEvent.originalData.queueNumber || 0) && ev !== grabbedEvent)
     let previousEvents
 
     if (previousMachine.id !== targetMachine.id) {
       newQueueNumber = targetEvent.originalData.queueNumber + 1 || 1
 
-      previousEvents = previousMachine.events.filter(ev => ev.isPlanned && ev.originalData.queueNumber >= grabbedEvent.originalData.queueNumber && ev !== grabbedEvent)
+      previousEvents = previousMachine.events.filter(ev => ev.eventType === 'planned' && ev.originalData.queueNumber >= grabbedEvent.originalData.queueNumber && ev !== grabbedEvent)
       futureEvents.forEach((ev) => {
         this.postponeEvent(ev, (grabbedEvent.theoreticalDuration + 300))
       })
@@ -429,14 +429,14 @@ export class TaskStore extends EventStore {
         newQueueNumber = targetEvent.originalData.queueNumber + 1 || 1
       } else {
         if (!targetEvent.originalData.queueNumber) {
-          const target = targetMachine.events.filter(ev => ev.isPlanned && ev.originalData.queueNumber < grabbedEvent.originalData.queueNumber)
+          const target = targetMachine.events.filter(ev => ev.eventType === 'planned' && ev.originalData.queueNumber < grabbedEvent.originalData.queueNumber)
           target.forEach((ev) => {
             this.postponeEvent(ev, (grabbedEvent.theoreticalDuration + 300))
           })
         }
         newQueueNumber = targetEvent.originalData.queueNumber || 1
       }
-      previousEvents = targetMachine.events.filter(ev => ev.isPlanned && ev.originalData.queueNumber <= targetEvent.originalData.queueNumber && ev !== grabbedEvent && ev.originalData.queueNumber > grabbedEvent.originalData.queueNumber)
+      previousEvents = targetMachine.events.filter(ev => ev.eventType === 'planned' && ev.originalData.queueNumber <= targetEvent.originalData.queueNumber && ev !== grabbedEvent && ev.originalData.queueNumber > grabbedEvent.originalData.queueNumber)
     }
     previousEvents.forEach((ev) => {
       this.expediteEvent(ev, (grabbedEvent.theoreticalDuration + 300))

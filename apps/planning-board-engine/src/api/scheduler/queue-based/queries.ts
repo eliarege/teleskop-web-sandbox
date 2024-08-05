@@ -22,48 +22,50 @@ export async function getQueueBasedEvents(startDate: string, endDate: string, in
 
 export async function getQueueBasedPlannedEvents(startDate: string, endDate: string): Promise<QueueBasedNonActualEvent[]> {
   const events = await knex.raw(`
-  With nonActualEvents as (
-    SELECT
-      CASE
-        WHEN queueNumber IS NULL THEN 'unplanned'
-        ELSE 'planned'
-      END	as 'eventType',
-      DATEADD(second, theoreticalDuration, startTime) as endTime,
-      *
-    FROM (
-      SELECT
-        d.PLANKEY AS planKey,
-        d.RECORDTIME as recordTime,
-        d.JOBORDER as jobOrder,
-        c.VALUE as fabricWeight,
-        d.PLANNEDMACHINE as machineId,
-        d.PRGCOUNT as programCount,
-        d.PROGRAMNOLIST as programList,
-        CASE
-          WHEN p.PLANKEY IS NULL THEN d.PLANNEDSTARTTIME
-          ELSE CASE
-                WHEN p.QUEUENUMBER = 1 THEN GETUTCDATE()
-                ELSE DATEADD(second, COALESCE(
-                      SUM(CASE
-                    WHEN d.TheoricalDuration = 0 THEN 28800
-                  ELSE d.TheoricalDuration
-                END + 300) OVER (PARTITION BY d.MACHINEIDLIST ORDER BY p.QUEUENUMBER ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0), GETUTCDATE())
-              END
-        END as startTime,
-        d.NOTE as note,
-        d.TheoricalDuration as theoreticalDuration,
-        d.Color as fabricColor,
-        d.CUSTOMERNAME as customer,
-        p.QUEUENUMBER as queueNumber,
-        p.PINNED as pinned
-      FROM DYBFBATCHPLAN d
-      LEFT JOIN PTBATCHPLANQUEUE p ON p.PLANKEY = d.PLANKEY
-      LEFT JOIN DYBFBATCHPLANPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.PARAMSTRING = 'Kilo'
-      WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
-    ) as subquery
-  ) SELECT * FROM nonActualEvents
-  WHERE eventType = 'planned' and startTime BETWEEN ? AND ?
-  ORDER BY machineId, queueNumber
+      select DATEADD(second, theoreticalDuration, startTime) AS endTime,* from (
+        select
+            'planned' as eventType,
+            d.PLANKEY AS planKey,
+              d.RECORDTIME AS recordTime,
+              d.JOBORDER AS jobOrder,
+              c.VALUE AS fabricWeight,
+              d.PLANNEDMACHINE AS machineId,
+              d.PRGCOUNT AS programCount,
+              d.PROGRAMNOLIST AS programList,
+                CASE
+                      WHEN p.QUEUENUMBER = 1 THEN GETUTCDATE()
+                      ELSE DATEADD(second, COALESCE(
+                            SUM(CASE
+                              WHEN d.TheoricalDuration = 0 OR d.TheoricalDuration IS NULL THEN 28800
+                              ELSE d.TheoricalDuration
+                            END + 300) OVER (PARTITION BY d.PLANNEDMACHINE ORDER BY p.QUEUENUMBER ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0), GETUTCDATE())
+                    END AS startTime,
+              d.NOTE AS note,
+              CASE
+                WHEN d.TheoricalDuration IS NULL THEN 28800
+                WHEN d.TheoricalDuration = 0 THEN 28800
+                ELSE d.TheoricalDuration
+              END AS theoreticalDuration,
+              d.Color AS fabricColor,
+              d.CUSTOMERNAME AS customer,
+              p.QUEUENUMBER AS queueNumber,
+              p.PINNED AS pinned,
+            (
+            SELECT v.parameterName as 'paramName', r.VALUE as 'value'
+              FROM DYBFBATCHPLANPARAMETERS r
+              LEFT JOIN PTCOLUMNS v ON v.parameterId = r.BATCHPARAMETERID
+              WHERE r.PLANKEY = d.PLANKEY
+              AND v.visible = 1
+              FOR JSON PATH
+              ) as erpParameters
+        from DYBFBATCHPLAN d
+        LEFT JOIN PTBATCHPLANQUEUE p ON p.PLANKEY = d.PLANKEY
+        LEFT JOIN DYBFBATCHPLANPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.PARAMSTRING = 'Kilo'
+        WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
+        AND p.PLANKEY IS NOT NULL
+      ) as subQuery
+      where startTime between ? and ?
+      ORDER BY machineId, queueNumber
   `, [startDate, endDate])
 
   return events.map(ev => ({
@@ -128,9 +130,9 @@ export async function getQueueBasedActualEvents(startTime: string, endTime: stri
         WHERE rowNumber = 1
       )
       SELECT * FROM ActualEvent
-      WHERE (startTime > CAST(? AS DATETIME)
-      OR (endTime BETWEEN CAST(? AS DATETIME) AND CAST(? AS DATETIME) OR endTime IS NULL))
-  `, [{ timezoneOffset: config.teleskopTimezoneOffset, startTime, endTime }])
+      WHERE (startTime > CAST(:startTime AS DATETIME)
+      OR (endTime BETWEEN CAST(:startTime AS DATETIME) AND CAST(:endTime AS DATETIME) OR endTime IS NULL))
+  `, { timezoneOffset: config.teleskopTimezoneOffset, startTime, endTime })
 }
 
 export async function checkMachineLastTaskQueue(machineId: number) {

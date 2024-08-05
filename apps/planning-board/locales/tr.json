@@ -14,7 +14,8 @@
     "customer-name": "Müşteri İsmi"
   },
   "tooltip": {
-    "note": "Notlar"
+    "note": "Notlar",
+    "auto-message": "Duruş sebebi girilmedi!"
   },
   "queue-based": {
     "alarm-count": "Toplam Alarm",

@@ -14,7 +14,8 @@
     "customer-name": "Customer Name"
   },
   "tooltip": {
-    "note": "Notes"
+    "note": "Notes",
+    "auto-message": "There is no stop reason input!"
   },
   "queue-based": {
     "alarm-count": "Total Alarm Count",

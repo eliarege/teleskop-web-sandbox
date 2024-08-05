@@ -76,7 +76,7 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
 `
   } else return `
   <div>
-    <div class="b-sch-event-title">${$i18n.t('tooltip.note')}: ${eventRecord.note}</div>
+    <div class="b-sch-event-title">${$i18n.t('tooltip.note')}: ${eventRecord.note === 'auto-generated' ? $i18n.t('tooltip.auto-message') : eventRecord.note}</div>
     <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
       <div class="b-sch-clock">
         <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">

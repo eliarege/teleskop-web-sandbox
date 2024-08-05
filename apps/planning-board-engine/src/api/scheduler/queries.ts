@@ -15,8 +15,7 @@ export async function getPtStatus() {
   }
 }
 export async function planningBoardStops(startDate: string, endDate: string): Promise<QueueBasedEventStop[]> {
-  return await knex({ b: 'BASTOPS' }).select({
-    eventType: 'stop',
+  const stops = await knex({ b: 'BASTOPS' }).select({
     machineId: 'b.MACHINEID',
     stopNumber: 'b.STOPNUMBER',
     stopReason: 'b.STOPREASON',
@@ -24,47 +23,46 @@ export async function planningBoardStops(startDate: string, endDate: string): Pr
     endTime: 'b.ENDTIME',
     note: 'b.EXPLANATION',
   }).whereBetween('b.STARTTIME', [startDate, endDate])
+  return stops.map(ev => ({
+    eventType: 'stop',
+    ...ev,
+  }))
 }
 export async function getUnplannedEvents() {
-  const events = await knex('dbo.DYBFBATCHPLAN as P')
-    .select({
-      planKey: 'P.PLANKEY',
-      recordTime: 'P.RECORDTIME',
-      jobOrder: 'P.JOBORDER',
-      fabricWeight: 'D.VALUE',
-      plannedMachineId: 'P.PLANNEDMACHINE',
-      programCount: 'P.PRGCOUNT',
-      programList: 'P.PROGRAMNOLIST',
-      plannedStartTime: 'P.PLANNEDSTARTTIME',
-      note: 'P.NOTE',
-      theoreticalDuration: 'P.TheoricalDuration',
-      isStopped: 'P.ISSTOPPED',
-      color: 'P.Color',
-      customer: 'P.CUSTOMERNAME',
-      erpParameters: knex.raw(`(
-        SELECT v.parameterName as 'paramName', r.VALUE as 'value'
-        FROM DYBFBATCHPLANPARAMETERS r
-        LEFT JOIN PTCOLUMNS v ON v.parameterId = r.BATCHPARAMETERID
-        WHERE r.PLANKEY = P.PLANKEY
-        AND v.visible = 1
-        FOR JSON PATH
-      )`),
-    })
-    .leftJoin('dbo.PTBATCHPLANQUEUE as Q', 'Q.PLANKEY', 'P.PLANKEY')
-    .leftJoin('dbo.DYBFBATCHPLANPARAMETERS as D', (builder) => {
-      builder.on('P.PLANKEY', 'D.PLANKEY')
-        .andOn('D.PARAMSTRING', knex.raw('?', ['Kilo']))
-    })
-    .where('Q.PLANKEY', null)
-    .andWhere('P.ISSTARTED', 0)
-    .andWhere((builder) => {
-      builder.whereNull('P.ISDELETED').orWhere('P.ISDELETED', 0)
-    })
-    .andWhere((builder) => {
-      builder.whereNull('P.ISDELETESENDTOMANUNITES').orWhere('P.ISDELETESENDTOMANUNITES', 0)
-    })
-    .andWhere('P.LASTFORJOBORDER', 1)
-    .orderBy('P.RECORDTIME', 'desc')
+  const events = await knex.raw(`
+        SELECT
+        TOP 100
+        'unplanned' as eventType,
+          d.PLANKEY AS planKey,
+          d.RECORDTIME AS recordTime,
+          d.JOBORDER AS jobOrder,
+          c.VALUE AS fabricWeight,
+          d.PLANNEDMACHINE AS machineId,
+          d.PRGCOUNT AS programCount,
+          d.PROGRAMNOLIST AS programList,
+          d.PLANNEDSTARTTIME AS startTime,
+          d.NOTE AS note,
+          d.TheoricalDuration AS theoreticalDuration,
+          d.Color AS fabricColor,
+          d.CUSTOMERNAME AS customer,
+          p.QUEUENUMBER AS queueNumber,
+          p.PINNED AS pinned,
+          (
+          SELECT v.parameterName as 'paramName', r.VALUE as 'value'
+            FROM DYBFBATCHPLANPARAMETERS r
+            LEFT JOIN PTCOLUMNS v ON v.parameterId = r.BATCHPARAMETERID
+            WHERE r.PLANKEY = d.PLANKEY
+            AND v.visible = 1
+            FOR JSON PATH
+            ) as erpParameters
+        FROM DYBFBATCHPLAN d
+        LEFT JOIN PTBATCHPLANQUEUE p ON p.PLANKEY = d.PLANKEY
+        LEFT JOIN DYBFBATCHPLANPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.PARAMSTRING = 'Kilo'
+    WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
+    AND p.PLANKEY IS NULL
+    AND d.LASTFORJOBORDER = 1
+    AND d.ISDELETESENDTOMANUNITES IS NULL OR d.ISDELETESENDTOMANUNITES = 0
+`)
 
   return events.map(ev => ({
     ...ev,
