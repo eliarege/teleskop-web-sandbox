@@ -15,6 +15,7 @@ export default defineNuxtConfig({
     sambaPassword: 'eliar',
     reqFilePath: 'manuel.req',
     writeFilePath: 'tmp/index.req',
+    addMissingTeleskopColumns: 'false',
     public: {
       kcClientId: 'dispensing-manager-ui',
       websockifyUrl: 'ws://localhost:6800',
