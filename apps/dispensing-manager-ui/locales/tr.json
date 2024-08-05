@@ -60,7 +60,7 @@
       "readFromDMS": "DMS'den Oku",
       "connectionStatus": "Bağlantı Durumu",
       "exportFileName": "Dışa Aktarım Dosya İsmi",
-      "exportIrrelevantConsumptions": "İlişkili Olmayan Tüketimleri Dışa Aktar",
+      "exportUnrelatedConsumptions": "İlişkili Olmayan Tüketimleri Dışa Aktar",
       "vncPort": "Dağıtıcı VNC Port'u",
       "vncPassword": "Dağıtıcı VNC Şifresi"
     },

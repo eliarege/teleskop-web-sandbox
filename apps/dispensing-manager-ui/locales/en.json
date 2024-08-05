@@ -60,7 +60,7 @@
       "readFromDMS": "Read from DMS",
       "connectionStatus": "Connection Status",
       "exportFileName": "Export Path",
-      "exportIrrelevantConsumptions": "Export Unrealted Consumptions",
+      "exportUnrelatedConsumptions": "Export Unrelated Consumptions",
       "vncPort": "Dispenser VNC Port",
       "vncPassword": "Dispenser VNC Password"
     },

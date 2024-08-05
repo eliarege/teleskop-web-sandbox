@@ -83,7 +83,7 @@ const dispenserInfo = ref<{ label: string, value: any, field: string, options?: 
   { label: t('settings.dispSettings.exportFileName'), value: '', field: 'exportFileName', controller: 'input' },
   { label: t('settings.dispSettings.readFromDMS'), value: '', field: 'dms', controller: 'checkbox' },
   { label: '', value: '', field: '', controller: '' },
-  { label: t('settings.dispSettings.exportIrrelevantConsumptions'), value: '', field: 'exportIrrelevantConsumptions', controller: 'checkbox' },
+  { label: t('settings.dispSettings.exportUnrelatedConsumptions'), value: '', field: 'exportUnrelatedConsumptions', controller: 'checkbox' },
 ])
 
 async function getTypes() {
@@ -409,7 +409,7 @@ const pagination = ref({ rowsPerPage: 0 })
                     class="w-70"
                     dense
                     filled
-                    :disable="disp.field === 'exportFileName' ? dispenserInfo.find(el => el.field === 'exportIrrelevantConsumptions')!.value : false"
+                    :disable="disp.field === 'exportFileName' ? dispenserInfo.find(el => el.field === 'exportUnrelatedConsumptions')!.value : false"
                     type="text"
                     :placeholder="disp.value"
                   />

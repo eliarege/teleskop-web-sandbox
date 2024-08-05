@@ -39,12 +39,12 @@ const dispenserParameters = {
   dispIP: 'IP',
   dispConsumptionFileName: 'CONSUMPTIONFILENAME',
   dms: 'READCONSUMPTIONFROMDMS',
-  exportIrrelevantConsumptions: 'EXPORTIRRELEVANTCONSUMPTION',
+  exportUnrelatedConsumptions: 'EXPORTIRRELEVANTCONSUMPTION',
   exportFileName: 'EXPORTFILENAME',
   connectionControlDate: 'CONNECTIONCONTROLDATE',
   connectionStatus: 'CONNECTIONSTATUS',
   vncPort: 'VNCPORT',
-  vncPassword: 'VNCPASSWORD'
+  vncPassword: 'VNCPASSWORD',
 }
 
 router.get('/dispenser', defineEventHandler(async () => {
@@ -141,7 +141,7 @@ router.post('/dispenser/:dispNo', defineEventHandler(async (event) => {
       IP: body?.dispIP,
       CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
       READCONSUMPTIONFROMDMS: body?.dms,
-      EXPORTIRRELEVANTCONSUMPTION: body?.exportIrrelevantConsumptions,
+      EXPORTIRRELEVANTCONSUMPTION: body?.exportUnrelatedConsumptions,
       EXPORTFILENAME: body?.exportFileName,
       VNCPORT: body?.vncPort,
       VNCPASSWORD: body?.vncPassword,
@@ -166,7 +166,7 @@ router.put('/dispenser/:dispNo', defineEventHandler(async (event) => {
       IP: body?.dispIP,
       CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
       READCONSUMPTIONFROMDMS: body?.dms,
-      EXPORTIRRELEVANTCONSUMPTION: body?.exportIrrelevantConsumptions,
+      EXPORTIRRELEVANTCONSUMPTION: body?.exportUnrelatedConsumptions,
       EXPORTFILENAME: body?.exportFileName,
       VNCPORT: body?.vncPort,
       VNCPASSWORD: body?.vncPassword,
