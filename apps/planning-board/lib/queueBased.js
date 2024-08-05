@@ -206,11 +206,12 @@ export class QueueDrag extends DragHelper {
       }
     }
     const target = schedule.resolveEventRecord(context.target) || previousEvent
+
     context.isValid = !isValidating
     && Boolean(startDate && machine)
     && target
     && target !== null
-      ? !target.isFinished
+      ? !target.eventType === 'finished'
       : !(startDate < new Date())
       && (validation.length > 0 ? validation.find(a => a.machineId === machine.id).valid : true)
 

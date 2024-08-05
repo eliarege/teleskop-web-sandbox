@@ -337,7 +337,6 @@ async function machineReload() {
 }
 
 watch(modifiedEvents, (newVal: QueueBasedEvent[]) => {
-  console.log('newVal', newVal)
   scheduler.events = newVal
   scrollStore.data = newVal
 })
