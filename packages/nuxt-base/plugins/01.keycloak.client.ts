@@ -152,7 +152,7 @@ export default defineNuxtPlugin(() => {
       initPromise = keycloak.init({
         onLoad: 'check-sso',
         scope: kcScope,
-        silentCheckSsoRedirectUri: withBase('/api/check-sso', config.app.baseURL),
+        silentCheckSsoRedirectUri: withBase('/api/check-sso', withBase(config.app.baseURL, location.origin)),
         messageReceiveTimeout: 5000,
         enableLogging: kcConfig?.enableLogging ?? import.meta.dev,
       })
