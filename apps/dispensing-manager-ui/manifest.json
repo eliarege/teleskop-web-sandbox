@@ -3,8 +3,6 @@
     "samba"
   ],
   "roles": [
-    { "name": "view" },
-    { "name": "vnc-access" },
     { "name": "manage" }
   ]
 }
