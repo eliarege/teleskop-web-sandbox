@@ -87,7 +87,13 @@
     "updated": "Güncellenme Tarihi",
     "processType": "Proccess Tipi",
     "parameter": "Parametre",
-    "command": "Program Komutu"
+    "command": "Program Komutu",
+    "totalChemReq": "Top. Kim.",
+    "totalDyeReq": "Top. Boya",
+    "manChemReq": "Man. Kim.",
+    "autoChemReq": "Oto. Kim.",
+    "autoDyeReq": "Oto. Boya",
+    "manDyeReq": "Man. Boya"
   },
   "command": {
     "icon": "İkon",

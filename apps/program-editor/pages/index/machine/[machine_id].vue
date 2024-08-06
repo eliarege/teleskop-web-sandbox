@@ -275,6 +275,48 @@ const columns = ref<ProgramTableColumn[]>([
     align: 'center',
   },
   {
+    name: 'totalChemReq',
+    label: tt('program.totalChemReq'),
+    field: 'totalChemReq',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    name: 'totalDyeReq',
+    label: tt('program.totalDyeReq'),
+    field: 'totalDyeReq',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    name: 'manChemReq',
+    label: tt('program.manChemReq'),
+    field: 'manChemReq',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    name: 'autoChemReq',
+    label: tt('program.autoChemReq'),
+    field: 'autoChemReq',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    name: 'autoDyeReq',
+    label: tt('program.autoDyeReq'),
+    field: 'autoDyeReq',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    name: 'manDyeReq',
+    label: tt('program.manDyeReq'),
+    field: 'manDyeReq',
+    sortable: false,
+    align: 'center',
+  },
+  {
     name: 'updated_at',
     label: tt('program.updated'),
     field: 'updatedAt',
@@ -586,6 +628,8 @@ function handleRowColor(row: ProgramHeader) {
     }
   }
 }
+
+console.log('columns', programs.value)
 </script>
 
 <template>
