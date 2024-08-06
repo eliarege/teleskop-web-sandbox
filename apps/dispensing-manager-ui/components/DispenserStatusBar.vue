@@ -50,7 +50,7 @@ function checkForOverflow() {
         :key="dispenser.dispNo"
         class="ml-10 font-size-4"
       >
-        <router-link :to="`/vnc/${dispenser.dispNo}`" target="_blank">
+        <NuxtLink :to="`/vnc/${dispenser.dispNo}`" target="_blank">
           <span class="cursor-pointer hover:decoration-underline">
             {{ `${dispenser.dispNo} - ${dispenser.name} - ${t(`dispenserConnectionStatus.${dispenser.connectionStatus}`)}` }}
             <q-icon
@@ -58,7 +58,7 @@ function checkForOverflow() {
               size="sm"
             />
           </span>
-        </router-link>
+        </NuxtLink>
       </div>
     </div>
   </div>
