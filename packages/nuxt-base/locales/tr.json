@@ -9,13 +9,13 @@
       "enter": "Tam ekran yap",
       "exit": "Tam ekrandan çık"
     },
-    "guest": "Guest",
+    "guest": "Misafir",
     "home": "Ana sayfa",
     "locale": "Dil",
-    "login": "Login",
-    "logout": "Logout",
-    "name": "Name",
-    "nodeVersion": "Node version",
+    "login": "Giriş Yap",
+    "logout": "Çıkış Yap",
+    "name": "İsim",
+    "nodeVersion": "Node versiyonu",
     "sendFeedback": "Geri bildirim gönder",
     "theme": {
       "_": "Tema",

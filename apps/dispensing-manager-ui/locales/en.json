@@ -235,6 +235,7 @@
     "_": "Recipe",
     "recipeTable": "Recipe Table",
     "amount": "Amount",
+    "recipeAmount": "Recipe Amount",
     "changePlannedMachine": "Change Planned Machine",
     "header": "Recipe Information Inquiry",
     "infoText": "Type the Job order number you want to Job on ",

@@ -52,6 +52,7 @@ const columns = [
   { label: t('materialName'), prop: 'materialName', align: 'center', showOverflowTooltip: true },
   { label: t('recipe.processNo'), prop: 'programProcessNo', align: 'center', showOverflowTooltip: true },
   { label: t('recipe.amount'), prop: 'amount', align: 'center', showOverflowTooltip: true },
+  { label: t('recipe.recipeAmount'), prop: 'recipeAmount', align: 'center', showOverflowTooltip: true },
   { label: t('recipe.metric'), prop: 'unit', align: 'center', showOverflowTooltip: true },
 ]
 
@@ -530,7 +531,7 @@ onBeforeUnmount(() => {
   max-width: 100%;
   height: 50%;
 }
-.text-override-left :deep(.text-right){
+.text-override-left :deep(.text-right) {
   text-align: left;
   word-break: normal;
   white-space: normal;
@@ -545,15 +546,15 @@ onBeforeUnmount(() => {
   height: 5rem;
   justify-content: center;
 }
-.content{
+.content {
   padding-bottom: 2rem;
 }
-.outer-div{
+.outer-div {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
-.footer-button{
+.footer-button {
   margin: 1rem;
   margin-bottom: 1rem;
   overflow: hidden;

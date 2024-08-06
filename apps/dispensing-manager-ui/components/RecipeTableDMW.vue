@@ -80,7 +80,9 @@ const selectedRow = ref()
 const rgbClasses = ['violet-class', 'blue-class', 'green-class', 'red-class', 'aqua-class', 'orange-class']
 function a({ row, columnIndex }: SpanMethodProps) {
   // HARDCODED! columnIndex 4 === chemCode --> veri değişirse değiştir!
-  if ((columnIndex === 7 || columnIndex === 8) && row.recipeType === 1 && row.processOrder) {
+  const isDyeCell = (columnIndex === 7 || columnIndex === 8) && row.recipeType === 1 && row.processOrder
+  const isAmountCell = (columnIndex === 10 || columnIndex === 11) && row.processOrder && row.recipeAmount
+  if (isDyeCell || isAmountCell) {
     const color = rgbClasses[row.processOrder % rgbClasses.length]
     return color
   }
@@ -403,11 +405,11 @@ async function showLogsOfSelectedStep() {
   background-color: #b8dfff !important;
 }
 .el-table {
-    --el-table-border: 1.5px solid #999999;
+  --el-table-border: 1.5px solid #999999;
 }
 
 .el-table thead.is-group th.el-table__cell {
-    background: #00000040;
+  background: #00000040;
 }
 .context-menu {
   position: fixed;
@@ -441,10 +443,9 @@ async function showLogsOfSelectedStep() {
 }
 
 @media (min-width: 600px) {
-
   .prev-logs-class .q-dialog__inner--minimized > div {
-  max-width: 100%;
-}
+    max-width: 100%;
+  }
 }
 @media (min-width: 735px) and (max-width: 1350px) {
   .el-table--small .el-table__cell {

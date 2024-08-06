@@ -234,6 +234,7 @@
     "_": "Reçete",
     "recipeTable": "Reçete Tablosu",
     "amount": "Miktar",
+    "recipeAmount": "Reçeteki Miktarı",
     "changePlannedMachine": "Planlanan Makineyi Değiştir",
     "header": "Reçete Bilgileri Sorgulama",
     "infoText": "Çalışmak istediğiniz iş emri numarasını yazınız. Sorgulama işlemi yapınız.",

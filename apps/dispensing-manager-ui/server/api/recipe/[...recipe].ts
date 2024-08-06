@@ -74,6 +74,7 @@ router.get('/joborder', defineEventHandler(async (event) => {
       unit: 'r.otherUnit',
       programNo: 'p.RECIPENO',
       programName: 't.NAME',
+      recipeAmount: 'r.RECIPEAMOUNT',
     })
     .leftJoin('dbo.DYBFBATCHORDERRECIPEHEADER as p', function () {
       this.on('r.PLANKEY', '=', 'p.PLANKEY')
