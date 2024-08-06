@@ -5,6 +5,8 @@ import ConnectMultiDispenserDialog from '~/components/ConnectMultiDispenserDialo
 import { colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 
+const keycloak = useKeycloak()
+
 const { t } = useI18n()
 const rows = ref<any[]>([])
 const disps = ref([])
@@ -74,14 +76,14 @@ const materialInfo = ref<{ label: string, value: any, field: string, numeric?: b
 ])
 
 async function getRows() {
-  rows.value = await $fetch('/api/settings/material-dispenser-connection-filtered', {
+  rows.value = await keycloak.fetch('/api/settings/material-dispenser-connection-filtered', {
     method: 'POST',
   })
   rows.value.unshift({})
 }
 
 async function getDisps() {
-  disps.value = await $fetch('/api/settings/dispenser')
+  disps.value = await keycloak.fetch('/api/settings/dispenser')
 }
 
 async function resetMaterialInfo(row: any) {
@@ -99,7 +101,7 @@ async function resetMaterialInfo(row: any) {
 }
 
 async function applyFilters(updatedValue: any) {
-  rows.value = await $fetch('/api/settings/material-dispenser-connection-filtered', {
+  rows.value = await keycloak.fetch('/api/settings/material-dispenser-connection-filtered', {
     method: 'POST',
     body: updatedValue,
   })
@@ -210,7 +212,7 @@ async function submit(isPut: boolean) {
   }
   /** If create */
   if (!isPut) {
-    isSuccess = await $fetch(`/api/settings/material-connection/${body.materialCode}`, {
+    isSuccess = await keycloak.fetch(`/api/settings/material-connection/${body.materialCode}`, {
       method: 'post',
       body,
     })
@@ -218,7 +220,7 @@ async function submit(isPut: boolean) {
     expandedRow.value = null
   }
   if (isPut) { /** If it is put */
-    isSuccess = await $fetch(`/api/settings/material-connection/${body.materialCode}`, {
+    isSuccess = await keycloak.fetch(`/api/settings/material-connection/${body.materialCode}`, {
       method: 'put',
       body,
     })
@@ -240,7 +242,7 @@ async function submit(isPut: boolean) {
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  const isSuccess = await $fetch(`/api/settings/material/${materialInfo.value[0].value}`, {
+  const isSuccess = await keycloak.fetch(`/api/settings/material/${materialInfo.value[0].value}`, {
     method: 'delete',
   })
   expandedRow.value = null
@@ -259,7 +261,7 @@ async function checkMaterialCodeExist() {
     givenMaterialCodeExistsWarning.value = true
     materialCodeErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.material') })
   } else if (materialInfo.value[0].value) {
-    givenMaterialCodeExistsWarning.value = await $fetch(`/api/settings/check-is-material-exist/${materialInfo.value[0].value}`)
+    givenMaterialCodeExistsWarning.value = await keycloak.fetch(`/api/settings/check-is-material-exist/${materialInfo.value[0].value}`)
     if (givenMaterialCodeExistsWarning.value)
       materialCodeErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: materialInfo.value[0].value, type: t('warnings.material') })
   } else {
@@ -267,7 +269,7 @@ async function checkMaterialCodeExist() {
   }
 }
 async function handleMultiEdit() {
-  const materials = await $fetch('/api/settings/materials-key-value')
+  const materials = await keycloak.fetch('/api/settings/materials-key-value')
   const dispensers = disps.value.map((disp) => {
     return { label: `${disp.dispNo} - ${disp.name}`, value: disp.dispNo }
   })
@@ -286,7 +288,7 @@ async function handleMultiEdit() {
       dispenserList: response.selectedDispensers,
     }
     const operation = response.isReplace ? 'replace' : 'add'
-    const status = await $fetch(`/api/settings/${operation}-material-dispenser-connection`, {
+    const status = await keycloak.fetch(`/api/settings/${operation}-material-dispenser-connection`, {
       method: 'POST',
       body,
     })
@@ -305,15 +307,14 @@ onBeforeRouteLeave(async (to, from, next) => {
   }
 })
 const pagination = ref({ rowsPerPage: 0 })
-
 </script>
 
 <template>
   <FilterableTable
+    v-model:pagination="pagination"
     :rows="rows"
     :columns="columns"
     :is-expandable="true"
-    v-model:pagination="pagination"
     style="height: 90vh;"
     :empty-first-row="true"
     :custom-sort-method="customSortMethod"

@@ -7,6 +7,7 @@ const props = defineProps({
   joborder: Number,
   plankey: Number,
 })
+const keycloak = useKeycloak()
 
 const { t, d } = useI18n()
 
@@ -68,8 +69,9 @@ const logCols = computed<Column[]>(() => [
 
 const logRows = ref()
 await applyFilters([])
+
 async function applyFilters(updatedValue: any) {
-  const tempFilteredLogs = await $fetch('/api/stepLogs/filtered-logs', {
+  const tempFilteredLogs = await keycloak.fetch('/api/stepLogs/filtered-logs', {
     method: 'post',
     body: {
       filters: updatedValue,
@@ -171,7 +173,7 @@ async function applyFilters(updatedValue: any) {
 .my-sticky-virtscroll-table-recipe :deep(tbody) {
   scroll-margin-top: 48px;
 }
-.text-override-left :deep(.text-right){
+.text-override-left :deep(.text-right) {
   text-align: left;
   word-break: normal;
   white-space: normal;

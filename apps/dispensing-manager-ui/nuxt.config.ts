@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: false,
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   extends: ['@teleskop/nuxt-base'],
   runtimeConfig: {
     teleskopHost: 'localhost',
@@ -10,11 +10,11 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
-    sambaPath: '//192.168.16.88/staging',
+    sambaPath: '//192.168.16.88/staging_dm',
     sambaUser: 'eliar',
     sambaPassword: 'eliar',
     reqFilePath: 'manuel.req',
-    writeFilePath: 'tmp/index.req',
+    writeFilePath: 'index.req',
     addMissingTeleskopColumns: 'false',
     public: {
       kcClientId: 'dispensing-manager-ui',

@@ -2,13 +2,15 @@
 import { symOutlinedLocalLaundryService, symOutlinedManufacturing, symOutlinedPackage2, symOutlinedSettingsApplications } from '@quasar/extras/material-symbols-outlined'
 import { } from '@quasar/extras/material-icons-round'
 import { breakpoints } from '~/shared/constants'
-import { navigateToPage } from '~/shared/functions'
+
+definePageMeta({
+  middleware: ['auth'],
+  roles: ['manage'],
+})
 
 const { t } = useI18n()
 const tempRoute = useRoute()
-const tabRef = computed(() => tempRoute.fullPath.split('/')[2] || 'material')
-if (!tempRoute.fullPath.split('/')[2])
-  navigateToPage('settings/dispenser')
+const tabRef = computed(() => tempRoute.path.split('/')[2] || 'dispenser')
 
 const splitterModel = ref(10)
 const isLaptop = useBreakpoints(breakpoints).greaterOrEqual('laptop')
@@ -59,11 +61,9 @@ const settings = [
 <style scoped>
 /* Mobile view */
 @media (max-width: 600px) {
-
   .header-class {
-  font-size: medium !important;
-}
-
+    font-size: medium !important;
+  }
 }
 
 .selected-tab {
@@ -95,7 +95,7 @@ const settings = [
 .tab-overwrite :deep(.q-tab__label) {
   font-weight: bold !important;
 }
-.q-tab--full{
+.q-tab--full {
   min-height: 8rem;
 }
 img.invert-colors {

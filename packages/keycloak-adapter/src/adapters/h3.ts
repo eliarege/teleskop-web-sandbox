@@ -1,7 +1,7 @@
 import type { JWTPayload } from 'jose'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 import { createError, defineEventHandler, getHeader } from 'h3'
-import type { EventHandlerRequest, EventHandlerResponse, H3Event } from 'h3'
+import type { EventHandler, EventHandlerRequest, H3Event } from 'h3'
 import { type LogLevel, createConsola } from 'consola'
 import type { KeycloakScope } from '../types'
 import { isBearer } from '../utils'
@@ -26,18 +26,15 @@ function getBearerToken(event: H3Event): string | null {
   return isBearer(type) ? token : null
 }
 
-export type H3AuthEvent<Request extends EventHandlerRequest> = H3Event<Request> & {
-  context: { kauth: KeycloakPayload }
-}
-
-export interface AuthEventHandler<Request extends EventHandlerRequest = EventHandlerRequest, Response extends EventHandlerResponse = EventHandlerResponse> {
-  __is_handler__?: true
-  (event: H3AuthEvent<Request>): Response
+declare module 'h3' {
+  interface H3EventContext {
+    kauth?: KeycloakPayload
+  }
 }
 
 export interface AuthEventHandlerObject<T extends EventHandlerRequest, D> {
   roles?: string[]
-  handler: AuthEventHandler<T, D>
+  handler: EventHandler<T, D>
 }
 
 export function h3Adapter(config: H3AdapterConfig) {
@@ -68,8 +65,8 @@ export function h3Adapter(config: H3AdapterConfig) {
     defineAuthEventHandler<T extends EventHandlerRequest, D>(
       authHandler:
         | AuthEventHandlerObject<T, D>
-        | AuthEventHandler<T, D>,
-    ): AuthEventHandler<T, D> {
+        | EventHandler<T, D>,
+    ): EventHandler<T, D> {
       const { handler, roles = [] } = typeof authHandler === 'object'
         ? authHandler
         : { handler: authHandler }
@@ -89,7 +86,7 @@ export function h3Adapter(config: H3AdapterConfig) {
           }
         }
         event.context.kauth = payload
-        return handler(event as H3AuthEvent<T>)
+        return handler(event)
       })
     },
   }

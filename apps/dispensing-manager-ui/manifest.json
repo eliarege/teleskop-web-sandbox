@@ -1,5 +1,8 @@
 {
   "envDependencies": [
     "samba"
+  ],
+  "roles": [
+    { "name": "manage" }
   ]
 }

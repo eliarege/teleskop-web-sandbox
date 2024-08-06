@@ -1,8 +1,12 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const route = useRoute()
-const { data: dispenser } = await useFetch(`/api/settings/dispenser/${Number.parseInt(route.params.id as string)}`)
-console.log(dispenser.value)
+const { data: dispenser } = await useAuthFetch(`/api/settings/dispenser/${Number.parseInt(route.params.id as string)}`)
+
+definePageMeta({
+  middleware: ['auth'],
+  roles: ['manage'],
+})
 </script>
 
 <template>

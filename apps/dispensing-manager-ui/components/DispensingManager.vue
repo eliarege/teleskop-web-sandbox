@@ -13,13 +13,14 @@ interface ConfirmationDialog {
   vis: boolean
   act: Action
 }
+const keycloak = useKeycloak()
 
 const actions = ref<Action[]>(['retry', 'cancel'])
 const confirmationDialog = ref<ConfirmationDialog>({ vis: false, act: 'cancel' })
-const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/settings/dispenser-connection-status', { default: () => [] })
+const { data: connectionStatus, refresh: refreshConnectionStatus } = await useAuthFetch<any[]>('/api/settings/dispenser-connection-status', { default: () => [] })
 useTimeoutPoll(refreshConnectionStatus, 120000, { immediate: true })
-const machines = await $fetch('/api/machine/machines')
-const dispensers = await $fetch('/api/settings/dispenser')
+const machines = await keycloak.fetch('/api/machine/machines')
+const dispensers = await keycloak.fetch('/api/settings/dispenser')
 const columnsRecipe = computed<Array<FilterableTableColumn>>(() => [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
@@ -123,7 +124,7 @@ const canceledVisible = ref(false)
 updateRecipe()
 
 async function updateRecipe() {
-  recipe.value = await $fetch(`/api/dispenser/joborderlogs?isCanceled=${canceledVisible.value}`, {
+  recipe.value = await keycloak.fetch(`/api/dispenser/joborderlogs?isCanceled=${canceledVisible.value}`, {
     method: 'post',
     body: filters.value,
   })
@@ -146,7 +147,7 @@ onUnmounted(() => {
 
 async function fetchMaterialData(reqnumber: number) {
   if (reqnumber)
-    material.value = await $fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
+    material.value = await keycloak.fetch(`/api/dispenser/requestmaterials?reqnumber=${reqnumber}`)
   else
     material.value = []
 }
@@ -172,7 +173,7 @@ async function clickShowRecipe(row: any, isLogs: string) {
 }
 
 async function completeProgram(row) {
-  await $fetch('/api/dispenser/complete-program', {
+  await keycloak.fetch('/api/dispenser/complete-program', {
     method: 'PUT',
     body: {
       reqNumber: row.reqnumber,
@@ -182,7 +183,7 @@ async function completeProgram(row) {
 }
 
 async function isRecipeDeleted(row) {
-  const isDeleted = await $fetch('/api/dispenser/check-status', {
+  const isDeleted = await keycloak.fetch('/api/dispenser/check-status', {
     method: 'POST',
     body: {
       joborder: row.joborder,
@@ -201,7 +202,7 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
       position: 'top',
     })
   else {
-    const countInProgram = await $fetch('/api/dispenser/total-step-count', {
+    const countInProgram = await keycloak.fetch('/api/dispenser/total-step-count', {
       method: 'POST',
       body: {
         plankey: row.plankey,
@@ -226,7 +227,7 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
     ]
 
     try {
-      await $fetch('/api/file/write-dispenser-step', {
+      await keycloak.fetch('/api/file/write-dispenser-step', {
         method: 'POST',
         body: {
           content: data,
@@ -261,10 +262,13 @@ async function updateSelectedRow(evt: any) {
   await fetchMaterialData(evt.reqnumber)
 }
 const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
+const hasManagerRole = computed(() => {
+  return keycloak.hasResourceRole('manage')
+})
 </script>
 
 <template>
-  <div class="dialog-class flex flex-row gap-5">
+  <div class="dialog-class flex flex-row gap-5 mb-12">
     <div class="responsive-flex-container ">
       <div
         class="responsive-table"
@@ -323,6 +327,7 @@ const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
                   :key="act"
                   v-close-popup
                   clickable
+                  :disable="!hasManagerRole"
                   @click="
                     selectedRow.status === StatusCodes.requestCompleted || selectedRow.status === StatusCodes.canceled
                       ? processRequest(act, selectedRow)
@@ -334,6 +339,7 @@ const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
                 <q-item
                   v-close-popup
                   clickable
+                  :disable="!hasManagerRole"
                   @click="completeProgram(selectedRow)"
                 >
                   <q-item-section>{{ t('dispensingManager.rcMenu.complete') }}</q-item-section>
@@ -415,6 +421,7 @@ const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
       </q-table>
     </div>
   </div>
+
   <DispenserStatusBar :dispenser-connection-statuses="connectionStatus" />
 </template>
 

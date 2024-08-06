@@ -74,7 +74,7 @@ export async function fetchTeleskopMachine(id: number): Promise<Machine | null> 
 }
 export async function fetchDMSMachine(id: number): Promise<Machine | null> {
   try {
-    if (inferBoolean(process.env.DMS_ENABLED)) {
+    if (config.dmsEnabled) {
       const response = await dms('DISPENSER')
         .select({
           name: 'dispenser_name',
@@ -96,7 +96,7 @@ export async function fetchDMSMachine(id: number): Promise<Machine | null> {
           port: 'VNCPORT',
           password: 'VNCPASSWORD',
         }).where('DISPENSERID', id).first()
-        return teleskopDispenser || null
+      return teleskopDispenser || null
     }
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {

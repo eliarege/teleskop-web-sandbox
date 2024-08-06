@@ -1,4 +1,4 @@
-import { createRouter, defineEventHandler, useBase } from 'h3'
+import { createRouter, useBase } from 'h3'
 import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 
@@ -28,7 +28,7 @@ const selectParameters = {
   completionTime: 'r.COMPLETEDTIME',
 }
 
-router.post('/joborderlogs', defineEventHandler(async (event) => {
+router.post('/joborderlogs', defineAuthEventHandler(async (event) => {
   const { isCanceled } = getQuery(event)
   const body = await readBody(event)
 
@@ -67,7 +67,7 @@ router.post('/joborderlogs', defineEventHandler(async (event) => {
   return await result
 }))
 
-router.get('/requestmaterials', defineEventHandler(async (event) => {
+router.get('/requestmaterials', defineAuthEventHandler(async (event) => {
   const { reqnumber } = getQuery(event)
   const result = await knex('dbo.DYTFREQMATERIALS as r')
     .join('dbo.DYTFMATERIAL as m', function () {
@@ -87,15 +87,18 @@ router.get('/requestmaterials', defineEventHandler(async (event) => {
   return result
 }))
 
-router.put('/complete-program', defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const result = await knex('DYTFCHEMREQUESTS')
-    .where('REQNUMBER', body.reqNumber)
-    .update({ STATUS: 3 })
-  return result
+router.put('/complete-program', defineAuthEventHandler({
+  roles: ['manage'],
+  async handler(event) {
+    const body = await readBody(event)
+    const result = await knex('DYTFCHEMREQUESTS')
+      .where('REQNUMBER', body.reqNumber)
+      .update({ STATUS: 3 })
+    return result
+  },
 }))
 
-router.post('/check-status', defineEventHandler(async (event) => {
+router.post('/check-status', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const status = await knex('DYBFBATCHPLAN')
     .where('JOBORDER', body.joborder)
@@ -104,18 +107,21 @@ router.post('/check-status', defineEventHandler(async (event) => {
   return status[0].ISDELETED
 }))
 
-router.put('/retry-cancel-status-setter', defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  await knex('DYTFCHEMREQUESTS')
-    .where('REQNUMBER', body.reqNumber)
-    .update({ STATUS: 8 })
-  await knex('DYTFREQMATERIALS')
-    .where('REQNUMBER', body.reqNumber)
-    .update({ STATUS: 8 })
-  return 1
+router.put('/retry-cancel-status-setter', defineAuthEventHandler({
+  roles: ['manage'],
+  async handler(event) {
+    const body = await readBody(event)
+    await knex('DYTFCHEMREQUESTS')
+      .where('REQNUMBER', body.reqNumber)
+      .update({ STATUS: 8 })
+    await knex('DYTFREQMATERIALS')
+      .where('REQNUMBER', body.reqNumber)
+      .update({ STATUS: 8 })
+    return 1
+  },
 }))
 
-router.post('/total-step-count', defineEventHandler(async (event) => {
+router.post('/total-step-count', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const result = await knex('DYBFBATCHORDERRECIPESTEPS')
     .where('PLANKEY', body.plankey)

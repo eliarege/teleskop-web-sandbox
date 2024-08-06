@@ -11,17 +11,18 @@ import { colors } from '~/shared/constants'
 // For this, we can use the onMounted hook from 'vue'
 
 const { t, d } = useI18n()
+const keycloak = useKeycloak()
 
 const externalFilterSlots = useStorage('filterSlots', [], sessionStorage)
 // const machines = ref([])
-const { data: machines } = await useFetch('/api/machine/machines')
-const rowsNumber = await $fetch('/api/joborder/joborder-count')
+const { data: machines } = await useAuthFetch('/api/machine/machines')
+const rowsNumber = await keycloak.fetch('/api/joborder/joborder-count')
 const pagination = ref({ rowsPerPage: 10, page: 1, rowsNumber } as QTableProps['pagination'])
 const visibleLoading = ref(true)
 const joborders = ref([])
 async function fetchData() {
   visibleLoading.value = true
-  const response = await $fetch('/api/joborder/joborders', {
+  const response = await keycloak.fetch('/api/joborder/joborders', {
     method: 'POST',
     body: { pagination: pagination.value, filters: externalFilterSlots.value },
   }).finally(() => visibleLoading.value = false)
@@ -165,7 +166,7 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
   height: 80vh;
   padding: 1rem;
 }
-.responsive-table{
+.responsive-table {
   width: 100%;
 }
 .right-home {

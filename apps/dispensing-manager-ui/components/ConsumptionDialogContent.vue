@@ -8,6 +8,7 @@ const props = defineProps({
   correctionNo: Number,
 })
 const { t, d } = useI18n()
+const keycloak = useKeycloak()
 
 const columnsOto = computed(() => [
   { name: 'processNo', label: t('recipe.processNo'), field: 'processNo' },
@@ -66,8 +67,9 @@ const columnsMan = computed(() => [
     },
   },
 ])
-const data = await $fetch(`/api/consumption/theoretical?joborder=${props.joborder}&correctionNo=${props.correctionNo}`)
-const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&correctionNo=${props.correctionNo}`)
+
+const data = await keycloak.fetch(`/api/consumption/theoretical?joborder=${props.joborder}&correctionNo=${props.correctionNo}`)
+const data2 = await keycloak.fetch(`/api/consumption/manual?joborder=${props.joborder}&correctionNo=${props.correctionNo}`)
 </script>
 
 <template>
@@ -153,7 +155,7 @@ const data2 = await $fetch(`/api/consumption/manual?joborder=${props.joborder}&c
 </template>
 
 <style scoped>
-.text-override-left :deep(.text-right){
+.text-override-left :deep(.text-right) {
   text-align: left;
   word-break: normal;
   white-space: normal;

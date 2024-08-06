@@ -2,6 +2,7 @@
 import { notification, onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 
 const { t } = useI18n()
+const keycloak = useKeycloak()
 
 const referenceOptions = ref([
   { value: 0, label: t('settings.driverInfo.prgNo') },
@@ -25,7 +26,7 @@ const radio = ref()
 const deleteDialogVisible = ref(false)
 const givenDriverIdExistsWarning = ref(false)
 const driverIdErrorMessage = ref('')
-const { data: deleteExpiredJobOrdersTime, refresh: refreshDeleteExpiredJobOrderDays } = await useFetch('/api/settings/delete-old-batch-time')
+const { data: deleteExpiredJobOrdersTime, refresh: refreshDeleteExpiredJobOrderDays } = await useAuthFetch('/api/settings/delete-old-batch-time')
 const deleteExpiredJobOrdersActivated = ref(deleteExpiredJobOrdersTime.value > 0)
 
 await fetchData()
@@ -36,16 +37,17 @@ function setVariables() {
   currentDriverName.value = driver.value?.DRIVERNAME ? driver.value?.DRIVERNAME : ''
   givenDriverIdExistsWarning.value = false
 }
+
 async function updateDriverSettings(isPut: boolean) {
   let isSuccess
   let keyI18N
-  await $fetch('/api/settings/file-system', {
+  await keycloak.fetch('/api/settings/file-system', {
     method: 'put',
     body: {
       path: requestFilteSystemPath.value,
     },
   })
-  await $fetch('/api/settings/delete-old-batch-time', {
+  await keycloak.fetch('/api/settings/delete-old-batch-time', {
     method: 'put',
     body: {
       days: deleteExpiredJobOrdersActivated.value ? deleteExpiredJobOrdersTime.value : 0,
@@ -64,19 +66,19 @@ async function updateDriverSettings(isPut: boolean) {
     CONTROLNV5DESC: driver.value?.CONTROLNV5DESC,
   }
   if (!isPut) {
-    isSuccess = await $fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
+    isSuccess = await keycloak.fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
       method: 'POST',
       body,
     })
     keyI18N = 'warnings.createResponse'
   } else {
-    isSuccess = await $fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
+    isSuccess = await keycloak.fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
       method: 'PUT',
       body,
     })
     keyI18N = 'warnings.changeResponse'
   }
-  drivers.value = await $fetch('/api/settings/driver')
+  drivers.value = await keycloak.fetch('/api/settings/driver')
   if (isSuccess && isSuccess?.code !== 400) {
     currentDriverName.value = driver.value?.DRIVERNAME
     driver.value.newDriver = false
@@ -94,8 +96,8 @@ async function updateDriverSettings(isPut: boolean) {
   )
 }
 async function fetchData() {
-  requestFilteSystemPath.value = await $fetch('/api/settings/file-system')
-  drivers.value = await $fetch('/api/settings/driver')
+  requestFilteSystemPath.value = await keycloak.fetch('/api/settings/file-system')
+  drivers.value = await keycloak.fetch('/api/settings/driver')
   if (drivers.value.length) {
     driver.value = drivers.value[0]
     driver.value.newDriver = false
@@ -110,7 +112,7 @@ async function addNewDriver() {
 }
 
 async function deleteDriver() {
-  const isSuccess = await $fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
+  const isSuccess = await keycloak.fetch(`/api/settings/driver/${driver.value.DRIVERID}`, {
     method: 'DELETE',
   })
   notification(isSuccess, t('warnings.deleteResponse', { type: t('warnings.driver'), result: isSuccess ? t('warnings.success') : t('warnings.fail') }))
@@ -371,7 +373,7 @@ async function checkDriverIdExist(driver: { DRIVERID: number | null }, value: In
     gap: 0.25rem;
     font-size: small;
   }
-  .row-item-bottom{
+  .row-item-bottom {
     font-size: small;
   }
   .input-class {

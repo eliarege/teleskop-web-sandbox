@@ -4,6 +4,7 @@ import { navigateToPage, notification } from '../shared/functions'
 import type { RecipeLatest } from '~/shared/types'
 import RefreshConfirmationDialog from '~/components/RefreshConfirmationDialog.vue'
 
+const keycloak = useKeycloak()
 const { t } = useI18n()
 const $q = useQuasar()
 const plannedMachineChangeVal = ref()
@@ -18,7 +19,7 @@ const plankey = ref()
 const showJoborderError = ref(false)
 const resetCounter = ref(0)
 const materialRows = ref([])
-const machines = await $fetch('/api/machine/machines')
+const machines = await keycloak.fetch('/api/machine/machines')
 const recipeData = ref()
 const jobordernum = ref()
 const showChangeMachineDialog = ref(false)
@@ -29,7 +30,9 @@ const isLastCorrectionNo = computed(() => {
     return correctionNoList?.value[correctionNoList.value.length - 1] === correctionNoDisplayed.value
   return true
 })
-
+const hasManagerRole = computed(() => {
+  return keycloak.hasResourceRole('manage')
+})
 const groupables: Array<{ key: keyof RecipeLatest, index: number }> = [
   { key: 'processOrder', index: 0 },
   { key: 'recipeType', index: 1 },
@@ -41,30 +44,128 @@ const groupables: Array<{ key: keyof RecipeLatest, index: number }> = [
 ]
 
 const columns = [
-  { label: t('recipe.processOrder'), prop: 'processOrder', align: 'center', showOverflowTooltip: true },
-  { label: t('recipeType'), prop: 'recipeTypeText', align: 'center', showOverflowTooltip: true },
-  { label: t('programNo'), prop: 'programNo', align: 'center', showOverflowTooltip: true },
-  { label: t('programName'), prop: 'programName', align: 'center', showOverflowTooltip: true },
-  { label: t('recipe.ISN'), prop: 'ISN', align: 'center', showOverflowTooltip: true },
-  { label: t('recipe.mainStep'), prop: 'mainStep', align: 'center', showOverflowTooltip: true },
-  { label: t('weighingInformation.parallelStep'), prop: 'parallelStep', align: 'center', showOverflowTooltip: true },
-  { label: t('materialCode'), prop: 'chemCode', align: 'center', showOverflowTooltip: true },
-  { label: t('materialName'), prop: 'materialName', align: 'center', showOverflowTooltip: true },
-  { label: t('recipe.processNo'), prop: 'programProcessNo', align: 'center', showOverflowTooltip: true },
-  { label: t('recipe.amount'), prop: 'amount', align: 'center', showOverflowTooltip: true },
-  { label: t('recipe.metric'), prop: 'unit', align: 'center', showOverflowTooltip: true },
+  {
+    label: () => t('recipe.processOrder'),
+    prop: 'processOrder',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('recipeType'),
+    prop: 'recipeTypeText',
+    align: 'center',
+    showOverflowTooltip: true,
+    formatter: (row: any) => t(`recipeTypes.${row.recipeType}`),
+  },
+  {
+    label: () => t('programNo'),
+    prop: 'programNo',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('programName'),
+    prop: 'programName',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('recipe.ISN'),
+    prop: 'ISN',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('recipe.mainStep'),
+    prop: 'mainStep',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('weighingInformation.parallelStep'),
+    prop: 'parallelStep',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('materialCode'),
+    prop: 'chemCode',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('materialName'),
+    prop: 'materialName',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('recipe.processNo'),
+    prop: 'programProcessNo',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('recipe.amount'),
+    prop: 'amount',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('recipe.recipeAmount'),
+    prop: 'recipeAmount',
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  {
+    label: () => t('recipe.metric'),
+    prop: 'unit',
+    align: 'center',
+    showOverflowTooltip: true,
+    formatter: (row: any) => t(`units.${row.unit}`),
+  },
 ]
 
 const buttonProps = ref([
-  { name: 'logs', label: t('recipe.logs'), link: 'showLogs', icon: 'description' },
-  { name: 'weighing', label: t('recipe.jobOrderMeasurement'), link: 'showConsumptions', icon: 'content_paste_search' },
-  { name: 'parameters', label: t('recipe.jobOrderParameters'), link: 'showParameters', icon: 'search' },
-  { name: 'weighingRefresh', label: t('recipe.jobOrderMeasurementRefresh'), link: 'weighingRefresh', icon: 'refresh' },
-  { name: 'solvingRefresh', label: t('recipe.jobOrderSolvingRefresh'), link: 'solvingRefresh', icon: 'refresh' },
+  {
+    name: 'logs',
+    label: t('recipe.logs'),
+    link: 'showLogs',
+    icon: 'description',
+    authorized: true,
+  },
+  {
+    name: 'weighing',
+    label: t('recipe.jobOrderMeasurement'),
+    link: 'showConsumptions',
+    icon: 'content_paste_search',
+    authorized: true,
+  },
+  {
+    name: 'parameters',
+    label: t('recipe.jobOrderParameters'),
+    link: 'showParameters',
+    icon: 'search',
+    authorized: true,
+  },
+  {
+    name: 'weighingRefresh',
+    label: t('recipe.jobOrderMeasurementRefresh'),
+    link: 'weighingRefresh',
+    icon: 'refresh',
+    authorized: hasManagerRole,
+  },
+  {
+    name: 'solvingRefresh',
+    label: t('recipe.jobOrderSolvingRefresh'),
+    link: 'solvingRefresh',
+    icon: 'refresh',
+    authorized: hasManagerRole,
+  },
 ])
 
 async function getCorrectionNOs(parameter: string) {
-  const correctionListTemp = await $fetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=recipeJB`)
+  const correctionListTemp = await keycloak.fetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=recipeJB`)
   correctionNoList.value = []
   correctionListTemp.forEach((element: { CORRECTIONNUMBER: number }) => correctionNoList.value.push(element.CORRECTIONNUMBER))
 }
@@ -92,7 +193,7 @@ function resetValues() {
 }
 
 async function requestManuelMaterials() {
-  materialRows.value = await $fetch('/api/recipe/recipe-manuals', {
+  materialRows.value = await keycloak.fetch('/api/recipe/recipe-manuals', {
     method: 'POST',
     body: {
       plankey: plankey.value,
@@ -100,8 +201,7 @@ async function requestManuelMaterials() {
     },
   })
   materialRows.value.forEach((row: any) => {
-    row.unit = t(`units.${row.unit}`)
-    row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
+    // row.unit = t(`units.${row.unit}`)
     const mainStep = row.mainStep
     const ISN = row.ISN
     row.mainStep = ISN ? `${ISN - 1} <-> ${ISN}` : 0
@@ -116,7 +216,7 @@ async function requestJobOrder() {
     currentRecipeJoborder.value = jobordernum.value
     getCorrectionNOs(currentRecipeJoborder.value)
     lastJobOrder.value = currentRecipeJoborder.value
-    recipeDataTemp.value = await $fetch('/api/recipe/joborder', {
+    recipeDataTemp.value = await keycloak.fetch('/api/recipe/joborder', {
       query: {
         recipeJB: currentRecipeJoborder.value,
         correctionNo: correctionNoDisplayed.value,
@@ -131,7 +231,7 @@ async function requestJobOrder() {
       })
     } else {
       if (!correctionNoDisplayed.value) {
-        const tempNo = await $fetch(`/api/recipe/correction-number-by-parameter?`, {
+        const tempNo = await keycloak.fetch(`/api/recipe/correction-number-by-parameter?`, {
           query: {
             parameter: currentRecipeJoborder.value,
             searchBy: 'planKey',
@@ -142,12 +242,12 @@ async function requestJobOrder() {
       recipeData.value = recipeDataTemp.value
       plankey.value = recipeData.value[0].planKey
       await requestManuelMaterials()
-      recipeData.value.forEach((row) => {
-        row.unit = t(`units.${row.unit}`)
-        row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
-      })
+      // recipeData.value.forEach((row) => {
+      //   // row.unit = t(`units.${row.unit}`)
+      //   // row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
+      // })
     }
-    const tempMach = await $fetch(`/api/machine/machine?`, {
+    const tempMach = await keycloak.fetch(`/api/machine/machine?`, {
       query: {
         joborder: currentRecipeJoborder.value,
         correctionNo: correctionNoDisplayed.value,
@@ -172,7 +272,7 @@ function clearCorrectionNo(event) {
 }
 
 async function checkIsThereAnyLog(plankey) {
-  const check = await $fetch('/api/stepLogs/check-if-log-exists', {
+  const check = await keycloak.fetch('/api/stepLogs/check-if-log-exists', {
     query: {
       plankey,
     },
@@ -217,19 +317,18 @@ function buttonAction(link: string) {
   }
 }
 function handleRefresh(refreshType: 'solving' | 'weighing') {
-  console.log(refreshType)
   $q.dialog({
     component: RefreshConfirmationDialog,
     componentProps: {
       refreshType,
     },
   }).onOk(async () => {
-    const res = await $fetch(`/api/recipe/refresh-${refreshType}-requests/${plankey.value}`, { method: 'POST' })
+    const res = await keycloak.fetch(`/api/recipe/refresh-${refreshType}-requests/${plankey.value}`, { method: 'POST' })
     notification(res, t(`recipe.refresh.${refreshType}.${res ? 'success' : 'fail'}`))
   })
 }
 async function submitCoupleMachine() {
-  const check = await $fetch('/api/recipe/change-planned-machine', {
+  const check = await keycloak.fetch('/api/recipe/change-planned-machine', {
     method: 'put',
     body: {
       plankey: plankey.value,
@@ -450,7 +549,7 @@ onBeforeUnmount(() => {
         :key="button.name"
         class="footer-button"
         outline
-        :disabled="!plankey || button.isDisabled"
+        :disabled="!plankey || !button.authorized"
         color="black"
         @click="buttonAction(button.link)"
       >
@@ -530,7 +629,7 @@ onBeforeUnmount(() => {
   max-width: 100%;
   height: 50%;
 }
-.text-override-left :deep(.text-right){
+.text-override-left :deep(.text-right) {
   text-align: left;
   word-break: normal;
   white-space: normal;
@@ -545,15 +644,15 @@ onBeforeUnmount(() => {
   height: 5rem;
   justify-content: center;
 }
-.content{
+.content {
   padding-bottom: 2rem;
 }
-.outer-div{
+.outer-div {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
-.footer-button{
+.footer-button {
   margin: 1rem;
   margin-bottom: 1rem;
   overflow: hidden;

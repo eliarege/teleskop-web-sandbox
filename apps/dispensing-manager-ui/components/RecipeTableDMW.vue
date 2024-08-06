@@ -37,6 +37,11 @@ const props = defineProps({
     required: false,
   },
 })
+
+const keycloak = useKeycloak()
+const hasManagerRole = computed(() => {
+  return keycloak.hasResourceRole('manage')
+})
 const $q = useQuasar()
 const { t } = useI18n()
 interface SpanMethodProps {
@@ -80,7 +85,9 @@ const selectedRow = ref()
 const rgbClasses = ['violet-class', 'blue-class', 'green-class', 'red-class', 'aqua-class', 'orange-class']
 function a({ row, columnIndex }: SpanMethodProps) {
   // HARDCODED! columnIndex 4 === chemCode --> veri değişirse değiştir!
-  if ((columnIndex === 7 || columnIndex === 8) && row.recipeType === 1 && row.processOrder) {
+  const isDyeCell = (columnIndex === 7 || columnIndex === 8) && row.recipeType === 1 && row.processOrder
+  const isAmountCell = (columnIndex === 10 || columnIndex === 11) && row.processOrder && row.recipeAmount
+  if (isDyeCell || isAmountCell) {
     const color = rgbClasses[row.processOrder % rgbClasses.length]
     return color
   }
@@ -129,8 +136,9 @@ const confirmationDialog = ref(false)
 
 const changeDialog = ref(false)
 const changeValue = ref()
+
 async function changeRow() {
-  await $fetch('/api/recipe/change-recipe-amount', {
+  await keycloak.fetch('/api/recipe/change-recipe-amount', {
     method: 'PUT',
     body: {
       planKey: selectedRow.value.planKey,
@@ -157,7 +165,7 @@ async function checkIsTankNoRequired() {
       selectedRow.value.programTotalCount++
   })
   const materialCodes = materials.map(material => material.materialCode)
-  isTankNoRequired.value = await $fetch('/api/recipe/check-tank-no-required', {
+  isTankNoRequired.value = await keycloak.fetch('/api/recipe/check-tank-no-required', {
     method: 'POST',
     body: {
       materialCodes,
@@ -185,7 +193,7 @@ async function requestRow() {
     selectedRow.value.processOrder,
   ]
 
-  const response = await $fetch('/api/file/write-recipe-step', {
+  const response = await keycloak.fetch('/api/file/write-recipe-step', {
     method: 'POST',
     body: {
       row: selectedRow.value,
@@ -211,7 +219,7 @@ watch(() => props.resetCounter, (newValue, oldValue) => {
 async function showLogsOfSelectedStep() {
   if (selectedRow.value) {
     const { joborder, programNo, mainStep } = selectedRow.value
-    const data = await $fetch('/api/recipe/previous-requests', {
+    const data = await keycloak.fetch('/api/recipe/previous-requests', {
       method: 'POST',
       body: { joborder, programNo, mainStep },
     })
@@ -260,14 +268,15 @@ async function showLogsOfSelectedStep() {
           v-for="col in props.columns"
           :key="col.prop"
           :prop="col.prop"
-          :label="col.label"
+          :label="toValue(col.label)"
+          :formatter="col.formatter"
           align="center"
           show-overflow-tooltip
         />
       </ElTableColumn>
     </ElTable>
     <div
-      v-if="contextMenuVisible && props.haveContextMenu"
+      v-if="contextMenuVisible && props.haveContextMenu && hasManagerRole"
       ref="tableContainer"
       class="context-menu"
       :style="contextMenuPosition"
@@ -403,11 +412,11 @@ async function showLogsOfSelectedStep() {
   background-color: #b8dfff !important;
 }
 .el-table {
-    --el-table-border: 1.5px solid #999999;
+  --el-table-border: 1.5px solid #999999;
 }
 
 .el-table thead.is-group th.el-table__cell {
-    background: #00000040;
+  background: #00000040;
 }
 .context-menu {
   position: fixed;
@@ -441,10 +450,9 @@ async function showLogsOfSelectedStep() {
 }
 
 @media (min-width: 600px) {
-
   .prev-logs-class .q-dialog__inner--minimized > div {
-  max-width: 100%;
-}
+    max-width: 100%;
+  }
 }
 @media (min-width: 735px) and (max-width: 1350px) {
   .el-table--small .el-table__cell {
