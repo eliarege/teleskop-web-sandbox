@@ -16,6 +16,7 @@ export default defineNitroPlugin(async () => {
         })
         console.log('Added VNCPORT column with default value 5900')
         console.log('Added VNCPASSWORD column with default value \'q\'')
+        await knex('DYTFDISPENSERSETTINGS').update({ VNCPORT: 5900, VNCPASSWORD: 'q' }).whereNull('VNCPORT').orWhereNull('VNCPASSWORD')
       }
     } catch (e) {
       console.error('Failed to create VNC columns', e)

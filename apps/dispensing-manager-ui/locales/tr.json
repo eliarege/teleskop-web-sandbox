@@ -7,7 +7,7 @@
   "joborders": "İş Emirleri",
   "finishedJobOrders": "Geçmiş İş Emirleri",
   "correctionNo": "Düzeltme Numarası",
-  "canceledJobOrdersTable": "Biten İş Emirleri",
+  "canceledJobOrdersTable": "Bitmiş İşler",
   "includes": "içerir",
   "joborder": "İş Emri",
   "joborderNo": "İş Emri Numarası",
@@ -34,7 +34,7 @@
   "apply": "Filtreleri Uygula",
   "hour": "saat",
   "min": "dk",
-  "ongoingJoborders": "İşlemdeki İş Emirleri",
+  "ongoingJoborders": "Aktif İşler",
   "search": "Ara",
   "more": "fazlası",
   "yes": "Evet",
@@ -188,8 +188,10 @@
     "alreadyStartedWarning": "İstek çoktan başlatıldı. Devam etmek istediğinize emin misiniz?",
     "requestSent": "İstek gönderildi.",
     "requestDidNotSend": "İstek gönderilemedi",
-    "retryRequestSent": "Adımı tekrarlama isteği göderildi.",
-    "cancelRequestSent": "Adımı iptal etme isteği göderildi."
+    "retryRequestSent": "Adımı tekrarlama isteği başarıyla gönderildi.",
+    "retryRequestDidNotSend": "Adımı tekrarlama isteği gönderilirken hata oluştu.",
+    "cancelRequestSent": "Adımı iptal etme isteği gönderildi.",
+    "cancelRequestDidNotSend": "Adımı iptal etme isteği göderilirken hata oluştu."
   },
   "jobOrderLogs": {
     "_": "İş Emri Kayıtları",

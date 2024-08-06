@@ -19,7 +19,7 @@ const confirmationDialog = ref<ConfirmationDialog>({ vis: false, act: 'cancel' }
 const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/settings/dispenser-connection-status', { default: () => [] })
 useTimeoutPoll(refreshConnectionStatus, 120000, { immediate: true })
 const machines = await $fetch('/api/machine/machines')
-// const dispensers = await $fetch('/api/settings/dispenser')
+const dispensers = await $fetch('/api/settings/dispenser')
 const columnsRecipe = computed<Array<FilterableTableColumn>>(() => [
   { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
@@ -40,7 +40,7 @@ const columnsRecipe = computed<Array<FilterableTableColumn>>(() => [
     field: 'name',
     filterable: true,
     filterType: 'select',
-    // selectionOptions: dispensers,
+    selectionOptions: dispensers,
     optionLabel: 'name',
     optionValue: 'dispNo',
     classes(row) {
@@ -127,8 +127,8 @@ async function updateRecipe() {
     method: 'post',
     body: filters.value,
   })
-  const isRowStillExist = recipe.value.find((row: any) => selectedRow.value.reqnumber === row.reqnumber)
-  if(!isRowStillExist) {
+  const isRowStillExist = recipe.value.find((row: any) => selectedRow.value?.reqnumber === row.reqnumber)
+  if (!isRowStillExist) {
     if (recipe.value?.length) {
       selectedRow.value = recipe.value[0]
       // await fetchMaterialData(selectedRow.value.reqnumber)
@@ -458,7 +458,6 @@ const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
 }
 .responsive-table {
   width: 100%;
-
 }
 img.invert-colors {
   filter: invert(1);
@@ -475,7 +474,7 @@ img.invert-colors {
   justify-content: center;
 }
 
-.text-override-left :deep(.text-right){
+.text-override-left :deep(.text-right) {
   text-align: left;
 }
 

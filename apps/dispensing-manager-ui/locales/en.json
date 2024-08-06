@@ -189,8 +189,10 @@
     "alreadyStartedWarning": "The request has already been initiated. Are you sure you want to continue?",
     "requestSent": "Request sent.",
     "requestDidNotSend": "Request did not send.",
-    "retryRequestSent": "Retry request sent.",
-    "cancelRequestSent": "Delete request sent."
+    "retryRequestSent": "Retry request sent successfully.",
+    "retryRequestDidNotSend": "An error occured while sending retry request.",
+    "cancelRequestSent": "Cancelation request sent successfully.",
+    "cancelRequestDidNotSend": "An error occured while sending cancelation request."
   },
   "jobOrderLogs": {
     "_": "Job Order Logs",
