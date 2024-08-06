@@ -9,6 +9,7 @@ export interface RecipeLatest {
   materialName: string | null
   programProcessNo: number | null
   amount: number | null
+  recipeAmount: number | null
   unit: string | null
   programNo: number | null
   programName: string | null

@@ -37,6 +37,9 @@ const props = defineProps({
     required: false,
   },
 })
+
+const keycloak = useKeycloak()
+
 const $q = useQuasar()
 const { t } = useI18n()
 interface SpanMethodProps {
@@ -131,8 +134,9 @@ const confirmationDialog = ref(false)
 
 const changeDialog = ref(false)
 const changeValue = ref()
+
 async function changeRow() {
-  await $fetch('/api/recipe/change-recipe-amount', {
+  await keycloak.fetch('/api/recipe/change-recipe-amount', {
     method: 'PUT',
     body: {
       planKey: selectedRow.value.planKey,
@@ -159,7 +163,7 @@ async function checkIsTankNoRequired() {
       selectedRow.value.programTotalCount++
   })
   const materialCodes = materials.map(material => material.materialCode)
-  isTankNoRequired.value = await $fetch('/api/recipe/check-tank-no-required', {
+  isTankNoRequired.value = await keycloak.fetch('/api/recipe/check-tank-no-required', {
     method: 'POST',
     body: {
       materialCodes,
@@ -187,7 +191,7 @@ async function requestRow() {
     selectedRow.value.processOrder,
   ]
 
-  const response = await $fetch('/api/file/write-recipe-step', {
+  const response = await keycloak.fetch('/api/file/write-recipe-step', {
     method: 'POST',
     body: {
       row: selectedRow.value,
@@ -213,7 +217,7 @@ watch(() => props.resetCounter, (newValue, oldValue) => {
 async function showLogsOfSelectedStep() {
   if (selectedRow.value) {
     const { joborder, programNo, mainStep } = selectedRow.value
-    const data = await $fetch('/api/recipe/previous-requests', {
+    const data = await keycloak.fetch('/api/recipe/previous-requests', {
       method: 'POST',
       body: { joborder, programNo, mainStep },
     })

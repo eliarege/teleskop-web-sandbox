@@ -5,6 +5,8 @@ import ConnectMultiDispenserDialog from '~/components/ConnectMultiDispenserDialo
 import { colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 
+const keycloak = useKeycloak()
+
 const { t } = useI18n()
 const rows = ref([])
 const disps = ref([])
@@ -12,7 +14,8 @@ const $q = useQuasar()
 
 await getRows()
 await getDisps()
-const machines = await $fetch('/api/machine/machines')
+
+const machines = await keycloak.fetch('/api/machine/machines')
 
 const controlDevices = [
   { controlDevice: 0, label: t('settings.noProgramator') }, // TODO:
@@ -67,14 +70,14 @@ const givenMachineIdExistsWarning = ref(false)
 const machineIdErrorMessage = ref('')
 
 async function getRows() {
-  rows.value = await $fetch('/api/settings/machine-dispenser-connection-filtered', {
+  rows.value = await keycloak.fetch('/api/settings/machine-dispenser-connection-filtered', {
     method: 'POST',
   })
   rows.value.unshift({})
 }
 
 async function getDisps() {
-  disps.value = await $fetch('/api/settings/dispenser')
+  disps.value = await keycloak.fetch('/api/settings/dispenser')
 }
 
 function resetMachineInfo(row?: any) {
@@ -90,7 +93,7 @@ function resetMachineInfo(row?: any) {
 }
 
 async function applyFilters(updatedValue: any) {
-  rows.value = await $fetch('/api/settings/machine-dispenser-connection-filtered', {
+  rows.value = await keycloak.fetch('/api/settings/machine-dispenser-connection-filtered', {
     method: 'POST',
     body: updatedValue,
   })
@@ -188,7 +191,7 @@ async function submit(isPut: boolean) {
   }
   /** If create */
   if (!isPut) {
-    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection/${body.machineid}`, {
+    isSuccess = await keycloak.fetch(`/api/settings/machine-dispenser-connection/${body.machineid}`, {
       method: 'post',
       body,
     })
@@ -197,7 +200,7 @@ async function submit(isPut: boolean) {
     expandedRow.value = null
   }
   if (isPut) { /** If it is put */
-    isSuccess = await $fetch(`/api/settings/machine-dispenser-connection/${body.machineid}`, {
+    isSuccess = await keycloak.fetch(`/api/settings/machine-dispenser-connection/${body.machineid}`, {
       method: 'put',
       body,
     })
@@ -223,7 +226,7 @@ async function submit(isPut: boolean) {
 
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  const isSuccess = await $fetch(`/api/settings/machine-dispenser-connection/${machineInfo.value[0].value}`, {
+  const isSuccess = await keycloak.fetch(`/api/settings/machine-dispenser-connection/${machineInfo.value[0].value}`, {
     method: 'delete',
   })
   expandedRow.value = null
@@ -240,7 +243,7 @@ async function checkMachineIdExist(mach: { value: number | null }, value: InputE
       machineIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.machine') })
     } else {
       if (mach.value)
-        givenMachineIdExistsWarning.value = await $fetch(`/api/settings/check-is-machine-exist/${machineInfo.value[0].value}`)
+        givenMachineIdExistsWarning.value = await keycloak.fetch(`/api/settings/check-is-machine-exist/${machineInfo.value[0].value}`)
       if (givenMachineIdExistsWarning.value)
         machineIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: machineInfo.value[0].value, type: t('warnings.machine') })
     }
@@ -266,7 +269,7 @@ async function handleMultiEdit() {
       dispenserList: response.selectedDispensers,
     }
     const operation = response.isReplace ? 'replace' : 'add'
-    const status = await $fetch(`/api/settings/${operation}-machine-dispenser-connection`, {
+    const status = await keycloak.fetch(`/api/settings/${operation}-machine-dispenser-connection`, {
       method: 'POST',
       body,
     })
@@ -291,11 +294,11 @@ const pagination = ref({ rowsPerPage: 0 })
 
 <template>
   <FilterableTable
+    v-model:pagination="pagination"
     :rows="rows"
     :columns="columns"
     :is-expandable="true"
     :empty-first-row="true"
-    v-model:pagination="pagination"
     style="height: 90vh;"
     :custom-sort-method="customSortMethod"
     @update-filter-slots="(evt) => applyFilters(evt)"

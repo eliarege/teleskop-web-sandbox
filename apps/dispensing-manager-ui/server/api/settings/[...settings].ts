@@ -1,4 +1,4 @@
-import { createRouter, defineEventHandler, useBase } from 'h3'
+import { createRouter, useBase } from 'h3'
 import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 
@@ -8,7 +8,8 @@ export default useBase('/api/settings', router.handler)
 /**
  * Dispenser settings
  */
-router.get('/dispenser-type', defineEventHandler(async () => {
+
+router.get('/dispenser-type', defineAuthEventHandler(async () => {
   const types = await knex('DYTFDISPENSERTYPE')
     .select({
       type: 'DISPENSERTYPENO',
@@ -17,7 +18,7 @@ router.get('/dispenser-type', defineEventHandler(async () => {
   return types
 }))
 
-router.get('/check-is-dispenser-exist/:dispenserId', defineEventHandler(async (event) => {
+router.get('/check-is-dispenser-exist/:dispenserId', defineAuthEventHandler(async (event) => {
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
   }
@@ -47,21 +48,21 @@ const dispenserParameters = {
   vncPassword: 'VNCPASSWORD',
 }
 
-router.get('/dispenser', defineEventHandler(async () => {
+router.get('/dispenser', defineAuthEventHandler(async () => {
   const dispensers = await knex('DYTFDISPENSERSETTINGS')
     .select(dispenserParameters)
     .orderBy('DISPENSERID', 'asc')
   return dispensers
 }))
 
-router.get('/dispenser/:dispNo', defineEventHandler(async (event) => {
+router.get('/dispenser/:dispNo', defineAuthEventHandler(async (event) => {
   const { dispNo } = getRouterParams(event)
   return (await knex('DYTFDISPENSERSETTINGS')
     .select(dispenserParameters)
     .where('DISPENSERID', dispNo)).at(0)
 }))
 
-// router.get('/ping/:dispNo', defineEventHandler(async (event) => {
+// router.get('/ping/:dispNo', defineAuthEventHandler(async (event) => {
 //   const { dispNo } = getRouterParams(event)
 //   const dispenser = await knex('DYTFDISPENSERSETTINGS')
 //     .first({
@@ -75,7 +76,7 @@ router.get('/dispenser/:dispNo', defineEventHandler(async (event) => {
 //   return dispenser
 // }))
 
-router.get('/dispenser-connection-status', defineEventHandler(async (event) => {
+router.get('/dispenser-connection-status', defineAuthEventHandler(async (event) => {
   const dispensers = await knex('DYTFDISPENSERSETTINGS')
     .select({
       dispNo: 'DISPENSERID',
@@ -108,7 +109,7 @@ router.get('/dispenser-connection-status', defineEventHandler(async (event) => {
   // return await Promise.all(statusPromises)
 }))
 
-router.post('/filtered-dispenser', defineEventHandler(async (event) => {
+router.post('/filtered-dispenser', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const dispensers = knex('DYTFDISPENSERSETTINGS')
     .select(dispenserParameters)
@@ -117,7 +118,7 @@ router.post('/filtered-dispenser', defineEventHandler(async (event) => {
   return await dispensers
 }))
 
-router.post('/dispenser/:dispNo', defineEventHandler(async (event) => {
+router.post('/dispenser/:dispNo', defineAuthEventHandler(async (event) => {
   let dispenser
   const body = await readBody(event)
   if (!event.context.params) {
@@ -149,7 +150,7 @@ router.post('/dispenser/:dispNo', defineEventHandler(async (event) => {
   return dispenser
 }))
 
-router.put('/dispenser/:dispNo', defineEventHandler(async (event) => {
+router.put('/dispenser/:dispNo', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
@@ -174,7 +175,7 @@ router.put('/dispenser/:dispNo', defineEventHandler(async (event) => {
   return dispenser
 }))
 
-router.delete('/dispenser/:dispNo', defineEventHandler(async (event) => {
+router.delete('/dispenser/:dispNo', defineAuthEventHandler(async (event) => {
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
   }
@@ -192,7 +193,7 @@ router.delete('/dispenser/:dispNo', defineEventHandler(async (event) => {
   return 1
 }))
 
-router.get('/check-is-machine-exist/:machineId', defineEventHandler(async (event) => {
+router.get('/check-is-machine-exist/:machineId', defineAuthEventHandler(async (event) => {
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
   }
@@ -215,7 +216,7 @@ const machineParameters = {
   controlDevice: 'N.CONTROLLERTYPE',
 }
 
-router.post('/machine-dispenser-connection-filtered', defineEventHandler(async (event) => {
+router.post('/machine-dispenser-connection-filtered', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   let machines: any = knex('DYTFMACHINES as N')
     .select(machineParameters)
@@ -243,7 +244,7 @@ router.post('/machine-dispenser-connection-filtered', defineEventHandler(async (
   return result
 }))
 
-router.post('/machine-dispenser-connection/:machineid', defineEventHandler(async (event) => {
+router.post('/machine-dispenser-connection/:machineid', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
@@ -269,7 +270,7 @@ router.post('/machine-dispenser-connection/:machineid', defineEventHandler(async
   return 1 // return 200
 }))
 
-router.put('/machine-dispenser-connection/:machineid', defineEventHandler(async (event) => {
+router.put('/machine-dispenser-connection/:machineid', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
@@ -299,7 +300,7 @@ router.put('/machine-dispenser-connection/:machineid', defineEventHandler(async 
   return 1
 }))
 
-router.post('/add-machine-dispenser-connection', defineEventHandler(async (event) => {
+router.post('/add-machine-dispenser-connection', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!body || !body.machineList || !body.dispenserList) {
     throw new Error('Machines and dispensers are required!')
@@ -319,7 +320,7 @@ router.post('/add-machine-dispenser-connection', defineEventHandler(async (event
       .insert(insertArray)
   return 1
 }))
-router.post('/replace-machine-dispenser-connection', defineEventHandler(async (event) => {
+router.post('/replace-machine-dispenser-connection', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!body || !body.machineList || !body.dispenserList) {
     throw new Error('Machines and dispensers are required!')
@@ -340,7 +341,7 @@ router.post('/replace-machine-dispenser-connection', defineEventHandler(async (e
   return 1
 }))
 
-router.delete('/machine-dispenser-connection/:machineid', defineEventHandler(async (event) => {
+router.delete('/machine-dispenser-connection/:machineid', defineAuthEventHandler(async (event) => {
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
   }
@@ -366,7 +367,7 @@ router.delete('/machine-dispenser-connection/:machineid', defineEventHandler(asy
  * Material settings
  */
 
-router.get('/material', defineEventHandler(async () => {
+router.get('/material', defineAuthEventHandler(async () => {
   const dispensers = await knex('DYTFMATERIAL')
     .select({
       materialCode: 'MATERIALCODE',
@@ -384,7 +385,7 @@ router.get('/material', defineEventHandler(async () => {
   return dispensers
 }))
 
-router.get('/check-is-material-exist/:materialCode', defineEventHandler(async (event) => {
+router.get('/check-is-material-exist/:materialCode', defineAuthEventHandler(async (event) => {
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
   }
@@ -410,13 +411,13 @@ const selectParametersMaterials = {
   dispNo: 'C.DISPENSERID',
 }
 
-router.get('/materials-key-value', defineEventHandler(async (event) => {
+router.get('/materials-key-value', defineAuthEventHandler(async (event) => {
   return await knex('DYTFMATERIAL as M')
     .select({ materialCode: 'M.MATERIALCODE', materialLabel: knex.raw('CONCAT(\'(\', M.MATERIALCODE, \') \', M.MATERIALNAME)') })
     .orderBy('M.MATERIALCODE')
 }))
 
-router.post('/add-material-dispenser-connection', defineEventHandler(async (event) => {
+router.post('/add-material-dispenser-connection', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!body || !body.materialList || !body.dispenserList) {
     throw new Error('Materials and dispensers are required!')
@@ -436,7 +437,7 @@ router.post('/add-material-dispenser-connection', defineEventHandler(async (even
       .insert(insertArray)
   return 1
 }))
-router.post('/replace-material-dispenser-connection', defineEventHandler(async (event) => {
+router.post('/replace-material-dispenser-connection', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!body || !body.materialList || !body.dispenserList) {
     throw new Error('Materials and dispensers are required!')
@@ -457,7 +458,7 @@ router.post('/replace-material-dispenser-connection', defineEventHandler(async (
   return 1
 }))
 
-router.post('/material-dispenser-connection-filtered', defineEventHandler(async (event) => {
+router.post('/material-dispenser-connection-filtered', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   let materials: any = knex('DYTFMATERIAL as M')
     .select(selectParametersMaterials)
@@ -482,7 +483,7 @@ router.post('/material-dispenser-connection-filtered', defineEventHandler(async 
   return result
 }))
 
-router.post('/material-connection/:materialCode', defineEventHandler(async (event) => {
+router.post('/material-connection/:materialCode', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
@@ -514,7 +515,7 @@ router.post('/material-connection/:materialCode', defineEventHandler(async (even
   return 1 // return 200
 }))
 
-router.put('/material-connection/:materialCode', defineEventHandler(async (event) => {
+router.put('/material-connection/:materialCode', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
@@ -546,7 +547,7 @@ router.put('/material-connection/:materialCode', defineEventHandler(async (event
   return 1
 }))
 
-router.delete('/material/:materialCode', defineEventHandler(async (event) => {
+router.delete('/material/:materialCode', defineAuthEventHandler(async (event) => {
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
   }
@@ -561,7 +562,7 @@ router.delete('/material/:materialCode', defineEventHandler(async (event) => {
  * Request Mechanism settings
  */
 
-router.get('/request-mechanism-setting', defineEventHandler(async () => {
+router.get('/request-mechanism-setting', defineAuthEventHandler(async () => {
   const sett = await knex('DYTFDYSETTINGS')
     .select({
       reqMechanismOption1: 'DYREQMECHANISM',
@@ -591,7 +592,7 @@ router.get('/request-mechanism-setting', defineEventHandler(async () => {
   return sett[0]
 }))
 
-router.put('/request-mechanism-setting', defineEventHandler(async (event) => {
+router.put('/request-mechanism-setting', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const settings = await knex('DYTFDYSETTINGS')
     .update({
@@ -627,13 +628,13 @@ router.put('/request-mechanism-setting', defineEventHandler(async (event) => {
   return 1
 }))
 
-router.get('/delete-old-batch-time', defineEventHandler(async (event) => {
+router.get('/delete-old-batch-time', defineAuthEventHandler(async (event) => {
   const days = await knex('DYTFDYSETTINGS')
     .first('DELETEOLDBATCHES')
   return days.DELETEOLDBATCHES
 }))
 
-router.put('/delete-old-batch-time', defineEventHandler(async (event) => {
+router.put('/delete-old-batch-time', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   await knex('DYTFDYSETTINGS')
     .update({
@@ -642,25 +643,25 @@ router.put('/delete-old-batch-time', defineEventHandler(async (event) => {
   return 1
 }))
 
-router.get('/file-system', defineEventHandler(async () => {
+router.get('/file-system', defineAuthEventHandler(async () => {
   const result = await knex('DYTFELIARSETTINGS')
     .select('BDYREQSEARCHPATH')
   return result[0].BDYREQSEARCHPATH
 }))
 
-router.put('/file-system', defineEventHandler(async (event) => {
+router.put('/file-system', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   await knex('DYTFELIARSETTINGS')
     .update({ BDYREQSEARCHPATH: body.path })
   return 1
 }))
 
-router.get('/driver', defineEventHandler(async () => {
+router.get('/driver', defineAuthEventHandler(async () => {
   const result = await knex('DYTFCOMDRIVERS')
   return result
 }))
 
-router.post('/driver/:DRIVERID', defineEventHandler(async (event) => {
+router.post('/driver/:DRIVERID', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
@@ -676,7 +677,7 @@ router.post('/driver/:DRIVERID', defineEventHandler(async (event) => {
   return 1
 }))
 
-router.put('/driver/:DRIVERID', defineEventHandler(async (event) => {
+router.put('/driver/:DRIVERID', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
@@ -688,7 +689,7 @@ router.put('/driver/:DRIVERID', defineEventHandler(async (event) => {
   return 1
 }))
 
-router.delete('/driver/:DRIVERID', defineEventHandler(async (event) => {
+router.delete('/driver/:DRIVERID', defineAuthEventHandler(async (event) => {
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
   }

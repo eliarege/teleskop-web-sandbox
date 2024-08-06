@@ -1,10 +1,10 @@
-import { createRouter, defineEventHandler, useBase } from 'h3'
+import { createRouter, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
 export default useBase('/api/parameter', router.handler)
 
-router.get('/parameters', defineEventHandler(async (event) => {
+router.get('/parameters', defineAuthEventHandler(async (event) => {
   const { plankey } = getQuery(event)
   const parameters = await knex('DYBFBATCHPLANPARAMETERS')
     .select({

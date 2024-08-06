@@ -1,12 +1,11 @@
-/* eslint-disable ts/no-invalid-this */
 import { ElScrollbar } from 'element-plus'
-import { createRouter, defineEventHandler, useBase } from 'h3'
+import { createRouter, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
 export default useBase('/api/consumption', router.handler)
 
-router.get('/theoretical', defineEventHandler(async (event) => {
+router.get('/theoretical', defineAuthEventHandler(async (event) => {
   const { joborder, correctionNo } = getQuery(event)
 
   const query = await knex
@@ -39,7 +38,7 @@ router.get('/theoretical', defineEventHandler(async (event) => {
   return query
 }))
 
-router.get('/manual', defineEventHandler(async (event) => {
+router.get('/manual', defineAuthEventHandler(async (event) => {
   const { joborder, correctionNo } = getQuery(event)
 
   const query = await knex('DYTFDUSTMATERIALSREQ as A')

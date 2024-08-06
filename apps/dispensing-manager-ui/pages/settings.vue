@@ -4,6 +4,10 @@ import { } from '@quasar/extras/material-icons-round'
 import { breakpoints } from '~/shared/constants'
 import { navigateToPage } from '~/shared/functions'
 
+definePageMeta({
+  roles: ['manage'],
+})
+
 const { t } = useI18n()
 const tempRoute = useRoute()
 const tabRef = computed(() => tempRoute.fullPath.split('/')[2] || 'material')
@@ -59,11 +63,9 @@ const settings = [
 <style scoped>
 /* Mobile view */
 @media (max-width: 600px) {
-
   .header-class {
-  font-size: medium !important;
-}
-
+    font-size: medium !important;
+  }
 }
 
 .selected-tab {
@@ -95,7 +97,7 @@ const settings = [
 .tab-overwrite :deep(.q-tab__label) {
   font-weight: bold !important;
 }
-.q-tab--full{
+.q-tab--full {
   min-height: 8rem;
 }
 img.invert-colors {

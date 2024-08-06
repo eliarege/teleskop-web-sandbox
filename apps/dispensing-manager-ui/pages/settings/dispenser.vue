@@ -6,6 +6,8 @@ import type { FilterableTableColumn } from '@teleskop/nuxt-base'
 import { DispenserConnectionStatus, colors } from '~/shared/constants'
 import { onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical, removeAnyNonNumerical } from '~/shared/functions'
 
+const keycloak = useKeycloak()
+
 const { t } = useI18n()
 const rows = ref([])
 const types = ref([])
@@ -22,7 +24,7 @@ const protocols = [
 
 await getRows()
 await getTypes()
-const { data: connectionStatus, refresh: refreshConnectionStatus } = await useFetch<any[]>('/api/settings/dispenser-connection-status', { default: () => [] })
+const { data: connectionStatus, refresh: refreshConnectionStatus } = await useAuthFetch<any[]>('/api/settings/dispenser-connection-status', { default: () => [] })
 useTimeoutPoll(refreshConnectionStatus, 120000, { immediate: true })
 
 const columns = computed<Array<FilterableTableColumn>>(() => [
@@ -87,11 +89,11 @@ const dispenserInfo = ref<{ label: string, value: any, field: string, options?: 
 ])
 
 async function getTypes() {
-  types.value = await $fetch('/api/settings/dispenser-type')
+  types.value = await keycloak.fetch('/api/settings/dispenser-type')
 }
 
 async function getRows() {
-  rows.value = await $fetch('/api/settings/dispenser')
+  rows.value = await keycloak.fetch('/api/settings/dispenser')
   rows.value.unshift({})
 }
 
@@ -110,7 +112,7 @@ function resetDispenserInfo(row?: any) {
 }
 
 async function applyFilters(updatedValue: any) {
-  rows.value = await $fetch('/api/settings/filtered-dispenser', {
+  rows.value = await keycloak.fetch('/api/settings/filtered-dispenser', {
     method: 'POST',
     body: updatedValue,
   })
@@ -210,14 +212,14 @@ async function submit(isPut: boolean) {
   }
   /** If create */
   if (!isPut) {
-    isSuccess = await $fetch(`/api/settings/dispenser/${body.dispNo}`, {
+    isSuccess = await keycloak.fetch(`/api/settings/dispenser/${body.dispNo}`, {
       method: 'post',
       body,
     })
     keyI18N = 'warnings.createResponse'
     expandedRow.value = null
   } else { /** If it is put */
-    isSuccess = await $fetch(`/api/settings/dispenser/${body.dispNo}`, {
+    isSuccess = await keycloak.fetch(`/api/settings/dispenser/${body.dispNo}`, {
       method: 'put',
       body,
     })
@@ -239,7 +241,7 @@ async function submit(isPut: boolean) {
 }
 const cancelDialogVisible = ref(false)
 async function deleteRow() {
-  const isSuccess = await $fetch(`/api/settings/dispenser/${dispenserInfo.value[0].value}`, {
+  const isSuccess = await keycloak.fetch(`/api/settings/dispenser/${dispenserInfo.value[0].value}`, {
     method: 'delete',
   })
   if (isSuccess.isConnectedMaterialExist || isSuccess.isConnectedMachineExist) {
@@ -274,7 +276,7 @@ async function checkDispenserCodeExist(disp: { value: number | null }, value: In
       dispenserIdErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.dispenser') })
     } else {
       if (disp.value)
-        givenDispenserIdExistsWarning.value = await $fetch(`/api/settings/check-is-dispenser-exist/${disp.value}`)
+        givenDispenserIdExistsWarning.value = await keycloak.fetch(`/api/settings/check-is-dispenser-exist/${disp.value}`)
       if (givenDispenserIdExistsWarning.value)
         dispenserIdErrorMessage.value = t('warnings.idAlreadyExistsOnBlue', { code: disp.value, type: t('warnings.dispenser') })
     }

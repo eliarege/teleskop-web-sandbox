@@ -4,6 +4,7 @@ import { navigateToPage, notification } from '../shared/functions'
 import type { RecipeLatest } from '~/shared/types'
 import RefreshConfirmationDialog from '~/components/RefreshConfirmationDialog.vue'
 
+const keycloak = useKeycloak()
 const { t } = useI18n()
 const $q = useQuasar()
 const plannedMachineChangeVal = ref()
@@ -18,7 +19,7 @@ const plankey = ref()
 const showJoborderError = ref(false)
 const resetCounter = ref(0)
 const materialRows = ref([])
-const machines = await $fetch('/api/machine/machines')
+const machines = await keycloak.fetch('/api/machine/machines')
 const recipeData = ref()
 const jobordernum = ref()
 const showChangeMachineDialog = ref(false)
@@ -65,7 +66,7 @@ const buttonProps = ref([
 ])
 
 async function getCorrectionNOs(parameter: string) {
-  const correctionListTemp = await $fetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=recipeJB`)
+  const correctionListTemp = await keycloak.fetch(`/api/recipe/correction-number-by-parameter?parameter=${parameter}&searchBy=recipeJB`)
   correctionNoList.value = []
   correctionListTemp.forEach((element: { CORRECTIONNUMBER: number }) => correctionNoList.value.push(element.CORRECTIONNUMBER))
 }
@@ -93,7 +94,7 @@ function resetValues() {
 }
 
 async function requestManuelMaterials() {
-  materialRows.value = await $fetch('/api/recipe/recipe-manuals', {
+  materialRows.value = await keycloak.fetch('/api/recipe/recipe-manuals', {
     method: 'POST',
     body: {
       plankey: plankey.value,
@@ -117,7 +118,7 @@ async function requestJobOrder() {
     currentRecipeJoborder.value = jobordernum.value
     getCorrectionNOs(currentRecipeJoborder.value)
     lastJobOrder.value = currentRecipeJoborder.value
-    recipeDataTemp.value = await $fetch('/api/recipe/joborder', {
+    recipeDataTemp.value = await keycloak.fetch('/api/recipe/joborder', {
       query: {
         recipeJB: currentRecipeJoborder.value,
         correctionNo: correctionNoDisplayed.value,
@@ -132,7 +133,7 @@ async function requestJobOrder() {
       })
     } else {
       if (!correctionNoDisplayed.value) {
-        const tempNo = await $fetch(`/api/recipe/correction-number-by-parameter?`, {
+        const tempNo = await keycloak.fetch(`/api/recipe/correction-number-by-parameter?`, {
           query: {
             parameter: currentRecipeJoborder.value,
             searchBy: 'planKey',
@@ -148,7 +149,7 @@ async function requestJobOrder() {
         row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
       })
     }
-    const tempMach = await $fetch(`/api/machine/machine?`, {
+    const tempMach = await keycloak.fetch(`/api/machine/machine?`, {
       query: {
         joborder: currentRecipeJoborder.value,
         correctionNo: correctionNoDisplayed.value,
@@ -173,7 +174,7 @@ function clearCorrectionNo(event) {
 }
 
 async function checkIsThereAnyLog(plankey) {
-  const check = await $fetch('/api/stepLogs/check-if-log-exists', {
+  const check = await keycloak.fetch('/api/stepLogs/check-if-log-exists', {
     query: {
       plankey,
     },
@@ -225,12 +226,12 @@ function handleRefresh(refreshType: 'solving' | 'weighing') {
       refreshType,
     },
   }).onOk(async () => {
-    const res = await $fetch(`/api/recipe/refresh-${refreshType}-requests/${plankey.value}`, { method: 'POST' })
+    const res = await keycloak.fetch(`/api/recipe/refresh-${refreshType}-requests/${plankey.value}`, { method: 'POST' })
     notification(res, t(`recipe.refresh.${refreshType}.${res ? 'success' : 'fail'}`))
   })
 }
 async function submitCoupleMachine() {
-  const check = await $fetch('/api/recipe/change-planned-machine', {
+  const check = await keycloak.fetch('/api/recipe/change-planned-machine', {
     method: 'put',
     body: {
       plankey: plankey.value,

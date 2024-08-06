@@ -16,8 +16,10 @@ const parameterCols = computed(() => [
   { name: 'value', label: t('jobOrderParameters.value'), field: 'value' },
   { name: 'unit', label: t('jobOrderParameters.unit'), field: 'unit' },
 ])
+const keycloak = useKeycloak()
 
-const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.value}`)
+const parameterRows = await keycloak.fetch(`/api/parameter/parameters?plankey=${plankey.value}`)
+const pagination = ref({ rowsPerPage: 0 })
 </script>
 
 <template>
@@ -33,6 +35,7 @@ const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.
 
     <q-card-section class="col" style="display: flex;">
       <FilterableTable
+        v-model:pagination="pagination"
         class="ml-5 mr-5 override-class-height"
         :columns="parameterCols"
         :rows="parameterRows"
@@ -78,7 +81,7 @@ const parameterRows = await $fetch(`/api/parameter/parameters?plankey=${plankey.
 </template>
 
 <style scoped>
-.text-override-left :deep(.text-right){
+.text-override-left :deep(.text-right) {
   text-align: left;
   word-break: normal;
   white-space: normal;

@@ -3,7 +3,7 @@ import { knex } from '~/server/connectionPool'
 const router = createRouter()
 export default useBase('/api/recipe', router.handler)
 
-router.get('/correction-number-by-parameter', defineEventHandler(async (event) => {
+router.get('/correction-number-by-parameter', defineAuthEventHandler(async (event) => {
   const { parameter } = getQuery(event)
   const { searchBy } = getQuery(event)
   let result
@@ -26,7 +26,7 @@ router.get('/correction-number-by-parameter', defineEventHandler(async (event) =
   return result
 }))
 
-// router.get('/correction-number-by-plankey', defineEventHandler(async (event) => {
+// router.get('/correction-number-by-plankey', defineAuthEventHandler(async (event) => {
 //   const { planKey } = getQuery(event)
 //   const result = await knex('DYBFBATCHPLAN')
 //     .where('PLANKEY', planKey)
@@ -34,7 +34,7 @@ router.get('/correction-number-by-parameter', defineEventHandler(async (event) =
 //     return result
 // }))
 
-router.get('/joborder', defineEventHandler(async (event) => {
+router.get('/joborder', defineAuthEventHandler(async (event) => {
   const { recipeJB, correctionNo } = getQuery(event)
   let planKey
   if (Number(correctionNo)) {
@@ -93,7 +93,7 @@ router.get('/joborder', defineEventHandler(async (event) => {
   return asd
 }))
 
-router.put('/change-planned-machine', defineEventHandler(async (event) => {
+router.put('/change-planned-machine', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const query = knex('DYBFBATCHPLAN')
     .where('PLANKEY', body.plankey)
@@ -108,7 +108,7 @@ router.put('/change-planned-machine', defineEventHandler(async (event) => {
   return await query
 }))
 
-router.put('/change-recipe-amount', defineEventHandler(async (event) => {
+router.put('/change-recipe-amount', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const query = await knex('DYBFBATCHORDERRECIPESTEPS')
     .where('PLANKEY', body.planKey)
@@ -120,7 +120,7 @@ router.put('/change-recipe-amount', defineEventHandler(async (event) => {
   return query
 }))
 
-router.post('/previous-requests', defineEventHandler(async (event) => {
+router.post('/previous-requests', defineAuthEventHandler(async (event) => {
   const { joborder, programNo, mainStep } = await readBody(event)
   const query = await knex('DYTFCHEMREQUESTS')
     .where('BATCHNO', joborder)
@@ -137,7 +137,7 @@ router.post('/previous-requests', defineEventHandler(async (event) => {
   return query
 }))
 
-router.post('/check-tank-no-required', defineEventHandler(async (event) => {
+router.post('/check-tank-no-required', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
 
   const arr = await knex('DYTFCHEMDISPCONNECTION as C')
@@ -153,7 +153,7 @@ router.post('/check-tank-no-required', defineEventHandler(async (event) => {
   return check
 }))
 
-router.post('/programs-by-plankey', defineEventHandler(async (event) => {
+router.post('/programs-by-plankey', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const result = await knex('DYBFBATCHORDERRECIPEHEADER')
     .where('PLANKEY', body.plankey)
@@ -165,7 +165,7 @@ router.post('/programs-by-plankey', defineEventHandler(async (event) => {
   return result
 }))
 
-router.post('/recipe-manuals', defineEventHandler(async (event) => {
+router.post('/recipe-manuals', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
 
   const result = await knex('DYBFBATCHORDERRECIPEMANUALS as A')
@@ -202,7 +202,7 @@ router.post('/recipe-manuals', defineEventHandler(async (event) => {
   return result
 }))
 
-router.post('/refresh-weighing-requests/:plankey', defineEventHandler(async (event) => {
+router.post('/refresh-weighing-requests/:plankey', defineAuthEventHandler(async (event) => {
   const { plankey } = getRouterParams(event)
   const record = await knex('DYBFBATCHPLAN')
     .where('PLANKEY', Number(plankey))
@@ -219,7 +219,7 @@ router.post('/refresh-weighing-requests/:plankey', defineEventHandler(async (eve
     }
   } else return 0
 }))
-router.post('/refresh-solving-requests/:plankey', defineEventHandler(async (event) => {
+router.post('/refresh-solving-requests/:plankey', defineAuthEventHandler(async (event) => {
   const { plankey } = getRouterParams(event)
   const record = await knex('DYBFBATCHPLAN').where('PLANKEY', Number(plankey)).first()
   if (record && record.lastForJoborder && !record.ISDELETED) {

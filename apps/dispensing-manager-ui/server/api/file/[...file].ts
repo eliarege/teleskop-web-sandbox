@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { createRouter, defineEventHandler, useBase } from 'h3'
+import { createRouter, useBase } from 'h3'
 import { Mutex, MutexInterface, Semaphore, SemaphoreInterface, withTimeout } from 'async-mutex'
 import { knex } from '~/server/connectionPool'
 import { sambaClient } from '~/server/sambaClient'
@@ -11,7 +11,7 @@ export default useBase('/api/file', router.handler)
 const config = useRuntimeConfig()
 const mutex = new Mutex()
 
-router.post('/write-recipe-step', defineEventHandler(async (event) => {
+router.post('/write-recipe-step', defineAuthEventHandler(async (event) => {
   // const writePath = path.join(config.writeFilePath, Date.now().toString())
   const body = await readBody(event)
   const materialCodes = body.materials.map(material => material.materialCode)
@@ -76,7 +76,7 @@ router.post('/write-recipe-step', defineEventHandler(async (event) => {
   else return { error: 5, message: 'Recipe step cannot be found on DYTFCHEMREQUESTS' }
 }))
 
-router.post('/write-dispenser-step', defineEventHandler(async (event) => {
+router.post('/write-dispenser-step', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const contentString = `${body.content.join(',')},${EOL.windows}`
   const reqFilePath = body.terminal === 'cancel' ? config.reqFilePath : `${body.terminal}.req`

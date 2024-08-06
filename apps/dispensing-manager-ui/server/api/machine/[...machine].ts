@@ -1,10 +1,10 @@
-import { createRouter, defineEventHandler, useBase } from 'h3'
+import { createRouter, useBase } from 'h3'
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
 export default useBase('/api/machine', router.handler)
 
-router.get('/machines', defineEventHandler(async (event) => {
+router.get('/machines', defineAuthEventHandler(async (event) => {
   const machines = await knex('DYTFMACHINES')
     .select({
       machinename: 'MACHINENAME',
@@ -15,7 +15,7 @@ router.get('/machines', defineEventHandler(async (event) => {
   return machines
 }))
 
-router.get('/machine', defineEventHandler(async (event) => {
+router.get('/machine', defineAuthEventHandler(async (event) => {
   const { joborder, correctionNo } = getQuery(event)
   const machineid = knex('DYBFBATCHPLAN')
     .select('PLANNEDMACHINE')
@@ -32,7 +32,7 @@ router.get('/machine', defineEventHandler(async (event) => {
   return machine[0]
 }))
 
-router.get('/machineid', defineEventHandler(async (event) => {
+router.get('/machineid', defineAuthEventHandler(async (event) => {
   const { plankey } = getQuery(event)
   const machineid = await knex('DYBFBATCHPLAN')
     .select('PLANNEDMACHINE')
@@ -41,7 +41,7 @@ router.get('/machineid', defineEventHandler(async (event) => {
   return machineid
 }))
 
-router.post('/control-dispenser-type-by-machineid', defineEventHandler(async (event) => {
+router.post('/control-dispenser-type-by-machineid', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const dispensers = await knex('DYTFMACHDISPCONNECTION as M')
     .where('M.MACHINEID', body.machineid)

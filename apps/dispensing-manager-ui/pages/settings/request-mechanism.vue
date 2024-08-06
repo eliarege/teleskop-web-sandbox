@@ -26,12 +26,13 @@ const tartimOptionsExtra = ref([
   { value: 1, label: t('settings.powderDye.opt2') },
   { value: 2, label: t('settings.powderDye.opt3') },
 ])
+const keycloak = useKeycloak()
 
 const genericOptions = ref()
-genericOptions.value = await $fetch('/api/settings/material')
+genericOptions.value = await keycloak.fetch('/api/settings/material')
 
 async function fetchSettings() {
-  settingsData.value = await $fetch('/api/settings/request-mechanism-setting')
+  settingsData.value = await keycloak.fetch('/api/settings/request-mechanism-setting')
 
   reqMechanism.value = settingsData.value.reqMechanismOption1 ? 1 : settingsData.value.reqMechanismOption2 ? 2 : 3
   reqMechanismNotCompletedOption.value = settingsData.value.reqMechanismOption3
@@ -47,7 +48,7 @@ async function fetchSettings() {
 await fetchSettings()
 
 async function changeSettings() {
-  const isSuccess = await $fetch('/api/settings/request-mechanism-setting', {
+  const isSuccess = await keycloak.fetch('/api/settings/request-mechanism-setting', {
     method: 'put',
     body: {
       reqMechanismOption1: reqMechanism.value === 1 ? 1 : 0,
@@ -368,15 +369,14 @@ function filterOptions(val, update) {
 
 /* Mobile view */
 @media (max-width: 600px) {
-
   .grid-container {
     grid-template-columns: repeat(1, 1fr);
   }
 
   .settings-section-header {
-  font-size: medium !important;
-  font-weight: bold;
-}
+    font-size: medium !important;
+    font-weight: bold;
+  }
   .settings-section {
     font-size: small;
     padding-right: 0rem !important;
@@ -384,7 +384,6 @@ function filterOptions(val, update) {
     white-space: normal;
     overflow-x: hidden;
   }
-
 }
 
 .grid-item {
@@ -399,6 +398,6 @@ function filterOptions(val, update) {
   padding-right: 6.25rem;
   padding-left: 6.25rem;
   padding-top: 1rem;
-  height:fit-content;
+  height: fit-content;
 }
 </style>

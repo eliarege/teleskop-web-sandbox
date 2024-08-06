@@ -1,4 +1,4 @@
-import { createRouter, defineEventHandler, useBase } from 'h3'
+import { createRouter, useBase } from 'h3'
 import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 
@@ -21,14 +21,14 @@ const selectParameters = {
   description: 'L.EXPLANATION',
 
 }
-router.get('/check-if-log-exists', defineEventHandler(async (event) => {
+router.get('/check-if-log-exists', defineAuthEventHandler(async (event) => {
   const { plankey } = getQuery(event)
   const parameters = await knex('DYBFBATCHORDERRECIPESTEPLOGS as L')
     .where('PLANKEY', Number(plankey))
   return !!parameters.length
 }))
 
-router.post('/filtered-logs', defineEventHandler(async (event) => {
+router.post('/filtered-logs', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const logs = knex('DYBFBATCHORDERRECIPESTEPLOGS as L')
     .leftJoin('DYTFMACHINES as M', 'L.MACHINEID', 'M.MACHINEID')

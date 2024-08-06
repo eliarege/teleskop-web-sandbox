@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: false,
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   extends: ['@teleskop/nuxt-base'],
   runtimeConfig: {
     teleskopHost: 'localhost',
@@ -18,6 +18,9 @@ export default defineNuxtConfig({
     addMissingTeleskopColumns: 'false',
     public: {
       kcClientId: 'dispensing-manager-ui',
+      kcUrl: 'http://localhost:8080',
+      kcRealm: 'teleskop-web',
+      kcEnabled: true,
       websockifyUrl: 'ws://localhost:6800',
     },
   },
