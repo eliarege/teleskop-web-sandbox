@@ -1,5 +1,5 @@
 import { fetchTreatmentSettings } from '../functions'
 
-export default defineEventHandler(async () => {
+export default defineAuthEventHandler(async () => {
   return await fetchTreatmentSettings()
 })

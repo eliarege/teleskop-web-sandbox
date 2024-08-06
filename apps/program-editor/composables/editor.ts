@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { klona } from 'klona/lite'
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineCommand, MachineConstant, ParameterItem, ParameterSelections, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, ioListItem } from '~/shared/types'
 import { capitalize } from '~/server/utils'
 import { PError } from '~/server/error'
@@ -33,6 +34,7 @@ export const useEditorStore = defineStore('editor', () => {
   const route = useRoute()
   const errorIds = ref(new Set<string>())
   const { notifySuccess, notifyError } = useNotify()
+  const { fetch } = useKeycloak()
 
   const theoricDuration = computed(() => formatDuration(calculateProgramDuration(program.value, machine.value)))
 
@@ -40,7 +42,7 @@ export const useEditorStore = defineStore('editor', () => {
     optimizedEnable: false,
   })
   async function fetchTreatmentSettings() {
-    treatmentSettings.value = await $fetch('/api/treatment-settings')
+    treatmentSettings.value = await fetch('/api/treatment-settings')
   }
 
   fetchTreatmentSettings()
@@ -247,7 +249,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function deleteProgram(machineId: number, programNo: number) {
-    await $fetch(`/api/machine/${machineId}/program/${programNo}`, {
+    await fetch(`/api/machine/${machineId}/program/${programNo}`, {
       method: 'DELETE',
       body: {
         programNo,
@@ -285,7 +287,7 @@ export const useEditorStore = defineStore('editor', () => {
       selectedParallelStep.value = -1
       lastStepId = 0
       lastCommandId = 0
-      program.value = await $fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
+      program.value = await fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
       for (const step of program.value.steps) {
         step.stepId = lastStepId++
         for (const command of step.parallelCommands) {
@@ -303,12 +305,12 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function fetchMachine(machineId: number) {
-    const machineData = await $fetch<Machine>(`/api/machine/${machineId}`)
+    const machineData = await fetch<Machine>(`/api/machine/${machineId}`)
     machine.value = machineData
   }
 
   async function fetchMachineCommands(machineId: number, editable?: boolean) {
-    const machineCommandsData = await $fetch<MachineCommand[]>(`/api/machine/${machineId}/commands${editable ? '?editable=true' : ''}`)
+    const machineCommandsData = await fetch<MachineCommand[]>(`/api/machine/${machineId}/commands${editable ? '?editable=true' : ''}`)
     if (machine.value) {
       if (!(machine.value.commands instanceof Map)) {
         machine.value.commands = new Map()
@@ -322,19 +324,19 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function fetchAllMachine() {
-    return await $fetch('/api/machine')
+    return await fetch('/api/machine')
   }
 
   async function fetchMachineGroup() {
-    return await $fetch('/api/machine-group')
+    return await fetch('/api/machine-group')
   }
 
   async function fetchAllPrograms(machineId: number) {
-    allPrograms.value = await $fetch<ProgramHeader[]>(`/api/machine/${machineId}/program`)
+    allPrograms.value = await fetch<ProgramHeader[]>(`/api/machine/${machineId}/program`)
   }
 
   async function fetchAllProcessTypes() {
-    allProcessType.value = (await $fetch<ProcessType[]>('/api/process')).map(type => ({
+    allProcessType.value = (await fetch<ProcessType[]>('/api/process')).map(type => ({
       ...type,
       label: capitalize(type.label),
     }))
@@ -376,7 +378,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   async function updateProgram() {
     try {
-      await $fetch(`/api/machine/${route.params.machine_id}/program`, {
+      await fetch(`/api/machine/${route.params.machine_id}/program`, {
         method: 'PUT',
         body: {
           program: program.value,
@@ -398,7 +400,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   async function insertProgram(newProgram: Program) {
     try {
-      await $fetch(`/api/machine/${newProgram.machineId}/program`, {
+      await fetch(`/api/machine/${newProgram.machineId}/program`, {
         method: 'POST',
         body: {
           program: newProgram,

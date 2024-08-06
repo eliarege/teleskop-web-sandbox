@@ -1,7 +1,7 @@
 import { inferBoolean } from '@teleskop/utils'
 import { machineStore } from '~/server/classes/MachineStore'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
   const query = getQuery(event)
   const machineId = Number.parseInt(machine_id)

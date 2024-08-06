@@ -1,6 +1,6 @@
 import { getMachines, getMachinesAsList } from '~/server/functions'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const query = getQuery(event)
   if(query?.asList)
     return await getMachinesAsList()

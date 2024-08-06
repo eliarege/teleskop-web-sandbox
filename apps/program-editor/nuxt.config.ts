@@ -23,7 +23,10 @@ export default defineNuxtConfig({
 
     teleskopTimezoneOffset: -180,
     public: {
+      kcUrl: 'http://localhost:8080/',
+      kcRealm: 'teleskop-web',
       kcClientId: 'program-editor',
+      kcEnabled: true,
     },
   },
   i18n: {

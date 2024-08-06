@@ -956,7 +956,7 @@ export class MachineController {
       CHANGEDATE: date,
       TBBCHANGESOURCE: '',
       TBBCHANGEDATE: program.updatedAtTBB ? program.updatedAtTBB : '',
-      LOCKEDBY: '',
+      LOCKEDBY: program.author ? program.author : '',
       CREATIONDATE: program.createdAt ? new Date((new Date(program.createdAt)).getTime() - timezone * 60000).toISOString() : date,
       USERCOMMENT: program.comment,
       ISDELETED: 0,

@@ -7,6 +7,7 @@ import type { QTableColumn } from 'quasar'
 import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { capitalize } from '~/server/utils'
 import type { ProgramFilter, ProgramHeader, ProgramTable } from '~/shared/types'
 import { ProgramStateColors, ProgramStatus } from '~/shared/constants'
@@ -160,6 +161,7 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
 })
 
 async function fetchPrograms(filter?: ProgramFilter) {
+  const { fetch } = useKeycloak()
   let query
   const checkAnyExistingFilter = getExistingFilter()
   if (checkAnyExistingFilter) {
@@ -168,7 +170,7 @@ async function fetchPrograms(filter?: ProgramFilter) {
   if (filter) {
     query = filterToQuery(filter)
   }
-  programs.value = await $fetch<ProgramHeader[]>(`/api/machine/${machineId}/program?${query || ''}`)
+  programs.value = await fetch(`/api/machine/${machineId}/program?${query || ''}`)
 }
 
 editor.isLoading = true
@@ -628,8 +630,6 @@ function handleRowColor(row: ProgramHeader) {
     }
   }
 }
-
-console.log('columns', programs.value)
 </script>
 
 <template>

@@ -13,8 +13,8 @@ defineEmits([
 const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const { data: machineGroup } = useFetch<MachineGroup[]>('/api/machine-group')
-const { data: allMachine } = useFetch<MachineInfo[]>('/api/machine')
+const { data: machineGroup } = useAuthFetch<MachineGroup[]>('/api/machine-group')
+const { data: allMachine } = useAuthFetch<MachineInfo[]>('/api/machine')
 
 const ticked = ref<string[]>([])
 const selectAll = ref(false)

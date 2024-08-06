@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar'
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak';
+
+const { fetch } = useKeycloak()
 
 const props = defineProps({
   processTypes: Array<any>,
@@ -25,7 +28,7 @@ const isProgramNoExist = ref(false)
 
 async function updateModelValue(val) {
   details.value.programNo = val
-  isProgramNoExist.value = await $fetch(`/api/program/has-program/${machineId}/${details.value.programNo}`)
+  isProgramNoExist.value = await fetch(`/api/program/has-program/${machineId}/${details.value.programNo}`)
 }
 </script>
 

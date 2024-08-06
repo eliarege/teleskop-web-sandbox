@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import TBCreateProcessTypeDialog from './TBCreateProcessTypeDialog.vue'
 import { notification } from '~/shared/functions'
 import type { ProcessType } from '~/shared/types'
@@ -6,10 +7,12 @@ import type { ProcessType } from '~/shared/types'
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
+
+const { fetch } = useKeycloak()
 const $q = useQuasar()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
-const { data: programTypes, refresh } = useFetch('/api/process', { default: () => [] })
+const { data: programTypes, refresh } = useAuthFetch('/api/process', { default: () => [] })
 const columns = computed(() => [
   { name: 'value', label: t('changeProcessTypeDialog.processTypeNo'), field: 'value', align: 'left' },
   { name: 'label', label: t('changeProcessTypeDialog.processTypeName'), field: 'label', align: 'left' },
@@ -18,7 +21,7 @@ const columns = computed(() => [
 const selectedRow = ref()
 async function handleUpdateProcessTypes() {
   console.log(programTypes.value)
-  const check = await $fetch('/api/process', { method: 'PUT', body: programTypes.value })
+  const check = await fetch('/api/process', { method: 'PUT', body: programTypes.value })
   const status = check ? 'success' : 'fail'
   notification(check, t(`changeProcessTypeDialog.updateProcessTypes.${status}`, { no: selectedRow.value.value }))
   refresh()
@@ -29,7 +32,7 @@ function handleCreateProcessType() {
   }).onOk(async (type: ProcessType) => {
     let check
     try {
-      check = await $fetch('/api/process', { method: 'POST', body: type })
+      check = await fetch('/api/process', { method: 'POST', body: type })
       console.log(!!check)
     } catch {
       check = false
@@ -56,7 +59,7 @@ function handleDeleteProcessType() {
     },
     persistent: true,
   }).onOk(async () => {
-    const check = await $fetch('/api/process', { method: 'DELETE', body: selectedRow.value.value })
+    const check = await fetch('/api/process', { method: 'DELETE', body: selectedRow.value.value })
     const status = check ? 'success' : 'fail'
     notification(check, t(`changeProcessTypeDialog.deleteProcessType.${status}`, { no: selectedRow.value.value }))
     refresh()

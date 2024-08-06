@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak';
+
+const { fetch } = useKeycloak()
 
 const props = defineProps({
   machines: Array<{ name: string, value: number, label: string }>,
@@ -68,7 +71,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
     for (const machine of selectedMachines.value) {
       const machineObject = props.machines?.find(mach => mach.value === machine)
       if (field === 1) {
-        const commands = await $fetch(`/api/machine/${machine}/commands?asList=true`)
+        const commands = await fetch(`/api/machine/${machine}/commands?asList=true`)
         commands.forEach((command) => {
           sheet.addRow({
             machineName: machineObject?.label,
@@ -78,7 +81,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
         })
       }
       if (field === 2) {
-        const commands = await $fetch(`/api/machine/${machine}/commands`)
+        const commands = await fetch(`/api/machine/${machine}/commands`)
 
         commands.forEach((command) => {
           sheet.addRow({
@@ -132,7 +135,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
         console.log(3)
       }
       if (field === 4) {
-        const parameters = await $fetch(`/api/machine/${machine}/parameters`)
+        const parameters = await fetch(`/api/machine/${machine}/parameters`)
 
         parameters.forEach((param) => {
           sheet.addRow({

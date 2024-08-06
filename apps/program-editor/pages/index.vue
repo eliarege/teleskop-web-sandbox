@@ -11,7 +11,6 @@ import { useEditorStore } from '~/composables/editor'
 import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
 
 const { $commandManager } = useNuxtApp()
-
 const { t } = useI18n()
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
