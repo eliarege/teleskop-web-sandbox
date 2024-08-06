@@ -5,10 +5,12 @@ const props = defineProps({
     required: true,
   },
 })
-const router = useRouter()
+const isServiceClosed = computed(() => {
+  return !props.dispenserConnectionStatuses.some(disp => disp.connectionStatus !== 3)
+})
 const { t } = useI18n()
 
-const dispenserStatus = ref()
+const dispenserStatusBarRef = ref()
 const contentWrapper = ref()
 
 onMounted(() => {
@@ -21,7 +23,7 @@ onUnmounted(() => {
 })
 
 function checkForOverflow() {
-  const container = dispenserStatus.value
+  const container = dispenserStatusBarRef.value
   const content = contentWrapper.value
 
   if (content.scrollWidth > container.clientWidth) {
@@ -33,21 +35,30 @@ function checkForOverflow() {
 </script>
 
 <template>
-  <div ref="dispenserStatus" class="dispenser-status">
+  <div ref="dispenserStatusBarRef" class="dispenser-status">
     <div ref="contentWrapper" class="content-wrapper">
+      <div v-if="isServiceClosed" class="w-100vw items-center flex justify-center">
+        <q-icon
+          v-bind="getConnectionStatusIcon(3)"
+          size="sm"
+        />
+        {{ t('dispenserConnectionStatus.3') }}
+      </div>
       <div
         v-for="dispenser in dispenserConnectionStatuses"
+        v-else
         :key="dispenser.dispNo"
         class="ml-10 font-size-4"
       >
-        <span class="cursor-pointer hover:decoration-underline" @click="router.push(`/vnc/${dispenser.dispNo}`)">
-          {{ `${dispenser.dispNo} - ${dispenser.name} - ${t(`dispenserConnectionStatus.${dispenser.connectionStatus}`)}` }}
-          {{ }}
-          <q-icon
-            v-bind="getConnectionStatusIcon(dispenser.connectionStatus)"
-            size="sm"
-          />
-        </span>
+        <router-link :to="`/vnc/${dispenser.dispNo}`" target="_blank">
+          <span class="cursor-pointer hover:decoration-underline">
+            {{ `${dispenser.dispNo} - ${dispenser.name} - ${t(`dispenserConnectionStatus.${dispenser.connectionStatus}`)}` }}
+            <q-icon
+              v-bind="getConnectionStatusIcon(dispenser.connectionStatus)"
+              size="sm"
+            />
+          </span>
+        </router-link>
       </div>
     </div>
   </div>
@@ -69,6 +80,7 @@ function checkForOverflow() {
 .content-wrapper {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   height: 100%;
   will-change: transform;
 }

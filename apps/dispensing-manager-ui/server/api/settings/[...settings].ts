@@ -39,10 +39,12 @@ const dispenserParameters = {
   dispIP: 'IP',
   dispConsumptionFileName: 'CONSUMPTIONFILENAME',
   dms: 'READCONSUMPTIONFROMDMS',
-  exportIrrelevantConsumptions: 'EXPORTIRRELEVANTCONSUMPTION',
+  exportUnrelatedConsumptions: 'EXPORTIRRELEVANTCONSUMPTION',
   exportFileName: 'EXPORTFILENAME',
   connectionControlDate: 'CONNECTIONCONTROLDATE',
   connectionStatus: 'CONNECTIONSTATUS',
+  vncPort: 'VNCPORT',
+  vncPassword: 'VNCPASSWORD',
 }
 
 router.get('/dispenser', defineEventHandler(async () => {
@@ -52,11 +54,11 @@ router.get('/dispenser', defineEventHandler(async () => {
   return dispensers
 }))
 
-router.get('/dispenser/:id', defineEventHandler(async (event) => {
-  const { id } = getRouterParams(event)
+router.get('/dispenser/:dispNo', defineEventHandler(async (event) => {
+  const { dispNo } = getRouterParams(event)
   return (await knex('DYTFDISPENSERSETTINGS')
     .select(dispenserParameters)
-    .where('DISPENSERID', id)).at(0)
+    .where('DISPENSERID', dispNo)).at(0)
 }))
 
 // router.get('/ping/:dispNo', defineEventHandler(async (event) => {
@@ -139,8 +141,10 @@ router.post('/dispenser/:dispNo', defineEventHandler(async (event) => {
       IP: body?.dispIP,
       CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
       READCONSUMPTIONFROMDMS: body?.dms,
-      EXPORTIRRELEVANTCONSUMPTION: body?.exportIrrelevantConsumptions,
+      EXPORTIRRELEVANTCONSUMPTION: body?.exportUnrelatedConsumptions,
       EXPORTFILENAME: body?.exportFileName,
+      VNCPORT: body?.vncPort,
+      VNCPASSWORD: body?.vncPassword,
     })
   return dispenser
 }))
@@ -150,8 +154,7 @@ router.put('/dispenser/:dispNo', defineEventHandler(async (event) => {
   if (!event.context.params) {
     throw new Error('URL parameters are undefined')
   }
-  const dispNo = event.context.params.dispNo
-
+  const { dispNo } = getRouterParams(event)
   const dispenser = await knex('DYTFDISPENSERSETTINGS')
     .where('DISPENSERID', dispNo)
     .update({
@@ -163,8 +166,10 @@ router.put('/dispenser/:dispNo', defineEventHandler(async (event) => {
       IP: body?.dispIP,
       CONSUMPTIONFILENAME: body?.dispConsumptionFileName,
       READCONSUMPTIONFROMDMS: body?.dms,
-      EXPORTIRRELEVANTCONSUMPTION: body?.exportIrrelevantConsumptions,
+      EXPORTIRRELEVANTCONSUMPTION: body?.exportUnrelatedConsumptions,
       EXPORTFILENAME: body?.exportFileName,
+      VNCPORT: body?.vncPort,
+      VNCPASSWORD: body?.vncPassword,
     })
   return dispenser
 }))
