@@ -2,7 +2,6 @@
 import { symOutlinedLocalLaundryService, symOutlinedManufacturing, symOutlinedPackage2, symOutlinedSettingsApplications } from '@quasar/extras/material-symbols-outlined'
 import { } from '@quasar/extras/material-icons-round'
 import { breakpoints } from '~/shared/constants'
-import { navigateToPage } from '~/shared/functions'
 
 definePageMeta({
   roles: ['manage'],
@@ -10,9 +9,7 @@ definePageMeta({
 
 const { t } = useI18n()
 const tempRoute = useRoute()
-const tabRef = computed(() => tempRoute.fullPath.split('/')[2] || 'material')
-if (!tempRoute.fullPath.split('/')[2])
-  navigateToPage('settings/dispenser')
+const tabRef = computed(() => tempRoute.path.split('/')[2] || 'dispenser')
 
 const splitterModel = ref(10)
 const isLaptop = useBreakpoints(breakpoints).greaterOrEqual('laptop')

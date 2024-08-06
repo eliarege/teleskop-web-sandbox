@@ -262,10 +262,13 @@ async function updateSelectedRow(evt: any) {
   await fetchMaterialData(evt.reqnumber)
 }
 const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
+const hasManagerRole = computed(() => {
+  return keycloak.hasResourceRole('manage')
+})
 </script>
 
 <template>
-  <div class="dialog-class flex flex-row gap-5">
+  <div class="dialog-class flex flex-row gap-5 mb-12">
     <div class="responsive-flex-container ">
       <div
         class="responsive-table"
@@ -324,6 +327,7 @@ const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
                   :key="act"
                   v-close-popup
                   clickable
+                  :disable="!hasManagerRole"
                   @click="
                     selectedRow.status === StatusCodes.requestCompleted || selectedRow.status === StatusCodes.canceled
                       ? processRequest(act, selectedRow)
@@ -335,6 +339,7 @@ const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
                 <q-item
                   v-close-popup
                   clickable
+                  :disable="!hasManagerRole"
                   @click="completeProgram(selectedRow)"
                 >
                   <q-item-section>{{ t('dispensingManager.rcMenu.complete') }}</q-item-section>
@@ -416,6 +421,7 @@ const pagination = ref({ rowsPerPage: 7 } as QTableProps['pagination'])
       </q-table>
     </div>
   </div>
+
   <DispenserStatusBar :dispenser-connection-statuses="connectionStatus" />
 </template>
 

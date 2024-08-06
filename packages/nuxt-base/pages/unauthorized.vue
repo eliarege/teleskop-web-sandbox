@@ -3,15 +3,13 @@ import { useRouter } from 'vue-router'
 
 const { t } = useI18n({ useScope: 'local' })
 
-const route = useRoute()
 const router = useRouter()
 
 definePageMeta({
   layout: false,
 })
-const fallbackPage = route.query.to
 function goToMainPage() {
-  router.push(fallbackPage || '/')
+  router.push('/')
 }
 </script>
 

@@ -39,7 +39,9 @@ const props = defineProps({
 })
 
 const keycloak = useKeycloak()
-
+const hasManagerRole = computed(() => {
+  return keycloak.hasResourceRole('manage')
+})
 const $q = useQuasar()
 const { t } = useI18n()
 interface SpanMethodProps {
@@ -266,14 +268,15 @@ async function showLogsOfSelectedStep() {
           v-for="col in props.columns"
           :key="col.prop"
           :prop="col.prop"
-          :label="col.label"
+          :label="toValue(col.label)"
+          :formatter="col.formatter"
           align="center"
           show-overflow-tooltip
         />
       </ElTableColumn>
     </ElTable>
     <div
-      v-if="contextMenuVisible && props.haveContextMenu"
+      v-if="contextMenuVisible && props.haveContextMenu && hasManagerRole"
       ref="tableContainer"
       class="context-menu"
       :style="contextMenuPosition"

@@ -1,5 +1,7 @@
 <template>
-  <DispensingManager />
+  <div>
+    <DispensingManager />
+  </div>
 </template>
 
 <style scoped lang="postcss">

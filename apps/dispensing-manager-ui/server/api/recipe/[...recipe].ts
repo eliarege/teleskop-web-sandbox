@@ -93,31 +93,37 @@ router.get('/joborder', defineAuthEventHandler(async (event) => {
   return asd
 }))
 
-router.put('/change-planned-machine', defineAuthEventHandler(async (event) => {
-  const body = await readBody(event)
-  const query = knex('DYBFBATCHPLAN')
-    .where('PLANKEY', body.plankey)
-  query.update({
-    PLANNEDMACHINE: body.newPlannedMachine,
-  })
-  if (body.isCoupled) {
+router.put('/change-planned-machine', defineAuthEventHandler({
+  roles: ['manage'],
+  async handler(event) {
+    const body = await readBody(event)
+    const query = knex('DYBFBATCHPLAN')
+      .where('PLANKEY', body.plankey)
     query.update({
-      SLAVEMACHINEID: body.newCoupledMachine,
+      PLANNEDMACHINE: body.newPlannedMachine,
     })
-  }
-  return await query
+    if (body.isCoupled) {
+      query.update({
+        SLAVEMACHINEID: body.newCoupledMachine,
+      })
+    }
+    return await query
+  },
 }))
 
-router.put('/change-recipe-amount', defineAuthEventHandler(async (event) => {
-  const body = await readBody(event)
-  const query = await knex('DYBFBATCHORDERRECIPESTEPS')
-    .where('PLANKEY', body.planKey)
-    .andWhere('REQNO_BATCH', body.ISN)
-    .andWhere('CHEMCODE', body.chemCode)
-    .update({
-      AMOUNT: body.newAmount,
-    })
-  return query
+router.put('/change-recipe-amount', defineAuthEventHandler({
+  roles: ['manage'],
+  async handler(event) {
+    const body = await readBody(event)
+    const query = await knex('DYBFBATCHORDERRECIPESTEPS')
+      .where('PLANKEY', body.planKey)
+      .andWhere('REQNO_BATCH', body.ISN)
+      .andWhere('CHEMCODE', body.chemCode)
+      .update({
+        AMOUNT: body.newAmount,
+      })
+    return query
+  },
 }))
 
 router.post('/previous-requests', defineAuthEventHandler(async (event) => {
@@ -202,34 +208,41 @@ router.post('/recipe-manuals', defineAuthEventHandler(async (event) => {
   return result
 }))
 
-router.post('/refresh-weighing-requests/:plankey', defineAuthEventHandler(async (event) => {
-  const { plankey } = getRouterParams(event)
-  const record = await knex('DYBFBATCHPLAN')
-    .where('PLANKEY', Number(plankey))
-    .select('PLANKEY', 'lastForJoborder', 'ISDELETED')
-    .first()
-  if (record && record.lastForJoborder && !record.ISDELETED) {
-    try {
-      await knex('DYBFBATCHPLAN').where('PLANKEY', Number(plankey)).update({
-        REFRESHWEIGHINGREQUESTS: true,
-      })
-      return 1
-    } catch (e) {
-      return 0
-    }
-  } else return 0
+router.post('/refresh-weighing-requests/:plankey', defineAuthEventHandler({
+  roles: ['manage'],
+  async handler(event) {
+    const { plankey } = getRouterParams(event)
+    const record = await knex('DYBFBATCHPLAN')
+      .where('PLANKEY', Number(plankey))
+      .select('PLANKEY', 'lastForJoborder', 'ISDELETED')
+      .first()
+    if (record && record.lastForJoborder && !record.ISDELETED) {
+      try {
+        await knex('DYBFBATCHPLAN').where('PLANKEY', Number(plankey)).update({
+          REFRESHWEIGHINGREQUESTS: true,
+        })
+        return 1
+      } catch (e) {
+        return 0
+      }
+    } else return 0
+  },
 }))
-router.post('/refresh-solving-requests/:plankey', defineAuthEventHandler(async (event) => {
-  const { plankey } = getRouterParams(event)
-  const record = await knex('DYBFBATCHPLAN').where('PLANKEY', Number(plankey)).first()
-  if (record && record.lastForJoborder && !record.ISDELETED) {
-    try {
-      await knex('DYBFBATCHPLAN').where('PLANKEY', Number(plankey)).update({
-        REFRESHSOLVINGREQUESTS: true,
-      })
-      return 1
-    } catch (e) {
-      return 0
-    }
-  } else return 0
+
+router.post('/refresh-solving-requests/:plankey', defineAuthEventHandler({
+  roles: ['manage'],
+  async handler(event) {
+    const { plankey } = getRouterParams(event)
+    const record = await knex('DYBFBATCHPLAN').where('PLANKEY', Number(plankey)).first()
+    if (record && record.lastForJoborder && !record.ISDELETED) {
+      try {
+        await knex('DYBFBATCHPLAN').where('PLANKEY', Number(plankey)).update({
+          REFRESHSOLVINGREQUESTS: true,
+        })
+        return 1
+      } catch (e) {
+        return 0
+      }
+    } else return 0
+  },
 }))
