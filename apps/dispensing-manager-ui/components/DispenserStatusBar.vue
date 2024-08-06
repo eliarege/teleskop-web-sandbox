@@ -37,8 +37,12 @@ function checkForOverflow() {
 <template>
   <div ref="dispenserStatusBarRef" class="dispenser-status">
     <div ref="contentWrapper" class="content-wrapper">
-      <div v-if="isServiceClosed">
-        Service closed
+      <div v-if="isServiceClosed" class="w-100vw items-center flex justify-center">
+        <q-icon
+          v-bind="getConnectionStatusIcon(3)"
+          size="sm"
+        />
+        {{ t('dispenserConnectionStatus.3') }}
       </div>
       <div
         v-for="dispenser in dispenserConnectionStatuses"
@@ -76,6 +80,7 @@ function checkForOverflow() {
 .content-wrapper {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   height: 100%;
   will-change: transform;
 }
