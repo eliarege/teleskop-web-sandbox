@@ -16,8 +16,8 @@ export async function getQueueBasedEvents(startDate: string, endDate: string, in
 
   if (includeStops) {
     const stops = await planningBoardStops(startDate, endDate)
-    return await queueBasedEventStatus([...plannedEvents, ...actualEvents, ...stops])
-  } else return await queueBasedEventStatus([...plannedEvents, ...actualEvents])
+    return await queueBasedEventStatus([...plannedEvents, ...actualEvents, ...stops], includeStops)
+  } else return await queueBasedEventStatus([...plannedEvents, ...actualEvents], includeStops)
 }
 
 export async function getQueueBasedPlannedEvents(startDate: string, endDate: string): Promise<QueueBasedNonActualEvent[]> {

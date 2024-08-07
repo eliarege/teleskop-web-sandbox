@@ -24,7 +24,7 @@ watch(color, useDebounceFn(() => {
         flat
         filled
         borderless
-        class="test w-1.125rem h-1.125rem"
+        class="color-field w-1.125rem h-1.125rem"
         :model-value="color"
       >
         <q-popup-proxy
@@ -42,7 +42,7 @@ watch(color, useDebounceFn(() => {
 </template>
 
 <style scoped lang="postcss">
-.test :deep(.q-field__inner) {
+.color-field :deep(.q-field__inner) {
   background-color: v-bind(color);
   border-radius: 3px;
   @apply overflow-hidden;

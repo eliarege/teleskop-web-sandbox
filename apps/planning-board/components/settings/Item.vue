@@ -45,7 +45,7 @@ const color = defineModel('color', { type: String })
           option-label="label"
           emit-value
           map-options
-          class="test max-w-40"
+          class="dropdown max-w-40"
         />
       </div>
     </div>
@@ -72,7 +72,7 @@ const color = defineModel('color', { type: String })
 </template>
 
 <style scoped lang="postcss">
-:deep(.test.q-field--dense .q-field__marginal) {
+:deep(.dropdown.q-field--dense .q-field__marginal) {
   height: 30px;
 }
 </style>
