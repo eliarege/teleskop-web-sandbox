@@ -4,7 +4,7 @@ const config = useRuntimeConfig()
 
 export const { defineAuthEventHandler } = config.public.kcEnabled
   ? h3Adapter({
-    url: config.public.kcUrl,
+    url: config.kcBackchannelUrl,
     realm: config.public.kcRealm,
     clientId: config.public.kcClientId,
   })

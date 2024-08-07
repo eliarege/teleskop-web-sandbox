@@ -15,6 +15,7 @@ export default defineNuxtConfig({
     twVersion: '',
     twBuildDate: '',
     twCommitHash: '',
+    kcBackchannelUrl: 'http://localhost:8080',
   },
   css: [
     '@unocss/reset/tailwind.css',
