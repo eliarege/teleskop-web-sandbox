@@ -4,7 +4,6 @@ import { } from '@quasar/extras/material-icons-round'
 import { breakpoints } from '~/shared/constants'
 
 definePageMeta({
-  middleware: ['auth'],
   roles: ['manage'],
 })
 
