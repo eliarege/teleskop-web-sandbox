@@ -15,7 +15,7 @@ const settingItems = reactive([
 </script>
 
 <template>
-  <div class="bg-white w-full !w-40vw max-h-90vh rounded-2xl overflow-auto" @click.stop.prevent>
+  <div class="bg-white w-full !w-40vw max-h-90vh rounded-2xl overflow-auto cursor-auto" @click.stop.prevent>
     <q-list>
       <q-expansion-item
         v-for="item in settingItems"
