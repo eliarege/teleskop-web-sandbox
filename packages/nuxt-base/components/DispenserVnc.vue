@@ -4,11 +4,11 @@ import { joinURL, parseURL, withBase, withProtocol } from 'ufo'
 import { NoVnc } from '@teleskop/ui'
 
 const props = defineProps({
-  id: {
+  dispenserId: {
     type: Number,
     required: true,
   },
-  name: {
+  dispenserName: {
     type: String,
     required: false,
   },
@@ -192,14 +192,14 @@ function resolveWebSocketUrl(url: string) {
 const websockifyWsUrl = resolveWebSocketUrl(props.websockifyUrl)
 function onDisconnect() {
   quasar.notify({
-    message: t('vncError', { name: props.name }),
+    message: t('vncError', { name: props.dispenserName }),
     timeout: 3000,
     position: 'top',
     color: 'negative',
   })
 }
 function onConnect() {
-  console.log('connected', props.name)
+  console.log('connected', props.dispenserName)
 }
 
 const fnKeys = reactive([
@@ -254,7 +254,7 @@ onBeforeUnmount(() => {
               <span class="loader z-1 absolute" />
               <NoVnc
                 ref="vnc"
-                :url="joinURL(websockifyWsUrl, 'dispenser', `${id}`)"
+                :url="joinURL(websockifyWsUrl, 'dispenser', `${dispenserId}`)"
                 resize-session
                 clip-viewport
                 drag-viewport

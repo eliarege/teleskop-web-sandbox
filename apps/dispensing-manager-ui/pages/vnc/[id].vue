@@ -10,8 +10,8 @@ definePageMeta({
 
 <template>
   <DispenserVnc
-    :id="dispenser.dispNo"
-    :name="dispenser.name"
+    :dispenser-id="dispenser.dispNo"
+    :dispenser-name="dispenser.name"
     :websockify-url="config.public.websockifyUrl"
   />
 </template>
