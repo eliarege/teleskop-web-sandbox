@@ -11,7 +11,10 @@ const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
 
 const items = [
-  [...props.extraItems ?? []],
+  ...(props.extraItems
+    ? [props.extraItems]
+    : []
+  ),
   [
     {
       label: tt('base.locale'),
