@@ -236,8 +236,7 @@ function toggleFullScreen() {
 }
 
 function onKeyPress(key: string) {
-  console.log(key)
-  vnc.value!.sendKey(KeyEnum[key], null)
+  vnc.value?.sendKey(KeyEnum[key], null)
 }
 onBeforeUnmount(() => {
   vnc.value?.disconnect()
@@ -278,9 +277,7 @@ onBeforeUnmount(() => {
           </div>
           <div class="flex justify-center mb-1 z-10">
             <VirtualKeyboard
-              :input="input"
-              @on-change="onChange"
-              @on-key-press="onKeyPress"
+              @key-press="onKeyPress"
             />
           </div>
         </div>
@@ -290,12 +287,12 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="postcss">
-* {
-  @apply font-extrabold text-gray-900;
-}
-
 .modal-wrapper {
   @apply justify-center w-auto;
+
+  * {
+    @apply font-extrabold text-gray-900;
+  }
 
   .modal-container {
     width: 100%;

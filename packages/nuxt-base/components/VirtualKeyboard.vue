@@ -2,35 +2,26 @@
 import Keyboard from 'simple-keyboard'
 import 'simple-keyboard/build/css/index.css'
 
-export interface Props {
-  keyboardClass?: string
-  input: string
-}
-const props = withDefaults(defineProps<Props>(), {
-  keyboardClass: 'simple-keyboard',
-})
-const emit = defineEmits(['onChange', 'onKeyPress'])
+const emit = defineEmits<{
+  change: [input: string]
+  keyPress: [button: string]
+}>()
+const id = useId()
 const keyboard = ref<Keyboard | null>(null)
 
 onMounted(() => {
-  keyboard.value = new Keyboard(props.keyboardClass, {
+  keyboard.value = new Keyboard(id, {
     onChange: input => onChange(input),
     onKeyPress: button => onKeyPress(button),
   })
 })
 
-watch(() => props.input, (newValue) => {
-  if (keyboard.value) {
-    keyboard.value.setInput(newValue)
-  }
-})
-
 function onChange(input: string) {
-  emit('onChange', input)
+  emit('change', input)
 }
 
 function onKeyPress(button: string) {
-  emit('onKeyPress', button)
+  emit('keyPress', button)
   if (button === '{shift}' || button === '{lock}') {
     handleShift()
   }
@@ -49,10 +40,13 @@ function handleShift() {
 </script>
 
 <template>
-  <div :class="keyboardClass" />
+  <div :id class="virtual-keyboard" />
 </template>
 
-<style>
+<style lang="postcss">
+.virtual-keyboard {
+  max-width: 850px;
+
   .keyboard-input {
     width: 850px;
     height: 100px;
@@ -62,13 +56,11 @@ function handleShift() {
     box-sizing: border-box;
   }
 
-  .simple-keyboard {
-    max-width: 850px;
-  }
   div.hg-button.hg-standardBtn {
     background-color: white;
   }
   div.hg-button.hg-functionBtn {
     background-color: grey;
   }
+}
 </style>
