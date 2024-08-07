@@ -94,19 +94,22 @@
         "show-deviation": "Gecikmeleri Göster"
       },
       "completed": {
-        "title": "Tamamlanmış İş Emirleri",
+        "name": "Tamamlanmış İş Emirleri Metni",
+        "title": "Tamamlanmış İş Emirleri Rengi",
         "text": "İş Emri Metni",
         "actual-batch-fabric-color": "İş Emirlerini kumaş renginde göster",
         "deviation-batch-fabric-color": "Gecikme Kumaş Rengi"
       },
       "ongoing": {
-        "title": "Devam Eden İş Emirleri",
+        "name": "Devam Eden İş Emirleri Metni",
+        "title": "Devam Eden İş Emirleri Rengi",
         "text": "İş Emri Metni",
         "is-batch-fabric-color": "İş Emirlerini kumaş renginde göster",
         "deviation-batch-fabric-color": "Gecikme Kumaş Rengi"
       },
       "planned": {
-        "title": "Planlanmış İş Emirleri",
+        "name": "Planlanmış İş Emirleri Metni",
+        "title": "Planlanmış İş Emirleri Rengi",
         "text": "İş Emri Metni",
         "is-batch-fabric-color": "İş Emirlerini kumaş renginde göster",
         "deviation-batch-fabric-color": "Gecikme Kumaş Rengi"

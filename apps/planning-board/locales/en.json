@@ -94,25 +94,28 @@
         "show-deviation": "Show Deviation"
       },
       "completed": {
-        "title": "Completed Job Orders",
+        "name": "Ongoing Job Order Text",
+        "title": "Completed Job Order Color",
         "text": "Job Order Text",
         "actual-batch-fabric-color": "Event Color",
         "deviation-batch-fabric-color": "Deviation Event Color"
       },
       "ongoing": {
-        "title": "Ongoing Job Orders",
+        "name": "Ongoing Job Order Text",
+        "title": "Ongoing Job Order Color",
         "text": "Job Order Text",
         "actual-batch-fabric-color": "Event Color",
         "deviation-batch-fabric-color": "Deviation Event Color"
       },
       "planned": {
-        "title": "Planned Job Orders",
+        "name": "Planned Job Order Text",
+        "title": "Planned Job Order Color",
         "text": "Job Order Text",
         "actual-batch-fabric-color": "Event Color",
         "deviation-batch-fabric-color": "Deviation Event Color"
       },
       "stops": {
-        "main": "Job Order Stops",
+        "main": "Job Order Stop Color",
         "title": "Show Stops",
         "color": "Stop Color"
       },

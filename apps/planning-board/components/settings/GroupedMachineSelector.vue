@@ -15,45 +15,52 @@ const selectedGroup = defineModel('selectedGroup', { type: Array as PropType<str
 
 <template>
   <div>
-    <q-list bordered class="max-h-100 overflow-auto">
-      <q-expansion-item
-        expand-separator
-        default-opened
-        dense-toggle
-        :label="group"
-      >
-        <q-list
+    <q-expansion-item
+      dense
+      expand-separator
+      default-opened
+      dense-toggle
+      :label="group"
+      class="border-1 border-gray-500/30"
+    >
+      <q-list class="max-h-100 overflow-auto pl-3">
+        <q-item
           v-for="machine in machines"
           :key="machine.id"
           v-ripple
           clickable
-          class="max-h-100 overflow-auto"
+          dense
+          class="q-item-avatar-dense"
         >
-          <q-item-section>
-            <div class="flex items-center">
-              <q-checkbox v-model="selectedMachines" :val="machine.id" />
-              {{ machine.name }}
-            </div>
+          <q-item-section avatar>
+            <q-checkbox
+              v-model="selectedMachines"
+              dense
+              :val="machine.id"
+            />
           </q-item-section>
-        </q-list>
-        <template #header>
-          <div class="w-full">
-            <div class="w-full h-full flex items-center">
-              <div>
-                <q-checkbox
-                  :model-value="selectedGroup"
-                  :val="group"
-                  @update:model-value="emits('selectedGroup')"
-                />
-              </div>
-              <div class="text-l font-extrabold">
-                {{ group }}
-              </div>
-            </div>
-          </div>
-        </template>
-      </q-expansion-item>
-    </q-list>
+          <q-item-section>
+            {{ machine.name }}
+          </q-item-section>
+        </q-item>
+      </q-list>
+      <template #header>
+        <q-item-section
+          avatar
+          class="q-item-avatar-dense"
+        >
+          <q-checkbox
+            dense
+            :model-value="selectedGroup"
+            :val="group"
+            @update:model-value="emits('selectedGroup')"
+          />
+        </q-item-section>
+        <q-item-section>
+          {{ group }}
+        </q-item-section>
+      </template>
+    </q-expansion-item>
   </div>
 </template>
 

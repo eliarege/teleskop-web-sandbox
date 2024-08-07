@@ -1,7 +1,7 @@
-.q-item-avatar-dense > .q-item__section--avatar {
+.q-item-avatar-dense > .q-item__section--avatar,
+.q-item-avatar-dense.q-item__section {
   min-width: unset;
 }
-
 .q-bottom-sheet__item {
   text-align: center;
 

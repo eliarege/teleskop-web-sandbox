@@ -48,58 +48,59 @@ const plannedEventsDropdown = computed(() => [
 
 <template>
   <div class="w-full h-full p-2">
-    <div class="w-full h-min gap-2 p-3 grid grid-cols-2 border rounded px-40">
-      <SettingsItem
-        v-model:color="store.settings.deviationColor"
-        :title="t('settings.plan-area.deviation.title')"
-        :checkbox-text="t('settings.plan-area.deviation.show-deviation')"
-        :is-deviation="true"
-      />
-      <SettingsItem
-        v-model:fabric-color="store.settings.showStops.show"
-        v-model:color="store.settings.showStops.color"
-        :title="t('settings.plan-area.stops.main')"
-        :checkbox-text="t('settings.plan-area.stops.title')"
-        :is-deviation="true"
-      />
-    </div>
+    <SettingsItem
+      v-model:dropdown="store.settings.plannedBatchText"
+      v-model:color="store.settings.plannedBatchColor"
+      v-model:fabric-color="store.settings.plannedBatchFabricColor"
+      :event-name-label="t('settings.plan-area.planned.name')"
+      :title="t('settings.plan-area.planned.title')"
+      :dropdown-options="plannedEventsDropdown"
+      :checkbox-text="t('settings.plan-area.show-on-fabric-color')"
+    />
+
     <q-separator spaced />
-    <div class="w-full h-full gap-2 p-3 grid grid-cols-3 border rounded">
-      <SettingsItem
-        v-model:dropdown="store.settings.plannedBatchText"
-        v-model:color="store.settings.plannedBatchColor"
-        v-model:fabric-color="store.settings.plannedBatchFabricColor"
-        :title="t('settings.plan-area.planned.title')"
-        :dropdown-options="plannedEventsDropdown"
-        :checkbox-text="t('settings.plan-area.show-on-fabric-color')"
-      />
-      <SettingsItem
-        v-model:dropdown="store.settings.ongoingBatchText"
-        v-model:color="store.settings.ongoingBatchColor"
-        v-model:fabric-color="store.settings.ongoingBatchFabricColor"
-        :title="t('settings.plan-area.ongoing.title')"
-        :dropdown-options="actualEventsDropdown"
-        :checkbox-text="t('settings.plan-area.show-on-fabric-color')"
-      />
-      <SettingsItem
-        v-model:dropdown="store.settings.completedBatchText"
-        v-model:color="store.settings.completedBatchColor"
-        v-model:fabric-color="store.settings.completedBatchFabricColor"
-        :title="t('settings.plan-area.completed.title')"
-        :dropdown-options="actualEventsDropdown"
-        :checkbox-text="t('settings.plan-area.show-on-fabric-color')"
-      />
-    </div>
+
+    <SettingsItem
+      v-model:dropdown="store.settings.ongoingBatchText"
+      v-model:color="store.settings.ongoingBatchColor"
+      v-model:fabric-color="store.settings.ongoingBatchFabricColor"
+      :event-name-label="t('settings.plan-area.ongoing.name')"
+      :title="t('settings.plan-area.ongoing.title')"
+      :dropdown-options="actualEventsDropdown"
+      :checkbox-text="t('settings.plan-area.show-on-fabric-color')"
+    />
+
+    <q-separator spaced />
+
+    <SettingsItem
+      v-model:dropdown="store.settings.completedBatchText"
+      v-model:color="store.settings.completedBatchColor"
+      v-model:fabric-color="store.settings.completedBatchFabricColor"
+      :event-name-label="t('settings.plan-area.completed.name')"
+      :title="t('settings.plan-area.completed.title')"
+      :dropdown-options="actualEventsDropdown"
+      :checkbox-text="t('settings.plan-area.show-on-fabric-color')"
+    />
+
+    <q-separator spaced />
+
+    <SettingsItem
+      v-model:fabric-color="store.settings.showStops.show"
+      v-model:color="store.settings.showStops.color"
+      :title="t('settings.plan-area.stops.main')"
+      :checkbox-text="t('settings.plan-area.stops.title')"
+      :is-deviation="true"
+    />
   </div>
 </template>
 
 <style scoped lang="postcss">
 .hover-shadow {
   box-shadow:
-  rgba(0, 0, 0, 0.25) 0px 54px 55px,
-  rgba(0, 0, 0, 0.12) 0px -12px 30px,
-  rgba(0, 0, 0, 0.12) 0px 4px 6px,
-  rgba(0, 0, 0, 0.17) 0px 12px 13px,
-  rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    rgba(0, 0, 0, 0.25) 0px 54px 55px,
+    rgba(0, 0, 0, 0.12) 0px -12px 30px,
+    rgba(0, 0, 0, 0.12) 0px 4px 6px,
+    rgba(0, 0, 0, 0.17) 0px 12px 13px,
+    rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 </style>
