@@ -587,6 +587,9 @@ importers:
       knex:
         specifier: 3.1.0
         version: 3.1.0(pg@8.11.5)(tedious@18.1.0)
+      pg:
+        specifier: 8.11.5
+        version: 8.11.5
       pino:
         specifier: 8.20.0
         version: 8.20.0
