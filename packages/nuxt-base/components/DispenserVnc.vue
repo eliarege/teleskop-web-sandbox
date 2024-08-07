@@ -192,7 +192,7 @@ function resolveWebSocketUrl(url: string) {
 const websockifyWsUrl = resolveWebSocketUrl(props.websockifyUrl)
 function onDisconnect() {
   quasar.notify({
-    message: t('vncError', { name: props.dispenserName }),
+    message: t('base.vncError', { name: props.dispenserName }),
     timeout: 3000,
     position: 'top',
     color: 'negative',
