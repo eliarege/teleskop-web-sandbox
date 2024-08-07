@@ -11,6 +11,3 @@ export default defineEventHandler(() => {
     nodeVersion: process.version,
   }
 })
-
-// NUXT_APP_NAME
-// NUXT_APP_COMMIT_HASH
