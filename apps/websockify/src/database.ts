@@ -1,6 +1,7 @@
 import process from 'node:process'
+import type { Knex as IKnex } from 'knex'
 import Knex from 'knex'
-import { inferBoolean, onExitSignal } from './utils'
+import { onExitSignal } from './utils'
 import { logger as parentLogger } from './logger'
 import { config } from './config'
 
@@ -12,10 +13,16 @@ export interface Machine {
 }
 
 const logger = parentLogger.child({ name: 'database' })
+const knexLogger: IKnex.Logger = {
+  debug: logger.debug.bind(logger),
+  error: logger.error.bind(logger),
+  warn: logger.warn.bind(logger),
+  deprecate: logger.warn.bind(logger),
+}
 
 const knex = Knex({
   client: 'mssql',
-  log: logger,
+  log: knexLogger,
   connection: {
     host: config.teleskopHost,
     port: config.teleskopPort,
@@ -30,7 +37,7 @@ const knex = Knex({
 })
 const dms = Knex({
   client: 'pg',
-  log: logger,
+  log: knexLogger,
   connection: {
     host: config.dmsHost,
     port: config.dmsPort,
@@ -39,6 +46,7 @@ const dms = Knex({
     database: config.dmsDatabase,
   },
 })
+
 export async function fetchTeleskopMachine(id: number): Promise<Machine | null> {
   try {
     const response = await knex
