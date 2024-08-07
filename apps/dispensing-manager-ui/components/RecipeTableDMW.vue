@@ -268,7 +268,7 @@ async function showLogsOfSelectedStep() {
           v-for="col in props.columns"
           :key="col.prop"
           :prop="col.prop"
-          :label="toValue(col.label)"
+          :label="col.label"
           :formatter="col.formatter"
           align="center"
           show-overflow-tooltip
