@@ -4,7 +4,7 @@ import { color as d3Color } from 'd3-color'
  *  Calculates the luminance value of a given color.
  */
 export function calculateLuminance(color: string) {
-  const colorToRGB = d3Color(color)!.rgb()
+  const colorToRGB = d3Color(color)?.rgb() || { r: 255, g: 255, b: 255 }
   const sRGB = {
     r: colorToRGB.r / 255,
     g: colorToRGB.g / 255,
