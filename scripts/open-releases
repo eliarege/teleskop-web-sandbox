@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+
+pkg=$1
+
+if [[ -z $pkg ]]; then
+  echo "Enter package name"
+fi
+
+repository=$(curl -s https://registry.npmjs.org/$1/latest | jq -r .repository.url)
+
+normalized=$(node -e "
+console.log(\"$repository\"
+  .replace(/^git\+|\.git$/g, '')
+  .replace('git://', 'https://')
+  .replace('ssh://git@', 'https://'));
+")
+
+echo "Navigating to $normalized/releases"
+google-chrome --open-tab $normalized/releases 2> /dev/null
