@@ -683,6 +683,9 @@ function handleRowColor(row: ProgramHeader) {
       <NuxtPage />
     </div>
   </div>
+
+  <CMProgramStateDialog />
+
   <EliarModal v-if="versionDialogVisible">
     <CMVersionDialog
       :rows="versions"

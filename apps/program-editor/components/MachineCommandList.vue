@@ -1,15 +1,12 @@
 <script lang="ts" setup>
 import { Sortable } from 'sortablejs-vue3'
-import { useQuasar } from 'quasar'
 import type { SortableEvent, SortableOptions } from 'sortablejs'
 import { isDef } from '@teleskop/utils'
-import { ProgramStateColors } from '~/shared/constants'
 import { useEditorStore } from '~/composables/editor'
-import type { MachineCommand, ProgramStep, ProgramStepCommand } from '~/shared/types'
+import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 
 const editor = useEditorStore()
 const { t } = useI18n()
-const { dark } = useQuasar()
 
 const sortableOptions = computed<SortableOptions>(() => ({
   sort: false,
@@ -22,7 +19,7 @@ const sortableOptions = computed<SortableOptions>(() => ({
 const route = useRoute()
 const isProgramPage = computed(() => route.path.includes('program'))
 const searchQuery = ref('')
-const { notifySuccess, notifyError } = useNotify()
+const { notifyError } = useNotify()
 
 const filteredCommands = computed(() => {
   const query = searchQuery.value.toLowerCase()
@@ -36,14 +33,6 @@ const filteredCommands = computed(() => {
       // && command.commandType === 0,
     )
 })
-
-const programStatus = computed(() => [
-  { label: t('programStatusInfo.noChanges'), color: dark.isActive ? ProgramStateColors.NO_CHANGES_DARK : ProgramStateColors.NO_CHANGES },
-  { label: t('programStatusInfo.onlyOnTeleskop'), color: ProgramStateColors.EXISTS_ONLY_ON_DATABASE },
-  { label: t('programStatusInfo.onlyOnController'), color: ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER },
-  { label: t('programStatusInfo.changedOnTeleskop'), color: ProgramStateColors.CHANGED_ON_TELESKOP },
-  { label: t('programStatusInfo.changedOnMachine'), color: ProgramStateColors.CHANGED_ON_MACHINE },
-])
 
 let draggedCommand: any = null
 
@@ -117,17 +106,6 @@ function validateParallelCommands(stepIndex: number): boolean {
         </QItem>
       </template>
     </Sortable>
-    <div
-      v-if="!isProgramPage"
-      class="w-full bottom-0 p-3 absolute"
-      :class="dark.isActive ? 'bg-dark-2' : 'bg-white'"
-    >
-      <div v-for="stat in programStatus" :key="stat.color">
-        <div :style="{ color: stat.color }">
-          {{ stat.label }}
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
