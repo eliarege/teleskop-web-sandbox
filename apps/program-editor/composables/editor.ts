@@ -25,7 +25,7 @@ export const useEditorStore = defineStore('editor', () => {
   const popupCommandListVisible = ref(false)
   const popupCommandDetailVisible = ref(false)
   const newVersionDialog = ref(false)
-  const leftDrawerOpen = ref(false)
+  const leftDrawerOpen = ref(true)
   const rightDrawerOpen = ref(false)
   let lastStepId = 0
   let lastCommandId = 0

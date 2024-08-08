@@ -215,7 +215,6 @@ const itemsMobile = [
 
     <QDrawer
       v-model="editor.leftDrawerOpen"
-      show-if-above
       side="left"
       borderless
       :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
@@ -239,7 +238,6 @@ const itemsMobile = [
 
     <QDrawer
       v-model="editor.rightDrawerOpen"
-      show-if-above
       side="right"
       borderless
       :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
