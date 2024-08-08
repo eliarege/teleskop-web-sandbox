@@ -4,7 +4,6 @@ import { klona } from 'klona/lite'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineCommand, MachineConstant, ParameterItem, ParameterSelections, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
-import { PError } from '~/server/error'
 import { CommandType } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 
@@ -282,25 +281,17 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function fetchProgram(machineId: number, programNo: number) {
-    try {
-      selectedStep.value = -1
-      selectedParallelStep.value = -1
-      lastStepId = 0
+    selectedStep.value = -1
+    selectedParallelStep.value = -1
+    lastStepId = 0
+    lastCommandId = 0
+    program.value = await fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
+    for (const step of program.value.steps) {
+      step.stepId = lastStepId++
+      for (const command of step.parallelCommands) {
+        command.commandId = lastCommandId++
+      }
       lastCommandId = 0
-      program.value = await fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
-      for (const step of program.value.steps) {
-        step.stepId = lastStepId++
-        for (const command of step.parallelCommands) {
-          command.commandId = lastCommandId++
-        }
-        lastCommandId = 0
-      }
-    } catch (err) {
-      if (err instanceof PError) {
-        if (err.code === 'PROGRAM_NOT_FOUND') {
-          throw createError({ statusCode: 404, data: { code: err.code, detail: err.detail } })
-        }
-      }
     }
   }
 
