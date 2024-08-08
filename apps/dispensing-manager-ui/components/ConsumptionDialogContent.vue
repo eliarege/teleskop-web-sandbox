@@ -92,7 +92,7 @@ const data2 = await keycloak.fetch(`/api/consumption/manual?joborder=${props.job
         :rows="data"
         virtual-scroll
         flat
-        class="w-full"
+        class="w-full text-override-left"
         bordered
         :virtual-scroll-sticky-size-start="48"
         :title="t('weighingInformation.oto') + t('weighingInformation._')"
@@ -117,7 +117,7 @@ const data2 = await keycloak.fetch(`/api/consumption/manual?joborder=${props.job
         :columns="columnsMan"
         :rows="data2"
         virtual-scroll
-        class="w-full"
+        class="w-full text-override-left"
         flat
         bordered
         :virtual-scroll-sticky-size-start="48"

@@ -257,7 +257,7 @@ async function deleteRow() {
 }
 
 async function checkMaterialCodeExist() {
-  if (materialInfo.value[0]?.value[0] === '0') {
+  if ((/^0+$/).test(materialInfo.value[0]?.value)) {
     givenMaterialCodeExistsWarning.value = true
     materialCodeErrorMessage.value = t('warnings.cannotBeZero', { type: t('warnings.material') })
   } else if (materialInfo.value[0].value) {

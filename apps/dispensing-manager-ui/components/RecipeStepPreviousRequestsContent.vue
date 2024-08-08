@@ -16,12 +16,40 @@ const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 const { t, d } = useI18n()
 
 const rerequestedStepCols = computed(() => [
-  { name: 'joborder', label: t('joborder'), field: 'joborder' },
-  { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo' },
-  { name: 'mainStep', label: t('recipe.mainStep'), field: 'mainStep' },
-  { name: 'status', label: t('statusCodes.text'), field: 'status', format: (val, row) => t(`statusCodes.${val}`), style: row => cellRGBColorHandler(row.status) },
-  { name: 'requestTime', label: t('requestTime'), field: 'requestTime', format: (val, row) => val ? d(val, 'datettime') : '_'.repeat(4) },
-  { name: 'endTime', label: t('endtime'), field: 'endTime', format: (val, row) => val ? d(val, 'datettime') : '_'.repeat(4) },
+  {
+    name: 'joborder',
+    label: t('joborder'),
+    field: 'joborder',
+  },
+  {
+    name: 'correctionNo',
+    label: t('correctionNo'),
+    field: 'correctionNo',
+  },
+  {
+    name: 'mainStep',
+    label: t('recipe.mainStep'),
+    field: 'mainStep',
+  },
+  {
+    name: 'status',
+    label: t('statusCodes.text'),
+    field: 'status',
+    format: (val, row) => t(`statusCodes.${val}`) !== `statusCodes.${val}` ? t(`statusCodes.${val}`) : '',
+    style: row => cellRGBColorHandler(row.status),
+  },
+  {
+    name: 'requestTime',
+    label: t('requestTime'),
+    field: 'requestTime',
+    format: (val, row) => val ? d(val, 'datettime') : '_'.repeat(4),
+  },
+  {
+    name: 'endTime',
+    label: t('endtime'),
+    field: 'endTime',
+    format: (val, row) => val ? d(val, 'datettime') : '_'.repeat(4),
+  },
 ])
 </script>
 

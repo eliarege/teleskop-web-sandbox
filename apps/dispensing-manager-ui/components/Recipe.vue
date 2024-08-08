@@ -43,88 +43,88 @@ const groupables: Array<{ key: keyof RecipeLatest, index: number }> = [
   { key: 'parallelStep', index: 6 },
 ]
 
-const columns = [
+const columns = computed(() => [
   {
-    label: () => t('recipe.processOrder'),
+    label: t('recipe.processOrder'),
     prop: 'processOrder',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('recipeType'),
+    label: t('recipeType'),
     prop: 'recipeTypeText',
     align: 'center',
     showOverflowTooltip: true,
     formatter: (row: any) => t(`recipeTypes.${row.recipeType}`),
   },
   {
-    label: () => t('programNo'),
+    label: t('programNo'),
     prop: 'programNo',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('programName'),
+    label: t('programName'),
     prop: 'programName',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('recipe.ISN'),
+    label: t('recipe.ISN'),
     prop: 'ISN',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('recipe.mainStep'),
+    label: t('recipe.mainStep'),
     prop: 'mainStep',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('weighingInformation.parallelStep'),
+    label: t('weighingInformation.parallelStep'),
     prop: 'parallelStep',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('materialCode'),
+    label: t('materialCode'),
     prop: 'chemCode',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('materialName'),
+    label: t('materialName'),
     prop: 'materialName',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('recipe.processNo'),
+    label: t('recipe.processNo'),
     prop: 'programProcessNo',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('recipe.amount'),
+    label: t('recipe.amount'),
     prop: 'amount',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('recipe.recipeAmount'),
+    label: t('recipe.recipeAmount'),
     prop: 'recipeAmount',
     align: 'center',
     showOverflowTooltip: true,
   },
   {
-    label: () => t('recipe.metric'),
+    label: t('recipe.metric'),
     prop: 'unit',
     align: 'center',
     showOverflowTooltip: true,
     formatter: (row: any) => t(`units.${row.unit}`),
   },
-]
+])
 
 const buttonProps = ref([
   {
@@ -534,7 +534,6 @@ onBeforeUnmount(() => {
 
     <div>
       <RecipeTable
-        v-if="materialRows.length > 0"
         :title="t('recipe.manuelMaterials')"
         :rows="materialRows"
         :columns="columns"
