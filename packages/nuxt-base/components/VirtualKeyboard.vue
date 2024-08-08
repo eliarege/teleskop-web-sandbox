@@ -6,11 +6,11 @@ const emit = defineEmits<{
   change: [input: string]
   keyPress: [button: string]
 }>()
-const id = useId()
+const keyboardDiv = ref()
 const keyboard = ref<Keyboard | null>(null)
 
 onMounted(() => {
-  keyboard.value = new Keyboard(id, {
+  keyboard.value = new Keyboard(keyboardDiv.value!, {
     onChange: input => onChange(input),
     onKeyPress: button => onKeyPress(button),
   })
@@ -40,7 +40,7 @@ function handleShift() {
 </script>
 
 <template>
-  <div :id class="virtual-keyboard" />
+  <div ref="keyboardDiv" class="virtual-keyboard" />
 </template>
 
 <style lang="postcss">
