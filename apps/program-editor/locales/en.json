@@ -87,7 +87,13 @@
     "opMud": "Op. ch.",
     "theoreticalDuration": "Theoretical Duration",
     "parameter": "Parameter",
-    "command": "Program Command"
+    "command": "Program Command",
+    "totalChemReq": "Total Chem.",
+    "totalDyeReq": "Total Dye.",
+    "manChemReq": "Man. Chem.",
+    "autoChemReq": "Auto. Chem.",
+    "autoDyeReq": "Auto. Dye.",
+    "manDyeReq": "Man. Dye."
   },
   "command": {
     "icon": "Icon",

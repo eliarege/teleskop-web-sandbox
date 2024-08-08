@@ -1,7 +1,6 @@
 import { set as setTimestamp } from 'date-fns'
 import type { Machine, MachineCommand, ParameterItem, ProgramHeader, ioListItem } from '../shared/types'
 import { BEGIN_HEADER, BEGIN_PROGRAM, FIRST_COMMAND_NO, LAST_COMMAND_NO } from './constants'
-import { readLineStrict, skipLine } from './utils'
 
 const NAME_RE = /^ISIM=(.+)?$/
 /** Capture groups: 1) isSet?, 2) date, 3) month, 4) year (20XX) */
@@ -30,6 +29,30 @@ const PROCESS_CODE_RE = /^PROCESSCODE=(\d+)?$/
  */
 
 const COMMAND_PATTERN = /^(\d{1,3}) F=1 P=(\d+)(?:-(\d+))?( FI=(\d+) FN=(\d+))? IO=((?:\[.+?\])*) SP=(-?\d+(?:\.\d+)?(?: -?\d+(?:\.\d+)?)*)?$/
+
+function skipLine(it: IterableIterator<string>): void {
+  it.next()
+}
+
+/** Reads next line, throws if EOF or does not match pattern. */
+function readLineStrict(it: IterableIterator<string>, pattern: RegExp | string): RegExpMatchArray {
+  const line = it.next()
+  if (line.done)
+    throw new Error('Unexpected end of iterator')
+
+  if (typeof pattern === 'string') {
+    if (pattern !== line.value)
+      throw new Error(`Unexpected line. Expected: ${pattern}, received: ${line.value}`)
+
+    return [line.value]
+  } else {
+    const match = line.value.match(pattern)
+    if (!match)
+      throw new Error(`Unexpected line. Expected pattern: ${pattern}, received: ${line.value}`)
+
+    return match
+  }
+}
 
 function readProgramName(it: IterableIterator<string>) {
   const match = readLineStrict(it, NAME_RE)

@@ -1,31 +1,29 @@
 <script setup lang="ts">
-import { useDialogPluginComponent } from 'quasar'
-
 const props = defineProps({
   processTypes: Array<any>,
   programsOrder: Array<any>,
 })
+
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
+
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
+const editor = useEditorStore()
+
 const details = ref({
   programNo: 1,
   name: '',
-  processType: props.processTypes[0],
+  processType: props.processTypes?.[0] || '',
   operatorCanInterrupt: false,
   creationTime: new Date().toDateString(),
 })
-const route = useRoute()
-
-const machineId = Number(route.params.machine_id)
-
 const isProgramNoExist = ref(false)
 
-async function updateModelValue(val) {
+async function updateModelValue(val: number) {
   details.value.programNo = val
-  isProgramNoExist.value = await $fetch(`/api/program/has-program/${machineId}/${details.value.programNo}`)
+  isProgramNoExist.value = editor.allPrograms.some(p => p.programNo === val)
 }
 </script>
 

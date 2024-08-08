@@ -11,7 +11,6 @@ import { useEditorStore } from '~/composables/editor'
 import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
 
 const { $commandManager } = useNuxtApp()
-
 const { t } = useI18n()
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
@@ -216,7 +215,6 @@ const itemsMobile = [
 
     <QDrawer
       v-model="editor.leftDrawerOpen"
-      show-if-above
       side="left"
       borderless
       :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
@@ -240,7 +238,6 @@ const itemsMobile = [
 
     <QDrawer
       v-model="editor.rightDrawerOpen"
-      show-if-above
       side="right"
       borderless
       :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"

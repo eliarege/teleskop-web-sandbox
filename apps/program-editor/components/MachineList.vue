@@ -6,8 +6,8 @@ const route = useRoute()
 const editor = useEditorStore()
 const { dark } = useQuasar()
 
-const { data: machineGroups } = useFetch<MachineGroup[]>('/api/machine-group')
-const { data: machines } = useFetch<MachineInfo[]>('/api/machine')
+const { data: machineGroups } = useAuthFetch<MachineGroup[]>('/api/machine-group')
+const { data: machines } = useAuthFetch<MachineInfo[]>('/api/machine')
 
 const machineGroupsWithMachines = computed(() => {
   if (!machineGroups.value || !machines.value)

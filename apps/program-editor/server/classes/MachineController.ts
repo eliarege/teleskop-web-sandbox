@@ -185,6 +185,12 @@ export class MachineController {
         updatedAtTBB: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.TBBCHANGEDATE)`),
         programState: 'H.PRGSTATE',
         isChanged: 'H.ISCHANGED',
+        totalChemReq: 'H.TotalChemReq',
+        totalDyeReq: 'H.TotalDyeReq',
+        manChemReq: 'H.ManChemReq',
+        autoChemReq: 'H.AutoChemReq',
+        autoDyeReq: 'H.AutoDyeReq',
+        manDyeReq: 'H.ManDyeReq',
       })
       .from('BFMASTERPRGHEADER AS H')
       .join('BFPROCESSTYPES AS T', 'T.PROCESSCODE', 'H.PROCESSCODE')
@@ -272,6 +278,12 @@ export class MachineController {
         updatedAtTBB: 'P.TBBCHANGEDATE',
         machineName: 'M.MACHINECODE',
         tbbProgramChangedEvent: this.trx.raw(sql`CASE P.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
+        totalChemReq: 'P.TotalChemReq',
+        totalDyeReq: 'P.TotalDyeReq',
+        manChemReq: 'P.ManChemReq',
+        autoChemReq: 'P.AutoChemReq',
+        autoDyeReq: 'P.AutoDyeReq',
+        manDyeReq: 'P.ManDyeReq',
         steps: this.trx.raw(sql`ISNULL((
         SELECT commands = ISNULL((
           SELECT s2.COMMANDNO AS commandNo,
@@ -944,7 +956,7 @@ export class MachineController {
       CHANGEDATE: date,
       TBBCHANGESOURCE: '',
       TBBCHANGEDATE: program.updatedAtTBB ? program.updatedAtTBB : '',
-      LOCKEDBY: '',
+      LOCKEDBY: program.author ? program.author : '',
       CREATIONDATE: program.createdAt ? new Date((new Date(program.createdAt)).getTime() - timezone * 60000).toISOString() : date,
       USERCOMMENT: program.comment,
       ISDELETED: 0,

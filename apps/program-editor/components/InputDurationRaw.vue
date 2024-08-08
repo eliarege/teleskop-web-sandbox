@@ -212,7 +212,6 @@ function getAdjustmentFactor(_inputBox) {
 function changeValueByArrowKeys(inputBox, direction) {
   const adjustmentFactor = getAdjustmentFactor(inputBox)
   let secondsValue = durationToSeconds(inputBox.value)
-  console.log(adjustmentFactor)
   switch (direction) {
     case 'up':
       secondsValue += adjustmentFactor

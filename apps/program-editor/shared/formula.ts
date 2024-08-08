@@ -81,7 +81,6 @@ function _calculateProgramStepDuration(step: ProgramStep, context: CalculationCo
 
       if (minA)
         duration += ((Math.abs(temperature - lastTemperature) / minA) * 60) + b
-      // console.log(duration, 'calulate', `(((${temperature} - ${lastTemperature}) / ${minA}) * 60) + ${b}`)
     }
   }
   return duration

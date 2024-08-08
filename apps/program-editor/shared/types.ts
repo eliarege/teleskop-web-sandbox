@@ -27,6 +27,12 @@ export interface ProgramTable {
   updatedAt: Date
   programState: number
   isChanged: boolean
+  totalChemReq: number
+  totalDyeReq: number
+  manChemReq: number
+  autoChemReq: number
+  autoDyeReq: number
+  manDyeReq: number
   updatedAtTBB: Date
 }
 
@@ -131,6 +137,12 @@ export interface ProgramHeader {
   programState: number | null
   isChanged: boolean | null
   tbbProgramChangedEvent: number | null
+  totalChemReq: number
+  totalDyeReq: number
+  manChemReq: number
+  autoChemReq: number
+  autoDyeReq: number
+  manDyeReq: number
 }
 
 export interface Program extends ProgramHeader {

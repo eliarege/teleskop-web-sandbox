@@ -1,5 +1,6 @@
 import { method } from 'lodash-es'
 import { defineStore } from 'pinia'
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { notification } from '~/shared/functions'
 import type { Program } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
@@ -60,7 +61,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       if (!comparsionBasket.includes(element))
         comparsionBasket.push(element)
     })
-    console.log(comparsionBasket)
   }
 
   function comparison() {
@@ -96,8 +96,9 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function createProgramOnPaste(copiedValue: { machine?: number, program: Program, newProgramNo?: number }, machineId: number): Promise<number> {
+    const { fetch } = useKeycloak()
     try {
-      return await $fetch(`/api/machine/${machineId}/program`, {
+      return await fetch(`/api/machine/${machineId}/program`, {
         method: 'POST',
         body: {
           newProgramNo: Number(copiedValue.newProgramNo),
@@ -114,9 +115,10 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function deleteProgram(selectedRows: any[], selectedOption: number, machineId: number) {
+    const { fetch } = useKeycloak()
     const query = `source=${selectedOption}`
     for (const program of selectedRows) {
-      const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
+      const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
         method: 'DELETE',
       })
       const status = check ? 'success' : 'fail'
@@ -124,13 +126,14 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
   async function getProgram(programNo: number, machineId: number): Promise<Program> {
-    return await $fetch(`/api/machine/${machineId}/program/${programNo}`)
+    const { fetch } = useKeycloak()
+    return await fetch(`/api/machine/${machineId}/program/${programNo}`)
   }
 
   async function changeName(programParam: any, newName: string, machineId: number) {
     const program = await getProgram(programParam.programNo, machineId)
     program.name = newName
-    const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}/update-name`, {
+    const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/update-name`, {
       method: 'PUT',
       body: {
         name: newName,
@@ -141,15 +144,17 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function getProcessTypes() {
-    return await $fetch('/api/process')
+    const { fetch } = useKeycloak()
+    return await fetch('/api/process')
   }
 
   async function changeProcessType(selectedRows, newType: number, machineId: number) {
+    const { fetch } = useKeycloak()
     for (const row of selectedRows) {
       const program = await getProgram(row.programNo, machineId)
       program.typeId = newType
       try {
-        const check = await $fetch(`/api/machine/${machineId}/program`, {
+        const check = await fetch(`/api/machine/${machineId}/program`, {
           method: 'PUT',
           body: {
             program,
@@ -164,18 +169,20 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function sendProgram(programs: Array<any>, machineId: number) {
+    const { fetch } = useKeycloak()
     for (const program of programs) {
-      const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
+      const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
       const status = check?.name ? 'failedToConnectMachine' : check ? 'success' : 'fail'
       notification(check, t(`contextMenu.send.${status}`, { name: program.name }))
     }
   }
 
   async function getRemoteProgram(programs: Array<any>, machineId: number) {
+    const { fetch } = useKeycloak()
     for (const program of programs) {
       let check = false
       if (program.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
-        check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
+        check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
       }
       const status = check ? 'success' : 'fail'
       notification(!!check, t(`contextMenu.get.${status}`, { name: program.name }))
@@ -183,12 +190,13 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function sendProgramToMachines(programs: Array<any>, machines: Array<any>, machineId: number) {
+    const { fetch } = useKeycloak()
     for (const machine of machines) {
       const m_id = getMachineId(machine)
       for (const program of programs) {
         // TODO: Maybe do not need to call machines * programs much endpoint machines can be taken through body and then for of loop on backend for faster runtime
         // but think about notification logic on each paste operation maybe bulk notification can be shown for each machine idk ...later.
-        const check = await $fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: m_id } })
+        const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: m_id } })
         const status = check?.statusCode === 'ECONNREFUSED' ? 'failedToConnectMachine' : check ? 'success' : 'fail'
         notification(check, t(`contextMenu.getInMachine.${status}`, { name: program.name, machine: m_id }))
       }
@@ -196,10 +204,11 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function deleteProgramFromMachine(programs: Array<any>, machines: Array<any>, source: string) {
+    const { fetch } = useKeycloak()
     for (const machine of machines) {
       const m_id = getMachineId(machine)
       for (const program of programs) {
-        const check = await $fetch(`/api/machine/${m_id}/program/${program.programNo}`, {
+        const check = await fetch(`/api/machine/${m_id}/program/${program.programNo}`, {
           method: 'DELETE',
           query: {
             source,
@@ -222,8 +231,9 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function deleteVersion(versions: Array<any>, machineId: number) {
+    const { fetch } = useKeycloak()
     for (const version of versions) {
-      const check = await $fetch(`/api/machine/${machineId}/program/${version.programNo}/archive/${version.version}`, {
+      const check = await fetch(`/api/machine/${machineId}/program/${version.programNo}/archive/${version.version}`, {
         method: 'DELETE',
       })
       const status = check ? 'success' : 'fail'
@@ -232,7 +242,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function fetchVersions(programNo: number, machineId: number): Promise<any[]> {
-    return await $fetch(`/api/machine/${machineId}/program/${programNo}/version`)
+    const { fetch } = useKeycloak()
+    return await fetch(`/api/machine/${machineId}/program/${programNo}/version`)
   }
 
   async function concatenatePrograms(programs, details, machineId: number) {
@@ -255,6 +266,12 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       programState: ProgramStatus.EXISTS_ONLY_ON_DATABASE,
       isChanged: false,
       tbbProgramChangedEvent: null,
+      autoChemReq: 0,
+      autoDyeReq: 0,
+      manChemReq: 0,
+      manDyeReq: 0,
+      totalChemReq: 0,
+      totalDyeReq: 0,
     }
     // await deleteProgram(programs, 1)
     for (const program of programs) {
@@ -270,8 +287,9 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   }
 
   async function createProgram(program: Program, machineId: number): Promise<number> {
+    const { fetch } = useKeycloak()
     try {
-      return await $fetch(`/api/machine/${machineId}/program`, {
+      return await fetch(`/api/machine/${machineId}/program`, {
         method: 'POST',
         body: {
           programNo: program.programNo,

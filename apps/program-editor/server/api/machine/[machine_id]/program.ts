@@ -5,7 +5,7 @@ import { PError } from '~/server/error'
 import { ProgramEditorActivityCodes } from '~/server/constants'
 import { logEditorOperation } from '~/server/functions'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
   const machineId = Number.parseInt(machine_id)
   const machine = await machineStore.get(machineId)

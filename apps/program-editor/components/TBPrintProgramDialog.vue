@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak';
+
+const { fetch } = useKeycloak()
+
 const props = defineProps({
   machines: Array,
 })
@@ -15,8 +19,8 @@ const commandGroup = ref([])
 const commandOptions = ref([] as any[])
 async function machineSelected(e) {
   selectedMachine.value = e
-  programOptions.value = await $fetch(`/api/machine/${selectedMachine.value.id}/program?asList=true`)
-  commandOptions.value = await $fetch(`/api/machine/${selectedMachine.value.id}/commands?asList=true`)
+  programOptions.value = await fetch(`/api/machine/${selectedMachine.value.id}/program?asList=true`)
+  commandOptions.value = await fetch(`/api/machine/${selectedMachine.value.id}/commands?asList=true`)
   commandOptions.value = commandOptions.value.map(row => ({
     name: row.name,
     value: row.value,

@@ -2,7 +2,7 @@ import { machineStore } from '~/server/classes/MachineStore'
 import { ProgramStatus } from '~/shared/constants'
 import { db } from '~/server/database'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
   const machineId = Number.parseInt(machine_id)
   const machine = await machineStore.get(machineId)
@@ -55,7 +55,8 @@ export default defineEventHandler(async (event) => {
         }
       }
     } catch (e) {
-      console.log(remotePrgNo)
+      // TODO: Handle
+      console.error(e)
     }
   }
 

@@ -1,3 +1,4 @@
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import CMDeleteProgramDialog from '~/components/CMDeleteProgramDialog.vue'
 import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPasteDialog.vue'
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
@@ -56,7 +57,9 @@ export interface RegisteredCommands {
   exportToExcel: [ctx: any]
   refresh: [ctx: any, machineId: number]
 }
+
 registerCommand(() => {
+  const { fetch } = useKeycloak()
   return {
     name: 'deleteProgram',
     execute(ctx: any, selectedRows: Array<any>, machineId: number) {
@@ -68,7 +71,7 @@ registerCommand(() => {
       }).onOk(async (option: string) => {
         const query = `source=${option}`
         for (const program of selectedRows)
-          await $fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
+          await fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
             method: 'DELETE',
           })
         // await contextMenuStore.deleteProgram(selectedRows, option, machineId)
@@ -305,10 +308,11 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const { fetch } = useKeycloak()
   return {
     name: 'printProgram',
     async execute(ctx: any) {
-      const machines = await $fetch('/api/machine')
+      const machines = await fetch('/api/machine')
       ctx.$q.dialog({
         component: TBPrintProgramDialog,
         componentProps: {
@@ -321,10 +325,11 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const { fetch } = useKeycloak()
   return {
     name: 'printProgramList',
     async execute(ctx: any) {
-      const machines = await $fetch('/api/machine')
+      const machines = await fetch('/api/machine')
       ctx.$q.dialog({
         component: TBPrintProgramListDialog,
         componentProps: {
@@ -349,10 +354,11 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const { fetch } = useKeycloak()
   return {
     name: 'exportToExcel',
     async execute(ctx: any) {
-      const machines = await $fetch('/api/machine?asList=true')
+      const machines = await fetch('/api/machine?asList=true')
       ctx.$q.dialog({
         component: TBExportExcelDialog,
         componentProps: {
@@ -365,13 +371,14 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const { fetch } = useKeycloak()
   return {
     name: 'refresh',
     async execute(ctx: any, machineId: number) {
       const editor = useEditorStore()
 
       editor.isLoading = true
-      await $fetch(`/api/machine/${machineId}/refresh`, {
+      await fetch(`/api/machine/${machineId}/refresh`, {
         method: 'POST',
       })
       await ctx.fetchPrograms()

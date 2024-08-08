@@ -3,7 +3,7 @@ import { ProgramEditorActivityCodes } from '~/server/constants'
 import { type ErrorProgramDetail, PError } from '~/server/error'
 import { logEditorOperation } from '~/server/functions'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
   const machineId = Number.parseInt(machine_id)
   const programNo = Number.parseInt(program_no)
@@ -12,7 +12,9 @@ export default defineEventHandler(async (event) => {
 
   if (event.method === 'GET') {
     try {
-      return await machine.fetchProgram(programNo)
+      const program = await machine.fetchProgram(programNo)
+      program.author = event.context.kauth!.name as string
+      return program
     } catch (error) {
       if (error instanceof PError) {
         if (error.code === 'PROGRAM_NOT_FOUND') {

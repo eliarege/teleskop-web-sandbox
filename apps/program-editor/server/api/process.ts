@@ -1,6 +1,6 @@
 import { createProcessType, deleteProcessType, fetchProcessTypes, updateProcessTypes } from '../functions'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   if (event.method === 'GET')
     return await fetchProcessTypes()
   else {
