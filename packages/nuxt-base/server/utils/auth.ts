@@ -8,4 +8,4 @@ export const { defineAuthEventHandler } = config.public.kcEnabled
     realm: config.public.kcRealm,
     clientId: config.public.kcClientId,
   })
-  : { defineAuthEventHandler: defineEventHandler }
+  : { defineAuthEventHandler: defineEventHandler } as ReturnType<typeof h3Adapter>
