@@ -277,48 +277,6 @@ const columns = ref<ProgramTableColumn[]>([
     align: 'center',
   },
   {
-    name: 'totalChemReq',
-    label: tt('program.totalChemReq'),
-    field: 'totalChemReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'totalDyeReq',
-    label: tt('program.totalDyeReq'),
-    field: 'totalDyeReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'manChemReq',
-    label: tt('program.manChemReq'),
-    field: 'manChemReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'autoChemReq',
-    label: tt('program.autoChemReq'),
-    field: 'autoChemReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'autoDyeReq',
-    label: tt('program.autoDyeReq'),
-    field: 'autoDyeReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'manDyeReq',
-    label: tt('program.manDyeReq'),
-    field: 'manDyeReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
     name: 'updated_at',
     label: tt('program.updated'),
     field: 'updatedAt',
@@ -637,132 +595,93 @@ function handleRowColor(row: ProgramHeader) {
     <div v-if="editor.isLoading" class="loading-container ">
       <LoadingSpinner :has-background="false" />
     </div>
-    <QTable
-      v-if="fullMatch"
-      dense
-      virtual-scroll
-      :rows="filteredPrograms"
-      :columns="columns"
-      row-key="id"
-      :rows-per-page-options="[0]"
-      flat
-      class="no-selected h-80vh"
-    >
-      <template #top>
-        <div class="flex justify-between p-2 w-full">
-          <QInput
-            v-model="filter"
-            dense
-            outlined
-            debounce="100"
-            icon
-            autocomplete="false"
-            :placeholder="t('search')"
-          >
-            <template #prepend>
-              <QIcon name="search" />
-            </template>
-          </QInput>
-          <QSpace />
-          <!-- <QBtn
-            icon="add"
-            color="grey-8"
-            outline
-            :label="t('menu.newProgram')"
-            @click="router.push(`/machine/${machineId}/program/new`)"
-          /> -->
-          <QSpace />
-          <QBtn
-            :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt' "
-            color="grey-8"
-            flat
-            @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
-          />
-        </div>
-      </template>
-      <template #body="props">
-        <QTr
-          :props="props"
-          :class="[isRowSelected(props.row) ? 'e-selected' : '']"
-          :style="{ color: `${handleRowColor(props.row)}` }"
-          @click="onRowClick(props.row)"
-          @dblclick="onRowDoubleClick(props.row)"
-          @contextmenu="onRowClick(props.row, true)"
-        >
-          <QTd
-            v-for="column in columns"
-            :key="column.name"
+    <div v-if="fullMatch">
+      <QTable
+        dense
+        virtual-scroll
+        :rows="filteredPrograms"
+        :columns="columns"
+        row-key="id"
+        :rows-per-page-options="[0]"
+        flat
+        class="no-selected h-80vh"
+      >
+        <template #top>
+          <div class="flex justify-between p-2 w-full">
+            <QInput
+              v-model="filter"
+              dense
+              outlined
+              debounce="100"
+              icon
+              autocomplete="false"
+              :placeholder="t('search')"
+            >
+              <template #prepend>
+                <QIcon name="search" />
+              </template>
+            </QInput>
+            <QSpace />
+            <QBtn
+              :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
+              color="grey-8"
+              flat
+              @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
+            />
+          </div>
+        </template>
+        <template #body="props">
+          <QTr
             :props="props"
+            :class="[isRowSelected(props.row) ? 'e-selected' : '']"
+            :style="{ color: `${handleRowColor(props.row)}` }"
+            @click="onRowClick(props.row)"
+            @dblclick="onRowDoubleClick(props.row)"
+            @contextmenu="onRowClick(props.row, true)"
           >
-            <q-menu
-              touch-position
-              context-menu
-              :transition-duration="0"
+            <QTd
+              v-for="column in columns"
+              :key="column.name"
+              :props="props"
             >
-              <ProgramContextMenu
-                :items="contextMenuOptions"
-              />
-            </q-menu>
-            <!-- <q-menu
-              touch-position
-              context-menu
-              :transition-duration="0"
-            >
-              <q-list
-                style="min-width: 300px;"
-              >
-                <template
-                  v-for="option in contextMenuOptions"
-                  :key="option.category"
-                >
-                  <q-separator v-if="addSeparator(option.category)" />
-                  <q-item
-                    v-close-popup="!option.disabled"
-                    clickable
-                    dense
-                    :disable="option.disabled"
-                    @click="event => handleClick(event, option)"
-                  >
-                    <q-item-section avatar class="menu-icon-class">
-                      <q-icon size="1rem" :name="option.icon" />
-                    </q-item-section>
-                    <q-item-section class="whitespace-nowrap">
-                      {{ option.label }}
-                    </q-item-section>
-                    <q-space />
-                    <q-item-section side>
-                      {{ option.keybind }}
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </q-list>
-            </q-menu> -->
-
-            <template v-if="column.name === 'operator'">
-              <QIcon
-                v-if="props.row.operator"
-                name="check"
-                color="positive"
-                size="1rem"
-              />
-            </template>
-            <template v-else>
-              {{ formatValue(props.row, column) }}
-              <QTooltip
-                v-if="column.tooltip"
-                class="bg-white text-black e-border text-sm"
+              <q-menu
+                touch-position
+                context-menu
                 :transition-duration="0"
-                :delay="500"
               >
-                {{ formatTooltip(props.row, column) }}
-              </QTooltip>
-            </template>
-          </QTd>
-        </QTr>
-      </template>
-    </QTable>
-    <!-- <p>{{ t('selectRange', { count: editor.selectedPrograms.length, total: programs.length }) }}</p> -->
-    <NuxtPage v-else />
+                <ProgramContextMenu
+                  :items="contextMenuOptions"
+                />
+              </q-menu>
+
+              <template v-if="column.name === 'operator'">
+                <QIcon
+                  v-if="props.row.operator"
+                  name="check"
+                  color="positive"
+                  size="1rem"
+                />
+              </template>
+              <template v-else>
+                {{ formatValue(props.row, column) }}
+                <QTooltip
+                  v-if="column.tooltip"
+                  class="bg-white text-black e-border text-sm"
+                  :transition-duration="0"
+                  :delay="500"
+                >
+                  {{ formatTooltip(props.row, column) }}
+                </QTooltip>
+              </template>
+            </QTd>
+          </QTr>
+        </template>
+      </QTable>
+      <p>{{ t('selectRange', { count: editor.selectedPrograms.length, total: programs.length }) }}</p>
+    </div>
+    <div v-else>
+      <NuxtPage />
+    </div>
   </div>
   <EliarModal v-if="versionDialogVisible">
     <CMVersionDialog
