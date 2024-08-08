@@ -20,7 +20,6 @@ const columns = computed(() => [
 ])
 const selectedRow = ref()
 async function handleUpdateProcessTypes() {
-  console.log(programTypes.value)
   const check = await fetch('/api/process', { method: 'PUT', body: programTypes.value })
   const status = check ? 'success' : 'fail'
   notification(check, t(`changeProcessTypeDialog.updateProcessTypes.${status}`, { no: selectedRow.value.value }))
@@ -33,7 +32,6 @@ function handleCreateProcessType() {
     let check
     try {
       check = await fetch('/api/process', { method: 'POST', body: type })
-      console.log(!!check)
     } catch {
       check = false
     }

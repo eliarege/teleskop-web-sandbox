@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
-import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak';
-
-const { fetch } = useKeycloak()
 
 const props = defineProps({
   machines: Array<{ name: string, value: number, label: string }>,
 })
+
+const { fetch } = useKeycloak()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
 
@@ -132,7 +131,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
         })
       }
       if (field === 3) {
-        console.log(3)
+        // TODO:
       }
       if (field === 4) {
         const parameters = await fetch(`/api/machine/${machine}/parameters`)

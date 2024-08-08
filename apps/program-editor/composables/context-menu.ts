@@ -61,7 +61,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       if (!comparsionBasket.includes(element))
         comparsionBasket.push(element)
     })
-    console.log(comparsionBasket)
   }
 
   function comparison() {
@@ -267,6 +266,12 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       programState: ProgramStatus.EXISTS_ONLY_ON_DATABASE,
       isChanged: false,
       tbbProgramChangedEvent: null,
+      autoChemReq: 0,
+      autoDyeReq: 0,
+      manChemReq: 0,
+      manDyeReq: 0,
+      totalChemReq: 0,
+      totalDyeReq: 0,
     }
     // await deleteProgram(programs, 1)
     for (const program of programs) {

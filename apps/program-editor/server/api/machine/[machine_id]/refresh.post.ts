@@ -55,7 +55,8 @@ export default defineAuthEventHandler(async (event) => {
         }
       }
     } catch (e) {
-      console.log(remotePrgNo)
+      // TODO: Handle
+      console.error(e)
     }
   }
 
