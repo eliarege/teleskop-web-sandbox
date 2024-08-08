@@ -36,7 +36,7 @@ const logCols = computed<Column[]>(() => [
     name: 'recipeType',
     label: t('recipeType'),
     field: 'recipeType',
-    format: (val, row) => val ? t(`recipeTypes.${val}`) : '',
+    format: (val, row) => t(`recipeTypes.${val}`) !== `recipeTypes.${val}` ? t(`recipeTypes.${val}`) : '',
     filterable: true,
     filterType: 'select',
     selectionOptions: [{ label: t('chemical'), recipeType: 0 }, { label: t('dye'), recipeType: 1 }],
@@ -48,8 +48,10 @@ const logCols = computed<Column[]>(() => [
     name: 'status',
     label: t('status'),
     field: 'status',
-    format: (val, row) => val ? t(`statusCodes.${val}`) : '',
-    style: row => cellRGBColorHandler(row.status),
+    format: (val, row) => t(`statusCodes.${val}`) !== `statusCodes.${val}` ? t(`statusCodes.${val}`) : '',
+    style: (row) => {
+      return cellRGBColorHandler(row.status)
+    },
     filterable: true,
     filterType: 'multiselect',
     selectionOptions: status.value,
@@ -81,6 +83,7 @@ async function applyFilters(updatedValue: any) {
   logRows.value = tempFilteredLogs
   machinename.value = logRows.value[0]?.machineName
 }
+const pagination = ref({ rowsPerPage: 0 })
 </script>
 
 <template>
@@ -96,6 +99,7 @@ async function applyFilters(updatedValue: any) {
     </div>
     <q-card-section class="col" style="display: flex;">
       <FilterableTable
+        v-model:pagination="pagination"
         class="override-class-height"
         :columns="logCols"
         :rows="logRows"
