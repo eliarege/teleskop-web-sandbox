@@ -9,5 +9,19 @@
       "dependencies": ["**"],
       "range": ""
     }
+  ],
+  "versionGroups": [
+    {
+      "label": "New versions of @antfu/eslint-config may add unwanted rules.",
+      "packages": ["**"],
+      "dependencies": ["@antfu/eslint-config"],
+      "pinVersion": "2.15.0"
+    },
+    {
+      "label": "Please use lodash-es instead of lodash",
+      "packages": ["**"],
+      "dependencies": ["lodash"],
+      "isBanned": true
+    }
   ]
 }
