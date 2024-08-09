@@ -867,7 +867,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
         <MachineVnc
           :machine-name="vncModal.currentMachine.name"
           :machine-id="vncModal.currentMachine.id"
-          websockify-url="ws://192.168.16.88:3000/websockify"
+          :websockify-url="config.public.websockifyUrl"
         />
       </template>
     </EliarModal>
