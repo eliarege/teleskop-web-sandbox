@@ -10,7 +10,7 @@ const color = ref(props.modelValue)
 
 watch(color, useDebounceFn(() => {
   emit('update:modelValue', color.value)
-}, 1000))
+}, 300))
 </script>
 
 <template>

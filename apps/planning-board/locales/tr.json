@@ -1,6 +1,10 @@
 {
   "toast": {
-    "succesful": "Başarıyla Kaydedildi"
+    "succesful": "Başarıyla Kaydedildi",
+    "fail": {
+      "refresh": "Yenileme başarısız",
+      "load": "Yükleme başarısız"
+    }
   },
   "upload-joborder": {
     "_": "Makineye gönder",

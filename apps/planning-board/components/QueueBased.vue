@@ -311,7 +311,7 @@ async function scheduleDataRefresh() {
   try {
     await refreshScheduler()
   } catch (err) {
-    Toast.show('Failed to Refresh')
+    Toast.show(t('toast.fail.refresh'))
   }
 
   setTimeout(scheduleDataRefresh, refreshInterval)
@@ -443,7 +443,7 @@ async function scrollToDate(ev: { jobOrder: string, startTime: string }) {
     await until(refreshingScheduler).toBe(false)
     const event = scheduler.events.find(e => e.jobOrder === ev.jobOrder)
     if (!event) {
-      Toast.show('Failed to load')
+      Toast.show(t('toast.fail.load'))
     } else {
       event.cls = 'custom-focus'
       scheduler.scrollEventIntoView(event, {

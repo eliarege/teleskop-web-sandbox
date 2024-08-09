@@ -1,6 +1,10 @@
 {
   "toast": {
-    "succesful": "Succesfully Saved"
+    "succesful": "Succesfully Saved",
+    "fail": {
+      "refresh": "Failed to Refresh",
+      "load": "Failed to Load"
+    }
   },
   "upload-joborder": {
     "_": "Send to machine",
