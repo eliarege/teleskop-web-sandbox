@@ -1,5 +1,5 @@
 import moo from 'moo'
-import { TbbFtpClient } from 'tbb-ftp-client'
+import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { PlanParameters, QueueBasedEventStop } from 'types/planning-board'
 import type { Program } from 'typescript'
 import { config } from '~/config'

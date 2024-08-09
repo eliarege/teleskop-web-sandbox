@@ -1,10 +1,10 @@
-import { v4 } from 'uuid'
+import { randomUUID } from 'node:crypto'
 import { addSeconds } from 'date-fns'
 import type { QueueBasedEvent, QueueBasedEventStop, QueueBasedEventWithStops, QueueBasedNonActualEvent, QueueBasedNonActualEventRaw } from '../../types/planning-board'
 import { knex } from '../knexConfig'
 
 export function generateClientId() {
-  return v4()
+  return randomUUID()
 }
 export function calculateDeviation(actualStartTime: string, plannedStartTime: string) {
   return new Date(actualStartTime).getTime() - new Date(plannedStartTime).getTime()
