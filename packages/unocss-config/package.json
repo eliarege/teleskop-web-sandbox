@@ -7,7 +7,6 @@
   "exports": {
     ".": "./uno.config.ts"
   },
-  "main": "./uno.config.ts",
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",

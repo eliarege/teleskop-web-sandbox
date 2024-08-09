@@ -8,7 +8,6 @@
   "exports": {
     ".": "./src/package.ts"
   },
-  "main": "./src/package.ts",
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
