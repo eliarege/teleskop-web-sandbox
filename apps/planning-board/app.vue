@@ -28,9 +28,7 @@ globalThis.bryntum.isTestEnv = true
         image="/eliarkurumsal.png"
       />
     </template>
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
+    <NuxtPage />
   </Suspense>
 </template>
 

@@ -1,12 +1,124 @@
 <script setup lang="ts">
+import type { TopbarMenuItem } from '@teleskop/nuxt-base'
+import { breakpointsTailwind } from '@vueuse/core'
+
+const { t } = useI18n()
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const sm = breakpoints.greaterOrEqual('sm')
+const queueBasedRef = ref()
+function scrollToDate(event: any) {
+  queueBasedRef.value.scrollToDate(event)
+}
+function refreshScheduler() {
+  queueBasedRef.value.refreshScheduler()
+}
+function addGridColumn(args: any) {
+  queueBasedRef.value.addGridColumn(args)
+}
+function removeGridColumn(args: any) {
+  queueBasedRef.value.removeGridColumn(args)
+}
+function dateRangeEnd() {
+  queueBasedRef.value.dateRangeEnd()
+}
+function zoomIn() {
+  queueBasedRef.value.zoomIn()
+}
+function zoomOut() {
+  queueBasedRef.value.zoomOut()
+}
+function resetZoom() {
+  queueBasedRef.value.resetZoom()
+}
+const tt = (key: string) => () => t(key)
+
+const items = [] as TopbarMenuItem[]
+
+const itemsMobile = [
+  [
+    {
+      label: tt('menu.home'),
+      icon: 'home',
+      to: '/',
+    },
+  ],
+  items,
+] as TopbarMenuItem[][]
+
 const url = useRouter()
 url.replace('?thumb')
 const { data: state } = await useFetch('/api/ptStatus')
 </script>
 
 <template>
-  <div class="w-full h-screen">
-    <TimeBased v-if="Number.parseInt(state || '0') === 1" />
-    <QueueBased v-else />
-  </div>
+  <QLayout view="hhh lpR fFf">
+    <QHeader
+      bordered
+      class="text-white bryntum-tbar-bg select-none border-b-3"
+    >
+      <QToolbar class="min-h-unset">
+        <template v-if="sm">
+          <QToolbarTitle shrink class="text-clip">
+            <NuxtLink to="/">
+              <Icon
+                name="IconEliar"
+                size="2.5rem"
+                class="p-1"
+              />
+            </NuxtLink>
+          </QToolbarTitle>
+
+          <NavbarJobOrderSearch class="mr-5" @scroll-to-event=" (e) => scrollToDate(e)" />
+
+          <NavbarButtonGroup
+            @refresh-scheduler="refreshScheduler()"
+            @add-grid-column="(e) => addGridColumn(e)"
+            @remove-grid-column="(e) => removeGridColumn(e)"
+            @date-range-end="dateRangeEnd()"
+            @zoom-in="zoomIn()"
+            @zoom-out="zoomOut()"
+            @reset-zoom="resetZoom()"
+          />
+          <TopbarButton
+            v-for="(item, index) in items"
+            :key="index"
+            :label="toValue(item.label)"
+            :disable="toValue(item.disabled)"
+          >
+            <TopbarMenu
+              v-if="item.subMenu"
+              v-bind="item.subMenu"
+            />
+          </TopbarButton>
+          <NavbarUnplannedJobOrderSearch />
+        </template>
+        <TopbarButton
+          v-else
+          icon="menu"
+        >
+          <TopbarMenu :items="itemsMobile" />
+        </TopbarButton>
+        <QSpace />
+        <div class="space-x-1">
+          <TopbarAppGrid />
+          <TopbarAuthenticatedUser disable-theme />
+          <TopbarUnauthenticatedUser disable-theme />
+          <TopbarLoginButton />
+        </div>
+      </QToolbar>
+    </QHeader>
+
+    <QPageContainer>
+      <QPage class="w-full h-screen">
+        <TimeBased v-if="Number.parseInt(state || '0') === 1" />
+        <QueueBased v-else ref="queueBasedRef" />
+      </QPage>
+    </QPageContainer>
+  </QLayout>
 </template>
+
+<style>
+.bryntum-tbar-bg {
+  background-color: #686872;
+}
+</style>

@@ -30,6 +30,7 @@
     }
   },
   "plan-recipe": {
+    "_": "Recipe",
     "title": "Automatic Recipe",
     "manuel": {
       "title": "Manual Recipe",
@@ -43,6 +44,9 @@
     "material-name": "Material Name",
     "amount": "Amount",
     "empty-text": "No Recipe to show"
+  },
+  "date-picker": {
+    "_": "Date"
   },
   "plan-parameters": {
     "title": "Plan Parameters",
@@ -59,6 +63,7 @@
     }
   },
   "batch-notes": {
+    "_": "Notes",
     "columns": {
       "user-name": "User Name",
       "job-order": "Job Order",
@@ -84,6 +89,7 @@
     }
   },
   "settings": {
+    "_": "Settings",
     "save": "Save",
     "plan-area": {
       "_": "Plan Area - Job Order View",
@@ -205,5 +211,14 @@
       "programs": "Programs",
       "summary": "Summary"
     }
+  },
+  "zoom": {
+    "in": "Zoom In",
+    "out": "Zoom Out",
+    "reset": "Reset Zoom"
+  },
+  "navbar": {
+    "unplanned-search": "Unplanned Job Order Search",
+    "job-order-search": "Job Order Search"
   }
 }

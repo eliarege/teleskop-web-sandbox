@@ -1,20 +1,33 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
+import type { DragHelperConfig, EventModel, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
 import { LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
-import { useDocumentVisibility } from '@vueuse/core'
-import { addDays, addHours } from 'date-fns'
 import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import { determineTextColor } from '@teleskop/utils'
+import { useDocumentVisibility } from '@vueuse/core'
+import { useFuse } from '@vueuse/integrations/useFuse'
+import { addDays, addHours } from 'date-fns'
 import { eventTooltip } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
-import type { QueueBasedEvent, QueueBasedUnplannedEvent } from '~/shared/queueBased'
+import type { QueueBasedEvent, QueueBasedNonActualEvent } from '~/shared/queueBased'
 import type { MachineStatus, PlanParameters } from '~/shared/types'
 import { useSettingStore } from '~/store/settings'
 
 const { t, locale, d } = useI18n()
 const visibility = useDocumentVisibility()
 const config = useRuntimeConfig()
+
+defineExpose({
+  scrollToDate,
+  refreshScheduler,
+  addGridColumn,
+  removeGridColumn,
+  dateRangeEnd,
+  zoomIn,
+  zoomOut,
+  resetZoom: zoomReset,
+  unplannedSearch,
+})
 
 let scheduler: SchedulerPro
 let grid: Grid
@@ -24,10 +37,8 @@ const today = new Date()
 const startDate = ref(today.toISOString())
 const endDate = ref(addDays(today, 3).toISOString())
 const jobOrderUploadLoading = ref(false)
-const schedulerDateModel = ref({
-  from: startDate.value,
-  to: endDate.value,
-})
+
+const refreshingScheduler = ref(false)
 const store = useSettingStore()
 
 const { data: events, refresh: eventRefresh, pending: eventPending } = await useFetch<QueueBasedEvent[]>('/api/queueBased/schedulerEvents', {
@@ -118,24 +129,7 @@ function setPlanParameters(show: boolean, planKey: number, machineId: number, pr
     planParametersModal.uploadData = uploadData
   }
 }
-const recipeModal = reactive({
-  show: false,
-  machineId: 0,
-  jobOrder: '',
-})
-function setRecipe(machineId: number, jobOrder: string) {
-  recipeModal.show = true
-  recipeModal.jobOrder = jobOrder
-  recipeModal.machineId = machineId
-}
-const notesModal = reactive({
-  show: false,
-  name: '',
-})
-function setNotes(name: string) {
-  notesModal.show = true
-  notesModal.name = name
-}
+
 const propertiesModal = reactive({
   show: false,
   machineId: 0,
@@ -167,9 +161,7 @@ function setVnc(id: number, name: string) {
   vncModal.currentMachine.id = id
   vncModal.currentMachine.name = name
 }
-const datePickerModal = ref(false)
 const machineSortModal = ref(false)
-const settingsModal = ref(false)
 // #endregion
 
 const sortIndex = Symbol('sortIndex')
@@ -303,7 +295,17 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((u
     constraintDate: new Date(),
   }
 }))
+const exactMatch = ref(false)
+const options = computed(() => ({
+  fuseOptions: {
+    keys: ['jobOrder'],
+    isCaseSensitive: false,
+    threshold: exactMatch.value ? 0 : undefined,
+  },
+  matchAllWhenSearchEmpty: true,
+}))
 
+const { results } = useFuse(() => store.unplannedText, modifiedUnscheduledEvents, options)
 async function scheduleDataRefresh() {
   await until(visibility).toBe('visible')
   try {
@@ -340,9 +342,10 @@ watch(modifiedEvents, (newVal: QueueBasedEvent[]) => {
   scheduler.events = newVal
   scrollStore.data = newVal
 })
-watch(modifiedUnscheduledEvents, (newVal: QueueBasedUnplannedEvent[]) => {
-  grid.store.data = newVal
+watch(() => results.value, () => {
+  grid.store.data = results.value.map(e => e.item)
 })
+
 watch(() => store.settings.showStops.show, async (newVal: boolean) => {
   await refreshScheduler()
 })
@@ -398,8 +401,8 @@ async function deleteEvent(planKey: number) {
   }).then(() => refreshScheduler())
 }
 function dateRangeEnd() {
-  scheduler.startDate = new Date(schedulerDateModel.value.from)
-  scheduler.endDate = new Date(schedulerDateModel.value.to)
+  scheduler.startDate = new Date(store.schedulerDateModel.from)
+  scheduler.endDate = new Date(store.schedulerDateModel.to)
   scheduler.zoomLevel = 17
   scheduler.refreshRows()
 }
@@ -409,6 +412,51 @@ watch(locale, () => {
     ev.textContent = `${t('queue-based.alarm-count')}:${count}`
   })
 })
+function zoomIn() {
+  scheduler.zoomIn()
+}
+function zoomOut() {
+  scheduler.zoomOut()
+}
+function zoomReset() {
+  scheduler.zoomLevel = 17
+}
+function unplannedSearch(str: string) {
+  grid.features.search.search(str)
+}
+async function scrollToDate(ev: { jobOrder: string, startTime: string }) {
+  const event = scheduler.events.find(e => e.jobOrder === ev.jobOrder)
+  if (event) {
+    event.cls = 'custom-focus'
+    scheduler.scrollEventIntoView(event, {
+      highlight: true,
+      animate: false,
+    })
+    setTimeout(() => {
+      event.cls = ''
+    }, 1000)
+  } else {
+    scheduler.scrollToDate(new Date(ev.startTime))
+    if (!refreshingScheduler.value) {
+      await until(refreshingScheduler).toBe(true)
+    }
+    await until(refreshingScheduler).toBe(false)
+    const event = scheduler.events.find(e => e.jobOrder === ev.jobOrder)
+    if (!event) {
+      Toast.show('Failed to load')
+    } else {
+      event.cls = 'custom-focus'
+      scheduler.scrollEventIntoView(event, {
+        highlight: true,
+        animate: false,
+      })
+      setTimeout(() => {
+        event.cls = ''
+      }, 1000)
+    }
+  }
+}
+
 onMounted(async () => {
   await until(machinesPending).toBe(false)
   const schedule: SchedulerPro = scheduler = new QueueSchedule({
@@ -432,8 +480,11 @@ onMounted(async () => {
     resources: machines.value,
     events: modifiedEvents.value,
     eventStyle: null,
-    onEventClick({ eventRecord }) {
-      console.log(eventRecord.originalData)
+    onEventClick({ eventRecord }: EventModel) {
+      store.selectedEvent = eventRecord
+    },
+    onCellClick() {
+      store.selectedEvent = {}
     },
     listeners: {
       eventSelectionChange({ action }: any) {
@@ -691,114 +742,6 @@ onMounted(async () => {
         template: (data: any) => eventTooltip(data.eventRecord, scheduler),
       },
     },
-    tbar: [
-      {
-        type: 'combo',
-        ref: 'scrollToEvent',
-        placeholder: 'L{scrollToEvent}',
-        editable: true,
-        store: scrollStore,
-        displayField: 'jobOrder',
-        valueField: 'id',
-        onAction: ({ record }: any) => {
-          const event: any = schedule.events.find(item => item.id === record.id)
-          if (event) {
-            event.cls = 'custom-focus'
-            setTimeout(() => {
-              event.cls = ''
-            }, 1000)
-            scheduler.scrollEventIntoView(event, {
-              highlight: true,
-              animate: false,
-            })
-          }
-        },
-      },
-      {
-        type: 'button',
-        disabled: true,
-        ref: 'parameterButton',
-        text: 'L{planparam}',
-        icon: 'b-fa b-fa-solid b-fa-sliders',
-        color: 'toolbar-buttons',
-        onClick() {
-          let program: string = schedule.selectedEvents[0].originalData.programNoList
-          if (program.endsWith(',')) {
-            program = program.slice(0, -1)
-          }
-
-          const planKey: number = schedule.selectedEvents[0].originalData.planKey
-          const machineId: number = schedule.selectedEvents[0].resourceId
-          const isBatchStarted = schedule.selectedEvents[0].originalData.isStarted
-
-          setPlanParameters(true, planKey, machineId, program, isBatchStarted, [], false)
-        },
-      },
-      {
-        type: 'button',
-        disabled: true,
-        ref: 'recipeButton',
-        text: 'L{recipe}',
-        icon: 'b-fa b-fa-solid b-fa-flask-vial',
-        color: 'toolbar-buttons',
-        onClick() {
-          const jobOrder: string = schedule.selectedEvents[0].name
-          const machineId: number = schedule.selectedEvents[0].resourceId
-          setRecipe(machineId, jobOrder)
-        },
-      },
-      {
-        type: 'button',
-        disabled: true,
-        ref: 'noteButton',
-        text: 'L{note}',
-        icon: 'b-fa b-fa-solid b-fa-note-sticky',
-        color: 'toolbar-buttons',
-        onClick() {
-          const name = schedule.selectedEvents[0].name
-          setNotes(name)
-        },
-      },
-      {
-        type: 'button',
-        text: 'L{settings}',
-        icon: 'b-fa b-fa-solid b-fa-gear',
-        color: 'toolbar-buttons',
-        onClick() {
-          settingsModal.value = true
-        },
-      },
-      {
-        type: 'button',
-        text: 'L{datepicker}',
-        icon: 'b-fa b-fa-solid b-fa-calendar-days',
-        color: 'toolbar-buttons',
-        onClick() {
-          datePickerModal.value = true
-        },
-      },
-      {
-        type: 'button',
-        icon: 'b-icon-search-plus',
-        tooltip: 'L{zoomin}',
-        color: 'toolbar-buttons',
-        onAction: () => schedule.zoomIn(),
-      },
-      {
-        type: 'button',
-        icon: 'b-icon b-icon-search-minus',
-        tooltip: 'L{zoomout}',
-        color: 'toolbar-buttons',
-        onAction: () => schedule.zoomOut(),
-      },
-      {
-        type: 'button',
-        icon: 'b-fa b-fa-solid b-fa-arrow-rotate-left',
-        tooltip: 'L{resetZoom}',
-        color: 'toolbar-buttons',
-        onAction: () => schedule.zoomLevel = 17,
-      },
-    ],
   } as Partial<SchedulerProConfig>)
   if (import.meta.dev) {
     // @ts-expect-error missing type
@@ -838,13 +781,6 @@ onMounted(async () => {
           paste: false,
         },
       },
-      search: {
-        label: 'Search',
-        icon: 'b-icon b-icon-search',
-        value: 'on',
-        style: 'margin-bottom: 1em',
-        onInput: () => grid.features.search.search(''),
-      },
     },
     collapsible: false,
     eventMenu: {
@@ -861,23 +797,10 @@ onMounted(async () => {
         hidden: true,
       },
     },
-    tbar: [
-      // https://bryntum.com/products/schedulerpro/docs/api/Grid/feature/Search
-      {
-        type: 'textfield',
-        inputType: 'text',
-        placeholder: 'L{search}',
-        clearable: true,
-        cls: 'flex justify-center items-center',
-        onInput({ value }: any) {
-          grid.features.search.search(value, false)
-        },
-      },
-    ],
     flex: '0 1 300px',
     project: schedule.project,
     store: {
-      data: modifiedUnscheduledEvents.value,
+      data: results.value.map(e => e.item),
       modelClass: QueueTask,
       autoLoad: true,
     },
@@ -895,11 +818,14 @@ onMounted(async () => {
   endDate.value = schedule.timeAxis.endDate.toISOString()
 
   schedule.eventStore.on({
+
     async loadDateRange(e: any) {
+      refreshingScheduler.value = true
       if (e.changed) {
         startDate.value = new Date(e.new.startDate).toISOString()
         endDate.value = new Date(e.new.endDate).toISOString()
       }
+      refreshingScheduler.value = false
     },
   })
   await scheduleDataRefresh()
@@ -929,46 +855,11 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
         />
       </template>
     </EliarModal>
-    <EliarModal v-if="datePickerModal" @click.stop="datePickerModal = false">
-      <template #default>
-        <div class="flex justify-center w-min m-auto rounded" @click.stop.prevent>
-          <QDate
-            v-model="schedulerDateModel"
-            range
-            dark
-            landscape
-            @click.stop.prevent
-            @range-end="dateRangeEnd()"
-          />
-        </div>
-      </template>
-    </EliarModal>
-    <EliarModal v-if="settingsModal" @click.stop="settingsModal = false">
-      <template #default>
-        <SettingsMain
-          @update-scheduler="refreshScheduler()"
-          @add-column="(ev: any) => addGridColumn(ev)"
-          @remove-column="(ev: any) => removeGridColumn(ev)"
-        />
-      </template>
-    </EliarModal>
     <EliarModal v-if="planParametersModal.show" @click.stop="planParametersModal.show = false">
       <template #default>
         <div class="w-full h-98vh overflow-auto">
           <PlanParameters v-bind="planParametersModal" @upload-machine="uploadJobOrder" />
         </div>
-      </template>
-    </EliarModal>
-    <EliarModal v-if="recipeModal.show" @click.stop="recipeModal.show = false">
-      <template #default>
-        <div class="!w-80vw !h-full">
-          <PlanRecipe :machine-id="recipeModal.machineId" :job-order="recipeModal.jobOrder" />
-        </div>
-      </template>
-    </EliarModal>
-    <EliarModal v-if="notesModal.show" @click.stop="notesModal.show = false">
-      <template #default>
-        <BatchNotes :job-order="notesModal.name" @update-scheduler="refreshScheduler()" />
       </template>
     </EliarModal>
     <EliarModal v-if="vncModal.show" @click.stop="vncModal.show = false">

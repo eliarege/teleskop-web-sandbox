@@ -6,7 +6,7 @@ import UnplannedOptions from './UnplannedOptions.vue'
 
 const emits = defineEmits(['addColumn', 'removeColumn'])
 const { t } = useI18n()
-// TODO: add emits
+
 const settingItems = reactive([
   { name: 'planningArea', caption: () => t('settings.plan-area._'), component: View, icon: matDisplaySettings },
   { name: 'viewOptions', caption: () => t('settings.view-options'), component: ViewOptions, icon: matPreview },

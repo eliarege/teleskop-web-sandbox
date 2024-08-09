@@ -19,7 +19,45 @@ export async function getQueueBasedEvents(startDate: string, endDate: string, in
     return await queueBasedEventStatus([...plannedEvents, ...actualEvents, ...stops], includeStops)
   } else return await queueBasedEventStatus([...plannedEvents, ...actualEvents], includeStops)
 }
-
+export async function getFullQueueBasedEvents() {
+  const plannedEvents = await knex.raw(`
+  select jobOrder, startTime from (
+        select
+              d.JOBORDER AS jobOrder,
+                CASE
+                      WHEN p.QUEUENUMBER = 1 THEN GETUTCDATE()
+                      ELSE DATEADD(second, COALESCE(
+                            SUM(CASE
+                              WHEN d.TheoricalDuration = 0 OR d.TheoricalDuration IS NULL THEN 28800
+                              ELSE d.TheoricalDuration
+                            END + 300) OVER (PARTITION BY d.PLANNEDMACHINE ORDER BY p.QUEUENUMBER ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0), GETUTCDATE())
+                    END AS startTime
+        from DYBFBATCHPLAN d
+        LEFT JOIN PTBATCHPLANQUEUE p ON p.PLANKEY = d.PLANKEY
+        LEFT JOIN DYBFBATCHPLANPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.PARAMSTRING = 'Kilo'
+        WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
+        AND p.PLANKEY IS NOT NULL
+) as subQuery
+  `)
+  const actualEvents = await knex.raw(`
+WITH ActualEvent AS (
+        SELECT
+          DATEADD(MINUTE, :timezoneOffset, startTime) as startTime,
+          jobOrder
+        FROM (
+          select
+              b.STARTTIME as startTime,
+              b.JOBORDER as jobOrder,
+              ROW_NUMBER() OVER (PARTITION BY b.PLANKEY ORDER BY b.BATCHREFERENCE DESC) AS rowNumber
+          from BADATA b
+          left join DYBFBATCHPLAN d ON d.PLANKEY = b.PLANKEY
+        ) as subquery
+        WHERE rowNumber = 1
+      )
+      SELECT * FROM ActualEvent
+    `, { timezoneOffset: config.teleskopTimezoneOffset })
+  return [...plannedEvents, ...actualEvents]
+}
 export async function getQueueBasedPlannedEvents(startDate: string, endDate: string): Promise<QueueBasedNonActualEvent[]> {
   const events = await knex.raw(`
       select DATEADD(second, theoreticalDuration, startTime) AS endTime,* from (

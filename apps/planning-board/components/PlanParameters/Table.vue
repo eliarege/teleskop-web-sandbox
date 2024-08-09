@@ -40,7 +40,6 @@ function editValidation(parameterData: PlanParameters, value: number): boolean {
 }
 async function saveParameter(value: number, parameter: PlanParameters, machineId: number) {
   if (parameter.paramStatus === 2) {
-    console.log('machineId', machineId)
     await $fetch('/api/planParameters', {
       method: 'POST',
       body: { parameter, value, machineId },

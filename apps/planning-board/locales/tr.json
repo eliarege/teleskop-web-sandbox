@@ -30,6 +30,7 @@
     }
   },
   "plan-recipe": {
+    "_": "Reçete",
     "title": "Otomatik Reçete",
     "manuel": {
       "title": "Manuel Reçete",
@@ -43,6 +44,9 @@
     "material-name": "Materyal İsmi",
     "amount": "Adet",
     "empty-text": "Gösterilecek Reçete yok"
+  },
+  "date-picker": {
+    "_": "Tarih"
   },
   "plan-parameters": {
     "title": "Plan Parametreleri",
@@ -59,6 +63,7 @@
     }
   },
   "batch-notes": {
+    "_": "Notlar",
     "columns": {
       "user-name": "Kullanıcı Adı",
       "job-order": "İş Emri",
@@ -84,6 +89,7 @@
     }
   },
   "settings": {
+    "_": "Ayarlar",
     "save": "Kaydet",
     "plan-area": {
       "_": "Planlama Alanı - İş Emri Görünümleri",
@@ -204,5 +210,14 @@
       "programs": "Programlar",
       "summary": "Özet"
     }
+  },
+  "zoom": {
+    "in": "Yakınlaştır",
+    "out": "Uzaklaştır",
+    "reset": "Yakınlaştırmayı sıfırla"
+  },
+  "navbar": {
+    "unplanned-search": "Planlanmamış İş Emirleri Arama",
+    "job-order-search": "İş Emirleri Arama"
   }
 }

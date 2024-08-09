@@ -1,9 +1,19 @@
+import type { EventModel } from '@bryntum/schedulerpro-trial'
 import { useStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import type { PtLocaleSettings } from '~/shared/types'
 
 export const useSettingStore = defineStore('settings', () => {
+  const startDate = ref()
+  const endDate = ref()
+  const schedulerDateModel = ref({
+    from: startDate.value,
+    to: endDate.value,
+  })
+  const unplannedText = ref()
   const machineOrdering = useStorage<number[]>('pt-machineOrdering', [])
+
+  const selectedEvent = ref({} as EventModel)
 
   const settings = useStorage('pt-settings', {
     deviationColor: '',
@@ -20,7 +30,12 @@ export const useSettingStore = defineStore('settings', () => {
   } as PtLocaleSettings)
 
   return {
+    startDate,
+    endDate,
+    unplannedText,
+    schedulerDateModel,
     settings,
+    selectedEvent,
     machineOrdering,
   }
 })
