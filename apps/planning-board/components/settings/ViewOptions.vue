@@ -95,7 +95,7 @@ async function saveParameters() {
     method: 'PUT',
   }).finally(() => {
     loading.value = false
-    Toast.show('Succesfully Saved!')
+    Toast.show(t('toast.succesful'))
   })
 }
 </script>

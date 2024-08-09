@@ -40,7 +40,7 @@ export async function getFullQueueBasedEvents() {
 ) as subQuery
   `)
   const actualEvents = await knex.raw(`
-WITH ActualEvent AS (
+    WITH ActualEvent AS (
         SELECT
           DATEADD(MINUTE, :timezoneOffset, startTime) as startTime,
           jobOrder
@@ -168,9 +168,10 @@ export async function getQueueBasedActualEvents(startTime: string, endTime: stri
         WHERE rowNumber = 1
       )
       SELECT * FROM ActualEvent
-      WHERE (startTime > CAST(:startTime AS DATETIME)
-      OR (endTime BETWEEN CAST(:startTime AS DATETIME) AND CAST(:endTime AS DATETIME) OR endTime IS NULL))
-  `, { timezoneOffset: config.teleskopTimezoneOffset, startTime, endTime })
+      WHERE (startTime BETWEEN :startTime AND :endTime)
+      OR  (endTime BETWEEN :startTime AND :endTime)
+      OR  (startTime < :startTime AND :endTime < endTime)
+      `, { timezoneOffset: config.teleskopTimezoneOffset, startTime, endTime })
 }
 
 export async function checkMachineLastTaskQueue(machineId: number) {

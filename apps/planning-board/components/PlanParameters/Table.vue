@@ -66,7 +66,7 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
         hide-pagination
         dense
         :rows-per-page-options="[0]"
-        no-data-label="No Parameter"
+        :no-data-label="t('plan-parameters.empty-text')"
       >
         <template #top>
           <div class="flex-center font-extrabold w-full">
@@ -134,7 +134,7 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
           <q-btn
             v-if="isSendMachine"
             color="primary"
-            label="resend"
+            :label="t('plan-parameters.resend')"
             :disable="parameterData.some(e => e.value === null)"
             @click="emit('uploadMachine', parameterData[0].planKey)"
           />

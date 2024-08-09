@@ -1,4 +1,7 @@
 {
+  "toast": {
+    "succesful": "Başarıyla Kaydedildi"
+  },
   "upload-joborder": {
     "_": "Makineye gönder",
     "upload-succes": "İş emri yükleme başarıyla tamamlandı",
@@ -56,6 +59,8 @@
     "param-low-limit": "Alt Limit",
     "param-high-limit": "Üst Limit",
     "validation-error": "Parametreler {paramLowLimit} ve {paramHighLimit} aralığında olmalıdır.",
+    "resend": "Tekrar Gönder",
+    "empty-text": "Parametre Yok",
     "legend": {
       "default": "Varsayılan değer ile sonradan eklenmiş parametre",
       "non-start": "Başlatma parametresi değil",
