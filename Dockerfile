@@ -87,17 +87,17 @@ ENTRYPOINT [ "node", "./server/index.mjs" ]
 ########################################
 FROM build AS deploy-node
 
-WORKDIR /opt/build
+WORKDIR /opt/deploy
 
 ARG APP_NAME
 
-RUN \
-  --mount=type=cache,id=pnpm,target=/pnpm/store \
-  pnpm deploy --filter=${APP_NAME} --prod /opt/deploy
+# Here we assume node apps are bundled in `dist` via `@teleskop/build-utils`.
+# It's possible to do this without this assumption but it's a lot more complex.
+# Read more: https://gitlab.com/eliarelektronik/dijital_boyahane/teleskop-web/-/commit/82687055346afa7c6c6c0f3cab0f380d5983c19a
 
-WORKDIR /opt/deploy
-
-RUN node -e "console.log('#!/bin/sh\nexec ' + require('./package.json').scripts.start)" > ./start \
+# Extract start script from `package.json`, move build output to deploy
+RUN cp -r /opt/build/apps/${APP_NAME}/dist /opt/build/apps/${APP_NAME}/package.json ./ \
+  && node -e "console.log('#!/bin/sh\nexec ' + require('./package.json').scripts.start)" > ./start \
   && chmod +x ./start
 
 ###############

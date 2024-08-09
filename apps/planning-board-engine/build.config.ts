@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 import { defineBuildConfig } from 'unbuild'
-import { inlineWorkspaceDependencies } from '@teleskop/build-utils'
+import { workspaceExternals } from '@teleskop/build-utils'
 
 const src = join(__dirname, 'src')
 
@@ -10,7 +10,7 @@ export default defineBuildConfig({
   alias: { '~': src },
   hooks: {
     'build:prepare': (ctx) => {
-      inlineWorkspaceDependencies(ctx)
+      workspaceExternals(ctx)
     },
   },
   replace: {
