@@ -5,8 +5,9 @@
   "private": true,
   "description": "",
   "license": "UNLICENSED",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
   "dependencies": {
     "@novnc/novnc": "1.4.0",
     "d3": "7.9.0"
