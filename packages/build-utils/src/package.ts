@@ -367,7 +367,7 @@ async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'optio
 
   // Write packages with multiple versions
   for (const [pkgName, pkgVersions] of Object.entries(multiVersionPkgs)) {
-    const versionEntires = Object.entries(pkgVersions).sort(
+    const versionEntries = Object.entries(pkgVersions).sort(
       ([v1, p1], [v2, p2]) => {
         // 1. Package with no parent packages to be hoisted
         if (p1.length === 0) {
@@ -380,7 +380,7 @@ async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'optio
         return compareVersions(v1, v2)
       },
     )
-    for (const [version, parentPkgs] of versionEntires) {
+    for (const [version, parentPkgs] of versionEntries) {
       // Write each version into node_modules/.nitro/{name}@{version}
       await writePackage(pkgName, version, `.nitro/${pkgName}@${version}`)
       // Link one version to the top level (for indirect bundle deps)
@@ -429,10 +429,11 @@ export function workspaceExternals(ctx: BuildContext, options?: CopyNodeExternal
   ctx.hooks.hook('build:before', async (ctx) => {
     // Inline workspace dependencies
     const workspaceDependencies = await getWorkspaceDependencies()
+    const externalDependencies = await getExternalDependencies()
     ctx.options.rollup.inlineDependencies = true
-    ctx.options.externals = ctx.options.externals.filter(e =>
-      typeof e === 'string' && !workspaceDependencies.includes(e),
-    )
+    ctx.options.externals = ctx.options.externals
+      .filter(e => typeof e === 'string' && !workspaceDependencies.includes(e))
+      .concat(externalDependencies)
   })
   ctx.hooks.hook('build:done', async (ctx) => {
     consola.info(`Copying externals`)
