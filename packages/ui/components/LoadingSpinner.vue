@@ -13,7 +13,7 @@ withDefaults(defineProps<{ hasBackground: boolean }>(), {
 </template>
 
 <style scoped lang="postcss">
-.custom-bg{
+.custom-bg {
   background-color: rgba(60, 60, 60, 0.3);
 }
 .spinner-wrapper {

@@ -2,15 +2,15 @@
   "name": "@bryntum/schedulerpro-trial-lib",
   "version": "1.0.0",
   "description": "Bryntum schedulerpro-trial component library",
-  "keywords": [
-    "bryntum",
-    "schedulerpro-trial"
-  ],
   "author": {
     "name": "Bryntum",
     "email": "info@bryntum.com",
     "url": "https://bryntum.com"
   },
   "license": "Commercial",
+  "keywords": [
+    "bryntum",
+    "schedulerpro-trial"
+  ],
   "main": "build.js"
 }

@@ -3,9 +3,13 @@
 ## Configuration
 
 ### SERVER_HOST
+
 ### SERVER_PORT
+
 Default: `5000`
+
 ### SERVER_PREFIX
+
 Default: `/`
 
 ### LOG_LEVEL
@@ -19,5 +23,7 @@ Teleskop bağlantı stringi. Syntax: https://learn.microsoft.com/en-us/sql/conne
 DmExchange bağlantı stringi. Syntax: https://learn.microsoft.com/en-us/sql/connect/ado-net/connection-string-syntax?view=sql-server-ver16
 
 ### MACHINE_STATUS_MAX_AGE
+
 ### MACHINE_ERP_MAPPINGS_MAX_AGE
+
 ### JOB_ORDER_ERP_PARAMETERS_MAX_AGE

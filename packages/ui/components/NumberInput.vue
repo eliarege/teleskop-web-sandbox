@@ -38,7 +38,7 @@ function onPastePreventNonNumerical(event: ClipboardEvent) {
 }
 
 function removeLeadingZeros(event: KeyboardEvent) {
-  const target: EventTarget = event.target
+  const target = event.target as HTMLInputElement
   if (event.key === '0' && target.value === '0') {
     return event.preventDefault()
   } else if (target.value.length === 1 && target.value[0] === '0') {
@@ -64,7 +64,7 @@ function onDrop(event: DragEvent) {
 </template>
 
 <style lang="postcss">
-.input-number.hide-arrows  {
+.input-number.hide-arrows {
   /* Chrome, Safari, Edge, Opera */
   & input::-webkit-outer-spin-button,
   & input::-webkit-inner-spin-button {
@@ -73,7 +73,7 @@ function onDrop(event: DragEvent) {
   }
 
   /* Firefox */
-  & input[type=number] {
+  & input[type='number'] {
     appearance: textfield;
     -moz-appearance: textfield;
   }
