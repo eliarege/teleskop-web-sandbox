@@ -6,7 +6,7 @@ import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOn
 import CMConcatenateProgramDetails from '~/components/CMConcatenateProgramDetails.vue'
 import CMChangeNameDialog from '~/components/CMChangeNameDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
-import { contextMenuStore } from '~/shared/utils'
+import { contextMenuStore } from '~/utils/context-menu'
 import TBProgramFilterDialog from '~/components/TBProgramFilterDialog.vue'
 import type { ProgramFilter } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
