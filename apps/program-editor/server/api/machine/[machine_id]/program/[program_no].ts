@@ -13,7 +13,7 @@ export default defineAuthEventHandler(async (event) => {
   if (event.method === 'GET') {
     try {
       const program = await machine.fetchProgram(programNo)
-      program.author = event.context.kauth!.name as string
+      program.author = event.context.kauth?.name || ''
       return program
     } catch (error) {
       if (error instanceof PError) {
