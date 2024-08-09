@@ -1,4 +1,4 @@
-import type { QueueBasedEvents, QueueBasedPlannedEvents } from './queueBased'
+import type { QueueBasedBaseEvent } from './queueBased'
 
 export interface MachineStatus {
   id: number
@@ -58,24 +58,6 @@ export interface MachineData extends MachineStatus {
   runningBatchRatio: number
   runningStartHour: string
 }
-export interface UnplannedEventsRaw {
-  planKey: number
-  recordTime: string
-  jobOrder: string
-  plannedMachineId: number
-  programCount: number
-  plannedStartTime: string
-  theoreticalDuration: number
-  note: string
-  erpParameters: Record<string, string>
-}
-export interface UnplannedEvents extends UnplannedEventsRaw {
-  id: string | number
-  name: string
-  duration: number
-  durationUnit: 'millisecond' | 'second' | 'minute' | 'hour' | 'day'
-  constraintDate: string | Date
-}
 export interface RecipeRaw {
   planKey: number | null
   recIndex: number | null
@@ -100,46 +82,88 @@ export interface Recipe {
   autoRecipe: RecipeRaw[]
   manualRecipe: RecipeRaw[]
 }
-export interface BatchText {
+
+export interface PtLocaleSettings {
+  deviationColor: string
+  completedBatchColor: string
+  completedBatchText: keyof QueueBasedBaseEvent
+  completedBatchFabricColor: boolean
+  ongoingBatchColor: string
+  ongoingBatchText: keyof QueueBasedBaseEvent
+  ongoingBatchFabricColor: boolean
+  plannedBatchColor: string
+  plannedBatchText: keyof QueueBasedBaseEvent
+  plannedBatchFabricColor: boolean
+  showStops: { show: boolean, color: string }
+}
+
+export interface ProgramHeader {
+  name: string
+  author: string | null
+  comment: string | null
+  typeId: number
+  createdAt: Date | null
+  updatedAt: Date | null
+  steps: ProgramStep[]
+  updatedAtTBB: string | null
+  programState: number | null
+  isChanged: boolean | null
+  tbbProgramChangedEvent: boolean | null
+}
+
+export interface Program extends ProgramHeader {
+  icon: string | null
+  programNo: number
+  typeName: string
+  machineId: number
+  machineName: string
+}
+export interface ProgramStep {
+  stepId: number
+  mainCommand: ProgramStepCommand
+  parallelCommands: ProgramStepCommand[]
+}
+export interface ProgramStepCommand {
+  commandId: number
+  commandNo: number | null
+  parameters: ParameterItem[]
+  ioList: ioListItem[]
+}
+export interface ParameterItem {
+  value: number
+  index: number
+}
+export interface ioListItem {
+  ioId: number
+  ioIndex: number
+  value: [number, number][]
+}
+
+export interface PlanParameters {
   id: number
-  label: string
-  value: keyof QueueBasedEvents
+  planKey: number
+  machineId: number
+  paramString: string
+  paramHighLimit: number
+  paramLowLimit: number
+  value: string | number
+  unitCode: number
+  paramStatus: 0 |
+  1 |
+  2 |
+  3
 }
-
-export interface Batch {
-  batchText: BatchText[]
-  archiveDays: number
-  showStops: {
-    show: boolean
-    color: string
+export interface PlanParameterProps {
+  planKey: number
+  isBatchStarted: boolean
+  machineId: number
+  missingParams: PlanParameters[]
+  isSendMachine: boolean
+  uploadData?: {
+    program: string
+    machineId: number
+    planKey: number
+    jobOrder: string
+    machineIp: string
   }
 }
-
-export interface CompletedBatch extends Batch {
-  completedBatch: {
-    batchText: BatchText | null
-    isBatchFabricColor: boolean
-    actualBatchFabricColor: string
-    deviationBatchFabricColor: string
-  }
-}
-
-export interface OngoingBatch extends Batch {
-  ongoingBatch: {
-    batchText: BatchText | null
-    isBatchFabricColor: boolean
-    actualBatchFabricColor: string
-    deviationBatchFabricColor: string
-  }
-}
-
-export interface PlannedBatch extends Batch {
-  plannedBatch: {
-    batchText: BatchText | null
-    isBatchFabricColor: boolean
-    actualBatchFabricColor: string
-    deviationBatchFabricColor: string
-  }
-}
-
-export type PtLocaleSettings = CompletedBatch & OngoingBatch & PlannedBatch

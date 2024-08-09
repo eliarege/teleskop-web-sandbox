@@ -1,10 +1,8 @@
-import type { QueueBasedPlannedEvents } from '~/shared/queueBased'
-
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const { newEvent } = await readBody(event)
   const url = `${config.planningEngineUrl}/queue_based/schedule_unplanned_events`
-  const events = $fetch<QueueBasedPlannedEvents[]>(url, {
+  const events = $fetch(url, {
     method: 'POST',
     body: { newEvent },
   })

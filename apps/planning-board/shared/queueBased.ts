@@ -1,25 +1,41 @@
-export interface QueueBasedEvents {
-  planKey: number
+export interface QueueBasedBaseEventRaw {
+  eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'stop' | 'unplanned'
   machineId: number
+  startTime: string
+  endTime: string
+}
+export interface QueueBasedEventStop extends QueueBasedBaseEventRaw {
+  eventType: 'stop'
+  stopNumber: number
+  stopReason: string
+}
+export interface QueueBasedBaseEvent extends QueueBasedBaseEventRaw {
+  eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'unplanned'
+  planKey: number
   jobOrder: string
   programNoList: string
+  programCount: number
   theoreticalDuration: number
   fabricWeight: number
+  fabricColor: number
   note: string
-  color: string
-  isDeleted: boolean
-  isStarted: boolean
-  isStopped: boolean
-  isPlanned: boolean
-  isFinished: boolean
-  isRunning: boolean
-  remainingTime: number
-  plannedStartDate?: string | Date
-  queueNumber?: number
-  pinned?: boolean
-  batchKey?: number
-  startTime?: string | Date
-  endTime?: string | Date
-  cancelTime?: string | Date
-  deviation?: number
 }
+export interface QueueBasedActualEvent extends QueueBasedBaseEvent {
+  eventType: 'finished' | 'ongoing' | 'manual'
+  batchKey: number
+  deviation: number
+}
+export interface QueueBasedNonActualEvent extends QueueBasedBaseEvent {
+  eventType: 'planned' | 'unplanned'
+  queueNumber: number
+  pinned: boolean
+}
+export interface QueueBasedUnplannedEvent extends QueueBasedNonActualEvent {
+  eventType: 'unplanned'
+  erpParameters: string
+}
+
+export type QueueBasedEvent =
+  QueueBasedNonActualEvent |
+  QueueBasedActualEvent |
+  QueueBasedEventStop

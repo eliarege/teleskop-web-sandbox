@@ -1,4 +1,17 @@
 {
+  "toast": {
+    "succesful": "Succesfully Saved",
+    "fail": {
+      "refresh": "Failed to Refresh",
+      "load": "Failed to Load"
+    }
+  },
+  "upload-joborder": {
+    "_": "Send to machine",
+    "upload-succes": "Joborder upload succesfuly completed",
+    "no-program": "This machine does not have required programs",
+    "fail": "Could not access the machine!"
+  },
   "app": {
     "name": "Planning Board"
   },
@@ -8,6 +21,213 @@
     "customer-name": "Customer Name"
   },
   "tooltip": {
-    "note": "Notes"
+    "note": "Notes",
+    "auto-message": "There is no stop reason input!"
+  },
+  "queue-based": {
+    "alarm-count": "Total Alarm Count",
+    "ctx-menu": {
+      "task-edit": "Update Job Order",
+      "task-delete": "Delete Job Order",
+      "remove-plan": "Remove From Plan",
+      "properties": "Job Order Properties",
+      "pin": "Pin Task",
+      "unpin": "Unpin Task",
+      "change-color": "Change Job Order Color"
+    }
+  },
+  "plan-recipe": {
+    "_": "Recipe",
+    "title": "Automatic Recipe",
+    "manuel": {
+      "title": "Manual Recipe",
+      "empty-text": "No Recipe to show"
+    },
+    "index": "Index",
+    "program": "Program",
+    "number": "Number",
+    "main-step": "Main Step",
+    "chem-code": "Chemical Code",
+    "material-name": "Material Name",
+    "amount": "Amount",
+    "empty-text": "No Recipe to show"
+  },
+  "date-picker": {
+    "_": "Date"
+  },
+  "plan-parameters": {
+    "title": "Plan Parameters",
+    "id": "Parameter ID",
+    "param-string": "Parameter",
+    "value": "Value",
+    "param-low-limit": "Low Limit",
+    "param-high-limit": "High Limit",
+    "validation-error": "Parameters should be in range of {paramLowLimit} and {paramHighLimit}",
+    "resend": "Resend",
+    "empty-text": "No Parameter",
+    "legend": {
+      "default": "Added parameter with default value",
+      "non-start": "Not an initialization parameter",
+      "value-invalid": "Value invalid"
+    }
+  },
+  "batch-notes": {
+    "_": "Notes",
+    "columns": {
+      "user-name": "User Name",
+      "job-order": "Job Order",
+      "note": "Note",
+      "date": "Date",
+      "show-on-screen": "Show On Screen"
+    },
+    "toast": {
+      "succesful": "Note Added succesfuly!",
+      "error": "An error occured: {err}"
+    },
+    "dialog": {
+      "title": "Are you sure to delete this note?"
+    },
+    "template": {
+      "no-data": "No Note to show.",
+      "delete": "Delete",
+      "ok": "Delete",
+      "cancel": "Cancel",
+      "new-note": "Add new Note",
+      "show-on-screen": "Show on Screen",
+      "submit": "Add Note"
+    }
+  },
+  "settings": {
+    "_": "Settings",
+    "save": "Save",
+    "plan-area": {
+      "_": "Plan Area - Job Order View",
+      "title": "Planning Area - Job Order Views",
+      "show-on-fabric-color": "Show job order on Fabric Color",
+      "deviation": {
+        "title": "Deviation",
+        "show-deviation": "Show Deviation"
+      },
+      "completed": {
+        "name": "Ongoing Job Order Text",
+        "title": "Completed Job Order Color",
+        "text": "Job Order Text",
+        "actual-batch-fabric-color": "Event Color",
+        "deviation-batch-fabric-color": "Deviation Event Color"
+      },
+      "ongoing": {
+        "name": "Ongoing Job Order Text",
+        "title": "Ongoing Job Order Color",
+        "text": "Job Order Text",
+        "actual-batch-fabric-color": "Event Color",
+        "deviation-batch-fabric-color": "Deviation Event Color"
+      },
+      "planned": {
+        "name": "Planned Job Order Text",
+        "title": "Planned Job Order Color",
+        "text": "Job Order Text",
+        "actual-batch-fabric-color": "Event Color",
+        "deviation-batch-fabric-color": "Deviation Event Color"
+      },
+      "stops": {
+        "main": "Job Order Stop Color",
+        "title": "Show Stops",
+        "color": "Stop Color"
+      },
+      "archive": {
+        "title": "History view in planning field",
+        "text": "Number of days to display archive work orders (Day)"
+      },
+      "dropDown": {
+        "planKey": "Plan Key",
+        "machineId": "Machine Id",
+        "queueNumber": "Queue Number",
+        "jobOrder": "Job Order",
+        "programNoList": "Program List",
+        "theoreticalDuration": "Theoretical Duration",
+        "fabricWeight": "Fabric Weight",
+        "partyNumber": "Party Number",
+        "note": "Note",
+        "startDate": "Start Date",
+        "plannedStartDate": "Planned Start Date",
+        "endDate": "End Date",
+        "batchKey": "Batch Key",
+        "endTime": "End Time",
+        "cancelTime": "Cancel Time",
+        "deviation": "Deviation",
+        "customerName": "Customer Name"
+      }
+
+    },
+    "view-options": "View Options",
+    "unplanned-options": "Unplanned Job Orders"
+  },
+  "machine-card": {
+    "consumption-electricity": "Last Week Electricity",
+    "consumption-water": "Last Week Water",
+    "consumption-salt": "Last Week Salt",
+    "consumption-steam": "Last Week Steam",
+    "active": "Active",
+    "idle": "Idle",
+    "mode": "Details",
+    "event": "Events",
+    "alarm": "Alarm(s)",
+    "alarm-second": "Alarm",
+    "setting": "Settings",
+    "machine-stop-notification": "Machine Stop",
+    "machine-active-command": "Command",
+    "machine-process": "Process",
+    "machine-step-no": "Step No",
+    "list": "List",
+    "program": "Program",
+    "in-use": "In Use",
+    "empty": "Empty",
+    "no-connection": "NO CONNECTION!",
+    "program-name": "Program Name",
+    "phase": "Phase",
+    "stop-reason": "Stop Reason",
+    "order-index": "Order",
+    "target-recipe": "Recipe",
+    "tank-no": "Tank",
+    "program-no": "Program",
+    "req-status": "Status",
+    "status-new": "New",
+    "status-sent": "Sent to Dispenser",
+    "status-finished": "Finished",
+    "status-prio": "Priority Changed",
+    "status-cancelled": "Cancelled",
+    "command": "Step No - Command No - Command Name",
+    "command-info": "Command Info",
+    "settings": {
+      "no-erp-val": "NO ERP VALUE"
+    }
+  },
+  "batch-properties": {
+    "time": {
+      "theoretical-duration": "Theoretical Duration",
+      "start-time": "Start Time",
+      "theoretical-start-time": "Theoretical Start Time",
+      "end-time": "End Time",
+      "elapsed-time": "Elapsed Time"
+    },
+    "summary": {
+      "plan-key": "Plan Key",
+      "fabric-weight": "Fabric Weight"
+    },
+    "tree": {
+      "erp-params": "ERP Parameters",
+      "time": "Times",
+      "programs": "Programs",
+      "summary": "Summary"
+    }
+  },
+  "zoom": {
+    "in": "Zoom In",
+    "out": "Zoom Out",
+    "reset": "Reset Zoom"
+  },
+  "navbar": {
+    "unplanned-search": "Unplanned Job Order Search",
+    "job-order-search": "Job Order Search"
   }
 }

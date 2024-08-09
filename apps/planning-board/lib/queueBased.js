@@ -12,58 +12,12 @@ import {
   Toast,
   Tooltip,
 } from '@bryntum/schedulerpro-trial'
+
 import { addMinutes, addSeconds } from 'date-fns'
 import { io } from 'socket.io-client'
+import { enLocalization, trLocalization } from './localization'
 import { integerToHex } from '~/composables/helper'
 
-const trLocalization = {
-  Object: {
-    planparam: 'Plan Parametreleri',
-    recipe: 'Reçete',
-    process: 'Prosess Bilgileri',
-    theoretical: 'Teorik Program',
-    settings: 'Ayarlar',
-    note: 'Notlar',
-    datepicker: 'Tarih',
-    rules: 'Kurallar',
-    zoomin: 'Yakınlaştır',
-    zoomout: 'Uzaklaştır',
-    resetZoom: 'Yakınlaştırmayı sıfırla',
-    search: 'İş Emri Arama',
-    scheduleConflict: 'Bu iş emrini bu makineye planlayamazsın!',
-    beforeNow: 'İş emrini güncel zamandan önceye planlayamazsın!',
-    program: 'Programlar eşleşmiyor!',
-    unassign: 'Planlanmamış İş Emirleri',
-    machine: 'Makine İsmi',
-    unassign: 'Planlanmamış İş Emirleri',
-    scrollToEvent: 'İş Emrine Git',
-    test: 'AMK',
-  },
-}
-const enLocalization = {
-  Object: {
-    planparam: 'Plan Parameters',
-    recipe: 'Recipe',
-    process: 'Process Information',
-    theoretical: 'Theoretical Program',
-    settings: 'Settings',
-    note: 'Notes',
-    datepicker: 'Date Picker',
-    rules: 'Rules',
-    zoomin: 'Zoom in',
-    zoomout: 'Zoom Out',
-    resetZoom: 'Reset Zoom',
-    search: 'Job Order Search',
-    scheduleConflict: 'Event can\'t be scheduled on this machine!',
-    beforeNow: 'You can not schedule this event before current time!',
-    program: 'Programs does not match',
-    unassign: 'Unassigned Job Orders',
-    machine: 'Machine Name',
-    unassign: 'Unassigned Job Orders',
-    scrollToEvent: 'Scroll To Job Order',
-    test: 'AMK',
-  },
-}
 function sortEventsByDateDesc(events) {
   return [...events].sort((a, b) => a.startDate < b.startDate ? -1 : 1)
 }
@@ -252,11 +206,14 @@ export class QueueDrag extends DragHelper {
       }
     }
     const target = schedule.resolveEventRecord(context.target) || previousEvent
+
     context.isValid = !isValidating
     && Boolean(startDate && machine)
-    && !(startDate < new Date())
     && target
-    && (validation.length > 0 ? validation.find(a => a.machineId === machine.id).valid : true)
+    && target !== null
+      ? !target.eventType === 'finished'
+      : !(startDate < new Date())
+      && (validation.length > 0 ? validation.find(a => a.machineId === machine.id).valid : true)
 
     task.startDate = startDate
     task.endDate = endDate
@@ -274,7 +231,7 @@ export class QueueDrag extends DragHelper {
       const endMinuteRotation = (endDate.getMinutes() + endDate.getSeconds() / 60) * 6
       const endHourRotation = (endDate.getHours() % 12 + endDate.getMinutes() / 60) * 30
 
-      const timeDisplay = text => `
+      const timeDisplay = () => `
       <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
                 <div class="b-sch-clock">
                     <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">${startMonth}</div>
@@ -292,11 +249,11 @@ export class QueueDrag extends DragHelper {
                 <span class="b-sch-clock-text">${DateHelper.format(endDate, schedule.displayDateFormat)}</span>
             </div>
             <div class="b-sch-event-title" style="color: #E07D80 !important">
-          ${this.tip.L(text)}
+          ${this.tip.L(context.isValid ? '' : 'scheduleConflict')}
         </div>
             `
       if (!context.isValid) {
-        this.tip.html = timeDisplay('scheduleConflict')
+        this.tip.html = timeDisplay()
         // TODO: set schedule conflict messaging
         // if (!schedule.isDateRangeAvailable(startDate, endDate, null, machine)) {
         //   this.tip.html = timeDisplay('overlap')
@@ -309,7 +266,7 @@ export class QueueDrag extends DragHelper {
         // }
       }
       if (context.valid) {
-        this.tip.html = timeDisplay('')
+        this.tip.html = timeDisplay()
         this.tip.showBy(context.element)
       }
     }
@@ -323,7 +280,7 @@ export class QueueDrag extends DragHelper {
     let newEvent
     if (target && valid) {
       task.originalData.machineId = machine.id
-      const currentEvents = sortEventsByDateDesc(machine.events.filter((ev => ev.isPlanned)))
+      const currentEvents = sortEventsByDateDesc(machine.events.filter((ev => ev.eventType === 'planned')))
       if (targetEventRecord) {
         newEvent = {
           planKey: task.id,
@@ -414,32 +371,6 @@ export class QueueDrag extends DragHelper {
 export class QueueTask extends EventModel {
   static $name = 'Task'
 
-  get eventColor() {
-    const ptSettings = JSON.parse(localStorage.getItem('pt-settings'))
-    const completedBatchSettings = ptSettings.completedBatch
-    const ongoingBatchBatchSettings = ptSettings.ongoingBatch
-    const plannedBatchBatchSettings = ptSettings.plannedBatch
-    switch (true) {
-      case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished && this.originalData.isDeviation):
-        return completedBatchSettings.deviationBatchFabricColor
-      case (!completedBatchSettings.isBatchFabricColor && this.originalData.isFinished):
-        return completedBatchSettings.actualBatchFabricColor
-
-      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.originalData.isRunning && this.originalData.isDeviation):
-        return plannedBatchBatchSettings.deviationBatchFabricColor
-      case (!plannedBatchBatchSettings.isBatchFabricColor && !this.originalData.isRunning):
-        return plannedBatchBatchSettings.actualBatchFabricColor
-
-      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning && this.originalData.isDeviation):
-        return ongoingBatchBatchSettings.deviationBatchFabricColor
-      case (!ongoingBatchBatchSettings.isBatchFabricColor && this.originalData.isRunning):
-        return ongoingBatchBatchSettings.actualBatchFabricColor
-
-      default:
-        return integerToHex(this.originalData.color)
-    }
-  }
-
   static get defaults() {
     return {
       durationUnit: 'h',
@@ -457,56 +388,56 @@ export class TaskStore extends EventStore {
   }
 
   setQueueNumber(oldQueueNumber, newQueueNumber, targetMachine, previousMachine, grabbedEvent) {
-    grabbedEvent.queueNumber = newQueueNumber
+    grabbedEvent.originalData.queueNumber = newQueueNumber
     if (targetMachine.id !== previousMachine.id) {
-      previousMachine.events.filter(ev => ev.queueNumber > oldQueueNumber && ev !== grabbedEvent).forEach((ev) => {
-        ev.queueNumber--
+      previousMachine.events.filter(ev => ev.originalData.queueNumber > oldQueueNumber && ev !== grabbedEvent).forEach((ev) => {
+        ev.originalData.queueNumber--
       })
 
-      targetMachine.events.filter(ev => ev.queueNumber >= newQueueNumber && ev !== grabbedEvent).forEach((ev) => {
-        ev.queueNumber++
+      targetMachine.events.filter(ev => ev.originalData.queueNumber >= newQueueNumber && ev !== grabbedEvent).forEach((ev) => {
+        ev.originalData.queueNumber++
       })
     } else {
       if (oldQueueNumber > newQueueNumber) {
-        targetMachine.events.filter(ev => ev.queueNumber >= newQueueNumber && ev.queueNumber < oldQueueNumber && ev !== grabbedEvent).forEach((ev) => {
-          ev.queueNumber++
+        targetMachine.events.filter(ev => ev.originalData.queueNumber >= newQueueNumber && ev.originalData.queueNumber < oldQueueNumber && ev !== grabbedEvent).forEach((ev) => {
+          ev.originalData.queueNumber++
         })
       } else {
-        targetMachine.events.filter(ev => ev.queueNumber > oldQueueNumber && ev.queueNumber <= newQueueNumber && ev !== grabbedEvent).forEach((ev) => {
-          ev.queueNumber--
+        targetMachine.events.filter(ev => ev.originalData.queueNumber > oldQueueNumber && ev.originalData.queueNumber <= newQueueNumber && ev !== grabbedEvent).forEach((ev) => {
+          ev.originalData.queueNumber--
         })
       }
     }
   }
 
   async scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine) {
-    const futureEvents = targetMachine.events.filter(ev => ev.isPlanned && ev.queueNumber > (targetEvent.queueNumber || 0) && ev !== grabbedEvent)
+    const futureEvents = targetMachine.events.filter(ev => ev.eventType === 'planned' && ev.originalData.queueNumber > (targetEvent.originalData.queueNumber || 0) && ev !== grabbedEvent)
     let previousEvents
 
     if (previousMachine.id !== targetMachine.id) {
-      newQueueNumber = targetEvent.queueNumber + 1 || 1
+      newQueueNumber = targetEvent.originalData.queueNumber + 1 || 1
 
-      previousEvents = previousMachine.events.filter(ev => ev.isPlanned && ev.queueNumber >= grabbedEvent.queueNumber && ev !== grabbedEvent)
+      previousEvents = previousMachine.events.filter(ev => ev.eventType === 'planned' && ev.originalData.queueNumber >= grabbedEvent.originalData.queueNumber && ev !== grabbedEvent)
       futureEvents.forEach((ev) => {
         this.postponeEvent(ev, (grabbedEvent.theoreticalDuration + 300))
       })
     } else {
-      if (grabbedEvent.queueNumber > targetEvent.queueNumber || 0) {
-        const target = targetMachine.events.filter(ev => ev.queueNumber > (targetEvent.queueNumber || 0) && ev.queueNumber < grabbedEvent.queueNumber)
+      if (grabbedEvent.originalData.queueNumber > targetEvent.originalData.queueNumber || 0) {
+        const target = targetMachine.events.filter(ev => ev.originalData.queueNumber > (targetEvent.originalData.queueNumber || 0) && ev.originalData.queueNumber < grabbedEvent.originalData.queueNumber)
         target.forEach((ev) => {
           this.postponeEvent(ev, (grabbedEvent.theoreticalDuration + 300))
         })
-        newQueueNumber = targetEvent.queueNumber + 1 || 1
+        newQueueNumber = targetEvent.originalData.queueNumber + 1 || 1
       } else {
-        if (!targetEvent.queueNumber) {
-          const target = targetMachine.events.filter(ev => ev.isPlanned && ev.queueNumber < grabbedEvent.queueNumber)
+        if (!targetEvent.originalData.queueNumber) {
+          const target = targetMachine.events.filter(ev => ev.eventType === 'planned' && ev.originalData.queueNumber < grabbedEvent.originalData.queueNumber)
           target.forEach((ev) => {
             this.postponeEvent(ev, (grabbedEvent.theoreticalDuration + 300))
           })
         }
-        newQueueNumber = targetEvent.queueNumber || 1
+        newQueueNumber = targetEvent.originalData.queueNumber || 1
       }
-      previousEvents = targetMachine.events.filter(ev => ev.isPlanned && ev.queueNumber <= targetEvent.queueNumber && ev !== grabbedEvent && ev.queueNumber > grabbedEvent.queueNumber)
+      previousEvents = targetMachine.events.filter(ev => ev.eventType === 'planned' && ev.originalData.queueNumber <= targetEvent.originalData.queueNumber && ev !== grabbedEvent && ev.originalData.queueNumber > grabbedEvent.originalData.queueNumber)
     }
     previousEvents.forEach((ev) => {
       this.expediteEvent(ev, (grabbedEvent.theoreticalDuration + 300))
@@ -515,7 +446,7 @@ export class TaskStore extends EventStore {
     grabbedEvent.startDate = addMinutes(targetEvent.endDate, 5)
     grabbedEvent.endDate = addSeconds(grabbedEvent.startDate, grabbedEvent.theoreticalDuration)
 
-    oldQueueNumber = grabbedEvent.queueNumber
+    oldQueueNumber = grabbedEvent.originalData.queueNumber
     if (grabbedEvent.isRemoved) {
       this.add(grabbedEvent)
     }

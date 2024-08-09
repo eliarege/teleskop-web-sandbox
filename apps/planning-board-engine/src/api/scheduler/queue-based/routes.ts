@@ -1,9 +1,9 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import { generateEventDates } from '../../../composables/helper'
 import type {
   EventReschedule,
 } from './queries'
 import {
+  getFullQueueBasedEvents,
   getQueueBasedEvents,
   getQueueBasedPlannedEvents,
   queueUnplannedEvents,
@@ -14,11 +14,12 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
     '/queue_based/scheduler_events',
     async (request: FastifyRequest<{
-      Querystring: { startDate: string, endDate: string }
+      Querystring: { startDate: string, endDate: string, includeStops: string }
     }>, reply) => {
       try {
-        const { startDate, endDate } = request.query
-        const plannedEvents = (await getQueueBasedEvents(startDate, endDate))
+        const { startDate, endDate, includeStops } = request.query
+        const stopsIncluded: boolean = JSON.parse(includeStops.toLowerCase())
+        const plannedEvents = (await getQueueBasedEvents(startDate, endDate, stopsIncluded))
         return reply.code(200).send(plannedEvents)
       } catch (err) {
         fastify.log.error(`An error occured while fetching planned events: ${err}`)
@@ -36,11 +37,20 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const plannedEvents = await getQueueBasedPlannedEvents(startDate, endDate)
         return reply.code(200).send(plannedEvents)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching planned events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching planned events: ${err}` })
+        fastify.log.error(`An error occured while fetching events: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching events: ${err}` })
       }
     },
   )
+  fastify.get('/queue_based/all_scheduled_events', async (request, reply) => {
+    try {
+      const events = await getFullQueueBasedEvents()
+      return reply.code(200).send(events)
+    } catch (err) {
+      fastify.log.error(`An error occured while fetching events: ${err}`)
+      return reply.code(500).send({ error: `An error occured while fetching events: ${err}` })
+    }
+  })
 
   fastify.put(
     '/queue_based/schedule_events',

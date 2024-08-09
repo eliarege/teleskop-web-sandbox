@@ -1,4 +1,17 @@
 {
+  "toast": {
+    "succesful": "Başarıyla Kaydedildi",
+    "fail": {
+      "refresh": "Yenileme başarısız",
+      "load": "Yükleme başarısız"
+    }
+  },
+  "upload-joborder": {
+    "_": "Makineye gönder",
+    "upload-succes": "İş emri yükleme başarıyla tamamlandı",
+    "no-program": "Bu cihazda gerekli programlar yok",
+    "fail": "Makineye erişim sağlanamadı!"
+  },
   "app": {
     "name": "Planlama Tahtası"
   },
@@ -8,6 +21,212 @@
     "customer-name": "Müşteri İsmi"
   },
   "tooltip": {
-    "note": "Notlar"
+    "note": "Notlar",
+    "auto-message": "Duruş sebebi girilmedi!"
+  },
+  "queue-based": {
+    "alarm-count": "Toplam Alarm",
+    "ctx-menu": {
+      "task-edit": "İş Emrini Güncelle",
+      "task-delete": "İş Emrini Sil",
+      "remove-plan": "Plandan Kaldır",
+      "properties": "İş Emri Özellikleri",
+      "pin": "İş Emrini Sabitle",
+      "unpin": "İş Emri Sabitlemesini Kaldır",
+      "change-color": "İş Emri Rengini Değiştir"
+    }
+  },
+  "plan-recipe": {
+    "_": "Reçete",
+    "title": "Otomatik Reçete",
+    "manuel": {
+      "title": "Manuel Reçete",
+      "empty-text": "Gösterilecek Reçete yok"
+    },
+    "index": "İndeks",
+    "program": "Program",
+    "number": "Numara",
+    "main-step": "Ana Adım",
+    "chem-code": "Kimyasal Kodu",
+    "material-name": "Materyal İsmi",
+    "amount": "Adet",
+    "empty-text": "Gösterilecek Reçete yok"
+  },
+  "date-picker": {
+    "_": "Tarih"
+  },
+  "plan-parameters": {
+    "title": "Plan Parametreleri",
+    "id": "Parametre ID",
+    "param-string": "Parametre",
+    "value": "Değer",
+    "param-low-limit": "Alt Limit",
+    "param-high-limit": "Üst Limit",
+    "validation-error": "Parametreler {paramLowLimit} ve {paramHighLimit} aralığında olmalıdır.",
+    "resend": "Tekrar Gönder",
+    "empty-text": "Parametre Yok",
+    "legend": {
+      "default": "Varsayılan değer ile sonradan eklenmiş parametre",
+      "non-start": "Başlatma parametresi değil",
+      "value-invalid": "Değer hatalı"
+    }
+  },
+  "batch-notes": {
+    "_": "Notlar",
+    "columns": {
+      "user-name": "Kullanıcı Adı",
+      "job-order": "İş Emri",
+      "note": "Not",
+      "date": "Tarih",
+      "show-on-screen": "Ekranda Göster"
+    },
+    "toast": {
+      "succesful": "Not başarıyla eklendi!",
+      "error": "Bir hata oluştu: {err}"
+    },
+    "dialog": {
+      "title": "Bu notu silmek istediğinizden emin misiniz?"
+    },
+    "template": {
+      "no-data": "Gösterilecek not yok.",
+      "delete": "Sil",
+      "ok": "Sil",
+      "cancel": "İptal",
+      "new-note": "Yeni not ekle",
+      "show-on-screen": "Ekranda göster",
+      "submit": "Not Ekle"
+    }
+  },
+  "settings": {
+    "_": "Ayarlar",
+    "save": "Kaydet",
+    "plan-area": {
+      "_": "Planlama Alanı - İş Emri Görünümleri",
+      "title": "Planlama Alanı - İş Emri Görünümleri",
+      "show-on-fabric-color": "İş Emirlerini kumaş renginde göster",
+      "deviation": {
+        "title": "Gecikme",
+        "show-deviation": "Gecikmeleri Göster"
+      },
+      "completed": {
+        "name": "Tamamlanmış İş Emirleri Metni",
+        "title": "Tamamlanmış İş Emirleri Rengi",
+        "text": "İş Emri Metni",
+        "actual-batch-fabric-color": "İş Emirlerini kumaş renginde göster",
+        "deviation-batch-fabric-color": "Gecikme Kumaş Rengi"
+      },
+      "ongoing": {
+        "name": "Devam Eden İş Emirleri Metni",
+        "title": "Devam Eden İş Emirleri Rengi",
+        "text": "İş Emri Metni",
+        "is-batch-fabric-color": "İş Emirlerini kumaş renginde göster",
+        "deviation-batch-fabric-color": "Gecikme Kumaş Rengi"
+      },
+      "planned": {
+        "name": "Planlanmış İş Emirleri Metni",
+        "title": "Planlanmış İş Emirleri Rengi",
+        "text": "İş Emri Metni",
+        "is-batch-fabric-color": "İş Emirlerini kumaş renginde göster",
+        "deviation-batch-fabric-color": "Gecikme Kumaş Rengi"
+      },
+      "stops": {
+        "main": "İş Emri Duruşları",
+        "title": "Duruşları Göster",
+        "color": "Duruş Rengi"
+      },
+      "archive": {
+        "title": "Planlama Alanında Geçmiş Görünümü",
+        "text": "Arşiv iş emri gösterme gün sayısı (Gün)"
+      },
+      "dropDown": {
+        "planKey": "Plan No",
+        "machineId": "Makine ID",
+        "queueNumber": "Sıra No",
+        "jobOrder": "İş Emri",
+        "programNoList": "Program Listesi",
+        "theoreticalDuration": "Teorik Süre",
+        "fabricWeight": "Kumaş Ağırlığı",
+        "partyNumber": "Parti No",
+        "note": "Not",
+        "startDate": "Başlangıç Tarihi",
+        "plannedStartDate": "Planlanan Başlangıç Tarihi",
+        "endDate": "Bitiş Tarihi",
+        "batchKey": "Batch No",
+        "endTime": "Bitiş Tarihi",
+        "cancelTime": "İptal Tarihi",
+        "deviation": "Gecikme",
+        "customerName": "Müşteri İsmi"
+      }
+    },
+    "view-options": "Görünüm Seçenekleri",
+    "unplanned-options": "Bekleyen İş Emirleri"
+  },
+  "machine-card": {
+    "consumption-electricity": "Geçen Hafta Elektrik",
+    "consumption-water": "Geçen Hafta Su",
+    "consumption-salt": "Geçen Hafta Tuz",
+    "consumption-steam": "Geçen Hafta Buhar",
+    "active": "Aktif",
+    "idle": "Boş",
+    "mode": "Detaylar",
+    "event": "Bildirimler",
+    "alarm": "Alarmlar",
+    "alarm-second": "Alarm",
+    "setting": "Ayarlar",
+    "machine-stop-notification": "Makine Duruş",
+    "machine-active-command": "Emir",
+    "machine-process": "Süreç",
+    "machine-step-no": "Step No",
+    "list": "Liste",
+    "program": "Program",
+    "in-use": "Kullanımda",
+    "empty": "Boşta",
+    "no-connection": "BAĞLANTI YOK!",
+    "program-name": "Program İsmi",
+    "phase": "Faz",
+    "stop-reason": "Duruş Nedeni",
+    "order-index": "Sıra",
+    "target-recipe": "Reçete",
+    "tank-no": "Tank",
+    "program-no": "Program",
+    "req-status": "Durum",
+    "status-new": "Yeni",
+    "status-sent": "Dağıtıcıya Gönderildi",
+    "status-finished": "Bitti",
+    "status-prio": "Öncelik Değişti",
+    "status-cancelled": "İptal Edildi",
+    "command": "Adım No - Komut No - Komut İsmi",
+    "command-info": "Komut Bilgileri",
+    "settings": {
+      "no-erp-val": "ERP DEĞERİ SEÇİLMEDİ"
+    }
+  },
+  "batch-properties": {
+    "time": {
+      "theoretical-duration": "Teorik Süre",
+      "start-time": "Başlangıç Saati",
+      "theoretical-start-time": "Teorik Başlangıç Saati",
+      "end-time": "Bitiş Saati",
+      "elapsed-time": "Geçen Süre"
+    },
+    "summary": {
+      "plan-key": "Plan No",
+      "fabric-weight": "Kumaş Ağırlığı"
+    },
+    "tree": {
+      "erp-params": "ERP Parametreleri",
+      "time": "Süreler",
+      "programs": "Programlar",
+      "summary": "Özet"
+    }
+  },
+  "zoom": {
+    "in": "Yakınlaştır",
+    "out": "Uzaklaştır",
+    "reset": "Yakınlaştırmayı sıfırla"
+  },
+  "navbar": {
+    "unplanned-search": "Planlanmamış İş Emirleri Arama",
+    "job-order-search": "İş Emirleri Arama"
   }
 }

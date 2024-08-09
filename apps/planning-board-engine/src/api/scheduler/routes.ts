@@ -1,31 +1,39 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import { compressJson } from '../../composables/helper'
 import {
   addBatchNote,
   addErpParameters,
+  bulkAddErpParameter,
+  createPlanParameter,
   deleteEvent,
   deleteNote,
   getBatchNotes,
   getBatchProperties,
   getColumnData,
+  getDetailedProgram,
   getDistinctErpParameters,
   getErpParameters,
   getEventTooltipParams,
+  getFormula,
   getMachines,
+  getMachinesByErpParameter,
   getPlanParameters,
   getPtStatus,
   getRecipe,
+  getStartingParametersWithValues,
   getTheoreticalDuration,
   getUnplannedColumns,
   getUnplannedEvents,
   pinEvent,
+  planningBoardStops,
   removeErpParameter,
   removeFromPlan,
   scheduleEvents,
   taskValid,
   unpinEvent,
   updateBatchNote,
+  updatePlanParameter,
   updateUnplannedColumns,
+  uploadToMachine,
   validateTaskPrograms,
 } from './queries'
 
@@ -39,6 +47,17 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching pt status: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching pt status: ${err}` })
+      }
+    },
+  )
+  fastify.get(
+    '/planning_board/stops',
+    async (request: FastifyRequest<{ Querystring: { startDate: string, endDate: string } }>, reply) => {
+      try {
+        const { startDate, endDate } = request.query
+        return await planningBoardStops(startDate, endDate)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching stops:`, err)
       }
     },
   )
@@ -79,15 +98,52 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-  fastify.get<{ Querystring: { planKey: number } }>(
+  fastify.get(
     '/planning_board/plan_parameters',
-    async (request: FastifyRequest<{ Querystring: { planKey: number } }>, reply) => {
+    async (request: FastifyRequest<{
+      Querystring: { planKey: number, machineId: number }
+    }>, reply) => {
       try {
-        const { planKey } = request.query
-        return await getPlanParameters(planKey)
+        const { planKey, machineId } = request.query
+        return await getPlanParameters(planKey, machineId)
       } catch (err) {
         fastify.log.error(`An error occured while fetching plan parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching plan parameters: ${err}` })
+      }
+    },
+  )
+  fastify.put(
+    '/planning_board/plan_parameters',
+    async (request: FastifyRequest<{
+      Querystring: { planKey: number, value: number, paramString: string }
+    }>, reply) => {
+      try {
+        const { planKey, value, paramString } = request.query
+        return await updatePlanParameter(planKey, value, paramString)
+      } catch (err) {
+        fastify.log.error(`An error occured while updating plan parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating plan parameter: ${err}` })
+      }
+    },
+  )
+  fastify.post(
+    '/planning_board/plan_parameters',
+    async (request: FastifyRequest<{
+      Body: { parameter: {
+        paramString: string
+        value?: number | string
+        planKey: string
+        paramLowLimit: number
+        paramHighLimit: number
+        paramStatus: number
+      }, value: number | string, machineId: number }
+    }>, reply) => {
+      try {
+        const { parameter, value, machineId } = request.body
+        return await createPlanParameter(parameter, value, machineId)
+      } catch (err) {
+        fastify.log.error(`An error occured while creating plan parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occured while creating plan parameter: ${err}` })
       }
     },
   )
@@ -102,19 +158,31 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-  fastify.get<{ Querystring: { machineId?: number, distinct?: boolean } }>(
+  fastify.get<{ Querystring: { paramString?: string, distinct?: boolean } }>(
     '/planning_board/settings/erp_parameters',
     async (request, reply) => {
       try {
-        const { machineId, distinct } = request.query
+        const { paramString, distinct } = request.query
         if (distinct) {
           return await getDistinctErpParameters()
-        } else if (machineId) {
-          return await getErpParameters(machineId)
+        } else if (paramString) {
+          return await getErpParameters(paramString)
         } else return fastify.log.error('MISSING QUERIES')
       } catch (err) {
         fastify.log.error(`An error occured while fetching erp parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching erp parameters: ${err}` })
+      }
+    },
+  )
+  fastify.get <{ Querystring: { paramString: string } }>(
+    '/planning_board/settings/machines_by_erp_parameter',
+    async (request, reply) => {
+      try {
+        const { paramString } = request.query
+        return await getMachinesByErpParameter(paramString)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching machines: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching machines: ${err}` })
       }
     },
   )
@@ -188,6 +256,19 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching theoretical duration: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching theoretical duration: ${err}` })
+      }
+    },
+  )
+
+  fastify.get(
+    '/planning_board/program_details',
+    async (request: FastifyRequest<{ Querystring: { programNo: number, machineId: number } }>, reply) => {
+      try {
+        const { programNo, machineId } = request.query
+        return await getDetailedProgram(programNo, machineId)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching detailed program: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching detailed program: ${err}` })
       }
     },
   )
@@ -312,6 +393,22 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     },
   )
 
+  fastify.put<{
+    Body: { paramString: string, machines: number[] }
+  }>(
+    '/planning_board/erp_parameters/bulk_add_parameter',
+    async (request, reply) => {
+      try {
+        const { paramString, machines } = request.body
+        await bulkAddErpParameter(paramString, machines)
+        return reply.code(200).send('Succesful')
+      } catch (err) {
+        fastify.log.error(`An error occured while adding erp parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occured while adding erp parameter: ${err}` })
+      }
+    },
+  )
+
   fastify.delete<{
     Querystring: { id: number }
   }>(
@@ -339,6 +436,38 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         console.error(`An error occured while deleting erp parameter: `, err)
         return reply.code(500).send({ error: `An error occured while deleting erp parameter: ${err}` })
+      }
+    },
+  )
+  /* ------------------------------------------------------------------------------------------------------------------------ */
+
+  fastify.put(
+    '/planning_board/upload_joborder',
+    async (request: FastifyRequest<{
+      Querystring: { program: string, machineId: number, planKey: string, machineIp: string, jobOrder: string }
+    }>, reply) => {
+      try {
+        const { program, machineId, planKey, machineIp, jobOrder } = request.query
+        const formula = await getFormula(program, machineId)
+        if (formula.length > 0) {
+          // @ts-expect-error ???
+          const startingParameterValues: {
+            machineId: number
+            paramString: string
+            value: string | number
+            paramLowLimit: number
+            paramHighLimit: number
+          }[] = await getStartingParametersWithValues(formula, planKey)
+          const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
+          if (!requestedStartingParameters || requestedStartingParameters.length === 0) {
+            // write to machine
+            await uploadToMachine(machineIp, startingParameterValues, program, jobOrder)
+            return reply.code(200).send('DONE')
+          }
+          return reply.code(200).send(requestedStartingParameters)
+        } else return reply.code(200).send('NO PROGRAM')
+      } catch (err) {
+        console.error(err)
       }
     },
   )

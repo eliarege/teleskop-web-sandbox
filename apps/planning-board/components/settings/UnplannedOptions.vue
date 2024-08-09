@@ -10,11 +10,11 @@ const sort = computed(() => unplannedColumns.value.toSorted((a, b) => a.id > b.i
 const visibleColumns = computed(() => sort.value.filter(a => a.visible === true))
 const invisibleColumns = computed(() => sort.value.filter(a => a.visible !== true))
 
-function addParameter() {
+async function addParameter() {
   if (sort.value) {
     const index = sort.value.indexOf(selected.value)
     sort.value[index].visible = true
-    $fetch('/api/unplannedColumns', {
+    await $fetch('/api/unplannedColumns', {
       method: 'PUT',
       body: { id: selected.value.id, visible: true },
     })
@@ -23,11 +23,11 @@ function addParameter() {
   }
 }
 
-function removeParameter() {
+async function removeParameter() {
   if (sort.value) {
     const index = sort.value.indexOf(selected.value)
     sort.value[index].visible = false
-    $fetch('/api/unplannedColumns', {
+    await $fetch('/api/unplannedColumns', {
       method: 'PUT',
       body: { id: selected.value.id, visible: false },
     })
@@ -35,7 +35,7 @@ function removeParameter() {
     selected.value = sort.value[index + 1]
   }
 }
-function onDoubleClick(item: {
+async function onDoubleClick(item: {
   id: number
   parameterId: number
   parameterName: string
@@ -43,65 +43,28 @@ function onDoubleClick(item: {
 }) {
   selected.value = item
   if (item.visible) {
-    removeParameter()
+    await removeParameter()
   } else {
-    addParameter()
+    await addParameter()
   }
 }
 </script>
 
 <template>
-  <div class="h-80vh unplanned-wrapper">
-    <q-list
-      dense
-      bordered
-      separator
-      class="max-h-80vh overflow-auto"
-    >
-      <q-item
-        v-for="(item, idx) in invisibleColumns"
-        :key="idx"
-        v-ripple
-        tabindex="0"
-        clickable
-        :manual-focus="true"
-        :focused="selected === item"
-        @click="selected = item"
-        @focus="selected = item"
-        @dblclick="onDoubleClick(item)"
-      >
-        <q-item-section>
-          {{ item.parameterName }}
-        </q-item-section>
-      </q-item>
-    </q-list>
-    <div class="flex-center flex-col gap-10 w-full h-full">
-      <q-btn
-        :disabled="visibleColumns.includes(selected)"
-        color="primary"
-        :icon-right="matChevronRight"
-        @click="addParameter()"
-      />
-      <q-btn
-        :disabled="invisibleColumns.includes(selected)"
-        color="primary"
-        :icon="matChevronLeft"
-        @click="removeParameter()"
-      />
-    </div>
-    <div>
+  <div class="h-70vh w-full">
+    <div class="unplanned-wrapper">
       <q-list
         dense
         bordered
         separator
-        class="max-h-80vh overflow-auto h-full"
+        class="max-h-70vh overflow-auto"
       >
         <q-item
-          v-for="(item, idy) in visibleColumns"
-          :key="idy"
+          v-for="(item, idx) in invisibleColumns"
+          :key="idx"
           v-ripple
-          clickable
           tabindex="0"
+          clickable
           :manual-focus="true"
           :focused="selected === item"
           @click="selected = item"
@@ -113,6 +76,45 @@ function onDoubleClick(item: {
           </q-item-section>
         </q-item>
       </q-list>
+      <div class="flex-center flex-col gap-10 w-full h-full">
+        <q-btn
+          :disabled="visibleColumns.includes(selected)"
+          color="primary"
+          :icon-right="matChevronRight"
+          @click="addParameter()"
+        />
+        <q-btn
+          :disabled="invisibleColumns.includes(selected)"
+          color="primary"
+          :icon="matChevronLeft"
+          @click="removeParameter()"
+        />
+      </div>
+      <div>
+        <q-list
+          dense
+          bordered
+          separator
+          class="max-h-80vh overflow-auto h-full"
+        >
+          <q-item
+            v-for="(item, idy) in visibleColumns"
+            :key="idy"
+            v-ripple
+            clickable
+            tabindex="0"
+            :manual-focus="true"
+            :focused="selected === item"
+            @click="selected = item"
+            @focus="selected = item"
+            @dblclick="onDoubleClick(item)"
+          >
+            <q-item-section>
+              {{ item.parameterName }}
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
     </div>
   </div>
 </template>

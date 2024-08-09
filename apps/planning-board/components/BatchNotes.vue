@@ -6,7 +6,7 @@ const emit = defineEmits(['updateScheduler'])
 const { t, d } = useI18n()
 const { data: batchNotes, refresh } = await useFetch('/api/note/getNote', {
   query: { jobOrder: props.jobOrder },
-  default: () => []
+  default: () => [],
 })
 const refactoredBatchNotes = computed(() => batchNotes.value.map((a) => {
   return {
@@ -16,18 +16,18 @@ const refactoredBatchNotes = computed(() => batchNotes.value.map((a) => {
 }))
 const search = ref('')
 const searchBatchNotes = ref([])
-watch(refactoredBatchNotes, notes => {
+watch(refactoredBatchNotes, (notes) => {
   searchBatchNotes.value = notes.filter(item => item.jobOrder.includes(search.value))
 }, { immediate: true })
 
 // TODO: format batchNotes date with useI18N.d
 const columns = computed(() => {
   return [
-    { name: 'userName', label: t('columns.user-name'), align: 'center', field: 'userName' },
-    { name: 'jobOrder', label: t('columns.job-order'), align: 'center', field: 'jobOrder' },
-    { name: 'note', label: t('columns.note'), align: 'center', field: 'note' },
-    { name: 'noteDate', label: t('columns.date'), align: 'center', field: 'noteDate' },
-    { name: 'showOnScreen', label: t('columns.show-on-screen'), align: 'center', field: 'showOnScreen' },
+    { name: 'userName', label: t('batch-notes.columns.user-name'), align: 'center', field: 'userName' },
+    { name: 'jobOrder', label: t('batch-notes.columns.job-order'), align: 'center', field: 'jobOrder' },
+    { name: 'note', label: t('batch-notes.columns.note'), align: 'center', field: 'note' },
+    { name: 'noteDate', label: t('batch-notes.columns.date'), align: 'center', field: 'noteDate' },
+    { name: 'showOnScreen', label: t('batch-notes.columns.show-on-screen'), align: 'center', field: 'showOnScreen' },
   ]
 })
 const newNote = reactive({
@@ -42,10 +42,10 @@ function addNote() {
     body: newNote,
   }).then(() => {
     emit('updateScheduler')
-    Toast.show(t('toast.succesful'))
+    Toast.show(t('batch-notes.toast.succesful'))
     refresh()
   }).catch((err) => {
-    Toast.show(t('toast.error', err))
+    Toast.show(t('batch-notes.toast.error', err))
   })
 }
 function updateNote(id: number, showOnScreen: boolean) {
@@ -53,10 +53,10 @@ function updateNote(id: number, showOnScreen: boolean) {
     method: 'PUT',
     body: { noteKey: id, showOnScreen },
   }).then(() => {
-    Toast.show(t('toast.succesful'))
+    Toast.show(t('batch-notes.toast.succesful'))
     emit('updateScheduler')
   }).catch((err) => {
-    Toast.show(t('toast.error', err))
+    Toast.show(t('batch-notes.toast.error', err))
   })
 }
 const q = useQuasar()
@@ -66,12 +66,12 @@ function deleteNote(id: number) {
     class: 'e-border',
     ok: {
       push: true,
-      label: t('template.ok'),
+      label: t('batch-notes.template.ok'),
       color: 'primary',
     },
     cancel: {
       push: true,
-      label: t('template.cancel'),
+      label: t('batch-notes.template.cancel'),
       color: 'red',
     },
   }).onOk(async () => {
@@ -80,10 +80,10 @@ function deleteNote(id: number) {
       query: { id },
     }).then(() => {
       emit('updateScheduler')
-      Toast.show(t('toast.succesful'))
+      Toast.show(t('batch-notes.toast.succesful'))
       refresh()
     }).catch((err) => {
-      Toast.show(t('toast.error', err))
+      Toast.show(t('batch-notes.toast.error', err))
     })
   })
 }
@@ -115,7 +115,7 @@ function deleteNote(id: number) {
             {{ col.label }}
           </q-th>
           <q-th auto-width>
-            {{ t('template.delete') }}
+            {{ t('batch-notes.template.delete') }}
           </q-th>
         </q-tr>
       </template>

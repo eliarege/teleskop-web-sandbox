@@ -8,7 +8,7 @@ import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeB
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
 const currentTime = useNow({ interval: 1000 })
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 
 // TODO (BEFORE PRODUCTION): change start/end date!
 const startDate = ref('2022/01/01')
@@ -671,7 +671,7 @@ function updateTaskColor() {
   </div>
 </template>
 
-<style lang="postcss">
+<!-- <style lang="postcss">
 div[bgRed] {
   background-color: rgba(237, 16, 16, 0.3) !important;
 }
@@ -719,30 +719,4 @@ div[bgGreen] {
 .b-sch-event-content {
   white-space: normal;
 }
-</style>
-
-<i18n lang="json">
-{
-  "en": {
-    "ctx-menu": {
-      "task-edit": "Update Job Order",
-      "task-delete": "Delete Job Order",
-      "remove-plan": "Remove From Plan",
-      "properties": "Job Order Properties",
-      "pin": "Pin Task",
-      "unpin": "Unpin Task"
-
-    }
-  },
-  "tr": {
-    "ctx-menu": {
-      "task-edit": "İş Emrini Güncelle",
-      "task-delete": "İş Emrini Sil",
-      "remove-plan": "Plandan kaldır",
-      "properties": "İş Emri Özellikleri",
-      "pin": "İş Emrini Sabitle",
-      "unpin": "İş Emri Sabitlemesini Kaldır"
-    }
-  }
-}
-</i18n>
+</style> -->

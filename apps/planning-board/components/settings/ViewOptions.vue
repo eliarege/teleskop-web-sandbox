@@ -1,213 +1,159 @@
 <script setup lang="ts">
-const emit = defineEmits(['updateScheduler'])
+import { Toast } from '@bryntum/schedulerpro-trial'
+import type { MachineStatus } from '~/shared/types'
 
 const { t } = useI18n()
-const q = useQuasar()
+const { data: machines } = await useFetch('/api/machineList', {
+  default: () => [],
+})
 
-const definitions = ref([] as any[])
-const plannedDefinitions = ref([] as any[])
-const currentMachine = ref(-1)
+const { data: erpParameters } = await useFetch('/api/settings/erpParameters', {
+  default: () => [],
+  query: { distinct: true },
+})
+const modifiedParameters = computed(() => erpParameters.value.toSorted((a, b) => a.paramId > b.paramId ? 1 : -1))
+const selected = ref()
 
-const { data: machines } = useFetch('/api/machineList')
-const activeMachine = ref(-1)
+const validMachines = ref([] as MachineStatus[])
 
-async function getErpParameters(machineId: number) {
-  currentMachine.value = machineId
-  const res = await $fetch<{ definitions: any[], plannedDefinitions: any[] }>('/api/settings/erpParameters', {
-    query: { machineId },
+const groups = ref([] as string[])
+const selectedMachines = ref([] as number[])
+
+async function setValidMachines(paramString: string) {
+  groups.value = []
+  selectedMachines.value = []
+  selected.value = paramString
+  const machinesByErpParam = await $fetch('/api/settings/erpParameters/machinesByErpParam', {
+    query: { paramString },
   })
-  definitions.value = res.definitions
-  plannedDefinitions.value = res.plannedDefinitions.sort((a, b) => a.paramId < b.paramId ? -1 : 1)
-}
+  const selectedMachinesList = await $fetch('/api/settings/erpParameters/getSelectedMachines', {
+    query: { paramString },
+  })
+  selectedMachines.value = selectedMachinesList
+  validMachines.value = machinesByErpParam
 
-const erpParameterColumns = reactive([
-  { name: 'paramId', label: t('erp-param-columns.id'), align: 'center', field: 'paramId' },
-  { name: 'paramName', align: 'center', label: t('erp-param-columns.param-name'), field: 'paramName' },
-])
+  const groupMap = new Map<string, number[]>()
 
-async function addParameter(id: number, machineId: number) {
-  await $fetch('/api/settings/erpParameters/addErpParameters', {
-    method: 'PUT',
-    query: { id, machineId },
+  validMachines.value.forEach((machine) => {
+    if (!groupMap.has(machine.groupName)) {
+      groupMap.set(machine.groupName, [])
+    }
+    groupMap.get(machine.groupName)!.push(machine.id)
+  })
+
+  groupMap.forEach((machineIds, groupName) => {
+    const allSelected = machineIds.every(id => selectedMachines.value.includes(id))
+    if (allSelected) {
+      groups.value.push(groupName)
+    }
   })
 }
-async function onPlannedCtx(row: any) {
-  plannedDefinitions.value.push(row)
-  await addParameter(row.id, row.machineId)
-}
 
-async function deleteParameter(id: number, machineId: number) {
-  q.dialog({
-    title: 'Are you sure to delete this parameter?',
-    class: 'e-border',
-    ok: {
-      push: true,
-      label: 'OK',
-      color: 'primary',
-    },
-    cancel: {
-      push: true,
-      label: 'CANCEL',
-      color: 'red',
-    },
-  }).onOk(async () => {
-    await $fetch('/api/settings/erpParameters/deleteErpParameters', {
-      method: 'PUT',
-      query: { id, machineId },
-    }).then(() => {
-      getErpParameters(machineId)
-      emit('updateScheduler')
+const groupedMachines = computed(() => {
+  const groupsRecord: Record<string, MachineStatus[]> = {}
+  validMachines.value.forEach((machine) => {
+    const group = machine.groupName
+    if (!groupsRecord[group]) {
+      groupsRecord[group] = []
+    }
+    groupsRecord[group].push(machine)
+  })
+  return Object.values(groupsRecord).map(group => group)
+})
+function selectMachine(id: number) {
+  if (!selectedMachines.value.includes(id)) {
+    selectedMachines.value.push(id)
+  }
+}
+function deselectMachine(id: number) {
+  const idx = selectedMachines.value.indexOf(id)
+  selectedMachines.value.splice(idx, 1)
+}
+async function customModelValue(group: string) {
+  const idList = machines.value.filter(m => m.groupName === group).map(m => m.id)
+  if (groups.value.includes(group)) {
+    idList.forEach((machine) => {
+      deselectMachine(machine)
     })
+    const idx = groups.value.indexOf(group)
+    groups.value.splice(idx, 1)
+  } else {
+    idList.forEach((machine) => {
+      selectMachine(machine)
+    })
+    groups.value.push(group)
+  }
+}
+const loading = ref(false)
+
+async function saveParameters() {
+  loading.value = true
+  // wait 0.3 seconds to animate loading?
+  await new Promise(resolve => setTimeout(resolve, 300))
+  await $fetch('/api/settings/erpParameters/bulkAddErpParameters', {
+    body: { paramString: selected.value, machines: selectedMachines.value },
+    method: 'PUT',
+  }).finally(() => {
+    loading.value = false
+    Toast.show(t('toast.succesful'))
   })
 }
 </script>
 
 <template>
-  <div class="view-options">
-    <div class="machine-list relative">
-      <q-list dense>
-        <q-item
-          v-for="(item, idx) in machines"
-          :key="idx"
-          v-ripple
-          :active="activeMachine === idx"
-          clickable
-          @click="activeMachine = idx"
-        >
-          <q-item-section @click="getErpParameters(item.id)">
-            {{ item.name }}
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </div>
-    <div class="erp-parameters">
-      <QTable
-        dense
-        :rows="definitions"
-        :columns="erpParameterColumns"
-        :rows-per-page-options="[0]"
-      >
-        <template #header="prop">
-          <q-tr :props="prop">
-            <q-th
-              v-for="col in prop.cols"
-              :key="col.name"
-              :props="prop"
-            >
-              {{ col.label }}
-            </q-th>
-            <q-th auto-width>
-              {{ t('erp-param-columns.add') }}
-            </q-th>
-          </q-tr>
-        </template>
-        <template #body="prop">
-          <q-tr :props="prop">
-            <q-td
-              v-for="col in prop.cols"
-              :key="col.name"
-              :props="prop"
-            >
-              {{ col.value }}
-            </q-td>
-            <q-td auto-width>
-              <q-btn
-                icon="add"
-                :disabled="plannedDefinitions.map((a) => a.id).includes(prop.row.id)"
-                color="primary"
-                size="sm"
-                @click="onPlannedCtx(prop.row)"
-              />
-            </q-td>
-          </q-tr>
-        </template>
-      </QTable>
-    </div>
-    <div class="planned-batch">
+  <div class="wrapper">
+    <div>
       <q-list
-        separator
-        bordered
         dense
+        bordered
+        padding
+        class="max-h-100 overflow-auto"
       >
         <q-item
-          v-for="item in plannedDefinitions"
-          :key="item.id"
+          v-for="item in modifiedParameters"
+          :key="item.paramId"
           v-ripple
+          :active="selected === item.paramName"
           clickable
+          @click="setValidMachines(item.paramName)"
         >
           <q-item-section>
             {{ item.paramName }}
           </q-item-section>
-          <q-item-section side>
-            <Icon
-              name="fluent:delete-16-regular"
-              color="red"
-              size="20"
-              @click="deleteParameter(item.id, item.machineId)"
-            />
-          </q-item-section>
         </q-item>
       </q-list>
     </div>
+    <q-space />
+    <div class="max-h-100 overflow-auto">
+      <div v-for="(group, idx) in groupedMachines" :key="idx">
+        <SettingsGroupedMachineSelector
+          v-model:selectedGroup="groups"
+          v-model:selectedMachine="selectedMachines"
+          :group="group[0].groupName"
+          :machines="group"
+          @selected-group="customModelValue(group[0].groupName)"
+        />
+      </div>
+    </div>
+  </div>
+  <div class="w-full flex px-3">
+    <q-space />
+    <q-btn
+      color="primary"
+      :label="t('settings.save')"
+      :loading="loading"
+      @click="saveParameters()"
+    >
+      <template #loading>
+        <q-spinner-facebook />
+      </template>
+    </q-btn>
   </div>
 </template>
 
 <style scoped lang="postcss">
-.view-options {
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  @apply grid gap-2 h-80vh;
-
-  .machine-list {
-    grid-area: 1 / 1 / 3 / 2;
-    border: 1px solid rgba(0, 0, 0, 0.125);
-    border-radius: 0.25rem;
-    @apply overflow-auto;
-  }
-
-  .erp-parameters {
-    grid-area: 1 / 2 / 3 / 3;
-    border: 1px solid rgba(0, 0, 0, 0.125);
-    border-radius: 0.25rem;
-    @apply overflow-auto;
-  }
-
-  .planned-batch {
-    grid-area: 1 / 3 / 3 / 4;
-    border: 1px solid rgba(0, 0, 0, 0.125);
-    border-radius: 0.25rem;
-    @apply overflow-auto;
-  }
+.wrapper {
+  grid-template-columns: 1fr 0.1fr 1fr;
+  @apply grid gap-2 p-3;
 }
 </style>
-
-<i18n lang="json">
-  {
-  "en": {
-    "erp-param-columns": {
-      "id": "Queue Number",
-      "param-name": "Parameter Name",
-      "field-name": "ERP Matching Area",
-      "add": "Add"
-    },
-    "batch-text": {
-      "job-order": "Job Order Number",
-      "party": "Party Number",
-      "customer": "Customer Name"
-    }
-  },
-  "tr": {
-    "erp-param-columns": {
-      "id": "Sıra Numarası",
-      "param-name": "Parametre İsmi",
-      "field-name": "ERP Eşleştirme Alanı",
-      "add": "Ekle"
-    },
-    "batch-text": {
-      "job-order": "İş Emri Numarası",
-      "party": "Parti Numarası",
-      "customer": "Müşteri İsmi"
-    }
-  }
-}
-</i18n>

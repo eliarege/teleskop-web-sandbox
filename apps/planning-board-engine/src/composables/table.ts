@@ -1,4 +1,5 @@
 import type { Knex } from 'knex'
+import { logger } from './logger'
 
 export async function createPtColumnsTable(knex: Knex) {
   try {
@@ -18,7 +19,7 @@ export async function createPtColumnsTable(knex: Knex) {
         table.string('parameterName')
         table.boolean('visible')
       }).then(async () => {
-        console.log('Table PTCOLUMNS created successfully')
+        logger.info('Table PTCOLUMNS created successfully')
         // TODO: Bulk insert
         await knex.transaction(async (trx) => {
           for (const row of values) {
@@ -29,14 +30,14 @@ export async function createPtColumnsTable(knex: Knex) {
             })
           }
         })
-          .then(() => console.log('Values inserted into PTCOLUMNS'))
-          .catch(err => console.error('An error occured while inserting values into PTCOLUMNS', err))
+          .then(() => logger.info('Values inserted into PTCOLUMNS'))
+          .catch(err => logger.error(err, 'An error occured while inserting values into PTCOLUMNS'))
       })
     } else {
-      console.log('Table PTCOLUMNS already exists, no data inserted')
+      logger.info('Table PTCOLUMNS already exists, no data inserted')
     }
   } catch (err) {
-    console.error('error:', err)
+    logger.error(err, 'error:')
   }
 }
 
@@ -52,7 +53,7 @@ export async function createPtMachineErpTable(knex: Knex) {
         table.string('paramName')
         table.boolean('visible')
       })
-      console.log('Table PTMACHINEERP created successfully')
+      logger.info('Table PTMACHINEERP created successfully')
       const values = await knex('BFMACHBATCHPARAMETERS').select({
         paramId: 'BATCHPARAMETERID',
         machineId: 'MACHINEID',
@@ -69,12 +70,12 @@ export async function createPtMachineErpTable(knex: Knex) {
           })
         }
       })
-        .then(() => console.log('Values inserted into PTMACHINEERP'))
-        .catch(err => console.error('An error occured while inserting values into PTMACHINEERP', err))
+        .then(() => logger.info('Values inserted into PTMACHINEERP'))
+        .catch(err => logger.error(err, 'An error occured while inserting values into PTMACHINEERP'))
     } else {
-      console.log('Table PTMACHINEERP already exists, no data inserted')
+      logger.info('Table PTMACHINEERP already exists, no data inserted')
     }
   } catch (err) {
-    console.error('error:', err)
+    logger.error(err, 'error:')
   }
 }

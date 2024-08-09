@@ -1,36 +1,41 @@
+import type { EventModel } from '@bryntum/schedulerpro-trial'
 import { useStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import type { PtLocaleSettings } from '~/shared/types'
 
 export const useSettingStore = defineStore('settings', () => {
+  const startDate = ref()
+  const endDate = ref()
+  const schedulerDateModel = ref({
+    from: startDate.value,
+    to: endDate.value,
+  })
+  const unplannedText = ref()
   const machineOrdering = useStorage<number[]>('pt-machineOrdering', [])
 
-  const settings = useStorage<PtLocaleSettings>('pt-settings', {
-    completedBatch: {
-      batchText: null,
-      isBatchFabricColor: false,
-      actualBatchFabricColor: '',
-      deviationBatchFabricColor: '',
-    },
-    ongoingBatch: {
-      batchText: null,
-      isBatchFabricColor: false,
-      actualBatchFabricColor: '',
-      deviationBatchFabricColor: '',
-    },
-    plannedBatch: {
-      batchText: null,
-      isBatchFabricColor: false,
-      actualBatchFabricColor: '',
-      deviationBatchFabricColor: '',
-    },
-    archiveDays: 0,
-    showStops: { show: false, color: '' },
-    batchText: [],
-  })
+  const selectedEvent = ref({} as EventModel)
+
+  const settings = useStorage('pt-settings', {
+    deviationColor: '',
+    completedBatchColor: '#007efc',
+    completedBatchText: 'jobOrder',
+    completedBatchFabricColor: false,
+    ongoingBatchColor: '#c0d61a',
+    ongoingBatchText: 'jobOrder',
+    ongoingBatchFabricColor: false,
+    plannedBatchColor: '',
+    plannedBatchText: 'jobOrder',
+    plannedBatchFabricColor: false,
+    showStops: { show: false, color: '#d61515' },
+  } as PtLocaleSettings)
 
   return {
+    startDate,
+    endDate,
+    unplannedText,
+    schedulerDateModel,
     settings,
+    selectedEvent,
     machineOrdering,
   }
 })

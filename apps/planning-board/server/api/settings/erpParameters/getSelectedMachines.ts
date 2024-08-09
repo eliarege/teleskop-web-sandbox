@@ -1,10 +1,10 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const { distinct } = getQuery(event)
+  const { paramString } = getQuery(event)
   const url = `${config.planningEngineUrl}/planning_board/settings/erp_parameters`
-  if (distinct) {
-    return await $fetch<{ paramName: string, paramId: number }[]>(url, {
-      query: { distinct },
+  if (paramString) {
+    return await $fetch<number[]>(url, {
+      query: { paramString },
     })
   } else throw createError({ statusCode: 400, statusMessage: 'MISSING QUERY' })
 })

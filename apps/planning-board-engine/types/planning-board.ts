@@ -1,59 +1,43 @@
-export interface UnscheduledTasks {
-  planKey: number
-  recordTime: string
-  jobOrder: string
-  fabricWeight: number
-  plannedMachineId: number
-  programCount: number
-  programList: string
-  plannedStartTime: string
-  note: string
-  erpFieldName: string | null
-  batchParameterId: number
-  theoreticalDuration: number
-  isStopped: boolean
-}
-
-/**
- ------------------ ------------------ ------------------ ------------------
- */
-
-export interface QueueBasedEventsBase {
-  planKey: number
+export interface QueueBasedBaseEventRaw {
+  eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'stop' | 'unplanned'
   machineId: number
+  startTime: string
+  endTime: string
+  note: string
+}
+export interface QueueBasedEventStop extends QueueBasedBaseEventRaw {
+  eventType: 'stop'
+  stopNumber: number | string
+  stopReason: string
+}
+export interface QueueBasedBaseEvent extends QueueBasedBaseEventRaw {
+  eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'unplanned'
+  planKey: number
   jobOrder: string
   programNoList: string
+  programCount: number
   theoreticalDuration: number
   fabricWeight: number
+  fabricColor: number
   note: string
-  color: string
-  isDeleted: boolean
-  isStarted: boolean
-  isStopped: boolean
-  percentDone: number
 }
-export interface QueueBasedPlannedEventsRaw extends QueueBasedEventsBase {
-  isPlanned: true
-  plannedStartDate: string | Date
-  queueNumber: number
-  pinned: boolean
-}
-
-export interface QueueBasedActualEventsRaw extends QueueBasedEventsBase {
-  isPlanned: false
+export interface QueueBasedActualEvent extends QueueBasedBaseEvent {
+  eventType: 'finished' | 'ongoing' | 'manual'
   batchKey: number
-  startTime: string | Date
-  endTime: string | Date
   deviation: number
 }
-
-export type QueueBasedMergedEvents = (QueueBasedPlannedEventsRaw | QueueBasedActualEventsRaw)
-export type QueueBasedModifiedMergedEvents = QueueBasedMergedEvents & {
-  isRunning: boolean
-  isFinished: boolean
-  endDate: string | Date
-  remainingTime: number
+export interface QueueBasedNonActualEvent extends QueueBasedBaseEvent {
+  eventType: 'planned' | 'unplanned'
+  queueNumber: number
+  pinned: boolean
+  erpParameters: string
 }
+
+export type QueueBasedEvent =
+  QueueBasedNonActualEvent |
+  QueueBasedActualEvent |
+  QueueBasedEventStop
+
 /**
  ------------------ ------------------ ------------------ ------------------
  */
@@ -135,4 +119,12 @@ export interface TimeBasedEventStates {
     isFinished: boolean
     hasNote: boolean
   }[]
+}
+export interface PlanParameters {
+  planKey: number
+  machineId: number
+  paramString: string
+  value: number | string
+  paramHighLimit: number
+  paramLowLimit: number
 }
