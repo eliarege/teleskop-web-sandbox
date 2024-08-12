@@ -314,6 +314,7 @@
     "weighingNumber": "Weighing Number"
   },
   "statusCodes": {
+    "-1": "",
     "0": "New Request",
     "1": "In The Dispenser",
     "2": "In The Process",

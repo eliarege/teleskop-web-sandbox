@@ -312,6 +312,7 @@
     "weighingNumber": "Tartım Numarası"
   },
   "statusCodes": {
+    "-1": "",
     "0": "Yeni İstek Geldi",
     "1": "İstek Dağıtıcıda",
     "2": "İstek İşlemde",
