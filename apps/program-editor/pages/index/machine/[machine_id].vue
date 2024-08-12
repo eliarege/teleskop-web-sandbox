@@ -72,13 +72,6 @@ onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
   }
 })
 
-onKeyStroke(['s', 'S'], (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
-    event.preventDefault()
-    editor.onSubmit()
-  }
-})
-
 onKeyStroke(['r', 'R'], (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
