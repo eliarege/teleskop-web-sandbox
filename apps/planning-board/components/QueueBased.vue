@@ -486,19 +486,6 @@ onMounted(async () => {
     onCellClick() {
       store.selectedEvent = {}
     },
-    listeners: {
-      eventSelectionChange({ action }: any) {
-        if (action === 'select' || action === 'update') {
-          schedule.widgetMap.parameterButton.disabled = false
-          schedule.widgetMap.recipeButton.disabled = false
-          schedule.widgetMap.noteButton.disabled = false
-        } else {
-          schedule.widgetMap.parameterButton.disabled = true
-          schedule.widgetMap.recipeButton.disabled = true
-          schedule.widgetMap.noteButton.disabled = true
-        }
-      },
-    },
     eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
       if (eventRecord.originalData.eventType !== 'stop') {
