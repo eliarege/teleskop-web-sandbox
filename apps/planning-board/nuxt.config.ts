@@ -29,6 +29,9 @@ export default defineNuxtConfig({
   },
   css: ['@bryntum/schedulerpro-trial/schedulerpro.classic.css'],
   vite: {
+    optimizeDeps: {
+      include: ['@bryntum/schedulerpro-trial'],
+    },
     vue: {
       template: {
         transformAssetUrls: {
