@@ -377,3 +377,8 @@ export interface TreatmentParameter {
   commandNo: number
   parameterIndex: number
 }
+
+export interface TeleskopSettings {
+  id: number
+  value: string
+}

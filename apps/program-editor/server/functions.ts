@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type { Machine, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, TreatmentGroup, ioListItem } from '../shared/types'
+import type { MachineGroup, MachineInfo, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
 import { MSSQL_ERROR } from './constants'
@@ -235,5 +235,41 @@ export async function fetchTreatmentSettings(): Promise<TreatmentSettings> {
   return {
     optimizedEnable,
     optimizedLimit,
+  }
+}
+
+/**
+ * Teleskop Ayarları Getir
+ * @param id - Settings ID
+ * @returns - Settings
+ */
+export async function fetchTeleskopSettings(id?: number): Promise<TeleskopSettings[] | string> {
+  const teleskopSettings = await db('TFTELESKOPSETTINGS').select({ id: 'ID', value: 'VALUE' }) as TeleskopSettings[]
+
+  if (id) {
+    const setting = teleskopSettings.find(s => s.id === id)
+    if (!setting)
+      return ''
+    return setting.value
+  }
+
+  return teleskopSettings
+}
+
+/**
+ * Teleskop Ayarları Güncelle
+ * @param id - Settings ID
+ * @param value - Settings Value
+ */
+export async function updateTeleskopSettings(id: number, value: string): Promise<void> {
+  const hasSetting = await db('TFTELESKOPSETTINGS').where('ID', id).first()
+
+  if (!hasSetting) {
+    await db('TFTELESKOPSETTINGS')
+      .insert({ ID: id, VALUE: value })
+  } else {
+    await db('TFTELESKOPSETTINGS')
+      .update({ value })
+      .where('ID', id)
   }
 }

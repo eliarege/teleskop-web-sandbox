@@ -129,6 +129,12 @@ const items = [
             $commandManager.executeCommand('editProgramTypes', { $q })
           },
         },
+        {
+          label: tt('menu.appSettings'),
+          onClick() {
+            $commandManager.executeCommand('editProgramIcons', { $q })
+          },
+        },
       ],
       ],
     },

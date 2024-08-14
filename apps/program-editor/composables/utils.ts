@@ -1,6 +1,6 @@
 import isEqual from 'fast-deep-equal'
 import { useEditorStore } from './editor'
-import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, TeleskopSettings, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -286,4 +286,14 @@ export function parseDuration(duration: string): number {
     return Number(hour) * 3600 + Number(minute) * 60 + Number(second)
   }
   return Number(duration) * 36000
+}
+
+export async function setTeleskopSettings(id: number, value: string): Promise<void> {
+  await $fetch(`/api/teleskop-settings`, {
+    method: 'PUT',
+    body: {
+      id,
+      value,
+    },
+  })
 }
