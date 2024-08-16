@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { notification } from '~/shared/functions'
+
 const props = defineProps({
   rows: Array<any>,
   machineId: Number,
   programNo: Number,
 })
-const emit = defineEmits(['close', 'delete'])
+const emit = defineEmits(['close', 'delete', 'activeVersionChanged'])
 const deleteVersionDialogVis = ref(false)
 const selectedRows = ref([])
 const isMoreThanOneRowSelected = computed(() => selectedRows.value.length > 1)
@@ -39,6 +41,12 @@ async function onRowClick(row: any, isRightClick?: boolean) {
       selectedRows.value.push(row)
   } else if (!(isRowSelected(row) && isRightClick))
     selectedRows.value = [row]
+}
+async function setActiveVersion() {
+  const newVersion = selectedRows.value[0]?.version
+  const check = await $fetch(`/api/machine/${props.machineId}/program/${props.programNo}/archive/${newVersion}`, { method: 'POST' })
+  notification(check, check ? t('contextMenu.version.setDefaultSuccess', { newVersion }) : t('contextMenu.version.setDefaultFail', { newVersion }))
+  emit('activeVersionChanged')
 }
 </script>
 
@@ -85,7 +93,7 @@ async function onRowClick(row: any, isRightClick?: boolean) {
 
       <q-card-actions align="right">
         <q-btn
-          :label="t('contextMenu.version.showInEditor')"
+          :label="t('contextMenu.version.showOnEditor')"
           outline
           color="black"
           :disable="isMoreThanOneRowSelected"
@@ -101,6 +109,7 @@ async function onRowClick(row: any, isRightClick?: boolean) {
           outline
           color="black"
           :disable="isMoreThanOneRowSelected"
+          @click="setActiveVersion()"
         />
         <q-btn
           v-close-popup
@@ -153,7 +162,7 @@ async function onRowClick(row: any, isRightClick?: boolean) {
 </template>
 
 <style scoped>
-.text-override-left :deep(.text-right){
+.text-override-left :deep(.text-right) {
   text-align: left;
   word-break: normal;
   white-space: normal;

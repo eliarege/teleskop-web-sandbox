@@ -288,9 +288,11 @@
       "endDate": "Bitiş Tarihi",
       "stepCount": "Adım Sayısı",
       "time": "Süre",
-      "showInEditor": "Editörde Göster",
+      "showOnEditor": "Editörde Göster",
       "compare": "Karşılaştır",
-      "makeDefault": "Geçerli Sürüm Yap"
+      "makeDefault": "Geçerli Sürüm Yap",
+      "setDefaultSuccess": "Aktif versiyon {version} ile değiştirildi.",
+      "setDefaultFail": "Aktif versiyonu değiştirirken hata oluştu."
     },
     "send": {
       "success": "{name} programı makineye başarıyla gönderildi.",

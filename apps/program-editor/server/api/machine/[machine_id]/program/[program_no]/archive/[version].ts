@@ -11,6 +11,16 @@ export default defineAuthEventHandler(async (event) => {
   if (event.method === 'GET') {
     logger.info(`User: ${event.context.kauth?.name}. Fetching archived program ${programNo} of machine ${machineId}.`)
     return await machine.fetchArchivedProgram(programNo, versionNo)
+  } else if (event.method === 'POST') {
+    try {
+      const newVersion = await machine.fetchArchivedProgram(programNo, versionNo)
+      console.log(newVersion.name)
+      await machine.deleteProgramFromDatabase(programNo)
+      await machine.insertProgram(newVersion)
+      return true
+    } catch (e) {
+      return e
+    }
   } else if (event.method === 'DELETE') {
     logger.info(`User: ${event.context.kauth?.name}. Deleting archived program ${programNo} of machine ${machineId}.`)
     return await machine.deleteVersion(programNo, versionNo)

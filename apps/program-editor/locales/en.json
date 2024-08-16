@@ -288,9 +288,11 @@
       "endDate": "End Date",
       "stepCount": "Step Count",
       "time": "Time",
-      "showInEditor": "Show in Editor",
+      "showOnEditor": "Show in Editor",
       "compare": "Compare",
-      "makeDefault": "Make Default"
+      "makeDefault": "Make Default",
+      "setDefaultSuccess": "Active version is set to {version} successfully.",
+      "setDefaultFail": "An error occured while setting active version to {version}"
     },
     "send": {
       "success": "Sending program {name} is succeed.",
