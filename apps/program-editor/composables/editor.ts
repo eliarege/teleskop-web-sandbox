@@ -1,10 +1,8 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import { klona } from 'klona/lite'
-import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
-import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineCommand, MachineConstant, ParameterItem, ParameterSelections, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, ioListItem } from '~/shared/types'
+import { isDef } from '@teleskop/utils'
+import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
-import { CommandType } from '~/shared/constants'
+import { CommandIconMapping, CommandType, commandTypeMaps } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
@@ -344,6 +342,7 @@ export const useEditorStore = defineStore('editor', () => {
       commandFormulas: [],
       constants: [],
       treatmentParameters: [],
+      commandTypes: [],
     }
   }
 
@@ -471,6 +470,9 @@ export const useEditorStore = defineStore('editor', () => {
     teleskopSettings.value = await $fetch<TeleskopSettings[]>(`/api/teleskop-settings`)
   }
 
+  async function fetchCommandTypes(machineId: number) {
+    machine.value.commandTypes = await $fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
+  }
 
   function getStepIcon(commandNo: number | undefined): StepIcon | undefined {
     if (!isDef(commandNo))
@@ -549,5 +551,6 @@ export const useEditorStore = defineStore('editor', () => {
     getStepIcon,
     fetchTeleskopSettings,
     teleskopSettings,
+    fetchCommandTypes,
   }
 })

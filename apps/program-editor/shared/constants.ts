@@ -35,11 +35,27 @@ export enum ParameterType {
   SELECTABLE_FORMULA = 'SELECTABLE_FORMULA',
 }
 
-export const CommandIconMapping: Record<string, { icon: string, label?: string, color?: string }> = {
-  'AK_Bosalt.gif': { icon: 'game-icons:water-tank', label: 'AK_Bosalt' },
-  'Kimyasal_Iste.gif': { icon: 'carbon:chemistry', label: 'Kimyasal_Iste', color: '#00CC00' },
-  'KK_AK_Transfer.gif': { icon: 'material-symbols:colors', label: 'KK_AK_Transfer', color: '#ff00ff' },
-  'BK_AK_Dozaj.gif': { icon: 'material-symbols:colors', label: 'BK_AK_Dozaj', color: '#0000ff' },
-  'BK_AK_Transfer.gif': { icon: 'game-icons:chemical-tank', label: 'BK_AK_Transfer', color: '#ff00ff' },
+export const commandTypeMaps = [
+  { index: 0, ref: [], value: 100, title: 'chemIcons.chemicalRequestCommands' },
+  { index: 1, ref: [], value: 101, title: 'chemIcons.manualChemicalRequestCommands' },
+  { index: 2, ref: [], value: 200, title: 'chemIcons.paintRequestCommands' },
+  { index: 3, ref: [], value: 201, title: 'chemIcons.manualPaintRequestCommands' },
+  { index: 4, ref: [], value: 300, title: 'chemIcons.chemicalTankTransferCommands' },
+  { index: 5, ref: [], value: 400, title: 'chemIcons.paintTankTransferCommands' },
+  { index: 6, ref: [], value: 500, title: 'chemIcons.reserveTankTransferCommands' },
+  { index: 7, ref: [], value: 600, title: 'chemIcons.pHControl' },
+  { index: 8, ref: [], value: 700, title: 'chemIcons.takeSample' },
+  { index: 9, ref: [], value: 800, title: 'chemIcons.saltRequestCommands' },
+  { index: 10, ref: [], value: 810, title: 'chemIcons.genericMaterial1Request' },
+  { index: 11, ref: [], value: 820, title: 'chemIcons.genericMaterial2Request' },
+  { index: 12, ref: [], value: 1000, title: 'chemIcons.manualMeasurementCommands' },
+]
 
+export const CommandIconMapping: Record<string, { icon: string, label?: string, color?: string }> = {
+  'AK_Bosalt.gif': { icon: 'ri:exchange-2-line', label: 'AK_Bosalt', color: '#00CC00' },
+  'Kimyasal_Iste.gif': { icon: 'carbon:chemistry', label: 'Kimyasal_Iste', color: '#00CC00' },
+  'KK_AK_Transfer.gif': { icon: 'ri:exchange-2-line', label: 'KK_AK_Transfer', color: '#00CC00' },
+  'BK_AK_Dozaj.gif': { icon: 'icon-park-outline:curve-adjustment', label: 'BK_AK_Dozaj', color: '#0000ff' },
+  'BK_AK_Transfer.gif': { icon: 'ri:exchange-2-line', label: 'BK_AK_Transfer', color: '#ff00ff' },
+  'KK_RK_Transfer.gif': { icon: 'ri:exchange-2-line', label: 'KK_RK_Transfer', color: '#00CC00' },
 }

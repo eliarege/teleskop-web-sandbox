@@ -168,6 +168,7 @@ async function fetchPrograms(filter?: ProgramFilter) {
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
 await editor.fetchMachine(Number(route.params.machine_id))
+await editor.fetchCommandTypes(Number(route.params.machine_id))
 await editor.fetchAllPrograms(Number(route.params.machine_id))
 await fetchPrograms().then(() => {
   editor.isLoading = false

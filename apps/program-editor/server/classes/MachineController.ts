@@ -9,7 +9,7 @@ import { stringifyProgram } from '../stringify'
 import { parseProgramString } from '../parse'
 import { PError } from '../error'
 import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
-import type { BatchParameter, CommandFormula, CommandIO, Machine, MachineCommand, MachineConstant, MachineGroup, ParameterItem, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 
@@ -1493,5 +1493,14 @@ export class MachineController {
       .join('BFTREATMENTPARAMETERGROUPMACHINES as MG', 'PGM.GROUPID', 'MG.GROUPID')
       .join('BFTREATMENTPARAMETERS as PT', 'PT.ID', 'PGM.PARAMID')
       .where('MG.MACHINEID', this.id)
+  }
+
+  async fetchCommandTypes(): Promise<CommandTypes[]> {
+    return await db('BFCOMMANDTYPES as CT')
+      .select({
+        commandType: 'CT.commandType',
+        commandNo: 'CT.commandNo',
+      })
+      .where('CT.machineId', this.id)
   }
 }
