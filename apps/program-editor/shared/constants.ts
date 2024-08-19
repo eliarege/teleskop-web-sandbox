@@ -34,3 +34,12 @@ export enum ParameterType {
   MACHINE_FORMULA = 'MACHINE_FORMULA',
   SELECTABLE_FORMULA = 'SELECTABLE_FORMULA',
 }
+
+export const CommandIconMapping: Record<string, { icon: string, label?: string, color?: string }> = {
+  'AK_Bosalt.gif': { icon: 'game-icons:water-tank', label: 'AK_Bosalt' },
+  'Kimyasal_Iste.gif': { icon: 'carbon:chemistry', label: 'Kimyasal_Iste', color: '#00CC00' },
+  'KK_AK_Transfer.gif': { icon: 'material-symbols:colors', label: 'KK_AK_Transfer', color: '#ff00ff' },
+  'BK_AK_Dozaj.gif': { icon: 'material-symbols:colors', label: 'BK_AK_Dozaj', color: '#0000ff' },
+  'BK_AK_Transfer.gif': { icon: 'game-icons:chemical-tank', label: 'BK_AK_Transfer', color: '#ff00ff' },
+
+}

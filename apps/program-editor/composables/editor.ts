@@ -465,6 +465,31 @@ export const useEditorStore = defineStore('editor', () => {
     return currentElement
   }
 
+  function getStepIcon(commandNo: number | undefined): StepIcon | undefined {
+    if (!isDef(commandNo))
+      return
+
+    const machineCommand = machine.value.commands.get(commandNo)
+    if (!machineCommand)
+      return
+
+    const machineCommandType = machine.value.commandTypes.find(commandType => commandType.commandNo === commandNo)
+    if (!machineCommandType)
+      return
+
+    const commandType = commandTypeMaps.find(map => map.value === machineCommandType?.commandType)
+    if (!commandType)
+      return
+
+    const iconSetting = teleskopSettings.value.find(setting => setting.id === 12)
+    const isSelected = (Number(iconSetting?.value) & (1 << Number(commandType.index))) > 0
+
+    if (!isSelected || !machineCommand)
+      return undefined
+
+    return CommandIconMapping[machineCommand.icon]
+  }
+
   return {
     program,
     machine,
@@ -514,5 +539,6 @@ export const useEditorStore = defineStore('editor', () => {
     getPathElement,
     fetchAllProcessTypes,
     scrollPage,
+    getStepIcon,
   }
 })

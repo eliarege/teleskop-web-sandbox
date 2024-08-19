@@ -6,7 +6,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['update:modelValue'])
-
+const { t } = useI18n()
 function toggle() {
   emit('update:modelValue', props.modelValue ^ (1 << props.commandIndex))
 }
@@ -20,8 +20,9 @@ const isChecked = computed(() => {
   <div>
     <q-checkbox
       v-model="isChecked"
-      :label="props.label"
+      :label="t(props.label)"
       @update:model-value="toggle"
     />
+    <Icon :name="props.label" class="icon" />
   </div>
 </template>
