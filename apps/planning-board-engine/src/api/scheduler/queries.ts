@@ -29,7 +29,7 @@ export async function planningBoardStops(startDate: string, endDate: string): Pr
   }))
 }
 export async function getUnplannedEvents() {
-  const events = await knex.raw(`
+  const events = await knex.raw(/* sql */`
         SELECT
         TOP 100
         'unplanned' as eventType,
@@ -71,7 +71,7 @@ export async function getUnplannedEvents() {
   }))
 }
 export async function getTheoreticalDuration(planKey: number) {
-  return await knex.raw(`
+  return await knex.raw(/* sql */`
   SELECT b.MACHINEID as machineId ,SUM(B.DURATION) as theoreticalDuration
   FROM BFMASTERPRGHEADER B
   WHERE B.PROGNO IN (
@@ -172,7 +172,7 @@ export async function getBatchProperties(machineId: number, planKey: number) {
     .groupBy('p.paramId', 'p.paramName', 'd.VALUE')
     .orderBy('p.paramId')
 
-  const programs = await knex.raw(`
+  const programs = await knex.raw(/* sql */`
     WITH SplitValues AS (
       SELECT CAST(value AS INT) AS ProgramNo
       FROM STRING_SPLIT((SELECT LEFT(d.PROGRAMNOLIST, LEN(d.PROGRAMNOLIST) - 1) FROM DYBFBATCHPLAN d WHERE d.PLANKEY = ${planKey}), ',')
@@ -183,7 +183,7 @@ export async function getBatchProperties(machineId: number, planKey: number) {
     AND b.MACHINEID = ${machineId}
     GROUP BY b.PROGNO, b.NAME;
   `)
-  const times = await knex.raw(`
+  const times = await knex.raw(/* sql */`
   SELECT TOP 1
     d.TheoricalDuration AS theoreticalDuration,
     d.STARTDATETIME AS startTime,
@@ -252,7 +252,7 @@ export async function getMachines(idList?: number[]) {
       manualReason: 's.manuelReason',
       manualReasonDateTime: 's.manuelReasonDateTime',
       manualCommandActive: 's.MANUELCOMMANDACTIVE',
-      totalAlarmCount: knex.raw(`(select count(*) from BAALARM where BAALARM.BATCHKEY = s.RUNNING_BATCHKEY and BAALARM.CONFIRMTIME is NULL)`),
+      totalAlarmCount: knex.raw(/* sql */`(select count(*) from BAALARM where BAALARM.BATCHKEY = s.RUNNING_BATCHKEY and BAALARM.CONFIRMTIME is NULL)`),
     })
     .where('m.INUSE', '=', 1)
     .andWhere('m.USEINTELESKOP', '=', 1)
@@ -351,7 +351,7 @@ export async function validateTaskPrograms(planKey: number) {
     await knex({ p: 'dbo.BFMACHINES' })
       .select({
         machineId: 'p.MACHINEID',
-        programs: knex.raw(`
+        programs: knex.raw(/* sql */`
         (select
           CONCAT('[', STRING_AGG(PROGNO, ','), ']') list
         from BFMASTERPRGHEADER b
@@ -769,7 +769,7 @@ export async function getStartingParametersWithValues(params: {
   paramHighLimit: number
 }[], planKey: string): Promise<{ paramString: string, value: string | number | null }[]> {
   const formattedValues = params.map(param => `('${param.paramString}')`).join(', ')
-  const parameters = await knex.raw(`
+  const parameters = await knex.raw(/* sql */`
     select
         v.PARAMSTRING as paramString,
         d.VALUE as value

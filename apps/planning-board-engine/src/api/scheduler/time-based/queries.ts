@@ -20,7 +20,7 @@ export async function getTimeBasedPlannedEvents() {
     }).whereNotNull('p.STARTTIME')
 }
 export async function getTimeBasedEvents(archiveDays: number) {
-  return await knex.raw(`
+  return await knex.raw(/* sql */`
     WITH RankedBatches AS (
       SELECT
         P.BATCHKEY as batchKey,

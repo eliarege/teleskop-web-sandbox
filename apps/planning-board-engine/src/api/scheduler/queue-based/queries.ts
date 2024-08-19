@@ -20,7 +20,7 @@ export async function getQueueBasedEvents(startDate: string, endDate: string, in
   } else return await queueBasedEventStatus([...plannedEvents, ...actualEvents], includeStops)
 }
 export async function getFullQueueBasedEvents() {
-  const plannedEvents = await knex.raw(`
+  const plannedEvents = await knex.raw(/* sql */`
   select jobOrder, startTime from (
         select
               d.JOBORDER AS jobOrder,
@@ -39,7 +39,7 @@ export async function getFullQueueBasedEvents() {
         AND p.PLANKEY IS NOT NULL
 ) as subQuery
   `)
-  const actualEvents = await knex.raw(`
+  const actualEvents = await knex.raw(/* sql */`
     WITH ActualEvent AS (
         SELECT
           DATEADD(MINUTE, :timezoneOffset, startTime) as startTime,
@@ -59,7 +59,7 @@ export async function getFullQueueBasedEvents() {
   return [...plannedEvents, ...actualEvents]
 }
 export async function getQueueBasedPlannedEvents(startDate: string, endDate: string): Promise<QueueBasedNonActualEvent[]> {
-  const events = await knex.raw(`
+  const events = await knex.raw(/* sql */`
       select DATEADD(second, theoreticalDuration, startTime) AS endTime,* from (
         select
             'planned' as eventType,
@@ -114,7 +114,7 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
 }
 
 export async function getQueueBasedActualEvents(startTime: string, endTime: string): Promise<QueueBasedActualEvent[]> {
-  return await knex.raw(`
+  return await knex.raw(/* sql */`
       WITH ActualEvent AS (
         SELECT
           CASE
@@ -125,9 +125,9 @@ export async function getQueueBasedActualEvents(startTime: string, endTime: stri
           DATEADD(MINUTE, :timezoneOffset, startTime) as startTime,
           DATEADD(MINUTE, :timezoneOffset, COALESCE(endTime, cancelTime,
             IIF(
-              DATEADD(SECOND, theoreticalDuration, startTime) > DATEADD(MINUTE, :timezoneOffset, GETUTCDATE()),
+              DATEADD(SECOND, theoreticalDuration, startTime) > DATEADD(MINUTE, -1 * :timezoneOffset, GETUTCDATE()),
               DATEADD(SECOND, theoreticalDuration, startTime),
-              DATEADD(MINUTE, :timezoneOffset, GETUTCDATE())
+              DATEADD(MINUTE, -1 * :timezoneOffset, GETUTCDATE())
             )
           )) as endTime,
           machineId,
