@@ -35,6 +35,8 @@ export const useEditorStore = defineStore('editor', () => {
   const { notifySuccess, notifyError } = useNotify()
   const { fetch } = useKeycloak()
 
+  const teleskopSettings = ref<TeleskopSettings[]>([])
+
   const theoricDuration = computed(() => formatDuration(calculateProgramDuration(program.value, machine.value)))
 
   const treatmentSettings = ref<{ optimizedEnable: boolean }>({
@@ -465,6 +467,11 @@ export const useEditorStore = defineStore('editor', () => {
     return currentElement
   }
 
+  async function fetchTeleskopSettings() {
+    teleskopSettings.value = await $fetch<TeleskopSettings[]>(`/api/teleskop-settings`)
+  }
+
+
   function getStepIcon(commandNo: number | undefined): StepIcon | undefined {
     if (!isDef(commandNo))
       return
@@ -540,5 +547,7 @@ export const useEditorStore = defineStore('editor', () => {
     fetchAllProcessTypes,
     scrollPage,
     getStepIcon,
+    fetchTeleskopSettings,
+    teleskopSettings,
   }
 })

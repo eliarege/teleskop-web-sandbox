@@ -239,25 +239,15 @@ export async function fetchTreatmentSettings(): Promise<TreatmentSettings> {
 }
 
 /**
- * Teleskop Ayarları Getir
- * @param id - Settings ID
+ * Gets Teleskop Settings
  * @returns - Settings
  */
-export async function fetchTeleskopSettings(id?: number): Promise<TeleskopSettings[] | string> {
-  const teleskopSettings = await db('TFTELESKOPSETTINGS').select({ id: 'ID', value: 'VALUE' }) as TeleskopSettings[]
-
-  if (id) {
-    const setting = teleskopSettings.find(s => s.id === id)
-    if (!setting)
-      return ''
-    return setting.value
-  }
-
-  return teleskopSettings
+export async function fetchTeleskopSettings(): Promise<TeleskopSettings[]> {
+  return await db('TFTELESKOPSETTINGS').select({ id: 'ID', value: 'VALUE' })
 }
 
 /**
- * Teleskop Ayarları Güncelle
+ * Updates Teleskop Settings
  * @param id - Settings ID
  * @param value - Settings Value
  */

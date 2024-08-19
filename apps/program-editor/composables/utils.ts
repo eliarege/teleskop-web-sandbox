@@ -296,4 +296,13 @@ export async function setTeleskopSettings(id: number, value: string): Promise<vo
       value,
     },
   })
+  const editor = useEditorStore()
+  await editor.fetchTeleskopSettings()
+}
+
+export async function getTeleskopSettings(): Promise<string> {
+  const { data } = await $fetch('/api/teleskop-settings', {
+    method: 'GET',
+  })
+  return data
 }
