@@ -30,7 +30,6 @@ onUnmounted(() => {
 
 <template>
   <QField
-    :id
     v-model="model"
     :dense
     :clearable

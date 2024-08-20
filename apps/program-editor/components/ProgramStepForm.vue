@@ -13,9 +13,14 @@ const devMode = import.meta.dev
 const { t } = useI18n()
 const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
-
+const stepIcons = computed(() => [
+  editor.getStepIcon(step.mainCommand.commandNo!),
+  ...step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!)),
+])
 const expanded = ref(false)
 const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')
+const mainIcon = computed(() => editor.getStepIcon(step.mainCommand.commandNo!))
+const parallelIcons = computed(() => step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!)))
 
 function toggle() {
   if (editor.selectedStep === stepIndex.value)
@@ -45,6 +50,24 @@ const sortableOptions: SortableOptions = {
     <div class="flex">
       <!-- <span v-if="devMode" class="color-gray-5">{{ step.stepId }}</span> -->
       <!-- <span>{{ duration }}</span> -->
+
+      <div class="flex items-center">
+        <div v-show="!expanded">
+          <div v-for="(icon, index) in stepIcons" :key="index">
+            <span v-if="icon">
+              <Icon
+                :name="icon.icon"
+                class="icon"
+                :color="icon.color"
+              />
+              <q-tooltip>
+                {{ icon.label }}
+              </q-tooltip>
+            </span>
+          </div>
+        </div>
+      </div>
+
       <QBtn
         class="expand-btn"
         :icon="expandIcon"
@@ -52,6 +75,20 @@ const sortableOptions: SortableOptions = {
         dense
         @click="toggle"
       />
+
+      <div v-show="expanded" class="mt-3 ml-1">
+        <span v-if="mainIcon">
+          <Icon
+            :name="mainIcon.icon"
+            class="icon"
+            :color="mainIcon.color"
+          />
+          <q-tooltip>
+            {{ mainIcon.label }}
+          </q-tooltip>
+        </span>
+      </div>
+
       <ProgramStepCommandForm
         class="flex-1"
         :path="`${props.path}.mainCommand`"
@@ -77,8 +114,21 @@ const sortableOptions: SortableOptions = {
             :class="{ __selected: editor.selectedStep === stepIndex && editor.selectedParallelStep === index }"
             @click="editor.changeSelection(stepIndex, index)"
           >
+            <div class="w-6 mt-3">
+              <div v-if="parallelIcons[index]">
+                <Icon
+                  :name="parallelIcons[index]?.icon"
+                  class="icon"
+                  :color="parallelIcons[index]?.color"
+                />
+                <q-tooltip>
+                  {{ parallelIcons[index]?.label }}
+                </q-tooltip>
+              </div>
+            </div>
+
             <div class="program-step-command ">
-              <ProgramStepCommandForm :path="`${props.path}.parallelCommands.${index}`" />
+              <ProgramStepCommandForm :path="`${props.path}.parallelCommands.${index}`" :expanded />
             </div>
             <QSpace />
             <QBtn
@@ -104,11 +154,11 @@ const sortableOptions: SortableOptions = {
 
 .step-parallel-command {
   @apply flex w-full pl-4;
-  @apply hover:( dark:bg-dark-1)
+  @apply hover:( dark:bg-dark-1);
 }
 
 .step-parallel-command:hover {
-  background-color : #d1e4fa;
+  background-color: #d1e4fa;
 }
 
 .step-parallel-command.__selected {
@@ -116,10 +166,14 @@ const sortableOptions: SortableOptions = {
 }
 
 .expand-btn {
-  @apply !text-(black opacity-60) !dark:(text-(white opacity-60))
+  @apply !text-(black opacity-60) !dark:(text-(white opacity-60));
 }
 
 .delete-btn {
-  @apply !text-(black opacity-60) !dark:(text-(white opacity-60))
+  @apply !text-(black opacity-60) !dark:(text-(white opacity-60));
+}
+
+.icon {
+  @apply text-18px mr-4px cursor-pointer;
 }
 </style>

@@ -1,10 +1,8 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import { klona } from 'klona/lite'
-import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
-import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineCommand, MachineConstant, ParameterItem, ParameterSelections, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, ioListItem } from '~/shared/types'
+import { isDef } from '@teleskop/utils'
+import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
-import { CommandType } from '~/shared/constants'
+import { CommandIconMapping, CommandType, commandTypeMaps } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
@@ -34,6 +32,8 @@ export const useEditorStore = defineStore('editor', () => {
   const errorIds = ref(new Set<string>())
   const { notifySuccess, notifyError } = useNotify()
   const { fetch } = useKeycloak()
+
+  const teleskopSettings = ref<TeleskopSettings[]>([])
 
   const theoricDuration = computed(() => formatDuration(calculateProgramDuration(program.value, machine.value)))
 
@@ -264,7 +264,7 @@ export const useEditorStore = defineStore('editor', () => {
         program.value.steps.splice(selectedStep.value, 1)
       }
     }
-    // selectedStep.value = -1
+    selectedStep.value = Math.min(selectedStep.value, program.value.steps.length - 1)
   }
 
   function deleteParallelStep(stepIndex?: number, parallelIndex?: number) {
@@ -277,7 +277,10 @@ export const useEditorStore = defineStore('editor', () => {
         }
       }
     }
-    // selectedParallelStep.value = -1
+    selectedParallelStep.value = Math.min(
+      selectedParallelStep.value, 
+      program.value.steps[selectedStep.value].parallelCommands.length - 1
+    )
   }
 
   async function fetchProgram(machineId: number, programNo: number) {
@@ -342,6 +345,7 @@ export const useEditorStore = defineStore('editor', () => {
       commandFormulas: [],
       constants: [],
       treatmentParameters: [],
+      commandTypes: [],
     }
   }
 
@@ -456,13 +460,46 @@ export const useEditorStore = defineStore('editor', () => {
     const pathParts = path.split('.')
     let currentElement = program.value as any
     for (const part of pathParts) {
-      if (currentElement !== undefined) {
+      if (isDef(currentElement)) {
         currentElement = currentElement[part]
       } else {
-        return undefined
+        return
       }
     }
     return currentElement
+  }
+
+  async function fetchTeleskopSettings() {
+    teleskopSettings.value = await $fetch<TeleskopSettings[]>(`/api/teleskop-settings`)
+  }
+
+  async function fetchCommandTypes(machineId: number) {
+    machine.value.commandTypes = await $fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
+  }
+
+  function getStepIcon(commandNo: number | undefined): StepIcon | undefined {
+    if (!isDef(commandNo))
+      return
+
+    const machineCommand = machine.value.commands.get(commandNo)
+    if (!machineCommand)
+      return
+
+    const machineCommandType = machine.value.commandTypes.find(commandType => commandType.commandNo === commandNo)
+    if (!machineCommandType)
+      return
+
+    const commandType = commandTypeMaps.find(map => map.value === machineCommandType?.commandType)
+    if (!commandType)
+      return
+
+    const iconSetting = teleskopSettings.value.find(setting => setting.id === 12)
+    const isSelected = (Number(iconSetting?.value) & (1 << Number(commandType.index))) > 0
+
+    if (!isSelected || !machineCommand)
+      return
+
+    return CommandIconMapping[machineCommand.icon]
   }
 
   return {
@@ -514,5 +551,9 @@ export const useEditorStore = defineStore('editor', () => {
     getPathElement,
     fetchAllProcessTypes,
     scrollPage,
+    getStepIcon,
+    fetchTeleskopSettings,
+    teleskopSettings,
+    fetchCommandTypes,
   }
 })

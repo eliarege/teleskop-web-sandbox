@@ -74,7 +74,11 @@
     "parameter": "Parametre",
     "io": "IO",
     "graphic": "Grafik",
-    "formula": "Formül"
+    "formula": "Formül",
+    "appSettings": "Uygulama Ayarları",
+    "editorIconSettings": "Editor İkon Ayarları",
+    "commandIcons": "Komut İkonları",
+    "selectedCommandIcons": "Secili Komut İkonları"
   },
   "program": {
     "name": "Program Adı",
@@ -341,6 +345,21 @@
     "commandIOName": "Komut IO ismi",
     "IOName": "IO ismi",
     "default": "Varsayılan"
+  },
+  "chemIcons": {
+    "chemicalRequestCommands": "Kimyasal İstek Komutları",
+    "manualChemicalRequestCommands": "Manuel Kimyasal İstek Komutları",
+    "paintRequestCommands": "Boya İstek Komutları",
+    "manualPaintRequestCommands": "Manuel Boya İstek Komutları",
+    "chemicalTankTransferCommands": "Kimyasal Kazanı Transfer Komutları",
+    "paintTankTransferCommands": "Boya Kazanı Transfer Komutları",
+    "reserveTankTransferCommands": "Rezerve Kazanı Transfer Komutları",
+    "pHControl": "pH Kontrol",
+    "takeSample": "Numune Al",
+    "saltRequestCommands": "Tuz İstek Komutları",
+    "genericMaterial1Request": "Jenerik Materyal 1 İstek",
+    "genericMaterial2Request": "Jenerik Materyal 2 İstek",
+    "manualMeasurementCommands": "Manuel Ölçüm Komutları"
   }
 
 }

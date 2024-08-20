@@ -281,6 +281,7 @@ export interface Machine {
   constants: MachineConstant[]
   batchParameters: BatchParameter[]
   treatmentParameters: TreatmentParameter[]
+  commandTypes: CommandTypes[]
 }
 
 export interface CommandItem {
@@ -376,4 +377,20 @@ export interface TreatmentParameter {
   groupId: number
   commandNo: number
   parameterIndex: number
+}
+
+export interface TeleskopSettings {
+  id: number
+  value: string
+}
+
+export interface CommandTypes {
+  commandType: number
+  commandNo: number
+}
+
+export interface StepIcon {
+  icon: string | undefined
+  label?: string | undefined
+  color?: string | undefined
 }

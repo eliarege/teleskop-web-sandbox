@@ -74,7 +74,11 @@
     "parameter": "Parameter",
     "io": "IO",
     "graphic": "Graphic",
-    "formula": "Formula"
+    "formula": "Formula",
+    "appSettings": "Application Settings",
+    "editorIconSettings": "Editor Icon Settings",
+    "commandIcons": "Command Icons",
+    "selectedCommandIcons": "Selected Command Icons"
   },
   "program": {
     "name": "Program Name",
@@ -341,5 +345,20 @@
     "commandIOName": "Command IO Name",
     "IOName": "IO Name",
     "default": "Default"
+  },
+  "chemIcons": {
+    "chemicalRequestCommands": "Chemical Request Commands",
+    "manualChemicalRequestCommands": "Manual Chemical Request Commands",
+    "paintRequestCommands": "Paint Request Commands",
+    "manualPaintRequestCommands": "Manual Paint Request Commands",
+    "chemicalTankTransferCommands": "Chemical Tank Transfer Commands",
+    "paintTankTransferCommands": "Paint Tank Transfer Commands",
+    "reserveTankTransferCommands": "Reserve Tank Transfer Commands",
+    "pHControl": "pH Control",
+    "takeSample": "Take Sample",
+    "saltRequestCommands": "Salt Request Commands",
+    "genericMaterial1Request": "Generic Material 1 Request",
+    "genericMaterial2Request": "Generic Material 2 Request",
+    "manualMeasurementCommands": "Manual Measurement Commands"
   }
 }

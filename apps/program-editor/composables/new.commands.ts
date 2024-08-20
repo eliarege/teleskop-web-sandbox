@@ -12,6 +12,7 @@ import type { ProgramFilter } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
+import TBApplicationSettingsDialog from '~/components/TBApplicationSettingsDialog.vue'
 import TBExportExcelDialog from '~/components/TBExportExcelDialog.vue'
 import hooks from '~/utils/hooks'
 
@@ -54,6 +55,7 @@ export interface RegisteredCommands {
   printProgram: [ctx: any]
   printProgramList: [ctx: any]
   editProgramTypes: [ctx: any]
+  editProgramIcons: [ctx: any]
   exportToExcel: [ctx: any]
   refresh: [ctx: any, machineId: number]
 }
@@ -355,6 +357,21 @@ registerCommand(() => {
 
 registerCommand(() => {
   const { fetch } = useKeycloak()
+  return {
+    name: 'editProgramIcons',
+    async execute(ctx: any) {
+      ctx.$q.dialog({
+        component: TBApplicationSettingsDialog,
+      }).onOk(async (value: string) => {
+        // Number 12 for icon settings
+        await setTeleskopSettings(12, value)
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
   return {
     name: 'exportToExcel',
     async execute(ctx: any) {
