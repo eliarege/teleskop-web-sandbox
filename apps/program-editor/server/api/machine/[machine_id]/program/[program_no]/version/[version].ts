@@ -14,9 +14,9 @@ export default defineAuthEventHandler(async (event) => {
   } else if (event.method === 'POST') {
     try {
       const newVersion = await machine.fetchArchivedProgram(programNo, versionNo)
-      console.log(newVersion.name)
       await machine.deleteProgramFromDatabase(programNo)
       await machine.insertProgram(newVersion)
+      // await machine.insertProgramToArchive(newVersion)
       return true
     } catch (e) {
       return e

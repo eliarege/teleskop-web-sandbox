@@ -26,14 +26,15 @@ export default defineAuthEventHandler(async (event) => {
     }
   } else if (event.method === 'DELETE') {
     if (query?.source) {
+      const { programState } = await machine.fetchProgram(programNo)
       const source = query.source.toString()
-      if (source.includes('machine')) {
+      if (source.includes('machine') && (programState === 0 || programState === 2)) {
         try {
           logger.info(`User: ${event.context?.kauth?.name}. Deleted program ${programNo} of machine ${machineId} from machine.`)
           await machine.deleteRemoteProgram(programNo)
         } catch (e) {}
       }
-      if (source.includes('db')) {
+      if (source.includes('db') && (programState === 1 || programState === 2)) {
         logger.info(`User: ${event.context?.kauth?.name}. Deleted program ${programNo} of machine ${machineId} from database.`)
         await logEditorOperation(ProgramEditorActivityCodes.PROGRAMDELETED, `Makine ${machineId}`, `Program No ${programNo}`)
         return await machine.deleteProgramFromDatabase(programNo)

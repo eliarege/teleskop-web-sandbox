@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ProgramEditorDialog from './ProgramEditorDialog.vue'
 import { notification } from '~/shared/functions'
 
 const props = defineProps({
@@ -7,9 +8,10 @@ const props = defineProps({
   programNo: Number,
 })
 const emit = defineEmits(['close', 'delete', 'activeVersionChanged'])
+const $q = useQuasar()
 const deleteVersionDialogVis = ref(false)
 const selectedRows = ref([])
-const isMoreThanOneRowSelected = computed(() => selectedRows.value.length > 1)
+const isMoreThanOneRowSelected = computed(() => selectedRows.value.length > 1 || selectedRows.value.length === 0)
 const { t } = useI18n()
 const columns = [
   { name: 'version', label: t('contextMenu.version._'), field: 'version' },
@@ -42,12 +44,32 @@ async function onRowClick(row: any, isRightClick?: boolean) {
   } else if (!(isRowSelected(row) && isRightClick))
     selectedRows.value = [row]
 }
+const selectedVersion = computed(() => selectedRows.value[0]?.version)
 async function setActiveVersion() {
-  const newVersion = selectedRows.value[0]?.version
-  const check = await $fetch(`/api/machine/${props.machineId}/program/${props.programNo}/archive/${newVersion}`, { method: 'POST' })
-  notification(check, check ? t('contextMenu.version.setDefaultSuccess', { newVersion }) : t('contextMenu.version.setDefaultFail', { newVersion }))
+  const check = await $fetch(`/api/machine/${props.machineId}/program/${props.programNo}/version/${selectedVersion.value}`, { method: 'POST' })
+  notification(check, check ? t('contextMenu.version.setDefaultSuccess', { version: selectedVersion.value }) : t('contextMenu.version.setDefaultFail', { version: selectedVersion.value }))
   emit('activeVersionChanged')
 }
+
+async function showOnEditor() {
+  $q.dialog({
+    component: ProgramEditorDialog,
+    componentProps: {
+      machineId: props.machineId,
+      programNo: props.programNo,
+      version: selectedVersion.value,
+      readOnly: true,
+    },
+  })
+
+  // emit('close')
+  // navigateTo(`/machine/${props.machineId}/program/${props.programNo}/version/${selectedRows.value[0]?.version}`)
+}
+const isActiveSelected = computed(() =>
+  selectedRows.value.some((version: any) =>
+    props.rows[props.rows?.length - 1].version === version.version,
+  ),
+)
 </script>
 
 <template>
@@ -97,18 +119,19 @@ async function setActiveVersion() {
           outline
           color="black"
           :disable="isMoreThanOneRowSelected"
+          @click="showOnEditor()"
         />
         <q-btn
           :label="t('contextMenu.version.compare')"
           outline
-          :disable="!isMoreThanOneRowSelected"
+          :disable="true"
           color="black"
         />
         <q-btn
           :label="t('contextMenu.version.makeDefault')"
           outline
           color="black"
-          :disable="isMoreThanOneRowSelected"
+          :disable="isMoreThanOneRowSelected || isActiveSelected"
           @click="setActiveVersion()"
         />
         <q-btn
@@ -117,7 +140,7 @@ async function setActiveVersion() {
           :label="t('delete')"
           color="red"
           icon="delete"
-          :disable="!selectedRows.length"
+          :disable="!selectedRows.length || isActiveSelected"
           @click="deleteVersionDialogVis = true"
         />
         <q-btn

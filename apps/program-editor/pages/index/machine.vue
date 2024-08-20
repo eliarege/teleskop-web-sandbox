@@ -534,7 +534,7 @@ const contextMenuOptions = computed(() => [
       icon: 'info',
       disabled: isMoreThanOneRowSelected.value,
       onClick: async () => {
-        versions.value = await contextMenuStore.fetchVersions(editor.selectedPrograms[0].programNo, machineId)
+        await fetchVersions(editor.selectedPrograms[0].programNo)
         versionDialogVisible.value = true
       },
     },
@@ -544,6 +544,9 @@ const contextMenuOptions = computed(() => [
 const ctrl = useKeyModifier('Control')
 const shift = useKeyModifier('Shift')
 
+async function fetchVersions(programNo: number) {
+  versions.value = await contextMenuStore.fetchVersions(programNo, machineId)
+}
 function handleFilterClick() {
   $commandManager.executeCommand(
     'filterPrograms',
@@ -624,6 +627,28 @@ function handleRowClass(row: ProgramTable): string {
     return 'only-on-teleskop'
 
   else {
+    option.execute()
+  }
+}
+
+async function handleVersionDelete(deleteVersions: any[]) {
+  editor.isLoading = true
+  console.log(deleteVersions)
+  await contextMenuStore.deleteVersion(deleteVersions, machineId)
+  await fetchPrograms()
+  await fetchVersions(editor.selectedPrograms[0].programNo)
+  editor.isLoading = false
+}
+function handleRowColor(row: ProgramHeader) {
+  if (0) { // User is not logged in //FIXME:
+    return 'grey'
+  } else if (row.isChanged)
+    return ProgramStateColors.CHANGED_ON_TELESKOP
+  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
+    return ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER
+  } else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE) {
+    return ProgramStateColors.EXISTS_ONLY_ON_DATABASE
+  } else {
     const changeDate = (new Date(row.updatedAt || 0)).getTime()
     const changeDateTBB = (new Date(row.updatedAtTBB || 0)).getTime()
     const interval = (changeDateTBB - changeDate) / 1000
@@ -739,7 +764,7 @@ function handleRowClass(row: ProgramTable): string {
       :program-no="editor.selectedPrograms[0].programNo"
       @close="versionDialogVisible = false"
       @delete="e => handleVersionDelete(e)"
-      @active-version-changed="fetchPrograms()"
+      @active-version-changed="fetchPrograms(), fetchVersions(editor.selectedPrograms[0].programNo)"
     />
   </EliarModal>
 

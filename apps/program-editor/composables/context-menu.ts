@@ -240,7 +240,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function deleteVersion(versions: Array<any>, machineId: number) {
     const { fetch } = useKeycloak()
     for (const version of versions) {
-      const check = await fetch(`/api/machine/${machineId}/program/${version.programNo}/archive/${version.version}`, {
+      const check = await fetch(`/api/machine/${machineId}/program/${version.programNo}/version/${version.version}`, {
         method: 'DELETE',
       })
       const status = check ? 'success' : 'fail'

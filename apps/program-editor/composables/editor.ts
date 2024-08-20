@@ -280,12 +280,15 @@ export const useEditorStore = defineStore('editor', () => {
     )
   }
 
-  async function fetchProgram(machineId: number, programNo: number) {
+  async function fetchProgram(machineId: number, programNo: number, _version?: number) {
     selectedStep.value = -1
     selectedParallelStep.value = -1
     lastStepId = 0
     lastCommandId = 0
-    program.value = await fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
+    if (_version !== undefined)
+      program.value = await fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${_version}`)
+    else
+      program.value = await fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
     for (const step of program.value.steps) {
       step.stepId = lastStepId++
       for (const command of step.parallelCommands) {
