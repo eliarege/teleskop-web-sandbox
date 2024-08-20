@@ -4,7 +4,12 @@ export const ProgramStateColors = {
   CHANGED_ON_TELESKOP: '#0000ff',
   CHANGED_ON_MACHINE: '#ff00ff',
   NO_CHANGES: '#080808',
-  NO_CHANGES_DARK: '#141414',
+
+  EXISTS_ONLY_ON_CONTROLLER_DARK: 'd0d0d0',
+  EXISTS_ONLY_ON_DATABASE_DARK: '#32cd32',
+  CHANGED_ON_TELESKOP_DARK: '#1e90ff',
+  CHANGED_ON_MACHINE_DARK: '#ff00ff',
+  NO_CHANGES_DARK: '#f5f5f5',
 } as const
 
 export enum ProgramStatus {

@@ -20,10 +20,10 @@ const { t } = useI18n()
 
 const programStatus = computed(() => [
   { label: t('programStatusInfo.noChanges'), color: dark.isActive ? ProgramStateColors.NO_CHANGES_DARK : ProgramStateColors.NO_CHANGES },
-  { label: t('programStatusInfo.onlyOnTeleskop'), color: ProgramStateColors.EXISTS_ONLY_ON_DATABASE },
-  { label: t('programStatusInfo.onlyOnController'), color: ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER },
-  { label: t('programStatusInfo.changedOnTeleskop'), color: ProgramStateColors.CHANGED_ON_TELESKOP },
-  { label: t('programStatusInfo.changedOnMachine'), color: ProgramStateColors.CHANGED_ON_MACHINE },
+  { label: t('programStatusInfo.onlyOnTeleskop'), color: dark.isActive ? ProgramStateColors.EXISTS_ONLY_ON_DATABASE_DARK : ProgramStateColors.EXISTS_ONLY_ON_DATABASE },
+  { label: t('programStatusInfo.onlyOnController'), color: dark.isActive ? ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER_DARK : ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER },
+  { label: t('programStatusInfo.changedOnTeleskop'), color: dark.isActive ? ProgramStateColors.CHANGED_ON_TELESKOP_DARK : ProgramStateColors.CHANGED_ON_TELESKOP },
+  { label: t('programStatusInfo.changedOnMachine'), color: dark.isActive ? ProgramStateColors.CHANGED_ON_MACHINE_DARK : ProgramStateColors.CHANGED_ON_MACHINE },
 ])
 </script>
 
@@ -61,6 +61,6 @@ const programStatus = computed(() => [
 }
 
 .status-body {
-  @apply dark:bg-dark-1 dark:text-gray-1 flex flex-col p-3 bg-gray-1;
+  @apply dark:bg-dark-2 dark:text-gray-1 flex flex-col p-3 bg-gray-1;
 }
 </style>
