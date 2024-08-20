@@ -6,11 +6,12 @@ defineEmits([
 ])
 const { t } = useI18n()
 const settings = ref(0)
-const fullSelect = 8191
+const fullSelect = parseInt('1'.repeat(commandTypeMaps.length), 2)
 const selectAll = ref(false)
 const editor = useEditorStore()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
+// TODO: teleskopSettings object olmalı, şuanki durumda her id'nin neye tekabül ettiğini bilmek gerekiyor. 
 settings.value = Number(editor.teleskopSettings?.find(s => s.id === 12)?.value)
 
 function toggleSelectAll() {

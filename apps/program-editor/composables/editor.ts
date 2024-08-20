@@ -264,7 +264,7 @@ export const useEditorStore = defineStore('editor', () => {
         program.value.steps.splice(selectedStep.value, 1)
       }
     }
-    selectedStep.value = selectedStep.value < program.value.steps.length ? selectedStep.value : program.value.steps.length - 1
+    selectedStep.value = Math.min(selectedStep.value, program.value.steps.length - 1)
   }
 
   function deleteParallelStep(stepIndex?: number, parallelIndex?: number) {
@@ -277,7 +277,10 @@ export const useEditorStore = defineStore('editor', () => {
         }
       }
     }
-    selectedParallelStep.value = selectedParallelStep.value < program.value.steps[selectedStep.value].parallelCommands.length ? selectedParallelStep.value : program.value.steps[selectedStep.value].parallelCommands.length - 1
+    selectedParallelStep.value = Math.min(
+      selectedParallelStep.value, 
+      program.value.steps[selectedStep.value].parallelCommands.length - 1
+    )
   }
 
   async function fetchProgram(machineId: number, programNo: number) {
@@ -457,10 +460,10 @@ export const useEditorStore = defineStore('editor', () => {
     const pathParts = path.split('.')
     let currentElement = program.value as any
     for (const part of pathParts) {
-      if (currentElement !== undefined) {
+      if (isDef(currentElement)) {
         currentElement = currentElement[part]
       } else {
-        return undefined
+        return
       }
     }
     return currentElement
@@ -494,7 +497,7 @@ export const useEditorStore = defineStore('editor', () => {
     const isSelected = (Number(iconSetting?.value) & (1 << Number(commandType.index))) > 0
 
     if (!isSelected || !machineCommand)
-      return undefined
+      return
 
     return CommandIconMapping[machineCommand.icon]
   }
