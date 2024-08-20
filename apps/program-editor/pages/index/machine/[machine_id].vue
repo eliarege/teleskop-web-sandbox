@@ -792,7 +792,7 @@ function handleRowColor(row: ProgramHeader) {
     </div>
   </div>
 
-  <CMProgramStateDialog />
+  <CMProgramStateDialog v-if="!route.params.program_no" />
 
   <EliarModal v-if="versionDialogVisible">
     <CMVersionDialog
