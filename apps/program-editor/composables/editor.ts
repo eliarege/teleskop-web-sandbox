@@ -264,7 +264,7 @@ export const useEditorStore = defineStore('editor', () => {
         program.value.steps.splice(selectedStep.value, 1)
       }
     }
-    // selectedStep.value = -1
+    selectedStep.value = selectedStep.value < program.value.steps.length ? selectedStep.value : program.value.steps.length - 1
   }
 
   function deleteParallelStep(stepIndex?: number, parallelIndex?: number) {
@@ -277,7 +277,7 @@ export const useEditorStore = defineStore('editor', () => {
         }
       }
     }
-    // selectedParallelStep.value = -1
+    selectedParallelStep.value = selectedParallelStep.value < program.value.steps[selectedStep.value].parallelCommands.length ? selectedParallelStep.value : program.value.steps[selectedStep.value].parallelCommands.length - 1
   }
 
   async function fetchProgram(machineId: number, programNo: number) {
