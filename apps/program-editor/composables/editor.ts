@@ -369,6 +369,12 @@ export const useEditorStore = defineStore('editor', () => {
       tbbProgramChangedEvent: 0,
       programState: 1,
       updatedAtTBB: null,
+      totalChemReq: 0,
+      totalDyeReq: 0,
+      manChemReq: 0,
+      autoChemReq: 0,
+      autoDyeReq: 0,
+      manDyeReq: 0,
     }
   }
 
