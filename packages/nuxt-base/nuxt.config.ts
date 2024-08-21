@@ -26,9 +26,9 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@pinia/nuxt',
     '@nuxtjs/i18n',
+    '@nuxt/icon',
     '@element-plus/nuxt',
     'nuxt-quasar-ui',
-    'nuxt-icon',
   ],
   quasar: {
     plugins: [
@@ -79,6 +79,18 @@ export default defineNuxtConfig({
         },
       },
     },
+  },
+  icon: {
+    mode: 'svg',
+    provider: 'server',
+    fallbackToApi: true,
+    collections: [],
+    customCollections: [
+      {
+        prefix: 'tw',
+        dir: resolve(__dirname, 'assets/icons'),
+      },
+    ],
   },
   hooks: {
     'schema:extend': (schemas) => {

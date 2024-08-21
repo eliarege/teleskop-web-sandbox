@@ -50,7 +50,7 @@ const itemsMobile = [
         <template v-if="sm">
           <QToolbarTitle shrink>
             <Icon
-              name="IconEliar"
+              name="tw:eliar"
               size="2.5rem"
               class="p-1"
             />

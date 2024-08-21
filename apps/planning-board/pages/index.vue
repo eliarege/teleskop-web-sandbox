@@ -61,7 +61,7 @@ const { data: state } = await useFetch('/api/ptStatus')
           <QToolbarTitle shrink class="text-clip">
             <NuxtLink to="/">
               <Icon
-                name="IconEliar"
+                name="tw:eliar"
                 size="2.5rem"
                 class="p-1"
               />

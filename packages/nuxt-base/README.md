@@ -9,3 +9,17 @@ Base layer for nuxt apps
 - [@unocss/nuxt](https://unocss.dev/integrations/nuxt)
 - [@vueuse/nuxt](https://vueuse.org/nuxt/README.html)
 - [@pinia/nuxt](https://pinia.vuejs.org/ssr/nuxt.html)
+- [@nuxt/icon](https://nuxt.com/modules/icon)
+
+## Icons
+
+### Custom Collection Usage
+
+```
+assets/icons
+├── eliar.svg
+```
+
+```vue
+<Icon name="tw:eliar" />
+```

@@ -85,7 +85,7 @@ const machineData = computed(() => {
           <QToolbarTitle class="text-clip" shrink>
             <NuxtLink to="/">
               <Icon
-                name="IconEliar"
+                name="tw:eliar"
                 size="3rem"
                 class="p-1"
               />
@@ -121,7 +121,7 @@ const machineData = computed(() => {
         >
           <NuxtLink to="/">
             <Icon
-              name="IconEliar"
+              name="tw:eliar"
               size="2rem"
               class="mr-2"
             />

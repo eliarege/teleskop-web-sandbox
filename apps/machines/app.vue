@@ -191,7 +191,7 @@ const itemsMobile = [
           <QToolbarTitle shrink>
             <NuxtLink to="/">
               <Icon
-                name="IconEliar"
+                name="tw:eliar"
                 size="2.5rem"
                 class="p-1"
               />
