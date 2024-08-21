@@ -12,6 +12,10 @@ const route = useRoute()
 const $q = useQuasar()
 const { $commandManager } = useNuxtApp()
 
+onBeforeRouteLeave(() => {
+  editor.program = editor.createProgram()
+})
+
 const buttons = computed(() => [
   // {
   //   label: t('menu.print'),
@@ -99,6 +103,18 @@ const buttons = computed(() => [
     disable: (editor.isLoading || editor.selectedStep === -1 || editor.selectedParallelStep === -1),
     onClick() {
       editor.deleteParallelStep()
+    },
+  },
+  {
+    label: t('Expand'),
+    originalLabel: t('Expand'),
+    tooltip: t('menu.allStepExpand'),
+    shortcut: '',
+    icon: 'expand_less',
+    disable: editor.isLoading,
+    onClick() {
+      editor.allStepExpanded = !editor.allStepExpanded
+      console.log(editor.allStepExpanded)
     },
   },
 ])

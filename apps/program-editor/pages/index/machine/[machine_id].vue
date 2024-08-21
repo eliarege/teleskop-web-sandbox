@@ -173,7 +173,6 @@ await editor.fetchAllPrograms(Number(route.params.machine_id))
 await fetchPrograms().then(() => {
   editor.isLoading = false
 })
-editor.program = editor.createProgram()
 
 const versionDialogVisible = ref(false)
 const comparisonDialogVisible = ref(false)
