@@ -356,10 +356,10 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const editor = useEditorStore()
   return {
     name: 'editProgramIcons',
     async execute(ctx: any) {
+      const editor = useEditorStore()
       ctx.$q.dialog({
         component: TBApplicationSettingsDialog,
       }).onOk(async (value: string) => {

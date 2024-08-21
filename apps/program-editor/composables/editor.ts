@@ -27,7 +27,8 @@ export const useEditorStore = defineStore('editor', () => {
   let lastStepId = 0
   let lastCommandId = 0
 
-  const { t } = useI18n()
+  const { $i18n } = useNuxtApp()
+  const { t } = $i18n
   const route = useRoute()
   const errorIds = ref(new Set<string>())
   const { notifySuccess, notifyError } = useNotify()
