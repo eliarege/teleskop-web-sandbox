@@ -470,11 +470,11 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function fetchTeleskopSettings() {
-    teleskopSettings.value = await $fetch<TeleskopSettings[]>(`/api/teleskop-settings`)
+    teleskopSettings.value = await fetch<TeleskopSettings[]>(`/api/teleskop-settings`)
   }
 
   async function fetchCommandTypes(machineId: number) {
-    machine.value.commandTypes = await $fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
+    machine.value.commandTypes = await fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
   }
 
   function getStepIcon(commandNo: number | undefined): StepIcon | undefined {
