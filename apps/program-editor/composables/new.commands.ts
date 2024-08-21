@@ -356,7 +356,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const { fetch } = useKeycloak()
+  const editor = useEditorStore()
   return {
     name: 'editProgramIcons',
     async execute(ctx: any) {
@@ -364,7 +364,7 @@ registerCommand(() => {
         component: TBApplicationSettingsDialog,
       }).onOk(async (value: string) => {
         // Number 12 for icon settings
-        await setTeleskopSettings(12, value)
+        await editor.updateTeleskopSettings(12, value)
       })
       return true
     },

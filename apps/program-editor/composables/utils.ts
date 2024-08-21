@@ -287,22 +287,3 @@ export function parseDuration(duration: string): number {
   }
   return Number(duration) * 36000
 }
-
-export async function setTeleskopSettings(id: number, value: string): Promise<void> {
-  await $fetch(`/api/teleskop-settings`, {
-    method: 'PUT',
-    body: {
-      id,
-      value,
-    },
-  })
-  const editor = useEditorStore()
-  await editor.fetchTeleskopSettings()
-}
-
-export async function getTeleskopSettings(): Promise<string> {
-  const { data } = await $fetch('/api/teleskop-settings', {
-    method: 'GET',
-  })
-  return data
-}

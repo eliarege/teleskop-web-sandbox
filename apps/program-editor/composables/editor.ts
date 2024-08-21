@@ -473,6 +473,19 @@ export const useEditorStore = defineStore('editor', () => {
     teleskopSettings.value = await fetch<TeleskopSettings[]>(`/api/teleskop-settings`)
   }
 
+  async function updateTeleskopSettings(id: number, value: string) {
+    await fetch('/api/teleskop-settings', {
+      method: 'PUT',
+      body: { id, value },
+    })
+    const setting = teleskopSettings.value.find(st => st.id === id)
+    if (setting) {
+      setting!.value = value
+    } else {
+      teleskopSettings.value.push({ id, value })
+    }
+  }
+
   async function fetchCommandTypes(machineId: number) {
     machine.value.commandTypes = await fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
   }
@@ -524,6 +537,7 @@ export const useEditorStore = defineStore('editor', () => {
     rightDrawerOpen,
     theoricDuration,
     treatmentSettings,
+    teleskopSettings,
     changeMachine,
     fetchProgram,
     fetchMachine,
@@ -553,7 +567,7 @@ export const useEditorStore = defineStore('editor', () => {
     scrollPage,
     getStepIcon,
     fetchTeleskopSettings,
-    teleskopSettings,
+    updateTeleskopSettings,
     fetchCommandTypes,
   }
 })
