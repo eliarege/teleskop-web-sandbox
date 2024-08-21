@@ -17,6 +17,10 @@ export function useContextBar(items: Ref<QBtnProps[]> | ComputedRef<QBtnProps[]>
   watch(() => route.path, () => {
     update(items.value)
   })
+
+  watchEffect(() => {
+    update(items.value)
+  })
 }
 
 export function useContextBarState() {
