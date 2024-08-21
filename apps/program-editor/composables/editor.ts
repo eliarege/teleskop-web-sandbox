@@ -278,8 +278,8 @@ export const useEditorStore = defineStore('editor', () => {
       }
     }
     selectedParallelStep.value = Math.min(
-      selectedParallelStep.value, 
-      program.value.steps[selectedStep.value].parallelCommands.length - 1
+      selectedParallelStep.value,
+      program.value.steps[selectedStep.value].parallelCommands.length - 1,
     )
   }
 

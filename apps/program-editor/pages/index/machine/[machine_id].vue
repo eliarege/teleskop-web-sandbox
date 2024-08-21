@@ -181,25 +181,80 @@ const versions = ref([] as Array<any>)
 const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length > 1)
 
 const buttons = computed(() => [
-  { label: t('menu.newProgram'), originalLabel: t('menu.newProgram'), tooltip: t('menu.newProgram'), shortcut: 'F2', icon: 'add_circle_outline', onClick() {
-    editor.popupNewProgramVisible = true
-  } },
-  { label: t('menu.editProgram'), originalLabel: t('menu.editProgram'), tooltip: t('menu.editProgram'), shortcut: 'F3', icon: 'edit', disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length, onClick() {
-    router.push(`/machine/${machineId}/program/${editor.selectedPrograms[0]?.programNo}`)
-  } },
-  { label: t('menu.deleteProgram'), originalLabel: t('menu.deleteProgram'), tooltip: t('menu.deleteProgram'), shortcut: 'Ctrl+Del', icon: 'delete', disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length, onClick() {
-    $commandManager.executeCommand('deleteProgram', { $q, fetchPrograms }, editor.selectedPrograms, Number(machineId))
-  } },
-  { label: t('menu.copy'), originalLabel: t('menu.copy'), tooltip: t('menu.copy'), shortcut: 'Ctrl+C', icon: 'content_copy', disable: !editor.selectedPrograms.length, onClick() {
-    contextMenuStore.copy(editor.selectedPrograms, machineId)
-  } },
-  { label: t('menu.paste'), originalLabel: t('menu.paste'), tooltip: t('menu.paste'), shortcut: 'Ctrl+V', disable: !contextMenuStore.isThereCopiedValue.value, icon: 'content_paste', onClick() {
-    $commandManager.executeCommand('pasteProgram', { $q, fetchPrograms }, Number(machineId))
-  } },
-  { label: t('menu.refresh'), originalLabel: t('menu.refresh'), tooltip: t('menu.refresh'), shortcut: 'F5', icon: 'refresh', onClick() {
-    $commandManager.executeCommand('refresh', { $q, fetchPrograms }, Number(machineId))
-  } },
+  {
+    label: t('menu.newProgram'),
+    originalLabel: t('menu.newProgram'),
+    tooltip: t('menu.newProgram'),
+    shortcut: 'F2',
+    icon: 'add_circle_outline',
+    onClick() {
+      editor.popupNewProgramVisible = true
+    },
+  },
+  {
+    label: t('menu.editProgram'),
+    originalLabel: t('menu.editProgram'),
+    tooltip: t('menu.editProgram'),
+    shortcut: 'F3',
+    icon: 'edit',
+    disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length,
+    onClick() {
+      router.push(`/machine/${machineId}/program/${editor.selectedPrograms[0]?.programNo}`)
+    },
+  },
+  {
+    label: t('menu.deleteProgram'),
+    originalLabel: t('menu.deleteProgram'),
+    tooltip: t('menu.deleteProgram'),
+    shortcut: 'Ctrl+Del',
+    icon: 'delete',
+    disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length,
+    onClick() {
+      // TODO: Context cannot be provided by executor
+      $commandManager.executeCommand(
+        'deleteProgram',
+        { $q, fetchPrograms },
+        editor.selectedPrograms,
+        Number(machineId),
+      )
+    },
+  },
+  {
+    label: t('menu.copy'),
+    originalLabel: t('menu.copy'),
+    tooltip: t('menu.copy'),
+    shortcut: 'Ctrl+C',
+    icon: 'content_copy',
+    disable: !editor.selectedPrograms.length,
+    onClick() {
+      contextMenuStore.copy(editor.selectedPrograms, machineId)
+    },
+  },
+  {
+    label: t('menu.paste'),
+    originalLabel: t('menu.paste'),
+    tooltip: t('menu.paste'),
+    shortcut: 'Ctrl+V',
+    disable: !contextMenuStore.isThereCopiedValue.value,
+    icon: 'content_paste',
+    onClick() {
+      // TODO: Context cannot be provided by executor
+      $commandManager.executeCommand('pasteProgram', { $q, fetchPrograms }, Number(machineId))
+    },
+  },
+  {
+    label: t('menu.refresh'),
+    originalLabel: t('menu.refresh'),
+    tooltip: t('menu.refresh'),
+    shortcut: 'F5',
+    icon: 'refresh',
+    onClick() {
+      // TODO: Context cannot be provided by executor
+      $commandManager.executeCommand('refresh', { $q, fetchPrograms }, Number(machineId))
+    },
+  },
 ])
+
 useContextBar(buttons)
 
 function format(date: Date): string {
@@ -242,10 +297,9 @@ const columns = ref<ProgramTableColumn[]>([
   {
     name: 'duration',
     label: tt('program.theoreticalDuration'),
-    field:
-      (value: { duration: number }) => {
-        return formatDuration(value.duration)
-      },
+    field: (value: { duration: number }) => {
+      return formatDuration(value.duration)
+    },
     sortable: true,
     align: 'center',
   },
@@ -374,6 +428,7 @@ const contextMenuOptions = computed(() => [
       icon: 'delete',
       disabled: false,
       onClick: () => {
+        // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'deleteProgram',
           { $q, fetchPrograms },
@@ -387,6 +442,7 @@ const contextMenuOptions = computed(() => [
       icon: '',
       disabled: false,
       onClick: () => {
+        // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'deleteProgramFromMultiMachine',
           { $q, fetchPrograms },
@@ -400,6 +456,7 @@ const contextMenuOptions = computed(() => [
       icon: '',
       disabled: !isMoreThanOneRowSelected.value,
       onClick: () => {
+        // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'concatenatePrograms',
           { $q, fetchPrograms },
@@ -418,6 +475,7 @@ const contextMenuOptions = computed(() => [
           row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
       onClick: async () => {
+        // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'changeName',
           { $q, fetchPrograms },
@@ -433,6 +491,7 @@ const contextMenuOptions = computed(() => [
       icon: '',
       disabled: false,
       onClick: () => {
+        // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'changeProcessType',
           { $q, fetchPrograms },
@@ -450,6 +509,7 @@ const contextMenuOptions = computed(() => [
       icon: 'send',
       disabled: false,
       onClick: async () => {
+        // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'sendProgram',
           { $q, fetchPrograms },
@@ -464,6 +524,7 @@ const contextMenuOptions = computed(() => [
       icon: '',
       disabled: false,
       onClick: () => {
+        // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'copyAndSend',
           { $q, fetchPrograms },
@@ -478,7 +539,13 @@ const contextMenuOptions = computed(() => [
       icon: '',
       disabled: false,
       onClick: async () => {
-        $commandManager.executeCommand('fetchProgram', { fetchPrograms }, editor.selectedPrograms, machineId)
+        // TODO: Context cannot be provided by executor
+        $commandManager.executeCommand(
+          'fetchProgram',
+          { fetchPrograms },
+          editor.selectedPrograms,
+          machineId,
+        )
       },
     },
   ],
@@ -523,7 +590,11 @@ const contextMenuOptions = computed(() => [
 const ctrl = useKeyModifier('Control')
 
 function handleFilterClick() {
-  $commandManager.executeCommand('filterPrograms', { $q, fetchPrograms, isProgramFilterExists })
+  // TODO: Context cannot be provided by executor
+  $commandManager.executeCommand(
+    'filterPrograms',
+    { $q, fetchPrograms, isProgramFilterExists },
+  )
 }
 function handleClearFilterClick() {
   clearFilter()
@@ -582,6 +653,7 @@ async function onRowClick(row: any, isRightClick?: boolean) {
 async function onRowDoubleClick(row: any) {
   await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
 }
+
 function handleClick(event: { preventDefault: () => void }, option: AppCommand) {
   if (option.disabled)
     event.preventDefault()
