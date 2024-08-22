@@ -9,7 +9,7 @@ interface CalculationContext {
   machine: Machine
 }
 
-const initialTemperature = 25
+export const initialTemperature = 25
 
 /**
  * Programın teorik süresini hesaplar.
@@ -25,13 +25,13 @@ export function calculateProgramDuration(program: Program, machine: Machine): nu
   }
 
   for (const step of program.steps) {
-    duration += _calculateProgramStepDuration(step, context)
+    duration += _calculateProgramStepDuration(step, context).duration
   }
 
   return duration
 }
 
-export function calculateProgramStepDuration(program: Program, machine: Machine, index: number): number {
+export function calculateProgramStepDuration(program: Program, machine: Machine, index: number): { duration: number, temperature: number } {
   const context: CalculationContext = {
     temperature: initialTemperature,
     machine,
@@ -49,17 +49,17 @@ export function calculateProgramStepDuration(program: Program, machine: Machine,
     }
   }
 
-  return _calculateProgramStepDuration(program.steps[index], context)
+  return { duration: _calculateProgramStepDuration(program.steps[index], context).duration, temperature: context.temperature }
 }
 
-function _calculateProgramStepDuration(step: ProgramStep, context: CalculationContext): number {
+function _calculateProgramStepDuration(step: ProgramStep, context: CalculationContext): { duration: number, temperature: number } {
   let duration = 0
 
   const commandNo = step.mainCommand.commandNo
   if (commandNo) {
     const machineCommand = context.machine.commands.get(commandNo)
     if (!machineCommand)
-      return 0
+      return { duration: 0, temperature: context.temperature }
 
     duration += calculateFormula(step, commandNo, machineCommand.x, context.machine)
 
@@ -83,7 +83,7 @@ function _calculateProgramStepDuration(step: ProgramStep, context: CalculationCo
         duration += ((Math.abs(temperature - lastTemperature) / minA) * 60) + b
     }
   }
-  return duration
+  return { duration, temperature: context.temperature }
 }
 
 const { Grammar, Parser } = nearley
