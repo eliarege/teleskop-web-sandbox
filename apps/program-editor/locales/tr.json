@@ -384,5 +384,13 @@
     "unknownCommand": "Bilinmeyen Komut",
     "stepStart": "Başlangıç Adım",
     "stepEnd": "Bitiş Adım"
+  },
+  "machineContextMenu": {
+    "uploadAllPrograms": "Tüm Programları Makineye Yolla",
+    "downloadAllPrograms": "Tüm Programları Makineden Al",
+    "copyAndSend": "Programları Kopyala Ve Başka Makineye Yapıştır",
+    "paste": "Yapıştır",
+    "findChange": "Bul - Değiştir",
+    "compareAllPrograms": "Tüm Programları Karşılaştır"
   }
 }

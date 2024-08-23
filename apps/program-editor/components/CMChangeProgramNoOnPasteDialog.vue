@@ -30,11 +30,12 @@ const isOKDisabled = computed(() => {
           <InputNumber
             v-model="newIds[index]"
             type="positive-integer"
-            dense
+            :dense="true"
             class="w-20"
+            hide-bottom-space
           />
           <span>
-            {{ remainder.program.name }}
+            {{ remainder.program.programNo }} - {{ remainder.program.name }}
           </span>
         </div>
       </q-card-section>

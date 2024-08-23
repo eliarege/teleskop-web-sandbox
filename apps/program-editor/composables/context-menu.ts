@@ -105,7 +105,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         },
       })
     } catch (e: any) {
-      if (e.data.data.code === 'PROGRAM_EXISTS') {
+      if (e?.data?.data?.code === 'PROGRAM_EXISTS') {
         return 0
       }
       throw e

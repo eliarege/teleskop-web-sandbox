@@ -384,5 +384,13 @@
     "unknownCommand": "Unknown Command",
     "stepStart": "Start Step",
     "stepEnd": "End Step"
+  },
+  "machineContextMenu": {
+    "uploadAllPrograms": "Upload All Programs To Machine",
+    "downloadAllPrograms": "Download All Programs From Machine",
+    "copyAndSend": "Copy All Programs And Paste To Another Machine",
+    "paste": "Paste",
+    "findChange": "Find - Change",
+    "compareAllPrograms": "Compare All Programs"
   }
 }

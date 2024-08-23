@@ -37,6 +37,7 @@ async function onUpdateSelected(selection: string) {
 }
 
 const thumbStyle = { opacity: '0' }
+const currentMachine = ref()
 </script>
 
 <template>
@@ -46,10 +47,14 @@ const thumbStyle = { opacity: '0' }
       style="height: calc(100vh - 80px); max-width: 400px;"
     >
       <QList
+        id="machine-list"
         dense
         borderless
       >
-        <template v-for="group in machineGroupsWithMachines" :key="group.groupId">
+        <template
+          v-for="group in machineGroupsWithMachines"
+          :key="group.groupId"
+        >
           <QExpansionItem
             v-if="group.machines && group.machines.length > 0"
             :label="group.name"
@@ -69,10 +74,17 @@ const thumbStyle = { opacity: '0' }
               clickable
               dense
               @click="onUpdateSelected(`${machine.groupId}-${machine.id}`)"
+              @contextmenu.prevent="currentMachine = machine"
             >
               <QItemSection dense>
                 {{ machine.name }}
               </QItemSection>
+              <q-menu
+                touch-position
+                context-menu
+              >
+                <MachineListContextMenu :machine-id="currentMachine?.id" />
+              </q-menu>
             </QItem>
           </QExpansionItem>
         </template>
