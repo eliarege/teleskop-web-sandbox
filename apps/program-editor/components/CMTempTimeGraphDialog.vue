@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar'
 import { Line } from 'vue-chartjs'
+import type { ChartData, ChartOptions } from 'chart.js'
 import { CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Title, Tooltip } from 'chart.js'
 import { calculateProgramStepDuration, initialTemperature } from '~/shared/formula'
 
@@ -8,55 +9,86 @@ ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineControll
 
 const { t } = useI18n()
 const editor = useEditorStore()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef } = useDialogPluginComponent()
 
-const chartData = ref()
-const chartOptions = ref()
+const chartData = ref<ChartData>()
+const chartOptions = ref<ChartOptions>()
 
 function calculateChartData() {
   const tempData: number[] = [initialTemperature]
   const timeData: number[] = [0]
   let formattedTime: string[] = []
+  const stepInfo: { step: number, commandNo: number, commandName: string }[] = []
 
   for (let i = 0; i < editor.program.steps.length; i++) {
     const { temperature, duration } = calculateProgramStepDuration(editor.program, editor.machine, i)
 
     tempData.push(temperature)
     timeData.push(timeData[i] + duration)
+
+    const commandNo = editor.program.steps[i].mainCommand.commandNo!
+    const commandName = editor.machine.commands.get(commandNo)?.name || ''
+    stepInfo.push({ step: i + 1, commandNo, commandName })
   }
   formattedTime = timeData.map(time => formatDuration(time))
-
-  console.log(formattedTime)
 
   chartData.value = {
     labels: formattedTime,
     datasets: [
       {
-        label: 'Sıcaklık (°C)',
+        label: t('apperance.temperature(c)'),
         data: tempData,
         fill: false,
         borderColor: 'rgb(75, 192, 192)',
         tension: 0.1,
+        pointRadius: 6,
+        pointHoverRadius: 8,
       },
     ],
   }
 
   chartOptions.value = {
-    responsive: true,
-    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        displayColors: false,
+        callbacks: {
+          label: (context) => {
+            return [
+              `${stepInfo[context.dataIndex].step}. ${t('apperance.step')}`,
+              `${stepInfo[context.dataIndex].commandNo} ${stepInfo[context.dataIndex].commandName}`,
+            ]
+          },
+        },
+        titleFont: {
+          size: 16,
+        },
+        bodyFont: {
+          size: 14,
+        },
+      },
+    },
     scales: {
       y: {
         title: {
           display: true,
-          text: 'Sıcaklık (°C)',
+          text: t('apperance.temperature(c)'),
+        },
+        ticks: {
+          font: {
+            size: 14,
+          },
         },
       },
       x: {
         title: {
           display: true,
-          text: 'Zaman (saat)',
+          text: t('apperance.time(h)'),
         },
-        beginAtZero: true,
+        ticks: {
+          font: {
+            size: 14,
+          },
+        },
       },
     },
   }
@@ -69,10 +101,10 @@ onMounted(() => {
 
 <template>
   <q-dialog ref="dialogRef" persistent>
-    <q-card class="flex flex-col justify-between max-w-5xl max-h-2xl min-w-5xl min-h-2xl">
+    <q-card class="flex flex-col max-w-6xl max-h-2xl min-w-6xl min-h-2xl">
       <q-card-section class="bg-gray-1 !dark:(bg-dark-1) flex justify-between">
         <span class="text-h6">
-          {{ 'Sıcaklık/Zaman Grafiği' }}
+          {{ t('apperance.tempTimeGraph') }}
         </span>
         <q-separator class="q-my-md" />
         <q-btn
@@ -90,23 +122,6 @@ onMounted(() => {
           :data="chartData"
         />
       </q-card-section>
-
-      <q-card-actions align="right" class="bg-gray-2 !dark:(bg-dark-1)">
-        <q-btn
-          v-close-popup
-          :label="t('okay')"
-          outline
-          icon="check"
-          @click="onDialogCancel"
-        />
-        <q-btn
-          v-close-popup
-          outline
-          :label="t('cancel')"
-          icon="close"
-          @click="onDialogOK"
-        />
-      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
