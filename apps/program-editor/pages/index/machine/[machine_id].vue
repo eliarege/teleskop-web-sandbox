@@ -817,6 +817,10 @@ function handleRowColor(row: ProgramHeader) {
   <EliarModal v-if="editor.popupSaveAsProgramVisible">
     <CMSaveAsProgramDialog />
   </EliarModal>
+
+  <EliarModal v-if="editor.popupTempTimeGraphVisible">
+    <CMTempTimeGraphDialog />
+  </EliarModal>
 </template>
 
 <style lang="postcss" scoped>

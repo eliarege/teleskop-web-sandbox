@@ -21,7 +21,9 @@ export const useEditorStore = defineStore('editor', () => {
   const popupSaveAsProgramVisible = ref(false)
   const popupCommandListVisible = ref(false)
   const popupCommandDetailVisible = ref(false)
-  const newVersionDialog = ref(false)
+  const popupVersionDialog = ref(false)
+  const popupTempTimeGraphVisible = ref(false)
+  const popupStepCommandGraphVisible = ref(false)
   const leftDrawerOpen = ref(true)
   const rightDrawerOpen = ref(false)
   let lastStepId = 0
@@ -530,7 +532,7 @@ export const useEditorStore = defineStore('editor', () => {
     selectedParallelStep,
     isLoading,
     errorIds,
-    newVersionDialog,
+    popupVersionDialog,
     allProcessType,
     allPrograms,
     selectedCommand,
@@ -540,6 +542,8 @@ export const useEditorStore = defineStore('editor', () => {
     popupSaveAsProgramVisible,
     popupCommandListVisible,
     popupCommandDetailVisible,
+    popupTempTimeGraphVisible,
+    popupStepCommandGraphVisible,
     leftDrawerOpen,
     rightDrawerOpen,
     theoricDuration,
