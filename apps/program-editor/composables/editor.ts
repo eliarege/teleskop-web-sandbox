@@ -1,5 +1,6 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, commandTypeMaps } from '~/shared/constants'
@@ -40,14 +41,10 @@ export const useEditorStore = defineStore('editor', () => {
 
   const theoricDuration = computed(() => formatDuration(calculateProgramDuration(program.value, machine.value)))
 
-  const treatmentSettings = ref<{ optimizedEnable: boolean }>({
-    optimizedEnable: false,
-  })
-  async function fetchTreatmentSettings() {
-    treatmentSettings.value = await fetch('/api/treatment-settings')
+  async function fetchTeleskopSettings() {
+    teleskopSettings.value = await fetch('/api/teleskop-settings')
   }
-
-  fetchTreatmentSettings()
+  fetchTeleskopSettings()
 
   async function changeMachine(id: number) {
     selectedPrograms.value = []
@@ -478,10 +475,6 @@ export const useEditorStore = defineStore('editor', () => {
     return currentElement
   }
 
-  async function fetchTeleskopSettings() {
-    teleskopSettings.value = await fetch<TeleskopSettings[]>(`/api/teleskop-settings`)
-  }
-
   async function updateTeleskopSettings(id: number, value: string) {
     await fetch('/api/teleskop-settings', {
       method: 'PUT',
@@ -547,7 +540,6 @@ export const useEditorStore = defineStore('editor', () => {
     leftDrawerOpen,
     rightDrawerOpen,
     theoricDuration,
-    treatmentSettings,
     teleskopSettings,
     changeMachine,
     fetchProgram,

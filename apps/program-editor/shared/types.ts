@@ -394,3 +394,13 @@ export interface StepIcon {
   label?: string | undefined
   color?: string | undefined
 }
+export interface TreatmentSettings {
+  optimizedEnable: boolean
+  optimizedLimit: number
+}
+
+export interface TeleskopSettings {
+  treatmentSettings: TreatmentSettings
+  selectedIcons: number
+  initialTemperature: number
+}

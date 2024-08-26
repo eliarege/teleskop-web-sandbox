@@ -1,7 +1,7 @@
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { Knex } from 'knex'
 import { isDef } from '@teleskop/utils'
-import { ensureTreatmentGroups, fetchTreatmentSettings, getGroupIdByMachineId, getMachineHost, hasMachine, logEditorOperation } from '../functions'
+import { ensureTreatmentGroups, fetchTeleskopSettings, getGroupIdByMachineId, getMachineHost, hasMachine, logEditorOperation } from '../functions'
 import { db, dmExchange } from '../database'
 import { withFTP, withTransaction } from '../decorators'
 import { sql } from '../sql'
@@ -1350,7 +1350,7 @@ export class MachineController {
 
     await ensureTreatmentGroups()
 
-    const settings = await fetchTreatmentSettings()
+    const settings = await fetchTeleskopSettings()
 
     const treatmentParameters = (await this.fetchTreatmentParameters()).map((parameter) => {
       return {
@@ -1375,15 +1375,15 @@ export class MachineController {
       })
       if (tp) {
         tp.counter++
-        if (tp.counter >= settings.optimizedLimit) {
+        if (tp.counter >= settings.treatmentSettings.optimizedLimit) {
           throw new PError('PROGRAM_TREATMENT_COMMAND_LIMIT', {
             machineId: this.id,
             programNo: program.programNo,
             commandNo: command.commandNo!,
-            limit: settings.optimizedLimit,
+            limit: settings.treatmentSettings.optimizedLimit,
           })
         }
-        if (!settings.optimizedEnable || (settings.optimizedEnable && parameter.optimized)) {
+        if (!settings.treatmentSettings.optimizedEnable || (settings.treatmentSettings.optimizedEnable && parameter.optimized)) {
           totalOptimizeCount++
           treatmentRefs.push({
             counter: tp.counter,
