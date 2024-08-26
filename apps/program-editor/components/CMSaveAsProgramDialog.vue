@@ -45,7 +45,7 @@ function onCancel() {
         <QCard style="width: 500px">
           <QCardSection>
             <div class="text-h6 text-center">
-              {{ t('menu.newProgram') }} - {{ editor.machine.name }}
+              {{ t('menu.saveAs') }} - {{ editor.machine.name }}
             </div>
           </QCardSection>
 
