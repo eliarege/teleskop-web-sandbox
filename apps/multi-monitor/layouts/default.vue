@@ -6,7 +6,11 @@ import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
 
 const { t } = useI18n()
-const breakpoints = useBreakpoints(breakpointsTailwind)
+const breakpoints = useBreakpoints({
+  lg: '1200px',
+  sm: '768px',
+  md: '768px',
+})
 const sm = breakpoints.greaterOrEqual('sm')
 const store = useDataStore()
 const showSettings = ref(false)
@@ -109,7 +113,6 @@ const machineData = computed(() => {
           :formatted
           :machine-data
         />
-
         <TopbarButton
           v-else
           icon="menu"

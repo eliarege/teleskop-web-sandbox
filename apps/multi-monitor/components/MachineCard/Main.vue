@@ -125,7 +125,7 @@ function isScreenViable(screen: number) {
 <style scoped lang="postcss">
 .card-wrapper {
   grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
-  @apply grid gap-x-3 gap-y-2 mt-1 overflow-x-hidden font-extrabold;
+  @apply grid gap-x-3 gap-y-2 mt-1 overflow-x-hidden font-extrabold pb-17;
   .card-container {
     border-radius: 20px;
     @apply flex flex-col e-border border-dark-900/10;

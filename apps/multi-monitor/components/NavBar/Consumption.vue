@@ -20,7 +20,7 @@ const store = useDataStore()
 </script>
 
 <template>
-  <div class="lg:(flex items-center justify-center gap-15) md:(grid grid-cols-2 grid-rows-2 gap-4) lt-sm:(h-min flex-center gap-3) text-center w-full">
+  <div class="lg:(flex items-center justify-center gap-15) md:(grid grid-cols-2 grid-rows-2 gap-4) <sm:(flex-center gap-3) text-center w-full">
     <NavBarConsumptionItem
       v-if="store.electricity"
       :label="t('teleskop.consumption-electricity')"

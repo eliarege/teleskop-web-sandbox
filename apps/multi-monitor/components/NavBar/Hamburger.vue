@@ -6,7 +6,7 @@ const emit = defineEmits(['close'])
 </script>
 
 <template>
-  <div class="bg-white rounded p-1 h-auto">
+  <div class="bg-white rounded p-1 w-screen">
     <Icon
       name="material-symbols:close"
       size="20"

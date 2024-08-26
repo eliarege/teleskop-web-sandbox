@@ -27,7 +27,8 @@ function formatNumber(value: number) {
 </script>
 
 <template>
-  <div class="inline">
+  <div class="lg:(inline) md:(flex-center) <sm:(flex-center)">
+    <!-- <div class="inline"> -->
     <QTooltip
       transition-show="scale"
       class="text-black e-border bg-white"

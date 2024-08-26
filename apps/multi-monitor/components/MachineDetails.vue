@@ -377,10 +377,10 @@ const { width: windowWidth } = useWindowSize()
   grid-template-columns: 0.5fr 1fr 1fr 0.5fr;
   grid-template-rows: repeat(3, 1fr);
   grid-template-areas:
-    "operator table table info"
-    "operator table table info"
-    "operator logs logs chart";
-  @apply grid gap-x-3 gap-y-1 w-full h-screen text-center max-w-1920px px-2 pb-2 text-black;
+    'operator table table info'
+    'operator table table info'
+    'operator logs logs chart';
+  @apply grid gap-x-3 gap-y-1 w-full h-screen text-center max-w-1920px px-2 pb-17 text-black;
 }
 
 .table-wrapper {
@@ -458,17 +458,16 @@ const { width: windowWidth } = useWindowSize()
 }
 
 @media (min-width: 735px) and (max-width: 1350px) {
-
   .wrapper {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: 15px 100px 1fr;
     grid-template-areas:
-      "header header header"
-      "table table table"
-      "table table table"
-      "chart operator operator"
-      "info operator operator"
-      "logs logs logs";
+      'header header header'
+      'table table table'
+      'table table table'
+      'chart operator operator'
+      'info operator operator'
+      'logs logs logs';
     @apply grid w-full h-full max-w-full px-10;
 
     .table-wrapper {
