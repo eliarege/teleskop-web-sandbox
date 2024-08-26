@@ -787,7 +787,7 @@ onMounted(async () => {
       align: 'left',
       field: 'name',
       htmlEncode: false,
-      minWidth: 200,
+      minWidth: 150,
       renderer: (data: any) => `${data.record.name}`,
     }, {
       type: 'duration',
@@ -865,8 +865,8 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
   <LoadingSpinner v-if="eventPending" :has-background="false" />
   <LoadingSpinner v-if="jobOrderUploadLoading" :has-background="true" />
   <div>
-    <div class="w-full h-screen relative">
-      <div id="main" class="w-full h-full" />
+    <div class="w-full h-full relative">
+      <div id="main" class="w-full content-height overflow-auto" />
     </div>
     <EliarModal v-if="propertiesModal.show" @click.stop="propertiesModal.show = false">
       <template #default>

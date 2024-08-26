@@ -33,14 +33,20 @@ globalThis.bryntum.isTestEnv = true
 </template>
 
 <style>
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #f5f5f5;
+}
+
 ::-webkit-scrollbar {
   width: 0.55rem;
-  height: 100%;
+  height: 0.55rem;
+  background-color: #f5f5f5;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #0d94fc;
-  opacity: 50%;
   border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #0d94fc;
 }
 </style>
