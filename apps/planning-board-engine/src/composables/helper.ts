@@ -29,16 +29,18 @@ export async function queueBasedEventStatus(events: QueueBasedEvent[], includeSt
   ongoingEvents.forEach((event) => {
     const plannedEventsOnSameMachine = events.filter(ev => ev.eventType === 'planned' && ev.machineId === event.machineId)
     plannedEventsOnSameMachine.forEach((ev) => {
-      if (new Date(event.endTime).getTime() >= new Date().getTime()) {
-        updatePlannedEvent(ev, event, events)
-      }
+      updatePlannedEvent(ev, event, events)
     })
   })
-  const stops = events.filter(e => e.eventType === 'stop')
-  return setStopTimes(events, stops).map(ev => ({
+  const eventsWithPercentDone = events.map(ev => ({
     ...ev,
     percentDone: ev.deviation > 0 ? 100 - ((ev.deviation / ev.theoreticalDuration) * 100) : 100,
   }))
+  if (includeStops) {
+    const stops = events.filter(e => e.eventType === 'stop')
+    return setStopTimes(eventsWithPercentDone, stops)
+  }
+  return eventsWithPercentDone
 }
 
 function updatePlannedEvent(ev: QueueBasedNonActualEvent, event: QueueBasedEvent, events: QueueBasedEvent[]) {

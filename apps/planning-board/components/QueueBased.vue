@@ -237,10 +237,10 @@ function setEventName(event: QueueBasedEvent): Values<QueueBasedEvent> {
     return formattedText
   }
   if (event.eventType === 'finished' || event.eventType === 'manual') {
-    const formattedText = isDate(event[ongoingBatchText]) ? d(event[ongoingBatchText], 'datetime') : event[ongoingBatchText]
+    const formattedText = isDate(event[completedBatchText]) ? d(event[completedBatchText], 'datetime') : event[completedBatchText]
     return formattedText
   } else if (event.eventType === 'ongoing') {
-    const formattedText = isDate(event[completedBatchText]) ? d(event[completedBatchText], 'datetime') : event[completedBatchText]
+    const formattedText = isDate(event[ongoingBatchText]) ? d(event[ongoingBatchText], 'datetime') : event[ongoingBatchText]
     return formattedText
   } else {
     return ' '
@@ -485,6 +485,44 @@ onMounted(async () => {
     },
     onCellClick() {
       store.selectedEvent = {}
+    },
+
+    onRenderEvent({ element, eventRecord }) {
+      if (eventRecord.originalData.eventType !== 'stop' && eventRecord.originalData.eventType !== 'unplanned') {
+        const outerBar = element.querySelector('.b-task-percent-bar-outer')
+        if (outerBar) {
+          const bgColor = setFabricColor(eventRecord.originalData)
+          const darkenedColor = darkenColor(bgColor, 20)
+
+          const stripedBackground = `background-image: repeating-linear-gradient(
+              45deg,
+              ${bgColor},
+              ${bgColor} 10px,
+              ${darkenedColor} 10px,
+              ${darkenedColor} 20px
+            );`
+
+          outerBar.setAttribute('style', stripedBackground)
+
+          const innerBar = outerBar.querySelector('.b-task-percent-bar')
+          if (innerBar) {
+            innerBar.style.backgroundColor = bgColor
+          }
+        }
+      }
+    },
+    onReleaseEvent({ element, eventRecord }) {
+      const outerBar = element.querySelector('.b-task-percent-bar-outer')
+      if (outerBar) {
+        const bgColor = setFabricColor(eventRecord.originalData)
+
+        outerBar.setAttribute('style', bgColor)
+
+        const innerBar = outerBar.querySelector('.b-task-percent-bar')
+        if (innerBar) {
+          innerBar.style.backgroundColor = bgColor
+        }
+      }
     },
     eventRenderer({ eventRecord }: any) {
       const icons: string[] = []
@@ -749,7 +787,7 @@ onMounted(async () => {
       align: 'left',
       field: 'name',
       htmlEncode: false,
-      minWidth: 200,
+      minWidth: 150,
       renderer: (data: any) => `${data.record.name}`,
     }, {
       type: 'duration',
@@ -827,8 +865,8 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
   <LoadingSpinner v-if="eventPending" :has-background="false" />
   <LoadingSpinner v-if="jobOrderUploadLoading" :has-background="true" />
   <div>
-    <div class="w-full h-screen relative">
-      <div id="main" class="w-full h-full" />
+    <div class="w-full h-full relative">
+      <div id="main" class="w-full content-height overflow-auto" />
     </div>
     <EliarModal v-if="propertiesModal.show" @click.stop="propertiesModal.show = false">
       <template #default>

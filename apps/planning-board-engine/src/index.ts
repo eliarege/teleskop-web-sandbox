@@ -31,7 +31,7 @@ const mutex = new Mutex()
 const clientTasks: Record<string, string[]> = {}
 const DB_NAME = process.env.TELESKOP_DATABASE
 app.ready().then(async () => {
-  await knex.raw(`ALTER DATABASE ${DB_NAME} SET COMPATIBILITY_LEVEL = 130`)
+  await knex.raw(/* sql */`ALTER DATABASE ${DB_NAME} SET COMPATIBILITY_LEVEL = 130`)
 
   await createPtColumnsTable(knex)
   await createPtMachineErpTable(knex)

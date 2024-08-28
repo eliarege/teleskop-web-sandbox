@@ -54,7 +54,7 @@ const { data: state } = await useFetch('/api/ptStatus')
   <QLayout view="hhh lpR fFf">
     <QHeader
       bordered
-      class="text-white bryntum-tbar-bg select-none border-b-3"
+      class="text-white bryntum-tbar-bg select-none border-b-3 !h-53px"
     >
       <QToolbar class="min-h-unset">
         <template v-if="sm">
@@ -109,7 +109,7 @@ const { data: state } = await useFetch('/api/ptStatus')
     </QHeader>
 
     <QPageContainer>
-      <QPage class="w-full h-screen">
+      <QPage class="w-full h-99vh content-height">
         <TimeBased v-if="Number.parseInt(state || '0') === 1" />
         <QueueBased v-else ref="queueBasedRef" />
       </QPage>
@@ -120,5 +120,9 @@ const { data: state } = await useFetch('/api/ptStatus')
 <style>
 .bryntum-tbar-bg {
   background-color: #686872;
+}
+.content-height {
+  height: calc(100vh - 53px);
+  max-height: calc(100vh - 53px);
 }
 </style>
