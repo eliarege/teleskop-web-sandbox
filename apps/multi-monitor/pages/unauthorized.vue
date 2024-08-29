@@ -3,7 +3,7 @@ const { t } = useI18n()
 const router = useRouter()
 
 definePageMeta({
-  layout: 'vnc',
+  layout: 'empty',
 })
 </script>
 

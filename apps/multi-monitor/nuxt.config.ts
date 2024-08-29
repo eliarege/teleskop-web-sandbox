@@ -22,9 +22,6 @@ export default defineNuxtConfig({
     machineStatusUrl: 'http://localhost:3050',
     isStaging: 'no',
     public: {
-      kcUrl: 'http://localhost:8080',
-      kcRealm: 'teleskop-web',
-      kcEnabled: true,
       kcClientId: 'multi-monitor',
       isDigitalFactory: 'false',
       teleskopHasLogs: 'true',

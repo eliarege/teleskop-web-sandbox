@@ -2,7 +2,7 @@
 import { useDataStore } from '~/store/Datas'
 
 definePageMeta({
-  layout: 'vnc',
+  layout: 'empty',
   middleware: ['auth'],
   roles: ['access-vnc'],
 })
@@ -17,7 +17,6 @@ const currentMachine = computed(() => {
 useHead({
   title: () => currentMachine.value?.name || `${t('loading')}...`,
 })
-setPageLayout('vnc')
 </script>
 
 <template>
