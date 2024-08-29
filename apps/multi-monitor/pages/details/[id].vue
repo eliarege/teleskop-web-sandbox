@@ -3,6 +3,9 @@ import { LoadingSpinner } from '@teleskop/ui'
 import type { BatchLogs, MachineDataRaw, NewBatchLogs, NewInterventions } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
 
+definePageMeta({
+  noAuth: true,
+})
 const store = useDataStore()
 const route = useRoute()
 

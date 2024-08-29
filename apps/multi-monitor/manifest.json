@@ -1,3 +1,6 @@
 {
-  "roles": []
+  "roles": [
+    { "name": "access-vnc" },
+    { "name": "manage-vnc" }
+  ]
 }

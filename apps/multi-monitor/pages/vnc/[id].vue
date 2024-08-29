@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { useDataStore } from '~/store/Datas'
 
+definePageMeta({
+  layout: 'vnc',
+  middleware: ['auth'],
+  roles: ['access-vnc'],
+})
 const store = useDataStore()
 const { t } = useI18n()
 const route = useRoute()
