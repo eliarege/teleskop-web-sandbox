@@ -15,6 +15,7 @@ import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
 import TBApplicationSettingsDialog from '~/components/TBApplicationSettingsDialog.vue'
 import TBExportExcelDialog from '~/components/TBExportExcelDialog.vue'
 import hooks from '~/utils/hooks'
+import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -58,7 +59,22 @@ export interface RegisteredCommands {
   editProgramIcons: [ctx: any]
   exportToExcel: [ctx: any]
   refresh: [ctx: any, machineId: number]
-}
+
+registerCommand(() => {
+  return {
+    name: 'stepCommandGraph',
+    execute(ctx: any) {
+      ctx.$q.dialog({
+        component: CMStepCommandGraphDialog,
+      }).onOk(() => {
+        console.log('OK')
+      }).onCancel(() => {
+        console.log('Cancel')
+      })
+      return true
+    },
+  }
+})
 
 registerCommand(() => {
   const { fetch } = useKeycloak()

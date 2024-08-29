@@ -371,6 +371,12 @@
     "tempTimeGraph": "Temperature/Time Graph",
     "temperature(c)": "Temperature(°C)",
     "time(h)": "Time(hour)",
-    "step": "Step"
+    "step": "Step",
+    "stepCommandGraph": "Step/Command Graph",
+    "steps": "Steps",
+    "commands": "Commands",
+    "unknownCommand": "Unknown Command",
+    "stepStart": "Start Step",
+    "stepEnd": "End Step"
   }
 }
