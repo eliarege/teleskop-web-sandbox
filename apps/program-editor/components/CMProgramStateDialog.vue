@@ -1,19 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useQuasar } from 'quasar'
-import { defineStore } from 'pinia'
+import { useLocalStorage } from '@vueuse/core'
 import { ProgramStateColors } from '~/shared/constants'
 
-const useStatusColorStore = defineStore('statusColor', () => {
-  const showPopup = ref(false)
-  function toggleStatusColor() {
-    showPopup.value = !showPopup.value
-  }
-
-  return { showPopup, toggleStatusColor }
+const useStatusColorStore = useLocalStorage('statusColor', {
+  showPopup: false,
 })
 
-const statusColor = useStatusColorStore()
+function togglePopup() {
+  useStatusColorStore.value.showPopup = !useStatusColorStore.value.showPopup
+}
 
 const { dark } = useQuasar()
 const { t } = useI18n()
@@ -29,18 +26,18 @@ const programStatus = computed(() => [
 
 <template>
   <div class="status-popup">
-    <div class="status-header" @click="statusColor.toggleStatusColor()">
+    <div class="status-header" @click="togglePopup()">
       <span class="font-size-4">
         {{ t('programStatusInfo._') }}
       </span>
       <QIcon
-        v-if="statusColor.showPopup"
+        v-if="useStatusColorStore.showPopup"
         name="close"
         size="1rem"
       />
     </div>
 
-    <div v-show="statusColor.showPopup" class="status-body">
+    <div v-show="useStatusColorStore.showPopup" class="status-body">
       <div
         v-for="status in programStatus"
         :key="status.label"
