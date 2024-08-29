@@ -70,10 +70,6 @@ registerCommand(() => {
     execute(ctx: any) {
       ctx.$q.dialog({
         component: CMTempTimeGraphDialog,
-      }).onOk(() => {
-        console.log('OK')
-      }).onCancel(() => {
-        console.log('Cancel')
       })
       return true
     },
@@ -86,10 +82,6 @@ registerCommand(() => {
     execute(ctx: any) {
       ctx.$q.dialog({
         component: CMStepCommandGraphDialog,
-      }).onOk(() => {
-        console.log('OK')
-      }).onCancel(() => {
-        console.log('Cancel')
       })
       return true
     },
