@@ -1,7 +1,7 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
-import type { DragHelperConfig, EventModel, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro-trial'
-import { LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro-trial'
+import type { DragHelperConfig, EventModel, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro'
+import { LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro'
 import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import { determineTextColor } from '@teleskop/utils'
 import { useDocumentVisibility } from '@vueuse/core'
@@ -61,7 +61,7 @@ async function uploadJobOrder(planKey: number) {
   const event: any = scheduler.events.find(e => e.id === planKey)
   const machine: any = scheduler.resources.find(e => e.id === event.resourceId)
 
-  let program = event.originalData.programNoList
+  let program = event.originalData.programList
   if (program.endsWith(',')) {
     program = program.slice(0, -1)
   }
@@ -480,7 +480,7 @@ onMounted(async () => {
     resources: machines.value,
     events: modifiedEvents.value,
     eventStyle: null,
-    onEventClick({ eventRecord }: EventModel) {
+    onEventClick({ eventRecord }) {
       store.selectedEvent = eventRecord
     },
     onCellClick() {
@@ -579,21 +579,48 @@ onMounted(async () => {
     },
     columns: [
       {
+        field: 'name',
         type: 'resourceInfo',
         text: 'L{machine}',
         flex: 1,
         showRole: true,
-        renderer: (data: any) => `
-        <div class="b-resource-info" role="presentation">
-          <dl role="presentation">
-            <dt role="presentation">${data.record.name}</dt>
-            <dd class="b-resource-role" role="presentation"></dd>
-            <dd class="b-resource-meta" role="presentation">
-              <div class="totalAlarmCount">${t('queue-based.alarm-count')}: ${data.record.totalAlarmCount}</div>
-            </dd>
-          </dl>
-        </div>
-        `,
+        renderer: ({ record }) => {
+          return {
+            tag: 'div',
+            class: 'b-resource-info',
+            children: [
+              {
+                tag: 'dl',
+                role: 'presentation',
+                children: [
+                  {
+                    tag: 'dt',
+                    role: 'presentation',
+                    text: record.name,
+                  },
+                  {
+                    tag: 'dd',
+                    role: 'presentation',
+                    class: 'b-resource-role',
+                  },
+                  {
+                    tag: 'dd',
+                    role: 'presentation',
+                    class: 'b-resource-meta',
+                    children: [
+                      {
+                        tag: 'div',
+                        role: 'presentation',
+                        class: 'totalAlarmCount',
+                        text: `${t('queue-based.alarm-count')}: ${record.totalAlarmCount}`,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          }
+        },
         enableCellContextMenu: true,
         cellMenuItems: {
           vnc: {
@@ -613,7 +640,6 @@ onMounted(async () => {
             },
           },
         },
-        field: 'name',
       },
     ],
     features: {
@@ -730,13 +756,13 @@ onMounted(async () => {
           properties: {
             icon: 'b-fa-solid b-fa-calendar-xmark',
             text: t('queue-based.ctx-menu.properties'),
-            onItem({ eventRecord, assignmentRecord }: any) {
+            onItem({ eventRecord, assignmentRecord }) {
               const planKey = eventRecord.originalData.id
               const jobOrder = eventRecord.originalData.name
               const machineId = assignmentRecord.originalData.resourceId
               const fabricWeight = eventRecord.originalData.fabricWeight
               const theoreticalDuration = eventRecord.originalData.theoreticalDuration
-              let program: string = eventRecord.originalData.programNoList
+              let program: string = eventRecord.originalData.programList
               if (program.endsWith(',')) {
                 program = program.slice(0, -1)
               }

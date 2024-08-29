@@ -13,7 +13,7 @@ export interface QueueBasedBaseEvent extends QueueBasedBaseEventRaw {
   eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'unplanned'
   planKey: number
   jobOrder: string
-  programNoList: string
+  programList: string
   programCount: number
   theoreticalDuration: number
   fabricWeight: number

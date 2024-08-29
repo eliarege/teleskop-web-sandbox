@@ -11,7 +11,7 @@ import {
   TimelineDateMapper,
   Toast,
   Tooltip,
-} from '@bryntum/schedulerpro-trial'
+} from '@bryntum/schedulerpro'
 
 import { addMinutes, addSeconds } from 'date-fns'
 import { io } from 'socket.io-client'
@@ -555,18 +555,6 @@ export class QueueSchedule extends SchedulerPro {
       useInitialAnimation: false,
       features: {
         stripe: true,
-        calendarHighlight: {
-          calendar: 'resource',
-          collectAvailableResources({ scheduler, eventRecords }) {
-            const draggedTask = eventRecords[0]
-            return scheduler.resourceStore.query(
-              resourceRecord =>
-                resourceRecord.processes
-                  .map(a => a.id)
-                  .includes(draggedTask.process) || !draggedTask.process,
-            )
-          },
-        },
       },
       async onEventDragStart({ context, resourceRecord, eventRecords }) {
         context.isDropped = false

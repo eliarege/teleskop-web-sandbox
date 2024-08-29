@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { LocaleManager } from '@bryntum/schedulerpro-trial'
-import '@bryntum/schedulerpro-trial/locales/schedulerpro.locale.En'
-import '@bryntum/schedulerpro-trial/locales/schedulerpro.locale.Tr'
+import { LocaleManager } from '@bryntum/schedulerpro'
+import '@bryntum/schedulerpro/locales/schedulerpro.locale.En'
+import '@bryntum/schedulerpro/locales/schedulerpro.locale.Tr'
 import { LoadingScreen } from '@teleskop/ui'
 
 const { locale } = useI18n()
@@ -13,10 +13,6 @@ watch(() => locale.value, (newLocale: string) => {
     LocaleManager.locale = 'En'
   }
 })
-// @ts-expect-error TODO: window augmentation
-globalThis.bryntum ??= {}
-// @ts-expect-error TODO: window augmentation
-globalThis.bryntum.isTestEnv = true
 </script>
 
 <template>

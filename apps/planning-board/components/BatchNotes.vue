@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Toast } from '@bryntum/schedulerpro-trial'
+import { Toast } from '@bryntum/schedulerpro'
 
 const props = defineProps<{ jobOrder: string }>()
 const emit = defineEmits(['updateScheduler'])

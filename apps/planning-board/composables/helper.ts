@@ -1,5 +1,5 @@
-import type { SchedulerPro } from '@bryntum/schedulerpro-trial'
-import { DateHelper } from '@bryntum/schedulerpro-trial'
+import type { SchedulerPro } from '@bryntum/schedulerpro'
+import { DateHelper } from '@bryntum/schedulerpro'
 import type { UnplannedEventsRaw } from '~/shared/types'
 
 export function decompressJson(data: { columns: string[], values: any[][] }) {

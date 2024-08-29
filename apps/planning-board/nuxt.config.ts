@@ -27,10 +27,10 @@ export default defineNuxtConfig({
       ],
     },
   },
-  css: ['@bryntum/schedulerpro-trial/schedulerpro.classic.css'],
+  css: ['@bryntum/schedulerpro/assets/schedulerpro.classic.css'],
   vite: {
     optimizeDeps: {
-      include: ['@bryntum/schedulerpro-trial'],
+      include: ['@bryntum/schedulerpro'],
     },
     vue: {
       template: {

@@ -143,7 +143,7 @@
         "machineId": "Machine Id",
         "queueNumber": "Queue Number",
         "jobOrder": "Job Order",
-        "programNoList": "Program List",
+        "programList": "Program List",
         "theoreticalDuration": "Theoretical Duration",
         "fabricWeight": "Fabric Weight",
         "partyNumber": "Party Number",

@@ -3,7 +3,7 @@ export interface TimeBasedArchiveEvents {
   planKey: number
   machineId: number
   jobOrder: string
-  programNoList: string
+  programList: string
   startTime: Date | string
   endTime: Date | string
   theoreticalDuration: number
@@ -23,7 +23,7 @@ export interface TimeBasedPlannedEvents {
   machineId: number
   plannedStartTime: Date | string
   jobOrder: string
-  programNoList: string
+  programList: string
   theoreticalDuration: number
   fabricWeight: number
   isStarted: boolean
@@ -45,7 +45,7 @@ export interface TimeBasedEventStates {
     plannedStartTime: Date | string
     plannedEndTime: Date | string
     jobOrder: string
-    programNoList: string
+    programList: string
     theoreticalDuration: number
     fabricWeight: number
     isStarted: boolean
@@ -58,7 +58,7 @@ export interface TimeBasedEventStates {
     planKey: number | string
     machineId: number
     jobOrder: string
-    programNoList: string
+    programList: string
     startTime: Date | string
     endTime: Date | string
     theoreticalDuration: number
