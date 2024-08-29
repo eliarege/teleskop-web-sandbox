@@ -3,6 +3,7 @@ import { Sortable } from 'sortablejs-vue3'
 import type { SortableOptions } from 'sortablejs'
 import ProgramStepCommandForm from './ProgramStepCommandForm.vue'
 import type { ProgramStep } from '~/shared/types'
+import { calculateProgramStepDuration } from '~/shared/formula'
 
 const props = defineProps<{
   path: string
@@ -44,10 +45,10 @@ const sortableOptions: SortableOptions = {
 }
 
 // Step Duration
-// const index = computed(() => Number(props.path.split('.').pop()))
-// const duration = computed(() => formatDuration(
-//   calculateProgramStepDuration(editor.program, editor.machine, index.value),
-// ))
+const index = computed(() => Number(props.path.split('.').pop()))
+const duration = computed(() => formatDuration(
+  calculateProgramStepDuration(editor.program, editor.machine, index.value).duration,
+))
 </script>
 
 <template>
@@ -73,6 +74,10 @@ const sortableOptions: SortableOptions = {
         </div>
       </div>
 
+      <div v-if="devMode" class="flex flex-col color-gray-5">
+        <span>{{ step.stepId }}</span>
+        <span>{{ duration }}</span>
+      </div>
       <QBtn
         class="expand-btn"
         :icon="expandIcon"
