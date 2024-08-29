@@ -83,7 +83,9 @@
     "programInfo": "Program Info",
     "versionInfo": "Version Info",
     "tempTimeGraph": "Temperature/Time Graph",
-    "stepCommandGraph": "Step/Command Graph"
+    "stepCommandGraph": "Step/Command Graph",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All"
   },
   "program": {
     "name": "Program Name",

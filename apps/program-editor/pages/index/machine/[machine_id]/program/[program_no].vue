@@ -106,15 +106,14 @@ const buttons = computed(() => [
     },
   },
   {
-    label: t('Expand'),
-    originalLabel: t('Expand'),
-    tooltip: t('menu.allStepExpand'),
+    label: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
+    originalLabel: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
+    tooltip: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
     shortcut: '',
-    icon: 'expand_less',
+    icon: editor.allStepExpanded ? 'expand_less' : 'expand_more',
     disable: editor.isLoading,
     onClick() {
       editor.allStepExpanded = !editor.allStepExpanded
-      console.log(editor.allStepExpanded)
     },
   },
 ])

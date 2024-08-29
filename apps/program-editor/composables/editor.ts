@@ -29,6 +29,7 @@ export const useEditorStore = defineStore('editor', () => {
   const rightDrawerOpen = ref(false)
   let lastStepId = 0
   let lastCommandId = 0
+  const allStepExpanded = ref(false)
 
   const { $i18n } = useNuxtApp()
   const { t } = $i18n
@@ -572,5 +573,6 @@ export const useEditorStore = defineStore('editor', () => {
     fetchTeleskopSettings,
     updateTeleskopSettings,
     fetchCommandTypes,
+    allStepExpanded,
   }
 })

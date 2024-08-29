@@ -17,7 +17,8 @@ const stepIcons = computed(() => [
   editor.getStepIcon(step.mainCommand.commandNo!),
   ...step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!)),
 ])
-const expanded = ref(false)
+
+const expanded = ref(editor.allStepExpanded)
 const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')
 const mainIcon = computed(() => editor.getStepIcon(step.mainCommand.commandNo!))
 const parallelIcons = computed(() => step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!)))
@@ -27,6 +28,10 @@ function toggle() {
     editor.changeSelection(stepIndex.value)
   expanded.value = !expanded.value
 }
+
+watch(() => editor.allStepExpanded, () => {
+  expanded.value = editor.allStepExpanded
+})
 
 const sortableOptions: SortableOptions = {
   sort: false,

@@ -83,7 +83,9 @@
     "programInfo": "Program Bilgileri",
     "versionInfo": "Versiyon Bilgileri",
     "tempTimeGraph": "Sıcaklık/Zaman Grafiği",
-    "stepCommandGraph": "Adım/Komut Grafiği"
+    "stepCommandGraph": "Adım/Komut Grafiği",
+    "expandAll": "Tümünü Genişlet",
+    "collapseAll": "Tümünü Daralt"
   },
   "program": {
     "name": "Program Adı",
