@@ -3,7 +3,7 @@ import { useDialogPluginComponent } from 'quasar'
 import { Line } from 'vue-chartjs'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Title, Tooltip } from 'chart.js'
-import { calculateProgramStepDuration, initialTemperature } from '~/shared/formula'
+import { calculateProgramStepDuration } from '~/shared/formula'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
 
@@ -12,13 +12,16 @@ const editor = useEditorStore()
 const { dialogRef } = useDialogPluginComponent()
 
 const chartData = ref<ChartData>()
-const chartOptions = ref<ChartOptions>()
+const chartOptions = ref<ChartOptions<'line'>>()
 
 function calculateChartData() {
-  const tempData: number[] = [initialTemperature]
+  const initialTemp = 25
+  const tempData: number[] = [initialTemp]
   const timeData: number[] = [0]
   let formattedTime: string[] = []
   const stepInfo: { step: number, commandNo: number, commandName: string }[] = []
+  const pointStyles: string[] = ['circle']
+  const pointBackgroundColors: string[] = ['green']
 
   for (let i = 0; i < editor.program.steps.length; i++) {
     const { temperature, duration } = calculateProgramStepDuration(editor.program, editor.machine, i)
@@ -27,9 +30,18 @@ function calculateChartData() {
     timeData.push(timeData[i] + duration)
 
     const commandNo = editor.program.steps[i].mainCommand.commandNo!
-    const commandName = editor.machine.commands.get(commandNo)?.name || ''
-    stepInfo.push({ step: i + 1, commandNo, commandName })
+    const machineCommand = editor.machine.commands.get(commandNo)!
+    stepInfo.push({ step: i + 1, commandNo, commandName: machineCommand.name })
+
+    if (machineCommand.isUnload) {
+      pointStyles.push('rectRot')
+      pointBackgroundColors.push('red')
+    } else {
+      pointStyles.push('circle')
+      pointBackgroundColors.push('green')
+    }
   }
+
   formattedTime = timeData.map(time => formatDuration(time))
 
   chartData.value = {
@@ -43,6 +55,8 @@ function calculateChartData() {
         tension: 0.1,
         pointRadius: 6,
         pointHoverRadius: 8,
+        pointStyle: pointStyles,
+        pointBackgroundColor: pointBackgroundColors,
       },
     ],
   }
@@ -53,9 +67,12 @@ function calculateChartData() {
         displayColors: false,
         callbacks: {
           label: (context) => {
+            if (stepInfo[context.dataIndex] === undefined)
+              return
             return [
               `${stepInfo[context.dataIndex].step}. ${t('apperance.step')}`,
               `${stepInfo[context.dataIndex].commandNo} ${stepInfo[context.dataIndex].commandName}`,
+              `${t('apperance.temperature(c)')}: ${context.parsed.y}`,
             ]
           },
         },
@@ -85,6 +102,7 @@ function calculateChartData() {
           text: t('apperance.time(h)'),
         },
         ticks: {
+          autoSkip: false,
           font: {
             size: 14,
           },
