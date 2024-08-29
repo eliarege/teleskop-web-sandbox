@@ -88,7 +88,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
 }
 
 function isScreenViable(screen: number) {
-  return screen < 900
+  return !(screen < 900)
 }
 // #endregion
 </script>

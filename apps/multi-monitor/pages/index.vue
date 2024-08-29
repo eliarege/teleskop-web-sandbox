@@ -7,7 +7,9 @@ const { notify } = useQuasar()
 const store = useDataStore()
 /* Dismiss notification box */
 let dismiss = null as (() => void) | null
-
+definePageMeta({
+  noAuth: true,
+})
 const { start: scheduleNext } = useTimeoutFn(async () => {
   await store.fetchMachineData()
   scheduleNext()

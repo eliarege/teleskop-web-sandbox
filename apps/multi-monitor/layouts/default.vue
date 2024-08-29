@@ -131,7 +131,7 @@ const machineData = computed(() => {
           </NuxtLink>
         </div>
         <QSpace />
-        <div class="space-x-1">
+        <div class="flex-shrink-0">
           <TopbarAppGrid />
           <TopbarAuthenticatedUser disable-theme :extra-items="commonSettingsItems" />
           <TopbarUnauthenticatedUser disable-theme :extra-items="commonSettingsItems" />

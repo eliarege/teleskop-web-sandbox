@@ -28,7 +28,7 @@ export default defineNuxtPlugin(() => {
           return unauthorized()
         }
       }
-      const authorized = roles.every(role => keycloak.hasResourceRole(role))
+      const authorized = roles.some(role => keycloak.hasResourceRole(role))
       if (!authorized) {
         return unauthorized()
       }

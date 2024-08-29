@@ -13,8 +13,25 @@ interface CardTitleProps {
   isGroupVisible: boolean
   isScreenViable: boolean
 }
-defineProps<CardTitleProps>()
+const props = defineProps<CardTitleProps>()
 const router = useRouter()
+const keycloak = useKeycloak()
+
+const computedLink = computed(() => {
+  if (!props.isScreenViable)
+    return '/'
+  return keycloak.hasResourceRole('access-vnc')
+    ? `/vnc/${props.machine.id}`
+    : '/unauthorized'
+})
+
+const computedTarget = computed(() => {
+  if (!props.isScreenViable || !keycloak.hasResourceRole('access-vnc')) {
+    return '_self'
+  }
+  return '_blank'
+})
+
 function handleRouting(batchStatus: number, id: number) {
   if (batchStatus !== 0) {
     router.push(`/details/${id}`)
@@ -38,13 +55,16 @@ function handleRouting(batchStatus: number, id: number) {
       <span v-if="isGroupVisible"> {{ machine.groupName }} &nbsp; </span>
       {{ machine.loggedInOperatorName }}
     </div>
-    <NuxtLink :to="isScreenViable ? '/' : `vnc/${machine.id}`" :target="isScreenViable ? '_self' : '_blank'">
+    <NuxtLink
+      :to="computedLink"
+      :target="computedTarget"
+    >
       <span
         class="flex w-min whitespace-nowrap text-left"
         :class="
           isScreenViable
-            ? 'cursor-not-allowed opacity-70'
-            : 'cursor-pointer hover:(underline text-white)'
+            ? 'cursor-pointer hover:(underline text-white)'
+            : 'cursor-not-allowed opacity-70'
         "
       >
         {{ machine.name }}

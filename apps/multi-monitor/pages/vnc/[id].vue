@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { useDataStore } from '~/store/Datas'
 
+definePageMeta({
+  layout: 'empty',
+  middleware: ['auth'],
+  roles: ['access-vnc'],
+})
 const store = useDataStore()
 const { t } = useI18n()
 const route = useRoute()
@@ -12,7 +17,6 @@ const currentMachine = computed(() => {
 useHead({
   title: () => currentMachine.value?.name || `${t('loading')}...`,
 })
-setPageLayout('vnc')
 </script>
 
 <template>
