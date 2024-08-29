@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Toast } from '@bryntum/schedulerpro-trial'
+import { Toast } from '@bryntum/schedulerpro'
 import type { MachineStatus } from '~/shared/types'
 
 const { t } = useI18n()

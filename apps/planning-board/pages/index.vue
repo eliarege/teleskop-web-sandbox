@@ -45,8 +45,6 @@ const itemsMobile = [
   items,
 ] as TopbarMenuItem[][]
 
-const url = useRouter()
-url.replace('?thumb')
 const { data: state } = await useFetch('/api/ptStatus')
 </script>
 

@@ -1,4 +1,4 @@
-import type { EventModel } from '@bryntum/schedulerpro-trial'
+import type { EventModel } from '@bryntum/schedulerpro'
 import { useStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import type { PtLocaleSettings } from '~/shared/types'

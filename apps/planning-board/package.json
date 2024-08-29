@@ -17,7 +17,7 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "@bryntum/schedulerpro-trial": "workspace:*",
+    "@bryntum/schedulerpro": "workspace:*",
     "@teleskop/ui": "workspace:*",
     "@teleskop/utils": "workspace:*",
     "@vueuse/integrations": "10.8.0",
