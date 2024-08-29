@@ -15,6 +15,7 @@ import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
 import TBApplicationSettingsDialog from '~/components/TBApplicationSettingsDialog.vue'
 import TBExportExcelDialog from '~/components/TBExportExcelDialog.vue'
 import hooks from '~/utils/hooks'
+import CMTempTimeGraphDialog from '~/components/CMTempTimeGraphDialog.vue'
 import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
@@ -59,6 +60,25 @@ export interface RegisteredCommands {
   editProgramIcons: [ctx: any]
   exportToExcel: [ctx: any]
   refresh: [ctx: any, machineId: number]
+  tempTimeGraph: [ctx: any]
+  stepCommandGraph: [ctx: any]
+}
+
+registerCommand(() => {
+  return {
+    name: 'tempTimeGraph',
+    execute(ctx: any) {
+      ctx.$q.dialog({
+        component: CMTempTimeGraphDialog,
+      }).onOk(() => {
+        console.log('OK')
+      }).onCancel(() => {
+        console.log('Cancel')
+      })
+      return true
+    },
+  }
+})
 
 registerCommand(() => {
   return {
