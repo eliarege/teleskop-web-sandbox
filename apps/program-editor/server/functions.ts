@@ -244,14 +244,6 @@ export async function fetchTeleskopSettings(): Promise<TeleskopSettings> {
 }
 
 /**
- * Gets Teleskop Settings
- * @returns - Settings
- */
-export async function fetchTeleskopSettings(): Promise<TeleskopSettings[]> {
-  return await db('TFTELESKOPSETTINGS').select({ id: 'ID', value: 'VALUE' })
-}
-
-/**
  * Updates Teleskop Settings
  * @param id - Settings ID
  * @param value - Settings Value

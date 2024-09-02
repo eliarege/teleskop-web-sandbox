@@ -38,7 +38,7 @@ export const useEditorStore = defineStore('editor', () => {
   const { notifySuccess, notifyError } = useNotify()
   const { fetch } = useKeycloak()
 
-  const teleskopSettings = ref<TeleskopSettings[]>([])
+  const teleskopSettings = ref<TeleskopSettings>({})
 
   const theoricDuration = computed(() => formatDuration(calculateProgramDuration(program.value, machine.value)))
 
@@ -481,12 +481,7 @@ export const useEditorStore = defineStore('editor', () => {
       method: 'PUT',
       body: { id, value },
     })
-    const setting = teleskopSettings.value.find(st => st.id === id)
-    if (setting) {
-      setting!.value = value
-    } else {
-      teleskopSettings.value.push({ id, value })
-    }
+    fetchTeleskopSettings()
   }
 
   async function fetchCommandTypes(machineId: number) {
@@ -509,8 +504,8 @@ export const useEditorStore = defineStore('editor', () => {
     if (!commandType)
       return
 
-    const iconSetting = teleskopSettings.value.find(setting => setting.id === 12)
-    const isSelected = (Number(iconSetting?.value) & (1 << Number(commandType.index))) > 0
+    const iconSetting = teleskopSettings.value.selectedIcons
+    const isSelected = (Number(iconSetting) & (1 << Number(commandType.index))) > 0
 
     if (!isSelected || !machineCommand)
       return

@@ -17,6 +17,7 @@ import TBExportExcelDialog from '~/components/TBExportExcelDialog.vue'
 import hooks from '~/utils/hooks'
 import CMTempTimeGraphDialog from '~/components/CMTempTimeGraphDialog.vue'
 import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
+import { TeleskopSettingsIds } from '~/shared/constants'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -391,8 +392,7 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: TBApplicationSettingsDialog,
       }).onOk(async (value: string) => {
-        // Number 12 for icon settings
-        await editor.updateTeleskopSettings(12, value)
+        await editor.updateTeleskopSettings(TeleskopSettingsIds.SELECTED_ICONS, value)
       })
       return true
     },

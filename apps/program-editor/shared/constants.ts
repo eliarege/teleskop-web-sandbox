@@ -12,6 +12,13 @@ export const ProgramStateColors = {
   NO_CHANGES_DARK: '#f5f5f5',
 } as const
 
+export enum TeleskopSettingsIds {
+  OPTIMIZED_ENABLE = 3,
+  OPTIMIZED_LIMIT = 11,
+  SELECTED_ICONS = 12,
+  INITIAL_TEMPERATURE = 13,
+}
+
 export enum ProgramStatus {
   EXISTS_ONLY_ON_CONTROLLER = 0,
   EXISTS_ONLY_ON_DATABASE = 1,
