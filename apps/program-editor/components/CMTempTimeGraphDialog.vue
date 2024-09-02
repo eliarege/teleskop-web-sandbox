@@ -8,6 +8,7 @@ import { calculateProgramStepDuration } from '~/shared/formula'
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
 
 const { t } = useI18n()
+const { dark } = useQuasar()
 const editor = useEditorStore()
 const { dialogRef } = useDialogPluginComponent()
 
@@ -86,6 +87,9 @@ function calculateChartData() {
     },
     scales: {
       y: {
+        grid: {
+          color: dark.isActive ? 'rgb(80, 80, 80)' : 'rgb(211, 211, 211)',
+        },
         title: {
           display: true,
           text: t('apperance.temperature(c)'),
@@ -97,6 +101,9 @@ function calculateChartData() {
         },
       },
       x: {
+        grid: {
+          color: dark.isActive ? 'rgb(80, 80, 80)' : 'rgb(211, 211, 211)',
+        },
         title: {
           display: true,
           text: t('apperance.time(h)'),
