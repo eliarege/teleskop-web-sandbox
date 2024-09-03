@@ -53,7 +53,7 @@ watch([width, parentWidth, defaultWidth], () => {
             size="1.2rem"
           />
           <span class="pl-1">{{ button.label }}</span>
-          <QTooltip>
+          <QTooltip v-if="button.tooltip && button.shortcut">
             {{ button.label !== '' ? button.shortcut : `${button.tooltip} (${button.shortcut})` }}
           </QTooltip>
         </QBtn>

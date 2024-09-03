@@ -1,5 +1,5 @@
 import { fetchTeleskopSettings } from '../functions'
 
-export default defineAuthEventHandler(async (event) => {
+export default defineAuthEventHandler(async () => {
   return await fetchTeleskopSettings()
 })

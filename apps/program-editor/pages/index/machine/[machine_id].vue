@@ -173,7 +173,6 @@ await editor.fetchAllPrograms(Number(route.params.machine_id))
 await fetchPrograms().then(() => {
   editor.isLoading = false
 })
-editor.program = editor.createProgram()
 
 const versionDialogVisible = ref(false)
 const comparisonDialogVisible = ref(false)
@@ -673,11 +672,11 @@ function handleRowColor(row: ProgramHeader) {
   if (0) { // User is not logged in //FIXME:
     return 'grey'
   } else if (row.isChanged)
-    return ProgramStateColors.CHANGED_ON_TELESKOP
+    return dark.isActive ? ProgramStateColors.CHANGED_ON_TELESKOP_DARK : ProgramStateColors.CHANGED_ON_TELESKOP
   else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
-    return ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER
+    return dark.isActive ? ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER_DARK : ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER
   } else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE) {
-    return ProgramStateColors.EXISTS_ONLY_ON_DATABASE
+    return dark.isActive ? ProgramStateColors.EXISTS_ONLY_ON_DATABASE_DARK : ProgramStateColors.EXISTS_ONLY_ON_DATABASE
   } else {
     const changeDate = (new Date(row.updatedAt || 0)).getTime()
     const changeDateTBB = (new Date(row.updatedAtTBB || 0)).getTime()
@@ -688,9 +687,9 @@ function handleRowColor(row: ProgramHeader) {
         // change info came with mm Idk what does it mean
       }
       if (changeDateTBB > changeDate)
-        return ProgramStateColors.CHANGED_ON_MACHINE // Program  changed on machine
+        return dark.isActive ? ProgramStateColors.CHANGED_ON_MACHINE_DARK : ProgramStateColors.CHANGED_ON_MACHINE // Program  changed on machine
       else
-        return ProgramStateColors.CHANGED_ON_TELESKOP // Program changed on teleskop
+        return dark.isActive ? ProgramStateColors.CHANGED_ON_TELESKOP_DARK : ProgramStateColors.CHANGED_ON_TELESKOP // Program changed on teleskop
     } else {
       return dark.isActive ? ProgramStateColors.NO_CHANGES_DARK : ProgramStateColors.NO_CHANGES
     }
@@ -792,7 +791,7 @@ function handleRowColor(row: ProgramHeader) {
     </div>
   </div>
 
-  <CMProgramStateDialog />
+  <CMProgramStateDialog v-if="!route.params.program_no" />
 
   <EliarModal v-if="versionDialogVisible">
     <CMVersionDialog
@@ -817,6 +816,14 @@ function handleRowColor(row: ProgramHeader) {
 
   <EliarModal v-if="editor.popupSaveAsProgramVisible">
     <CMSaveAsProgramDialog />
+  </EliarModal>
+
+  <EliarModal v-if="editor.popupTempTimeGraphVisible">
+    <CMTempTimeGraphDialog />
+  </EliarModal>
+
+  <EliarModal v-if="editor.popupStepCommandGraphVisible">
+    <CMStepCommandGraphDialog />
   </EliarModal>
 </template>
 

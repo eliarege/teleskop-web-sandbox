@@ -1,5 +1,6 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, commandTypeMaps } from '~/shared/constants'
@@ -21,11 +22,14 @@ export const useEditorStore = defineStore('editor', () => {
   const popupSaveAsProgramVisible = ref(false)
   const popupCommandListVisible = ref(false)
   const popupCommandDetailVisible = ref(false)
-  const newVersionDialog = ref(false)
+  const popupVersionDialog = ref(false)
+  const popupTempTimeGraphVisible = ref(false)
+  const popupStepCommandGraphVisible = ref(false)
   const leftDrawerOpen = ref(true)
   const rightDrawerOpen = ref(false)
   let lastStepId = 0
   let lastCommandId = 0
+  const allStepExpanded = ref(false)
 
   const { $i18n } = useNuxtApp()
   const { t } = $i18n
@@ -34,18 +38,14 @@ export const useEditorStore = defineStore('editor', () => {
   const { notifySuccess, notifyError } = useNotify()
   const { fetch } = useKeycloak()
 
-  const teleskopSettings = ref<TeleskopSettings[]>([])
+  const teleskopSettings = ref<TeleskopSettings>({})
 
   const theoricDuration = computed(() => formatDuration(calculateProgramDuration(program.value, machine.value)))
 
-  const treatmentSettings = ref<{ optimizedEnable: boolean }>({
-    optimizedEnable: false,
-  })
-  async function fetchTreatmentSettings() {
-    treatmentSettings.value = await fetch('/api/treatment-settings')
+  async function fetchTeleskopSettings() {
+    teleskopSettings.value = await fetch('/api/teleskop-settings')
   }
-
-  fetchTreatmentSettings()
+  fetchTeleskopSettings()
 
   async function changeMachine(id: number) {
     selectedPrograms.value = []
@@ -369,6 +369,12 @@ export const useEditorStore = defineStore('editor', () => {
       tbbProgramChangedEvent: 0,
       programState: 1,
       updatedAtTBB: null,
+      totalChemReq: 0,
+      totalDyeReq: 0,
+      manChemReq: 0,
+      autoChemReq: 0,
+      autoDyeReq: 0,
+      manDyeReq: 0,
     }
   }
 
@@ -470,21 +476,12 @@ export const useEditorStore = defineStore('editor', () => {
     return currentElement
   }
 
-  async function fetchTeleskopSettings() {
-    teleskopSettings.value = await fetch<TeleskopSettings[]>(`/api/teleskop-settings`)
-  }
-
   async function updateTeleskopSettings(id: number, value: string) {
     await fetch('/api/teleskop-settings', {
       method: 'PUT',
       body: { id, value },
     })
-    const setting = teleskopSettings.value.find(st => st.id === id)
-    if (setting) {
-      setting!.value = value
-    } else {
-      teleskopSettings.value.push({ id, value })
-    }
+    fetchTeleskopSettings()
   }
 
   async function fetchCommandTypes(machineId: number) {
@@ -507,8 +504,8 @@ export const useEditorStore = defineStore('editor', () => {
     if (!commandType)
       return
 
-    const iconSetting = teleskopSettings.value.find(setting => setting.id === 12)
-    const isSelected = (Number(iconSetting?.value) & (1 << Number(commandType.index))) > 0
+    const iconSetting = teleskopSettings.value.selectedIcons
+    const isSelected = (Number(iconSetting) & (1 << Number(commandType.index))) > 0
 
     if (!isSelected || !machineCommand)
       return
@@ -524,7 +521,7 @@ export const useEditorStore = defineStore('editor', () => {
     selectedParallelStep,
     isLoading,
     errorIds,
-    newVersionDialog,
+    popupVersionDialog,
     allProcessType,
     allPrograms,
     selectedCommand,
@@ -534,10 +531,11 @@ export const useEditorStore = defineStore('editor', () => {
     popupSaveAsProgramVisible,
     popupCommandListVisible,
     popupCommandDetailVisible,
+    popupTempTimeGraphVisible,
+    popupStepCommandGraphVisible,
     leftDrawerOpen,
     rightDrawerOpen,
     theoricDuration,
-    treatmentSettings,
     teleskopSettings,
     changeMachine,
     fetchProgram,
@@ -570,5 +568,6 @@ export const useEditorStore = defineStore('editor', () => {
     fetchTeleskopSettings,
     updateTeleskopSettings,
     fetchCommandTypes,
+    allStepExpanded,
   }
 })

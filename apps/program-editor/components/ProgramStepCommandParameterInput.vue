@@ -28,7 +28,7 @@ const formulaOptions = computed(() =>
 )
 
 const isOptimizable = computed(() => {
-  return editor.treatmentSettings?.optimizedEnable && editor.machine.treatmentParameters.find((tp) => {
+  return editor.teleskopSettings.treatmentSettings.optimizedEnable && editor.machine.treatmentParameters.find((tp) => {
     return tp.commandNo === props.commandNo && tp.parameterIndex === props.parameter.index
   })
 })

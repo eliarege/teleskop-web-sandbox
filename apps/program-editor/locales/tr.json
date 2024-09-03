@@ -78,7 +78,14 @@
     "appSettings": "Uygulama Ayarları",
     "editorIconSettings": "Editor İkon Ayarları",
     "commandIcons": "Komut İkonları",
-    "selectedCommandIcons": "Secili Komut İkonları"
+    "selectedCommandIcons": "Secili Komut İkonları",
+    "appearance": "Görünüm",
+    "programInfo": "Program Bilgileri",
+    "versionInfo": "Versiyon Bilgileri",
+    "tempTimeGraph": "Sıcaklık/Zaman Grafiği",
+    "stepCommandGraph": "Adım/Komut Grafiği",
+    "expandAll": "Tümünü Genişlet",
+    "collapseAll": "Tümünü Daralt"
   },
   "program": {
     "name": "Program Adı",
@@ -179,6 +186,7 @@
   "change": "Değiştir",
   "send": "Gönder",
   "apply": "Uygula",
+  "ok": "Tamam",
   "topbar": {
     "programFilter": {
       "_": "Program Filtrele",
@@ -360,6 +368,17 @@
     "genericMaterial1Request": "Jenerik Materyal 1 İstek",
     "genericMaterial2Request": "Jenerik Materyal 2 İstek",
     "manualMeasurementCommands": "Manuel Ölçüm Komutları"
+  },
+  "apperance": {
+    "tempTimeGraph": "Sıcaklık/Zaman Grafiği",
+    "temperature(c)": "Sıcaklık(°C)",
+    "time(h)": "Zaman(saat)",
+    "step": "Adım",
+    "stepCommandGraph": "Adım/Komut Grafiği",
+    "steps": "Adımlar",
+    "commands": "Komutlar",
+    "unknownCommand": "Bilinmeyen Komut",
+    "stepStart": "Başlangıç Adım",
+    "stepEnd": "Bitiş Adım"
   }
-
 }

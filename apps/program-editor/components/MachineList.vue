@@ -28,8 +28,6 @@ watch(() => [machineGroupsWithMachines.value.length, route.path], () => {
 }, { immediate: true })
 
 async function onUpdateSelected(selection: string) {
-  editor.program = editor.createProgram()
-
   if (selection) {
     const id = Number.parseInt(selection.split('-')[1])
     editor.changeMachine(id)

@@ -3,3 +3,19 @@
   min-width: 200px;
   vertical-align: baseline;
 }
+
+.body--light{
+  .no-changes{ color: #080808; }
+  .only-on-teleskop{ color: #00ff00; }
+  .only-on-controller{ color: #bebebe; }
+  .changed-on-teleskop{ color: #0000ff; }
+  .changed-on-machine{ color: #ff00ff; }
+}
+
+.body--dark{
+  .no-changes{ color: #f5f5f5;}
+  .only-on-teleskop{ color: #32cd32;}
+  .only-on-controller{ color: #d0d0d0;}
+  .changed-on-teleskop{ color:#1e90ff;}
+  .changed-on-machine{ color: #ff00ff;}
+}

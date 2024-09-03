@@ -6,6 +6,7 @@ interface CustomQBtnProps extends QBtnProps {
   shortcut?: string
 }
 
+const route = useRoute()
 const contextBarButtons = ref([] as CustomQBtnProps[])
 
 function update(entries: Array<QBtnProps>) {
@@ -13,6 +14,10 @@ function update(entries: Array<QBtnProps>) {
 }
 
 export function useContextBar(items: Ref<QBtnProps[]> | ComputedRef<QBtnProps[]>): void {
+  watch(() => route.path, () => {
+    update(items.value)
+  })
+
   watchEffect(() => {
     update(items.value)
   })

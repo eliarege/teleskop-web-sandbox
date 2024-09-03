@@ -49,7 +49,6 @@ const items = [
                   $commandManager.executeCommand('printProgram', { $q })
                 },
                 disabled: true,
-
               },
             ]],
           },
@@ -117,6 +116,30 @@ const items = [
         //   },
         // ],
       ],
+    },
+  },
+  {
+    label: tt('menu.appearance'),
+    disabled: computed(() => !editor.program.programNo),
+    subMenu: {
+      items: [[
+        { label: tt('menu.programInfo'), icon: 'info', onClick: () => {
+          editor.popupSaveAsProgramVisible = true
+        } },
+        { label: tt('menu.versionInfo'), icon: 'info', onClick: () => {
+          editor.popupVersionDialog = true
+        } },
+        { label: tt('menu.commandInfo'), icon: 'info', onClick: () => {
+          editor.popupCommandDetailVisible = true
+        } },
+      ], [
+        { label: tt('menu.tempTimeGraph'), icon: 'timeline', onClick: () => {
+          $commandManager.executeCommand('tempTimeGraph', { $q })
+        } },
+        { label: tt('menu.stepCommandGraph'), icon: 'timeline', onClick: () => {
+          $commandManager.executeCommand('stepCommandGraph', { $q })
+        } },
+      ]],
     },
   },
   {

@@ -15,10 +15,14 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
+    "@iconify-json/carbon": "1.2.1",
+    "@iconify-json/icon-park-outline": "1.2.0",
+    "@iconify-json/ri": "1.2.0",
     "@teleskop/tbb-ftp-client": "workspace:*",
     "@teleskop/ui": "workspace:*",
     "@teleskop/utils": "workspace:*",
     "@vueuse/integrations": "10.8.0",
+    "chart.js": "4.4.4",
     "date-fns": "3.6.0",
     "exceljs": "4.4.0",
     "fast-deep-equal": "3.1.3",
@@ -31,7 +35,8 @@
     "nearley": "2.20.1",
     "sortablejs": "1.15.3",
     "sortablejs-vue3": "1.2.11",
-    "tedious": "18.1.0"
+    "tedious": "18.1.0",
+    "vue-chartjs": "5.3.1"
   },
   "devDependencies": {
     "@teleskop/nuxt-base": "workspace:*",

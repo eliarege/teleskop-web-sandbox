@@ -3,6 +3,7 @@ import { Sortable } from 'sortablejs-vue3'
 import type { SortableOptions } from 'sortablejs'
 import ProgramStepCommandForm from './ProgramStepCommandForm.vue'
 import type { ProgramStep } from '~/shared/types'
+import { calculateProgramStepDuration } from '~/shared/formula'
 
 const props = defineProps<{
   path: string
@@ -17,7 +18,8 @@ const stepIcons = computed(() => [
   editor.getStepIcon(step.mainCommand.commandNo!),
   ...step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!)),
 ])
-const expanded = ref(false)
+
+const expanded = ref(editor.allStepExpanded)
 const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')
 const mainIcon = computed(() => editor.getStepIcon(step.mainCommand.commandNo!))
 const parallelIcons = computed(() => step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!)))
@@ -27,6 +29,10 @@ function toggle() {
     editor.changeSelection(stepIndex.value)
   expanded.value = !expanded.value
 }
+
+watch(() => editor.allStepExpanded, () => {
+  expanded.value = editor.allStepExpanded
+})
 
 const sortableOptions: SortableOptions = {
   sort: false,
@@ -39,10 +45,10 @@ const sortableOptions: SortableOptions = {
 }
 
 // Step Duration
-// const index = computed(() => Number(props.path.split('.').pop()))
-// const duration = computed(() => formatDuration(
-//   calculateProgramStepDuration(editor.program, editor.machine, index.value),
-// ))
+const index = computed(() => Number(props.path.split('.').pop()))
+const duration = computed(() => formatDuration(
+  calculateProgramStepDuration(editor.program, editor.machine, index.value).duration,
+))
 </script>
 
 <template>
@@ -68,6 +74,10 @@ const sortableOptions: SortableOptions = {
         </div>
       </div>
 
+      <div v-if="devMode" class="flex flex-col color-gray-5">
+        <span>{{ step.stepId }}</span>
+        <span>{{ duration }}</span>
+      </div>
       <QBtn
         class="expand-btn"
         :icon="expandIcon"

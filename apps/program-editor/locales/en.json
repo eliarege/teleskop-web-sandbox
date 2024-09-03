@@ -67,7 +67,7 @@
     "projectInfo": "Project Info",
     "allCommandList": "All Command List",
     "commandList": "Command List",
-    "commandInfo": "Command Detail",
+    "commandInfo": "Command Info",
     "show": "Show",
     "close": "Close",
     "general": "General",
@@ -78,7 +78,14 @@
     "appSettings": "Application Settings",
     "editorIconSettings": "Editor Icon Settings",
     "commandIcons": "Command Icons",
-    "selectedCommandIcons": "Selected Command Icons"
+    "selectedCommandIcons": "Selected Command Icons",
+    "appearance": "Apperance",
+    "programInfo": "Program Info",
+    "versionInfo": "Version Info",
+    "tempTimeGraph": "Temperature/Time Graph",
+    "stepCommandGraph": "Step/Command Graph",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All"
   },
   "program": {
     "name": "Program Name",
@@ -178,6 +185,7 @@
   "submit": "Submit",
   "change": "Change",
   "apply": "Apply",
+  "ok": "OK",
   "topbar": {
     "programFilter": {
       "_": "Filter Programs",
@@ -360,5 +368,17 @@
     "genericMaterial1Request": "Generic Material 1 Request",
     "genericMaterial2Request": "Generic Material 2 Request",
     "manualMeasurementCommands": "Manual Measurement Commands"
+  },
+  "apperance": {
+    "tempTimeGraph": "Temperature/Time Graph",
+    "temperature(c)": "Temperature(°C)",
+    "time(h)": "Time(hour)",
+    "step": "Step",
+    "stepCommandGraph": "Step/Command Graph",
+    "steps": "Steps",
+    "commands": "Commands",
+    "unknownCommand": "Unknown Command",
+    "stepStart": "Start Step",
+    "stepEnd": "End Step"
   }
 }
