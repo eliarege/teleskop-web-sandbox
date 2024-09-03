@@ -1,4 +1,3 @@
-import process from 'node:process'
 import { inferBoolean, isDef } from './base'
 
 export type ConfigProps = {
@@ -41,6 +40,10 @@ type RuntimeValue<Type, Message extends string> = Type & {
 
 export function defineConfiguration<const T extends Record<string, ConfigProps>>(config: T): InferConfigObject<T> {
   const output = {} as Record<string, any>
+  /* eslint-disable-next-line node/prefer-global/process */
+  const process = globalThis.process
+  if (!process)
+    throw new Error(`Can only run in node environment`)
   for (const [key, props] of Object.entries(config)) {
     const type = props.type || 'string'
     const rawValue = process.env[props.env]
