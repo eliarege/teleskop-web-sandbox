@@ -25,7 +25,7 @@
   "devDependencies": {
     "@teleskop/tsconfig": "workspace:*",
     "@types/node": "20.12.12",
-    "typescript": "5.5.2",
+    "typescript": "5.5.4",
     "unbuild": "2.0.0"
   }
 }

@@ -32,6 +32,6 @@
     "eslint": "9.6.0",
     "fastify": "4.26.2",
     "h3": "1.11.1",
-    "typescript": "5.5.2"
+    "typescript": "5.5.4"
   }
 }

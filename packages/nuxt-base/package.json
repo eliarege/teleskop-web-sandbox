@@ -12,11 +12,11 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@element-plus/nuxt": "1.0.9",
+    "@element-plus/nuxt": "1.0.10",
     "@nuxt/icon": "1.4.7",
     "@nuxtjs/i18n": "8.3.1",
-    "@pinia/nuxt": "0.5.1",
-    "@quasar/extras": "1.16.11",
+    "@pinia/nuxt": "0.5.4",
+    "@quasar/extras": "1.16.12",
     "@teleskop/keycloak-adapter": "workspace:*",
     "@unocss/nuxt": "0.59.4",
     "@unocss/reset": "0.59.4",
@@ -24,11 +24,11 @@
     "@vueuse/nuxt": "10.9.0",
     "element-plus": "2.6.3",
     "keycloak-js": "24.0.4",
-    "nuxt-quasar-ui": "2.1.2",
+    "nuxt-quasar-ui": "2.1.4",
     "pinia": "2.1.7",
-    "quasar": "2.16.2",
-    "simple-keyboard": "3.7.83",
-    "ufo": "1.5.3",
+    "quasar": "2.16.9",
+    "simple-keyboard": "3.7.106",
+    "ufo": "1.5.4",
     "unocss": "0.59.4"
   },
   "devDependencies": {

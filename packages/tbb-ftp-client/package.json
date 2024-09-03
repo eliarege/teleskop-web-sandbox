@@ -20,7 +20,7 @@
   "devDependencies": {
     "@teleskop/tsconfig": "workspace:*",
     "eslint": "9.6.0",
-    "typescript": "5.5.2",
+    "typescript": "5.5.4",
     "vitest": "1.5.0"
   }
 }

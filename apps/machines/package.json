@@ -17,9 +17,9 @@
   },
   "dependencies": {
     "@floating-ui/vue": "1.0.6",
-    "@formkit/i18n": "1.6.4",
-    "@formkit/nuxt": "1.6.4",
-    "@formkit/themes": "1.6.4",
+    "@formkit/i18n": "1.6.5",
+    "@formkit/nuxt": "1.6.5",
+    "@formkit/themes": "1.6.5",
     "@teleskop/tbb-ftp-client": "workspace:*",
     "@teleskop/ui": "workspace:*",
     "@teleskop/utils": "workspace:*",
@@ -31,9 +31,9 @@
     "mathjs": "12.4.2",
     "mssql": "10.0.2",
     "soap": "1.0.3",
-    "sortablejs": "1.15.2",
+    "sortablejs": "1.15.3",
     "sortablejs-vue3": "1.2.11",
-    "ufo": "1.5.3",
+    "ufo": "1.5.4",
     "uuid": "9.0.1"
   },
   "devDependencies": {
@@ -42,7 +42,7 @@
     "@teleskop/unocss-config": "workspace:*",
     "eslint": "9.6.0",
     "nuxt": "3.11.2",
-    "typescript": "5.5.2",
+    "typescript": "5.5.4",
     "vue": "3.4.27",
     "vue-router": "4.3.2",
     "vue-tsc": "2.0.24"
