@@ -36,7 +36,7 @@ interface App {
   clientId: string
   roles: SyncedAppRole[]
   pkg: PackageJSON
-  manifest?: ManifestJSON
+  manifest: ManifestJSON | null
 }
 
 interface MappingsRepresentation {
@@ -61,13 +61,15 @@ const SCHEMA_DIR = resolve(ROOT_DIR, 'schemas')
 const NUXT_CONFIG_RE = /^nuxt\.config\.(m?j|t)s$/
 
 async function readJSON(path: string, { strict } = { strict: true }) {
-  return JSON.parse(await readFile(path, 'utf-8').catch((e) => {
-    if (!strict && e.code === 'ENOENT') {
-      return 'null'
-    } else {
-      throw e
-    }
-  }))
+  return JSON.parse(
+    await readFile(path, 'utf-8').catch((e) => {
+      if (!strict && e.code === 'ENOENT') {
+        return 'null'
+      } else {
+        throw e
+      }
+    }),
+  )
 }
 
 function upperFirst(str: string) {
@@ -78,12 +80,12 @@ function toTitleCase(str: string) {
   return str.split('-').map(upperFirst).join(' ')
 }
 
-function getManifestJson(appName: string): Promise<ManifestJSON | undefined> {
+function getManifestJson(appName: string): Promise<ManifestJSON | null> {
   return readJSON(join(APP_DIR, appName, 'manifest.json'), { strict: false })
 }
 
-function getPackageJson(appName: string): Promise<PackageJSON> {
-  return readJSON(join(APP_DIR, appName, 'package.json'))
+function getPackageJson(appName: string): Promise<PackageJSON | null> {
+  return readJSON(join(APP_DIR, appName, 'package.json'), { strict: false })
 }
 
 async function isNuxtApp(appName: string): Promise<boolean> {
@@ -332,19 +334,21 @@ async function main() {
   const apps = new Map<string, App>()
   for (const name of appNames) {
     const pkg = await getPackageJson(name)
-    const manifest = await getManifestJson(name)
-    const isNuxt = await isNuxtApp(name)
-    if (manifest && !validateManifest(manifest)) {
-      consola.error(`App "${name}" has invalid "manifest.json" file:\n`, serializeAjvErrors(validateManifest.errors!))
-    } else {
-      apps.set(name, {
-        name,
-        type: isNuxt ? 'nuxt' : 'node',
-        pkg,
-        manifest,
-        clientId: '',
-        roles: [],
-      })
+    if (pkg) {
+      const manifest = await getManifestJson(name)
+      const isNuxt = await isNuxtApp(name)
+      if (manifest && !validateManifest(manifest)) {
+        consola.error(`App "${name}" has invalid "manifest.json" file:\n`, serializeAjvErrors(validateManifest.errors!))
+      } else {
+        apps.set(name, {
+          name,
+          type: isNuxt ? 'nuxt' : 'node',
+          pkg,
+          manifest,
+          clientId: '',
+          roles: [],
+        })
+      }
     }
   }
 
