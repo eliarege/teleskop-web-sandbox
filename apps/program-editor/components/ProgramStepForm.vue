@@ -57,20 +57,18 @@ const duration = computed(() => formatDuration(
       <!-- <span v-if="devMode" class="color-gray-5">{{ step.stepId }}</span> -->
       <!-- <span>{{ duration }}</span> -->
 
-      <div class="flex items-center">
-        <div v-show="!expanded">
-          <div v-for="(icon, index) in stepIcons" :key="index">
-            <span v-if="icon">
-              <Icon
-                :name="icon.icon"
-                class="icon"
-                :color="icon.color"
-              />
-              <q-tooltip>
-                {{ icon.label }}
-              </q-tooltip>
-            </span>
-          </div>
+      <div v-show="!expanded" class="flex items-center w-5">
+        <div v-for="(icon, key) in stepIcons" :key="key">
+          <span v-if="icon && icon.name">
+            <div
+              class="icon"
+              :class="icon.name"
+              :style="{ color: icon.color }"
+            />
+            <q-tooltip>
+              {{ icon.name ? icon.label : t('noIcon') }}
+            </q-tooltip>
+          </span>
         </div>
       </div>
 
@@ -78,6 +76,7 @@ const duration = computed(() => formatDuration(
         <span>{{ step.stepId }}</span>
         <span>{{ duration }}</span>
       </div>
+
       <QBtn
         class="expand-btn"
         :icon="expandIcon"
@@ -86,17 +85,17 @@ const duration = computed(() => formatDuration(
         @click="toggle"
       />
 
-      <div v-show="expanded" class="mt-3 ml-1">
-        <span v-if="mainIcon">
-          <Icon
-            :name="mainIcon.icon"
+      <div v-show="expanded" class="mt-3 ml-1 w-5">
+        <div v-if="mainIcon">
+          <div
             class="icon"
-            :color="mainIcon.color"
+            :class="mainIcon.name"
+            :style="{ color: mainIcon.color }"
           />
           <q-tooltip>
-            {{ mainIcon.label }}
+            {{ mainIcon.name ? mainIcon.label : t('noIcon') }}
           </q-tooltip>
-        </span>
+        </div>
       </div>
 
       <ProgramStepCommandForm
@@ -124,12 +123,12 @@ const duration = computed(() => formatDuration(
             :class="{ __selected: editor.selectedStep === stepIndex && editor.selectedParallelStep === index }"
             @click="editor.changeSelection(stepIndex, index)"
           >
-            <div class="w-6 mt-3">
-              <div v-if="parallelIcons[index]">
-                <Icon
-                  :name="parallelIcons[index]?.icon"
+            <div class="w-5 mt-3">
+              <div v-if="parallelIcons[index]?.name">
+                <div
                   class="icon"
-                  :color="parallelIcons[index]?.color"
+                  :class="parallelIcons[index]?.name"
+                  :style="{ color: parallelIcons[index]?.color }"
                 />
                 <q-tooltip>
                   {{ parallelIcons[index]?.label }}

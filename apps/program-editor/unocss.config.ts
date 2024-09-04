@@ -1,9 +1,17 @@
 import sharedConfig from '@teleskop/unocss-config'
-import { mergeConfigs } from 'unocss'
+import { mergeConfigs, presetIcons } from 'unocss'
 
 export default mergeConfigs([
   sharedConfig,
   {
+    presets: [
+      presetIcons(),
+    ],
+    content: {
+      pipeline: {
+        include: [/\.(vue|svelte|[jt]sx|ts|mdx?|astro|elm|php|phtml|html)($|\?)/],
+      },
+    },
     shortcuts: [
       {
         'flex-center': 'flex justify-center items-center',

@@ -45,6 +45,7 @@
     "@types/moo": "0.5.9",
     "@types/nearley": "2.11.5",
     "@types/sortablejs": "1.15.8",
+    "@unocss/preset-icons": "0.62.3",
     "eslint": "9.6.0",
     "nuxt": "3.11.2",
     "typescript": "5.5.4",

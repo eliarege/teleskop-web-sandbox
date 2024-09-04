@@ -63,11 +63,11 @@ export const commandTypeMaps = [
   { index: 12, ref: [], value: 1000, title: 'chemIcons.manualMeasurementCommands' },
 ]
 
-export const CommandIconMapping: Record<string, { icon: string, label?: string, color?: string }> = {
-  'AK_Bosalt.gif': { icon: 'ri:exchange-2-line', label: 'AK_Bosalt', color: '#00CC00' },
-  'Kimyasal_Iste.gif': { icon: 'carbon:chemistry', label: 'Kimyasal_Iste', color: '#00CC00' },
-  'KK_AK_Transfer.gif': { icon: 'ri:exchange-2-line', label: 'KK_AK_Transfer', color: '#00CC00' },
-  'BK_AK_Dozaj.gif': { icon: 'icon-park-outline:curve-adjustment', label: 'BK_AK_Dozaj', color: '#0000ff' },
-  'BK_AK_Transfer.gif': { icon: 'ri:exchange-2-line', label: 'BK_AK_Transfer', color: '#ff00ff' },
-  'KK_RK_Transfer.gif': { icon: 'ri:exchange-2-line', label: 'KK_RK_Transfer', color: '#00CC00' },
+export const CommandIconMapping: Record<string, { name: string, label?: string, color?: string }> = {
+  'AK_Bosalt.gif': { name: 'i-ri-exchange-2-line', label: 'AK_Bosalt', color: '#00CC00' },
+  'Kimyasal_Iste.gif': { name: 'i-carbon-chemistry', label: 'Kimyasal_Iste', color: '#00CC00' },
+  'KK_AK_Transfer.gif': { name: 'i-ri-exchange-2-line', label: 'KK_AK_Transfer', color: '#00CC00' },
+  'BK_AK_Dozaj.gif': { name: 'i-icon-park-outline-curve-adjustment', label: 'BK_AK_Dozaj', color: '#0000ff' },
+  'BK_AK_Transfer.gif': { name: 'i-ri-exchange-2-line', label: 'BK_AK_Transfer', color: '#ff00ff' },
+  'KK_RK_Transfer.gif': { name: 'i-ri-exchange-2-line', label: 'KK_RK_Transfer', color: '#00CC00' },
 }

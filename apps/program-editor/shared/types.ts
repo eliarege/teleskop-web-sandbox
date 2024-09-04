@@ -385,7 +385,7 @@ export interface CommandTypes {
 }
 
 export interface StepIcon {
-  icon: string | undefined
+  name: string | undefined
   label?: string | undefined
   color?: string | undefined
 }
