@@ -36,19 +36,14 @@ const items = computed(() => [[
       )
     },
   },
-  // {
-  //   label: t('machineContextMenu.copyAndSend'),
-  //   disabled: false,
-  //   onClick: async () => {
-  //     console.log(123)
-  //     const programs = await fetch(`/api/machine/${props.machineId}/program`)
-  //     contextMenuStore.copy(programs, props.machineId)
-  //     $commandManager.executeCommand(
-  //       'copyAllProgramsAndPaste',
-  //       { $q, fetchPrograms: () => {} },
-  //     )
-  //   },
-  // },
+  {
+    label: t('machineContextMenu.copy'),
+    disabled: false,
+    onClick: async () => {
+      const programs = await fetch(`/api/machine/${props.machineId}/program`)
+      contextMenuStore.copy(programs, props.machineId)
+    },
+  },
   {
     label: t('machineContextMenu.paste'),
     disabled: !contextMenuStore.isThereCopiedValue.value,

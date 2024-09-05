@@ -388,7 +388,7 @@
   "machineContextMenu": {
     "uploadAllPrograms": "Upload All Programs To Machine",
     "downloadAllPrograms": "Download All Programs From Machine",
-    "copyAndSend": "Copy All Programs And Paste To Another Machine",
+    "copy": "Copy All Programs",
     "paste": "Paste",
     "findChange": "Find - Change",
     "compareAllPrograms": "Compare All Programs"

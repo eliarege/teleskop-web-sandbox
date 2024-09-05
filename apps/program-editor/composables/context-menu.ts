@@ -86,7 +86,19 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         remains.push(val)
       else {
         pastedValues.push(val)
-        notification(true, t('contextMenu.pasteNotification.success', { name: val.program.name, programNo: val.newProgramNo ? val.newProgramNo : val.program.programNo }))
+        notification(
+          true,
+          t(
+            'contextMenu.pasteNotification.success',
+            {
+              name: val.program.name,
+              programNo: val.newProgramNo
+                ? val.newProgramNo
+                : val.program.programNo,
+            },
+          ),
+          'paste',
+        )
       }
     }
     return remains

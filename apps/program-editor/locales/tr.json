@@ -388,7 +388,7 @@
   "machineContextMenu": {
     "uploadAllPrograms": "Tüm Programları Makineye Yolla",
     "downloadAllPrograms": "Tüm Programları Makineden Al",
-    "copyAndSend": "Programları Kopyala Ve Başka Makineye Yapıştır",
+    "copy": "Programları Kopyala",
     "paste": "Yapıştır",
     "findChange": "Bul - Değiştir",
     "compareAllPrograms": "Tüm Programları Karşılaştır"
