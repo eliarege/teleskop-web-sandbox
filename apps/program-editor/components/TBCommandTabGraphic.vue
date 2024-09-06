@@ -33,11 +33,23 @@ const unload = ref(editor.selectedCommand?.isUnload)
       </tr>
       <tr>
         <td>{{ t('command.graphic.isTemperature') }}</td>
-        <td><q-checkbox v-model="temperature" dense /></td>
+        <td>
+          <q-checkbox
+            v-model="temperature"
+            disable
+            dense
+          />
+        </td>
       </tr>
       <tr>
         <td>{{ t('command.graphic.isUnload') }}</td>
-        <td><q-checkbox v-model="unload" dense /></td>
+        <td>
+          <q-checkbox
+            v-model="unload"
+            disable
+            dense
+          />
+        </td>
       </tr>
     </table>
   </q-tab-panel>
