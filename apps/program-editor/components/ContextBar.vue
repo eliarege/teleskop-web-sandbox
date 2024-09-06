@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { QBtn } from 'quasar'
 import { useElementSize } from '@vueuse/core'
 import { useContextBarState } from '~/composables/useContextBar'
+import { calculateProgramDuration } from '~/shared/formula'
 
 const { contextBarButtons } = useContextBarState()
 const editor = useEditorStore()
@@ -61,7 +62,7 @@ watch([width, parentWidth, defaultWidth], () => {
     </div>
   </div>
   <div v-if="editor.program.programNo" class="flex items-center">
-    {{ editor.theoricDuration }}
+    {{ formatDuration(calculateProgramDuration(editor.program, editor.machine)) }}
   </div>
   <QBtn
     class="text-gray-6 dark:text-gray-3"

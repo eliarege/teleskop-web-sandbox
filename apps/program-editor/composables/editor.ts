@@ -4,7 +4,6 @@ import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, commandTypeMaps } from '~/shared/constants'
-import { calculateProgramDuration } from '~/shared/formula'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
@@ -39,8 +38,6 @@ export const useEditorStore = defineStore('editor', () => {
   const { fetch } = useKeycloak()
 
   const teleskopSettings = ref<TeleskopSettings>({})
-
-  const theoricDuration = computed(() => formatDuration(calculateProgramDuration(program.value, machine.value)))
 
   async function fetchTeleskopSettings() {
     teleskopSettings.value = await fetch('/api/teleskop-settings')
@@ -481,7 +478,7 @@ export const useEditorStore = defineStore('editor', () => {
       method: 'PUT',
       body: { id, value },
     })
-    fetchTeleskopSettings()
+    await fetchTeleskopSettings()
   }
 
   async function fetchCommandTypes(machineId: number) {
@@ -535,7 +532,6 @@ export const useEditorStore = defineStore('editor', () => {
     popupStepCommandGraphVisible,
     leftDrawerOpen,
     rightDrawerOpen,
-    theoricDuration,
     teleskopSettings,
     changeMachine,
     fetchProgram,
