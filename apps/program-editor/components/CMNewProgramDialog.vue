@@ -11,7 +11,7 @@ const machineId = Number(useRoute().params.machine_id)
 allProcessTypes.value = await editor.fetchAllProcessTypes()
 machineName.value = await editor.fetchAllMachine().then(machines => machines.find(machine => machine.id === machineId)?.name)
 
-const programNo = ref<number>(editor.program.programNo)
+const programNo = ref<number>()
 const programName = ref<string>(editor.program.name)
 const processType = ref<number>(editor.program.typeId)
 const operator = ref<boolean>(editor.program.tbbProgramChangedEvent === 1)
@@ -21,7 +21,7 @@ const newProgram = computed<Program>(() => {
   return {
     ...editor.program,
     machineId,
-    programNo: programNo.value,
+    programNo: programNo.value!,
     name: programName.value,
     typeId: processType.value,
     tbbProgramChangedEvent: operator.value ? 1 : 0,
@@ -29,7 +29,8 @@ const newProgram = computed<Program>(() => {
 })
 
 editor.isLoading = true
-await editor.fetchMachineCommands(editor.machine.id)
+await editor.fetchMachine(editor.machine.id)
+await editor.fetchAllPrograms(editor.machine.id)
 await editor.fetchAllProcessTypes().then(() => {
   editor.isLoading = false
 })
@@ -50,18 +51,22 @@ function onCancel() {
             </div>
           </QCardSection>
 
-          <QCardSection class="q-pa-lg">
+          <QCardSection class="mx-4">
             <InputNumber
               v-model="programNo"
               type="positive-integer"
               :label="t('program.programNo')"
               :maxlength="10"
               :rules="[(val: string) => !!val || t('input.required', { field: t('program.programNo') })]"
+              class="mb-3"
+              dense
             />
             <QInput
               v-model="programName"
               :label="t('program.name')"
               :rules="[(val: string) => !!val || t('input.required', { field: t('program.name') })]"
+              class="mb-3"
+              dense
             />
             <QSelect
               v-model="processType"
@@ -71,10 +76,12 @@ function onCancel() {
               :rules="[(val: number) => val !== undefined || t('input.required', { field: t('program.programState') })]"
               map-options
               emit-value
+              dense
             />
             <QCheckbox
               v-model="operator"
               :label="t('operator')"
+              dense
             />
           </QCardSection>
           <QCardActions
@@ -95,7 +102,7 @@ function onCancel() {
               class=" bg-primary text-white"
               type="submit"
               :loading="editor.isLoading"
-              :disable="editor.isLoading"
+              :disable="editor.isLoading || !newProgram.programNo || !newProgram.name"
               @click="editor.onSubmit(newProgram)"
             />
           </QCardActions>

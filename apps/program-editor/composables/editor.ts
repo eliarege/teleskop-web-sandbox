@@ -203,10 +203,18 @@ export const useEditorStore = defineStore('editor', () => {
       notifyError(t('saveProgram.incorrect'))
     } else {
       if (newProgram) {
-        if (await insertProgram(newProgram)) {
-          notifySuccess(t('saveProgram.success'))
+        if (allPrograms.value.some(p => p.programNo === newProgram.programNo)) {
+          notifyError(t('input.unique', { field: t('program.programNo') }))
         } else {
-          notifyError(t('saveProgram.fail'))
+          if (await insertProgram(newProgram)) {
+            notifySuccess(t('saveProgram.success'))
+            popupNewProgramVisible.value = false
+            setTimeout(() => {
+              newStep()
+            }, 1000)
+          } else {
+            notifyError(t('saveProgram.fail'))
+          }
         }
       } else {
         if (await updateProgram()) {
@@ -216,8 +224,6 @@ export const useEditorStore = defineStore('editor', () => {
         }
       }
     }
-    popupNewProgramVisible.value = false
-    popupSaveAsProgramVisible.value = false
     isLoading.value = false
   }
 
