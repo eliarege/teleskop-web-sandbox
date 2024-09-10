@@ -17,6 +17,7 @@
   "programNotSaved": "Program güncellenirken hata oluştu",
   "programNotUpdated": "Program güncellenemedi",
   "treatmentParameterLimitReached": "{commandNo} numaralı komut {limit}'den fazla kullanılamaz",
+  "(copy)": "(Kopya)",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",

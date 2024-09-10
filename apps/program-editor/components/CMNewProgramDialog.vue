@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import type { Program } from '~/shared/types'
 
+const props = defineProps<{
+  header: 'newProgram' | 'saveAs'
+  programNo?: number
+}>()
+
 const editor = useEditorStore()
-const router = useRouter()
 const { t } = useI18n()
-const allProcessTypes: any = ref([])
-const machineName = ref<string>()
 
-const machineId = Number(useRoute().params.machine_id)
-allProcessTypes.value = await editor.fetchAllProcessTypes()
-machineName.value = await editor.fetchAllMachine().then(machines => machines.find(machine => machine.id === machineId)?.name)
+const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const programNo = ref<number>()
-const programName = ref<string>(editor.program.name)
+const programNo = ref(props.programNo)
+const programName = ref<string>(`${editor.program.name} ${props.header === 'saveAs' ? t('(copy)') : ''}`)
 const processType = ref<number>(editor.program.typeId)
 const operator = ref<boolean>(editor.program.tbbProgramChangedEvent === 1)
 const { dark } = useQuasar()
@@ -20,94 +20,88 @@ const { dark } = useQuasar()
 const newProgram = computed<Program>(() => {
   return {
     ...editor.program,
-    machineId,
+    machineId: editor.machine.id,
     programNo: programNo.value!,
     name: programName.value,
     typeId: processType.value,
     tbbProgramChangedEvent: operator.value ? 1 : 0,
   }
 })
-
-editor.isLoading = true
-await editor.fetchMachine(editor.machine.id)
-await editor.fetchAllPrograms(editor.machine.id)
-await editor.fetchAllProcessTypes().then(() => {
-  editor.isLoading = false
-})
-
-function onCancel() {
-  router.push(`/machine/${editor.machine.id}/`)
-}
 </script>
 
 <template>
   <div class="w-full h-full">
-    <QCard>
-      <QForm @submit="editor.onSubmit(newProgram)" @reset="onCancel">
-        <QCard style="width: 500px">
-          <QCardSection>
-            <div class="text-h6 text-center">
-              {{ t('menu.newProgram') }} - {{ editor.machine.name }}
-            </div>
-          </QCardSection>
+    <q-dialog ref="dialogRef" persistent>
+      <QCard>
+        <QForm @submit="onDialogOK(newProgram)">
+          <QCard style="width: 500px">
+            <QCardSection>
+              <div class="text-h6 text-center">
+                {{ t(`menu.${props.header}`) }} - {{ editor.machine.name }}
+              </div>
+            </QCardSection>
 
-          <QCardSection class="mx-4">
-            <InputNumber
-              v-model="programNo"
-              type="positive-integer"
-              :label="t('program.programNo')"
-              :maxlength="10"
-              :rules="[(val: string) => !!val || t('input.required', { field: t('program.programNo') })]"
-              class="mb-3"
-              dense
-            />
-            <QInput
-              v-model="programName"
-              :label="t('program.name')"
-              :rules="[(val: string) => !!val || t('input.required', { field: t('program.name') })]"
-              class="mb-3"
-              dense
-            />
-            <QSelect
-              v-model="processType"
-              :options="editor.allProcessType"
-              :label="t('program.programState')"
-              options-dense
-              :rules="[(val: number) => val !== undefined || t('input.required', { field: t('program.programState') })]"
-              map-options
-              emit-value
-              dense
-            />
-            <QCheckbox
-              v-model="operator"
-              :label="t('operator')"
-              dense
-            />
-          </QCardSection>
-          <QCardActions
-            align="right"
-            class="q-pa-md"
-            :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
-          >
-            <QBtn
-              flat
-              :label="t('cancel')"
-              class="q-mr-sm"
-              type="reset"
-              @click="editor.popupNewProgramVisible = false"
-            />
-            <QBtn
-              flat
-              :label="t('create')"
-              class=" bg-primary text-white"
-              type="submit"
-              :loading="editor.isLoading"
-              :disable="editor.isLoading || !newProgram.programNo || !newProgram.name"
-              @click="editor.onSubmit(newProgram)"
-            />
-          </QCardActions>
-        </QCard>
-      </QForm>
-    </QCard>
+            <QCardSection class="mx-4">
+              <InputNumber
+                v-model="programNo"
+                type="positive-integer"
+                :label="t('program.programNo')"
+                :maxlength="10"
+                :rules="[
+                  (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
+                  (val: number) => !editor.allPrograms.some(p => p.programNo === val) || t('input.unique', { field: t('program.programNo') }),
+                ]"
+                class="mb-3"
+                dense
+              />
+              <QInput
+                v-model="programName"
+                :label="t('program.name')"
+                :rules="[(val: string) => !!val || t('input.required', { field: t('program.name') })]"
+                class="mb-3"
+                dense
+              />
+              <QSelect
+                v-model="processType"
+                :options="editor.allProcessType"
+                :label="t('program.programState')"
+                options-dense
+                :rules="[(val: number) => val !== undefined || t('input.required', { field: t('program.programState') })]"
+                map-options
+                emit-value
+                dense
+              />
+              <QCheckbox
+                v-model="operator"
+                :label="t('operator')"
+                dense
+              />
+            </QCardSection>
+            <QCardActions
+              align="right"
+              class="q-pa-md"
+              :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+            >
+              <QBtn
+                flat
+                :label="t('cancel')"
+                class="q-mr-sm"
+                type="reset"
+                @click="onDialogCancel"
+              />
+              <QBtn
+                flat
+                :label="t('create')"
+                class=" bg-primary text-white"
+                type="submit"
+                :loading="editor.isLoading"
+                :disable="editor.isLoading || !newProgram.programNo || !newProgram.name"
+                @submit="onDialogOK(newProgram)"
+              />
+            </QCardActions>
+          </QCard>
+        </QForm>
+      </QCard>
+    </q-dialog>
   </div>
 </template>

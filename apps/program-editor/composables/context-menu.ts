@@ -12,7 +12,7 @@ interface ProgramHeader {
 export interface ContextMenuStore {
   getCopiedValues: () => Array<{ machine: number, program: Program, newProgramNo?: number }>
   comparisonBasketLength: () => number
-  copy: (data: Array<{ program: Program }>, fromMachine: number) => void
+  copy: (program: ProgramHeader[], fromMachine: number) => void
   paste: (machineId: number, directPasteValues?: Array<{ machine: number, program: Program, newProgramNo?: number }>) => Promise<Array<{ machine: number, program: Program }>>
   setCtx: (ctx?: any) => void
   deleteProgram: (selectedRows: Array<ProgramHeader>, selectedOption: number, machineId: number) => Promise<void>

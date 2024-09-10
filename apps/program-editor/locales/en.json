@@ -17,6 +17,7 @@
   "programNotSaved": "Error occured while trying to save program",
   "programNotUpdated": "Program has not been updated",
   "treatmentParameterLimitReached": "Command {commandNo} cannot be used more than {limit}",
+  "(copy)": "(Copy)",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",

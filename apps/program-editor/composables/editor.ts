@@ -17,8 +17,6 @@ export const useEditorStore = defineStore('editor', () => {
   const selectedStep = ref<number>(-1)
   const selectedParallelStep = ref<number>(-1)
   const isLoading = ref<boolean>(false)
-  const popupNewProgramVisible = ref(false)
-  const popupSaveAsProgramVisible = ref(false)
   const popupCommandListVisible = ref(false)
   const popupCommandDetailVisible = ref(false)
   const popupVersionDialog = ref(false)
@@ -208,10 +206,6 @@ export const useEditorStore = defineStore('editor', () => {
         } else {
           if (await insertProgram(newProgram)) {
             notifySuccess(t('saveProgram.success'))
-            popupNewProgramVisible.value = false
-            setTimeout(() => {
-              newStep()
-            }, 1000)
           } else {
             notifyError(t('saveProgram.fail'))
           }
@@ -530,8 +524,6 @@ export const useEditorStore = defineStore('editor', () => {
     selectedCommand,
     lastStepId,
     lastCommandId,
-    popupNewProgramVisible,
-    popupSaveAsProgramVisible,
     popupCommandListVisible,
     popupCommandDetailVisible,
     popupTempTimeGraphVisible,

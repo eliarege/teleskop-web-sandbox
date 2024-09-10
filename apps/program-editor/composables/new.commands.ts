@@ -8,7 +8,7 @@ import CMChangeNameDialog from '~/components/CMChangeNameDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
 import TBProgramFilterDialog from '~/components/TBProgramFilterDialog.vue'
-import type { ProgramFilter } from '~/shared/types'
+import type { Program, ProgramFilter } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -18,6 +18,7 @@ import hooks from '~/utils/hooks'
 import CMTempTimeGraphDialog from '~/components/CMTempTimeGraphDialog.vue'
 import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
 import { TeleskopSettingsIds } from '~/shared/constants'
+import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -63,7 +64,57 @@ export interface RegisteredCommands {
   refresh: [ctx: any, machineId: number]
   tempTimeGraph: [ctx: any]
   stepCommandGraph: [ctx: any]
+  newProgram: [ctx: any]
+  saveAsProgram: [ctx: any]
 }
+
+registerCommand(() => {
+  return {
+    name: 'newProgram',
+    execute(ctx: any) {
+      ctx.$q.dialog({
+        component: CMNewProgramDialog,
+        componentProps: {
+          header: 'newProgram',
+        },
+      }).onOk(async (newProgram: Program) => {
+        const editor = useEditorStore()
+        await editor.onSubmit(newProgram)
+        setTimeout(() => {
+          editor.newStep()
+        }, 1000)
+        return true
+      }).onCancel(() => {
+        return false
+      })
+
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
+  return {
+    name: 'saveAsProgram',
+    execute(ctx: any) {
+      ctx.$q.dialog({
+        component: CMNewProgramDialog,
+        componentProps: {
+          header: 'saveAs',
+          programNo: editor.program.programNo,
+        },
+      }).onOk(async (newProgram: Program) => {
+        await editor.onSubmit(newProgram)
+        return true
+      }).onCancel(() => {
+        return false
+      })
+
+      return true
+    },
+  }
+})
 
 registerCommand(() => {
   return {
