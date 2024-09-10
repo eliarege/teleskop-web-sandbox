@@ -297,21 +297,11 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function fetchMachine(machineId: number) {
-    const machineData = await fetch<Machine>(`/api/machine/${machineId}`)
-    machine.value = machineData
-  }
+    const machineData = await fetch<Machine & { commands: MachineCommand[] }>(`/api/machine/${machineId}`)
 
-  async function fetchMachineCommands(machineId: number, editable?: boolean) {
-    const machineCommandsData = await fetch<MachineCommand[]>(`/api/machine/${machineId}/commands${editable ? '?editable=true' : ''}`)
-    if (machine.value) {
-      if (!(machine.value.commands instanceof Map)) {
-        machine.value.commands = new Map()
-      }
-
-      machine.value.commands.clear()
-      for (const command of machineCommandsData) {
-        machine.value?.commands.set(command.commandNo, command)
-      }
+    machine.value = {
+      ...machineData,
+      commands: new Map((machineData.commands).map(command => [command.commandNo, command])),
     }
   }
 
@@ -534,7 +524,6 @@ export const useEditorStore = defineStore('editor', () => {
     changeMachine,
     fetchProgram,
     fetchMachine,
-    fetchMachineCommands,
     fetchAllMachine,
     fetchMachineGroup,
     fetchAllPrograms,
