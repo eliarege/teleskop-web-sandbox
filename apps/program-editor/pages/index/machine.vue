@@ -15,7 +15,10 @@ import { clearFilter, filterToQuery, formatDuration, getExistingFilter } from '~
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
-import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
+
+definePageMeta({
+  path: '/machine/:machine_id',
+})
 
 const { $commandManager } = useNuxtApp()
 const { t, locale } = useI18n()
@@ -29,27 +32,16 @@ const isProgramFilterExists = ref(getExistingFilter())
 const programs = ref([] as ProgramHeader[])
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t })
-onKeyStroke('F2', (event: KeyboardEvent) => {
-  if (!route.params.program_no) {
-    event.preventDefault()
-    editor.popupNewProgramVisible = true
-  } else {
-    event.preventDefault()
-    editor.newStep()
-  }
-})
 
-onKeyStroke('F3', (event: KeyboardEvent) => {
-  if (route.params.program_no) {
-    event.preventDefault()
-    editor.newParallelStep()
-  }
+onKeyStroke('F2', (event: KeyboardEvent) => {
+  event.preventDefault()
+  $commandManager.executeCommand('newProgram', { $q })
 })
 
 onKeyStroke('F4', (event: KeyboardEvent) => {
   if (editor.selectedPrograms.length === 1) {
     event.preventDefault()
-    router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
+    router.push(`${machineId}/program/${editor.selectedPrograms[0].programNo}`)
   }
 })
 
@@ -82,74 +74,41 @@ onKeyStroke(['r', 'R'], (event: KeyboardEvent) => {
 onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
-    editor.popupNewProgramVisible = true
+    $commandManager.executeCommand('newProgram', { $q })
+  }
+})
+
+onKeyStroke(['c', 'C'], (event: KeyboardEvent) => {
+  if (event.ctrlKey) {
+    event.preventDefault()
+    contextMenuStore.copy(editor.selectedPrograms, machineId)
+    console.log(contextMenuStore.getCopiedValues())
+  }
+})
+
+onKeyStroke(['v', 'V'], (event: KeyboardEvent) => {
+  if (event.ctrlKey) {
+    event.preventDefault()
+    contextMenuStore.paste(machineId)
   }
 })
 
 onKeyStroke(['Enter'], (event: KeyboardEvent) => {
   event.preventDefault()
-  if (!route.params.program_no) {
-    if (editor.selectedPrograms.length === 1)
-      router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
-  } else {
-    editor.scrollPage(editor.selectedStep, true)
-  }
+  if (editor.selectedPrograms.length === 1)
+    router.push(`${machineId}/program/${editor.selectedPrograms[0].programNo}`)
 })
 
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
   event.preventDefault()
-  if (route.params.program_no) {
-    if (event.ctrlKey)
-      editor.deleteParallelStep()
-    else
-      editor.deleteStep()
-  }
-})
-
-onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (route.params.program_no) {
-    if (event.shiftKey) {
-      if (between(editor.selectedParallelStep + 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
-        editor.selectedParallelStep = editor.selectedParallelStep + 1
-      }
-    } else {
-      if (between(editor.selectedStep + 1, 0, editor.program.steps.length - 1)) {
-        editor.selectedStep = editor.selectedStep + 1
-      }
-    }
-    editor.scrollPage(editor.selectedStep)
-  }
-})
-
-onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (route.params.program_no) {
-    if (event.shiftKey) {
-      if (between(editor.selectedParallelStep - 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
-        editor.selectedParallelStep = editor.selectedParallelStep - 1
-      }
-    } else {
-      if (between(editor.selectedStep - 1, 0, editor.program.steps.length - 1)) {
-        editor.selectedStep = editor.selectedStep - 1
-      }
-    }
-    editor.scrollPage(editor.selectedStep)
-  }
+  $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
 })
 
 onKeyStroke('Escape', (event: KeyboardEvent) => {
   event.preventDefault()
-  if (route.params.program_no) {
-    editor.selectedStep = -1
-    editor.selectedParallelStep = -1
-  } else {
-    editor.selectedPrograms = []
-    editor.popupCommandDetailVisible = false
-    editor.popupCommandListVisible = false
-    editor.popupNewProgramVisible = false
-    editor.popupSaveAsProgramVisible = false
-  }
+  editor.selectedPrograms = []
+  editor.popupCommandDetailVisible = false
+  editor.popupCommandListVisible = false
 })
 
 async function fetchPrograms(filter?: ProgramFilter) {
@@ -170,6 +129,7 @@ await editor.fetchTeleskopSettings()
 await editor.fetchMachine(Number(route.params.machine_id))
 await editor.fetchCommandTypes(Number(route.params.machine_id))
 await editor.fetchAllPrograms(Number(route.params.machine_id))
+await editor.fetchAllProcessTypes()
 await fetchPrograms().then(() => {
   editor.isLoading = false
 })
@@ -187,18 +147,18 @@ const buttons = computed(() => [
     shortcut: 'F2',
     icon: 'add_circle_outline',
     onClick() {
-      editor.popupNewProgramVisible = true
+      $commandManager.executeCommand('newProgram', { $q })
     },
   },
   {
     label: t('menu.editProgram'),
     originalLabel: t('menu.editProgram'),
     tooltip: t('menu.editProgram'),
-    shortcut: 'F3',
+    shortcut: 'F4',
     icon: 'edit',
     disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length,
     onClick() {
-      router.push(`/machine/${machineId}/program/${editor.selectedPrograms[0]?.programNo}`)
+      router.push(`${machineId}/program/${editor.selectedPrograms[0]?.programNo}`)
     },
   },
   {
@@ -409,16 +369,16 @@ const contextMenuOptions = computed(() => [
       icon: 'add',
       disabled: false,
       onClick: () => {
-        editor.popupNewProgramVisible = true
+        $commandManager.executeCommand('newProgram', { $q })
       },
     },
     {
       label: tt('contextMenu.editProgram'),
-      shortcut: 'F3',
+      shortcut: 'F4',
       icon: 'edit',
       disabled: isMoreThanOneRowSelected.value,
       onClick: async () => {
-        await navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
+        await navigateTo(`${machineId}/program/${editor.selectedPrograms[0].programNo}`)
       },
     },
     {
@@ -650,7 +610,7 @@ async function onRowClick(row: any, isRightClick?: boolean) {
 }
 
 async function onRowDoubleClick(row: any) {
-  await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
+  await navigateTo(`${machineId}/program/${row.programNo}`)
 }
 
 function handleClick(event: { preventDefault: () => void }, option: AppCommand) {
@@ -808,14 +768,6 @@ function handleRowColor(row: ProgramHeader) {
       type="comparison"
       @close="comparisonDialogVisible = false"
     />
-  </EliarModal>
-
-  <EliarModal v-if="editor.popupNewProgramVisible">
-    <CMNewProgramDialog />
-  </EliarModal>
-
-  <EliarModal v-if="editor.popupSaveAsProgramVisible">
-    <CMSaveAsProgramDialog />
   </EliarModal>
 
   <EliarModal v-if="editor.popupTempTimeGraphVisible">
