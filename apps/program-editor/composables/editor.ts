@@ -3,7 +3,7 @@ import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
-import { CommandIconMapping, CommandType, commandTypeMaps } from '~/shared/constants'
+import { CommandIconMapping, CommandType, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
@@ -40,7 +40,6 @@ export const useEditorStore = defineStore('editor', () => {
   async function fetchTeleskopSettings() {
     teleskopSettings.value = await fetch('/api/teleskop-settings')
   }
-  fetchTeleskopSettings()
 
   async function changeMachine(id: number) {
     selectedPrograms.value = []
@@ -463,12 +462,26 @@ export const useEditorStore = defineStore('editor', () => {
     return currentElement
   }
 
-  async function updateTeleskopSettings(id: number, value: string) {
+  async function updateTeleskopSettings(id: TeleskopSettingsIds, value: string) {
+    switch (id) {
+      case TeleskopSettingsIds.OPTIMIZED_ENABLE:
+        teleskopSettings.value.treatmentSettings.optimizedEnable = value === 'true'
+        break
+      case TeleskopSettingsIds.OPTIMIZED_LIMIT:
+        teleskopSettings.value.treatmentSettings.optimizedLimit = Number(value)
+        break
+      case TeleskopSettingsIds.SELECTED_ICONS:
+        teleskopSettings.value.selectedIcons = Number(value)
+        break
+      case TeleskopSettingsIds.INITIAL_TEMPERATURE:
+        teleskopSettings.value.initialTemperature = Number(value)
+        break
+    }
+
     await fetch('/api/teleskop-settings', {
       method: 'PUT',
       body: { id, value },
     })
-    await fetchTeleskopSettings()
   }
 
   async function fetchCommandTypes(machineId: number) {
