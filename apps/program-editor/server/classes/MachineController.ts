@@ -606,6 +606,7 @@ export class MachineController {
     const constants = await this.fetchMachineConstants()
     const commandFormulas = await this.fetchCommandFormulas()
     const treatmentParameters = await this.fetchTreatmentParameters()
+    const commandTypes = await this.fetchCommandTypes()
     return {
       id: this.id,
       name,
@@ -614,6 +615,7 @@ export class MachineController {
       commandFormulas,
       batchParameters,
       treatmentParameters,
+      commandTypes,
     }
   }
 
