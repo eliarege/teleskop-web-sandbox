@@ -2,6 +2,7 @@ import { machineStore } from '~/server/classes/MachineStore'
 import { ProgramEditorActivityCodes } from '~/server/constants'
 import { type ErrorProgramDetail, PError } from '~/server/error'
 import { logEditorOperation } from '~/server/functions'
+import logger from '~/shared/logger'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
@@ -12,6 +13,7 @@ export default defineAuthEventHandler(async (event) => {
 
   if (event.method === 'GET') {
     try {
+      logger.info(`User: ${event.context.kauth?.name}. Fetching program ${programNo} of machine ${machineId}.`)
       const program = await machine.fetchProgram(programNo)
       program.author = event.context.kauth?.name || ''
       return program
@@ -27,10 +29,12 @@ export default defineAuthEventHandler(async (event) => {
       const source = query.source.toString()
       if (source.includes('machine')) {
         try {
+          logger.info(`User: ${event.context?.kauth?.name}. Deleted program ${programNo} of machine ${machineId} from machine.`)
           await machine.deleteRemoteProgram(programNo)
         } catch (e) {}
       }
       if (source.includes('db')) {
+        logger.info(`User: ${event.context?.kauth?.name}. Deleted program ${programNo} of machine ${machineId} from database.`)
         await logEditorOperation(ProgramEditorActivityCodes.PROGRAMDELETED, `Makine ${machineId}`, `Program No ${programNo}`)
         return await machine.deleteProgramFromDatabase(programNo)
       }

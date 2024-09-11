@@ -4,12 +4,14 @@ import { ProgramStatus } from '~/shared/constants'
 import { PError } from '~/server/error'
 import { ProgramEditorActivityCodes } from '~/server/constants'
 import { logEditorOperation } from '~/server/functions'
+import logger from '~/shared/logger'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
   const machineId = Number.parseInt(machine_id)
   const machine = await machineStore.get(machineId)
   const query = getQuery(event)
+
   if (event.method === 'GET') {
     if (query?.asList) {
       return await machine.getProgramHeadersAsList()
@@ -40,6 +42,7 @@ export default defineAuthEventHandler(async (event) => {
     }
 
     try {
+      logger.info(`User: ${event.context?.kauth?.name}. Created program ${program.programNo} of machine ${machineId}.`)
       await machine.insertProgram(program)
       await logEditorOperation(actCode, act1, act2)
     } catch (err) {
@@ -66,6 +69,7 @@ export default defineAuthEventHandler(async (event) => {
     // else {
     // }
     try {
+      logger.info(`User: ${event.context?.kauth?.name}. Updated program ${body.program.programNo} of machine ${machineId}.`)
       return await machine.updateProgram(body.program)
     } catch (err) {
       if (err instanceof PError) {

@@ -1,4 +1,5 @@
 import { machineStore } from '~/server/classes/MachineStore'
+import logger from '~/shared/logger'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no, version } = getRouterParams(event)
@@ -8,8 +9,10 @@ export default defineAuthEventHandler(async (event) => {
   const machine = await machineStore.get(machineId)
 
   if (event.method === 'GET') {
+    logger.info(`User: ${event.context.kauth?.name}. Fetching archived program ${programNo} of machine ${machineId}.`)
     return await machine.fetchArchivedProgram(programNo, versionNo)
   } else if (event.method === 'DELETE') {
+    logger.info(`User: ${event.context.kauth?.name}. Deleting archived program ${programNo} of machine ${machineId}.`)
     return await machine.deleteVersion(programNo, versionNo)
   }
 })
