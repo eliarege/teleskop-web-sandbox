@@ -140,7 +140,7 @@ const machineData = computed(() => {
       </QToolbar>
     </QHeader>
 
-    <QPageContainer>
+    <QPageContainer class="test">
       <slot />
       <q-dialog
         v-if="showSettings"
@@ -160,5 +160,9 @@ const machineData = computed(() => {
   </QLayout>
 </template>
 
-<style>
+<style scoped lang="postcss">
+.test {
+  height: calc(100vh);
+  overflow: auto;
+}
 </style>

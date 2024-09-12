@@ -80,12 +80,4 @@ onKeyStroke(['P', 'p'], (ev) => {
 </template>
 
 <style lang="postcss" scoped>
-@media screen and (min-width: 735px) {
-  .main-container {
-    padding: 0 0.5rem;
-    width: 100%;
-    height: 100vh;
-    overflow: auto;
-  }
-}
 </style>
