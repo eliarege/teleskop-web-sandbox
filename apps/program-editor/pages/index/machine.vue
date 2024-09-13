@@ -664,45 +664,47 @@ function handleRowColor(row: ProgramHeader) {
     </div>
     <div v-if="fullMatch">
       <QTable
-        dense
-        virtual-scroll
+        v-model:selected="editor.selectedPrograms"
         :rows="filteredPrograms"
         :columns="columns"
-        row-key="id"
+        row-key="programNo"
         :rows-per-page-options="[0]"
-        flat
         class="no-selected h-80vh"
+        selection="multiple"
+        :selected-rows-label="getSelectedString"
+        :filter="filter"
+        dense
+        flat
       >
-        <template #top>
-          <div class="flex justify-between p-2 w-full">
-            <QInput
-              v-model="filter"
-              dense
-              outlined
-              debounce="100"
-              icon
-              autocomplete="false"
-              :placeholder="t('search')"
-            >
-              <template #prepend>
-                <QIcon name="search" />
-              </template>
-            </QInput>
-            <QSpace />
-            <QBtn
-              :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
-              color="grey-8"
-              flat
-              @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
-            />
-          </div>
+        <template #top-left>
+          <q-input
+            v-model="filter"
+            dense
+            outlined
+            debounce="300"
+            :placeholder="t('search')"
+            class="q-mb-sm"
+          >
+            <template #append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
         </template>
+        <template #top-right>
+          <QBtn
+            :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
+            color="grey-8"
+            flat
+            @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
+          />
+        </template>
+
         <template #body="props">
           <QTr
             :props="props"
             :class="[isRowSelected(props.row) ? 'e-selected' : '']"
             :style="{ color: `${handleRowColor(props.row)}` }"
-            @click="onRowClick(props.row)"
+            @click="onRowClick(props.row, false)"
             @dblclick="onRowDoubleClick(props.row)"
             @contextmenu="onRowClick(props.row, true)"
           >
@@ -744,7 +746,6 @@ function handleRowColor(row: ProgramHeader) {
           </QTr>
         </template>
       </QTable>
-      <p>{{ t('selectRange', { count: editor.selectedPrograms.length, total: programs.length }) }}</p>
     </div>
     <div v-else>
       <NuxtPage />

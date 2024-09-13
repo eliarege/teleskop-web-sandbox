@@ -6,7 +6,7 @@
 
 .body--light{
   .no-changes{ color: #080808; }
-  .only-on-teleskop{ color: #00ff00; }
+  .only-on-teleskop{ color: #009900; }
   .only-on-controller{ color: #bebebe; }
   .changed-on-teleskop{ color: #0000ff; }
   .changed-on-machine{ color: #ff00ff; }
