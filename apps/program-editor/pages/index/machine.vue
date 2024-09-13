@@ -29,7 +29,6 @@ const router = useRouter()
 const editor = useEditorStore()
 const machineId = Number(route.params.machine_id)
 const isProgramFilterExists = ref(getExistingFilter())
-const programs = ref([] as ProgramHeader[])
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t })
 
@@ -45,9 +44,12 @@ onKeyStroke('F4', (event: KeyboardEvent) => {
   }
 })
 
-onKeyStroke('F5', (event: KeyboardEvent) => {
+onKeyStroke('F5', async (event: KeyboardEvent) => {
   event.preventDefault()
-  fetchPrograms()
+  editor.isLoading = true
+  await editor.fetchAllPrograms().then(() => {
+    editor.isLoading = false
+  })
 })
 
 onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
@@ -82,7 +84,6 @@ onKeyStroke(['c', 'C'], (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
     contextMenuStore.copy(editor.selectedPrograms, machineId)
-    console.log(contextMenuStore.getCopiedValues())
   }
 })
 
@@ -111,26 +112,12 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
   editor.popupCommandListVisible = false
 })
 
-async function fetchPrograms(filter?: ProgramFilter) {
-  const { fetch } = useKeycloak()
-  let query
-  const checkAnyExistingFilter = getExistingFilter()
-  if (checkAnyExistingFilter) {
-    query = filterToQuery(checkAnyExistingFilter)
-  }
-  if (filter) {
-    query = filterToQuery(filter)
-  }
-  programs.value = await fetch(`/api/machine/${machineId}/program?${query || ''}`)
-}
-
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
-await editor.fetchMachine(Number(route.params.machine_id))
-await editor.fetchCommandTypes(Number(route.params.machine_id))
-await editor.fetchAllPrograms(Number(route.params.machine_id))
-await editor.fetchAllProcessTypes()
-await fetchPrograms().then(() => {
+await editor.fetchMachine(machineId)
+await editor.fetchCommandTypes(machineId)
+await editor.fetchAllPrograms()
+await editor.fetchAllProcessTypes().then(() => {
   editor.isLoading = false
 })
 
@@ -138,6 +125,25 @@ const versionDialogVisible = ref(false)
 const comparisonDialogVisible = ref(false)
 const versions = ref([] as Array<any>)
 const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length > 1)
+
+const filter = ref('')
+const debouncedFilter = refDebounced(filter, 250)
+
+const PATH_RE = /^\/machine\/([^/]+?)\/?$/
+
+const fullMatch = computed(() => PATH_RE.test(route.path))
+watch(fullMatch, async () => {
+  if (fullMatch.value)
+    await editor.fetchAllPrograms()
+})
+
+const { results: filterResults } = useFuse(debouncedFilter, () => editor.allPrograms, {
+  matchAllWhenSearchEmpty: true,
+  fuseOptions: {
+    keys: ['programNo', 'name', 'type'],
+  },
+})
+const filteredPrograms = computed(() => filterResults.value.map(res => res.item))
 
 const buttons = computed(() => [
   {
@@ -172,9 +178,9 @@ const buttons = computed(() => [
       // TODO: Context cannot be provided by executor
       $commandManager.executeCommand(
         'deleteProgram',
-        { $q, fetchPrograms },
+        { $q },
         editor.selectedPrograms,
-        Number(machineId),
+        machineId,
       )
     },
   },
@@ -198,7 +204,7 @@ const buttons = computed(() => [
     icon: 'content_paste',
     onClick() {
       // TODO: Context cannot be provided by executor
-      $commandManager.executeCommand('pasteProgram', { $q, fetchPrograms }, Number(machineId))
+      $commandManager.executeCommand('pasteProgram', { $q }, machineId)
     },
   },
   {
@@ -209,7 +215,7 @@ const buttons = computed(() => [
     icon: 'refresh',
     onClick() {
       // TODO: Context cannot be provided by executor
-      $commandManager.executeCommand('refresh', { $q, fetchPrograms }, Number(machineId))
+      $commandManager.executeCommand('refresh', { $q }, machineId)
     },
   },
 ])
@@ -355,7 +361,7 @@ const contextMenuOptions = computed(() => [
       onClick: () => {
         $commandManager.executeCommand(
           'pasteProgram',
-          { $q, fetchPrograms },
+          { $q },
           machineId,
         )
       },
@@ -390,7 +396,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'deleteProgram',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -404,7 +410,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'deleteProgramFromMultiMachine',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
         )
       },
@@ -418,7 +424,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'concatenatePrograms',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -437,11 +443,10 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'changeName',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
-        // await fetchPrograms()
       },
     },
     {
@@ -453,7 +458,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'changeProcessType',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -471,7 +476,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'sendProgram',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -486,7 +491,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'copyAndSend',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -501,7 +506,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'fetchProgram',
-          { fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -561,23 +566,6 @@ function handleClearFilterClick() {
   fetchPrograms()
 }
 
-const filter = ref('')
-const debouncedFilter = refDebounced(filter, 250)
-
-const PATH_RE = /^\/machine\/([^/]+?)\/?$/
-
-const fullMatch = computed(() => PATH_RE.test(route.path))
-watch(fullMatch, async () => {
-  if (fullMatch.value)
-    await fetchPrograms()
-})
-const { results: filterResults } = useFuse(debouncedFilter, programs as Ref<ProgramTable[]>, {
-  matchAllWhenSearchEmpty: true,
-  fuseOptions: {
-    keys: ['programNo', 'name', 'type'],
-  },
-})
-
 function formatValue<T extends Record<string, any>>(row: T, column: QTableColumn<T>) {
   const value = typeof column.field === 'function' ? column.field(row) : row[column.field]
   return column.format ? column.format(value, row) : value
@@ -588,17 +576,14 @@ function formatTooltip<T extends Record<string, any>>(row: T, column: QTableColu
   return column.tooltip ? column.tooltip(value, row) : value
 }
 
-const filteredPrograms = computed(() => {
-  return filterResults.value.map(r => r.item)
-})
-
-function isRowSelected(row: any) {
+function isRowSelected(row: ProgramTable) {
   return editor.selectedPrograms.includes(row)
 }
-function removeSelection(row: any) {
+function removeSelection(row: ProgramTable) {
   editor.selectedPrograms = editor.selectedPrograms.filter(r => r !== row)
 }
-async function onRowClick(row: any, isRightClick?: boolean) {
+
+function onRowClick(row: ProgramTable, isRightClick?: boolean) {
   if (ctrl.value) {
     if (isRowSelected(row)) {
       if (!isRightClick)
@@ -609,25 +594,18 @@ async function onRowClick(row: any, isRightClick?: boolean) {
     editor.selectedPrograms = [row]
 }
 
-async function onRowDoubleClick(row: any) {
+async function onRowDoubleClick(row: ProgramTable) {
   await navigateTo(`${machineId}/program/${row.programNo}`)
-}
-
-function handleClick(event: { preventDefault: () => void }, option: AppCommand) {
-  if (option.disabled)
-    event.preventDefault()
-  else {
-    option.execute()
-  }
 }
 
 async function handleVersionDelete(deleteVersions: any[]) {
   editor.isLoading = true
   await contextMenuStore.deleteVersion(deleteVersions, machineId)
-  await fetchPrograms()
+  await editor.fetchAllPrograms()
   versions.value = await contextMenuStore.fetchVersions(editor.selectedPrograms[0].programNo, machineId)
   editor.isLoading = false
 }
+
 function handleRowColor(row: ProgramHeader) {
   if (0) { // User is not logged in //FIXME:
     return 'grey'
@@ -654,6 +632,10 @@ function handleRowColor(row: ProgramHeader) {
       return dark.isActive ? ProgramStateColors.NO_CHANGES_DARK : ProgramStateColors.NO_CHANGES
     }
   }
+}
+
+function getSelectedString() {
+  return t('selectRange', { count: editor.selectedPrograms.length, total: editor.allPrograms.length })
 }
 </script>
 
