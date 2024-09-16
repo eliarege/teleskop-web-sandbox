@@ -55,13 +55,16 @@ export function parseBatchParameters(content: string) {
     const list = JSON.parse(match[10])
     const selectionList = []
     const selectionValues = []
-    const selectionListDefault = []
+    let selectionListDefault = null as string | null
 
     if (list && list.length) {
       for (let i = 0; i < list.length; i += 3) {
         selectionList.push(list[i])
         selectionValues.push(list[i + 1])
-        selectionListDefault.push(list[i + 2])
+        const isDefault = list[i + 2] === 1
+        if (isDefault) {
+          selectionListDefault = list[i + 1]
+        }
       }
     }
 
