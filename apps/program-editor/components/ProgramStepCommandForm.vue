@@ -29,7 +29,7 @@ const machineCommand = computed(() => {
       <div class="pb-2">
         <CommandSelector :path="props.path" />
       </div>
-      <div class="flex flex-wrap gap-x-2 gap-y-1">
+      <div class="flex flex-wrap gap-x-1 gap-y-1">
         <ProgramStepCommandParameterInput
           v-for="(parameter, index) in machineCommand.editableParameters"
           :key="`pr-${programCommand.commandNo}-${index}`"

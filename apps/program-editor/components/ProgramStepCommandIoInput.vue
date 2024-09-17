@@ -34,7 +34,7 @@ function decode(values: string[]) {
 
 <template>
   <div class="q-input-border">
-    <div class="relative pt-5">
+    <div class="relative pt-5 text-3">
       <div class="q-input-text">
         {{ props.io.name }}
       </div>
@@ -67,7 +67,7 @@ function decode(values: string[]) {
 }
 .q-input-border {
   border-radius: 4px;
-  padding: 0 .5rem .25rem .5rem;
+  padding: 0 0.5rem 0.25rem 0.5rem;
   border: 1px solid rgba(0, 0, 0, 0.24);
 }
 .body--dark .q-input-text {

@@ -48,6 +48,8 @@ watch(() => model.value, (newValue: number) => {
       :label="parameter.name"
       :rules="rules"
       style="width: 150px;"
+      class="text-3"
+      hide-bottom-space
     >
       <template #optimized>
         <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -71,6 +73,7 @@ watch(() => model.value, (newValue: number) => {
       outlined
       dense
       style="width: 150px;"
+      class="text-3"
     >
       <template #optimized>
         <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -96,6 +99,7 @@ watch(() => model.value, (newValue: number) => {
     outlined
     dense
     style="width: 180px;"
+    class="text-3"
   />
   <div v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
     <QSelect
@@ -110,6 +114,7 @@ watch(() => model.value, (newValue: number) => {
       outlined
       dense
       style="width: 180px;"
+      class="text-3"
     >
       <template #option="scope">
         <QItem
@@ -118,6 +123,8 @@ watch(() => model.value, (newValue: number) => {
           clickable
           :active="model === scope.opt.value"
           active-class="bg-blue-1"
+          class="text-3"
+
           @click="model = scope.opt.value"
         >
           <QItemSection>

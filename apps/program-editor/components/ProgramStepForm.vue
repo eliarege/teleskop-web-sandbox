@@ -77,7 +77,7 @@ const duration = computed(() => formatDuration(
         </div>
       </div>
 
-      <div v-if="devMode" class="flex flex-col color-gray-5">
+      <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
         <span>{{ step.stepId }}</span>
         <span>{{ duration }}</span>
       </div>
