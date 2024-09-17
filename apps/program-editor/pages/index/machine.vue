@@ -10,7 +10,6 @@ import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
 import type { ProgramFilter, ProgramHeader, ProgramTable } from '~/shared/types'
 import { ProgramStateColors, ProgramStatus } from '~/shared/constants'
-import type { AppCommand } from '~/composables/new.commands'
 import { clearFilter, filterToQuery, formatDuration, getExistingFilter } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
@@ -28,6 +27,7 @@ const route = useRoute()
 const router = useRouter()
 const editor = useEditorStore()
 const machineId = Number(route.params.machine_id)
+const tableRef = ref()
 const isProgramFilterExists = ref(getExistingFilter())
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t })
@@ -143,7 +143,7 @@ const { results: filterResults } = useFuse(debouncedFilter, () => editor.allProg
     keys: ['programNo', 'name', 'type'],
   },
 })
-const filteredPrograms = computed(() => filterResults.value.map(res => res.item))
+const filteredPrograms = computed<ProgramTable[]>(() => filterResults.value.map(res => res.item))
 
 const buttons = computed(() => [
   {
@@ -246,7 +246,7 @@ interface ProgramTableColumn extends Omit<QTableColumn, 'label'> {
 
 const columns = ref<ProgramTableColumn[]>([
   {
-    name: 'no',
+    name: 'programNo',
     label: '#',
     field: 'programNo',
     sortable: true,
@@ -552,6 +552,7 @@ const contextMenuOptions = computed(() => [
 
 ] as TopbarMenuItem[][])
 const ctrl = useKeyModifier('Control')
+const shift = useKeyModifier('Shift')
 
 function handleFilterClick() {
   // TODO: Context cannot be provided by executor
@@ -581,21 +582,6 @@ function isRowSelected(row: ProgramTable) {
 }
 function removeSelection(row: ProgramTable) {
   editor.selectedPrograms = editor.selectedPrograms.filter(r => r !== row)
-}
-
-function onRowClick(row: ProgramTable, isRightClick?: boolean) {
-  if (ctrl.value) {
-    if (isRowSelected(row)) {
-      if (!isRightClick)
-        removeSelection(row)
-    } else
-      editor.selectedPrograms.push(row)
-  } else if (!(isRowSelected(row) && isRightClick))
-    editor.selectedPrograms = [row]
-}
-
-async function onRowDoubleClick(row: ProgramTable) {
-  await navigateTo(`${machineId}/program/${row.programNo}`)
 }
 
 async function handleVersionDelete(deleteVersions: any[]) {
@@ -637,6 +623,42 @@ function handleRowColor(row: ProgramHeader) {
 function getSelectedString() {
   return t('selectRange', { count: editor.selectedPrograms.length, total: editor.allPrograms.length })
 }
+
+const showContextMenu = ref(false)
+const contextMenuPosition = ref({ x: 0, y: 0 })
+
+function onRowClick(event: Event, row: ProgramTable) {
+  if (ctrl.value) {
+    if (isRowSelected(row)) {
+      removeSelection(row)
+    } else
+      editor.selectedPrograms.push(row)
+  } else if (shift.value) {
+    nextTick(() => {
+      const tableRows = tableRef.value.filteredSortedRows
+      let firstIndex = tableRows.indexOf(editor.selectedPrograms[0])
+      let lastIndex = tableRows.indexOf(row)
+      if (firstIndex > lastIndex) {
+        [firstIndex, lastIndex] = [lastIndex, firstIndex]
+      }
+      editor.selectedPrograms = tableRows.slice(firstIndex, lastIndex + 1)
+    })
+  } else if (!isRowSelected(row)) {
+    editor.selectedPrograms = [row]
+  }
+}
+
+async function onRowDoubleClick(event: Event, row: ProgramTable) {
+  await navigateTo(`${machineId}/program/${row.programNo}`)
+  showContextMenu.value = false
+}
+
+function handleContextMenu(event: Event, row: ProgramTable) {
+  event.preventDefault()
+
+  onRowClick(event, row)
+  showContextMenu.value = true
+}
 </script>
 
 <template>
@@ -646,6 +668,7 @@ function getSelectedString() {
     </div>
     <div v-if="fullMatch">
       <QTable
+        ref="tableRef"
         v-model:selected="editor.selectedPrograms"
         :rows="filteredPrograms"
         :columns="columns"
@@ -657,77 +680,20 @@ function getSelectedString() {
         :filter="filter"
         dense
         flat
+        @row-click="onRowClick"
+        @row-dblclick="onRowDoubleClick"
+        @row-contextmenu="handleContextMenu"
+      />
+
+      <q-menu
+        v-model="showContextMenu"
+        touch-position
+        context-menu
+        :transition-duration="0"
+        :style="{ left: `${contextMenuPosition.x}px`, top: `${contextMenuPosition.y}px` }"
       >
-        <template #top-left>
-          <q-input
-            v-model="filter"
-            dense
-            outlined
-            debounce="300"
-            :placeholder="t('search')"
-            class="q-mb-sm"
-          >
-            <template #append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-        </template>
-        <template #top-right>
-          <QBtn
-            :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
-            color="grey-8"
-            flat
-            @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
-          />
-        </template>
-
-        <template #body="props">
-          <QTr
-            :props="props"
-            :class="[isRowSelected(props.row) ? 'e-selected' : '']"
-            :style="{ color: `${handleRowColor(props.row)}` }"
-            @click="onRowClick(props.row, false)"
-            @dblclick="onRowDoubleClick(props.row)"
-            @contextmenu="onRowClick(props.row, true)"
-          >
-            <QTd
-              v-for="column in columns"
-              :key="column.name"
-              :props="props"
-            >
-              <q-menu
-                touch-position
-                context-menu
-                :transition-duration="0"
-              >
-                <ProgramContextMenu
-                  :items="contextMenuOptions"
-                />
-              </q-menu>
-
-              <template v-if="column.name === 'operator'">
-                <QIcon
-                  v-if="props.row.operator"
-                  name="check"
-                  color="positive"
-                  size="1rem"
-                />
-              </template>
-              <template v-else>
-                {{ formatValue(props.row, column) }}
-                <QTooltip
-                  v-if="column.tooltip"
-                  class="bg-white text-black e-border text-sm"
-                  :transition-duration="0"
-                  :delay="500"
-                >
-                  {{ formatTooltip(props.row, column) }}
-                </QTooltip>
-              </template>
-            </QTd>
-          </QTr>
-        </template>
-      </QTable>
+        <ProgramContextMenu :items="contextMenuOptions" />
+      </q-menu>
     </div>
     <div v-else>
       <NuxtPage />
