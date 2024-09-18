@@ -6,6 +6,7 @@ const props = defineProps<{
   io: CommandIO
 }>()
 
+const { t } = useI18n()
 const editor = useEditorStore()
 const programIO: ioListItem = editor.getPathElement(props.path)
 
@@ -30,20 +31,36 @@ function encode(values: ioListItem) {
 function decode(values: string[]) {
   return values.map(value => value.split(separator).map(v => Number.parseInt(v)) as [number, number])
 }
+
+const selectedOptionsText = computed(() => {
+  const selected = options.value
+    .filter(option => model.value.includes(option.value))
+    .map(option => `${option.label.substring(0, 6).trim()}.`)
+
+  return selected.length > 0 ? selected.join(', ') : t('noSelection')
+})
 </script>
 
 <template>
-  <div class="q-input-border">
-    <div class="relative pt-5 text-3">
+  <div
+    class="q-input-border inline-block align-top mr-1 mb-1"
+  >
+    <div class="relative pt-4 text-3 fit-content">
       <div class="q-input-text">
         {{ props.io.name }}
       </div>
-      <QOptionGroup
-        v-model="model"
-        :options="options"
-        type="checkbox"
-        dense
-      />
+      <div class="option-text">
+        {{ selectedOptionsText }}
+      </div>
+      <div class="option-group">
+        <QOptionGroup
+          v-model="model"
+          :options="options"
+          type="checkbox"
+          class="pt-1"
+          dense
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -65,15 +82,47 @@ function decode(values: string[]) {
   letter-spacing: 0.00937em;
   transform-origin: left top;
 }
+
 .q-input-border {
   border-radius: 4px;
   padding: 0 0.5rem 0.25rem 0.5rem;
   border: 1px solid rgba(0, 0, 0, 0.24);
+  position: relative;
 }
+
 .body--dark .q-input-text {
   color: rgba(255, 255, 255, 0.7);
 }
+
 .body--dark .q-input-border {
   border-color: rgba(255, 255, 255, 0.6);
+}
+
+.option-group {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding-right: 0.3rem;
+  transition:
+    max-height 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+}
+
+.option-text {
+  max-height: 20px;
+  opacity: 1;
+  transition:
+    max-height 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+}
+
+.q-input-border:hover .option-group {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.q-input-border:hover .option-text {
+  max-height: 0;
+  opacity: 0;
 }
 </style>

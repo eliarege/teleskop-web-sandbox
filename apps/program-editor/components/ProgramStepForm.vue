@@ -57,7 +57,7 @@ const duration = computed(() => formatDuration(
       <!-- <span v-if="devMode" class="color-gray-5">{{ step.stepId }}</span> -->
       <!-- <span>{{ duration }}</span> -->
 
-      <div class="flex items-center w-5 ">
+      <div class="flex items-center w-5">
         <div v-show="!expanded" class="space-y-1">
           <div
             v-for="(icon, key) in stepIcons"

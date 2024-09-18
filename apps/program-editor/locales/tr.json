@@ -18,6 +18,7 @@
   "programNotUpdated": "Program güncellenemedi",
   "treatmentParameterLimitReached": "{commandNo} numaralı komut {limit}'den fazla kullanılamaz",
   "(copy)": "(Kopya)",
+  "noSelection": "Seçim Yok",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",

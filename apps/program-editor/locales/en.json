@@ -18,6 +18,7 @@
   "programNotUpdated": "Program has not been updated",
   "treatmentParameterLimitReached": "Command {commandNo} cannot be used more than {limit}",
   "(copy)": "(Copy)",
+  "noSelection": "No Selection",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",
