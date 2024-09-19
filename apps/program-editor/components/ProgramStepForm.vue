@@ -78,8 +78,8 @@ const duration = computed(() => formatDuration(
       </div>
 
       <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
-        <span>{{ step.stepId }}</span>
-        <span>{{ duration }}</span>
+        <!-- <span>{{ step.stepId }}</span>
+        <span>{{ duration }}</span> -->
       </div>
 
       <QBtn
@@ -90,16 +90,18 @@ const duration = computed(() => formatDuration(
         @click="toggle"
       />
 
-      <div v-show="expanded" class="mt-3 ml-1 w-5">
-        <div v-if="mainIcon">
-          <div
-            class="icon"
-            :class="mainIcon.name"
-            :style="{ color: mainIcon.color }"
-          />
-          <q-tooltip>
-            {{ mainIcon.name ? mainIcon.label : t('noIcon') }}
-          </q-tooltip>
+      <div class="w-5">
+        <div v-show="expanded" class="mt-3 ml-1">
+          <div v-if="mainIcon">
+            <div
+              class="icon"
+              :class="mainIcon.name"
+              :style="{ color: mainIcon.color }"
+            />
+            <q-tooltip>
+              {{ mainIcon.name ? mainIcon.label : t('noIcon') }}
+            </q-tooltip>
+          </div>
         </div>
       </div>
 
@@ -141,7 +143,7 @@ const duration = computed(() => formatDuration(
               </div>
             </div>
 
-            <div class="program-step-command ">
+            <div>
               <ProgramStepCommandForm :path="`${props.path}.parallelCommands.${index}`" :expanded />
             </div>
             <QSpace />
@@ -162,7 +164,7 @@ const duration = computed(() => formatDuration(
 
 <style lang="postcss" scoped>
 .step-parallel-command {
-  @apply flex w-full pl-4;
+  @apply flex flex-row items-center w-full pl-4;
   @apply hover:( dark:bg-dark-1);
   @apply border-b border-black border-opacity-20;
   @apply dark:(border-b border-white border-opacity-20);

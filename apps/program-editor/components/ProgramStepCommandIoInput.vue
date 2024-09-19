@@ -103,25 +103,21 @@ const selectedOptionsText = computed(() => {
   opacity: 0;
   overflow: hidden;
   padding-right: 0.3rem;
-  transition:
-    max-height 0.3s ease-in-out,
-    opacity 0.3s ease-in-out;
 }
 
 .option-text {
   max-height: 20px;
   opacity: 1;
-  transition:
-    max-height 0.3s ease-in-out,
-    opacity 0.3s ease-in-out;
 }
 
-.q-input-border:hover .option-group {
+.q-input-border:hover .option-group,
+.q-input-border:focus-within .option-group {
   max-height: 500px;
   opacity: 1;
 }
 
-.q-input-border:hover .option-text {
+.q-input-border:hover .option-text,
+.q-input-border:focus-within .option-text {
   max-height: 0;
   opacity: 0;
 }
