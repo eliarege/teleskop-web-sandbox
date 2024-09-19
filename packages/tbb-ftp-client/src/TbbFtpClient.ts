@@ -373,38 +373,26 @@ export class TbbFtpClient {
   }
 
   async fetchIcons() {
-    enum IconType {
-      FunctionIconsBig = 1,
-      FunctionIconsBigParalel = 2,
-      FunctionDisableIconsBig = 3,
-      FunctionDisableIconsBigParalel = 4,
-    }
-
-    const remotePath = '/tbb6500/data/pics'
+    const iconPaths = [
+      { type: 1, path: '/tbb6500/data/pics/function_icons_big' },
+      { type: 2, path: '/tbb6500/data/pics/function_icons_big/paralel' },
+      { type: 3, path: '/tbb6500/data/pics/function_disable_icons_big' },
+      { type: 4, path: '/tbb6500/data/pics/function_disable_icons_big/paralel' },
+    ]
     const icons: Icon[] = []
 
-    const fetchIconsRecursively = async (pathName: string) => {
-      const subDirContents = await this.list(pathName)
-      for (const item of subDirContents) {
-        const itemPath = path.posix.join(pathName, item.name)
-        if (item.isDirectory) {
-          await fetchIconsRecursively(itemPath)
-        } else {
-          let type: IconType
-          if (itemPath.includes('disable') && itemPath.includes('paralel')) {
-            type = IconType.FunctionDisableIconsBigParalel
-          } else if (itemPath.includes('disable')) {
-            type = IconType.FunctionDisableIconsBig
-          } else if (itemPath.includes('paralel')) {
-            type = IconType.FunctionIconsBigParalel
-          } else {
-            type = IconType.FunctionIconsBig
-          }
-          icons.push({ type, name: item.name, data: await this.download(itemPath, { encoding: 'binary' }) })
+    for (const iconPath of iconPaths) {
+      const files = await this.list(iconPath.path)
+      for (const file of files) {
+        if (file.isFile) {
+          icons.push({
+            name: file.name,
+            type: iconPath.type,
+            data: await this.download(path.posix.join(iconPath.path, file.name)),
+          })
         }
       }
     }
-    await fetchIconsRecursively(remotePath)
 
     return icons
   }

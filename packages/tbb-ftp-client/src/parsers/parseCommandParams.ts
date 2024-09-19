@@ -1,4 +1,4 @@
-const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" "([^"]*)" (\d+) -?(.+) -?(.+) (.+) (\d+)(?: (.+))?$/gim
+const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" "([^"]*)" (\d+) (-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?) (\d+)(?: (.+))?$/gim
 
 // TODO: ["Calisma","0","Calis","1"] => [{name: "calis", value: 0}, ...]
 /**
@@ -21,9 +21,9 @@ export function parseCommandParams(content: string) {
       paramName: match[4],
       paramFormula: match[5],
       binding: Number.parseInt(match[6]),
-      defaultValue: Number.parseInt(match[7]),
-      minValue: Number.parseInt(match[8]),
-      maxValue: Number.parseInt(match[9]),
+      defaultValue: Number.parseFloat(match[7]),
+      minValue: Number.parseFloat(match[8]),
+      maxValue: Number.parseFloat(match[9]),
       graphic: Number.parseInt(match[10]),
       selectionList: match[11] ? processSelectionList(JSON.parse(match[11])) : null,
     }

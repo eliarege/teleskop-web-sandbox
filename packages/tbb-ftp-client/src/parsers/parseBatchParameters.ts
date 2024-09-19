@@ -38,21 +38,21 @@ const unitMap = [
   'oz/Feet',
 ]
 
-const pattern = /^SABIT_(\d+)=(.+), (.+), (.+), (.+), (.+), (.+), ([^,]*),(?:([^,]*),)?(\[.*\])$/gim
+const pattern = /^SABIT_(\d+)=(.+),(.+)$/gim
 
 /**
  * **Path**: `/tbb6500/data/config/baslatmaParametreleri`
  *
  * **Example**:
  * ```
- * SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600,[]"
+ * SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600, []"
  * ```
  */
 export function parseBatchParameters(content: string) {
   const reasons = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const list = JSON.parse(match[10])
+    const list = JSON.parse(match[3])
     const selectionList = []
     const selectionValues = []
     let selectionListDefault = null as string | null
@@ -68,17 +68,20 @@ export function parseBatchParameters(content: string) {
       }
     }
 
+    const id = Number.parseInt(match[1])
+    const entries = match[2].split(',').map(e => e.trim())
+
     const reason = {
-      batchParameterId: Number.parseInt(match[1]),
-      paramString: match[2],
-      format: match[3],
-      min: Number.parseInt(match[4]),
-      max: Number.parseInt(match[5]),
-      default: Number.parseInt(match[6]),
-      unitCode: Number.parseInt(match[7]),
-      unitText: unitMap[Number.parseInt(match[7])],
-      parameterId: Number.parseInt(match[8]),
-      dmArea: match[9] ? Number.parseInt(match[9]) : null,
+      batchParameterId: id,
+      paramString: entries[0],
+      format: entries[1],
+      min: Number.parseInt(entries[2]),
+      max: Number.parseInt(entries[3]),
+      default: Number.parseInt(entries[4]),
+      unitCode: Number.parseInt(entries[5]),
+      unitText: unitMap[Number.parseInt(entries[5])],
+      parameterId: Number.parseInt(entries[6]),
+      dmArea: entries[7] ? Number.parseInt(entries[7]) : null,
       selectionList,
       selectionValues,
       selectionListDefault,

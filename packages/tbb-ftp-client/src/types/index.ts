@@ -1,3 +1,5 @@
+import type { Buffer } from 'node:buffer'
+
 export interface Machine {
   id: number
   code: string
@@ -261,7 +263,7 @@ export interface LockOutputDigital extends LockOutput {
 export interface Icon {
   type: number
   name: string
-  data: string
+  data: Buffer
 }
 
 export interface CalibrationAnalogInput {

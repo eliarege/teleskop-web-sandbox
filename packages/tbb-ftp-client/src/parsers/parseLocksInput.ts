@@ -22,7 +22,9 @@ export function parseSeperatedLocks(line: string) {
   const regex = /"[^"]+"|\S+/g
   const parts = [...line.matchAll(regex)].map(p => p[0].replace(/"/g, ''))
 
-  const lockId = Number.parseInt(parts[0], 10)
+  // Normalde cihazdan alınan kilitleme ID'leri, teleskop veri tabanına yazılmadan önce +1 yapılıyor.
+  // Kompleksliği azaltmak için bu işlem, ilgili parse/serialize fonksiyonlarında yapılıyor.
+  const lockId = Number.parseInt(parts[0], 10) + 1
   const inputType = Number.parseInt(parts[1], 10)
   const logicType = Number.parseInt(parts[parts.length - 1], 10)
   let inputs: any[] = []
@@ -58,7 +60,7 @@ function parseAnalogInputs(parts: string[]) {
   for (let i = 0; i < parts.length; i += 5) {
     if (Number.parseInt(parts[i], 10) !== -1) {
       inputs.push({
-        id: Number.parseInt(parts[i], 10),
+        id: Number.parseInt(parts[i], 10) + 1,
         r1min: (parts[i + 1]),
         r2max: (parts[i + 2]),
         histerisis: (parts[i + 3]),
@@ -74,7 +76,7 @@ function parseDigitalInputs(parts: string[]) {
   for (let i = 0; i < parts.length; i += 2) {
     if (Number.parseInt(parts[i], 10) !== -1) {
       inputs.push({
-        id: Number.parseInt(parts[i], 10),
+        id: Number.parseInt(parts[i], 10) + 1,
         state: Number.parseInt(parts[i + 1], 10),
       })
     }
@@ -87,7 +89,7 @@ function parseDigitalOutputs(parts: string[]) {
   for (let i = 0; i < parts.length; i += 2) {
     if (Number.parseInt(parts[i], 10) !== -1) {
       outputs.push({
-        id: Number.parseInt(parts[i], 10),
+        id: Number.parseInt(parts[i], 10) + 1,
         state: Number.parseInt(parts[i + 1], 10),
       })
     }
@@ -100,7 +102,7 @@ function parseCommandInputs(parts: string[]) {
   for (let i = 0; i < parts.length; i += 2) {
     if (Number.parseInt(parts[i], 10) !== -1) {
       commands.push({
-        id: Number.parseInt(parts[i], 10),
+        id: Number.parseInt(parts[i], 10) + 1,
         state: Number.parseInt(parts[i + 1], 10),
       })
     }
@@ -113,7 +115,7 @@ function parseLockInputs(parts: string[]) {
   for (let i = 0; i < parts.length; i += 2) {
     if (Number.parseInt(parts[i], 10) !== -1) {
       locks.push({
-        id: Number.parseInt(parts[i], 10),
+        id: Number.parseInt(parts[i], 10) + 1,
         state: Number.parseInt(parts[i + 1], 10),
       })
     }
@@ -126,7 +128,7 @@ function parseVirtualInputs(parts: string[]) {
   for (let i = 0; i < parts.length; i += 2) {
     if (Number.parseInt(parts[i], 10) !== -1) {
       inputs.push({
-        id: Number.parseInt(parts[i], 10),
+        id: Number.parseInt(parts[i], 10) + 1,
         state: Number.parseInt(parts[i + 1], 10),
       })
     }

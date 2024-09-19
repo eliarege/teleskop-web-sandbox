@@ -21,7 +21,7 @@ export function parseLocksOutput(content: string) {
     if (!lineMatch)
       continue // Skip lines that don't match the basic pattern
 
-    const lockNo = Number(lineMatch[1])
+    const lockNo = Number(lineMatch[1]) + 1
     const outputType = Number(lineMatch[2])
 
     if (outputType === 2) {
@@ -46,7 +46,7 @@ function parseAnalogOutputs(line: string) {
   while (match) {
     if (Number(match[1]) !== -1)
       outputs.push({
-        outputId: Number(match[1]),
+        outputId: Number(match[1]) + 1,
         percentage: Number(match[2]),
       })
     match = analogOutputPattern.exec(line)
@@ -62,7 +62,7 @@ function parseDigitalOutputs(line: string) {
   while (match) {
     if (Number(match[1]) !== -1)
       outputs.push({
-        outputId: Number(match[1]),
+        outputId: Number(match[1]) + 1,
         state: Number(match[2]),
       })
     match = digitalOutputPattern.exec(line)

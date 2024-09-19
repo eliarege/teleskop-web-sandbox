@@ -1,6 +1,5 @@
 import type { IOChangedEvent } from '../types'
 
-const pattern = /^(\d+) (\d+) (\d+)(?: ?)(\d*)(?: ?)(\d*)$/gim
 /**
  * **Path**: `/tbb6500/data/config/io_changed_event`
  *
@@ -11,19 +10,32 @@ const pattern = /^(\d+) (\d+) (\d+)(?: ?)(\d*)(?: ?)(\d*)$/gim
  * ```
  */
 export function parseIOChangedEvent(content: string) {
-  const inputs = []
-  let match = pattern.exec(content)
-  while (match !== null) {
-    const input: Partial<IOChangedEvent> = {
-      ioType: Number.parseInt(match[1]),
-      ioIndex: Number.parseInt(match[2]),
-      difference: Number.parseInt(match[3]),
-      period: match[4] ? Number.parseInt(match[4]) : null,
-      minPeriod: match[5] ? Number.parseInt(match[5]) : null,
-    }
+  const inputs = [] as IOChangedEvent[]
 
-    inputs.push(input)
-    match = pattern.exec(content)
+  for (const line of content.split('\n')) {
+    if (line) {
+      const segment = line.trim().split(/\s+/)
+      const ioType = Number.parseInt(segment[0])
+      // Calculated Values
+      if (ioType === 6) {
+        inputs.push({
+          ioType,
+          ioIndex: Number.parseInt(segment[1]),
+          difference: 0,
+          period: segment[4] ? Number.parseInt(segment[4]) : null,
+          minPeriod: segment[4] ? Number.parseInt(segment[5]) : null,
+        })
+      } else {
+        inputs.push({
+          ioType,
+          ioIndex: Number.parseInt(segment[1]),
+          difference: Number.parseInt(segment[2]),
+          period: segment[3] ? Number.parseInt(segment[3]) : null,
+          minPeriod: segment[4] ? Number.parseInt(segment[4]) : null,
+        })
+      }
+    }
   }
+
   return inputs
 }

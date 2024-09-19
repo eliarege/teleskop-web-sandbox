@@ -20,7 +20,7 @@ async function replaceRecords(knex: Knex, tableName: string, data: any[], whereO
       await insertQuery.insert(chunk)
     }
     return true
-  } catch (error) {
+  } catch (error: any) {
     throw new DatabaseQueryError(error.message)
   }
 }
@@ -228,8 +228,8 @@ export async function updateIOChangedEvent(machineId: number, tbb: TbbFtpClient,
   if (!inputs.length)
     return false
   const data = inputs.map((d) => {
-    const period = d.ioType === 1 || d.ioType === 2 ? d.period : 0
-    const processed = d.ioType === 1 || d.ioType === 2 ? true : d.difference === 1
+    const period = (d.ioType === 1 || d.ioType === 2) ? d.period : 0
+    const processed = (d.ioType === 1 || d.ioType === 2) ? true : d.difference === 1
 
     return {
       MACHINEID: machineId,
@@ -267,19 +267,20 @@ export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient
   if (!commands.length)
     return false
 
-  const paramValues = await trx('BFMACHPARAMETERS')
+  const machineConstants = await trx('BFMACHPARAMETERS')
     .select({
-      machineParameterId: 'MACHINEPARAMETERID',
+      id: 'MACHINEPARAMETERID',
       currentValue: 'currentValue',
     })
     .where('MACHINEID', machineId)
 
   const data = commands.map((d) => {
-    let activated = 0
+    let activated = d.activated
     if (d.activated === 1 && d.machineConstantId !== -1) {
-      const currentValue = paramValues.find(p => p.machineParameterId === d.machineConstantId)?.currentValue
-      if (currentValue && currentValue !== 0)
-        activated = 1
+      const constant = machineConstants.find(con => con.id === d.machineConstantId)
+      if (constant?.currentValue === 0) {
+        activated = 0
+      }
     }
 
     return {
@@ -512,12 +513,12 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
 
     const functionName = functionNameRow?.TBBFUNTIONNAME
     const alarmObj = functionAlarms.find(a => a.f === functionName)
+    let alarmTypeIndex = null as number | null
 
     if (alarmObj) {
       const alarmType = Object.keys(alarmObj)
         .find(key => alarmObj[key as keyof FunctionAlarm]?.includes(String(c.alarmNo)))
 
-      let alarmTypeIndex
       switch (alarmType) {
         case 's':
           alarmTypeIndex = 0
@@ -531,21 +532,18 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
         case 'm':
           alarmTypeIndex = 3
           break
-        default:
-          alarmTypeIndex = null
-          break
       }
-
-      commandsAlarmsInserts.push({
-        MACHINEID: machineId,
-        ALARMINDEX: c.alarmNo,
-        COMMANDNO: c.commandNo,
-        ALARMNO: c.alarmNo,
-        UNIVERSALALARMNO: c.alarmNo,
-        ALARM: c.alarm,
-        ALARMTYPE: alarmTypeIndex,
-      })
     }
+
+    commandsAlarmsInserts.push({
+      MACHINEID: machineId,
+      ALARMINDEX: c.alarmNo,
+      COMMANDNO: c.commandNo,
+      ALARMNO: c.alarmNo,
+      UNIVERSALALARMNO: c.alarmNo,
+      ALARM: c.alarm,
+      ALARMTYPE: alarmTypeIndex,
+    })
   }
 
   return await replaceRecords(trx, 'BFMASTERCOMMANDSALARMS', commandsAlarmsInserts, { MACHINEID: machineId })
@@ -611,9 +609,9 @@ export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx
   const analogInputsDB = analogInputs.flatMap(d =>
     d.inputs.map((input, index) => ({
       MACHINEID: machineId,
-      LOCKNO: d.lockId + 1,
+      LOCKNO: d.lockId,
       LOCKAININDEX: index,
-      ID: input.id + 1,
+      ID: input.id,
       R1MIN: input.r1min,
       R2MAX: input.r2max,
       HISTERISIS: input.histerisis,
@@ -625,9 +623,9 @@ export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx
   const digitalInputsDB = digitalInputs.flatMap(d =>
     d.inputs.map((input, index) => ({
       MACHINEID: machineId,
-      LOCKNO: d.lockId + 1,
+      LOCKNO: d.lockId,
       LOCKDININDEX: index,
-      ID: input.id + 1,
+      ID: input.id,
       STATE: input.state,
     })),
   )
@@ -636,9 +634,9 @@ export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx
   const digitalOutputsDB = digitalOutputs.flatMap(d =>
     d.inputs.map((input, index) => ({
       MACHINEID: machineId,
-      LOCKNO: d.lockId + 1,
+      LOCKNO: d.lockId,
       LOCKDOUTINDEX: index,
-      ID: input.id + 1,
+      ID: input.id,
       STATE: input.state,
     })),
   )
@@ -647,9 +645,9 @@ export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx
   const commandsDB = commands.flatMap(d =>
     d.inputs.map((input, index) => ({
       MACHINEID: machineId,
-      LOCKNO: d.lockId + 1,
+      LOCKNO: d.lockId,
       COMMANDINDEX: index,
-      COMMANDNO: input.id + 1,
+      COMMANDNO: input.id,
       STATE: input.state,
     })),
   )
@@ -658,9 +656,9 @@ export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx
   const locksInputDB = locksInput.flatMap(d =>
     d.inputs.map((input, index) => ({
       MACHINEID: machineId,
-      LOCKNO: d.lockId + 1,
+      LOCKNO: d.lockId,
       LOCKLOCKINDEX: index,
-      OTHERLOCKNO: input.id + 1,
+      OTHERLOCKNO: input.id,
       STATE: input.state,
     })),
   )
@@ -669,9 +667,9 @@ export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx
   const virtualInputsDB = virtualInputs.flatMap(d =>
     d.inputs.map((input, index) => ({
       MACHINEID: machineId,
-      LOCKNO: d.lockId + 1,
+      LOCKNO: d.lockId,
       LOCKDININDEX: index,
-      ID: input.id + 1,
+      ID: input.id,
       TRIGGER: input.state,
     })),
   )
@@ -706,7 +704,7 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
 
   const data = locks.map(d => ({
     MACHINEID: machineId,
-    LOCKNO: d.lockNo! + 1,
+    LOCKNO: d.lockNo,
     LOCKNAME: d.lockName,
     LOGICTYPE: d.logicType,
     STOPDYEING: d.stopDyeing,
@@ -748,6 +746,15 @@ export async function updateSystemParams(machineId: number, tbb: TbbFtpClient, t
     await trx('BFMACHINESYSTEMPARAMS')
       .where('MachineId', machineId)
       .del()
+
+    const fromProjectLanguage = system.FROM_PROJECT_LANGUAGE as string | undefined
+    if (fromProjectLanguage && fromProjectLanguage !== '-1') {
+      await trx('BFMACHINES')
+        .where('MACHINEID', machineId)
+        .update({
+          LANGUAGEID: fromProjectLanguage,
+        })
+    }
 
     const systemParams = Object.entries(system).map(([key, value]) => ({
       MachineId: machineId,
@@ -822,7 +829,7 @@ export async function updateIcons(machineId: number, tbb: TbbFtpClient, trx: Kne
       MACHINEID: machineId,
       ICONTYPE: d.type,
       ICONNAME: d.name,
-      ICONDATA: trx.raw('CONVERT(varbinary(max), ?)', d.data),
+      ICONDATA: d.data,
     }
   })
 
@@ -924,9 +931,9 @@ export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, tr
     lock.analogOutputs.forEach((output, index) => {
       analogOutputs.push({
         MACHINEID: machineId,
-        LOCKNO: lock.lockNo + 1,
+        LOCKNO: lock.lockNo,
         LOCKAOUTINDEX: index,
-        ID: output.outputId + 1,
+        ID: output.outputId,
         PERCENTAGE: output.percentage,
       })
     })
@@ -936,9 +943,9 @@ export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, tr
     lock.digitalOutputs.forEach((output, index) => {
       digitalOutputs.push({
         MACHINEID: machineId,
-        LOCKNO: lock.lockNo + 1,
+        LOCKNO: lock.lockNo,
         LOCKDOUTINDEX: index,
-        ID: output.outputId + 1,
+        ID: output.outputId,
         STATE: output.state,
       })
     })
@@ -1045,22 +1052,22 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
 
 export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   try {
-    await trx('BFERPPARAMETERDEFINITIONS')
-      .where('MACHINEID', machineId)
-      .del()
-
-    await trx.raw(`
-    INSERT INTO BFERPPARAMETERDEFINITIONS (PARAMID, PARAMNAME, PARAMTYPE, MACHINEID)
-    SELECT (SELECT ISNULL(MAX(PARAMID), 0)
-    FROM BFERPPARAMETERDEFINITIONS
-    WHERE MACHINEID = P.MACHINEID) + ROW_NUMBER() OVER(ORDER BY P.BATCHPARAMETERID ASC)
-    AS BATCHPARAMETERID, P.PARAMSTRING, P.PARAMETERTYPE, P.MACHINEID
-    FROM BFMACHBATCHPARAMETERS P
-    LEFT OUTER JOIN BFERPPARAMETERDEFINITIONS E
-    ON (E.MACHINEID = P.MACHINEID AND P.PARAMSTRING = E.PARAMNAME)
-      WHERE P.MACHINEID = (?) AND E.PARAMNAME IS NULL
-      ORDER BY P.BATCHPARAMETERID ASC
-    `, [machineId])
+    // Proje yükleme aşamasında makineden alınan başlatma parametreleri listesi,
+    // ERP parametrelerinin kolay tanımlanması için aşağıdaki script ile ERP parametre tanımları tablosuna aktarılıyor.
+    await trx.raw(/* sql */`
+      INSERT INTO BFERPPARAMETERDEFINITIONS (PARAMID, PARAMNAME, PARAMTYPE, MACHINEID)
+      SELECT (
+        SELECT ISNULL(MAX(PARAMID), 0)
+        FROM BFERPPARAMETERDEFINITIONS
+        WHERE MACHINEID = P.MACHINEID
+      ) + ROW_NUMBER() OVER(ORDER BY P.BATCHPARAMETERID ASC) AS BATCHPARAMETERID
+        , P.PARAMSTRING
+        , P.PARAMETERTYPE
+        , P.MACHINEID
+      FROM BFMACHBATCHPARAMETERS P
+      LEFT JOIN BFERPPARAMETERDEFINITIONS E ON (E.MACHINEID = P.MACHINEID AND P.PARAMSTRING = E.PARAMNAME)
+      WHERE P.MACHINEID = :machineId
+      ORDER BY P.BATCHPARAMETERID ASC`, { machineId })
 
     return true
   } catch (error: any) {

@@ -1,6 +1,5 @@
 import type { MasterCommand } from '../types'
 
-const pattern = /^(\d+)(?: (.*) (.*) (.*))?$/gim
 // /^(\d+)((.*) (.*))?$/gim
 /**
  * **Path**: `/tbb6500/data/commands/editing`
@@ -13,17 +12,20 @@ const pattern = /^(\d+)(?: (.*) (.*) (.*))?$/gim
  * ```
  */
 export function parseCommandsEditing(content: string) {
-  const commands = []
-  let match = pattern.exec(content)
-  while (match !== null) {
-    const command: Partial<MasterCommand> = {
-      commandNo: Number.parseInt(match[1]),
-      adviceList: match[2] ? match[2].replace(/,$/, '').trim() : '-1',
-      dontUseList: match[3] ? match[3].replace(/,$/, '').trim() : null,
-      dontUseListCounter: match[4] ? match[4].replace(/,$/, '').trim() : null,
+  const commands: Partial<MasterCommand>[] = []
+
+  const lines = content.split('\n')
+  for (const line of lines) {
+    if (line) {
+      const segments = line.split(' ')
+      commands.push({
+        commandNo: Number.parseInt(segments[0]),
+        adviceList: segments[1] ? segments[1].replace(/,$/, '') : '-1',
+        dontUseList: segments[2] ? segments[2].replace(/,$/, '') : null,
+        dontUseListCounter: segments[3] ? segments[3].replace(/,$/, '') : null,
+      })
     }
-    commands.push(command)
-    match = pattern.exec(content)
   }
+
   return commands
 }

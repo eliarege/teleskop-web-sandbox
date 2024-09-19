@@ -62,8 +62,8 @@ it('parseAnalogOutput', () => {
 
 it('parseBatchParameters', () => {
   const contents = `
-SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600,[]
-SABIT_2=Ikinci Soda, 0, 0, 5000, 0, 2, 4,[]
+SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600, []
+SABIT_2=Ikinci Soda, 0, 0, 5000, 0, 2, 4, []
 `
 
   const output = parseBatchParameters(contents)
@@ -82,7 +82,7 @@ SABIT_2=Ikinci Soda, 0, 0, 5000, 0, 2, 4,[]
       dmArea: 9600,
       selectionList: [],
       selectionValues: [],
-      selectionListDefault: [],
+      selectionListDefault: null,
     },
     {
       batchParameterId: 2,
@@ -97,7 +97,7 @@ SABIT_2=Ikinci Soda, 0, 0, 5000, 0, 2, 4,[]
       dmArea: null,
       selectionList: [],
       selectionValues: [],
-      selectionListDefault: [],
+      selectionListDefault: null,
     },
   ]
 
@@ -248,6 +248,8 @@ it('parseCommandParams', () => {
   const contents = `
 5 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
 5 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
+15 1 "SP 17" "Hedef Toleransı" "" 3 0.8 0.0 1.0 0
+41 0 "SP 2" "Dozaj Egrisi" "" 1 0 -4 4 0 ["-4","-4","-3","-3","-2","-2","-1","-1","Lineer","0","1","1","2","2","3","3","4","4"]
 `
   const output = parseCommandParams(contents)
 
@@ -283,6 +285,40 @@ it('parseCommandParams', () => {
           name: 'Calis',
           value: 1,
         },
+      ],
+    },
+    {
+      commandNo: 15,
+      name: 'SP 17',
+      paramName: 'Hedef Toleransı',
+      paramFormula: '',
+      binding: 3,
+      defaultValue: 0.8,
+      minValue: 0,
+      maxValue: 1,
+      graphic: 0,
+      selectionList: null,
+    },
+    {
+      commandNo: 41,
+      name: 'SP 2',
+      paramName: 'Dozaj Egrisi',
+      paramFormula: '',
+      binding: 1,
+      defaultValue: 0,
+      minValue: -4,
+      maxValue: 4,
+      graphic: 0,
+      selectionList: [
+        { name: '-4', value: -4 },
+        { name: '-3', value: -3 },
+        { name: '-2', value: -2 },
+        { name: '-1', value: -1 },
+        { name: 'Lineer', value: 0 },
+        { name: '1', value: 1 },
+        { name: '2', value: 2 },
+        { name: '3', value: 3 },
+        { name: '4', value: 4 },
       ],
     },
   ]
@@ -514,6 +550,7 @@ it('parseIOChangedEvent', () => {
 1 13 10 60 60
 2 0 10 60
 5 2 60
+6 1 10 10 60 5
 `
 
   const output = parseIOChangedEvent(contents)
@@ -540,6 +577,13 @@ it('parseIOChangedEvent', () => {
       period: null,
       minPeriod: null,
     },
+    {
+      ioType: 6,
+      ioIndex: 1,
+      difference: 0,
+      period: 60,
+      minPeriod: 5,
+    },
   ]
 
   expect(output).toStrictEqual(results)
@@ -549,12 +593,13 @@ it('parseLockGeneral', () => {
   const contents = `
 0 "Otomatik" 0 0 0 0 "0" "0" 0 "" 1
 182 "4.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "4.Kule Kumas Koptu" 1
+55 "BK+1+ORANSAL+DOLDUR+MKS+ON" 0 0 0 0 "" "" 0 "" 1
 `
   const output = parseLockGeneral(contents)
 
   const results = [
     {
-      lockNo: 0,
+      lockNo: 1,
       lockName: 'Otomatik',
       logicType: 0,
       stopDyeing: 0,
@@ -567,7 +612,7 @@ it('parseLockGeneral', () => {
       active: 1,
     },
     {
-      lockNo: 182,
+      lockNo: 183,
       lockName: '4.Kule Kumas Koptu',
       logicType: 0,
       stopDyeing: 0,
@@ -577,6 +622,19 @@ it('parseLockGeneral', () => {
       stepDelay: '0',
       giveMessage: 1,
       messageString: '4.Kule Kumas Koptu',
+      active: 1,
+    },
+    {
+      lockNo: 56,
+      lockName: 'BK+1+ORANSAL+DOLDUR+MKS+ON',
+      logicType: 0,
+      stopDyeing: 0,
+      jumpStep: 0,
+      alarm: 0,
+      onDelay: '',
+      stepDelay: '',
+      giveMessage: 0,
+      messageString: '',
       active: 1,
     },
   ]
@@ -595,17 +653,17 @@ it('parseLocksInput', () => {
 
   const results = [
     {
-      lockId: 6,
+      lockId: 7,
       inputType: 8,
       inputs: [],
       logicType: 0,
     },
     {
-      lockId: 7,
+      lockId: 8,
       inputType: 0,
       inputs: [
         {
-          id: 0,
+          id: 1,
           r1min: 'Dozaj Sicaklik',
           r2max: '0',
           histerisis: '0.0',
@@ -631,34 +689,33 @@ it('parseLocksOutput', () => {
   const results = {
     analogLocks: [
       {
-        lockNo: 172,
+        lockNo: 173,
         analogOutputs: [
           {
-            outputId: 9,
+            outputId: 10,
             percentage: 0,
           },
         ],
       },
       {
-        lockNo: 7,
-        analogOutputs: [
-        ],
+        lockNo: 8,
+        analogOutputs: [],
       },
     ],
     digitalLocks: [
       {
-        lockNo: 6,
+        lockNo: 7,
         digitalOutputs: [
           {
-            outputId: 62,
+            outputId: 63,
             state: 0,
           },
           {
-            outputId: 30,
+            outputId: 31,
             state: 1,
           },
           {
-            outputId: 63,
+            outputId: 64,
             state: 0,
           },
         ],
@@ -671,7 +728,7 @@ it('parseLocksOutput', () => {
 
 it('parseMachineParameters', () => {
   const contents = `
-SABIT_0=AK Ust,15000.000,9100,1,0.000,15000.000,0,1,0
+SABIT_0=AK Ust,9000,9100,1,0,9500,0,1,0
 SABIT_80=Kumas gir minumum,7500.000,9101,1,7500.000,8000.000,0,81,0
 `
 
@@ -681,11 +738,11 @@ SABIT_80=Kumas gir minumum,7500.000,9101,1,7500.000,8000.000,0,81,0
     {
       machineParameterId: 0,
       paramString: 'AK Ust',
-      defaultValue: 15000.000,
+      defaultValue: 9000,
       dmArea: 9100,
       consScreen: 1,
-      paramLowLimit: 0.000,
-      paramHighLimit: 15000.000,
+      paramLowLimit: 0,
+      paramHighLimit: 9500,
       consFormat: 0,
       consUnit: 0,
     },
