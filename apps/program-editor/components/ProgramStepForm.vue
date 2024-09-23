@@ -47,7 +47,7 @@ const sortableOptions: SortableOptions = {
 
 // Step Duration
 const duration = computed(() => formatDuration(
-  calculateProgramStepDuration(editor.program, editor.machine, stepIndex.value).duration,
+  calculateProgramStepDuration(editor.program, editor.machine, editor.teleskopSettings.initialTemperature, stepIndex.value).duration,
 ))
 </script>
 
@@ -55,7 +55,7 @@ const duration = computed(() => formatDuration(
   <div>
     <div class="flex">
       <!-- <span v-if="devMode" class="color-gray-5">{{ step.stepId }}</span> -->
-      <!-- <span>{{ duration }}</span> -->
+      <span class="color-gray">{{ duration }}</span>
 
       <div class="flex items-center w-5">
         <div v-show="!expanded" class="space-y-1">

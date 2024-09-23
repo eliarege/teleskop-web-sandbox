@@ -260,3 +260,28 @@ export async function updateTeleskopSettings(id: number, value: string): Promise
       .where('ID', id)
   }
 }
+
+export async function getTeleskopSettings(): Promise<TeleskopSettings> {
+  const settings = await db('TFTELESKOPSETTINGS').select({ id: 'ID', value: 'VALUE' })
+
+  // Program yazarken optimize edilsin
+  const optimizedEnable = settings.find(s => s.id === 3)?.value === '1'
+
+  // Optimize edilebilen parametre sayısı (yoksa 10 alınacak)
+  const optimizedLimit = Number(settings.find(s => s.id === 11)?.value ?? 10)
+
+  // Programda gösterilecek ikonlar
+  const selectedIcons = Number(settings.find(s => s.id === 12)?.value ?? 0)
+
+  // Başlangıç sıcaklığı
+  const initialTemperature = Number(settings.find(s => s.id === 13)?.value ?? 25)
+
+  return {
+    treatmentSettings: {
+      optimizedEnable,
+      optimizedLimit,
+    },
+    selectedIcons,
+    initialTemperature,
+  }
+}

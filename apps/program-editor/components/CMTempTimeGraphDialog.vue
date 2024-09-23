@@ -16,8 +16,7 @@ const chartData = ref<ChartData>()
 const chartOptions = ref<ChartOptions<'line'>>()
 
 function calculateChartData() {
-  const initialTemp = 25
-  const tempData: number[] = [initialTemp]
+  const tempData: number[] = [editor.teleskopSettings.initialTemperature]
   const timeData: number[] = [0]
   let formattedTime: string[] = []
   const stepInfo: { step: number, commandNo: number, commandName: string }[] = []
@@ -25,7 +24,7 @@ function calculateChartData() {
   const pointBackgroundColors: string[] = ['green']
 
   for (let i = 0; i < editor.program.steps.length; i++) {
-    const { temperature, duration } = calculateProgramStepDuration(editor.program, editor.machine, i)
+    const { temperature, duration } = calculateProgramStepDuration(editor.program, editor.machine, editor.teleskopSettings.initialTemperature, i)
 
     tempData.push(temperature)
     timeData.push(timeData[i] + duration)

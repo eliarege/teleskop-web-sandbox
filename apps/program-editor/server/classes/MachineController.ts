@@ -1,7 +1,7 @@
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { Knex } from 'knex'
 import { isDef } from '@teleskop/utils'
-import { ensureTreatmentGroups, fetchTeleskopSettings, getGroupIdByMachineId, getMachineHost, hasMachine, logEditorOperation } from '../functions'
+import { ensureTreatmentGroups, fetchTeleskopSettings, getGroupIdByMachineId, getMachineHost, getTeleskopSettings, hasMachine, logEditorOperation } from '../functions'
 import { db, dmExchange } from '../database'
 import { withFTP, withTransaction } from '../decorators'
 import { sql } from '../sql'
@@ -937,11 +937,12 @@ export class MachineController {
     const config = useRuntimeConfig()
     const timezone = Number(config.teleskopTimezoneOffset)
     const date = new Date(new Date().getTime() - timezone * 60000).toISOString()
+    const initialTemp = (await getTeleskopSettings()).initialTemperature
 
     program.duration = calculateProgramDuration(program, {
       ...machine,
       commands: this.commandArrayToMap(machine.commands),
-    })
+    }, initialTemp)
 
     const steps: StepItem[] = []
     const parameters: StepParameter[] = []

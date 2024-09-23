@@ -14,9 +14,10 @@ const width = ref(useElementSize(el).width)
 const parentWidth = ref(useElementSize(parentEl).width)
 const defaultWidth = ref(0)
 
-const programDuration = computed(() => {
-  return formatDuration(calculateProgramDuration(editor.program, editor.machine))
-})
+function calcProgramDuration() {
+  editor.program.duration = calculateProgramDuration(editor.program, editor.machine, editor.teleskopSettings.initialTemperature)
+  return editor.program.duration
+}
 
 watch([width, parentWidth, defaultWidth], () => {
   defaultWidth.value = width.value > defaultWidth.value ? width.value : defaultWidth.value
@@ -66,7 +67,7 @@ watch([width, parentWidth, defaultWidth], () => {
     </div>
   </div>
   <div v-if="editor.program.programNo" class="flex items-center">
-    {{ programDuration }}
+    {{ formatDuration(calcProgramDuration()) }}
   </div>
   <QBtn
     class="text-gray-6 dark:text-gray-3"
