@@ -83,7 +83,7 @@ function _calculateProgramStepDuration(step: ProgramStep, context: CalculationCo
         duration += ((Math.abs(temperature - lastTemperature) / minA) * 60) + b
     }
   }
-  return { duration, temperature: context.temperature }
+  return { duration: Math.ceil(duration), temperature: context.temperature }
 }
 
 const { Grammar, Parser } = nearley
