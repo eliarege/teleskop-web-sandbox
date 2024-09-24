@@ -2,7 +2,7 @@ import { method } from 'lodash-es'
 import { defineStore } from 'pinia'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { notification } from '~/shared/functions'
-import type { Program } from '~/shared/types'
+import type { Program, ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 
 interface ProgramHeader {
@@ -10,14 +10,14 @@ interface ProgramHeader {
   name: string
 }
 export interface ContextMenuStore {
-  getCopiedValues: () => Array<{ machine: number, program: Program, newProgramNo?: number }>
+  getCopiedValues: () => Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>
   comparisonBasketLength: () => number
-  copy: (program: ProgramHeader[], fromMachine: number) => void
+  copy: (program: ProgramTable[], fromMachine: number) => void
   paste: (machineId: number, directPasteValues?: Array<{ machine: number, program: Program, newProgramNo?: number }>) => Promise<Array<{ machine: number, program: Program }>>
   setCtx: (ctx?: any) => void
   deleteProgram: (selectedRows: Array<ProgramHeader>, selectedOption: number, machineId: number) => Promise<void>
   getProgram: (programNo: number, machineId: number) => Promise<Program>
-  changeName: (programParam: { programNo: number }, newName: string, machineId: number) => Promise<void>
+  changeName: (programNo: number, newName: string, machineId: number) => Promise<void>
   getProcessTypes: () => Promise<any[]>
   changeProcessType: (selectedRows: Array<{ programNo: number }>, newType: number, machineId: number) => Promise<void>
   sendProgram: (programs: Array<ProgramHeader>, machineId: number) => Promise<void>
@@ -34,7 +34,7 @@ export interface ContextMenuStore {
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
-  const copiedValues = ref([] as Array<{ machine: number, program: any, newProgramNo?: number }>)
+  const copiedValues = ref([] as Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>)
   let comparsionBasket = [] as Array<any>
   // const machineId = Number(route.params.machine_id)
   let t = function (param: string, ...args: any[]) {
@@ -71,9 +71,9 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return comparsionBasket.length
   }
 
-  function copy(data: any, fromMachine: number) {
+  function copy(selectedPrograms: ProgramTable[], fromMachine: number) {
     copiedValues.value = []
-    data.forEach((program) => {
+    selectedPrograms.forEach((program) => {
       copiedValues.value.push({ machine: fromMachine, program })
     })
   }
@@ -130,16 +130,19 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return await fetch(`/api/machine/${machineId}/program/${programNo}`)
   }
 
-  async function changeName(programParam: any, newName: string, machineId: number) {
-    const program = await getProgram(programParam.programNo, machineId)
+  async function changeName(programNo: number, newName: string, machineId: number) {
+    const program = await getProgram(programNo, machineId)
+
     program.name = newName
     const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/update-name`, {
       method: 'PUT',
-      body: {
-        name: newName,
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ name: newName }),
     })
-    const status = check ? 'success' : 'fail'
+
+    const status = check.ok ? 'success' : 'fail'
     notification(check, t(`contextMenu.changeNameNotification.${status}`, { programNo: program.programNo }))
   }
 
@@ -148,7 +151,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return await fetch('/api/process')
   }
 
-  async function changeProcessType(selectedRows, newType: number, machineId: number) {
+  async function changeProcessType(selectedRow, newType: number, machineId: number) {
     const { fetch } = useKeycloak()
     for (const row of selectedRows) {
       const program = await getProgram(row.programNo, machineId)
@@ -177,16 +180,16 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function getRemoteProgram(programs: Array<any>, machineId: number) {
+  async function getRemoteProgram(programs: ProgramTable[], machineId: number) {
     const { fetch } = useKeycloak()
+    const editor = useEditorStore()
+    editor.isLoading = true
     for (const program of programs) {
-      let check = false
-      if (program.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
-        check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
-      }
+      const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
       const status = check ? 'success' : 'fail'
-      notification(!!check, t(`contextMenu.get.${status}`, { name: program.name }))
+      notification(check, t(`contextMenu.get.${status}`, { name: program.name }))
     }
+    editor.isLoading = false
   }
 
   async function sendProgramToMachines(programs: Array<any>, machines: Array<any>, machineId: number) {
