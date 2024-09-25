@@ -505,7 +505,7 @@ const contextMenuOptions = computed(() => [
       onClick: async () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
-          'fetchProgram',
+          'getProgram',
           { $q },
           editor.selectedPrograms,
           machineId,
@@ -555,21 +555,16 @@ const ctrl = useKeyModifier('Control')
 const shift = useKeyModifier('Shift')
 
 function handleFilterClick() {
-  // TODO: Context cannot be provided by executor
   $commandManager.executeCommand(
     'filterPrograms',
-    { $q, fetchPrograms, isProgramFilterExists },
+    { $q, filteredPrograms, isProgramFilterExists },
   )
 }
+
 function handleClearFilterClick() {
   clearFilter()
   isProgramFilterExists.value = false
-  fetchPrograms()
-}
-
-function formatValue<T extends Record<string, any>>(row: T, column: QTableColumn<T>) {
-  const value = typeof column.field === 'function' ? column.field(row) : row[column.field]
-  return column.format ? column.format(value, row) : value
+  editor.fetchAllPrograms()
 }
 
 function formatTooltip<T extends Record<string, any>>(row: T, column: QTableColumn<T> & { tooltip?: (value: any, row: any) => string }) {
@@ -590,34 +585,6 @@ async function handleVersionDelete(deleteVersions: any[]) {
   await editor.fetchAllPrograms()
   versions.value = await contextMenuStore.fetchVersions(editor.selectedPrograms[0].programNo, machineId)
   editor.isLoading = false
-}
-
-function handleRowColor(row: ProgramHeader) {
-  if (0) { // User is not logged in //FIXME:
-    return 'grey'
-  } else if (row.isChanged)
-    return dark.isActive ? ProgramStateColors.CHANGED_ON_TELESKOP_DARK : ProgramStateColors.CHANGED_ON_TELESKOP
-  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
-    return dark.isActive ? ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER_DARK : ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER
-  } else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE) {
-    return dark.isActive ? ProgramStateColors.EXISTS_ONLY_ON_DATABASE_DARK : ProgramStateColors.EXISTS_ONLY_ON_DATABASE
-  } else {
-    const changeDate = (new Date(row.updatedAt || 0)).getTime()
-    const changeDateTBB = (new Date(row.updatedAtTBB || 0)).getTime()
-    const interval = (changeDateTBB - changeDate) / 1000
-
-    if (interval > 600 || interval < -600) {
-      if (row.tbbProgramChangedEvent) {
-        // change info came with mm Idk what does it mean
-      }
-      if (changeDateTBB > changeDate)
-        return dark.isActive ? ProgramStateColors.CHANGED_ON_MACHINE_DARK : ProgramStateColors.CHANGED_ON_MACHINE // Program  changed on machine
-      else
-        return dark.isActive ? ProgramStateColors.CHANGED_ON_TELESKOP_DARK : ProgramStateColors.CHANGED_ON_TELESKOP // Program changed on teleskop
-    } else {
-      return dark.isActive ? ProgramStateColors.NO_CHANGES_DARK : ProgramStateColors.NO_CHANGES
-    }
-  }
 }
 
 function getSelectedString() {
@@ -655,9 +622,31 @@ async function onRowDoubleClick(event: Event, row: ProgramTable) {
 
 function handleContextMenu(event: Event, row: ProgramTable) {
   event.preventDefault()
-
   onRowClick(event, row)
   showContextMenu.value = true
+}
+
+function handleRowClass(row: ProgramTable): string {
+  if (row.isChanged)
+    return 'changed-on-teleskop'
+
+  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+    return 'only-on-controller'
+
+  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
+    return 'only-on-teleskop'
+
+  else {
+    const changeDate = (new Date(row.updatedAt || 0)).getTime()
+    const changeDateTBB = (new Date(row.updatedAtTBB || 0)).getTime()
+    const interval = (changeDateTBB - changeDate) / 1000
+
+    if (Math.abs(interval) > 600) {
+      return changeDateTBB > changeDate ? 'changed-on-machine' : 'changed-on-teleskop'
+    }
+
+    return 'no-changes'
+  }
 }
 </script>
 
@@ -666,6 +655,7 @@ function handleContextMenu(event: Event, row: ProgramTable) {
     <div v-if="editor.isLoading" class="loading-container ">
       <LoadingSpinner :has-background="false" />
     </div>
+
     <div v-if="fullMatch">
       <QTable
         ref="tableRef"
@@ -674,16 +664,76 @@ function handleContextMenu(event: Event, row: ProgramTable) {
         :columns="columns"
         row-key="programNo"
         :rows-per-page-options="[0]"
-        class="no-selected h-80vh"
+        class="program-table"
         selection="multiple"
         :selected-rows-label="getSelectedString"
         :filter="filter"
         dense
         flat
+        table-header-style="position: sticky; top: 0; z-index: 1; background-color: #f5f5f5; height: 50px;"
+        bottom-row-style="background-color: #ff0000; color: white;"
+        table-style="border-radius: 10px;"
         @row-click="onRowClick"
         @row-dblclick="onRowDoubleClick"
         @row-contextmenu="handleContextMenu"
-      />
+      >
+        <template #body-cell="{ value, row, col }">
+          <QTd
+            :class="[handleRowClass(row), col.__tdClass?.(row)]"
+            :style="col.__tdStyle?.(row)"
+          >
+            <template v-if="typeof value === 'boolean'">
+              <QIcon
+                :name="value ? 'check' : ''"
+                color="positive"
+                size="xs"
+              />
+            </template>
+            <template v-else>
+              {{ value }}
+            </template>
+            <QTooltip v-if="col.tooltip">
+              {{ formatTooltip(row, col) }}
+            </QTooltip>
+          </QTd>
+        </template>
+        <template #top>
+          <QInput
+            v-model="filter"
+            clear-icon="close"
+            class="q-pa-md w-xs"
+            dense
+            autocomplete="false"
+            debounce="100"
+            outlined
+            icon
+            :placeholder="t('search')"
+          >
+            <template #prepend>
+              <QIcon name="search" />
+            </template>
+
+            <template #append>
+              <QBtn
+                v-if="filter"
+                icon="close"
+                flat
+                round
+                dense
+                size="sm"
+                @click="filter = ''"
+              />
+            </template>
+          </QInput>
+          <QSpace />
+          <QBtn
+            :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
+            color="grey-8"
+            flat
+            @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
+          />
+        </template>
+      </QTable>
 
       <q-menu
         v-model="showContextMenu"
@@ -748,5 +798,23 @@ function handleContextMenu(event: Event, row: ProgramTable) {
   height: 100%;
   z-index: 50;
   background-color: rgb(229, 231, 235, 0.2);
+}
+
+.custom-scrollbar {
+  width: 300px;
+  height: 200px;
+  overflow-y: scroll; /* Enable vertical scrolling */
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.program-table :deep(.q-table__bottom) {
+  background-color: #f5f5f5;
+}
+
+.program-table {
+  height: 80vh;
+  border-radius: 10px;
+  user-select: none;
 }
 </style>
