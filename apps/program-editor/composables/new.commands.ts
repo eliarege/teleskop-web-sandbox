@@ -69,6 +69,7 @@ export interface RegisteredCommands {
 }
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'newProgram',
     execute(ctx: any) {
@@ -78,7 +79,6 @@ registerCommand(() => {
           header: 'newProgram',
         },
       }).onOk(async (newProgram: Program) => {
-        const editor = useEditorStore()
         await editor.onSubmit(newProgram)
         setTimeout(() => {
           editor.newStep()
@@ -141,6 +141,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   const { fetch } = useKeycloak()
   return {
     name: 'deleteProgram',
@@ -157,7 +158,7 @@ registerCommand(() => {
             method: 'DELETE',
           })
         // await contextMenuStore.deleteProgram(selectedRows, option, machineId)
-        await ctx.fetchPrograms()
+        await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
         return false
@@ -168,6 +169,7 @@ registerCommand(() => {
 })
 
 async function openDialogonPaste(ctx: any, remainsFromPaste: any, machineId: number) {
+  const editor = useEditorStore()
   let remains = remainsFromPaste
   if (remains.length) {
     ctx.$q.dialog({
@@ -181,7 +183,7 @@ async function openDialogonPaste(ctx: any, remainsFromPaste: any, machineId: num
       })
       remains = await contextMenuStore.paste(machineId, remains)
       await openDialogonPaste(ctx, remains, machineId)
-      await ctx.fetchPrograms()
+      await editor.fetchAllPrograms()
       /**
      TODO: This has to be done through commandManager.executeCommand 'cause
       commandManager will handle undo redo operations and paste is not a single paste operation
@@ -197,6 +199,7 @@ async function openDialogonPaste(ctx: any, remainsFromPaste: any, machineId: num
 }
 
 registerCommand(() => {
+  const editor = useEditorStore()
   let remainsFromPaste = [] as Array<any>
 
   return {
@@ -204,7 +207,7 @@ registerCommand(() => {
     async execute(ctx: any, machineId: number, remains?) {
       if (!remains) {
         remainsFromPaste = await contextMenuStore.paste(machineId)
-        await ctx.fetchPrograms()
+        await editor.fetchAllPrograms()
       }
       if (remainsFromPaste.length)
         await openDialogonPaste(ctx, remainsFromPaste, machineId)
@@ -214,6 +217,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'deleteProgramFromMultiMachine',
     execute(ctx: any, selectedRows) {
@@ -230,7 +234,7 @@ registerCommand(() => {
           },
         }).onOk(async (option: string) => {
           await contextMenuStore.deleteProgramFromMachine(selectedRows, machines, option)
-          await ctx.fetchPrograms()
+          await editor.fetchAllPrograms()
           return true
         }).onCancel(() => {
           return false
@@ -244,6 +248,7 @@ registerCommand(() => {
 })
 // // TODO: Make this function that return promise not inline code
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'concatenatePrograms',
     async execute(ctx: any, selectedRows, machineId) {
@@ -271,7 +276,7 @@ registerCommand(() => {
           },
         }).onOk(async (details) => {
           await contextMenuStore.concatenatePrograms(details.programsOrder, details.details, machineId)
-          await ctx.fetchPrograms()
+          await editor.fetchAllPrograms()
           resolve(true)
         }).onCancel(() => {
           reject(false)
@@ -283,6 +288,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'changeName',
     execute(ctx: any, selectedRows, machineId) {
@@ -293,7 +299,6 @@ registerCommand(() => {
         },
       }).onOk(async (newName: string) => {
         await contextMenuStore.changeName(selectedRows[0].programNo, newName, machineId)
-        const editor = useEditorStore()
         await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
@@ -305,6 +310,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'changeProcessType',
     async execute(ctx: any, selectedRows, machineId) {
@@ -316,7 +322,7 @@ registerCommand(() => {
         },
       }).onOk(async (newType) => {
         await contextMenuStore.changeProcessType(selectedRows, newType, machineId)
-        await ctx.fetchPrograms()
+        await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
         return false
@@ -326,17 +332,19 @@ registerCommand(() => {
   }
 })
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'sendProgram',
     async execute(ctx: any, selectedRows, machineId) {
       await contextMenuStore.sendProgram(selectedRows, machineId)
-      await ctx.fetchPrograms()
+      await editor.fetchAllPrograms()
       return false // Dont want to add uno redo stack 'cause it cannot be reversible'
     },
   }
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'copyAndSend',
     execute(ctx: any, selectedRows, machineId) {
@@ -348,7 +356,7 @@ registerCommand(() => {
       }).onOk(async (machines) => {
         // FIXME: steps null check for on backend
         await contextMenuStore.sendProgramToMachines(selectedRows, machines, machineId)
-        await ctx.fetchPrograms()
+        await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
         return false
@@ -358,23 +366,24 @@ registerCommand(() => {
   }
 })
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'fetchProgram',
     async execute(ctx: any, selectedRows, machineId) {
       await contextMenuStore.getRemoteProgram(selectedRows, machineId)
-      await ctx.fetchPrograms()
+      await editor.fetchAllPrograms()
       return false // Dont want to add uno redo stack 'cause it cannot be reversible'
     },
   }
 })
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'filterPrograms',
     async execute(ctx: any) {
       ctx.$q.dialog({
         component: TBProgramFilterDialog,
       }).onOk(async (filter: ProgramFilter) => {
-        const editor = useEditorStore()
         await editor.fetchAllPrograms(filter)
         if (ctx?.isProgramFilterExists)
           ctx.isProgramFilterExists.value = true

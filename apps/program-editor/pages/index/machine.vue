@@ -8,8 +8,8 @@ import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
-import type { ProgramFilter, ProgramHeader, ProgramTable } from '~/shared/types'
-import { ProgramStateColors, ProgramStatus } from '~/shared/constants'
+import type { ProgramTable } from '~/shared/types'
+import { ProgramStatus } from '~/shared/constants'
 import { clearFilter, filterToQuery, formatDuration, getExistingFilter } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
@@ -21,7 +21,6 @@ definePageMeta({
 
 const { $commandManager } = useNuxtApp()
 const { t, locale } = useI18n()
-const { dark } = useQuasar()
 const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
@@ -76,7 +75,7 @@ onKeyStroke(['r', 'R'], (event: KeyboardEvent) => {
 onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
-    $commandManager.executeCommand('newProgram', { $q })
+    editor.selectedPrograms = editor.allPrograms
   }
 })
 
@@ -591,7 +590,6 @@ function getSelectedString() {
   return t('selectRange', { count: editor.selectedPrograms.length, total: editor.allPrograms.length })
 }
 
-const showContextMenu = ref(false)
 const contextMenuPosition = ref({ x: 0, y: 0 })
 
 function onRowClick(event: Event, row: ProgramTable) {
@@ -617,13 +615,11 @@ function onRowClick(event: Event, row: ProgramTable) {
 
 async function onRowDoubleClick(event: Event, row: ProgramTable) {
   await navigateTo(`${machineId}/program/${row.programNo}`)
-  showContextMenu.value = false
 }
 
 function handleContextMenu(event: Event, row: ProgramTable) {
   event.preventDefault()
   onRowClick(event, row)
-  showContextMenu.value = true
 }
 
 function handleRowClass(row: ProgramTable): string {
@@ -736,11 +732,9 @@ function handleRowClass(row: ProgramTable): string {
       </QTable>
 
       <q-menu
-        v-model="showContextMenu"
         touch-position
         context-menu
         :transition-duration="0"
-        :style="{ left: `${contextMenuPosition.x}px`, top: `${contextMenuPosition.y}px` }"
       >
         <ProgramContextMenu :items="contextMenuOptions" />
       </q-menu>

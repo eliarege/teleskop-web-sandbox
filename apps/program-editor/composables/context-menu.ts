@@ -1,5 +1,3 @@
-import { method } from 'lodash-es'
-import { defineStore } from 'pinia'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { notification } from '~/shared/functions'
 import type { Program, ProgramTable } from '~/shared/types'

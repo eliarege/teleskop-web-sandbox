@@ -125,16 +125,9 @@ function readProcessCode(it: IterableIterator<string>): number {
   return match[1] ? Number.parseInt(match[1]) : 0
 }
 
-export function parseProgramString(programString: string, machine: Pick<Machine, 'commands'>): ProgramHeader {
-  const program: ProgramHeader = {
-    name: '',
-    author: null,
-    comment: null,
-    typeId: 0,
-    createdAt: null,
-    updatedAt: null,
-    steps: [],
-  }
+export function parseProgramString(programString: string, machine: Pick<Machine, 'id' | 'commands'>): ProgramHeader {
+  const program = createEmptyProgram()
+
   const reader = programString.split('\n')
 
   const it = reader[Symbol.iterator]()
@@ -225,4 +218,28 @@ function parseCommandIOList(list: string, command: MachineCommand): ioListItem[]
     }
   }
   return ioList
+}
+
+function createEmptyProgram(): ProgramHeader {
+  return {
+    programNo: 0,
+    duration: 0,
+    updatedAtTBB: null,
+    programState: 0,
+    name: '',
+    author: null,
+    comment: null,
+    typeId: 0,
+    createdAt: null,
+    updatedAt: null,
+    steps: [],
+    isChanged: false,
+    tbbProgramChangedEvent: 0,
+    totalChemReq: 0,
+    totalDyeReq: 0,
+    manChemReq: 0,
+    autoChemReq: 0,
+    autoDyeReq: 0,
+    manDyeReq: 0,
+  }
 }
