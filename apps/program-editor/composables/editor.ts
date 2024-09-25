@@ -1,7 +1,7 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
-import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramFilter, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -12,7 +12,7 @@ export const useEditorStore = defineStore('editor', () => {
   const machine = ref<Machine>(createMachine())
   const selectedPrograms = ref<ProgramTable[]>([])
   const allProcessType = ref<ProcessType[]>([])
-  const allPrograms = ref<ProgramHeader[]>([])
+  const allPrograms = ref<ProgramTable[]>([])
   const selectedCommand = ref<MachineCommand | null>(null)
   const selectedStep = ref<number>(-1)
   const selectedParallelStep = ref<number>(-1)
@@ -312,8 +312,13 @@ export const useEditorStore = defineStore('editor', () => {
     return await fetch('/api/machine-group')
   }
 
-  async function fetchAllPrograms(machineId: number) {
-    allPrograms.value = await fetch<ProgramHeader[]>(`/api/machine/${machineId}/program`)
+  async function fetchAllPrograms(filter?: ProgramFilter): Promise<void> {
+    if (filter) {
+      console.log(filterToQuery(filter))
+      allPrograms.value = await fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program?filter=${filterToQuery(filter)}`)
+    } else {
+      allPrograms.value = await fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program`)
+    }
   }
 
   async function fetchAllProcessTypes() {

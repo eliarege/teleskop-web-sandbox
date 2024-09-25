@@ -53,7 +53,7 @@ function onDragEnd(event: SortableEvent) {
         :class="{ __selected: editor.selectedStep === index }"
       >
         <QItemSection side>
-          <QItemLabel>
+          <QItemLabel class="w-5">
             {{ index + 1 }}
           </QItemLabel>
         </QItemSection>

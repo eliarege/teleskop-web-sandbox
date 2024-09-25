@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { QForm } from 'quasar'
-import { LoadingSpinner } from '@teleskop/ui'
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
-import { commandTypeMaps } from '~/shared/constants'
 
 const editor = useEditorStore()
 const form = ref<QForm>()
@@ -12,6 +10,8 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const $q = useQuasar()
 const { $commandManager } = useNuxtApp()
+
+const ctrl = useKeyModifier('Control')
 
 definePageMeta({
   path: '/machine/:machine_id/program/:program_no',
@@ -183,6 +183,13 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
   editor.selectedParallelStep = -1
 })
 
+onKeyStroke(['S', 's'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (ctrl.value) {
+    editor.onSubmit()
+  }
+})
+
 const machineId = Number(route.params.machine_id)
 const programNo = Number(route.params.program_no)
 
@@ -195,9 +202,8 @@ await editor.fetchTeleskopSettings()
 await editor.fetchMachine(Number(route.params.machine_id))
 await editor.fetchCommandTypes(Number(route.params.machine_id))
 await editor.fetchAllProcessTypes()
-await editor.fetchProgram(machineId, programNo).then(() => {
-  editor.isLoading = false
-})
+await editor.fetchProgram(machineId, programNo)
+editor.isLoading = false
 </script>
 
 <template>

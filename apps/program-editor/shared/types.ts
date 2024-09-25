@@ -130,10 +130,10 @@ export interface ProgramHeader {
   author: string | null
   comment: string | null
   typeId: number
-  createdAt: Date
+  createdAt: Date | null
   updatedAt: Date | null
   steps: ProgramStep[]
-  updatedAtTBB: string | null
+  updatedAtTBB: Date | null
   programState: number | null
   isChanged: boolean | null
   tbbProgramChangedEvent: number | null

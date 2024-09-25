@@ -4,9 +4,10 @@ import { db } from '~/server/database'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
-  const machineId = Number.parseInt(machine_id)
+  const machineId = Number(machine_id)
   const machine = await machineStore.get(machineId)
   let remotePrograms: Array<number> = []
+
   try {
     remotePrograms = await machine.fetchRemoteProgramList()
   } catch (e) {

@@ -248,6 +248,7 @@ export function getExistingFilter() {
 export function clearFilter() {
   setExistingFilter(null)
 }
+
 export function filterToQuery(filter: ProgramFilter): string {
   let query = ''
   if (filter.programNo)

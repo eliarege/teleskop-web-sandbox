@@ -292,8 +292,9 @@ registerCommand(() => {
           name: selectedRows[0]?.name,
         },
       }).onOk(async (newName: string) => {
-        await contextMenuStore.changeName(selectedRows[0], newName, machineId)
-        await ctx.fetchPrograms()
+        await contextMenuStore.changeName(selectedRows[0].programNo, newName, machineId)
+        const editor = useEditorStore()
+        await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
         return false
@@ -370,14 +371,11 @@ registerCommand(() => {
   return {
     name: 'filterPrograms',
     async execute(ctx: any) {
-      const processTypes = await contextMenuStore.getProcessTypes()
       ctx.$q.dialog({
         component: TBProgramFilterDialog,
-        componentProps: {
-          processTypes,
-        },
       }).onOk(async (filter: ProgramFilter) => {
-        await ctx.fetchPrograms(filter)
+        const editor = useEditorStore()
+        await editor.fetchAllPrograms(filter)
         if (ctx?.isProgramFilterExists)
           ctx.isProgramFilterExists.value = true
         return true
@@ -477,7 +475,7 @@ registerCommand(() => {
       await fetch(`/api/machine/${machineId}/refresh`, {
         method: 'POST',
       })
-      await ctx.fetchPrograms()
+      await editor.fetchAllPrograms()
       editor.isLoading = false
       return true
     },

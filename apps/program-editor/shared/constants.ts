@@ -1,6 +1,6 @@
 export const ProgramStateColors = {
   EXISTS_ONLY_ON_CONTROLLER: '#bebebe',
-  EXISTS_ONLY_ON_DATABASE: '#00ff00',
+  EXISTS_ONLY_ON_DATABASE: '#009900',
   CHANGED_ON_TELESKOP: '#0000ff',
   CHANGED_ON_MACHINE: '#ff00ff',
   NO_CHANGES: '#080808',
