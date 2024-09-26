@@ -25,5 +25,32 @@
     },
     "version": "Version",
     "vncError": "{name} Connection Failed!"
+  },
+  "feedback": {
+    "title": "Report a Feedback",
+    "sent-succesfull": "Feedback sent succesfuly.",
+    "sent-fail": "An error occurred while sending feedback",
+    "username": "Username",
+    "email": "Email",
+    "app-name": "App Name",
+    "description": "Description",
+    "reportType": {
+      "-": "Report Type",
+      "bug": "Bug",
+      "feedback": "Feedback",
+      "suggestion": "Suggestion",
+      "other": "Other"
+    },
+    "screenshot": {
+      "edit": "Edit",
+      "take-screenshot": "Take Screenshot"
+    },
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "editor": {
+      "title": "Highlight or hide information in your screenshot",
+      "save": "Save",
+      "cancel": "Cancel"
+    }
   }
 }

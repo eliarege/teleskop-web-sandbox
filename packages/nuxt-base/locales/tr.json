@@ -25,5 +25,32 @@
     },
     "version": "Version",
     "vncError": "{name} Bağlantısı Başarısız Oldu!"
+  },
+  "feedback": {
+    "title": "Geri bildirim Gönder",
+    "sent-succesfull": "Geri bildirim başarıyla oluşturuldu.",
+    "sent-fail": "Geri bildirim gönderilirken bir hata oluştu",
+    "username": "Kullanıcı Adı",
+    "email": "E-Posta",
+    "app-name": "Uygulama İsmi",
+    "description": "Açıklama",
+    "reportType": {
+      "-": "Rapor Tipi",
+      "bug": "Hata",
+      "feedback": "Geri Bildirim",
+      "suggestion": "Öneri",
+      "other": "Diğer"
+    },
+    "screenshot": {
+      "edit": "Düzenle",
+      "take-screenshot": "Ekran Görüntüsü Al"
+    },
+    "submit": "Gönder",
+    "cancel": "İptal Et",
+    "editor": {
+      "title": "Ekran görüntünüzdeki bilgileri vurgulayın veya gizleyin",
+      "save": "Kaydet",
+      "cancel": "İptal Et"
+    }
   }
 }

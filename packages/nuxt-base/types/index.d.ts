@@ -1,4 +1,4 @@
-import type { MenuProps, QTableColumn, VueClassProp, VueStyleProp } from 'quasar'
+import type { QTableColumn, VueClassProp, VueStyleProp } from 'quasar'
 
 export interface TopbarMenuProps {
   anchor?: QMenuProps['anchor']
@@ -48,5 +48,29 @@ export interface FilterableTableFilter {
     operator?: string
     number?: number
     direction?: string
+  }
+}
+export interface Feedback {
+  feedbackDate: string
+  username: string
+  email: string
+  app: {
+    name: string
+    version: string
+    buildDate: string
+    commitHash: string
+  }
+  image?: string
+  reportType: string
+  description: string
+  browser: {
+    name: string
+    version: string
+    width: number
+    height: number
+  }
+  os: {
+    name: string
+    version: string
   }
 }

@@ -1,7 +1,19 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '../../types'
 import AppAboutDialog from '../AppAboutDialog.vue'
+import FeedbackBase from './feedback/Base.vue'
+import { checkIfBrowserSupported, takeScreenshot } from '~/utils/screenshot'
 
+interface FeedbackModel {
+  username: string
+  email: string
+  app: {
+    name: string
+  }
+  reportType: string
+  description: string
+  image: string
+}
 const props = defineProps<{
   extraItems?: TopbarMenuItem[]
   disableTheme?: boolean
@@ -10,6 +22,40 @@ const { dark, dialog } = useQuasar()
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
 
+const feedback: FeedbackModel = reactive({
+  username: '',
+  email: '',
+  app: {
+    name: '',
+  },
+  reportType: '',
+  description: '',
+  image: '',
+})
+
+async function screenshot() {
+  if (checkIfBrowserSupported()) {
+    takeScreenshot().then((screenshot) => {
+      feedback.image = screenshot
+      feedBackDialog()
+    })
+  }
+}
+
+function feedBackDialog() {
+  dialog({
+    component: FeedbackBase,
+    componentProps: { feedback },
+  }).onOk((e: FeedbackModel) => {
+    feedback.app.name = e.app.name
+    feedback.description = e.description
+    feedback.email = e.email
+    feedback.image = e.image
+    feedback.reportType = e.reportType
+    feedback.username = e.username
+    screenshot()
+  })
+}
 const items = [
   ...(props.extraItems
     ? [props.extraItems]
@@ -65,6 +111,7 @@ const items = [
     {
       label: tt('base.sendFeedback'),
       icon: 'feedback',
+      onClick: () => feedBackDialog(),
     },
   ],
 ] as TopbarMenuItem[][]
