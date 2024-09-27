@@ -18,13 +18,18 @@ const chartOptions = ref<ChartOptions<'line'>>()
 function calculateChartData() {
   const tempData: number[] = [editor.teleskopSettings.initialTemperature]
   const timeData: number[] = [0]
-  let formattedTime: string[] = []
+  const dataPoints: { x: number, y: number }[] = [{ x: 0, y: editor.teleskopSettings.initialTemperature }]
   const stepInfo: { step: number, commandNo: number, commandName: string }[] = []
   const pointStyles: string[] = ['circle']
   const pointBackgroundColors: string[] = ['green']
 
   for (let i = 0; i < editor.program.steps.length; i++) {
-    const { temperature, duration } = calculateProgramStepDuration(editor.program, editor.machine, editor.teleskopSettings.initialTemperature, i)
+    const { temperature, duration } = calculateProgramStepDuration(
+      editor.program,
+      editor.machine,
+      editor.teleskopSettings.initialTemperature,
+      i,
+    )
 
     tempData.push(temperature)
     timeData.push(timeData[i] + duration)
@@ -32,6 +37,8 @@ function calculateChartData() {
     const commandNo = editor.program.steps[i].mainCommand.commandNo!
     const machineCommand = editor.machine.commands.get(commandNo)!
     stepInfo.push({ step: i + 1, commandNo, commandName: machineCommand.name })
+
+    dataPoints.push({ x: timeData[i + 1], y: temperature })
 
     if (machineCommand.isUnload) {
       pointStyles.push('rectRot')
@@ -42,19 +49,16 @@ function calculateChartData() {
     }
   }
 
-  formattedTime = timeData.map(time => formatDuration(time))
-
   chartData.value = {
-    labels: formattedTime,
     datasets: [
       {
         label: t('apperance.temperature(c)'),
-        data: tempData,
+        data: dataPoints.map(({ x, y }) => ({ x, y })),
         fill: false,
         borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1,
-        pointRadius: 6,
-        pointHoverRadius: 8,
+        tension: 0,
+        pointRadius: 4,
+        pointHoverRadius: 6,
         pointStyle: pointStyles,
         pointBackgroundColor: pointBackgroundColors,
       },
@@ -66,6 +70,9 @@ function calculateChartData() {
       tooltip: {
         displayColors: false,
         callbacks: {
+          title: (context) => {
+            return `${formatDuration(timeData[context[0].dataIndex])}`
+          },
           label: (context) => {
             if (stepInfo[context.dataIndex] === undefined)
               return
@@ -100,6 +107,7 @@ function calculateChartData() {
         },
       },
       x: {
+        type: 'linear',
         grid: {
           color: dark.isActive ? 'rgb(80, 80, 80)' : 'rgb(211, 211, 211)',
         },
@@ -111,6 +119,10 @@ function calculateChartData() {
           autoSkip: false,
           font: {
             size: 14,
+          },
+          autoSkip: false,
+          callback: (value) => {
+            return `${formatDuration(Number(value))}`
           },
         },
       },
