@@ -23,7 +23,6 @@ const { $commandManager } = useNuxtApp()
 const { t, locale } = useI18n()
 const $q = useQuasar()
 const route = useRoute()
-const router = useRouter()
 const editor = useEditorStore()
 const machineId = Number(route.params.machine_id)
 const tableRef = ref()
@@ -36,10 +35,10 @@ onKeyStroke('F2', (event: KeyboardEvent) => {
   $commandManager.executeCommand('newProgram', { $q })
 })
 
-onKeyStroke('F4', (event: KeyboardEvent) => {
+onKeyStroke('F3', (event: KeyboardEvent) => {
   if (editor.selectedPrograms.length === 1) {
     event.preventDefault()
-    router.push(`${machineId}/program/${editor.selectedPrograms[0].programNo}`)
+    navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
   }
 })
 
@@ -96,7 +95,7 @@ onKeyStroke(['v', 'V'], (event: KeyboardEvent) => {
 onKeyStroke(['Enter'], (event: KeyboardEvent) => {
   event.preventDefault()
   if (editor.selectedPrograms.length === 1)
-    router.push(`${machineId}/program/${editor.selectedPrograms[0].programNo}`)
+    navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
 })
 
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
@@ -128,14 +127,6 @@ const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length >
 const filter = ref('')
 const debouncedFilter = refDebounced(filter, 250)
 
-const PATH_RE = /^\/machine\/([^/]+?)\/?$/
-
-const fullMatch = computed(() => PATH_RE.test(route.path))
-watch(fullMatch, async () => {
-  if (fullMatch.value)
-    await editor.fetchAllPrograms()
-})
-
 const { results: filterResults } = useFuse(debouncedFilter, () => editor.allPrograms, {
   matchAllWhenSearchEmpty: true,
   fuseOptions: {
@@ -159,11 +150,11 @@ const buttons = computed(() => [
     label: t('menu.editProgram'),
     originalLabel: t('menu.editProgram'),
     tooltip: t('menu.editProgram'),
-    shortcut: 'F4',
+    shortcut: 'F3',
     icon: 'edit',
     disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length,
     onClick() {
-      router.push(`${machineId}/program/${editor.selectedPrograms[0]?.programNo}`)
+      navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
     },
   },
   {
@@ -379,11 +370,11 @@ const contextMenuOptions = computed(() => [
     },
     {
       label: tt('contextMenu.editProgram'),
-      shortcut: 'F4',
+      shortcut: 'F3',
       icon: 'edit',
       disabled: isMoreThanOneRowSelected.value,
       onClick: async () => {
-        await navigateTo(`${machineId}/program/${editor.selectedPrograms[0].programNo}`)
+        await navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
       },
     },
     {
@@ -614,7 +605,7 @@ function onRowClick(event: Event, row: ProgramTable) {
 }
 
 async function onRowDoubleClick(event: Event, row: ProgramTable) {
-  await navigateTo(`${machineId}/program/${row.programNo}`)
+  await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
 }
 
 function handleContextMenu(event: Event, row: ProgramTable) {
@@ -652,96 +643,91 @@ function handleRowClass(row: ProgramTable): string {
       <LoadingSpinner :has-background="false" />
     </div>
 
-    <div v-if="fullMatch">
-      <QTable
-        ref="tableRef"
-        v-model:selected="editor.selectedPrograms"
-        :rows="filteredPrograms"
-        :columns="columns"
-        row-key="programNo"
-        :rows-per-page-options="[0]"
-        class="program-table"
-        selection="multiple"
-        :selected-rows-label="getSelectedString"
-        :filter="filter"
-        dense
-        flat
-        table-header-style="position: sticky; top: 0; z-index: 1; background-color: #f5f5f5; height: 50px;"
-        bottom-row-style="background-color: #ff0000; color: white;"
-        table-style="border-radius: 10px;"
-        @row-click="onRowClick"
-        @row-dblclick="onRowDoubleClick"
-        @row-contextmenu="handleContextMenu"
-      >
-        <template #body-cell="{ value, row, col }">
-          <QTd
-            :class="[handleRowClass(row), col.__tdClass?.(row)]"
-            :style="col.__tdStyle?.(row)"
-          >
-            <template v-if="typeof value === 'boolean'">
-              <QIcon
-                :name="value ? 'check' : ''"
-                color="positive"
-                size="xs"
-              />
-            </template>
-            <template v-else>
-              {{ value }}
-            </template>
-            <QTooltip v-if="col.tooltip">
-              {{ formatTooltip(row, col) }}
-            </QTooltip>
-          </QTd>
-        </template>
-        <template #top>
-          <QInput
-            v-model="filter"
-            clear-icon="close"
-            class="q-pa-md w-xs"
-            dense
-            autocomplete="false"
-            debounce="100"
-            outlined
-            icon
-            :placeholder="t('search')"
-          >
-            <template #prepend>
-              <QIcon name="search" />
-            </template>
+    <QTable
+      ref="tableRef"
+      v-model:selected="editor.selectedPrograms"
+      :rows="filteredPrograms"
+      :columns="columns"
+      row-key="programNo"
+      :rows-per-page-options="[0]"
+      class="program-table"
+      selection="multiple"
+      :selected-rows-label="getSelectedString"
+      :filter="filter"
+      dense
+      flat
+      table-header-style="position: sticky; top: 0; z-index: 1; background-color: #f5f5f5; height: 50px;"
+      bottom-row-style="background-color: #ff0000; color: white;"
+      table-style="border-radius: 10px;"
+      @row-click="onRowClick"
+      @row-dblclick="onRowDoubleClick"
+      @row-contextmenu="handleContextMenu"
+    >
+      <template #body-cell="{ value, row, col }">
+        <QTd
+          :class="[handleRowClass(row), col.__tdClass?.(row)]"
+          :style="col.__tdStyle?.(row)"
+        >
+          <template v-if="typeof value === 'boolean'">
+            <QIcon
+              :name="value ? 'check' : ''"
+              color="positive"
+              size="xs"
+            />
+          </template>
+          <template v-else>
+            {{ value }}
+          </template>
+          <QTooltip v-if="col.tooltip">
+            {{ formatTooltip(row, col) }}
+          </QTooltip>
+        </QTd>
+      </template>
+      <template #top>
+        <QInput
+          v-model="filter"
+          clear-icon="close"
+          class="q-pa-md w-xs"
+          dense
+          autocomplete="false"
+          debounce="100"
+          outlined
+          icon
+          :placeholder="t('search')"
+        >
+          <template #prepend>
+            <QIcon name="search" />
+          </template>
 
-            <template #append>
-              <QBtn
-                v-if="filter"
-                icon="close"
-                flat
-                round
-                dense
-                size="sm"
-                @click="filter = ''"
-              />
-            </template>
-          </QInput>
-          <QSpace />
-          <QBtn
-            :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
-            color="grey-8"
-            flat
-            @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
-          />
-        </template>
-      </QTable>
+          <template #append>
+            <QBtn
+              v-if="filter"
+              icon="close"
+              flat
+              round
+              dense
+              size="sm"
+              @click="filter = ''"
+            />
+          </template>
+        </QInput>
+        <QSpace />
+        <QBtn
+          :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
+          color="grey-8"
+          flat
+          @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
+        />
+      </template>
+    </QTable>
 
-      <q-menu
-        touch-position
-        context-menu
-        :transition-duration="0"
-      >
-        <ProgramContextMenu :items="contextMenuOptions" />
-      </q-menu>
-    </div>
-    <div v-else>
-      <NuxtPage />
-    </div>
+    <q-menu
+      touch-position
+      context-menu
+      :transition-duration="0"
+    >
+      <ProgramContextMenu :items="contextMenuOptions" />
+    </q-menu>
   </div>
 
   <CMProgramStateDialog v-if="!route.params.program_no" />
