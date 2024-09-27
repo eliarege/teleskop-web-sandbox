@@ -18,6 +18,9 @@
   },
   "dependencies": {
     "@bryntum/schedulerpro": "workspace:*",
+    "@iconify-json/fa": "1.2.0",
+    "@iconify-json/material-symbols": "1.2.0",
+    "@iconify-json/mdi": "1.2.0",
     "@teleskop/ui": "workspace:*",
     "@teleskop/utils": "workspace:*",
     "@vueuse/integrations": "10.8.0",

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import { determineTextColor } from '@teleskop/utils'
 import { getUnitById, setParameterColor } from '~/shared/enums'
 import type { PlanParameters } from '~/shared/types'
 

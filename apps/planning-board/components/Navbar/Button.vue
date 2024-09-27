@@ -1,5 +1,5 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ label?: string, icon: string, size: string, color?: string, description?: string }>(), {
+withDefaults(defineProps<{ label?: string, icon: string, size?: string, color?: string, description?: string }>(), {
   color: 'white',
 })
 </script>
@@ -9,7 +9,7 @@ withDefaults(defineProps<{ label?: string, icon: string, size: string, color?: s
     <QTooltip v-if="description">
       {{ description }}
     </QTooltip>
-    <Icon :name="icon" :size="size" />
+    <TeleskopIcon :name="icon" :size="size" />
     {{ label }}
   </QBtn>
 </template>
