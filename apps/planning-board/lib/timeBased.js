@@ -12,7 +12,7 @@ import {
   Toast,
   Tooltip,
 
-} from '@bryntum/schedulerpro-trial'
+} from '@bryntum/schedulerpro'
 import { addSeconds } from 'date-fns'
 import { io } from 'socket.io-client'
 

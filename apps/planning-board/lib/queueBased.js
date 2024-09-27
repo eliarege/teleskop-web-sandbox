@@ -62,6 +62,7 @@ function removeAttributes(element, pattern) {
 function getResourceRow(resource) {
   return document.querySelector(`div[data-id="${resource.id}"]`)
 }
+
 export class QueueDrag extends DragHelper {
   static get configurable() {
     return {
@@ -182,7 +183,9 @@ export class QueueDrag extends DragHelper {
       endDate = startDate && DateHelper.add(startDate, task.originalData.theoreticalDuration, 'seconds')
     }
     const eventStartDate = schedule.getDateFromCoordinate(context.clientX, 'round', false)
-    const targetMachineEvents = machine.events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+    const targetMachineEvents = machine && machine.events
+      ? machine.events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+      : []
 
     let previousEvent = null
     let nextEvent = null
@@ -198,20 +201,23 @@ export class QueueDrag extends DragHelper {
         break
       }
     }
-    if (!previousEvent && !nextEvent) {
-      if (new Date(eventStartDate) < new Date(targetMachineEvents[0].startDate)) {
-        nextEvent = targetMachineEvents[0]
-      } else if (new Date(eventStartDate) >= new Date(targetMachineEvents[targetMachineEvents.length - 1].startDate)) {
-        previousEvent = targetMachineEvents[targetMachineEvents.length - 1]
+    if (targetMachineEvents.length > 0) {
+      if (!previousEvent && !nextEvent) {
+        if (new Date(eventStartDate) < new Date(targetMachineEvents[0].startDate)) {
+          nextEvent = targetMachineEvents[0]
+        } else if (new Date(eventStartDate) >= new Date(targetMachineEvents[targetMachineEvents.length - 1].startDate)) {
+          previousEvent = targetMachineEvents[targetMachineEvents.length - 1]
+        }
       }
     }
+
     const target = schedule.resolveEventRecord(context.target) || previousEvent
 
     context.isValid = !isValidating
     && Boolean(startDate && machine)
     && target
     && target !== null
-      ? !target.eventType === 'finished'
+      ? !(target.eventType === 'finished')
       : !(startDate < new Date())
       && (validation.length > 0 ? validation.find(a => a.machineId === machine.id).valid : true)
 
