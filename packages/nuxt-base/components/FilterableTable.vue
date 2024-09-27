@@ -645,7 +645,7 @@ function onRequest(pagination: QTableProps['pagination']) {
   padding: 3px 8px;
 }
 
-.filterable-table :deep(.q-table th, .q-table td ) {
+.filterable-table :deep(.q-table th, .q-table td) {
   padding: 0.3vw;
 }
 .filter-slots {
@@ -672,7 +672,7 @@ function onRequest(pagination: QTableProps['pagination']) {
   align-items: center;
   cursor: pointer;
   height: 22px;
-  background-color:  rgba(124, 196, 255, 0.885);
+  background-color: rgba(124, 196, 255, 0.885);
   color: #509ee3;
 }
 .body--dark .filter-slots-order {
@@ -702,9 +702,9 @@ function onRequest(pagination: QTableProps['pagination']) {
   color: rgb(0, 0, 0);
 }
 .body--dark .add-btn {
-  color: rgb(255, 255, 255)
+  color: rgb(255, 255, 255);
 }
-.text-override-center :deep(.text-right){
+.text-override-center :deep(.text-right) {
   text-align: center;
   word-break: normal;
   white-space: normal;
@@ -713,7 +713,7 @@ function onRequest(pagination: QTableProps['pagination']) {
 .select-dropdown-removal :deep(.q-select__dropdown-icon) {
   display: none;
 }
-.text-override-left :deep(.text-right){
+.text-override-left :deep(.text-right) {
   text-align: left;
   /* word-break: normal;
   white-space: normal; */
