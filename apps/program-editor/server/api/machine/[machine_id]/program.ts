@@ -4,7 +4,7 @@ import { ProgramStatus } from '~/shared/constants'
 import { PError } from '~/server/error'
 import { ProgramEditorActivityCodes } from '~/server/constants'
 import { logEditorOperation } from '~/server/functions'
-import logger from '~/shared/logger'
+import logger from '~/server/logger'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)

@@ -1,8 +1,8 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { ProgramEditorActivityCodes } from '~/server/constants'
-import { type ErrorProgramDetail, PError } from '~/server/error'
+import { PError } from '~/server/error'
 import { logEditorOperation } from '~/server/functions'
-import logger from '~/shared/logger'
+import logger from '~/server/logger'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)

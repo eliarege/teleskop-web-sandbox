@@ -1,5 +1,5 @@
 import { updateTeleskopSettings } from '../functions'
-import logger from '~/shared/logger'
+import logger from '~/server/logger'
 
 export default defineAuthEventHandler(async (event) => {
   const body = await readBody(event)

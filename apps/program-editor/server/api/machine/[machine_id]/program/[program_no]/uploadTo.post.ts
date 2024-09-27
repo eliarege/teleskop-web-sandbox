@@ -1,5 +1,5 @@
 import { machineStore } from '~/server/classes/MachineStore'
-import logger from '~/shared/logger'
+import logger from '~/server/logger'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
