@@ -352,6 +352,15 @@ importers:
       '@bryntum/schedulerpro':
         specifier: workspace:*
         version: link:../../vendor/schedulerpro
+      '@iconify-json/fa':
+        specifier: 1.2.0
+        version: 1.2.0
+      '@iconify-json/material-symbols':
+        specifier: 1.2.0
+        version: 1.2.0
+      '@iconify-json/mdi':
+        specifier: 1.2.0
+        version: 1.2.0
       '@teleskop/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -850,6 +859,9 @@ importers:
       keycloak-js:
         specifier: 24.0.4
         version: 24.0.4
+      nodemailer:
+        specifier: 6.9.15
+        version: 6.9.15
       nuxt-quasar-ui:
         specifier: 2.1.4
         version: 2.1.4(@quasar/extras@1.16.12)(magicast@0.3.4)(quasar@2.16.9)(rollup@4.16.2)
@@ -872,6 +884,9 @@ importers:
       '@types/node':
         specifier: 20.12.12
         version: 20.12.12
+      '@types/nodemailer':
+        specifier: 6.4.16
+        version: 6.4.16
       nuxt:
         specifier: 3.11.2
         version: 3.11.2(@parcel/watcher@2.4.1)(@types/node@20.12.12)(@unocss/reset@0.59.4)(async-validator@4.2.5)(axios@1.7.2)(eslint@9.6.0)(floating-vue@5.2.2(@nuxt/kit@3.12.4(magicast@0.3.4)(rollup@4.16.2))(vue@3.4.27(typescript@5.5.4)))(fuse.js@7.0.0)(ioredis@5.4.1)(jwt-decode@4.0.0)(optionator@0.9.3)(rollup@4.16.2)(sortablejs@1.15.3)(terser@5.31.0)(typescript@5.5.4)(unocss@0.59.4(@unocss/webpack@0.59.4(rollup@4.16.2)(webpack@5.91.0))(postcss@8.4.38)(rollup@4.16.2)(vite@5.2.12(@types/node@20.12.12)(terser@5.31.0)))(vite@5.2.12(@types/node@20.12.12)(terser@5.31.0))
@@ -1784,8 +1799,17 @@ packages:
   '@iconify-json/carbon@1.2.1':
     resolution: {integrity: sha512-dIMY6OOY9LnwR3kOqAtfz4phGFG+KNfESEwSL6muCprBelSlSPpRXtdqvEEO/qWhkf5AJ9hWrOV3Egi5Z2IuKA==}
 
+  '@iconify-json/fa@1.2.0':
+    resolution: {integrity: sha512-D49fT0bDtnoJIEE2586VDL6Yuti6BBYWA90GIeZabJ6KZ8WXylw+EhQfz6weMDr0HrRDFV/mzwS8gpWADBprMA==}
+
   '@iconify-json/icon-park-outline@1.2.0':
     resolution: {integrity: sha512-bIP9zklNR/KoBYOyOZVWCZnrxvs9nd7DOaQ9G7eWGDO5UcfWtW9WC+ETeUfJ2MOGKMIx5FDshNWs3ETs/Md5kg==}
+
+  '@iconify-json/material-symbols@1.2.0':
+    resolution: {integrity: sha512-g/a+Z5SE5GyNu8EmRKidRX0D6odws6sz68PhXvCWBK1YLCcf3XDBWZoWUyOQ/jlyUsvGu1QkDXBxq5XYSFPWXQ==}
+
+  '@iconify-json/mdi@1.2.0':
+    resolution: {integrity: sha512-E9/3l5Syg3wfuarorFodhn4s8YorxhH3U3U20LaNBNiqw1kFNIDWhF6HymuzAD35k7RH0OBasJ+ZUyFtVVV6eg==}
 
   '@iconify-json/ri@1.2.0':
     resolution: {integrity: sha512-br8It3uRHylNhEH72aU9VF6gIdL4BAi6JMdcxsCaVbAyWBJ0jd4RxfmsYnil6TmEfP5wxihiCKbtbQmIHZdqKg==}
@@ -2565,6 +2589,9 @@ packages:
 
   '@types/node@20.12.12':
     resolution: {integrity: sha512-eWLDGF/FOSPtAvEqeRAQ4C8LSA7M1I7i0ky1I8U7kD1J5ITyW3AsRhQrKVoWf5pFKZ2kILsEGJhsI9r93PYnOw==}
+
+  '@types/nodemailer@6.4.16':
+    resolution: {integrity: sha512-uz6hN6Pp0upXMcilM61CoKyjT7sskBoOWpptkjjJp8jIMlTdc3xG01U7proKkXzruMS4hS0zqtHNkNPFB20rKQ==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -5963,6 +5990,10 @@ packages:
   node-releases@2.0.14:
     resolution: {integrity: sha512-y10wOWt8yZpqXmOgRo77WaHEmhYQYGNA6y421PKsKYWEK8aW+cqAphborZDhqfyKrbZEN92CN1X2KbafY2s7Yw==}
 
+  nodemailer@6.9.15:
+    resolution: {integrity: sha512-AHf04ySLC6CIfuRtRiEYtGEXgRfa6INgWGluDhnxTZhHSKvrBu7lc1VVchQ0d8nPc4cFaZoPq8vkyNoZr0TpGQ==}
+    engines: {node: '>=6.0.0'}
+
   nopt@5.0.0:
     resolution: {integrity: sha512-Tbj67rffqceeLpcRXrT7vKAN8CwfPeIBgM7E6iBkmKLV7bEMwpGgYLGv0jACUsECaa/vuxP0IjEont6umdMgtQ==}
     engines: {node: '>=6'}
@@ -8987,7 +9018,19 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
+  '@iconify-json/fa@1.2.0':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/icon-park-outline@1.2.0':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/material-symbols@1.2.0':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/mdi@1.2.0':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -10215,6 +10258,10 @@ snapshots:
   '@types/node@20.12.12':
     dependencies:
       undici-types: 5.26.5
+
+  '@types/nodemailer@6.4.16':
+    dependencies:
+      '@types/node': 20.12.12
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -14309,6 +14356,8 @@ snapshots:
       - supports-color
 
   node-releases@2.0.14: {}
+
+  nodemailer@6.9.15: {}
 
   nopt@5.0.0:
     dependencies:
