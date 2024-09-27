@@ -713,7 +713,7 @@ onMounted(async () => {
                 .then(() => {
                   refreshScheduler()
                   schedule.refreshRows()
-                  Toast.show('Event succesfuly pinned!')
+                  Toast.show('Event successfully pinned!')
                 })
                 .catch(err => Toast.show(err))
             },
@@ -729,7 +729,7 @@ onMounted(async () => {
                 .then(() => {
                   refreshScheduler()
                   schedule.refreshRows()
-                  Toast.show('Event succesfuly pinned!')
+                  Toast.show('Event successfully pinned!')
                 })
                 .catch(err => Toast.show(err))
             },

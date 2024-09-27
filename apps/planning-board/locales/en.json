@@ -8,7 +8,7 @@
   },
   "upload-joborder": {
     "_": "Send to machine",
-    "upload-succes": "Joborder upload succesfuly completed",
+    "upload-succes": "Joborder upload successfully completed",
     "no-program": "This machine does not have required programs",
     "fail": "Could not access the machine!"
   },
@@ -81,7 +81,7 @@
       "show-on-screen": "Show On Screen"
     },
     "toast": {
-      "succesful": "Note Added succesfuly!",
+      "succesful": "Note Added successfully!",
       "error": "An error occured: {err}"
     },
     "dialog": {

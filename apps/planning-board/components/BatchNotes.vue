@@ -183,7 +183,7 @@ function deleteNote(id: number) {
       "show-on-screen": "Show On Screen"
     },
     "toast": {
-      "succesful": "Note Added succesfuly!",
+      "succesful": "Note Added successfully!",
       "error": "An error occured: {err}"
     },
     "dialog": {

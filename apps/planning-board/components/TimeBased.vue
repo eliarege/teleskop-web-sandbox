@@ -350,7 +350,7 @@ onMounted(async () => {
                 .then(async () => {
                   await refreshSchedulerWithLoading()
                   schedule.renderRows()
-                  Toast.show('Event succesfuly pinned!')
+                  Toast.show('Event successfully pinned!')
                 })
                 .catch(err => Toast.show(err))
             },
@@ -366,7 +366,7 @@ onMounted(async () => {
                 .then(async () => {
                   await refreshSchedulerWithLoading()
                   schedule.renderRows()
-                  Toast.show('Event succesfuly unpinned!')
+                  Toast.show('Event successfully unpinned!')
                 })
                 .catch(err => Toast.show(err))
             },
