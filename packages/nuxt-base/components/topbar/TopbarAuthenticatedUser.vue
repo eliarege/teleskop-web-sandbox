@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TopbarMenuItem } from '../../types'
+import type { TopbarMenuItem } from '~/types'
 
 defineProps<{
   extraItems?: TopbarMenuItem[]

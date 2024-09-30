@@ -20,12 +20,14 @@ let rectId = 0
 
 function saveScreenshot() {
   const originalCanvas = canvasRef.value
+  if (!originalCanvas)
+    return
 
   const newCanvas = document.createElement('canvas')
   newCanvas.width = originalCanvas.width
   newCanvas.height = originalCanvas.height
 
-  const ctx = newCanvas.getContext('2d')
+  const ctx = newCanvas.getContext('2d')!
 
   const img = new Image()
   img.src = image.value
@@ -61,7 +63,7 @@ function handleClose(rectId: number) {
 
   const canvas = canvasRef.value
   if (canvas) {
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    const ctx = canvas.getContext('2d')!
     drawAllRects(ctx)
   }
 }

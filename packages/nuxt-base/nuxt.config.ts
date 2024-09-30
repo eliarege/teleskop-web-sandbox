@@ -15,9 +15,9 @@ export default defineNuxtConfig({
     twVersion: '',
     twBuildDate: '',
     twCommitHash: '',
-    smtpUser: 'mailbot@eliar.com.tr',
-    smtpPass: '',
-    feedbackMail: '',
+    smtpUser: '',
+    smtpPassword: '',
+    serviceDeskEmail: '',
     kcBackchannelUrl: 'http://localhost:8080',
   },
   css: [

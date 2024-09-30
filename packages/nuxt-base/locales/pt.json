@@ -28,8 +28,13 @@
   },
   "feedback": {
     "title": "Report a Feedback",
-    "sent-succesfull": "Feedback sent succesfuly.",
-    "sent-fail": "An error occurred while sending feedback",
+    "response": {
+      "success": "Feedback sent successfully.",
+      "send-fail": "An error occurred while sending feedback.",
+      "not-configured": "Send Feedback is not configured.",
+      "no-auth": "Authentication is not configured.",
+      "email-not-verified": "You need to verify your e-mail to be able to send feedbacks."
+    },
     "username": "Username",
     "email": "Email",
     "app-name": "App Name",

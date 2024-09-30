@@ -1,8 +1,5 @@
-export function sleep(timeoutInMs = 300) {
-  return new Promise((r) => {
-    setTimeout(r, timeoutInMs)
-  })
-}
+import { sleep } from './base'
+
 export async function waitForFocus(result: MediaStream): Promise<MediaStream> {
   await sleep()
   if (document.hasFocus()) {
@@ -10,9 +7,10 @@ export async function waitForFocus(result: MediaStream): Promise<MediaStream> {
   }
   return waitForFocus(result)
 }
-export function checkIfBrowserSupported() {
+export function mediaDevicesAvailable() {
   return Boolean(navigator.mediaDevices?.getDisplayMedia)
 }
+
 export function stopCapture(video: HTMLVideoElement) {
   // @ts-expect-error because getTracks is very much valid in modern browsers
   const tracks = video.srcObject?.getTracks()
@@ -21,6 +19,7 @@ export function stopCapture(video: HTMLVideoElement) {
   video.srcObject = null
   video.remove()
 }
+
 export function paintVideoFrameOnCanvas(video: HTMLVideoElement) {
   // @ts-expect-error because getTracks is very much valid in modern browsers
   const videoTrackSettings = video.srcObject?.getTracks()[0].getSettings()
@@ -33,6 +32,7 @@ export function paintVideoFrameOnCanvas(video: HTMLVideoElement) {
 
   return canvas
 }
+
 export function createVideoElementToCaptureFrames(mediaStream: MediaStream) {
   const video = document.createElement('video')
   video.autoplay = true

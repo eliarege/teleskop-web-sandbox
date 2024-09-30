@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TopbarMenuItem } from '../../types'
+import type { TopbarMenuItem } from '~/types'
 
 const props = defineProps<{
   item: Omit<TopbarMenuItem, 'style' | 'class'>

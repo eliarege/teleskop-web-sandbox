@@ -1,18 +1,9 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
-import type { Feedback } from '~/types'
+import { parseAppList } from '~/utils/base'
+import type { Feedback, FeedbackModel } from '~/types'
+import { mediaDevicesAvailable } from '~/utils/screenshot'
 import { getBrowserInfo, getOSInfo } from '~/utils/userAgent'
-
-interface FeedbackModel {
-  username: string
-  email: string
-  app: {
-    name: string
-  }
-  reportType: string
-  description: string
-  image: string
-}
 
 const props = defineProps<{ feedback: FeedbackModel }>()
 defineEmits([...useDialogPluginComponent.emits, 'update:modelValue'])
@@ -22,36 +13,21 @@ const q = useQuasar()
 const { width, height } = useWindowSize()
 
 const config = useRuntimeConfig()
-const kc = useKeycloak()
+const { fetch: authFetch, tokenParsed } = useKeycloak()
 
-const { dialogRef, onDialogOK } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const username = ref(`${kc.userProfile.value.firstName}` + ' ' + `${kc.userProfile.value.lastName}`)
-const email = ref(kc.userProfile.value.email)
+const appList = parseAppList(config.public.appList)
 
-const reportType = reactive([
-  {
-    name: t('feedback.reportType.bug'),
-  },
-  {
-    name: t('feedback.reportType.feedback'),
-  },
-  {
-    name: t('feedback.reportType.suggestion'),
-  },
-  {
-    name: t('feedback.reportType.other'),
-  },
+const reportTypes = reactive([
+  { name: t('feedback.reportType.bug') },
+  { name: t('feedback.reportType.feedback') },
+  { name: t('feedback.reportType.suggestion') },
+  { name: t('feedback.reportType.other') },
 ])
 
-const descriptionRef = ref()
 const feedbackModel: Feedback = reactive({
-  feedbackDate: new Date(),
-  username: username.value,
-  email: email.value,
-  app: {
-    name: props.feedback.app.name,
-  },
+  appName: props.feedback.appName,
   image: props.feedback.image,
   reportType: props.feedback.reportType,
   description: props.feedback.description,
@@ -64,14 +40,14 @@ const feedbackModel: Feedback = reactive({
 })
 function isFormValid(): boolean {
   return (
-    feedbackModel.app.name !== null && feedbackModel.app.name.trim() !== ''
+    feedbackModel.appName !== null && feedbackModel.appName.trim() !== ''
     && feedbackModel.reportType !== null && feedbackModel.reportType.trim() !== ''
     && feedbackModel.description !== null && feedbackModel.description.trim() !== ''
   )
 }
 
 function onAppItemSelect(item: string) {
-  feedbackModel.app.name = item
+  feedbackModel.appName = item
 }
 
 function onReportItemSelect(item: string) {
@@ -81,21 +57,22 @@ function onReportItemSelect(item: string) {
 const editCanvas = ref(false)
 const loading = ref(false)
 async function sendFeedback() {
+  // Remove Data URI prefix before sending the feedback
   const modifiedModel = {
     ...feedbackModel,
     image: feedbackModel.image?.split(',')[1],
   }
   loading.value = true
-  await $fetch('/api/feedback', {
+  await authFetch('/api/feedback', {
     method: 'POST',
     body: modifiedModel,
   }).then(() => q.notify({
-    message: t('feedback.sent-succesfull'),
+    message: t('feedback.response.success'),
     color: 'green',
     position: 'top',
   })).catch((err) => {
     q.notify({
-      message: t(`feedback.${err.statusMessage}`),
+      message: t(`feedback.response.${err.statusMessage}`),
       color: 'red',
       position: 'top',
     })
@@ -114,23 +91,22 @@ async function sendFeedback() {
       <span class="text-center p-3 font-extrabold text-xl">{{ t('feedback.title') }}</span>
       <div class="bg-white w-full h-min p-3 grid grid-cols-2 gap-5">
         <TopbarFeedbackInput
-          v-model:text="username"
+          :text="tokenParsed?.name"
           readonly
           :label="t('feedback.username')"
         />
         <TopbarFeedbackInput
-          v-model:text="email"
+          :text="tokenParsed?.email"
           readonly
           :label="t('feedback.email')"
         />
-
         <TopbarFeedbackInput
-          v-model:text="feedbackModel.app.name"
+          v-model:text="feedbackModel.appName"
           :label="t('feedback.app-name')"
           class="select-none"
           readonly
         >
-          <TopbarFeedbackInputDropdown :items="config.public.appList" @dropdown-click="onAppItemSelect" />
+          <TopbarFeedbackInputDropdown :items="appList" @dropdown-click="onAppItemSelect" />
         </TopbarFeedbackInput>
         <TopbarFeedbackInput
           v-model:text="feedbackModel.reportType"
@@ -138,7 +114,7 @@ async function sendFeedback() {
           class="select-none"
           readonly
         >
-          <TopbarFeedbackInputDropdown :items="reportType" @dropdown-click="onReportItemSelect" />
+          <TopbarFeedbackInputDropdown :items="reportTypes" @dropdown-click="onReportItemSelect" />
         </TopbarFeedbackInput>
       </div>
       <div class="p-3">
@@ -146,10 +122,12 @@ async function sendFeedback() {
           v-model="feedbackModel.description"
           :label="t('feedback.description')"
           type="textarea"
-          class="border-1 rounded p-3 max-h-250px overflow-auto"
+          class="description-input"
+          outlined
+          autogrow
         />
         <br>
-        <div class="border-1">
+        <div v-if="mediaDevicesAvailable()" class="border-1">
           <q-img
             :src="feedbackModel.image"
           >
@@ -212,6 +190,7 @@ async function sendFeedback() {
           :label="t('feedback.cancel')"
           icon="cancel"
           dense
+          @click="onDialogCancel"
         />
       </div>
     </div>
@@ -229,4 +208,7 @@ async function sendFeedback() {
 </template>
 
 <style scoped lang="postcss">
+.description-input :deep(.q-field__control) {
+  min-height: 8rem;
+}
 </style>

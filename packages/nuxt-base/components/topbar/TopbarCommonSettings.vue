@@ -1,61 +1,56 @@
 <script setup lang="ts">
-import type { TopbarMenuItem } from '../../types'
 import AppAboutDialog from '../AppAboutDialog.vue'
 import FeedbackBase from './feedback/Base.vue'
-import { checkIfBrowserSupported, takeScreenshot } from '~/utils/screenshot'
+import type { FeedbackModel, TopbarMenuItem } from '~/types'
+import { mediaDevicesAvailable, takeScreenshot } from '~/utils/screenshot'
 
-interface FeedbackModel {
-  username: string
-  email: string
-  app: {
-    name: string
-  }
-  reportType: string
-  description: string
-  image: string
-}
 const props = defineProps<{
   extraItems?: TopbarMenuItem[]
   disableTheme?: boolean
 }>()
 const { dark, dialog } = useQuasar()
+const keycloak = useKeycloak()
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
 
 const feedback: FeedbackModel = reactive({
-  username: '',
-  email: '',
-  app: {
-    name: '',
-  },
+  appName: '',
   reportType: '',
   description: '',
   image: '',
 })
 
 async function screenshot() {
-  if (checkIfBrowserSupported()) {
+  if (mediaDevicesAvailable()) {
     takeScreenshot().then((screenshot) => {
       feedback.image = screenshot
-      feedBackDialog()
+      feedbackDialog()
     })
+  } else {
+    feedbackDialog()
   }
 }
 
-function feedBackDialog() {
+function feedbackDialog() {
   dialog({
     component: FeedbackBase,
     componentProps: { feedback },
   }).onOk((e: FeedbackModel) => {
-    feedback.app.name = e.app.name
+    feedback.appName = e.appName
     feedback.description = e.description
-    feedback.email = e.email
     feedback.image = e.image
     feedback.reportType = e.reportType
-    feedback.username = e.username
     screenshot()
   })
 }
+
+const feedbackEnabled = computed(() => {
+  return keycloak.enabled
+    && keycloak.authenticated
+    && keycloak.tokenParsed.value?.email_verified
+    || false
+})
+
 const items = [
   ...(props.extraItems
     ? [props.extraItems]
@@ -111,7 +106,8 @@ const items = [
     {
       label: tt('base.sendFeedback'),
       icon: 'feedback',
-      onClick: () => feedBackDialog(),
+      disabled: () => !feedbackEnabled.value,
+      onClick: () => feedbackDialog(),
     },
   ],
 ] as TopbarMenuItem[][]

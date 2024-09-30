@@ -1,5 +1,9 @@
 <script setup lang="ts">
-defineProps<{ color: string, textColor: string, dense: boolean }>()
+defineProps<{
+  color?: string
+  textColor?: string
+  dense?: boolean
+}>()
 defineEmits(['close'])
 </script>
 
