@@ -77,12 +77,25 @@ const label = computed(() => {
       hide-bottom-space
       emit-value
       style="width: 250px"
+      class="text-3"
       options-dense
-      outlined
       dense
       auto-close
-      @update:model-value="editor.updateCommand(programCommand, $event)"
+      outlined
+      filled
     >
+      <template #option="scope">
+        <QItem
+          v-close-popup
+          clickable
+          dense
+          @click="editor.updateCommand(programCommand, scope.opt.value)"
+        >
+          <QItemSection class="text-3">
+            {{ scope.opt.label }}
+          </QItemSection>
+        </QItem>
+      </template>
       <template #no-option>
         <QItem>
           <QItemSection>

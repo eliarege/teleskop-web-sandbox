@@ -9,15 +9,13 @@ interface CalculationContext {
   machine: Machine
 }
 
-export const initialTemperature = 25
-
 /**
  * Programın teorik süresini hesaplar.
  * @param program - Program
  * @param machine - Machine
  * @returns {number} Program duration
  */
-export function calculateProgramDuration(program: Program, machine: Machine): number {
+export function calculateProgramDuration(program: Program, machine: Machine, initialTemperature: number): number {
   let duration = 0
   const context: CalculationContext = {
     temperature: initialTemperature,
@@ -31,7 +29,7 @@ export function calculateProgramDuration(program: Program, machine: Machine): nu
   return duration
 }
 
-export function calculateProgramStepDuration(program: Program, machine: Machine, index: number): { duration: number, temperature: number } {
+export function calculateProgramStepDuration(program: Program, machine: Machine, initialTemperature: number, index: number): { duration: number, temperature: number } {
   const context: CalculationContext = {
     temperature: initialTemperature,
     machine,
@@ -83,7 +81,7 @@ function _calculateProgramStepDuration(step: ProgramStep, context: CalculationCo
         duration += ((Math.abs(temperature - lastTemperature) / minA) * 60) + b
     }
   }
-  return { duration, temperature: context.temperature }
+  return { duration: Math.round(duration), temperature: context.temperature }
 }
 
 const { Grammar, Parser } = nearley

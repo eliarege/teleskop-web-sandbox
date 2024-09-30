@@ -1,10 +1,9 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
-import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramFilter, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
-import { CommandIconMapping, CommandType, commandTypeMaps } from '~/shared/constants'
-import { calculateProgramDuration } from '~/shared/formula'
+import { CommandIconMapping, CommandType, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
@@ -13,13 +12,11 @@ export const useEditorStore = defineStore('editor', () => {
   const machine = ref<Machine>(createMachine())
   const selectedPrograms = ref<ProgramTable[]>([])
   const allProcessType = ref<ProcessType[]>([])
-  const allPrograms = ref<ProgramHeader[]>([])
+  const allPrograms = ref<ProgramTable[]>([])
   const selectedCommand = ref<MachineCommand | null>(null)
   const selectedStep = ref<number>(-1)
   const selectedParallelStep = ref<number>(-1)
   const isLoading = ref<boolean>(false)
-  const popupNewProgramVisible = ref(false)
-  const popupSaveAsProgramVisible = ref(false)
   const popupCommandListVisible = ref(false)
   const popupCommandDetailVisible = ref(false)
   const popupVersionDialog = ref(false)
@@ -40,12 +37,9 @@ export const useEditorStore = defineStore('editor', () => {
 
   const teleskopSettings = ref<TeleskopSettings>({})
 
-  const theoricDuration = computed(() => formatDuration(calculateProgramDuration(program.value, machine.value)))
-
   async function fetchTeleskopSettings() {
     teleskopSettings.value = await fetch('/api/teleskop-settings')
   }
-  fetchTeleskopSettings()
 
   async function changeMachine(id: number) {
     selectedPrograms.value = []
@@ -206,10 +200,14 @@ export const useEditorStore = defineStore('editor', () => {
       notifyError(t('saveProgram.incorrect'))
     } else {
       if (newProgram) {
-        if (await insertProgram(newProgram)) {
-          notifySuccess(t('saveProgram.success'))
+        if (allPrograms.value.some(p => p.programNo === newProgram.programNo)) {
+          notifyError(t('input.unique', { field: t('program.programNo') }))
         } else {
-          notifyError(t('saveProgram.fail'))
+          if (await insertProgram(newProgram)) {
+            notifySuccess(t('saveProgram.success'))
+          } else {
+            notifyError(t('saveProgram.fail'))
+          }
         }
       } else {
         if (await updateProgram()) {
@@ -219,8 +217,6 @@ export const useEditorStore = defineStore('editor', () => {
         }
       }
     }
-    popupNewProgramVisible.value = false
-    popupSaveAsProgramVisible.value = false
     isLoading.value = false
   }
 
@@ -300,21 +296,11 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function fetchMachine(machineId: number) {
-    const machineData = await fetch<Machine>(`/api/machine/${machineId}`)
-    machine.value = machineData
-  }
+    const machineData = await fetch<Machine & { commands: MachineCommand[] }>(`/api/machine/${machineId}`)
 
-  async function fetchMachineCommands(machineId: number, editable?: boolean) {
-    const machineCommandsData = await fetch<MachineCommand[]>(`/api/machine/${machineId}/commands${editable ? '?editable=true' : ''}`)
-    if (machine.value) {
-      if (!(machine.value.commands instanceof Map)) {
-        machine.value.commands = new Map()
-      }
-
-      machine.value.commands.clear()
-      for (const command of machineCommandsData) {
-        machine.value?.commands.set(command.commandNo, command)
-      }
+    machine.value = {
+      ...machineData,
+      commands: new Map((machineData.commands).map(command => [command.commandNo, command])),
     }
   }
 
@@ -326,8 +312,12 @@ export const useEditorStore = defineStore('editor', () => {
     return await fetch('/api/machine-group')
   }
 
-  async function fetchAllPrograms(machineId: number) {
-    allPrograms.value = await fetch<ProgramHeader[]>(`/api/machine/${machineId}/program`)
+  async function fetchAllPrograms(filter?: ProgramFilter): Promise<void> {
+    if (filter) {
+      allPrograms.value = await fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program?filter=${filterToQuery(filter)}`)
+    } else {
+      allPrograms.value = await fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program`)
+    }
   }
 
   async function fetchAllProcessTypes() {
@@ -476,12 +466,26 @@ export const useEditorStore = defineStore('editor', () => {
     return currentElement
   }
 
-  async function updateTeleskopSettings(id: number, value: string) {
+  async function updateTeleskopSettings(id: TeleskopSettingsIds, value: string) {
+    switch (id) {
+      case TeleskopSettingsIds.OPTIMIZED_ENABLE:
+        teleskopSettings.value.treatmentSettings.optimizedEnable = value === 'true'
+        break
+      case TeleskopSettingsIds.OPTIMIZED_LIMIT:
+        teleskopSettings.value.treatmentSettings.optimizedLimit = Number(value)
+        break
+      case TeleskopSettingsIds.SELECTED_ICONS:
+        teleskopSettings.value.selectedIcons = Number(value)
+        break
+      case TeleskopSettingsIds.INITIAL_TEMPERATURE:
+        teleskopSettings.value.initialTemperature = Number(value)
+        break
+    }
+
     await fetch('/api/teleskop-settings', {
       method: 'PUT',
       body: { id, value },
     })
-    fetchTeleskopSettings()
   }
 
   async function fetchCommandTypes(machineId: number) {
@@ -527,20 +531,16 @@ export const useEditorStore = defineStore('editor', () => {
     selectedCommand,
     lastStepId,
     lastCommandId,
-    popupNewProgramVisible,
-    popupSaveAsProgramVisible,
     popupCommandListVisible,
     popupCommandDetailVisible,
     popupTempTimeGraphVisible,
     popupStepCommandGraphVisible,
     leftDrawerOpen,
     rightDrawerOpen,
-    theoricDuration,
     teleskopSettings,
     changeMachine,
     fetchProgram,
     fetchMachine,
-    fetchMachineCommands,
     fetchAllMachine,
     fetchMachineGroup,
     fetchAllPrograms,

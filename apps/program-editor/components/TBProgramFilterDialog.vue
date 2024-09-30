@@ -3,13 +3,12 @@ import { QCheckbox, QInput, QSelect } from 'quasar'
 import InputNumber from './InputNumber.vue'
 import type { ProgramFilter } from '~/shared/types'
 
-const props = defineProps({
-  processTypes: Array<any>,
-})
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
 const filter: ProgramFilter = ref({ clearOnChange: false })
+
+const editor = useEditorStore()
 const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 function clearFilters() {
@@ -44,7 +43,7 @@ function clearFilters() {
             class="q-mt-md"
             dense
             options-dense
-            :options="processTypes"
+            :options="editor.allProcessType"
             :label="t('topbar.programFilter.processType')"
           />
           <QCheckbox
@@ -65,17 +64,19 @@ function clearFilters() {
           icon="close"
           @click="onDialogCancel"
         />
-        <!-- <q-btn
+        <q-btn
           v-close-popup
           outline
           :label="t('topbar.programFilter.clearFilter')"
+          icon="delete"
           @click="clearFilters"
-        /> -->
+        />
         <q-btn
           v-close-popup
           outline
           :disable="!(filter.processType || filter.programName || filter.programNo) "
           :label="t('apply')"
+          icon="check"
           @click="onDialogOK(filter)"
         />
       </q-card-actions>

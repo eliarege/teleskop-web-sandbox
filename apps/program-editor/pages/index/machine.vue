@@ -8,54 +8,46 @@ import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
-import type { ProgramFilter, ProgramHeader, ProgramTable } from '~/shared/types'
-import { ProgramStateColors, ProgramStatus } from '~/shared/constants'
-import type { AppCommand } from '~/composables/new.commands'
+import type { ProgramTable } from '~/shared/types'
+import { ProgramStatus } from '~/shared/constants'
 import { clearFilter, filterToQuery, formatDuration, getExistingFilter } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
-import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
+
+definePageMeta({
+  path: '/machine/:machine_id',
+})
 
 const { $commandManager } = useNuxtApp()
 const { t, locale } = useI18n()
-const { dark } = useQuasar()
 const $q = useQuasar()
 const route = useRoute()
-const router = useRouter()
 const editor = useEditorStore()
 const machineId = Number(route.params.machine_id)
+const tableRef = ref()
 const isProgramFilterExists = ref(getExistingFilter())
-const programs = ref([] as ProgramHeader[])
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t })
+
 onKeyStroke('F2', (event: KeyboardEvent) => {
-  if (!route.params.program_no) {
-    event.preventDefault()
-    editor.popupNewProgramVisible = true
-  } else {
-    event.preventDefault()
-    editor.newStep()
-  }
+  event.preventDefault()
+  $commandManager.executeCommand('newProgram', { $q })
 })
 
 onKeyStroke('F3', (event: KeyboardEvent) => {
-  if (route.params.program_no) {
-    event.preventDefault()
-    editor.newParallelStep()
-  }
-})
-
-onKeyStroke('F4', (event: KeyboardEvent) => {
   if (editor.selectedPrograms.length === 1) {
     event.preventDefault()
-    router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
+    navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
   }
 })
 
-onKeyStroke('F5', (event: KeyboardEvent) => {
+onKeyStroke('F5', async (event: KeyboardEvent) => {
   event.preventDefault()
-  fetchPrograms()
+  editor.isLoading = true
+  await editor.fetchAllPrograms().then(() => {
+    editor.isLoading = false
+  })
 })
 
 onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
@@ -82,95 +74,48 @@ onKeyStroke(['r', 'R'], (event: KeyboardEvent) => {
 onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
-    editor.popupNewProgramVisible = true
+    editor.selectedPrograms = editor.allPrograms
+  }
+})
+
+onKeyStroke(['c', 'C'], (event: KeyboardEvent) => {
+  if (event.ctrlKey) {
+    event.preventDefault()
+    contextMenuStore.copy(editor.selectedPrograms, machineId)
+  }
+})
+
+onKeyStroke(['v', 'V'], (event: KeyboardEvent) => {
+  if (event.ctrlKey) {
+    event.preventDefault()
+    contextMenuStore.paste(machineId)
   }
 })
 
 onKeyStroke(['Enter'], (event: KeyboardEvent) => {
   event.preventDefault()
-  if (!route.params.program_no) {
-    if (editor.selectedPrograms.length === 1)
-      router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
-  } else {
-    editor.scrollPage(editor.selectedStep, true)
-  }
+  if (editor.selectedPrograms.length === 1)
+    navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
 })
 
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
   event.preventDefault()
-  if (route.params.program_no) {
-    if (event.ctrlKey)
-      editor.deleteParallelStep()
-    else
-      editor.deleteStep()
-  }
-})
-
-onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (route.params.program_no) {
-    if (event.shiftKey) {
-      if (between(editor.selectedParallelStep + 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
-        editor.selectedParallelStep = editor.selectedParallelStep + 1
-      }
-    } else {
-      if (between(editor.selectedStep + 1, 0, editor.program.steps.length - 1)) {
-        editor.selectedStep = editor.selectedStep + 1
-      }
-    }
-    editor.scrollPage(editor.selectedStep)
-  }
-})
-
-onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (route.params.program_no) {
-    if (event.shiftKey) {
-      if (between(editor.selectedParallelStep - 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
-        editor.selectedParallelStep = editor.selectedParallelStep - 1
-      }
-    } else {
-      if (between(editor.selectedStep - 1, 0, editor.program.steps.length - 1)) {
-        editor.selectedStep = editor.selectedStep - 1
-      }
-    }
-    editor.scrollPage(editor.selectedStep)
-  }
+  $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
 })
 
 onKeyStroke('Escape', (event: KeyboardEvent) => {
   event.preventDefault()
-  if (route.params.program_no) {
-    editor.selectedStep = -1
-    editor.selectedParallelStep = -1
-  } else {
-    editor.selectedPrograms = []
-    editor.popupCommandDetailVisible = false
-    editor.popupCommandListVisible = false
-    editor.popupNewProgramVisible = false
-    editor.popupSaveAsProgramVisible = false
-  }
+  editor.selectedPrograms = []
+  editor.popupCommandDetailVisible = false
+  editor.popupCommandListVisible = false
 })
-
-async function fetchPrograms(filter?: ProgramFilter) {
-  const { fetch } = useKeycloak()
-  let query
-  const checkAnyExistingFilter = getExistingFilter()
-  if (checkAnyExistingFilter) {
-    query = filterToQuery(checkAnyExistingFilter)
-  }
-  if (filter) {
-    query = filterToQuery(filter)
-  }
-  programs.value = await fetch(`/api/machine/${machineId}/program?${query || ''}`)
-}
 
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
-await editor.fetchMachine(Number(route.params.machine_id))
-await editor.fetchCommandTypes(Number(route.params.machine_id))
-await editor.fetchAllPrograms(Number(route.params.machine_id))
-await fetchPrograms().then(() => {
+await editor.fetchMachine(machineId)
+await editor.fetchCommandTypes(machineId)
+await editor.fetchAllPrograms()
+await editor.fetchAllProcessTypes().then(() => {
   editor.isLoading = false
 })
 
@@ -178,6 +123,17 @@ const versionDialogVisible = ref(false)
 const comparisonDialogVisible = ref(false)
 const versions = ref([] as Array<any>)
 const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length > 1)
+
+const filter = ref('')
+const debouncedFilter = refDebounced(filter, 250)
+
+const { results: filterResults } = useFuse(debouncedFilter, () => editor.allPrograms, {
+  matchAllWhenSearchEmpty: true,
+  fuseOptions: {
+    keys: ['programNo', 'name', 'type'],
+  },
+})
+const filteredPrograms = computed<ProgramTable[]>(() => filterResults.value.map(res => res.item))
 
 const buttons = computed(() => [
   {
@@ -187,7 +143,7 @@ const buttons = computed(() => [
     shortcut: 'F2',
     icon: 'add_circle_outline',
     onClick() {
-      editor.popupNewProgramVisible = true
+      $commandManager.executeCommand('newProgram', { $q })
     },
   },
   {
@@ -198,7 +154,7 @@ const buttons = computed(() => [
     icon: 'edit',
     disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length,
     onClick() {
-      router.push(`/machine/${machineId}/program/${editor.selectedPrograms[0]?.programNo}`)
+      navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
     },
   },
   {
@@ -212,9 +168,9 @@ const buttons = computed(() => [
       // TODO: Context cannot be provided by executor
       $commandManager.executeCommand(
         'deleteProgram',
-        { $q, fetchPrograms },
+        { $q },
         editor.selectedPrograms,
-        Number(machineId),
+        machineId,
       )
     },
   },
@@ -238,7 +194,7 @@ const buttons = computed(() => [
     icon: 'content_paste',
     onClick() {
       // TODO: Context cannot be provided by executor
-      $commandManager.executeCommand('pasteProgram', { $q, fetchPrograms }, Number(machineId))
+      $commandManager.executeCommand('pasteProgram', { $q }, machineId)
     },
   },
   {
@@ -249,7 +205,7 @@ const buttons = computed(() => [
     icon: 'refresh',
     onClick() {
       // TODO: Context cannot be provided by executor
-      $commandManager.executeCommand('refresh', { $q, fetchPrograms }, Number(machineId))
+      $commandManager.executeCommand('refresh', { $q }, machineId)
     },
   },
 ])
@@ -280,7 +236,7 @@ interface ProgramTableColumn extends Omit<QTableColumn, 'label'> {
 
 const columns = ref<ProgramTableColumn[]>([
   {
-    name: 'no',
+    name: 'programNo',
     label: '#',
     field: 'programNo',
     sortable: true,
@@ -395,7 +351,7 @@ const contextMenuOptions = computed(() => [
       onClick: () => {
         $commandManager.executeCommand(
           'pasteProgram',
-          { $q, fetchPrograms },
+          { $q },
           machineId,
         )
       },
@@ -409,7 +365,7 @@ const contextMenuOptions = computed(() => [
       icon: 'add',
       disabled: false,
       onClick: () => {
-        editor.popupNewProgramVisible = true
+        $commandManager.executeCommand('newProgram', { $q })
       },
     },
     {
@@ -430,7 +386,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'deleteProgram',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -444,7 +400,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'deleteProgramFromMultiMachine',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
         )
       },
@@ -458,7 +414,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'concatenatePrograms',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -477,11 +433,10 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'changeName',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
-        // await fetchPrograms()
       },
     },
     {
@@ -493,7 +448,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'changeProcessType',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -511,7 +466,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'sendProgram',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -526,7 +481,7 @@ const contextMenuOptions = computed(() => [
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'copyAndSend',
-          { $q, fetchPrograms },
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -540,8 +495,8 @@ const contextMenuOptions = computed(() => [
       onClick: async () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
-          'fetchProgram',
-          { fetchPrograms },
+          'getProgram',
+          { $q },
           editor.selectedPrograms,
           machineId,
         )
@@ -587,40 +542,19 @@ const contextMenuOptions = computed(() => [
 
 ] as TopbarMenuItem[][])
 const ctrl = useKeyModifier('Control')
+const shift = useKeyModifier('Shift')
 
 function handleFilterClick() {
-  // TODO: Context cannot be provided by executor
   $commandManager.executeCommand(
     'filterPrograms',
-    { $q, fetchPrograms, isProgramFilterExists },
+    { $q, filteredPrograms, isProgramFilterExists },
   )
 }
+
 function handleClearFilterClick() {
   clearFilter()
   isProgramFilterExists.value = false
-  fetchPrograms()
-}
-
-const filter = ref('')
-const debouncedFilter = refDebounced(filter, 250)
-
-const PATH_RE = /^\/machine\/([^/]+?)\/?$/
-
-const fullMatch = computed(() => PATH_RE.test(route.path))
-watch(fullMatch, async () => {
-  if (fullMatch.value)
-    await fetchPrograms()
-})
-const { results: filterResults } = useFuse(debouncedFilter, programs as Ref<ProgramTable[]>, {
-  matchAllWhenSearchEmpty: true,
-  fuseOptions: {
-    keys: ['programNo', 'name', 'type'],
-  },
-})
-
-function formatValue<T extends Record<string, any>>(row: T, column: QTableColumn<T>) {
-  const value = typeof column.field === 'function' ? column.field(row) : row[column.field]
-  return column.format ? column.format(value, row) : value
+  editor.fetchAllPrograms()
 }
 
 function formatTooltip<T extends Record<string, any>>(row: T, column: QTableColumn<T> & { tooltip?: (value: any, row: any) => string }) {
@@ -628,71 +562,77 @@ function formatTooltip<T extends Record<string, any>>(row: T, column: QTableColu
   return column.tooltip ? column.tooltip(value, row) : value
 }
 
-const filteredPrograms = computed(() => {
-  return filterResults.value.map(r => r.item)
-})
-
-function isRowSelected(row: any) {
+function isRowSelected(row: ProgramTable) {
   return editor.selectedPrograms.includes(row)
 }
-function removeSelection(row: any) {
+function removeSelection(row: ProgramTable) {
   editor.selectedPrograms = editor.selectedPrograms.filter(r => r !== row)
-}
-async function onRowClick(row: any, isRightClick?: boolean) {
-  if (ctrl.value) {
-    if (isRowSelected(row)) {
-      if (!isRightClick)
-        removeSelection(row)
-    } else
-      editor.selectedPrograms.push(row)
-  } else if (!(isRowSelected(row) && isRightClick))
-    editor.selectedPrograms = [row]
-}
-
-async function onRowDoubleClick(row: any) {
-  await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
-}
-
-function handleClick(event: { preventDefault: () => void }, option: AppCommand) {
-  if (option.disabled)
-    event.preventDefault()
-  else {
-    option.execute()
-  }
 }
 
 async function handleVersionDelete(deleteVersions: any[]) {
   editor.isLoading = true
   await contextMenuStore.deleteVersion(deleteVersions, machineId)
-  await fetchPrograms()
+  await editor.fetchAllPrograms()
   versions.value = await contextMenuStore.fetchVersions(editor.selectedPrograms[0].programNo, machineId)
   editor.isLoading = false
 }
-function handleRowColor(row: ProgramHeader) {
-  if (0) { // User is not logged in //FIXME:
-    return 'grey'
-  } else if (row.isChanged)
-    return dark.isActive ? ProgramStateColors.CHANGED_ON_TELESKOP_DARK : ProgramStateColors.CHANGED_ON_TELESKOP
-  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
-    return dark.isActive ? ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER_DARK : ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER
-  } else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE) {
-    return dark.isActive ? ProgramStateColors.EXISTS_ONLY_ON_DATABASE_DARK : ProgramStateColors.EXISTS_ONLY_ON_DATABASE
-  } else {
+
+function getSelectedString() {
+  return t('selectRange', { count: editor.selectedPrograms.length, total: editor.allPrograms.length })
+}
+
+const contextMenuPosition = ref({ x: 0, y: 0 })
+
+function onRowClick(event: Event, row: ProgramTable) {
+  if (ctrl.value) {
+    if (isRowSelected(row)) {
+      removeSelection(row)
+    } else
+      editor.selectedPrograms.push(row)
+  } else if (shift.value) {
+    nextTick(() => {
+      const tableRows = tableRef.value.filteredSortedRows
+      let firstIndex = tableRows.indexOf(editor.selectedPrograms[0])
+      let lastIndex = tableRows.indexOf(row)
+      if (firstIndex > lastIndex) {
+        [firstIndex, lastIndex] = [lastIndex, firstIndex]
+      }
+      editor.selectedPrograms = tableRows.slice(firstIndex, lastIndex + 1)
+    })
+  } else if (!isRowSelected(row)) {
+    editor.selectedPrograms = [row]
+  }
+}
+
+async function onRowDoubleClick(event: Event, row: ProgramTable) {
+  await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
+}
+
+function handleContextMenu(event: Event, row: ProgramTable) {
+  event.preventDefault()
+  onRowClick(event, row)
+}
+
+function handleRowClass(row: ProgramTable): string {
+  if (row.isChanged)
+    return 'changed-on-teleskop'
+
+  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+    return 'only-on-controller'
+
+  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
+    return 'only-on-teleskop'
+
+  else {
     const changeDate = (new Date(row.updatedAt || 0)).getTime()
     const changeDateTBB = (new Date(row.updatedAtTBB || 0)).getTime()
     const interval = (changeDateTBB - changeDate) / 1000
 
-    if (interval > 600 || interval < -600) {
-      if (row.tbbProgramChangedEvent) {
-        // change info came with mm Idk what does it mean
-      }
-      if (changeDateTBB > changeDate)
-        return dark.isActive ? ProgramStateColors.CHANGED_ON_MACHINE_DARK : ProgramStateColors.CHANGED_ON_MACHINE // Program  changed on machine
-      else
-        return dark.isActive ? ProgramStateColors.CHANGED_ON_TELESKOP_DARK : ProgramStateColors.CHANGED_ON_TELESKOP // Program changed on teleskop
-    } else {
-      return dark.isActive ? ProgramStateColors.NO_CHANGES_DARK : ProgramStateColors.NO_CHANGES
+    if (Math.abs(interval) > 600) {
+      return changeDateTBB > changeDate ? 'changed-on-machine' : 'changed-on-teleskop'
     }
+
+    return 'no-changes'
   }
 }
 </script>
@@ -702,93 +642,92 @@ function handleRowColor(row: ProgramHeader) {
     <div v-if="editor.isLoading" class="loading-container ">
       <LoadingSpinner :has-background="false" />
     </div>
-    <div v-if="fullMatch">
-      <QTable
-        dense
-        virtual-scroll
-        :rows="filteredPrograms"
-        :columns="columns"
-        row-key="id"
-        :rows-per-page-options="[0]"
-        flat
-        class="no-selected h-80vh"
-      >
-        <template #top>
-          <div class="flex justify-between p-2 w-full">
-            <QInput
-              v-model="filter"
-              dense
-              outlined
-              debounce="100"
-              icon
-              autocomplete="false"
-              :placeholder="t('search')"
-            >
-              <template #prepend>
-                <QIcon name="search" />
-              </template>
-            </QInput>
-            <QSpace />
-            <QBtn
-              :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
-              color="grey-8"
-              flat
-              @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
-            />
-          </div>
-        </template>
-        <template #body="props">
-          <QTr
-            :props="props"
-            :class="[isRowSelected(props.row) ? 'e-selected' : '']"
-            :style="{ color: `${handleRowColor(props.row)}` }"
-            @click="onRowClick(props.row)"
-            @dblclick="onRowDoubleClick(props.row)"
-            @contextmenu="onRowClick(props.row, true)"
-          >
-            <QTd
-              v-for="column in columns"
-              :key="column.name"
-              :props="props"
-            >
-              <q-menu
-                touch-position
-                context-menu
-                :transition-duration="0"
-              >
-                <ProgramContextMenu
-                  :items="contextMenuOptions"
-                />
-              </q-menu>
 
-              <template v-if="column.name === 'operator'">
-                <QIcon
-                  v-if="props.row.operator"
-                  name="check"
-                  color="positive"
-                  size="1rem"
-                />
-              </template>
-              <template v-else>
-                {{ formatValue(props.row, column) }}
-                <QTooltip
-                  v-if="column.tooltip"
-                  class="bg-white text-black e-border text-sm"
-                  :transition-duration="0"
-                  :delay="500"
-                >
-                  {{ formatTooltip(props.row, column) }}
-                </QTooltip>
-              </template>
-            </QTd>
-          </QTr>
-        </template>
-      </QTable>
-      <p>{{ t('selectRange', { count: editor.selectedPrograms.length, total: programs.length }) }}</p>
-    </div>
-    <div v-else>
-      <NuxtPage />
-    </div>
+    <QTable
+      ref="tableRef"
+      v-model:selected="editor.selectedPrograms"
+      :rows="filteredPrograms"
+      :columns="columns"
+      row-key="programNo"
+      :rows-per-page-options="[0]"
+      class="program-table"
+      selection="multiple"
+      :selected-rows-label="getSelectedString"
+      :filter="filter"
+      dense
+      flat
+      table-header-style="position: sticky; top: 0; z-index: 1; background-color: #f5f5f5; height: 50px;"
+      bottom-row-style="background-color: #ff0000; color: white;"
+      table-style="border-radius: 10px;"
+      @row-click="onRowClick"
+      @row-dblclick="onRowDoubleClick"
+      @row-contextmenu="handleContextMenu"
+    >
+      <template #body-cell="{ value, row, col }">
+        <QTd
+          :class="[handleRowClass(row), col.__tdClass?.(row)]"
+          :style="col.__tdStyle?.(row)"
+        >
+          <template v-if="typeof value === 'boolean'">
+            <QIcon
+              :name="value ? 'check' : ''"
+              color="positive"
+              size="xs"
+            />
+          </template>
+          <template v-else>
+            {{ value }}
+          </template>
+          <QTooltip v-if="col.tooltip">
+            {{ formatTooltip(row, col) }}
+          </QTooltip>
+        </QTd>
+      </template>
+      <template #top>
+        <QInput
+          v-model="filter"
+          clear-icon="close"
+          class="q-pa-md w-xs"
+          dense
+          autocomplete="false"
+          debounce="100"
+          outlined
+          icon
+          :placeholder="t('search')"
+        >
+          <template #prepend>
+            <QIcon name="search" />
+          </template>
+
+          <template #append>
+            <QBtn
+              v-if="filter"
+              icon="close"
+              flat
+              round
+              dense
+              size="sm"
+              @click="filter = ''"
+            />
+          </template>
+        </QInput>
+        <QSpace />
+        <QBtn
+          :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
+          color="grey-8"
+          flat
+          @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
+        />
+      </template>
+    </QTable>
+
+    <q-menu
+      touch-position
+      context-menu
+      :transition-duration="0"
+    >
+      <ProgramContextMenu :items="contextMenuOptions" />
+    </q-menu>
   </div>
 
   <CMProgramStateDialog v-if="!route.params.program_no" />
@@ -808,14 +747,6 @@ function handleRowColor(row: ProgramHeader) {
       type="comparison"
       @close="comparisonDialogVisible = false"
     />
-  </EliarModal>
-
-  <EliarModal v-if="editor.popupNewProgramVisible">
-    <CMNewProgramDialog />
-  </EliarModal>
-
-  <EliarModal v-if="editor.popupSaveAsProgramVisible">
-    <CMSaveAsProgramDialog />
   </EliarModal>
 
   <EliarModal v-if="editor.popupTempTimeGraphVisible">
@@ -847,5 +778,23 @@ function handleRowColor(row: ProgramHeader) {
   height: 100%;
   z-index: 50;
   background-color: rgb(229, 231, 235, 0.2);
+}
+
+.custom-scrollbar {
+  width: 300px;
+  height: 200px;
+  overflow-y: scroll; /* Enable vertical scrolling */
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.program-table :deep(.q-table__bottom) {
+  background-color: #f5f5f5;
+}
+
+.program-table {
+  height: 80vh;
+  border-radius: 10px;
+  user-select: none;
 }
 </style>

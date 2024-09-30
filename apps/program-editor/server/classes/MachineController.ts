@@ -1,7 +1,7 @@
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { Knex } from 'knex'
 import { isDef } from '@teleskop/utils'
-import { ensureTreatmentGroups, fetchTeleskopSettings, getGroupIdByMachineId, getMachineHost, hasMachine, logEditorOperation } from '../functions'
+import { ensureTreatmentGroups, fetchTeleskopSettings, getMachineHost, getTeleskopSettings, hasMachine, logEditorOperation } from '../functions'
 import { db, dmExchange } from '../database'
 import { withFTP, withTransaction } from '../decorators'
 import { sql } from '../sql'
@@ -9,7 +9,8 @@ import { stringifyProgram } from '../stringify'
 import { parseProgramString } from '../parse'
 import { PError } from '../error'
 import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
-import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramStep, ProgramStepCommand, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import logger from '../logger'
+import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 
@@ -167,10 +168,10 @@ export class MachineController {
 
   /**
    * Makinenin tüm programlarının headers'larını getirir
-   * @returns {Promise<Array<ProgramHeader>>} - ProgramHeader dizisi
+   * @returns {Promise<Array<ProgramHeader>>} - Makinenin tüm programlarının dizisi
    */
   @withTransaction
-  async fetchAllProgramHeaders(query?: any): Promise<ProgramHeader[]> {
+  async fetchAllProgramHeaders(query?: any): Promise<ProgramTable[]> {
     const config = useRuntimeConfig()
 
     const headers = await this.trx
@@ -472,6 +473,19 @@ export class MachineController {
   }
 
   /**
+   * Programın makinede olup olmadığını kontrol eder
+   * @param {number} programNo - Program numarası
+   * @returns {Promise<boolean>} - Programın var olup olmadığını belirten bir Promise
+   */
+  @withFTP
+  async hasProgramOnMachine(programNo: number): Promise<boolean> {
+    const result = await this.ftp
+      .fetchProgramList()
+      .then(list => list.includes(programNo))
+    return result
+  }
+
+  /**
    * Kullanımda olan ve teleskop kullanımına izin verilen tüm makinelerin listesini getirir
    * @returns {Promise<MachineInfo[]>} - Makine dizisi içeren bir Promise
    */
@@ -504,9 +518,21 @@ export class MachineController {
       // Code below line does not give error in the case that teleskop has not have program but machine has program.
       // It should return false 'cause program already exists on machine so it cannot be uploaded to machine
       const exists = await this.hasProgram(program.programNo)
-      if (exists)
-        await this.deleteProgramFromDatabase(program.programNo)
+      const existsOnMachine = await this.hasProgramOnMachine(program.programNo)
 
+      // Program veritabanında yok, makine de var
+      if (!exists && existsOnMachine)
+        throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo: program.programNo })
+
+      // Program veritabanında yok, makine de yok
+      if (!exists && !existsOnMachine)
+        await this.insertProgram(program)
+
+      // Program veritabanında var, makine de var
+      if (exists && existsOnMachine)
+        await this.updateProgram(program)
+
+      await this.deleteProgramFromDatabase(program.programNo)
       const currentTimestamp = this.getCurrentTimestamp()
       program.programState = ProgramStatus.EXISTS_ON_BOTH
       program.updatedAtTBB = currentTimestamp
@@ -516,7 +542,7 @@ export class MachineController {
       await this.ftp.upload(`/tbb6500/data/programs/program/${program.programNo}`, stringifyProgram(program, {
         commands: this.commandArrayToMap(await this.fetchCommands()),
       }))
-      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `Program ${program.programNo}`)
+      logger.info(`Program ${program.programNo} sent to machine ${this.id}.`)
       return true
     } catch (err) {
       if (isError(err)) {
@@ -529,6 +555,7 @@ export class MachineController {
         }
       }
       console.error('An error occured during sending program(s) to machine', err)
+      logger.error({ error: err }, 'An error occured during sending program(s) to machine')
       return false
     }
   }
@@ -557,6 +584,7 @@ export class MachineController {
     const { name } = await this.trx.from('BFMACHINES').first({ name: 'MACHINECODE' }).where('MACHINEID', this.id)!
     const commands = await this.fetchCommands()
     const rawProgram = parseProgramString(programString, {
+      id: this.id,
       commands: this.commandArrayToMap(commands),
     })
     const currentTimestamp = this.getCurrentTimestamp()
@@ -606,6 +634,7 @@ export class MachineController {
     const constants = await this.fetchMachineConstants()
     const commandFormulas = await this.fetchCommandFormulas()
     const treatmentParameters = await this.fetchTreatmentParameters()
+    const commandTypes = await this.fetchCommandTypes()
     return {
       id: this.id,
       name,
@@ -614,6 +643,7 @@ export class MachineController {
       commandFormulas,
       batchParameters,
       treatmentParameters,
+      commandTypes,
     }
   }
 
@@ -935,11 +965,12 @@ export class MachineController {
     const config = useRuntimeConfig()
     const timezone = Number(config.teleskopTimezoneOffset)
     const date = new Date(new Date().getTime() - timezone * 60000).toISOString()
+    const initialTemp = (await getTeleskopSettings()).initialTemperature
 
     program.duration = calculateProgramDuration(program, {
       ...machine,
       commands: this.commandArrayToMap(machine.commands),
-    })
+    }, initialTemp)
 
     const steps: StepItem[] = []
     const parameters: StepParameter[] = []
@@ -955,7 +986,7 @@ export class MachineController {
       TOTALSTEP: program.steps.length,
       CHANGEDATE: date,
       TBBCHANGESOURCE: '',
-      TBBCHANGEDATE: program.updatedAtTBB ? program.updatedAtTBB : '',
+      TBBCHANGEDATE: program.updatedAtTBB ?? '',
       LOCKEDBY: program.author ? program.author : '',
       CREATIONDATE: program.createdAt ? new Date((new Date(program.createdAt)).getTime() - timezone * 60000).toISOString() : date,
       USERCOMMENT: program.comment,
@@ -1264,7 +1295,6 @@ export class MachineController {
 
   /**
    * Makine sabitlerini getirir.
-   * @param machineId - Makine Id
    * @returns {Promise<MachineConstant[]>} - Makinenin sabitlerinin listesi
    */
   @withTransaction

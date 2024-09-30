@@ -6,12 +6,10 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 const { dark } = useQuasar()
 
-const useStatusColorStore = useLocalStorage('statusColor', {
-  showPopup: false,
-})
+const showStatusColorPopup = useLocalStorage('showPopup', true)
 
 function togglePopup() {
-  useStatusColorStore.value.showPopup = !useStatusColorStore.value.showPopup
+  showStatusColorPopup.value = !showStatusColorPopup.value
 }
 
 const programStatus = computed(() => [
@@ -30,7 +28,7 @@ const programStatus = computed(() => [
         {{ t('programStatusInfo._') }}
       </span>
       <QIcon
-        v-if="useStatusColorStore.showPopup"
+        v-if="showStatusColorPopup"
         name="close"
         :color="dark.isActive ? 'grey-3' : 'grey-8'"
         class="q-mx-sm"
@@ -38,7 +36,7 @@ const programStatus = computed(() => [
       />
     </div>
 
-    <div v-show="useStatusColorStore.showPopup" class="status-body">
+    <div v-show="showStatusColorPopup" class="status-body">
       <div class="flex flex-col">
         <div
           v-for="status in programStatus"

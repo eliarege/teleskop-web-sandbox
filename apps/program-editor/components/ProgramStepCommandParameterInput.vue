@@ -39,94 +39,105 @@ watch(() => model.value, (newValue: number) => {
 </script>
 
 <template>
-  <template v-if="parameter.type === 'NUMBER'">
-    <InputDuration
-      v-if="parameter.format === 'DURATION'"
-      v-model="model"
-      dense
-      outlined
-      :label="parameter.name"
-      :rules="rules"
-    >
-      <template #optimized>
-        <div v-if="isOptimizable" class="ml-3 flex-center h-full">
-          <QCheckbox
-            v-model="programParameter.optimized"
-            size="sm"
-            dense
-          />
-        </div>
-      </template>
-    </InputDuration>
-    <InputNumber
-      v-else
-      v-model="model"
-      :rules="rules"
-      :label="parameter.name"
-      type="decimal"
-      :maxlength="10"
-      :hide-bottom-space="true"
-      :format="parameter.format"
-      outlined
-      dense
-    >
-      <template #optimized>
-        <div v-if="isOptimizable" class="ml-3 flex-center h-full">
-          <QCheckbox
-            v-model="programParameter.optimized"
-            size="sm"
-            dense
-          />
-        </div>
-      </template>
-    </InputNumber>
-  </template>
-  <QSelect
-    v-else-if="parameter.type === 'SELECT'"
-    v-model="model"
-    :label="parameter.name"
-    :options="options"
-    option-label="name"
-    option-value="value"
-    options-dense
-    map-options
-    emit-value
-    outlined
-    dense
-    style="width: 150px;"
-  />
-  <div v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
+  <div class="inline-block pr-1 pb-1">
+    <template v-if="parameter.type === 'NUMBER'">
+      <InputDuration
+        v-if="parameter.format === 'DURATION'"
+        v-model="model"
+        dense
+        outlined
+        :label="parameter.name"
+        :rules="rules"
+        style="width: 150px;"
+        class="text-3"
+        hide-bottom-space
+      >
+        <template #optimized>
+          <div v-if="isOptimizable" class="ml-3 flex-center h-full">
+            <QCheckbox
+              v-model="programParameter.optimized"
+              size="sm"
+              dense
+            />
+          </div>
+        </template>
+      </InputDuration>
+      <InputNumber
+        v-else
+        v-model="model"
+        :rules="rules"
+        :label="parameter.name"
+        type="decimal"
+        :maxlength="10"
+        :hide-bottom-space="true"
+        :format="parameter.format"
+        outlined
+        dense
+        style="width: 150px;"
+        class="text-3"
+      >
+        <template #optimized>
+          <div v-if="isOptimizable" class="ml-3 flex-center h-full">
+            <QCheckbox
+              v-model="programParameter.optimized"
+              size="sm"
+              dense
+            />
+          </div>
+        </template>
+      </InputNumber>
+    </template>
     <QSelect
+      v-else-if="parameter.type === 'SELECT'"
       v-model="model"
       :label="parameter.name"
-      :options="formulaOptions"
-      option-label="label"
+      :options="options"
+      option-label="name"
       option-value="value"
       options-dense
       map-options
       emit-value
       outlined
       dense
-      style="width: 200px;"
-    >
-      <template #option="scope">
-        <QItem
-          v-close-popup
-          dense
-          clickable
-          :active="model === scope.opt.value"
-          active-class="bg-blue-1"
-          @click="model = scope.opt.value"
-        >
-          <QItemSection>
-            {{ scope.opt.label }}
-            <QTooltip>{{ scope.opt.formula }}</QTooltip>
-          </QItemSection>
-        </QItem>
-      </template>
-    </QSelect>
-    <QTooltip>
-      {{ formulaOptions.find((f) => f.value === model)?.formula }}
-    </QTooltip>
+      style="width: 180px;"
+      class="text-3"
+    />
+    <div v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
+      <QSelect
+        v-model="model"
+        :label="parameter.name"
+        :options="formulaOptions"
+        option-label="label"
+        option-value="value"
+        options-dense
+        map-options
+        emit-value
+        outlined
+        dense
+        style="width: 180px;"
+        class="text-3"
+      >
+        <template #option="scope">
+          <QItem
+            v-close-popup
+            dense
+            clickable
+            :active="model === scope.opt.value"
+            active-class="bg-blue-1"
+            class="text-3"
+
+            @click="model = scope.opt.value"
+          >
+            <QItemSection>
+              {{ scope.opt.label }}
+              <QTooltip>{{ scope.opt.formula }}</QTooltip>
+            </QItemSection>
+          </QItem>
+        </template>
+      </QSelect>
+      <QTooltip>
+        {{ formulaOptions.find((f) => f.value === model)?.formula }}
+      </QTooltip>
+    </div>
   </div>
 </template>

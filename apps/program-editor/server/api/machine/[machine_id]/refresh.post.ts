@@ -1,16 +1,18 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { ProgramStatus } from '~/shared/constants'
 import { db } from '~/server/database'
+import logger from '~/server/logger'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
-  const machineId = Number.parseInt(machine_id)
+  const machineId = Number(machine_id)
   const machine = await machineStore.get(machineId)
   let remotePrograms: Array<number> = []
+
   try {
     remotePrograms = await machine.fetchRemoteProgramList()
   } catch (e) {
-    console.log('An error occurred during connecting to device')
+    logger.error({ error: e }, `An error occurred during fetching remote program list of machine ${machineId}.`)
     return 1
   }
   const teleskopPrograms = await db.select('PROGNO', 'PRGSTATE')
@@ -55,8 +57,7 @@ export default defineAuthEventHandler(async (event) => {
         }
       }
     } catch (e) {
-      // TODO: Handle
-      console.error(e)
+      logger.error({ error: e }, `An error occurred during fetching remote program ${remotePrgNo} of machine ${machineId}.`)
     }
   }
 

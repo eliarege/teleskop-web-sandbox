@@ -23,6 +23,5 @@ const isChecked = computed(() => {
       :label="t(props.label)"
       @update:model-value="toggle"
     />
-    <Icon :name="props.label" class="icon" />
   </div>
 </template>

@@ -74,7 +74,7 @@ const items = [
             icon: 'add_circle_outline',
             shortcut: 'F2',
             onClick() {
-              editor.popupNewProgramVisible = true
+              $commandManager.executeCommand('newProgram', { $q })
             },
           },
           // {
@@ -123,9 +123,6 @@ const items = [
     disabled: computed(() => !editor.program.programNo),
     subMenu: {
       items: [[
-        { label: tt('menu.programInfo'), icon: 'info', onClick: () => {
-          editor.popupSaveAsProgramVisible = true
-        } },
         { label: tt('menu.versionInfo'), icon: 'info', onClick: () => {
           editor.popupVersionDialog = true
         } },

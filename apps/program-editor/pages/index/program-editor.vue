@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { QForm } from 'quasar'
-import { LoadingSpinner } from '@teleskop/ui'
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
@@ -11,6 +10,12 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const $q = useQuasar()
 const { $commandManager } = useNuxtApp()
+
+const ctrl = useKeyModifier('Control')
+
+definePageMeta({
+  path: '/machine/:machine_id/program/:program_no',
+})
 
 onBeforeRouteLeave(() => {
   editor.program = editor.createProgram()
@@ -47,7 +52,7 @@ const buttons = computed(() => [
     icon: 'save_as',
     disable: editor.isLoading,
     onClick() {
-      editor.popupSaveAsProgramVisible = true
+      $commandManager.executeCommand('saveAsProgram', { $q })
     },
   },
   {
@@ -119,6 +124,72 @@ const buttons = computed(() => [
 ])
 useContextBar(buttons)
 
+onKeyStroke('F2', (event: KeyboardEvent) => {
+  event.preventDefault()
+  editor.newStep()
+})
+
+onKeyStroke('F3', (event: KeyboardEvent) => {
+  if (route.params.program_no) {
+    event.preventDefault()
+    editor.newParallelStep()
+  }
+})
+
+onKeyStroke(['Enter', 'NumpadEnter'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  editor.scrollPage(editor.selectedStep, true)
+})
+
+onKeyStroke(['Delete'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (event.ctrlKey)
+    editor.deleteParallelStep()
+  else
+    editor.deleteStep()
+})
+
+onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (event.shiftKey) {
+    if (between(editor.selectedParallelStep + 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
+      editor.selectedParallelStep = editor.selectedParallelStep + 1
+    }
+  } else {
+    if (between(editor.selectedStep + 1, 0, editor.program.steps.length - 1)) {
+      editor.selectedStep = editor.selectedStep + 1
+    }
+  }
+  editor.scrollPage(editor.selectedStep)
+})
+
+onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (event.shiftKey) {
+    if (between(editor.selectedParallelStep - 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
+      editor.selectedParallelStep = editor.selectedParallelStep - 1
+    }
+  } else {
+    if (between(editor.selectedStep - 1, 0, editor.program.steps.length - 1)) {
+      editor.selectedStep = editor.selectedStep - 1
+    }
+  }
+  editor.scrollPage(editor.selectedStep)
+})
+
+onKeyStroke('Escape', (event: KeyboardEvent) => {
+  event.preventDefault()
+  editor.selectedStep = -1
+  editor.selectedParallelStep = -1
+})
+
+onKeyStroke(['S', 's'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (ctrl.value) {
+    editor.onSubmit()
+  }
+})
+
 const machineId = Number(route.params.machine_id)
 const programNo = Number(route.params.program_no)
 
@@ -127,14 +198,16 @@ watch(locale, () => {
 })
 
 editor.isLoading = true
-await editor.fetchMachineCommands(machineId)
-await editor.fetchProgram(machineId, programNo).then(() => {
-  editor.isLoading = false
-})
+await editor.fetchTeleskopSettings()
+await editor.fetchMachine(Number(route.params.machine_id))
+await editor.fetchCommandTypes(Number(route.params.machine_id))
+await editor.fetchAllProcessTypes()
+await editor.fetchProgram(machineId, programNo)
+editor.isLoading = false
 </script>
 
 <template>
-  <div>
+  <div class="q-pa-md">
     <QForm ref="form">
       <ProgramEditor />
     </QForm>

@@ -15,9 +15,6 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "@iconify-json/carbon": "1.2.1",
-    "@iconify-json/icon-park-outline": "1.2.0",
-    "@iconify-json/ri": "1.2.0",
     "@teleskop/tbb-ftp-client": "workspace:*",
     "@teleskop/ui": "workspace:*",
     "@teleskop/utils": "workspace:*",
@@ -33,12 +30,17 @@
     "lodash-es": "4.17.21",
     "moo": "0.5.2",
     "nearley": "2.20.1",
+    "pino": "8.20.0",
     "sortablejs": "1.15.3",
     "sortablejs-vue3": "1.2.11",
     "tedious": "18.1.0",
     "vue-chartjs": "5.3.1"
   },
   "devDependencies": {
+    "@iconify-json/carbon": "1.2.1",
+    "@iconify-json/icon-park-outline": "1.2.0",
+    "@iconify-json/material-symbols": "1.2.1",
+    "@iconify-json/ri": "1.2.0",
     "@teleskop/nuxt-base": "workspace:*",
     "@teleskop/unocss-config": "workspace:*",
     "@types/lodash-es": "4.17.12",

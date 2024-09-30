@@ -8,7 +8,7 @@ import CMChangeNameDialog from '~/components/CMChangeNameDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
 import TBProgramFilterDialog from '~/components/TBProgramFilterDialog.vue'
-import type { ProgramFilter } from '~/shared/types'
+import type { Program, ProgramFilter } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -18,6 +18,7 @@ import hooks from '~/utils/hooks'
 import CMTempTimeGraphDialog from '~/components/CMTempTimeGraphDialog.vue'
 import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
 import { TeleskopSettingsIds } from '~/shared/constants'
+import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -63,7 +64,57 @@ export interface RegisteredCommands {
   refresh: [ctx: any, machineId: number]
   tempTimeGraph: [ctx: any]
   stepCommandGraph: [ctx: any]
+  newProgram: [ctx: any]
+  saveAsProgram: [ctx: any]
 }
+
+registerCommand(() => {
+  const editor = useEditorStore()
+  return {
+    name: 'newProgram',
+    execute(ctx: any) {
+      ctx.$q.dialog({
+        component: CMNewProgramDialog,
+        componentProps: {
+          header: 'newProgram',
+        },
+      }).onOk(async (newProgram: Program) => {
+        await editor.onSubmit(newProgram)
+        setTimeout(() => {
+          editor.newStep()
+        }, 1000)
+        return true
+      }).onCancel(() => {
+        return false
+      })
+
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
+  return {
+    name: 'saveAsProgram',
+    execute(ctx: any) {
+      ctx.$q.dialog({
+        component: CMNewProgramDialog,
+        componentProps: {
+          header: 'saveAs',
+          programNo: editor.program.programNo,
+        },
+      }).onOk(async (newProgram: Program) => {
+        await editor.onSubmit(newProgram)
+        return true
+      }).onCancel(() => {
+        return false
+      })
+
+      return true
+    },
+  }
+})
 
 registerCommand(() => {
   return {
@@ -90,6 +141,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   const { fetch } = useKeycloak()
   return {
     name: 'deleteProgram',
@@ -106,7 +158,7 @@ registerCommand(() => {
             method: 'DELETE',
           })
         // await contextMenuStore.deleteProgram(selectedRows, option, machineId)
-        await ctx.fetchPrograms()
+        await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
         return false
@@ -117,6 +169,7 @@ registerCommand(() => {
 })
 
 async function openDialogonPaste(ctx: any, remainsFromPaste: any, machineId: number) {
+  const editor = useEditorStore()
   let remains = remainsFromPaste
   if (remains.length) {
     ctx.$q.dialog({
@@ -130,7 +183,7 @@ async function openDialogonPaste(ctx: any, remainsFromPaste: any, machineId: num
       })
       remains = await contextMenuStore.paste(machineId, remains)
       await openDialogonPaste(ctx, remains, machineId)
-      await ctx.fetchPrograms()
+      await editor.fetchAllPrograms()
       /**
      TODO: This has to be done through commandManager.executeCommand 'cause
       commandManager will handle undo redo operations and paste is not a single paste operation
@@ -146,6 +199,7 @@ async function openDialogonPaste(ctx: any, remainsFromPaste: any, machineId: num
 }
 
 registerCommand(() => {
+  const editor = useEditorStore()
   let remainsFromPaste = [] as Array<any>
 
   return {
@@ -153,7 +207,7 @@ registerCommand(() => {
     async execute(ctx: any, machineId: number, remains?) {
       if (!remains) {
         remainsFromPaste = await contextMenuStore.paste(machineId)
-        await ctx.fetchPrograms()
+        await editor.fetchAllPrograms()
       }
       if (remainsFromPaste.length)
         await openDialogonPaste(ctx, remainsFromPaste, machineId)
@@ -163,6 +217,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'deleteProgramFromMultiMachine',
     execute(ctx: any, selectedRows) {
@@ -179,7 +234,7 @@ registerCommand(() => {
           },
         }).onOk(async (option: string) => {
           await contextMenuStore.deleteProgramFromMachine(selectedRows, machines, option)
-          await ctx.fetchPrograms()
+          await editor.fetchAllPrograms()
           return true
         }).onCancel(() => {
           return false
@@ -193,6 +248,7 @@ registerCommand(() => {
 })
 // // TODO: Make this function that return promise not inline code
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'concatenatePrograms',
     async execute(ctx: any, selectedRows, machineId) {
@@ -220,7 +276,7 @@ registerCommand(() => {
           },
         }).onOk(async (details) => {
           await contextMenuStore.concatenatePrograms(details.programsOrder, details.details, machineId)
-          await ctx.fetchPrograms()
+          await editor.fetchAllPrograms()
           resolve(true)
         }).onCancel(() => {
           reject(false)
@@ -232,6 +288,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'changeName',
     execute(ctx: any, selectedRows, machineId) {
@@ -241,8 +298,8 @@ registerCommand(() => {
           name: selectedRows[0]?.name,
         },
       }).onOk(async (newName: string) => {
-        await contextMenuStore.changeName(selectedRows[0], newName, machineId)
-        await ctx.fetchPrograms()
+        await contextMenuStore.changeName(selectedRows[0].programNo, newName, machineId)
+        await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
         return false
@@ -253,6 +310,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'changeProcessType',
     async execute(ctx: any, selectedRows, machineId) {
@@ -264,7 +322,7 @@ registerCommand(() => {
         },
       }).onOk(async (newType) => {
         await contextMenuStore.changeProcessType(selectedRows, newType, machineId)
-        await ctx.fetchPrograms()
+        await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
         return false
@@ -274,17 +332,19 @@ registerCommand(() => {
   }
 })
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'sendProgram',
     async execute(ctx: any, selectedRows, machineId) {
       await contextMenuStore.sendProgram(selectedRows, machineId)
-      await ctx.fetchPrograms()
+      await editor.fetchAllPrograms()
       return false // Dont want to add uno redo stack 'cause it cannot be reversible'
     },
   }
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'copyAndSend',
     execute(ctx: any, selectedRows, machineId) {
@@ -296,7 +356,7 @@ registerCommand(() => {
       }).onOk(async (machines) => {
         // FIXME: steps null check for on backend
         await contextMenuStore.sendProgramToMachines(selectedRows, machines, machineId)
-        await ctx.fetchPrograms()
+        await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
         return false
@@ -306,27 +366,25 @@ registerCommand(() => {
   }
 })
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'fetchProgram',
     async execute(ctx: any, selectedRows, machineId) {
       await contextMenuStore.getRemoteProgram(selectedRows, machineId)
-      await ctx.fetchPrograms()
+      await editor.fetchAllPrograms()
       return false // Dont want to add uno redo stack 'cause it cannot be reversible'
     },
   }
 })
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'filterPrograms',
     async execute(ctx: any) {
-      const processTypes = await contextMenuStore.getProcessTypes()
       ctx.$q.dialog({
         component: TBProgramFilterDialog,
-        componentProps: {
-          processTypes,
-        },
       }).onOk(async (filter: ProgramFilter) => {
-        await ctx.fetchPrograms(filter)
+        await editor.fetchAllPrograms(filter)
         if (ctx?.isProgramFilterExists)
           ctx.isProgramFilterExists.value = true
         return true
@@ -426,7 +484,7 @@ registerCommand(() => {
       await fetch(`/api/machine/${machineId}/refresh`, {
         method: 'POST',
       })
-      await ctx.fetchPrograms()
+      await editor.fetchAllPrograms()
       editor.isLoading = false
       return true
     },

@@ -14,10 +14,11 @@ const devMode = import.meta.dev
 const { t } = useI18n()
 const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
-const stepIcons = computed(() => [
-  editor.getStepIcon(step.mainCommand.commandNo!),
-  ...step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!)),
-])
+const stepIcons = computed(() => {
+  const mainIcon = editor.getStepIcon(step.mainCommand.commandNo!)
+  const parallelIcons = step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!))
+  return [mainIcon, ...parallelIcons]
+})
 
 const expanded = ref(editor.allStepExpanded)
 const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')
@@ -45,9 +46,8 @@ const sortableOptions: SortableOptions = {
 }
 
 // Step Duration
-const index = computed(() => Number(props.path.split('.').pop()))
 const duration = computed(() => formatDuration(
-  calculateProgramStepDuration(editor.program, editor.machine, index.value).duration,
+  calculateProgramStepDuration(editor.program, editor.machine, editor.teleskopSettings.initialTemperature, stepIndex.value).duration,
 ))
 </script>
 
@@ -55,29 +55,33 @@ const duration = computed(() => formatDuration(
   <div>
     <div class="flex">
       <!-- <span v-if="devMode" class="color-gray-5">{{ step.stepId }}</span> -->
-      <!-- <span>{{ duration }}</span> -->
+      <!-- <span class="color-gray">{{ duration }}</span> -->
 
-      <div class="flex items-center">
-        <div v-show="!expanded">
-          <div v-for="(icon, index) in stepIcons" :key="index">
-            <span v-if="icon">
-              <Icon
-                :name="icon.icon"
+      <div class="flex items-center w-5">
+        <div v-show="!expanded" class="space-y-1">
+          <div
+            v-for="(icon, key) in stepIcons"
+            :key="key"
+          >
+            <div v-if="icon">
+              <div
                 class="icon"
-                :color="icon.color"
+                :class="icon.name"
+                :style="{ color: icon.color }"
               />
               <q-tooltip>
-                {{ icon.label }}
+                {{ icon.name ? icon.label : t('noIcon') }}
               </q-tooltip>
-            </span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div v-if="devMode" class="flex flex-col color-gray-5">
-        <span>{{ step.stepId }}</span>
-        <span>{{ duration }}</span>
+      <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
+        <!-- <span>{{ step.stepId }}</span>
+        <span>{{ duration }}</span> -->
       </div>
+
       <QBtn
         class="expand-btn"
         :icon="expandIcon"
@@ -86,17 +90,19 @@ const duration = computed(() => formatDuration(
         @click="toggle"
       />
 
-      <div v-show="expanded" class="mt-3 ml-1">
-        <span v-if="mainIcon">
-          <Icon
-            :name="mainIcon.icon"
-            class="icon"
-            :color="mainIcon.color"
-          />
-          <q-tooltip>
-            {{ mainIcon.label }}
-          </q-tooltip>
-        </span>
+      <div class="w-5">
+        <div v-show="expanded" class="mt-3 ml-1">
+          <div v-if="mainIcon">
+            <div
+              class="icon"
+              :class="mainIcon.name"
+              :style="{ color: mainIcon.color }"
+            />
+            <q-tooltip>
+              {{ mainIcon.name ? mainIcon.label : t('noIcon') }}
+            </q-tooltip>
+          </div>
+        </div>
       </div>
 
       <ProgramStepCommandForm
@@ -124,12 +130,12 @@ const duration = computed(() => formatDuration(
             :class="{ __selected: editor.selectedStep === stepIndex && editor.selectedParallelStep === index }"
             @click="editor.changeSelection(stepIndex, index)"
           >
-            <div class="w-6 mt-3">
-              <div v-if="parallelIcons[index]">
-                <Icon
-                  :name="parallelIcons[index]?.icon"
+            <div class="w-5">
+              <div v-if="parallelIcons[index]?.name">
+                <div
                   class="icon"
-                  :color="parallelIcons[index]?.color"
+                  :class="parallelIcons[index]?.name"
+                  :style="{ color: parallelIcons[index]?.color }"
                 />
                 <q-tooltip>
                   {{ parallelIcons[index]?.label }}
@@ -137,7 +143,7 @@ const duration = computed(() => formatDuration(
               </div>
             </div>
 
-            <div class="program-step-command ">
+            <div>
               <ProgramStepCommandForm :path="`${props.path}.parallelCommands.${index}`" :expanded />
             </div>
             <QSpace />
@@ -157,14 +163,15 @@ const duration = computed(() => formatDuration(
 </template>
 
 <style lang="postcss" scoped>
-.parallel-commands .program-step-command:not(:last-of-type) {
+.step-parallel-command {
+  @apply flex flex-row items-center w-full pl-4;
+  @apply hover:( dark:bg-dark-1);
   @apply border-b border-black border-opacity-20;
   @apply dark:(border-b border-white border-opacity-20);
 }
 
-.step-parallel-command {
-  @apply flex w-full pl-4;
-  @apply hover:( dark:bg-dark-1);
+.step-parallel-command:last-child {
+  @apply border-none;
 }
 
 .step-parallel-command:hover {

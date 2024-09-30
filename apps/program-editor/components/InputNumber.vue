@@ -217,7 +217,7 @@ onMounted(() => {
 </template>
 
 <style lang="postcss">
-.input-number.hide-arrows  {
+.input-number.hide-arrows {
   /* Chrome, Safari, Edge, Opera */
   & input::-webkit-outer-spin-button,
   & input::-webkit-inner-spin-button {
@@ -226,7 +226,7 @@ onMounted(() => {
   }
 
   /* Firefox */
-  & input[type=number] {
+  & input[type='number'] {
     appearance: textfield;
     -moz-appearance: textfield;
   }

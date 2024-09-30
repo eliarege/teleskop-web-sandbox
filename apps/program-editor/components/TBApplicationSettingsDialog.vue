@@ -4,19 +4,18 @@ import { commandTypeMaps } from '~/shared/constants'
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
-const { t } = useI18n()
-const settings = ref(0)
-const { dark } = useQuasar()
-const fullSelect = Number.parseInt('1'.repeat(commandTypeMaps.length), 2)
-const selectAll = ref(false)
-const editor = useEditorStore()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-settings.value = Number(editor.teleskopSettings.selectedIcons)
+const { t } = useI18n()
+const { dark } = useQuasar()
+const editor = useEditorStore()
+const selectedIcons = ref(editor.teleskopSettings.selectedIcons)
+const fullSelect = Number.parseInt('1'.repeat(commandTypeMaps.length), 2)
+const selectAll = ref(selectedIcons.value === fullSelect)
+const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 function toggleSelectAll() {
   selectAll.value = !selectAll.value
-  settings.value = selectAll.value ? fullSelect : 0
+  selectedIcons.value = selectAll.value ? fullSelect : 0
 }
 </script>
 
@@ -54,7 +53,7 @@ function toggleSelectAll() {
             :key="commandType.index"
           >
             <ChemIconCheckbox
-              v-model="settings"
+              v-model="selectedIcons"
               :command-index="commandType.index"
               :label="commandType.title"
             />
@@ -62,7 +61,7 @@ function toggleSelectAll() {
         </div>
         <div>
           <q-checkbox
-            :model-value="selectAll ? true : settings === fullSelect"
+            :model-value="selectedIcons === fullSelect"
             :label="selectAll ? t('dropAll') : t('selectAll')"
             @update:model-value="toggleSelectAll"
           />
@@ -76,7 +75,7 @@ function toggleSelectAll() {
           outline
           color="primary"
           icon="check"
-          @click="onDialogOK(settings)"
+          @click="onDialogOK(selectedIcons)"
         />
         <q-btn
           :label="t('menu.close')"

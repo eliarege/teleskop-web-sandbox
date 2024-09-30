@@ -23,13 +23,13 @@ const machineCommand = computed(() => {
 </script>
 
 <template>
-  <div class="pl-1 py-1 flex">
+  <div class="pl-1 pt-1">
     <!-- <span v-if="devMode" class="color-gray-5">{{ programCommand.commandId }}</span> -->
-    <div>
-      <div class="pb-2">
+    <div class="flex">
+      <div class="pb-1 pr-2">
         <CommandSelector :path="props.path" />
       </div>
-      <div class="flex flex-wrap gap-x-2 gap-y-1">
+      <div class="flex-1">
         <ProgramStepCommandParameterInput
           v-for="(parameter, index) in machineCommand.editableParameters"
           :key="`pr-${programCommand.commandNo}-${index}`"
