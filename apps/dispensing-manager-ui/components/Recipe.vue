@@ -110,12 +110,22 @@ const columns = computed(() => [
     prop: 'amount',
     align: 'center',
     showOverflowTooltip: true,
+    formatter: (row: any) => {
+      if(!row.amount) return ''
+    const amount = Number(row.amount);
+    return amount % 1 === 0 ? amount.toString() : amount.toFixed(2);
+  }
   },
   {
     label: t('recipe.recipeAmount'),
     prop: 'recipeAmount',
     align: 'center',
     showOverflowTooltip: true,
+    formatter: (row: any) => {
+      if(!row.recipeAmount) return ''
+    const amount = Number(row.recipeAmount);
+    return amount % 1 === 0 ? amount.toString() : amount.toFixed(2);
+  }
   },
   {
     label: t('recipe.metric'),
@@ -534,6 +544,7 @@ onBeforeUnmount(() => {
 
     <div>
       <RecipeTable
+        v-if="materialRows.length"
         :title="t('recipe.manuelMaterials')"
         :rows="materialRows"
         :columns="columns"
