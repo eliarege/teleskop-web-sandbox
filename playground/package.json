@@ -1,5 +1,6 @@
 {
   "name": "playground",
+  "type": "module",
   "version": "0.1.0",
   "description": "",
   "scripts": {
