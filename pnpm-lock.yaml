@@ -498,15 +498,6 @@ importers:
 
   apps/program-editor:
     dependencies:
-      '@iconify-json/carbon':
-        specifier: 1.2.1
-        version: 1.2.1
-      '@iconify-json/icon-park-outline':
-        specifier: 1.2.0
-        version: 1.2.0
-      '@iconify-json/ri':
-        specifier: 1.2.0
-        version: 1.2.0
       '@teleskop/tbb-ftp-client':
         specifier: workspace:*
         version: link:../../packages/tbb-ftp-client
@@ -552,6 +543,9 @@ importers:
       nearley:
         specifier: 2.20.1
         version: 2.20.1
+      pino:
+        specifier: 8.20.0
+        version: 8.20.0
       sortablejs:
         specifier: 1.15.3
         version: 1.15.3
@@ -565,6 +559,18 @@ importers:
         specifier: 5.3.1
         version: 5.3.1(chart.js@4.4.4)(vue@3.4.27(typescript@5.5.4))
     devDependencies:
+      '@iconify-json/carbon':
+        specifier: 1.2.1
+        version: 1.2.1
+      '@iconify-json/icon-park-outline':
+        specifier: 1.2.0
+        version: 1.2.0
+      '@iconify-json/material-symbols':
+        specifier: 1.2.1
+        version: 1.2.1
+      '@iconify-json/ri':
+        specifier: 1.2.0
+        version: 1.2.0
       '@teleskop/nuxt-base':
         specifier: workspace:*
         version: link:../../packages/nuxt-base
@@ -1807,6 +1813,9 @@ packages:
 
   '@iconify-json/material-symbols@1.2.0':
     resolution: {integrity: sha512-g/a+Z5SE5GyNu8EmRKidRX0D6odws6sz68PhXvCWBK1YLCcf3XDBWZoWUyOQ/jlyUsvGu1QkDXBxq5XYSFPWXQ==}
+
+  '@iconify-json/material-symbols@1.2.1':
+    resolution: {integrity: sha512-r9yaBzlUmN87aCTSoCNtDCd7R9F0iVDjNPL9QHHhm1WglFJvTUKx9iBC5xcZpP0qN0bg9R5FkM90CndWxEBAnw==}
 
   '@iconify-json/mdi@1.2.0':
     resolution: {integrity: sha512-E9/3l5Syg3wfuarorFodhn4s8YorxhH3U3U20LaNBNiqw1kFNIDWhF6HymuzAD35k7RH0OBasJ+ZUyFtVVV6eg==}
@@ -9027,6 +9036,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/material-symbols@1.2.0':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/material-symbols@1.2.1':
     dependencies:
       '@iconify/types': 2.0.0
 
