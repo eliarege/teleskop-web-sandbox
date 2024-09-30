@@ -55,7 +55,7 @@ const duration = computed(() => formatDuration(
   <div>
     <div class="flex">
       <!-- <span v-if="devMode" class="color-gray-5">{{ step.stepId }}</span> -->
-      <span class="color-gray">{{ duration }}</span>
+      <!-- <span class="color-gray">{{ duration }}</span> -->
 
       <div class="flex items-center w-5">
         <div v-show="!expanded" class="space-y-1">
@@ -130,7 +130,7 @@ const duration = computed(() => formatDuration(
             :class="{ __selected: editor.selectedStep === stepIndex && editor.selectedParallelStep === index }"
             @click="editor.changeSelection(stepIndex, index)"
           >
-            <div class="w-5 mt-3">
+            <div class="w-5">
               <div v-if="parallelIcons[index]?.name">
                 <div
                   class="icon"

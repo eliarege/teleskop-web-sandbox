@@ -1,12 +1,9 @@
 import sharedConfig from '@teleskop/unocss-config'
-import { mergeConfigs, presetIcons } from 'unocss'
+import { mergeConfigs } from 'unocss'
 
 export default mergeConfigs([
   sharedConfig,
   {
-    presets: [
-      presetIcons(),
-    ],
     content: {
       pipeline: {
         include: [/\.(vue|svelte|[jt]sx|ts|mdx?|astro|elm|php|phtml|html)($|\?)/],
