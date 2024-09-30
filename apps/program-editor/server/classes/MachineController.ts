@@ -9,6 +9,7 @@ import { stringifyProgram } from '../stringify'
 import { parseProgramString } from '../parse'
 import { PError } from '../error'
 import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
+import logger from '../logger'
 import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
@@ -513,6 +514,9 @@ export class MachineController {
   @withFTP
   async uploadProgram(program: Program): Promise<boolean | Error> {
     try {
+      // FIXME:
+      // Code below line does not give error in the case that teleskop has not have program but machine has program.
+      // It should return false 'cause program already exists on machine so it cannot be uploaded to machine
       const exists = await this.hasProgram(program.programNo)
       const existsOnMachine = await this.hasProgramOnMachine(program.programNo)
 
@@ -529,7 +533,6 @@ export class MachineController {
         await this.updateProgram(program)
 
       await this.deleteProgramFromDatabase(program.programNo)
-
       const currentTimestamp = this.getCurrentTimestamp()
       program.programState = ProgramStatus.EXISTS_ON_BOTH
       program.updatedAtTBB = currentTimestamp
@@ -539,7 +542,7 @@ export class MachineController {
       await this.ftp.upload(`/tbb6500/data/programs/program/${program.programNo}`, stringifyProgram(program, {
         commands: this.commandArrayToMap(await this.fetchCommands()),
       }))
-      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `Program ${program.programNo}`)
+      logger.info(`Program ${program.programNo} sent to machine ${this.id}.`)
       return true
     } catch (err) {
       if (isError(err)) {
@@ -552,6 +555,7 @@ export class MachineController {
         }
       }
       console.error('An error occured during sending program(s) to machine', err)
+      logger.error({ error: err }, 'An error occured during sending program(s) to machine')
       return false
     }
   }
@@ -580,6 +584,7 @@ export class MachineController {
     const { name } = await this.trx.from('BFMACHINES').first({ name: 'MACHINECODE' }).where('MACHINEID', this.id)!
     const commands = await this.fetchCommands()
     const rawProgram = parseProgramString(programString, {
+      id: this.id,
       commands: this.commandArrayToMap(commands),
     })
     const currentTimestamp = this.getCurrentTimestamp()

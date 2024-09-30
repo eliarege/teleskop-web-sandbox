@@ -171,11 +171,14 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function sendProgram(programs: Array<any>, machineId: number) {
     const { fetch } = useKeycloak()
+    const editor = useEditorStore()
+    editor.isLoading = true
     for (const program of programs) {
       const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
       const status = check?.name ? 'failedToConnectMachine' : check ? 'success' : 'fail'
       notification(check, t(`contextMenu.send.${status}`, { name: program.name }))
     }
+    editor.isLoading = false
   }
 
   async function getRemoteProgram(programs: ProgramTable[], machineId: number) {
@@ -197,7 +200,10 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       for (const program of programs) {
         // TODO: Maybe do not need to call machines * programs much endpoint machines can be taken through body and then for of loop on backend for faster runtime
         // but think about notification logic on each paste operation maybe bulk notification can be shown for each machine idk ...later.
+        const editor = useEditorStore()
+        editor.isLoading = true
         const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: m_id } })
+        editor.isLoading = false
         const status = check?.statusCode === 'ECONNREFUSED' ? 'failedToConnectMachine' : check ? 'success' : 'fail'
         notification(check, t(`contextMenu.getInMachine.${status}`, { name: program.name, machine: m_id }))
       }

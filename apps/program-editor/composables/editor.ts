@@ -314,7 +314,6 @@ export const useEditorStore = defineStore('editor', () => {
 
   async function fetchAllPrograms(filter?: ProgramFilter): Promise<void> {
     if (filter) {
-      console.log(filterToQuery(filter))
       allPrograms.value = await fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program?filter=${filterToQuery(filter)}`)
     } else {
       allPrograms.value = await fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program`)
