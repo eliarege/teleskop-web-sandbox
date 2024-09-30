@@ -11,7 +11,7 @@ case "$1" in
     exec docker compose -f $DIR/docker-compose.yml -p teleskop up -d $@
     ;;
   sync)
-    out=$(script -q /dev/null -c "pnpm exec tsx $DIR/keycloak-sync/bin/sync.ts" | tee /dev/tty)
+    out=$(script -q /dev/null -c "pnpm exec tsx --tsconfig $DIR/keycloak-sync/tsconfig.json $DIR/keycloak-sync/bin/sync.ts" | tee /dev/tty)
     # NodeJS BUG: `fetch` exits the process silently if Keycloak has not been initialized.
     # If the sync process exits with 0 and has no output, weinfer it's due to the fetch issue.
     if [[ -z $out && $? -eq 0 ]]; then
