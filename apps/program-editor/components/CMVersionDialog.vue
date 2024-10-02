@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ProgramEditorDialog from './ProgramEditorDialog.vue'
 import { notification } from '~/shared/functions'
 
 const props = defineProps({
@@ -52,15 +51,15 @@ async function setActiveVersion() {
 }
 
 async function showOnEditor() {
-  $q.dialog({
-    component: ProgramEditorDialog,
-    componentProps: {
-      machineId: props.machineId,
-      programNo: props.programNo,
-      version: selectedVersion.value,
-      readOnly: true,
-    },
-  })
+  // $q.dialog({
+  //   component: ProgramEditorDialog,
+  //   componentProps: {
+  //     machineId: props.machineId,
+  //     programNo: props.programNo,
+  //     version: selectedVersion.value,
+  //     readOnly: true,
+  //   },
+  // })
 
   // emit('close')
   // navigateTo(`/machine/${props.machineId}/program/${props.programNo}/version/${selectedRows.value[0]?.version}`)
