@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
+import html2canvas from 'html2canvas-pro'
 import { parseAppList } from '~/utils/base'
 import type { Feedback, FeedbackModel } from '~/types'
-import { mediaDevicesAvailable } from '~/utils/screenshot'
 import { getBrowserInfo, getOSInfo } from '~/utils/userAgent'
 
 const props = defineProps<{ feedback: FeedbackModel }>()
@@ -15,7 +15,7 @@ const { width, height } = useWindowSize()
 const config = useRuntimeConfig()
 const { fetch: authFetch, tokenParsed } = useKeycloak()
 
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
 const appList = parseAppList(config.public.appList)
 
@@ -25,6 +25,9 @@ const reportTypes = reactive([
   { name: t('feedback.reportType.suggestion') },
   { name: t('feedback.reportType.other') },
 ])
+
+const originalImage = ref('')
+const rectArr = ref([])
 
 const feedbackModel: Feedback = reactive({
   appName: props.feedback.appName,
@@ -38,6 +41,7 @@ const feedbackModel: Feedback = reactive({
   },
   os: getOSInfo(navigator.userAgent),
 })
+
 function isFormValid(): boolean {
   return (
     feedbackModel.appName !== null && feedbackModel.appName.trim() !== ''
@@ -55,14 +59,14 @@ function onReportItemSelect(item: string) {
 }
 
 const editCanvas = ref(false)
-const loading = ref(false)
+const submitLoading = ref(false)
 async function sendFeedback() {
   // Remove Data URI prefix before sending the feedback
   const modifiedModel = {
     ...feedbackModel,
     image: feedbackModel.image?.split(',')[1],
   }
-  loading.value = true
+  submitLoading.value = true
   await authFetch('/api/feedback', {
     method: 'POST',
     body: modifiedModel,
@@ -77,7 +81,27 @@ async function sendFeedback() {
       position: 'top',
     })
   })
-  loading.value = false
+  submitLoading.value = false
+}
+
+const ssLoading = ref(false)
+async function takeScreenshot() {
+  ssLoading.value = true
+  const element = document.body
+  try {
+    const canvas = await html2canvas(element, {
+      logging: false,
+      useCORS: true,
+      scale: window.devicePixelRatio,
+      ignoreElements: element => element.getAttribute('role') === 'dialog',
+    })
+
+    feedbackModel.image = canvas.toDataURL()
+    originalImage.value = canvas.toDataURL()
+  } catch (error) {
+    console.error('Ekran görüntüsü alınırken hata oluştu:', error)
+  }
+  ssLoading.value = false
 }
 </script>
 
@@ -127,7 +151,7 @@ async function sendFeedback() {
           autogrow
         />
         <br>
-        <div v-if="mediaDevicesAvailable()" class="border-1">
+        <div class="border-1">
           <q-img
             :src="feedbackModel.image"
           >
@@ -161,8 +185,9 @@ async function sendFeedback() {
                 dense
                 padding="none"
                 no-caps
+                :loading="ssLoading"
                 :label="t('feedback.screenshot.take-screenshot')"
-                @click="onDialogOK(feedbackModel)"
+                @click="takeScreenshot"
               />
             </div>
           </q-img>
@@ -177,7 +202,7 @@ async function sendFeedback() {
           :label="t('feedback.submit')"
           icon="send"
           dense
-          :loading
+          :submit-loading
           :disabled="!isFormValid()"
           @click="sendFeedback"
         >
@@ -202,7 +227,12 @@ async function sendFeedback() {
     to="body"
   >
     <div class="absolute top-1/2 left-1/2 z-10001 w-full h-full p-3">
-      <TopbarFeedbackEditor v-model:image="feedbackModel.image" @close="editCanvas = !editCanvas" />
+      <TopbarFeedbackEditor
+        v-model:image="originalImage"
+        v-model:rect-arr="rectArr"
+        v-model:merged-image="feedbackModel.image"
+        @close="editCanvas = !editCanvas"
+      />
     </div>
   </QDialog>
 </template>

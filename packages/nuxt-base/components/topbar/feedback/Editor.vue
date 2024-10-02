@@ -10,13 +10,17 @@ interface Rectangle {
   height: number
   showCloseButton: boolean
 }
+
 const { t } = useI18n()
 const image = defineModel('image', { type: String, required: true })
+const mergedImage = defineModel('mergedImage', { type: String, required: true })
+
+const rectArr = defineModel<Rectangle[]>('rectArr', { required: true })
 const { width, height } = useWindowSize()
-const rectArr = ref<Rectangle[]>([])
+
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const rem = 16
-let rectId = 0
+let rectId = (rectArr.value.reduce((maxId, rect) => Math.max(maxId, rect.id), 0)) + 1
 
 function saveScreenshot() {
   const originalCanvas = canvasRef.value
@@ -36,12 +40,13 @@ function saveScreenshot() {
     ctx.drawImage(img, 0, 0, newCanvas.width, newCanvas.height)
     ctx.drawImage(originalCanvas, 0, 0)
 
-    image.value = newCanvas.toDataURL('image/png')
+    mergedImage.value = newCanvas.toDataURL('image/png')
     emit('close')
   }
 }
 
-function drawAllRects(ctx: CanvasRenderingContext2D) {
+async function drawAllRects(ctx: CanvasRenderingContext2D) {
+  await nextTick()
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   if (rectArr.value.length === 0) {
     return
@@ -58,9 +63,9 @@ function drawAllRects(ctx: CanvasRenderingContext2D) {
   })
 }
 
-function handleClose(rectId: number) {
+async function handleClose(rectId: number) {
   rectArr.value = rectArr.value.filter((rect: Rectangle) => rect.id !== rectId)
-
+  await nextTick()
   const canvas = canvasRef.value
   if (canvas) {
     const ctx = canvas.getContext('2d')!
@@ -85,6 +90,9 @@ function updateCloseButtonVisibility(x: number, y: number) {
 
 onMounted(() => {
   const canvas = canvasRef.value
+  const ctx = canvas?.getContext('2d') as CanvasRenderingContext2D
+  drawAllRects(ctx)
+
   if (!canvas)
     return
 
@@ -100,7 +108,6 @@ onMounted(() => {
     startY = e.offsetY
     isDrawing = true
   }
-
   function onMouseMove(e: MouseEvent) {
     if (isDrawing) {
       const ctx = canvas?.getContext('2d') as CanvasRenderingContext2D
@@ -194,14 +201,14 @@ onMounted(() => {
         <q-btn
           color="primary"
           :label="t('feedback.editor.save')"
-          class="w-20"
+          class="w-20 whitespace-nowrap"
           @click="saveScreenshot"
         />
         <q-btn
           flat
           color="red"
           :label="t('feedback.editor.cancel')"
-          class="w-20"
+          class="w-20 whitespace-nowrap"
           @click="$emit('close')"
         />
       </div>

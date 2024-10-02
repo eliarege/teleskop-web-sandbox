@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import html2canvas from 'html2canvas-pro'
 import AppAboutDialog from '../AppAboutDialog.vue'
 import FeedbackBase from './feedback/Base.vue'
 import type { FeedbackModel, TopbarMenuItem } from '~/types'
-import { mediaDevicesAvailable, takeScreenshot } from '~/utils/screenshot'
+import { mediaDevicesAvailable } from '~/utils/screenshot'
+import { sleep } from '~/utils/base'
 
 const props = defineProps<{
   extraItems?: TopbarMenuItem[]
@@ -10,6 +12,7 @@ const props = defineProps<{
 }>()
 const { dark, dialog } = useQuasar()
 const keycloak = useKeycloak()
+
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
 
@@ -20,17 +23,6 @@ const feedback: FeedbackModel = reactive({
   image: '',
 })
 
-async function screenshot() {
-  if (mediaDevicesAvailable()) {
-    takeScreenshot().then((screenshot) => {
-      feedback.image = screenshot
-      feedbackDialog()
-    })
-  } else {
-    feedbackDialog()
-  }
-}
-
 function feedbackDialog() {
   dialog({
     component: FeedbackBase,
@@ -40,7 +32,6 @@ function feedbackDialog() {
     feedback.description = e.description
     feedback.image = e.image
     feedback.reportType = e.reportType
-    screenshot()
   })
 }
 
