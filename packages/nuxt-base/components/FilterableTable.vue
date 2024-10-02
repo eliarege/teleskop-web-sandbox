@@ -151,52 +151,58 @@ function pushToFilters(col: FilterableTableColumn, index: number, orderByType?: 
     })
     filterSlots.value.push(temp)
   }
-  // If the filterType is date the index parameter will be the index of dateOptions
-  else if (col.filterType === 'date') {
-    const selectedDate: DateType = dateOptions.value[index]
-    if (selectedDate.text) {
-      temp = { label: `${col.label} ${t('in')} ${selectedDate.text}`, field: col.field, value: { from: selectedDate.from, to: selectedDate.to }, filterType: col.filterType }
-    } else {
-      temp = { label: `${col.label} ${t('from')} ${selectedDate.from} ${t('to')} ${selectedDate.to}`, field: col.field, value: { from: selectedDate.from, to: selectedDate.to }, filterType: col.filterType }
+  else {
+    const filterIndex = filterSlots.value.findIndex((filter) => filter.field === col.field)
+    if(filterIndex !== -1) {
+      filterSlots.value.splice(filterIndex, 1)
     }
-    if (!contains(filterSlots.value, temp))
-      filterSlots.value.push(temp)
-  } else {
-  // If the filterType is not date the index parameter will be the index of selectionOptions
-    const name = col.label
-    const option = selectedOptions.value[index]
-    let optionLabel = ''
-    if (col.optionLabel) {
-      if (col.filterType === 'multiselect')
-        option.forEach(opt => optionLabel += `${opt[col.optionLabel]} `)
-      else
-        optionLabel = option[col.optionLabel]
-    } else
-      optionLabel = option
-    const filterType = col.filterType
-    if (filterType === 'select' || filterType === 'multiselect' || filterType === 'boolean') {
-      temp = { label: `${name} ${t('is')} ${optionLabel}`, field: col.field, value: { option: [option] }, filterType, optionValue: col.optionValue }
-      if (filterType === 'multiselect')
-        temp.value.option = option
-      if (!contains(filterSlots.value, temp) && option !== null) {
-        filterSlots.value.push(temp)
-      }
-    }
-    if (col.filterType === 'equals' || col.filterType === 'includes') {
-      temp = { label: `${name} ${col.filterType} ${option} `, field: col.field, value: option, filterType: col.filterType }
-      if (!contains(filterSlots.value, temp))
-        filterSlots.value.push(temp)
-    }
-    if (col.filterType === 'comparison' && option && option.number1) {
-      if (option.operator.text === 'between' && option.number2) {
-        const min = Math.min(option.number1, option.number2)
-        const max = Math.max(option.number1, option.number2)
-        temp = { label: `${name} ${t('between')} ${min} ${t('and')} ${max}`, field: col.field, value: { min, max }, filterType: col.filterType }
+    // If the filterType is date the index parameter will be the index of dateOptions
+    if (col.filterType === 'date') {
+      const selectedDate: DateType = dateOptions.value[index]
+      if (selectedDate.text) {
+        temp = { label: `${col.label} ${t('in')} ${selectedDate.text}`, field: col.field, value: { from: selectedDate.from, to: selectedDate.to }, filterType: col.filterType }
       } else {
-        temp = { label: `${name} ${option.operator.symbol} ${option.number1}`, field: col.field, value: { operator: option.operator.symbol, number: option.number1 }, filterType: col.filterType }
+        temp = { label: `${col.label} ${t('from')} ${selectedDate.from} ${t('to')} ${selectedDate.to}`, field: col.field, value: { from: selectedDate.from, to: selectedDate.to }, filterType: col.filterType }
       }
       if (!contains(filterSlots.value, temp))
         filterSlots.value.push(temp)
+    } else {
+    // If the filterType is not date the index parameter will be the index of selectionOptions
+      const name = col.label
+      const option = selectedOptions.value[index]
+      let optionLabel = ''
+      if (col.optionLabel) {
+        if (col.filterType === 'multiselect')
+          option.forEach(opt => optionLabel += `${opt[col.optionLabel]} `)
+        else
+          optionLabel = option[col.optionLabel]
+      } else
+        optionLabel = option
+      const filterType = col.filterType
+      if (filterType === 'select' || filterType === 'multiselect' || filterType === 'boolean') {
+        temp = { label: `${name} ${t('is')} ${optionLabel}`, field: col.field, value: { option: [option] }, filterType, optionValue: col.optionValue }
+        if (filterType === 'multiselect')
+          temp.value.option = option
+        if (!contains(filterSlots.value, temp) && option !== null) {
+          filterSlots.value.push(temp)
+        }
+      }
+      if (col.filterType === 'equals' || col.filterType === 'includes') {
+        temp = { label: `${name} ${col.filterType} ${option} `, field: col.field, value: option, filterType: col.filterType }
+        if (!contains(filterSlots.value, temp))
+          filterSlots.value.push(temp)
+      }
+      if (col.filterType === 'comparison' && option && option.number1) {
+        if (option.operator.text === 'between' && option.number2) {
+          const min = Math.min(option.number1, option.number2)
+          const max = Math.max(option.number1, option.number2)
+          temp = { label: `${name} ${t('between')} ${min} ${t('and')} ${max}`, field: col.field, value: { min, max }, filterType: col.filterType }
+        } else {
+          temp = { label: `${name} ${option.operator.symbol} ${option.number1}`, field: col.field, value: { operator: option.operator.symbol, number: option.number1 }, filterType: col.filterType }
+        }
+        if (!contains(filterSlots.value, temp))
+          filterSlots.value.push(temp)
+      }
     }
   }
 }
