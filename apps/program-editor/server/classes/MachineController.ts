@@ -690,6 +690,28 @@ export class MachineController {
   }
 
   /**
+   * Programın header bilgilerini günceller
+   * @param {ProgramHeader} program - Güncellenmek istenen program
+   * @returns {Promise<number>} - Etkilenen satır sayısı
+   */
+  @withTransaction
+  async updateProgramHeader(program: ProgramHeader): Promise<number> {
+    console.log('updateProgramHeader: ', program)
+
+    const config = useRuntimeConfig()
+    const date = new Date(new Date().getTime() - Number(config.teleskopTimezoneOffset) * 60000).toISOString()
+    if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+      program.isChanged = true
+    const result = await this.trx
+      .from('BFMASTERPRGHEADER')
+      .where('PROGNO', program.programNo)
+      .andWhere('MACHINEID', this.id)
+      .update({ NAME: program.name, PROCESSCODE: program.typeId, TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent, ISCHANGED: program.isChanged, CHANGEDATE: date })
+
+    return result
+  }
+
+  /**
    * Zaman dilimine göre tarih ve saat döndürür
    * @returns {Date} - Zaman dilimine göre tarih ve saat
    */

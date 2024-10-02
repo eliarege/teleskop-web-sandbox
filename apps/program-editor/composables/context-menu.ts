@@ -17,6 +17,7 @@ export interface ContextMenuStore {
   deleteProgram: (selectedRows: Array<ProgramHeader>, selectedOption: number, machineId: number) => Promise<void>
   getProgram: (programNo: number, machineId: number) => Promise<Program>
   changeName: (programNo: number, newName: string, machineId: number) => Promise<void>
+  updateProgramHeader: (program: ProgramHeader, machineId: number) => Promise<void>
   getProcessTypes: () => Promise<any[]>
   changeProcessType: (selectedRows: Array<{ programNo: number }>, newType: number, machineId: number) => Promise<void>
   sendProgram: (programs: Array<ProgramHeader>, machineId: number) => Promise<void>
@@ -150,6 +151,20 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
     const status = check.ok ? 'success' : 'fail'
     notification(check, t(`contextMenu.changeNameNotification.${status}`, { programNo: program.programNo }))
+  }
+
+  async function updateProgramHeader(program: ProgramHeader, machineId: number) {
+    const { fetch } = useKeycloak()
+    const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/update-header`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ program }),
+    })
+
+    const status = check ? 'success' : 'fail'
+    notification(check, t(`contextMenu.updateHeaderNotification.${status}`, { programNo: program.programNo }))
   }
 
   async function getProcessTypes() {
@@ -333,6 +348,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     getProgram,
     sendProgram,
     changeName,
+    updateProgramHeader,
     changeProcessType,
     comparison,
     addToComparisonBasket,

@@ -1,23 +1,22 @@
 <script setup lang="ts">
-import type { Program } from '~/shared/types'
+import type { ProcessType, ProgramHeader } from '~/shared/types'
 
 const props = defineProps<{
-  header: 'newProgram' | 'saveAs'
-  programNo?: number
+  header: 'newProgram' | 'saveAs' | 'rename'
 }>()
 
-const editor = useEditorStore()
 const { t } = useI18n()
-
+const { dark } = useQuasar()
+const editor = useEditorStore()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const programNo = ref(props.programNo)
-const programName = ref<string>(`${editor.program.name} ${props.header === 'saveAs' ? t('(copy)') : ''}`)
-const processType = ref<number>(editor.program.typeId)
-const operator = ref<boolean>(editor.program.tbbProgramChangedEvent === 1)
-const { dark } = useQuasar()
+const programTypeId = editor.allProcessType.find((p: ProcessType) => p.label === editor.selectedPrograms[0]?.type)?.value
+const programNo = ref(editor.selectedPrograms[0]?.programNo)
+const programName = ref<string>(`${editor.selectedPrograms[0]?.name} ${props.header === 'saveAs' ? t('(copy)') : ''}`)
+const processType = ref<number>(programTypeId || editor.program.typeId)
+const operator = ref<boolean>(editor.selectedPrograms[0]?.operator || editor.program.tbbProgramChangedEvent === 1)
 
-const newProgram = computed<Program>(() => {
+const newProgram = computed<ProgramHeader>(() => {
   return {
     ...editor.program,
     machineId: editor.machine.id,
@@ -51,6 +50,7 @@ const newProgram = computed<Program>(() => {
                   (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
                   (val: number) => !editor.allPrograms.some(p => p.programNo === val) || t('input.unique', { field: t('program.programNo') }),
                 ]"
+                :disable="header === 'rename'"
                 class="mb-3"
                 dense
               />
@@ -91,7 +91,7 @@ const newProgram = computed<Program>(() => {
               />
               <QBtn
                 flat
-                :label="t('create')"
+                :label="header === 'rename' ? t('save') : t('create')"
                 class=" bg-primary text-white"
                 type="submit"
                 :loading="editor.isLoading"
