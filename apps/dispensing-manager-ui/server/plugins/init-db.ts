@@ -8,7 +8,6 @@ export default defineNitroPlugin(async () => {
   if (inferBoolean(addMissingTeleskopColumns)) {
     try {
       const dispenserSettingsColumns = await knex('DYTFDISPENSERSETTINGS').columnInfo()
-
       await knex.schema.table('DYTFDISPENSERSETTINGS', (table) => {
         if (!dispenserSettingsColumns.VNCPORT) {
           table.integer('VNCPORT').defaultTo(5900).nullable()
@@ -18,13 +17,21 @@ export default defineNitroPlugin(async () => {
           table.string('VNCPASSWORD', 40).defaultTo('q').nullable()
           console.log('Added VNCPASSWORD column with default value \'q\'')
         }
-        if (!dispenserSettingsColumns.CONNECTIONSTATUS) {
+        if (!dispenserSettingsColumns.CONNECTIONCONTROLDATE) {
           table.datetime('CONNECTIONCONTROLDATE', { precision: 23 })
           console.log('Added CONNECTIONCONTROLDATE column')
         }
-        if (!dispenserSettingsColumns.CONNECTIONCONTROLDATE) {
+        if (!dispenserSettingsColumns.CONNECTIONSTATUS) {
           table.tinyint('CONNECTIONSTATUS', 1)
           console.log('Added CONNECTIONSTATUS dispenserSettingsColumns')
+        }
+        if (!dispenserSettingsColumns.EXPORTFILENAME) {
+          table.string('EXPORTFILENAME', 50)
+          console.log('Added EXPORTFILENAME dispenserSettingsColumns')
+        }
+        if (!dispenserSettingsColumns.EXPORTIRRELEVANTCONSUMPTION) {
+          table.boolean('EXPORTIRRELEVANTCONSUMPTION')
+          console.log('Added EXPORTIRRELEVANTCONSUMPTION dispenserSettingsColumns')
         }
       })
       await knex('DYTFDISPENSERSETTINGS').update({ VNCPORT: 5900, VNCPASSWORD: 'q' }).whereNull('VNCPORT').orWhereNull('VNCPASSWORD')

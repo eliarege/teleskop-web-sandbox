@@ -27,10 +27,8 @@ const props = defineProps({
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
-const dispenser = []
 const selectedObjects = ref([])
 const selectedDispensers = ref([])
-
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
 </script>
@@ -82,13 +80,13 @@ const { t } = useI18n()
         <q-btn
           outline
           :label="t('replace')"
-          :disable="!selectedObjects.length"
+          :disable="!selectedObjects || !selectedObjects?.length"
           @click="onDialogOK({ isReplace: true, selectedObjects, selectedDispensers })"
         />
         <q-btn
           outline
           :label="t('add')"
-          :disable="!selectedObjects.length"
+          :disable="!selectedObjects || !selectedObjects?.length"
           @click="onDialogOK({ isReplace: false, selectedObjects, selectedDispensers })"
         />
       </q-card-actions>
