@@ -1,33 +1,67 @@
 <script setup lang="ts">
 import DMP from 'diff-match-patch'
-import type { Program } from '~/shared/types'
+import { LoadingSpinner } from '@teleskop/ui'
+import { isValid } from 'date-fns'
+import { indexOf } from 'lodash-es'
+import type { CommandParameterDiff, ProgramStepCommandDiff, ProgramInfoHeader, ProgramVersion } from '~/utils/types'
+import Main from '~/components/Comparison/Main.vue'
+import type { Program, ProgramStep } from '~/shared/types'
 import { useEditorStore } from '~/composables/editor'
 
 const dmp = new DMP()
 const route = useRoute()
 const { m, p1, p2, v1, v2 } = route.query
 
+enum DiffType {
+  onlyLeft = -1,
+  bothSides = 0,
+  onlyRight = 1,
+}
+
 const paths = [
   `/api/machine/${m}/program/${p1}`,
-  `/api/machine/${m}/program/${p2}`,
+ ` /api/machine/${m}/program/${p2}`,
 ]
+
+let isValid1 = false
+let isValid2 = false
+
 if (v1 && v2) {
   paths[0] += `/version/${v1}`
   paths[1] += `/version/${v2}`
+
+  const versions = await $fetch<ProgramVersion[]>(`/api/machine/${m}/program/${p1}/version`)
+  const maxVersion = versions.length - 1
+  if (versions[maxVersion].version === Number(v1)) {
+    isValid1 = true
+  } else if (versions[maxVersion].version === Number(v2)) {
+    isValid2 = true
+  }
+} else {
+  isValid1 = true
+  isValid2 = true
 }
+
 const editor = useEditorStore()
-await editor.fetchMachine(Number(m))
+
+const loading = ref(true)
+onMounted(async () => {
+  await editor.fetchMachine(Number(m))
+  loading.value = false
+})
+
 const programOneData: Program = await $fetch(paths[0])
 const programTwoData: Program = await $fetch(paths[1])
 
 const programOneCommands = [] as number[]
 const programTwoCommands = [] as number[]
-programOneData!.steps.forEach((step) => {
-  programOneCommands.push(step.mainCommand.commandNo)
+
+programOneData.steps.forEach((step) => {
+  programOneCommands.push(step.mainCommand.commandNo!)
 })
 
-programTwoData!.steps.forEach((step) => {
-  programTwoCommands.push(step.mainCommand.commandNo)
+programTwoData.steps.forEach((step) => {
+  programTwoCommands.push(step.mainCommand.commandNo!)
 })
 
 // turning normal to utf8
@@ -37,175 +71,187 @@ const a = new Uint8Array(programOneCommands)
 const b = new Uint8Array(programTwoCommands)
 
 // using diff func
-const mainResult = dmp.diff_main(
+const diffResult = dmp.diff_main(
   decoder.decode(a),
   decoder.decode(b),
 )
-
 // turning utf8 to normal
-mainResult.forEach((value) => {
-  value[1] = [...encoder.encode(value[1])]
+const mainResult = diffResult.map((value) => {
+  return [value[0], [...encoder.encode(value[1])]]
 })
 
-const resultArray: [any, any][] = []
+const allResults: Array<[ProgramStepCommandDiff | null, ProgramStepCommandDiff | null]> = []
 
-// Her bir `commandNo` için sayacın tutulduğu bir obje
-const commandCountersOne: Record<number, number> = {}
-const commandCountersTwo: Record<number, number> = {}
+function compareCommands(left: ProgramStepCommandDiff, right: ProgramStepCommandDiff): void {
+  // Compare main commands
+  if (left.mainCommand.commandNo !== right.mainCommand.commandNo) {
+    left.mainCommand.diff = true
+    right.mainCommand.diff = true
+  } else {
+    // Compare parameters
+    const leftParams = [...left.mainCommand.parameters]
+    const rightParams = [...right.mainCommand.parameters]
 
-// Belirli bir `commandNo`'ya göre adım bilgisini almak için kullanılan fonksiyon
-function getCommandDetailsWithCount(programData: Program, commandNo: number, count: number) {
-  let matchCount = 0
-  for (const step of programData.steps) {
-    if (step.mainCommand.commandNo === commandNo) {
-      if (matchCount === count) {
-        return step
-      }
-      matchCount++
-    }
-  }
-  return null
-}
+    while (leftParams.length > 0 || rightParams.length > 0) {
+      const leftParam = leftParams[0]
+      const rightParam = rightParams[0]
 
-mainResult.forEach(([indicator, values]) => {
-  values.forEach((commandNo) => {
-    if (indicator === -1) {
-      commandCountersOne[commandNo] = (commandCountersOne[commandNo] || 0) + 1
-      const commandDetailsOne = getCommandDetailsWithCount(
-        programOneData,
-        commandNo,
-        commandCountersOne[commandNo] - 1,
-      )
-      resultArray.push([commandDetailsOne, null])
-    } else if (indicator === 1) {
-      commandCountersTwo[commandNo] = (commandCountersTwo[commandNo] || 0) + 1
-      const commandDetailsTwo = getCommandDetailsWithCount(
-        programTwoData,
-        commandNo,
-        commandCountersTwo[commandNo] - 1,
-      )
-      resultArray.push([null, commandDetailsTwo])
-    } else if (indicator === 0) {
-      commandCountersOne[commandNo] = (commandCountersOne[commandNo] || 0) + 1
-      const commandDetailsOne = getCommandDetailsWithCount(
-        programOneData,
-        commandNo,
-        commandCountersOne[commandNo] - 1,
-      )
-      commandCountersTwo[commandNo] = (commandCountersTwo[commandNo] || 0) + 1
-      const commandDetailsTwo = getCommandDetailsWithCount(
-        programTwoData,
-        commandNo,
-        commandCountersTwo[commandNo] - 1,
-      )
-
-      resultArray.push([commandDetailsOne, commandDetailsTwo])
-    }
-  })
-})
-
-const parallelDifferences: Array<ParallelObject> = []
-interface ParallelObject {
-  onlyLeft: []
-  onlyRight: []
-  intersection: []
-}
-const mainParametersDifferences: Array<MainParametersObject> = []
-
-interface MainParametersObject {
-  leftDifferentValues: []
-  rightDifferentValues: []
-  sameValues: []
-}
-
-resultArray.forEach(([commandDetailsOne, commandDetailsTwo]) => {
-  const parallelSorting: ParallelObject = {
-    onlyLeft: [],
-    onlyRight: [],
-    intersection: [],
-  }
-
-  const mainParametersSorting: MainParametersObject = {
-    leftDifferentValues: [],
-    rightDifferentValues: [],
-    sameValues: [],
-  }
-
-  if (commandDetailsOne && commandDetailsTwo) {
-    // comparison of parallel comands
-    const parallelCommandsOne = [...commandDetailsOne.parallelCommands]
-    const parallelCommandsTwo = [...commandDetailsTwo.parallelCommands]
-
-    while (parallelCommandsOne.length && parallelCommandsTwo.length) {
-      const hasMatch = parallelCommandsTwo.some(cmd => cmd.commandNo === parallelCommandsOne[0].commandNo)
-
-      if (hasMatch) {
-        const shiftVar = parallelCommandsOne.shift()
-        const parallel2Command = parallelCommandsTwo.find(cmd => cmd.commandNo === shiftVar.commandNo)
-        parallelSorting.intersection.push([shiftVar, parallel2Command])
-        parallelCommandsTwo.splice(parallelCommandsTwo.findIndex(cmd => cmd.commandNo === shiftVar.commandNo), 1)
+      if (!rightParam) {
+        const index = left.mainCommand.parameters.indexOf(leftParams.shift()!)
+        left.mainCommand.parameters[index].diff = true
+      } else if (!leftParam) {
+        const index = right.mainCommand.parameters.indexOf(rightParams.shift()!)
+        right.mainCommand.parameters[index].diff = true
+      } else if (leftParam?.value === rightParam?.value && leftParam?.index === rightParam?.index) {
+        leftParams.shift()
+        rightParams.shift()
       } else {
-        parallelSorting.onlyLeft.push(parallelCommandsOne.shift())
+        const indexLeft = left.mainCommand.parameters.indexOf(leftParams.shift()!)
+        left.mainCommand.parameters[indexLeft].diff = true
+        const indexRight = right.mainCommand.parameters.indexOf(rightParams.shift()!)
+        right.mainCommand.parameters[indexRight].diff = true
       }
     }
+  }
 
-    parallelSorting.onlyRight.push(...parallelCommandsTwo)
+  // Compare parallel commands
+  const leftParallel = [...left.parallelCommands]
+  const rightParallel = [...right.parallelCommands]
 
-    parallelDifferences.push(parallelSorting)
+  while (leftParallel.length > 0 || rightParallel.length > 0) {
+    const leftCmd = leftParallel[0]
+    const rightCmd = rightParallel[0]
 
-    // comparison of main parameters
-    const mainParamsOne = commandDetailsOne.mainCommand.parameters
-    const mainParamsTwo = commandDetailsTwo.mainCommand.parameters
+    if (!leftCmd) {
+      rightParallel.shift()!.diff = true
+    } else if (!rightCmd) {
+      leftParallel.shift()!.diff = true
+    } else if (leftCmd.commandNo === rightCmd.commandNo) {
+      // Compare parameters of matching parallel commands
+      const leftParams = [...leftCmd.parameters]
+      const rightParams = [...rightCmd.parameters]
 
-    const mainParametersSorting: MainParametersObject = {
-      leftDifferentValues: [],
-      rightDifferentValues: [],
-      sameValues: [],
-    }
+      while (leftParams.length > 0 || rightParams.length > 0) {
+        const leftParam = leftParams[0]
+        const rightParam = rightParams[0]
 
-    while (mainParamsOne.length > 0 || mainParamsTwo.length > 0) {
-      const paramOne = mainParamsOne[0]
-      const paramTwo = mainParamsTwo[0]
-
-      if (!paramOne) {
-        mainParametersSorting.rightDifferentValues.push(mainParamsTwo.shift()!)
-      } else if (!paramTwo) {
-        mainParametersSorting.leftDifferentValues.push(mainParamsOne.shift()!)
-      } else if (paramOne.index === paramTwo.index) {
-        if (paramOne.value === paramTwo.value) {
-          mainParametersSorting.sameValues.push(mainParamsOne.shift()!)
-          mainParamsTwo.shift()
+        if (!rightParam) {
+          const index = leftCmd.parameters.indexOf(leftParams.shift()!)
+          leftCmd.parameters[index].diff = true
+        } else if (!leftParam) {
+          const index = rightCmd.parameters.indexOf(rightParams.shift()!)
+          rightCmd.parameters[index].diff = true
+        } else if (leftParam.value === rightParam.value && leftParam.index === rightParam.index) {
+          leftParams.shift()
+          rightParams.shift()
         } else {
-          mainParametersSorting.leftDifferentValues.push(mainParamsOne.shift()!)
-          mainParametersSorting.rightDifferentValues.push(mainParamsTwo.shift()!)
+          const indexLeft = leftCmd.parameters.indexOf(leftParams.shift()!)
+          leftCmd.parameters[indexLeft].diff = true
+          const indexRight = rightCmd.parameters.indexOf(rightParams.shift()!)
+          rightCmd.parameters[indexRight].diff = true
         }
-      } else if (paramOne.index < paramTwo.index) {
-        mainParametersSorting.leftDifferentValues.push(mainParamsOne.shift()!)
-      } else {
-        mainParametersSorting.rightDifferentValues.push(mainParamsTwo.shift()!)
+      }
+
+      leftParallel.shift()
+      rightParallel.shift()
+    } else {
+      leftParallel.shift()!.diff = true
+      rightParallel.shift()!.diff = true
+    }
+  }
+}
+
+function createProgramStepCommandDiff(step: ProgramStep): ProgramStepCommandDiff {
+  return {
+    mainCommand: {
+      diff: false,
+      commandNo: step.mainCommand.commandNo || 0,
+      parameters: (step.mainCommand.parameters || []).map(param => ({
+        index: param.index,
+        value: param.value,
+        diff: false,
+      })),
+    },
+    parallelCommands: step.parallelCommands.map(cmd => ({
+      commandNo: cmd.commandNo!,
+      diff: false,
+      parameters: (cmd.parameters || []).map(param => ({
+        index: param.index,
+        value: param.value,
+        diff: false,
+      })),
+    })),
+  }
+}
+
+function processMainResult(): void {
+  let leftIndex = 0
+  let rightIndex = 0
+
+  for (const [diffType, diffValue] of mainResult) {
+    if (diffType === DiffType.bothSides) {
+      const steps = diffValue.toString().split(',').length
+      for (let i = 0; i < steps; i++) {
+        const left = createProgramStepCommandDiff(programOneData!.steps[leftIndex])
+        const right = createProgramStepCommandDiff(programTwoData!.steps[rightIndex])
+
+        compareCommands(left, right)
+        allResults.push([left, right])
+        leftIndex++
+        rightIndex++
+      }
+    } else if (diffType === DiffType.onlyLeft) {
+      const steps = diffValue.toString().split(',').length
+      for (let i = 0; i < steps; i++) {
+        const left = createProgramStepCommandDiff(programOneData!.steps[leftIndex])
+        left.mainCommand.diff = true
+        allResults.push([left, null])
+        leftIndex++
+      }
+    } else if (diffType === DiffType.onlyRight) {
+      const steps = diffValue.toString().split(',').length
+      for (let i = 0; i < steps; i++) {
+        const right = createProgramStepCommandDiff(programTwoData!.steps[rightIndex])
+        right.mainCommand.diff = true
+        allResults.push([null, right])
+        rightIndex++
       }
     }
-
-    mainParametersDifferences.push(mainParametersSorting)
   }
-})
+}
 
-console.log('Main Command Result: ', resultArray)
-console.log('Parallel Differences:', parallelDifferences)
-console.log('Main Param Difference Array: ', mainParametersDifferences)
+processMainResult()
+
+const programOneHeader: ProgramInfoHeader = {
+  programName: programOneData.name,
+  programNo: programOneData.programNo,
+  programVersion: Number(v1),
+  stepCount: programOneData.steps.length,
+  isValid: isValid1,
+}
+
+const programTwoHeader: ProgramInfoHeader = {
+  programName: programTwoData.name,
+  programNo: programTwoData.programNo,
+  programVersion: Number(v2),
+  stepCount: programTwoData.steps.length,
+  isValid: isValid2,
+}
+
+console.log('All Results:', allResults)
 </script>
 
 <template>
-  <ComparisonTable
-    :result-array="resultArray"
-    :parallel-differences="parallelDifferences"
-    :main-parameters-differences="mainParametersDifferences"
-    :first-program="Number(p1)"
-    :first-version="Number(v1)"
-    :second-program="Number(p2)"
-    :second-version="Number(v2)"
-    :machine="Number(m)"
-  />
+  <div v-if="loading" class="spinner-container">
+    <LoadingSpinner :has-background="false" />
+  </div>
+  <div v-else>
+    <Main
+      :all-results="allResults"
+      :program-one-header="programOneHeader"
+      :program-two-header="programTwoHeader"
+    />
+  </div>
 </template>
 
 <style lang="postcss">

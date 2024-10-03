@@ -1241,6 +1241,7 @@ export class MachineController {
       .join('BFPROCESSTYPES AS T', 'T.PROCESSCODE', 'H.PROCESSCODE')
       .where('H.MACHINEID', this.id)
       .andWhere('H.PROGNO', programNo)
+      .orderBy('H.MACHINEPRGVERSIONNO', 'asc')
   }
 
   /**

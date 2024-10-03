@@ -392,5 +392,12 @@
     "paste": "Paste",
     "findChange": "Find - Change",
     "compareAllPrograms": "Compare All Programs"
+  },
+  "comparisonTable": {
+    "programName": "Program Name",
+    "programNo": "Program No",
+    "versionNo": "Version No",
+    "stepCount": "Step Count",
+    "edit": "EDIT"
   }
 }
