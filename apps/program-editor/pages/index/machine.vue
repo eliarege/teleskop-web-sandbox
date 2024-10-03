@@ -743,7 +743,7 @@ function handleRowClass(row: ProgramTable): string {
       :program-no="editor.selectedPrograms[0].programNo"
       @close="versionDialogVisible = false"
       @delete="e => handleVersionDelete(e)"
-      @active-version-changed="fetchPrograms(), fetchVersions(editor.selectedPrograms[0].programNo)"
+      @active-version-changed="editor.fetchAllPrograms(), fetchVersions(editor.selectedPrograms[0].programNo)"
     />
   </EliarModal>
 

@@ -42,8 +42,10 @@ async function onRowClick(row: any, isRightClick?: boolean) {
         removeSelection(row)
     } else
       selectedRows.value.push(row)
-  } else if (!(isRowSelected(row) && isRightClick))
-    selectedRows.value = [row]
+  } else if (!(isRowSelected(row) && isRightClick)) {
+    selectedRows.value = []
+    selectedRows.value.push(row)
+  }
 }
 const selectedVersion = computed(() => selectedRows.value[0]?.version)
 async function setActiveVersion() {
@@ -125,9 +127,11 @@ const isActiveSelected = computed(() =>
         <q-btn
           :label="t('contextMenu.version.compare')"
           outline
-          :disable="true"
+          :disable="selectedRows.length !== 2"
           color="black"
-        />
+          @click="navigateTo(`/comparison?m=${machineId}&p1=${programNo}&p2=${programNo}&v1=${selectedRows[0].version}&v2=${selectedRows[1].version}`)"
+          />
+          <!--  -->
         <q-btn
           :label="t('contextMenu.version.makeDefault')"
           outline

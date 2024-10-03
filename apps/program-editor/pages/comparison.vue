@@ -12,8 +12,8 @@ const paths = [
   `/api/machine/${m}/program/${p2}`,
 ]
 if (v1 && v2) {
-  paths[0] += `/archive/${v1}`
-  paths[1] += `/archive/${v2}`
+  paths[0] += `/version/${v1}`
+  paths[1] += `/version/${v2}`
 }
 const editor = useEditorStore()
 await editor.fetchMachine(Number(m))
