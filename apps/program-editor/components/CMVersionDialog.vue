@@ -6,6 +6,8 @@ const props = defineProps({
   machineId: Number,
   programNo: Number,
 })
+const { fetch } = useKeycloak()
+
 const emit = defineEmits(['close', 'delete', 'activeVersionChanged'])
 const $q = useQuasar()
 const deleteVersionDialogVis = ref(false)
@@ -45,7 +47,7 @@ async function onRowClick(row: any, isRightClick?: boolean) {
 }
 const selectedVersion = computed(() => selectedRows.value[0]?.version)
 async function setActiveVersion() {
-  const check = await $fetch(`/api/machine/${props.machineId}/program/${props.programNo}/version/${selectedVersion.value}`, { method: 'POST' })
+  const check = await fetch(`/api/machine/${props.machineId}/program/${props.programNo}/version/${selectedVersion.value}`, { method: 'POST' })
   notification(check, check ? t('contextMenu.version.setDefaultSuccess', { version: selectedVersion.value }) : t('contextMenu.version.setDefaultFail', { version: selectedVersion.value }))
   emit('activeVersionChanged')
 }
