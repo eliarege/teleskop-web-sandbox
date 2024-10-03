@@ -23,12 +23,13 @@ const { $commandManager } = useNuxtApp()
 const { t, locale } = useI18n()
 const $q = useQuasar()
 const route = useRoute()
+const router = useRouter()
 const editor = useEditorStore()
 const machineId = Number(route.params.machine_id)
 const tableRef = ref()
 const isProgramFilterExists = ref(getExistingFilter())
 const tt = (key: string) => toRef(() => t(key))
-contextMenuStore.setCtx({ t })
+contextMenuStore.setCtx({ t, router })
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
@@ -495,7 +496,7 @@ const contextMenuOptions = computed(() => [
       onClick: async () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
-          'getProgram',
+          'fetchProgram',
           { $q },
           editor.selectedPrograms,
           machineId,
@@ -511,7 +512,7 @@ const contextMenuOptions = computed(() => [
       icon: 'playlist_add',
       disabled: false,
       onClick: () => {
-        contextMenuStore.addToComparisonBasket(editor.selectedPrograms)
+        contextMenuStore.addToComparisonBasket(editor.selectedPrograms, machineId)
       },
     },
     {
@@ -520,7 +521,7 @@ const contextMenuOptions = computed(() => [
       icon: 'compare_arrows',
       disabled: !contextMenuStore.comparisonBasketLength(),
       onClick: () => {
-        contextMenuStore.addToComparisonBasket(editor.selectedPrograms)
+        contextMenuStore.addToComparisonBasket(editor.selectedPrograms, machineId)
         // comparisonDialogVisible.value = true
         contextMenuStore.comparison()
       },
@@ -627,28 +628,6 @@ function handleRowClass(row: ProgramTable): string {
     return 'only-on-teleskop'
 
   else {
-    option.execute()
-  }
-}
-
-async function handleVersionDelete(deleteVersions: any[]) {
-  editor.isLoading = true
-  console.log(deleteVersions)
-  await contextMenuStore.deleteVersion(deleteVersions, machineId)
-  await fetchPrograms()
-  await fetchVersions(editor.selectedPrograms[0].programNo)
-  editor.isLoading = false
-}
-function handleRowColor(row: ProgramHeader) {
-  if (0) { // User is not logged in //FIXME:
-    return 'grey'
-  } else if (row.isChanged)
-    return ProgramStateColors.CHANGED_ON_TELESKOP
-  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
-    return ProgramStateColors.EXISTS_ONLY_ON_CONTROLLER
-  } else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE) {
-    return ProgramStateColors.EXISTS_ONLY_ON_DATABASE
-  } else {
     const changeDate = (new Date(row.updatedAt || 0)).getTime()
     const changeDateTBB = (new Date(row.updatedAtTBB || 0)).getTime()
     const interval = (changeDateTBB - changeDate) / 1000
