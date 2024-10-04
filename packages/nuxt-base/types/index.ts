@@ -20,6 +20,7 @@ export interface TopbarMenuItem {
   shortcut?: string
   style?: VueStyleProp
   disabled?: MaybeRefOrGetter<boolean>
+  disableReason?: string
   onClick?: () => void
   subMenu?: TopbarMenuProps
 }
@@ -52,9 +53,14 @@ export interface FilterableTableFilter {
 }
 
 export interface Feedback {
-  appName: string
+  appName: {
+    name: string
+    url: string
+  }
   image: string
-  reportType: string
+  reportType: {
+    name: string
+  }
   description: string
   browser: {
     name: string

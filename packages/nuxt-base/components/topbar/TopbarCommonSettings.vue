@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import html2canvas from 'html2canvas-pro'
 import AppAboutDialog from '../AppAboutDialog.vue'
-import FeedbackBase from './feedback/Base.vue'
+import TopbarFeedbackDialog from './feedback/TopbarFeedbackDialog.vue'
 import type { FeedbackModel, TopbarMenuItem } from '~/types'
-import { mediaDevicesAvailable } from '~/utils/screenshot'
-import { sleep } from '~/utils/base'
 
 const props = defineProps<{
   extraItems?: TopbarMenuItem[]
@@ -15,18 +12,28 @@ const keycloak = useKeycloak()
 
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
-
+const { data: properties } = await useFetch('/api/properties')
 const feedback: FeedbackModel = reactive({
-  appName: '',
+  appName: properties.value.name,
   reportType: '',
   description: '',
   image: '',
 })
+const feedbackEnabled = computed(() => {
+  return keycloak.enabled
+    && keycloak.authenticated
+    && keycloak.tokenParsed.value?.email_verified
+    || false
+})
+
+const feedbackDisableReason = computed(() => {
+  return !keycloak.tokenParsed.value.email_verified ? 'feedback.mail-not-verified' : null
+})
 
 function feedbackDialog() {
   dialog({
-    component: FeedbackBase,
-    componentProps: { feedback },
+    component: TopbarFeedbackDialog,
+    componentProps: { feedback, feedbackEnabled: feedbackEnabled.value },
   }).onOk((e: FeedbackModel) => {
     feedback.appName = e.appName
     feedback.description = e.description
@@ -34,13 +41,6 @@ function feedbackDialog() {
     feedback.reportType = e.reportType
   })
 }
-
-const feedbackEnabled = computed(() => {
-  return keycloak.enabled
-    && keycloak.authenticated
-    && keycloak.tokenParsed.value?.email_verified
-    || false
-})
 
 const items = [
   ...(props.extraItems
@@ -98,6 +98,7 @@ const items = [
       label: tt('base.sendFeedback'),
       icon: 'feedback',
       disabled: () => !feedbackEnabled.value,
+      disableReason: feedbackDisableReason.value,
       onClick: () => feedbackDialog(),
     },
   ],

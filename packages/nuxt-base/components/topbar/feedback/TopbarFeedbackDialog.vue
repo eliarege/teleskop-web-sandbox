@@ -5,7 +5,7 @@ import { parseAppList } from '~/utils/base'
 import type { Feedback, FeedbackModel } from '~/types'
 import { getBrowserInfo, getOSInfo } from '~/utils/userAgent'
 
-const props = defineProps<{ feedback: FeedbackModel }>()
+const props = defineProps<{ feedback: FeedbackModel, feedbackEnabled: boolean }>()
 defineEmits([...useDialogPluginComponent.emits, 'update:modelValue'])
 
 const { t } = useI18n()
@@ -17,8 +17,10 @@ const { fetch: authFetch, tokenParsed } = useKeycloak()
 
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
-const appList = parseAppList(config.public.appList)
-
+const appList = parseAppList(config.public.appList).map(n => ({
+  ...n,
+  name: t(`base.apps.${n.name}`),
+}))
 const reportTypes = reactive([
   { name: t('feedback.reportType.bug') },
   { name: t('feedback.reportType.feedback') },
@@ -30,9 +32,9 @@ const originalImage = ref('')
 const rectArr = ref([])
 
 const feedbackModel: Feedback = reactive({
-  appName: props.feedback.appName,
+  appName: t('app.name'),
   image: props.feedback.image,
-  reportType: props.feedback.reportType,
+  reportType: { name: props.feedback.reportType },
   description: props.feedback.description,
   browser: {
     ...getBrowserInfo(navigator.userAgent),
@@ -41,21 +43,8 @@ const feedbackModel: Feedback = reactive({
   },
   os: getOSInfo(navigator.userAgent),
 })
-
 function isFormValid(): boolean {
-  return (
-    feedbackModel.appName !== null && feedbackModel.appName.trim() !== ''
-    && feedbackModel.reportType !== null && feedbackModel.reportType.trim() !== ''
-    && feedbackModel.description !== null && feedbackModel.description.trim() !== ''
-  )
-}
-
-function onAppItemSelect(item: string) {
-  feedbackModel.appName = item
-}
-
-function onReportItemSelect(item: string) {
-  feedbackModel.reportType = item
+  return feedbackModel.reportType.name.trim() !== '' && feedbackModel.description.trim() !== ''
 }
 
 const editCanvas = ref(false)
@@ -75,11 +64,19 @@ async function sendFeedback() {
     color: 'green',
     position: 'top',
   })).catch((err) => {
-    q.notify({
-      message: t(`feedback.response.${err.statusMessage}`),
-      color: 'red',
-      position: 'top',
-    })
+    if (err.data.code) {
+      q.notify({
+        message: t(`feedback.response.${err.data.code}`),
+        color: 'red',
+        position: 'top',
+      })
+    } else {
+      q.notify({
+        message: t(`feedback.response.error-fallback`),
+        color: 'red',
+        position: 'top',
+      })
+    }
   })
   submitLoading.value = false
 }
@@ -124,32 +121,37 @@ async function takeScreenshot() {
           readonly
           :label="t('feedback.email')"
         />
-        <TopbarFeedbackInput
-          v-model:text="feedbackModel.appName"
+        <QSelect
+          v-model="feedbackModel.appName"
           :label="t('feedback.app-name')"
-          class="select-none"
-          readonly
-        >
-          <TopbarFeedbackInputDropdown :items="appList" @dropdown-click="onAppItemSelect" />
-        </TopbarFeedbackInput>
-        <TopbarFeedbackInput
-          v-model:text="feedbackModel.reportType"
+          :options="appList"
+          option-label="name"
+          map-options
+          outlined
+          dense
+        />
+        <QSelect
+          v-model="feedbackModel.reportType"
           :label="t('feedback.reportType.-')"
           class="select-none"
-          readonly
-        >
-          <TopbarFeedbackInputDropdown :items="reportTypes" @dropdown-click="onReportItemSelect" />
-        </TopbarFeedbackInput>
+          :options="reportTypes"
+          option-label="name"
+          map-options
+          outlined
+          dense
+        />
       </div>
       <div class="p-3">
-        <q-input
-          v-model="feedbackModel.description"
-          :label="t('feedback.description')"
-          type="textarea"
-          class="description-input"
-          outlined
-          autogrow
-        />
+        <div class="">
+          <q-input
+            v-model="feedbackModel.description"
+            :label="t('feedback.description')"
+            type="textarea"
+            class="description-input"
+            outlined
+            autogrow
+          />
+        </div>
         <br>
         <div class="border-1">
           <q-img
@@ -227,7 +229,7 @@ async function takeScreenshot() {
     to="body"
   >
     <div class="absolute top-1/2 left-1/2 z-10001 w-full h-full p-3">
-      <TopbarFeedbackEditor
+      <TopbarFeedbackScreenshotEditor
         v-model:image="originalImage"
         v-model:rect-arr="rectArr"
         v-model:merged-image="feedbackModel.image"
@@ -240,5 +242,8 @@ async function takeScreenshot() {
 <style scoped lang="postcss">
 .description-input :deep(.q-field__control) {
   min-height: 8rem;
+}
+.description-input :deep(.q-field__control-container) {
+  @apply max-h-75 overflow-auto;
 }
 </style>

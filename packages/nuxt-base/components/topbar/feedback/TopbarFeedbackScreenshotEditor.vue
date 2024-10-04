@@ -46,7 +46,7 @@ function saveScreenshot() {
 }
 
 async function drawAllRects(ctx: CanvasRenderingContext2D) {
-  await nextTick()
+  // await nextTick()
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   if (rectArr.value.length === 0) {
     return
@@ -59,6 +59,7 @@ async function drawAllRects(ctx: CanvasRenderingContext2D) {
 
     ctx.strokeStyle = 'yellow'
     ctx.lineWidth = 4
+
     ctx.strokeRect(rect.startX, rect.startY, rect.width, rect.height)
   })
 }
@@ -90,14 +91,15 @@ function updateCloseButtonVisibility(x: number, y: number) {
 
 onMounted(() => {
   const canvas = canvasRef.value
-  const ctx = canvas?.getContext('2d') as CanvasRenderingContext2D
-  drawAllRects(ctx)
-
   if (!canvas)
     return
 
+  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+
   canvas.height = height.value - (rem * 2)
   canvas.width = width.value - (rem * 2)
+
+  drawAllRects(ctx)
 
   let isDrawing = false
   let startX: number
@@ -108,9 +110,10 @@ onMounted(() => {
     startY = e.offsetY
     isDrawing = true
   }
+
   function onMouseMove(e: MouseEvent) {
     if (isDrawing) {
-      const ctx = canvas?.getContext('2d') as CanvasRenderingContext2D
+      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
       const currentX = e.offsetX
       const currentY = e.offsetY
 
@@ -165,12 +168,18 @@ onMounted(() => {
     <div class="w-full h-15 bg-gray-900 text-white flex-center px-5">
       <span>{{ t('feedback.editor.title') }}</span>
       <q-space />
-      <TopbarFeedbackEditorCloseButton
-        class="rounded-2xl"
-        color="transparent"
-        text-color="white"
-        @close="$emit('close')"
-      />
+      <div>
+        <q-btn
+          icon="close"
+          dense
+          rounded
+          text-color="white"
+          color="transparent"
+          size="sm"
+          class="rounded-2xl"
+          @click="$emit('close')"
+        />
+      </div>
     </div>
     <div class="relative max-h-75vh overflow-auto select-none">
       <canvas ref="canvasRef" class="absolute left-0 top-0" />
@@ -187,12 +196,18 @@ onMounted(() => {
         :key="rect.id"
         :style="{ position: 'absolute', left: `${rect.startX + rect.width}px`, top: `${rect.startY}px`, transform: 'translate(-50%, -50%)' }"
       >
-        <TopbarFeedbackEditorCloseButton
-          v-if="rect.showCloseButton"
-          dense
-          color="black"
-          @close="handleClose(rect.id)"
-        />
+        <div>
+          <q-btn
+            v-if="rect.showCloseButton"
+            icon="close"
+            dense
+            rounded
+            color="black"
+            size="sm"
+            class="rounded-2xl"
+            @click="handleClose(rect.id)"
+          />
+        </div>
       </div>
     </div>
     <div class="w-full h-15 bg-gray-900 text-white flex-center">
