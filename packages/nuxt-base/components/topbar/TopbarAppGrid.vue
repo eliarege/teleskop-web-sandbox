@@ -26,7 +26,7 @@ const appList = parseAppList(config.public.appList).map((app) => {
     round
   >
     <QTooltip>
-      {{ t('base.apps') }}
+      {{ t('base._') }}
     </QTooltip>
     <QMenu :transition-duration="0">
       <div class="grid grid-cols-3 p-2">

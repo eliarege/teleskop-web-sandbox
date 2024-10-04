@@ -2,7 +2,13 @@
   "base": {
     "about": "About",
     "aboutApp": "Uygulama hakkında",
-    "apps": "Uygulamalar",
+    "apps": {
+      "_": "Uygulamalar",
+      "multi-monitor": "Çoklu İzleme",
+      "program-editor": "Program Editörü",
+      "planning-board": "Planlama Tahtası",
+      "dispensing-manager": "Dağıtım Yöneticisi"
+    },
     "buildDate": "Build date",
     "commitHash": "Commit hash",
     "fullscreen": {
