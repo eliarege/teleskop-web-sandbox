@@ -6,6 +6,8 @@ const props = defineProps<{
 }>()
 
 const isDef = (value: unknown) => value != null
+const { t } = useI18n()
+const tt = (key: string) => toRef(() => t(key))
 
 const leftIcon = computed(() => {
   if (isDef(props.item.active)) {
@@ -26,6 +28,9 @@ const leftIcon = computed(() => {
     :to="item.to"
     @click="item.onClick"
   >
+    <QTooltip v-if="item.disabled && item.disableReason">
+      {{ tt(item.disableReason) }}
+    </QTooltip>
     <QItemSection class="px-0 mr-2.5 opacity-60" avatar>
       <QIcon size="1rem" :name="leftIcon" />
     </QItemSection>
