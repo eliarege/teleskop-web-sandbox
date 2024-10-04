@@ -39,7 +39,8 @@
       "send-fail": "Geri bildirim gönderilirken bir hata oluştu.",
       "not-configured": "Geri bildirim gönderme konfigüre edili değil.",
       "no-auth": "Kimlik doğrulama konfigüre edili değil.",
-      "email-not-verified": "Geri bildirim gönderebilmeniz için e-postanızı doğrulamanız gerekiyor."
+      "email-not-verified": "Geri bildirim gönderebilmeniz için e-postanızı doğrulamanız gerekiyor.",
+      "error-fallback": "Tanımlanamayan Hata"
     },
     "username": "Kullanıcı Adı",
     "email": "E-Posta",
