@@ -33,6 +33,11 @@ export class MachineController {
     return new MachineController(id, host)
   }
 
+  @withTransaction
+  async withTransaction(callback: (controller: MachineController) => Promise<void> | void) {
+    await callback(this)
+  }
+
   /**
    * COMMANDTYPE (0,3)
    * 0 ana
