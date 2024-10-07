@@ -1,4 +1,5 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
+import type { Router } from 'vue-router'
 import { notification } from '~/shared/functions'
 import type { Program, ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
@@ -19,27 +20,30 @@ export interface ContextMenuStore {
   getProcessTypes: () => Promise<any[]>
   changeProcessType: (selectedRows: Array<{ programNo: number }>, newType: number, machineId: number) => Promise<void>
   sendProgram: (programs: Array<ProgramHeader>, machineId: number) => Promise<void>
-  getRemoteProgram: (programs: Array<{ programNo: number, programState: string, name: string }>, machineId: number) => Promise<void>
+  getRemoteProgram: (programs: Array<ProgramTable>, machineId: number) => Promise<void>
   sendProgramToMachines: (programs: Array<ProgramHeader>, machines: Array<any>, machineId: number) => Promise<void>
   deleteProgramFromMachine: (programs: Array<ProgramHeader>, machines: Array<any>, source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
   concatenatePrograms: (programs: Array<{ programNo: number }>, details: { programNo: number, processType: { label: string, value: number }, name: string, creationTime: Date }, machineId: number) => Promise<void>
   comparison: () => void
-  addToComparisonBasket: (elements: any[]) => void
+  addToComparisonBasket: (e: any, machineId: number) => void
   clearComparisonBasket: () => void
+  getComparisonBasket: () => Array<{ program: Program, machineId: number }>
   isThereCopiedValue: ComputedRef<boolean>
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
   const copiedValues = ref([] as Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>)
-  let comparsionBasket = [] as Array<any>
+  let comparsionBasket: any[] = []
   // const machineId = Number(route.params.machine_id)
   let t = function (param: string, ...args: any[]) {
     return param
   }
-  function setCtx(ctx?: any) {
+  let router: Router = {} as Router
+  function setCtx(ctx?: { t: any, router: Router }) {
     t = ctx?.t
+    router = ctx?.router!
   }
 
   function getCopiedValues() {
@@ -54,17 +58,21 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     comparsionBasket = []
   }
 
-  function addToComparisonBasket(e: any) {
+  function addToComparisonBasket(e: any, machineId: number) {
     e.forEach((element) => {
-      if (!comparsionBasket.includes(element))
-        comparsionBasket.push(element)
+      if (!comparsionBasket.includes([element.programNo, machineId]))
+        comparsionBasket.push([element.programNo, machineId])
     })
   }
 
   function comparison() {
-
+    const path = `/comparison?m=${comparsionBasket[0][1]}&p1=${comparsionBasket[0][0]}&p2=${comparsionBasket[1][0]}`
+    clearComparisonBasket()
+    navigateTo(path)
   }
-
+  function getComparisonBasket() {
+    return comparsionBasket
+  }
   function comparisonBasketLength() {
     return comparsionBasket.length
   }
@@ -329,6 +337,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     comparison,
     addToComparisonBasket,
     clearComparisonBasket,
+    getComparisonBasket,
     isThereCopiedValue,
   }
 }

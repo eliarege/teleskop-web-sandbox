@@ -8,8 +8,6 @@ const editor = useEditorStore()
 const form = ref<QForm>()
 const { t, locale } = useI18n()
 const route = useRoute()
-const $q = useQuasar()
-const { $commandManager } = useNuxtApp()
 
 const ctrl = useKeyModifier('Control')
 

@@ -288,9 +288,11 @@
       "endDate": "Bitiş Tarihi",
       "stepCount": "Adım Sayısı",
       "time": "Süre",
-      "showInEditor": "Editörde Göster",
+      "showOnEditor": "Editörde Göster",
       "compare": "Karşılaştır",
-      "makeDefault": "Geçerli Sürüm Yap"
+      "makeDefault": "Geçerli Sürüm Yap",
+      "setDefaultSuccess": "Aktif versiyon {version} ile değiştirildi.",
+      "setDefaultFail": "Aktif versiyonu değiştirirken hata oluştu."
     },
     "send": {
       "success": "{name} programı makineye başarıyla gönderildi.",
@@ -382,5 +384,20 @@
     "unknownCommand": "Bilinmeyen Komut",
     "stepStart": "Başlangıç Adım",
     "stepEnd": "Bitiş Adım"
+  },
+  "machineContextMenu": {
+    "uploadAllPrograms": "Tüm Programları Makineye Yolla",
+    "downloadAllPrograms": "Tüm Programları Makineden Al",
+    "copy": "Programları Kopyala",
+    "paste": "Yapıştır",
+    "findChange": "Bul - Değiştir",
+    "compareAllPrograms": "Tüm Programları Karşılaştır"
+  },
+  "comparisonTable": {
+    "programName": "Program İsmi",
+    "programNo": "Program Numarası",
+    "versionNo": "Version Numarası",
+    "stepCount": "Adım Sayısı",
+    "edit": "DÜZENLE"
   }
 }

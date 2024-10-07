@@ -33,6 +33,11 @@ export class MachineController {
     return new MachineController(id, host)
   }
 
+  @withTransaction
+  async withTransaction(callback: (controller: MachineController) => Promise<void> | void) {
+    await callback(this)
+  }
+
   /**
    * COMMANDTYPE (0,3)
    * 0 ana
@@ -1241,6 +1246,7 @@ export class MachineController {
       .join('BFPROCESSTYPES AS T', 'T.PROCESSCODE', 'H.PROCESSCODE')
       .where('H.MACHINEID', this.id)
       .andWhere('H.PROGNO', programNo)
+      .orderBy('H.MACHINEPRGVERSIONNO', 'asc')
   }
 
   /**

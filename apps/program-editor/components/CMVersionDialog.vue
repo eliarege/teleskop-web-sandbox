@@ -1,13 +1,18 @@
 <script setup lang="ts">
-const props = defineProps({
-  rows: Array<any>,
-  machineId: Number,
-  programNo: Number,
-})
-const emit = defineEmits(['close', 'delete'])
+import { notification } from '~/shared/functions'
+
+const props = defineProps<{
+  rows: any[]
+  machineId: number
+  programNo: number
+}>()
+const emit = defineEmits(['close', 'delete', 'activeVersionChanged'])
+
+const { fetch } = useKeycloak()
+
 const deleteVersionDialogVis = ref(false)
-const selectedRows = ref([])
-const isMoreThanOneRowSelected = computed(() => selectedRows.value.length > 1)
+const selectedRows = ref([] as any[])
+const isMoreThanOneRowSelected = computed(() => selectedRows.value.length > 1 || selectedRows.value.length === 0)
 const { t } = useI18n()
 const columns = [
   { name: 'version', label: t('contextMenu.version._'), field: 'version' },
@@ -37,9 +42,27 @@ async function onRowClick(row: any, isRightClick?: boolean) {
         removeSelection(row)
     } else
       selectedRows.value.push(row)
-  } else if (!(isRowSelected(row) && isRightClick))
-    selectedRows.value = [row]
+  } else if (!(isRowSelected(row) && isRightClick)) {
+    selectedRows.value = []
+    selectedRows.value.push(row)
+  }
 }
+const selectedVersion = computed(() => selectedRows.value[0]?.version)
+async function setActiveVersion() {
+  const check = await fetch(`/api/machine/${props.machineId}/program/${props.programNo}/version/${selectedVersion.value}`, { method: 'POST' })
+  notification(check, check ? t('contextMenu.version.setDefaultSuccess', { version: selectedVersion.value }) : t('contextMenu.version.setDefaultFail', { version: selectedVersion.value }))
+  emit('activeVersionChanged')
+}
+
+/** TODO: Read-only editor component so we can show older versions of programs */
+async function showOnEditor() {
+  // Noop
+}
+const isActiveSelected = computed(() =>
+  selectedRows.value.some((version: any) =>
+    props.rows[props.rows?.length - 1].version === version.version,
+  ),
+)
 </script>
 
 <template>
@@ -85,22 +108,26 @@ async function onRowClick(row: any, isRightClick?: boolean) {
 
       <q-card-actions align="right">
         <q-btn
-          :label="t('contextMenu.version.showInEditor')"
+          :label="t('contextMenu.version.showOnEditor')"
           outline
           color="black"
           :disable="isMoreThanOneRowSelected"
+          @click="showOnEditor()"
         />
         <q-btn
           :label="t('contextMenu.version.compare')"
           outline
-          :disable="!isMoreThanOneRowSelected"
+          :disable="selectedRows.length !== 2"
           color="black"
+          @click="navigateTo(`/comparison?m=${machineId}&p1=${programNo}&p2=${programNo}&v1=${selectedRows[0].version}&v2=${selectedRows[1].version}`)"
         />
+        <!--  -->
         <q-btn
           :label="t('contextMenu.version.makeDefault')"
           outline
           color="black"
-          :disable="isMoreThanOneRowSelected"
+          :disable="isMoreThanOneRowSelected || isActiveSelected"
+          @click="setActiveVersion()"
         />
         <q-btn
           v-close-popup
@@ -108,7 +135,7 @@ async function onRowClick(row: any, isRightClick?: boolean) {
           :label="t('delete')"
           color="red"
           icon="delete"
-          :disable="!selectedRows.length"
+          :disable="!selectedRows.length || isActiveSelected"
           @click="deleteVersionDialogVis = true"
         />
         <q-btn
@@ -153,7 +180,7 @@ async function onRowClick(row: any, isRightClick?: boolean) {
 </template>
 
 <style scoped>
-.text-override-left :deep(.text-right){
+.text-override-left :deep(.text-right) {
   text-align: left;
   word-break: normal;
   white-space: normal;

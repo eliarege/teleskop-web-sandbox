@@ -23,12 +23,13 @@ const { $commandManager } = useNuxtApp()
 const { t, locale } = useI18n()
 const $q = useQuasar()
 const route = useRoute()
+const router = useRouter()
 const editor = useEditorStore()
 const machineId = Number(route.params.machine_id)
 const tableRef = ref()
 const isProgramFilterExists = ref(getExistingFilter())
 const tt = (key: string) => toRef(() => t(key))
-contextMenuStore.setCtx({ t })
+contextMenuStore.setCtx({ t, router })
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
@@ -495,7 +496,7 @@ const contextMenuOptions = computed(() => [
       onClick: async () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
-          'getProgram',
+          'fetchProgram',
           { $q },
           editor.selectedPrograms,
           machineId,
@@ -511,7 +512,7 @@ const contextMenuOptions = computed(() => [
       icon: 'playlist_add',
       disabled: false,
       onClick: () => {
-        contextMenuStore.addToComparisonBasket(editor.selectedPrograms)
+        contextMenuStore.addToComparisonBasket(editor.selectedPrograms, machineId)
       },
     },
     {
@@ -520,7 +521,7 @@ const contextMenuOptions = computed(() => [
       icon: 'compare_arrows',
       disabled: !contextMenuStore.comparisonBasketLength(),
       onClick: () => {
-        contextMenuStore.addToComparisonBasket(editor.selectedPrograms)
+        contextMenuStore.addToComparisonBasket(editor.selectedPrograms, machineId)
         // comparisonDialogVisible.value = true
         contextMenuStore.comparison()
       },
@@ -534,7 +535,7 @@ const contextMenuOptions = computed(() => [
       icon: 'info',
       disabled: isMoreThanOneRowSelected.value,
       onClick: async () => {
-        versions.value = await contextMenuStore.fetchVersions(editor.selectedPrograms[0].programNo, machineId)
+        await fetchVersions(editor.selectedPrograms[0].programNo)
         versionDialogVisible.value = true
       },
     },
@@ -544,6 +545,9 @@ const contextMenuOptions = computed(() => [
 const ctrl = useKeyModifier('Control')
 const shift = useKeyModifier('Shift')
 
+async function fetchVersions(programNo: number) {
+  versions.value = await contextMenuStore.fetchVersions(programNo, machineId)
+}
 function handleFilterClick() {
   $commandManager.executeCommand(
     'filterPrograms',
@@ -739,6 +743,7 @@ function handleRowClass(row: ProgramTable): string {
       :program-no="editor.selectedPrograms[0].programNo"
       @close="versionDialogVisible = false"
       @delete="e => handleVersionDelete(e)"
+      @active-version-changed="editor.fetchAllPrograms(), fetchVersions(editor.selectedPrograms[0].programNo)"
     />
   </EliarModal>
 
