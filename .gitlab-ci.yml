@@ -70,7 +70,7 @@ prepare-apps:
     paths:
       - out-*/
 
-merge-request-summarize:
+.merge-request-summarize:
   image: node:20
   stage: prepare
   variables:
