@@ -33,12 +33,19 @@ export const useEditorStore = defineStore('editor', () => {
   const route = useRoute()
   const errorIds = ref(new Set<string>())
   const { notifySuccess, notifyError } = useNotify()
-  const { fetch } = useKeycloak()
+  const kc = useKeycloak()
 
-  const teleskopSettings = ref<TeleskopSettings>({})
+  const teleskopSettings = ref<TeleskopSettings>({
+    initialTemperature: 25,
+    selectedIcons: 0,
+    treatmentSettings: {
+      optimizedEnable: false,
+      optimizedLimit: 10,
+    },
+  })
 
   async function fetchTeleskopSettings() {
-    teleskopSettings.value = await fetch('/api/teleskop-settings')
+    teleskopSettings.value = await kc.fetch('/api/teleskop-settings')
   }
 
   async function changeMachine(id: number) {
@@ -245,7 +252,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function deleteProgram(machineId: number, programNo: number) {
-    await fetch(`/api/machine/${machineId}/program/${programNo}`, {
+    await kc.fetch(`/api/machine/${machineId}/program/${programNo}`, {
       method: 'DELETE',
       body: {
         programNo,
@@ -280,15 +287,15 @@ export const useEditorStore = defineStore('editor', () => {
     )
   }
 
-  async function fetchProgram(machineId: number, programNo: number, _version?: number) {
+  async function fetchProgram(machineId: number, programNo: number, version?: number) {
     selectedStep.value = -1
     selectedParallelStep.value = -1
     lastStepId = 0
     lastCommandId = 0
-    if (_version !== undefined)
-      program.value = await fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${_version}`)
+    if (version !== undefined)
+      program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
     else
-      program.value = await fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
+      program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
     for (const step of program.value.steps) {
       step.stepId = lastStepId++
       for (const command of step.parallelCommands) {
@@ -299,7 +306,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function fetchMachine(machineId: number) {
-    const machineData = await fetch<Machine & { commands: MachineCommand[] }>(`/api/machine/${machineId}`)
+    const machineData = await kc.fetch<Machine & { commands: MachineCommand[] }>(`/api/machine/${machineId}`)
 
     machine.value = {
       ...machineData,
@@ -308,23 +315,23 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function fetchAllMachine() {
-    return await fetch('/api/machine')
+    return await kc.fetch('/api/machine')
   }
 
   async function fetchMachineGroup() {
-    return await fetch('/api/machine-group')
+    return await kc.fetch('/api/machine-group')
   }
 
   async function fetchAllPrograms(filter?: ProgramFilter): Promise<void> {
     if (filter) {
-      allPrograms.value = await fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program?filter=${filterToQuery(filter)}`)
+      allPrograms.value = await kc.fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program?filter=${filterToQuery(filter)}`)
     } else {
-      allPrograms.value = await fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program`)
+      allPrograms.value = await kc.fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program`)
     }
   }
 
   async function fetchAllProcessTypes() {
-    allProcessType.value = (await fetch<ProcessType[]>('/api/process')).map(type => ({
+    allProcessType.value = (await kc.fetch<ProcessType[]>('/api/process')).map(type => ({
       ...type,
       label: capitalize(type.label),
     }))
@@ -373,7 +380,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   async function updateProgram() {
     try {
-      await fetch(`/api/machine/${route.params.machine_id}/program`, {
+      await kc.fetch(`/api/machine/${route.params.machine_id}/program`, {
         method: 'PUT',
         body: {
           program: program.value,
@@ -395,7 +402,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   async function insertProgram(newProgram: Program) {
     try {
-      await fetch(`/api/machine/${newProgram.machineId}/program`, {
+      await kc.fetch(`/api/machine/${newProgram.machineId}/program`, {
         method: 'POST',
         body: {
           program: newProgram,
@@ -485,14 +492,14 @@ export const useEditorStore = defineStore('editor', () => {
         break
     }
 
-    await fetch('/api/teleskop-settings', {
+    await kc.fetch('/api/teleskop-settings', {
       method: 'PUT',
       body: { id, value },
     })
   }
 
   async function fetchCommandTypes(machineId: number) {
-    machine.value.commandTypes = await fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
+    machine.value.commandTypes = await kc.fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
   }
 
   function getStepIcon(commandNo: number | undefined): StepIcon | undefined {

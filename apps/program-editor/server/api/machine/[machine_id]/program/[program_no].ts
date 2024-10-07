@@ -3,6 +3,7 @@ import { ProgramEditorActivityCodes } from '~/server/constants'
 import { PError } from '~/server/error'
 import { logEditorOperation } from '~/server/functions'
 import logger from '~/server/logger'
+import { ProgramStatus } from '~/shared/constants'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
@@ -28,13 +29,22 @@ export default defineAuthEventHandler(async (event) => {
     if (query?.source) {
       const { programState } = await machine.fetchProgram(programNo)
       const source = query.source.toString()
-      if (source.includes('machine') && (programState === 0 || programState === 2)) {
+      if (
+        source.includes('machine') && (
+          programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER || programState === ProgramStatus.EXISTS_ON_BOTH
+        )
+      ) {
         try {
           logger.info(`User: ${event.context?.kauth?.name}. Deleted program ${programNo} of machine ${machineId} from machine.`)
           await machine.deleteRemoteProgram(programNo)
         } catch (e) {}
       }
-      if (source.includes('db') && (programState === 1 || programState === 2)) {
+      if (
+        source.includes('db') && (
+          programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
+          || programState === ProgramStatus.EXISTS_ON_BOTH
+        )
+      ) {
         logger.info(`User: ${event.context?.kauth?.name}. Deleted program ${programNo} of machine ${machineId} from database.`)
         await logEditorOperation(ProgramEditorActivityCodes.PROGRAMDELETED, `Makine ${machineId}`, `Program No ${programNo}`)
         return await machine.deleteProgramFromDatabase(programNo)

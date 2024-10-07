@@ -1,8 +1,8 @@
 import type { ParameterItem, Program, ProgramStep, ProgramStepCommand, ioListItem } from '~/shared/types'
 
 export interface EditorCommand {
-  execute(): boolean
-  undo(): boolean
+  execute: () => boolean
+  undo: () => boolean
 }
 
 const UNDO_BEFORE_EXECUTE = 'Undo Before Execute'

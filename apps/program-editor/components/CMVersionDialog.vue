@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { notification } from '~/shared/functions'
 
-const props = defineProps({
-  rows: Array<any>,
-  machineId: Number,
-  programNo: Number,
-})
+const props = defineProps<{
+  rows: any[]
+  machineId: number
+  programNo: number
+}>()
+const emit = defineEmits(['close', 'delete', 'activeVersionChanged'])
+
 const { fetch } = useKeycloak()
 
-const emit = defineEmits(['close', 'delete', 'activeVersionChanged'])
-const $q = useQuasar()
 const deleteVersionDialogVis = ref(false)
-const selectedRows = ref([])
+const selectedRows = ref([] as any[])
 const isMoreThanOneRowSelected = computed(() => selectedRows.value.length > 1 || selectedRows.value.length === 0)
 const { t } = useI18n()
 const columns = [
@@ -54,19 +54,9 @@ async function setActiveVersion() {
   emit('activeVersionChanged')
 }
 
+/** TODO: Read-only editor component so we can show older versions of programs */
 async function showOnEditor() {
-  // $q.dialog({
-  //   component: ProgramEditorDialog,
-  //   componentProps: {
-  //     machineId: props.machineId,
-  //     programNo: props.programNo,
-  //     version: selectedVersion.value,
-  //     readOnly: true,
-  //   },
-  // })
-
-  // emit('close')
-  // navigateTo(`/machine/${props.machineId}/program/${props.programNo}/version/${selectedRows.value[0]?.version}`)
+  // Noop
 }
 const isActiveSelected = computed(() =>
   selectedRows.value.some((version: any) =>
@@ -130,8 +120,8 @@ const isActiveSelected = computed(() =>
           :disable="selectedRows.length !== 2"
           color="black"
           @click="navigateTo(`/comparison?m=${machineId}&p1=${programNo}&p2=${programNo}&v1=${selectedRows[0].version}&v2=${selectedRows[1].version}`)"
-          />
-          <!--  -->
+        />
+        <!--  -->
         <q-btn
           :label="t('contextMenu.version.makeDefault')"
           outline

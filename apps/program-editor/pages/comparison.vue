@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import DMP from 'diff-match-patch'
 import { LoadingSpinner } from '@teleskop/ui'
-import { isValid } from 'date-fns'
-import { indexOf } from 'lodash-es'
-import type { CommandParameterDiff, ProgramStepCommandDiff, ProgramInfoHeader, ProgramVersion } from '~/utils/types'
 import Main from '~/components/Comparison/Main.vue'
-import type { Program, ProgramStep } from '~/shared/types'
+import type { Program, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion } from '~/shared/types'
 import { useEditorStore } from '~/composables/editor'
 
 const dmp = new DMP()
 const route = useRoute()
+const editor = useEditorStore()
+const kc = useKeycloak()
+
 const { m, p1, p2, v1, v2 } = route.query
 
 enum DiffType {
@@ -17,6 +17,8 @@ enum DiffType {
   bothSides = 0,
   onlyRight = 1,
 }
+
+type DmpDiff = [DiffType, number[]]
 
 const paths = [
   `/api/machine/${m}/program/${p1}`,
@@ -30,7 +32,7 @@ if (v1 && v2) {
   paths[0] += `/version/${v1}`
   paths[1] += `/version/${v2}`
 
-  const versions = await $fetch<ProgramVersion[]>(`/api/machine/${m}/program/${p1}/version`)
+  const versions = await kc.fetch<ProgramVersion[]>(`/api/machine/${m}/program/${p1}/version`)
   const maxVersion = versions.length - 1
   if (versions[maxVersion].version === Number(v1)) {
     isValid1 = true
@@ -42,45 +44,35 @@ if (v1 && v2) {
   isValid2 = true
 }
 
-const editor = useEditorStore()
-
 const loading = ref(true)
-onMounted(async () => {
-  await editor.fetchMachine(Number(m))
+editor.fetchMachine(Number(m)).then(() => {
   loading.value = false
+}).catch((err) => {
+  console.error(`Failed to load machine data for machine '${m}'`, err)
+  navigateTo('/')
 })
 
-const programOneData: Program = await $fetch(paths[0])
-const programTwoData: Program = await $fetch(paths[1])
+const programOneData = await kc.fetch<Program>(paths[0])
+const programTwoData = await kc.fetch<Program>(paths[1])
 
-const programOneCommands = [] as number[]
-const programTwoCommands = [] as number[]
+const programOneCommands = programOneData.steps.map(step => step.mainCommand.commandNo!)
+const programTwoCommands = programTwoData.steps.map(step => step.mainCommand.commandNo!)
 
-programOneData.steps.forEach((step) => {
-  programOneCommands.push(step.mainCommand.commandNo!)
-})
-
-programTwoData.steps.forEach((step) => {
-  programTwoCommands.push(step.mainCommand.commandNo!)
-})
-
-// turning normal to utf8
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
-const a = new Uint8Array(programOneCommands)
-const b = new Uint8Array(programTwoCommands)
 
-// using diff func
-const diffResult = dmp.diff_main(
-  decoder.decode(a),
-  decoder.decode(b),
+// turning normal to utf8 and using diff func
+const dmpDiffsRaw = dmp.diff_main(
+  decoder.decode(new Uint8Array(programOneCommands)),
+  decoder.decode(new Uint8Array(programTwoCommands)),
 )
-// turning utf8 to normal
-const mainResult = diffResult.map((value) => {
-  return [value[0], [...encoder.encode(value[1])]]
-})
 
-const allResults: Array<[ProgramStepCommandDiff | null, ProgramStepCommandDiff | null]> = []
+// turning utf8 to normal
+const dmpDiffs = dmpDiffsRaw.map((value) => {
+  return [value[0], [...encoder.encode(value[1])]]
+}) as DmpDiff[]
+
+const diffResults: Array<[ProgramStepCommandDiff | null, ProgramStepCommandDiff | null]> = []
 
 function compareCommands(left: ProgramStepCommandDiff, right: ProgramStepCommandDiff): void {
   // Compare main commands
@@ -184,43 +176,43 @@ function createProgramStepCommandDiff(step: ProgramStep): ProgramStepCommandDiff
   }
 }
 
-function processMainResult(): void {
+function processDmpDiffs(): void {
   let leftIndex = 0
   let rightIndex = 0
 
-  for (const [diffType, diffValue] of mainResult) {
+  for (const [diffType, diffValue] of dmpDiffs) {
     if (diffType === DiffType.bothSides) {
       const steps = diffValue.toString().split(',').length
       for (let i = 0; i < steps; i++) {
-        const left = createProgramStepCommandDiff(programOneData!.steps[leftIndex])
-        const right = createProgramStepCommandDiff(programTwoData!.steps[rightIndex])
+        const left = createProgramStepCommandDiff(programOneData.steps[leftIndex])
+        const right = createProgramStepCommandDiff(programTwoData.steps[rightIndex])
 
         compareCommands(left, right)
-        allResults.push([left, right])
+        diffResults.push([left, right])
         leftIndex++
         rightIndex++
       }
     } else if (diffType === DiffType.onlyLeft) {
       const steps = diffValue.toString().split(',').length
       for (let i = 0; i < steps; i++) {
-        const left = createProgramStepCommandDiff(programOneData!.steps[leftIndex])
+        const left = createProgramStepCommandDiff(programOneData.steps[leftIndex])
         left.mainCommand.diff = true
-        allResults.push([left, null])
+        diffResults.push([left, null])
         leftIndex++
       }
     } else if (diffType === DiffType.onlyRight) {
       const steps = diffValue.toString().split(',').length
       for (let i = 0; i < steps; i++) {
-        const right = createProgramStepCommandDiff(programTwoData!.steps[rightIndex])
+        const right = createProgramStepCommandDiff(programTwoData.steps[rightIndex])
         right.mainCommand.diff = true
-        allResults.push([null, right])
+        diffResults.push([null, right])
         rightIndex++
       }
     }
   }
 }
 
-processMainResult()
+processDmpDiffs()
 
 const programOneHeader: ProgramInfoHeader = {
   programName: programOneData.name,
@@ -237,20 +229,20 @@ const programTwoHeader: ProgramInfoHeader = {
   stepCount: programTwoData.steps.length,
   isValid: isValid2,
 }
-
-console.log('All Results:', allResults)
 </script>
 
 <template>
-  <div v-if="loading" class="spinner-container">
-    <LoadingSpinner :has-background="false" />
-  </div>
-  <div v-else>
-    <Main
-      :all-results="allResults"
-      :program-one-header="programOneHeader"
-      :program-two-header="programTwoHeader"
-    />
+  <div>
+    <div v-if="loading" class="spinner-container">
+      <LoadingSpinner :has-background="false" />
+    </div>
+    <div v-else>
+      <Main
+        :diff-results="diffResults"
+        :program-one-header="programOneHeader"
+        :program-two-header="programTwoHeader"
+      />
+    </div>
   </div>
 </template>
 

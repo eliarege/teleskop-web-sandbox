@@ -2,10 +2,10 @@
 import Bar from './Bar.vue'
 import Header from './Header.vue'
 import Card from './Card.vue'
-import type { ProgramStepCommandDiff, ProgramInfoHeader } from '~/utils/types'
+import type { ProgramInfoHeader, ProgramStepCommandDiff } from '~/shared/types'
 
 const props = defineProps<{
-  allResults: [ProgramStepCommandDiff | null, ProgramStepCommandDiff | null][]
+  diffResults: [ProgramStepCommandDiff | null, ProgramStepCommandDiff | null][]
   programOneHeader: ProgramInfoHeader
   programTwoHeader: ProgramInfoHeader
 }>()
@@ -14,7 +14,7 @@ const props = defineProps<{
 <template>
   <div class="w-full">
     <Bar
-      :all-results="allResults"
+      :diff-results="diffResults"
     />
     <div class="flex-center w-full">
       <div class="comparison-table w-full h-full gap-2 q-pa-md space-y-4">
@@ -23,20 +23,20 @@ const props = defineProps<{
           :program-two-header="programTwoHeader"
         />
         <div
-          v-for="(result, index) in props.allResults"
+          v-for="(result, index) in props.diffResults"
           :key="index"
           class="flex w-full justify-center flex-nowrap gap-2"
         >
           <Card
             :result-side="result[0]"
             class="w-full"
-            :index="index"
+            :step-index="index"
           />
 
           <Card
             :result-side="result[1]"
             class="w-full"
-            :index="index"
+            :step-index="index"
           />
         </div>
       </div>

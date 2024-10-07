@@ -16,7 +16,6 @@ const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
 const $q = useQuasar()
 const route = useRoute()
-const router = useRouter()
 const { dark } = useQuasar()
 
 const editor = useEditorStore()

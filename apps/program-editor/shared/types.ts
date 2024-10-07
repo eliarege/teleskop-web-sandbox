@@ -399,3 +399,41 @@ export interface TeleskopSettings {
   selectedIcons: number
   initialTemperature: number
 }
+
+// #region Program Comparison
+export interface ProgramVersion {
+  programNo: number
+  name: string
+  version: number
+  stepCount: number
+  type: string
+  changedDate: Date
+}
+export interface ProgramStepCommandDiff {
+  mainCommand: {
+    diff: boolean
+    commandNo: number
+    parameters: CommandParameterDiff[]
+  }
+  parallelCommands: {
+    diff: boolean
+    commandNo: number
+    parameters: CommandParameterDiff[]
+  }[]
+}
+
+export interface CommandParameterDiff {
+  index: number
+  value: any
+  diff: boolean
+}
+
+export interface ProgramInfoHeader {
+  programName: string
+  programNo: number
+  programVersion: number | null
+  stepCount: number
+  isValid: boolean
+}
+
+// #endregion

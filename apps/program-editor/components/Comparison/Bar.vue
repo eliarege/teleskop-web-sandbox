@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ParameterItem, ProgramStep, ProgramStepCommand } from '~/shared/types'
-import type ProgramStepCommandDiff from '~/pages/comparison.vue'
+import type { CommandParameterDiff, ProgramStepCommandDiff } from '~/shared/types'
 
 const props = defineProps<{
-  allResults: [ProgramStepCommandDiff | null, ProgramStepCommandDiff | null][]
+  diffResults: [ProgramStepCommandDiff | null, ProgramStepCommandDiff | null][]
 }>()
 
-const areMainCommandsDifferent = computed(() => props.allResults.map(([left, right]) =>
+const areMainCommandsDifferent = computed(() => props.diffResults.map(([left, right]) =>
   !left || !right || left.mainCommand.commandNo !== right.mainCommand.commandNo,
 ))
 
-const totalSteps = computed(() => props.allResults.length)
+const totalSteps = computed(() => props.diffResults.length)
 
 function hasAnyDifference(index: number): boolean {
-  const [left, right] = props.allResults[index]
+  const [left, right] = props.diffResults[index]
 
   if (!left || !right) {
     return true

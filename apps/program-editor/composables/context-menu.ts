@@ -1,7 +1,7 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
+import type { Router } from 'vue-router'
 import { notification } from '~/shared/functions'
 import type { Program, ProgramTable } from '~/shared/types'
-import type { Router } from 'vue-router'
 import { ProgramStatus } from '~/shared/constants'
 
 interface ProgramHeader {
@@ -44,7 +44,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   function setCtx(ctx?: { t: any, router: Router }) {
     t = ctx?.t
     router = ctx?.router!
-
   }
 
   function getCopiedValues() {
@@ -69,8 +68,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   function comparison() {
     const path = `/comparison?m=${comparsionBasket[0][1]}&p1=${comparsionBasket[0][0]}&p2=${comparsionBasket[1][0]}`
     clearComparisonBasket()
-    console.log(path)
-    router.push(path)
+    navigateTo(path)
   }
   function getComparisonBasket() {
     return comparsionBasket

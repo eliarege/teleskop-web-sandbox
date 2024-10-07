@@ -1,85 +1,68 @@
 <script setup lang="ts">
 import { useEditorStore } from '~/composables/editor'
-import type { MachineCommand, ParameterItem } from '~/shared/types'
-import type { CommandParameterDiff, ProgramStepCommandDiff } from '~/utils/types'
+import type { CommandParameterDiff, MachineCommand, ProgramStepCommandDiff } from '~/shared/types'
 import { ParameterType } from '~/shared/constants'
 
-const props = defineProps<{
-  resultSide: ProgramStepCommandDiff | null
-  index: number
+defineProps<{
+  resultSide?: ProgramStepCommandDiff | null
+  stepIndex: number
 }>()
-const resultSide: ProgramStepCommandDiff = props.resultSide || {} as ProgramStepCommandDiff
 const editor = useEditorStore()
 
-function getCommandInfo(commandNo: number | null): MachineCommand {
-  if (commandNo) {
-    return editor.machine.commands.get(commandNo)!
-  }
-  return {} as MachineCommand
+function getCommandInfo(commandNo: number): MachineCommand | undefined {
+  return editor.machine.commands.get(commandNo)
 }
 
 function getParameterName(commandNo: number, paramIndex: number): string {
   const command = getCommandInfo(commandNo)
-  return command.parameters[paramIndex]?.name || ''
+  return command?.parameters[paramIndex]?.name || ''
 }
 
-function getParameterValue(param: CommandParameterDiff, commandNo: number | null): string {
-  if (commandNo === null) {
-    return String(param.value)
-  }
+function getCommandString(commandNo: number): string {
+  const command = getCommandInfo(commandNo)
+  return command ? `${commandNo} - ${command.name}` : ''
+}
 
+function getParameterValue(param: CommandParameterDiff, commandNo: number): string {
   const machineCommand = editor.machine.commands.get(commandNo)
   const machineParameter = machineCommand?.parameters.find(p => param.index === p.index)
 
-  if (!machineParameter) {
-    return String(param.value)
+  if (machineParameter) {
+    if (machineParameter.type === ParameterType.NUMBER && machineParameter.format === 'DURATION') {
+      return formatDuration(Number(param.value))
+    }
+    if (machineParameter.type === ParameterType.SELECT) {
+      return machineParameter.selections.find(s => s.value === param.value)?.name || ''
+    }
   }
-
-  switch (machineParameter.type) {
-    case ParameterType.NUMBER:
-
-      return machineParameter.format === 'DURATION'
-        ? formatDuration(Number(param.value))
-        : String(param.value)
-    case ParameterType.SELECT:
-
-      return machineParameter.selections.find(sel => sel.value === param.value)?.name || 'Sel Yok'
-    case ParameterType.MACHINE_FORMULA:
-
-      return String(param.value)
-    case ParameterType.SELECTABLE_FORMULA:
-
-      return String(param.value)
-    default:
-      return String(param.value)
-  }
+  return String(param.value)
 }
 </script>
 
 <template>
-  <div :id="`command-${index}`" class="flex">
+  <div :id="`command-${stepIndex}`" class="flex">
     <q-card class="w-full">
-      <q-card-section v-if="resultSide !== null">
+      <q-card-section v-if="resultSide">
         <!-- Main Command -->
         <div
           class="main-command"
           :class="{
-            'all-red ': resultSide?.mainCommand?.diff,
-            'bg-white-100': !resultSide?.mainCommand?.diff,
+            'all-red ': resultSide.mainCommand.diff,
+            'bg-white-100': !resultSide.mainCommand.diff,
           }"
         >
           <div
-            v-if="resultSide?.mainCommand"
+            v-if="resultSide.mainCommand"
             class="text-h6"
-            :class="{ 'text-red  ': resultSide?.mainCommand?.diff }"
+            :class="{ 'text-red  ': resultSide.mainCommand.diff }"
           >
-            {{ resultSide?.mainCommand?.commandNo }} - {{ getCommandInfo(resultSide?.mainCommand?.commandNo).name }}
+            {{ getCommandString(resultSide.mainCommand.commandNo) }}
           </div>
         </div>
 
         <!-- Parameters -->
-        <q-separator v-if="resultSide?.mainCommand?.parameters?.length > 0" class="separator-thick" />
-        <div v-if="resultSide?.mainCommand?.parameters?.length > 0" class="parameters q-py-xs">
+        <q-separator v-if="resultSide.mainCommand.parameters.length > 0" class="separator-thick" />
+        <div v-if="resultSide.mainCommand.parameters.length > 0" class="parameters q-py-xs">
           <q-chip
             v-for="param in resultSide.mainCommand.parameters"
             :key="param.index"
@@ -93,8 +76,8 @@ function getParameterValue(param: CommandParameterDiff, commandNo: number | null
         </div>
 
         <!-- Parallel Commands -->
-        <q-separator v-if="resultSide.parallelCommands?.length > 0" class="separator-thick" />
-        <div class="q-py-xs" :class="{ 'parallel-commands': resultSide.parallelCommands?.length > 0, 'bg-white': !resultSide.parallelCommands?.length }">
+        <q-separator v-if="resultSide.parallelCommands.length > 0" class="separator-thick" />
+        <div class="q-py-xs" :class="resultSide.parallelCommands.length ? 'parallel-commands' : 'bg-white'">
           <q-chip
             v-for="(parallel, idx) in resultSide.parallelCommands"
             :key="idx"
@@ -102,7 +85,7 @@ function getParameterValue(param: CommandParameterDiff, commandNo: number | null
             text-color="white"
             class="q-ma-xs "
           >
-            {{ parallel.commandNo }} - {{ getCommandInfo(parallel.commandNo).name }}
+            {{ getCommandString(parallel.commandNo) }}
             <q-badge
               v-for="param in parallel.parameters"
               :key="param.index"
