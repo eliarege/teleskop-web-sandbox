@@ -23,13 +23,71 @@ export function calculateProgramDuration(program: Program, machine: Machine, ini
   }
 
   for (const step of program.steps) {
-    duration += _calculateProgramStepDuration(step, context).duration
+    const stepDuration = _calculateProgramStepDuration(step, context)
+    for (const _ of stepDuration) {
+      duration += _.duration
+    }
   }
 
   return duration
 }
 
-export function calculateProgramStepDuration(program: Program, machine: Machine, initialTemperature: number, index: number): { duration: number, temperature: number } {
+/**
+ * Programın her bir adımın noktasını hesaplar.
+ * @param program - Program
+ * @param machine - Makine
+ * @param initialTemperature - Baslangıc sicakligi
+ * @returns {number} Teorik sure
+ */
+export function calculateProgramDurationPoint(program: Program, machine: Machine, initialTemperature: number) {
+  const tempData: number[] = [initialTemperature]
+  const timeData: number[] = [0]
+  const pointStyles: string[] = ['circle']
+  const pointBackgroundColors: string[] = ['green']
+  const dataPoints: { x: number, y: number }[] = [{ x: 0, y: initialTemperature }]
+  const stepInfo: { step: number, commandNo: number, commandName: string }[] = []
+
+  for (let i = 0; i < program.steps.length; i++) {
+    const points = calculateProgramStepDuration(
+      program,
+      machine,
+      initialTemperature,
+      i,
+    )
+    for (const point of points) {
+      const prevTime = timeData[timeData.length - 1]
+      const currentTime = prevTime + point.duration
+
+      tempData.push(point.temperature)
+      timeData.push(currentTime)
+
+      const commandNo = program.steps[i].mainCommand.commandNo!
+      const machineCommand = machine.commands.get(commandNo)!
+      stepInfo.push({ step: i + 1, commandNo, commandName: machineCommand.name })
+
+      dataPoints.push({ x: currentTime, y: point.temperature })
+
+      if (machineCommand.isUnload) {
+        pointStyles.push('rectRot')
+        pointBackgroundColors.push('red')
+      } else {
+        pointStyles.push('circle')
+        pointBackgroundColors.push('green')
+      }
+    }
+  }
+  return { tempData, timeData, pointStyles, pointBackgroundColors, dataPoints, stepInfo }
+}
+
+/**
+ * Programın her bir adımın teorik süresini hesaplar.
+ * @param program - Program
+ * @param machine - Makine
+ * @param initialTemperature - Baslangıc sicakligi
+ * @param index - Programın kacinci adımı
+ * @returns {number} Teorik sure
+ */
+export function calculateProgramStepDuration(program: Program, machine: Machine, initialTemperature: number, index: number): { duration: number, temperature: number }[] {
   const context: CalculationContext = {
     temperature: initialTemperature,
     machine,
@@ -47,17 +105,18 @@ export function calculateProgramStepDuration(program: Program, machine: Machine,
     }
   }
 
-  return { duration: _calculateProgramStepDuration(program.steps[index], context).duration, temperature: context.temperature }
+  return _calculateProgramStepDuration(program.steps[index], context)
 }
 
-function _calculateProgramStepDuration(step: ProgramStep, context: CalculationContext): { duration: number, temperature: number } {
+function _calculateProgramStepDuration(step: ProgramStep, context: CalculationContext): { duration: number, temperature: number }[] {
+  const stepInfo = [{ duration: 0, temperature: context.temperature }]
   let duration = 0
 
   const commandNo = step.mainCommand.commandNo
   if (commandNo) {
     const machineCommand = context.machine.commands.get(commandNo)
     if (!machineCommand)
-      return { duration: 0, temperature: context.temperature }
+      return stepInfo
 
     duration += calculateFormula(step, commandNo, machineCommand.x, context.machine)
 
@@ -78,10 +137,17 @@ function _calculateProgramStepDuration(step: ProgramStep, context: CalculationCo
         context.temperature = temperature
 
       if (minA)
-        duration += ((Math.abs(temperature - lastTemperature) / minA) * 60) + b
+        duration += ((Math.abs(temperature - lastTemperature) / minA) * 60)
     }
+
+    if (b)
+      stepInfo.push({ duration: Math.round(b), temperature: context.temperature })
   }
-  return { duration: Math.round(duration), temperature: context.temperature }
+
+  stepInfo[0].duration = Math.round(duration)
+  stepInfo[0].temperature = context.temperature
+
+  return stepInfo
 }
 
 const { Grammar, Parser } = nearley
