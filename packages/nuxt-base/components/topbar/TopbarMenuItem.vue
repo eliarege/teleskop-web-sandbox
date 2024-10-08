@@ -18,7 +18,8 @@ const leftIcon = computed(() => {
 
 <template>
   <QItem
-    v-close-popup="!isDefined(item.subMenu)"
+    v-if="toValue(item.hidden) !== true"
+    v-close-popup="!isDef(item.subMenu)"
     clickable
     dense
     class="q-item-avatar-dense px-2.5 whitespace-nowrap"
