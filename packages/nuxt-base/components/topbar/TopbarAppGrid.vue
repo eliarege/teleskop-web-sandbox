@@ -11,8 +11,8 @@ function withHostname(url: string) {
 
 const appList = parseAppList(config.public.appList).map((app) => {
   return {
-    label: app.name,
-    url: withHostname(app.url),
+    label: () => t(`base.apps.${app.name}`),
+    url: withHostname(app.url || '/'),
     img: withBase(`/app-icons/${app.img}`, config.app.baseURL),
   }
 })
@@ -26,7 +26,7 @@ const appList = parseAppList(config.public.appList).map((app) => {
     round
   >
     <QTooltip>
-      {{ t('base._') }}
+      {{ t('base.apps._') }}
     </QTooltip>
     <QMenu :transition-duration="0">
       <div class="grid grid-cols-3 p-2">
@@ -47,7 +47,7 @@ const appList = parseAppList(config.public.appList).map((app) => {
             :src="app.img"
           />
           <div class="whitespace-wrap leading-4 text-xs pt-1">
-            {{ app.label }}
+            {{ toValue(app.label) }}
           </div>
         </QBtn>
       </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { LocaleObject } from '@nuxtjs/i18n'
 import AppAboutDialog from '../AppAboutDialog.vue'
 import TopbarFeedbackDialog from './feedback/TopbarFeedbackDialog.vue'
 import type { FeedbackModel, TopbarMenuItem } from '~/types'
@@ -21,21 +22,30 @@ const feedback: FeedbackModel = reactive({
   description: '',
   image: '',
 })
+
 const feedbackEnabled = computed(() => {
   return keycloak.enabled
-    && keycloak.authenticated
+    && keycloak.authenticated.value
     && keycloak.tokenParsed.value?.email_verified
     || false
 })
 
 const feedbackDisableReason = computed(() => {
-  return !keycloak.tokenParsed.value.email_verified ? 'feedback.mail-not-verified' : null
+  if (!feedbackEnabled.value) {
+    if (!keycloak.enabled)
+      return t('feedback.response.no-auth')
+    if (!keycloak.authenticated.value)
+      return t('feedback.response.auth-required')
+    if (keycloak.tokenParsed.value?.email_verified === false)
+      return t('feedback.response.email-not-verified')
+  }
+  return null
 })
 
 function feedbackDialog() {
   dialog({
     component: TopbarFeedbackDialog,
-    componentProps: { feedback, feedbackEnabled: feedbackEnabled.value },
+    componentProps: { feedback },
   }).onOk((e: FeedbackModel) => {
     feedback.appName = e.appName
     feedback.description = e.description
@@ -55,7 +65,7 @@ const items = [
       icon: 'translate',
       subMenu: {
         offset: [0.5, 0],
-        items: [locales.value.map((l) => {
+        items: [locales.value.map((l: LocaleObject) => {
           return {
             label: l.name,
             active: locale.value === l.code,
@@ -100,7 +110,7 @@ const items = [
       label: tt('base.sendFeedback'),
       icon: 'feedback',
       disabled: () => !feedbackEnabled.value,
-      disableReason: feedbackDisableReason.value,
+      disableReason: feedbackDisableReason,
       onClick: () => feedbackDialog(),
     },
   ],

@@ -7,7 +7,9 @@
       "multi-monitor": "Multi Monitor",
       "program-editor": "Program Editor",
       "planning-board": "Planning Board",
-      "dispensing-manager": "Dispensing Manager"
+      "dispensing-manager-ui": "Dispensing Manager",
+      "report": "Report",
+      "archive": "Archive"
     },
     "buildDate": "Build date",
     "commitHash": "Commit hash",
@@ -39,7 +41,9 @@
       "send-fail": "An error occurred while sending feedback.",
       "not-configured": "Send Feedback is not configured.",
       "no-auth": "Authentication is not configured.",
-      "email-not-verified": "You need to verify your e-mail to be able to send feedbacks.",
+      "auth-required": "You need to log in to send feedback.",
+      "email-not-verified": "You need to verify your e-mail to send feedback.",
+      "screenshot-error": "An error occured while taking a screenshot.",
       "error-fallback": "Unidentified Error"
     },
     "username": "Username",
@@ -47,7 +51,7 @@
     "app-name": "App Name",
     "description": "Description",
     "reportType": {
-      "-": "Report Type",
+      "_": "Report Type",
       "bug": "Bug",
       "feedback": "Feedback",
       "suggestion": "Suggestion",

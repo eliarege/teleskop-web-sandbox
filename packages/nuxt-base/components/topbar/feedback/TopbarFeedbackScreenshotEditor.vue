@@ -1,26 +1,43 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
 
-const emit = defineEmits(['close'])
-interface Rectangle {
-  id: number
+const props = defineProps<{
+  image: string
+  rects?: Rect[]
+}>()
+const emit = defineEmits<{
+  close: []
+  save: [image: string, rects: Rect[]]
+}>()
+
+export interface Rect {
   startX: number
   startY: number
   width: number
   height: number
+}
+
+interface RectInternal extends Rect {
+  id: number
   showCloseButton: boolean
 }
 
 const { t } = useI18n()
-const image = defineModel('image', { type: String, required: true })
-const mergedImage = defineModel('mergedImage', { type: String, required: true })
 
-const rectArr = defineModel<Rectangle[]>('rectArr', { required: true })
 const { width, height } = useWindowSize()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
+const rectArr = ref(props.rects?.map<RectInternal>((r, i) => {
+  return {
+    ...r,
+    id: i,
+    showCloseButton: false,
+  }
+}) || [])
+
+let nextId = rectArr.value.length
+
 const rem = 16
-let rectId = (rectArr.value.reduce((maxId, rect) => Math.max(maxId, rect.id), 0)) + 1
 
 function saveScreenshot() {
   const originalCanvas = canvasRef.value
@@ -34,14 +51,13 @@ function saveScreenshot() {
   const ctx = newCanvas.getContext('2d')!
 
   const img = new Image()
-  img.src = image.value
+  img.src = props.image
 
   img.onload = () => {
     ctx.drawImage(img, 0, 0, newCanvas.width, newCanvas.height)
     ctx.drawImage(originalCanvas, 0, 0)
 
-    mergedImage.value = newCanvas.toDataURL('image/png')
-    emit('close')
+    emit('save', newCanvas.toDataURL('image/png'), [...rectArr.value])
   }
 }
 
@@ -54,7 +70,7 @@ async function drawAllRects(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = 'rgba(128, 128, 128, 0.5)'
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
-  rectArr.value.forEach((rect: Rectangle) => {
+  rectArr.value.forEach((rect) => {
     ctx.clearRect(rect.startX, rect.startY, rect.width, rect.height)
 
     ctx.strokeStyle = 'yellow'
@@ -65,8 +81,7 @@ async function drawAllRects(ctx: CanvasRenderingContext2D) {
 }
 
 async function handleClose(rectId: number) {
-  rectArr.value = rectArr.value.filter((rect: Rectangle) => rect.id !== rectId)
-  await nextTick()
+  rectArr.value = rectArr.value.filter(rect => rect.id !== rectId)
   const canvas = canvasRef.value
   if (canvas) {
     const ctx = canvas.getContext('2d')!
@@ -113,7 +128,6 @@ onMounted(() => {
 
   function onMouseMove(e: MouseEvent) {
     if (isDrawing) {
-      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
       const currentX = e.offsetX
       const currentY = e.offsetY
 
@@ -129,10 +143,8 @@ onMounted(() => {
       updateCloseButtonVisibility(e.offsetX, e.offsetY)
     }
   }
-  function onMouseUp(e: MouseEvent) {
-    if (!canvas)
-      return
 
+  function onMouseUp(e: MouseEvent) {
     const currentX = e.offsetX
     const currentY = e.offsetY
 
@@ -150,11 +162,11 @@ onMounted(() => {
     }
 
     if (width !== 0 && height !== 0) {
-      rectArr.value.push({ id: rectId++, startX, startY, width, height, showCloseButton: false })
+      rectArr.value.push({ id: nextId++, startX, startY, width, height, showCloseButton: false })
     }
 
     isDrawing = false
-    drawAllRects(canvas.getContext('2d') as CanvasRenderingContext2D)
+    drawAllRects(ctx)
   }
 
   useEventListener(canvas, 'mousedown', onMouseDown)

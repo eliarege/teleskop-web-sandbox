@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
 import html2canvas from 'html2canvas-pro'
+import type { Rect } from './TopbarFeedbackScreenshotEditor.vue'
 import { parseAppList } from '~/utils/base'
 import type { Feedback, FeedbackModel } from '~/types'
 import { getBrowserInfo, getOSInfo } from '~/utils/userAgent'
 import { useAppProps } from '~/composables/useAppProps'
 
-const props = defineProps<{ feedback: FeedbackModel, feedbackEnabled: boolean }>()
+const props = defineProps<{
+  feedback: FeedbackModel
+}>()
 defineEmits([...useDialogPluginComponent.emits, 'update:modelValue'])
 
 const { t } = useI18n()
@@ -20,23 +23,23 @@ const { fetch: authFetch, tokenParsed } = useKeycloak()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
 const appList = parseAppList(config.public.appList).map(n => ({
-  ...n,
   name: t(`base.apps.${n.name}`),
+  value: n.name,
 }))
 const reportTypes = reactive([
-  { name: t('feedback.reportType.bug') },
-  { name: t('feedback.reportType.feedback') },
-  { name: t('feedback.reportType.suggestion') },
-  { name: t('feedback.reportType.other') },
+  { name: t('feedback.reportType.bug'), value: 'bug' },
+  { name: t('feedback.reportType.feedback'), value: 'feedback' },
+  { name: t('feedback.reportType.suggestion'), value: 'suggestion' },
+  { name: t('feedback.reportType.other'), value: 'other' },
 ])
 
 const originalImage = ref('')
-const rectArr = ref([])
+const rectArr = ref<Rect[]>([])
 
 const feedbackModel: Feedback = reactive({
   appName: appProps.name,
   image: props.feedback.image,
-  reportType: { name: props.feedback.reportType },
+  reportType: props.feedback.reportType,
   description: props.feedback.description,
   browser: {
     ...getBrowserInfo(navigator.userAgent),
@@ -46,7 +49,8 @@ const feedbackModel: Feedback = reactive({
   os: getOSInfo(navigator.userAgent),
 })
 function isFormValid(): boolean {
-  return feedbackModel.reportType.name.trim() !== '' && feedbackModel.description.trim() !== ''
+  return feedbackModel.reportType.trim() !== ''
+    && feedbackModel.description.trim() !== ''
 }
 
 const editCanvas = ref(false)
@@ -66,7 +70,7 @@ async function sendFeedback() {
     color: 'green',
     position: 'top',
   })).catch((err) => {
-    if (err.data.code) {
+    if (err.data?.code) {
       q.notify({
         message: t(`feedback.response.${err.data.code}`),
         color: 'red',
@@ -87,6 +91,8 @@ const ssLoading = ref(false)
 async function takeScreenshot() {
   ssLoading.value = true
   const element = document.body
+  // Wait for loading spinner to be rendered
+  await sleep(500)
   try {
     const canvas = await html2canvas(element, {
       logging: false,
@@ -98,9 +104,25 @@ async function takeScreenshot() {
     feedbackModel.image = canvas.toDataURL()
     originalImage.value = canvas.toDataURL()
   } catch (error) {
-    console.error('Ekran görüntüsü alınırken hata oluştu:', error)
+    console.error(error)
+    q.notify({
+      message: t('feedback.response.screenshot-error'),
+      color: 'red',
+      position: 'top',
+    })
   }
   ssLoading.value = false
+}
+
+function clearScreenshot() {
+  feedbackModel.image = ''
+  rectArr.value = []
+}
+
+function onSave(newImage: string, newRects: Rect[]) {
+  feedbackModel.image = newImage
+  rectArr.value = newRects
+  editCanvas.value = false
 }
 </script>
 
@@ -129,23 +151,27 @@ async function takeScreenshot() {
           :options="appList"
           option-label="name"
           map-options
+          emit-value
           outlined
           dense
+          options-dense
         />
         <QSelect
           v-model="feedbackModel.reportType"
-          :label="t('feedback.reportType.-')"
+          :label="t('feedback.reportType._')"
           class="select-none"
           :options="reportTypes"
           option-label="name"
           map-options
+          emit-value
           outlined
           dense
+          options-dense
         />
       </div>
       <div class="p-3">
         <div class="">
-          <q-input
+          <QInput
             v-model="feedbackModel.description"
             :label="t('feedback.description')"
             type="textarea"
@@ -156,14 +182,14 @@ async function takeScreenshot() {
         </div>
         <br>
         <div class="border-1">
-          <q-img
+          <QImg
             :src="feedbackModel.image"
           >
             <div
               v-if="feedbackModel.image !== ''"
               class="absolute-center w-full text-center"
             >
-              <q-btn
+              <QBtn
                 flat
                 dense
                 no-caps
@@ -171,20 +197,20 @@ async function takeScreenshot() {
                 :label="t('feedback.screenshot.edit')"
                 @click="editCanvas = !editCanvas"
               />
-              <q-btn
+              <QBtn
                 flat
                 dense
                 padding="none"
                 icon="cancel"
                 float="right"
-                @click="feedbackModel.image = ''"
+                @click="clearScreenshot"
               />
             </div>
             <div
               v-if="feedbackModel.image === ''"
               class="absolute-bottom w-auto h-min text-center"
             >
-              <q-btn
+              <QBtn
                 flat
                 dense
                 padding="none"
@@ -194,13 +220,13 @@ async function takeScreenshot() {
                 @click="takeScreenshot"
               />
             </div>
-          </q-img>
+          </QImg>
         </div>
       </div>
-      <q-space />
+      <QSpace />
       <div class="flex gap-5 p-3">
-        <q-space />
-        <q-btn
+        <QSpace />
+        <QBtn
           no-caps
           color="primary"
           :label="t('feedback.submit')"
@@ -211,10 +237,10 @@ async function takeScreenshot() {
           @click="sendFeedback"
         >
           <template #loading>
-            <q-spinner-facebook />
+            <QSpinnerFacebook />
           </template>
-        </q-btn>
-        <q-btn
+        </QBtn>
+        <QBtn
           no-caps
           :label="t('feedback.cancel')"
           icon="cancel"
@@ -223,27 +249,27 @@ async function takeScreenshot() {
         />
       </div>
     </div>
-  </QDialog>
-
-  <QDialog
-    v-model="editCanvas"
-    maximized
-    to="body"
-  >
-    <div class="absolute top-1/2 left-1/2 z-10001 w-full h-full p-3">
-      <TopbarFeedbackScreenshotEditor
-        v-model:image="originalImage"
-        v-model:rect-arr="rectArr"
-        v-model:merged-image="feedbackModel.image"
-        @close="editCanvas = !editCanvas"
-      />
-    </div>
+    <QDialog
+      v-model="editCanvas"
+      maximized
+      to="body"
+    >
+      <div class="absolute top-1/2 left-1/2 z-10001 w-full h-full p-3">
+        <TopbarFeedbackScreenshotEditor
+          :image="originalImage"
+          :rects="rectArr"
+          @save="onSave"
+          @close="editCanvas = false"
+        />
+      </div>
+    </QDialog>
   </QDialog>
 </template>
 
 <style scoped lang="postcss">
 .description-input :deep(.q-field__control) {
   min-height: 8rem;
+  cursor: text;
 }
 .description-input :deep(.q-field__control-container) {
   @apply max-h-75 overflow-auto;
