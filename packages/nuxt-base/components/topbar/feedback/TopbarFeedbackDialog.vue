@@ -4,12 +4,14 @@ import html2canvas from 'html2canvas-pro'
 import { parseAppList } from '~/utils/base'
 import type { Feedback, FeedbackModel } from '~/types'
 import { getBrowserInfo, getOSInfo } from '~/utils/userAgent'
+import { useAppProps } from '~/composables/useAppProps'
 
 const props = defineProps<{ feedback: FeedbackModel, feedbackEnabled: boolean }>()
 defineEmits([...useDialogPluginComponent.emits, 'update:modelValue'])
 
 const { t } = useI18n()
 const q = useQuasar()
+const appProps = useAppProps()
 const { width, height } = useWindowSize()
 
 const config = useRuntimeConfig()
@@ -32,7 +34,7 @@ const originalImage = ref('')
 const rectArr = ref([])
 
 const feedbackModel: Feedback = reactive({
-  appName: t('app.name'),
+  appName: appProps.name,
   image: props.feedback.image,
   reportType: { name: props.feedback.reportType },
   description: props.feedback.description,

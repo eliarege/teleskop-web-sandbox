@@ -2,6 +2,7 @@
 import AppAboutDialog from '../AppAboutDialog.vue'
 import TopbarFeedbackDialog from './feedback/TopbarFeedbackDialog.vue'
 import type { FeedbackModel, TopbarMenuItem } from '~/types'
+import { useAppProps } from '~/composables/useAppProps'
 
 const props = defineProps<{
   extraItems?: TopbarMenuItem[]
@@ -12,9 +13,10 @@ const keycloak = useKeycloak()
 
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
-const { data: properties } = await useFetch('/api/properties')
+const appProps = useAppProps()
+
 const feedback: FeedbackModel = reactive({
-  appName: properties.value.name,
+  appName: appProps.name,
   reportType: '',
   description: '',
   image: '',

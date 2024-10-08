@@ -1,24 +1,29 @@
 <script setup lang="ts">
 import type { QTableProps } from 'quasar'
+import { useAppProps } from '~/composables/useAppProps'
 
 defineEmits([...useDialogPluginComponent.emits])
 
-const { t } = useI18n()
+const { t, d } = useI18n()
+const appProps = useAppProps()
 const { dialogRef, onDialogHide, onDialogCancel } = useDialogPluginComponent()
-const { data: rows, pending } = useFetch('/api/properties', {
-  default: () => [],
-  transform(input) {
-    return Object.entries(input)
-      .map(([key, value]) => ({ key, value }))
-  },
-})
+
+const buildDate = new Date(appProps.buildDate)
+const buildDateString = !Number.isNaN(buildDate.getTime()) ? d(buildDate, 'datetime') : ''
+
+const appPropRows = [
+  { key: t('base.name'), value: appProps.name },
+  { key: t('base.version'), value: appProps.version },
+  { key: t('base.buildDate'), value: buildDateString },
+  { key: t('base.commitHash'), value: appProps.commitHash },
+  { key: t('base.nodeVersion'), value: appProps.nodeVersion },
+]
 const columns: QTableProps['columns'] = [
   {
     name: 'key',
     field: 'key',
     label: '',
     align: 'left',
-    format: (v: string) => t(`base.${v}`),
   },
   {
     name: 'value',
@@ -33,7 +38,7 @@ const columns: QTableProps['columns'] = [
     <QCard class="min-w-80">
       <QCardSection class="flex items-center pb-0">
         <div class="text-6">
-          About
+          {{ t('base.about') }}
         </div>
         <QSpace />
         <QBtn
@@ -50,9 +55,8 @@ const columns: QTableProps['columns'] = [
           dense
           hide-header
           hide-bottom
-          :rows
+          :rows="appPropRows"
           :columns
-          :loading="pending"
         />
       </QCardSection>
     </QCard>

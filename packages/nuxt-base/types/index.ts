@@ -80,3 +80,11 @@ export interface FeedbackModel {
   description: string
   image: string
 }
+
+export interface AppProperties {
+  readonly name: string
+  readonly version: string
+  readonly buildDate: string
+  readonly commitHash: string
+  readonly nodeVersion: string
+}
