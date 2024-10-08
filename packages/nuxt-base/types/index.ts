@@ -17,10 +17,11 @@ export interface TopbarMenuItem {
   icon?: MaybeRefOrGetter<string>
   class?: VueClassProp
   active?: MaybeRefOrGetter<boolean>
+  hidden?: MaybeRefOrGetter<boolean>
   shortcut?: string
   style?: VueStyleProp
   disabled?: MaybeRefOrGetter<boolean>
-  disableReason?: string
+  disableReason?: MaybeRefOrGetter<string>
   onClick?: () => void
   subMenu?: TopbarMenuProps
 }
@@ -53,14 +54,9 @@ export interface FilterableTableFilter {
 }
 
 export interface Feedback {
-  appName: {
-    name: string
-    url: string
-  }
+  appName: string
   image: string
-  reportType: {
-    name: string
-  }
+  reportType: string
   description: string
   browser: {
     name: string
