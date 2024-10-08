@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
+import { createError } from 'h3'
 import type { Feedback } from '~/types'
-
 // TODO: Body validation
 export default defineAuthEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -10,20 +10,29 @@ export default defineAuthEventHandler(async (event) => {
     console.error('Authentication should be able to send feedback.')
     throw createError({
       statusCode: 500,
-      message: 'no-auth',
+      data: {
+        code: 'feedback.response.no-auth',
+        message: 'User not authenticated',
+      },
     })
   }
   if (!config.smtpUser || !config.smtpPassword || !config.serviceDeskEmail) {
     console.error('SMTP should be configured to be able to send feedback.')
     throw createError({
       statusCode: 500,
-      message: 'not-configured',
+      data: {
+        code: 'feedback.response.not-configured',
+        message: 'SMTP should be configured.',
+      },
     })
   }
   if (!token.email || !token.email_verified) {
     throw createError({
       statusCode: 400,
-      message: 'email-not-verified',
+      data: {
+        code: 'feedback.response.email-not-verified',
+        message: 'E-Mail has to be verified.',
+      },
     })
   }
 
@@ -89,7 +98,10 @@ ${feedback.image ? '#### 📸 Screenshot' : ''}
   } catch (error) {
     throw createError({
       statusCode: 500,
-      statusMessage: 'send-fail',
+      data: {
+        code: 'feedback.response.send-fail',
+        message: 'Failed to send email',
+      },
     })
   }
 })

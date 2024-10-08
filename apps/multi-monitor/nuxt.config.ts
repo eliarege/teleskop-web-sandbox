@@ -21,6 +21,7 @@ export default defineNuxtConfig({
     teleskopInstanceName: '',
     machineStatusUrl: 'http://localhost:3050',
     isStaging: 'no',
+    twName: 'multi-monitor',
     public: {
       kcClientId: 'multi-monitor',
       isDigitalFactory: 'false',

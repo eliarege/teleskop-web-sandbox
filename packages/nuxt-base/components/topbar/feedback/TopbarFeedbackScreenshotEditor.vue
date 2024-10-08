@@ -1,22 +1,43 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
 
-const emit = defineEmits(['close'])
-interface Rectangle {
-  id: number
+const props = defineProps<{
+  image: string
+  rects?: Rect[]
+}>()
+const emit = defineEmits<{
+  close: []
+  save: [image: string, rects: Rect[]]
+}>()
+
+export interface Rect {
   startX: number
   startY: number
   width: number
   height: number
+}
+
+interface RectInternal extends Rect {
+  id: number
   showCloseButton: boolean
 }
+
 const { t } = useI18n()
-const image = defineModel('image', { type: String, required: true })
+
 const { width, height } = useWindowSize()
-const rectArr = ref<Rectangle[]>([])
+
 const canvasRef = ref<HTMLCanvasElement | null>(null)
+const rectArr = ref(props.rects?.map<RectInternal>((r, i) => {
+  return {
+    ...r,
+    id: i,
+    showCloseButton: false,
+  }
+}) || [])
+
+let nextId = rectArr.value.length
+
 const rem = 16
-let rectId = 0
 
 function saveScreenshot() {
   const originalCanvas = canvasRef.value
@@ -30,18 +51,18 @@ function saveScreenshot() {
   const ctx = newCanvas.getContext('2d')!
 
   const img = new Image()
-  img.src = image.value
+  img.src = props.image
 
   img.onload = () => {
     ctx.drawImage(img, 0, 0, newCanvas.width, newCanvas.height)
     ctx.drawImage(originalCanvas, 0, 0)
 
-    image.value = newCanvas.toDataURL('image/png')
-    emit('close')
+    emit('save', newCanvas.toDataURL('image/png'), [...rectArr.value])
   }
 }
 
-function drawAllRects(ctx: CanvasRenderingContext2D) {
+async function drawAllRects(ctx: CanvasRenderingContext2D) {
+  // await nextTick()
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   if (rectArr.value.length === 0) {
     return
@@ -49,18 +70,18 @@ function drawAllRects(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = 'rgba(128, 128, 128, 0.5)'
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
-  rectArr.value.forEach((rect: Rectangle) => {
+  rectArr.value.forEach((rect) => {
     ctx.clearRect(rect.startX, rect.startY, rect.width, rect.height)
 
     ctx.strokeStyle = 'yellow'
     ctx.lineWidth = 4
+
     ctx.strokeRect(rect.startX, rect.startY, rect.width, rect.height)
   })
 }
 
-function handleClose(rectId: number) {
-  rectArr.value = rectArr.value.filter((rect: Rectangle) => rect.id !== rectId)
-
+async function handleClose(rectId: number) {
+  rectArr.value = rectArr.value.filter(rect => rect.id !== rectId)
   const canvas = canvasRef.value
   if (canvas) {
     const ctx = canvas.getContext('2d')!
@@ -88,8 +109,12 @@ onMounted(() => {
   if (!canvas)
     return
 
+  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+
   canvas.height = height.value - (rem * 2)
   canvas.width = width.value - (rem * 2)
+
+  drawAllRects(ctx)
 
   let isDrawing = false
   let startX: number
@@ -103,7 +128,6 @@ onMounted(() => {
 
   function onMouseMove(e: MouseEvent) {
     if (isDrawing) {
-      const ctx = canvas?.getContext('2d') as CanvasRenderingContext2D
       const currentX = e.offsetX
       const currentY = e.offsetY
 
@@ -119,10 +143,8 @@ onMounted(() => {
       updateCloseButtonVisibility(e.offsetX, e.offsetY)
     }
   }
-  function onMouseUp(e: MouseEvent) {
-    if (!canvas)
-      return
 
+  function onMouseUp(e: MouseEvent) {
     const currentX = e.offsetX
     const currentY = e.offsetY
 
@@ -140,11 +162,11 @@ onMounted(() => {
     }
 
     if (width !== 0 && height !== 0) {
-      rectArr.value.push({ id: rectId++, startX, startY, width, height, showCloseButton: false })
+      rectArr.value.push({ id: nextId++, startX, startY, width, height, showCloseButton: false })
     }
 
     isDrawing = false
-    drawAllRects(canvas.getContext('2d') as CanvasRenderingContext2D)
+    drawAllRects(ctx)
   }
 
   useEventListener(canvas, 'mousedown', onMouseDown)
@@ -158,12 +180,18 @@ onMounted(() => {
     <div class="w-full h-15 bg-gray-900 text-white flex-center px-5">
       <span>{{ t('feedback.editor.title') }}</span>
       <q-space />
-      <TopbarFeedbackEditorCloseButton
-        class="rounded-2xl"
-        color="transparent"
-        text-color="white"
-        @close="$emit('close')"
-      />
+      <div>
+        <q-btn
+          icon="close"
+          dense
+          rounded
+          text-color="white"
+          color="transparent"
+          size="sm"
+          class="rounded-2xl"
+          @click="$emit('close')"
+        />
+      </div>
     </div>
     <div class="relative max-h-75vh overflow-auto select-none">
       <canvas ref="canvasRef" class="absolute left-0 top-0" />
@@ -180,12 +208,18 @@ onMounted(() => {
         :key="rect.id"
         :style="{ position: 'absolute', left: `${rect.startX + rect.width}px`, top: `${rect.startY}px`, transform: 'translate(-50%, -50%)' }"
       >
-        <TopbarFeedbackEditorCloseButton
-          v-if="rect.showCloseButton"
-          dense
-          color="black"
-          @close="handleClose(rect.id)"
-        />
+        <div>
+          <q-btn
+            v-if="rect.showCloseButton"
+            icon="close"
+            dense
+            rounded
+            color="black"
+            size="sm"
+            class="rounded-2xl"
+            @click="handleClose(rect.id)"
+          />
+        </div>
       </div>
     </div>
     <div class="w-full h-15 bg-gray-900 text-white flex-center">
@@ -194,14 +228,14 @@ onMounted(() => {
         <q-btn
           color="primary"
           :label="t('feedback.editor.save')"
-          class="w-20"
+          class="w-20 whitespace-nowrap"
           @click="saveScreenshot"
         />
         <q-btn
           flat
           color="red"
           :label="t('feedback.editor.cancel')"
-          class="w-20"
+          class="w-20 whitespace-nowrap"
           @click="$emit('close')"
         />
       </div>

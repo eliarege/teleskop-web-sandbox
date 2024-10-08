@@ -18,7 +18,8 @@ const leftIcon = computed(() => {
 
 <template>
   <QItem
-    v-close-popup="!isDefined(item.subMenu)"
+    v-if="toValue(item.hidden) !== true"
+    v-close-popup="!isDef(item.subMenu)"
     clickable
     dense
     class="q-item-avatar-dense px-2.5 whitespace-nowrap"
@@ -26,6 +27,9 @@ const leftIcon = computed(() => {
     :to="item.to"
     @click="item.onClick"
   >
+    <QTooltip v-if="toValue(item.disabled) && toValue(item.disableReason)">
+      {{ toValue(item.disableReason) }}
+    </QTooltip>
     <QItemSection class="px-0 mr-2.5 opacity-60" avatar>
       <QIcon size="1rem" :name="leftIcon" />
     </QItemSection>

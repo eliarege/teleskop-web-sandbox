@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import type { LocaleObject } from '@nuxtjs/i18n'
 import AppAboutDialog from '../AppAboutDialog.vue'
-import FeedbackBase from './feedback/Base.vue'
+import TopbarFeedbackDialog from './feedback/TopbarFeedbackDialog.vue'
 import type { FeedbackModel, TopbarMenuItem } from '~/types'
-import { mediaDevicesAvailable, takeScreenshot } from '~/utils/screenshot'
+import { useAppProps } from '~/composables/useAppProps'
 
 const props = defineProps<{
   extraItems?: TopbarMenuItem[]
@@ -10,46 +11,48 @@ const props = defineProps<{
 }>()
 const { dark, dialog } = useQuasar()
 const keycloak = useKeycloak()
+
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
+const appProps = useAppProps()
 
 const feedback: FeedbackModel = reactive({
-  appName: '',
+  appName: appProps.name,
   reportType: '',
   description: '',
   image: '',
 })
 
-async function screenshot() {
-  if (mediaDevicesAvailable()) {
-    takeScreenshot().then((screenshot) => {
-      feedback.image = screenshot
-      feedbackDialog()
-    })
-  } else {
-    feedbackDialog()
+const feedbackEnabled = computed(() => {
+  return keycloak.enabled
+    && keycloak.authenticated.value
+    && keycloak.tokenParsed.value?.email_verified
+    || false
+})
+
+const feedbackDisableReason = computed(() => {
+  if (!feedbackEnabled.value) {
+    if (!keycloak.enabled)
+      return t('feedback.response.no-auth')
+    if (!keycloak.authenticated.value)
+      return t('feedback.response.auth-required')
+    if (keycloak.tokenParsed.value?.email_verified === false)
+      return t('feedback.response.email-not-verified')
   }
-}
+  return null
+})
 
 function feedbackDialog() {
   dialog({
-    component: FeedbackBase,
+    component: TopbarFeedbackDialog,
     componentProps: { feedback },
   }).onOk((e: FeedbackModel) => {
     feedback.appName = e.appName
     feedback.description = e.description
     feedback.image = e.image
     feedback.reportType = e.reportType
-    screenshot()
   })
 }
-
-const feedbackEnabled = computed(() => {
-  return keycloak.enabled
-    && keycloak.authenticated
-    && keycloak.tokenParsed.value?.email_verified
-    || false
-})
 
 const items = [
   ...(props.extraItems
@@ -62,7 +65,7 @@ const items = [
       icon: 'translate',
       subMenu: {
         offset: [0.5, 0],
-        items: [locales.value.map((l) => {
+        items: [locales.value.map((l: LocaleObject) => {
           return {
             label: l.name,
             active: locale.value === l.code,
@@ -107,6 +110,7 @@ const items = [
       label: tt('base.sendFeedback'),
       icon: 'feedback',
       disabled: () => !feedbackEnabled.value,
+      disableReason: feedbackDisableReason,
       onClick: () => feedbackDialog(),
     },
   ],

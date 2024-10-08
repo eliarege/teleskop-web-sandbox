@@ -17,9 +17,11 @@ export interface TopbarMenuItem {
   icon?: MaybeRefOrGetter<string>
   class?: VueClassProp
   active?: MaybeRefOrGetter<boolean>
+  hidden?: MaybeRefOrGetter<boolean>
   shortcut?: string
   style?: VueStyleProp
   disabled?: MaybeRefOrGetter<boolean>
+  disableReason?: MaybeRefOrGetter<string>
   onClick?: () => void
   subMenu?: TopbarMenuProps
 }
@@ -73,4 +75,12 @@ export interface FeedbackModel {
   reportType: string
   description: string
   image: string
+}
+
+export interface AppProperties {
+  readonly name: string
+  readonly version: string
+  readonly buildDate: string
+  readonly commitHash: string
+  readonly nodeVersion: string
 }

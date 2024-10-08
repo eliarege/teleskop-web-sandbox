@@ -16,6 +16,8 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     sseLoggingEnabled: 'false',
+
+    twName: 'machines',
     public: {
       kcClientId: 'machines',
     },

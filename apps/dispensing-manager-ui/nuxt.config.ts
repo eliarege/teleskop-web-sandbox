@@ -16,6 +16,8 @@ export default defineNuxtConfig({
     reqFilePath: 'manuel.req',
     writeFilePath: 'index.req',
     addMissingTeleskopColumns: 'false',
+
+    twName: 'dispensing-manager-ui',
     public: {
       kcClientId: 'dispensing-manager-ui',
       websockifyUrl: 'ws://localhost:6800',

@@ -66,42 +66,46 @@ onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['r', 'R'], (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
+  if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
     editor.onReset()
   }
 })
 
 onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
+  if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
     editor.selectedPrograms = editor.allPrograms
   }
 })
 
 onKeyStroke(['c', 'C'], (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
+  if (event.ctrlKey && editor.selectedPrograms.length && !isActiveElementEditable()) {
     event.preventDefault()
     contextMenuStore.copy(editor.selectedPrograms, machineId)
   }
 })
 
 onKeyStroke(['v', 'V'], (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
+  if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
     contextMenuStore.paste(machineId)
   }
 })
 
 onKeyStroke(['Enter'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (editor.selectedPrograms.length === 1)
-    navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
+  if (!isActiveElementEditable()) {
+    event.preventDefault()
+    if (editor.selectedPrograms.length === 1)
+      navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
+  }
 })
 
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
+  if (!isActiveElementEditable()) {
+    event.preventDefault()
+    $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
+  }
 })
 
 onKeyStroke('Escape', (event: KeyboardEvent) => {

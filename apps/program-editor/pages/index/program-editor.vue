@@ -9,8 +9,6 @@ const form = ref<QForm>()
 const { t, locale } = useI18n()
 const route = useRoute()
 
-const ctrl = useKeyModifier('Control')
-
 definePageMeta({
   path: '/machine/:machine_id/program/:program_no',
 })
@@ -135,19 +133,26 @@ onKeyStroke('F3', (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['Enter', 'NumpadEnter'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  editor.scrollPage(editor.selectedStep, true)
+  if (!isActiveElementEditable()) {
+    event.preventDefault()
+    editor.scrollPage(editor.selectedStep, true)
+  }
 })
 
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (event.ctrlKey)
-    editor.deleteParallelStep()
-  else
-    editor.deleteStep()
+  if (!isActiveElementEditable()) {
+    event.preventDefault()
+    if (event.ctrlKey)
+      editor.deleteParallelStep()
+    else
+      editor.deleteStep()
+  }
 })
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
+  if (isActiveElementEditable())
+    return
+
   event.preventDefault()
   if (event.shiftKey) {
     if (between(editor.selectedParallelStep + 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
@@ -162,6 +167,9 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
+  if (isActiveElementEditable())
+    return
+
   event.preventDefault()
   if (event.shiftKey) {
     if (between(editor.selectedParallelStep - 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
@@ -182,8 +190,8 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['S', 's'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (ctrl.value) {
+  if (event.ctrlKey && !isActiveElementEditable()) {
+    event.preventDefault()
     editor.onSubmit()
   }
 })
