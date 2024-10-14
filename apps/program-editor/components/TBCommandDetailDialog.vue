@@ -2,6 +2,14 @@
 const editor = useEditorStore()
 const { t } = useI18n()
 const tab = ref('general')
+
+if (editor.selectedSteps.length) {
+  const firstCommandNo = editor.selectedSteps[0].mainCommand.commandNo!
+  editor.selectedCommand = editor.machine.commands.get(firstCommandNo)!
+} else {
+  const firstCommand = editor.machine.commands.entries().next().value
+  editor.selectedCommand = firstCommand[1]
+}
 </script>
 
 <template>
