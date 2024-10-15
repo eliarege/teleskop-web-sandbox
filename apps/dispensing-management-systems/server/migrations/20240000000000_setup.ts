@@ -10,7 +10,7 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('BATCH_PLAN', (table) => {
-    table.increments('plan_key')
+    table.increments('plan_key').primary()
     table.text('batch')
     table.integer('batch_correction_no')
     table.integer('planned_machine')
@@ -40,21 +40,34 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('MACHINE', (table) => {
-    table.increments('machine_id')
+    table.increments('machine_id').primary()
     table.text('machine_name')
     table.integer('controller_type')
   })
 
+  await knex.schema.createTable('MATERIAL', (table) => {
+    table.text('material_code').notNullable().primary()
+    table.text('material_name')
+    table.double('ph')
+    table.double('density')
+    table.integer('material_group_no')
+    table.boolean('re_requestable').defaultTo(false)
+    table.boolean('direct_transfer').defaultTo(false)
+    table.text('cost_unit')
+    table.double('unit_cost')
+    table.text('source')
+  })
+
   await knex.schema.createTable('COMMAND_TYPE', (table) => {
     table.integer('machine_id')
-    table.foreign('machine_id', 'fk_machine')
+    table.foreign('machine_id', 'fk_machine_id')
       .references('machine_id')
       .inTable('MACHINE')
     table.integer('command_type')
     table.integer('command_no')
   })
   await knex.schema.createTable('DISPENSER', (table) => {
-    table.increments('dispenser_id')
+    table.increments('dispenser_id').primary()
     table.text('dispenser_name')
     table.text('ip_address')
     table.text('vnc_password')
@@ -68,17 +81,17 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('DISPENSER_BRAND', (table) => {
-    table.increments('brand_id')
+    table.increments('brand_id').primary()
     table.text('brand_name')
   })
 
   await knex.schema.createTable('DISPENSER_MACHINE_CONNECTION', (table) => {
     table.integer('dispenser_id')
-    table.foreign('dispenser_id', 'fk_dispenser')
+    table.foreign('dispenser_id', 'fk_dispenser_id')
       .references('dispenser_id')
       .inTable('DISPENSER')
     table.integer('machine_id')
-    table.foreign('machine_id', 'fk_machine')
+    table.foreign('machine_id', 'fk_machine_id')
       .references('machine_id')
       .inTable('MACHINE')
     table.primary(['dispenser_id', 'machine_id'])
@@ -97,7 +110,7 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('DISPENSER_TYPE', (table) => {
-    table.increments('dispenser_type_id')
+    table.increments('dispenser_type_id').primary()
     table.text('dispenser_type_name')
     table.integer('dispenser_brand_id')
   })
@@ -105,7 +118,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('DUST_MATERIAL', (table) => {
     table.integer('req_no')
     table.text('material_code')
-    table.foreign('material_code', 'fk_material')
+    table.foreign('material_code', 'fk_material_code')
       .references('material_code')
       .inTable('MATERIAL')
     table.double('recipe_amount')
@@ -115,12 +128,12 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('DUST_MATERIAL_REQUEST', (table) => {
-    table.increments('req_no')
+    table.increments('req_no').primary()
     table.text('batch_no')
     table.integer('queue_no')
     table.integer('recipe_type')
     table.integer('dispenser_id')
-    table.foreign('dispenser_id', 'fk_dispenser')
+    table.foreign('dispenser_id', 'fk_dispenser_id')
       .references('dispenser_id')
       .inTable('DISPENSER')
     table.timestamp('request_time', { precision: 6, useTz: true })
@@ -128,25 +141,25 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('correction_no')
     table.integer('recipe_index')
     table.integer('machine_id')
-    table.foreign('machine_id', 'fk_machine')
+    table.foreign('machine_id', 'fk_machine_id')
       .references('machine_id')
       .inTable('MACHINE')
   })
 
   await knex.schema.createTable('JOB_ORDER', (table) => {
+    table.increments('job_id').primary()
     table.integer('batch_correction_no')
     table.integer('tank_no')
     table.integer('program_no')
     table.integer('recipe_process_no')
     table.integer('recipe_step_no')
-    table.increments('job_id')
     table.integer('step_no')
     table.integer('dispenser_id')
-    table.foreign('dispenser_id', 'fk_dispenser')
+    table.foreign('dispenser_id', 'fk_dispenser_id')
       .references('dispenser_id')
       .inTable('DISPENSER')
     table.integer('machine_id')
-    table.foreign('machine_id', 'fk_machine')
+    table.foreign('machine_id', 'fk_machine_id')
       .references('machine_id')
       .inTable('MACHINE')
     table.smallint('status')
@@ -162,19 +175,6 @@ export async function up(knex: Knex): Promise<void> {
     table.text('controller_type_name')
   })
 
-  await knex.schema.createTable('MATERIAL', (table) => {
-    table.text('material_code').notNullable().primary()
-    table.text('material_name')
-    table.double('ph')
-    table.double('density')
-    table.integer('material_group_no')
-    table.boolean('re_requestable').defaultTo(false)
-    table.boolean('direct_transfer').defaultTo(false)
-    table.text('cost_unit')
-    table.double('unit_cost')
-    table.text('source')
-  })
-
   await knex.schema.createTable('MATERIAL_REQUEST', (table) => {
     table.integer('req_no')
     table.double('recipe_amount')
@@ -185,13 +185,13 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('main_step')
     table.integer('parallel_step')
     table.integer('dispenser_id')
-    table.foreign('dispenser_id', 'fk_dispenser')
+    table.foreign('dispenser_id', 'fk_dispenser_id')
       .references('dispenser_id')
       .inTable('DISPENSER')
   })
   await knex.schema.createTable('MASTER_COMMAND', (table) => {
     table.integer('machine_id')
-    table.foreign('machine_id', 'fk_machine')
+    table.foreign('machine_id', 'fk_machine_id')
       .references('machine_id')
       .inTable('MACHINE')
     table.integer('command_no')
@@ -202,11 +202,14 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('machine_id')
     table.integer('program_no')
     table.text('program_name')
+    table.integer('chem_requests')
+    table.integer('dye_requests')
+    table.integer('salt_requests')
   })
 
   await knex.schema.createTable('PROTOCOL', (table) => {
     table.integer('dispenser_brand_id')
-    table.foreign('dispenser_brand_id', 'fk_dispenser_brand')
+    table.foreign('dispenser_brand_id', 'fk_dispenser_brand_id')
       .references('brand_id')
       .inTable('DISPENSER_BRAND')
     table.text('protocol')
@@ -214,7 +217,24 @@ export async function up(knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('RECIPE_MASTER', (table) => {
-    table.increments('recipe_id')
+    table.increments('recipe_id').primary()
+    table.text('recipe_name')
+  })
+
+  await knex.schema.createTable('RECIPE_MASTER_MATERIAL', (table) => {
+    table.integer('recipe_id')
+    table.foreign('recipe_id', 'fk_recipe_id').references('recipe_id').inTable('RECIPE_MASTER')
+    table.text('material_code').notNullable()
+    table.foreign('material_code', 'fk_material_code').references('material_code').inTable('MATERIAL')
+    table.integer('program_no')
+    table.integer('step_no')
+    table.integer('unit')
+    table.integer('amount')
+    table.integer('type')
+  })
+
+  await knex.schema.createTable('RECIPE_PROGRAM_MASTER', (table) => {
+    table.increments('recipe_id').primary()
     table.text('recipe_name')
     table.integer('recipe_group')
     table.text('recipe_comment')
@@ -223,18 +243,23 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamp('last_update', { precision: 6, useTz: true })
     table.integer('step_no')
     table.integer('program_no')
+    table.integer('machine_id')
+    table.foreign('machine_id', 'fk_machine_id')
+      .references('machine_id')
+      .inTable('MACHINE')
     table.boolean('is_passive')
   })
 
-  await knex.schema.createTable('RECIPE_MASTER_STEP', (table) => {
-    table.increments('recipe_master_id')
-    table.foreign('recipe_master_id', 'fk_recipe_master').references('recipe_id').inTable('RECIPE_MASTER')
-    table.integer('material_code').notNullable()
+  await knex.schema.createTable('RECIPE_PROGRAM_MASTER_STEP', (table) => {
+    table.integer('recipe_master_program_id')
+    table.foreign('recipe_master_program_id', 'fk_recipe_master_program_id').references('recipe_id').inTable('RECIPE_PROGRAM_MASTER')
+    table.text('material_code').notNullable()
     table.foreign('material_code', 'fk_material_code').references('material_code').inTable('MATERIAL')
     table.integer('main_step')
     table.integer('parallel_step')
     table.integer('unit').defaultTo(3)
     table.double('amount')
+    table.primary(['recipe_master_program_id', 'main_step', 'parallel_step'])
   })
 
   await knex.schema.createTable('TELESKOP_SETTINGS', (table) => {
@@ -284,8 +309,8 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
   await knex.schema.alterTable('DISPENSER_MACHINE_CONNECTION', (table) => {
-    table.dropForeign(['dispenser_id'], 'fk_dispenser')
-    table.dropForeign(['machine_id'], 'fk_machine')
+    table.dropForeign(['dispenser_id'], 'fk_dispenser_id')
+    table.dropForeign(['machine_id'], 'fk_machine_id')
   })
 
   await knex.schema.alterTable('DISPENSER_MATERIAL_CONNECTION', (table) => {
@@ -294,35 +319,44 @@ export async function down(knex: Knex): Promise<void> {
   })
 
   await knex.schema.alterTable('DUST_MATERIAL', (table) => {
-    table.dropForeign(['material_code'], 'fk_material')
+    table.dropForeign(['material_code'], 'fk_material_code')
   })
 
   await knex.schema.alterTable('DUST_MATERIAL_REQUEST', (table) => {
-    table.dropForeign(['dispenser_id'], 'fk_dispenser')
-    table.dropForeign(['machine_id'], 'fk_machine')
+    table.dropForeign(['dispenser_id'], 'fk_dispenser_id')
+    table.dropForeign(['machine_id'], 'fk_machine_id')
   })
 
   await knex.schema.alterTable('JOB_ORDER', (table) => {
-    table.dropForeign(['dispenser_id'], 'fk_dispenser')
-    table.dropForeign(['machine_id'], 'fk_machine')
+    table.dropForeign(['dispenser_id'], 'fk_dispenser_id')
+    table.dropForeign(['machine_id'], 'fk_machine_id')
   })
 
   await knex.schema.alterTable('MATERIAL_REQUEST', (table) => {
-    table.dropForeign(['dispenser_id'], 'fk_dispenser')
+    table.dropForeign(['dispenser_id'], 'fk_dispenser_id')
   })
 
   await knex.schema.alterTable('PROTOCOL', (table) => {
-    table.dropForeign(['dispenser_brand_id'], 'fk_dispenser_brand')
+    table.dropForeign(['dispenser_brand_id'], 'fk_dispenser_brand_id')
   })
 
-  await knex.schema.alterTable('RECIPE_MASTER', (table) => {
-    table.dropForeign(['machine_id'], 'recipe_master_machine_id_foreign')
+  await knex.schema.alterTable('RECIPE_MASTER_MATERIAL', (table) => {
+    table.dropForeign(['recipe_id'], 'fk_recipe_id')
+    table.dropForeign(['material_code'], 'fk_material_code')
   })
-  await knex.schema.alterTable('RECIPE_MASTER_STEP', (table) => {
-    table.dropForeign(['recipe_master_id'], 'recipe_master_step_fk')
+
+  await knex.schema.alterTable('RECIPE_PROGRAM_MASTER', (table) => {
+    table.dropForeign(['machine_id'], 'fk_machine_id')
+  })
+  await knex.schema.alterTable('RECIPE_PROGRAM_MASTER_STEP', (table) => {
+    table.dropForeign(['recipe_master_program_id'], 'fk_recipe_master_program_id')
+    table.dropForeign(['material_code'], 'fk_material_code')
   })
   await knex.schema.dropTableIfExists('TELESKOP_SETTINGS')
   await knex.schema.dropTableIfExists('RECIPE_MASTER')
+  await knex.schema.dropTableIfExists('RECIPE_MASTER_MATERIAL')
+  await knex.schema.dropTableIfExists('RECIPE_PROGRAM_MASTER')
+  await knex.schema.dropTableIfExists('RECIPE_PROGRAM_MASTER_STEP')
   await knex.schema.dropTableIfExists('PROTOCOL')
   await knex.schema.dropTableIfExists('PROGRAM_HEADER')
   await knex.schema.dropTableIfExists('MATERIAL_REQUEST')

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BatchRecipeStep } from '~/shared/types';
+import type { BatchRecipeStep } from '~/shared/types'
 
 const props = defineProps({
   batchNo: {
@@ -30,7 +30,7 @@ async function getRecipe() {
     recipeData.value = recipeDataTemp.value
     recipeData.value.forEach((row: any) => {
       row.unit = t(`units.${row.unit}`)
-      row.recipeTypeText = t(`recipeTypes.${row.recipeType - 1}`)
+      row.recipeTypeText = t(`recipeTypes.${row.recipeType}`)
     })
     plankey.value = recipeData.value[0].planKey
   }
@@ -77,6 +77,3 @@ const groupables = [
     />
   </div>
 </template>
-
-<style scoped lang="postcss">
-</style>

@@ -74,6 +74,3 @@ async function clickBtn() {
     </QTooltip>
   </QBtn>
 </template>
-
-<style scoped lang="postcss">
-</style>

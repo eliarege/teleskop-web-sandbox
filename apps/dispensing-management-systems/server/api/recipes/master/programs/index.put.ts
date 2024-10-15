@@ -1,9 +1,9 @@
 import { dmsDB } from '~/server/connectionPool'
-import type { RecipeMaster } from '~/shared/types'
+import type { RecipeProgramMaster } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
-  const { recipe } = await readBody<{ recipe: RecipeMaster }>(event)
-  const res = await dmsDB('RECIPE_MASTER').insert({
+  const { recipe } = await readBody<{ recipe: RecipeProgramMaster }>(event)
+  const res = await dmsDB('RECIPE_PROGRAM_MASTER').insert({
     recipe_id: recipe.recipeId,
     recipe_name: recipe.recipeName,
     recipe_group: recipe.recipeGroup,

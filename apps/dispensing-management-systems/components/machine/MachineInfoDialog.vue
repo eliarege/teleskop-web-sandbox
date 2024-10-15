@@ -41,6 +41,12 @@ const editedMachine = machine.value ? ref(klona(machine.value)) : ref(klona(defa
 const dispensers = toRef(props, 'dispensers')
 const selectedDispensersInitial = machine.value ? ref(machine.value.connectedDispensers!.map(dispenser => dispenser.dispenserId)) : ref([])
 const selectedDispensers = ref(klona(selectedDispensersInitial.value))
+const hasChanges = computed(() => {
+  return (
+    JSON.stringify(editedMachine.value) !== JSON.stringify(machine.value)
+    || JSON.stringify(selectedDispensers.value) !== JSON.stringify(selectedDispensersInitial.value)
+  )
+})
 async function onSave() {
   try {
     const added = selectedDispensers.value
@@ -68,9 +74,51 @@ async function onSave() {
   }
 }
 
+function onCancel() {
+  if (hasChanges.value) {
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.Cancel'),
+        confirmBtn: {
+          label: t('Confirm'),
+          color: 'positive',
+          icon: 'done',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(() => {
+      onDialogCancel()
+    })
+  } else {
+    onDialogCancel()
+  }
+}
+
 function onReset() {
-  editedMachine.value = machine.value ? klona(machine.value) : klona(defaultMachine)
-  selectedDispensers.value = klona(selectedDispensersInitial.value)
+  if (hasChanges.value) {
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.Reset'),
+        confirmBtn: {
+          label: t('Reset'),
+          color: 'positive',
+          icon: 'done',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(() => {
+      editedMachine.value = machine.value ? klona(machine.value) : klona(defaultMachine)
+      selectedDispensers.value = klona(selectedDispensersInitial.value)
+    })
+  }
 }
 
 async function onDelete() {
@@ -113,7 +161,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
   <QDialog
     ref="dialogRef"
     full-width
-    persistent
+    :persistent="hasChanges"
     @hide="onDialogHide"
   >
     <QCard class="scroll border-b-solid border-10px border-grey">
@@ -125,7 +173,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
           <div class="flex flex-row flex-wrap justify-center">
             <div class="row-item">
               <span class="item-label">
-                {{ t('machineFields.No') }}
+                {{ t('machineFields.Id') }}
               </span>
               <QInput
                 v-model="editedMachine.machineId"
@@ -206,7 +254,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
               :label="t('Cancel')"
               color="warning"
               icon="cancel"
-              @click="onDialogCancel"
+              @click="onCancel"
             />
             <QBtn
               :label="t('Reset')"

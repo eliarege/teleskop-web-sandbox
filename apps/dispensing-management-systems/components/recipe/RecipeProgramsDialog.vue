@@ -3,7 +3,7 @@ import { useDialogPluginComponent, useQuasar } from 'quasar'
 import draggable from 'vuedraggable'
 import { klona } from 'klona'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
-import type { ProgramHeader, RecipeMaster, RecipeMasterStep } from '~/shared/types'
+import type { ProgramHeader, RecipeProgramMaster, RecipeProgramMasterStep } from '~/shared/types'
 
 const props = defineProps({
   recipeId: {
@@ -21,9 +21,9 @@ interface OptionMap {
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
-const recipe = ref<RecipeMaster>()
-const editedRecipe = ref<RecipeMaster>()
-const defaultRecipe: RecipeMaster = {
+const recipe = ref<RecipeProgramMaster>()
+const editedRecipe = ref<RecipeProgramMaster>()
+const defaultRecipe: RecipeProgramMaster = {
   recipeId: props.recipeId,
   recipeName: '',
   recipeGroup: 0,
@@ -35,51 +35,123 @@ const defaultRecipe: RecipeMaster = {
   prepTime: new Date(),
   lastUpdate: new Date(),
 }
-const defaultSteps = ref<RecipeMasterStep[]>([])
-const recipeSteps = ref<RecipeMasterStep[]>([])
+const defaultSteps = ref<RecipeProgramMasterStep[]>([])
+const recipeSteps = ref<RecipeProgramMasterStep[]>([])
 const units: OptionMap[] = [{ id: 0, name: t('units.0') }, { id: 1, name: t('units.1') }, { id: 2, name: t('units.2') }, { id: 3, name: t('units.3') }, { id: 4, name: t('units.4') }, { id: 5, name: t('units.5') }, { id: 6, name: t('units.6') }]
-const types: OptionMap[] = [{ id: 0, name: t('recipeTypes.0') }, { id: 1, name: t('recipeTypes.1') }]
+const types: OptionMap[] = [{ id: 0, name: t('recipeTypes.0') }, { id: 1, name: t('recipeTypes.1') }, { id: 2, name: t('recipeTypes.2') }, { id: 3, name: t('recipeTypes.3') }]
 const groups: OptionMap[] = []
+const table = ref()
+const selectedProgram = ref<ProgramHeader>()
 const programs = ref<ProgramHeader[]>([])
+const programOptions = ref<ProgramHeader[]>([])
+const programSteps = ref<RecipeProgramMasterStep[]>([])
+const hasChanges = computed(() => {
+  return (
+    JSON.stringify(editedRecipe.value) !== JSON.stringify(props.isNew ? defaultRecipe : recipe.value)
+    || JSON.stringify(recipeSteps.value) !== JSON.stringify(defaultSteps.value)
+  )
+})
+// Default value
+const machineId = 3
 getRecipe()
 getRecipeSteps()
 getPrograms()
 async function getRecipe() {
   if (!props.isNew) {
-    recipe.value = await $fetch(`/api/recipes/master/${props.recipeId}`)
+    recipe.value = await $fetch(`/api/recipes/master/programs/${props.recipeId}`)
     editedRecipe.value = klona(recipe.value)
   } else {
     editedRecipe.value = klona(defaultRecipe)
   }
+  onTypeSelect(editedRecipe.value!.recipeType)
 }
 async function getRecipeSteps() {
-  recipeSteps.value = await $fetch(`/api/recipes/master/steps/${props.recipeId}`)
+  recipeSteps.value = await $fetch(`/api/recipes/master/programs/steps/${props.recipeId}`)
   defaultSteps.value = recipeSteps.value
 }
 async function getPrograms() {
-  // Default machine_id = 3
-  programs.value = await $fetch(`/api/programs/3`)
+  programs.value = await $fetch(`/api/programs/headers/${machineId}`)
+  programOptions.value = programs.value
+  selectedProgram.value = programOptions.value.find(p => p.programNo === editedRecipe.value?.programNo)
+  onProgramSelect(selectedProgram.value)
+}
+async function onProgramSelect(program: ProgramHeader | undefined) {
+  if (program) {
+    editedRecipe.value!.programNo = program.programNo
+    programSteps.value = await $fetch(`/api/programs`, { query: { machineId, programNo: program.programNo } })
+  }
+}
+function onTypeSelect(type: number) {
+  table.value.type = type
 }
 function getProgramName(program: ProgramHeader) {
   return `${program.programNo} - ${program.programName}`
+}
+function filterPrograms(val: any, update: (param: any) => void) {
+  update(() => {
+    const needle = val.toLowerCase()
+    programOptions.value = programs.value.filter(program => `${program.programNo} - ${program.programName.toLowerCase()}`.includes(needle))
+  })
 }
 async function onSave() {
   try {
     if (props.isNew) {
       await $fetch(`/api/recipes/master`, { method: 'PUT', body: { recipe: editedRecipe.value } })
     } else {
-      await $fetch(`/api/recipes/master/${props.recipeId}`, { method: 'POST', body: { recipe: editedRecipe.value } })
+      await $fetch(`/api/recipes/master/programs/${props.recipeId}`, { method: 'POST', body: { recipe: editedRecipe.value } })
     }
-    await $fetch(`/api/recipes/master/steps/${props.recipeId}`, { method: 'POST', body: { steps: recipeSteps.value } })
+    await $fetch(`/api/recipes/master/programs/steps/${props.recipeId}`, { method: 'POST', body: { steps: recipeSteps.value } })
     onDialogOK(true)
   } catch (e) {
     onDialogOK(false)
   }
 }
 
+function onCancel() {
+  if (hasChanges.value) {
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.Cancel'),
+        confirmBtn: {
+          label: t('Confirm'),
+          color: 'positive',
+          icon: 'done',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(() => {
+      onDialogCancel()
+    })
+  } else {
+    onDialogCancel()
+  }
+}
+
 function onReset() {
-  recipeSteps.value = defaultSteps.value
-  editedRecipe.value = klona(props.isNew ? defaultRecipe : recipe.value)
+  if (hasChanges.value) {
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.Reset'),
+        confirmBtn: {
+          label: t('Confirm'),
+          color: 'positive',
+          icon: 'done',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(() => {
+      recipeSteps.value = defaultSteps.value
+      editedRecipe.value = klona(props.isNew ? defaultRecipe : recipe.value)
+    })
+  }
 }
 
 async function onDelete() {
@@ -98,7 +170,7 @@ async function onDelete() {
       },
     },
   }).onOk(async () => {
-    await $fetch(`/api/recipes/master/${props.recipeId}`, { method: 'DELETE' })
+    await $fetch(`/api/recipes/master/programs/${props.recipeId}`, { method: 'DELETE' })
     onDialogOK(true)
   })
 }
@@ -133,6 +205,27 @@ function moveItem(from: number, to: number) {
   recipeSteps.value.splice(from, 1)
   recipeSteps.value.splice(to, 0, item)
 }
+function updateStep(index: number, isMain: boolean, refs: any) {
+  const element = recipeSteps.value.splice(index, 1)[0]
+
+  let newIndex = recipeSteps.value.findIndex(
+    item =>
+      item.mainStep > element.mainStep
+      || (item.mainStep === element.mainStep && item.parallelStep > element.parallelStep),
+  )
+  if (newIndex === -1) {
+    recipeSteps.value.push(element)
+    newIndex = recipeSteps.value.length - 1
+  } else {
+    recipeSteps.value.splice(newIndex, 0, element)
+  }
+  const refName = isMain ? `mainStep${newIndex}` : `parallelStep${newIndex}`
+  const inputRef = refs[refName] as HTMLInputElement
+  if (inputRef) {
+    inputRef.focus()
+  }
+}
+
 function onRemoveStep(index: number) {
   recipeSteps.value.splice(index, 1)
 }
@@ -142,6 +235,7 @@ function onRemoveStep(index: number) {
   <QDialog
     ref="dialogRef"
     full-width
+    :persistent="hasChanges"
     @hide="onDialogHide"
   >
     <QCard>
@@ -186,6 +280,7 @@ function onRemoveStep(index: number) {
             option-value="id"
             option-label="name"
             :options="types"
+            @update:model-value="onTypeSelect"
           />
         </div>
         <div class="row-item">
@@ -210,16 +305,17 @@ function onRemoveStep(index: number) {
             {{ t('recipeFields.Program') }}
           </span>
           <QSelect
-            v-model="editedRecipe.programNo"
+            v-model="selectedProgram"
             borderless
+            clearable
             dense
             filled
-            emit-value
-            map-options
-            options-dense
-            option-value="programNo"
-            :option-label=getProgramName
-            :options="programs"
+            use-input
+            input-debounce="0"
+            :option-label="getProgramName"
+            :options="programOptions"
+            @filter="filterPrograms"
+            @update:model-value="onProgramSelect"
           />
         </div>
         <div class="row-item">
@@ -266,7 +362,7 @@ function onRemoveStep(index: number) {
               </tr>
             </thead>
             <draggable
-              v-model="recipeSteps"
+            v-model="recipeSteps"
               class="draggable-area"
               group="materials"
               ghost-class="material-ghost"
@@ -308,24 +404,37 @@ function onRemoveStep(index: number) {
                   </td>
                   <td>
                     <QInput
-                      v-model="element.mainStep"
+                      :ref="`mainStep${index}`"
+                      v-model.number="element.mainStep"
                       dense
                       type="number"
-                      :rules="[(val: number) => val >= 0]"
+                      reactive-rules
+                      :rules="[
+                        (val: number) => val >= 0,
+                        (val: number) => !recipeSteps.some((e, i) => e.mainStep === val && e.parallelStep === element.parallelStep && i !== index),
+                      ]"
                       min="1"
                       hide-bottom-space
+                      @update:model-value="val => updateStep(index, true, $refs)"
                     />
                   </td>
                   <td>
                     <QInput
-                      v-model="element.parallelStep"
+                      :ref="`parallelStep${index}`"
+                      v-model.number="element.parallelStep"
                       dense
                       type="number"
-                      :rules="[(val: number) => val >= 0]"
+                      reactive-rules
+                      :rules="[
+                        (val: number) => val >= 0,
+                        (val: number) => !recipeSteps.some((e, i) => e.parallelStep === val && e.mainStep === element.mainStep && i !== index),
+                      ]"
                       min="1"
                       hide-bottom-space
+                      @update:model-value="val => updateStep(index, false, $refs)"
                     />
                   </td>
+
                   <td>
                     <span>
                       {{ element.materialCode }}
@@ -369,7 +478,11 @@ function onRemoveStep(index: number) {
           <h3 flex-center>
             {{ t('Materials') }}
           </h3>
-          <MaterialTable ml-2 />
+          <MaterialTable
+            ref="table"
+            :is-draggable="true"
+            ml-2
+          />
         </div>
       </div>
       <div class="dialog-button-section">
@@ -384,7 +497,7 @@ function onRemoveStep(index: number) {
           :label="t('Cancel')"
           color="warning"
           icon="cancel"
-          @click="onDialogCancel"
+          @click="onCancel"
         />
         <QBtn
           :label="t('Reset')"

@@ -54,6 +54,3 @@ const { t } = useI18n()
     </QCard>
   </QDialog>
 </template>
-
-<style scoped lang="postcss">
-</style>

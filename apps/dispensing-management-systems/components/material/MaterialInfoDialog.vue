@@ -48,6 +48,12 @@ const unitOptions = ref([
   'TL',
   '$',
 ])
+const hasChanges = computed(() => {
+  return (
+    JSON.stringify(editedMaterial.value) !== JSON.stringify(material.value ? material.value : defaultMaterial)
+    || JSON.stringify(selectedDispensers.value) !== JSON.stringify(selectedDispensersInitial.value)
+  )
+})
 async function onSave() {
   try {
     const added = selectedDispensers.value
@@ -71,9 +77,51 @@ async function onSave() {
   }
 }
 
+function onCancel() {
+  if (hasChanges.value) {
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.Cancel'),
+        confirmBtn: {
+          label: t('Confirm'),
+          color: 'positive',
+          icon: 'done',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(() => {
+      onDialogCancel()
+    })
+  } else {
+    onDialogCancel()
+  }
+}
+
 function onReset() {
-  editedMaterial.value = material.value ? klona(material.value) : klona(defaultMaterial)
-  selectedDispensers.value = klona(selectedDispensersInitial.value)
+  if (hasChanges.value) {
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.Reset'),
+        confirmBtn: {
+          label: t('Reset'),
+          color: 'positive',
+          icon: 'done',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(() => {
+      editedMaterial.value = material.value ? klona(material.value) : klona(defaultMaterial)
+      selectedDispensers.value = klona(selectedDispensersInitial.value)
+    })
+  }
 }
 async function onDelete() {
   q.dialog({
@@ -115,7 +163,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
   <QDialog
     ref="dialogRef"
     full-width
-    persistent
+    :persistent="hasChanges"
     @hide="onDialogHide"
   >
     <QCard class="scroll border-b-solid border-10px border-grey">
@@ -279,7 +327,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
             :label="t('Cancel')"
             color="warning"
             icon="cancel"
-            @click="onDialogCancel"
+            @click="onCancel"
           />
           <QBtn
             :label="t('Reset')"

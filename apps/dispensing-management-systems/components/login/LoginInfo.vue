@@ -1,8 +1,8 @@
 <script lang="ts" setup>
+const emit = defineEmits(['logout'])
 const { userProfile, loadUserProfile, logout } = useKeycloak()
 loadUserProfile()
 
-const emit = defineEmits(['logout'])
 const { t } = useI18n()
 
 function onLogout() {
@@ -12,7 +12,7 @@ function onLogout() {
 </script>
 
 <template>
-  <div v-if=userProfile class="q-pa-md">
+  <div v-if="userProfile" class="q-pa-md">
     <div class="welcome-message">
       {{ `${t('Welcome')}, ${userProfile?.username}` }}
     </div>
@@ -37,9 +37,9 @@ function onLogout() {
 
 <style scoped>
   .welcome-message {
-    text-align: center;
-    margin-bottom: 1rem;
-    font-family: sans-serif;
-    font-size: 16px;
-  }
+  text-align: center;
+  margin-bottom: 1rem;
+  font-family: sans-serif;
+  font-size: 16px;
+}
 </style>

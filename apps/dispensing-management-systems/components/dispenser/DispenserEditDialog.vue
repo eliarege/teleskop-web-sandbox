@@ -40,7 +40,11 @@ const protocols = ref<Protocol[]>([])
 const brandProtocols = ref<Protocol[]>([])
 const protocolFields = ref<string[]>([])
 const passwordVisible = ref(false)
-
+const hasChanges = computed(() => {
+  return (
+    JSON.stringify(editedDispenser.value) !== JSON.stringify(dispenser.value ? dispenser.value : defaultDispenser)
+  )
+})
 getDispenserBrands()
 getDispenserTypes()
 getProtocols()
@@ -87,7 +91,7 @@ function onProtocolSelected() {
   const selectedProtocol = brandProtocols.value.find(protocol => protocol.protocol === String(editedDispenser.value.protocol))
   protocolFields.value = selectedProtocol!.fields
   if (dispenser.value && editedDispenser.value.dispenserBrandId === dispenser.value.dispenserBrandId && editedDispenser.value.protocol === dispenser.value.protocol)
-    editedDispenser.value.protocolFields = dispenser.value.protocolFields
+    editedDispenser.value.protocolFields = JSON.parse(JSON.stringify(dispenser.value.protocolFields))
   else {
     const emptyProtocolFields = Object.fromEntries(protocolFields.value.map((field: string) => [field, '']))
     editedDispenser.value.protocolFields = emptyProtocolFields
@@ -102,15 +106,56 @@ async function onSave() {
   onDialogOK(editedDispenser.value)
 }
 
-function onReset() {
-  if (!dispenser.value) {
-    brandDispenserTypes.value = []
-    brandProtocols.value = []
-    editedDispenser.value.protocolFields = null
+function onCancel() {
+  if (hasChanges.value) {
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.Cancel'),
+        confirmBtn: {
+          label: t('Confirm'),
+          color: 'positive',
+          icon: 'done',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(() => {
+      onDialogCancel()
+    })
+  } else {
+    onDialogCancel()
   }
-  editedDispenser.value = JSON.parse(JSON.stringify(dispenser.value ? dispenser.value : defaultDispenser))
-  onBrandSelected()
-  onProtocolSelected()
+}
+
+function onReset() {
+  if (hasChanges.value)
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.Reset'),
+        confirmBtn: {
+          label: t('Confirm'),
+          color: 'positive',
+          icon: 'done',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(() => {
+      if (!dispenser.value) {
+        brandDispenserTypes.value = []
+        brandProtocols.value = []
+        editedDispenser.value.protocolFields = null
+      }
+      editedDispenser.value = JSON.parse(JSON.stringify(dispenser.value ? dispenser.value : defaultDispenser))
+      onBrandSelected()
+      onProtocolSelected()
+    })
 }
 async function onDelete() {
   q.dialog({
@@ -151,7 +196,7 @@ async function pingAddress() {
   <QDialog
     ref="dialogRef"
     full-width
-    persistent
+    :persistent="hasChanges"
     @hide="onDialogHide"
   >
     <QCard class="scroll border-b-solid border-10px border-grey">
@@ -363,7 +408,7 @@ async function pingAddress() {
             :label="t('Cancel')"
             color="warning"
             icon="cancel"
-            @click="onDialogCancel"
+            @click="onCancel"
           />
           <QBtn
             :label="t('Reset')"

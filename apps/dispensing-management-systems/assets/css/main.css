@@ -46,7 +46,6 @@
 .dialog-button-section {
   display: flex;
   align-items: center;
-  justify-content: center;
   justify-content: space-evenly;
   padding: 0.5rem;
   position: sticky;

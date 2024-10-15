@@ -65,7 +65,3 @@ async function getMaterials() {
     </QCard>
   </QDialog>
 </template>
-
-<style scoped lang="postcss">
-
-</style>

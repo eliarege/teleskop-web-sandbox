@@ -18,7 +18,10 @@ export interface JobOrder {
 export interface ProgramHeader {
   machineId: number
   programNo: number
-  programName: number
+  programName: string
+  chemRequests: number
+  dyeRequests: number
+  saltRequests: number
 }
 export interface BatchPlan {
   planKey: number
@@ -148,6 +151,27 @@ export interface MachineControllerType {
 export interface RecipeMaster {
   recipeId: number
   recipeName: string
+}
+export interface RecipeMasterStep {
+  recipeId: number
+  programNo: number
+  programName: string
+  stepNo: number
+  steps: { type: number, stepNo: number, materials: RecipeMasterMaterial[] }[]
+  chemRequests: number
+  dyeRequests: number
+  saltRequests: number
+}
+export interface RecipeMasterMaterial {
+  materialCode: string
+  materialName: string
+  unit: number
+  amount: number
+  type: number
+}
+export interface RecipeProgramMaster {
+  recipeId: number
+  recipeName: string
   recipeGroup: number
   recipeType: number
   comment: string
@@ -157,7 +181,7 @@ export interface RecipeMaster {
   programNo: number
   isPassive: boolean
 }
-export interface RecipeMasterStep {
+export interface RecipeProgramMasterStep {
   recipeId: number
   materialCode: string
   materialName: string

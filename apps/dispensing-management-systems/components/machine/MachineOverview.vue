@@ -38,15 +38,19 @@ const machineColumns: (QTableColumn<Machine>)[] = [
   {
     name: 'machineid',
     required: true,
-    label: t('machineFields.No'),
+    label: t('machineFields.Id'),
     align: 'center',
     field: 'machineId',
     format: val => `${val}`,
     sortable: true,
   },
   { name: 'machinename', label: t('machineFields.Name'), align: 'center', field: 'machineName', sortable: true },
-  { name: 'controllertype', label: t('machineFields.ControllerType'), align: 'center', field: 'controllerType', sortable: true },
-
+  {
+    name: 'connectedDispensers',
+    label: t('materialFields.ConnectedDispensers'),
+    field: 'connectedDispensers',
+    align: 'left',
+  },
 ]
 const { data: machines, refresh: refreshMachines } = await useFetch(`/api/machines`)
 
@@ -324,8 +328,8 @@ const machinePagination = ref({ rowsPerPage: 20 })
               :key="col.name"
               :props="props"
             >
-              <span v-if="col.field === 'controllerType'">
-                {{ controllerTypes?.find(type => type.controllerTypeId === col.value)?.controllerTypeName }}
+              <span v-if="col.field === 'connectedDispensers'">
+                {{ props.row.connectedDispensers?.map((connection: any) => connection.dispenserName).filter(Boolean).join(', ') || '-' }}
               </span>
               <span v-else>
                 {{ col.value }}

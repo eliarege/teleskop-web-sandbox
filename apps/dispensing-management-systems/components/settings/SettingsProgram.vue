@@ -1,24 +1,23 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import RecipeChartDialog from '../recipe/RecipeChartDialog.vue'
-import RecipeCommandsDialog from '../recipe/RecipeCommandsDialog.vue'
+import RecipeProgramsDialog from '../recipe/RecipeProgramsDialog.vue'
 import type { RecipeProgramMaster } from '~/shared/types'
 
 const { t } = useI18n()
 const { notifySuccess, notifyFail } = useNotify()
 const q = useQuasar()
-const { data: recipes, refresh: refreshRecipes } = await useFetch<RecipeProgramMaster[]>('/api/recipes/master')
+const { data: recipes, refresh: refreshPrograms } = await useFetch<RecipeProgramMaster[]>('/api/recipes/master/programs')
 const columns: (QTableColumn<RecipeProgramMaster>)[] = [
   {
     name: 'recipeId',
-    label: t('recipeFields.ID'),
+    label: t('programFields.ID'),
     field: 'recipeId',
     sortable: true,
     align: 'left',
   },
   {
     name: 'recipeName',
-    label: t('recipeFields.Name'),
+    label: t('programFields.Name'),
     field: 'recipeName',
     sortable: true,
     align: 'left',
@@ -27,44 +26,32 @@ const columns: (QTableColumn<RecipeProgramMaster>)[] = [
 
 async function onEditClick(row: RecipeProgramMaster) {
   q.dialog({
-    component: RecipeCommandsDialog,
+    component: RecipeProgramsDialog,
     componentProps: {
       recipeId: row.recipeId,
-      recipeName: row.recipeName,
       isNew: false,
     },
   }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
-      refreshRecipes()
+      refreshPrograms()
     } else
       notifyFail(t('Failed'))
   },
   )
 }
 
-async function onChartClick(row: RecipeProgramMaster) {
+async function addNewProgram() {
   q.dialog({
-    component: RecipeChartDialog,
-    componentProps: {
-      recipeId: row.recipeId,
-      recipeName: row.recipeName,
-    },
-  })
-}
-
-async function addNewRecipe() {
-  q.dialog({
-    component: RecipeCommandsDialog,
+    component: RecipeProgramsDialog,
     componentProps: {
       recipeId: recipes.value ? Math.max(...recipes.value.map(obj => obj.recipeId)) + 1 : 1,
-      recipeName: t('recipeFields.Placeholder'),
       isNew: true,
     },
   }).onOk((payload: any) => {
     if (payload) {
       notifySuccess(t('Success'))
-      refreshRecipes()
+      refreshPrograms()
     } else
       notifyFail(t('Failed'))
   },
@@ -76,27 +63,21 @@ const pagination = ref({ rowsPerPage: 20 })
 
 <template>
   <div class="flex-center text-xl">
-    {{ t('settings.Recipe') }}
+    {{ t('settings.Program') }}
   </div>
   <QSeparator
     class="w-full mt-5 mb-5"
   />
   <div class="flex-center mb-4">
     <QBtn
-      :label="$t('AddNewRecipe')"
+      :label="$t('AddNewProgram')"
       no-caps
       icon="note_add"
       color="primary"
       class="h-12"
       style="white-space: nowrap; text-overflow: ellipsis;"
       clickable
-      @click="addNewRecipe"
-    />
-    <TeleskopSyncBtn
-      class="ml-2"
-      type="Programs"
-      :min-size="800"
-      @click="refreshRecipes"
+      @click="addNewProgram"
     />
   </div>
   <QTable
@@ -143,19 +124,6 @@ const pagination = ref({ rowsPerPage: 20 })
               anchor="top middle"
             >
               {{ t('Edit') }}
-            </QTooltip>
-          </QBtn>
-          <QBtn
-            class="cursor-pointer"
-            icon="show_chart"
-            flat
-            @click="onChartClick(props.row)"
-          >
-            <QTooltip
-              :offset="[0, 30]"
-              anchor="top middle"
-            >
-              {{ t('recipeFields.Chart') }}
             </QTooltip>
           </QBtn>
         </QTd>
