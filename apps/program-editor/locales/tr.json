@@ -404,6 +404,10 @@
     "hideIcons": "İkonları Gizle",
     "showIcons": "Ikonları Göster",
     "hideSlopes": "Eğimleri Gizle",
-    "showSlopes": "Eğimleri Göster"
+    "showSlopes": "Eğimleri Göster",
+    "hideDuration": "Süreyi Gizle",
+    "showDuration": "Süreyi Göster",
+    "fullScreen": "Tam Ekran",
+    "screenShot": "Ekran Görüntüsü"
   }
 }

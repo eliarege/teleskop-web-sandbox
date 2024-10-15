@@ -404,6 +404,10 @@
     "hideIcons": "Hide Icons",
     "showIcons": "Show Icons",
     "hideSlopes": "Hide Slopes",
-    "showSlopes": "Show Slopes"
+    "showSlopes": "Show Slopes",
+    "hideDuration": "Hide Duration",
+    "showDuration": "Show Duration",
+    "fullScreen": "Full Screen",
+    "screenShot": "Screenshot"
   }
 }
