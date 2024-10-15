@@ -24,10 +24,11 @@ const selectedDispenser = ref(dataStore.selectedDispenser ? dataStore.selectedDi
 const { data: machines } = await useFetch<Machine[]>('/api/machines')
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
-  if (dispenserId)
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/job-orders`, { query: { dispenserId }, method: 'POST', body: { filters: filters.value } })
-  else
-    jobOrders.value = await $fetch<JobOrder[]>(`/api/job-orders`, { method: 'POST', body: { filters: filters.value } })
+  jobOrders.value = await $fetch<JobOrder[]>(`/api/job-orders`, {
+    method: 'POST',
+    body: { filters: filters.value },
+    query: dispenserId ? { dispenserId } : undefined,
+  })
 }
 getJobOrders()
 const columns = ref([
@@ -406,7 +407,7 @@ async function handleFile(status: any, data: any) {
   position: sticky;
   top: 45px;
   bottom: 0px;
-  z-index:1;
+  z-index: 1;
 }
 .custom-filterable-table {
   background-color: #f0f0f0;

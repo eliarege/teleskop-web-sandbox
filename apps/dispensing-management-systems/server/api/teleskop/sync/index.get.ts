@@ -113,6 +113,9 @@ const programHeaderParams = {
   machineId: 'MACHINEID',
   programNo: 'PROGNO',
   programName: 'NAME',
+  chemRequests: 'TotalChemReq',
+  dyeRequests: 'TotalDyeReq',
+  saltRequests: 'TOTALSALTREQ'
 }
 const dispenserMachineConnectionParams = {
   dispenserId: 'DISPENSERID',

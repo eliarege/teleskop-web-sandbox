@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     .select({
       planKey: 'r.plan_key',
       processOrder: 'r.process_order',
-      recipeType: 'm.material_group_no',
+      recipeType: 'r.recipe_type',
       ISN: 'r.req_no_batch',
       mainStep: 'r.main_step',
       parallelStep: 'r.parallel_step',
@@ -36,9 +36,10 @@ export default defineEventHandler(async (event) => {
       programNo: 'p.program_no',
       programName: 'p.program_name',
     })
-    .leftJoin('BATCH_HEADER as h', (builder) => {
+    .rightJoin('BATCH_HEADER as h', (builder) => {
       builder
         .on('r.plan_key', '=', 'h.plan_key')
+        .andOn('r.recipe_type', '=', 'h.recipe_type')
         .andOn('r.process_order', '=', 'h.recipe_index')
     })
     .leftJoin('PROGRAM_HEADER as p', (builder) => {

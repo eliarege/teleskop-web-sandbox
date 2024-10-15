@@ -3,13 +3,62 @@ import draggable from 'vuedraggable'
 import { useI18n } from 'vue-i18n'
 import type { Material } from '~/shared/types'
 
+const p = defineProps({
+  isDraggable: {
+    type: Boolean,
+    default: false,
+  },
+})
+const emit = defineEmits(['materialSelected', 'close'])
 const { t } = useI18n()
 const materials = ref<Material[]>([])
+const selectedMaterial = ref<Material | null>(null)
+const materialSearchFilter = ref('')
+const type = ref<number>(0)
+defineExpose({
+  type,
+})
+
 getMaterials()
 async function getMaterials() {
   materials.value = await $fetch('/api/materials')
 }
-const materialSearchFilter = ref('')
+
+const filteredMaterials = computed(() => {
+  return materialFilter(materials.value, materialSearchFilter.value)
+})
+
+function selectMaterial(material: Material) {
+  selectedMaterial.value = material
+}
+
+function clearSelection() {
+  selectedMaterial.value = null
+}
+
+function confirmSelection() {
+  emit('materialSelected', selectedMaterial.value)
+  clearSelection()
+}
+function cloneMaterial(item: Material) {
+  return {
+    materialCode: item.materialCode,
+    materialName: item.materialName,
+    amount: 0,
+    unit: 3,
+    mainStep: 1,
+    parallelStep: 1,
+  }
+}
+function materialFilter(rows: Material[], terms: string) {
+  terms = terms.toLowerCase()
+  return rows.filter((row) => {
+    const materialCodeMatches = row.materialCode.toLowerCase().includes(terms)
+    const materialNameMatches = row.materialName.toLowerCase().includes(terms)
+    const materialGroupMatches = type.value === 4 ? true : type.value === row.materialGroupNo
+    return (materialCodeMatches || materialNameMatches) && materialGroupMatches
+  })
+}
 
 const columns = [
   {
@@ -30,40 +79,54 @@ const columns = [
   },
 ]
 
-function cloneMaterial(item: Material) {
-  return {
-    materialCode: item.materialCode,
-    materialName: item.materialName,
-    amount: 0,
-    unit: 3,
-    mainStep: 1,
-    parallelStep: 1
-  }
-}
+const icons = [
+  '',
+  'science',
+  'palette',
+  'grain',
+]
 </script>
 
 <template>
   <QTable
     :columns
-    :rows="materials"
+    :rows="filteredMaterials"
     :filter="materialSearchFilter"
+    :filter-method="materialFilter"
     row-key="materialCode"
     h-95
     mb-2
   >
     <template #header>
-      <QInput
-        v-model="materialSearchFilter"
-        :label="t('Search')"
-        class="mx-5 mb-5"
-      >
-        <template #prepend>
-          <QIcon name="search" />
-        </template>
-      </QInput>
+      <div class="mx-5 mb-5 flex-center">
+        <QIcon
+          :name="icons[type]"
+          size="20px"
+          mt-1
+          mr-2
+        />
+        <QInput
+          v-model="materialSearchFilter"
+          :label="t('Search')"
+        >
+          <template #prepend>
+            <QIcon name="search" />
+          </template>
+        </QInput>
+        <QBtn
+          icon="close"
+          size="10px"
+          flat
+          round
+          mt-1
+          mr-2
+          @click="$emit('close')"
+        />
+      </div>
     </template>
     <template #body="props">
       <draggable
+        v-if="p.isDraggable"
         :list="[props.row]"
         :group="{ name: 'materials', pull: 'clone', put: false }"
         :clone="cloneMaterial"
@@ -78,7 +141,6 @@ function cloneMaterial(item: Material) {
             <QTd
               v-for="col in columns"
               :key="col.name"
-              :props
               class="cursor-pointer"
               :style="col.name === 'materialCode' ? 'width: 100px;' : ''"
             >
@@ -87,13 +149,54 @@ function cloneMaterial(item: Material) {
           </QTr>
         </template>
       </draggable>
+      <div v-else>
+        <QTr
+          :class="{ 'selected-row': selectedMaterial && selectedMaterial.materialCode === props.row.materialCode }"
+          style="cursor: pointer;"
+          @click="selectMaterial(props.row)"
+        >
+          <QTd>
+            <QIcon name="adjust" cursor-pointer />
+          </QTd>
+          <QTd
+            v-for="col in columns"
+            :key="col.name"
+            :style="col.name === 'materialCode' ? 'width: 100px;' : ''"
+          >
+            {{ props.row[col.name] }}
+          </QTd>
+        </QTr>
+      </div>
     </template>
   </QTable>
+
+  <div v-if="selectedMaterial" class="confirm-buttons-container">
+    <QBtn
+      :label="t('Confirm')"
+      color="primary"
+      @click="confirmSelection"
+    />
+    <QBtn
+      :label="t('Cancel')"
+      color="negative"
+      @click="clearSelection"
+    />
+  </div>
 </template>
 
 <style scoped>
 .material-ghost {
   opacity: 0.5;
   background: #c8ebfb;
+}
+
+.selected-row {
+  background-color: var(--q-primary);
+}
+
+.confirm-buttons-container {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 20px;
 }
 </style>

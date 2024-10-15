@@ -48,6 +48,9 @@ export default defineEventHandler(async (event) => {
         machine_id: data.machineId,
         program_no: data.programNo,
         program_name: data.programName,
+        chem_requests: data.chemRequests,
+        dye_requests: data.dyeRequests,
+        salt_requests: data.saltRequests
       }
       programHeaders.push(programHeader)
     })
@@ -154,6 +157,7 @@ export default defineEventHandler(async (event) => {
         process_order: data.processOrder,
         material_code: data.materialCode,
         prog_proc_no: data.programProcessNo,
+        recipe_type: data.recipeType,
         amount: data.amount,
         unit: data.unit,
       })

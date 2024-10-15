@@ -12,7 +12,7 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-
+const { isSupported, toggle, exit } = useFullscreen()
 const dispenser = toRef(props, 'dispenser')
 const config = useRuntimeConfig()
 
@@ -232,7 +232,10 @@ function handleFnKey(key: string) {
   }
 }
 function toggleFullScreen() {
-  isFullScreen.value = !isFullScreen.value
+  if (isSupported) {
+    toggle()
+    isFullScreen.value = !isFullScreen.value
+  }
 }
 
 function onKeyPress(key: string) {
@@ -241,6 +244,7 @@ function onKeyPress(key: string) {
 }
 onBeforeUnmount(() => {
   vnc.value?.disconnect()
+  exit()
 })
 </script>
 
@@ -250,7 +254,7 @@ onBeforeUnmount(() => {
       <div class="modal-container">
         <div class="wrapper" @click.stop.prevent>
           <div class="machine-screen">
-            <div class="screen">
+            <div class="screen" :class="{ fullscreen: isFullScreen }">
               <span class="loader z-1 absolute" />
               <NoVnc
                 ref="vnc"
@@ -279,6 +283,7 @@ onBeforeUnmount(() => {
           </div>
           <div class="flex justify-center mb-1 z-10">
             <VirtualKeyboard
+              v-show="!isFullScreen"
               :input="input"
               @on-change="onChange"
               @on-key-press="onKeyPress"
@@ -316,6 +321,10 @@ onBeforeUnmount(() => {
     .screen {
       @apply flex justify-center items-center w-800px h-540px mx-7 my-2 border border-gray-300 border-3px rounded;
     }
+
+    .screen.fullscreen {
+      @apply flex w-full h-full mx-0 my-0 z--1;
+    }
   }
 
   .machine-keys {
@@ -326,7 +335,7 @@ onBeforeUnmount(() => {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       grid-template-rows: 1fr;
-      grid-template-areas: "ctrl ctrl-alt-del lwin file-transfer full-screen";
+      grid-template-areas: 'ctrl ctrl-alt-del lwin file-transfer full-screen';
       @apply w-full h-14 justify-items-center px-10 gap-5;
 
       .lwin {
@@ -380,7 +389,7 @@ onBeforeUnmount(() => {
 }
 
 .loader {
-  border-color: #FFFFFF #FFFFFF transparent transparent;
+  border-color: #ffffff #ffffff transparent transparent;
   animation: rotation 1s linear infinite;
   @apply w-48px h-48px rounded-1/2 inline-block relative border-3px box-border;
 }
@@ -394,7 +403,7 @@ onBeforeUnmount(() => {
 }
 
 .loader::before {
-  border-color: #FFFFFF #FFFFFF transparent transparent;
+  border-color: #ffffff #ffffff transparent transparent;
   animation: rotation 1.5s linear infinite;
   @apply w-32px h-32px;
 }

@@ -54,21 +54,21 @@ function handleShift() {
 
 <style>
   .keyboard-input {
-    width: 850px;
-    height: 100px;
-    padding: 20px;
-    font-size: 20px;
-    border: none;
-    box-sizing: border-box;
-  }
+  width: 850px;
+  height: 100px;
+  padding: 20px;
+  font-size: 20px;
+  border: none;
+  box-sizing: border-box;
+}
 
-  .simple-keyboard {
-    max-width: 850px;
-  }
-  div.hg-button.hg-standardBtn {
-    background-color: white;
-  }
-  div.hg-button.hg-functionBtn {
-    background-color: grey;
-  }
+.simple-keyboard {
+  max-width: 850px;
+}
+div.hg-button.hg-standardBtn {
+  background-color: white;
+}
+div.hg-button.hg-functionBtn {
+  background-color: grey;
+}
 </style>

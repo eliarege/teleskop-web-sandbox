@@ -294,14 +294,16 @@ const pagination = ref({ rowsPerPage: 100 })
 .tabs-border {
   border: 1px;
   border-style: solid;
-  border-color: rgba(128,128,128,0.5);
+  border-color: rgba(128, 128, 128, 0.5);
 }
 
 .grid-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* Two columns per row */
   gap: 16px; /* Adjust gap between grid items */
-  max-height: calc(80vh - 100px); /* Set maximum height for the grid container */
+  max-height: calc(
+    80vh - 100px
+  ); /* Set maximum height for the grid container */
   overflow-y: auto; /* Enable vertical scrolling if content exceeds container height */
   margin-top: 20px;
 }

@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { klona } from 'klona'
+import ConfirmationDialog from '../ConfirmationDialog.vue'
 import type { DatabaseConnection } from '~/shared/types'
+
 import { useStateStore } from '~/store/State'
 
 const { t } = useI18n()
 const { notifySuccess, notifyFail } = useNotify()
+const q = useQuasar()
 const stateStore = useStateStore()
 const { data: defaultSettings } = await useFetch<DatabaseConnection>('/api/teleskop/parameters')
 const teleskopSettings = ref<DatabaseConnection>()
 teleskopSettings.value = klona(defaultSettings.value)
-
 const passwordVisible = ref(false)
-
+const hasChanges = computed(() => {
+  return JSON.stringify(teleskopSettings.value) === JSON.stringify(defaultSettings.value)
+})
 async function onSave() {
   try {
     const connection = teleskopSettings.value
@@ -23,7 +27,25 @@ async function onSave() {
 }
 
 function onReset() {
-  teleskopSettings.value = klona(defaultSettings.value)
+  if (hasChanges.value) {
+    q.dialog({
+      component: ConfirmationDialog,
+      componentProps: {
+        bodyText: t('confirmationDialogBody.Reset'),
+        confirmBtn: {
+          label: t('Confirm'),
+          color: 'positive',
+          icon: 'done',
+        },
+        cancelBtn: {
+          label: t('Cancel'),
+          icon: 'close',
+        },
+      },
+    }).onOk(() => {
+      teleskopSettings.value = klona(defaultSettings.value)
+    })
+  }
 }
 async function pingAddress() {
   try {

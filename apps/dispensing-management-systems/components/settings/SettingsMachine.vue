@@ -13,7 +13,7 @@ const { data: controllerTypes } = await useFetch<MachineControllerType[]>('/api/
 const columns: (QTableColumn<Machine>)[] = [
   {
     name: 'machineNo',
-    label: t('machineFields.No'),
+    label: t('machineFields.Id'),
     field: 'machineId',
     sortable: true,
     align: 'left',

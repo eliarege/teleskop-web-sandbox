@@ -7,6 +7,7 @@
   "AddNewDispenser": "Yeni Dağıtıcı Ekle",
   "AddNewMachine": "Yeni Makine Ekle",
   "AddNewMaterial": "Yeni Malzeme Ekle",
+  "AddNewProgram": "Yeni Program Ekle",
   "AddNewRecipe": "Yeni Reçete Ekle",
   "SearchJob": "İş Emri Ara",
   "Refresh": "Yenile",
@@ -19,6 +20,8 @@
   "Dispensers": "Dağıtıcılar",
   "AllDispensers": "Tüm Dağıtıcılar",
   "Machines": "Makineler",
+  "Programs": "Programlar",
+  "SelectProgram": "Program Seçin",
   "Machine": "Makine",
   "ShowDispenserList": "Dağıtıcı Listesini Göster",
   "HideDispenserList": "Dağıtıcı Listesini Sakla",
@@ -68,11 +71,16 @@
   "Cancel": "İptal",
   "Delete": "Sil",
   "Other": "Diğer",
+  "ChemRequests": "Kimyasal İstekler",
+  "DyeRequests": "Boya İstekleri",
+  "SaltRequests": "Tuz İstekleri",
   "confirmationDialogBody": {
     "DeleteDispenser": "Bu dağıtıcıyı silmek istediğinizden emin misiniz?",
     "DeleteMachine": "Bu makineyi silmek istediğinizden emin misiniz?",
     "DeleteMaterial": "Bu malzemeyi silmek istediğinizden emin misiniz?",
     "DeleteRecipe": "Bu reçeteyi silmek istediğinizden emin misiniz?",
+    "Cancel": "Kaydedilmemiş değişiklikleriniz var. Kaydetmeden çıkmak istediğinizden emin misiniz?",
+    "Reset": "Yaptığınız değişiklikleri geri almak istediğinizden emin misiniz?",
     "SyncDataConfirmation": "Teleskop veritabanıyla {name} verilerini eşitlemek istediğinizden emin misiniz?",
     "AlreadyStartedWarning": "İstek çoktan başlatıldı. Devam etmek istediğinize emin misiniz?"
   },
@@ -90,6 +98,7 @@
     "App": "Uygulama Ayarları",
     "Material": "Malzeme Ayarları",
     "Machine": "Makine Ayarları",
+    "Program": "Program Ayarları",
     "Recipe": "Reçete Ayarları",
     "Teleskop": "Teleskop Ayarları"
   },
@@ -119,6 +128,10 @@
     "VncPassword": "Vnc Şifresi",
     "JDMConnections": "JDM Bağlantıları"
   },
+  "programFields": {
+    "ID": "Program No",
+    "Name": "Program Adı"
+  },
   "recipeFields": {
     "Info": "Reçete Bilgisi",
     "Details": "{batch} İş Emri Reçete Detayları",
@@ -135,7 +148,11 @@
     "Type": "Reçete Türü",
     "Group": "Reçete Grubu",
     "Program": "Program",
-    "Desc": "Reçete Açıklaması"
+    "Desc": "Reçete Açıklaması",
+    "Placeholder": "Yeni Reçete",
+    "Chart": "Reçete Grafiği",
+    "Minutes": "Dakikalar",
+    "Temperature:": "Temperature"
   },
   "commandTypes": {
     "ChemicalRequest": "Kimyasal İstek Komutları",
@@ -177,8 +194,8 @@
     "No": "Tartım Numarası"
   },
   "machineFields": {
+    "Id": "Makine Modülü",
     "Name": "Makine Adı",
-    "No": "Makine Numarası",
     "ControllerType": "Kontrol Makinesi"
   },
   "protocolParameters": {
@@ -205,7 +222,9 @@
   },
   "recipeTypes": {
     "0": "Kimyasal",
-    "1": "Boya"
+    "1": "Boya",
+    "2": "Tuz",
+    "3": "Diğer"
   },
   "materialTypes": {
     "1": "Kimyasal",
