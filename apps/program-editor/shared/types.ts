@@ -62,7 +62,7 @@ export interface MachineCommand {
   icon: string
   adviceList: string
   dontUseList: number[]
-  isRunManual: boolean
+  isRunManual: number
   commandType: CommandType
   moveParallel: number
   x: string
@@ -293,7 +293,7 @@ export interface CommandItem {
   ACTIVATED: boolean
   ADVICELIST: string
   DONTUSELIST: string
-  ISRUNMANUAL: boolean
+  ISRUNMANUAL: number
   COMMANDTYPE: number
   MOVEPARALLEL: number
   CHANGETIME: string

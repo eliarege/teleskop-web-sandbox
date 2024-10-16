@@ -28,7 +28,7 @@ const { t } = useI18n()
       </tr>
       <tr>
         <td>{{ t('command.canWorkManually') }}</td>
-        <td>{{ editor.selectedCommand?.isRunManual }}</td>
+        <td>{{ editor.selectedCommand?.isRunManual ? t('command.yes') : t('command.no') }}</td>
       </tr>
       <tr>
         <td>{{ t('command.suggestionList') }}</td>

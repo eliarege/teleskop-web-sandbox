@@ -152,6 +152,7 @@ export class MachineController {
 
     for (const cmd of commandsOutput) {
       cmd.dontUseList = cmd.dontUseList?.split(',').map(Number) || []
+      cmd.isRunManual = cmd.isRunManual ? 1 : 0
       cmd.parameters = JSON.parse(cmd.parameters)
       cmd.ioList = JSON.parse(cmd.ioList)
     }
