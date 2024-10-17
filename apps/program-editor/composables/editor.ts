@@ -14,7 +14,7 @@ export const useEditorStore = defineStore('editor', () => {
   const allProcessType = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTable[]>([])
   const selectedCommand = ref<MachineCommand | null>(null)
-  const selectedStep = ref<number>(-1)
+  const selectedSteps = ref<ProgramStep[]>([])
   const selectedParallelStep = ref<number>(-1)
   const isLoading = ref<boolean>(false)
   const popupCommandListVisible = ref(false)
@@ -62,7 +62,7 @@ export const useEditorStore = defineStore('editor', () => {
     })
   }
 
-  function createEmptyStep() {
+  function createEmptyStep(): ProgramStep {
     return {
       stepId: lastStepId++,
       mainCommand: createEmptyCommand(),
@@ -81,7 +81,8 @@ export const useEditorStore = defineStore('editor', () => {
 
   function newStep() {
     const emptyStep = createEmptyStep()
-    const stepIndex = selectedStep.value !== -1 ? selectedStep.value : program.value.steps.length - 1
+    const selectedIndex = program.value.steps.findIndex(step => step.stepId === selectedSteps.value[0]?.stepId)
+    const stepIndex = selectedIndex !== -1 ? selectedIndex : program.value.steps.length - 1
 
     emptyStep.parallelCommands = stepIndex > 0 ? klona(program.value.steps[stepIndex].parallelCommands) : []
     for (const command of emptyStep.parallelCommands) {
@@ -90,7 +91,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     program.value.steps.splice(stepIndex + 1, 0, emptyStep)
     selectedParallelStep.value = -1
-    selectedStep.value = stepIndex + 1
+    selectedSteps.value = [program.value.steps[stepIndex + 1]]
     nextTick(() => {
       scrollPage(stepIndex + 1, true)
     })
@@ -116,7 +117,7 @@ export const useEditorStore = defineStore('editor', () => {
     }
     program.value.steps.splice(stepIndex + 1, 0, newStep)
     selectedParallelStep.value = -1
-    selectedStep.value = stepIndex + 1
+    selectedSteps.value = [program.value.steps[stepIndex + 1]]
     nextTick(() => {
       scrollPage(stepIndex + 1, true)
     })
@@ -148,7 +149,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function newParallelStep() {
-    const index = selectedStep.value !== -1 ? selectedStep.value : program.value.steps.length - 1
+    const index = selectedSteps.value.length || program.value.steps.length
     const parallelIndex = selectedParallelStep.value !== -1 ? selectedParallelStep.value : program.value.steps[index].parallelCommands.length
     program.value.steps[index].parallelCommands.splice(parallelIndex + 1, 0, createEmptyCommand())
 
@@ -264,31 +265,30 @@ export const useEditorStore = defineStore('editor', () => {
     if (stepIndex !== undefined) {
       program.value.steps.splice(stepIndex, 1)
     } else {
-      if (selectedStep.value !== -1 && program.value.steps.length > 0) {
-        program.value.steps.splice(selectedStep.value, 1)
+      if (selectedSteps.value.length) {
+        program.value.steps.splice(selectedSteps.value.length, 1)
       }
     }
-    selectedStep.value = Math.min(selectedStep.value, program.value.steps.length - 1)
+    // selectedStep.value = Math.min(selectedStep.value, program.value.steps.length - 1)
   }
 
   function deleteParallelStep(stepIndex?: number, parallelIndex?: number) {
     if (stepIndex !== undefined && parallelIndex !== undefined) {
       program.value.steps[stepIndex]?.parallelCommands.splice(parallelIndex, 1)
     } else {
-      if (selectedStep.value !== -1 && program.value.steps.length > 0) {
-        if (program.value.steps[selectedStep.value].parallelCommands.length > 0) {
-          program.value.steps[selectedStep.value].parallelCommands.splice(selectedParallelStep.value, 1)
-        }
+      if (selectedSteps.value.length && selectedParallelStep.value !== -1) {
+        if (program.value.steps[selectedSteps.value.length].parallelCommands.length > 0)
+          program.value.steps[selectedSteps.value.length].parallelCommands.splice(selectedParallelStep.value, 1)
       }
     }
     selectedParallelStep.value = Math.min(
       selectedParallelStep.value,
-      program.value.steps[selectedStep.value].parallelCommands.length - 1,
+      program.value.steps[selectedSteps.value.length].parallelCommands.length - 1,
     )
   }
 
   async function fetchProgram(machineId: number, programNo: number, version?: number) {
-    selectedStep.value = -1
+    selectedSteps.value = []
     selectedParallelStep.value = -1
     lastStepId = 0
     lastCommandId = 0
@@ -436,19 +436,17 @@ export const useEditorStore = defineStore('editor', () => {
    * @returns {void}
    */
   function changeSelection(mainIndex: number, parallelIndex?: number): void {
-    if (selectedStep.value === mainIndex) {
-      selectedStep.value = -1
+    if (selectedSteps.value.length) {
+      selectedSteps.value = []
       selectedParallelStep.value = -1
     } else {
-      selectedStep.value = mainIndex
+      selectedSteps.value = [program.value.steps[mainIndex]]
     }
-    if (parallelIndex !== undefined) {
-      if (selectedParallelStep.value === parallelIndex)
-        selectedParallelStep.value = -1
-      else {
-        selectedParallelStep.value = parallelIndex
-        selectedStep.value = -1
-      }
+
+    if (selectedParallelStep.value !== -1) {
+      selectedParallelStep.value = -1
+    } else if (parallelIndex !== undefined) {
+      selectedParallelStep.value = parallelIndex
     }
   }
 
@@ -531,7 +529,7 @@ export const useEditorStore = defineStore('editor', () => {
     program,
     machine,
     selectedPrograms,
-    selectedStep,
+    selectedSteps,
     selectedParallelStep,
     isLoading,
     errorIds,
@@ -548,6 +546,8 @@ export const useEditorStore = defineStore('editor', () => {
     leftDrawerOpen,
     rightDrawerOpen,
     teleskopSettings,
+    createEmptyStep,
+    createEmptyCommand,
     changeMachine,
     fetchProgram,
     fetchMachine,

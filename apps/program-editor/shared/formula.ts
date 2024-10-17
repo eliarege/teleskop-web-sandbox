@@ -42,6 +42,7 @@ export function calculateProgramDuration(program: Program, machine: Machine, ini
 export function calculateProgramDurationPoint(program: Program, machine: Machine, initialTemperature: number) {
   const tempData: number[] = [initialTemperature]
   const timeData: number[] = [0]
+  const gradientData: number[] = [0]
   const pointStyles: string[] = ['circle']
   const pointBackgroundColors: string[] = ['green']
   const dataPoints: { x: number, y: number }[] = [{ x: 0, y: initialTemperature }]
@@ -60,6 +61,7 @@ export function calculateProgramDurationPoint(program: Program, machine: Machine
 
       tempData.push(point.temperature)
       timeData.push(currentTime)
+      gradientData.push((point.temperature - tempData[tempData.length - 1]) / point.duration)
 
       const commandNo = program.steps[i].mainCommand.commandNo!
       const machineCommand = machine.commands.get(commandNo)!
@@ -76,7 +78,7 @@ export function calculateProgramDurationPoint(program: Program, machine: Machine
       }
     }
   }
-  return { tempData, timeData, pointStyles, pointBackgroundColors, dataPoints, stepInfo }
+  return { tempData, timeData, pointStyles, pointBackgroundColors, dataPoints, stepInfo, gradientData }
 }
 
 /**

@@ -55,7 +55,7 @@ const duration = computed(() => formatDuration(
             :key="key"
           >
             <div v-if="icon">
-              <div
+              <UnoIcon
                 class="icon"
                 :class="icon.name"
                 :style="{ color: icon.color }"
@@ -84,7 +84,7 @@ const duration = computed(() => formatDuration(
       <div class="w-5">
         <div v-show="expanded" class="mt-3 ml-1">
           <div v-if="mainIcon">
-            <div
+            <UnoIcon
               class="icon"
               :class="mainIcon.name"
               :style="{ color: mainIcon.color }"
@@ -125,7 +125,7 @@ const duration = computed(() => formatDuration(
             </div>
             <div class="w-5">
               <div v-if="parallelIcons[index]?.name">
-                <div
+                <UnoIcon
                   class="icon"
                   :class="parallelIcons[index]?.name"
                   :style="{ color: parallelIcons[index]?.color }"
