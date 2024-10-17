@@ -8,6 +8,15 @@ const editor = useEditorStore()
 const form = ref<QForm>()
 const { t, locale } = useI18n()
 const route = useRoute()
+const $q = useQuasar()
+const { $commandManager } = useNuxtApp()
+
+const devMode = import.meta.dev
+
+const machineId = Number(route.params.machine_id)
+const programNo = Number(route.params.program_no)
+
+const ctrl = useKeyModifier('Control')
 
 definePageMeta({
   path: '/machine/:machine_id/program/:program_no',
@@ -79,7 +88,7 @@ const buttons = computed(() => [
     tooltip: t('menu.newParallelStep'),
     shortcut: 'F3',
     icon: 'add_circle_outline',
-    disable: editor.isLoading || editor.selectedStep === -1,
+    disable: editor.isLoading || editor.selectedSteps,
     onClick() {
       editor.newParallelStep()
     },
@@ -90,7 +99,7 @@ const buttons = computed(() => [
     tooltip: t('menu.deleteStep'),
     shortcut: 'Del',
     icon: 'delete',
-    disable: (editor.isLoading || editor.selectedStep === -1),
+    disable: (editor.isLoading || editor.selectedSteps),
     onClick() {
       editor.deleteStep()
     },
@@ -101,7 +110,7 @@ const buttons = computed(() => [
     tooltip: t('menu.deleteParallelStep'),
     shortcut: 'Ctrl+Del',
     icon: 'delete',
-    disable: (editor.isLoading || editor.selectedStep === -1 || editor.selectedParallelStep === -1),
+    disable: (editor.isLoading || editor.selectedSteps || editor.selectedParallelStep === -1),
     onClick() {
       editor.deleteParallelStep()
     },
@@ -133,10 +142,8 @@ onKeyStroke('F3', (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['Enter', 'NumpadEnter'], (event: KeyboardEvent) => {
-  if (!isActiveElementEditable()) {
-    event.preventDefault()
-    editor.scrollPage(editor.selectedStep, true)
-  }
+  event.preventDefault()
+  editor.scrollPage(editor.selectedSteps[0].stepId, true)
 })
 
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
@@ -155,15 +162,15 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
 
   event.preventDefault()
   if (event.shiftKey) {
-    if (between(editor.selectedParallelStep + 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
+    if (between(editor.selectedParallelStep + 1, 0, editor.program.steps[editor.selectedSteps[0].stepId].parallelCommands.length - 1)) {
       editor.selectedParallelStep = editor.selectedParallelStep + 1
     }
   } else {
-    if (between(editor.selectedStep + 1, 0, editor.program.steps.length - 1)) {
-      editor.selectedStep = editor.selectedStep + 1
+    if (between(editor.selectedSteps[0].stepId, 0, editor.program.steps.length - 1)) {
+      editor.selectedSteps = [editor.selectedSteps[0]]
     }
   }
-  editor.scrollPage(editor.selectedStep)
+  editor.scrollPage(editor.selectedSteps[0].stepId)
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
@@ -172,20 +179,20 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
 
   event.preventDefault()
   if (event.shiftKey) {
-    if (between(editor.selectedParallelStep - 1, 0, editor.program.steps[editor.selectedStep].parallelCommands.length - 1)) {
+    if (between(editor.selectedParallelStep - 1, 0, editor.program.steps[editor.selectedSteps[0].stepId].parallelCommands.length - 1)) {
       editor.selectedParallelStep = editor.selectedParallelStep - 1
     }
   } else {
-    if (between(editor.selectedStep - 1, 0, editor.program.steps.length - 1)) {
-      editor.selectedStep = editor.selectedStep - 1
+    if (between(editor.selectedSteps[0].stepId - 1, 0, editor.program.steps.length - 1)) {
+      editor.selectedSteps = [editor.selectedSteps[0]]
     }
   }
-  editor.scrollPage(editor.selectedStep)
+  editor.scrollPage(editor.selectedSteps[0].stepId)
 })
 
 onKeyStroke('Escape', (event: KeyboardEvent) => {
   event.preventDefault()
-  editor.selectedStep = -1
+  editor.selectedSteps = []
   editor.selectedParallelStep = -1
 })
 
@@ -196,8 +203,25 @@ onKeyStroke(['S', 's'], (event: KeyboardEvent) => {
   }
 })
 
-const machineId = Number(route.params.machine_id)
-const programNo = Number(route.params.program_no)
+onKeyStroke(['A', 'a'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (ctrl.value)
+    editor.selectedSteps = editor.program.steps
+})
+
+onKeyStroke(['C', 'c'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (ctrl.value) {
+    contextMenuStore.copyStep()
+  }
+})
+
+onKeyStroke(['V', 'v'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (ctrl.value) {
+    contextMenuStore.pasteStep()
+  }
+})
 
 watch(locale, () => {
   form.value?.validate()
@@ -215,6 +239,10 @@ editor.isLoading = false
 <template>
   <div class="q-pa-md">
     <QForm ref="form">
+      <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
+        <span> {{ `selectedStep: ${editor.selectedSteps.map(x => x?.stepId)}` }} </span>
+        <span> {{ `copiedSteps: ${contextMenuStore.getCopiedStepsValues(editor.machine.id, editor.program.programNo)?.steps.map(x => x?.stepId) || ''}` }} </span>
+      </div>
       <ProgramEditor />
     </QForm>
   </div>

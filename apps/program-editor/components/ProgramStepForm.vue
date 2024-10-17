@@ -25,12 +25,6 @@ const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more'
 const mainIcon = computed(() => editor.getStepIcon(step.mainCommand.commandNo!))
 const parallelIcons = computed(() => step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!)))
 
-function toggle() {
-  if (editor.selectedStep === stepIndex.value)
-    editor.changeSelection(stepIndex.value)
-  expanded.value = !expanded.value
-}
-
 watch(() => editor.allStepExpanded, () => {
   expanded.value = editor.allStepExpanded
 })
@@ -54,9 +48,6 @@ const duration = computed(() => formatDuration(
 <template>
   <div>
     <div class="flex">
-      <!-- <span v-if="devMode" class="color-gray-5">{{ step.stepId }}</span> -->
-      <!-- <span class="color-gray">{{ duration }}</span> -->
-
       <div class="flex items-center w-5">
         <div v-show="!expanded" class="space-y-1">
           <div
@@ -78,8 +69,8 @@ const duration = computed(() => formatDuration(
       </div>
 
       <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
-        <!-- <span>{{ step.stepId }}</span>
-        <span>{{ duration }}</span> -->
+        <span>{{ step.stepId }}</span>
+        <span>{{ duration }}</span>
       </div>
 
       <QBtn
@@ -87,7 +78,7 @@ const duration = computed(() => formatDuration(
         :icon="expandIcon"
         flat
         dense
-        @click="toggle"
+        @click="expanded = !expanded"
       />
 
       <div class="w-5">
@@ -110,7 +101,7 @@ const duration = computed(() => formatDuration(
         :path="`${props.path}.mainCommand`"
       />
     </div>
-    <div v-show="expanded" class="e-border-color border-(y x-0) mt-2px mb-2 pl-16">
+    <div v-show="expanded" class="e-border-color border-(t x-0) mt-2px pl-16">
       <Sortable
         :list="step.parallelCommands"
         item-key="commandId"
@@ -127,9 +118,11 @@ const duration = computed(() => formatDuration(
         <template #item="{ index }">
           <div
             class="step-parallel-command"
-            :class="{ __selected: editor.selectedStep === stepIndex && editor.selectedParallelStep === index }"
-            @click="editor.changeSelection(stepIndex, index)"
+            :class="{ __selected: editor.selectedSteps.find(step => step.stepId === stepIndex) && editor.selectedParallelStep === index }"
           >
+            <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
+              <span>{{ step.parallelCommands[index].commandId }}</span>
+            </div>
             <div class="w-5">
               <div v-if="parallelIcons[index]?.name">
                 <div
@@ -148,7 +141,6 @@ const duration = computed(() => formatDuration(
             </div>
             <QSpace />
             <QBtn
-              v-if="editor.selectedStep === stepIndex && editor.selectedParallelStep === index"
               class="delete-btn"
               icon="close"
               flat
@@ -165,7 +157,6 @@ const duration = computed(() => formatDuration(
 <style lang="postcss" scoped>
 .step-parallel-command {
   @apply flex flex-row items-center w-full pl-4;
-  @apply hover:( dark:bg-dark-1);
   @apply border-b border-black border-opacity-20;
   @apply dark:(border-b border-white border-opacity-20);
 }
@@ -176,6 +167,10 @@ const duration = computed(() => formatDuration(
 
 .step-parallel-command:hover {
   background-color: #d1e4fa;
+
+  .delete-btn {
+    @apply !text-(black opacity-60) !dark:(text-(white opacity-60));
+  }
 }
 
 .step-parallel-command.__selected {
@@ -187,7 +182,7 @@ const duration = computed(() => formatDuration(
 }
 
 .delete-btn {
-  @apply !text-(black opacity-60) !dark:(text-(white opacity-60));
+  @apply !text-(black opacity-0) !dark:(text-(white opacity-0));
 }
 
 .icon {

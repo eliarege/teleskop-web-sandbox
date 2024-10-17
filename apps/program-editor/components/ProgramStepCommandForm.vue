@@ -9,9 +9,7 @@ const props = defineProps<{
 }>()
 
 const editor = useEditorStore()
-const devMode = import.meta.dev
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
-
 const machineCommand = computed(() => {
   if (!programCommand.commandNo)
     return {}
@@ -24,7 +22,6 @@ const machineCommand = computed(() => {
 
 <template>
   <div class="pl-1 pt-1">
-    <!-- <span v-if="devMode" class="color-gray-5">{{ programCommand.commandId }}</span> -->
     <div class="flex">
       <div class="pb-1 pr-2">
         <CommandSelector :path="props.path" />
@@ -35,7 +32,7 @@ const machineCommand = computed(() => {
           :key="`pr-${programCommand.commandNo}-${index}`"
           :path="`${props.path}.parameters.${index}`"
           :parameter="parameter"
-          :command-no="programCommand.commandNo"
+          :command-no="programCommand.commandNo!"
         />
         <ProgramStepCommandIoInput
           v-for="(io, index) in machineCommand.selectableIOs"
