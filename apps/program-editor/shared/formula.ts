@@ -2,7 +2,7 @@ import nearley from 'nearley'
 // @ts-expect-error TODO: Add shims for nearley files
 import grammar from './grammar.ne'
 import { ParameterType } from './constants'
-import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineCommand, MachineConstant, Program, ProgramStep } from './types'
+import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineConstant, Program, ProgramStep } from './types'
 
 interface CalculationContext {
   temperature: number
@@ -33,7 +33,7 @@ export function calculateProgramDuration(program: Program, machine: Machine, ini
 }
 
 /**
- * Programın her bir adımın noktasını hesaplar.
+ * Programın her bir adımın grafikteki noktasının teorik değerini hesaplar.
  * @param program - Program
  * @param machine - Makine
  * @param initialTemperature - Baslangıc sicakligi
