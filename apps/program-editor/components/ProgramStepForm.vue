@@ -22,8 +22,6 @@ const stepIcons = computed(() => {
 
 const expanded = ref(editor.allStepExpanded)
 const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')
-const mainIcon = computed(() => editor.getStepIcon(step.mainCommand.commandNo!))
-const parallelIcons = computed(() => step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!)))
 
 watch(() => editor.allStepExpanded, () => {
   expanded.value = editor.allStepExpanded
@@ -81,24 +79,10 @@ const duration = computed(() => formatDuration(
         @click="expanded = !expanded"
       />
 
-      <div class="w-5">
-        <div v-show="expanded" class="mt-3 ml-1">
-          <div v-if="mainIcon">
-            <UnoIcon
-              class="icon"
-              :class="mainIcon.name"
-              :style="{ color: mainIcon.color }"
-            />
-            <q-tooltip>
-              {{ mainIcon.name ? mainIcon.label : t('noIcon') }}
-            </q-tooltip>
-          </div>
-        </div>
-      </div>
-
       <ProgramStepCommandForm
         class="flex-1"
         :path="`${props.path}.mainCommand`"
+        :expanded
       />
     </div>
     <div v-show="expanded" class="e-border-color border-(t x-0) mt-2px pl-16">
@@ -122,18 +106,6 @@ const duration = computed(() => formatDuration(
           >
             <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
               <span>{{ step.parallelCommands[index].commandId }}</span>
-            </div>
-            <div class="w-5">
-              <div v-if="parallelIcons[index]?.name">
-                <UnoIcon
-                  class="icon"
-                  :class="parallelIcons[index]?.name"
-                  :style="{ color: parallelIcons[index]?.color }"
-                />
-                <q-tooltip>
-                  {{ parallelIcons[index]?.label }}
-                </q-tooltip>
-              </div>
             </div>
 
             <div>

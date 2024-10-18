@@ -6,6 +6,7 @@ import type { CommandIO, CommandParameter, ProgramStepCommand } from '~/shared/t
 
 const props = defineProps<{
   path: string
+  expanded?: boolean
 }>()
 
 const editor = useEditorStore()
@@ -18,11 +19,23 @@ const machineCommand = computed(() => {
   const selectableIOs = command?.ioList.filter((io: CommandIO) => io.selectable) || []
   return { editableParameters, selectableIOs }
 })
+
+const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!))
 </script>
 
 <template>
   <div class="pl-1 pt-1">
     <div class="flex">
+      <div v-if="expanded" class="w-7 flex-center">
+        <UnoIcon
+          class="icon"
+          :class="commandIcon?.name"
+          :style="{ color: commandIcon?.color }"
+        />
+        <q-tooltip>
+          {{ commandIcon?.label }}
+        </q-tooltip>
+      </div>
       <div class="pb-1 pr-2">
         <CommandSelector :path="props.path" />
       </div>
@@ -44,3 +57,9 @@ const machineCommand = computed(() => {
     </div>
   </div>
 </template>
+
+<style lang="postcss" scoped>
+  .icon {
+  @apply text-18px mr-4px cursor-pointer;
+}
+</style>

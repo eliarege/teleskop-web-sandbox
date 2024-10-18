@@ -142,7 +142,10 @@ onKeyStroke('F3', (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['Enter', 'NumpadEnter'], (event: KeyboardEvent) => {
-  event.preventDefault()
+  if (!isActiveElementEditable()) {
+    event.preventDefault()
+    editor.scrollPage(editor.selectedSteps[0].stepId, true)
+  }
   editor.scrollPage(editor.selectedSteps[0].stepId, true)
 })
 
@@ -204,21 +207,22 @@ onKeyStroke(['S', 's'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['A', 'a'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (ctrl.value)
+  if (ctrl.value && !isActiveElementEditable()) {
+    event.preventDefault()
     editor.selectedSteps = editor.program.steps
+  }
 })
 
 onKeyStroke(['C', 'c'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (ctrl.value) {
+  if (ctrl.value && !isActiveElementEditable()) {
+    event.preventDefault()
     contextMenuStore.copyStep()
   }
 })
 
 onKeyStroke(['V', 'v'], (event: KeyboardEvent) => {
-  event.preventDefault()
-  if (ctrl.value) {
+  if (ctrl.value && !isActiveElementEditable()) {
+    event.preventDefault()
     contextMenuStore.pasteStep()
   }
 })

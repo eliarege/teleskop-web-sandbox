@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isDef } from '@teleskop/utils'
 import type { ProcessType, ProgramHeader } from '~/shared/types'
 
 const props = defineProps<{
@@ -66,7 +67,7 @@ const newProgram = computed<ProgramHeader>(() => {
                 :options="editor.allProcessType"
                 :label="t('program.programState')"
                 options-dense
-                :rules="[(val: number) => val !== undefined || t('input.required', { field: t('program.programState') })]"
+                :rules="[(val: number) => !isDef(val) || t('input.required', { field: t('program.programState') })]"
                 map-options
                 emit-value
                 dense

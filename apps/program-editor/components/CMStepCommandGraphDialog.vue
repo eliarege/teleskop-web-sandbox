@@ -139,7 +139,7 @@ onMounted(() => {
       </q-card-section>
       <q-card-section>
         <Bar
-          id="myChart"
+          id="step-command-graph"
           :options="chartOptions"
           :data="chartData"
         />

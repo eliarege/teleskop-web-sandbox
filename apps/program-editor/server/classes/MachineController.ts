@@ -697,8 +697,6 @@ export class MachineController {
    */
   @withTransaction
   async updateProgramHeader(program: ProgramHeader): Promise<number> {
-    console.log('updateProgramHeader: ', program)
-
     const config = useRuntimeConfig()
     const date = new Date(new Date().getTime() - Number(config.teleskopTimezoneOffset) * 60000).toISOString()
     if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
@@ -707,7 +705,7 @@ export class MachineController {
       .from('BFMASTERPRGHEADER')
       .where('PROGNO', program.programNo)
       .andWhere('MACHINEID', this.id)
-      .update({ NAME: program.name, PROCESSCODE: program.typeId, TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent, ISCHANGED: program.isChanged, CHANGEDATE: date })
+      .update({ NAME: program.name, PROCESSCODE: program.typeId, CHANGEDATE: date })
 
     return result
   }
@@ -1020,7 +1018,7 @@ export class MachineController {
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
-      PRGSTATE: program.programState === undefined ? ProgramStatus.EXISTS_ONLY_ON_DATABASE : program.programState,
+      PRGSTATE: isDef(program.programState) ? ProgramStatus.EXISTS_ONLY_ON_DATABASE : program.programState,
       TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
       TotalChemReq: 0,

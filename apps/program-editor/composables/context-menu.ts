@@ -198,10 +198,9 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     program.name = newName
     const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/update-name`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
+      body: {
+        name: newName,
       },
-      body: JSON.stringify({ name: newName }),
     })
 
     const status = check.ok ? 'success' : 'fail'
@@ -212,10 +211,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const { fetch } = useKeycloak()
     const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/update-header`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ program }),
+      body: program,
     })
 
     const status = check ? 'success' : 'fail'

@@ -52,14 +52,14 @@ onKeyStroke('F5', async (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
+  if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
     $commandManager.executeCommand('printProgram', { $q })
   }
 })
 
 onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
+  if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
     $commandManager.executeCommand('printProgramList', { $q })
   }

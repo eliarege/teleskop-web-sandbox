@@ -82,7 +82,7 @@ export function calculateProgramDurationPoint(program: Program, machine: Machine
 }
 
 /**
- * Programın her bir adımın teorik süresini hesaplar.
+ * Programın her bir adımın sonundaki teorik süresini ve sıcaklığını hesaplar.
  * @param program - Program
  * @param machine - Makine
  * @param initialTemperature - Baslangıc sicakligi
@@ -155,6 +155,14 @@ function _calculateProgramStepDuration(step: ProgramStep, context: CalculationCo
 const { Grammar, Parser } = nearley
 const parseCache = new Map<string, any>()
 
+/**
+ * Bir adımın formulu hesaplar.
+ * @param step - Programdaki bir adım
+ * @param commandNo - Komut numarası
+ * @param formula - Adımın formulu
+ * @param machine - Makine
+ * @returns - Hesaplanan formulu
+ */
 export function calculateFormula(step: ProgramStep, commandNo: number, formula: string, machine: Machine): number {
   if (!formula)
     return 0

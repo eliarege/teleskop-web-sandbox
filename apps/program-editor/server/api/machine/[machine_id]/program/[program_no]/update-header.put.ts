@@ -10,7 +10,5 @@ export default defineAuthEventHandler(async (event) => {
   const machine = await machineStore.get(machineId)
 
   logger.info(`User: ${event.context.kauth?.name}. Updating name of program ${program.programNo} of machine ${machineId}.`)
-  console.log('program. ', program)
-
   return await machine.updateProgramHeader(program)
 })

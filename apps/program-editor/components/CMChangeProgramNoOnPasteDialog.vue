@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isDef } from '@teleskop/utils'
 import { useDialogPluginComponent } from 'quasar'
 
 const props = defineProps({
@@ -11,7 +12,7 @@ const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const newIds = ref(props.remains!.map(() => ''))
 const isOKDisabled = computed(() => {
-  return newIds.value.some(id => id === undefined || id === null || id === '')
+  return newIds.value.some(id => isDef(id) || id === null || id === '')
 })
 </script>
 

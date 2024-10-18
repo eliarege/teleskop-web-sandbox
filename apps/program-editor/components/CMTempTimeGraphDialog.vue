@@ -4,6 +4,7 @@ import { Line } from 'vue-chartjs'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Title, Tooltip } from 'chart.js'
 import html2canvas from 'html2canvas-pro'
+import { isDef } from '@teleskop/utils'
 import { calculateProgramDurationPoint } from '~/shared/formula'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
@@ -70,7 +71,7 @@ function calculateChartData() {
             return `${formatDuration(timeData[context[0].dataIndex])}`
           },
           label: (context) => {
-            if (stepInfo[context.dataIndex] === undefined)
+            if (isDef(stepInfo[context.dataIndex]))
               return
 
             return [
@@ -143,7 +144,7 @@ interface Point {
 }
 
 function getIconStyle(point: Point) {
-  const chartInstance = ChartJS.getChart('myChart')
+  const chartInstance = ChartJS.getChart('temp-time-graph')
   if (!chartInstance || !chartOptions.value?.scales?.x || !chartOptions.value.scales.y)
     return {}
 
@@ -179,7 +180,7 @@ function calculatePoint(point1: Point, point2: Point) {
   if (!point1 || !point2)
     return {}
 
-  const chartInstance = ChartJS.getChart('myChart')
+  const chartInstance = ChartJS.getChart('temp-time-graph')
   if (!chartInstance || !chartOptions.value?.scales?.x || !chartOptions.value.scales.y)
     return {}
 
@@ -329,105 +330,103 @@ onMounted(() => {
 <template>
   <q-dialog ref="dialogRef" persistent>
     <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl bg-gray-1 !dark:(bg-dark-4)">
-      <Suspense>
-        <div id="container">
-          <q-card-section>
-            <div class="text-h6 flex">
-              {{ t('tempTimeGraph._') }}
-              <q-space />
-              <q-btn
-                v-close-popup
-                icon="close"
-                flat
-                round
-                dense
-              />
-            </div>
-            <div class="text-h8">
-              {{ editor.machine.id }} - {{ editor.machine.name }}
-            </div>
-          </q-card-section>
-          <q-card-section>
-            <div class="flex justify-end mb-2">
-              <q-btn
-                :label="showIcons ? t('tempTimeGraph.hideIcons') : t('tempTimeGraph.showIcons')"
-                class="setting-btn"
-                color="primary"
-                icon="image"
-                @click="showIcons = !showIcons"
-              />
-              <q-btn
-                :label="showSlopes ? t('tempTimeGraph.hideSlopes') : t('tempTimeGraph.showSlopes')"
-                class="setting-btn"
-                color="secondary"
-                icon="timeline"
-                @click="showSlopes = !showSlopes"
-              />
-              <q-btn
-                :label="showDurations ? t('tempTimeGraph.hideDuration') : t('tempTimeGraph.showDuration')"
-                class="setting-btn"
-                color="orange"
-                icon="timelapse"
-                @click="showDurations = !showDurations"
-              />
-              <!-- <q-btn
+      <div id="container">
+        <q-card-section>
+          <div class="text-h6 flex">
+            {{ t('tempTimeGraph._') }}
+            <q-space />
+            <q-btn
+              v-close-popup
+              icon="close"
+              flat
+              round
+              dense
+            />
+          </div>
+          <div class="text-h8">
+            {{ editor.machine.id }} - {{ editor.machine.name }}
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <div class="flex justify-end mb-2">
+            <q-btn
+              :label="showIcons ? t('tempTimeGraph.hideIcons') : t('tempTimeGraph.showIcons')"
+              class="setting-btn"
+              color="primary"
+              icon="image"
+              @click="showIcons = !showIcons"
+            />
+            <q-btn
+              :label="showSlopes ? t('tempTimeGraph.hideSlopes') : t('tempTimeGraph.showSlopes')"
+              class="setting-btn"
+              color="secondary"
+              icon="timeline"
+              @click="showSlopes = !showSlopes"
+            />
+            <q-btn
+              :label="showDurations ? t('tempTimeGraph.hideDuration') : t('tempTimeGraph.showDuration')"
+              class="setting-btn"
+              color="orange"
+              icon="timelapse"
+              @click="showDurations = !showDurations"
+            />
+            <!-- <q-btn
                 :label="t('tempTimeGraph.fullScreen')"
                 class="setting-btn"
                 color="blue"
                 icon="fullscreen"
                 @click="fullScreen"
               /> -->
-              <q-btn
-                :label="t('tempTimeGraph.screenShot')"
-                class="setting-btn"
-                color="green"
-                icon="camera_alt"
-                @click="screenShot"
-              />
-            </div>
+            <q-btn
+              :label="t('tempTimeGraph.screenShot')"
+              class="setting-btn"
+              color="green"
+              icon="camera_alt"
+              @click="screenShot"
+            />
+          </div>
+          <div
+            id="chart-container"
+            style="position: relative"
+          >
+            <Line
+              id="temp-time-graph"
+              :options="chartOptions"
+              :data="chartData"
+            />
             <div
-              id="chart-container"
-              style="position: relative"
+              v-for="(point, index) in chartData?.datasets[0].data"
+              :key="index"
             >
-              <Line
-                id="myChart"
-                :options="chartOptions"
-                :data="chartData"
+              <!-- Command Icon -->
+              <UnoIcon
+                v-if="showIcons"
+                :style="getIconStyle(point)"
+                :class="point.icon"
+                class="iconify-icon"
               />
-              <div
-                v-for="(point, index) in chartData?.datasets[0].data"
-                :key="index"
+
+              <!-- Slope Label -->
+              <span
+                v-if="showSlopes && point.slope !== 0"
+                :style="getSlopeStyle(point, chartData?.datasets[0].data[index + 1])"
+                class="slope-label"
               >
-                <!-- Command Icon -->
-                <UnoIcon
-                  v-if="showIcons"
-                  :style="getIconStyle(point)"
-                  :class="point.icon"
-                  class="iconify-icon"
-                />
+                {{ `${point.slope}'C` }}
+              </span>
 
-                <!-- Slope Label -->
-                <span
-                  v-if="showSlopes && point.slope !== 0"
-                  :style="getSlopeStyle(point, chartData?.datasets[0].data[index + 1])"
-                  class="slope-label"
-                >
-                  {{ `${point.slope}'C` }}
-                </span>
-
-                <!-- Duration Label -->
-                <span
-                  v-if="showDurations && point.duration >= 600"
-                  :style="getDuraitonStyle(point, chartData?.datasets[0].data[index + 1])"
-                  class="duration-label"
-                >
-                  {{ `${Math.floor(point.duration / 60)}'` }}
-                </span>
-              </div>
+              <!-- Duration Label -->
+              <span
+                v-if="showDurations && point.duration >= 600"
+                :style="getDuraitonStyle(point, chartData?.datasets[0].data[index + 1])"
+                class="duration-label"
+              >
+                {{ `${Math.floor(point.duration / 60)}'` }}
+              </span>
             </div>
-          </q-card-section>
-        </div>
-      </Suspense>
+          </div>
+        </q-card-section>
+      </div>
     </q-card>
   </q-dialog>
 </template>

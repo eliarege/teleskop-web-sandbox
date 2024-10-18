@@ -1,5 +1,6 @@
 import isEqual from 'fast-deep-equal'
 import { useEditorStore } from './editor'
+import { isDef } from '@teleskop/utils'
 import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, TeleskopSettings, ioListItem } from '~/shared/types'
 
 export interface CommitState {
@@ -268,7 +269,7 @@ export function filterToQuery(filter: ProgramFilter): string {
  * @returns {string} Süreyi 00:00:00 formatında döndürür
  */
 export function formatDuration(duration: number, hideZero?: boolean): string {
-  if (duration === undefined || duration === null || isNaN(duration) || duration < 0) {
+  if (isDef(duration) || duration === null || isNaN(duration) || duration < 0) {
     return '00:00:00'
   }
 

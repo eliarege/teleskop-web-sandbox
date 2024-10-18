@@ -262,7 +262,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function deleteStep(stepIndex?: number) {
-    if (stepIndex !== undefined) {
+    if (!isDef(stepIndex)) {
       program.value.steps.splice(stepIndex, 1)
     } else {
       if (selectedSteps.value.length) {
@@ -273,7 +273,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function deleteParallelStep(stepIndex?: number, parallelIndex?: number) {
-    if (stepIndex !== undefined && parallelIndex !== undefined) {
+    if (!isDef(stepIndex) && !isDef(parallelIndex)) {
       program.value.steps[stepIndex]?.parallelCommands.splice(parallelIndex, 1)
     } else {
       if (selectedSteps.value.length && selectedParallelStep.value !== -1) {
@@ -292,7 +292,7 @@ export const useEditorStore = defineStore('editor', () => {
     selectedParallelStep.value = -1
     lastStepId = 0
     lastCommandId = 0
-    if (version !== undefined)
+    if (isDef(version))
       program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
     else
       program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
@@ -445,7 +445,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     if (selectedParallelStep.value !== -1) {
       selectedParallelStep.value = -1
-    } else if (parallelIndex !== undefined) {
+    } else if (isDef(parallelIndex)) {
       selectedParallelStep.value = parallelIndex
     }
   }
