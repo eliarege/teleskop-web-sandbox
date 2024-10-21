@@ -99,7 +99,7 @@ watch(() => model.value, (newValue: number) => {
       emit-value
       outlined
       dense
-      style="width: 180px;"
+      style="width: 150px;"
       class="text-3"
     />
     <div v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
@@ -114,7 +114,7 @@ watch(() => model.value, (newValue: number) => {
         emit-value
         outlined
         dense
-        style="width: 180px;"
+        style="width: 150px;"
         class="text-3"
       >
         <template #option="scope">

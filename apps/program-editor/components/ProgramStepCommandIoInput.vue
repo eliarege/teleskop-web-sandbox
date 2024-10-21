@@ -45,7 +45,7 @@ const selectedOptionsText = computed(() => {
   <div
     class="q-input-border inline-block align-top mr-1 mb-1"
   >
-    <div class="relative pt-4 text-3 fit-content">
+    <div class="relative pt-4 text-3 min-w-32 max-w-40">
       <div class="q-input-text">
         {{ props.io.name }}
       </div>

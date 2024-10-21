@@ -374,7 +374,6 @@
     "manualMeasurementCommands": "Manual Measurement Commands"
   },
   "apperance": {
-    "tempTimeGraph": "Temperature/Time Graph",
     "temperature(c)": "Temperature(°C)",
     "time(h)": "Time(hour)",
     "step": "Step",
@@ -399,5 +398,16 @@
     "versionNo": "Version No",
     "stepCount": "Step Count",
     "edit": "EDIT"
+  },
+  "tempTimeGraph": {
+    "_": "Temperature/Time Graph",
+    "hideIcons": "Hide Icons",
+    "showIcons": "Show Icons",
+    "hideSlopes": "Hide Slopes",
+    "showSlopes": "Show Slopes",
+    "hideDuration": "Hide Duration",
+    "showDuration": "Show Duration",
+    "fullScreen": "Full Screen",
+    "screenShot": "Screenshot"
   }
 }

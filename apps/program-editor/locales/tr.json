@@ -374,7 +374,6 @@
     "manualMeasurementCommands": "Manuel Ölçüm Komutları"
   },
   "apperance": {
-    "tempTimeGraph": "Sıcaklık/Zaman Grafiği",
     "temperature(c)": "Sıcaklık(°C)",
     "time(h)": "Zaman(saat)",
     "step": "Adım",
@@ -399,5 +398,16 @@
     "versionNo": "Version Numarası",
     "stepCount": "Adım Sayısı",
     "edit": "DÜZENLE"
+  },
+  "tempTimeGraph": {
+    "_": "Sıcaklık/Zaman Grafiği",
+    "hideIcons": "İkonları Gizle",
+    "showIcons": "Ikonları Göster",
+    "hideSlopes": "Eğimleri Gizle",
+    "showSlopes": "Eğimleri Göster",
+    "hideDuration": "Süreyi Gizle",
+    "showDuration": "Süreyi Göster",
+    "fullScreen": "Tam Ekran",
+    "screenShot": "Ekran Görüntüsü"
   }
 }

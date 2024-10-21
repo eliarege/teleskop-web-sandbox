@@ -1,7 +1,7 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { notification } from '~/shared/functions'
-import type { Program, ProgramTable } from '~/shared/types'
+import type { Program, ProgramStep, ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 
 interface ProgramHeader {
@@ -10,6 +10,7 @@ interface ProgramHeader {
 }
 export interface ContextMenuStore {
   getCopiedValues: () => Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>
+  getCopiedStepsValues: (machineId: number, programNo: number) => { machineId: number, programNo: number, steps: ProgramStep[] } | undefined
   comparisonBasketLength: () => number
   copy: (program: ProgramTable[], fromMachine: number) => void
   paste: (machineId: number, directPasteValues?: Array<{ machine: number, program: Program, newProgramNo?: number }>) => Promise<Array<{ machine: number, program: Program }>>
@@ -17,6 +18,7 @@ export interface ContextMenuStore {
   deleteProgram: (selectedRows: Array<ProgramHeader>, selectedOption: number, machineId: number) => Promise<void>
   getProgram: (programNo: number, machineId: number) => Promise<Program>
   changeName: (programNo: number, newName: string, machineId: number) => Promise<void>
+  updateProgramHeader: (program: ProgramHeader, machineId: number) => Promise<void>
   getProcessTypes: () => Promise<any[]>
   changeProcessType: (selectedRows: Array<{ programNo: number }>, newType: number, machineId: number) => Promise<void>
   sendProgram: (programs: Array<ProgramHeader>, machineId: number) => Promise<void>
@@ -31,11 +33,14 @@ export interface ContextMenuStore {
   clearComparisonBasket: () => void
   getComparisonBasket: () => Array<{ program: Program, machineId: number }>
   isThereCopiedValue: ComputedRef<boolean>
+  copyStep: () => void
+  pasteStep: () => void
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
   const copiedValues = ref([] as Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>)
-  let comparsionBasket: any[] = []
+  const copiedStepValues = ref([] as Array<{ machineId: number, programNo: number, steps: ProgramStep[] }>)
+  let comparsionBasket = [] as Array<any>
   // const machineId = Number(route.params.machine_id)
   let t = function (param: string, ...args: any[]) {
     return param
@@ -44,6 +49,57 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   function setCtx(ctx?: { t: any, router: Router }) {
     t = ctx?.t
     router = ctx?.router!
+  }
+
+  function copyStep() {
+    const editor = useEditorStore()
+    copiedStepValues.value = []
+    editor.selectedSteps.forEach((step) => {
+      const hasValue = copiedStepValues.value.find(value => value.machineId === editor.machine.id && value.programNo === editor.program.programNo)
+      if (hasValue) {
+        hasValue.steps.push(step)
+      } else {
+        copiedStepValues.value.push({ machineId: editor.machine.id, programNo: editor.program.programNo, steps: [step] })
+      }
+    })
+  }
+
+  function pasteStep() {
+    const editor = useEditorStore()
+    editor.isLoading = true
+
+    let stepIndex = editor.program.steps.length - 1
+    if (editor.selectedSteps.length) {
+      stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0])
+    }
+
+    editor.selectedSteps = []
+
+    const copiedSteps = getCopiedStepsValues(editor.machine.id, editor.program.programNo)
+
+    copiedSteps?.steps.forEach((step) => {
+      const emptyStep = editor.createEmptyStep()
+      emptyStep.mainCommand = { ...step.mainCommand }
+      emptyStep.parallelCommands = step.parallelCommands.map((command) => {
+        return { ...command }
+      })
+      for (const command of emptyStep.parallelCommands) {
+        const emptyCommand = editor.createEmptyCommand()
+        emptyCommand.parameters = command.parameters.map((parameter) => {
+          return { ...parameter }
+        })
+        emptyCommand.ioList = command.ioList.map((io) => {
+          return { ...io }
+        })
+      }
+      editor.selectedSteps.push(emptyStep)
+    })
+    editor.program.steps.splice(stepIndex, 0, ...editor.selectedSteps)
+    editor.isLoading = false
+  }
+
+  function getCopiedStepsValues(machineId: number, programNo: number): { machineId: number, programNo: number, steps: ProgramStep[] } | undefined {
+    return copiedStepValues.value.find(value => value.machineId === machineId && value.programNo === programNo)
   }
 
   function getCopiedValues() {
@@ -142,14 +198,24 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     program.name = newName
     const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/update-name`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
+      body: {
+        name: newName,
       },
-      body: JSON.stringify({ name: newName }),
     })
 
     const status = check.ok ? 'success' : 'fail'
     notification(check, t(`contextMenu.changeNameNotification.${status}`, { programNo: program.programNo }))
+  }
+
+  async function updateProgramHeader(program: ProgramHeader, machineId: number) {
+    const { fetch } = useKeycloak()
+    const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/update-header`, {
+      method: 'PUT',
+      body: program,
+    })
+
+    const status = check ? 'success' : 'fail'
+    notification(check, t(`contextMenu.updateHeaderNotification.${status}`, { programNo: program.programNo }))
   }
 
   async function getProcessTypes() {
@@ -318,6 +384,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   return {
     getCopiedValues,
+    getCopiedStepsValues,
     comparisonBasketLength,
     copy,
     setCtx,
@@ -333,11 +400,14 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     getProgram,
     sendProgram,
     changeName,
+    updateProgramHeader,
     changeProcessType,
     comparison,
     addToComparisonBasket,
     clearComparisonBasket,
     getComparisonBasket,
     isThereCopiedValue,
+    copyStep,
+    pasteStep,
   }
 }

@@ -1,5 +1,6 @@
 import isEqual from 'fast-deep-equal'
 import { useEditorStore } from './editor'
+import { isDef } from '@teleskop/utils'
 import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, TeleskopSettings, ioListItem } from '~/shared/types'
 
 export interface CommitState {
@@ -262,19 +263,31 @@ export function filterToQuery(filter: ProgramFilter): string {
 }
 
 /**
- * Düzenlenen saniyeyi 00:00:00 formatına dönüştürür
- * @param duration Saniye
- * @returns {string} 00:00:00
+ * Verilen saniyeyi 00:00:00 formatına dönüştürür
+ * @param duration Saniye cinsinden süre
+ * @param hideZero True ise saat ve dakika sıfırsa gizlenir
+ * @returns {string} Süreyi 00:00:00 formatında döndürür
  */
-export function formatDuration(duration: number): string {
-  if (!duration) {
+export function formatDuration(duration: number, hideZero?: boolean): string {
+  if (!isDef(duration) || duration === null || isNaN(duration) || duration < 0) {
     return '00:00:00'
   }
+
   const hour = Math.floor(duration / 3600)
   const minute = Math.floor((duration % 3600) / 60)
-  const second = duration % 60
+  const second = Math.floor(duration % 60)
+
+  if (hideZero) {
+    if (hour === 0 && minute === 0) {
+      return String(second).padStart(2, '0')
+    } else if (hour === 0) {
+      return `${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
+    }
+  }
+
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
 }
+
 
 /**
  * 00:00:00 formatını saniyeye dönüştürür

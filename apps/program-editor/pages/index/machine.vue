@@ -4,7 +4,7 @@ import { enGB, tr } from 'date-fns/locale'
 import { useFuse } from '@vueuse/integrations/useFuse'
 import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import type { QTableColumn } from 'quasar'
-import { useQuasar } from 'quasar'
+import { event, useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
@@ -52,14 +52,14 @@ onKeyStroke('F5', async (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
+  if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
     $commandManager.executeCommand('printProgram', { $q })
   }
 })
 
 onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
+  if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
     $commandManager.executeCommand('printProgramList', { $q })
   }
@@ -96,7 +96,7 @@ onKeyStroke(['v', 'V'], (event: KeyboardEvent) => {
 onKeyStroke(['Enter'], (event: KeyboardEvent) => {
   if (!isActiveElementEditable()) {
     event.preventDefault()
-    if (editor.selectedPrograms.length === 1)
+    if (editor.selectedPrograms.length >= 1)
       navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
   }
 })
@@ -114,6 +114,31 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
   editor.popupCommandDetailVisible = false
   editor.popupCommandListVisible = false
 })
+
+onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
+  if (isActiveElementEditable()) return
+
+  event.preventDefault()
+  const currentIndex = editor.allPrograms.indexOf(editor.selectedPrograms[0])
+
+  if (currentIndex > 0) {
+    const newSelection = editor.allPrograms[currentIndex - 1]
+    editor.selectedPrograms = [newSelection]
+  }
+})
+
+onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
+  if (isActiveElementEditable()) return
+
+  event.preventDefault()
+  const currentIndex = editor.allPrograms.indexOf(editor.selectedPrograms[0])
+
+  if (currentIndex < editor.allPrograms.length - 1) {
+    const newSelection = editor.allPrograms[currentIndex + 1]
+    editor.selectedPrograms = [newSelection]
+  }
+})
+
 
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
@@ -806,4 +831,5 @@ function handleRowClass(row: ProgramTable): string {
   border-radius: 10px;
   user-select: none;
 }
+
 </style>

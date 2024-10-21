@@ -152,6 +152,7 @@ export class MachineController {
 
     for (const cmd of commandsOutput) {
       cmd.dontUseList = cmd.dontUseList?.split(',').map(Number) || []
+      cmd.isRunManual = cmd.isRunManual ? 1 : 0
       cmd.parameters = JSON.parse(cmd.parameters)
       cmd.ioList = JSON.parse(cmd.ioList)
     }
@@ -690,6 +691,26 @@ export class MachineController {
   }
 
   /**
+   * Programın header bilgilerini günceller
+   * @param {ProgramHeader} program - Güncellenmek istenen program
+   * @returns {Promise<number>} - Etkilenen satır sayısı
+   */
+  @withTransaction
+  async updateProgramHeader(program: ProgramHeader): Promise<number> {
+    const config = useRuntimeConfig()
+    const date = new Date(new Date().getTime() - Number(config.teleskopTimezoneOffset) * 60000).toISOString()
+    if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+      program.isChanged = true
+    const result = await this.trx
+      .from('BFMASTERPRGHEADER')
+      .where('PROGNO', program.programNo)
+      .andWhere('MACHINEID', this.id)
+      .update({ NAME: program.name, PROCESSCODE: program.typeId, CHANGEDATE: date })
+
+    return result
+  }
+
+  /**
    * Zaman dilimine göre tarih ve saat döndürür
    * @returns {Date} - Zaman dilimine göre tarih ve saat
    */
@@ -997,7 +1018,7 @@ export class MachineController {
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
-      PRGSTATE: program.programState === undefined ? ProgramStatus.EXISTS_ONLY_ON_DATABASE : program.programState,
+      PRGSTATE: isDef(program.programState) ? ProgramStatus.EXISTS_ONLY_ON_DATABASE : program.programState,
       TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
       TotalChemReq: 0,

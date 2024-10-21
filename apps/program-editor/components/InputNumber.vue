@@ -9,6 +9,7 @@ const props = withDefaults(defineProps<{
   dense?: boolean
   hideBottomSpace?: boolean
   format?: string
+  disable?: boolean
 }>(), {
   type: 'decimal',
   rules: () => [],
@@ -190,6 +191,7 @@ onMounted(() => {
     no-error-icon
     :hide-bottom-space="hideBottomSpace"
     :outlined="outlined"
+    :disable="disable"
     :dense="dense"
     :suffix="format === 'DURATION' ? 'min' : ''"
   >
@@ -203,6 +205,7 @@ onMounted(() => {
         autocomplete="off"
         class="q-field__native q-placeholder"
         :class="format === 'DURATION' ? 'text-right' : ''"
+        :disabled="disable"
         @keydown="onKeydownPreventNonNumerical"
         @paste="onPastePreventNonNumerical"
         @drop="onDrop"

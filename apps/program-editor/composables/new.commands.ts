@@ -4,11 +4,10 @@ import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPast
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import CMConcatenateProgramDetails from '~/components/CMConcatenateProgramDetails.vue'
-import CMChangeNameDialog from '~/components/CMChangeNameDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
 import TBProgramFilterDialog from '~/components/TBProgramFilterDialog.vue'
-import type { Program, ProgramFilter } from '~/shared/types'
+import type { Program, ProgramFilter, ProgramHeader, ProgramTable } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -288,17 +287,17 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const editor = useEditorStore()
   return {
     name: 'changeName',
-    execute(ctx: any, selectedRows, machineId) {
+    execute(ctx: any, selectedPrograms: ProgramTable[], machineId) {
       ctx.$q.dialog({
-        component: CMChangeNameDialog,
+        component: CMNewProgramDialog,
         componentProps: {
-          name: selectedRows[0]?.name,
+          header: 'rename',
         },
-      }).onOk(async (newName: string) => {
-        await contextMenuStore.changeName(selectedRows[0].programNo, newName, machineId)
+      }).onOk(async (program: ProgramHeader) => {
+        const editor = useEditorStore()
+        await contextMenuStore.updateProgramHeader(program, machineId)
         await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
