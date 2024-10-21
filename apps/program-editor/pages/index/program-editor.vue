@@ -146,7 +146,6 @@ onKeyStroke(['Enter', 'NumpadEnter'], (event: KeyboardEvent) => {
     event.preventDefault()
     editor.scrollPage(editor.selectedSteps[0].stepId, true)
   }
-  editor.scrollPage(editor.selectedSteps[0].stepId, true)
 })
 
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
@@ -160,8 +159,7 @@ onKeyStroke(['Delete'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable())
-    return
+  if (isActiveElementEditable()) return
 
   event.preventDefault()
   if (event.shiftKey) {
@@ -177,8 +175,7 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable())
-    return
+  if (isActiveElementEditable()) return
 
   event.preventDefault()
   if (event.shiftKey) {

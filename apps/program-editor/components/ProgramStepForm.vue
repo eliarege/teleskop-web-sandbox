@@ -38,9 +38,12 @@ const sortableOptions: SortableOptions = {
 }
 
 // Step Duration
-const duration = computed(() => formatDuration(
-  calculateProgramStepDuration(editor.program, editor.machine, editor.teleskopSettings.initialTemperature, stepIndex.value).duration,
-))
+const duration = computed(() => {
+  const stepDurations = calculateProgramStepDuration(editor.program, editor.machine, editor.teleskopSettings.initialTemperature, stepIndex.value)
+  const totalStepDuration = stepDurations.reduce((total, step) => total + step.duration, 0)
+  return formatDuration(totalStepDuration)
+})
+
 </script>
 
 <template>
