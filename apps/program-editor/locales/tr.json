@@ -401,6 +401,7 @@
   },
   "tempTimeGraph": {
     "_": "Sıcaklık/Zaman Grafiği",
+    "lower": "sicaklik-zaman-grafigi",
     "hideIcons": "İkonları Gizle",
     "showIcons": "Ikonları Göster",
     "hideSlopes": "Eğimleri Gizle",

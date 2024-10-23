@@ -401,6 +401,7 @@
   },
   "tempTimeGraph": {
     "_": "Temperature/Time Graph",
+    "lower": "temperature-time-graph",
     "hideIcons": "Hide Icons",
     "showIcons": "Show Icons",
     "hideSlopes": "Hide Slopes",
