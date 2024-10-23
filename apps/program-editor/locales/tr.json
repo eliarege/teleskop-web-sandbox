@@ -410,5 +410,10 @@
     "showDuration": "Süreyi Göster",
     "fullScreen": "Tam Ekran",
     "screenShot": "Ekran Görüntüsü"
+  },
+  "stepCommandGraph": {
+    "_": "Adım/Komut Grafiği",
+    "lower": "adim-komut-grafigi",
+    "screenShot": "Ekran Görüntüsü"
   }
 }

@@ -349,8 +349,9 @@ onMounted(() => {
               dense
             />
           </div>
-          <div class="text-h8">
-            {{ editor.machine.id }} - {{ editor.machine.name }}
+          <div class="text-h8 flex flex-col">
+            <span>{{ editor.machine.id }} - {{ editor.machine.name }}</span>
+            <span>{{ editor.program.programNo }} - {{ editor.program.name }}</span>
           </div>
         </q-card-section>
         <q-card-section>

@@ -410,5 +410,10 @@
     "showDuration": "Show Duration",
     "fullScreen": "Full Screen",
     "screenShot": "Screenshot"
+  },
+  "stepCommandGraph": {
+    "_": "Step/Command Graph",
+    "lower": "step-command-graph",
+    "screenShot": "Screenshot"
   }
 }

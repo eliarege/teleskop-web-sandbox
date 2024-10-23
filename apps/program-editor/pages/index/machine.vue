@@ -116,7 +116,8 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable()) return
+  if (isActiveElementEditable())
+    return
 
   event.preventDefault()
   const currentIndex = editor.allPrograms.indexOf(editor.selectedPrograms[0])
@@ -128,7 +129,8 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable()) return
+  if (isActiveElementEditable())
+    return
 
   event.preventDefault()
   const currentIndex = editor.allPrograms.indexOf(editor.selectedPrograms[0])
@@ -138,7 +140,6 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
     editor.selectedPrograms = [newSelection]
   }
 })
-
 
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
@@ -831,5 +832,4 @@ function handleRowClass(row: ProgramTable): string {
   border-radius: 10px;
   user-select: none;
 }
-
 </style>
