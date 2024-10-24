@@ -184,7 +184,7 @@ function getIconStyle(point: { x: number, y: number, color: string }): CSSProper
 
   return {
     position: 'absolute',
-    left: `${x + 18}px`,
+    left: `${x + 8}px`,
     top: `${y + 24}px`,
     color: point.color,
   }
@@ -412,13 +412,14 @@ onMounted(() => {
                   :class="point.icon"
                   class="iconify-icon"
                 />
-                <div
+                <!-- Icon Index -->
+                <!-- <div
                   v-if="point.icon"
                   :style="point.iconIndexStyle"
                   class="icon-index"
                 >
-                  {{ '2' }}
-                </div>
+                   {{ '2' }}
+                </div> -->
               </div>
 
               <!-- Slope Label -->
