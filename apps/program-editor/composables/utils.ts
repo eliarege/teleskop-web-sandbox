@@ -1,6 +1,7 @@
 import isEqual from 'fast-deep-equal'
 import { useEditorStore } from './editor'
 import { isDef } from '@teleskop/utils'
+import { ref } from 'vue';
 import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, TeleskopSettings, ioListItem } from '~/shared/types'
 
 export interface CommitState {
@@ -301,3 +302,12 @@ export function parseDuration(duration: string): number {
   }
   return Number(duration) * 36000
 }
+
+interface Notification {
+  message: string
+  type: 'positive' | 'warning'
+  date: Date
+}
+
+export const showNotificationPopup = ref(false)
+export const notifications = ref<Notification[]>([])

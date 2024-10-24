@@ -416,5 +416,13 @@
     "_": "Step/Command Graph",
     "lower": "step-command-graph",
     "screenShot": "Screenshot"
+  },
+  "notification": {
+    "_": "Notification",
+    "notifications": "Notifications",
+    "no_notification": "No notification",
+    "yes_notification": "{count} notification(s)!",
+    "delete_all": "Delete all",
+    "close": "Close"
   }
 }

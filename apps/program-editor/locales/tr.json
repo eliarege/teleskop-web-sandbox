@@ -416,5 +416,13 @@
     "_": "Adım/Komut Grafiği",
     "lower": "adim-komut-grafigi",
     "screenShot": "Ekran Görüntüsü"
+  },
+  "notification": {
+    "_": "Bildirim",
+    "notifications": "Bildirimler",
+    "no_notification": "Bildirim yok",
+    "yes_notification": "{count} bildirim var!",
+    "delete_all": "Tüm bildirimleri sil",
+    "close": "Kapat"
   }
 }

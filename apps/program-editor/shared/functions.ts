@@ -24,6 +24,8 @@ export function reverseAllCheckboxOnOptionGroup(options: { value: any }[], model
   return result
 }
 export function notification(isSuccess: any, message: string, group?: string) {
+  notifications.value.push({ message, type: isSuccess ? 'positive' : 'warning', date: new Date() })
+
   Notify.create({
     message,
     group,
