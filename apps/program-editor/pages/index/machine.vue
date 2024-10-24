@@ -30,6 +30,7 @@ const tableRef = ref()
 const isProgramFilterExists = ref(getExistingFilter())
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t, router })
+const devMode = import.meta.dev
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
@@ -89,7 +90,7 @@ onKeyStroke(['c', 'C'], (event: KeyboardEvent) => {
 onKeyStroke(['v', 'V'], (event: KeyboardEvent) => {
   if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
-    contextMenuStore.paste(machineId)
+    $commandManager.executeCommand('pasteProgram', { $q }, machineId)
   }
 })
 
@@ -487,7 +488,6 @@ const contextMenuOptions = computed(() => [
     },
   ],
   [
-
     {
       label: tt('contextMenu.sendProgram'),
       shortcut: '',
@@ -615,9 +615,7 @@ function getSelectedString() {
   return t('selectRange', { count: editor.selectedPrograms.length, total: editor.allPrograms.length })
 }
 
-const contextMenuPosition = ref({ x: 0, y: 0 })
-
-function onRowClick(event: Event, row: ProgramTable) {
+function onRowClick(event: MouseEvent, row: ProgramTable) {
   if (ctrl.value) {
     if (isRowSelected(row)) {
       removeSelection(row)
@@ -633,7 +631,7 @@ function onRowClick(event: Event, row: ProgramTable) {
       }
       editor.selectedPrograms = tableRows.slice(firstIndex, lastIndex + 1)
     })
-  } else if (!isRowSelected(row)) {
+  } else if (event.button !== 2) { // not right click
     editor.selectedPrograms = [row]
   }
 }
@@ -673,10 +671,13 @@ function handleRowClass(row: ProgramTable): string {
 
 <template>
   <div class="custom-page select-none relative">
-    <div v-if="editor.isLoading" class="loading-container ">
+    <div v-if="editor.isLoading" class="loading-container">
       <LoadingSpinner :has-background="false" />
     </div>
-
+    <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
+      <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
+      <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues()?.map(p => p.program.programNo).join(', ')}` }} </span>
+    </div>
     <QTable
       ref="tableRef"
       v-model:selected="editor.selectedPrograms"

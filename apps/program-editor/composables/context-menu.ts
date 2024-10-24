@@ -140,24 +140,28 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     })
   }
 
-  async function paste(machineId: number, directPasteValues?: Array<{ machine: number, program: any, newProgramNo?: number }>) {
+  async function paste(machineId: number, directPasteValues?: Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>) {
+    const editor = useEditorStore()
     const operationValues = directPasteValues || copiedValues.value
-    const remains: { machine: number, program: any }[] = []
-    const pastedValues: { machine: number, program: any }[] = []
+    const remains: { machine: number, program: ProgramTable }[] = []
+    const pastedValues: { machine: number, program: ProgramTable }[] = []
     for (const val of operationValues) {
       const returnValue = await createProgramOnPaste(val, machineId)
-      if (returnValue === 0)
+      if (returnValue === 0) {
         remains.push(val)
-      else {
+        notification(false, t('contextMenu.pasteNotification.fail', { name: val.program.name, programNo: val.newProgramNo ? val.newProgramNo : val.program.programNo }))
+      } else {
         pastedValues.push(val)
+        editor.selectedPrograms.push(val.program)
         notification(true, t('contextMenu.pasteNotification.success', { name: val.program.name, programNo: val.newProgramNo ? val.newProgramNo : val.program.programNo }))
       }
     }
+    await editor.fetchAllPrograms()
     return remains
     // TODO: Command contextmenu.paste() i kullanamlı ardından remains dönmeli pastedValues'i redo undo stacke kaydedip ona göre delete atmalı
   }
 
-  async function createProgramOnPaste(copiedValue: { machine?: number, program: Program, newProgramNo?: number }, machineId: number): Promise<number> {
+  async function createProgramOnPaste(copiedValue: { machine?: number, program: ProgramTable, newProgramNo?: number }, machineId: number): Promise<number> {
     const { fetch } = useKeycloak()
     try {
       return await fetch(`/api/machine/${machineId}/program`, {

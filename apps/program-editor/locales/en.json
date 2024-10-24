@@ -320,7 +320,8 @@
       "operate": "Delete"
     },
     "pasteNotification": {
-      "success": "Program {name} is successfully saved with program no {programNo}."
+      "success": "Program {name} is successfully saved with program no {programNo}.",
+      "fail": "An error occured while saving program {name} with program no {programNo}."
     },
     "changeNameNotification": {
       "success": "Change name operation is succeed for program with program no {programNo}.",

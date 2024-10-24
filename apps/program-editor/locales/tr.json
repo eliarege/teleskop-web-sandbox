@@ -320,7 +320,8 @@
       "operate": "Sil"
     },
     "pasteNotification": {
-      "success": "{name} programı {programNo} numarasıyla kaydedildi."
+      "success": "{name} programı {programNo} numarasıyla kaydedildi.",
+      "fail": "{name} programı {programNo} numarasına kaydedilirken hata oluştu."
     },
     "changeNameNotification": {
       "success": "{programNo} numaralı programın ismi başarıyla değiştirildi.",
