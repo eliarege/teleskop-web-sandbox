@@ -193,7 +193,7 @@ const buttons = computed(() => [
     label: t('menu.deleteProgram'),
     originalLabel: t('menu.deleteProgram'),
     tooltip: t('menu.deleteProgram'),
-    shortcut: 'Ctrl+Del',
+    shortcut: 'Delete',
     icon: 'delete',
     disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length,
     onClick() {
@@ -368,7 +368,7 @@ const contextMenuOptions = computed(() => [
   [
     {
       label: tt('contextMenu.copy'),
-      shortcut: '',
+      shortcut: 'Ctrl+C',
       icon: 'content_copy',
       disabled: false,
       onClick: () => {
@@ -377,7 +377,7 @@ const contextMenuOptions = computed(() => [
     },
     {
       label: tt('contextMenu.paste'),
-      shortcut: '',
+      shortcut: 'Ctrl+V',
       icon: 'content_paste',
       disabled: !contextMenuStore.isThereCopiedValue.value,
       onClick: () => {
@@ -411,7 +411,7 @@ const contextMenuOptions = computed(() => [
     },
     {
       label: tt('contextMenu.deleteProgram'),
-      shortcut: 'Ctrl+Del',
+      shortcut: 'Delete',
       icon: 'delete',
       disabled: false,
       onClick: () => {
@@ -632,7 +632,9 @@ function onRowClick(event: MouseEvent, row: ProgramTable) {
       editor.selectedPrograms = tableRows.slice(firstIndex, lastIndex + 1)
     })
   } else if (event.button !== 2) { // not right click
-    editor.selectedPrograms = [row]
+      editor.selectedPrograms = [row]
+  } else if (event.button === 2) { // right click
+      editor.selectedPrograms.push(row)
   }
 }
 

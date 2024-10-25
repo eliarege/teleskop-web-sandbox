@@ -12,7 +12,7 @@ const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const newIds = ref(props.remains!.map(() => ''))
 const isOKDisabled = computed(() => {
-  return newIds.value.some(id => !isDef(id) || id === null || id === '')
+  return newIds.value.some(id => !isDef(id) || id === '')
 })
 </script>
 

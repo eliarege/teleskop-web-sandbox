@@ -13,7 +13,7 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const programTypeId = editor.allProcessType.find((p: ProcessType) => p.label === editor.selectedPrograms[0]?.type)?.value
 const programNo = ref(editor.selectedPrograms[0]?.programNo)
-const programName = ref<string>(`${editor.selectedPrograms[0]?.name} ${props.header === 'saveAs' ? t('(copy)') : ''}`)
+const programName = ref<string>(`${editor.selectedPrograms[0]?.name || editor.program.name} ${props.header === 'saveAs' ? t('(copy)') : ''}`)
 const processType = ref<number>(programTypeId || editor.program.typeId)
 const operator = ref<boolean>(editor.selectedPrograms[0]?.operator || editor.program.tbbProgramChangedEvent === 1)
 
@@ -31,7 +31,7 @@ const newProgram = computed<ProgramHeader>(() => {
 
 <template>
   <div class="w-full h-full">
-    <q-dialog ref="dialogRef" persistent>
+    <q-dialog ref="dialogRef">
       <QCard>
         <QForm @submit="onDialogOK(newProgram)">
           <QCard style="width: 500px">
@@ -67,7 +67,7 @@ const newProgram = computed<ProgramHeader>(() => {
                 :options="editor.allProcessType"
                 :label="t('program.programState')"
                 options-dense
-                :rules="[(val: number) => !isDef(val) || t('input.required', { field: t('program.programState') })]"
+                :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.programState') })]"
                 map-options
                 emit-value
                 dense

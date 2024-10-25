@@ -270,7 +270,7 @@ export function filterToQuery(filter: ProgramFilter): string {
  * @returns {string} Süreyi 00:00:00 formatında döndürür
  */
 export function formatDuration(duration: number, hideZero?: boolean): string {
-  if (!isDef(duration) || duration === null || isNaN(duration) || duration < 0) {
+  if (!isDef(duration) || isNaN(duration) || duration < 0) {
     return '00:00:00'
   }
 

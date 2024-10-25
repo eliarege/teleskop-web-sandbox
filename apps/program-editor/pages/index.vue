@@ -130,10 +130,10 @@ const items = [
           editor.popupCommandDetailVisible = true
         } },
       ], [
-        { label: tt('menu.tempTimeGraph'), icon: 'timeline', onClick: () => {
+        { label: tt('menu.tempTimeGraph'), icon: 'timeline', shortcut: 'F8', onClick: () => {
           $commandManager.executeCommand('tempTimeGraph', { $q })
         } },
-        { label: tt('menu.stepCommandGraph'), icon: 'timeline', onClick: () => {
+        { label: tt('menu.stepCommandGraph'), icon: 'timeline', shortcut: 'F7', onClick: () => {
           $commandManager.executeCommand('stepCommandGraph', { $q })
         } },
       ]],
