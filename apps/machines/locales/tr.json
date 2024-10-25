@@ -72,6 +72,7 @@
   "waterTypeDefinitions": "Su Tipleri",
   "theoreticalWaterConsumptions": "Teorik Su Tüketimi",
   "projectViewLanguage": "Proje Görünüm Dili",
+  "initialTemperature": "Başlangıç Sıcaklığı",
   "groupType": "Grup Tipi",
   "name": "Ad",
   "paramLowLimit": "Parametre Alt Limit",
