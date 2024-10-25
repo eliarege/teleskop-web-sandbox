@@ -30,6 +30,7 @@ const tableRef = ref()
 const isProgramFilterExists = ref(getExistingFilter())
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t, router })
+const devMode = import.meta.dev
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
@@ -89,7 +90,7 @@ onKeyStroke(['c', 'C'], (event: KeyboardEvent) => {
 onKeyStroke(['v', 'V'], (event: KeyboardEvent) => {
   if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
-    contextMenuStore.paste(machineId)
+    $commandManager.executeCommand('pasteProgram', { $q }, machineId)
   }
 })
 
@@ -116,7 +117,8 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable()) return
+  if (isActiveElementEditable())
+    return
 
   event.preventDefault()
   const currentIndex = editor.allPrograms.indexOf(editor.selectedPrograms[0])
@@ -128,7 +130,8 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable()) return
+  if (isActiveElementEditable())
+    return
 
   event.preventDefault()
   const currentIndex = editor.allPrograms.indexOf(editor.selectedPrograms[0])
@@ -138,7 +141,6 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
     editor.selectedPrograms = [newSelection]
   }
 })
-
 
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
@@ -191,7 +193,7 @@ const buttons = computed(() => [
     label: t('menu.deleteProgram'),
     originalLabel: t('menu.deleteProgram'),
     tooltip: t('menu.deleteProgram'),
-    shortcut: 'Ctrl+Del',
+    shortcut: 'Delete',
     icon: 'delete',
     disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length,
     onClick() {
@@ -366,7 +368,7 @@ const contextMenuOptions = computed(() => [
   [
     {
       label: tt('contextMenu.copy'),
-      shortcut: '',
+      shortcut: 'Ctrl+C',
       icon: 'content_copy',
       disabled: false,
       onClick: () => {
@@ -375,7 +377,7 @@ const contextMenuOptions = computed(() => [
     },
     {
       label: tt('contextMenu.paste'),
-      shortcut: '',
+      shortcut: 'Ctrl+V',
       icon: 'content_paste',
       disabled: !contextMenuStore.isThereCopiedValue.value,
       onClick: () => {
@@ -409,7 +411,7 @@ const contextMenuOptions = computed(() => [
     },
     {
       label: tt('contextMenu.deleteProgram'),
-      shortcut: 'Ctrl+Del',
+      shortcut: 'Delete',
       icon: 'delete',
       disabled: false,
       onClick: () => {
@@ -486,7 +488,6 @@ const contextMenuOptions = computed(() => [
     },
   ],
   [
-
     {
       label: tt('contextMenu.sendProgram'),
       shortcut: '',
@@ -614,9 +615,7 @@ function getSelectedString() {
   return t('selectRange', { count: editor.selectedPrograms.length, total: editor.allPrograms.length })
 }
 
-const contextMenuPosition = ref({ x: 0, y: 0 })
-
-function onRowClick(event: Event, row: ProgramTable) {
+function onRowClick(event: MouseEvent, row: ProgramTable) {
   if (ctrl.value) {
     if (isRowSelected(row)) {
       removeSelection(row)
@@ -632,8 +631,10 @@ function onRowClick(event: Event, row: ProgramTable) {
       }
       editor.selectedPrograms = tableRows.slice(firstIndex, lastIndex + 1)
     })
-  } else if (!isRowSelected(row)) {
-    editor.selectedPrograms = [row]
+  } else if (event.button !== 2) { // not right click
+      editor.selectedPrograms = [row]
+  } else if (event.button === 2) { // right click
+      editor.selectedPrograms.push(row)
   }
 }
 
@@ -672,10 +673,13 @@ function handleRowClass(row: ProgramTable): string {
 
 <template>
   <div class="custom-page select-none relative">
-    <div v-if="editor.isLoading" class="loading-container ">
+    <div v-if="editor.isLoading" class="loading-container">
       <LoadingSpinner :has-background="false" />
     </div>
-
+    <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
+      <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
+      <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues()?.map(p => p.program.programNo).join(', ')}` }} </span>
+    </div>
     <QTable
       ref="tableRef"
       v-model:selected="editor.selectedPrograms"
@@ -831,5 +835,4 @@ function handleRowClass(row: ProgramTable): string {
   border-radius: 10px;
   user-select: none;
 }
-
 </style>

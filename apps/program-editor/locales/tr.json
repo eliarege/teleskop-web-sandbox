@@ -320,7 +320,8 @@
       "operate": "Sil"
     },
     "pasteNotification": {
-      "success": "{name} programı {programNo} numarasıyla kaydedildi."
+      "success": "{name} programı {programNo} numarasıyla kaydedildi.",
+      "fail": "{name} programı {programNo} numarasına kaydedilirken hata oluştu."
     },
     "changeNameNotification": {
       "success": "{programNo} numaralı programın ismi başarıyla değiştirildi.",
@@ -401,6 +402,7 @@
   },
   "tempTimeGraph": {
     "_": "Sıcaklık/Zaman Grafiği",
+    "lower": "sicaklik-zaman-grafigi",
     "hideIcons": "İkonları Gizle",
     "showIcons": "Ikonları Göster",
     "hideSlopes": "Eğimleri Gizle",
@@ -409,5 +411,18 @@
     "showDuration": "Süreyi Göster",
     "fullScreen": "Tam Ekran",
     "screenShot": "Ekran Görüntüsü"
+  },
+  "stepCommandGraph": {
+    "_": "Adım/Komut Grafiği",
+    "lower": "adim-komut-grafigi",
+    "screenShot": "Ekran Görüntüsü"
+  },
+  "notification": {
+    "_": "Bildirim",
+    "notifications": "Bildirimler",
+    "no_notification": "Bildirim yok",
+    "yes_notification": "{count} bildirim var!",
+    "delete_all": "Tüm bildirimleri sil",
+    "close": "Kapat"
   }
 }

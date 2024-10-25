@@ -23,6 +23,7 @@ const settingsList = [
   { label: 'ttbDyehouseNumber', value: 7 },
   { label: 'ttbProcessUsageActive', value: 8 },
   { label: 'ttbSaveIOValuesInDatabase', value: 9 },
+  { label: 'ttbInitialTemperature', value: 13 },
 ] as const
 
 const formData = ref<Partial<Setting>>({})
@@ -86,6 +87,15 @@ const schema = computed(() => ([
     validation: 'required',
     $formkit: 'select',
     options: [-1, 1, 2, 3, 4, 5],
+  },
+  {
+    label: t('initialTemperature'),
+    name: 'ttbInitialTemperature',
+    $formkit: 'number',
+    validation: 'required',
+    min: -10,
+    max: 300,
+    step: 1,
   },
 ]))
 

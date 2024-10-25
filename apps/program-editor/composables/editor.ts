@@ -1,7 +1,7 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
-import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramFilter, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramFilter, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -149,12 +149,13 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function newParallelStep() {
-    const index = selectedSteps.value.length || program.value.steps.length
-    const parallelIndex = selectedParallelStep.value !== -1 ? selectedParallelStep.value : program.value.steps[index].parallelCommands.length
-    program.value.steps[index].parallelCommands.splice(parallelIndex + 1, 0, createEmptyCommand())
+    const index = program.value.steps.findIndex(step => step.stepId === selectedSteps.value[0]?.stepId)
+    const mainIndex = index < 0 ? program.value.steps.length - 1 : index
+    const parallelIndex = program.value.steps[mainIndex].parallelCommands.length - 1
+    program.value.steps[mainIndex].parallelCommands.splice(parallelIndex + 1, 0, createEmptyCommand())
 
     nextTick(() => {
-      scrollPage(index, true)
+      scrollPage(mainIndex, true)
     })
   }
 
@@ -262,18 +263,24 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function deleteStep(stepIndex?: number) {
-    if (!isDef(stepIndex)) {
+    if (isDef(stepIndex)) {
       program.value.steps.splice(stepIndex, 1)
     } else {
-      if (selectedSteps.value.length) {
-        program.value.steps.splice(selectedSteps.value.length, 1)
+      // Sondan başa doğru iterasyon yaparak elemanları sil
+      for (let i = selectedSteps.value.length - 1; i >= 0; i--) {
+        const index = program.value.steps.findIndex(s => s.stepId === selectedSteps.value[i].stepId)
+        if (index !== -1) {
+          program.value.steps.splice(index, 1)
+        }
       }
+      selectedSteps.value = []
     }
-    // selectedStep.value = Math.min(selectedStep.value, program.value.steps.length - 1)
   }
 
+
+
   function deleteParallelStep(stepIndex?: number, parallelIndex?: number) {
-    if (!isDef(stepIndex) && !isDef(parallelIndex)) {
+    if (isDef(stepIndex) && isDef(parallelIndex)) {
       program.value.steps[stepIndex]?.parallelCommands.splice(parallelIndex, 1)
     } else {
       if (selectedSteps.value.length && selectedParallelStep.value !== -1) {

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind } from '@vueuse/core'
-import { useRouter } from 'vue-router'
 import { EliarModal } from '@teleskop/ui'
 import { isDef } from '@teleskop/utils'
 import MachineCommandList from '~/components/MachineCommandList.vue'
@@ -10,6 +9,7 @@ import ProgramTitle from '~/components/ProgramTitle.vue'
 import ContextBar from '~/components/ContextBar.vue'
 import { useEditorStore } from '~/composables/editor'
 import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
+import TopbarNotificationButton from '~/components/TopbarNotificationButton.vue'
 
 const { $commandManager } = useNuxtApp()
 const { t } = useI18n()
@@ -130,10 +130,10 @@ const items = [
           editor.popupCommandDetailVisible = true
         } },
       ], [
-        { label: tt('menu.tempTimeGraph'), icon: 'timeline', onClick: () => {
+        { label: tt('menu.tempTimeGraph'), icon: 'timeline', shortcut: 'F8', onClick: () => {
           $commandManager.executeCommand('tempTimeGraph', { $q })
         } },
-        { label: tt('menu.stepCommandGraph'), icon: 'timeline', onClick: () => {
+        { label: tt('menu.stepCommandGraph'), icon: 'timeline', shortcut: 'F7', onClick: () => {
           $commandManager.executeCommand('stepCommandGraph', { $q })
         } },
       ]],
@@ -230,6 +230,7 @@ const itemsMobile = [
         </div>
         <QSpace />
         <div class="space-x-1">
+          <TopbarNotificationButton />
           <TopbarFullscreenButton />
           <TopbarAppGrid />
           <TopbarAuthenticatedUser />

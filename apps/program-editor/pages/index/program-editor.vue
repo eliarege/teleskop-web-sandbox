@@ -108,7 +108,7 @@ const buttons = computed(() => [
     label: t('menu.deleteParallelStep'),
     originalLabel: t('menu.deleteParallelStep'),
     tooltip: t('menu.deleteParallelStep'),
-    shortcut: 'Ctrl+Del',
+    shortcut: ' ',
     icon: 'delete',
     disable: (editor.isLoading || editor.selectedSteps || editor.selectedParallelStep === -1),
     onClick() {
@@ -141,6 +141,16 @@ onKeyStroke('F3', (event: KeyboardEvent) => {
   }
 })
 
+onKeyStroke(['F7'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  $commandManager.executeCommand('stepCommandGraph', { $q })
+})
+
+onKeyStroke(['F8'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  $commandManager.executeCommand('tempTimeGraph', { $q })
+})
+
 onKeyStroke(['Enter', 'NumpadEnter'], (event: KeyboardEvent) => {
   if (!isActiveElementEditable()) {
     event.preventDefault()
@@ -151,10 +161,7 @@ onKeyStroke(['Enter', 'NumpadEnter'], (event: KeyboardEvent) => {
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
   if (!isActiveElementEditable()) {
     event.preventDefault()
-    if (event.ctrlKey)
-      editor.deleteParallelStep()
-    else
-      editor.deleteStep()
+    editor.deleteStep()
   }
 })
 

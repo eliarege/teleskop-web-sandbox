@@ -78,6 +78,7 @@
   "waterTypeDefinitions": "Water Types",
   "theoreticalWaterConsumptions": "Theoretical Water Consumptions",
   "projectViewLanguage": "Project View Language",
+  "initialTemperature": "Initial Temperature",
   "groupType": "Group Type",
   "name": "Name",
   "paramLowLimit": "Param Low Limit",

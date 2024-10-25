@@ -27,14 +27,16 @@ const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!)
   <div class="pl-1 pt-1">
     <div class="flex">
       <div v-if="expanded" class="w-7 flex-center">
-        <UnoIcon
-          class="icon"
-          :class="commandIcon?.name"
-          :style="{ color: commandIcon?.color }"
-        />
-        <q-tooltip>
-          {{ commandIcon?.label }}
-        </q-tooltip>
+        <div v-if="commandIcon">
+          <UnoIcon
+            class="icon"
+            :class="commandIcon.name"
+            :style="{ color: commandIcon.color }"
+          />
+          <q-tooltip>
+            {{ commandIcon.label }}
+          </q-tooltip>
+        </div>
       </div>
       <div class="pb-1 pr-2">
         <CommandSelector :path="props.path" />

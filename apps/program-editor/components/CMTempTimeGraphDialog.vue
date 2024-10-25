@@ -2,9 +2,10 @@
 import { useDialogPluginComponent } from 'quasar'
 import { Line } from 'vue-chartjs'
 import type { ChartData, ChartOptions } from 'chart.js'
-import { CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Title, Tooltip } from 'chart.js'
+import { CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Title, Tooltip, animator } from 'chart.js'
 import html2canvas from 'html2canvas-pro'
 import { isDef } from '@teleskop/utils'
+import type { CSSProperties } from 'vue'
 import { calculateProgramDurationPoint } from '~/shared/formula'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
@@ -17,10 +18,11 @@ const { dialogRef } = useDialogPluginComponent()
 const showIcons = ref(true)
 const showSlopes = ref(true)
 const showDurations = ref(true)
-// const isFullScreen = ref(false)
+const isFullScreen = ref(false)
 
 const chartData = ref<ChartData>()
 const chartOptions = ref<ChartOptions<'line'>>()
+const chartRef = ref<{ chart: ChartJS }>()
 
 function calculateChartData() {
   const { timeData, dataPoints, stepInfo } = calculateProgramDurationPoint(
@@ -38,17 +40,7 @@ function calculateChartData() {
     datasets: [
       {
         label: t('apperance.temperature(c)'),
-        data: dataPoints.map(({ x, y }, index) => {
-          const commandIcon = editor.getStepIcon(stepInfo[index]?.commandNo)
-          return {
-            x,
-            y,
-            icon: commandIcon?.name || 'mdi:thermometer',
-            color: commandIcon?.color || '#FF0000',
-            slope: calculateSlope(dataPoints[index], dataPoints[index + 1]),
-            duration: timeData[index + 1] - timeData[index],
-          }
-        }),
+        data: calcDataPoints(dataPoints, stepInfo, timeData),
         fill: false,
         borderColor: 'rgb(75, 192, 192)',
         tension: 0,
@@ -63,6 +55,8 @@ function calculateChartData() {
   }
 
   chartOptions.value = {
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       tooltip: {
         displayColors: false,
@@ -71,7 +65,7 @@ function calculateChartData() {
             return `${formatDuration(timeData[context[0].dataIndex])}`
           },
           label: (context) => {
-            if (isDef(stepInfo[context.dataIndex]))
+            if (!isDef(stepInfo[context.dataIndex]))
               return
 
             return [
@@ -131,6 +125,13 @@ function calculateChartData() {
         },
       },
     },
+    onResize() {
+      nextTick(() => {
+        if (chartData.value && chartData.value.datasets) {
+          chartData.value.datasets[0].data = calcDataPoints(dataPoints, stepInfo, timeData)
+        }
+      })
+    },
   }
 }
 
@@ -138,16 +139,37 @@ interface Point {
   x: number
   y: number
   icon: string
+  iconStyle: CSSProperties
+  iconIndexStyle: CSSProperties
   color: string
   slope: number
+  slopeStyle: CSSProperties
   duration: number
+  durationStyle: CSSProperties
 }
 
-function getIconStyle(point: Point) {
-  const chartInstance = ChartJS.getChart('temp-time-graph')
+function calcDataPoints(dataPoints: { x: number, y: number }[], stepInfo: { commandNo: number, commandName: string, step: number }[], timeData: number[]): Point[] {
+  return dataPoints.map(({ x, y }, index) => {
+    const commandIcon = editor.getStepIcon(stepInfo[index]?.commandNo)
+    return {
+      x,
+      y,
+      icon: commandIcon?.name || '',
+      iconStyle: getIconStyle({ x, y, color: commandIcon?.color || '#FF0000' }),
+      iconIndexStyle: { ...getIconStyle({ x, y, color: commandIcon?.color || '#FF0000' }), margin: '-1px -8px', fontSize: '14px' },
+      color: commandIcon?.color || '#FF0000',
+      slope: calculateSlope(dataPoints[index], dataPoints[index + 1]),
+      slopeStyle: getSlopeStyle(dataPoints[index], dataPoints[index + 1]),
+      duration: timeData[index + 1] - timeData[index],
+      durationStyle: getDurationStyle(dataPoints[index], dataPoints[index + 1]),
+    }
+  })
+}
+
+function getIconStyle(point: { x: number, y: number, color: string }): CSSProperties {
+  const chartInstance = chartRef.value?.chart
   if (!chartInstance || !chartOptions.value?.scales?.x || !chartOptions.value.scales.y)
     return {}
-
   const chartArea = chartInstance.chartArea
   if (!chartArea)
     return {}
@@ -162,13 +184,13 @@ function getIconStyle(point: Point) {
 
   return {
     position: 'absolute',
-    left: `${x - 8}px`,
-    top: `${y - 28}px`,
+    left: `${x + 8}px`,
+    top: `${y + 24}px`,
     color: point.color,
   }
 }
 
-function calculateSlope(point1: Point, point2: Point): number {
+function calculateSlope(point1: { x: number, y: number }, point2: { x: number, y: number }): number {
   if (!point1 || !point2)
     return 0 // adımlardan biri yoksa eğim 0
   if (point1.x === point2.x)
@@ -176,11 +198,11 @@ function calculateSlope(point1: Point, point2: Point): number {
   return Math.round((point2.y - point1.y) / ((point2.x - point1.x) / 60))
 }
 
-function calculatePoint(point1: Point, point2: Point) {
+function calculatePoint(point1: { x: number, y: number }, point2: { x: number, y: number }) {
   if (!point1 || !point2)
     return {}
 
-  const chartInstance = ChartJS.getChart('temp-time-graph')
+  const chartInstance = chartRef.value?.chart
   if (!chartInstance || !chartOptions.value?.scales?.x || !chartOptions.value.scales.y)
     return {}
 
@@ -205,13 +227,13 @@ function calculatePoint(point1: Point, point2: Point) {
   }
 }
 
-function getSlopeStyle(point1: Point, point2: Point) {
+function getSlopeStyle(point1: { x: number, y: number }, point2: { x: number, y: number }) {
   const { x: xMid, y: yMid } = calculatePoint(point1, point2)
 
   return {
     position: 'absolute',
-    left: `${xMid - 16}px`,
-    top: `${yMid - 16}px`,
+    left: `${xMid}px`,
+    top: `${yMid + 42}px`,
     fontSize: '12px',
     color: '#333',
     background: '#fff',
@@ -221,13 +243,13 @@ function getSlopeStyle(point1: Point, point2: Point) {
   }
 }
 
-function getDuraitonStyle(point1: number, point2: number) {
+function getDurationStyle(point1: { x: number, y: number }, point2: { x: number, y: number }) {
   const { x: xMid, y: yMid } = calculatePoint(point1, point2)
 
   return {
     position: 'absolute',
-    left: `${xMid - 16}px`,
-    top: `${yMid - 38}px`,
+    left: `${xMid}px`,
+    top: `${yMid + 20}px`,
     fontSize: '12px',
     color: '#333',
     background: '#fff',
@@ -236,26 +258,6 @@ function getDuraitonStyle(point1: number, point2: number) {
     padding: '1px 3px',
   }
 }
-
-// function fullScreen() {
-//   const element = document.getElementById('container')
-
-//   if (isFullScreen.value) {
-//     document.exitFullscreen().then(() => {
-//       element?.style.removeProperty('backgroundColor')
-//       resizeChart() // Resize chart after exiting full screen
-//     })
-//   } else {
-//     if (element) {
-//       element.requestFullscreen().then(() => {
-//         element.style.backgroundColor = 'rgb(243 244 246)'
-//         resizeChart() // Resize chart after entering full screen
-//       })
-//     }
-//   }
-
-//   isFullScreen.value = !isFullScreen.value
-// }
 
 async function screenShot() {
   const element = document.getElementById('chart-container')
@@ -316,7 +318,7 @@ async function screenShot() {
       },
     })
     const link = document.createElement('a')
-    link.download = `${editor.machine.id}-${editor.program.programNo}-temp/time-graph.png`
+    link.download = `${editor.machine.id}-${editor.program.programNo}-${t('tempTimeGraph.lower')}.png`
     link.href = canvas.toDataURL('image/png')
     link.click()
   }
@@ -328,10 +330,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" persistent>
-    <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl bg-gray-1 !dark:(bg-dark-4)">
+  <q-dialog
+    ref="dialogRef"
+    :full-width="isFullScreen"
+    :full-height="isFullScreen"
+  >
+    <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl !dark:(bg-dark-4)">
       <div id="container">
-        <q-card-section>
+        <q-card-section class="bg-gray-1 !dark:(bg-dark-1)">
           <div class="text-h6 flex">
             {{ t('tempTimeGraph._') }}
             <q-space />
@@ -343,8 +349,9 @@ onMounted(() => {
               dense
             />
           </div>
-          <div class="text-h8">
-            {{ editor.machine.id }} - {{ editor.machine.name }}
+          <div class="text-h8 flex flex-col">
+            <span>{{ editor.machine.id }} - {{ editor.machine.name }}</span>
+            <span>{{ editor.program.programNo }} - {{ editor.program.name }}</span>
           </div>
         </q-card-section>
         <q-card-section>
@@ -370,13 +377,13 @@ onMounted(() => {
               icon="timelapse"
               @click="showDurations = !showDurations"
             />
-            <!-- <q-btn
-                :label="t('tempTimeGraph.fullScreen')"
-                class="setting-btn"
-                color="blue"
-                icon="fullscreen"
-                @click="fullScreen"
-              /> -->
+            <q-btn
+              :label="t('tempTimeGraph.fullScreen')"
+              class="setting-btn"
+              color="blue"
+              icon="fullscreen"
+              @click="isFullScreen = !isFullScreen"
+            />
             <q-btn
               :label="t('tempTimeGraph.screenShot')"
               class="setting-btn"
@@ -387,10 +394,10 @@ onMounted(() => {
           </div>
           <div
             id="chart-container"
-            style="position: relative"
+            :style="{ width: isFullScreen ? '100%' : '99%', height: isFullScreen ? '80vh' : '50vh' }"
           >
             <Line
-              id="temp-time-graph"
+              ref="chartRef"
               :options="chartOptions"
               :data="chartData"
             />
@@ -399,17 +406,26 @@ onMounted(() => {
               :key="index"
             >
               <!-- Command Icon -->
-              <UnoIcon
-                v-if="showIcons"
-                :style="getIconStyle(point)"
-                :class="point.icon"
-                class="iconify-icon"
-              />
+              <div v-if="showIcons">
+                <UnoIcon
+                  :style="point.iconStyle"
+                  :class="point.icon"
+                  class="iconify-icon"
+                />
+                <!-- Icon Index -->
+                <!-- <div
+                  v-if="point.icon"
+                  :style="point.iconIndexStyle"
+                  class="icon-index"
+                >
+                   {{ '2' }}
+                </div> -->
+              </div>
 
               <!-- Slope Label -->
               <span
                 v-if="showSlopes && point.slope !== 0"
-                :style="getSlopeStyle(point, chartData?.datasets[0].data[index + 1])"
+                :style="point.slopeStyle"
                 class="slope-label"
               >
                 {{ `${point.slope}'C` }}
@@ -418,7 +434,7 @@ onMounted(() => {
               <!-- Duration Label -->
               <span
                 v-if="showDurations && point.duration >= 600"
-                :style="getDuraitonStyle(point, chartData?.datasets[0].data[index + 1])"
+                :style="point.durationStyle"
                 class="duration-label"
               >
                 {{ `${Math.floor(point.duration / 60)}'` }}
@@ -435,6 +451,13 @@ onMounted(() => {
 .iconify-icon {
   font-size: 16px;
   position: absolute;
+}
+.icon-index {
+  position: absolute;
+  font-size: 14px;
+  color: #333;
+  pointer-events: none;
+  font-weight: bold;
 }
 .slope-label {
   position: absolute;
