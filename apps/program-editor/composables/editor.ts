@@ -1,7 +1,7 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
-import type { CommandTypes, Machine, MachineCommand, ParameterItem, ProcessType, Program, ProgramFilter, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramFilter, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -44,11 +44,20 @@ export const useEditorStore = defineStore('editor', () => {
     },
   })
 
-  async function fetchTeleskopSettings() {
+  /**
+   * Teleskop ayarlarını alır
+   * @returns {Promise<void>}
+   */
+  async function fetchTeleskopSettings(): Promise<void> {
     teleskopSettings.value = await kc.fetch('/api/teleskop-settings')
   }
 
-  async function changeMachine(id: number) {
+  /**
+   * Makineyi degistirir
+   * @param id - Makine ID
+   * @returns {Promise<void>}
+   */
+  async function changeMachine(id: number): Promise<void> {
     selectedPrograms.value = []
     const MACHINE_PATH_RE = /^\/machine\/\d+$/
     if (machine.value.id !== id) {
@@ -62,6 +71,10 @@ export const useEditorStore = defineStore('editor', () => {
     })
   }
 
+  /**
+   * Yeni step olusturur
+   * @returns {ProgramStep} - Yeni step
+   */
   function createEmptyStep(): ProgramStep {
     return {
       stepId: lastStepId++,
@@ -70,7 +83,11 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  function createEmptyCommand() {
+  /**
+   * Yeni komut olusturur
+   * @returns {ProgramStepCommand} - Yeni step
+   */
+  function createEmptyCommand(): ProgramStepCommand {
     return {
       commandId: lastCommandId++,
       commandNo: null,
@@ -79,7 +96,11 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  function newStep() {
+  /**
+   * Programa step ekler
+   * @returns {void}
+   */
+  function newStep(): void {
     const emptyStep = createEmptyStep()
     const selectedIndex = program.value.steps.findIndex(step => step.stepId === selectedSteps.value[0]?.stepId)
     const stepIndex = selectedIndex !== -1 ? selectedIndex : program.value.steps.length - 1
@@ -97,7 +118,13 @@ export const useEditorStore = defineStore('editor', () => {
     })
   }
 
-  function newStepCommand(commandNo: number, stepIndex: number) {
+  /**
+   * Belirtilen stepIndex'e step ekler
+   * @param commandNo - Komut numarası
+   * @param stepIndex - Step index
+   * @returns {void}
+   */
+  function newStepCommand(commandNo: number, stepIndex: number): void {
     const newStep = createEmptyStep()
     const machineCommand = machine.value?.commands.get(commandNo)
 
@@ -148,7 +175,11 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  function newParallelStep() {
+  /**
+   * Programa parallel step ekler
+   * @returns {void}
+   */
+  function newParallelStep(): void {
     const index = program.value.steps.findIndex(step => step.stepId === selectedSteps.value[0]?.stepId)
     const mainIndex = index < 0 ? program.value.steps.length - 1 : index
     const parallelIndex = program.value.steps[mainIndex].parallelCommands.length - 1
@@ -159,7 +190,13 @@ export const useEditorStore = defineStore('editor', () => {
     })
   }
 
-  function newParallelStepCommand(commandNo: number, stepIndex: number) {
+  /**
+   * Belirtilen stepIndex'e parallel step ekler
+   * @param commandNo - Komut numarası
+   * @param stepIndex - Step index
+   * @returns {void}
+   */
+  function newParallelStepCommand(commandNo: number, stepIndex: number): void {
     const machineCommand = machine.value?.commands.get(commandNo)
     if (!machineCommand) {
       return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
@@ -170,7 +207,13 @@ export const useEditorStore = defineStore('editor', () => {
     program.value.steps[stepIndex].parallelCommands.push(newCommand)
   }
 
-  function updateCommand(command: ProgramStepCommand, commandNo: number) {
+  /**
+   * Belirtilen komutu değiştirir
+   * @param command - Program komutu
+   * @param commandNo - Komut numarası
+   * @returns {void}
+   */
+  function updateCommand(command: ProgramStepCommand, commandNo: number): void {
     const machineCommand = machine.value?.commands.get(commandNo)
     if (!machineCommand) {
       return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
@@ -197,7 +240,12 @@ export const useEditorStore = defineStore('editor', () => {
       }))
   }
 
-  async function onSubmit(newProgram?: Program) {
+  /**
+   * Programı kaydeder
+   * @param newProgram - Program
+   * @returns {Promise<void>}
+   */
+  async function onSubmit(newProgram?: Program): Promise<void> {
     isLoading.value = true
     const firstId = errorIds.value.values().next().value
     if (firstId) {
@@ -229,7 +277,11 @@ export const useEditorStore = defineStore('editor', () => {
     isLoading.value = false
   }
 
-  async function onSaveAs() {
+  /**
+   * Programı veri tabanına kaydet
+   * @returns {Promise<void>}
+   */
+  async function onSaveAs(): Promise<void> {
     isLoading.value = true
     const firstId = errorIds.value.values().next().value
     if (firstId) {
@@ -253,7 +305,13 @@ export const useEditorStore = defineStore('editor', () => {
     window.location.reload()
   }
 
-  async function deleteProgram(machineId: number, programNo: number) {
+  /**
+   * Programı veri tabanından sil
+   * @param machineId - Makine ID
+   * @param programNo - Program no
+   * @returns {Promise<void>}
+   */
+  async function deleteProgram(machineId: number, programNo: number): Promise<void> {
     await kc.fetch(`/api/machine/${machineId}/program/${programNo}`, {
       method: 'DELETE',
       body: {
@@ -262,7 +320,12 @@ export const useEditorStore = defineStore('editor', () => {
     })
   }
 
-  function deleteStep(stepIndex?: number) {
+  /**
+   * Sondan basa dogru iterasyon yaparak elemanları sil
+   * @param stepIndex - Silinecek step index
+   * @returns {void}
+   */
+  function deleteStep(stepIndex?: number): void {
     if (isDef(stepIndex)) {
       program.value.steps.splice(stepIndex, 1)
     } else {
@@ -277,9 +340,13 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-
-
-  function deleteParallelStep(stepIndex?: number, parallelIndex?: number) {
+  /**
+   * Parallel step'i sil
+   * @param stepIndex - Step index
+   * @param parallelIndex - Parallel step index
+   * @returns {void}
+   */
+  function deleteParallelStep(stepIndex?: number, parallelIndex?: number): void {
     if (isDef(stepIndex) && isDef(parallelIndex)) {
       program.value.steps[stepIndex]?.parallelCommands.splice(parallelIndex, 1)
     } else {
@@ -294,7 +361,14 @@ export const useEditorStore = defineStore('editor', () => {
     )
   }
 
-  async function fetchProgram(machineId: number, programNo: number, version?: number) {
+  /**
+   * Programı getirir
+   * @param machineId - Makine ID
+   * @param programNo - Program no
+   * @param version - Program versiyonu
+   * @returns {Promise<void>}
+   */
+  async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<void> {
     selectedSteps.value = []
     selectedParallelStep.value = -1
     lastStepId = 0
@@ -312,7 +386,12 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  async function fetchMachine(machineId: number) {
+  /**
+   * Makineyi getirir
+   * @param machineId - Makine ID
+   * @returns {Promise<void>}
+   */
+  async function fetchMachine(machineId: number): Promise<void> {
     const machineData = await kc.fetch<Machine & { commands: MachineCommand[] }>(`/api/machine/${machineId}`)
 
     machine.value = {
@@ -321,14 +400,27 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  async function fetchAllMachine() {
+  /**
+   * Tüm makineleri getirir
+   * @returns {Promise<Machine[]>} - Tüm makineleri getirir
+   */
+  async function fetchAllMachine(): Promise<Machine[]> {
     return await kc.fetch('/api/machine')
   }
 
-  async function fetchMachineGroup() {
+  /**
+   * Tüm makine gruplarını getirir
+   * @returns {Promise<MachineGroup[]>} Makine grup dizisi içeren bir Promise
+   */
+  async function fetchMachineGroup(): Promise<MachineGroup[]> {
     return await kc.fetch('/api/machine-group')
   }
 
+  /**
+   * Tüm programları getirir
+   * @param filter - Filtre
+   * @returns {Promise<void>}
+   */
   async function fetchAllPrograms(filter?: ProgramFilter): Promise<void> {
     if (filter) {
       allPrograms.value = await kc.fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program?filter=${filterToQuery(filter)}`)
@@ -337,6 +429,10 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  /**
+   * Tüm proses tiplerini getirir
+   * @returns {Promise<void>}
+   */
   async function fetchAllProcessTypes() {
     allProcessType.value = (await kc.fetch<ProcessType[]>('/api/process')).map(type => ({
       ...type,
@@ -344,6 +440,10 @@ export const useEditorStore = defineStore('editor', () => {
     }))
   }
 
+  /**
+   * Yeni bir makine olusturur
+   * @returns {Machine} Makine
+   */
   function createMachine(): Machine {
     return {
       id: 0,
@@ -357,6 +457,10 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  /**
+   * Yeni bir program olusturur
+   * @returns {Program} Program
+   */
   function createProgram() {
     return {
       name: '',
@@ -385,7 +489,11 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  async function updateProgram() {
+  /**
+   * Programı veritabanında günceller
+   * @returns {Promise<boolean>} Program güncellendi mi
+   */
+  async function updateProgram(): Promise<boolean> {
     try {
       await kc.fetch(`/api/machine/${route.params.machine_id}/program`, {
         method: 'PUT',
@@ -407,7 +515,12 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  async function insertProgram(newProgram: Program) {
+  /**
+   * Programı veritabanına kaydeder
+   * @param newProgram - Program
+   * @returns {Promise<boolean>} Program kaydedildi mi
+   */
+  async function insertProgram(newProgram: Program): Promise<boolean> {
     try {
       await kc.fetch(`/api/machine/${newProgram.machineId}/program`, {
         method: 'POST',
@@ -431,6 +544,13 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  /**
+   * Programın belirtilen indexine step ekler
+   * @param program - Program
+   * @param index - Step index
+   * @param step - Step
+   * @returns {void}
+   */
   function insertStep(program: Program, index: number, step: ProgramStep) {
     assertIndex(index, program.steps.length + 1)
     program.steps.splice(index, 0, step)
@@ -458,15 +578,16 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-- 1. Step index
-- 2. Main Komut (mainCommand), Parallel Komut (parallelCommands)
-- 3. Komut index (main ise 0)
-- 4. Parametre (parameters), IO (ioList)
-- 4. IO index
-- 5. IO value index
+   * Belirtilen pathe sahip programın bilgilerini getirir
+    - 1. Step index
+    - 2. Main Komut (mainCommand), Parallel Komut (parallelCommands)
+    - 3. Komut index (main ise 0)
+    - 4. Parametre (parameters), IO (ioList)
+    - 4. IO index
+    - 5. IO value index
    *
-   * @param path string
-   * @returns object | undefined
+   * @param path - Path
+   * @returns {any} - Program Object
    */
   function getPathElement(path: string): any {
     const pathParts = path.split('.')
@@ -481,6 +602,12 @@ export const useEditorStore = defineStore('editor', () => {
     return currentElement
   }
 
+  /**
+   * Teleskop ayarlarını günceller
+   * @param id - Ayar ID
+   * @param value - Deger
+   * @returns {Promise<void>}
+   */
   async function updateTeleskopSettings(id: TeleskopSettingsIds, value: string) {
     switch (id) {
       case TeleskopSettingsIds.OPTIMIZED_ENABLE:
@@ -503,10 +630,20 @@ export const useEditorStore = defineStore('editor', () => {
     })
   }
 
+  /**
+   * Makine komut tiplerini getirir
+   * @param machineId - Makine ID
+   * @returns {Promise<void>}
+   */
   async function fetchCommandTypes(machineId: number) {
     machine.value.commandTypes = await kc.fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
   }
 
+  /**
+   *  Belirtilen komutun ikonunu döndürür
+   * @param commandNo Komut numarası
+   * @returns {StepIcon | undefined} StepIcon
+   */
   function getStepIcon(commandNo: number | undefined): StepIcon | undefined {
     if (!isDef(commandNo))
       return
