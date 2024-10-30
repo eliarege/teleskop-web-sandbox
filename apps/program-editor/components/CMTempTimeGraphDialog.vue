@@ -135,6 +135,11 @@ function calculateChartData() {
   }
 }
 
+interface Coordinate {
+  x: number
+  y: number
+}
+
 interface Point {
   x: number
   y: number
@@ -148,7 +153,7 @@ interface Point {
   durationStyle: CSSProperties
 }
 
-function calcDataPoints(dataPoints: { x: number, y: number }[], stepInfo: { commandNo: number, commandName: string, step: number }[], timeData: number[]): Point[] {
+function calcDataPoints(dataPoints: Coordinate[], stepInfo: { commandNo: number, commandName: string, step: number }[], timeData: number[]): Point[] {
   return dataPoints.map(({ x, y }, index) => {
     const commandIcon = editor.getStepIcon(stepInfo[index]?.commandNo)
     return {
@@ -190,7 +195,7 @@ function getIconStyle(point: { x: number, y: number, color: string }): CSSProper
   }
 }
 
-function calculateSlope(point1: { x: number, y: number }, point2: { x: number, y: number }): number {
+function calculateSlope(point1: Coordinate, point2: Coordinate): number {
   if (!point1 || !point2)
     return 0 // adımlardan biri yoksa eğim 0
   if (point1.x === point2.x)
@@ -198,7 +203,7 @@ function calculateSlope(point1: { x: number, y: number }, point2: { x: number, y
   return Math.round((point2.y - point1.y) / ((point2.x - point1.x) / 60))
 }
 
-function calculatePoint(point1: { x: number, y: number }, point2: { x: number, y: number }) {
+function calculatePoint(point1: Coordinate, point2: Coordinate) {
   if (!point1 || !point2)
     return {}
 
@@ -227,7 +232,7 @@ function calculatePoint(point1: { x: number, y: number }, point2: { x: number, y
   }
 }
 
-function getSlopeStyle(point1: { x: number, y: number }, point2: { x: number, y: number }) {
+function getSlopeStyle(point1: Coordinate, point2: Coordinate) {
   const { x: xMid, y: yMid } = calculatePoint(point1, point2)
 
   return {
@@ -243,7 +248,7 @@ function getSlopeStyle(point1: { x: number, y: number }, point2: { x: number, y:
   }
 }
 
-function getDurationStyle(point1: { x: number, y: number }, point2: { x: number, y: number }) {
+function getDurationStyle(point1: Coordinate, point2: Coordinate) {
   const { x: xMid, y: yMid } = calculatePoint(point1, point2)
 
   return {
