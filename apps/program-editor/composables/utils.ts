@@ -1,7 +1,7 @@
 import isEqual from 'fast-deep-equal'
-import { useEditorStore } from './editor'
 import { isDef } from '@teleskop/utils'
-import { ref } from 'vue';
+import { ref } from 'vue'
+import { useEditorStore } from './editor'
 import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, TeleskopSettings, ioListItem } from '~/shared/types'
 
 export interface CommitState {
@@ -289,7 +289,6 @@ export function formatDuration(duration: number, hideZero?: boolean): string {
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
 }
 
-
 /**
  * 00:00:00 formatını saniyeye dönüştürür
  * @param duration string
@@ -309,5 +308,9 @@ interface Notification {
   date: Date
 }
 
-export const showNotificationPopup = ref(false)
-export const notifications = ref<Notification[]>([])
+export const useNotificationStore = defineStore('notification', () => {
+  const showNotificationPopup = ref<boolean>(false)
+  const notifications = ref<Notification[]>([])
+
+  return { showNotificationPopup, notifications }
+})
