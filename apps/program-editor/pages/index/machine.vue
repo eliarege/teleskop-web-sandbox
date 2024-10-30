@@ -632,9 +632,10 @@ function onRowClick(event: MouseEvent, row: ProgramTable) {
       editor.selectedPrograms = tableRows.slice(firstIndex, lastIndex + 1)
     })
   } else if (event.button !== 2) { // not right click
-      editor.selectedPrograms = [row]
+    editor.selectedPrograms = [row]
   } else if (event.button === 2) { // right click
-      editor.selectedPrograms.push(row)
+    if (!isRowSelected(row))
+      editor.selectedPrograms = [row]
   }
 }
 
