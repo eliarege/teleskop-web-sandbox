@@ -166,7 +166,8 @@ onKeyStroke(['Delete'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable()) return
+  if (isActiveElementEditable())
+    return
 
   event.preventDefault()
   if (event.shiftKey) {
@@ -174,15 +175,17 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
       editor.selectedParallelStep = editor.selectedParallelStep + 1
     }
   } else {
-    if (between(editor.selectedSteps[0].stepId, 0, editor.program.steps.length - 1)) {
-      editor.selectedSteps = [editor.selectedSteps[0]]
+    const stepIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0].stepId) + 1
+    if (between(stepIndex, 0, editor.program.steps.length - 1)) {
+      editor.selectedSteps = [editor.program.steps[stepIndex]]
     }
   }
   editor.scrollPage(editor.selectedSteps[0].stepId)
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable()) return
+  if (isActiveElementEditable())
+    return
 
   event.preventDefault()
   if (event.shiftKey) {
@@ -190,8 +193,9 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
       editor.selectedParallelStep = editor.selectedParallelStep - 1
     }
   } else {
-    if (between(editor.selectedSteps[0].stepId - 1, 0, editor.program.steps.length - 1)) {
-      editor.selectedSteps = [editor.selectedSteps[0]]
+    const stepIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0].stepId) - 1
+    if (between(stepIndex, 0, editor.program.steps.length - 1)) {
+      editor.selectedSteps = [editor.program.steps[stepIndex]]
     }
   }
   editor.scrollPage(editor.selectedSteps[0].stepId)
