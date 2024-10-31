@@ -1,13 +1,13 @@
 <script setup lang="ts">
-const { t } = useI18n()
+const { t, d } = useI18n()
 const notificationState = useNotificationStore()
 
 function getNoficationTime(notificationDate: Date) {
-  return `${notificationDate.getHours()}:${notificationDate.getMinutes() < 10 ? `0${notificationDate.getMinutes()}` : notificationDate.getMinutes()}`
+  return d(notificationDate, { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
-function removeNotification(notificationTime: Date) {
-  notificationState.notifications = notificationState.notifications.filter(notification => notification.date.getTime() !== notificationTime.getTime())
+function removeNotification(index: number) {
+  notificationState.notifications.splice(index, 1)
 }
 </script>
 
@@ -78,7 +78,7 @@ function removeNotification(notificationTime: Date) {
                 round
                 size="sm"
                 dense
-                @click="removeNotification(notification.date)"
+                @click="removeNotification(i)"
               />
             </div>
           </div>
