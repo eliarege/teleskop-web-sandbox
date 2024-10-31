@@ -280,6 +280,7 @@ onMounted(() => {
     ref="dialogRef"
     :full-width="isFullScreen"
     :full-height="isFullScreen"
+    @hide="editor.popupTempTimeGraphVisible = false"
   >
     <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl !dark:(bg-dark-4)">
       <div id="container">

@@ -787,14 +787,6 @@ function handleRowClass(row: ProgramTable): string {
       @close="comparisonDialogVisible = false"
     />
   </EliarModal>
-
-  <EliarModal v-if="editor.popupTempTimeGraphVisible">
-    <CMTempTimeGraphDialog />
-  </EliarModal>
-
-  <EliarModal v-if="editor.popupStepCommandGraphVisible">
-    <CMStepCommandGraphDialog />
-  </EliarModal>
 </template>
 
 <style lang="postcss" scoped>
