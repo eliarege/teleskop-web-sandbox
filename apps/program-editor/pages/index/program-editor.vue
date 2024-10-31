@@ -165,39 +165,41 @@ onKeyStroke(['Delete'], (event: KeyboardEvent) => {
   }
 })
 
-onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable())
-    return
+onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
+  if (isActiveElementEditable()) return
 
   event.preventDefault()
+
   if (event.shiftKey) {
-    if (between(editor.selectedParallelStep + 1, 0, editor.program.steps[editor.selectedSteps[0].stepId].parallelCommands.length - 1)) {
-      editor.selectedParallelStep = editor.selectedParallelStep + 1
+    const parallelStep = editor.selectedParallelStep - 1
+    if (between(parallelStep, 0, editor.program.steps[editor.selectedSteps[0].stepId].parallelCommands.length - 1)) {
+      editor.selectedParallelStep = parallelStep
     }
   } else {
-    const stepIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0].stepId) + 1
-    if (between(stepIndex, 0, editor.program.steps.length - 1)) {
-      editor.selectedSteps = [editor.program.steps[stepIndex]]
-    }
+    const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
+    const stepIndex = currentIndex > 0 ? currentIndex - 1 : editor.program.steps.length - 1
+    editor.selectedSteps = [editor.program.steps[stepIndex]]
   }
+
   editor.scrollPage(editor.selectedSteps[0].stepId)
 })
 
-onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable())
-    return
+onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
+  if (isActiveElementEditable()) return
 
   event.preventDefault()
+
   if (event.shiftKey) {
-    if (between(editor.selectedParallelStep - 1, 0, editor.program.steps[editor.selectedSteps[0].stepId].parallelCommands.length - 1)) {
-      editor.selectedParallelStep = editor.selectedParallelStep - 1
+    const parallelStep = editor.selectedParallelStep + 1
+    if (between(parallelStep, 0, editor.program.steps[editor.selectedSteps[0].stepId].parallelCommands.length - 1)) {
+      editor.selectedParallelStep = parallelStep
     }
   } else {
-    const stepIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0].stepId) - 1
-    if (between(stepIndex, 0, editor.program.steps.length - 1)) {
-      editor.selectedSteps = [editor.program.steps[stepIndex]]
-    }
+    const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
+    const stepIndex = between(currentIndex + 1, 0, editor.program.steps.length - 1) ? currentIndex + 1 : currentIndex
+    editor.selectedSteps = [editor.program.steps[stepIndex]]
   }
+
   editor.scrollPage(editor.selectedSteps[0].stepId)
 })
 
