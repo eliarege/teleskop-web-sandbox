@@ -35,7 +35,7 @@ const colors = useColorStore()
 }
 
 html {
-  font-family: "Roboto", sans-serif;
+  font-family: 'Roboto', sans-serif;
   /* @apply text-light-600; */
 }
 
@@ -95,7 +95,9 @@ html {
   }
 
   .btn-default:hover {
-    box-shadow: 0 4px 4px 0 #9b9a9a, 0 4px 5px 0 #6e6e6e;
+    box-shadow:
+      0 4px 4px 0 #9b9a9a,
+      0 4px 5px 0 #6e6e6e;
   }
 }
 </style>

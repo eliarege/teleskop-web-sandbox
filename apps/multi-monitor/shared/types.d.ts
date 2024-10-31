@@ -152,3 +152,20 @@ export interface BatchLogs {
 export interface NewBatchLogs extends BatchLogs {
   newTime: string
 }
+interface Alarm {
+  alarmNo: number
+  alarmName: string
+  showOnScreen: boolean
+}
+
+interface Command {
+  commandNo: number
+  commandName: string
+  alarms: Alarm[]
+}
+
+export interface MachineAlarm {
+  machineId: number
+  machineName: string
+  commands: Command[]
+}
