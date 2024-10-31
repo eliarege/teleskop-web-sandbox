@@ -6,7 +6,7 @@ import { CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, L
 import { isDef } from '@teleskop/utils'
 import type { CSSProperties } from 'vue'
 import { calculateProgramDurationPoint } from '~/shared/formula'
-import { screenShot } from '~/shared/utils'
+import { screenshot } from '~/shared/utils'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
 
@@ -267,7 +267,7 @@ function getDurationStyle(point1: Coordinate, point2: Coordinate) {
 function takeScreenShot() {
   const element = document.getElementById('chart-container')
   if (element)
-    screenShot(element, `${editor.machine.id}-${editor.program.programNo}-${t('tempTimeGraph.lower')}`)
+    screenshot(element, `${editor.machine.id}-${editor.program.programNo}-${t('tempTimeGraph.lower')}`)
 }
 
 onMounted(() => {

@@ -46,7 +46,7 @@ export function getCaller() {
   return new Error('...').stack?.split('\n')[3]
 }
 
-export async function screenShot(element: HTMLElement, filename: string) {
+export async function screenshot(element: HTMLElement, filename: string) {
   if (element) {
     const canvas = await html2canvas(element, {
       logging: false,

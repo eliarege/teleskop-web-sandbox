@@ -3,7 +3,7 @@ import { useDialogPluginComponent } from 'quasar'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { BarController, BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from 'chart.js'
 import { Bar } from 'vue-chartjs'
-import { screenShot } from '~/shared/utils'
+import { screenshot } from '~/shared/utils'
 
 const { t } = useI18n()
 const editor = useEditorStore()
@@ -120,7 +120,7 @@ chartOptions.value = {
 function takeScreenShot() {
   const element = document.getElementById('chart-container')
   if (element)
-    screenShot(element, `${editor.machine.id}-${editor.program.programNo}-${t('stepCommandGraph.lower')}`)
+    screenshot(element, `${editor.machine.id}-${editor.program.programNo}-${t('stepCommandGraph.lower')}`)
 }
 
 onMounted(() => {
