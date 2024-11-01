@@ -41,13 +41,10 @@ const sortedMachines = computed(() => {
   } else if (store.sortMachines === 4) {
     return [...filteredMachines].sort((a, b) => a.groupName < b.groupName ? -1 : 1,
     )
-  } else if (store.sortMachines === 5) {
-    return filteredMachines.filter(alarm => alarm.currentAlarmStatus !== 2).sort((a, b) => a.currentAlarmStatus > b.currentAlarmStatus ? 1 : -1)
   } else {
     return [...filteredMachines].sort((a, b) => (a.id < b.id ? -1 : 1))
   }
 })
-
 // #region FUNCTIONS
 function connectionStatus(params: number) {
   if (params === 1) {
@@ -95,6 +92,7 @@ function isScreenViable(screen: number) {
 
 <template>
   <div
+    v-if="store.sortMachines !== 5"
     class="card-wrapper lt-sm:(px-2)"
     :style="{ zoom: store.zoomLevel }"
   >
@@ -102,22 +100,24 @@ function isScreenViable(screen: number) {
       v-for="element in sortedMachines"
       :key="element.id"
     >
-      <MachineCardLayout
-        :colors="{
-          backGround: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus),
-          itemBackGround: colors.cardItemBg,
-          activeBackGround: colors.cardActiveBg,
-          idleBackGround: colors.cardIdleBg,
-        }"
-        :washing="store.settings?.washing"
-        :machine="element"
-        :is-group-visible="store.group"
-        :is-screen-viable="isScreenViable(screenWidth)"
-        :connection-status="connectionStatus(element.connectionStatus)"
-        :req-status="reqStatus(element.reqStatus)"
-        :machine-sort="store.sortMachines"
-        :links-active="true"
-      />
+      <div class="w-full h-full">
+        <MachineCardLayout
+          :colors="{
+            backGround: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus),
+            itemBackGround: colors.cardItemBg,
+            activeBackGround: colors.cardActiveBg,
+            idleBackGround: colors.cardIdleBg,
+          }"
+          :washing="store.settings?.washing"
+          :machine="element"
+          :is-group-visible="store.group"
+          :is-screen-viable="isScreenViable(screenWidth)"
+          :connection-status="connectionStatus(element.connectionStatus)"
+          :req-status="reqStatus(element.reqStatus)"
+          :machine-sort="store.sortMachines"
+          :links-active="true"
+        />
+      </div>
     </div>
   </div>
 </template>

@@ -52,7 +52,6 @@ export interface MachineDataRaw {
   totalConsumedElectricity: number
   erp: Record<string, any> | null
 }
-
 export interface MachineData extends MachineDataRaw {
   runningStartTime: Date
   stopReasonDateTime: Date
@@ -60,7 +59,6 @@ export interface MachineData extends MachineDataRaw {
   newTheoreticalDuration: number
   runningStartHour: string
 }
-
 export interface TableData extends MachineDataRaw {
   name: string
   operator: string
@@ -168,4 +166,22 @@ export interface MachineAlarm {
   machineId: number
   machineName: string
   commands: Command[]
+}
+
+export interface MachineAlarmListRaw {
+  commandNo: number
+  alarmNo: number
+  alarmName: string
+  showOnScreen: boolean
+  alarmStatus: 0 | 1
+}
+
+export interface MachineAlarmList {
+  machineId: number
+  machineName: string
+  batchKey: number
+  jobOrder: string
+  operatorName: string
+  currentTemperature: number
+  alarmList: MachineAlarmListRaw[]
 }

@@ -38,7 +38,7 @@ function reqStatus(params: number) {
 </script>
 
 <template>
-  <div v-if="machineSort !== 5" class="machine-commands">
+  <div class="machine-commands">
     <!-- ERP DROPDOWN -->
     <div
       v-show="machine.runningBatchStatus === 2"
@@ -255,31 +255,6 @@ function reqStatus(params: number) {
         <span>{{ t("teleskop.req-status") }} -
           {{ reqStatus(machine.reqStatus) }}</span>
       </div>
-    </div>
-  </div>
-  <div v-else class="machine-commands !gap-2">
-    <div
-      class="machine-commands_items min-h-20 text-center justify-center text-4xl"
-      :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
-    >
-      {{ machine.name }}
-    </div>
-    <div v-if="machine.connectionStatus === 1">
-      <div
-        class="machine-commands_items min-h-20 text-center justify-center text-2xl alarm"
-        :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
-      >
-        {{ machine.runningAlarmNo }}
-        <span v-show="machine.runningAlarmName !== ' '">&nbsp;|&nbsp;</span>
-        {{ machine.runningAlarmName }}
-      </div>
-    </div>
-    <div
-      v-else
-      class="machine-commands_items min-h-20 text-center justify-center text-2xl alarm"
-      :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
-    >
-      {{ t('teleskop.no-connection') }}
     </div>
   </div>
 </template>

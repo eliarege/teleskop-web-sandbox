@@ -4,11 +4,11 @@ import type { Trends } from '~/shared/types'
 export async function getTrendData(): Promise<Trends> {
   const currentWeekData = await knex('BACONSUMPTION AS c')
     .select({
-      currentWeekTotalWater: knex.raw('COALESCE(SUM(c.WaterTotal), 176968)'), // MOCK! SET IT TO 0 BEFORE PROD!!!
-      currentWeekElectricity: knex.raw('COALESCE(SUM(c.ELECTRICITY), 315)'), // MOCK! SET IT TO 0 BEFORE PROD!!!
-      currentWeekFM: knex.raw('COALESCE(SUM(c.FM1VALUE), 176968)'), // MOCK! SET IT TO 0 BEFORE PROD!!!
+      currentWeekTotalWater: knex.raw('COALESCE(SUM(c.WaterTotal), 0)'),
+      currentWeekElectricity: knex.raw('COALESCE(SUM(c.ELECTRICITY), 0)'),
+      currentWeekFM: knex.raw('COALESCE(SUM(c.FM1VALUE), 0)'),
       currentWeekSalt: knex.raw('COALESCE(SUM(c.SALT), 0)'),
-      currentWeekSteam: knex.raw('COALESCE(SUM(c.STEAM), 2937)'), // MOCK! SET IT TO 0 BEFORE PROD!!!
+      currentWeekSteam: knex.raw('COALESCE(SUM(c.STEAM), 0)'),
     })
     .innerJoin(
       knex('BADATA AS r').select('r.BATCHKEY', 'r.STARTTIME').as('r'),
@@ -22,11 +22,11 @@ export async function getTrendData(): Promise<Trends> {
 
   const lastWeekData = await knex('BACONSUMPTION AS c')
     .select({
-      lastWeekTotalWater: knex.raw('COALESCE(SUM(c.WaterTotal), 8899395)'), // MOCK! SET IT TO 0 BEFORE PROD!!!
-      lastWeekElectricity: knex.raw('COALESCE(SUM(c.ELECTRICITY), 8183)'), // MOCK! SET IT TO 0 BEFORE PROD!!!
-      lastWeekFM: knex.raw('COALESCE(SUM(c.FM1VALUE), 8899395)'), // MOCK! SET IT TO 0 BEFORE PROD!!!
+      lastWeekTotalWater: knex.raw('COALESCE(SUM(c.WaterTotal), 0)'),
+      lastWeekElectricity: knex.raw('COALESCE(SUM(c.ELECTRICITY), 0)'),
+      lastWeekFM: knex.raw('COALESCE(SUM(c.FM1VALUE), 0)'),
       lastWeekSalt: knex.raw('COALESCE(SUM(c.SALT), 0)'),
-      lastWeekSteam: knex.raw('COALESCE(SUM(c.STEAM), 242019)'), // MOCK! SET IT TO 0 BEFORE PROD!!!
+      lastWeekSteam: knex.raw('COALESCE(SUM(c.STEAM), 0)'),
     })
     .innerJoin(
       knex('BADATA AS r').select('r.BATCHKEY', 'r.STARTTIME').as('r'),
@@ -37,7 +37,6 @@ export async function getTrendData(): Promise<Trends> {
       knex.raw('dateadd(day,(2 - datepart(weekday, dateadd(week, -1, getdate()))),cast(dateadd(week, -1, getdate()) AS date))'),
       knex.raw('dateadd(day,(2 - datepart(weekday, getdate())),cast(getdate() as date))'),
     ])
-  console.log({ currentWeekData, lastWeekData })
   return {
     ...currentWeekData[0],
     ...lastWeekData[0],
