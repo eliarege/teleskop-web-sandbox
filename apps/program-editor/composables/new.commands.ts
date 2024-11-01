@@ -119,10 +119,14 @@ registerCommand(() => {
   return {
     name: 'tempTimeGraph',
     execute(ctx: any) {
-      ctx.$q.dialog({
-        component: CMTempTimeGraphDialog,
-      })
-      return true
+      const editor = useEditorStore()
+      if (!editor.popupTempTimeGraphVisible) {
+        ctx.$q.dialog({
+          component: CMTempTimeGraphDialog,
+        })
+        editor.popupTempTimeGraphVisible = true
+        return true
+      }
     },
   }
 })
@@ -131,10 +135,14 @@ registerCommand(() => {
   return {
     name: 'stepCommandGraph',
     execute(ctx: any) {
-      ctx.$q.dialog({
-        component: CMStepCommandGraphDialog,
-      })
-      return true
+      const editor = useEditorStore()
+      if (!editor.popupStepCommandGraphVisible) {
+        ctx.$q.dialog({
+          component: CMStepCommandGraphDialog,
+        })
+        editor.popupStepCommandGraphVisible = true
+        return true
+      }
     },
   }
 })

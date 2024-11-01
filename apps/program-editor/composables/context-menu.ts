@@ -247,15 +247,22 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function sendProgram(programs: Array<any>, machineId: number) {
+  async function sendProgram(programs: ProgramTable[], machineId: number) {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
     editor.isLoading = true
+
     for (const program of programs) {
-      const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
-      const status = check?.name ? 'failedToConnectMachine' : check ? 'success' : 'fail'
-      notification(check, t(`contextMenu.send.${status}`, { name: program.name }))
+      try {
+        const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
+
+        const status = check?.name ? 'failedToConnectMachine' : check ? 'success' : 'fail'
+        notification(check, t(`contextMenu.send.${status}`, { name: program.name }))
+      } catch (error) {
+        notification(null, t(`contextMenu.send.fail`, { name: program.name }))
+      }
     }
+
     editor.isLoading = false
   }
 

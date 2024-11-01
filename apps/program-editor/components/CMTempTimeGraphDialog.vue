@@ -3,10 +3,10 @@ import { useDialogPluginComponent } from 'quasar'
 import { Line } from 'vue-chartjs'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Title, Tooltip, animator } from 'chart.js'
-import html2canvas from 'html2canvas-pro'
 import { isDef } from '@teleskop/utils'
 import type { CSSProperties } from 'vue'
 import { calculateProgramDurationPoint } from '~/shared/formula'
+import { screenshot } from '~/shared/utils'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
 
@@ -135,6 +135,11 @@ function calculateChartData() {
   }
 }
 
+interface Coordinate {
+  x: number
+  y: number
+}
+
 interface Point {
   x: number
   y: number
@@ -148,7 +153,7 @@ interface Point {
   durationStyle: CSSProperties
 }
 
-function calcDataPoints(dataPoints: { x: number, y: number }[], stepInfo: { commandNo: number, commandName: string, step: number }[], timeData: number[]): Point[] {
+function calcDataPoints(dataPoints: Coordinate[], stepInfo: { commandNo: number, commandName: string, step: number }[], timeData: number[]): Point[] {
   return dataPoints.map(({ x, y }, index) => {
     const commandIcon = editor.getStepIcon(stepInfo[index]?.commandNo)
     return {
@@ -190,7 +195,7 @@ function getIconStyle(point: { x: number, y: number, color: string }): CSSProper
   }
 }
 
-function calculateSlope(point1: { x: number, y: number }, point2: { x: number, y: number }): number {
+function calculateSlope(point1: Coordinate, point2: Coordinate): number {
   if (!point1 || !point2)
     return 0 // adımlardan biri yoksa eğim 0
   if (point1.x === point2.x)
@@ -198,7 +203,7 @@ function calculateSlope(point1: { x: number, y: number }, point2: { x: number, y
   return Math.round((point2.y - point1.y) / ((point2.x - point1.x) / 60))
 }
 
-function calculatePoint(point1: { x: number, y: number }, point2: { x: number, y: number }) {
+function calculatePoint(point1: Coordinate, point2: Coordinate) {
   if (!point1 || !point2)
     return {}
 
@@ -227,7 +232,7 @@ function calculatePoint(point1: { x: number, y: number }, point2: { x: number, y
   }
 }
 
-function getSlopeStyle(point1: { x: number, y: number }, point2: { x: number, y: number }) {
+function getSlopeStyle(point1: Coordinate, point2: Coordinate) {
   const { x: xMid, y: yMid } = calculatePoint(point1, point2)
 
   return {
@@ -243,7 +248,7 @@ function getSlopeStyle(point1: { x: number, y: number }, point2: { x: number, y:
   }
 }
 
-function getDurationStyle(point1: { x: number, y: number }, point2: { x: number, y: number }) {
+function getDurationStyle(point1: Coordinate, point2: Coordinate) {
   const { x: xMid, y: yMid } = calculatePoint(point1, point2)
 
   return {
@@ -259,69 +264,10 @@ function getDurationStyle(point1: { x: number, y: number }, point2: { x: number,
   }
 }
 
-async function screenShot() {
+function takeScreenShot() {
   const element = document.getElementById('chart-container')
-  if (element) {
-    const canvas = await html2canvas(element, {
-      logging: false,
-      useCORS: true,
-      scale: window.devicePixelRatio,
-      onclone(document) {
-        const recurse = (el: Element, cb: (el: Element) => void) => {
-          cb(el)
-          for (const child of el.children) {
-            recurse(child, cb)
-          }
-        }
-
-        const stringToUInt8Array = (str: string) => {
-          const arr = new Uint8Array(str.length)
-          for (let i = 0; i < str.length; i++) {
-            arr[i] = str.charCodeAt(i)
-          }
-          return arr
-        }
-
-        const UTF8_RE = /^utf-?8$/i
-        /** 1st capturing group should return encoding of data if its present, 2nd capturing group returns data. */
-        const SVG_DATA_URL_RE = /^url\(['"]?data:image\/svg\+xml(?:;[\w-]+=[\w-]+?)*(?:;([\w-]+))?,(.+?)['"]?\)$/i
-
-        recurse(document.body, (el) => {
-          const styles = getComputedStyle(el)
-          const svgUrlMatch = styles.maskImage.match(SVG_DATA_URL_RE)
-
-          if (!svgUrlMatch)
-            return
-
-          const color = styles.backgroundColor
-          let [encoding = 'utf8', data] = svgUrlMatch.slice(1)
-
-          if (UTF8_RE.test(encoding)) {
-            const decoder = new TextDecoder(encoding)
-            data = decoder.decode(stringToUInt8Array(data))
-          }
-
-          const cloneEl = el.cloneNode()
-          if (!(cloneEl instanceof HTMLElement))
-            return
-
-          cloneEl.style.backgroundColor = 'transparent'
-          cloneEl.innerHTML = decodeURIComponent(data)
-
-          const svgEl = cloneEl.firstChild as SVGSVGElement
-          svgEl.style.color = color
-          svgEl.style.width = '100%'
-          svgEl.style.height = '100%'
-
-          el.parentNode?.replaceChild(cloneEl, el)
-        })
-      },
-    })
-    const link = document.createElement('a')
-    link.download = `${editor.machine.id}-${editor.program.programNo}-${t('tempTimeGraph.lower')}.png`
-    link.href = canvas.toDataURL('image/png')
-    link.click()
-  }
+  if (element)
+    screenshot(element, `${editor.machine.id}-${editor.program.programNo}-${t('tempTimeGraph.lower')}`)
 }
 
 onMounted(() => {
@@ -334,6 +280,7 @@ onMounted(() => {
     ref="dialogRef"
     :full-width="isFullScreen"
     :full-height="isFullScreen"
+    @hide="editor.popupTempTimeGraphVisible = false"
   >
     <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl !dark:(bg-dark-4)">
       <div id="container">
@@ -389,12 +336,12 @@ onMounted(() => {
               class="setting-btn"
               color="green"
               icon="camera_alt"
-              @click="screenShot"
+              @click="takeScreenShot"
             />
           </div>
           <div
             id="chart-container"
-            :style="{ width: isFullScreen ? '100%' : '99%', height: isFullScreen ? '80vh' : '50vh' }"
+            :style="{ width: isFullScreen ? '100%' : '99%', height: isFullScreen ? '75vh' : '50vh' }"
           >
             <Line
               ref="chartRef"

@@ -3,7 +3,7 @@ import { useDialogPluginComponent } from 'quasar'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { BarController, BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from 'chart.js'
 import { Bar } from 'vue-chartjs'
-import html2canvas from 'html2canvas-pro'
+import { screenshot } from '~/shared/utils'
 
 const { t } = useI18n()
 const editor = useEditorStore()
@@ -117,69 +117,10 @@ chartOptions.value = {
   },
 }
 
-async function screenShot() {
+function takeScreenShot() {
   const element = document.getElementById('chart-container')
-  if (element) {
-    const canvas = await html2canvas(element, {
-      logging: false,
-      useCORS: true,
-      scale: window.devicePixelRatio,
-      onclone(document) {
-        const recurse = (el: Element, cb: (el: Element) => void) => {
-          cb(el)
-          for (const child of el.children) {
-            recurse(child, cb)
-          }
-        }
-
-        const stringToUInt8Array = (str: string) => {
-          const arr = new Uint8Array(str.length)
-          for (let i = 0; i < str.length; i++) {
-            arr[i] = str.charCodeAt(i)
-          }
-          return arr
-        }
-
-        const UTF8_RE = /^utf-?8$/i
-        /** 1st capturing group should return encoding of data if its present, 2nd capturing group returns data. */
-        const SVG_DATA_URL_RE = /^url\(['"]?data:image\/svg\+xml(?:;[\w-]+=[\w-]+?)*(?:;([\w-]+))?,(.+?)['"]?\)$/i
-
-        recurse(document.body, (el) => {
-          const styles = getComputedStyle(el)
-          const svgUrlMatch = styles.maskImage.match(SVG_DATA_URL_RE)
-
-          if (!svgUrlMatch)
-            return
-
-          const color = styles.backgroundColor
-          let [encoding = 'utf8', data] = svgUrlMatch.slice(1)
-
-          if (UTF8_RE.test(encoding)) {
-            const decoder = new TextDecoder(encoding)
-            data = decoder.decode(stringToUInt8Array(data))
-          }
-
-          const cloneEl = el.cloneNode()
-          if (!(cloneEl instanceof HTMLElement))
-            return
-
-          cloneEl.style.backgroundColor = 'transparent'
-          cloneEl.innerHTML = decodeURIComponent(data)
-
-          const svgEl = cloneEl.firstChild as SVGSVGElement
-          svgEl.style.color = color
-          svgEl.style.width = '100%'
-          svgEl.style.height = '100%'
-
-          el.parentNode?.replaceChild(cloneEl, el)
-        })
-      },
-    })
-    const link = document.createElement('a')
-    link.download = `${editor.machine.id}-${editor.program.programNo}-${t('stepCommandGraph.lower')}.png`
-    link.href = canvas.toDataURL('image/png')
-    link.click()
-  }
+  if (element)
+    screenshot(element, `${editor.machine.id}-${editor.program.programNo}-${t('stepCommandGraph.lower')}`)
 }
 
 onMounted(() => {
@@ -188,7 +129,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
+  <q-dialog ref="dialogRef" @hide="editor.popupStepCommandGraphVisible = false">
     <q-card class="flex flex-col max-w-6xl max-h-2xl min-w-6xl min-h-2xl !dark:(bg-dark-4)">
       <div id="container">
         <q-card-section class="bg-gray-1 !dark:(bg-dark-1)">
@@ -215,7 +156,7 @@ onMounted(() => {
               class="setting-btn"
               color="green"
               icon="camera_alt"
-              @click="screenShot"
+              @click="takeScreenShot"
             />
           </div>
           <div
