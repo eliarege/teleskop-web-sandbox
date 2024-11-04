@@ -10,6 +10,13 @@ export interface ProgramInfo {
   isChanged: boolean
 }
 
+export interface Filter {
+  programNo?: number | null
+  programName?: string | null
+  processType?: ProcessType | null
+  clearOnChange: boolean
+}
+
 export interface ProgramFilter {
   programNo?: number
   programName?: string

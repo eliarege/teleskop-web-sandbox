@@ -10,7 +10,7 @@ import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
 import type { ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
-import { clearFilter, filterToQuery, formatDuration, getExistingFilter } from '~/composables/utils'
+import { clearFilter, formatDuration, getExistingFilter } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
@@ -94,6 +94,13 @@ onKeyStroke(['v', 'V'], (event: KeyboardEvent) => {
   }
 })
 
+onKeyStroke(['f', 'F'], (event: KeyboardEvent) => {
+  if (event.ctrlKey && !isActiveElementEditable()) {
+    event.preventDefault()
+    useFilterStore().showFilterPopup = true
+  }
+})
+
 onKeyStroke(['Enter'], (event: KeyboardEvent) => {
   if (!isActiveElementEditable()) {
     event.preventDefault()
@@ -142,11 +149,14 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
   }
 })
 
+if (useFilterStore().existingFilter.clearOnChange)
+  clearFilter()
+
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
 await editor.fetchMachine(machineId)
 await editor.fetchCommandTypes(machineId)
-await editor.fetchAllPrograms()
+await editor.fetchAllPrograms(useFilterStore().existingFilter)
 await editor.fetchAllProcessTypes().then(() => {
   editor.isLoading = false
 })
@@ -578,18 +588,6 @@ const shift = useKeyModifier('Shift')
 async function fetchVersions(programNo: number) {
   versions.value = await contextMenuStore.fetchVersions(programNo, machineId)
 }
-function handleFilterClick() {
-  $commandManager.executeCommand(
-    'filterPrograms',
-    { $q, filteredPrograms, isProgramFilterExists },
-  )
-}
-
-function handleClearFilterClick() {
-  clearFilter()
-  isProgramFilterExists.value = false
-  editor.fetchAllPrograms()
-}
 
 function formatTooltip<T extends Record<string, any>>(row: T, column: QTableColumn<T> & { tooltip?: (value: any, row: any) => string }) {
   const value = typeof column.field === 'function' ? column.field(row) : row[column.field]
@@ -750,12 +748,7 @@ function handleRowClass(row: ProgramTable): string {
           </template>
         </QInput>
         <QSpace />
-        <QBtn
-          :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
-          color="grey-8"
-          flat
-          @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
-        />
+        <ProgramFilterButton/>
       </template>
     </QTable>
 

@@ -424,5 +424,16 @@
     "yes_notification": "{count} bildirim var!",
     "delete_all": "Tüm bildirimleri sil",
     "close": "Kapat"
+  },
+  "filter": {
+    "_": "Filtrele",
+    "programFilter": "Program Filtresi",
+    "programNo": "Program Numarası",
+    "programName": "Program Adı",
+    "processType": "Proccess Tipi",
+    "clearFilterOnChange":"Makine seçimi değiştiğinde filtreleri temizle.",
+    "delete_all": "Filtreleri sıfırla",
+    "close": "Kapat",
+    "apply": "Uygula"
   }
 }

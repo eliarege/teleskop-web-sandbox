@@ -2,7 +2,7 @@ import isEqual from 'fast-deep-equal'
 import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
 import { useEditorStore } from './editor'
-import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, Filter, ProgramStepCommand, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -230,37 +230,32 @@ export function compareProgram(programA: Program, programB: Program, noEmitOnDif
   return true
 }
 
-let existingFilter: ProgramFilter | null = {
-  programNo: 1,
-  programName: '',
-  processType: { value: 1, label: '' },
-  clearOnChange: true,
+interface Notification {
+  message: string
+  type: 'positive' | 'warning'
+  date: Date
 }
 
-export function setExistingFilter(filter: ProgramFilter | null) {
-  existingFilter = filter
-}
+export const useNotificationStore = defineStore('notification', () => {
+  const showNotificationPopup = ref<boolean>(false)
+  const notifications = ref<Notification[]>([])
 
-export function getExistingFilter() {
-  if (existingFilter && existingFilter.clearOnChange)
-    return false
-  return existingFilter
-}
+  return { showNotificationPopup, notifications }
+})
+
+export const useFilterStore = defineStore('filter', () => {
+  const showFilterPopup = ref<boolean>(false)
+  const existingFilter = ref<Filter>({
+    clearOnChange: true,
+  })
+
+  return { showFilterPopup, existingFilter }
+})
 
 export function clearFilter() {
-  setExistingFilter(null)
-}
-
-export function filterToQuery(filter: ProgramFilter): string {
-  let query = ''
-  if (filter.programNo)
-    query += `programNo=${filter.programNo}&`
-  if (filter.programName)
-    query += `programName=${filter.programName}&`
-  if (filter.processType)
-    query += `processType=${filter.processType.value}&`
-  setExistingFilter(filter)
-  return query
+  useFilterStore().existingFilter = {
+    clearOnChange: true
+  }
 }
 
 /**
@@ -301,16 +296,3 @@ export function parseDuration(duration: string): number {
   }
   return Number(duration) * 36000
 }
-
-interface Notification {
-  message: string
-  type: 'positive' | 'warning'
-  date: Date
-}
-
-export const useNotificationStore = defineStore('notification', () => {
-  const showNotificationPopup = ref<boolean>(false)
-  const notifications = ref<Notification[]>([])
-
-  return { showNotificationPopup, notifications }
-})

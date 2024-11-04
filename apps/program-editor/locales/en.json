@@ -424,5 +424,16 @@
     "yes_notification": "{count} notification(s)!",
     "delete_all": "Delete all",
     "close": "Close"
+  },
+  "filter": {
+    "_": "Filter",
+    "programFilter": "Program Filter",
+    "programNo": "Program No",
+    "programName": "Program Name",
+    "processType": "Proccess Type",
+    "clearFilterOnChange":"Machine selection has changed, filter will be cleared.",
+    "delete_all": "Delete all",
+    "close": "Close",
+    "apply": "Apply"
   }
 }

@@ -6,8 +6,7 @@ import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOn
 import CMConcatenateProgramDetails from '~/components/CMConcatenateProgramDetails.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import TBProgramFilterDialog from '~/components/TBProgramFilterDialog.vue'
-import type { Program, ProgramFilter, ProgramHeader, ProgramTable } from '~/shared/types'
+import type { Program, ProgramHeader, ProgramTable } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -54,7 +53,6 @@ export interface RegisteredCommands {
   sendProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
   copyAndSend: [ctx: any, selectedRows: Array<any>, machineId: number]
   fetchProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
-  filterPrograms: [ctx: any]
   printProgram: [ctx: any]
   printProgramList: [ctx: any]
   editProgramTypes: [ctx: any]
@@ -380,25 +378,6 @@ registerCommand(() => {
       await contextMenuStore.getRemoteProgram(selectedRows, machineId)
       await editor.fetchAllPrograms()
       return false // Dont want to add uno redo stack 'cause it cannot be reversible'
-    },
-  }
-})
-registerCommand(() => {
-  const editor = useEditorStore()
-  return {
-    name: 'filterPrograms',
-    async execute(ctx: any) {
-      ctx.$q.dialog({
-        component: TBProgramFilterDialog,
-      }).onOk(async (filter: ProgramFilter) => {
-        await editor.fetchAllPrograms(filter)
-        if (ctx?.isProgramFilterExists)
-          ctx.isProgramFilterExists.value = true
-        return true
-      }).onCancel(() => {
-        return false
-      })
-      return true
     },
   }
 })
