@@ -10,7 +10,7 @@ import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
 import type { ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
-import { clearFilter, formatDuration, getExistingFilter } from '~/composables/utils'
+import { clearFilter, formatDuration } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
@@ -27,7 +27,6 @@ const router = useRouter()
 const editor = useEditorStore()
 const machineId = Number(route.params.machine_id)
 const tableRef = ref()
-const isProgramFilterExists = ref(getExistingFilter())
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t, router })
 const devMode = import.meta.dev
