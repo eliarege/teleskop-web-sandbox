@@ -2,7 +2,7 @@ import isEqual from 'fast-deep-equal'
 import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
 import { useEditorStore } from './editor'
-import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, Filter, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -245,7 +245,7 @@ export const useNotificationStore = defineStore('notification', () => {
 
 export const useFilterStore = defineStore('filter', () => {
   const showFilterPopup = ref<boolean>(false)
-  const existingFilter = ref<Filter>({
+  const existingFilter = ref<ProgramFilter>({
     clearOnChange: true,
   })
 

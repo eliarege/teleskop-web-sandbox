@@ -1,7 +1,7 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
-import type { CommandTypes, Filter, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramFilter, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -421,7 +421,7 @@ export const useEditorStore = defineStore('editor', () => {
    * @param filter - Filtre
    * @returns {Promise<void>}
    */
-  async function fetchAllPrograms(filter?: Filter ): Promise<void> {
+  async function fetchAllPrograms(filter?: ProgramFilter ): Promise<void> {
     if (filter) {
       allPrograms.value = await kc.fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program`, {
         query: {
