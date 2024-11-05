@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { useStorage } from '@vueuse/core'
-import type { MachineDataRaw } from '../shared/types'
+import type { FetchStatus, MachineDataRaw } from '../shared/types'
 
 interface Settings {
   washing: boolean
@@ -43,8 +43,6 @@ export const useDataStore = defineStore('datas', () => {
     const value = Math.round(Math.min(Math.max(scrollSpeed.value, 1), 5))
     return scrollSpeedOptions[value - 1]
   })
-
-  type FetchStatus = 'idle' | 'pending' | 'error' | 'success'
 
   const machines = ref<MachineDataRaw[]>([])
   const fetchMachineStatus = ref<FetchStatus>('idle')

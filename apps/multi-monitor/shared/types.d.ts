@@ -150,13 +150,13 @@ export interface BatchLogs {
 export interface NewBatchLogs extends BatchLogs {
   newTime: string
 }
-interface Alarm {
+export interface Alarm {
   alarmNo: number
   alarmName: string
   showOnScreen: boolean
 }
 
-interface Command {
+export interface Command {
   commandNo: number
   commandName: string
   alarms: Alarm[]
@@ -185,3 +185,4 @@ export interface MachineAlarmList {
   currentTemperature: number
   alarmList: MachineAlarmListRaw[]
 }
+export type FetchStatus = 'idle' | 'pending' | 'error' | 'success'

@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import type { MachineAlarmList } from '~/shared/types'
+import { useAlarmStore } from '~/store/Alarm'
 
-const { data: alarmList } = await useFetch('/api/alarmList', {
-  default: () => [] as MachineAlarmList[],
-})
+const alarmStore = useAlarmStore()
+
+const { start: scheduleNext } = useTimeoutFn(async () => {
+  await alarmStore.fetchAlarmList()
+  scheduleNext()
+}, 5000)
 
 const { t } = useI18n()
 
-const alarmColumns = computed(() => alarmList.value.reduce((a, b, i) => {
+const alarmColumns = computed(() => alarmStore.alarmList.reduce((a, b, i) => {
   a[i % a.length].push(b)
   return a
 }, [[], [], [], []]))

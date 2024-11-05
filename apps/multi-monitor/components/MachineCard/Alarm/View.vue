@@ -25,10 +25,8 @@ defineProps<{ machine: MachineAlarmList }>()
             :color="alarm.alarmStatus === 0 ? 'red' : 'orange'"
             size="30"
           />
-          <span class="font-extrabold text-xl">{{ alarm.commandNo }} - {{ alarm.alarmNo }} - {{ alarm.alarmName }}
-            <QTooltip>
-              Command No - Alarm No - Alarm Name
-            </QTooltip>
+          <span class="font-extrabold text-xl">
+            {{ alarm.commandNo }} - {{ alarm.alarmNo }} - {{ alarm.alarmName }}
           </span>
         </div>
       </div>

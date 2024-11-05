@@ -1,38 +1,24 @@
 <script setup lang="ts">
-import { useDataStore } from '~/store/Datas'
-
 const { data: alarms } = await useFetch('/api/alarms', {
   default: () => [],
 })
-watch(
-  () => window.location.hash,
-  () => {
-    scrollToHash()
-  },
-)
-function scrollToHash() {
-  const hash = window.location.hash.slice(1)
-  if (hash) {
-    const element = document.getElementById(hash)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
-}
+const machines = computed(() => alarms.value.map(m => ({ name: m.machineName, id: m.machineId })))
+const activeMachine = ref(3)
+const commands = computed(() => alarms.value.filter(c => c.machineId === activeMachine.value).map(a => a.commands).flat())
 </script>
 
 <template>
-  <div class="flex-center gap-7 w-min m-auto">
-    <div>
-      <AlarmSidebar :machines="alarms.map((m) => ({ name: m.machineName, id: m.machineId }))" />
-    </div>
-    <div
-      class="flex-center w-full max-h-92vh overflow-auto"
-    >
-      <AlarmCard :alarms />
-    </div>
+  <div class="topbar-height grid grid-cols-[280px_1fr]">
+    <AlarmSidebar v-model="activeMachine" :machines />
+    <AlarmCard
+      :commands
+      :active-machine
+    />
   </div>
 </template>
 
 <style scoped lang="postcss">
+.topbar-height {
+  height: calc(100vh - 65px);
+}
 </style>
