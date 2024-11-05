@@ -120,6 +120,9 @@ function isScreenViable(screen: number) {
       </div>
     </div>
   </div>
+  <div v-else>
+    <MachineCardAlarm />
+  </div>
 </template>
 
 <style scoped lang="postcss">
