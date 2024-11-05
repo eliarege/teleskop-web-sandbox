@@ -410,12 +410,12 @@
     "hideDuration": "Süreyi Gizle",
     "showDuration": "Süreyi Göster",
     "fullScreen": "Tam Ekran",
-    "screenShot": "Ekran Görüntüsü"
+    "screenshot": "Ekran Görüntüsü"
   },
   "stepCommandGraph": {
     "_": "Adım/Komut Grafiği",
     "lower": "adim-komut-grafigi",
-    "screenShot": "Ekran Görüntüsü"
+    "screenshot": "Ekran Görüntüsü"
   },
   "notification": {
     "_": "Bildirim",

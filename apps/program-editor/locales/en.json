@@ -410,12 +410,12 @@
     "hideDuration": "Hide Duration",
     "showDuration": "Show Duration",
     "fullScreen": "Full Screen",
-    "screenShot": "Screenshot"
+    "screenshot": "Screenshot"
   },
   "stepCommandGraph": {
     "_": "Step/Command Graph",
     "lower": "step-command-graph",
-    "screenShot": "Screenshot"
+    "screenshot": "Screenshot"
   },
   "notification": {
     "_": "Notification",
