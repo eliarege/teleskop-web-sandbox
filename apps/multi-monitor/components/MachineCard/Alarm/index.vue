@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { MachineAlarmList } from '~/shared/types'
 import { useAlarmStore } from '~/store/Alarm'
 
 const alarmStore = useAlarmStore()
