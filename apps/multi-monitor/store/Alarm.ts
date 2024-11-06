@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import type { FetchStatus, MachineAlarm } from '~/shared/types'
+import type { FetchStatus, MachineAlarmList } from '~/shared/types'
 
 export const useAlarmStore = defineStore('alarm', () => {
-  const alarmList = ref([] as MachineAlarm[])
+  const alarmList = ref([] as MachineAlarmList[])
 
   const fetchAlarmStatus = ref<FetchStatus>('idle')
   const fetchAlarmError = ref<Error | null>(null)
