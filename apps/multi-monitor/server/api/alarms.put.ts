@@ -1,7 +1,8 @@
-import { updateMachineAlarms } from '../queries/alarms'
-import type { MachineAlarm } from '~/shared/types'
+import { updateMachineAlarmVisibility } from '../queries/alarms'
 
+// TODO: Body validation
+// Maybe queries can be executed in routes
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  return await updateMachineAlarms(body.machineId, body.commandNo, body.alarmNo)
+  return await updateMachineAlarmVisibility(body.machineId, body.commandNo, body.alarmNo, body.showOnScreen)
 })

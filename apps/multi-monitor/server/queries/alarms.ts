@@ -118,20 +118,14 @@ export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
   return Array.from(machinesMap.values()).filter(machine => machine.alarmList.length > 0)
 }
 
-export async function updateMachineAlarms(machineId: number, commandNo: number, alarmNo: number) {
-  try {
-    await knex('BFMASTERCOMMANDSALARMS')
-      .where({
-        MACHINEID: machineId,
-        COMMANDNO: commandNo,
-        ALARMNO: alarmNo,
-      })
-      .update({
-        SHOWONSCREEN: knex.raw('CASE WHEN SHOWONSCREEN = 1 THEN 0 ELSE 1 END'),
-      })
-
-    return 'Alarm visibility updated successfully.'
-  } catch (err) {
-    return `Error updating alarm visibility: ${err}`
-  }
+export async function updateMachineAlarmVisibility(machineId: number, commandNo: number, alarmNo: number, showOnScreen: boolean) {
+  await knex('BFMASTERCOMMANDSALARMS')
+    .where({
+      MACHINEID: machineId,
+      COMMANDNO: commandNo,
+      ALARMNO: alarmNo,
+    })
+    .update({
+      SHOWONSCREEN: showOnScreen,
+    })
 }
