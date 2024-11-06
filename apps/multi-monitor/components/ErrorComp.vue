@@ -19,8 +19,8 @@ const { t } = useI18n()
           <span class="flex text-center text-xl opacity-50">{{
             t("error-message-last")
           }}</span>
-          <Icon
-            name="icon-park:six-circular-connection"
+          <TwIcon
+            name="i-icon-park:six-circular-connection"
             size="60"
             class="rotate-center"
           />

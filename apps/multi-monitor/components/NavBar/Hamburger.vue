@@ -7,9 +7,9 @@ const emit = defineEmits(['close'])
 
 <template>
   <div class="bg-white rounded p-1 w-screen">
-    <Icon
-      name="material-symbols:close"
-      size="20"
+    <TwIcon
+      name="i-material-symbols:close"
+      size="20px"
       @click="emit('close')"
     />
     <NavBarPieCharts :machine-data />

@@ -21,5 +21,5 @@ assets/icons
 ```
 
 ```vue
-<Icon name="tw:eliar" />
+<TwIcon name="i-tw:eliar" />
 ```

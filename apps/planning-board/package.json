@@ -17,10 +17,6 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "@bryntum/schedulerpro": "workspace:*",
-    "@iconify-json/fa": "1.2.0",
-    "@iconify-json/material-symbols": "1.2.0",
-    "@iconify-json/mdi": "1.2.0",
     "@teleskop/ui": "workspace:*",
     "@teleskop/utils": "workspace:*",
     "@vueuse/integrations": "10.8.0",
@@ -35,6 +31,11 @@
     "tedious": "18.1.0"
   },
   "devDependencies": {
+    "@bryntum/schedulerpro": "workspace:*",
+    "@iconify-json/ic": "1.2.1",
+    "@iconify-json/jam": "1.2.1",
+    "@iconify-json/material-symbols": "1.2.0",
+    "@iconify-json/mdi": "1.2.0",
     "@teleskop/nuxt-base": "workspace:*",
     "@teleskop/rollup-plugin-string": "workspace:*",
     "@types/d3": "7.4.3",

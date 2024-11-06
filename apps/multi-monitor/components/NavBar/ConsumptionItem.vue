@@ -37,10 +37,10 @@ function formatNumber(value: number) {
       {{ label }}
       {{ formatNumber(previousValue) }}
     </QTooltip>
-    <Icon
+    <TwIcon
       :name="icon"
       :color="iconColor"
-      size="40"
+      size="40px"
       class="block"
     />
     <span :class="currentValue > previousValue ? negativeTrendClass : positiveTrendClass">

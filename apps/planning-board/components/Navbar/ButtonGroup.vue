@@ -46,7 +46,7 @@ const datePicker = ref(false)
   <div class="w-full flex gap-3">
     <NavbarButton
       :label="t('plan-parameters.title')"
-      icon="i-mdi-slider"
+      icon="i-mdi:slider"
       :disabled="!store.selectedEvent.id"
       flat
       dense
@@ -59,7 +59,7 @@ const datePicker = ref(false)
 
     <NavbarButton
       :label="t('plan-recipe._')"
-      icon="i-mdi-flask"
+      icon="i-mdi:flask"
       :disabled="!store.selectedEvent.id"
       flat
       dense
@@ -72,7 +72,7 @@ const datePicker = ref(false)
 
     <NavbarButton
       :label="t('batch-notes._')"
-      icon="i-mdi-note-outline"
+      icon="i-mdi:note-outline"
       :disabled="!store.selectedEvent.id"
       flat
       dense
@@ -88,7 +88,7 @@ const datePicker = ref(false)
 
     <NavbarButton
       :label="t('settings._')"
-      icon="i-mdi-gear"
+      icon="i-mdi:gear"
       flat
       dense
       no-caps
@@ -104,7 +104,7 @@ const datePicker = ref(false)
 
     <NavbarButton
       :label="t('date-picker._')"
-      icon="i-mdi-date-range"
+      icon="i-mdi:date-range"
       flat
       dense
       no-caps
@@ -123,7 +123,7 @@ const datePicker = ref(false)
 
     <NavbarButton
       :description="t('zoom.in')"
-      icon="i-mdi-zoom-in"
+      icon="i-mdi:zoom-in"
       flat
       dense
       no-caps
@@ -131,7 +131,7 @@ const datePicker = ref(false)
     />
     <NavbarButton
       :description="t('zoom.out')"
-      icon="i-mdi-zoom-out"
+      icon="i-mdi:zoom-out"
       flat
       dense
       no-caps
@@ -139,7 +139,7 @@ const datePicker = ref(false)
     />
     <NavbarButton
       :description="t('zoom.reset')"
-      icon="i-mdi-arrow-rotate-left"
+      icon="i-mdi:arrow-rotate-left"
       flat
       dense
       no-caps

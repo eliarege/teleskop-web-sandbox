@@ -9,7 +9,7 @@ withDefaults(defineProps<{ label?: string, icon: string, size?: string, color?: 
     <QTooltip v-if="description">
       {{ description }}
     </QTooltip>
-    <TeleskopIcon :name="icon" :size="size" />
+    <TwIcon :name="icon" :size="size" />
     {{ label }}
   </QBtn>
 </template>

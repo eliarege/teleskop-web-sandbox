@@ -101,8 +101,8 @@ function reqStatus(params: number) {
     </div>
     <div class="machine-info">
       <div class="thermometer" :style="{ background: colors.itemBackGround, color: textColor(colors.itemBackGround) }">
-        <Icon
-          name="jam:temperature"
+        <TwIcon
+          name="i-jam:temperature"
           color="orange"
           :inline="true"
         />

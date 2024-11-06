@@ -24,8 +24,10 @@ export default defineConfig({
         light: '.body--light',
       },
     }),
-    presetAttributify(),
+    // presetAttributify(),
     presetIcons({
+      warn: true,
+      prefix: 'i-',
       customizations: {
         // https://github.com/unocss/unocss/issues/4084
         iconCustomizer(collection, icon, props) {
@@ -37,7 +39,6 @@ export default defineConfig({
         tw: FileSystemIconLoader(resolve(__dirname, 'assets/icons')),
       },
     }),
-
   ],
   transformers: [
     transformerVariantGroup(),

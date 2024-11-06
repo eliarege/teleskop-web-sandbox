@@ -62,7 +62,7 @@ function onEnd(ev: SortableEvent) {
     >
       <template #item="{ element }">
         <div class="w-full h-full flex justify-start items-center whitespace-nowrap p-1 border-1px border-gray-500/50 rounded m-1 hover:(bg-blue-3 text-white)">
-          <TeleskopIcon name="i-ic-twotone-list" />
+          <TwIcon name="i-ic:twotone-list" />
           {{ element.name }}
         </div>
       </template>
