@@ -4,6 +4,7 @@
     "aboutApp": "About application",
     "apps": {
       "_": "Apps",
+      "machines": "Machines",
       "multi-monitor": "Multi Monitor",
       "program-editor": "Program Editor",
       "planning-board": "Planning Board",
