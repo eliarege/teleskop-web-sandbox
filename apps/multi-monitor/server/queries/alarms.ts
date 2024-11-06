@@ -2,43 +2,40 @@ import { knex } from '../knexConfig'
 import type { MachineAlarm, MachineAlarmList } from '~/shared/types'
 
 export async function getMachineAlarms(): Promise<MachineAlarm[]> {
-  return knex.raw(`
-    SELECT JSON_QUERY((
+  const machineCommandAlarms = await knex.raw(/* sql */`
+    SELECT
+      m.MACHINEID AS machineId,
+      m.MACHINECODE AS machineName,
+      commands = (
         SELECT
-            main.MACHINEID AS machineId,
-            d.MACHINECODE AS machineName,
-            (
-                SELECT JSON_QUERY((
-                    SELECT
-                        commands.COMMANDNO AS commandNo,
-                        c.NAME AS commandName,
-                        (
-                            SELECT JSON_QUERY((
-                                SELECT
-                                    alarms.ALARMNO AS alarmNo,
-                                    alarms.ALARM AS alarmName,
-                                    alarms.SHOWONSCREEN AS showOnScreen
-                                FROM BFMASTERCOMMANDSALARMS AS alarms
-                                WHERE alarms.MACHINEID = main.MACHINEID
-                                AND alarms.COMMANDNO = commands.COMMANDNO
-                                FOR JSON PATH
-                            )) AS alarms
-                        ) AS alarms
-                    FROM BFMASTERCOMMANDSALARMS AS commands
-                    LEFT JOIN BFMASTERCOMMANDS AS c ON commands.MACHINEID = c.MACHINEID AND commands.COMMANDNO = c.COMMANDNO
-                    WHERE commands.MACHINEID = main.MACHINEID
-                    GROUP BY commands.COMMANDNO, c.NAME
-                    FOR JSON PATH
-                )) AS commands
-            ) AS commands
-        FROM BFMASTERCOMMANDSALARMS AS main
-        LEFT JOIN BFMACHINES AS d ON d.MACHINEID = main.MACHINEID
-        WHERE d.USEINTELESKOP = 1 AND d.INUSE = 1
-        GROUP BY main.MACHINEID, d.MACHINECODE
-        ORDER BY main.MACHINEID
+          c.COMMANDNO AS commandNo,
+          c.NAME AS commandName,
+          alarms = (
+            SELECT
+              a.ALARMNO AS alarmNo,
+              a.ALARM AS alarmName,
+              a.SHOWONSCREEN AS showOnScreen
+            FROM BFMASTERCOMMANDSALARMS AS a
+            WHERE a.MACHINEID = m.MACHINEID
+              AND a.COMMANDNO = c.COMMANDNO
+            ORDER BY a.ALARMNO
+            FOR JSON PATH
+          )
+        FROM BFMASTERCOMMANDS AS c
+        WHERE c.MACHINEID = m.MACHINEID
+        ORDER BY c.COMMANDNO
         FOR JSON PATH
-    )) AS result
-`)
+    )
+    FROM BFMACHINES AS m
+    WHERE m.USEINTELESKOP = 1 AND m.INUSE = 1
+    ORDER BY m.MACHINEID
+  `)
+
+  for (const machine of machineCommandAlarms) {
+    machine.commands = JSON.parse(machine.commands)
+  }
+
+  return machineCommandAlarms
 }
 
 export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
