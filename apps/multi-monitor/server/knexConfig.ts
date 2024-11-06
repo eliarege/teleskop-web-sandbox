@@ -8,7 +8,7 @@ export const knex = Knex({
     ...(
       config.teleskopInstanceName
         ? { instanceName: config.teleskopInstanceName }
-        : { port: config.teleskopPort }
+        : { port: Number(config.teleskopPort) }
     ),
     user: config.teleskopUser,
     password: config.teleskopPassword,
