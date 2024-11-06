@@ -4,6 +4,7 @@ import { withBase } from 'ufo'
 import type { MachineData } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { useDataStore } from '~/store/Datas'
+import { MachineSort } from '~/shared/constants'
 
 const props = defineProps({
   machineData: {
@@ -19,30 +20,33 @@ const colors = useColorStore()
 const baseURL = useRuntimeConfig().app.baseURL
 const withBaseURL = (input: string) => withBase(input, baseURL)
 
+const compareById = (a: { id: number }, b: { id: number }) => a.id - b.id
+
 const sortedMachines = computed(() => {
   const filteredGroups = props.machineData.filter(group => !store.filteredGroups.has(group.groupName))
   const filteredMachines = filteredGroups.filter(item => !store.filteredMachines.has(item.id))
-  const activeSort = filteredMachines.filter(
-    machine => machine.runningBatchStatus !== 0,
-  )
-  const inactiveSort = filteredMachines.filter(
-    machine => machine.runningBatchStatus === 0,
-  )
-  if (store.sortMachines === 3) {
-    return [
-      ...inactiveSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
-      ...activeSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
-    ]
-  } else if (store.sortMachines === 2) {
-    return [
-      ...activeSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
-      ...inactiveSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
-    ]
-  } else if (store.sortMachines === 4) {
-    return [...filteredMachines].sort((a, b) => a.groupName < b.groupName ? -1 : 1,
-    )
-  } else {
-    return [...filteredMachines].sort((a, b) => (a.id < b.id ? -1 : 1))
+  const activeMachines = filteredMachines.filter(machine => machine.runningBatchStatus !== 0)
+  const inactiveMachines = filteredMachines.filter(machine => machine.runningBatchStatus === 0)
+
+  switch (store.sortMachines) {
+    case MachineSort.ById:
+      return filteredMachines.sort(compareById)
+    case MachineSort.ByActive:
+      return [
+        ...activeMachines.sort(compareById),
+        ...inactiveMachines.sort(compareById),
+      ]
+    case MachineSort.ByIdle:
+      return [
+        ...inactiveMachines.sort(compareById),
+        ...activeMachines.sort(compareById),
+      ]
+    case MachineSort.ByGroup:
+      return filteredMachines.sort((a, b) =>
+        a.groupName < b.groupName ? -1 : (a.groupName > b.groupName ? 1 : 0),
+      )
+    default:
+      return filteredMachines
   }
 })
 // #region FUNCTIONS
@@ -72,7 +76,7 @@ function reqStatus(params: number) {
 const { width: screenWidth } = useWindowSize()
 
 function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
-  if (store.sortMachines === 5) {
+  if (store.sortMachines === MachineSort.Alarms) {
     if (currentAlarmStatus === 0) {
       return '#FF3030'
     } else if (currentAlarmStatus === 1) {
@@ -92,7 +96,7 @@ function isScreenViable(screen: number) {
 
 <template>
   <div
-    v-if="store.sortMachines !== 5"
+    v-if="store.sortMachines !== MachineSort.Alarms"
     class="card-wrapper lt-sm:(px-2)"
     :style="{ zoom: store.zoomLevel }"
   >

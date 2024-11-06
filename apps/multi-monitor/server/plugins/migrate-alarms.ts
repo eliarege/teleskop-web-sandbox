@@ -23,6 +23,6 @@ export default defineNitroPlugin(async () => {
 
     console.log('Existing records updated successfully!')
   } catch (err) {
-    console.error('Failed to migrate BFMASTERCOMMANDSALARMS')
+    console.error('Failed to migrate BFMASTERCOMMANDSALARMS', err)
   }
 })
