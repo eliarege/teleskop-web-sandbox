@@ -5,7 +5,7 @@ const { t } = useI18n()
 
 const machineSearch = ref('')
 
-const asdsad = computed(() => {
+const filteredMachines = computed(() => {
   if (machineSearch.value === '') {
     return props.machines
   } else {
@@ -17,9 +17,9 @@ const activeMachine = defineModel({ type: Number, required: true })
 </script>
 
 <template>
-  <div class="w-70 border-r-1 topbar-height p-2 select-none">
-    <span class="font-extrabold text-xl ml-3">{{ t('alarm.machines') }}</span>
-    <q-list>
+  <div class="w-70 alarm-container-height border-r-1 p-2 select-none">
+    <div style="height: 75px">
+      <span class="font-extrabold text-xl ml-3">{{ t('alarm.machines') }}</span>
       <q-input
         v-model="machineSearch"
         :label="t('alarm.machineSearch')"
@@ -37,9 +37,10 @@ const activeMachine = defineModel({ type: Number, required: true })
           <q-icon name="search" />
         </template>
       </q-input>
-
+    </div>
+    <q-list class="machine-container">
       <q-item
-        v-for="machine in asdsad"
+        v-for="machine in filteredMachines"
         :key="machine.id"
         flat
         dense
@@ -55,9 +56,9 @@ const activeMachine = defineModel({ type: Number, required: true })
   </div>
 </template>
 
-<style scoped lang="postcss">
-.topbar-height {
-  max-height: calc(100vh - 65px);
+<style lang="postcss" scoped>
+.machine-container {
+  height: calc(100vh - 150px);
   overflow: auto;
 }
 </style>

@@ -1,24 +1,39 @@
 <script setup lang="ts">
-const { data: alarms } = await useFetch('/api/alarms', {
+import type { MachineAlarm } from '~/shared/types'
+
+const { data: alarms } = await useFetch<MachineAlarm[]>('/api/alarms', {
   default: () => [],
 })
-const machines = computed(() => alarms.value.map(m => ({ name: m.machineName, id: m.machineId })))
-const activeMachine = ref(3)
-const commands = computed(() => alarms.value.filter(c => c.machineId === activeMachine.value).map(a => a.commands).flat())
+
+const machines = computed(() =>
+  alarms.value.map(m => ({ name: m.machineName, id: m.machineId })),
+)
+
+const activeMachine = ref(machines.value[0]?.id)
+
+const commands = computed(() => {
+  return alarms.value
+    .filter(c => c.machineId === activeMachine.value)
+    .flatMap(a => a.commands)
+})
 </script>
 
 <template>
-  <div class="topbar-height grid grid-cols-[280px_1fr]">
-    <AlarmSidebar v-model="activeMachine" :machines />
+  <div class="alarm-container-height grid grid-cols-[280px_1fr]">
+    <AlarmSidebar
+      v-model="activeMachine"
+      :machines
+    />
     <AlarmCard
       :commands
       :active-machine
+      class="overflow-auto"
     />
   </div>
 </template>
 
-<style scoped lang="postcss">
-.topbar-height {
+<style lang="postcss">
+.alarm-container-height {
   height: calc(100vh - 65px);
 }
 </style>

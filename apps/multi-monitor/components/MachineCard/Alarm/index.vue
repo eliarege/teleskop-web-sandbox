@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { times } from 'lodash-es'
+import type { MachineAlarmList } from '~/shared/types'
 import { useAlarmStore } from '~/store/Alarm'
 
 const alarmStore = useAlarmStore()
@@ -8,43 +10,36 @@ const { start: scheduleNext } = useTimeoutFn(async () => {
   scheduleNext()
 }, 5000)
 
-const { t } = useI18n()
+const columnsLength = ref(4)
 
-const alarmColumns = computed(() => alarmStore.alarmList.reduce((a, b, i) => {
-  a[i % a.length].push(b)
-  return a
-}, [[], [], [], []]))
+const alarmColumns = computed(() => {
+  return alarmStore.alarmList.reduce((a, b, i) => {
+    a[i % a.length].push(b)
+    return a
+  }, [...times(columnsLength.value, () => [] as MachineAlarmList[])])
+})
 </script>
 
 <template>
   <div class="grid grid-cols-4 gap-3">
-    <div class="space-y-3">
+    <div
+      v-for="(column, index) in alarmColumns"
+      :key="index"
+      class="space-y-3"
+    >
       <MachineCardAlarmView
-        v-for="machine in alarmColumns[0]"
-        :key="`0${machine.machineId}`"
-        :machine
-      />
-    </div>
-    <div class="space-y-3">
-      <MachineCardAlarmView
-        v-for="machine in alarmColumns[1]"
-        :key="`1${machine.machineId}`"
-        :machine
-      />
-    </div>
-    <div class="space-y-3">
-      <MachineCardAlarmView
-        v-for="machine in alarmColumns[2]"
-        :key="`2${machine.machineId}`"
-        :machine
-      />
-    </div>
-    <div class="space-y-3">
-      <MachineCardAlarmView
-        v-for="machine in alarmColumns[3]"
-        :key="`3${machine.machineId}`"
+        v-for="machine in column"
+        :key="`${index}-${machine.machineId}`"
         :machine
       />
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+.alarm-columns {
+  display: grid;
+  grid-template-columns: repeat(v-bind(columnsLength), 1fr);
+  @apply gap-3;
+}
+</style>

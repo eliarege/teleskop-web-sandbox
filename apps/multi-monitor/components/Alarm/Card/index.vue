@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { times } from 'lodash-es'
 import type { Command } from '~/shared/types'
 
 const props = defineProps<{ commands: Command[], activeMachine: number }>()
@@ -32,10 +33,12 @@ const filteredCommands = computed(() => {
   return commands
 })
 
+const columnsLength = ref(3)
+
 const commandColumns = computed(() => filteredCommands.value.reduce((a, b, i) => {
   a[i % a.length].push(b)
   return a
-}, [[], [], []] as Command[][]))
+}, [...times(columnsLength.value, () => [] as Command[])]))
 
 const filterLabel = computed(() => {
   switch (onlyShowDisabledAlarms.value) {
@@ -65,7 +68,7 @@ const filterIcon = computed(() => {
 </script>
 
 <template>
-  <div class="topbar-height">
+  <div class="alarm-container-height">
     <div class="grid grid-cols-[1fr_0.1fr_0.2fr] px-5">
       <q-input
         v-model="commandSearch"
@@ -95,45 +98,15 @@ const filterIcon = computed(() => {
       />
     </div>
 
-    <q-list class="grid grid-cols-3 gap-3 p-2">
-      <div class="space-y-3">
+    <q-list class="command-columns">
+      <div
+        v-for="(column, index) in commandColumns"
+        :key="index"
+        class="space-y-3"
+      >
         <q-expansion-item
-          v-for="(item, idx) in commandColumns[0]"
-          :key="idx"
-          default-opened
-          switch-toggle-side
-          :label="`${item.commandNo} - ${item.commandName}`"
-          class="border-1 rounded-2xl font-bold h-min overflow-hidden"
-        >
-          <AlarmCardContent
-            :active-machine
-            :alarms="item.alarms"
-            :command-no="item.commandNo"
-          />
-        </q-expansion-item>
-      </div>
-
-      <div class="space-y-3">
-        <q-expansion-item
-          v-for="(item, idx) in commandColumns[1]"
-          :key="idx"
-          default-opened
-          switch-toggle-side
-          :label="`${item.commandNo} - ${item.commandName}`"
-          class="border-1 rounded-2xl font-bold h-min overflow-hidden"
-        >
-          <AlarmCardContent
-            :active-machine
-            :alarms="item.alarms"
-            :command-no="item.commandNo"
-          />
-        </q-expansion-item>
-      </div>
-
-      <div class="space-y-3">
-        <q-expansion-item
-          v-for="(item, idx) in commandColumns[2]"
-          :key="idx"
+          v-for="item in column"
+          :key="`${index}-${item.commandNo}`"
           default-opened
           switch-toggle-side
           :label="`${item.commandNo} - ${item.commandName}`"
@@ -151,8 +124,9 @@ const filterIcon = computed(() => {
 </template>
 
 <style scoped lang="postcss">
-.topbar-height {
-  height: calc(100vh - 65px);
-  overflow: auto;
+.command-columns {
+  display: grid;
+  grid-template-columns: repeat(v-bind(columnsLength), 1fr);
+  @apply gap-3 p-2;
 }
 </style>
