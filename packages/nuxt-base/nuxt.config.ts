@@ -51,6 +51,9 @@ export default defineNuxtConfig({
   elementPlus: {
     icon: false,
   },
+  unocss: {
+    nuxtLayers: true,
+  },
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'en',

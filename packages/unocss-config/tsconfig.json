@@ -1,4 +1,0 @@
-{
-  "extends": "@teleskop/tsconfig/node",
-  "files": ["./uno.config.ts"]
-}

@@ -1,4 +1,4 @@
-import { mergeConfigs } from 'unocss'
-import sharedConfig from '@teleskop/unocss-config'
+import { mergeConfigs } from '@unocss/core'
+import baseConfig from './.nuxt/uno.config.mjs'
 
-export default mergeConfigs([sharedConfig])
+export default mergeConfigs([baseConfig])
