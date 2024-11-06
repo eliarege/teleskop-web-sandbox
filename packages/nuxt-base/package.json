@@ -30,7 +30,7 @@
     "nuxt-quasar-ui": "2.1.4",
     "pinia": "2.1.7",
     "quasar": "2.16.9",
-    "simple-keyboard": "3.7.106",
+    "simple-keyboard": "3.8.7",
     "ufo": "1.5.4",
     "unocss": "0.64.0"
   },

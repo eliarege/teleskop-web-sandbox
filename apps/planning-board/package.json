@@ -34,7 +34,7 @@
     "@bryntum/schedulerpro": "workspace:*",
     "@iconify-json/ic": "1.2.1",
     "@iconify-json/jam": "1.2.1",
-    "@iconify-json/material-symbols": "1.2.0",
+    "@iconify-json/material-symbols": "1.2.6",
     "@iconify-json/mdi": "1.2.0",
     "@teleskop/nuxt-base": "workspace:*",
     "@teleskop/rollup-plugin-string": "workspace:*",
