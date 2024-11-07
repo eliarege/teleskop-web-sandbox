@@ -63,6 +63,7 @@ export const commandTypeMaps = [
   { index: 12, ref: [], value: 1000, title: 'chemIcons.manualMeasurementCommands' },
 ]
 
+// @unocss-include
 export const CommandIconMapping: Record<string, { name: string, label?: string, color?: string }> = {
   'AK_Bosalt.gif': { name: 'i-ri-exchange-2-line', label: 'AK_Bosalt', color: '#00CC00' },
   'Kimyasal_Iste.gif': { name: 'i-carbon-chemistry', label: 'Kimyasal_Iste', color: '#00CC00' },

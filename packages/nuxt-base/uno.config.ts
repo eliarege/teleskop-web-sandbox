@@ -28,13 +28,6 @@ export default defineConfig({
     presetIcons({
       warn: true,
       prefix: 'i-',
-      customizations: {
-        // https://github.com/unocss/unocss/issues/4084
-        iconCustomizer(collection, icon, props) {
-          props.width = '1.5em'
-          props.height = '1.5em'
-        },
-      },
       collections: {
         tw: FileSystemIconLoader(resolve(__dirname, 'assets/icons')),
       },

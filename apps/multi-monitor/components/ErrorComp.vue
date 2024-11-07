@@ -21,7 +21,7 @@ const { t } = useI18n()
           }}</span>
           <TwIcon
             name="i-icon-park:six-circular-connection"
-            size="60"
+            size="60px"
             class="rotate-center"
           />
         </div>

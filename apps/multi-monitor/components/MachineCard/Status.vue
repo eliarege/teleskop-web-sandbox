@@ -35,7 +35,6 @@ function connectionStatus(params: number) {
       <TwIcon
         name="i-jam:temperature"
         color="orange"
-        :inline="true"
       />
       {{ Math.round(machine.currentTemperature) }}C°
     </div>

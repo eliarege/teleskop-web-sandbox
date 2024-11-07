@@ -20,10 +20,10 @@ defineProps<{ machine: MachineAlarmList }>()
         :class="alarm.alarmStatus === 0 ? 'border-red-600 bg-red-300/20' : 'border-yellow-500 bg-yellow-300/20'"
       >
         <div class="flex items-center gap-3">
-          <Icon
+          <TwIcon
             :name="alarm.alarmStatus === 0 ? 'mingcute:alert-fill' : 'fluent:alert-12-filled'"
             :color="alarm.alarmStatus === 0 ? 'red' : 'orange'"
-            size="30"
+            size="30px"
           />
           <span class="font-extrabold text-xl">
             {{ alarm.commandNo }} - {{ alarm.alarmNo }} - {{ alarm.alarmName }}
