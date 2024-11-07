@@ -147,5 +147,15 @@
     "status": "Durum",
     "checked-names": "Sırala: ",
     "placeholder": "Ara"
+  },
+  "alarm": {
+    "machines": "Makineler",
+    "machineSearch": "Makine Arama",
+    "commandSearch": "Komut Arama",
+    "filter": {
+      "showAll": "Tümünü Göster",
+      "active": "Sadece Aktifler",
+      "inactive": "Sadece Pasifler"
+    }
   }
 }

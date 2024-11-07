@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { useStorage } from '@vueuse/core'
-import type { MachineDataRaw } from '../shared/types'
+import type { FetchStatus, MachineDataRaw } from '../shared/types'
+import { MachineSort, type MachineSortValue } from '~/shared/constants'
 
 interface Settings {
   washing: boolean
@@ -19,7 +20,7 @@ export const useDataStore = defineStore('datas', () => {
   const filteredMachines = useStorage('filtered-machines', new Set<number>())
   const filteredGroups = useStorage('filtered-groups', new Set<string>())
   // machinestatus
-  const sortMachines = useStorage('machine-sort', 1)
+  const sortMachines = useStorage<MachineSortValue>('machine-sort', MachineSort.ById)
 
   const zoomLevel = ref(1)
   const setZoomLevel = (value: number | string | null) => {
@@ -43,8 +44,6 @@ export const useDataStore = defineStore('datas', () => {
     const value = Math.round(Math.min(Math.max(scrollSpeed.value, 1), 5))
     return scrollSpeedOptions[value - 1]
   })
-
-  type FetchStatus = 'idle' | 'pending' | 'error' | 'success'
 
   const machines = ref<MachineDataRaw[]>([])
   const fetchMachineStatus = ref<FetchStatus>('idle')

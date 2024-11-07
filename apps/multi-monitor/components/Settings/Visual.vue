@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useDataStore } from '~/store/Datas'
 
-defineProps<{ test: string }>()
 const { t } = useI18n()
 const store = useDataStore()
 </script>

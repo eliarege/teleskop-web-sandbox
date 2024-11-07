@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind, useWindowSize } from '@vueuse/core'
-import { matSettings } from '@quasar/extras/material-icons'
+import { matAlarm, matSettings } from '@quasar/extras/material-icons'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
 
@@ -20,6 +20,8 @@ const { width } = useWindowSize()
 const isMobile = computed(() => width.value <= 767)
 const tt = (key: string) => () => t(key)
 
+const router = useRouter()
+
 const items = [] as TopbarMenuItem[]
 const commonSettingsItems: TopbarMenuItem[] = [
   {
@@ -27,6 +29,13 @@ const commonSettingsItems: TopbarMenuItem[] = [
     icon: matSettings,
     onClick() {
       showSettings.value = !showSettings.value
+    },
+  },
+  {
+    label: tt('teleskop.alarm'),
+    icon: matAlarm,
+    onClick() {
+      router.push('/alarm')
     },
   },
 ]

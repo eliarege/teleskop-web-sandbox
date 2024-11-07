@@ -4,6 +4,7 @@ import { withBase } from 'ufo'
 import type { MachineData } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { useDataStore } from '~/store/Datas'
+import { MachineSort } from '~/shared/constants'
 
 const props = defineProps({
   machineData: {
@@ -19,35 +20,35 @@ const colors = useColorStore()
 const baseURL = useRuntimeConfig().app.baseURL
 const withBaseURL = (input: string) => withBase(input, baseURL)
 
+const compareById = (a: { id: number }, b: { id: number }) => a.id - b.id
+
 const sortedMachines = computed(() => {
   const filteredGroups = props.machineData.filter(group => !store.filteredGroups.has(group.groupName))
   const filteredMachines = filteredGroups.filter(item => !store.filteredMachines.has(item.id))
-  const activeSort = filteredMachines.filter(
-    machine => machine.runningBatchStatus !== 0,
-  )
-  const inactiveSort = filteredMachines.filter(
-    machine => machine.runningBatchStatus === 0,
-  )
-  if (store.sortMachines === 3) {
-    return [
-      ...inactiveSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
-      ...activeSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
-    ]
-  } else if (store.sortMachines === 2) {
-    return [
-      ...activeSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
-      ...inactiveSort.sort((a, b) => (a.id < b.id ? -1 : 1)),
-    ]
-  } else if (store.sortMachines === 4) {
-    return [...filteredMachines].sort((a, b) => a.groupName < b.groupName ? -1 : 1,
-    )
-  } else if (store.sortMachines === 5) {
-    return filteredMachines.filter(alarm => alarm.currentAlarmStatus !== 2).sort((a, b) => a.currentAlarmStatus > b.currentAlarmStatus ? 1 : -1)
-  } else {
-    return [...filteredMachines].sort((a, b) => (a.id < b.id ? -1 : 1))
+  const activeMachines = filteredMachines.filter(machine => machine.runningBatchStatus !== 0)
+  const inactiveMachines = filteredMachines.filter(machine => machine.runningBatchStatus === 0)
+
+  switch (store.sortMachines) {
+    case MachineSort.ById:
+      return filteredMachines.sort(compareById)
+    case MachineSort.ByActive:
+      return [
+        ...activeMachines.sort(compareById),
+        ...inactiveMachines.sort(compareById),
+      ]
+    case MachineSort.ByIdle:
+      return [
+        ...inactiveMachines.sort(compareById),
+        ...activeMachines.sort(compareById),
+      ]
+    case MachineSort.ByGroup:
+      return filteredMachines.sort((a, b) =>
+        a.groupName < b.groupName ? -1 : (a.groupName > b.groupName ? 1 : 0),
+      )
+    default:
+      return filteredMachines
   }
 })
-
 // #region FUNCTIONS
 function connectionStatus(params: number) {
   if (params === 1) {
@@ -75,7 +76,7 @@ function reqStatus(params: number) {
 const { width: screenWidth } = useWindowSize()
 
 function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
-  if (store.sortMachines === 5) {
+  if (store.sortMachines === MachineSort.Alarms) {
     if (currentAlarmStatus === 0) {
       return '#FF3030'
     } else if (currentAlarmStatus === 1) {
@@ -95,6 +96,7 @@ function isScreenViable(screen: number) {
 
 <template>
   <div
+    v-if="store.sortMachines !== MachineSort.Alarms"
     class="card-wrapper lt-sm:(px-2)"
     :style="{ zoom: store.zoomLevel }"
   >
@@ -102,23 +104,28 @@ function isScreenViable(screen: number) {
       v-for="element in sortedMachines"
       :key="element.id"
     >
-      <MachineCardLayout
-        :colors="{
-          backGround: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus),
-          itemBackGround: colors.cardItemBg,
-          activeBackGround: colors.cardActiveBg,
-          idleBackGround: colors.cardIdleBg,
-        }"
-        :washing="store.settings?.washing"
-        :machine="element"
-        :is-group-visible="store.group"
-        :is-screen-viable="isScreenViable(screenWidth)"
-        :connection-status="connectionStatus(element.connectionStatus)"
-        :req-status="reqStatus(element.reqStatus)"
-        :machine-sort="store.sortMachines"
-        :links-active="true"
-      />
+      <div class="w-full h-full">
+        <MachineCardLayout
+          :colors="{
+            backGround: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus),
+            itemBackGround: colors.cardItemBg,
+            activeBackGround: colors.cardActiveBg,
+            idleBackGround: colors.cardIdleBg,
+          }"
+          :washing="store.settings?.washing"
+          :machine="element"
+          :is-group-visible="store.group"
+          :is-screen-viable="isScreenViable(screenWidth)"
+          :connection-status="connectionStatus(element.connectionStatus)"
+          :req-status="reqStatus(element.reqStatus)"
+          :machine-sort="store.sortMachines"
+          :links-active="true"
+        />
+      </div>
     </div>
+  </div>
+  <div v-else>
+    <MachineCardAlarm />
   </div>
 </template>
 

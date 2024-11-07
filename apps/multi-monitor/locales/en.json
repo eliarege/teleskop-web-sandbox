@@ -37,7 +37,7 @@
     "idle": "Idle",
     "mode": "Details",
     "event": "Events",
-    "alarm": "Alarm(s)",
+    "alarm": "Alarms",
     "alarm-second": "Alarm",
     "settings": "Settings",
     "machine-stop-notification": "Machine Stop",
@@ -147,5 +147,15 @@
     "status": "Status",
     "checked-names": "Sort By:",
     "placeholder": "Search"
+  },
+  "alarm": {
+    "machines": "Machines",
+    "machineSearch": "Machine Search",
+    "commandSearch": "Command Search",
+    "filter": {
+      "showAll": "Show All",
+      "active": "Just Actives",
+      "inactive": "Just Passives"
+    }
   }
 }
