@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
+import type { FetchError } from 'ofetch'
 import type { Rect } from './FeedbackScreenshotEditor.vue'
 import { parseAppList } from '~/utils/base'
 import type { Feedback, FeedbackModel } from '~/types'
@@ -15,7 +16,7 @@ const appProps = useAppProps()
 const { width, height } = useWindowSize()
 
 const config = useRuntimeConfig()
-const { fetch: authFetch, tokenParsed } = useKeycloak()
+const { fetch: kcFetch, tokenParsed } = useKeycloak()
 
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
@@ -37,6 +38,7 @@ const feedbackModel: Feedback = reactive({
   appName: appProps.name,
   image: '',
   reportType: '',
+  title: '',
   description: '',
   browser: {
     ...getBrowserInfo(navigator.userAgent),
@@ -46,7 +48,8 @@ const feedbackModel: Feedback = reactive({
   os: getOSInfo(navigator.userAgent),
 })
 function isFormValid(): boolean {
-  return feedbackModel.reportType.trim() !== ''
+  return feedbackModel.reportType !== ''
+    && feedbackModel.title.trim() !== ''
     && feedbackModel.description.trim() !== ''
 }
 
@@ -60,19 +63,21 @@ async function sendFeedback() {
   const modifiedModel = {
     ...feedbackModel,
     image: feedbackModel.image?.split(',')[1],
+    title: feedbackModel.title.trim(),
+    description: feedbackModel.description.trim(),
   }
   submitLoading.value = true
-  await authFetch('/api/feedback', {
+  await kcFetch('/api/feedback', {
     method: 'POST',
     body: modifiedModel,
   }).then(() => q.notify({
     message: t('feedback.response.success'),
     color: 'green',
     position: 'top',
-  })).catch((err) => {
-    if (err.data?.code) {
+  })).catch((err: FetchError) => {
+    if (err.data?.data?.code) {
       q.notify({
-        message: t(`feedback.response.${err.data.code}`),
+        message: t(`feedback.response.${err.data.data.code}`),
         color: 'red',
         position: 'top',
       })
@@ -131,7 +136,9 @@ function onSave(newImage: string, newRects: Rect[]) {
     maximized
   >
     <div class="bg-white w-full h-full flex flex-col ">
-      <span class="text-center p-3 font-extrabold text-xl">{{ t('feedback.title') }}</span>
+      <span class="text-center p-3 font-extrabold text-xl">
+        {{ t('feedback.dialogTitle') }}
+      </span>
       <div class="bg-white w-full h-min p-3 grid grid-cols-2 gap-5">
         <FeedbackInput
           :text="tokenParsed?.name"
@@ -145,7 +152,7 @@ function onSave(newImage: string, newRects: Rect[]) {
         />
         <QSelect
           v-model="feedbackModel.appName"
-          :label="t('feedback.app-name')"
+          :label="t('feedback.appName')"
           :options="appList"
           option-label="name"
           map-options
@@ -167,18 +174,23 @@ function onSave(newImage: string, newRects: Rect[]) {
           options-dense
         />
       </div>
-      <div class="p-3">
-        <div class="">
-          <QInput
-            v-model="feedbackModel.description"
-            :label="t('feedback.description')"
-            type="textarea"
-            class="description-input"
-            outlined
-            autogrow
-          />
-        </div>
-        <br>
+      <div class="p-3 space-y-3">
+        <QInput
+          v-model="feedbackModel.title"
+          :label="t('feedback.title')"
+          maxlength="30"
+          outlined
+          dense
+        />
+        <QInput
+          v-model="feedbackModel.description"
+          :label="t('feedback.description')"
+          type="textarea"
+          class="description-input"
+          outlined
+          autogrow
+          maxlength="400"
+        />
         <div class="border-1">
           <QImg
             :src="feedbackModel.image"
@@ -214,7 +226,7 @@ function onSave(newImage: string, newRects: Rect[]) {
                 padding="none"
                 no-caps
                 :loading="ssLoading"
-                :label="t('feedback.screenshot.take-screenshot')"
+                :label="t('feedback.screenshot.takeScreenshot')"
                 @click="takeScreenshot"
               />
             </div>
@@ -230,7 +242,7 @@ function onSave(newImage: string, newRects: Rect[]) {
           :label="t('feedback.submit')"
           icon="send"
           dense
-          :submit-loading
+          :loading="submitLoading"
           :disabled="!isFormValid()"
           @click="sendFeedback"
         >

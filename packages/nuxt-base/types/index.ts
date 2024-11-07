@@ -57,6 +57,7 @@ export interface Feedback {
   appName: string
   image: string
   reportType: string
+  title: string
   description: string
   browser: {
     name: string

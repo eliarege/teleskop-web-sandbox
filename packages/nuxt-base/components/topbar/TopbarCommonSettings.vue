@@ -8,30 +8,13 @@ const props = defineProps<{
   disableTheme?: boolean
 }>()
 const { dark, dialog } = useQuasar()
-const keycloak = useKeycloak()
 const nuxt = useNuxtApp()
 
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
 
-const feedbackEnabled = computed(() => {
-  return keycloak.enabled
-    && keycloak.authenticated.value
-    && keycloak.tokenParsed.value?.email_verified
-    || false
-})
-
-const feedbackDisableReason = computed(() => {
-  if (!feedbackEnabled.value) {
-    if (!keycloak.enabled)
-      return t('feedback.response.no-auth')
-    if (!keycloak.authenticated.value)
-      return t('feedback.response.auth-required')
-    if (keycloak.tokenParsed.value?.email_verified === false)
-      return t('feedback.response.email-not-verified')
-  }
-  return null
-})
+const feedbackEnabled = computed(() => nuxt.$feedback.isEnabled() === true)
+const feedbackDisableReason = computed(() => nuxt.$feedback.isEnabled())
 
 const items = [
   ...(props.extraItems
@@ -91,7 +74,7 @@ const items = [
       shortcut: 'F9',
       disabled: () => !feedbackEnabled.value,
       disableReason: feedbackDisableReason,
-      onClick: () => nuxt.$showFeedbackDialog(),
+      onClick: () => nuxt.$feedback.showDialog(),
     },
   ],
 ] as TopbarMenuItem[][]

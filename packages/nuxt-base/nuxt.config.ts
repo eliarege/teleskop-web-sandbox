@@ -18,6 +18,7 @@ export default defineNuxtConfig({
     smtpUser: '',
     smtpPassword: '',
     serviceDeskEmail: '',
+    customerName: '',
     kcBackchannelUrl: 'http://localhost:8080',
   },
   css: [

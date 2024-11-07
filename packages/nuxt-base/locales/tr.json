@@ -36,7 +36,7 @@
     "vncError": "{name} Bağlantısı Başarısız Oldu!"
   },
   "feedback": {
-    "title": "Geri bildirim Gönder",
+    "dialogTitle": "Geri bildirim Gönder",
     "response": {
       "success": "Geri bildirim başarıyla gönderildi.",
       "send-fail": "Geri bildirim gönderilirken bir hata oluştu.",
@@ -45,11 +45,13 @@
       "auth-required": "Geri bildirim gönderebilmeniz için giriş yapmanız gerekiyor.",
       "email-not-verified": "Geri bildirim gönderebilmeniz için e-postanızı doğrulamanız gerekiyor.",
       "screenshot-error": "Ekran görüntüsü alınırken hata oluştu.",
-      "error-fallback": "Tanımlanamayan Hata"
+      "bad-image": "Geçersiz resim formatı.",
+      "error-fallback": "Tanımlanamayan hata."
     },
     "username": "Kullanıcı Adı",
     "email": "E-Posta",
-    "app-name": "Uygulama İsmi",
+    "appName": "Uygulama İsmi",
+    "title": "Başlık",
     "description": "Açıklama",
     "reportType": {
       "_": "Rapor Tipi",
@@ -60,7 +62,7 @@
     },
     "screenshot": {
       "edit": "Düzenle",
-      "take-screenshot": "Ekran Görüntüsü Al"
+      "takeScreenshot": "Ekran Görüntüsü Al"
     },
     "submit": "Gönder",
     "cancel": "İptal Et",
