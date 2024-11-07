@@ -10,7 +10,8 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "keycloak": "./keycloak/keycloak.sh"
+    "keycloak": "./keycloak/keycloak.sh",
+    "cleanup": "find ./ \\( -name \"node_modules\" -o -name \".nuxt\" \\) -type d -prune -exec rm -rf '{}' +"
   },
   "devDependencies": {
     "@teleskop/eslint-config": "workspace:*",
