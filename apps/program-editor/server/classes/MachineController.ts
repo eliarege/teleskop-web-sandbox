@@ -103,8 +103,14 @@ export class MachineController {
                 TRIM(SUBSTRING(l.value, 2, LEN(l.value) - 2)) as name,
                 CAST(TRIM(SUBSTRING(v.value, 2, LEN(v.value) - 2)) as int) as value
               FROM (values (1)) t(x)
-              JOIN STRING_SPLIT(REPLACE(P.SELECTIONLIST, '" "', '"&"'), '&', 1) l on 1=1
-              JOIN STRING_SPLIT(REPLACE(P.SELECTIONVALUES, '" "', '"&"'), '&', 1) v on l.ordinal = v.ordinal
+              JOIN (
+                SELECT value, ROW_NUMBER() OVER (ORDER BY (SELECT 1)) ordinal
+                FROM STRING_SPLIT(REPLACE(P.SELECTIONLIST, '" "', '"&"'), '&')
+              ) l on 1=1
+              JOIN (
+                SELECT value, ROW_NUMBER() OVER (ORDER BY (SELECT 1)) ordinal
+                FROM STRING_SPLIT(REPLACE(P.SELECTIONVALUES, '" "', '"&"'), '&')
+              ) v on l.ordinal = v.ordinal
               WHERE P.PARAMETERTYPE = 1 AND P.SELECTIONLIST != '' AND P.SELECTIONVALUES != ''
               FOR JSON AUTO, INCLUDE_NULL_VALUES
             ), '[]')
