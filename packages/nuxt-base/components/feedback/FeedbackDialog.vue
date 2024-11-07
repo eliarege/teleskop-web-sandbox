@@ -7,10 +7,7 @@ import { getBrowserInfo, getOSInfo } from '~/utils/userAgent'
 import { useAppProps } from '~/composables/useAppProps'
 import { convertElementToCanvas } from '~/utils/html2canvas'
 
-const props = defineProps<{
-  feedback: FeedbackModel
-}>()
-defineEmits([...useDialogPluginComponent.emits, 'update:modelValue'])
+defineEmits([...useDialogPluginComponent.emits])
 
 const { t } = useI18n()
 const q = useQuasar()
@@ -38,9 +35,9 @@ const rectArr = ref<Rect[]>([])
 
 const feedbackModel: Feedback = reactive({
   appName: appProps.name,
-  image: props.feedback.image,
-  reportType: props.feedback.reportType,
-  description: props.feedback.description,
+  image: '',
+  reportType: '',
+  description: '',
   browser: {
     ...getBrowserInfo(navigator.userAgent),
     width: width.value,
@@ -56,6 +53,7 @@ function isFormValid(): boolean {
 const dialogId = useId()
 const editCanvas = ref(false)
 const submitLoading = ref(false)
+const ssLoading = ref(false)
 
 async function sendFeedback() {
   // Remove Data URI prefix before sending the feedback
@@ -89,7 +87,6 @@ async function sendFeedback() {
   submitLoading.value = false
 }
 
-const ssLoading = ref(false)
 async function takeScreenshot() {
   ssLoading.value = true
   // Wait for loading spinner to be rendered

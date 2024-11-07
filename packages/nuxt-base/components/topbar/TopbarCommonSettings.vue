@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { LocaleObject } from '@nuxtjs/i18n'
 import AppAboutDialog from '../AppAboutDialog.vue'
-import FeedbackDialog from '../feedback/FeedbackDialog.vue'
-import type { FeedbackModel, TopbarMenuItem } from '~/types'
-import { useAppProps } from '~/composables/useAppProps'
+import type { TopbarMenuItem } from '~/types'
 
 const props = defineProps<{
   extraItems?: TopbarMenuItem[]
@@ -11,17 +9,10 @@ const props = defineProps<{
 }>()
 const { dark, dialog } = useQuasar()
 const keycloak = useKeycloak()
+const nuxt = useNuxtApp()
 
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
-const appProps = useAppProps()
-
-const feedback: FeedbackModel = reactive({
-  appName: appProps.name,
-  reportType: '',
-  description: '',
-  image: '',
-})
 
 const feedbackEnabled = computed(() => {
   return keycloak.enabled
@@ -41,18 +32,6 @@ const feedbackDisableReason = computed(() => {
   }
   return null
 })
-
-function feedbackDialog() {
-  dialog({
-    component: FeedbackDialog,
-    componentProps: { feedback },
-  }).onOk((e: FeedbackModel) => {
-    feedback.appName = e.appName
-    feedback.description = e.description
-    feedback.image = e.image
-    feedback.reportType = e.reportType
-  })
-}
 
 const items = [
   ...(props.extraItems
@@ -109,9 +88,10 @@ const items = [
     {
       label: tt('base.sendFeedback'),
       icon: 'feedback',
+      shortcut: 'F9',
       disabled: () => !feedbackEnabled.value,
       disableReason: feedbackDisableReason,
-      onClick: () => feedbackDialog(),
+      onClick: () => nuxt.$showFeedbackDialog(),
     },
   ],
 ] as TopbarMenuItem[][]
