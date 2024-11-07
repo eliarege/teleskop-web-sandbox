@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
-import html2canvas from 'html2canvas-pro'
-import type { Rect } from './TopbarFeedbackScreenshotEditor.vue'
+import type { Rect } from './FeedbackScreenshotEditor.vue'
 import { parseAppList } from '~/utils/base'
 import type { Feedback, FeedbackModel } from '~/types'
 import { getBrowserInfo, getOSInfo } from '~/utils/userAgent'
 import { useAppProps } from '~/composables/useAppProps'
+import { convertElementToCanvas } from '~/utils/html2canvas'
 
 const props = defineProps<{
   feedback: FeedbackModel
@@ -53,8 +53,10 @@ function isFormValid(): boolean {
     && feedbackModel.description.trim() !== ''
 }
 
+const dialogId = useId()
 const editCanvas = ref(false)
 const submitLoading = ref(false)
+
 async function sendFeedback() {
   // Remove Data URI prefix before sending the feedback
   const modifiedModel = {
@@ -90,15 +92,13 @@ async function sendFeedback() {
 const ssLoading = ref(false)
 async function takeScreenshot() {
   ssLoading.value = true
-  const element = document.body
   // Wait for loading spinner to be rendered
   await sleep(500)
   try {
-    const canvas = await html2canvas(element, {
-      logging: false,
-      useCORS: true,
-      scale: window.devicePixelRatio,
-      ignoreElements: element => element.getAttribute('role') === 'dialog',
+    const canvas = await convertElementToCanvas(document.body, {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      ignoreElements: el => el.id === dialogId,
     })
 
     feedbackModel.image = canvas.toDataURL()
@@ -128,6 +128,7 @@ function onSave(newImage: string, newRects: Rect[]) {
 
 <template>
   <QDialog
+    :id="dialogId"
     ref="dialogRef"
     position="right"
     maximized
@@ -135,12 +136,12 @@ function onSave(newImage: string, newRects: Rect[]) {
     <div class="bg-white w-full h-full flex flex-col ">
       <span class="text-center p-3 font-extrabold text-xl">{{ t('feedback.title') }}</span>
       <div class="bg-white w-full h-min p-3 grid grid-cols-2 gap-5">
-        <TopbarFeedbackInput
+        <FeedbackInput
           :text="tokenParsed?.name"
           readonly
           :label="t('feedback.username')"
         />
-        <TopbarFeedbackInput
+        <FeedbackInput
           :text="tokenParsed?.email"
           readonly
           :label="t('feedback.email')"
@@ -255,7 +256,7 @@ function onSave(newImage: string, newRects: Rect[]) {
       to="body"
     >
       <div class="absolute top-1/2 left-1/2 z-10001 w-full h-full p-3">
-        <TopbarFeedbackScreenshotEditor
+        <FeedbackScreenshotEditor
           :image="originalImage"
           :rects="rectArr"
           @save="onSave"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LocaleObject } from '@nuxtjs/i18n'
 import AppAboutDialog from '../AppAboutDialog.vue'
-import TopbarFeedbackDialog from './feedback/TopbarFeedbackDialog.vue'
+import FeedbackDialog from '../feedback/FeedbackDialog.vue'
 import type { FeedbackModel, TopbarMenuItem } from '~/types'
 import { useAppProps } from '~/composables/useAppProps'
 
@@ -44,7 +44,7 @@ const feedbackDisableReason = computed(() => {
 
 function feedbackDialog() {
   dialog({
-    component: TopbarFeedbackDialog,
+    component: FeedbackDialog,
     componentProps: { feedback },
   }).onOk((e: FeedbackModel) => {
     feedback.appName = e.appName
