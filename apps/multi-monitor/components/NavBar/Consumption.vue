@@ -24,7 +24,7 @@ const store = useDataStore()
     <NavBarConsumptionItem
       v-if="store.electricity"
       :label="t('teleskop.consumption-electricity')"
-      icon="ant-design:thunderbolt-twotone"
+      icon="i-ant-design:thunderbolt-twotone"
       unit="kWh"
       :previous-value="trends.lastWeekElectricity"
       :current-value="trends.currentWeekElectricity"
@@ -32,7 +32,7 @@ const store = useDataStore()
     <NavBarConsumptionItem
       v-if="store.water"
       :label="t('teleskop.consumption-water')"
-      icon="ic:baseline-water-drop"
+      icon="i-ic:baseline-water-drop"
       unit="L"
       :previous-value="trends.lastWeekTotalWater"
       :current-value="trends.currentWeekTotalWater"
@@ -40,7 +40,7 @@ const store = useDataStore()
     <NavBarConsumptionItem
       v-if="store.salt"
       :label="t('teleskop.consumption-salt')"
-      icon="tabler:salt"
+      icon="i-tabler:salt"
       unit="L"
       :previous-value="trends.lastWeekSalt"
       :current-value="trends.currentWeekSalt"
@@ -48,7 +48,7 @@ const store = useDataStore()
     <NavBarConsumptionItem
       v-if="store.steam"
       :label="t('teleskop.consumption-steam')"
-      icon="fluent:building-factory-48-regular"
+      icon="i-fluent:building-factory-48-regular"
       unit="kg"
       :previous-value="trends.lastWeekSteam"
       :current-value="trends.currentWeekSteam"

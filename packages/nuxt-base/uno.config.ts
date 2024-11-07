@@ -1,4 +1,9 @@
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig, presetAttributify, presetIcons, presetUno, transformerDirectives, transformerVariantGroup } from 'unocss'
+import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // https://unocss.dev/guide/
 export default defineConfig({
@@ -19,9 +24,20 @@ export default defineConfig({
         light: '.body--light',
       },
     }),
-    presetAttributify(),
+    // presetAttributify(),
     presetIcons({
       warn: true,
+      prefix: 'i-',
+      customizations: {
+        // https://github.com/unocss/unocss/issues/4084
+        iconCustomizer(collection, icon, props) {
+          props.width = '1.5em'
+          props.height = '1.5em'
+        },
+      },
+      collections: {
+        tw: FileSystemIconLoader(resolve(__dirname, 'assets/icons')),
+      },
     }),
   ],
   transformers: [

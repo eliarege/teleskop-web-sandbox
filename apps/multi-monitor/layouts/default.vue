@@ -88,8 +88,8 @@ const machineData = computed(() => {
         <template v-if="sm">
           <QToolbarTitle class="text-clip" shrink>
             <NuxtLink to="/">
-              <Icon
-                name="tw:eliar"
+              <TwIcon
+                name="i-tw:eliar"
                 size="3rem"
                 class="p-1"
               />
@@ -123,8 +123,8 @@ const machineData = computed(() => {
           class="flex-center w-full"
         >
           <NuxtLink to="/">
-            <Icon
-              name="tw:eliar"
+            <TwIcon
+              name="i-tw:eliar"
               size="2rem"
               class="mr-2"
             />

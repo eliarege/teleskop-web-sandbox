@@ -4,6 +4,7 @@
     "aboutApp": "About application",
     "apps": {
       "_": "Apps",
+      "machines": "Machines",
       "multi-monitor": "Multi Monitor",
       "program-editor": "Program Editor",
       "planning-board": "Planning Board",
@@ -35,7 +36,7 @@
     "vncError": "{name} Connection Failed!"
   },
   "feedback": {
-    "title": "Report a Feedback",
+    "dialogTitle": "Report a Feedback",
     "response": {
       "success": "Feedback sent successfully.",
       "send-fail": "An error occurred while sending feedback.",
@@ -44,11 +45,13 @@
       "auth-required": "You need to log in to send feedback.",
       "email-not-verified": "You need to verify your e-mail to send feedback.",
       "screenshot-error": "An error occured while taking a screenshot.",
-      "error-fallback": "Unidentified Error"
+      "bad-image": "Invalid image format.",
+      "error-fallback": "Unidentified error."
     },
     "username": "Username",
     "email": "Email",
-    "app-name": "App Name",
+    "appName": "App Name",
+    "title": "Title",
     "description": "Description",
     "reportType": {
       "_": "Report Type",
@@ -59,7 +62,7 @@
     },
     "screenshot": {
       "edit": "Edit",
-      "take-screenshot": "Take Screenshot"
+      "takeScreenshot": "Take Screenshot"
     },
     "submit": "Submit",
     "cancel": "Cancel",

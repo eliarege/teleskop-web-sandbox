@@ -39,11 +39,10 @@
   "devDependencies": {
     "@teleskop/nuxt-base": "workspace:*",
     "@teleskop/rollup-plugin-string": "workspace:*",
-    "@teleskop/unocss-config": "workspace:*",
     "eslint": "9.6.0",
     "nuxt": "3.11.2",
     "typescript": "5.5.4",
-    "vue": "3.4.27",
+    "vue": "3.5.12",
     "vue-router": "4.3.2",
     "vue-tsc": "2.0.24"
   }

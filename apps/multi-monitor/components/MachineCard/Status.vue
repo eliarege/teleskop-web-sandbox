@@ -32,8 +32,8 @@ function connectionStatus(params: number) {
 <template>
   <div class="machine-info">
     <div class="thermometer" :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }">
-      <Icon
-        name="jam:temperature"
+      <TwIcon
+        name="i-jam:temperature"
         color="orange"
         :inline="true"
       />

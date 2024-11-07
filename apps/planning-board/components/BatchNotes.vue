@@ -101,7 +101,7 @@ function deleteNote(id: number) {
         <q-space />
         <q-input v-model="search" dense>
           <template #append>
-            <TeleskopIcon name="i-material-symbols-search" />
+            <TwIcon name="i-material-symbols:search" />
           </template>
         </q-input>
       </template>

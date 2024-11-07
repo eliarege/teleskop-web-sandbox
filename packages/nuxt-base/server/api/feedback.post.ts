@@ -1,6 +1,10 @@
-import nodemailer from 'nodemailer'
+import { Buffer } from 'node:buffer'
+import os from 'node:os'
+import prettyBytes from 'pretty-bytes'
+import nodemailer, { type SendMailOptions } from 'nodemailer'
 import { createError } from 'h3'
 import type { Feedback } from '~/types'
+
 // TODO: Body validation
 export default defineAuthEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -11,7 +15,7 @@ export default defineAuthEventHandler(async (event) => {
     throw createError({
       statusCode: 500,
       data: {
-        code: 'feedback.response.no-auth',
+        code: 'no-auth',
         message: 'User not authenticated',
       },
     })
@@ -21,7 +25,7 @@ export default defineAuthEventHandler(async (event) => {
     throw createError({
       statusCode: 500,
       data: {
-        code: 'feedback.response.not-configured',
+        code: 'not-configured',
         message: 'SMTP should be configured.',
       },
     })
@@ -30,13 +34,23 @@ export default defineAuthEventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       data: {
-        code: 'feedback.response.email-not-verified',
+        code: 'email-not-verified',
         message: 'E-Mail has to be verified.',
       },
     })
   }
 
   const feedback = await readBody(event) as Feedback
+
+  if (feedback.image && !isValidBase64(feedback.image)) {
+    throw createError({
+      statusCode: 400,
+      data: {
+        code: 'bad-image',
+        message: 'Invalid image format. Expected base64.',
+      },
+    })
+  }
 
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -48,60 +62,101 @@ export default defineAuthEventHandler(async (event) => {
     },
   })
 
-  const mailContent = `
-#### 📅 Date
+  let subject = `[${feedback.reportType}] [${feedback.appName}] ${feedback.title}`
+  if (config.customerName) {
+    subject = `[${config.customerName}] ${subject}`
+  }
 
-${new Date().toISOString()}
+  const mailOptions: SendMailOptions = {
+    from: config.smtpUser,
+    to: config.serviceDeskEmail,
+    subject,
+    replyTo: token.email,
+    text: `
+## 👤 Reporter
 
-#### 👤 User Information
-- **Username:** ${token.name}
+- **Name:** ${token.name}
+- **Username:** ${token.username}
 - **Email:** ${token.email}
+- **Customer/Company:** ${config.customerName}
 
-#### 💻 Application Information
-- **Name:** ${token.appName}
+## 🏡 Environment
+
+### App Info
+- **Name:** ${feedback.appName}
 - **Version:** ${config.twVersion}
 - **Build Date:** ${config.twBuildDate}
 - **Commit Hash:** ${config.twCommitHash}
 
-#### 🌐 Browser Information
-- **Browser Name:** ${feedback.browser.name}
-- **Browser Version:** ${feedback.browser.version}
-- **Resolution:** ${feedback.browser.width} x ${feedback.browser.height}
+### Browser Info
+- **Name:** ${feedback.browser.name}
+- **Version:** ${feedback.browser.version}
+- **Window Resolution:** ${feedback.browser.width} x ${feedback.browser.height}
 
-#### 🖥️ Operating System Information
-- **OS Name:** ${feedback.os.name}
-- **OS Version:** ${feedback.os.version}
+### Client Operating System
+- **Name:** ${feedback.os.name}
+- **Version:** ${feedback.os.version}
 
-#### 📝 Description
+### Server Operating System
+- **Name:** ${os.type()}
+- **Version:** ${os.version()}
+- **Architecture:** ${os.arch()}
+- **CPU:** ${getCPUInfo()}
+- **Memory:** ${prettyBytes(os.totalmem())}
+
+## 📝 Description
 
 ${feedback.description}
+  `,
+  }
 
-${feedback.image ? '#### 📸 Screenshot' : ''}
-  `
+  // Attach image
+  if (feedback.image) {
+    const timestamp = new Date().toISOString()
+    let filename = `${feedback.appName}_${timestamp}.png`
+    if (config.customerName) {
+      filename = `screenshot_${config.customerName.toLowerCase()}_${filename}`
+    } else {
+      filename = `screenshot_${filename}`
+    }
+
+    mailOptions.text += `\n'## 📸 Screenshot'`
+    mailOptions.attachments = [
+      {
+        filename,
+        content: feedback.image,
+        encoding: 'base64',
+      },
+    ]
+  }
 
   try {
-    await transporter.sendMail({
-      from: config.smtpUser,
-      to: config.serviceDeskEmail,
-      subject: `${feedback.reportType}: ${feedback.appName}`,
-      attachments: [
-        {
-          filename: 'screenshot.png',
-          content: feedback.image,
-          encoding: 'base64',
-        },
-      ],
-      text: mailContent,
-      replyTo: token.email,
-    })
+    await transporter.sendMail(mailOptions)
     return 'OK'
   } catch (error) {
     throw createError({
       statusCode: 500,
       data: {
-        code: 'feedback.response.send-fail',
+        code: 'send-fail',
         message: 'Failed to send email',
       },
     })
   }
 })
+
+function isValidBase64(str: string) {
+  try {
+    return Buffer.from(str, 'base64').toString('base64') === str
+  } catch (error) {
+    return false
+  }
+}
+
+function getCPUInfo(): string {
+  const cpus = os.cpus()
+  if (cpus.length) {
+    return `${cpus[0].model} (Core: ${cpus.length})`
+  } else {
+    return ''
+  }
+}

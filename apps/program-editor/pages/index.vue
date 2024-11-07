@@ -198,8 +198,8 @@ const itemsMobile = [
         <template v-if="sm">
           <QToolbarTitle shrink>
             <NuxtLink to="/">
-              <Icon
-                name="tw:eliar"
+              <TwIcon
+                name="i-tw:eliar"
                 size="2.5rem"
                 class="p-1"
               />

@@ -24,9 +24,8 @@ function goToMainPage() {
     <q-btn
       color="black"
       outline
-      class="back-button mt-5"
+      class="back-button font-bold mt-5"
       size="lg"
-      font="bold"
       no-caps
       @click="goToMainPage"
     >

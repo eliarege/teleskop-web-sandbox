@@ -1,58 +1,20 @@
 <script setup lang="ts">
 import type { LocaleObject } from '@nuxtjs/i18n'
 import AppAboutDialog from '../AppAboutDialog.vue'
-import TopbarFeedbackDialog from './feedback/TopbarFeedbackDialog.vue'
-import type { FeedbackModel, TopbarMenuItem } from '~/types'
-import { useAppProps } from '~/composables/useAppProps'
+import type { TopbarMenuItem } from '~/types'
 
 const props = defineProps<{
   extraItems?: TopbarMenuItem[]
   disableTheme?: boolean
 }>()
 const { dark, dialog } = useQuasar()
-const keycloak = useKeycloak()
+const nuxt = useNuxtApp()
 
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
-const appProps = useAppProps()
 
-const feedback: FeedbackModel = reactive({
-  appName: appProps.name,
-  reportType: '',
-  description: '',
-  image: '',
-})
-
-const feedbackEnabled = computed(() => {
-  return keycloak.enabled
-    && keycloak.authenticated.value
-    && keycloak.tokenParsed.value?.email_verified
-    || false
-})
-
-const feedbackDisableReason = computed(() => {
-  if (!feedbackEnabled.value) {
-    if (!keycloak.enabled)
-      return t('feedback.response.no-auth')
-    if (!keycloak.authenticated.value)
-      return t('feedback.response.auth-required')
-    if (keycloak.tokenParsed.value?.email_verified === false)
-      return t('feedback.response.email-not-verified')
-  }
-  return null
-})
-
-function feedbackDialog() {
-  dialog({
-    component: TopbarFeedbackDialog,
-    componentProps: { feedback },
-  }).onOk((e: FeedbackModel) => {
-    feedback.appName = e.appName
-    feedback.description = e.description
-    feedback.image = e.image
-    feedback.reportType = e.reportType
-  })
-}
+const feedbackEnabled = computed(() => nuxt.$feedback.isEnabled() === true)
+const feedbackDisableReason = computed(() => nuxt.$feedback.isEnabled())
 
 const items = [
   ...(props.extraItems
@@ -109,9 +71,10 @@ const items = [
     {
       label: tt('base.sendFeedback'),
       icon: 'feedback',
+      shortcut: 'F9',
       disabled: () => !feedbackEnabled.value,
       disableReason: feedbackDisableReason,
-      onClick: () => feedbackDialog(),
+      onClick: () => nuxt.$feedback.showDialog(),
     },
   ],
 ] as TopbarMenuItem[][]

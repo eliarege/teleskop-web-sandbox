@@ -22,6 +22,11 @@
       "packages": ["**"],
       "dependencies": ["lodash"],
       "isBanned": true
+    },
+    {
+      "label": "UnoCSS Dependencies should be same version",
+      "dependencies": ["unocss", "@unocss/**"],
+      "pinVersion": "0.64.0"
     }
   ]
 }

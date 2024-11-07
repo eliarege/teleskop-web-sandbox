@@ -1,8 +1,7 @@
-import { defineConfig } from 'unocss'
-import sharedConfig from '@teleskop/unocss-config'
+import { mergeConfigs } from '@unocss/core'
+import baseConfig from './.nuxt/uno.config.mjs'
 
-const extended = {
-  ...sharedConfig,
+export default mergeConfigs([baseConfig, {
   theme: {
     breakpoints: {
       lg: '1200px',
@@ -10,6 +9,4 @@ const extended = {
       md: '768px',
     },
   },
-}
-export default defineConfig({ ...extended })
-// export default mergeConfigs([sharedConfig])
+}])

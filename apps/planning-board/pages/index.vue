@@ -58,8 +58,8 @@ const { data: state } = await useFetch('/api/ptStatus')
         <template v-if="sm">
           <QToolbarTitle shrink class="text-clip">
             <NuxtLink to="/">
-              <Icon
-                name="tw:eliar"
+              <TwIcon
+                name="i-tw:eliar"
                 size="2.5rem"
                 class="p-1"
               />

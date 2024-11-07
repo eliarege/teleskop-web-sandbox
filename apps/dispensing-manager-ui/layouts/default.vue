@@ -49,8 +49,8 @@ const itemsMobile = [
       <QToolbar class="min-h-unset">
         <template v-if="sm">
           <QToolbarTitle shrink>
-            <Icon
-              name="tw:eliar"
+            <TwIcon
+              name="i-tw:eliar"
               size="2.5rem"
               class="p-1"
             />
