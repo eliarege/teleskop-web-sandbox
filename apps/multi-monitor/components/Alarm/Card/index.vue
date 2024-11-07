@@ -114,7 +114,7 @@ const filterIcon = computed(() => {
         >
           <AlarmCardContent
             :active-machine
-            :alarms="item.alarms"
+            :alarms="item.alarms || []"
             :command-no="item.commandNo"
           />
         </q-expansion-item>
