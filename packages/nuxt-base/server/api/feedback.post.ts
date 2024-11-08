@@ -76,7 +76,6 @@ export default defineAuthEventHandler(async (event) => {
 ## 👤 Reporter
 
 - **Name:** ${token.name}
-- **Username:** ${token.username}
 - **Email:** ${token.email}
 - **Customer/Company:** ${config.customerName}
 
