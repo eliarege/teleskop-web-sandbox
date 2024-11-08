@@ -451,7 +451,7 @@ const { width: windowWidth } = useWindowSize()
 
 .modal-mask {
   background: rgba(0, 0, 0, 0.7);
-  @apply fixed z-100 justify-center left-0 top-0 w-full h-full;
+  @apply fixed z-2001 justify-center left-0 top-0 w-full h-full;
 
   .modal-wrapper {
     @apply flex justify-center items-center h-full max-w-1920px w-full overflow-auto;
