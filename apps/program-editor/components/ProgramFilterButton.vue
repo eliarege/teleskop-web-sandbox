@@ -1,34 +1,21 @@
 <script setup lang="ts">
-import type { ProgramFilter } from '~/shared/types';
 
 const { t } = useI18n()
 const editor = useEditorStore()
+const filter = useProgramFilterStore()
 const inputId = useId()
 
 async function applyFilter() {
-  filter.existingFilter = programFilter.value
   editor.isLoading = true
-  await editor.fetchAllPrograms(programFilter.value)
+  await editor.fetchAllPrograms(filter.existingFilter)
   editor.isLoading = false
-  filter.showFilterPopup = false
 }
 
 async function deleteFilter() {
-  clearFilter()
-  programFilter.value = {
-    clearOnChange: true,
-  }
+  filter.clearFilter()
   editor.isLoading = true
   await editor.fetchAllPrograms()
   editor.isLoading = false
-  filter.showFilterPopup = false
-}
-
-function getFilterIconColor() {
-  return filter.existingFilter.programNo
-      || filter.existingFilter.programName
-      || filter.existingFilter.processType
-      ? 'red-6' : 'gray-6'
 }
 
 function focusNumberInput() {
@@ -39,8 +26,8 @@ function focusNumberInput() {
 <template>
   <div>
     <TopbarButton
+      :color="filter.hasFilter() ? 'red-6' : 'gray-6'"
       icon="filter_alt"
-      :color="getFilterIconColor()"
       rounded
     >
       <QTooltip class="text-capitalize">
@@ -57,70 +44,71 @@ function focusNumberInput() {
       class="rounded-md"
       @show="focusNumberInput()"
     >
-      <div class="q-pa-sm" style="width: 370px;">
+      <div class="q-pa-sm" style="width: 380px;">
         <div class="text-4 flex items-center">
-          <span class="pl-2">{{ t('filter.programFilter') }}</span>
+          <span class="text-gray-8 ml-2">{{ t('filter.programFilter') }}</span>
           <QSpace />
           <QBtn
-            icon="delete"
             class="text-gray-6 mr-2"
-            flat
-            round
+            v-close-popup
+            icon="delete"
             size="md"
+            round
             dense
+            flat
             @click="deleteFilter()"
           >
             <QTooltip> {{ t('filter.delete_all') }} </QTooltip>
           </QBtn>
           <QBtn
-            icon="close"
             class="text-gray-8"
-            flat
-            round
+            v-close-popup
+            icon="close"
             size="md"
+            round
             dense
-            @click="filter.showFilterPopup = false"
+            flat
           >
             <QTooltip>{{ t('filter.close') }}</QTooltip>
           </QBtn>
         </div>
         <QSeparator />
         <div class="q-pa-md justify-center">
-          <QForm @submit="applyFilter" @reset="clearFilter">
+          <QForm @submit="applyFilter" @reset="deleteFilter" class="q-gutter-md">
             <InputNumber
               :id="inputId"
-              v-model="programFilter.programNo"
+              v-model="filter.existingFilter.programNo"
               :label="t('filter.programNo')"
+              hide-bottom-space
               maybe-empty
               dense
             />
             <QInput
-              v-model="programFilter.programName"
-              dense
+              v-model="filter.existingFilter.programName"
               :label="t('filter.programName')"
+              dense
             />
             <QSelect
-              v-model="programFilter.processType"
-              class="q-mt-md"
-              dense
-              options-dense
+              v-model="filter.existingFilter.processType"
               :options="editor.allProcessType"
               :label="t('filter.processType')"
+              options-dense
+              dense
             />
             <QCheckbox
-              v-model="programFilter.clearOnChange"
-              class="q-mt-md text-gray-8"
-              color="gray-8"
+              v-model="filter.existingFilter.clearOnChange"
               :label="t('filter.clearFilterOnChange')"
+              color="gray-8"
               dense
             />
             <div class="flex justify-end">
-              <q-btn
-              type="submit"
-                v-close-popup
-                outline
+              <QBtn
+                class="bg-primary text-white"
                 :label="t('filter.apply')"
+                v-close-popup
+                type="submit"
                 icon="check"
+                flat
                 @click="applyFilter()"
               />
             </div>

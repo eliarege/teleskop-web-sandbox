@@ -243,20 +243,24 @@ export const useNotificationStore = defineStore('notification', () => {
   return { showNotificationPopup, notifications }
 })
 
-export const useFilterStore = defineStore('filter', () => {
+export const useProgramFilterStore = defineStore('filter', () => {
   const showFilterPopup = ref<boolean>(false)
   const existingFilter = ref<ProgramFilter>({
     clearOnChange: true,
   })
 
-  return { showFilterPopup, existingFilter }
-})
-
-export function clearFilter() {
-  useFilterStore().existingFilter = {
-    clearOnChange: true
+  function hasFilter (): boolean {
+    return !!(existingFilter.value.programNo || existingFilter.value.programName || existingFilter.value.processType)
   }
-}
+
+  function clearFilter() {
+    existingFilter.value = {
+      clearOnChange: true
+    }
+  }
+
+  return { showFilterPopup, existingFilter , hasFilter, clearFilter }
+})
 
 /**
  * Verilen saniyeyi 00:00:00 formatına dönüştürür

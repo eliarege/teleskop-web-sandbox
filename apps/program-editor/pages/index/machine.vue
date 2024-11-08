@@ -10,7 +10,7 @@ import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
 import type { ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
-import { clearFilter, formatDuration } from '~/composables/utils'
+import { formatDuration } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
@@ -25,6 +25,7 @@ const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
 const editor = useEditorStore()
+const filter = useProgramFilterStore()
 const machineId = Number(route.params.machine_id)
 const tableRef = ref()
 const tt = (key: string) => toRef(() => t(key))
@@ -96,7 +97,7 @@ onKeyStroke(['v', 'V'], (event: KeyboardEvent) => {
 onKeyStroke(['f', 'F'], (event: KeyboardEvent) => {
   if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
-    useFilterStore().showFilterPopup = true
+    filter.showFilterPopup = true
   }
 })
 
@@ -148,14 +149,14 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
   }
 })
 
-if (useFilterStore().existingFilter.clearOnChange)
-  clearFilter()
+if (filter.existingFilter.clearOnChange)
+  filter.clearFilter()
 
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
 await editor.fetchMachine(machineId)
 await editor.fetchCommandTypes(machineId)
-await editor.fetchAllPrograms(useFilterStore().existingFilter)
+await editor.fetchAllPrograms(filter.existingFilter)
 await editor.fetchAllProcessTypes().then(() => {
   editor.isLoading = false
 })
