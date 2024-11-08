@@ -3,15 +3,7 @@ import type { ProgramFilter } from '~/shared/types';
 
 const { t } = useI18n()
 const editor = useEditorStore()
-const filter = useFilterStore()
-const numberInput = ref()
-
-const programFilter = ref<ProgramFilter>({
-  programNo: filter.existingFilter.programNo,
-  programName: filter.existingFilter.programName,
-  processType: filter.existingFilter.processType,
-  clearOnChange: filter.existingFilter.clearOnChange,
-})
+const inputId = useId()
 
 async function applyFilter() {
   filter.existingFilter = programFilter.value
@@ -40,9 +32,7 @@ function getFilterIconColor() {
 }
 
 function focusNumberInput() {
-  nextTick(() => {
-    numberInput.value?.$el.querySelector('input').focus()
-  })
+  document.getElementById(inputId)?.focus()
 }
 </script>
 
@@ -98,7 +88,7 @@ function focusNumberInput() {
         <div class="q-pa-md justify-center">
           <QForm @submit="applyFilter" @reset="clearFilter">
             <InputNumber
-              ref="numberInput"
+              :id="inputId"
               v-model="programFilter.programNo"
               :label="t('filter.programNo')"
               maybe-empty

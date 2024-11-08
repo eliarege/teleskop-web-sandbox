@@ -11,6 +11,7 @@ const props = withDefaults(defineProps<{
   format?: string
   disable?: boolean
   maybeEmpty?: boolean
+  id?: string
 }>(), {
   type: 'decimal',
   rules: () => [],
@@ -23,7 +24,7 @@ const props = withDefaults(defineProps<{
 
 const model = defineModel<number>()
 const editor = useEditorStore()
-const id = useId()
+const id = props.id || useId()
 const input = ref<QInput>()
 const numberInput = ref<HTMLElement | null>(null)
 
