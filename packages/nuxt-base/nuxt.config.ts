@@ -54,6 +54,11 @@ export default defineNuxtConfig({
   unocss: {
     nuxtLayers: true,
   },
+  postcss: {
+    plugins: {
+      'postcss-nested': {},
+    }
+  },
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'en',
