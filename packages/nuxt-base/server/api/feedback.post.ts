@@ -120,7 +120,7 @@ ${feedback.description}
       filename = `screenshot_${filename}`
     }
 
-    mailOptions.text += `\n'## 📸 Screenshot'`
+    mailOptions.text += `\n## 📸 Screenshot`
     mailOptions.attachments = [
       {
         filename,
