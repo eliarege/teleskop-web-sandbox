@@ -372,7 +372,9 @@ const { width: windowWidth } = useWindowSize()
 .green-class {
   background: rgba(40, 220, 40, 0.6) !important;
 }
+
 .wrapper {
+  height: calc(100vh - 65px);
   display: grid;
   grid-template-columns: 0.5fr 1fr 1fr 0.5fr;
   grid-template-rows: repeat(3, 1fr);
@@ -380,17 +382,19 @@ const { width: windowWidth } = useWindowSize()
     'operator table table info'
     'operator table table info'
     'operator logs logs chart';
-  @apply grid gap-x-3 gap-y-1 w-full h-screen text-center max-w-1920px px-2 pb-17 text-black;
+  @apply grid gap-x-3 gap-y-1 w-full text-center max-w-1920px px-2 pb-1 text-black;
 }
 
 .table-wrapper {
   grid-area: table;
-  @apply rounded-2xl h-auto shadow shadow-gray-700/50 shadow-lg;
+  height: -webkit-fill-available;
+  @apply rounded-2xl shadow shadow-gray-700/50 shadow-lg;
 }
 
 .info-wrapper {
   grid-area: info;
-  @apply rounded-2xl h-auto overflow-auto shadow shadow-gray-700/50 shadow-lg shadow;
+  height: -webkit-fill-available;
+  @apply rounded-2xl overflow-auto shadow shadow-gray-700/50 shadow-lg shadow;
 
   .info {
     @apply text-lg;
@@ -429,7 +433,8 @@ const { width: windowWidth } = useWindowSize()
 
 .log-wrapper {
   grid-area: logs;
-  @apply rounded-2xl border border-gray-500 flex justify-between w-full h-auto shadow shadow-gray-700/50 shadow-lg overflow-auto;
+  height: -webkit-fill-available;
+  @apply rounded-2xl border border-gray-500 flex justify-between w-full  shadow shadow-gray-700/50 shadow-lg overflow-auto;
 
   ::slotted(.content) {
     background-color: rgb(48, 76, 76);
