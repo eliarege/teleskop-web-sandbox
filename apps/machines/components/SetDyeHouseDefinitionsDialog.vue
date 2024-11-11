@@ -8,6 +8,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const kc = useKeycloak()
+
 const { t } = useI18n()
 
 const options = ref<Record<string, boolean>>({
@@ -22,7 +24,7 @@ const { notifySuccess, notifyError } = useNotify()
 
 async function setDefinitions() {
   try {
-    await $fetch('/api/sync/upload-dye-house-definitions', {
+    await kc.fetch('/api/sync/upload-dye-house-definitions', {
       method: 'POST',
       body: {
         machineId: props.selected.machineId,

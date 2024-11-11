@@ -7,6 +7,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const kc = useKeycloak()
+
 const { t } = useI18n()
 
 const selected = ref<Partial<TreatmentParameter>>({
@@ -21,21 +23,21 @@ const { data: params, refresh: refreshParams } = useLazyFetch<TreatmentParameter
 })
 
 async function handleAdd() {
-  await $fetch('/api/treatment-parameters/treatment-parameter', {
+  await kc.fetch('/api/treatment-parameters/treatment-parameter', {
     method: 'POST',
     body: selected.value,
   })
   await refreshParams()
 }
 async function handleEdit() {
-  await $fetch('/api/treatment-parameters/treatment-parameter', {
+  await kc.fetch('/api/treatment-parameters/treatment-parameter', {
     method: 'PUT',
     body: selected.value,
   })
   await refreshParams()
 }
 async function handleDelete() {
-  await $fetch('/api/treatment-parameters/treatment-parameter', {
+  await kc.fetch('/api/treatment-parameters/treatment-parameter', {
     method: 'DELETE',
     body: selected.value,
   })

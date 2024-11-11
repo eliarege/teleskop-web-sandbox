@@ -10,6 +10,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const kc = useKeycloak()
+
 const { t } = useI18n()
 
 const selected = ref<Partial<TreatmentMachineGroup>>({
@@ -42,7 +44,7 @@ async function handleDragDrop(e: SortableEvent) {
   if (matches && matches.length) {
     const machineId = Number.parseInt(matches[0])
 
-    await $fetch('/api/treatment-parameters/machine-group-machines', {
+    await kc.fetch('/api/treatment-parameters/machine-group-machines', {
       method: 'PUT',
       body: {
         machineId,
@@ -54,21 +56,21 @@ async function handleDragDrop(e: SortableEvent) {
 }
 
 async function handleAdd() {
-  await $fetch('/api/treatment-parameters/machine-group', {
+  await kc.fetch('/api/treatment-parameters/machine-group', {
     method: 'POST',
     body: selected.value,
   })
   await refreshGroups()
 }
 async function handleEdit() {
-  await $fetch('/api/treatment-parameters/machine-group', {
+  await kc.fetch('/api/treatment-parameters/machine-group', {
     method: 'PUT',
     body: selected.value,
   })
   await refreshGroups()
 }
 async function handleDelete() {
-  await $fetch('/api/treatment-parameters/machine-group', {
+  await kc.fetch('/api/treatment-parameters/machine-group', {
     method: 'DELETE',
     body: selected.value,
   })

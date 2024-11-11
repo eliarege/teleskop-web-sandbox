@@ -9,6 +9,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const kc = useKeycloak()
+
 const { t } = useI18n()
 
 const tab = ref('inputs')
@@ -67,7 +69,7 @@ const outputColumns = computed<FilterableTableColumn[]>(() => ([
 ]))
 
 async function handleFilterSlotsUpdateInputs(updatedValue: FilterableTableFilter[]) {
-  inputs.value = await $fetch('/api/io/analog-input', {
+  inputs.value = await kc.fetch('/api/io/analog-input', {
     method: 'POST',
     body: {
       machineId: machineId.value,
@@ -77,7 +79,7 @@ async function handleFilterSlotsUpdateInputs(updatedValue: FilterableTableFilter
 }
 
 async function handleFilterSlotsUpdateOutputs(updatedValue: FilterableTableFilter[]) {
-  outputs.value = await $fetch('/api/io/analog-output', {
+  outputs.value = await kc.fetch('/api/io/analog-output', {
     method: 'POST',
     body: {
       machineId: machineId.value,
@@ -87,7 +89,7 @@ async function handleFilterSlotsUpdateOutputs(updatedValue: FilterableTableFilte
 }
 
 async function handleSubmit() {
-  await $fetch('/api/machine/max-reel-speed', {
+  await kc.fetch('/api/machine/max-reel-speed', {
     method: 'PUT',
     body: {
       machineId: machineId.value,

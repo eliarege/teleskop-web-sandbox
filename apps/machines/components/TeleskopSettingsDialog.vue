@@ -8,6 +8,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const kc = useKeycloak()
+
 const { t } = useI18n()
 
 type Label = (typeof settingsList)[number]['label']
@@ -107,7 +109,7 @@ async function handleSubmit() {
       submitData[setting.value] = value
     }
   }
-  await $fetch('/api/machines/teleskop-settings', {
+  await kc.fetch('/api/machines/teleskop-settings', {
     method: 'PUT',
     body: submitData,
   })

@@ -8,6 +8,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['refresh'])
 
+const kc = useKeycloak()
+
 const { t, locale, setLocale } = useI18n()
 
 const showMachineParameters = ref(false)
@@ -20,12 +22,12 @@ const { data: databaseVersion } = useLazyFetch('/api/machines/database-version',
 })
 
 async function updateVersions() {
-  await $fetch('/api/sync/machine-versions')
+  await kc.fetch('/api/sync/machine-versions')
   emit('refresh')
 }
 
 async function loadProject() {
-  await $fetch('/api/sync/update-machine', {
+  await kc.fetch('/api/sync/update-machine', {
     method: 'GET',
     query: {
       machineId: props.selected.machineId,

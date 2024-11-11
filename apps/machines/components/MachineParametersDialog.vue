@@ -9,6 +9,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const kc = useKeycloak()
+
 const { t } = useI18n()
 const columns = computed<FilterableTableColumn[]>(() => ([
   {
@@ -71,7 +73,7 @@ const { data: params } = useLazyFetch('/api/machines/machine-parameters', {
 })
 
 async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
-  params.value = await $fetch('/api/machines/machine-parameters', {
+  params.value = await kc.fetch('/api/machines/machine-parameters', {
     method: 'POST',
     body: {
       machineId: id.value,
