@@ -37,8 +37,10 @@
     "@teleskop/nuxt-base": "workspace:*",
     "@types/node": "20.12.12",
     "@types/pg": "8.11.10",
+    "@unocss/reset": "0.64.0",
     "nuxt": "3.11.2",
     "typescript": "5.5.4",
+    "unocss": "0.64.0",
     "vue": "3.5.12",
     "vue-router": "4.3.2",
     "vue-tsc": "2.0.24"
