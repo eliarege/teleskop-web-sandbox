@@ -10,6 +10,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close', 'refresh'])
 
+const kc = useKeycloak()
+
 const { t } = useI18n()
 
 const { data: startingParameters } = useLazyFetch('/api/formulas/starting-parameter-options', {
@@ -88,7 +90,7 @@ function handleOptionClick(option: { paramString: string, defaultValue: number }
 
 async function handleSubmit() {
   if (isValidExpression.value) {
-    await $fetch('/api/formulas/formula', {
+    await kc.fetch('/api/formulas/formula', {
       method: 'PUT',
       body: {
         formula: { ...props.formula, formula: expression.value },
