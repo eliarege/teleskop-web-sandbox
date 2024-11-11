@@ -126,7 +126,8 @@ export const diffs: any[] = []
  * @returns {boolean} Aynı ise true döner
  */
 function compareHeader(programA: any, programB: any): boolean {
-  for (const key of Object.keys(programA)) {
+  const { duration, steps, ...programWithoutSteps } = programA
+  for (const key of Object.keys(programWithoutSteps)) {
     if (programA[key] !== programB[key]) {
       diffs.push({ kind: 'E', path: key, prgA: programA[key], prgB: programB[key] })
       return false
@@ -136,6 +137,9 @@ function compareHeader(programA: any, programB: any): boolean {
 }
 
 export function compareCommand(stepA: ProgramStepCommand, stepB: ProgramStepCommand): boolean {
+  if (!isDef(stepA) || !isDef(stepB)) {
+    return false
+  }
   if (stepA.commandNo !== stepB.commandNo) {
     return false
   }
@@ -159,9 +163,21 @@ function compareIOLists(ioListA: ioListItem[], ioListB: ioListItem[]): boolean {
     const ioA = ioListA[index]
     const ioB = ioListB[index]
 
+    if (!isDef(ioA) || !isDef(ioB)) {
+      return false
+    }
+
+    if (ioA.value.length !== ioB.value.length) {
+      return false
+    }
+
     for (let valueIndex = 0; valueIndex < ioA.value.length; valueIndex++) {
       const valueA = ioA.value[valueIndex]
       const valueB = ioB.value[valueIndex]
+
+      if (!isDef(valueA) || !isDef(valueB)) {
+        return false
+      }
 
       if (valueA[0] !== valueB[0] || valueA[1] !== valueB[1]) {
         return false
@@ -207,6 +223,12 @@ export function compareProgram(programA: Program, programB: Program, noEmitOnDif
   for (let stepIndex = 0; stepIndex < programA.steps.length; stepIndex++) {
     const stepA = programA.steps[stepIndex]
     const stepB = programB.steps[stepIndex]
+
+    if (!isDef(stepA) || !isDef(stepB)) {
+      diffs.push({ kind: 'E', path: ['steps', stepIndex], prgA: stepA, prgB: stepB })
+      if (noEmitOnDiff)
+        return false
+    }
 
     // Main Command
     if (!compareCommand(stepA.mainCommand, stepB.mainCommand)) {
