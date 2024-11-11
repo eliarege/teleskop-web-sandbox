@@ -101,7 +101,7 @@ export default defineAuthEventHandler(async (event) => {
 - **Version:** ${os.version()}
 - **Architecture:** ${os.arch()}
 - **CPU:** ${getCPUInfo()}
-- **Memory:** ${prettyBytes(os.totalmem())}
+- **Memory:** ${prettyBytes(os.totalmem(), { binary: true })}
 
 ## 📝 Description
 
