@@ -18,9 +18,9 @@
     "@teleskop/nuxt-base": "workspace:*",
     "@types/node": "20.12.12",
     "@unocss/reset": "0.64.0",
-    "nuxt": "3.11.2",
+    "nuxt": "3.14.159",
     "unocss": "0.64.0",
     "vue": "3.5.12",
-    "vue-router": "4.3.2"
+    "vue-router": "4.4.5"
   }
 }
