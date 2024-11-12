@@ -2,7 +2,7 @@ import isEqual from 'fast-deep-equal'
 import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
 import { useEditorStore } from './editor'
-import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramHeader, ProgramStepCommand, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -121,20 +121,25 @@ export const diffs: any[] = []
 
 /**
  * Programın header bilgilerini karsılastırır
- * @param programA Program
- * @param programB Program
+ * @param programA Program Header
+ * @param programB Program Header
  * @returns {boolean} Aynı ise true döner
  */
-function compareHeader(programA: any, programB: any): boolean {
+function compareHeader(programA: ProgramHeader, programB: ProgramHeader): boolean {
+  if (!isDef(programA) || !isDef(programB)) {
+    return false
+  }
+
   const { duration, steps, ...programWithoutSteps } = programA
-  for (const key of Object.keys(programWithoutSteps)) {
+
+  for (const key of Object.keys(programWithoutSteps) as (keyof ProgramHeader)[]) {
     if (programA[key] !== programB[key]) {
-      diffs.push({ kind: 'E', path: key, prgA: programA[key], prgB: programB[key] })
       return false
     }
   }
   return true
 }
+
 
 export function compareCommand(stepA: ProgramStepCommand, stepB: ProgramStepCommand): boolean {
   if (!isDef(stepA) || !isDef(stepB)) {
@@ -215,6 +220,12 @@ function compareParameters(parametersA: ParameterItem[], parametersB: ParameterI
 export function compareProgram(programA: Program, programB: Program, noEmitOnDiff?: boolean): boolean {
   // Header
   if (!compareHeader(programA, programB)) {
+    if (noEmitOnDiff)
+      return false
+  }
+
+  if (programA.steps.length !== programB.steps.length) {
+    diffs.push({ kind: 'E', path: ['steps'], prgA: programA.steps, prgB: programB.steps })
     if (noEmitOnDiff)
       return false
   }
