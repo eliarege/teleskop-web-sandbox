@@ -14,7 +14,6 @@
   "dependencies": {
     "@element-plus/nuxt": "1.0.10",
     "@iconify/utils": "2.1.33",
-    "@nuxt/icon": "1.4.7",
     "@nuxtjs/i18n": "8.3.1",
     "@pinia/nuxt": "0.5.4",
     "@quasar/extras": "1.16.12",
