@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { NoVncEvents } from '@novnc/novnc/core/rfb'
-import RFB from '@novnc/novnc/core/rfb'
+import RFB from '@novnc/novnc/lib/rfb'
 import { nextTick, onBeforeMount, onMounted, ref, toRef, watch } from 'vue'
 import type { Ref } from 'vue'
 

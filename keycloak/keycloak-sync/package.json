@@ -10,13 +10,13 @@
   },
   "dependencies": {
     "@keycloak/keycloak-admin-client": "24.0.4",
-    "ajv": "8.12.0",
+    "ajv": "8.17.1",
     "consola": "3.2.3",
     "object-hash": "3.0.0"
   },
   "devDependencies": {
     "@teleskop/tsconfig": "workspace:*",
     "@types/object-hash": "3.0.6",
-    "tsx": "4.7.2"
+    "tsx": "4.19.2"
   }
 }

@@ -16,7 +16,7 @@
   "devDependencies": {
     "@teleskop/eslint-config": "workspace:*",
     "syncpack": "13.0.0",
-    "turbo": "2.0.6"
+    "turbo": "2.2.3"
   },
   "pnpm": {
     "peerDependencyRules": {
