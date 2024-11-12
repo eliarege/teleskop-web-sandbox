@@ -22,8 +22,6 @@
     "@teleskop/tbb-ftp-client": "workspace:*",
     "@teleskop/ui": "workspace:*",
     "@teleskop/utils": "workspace:*",
-    "@types/uuid": "9.0.8",
-    "basic-ftp": "5.0.5",
     "klona": "2.0.6",
     "knex": "3.1.0",
     "lodash-es": "4.17.21",
@@ -32,8 +30,7 @@
     "soap": "1.1.6",
     "sortablejs": "1.15.3",
     "sortablejs-vue3": "1.2.11",
-    "ufo": "1.5.4",
-    "uuid": "9.0.1"
+    "ufo": "1.5.4"
   },
   "devDependencies": {
     "@teleskop/nuxt-base": "workspace:*",

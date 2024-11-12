@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid'
+import { randomUUID } from 'node:crypto'
 import { useSSE } from '~/server/utils/sse'
 
 export default defineEventHandler(async (event) => {
@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     const sse = useSSE()
 
     const client = {
-      id: uuid(),
+      id: randomUUID(),
       event,
     }
     sse.addClient(client)
