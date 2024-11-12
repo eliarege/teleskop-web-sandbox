@@ -212,8 +212,13 @@ export default defineNuxtPlugin(() => {
   const fetch = $fetch.create({
     async onRequest(context) {
       if (kcEnabled) {
-        await keycloak.updateToken(kcConfig?.minimumTokenValidity)
-        setHeader(context.options, 'Authorization', `Bearer ${token.value}`)
+        if (!token.value && !didInitialise.value) {
+          await until(didInitialise).toBe(true)
+        }
+        if (token.value) {
+          await keycloak.updateToken(kcConfig?.minimumTokenValidity)
+          setHeader(context.options, 'Authorization', `Bearer ${token.value}`)
+        }
       }
     },
   })
