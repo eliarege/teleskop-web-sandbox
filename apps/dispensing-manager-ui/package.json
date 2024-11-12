@@ -20,7 +20,7 @@
     "@teleskop/utils": "workspace:*",
     "async-mutex": "0.5.0",
     "knex": "3.1.0",
-    "mssql": "10.0.2",
+    "mssql": "11.0.1",
     "samba-client": "7.2.0",
     "ufo": "1.5.4"
   },
