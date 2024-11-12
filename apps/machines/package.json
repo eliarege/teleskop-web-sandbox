@@ -16,7 +16,6 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "@floating-ui/vue": "1.0.6",
     "@formkit/i18n": "1.6.5",
     "@formkit/nuxt": "1.6.5",
     "@formkit/themes": "1.6.5",
