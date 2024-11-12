@@ -11,7 +11,7 @@
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "keycloak": "./keycloak/keycloak.sh",
-    "cleanup": "find ./ \\( -name \"node_modules\" -o -name \".nuxt\" \\) -type d -prune -exec rm -rf '{}' +"
+    "cleanup": "find ./ \\( -type f -name \"pnpm-lock.*.yaml\" -o -type d -name \"node_modules\" -o -type d -name \".nuxt\" \\) -prune -exec rm -rf '{}' +"
   },
   "devDependencies": {
     "@teleskop/eslint-config": "workspace:*",
