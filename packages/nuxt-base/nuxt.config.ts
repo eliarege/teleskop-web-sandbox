@@ -11,6 +11,7 @@ export default defineNuxtConfig({
       kcClientId: 'nuxt-client',
       kcEnabled: false,
     },
+    logLevel: '',
     twName: '',
     twVersion: '',
     twBuildDate: '',

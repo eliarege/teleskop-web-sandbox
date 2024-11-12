@@ -29,6 +29,8 @@
     "nodemailer": "6.9.15",
     "nuxt-quasar-ui": "2.1.4",
     "pinia": "2.1.7",
+    "pino": "8.20.0",
+    "pino-pretty": "11.0.0",
     "postcss-nested": "7.0.2",
     "pretty-bytes": "6.1.1",
     "quasar": "2.16.9",
