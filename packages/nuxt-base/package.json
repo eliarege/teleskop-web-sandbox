@@ -38,7 +38,7 @@
     "unocss": "0.64.0"
   },
   "devDependencies": {
-    "@types/node": "20.12.12",
+    "@types/node": "22.9.0",
     "@types/nodemailer": "6.4.16",
     "nuxt": "3.14.159",
     "vite": "5.4.11",

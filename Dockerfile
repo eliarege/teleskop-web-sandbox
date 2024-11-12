@@ -1,7 +1,7 @@
 ###############
 ## Base Image
 ###############
-FROM node:20.15-alpine AS base
+FROM node:22.11-alpine AS base
 
 RUN apk add --no-cache gcompat
 

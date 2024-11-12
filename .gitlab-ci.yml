@@ -56,7 +56,7 @@ variables:
     description: Whitespace seperated list of apps to build/release
 
 prepare-apps:
-  image: node:20
+  image: node:22
   stage: prepare
   extends:
     - .app-rules
@@ -71,7 +71,7 @@ prepare-apps:
       - out-*/
 
 .merge-request-summarize:
-  image: node:20
+  image: node:22
   stage: prepare
   variables:
     GIT_DEPTH: 0
@@ -100,7 +100,7 @@ prepare-apps:
 
 # TODO: Migrate this job to use `changesets`
 release-devops-packages:
-  image: node:20
+  image: node:22
   stage: release
   extends:
     - .devops-rules

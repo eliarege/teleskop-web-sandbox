@@ -35,7 +35,7 @@
   "devDependencies": {
     "@teleskop/build-utils": "workspace:*",
     "@teleskop/tsconfig": "workspace:*",
-    "@types/node": "20.12.12",
+    "@types/node": "22.9.0",
     "@types/ws": "8.5.13",
     "eslint": "9.14.0",
     "pino-pretty": "11.0.0",
