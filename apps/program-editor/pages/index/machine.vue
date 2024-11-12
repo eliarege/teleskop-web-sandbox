@@ -66,10 +66,10 @@ onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
   }
 })
 
-onKeyStroke(['r', 'R'], (event: KeyboardEvent) => {
+onKeyStroke(['r', 'R'], async (event: KeyboardEvent) => {
   if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
-    editor.onReset()
+    await editor.fetchMachine(machineId)
   }
 })
 
@@ -166,8 +166,8 @@ const comparisonDialogVisible = ref(false)
 const versions = ref([] as Array<any>)
 const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length > 1)
 
-const filter = ref('')
-const debouncedFilter = refDebounced(filter, 250)
+const searchFilter = ref('')
+const debouncedFilter = refDebounced(searchFilter, 250)
 
 const { results: filterResults } = useFuse(debouncedFilter, () => editor.allPrograms, {
   matchAllWhenSearchEmpty: true,
@@ -650,10 +650,10 @@ function handleRowClass(row: ProgramTable): string {
   if (row.isChanged)
     return 'changed-on-teleskop'
 
-  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
-    return 'only-on-controller'
+  else if (row.refactor(PE): updated variable names for clarity
 
-  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
+Improved variable naming conventions throughout the code for better readability and consistency.
+.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
     return 'only-on-teleskop'
 
   else {
@@ -689,7 +689,7 @@ function handleRowClass(row: ProgramTable): string {
       class="program-table"
       selection="multiple"
       :selected-rows-label="getSelectedString"
-      :filter="filter"
+      :filter="searchFilter"
       dense
       flat
       table-header-style="position: sticky; top: 0; z-index: 1; background-color: #f5f5f5; height: 50px;"
@@ -721,7 +721,7 @@ function handleRowClass(row: ProgramTable): string {
       </template>
       <template #top>
         <QInput
-          v-model="filter"
+          v-model="searchFilter"
           clear-icon="close"
           class="q-pa-md w-xs"
           dense
@@ -737,13 +737,13 @@ function handleRowClass(row: ProgramTable): string {
 
           <template #append>
             <QBtn
-              v-if="filter"
+              v-if="searchFilter"
               icon="close"
               flat
               round
               dense
               size="sm"
-              @click="filter = ''"
+              @click="searchFilter = ''"
             />
           </template>
         </QInput>
