@@ -22,10 +22,6 @@ definePageMeta({
   path: '/machine/:machine_id/program/:program_no',
 })
 
-onBeforeRouteLeave(() => {
-  editor.program = editor.createProgram()
-})
-
 const buttons = computed(() => [
   // {
   //   label: t('menu.print'),
@@ -68,7 +64,9 @@ const buttons = computed(() => [
     icon: 'refresh',
     disable: editor.isLoading,
     onClick() {
-      editor.onReset()
+      const hasChanged = editor.hasProgramChanged()
+      if (hasChanged)
+        $commandManager.executeCommand('discardChanges', { $q })
     },
   },
   {
@@ -88,7 +86,7 @@ const buttons = computed(() => [
     tooltip: t('menu.newParallelStep'),
     shortcut: 'F3',
     icon: 'add_circle_outline',
-    disable: editor.isLoading || editor.selectedSteps,
+    disable: editor.isLoading,
     onClick() {
       editor.newParallelStep()
     },
@@ -99,22 +97,22 @@ const buttons = computed(() => [
     tooltip: t('menu.deleteStep'),
     shortcut: 'Del',
     icon: 'delete',
-    disable: (editor.isLoading || editor.selectedSteps),
+    disable: editor.isLoading || !editor.selectedSteps.length,
     onClick() {
       editor.deleteStep()
     },
   },
-  {
-    label: t('menu.deleteParallelStep'),
-    originalLabel: t('menu.deleteParallelStep'),
-    tooltip: t('menu.deleteParallelStep'),
-    shortcut: ' ',
-    icon: 'delete',
-    disable: (editor.isLoading || editor.selectedSteps || editor.selectedParallelStep === -1),
-    onClick() {
-      editor.deleteParallelStep()
-    },
-  },
+  // {
+  //   label: t('menu.deleteParallelStep'),
+  //   originalLabel: t('menu.deleteParallelStep'),
+  //   tooltip: t('menu.deleteParallelStep'),
+  //   shortcut: ' ',
+  //   icon: 'delete',
+  //   disable: (editor.isLoading || editor.selectedSteps || editor.selectedParallelStep === -1),
+  //   onClick() {
+  //     editor.deleteParallelStep()
+  //   },
+  // },
   {
     label: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
     originalLabel: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
@@ -166,7 +164,8 @@ onKeyStroke(['Delete'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable()) return
+  if (isActiveElementEditable())
+    return
 
   event.preventDefault()
 
@@ -185,7 +184,8 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable()) return
+  if (isActiveElementEditable())
+    return
 
   event.preventDefault()
 
@@ -237,6 +237,16 @@ onKeyStroke(['V', 'v'], (event: KeyboardEvent) => {
   }
 })
 
+onKeyStroke(['R', 'r'], async (event: KeyboardEvent) => {
+  if (ctrl.value) {
+    event.preventDefault()
+
+    const hasChanged = editor.hasProgramChanged()
+    if (hasChanged)
+      $commandManager.executeCommand('discardChanges', { $q })
+  }
+})
+
 watch(locale, () => {
   form.value?.validate()
 })
@@ -248,6 +258,16 @@ await editor.fetchCommandTypes(Number(route.params.machine_id))
 await editor.fetchAllProcessTypes()
 await editor.fetchProgram(machineId, programNo)
 editor.isLoading = false
+
+onBeforeRouteLeave(() => {
+  const hasChanged = editor.hasProgramChanged()
+  if (hasChanged) {
+    $commandManager.executeCommand('discardChanges', { $q })
+    return false
+  } else {
+    return true
+  }
+})
 </script>
 
 <template>
