@@ -1,5 +1,7 @@
 import { Buffer } from 'node:buffer'
+import { readFileSync } from 'node:fs'
 import os from 'node:os'
+import process from 'node:process'
 import prettyBytes from 'pretty-bytes'
 import nodemailer, { type SendMailOptions } from 'nodemailer'
 import { createError } from 'h3'
@@ -100,8 +102,8 @@ export default defineAuthEventHandler(async (event) => {
 - **Name:** ${os.type()}
 - **Version:** ${os.version()}
 - **Architecture:** ${os.arch()}
-- **CPU:** ${getCPUInfo()}
-- **Memory:** ${prettyBytes(os.totalmem(), { binary: true })}
+- **CPU:** ${getCpuInfo()}
+- **Memory:** ${getMemory()}
 
 ## 📝 Description
 
@@ -151,11 +153,28 @@ function isValidBase64(str: string) {
   }
 }
 
-function getCPUInfo(): string {
+function getMemory(): string {
+  const memory = process.constrainedMemory() || os.totalmem()
+  return prettyBytes(memory, { binary: true })
+}
+
+function getCpuInfo(): string {
   const cpus = os.cpus()
   if (cpus.length) {
-    return `${cpus[0].model} (Core: ${cpus.length})`
+    return `${cpus[0].model} (Core: ${getCpuCores()})`
   } else {
     return ''
+  }
+}
+
+function getCpuCores() {
+  try {
+    const quota = readFileSync('/sys/fs/cgroup/cpu/cpu.cfs_quota_us', 'utf8');
+    const period = readFileSync('/sys/fs/cgroup/cpu/cpu.cfs_period_us', 'utf8');
+    const cores = Math.ceil(parseInt(quota) / parseInt(period));
+    return cores > 0 ? cores : os.cpus().length;
+  } catch (err) {
+    console.error('Failed to read cgroup CPU limits:', err);
+    return os.cpus().length;
   }
 }
