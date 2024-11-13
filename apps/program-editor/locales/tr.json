@@ -435,5 +435,11 @@
     "delete_all": "Filtreleri sıfırla",
     "close": "Kapat",
     "apply": "Uygula"
+  },
+  "discardChanges": {
+    "title": "Değişiklikleri Geri Al",
+    "message": "Yaptığınız değişiklikleri geri almak istediğinizden emin misiniz?",
+    "discard": "Geri Al",
+    "cancel": "İptal"
   }
 }

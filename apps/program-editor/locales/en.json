@@ -435,5 +435,11 @@
     "delete_all": "Delete all",
     "close": "Close",
     "apply": "Apply"
+  },
+  "discardChanges": {
+    "title": "Discard Changes",
+    "message": "Are you sure you want to discard your changes?",
+    "discard": "Discard",
+    "cancel": "Cancel"
   }
 }

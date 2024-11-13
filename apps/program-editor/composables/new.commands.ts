@@ -17,6 +17,7 @@ import CMTempTimeGraphDialog from '~/components/CMTempTimeGraphDialog.vue'
 import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
 import { TeleskopSettingsIds } from '~/shared/constants'
 import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
+import TBDiscardChangesDialog from '~/components/TBDiscardChangesDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -63,6 +64,7 @@ export interface RegisteredCommands {
   stepCommandGraph: [ctx: any]
   newProgram: [ctx: any]
   saveAsProgram: [ctx: any]
+  discardChanges: [ctx: any]
 }
 
 registerCommand(() => {
@@ -472,6 +474,18 @@ registerCommand(() => {
       })
       await editor.fetchAllPrograms()
       editor.isLoading = false
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'discardChanges',
+    execute(ctx: any) {
+      ctx.$q.dialog({
+        component: TBDiscardChangesDialog,
+      })
       return true
     },
   }

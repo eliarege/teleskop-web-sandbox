@@ -8,7 +8,7 @@ import { CommandIconMapping, CommandType, TeleskopSettingsIds, commandTypeMaps }
 export type EditorStore = ReturnType<typeof useEditorStore>
 
 export const useEditorStore = defineStore('editor', () => {
-  const program = ref<Program>(createProgram())
+  const originalProgram = ref<Program>(createEmptyProgram())
   const machine = ref<Machine>(createMachine())
   const selectedPrograms = ref<ProgramTable[]>([])
   const allProcessType = ref<ProcessType[]>([])
@@ -278,38 +278,41 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Programı veri tabanına kaydet
-   * @returns {Promise<void>}
+   * Programı sıfırlayarak, belirtilen makine ve program numarası için verileri yeniden yükler.
+   *
+   * @returns {Promise<void>} Fonksiyon bir `Promise` döner ve işlemi tamamlar.
+   *
+   * @description Bu fonksiyon, belirtilen makine ID'si ve program numarasına göre program verilerini
+   * API üzerinden çeker ve mevcut programı sıfırlar. Yeni alınan verilerle `program.value` güncellenir.
    */
-  async function onSaveAs(): Promise<void> {
-    isLoading.value = true
-    const firstId = errorIds.value.values().next().value
-    if (firstId) {
-      const el = document.getElementById(firstId)
-      const parentEl = el?.closest('.q-item__section--main')
-      const stepIndex = parentEl?.children[0].id?.split('-').pop()
-
-      scrollPage(Number(stepIndex), true)
-      notifyError(t('saveProgram.incorrect'))
-    } else {
-      if (await updateProgram()) {
-        notifySuccess(t('saveProgram.success'))
-      } else {
-        notifyError(t('saveProgram.fail'))
-      }
-    }
-    isLoading.value = false
-  }
-
-  function onReset() {
-    window.location.reload()
+  async function onResetProgram(): Promise<void> {
+    program.value = createEmptyProgram()
+    await nextTick()
+    program.value = klona(originalProgram.value)
+    selectedSteps.value = []
+    selectedParallelStep.value = -1
   }
 
   /**
-   * Programı veri tabanından sil
-   * @param machineId - Makine ID
-   * @param programNo - Program no
-   * @returns {Promise<void>}
+   * Mevcut programda herhangi bir değişiklik olup olmadığını belirler.
+   *
+   * @returns {boolean} Programda değişiklik yapılmışsa `true`, yapılmamışsa `false` döner.
+   *
+   * @description
+   * Bu fonksiyon, mevcut program (`program.value`) ve orijinal program (`originalProgram.value`)
+   * arasında bir karşılaştırma yaparak değişiklik olup olmadığını kontrol eder. Eğer `program_no`
+   * route parametresi eksikse `false` döner.
+   * `compareProgram` fonksiyonu kullanılarak karşılaştırma yapılır.
+   */
+  function hasProgramChanged(): boolean {
+    const route = useRoute()
+
+    if (!isDef(route.params.program_no))
+      return false
+
+    return !compareProgram(program.value, originalProgram.value, true)
+  }
+
    */
   async function deleteProgram(machineId: number, programNo: number): Promise<void> {
     await kc.fetch(`/api/machine/${machineId}/program/${programNo}`, {
@@ -384,6 +387,8 @@ export const useEditorStore = defineStore('editor', () => {
       }
       lastCommandId = 0
     }
+
+    originalProgram.value = klona(program.value)
   }
 
   /**
@@ -677,6 +682,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   return {
     program,
+    originalProgram,
     machine,
     selectedPrograms,
     selectedSteps,
@@ -729,5 +735,6 @@ export const useEditorStore = defineStore('editor', () => {
     updateTeleskopSettings,
     fetchCommandTypes,
     allStepExpanded,
+    hasProgramChanged,
   }
 })
