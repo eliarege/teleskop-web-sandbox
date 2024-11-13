@@ -650,10 +650,10 @@ function handleRowClass(row: ProgramTable): string {
   if (row.isChanged)
     return 'changed-on-teleskop'
 
-  else if (row.refactor(PE): updated variable names for clarity
+  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+    return 'only-on-controller'
 
-Improved variable naming conventions throughout the code for better readability and consistency.
-.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
+  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
     return 'only-on-teleskop'
 
   else {
@@ -748,7 +748,7 @@ Improved variable naming conventions throughout the code for better readability 
           </template>
         </QInput>
         <QSpace />
-        <ProgramFilterButton/>
+        <ProgramFilterButton />
       </template>
     </QTable>
 
