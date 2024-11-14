@@ -77,7 +77,7 @@ const buttons = computed(() => [
     icon: 'add_circle_outline',
     disable: editor.isLoading,
     onClick() {
-      editor.newStep()
+      editor.addStep()
     },
   },
   {
@@ -129,7 +129,7 @@ useContextBar(buttons)
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
-  editor.newStep()
+  editor.addStep()
 })
 
 onKeyStroke('F3', (event: KeyboardEvent) => {
@@ -253,8 +253,9 @@ watch(locale, () => {
 
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
-await editor.fetchMachine(Number(route.params.machine_id))
-await editor.fetchCommandTypes(Number(route.params.machine_id))
+if (editor.machine.id !== machineId)
+  await editor.fetchMachine(machineId)
+await editor.fetchCommandTypes(machineId)
 await editor.fetchAllProcessTypes()
 await editor.fetchProgram(machineId, programNo)
 editor.isLoading = false

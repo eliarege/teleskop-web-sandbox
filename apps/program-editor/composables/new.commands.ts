@@ -136,14 +136,10 @@ registerCommand(() => {
   return {
     name: 'stepCommandGraph',
     execute(ctx: any) {
-      const editor = useEditorStore()
-      if (!editor.popupStepCommandGraphVisible) {
-        ctx.$q.dialog({
-          component: CMStepCommandGraphDialog,
-        })
-        editor.popupStepCommandGraphVisible = true
-        return true
-      }
+      ctx.$q.dialog({
+        component: CMStepCommandGraphDialog,
+      })
+      return true
     },
   }
 })

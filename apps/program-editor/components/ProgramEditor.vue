@@ -34,32 +34,11 @@ function onDragEnd(event: SortableEvent) {
     dragged = null
   }
 }
-
-const ctrl = useKeyModifier('Control')
-
-function selectStep(stepIndex: number) {
-  const editor = useEditorStore()
-  const stepId = editor.program.steps[stepIndex].stepId
-  const hasSelectedStep = editor.selectedSteps.find(step => step.stepId === stepId)
-
-  if (ctrl.value && !hasSelectedStep) {
-    editor.selectedSteps.push(editor.program.steps.find(step => step.stepId === stepId)!)
-
-    editor.selectedSteps.sort((a, b) => {
-      const indexA = editor.program.steps.findIndex(x => x.stepId === a.stepId)
-      const indexB = editor.program.steps.findIndex(x => x.stepId === b.stepId)
-      return indexA - indexB
-    })
-  } else if (ctrl.value && hasSelectedStep)
-    editor.selectedSteps = editor.selectedSteps.filter(step => step.stepId !== stepId)
-  else
-    editor.selectedSteps = [editor.program.steps.find(step => step.stepId === stepId)!]
-}
 </script>
 
 <template>
   <Sortable
-    class="program-editor e-div-y pb-120 "
+    class="program-editor e-div-y pb-120"
     :list="// eslint-disable-next-line vue/no-extra-parens
       (editor.program?.steps as ProgramStep[])"
     item-key="stepId"
@@ -79,7 +58,7 @@ function selectStep(stepIndex: number) {
           </QItemLabel>
         </QItemSection>
         <QItemSection class="pl-2">
-          <div :id="`step-${index}`" @click="selectStep(index)">
+          <div :id="`step-${index}`" @click="editor.selectStep($event.ctrlKey, index)">
             <ProgramStepForm :path="`steps.${index}`" />
           </div>
         </QItemSection>

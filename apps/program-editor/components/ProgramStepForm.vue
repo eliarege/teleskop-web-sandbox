@@ -43,7 +43,6 @@ const duration = computed(() => {
   const totalStepDuration = stepDurations.reduce((total, step) => total + step.duration, 0)
   return formatDuration(totalStepDuration)
 })
-
 </script>
 
 <template>
@@ -70,7 +69,7 @@ const duration = computed(() => {
       </div>
 
       <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
-        <span>{{ step.stepId }}</span>
+        <span>{{ `stepId: ${step.stepId}` }}</span>
         <span>{{ duration }}</span>
       </div>
 
@@ -108,7 +107,7 @@ const duration = computed(() => {
             :class="{ __selected: editor.selectedSteps.find(step => step.stepId === stepIndex) && editor.selectedParallelStep === index }"
           >
             <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
-              <span>{{ step.parallelCommands[index].commandId }}</span>
+              <span>{{ `commandId: ${step.parallelCommands[index].commandId}` }}</span>
             </div>
 
             <div>

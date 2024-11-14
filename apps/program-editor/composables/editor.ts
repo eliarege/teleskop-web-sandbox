@@ -8,6 +8,7 @@ import { CommandIconMapping, CommandType, TeleskopSettingsIds, commandTypeMaps }
 export type EditorStore = ReturnType<typeof useEditorStore>
 
 export const useEditorStore = defineStore('editor', () => {
+  const program = ref<Program>(createEmptyProgram())
   const originalProgram = ref<Program>(createEmptyProgram())
   const machine = ref<Machine>(createMachine())
   const selectedPrograms = ref<ProgramTable[]>([])
@@ -21,7 +22,6 @@ export const useEditorStore = defineStore('editor', () => {
   const popupCommandDetailVisible = ref(false)
   const popupVersionDialog = ref(false)
   const popupTempTimeGraphVisible = ref(false)
-  const popupStepCommandGraphVisible = ref(false)
   const leftDrawerOpen = ref(true)
   const rightDrawerOpen = ref(false)
   let lastStepId = 0
@@ -45,17 +45,29 @@ export const useEditorStore = defineStore('editor', () => {
   })
 
   /**
-   * Teleskop ayarlarını alır
-   * @returns {Promise<void>}
+   * Teleskop ayarlarını alır ve teleskopSettings değişkenine atar.
+   *
+   * Bu fonksiyon, sunucudan teleskop ayarlarını almak için bir API çağrısı yapar ve
+   * alınan ayarları `teleskopSettings` reaktif değişkenine atar.
+   * API yanıtı alındıktan sonra, bu ayarlar bileşen içinde kullanılabilir hale gelir.
+   *
+   * @returns {Promise<void>} Promise döner ve asenkron bir işlem olduğunu belirtir.
    */
   async function fetchTeleskopSettings(): Promise<void> {
     teleskopSettings.value = await kc.fetch('/api/teleskop-settings')
   }
 
   /**
-   * Makineyi degistirir
-   * @param id - Makine ID
-   * @returns {Promise<void>}
+   * Seçili makineyi değiştirir ve ilgili makine sayfasına yönlendirir.
+   *
+   * Bu fonksiyon, geçerli makineyi değiştirir ve yeni bir makine ID'si ile yönlendirme işlemi
+   * gerçekleştirir. Eğer mevcut makine ID'si, parametre olarak verilen ID ile farklıysa,
+   * mevcut makine sıfırlanır ve yeni bir makine nesnesi oluşturulur. Sayfada yönlendirme yapılırken
+   * mevcut rota `/machine/:id` formatında ise, sayfa yeniden yüklenmeden yalnızca URL değiştirilir.
+   *
+   * @param {number} id - Değiştirilecek makinenin ID'si.
+   *
+   * @returns {Promise<void>} Promise döner ve asenkron bir işlem olduğunu belirtir.
    */
   async function changeMachine(id: number): Promise<void> {
     selectedPrograms.value = []
@@ -65,6 +77,7 @@ export const useEditorStore = defineStore('editor', () => {
     }
     // Replace only if navigating from /machine/:id
     const replace = MACHINE_PATH_RE.test(route.path)
+
     await navigateTo({
       path: `/machine/${id}`,
       replace,
@@ -72,8 +85,17 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Yeni step olusturur
-   * @returns {ProgramStep} - Yeni step
+   * Yeni bir boş adım oluşturur.
+   *
+   * Bu fonksiyon, bir `ProgramStep` nesnesi döndürür. Adım, benzersiz bir `stepId` değeri ile
+   * başlatılır, ancak ana komut (`mainCommand`) boş bir komut nesnesi olarak atanır ve paralel komutlar
+   * (`parallelCommands`) boş bir dizi olarak başlatılır.
+   *
+   * @returns {ProgramStep} Boş bir adım nesnesi.
+   *
+   * @description Bu fonksiyon, yeni bir boş adım (ProgramStep) oluşturur. Adımın `stepId` değeri artan
+   * bir sayıya sahip olur, `mainCommand` ise boş bir komut nesnesi olur. Paralel komutlar listesi ise
+   * boş bir dizi olarak başlatılır.
    */
   function createEmptyStep(): ProgramStep {
     return {
@@ -84,8 +106,15 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Yeni komut olusturur
-   * @returns {ProgramStepCommand} - Yeni step
+   * Yeni bir boş komut oluşturur.
+   *
+   * Bu fonksiyon, bir `ProgramStepCommand` nesnesi döndürür. Komut, benzersiz bir `commandId` değeri ile
+   * başlatılır, ancak komut numarası (`commandNo`), parametreler (`parameters`) ve IO listesi (`ioList`) boş olur.
+   *
+   * @returns {ProgramStepCommand} Boş bir komut nesnesi.
+   *
+   * @description Bu fonksiyon, yeni bir adım komutu (ProgramStepCommand) oluşturur. Komutun `commandId`
+   * değeri artan bir değere sahiptir, ancak `commandNo` ve parametre listeleri boş başlatılır. IO listesi de boş olur.
    */
   function createEmptyCommand(): ProgramStepCommand {
     return {
@@ -97,64 +126,70 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Programa step ekler
+   * Yeni bir adım ekler.
+   *
+   * Bu fonksiyon, yeni bir adım oluşturur, komut numarası verilmişse ilgili komutu kullanarak günceller.
+   * Eğer komut paralel türde ise hata mesajı gösterir. Aksi takdirde yeni adımı belirtilen konuma ekler
+   * ve paralel komutları kopyalar. Yeni adım eklendikten sonra sayfayı kaydırarak, yeni adımı görünür yapar.
+   *
+   * @param {number | undefined} commandNo - Kullanılacak komutun numarası. Eğer `undefined` ise boş bir adım ekler.
+   * @param {number | undefined} stepIndex - Yeni adımın ekleneceği mevcut adımın indeksini belirtir.
+   *
    * @returns {void}
    */
-  function newStep(): void {
-    const emptyStep = createEmptyStep()
-    const selectedIndex = program.value.steps.findIndex(step => step.stepId === selectedSteps.value[0]?.stepId)
-    const stepIndex = selectedIndex !== -1 ? selectedIndex : program.value.steps.length - 1
-
-    emptyStep.parallelCommands = stepIndex > 0 ? klona(program.value.steps[stepIndex].parallelCommands) : []
-    for (const command of emptyStep.parallelCommands) {
-      command.commandId = lastCommandId++
-    }
-
-    program.value.steps.splice(stepIndex + 1, 0, emptyStep)
-    selectedParallelStep.value = -1
-    selectedSteps.value = [program.value.steps[stepIndex + 1]]
-    nextTick(() => {
-      scrollPage(stepIndex + 1, true)
-    })
-  }
-
-  /**
-   * Belirtilen stepIndex'e step ekler
-   * @param commandNo - Komut numarası
-   * @param stepIndex - Step index
-   * @returns {void}
-   */
-  function newStepCommand(commandNo: number, stepIndex: number): void {
+  function addStep(commandNo?: number, stepIndex?: number): void {
     const newStep = createEmptyStep()
-    const machineCommand = machine.value?.commands.get(commandNo)
 
-    if (!machineCommand) {
-      return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
+    // Belirli bir komut numarası verilmişse, komut bilgilerini al ve kontrol et
+    if (isDef(commandNo)) {
+      const machineCommand = machine.value?.commands.get(commandNo)
+
+      if (!machineCommand) {
+        return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
+      }
+
+      // Komut tipi paralel ise hata ver
+      if (machineCommand.commandType === CommandType.PARALLEL) {
+        return notifyError(t('error.cannotMainCommand', { commandNo }))
+      }
+
+      // Komut bilgilerini güncelle
+      updateCommand(newStep.mainCommand, commandNo)
     }
 
-    if (machineCommand.commandType === CommandType.PARALLEL) {
-      return notifyError(t('error.cannotMainCommand', { commandNo }))
-    }
+    // Paralel komutları kopyala (eğer varsa)
+    const index = stepIndex !== undefined && stepIndex >= 0 ? stepIndex : program.value.steps.length - 1
+    newStep.parallelCommands = index > 0 ? klona(program.value.steps[index].parallelCommands) : []
 
-    updateCommand(newStep.mainCommand, commandNo)
-
-    newStep.parallelCommands = stepIndex > 0 ? klona(program.value.steps[stepIndex].parallelCommands) : []
+    // Paralel komutların ID'sini güncelle
     for (const command of newStep.parallelCommands) {
       command.commandId = lastCommandId++
     }
-    program.value.steps.splice(stepIndex + 1, 0, newStep)
+
+    // Yeni adımı belirtilen konuma ekle
+    program.value.steps.splice(index + 1, 0, newStep)
+
+    // Seçim ve kaydırma işlemleri
     selectedParallelStep.value = -1
-    selectedSteps.value = [program.value.steps[stepIndex + 1]]
+    selectedSteps.value = [program.value.steps[index + 1]]
     nextTick(() => {
-      scrollPage(stepIndex + 1, true)
+      scrollPage(index + 1, true)
     })
   }
 
   /**
-   * Belirtilen stepIndex'taki step'i scroll eder.
-   * @param stepIndex - Step index
-   * @param isExpanded - Parallel stepleri göster
+   * Sayfada belirtilen adımın görünür olmasını sağlar ve isteğe bağlı olarak adımın genişletilmesini sağlar.
+   *
+   * Bu fonksiyon, belirtilen `stepIndex` ile adımın sayfadaki doğru konumda görünür olmasını sağlamak için
+   * sayfayı kaydırır. Ayrıca, adımın genişletilmesi gerekiyorsa, genişleme butonuna tıklayarak adımın içeriğini açar.
+   *
+   * @param {number} stepIndex - Görünür yapmak istenen adımın indeksini belirtir.
+   * @param {boolean} [isExpanded] - Eğer adımın genişletilmesi isteniyorsa `true` olmalıdır. Varsayılan değer `undefined` olup, genişletme işlemi yapılmaz.
+   *
    * @returns {void}
+   *
+   * @description Bu fonksiyon, belirtilen adımın sayfadaki görünür olmasını sağlar ve gerektiğinde o adımın
+   * genişletilmesini sağlar. Genişletilmek istenen adımda expand butonunu bulunur ve butona tıklanır.
    */
   function scrollPage(stepIndex: number, isExpanded?: boolean): void {
     const el = document.getElementById(`step-${stepIndex}`)
@@ -176,8 +211,18 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Programa parallel step ekler
+   * Yeni bir paralel adım ekler.
+   *
+   * Bu fonksiyon, seçilen adımın paralel komutlar listesine yeni bir paralel komut ekler.
+   * Eğer adım mevcut değilse, yeni bir paralel komut programın sonuna eklenir.
+   *
+   * Yeni paralel komut, `createEmptyCommand` fonksiyonu ile oluşturulur ve eklenir.
+   * Ayrıca, ekleme işleminden sonra sayfa, yeni paralel komutun bulunduğu adımda kaydırılır.
+   *
    * @returns {void}
+   *
+   * @description Bu fonksiyon, seçilen adımın paralel komutlar listesine yeni bir paralel komut ekler.
+   * Eğer seçilen adım yoksa, paralel komut programın sonuna eklenir.
    */
   function newParallelStep(): void {
     const index = program.value.steps.findIndex(step => step.stepId === selectedSteps.value[0]?.stepId)
@@ -191,10 +236,20 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Belirtilen stepIndex'e parallel step ekler
-   * @param commandNo - Komut numarası
-   * @param stepIndex - Step index
+   * Yeni bir paralel adım komutu oluşturur ve belirtilen adımın paralel komutlar listesine ekler.
+   *
+   * Bu fonksiyon, `commandNo` kullanarak makine komutunu alır ve eğer komut bulunursa, yeni bir komut oluşturur.
+   * Ardından, bu yeni komut, belirtilen `stepIndex`'teki adımın paralel komutlar listesine eklenir.
+   *
+   * Eğer makine komutu bulunamazsa, kullanıcıya bir hata mesajı gösterilir.
+   *
+   * @param {number} commandNo - Kullanılacak makine komutunun numarası.
+   * @param {number} stepIndex - Paralel komutun ekleneceği adımın indeksi.
+   *
    * @returns {void}
+   *
+   * @description Bu fonksiyon, belirtilen adımın paralel komutlar listesine yeni bir komut ekler.
+   * Yeni komut, `createEmptyCommand` fonksiyonu ile oluşturulur ve `updateCommand` fonksiyonu ile güncellenir.
    */
   function newParallelStepCommand(commandNo: number, stepIndex: number): void {
     const machineCommand = machine.value?.commands.get(commandNo)
@@ -204,24 +259,37 @@ export const useEditorStore = defineStore('editor', () => {
 
     const newCommand = createEmptyCommand()
     updateCommand(newCommand, commandNo)
-    program.value.steps[stepIndex].parallelCommands.push(newCommand)
+    program.value?.steps[stepIndex].parallelCommands.push(newCommand)
   }
 
   /**
-   * Belirtilen komutu değiştirir
-   * @param command - Program komutu
-   * @param commandNo - Komut numarası
+   * Mevcut bir komutu, sağlanan komut numarasına göre günceller.
+   *
+   * Bu fonksiyon, `newCommandNo` kullanarak makine komutunu alır ve eğer bulunursa, verilen `command` parametresi
+   * ile makine komutunun parametrelerini ve IO listesini günceller. Sadece düzenlenebilir veya formül kullanan parametreler
+   * dahil edilir, seçilebilir IO'lar ise IO listesine eklenir.
+   *
+   * Eğer makine komutu bulunamazsa, kullanıcıya bir hata mesajı gösterilir.
+   *
+   * @param {ProgramStepCommand} command - Güncellenmesi gereken program adımı komutu.
+   * @param {number} newCommandNo - Makine komutunu almak için kullanılan yeni komut numarası.
+   *
    * @returns {void}
+   *
+   * @description Bu fonksiyon, verilen komutu, makinenin mevcut komutlarından alınan verilerle günceller.
+   * Parametreler, yalnızca düzenlenebilir veya formül kullananlar ile güncellenir ve IO listesi, yalnızca seçilebilir
+   * IO'larla doldurulur.
    */
-  function updateCommand(command: ProgramStepCommand, commandNo: number): void {
-    const machineCommand = machine.value?.commands.get(commandNo)
+  function updateCommand(newCommandNo: number, path: string): void {
+    const machineCommand = machine.value?.commands.get(newCommandNo)
     if (!machineCommand) {
-      return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
+      return notifyError(t('error.machineCommandNotFound', { commandNo: newCommandNo, machineId: machine.value?.id }))
     }
 
-    command.commandNo = machineCommand.commandNo
+    const step: ProgramStepCommand = getPathElement(path)
+    step.commandNo = newCommandNo
 
-    command.parameters = machineCommand.parameters
+    step.parameters = machineCommand.parameters
       .filter(parameter => parameter.editable || parameter.useFormula)
       .map(parameter => ({
         index: parameter.index,
@@ -229,7 +297,7 @@ export const useEditorStore = defineStore('editor', () => {
         optimized: false,
       }))
 
-    command.ioList = machineCommand.ioList
+    step.ioList = machineCommand.ioList
       .filter(io => io.selectable)
       .map(io => ({
         ioId: io.physicalId,
@@ -241,9 +309,21 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Programı kaydeder
-   * @param newProgram - Program
-   * @returns {Promise<void>}
+   * Program verilerini kaydeder. Yeni bir program ekler veya mevcut programı günceller.
+   *
+   * - Eğer `newProgram` parametresi sağlanırsa, yeni bir program eklenir.
+   * - Eğer `newProgram` sağlanmazsa, mevcut program güncellenir.
+   *
+   * Eğer herhangi bir hata varsa, hatalı alan kullanıcıya bildirilir.
+   *
+   * @param {Program} [newProgram] - Yeni program verisi (isteğe bağlı).
+   *
+   * @returns {Promise<void>} Fonksiyon bir `Promise` döner ve işlemi tamamlar.
+   *
+   * @description Bu fonksiyon, önce program formunda herhangi bir hata olup olmadığını kontrol eder.
+   * Eğer hata varsa, kullanıcıyı hatalı alana yönlendirir ve hata mesajı gösterir.
+   * Eğer hata yoksa, yeni program eklenir veya mevcut program güncellenir. İşlem sonucunda başarılı
+   * veya başarısız bildirimleri yapılır.
    */
   async function onSubmit(newProgram?: Program): Promise<void> {
     isLoading.value = true
@@ -297,6 +377,17 @@ export const useEditorStore = defineStore('editor', () => {
     return !compareProgram(program.value, originalProgram.value, true)
   }
 
+  /**
+   * Verilen makine ID'si ve program numarasına göre programı veritabanından siler.
+   *
+   * @param {number} machineId - Silinecek programın ait olduğu makinenin ID'si.
+   * @param {number} programNo - Silinecek programın numarası.
+   *
+   * @returns {Promise<void>} Fonksiyon bir `Promise` döner ve işlemi tamamlar.
+   *
+   * @description Bu fonksiyon, belirtilen makine ID'si ve program numarasına göre,
+   * ilgili programı API üzerinden siler. Program silme işlemi başarılı olduğunda
+   * fonksiyon hiçbir değer döndürmez.
    */
   async function deleteProgram(machineId: number, programNo: number): Promise<void> {
     await kc.fetch(`/api/machine/${machineId}/program/${programNo}`, {
@@ -308,9 +399,16 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Sondan basa dogru iterasyon yaparak elemanları sil
-   * @param stepIndex - Silinecek step index
-   * @returns {void}
+   * Belirtilen adım indeksine göre adımı siler.
+   * Eğer indeks belirtilmezse, seçili adımlar üzerinden silme işlemi yapılır.
+   *
+   * @param {number} [stepIndex] - (İsteğe bağlı) Silinecek adımın indeksidir.
+   *
+   * @returns {void} Fonksiyon herhangi bir değer döndürmez.
+   *
+   * @description Bu fonksiyon, belirtilen adım indeksine göre adımı siler. Eğer indeks belirtilmezse,
+   * seçili adımlar üzerinde işlem yapılır ve her bir seçili adım, programın adımlarından silinir.
+   * Silme işlemi, sondan başa doğru yapılır.
    */
   function deleteStep(stepIndex?: number): void {
     if (isDef(stepIndex)) {
@@ -328,10 +426,16 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Parallel step'i sil
-   * @param stepIndex - Step index
-   * @param parallelIndex - Parallel step index
-   * @returns {void}
+   * Belirtilen adım ve paralel komut indekslerine göre paralel adımı siler.
+   *
+   * @param {number} [stepIndex] - (İsteğe bağlı) Silinecek paralel adımın bulunduğu adımın indeksi.
+   * @param {number} [parallelIndex] - (İsteğe bağlı) Silinecek paralel komutun indeksi.
+   *
+   * @returns {void} Fonksiyon herhangi bir değer döndürmez.
+   *
+   * @description Bu fonksiyon, bir adım ve paralel komut indeksine göre paralel komutları siler. Eğer indeksler belirtilmezse,
+   * seçili adım ve paralel komut üzerinden işlem yapılır. Paralel komutlar silindikten sonra, seçilen paralel adımın
+   * geçerli bir indekse sahip olması sağlanır.
    */
   function deleteParallelStep(stepIndex?: number, parallelIndex?: number): void {
     if (isDef(stepIndex) && isDef(parallelIndex)) {
@@ -349,21 +453,30 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Programı getirir
-   * @param machineId - Makine ID
-   * @param programNo - Program no
-   * @param version - Program versiyonu
-   * @returns {Promise<void>}
+   * Belirtilen makine ID'si ve program numarasına göre program verisini getirir.
+   *
+   * @param {number} machineId - Programın ait olduğu makinenin ID'si.
+   * @param {number} programNo - Getirilecek programın numarası.
+   * @param {number} [version] - (İsteğe bağlı) Getirilecek programın versiyonu. Eğer sağlanmazsa en son sürüm getirilir.
+   *
+   * @returns {Promise<void>} Program verisi başarıyla getirildikten sonra `Promise` döner.
+   *
+   * @description Bu fonksiyon, belirtilen makine ID'si ve program numarasına göre program verilerini API'den çeker.
+   * Programın versiyonu sağlanmışsa, belirtilen versiyon getirilir; aksi takdirde en son sürüm getirilir.
+   * Veriler çekildikten sonra, programın her bir adımı (`step`) ve paralel komutları (`parallelCommands`) işlenir.
+   * Her bir adım ve komut için benzersiz ID'ler atanır.
    */
   async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<void> {
     selectedSteps.value = []
     selectedParallelStep.value = -1
     lastStepId = 0
     lastCommandId = 0
+
     if (isDef(version))
       program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
     else
       program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
+
     for (const step of program.value.steps) {
       step.stepId = lastStepId++
       for (const command of step.parallelCommands) {
@@ -376,9 +489,15 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Makineyi getirir
-   * @param machineId - Makine ID
-   * @returns {Promise<void>}
+   * Belirtilen makine ID'sine göre makine verilerini getirir.
+   *
+   * @param {number} machineId - Getirilecek makinenin ID'si.
+   *
+   * @returns {Promise<void>} Makine verileri başarıyla getirildikten sonra `Promise` döner.
+   *
+   * @description Bu fonksiyon, API üzerinden belirtilen makine ID'sine sahip makine verilerini çeker.
+   * Veriler, `Machine` ve `MachineCommand` türlerini içeren bir nesne olarak döner.
+   * Elde edilen makine komutları, bir `Map` yapısına dönüştürülerek `machine` değişkenine atanır.
    */
   async function fetchMachine(machineId: number): Promise<void> {
     const machineData = await kc.fetch<Machine & { commands: MachineCommand[] }>(`/api/machine/${machineId}`)
@@ -390,34 +509,48 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Tüm makineleri getirir
-   * @returns {Promise<Machine[]>} - Tüm makineleri getirir
+   * Tüm makineleri getirir.
+   *
+   * @returns {Promise<Machine[]>} Makineleri içeren bir `Promise` döner.
+   *
+   * @description Bu fonksiyon, API üzerinden tüm makineleri çeker ve bir dizi olarak döner.
+   * Elde edilen makineler, `Machine` türünde nesneler içerir.
    */
   async function fetchAllMachine(): Promise<Machine[]> {
     return await kc.fetch('/api/machine')
   }
 
   /**
-   * Tüm makine gruplarını getirir
-   * @returns {Promise<MachineGroup[]>} Makine grup dizisi içeren bir Promise
+   * Makine gruplarını getirir.
+   *
+   * @returns {Promise<MachineGroup[]>} Makine gruplarını içeren bir `Promise` döner.
+   *
+   * @description Bu fonksiyon, API üzerinden makine gruplarını çeker ve bir dizi olarak döner.
+   * Elde edilen makine grupları, `MachineGroup` türünde nesneler içerir.
    */
   async function fetchMachineGroup(): Promise<MachineGroup[]> {
     return await kc.fetch('/api/machine-group')
   }
 
   /**
-   * Tüm programları getirir
-   * @param filter - Filtre
-   * @returns {Promise<void>}
+   * Tüm programları getirir ve isteğe bağlı olarak filtreler uygular.
+   *
+   * @param {ProgramFilter} [filter] - Programları filtrelemek için kullanılan opsiyonel filtre parametreleri.
+   *
+   * @returns {Promise<void>} Programlar başarıyla getirildikten sonra `Promise` döner.
+   *
+   * @description Bu fonksiyon, API üzerinden tüm programları çeker. Eğer filtre parametreleri verilmişse, yalnızca verilen filtrelere uyan programlar getirilir.
+   * Filtre parametreleri, program numarası (programNo), program adı (programName) ve işlem tipi (processType) gibi alanları içerebilir.
+   * Filtre verilmediği takdirde tüm programlar getirilir ve `allPrograms` değişkenine atanır.
    */
-  async function fetchAllPrograms(filter?: ProgramFilter ): Promise<void> {
+  async function fetchAllPrograms(filter?: ProgramFilter): Promise<void> {
     if (filter) {
       allPrograms.value = await kc.fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program`, {
         query: {
           programNo: filter.programNo,
           programName: filter.programName,
           processType: filter.processType?.value,
-        }
+        },
       })
     } else {
       allPrograms.value = await kc.fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program`)
@@ -425,10 +558,14 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Tüm proses tiplerini getirir
-   * @returns {Promise<void>}
+   * Tüm işlem türlerini getirir ve her birine etiket (label) ekler.
+   *
+   * @returns {Promise<void>} İşlem türlerini başarıyla getirdikten sonra `Promise` döner.
+   *
+   * @description Bu fonksiyon, API üzerinden tüm işlem türlerini çeker ve her işlem türünün etiketini (label) `capitalize` fonksiyonu ile büyük harf yaparak günceller.
+   * Güncellenmiş işlem türleri, `allProcessType` değişkenine atanır.
    */
-  async function fetchAllProcessTypes() {
+  async function fetchAllProcessTypes(): Promise<void> {
     allProcessType.value = (await kc.fetch<ProcessType[]>('/api/process')).map(type => ({
       ...type,
       label: capitalize(type.label),
@@ -436,8 +573,12 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Yeni bir makine olusturur
-   * @returns {Machine} Makine
+   * Yeni bir makine nesnesi oluşturur ve başlangıç değerleriyle döner.
+   *
+   * @returns {Machine} Yeni oluşturulmuş, varsayılan değerlerle doldurulmuş makine nesnesi.
+   *
+   * @description Bu fonksiyon, yeni bir makine nesnesi oluşturur ve içerisinde gerekli tüm alanları varsayılan değerlerle (örneğin: 0, boş string, yeni bir `Map` nesnesi vb.) başlatır.
+   * Elde edilen makine nesnesi, makineyle ilgili temel bilgileri tutacak şekilde yapılandırılmıştır.
    */
   function createMachine(): Machine {
     return {
@@ -453,10 +594,14 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Yeni bir program olusturur
-   * @returns {Program} Program
+   * Yeni bir program nesnesi oluşturur ve başlangıç değerleriyle döner.
+   *
+   * @returns {Program} Yeni oluşturulmuş, varsayılan değerlerle doldurulmuş program nesnesi.
+   *
+   * @description Bu fonksiyon, yeni bir program nesnesi oluşturur ve içerisinde gerekli tüm alanları varsayılan değerlerle (örneğin: boş string, 0, `new Date()` vb.) başlatır.
+   * Elde edilen program nesnesi, programla ilgili temel bilgileri tutacak şekilde yapılandırılmıştır.
    */
-  function createProgram() {
+  function createEmptyProgram(): Program {
     return {
       name: '',
       icon: '',
@@ -485,8 +630,14 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Programı veritabanında günceller
-   * @returns {Promise<boolean>} Program güncellendi mi
+   * Programı veritabanında günceller ve başarı durumuna göre `true` veya `false` döner.
+   *
+   * @returns {Promise<boolean>} Program güncelleme işleminin sonucunu belirten bir `Promise`.
+   * Başarılı olursa `true`, hata durumunda `false` döner.
+   *
+   * @description Bu fonksiyon, mevcut programı belirtilen API'ye gönderir ve güncelleme işlemini yapar.
+   * Özellikle `PROGRAM_TREATMENT_COMMAND_LIMIT` hatası durumunda, ilgili limitin aşıldığına dair bir bildirim gösterilir.
+   * Eğer işlem sırasında bir hata oluşursa, hata mesajına göre uygun bir bildirim gösterilir ve `false` döner.
    */
   async function updateProgram(): Promise<boolean> {
     try {
@@ -511,9 +662,16 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Programı veritabanına kaydeder
-   * @param newProgram - Program
-   * @returns {Promise<boolean>} Program kaydedildi mi
+   * Yeni bir program ekler ve başarı durumuna göre yönlendirme yapar.
+   *
+   * @param {Program} newProgram - Eklenecek yeni program.
+   *
+   * @returns {Promise<boolean>} Programın eklenip eklenmediğine dair bir `Promise`.
+   * Eğer program başarılı bir şekilde eklenirse `true`, hata durumunda `false` döner.
+   *
+   * @description Bu fonksiyon, verilen programı belirtilen API'ye gönderir ve başarılı olursa kullanıcıyı yönlendirir.
+   * Eğer işlem sırasında bir hata oluşursa, hata mesajına göre uygun bir bildirim gösterilir.
+   * Özellikle `PROGRAM_TREATMENT_COMMAND_LIMIT` hatası durumunda, ilgili limitin aşıldığına dair bir bildirim gösterilir.
    */
   async function insertProgram(newProgram: Program): Promise<boolean> {
     try {
@@ -540,49 +698,69 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Programın belirtilen indexine step ekler
-   * @param program - Program
-   * @param index - Step index
-   * @param step - Step
-   * @returns {void}
+   * Verilen adımı programın belirtilen indexine ekler.
+   *
+   * @param {Program} program - Eklenecek program.
+   * @param {number} index - Adımın ekleneceği indeks.
+   * @param {ProgramStep} step - Eklenecek yeni adım.
+   *
+   * @returns {void} Fonksiyon herhangi bir değer döndürmez.
+   *
+   * @description Bu fonksiyon, belirtilen programın adımlar listesine verilen indekste yeni bir adım ekler.
+   * Adım eklenmeden önce, belirtilen indeksin geçerli olup olmadığı `assertIndex` fonksiyonu ile kontrol edilir.
    */
-  function insertStep(program: Program, index: number, step: ProgramStep) {
+  function insertStep(program: Program, index: number, step: ProgramStep): void {
     assertIndex(index, program.steps.length + 1)
     program.steps.splice(index, 0, step)
   }
 
   /**
-   * Belirtilen step'i seçer
-   * @param mainIndex - Step index
-   * @param parallelIndex - Parallel step index
-   * @returns {void}
+   * Programda adım seçme işlemini gerçekleştirir ve seçilen adımları günceller.
+   *
+   * Adım, `ctrl` tuşu ile çoklu seçim yapılabilmesini sağlar. Eğer `ctrl` tuşu basılıysa, adım daha önce seçilmişse seçim kaldırılır, seçilmemişse seçim yapılır.
+   * Eğer `ctrl` tuşu basılı değilse, yalnızca bir adım seçilir.
+   *
+   * @param {boolean} ctrlKey - `ctrl` tuşu basılmış mı?.
+   * @param {number} stepIndex - Seçilen adımın indexi.
+   *
+   * @returns {void} Fonksiyon herhangi bir değer döndürmez.
+   *
+   * @description Bu fonksiyon, verilen adım indeksine göre ilgili adımı seçer veya seçimden çıkarır. Seçilen adımlar `selectedSteps` dizisinde saklanır ve sıralanır.
    */
-  function changeSelection(mainIndex: number, parallelIndex?: number): void {
-    if (selectedSteps.value.length) {
-      selectedSteps.value = []
-      selectedParallelStep.value = -1
-    } else {
-      selectedSteps.value = [program.value.steps[mainIndex]]
-    }
+  function selectStep(ctrlKey: boolean, stepIndex: number): void {
+    const stepId = program.value.steps[stepIndex].stepId
+    const hasSelectedStep = selectedSteps.value.find(step => step.stepId === stepId)
 
-    if (selectedParallelStep.value !== -1) {
-      selectedParallelStep.value = -1
-    } else if (isDef(parallelIndex)) {
-      selectedParallelStep.value = parallelIndex
-    }
+    if (ctrlKey && !hasSelectedStep) {
+      selectedSteps.value.push(program.value.steps.find(step => step.stepId === stepId)!)
+
+      selectedSteps.value.sort((a, b) => {
+        const indexA = program.value.steps.findIndex(x => x.stepId === a.stepId)
+        const indexB = program.value.steps.findIndex(x => x.stepId === b.stepId)
+        return indexA - indexB
+      })
+    } else if (ctrlKey && hasSelectedStep)
+      selectedSteps.value = selectedSteps.value.filter(step => step.stepId !== stepId)
+    else
+      selectedSteps.value = [program.value.steps.find(step => step.stepId === stepId)!]
   }
 
   /**
-   * Belirtilen pathe sahip programın bilgilerini getirir
-    - 1. Step index
-    - 2. Main Komut (mainCommand), Parallel Komut (parallelCommands)
-    - 3. Komut index (main ise 0)
-    - 4. Parametre (parameters), IO (ioList)
-    - 4. IO index
-    - 5. IO value index
+   * Verilen yol (path) üzerinden programın bir öğesini getirir.
    *
-   * @param path - Path
-   * @returns {any} - Program Object
+   * Yol yapısı şu şekildedir:
+   * 1. Step index
+   * 2. Main Komut (mainCommand), Parallel Komut (parallelCommands)
+   * 3. Komut index (main ise 0)
+   * 4. Parametre (parameters), IO (ioList)
+   * 5. IO index
+   * 6. IO value index
+   *
+   * @param {string} path - Elde edilmek istenen öğenin nokta ile ayrılmış yoludur.
+   *
+   * @returns {any} Yolun sonundaki öğe. Eğer yol geçersizse `undefined` döner.
+   *
+   * @description Bu fonksiyon, verilen yol (örneğin: `program.steps.step1`) üzerinden ilgili öğeyi arar ve bulur. Eğer yol geçersizse, `undefined` döner.
    */
   function getPathElement(path: string): any {
     const pathParts = path.split('.')
@@ -598,12 +776,16 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Teleskop ayarlarını günceller
-   * @param id - Ayar ID
-   * @param value - Deger
-   * @returns {Promise<void>}
+   * Teleskop ayarlarını günceller ve API'ye gönderir.
+   *
+   * @param {TeleskopSettingsIds} id - Güncellenmek istenen ayarın ID'si.
+   * @param {string} value - Ayar için yeni değer. Değer türüne bağlı olarak uygun şekilde işlenir.
+   *
+   * @returns {Promise<void>} Güncelleme işlemi tamamlandığında çözümlenen bir promise döner.
+   *
+   * @description Bu fonksiyon, verilen ayar kimliğine göre teleskop ayarlarını günceller ve yapılan değişikliği API'ye gönderir.
    */
-  async function updateTeleskopSettings(id: TeleskopSettingsIds, value: string) {
+  async function updateTeleskopSettings(id: TeleskopSettingsIds, value: string): Promise<void> {
     switch (id) {
       case TeleskopSettingsIds.OPTIMIZED_ENABLE:
         teleskopSettings.value.treatmentSettings.optimizedEnable = value === 'true'
@@ -626,20 +808,30 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Makine komut tiplerini getirir
-   * @param machineId - Makine ID
-   * @returns {Promise<void>}
+   * Verilen makine ID'sine göre makine komut tiplerini getirir.
+   *
+   * @param {number} machineId - Makine ID
+   *
+   * @returns {Promise<void>} - Komut tipleri başarıyla getirildiğinde çözümlenen bir promise döner.
+   *
+   * @description Bu fonksiyon, belirtilen makine ID'sine göre komut tiplerini getirir.
    */
-  async function fetchCommandTypes(machineId: number) {
+  async function fetchCommandTypes(machineId: number): Promise<void> {
     machine.value.commandTypes = await kc.fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
   }
 
   /**
-   *  Belirtilen komutun ikonunu döndürür
-   * @param commandNo Komut numarası
-   * @returns {StepIcon | undefined} StepIcon
+   * Verilen bir komut numarası ile ilişkili ikonu döndürür.
+   *
+   * @param {number} commandNo - İkonun alınacağı komut numarası.
+   *
+   * @returns {StepIcon | undefined} Komutla ilişkili ikon veya eğer ikon bulunamazsa ya da seçim koşulları sağlanmazsa `undefined`.
+   *
+   * @description Bu fonksiyon, bir komut numarasının tanımlı olup olmadığını kontrol eder ve ilgili komutu ve komut tipini alır.
+   * Ardından, komut tipinin bilinen bir eşlemeyle uyumlu olup olmadığını ve `teleskopSettings` içindeki ikon ayarlarına göre
+   * ikonun gösterilip gösterilmeyeceğini belirler. Tüm koşullar sağlanırsa, uygun `StepIcon` döner; aksi takdirde `undefined` döner.
    */
-  function getStepIcon(commandNo: number | undefined): StepIcon | undefined {
+  function getStepIcon(commandNo: number): StepIcon | undefined {
     if (!isDef(commandNo))
       return
 
@@ -682,7 +874,6 @@ export const useEditorStore = defineStore('editor', () => {
     popupCommandListVisible,
     popupCommandDetailVisible,
     popupTempTimeGraphVisible,
-    popupStepCommandGraphVisible,
     leftDrawerOpen,
     rightDrawerOpen,
     teleskopSettings,
@@ -695,22 +886,19 @@ export const useEditorStore = defineStore('editor', () => {
     fetchMachineGroup,
     fetchAllPrograms,
     createMachine,
-    createProgram,
+    createEmptyProgram,
     updateProgram,
     onSubmit,
-    onSaveAs,
-    onReset,
     insertProgram,
     insertStep,
-    newStep,
-    newStepCommand,
+    addStep,
     newParallelStep,
     newParallelStepCommand,
     updateCommand,
     deleteProgram,
     deleteStep,
     deleteParallelStep,
-    changeSelection,
+    selectStep,
     getPathElement,
     fetchAllProcessTypes,
     scrollPage,

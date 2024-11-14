@@ -129,7 +129,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" @hide="editor.popupStepCommandGraphVisible = false">
+  <q-dialog ref="dialogRef">
     <q-card class="flex flex-col max-w-6xl max-h-2xl min-w-6xl min-h-2xl !dark:(bg-dark-4)">
       <div id="container">
         <q-card-section class="bg-gray-1 !dark:(bg-dark-1)">

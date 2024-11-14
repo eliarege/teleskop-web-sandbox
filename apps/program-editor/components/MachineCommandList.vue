@@ -58,7 +58,7 @@ function onDragEnd(event: SortableEvent) {
           notifyError(t('error.notSameCommand', { command: draggedCommand.name }))
       }
     } else {
-      editor.newStepCommand(draggedCommand.commandNo, event.newIndex - 1)
+      editor.addStep(draggedCommand.commandNo, event.newIndex - 1)
     }
 
     draggedCommand = null
@@ -96,7 +96,7 @@ function validateParallelCommands(stepIndex: number): boolean {
           dense
           tag="span"
           clickable
-          @dblclick="editor.newStepCommand(command.commandNo, editor.program.steps.length - 1)"
+          @dblclick="editor.addStep(command.commandNo, editor.program.steps.length - 1)"
         >
           <QItemSection>
             <QItemLabel>
