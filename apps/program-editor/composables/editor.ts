@@ -278,22 +278,6 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Programı sıfırlayarak, belirtilen makine ve program numarası için verileri yeniden yükler.
-   *
-   * @returns {Promise<void>} Fonksiyon bir `Promise` döner ve işlemi tamamlar.
-   *
-   * @description Bu fonksiyon, belirtilen makine ID'si ve program numarasına göre program verilerini
-   * API üzerinden çeker ve mevcut programı sıfırlar. Yeni alınan verilerle `program.value` güncellenir.
-   */
-  async function onResetProgram(): Promise<void> {
-    program.value = createEmptyProgram()
-    await nextTick()
-    program.value = klona(originalProgram.value)
-    selectedSteps.value = []
-    selectedParallelStep.value = -1
-  }
-
-  /**
    * Mevcut programda herhangi bir değişiklik olup olmadığını belirler.
    *
    * @returns {boolean} Programda değişiklik yapılmışsa `true`, yapılmamışsa `false` döner.

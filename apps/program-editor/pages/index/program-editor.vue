@@ -62,7 +62,7 @@ const buttons = computed(() => [
     tooltip: t('menu.reset'),
     shortcut: 'Ctrl+R',
     icon: 'refresh',
-    disable: editor.isLoading,
+    disable: !editor.hasProgramChanged(),
     onClick() {
       const hasChanged = editor.hasProgramChanged()
       if (hasChanged)

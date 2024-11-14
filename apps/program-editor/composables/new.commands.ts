@@ -1,4 +1,5 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
+import { klona } from 'klona'
 import CMDeleteProgramDialog from '~/components/CMDeleteProgramDialog.vue'
 import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPasteDialog.vue'
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
@@ -64,7 +65,7 @@ export interface RegisteredCommands {
   stepCommandGraph: [ctx: any]
   newProgram: [ctx: any]
   saveAsProgram: [ctx: any]
-  discardChanges: [ctx: any]
+  discardChanges: [ctx: any, machineId?: number]
 }
 
 registerCommand(() => {
@@ -80,7 +81,7 @@ registerCommand(() => {
       }).onOk(async (newProgram: Program) => {
         await editor.onSubmit(newProgram)
         setTimeout(() => {
-          editor.newStep()
+          editor.addStep()
         }, 1000)
         return true
       }).onCancel(() => {
@@ -482,9 +483,20 @@ registerCommand(() => {
 registerCommand(() => {
   return {
     name: 'discardChanges',
-    execute(ctx: any) {
+    execute(ctx: any, machineId: number) {
       ctx.$q.dialog({
         component: TBDiscardChangesDialog,
+      }).onOk(async () => {
+        const editor = useEditorStore()
+        editor.program = editor.createEmptyProgram()
+        await nextTick()
+        editor.program = klona(editor.originalProgram)
+        editor.selectedSteps = []
+        editor.selectedParallelStep = -1
+
+        if (machineId) {
+          await editor.changeMachine(machineId)
+        }
       })
       return true
     },
