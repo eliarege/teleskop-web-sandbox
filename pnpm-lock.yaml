@@ -935,8 +935,8 @@ importers:
         specifier: 6.9.16
         version: 6.9.16
       nuxt-quasar-ui:
-        specifier: 2.1.6
-        version: 2.1.6(@quasar/extras@1.16.13)(magicast@0.3.5)(quasar@2.17.2)(rollup@4.25.0)(webpack-sources@3.2.3)
+        specifier: 2.1.7
+        version: 2.1.7(@quasar/extras@1.16.13)(magicast@0.3.5)(quasar@2.17.2)(rollup@4.25.0)(webpack-sources@3.2.3)
       pinia:
         specifier: 2.2.6
         version: 2.2.6(typescript@5.6.3)(vue@3.5.12(typescript@5.6.3))
@@ -6053,6 +6053,12 @@ packages:
 
   nuxt-quasar-ui@2.1.6:
     resolution: {integrity: sha512-555BPlZKDnBJAL98l+dz67E4QoI8psZDKDsF44lldCyqpjey8OUbpIRpBENTYNr/cpXVDJaWHc1vEfdkgc/eQw==}
+    peerDependencies:
+      '@quasar/extras': ^1
+      quasar: ^2.8.0
+
+  nuxt-quasar-ui@2.1.7:
+    resolution: {integrity: sha512-rqI6sUgl0IVZZrlW8naSGcvob8nvHLDfyYYLjgoKD5nE3ty/r04etQ/n1PXtR8YEbfHqnmAPpODogzRdMF3eBg==}
     peerDependencies:
       '@quasar/extras': ^1
       quasar: ^2.8.0
@@ -13760,6 +13766,21 @@ snapshots:
   nuxi@3.15.0: {}
 
   nuxt-quasar-ui@2.1.6(@quasar/extras@1.16.13)(magicast@0.3.5)(quasar@2.17.2)(rollup@4.25.0)(webpack-sources@3.2.3):
+    dependencies:
+      '@nuxt/kit': 3.14.159(magicast@0.3.5)(rollup@4.25.0)(webpack-sources@3.2.3)
+      '@quasar/extras': 1.16.13
+      defu: 6.1.4
+      magic-string: 0.30.12
+      p-memoize: 7.1.1
+      quasar: 2.17.2
+      semver: 7.6.3
+    transitivePeerDependencies:
+      - magicast
+      - rollup
+      - supports-color
+      - webpack-sources
+
+  nuxt-quasar-ui@2.1.7(@quasar/extras@1.16.13)(magicast@0.3.5)(quasar@2.17.2)(rollup@4.25.0)(webpack-sources@3.2.3):
     dependencies:
       '@nuxt/kit': 3.14.159(magicast@0.3.5)(rollup@4.25.0)(webpack-sources@3.2.3)
       '@quasar/extras': 1.16.13
