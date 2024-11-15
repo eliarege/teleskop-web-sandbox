@@ -35,6 +35,7 @@ export default defineNuxtConfig({
     locales: [
       { code: 'en', file: 'en.json' },
       { code: 'tr', file: 'tr.json' },
+      { code: 'pt', file: 'pt.json' },
     ],
   },
   nitro: {
