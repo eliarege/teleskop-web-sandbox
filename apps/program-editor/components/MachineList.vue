@@ -36,6 +36,8 @@ async function onUpdateSelected(selection: string) {
     const hasChanged = editor.hasProgramChanged()
     if (hasChanged)
       $commandManager.executeCommand('discardChanges', { $q }, id)
+    else
+      await editor.changeMachine(id)
   } else {
     await navigateTo('/')
   }
