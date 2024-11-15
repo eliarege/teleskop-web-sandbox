@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
-import type { FetchStatus, MachineAlarmList } from '~/shared/types'
+import type { FetchStatus, MachineAlarmList, MachineAlarmStats } from '~/shared/types'
 
 export const useAlarmStore = defineStore('alarm', () => {
   const alarmList = ref([] as MachineAlarmList[])
+  const alarmStats = ref({} as MachineAlarmStats)
 
   const fetchAlarmStatus = ref<FetchStatus>('idle')
   const fetchAlarmError = ref<Error | null>(null)
@@ -12,6 +13,8 @@ export const useAlarmStore = defineStore('alarm', () => {
 
     try {
       alarmList.value = await $fetch('/api/alarmList')
+      alarmStats.value = await $fetch('/api/alarmStatistics')
+
       fetchAlarmStatus.value = 'success'
     } catch (err: any) {
       fetchAlarmStatus.value = 'error'
@@ -21,6 +24,7 @@ export const useAlarmStore = defineStore('alarm', () => {
   fetchAlarmList()
   return {
     alarmList,
+    alarmStats,
     fetchAlarmList,
   }
 })

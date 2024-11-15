@@ -152,6 +152,13 @@
     "machines": "Machines",
     "machineSearch": "Machine Search",
     "commandSearch": "Command Search",
+    "start": "Alarm start date",
+    "topbar": {
+      "last-day": "Last 24 hours",
+      "active-alarms": "Active Alarm(s)",
+      "confirmed-alarms": "Confirmed Alarm(s)",
+      "machine-count": "Machine Count"
+    },
     "filter": {
       "showAll": "Show All",
       "active": "Just Actives",

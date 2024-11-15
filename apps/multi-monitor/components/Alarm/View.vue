@@ -3,6 +3,7 @@ import Alarm from '~/pages/alarm.vue'
 import type { MachineAlarmList } from '~/shared/types'
 
 defineProps<{ machine: MachineAlarmList }>()
+const { d, t } = useI18n()
 </script>
 
 <template>
@@ -14,14 +15,14 @@ defineProps<{ machine: MachineAlarmList }>()
     <div class="px-7 py-2">
       <div
         v-for="alarm in machine.alarmList"
-        v-show="alarm.showOnScreen"
+        v-show="alarm.showOnScreen !== false"
         :key="alarm.alarmNo"
         class="w-full h-full border-1 border-l-3 rounded px-3 py-2 mb-3"
         :class="alarm.alarmStatus === 0 ? 'border-red-600 bg-red-300/20' : 'border-yellow-500 bg-yellow-300/20'"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 whitespace-nowrap flex-1">
           <TwIcon
-            :name="alarm.alarmStatus === 0 ? 'mingcute:alert-fill' : 'fluent:alert-12-filled'"
+            :name="alarm.alarmStatus === 0 ? 'i-mingcute:alert-fill' : 'i-fluent:alert-12-filled'"
             :color="alarm.alarmStatus === 0 ? 'red' : 'orange'"
             size="30px"
           />
@@ -29,6 +30,15 @@ defineProps<{ machine: MachineAlarmList }>()
             {{ alarm.commandNo }} - {{ alarm.alarmNo }} - {{ alarm.alarmName }}
           </span>
         </div>
+        <span class="ml-13">
+          {{ t('alarm.start') }}: {{ d(alarm.alarmStartTime, {
+            day: '2-digit',
+            month: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }) }}
+        </span>
       </div>
     </div>
   </div>

@@ -1,39 +1,45 @@
 <script setup lang="ts">
-import type { MachineAlarm } from '~/shared/types'
+import { times } from 'lodash-es'
+import type { MachineAlarmList } from '~/shared/types'
+import { useAlarmStore } from '~/store/Alarm'
 
-const { data: alarms } = await useFetch<MachineAlarm[]>('/api/alarms', {
-  default: () => [],
-})
+const alarmStore = useAlarmStore()
 
-const machines = computed(() =>
-  alarms.value.map(m => ({ name: m.machineName, id: m.machineId })),
-)
+const { start: scheduleNext } = useTimeoutFn(async () => {
+  await alarmStore.fetchAlarmList()
+  scheduleNext()
+}, 5000)
 
-const activeMachine = ref(machines.value[0]?.id)
+const columnsLength = ref(4)
 
-const commands = computed(() => {
-  return alarms.value
-    .filter(c => c.machineId === activeMachine.value)
-    .flatMap(a => a.commands)
+const alarmColumns = computed(() => {
+  return alarmStore.alarmList.reduce((a, b, i) => {
+    a[i % a.length].push(b)
+    return a
+  }, [...times(columnsLength.value, () => [] as MachineAlarmList[])])
 })
 </script>
 
 <template>
-  <div class="alarm-container-height grid grid-cols-[280px_1fr]">
-    <AlarmSidebar
-      v-model="activeMachine"
-      :machines
-    />
-    <AlarmCard
-      :commands
-      :active-machine
-      class="overflow-auto"
-    />
+  <div class="grid grid-cols-4 gap-3">
+    <div
+      v-for="(column, index) in alarmColumns"
+      :key="index"
+      class="space-y-3"
+    >
+      <AlarmView
+        v-for="machine in column"
+        :key="`${index}-${machine.machineId}`"
+        :machine
+      />
+    </div>
   </div>
 </template>
 
-<style lang="postcss">
-.alarm-container-height {
-  height: calc(100vh - 65px);
+<style scoped lang="postcss">
+.alarm-columns {
+  display: grid;
+  grid-template-columns: repeat(v-bind(columnsLength), 1fr);
+  @apply gap-3;
 }
 </style>

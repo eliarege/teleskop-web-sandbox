@@ -1,5 +1,5 @@
 import { knex } from '../knexConfig'
-import type { MachineAlarm, MachineAlarmList } from '~/shared/types'
+import type { MachineAlarm, MachineAlarmList, MachineAlarmStats } from '~/shared/types'
 
 export async function getMachineAlarms(): Promise<MachineAlarm[]> {
   const machineCommandAlarms = await knex.raw(/* sql */`
@@ -53,6 +53,7 @@ export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
       d.COMMANDNO as commandNo,
       d.EXPLANATION as alarmName,
       d.ALARMNO as alarmNo,
+      d.STARTTIME as alarmStartTime,
       f.SHOWONSCREEN as showOnScreen,
       CASE
         WHEN d.CONFIRMTIME IS NOT NULL THEN 1
@@ -66,9 +67,9 @@ export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
     LEFT JOIN BFMASTERCOMMANDSALARMS f ON f.COMMANDNO = d.COMMANDNO AND d.ALARMNO = f.ALARMNO AND f.MACHINEID = s.MACHINEID
     WHERE m.INUSE = 1
       AND m.USEINTELESKOP = 1
-      AND d.ENDTIME IS NULL
-      --AND s.currentAlarmStatus <> 2
-    ORDER BY m.MACHINEID
+      AND (d.ENDTIME IS NULL OR d.ENDTIME > GETUTCDATE())
+      AND (s.currentAlarmStatus = 0 OR s.currentAlarmStatus = 1)
+    ORDER BY d.STARTTIME
   `)
   const machinesMap = new Map<number, MachineAlarmList>()
 
@@ -83,6 +84,7 @@ export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
       commandNo,
       alarmNo,
       alarmName,
+      alarmStartTime,
       showOnScreen,
       alarmStatus,
     } = row
@@ -102,20 +104,20 @@ export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
     if (commandNo !== null) {
       const machine = machinesMap.get(machineId)
       if (machine) {
-        if (commandNo !== null && alarmNo !== null && alarmName !== null && showOnScreen !== null) {
-          machine.alarmList.push({
-            commandNo,
-            alarmNo,
-            alarmName,
-            showOnScreen,
-            alarmStatus,
-          })
-        }
+        machine.alarmList.push({
+          commandNo,
+          alarmNo,
+          alarmName,
+          alarmStartTime,
+          showOnScreen,
+          alarmStatus,
+        })
       }
     }
   }
 
-  return Array.from(machinesMap.values()).filter(machine => machine.alarmList.length > 0)
+  return (Array.from(machinesMap.values())
+    .filter(machine => machine.alarmList.length > 0)).sort((a, b) => a.machineId > b.machineId ? 1 : -1)
 }
 
 export async function updateMachineAlarmVisibility(machineId: number, commandNo: number, alarmNo: number, showOnScreen: boolean) {
@@ -128,4 +130,13 @@ export async function updateMachineAlarmVisibility(machineId: number, commandNo:
     .update({
       SHOWONSCREEN: showOnScreen,
     })
+}
+
+export async function getLastDayAlarmCount(): Promise<MachineAlarmStats> {
+  const result = await knex({ b: 'BAALARM' })
+    .count('* as alarmsInLast24Hours')
+    .where('b.STARTTIME', knex.raw('DATEADD(DAY, -1, GETUTCDATE())'))
+    .first()
+
+  return { alarmsInLast24Hours: result?.alarmsInLast24Hours as number }
 }

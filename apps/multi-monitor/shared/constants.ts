@@ -5,7 +5,6 @@ export const MachineSort = {
   ByActive: 2,
   ByIdle: 3,
   ByGroup: 4,
-  Alarms: 5,
 } as const
 
 export type MachineSortValue = Values<typeof MachineSort>

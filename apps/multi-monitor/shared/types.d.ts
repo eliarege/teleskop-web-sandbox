@@ -172,6 +172,7 @@ export interface MachineAlarmListRaw {
   commandNo: number
   alarmNo: number
   alarmName: string
+  alarmStartTime: string
   showOnScreen: boolean
   alarmStatus: 0 | 1
 }
@@ -184,5 +185,9 @@ export interface MachineAlarmList {
   operatorName: string
   currentTemperature: number
   alarmList: MachineAlarmListRaw[]
+}
+
+export interface MachineAlarmStats {
+  alarmsInLast24Hours: number
 }
 export type FetchStatus = 'idle' | 'pending' | 'error' | 'success'
