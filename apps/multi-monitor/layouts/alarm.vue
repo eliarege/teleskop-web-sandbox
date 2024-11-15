@@ -96,6 +96,13 @@ const filterModal = ref(false)
 
     <QPageContainer class="page-container">
       <slot />
+      <q-dialog
+        v-if="showSettings"
+        v-model="showSettings"
+        :position="isMobile ? 'top' : 'standard' "
+      >
+        <Settings @close="showSettings = false" />
+      </q-dialog>
     </QPageContainer>
   </QLayout>
 </template>
