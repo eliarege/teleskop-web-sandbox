@@ -30,7 +30,7 @@ const interventions = computed(() => {
 <template>
   <div v-if="currentMachine" class="flex justify-center">
     <MachineDetails
-      :current-machine="currentMachine!"
+      :current-machine="currentMachine"
       :intervents="interventions"
     />
   </div>
