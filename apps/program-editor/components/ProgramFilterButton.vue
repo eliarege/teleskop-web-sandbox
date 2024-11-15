@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 const { t } = useI18n()
 const editor = useEditorStore()
 const filter = useProgramFilterStore()
@@ -7,7 +6,7 @@ const inputId = useId()
 
 async function applyFilter() {
   editor.isLoading = true
-  await editor.fetchAllPrograms(filter.existingFilter)
+  editor.fetchAllPrograms()
   editor.isLoading = false
 }
 
@@ -49,8 +48,8 @@ function focusNumberInput() {
           <span class="text-gray-8 ml-2">{{ t('filter.programFilter') }}</span>
           <QSpace />
           <QBtn
-            class="text-gray-6 mr-2"
             v-close-popup
+            class="text-gray-6 mr-2"
             icon="delete"
             size="md"
             round
@@ -61,8 +60,8 @@ function focusNumberInput() {
             <QTooltip> {{ t('filter.delete_all') }} </QTooltip>
           </QBtn>
           <QBtn
-            class="text-gray-8"
             v-close-popup
+            class="text-gray-8"
             icon="close"
             size="md"
             round
@@ -74,7 +73,11 @@ function focusNumberInput() {
         </div>
         <QSeparator />
         <div class="q-pa-md justify-center">
-          <QForm @submit="applyFilter" @reset="deleteFilter" class="q-gutter-md">
+          <QForm
+            class="q-gutter-md"
+            @submit="applyFilter"
+            @reset="deleteFilter"
+          >
             <InputNumber
               :id="inputId"
               v-model="filter.existingFilter.programNo"
@@ -103,9 +106,9 @@ function focusNumberInput() {
             />
             <div class="flex justify-end">
               <QBtn
+                v-close-popup
                 class="bg-primary text-white"
                 :label="t('filter.apply')"
-                v-close-popup
                 type="submit"
                 icon="check"
                 flat

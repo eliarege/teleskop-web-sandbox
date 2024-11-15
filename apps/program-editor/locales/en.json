@@ -295,8 +295,8 @@
       "setDefaultFail": "An error occured while setting active version to {version}"
     },
     "send": {
-      "success": "Sending program {name} is succeed.",
-      "fail": "An error occured while sending program {name}."
+      "success": "Program {name} has been sent successfully.",
+      "fail": "An error occurred while sending the program {name}."
     },
     "get": {
       "success": "Taking program {name} is succeed.",
@@ -431,7 +431,7 @@
     "programNo": "Program No",
     "programName": "Program Name",
     "processType": "Proccess Type",
-    "clearFilterOnChange":"Machine selection has changed, filter will be cleared.",
+    "clearFilterOnChange": "Machine selection has changed, filter will be cleared.",
     "delete_all": "Delete all",
     "close": "Close",
     "apply": "Apply"

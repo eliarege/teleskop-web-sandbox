@@ -47,9 +47,8 @@ onKeyStroke('F3', (event: KeyboardEvent) => {
 onKeyStroke('F5', async (event: KeyboardEvent) => {
   event.preventDefault()
   editor.isLoading = true
-  await editor.fetchAllPrograms().then(() => {
-    editor.isLoading = false
-  })
+  await editor.fetchAllPrograms()
+  editor.isLoading = false
 })
 
 onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
@@ -157,7 +156,7 @@ await editor.fetchTeleskopSettings()
 if (editor.machine.id !== machineId)
   await editor.fetchMachine(machineId)
 await editor.fetchCommandTypes(machineId)
-await editor.fetchAllPrograms(filter.existingFilter)
+await editor.fetchAllPrograms()
 await editor.fetchAllProcessTypes().then(() => {
   editor.isLoading = false
 })
@@ -723,29 +722,16 @@ function handleRowClass(row: ProgramTable): string {
       <template #top>
         <QInput
           v-model="searchFilter"
-          clear-icon="close"
           class="q-pa-md w-xs"
-          dense
+          :placeholder="t('search')"
           autocomplete="false"
           debounce="100"
+          clearable
           outlined
-          icon
-          :placeholder="t('search')"
+          dense
         >
           <template #prepend>
             <QIcon name="search" />
-          </template>
-
-          <template #append>
-            <QBtn
-              v-if="searchFilter"
-              icon="close"
-              flat
-              round
-              dense
-              size="sm"
-              @click="searchFilter = ''"
-            />
           </template>
         </QInput>
         <QSpace />

@@ -28,18 +28,18 @@ function removeNotification(index: number) {
     transition-hide="scale"
     anchor="bottom right"
     self="top right"
-    class="rounded-md"
+    class="rounded-md select-none"
   >
-    <div class="q-pa-sm" style="width: 400px;">
+    <div class="q-pa-sm " style="width: 400px;">
       <div class="text-4 flex items-center">
-        <span class="pl-2">{{ `${t('notification.notifications')} (${notificationState.notifications.length})` }}</span>
+        <span class="pl-2 text-sm">{{ `${t('notification.notifications')} (${notificationState.notifications.length})` }}</span>
         <QSpace />
         <QBtn
           icon="delete"
           class="text-gray-6 mr-2"
           flat
           round
-          size="md"
+          size="sm"
           dense
           @click="notificationState.notifications = []"
         >
@@ -50,7 +50,7 @@ function removeNotification(index: number) {
           class="text-gray-8"
           flat
           round
-          size="md"
+          size="sm"
           dense
           @click="notificationState.showNotificationPopup = false"
         >
@@ -58,25 +58,25 @@ function removeNotification(index: number) {
         </QBtn>
       </div>
       <QSeparator />
-      <div v-if="notificationState.notifications.length">
+      <div v-if="notificationState.notifications.length" class="notification-list">
         <div
           v-for="(notification, i) in notificationState.notifications"
           :key="i"
           class="p-1"
         >
           <div
-            class="flex flex-nowrap justify-between items-center text-gray-8 p-1 rounded-lg"
+            class="flex flex-nowrap justify-between items-center text-gray-1 rounded-lg"
             :class="`bg-${notification.type}`"
           >
             <span class="p-2">{{ notification.message }}</span>
             <div class="flex flex-nowrap items-center">
-              <span class="pr-2 text-gray-6">{{ getNoficationTime(notification.date) }}</span>
+              <span class="text-gray-2 text-xs">{{ getNoficationTime(notification.date) }}</span>
               <QBtn
                 icon="close"
-                class="text-gray-8"
+                class="text-gray-2 m-1"
                 flat
                 round
-                size="sm"
+                size="xs"
                 dense
                 @click="removeNotification(i)"
               />
@@ -85,8 +85,15 @@ function removeNotification(index: number) {
         </div>
       </div>
       <div v-else>
-        <span class="p-2 flex justify-center items-center">{{ t('notification.no_notification') }}</span>
+        <span class="flex justify-center items-center p-2 text-gray-6 text-xs">{{ t('notification.no_notification') }}</span>
       </div>
     </div>
   </QPopupProxy>
 </template>
+
+<style lang="postcss" scoped>
+.notification-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+</style>

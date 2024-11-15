@@ -431,7 +431,7 @@
     "programNo": "Program Numarası",
     "programName": "Program Adı",
     "processType": "Proccess Tipi",
-    "clearFilterOnChange":"Makine seçimi değiştiğinde filtreleri temizle.",
+    "clearFilterOnChange": "Makine seçimi değiştiğinde filtreleri temizle.",
     "delete_all": "Filtreleri sıfırla",
     "close": "Kapat",
     "apply": "Uygula"

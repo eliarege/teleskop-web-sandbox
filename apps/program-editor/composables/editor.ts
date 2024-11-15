@@ -71,6 +71,8 @@ export const useEditorStore = defineStore('editor', () => {
    */
   async function changeMachine(id: number): Promise<void> {
     selectedPrograms.value = []
+    selectedSteps.value = []
+
     const MACHINE_PATH_RE = /^\/machine\/\d+$/
     if (machine.value.id !== id) {
       machine.value = createMachine()
@@ -543,18 +545,20 @@ export const useEditorStore = defineStore('editor', () => {
    * Filtre parametreleri, program numarası (programNo), program adı (programName) ve işlem tipi (processType) gibi alanları içerebilir.
    * Filtre verilmediği takdirde tüm programlar getirilir ve `allPrograms` değişkenine atanır.
    */
-  async function fetchAllPrograms(filter?: ProgramFilter): Promise<void> {
-    if (filter) {
-      allPrograms.value = await kc.fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program`, {
-        query: {
-          programNo: filter.programNo,
-          programName: filter.programName,
-          processType: filter.processType?.value,
-        },
-      })
-    } else {
-      allPrograms.value = await kc.fetch<ProgramTable[]>(`/api/machine/${machine.value.id}/program`)
-    }
+  async function fetchAllPrograms(): Promise<void> {
+    const filter = useProgramFilterStore()
+    const query = filter.hasFilter()
+      ? {
+          programNo: filter.existingFilter.programNo,
+          programName: filter.existingFilter.programName,
+          processType: filter.existingFilter.processType?.value,
+        }
+      : undefined
+
+    allPrograms.value = await kc.fetch<ProgramTable[]>(
+      `/api/machine/${machine.value.id}/program`,
+      { query },
+    )
   }
 
   /**

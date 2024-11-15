@@ -140,7 +140,6 @@ function compareHeader(programA: ProgramHeader, programB: ProgramHeader): boolea
   return true
 }
 
-
 export function compareCommand(stepA: ProgramStepCommand, stepB: ProgramStepCommand): boolean {
   if (!isDef(stepA) || !isDef(stepB)) {
     return false
@@ -282,17 +281,17 @@ export const useProgramFilterStore = defineStore('filter', () => {
     clearOnChange: true,
   })
 
-  function hasFilter (): boolean {
+  function hasFilter(): boolean {
     return !!(existingFilter.value.programNo || existingFilter.value.programName || existingFilter.value.processType)
   }
 
   function clearFilter() {
     existingFilter.value = {
-      clearOnChange: true
+      clearOnChange: true,
     }
   }
 
-  return { showFilterPopup, existingFilter , hasFilter, clearFilter }
+  return { showFilterPopup, existingFilter, hasFilter, clearFilter }
 })
 
 /**
