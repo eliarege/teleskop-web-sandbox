@@ -179,6 +179,8 @@
   "dropAll": "Tümünü bırak",
   "selectReverse": "Seçimi ters çevir",
   "selectRange": "{count} kayıt seçildi, {total} kayıt toplamı",
+  "expandAll": "Tümünü genişlet",
+  "collapseAll": "Tümünü daralt",
   "yes": "Evet",
   "no": "Hayır",
   "cancel": "İptal",
