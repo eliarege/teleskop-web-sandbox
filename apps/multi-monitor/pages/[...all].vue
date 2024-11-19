@@ -11,7 +11,7 @@ const router = useRouter()
     <FallBack
       :error-message="t('404.message')"
       :return-message="t('404.return')"
-      @return="() => router.push('/')"
+      @return="() => navigateTo('/')"
     />
   </div>
 </template>

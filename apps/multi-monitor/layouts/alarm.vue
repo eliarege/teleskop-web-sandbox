@@ -27,7 +27,7 @@ const commonSettingsItems: TopbarMenuItem[] = [
     label: tt('teleskop.alarm'),
     icon: matAlarm,
     onClick() {
-      router.push('/alarm')
+      navigateTo('/alarm')
     },
   },
 ]

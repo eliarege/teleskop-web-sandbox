@@ -18,7 +18,7 @@ const router = useRouter()
 
 function handleRouting(batchStatus: number, id: number) {
   if (batchStatus !== 0) {
-    router.push(`/details/${id}`)
+    navigateTo(`/details/${id}`)
   }
 }
 </script>
