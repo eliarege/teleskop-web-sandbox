@@ -32,7 +32,11 @@ withDefaults(defineProps<MachineCardProps>(), {
       :is-group-visible
       :is-screen-viable
     />
-    <MachineCardStatus :colors :machine />
+    <MachineCardStatus
+      :colors
+      :machine
+      :is-screen-viable
+    />
     <MachineCardInfo
       :colors
       :machine

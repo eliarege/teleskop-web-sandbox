@@ -2,6 +2,7 @@
   "app": {
     "name": "Multi Monitor"
   },
+  "archive-monitor": "Monitor de arquivo",
   "home": "Início",
   "loading": "Carregando",
   "vnc-error": "Falha na Conexão com {name}!",
@@ -66,6 +67,7 @@
     "command-info": "Informações do Comando"
   },
   "details": {
+    "_": "Detalhes",
     "name": "Nome da Máquina",
     "recipe-t-auto": "Receitas Automáticas",
     "recipe-t-manuel": "Receitas Manuais",

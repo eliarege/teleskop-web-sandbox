@@ -2,6 +2,7 @@
   "app": {
     "name": "Çoklu İzleme"
   },
+  "archive-monitor": "Arşiv Monitör",
   "home": "Anasayfa",
   "loading": "Yükleniyor",
   "vnc-error": "{name} Bağlantısı Başarısız Oldu!",
@@ -66,6 +67,7 @@
     "command-info": "Komut Bilgi"
   },
   "details": {
+    "_": "Detaylar",
     "name": "Makine İsmi",
     "recipe-t-auto": "Otomatik Reçeteler",
     "recipe-t-manuel": "Manuel Reçeteler",

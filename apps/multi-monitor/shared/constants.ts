@@ -7,4 +7,11 @@ export const MachineSort = {
   ByGroup: 4,
 } as const
 
+export const AppList = {
+  archive: 'archive-monitor',
+  multiMonitor: 'multi-monitor',
+  planningBoard: 'planning-board',
+  programEditor: 'program-editor',
+  dispensingManager: 'dispensing-manager',
+}
 export type MachineSortValue = Values<typeof MachineSort>
