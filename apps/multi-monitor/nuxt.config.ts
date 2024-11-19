@@ -27,7 +27,6 @@ export default defineNuxtConfig({
       isDigitalFactory: 'false',
       teleskopHasLogs: 'true',
       websockifyUrl: 'http://localhost:6800',
-      appList: '[{"name": "multi-monitor", "url": "http://localhost:3000" },{"name": "planning-board", "url": "http://localhost:3000" },{"name": "program-editor", "url": "http://localhost:3000" },{"name": "dispensing-manager", "url": "http://localhost:3000" }, {"name": "archive-monitor", "url": "http://localhost:3001" }]',
     },
   },
   i18n: {
