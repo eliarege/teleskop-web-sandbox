@@ -30,7 +30,6 @@ const machineId = Number(route.params.machine_id)
 const tableRef = ref()
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t, router })
-const devMode = import.meta.dev
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
@@ -671,14 +670,16 @@ function handleRowClass(row: ProgramTable): string {
 </script>
 
 <template>
+  <div v-if="editor.isLoading">
+    <LoadingSpinner :has-background="false" />
+  </div>
   <div class="custom-page select-none relative">
-    <div v-if="editor.isLoading" class="loading-container">
-      <LoadingSpinner :has-background="false" />
-    </div>
-    <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
-      <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
-      <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues()?.map(p => p.program.programNo).join(', ')}` }} </span>
-    </div>
+    <DevOnly>
+      <div class="flex flex-col color-gray-5 text-3">
+        <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
+        <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues()?.map(p => p.program.programNo).join(', ')}` }} </span>
+      </div>
+    </DevOnly>
     <QTable
       ref="tableRef"
       v-model:selected="editor.selectedPrograms"

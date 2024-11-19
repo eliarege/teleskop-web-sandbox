@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { QForm } from 'quasar'
+import LoadingSpinner from '../../../../packages/ui/components/LoadingSpinner.vue'
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
@@ -10,8 +11,6 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const $q = useQuasar()
 const { $commandManager } = useNuxtApp()
-
-const devMode = import.meta.dev
 
 const machineId = Number(route.params.machine_id)
 const programNo = Number(route.params.program_no)
@@ -272,12 +271,17 @@ onBeforeRouteLeave(() => {
 </script>
 
 <template>
-  <div class="q-pa-md">
+  <div v-if="editor.isLoading">
+    <LoadingSpinner :has-background="false" />
+  </div>
+  <div class="q-pa-md select-none">
     <QForm ref="form">
-      <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
-        <span> {{ `selectedStep: ${editor.selectedSteps.map(x => x?.stepId)}` }} </span>
-        <span> {{ `copiedSteps: ${contextMenuStore.getCopiedStepsValues(editor.machine.id, editor.program.programNo)?.steps.map(x => x?.stepId) || ''}` }} </span>
-      </div>
+      <DevOnly>
+        <div class="flex flex-col color-gray-5 text-3">
+          <span> {{ `selectedStep: ${editor.selectedSteps.map(x => x?.stepId)}` }} </span>
+          <span> {{ `copiedSteps: ${contextMenuStore.getCopiedStepsValues(editor.machine.id, editor.program.programNo)?.steps.map(x => x?.stepId) || ''}` }} </span>
+        </div>
+      </DevOnly>
       <ProgramEditor />
     </QForm>
   </div>
