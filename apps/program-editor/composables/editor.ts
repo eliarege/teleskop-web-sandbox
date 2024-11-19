@@ -330,7 +330,6 @@ export const useEditorStore = defineStore('editor', () => {
    * veya başarısız bildirimleri yapılır.
    */
   async function onSubmit(newProgram?: Program): Promise<void> {
-    isLoading.value = true
     const firstId = errorIds.value.values().next().value
     if (firstId) {
       const el = document.getElementById(firstId)
@@ -340,11 +339,13 @@ export const useEditorStore = defineStore('editor', () => {
       scrollPage(Number(stepIndex), true)
       notifyError(t('saveProgram.incorrect'))
     } else {
+      isLoading.value = true
       if (newProgram) {
         if (allPrograms.value.some(p => p.programNo === newProgram.programNo)) {
           notifyError(t('input.unique', { field: t('program.programNo') }))
         } else {
           if (await insertProgram(newProgram)) {
+            originalProgram.value = newProgram
             notifySuccess(t('saveProgram.success'))
           } else {
             notifyError(t('saveProgram.fail'))
@@ -352,13 +353,14 @@ export const useEditorStore = defineStore('editor', () => {
         }
       } else {
         if (await updateProgram()) {
+          originalProgram.value = program.value
           notifySuccess(t('saveProgram.success'))
         } else {
           notifyError(t('saveProgram.fail'))
         }
       }
+      isLoading.value = false
     }
-    isLoading.value = false
   }
 
   /**

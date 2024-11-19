@@ -40,8 +40,8 @@ const buttons = computed(() => [
     shortcut: 'Ctrl+S',
     icon: 'save',
     disable: editor.isLoading,
-    onClick() {
-      editor.onSubmit()
+    onClick: async () => {
+      await editor.onSubmit()
     },
   },
   {
@@ -61,7 +61,7 @@ const buttons = computed(() => [
     tooltip: t('menu.reset'),
     shortcut: 'Ctrl+R',
     icon: 'refresh',
-    disable: !editor.hasProgramChanged(),
+    disable: !editor.hasProgramChanged() || editor.isLoading,
     onClick() {
       const hasChanged = editor.hasProgramChanged()
       if (hasChanged)
@@ -208,10 +208,10 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
   editor.selectedParallelStep = -1
 })
 
-onKeyStroke(['S', 's'], (event: KeyboardEvent) => {
+onKeyStroke(['S', 's'], async (event: KeyboardEvent) => {
   if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
-    editor.onSubmit()
+    await editor.onSubmit()
   }
 })
 
@@ -236,7 +236,7 @@ onKeyStroke(['V', 'v'], (event: KeyboardEvent) => {
   }
 })
 
-onKeyStroke(['R', 'r'], async (event: KeyboardEvent) => {
+onKeyStroke(['R', 'r'], (event: KeyboardEvent) => {
   if (ctrl.value) {
     event.preventDefault()
 

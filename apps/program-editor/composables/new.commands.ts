@@ -335,6 +335,7 @@ registerCommand(() => {
     },
   }
 })
+
 registerCommand(() => {
   const editor = useEditorStore()
   return {
@@ -357,7 +358,7 @@ registerCommand(() => {
         componentProps: {
           type: 'copyAndSend',
         },
-      }).onOk(async (machines) => {
+      }).onOk(async (machines: string[]) => {
         // FIXME: steps null check for on backend
         await contextMenuStore.sendProgramToMachines(selectedRows, machines, machineId)
         await editor.fetchAllPrograms()
