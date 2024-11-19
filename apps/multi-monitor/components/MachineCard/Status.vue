@@ -73,6 +73,7 @@ const archiveUrl = computed(() => parseAppList(config.public.appList).find(e => 
         />
         <div class="flex-center gap-3 ml-1">
           <NuxtLink
+            external
             :to="computedVncLink"
             :target="computedVncTarget"
             :class="isScreenViable ? '' : 'cursor-not-allowed'"
@@ -93,6 +94,7 @@ const archiveUrl = computed(() => parseAppList(config.public.appList).find(e => 
             <QTooltip>{{ t('details._') }}</QTooltip>
           </NuxtLink>
           <NuxtLink
+            external
             target="_blank"
             :to="`${archiveUrl}/${machine.runningBatchKey}`"
             :class="machine.runningStepNo !== 0 ? 'cursor-pointer' : 'cursor-not-allowed'"
