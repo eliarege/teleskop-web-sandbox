@@ -42,7 +42,7 @@ function selectAllMachines() {
   else
     ticked.value = []
 }
-function expandToogle() {
+function expandToggle() {
   if (expanded.value.length === 0)
     expanded.value = nodes.value.flatMap(getAllNodeIds)
   else
@@ -104,7 +104,7 @@ function getAllNodeIds(node: any) {
           :icon="expanded.length ? 'expand_less' : 'expand_more'"
           color="primary"
           dense
-          @click="expandToogle"
+          @click="expandToggle"
         />
       </div>
 

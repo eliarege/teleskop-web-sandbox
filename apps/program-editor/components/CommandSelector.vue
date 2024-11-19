@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const editor = useEditorStore()
-const programCommand: ProgramStepCommand = computed(() => editor.getPathElement(props.path))
+const programCommand = ref<ProgramStepCommand>(editor.getPathElement(props.path))
 const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? CommandType.MAIN : CommandType.PARALLEL
 
 const id = useId()
@@ -88,7 +88,7 @@ const label = computed(() => {
           v-close-popup
           clickable
           dense
-          @click="editor.updateCommand(scope.opt.value, path)"
+          @click="editor.updateCommand(scope.opt.value, programCommand)"
         >
           <QItemSection class="text-3">
             {{ scope.opt.label }}

@@ -70,6 +70,9 @@ export const useEditorStore = defineStore('editor', () => {
    * @returns {Promise<void>} Promise döner ve asenkron bir işlem olduğunu belirtir.
    */
   async function changeMachine(id: number): Promise<void> {
+    if (isLoading.value)
+      return
+
     selectedPrograms.value = []
     selectedSteps.value = []
 
@@ -146,7 +149,7 @@ export const useEditorStore = defineStore('editor', () => {
     if (isDef(commandNo)) {
       const machineCommand = machine.value?.commands.get(commandNo)
 
-      if (!machineCommand) {
+      if (!isDef(machineCommand)) {
         return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
       }
 
@@ -156,7 +159,7 @@ export const useEditorStore = defineStore('editor', () => {
       }
 
       // Komut bilgilerini güncelle
-      updateCommand(newStep.mainCommand, commandNo)
+      updateCommand(commandNo, newStep.mainCommand)
     }
 
     // Paralel komutları kopyala (eğer varsa)
@@ -260,7 +263,7 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     const newCommand = createEmptyCommand()
-    updateCommand(newCommand, commandNo)
+    updateCommand(commandNo, newCommand)
     program.value?.steps[stepIndex].parallelCommands.push(newCommand)
   }
 
@@ -282,13 +285,12 @@ export const useEditorStore = defineStore('editor', () => {
    * Parametreler, yalnızca düzenlenebilir veya formül kullananlar ile güncellenir ve IO listesi, yalnızca seçilebilir
    * IO'larla doldurulur.
    */
-  function updateCommand(newCommandNo: number, path: string): void {
-    const machineCommand = machine.value?.commands.get(newCommandNo)
+  function updateCommand(newCommandNo: number, step: ProgramStepCommand): void {
+    const machineCommand = machine.value.commands.get(newCommandNo)
     if (!machineCommand) {
       return notifyError(t('error.machineCommandNotFound', { commandNo: newCommandNo, machineId: machine.value?.id }))
     }
 
-    const step: ProgramStepCommand = getPathElement(path)
     step.commandNo = newCommandNo
 
     step.parameters = machineCommand.parameters
