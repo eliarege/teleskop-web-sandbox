@@ -2,6 +2,7 @@
   "app": {
     "name": "Çoklu İzleme"
   },
+  "archive-monitor": "Arşiv Monitör",
   "home": "Anasayfa",
   "loading": "Yükleniyor",
   "vnc-error": "{name} Bağlantısı Başarısız Oldu!",
@@ -66,6 +67,7 @@
     "command-info": "Komut Bilgi"
   },
   "details": {
+    "_": "Detaylar",
     "name": "Makine İsmi",
     "recipe-t-auto": "Otomatik Reçeteler",
     "recipe-t-manuel": "Manuel Reçeteler",
@@ -152,6 +154,13 @@
     "machines": "Makineler",
     "machineSearch": "Makine Arama",
     "commandSearch": "Komut Arama",
+    "start": "Alarm başlangıç saati",
+    "topbar": {
+      "last-day": "Son 24 saat",
+      "active-alarms": "Aktif Alarm",
+      "confirmed-alarms": "Onaylanmış Alarm",
+      "machine-count": "Makine Sayısı"
+    },
     "filter": {
       "showAll": "Tümünü Göster",
       "active": "Sadece Aktifler",

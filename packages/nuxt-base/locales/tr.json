@@ -12,6 +12,7 @@
       "report": "Rapor",
       "archive": "Arşiv"
     },
+    "filter": "Filtreleme",
     "buildDate": "Build tarihi",
     "commitHash": "Commit hash",
     "fullscreen": {

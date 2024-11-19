@@ -5,7 +5,13 @@ export const MachineSort = {
   ByActive: 2,
   ByIdle: 3,
   ByGroup: 4,
-  Alarms: 5,
 } as const
 
+export const AppList = {
+  archive: 'archive-monitor',
+  multiMonitor: 'multi-monitor',
+  planningBoard: 'planning-board',
+  programEditor: 'program-editor',
+  dispensingManager: 'dispensing-manager',
+}
 export type MachineSortValue = Values<typeof MachineSort>

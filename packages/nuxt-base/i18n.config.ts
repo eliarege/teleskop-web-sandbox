@@ -17,6 +17,12 @@ export default defineI18nConfig(() => ({
         month: 'numeric',
         day: 'numeric',
       },
+      time: {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      },
+
     },
     tr: {
       datetime: {
@@ -32,6 +38,12 @@ export default defineI18nConfig(() => ({
         month: 'numeric',
         day: 'numeric',
       },
+      time: {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      },
+
     },
   },
 }))

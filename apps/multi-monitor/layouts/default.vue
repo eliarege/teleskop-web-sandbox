@@ -21,7 +21,6 @@ const isMobile = computed(() => width.value <= 767)
 const tt = (key: string) => () => t(key)
 
 const router = useRouter()
-
 const items = [] as TopbarMenuItem[]
 const commonSettingsItems: TopbarMenuItem[] = [
   {
@@ -35,7 +34,7 @@ const commonSettingsItems: TopbarMenuItem[] = [
     label: tt('teleskop.alarm'),
     icon: matAlarm,
     onClick() {
-      router.push('/alarm')
+      navigateTo('/alarm')
     },
   },
 ]

@@ -32,7 +32,11 @@ withDefaults(defineProps<MachineCardProps>(), {
       :is-group-visible
       :is-screen-viable
     />
-    <MachineCardStatus :colors :machine />
+    <MachineCardStatus
+      :colors
+      :machine
+      :is-screen-viable
+    />
     <MachineCardInfo
       :colors
       :machine
@@ -45,7 +49,7 @@ withDefaults(defineProps<MachineCardProps>(), {
 <style lang="postcss">
   .card-container {
   border-radius: 20px;
-  @apply flex flex-col e-border border-dark-900/10 w-full h-full;
+  @apply flex flex-col w-full h-full;
   .icons {
     @apply w-7 h-7 p-3px;
   }
@@ -56,7 +60,7 @@ withDefaults(defineProps<MachineCardProps>(), {
   .card-items {
     @apply flex flex-row-reverse justify-evenly text-center;
     .card-items__item {
-      @apply e-border border-black w-full;
+      @apply border-1 border-black w-full;
     }
   }
   .machine-info {

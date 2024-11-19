@@ -76,12 +76,10 @@ function reqStatus(params: number) {
 const { width: screenWidth } = useWindowSize()
 
 function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
-  if (store.sortMachines === MachineSort.Alarms) {
-    if (currentAlarmStatus === 0) {
-      return '#FF3030'
-    } else if (currentAlarmStatus === 1) {
-      return '#FFA730'
-    }
+  if (currentAlarmStatus === 0) {
+    return '#FF3030'
+  } else if (currentAlarmStatus === 1) {
+    return '#FFA730'
   }
   if (runningBatchStatus !== 2) {
     return colors.cardIdleBg
@@ -96,7 +94,6 @@ function isScreenViable(screen: number) {
 
 <template>
   <div
-    v-if="store.sortMachines !== MachineSort.Alarms"
     class="card-wrapper lt-sm:(px-2)"
     :style="{ zoom: store.zoomLevel }"
   >
@@ -124,44 +121,17 @@ function isScreenViable(screen: number) {
       </div>
     </div>
   </div>
-  <div v-else>
-    <MachineCardAlarm />
-  </div>
 </template>
 
 <style scoped lang="postcss">
 .card-wrapper {
   grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
   @apply grid gap-x-3 gap-y-2 mt-1 overflow-x-hidden font-extrabold pb-3 px-3;
-  .card-container {
-    border-radius: 20px;
-    @apply flex flex-col e-border border-dark-900/10;
-  }
 }
 @media screen and (max-width: 735px) {
   .card-wrapper {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     @apply;
-  }
-}
-.alarm {
-  animation: alarm 10s ease-out infinite;
-  transform: translate3d(0);
-}
-@keyframes alarm {
-  0%,
-  1%,
-  2%,
-  3%,
-  4% {
-    color: rgba(255, 255, 255, 0);
-  }
-  1.5%,
-  2.5%,
-  3.5%,
-  4.5%,
-  100% {
-    color: rgba(255, 255, 255, 1);
   }
 }
 </style>

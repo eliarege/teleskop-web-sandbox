@@ -15,26 +15,10 @@ interface CardTitleProps {
 }
 const props = defineProps<CardTitleProps>()
 const router = useRouter()
-const keycloak = useKeycloak()
-
-const computedLink = computed(() => {
-  if (!props.isScreenViable)
-    return '/'
-  return keycloak.hasResourceRole('access-vnc')
-    ? `/vnc/${props.machine.id}`
-    : '/unauthorized'
-})
-
-const computedTarget = computed(() => {
-  if (!props.isScreenViable || !keycloak.hasResourceRole('access-vnc')) {
-    return '_self'
-  }
-  return '_blank'
-})
 
 function handleRouting(batchStatus: number, id: number) {
   if (batchStatus !== 0) {
-    router.push(`/details/${id}`)
+    navigateTo(`/details/${id}`)
   }
 }
 </script>
@@ -55,28 +39,14 @@ function handleRouting(batchStatus: number, id: number) {
       <span v-if="isGroupVisible"> {{ machine.groupName }} &nbsp; </span>
       {{ machine.loggedInOperatorName }}
     </div>
-    <NuxtLink
-      :to="computedLink"
-      :target="computedTarget"
-    >
-      <span
-        class="flex w-min whitespace-nowrap text-left"
-        :class="
-          isScreenViable
-            ? 'cursor-pointer hover:(underline text-white)'
-            : 'cursor-not-allowed opacity-70'
-        "
-      >
-        {{ machine.name }}
-      </span>
-    </NuxtLink>
+    <span class="flex w-min whitespace-nowrap text-left">
+      {{ machine.name }}
+    </span>
   </div>
   <div class="card-items justify-center">
     <span class="card-items__item">{{ machine.runningStartHour }}</span>
     <div
-      class="card-items__item hover:underline hover:text-shadow-lg"
-      :class="machine.runningBatchStatus !== 0 ? 'cursor-pointer' : 'cursor-not-allowed'"
-      @click="handleRouting(machine.runningBatchStatus, machine.id)"
+      class="card-items__item"
     >
       <span>
         {{ machine.runningJobOrder }}

@@ -1,75 +1,73 @@
 {
   "base": {
-    "about": "About",
-    "aboutApp": "About application",
+    "about": "Sobre",
+    "aboutApp": "Sobre o aplicativo",
     "apps": {
-      "_": "Apps",
-      "machines": "Machines",
-      "multi-monitor": "Multi Monitor",
-      "program-editor": "Program Editor",
-      "planning-board": "Planning Board",
-      "dispensing-manager-ui": "Dispensing Manager",
-      "report": "Report",
-      "archive": "Archive"
+      "_": "Aplicativos",
+      "multi-monitor": "Monitor Multiplo",
+      "program-editor": "Editor de Programas",
+      "planning-board": "Quadro de Planejamento",
+      "dispensing-manager-ui": "Gerenciador de Dispensação",
+      "report": "Relatório",
+      "archive": "Arquivo"
     },
-    "buildDate": "Build date",
-    "commitHash": "Commit hash",
+    "filter": "Filtro",
+    "buildDate": "Data de construção",
+    "commitHash": "Hash do commit",
     "fullscreen": {
-      "enter": "Enter fullscreen",
-      "exit": "Exit fullscreen"
+      "enter": "Entrar em tela cheia",
+      "exit": "Sair de tela cheia"
     },
-    "guest": "Guest",
-    "home": "Home",
-    "locale": "Locale",
-    "login": "Login",
-    "logout": "Logout",
-    "name": "Name",
-    "nodeVersion": "Node version",
-    "sendFeedback": "Send feedback",
+    "guest": "Convidado",
+    "home": "Início",
+    "locale": "Localidade",
+    "login": "Entrar",
+    "logout": "Sair",
+    "name": "Nome",
+    "nodeVersion": "Versão do Node",
+    "sendFeedback": "Enviar feedback",
     "theme": {
-      "_": "Theme",
-      "dark": "Dark theme",
-      "device": "Device theme",
-      "light": "Light theme"
+      "_": "Tema",
+      "dark": "Tema escuro",
+      "device": "Tema do dispositivo",
+      "light": "Tema claro"
     },
-    "version": "Version",
-    "vncError": "{name} Connection Failed!"
+    "version": "Versão",
+    "vncError": "Conexão com {name} falhou!"
   },
   "feedback": {
-    "dialogTitle": "Report a Feedback",
+    "title": "Relatar um Feedback",
     "response": {
-      "success": "Feedback sent successfully.",
-      "send-fail": "An error occurred while sending feedback.",
-      "not-configured": "Send Feedback is not configured.",
-      "no-auth": "Authentication is not configured.",
-      "auth-required": "You need to log in to send feedback.",
-      "email-not-verified": "You need to verify your e-mail to send feedback.",
-      "screenshot-error": "An error occured while taking a screenshot.",
-      "bad-image": "Invalid image format.",
-      "error-fallback": "Unidentified error."
+      "success": "Feedback enviado com sucesso.",
+      "send-fail": "Ocorreu um erro ao enviar o feedback.",
+      "not-configured": "Envio de Feedback não está configurado.",
+      "no-auth": "Autenticação não está configurada.",
+      "auth-required": "Você precisa fazer login para enviar feedback.",
+      "email-not-verified": "Você precisa verificar seu e-mail para enviar feedback.",
+      "screenshot-error": "Ocorreu um erro ao tirar uma captura de tela.",
+      "error-fallback": "Erro não identificado"
     },
-    "username": "Username",
-    "email": "Email",
-    "appName": "App Name",
-    "title": "Title",
-    "description": "Description",
+    "username": "Nome de usuário",
+    "email": "E-mail",
+    "app-name": "Nome do aplicativo",
+    "description": "Descrição",
     "reportType": {
-      "_": "Report Type",
-      "bug": "Bug",
+      "_": "Tipo de Relatório",
+      "bug": "Erro",
       "feedback": "Feedback",
-      "suggestion": "Suggestion",
-      "other": "Other"
+      "suggestion": "Sugestão",
+      "other": "Outro"
     },
     "screenshot": {
-      "edit": "Edit",
-      "takeScreenshot": "Take Screenshot"
+      "edit": "Editar",
+      "take-screenshot": "Tirar Captura de Tela"
     },
-    "submit": "Submit",
-    "cancel": "Cancel",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
     "editor": {
-      "title": "Highlight or hide information in your screenshot",
-      "save": "Save",
-      "cancel": "Cancel"
+      "title": "Realce ou oculte informações em sua captura de tela",
+      "save": "Salvar",
+      "cancel": "Cancelar"
     }
   }
 }

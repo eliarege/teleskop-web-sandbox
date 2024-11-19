@@ -12,6 +12,7 @@
       "report": "Report",
       "archive": "Archive"
     },
+    "filter": "Filter",
     "buildDate": "Build date",
     "commitHash": "Commit hash",
     "fullscreen": {

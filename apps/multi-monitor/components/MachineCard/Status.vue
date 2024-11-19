@@ -2,6 +2,7 @@
 import { withBase } from 'ufo'
 import { determineTextColor } from '@teleskop/utils'
 import type { MachineData } from '~/shared/types'
+import { AppList } from '~/shared/constants'
 
 interface MachineStautsProps {
   colors: {
@@ -10,11 +11,15 @@ interface MachineStautsProps {
     idleBackGround: string
     itemBackGround: string
   }
+  isScreenViable: boolean
   machine: MachineData
 }
-defineProps<MachineStautsProps>()
-const baseURL = useRuntimeConfig().app.baseURL
+const props = defineProps<MachineStautsProps>()
+const config = useRuntimeConfig()
+const { t } = useI18n()
+const baseURL = config.app.baseURL
 const withBaseURL = (input: string) => withBase(input, baseURL)
+const keycloak = useKeycloak()
 
 function connectionStatus(params: number) {
   if (params === 1) {
@@ -27,6 +32,27 @@ function connectionStatus(params: number) {
     return withBaseURL('/icons/baglantı-sorunlu.png')
   }
 }
+const computedVncLink = computed(() => {
+  if (!props.isScreenViable)
+    return '/'
+  return keycloak.hasResourceRole('access-vnc')
+    ? `/vnc/${props.machine.id}`
+    : '/unauthorized'
+})
+
+const computedVncTarget = computed(() => {
+  if (!props.isScreenViable || !keycloak.hasResourceRole('access-vnc')) {
+    return '_self'
+  }
+  return '_blank'
+})
+
+function handleRouting(batchStatus: number, id: number) {
+  if (batchStatus !== 0) {
+    return `/details/${id}`
+  }
+}
+const archiveUrl = computed(() => parseAppList(config.public.appList).find(e => e.name === AppList.archive)?.url)
 </script>
 
 <template>
@@ -39,14 +65,48 @@ function connectionStatus(params: number) {
       {{ Math.round(machine.currentTemperature) }}C°
     </div>
     <div>
-      <div
-        class="relative w-25"
-        :class="machine.runningStepNo === 0 ? 'invisible' : 'visible'"
-      >
+      <div class="relative w-25">
         <MachineCardProgressBar
           :data="machine"
           :completition-ratio="(machine.elapsedTime! / machine.theoreticalDuration!) * 100"
+          :class="machine.runningStepNo === 0 ? 'invisible' : 'visible'"
         />
+        <div class="flex-center gap-3 ml-1">
+          <NuxtLink
+            external
+            :to="computedVncLink"
+            :target="computedVncTarget"
+            :class="isScreenViable ? '' : 'cursor-not-allowed'"
+          >
+            <TwIcon
+              name="i-material-symbols:monitor-outline"
+              size="20px"
+              :color="determineTextColor(colors.backGround)"
+            />
+            <QTooltip>VNC</QTooltip>
+          </NuxtLink>
+          <NuxtLink :to="handleRouting(machine.runningBatchStatus, machine.id)" :class="machine.runningStepNo !== 0 ? 'cursor-pointer' : 'cursor-not-allowed'">
+            <TwIcon
+              name="i-mdi:card-account-details-outline"
+              size="20px"
+              :color="determineTextColor(colors.backGround)"
+            />
+            <QTooltip>{{ t('details._') }}</QTooltip>
+          </NuxtLink>
+          <NuxtLink
+            external
+            target="_blank"
+            :to="`${archiveUrl}/${machine.runningBatchKey}`"
+            :class="machine.runningStepNo !== 0 ? 'cursor-pointer' : 'cursor-not-allowed'"
+          >
+            <TwIcon
+              name="i-mdi:chart-line"
+              size="20px"
+              :color="determineTextColor(colors.backGround)"
+            />
+            <QTooltip>{{ t('archive-monitor') }}</QTooltip>
+          </NuxtLink>
+        </div>
       </div>
     </div>
     <!-- ICONS -->

@@ -2,6 +2,7 @@
   "app": {
     "name": "Multi Monitor"
   },
+  "archive-monitor": "Archive Monitor",
   "home": "Home",
   "loading": "Loading",
   "vnc-error": "{name} Connection Failed!",
@@ -66,6 +67,7 @@
     "command-info": "Command Info"
   },
   "details": {
+    "_": "Details",
     "name": "Machine Name",
     "recipe-t-auto": "Auto Recipes",
     "recipe-t-manuel": "Manuel Recipes",
@@ -152,6 +154,13 @@
     "machines": "Machines",
     "machineSearch": "Machine Search",
     "commandSearch": "Command Search",
+    "start": "Alarm start date",
+    "topbar": {
+      "last-day": "Last 24 hours",
+      "active-alarms": "Active Alarm(s)",
+      "confirmed-alarms": "Confirmed Alarm(s)",
+      "machine-count": "Machine Count"
+    },
     "filter": {
       "showAll": "Show All",
       "active": "Just Actives",

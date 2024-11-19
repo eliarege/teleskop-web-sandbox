@@ -3,6 +3,7 @@ import { times } from 'lodash-es'
 import type { Command } from '~/shared/types'
 
 const props = defineProps<{ commands: Command[], activeMachine: number }>()
+const emit = defineEmits(['close'])
 const { t } = useI18n()
 const commandSearch = ref('' as string)
 
@@ -88,14 +89,25 @@ const filterIcon = computed(() => {
         </template>
       </q-input>
       <q-space />
-      <q-btn
-        no-caps
-        dense
-        outline
-        :icon="filterIcon"
-        :label="filterLabel"
-        @click="onlyShowDisabledAlarms = (onlyShowDisabledAlarms + 1) % 3"
-      />
+      <div class="flex-center">
+        <q-btn
+          no-caps
+          dense
+          outline
+          :icon="filterIcon"
+          :label="filterLabel"
+          class="w-full!"
+          @click="onlyShowDisabledAlarms = (onlyShowDisabledAlarms + 1) % 3"
+        />
+        <q-btn
+          icon="close"
+          flat
+          dense
+          max-w-10
+          rounded
+          @click="emit('close')"
+        />
+      </div>
     </div>
 
     <q-list class="command-columns">
@@ -112,7 +124,7 @@ const filterIcon = computed(() => {
           :label="`${item.commandNo} - ${item.commandName}`"
           class="border-1 rounded-2xl font-bold h-min overflow-hidden"
         >
-          <AlarmCardContent
+          <AlarmFilterCardContent
             :active-machine
             :alarms="item.alarms || []"
             :command-no="item.commandNo"
