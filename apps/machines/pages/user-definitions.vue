@@ -109,7 +109,7 @@ const columns = computed(() => ({
   },
 }))
 
-const { data: users, refresh } = useLazyFetch('/api/user-definitions/user-definitions', {
+const { data: users, refresh } = useAuthFetch('/api/user-definitions/user-definitions', {
   default: () => [],
   method: 'POST',
   body: {},

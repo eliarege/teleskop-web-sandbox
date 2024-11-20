@@ -48,7 +48,7 @@ const columns = computed<FilterableTableColumn[]>(() => ([
   },
 ]))
 
-const { data: fails } = useLazyFetch('/api/machine-access-fails/machine-access-fails', {
+const { data: fails } = useAuthFetch('/api/machine-access-fails/machine-access-fails', {
   default: () => [],
   method: 'POST',
   body: {},

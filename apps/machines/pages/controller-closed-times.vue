@@ -65,7 +65,7 @@ const columns = computed<FilterableTableColumn[]>(() => ([
   },
 ]))
 
-const { data: times } = useLazyFetch('/api/controller-closed-times/controller-closed-times', {
+const { data: times } = useAuthFetch('/api/controller-closed-times/controller-closed-times', {
   default: () => [],
   method: 'POST',
   body: {},

@@ -17,7 +17,7 @@ const showMimic = ref(false)
 const showGetDyeHouseDefinitions = ref(false)
 const showSetDyeHouseDefinitions = ref(false)
 
-const { data: databaseVersion } = useLazyFetch('/api/machines/database-version', {
+const { data: databaseVersion } = useAuthFetch('/api/machines/database-version', {
   default: () => '',
 })
 

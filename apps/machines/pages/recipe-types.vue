@@ -29,7 +29,7 @@ const columns = computed(() => ({
   },
 }))
 
-const { data: recipeTypes, refresh } = useLazyFetch<RecipeType[]>('/api/recipe-types/recipe-types', {
+const { data: recipeTypes, refresh } = useAuthFetch<RecipeType[]>('/api/recipe-types/recipe-types', {
   default: () => [],
   method: 'POST',
   body: {},

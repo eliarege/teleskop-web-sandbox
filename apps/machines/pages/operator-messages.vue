@@ -3,7 +3,7 @@ import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nux
 
 const { t, d } = useI18n()
 
-const { data: messages } = useLazyFetch('/api/machines/operator-messages', {
+const { data: messages } = useAuthFetch('/api/machines/operator-messages', {
   default: () => [],
   method: 'POST',
   body: {},

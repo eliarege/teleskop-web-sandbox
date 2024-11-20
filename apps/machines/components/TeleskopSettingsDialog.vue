@@ -30,7 +30,7 @@ const settingsList = [
 
 const formData = ref<Partial<Setting>>({})
 
-const { data: _setting } = useLazyFetch('/api/machines/teleskop-settings', {
+const { data: _setting } = useAuthFetch('/api/machines/teleskop-settings', {
   default: () => ({}),
   onResponse: (res) => {
     const data = res.response._data

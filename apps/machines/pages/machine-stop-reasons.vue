@@ -50,7 +50,7 @@ const columns = computed(() => ({
 
 }))
 
-const { data: stopReasons, refresh } = useLazyFetch<StopReason[]>('/api/stop-reasons/stop-reasons', {
+const { data: stopReasons, refresh } = useAuthFetch<StopReason[]>('/api/stop-reasons/stop-reasons', {
   default: () => [],
   method: 'POST',
   body: {},

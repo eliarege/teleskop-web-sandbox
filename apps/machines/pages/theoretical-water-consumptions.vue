@@ -19,9 +19,9 @@ const water = ref<Water>({
   waterParam: null,
 })
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
+const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
-const { data: machineCommands } = useLazyFetch('/api/master-commands/master-commands', {
+const { data: machineCommands } = useAuthFetch('/api/master-commands/master-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
@@ -32,17 +32,17 @@ const fetchParams = computed(() => {
     : undefined
 })
 
-const { data: waterIO } = useLazyFetch<WaterIO[]>('/api/io/command-io-all', {
+const { data: waterIO } = useAuthFetch<WaterIO[]>('/api/io/command-io-all', {
   immediate: false,
   query: fetchParams,
 })
 
-const { data: waterParams } = useLazyFetch<readonly CommandParameter[]>('/api/commands/command-parameters', {
+const { data: waterParams } = useAuthFetch<readonly CommandParameter[]>('/api/commands/command-parameters', {
   immediate: false,
   query: fetchParams,
 })
 
-const { data: waterConsumptions } = useLazyFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+const { data: waterConsumptions } = useAuthFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
   immediate: false,
   query: fetchParams,
 })

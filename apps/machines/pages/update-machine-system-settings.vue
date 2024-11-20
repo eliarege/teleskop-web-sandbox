@@ -177,7 +177,7 @@ const settings: Setting[] = [
   { caption: 'KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF', token: tokens.KOMUT_ZAMAN_ASILDI_SEBEPLERI_AKTIF },
 ]
 
-const { data: machines } = useLazyFetch('/api/machines/machines', {
+const { data: machines } = useAuthFetch('/api/machines/machines', {
   method: 'POST',
   body: {},
   transform: (machines: Machine[]) => {

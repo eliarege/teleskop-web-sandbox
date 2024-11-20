@@ -70,7 +70,7 @@ const columns = computed<FilterableTableColumn[]>(() => ([
 
 const filters = ref<FilterableTableFilter[]>([])
 
-const { data: tankMaterialDefinitions, execute } = useLazyFetch('/api/materials/material-tank-water-definitions', {
+const { data: tankMaterialDefinitions, execute } = useAuthFetch('/api/materials/material-tank-water-definitions', {
   method: 'POST',
   body: { filters },
   default: () => [],

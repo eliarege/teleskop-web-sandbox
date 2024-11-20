@@ -6,14 +6,14 @@ const { t } = useI18n()
 const selectedMachineId = ref()
 const changedCommands = ref<{ command: MasterCommand, checked: boolean }[]>([])
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
+const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
-const { data: selectedCommands } = useLazyFetch('/api/step-skipping-reasons/step-skipping-reason-commands', {
+const { data: selectedCommands } = useAuthFetch('/api/step-skipping-reasons/step-skipping-reason-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
 
-const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
+const { data: commands } = useAuthFetch('/api/master-commands/master-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
   watch: [selectedCommands],

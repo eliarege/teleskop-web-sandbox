@@ -15,10 +15,10 @@ const { t } = useI18n()
 const selectedMachineId = ref()
 const tanksClone = ref<TankDefinition[]>()
 
-const { data: machines } = useLazyFetch<Machine[]>('/api/machines/active-machines')
-const { data: materials } = useLazyFetch<Material[]>('/api/materials/materials')
+const { data: machines } = useAuthFetch<Machine[]>('/api/machines/active-machines')
+const { data: materials } = useAuthFetch<Material[]>('/api/materials/materials')
 
-const { data: tanks, refresh: refreshTanks } = useLazyFetch('/api/materials/material-tank-map', {
+const { data: tanks, refresh: refreshTanks } = useAuthFetch('/api/materials/material-tank-map', {
   immediate: false,
   default: () => [],
   query: { machineId: selectedMachineId },

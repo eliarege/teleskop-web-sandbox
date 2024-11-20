@@ -32,7 +32,7 @@ const columns = computed(() => ({
 
 }))
 
-const { data: waterTypes, refresh } = useLazyFetch<WaterType[]>('/api/water-types/water-types', {
+const { data: waterTypes, refresh } = useAuthFetch<WaterType[]>('/api/water-types/water-types', {
   default: () => [],
   method: 'POST',
   body: {},

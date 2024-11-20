@@ -4,7 +4,7 @@ import type { MachineGroup } from '~/types'
 
 const { t } = useI18n()
 
-const { data: machineGroups, pending, refresh } = await useFetch<readonly MachineGroup[]>('/api/machines/machine-groups', {
+const { data: machineGroups, pending, refresh } = await useAuthFetch<readonly MachineGroup[]>('/api/machines/machine-groups', {
   default: () => [],
 })
 

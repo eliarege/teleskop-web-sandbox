@@ -14,21 +14,21 @@ const kc = useKeycloak()
 
 const { t } = useI18n()
 
-const { data: startingParameters } = useLazyFetch('/api/formulas/starting-parameter-options', {
+const { data: startingParameters } = useAuthFetch('/api/formulas/starting-parameter-options', {
   default: () => [],
   query: {
     machineId: props.machineId,
   },
 })
 
-const { data: machineConstants } = useLazyFetch('/api/formulas/machine-constant-options', {
+const { data: machineConstants } = useAuthFetch('/api/formulas/machine-constant-options', {
   default: () => [],
   query: {
     machineId: props.machineId,
   },
 })
 
-const { data: commandParameters } = useLazyFetch('/api/formulas/command-parameter-options', {
+const { data: commandParameters } = useAuthFetch('/api/formulas/command-parameter-options', {
   default: () => [],
   query: {
     machineId: props.machineId,

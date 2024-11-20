@@ -31,13 +31,13 @@ const commandTypeMaps = reactive<commandTypeMap[]>([
   { ref: [], value: 1000, title: t('manualMeasurementCommands') },
 ])
 
-const { data: machines } = useLazyFetch('/api/machines/machines', {
+const { data: machines } = useAuthFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const { data: commands } = useLazyFetch('/api/commands/unused-commands', {
+const { data: commands } = useAuthFetch('/api/commands/unused-commands', {
   default: () => [],
   immediate: false,
   query: {
@@ -45,7 +45,7 @@ const { data: commands } = useLazyFetch('/api/commands/unused-commands', {
   },
 })
 
-const { data: commandTypes, refresh } = useLazyFetch<CommandType[]>('/api/commands/command-types', {
+const { data: commandTypes, refresh } = useAuthFetch<CommandType[]>('/api/commands/command-types', {
   default: () => [],
   immediate: false,
   query: {

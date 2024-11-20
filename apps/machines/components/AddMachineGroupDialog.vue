@@ -21,11 +21,11 @@ const selected = ref<Partial<TreatmentMachineGroup>>({
 
 const selectedGroupId = ref(-1)
 
-const { data: machineGroups, refresh: refreshGroups } = useLazyFetch('/api/treatment-parameters/machine-groups', {
+const { data: machineGroups, refresh: refreshGroups } = useAuthFetch('/api/treatment-parameters/machine-groups', {
   default: () => [],
 })
 
-const { data: selectedMachines } = useLazyFetch('/api/treatment-parameters/machine-group-machines', {
+const { data: selectedMachines } = useAuthFetch('/api/treatment-parameters/machine-group-machines', {
   default: () => [],
   immediate: false,
   query: {
@@ -33,7 +33,7 @@ const { data: selectedMachines } = useLazyFetch('/api/treatment-parameters/machi
   },
 })
 
-const { data: machines } = useLazyFetch('/api/treatment-parameters/available-machines', {
+const { data: machines } = useAuthFetch('/api/treatment-parameters/available-machines', {
   default: () => [],
   watch: [selectedMachines],
 })

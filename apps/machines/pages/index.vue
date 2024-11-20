@@ -18,11 +18,11 @@ interface Option {
 const { t, locale, setLocale } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 
-const { data: databaseVersion } = useLazyFetch('/api/machines/database-version', {
+const { data: databaseVersion } = useAuthFetch('/api/machines/database-version', {
   default: () => '',
 })
 
-const { data: machineGroups } = useLazyFetch('/api/machines/machine-groups', {
+const { data: machineGroups } = useAuthFetch('/api/machines/machine-groups', {
   default: () => [],
   transform: (machineGroups: MachineGroup[]) => {
     const options: Option[] = []
@@ -382,7 +382,7 @@ const columns = computed(() => ({
   },
 }))
 
-const { data: machines, refresh } = useLazyFetch<Machine[]>('/api/machines/machines', {
+const { data: machines, refresh } = useAuthFetch<Machine[]>('/api/machines/machines', {
   default: () => [],
   method: 'POST',
   body: {},

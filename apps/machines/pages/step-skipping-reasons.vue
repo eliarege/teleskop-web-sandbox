@@ -36,7 +36,7 @@ const columns = computed(() => ({
 
 }))
 
-const { data: stepSkippingReasons, refresh } = useLazyFetch<StepReason[]>('/api/step-skipping-reasons/step-skipping-reasons', {
+const { data: stepSkippingReasons, refresh } = useAuthFetch<StepReason[]>('/api/step-skipping-reasons/step-skipping-reasons', {
   default: () => [],
   method: 'POST',
   body: {},

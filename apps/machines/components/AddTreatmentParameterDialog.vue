@@ -18,7 +18,7 @@ const selected = ref<Partial<TreatmentParameter>>({
 
 const selectedGroupId = ref(-1)
 
-const { data: params, refresh: refreshParams } = useLazyFetch<TreatmentParameter[]>('/api/treatment-parameters/treatment-parameters', {
+const { data: params, refresh: refreshParams } = useAuthFetch<TreatmentParameter[]>('/api/treatment-parameters/treatment-parameters', {
   default: () => [],
 })
 

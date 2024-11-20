@@ -45,7 +45,7 @@ const columns = computed(() => ({
   },
 }))
 
-const { data: manualReasons, refresh } = useLazyFetch<ManualReason[]>('/api/manual-reasons/manual-reasons', {
+const { data: manualReasons, refresh } = useAuthFetch<ManualReason[]>('/api/manual-reasons/manual-reasons', {
   default: () => [],
   method: 'POST',
   body: {},

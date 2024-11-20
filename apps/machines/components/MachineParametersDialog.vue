@@ -66,7 +66,7 @@ const columns = computed<FilterableTableColumn[]>(() => ([
 ]))
 
 const id = computed(() => props.selected.machineId)
-const { data: params } = useLazyFetch('/api/machines/machine-parameters', {
+const { data: params } = useAuthFetch('/api/machines/machine-parameters', {
   default: () => [],
   method: 'POST',
   body: { machineId: id.value },

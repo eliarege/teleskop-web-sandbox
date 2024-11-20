@@ -9,18 +9,18 @@ const selectedCommandNo = ref()
 const selectedReasonId = ref()
 const changedReasons = ref<CommandTimeoutReason[]>([])
 
-const { data: machines } = useLazyFetch<Machine[]>('/api/machines/active-machines', {
+const { data: machines } = useAuthFetch<Machine[]>('/api/machines/active-machines', {
   default: () => [],
 })
-const { data: machineCommands } = useLazyFetch<MasterCommand[]>(`/api/master-commands/master-commands`, {
+const { data: machineCommands } = useAuthFetch<MasterCommand[]>(`/api/master-commands/master-commands`, {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
-const { data: selectedCommandReasons } = useLazyFetch<CommandTimeoutReason[]>('/api/command-timeout-reasons/selected-command-reasons', {
+const { data: selectedCommandReasons } = useAuthFetch<CommandTimeoutReason[]>('/api/command-timeout-reasons/selected-command-reasons', {
   immediate: false,
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })
-const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useLazyFetch<CommandTimeoutReason[]>('/api/command-timeout-reasons/timeout-reasons', {
+const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useAuthFetch<CommandTimeoutReason[]>('/api/command-timeout-reasons/timeout-reasons', {
   immediate: false,
   watch: [selectedCommandReasons],
   transform: (timeoutReasons) => {
@@ -31,7 +31,7 @@ const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useLazyFetch<Co
   },
 })
 
-const { data: selectedReasonCommands } = useLazyFetch('/api/command-timeout-reasons/selected-timeout-reasons', {
+const { data: selectedReasonCommands } = useAuthFetch('/api/command-timeout-reasons/selected-timeout-reasons', {
   immediate: false,
   query: { machineId: selectedMachineId, reasonId: selectedReasonId },
 })

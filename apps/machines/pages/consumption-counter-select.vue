@@ -21,9 +21,9 @@ const counter2 = ref()
 
 const changedCounters = ref<ConsumptionCounter[]>([])
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
+const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
-const { data: counterOptions } = useLazyFetch('/api/consumption-counters/mach-counters', {
+const { data: counterOptions } = useAuthFetch('/api/consumption-counters/mach-counters', {
   immediate: false,
   query: { machineId: selectedMachineId },
   transform: (counterOptions) => {
@@ -35,7 +35,7 @@ const { data: counterOptions } = useLazyFetch('/api/consumption-counters/mach-co
   },
 })
 
-const { data: counters } = useLazyFetch('/api/consumption-counters/consumption-counter', {
+const { data: counters } = useAuthFetch('/api/consumption-counters/consumption-counter', {
   immediate: false,
   query: { machineId: selectedMachineId },
 })

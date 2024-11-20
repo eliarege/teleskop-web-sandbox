@@ -52,15 +52,15 @@ const commandLists = reactive<CommandList[]>([
   { name: 'listOfRequestCommands', ref: [] },
 ])
 
-const { data: machines } = useLazyFetch<Machine[]>('/api/machines/active-machines')
+const { data: machines } = useAuthFetch<Machine[]>('/api/machines/active-machines')
 
-const { data: tankDefinitions, refresh: refreshDefinitions } = useLazyFetch<TankDefinition[]>('/api/tank-definitions/tank-definitions', {
+const { data: tankDefinitions, refresh: refreshDefinitions } = useAuthFetch<TankDefinition[]>('/api/tank-definitions/tank-definitions', {
   immediate: false,
   default: () => [],
   query: { machineId: selectedMachineId },
 })
 
-const { data: highLimitOptions } = useLazyFetch('/api/machine-parameters/machine-parameters', {
+const { data: highLimitOptions } = useAuthFetch('/api/machine-parameters/machine-parameters', {
   immediate: false,
   query: { machineId: selectedMachineId },
   transform: (parameters) => {
@@ -73,7 +73,7 @@ const { data: highLimitOptions } = useLazyFetch('/api/machine-parameters/machine
   },
 })
 
-const { data: commands, refresh: refreshCommands } = useLazyFetch<MasterCommand[]>('/api/master-commands/master-commands', {
+const { data: commands, refresh: refreshCommands } = useAuthFetch<MasterCommand[]>('/api/master-commands/master-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
   default: () => [],
@@ -376,7 +376,8 @@ const contextMenuOptions = computed(() => [
 
 <style scoped>
 .grid {
-  grid-template-areas: "1 1"
-                       "1 1";
+  grid-template-areas:
+    '1 1'
+    '1 1';
 }
 </style>

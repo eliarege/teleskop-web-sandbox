@@ -3,7 +3,7 @@ import type { FinishReason } from '~/types'
 
 const { t } = useI18n()
 
-const { data: finishReasons, refresh } = useLazyFetch<FinishReason[]>('/api/finish-reasons/finish-reasons', {
+const { data: finishReasons, refresh } = useAuthFetch<FinishReason[]>('/api/finish-reasons/finish-reasons', {
   default: () => [],
   method: 'POST',
   body: {},

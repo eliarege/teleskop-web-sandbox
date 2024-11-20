@@ -33,7 +33,7 @@ const columns = computed(() => ({
   },
 }))
 
-const { data: machines, refresh } = useLazyFetch<Machine[]>('/api/machines/other-machines', {
+const { data: machines, refresh } = useAuthFetch<Machine[]>('/api/machines/other-machines', {
   default: () => [],
   method: 'POST',
   body: {},

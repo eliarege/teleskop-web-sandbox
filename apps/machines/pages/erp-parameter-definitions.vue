@@ -194,13 +194,13 @@ const showImportBatchParametersDialog = ref(false)
 
 const selectedMachineId = computed(() => selectedMachine.value.machineId)
 
-const { data: machines } = useLazyFetch('/api/machines/machines', {
+const { data: machines } = useAuthFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const { data: params, refresh: refreshParams } = useLazyFetch<ErpParameter[]>('/api/erp/erp-parameters', {
+const { data: params, refresh: refreshParams } = useAuthFetch<ErpParameter[]>('/api/erp/erp-parameters', {
   default: () => [],
   immediate: false,
   method: 'POST',

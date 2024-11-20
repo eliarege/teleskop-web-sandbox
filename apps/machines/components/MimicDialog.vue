@@ -18,7 +18,7 @@ const tab = ref('inputs')
 const machineId = computed(() => props.selected.machineId)
 const maxReelSpeed = ref(0)
 
-const { data: inputs } = useLazyFetch('/api/io/analog-input', {
+const { data: inputs } = useAuthFetch('/api/io/analog-input', {
   body: { machineId: machineId.value },
   method: 'POST',
   default: () => [],
@@ -43,7 +43,7 @@ const inputColumns = computed<FilterableTableColumn[]>(() => ([
   },
 ]))
 
-const { data: outputs } = useLazyFetch('/api/io/analog-output', {
+const { data: outputs } = useAuthFetch('/api/io/analog-output', {
   body: { machineId: machineId.value },
   method: 'POST',
   default: () => [],

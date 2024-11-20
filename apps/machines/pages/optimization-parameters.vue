@@ -6,22 +6,22 @@ const showAddTreatmentParameterDialog = ref(false)
 const selectedMachineGroup = ref()
 const selectedParameter = ref()
 
-const { data: machineGroups, refresh: refreshMachineGroups } = useLazyFetch('/api/treatment-parameters/machine-groups', {
+const { data: machineGroups, refresh: refreshMachineGroups } = useAuthFetch('/api/treatment-parameters/machine-groups', {
   default: () => [],
 })
 
-const { data: treatmentParameters, refresh: refreshTreatmentParameters } = useLazyFetch('/api/treatment-parameters/treatment-parameters', {
+const { data: treatmentParameters, refresh: refreshTreatmentParameters } = useAuthFetch('/api/treatment-parameters/treatment-parameters', {
   default: () => [],
 })
 
-const { data: commandParameters } = useLazyFetch('/api/treatment-parameters/command-parameters', {
+const { data: commandParameters } = useAuthFetch('/api/treatment-parameters/command-parameters', {
   default: () => [],
   immediate: false,
   method: 'POST',
   body: selectedMachineGroup,
 })
 
-const { data: matchedTreatments, refresh } = useLazyFetch('/api/treatment-parameters/treatment-map', {
+const { data: matchedTreatments, refresh } = useAuthFetch('/api/treatment-parameters/treatment-map', {
   default: () => [],
 })
 
