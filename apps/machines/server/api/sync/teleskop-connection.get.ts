@@ -1,7 +1,7 @@
 import { TbbFtpClient, withTbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { ip } = getQuery(event)
   try {
     const ftpClient = new TbbFtpClient(ip as string, { timeout: 1000 })

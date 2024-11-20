@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ManualReason } from '~/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
 const columns = computed(() => ({
@@ -51,7 +52,7 @@ const { data: manualReasons, refresh } = useAuthFetch<ManualReason[]>('/api/manu
   body: {},
 })
 async function handleAdd(formData: ManualReason) {
-  await $fetch('/api/manual-reasons/manual-reason', {
+  await kc.fetch('/api/manual-reasons/manual-reason', {
     method: 'POST',
     body: {
       manualId: manualReasons.value[manualReasons.value.length - 1].manualId + 1,
@@ -63,7 +64,7 @@ async function handleAdd(formData: ManualReason) {
 }
 
 async function handleEdit(formData: ManualReason) {
-  await $fetch('/api/manual-reasons/manual-reason', {
+  await kc.fetch('/api/manual-reasons/manual-reason', {
     method: 'PUT',
     body: formData,
   })
@@ -71,7 +72,7 @@ async function handleEdit(formData: ManualReason) {
 }
 
 async function handleDelete(formData: ManualReason[]) {
-  await $fetch('/api/manual-reasons/manual-reasons', {
+  await kc.fetch('/api/manual-reasons/manual-reasons', {
     method: 'DELETE',
     body: {
       manualIds: formData.map(d => d.manualId),

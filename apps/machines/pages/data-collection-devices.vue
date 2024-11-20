@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Machine } from '~/types'
 
+const kc = useKeycloak()
+
 const columns = computed(() => ({
   machineId: {
     label: 'Makine Id',
@@ -40,7 +42,7 @@ const { data: machines, refresh } = useAuthFetch<Machine[]>('/api/machines/other
 })
 
 async function handleAdd(formData: Machine) {
-  await $fetch('/api/machines/other-machine', {
+  await kc.fetch('/api/machines/other-machine', {
     method: 'POST',
     body: formData,
   })
@@ -48,7 +50,7 @@ async function handleAdd(formData: Machine) {
 }
 
 async function handleEdit(formData: Machine, old: Machine) {
-  await $fetch('/api/machines/other-machine', {
+  await kc.fetch('/api/machines/other-machine', {
     method: 'PUT',
     body: {
       ...formData,
@@ -59,7 +61,7 @@ async function handleEdit(formData: Machine, old: Machine) {
 }
 
 async function handleDelete(formData: Machine[]) {
-  await $fetch('/api/machines/other-machine', {
+  await kc.fetch('/api/machines/other-machine', {
     method: 'DELETE',
     body: {
       machineIds: formData.map(d => d.machineId),

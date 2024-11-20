@@ -2,6 +2,7 @@
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { CommandTimeoutReason, Machine, MasterCommand } from '~/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -44,7 +45,7 @@ function handleCheckChange(e: boolean, reason: CommandTimeoutReason) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/command-timeout-reasons/command-timeout-reasons', { method: 'PUT', body: { changedReasons: changedReasons.value } })
+  await kc.fetch('/api/command-timeout-reasons/command-timeout-reasons', { method: 'PUT', body: { changedReasons: changedReasons.value } })
   changedReasons.value = []
 }
 
@@ -53,7 +54,7 @@ const showEditReasonDialog = ref(false)
 
 const newReasonText = ref('')
 async function handleAddReason() {
-  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+  await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
     method: 'POST',
     body: { reasonText: newReasonText.value },
   })
@@ -72,7 +73,7 @@ function handleEditButton() {
 }
 
 async function handleEditReason() {
-  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+  await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
     method: 'PUT',
     body: { reasonText: newReasonText.value, id: selectedReasonId.value },
   })
@@ -82,7 +83,7 @@ async function handleEditReason() {
 }
 
 async function handleDeleteReason() {
-  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+  await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
     method: 'DELETE',
     body: { id: selectedReasonId.value },
   })
@@ -109,7 +110,7 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      await $fetch('/api/command-timeout-reasons/copy', {
+      await kc.fetch('/api/command-timeout-reasons/copy', {
         method: 'POST',
         body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
       })

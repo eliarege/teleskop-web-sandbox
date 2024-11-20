@@ -2,7 +2,7 @@
 import type { MasterCommand } from '~/types'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const selectedMachineId = ref()
 const changedCommands = ref<{ command: MasterCommand, checked: boolean }[]>([])
 
@@ -32,7 +32,7 @@ async function handleCheckChange(e: boolean, command: MasterCommand) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/step-skipping-reasons/command-reason', {
+  await kc.fetch('/api/step-skipping-reasons/command-reason', {
     method: 'PUT',
     body: { changedCommands: changedCommands.value },
   })

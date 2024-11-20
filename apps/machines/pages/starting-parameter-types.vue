@@ -4,7 +4,7 @@ import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { StartingParameter } from '~/types'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const selectedMachineId = ref()
 
 interface ParamTypeMap {
@@ -65,7 +65,7 @@ function handleOptionChange(paramType: ParamTypeMap) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/starting-parameter-types/starting-parameter-types', {
+  await kc.fetch('/api/starting-parameter-types/starting-parameter-types', {
     method: 'PUT',
     body: { changedParameterTypes: changedParameterTypes.value },
   })

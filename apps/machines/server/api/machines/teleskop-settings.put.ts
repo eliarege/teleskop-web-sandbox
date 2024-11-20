@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
 
   for (const [key, value] of Object.entries(body)) {

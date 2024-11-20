@@ -15,6 +15,7 @@ interface Option {
   value: number
 }
 
+const kc = useKeycloak()
 const { t, locale, setLocale } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 
@@ -407,7 +408,7 @@ function handleSelection(formData: Machine[]) {
 }
 
 async function updateVersions() {
-  await $fetch('/api/sync/machine-versions')
+  await kc.fetch('/api/sync/machine-versions')
   await refresh()
 }
 
@@ -436,7 +437,7 @@ const { notifySuccess, notifyError } = useNotify()
 
 async function loadProject() {
   try {
-    await $fetch('/api/sync/network-connection', {
+    await kc.fetch('/api/sync/network-connection', {
       method: 'POST',
       retry: false,
       body: {
@@ -445,7 +446,7 @@ async function loadProject() {
     })
     notifySuccess(t('connectionSuccessful'))
 
-    await $fetch('/api/sync/update-machine', {
+    await kc.fetch('/api/sync/update-machine', {
       method: 'GET',
       retry: false,
       query: {
@@ -464,7 +465,7 @@ async function loadProject() {
 }
 
 async function handleAdd(formData: Machine) {
-  await $fetch('/api/machines/machine', {
+  await kc.fetch('/api/machines/machine', {
     method: 'POST',
     body: formData,
   })
@@ -472,7 +473,7 @@ async function handleAdd(formData: Machine) {
 }
 
 async function handleEdit(formData: Machine) {
-  await $fetch('/api/machines/machine', {
+  await kc.fetch('/api/machines/machine', {
     method: 'PUT',
     body: {
       machine: formData,
@@ -483,7 +484,7 @@ async function handleEdit(formData: Machine) {
 }
 
 async function handleDelete(formData: Machine[]) {
-  await $fetch('/api/machines/machine', {
+  await kc.fetch('/api/machines/machine', {
     method: 'DELETE',
     body: {
       machineIds: formData.map((d: Machine) => d.machineId),
@@ -520,7 +521,7 @@ const contextMenuOptions = computed<Partial<IContextMenuOption>[]>(() => [
     icon: 'content_paste',
     disabled: selected.value.machineId === -1 || !copy.value,
     onClick: async () => {
-      await $fetch('/api/io/copy', {
+      await kc.fetch('/api/io/copy', {
         method: 'POST',
         body: {
           sourceMachineId: copy.value,
@@ -579,7 +580,7 @@ async function checkTeleskopConnection(formData: Machine) {
   try {
     teleskopConnectionMessage.value.message = t('tryingConnection')
     teleskopConnectionMessage.value.color = ''
-    await $fetch('/api/sync/teleskop-connection', {
+    await kc.fetch('/api/sync/teleskop-connection', {
       method: 'GET',
       retry: false,
       query: {
@@ -601,7 +602,7 @@ async function checkNetworkConnection(formData: Machine) {
   try {
     networkConnectionMessage.value.message = t('tryingConnection')
     networkConnectionMessage.value.color = ''
-    await $fetch('/api/sync/network-connection', {
+    await kc.fetch('/api/sync/network-connection', {
       method: 'POST',
       retry: false,
       body: {

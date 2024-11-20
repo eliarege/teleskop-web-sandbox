@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 import type { TreatmentParameter } from '~/types'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { id, treatmentParameter } = await readBody(event)
   return await knex('BFTREATMENTPARAMETERS')
     .where('ID', id)

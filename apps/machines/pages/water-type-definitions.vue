@@ -2,7 +2,7 @@
 import type { WaterType } from '~/types'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const columns = computed(() => ({
   waterTypeId: {
     label: t('waterTypeId'),
@@ -39,7 +39,7 @@ const { data: waterTypes, refresh } = useAuthFetch<WaterType[]>('/api/water-type
 })
 
 async function handleAdd(formData: WaterType) {
-  await $fetch('/api/water-types/water-type', {
+  await kc.fetch('/api/water-types/water-type', {
     method: 'POST',
     body: formData,
   })
@@ -47,7 +47,7 @@ async function handleAdd(formData: WaterType) {
 }
 
 async function handleEdit(formData: WaterType) {
-  await $fetch('/api/water-types/water-type', {
+  await kc.fetch('/api/water-types/water-type', {
     method: 'PUT',
     body: formData,
   })
@@ -55,7 +55,7 @@ async function handleEdit(formData: WaterType) {
 }
 
 async function handleDelete(formData: WaterType[]) {
-  await $fetch('/api/water-types/water-types', {
+  await kc.fetch('/api/water-types/water-types', {
     method: 'DELETE',
     body: formData.map(d => d.waterTypeId),
   })

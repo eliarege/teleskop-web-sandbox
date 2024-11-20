@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 import type { Machine } from '~/types'
 
-export default defineEventHandler(async () => {
+export default defineAuthEventHandler(async () => {
   const machines: Machine[] = await knex('BFMACHINES')
     .where({
       INUSE: 1,

@@ -9,7 +9,7 @@ interface Water {
 }
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 
@@ -80,7 +80,7 @@ async function handleSubmit() {
     commandIO2: water.value.waterIO2 ? water.value.waterIO2.ioIndex : undefined,
     commandParameter: water.value.waterParam ? water.value.waterParam.parameterIndex : undefined,
   }
-  await $fetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+  await kc.fetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
     method: 'POST',
     body: obj,
   })
@@ -106,7 +106,7 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      await $fetch('/api/theoretical-water-consumptions/copy', {
+      await kc.fetch('/api/theoretical-water-consumptions/copy', {
         method: 'POST',
         body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
       })

@@ -11,8 +11,8 @@ interface commandTypeMap {
   title: string
 }
 
+const kc = useKeycloak()
 const { t } = useI18n()
-
 const selectedMachineId = ref()
 
 const commandTypeMaps = reactive<commandTypeMap[]>([
@@ -95,7 +95,7 @@ function handleDragDrop(e: SortableEvent, commandMap: commandTypeMap) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/commands/command-types', {
+  await kc.fetch('/api/commands/command-types', {
     method: 'PUT',
     body: { machineId: selectedMachineId.value, commandTypes: commandTypes.value },
   })
@@ -121,7 +121,7 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      await $fetch('/api/commands/command-types', {
+      await kc.fetch('/api/commands/command-types', {
         method: 'PUT',
         body: {
           machineId: selectedMachineId.value,

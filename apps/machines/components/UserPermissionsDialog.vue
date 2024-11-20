@@ -15,6 +15,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['close'])
+const kc = useKeycloak()
 
 const kc = useKeycloak()
 

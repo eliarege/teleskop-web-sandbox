@@ -110,6 +110,7 @@ async function handleSubmit() {
     }
   }
   await kc.fetch('/api/machines/teleskop-settings', {
+  await kc.fetch('/api/machines/teleskop-settings', {
     method: 'PUT',
     body: submitData,
   })

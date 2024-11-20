@@ -1,7 +1,7 @@
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machineId } = getQuery(event)
 
   const tbb = new TbbFtpClient('192.168.88.202')

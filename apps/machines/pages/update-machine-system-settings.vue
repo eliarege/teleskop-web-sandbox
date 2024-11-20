@@ -2,7 +2,7 @@
 import type { Machine, Setting } from '~/types'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const showAddMachineSystemSetting = ref(false)
 
 interface MachineSetting extends Machine {
@@ -202,7 +202,7 @@ function handleDelete() {
 }
 
 async function handleSend() {
-  await $fetch('/api/sync/machine-settings', {
+  await kc.fetch('/api/sync/machine-settings', {
     method: 'POST',
     body: {
       settings: selectedSettings.value,

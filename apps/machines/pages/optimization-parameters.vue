@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const kc = useKeycloak()
 const { t } = useI18n()
 const selectedOption = ref()
 const showAddMachineGroupDialog = ref(false)
@@ -26,7 +27,7 @@ const { data: matchedTreatments, refresh } = useAuthFetch('/api/treatment-parame
 })
 
 async function handleAdd() {
-  await $fetch('/api/treatment-parameters/treatment-map', {
+  await kc.fetch('/api/treatment-parameters/treatment-map', {
     method: 'POST',
     body: {
       paramId: selectedParameter.value.id,

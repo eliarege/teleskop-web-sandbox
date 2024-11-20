@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nuxt-base'
 
+const kc = useKeycloak()
 const { t, d } = useI18n()
 
 const { data: messages } = useAuthFetch('/api/machines/operator-messages', {
@@ -61,7 +62,7 @@ const columns = computed<FilterableTableColumn[]>(() => ([
 ]))
 
 async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
-  messages.value = await $fetch('/api/machines/operator-messages', {
+  messages.value = await kc.fetch('/api/machines/operator-messages', {
     method: 'POST',
     body: {
       filters: updatedValue,

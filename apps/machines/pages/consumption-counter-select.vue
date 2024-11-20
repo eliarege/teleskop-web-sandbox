@@ -12,6 +12,7 @@ interface CounterOption {
   name: string
 }
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -59,7 +60,7 @@ function handleOptionChange() {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/consumption-counters/consumption-counters', {
+  await kc.fetch('/api/consumption-counters/consumption-counters', {
     method: 'PUT',
     body: { changedCounters: changedCounters.value },
   })

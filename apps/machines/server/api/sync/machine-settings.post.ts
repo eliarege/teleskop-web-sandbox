@@ -2,7 +2,7 @@ import { withTbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 import type { Setting } from '~/types'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machines, settings } = await readBody(event)
 
   let system: Record<string, string> = {}

@@ -5,7 +5,7 @@ import type { Machine, Material, TankDefinition } from '~/types'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 /*
 1 kimyasal
 2 boya
@@ -49,7 +49,7 @@ async function handleDragDrop(e: any, tank: TankDefinition) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/materials/material-tank-map', {
+  await kc.fetch('/api/materials/material-tank-map', {
     method: 'POST',
     body: {
       tankMap: tanksClone.value,
@@ -77,7 +77,7 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      await $fetch('/api/materials/material-tank-map', {
+      await kc.fetch('/api/materials/material-tank-map', {
         method: 'POST',
         body: {
           tankMap: copy.value.map((t: TankDefinition) => ({ ...t, machineId: selectedMachineId.value })),

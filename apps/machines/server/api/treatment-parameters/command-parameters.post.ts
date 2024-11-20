@@ -12,7 +12,7 @@ and BFTREATMENTPARAMETERGROUPS.ID = 1
 
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { id } = await readBody(event)
 
   const { machineId } = await knex('BFTREATMENTPARAMETERGROUPMACHINES')

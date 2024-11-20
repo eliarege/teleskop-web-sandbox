@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machineId, commandNo } = getQuery(event)
   return await knex('BFTHEORETICALWATERCONSUMPTION')
     .where('BFTHEORETICALWATERCONSUMPTION.MACHINEID', machineId)

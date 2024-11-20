@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { MasterCommand } from '~/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -63,7 +64,7 @@ async function handleOptionChange(commandTypeName: string) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/smart-request-commands/smart-request-commands', {
+  await kc.fetch('/api/smart-request-commands/smart-request-commands', {
     method: 'PUT',
     body: { changedCommandTypes: changedCommandTypes.value },
   })

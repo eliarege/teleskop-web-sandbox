@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { tankDefinition, rowName, value } = await readBody(event)
 
   return await knex('DYTFMATERIALTANKMAP')

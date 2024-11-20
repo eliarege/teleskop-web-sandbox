@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async () => {
+export default defineAuthEventHandler(async () => {
   return await knex.raw(`SELECT map.PARAMID ,map.GROUPID ,map.COMMANDNO ,map.PARAMETERINDEX, prm.TREATMENTPARAMETER, grp.GROUPNAME, mach.MACHINEID, cmd.NAME, cmdPrm.PARAMSTRING FROM BFTREATMENTPARAMGROUPMAP map
   LEFT JOIN BFTREATMENTPARAMETERS prm ON map.PARAMID = prm.ID
   LEFT JOIN BFTREATMENTPARAMETERGROUPS grp ON map.GROUPID = grp.ID
