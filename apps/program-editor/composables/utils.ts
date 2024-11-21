@@ -2,7 +2,7 @@ import isEqual from 'fast-deep-equal'
 import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
 import { useEditorStore } from './editor'
-import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramStepCommand, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramHeader, ProgramStepCommand, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -121,14 +121,19 @@ export const diffs: any[] = []
 
 /**
  * Programın header bilgilerini karsılastırır
- * @param programA Program
- * @param programB Program
+ * @param programA Program Header
+ * @param programB Program Header
  * @returns {boolean} Aynı ise true döner
  */
-function compareHeader(programA: any, programB: any): boolean {
-  for (const key of Object.keys(programA)) {
+function compareHeader(programA: ProgramHeader, programB: ProgramHeader): boolean {
+  if (!isDef(programA) || !isDef(programB)) {
+    return false
+  }
+
+  const { duration, steps, ...programWithoutSteps } = programA
+
+  for (const key of Object.keys(programWithoutSteps) as (keyof ProgramHeader)[]) {
     if (programA[key] !== programB[key]) {
-      diffs.push({ kind: 'E', path: key, prgA: programA[key], prgB: programB[key] })
       return false
     }
   }
@@ -136,6 +141,9 @@ function compareHeader(programA: any, programB: any): boolean {
 }
 
 export function compareCommand(stepA: ProgramStepCommand, stepB: ProgramStepCommand): boolean {
+  if (!isDef(stepA) || !isDef(stepB)) {
+    return false
+  }
   if (stepA.commandNo !== stepB.commandNo) {
     return false
   }
@@ -159,9 +167,21 @@ function compareIOLists(ioListA: ioListItem[], ioListB: ioListItem[]): boolean {
     const ioA = ioListA[index]
     const ioB = ioListB[index]
 
+    if (!isDef(ioA) || !isDef(ioB)) {
+      return false
+    }
+
+    if (ioA.value.length !== ioB.value.length) {
+      return false
+    }
+
     for (let valueIndex = 0; valueIndex < ioA.value.length; valueIndex++) {
       const valueA = ioA.value[valueIndex]
       const valueB = ioB.value[valueIndex]
+
+      if (!isDef(valueA) || !isDef(valueB)) {
+        return false
+      }
 
       if (valueA[0] !== valueB[0] || valueA[1] !== valueB[1]) {
         return false
@@ -203,10 +223,22 @@ export function compareProgram(programA: Program, programB: Program, noEmitOnDif
       return false
   }
 
+  if (programA.steps.length !== programB.steps.length) {
+    diffs.push({ kind: 'E', path: ['steps'], prgA: programA.steps, prgB: programB.steps })
+    if (noEmitOnDiff)
+      return false
+  }
+
   // Steps
   for (let stepIndex = 0; stepIndex < programA.steps.length; stepIndex++) {
     const stepA = programA.steps[stepIndex]
     const stepB = programB.steps[stepIndex]
+
+    if (!isDef(stepA) || !isDef(stepB)) {
+      diffs.push({ kind: 'E', path: ['steps', stepIndex], prgA: stepA, prgB: stepB })
+      if (noEmitOnDiff)
+        return false
+    }
 
     // Main Command
     if (!compareCommand(stepA.mainCommand, stepB.mainCommand)) {
@@ -230,38 +262,37 @@ export function compareProgram(programA: Program, programB: Program, noEmitOnDif
   return true
 }
 
-let existingFilter: ProgramFilter | null = {
-  programNo: 1,
-  programName: '',
-  processType: { value: 1, label: '' },
-  clearOnChange: true,
+interface Notification {
+  message: string
+  type: 'positive' | 'warning'
+  date: Date
 }
 
-export function setExistingFilter(filter: ProgramFilter | null) {
-  existingFilter = filter
-}
+export const useNotificationStore = defineStore('notification', () => {
+  const showNotificationPopup = ref<boolean>(false)
+  const notifications = ref<Notification[]>([])
 
-export function getExistingFilter() {
-  if (existingFilter && existingFilter.clearOnChange)
-    return false
-  return existingFilter
-}
+  return { showNotificationPopup, notifications }
+})
 
-export function clearFilter() {
-  setExistingFilter(null)
-}
+export const useProgramFilterStore = defineStore('filter', () => {
+  const showFilterPopup = ref<boolean>(false)
+  const existingFilter = ref<ProgramFilter>({
+    clearOnChange: true,
+  })
 
-export function filterToQuery(filter: ProgramFilter): string {
-  let query = ''
-  if (filter.programNo)
-    query += `programNo=${filter.programNo}&`
-  if (filter.programName)
-    query += `programName=${filter.programName}&`
-  if (filter.processType)
-    query += `processType=${filter.processType.value}&`
-  setExistingFilter(filter)
-  return query
-}
+  function hasFilter(): boolean {
+    return !!(existingFilter.value.programNo || existingFilter.value.programName || existingFilter.value.processType)
+  }
+
+  function clearFilter() {
+    existingFilter.value = {
+      clearOnChange: true,
+    }
+  }
+
+  return { showFilterPopup, existingFilter, hasFilter, clearFilter }
+})
 
 /**
  * Verilen saniyeyi 00:00:00 formatına dönüştürür
@@ -301,16 +332,3 @@ export function parseDuration(duration: string): number {
   }
   return Number(duration) * 36000
 }
-
-interface Notification {
-  message: string
-  type: 'positive' | 'warning'
-  date: Date
-}
-
-export const useNotificationStore = defineStore('notification', () => {
-  const showNotificationPopup = ref<boolean>(false)
-  const notifications = ref<Notification[]>([])
-
-  return { showNotificationPopup, notifications }
-})

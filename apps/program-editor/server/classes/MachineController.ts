@@ -519,9 +519,22 @@ export class MachineController {
   // }
 
   /**
-   * Belirtilen programı makineye yükler
-   * @param {Program} program - Yüklenmek istenen program
-   * @returns {Promise<boolean>} - Yükleme işleminin başarılı olup olmadığını belirten bir Promise
+   * Bir programı makineye yükler. Programın varlık durumuna göre uygun işlemi gerçekleştirir.
+   *
+   * @param {Program} program - Yüklenecek programın detaylarını içeren nesne.
+   * @returns {Promise<boolean | Error>} Program başarıyla yüklendiğinde `true`, hata durumunda bir `Error` nesnesi döner.
+   *
+   * @throws {PError} - Eğer program veritabanında yok ancak makinede mevcutsa, `PROGRAM_NOT_FOUND` hata kodu ile bir hata fırlatır.
+   *
+   * @description
+   * Bu fonksiyon, programın teleskop (veritabanı) ve makine üzerindeki varlık durumunu kontrol eder.
+   * Aşağıdaki durumları ele alır:
+   * 1. **Veritabanında yok, makinede var**: Hata fırlatır (`PROGRAM_NOT_FOUND`).
+   * 2. **Veritabanında yok, makinede yok**: Programı veritabanına ekler.
+   * 3. **Veritabanında var, makinede var**: Programı günceller.
+   *
+   * Sonrasında, program veritabanından silinir, yeniden eklenir ve FTP üzerinden makineye yüklenir.
+   * Hata durumlarında özel hata kodları (`ECONNREFUSED`, `EHOSTUNREACH`) işlenir.
    */
   @withFTP
   async uploadProgram(program: Program): Promise<boolean | Error> {
@@ -567,7 +580,7 @@ export class MachineController {
         }
       }
       console.error('An error occured during sending program(s) to machine', err)
-      logger.error({ error: err }, 'An error occured during sending program(s) to machine')
+      logger.error({ error: err }, 'An error occured during sending program(s) to machine.')
       return false
     }
   }

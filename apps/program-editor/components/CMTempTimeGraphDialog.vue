@@ -264,7 +264,7 @@ function getDurationStyle(point1: Coordinate, point2: Coordinate) {
   }
 }
 
-function takeScreenShot() {
+function takeScreenshot() {
   const element = document.getElementById('chart-container')
   if (element)
     screenshot(element, `${editor.machine.id}-${editor.program.programNo}-${t('tempTimeGraph.lower')}`)
@@ -332,11 +332,11 @@ onMounted(() => {
               @click="isFullScreen = !isFullScreen"
             />
             <q-btn
-              :label="t('tempTimeGraph.screenShot')"
+              :label="t('tempTimeGraph.screenshot')"
               class="setting-btn"
               color="green"
               icon="camera_alt"
-              @click="takeScreenShot"
+              @click="takeScreenshot"
             />
           </div>
           <div

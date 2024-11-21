@@ -8,17 +8,16 @@ const props = defineProps<{
   path: string
 }>()
 
+const { t } = useI18n()
 const editor = useEditorStore()
-const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
+const programCommand = ref<ProgramStepCommand>(editor.getPathElement(props.path))
 const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? CommandType.MAIN : CommandType.PARALLEL
 
-const select = ref<QSelect>()
 const id = useId()
-
-const { t } = useI18n()
+const select = ref<QSelect>()
 
 watch(() => select.value?.modelValue, () => {
-  if (programCommand.commandNo === null) {
+  if (programCommand.value.commandNo === null) {
     editor.errorIds.add(id)
     select.value?.focus()
   } else {
@@ -45,7 +44,7 @@ const filteredCommands = computed(() => {
   filteredArray = filteredArray.filter(({ commandNo }) => {
     const step = editor.program.steps[stepIndex.value]
 
-    return commandNo === programCommand.commandNo
+    return commandNo === programCommand.value.commandNo
       || (
         step.mainCommand.commandNo !== commandNo
         && !step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === commandNo,
@@ -58,7 +57,7 @@ const filteredCommands = computed(() => {
 })
 
 const label = computed(() => {
-  return !programCommand.commandNo ? t('selectCommand') : undefined
+  return !programCommand.value.commandNo ? t('selectCommand') : undefined
 })
 </script>
 
@@ -89,7 +88,7 @@ const label = computed(() => {
           v-close-popup
           clickable
           dense
-          @click="editor.updateCommand(programCommand, scope.opt.value)"
+          @click="editor.updateCommand(scope.opt.value, programCommand)"
         >
           <QItemSection class="text-3">
             {{ scope.opt.label }}

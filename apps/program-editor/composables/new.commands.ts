@@ -1,4 +1,5 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
+import { klona } from 'klona'
 import CMDeleteProgramDialog from '~/components/CMDeleteProgramDialog.vue'
 import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPasteDialog.vue'
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
@@ -6,8 +7,7 @@ import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOn
 import CMConcatenateProgramDetails from '~/components/CMConcatenateProgramDetails.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import TBProgramFilterDialog from '~/components/TBProgramFilterDialog.vue'
-import type { Program, ProgramFilter, ProgramHeader, ProgramTable } from '~/shared/types'
+import type { Program, ProgramHeader, ProgramTable } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -18,6 +18,7 @@ import CMTempTimeGraphDialog from '~/components/CMTempTimeGraphDialog.vue'
 import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
 import { TeleskopSettingsIds } from '~/shared/constants'
 import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
+import TBDiscardChangesDialog from '~/components/TBDiscardChangesDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -54,7 +55,6 @@ export interface RegisteredCommands {
   sendProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
   copyAndSend: [ctx: any, selectedRows: Array<any>, machineId: number]
   fetchProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
-  filterPrograms: [ctx: any]
   printProgram: [ctx: any]
   printProgramList: [ctx: any]
   editProgramTypes: [ctx: any]
@@ -65,6 +65,7 @@ export interface RegisteredCommands {
   stepCommandGraph: [ctx: any]
   newProgram: [ctx: any]
   saveAsProgram: [ctx: any]
+  discardChanges: [ctx: any, machineId?: number]
 }
 
 registerCommand(() => {
@@ -80,7 +81,7 @@ registerCommand(() => {
       }).onOk(async (newProgram: Program) => {
         await editor.onSubmit(newProgram)
         setTimeout(() => {
-          editor.newStep()
+          editor.addStep()
         }, 1000)
         return true
       }).onCancel(() => {
@@ -135,14 +136,10 @@ registerCommand(() => {
   return {
     name: 'stepCommandGraph',
     execute(ctx: any) {
-      const editor = useEditorStore()
-      if (!editor.popupStepCommandGraphVisible) {
-        ctx.$q.dialog({
-          component: CMStepCommandGraphDialog,
-        })
-        editor.popupStepCommandGraphVisible = true
-        return true
-      }
+      ctx.$q.dialog({
+        component: CMStepCommandGraphDialog,
+      })
+      return true
     },
   }
 })
@@ -338,6 +335,7 @@ registerCommand(() => {
     },
   }
 })
+
 registerCommand(() => {
   const editor = useEditorStore()
   return {
@@ -360,7 +358,7 @@ registerCommand(() => {
         componentProps: {
           type: 'copyAndSend',
         },
-      }).onOk(async (machines) => {
+      }).onOk(async (machines: string[]) => {
         // FIXME: steps null check for on backend
         await contextMenuStore.sendProgramToMachines(selectedRows, machines, machineId)
         await editor.fetchAllPrograms()
@@ -380,25 +378,6 @@ registerCommand(() => {
       await contextMenuStore.getRemoteProgram(selectedRows, machineId)
       await editor.fetchAllPrograms()
       return false // Dont want to add uno redo stack 'cause it cannot be reversible'
-    },
-  }
-})
-registerCommand(() => {
-  const editor = useEditorStore()
-  return {
-    name: 'filterPrograms',
-    async execute(ctx: any) {
-      ctx.$q.dialog({
-        component: TBProgramFilterDialog,
-      }).onOk(async (filter: ProgramFilter) => {
-        await editor.fetchAllPrograms(filter)
-        if (ctx?.isProgramFilterExists)
-          ctx.isProgramFilterExists.value = true
-        return true
-      }).onCancel(() => {
-        return false
-      })
-      return true
     },
   }
 })
@@ -493,6 +472,29 @@ registerCommand(() => {
       })
       await editor.fetchAllPrograms()
       editor.isLoading = false
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'discardChanges',
+    execute(ctx: any, machineId: number) {
+      ctx.$q.dialog({
+        component: TBDiscardChangesDialog,
+      }).onOk(async () => {
+        const editor = useEditorStore()
+        editor.program = editor.createEmptyProgram()
+        await nextTick()
+        editor.program = klona(editor.originalProgram)
+        editor.selectedSteps = []
+        editor.selectedParallelStep = -1
+
+        if (machineId) {
+          await editor.changeMachine(machineId)
+        }
+      })
       return true
     },
   }

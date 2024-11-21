@@ -10,7 +10,7 @@ import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
 import type { ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
-import { clearFilter, filterToQuery, formatDuration, getExistingFilter } from '~/composables/utils'
+import { formatDuration } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
@@ -25,12 +25,11 @@ const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
 const editor = useEditorStore()
+const filter = useProgramFilterStore()
 const machineId = Number(route.params.machine_id)
 const tableRef = ref()
-const isProgramFilterExists = ref(getExistingFilter())
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t, router })
-const devMode = import.meta.dev
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
@@ -47,9 +46,8 @@ onKeyStroke('F3', (event: KeyboardEvent) => {
 onKeyStroke('F5', async (event: KeyboardEvent) => {
   event.preventDefault()
   editor.isLoading = true
-  await editor.fetchAllPrograms().then(() => {
-    editor.isLoading = false
-  })
+  await editor.fetchAllPrograms()
+  editor.isLoading = false
 })
 
 onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
@@ -66,10 +64,10 @@ onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
   }
 })
 
-onKeyStroke(['r', 'R'], (event: KeyboardEvent) => {
+onKeyStroke(['r', 'R'], async (event: KeyboardEvent) => {
   if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
-    editor.onReset()
+    await editor.fetchMachine(machineId)
   }
 })
 
@@ -91,6 +89,13 @@ onKeyStroke(['v', 'V'], (event: KeyboardEvent) => {
   if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
     $commandManager.executeCommand('pasteProgram', { $q }, machineId)
+  }
+})
+
+onKeyStroke(['f', 'F'], (event: KeyboardEvent) => {
+  if (event.ctrlKey && !isActiveElementEditable()) {
+    event.preventDefault()
+    filter.showFilterPopup = true
   }
 })
 
@@ -142,9 +147,13 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
   }
 })
 
+if (filter.existingFilter.clearOnChange)
+  filter.clearFilter()
+
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
-await editor.fetchMachine(machineId)
+if (editor.machine.id !== machineId)
+  await editor.fetchMachine(machineId)
 await editor.fetchCommandTypes(machineId)
 await editor.fetchAllPrograms()
 await editor.fetchAllProcessTypes().then(() => {
@@ -156,8 +165,8 @@ const comparisonDialogVisible = ref(false)
 const versions = ref([] as Array<any>)
 const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length > 1)
 
-const filter = ref('')
-const debouncedFilter = refDebounced(filter, 250)
+const searchFilter = ref('')
+const debouncedFilter = refDebounced(searchFilter, 250)
 
 const { results: filterResults } = useFuse(debouncedFilter, () => editor.allPrograms, {
   matchAllWhenSearchEmpty: true,
@@ -578,18 +587,6 @@ const shift = useKeyModifier('Shift')
 async function fetchVersions(programNo: number) {
   versions.value = await contextMenuStore.fetchVersions(programNo, machineId)
 }
-function handleFilterClick() {
-  $commandManager.executeCommand(
-    'filterPrograms',
-    { $q, filteredPrograms, isProgramFilterExists },
-  )
-}
-
-function handleClearFilterClick() {
-  clearFilter()
-  isProgramFilterExists.value = false
-  editor.fetchAllPrograms()
-}
 
 function formatTooltip<T extends Record<string, any>>(row: T, column: QTableColumn<T> & { tooltip?: (value: any, row: any) => string }) {
   const value = typeof column.field === 'function' ? column.field(row) : row[column.field]
@@ -673,14 +670,16 @@ function handleRowClass(row: ProgramTable): string {
 </script>
 
 <template>
+  <div v-if="editor.isLoading">
+    <LoadingSpinner :has-background="false" />
+  </div>
   <div class="custom-page select-none relative">
-    <div v-if="editor.isLoading" class="loading-container">
-      <LoadingSpinner :has-background="false" />
-    </div>
-    <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
-      <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
-      <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues()?.map(p => p.program.programNo).join(', ')}` }} </span>
-    </div>
+    <DevOnly>
+      <div class="flex flex-col color-gray-5 text-3">
+        <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
+        <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues()?.map(p => p.program.programNo).join(', ')}` }} </span>
+      </div>
+    </DevOnly>
     <QTable
       ref="tableRef"
       v-model:selected="editor.selectedPrograms"
@@ -691,7 +690,7 @@ function handleRowClass(row: ProgramTable): string {
       class="program-table"
       selection="multiple"
       :selected-rows-label="getSelectedString"
-      :filter="filter"
+      :filter="searchFilter"
       dense
       flat
       table-header-style="position: sticky; top: 0; z-index: 1; background-color: #f5f5f5; height: 50px;"
@@ -723,39 +722,21 @@ function handleRowClass(row: ProgramTable): string {
       </template>
       <template #top>
         <QInput
-          v-model="filter"
-          clear-icon="close"
+          v-model="searchFilter"
           class="q-pa-md w-xs"
-          dense
+          :placeholder="t('search')"
           autocomplete="false"
           debounce="100"
+          clearable
           outlined
-          icon
-          :placeholder="t('search')"
+          dense
         >
           <template #prepend>
             <QIcon name="search" />
           </template>
-
-          <template #append>
-            <QBtn
-              v-if="filter"
-              icon="close"
-              flat
-              round
-              dense
-              size="sm"
-              @click="filter = ''"
-            />
-          </template>
         </QInput>
         <QSpace />
-        <QBtn
-          :icon="isProgramFilterExists ? 'filter_alt_off' : 'filter_alt'"
-          color="grey-8"
-          flat
-          @click="isProgramFilterExists ? handleClearFilterClick() : handleFilterClick()"
-        />
+        <ProgramFilterButton />
       </template>
     </QTable>
 

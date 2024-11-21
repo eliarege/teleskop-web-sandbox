@@ -117,7 +117,7 @@ chartOptions.value = {
   },
 }
 
-function takeScreenShot() {
+function takeScreenshot() {
   const element = document.getElementById('chart-container')
   if (element)
     screenshot(element, `${editor.machine.id}-${editor.program.programNo}-${t('stepCommandGraph.lower')}`)
@@ -129,7 +129,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" @hide="editor.popupStepCommandGraphVisible = false">
+  <q-dialog ref="dialogRef">
     <q-card class="flex flex-col max-w-6xl max-h-2xl min-w-6xl min-h-2xl !dark:(bg-dark-4)">
       <div id="container">
         <q-card-section class="bg-gray-1 !dark:(bg-dark-1)">
@@ -152,11 +152,11 @@ onMounted(() => {
         <q-card-section>
           <div class="flex justify-end mb-2">
             <q-btn
-              :label="t('tempTimeGraph.screenShot')"
+              :label="t('tempTimeGraph.screenshot')"
               class="setting-btn"
               color="green"
               icon="camera_alt"
-              @click="takeScreenShot"
+              @click="takeScreenshot"
             />
           </div>
           <div

@@ -179,6 +179,8 @@
   "dropAll": "Tümünü bırak",
   "selectReverse": "Seçimi ters çevir",
   "selectRange": "{count} kayıt seçildi, {total} kayıt toplamı",
+  "expandAll": "Tümünü genişlet",
+  "collapseAll": "Tümünü daralt",
   "yes": "Evet",
   "no": "Hayır",
   "cancel": "İptal",
@@ -410,12 +412,12 @@
     "hideDuration": "Süreyi Gizle",
     "showDuration": "Süreyi Göster",
     "fullScreen": "Tam Ekran",
-    "screenShot": "Ekran Görüntüsü"
+    "screenshot": "Ekran Görüntüsü"
   },
   "stepCommandGraph": {
     "_": "Adım/Komut Grafiği",
     "lower": "adim-komut-grafigi",
-    "screenShot": "Ekran Görüntüsü"
+    "screenshot": "Ekran Görüntüsü"
   },
   "notification": {
     "_": "Bildirim",
@@ -424,5 +426,22 @@
     "yes_notification": "{count} bildirim var!",
     "delete_all": "Tüm bildirimleri sil",
     "close": "Kapat"
+  },
+  "filter": {
+    "_": "Filtrele",
+    "programFilter": "Program Filtresi",
+    "programNo": "Program Numarası",
+    "programName": "Program Adı",
+    "processType": "Proccess Tipi",
+    "clearFilterOnChange": "Makine seçimi değiştiğinde filtreleri temizle.",
+    "delete_all": "Filtreleri sıfırla",
+    "close": "Kapat",
+    "apply": "Uygula"
+  },
+  "discardChanges": {
+    "title": "Değişiklikleri Geri Al",
+    "message": "Yaptığınız değişiklikleri geri almak istediğinizden emin misiniz?",
+    "discard": "Geri Al",
+    "cancel": "İptal"
   }
 }

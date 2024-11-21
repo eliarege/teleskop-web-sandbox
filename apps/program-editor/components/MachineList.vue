@@ -4,7 +4,9 @@ import type { MachineGroup, MachineInfo } from '~/shared/types'
 
 const route = useRoute()
 const editor = useEditorStore()
+const $q = useQuasar()
 const { dark } = useQuasar()
+const { $commandManager } = useNuxtApp()
 
 const { data: machineGroups } = useAuthFetch<MachineGroup[]>('/api/machine-group')
 const { data: machines } = useAuthFetch<MachineInfo[]>('/api/machine')
@@ -19,6 +21,7 @@ const machineGroupsWithMachines = computed(() => {
   }))
 })
 
+// İlk makineyi otomatik olarak seçer
 watch(() => [machineGroupsWithMachines.value.length, route.path], () => {
   if (route.path === '/') {
     const firstMachine = machineGroupsWithMachines.value.find(group => group.machines.length)?.machines[0]
@@ -30,7 +33,11 @@ watch(() => [machineGroupsWithMachines.value.length, route.path], () => {
 async function onUpdateSelected(selection: string) {
   if (selection) {
     const id = Number.parseInt(selection.split('-')[1])
-    editor.changeMachine(id)
+    const hasChanged = editor.hasProgramChanged()
+    if (hasChanged)
+      $commandManager.executeCommand('discardChanges', { $q }, id)
+    else
+      await editor.changeMachine(id)
   } else {
     await navigateTo('/')
   }

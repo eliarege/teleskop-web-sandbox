@@ -278,7 +278,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     editor.isLoading = false
   }
 
-  async function sendProgramToMachines(programs: Array<any>, machines: Array<any>, machineId: number) {
+  async function sendProgramToMachines(programs: ProgramHeader[], machines: string[], machineId: number) {
     const { fetch } = useKeycloak()
     for (const machine of machines) {
       const m_id = getMachineId(machine)

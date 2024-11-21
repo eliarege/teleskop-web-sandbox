@@ -10,7 +10,6 @@ const props = defineProps<{
 }>()
 
 const editor = useEditorStore()
-const devMode = import.meta.dev
 const { t } = useI18n()
 const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
@@ -43,7 +42,6 @@ const duration = computed(() => {
   const totalStepDuration = stepDurations.reduce((total, step) => total + step.duration, 0)
   return formatDuration(totalStepDuration)
 })
-
 </script>
 
 <template>
@@ -69,10 +67,12 @@ const duration = computed(() => {
         </div>
       </div>
 
-      <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
-        <span>{{ step.stepId }}</span>
-        <span>{{ duration }}</span>
-      </div>
+      <DevOnly>
+        <div class="flex flex-col color-gray-5 text-3">
+          <span>{{ `stepId: ${step.stepId}` }}</span>
+          <span>{{ duration }}</span>
+        </div>
+      </DevOnly>
 
       <QBtn
         class="expand-btn"
@@ -107,9 +107,11 @@ const duration = computed(() => {
             class="step-parallel-command"
             :class="{ __selected: editor.selectedSteps.find(step => step.stepId === stepIndex) && editor.selectedParallelStep === index }"
           >
-            <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
-              <span>{{ step.parallelCommands[index].commandId }}</span>
-            </div>
+            <DevOnly>
+              <div class="flex flex-col color-gray-5 text-3">
+                <span>{{ `commandId: ${step.parallelCommands[index].commandId}` }}</span>
+              </div>
+            </DevOnly>
 
             <div>
               <ProgramStepCommandForm :path="`${props.path}.parallelCommands.${index}`" :expanded />

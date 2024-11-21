@@ -4,6 +4,7 @@ import { useDialogPluginComponent } from 'quasar'
 
 const props = defineProps({
   remains: Array<any>,
+  programName: String,
 })
 defineEmits([
   ...useDialogPluginComponent.emits,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { QForm } from 'quasar'
+import LoadingSpinner from '../../../../packages/ui/components/LoadingSpinner.vue'
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
@@ -11,8 +12,6 @@ const route = useRoute()
 const $q = useQuasar()
 const { $commandManager } = useNuxtApp()
 
-const devMode = import.meta.dev
-
 const machineId = Number(route.params.machine_id)
 const programNo = Number(route.params.program_no)
 
@@ -20,10 +19,6 @@ const ctrl = useKeyModifier('Control')
 
 definePageMeta({
   path: '/machine/:machine_id/program/:program_no',
-})
-
-onBeforeRouteLeave(() => {
-  editor.program = editor.createProgram()
 })
 
 const buttons = computed(() => [
@@ -45,8 +40,8 @@ const buttons = computed(() => [
     shortcut: 'Ctrl+S',
     icon: 'save',
     disable: editor.isLoading,
-    onClick() {
-      editor.onSubmit()
+    onClick: async () => {
+      await editor.onSubmit()
     },
   },
   {
@@ -66,9 +61,11 @@ const buttons = computed(() => [
     tooltip: t('menu.reset'),
     shortcut: 'Ctrl+R',
     icon: 'refresh',
-    disable: editor.isLoading,
+    disable: !editor.hasProgramChanged() || editor.isLoading,
     onClick() {
-      editor.onReset()
+      const hasChanged = editor.hasProgramChanged()
+      if (hasChanged)
+        $commandManager.executeCommand('discardChanges', { $q })
     },
   },
   {
@@ -79,7 +76,7 @@ const buttons = computed(() => [
     icon: 'add_circle_outline',
     disable: editor.isLoading,
     onClick() {
-      editor.newStep()
+      editor.addStep()
     },
   },
   {
@@ -88,7 +85,7 @@ const buttons = computed(() => [
     tooltip: t('menu.newParallelStep'),
     shortcut: 'F3',
     icon: 'add_circle_outline',
-    disable: editor.isLoading || editor.selectedSteps,
+    disable: editor.isLoading,
     onClick() {
       editor.newParallelStep()
     },
@@ -99,22 +96,22 @@ const buttons = computed(() => [
     tooltip: t('menu.deleteStep'),
     shortcut: 'Del',
     icon: 'delete',
-    disable: (editor.isLoading || editor.selectedSteps),
+    disable: editor.isLoading || !editor.selectedSteps.length,
     onClick() {
       editor.deleteStep()
     },
   },
-  {
-    label: t('menu.deleteParallelStep'),
-    originalLabel: t('menu.deleteParallelStep'),
-    tooltip: t('menu.deleteParallelStep'),
-    shortcut: ' ',
-    icon: 'delete',
-    disable: (editor.isLoading || editor.selectedSteps || editor.selectedParallelStep === -1),
-    onClick() {
-      editor.deleteParallelStep()
-    },
-  },
+  // {
+  //   label: t('menu.deleteParallelStep'),
+  //   originalLabel: t('menu.deleteParallelStep'),
+  //   tooltip: t('menu.deleteParallelStep'),
+  //   shortcut: ' ',
+  //   icon: 'delete',
+  //   disable: (editor.isLoading || editor.selectedSteps || editor.selectedParallelStep === -1),
+  //   onClick() {
+  //     editor.deleteParallelStep()
+  //   },
+  // },
   {
     label: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
     originalLabel: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
@@ -131,7 +128,7 @@ useContextBar(buttons)
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
-  editor.newStep()
+  editor.addStep()
 })
 
 onKeyStroke('F3', (event: KeyboardEvent) => {
@@ -166,7 +163,8 @@ onKeyStroke(['Delete'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable()) return
+  if (isActiveElementEditable())
+    return
 
   event.preventDefault()
 
@@ -185,7 +183,8 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable()) return
+  if (isActiveElementEditable())
+    return
 
   event.preventDefault()
 
@@ -209,10 +208,10 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
   editor.selectedParallelStep = -1
 })
 
-onKeyStroke(['S', 's'], (event: KeyboardEvent) => {
+onKeyStroke(['S', 's'], async (event: KeyboardEvent) => {
   if (event.ctrlKey && !isActiveElementEditable()) {
     event.preventDefault()
-    editor.onSubmit()
+    await editor.onSubmit()
   }
 })
 
@@ -237,26 +236,52 @@ onKeyStroke(['V', 'v'], (event: KeyboardEvent) => {
   }
 })
 
+onKeyStroke(['R', 'r'], (event: KeyboardEvent) => {
+  if (ctrl.value) {
+    event.preventDefault()
+
+    const hasChanged = editor.hasProgramChanged()
+    if (hasChanged)
+      $commandManager.executeCommand('discardChanges', { $q })
+  }
+})
+
 watch(locale, () => {
   form.value?.validate()
 })
 
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
-await editor.fetchMachine(Number(route.params.machine_id))
-await editor.fetchCommandTypes(Number(route.params.machine_id))
+if (editor.machine.id !== machineId)
+  await editor.fetchMachine(machineId)
+await editor.fetchCommandTypes(machineId)
 await editor.fetchAllProcessTypes()
 await editor.fetchProgram(machineId, programNo)
 editor.isLoading = false
+
+onBeforeRouteLeave(() => {
+  const hasChanged = editor.hasProgramChanged()
+  if (hasChanged) {
+    $commandManager.executeCommand('discardChanges', { $q })
+    return false
+  } else {
+    return true
+  }
+})
 </script>
 
 <template>
-  <div class="q-pa-md">
+  <div v-if="editor.isLoading">
+    <LoadingSpinner :has-background="false" />
+  </div>
+  <div class="q-pa-md select-none">
     <QForm ref="form">
-      <div v-if="devMode" class="flex flex-col color-gray-5 text-3">
-        <span> {{ `selectedStep: ${editor.selectedSteps.map(x => x?.stepId)}` }} </span>
-        <span> {{ `copiedSteps: ${contextMenuStore.getCopiedStepsValues(editor.machine.id, editor.program.programNo)?.steps.map(x => x?.stepId) || ''}` }} </span>
-      </div>
+      <DevOnly>
+        <div class="flex flex-col color-gray-5 text-3">
+          <span> {{ `selectedStep: ${editor.selectedSteps.map(x => x?.stepId)}` }} </span>
+          <span> {{ `copiedSteps: ${contextMenuStore.getCopiedStepsValues(editor.machine.id, editor.program.programNo)?.steps.map(x => x?.stepId) || ''}` }} </span>
+        </div>
+      </DevOnly>
       <ProgramEditor />
     </QForm>
   </div>

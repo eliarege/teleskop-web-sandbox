@@ -179,6 +179,8 @@
   "dropAll": "Drop all",
   "selectReverse": "Reverse selection",
   "selectRange": "{count} records selected of {total}",
+  "expandAll": "Expand all",
+  "collapseAll": "Collapse all",
   "yes": "Yes",
   "no": "No",
   "cancel": "Cancel",
@@ -295,8 +297,8 @@
       "setDefaultFail": "An error occured while setting active version to {version}"
     },
     "send": {
-      "success": "Sending program {name} is succeed.",
-      "fail": "An error occured while sending program {name}."
+      "success": "Program {name} has been sent successfully.",
+      "fail": "An error occurred while sending the program {name}."
     },
     "get": {
       "success": "Taking program {name} is succeed.",
@@ -410,12 +412,12 @@
     "hideDuration": "Hide Duration",
     "showDuration": "Show Duration",
     "fullScreen": "Full Screen",
-    "screenShot": "Screenshot"
+    "screenshot": "Screenshot"
   },
   "stepCommandGraph": {
     "_": "Step/Command Graph",
     "lower": "step-command-graph",
-    "screenShot": "Screenshot"
+    "screenshot": "Screenshot"
   },
   "notification": {
     "_": "Notification",
@@ -424,5 +426,22 @@
     "yes_notification": "{count} notification(s)!",
     "delete_all": "Delete all",
     "close": "Close"
+  },
+  "filter": {
+    "_": "Filter",
+    "programFilter": "Program Filter",
+    "programNo": "Program No",
+    "programName": "Program Name",
+    "processType": "Proccess Type",
+    "clearFilterOnChange": "Machine selection has changed, filter will be cleared.",
+    "delete_all": "Delete all",
+    "close": "Close",
+    "apply": "Apply"
+  },
+  "discardChanges": {
+    "title": "Discard Changes",
+    "message": "Are you sure you want to discard your changes?",
+    "discard": "Discard",
+    "cancel": "Cancel"
   }
 }

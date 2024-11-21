@@ -10,6 +10,8 @@ const props = withDefaults(defineProps<{
   hideBottomSpace?: boolean
   format?: string
   disable?: boolean
+  maybeEmpty?: boolean
+  id?: string
 }>(), {
   type: 'decimal',
   rules: () => [],
@@ -17,11 +19,12 @@ const props = withDefaults(defineProps<{
   outlined: false,
   dense: false,
   hideBottomSpace: false,
+  maybeEmpty: false,
 })
 
 const model = defineModel<number>()
 const editor = useEditorStore()
-const id = useId()
+const id = props.id || useId()
 const input = ref<QInput>()
 const numberInput = ref<HTMLElement | null>(null)
 
@@ -145,6 +148,12 @@ function onBlur(event: FocusEvent) {
   }
 
   let value = event.target.value
+
+  if (props.maybeEmpty && value === '') {
+    model.value = undefined
+    return
+  }
+
   if (value.startsWith('.')) {
     value = `0${value}`
   }
@@ -169,7 +178,9 @@ function onBlur(event: FocusEvent) {
 
 function onInput(event: Event) {
   const { value } = event.target as HTMLInputElement
-  if (value !== '') {
+  if (value === '' && props.maybeEmpty) {
+    model.value = undefined
+  } else if (value !== '') {
     model.value = Number.parseFloat(value)
   }
 }
