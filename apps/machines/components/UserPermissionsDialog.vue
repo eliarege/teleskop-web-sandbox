@@ -17,8 +17,6 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 const kc = useKeycloak()
 
-const kc = useKeycloak()
-
 // sistem menulerine erisim ve cihaz ayar yetkisi'nin baglı oldugu izinler var bu secenekler secilmeden diger izinler secilemez
 const controllerPermission = ref(false)
 const menuAccessPermission = ref(false)
