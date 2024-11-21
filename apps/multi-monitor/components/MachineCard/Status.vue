@@ -73,7 +73,6 @@ const archiveUrl = computed(() => parseAppList(config.public.appList).find(e => 
         />
         <div class="flex-center gap-3 ml-1">
           <NuxtLink
-            external
             :to="computedVncLink"
             :target="computedVncTarget"
             :class="isScreenViable ? '' : 'cursor-not-allowed'"
