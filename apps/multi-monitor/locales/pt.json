@@ -155,6 +155,7 @@
     "machineSearch": "Buscar Máquina",
     "commandSearch": "Buscar Comando",
     "start": "Data de Início do Alarme",
+    "active-since": "Tempo ativo (min)",
     "topbar": {
       "last-day": "Últimas 24 horas",
       "active-alarms": "Alarme(s) Ativo(s)",
