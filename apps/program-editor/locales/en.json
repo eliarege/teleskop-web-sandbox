@@ -17,8 +17,9 @@
   "programNotSaved": "Error occured while trying to save program",
   "programNotUpdated": "Program has not been updated",
   "treatmentParameterLimitReached": "Command {commandNo} cannot be used more than {limit}",
-  "(copy)": "(Copy)",
+  "(copy)": "({programNo} Copy)",
   "noSelection": "No Selection",
+  "invalidCommand": "Check for faulty command",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",
@@ -190,16 +191,6 @@
   "change": "Change",
   "apply": "Apply",
   "ok": "OK",
-  "topbar": {
-    "programFilter": {
-      "_": "Filter Programs",
-      "programNo": "Program No",
-      "programName": "Program Name",
-      "processType": "Proccess Type",
-      "clearFilter": "Clear Filter",
-      "clearFilterOnChange": "Clear filter when machine changed."
-    }
-  },
   "message": {
     "delete_program": "Delete program from Teleskop",
     "program_not_deleted": "Program could not be deleted from Teleskop"
@@ -433,7 +424,7 @@
     "programNo": "Program No",
     "programName": "Program Name",
     "processType": "Proccess Type",
-    "clearFilterOnChange": "Machine selection has changed, filter will be cleared.",
+    "clearFilterOnChange": "Clear filter when machine changed.",
     "delete_all": "Delete all",
     "close": "Close",
     "apply": "Apply"

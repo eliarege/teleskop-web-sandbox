@@ -77,44 +77,39 @@ const items = [
               $commandManager.executeCommand('newProgram', { $q })
             },
           },
-          // {
-          //   label: tt('menu.editProgram'),
-          //   icon: 'edit',
-          //   shortcut: 'F3',
-          //   onClick() {
-          //     if (editor.selectedPrograms.length > 0) {
-          //       router.push(`/machine/${editor.machine.id}/program/${editor.selectedPrograms[0].programNo}`)
-          //     } else {
-          //       router.push(`/machine/${editor.machine.id}/program/${editor.allPrograms[0].programNo}`)
-          //     }
-          //   },
-          // },
-          // {
-          //   label: tt('menu.deleteProgram'),
-          //   icon: 'delete',
-          //   shortcut: 'Ctrl+Del',
-          //   onClick() {
-          //     if (editor.selectedPrograms.length > 0) {
-          //       $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
-          //     }
-          //   },
-          // },
+          {
+            label: tt('menu.editProgram'),
+            icon: 'edit',
+            shortcut: 'F3',
+            disabled: () => editor.selectedPrograms.length < 1,
+            onClick() {
+              navigateTo(`/machine/${editor.machine.id}/program/${Math.min(...editor.selectedPrograms.map(p => p.programNo))}`)
+            },
+          },
+          {
+            label: tt('menu.deleteProgram'),
+            icon: 'delete',
+            shortcut: 'Ctrl+Del',
+            disabled: () => editor.selectedPrograms.length < 1,
+            onClick() {
+              $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
+            },
+          },
         ],
         [
           { label: tt('menu.getAllPrograms'), icon: 'download', disabled: true },
           { label: tt('menu.sendAllPrograms'), icon: 'upload', disabled: true },
         ],
-        // [
-        //   {
-        //     label: tt('menu.rename'),
-        //     icon: 'edit',
-        //     onClick() {
-        //       if (editor.selectedPrograms.length > 0) {
-        //         $commandManager.executeCommand('changeName', { $q }, editor.selectedPrograms, editor.machine.id)
-        //       }
-        //     },
-        //   },
-        // ],
+        [
+          {
+            label: tt('menu.rename'),
+            icon: 'edit',
+            disabled: () => editor.selectedPrograms.length < 1,
+            onClick() {
+              $commandManager.executeCommand('changeName', { $q }, editor.selectedPrograms, editor.machine.id)
+            },
+          },
+        ],
       ],
     },
   },
@@ -131,7 +126,17 @@ const items = [
         } },
       ], [
         { label: tt('menu.tempTimeGraph'), icon: 'timeline', shortcut: 'F8', onClick: () => {
-          $commandManager.executeCommand('tempTimeGraph', { $q })
+          const editor = useEditorStore()
+          if (!editor.errorIds.size) {
+            $commandManager.executeCommand('tempTimeGraph', { $q })
+          } else {
+            $q.notify({
+              type: 'negative',
+              icon: 'error',
+              position: 'top',
+              message: tt('invalidCommand'),
+            })
+          }
         } },
         { label: tt('menu.stepCommandGraph'), icon: 'timeline', shortcut: 'F7', onClick: () => {
           $commandManager.executeCommand('stepCommandGraph', { $q })

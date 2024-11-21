@@ -157,12 +157,14 @@ registerCommand(() => {
         },
       }).onOk(async (option: string) => {
         const query = `source=${option}`
+        editor.isLoading = true
         for (const program of selectedRows)
           await fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
             method: 'DELETE',
           })
-        // await contextMenuStore.deleteProgram(selectedRows, option, machineId)
         await editor.fetchAllPrograms()
+        editor.isLoading = false
+        editor.selectedPrograms = []
         return true
       }).onCancel(() => {
         return false
@@ -302,8 +304,10 @@ registerCommand(() => {
         },
       }).onOk(async (program: ProgramHeader) => {
         const editor = useEditorStore()
+        editor.isLoading = true
         await contextMenuStore.updateProgramHeader(program, machineId)
         await editor.fetchAllPrograms()
+        editor.isLoading = false
         return true
       }).onCancel(() => {
         return false

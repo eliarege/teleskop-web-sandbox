@@ -11,11 +11,11 @@ const { dark } = useQuasar()
 const editor = useEditorStore()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const programTypeId = editor.allProcessType.find((p: ProcessType) => p.label === editor.selectedPrograms[0]?.type)?.value
-const programNo = ref(editor.selectedPrograms[0]?.programNo)
-const programName = ref<string>(`${editor.selectedPrograms[0]?.name || editor.program.name} ${props.header === 'saveAs' ? t('(copy)') : ''}`)
+const programTypeId = editor.allProcessType[0].value
+const programNo = ref(props.header === 'rename' ? editor.selectedPrograms[0]?.programNo : null)
+const programName = ref<string>(`${props.header !== 'newProgram' ? editor.program.name : ''} ${props.header === 'saveAs' ? t('(copy)', { programNo: editor.program.programNo }) : ''}`)
 const processType = ref<number>(programTypeId || editor.program.typeId)
-const operator = ref<boolean>(editor.selectedPrograms[0]?.operator || editor.program.tbbProgramChangedEvent === 1)
+const operator = ref<boolean>(props.header === 'rename' ? editor.selectedPrograms[0]?.tbbProgramChangedEvent === 1 : false)
 
 const newProgram = computed<ProgramHeader>(() => {
   return {
