@@ -9,7 +9,7 @@ interface Water {
 }
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 
@@ -19,9 +19,9 @@ const water = ref<Water>({
   waterParam: null,
 })
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
+const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
-const { data: machineCommands } = useLazyFetch('/api/master-commands/master-commands', {
+const { data: machineCommands } = useAuthFetch('/api/master-commands/master-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
@@ -32,17 +32,17 @@ const fetchParams = computed(() => {
     : undefined
 })
 
-const { data: waterIO } = useLazyFetch<WaterIO[]>('/api/io/command-io-all', {
+const { data: waterIO } = useAuthFetch<WaterIO[]>('/api/io/command-io-all', {
   immediate: false,
   query: fetchParams,
 })
 
-const { data: waterParams } = useLazyFetch<readonly CommandParameter[]>('/api/commands/command-parameters', {
+const { data: waterParams } = useAuthFetch<readonly CommandParameter[]>('/api/commands/command-parameters', {
   immediate: false,
   query: fetchParams,
 })
 
-const { data: waterConsumptions } = useLazyFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+const { data: waterConsumptions } = useAuthFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
   immediate: false,
   query: fetchParams,
 })
@@ -80,7 +80,7 @@ async function handleSubmit() {
     commandIO2: water.value.waterIO2 ? water.value.waterIO2.ioIndex : undefined,
     commandParameter: water.value.waterParam ? water.value.waterParam.parameterIndex : undefined,
   }
-  await $fetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+  await kc.fetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
     method: 'POST',
     body: obj,
   })
@@ -106,7 +106,7 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      await $fetch('/api/theoretical-water-consumptions/copy', {
+      await kc.fetch('/api/theoretical-water-consumptions/copy', {
         method: 'POST',
         body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
       })

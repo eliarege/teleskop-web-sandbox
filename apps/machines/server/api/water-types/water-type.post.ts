@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { waterTypeName } = await readBody(event)
 
   const maxId = await knex('BFWaterTypes').max('waterTypeId as waterTypeId').first()

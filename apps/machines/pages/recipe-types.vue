@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { RecipeType } from '~/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
 const columns = computed(() => ({
@@ -29,14 +30,14 @@ const columns = computed(() => ({
   },
 }))
 
-const { data: recipeTypes, refresh } = useLazyFetch<RecipeType[]>('/api/recipe-types/recipe-types', {
+const { data: recipeTypes, refresh } = useAuthFetch<RecipeType[]>('/api/recipe-types/recipe-types', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
 async function handleAdd(formData: RecipeType) {
-  await $fetch('/api/recipe-types/recipe-type', {
+  await kc.fetch('/api/recipe-types/recipe-type', {
     method: 'POST',
     body: formData,
   })
@@ -44,7 +45,7 @@ async function handleAdd(formData: RecipeType) {
 }
 
 async function handleEdit(formData: RecipeType) {
-  await $fetch('/api/recipe-types/recipe-type', {
+  await kc.fetch('/api/recipe-types/recipe-type', {
     method: 'PUT',
     body: formData,
   })
@@ -52,7 +53,7 @@ async function handleEdit(formData: RecipeType) {
 }
 
 async function handleDelete(formData: RecipeType[]) {
-  await $fetch('/api/recipe-types/recipe-types', {
+  await kc.fetch('/api/recipe-types/recipe-types', {
     method: 'DELETE',
     body: {
       ids: formData.map(d => d.id),

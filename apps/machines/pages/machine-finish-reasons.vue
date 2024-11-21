@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { FinishReason } from '~/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
-const { data: finishReasons, refresh } = useLazyFetch<FinishReason[]>('/api/finish-reasons/finish-reasons', {
+const { data: finishReasons, refresh } = useAuthFetch<FinishReason[]>('/api/finish-reasons/finish-reasons', {
   default: () => [],
   method: 'POST',
   body: {},
@@ -59,7 +60,7 @@ const columns = computed(() => ({
 }))
 
 async function handleAdd(formData: FinishReason) {
-  await $fetch('/api/finish-reasons/finish-reason', {
+  await kc.fetch('/api/finish-reasons/finish-reason', {
     method: 'POST',
     body: {
       reasonId: finishReasons.value[finishReasons.value.length - 1].reasonId + 1,
@@ -70,7 +71,7 @@ async function handleAdd(formData: FinishReason) {
 }
 
 async function handleEdit(formData: FinishReason) {
-  await $fetch('/api/finish-reasons/finish-reason', {
+  await kc.fetch('/api/finish-reasons/finish-reason', {
     method: 'PUT',
     body: formData,
   })
@@ -78,7 +79,7 @@ async function handleEdit(formData: FinishReason) {
 }
 
 async function handleDelete(formData: FinishReason[]) {
-  await $fetch('/api/finish-reasons/finish-reasons', {
+  await kc.fetch('/api/finish-reasons/finish-reasons', {
     method: 'DELETE',
     body: {
       reasonIds: formData.map(d => d.reasonId),

@@ -8,6 +8,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const kc = useKeycloak()
+
 const { t } = useI18n()
 
 type Label = (typeof settingsList)[number]['label']
@@ -28,7 +30,7 @@ const settingsList = [
 
 const formData = ref<Partial<Setting>>({})
 
-const { data: _setting } = useLazyFetch('/api/machines/teleskop-settings', {
+const { data: _setting } = useAuthFetch('/api/machines/teleskop-settings', {
   default: () => ({}),
   onResponse: (res) => {
     const data = res.response._data
@@ -107,7 +109,7 @@ async function handleSubmit() {
       submitData[setting.value] = value
     }
   }
-  await $fetch('/api/machines/teleskop-settings', {
+  await kc.fetch('/api/machines/teleskop-settings', {
     method: 'PUT',
     body: submitData,
   })

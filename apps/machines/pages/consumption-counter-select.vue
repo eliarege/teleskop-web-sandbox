@@ -12,6 +12,7 @@ interface CounterOption {
   name: string
 }
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -21,9 +22,9 @@ const counter2 = ref()
 
 const changedCounters = ref<ConsumptionCounter[]>([])
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
+const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
-const { data: counterOptions } = useLazyFetch('/api/consumption-counters/mach-counters', {
+const { data: counterOptions } = useAuthFetch('/api/consumption-counters/mach-counters', {
   immediate: false,
   query: { machineId: selectedMachineId },
   transform: (counterOptions) => {
@@ -35,7 +36,7 @@ const { data: counterOptions } = useLazyFetch('/api/consumption-counters/mach-co
   },
 })
 
-const { data: counters } = useLazyFetch('/api/consumption-counters/consumption-counter', {
+const { data: counters } = useAuthFetch('/api/consumption-counters/consumption-counter', {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
@@ -59,7 +60,7 @@ function handleOptionChange() {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/consumption-counters/consumption-counters', {
+  await kc.fetch('/api/consumption-counters/consumption-counters', {
     method: 'PUT',
     body: { changedCounters: changedCounters.value },
   })

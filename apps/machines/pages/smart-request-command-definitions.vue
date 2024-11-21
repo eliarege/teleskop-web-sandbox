@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { MasterCommand } from '~/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -32,8 +33,8 @@ const commandTypeMaps = reactive<CommandTypeMap[]>([
   { id: 303, name: 'tank3Dosage2', data: null, label: t('tank3Dosage2') },
 ])
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
-const { data: commandOptions } = useLazyFetch('/api/master-commands/master-commands', {
+const { data: machines } = useAuthFetch('/api/machines/active-machines')
+const { data: commandOptions } = useAuthFetch('/api/master-commands/master-commands', {
   query: { machineId: selectedMachineId },
   immediate: false,
   transform: (commandOptions) => {
@@ -45,7 +46,7 @@ const { data: commandOptions } = useLazyFetch('/api/master-commands/master-comma
   },
 })
 
-const { data: commands } = useLazyFetch('/api/smart-request-commands/smart-request-commands', {
+const { data: commands } = useAuthFetch('/api/smart-request-commands/smart-request-commands', {
   query: { machineId: selectedMachineId },
   immediate: false,
 })
@@ -63,7 +64,7 @@ async function handleOptionChange(commandTypeName: string) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/smart-request-commands/smart-request-commands', {
+  await kc.fetch('/api/smart-request-commands/smart-request-commands', {
     method: 'PUT',
     body: { changedCommandTypes: changedCommandTypes.value },
   })

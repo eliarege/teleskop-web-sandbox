@@ -1,17 +1,15 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
+  const { machineId, commandNo } = getQuery(event)
 
-    const { machineId, commandNo } = getQuery(event)
+  const reasonIds = await knex('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId)
+    .andWhere('COMMANDNO', commandNo).select('REASONID')
 
-    const reasonIds = await knex('BFCOMMANDTIMEOUTREASONMAP').where('MACHINEID', machineId)
-      .andWhere('COMMANDNO', commandNo).select('REASONID')
+  const timeoutReasons = await knex('BFCOMMANDTIMEOUTREASONS').whereIn('ID', reasonIds.map(r => r.REASONID))
+    .select(
+      { id: 'ID', reasonText: 'REASONTEXT' },
+    )
 
-    const timeoutReasons = await knex('BFCOMMANDTIMEOUTREASONS').whereIn('ID', reasonIds.map(r => r.REASONID))
-      .select(
-        { id: 'ID', reasonText: 'REASONTEXT' },
-      )
-
-    return timeoutReasons
-
+  return timeoutReasons
 })

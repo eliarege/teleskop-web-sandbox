@@ -2,7 +2,7 @@
 import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nuxt-base'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const materialTypeMap = [
   { id: 1, name: t('chemical') },
   { id: 2, name: t('dye') },
@@ -70,7 +70,7 @@ const columns = computed<FilterableTableColumn[]>(() => ([
 
 const filters = ref<FilterableTableFilter[]>([])
 
-const { data: tankMaterialDefinitions, execute } = useLazyFetch('/api/materials/material-tank-water-definitions', {
+const { data: tankMaterialDefinitions, execute } = useAuthFetch('/api/materials/material-tank-water-definitions', {
   method: 'POST',
   body: { filters },
   default: () => [],
@@ -88,7 +88,7 @@ async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
 async function popupUpdate(value: string, rowName: string, props) {
   const tankDefinition = tankMaterialDefinitions.value[props.rowIndex]
   tankDefinition[rowName] = value
-  return await $fetch('/api/materials/material-tank-water-definition', {
+  return await kc.fetch('/api/materials/material-tank-water-definition', {
     method: 'POST',
     body: { tankDefinition, rowName, value },
   })

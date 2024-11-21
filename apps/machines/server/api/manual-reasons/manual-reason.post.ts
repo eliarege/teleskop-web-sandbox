@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { manualId, manualReason, reportToERP } = await readBody(event)
 
   const res = await knex('BFMANUALREASONSGENERAL')

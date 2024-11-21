@@ -2,6 +2,7 @@
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { CommandTimeoutReason, Machine, MasterCommand } from '~/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
 const selectedMachineId = ref()
@@ -9,18 +10,18 @@ const selectedCommandNo = ref()
 const selectedReasonId = ref()
 const changedReasons = ref<CommandTimeoutReason[]>([])
 
-const { data: machines } = useLazyFetch<Machine[]>('/api/machines/active-machines', {
+const { data: machines } = useAuthFetch<Machine[]>('/api/machines/active-machines', {
   default: () => [],
 })
-const { data: machineCommands } = useLazyFetch<MasterCommand[]>(`/api/master-commands/master-commands`, {
+const { data: machineCommands } = useAuthFetch<MasterCommand[]>(`/api/master-commands/master-commands`, {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
-const { data: selectedCommandReasons } = useLazyFetch<CommandTimeoutReason[]>('/api/command-timeout-reasons/selected-command-reasons', {
+const { data: selectedCommandReasons } = useAuthFetch<CommandTimeoutReason[]>('/api/command-timeout-reasons/selected-command-reasons', {
   immediate: false,
   query: { machineId: selectedMachineId, commandNo: selectedCommandNo },
 })
-const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useLazyFetch<CommandTimeoutReason[]>('/api/command-timeout-reasons/timeout-reasons', {
+const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useAuthFetch<CommandTimeoutReason[]>('/api/command-timeout-reasons/timeout-reasons', {
   immediate: false,
   watch: [selectedCommandReasons],
   transform: (timeoutReasons) => {
@@ -31,7 +32,7 @@ const { data: timeoutReasons, refresh: refreshTimeoutReasons } = useLazyFetch<Co
   },
 })
 
-const { data: selectedReasonCommands } = useLazyFetch('/api/command-timeout-reasons/selected-timeout-reasons', {
+const { data: selectedReasonCommands } = useAuthFetch('/api/command-timeout-reasons/selected-timeout-reasons', {
   immediate: false,
   query: { machineId: selectedMachineId, reasonId: selectedReasonId },
 })
@@ -44,7 +45,7 @@ function handleCheckChange(e: boolean, reason: CommandTimeoutReason) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/command-timeout-reasons/command-timeout-reasons', { method: 'PUT', body: { changedReasons: changedReasons.value } })
+  await kc.fetch('/api/command-timeout-reasons/command-timeout-reasons', { method: 'PUT', body: { changedReasons: changedReasons.value } })
   changedReasons.value = []
 }
 
@@ -53,7 +54,7 @@ const showEditReasonDialog = ref(false)
 
 const newReasonText = ref('')
 async function handleAddReason() {
-  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+  await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
     method: 'POST',
     body: { reasonText: newReasonText.value },
   })
@@ -72,7 +73,7 @@ function handleEditButton() {
 }
 
 async function handleEditReason() {
-  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+  await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
     method: 'PUT',
     body: { reasonText: newReasonText.value, id: selectedReasonId.value },
   })
@@ -82,7 +83,7 @@ async function handleEditReason() {
 }
 
 async function handleDeleteReason() {
-  await $fetch('/api/command-timeout-reasons/command-timeout-reason', {
+  await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
     method: 'DELETE',
     body: { id: selectedReasonId.value },
   })
@@ -109,7 +110,7 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      await $fetch('/api/command-timeout-reasons/copy', {
+      await kc.fetch('/api/command-timeout-reasons/copy', {
         method: 'POST',
         body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
       })

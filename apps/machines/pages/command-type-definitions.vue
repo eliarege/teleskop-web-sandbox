@@ -11,8 +11,8 @@ interface commandTypeMap {
   title: string
 }
 
+const kc = useKeycloak()
 const { t } = useI18n()
-
 const selectedMachineId = ref()
 
 const commandTypeMaps = reactive<commandTypeMap[]>([
@@ -31,13 +31,13 @@ const commandTypeMaps = reactive<commandTypeMap[]>([
   { ref: [], value: 1000, title: t('manualMeasurementCommands') },
 ])
 
-const { data: machines } = useLazyFetch('/api/machines/machines', {
+const { data: machines } = useAuthFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const { data: commands } = useLazyFetch('/api/commands/unused-commands', {
+const { data: commands } = useAuthFetch('/api/commands/unused-commands', {
   default: () => [],
   immediate: false,
   query: {
@@ -45,7 +45,7 @@ const { data: commands } = useLazyFetch('/api/commands/unused-commands', {
   },
 })
 
-const { data: commandTypes, refresh } = useLazyFetch<CommandType[]>('/api/commands/command-types', {
+const { data: commandTypes, refresh } = useAuthFetch<CommandType[]>('/api/commands/command-types', {
   default: () => [],
   immediate: false,
   query: {
@@ -95,7 +95,7 @@ function handleDragDrop(e: SortableEvent, commandMap: commandTypeMap) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/commands/command-types', {
+  await kc.fetch('/api/commands/command-types', {
     method: 'PUT',
     body: { machineId: selectedMachineId.value, commandTypes: commandTypes.value },
   })
@@ -121,7 +121,7 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      await $fetch('/api/commands/command-types', {
+      await kc.fetch('/api/commands/command-types', {
         method: 'PUT',
         body: {
           machineId: selectedMachineId.value,

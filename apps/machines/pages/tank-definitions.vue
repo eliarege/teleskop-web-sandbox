@@ -6,7 +6,7 @@ import type { Machine, MasterCommand } from '~/types'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const selectedMachineId = ref()
 const selectedDefinition = ref()
 
@@ -52,15 +52,15 @@ const commandLists = reactive<CommandList[]>([
   { name: 'listOfRequestCommands', ref: [] },
 ])
 
-const { data: machines } = useLazyFetch<Machine[]>('/api/machines/active-machines')
+const { data: machines } = useAuthFetch<Machine[]>('/api/machines/active-machines')
 
-const { data: tankDefinitions, refresh: refreshDefinitions } = useLazyFetch<TankDefinition[]>('/api/tank-definitions/tank-definitions', {
+const { data: tankDefinitions, refresh: refreshDefinitions } = useAuthFetch<TankDefinition[]>('/api/tank-definitions/tank-definitions', {
   immediate: false,
   default: () => [],
   query: { machineId: selectedMachineId },
 })
 
-const { data: highLimitOptions } = useLazyFetch('/api/machine-parameters/machine-parameters', {
+const { data: highLimitOptions } = useAuthFetch('/api/machine-parameters/machine-parameters', {
   immediate: false,
   query: { machineId: selectedMachineId },
   transform: (parameters) => {
@@ -73,7 +73,7 @@ const { data: highLimitOptions } = useLazyFetch('/api/machine-parameters/machine
   },
 })
 
-const { data: commands, refresh: refreshCommands } = useLazyFetch<MasterCommand[]>('/api/master-commands/master-commands', {
+const { data: commands, refresh: refreshCommands } = useAuthFetch<MasterCommand[]>('/api/master-commands/master-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
   default: () => [],
@@ -129,7 +129,7 @@ async function handleTankDefinitionAdd() {
     machineId: selectedMachineId.value,
     ...tank.value,
   }
-  await $fetch('/api/tank-definitions/tank-definition', {
+  await kc.fetch('/api/tank-definitions/tank-definition', {
     method: 'POST',
     body: tankDef,
   })
@@ -137,7 +137,7 @@ async function handleTankDefinitionAdd() {
 }
 
 async function handleDelete() {
-  await $fetch('/api/tank-definitions/tank-definition', {
+  await kc.fetch('/api/tank-definitions/tank-definition', {
     method: 'DELETE',
     body: {
       machineId: selectedMachineId.value,
@@ -164,7 +164,7 @@ async function handleDragDrop(e: SortableEvent, listName: NumberArrayKeys<TankDe
 async function handleSubmit() {
   const tankDef = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)!
 
-  await $fetch('/api/tank-definitions/tank-definition-list', {
+  await kc.fetch('/api/tank-definitions/tank-definition-list', {
     method: 'PUT',
     body: tankDef,
   })
@@ -193,7 +193,7 @@ const contextMenuOptions = computed(() => [
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
       for (const tankDef of copy.value) {
-        await $fetch('/api/tank-definitions/tank-definition-list', {
+        await kc.fetch('/api/tank-definitions/tank-definition-list', {
           method: 'PUT',
           body: {
             ...tankDef,
@@ -376,7 +376,8 @@ const contextMenuOptions = computed(() => [
 
 <style scoped>
 .grid {
-  grid-template-areas: "1 1"
-                       "1 1";
+  grid-template-areas:
+    '1 1'
+    '1 1';
 }
 </style>

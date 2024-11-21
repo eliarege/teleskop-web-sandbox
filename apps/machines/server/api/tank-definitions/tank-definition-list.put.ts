@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machineId, tankNo, name, highLimit, machineConstantHighLimit, listOfTransferCommands, listOfRequestCommands, listOfCirculationDosageCommands, listOfCirculationRequestCommands } = await readBody(event)
 
   const record = await knex('BFMACHINETANKS')

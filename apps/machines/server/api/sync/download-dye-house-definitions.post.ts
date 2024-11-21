@@ -2,7 +2,7 @@ import { withTbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { knex } from '~/server/connectionPool'
 import { updateManualReasonsGeneral } from '~/server/utils/updateDatabase'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machineId, options } = await readBody(event)
 
   const numMachineId = Number.parseInt(machineId as string)

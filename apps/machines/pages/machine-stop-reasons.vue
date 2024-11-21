@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { StopReason } from '~/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
 const columns = computed(() => ({
@@ -50,14 +51,14 @@ const columns = computed(() => ({
 
 }))
 
-const { data: stopReasons, refresh } = useLazyFetch<StopReason[]>('/api/stop-reasons/stop-reasons', {
+const { data: stopReasons, refresh } = useAuthFetch<StopReason[]>('/api/stop-reasons/stop-reasons', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
 async function handleEdit(formData: StopReason) {
-  await $fetch('/api/stop-reasons/stop-reason', {
+  await kc.fetch('/api/stop-reasons/stop-reason', {
     method: 'PUT',
     body: formData,
   })
@@ -65,7 +66,7 @@ async function handleEdit(formData: StopReason) {
 }
 
 async function handleAdd(formData: StopReason) {
-  await $fetch('/api/stop-reasons/stop-reason', {
+  await kc.fetch('/api/stop-reasons/stop-reason', {
     method: 'POST',
     body: {
       stopCode: stopReasons.value[stopReasons.value.length - 1].stopCode + 1,
@@ -77,7 +78,7 @@ async function handleAdd(formData: StopReason) {
 }
 
 async function handleDelete(formData: StopReason[]) {
-  await $fetch('/api/stop-reasons/stop-reasons', {
+  await kc.fetch('/api/stop-reasons/stop-reasons', {
     method: 'DELETE',
     body: {
       stopCodes: formData.map(d => d.stopCode),

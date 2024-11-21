@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 import type { CommandType } from '~/types'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machineId, commandTypes } = await readBody(event)
 
   await knex.transaction(async (trx) => {

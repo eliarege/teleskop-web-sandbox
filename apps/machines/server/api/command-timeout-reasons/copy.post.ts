@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { sourceMachineId, targetMachineId } = await readBody(event)
 
   await knex.transaction(async (trx) => {

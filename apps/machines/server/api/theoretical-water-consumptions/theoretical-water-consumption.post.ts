@@ -8,7 +8,7 @@ interface TheoreticalWaterConsumption {
   COMMANDPRM?: number
 }
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machineId, commandNo, commandIO, commandIO2, commandParameter } = await readBody(event)
 
   const insertData: Partial<TheoreticalWaterConsumption> = {}

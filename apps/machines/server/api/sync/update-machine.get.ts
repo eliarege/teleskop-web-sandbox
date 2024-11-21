@@ -7,7 +7,7 @@ import { DatabaseQueryError } from '~/server/error'
 
 const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machineId, sseId } = getQuery(event)
 
   const numMachineId = Number.parseInt(machineId as string)

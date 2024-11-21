@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 import type { TreatmentParameter } from '~/types'
 
-export default defineEventHandler(async () => {
+export default defineAuthEventHandler(async () => {
   const treatmentParameter: TreatmentParameter[] = await knex('BFTREATMENTPARAMETERS')
     .select({
       id: 'ID',
@@ -12,5 +12,4 @@ export default defineEventHandler(async () => {
     },
     )
   return treatmentParameter
-
 })

@@ -12,13 +12,13 @@ const { t } = useI18n()
 const selectedMachineId = ref<number>()
 const selectedParam = ref<BatchParam>()
 
-const { data: machines } = useLazyFetch('/api/machines/machines', {
+const { data: machines } = useAuthFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const { data: batchParameters } = useLazyFetch('/api/starting-parameter-types/starting-parameters', {
+const { data: batchParameters } = useAuthFetch('/api/starting-parameter-types/starting-parameters', {
   immediate: false,
   default: () => [],
   query: {

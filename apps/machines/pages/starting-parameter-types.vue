@@ -4,7 +4,7 @@ import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { StartingParameter } from '~/types'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const selectedMachineId = ref()
 
 interface ParamTypeMap {
@@ -25,9 +25,9 @@ const paramTypeMaps = reactive<ParamTypeMap[]>([
   { id: 8, data: null, name: 'fabricType' },
 ])
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
+const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
-const { data: parameterOptions } = useLazyFetch('/api/starting-parameter-types/starting-parameters', {
+const { data: parameterOptions } = useAuthFetch('/api/starting-parameter-types/starting-parameters', {
   query: { machineId: selectedMachineId },
   immediate: false,
   transform: (parameterOptions) => {
@@ -39,7 +39,7 @@ const { data: parameterOptions } = useLazyFetch('/api/starting-parameter-types/s
   },
 })
 
-const { data: parameterTypes } = useLazyFetch('/api/starting-parameter-types/starting-parameter-types', {
+const { data: parameterTypes } = useAuthFetch('/api/starting-parameter-types/starting-parameter-types', {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
@@ -65,7 +65,7 @@ function handleOptionChange(paramType: ParamTypeMap) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/starting-parameter-types/starting-parameter-types', {
+  await kc.fetch('/api/starting-parameter-types/starting-parameter-types', {
     method: 'PUT',
     body: { changedParameterTypes: changedParameterTypes.value },
   })

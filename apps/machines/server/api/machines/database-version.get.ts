@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async () => {
+export default defineAuthEventHandler(async () => {
   const version = await knex('TFDBVERSION')
     .select('DBVERSION')
     .first()

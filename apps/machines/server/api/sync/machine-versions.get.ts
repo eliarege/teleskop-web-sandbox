@@ -5,7 +5,7 @@ import soapSchema from '~/utils/soapSchema'
 
 const wsdl = new WSDL(WSDL_CONTENT, '', {})
 
-export default defineEventHandler(async () => {
+export default defineAuthEventHandler(async () => {
   const machines = await knex('BFMACHINES').select('MACHINEID', 'IP')
 
   const versionPromises = machines.map(async (machine) => {

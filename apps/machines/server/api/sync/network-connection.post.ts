@@ -4,7 +4,7 @@ import soapSchema from '~/utils/soapSchema'
 
 const wsdl = new WSDL(WSDL_CONTENT, '', {})
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { ip } = await readBody(event)
 
   try {

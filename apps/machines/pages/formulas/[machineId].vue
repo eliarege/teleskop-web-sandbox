@@ -4,6 +4,7 @@ import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nux
 import type { Formula } from '~/types'
 
 const { t } = useI18n()
+const kc = useKeycloak()
 const route = useRoute()
 
 interface Option {
@@ -67,7 +68,7 @@ const formula = ref<Partial<Formula>>({})
 const selectedCommandNo = ref()
 const copy = ref()
 
-const { data: formulas, refresh: refreshFormulas } = useLazyFetch('/api/formulas/formulas', {
+const { data: formulas, refresh: refreshFormulas } = useAuthFetch('/api/formulas/formulas', {
   query: { machineId: machineId.value },
   default: () => [],
   method: 'POST',
@@ -83,7 +84,7 @@ const { data: formulas, refresh: refreshFormulas } = useLazyFetch('/api/formulas
   },
 })
 
-const { data: commandOptions } = useLazyFetch('/api/formulas/command-options', {
+const { data: commandOptions } = useAuthFetch('/api/formulas/command-options', {
   method: 'GET',
   default: () => [],
   query: {
@@ -96,7 +97,7 @@ const { data: commandOptions } = useLazyFetch('/api/formulas/command-options', {
   },
 })
 
-const { data: commandParameterOptions, execute: executeCommandParameterOptions } = useLazyFetch('/api/formulas/command-parameters', {
+const { data: commandParameterOptions, execute: executeCommandParameterOptions } = useAuthFetch('/api/formulas/command-parameters', {
   immediate: false,
   method: 'GET',
   default: () => [],
@@ -112,7 +113,7 @@ const { data: commandParameterOptions, execute: executeCommandParameterOptions }
 })
 
 async function handleAdd() {
-  await $fetch('/api/formulas/formula', {
+  await kc.fetch('/api/formulas/formula', {
     method: 'POST',
     body: {
       ...formula.value,
@@ -123,7 +124,7 @@ async function handleAdd() {
 }
 
 async function handleEdit() {
-  await $fetch('/api/formulas/formula', {
+  await kc.fetch('/api/formulas/formula', {
     method: 'PUT',
     body: {
       formula: formula.value,
@@ -135,7 +136,7 @@ async function handleEdit() {
 }
 
 async function handleDelete() {
-  await $fetch('/api/formulas/formula', {
+  await kc.fetch('/api/formulas/formula', {
     method: 'DELETE',
     query: {
       formulaId: formula.value.formulaId,
@@ -156,7 +157,7 @@ function handleParamSelect(e: Option) {
 }
 
 async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
-  formulas.value = await $fetch('/api/formulas/formulas', {
+  formulas.value = await kc.fetch('/api/formulas/formulas', {
     method: 'POST',
     body: {
       filters: updatedValue,

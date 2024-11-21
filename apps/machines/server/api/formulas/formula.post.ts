@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 import type { Formula } from '~/types'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const body = await readBody<Formula>(event)
 
   await knex('BFCOMMANDFORMULAS')

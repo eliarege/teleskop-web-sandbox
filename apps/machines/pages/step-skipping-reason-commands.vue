@@ -2,18 +2,18 @@
 import type { MasterCommand } from '~/types'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const selectedMachineId = ref()
 const changedCommands = ref<{ command: MasterCommand, checked: boolean }[]>([])
 
-const { data: machines } = useLazyFetch('/api/machines/active-machines')
+const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
-const { data: selectedCommands } = useLazyFetch('/api/step-skipping-reasons/step-skipping-reason-commands', {
+const { data: selectedCommands } = useAuthFetch('/api/step-skipping-reasons/step-skipping-reason-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
 
-const { data: commands } = useLazyFetch('/api/master-commands/master-commands', {
+const { data: commands } = useAuthFetch('/api/master-commands/master-commands', {
   immediate: false,
   query: { machineId: selectedMachineId },
   watch: [selectedCommands],
@@ -32,7 +32,7 @@ async function handleCheckChange(e: boolean, command: MasterCommand) {
 }
 
 async function handleSubmit() {
-  await $fetch('/api/step-skipping-reasons/command-reason', {
+  await kc.fetch('/api/step-skipping-reasons/command-reason', {
     method: 'PUT',
     body: { changedCommands: changedCommands.value },
   })

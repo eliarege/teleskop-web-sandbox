@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nuxt-base'
 
+const kc = useKeycloak()
 const { t, d } = useI18n()
 
 const closedTimeOptions = computed(() => ([
@@ -65,14 +66,14 @@ const columns = computed<FilterableTableColumn[]>(() => ([
   },
 ]))
 
-const { data: times } = useLazyFetch('/api/controller-closed-times/controller-closed-times', {
+const { data: times } = useAuthFetch('/api/controller-closed-times/controller-closed-times', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
 async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
-  times.value = await $fetch('/api/controller-closed-times/controller-closed-times', {
+  times.value = await kc.fetch('/api/controller-closed-times/controller-closed-times', {
     method: 'POST',
     body: {
       filters: updatedValue,

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nuxt-base'
 
+const kc = useKeycloak()
 const { t, d } = useI18n()
 
 const accessFailOptions = computed(() => ([
@@ -48,14 +49,14 @@ const columns = computed<FilterableTableColumn[]>(() => ([
   },
 ]))
 
-const { data: fails } = useLazyFetch('/api/machine-access-fails/machine-access-fails', {
+const { data: fails } = useAuthFetch('/api/machine-access-fails/machine-access-fails', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
 async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
-  fails.value = await $fetch('/api/machine-access-fails/machine-access-fails', {
+  fails.value = await kc.fetch('/api/machine-access-fails/machine-access-fails', {
     method: 'POST',
     body: {
       filters: updatedValue,

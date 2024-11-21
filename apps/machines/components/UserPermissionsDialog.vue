@@ -15,6 +15,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['close'])
+const kc = useKeycloak()
 
 // sistem menulerine erisim ve cihaz ayar yetkisi'nin baglı oldugu izinler var bu secenekler secilmeden diger izinler secilemez
 const controllerPermission = ref(false)
@@ -98,7 +99,7 @@ async function savePermissions() {
   const hexadecimalValueGroup1 = `0x${combinedPermissionValueGroup1.toString(16).padStart(8, '0')}`
   const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
 
-  return await $fetch('/api/user-definitions/user-definition', {
+  return await kc.fetch('/api/user-definitions/user-definition', {
     method: 'PUT',
     body: { userId: user.value.userId, userMode: hexadecimalValueGroup1, userMode2: hexadecimalValueGroup2 },
   })

@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machineId, machineCode, inUse, oldId } = await readBody(event)
 
   const res = await knex('BFMACHINES')

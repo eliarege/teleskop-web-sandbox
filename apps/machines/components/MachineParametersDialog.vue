@@ -9,6 +9,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const kc = useKeycloak()
+
 const { t } = useI18n()
 const columns = computed<FilterableTableColumn[]>(() => ([
   {
@@ -64,14 +66,14 @@ const columns = computed<FilterableTableColumn[]>(() => ([
 ]))
 
 const id = computed(() => props.selected.machineId)
-const { data: params } = useLazyFetch('/api/machines/machine-parameters', {
+const { data: params } = useAuthFetch('/api/machines/machine-parameters', {
   default: () => [],
   method: 'POST',
   body: { machineId: id.value },
 })
 
 async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
-  params.value = await $fetch('/api/machines/machine-parameters', {
+  params.value = await kc.fetch('/api/machines/machine-parameters', {
     method: 'POST',
     body: {
       machineId: id.value,

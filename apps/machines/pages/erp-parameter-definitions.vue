@@ -3,6 +3,7 @@ import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nux
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { BatchParam, ErpParameter, Machine } from '~/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
 const machineColumns = computed<FilterableTableColumn[]>(() => ([
@@ -194,13 +195,13 @@ const showImportBatchParametersDialog = ref(false)
 
 const selectedMachineId = computed(() => selectedMachine.value.machineId)
 
-const { data: machines } = useLazyFetch('/api/machines/machines', {
+const { data: machines } = useAuthFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const { data: params, refresh: refreshParams } = useLazyFetch<ErpParameter[]>('/api/erp/erp-parameters', {
+const { data: params, refresh: refreshParams } = useAuthFetch<ErpParameter[]>('/api/erp/erp-parameters', {
   default: () => [],
   immediate: false,
   method: 'POST',
@@ -208,7 +209,7 @@ const { data: params, refresh: refreshParams } = useLazyFetch<ErpParameter[]>('/
 })
 
 async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
-  machines.value = await $fetch('/api/machines/machines', {
+  machines.value = await kc.fetch('/api/machines/machines', {
     method: 'POST',
     body: {
       filters: updatedValue,
@@ -242,7 +243,7 @@ async function handleParamSelection(obj: ErpParameter) {
 async function addParam() {
   if (params.value.length) {
     const paramId = Math.max(...params.value.map(p => p.paramId)) + 1
-    await $fetch('/api/erp/erp-parameter', {
+    await kc.fetch('/api/erp/erp-parameter', {
       method: 'POST',
       body: { paramId, machineId: selectedMachineId.value, erpParameter: selectedParam.value },
     })
@@ -251,7 +252,7 @@ async function addParam() {
 }
 
 async function editParam() {
-  await $fetch('/api/erp/erp-parameter', {
+  await kc.fetch('/api/erp/erp-parameter', {
     method: 'PUT',
     body: { erpParameter: selectedParam.value },
   })
@@ -259,7 +260,7 @@ async function editParam() {
 }
 
 async function deleteParam() {
-  return await $fetch('/api/erp/erp-parameter', {
+  return await kc.fetch('/api/erp/erp-parameter', {
     method: 'DELETE',
     body: { erpParameter: selectedParam.value },
   })
@@ -268,7 +269,7 @@ async function deleteParam() {
 
 async function addBatchParam(batchParam: BatchParam) {
   showImportBatchParametersDialog.value = false
-  await $fetch('/api/erp/erp-parameter', {
+  await kc.fetch('/api/erp/erp-parameter', {
     method: 'POST',
     body: {
       machineId: selectedMachineId.value,
@@ -332,7 +333,7 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: selectedMachineId.value === -1 || !copy.value || !copyMode.value,
     onClick: async () => {
-      await $fetch('/api/erp/copy', {
+      await kc.fetch('/api/erp/copy', {
         method: 'POST',
         body: {
           sourceMachineId: copy.value,

@@ -2,7 +2,7 @@
 import type { StepReason } from '~/types'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const columns = computed(() => ({
   id: {
     label: 'ID',
@@ -36,14 +36,14 @@ const columns = computed(() => ({
 
 }))
 
-const { data: stepSkippingReasons, refresh } = useLazyFetch<StepReason[]>('/api/step-skipping-reasons/step-skipping-reasons', {
+const { data: stepSkippingReasons, refresh } = useAuthFetch<StepReason[]>('/api/step-skipping-reasons/step-skipping-reasons', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
 async function handleAdd(formData: StepReason) {
-  await $fetch('/api/step-skipping-reasons/reason', {
+  await kc.fetch('/api/step-skipping-reasons/reason', {
     method: 'POST',
     body: formData,
   })
@@ -51,7 +51,7 @@ async function handleAdd(formData: StepReason) {
 }
 
 async function handleEdit(formData: StepReason, old: StepReason) {
-  await $fetch('/api/step-skipping-reasons/reason', {
+  await kc.fetch('/api/step-skipping-reasons/reason', {
     method: 'PUT',
     body: {
       ...formData,
@@ -62,7 +62,7 @@ async function handleEdit(formData: StepReason, old: StepReason) {
 }
 
 async function handleDelete(formData: StepReason[]) {
-  await $fetch('/api/step-skipping-reasons/step-skipping-reasons', {
+  await kc.fetch('/api/step-skipping-reasons/step-skipping-reasons', {
     method: 'DELETE',
     body: {
       reasonIds: formData.map(d => d.id),

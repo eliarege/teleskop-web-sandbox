@@ -1,7 +1,7 @@
 import { knex } from '~/server/connectionPool'
 import type { User } from '~/types'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const user: User = await readBody(event)
   const res = await knex('BFUSERS').insert({
     userID: user.userId,

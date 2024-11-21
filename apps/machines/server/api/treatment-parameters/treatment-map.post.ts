@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { paramId, groupId, commandNo, parameterIndex } = await readBody(event)
 
   const existing = await knex('BFTREATMENTPARAMGROUPMAP')

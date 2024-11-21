@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async () => {
+export default defineAuthEventHandler(async () => {
   return await knex('BFTREATMENTPARAMETERGROUPS')
     .select({
       id: 'ID',

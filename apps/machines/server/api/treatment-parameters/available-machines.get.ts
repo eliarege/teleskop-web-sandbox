@@ -2,7 +2,7 @@ import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 import type { Machine } from '~/types'
 
-export default defineEventHandler(async () => {
+export default defineAuthEventHandler(async () => {
   const selectParams = {
     machineId: 'BFMACHINES.MACHINEID',
     machineCode: 'MACHINECODE',

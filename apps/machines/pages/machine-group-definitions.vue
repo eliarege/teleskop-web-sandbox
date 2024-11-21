@@ -2,9 +2,10 @@
 import type { FilterableTableColumn } from '@teleskop/nuxt-base'
 import type { MachineGroup } from '~/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
 
-const { data: machineGroups, pending, refresh } = await useFetch<readonly MachineGroup[]>('/api/machines/machine-groups', {
+const { data: machineGroups, pending, refresh } = await useAuthFetch<readonly MachineGroup[]>('/api/machines/machine-groups', {
   default: () => [],
 })
 
@@ -89,7 +90,7 @@ async function handleMachineGroupSelect(e: Omit<MachineGroup, 'groupId'>, group:
 }
 
 async function handleSubmit() {
-  await $fetch('/api/machines/machine-group-types', { method: 'PUT', body: { changedGroups: changedGroups.value } })
+  await kc.fetch('/api/machines/machine-group-types', { method: 'PUT', body: { changedGroups: changedGroups.value } })
   await refresh()
   changedGroups.value = []
 }

@@ -1,6 +1,6 @@
 import { knex } from '~/server/connectionPool'
 
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const { machineId } = getQuery(event)
   const machines = await knex('BFMACHPARAMETERS')
     .where('MACHINEID', machineId)

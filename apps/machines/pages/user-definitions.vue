@@ -2,7 +2,7 @@
 import type { User } from '~/types'
 
 const { t } = useI18n()
-
+const kc = useKeycloak()
 const userTypeOptions = [{ label: t('Operator'), value: 1 }, { label: t('other'), value: 2 }]
 
 const columns = computed(() => ({
@@ -109,7 +109,7 @@ const columns = computed(() => ({
   },
 }))
 
-const { data: users, refresh } = useLazyFetch('/api/user-definitions/user-definitions', {
+const { data: users, refresh } = useAuthFetch('/api/user-definitions/user-definitions', {
   default: () => [],
   method: 'POST',
   body: {},
@@ -131,7 +131,7 @@ const selected = ref<Partial<User>>({
 async function handleAdd(formData: Partial<User>) {
   formData.userMode = selected.value.userMode
   formData.userMode2 = selected.value.userMode2
-  await $fetch('/api/user-definitions/user-definition', {
+  await kc.fetch('/api/user-definitions/user-definition', {
     method: 'POST',
     body: formData,
   })
@@ -141,7 +141,7 @@ async function handleAdd(formData: Partial<User>) {
 async function handleEdit(formData: Partial<User>) {
   formData.userMode = selected.value.userMode
   formData.userMode2 = selected.value.userMode2
-  await $fetch('/api/user-definitions/user-definition', {
+  await kc.fetch('/api/user-definitions/user-definition', {
     method: 'PUT',
     body:
       formData,
@@ -150,7 +150,7 @@ async function handleEdit(formData: Partial<User>) {
 }
 
 async function handleDelete(formData: Partial<User>[]) {
-  await $fetch('/api/user-definitions/user-definition', {
+  await kc.fetch('/api/user-definitions/user-definition', {
     method: 'DELETE',
     body: {
       userIds: formData.map(d => d.userId),
