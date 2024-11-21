@@ -35,13 +35,11 @@ function connectionStatus(params: number) {
 const computedVncLink = computed(() => {
   if (!props.isScreenViable)
     return '/'
-  return keycloak.hasResourceRole('access-vnc')
-    ? `/vnc/${props.machine.id}`
-    : '/unauthorized'
+  return `/vnc/${props.machine.id}`
 })
 
 const computedVncTarget = computed(() => {
-  if (!props.isScreenViable || !keycloak.hasResourceRole('access-vnc')) {
+  if (!props.isScreenViable) {
     return '_self'
   }
   return '_blank'
@@ -73,7 +71,6 @@ const archiveUrl = computed(() => parseAppList(config.public.appList).find(e => 
         />
         <div class="flex-center gap-3 ml-1">
           <NuxtLink
-            external
             :to="computedVncLink"
             :target="computedVncTarget"
             :class="isScreenViable ? '' : 'cursor-not-allowed'"

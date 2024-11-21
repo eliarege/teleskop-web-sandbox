@@ -155,6 +155,7 @@
     "machineSearch": "Makine Arama",
     "commandSearch": "Komut Arama",
     "start": "Alarm başlangıç saati",
+    "active-since": "Etkin Süre (dk)",
     "topbar": {
       "last-day": "Son 24 saat",
       "active-alarms": "Aktif Alarm",

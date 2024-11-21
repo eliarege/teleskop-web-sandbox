@@ -1,9 +1,18 @@
 <script setup lang="ts">
+import { differenceInMilliseconds } from 'date-fns'
 import Alarm from '~/pages/alarm.vue'
 import type { MachineAlarmList } from '~/shared/types'
 
 defineProps<{ machine: MachineAlarmList }>()
 const { d, t } = useI18n()
+
+function getTimeDifferenceInMinutesSeconds(alarmStartTime: string): string {
+  const milliSeconds = differenceInMilliseconds(alarmStartTime, new Date())
+  const minutes = Math.floor(milliSeconds / 60000)
+  const seconds = Math.floor((milliSeconds % 60000) / 1000)
+
+  return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`
+}
 </script>
 
 <template>
@@ -30,15 +39,20 @@ const { d, t } = useI18n()
             {{ alarm.commandNo }} - {{ alarm.alarmNo }} - {{ alarm.alarmName }}
           </span>
         </div>
-        <span class="ml-13">
-          {{ t('alarm.start') }}: {{ d(alarm.alarmStartTime, {
-            day: '2-digit',
-            month: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-          }) }}
-        </span>
+        <div class="flex flex-col">
+          <span class="ml-13">
+            {{ t('alarm.start') }}: {{ d(alarm.alarmStartTime, {
+              day: '2-digit',
+              month: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            }) }}
+          </span>
+          <span class="ml-13">
+            {{ t('alarm.active-since') }}: {{ getTimeDifferenceInMinutesSeconds(alarm.alarmStartTime) }}
+          </span>
+        </div>
       </div>
     </div>
   </div>
