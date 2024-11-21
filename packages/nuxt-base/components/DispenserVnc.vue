@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
-import { joinURL, parseURL, withBase, withProtocol } from 'ufo'
+import { joinURL, parseHost, parseURL, stringifyParsedURL, withBase, withProtocol } from 'ufo'
 import { NoVnc } from '@teleskop/ui'
 
 const props = defineProps({
@@ -17,6 +17,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const { token, enabled } = useKeycloak()
 
 const { t } = useI18n()
 
@@ -179,11 +181,18 @@ const KeyEnum = {
 const quasar = useQuasar()
 const vnc = ref<InstanceType<typeof NoVnc> | null>(null)
 const isFullScreen = ref(false)
-
 function resolveWebSocketUrl(url: string) {
   const parsed = parseURL(url)
   const protocol = parsed.protocol || window.location.protocol
   const isSecure = protocol === 'https:'
+
+  if (parsed.host) {
+    const host = parseHost(parsed.host)
+    if (host.hostname === '$host') {
+      parsed.host = host.port ? `${window.location.hostname}:${host.port}` : window.location.hostname
+      url = stringifyParsedURL(parsed)
+    }
+  }
   return withProtocol(
     withBase(url, `${window.location.protocol}//${window.location.host}`),
     isSecure ? `wss://` : `ws://`,
@@ -241,6 +250,7 @@ function onKeyPress(key: string) {
 onBeforeUnmount(() => {
   vnc.value?.disconnect()
 })
+const config = useRuntimeConfig()
 </script>
 
 <template>
@@ -254,6 +264,8 @@ onBeforeUnmount(() => {
               <NoVnc
                 ref="vnc"
                 :url="joinURL(websockifyWsUrl, 'dispenser', `${dispenserId}`)"
+                :auth="enabled"
+                :token="token"
                 resize-session
                 clip-viewport
                 drag-viewport

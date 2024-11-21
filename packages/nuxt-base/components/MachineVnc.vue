@@ -49,9 +49,8 @@ const props = defineProps<{
 }>()
 const { t } = useI18n()
 const quasar = useQuasar()
-const config = useRuntimeConfig()
 const { width } = useWindowSize()
-const { token } = useKeycloak()
+const { token, enabled } = useKeycloak()
 const vnc = ref<InstanceType<typeof NoVnc> | null>(null)
 
 const maxFactor = 2.5
@@ -189,7 +188,7 @@ const websockifyWsUrl = resolveWebSocketUrl(props.websockifyUrl)
           <NoVnc
             ref="vnc"
             :url="joinURL(websockifyWsUrl, machineId.toString())"
-            :auth="config.public.kcEnabled"
+            :auth="enabled"
             :token="token"
             scale-viewport
             class="w-full h-full z-2 absolute"
