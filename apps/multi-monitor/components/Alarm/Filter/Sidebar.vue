@@ -57,7 +57,7 @@ const activeMachine = defineModel({ type: Number, required: true })
 </template>
 
 <style lang="postcss" scoped>
-.machine-container {
+.alarm-container-height {
   height: calc(100vh - 150px);
   overflow: auto;
 }

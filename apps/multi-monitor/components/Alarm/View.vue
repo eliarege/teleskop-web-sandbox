@@ -21,7 +21,7 @@ function getTimeDifferenceInMinutesSeconds(alarmStartTime: string): string {
       <span class="font-extrabold text-xl ml-5">{{ machine.machineName }}</span>
       <span class="text-gray-700 font-bold">{{ machine.operatorName }}</span>
     </div>
-    <div class="px-7 py-2">
+    <div class="px-4 py-2">
       <div
         v-for="alarm in machine.alarmList"
         v-show="alarm.showOnScreen !== false"
@@ -29,13 +29,13 @@ function getTimeDifferenceInMinutesSeconds(alarmStartTime: string): string {
         class="w-full h-full border-1 border-l-3 rounded px-3 py-2 mb-3"
         :class="alarm.alarmStatus === 0 ? 'border-red-600 bg-red-300/20' : 'border-yellow-500 bg-yellow-300/20'"
       >
-        <div class="flex items-center gap-3 whitespace-nowrap flex-1">
+        <div class="flex items-center gap-3 whitespace-nowrap">
           <TwIcon
             :name="alarm.alarmStatus === 0 ? 'i-mingcute:alert-fill' : 'i-fluent:alert-12-filled'"
             :color="alarm.alarmStatus === 0 ? 'red' : 'orange'"
             size="30px"
           />
-          <span class="font-extrabold text-xl">
+          <span class="font-extrabold text-lg">
             {{ alarm.commandNo }} - {{ alarm.alarmNo }} - {{ alarm.alarmName }}
           </span>
         </div>
