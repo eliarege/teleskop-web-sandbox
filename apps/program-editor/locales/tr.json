@@ -17,8 +17,9 @@
   "programNotSaved": "Program güncellenirken hata oluştu",
   "programNotUpdated": "Program güncellenemedi",
   "treatmentParameterLimitReached": "{commandNo} numaralı komut {limit}'den fazla kullanılamaz",
-  "(copy)": "(Kopya)",
+  "(copy)": "({programNo} Kopya)",
   "noSelection": "Seçim Yok",
+  "invalidCommand": "Hatalı komutu kontrol ediniz.",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",
@@ -191,16 +192,6 @@
   "send": "Gönder",
   "apply": "Uygula",
   "ok": "Tamam",
-  "topbar": {
-    "programFilter": {
-      "_": "Program Filtrele",
-      "programNo": "Program No",
-      "programName": "Program İsmi",
-      "processType": "Proses Tipi",
-      "clearFilter": "Filtreleri Temizle",
-      "clearFilterOnChange": "Makine seçimi değiştiğinde filtreleri temizle."
-    }
-  },
   "message": {
     "delete_program": "Program Teleskop'tan silindi",
     "program_not_deleted": "Program Teleskop'tan silinemedi"

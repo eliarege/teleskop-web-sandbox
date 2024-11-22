@@ -353,7 +353,7 @@ export const useEditorStore = defineStore('editor', () => {
         }
       } else {
         if (await updateProgram()) {
-          originalProgram.value = program.value
+          originalProgram.value = klona(program.value)
           notifySuccess(t('saveProgram.success'))
         } else {
           notifyError(t('saveProgram.fail'))
