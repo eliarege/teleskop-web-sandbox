@@ -612,31 +612,46 @@ function getSelectedString() {
   return t('selectRange', { count: editor.selectedPrograms.length, total: editor.allPrograms.length })
 }
 
-function onRowClick(event: MouseEvent, row: ProgramTable) {
-  if (ctrl.value) {
-    if (isRowSelected(row)) {
-      removeSelection(row)
-    } else
-      editor.selectedPrograms.push(row)
-  } else if (shift.value) {
-    nextTick(() => {
-      const tableRows = tableRef.value.filteredSortedRows
-      let firstIndex = tableRows.indexOf(editor.selectedPrograms[0])
-      let lastIndex = tableRows.indexOf(row)
-      if (firstIndex > lastIndex) {
-        [firstIndex, lastIndex] = [lastIndex, firstIndex]
-      }
-      editor.selectedPrograms = tableRows.slice(firstIndex, lastIndex + 1)
-    })
-  } else if (event.button !== 2) { // not right click
-    editor.selectedPrograms = [row]
-  } else if (event.button === 2) { // right click
+function onRowClick(event: Event, row: ProgramTable) {
+  const pointer = event as PointerEvent
+
+  if (pointer.button === 2) { // Right click
     if (!isRowSelected(row))
       editor.selectedPrograms = [row]
+    return
   }
+
+  if (ctrl.value) {
+    isRowSelected(row) ? removeSelection(row) : editor.selectedPrograms.push(row)
+    return
+  }
+
+  if (shift.value) {
+    nextTick(() => {
+      const tableRows = tableRef.value.filteredSortedRows
+      const firstIndex = Math.min(
+        tableRows.indexOf(editor.selectedPrograms[0]),
+        tableRows.indexOf(row),
+      )
+      const lastIndex = Math.max(
+        tableRows.indexOf(editor.selectedPrograms[0]),
+        tableRows.indexOf(row),
+      )
+      editor.selectedPrograms = tableRows.slice(firstIndex, lastIndex + 1)
+    })
+    return
+  }
+
+  // Default: Left or middle click
+  editor.selectedPrograms = [row]
 }
 
 async function onRowDoubleClick(event: Event, row: ProgramTable) {
+  const target = event.target as HTMLElement
+
+  if (target.closest('.q-checkbox'))
+    return
+
   await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
 }
 
