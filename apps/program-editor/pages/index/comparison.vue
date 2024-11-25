@@ -2,13 +2,17 @@
 import DMP from 'diff-match-patch'
 import { LoadingSpinner } from '@teleskop/ui'
 import Main from '~/components/Comparison/Main.vue'
-import type { Program, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion } from '~/shared/types'
+import type { ContextBarButtons, Program, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion } from '~/shared/types'
 import { useEditorStore } from '~/composables/editor'
+import { useContextBar } from '~/composables/useContextBar'
 
 const dmp = new DMP()
 const route = useRoute()
 const editor = useEditorStore()
 const kc = useKeycloak()
+
+const buttons = computed<ContextBarButtons[]>(() => [])
+useContextBar(buttons)
 
 const { m, p1, p2, v1, v2 } = route.query
 

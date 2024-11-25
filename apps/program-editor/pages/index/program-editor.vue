@@ -4,6 +4,7 @@ import LoadingSpinner from '../../../../packages/ui/components/LoadingSpinner.vu
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
+import type { ContextBarButtons } from '~/shared/types'
 
 const editor = useEditorStore()
 const form = ref<QForm>()
@@ -21,7 +22,7 @@ definePageMeta({
   path: '/machine/:machine_id/program/:program_no',
 })
 
-const buttons = computed(() => [
+const buttons = computed<ContextBarButtons[]>(() => [
   // {
   //   label: t('menu.print'),
   //   originalLabel: t('menu.print'),

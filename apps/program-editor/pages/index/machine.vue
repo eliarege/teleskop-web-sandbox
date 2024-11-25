@@ -4,11 +4,11 @@ import { enGB, tr } from 'date-fns/locale'
 import { useFuse } from '@vueuse/integrations/useFuse'
 import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import type { QTableColumn } from 'quasar'
-import { event, useQuasar } from 'quasar'
+import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
-import type { ProgramTable } from '~/shared/types'
+import type { ContextBarButtons, ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { formatDuration } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
@@ -176,7 +176,7 @@ const { results: filterResults } = useFuse(debouncedFilter, () => editor.allProg
 })
 const filteredPrograms = computed<ProgramTable[]>(() => filterResults.value.map(res => res.item))
 
-const buttons = computed(() => [
+const buttons = computed<ContextBarButtons[]>(() => [
   {
     label: t('menu.newProgram'),
     originalLabel: t('menu.newProgram'),
@@ -250,7 +250,6 @@ const buttons = computed(() => [
     },
   },
 ])
-
 useContextBar(buttons)
 
 function format(date: Date): string {

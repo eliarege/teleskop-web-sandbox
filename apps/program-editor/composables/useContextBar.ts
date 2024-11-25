@@ -13,13 +13,20 @@ function update(entries: Array<QBtnProps>) {
   contextBarButtons.value = entries
 }
 
-export function useContextBar(items: Ref<QBtnProps[]> | ComputedRef<QBtnProps[]>): void {
-  watch(() => route.path, () => {
-    update(items.value)
-  })
+export function useContextBar(items: Ref<QBtnProps[]> | ComputedRef<QBtnProps[]> | null): void {
+  watch(
+    () => route.path,
+    () => {
+      if (items?.value) {
+        update(items.value)
+      }
+    },
+  )
 
   watchEffect(() => {
-    update(items.value)
+    if (items?.value) {
+      update(items.value)
+    }
   })
 }
 
