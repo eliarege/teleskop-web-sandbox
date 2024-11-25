@@ -204,7 +204,7 @@ const buttons = computed(() => [
     tooltip: t('menu.deleteProgram'),
     shortcut: 'Delete',
     icon: 'delete',
-    disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length,
+    disable: !editor.selectedPrograms.length,
     onClick() {
       // TODO: Context cannot be provided by executor
       $commandManager.executeCommand(
@@ -685,7 +685,7 @@ function handleRowClass(row: ProgramTable): string {
 </script>
 
 <template>
-  <div v-if="editor.isLoading">
+  <div v-if="editor.isLoading" class="loading-container">
     <LoadingSpinner :has-background="false" />
   </div>
   <div class="custom-page select-none relative">
@@ -795,15 +795,13 @@ function handleRowClass(row: ProgramTable): string {
 }
 
 .loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   z-index: 50;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background-color: rgb(229, 231, 235, 0.2);
 }
 

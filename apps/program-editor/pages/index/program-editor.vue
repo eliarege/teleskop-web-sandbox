@@ -271,10 +271,10 @@ onBeforeRouteLeave(() => {
 </script>
 
 <template>
-  <div v-if="editor.isLoading">
-    <LoadingSpinner :has-background="false" />
-  </div>
   <div class="q-pa-md select-none">
+    <div v-if="editor.isLoading" class="loading-container">
+      <LoadingSpinner :has-background="false" />
+    </div>
     <QForm ref="form">
       <DevOnly>
         <div class="flex flex-col color-gray-5 text-3">
@@ -286,3 +286,16 @@ onBeforeRouteLeave(() => {
     </QForm>
   </div>
 </template>
+
+<style scoped>
+.loading-container {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  z-index: 50;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgb(229, 231, 235, 0.2);
+}
+</style>
