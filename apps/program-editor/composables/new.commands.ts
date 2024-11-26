@@ -158,12 +158,22 @@ registerCommand(() => {
       }).onOk(async (option: string) => {
         const query = `source=${option}`
         editor.isLoading = true
-        for (const program of selectedRows)
-          await fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
-            method: 'DELETE',
-          })
-        await editor.fetchAllPrograms()
-        editor.isLoading = false
+
+        try {
+          await Promise.all(
+            selectedRows.map(program =>
+              fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
+                method: 'DELETE',
+              }),
+            ),
+          )
+
+          await editor.fetchAllPrograms()
+        } catch (error) {
+          console.error('Error during program deletion:', error)
+        } finally {
+          editor.isLoading = false
+        }
         editor.selectedPrograms = []
         return true
       }).onCancel(() => {
