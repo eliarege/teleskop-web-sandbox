@@ -4,6 +4,7 @@ import { PError } from '~/server/error'
 import { logEditorOperation } from '~/server/functions'
 import logger from '~/server/logger'
 import { ProgramStatus } from '~/shared/constants'
+import { hasRole } from '~/shared/utils'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
@@ -13,44 +14,103 @@ export default defineAuthEventHandler(async (event) => {
   const query = getQuery(event)
 
   if (event.method === 'GET') {
-    try {
-      logger.info(`User: ${event.context.kauth?.name}. Fetching program ${programNo} of machine ${machineId}.`)
-      const program = await machine.fetchProgram(programNo)
-      program.author = event.context.kauth?.name || ''
-      return program
-    } catch (error) {
-      if (error instanceof PError) {
-        if (error.code === 'PROGRAM_NOT_FOUND') {
-          throw createError({ statusCode: 404, data: { code: error.code, detail: error.detail } })
-        }
-      }
+    checkRole(event, 'program-view')
+    return await logAndFetchProgram(machine, programNo, event.context?.kauth?.name)
+  }
+
+  if (event.method === 'DELETE') {
+    checkRole(event, 'program-delete')
+    return await handleProgramDeletion(machine, programNo, query, machineId, event.context?.kauth?.name)
+  }
+
+  throw createError({ statusCode: 405, statusMessage: `Method ${event.method} not allowed.` })
+})
+
+// Helper Functions
+
+function checkRole(event: any, role: string) {
+  if (!hasRole(event, role)) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: `You do not have permission to perform this action.`,
+    })
+  }
+  return true
+}
+
+async function logAndFetchProgram(machine: any, programNo: number, userName?: string) {
+  try {
+    logger.info(`User: ${userName}. Fetching program ${programNo}.`)
+    const program = await machine.fetchProgram(programNo)
+    program.author = userName || ''
+    return program
+  } catch (error) {
+    if (error instanceof PError && error.code === 'PROGRAM_NOT_FOUND') {
+      throw createError({
+        statusCode: 404,
+        data: { code: error.code, detail: error.detail },
+      })
     }
-  } else if (event.method === 'DELETE') {
-    if (query?.source) {
-      const { programState } = await machine.fetchProgram(programNo)
-      const source = query.source.toString()
-      if (
-        source.includes('machine') && (
-          programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER || programState === ProgramStatus.EXISTS_ON_BOTH
-        )
-      ) {
-        try {
-          logger.info(`User: ${event.context?.kauth?.name}. Deleted program ${programNo} of machine ${machineId} from machine.`)
-          await machine.deleteRemoteProgram(programNo)
-        } catch (e) {}
-      }
-      if (
-        source.includes('db') && (
-          programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
-          || programState === ProgramStatus.EXISTS_ON_BOTH
-        )
-      ) {
-        logger.info(`User: ${event.context?.kauth?.name}. Deleted program ${programNo} of machine ${machineId} from database.`)
-        await logEditorOperation(ProgramEditorActivityCodes.PROGRAMDELETED, `Makine ${machineId}`, `Program No ${programNo}`)
-        return await machine.deleteProgramFromDatabase(programNo)
-      }
-      return 1
-    }
+    throw error
+  }
+}
+
+async function handleProgramDeletion(
+  machine: any,
+  programNo: number,
+  query: any,
+  machineId: number,
+  userName?: string,
+) {
+  if (!query?.source) {
     return 0
   }
-})
+
+  const { programState } = await machine.fetchProgram(programNo)
+  console.log('programState: ', programState)
+  const source = query.source.toString()
+
+  if (source.includes('machine')) {
+    await deleteFromMachineIfValid(machine, programNo, programState, machineId, userName)
+  }
+
+  if (source.includes('db')) {
+    return await deleteFromDatabaseIfValid(machine, programNo, programState, machineId, userName)
+  }
+
+  return 1
+}
+
+async function deleteFromMachineIfValid(machine: any, programNo: number, programState: string, machineId: number, userName?: string) {
+  if (
+    programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER
+    || programState === ProgramStatus.EXISTS_ON_BOTH
+  ) {
+    try {
+      logger.info(`User: ${userName}. Deleted program ${programNo} from machine ${machineId}.`)
+      await machine.deleteRemoteProgram(programNo)
+    } catch (error) {
+      logger.error(`Error deleting program ${programNo} from machine ${machineId}: ${error.message}`)
+    }
+  }
+}
+
+async function deleteFromDatabaseIfValid(
+  machine: any,
+  programNo: number,
+  programState: string,
+  machineId: number,
+  userName?: string,
+) {
+  if (programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE || programState === ProgramStatus.EXISTS_ON_BOTH
+  ) {
+    logger.info(`User: ${userName}. Deleted program ${programNo} from database for machine ${machineId}.`)
+    await logEditorOperation(
+      ProgramEditorActivityCodes.PROGRAMDELETED,
+      `Machine ${machineId}`,
+      `Program No ${programNo}`,
+    )
+    return await machine.deleteProgramFromDatabase(programNo)
+  }
+  return 0
+}

@@ -20,6 +20,7 @@ const ctrl = useKeyModifier('Control')
 
 definePageMeta({
   path: '/machine/:machine_id/program/:program_no',
+  roles: ['program-view'],
 })
 
 const buttons = computed<ContextBarButtons[]>(() => [
