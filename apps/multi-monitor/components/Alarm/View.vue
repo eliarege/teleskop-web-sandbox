@@ -7,7 +7,7 @@ defineProps<{ machine: MachineAlarmList }>()
 const { d, t } = useI18n()
 
 function getTimeDifferenceInMinutesSeconds(alarmStartTime: string): string {
-  const milliSeconds = differenceInMilliseconds(alarmStartTime, new Date())
+  const milliSeconds = differenceInMilliseconds(new Date(), new Date(alarmStartTime))
   const minutes = Math.floor(milliSeconds / 60000)
   const seconds = Math.floor((milliSeconds % 60000) / 1000)
 
