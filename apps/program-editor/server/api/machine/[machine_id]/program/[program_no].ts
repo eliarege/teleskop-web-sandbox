@@ -4,7 +4,7 @@ import { PError } from '~/server/error'
 import { logEditorOperation } from '~/server/functions'
 import logger from '~/server/logger'
 import { ProgramStatus } from '~/shared/constants'
-import { hasRole } from '~/shared/utils'
+import { checkPermission, hasRole } from '~/shared/utils'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
@@ -14,12 +14,25 @@ export default defineAuthEventHandler(async (event) => {
   const query = getQuery(event)
 
   if (event.method === 'GET') {
-    checkRole(event, 'program-view')
-    return await logAndFetchProgram(machine, programNo, event.context?.kauth?.name)
+    logger.info(`User: ${event.context.kauth?.name}. Fetching program ${programNo}.`)
+    checkPermission(event, 'program-view')
+    try {
+      const program = await machine.fetchProgram(programNo)
+      program.author = event.context.kauth?.name || ''
+      return program
+    } catch (error) {
+      if (error instanceof PError && error.code === 'PROGRAM_NOT_FOUND') {
+        throw createError({
+          statusCode: 404,
+          data: { code: error.code, detail: error.detail },
+        })
+      }
+      throw error
+    }
   }
 
   if (event.method === 'DELETE') {
-    checkRole(event, 'program-delete')
+    checkPermission(event, 'program-delete')
     return await handleProgramDeletion(machine, programNo, query, machineId, event.context?.kauth?.name)
   }
 
@@ -27,33 +40,6 @@ export default defineAuthEventHandler(async (event) => {
 })
 
 // Helper Functions
-
-function checkRole(event: any, role: string) {
-  if (!hasRole(event, role)) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: `You do not have permission to perform this action.`,
-    })
-  }
-  return true
-}
-
-async function logAndFetchProgram(machine: any, programNo: number, userName?: string) {
-  try {
-    logger.info(`User: ${userName}. Fetching program ${programNo}.`)
-    const program = await machine.fetchProgram(programNo)
-    program.author = userName || ''
-    return program
-  } catch (error) {
-    if (error instanceof PError && error.code === 'PROGRAM_NOT_FOUND') {
-      throw createError({
-        statusCode: 404,
-        data: { code: error.code, detail: error.detail },
-      })
-    }
-    throw error
-  }
-}
 
 async function handleProgramDeletion(
   machine: any,

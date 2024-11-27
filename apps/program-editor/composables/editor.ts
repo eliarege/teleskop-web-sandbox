@@ -541,8 +541,6 @@ export const useEditorStore = defineStore('editor', () => {
   /**
    * Tüm programları getirir ve isteğe bağlı olarak filtreler uygular.
    *
-   * @param {ProgramFilter} [filter] - Programları filtrelemek için kullanılan opsiyonel filtre parametreleri.
-   *
    * @returns {Promise<void>} Programlar başarıyla getirildikten sonra `Promise` döner.
    *
    * @description Bu fonksiyon, API üzerinden tüm programları çeker. Eğer filtre parametreleri verilmişse, yalnızca verilen filtrelere uyan programlar getirilir.

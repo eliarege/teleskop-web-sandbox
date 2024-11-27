@@ -60,3 +60,12 @@ export function hasRole(event: any, role: string): boolean {
 
   return roles.includes(role)
 }
+
+export function checkPermission(event: any, role: string) {
+  if (!hasRole(event, role)) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'You do not have permission to perform this action.',
+    })
+  }
+}

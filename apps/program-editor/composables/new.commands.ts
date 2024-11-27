@@ -46,10 +46,10 @@ export function registerCommand(command: () => AppCommand) {
   })
 }
 export interface RegisteredCommands {
-  deleteProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
+  deleteProgram: [ctx: any, selectedRows: ProgramTable[], machineId: number]
   pasteProgram: [ctx: any, machineId: number, remains?: any]
   deleteProgramFromMultiMachine: [ctx: any, selectedRows: Array<any>]
-  concatenatePrograms: [ctx: any, selectedRows: Array<any>, machineId: number]
+  concatenatePrograms: [ctx: any, selectedRows: ProgramTable[], machineId: number]
   changeName: [ctx: any, selectedRows: Array<any>, machineId: number]
   changeProcessType: [ctx: any, selectedRows: Array<any>, machineId: number]
   sendProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
@@ -148,7 +148,7 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'deleteProgram',
-    execute(ctx: any, selectedRows: Array<any>, machineId: number) {
+    execute(ctx: any, selectedRows: ProgramTable[], machineId: number) {
       ctx.$q.dialog({
         component: CMDeleteProgramDialog,
         componentProps: {
