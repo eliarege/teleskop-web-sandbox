@@ -15,7 +15,7 @@ export interface ContextMenuStore {
   copy: (program: ProgramTable[], fromMachine: number) => void
   paste: (machineId: number, directPasteValues?: Array<{ machine: number, program: Program, newProgramNo?: number }>) => Promise<Array<{ machine: number, program: Program }>>
   setCtx: (ctx?: any) => void
-  deleteProgram: (selectedRows: Array<ProgramHeader>, selectedOption: number, machineId: number) => Promise<void>
+  deleteProgram: (selectedRows: ProgramTable[], selectedOption: number, machineId: number) => Promise<void>
   getProgram: (programNo: number, machineId: number) => Promise<Program>
   changeName: (programNo: number, newName: string, machineId: number) => Promise<void>
   updateProgramHeader: (program: ProgramHeader, machineId: number) => Promise<void>
@@ -180,17 +180,29 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function deleteProgram(selectedRows: any[], selectedOption: number, machineId: number) {
+  async function deleteProgram(selectedRows: ProgramTable[], selectedOption: number, machineId: number) {
     const { fetch } = useKeycloak()
     const query = `source=${selectedOption}`
-    for (const program of selectedRows) {
-      const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
-        method: 'DELETE',
-      })
-      const status = check ? 'success' : 'fail'
-      notification(check, t(`contextMenu.delete.${status}`, { programNo: program.programNo, name: program.name }))
-    }
+
+    const deletionTasks = selectedRows.map(async (program) => {
+      try {
+        const response = await fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
+          method: 'DELETE',
+        })
+
+        const status = response ? 'success' : 'fail'
+        notification(response, t(`contextMenu.delete.${status}`, { programNo: program.programNo, name: program.name,
+        }))
+      } catch (error) {
+        console.error(`Error deleting program ${program.programNo}:`, error)
+        notification(false, t('contextMenu.delete.fail', { programNo: program.programNo, name: program.name,
+        }))
+      }
+    })
+
+    await Promise.all(deletionTasks)
   }
+
   async function getProgram(programNo: number, machineId: number): Promise<Program> {
     const { fetch } = useKeycloak()
     return await fetch(`/api/machine/${machineId}/program/${programNo}`)

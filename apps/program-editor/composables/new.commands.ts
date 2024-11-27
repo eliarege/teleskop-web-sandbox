@@ -146,7 +146,6 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
-  const { fetch } = useKeycloak()
   return {
     name: 'deleteProgram',
     execute(ctx: any, selectedRows: Array<any>, machineId: number) {
@@ -155,25 +154,15 @@ registerCommand(() => {
         componentProps: {
           programNames: selectedRows.map(r => r.name),
         },
-      }).onOk(async (option: string) => {
-        const query = `source=${option}`
+      }).onOk(async (option: number) => {
         editor.isLoading = true
-
         try {
-          await Promise.all(
-            selectedRows.map(program =>
-              fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
-                method: 'DELETE',
-              }),
-            ),
-          )
-
+          await contextMenuStore.deleteProgram(selectedRows, option, machineId)
           await editor.fetchAllPrograms()
         } catch (error) {
           console.error('Error during program deletion:', error)
-        } finally {
-          editor.isLoading = false
         }
+        editor.isLoading = false
         editor.selectedPrograms = []
         return true
       }).onCancel(() => {
