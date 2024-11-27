@@ -261,17 +261,8 @@
       "deleteFromMachine": "Programı sadece cihazdan sil"
     },
     "concatenateProgramsDialog": {
-      "warning": "Programları fare ile taşıyarak sıralayınız.",
-      "concatenate": "Programları birleştir",
-      "header": "Program Bilgileri",
-      "programNo": "Program Numarası",
-      "name": "Program Adı",
-      "processType": "Proccess Tipi",
-      "operatorCanInterrupt": "Operatör müdahale edebilir",
-      "creationTime": "Oluşturma Zamanı",
-      "programList": "Program Listesi",
-      "warningNoPK": "Program numarası boş olamaz.",
-      "warningDuplicatePK": "Program numarası mevcut."
+      "title": "Programları Birleştir",
+      "warning": "Programları fare ile taşıyarak sıralayınız."
     },
     "version": {
       "_": "Versiyon",

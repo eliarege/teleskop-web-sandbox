@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
 import { useDialogPluginComponent } from 'quasar'
+import type { ProgramTable } from '~/shared/types'
 
 const props = defineProps({
-  programs: Array<any>,
+  programs: Array<ProgramTable[]>,
 })
+
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
+
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
-
 const { t } = useI18n()
-
+const { dark } = useQuasar()
 const programs = ref(props.programs)
 
 function moveItemInArray(array: [], from: number, to: number) {
@@ -25,12 +27,25 @@ const options = {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" persistent>
+  <q-dialog ref="dialogRef">
     <q-card>
-      <q-card-section class="row items-center">
-        <span class="q-ml-sm"> {{ t('contextMenu.concatenateProgramsDialog.warning') }}</span>
+      <q-card-section class="w-100">
+        <div class="text-h6 flex">
+          {{ t('contextMenu.concatenateProgramsDialog.title') }}
+          <q-space />
+          <q-btn
+            icon="close"
+            flat
+            round
+            dense
+            @click="onDialogCancel"
+          />
+        </div>
       </q-card-section>
       <q-card-section>
+        <div class="p-2 ">
+          <span> {{ t('contextMenu.concatenateProgramsDialog.warning') }}</span>
+        </div>
         <Sortable
           :list="programs"
           item-key="programNo"
@@ -39,26 +54,31 @@ const options = {
           @end="event => moveItemInArray(programs, event.oldIndex, event.newIndex)"
         >
           <template #item="{ element }">
-            <div :key="element.programNo" class="border-2 my-2 p-2 items-center flex cursor-grab">
+            <div
+              :key="element.programNo"
+              :class="dark.isActive ? 'border-white' : 'border-black'"
+              class="border-1 rounded p-2 m-2 items-center cursor-grab"
+            >
               {{ `${element.programNo} - ${element.name}` }}
             </div>
           </template>
         </Sortable>
       </q-card-section>
 
-      <q-card-actions align="right">
+      <q-card-actions
+        class="q-pa-md"
+        align="right"
+        :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+      >
         <q-btn
           v-close-popup
           :label="t('cancel')"
-          outline
-          color="black"
-          icon="close"
+          flat
           @click="onDialogCancel"
         />
         <q-btn
-          outline
-          :label="t('contextMenu.concatenateProgramsDialog.concatenate')"
-          icon="check"
+          :label="t('ok')"
+          color="primary"
           @click="onDialogOK(programs)"
         />
       </q-card-actions>

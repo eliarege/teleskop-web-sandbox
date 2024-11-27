@@ -4,7 +4,6 @@ import CMDeleteProgramDialog from '~/components/CMDeleteProgramDialog.vue'
 import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPasteDialog.vue'
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
-import CMConcatenateProgramDetails from '~/components/CMConcatenateProgramDetails.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
 import type { Program, ProgramHeader, ProgramTable } from '~/shared/types'
@@ -251,46 +250,63 @@ registerCommand(() => {
     },
   }
 })
-// // TODO: Make this function that return promise not inline code
+
 registerCommand(() => {
   const editor = useEditorStore()
+
   return {
     name: 'concatenatePrograms',
-    async execute(ctx: any, selectedRows, machineId) {
-      let programsOnExecute: any
-      const processTypes = await contextMenuStore.getProcessTypes()
-      await new Promise((resolve, reject) => {
-        ctx.$q.dialog({
-          component: CMProgramOrdersOnConcatenationDialog,
-          componentProps: {
-            programs: selectedRows,
-          },
-        }).onOk(async (programs) => {
-          programsOnExecute = programs
-          resolve(true)
-        }).onCancel(() => {
-          reject(false)
-        })
-      })
-      await new Promise((resolve, reject) => {
-        ctx.$q.dialog({
-          component: CMConcatenateProgramDetails,
-          componentProps: {
-            processTypes,
-            programsOrder: programsOnExecute,
-          },
-        }).onOk(async (details) => {
-          await contextMenuStore.concatenatePrograms(details.programsOrder, details.details, machineId)
-          await editor.fetchAllPrograms()
-          resolve(true)
-        }).onCancel(() => {
-          reject(false)
-        })
-      })
-      return true
+    async execute(ctx: any, selectedRows: ProgramTable[], machineId: number) {
+      try {
+        // Kullanıcıdan program sıralaması al
+        const programsOrder = await getProgramsOrder(ctx, selectedRows)
+
+        // Yeni program detaylarını al
+        const programDetails = await getNewProgramDetails(ctx)
+        console.log('Program Details:', programDetails)
+
+        // Programları birleştir
+        await contextMenuStore.concatenatePrograms(programsOrder, programDetails, machineId)
+        await editor.fetchAllPrograms()
+
+        return true
+      } catch (error) {
+        console.error('Error during program concatenation:', error)
+        return false
+      }
     },
   }
 })
+
+async function getProgramsOrder(ctx: any, selectedRows: ProgramTable[]): Promise<ProgramTable[]> {
+  return new Promise((resolve, reject) => {
+    ctx.$q.dialog({
+      component: CMProgramOrdersOnConcatenationDialog,
+      componentProps: {
+        programs: selectedRows,
+      },
+    }).onOk((programsOrder) => {
+      resolve(programsOrder)
+    }).onCancel(() => {
+      reject(new Error('Program order selection cancelled'))
+    })
+  })
+}
+
+async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
+  return new Promise((resolve, reject) => {
+    ctx.$q.dialog({
+      component: CMNewProgramDialog,
+      componentProps: {
+        header: 'newProgram',
+      },
+    }).onOk((program) => {
+      resolve(program)
+    }).onCancel(() => {
+      reject(new Error('New program details input cancelled'))
+    })
+  })
+}
 
 registerCommand(() => {
   return {

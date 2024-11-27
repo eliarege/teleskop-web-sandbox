@@ -1,13 +1,9 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { notification } from '~/shared/functions'
-import type { Program, ProgramStep, ProgramTable } from '~/shared/types'
+import type { Program, ProgramHeader, ProgramStep, ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 
-interface ProgramHeader {
-  programNo: number
-  name: string
-}
 export interface ContextMenuStore {
   getCopiedValues: () => Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>
   getCopiedStepsValues: (machineId: number, programNo: number) => { machineId: number, programNo: number, steps: ProgramStep[] } | undefined
@@ -27,7 +23,7 @@ export interface ContextMenuStore {
   deleteProgramFromMachine: (programs: Array<ProgramHeader>, machines: Array<any>, source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
-  concatenatePrograms: (programs: Array<{ programNo: number }>, details: { programNo: number, processType: { label: string, value: number }, name: string, creationTime: Date }, machineId: number) => Promise<void>
+  concatenatePrograms: (programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
   comparison: () => void
   addToComparisonBasket: (e: any, machineId: number) => void
   clearComparisonBasket: () => void
@@ -350,58 +346,35 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return await fetch(`/api/machine/${machineId}/program/${programNo}/version`)
   }
 
-  async function concatenatePrograms(programs, details, machineId: number) {
-    // console.log('Don\'t know how to concatenate programs. Will steps added ent-to-end or is there any other logic on that?')
-    const concatedProgram: Program = {
-      icon: null,
-      programNo: details.programNo,
-      typeName: details.processType.label,
-      machineId,
-      machineName: '',
-      name: details.name,
-      author: null,
-      comment: null,
-      typeId: details.processType.value,
-      createdAt: details.creationTime,
-      updatedAt: details.creationTime,
-      steps: [],
-      duration: 0,
-      updatedAtTBB: null,
-      programState: ProgramStatus.EXISTS_ONLY_ON_DATABASE,
-      isChanged: false,
-      tbbProgramChangedEvent: null,
-      autoChemReq: 0,
-      autoDyeReq: 0,
-      manChemReq: 0,
-      manDyeReq: 0,
-      totalChemReq: 0,
-      totalDyeReq: 0,
-    }
-    // await deleteProgram(programs, 1)
-    for (const program of programs) {
-      (await getProgram(program.programNo, machineId)).steps.forEach((step) => {
-        concatedProgram.steps.push(step)
-      })
-    }
-    const returnValue = await createProgram(concatedProgram, machineId)
-    if (returnValue)
-      notification(true, t('contextMenu.pasteNotification.success', { name: concatedProgram.name, programNo: concatedProgram.programNo }))
-    else
-      notification(false, t('contextMenu.pasteNotification.fail', { name: concatedProgram.name, programNo: concatedProgram.programNo }))
-  }
+  async function concatenatePrograms(programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) {
+    const editor = useEditorStore()
 
-  async function createProgram(program: Program, machineId: number): Promise<number> {
-    const { fetch } = useKeycloak()
+    const newProgram = editor.createEmptyProgram()
+
+    newProgram.machineId = machineId
+    newProgram.programNo = programDetails.programNo
+    newProgram.name = programDetails.name
+    newProgram.typeId = programDetails.typeId
+    newProgram.tbbProgramChangedEvent = programDetails.tbbProgramChangedEvent
+
+    editor.isLoading = true
     try {
-      return await fetch(`/api/machine/${machineId}/program`, {
-        method: 'POST',
-        body: {
-          programNo: program.programNo,
-          program,
-        },
-      })
-    } catch (e) {
-      return 0
+      for (const program of programs) {
+        const fetchedProgram = await getProgram(program.programNo, machineId)
+        newProgram.steps.push(...fetchedProgram.steps)
+      }
+
+      await editor.insertProgram(newProgram)
+
+      notification(true, t('contextMenu.pasteNotification.success', { name: newProgram.name, programNo: newProgram.programNo }))
+      return true
+    } catch (error) {
+      console.error('Error during program concatenation:', error)
+
+      notification(false, t('contextMenu.pasteNotification.fail', { name: newProgram.name, programNo: newProgram.programNo }))
+      return false
+    } finally {
+      editor.isLoading = false
     }
   }
 

@@ -261,17 +261,8 @@
       "deleteFromMachine": "Delete program from machine"
     },
     "concatenateProgramsDialog": {
-      "warning": "Re-order programs by dragging.",
-      "concatenate": "Concatenate programs",
-      "header": "Program Info",
-      "programNo": "Program No",
-      "name": "Program Name",
-      "processType": "Proccess Type",
-      "operatorCanInterrupt": "Operator can interrupt",
-      "creationTime": "Creation Time",
-      "programList": "Program List",
-      "warningNoPK": "Program no cannot be empty.",
-      "warningDuplicatePK": "Program no already exists."
+      "title": "Concatenate Programs",
+      "warning": "Re-order programs by dragging."
     },
     "version": {
       "_": "Version",
