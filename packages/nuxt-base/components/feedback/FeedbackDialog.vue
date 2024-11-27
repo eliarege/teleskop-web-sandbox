@@ -18,7 +18,7 @@ const { width, height } = useWindowSize()
 const config = useRuntimeConfig()
 const { fetch: kcFetch, tokenParsed } = useKeycloak()
 
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const appList = parseAppList(config.public.appList).map(n => ({
   name: t(`base.apps.${n.name}`),
@@ -70,11 +70,14 @@ async function sendFeedback() {
   await kcFetch('/api/feedback', {
     method: 'POST',
     body: modifiedModel,
-  }).then(() => q.notify({
-    message: t('feedback.response.success'),
-    color: 'green',
-    position: 'top',
-  })).catch((err: FetchError) => {
+  }).then(() => {
+    onDialogOK()
+    q.notify({
+      message: t('feedback.response.success'),
+      color: 'green',
+      position: 'top',
+    })
+  }).catch((err: FetchError) => {
     if (err.data?.data?.code) {
       q.notify({
         message: t(`feedback.response.${err.data.data.code}`),
@@ -134,6 +137,7 @@ function onSave(newImage: string, newRects: Rect[]) {
     ref="dialogRef"
     position="right"
     maximized
+    @hide="onDialogHide"
   >
     <div class="bg-white w-full h-full flex flex-col ">
       <span class="text-center p-3 font-extrabold text-xl">

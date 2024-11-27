@@ -36,16 +36,11 @@ export default defineNuxtPlugin(() => {
       dialogVisible = true
       dialogObject = dialog({
         component: FeedbackDialog,
-      }).onOk(hideDialog)
-        .onCancel(hideDialog)
-        .onDismiss(hideDialog)
+      }).onDismiss(() => {
+        dialogVisible = false
+        dialogObject = null
+      })
     }
-  }
-
-  function hideDialog() {
-    dialogVisible = false
-    dialogObject?.hide()
-    dialogObject = null
   }
 
   onKeyStroke('F9', (event: Event) => {
@@ -53,7 +48,7 @@ export default defineNuxtPlugin(() => {
     if (!dialogVisible) {
       showDialog()
     } else {
-      hideDialog()
+      dialogObject?.hide()
     }
   })
 
