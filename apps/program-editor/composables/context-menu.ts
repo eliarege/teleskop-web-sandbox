@@ -13,7 +13,6 @@ export interface ContextMenuStore {
   setCtx: (ctx?: any) => void
   deleteProgram: (selectedRows: ProgramTable[], selectedOption: number, machineId: number) => Promise<void>
   getProgram: (programNo: number, machineId: number) => Promise<Program>
-  changeName: (programNo: number, newName: string, machineId: number) => Promise<void>
   updateProgramHeader: (program: ProgramHeader, machineId: number) => Promise<void>
   getProcessTypes: () => Promise<any[]>
   changeProcessType: (selectedRows: Array<{ programNo: number }>, newType: number, machineId: number) => Promise<void>
@@ -204,26 +203,11 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return await fetch(`/api/machine/${machineId}/program/${programNo}`)
   }
 
-  async function changeName(programNo: number, newName: string, machineId: number) {
-    const program = await getProgram(programNo, machineId)
-
-    program.name = newName
-    const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/update-name`, {
-      method: 'PUT',
-      body: {
-        name: newName,
-      },
-    })
-
-    const status = check.ok ? 'success' : 'fail'
-    notification(check, t(`contextMenu.changeNameNotification.${status}`, { programNo: program.programNo }))
-  }
-
   async function updateProgramHeader(program: ProgramHeader, machineId: number) {
     const { fetch } = useKeycloak()
     const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/update-header`, {
       method: 'PUT',
-      body: program,
+      body: { program },
     })
 
     const status = check ? 'success' : 'fail'
@@ -395,7 +379,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     deleteProgram,
     getProgram,
     sendProgram,
-    changeName,
     updateProgramHeader,
     changeProcessType,
     comparison,

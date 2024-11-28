@@ -191,6 +191,7 @@
   "change": "Change",
   "apply": "Apply",
   "ok": "OK",
+  "save": "Save",
   "message": {
     "delete_program": "Delete program from Teleskop",
     "program_not_deleted": "Program could not be deleted from Teleskop"
