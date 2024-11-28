@@ -671,6 +671,8 @@ export const useEditorStore = defineStore('editor', () => {
    * Yeni bir program ekler ve başarı durumuna göre yönlendirme yapar.
    *
    * @param {Program} newProgram - Eklenecek yeni program.
+   * @param {boolean} redirect - Ekleme sonrası kullanıcıyı programa yönlendirme yapılacaksa `true`, aksi halde `false`.
+   *                             Varsayılan deger `true`.
    *
    * @returns {Promise<boolean>} Programın eklenip eklenmediğine dair bir `Promise`.
    * Eğer program başarılı bir şekilde eklenirse `true`, hata durumunda `false` döner.
@@ -679,7 +681,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Eğer işlem sırasında bir hata oluşursa, hata mesajına göre uygun bir bildirim gösterilir.
    * Özellikle `PROGRAM_TREATMENT_COMMAND_LIMIT` hatası durumunda, ilgili limitin aşıldığına dair bir bildirim gösterilir.
    */
-  async function insertProgram(newProgram: Program): Promise<boolean> {
+  async function insertProgram(newProgram: Program, redirect: boolean = true): Promise<boolean> {
     try {
       await kc.fetch(`/api/machine/${newProgram.machineId}/program`, {
         method: 'POST',
@@ -688,7 +690,9 @@ export const useEditorStore = defineStore('editor', () => {
         },
       })
 
-      navigateTo(`/machine/${newProgram.machineId}/program/${newProgram.programNo}`)
+      if (redirect)
+        navigateTo(`/machine/${newProgram.machineId}/program/${newProgram.programNo}`)
+
       return true
     } catch (error: any) {
       if (error.statusCode === 400) {

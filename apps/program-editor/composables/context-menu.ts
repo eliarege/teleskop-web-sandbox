@@ -348,7 +348,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         newProgram.steps.push(...fetchedProgram.steps)
       }
 
-      await editor.insertProgram(newProgram)
+      await editor.insertProgram(newProgram, false)
 
       notification(true, t('contextMenu.pasteNotification.success', { name: newProgram.name, programNo: newProgram.programNo }))
       return true
