@@ -99,7 +99,7 @@
     "opMud": "Op. Müd.",
     "theoreticalDuration": "Teorik Süre",
     "updated": "Günc. Tarihi",
-    "processType": "Proccess Tipi",
+    "processType": "Program Tipi",
     "parameter": "Parametre",
     "command": "Program Komutu",
     "totalChemReq": "Top. Kim.",
@@ -133,7 +133,7 @@
       "temp/time": "Sıcaklık/Zaman",
       "isDefault": "Varsayılan mı?",
       "belongsToFunction": "Fonksiyona mı ait?",
-      "selectableOptions": "Seçilebilir Listesi",
+      "selectableList": "Seçilebilir Listesi",
       "operationTime": "Çalışma Süresi",
       "liter": "Litre",
       "temperature": "Sıcaklık",
@@ -226,6 +226,7 @@
     "note": "Not",
     "deletionWarning": "Program tipi {type} silinecek! Devam etmek istediğinize emin misiniz?",
     "createProcessType": {
+      "_": "Program Tipi Oluştur",
       "success": "{no} - {name} program tipi başarıyla oluşturuldu.",
       "fail": "Program tipi oluşturulamadı."
     },
@@ -247,7 +248,7 @@
     "deleteProgramsFromMachine": "Program(lar)ı Makinelerden Sil",
     "concatPrograms": "Programları Birleştir",
     "changeName": "Ad Değiştir",
-    "changeProcessType": "Process Tipini Değiştir",
+    "changeProcessType": "Program Tipini Değiştir",
     "sendProgram": "Programı Yolla",
     "copyToMachinesAndSend": "Makinelere Kopyala ve Yolla",
     "getProgram": "Programı Al",
@@ -256,6 +257,7 @@
     "compareWith": "Bununla Karşılaştır",
     "pasteDuplicateKeyWarning": "Yapıştırılmak istenilen programların numaraları bu makinede mevcut. Lütfen yeni program numaralarını giriniz.",
     "deleteProgramDialog": {
+      "title": "Programı Sil",
       "warning": "Program {name} silinecek! Devam etmek istediğinize emin misiniz?",
       "deleteFromBoth": "Programı Teleskop'tan ve cihazdan sil",
       "deleteFromTeleskop": "Programı sadece Teleskop'tan sil",
@@ -313,8 +315,8 @@
       "fail": "{programNo} numaralı programın ismini değiştirme işlemi başarısız."
     },
     "changeProcessTypeNotification": {
-      "success": "{programNo} numaralı programın process tipi başarıyla değiştirildi.",
-      "fail": "{programNo} numaralı programın process tipini değiştirme işlemi başarısız."
+      "success": "{programNo} numaralı programın tipi başarıyla değiştirildi.",
+      "fail": "{programNo} numaralı programın tipini değiştirme işlemi başarısız."
     },
     "deleteFromMultiMachineNotification": {
       "success": "{programNo} numaralı {name} programı {machineId} makinesinden başarıyla silindi.",
@@ -415,7 +417,7 @@
     "programFilter": "Program Filtresi",
     "programNo": "Program Numarası",
     "programName": "Program Adı",
-    "processType": "Proccess Tipi",
+    "processType": "Program Tipi",
     "clearFilterOnChange": "Makine seçimi değiştiğinde filtreleri temizle.",
     "delete_all": "Filtreleri sıfırla",
     "close": "Kapat",

@@ -65,7 +65,7 @@ const items = [
   { label: tt('menu.tools'), disabled: true },
   {
     label: tt('menu.program'),
-    disabled: computed(() => !editor.machine.id),
+    disabled: computed(() => !isDef(route.params.machine_id)),
     subMenu: {
       items: [
         [
@@ -115,14 +115,14 @@ const items = [
   },
   {
     label: tt('menu.appearance'),
-    disabled: computed(() => !editor.program.programNo),
+    disabled: computed(() => !isDef(route.params.program_no)),
     subMenu: {
       items: [[
         { label: tt('menu.versionInfo'), icon: 'info', onClick: () => {
           editor.popupVersionDialog = true
         } },
         { label: tt('menu.commandInfo'), icon: 'info', onClick: () => {
-          editor.popupCommandDetailVisible = true
+          $commandManager.executeCommand('allCommandsList', { $q })
         } },
       ], [
         { label: tt('menu.tempTimeGraph'), icon: 'timeline', shortcut: 'F8', onClick: () => {
@@ -173,7 +173,7 @@ const items = [
           label: tt('menu.allCommandList'),
           disable: isDef(route.params.program_no),
           onClick() {
-            editor.popupCommandListVisible = true
+            $commandManager.executeCommand('allCommandsList', { $q })
           },
         },
       ]],
@@ -277,14 +277,6 @@ const itemsMobile = [
       <MachineCommandList />
     </QDrawer>
   </QLayout>
-
-  <EliarModal v-if="editor.popupCommandListVisible">
-    <TBAllCommandsDialog />
-  </EliarModal>
-
-  <EliarModal v-if="editor.popupCommandDetailVisible">
-    <TBCommandDetailDialog />
-  </EliarModal>
 </template>
 
 <style lang="postcss" scoped>

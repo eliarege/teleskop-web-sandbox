@@ -185,7 +185,7 @@
   "yes": "Yes",
   "no": "No",
   "cancel": "Cancel",
-  "create": "Create",
+  "create": "Create ",
   "delete": "Delete",
   "submit": "Submit",
   "change": "Change",
@@ -226,6 +226,7 @@
     "note": "Note",
     "deletionWarning": "Program type {type} will be deleted! Are you sure you want to continue?",
     "createProcessType": {
+      "_": "Create Program Type",
       "success": "Process type {no} - {name} is created successfully.",
       "fail": "An error occured while creating process type."
     },
@@ -256,6 +257,7 @@
     "compareWith": "Compare With",
     "pasteDuplicateKeyWarning": "Programs with given program numbers exists. Please provide a new program number for programs below.",
     "deleteProgramDialog": {
+      "title": "Delete Program",
       "warning": "Program {name} will be deleted! Are you sure you want to continue?",
       "deleteFromBoth": "Delete program from both machine and Teleskop",
       "deleteFromTeleskop": "Delete program from Teleskop",

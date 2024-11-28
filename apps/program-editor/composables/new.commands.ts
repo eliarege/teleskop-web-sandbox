@@ -6,7 +6,7 @@ import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { Program, ProgramHeader, ProgramTable } from '~/shared/types'
+import type { MachineCommand, Program, ProgramHeader, ProgramTable } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -18,6 +18,8 @@ import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
 import { TeleskopSettingsIds } from '~/shared/constants'
 import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
 import TBDiscardChangesDialog from '~/components/TBDiscardChangesDialog.vue'
+import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
+import TBCommandDetailDialog from '~/components/TBCommandDetailDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -65,6 +67,8 @@ export interface RegisteredCommands {
   newProgram: [ctx: any]
   saveAsProgram: [ctx: any]
   discardChanges: [ctx: any, machineId?: number]
+  allCommandsList: [ctx: any]
+  commandDetails: [ctx: any, machineId: number, commandNo: number]
 }
 
 registerCommand(() => {
@@ -119,14 +123,10 @@ registerCommand(() => {
   return {
     name: 'tempTimeGraph',
     execute(ctx: any) {
-      const editor = useEditorStore()
-      if (!editor.popupTempTimeGraphVisible) {
-        ctx.$q.dialog({
-          component: CMTempTimeGraphDialog,
-        })
-        editor.popupTempTimeGraphVisible = true
-        return true
-      }
+      ctx.$q.dialog({
+        component: CMTempTimeGraphDialog,
+      })
+      return true
     },
   }
 })
@@ -456,6 +456,45 @@ registerCommand(() => {
         component: TBApplicationSettingsDialog,
       }).onOk(async (value: string) => {
         await editor.updateTeleskopSettings(TeleskopSettingsIds.SELECTED_ICONS, value)
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
+  return {
+    name: 'allCommandsList',
+    async execute(ctx: any) {
+      ctx.$q.dialog({
+        component: TBAllCommandsDialog,
+        componentProps: {
+          machineId: editor.machine.id,
+          machineName: editor.machine.name,
+          machineCommands: Array.from(editor.machine.commands.values()),
+        },
+      }).onOk(async (command: MachineCommand) => {
+        ctx.$q.dialog({
+          component: TBCommandDetailDialog,
+          componentProps: {
+            machineId: editor.machine.id,
+            machineName: editor.machine.name,
+            machineCommand: command,
+          },
+        })
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'commandDetails',
+    async execute(ctx: any) {
+      ctx.$q.dialog({
+        component: TBCommandDetailDialog,
       })
       return true
     },
