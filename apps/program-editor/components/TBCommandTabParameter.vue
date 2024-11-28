@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const editor = useEditorStore()
+import type { MachineCommand } from '~/shared/types'
+
+const props = defineProps<{ command: MachineCommand }>()
 const { t } = useI18n()
 const parameterTab = ref(0)
 </script>
@@ -15,7 +17,7 @@ const parameterTab = ref(0)
       narrow-indicator
     >
       <q-tab
-        v-for="parameter in editor.selectedCommand?.parameters"
+        v-for="parameter in props.command.parameters"
         :key="parameter.index"
         :name="parameter.index"
         :label="`${parameter.name}`"
@@ -23,7 +25,7 @@ const parameterTab = ref(0)
     </q-tabs>
     <q-tab-panels v-model="parameterTab" animated>
       <q-tab-panel
-        v-for="parameter in editor.selectedCommand?.parameters"
+        v-for="parameter in props.command.parameters"
         :key="parameter.index"
         :name="parameter.index"
         class="tab-panel-class"
@@ -32,23 +34,23 @@ const parameterTab = ref(0)
           <tbody>
             <tr>
               <td>{{ t('command.parameter.name') }}</td>
-              <td>{{ editor.selectedCommand?.parameters[parameter.index].name }}</td>
+              <td>{{ props.command.parameters[parameter.index].name }}</td>
             </tr>
             <tr>
               <td>{{ t('command.parameter.type') }}</td>
-              <td>{{ editor.selectedCommand?.parameters[parameter.index].type }}</td>
+              <td>{{ props.command.parameters[parameter.index].type }}</td>
             </tr>
             <tr>
               <td>{{ t('command.parameter.value') }}</td>
-              <td>{{ editor.selectedCommand?.parameters[parameter.index].value }}</td>
+              <td>{{ props.command.parameters[parameter.index].value }}</td>
             </tr>
             <tr>
               <td>{{ t('command.parameter.lowerLimit') }}</td>
-              <td>{{ editor.selectedCommand?.parameters[parameter.index].minValue }}</td>
+              <td>{{ props.command.parameters[parameter.index].minValue }}</td>
             </tr>
             <tr>
               <td>{{ t('command.parameter.upperLimit') }}</td>
-              <td>{{ editor.selectedCommand?.parameters[parameter.index].maxValue }}</td>
+              <td>{{ props.command.parameters[parameter.index].maxValue }}</td>
             </tr>
             <tr>
               <td>{{ t('command.parameter.unit') }}</td>
@@ -77,7 +79,7 @@ const parameterTab = ref(0)
             <tr>
               <td>{{ t('command.parameter.selectableList') }}</td>
               <td>
-                <tr v-for="selection in editor.selectedCommand?.parameters[parameter.index].selections" :key="selection.name">
+                <tr v-for="selection in props.command.parameters[parameter.index].selections" :key="selection.name">
                   <td>{{ selection.name }} ({{ selection.value }})</td>
                 </tr>
               </td>

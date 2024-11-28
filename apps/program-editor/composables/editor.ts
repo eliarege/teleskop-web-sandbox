@@ -14,14 +14,10 @@ export const useEditorStore = defineStore('editor', () => {
   const selectedPrograms = ref<ProgramTable[]>([])
   const allProcessType = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTable[]>([])
-  const selectedCommand = ref<MachineCommand | null>(null)
   const selectedSteps = ref<ProgramStep[]>([])
   const selectedParallelStep = ref<number>(-1)
   const isLoading = ref<boolean>(false)
-  const popupCommandListVisible = ref(false)
-  const popupCommandDetailVisible = ref(false)
   const popupVersionDialog = ref(false)
-  const popupTempTimeGraphVisible = ref(false)
   const leftDrawerOpen = ref(true)
   const rightDrawerOpen = ref(false)
   let lastStepId = 0
@@ -878,12 +874,8 @@ export const useEditorStore = defineStore('editor', () => {
     popupVersionDialog,
     allProcessType,
     allPrograms,
-    selectedCommand,
     lastStepId,
     lastCommandId,
-    popupCommandListVisible,
-    popupCommandDetailVisible,
-    popupTempTimeGraphVisible,
     leftDrawerOpen,
     rightDrawerOpen,
     teleskopSettings,

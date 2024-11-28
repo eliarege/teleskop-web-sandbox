@@ -9,6 +9,7 @@ defineEmits([
 ])
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
+const { dark } = useQuasar()
 const selectedOption = ref('db-machine')
 const options = [
   { label: t('contextMenu.deleteProgramDialog.deleteFromBoth'), value: 'db-machine' },
@@ -18,42 +19,54 @@ const options = [
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" persistent>
-    <q-card>
-      <q-card-section class="row items-center">
-        <q-avatar
-          icon="delete"
-        />
-        <span class="q-ml-sm max-w-100"> {{ t('contextMenu.deleteProgramDialog.warning', { name: props.programNames }) }}</span>
-      </q-card-section>
-      <q-card-section>
-        <div class="flex items-center justify-center">
-          <q-option-group
+  <QDialog ref="dialogRef">
+    <QCard>
+      <QCardSection>
+        <div class="text-h6 flex">
+          {{ t('contextMenu.deleteProgramDialog.title') }}
+          <QSpace />
+          <QBtn
+            icon="close"
+            flat
+            round
+            dense
+            color="gray-6"
+            @click="onDialogCancel"
+          />
+        </div>
+      </QCardSection>
+
+      <QCardSection>
+        <span class="max-w-100"> {{ t('contextMenu.deleteProgramDialog.warning', { name: props.programNames }) }}</span>
+        <div class="mt-4 ml-4 flex">
+          <QOptionGroup
             v-model="selectedOption"
+            class="q-gutter-sm"
             :options="options"
             dense
           />
         </div>
-      </q-card-section>
+      </QCardSection>
 
-      <q-card-actions align="right">
-        <q-btn
-          v-close-popup
+      <QCardActions
+        align="right"
+        class="q-pa-md"
+        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
+      >
+        <QBtn
           :label="t('cancel')"
-          outline
-          color="black"
-          icon="close"
+          class="q-mr-sm"
+          flat
           @click="onDialogCancel"
         />
-        <q-btn
-          v-close-popup
-          outline
+        <QBtn
           :label="t('delete')"
-          color="red"
+          class="q-mr-sm bg-red-6 text-white"
           icon="delete"
+          flat
           @click="onDialogOK(selectedOption)"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+      </QCardActions>
+    </QCard>
+  </QDialog>
 </template>

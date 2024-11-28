@@ -49,7 +49,6 @@ const newProgram = computed<ProgramHeader>(() => ({
             </QCardSection>
 
             <QCardSection class="mx-4">
-              <!-- Program No Input -->
               <InputNumber
                 v-model="programNo"
                 type="positive-integer"
@@ -93,7 +92,7 @@ const newProgram = computed<ProgramHeader>(() => ({
             <QCardActions
               align="right"
               class="q-pa-md"
-              :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+              :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
             >
               <QBtn
                 flat

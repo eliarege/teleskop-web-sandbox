@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { IO_TYPE } from '~/shared/constants'
+import type { MachineCommand } from '~/shared/types'
 
-const editor = useEditorStore()
+const props = defineProps<{ command: MachineCommand }>()
 const ioTab = ref(0)
 const { t } = useI18n()
 </script>
@@ -17,7 +18,7 @@ const { t } = useI18n()
       narrow-indicator
     >
       <q-tab
-        v-for="io in editor.selectedCommand?.ioList"
+        v-for="io in props.command.ioList"
         :key="io.index"
         :name="io.index"
         :label="io.name"
@@ -25,7 +26,7 @@ const { t } = useI18n()
     </q-tabs>
     <q-tab-panels v-model="ioTab" animated>
       <q-tab-panel
-        v-for="io in editor.selectedCommand?.ioList"
+        v-for="io in props.command.ioList"
         :key="io.index"
         :name="io.index"
         class="tab-panel-class"

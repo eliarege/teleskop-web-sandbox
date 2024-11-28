@@ -10,8 +10,9 @@ defineEmits([
 
 const { fetch } = useKeycloak()
 const $q = useQuasar()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
+const { dark } = useQuasar()
 const { data: programTypes, refresh } = useAuthFetch('/api/process', { default: () => [] })
 const columns = computed(() => [
   { name: 'value', label: t('changeProcessTypeDialog.processTypeNo'), field: 'value', align: 'left' },
@@ -66,25 +67,26 @@ function handleDeleteProcessType() {
 </script>
 
 <template>
-  <q-dialog
+  <QDialog
     ref="dialogRef"
-    persistent
-    class="wider-dialog"
   >
-    <q-card>
-      <q-card-section class="row items-center">
-        <span class="q-ml-sm"> {{ t('contextMenu.changeProcessType') }}</span>
-        <q-space />
-        <q-btn
-          icon="close"
-          flat
-          round
-          dense
-          @click="onDialogCancel"
-        />
-      </q-card-section>
-      <q-card-section>
-        <q-table
+    <QCard>
+      <QCardSection>
+        <div class="text-h6 flex">
+          {{ t('contextMenu.changeProcessType') }}
+          <q-space />
+          <q-btn
+            icon="close"
+            flat
+            round
+            dense
+            @click="onDialogCancel"
+          />
+        </div>
+      </QCardSection>
+
+      <QCardSection>
+        <QTable
           flat
           class="h-150"
           bordered
@@ -97,8 +99,8 @@ function handleDeleteProcessType() {
           @row-click="(e, row) => selectedRow = row "
         >
           <template #body-cell="props">
-            <q-td :props="props" :class="props.row === selectedRow ? '!e-selected' : ''">
-              <q-input
+            <QTd :props="props" :class="props.row === selectedRow ? '!e-selected' : ''">
+              <QInput
                 v-if="props.col.name !== 'value'"
                 v-model="props.row[ props.col.name ]"
                 dense
@@ -107,40 +109,46 @@ function handleDeleteProcessType() {
               <span v-else>
                 {{ props.row[props.col.name] }}
               </span>
-            </q-td>
+            </QTd>
           </template>
-        </q-table>
-      </q-card-section>
+        </QTable>
+      </QCardSection>
 
-      <q-card-actions align="right">
-        <q-btn
-          :label="t('delete')"
-          outline
-          color="red"
-          icon="delete"
-          :disable="!selectedRow"
-          @click="handleDeleteProcessType"
-        />
-        <q-btn
+      <QCardActions
+        align="right"
+        class="q-pa-md"
+        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
+      >
+        <QBtn
           :label="t('create')"
-          outline
-          color="primary"
+          class="q-mr-sm"
           icon="create"
+          flat
           @click="handleCreateProcessType"
         />
-        <q-btn
-          outline
-          icon="save"
+        <QBtn
+          :label="t('delete')"
+          class="q-mr-sm bg-red-6 text-white"
+          icon="delete"
+          :disable="!selectedRow"
+          flat
+          @click="handleDeleteProcessType"
+        />
+
+        <QBtn
           :label="t('submit')"
+          class="q-mr-sm bg-primary text-white"
+          icon="save"
+          flat
           @click="handleUpdateProcessTypes"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+      </QCardActions>
+    </QCard>
+  </QDialog>
 </template>
 
 <style scoped>
-.wider-dialog .q-dialog__inner--minimized > div {
+.q-dialog__inner--minimized > div {
   max-width: none !important;
 }
 </style>

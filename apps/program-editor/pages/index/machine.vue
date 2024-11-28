@@ -117,8 +117,6 @@ onKeyStroke(['Delete'], (event: KeyboardEvent) => {
 onKeyStroke('Escape', (event: KeyboardEvent) => {
   event.preventDefault()
   editor.selectedPrograms = []
-  editor.popupCommandDetailVisible = false
-  editor.popupCommandListVisible = false
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {

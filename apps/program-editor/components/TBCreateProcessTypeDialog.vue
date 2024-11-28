@@ -11,19 +11,28 @@ const processType = ref({
 } as ProcessType)
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
+const { dark } = useQuasar()
 </script>
 
 <template>
-  <q-dialog
+  <QDialog
     ref="dialogRef"
-    persistent
-    class="wider-dialog"
   >
-    <q-card>
-      <q-card-section class="row items-center">
-        <span class="q-ml-sm"> {{ t('create') }}</span>
-      </q-card-section>
-      <q-card-section>
+    <QCard>
+      <QCardSection>
+        <div class="text-h6 flex">
+          {{ t('changeProcessTypeDialog.createProcessType._') }}
+          <q-space />
+          <q-btn
+            icon="close"
+            flat
+            round
+            dense
+            @click="onDialogCancel"
+          />
+        </div>
+      </QCardSection>
+      <QCardSection>
         <div class="flex gap-5">
           <q-input
             v-model="processType.value"
@@ -44,30 +53,33 @@ const { t } = useI18n()
             outlined
           />
         </div>
-      </q-card-section>
+      </QCardSection>
 
-      <q-card-actions align="right">
-        <q-btn
+      <QCardActions
+        align="right"
+        class="q-pa-md"
+        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
+      >
+        <QBtn
           :label="t('cancel')"
-          outline
-          color="black"
-          icon="close"
+          class="q-mr-sm"
+          flat
           @click="onDialogCancel"
         />
-        <q-btn
-          outline
-          icon="check"
+        <QBtn
           :label="t('create')"
+          class="q-mr-sm bg-primary text-white"
+          flat
           :disable="!processType.value"
           @click="onDialogOK(processType)"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+      </QCardActions>
+    </QCard>
+  </QDialog>
 </template>
 
 <style scoped>
-.wider-dialog .q-dialog__inner--minimized > div {
+.q-dialog__inner--minimized > div {
   max-width: none !important;
 }
 </style>

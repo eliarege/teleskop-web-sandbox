@@ -23,7 +23,6 @@ function toggleSelectAll() {
   <q-dialog
     ref="dialogRef"
     class="select-none"
-    persistent
   >
     <q-card>
       <q-card-section>
@@ -38,13 +37,12 @@ function toggleSelectAll() {
             @click="onDialogCancel"
           />
         </div>
-        <div class="text-h8">
+        <div class="text-h8 color-gray-6 dark:text-gray-4">
           {{ t('menu.editorIconSettings') }}
         </div>
       </q-card-section>
-      <q-separator />
       <q-card-section>
-        <div class="text-h8 w-100 mb-2">
+        <div class="text-h8 w-100 mb-2 color-gray-6 dark:text-gray-4">
           {{ t('menu.commandIcons') }}
         </div>
         <div class="h-120 overflow-auto border-2 rounded-md  border-solid pl-3 dark:border-dark-3">
@@ -67,24 +65,25 @@ function toggleSelectAll() {
           />
         </div>
       </q-card-section>
-      <q-separator />
 
-      <q-card-actions align="right">
-        <q-btn
-          :label="t('apply')"
-          outline
-          color="primary"
-          icon="check"
-          @click="onDialogOK(selectedIcons)"
-        />
-        <q-btn
+      <QCardActions
+        align="right"
+        class="q-pa-md"
+        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
+      >
+        <QBtn
+          class="q-mr-sm"
           :label="t('menu.close')"
-          outline
-          :color="dark.isActive ? 'grey-3' : 'grey-8'"
-          icon="close"
+          flat
           @click="onDialogCancel"
         />
-      </q-card-actions>
+        <QBtn
+          :label="t('apply')"
+          class="bg-primary text-white"
+          flat
+          @click="onDialogOK(selectedIcons)"
+        />
+      </QCardActions>
     </q-card>
   </q-dialog>
 </template>

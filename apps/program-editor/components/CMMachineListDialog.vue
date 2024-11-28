@@ -11,6 +11,7 @@ defineEmits([
 ])
 
 const { t } = useI18n()
+const { dark } = useQuasar()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const { data: machineGroup } = useAuthFetch<MachineGroup[]>('/api/machine-group')
@@ -59,13 +60,13 @@ function getAllNodeIds(node: any) {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
-    <q-card>
-      <q-card-section class="w-100">
+  <QDialog ref="dialogRef">
+    <QCard>
+      <QCardSection class="w-100">
         <div class="text-h6 flex">
           {{ t('contextMenu.copyToMachinesAndSend') }}
-          <q-space />
-          <q-btn
+          <QSpace />
+          <QBtn
             icon="close"
             flat
             round
@@ -73,8 +74,8 @@ function getAllNodeIds(node: any) {
             @click="onDialogCancel"
           />
         </div>
-      </q-card-section>
-      <q-card-section>
+      </QCardSection>
+      <QCardSection>
         <div class="text-sm mb-2">
           {{ t(`contextMenu.${props.type}.selectMachine`) }}
         </div>
@@ -90,7 +91,7 @@ function getAllNodeIds(node: any) {
             class="w-full min-h-120 max-h-120 overflow-y-scroll"
           />
         </div>
-      </q-card-section>
+      </QCardSection>
       <div class="q-pa-md">
         <QCheckbox
           v-model="selectAll"
@@ -99,36 +100,36 @@ function getAllNodeIds(node: any) {
           dense
           @update:model-value="selectAllMachines"
         />
-        <q-btn
+        <QBtn
           :label="expanded.length ? t('collapseAll') : t('expandAll')"
           :icon="expanded.length ? 'expand_less' : 'expand_more'"
-          color="primary"
+          class="q-ml-sm bg-gray-1"
           dense
+          flat
           @click="expandToggle"
         />
       </div>
 
-      <q-card-actions
+      <QCardActions
         align="right"
-        class="bg-gray-1"
+        class="q-pa-md"
+        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
       >
-        <q-btn
-          v-close-popup
+        <QBtn
           :label="t('cancel')"
-          outline
-          color="black"
-          icon="close"
+          class="q-mr-sm"
+          flat
           @click="onDialogCancel"
         />
-        <q-btn
-          v-close-popup
-          outline
-          :color="props.type === 'deleteFromMultiMachine' ? 'red' : ''"
+        <QBtn
+          class="q-mr-sm text-white"
+          :class="props.type === 'deleteFromMultiMachine' ? 'bg-red-6' : 'bg-primary'"
           :icon="props.type === 'deleteFromMultiMachine' ? 'delete' : 'send'"
           :label="t(`contextMenu.${props.type}.operate`)"
+          flat
           @click="onDialogOK(ticked)"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+      </QCardActions>
+    </QCard>
+  </QDialog>
 </template>

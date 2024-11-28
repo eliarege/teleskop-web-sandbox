@@ -280,11 +280,10 @@ onMounted(() => {
     ref="dialogRef"
     :full-width="isFullScreen"
     :full-height="isFullScreen"
-    @hide="editor.popupTempTimeGraphVisible = false"
   >
-    <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl !dark:(bg-dark-4)">
+    <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl">
       <div id="container">
-        <q-card-section class="bg-gray-1 !dark:(bg-dark-1)">
+        <q-card-section :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'">
           <div class="text-h6 flex">
             {{ t('tempTimeGraph._') }}
             <q-space />
@@ -296,7 +295,7 @@ onMounted(() => {
               dense
             />
           </div>
-          <div class="text-h8 flex flex-col">
+          <div class="text-h8 flex flex-col color-gray-6 dark:text-gray-4">
             <span>{{ editor.machine.id }} - {{ editor.machine.name }}</span>
             <span>{{ editor.program.programNo }} - {{ editor.program.name }}</span>
           </div>

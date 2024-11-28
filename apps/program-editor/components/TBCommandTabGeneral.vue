@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const editor = useEditorStore()
+import type { MachineCommand } from '~/shared/types'
+
+const props = defineProps<{ command: MachineCommand }>()
 const { t } = useI18n()
 </script>
 
@@ -9,15 +11,15 @@ const { t } = useI18n()
       <tbody>
         <tr>
           <td>{{ t('command.commandNo') }}</td>
-          <td>{{ editor.selectedCommand?.commandNo }}</td>
+          <td>{{ props.command.commandNo }}</td>
         </tr>
         <tr>
           <td>{{ t('command.name') }}</td>
-          <td>{{ editor.selectedCommand?.name }}</td>
+          <td>{{ props.command.name }}</td>
         </tr>
         <tr>
           <td>{{ t('command.type') }}</td>
-          <td>{{ editor.selectedCommand?.commandType }}</td>
+          <td>{{ props.command.commandType }}</td>
         </tr>
         <tr>
           <td>{{ t('command.createDate') }}</td>
@@ -29,15 +31,15 @@ const { t } = useI18n()
         </tr>
         <tr>
           <td>{{ t('command.canWorkManually') }}</td>
-          <td>{{ editor.selectedCommand?.isRunManual ? t('command.yes') : t('command.no') }}</td>
+          <td>{{ props.command.isRunManual ? t('command.yes') : t('command.no') }}</td>
         </tr>
         <tr>
           <td>{{ t('command.suggestionList') }}</td>
-          <td>{{ editor.selectedCommand?.adviceList }}</td>
+          <td>{{ props.command.adviceList }}</td>
         </tr>
         <tr>
           <td>{{ t('command.nonParallelCommands') }}</td>
-          <td>{{ editor.selectedCommand?.dontUseList }}</td>
+          <td>{{ props.command.dontUseList }}</td>
         </tr>
       </tbody>
     </table>
