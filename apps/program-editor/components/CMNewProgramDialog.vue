@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { isDef } from '@teleskop/utils'
-import type { ProcessType, ProgramHeader } from '~/shared/types'
+import type { ProgramHeader } from '~/shared/types'
 
 const props = defineProps<{
   header: 'newProgram' | 'saveAs' | 'rename'
@@ -11,26 +11,33 @@ const { dark } = useQuasar()
 const editor = useEditorStore()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const programTypeId = editor.allProcessType[0].value
-const programNo = ref(props.header === 'rename' ? editor.selectedPrograms[0]?.programNo : null)
-const programName = ref<string>(`${props.header !== 'newProgram' ? editor.program.name : ''} ${props.header === 'saveAs' ? t('(copy)', { programNo: editor.program.programNo }) : ''}`)
-const processType = ref<number>(programTypeId || editor.program.typeId)
-const operator = ref<boolean>(props.header === 'rename' ? editor.selectedPrograms[0]?.tbbProgramChangedEvent === 1 : false)
+const isRename = props.header === 'rename'
+const isSaveAs = props.header === 'saveAs'
 
-const newProgram = computed<ProgramHeader>(() => {
-  return {
-    ...editor.program,
-    machineId: editor.machine.id,
-    programNo: programNo.value!,
-    name: programName.value,
-    typeId: processType.value,
-    tbbProgramChangedEvent: operator.value ? 1 : 0,
-  }
-})
+const programNo = ref<number | null>(isRename ? editor.selectedPrograms[0]?.programNo : null)
+const programName = ref<string>(
+  isRename
+    ? editor.selectedPrograms[0]?.name || ''
+    : isSaveAs
+      ? `${editor.program.name || ''} ${t('(copy)', { programNo: editor.program.programNo })}`
+      : '',
+)
+const processType = ref<number>(editor.allProcessType[0]?.value || editor.program.typeId)
+const operator = ref<boolean>(isRename ? editor.selectedPrograms[0]?.operator || false : false)
+
+const newProgram = computed<ProgramHeader>(() => ({
+  ...editor.program,
+  machineId: editor.machine.id,
+  programNo: programNo.value ?? 0,
+  name: programName.value,
+  typeId: processType.value,
+  tbbProgramChangedEvent: operator.value ? 1 : 0,
+  steps: props.header === 'newProgram' ? [] : editor.program.steps,
+}))
 </script>
 
 <template>
-  <div class="w-full h-full">
+  <div class="w-full h-full select-none">
     <q-dialog ref="dialogRef">
       <QCard>
         <QForm @submit="onDialogOK(newProgram)">
@@ -42,6 +49,7 @@ const newProgram = computed<ProgramHeader>(() => {
             </QCardSection>
 
             <QCardSection class="mx-4">
+              <!-- Program No Input -->
               <InputNumber
                 v-model="programNo"
                 type="positive-integer"
@@ -51,10 +59,11 @@ const newProgram = computed<ProgramHeader>(() => {
                   (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
                   (val: number) => !editor.allPrograms.some(p => p.programNo === val) || t('input.unique', { field: t('program.programNo') }),
                 ]"
-                :disable="header === 'rename'"
+                :disable="isRename"
                 class="mb-3"
                 dense
               />
+
               <QInput
                 v-model="programName"
                 :label="t('program.name')"
@@ -62,6 +71,7 @@ const newProgram = computed<ProgramHeader>(() => {
                 class="mb-3"
                 dense
               />
+
               <QSelect
                 v-model="processType"
                 :options="editor.allProcessType"
@@ -72,12 +82,14 @@ const newProgram = computed<ProgramHeader>(() => {
                 emit-value
                 dense
               />
+
               <QCheckbox
                 v-model="operator"
                 :label="t('operator')"
                 dense
               />
             </QCardSection>
+
             <QCardActions
               align="right"
               class="q-pa-md"
@@ -92,7 +104,7 @@ const newProgram = computed<ProgramHeader>(() => {
               />
               <QBtn
                 flat
-                :label="header === 'rename' ? t('save') : t('create')"
+                :label="isRename ? t('save') : t('create')"
                 class=" bg-primary text-white"
                 type="submit"
                 :loading="editor.isLoading"
