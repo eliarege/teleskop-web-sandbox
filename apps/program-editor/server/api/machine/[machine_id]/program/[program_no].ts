@@ -88,8 +88,10 @@ async function deleteFromDatabaseIfValid(
   machineId: number,
   userName?: string,
 ) {
-  if (programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
-    || programState === ProgramStatus.EXISTS_ON_BOTH) {
+  if (
+    programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
+    || programState === ProgramStatus.EXISTS_ON_BOTH
+  ) {
     logger.info(`User: ${userName}. Deleted program ${programNo} from database for machine ${machineId}.`)
     await logEditorOperation(
       ProgramEditorActivityCodes.PROGRAMDELETED,
