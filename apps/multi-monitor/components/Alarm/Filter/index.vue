@@ -17,15 +17,20 @@ const commands = computed(() => {
     .filter(c => c.machineId === activeMachine.value)
     .flatMap(a => a.commands)
 })
+const { width } = useWindowSize()
+const isMobile = computed(() => width.value <= 767)
 </script>
 
 <template>
-  <div class="alarm-container-height grid grid-cols-[280px_1fr] bg-white">
+  <div class="alarm-container-height bg-white" :class="isMobile ? 'flex w-full' : 'grid grid-cols-[280px_1fr]'">
     <AlarmFilterSidebar
+      v-if="!isMobile"
       v-model="activeMachine"
       :machines
     />
     <AlarmFilterCard
+      v-model="activeMachine"
+      :machines
       :commands
       :active-machine
       class="overflow-auto"

@@ -67,7 +67,7 @@ const filterModal = ref(false)
 
         <div
           v-if="isMobile"
-          class="flex-center w-full"
+          class="flex items-center"
         >
           <NuxtLink to="/">
             <TwIcon

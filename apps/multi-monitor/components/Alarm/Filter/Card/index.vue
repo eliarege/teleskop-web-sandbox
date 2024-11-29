@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { times } from 'lodash-es'
+import { mdiMenu } from '@quasar/extras/mdi-v7'
 import type { Command } from '~/shared/types'
 
-const props = defineProps<{ commands: Command[], activeMachine: number }>()
+const props = defineProps<{ commands: Command[], activeMachine: number, machines: { name: string, id: number }[] }>()
 const emit = defineEmits(['close'])
+const selectedMachine = defineModel({ required: true })
 const { t } = useI18n()
 const commandSearch = ref('' as string)
 
@@ -34,7 +36,25 @@ const filteredCommands = computed(() => {
   return commands
 })
 
-const columnsLength = ref(3)
+const breakpoints = useBreakpoints({
+  sm: 900,
+  md: 1350,
+  lg: 1800,
+  xl: 2150,
+})
+const sm = breakpoints.smallerOrEqual('sm')
+const md = breakpoints.smallerOrEqual('md')
+const lg = breakpoints.smallerOrEqual('lg')
+
+const columnsLength = computed(() => {
+  if (sm.value)
+    return 1
+  if (md.value)
+    return 2
+  if (lg.value)
+    return 3
+  return 4
+})
 
 const commandColumns = computed(() => filteredCommands.value.reduce((a, b, i) => {
   a[i % a.length].push(b)
@@ -66,30 +86,53 @@ const filterIcon = computed(() => {
       return 'filter_list'
   }
 })
+const { width } = useWindowSize()
+const isMobile = computed(() => width.value <= 767)
+const machineModal = ref(false)
 </script>
 
 <template>
-  <div class="alarm-container-height">
-    <div class="grid grid-cols-[1fr_0.1fr_0.2fr] px-5">
-      <q-input
-        v-model="commandSearch"
-        :label="t('alarm.commandSearch')"
+  <div class="alarm-container-height w-full">
+    <div :class="isMobile ? 'flex-center' : 'grid grid-cols-[1fr_0.3fr] px-5'">
+      <q-btn
+        v-if="isMobile"
+        no-caps
         dense
         flat
-        class="px-3"
+        :icon="mdiMenu"
+        @click="machineModal = !machineModal"
+      />
+      <QDialog
+        v-model="machineModal"
+        full-height
       >
-        <template #append>
-          <q-icon
-            v-if="commandSearch !== ''"
-            name="close"
-            class="cursor-pointer"
-            @click="commandSearch = ''"
-          />
-          <q-icon name="search" />
-        </template>
-      </q-input>
-      <q-space />
-      <div class="flex-center">
+        <AlarmFilterSidebar
+          v-model="selectedMachine"
+          class="bg-white"
+          :machines
+        />
+      </QDialog>
+      <div>
+        <q-input
+          v-model="commandSearch"
+          :label="t('alarm.commandSearch')"
+          dense
+          flat
+          class="px-3"
+        >
+          <template #append>
+            <q-icon
+              v-if="commandSearch !== ''"
+              name="close"
+              class="cursor-pointer"
+              @click="commandSearch = ''"
+            />
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </div>
+
+      <div class="flex-center whitespace-nowrap gap-3">
         <q-btn
           no-caps
           dense

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { times } from 'lodash-es'
+import { useBreakpoints } from '@vueuse/core'
 import type { MachineAlarmList } from '~/shared/types'
 import { useAlarmStore } from '~/store/Alarm'
 
@@ -10,7 +11,25 @@ const { start: scheduleNext } = useTimeoutFn(async () => {
   scheduleNext()
 }, 5000)
 
-const columnsLength = ref(4)
+const breakpoints = useBreakpoints({
+  sm: 900,
+  md: 1350,
+  lg: 1800,
+  xl: 2150,
+})
+const sm = breakpoints.smallerOrEqual('sm')
+const md = breakpoints.smallerOrEqual('md')
+const lg = breakpoints.smallerOrEqual('lg')
+
+const columnsLength = computed(() => {
+  if (sm.value)
+    return 1
+  if (md.value)
+    return 2
+  if (lg.value)
+    return 3
+  return 4
+})
 
 const alarmColumns = computed(() => {
   return alarmStore.alarmList.reduce((a, b, i) => {
@@ -21,11 +40,11 @@ const alarmColumns = computed(() => {
 </script>
 
 <template>
-  <div class="grid grid-cols-4 gap-3">
+  <div class="grid gap-3 px-1" :style="{ gridTemplateColumns: `repeat(${columnsLength}, 1fr)` }">
     <div
       v-for="(column, index) in alarmColumns"
       :key="index"
-      class="space-y-3"
+      class="space-y-3 min-w-390px"
     >
       <AlarmView
         v-for="machine in column"
@@ -39,7 +58,6 @@ const alarmColumns = computed(() => {
 <style scoped lang="postcss">
 .alarm-columns {
   display: grid;
-  grid-template-columns: repeat(v-bind(columnsLength), 1fr);
   @apply gap-3;
 }
 </style>
