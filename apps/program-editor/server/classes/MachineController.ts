@@ -167,7 +167,7 @@ export class MachineController {
   }
 
   @withTransaction
-  async getCommandsAsList(): Promise<any[]> {
+  async getCommandsAsList(): Promise<Pick<MachineCommand, 'commandNo' | 'name'>[]> {
     return await this.trx
       .select({
         value: 'C.COMMANDNO',

@@ -502,6 +502,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const { fetch } = useKeycloak()
   return {
     name: 'exportToExcel',
     async execute(ctx: any) {

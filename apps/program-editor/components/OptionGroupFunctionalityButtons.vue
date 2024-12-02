@@ -2,9 +2,10 @@
 import { removeAllCheckboxOnOptionGroup, reverseAllCheckboxOnOptionGroup, selectAllCheckboxOnOptionGroup } from '../shared/functions'
 
 const props = defineProps({
-  model: [],
-  options: Array<{ value: any }>,
+  model: { type: Array, default: () => [] },
+  options: { type: Array, default: () => [] },
 })
+
 const emit = defineEmits(['update:model'])
 const { t } = useI18n()
 const buttons = [
