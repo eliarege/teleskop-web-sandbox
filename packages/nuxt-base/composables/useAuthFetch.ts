@@ -7,13 +7,5 @@ export interface UseAuthFetchOptions<T> extends UseFetchOptions<T> {
 
 export const useAuthFetch: typeof useFetch = <T>(url: string | (() => string), options?: UseAuthFetchOptions<T>) => {
   const keycloak = useKeycloak()
-  const onRequest: UseFetchOptions<T>['onRequest'] = async (context) => {
-    await keycloak.updateToken(options?.minimumTokenValidity)
-    setHeader(context.options, 'Authorization', `Bearer ${keycloak.token.value}`)
-    if (typeof options?.onRequest === 'function') {
-      await options.onRequest(context)
-    }
-  }
-
-  return useFetch(url, { ...options, onRequest })
+  return useFetch(url, { ...options, $fetch: keycloak.fetch })
 }
