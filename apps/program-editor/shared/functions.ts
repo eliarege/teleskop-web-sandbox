@@ -1,19 +1,20 @@
 import { Notify } from 'quasar'
+import type { MachineInfo } from './types'
 
-export function selectAllCheckboxOnOptionGroup(options: Array<{ value: any }>) {
+export function selectAllCheckboxOnOptionGroup(options: MachineInfo[]): MachineInfo[] {
   if (!options)
     return []
-  return options.map(option => option.value)
+  return options
 }
 
 export function removeAllCheckboxOnOptionGroup() {
   return []
 }
 
-export function reverseAllCheckboxOnOptionGroup(options: Array<{ value: any }>, model: any[]) {
+export function reverseAllCheckboxOnOptionGroup(options: MachineInfo[], model: MachineInfo[]): MachineInfo[] {
   if (!options || !model)
     return []
-  return options.filter(option => !model.includes(option.value)).map(option => option.value)
+  return options.filter(option => !model.some(m => m.id === option.id))
 }
 
 export function notification(isSuccess: any, message: string, group?: string) {

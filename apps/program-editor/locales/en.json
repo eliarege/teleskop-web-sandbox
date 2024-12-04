@@ -342,6 +342,8 @@
     "min": "Min",
     "max": "Max",
     "parameter": "Parameter",
+    "parameterId": "Parameter Id",
+    "parameterName": "Parameter Name",
     "commandIOName": "Command IO Name",
     "IOName": "IO Name",
     "default": "Default"
