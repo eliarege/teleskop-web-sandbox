@@ -1,30 +1,20 @@
 <script lang="ts" setup>
 import type { QList } from 'quasar'
-import type { MachineGroup, MachineInfo } from '~/shared/types'
+import type { MachineGroup } from '~/shared/types'
 
 const route = useRoute()
 const editor = useEditorStore()
 const $q = useQuasar()
 const { dark } = useQuasar()
+const { fetch } = useKeycloak()
 const { $commandManager } = useNuxtApp()
 
-const { data: machineGroups } = useAuthFetch<MachineGroup[]>('/api/machine-group')
-const { data: machines } = useAuthFetch<MachineInfo[]>('/api/machine')
-
-const machineGroupsWithMachines = computed(() => {
-  if (!machineGroups.value || !machines.value)
-    return []
-
-  return machineGroups.value.map(group => ({
-    ...group,
-    machines: machines.value!.filter(machine => machine.groupId === group.groupId),
-  }))
-})
+const machineGroups = await fetch<MachineGroup[]>('/api/machine-group')
 
 // İlk makineyi otomatik olarak seçer
-watch(() => [machineGroupsWithMachines.value.length, route.path], () => {
+watch(() => [machineGroups.length, route.path], () => {
   if (route.path === '/') {
-    const firstMachine = machineGroupsWithMachines.value.find(group => group.machines.length)?.machines[0]
+    const firstMachine = machineGroups.find(group => group.machines.length)?.machines[0]
     if (firstMachine)
       editor.changeMachine(firstMachine.id)
   }
@@ -59,7 +49,7 @@ const currentMachine = ref()
         borderless
       >
         <template
-          v-for="group in machineGroupsWithMachines"
+          v-for="group in machineGroups"
           :key="group.groupId"
         >
           <QExpansionItem
