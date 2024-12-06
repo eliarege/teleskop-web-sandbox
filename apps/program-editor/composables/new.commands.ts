@@ -506,11 +506,11 @@ registerCommand(() => {
   return {
     name: 'exportToExcel',
     async execute(ctx: any) {
-      const machines = await fetch('/api/machine?asList=true')
+      const machineGroups = await fetch('/api/machine-group')
       ctx.$q.dialog({
         component: TBExportExcelDialog,
         componentProps: {
-          machines,
+          machineGroups,
         },
       })
       return true

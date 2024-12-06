@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { removeAllCheckboxOnOptionGroup, reverseAllCheckboxOnOptionGroup, selectAllCheckboxOnOptionGroup } from '../shared/functions'
-import type { MachineGroup, MachineInfo } from '~/shared/types'
+import type { MachineInfo } from '~/shared/types'
 
 const props = defineProps<{
   model: MachineInfo[] | undefined
