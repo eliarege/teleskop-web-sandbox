@@ -38,7 +38,7 @@ function onDragEnd(event: SortableEvent) {
 
 <template>
   <Sortable
-    class="program-editor e-div-y pb-120"
+    class="program-editor e-div-y"
     :list="// eslint-disable-next-line vue/no-extra-parens
       (editor.program?.steps as ProgramStep[])"
     item-key="stepId"
@@ -75,6 +75,9 @@ function onDragEnd(event: SortableEvent) {
           />
         </QItemSection>
       </QItem>
+    </template>
+    <template #footer>
+      <div class="h-120" @click="editor.selectedSteps = []" />
     </template>
   </Sortable>
 </template>
