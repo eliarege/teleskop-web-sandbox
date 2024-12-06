@@ -161,7 +161,7 @@ export const useEditorStore = defineStore('editor', () => {
     const targetIndex = isDef(stepIndex) ? stepIndex : getStepIndex()
 
     // Paralel komutları kopyala (eğer varsa)
-    newStep.parallelCommands = targetIndex >= 0 ? [...program.value.steps[targetIndex].parallelCommands] : []
+    newStep.parallelCommands = targetIndex >= 0 ? klona(program.value.steps[targetIndex].parallelCommands) : []
 
     // Paralel komutların ID'sini güncelle
     for (const command of newStep.parallelCommands) {
