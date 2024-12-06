@@ -52,13 +52,13 @@ function onDragEnd(event: SortableEvent) {
         class="program-step"
         :class="{ __selected: editor.selectedSteps.find(step => step.stepId === editor.program.steps[index].stepId) }"
       >
-        <QItemSection side>
+        <QItemSection side @click="editor.selectStep($event.ctrlKey, index)">
           <QItemLabel class="w-5">
             {{ index + 1 }}
           </QItemLabel>
         </QItemSection>
-        <QItemSection class="pl-2">
-          <div :id="`step-${index}`" @click="editor.selectStep($event.ctrlKey, index)">
+        <QItemSection class="pl-2" @click="editor.selectStep($event.ctrlKey, index)">
+          <div :id="`step-${index}`">
             <ProgramStepForm :path="`steps.${index}`" />
           </div>
         </QItemSection>
