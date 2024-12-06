@@ -174,7 +174,8 @@
   "error": {
     "machineCommandNotFound": "{commandNo} numaralı komut {machineId} numaralı makinede bulunamadı",
     "cannotMainCommand": "{commandNo} numaralı komut ana komut olamaz",
-    "notSameCommand": "Bir adımda aynı komut iki kere kullanılamaz"
+    "notSameCommand": "Bir adımda aynı komut iki kere kullanılamaz",
+    "mainStepNotFound": "Ana adım bulunamadı"
   },
   "selectAll": "Tümünü seç",
   "dropAll": "Tümünü bırak",

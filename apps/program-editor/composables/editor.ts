@@ -120,7 +120,7 @@ export const useEditorStore = defineStore('editor', () => {
   function createEmptyCommand(): ProgramStepCommand {
     return {
       commandId: lastCommandId++,
-      commandNo: null,
+      commandNo: null!,
       parameters: [] as ParameterItem[],
       ioList: [] as ioListItem[],
     }
@@ -158,9 +158,10 @@ export const useEditorStore = defineStore('editor', () => {
       updateCommand(commandNo, newStep.mainCommand)
     }
 
+    const targetIndex = isDef(stepIndex) ? stepIndex : getStepIndex()
+
     // Paralel komutları kopyala (eğer varsa)
-    const index = stepIndex !== undefined && stepIndex >= 0 ? stepIndex : program.value.steps.length - 1
-    newStep.parallelCommands = index > 0 ? klona(program.value.steps[index].parallelCommands) : []
+    newStep.parallelCommands = targetIndex >= 0 ? [...program.value.steps[targetIndex].parallelCommands] : []
 
     // Paralel komutların ID'sini güncelle
     for (const command of newStep.parallelCommands) {
@@ -168,14 +169,32 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     // Yeni adımı belirtilen konuma ekle
-    program.value.steps.splice(index + 1, 0, newStep)
+    program.value.steps.splice(targetIndex + 1, 0, newStep)
 
     // Seçim ve kaydırma işlemleri
     selectedParallelStep.value = -1
-    selectedSteps.value = [program.value.steps[index + 1]]
+    selectedSteps.value = [program.value.steps[targetIndex + 1]]
     nextTick(() => {
-      scrollPage(index + 1, true)
+      scrollPage(targetIndex + 1, true)
     })
+  }
+
+  /**
+   * Belirtilen veya seçilen adımın indeksini döndürür.
+   *
+   * Bu fonksiyon, opsiyonel olarak verilen bir `stepId` değerine göre programın adımlarında arama yapar
+   * ve eşleşen adımın indeksini döndürür. Eğer `stepId` verilmemişse, seçilen adım (`selectedSteps`) kullanılır.
+   * Hiçbir adım bulunamazsa, programdaki son adımın indeksini döndürür.
+   *
+   * @param {number} [stepId] - İsteğe bağlı olarak kontrol edilecek adım kimliği.
+   * @returns {number} Adımın indeksini veya programdaki son adımın indeksini döndürür.
+   */
+  function getStepIndex(stepId?: number): number {
+    const selectedStepId = stepId ?? selectedSteps.value[0]?.stepId
+    const mainIndex = program.value.steps.findIndex(step => step.stepId === selectedStepId)
+    const targetIndex = mainIndex >= 0 ? mainIndex : program.value.steps.length - 1
+
+    return targetIndex
   }
 
   /**
@@ -226,13 +245,19 @@ export const useEditorStore = defineStore('editor', () => {
    * Eğer seçilen adım yoksa, paralel komut programın sonuna eklenir.
    */
   function newParallelStep(): void {
-    const index = program.value.steps.findIndex(step => step.stepId === selectedSteps.value[0]?.stepId)
-    const mainIndex = index < 0 ? program.value.steps.length - 1 : index
-    const parallelIndex = program.value.steps[mainIndex].parallelCommands.length - 1
-    program.value.steps[mainIndex].parallelCommands.splice(parallelIndex + 1, 0, createEmptyCommand())
+    const targetIndex = getStepIndex()
+
+    // Eğer adım yoksa, işlem yapılmaz
+    if (targetIndex < 0) {
+      notifyError(t('error.mainStepNotFound'))
+      return
+    }
+
+    const parallelCommands = program.value.steps[targetIndex].parallelCommands
+    parallelCommands.push(createEmptyCommand())
 
     nextTick(() => {
-      scrollPage(mainIndex, true)
+      scrollPage(targetIndex, true)
     })
   }
 
@@ -272,8 +297,8 @@ export const useEditorStore = defineStore('editor', () => {
    *
    * Eğer makine komutu bulunamazsa, kullanıcıya bir hata mesajı gösterilir.
    *
-   * @param {ProgramStepCommand} command - Güncellenmesi gereken program adımı komutu.
    * @param {number} newCommandNo - Makine komutunu almak için kullanılan yeni komut numarası.
+   * @param {ProgramStepCommand} step - Güncellenmesi gereken program adımı komutu.
    *
    * @returns {void}
    *
