@@ -1,18 +1,12 @@
 import { createProcessType, deleteProcessType, fetchProcessTypes, updateProcessTypes } from '../functions'
-import { hasRole } from '~/shared/utils'
+import { checkPermission } from '../utils/auth'
 
 export default defineAuthEventHandler(async (event) => {
   if (event.method === 'GET') {
     return await fetchProcessTypes()
   }
 
-  if (!hasRole(event, 'process-edit')) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'You do not have permission to perform this action.',
-    })
-  }
-
+  checkPermission(event, 'process-edit')
   const body = await readBody(event)
 
   if (event.method === 'POST') {

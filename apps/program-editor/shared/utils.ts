@@ -53,19 +53,3 @@ export async function screenshot(element: HTMLElement, filename: string) {
   link.href = canvas.toDataURL('image/png')
   link.click()
 }
-
-export function hasRole(event: any, role: string): boolean {
-  const clientId = useRuntimeConfig().public.kcClientId
-  const roles = event.context.kauth?.resource_access?.[clientId].roles || []
-
-  return roles.includes(role)
-}
-
-export function checkPermission(event: any, role: string) {
-  if (!hasRole(event, role)) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'You do not have permission to perform this action.',
-    })
-  }
-}

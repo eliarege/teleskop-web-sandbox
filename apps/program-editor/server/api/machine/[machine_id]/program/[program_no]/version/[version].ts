@@ -1,6 +1,6 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import logger from '~/server/logger'
-import { checkPermission } from '~/shared/utils'
+import { checkPermission } from '~/server/utils/auth'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no, version } = getRouterParams(event)

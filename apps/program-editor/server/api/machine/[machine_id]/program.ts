@@ -5,7 +5,7 @@ import { PError } from '~/server/error'
 import { ProgramEditorActivityCodes } from '~/server/constants'
 import { logEditorOperation } from '~/server/functions'
 import logger from '~/server/logger'
-import { hasRole } from '~/shared/utils'
+import { checkPermission } from '~/server/utils/auth'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
@@ -18,13 +18,13 @@ export default defineAuthEventHandler(async (event) => {
   }
 
   if (event.method === 'POST') {
-    checkRole(event, 'program-create')
+    checkPermission(event, 'program-create')
     const body = await readBody(event)
     return handleCreateProgram(machine, body, machineId, event.context?.kauth?.name)
   }
 
   if (event.method === 'PUT') {
-    checkRole(event, 'program-edit')
+    checkPermission(event, 'program-edit')
     const body = await readBody(event)
     return handleUpdateProgram(machine, body, machineId, event.context?.kauth?.name)
   }
@@ -94,13 +94,4 @@ function handleProgramError(err: unknown) {
     })
   }
   throw err
-}
-
-function checkRole(event: any, role: string) {
-  if (!hasRole(event, role)) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: `You do not have permission to perform this action.`,
-    })
-  }
 }
