@@ -55,7 +55,6 @@ const options = {
         >
           <template #item="{ element }">
             <div
-              :key="element.programNo"
               :class="dark.isActive ? 'border-white' : 'border-black'"
               class="border-1 rounded p-2 m-2 items-center cursor-grab"
             >

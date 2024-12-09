@@ -106,7 +106,7 @@ const items = [
             icon: 'edit',
             disabled: () => editor.selectedPrograms.length < 1,
             onClick() {
-              $commandManager.executeCommand('changeName', { $q }, editor.selectedPrograms, editor.machine.id)
+              $commandManager.executeCommand('changeName', { $q }, editor.machine.id, editor.selectedPrograms[0].programNo)
             },
           },
         ],

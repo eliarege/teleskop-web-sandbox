@@ -1,50 +1,54 @@
 <script setup lang="ts">
 import { isDef } from '@teleskop/utils'
-import type { ProgramHeader } from '~/shared/types'
+import type { ProcessType, Program, ProgramHeader } from '~/shared/types'
 
 const props = defineProps<{
-  header: 'newProgram' | 'saveAs' | 'rename'
+  type: 'newProgram' | 'saveAs' | 'rename'
+  program: ProgramHeader
+  machineId: number
+  machineName: string
+  allProcessTypes: ProcessType[]
 }>()
 
 const { t } = useI18n()
 const { dark } = useQuasar()
-const editor = useEditorStore()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const isRename = props.header === 'rename'
-const isSaveAs = props.header === 'saveAs'
+const isRename = props.type === 'rename'
+const isSaveAs = props.type === 'saveAs'
 
-const programNo = ref<number | null>(isRename ? editor.selectedPrograms[0]?.programNo : null)
+const programNo = ref<number | undefined>(isRename ? props.program.programNo : undefined)
 const programName = ref<string>(
   isRename
-    ? editor.selectedPrograms[0]?.name || ''
+    ? props.program.name || ''
     : isSaveAs
-      ? `${editor.program.name || ''} ${t('(copy)', { programNo: editor.program.programNo })}`
+      ? `${props.program.name || ''} ${t('(copy)', { programNo: props.program.programNo })}`
       : '',
 )
-const processType = ref<number>(editor.allProcessType[0]?.value || editor.program.typeId)
-const operator = ref<boolean>(isRename ? editor.selectedPrograms[0]?.operator || false : false)
 
-const newProgram = computed<ProgramHeader>(() => ({
-  ...editor.program,
-  machineId: editor.machine.id,
+const processType = ref<number>(props.program.typeId || props.allProcessTypes[0].value)
+const operator = ref<boolean>(isRename ? props.program.tbbProgramChangedEvent === 1 : false)
+
+const newProgram = computed<Program | ProgramHeader>(() => ({
+  ...props.program,
+  machineId: props.machineId,
   programNo: programNo.value ?? 0,
   name: programName.value,
   typeId: processType.value,
   tbbProgramChangedEvent: operator.value ? 1 : 0,
-  steps: props.header === 'newProgram' ? [] : editor.program.steps,
+  steps: props.type === 'newProgram' ? [] : props.program.steps,
 }))
 </script>
 
 <template>
   <div class="w-full h-full select-none">
-    <q-dialog ref="dialogRef">
+    <QDialog ref="dialogRef">
       <QCard>
-        <QForm @submit="onDialogOK(newProgram)">
+        <QForm @submit.prevent="onDialogOK(newProgram)">
           <QCard style="width: 500px">
             <QCardSection>
               <div class="text-h6 text-center">
-                {{ t(`menu.${props.header}`) }} - {{ editor.machine.name }}
+                {{ t(`menu.${props.type}`) }} - {{ machineName }}
               </div>
             </QCardSection>
 
@@ -56,7 +60,8 @@ const newProgram = computed<ProgramHeader>(() => ({
                 :maxlength="10"
                 :rules="[
                   (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
-                  (val: number) => !editor.allPrograms.some(p => p.programNo === val) || t('input.unique', { field: t('program.programNo') }),
+                  //alltaki editorü kaldır, qdialog kapanmaması gerekiyor
+                  (val: number) => !useEditorStore().allPrograms.some(p => p.programNo === val) || t('input.unique', { field: t('program.programNo') }),
                 ]"
                 :disable="isRename"
                 class="mb-3"
@@ -73,7 +78,7 @@ const newProgram = computed<ProgramHeader>(() => ({
 
               <QSelect
                 v-model="processType"
-                :options="editor.allProcessType"
+                :options="allProcessTypes"
                 :label="t('program.programState')"
                 options-dense
                 :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.programState') })]"
@@ -106,14 +111,12 @@ const newProgram = computed<ProgramHeader>(() => ({
                 :label="isRename ? t('save') : t('create')"
                 class=" bg-primary text-white"
                 type="submit"
-                :loading="editor.isLoading"
-                :disable="editor.isLoading || !newProgram.programNo || !newProgram.name"
-                @submit="onDialogOK(newProgram)"
+                :disable="!newProgram.programNo || !newProgram.name"
               />
             </QCardActions>
           </QCard>
         </QForm>
       </QCard>
-    </q-dialog>
+    </QDialog>
   </div>
 </template>

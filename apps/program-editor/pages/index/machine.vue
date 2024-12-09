@@ -464,16 +464,15 @@ const contextMenuOptions = computed(() => [
       icon: 'edit_note',
       disabled: isMoreThanOneRowSelected.value
       || !!editor.selectedPrograms.find(
-        (row: any) =>
+        (row: ProgramTable) =>
           row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
       onClick: async () => {
-        // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'changeName',
           { $q },
-          editor.selectedPrograms,
           machineId,
+          editor.selectedPrograms[0].programNo,
         )
       },
     },
