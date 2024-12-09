@@ -12,7 +12,7 @@ export const useEditorStore = defineStore('editor', () => {
   const originalProgram = ref<Program>(createEmptyProgram())
   const machine = ref<Machine>(createMachine())
   const selectedPrograms = ref<ProgramTable[]>([])
-  const allProcessType = ref<ProcessType[]>([])
+  const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTable[]>([])
   const selectedSteps = ref<ProgramStep[]>([])
   const selectedParallelStep = ref<number>(-1)
@@ -343,14 +343,14 @@ export const useEditorStore = defineStore('editor', () => {
    *
    * @param {Program} [newProgram] - Yeni program verisi (isteğe bağlı).
    *
-   * @returns {Promise<void>} Fonksiyon bir `Promise` döner ve işlemi tamamlar.
+   * @returns {Promise<boolean>} Program kaydedildi mi? `true` veya `false` döner.
    *
    * @description Bu fonksiyon, önce program formunda herhangi bir hata olup olmadığını kontrol eder.
    * Eğer hata varsa, kullanıcıyı hatalı alana yönlendirir ve hata mesajı gösterir.
    * Eğer hata yoksa, yeni program eklenir veya mevcut program güncellenir. İşlem sonucunda başarılı
    * veya başarısız bildirimleri yapılır.
    */
-  async function onSubmit(newProgram?: Program): Promise<void> {
+  async function onSubmit(newProgram?: Program): Promise<boolean> {
     const firstId = errorIds.value.values().next().value
     if (firstId) {
       const el = document.getElementById(firstId)
@@ -359,17 +359,21 @@ export const useEditorStore = defineStore('editor', () => {
 
       scrollPage(Number(stepIndex), true)
       notifyError(t('saveProgram.incorrect'))
+      return false
     } else {
       isLoading.value = true
       if (newProgram) {
         if (allPrograms.value.some(p => p.programNo === newProgram.programNo)) {
           notifyError(t('input.unique', { field: t('program.programNo') }))
+          isLoading.value = false
+          return false
         } else {
           if (await insertProgram(newProgram)) {
             originalProgram.value = newProgram
             notifySuccess(t('saveProgram.success'))
           } else {
             notifyError(t('saveProgram.fail'))
+            return false
           }
         }
       } else {
@@ -378,9 +382,11 @@ export const useEditorStore = defineStore('editor', () => {
           notifySuccess(t('saveProgram.success'))
         } else {
           notifyError(t('saveProgram.fail'))
+          return false
         }
       }
       isLoading.value = false
+      return true
     }
   }
 
@@ -493,7 +499,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Veriler çekildikten sonra, programın her bir adımı (`step`) ve paralel komutları (`parallelCommands`) işlenir.
    * Her bir adım ve komut için benzersiz ID'ler atanır.
    */
-  async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<void> {
+  async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<Program> {
     selectedSteps.value = []
     selectedParallelStep.value = -1
     lastStepId = 0
@@ -593,7 +599,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Güncellenmiş işlem türleri, `allProcessType` değişkenine atanır.
    */
   async function fetchAllProcessTypes(): Promise<void> {
-    allProcessType.value = (await kc.fetch<ProcessType[]>('/api/process')).map(type => ({
+    allProcessTypes.value = (await kc.fetch<ProcessType[]>('/api/process')).map(type => ({
       ...type,
       label: capitalize(type.label),
     }))
@@ -897,7 +903,7 @@ export const useEditorStore = defineStore('editor', () => {
     isLoading,
     errorIds,
     popupVersionDialog,
-    allProcessType,
+    allProcessTypes,
     allPrograms,
     lastStepId,
     lastCommandId,

@@ -51,7 +51,7 @@ export interface RegisteredCommands {
   pasteProgram: [ctx: any, machineId: number, remains?: any]
   deleteProgramFromMultiMachine: [ctx: any, selectedRows: Array<any>]
   concatenatePrograms: [ctx: any, selectedRows: ProgramTable[], machineId: number]
-  changeName: [ctx: any, selectedRows: Array<any>, machineId: number]
+  changeName: [ctx: any, machineId: number, programNo: number]
   changeProcessType: [ctx: any, selectedRows: Array<any>, machineId: number]
   sendProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
   copyAndSend: [ctx: any, selectedRows: Array<any>, machineId: number]
@@ -76,13 +76,21 @@ registerCommand(() => {
   return {
     name: 'newProgram',
     execute(ctx: any) {
+      const program = editor.createEmptyProgram()
+
       ctx.$q.dialog({
         component: CMNewProgramDialog,
         componentProps: {
-          header: 'newProgram',
+          type: 'newProgram',
+          program,
+          machineId: editor.machine.id,
+          machineName: editor.machine.name,
+          allProcessTypes: editor.allProcessTypes,
         },
       }).onOk(async (newProgram: Program) => {
-        await editor.onSubmit(newProgram)
+        const result = await editor.onSubmit(newProgram)
+        if (!result)
+          return false
         setTimeout(() => {
           editor.addStep()
         }, 1000)
@@ -104,10 +112,15 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: CMNewProgramDialog,
         componentProps: {
-          header: 'saveAs',
-          programNo: editor.program.programNo,
+          type: 'saveAs',
+          program: editor.program,
+          machineId: editor.machine.id,
+          machineName: editor.machine.name,
+          allProcessTypes: editor.allProcessTypes,
         },
       }).onOk(async (newProgram: Program) => {
+        console.log(newProgram)
+
         await editor.onSubmit(newProgram)
         return true
       }).onCancel(() => {
@@ -298,9 +311,9 @@ async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
     ctx.$q.dialog({
       component: CMNewProgramDialog,
       componentProps: {
-        header: 'newProgram',
+        type: 'newProgram',
       },
-    }).onOk((program) => {
+    }).onOk((program: ProgramHeader) => {
       resolve(program)
     }).onCancel(() => {
       reject(new Error('New program details input cancelled'))
@@ -309,25 +322,37 @@ async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
 }
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'changeName',
-    execute(ctx: any, selectedPrograms: ProgramTable[], machineId) {
-      ctx.$q.dialog({
-        component: CMNewProgramDialog,
-        componentProps: {
-          header: 'rename',
-        },
-      }).onOk(async (program: ProgramHeader) => {
-        const editor = useEditorStore()
+    async execute(ctx: any, machineId: number, programNo: number) {
+      try {
         editor.isLoading = true
-        await contextMenuStore.updateProgramHeader(program, machineId)
-        await editor.fetchAllPrograms()
+        const program = await contextMenuStore.getProgramHeader(machineId, programNo)
         editor.isLoading = false
+
+        ctx.$q.dialog({
+          component: CMNewProgramDialog,
+          componentProps: {
+            type: 'rename',
+            program,
+            machineId,
+            machineName: editor.machine.name,
+            allProcessTypes: editor.allProcessTypes,
+          },
+        }).onOk(async (program: ProgramHeader) => {
+          editor.isLoading = true
+          await contextMenuStore.updateProgramHeader(machineId, program)
+          await editor.fetchAllPrograms()
+          editor.isLoading = false
+          return true
+        }).onCancel(() => {
+          return false
+        })
         return true
-      }).onCancel(() => {
-        return false
-      })
-      return true
+      } catch (error) {
+        console.error('Program not found:', error)
+      }
     },
   }
 })

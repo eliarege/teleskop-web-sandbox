@@ -325,6 +325,10 @@
     },
     "deleteVersionDialog": {
       "warning": "Version(s) {code} will be deleted! Are you sure you want to continue?"
+    },
+    "updateHeaderNotification": {
+      "success": "Update header operation is succeed for program with program no {programNo}.",
+      "fail": "Update header operation is failed for program with program no {programNo}."
     }
   },
   "exportExcelDialog": {

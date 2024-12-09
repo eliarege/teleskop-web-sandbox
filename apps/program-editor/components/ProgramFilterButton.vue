@@ -91,7 +91,7 @@ function focusNumberInput() {
               />
               <QSelect
                 v-model="filter.existingFilter.processType"
-                :options="editor.allProcessType"
+                :options="editor.allProcessTypes"
                 :label="t('filter.processType')"
                 options-dense
                 dense

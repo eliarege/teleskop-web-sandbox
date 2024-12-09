@@ -325,6 +325,10 @@
     },
     "deleteVersionDialog": {
       "warning": "Version {code} silinecek! Devam etmek istediğinize emin misiniz?"
+    },
+    "updateHeaderNotification": {
+      "success": "{programNo} numaralı programın baslığı basarıyla değiştirildi.",
+      "fail": "{programNo} numaralı programın baslığı değiştirme işlemi basarısız."
     }
   },
   "exportExcelDialog": {

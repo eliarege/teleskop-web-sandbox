@@ -1,7 +1,7 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { notification } from '~/shared/functions'
-import type { Program, ProgramHeader, ProgramStep, ProgramTable } from '~/shared/types'
+import type { ProcessType, Program, ProgramHeader, ProgramStep, ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 
 export interface ContextMenuStore {
@@ -13,8 +13,9 @@ export interface ContextMenuStore {
   setCtx: (ctx?: any) => void
   deleteProgram: (selectedRows: ProgramTable[], selectedOption: number, machineId: number) => Promise<void>
   getProgram: (programNo: number, machineId: number) => Promise<Program>
-  updateProgramHeader: (program: ProgramHeader, machineId: number) => Promise<void>
-  getProcessTypes: () => Promise<any[]>
+  updateProgramHeader: (machineId: number, program: ProgramHeader,) => Promise<void>
+  getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
+  getProcessTypes: () => Promise<ProcessType[]>
   changeProcessType: (selectedRows: Array<{ programNo: number }>, newType: number, machineId: number) => Promise<void>
   sendProgram: (programs: Array<ProgramHeader>, machineId: number) => Promise<void>
   getRemoteProgram: (programs: Array<ProgramTable>, machineId: number) => Promise<void>
@@ -203,9 +204,14 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return await fetch(`/api/machine/${machineId}/program/${programNo}`)
   }
 
-  async function updateProgramHeader(program: ProgramHeader, machineId: number) {
+  async function getProgramHeader(machineId: number, programNo: number): Promise<ProgramHeader> {
     const { fetch } = useKeycloak()
-    const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/update-header`, {
+    return await fetch(`/api/machine/${machineId}/program/${programNo}/header`)
+  }
+
+  async function updateProgramHeader(machineId: number, program: ProgramHeader) {
+    const { fetch } = useKeycloak()
+    const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/header`, {
       method: 'PUT',
       body: { program },
     })
@@ -214,7 +220,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     notification(check, t(`contextMenu.updateHeaderNotification.${status}`, { programNo: program.programNo }))
   }
 
-  async function getProcessTypes() {
+  async function getProcessTypes(): Promise<ProcessType[]> {
     const { fetch } = useKeycloak()
     return await fetch('/api/process')
   }
@@ -379,6 +385,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     deleteProgram,
     getProgram,
     sendProgram,
+    getProgramHeader,
     updateProgramHeader,
     changeProcessType,
     comparison,
