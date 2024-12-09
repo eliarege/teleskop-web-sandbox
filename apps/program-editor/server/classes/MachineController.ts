@@ -710,6 +710,43 @@ export class MachineController {
   }
 
   /**
+   * Programın header bilgilerini getirir
+   * @param {number} machineId - Makine numarası
+   * @param {number} programNo - Program numarası
+   * @returns {Promise<ProgramHeader>} - Programın header bilgilerini içeren bir Promise
+   */
+  @withTransaction
+  async fetchProgramHeader(machineId: number, programNo: number): Promise<ProgramHeader> {
+    const program: ProgramHeader = await this.trx
+      .select({
+        programNo: 'H.PROGNO',
+        name: 'H.NAME',
+        duration: 'H.DURATION',
+        author: 'H.LOCKEDBY',
+        comment: 'H.USERCOMMENT',
+        typeId: 'H.PROCESSCODE',
+        createdAt: 'H.CREATIONDATE',
+        updatedAt: 'H.CHANGEDATE',
+        updatedAtTBB: 'H.TBBCHANGEDATE',
+        programState: 'H.PRGSTATE',
+        isChanged: 'H.ISCHANGED',
+        tbbProgramChangedEvent: this.trx.raw(sql`CASE H.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
+        totalChemReq: 'H.TotalChemReq',
+        totalDyeReq: 'H.TotalDyeReq',
+        manChemReq: 'H.ManChemReq',
+        autoChemReq: 'H.AutoChemReq',
+        autoDyeReq: 'H.AutoDyeReq',
+        manDyeReq: 'H.ManDyeReq',
+      })
+      .from(' BFMASTERPRGHEADER AS H')
+      .where('PROGNO', programNo)
+      .andWhere('MACHINEID', machineId)
+      .first()
+
+    return program
+  }
+
+  /**
    * Programın header bilgilerini günceller
    * @param {ProgramHeader} program - Güncellenmek istenen program
    * @returns {Promise<number>} - Etkilenen satır sayısı
@@ -721,10 +758,15 @@ export class MachineController {
     if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
       program.isChanged = true
     const result = await this.trx
+      .update({
+        NAME: program.name,
+        PROCESSCODE: program.typeId,
+        CHANGEDATE: date,
+        TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
+      })
       .from('BFMASTERPRGHEADER')
       .where('PROGNO', program.programNo)
       .andWhere('MACHINEID', this.id)
-      .update({ NAME: program.name, PROCESSCODE: program.typeId, CHANGEDATE: date })
 
     return result
   }

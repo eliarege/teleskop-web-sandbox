@@ -26,7 +26,6 @@ export default defineNuxtConfig({
     twName: 'program-editor',
     public: {
       kcClientId: 'program-editor',
-      kcEnabled: true,
     },
   },
   i18n: {
