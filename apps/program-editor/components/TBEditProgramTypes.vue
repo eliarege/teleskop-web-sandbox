@@ -8,24 +8,27 @@ defineEmits([
   ...useDialogPluginComponent.emits,
 ])
 
-const { fetch } = useKeycloak()
 const $q = useQuasar()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
-const { dark } = useQuasar()
+const { fetch } = useKeycloak()
+const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+
+const selectedRow = ref()
 const { data: programTypes, refresh } = useAuthFetch('/api/process', { default: () => [] })
+
 const columns = computed(() => [
   { name: 'value', label: t('changeProcessTypeDialog.processTypeNo'), field: 'value', align: 'left' },
   { name: 'label', label: t('changeProcessTypeDialog.processTypeName'), field: 'label', align: 'left' },
   { name: 'description', label: t('changeProcessTypeDialog.note'), field: 'description', align: 'left' },
 ])
-const selectedRow = ref()
+
 async function handleUpdateProcessTypes() {
   const check = await fetch('/api/process', { method: 'PUT', body: programTypes.value })
   const status = check ? 'success' : 'fail'
   notification(check, t(`changeProcessTypeDialog.updateProcessTypes.${status}`, { no: selectedRow.value.value }))
   refresh()
 }
+
 function handleCreateProcessType() {
   $q.dialog({
     component: TBCreateProcessTypeDialog,
@@ -41,6 +44,7 @@ function handleCreateProcessType() {
     refresh()
   })
 }
+
 function handleDeleteProcessType() {
   $q.dialog({
     title: t('delete'),
@@ -76,6 +80,7 @@ function handleDeleteProcessType() {
           {{ t('contextMenu.changeProcessType') }}
           <q-space />
           <q-btn
+            class="text-gray-4 dark:text-gray-6"
             icon="close"
             flat
             round
@@ -115,29 +120,27 @@ function handleDeleteProcessType() {
       </QCardSection>
 
       <QCardActions
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
         align="right"
-        class="q-pa-md"
-        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
       >
         <QBtn
           :label="t('create')"
-          class="q-mr-sm"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
           icon="create"
           flat
           @click="handleCreateProcessType"
         />
         <QBtn
           :label="t('delete')"
-          class="q-mr-sm bg-red-6 text-white"
+          class="q-mr-sm bg-red-6"
           icon="delete"
           :disable="!selectedRow"
           flat
           @click="handleDeleteProcessType"
         />
-
         <QBtn
           :label="t('submit')"
-          class="q-mr-sm bg-primary text-white"
+          class="q-mr-sm bg-primary"
           icon="save"
           flat
           @click="handleUpdateProcessTypes"

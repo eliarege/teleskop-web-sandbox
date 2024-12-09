@@ -11,7 +11,6 @@ const processType = ref({
 } as ProcessType)
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
-const { dark } = useQuasar()
 </script>
 
 <template>
@@ -24,6 +23,7 @@ const { dark } = useQuasar()
           {{ t('changeProcessTypeDialog.createProcessType._') }}
           <q-space />
           <q-btn
+            class="text-gray-4 dark:text-gray-6"
             icon="close"
             flat
             round
@@ -57,18 +57,17 @@ const { dark } = useQuasar()
 
       <QCardActions
         align="right"
-        class="q-pa-md"
-        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
         <QBtn
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           :label="t('cancel')"
-          class="q-mr-sm"
           flat
           @click="onDialogCancel"
         />
         <QBtn
           :label="t('create')"
-          class="q-mr-sm bg-primary text-white"
+          class="q-mr-sm bg-primary text-white dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           flat
           :disable="!processType.value"
           @click="onDialogOK(processType)"

@@ -6,7 +6,6 @@ defineEmits([
 ])
 
 const { t } = useI18n()
-const { dark } = useQuasar()
 const editor = useEditorStore()
 const selectedIcons = ref(editor.teleskopSettings.selectedIcons)
 const fullSelect = Number.parseInt('1'.repeat(commandTypeMaps.length), 2)
@@ -30,6 +29,7 @@ function toggleSelectAll() {
           {{ t('menu.appSettings') }}
           <q-space />
           <q-btn
+            class="text-gray-4 dark:text-gray-6"
             icon="close"
             flat
             round
@@ -68,11 +68,10 @@ function toggleSelectAll() {
 
       <QCardActions
         align="right"
-        class="q-pa-md"
-        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
         <QBtn
-          class="q-mr-sm"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           :label="t('menu.close')"
           flat
           @click="onDialogCancel"

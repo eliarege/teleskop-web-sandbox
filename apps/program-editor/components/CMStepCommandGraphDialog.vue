@@ -6,7 +6,6 @@ import { Bar } from 'vue-chartjs'
 import { screenshot } from '~/shared/utils'
 
 const { t } = useI18n()
-const { dark } = useQuasar()
 const editor = useEditorStore()
 const { dialogRef } = useDialogPluginComponent()
 
@@ -133,7 +132,7 @@ onMounted(() => {
   <q-dialog ref="dialogRef">
     <q-card class="flex flex-col max-w-6xl max-h-2xl min-w-6xl min-h-2xl !dark:(bg-dark-4)">
       <div id="container">
-        <q-card-section :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'">
+        <q-card-section class="bg-gray-1 dark:bg-dark-3">
           <div class="text-h6 flex">
             {{ t('stepCommandGraph._') }}
             <q-space />

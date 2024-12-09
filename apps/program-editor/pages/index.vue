@@ -17,7 +17,6 @@ const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
 const $q = useQuasar()
 const route = useRoute()
-const { dark } = useQuasar()
 
 const editor = useEditorStore()
 editor.machine = editor.createMachine()
@@ -194,10 +193,10 @@ const itemsMobile = [
 </script>
 
 <template>
-  <QLayout view="hHh LpR fFf" :class="dark.isActive ? 'bg-dark' : 'bg-white'">
+  <QLayout view="hHh LpR fFf" class="bg-gray-1 dark:bg-dark-4">
     <QHeader
       borderless
-      class="bg-gray-2 text-black !dark:(bg-dark-1 text-gray-1) select-none"
+      class="bg-gray-1 text-black !dark:(bg-dark-1 text-gray-1) select-none"
     >
       <QToolbar class="min-h-unset">
         <template v-if="sm">
@@ -249,7 +248,7 @@ const itemsMobile = [
       v-model="editor.leftDrawerOpen"
       side="left"
       borderless
-      :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+      class="bg-light-7 dark:bg-dark-3"
     >
       <MachineList />
     </QDrawer>
@@ -257,8 +256,7 @@ const itemsMobile = [
     <QPageContainer>
       <QPage>
         <div
-          :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
-          class="flex sticky top-10 z-10"
+          class="flex sticky top-10 z-10 bg-gray-2 dark:bg-dark-3"
         >
           <ContextBar />
         </div>
@@ -272,7 +270,7 @@ const itemsMobile = [
       v-model="editor.rightDrawerOpen"
       side="right"
       borderless
-      :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+      class="bg-light-7 dark:bg-dark-3"
     >
       <MachineCommandList />
     </QDrawer>

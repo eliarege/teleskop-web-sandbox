@@ -11,7 +11,6 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const { dark } = useQuasar()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const isRename = props.type === 'rename'
@@ -96,20 +95,19 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
 
             <QCardActions
               align="right"
-              class="q-pa-md"
-              :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
+              class="q-pa-md bg-gray-1 dark:bg-dark-4"
             >
               <QBtn
                 flat
                 :label="t('cancel')"
-                class="q-mr-sm"
+                class="q-mr-sm bg-gray-2  dark:bg-dark-3 text-dark-4 dark:text-gray-2"
                 type="reset"
                 @click="onDialogCancel"
               />
               <QBtn
                 flat
                 :label="isRename ? t('save') : t('create')"
-                class=" bg-primary text-white"
+                class="q-mr-sm bg-primary text-gray-1 dark:text-gray-2"
                 type="submit"
                 :disable="!newProgram.programNo || !newProgram.name"
               />

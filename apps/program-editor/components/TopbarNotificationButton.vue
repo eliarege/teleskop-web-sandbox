@@ -14,7 +14,7 @@ function removeNotification(index: number) {
 <template>
   <TopbarButton
     icon="notifications"
-    :color="notificationState.notifications.length ? 'red' : 'gray-8'"
+    :color="notificationState.notifications.length ? 'red' : 'gray-6 dark:text-gray-4'"
     round
   >
     <QTooltip class="text-capitalize">
@@ -45,8 +45,8 @@ function removeNotification(index: number) {
             <QTooltip> {{ t('notification.delete_all') }} </QTooltip>
           </QBtn>
           <QBtn
+            class="text-gray-4 dark:text-gray-6"
             icon="close"
-            class="text-gray-8"
             flat
             round
             size="sm"

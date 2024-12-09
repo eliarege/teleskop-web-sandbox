@@ -11,7 +11,6 @@ defineEmits([
 ])
 
 const { t } = useI18n()
-const { dark } = useQuasar()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const { data: machineGroup } = useAuthFetch<MachineGroup[]>('/api/machine-group')
@@ -38,11 +37,14 @@ const nodes = computed(() => {
 })
 
 function selectAllMachines() {
-  if (selectAll.value)
+  if (!selectAll.value)
     ticked.value = nodes.value.flatMap(group => group.children.map(machine => machine.id))
   else
     ticked.value = []
+
+  selectAll.value = !selectAll.value
 }
+
 function expandToggle() {
   if (expanded.value.length === 0)
     expanded.value = nodes.value.flatMap(getAllNodeIds)
@@ -68,6 +70,7 @@ function getAllNodeIds(node: any) {
           <QSpace />
           <QBtn
             icon="close"
+            class="text-gray-4 dark:text-gray-6"
             flat
             round
             dense
@@ -75,7 +78,8 @@ function getAllNodeIds(node: any) {
           />
         </div>
       </QCardSection>
-      <QCardSection>
+
+      <QCardSection class="text-gray-8 dark:text-gray-3">
         <div class="text-sm mb-2">
           {{ t(`contextMenu.${props.type}.selectMachine`) }}
         </div>
@@ -91,40 +95,39 @@ function getAllNodeIds(node: any) {
             class="w-full min-h-120 max-h-120 overflow-y-scroll"
           />
         </div>
+
+        <div class="flex gap-4 justify-start p-2">
+          <QBtn
+            class="w-40 bg-gray-1 dark:bg-dark-4"
+            :label="selectAll ? t('dropAll') : t('selectAll')"
+            dense
+            flat
+            @click="selectAllMachines"
+          />
+
+          <QBtn
+            class="w-40 bg-gray-1 dark:bg-dark-4"
+            :label="expanded.length ? t('collapseAll') : t('expandAll')"
+            dense
+            flat
+            @click="expandToggle"
+          />
+        </div>
       </QCardSection>
-      <div class="q-pa-md">
-        <QCheckbox
-          v-model="selectAll"
-          class="w-34"
-          :label="selectAll ? t('dropAll') : t('selectAll')"
-          dense
-          @update:model-value="selectAllMachines"
-        />
-        <QBtn
-          :label="expanded.length ? t('collapseAll') : t('expandAll')"
-          :icon="expanded.length ? 'expand_less' : 'expand_more'"
-          class="q-ml-sm bg-gray-1"
-          dense
-          flat
-          @click="expandToggle"
-        />
-      </div>
 
       <QCardActions
         align="right"
-        class="q-pa-md"
-        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
         <QBtn
           :label="t('cancel')"
-          class="q-mr-sm"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           flat
           @click="onDialogCancel"
         />
         <QBtn
-          class="q-mr-sm text-white"
+          class="q-mr-sm text-gray-1 dark:text-gray-2"
           :class="props.type === 'deleteFromMultiMachine' ? 'bg-red-6' : 'bg-primary'"
-          :icon="props.type === 'deleteFromMultiMachine' ? 'delete' : 'send'"
           :label="t(`contextMenu.${props.type}.operate`)"
           flat
           @click="onDialogOK(ticked)"

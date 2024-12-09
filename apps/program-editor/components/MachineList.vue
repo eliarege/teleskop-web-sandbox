@@ -5,7 +5,6 @@ import type { MachineGroup } from '~/shared/types'
 const route = useRoute()
 const editor = useEditorStore()
 const $q = useQuasar()
-const { dark } = useQuasar()
 const { fetch } = useKeycloak()
 const { $commandManager } = useNuxtApp()
 
@@ -56,7 +55,7 @@ const currentMachine = ref()
             v-if="group.machines && group.machines.length > 0"
             :label="group.name"
             default-opened
-            :header-class="dark.isActive ? 'bg-grey-9 text-white' : 'bg-gray-2 text-black'"
+            header-class="bg-light-9 dark:bg-dark-1 text-gray-8 dark:text-gray-3"
             borderless
             dense
           >
@@ -66,7 +65,7 @@ const currentMachine = ref()
               v-ripple
               :active="route.params.machine_id === `${machine.id}`"
               active-class="e-selected"
-              :class="dark.isActive ? ' text-gray-3' : 'text-gray-8'"
+              class="text-gray-8 dark:text-gray-3"
               borderless
               clickable
               dense
@@ -76,12 +75,12 @@ const currentMachine = ref()
               <QItemSection dense>
                 {{ machine.name }}
               </QItemSection>
-              <q-menu
+              <QMenu
                 touch-position
                 context-menu
               >
                 <MachineListContextMenu :machine-id="currentMachine?.id" />
-              </q-menu>
+              </QMenu>
             </QItem>
           </QExpansionItem>
         </template>

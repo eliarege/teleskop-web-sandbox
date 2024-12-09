@@ -9,7 +9,6 @@ const props = defineProps<{
 
 const kc = useKeycloak()
 const { t } = useI18n()
-const { dark } = useQuasar()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 let sheet: ExcelJS.Worksheet
 const { data: machineGroup } = useAuthFetch<MachineGroup[]>('/api/machine-group')
@@ -279,12 +278,17 @@ function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
       </QCardSection>
       <QCardActions
         align="right"
-        class="q-pa-md"
-        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
         <QBtn
+          :label="t('cancel')"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+          flat
+          @click="onDialogCancel"
+        />
+        <QBtn
           :label="t('ok')"
-          class="q-mr-sm bg-primary text-white"
+          class="q-mr-sm bg-primary"
           flat
           :disable="!(selectedFields.length && selectedMachines.length)"
           @click="exportExcel"

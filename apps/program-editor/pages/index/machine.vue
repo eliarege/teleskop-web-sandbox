@@ -698,15 +698,15 @@ function handleRowClass(row: ProgramTable): string {
       :columns="columns"
       row-key="programNo"
       :rows-per-page-options="[0]"
-      class="program-table"
+      class="program-table bg-gray-1 dark:bg-dark-4"
       selection="multiple"
       :selected-rows-label="getSelectedString"
       :filter="searchFilter"
       dense
       flat
-      table-header-style="position: sticky; top: 0; z-index: 1; background-color: #f5f5f5; height: 50px;"
-      bottom-row-style="background-color: #ff0000; color: white;"
-      table-style="border-radius: 10px;"
+      table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
+      table-header-class="bg-gray-1 dark:bg-dark-4"
+      table-class="bg-gray-1 dark:bg-dark-4"
       @row-click="onRowClick"
       @row-dblclick="onRowDoubleClick"
       @row-contextmenu="handleContextMenu"
@@ -809,13 +809,8 @@ function handleRowClass(row: ProgramTable): string {
   border: 1px solid #ccc;
 }
 
-.program-table :deep(.q-table__bottom) {
-  background-color: #f5f5f5;
-}
-
 .program-table {
   height: 80vh;
-  border-radius: 10px;
   user-select: none;
 }
 </style>

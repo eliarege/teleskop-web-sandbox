@@ -11,7 +11,6 @@ import { screenshot } from '~/shared/utils'
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
 
 const { t } = useI18n()
-const { dark } = useQuasar()
 const editor = useEditorStore()
 const { dialogRef } = useDialogPluginComponent()
 
@@ -90,9 +89,6 @@ function calculateChartData() {
       y: {
         min: Math.min(0, minY - (10 + (minY % 10))),
         max: maxY + (10 - (maxY % 10)),
-        grid: {
-          color: dark.isActive ? 'rgb(80, 80, 80)' : 'rgb(211, 211, 211)',
-        },
         title: {
           display: true,
           text: t('apperance.temperature(c)'),
@@ -107,9 +103,6 @@ function calculateChartData() {
         type: 'linear',
         min: minX,
         max: maxX,
-        grid: {
-          color: dark.isActive ? 'rgb(80, 80, 80)' : 'rgb(211, 211, 211)',
-        },
         title: {
           display: true,
           text: t('apperance.time(h)'),
@@ -283,7 +276,7 @@ onMounted(() => {
   >
     <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl">
       <div id="container">
-        <q-card-section :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'">
+        <q-card-section class="bg-gray-1 dark:bg-dark-4">
           <div class="text-h6 flex">
             {{ t('tempTimeGraph._') }}
             <q-space />

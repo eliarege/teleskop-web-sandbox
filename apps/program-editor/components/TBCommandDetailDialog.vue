@@ -8,7 +8,6 @@ const props = defineProps<{
 }>()
 
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
-const { dark } = useQuasar()
 const { t } = useI18n()
 const tab = ref('general')
 </script>
@@ -26,6 +25,7 @@ const tab = ref('general')
             {{ t('menu.commandInfo') }}
             <q-space />
             <q-btn
+              class="text-gray-4 dark:text-gray-6"
               icon="close"
               flat
               round
@@ -86,11 +86,10 @@ const tab = ref('general')
         </QCardSection>
         <QCardActions
           align="right"
-          class="q-pa-md"
-          :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
+          class="q-pa-md bg-gray-1 dark:bg-dark-4"
         >
           <QBtn
-            class="q-mr-sm"
+            class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
             :label="t('menu.close')"
             flat
             @click="onDialogCancel"

@@ -13,7 +13,6 @@ defineEmits([
 
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
-const { dark } = useQuasar()
 const programs = ref(props.programs)
 
 function moveItemInArray(array: [], from: number, to: number) {
@@ -34,6 +33,7 @@ const options = {
           {{ t('contextMenu.concatenateProgramsDialog.title') }}
           <q-space />
           <q-btn
+            class="text-gray-4 dark:text-gray-6"
             icon="close"
             flat
             round
@@ -55,8 +55,7 @@ const options = {
         >
           <template #item="{ element }">
             <div
-              :class="dark.isActive ? 'border-white' : 'border-black'"
-              class="border-1 rounded p-2 m-2 items-center cursor-grab"
+              class="border-1 rounded p-2 m-2 items-center cursor-grab border-gray-4 dark:border-gray-5"
             >
               {{ `${element.programNo} - ${element.name}` }}
             </div>
@@ -65,17 +64,17 @@ const options = {
       </q-card-section>
 
       <q-card-actions
-        class="q-pa-md"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
         align="right"
-        :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
       >
         <q-btn
-          v-close-popup
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           :label="t('cancel')"
           flat
           @click="onDialogCancel"
         />
         <q-btn
+          class="q-mr-sm bg-primary"
           :label="t('ok')"
           color="primary"
           @click="onDialogOK(programs)"

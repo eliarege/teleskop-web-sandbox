@@ -9,7 +9,6 @@ defineEmits([
 ])
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
-const { dark } = useQuasar()
 const selectedOption = ref('db-machine')
 const options = [
   { label: t('contextMenu.deleteProgramDialog.deleteFromBoth'), value: 'db-machine' },
@@ -27,16 +26,16 @@ const options = [
           <QSpace />
           <QBtn
             icon="close"
+            class="text-gray-4 dark:text-gray-6"
             flat
             round
             dense
-            color="gray-6"
             @click="onDialogCancel"
           />
         </div>
       </QCardSection>
 
-      <QCardSection>
+      <QCardSection class="text-gray-8 dark:text-gray-3">
         <span class="max-w-100"> {{ t('contextMenu.deleteProgramDialog.warning', { name: props.programNames }) }}</span>
         <div class="mt-4 ml-4 flex">
           <QOptionGroup
@@ -49,20 +48,18 @@ const options = [
       </QCardSection>
 
       <QCardActions
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
         align="right"
-        class="q-pa-md"
-        :class="dark.isActive ? 'bg-dark-4' : 'bg-gray-1'"
       >
         <QBtn
           :label="t('cancel')"
-          class="q-mr-sm"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
           flat
           @click="onDialogCancel"
         />
         <QBtn
           :label="t('delete')"
-          class="q-mr-sm bg-red-6 text-white"
-          icon="delete"
+          class="q-mr-sm bg-red-6"
           flat
           @click="onDialogOK(selectedOption)"
         />
