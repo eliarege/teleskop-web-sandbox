@@ -5,11 +5,12 @@ const knex = Knex({
   client: 'mssql',
   connection: {
     host: config.teleskopHost,
-    port: Number.parseInt(config.teleskopPort),
+    port: Number(config.teleskopPort),
     user: config.teleskopUser,
-    password: config.teleskopPassword.toString(),
+    password: String(config.teleskopPassword),
     database: config.teleskopDatabase,
     options: {
+      instanceName: config.teleskopInstanceName,
       trustServerCertificate: true,
     },
   },

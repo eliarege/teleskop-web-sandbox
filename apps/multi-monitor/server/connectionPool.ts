@@ -6,12 +6,11 @@ const pool = new ConnectionPool({
   server: config.teleskopHost,
   port: Number.parseInt(config.teleskopPort),
   user: config.teleskopUser,
-  password: config.teleskopPassword.toString(),
+  password: String(config.teleskopPassword),
   database: config.teleskopDatabase,
   options: {
     encrypt: false,
-    database: config.teleskopDatabase,
-    instanceName: config.teleskopInstanceName || undefined,
+    instanceName: config.teleskopInstanceName,
     trustServerCertificate: true,
   },
 })

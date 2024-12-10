@@ -15,6 +15,7 @@ export default defineNuxtConfig({
     teleskopPort: '1433',
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
+    teleskopInstanceName: '',
     sseLoggingEnabled: 'false',
 
     twName: 'machines',

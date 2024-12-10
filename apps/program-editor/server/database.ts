@@ -6,12 +6,12 @@ export const db = Knex({
   client: 'mssql',
   connection: {
     host: config.teleskopHost,
-    port: Number.parseInt(config.teleskopPort),
+    port: Number(config.teleskopPort),
     user: config.teleskopUser,
     password: String(config.teleskopPassword),
     database: config.teleskopDatabase,
     options: {
-      instanceName: config.teleskopInstanceName || undefined,
+      instanceName: config.teleskopInstanceName,
       trustServerCertificate: true,
     },
   },
@@ -21,12 +21,12 @@ export const dmExchange = Knex({
   client: 'mssql',
   connection: {
     host: config.dmexchangeHost,
-    port: Number.parseInt(config.dmexchangePort),
+    port: Number(config.dmexchangePort),
     user: config.dmexchangeUser,
     password: String(config.dmexchangePassword),
     database: config.dmexchangeDatabase,
     options: {
-      instanceName: config.dmexchangeInstanceName || undefined,
+      instanceName: config.dmexchangeInstanceName,
       trustServerCertificate: true,
     },
   },
