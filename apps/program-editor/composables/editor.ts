@@ -3,7 +3,7 @@ import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramFilter, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
-import { CommandIconMapping, CommandType, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
+import { CommandIconMapping, CommandType, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
@@ -161,7 +161,28 @@ export const useEditorStore = defineStore('editor', () => {
     const targetIndex = isDef(stepIndex) ? stepIndex : getStepIndex()
 
     // Paralel komutları kopyala (eğer varsa)
-    newStep.parallelCommands = targetIndex >= 0 ? klona(program.value.steps[targetIndex].parallelCommands) : []
+    for (const command of program.value.steps[targetIndex].parallelCommands) {
+      const machineCommand = machine.value.commands.get(command.commandNo)
+
+      if (isDef(machineCommand)) {
+        // Paralel adımı taşı
+        if (machineCommand.moveParallel === MoveParallel.MOVE) {
+          newStep.parallelCommands.push(klona(command))
+
+        // Paralel adım devreden çıkana kadar taşı
+        } else if (machineCommand.moveParallel === 1) {
+          const mainCommandDontuselist = machine.value.commands.get(command.commandNo)?.dontUseList
+          if (mainCommandDontuselist && !mainCommandDontuselist.find(cNo => cNo === command.commandNo)) {
+            newStep.parallelCommands.push(klona(command))
+          }
+        // Paralel adımı taşıma
+        } else if (machineCommand.moveParallel === MoveParallel.STOP) {
+          // TODO
+        } else {
+          console.warn(`Invalid moveParallel value: ${machineCommand.moveParallel}`)
+        }
+      }
+    }
 
     // Paralel komutların ID'sini güncelle
     for (const command of newStep.parallelCommands) {
