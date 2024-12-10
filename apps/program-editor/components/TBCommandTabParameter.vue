@@ -23,7 +23,7 @@ const parameterTab = ref(0)
         :label="`${parameter.name}`"
       />
     </q-tabs>
-    <q-tab-panels v-model="parameterTab" animated>
+    <q-tab-panels v-model="parameterTab">
       <q-tab-panel
         v-for="parameter in props.command.parameters"
         :key="parameter.index"

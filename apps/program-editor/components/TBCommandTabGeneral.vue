@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { MoveParallel } from '~/shared/constants'
 import type { MachineCommand } from '~/shared/types'
 
 const props = defineProps<{ command: MachineCommand }>()
@@ -26,8 +27,8 @@ const { t } = useI18n()
           <td>{{ "" }}</td>
         </tr>
         <tr>
-          <td>{{ t('command.transportType') }}</td>
-          <td>{{ "" }}</td>
+          <td>{{ t('command.transportType._') }}</td>
+          <td>{{ t(`command.transportType.${MoveParallel[props.command.moveParallel]}`) }}</td>
         </tr>
         <tr>
           <td>{{ t('command.canWorkManually') }}</td>

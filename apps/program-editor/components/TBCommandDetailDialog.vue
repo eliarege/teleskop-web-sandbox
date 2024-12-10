@@ -60,7 +60,7 @@ const tab = ref('general')
 
               <q-separator />
 
-              <QTabPanels v-model="tab" animated>
+              <QTabPanels v-model="tab">
                 <QTabPanel name="general">
                   <TBCommandTabGeneral :command="props.machineCommand" />
                 </QTabPanel>

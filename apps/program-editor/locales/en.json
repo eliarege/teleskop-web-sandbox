@@ -117,7 +117,12 @@
     "name": "Command Name",
     "type": "Command Type",
     "createDate": "Create Date",
-    "transportType": "Transport Type",
+    "transportType": {
+      "_": "Transport Type",
+      "MOVE": "Move",
+      "MOVE_UNTIL_DISABLED": "Move Until Disabled",
+      "STOP": "Stop"
+    },
     "canWorkManually": "Can Work Manually",
     "suggestionList": "Suggestion List",
     "nonParallelCommands": "Non Parallel Commands",

@@ -117,7 +117,12 @@
     "name": "Komut Adı",
     "type": "Komut Tipi",
     "createDate": "Oluşturma Tarihi",
-    "transportType": "Taşıma Tipi",
+    "transportType": {
+      "_": "Taşıma Tipi",
+      "MOVE": "Taşı",
+      "MOVE_UNTIL_DISABLED": "Devreden Çıkana Kadar Taşı",
+      "STOP": "Taşıma"
+    },
     "canWorkManually": "Manuel Çalışabilir",
     "suggestionList": "Öneri Listesi",
     "nonParallelCommands": "Paralel Çalışmayan Komutlar",

@@ -24,7 +24,7 @@ const { t } = useI18n()
         :label="io.name"
       />
     </q-tabs>
-    <q-tab-panels v-model="ioTab" animated>
+    <q-tab-panels v-model="ioTab">
       <q-tab-panel
         v-for="io in props.command.ioList"
         :key="io.index"
