@@ -161,25 +161,27 @@ export const useEditorStore = defineStore('editor', () => {
     const targetIndex = isDef(stepIndex) ? stepIndex : getStepIndex()
 
     // Paralel komutları kopyala (eğer varsa)
-    for (const command of program.value.steps[targetIndex].parallelCommands) {
-      const machineCommand = machine.value.commands.get(command.commandNo)
+    if (program.value.steps[targetIndex]) {
+      for (const command of program.value.steps[targetIndex]?.parallelCommands) {
+        const machineCommand = machine.value.commands.get(command.commandNo)
 
-      if (isDef(machineCommand)) {
+        if (isDef(machineCommand)) {
         // Paralel adımı taşı
-        if (machineCommand.moveParallel === MoveParallel.MOVE) {
-          newStep.parallelCommands.push(klona(command))
-
-        // Paralel adım devreden çıkana kadar taşı
-        } else if (machineCommand.moveParallel === 1) {
-          const mainCommandDontuselist = machine.value.commands.get(command.commandNo)?.dontUseList
-          if (mainCommandDontuselist && !mainCommandDontuselist.find(cNo => cNo === command.commandNo)) {
+          if (machineCommand.moveParallel === MoveParallel.MOVE) {
             newStep.parallelCommands.push(klona(command))
-          }
-        // Paralel adımı taşıma
-        } else if (machineCommand.moveParallel === MoveParallel.STOP) {
+
+            // Paralel adım devreden çıkana kadar taşı
+          } else if (machineCommand.moveParallel === 1) {
+            const mainCommandDontuselist = machine.value.commands.get(command.commandNo)?.dontUseList
+            if (mainCommandDontuselist && !mainCommandDontuselist.find(cNo => cNo === command.commandNo)) {
+              newStep.parallelCommands.push(klona(command))
+            }
+            // Paralel adımı taşıma
+          } else if (machineCommand.moveParallel === MoveParallel.STOP) {
           // TODO
-        } else {
-          console.warn(`Invalid moveParallel value: ${machineCommand.moveParallel}`)
+          } else {
+            console.warn(`Invalid moveParallel value: ${machineCommand.moveParallel}`)
+          }
         }
       }
     }
