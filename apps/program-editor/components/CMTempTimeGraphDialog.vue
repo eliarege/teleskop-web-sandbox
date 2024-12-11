@@ -11,7 +11,6 @@ import { screenshot } from '~/shared/utils'
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
 
 const { t } = useI18n()
-const { dark } = useQuasar()
 const editor = useEditorStore()
 const { dialogRef } = useDialogPluginComponent()
 
@@ -90,9 +89,6 @@ function calculateChartData() {
       y: {
         min: Math.min(0, minY - (10 + (minY % 10))),
         max: maxY + (10 - (maxY % 10)),
-        grid: {
-          color: dark.isActive ? 'rgb(80, 80, 80)' : 'rgb(211, 211, 211)',
-        },
         title: {
           display: true,
           text: t('apperance.temperature(c)'),
@@ -107,9 +103,6 @@ function calculateChartData() {
         type: 'linear',
         min: minX,
         max: maxX,
-        grid: {
-          color: dark.isActive ? 'rgb(80, 80, 80)' : 'rgb(211, 211, 211)',
-        },
         title: {
           display: true,
           text: t('apperance.time(h)'),
@@ -280,11 +273,10 @@ onMounted(() => {
     ref="dialogRef"
     :full-width="isFullScreen"
     :full-height="isFullScreen"
-    @hide="editor.popupTempTimeGraphVisible = false"
   >
-    <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl !dark:(bg-dark-4)">
+    <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl">
       <div id="container">
-        <q-card-section class="bg-gray-1 !dark:(bg-dark-1)">
+        <q-card-section class="bg-gray-1 dark:bg-dark-4">
           <div class="text-h6 flex">
             {{ t('tempTimeGraph._') }}
             <q-space />
@@ -296,7 +288,7 @@ onMounted(() => {
               dense
             />
           </div>
-          <div class="text-h8 flex flex-col">
+          <div class="text-h8 flex flex-col color-gray-6 dark:text-gray-4">
             <span>{{ editor.machine.id }} - {{ editor.machine.name }}</span>
             <span>{{ editor.program.programNo }} - {{ editor.program.name }}</span>
           </div>

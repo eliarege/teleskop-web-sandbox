@@ -1,43 +1,53 @@
 <script setup lang="ts">
 import { isDef } from '@teleskop/utils'
-import type { ProcessType, ProgramHeader } from '~/shared/types'
+import type { ProcessType, Program, ProgramHeader } from '~/shared/types'
 
 const props = defineProps<{
-  header: 'newProgram' | 'saveAs' | 'rename'
+  type: 'newProgram' | 'saveAs' | 'rename'
+  program: ProgramHeader
+  machineId: number
+  machineName: string
+  allProcessTypes: ProcessType[]
 }>()
 
 const { t } = useI18n()
-const { dark } = useQuasar()
-const editor = useEditorStore()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const programTypeId = editor.allProcessType[0].value
-const programNo = ref(props.header === 'rename' ? editor.selectedPrograms[0]?.programNo : null)
-const programName = ref<string>(`${props.header !== 'newProgram' ? editor.program.name : ''} ${props.header === 'saveAs' ? t('(copy)', { programNo: editor.program.programNo }) : ''}`)
-const processType = ref<number>(programTypeId || editor.program.typeId)
-const operator = ref<boolean>(props.header === 'rename' ? editor.selectedPrograms[0]?.tbbProgramChangedEvent === 1 : false)
+const isRename = props.type === 'rename'
+const isSaveAs = props.type === 'saveAs'
 
-const newProgram = computed<ProgramHeader>(() => {
-  return {
-    ...editor.program,
-    machineId: editor.machine.id,
-    programNo: programNo.value!,
-    name: programName.value,
-    typeId: processType.value,
-    tbbProgramChangedEvent: operator.value ? 1 : 0,
-  }
-})
+const programNo = ref<number | undefined>(isRename ? props.program.programNo : undefined)
+const programName = ref<string>(
+  isRename
+    ? props.program.name || ''
+    : isSaveAs
+      ? `${props.program.name || ''} ${t('(copy)', { programNo: props.program.programNo })}`
+      : '',
+)
+
+const processType = ref<number>(props.program.typeId || props.allProcessTypes[0].value)
+const operator = ref<boolean>(isRename ? props.program.tbbProgramChangedEvent === 1 : false)
+
+const newProgram = computed<Program | ProgramHeader>(() => ({
+  ...props.program,
+  machineId: props.machineId,
+  programNo: programNo.value ?? 0,
+  name: programName.value,
+  typeId: processType.value,
+  tbbProgramChangedEvent: operator.value ? 1 : 0,
+  steps: props.type === 'newProgram' ? [] : props.program.steps,
+}))
 </script>
 
 <template>
-  <div class="w-full h-full">
-    <q-dialog ref="dialogRef">
+  <div class="w-full h-full select-none">
+    <QDialog ref="dialogRef">
       <QCard>
-        <QForm @submit="onDialogOK(newProgram)">
+        <QForm @submit.prevent="onDialogOK(newProgram)">
           <QCard style="width: 500px">
             <QCardSection>
               <div class="text-h6 text-center">
-                {{ t(`menu.${props.header}`) }} - {{ editor.machine.name }}
+                {{ t(`menu.${props.type}`) }} - {{ machineName }}
               </div>
             </QCardSection>
 
@@ -49,12 +59,14 @@ const newProgram = computed<ProgramHeader>(() => {
                 :maxlength="10"
                 :rules="[
                   (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
-                  (val: number) => !editor.allPrograms.some(p => p.programNo === val) || t('input.unique', { field: t('program.programNo') }),
+                  //alltaki editorü kaldır, qdialog kapanmaması gerekiyor
+                  (val: number) => !useEditorStore().allPrograms.some(p => p.programNo === val) || t('input.unique', { field: t('program.programNo') }),
                 ]"
-                :disable="header === 'rename'"
+                :disable="isRename"
                 class="mb-3"
                 dense
               />
+
               <QInput
                 v-model="programName"
                 :label="t('program.name')"
@@ -62,9 +74,10 @@ const newProgram = computed<ProgramHeader>(() => {
                 class="mb-3"
                 dense
               />
+
               <QSelect
                 v-model="processType"
-                :options="editor.allProcessType"
+                :options="allProcessTypes"
                 :label="t('program.programState')"
                 options-dense
                 :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.programState') })]"
@@ -72,37 +85,36 @@ const newProgram = computed<ProgramHeader>(() => {
                 emit-value
                 dense
               />
+
               <QCheckbox
                 v-model="operator"
                 :label="t('operator')"
                 dense
               />
             </QCardSection>
+
             <QCardActions
               align="right"
-              class="q-pa-md"
-              :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+              class="q-pa-md bg-gray-1 dark:bg-dark-4"
             >
               <QBtn
                 flat
                 :label="t('cancel')"
-                class="q-mr-sm"
+                class="q-mr-sm bg-gray-2  dark:bg-dark-3 text-dark-4 dark:text-gray-2"
                 type="reset"
                 @click="onDialogCancel"
               />
               <QBtn
                 flat
-                :label="header === 'rename' ? t('save') : t('create')"
-                class=" bg-primary text-white"
+                :label="isRename ? t('save') : t('create')"
+                class="q-mr-sm bg-primary text-gray-1 dark:text-gray-2"
                 type="submit"
-                :loading="editor.isLoading"
-                :disable="editor.isLoading || !newProgram.programNo || !newProgram.name"
-                @submit="onDialogOK(newProgram)"
+                :disable="!newProgram.programNo || !newProgram.name"
               />
             </QCardActions>
           </QCard>
         </QForm>
       </QCard>
-    </q-dialog>
+    </QDialog>
   </div>
 </template>

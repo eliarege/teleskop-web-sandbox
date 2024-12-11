@@ -1,9 +1,12 @@
 {
   "roles": [
-    { "name": "program-upload" },
-    { "name": "program-download" },
+    { "name": "machine-upload" },
+    { "name": "machine-download" },
+    { "name": "program-view" },
     { "name": "program-create" },
     { "name": "program-edit" },
-    { "name": "program-delete" }
+    { "name": "program-delete" },
+    { "name": "teleskop-settings" },
+    { "name": "process-edit" }
   ]
 }

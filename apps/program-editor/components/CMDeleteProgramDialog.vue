@@ -18,42 +18,52 @@ const options = [
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" persistent>
-    <q-card>
-      <q-card-section class="row items-center">
-        <q-avatar
-          icon="delete"
-        />
-        <span class="q-ml-sm max-w-100"> {{ t('contextMenu.deleteProgramDialog.warning', { name: props.programNames }) }}</span>
-      </q-card-section>
-      <q-card-section>
-        <div class="flex items-center justify-center">
-          <q-option-group
+  <QDialog ref="dialogRef">
+    <QCard>
+      <QCardSection>
+        <div class="text-h6 flex">
+          {{ t('contextMenu.deleteProgramDialog.title') }}
+          <QSpace />
+          <QBtn
+            icon="close"
+            class="text-gray-4 dark:text-gray-6"
+            flat
+            round
+            dense
+            @click="onDialogCancel"
+          />
+        </div>
+      </QCardSection>
+
+      <QCardSection class="text-gray-8 dark:text-gray-3">
+        <span class="max-w-100"> {{ t('contextMenu.deleteProgramDialog.warning', { name: props.programNames }) }}</span>
+        <div class="mt-4 ml-4 flex">
+          <QOptionGroup
             v-model="selectedOption"
+            class="q-gutter-sm"
             :options="options"
             dense
           />
         </div>
-      </q-card-section>
+      </QCardSection>
 
-      <q-card-actions align="right">
-        <q-btn
-          v-close-popup
+      <QCardActions
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
+        align="right"
+      >
+        <QBtn
           :label="t('cancel')"
-          outline
-          color="black"
-          icon="close"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+          flat
           @click="onDialogCancel"
         />
-        <q-btn
-          v-close-popup
-          outline
+        <QBtn
           :label="t('delete')"
-          color="red"
-          icon="delete"
+          class="q-mr-sm bg-red-6"
+          flat
           @click="onDialogOK(selectedOption)"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+      </QCardActions>
+    </QCard>
+  </QDialog>
 </template>

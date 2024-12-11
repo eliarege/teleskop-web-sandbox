@@ -2,13 +2,17 @@
 import DMP from 'diff-match-patch'
 import { LoadingSpinner } from '@teleskop/ui'
 import Main from '~/components/Comparison/Main.vue'
-import type { Program, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion } from '~/shared/types'
+import type { ContextBarButtons, Program, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion } from '~/shared/types'
 import { useEditorStore } from '~/composables/editor'
+import { useContextBar } from '~/composables/useContextBar'
 
 const dmp = new DMP()
 const route = useRoute()
 const editor = useEditorStore()
 const kc = useKeycloak()
+
+const buttons = computed<ContextBarButtons[]>(() => [])
+useContextBar(buttons)
 
 const { m, p1, p2, v1, v2 } = route.query
 
@@ -22,7 +26,7 @@ type DmpDiff = [DiffType, number[]]
 
 const paths = [
   `/api/machine/${m}/program/${p1}`,
- ` /api/machine/${m}/program/${p2}`,
+  `/api/machine/${m}/program/${p2}`,
 ]
 
 let isValid1 = false
@@ -55,8 +59,8 @@ editor.fetchMachine(Number(m)).then(() => {
 const programOneData = await kc.fetch<Program>(paths[0])
 const programTwoData = await kc.fetch<Program>(paths[1])
 
-const programOneCommands = programOneData.steps.map(step => step.mainCommand.commandNo!)
-const programTwoCommands = programTwoData.steps.map(step => step.mainCommand.commandNo!)
+const programOneCommands = programOneData.steps.map(step => step.mainCommand.commandNo)
+const programTwoCommands = programTwoData.steps.map(step => step.mainCommand.commandNo)
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()

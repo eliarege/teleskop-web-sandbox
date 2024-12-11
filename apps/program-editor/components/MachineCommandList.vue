@@ -96,7 +96,7 @@ function validateParallelCommands(stepIndex: number): boolean {
           dense
           tag="span"
           clickable
-          @dblclick="editor.addStep(command.commandNo, editor.program.steps.length - 1)"
+          @dblclick="editor.addStep(command.commandNo)"
         >
           <QItemSection>
             <QItemLabel>

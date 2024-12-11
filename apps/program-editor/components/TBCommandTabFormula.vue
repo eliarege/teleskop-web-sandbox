@@ -1,7 +1,7 @@
 <script setup lang="ts">
-const props = defineProps<{
-  modelValue?: boolean
-}>()
+import type { MachineCommand } from '~/shared/types'
+
+const props = defineProps<{ command: MachineCommand }>()
 </script>
 
 <template>

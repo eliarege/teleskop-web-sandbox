@@ -99,7 +99,7 @@
     "opMud": "Op. Müd.",
     "theoreticalDuration": "Teorik Süre",
     "updated": "Günc. Tarihi",
-    "processType": "Proccess Tipi",
+    "processType": "Program Tipi",
     "parameter": "Parametre",
     "command": "Program Komutu",
     "totalChemReq": "Top. Kim.",
@@ -117,7 +117,12 @@
     "name": "Komut Adı",
     "type": "Komut Tipi",
     "createDate": "Oluşturma Tarihi",
-    "transportType": "Taşıma Tipi",
+    "transportType": {
+      "_": "Taşıma Tipi",
+      "MOVE": "Taşı",
+      "MOVE_UNTIL_DISABLED": "Devreden Çıkana Kadar Taşı",
+      "STOP": "Taşıma"
+    },
     "canWorkManually": "Manuel Çalışabilir",
     "suggestionList": "Öneri Listesi",
     "nonParallelCommands": "Paralel Çalışmayan Komutlar",
@@ -133,7 +138,7 @@
       "temp/time": "Sıcaklık/Zaman",
       "isDefault": "Varsayılan mı?",
       "belongsToFunction": "Fonksiyona mı ait?",
-      "selectableOptions": "Seçilebilir Listesi",
+      "selectableList": "Seçilebilir Listesi",
       "operationTime": "Çalışma Süresi",
       "liter": "Litre",
       "temperature": "Sıcaklık",
@@ -174,7 +179,8 @@
   "error": {
     "machineCommandNotFound": "{commandNo} numaralı komut {machineId} numaralı makinede bulunamadı",
     "cannotMainCommand": "{commandNo} numaralı komut ana komut olamaz",
-    "notSameCommand": "Bir adımda aynı komut iki kere kullanılamaz"
+    "notSameCommand": "Bir adımda aynı komut iki kere kullanılamaz",
+    "mainStepNotFound": "Ana adım bulunamadı"
   },
   "selectAll": "Tümünü seç",
   "dropAll": "Tümünü bırak",
@@ -192,6 +198,7 @@
   "send": "Gönder",
   "apply": "Uygula",
   "ok": "Tamam",
+  "save": "Kaydet",
   "message": {
     "delete_program": "Program Teleskop'tan silindi",
     "program_not_deleted": "Program Teleskop'tan silinemedi"
@@ -225,6 +232,7 @@
     "note": "Not",
     "deletionWarning": "Program tipi {type} silinecek! Devam etmek istediğinize emin misiniz?",
     "createProcessType": {
+      "_": "Program Tipi Oluştur",
       "success": "{no} - {name} program tipi başarıyla oluşturuldu.",
       "fail": "Program tipi oluşturulamadı."
     },
@@ -246,7 +254,7 @@
     "deleteProgramsFromMachine": "Program(lar)ı Makinelerden Sil",
     "concatPrograms": "Programları Birleştir",
     "changeName": "Ad Değiştir",
-    "changeProcessType": "Process Tipini Değiştir",
+    "changeProcessType": "Program Tipini Değiştir",
     "sendProgram": "Programı Yolla",
     "copyToMachinesAndSend": "Makinelere Kopyala ve Yolla",
     "getProgram": "Programı Al",
@@ -255,23 +263,15 @@
     "compareWith": "Bununla Karşılaştır",
     "pasteDuplicateKeyWarning": "Yapıştırılmak istenilen programların numaraları bu makinede mevcut. Lütfen yeni program numaralarını giriniz.",
     "deleteProgramDialog": {
+      "title": "Programı Sil",
       "warning": "Program {name} silinecek! Devam etmek istediğinize emin misiniz?",
       "deleteFromBoth": "Programı Teleskop'tan ve cihazdan sil",
       "deleteFromTeleskop": "Programı sadece Teleskop'tan sil",
       "deleteFromMachine": "Programı sadece cihazdan sil"
     },
     "concatenateProgramsDialog": {
-      "warning": "Programları fare ile taşıyarak sıralayınız.",
-      "concatenate": "Programları birleştir",
-      "header": "Program Bilgileri",
-      "programNo": "Program Numarası",
-      "name": "Program Adı",
-      "processType": "Proccess Tipi",
-      "operatorCanInterrupt": "Operatör müdahale edebilir",
-      "creationTime": "Oluşturma Zamanı",
-      "programList": "Program Listesi",
-      "warningNoPK": "Program numarası boş olamaz.",
-      "warningDuplicatePK": "Program numarası mevcut."
+      "title": "Programları Birleştir",
+      "warning": "Programları fare ile taşıyarak sıralayınız."
     },
     "version": {
       "_": "Versiyon",
@@ -321,8 +321,8 @@
       "fail": "{programNo} numaralı programın ismini değiştirme işlemi başarısız."
     },
     "changeProcessTypeNotification": {
-      "success": "{programNo} numaralı programın process tipi başarıyla değiştirildi.",
-      "fail": "{programNo} numaralı programın process tipini değiştirme işlemi başarısız."
+      "success": "{programNo} numaralı programın tipi başarıyla değiştirildi.",
+      "fail": "{programNo} numaralı programın tipini değiştirme işlemi başarısız."
     },
     "deleteFromMultiMachineNotification": {
       "success": "{programNo} numaralı {name} programı {machineId} makinesinden başarıyla silindi.",
@@ -330,6 +330,10 @@
     },
     "deleteVersionDialog": {
       "warning": "Version {code} silinecek! Devam etmek istediğinize emin misiniz?"
+    },
+    "updateHeaderNotification": {
+      "success": "{programNo} numaralı programın baslığı basarıyla değiştirildi.",
+      "fail": "{programNo} numaralı programın baslığı değiştirme işlemi basarısız."
     }
   },
   "exportExcelDialog": {
@@ -342,12 +346,14 @@
     "startParametersList": "Başlangıç Parametreleri Listesi",
     "required": "Zorunlu",
     "machine": "Makine",
-    "commandNo": "Komut Numarası",
+    "commandNo": "Komut No",
     "commandName": "Komut İsmi",
     "value": "Değer",
     "min": "Min",
     "max": "Max",
     "parameter": "Parametre",
+    "parameterId": "Parameter Id",
+    "parameterName": "Parameter Name",
     "commandIOName": "Komut IO ismi",
     "IOName": "IO ismi",
     "default": "Varsayılan"
@@ -423,7 +429,7 @@
     "programFilter": "Program Filtresi",
     "programNo": "Program Numarası",
     "programName": "Program Adı",
-    "processType": "Proccess Tipi",
+    "processType": "Program Tipi",
     "clearFilterOnChange": "Makine seçimi değiştiğinde filtreleri temizle.",
     "delete_all": "Filtreleri sıfırla",
     "close": "Kapat",

@@ -301,7 +301,7 @@ export const useProgramFilterStore = defineStore('filter', () => {
  * @returns {string} Süreyi 00:00:00 formatında döndürür
  */
 export function formatDuration(duration: number, hideZero?: boolean): string {
-  if (!isDef(duration) || isNaN(duration) || duration < 0) {
+  if (!isDef(duration) || Number.isNaN(duration) || duration < 0) {
     return '00:00:00'
   }
 

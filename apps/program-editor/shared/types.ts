@@ -1,3 +1,4 @@
+import type { QBtnProps } from 'quasar'
 import type { CommandType, ParameterType } from './constants'
 
 export interface ProgramInfo {
@@ -161,7 +162,7 @@ export interface ProgramStep {
 
 export interface ProgramStepCommand {
   commandId: number
-  commandNo: number | null
+  commandNo: number
   parameters: ParameterItem[]
   ioList: ioListItem[]
 }
@@ -434,6 +435,12 @@ export interface ProgramInfoHeader {
   programVersion: number | null
   stepCount: number
   isValid: boolean
+}
+
+export interface ContextBarButtons extends QBtnProps {
+  originalLabel?: string
+  shortcut?: string
+  tooltip?: string
 }
 
 // #endregion

@@ -4,10 +4,9 @@ import CMDeleteProgramDialog from '~/components/CMDeleteProgramDialog.vue'
 import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPasteDialog.vue'
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
-import CMConcatenateProgramDetails from '~/components/CMConcatenateProgramDetails.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { Program, ProgramHeader, ProgramTable } from '~/shared/types'
+import type { MachineCommand, Program, ProgramHeader, ProgramTable } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -19,6 +18,8 @@ import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
 import { TeleskopSettingsIds } from '~/shared/constants'
 import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
 import TBDiscardChangesDialog from '~/components/TBDiscardChangesDialog.vue'
+import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
+import TBCommandDetailDialog from '~/components/TBCommandDetailDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -46,11 +47,11 @@ export function registerCommand(command: () => AppCommand) {
   })
 }
 export interface RegisteredCommands {
-  deleteProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
+  deleteProgram: [ctx: any, selectedRows: ProgramTable[], machineId: number]
   pasteProgram: [ctx: any, machineId: number, remains?: any]
   deleteProgramFromMultiMachine: [ctx: any, selectedRows: Array<any>]
-  concatenatePrograms: [ctx: any, selectedRows: Array<any>, machineId: number]
-  changeName: [ctx: any, selectedRows: Array<any>, machineId: number]
+  concatenatePrograms: [ctx: any, selectedRows: ProgramTable[], machineId: number]
+  changeName: [ctx: any, machineId: number, programNo: number]
   changeProcessType: [ctx: any, selectedRows: Array<any>, machineId: number]
   sendProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
   copyAndSend: [ctx: any, selectedRows: Array<any>, machineId: number]
@@ -66,6 +67,8 @@ export interface RegisteredCommands {
   newProgram: [ctx: any]
   saveAsProgram: [ctx: any]
   discardChanges: [ctx: any, machineId?: number]
+  allCommandsList: [ctx: any]
+  commandDetails: [ctx: any, machineId: number, commandNo: number]
 }
 
 registerCommand(() => {
@@ -73,13 +76,21 @@ registerCommand(() => {
   return {
     name: 'newProgram',
     execute(ctx: any) {
+      const program = editor.createEmptyProgram()
+
       ctx.$q.dialog({
         component: CMNewProgramDialog,
         componentProps: {
-          header: 'newProgram',
+          type: 'newProgram',
+          program,
+          machineId: editor.machine.id,
+          machineName: editor.machine.name,
+          allProcessTypes: editor.allProcessTypes,
         },
       }).onOk(async (newProgram: Program) => {
-        await editor.onSubmit(newProgram)
+        const result = await editor.onSubmit(newProgram)
+        if (!result)
+          return false
         setTimeout(() => {
           editor.addStep()
         }, 1000)
@@ -101,10 +112,15 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: CMNewProgramDialog,
         componentProps: {
-          header: 'saveAs',
-          programNo: editor.program.programNo,
+          type: 'saveAs',
+          program: editor.program,
+          machineId: editor.machine.id,
+          machineName: editor.machine.name,
+          allProcessTypes: editor.allProcessTypes,
         },
       }).onOk(async (newProgram: Program) => {
+        console.log(newProgram)
+
         await editor.onSubmit(newProgram)
         return true
       }).onCancel(() => {
@@ -120,14 +136,10 @@ registerCommand(() => {
   return {
     name: 'tempTimeGraph',
     execute(ctx: any) {
-      const editor = useEditorStore()
-      if (!editor.popupTempTimeGraphVisible) {
-        ctx.$q.dialog({
-          component: CMTempTimeGraphDialog,
-        })
-        editor.popupTempTimeGraphVisible = true
-        return true
-      }
+      ctx.$q.dialog({
+        component: CMTempTimeGraphDialog,
+      })
+      return true
     },
   }
 })
@@ -146,23 +158,22 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
-  const { fetch } = useKeycloak()
   return {
     name: 'deleteProgram',
-    execute(ctx: any, selectedRows: Array<any>, machineId: number) {
+    execute(ctx: any, selectedRows: ProgramTable[], machineId: number) {
       ctx.$q.dialog({
         component: CMDeleteProgramDialog,
         componentProps: {
           programNames: selectedRows.map(r => r.name),
         },
-      }).onOk(async (option: string) => {
-        const query = `source=${option}`
+      }).onOk(async (option: number) => {
         editor.isLoading = true
-        for (const program of selectedRows)
-          await fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
-            method: 'DELETE',
-          })
-        await editor.fetchAllPrograms()
+        try {
+          await contextMenuStore.deleteProgram(selectedRows, option, machineId)
+          await editor.fetchAllPrograms()
+        } catch (error) {
+          console.error('Error during program deletion:', error)
+        }
         editor.isLoading = false
         editor.selectedPrograms = []
         return true
@@ -252,67 +263,96 @@ registerCommand(() => {
     },
   }
 })
-// // TODO: Make this function that return promise not inline code
+
 registerCommand(() => {
   const editor = useEditorStore()
+
   return {
     name: 'concatenatePrograms',
-    async execute(ctx: any, selectedRows, machineId) {
-      let programsOnExecute: any
-      const processTypes = await contextMenuStore.getProcessTypes()
-      await new Promise((resolve, reject) => {
-        ctx.$q.dialog({
-          component: CMProgramOrdersOnConcatenationDialog,
-          componentProps: {
-            programs: selectedRows,
-          },
-        }).onOk(async (programs) => {
-          programsOnExecute = programs
-          resolve(true)
-        }).onCancel(() => {
-          reject(false)
-        })
-      })
-      await new Promise((resolve, reject) => {
-        ctx.$q.dialog({
-          component: CMConcatenateProgramDetails,
-          componentProps: {
-            processTypes,
-            programsOrder: programsOnExecute,
-          },
-        }).onOk(async (details) => {
-          await contextMenuStore.concatenatePrograms(details.programsOrder, details.details, machineId)
-          await editor.fetchAllPrograms()
-          resolve(true)
-        }).onCancel(() => {
-          reject(false)
-        })
-      })
-      return true
+    async execute(ctx: any, selectedRows: ProgramTable[], machineId: number) {
+      try {
+        // Kullanıcıdan program sıralaması al
+        const programsOrder = await getProgramsOrder(ctx, selectedRows)
+
+        // Yeni program detaylarını al
+        const programDetails = await getNewProgramDetails(ctx)
+        console.log('Program Details:', programDetails)
+
+        // Programları birleştir
+        await contextMenuStore.concatenatePrograms(programsOrder, programDetails, machineId)
+        await editor.fetchAllPrograms()
+
+        return true
+      } catch (error) {
+        console.error('Error during program concatenation:', error)
+        return false
+      }
     },
   }
 })
 
+async function getProgramsOrder(ctx: any, selectedRows: ProgramTable[]): Promise<ProgramTable[]> {
+  return new Promise((resolve, reject) => {
+    ctx.$q.dialog({
+      component: CMProgramOrdersOnConcatenationDialog,
+      componentProps: {
+        programs: selectedRows,
+      },
+    }).onOk((programsOrder) => {
+      resolve(programsOrder)
+    }).onCancel(() => {
+      reject(new Error('Program order selection cancelled'))
+    })
+  })
+}
+
+async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
+  return new Promise((resolve, reject) => {
+    ctx.$q.dialog({
+      component: CMNewProgramDialog,
+      componentProps: {
+        type: 'newProgram',
+      },
+    }).onOk((program: ProgramHeader) => {
+      resolve(program)
+    }).onCancel(() => {
+      reject(new Error('New program details input cancelled'))
+    })
+  })
+}
+
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'changeName',
-    execute(ctx: any, selectedPrograms: ProgramTable[], machineId) {
-      ctx.$q.dialog({
-        component: CMNewProgramDialog,
-        componentProps: {
-          header: 'rename',
-        },
-      }).onOk(async (program: ProgramHeader) => {
-        const editor = useEditorStore()
+    async execute(ctx: any, machineId: number, programNo: number) {
+      try {
         editor.isLoading = true
-        await contextMenuStore.updateProgramHeader(program, machineId)
-        await editor.fetchAllPrograms()
+        const program = await contextMenuStore.getProgramHeader(machineId, programNo)
         editor.isLoading = false
+
+        ctx.$q.dialog({
+          component: CMNewProgramDialog,
+          componentProps: {
+            type: 'rename',
+            program,
+            machineId,
+            machineName: editor.machine.name,
+            allProcessTypes: editor.allProcessTypes,
+          },
+        }).onOk(async (program: ProgramHeader) => {
+          editor.isLoading = true
+          await contextMenuStore.updateProgramHeader(machineId, program)
+          await editor.fetchAllPrograms()
+          editor.isLoading = false
+          return true
+        }).onCancel(() => {
+          return false
+        })
         return true
-      }).onCancel(() => {
-        return false
-      })
-      return true
+      } catch (error) {
+        console.error('Program not found:', error)
+      }
     },
   }
 })
@@ -448,14 +488,54 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
+  return {
+    name: 'allCommandsList',
+    async execute(ctx: any) {
+      ctx.$q.dialog({
+        component: TBAllCommandsDialog,
+        componentProps: {
+          machineId: editor.machine.id,
+          machineName: editor.machine.name,
+          machineCommands: Array.from(editor.machine.commands.values()),
+        },
+      }).onOk(async (command: MachineCommand) => {
+        ctx.$q.dialog({
+          component: TBCommandDetailDialog,
+          componentProps: {
+            machineId: editor.machine.id,
+            machineName: editor.machine.name,
+            machineCommand: command,
+          },
+        })
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'commandDetails',
+    async execute(ctx: any) {
+      ctx.$q.dialog({
+        component: TBCommandDetailDialog,
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  const { fetch } = useKeycloak()
   return {
     name: 'exportToExcel',
     async execute(ctx: any) {
-      const machines = await fetch('/api/machine?asList=true')
+      const machineGroups = await fetch('/api/machine-group')
       ctx.$q.dialog({
         component: TBExportExcelDialog,
         componentProps: {
-          machines,
+          machineGroups,
         },
       })
       return true

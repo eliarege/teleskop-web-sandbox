@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type { MachineGroup, MachineInfo, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
+import type { CommandParameter, MachineGroup, MachineInfo, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
 import { MSSQL_ERROR } from './constants'
@@ -144,7 +144,7 @@ export async function deleteProcessType(processCode: number): Promise<any> {
     .from('BFPROCESSTYPES')
 }
 
-export async function getMachineBatchParameters(machineId: number): Promise<any[]> {
+export async function getMachineBatchParameters(machineId: number): Promise<CommandParameter[]> {
   const parameters = await db('BFMACHBATCHPARAMETERS')
     .where('MACHINEID', machineId)
     .select({

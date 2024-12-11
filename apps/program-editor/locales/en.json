@@ -117,7 +117,12 @@
     "name": "Command Name",
     "type": "Command Type",
     "createDate": "Create Date",
-    "transportType": "Transport Type",
+    "transportType": {
+      "_": "Transport Type",
+      "MOVE": "Move",
+      "MOVE_UNTIL_DISABLED": "Move Until Disabled",
+      "STOP": "Stop"
+    },
     "canWorkManually": "Can Work Manually",
     "suggestionList": "Suggestion List",
     "nonParallelCommands": "Non Parallel Commands",
@@ -174,7 +179,8 @@
   "error": {
     "machineCommandNotFound": "{commandNo} number command {machineId} machine not found",
     "cannotMainCommand": "{commandNo} number command cannot be main command",
-    "notSameCommand": "Cannot have the same command in one step"
+    "notSameCommand": "Cannot have the same command in one step",
+    "mainStepNotFound": "Main step not found"
   },
   "selectAll": "Select all",
   "dropAll": "Drop all",
@@ -185,12 +191,13 @@
   "yes": "Yes",
   "no": "No",
   "cancel": "Cancel",
-  "create": "Create",
+  "create": "Create ",
   "delete": "Delete",
   "submit": "Submit",
   "change": "Change",
   "apply": "Apply",
   "ok": "OK",
+  "save": "Save",
   "message": {
     "delete_program": "Delete program from Teleskop",
     "program_not_deleted": "Program could not be deleted from Teleskop"
@@ -225,6 +232,7 @@
     "note": "Note",
     "deletionWarning": "Program type {type} will be deleted! Are you sure you want to continue?",
     "createProcessType": {
+      "_": "Create Program Type",
       "success": "Process type {no} - {name} is created successfully.",
       "fail": "An error occured while creating process type."
     },
@@ -255,23 +263,15 @@
     "compareWith": "Compare With",
     "pasteDuplicateKeyWarning": "Programs with given program numbers exists. Please provide a new program number for programs below.",
     "deleteProgramDialog": {
+      "title": "Delete Program",
       "warning": "Program {name} will be deleted! Are you sure you want to continue?",
       "deleteFromBoth": "Delete program from both machine and Teleskop",
       "deleteFromTeleskop": "Delete program from Teleskop",
       "deleteFromMachine": "Delete program from machine"
     },
     "concatenateProgramsDialog": {
-      "warning": "Re-order programs by dragging.",
-      "concatenate": "Concatenate programs",
-      "header": "Program Info",
-      "programNo": "Program No",
-      "name": "Program Name",
-      "processType": "Proccess Type",
-      "operatorCanInterrupt": "Operator can interrupt",
-      "creationTime": "Creation Time",
-      "programList": "Program List",
-      "warningNoPK": "Program no cannot be empty.",
-      "warningDuplicatePK": "Program no already exists."
+      "title": "Concatenate Programs",
+      "warning": "Re-order programs by dragging."
     },
     "version": {
       "_": "Version",
@@ -330,6 +330,10 @@
     },
     "deleteVersionDialog": {
       "warning": "Version(s) {code} will be deleted! Are you sure you want to continue?"
+    },
+    "updateHeaderNotification": {
+      "success": "Update header operation is succeed for program with program no {programNo}.",
+      "fail": "Update header operation is failed for program with program no {programNo}."
     }
   },
   "exportExcelDialog": {
@@ -348,6 +352,8 @@
     "min": "Min",
     "max": "Max",
     "parameter": "Parameter",
+    "parameterId": "Parameter Id",
+    "parameterName": "Parameter Name",
     "commandIOName": "Command IO Name",
     "IOName": "IO Name",
     "default": "Default"

@@ -1,30 +1,19 @@
 <script lang="ts" setup>
 import type { QList } from 'quasar'
-import type { MachineGroup, MachineInfo } from '~/shared/types'
+import type { MachineGroup } from '~/shared/types'
 
 const route = useRoute()
 const editor = useEditorStore()
 const $q = useQuasar()
-const { dark } = useQuasar()
+const { fetch } = useKeycloak()
 const { $commandManager } = useNuxtApp()
 
-const { data: machineGroups } = useAuthFetch<MachineGroup[]>('/api/machine-group')
-const { data: machines } = useAuthFetch<MachineInfo[]>('/api/machine')
-
-const machineGroupsWithMachines = computed(() => {
-  if (!machineGroups.value || !machines.value)
-    return []
-
-  return machineGroups.value.map(group => ({
-    ...group,
-    machines: machines.value!.filter(machine => machine.groupId === group.groupId),
-  }))
-})
+const machineGroups = await fetch<MachineGroup[]>('/api/machine-group')
 
 // İlk makineyi otomatik olarak seçer
-watch(() => [machineGroupsWithMachines.value.length, route.path], () => {
+watch(() => [machineGroups.length, route.path], () => {
   if (route.path === '/') {
-    const firstMachine = machineGroupsWithMachines.value.find(group => group.machines.length)?.machines[0]
+    const firstMachine = machineGroups.find(group => group.machines.length)?.machines[0]
     if (firstMachine)
       editor.changeMachine(firstMachine.id)
   }
@@ -59,14 +48,14 @@ const currentMachine = ref()
         borderless
       >
         <template
-          v-for="group in machineGroupsWithMachines"
+          v-for="group in machineGroups"
           :key="group.groupId"
         >
           <QExpansionItem
             v-if="group.machines && group.machines.length > 0"
             :label="group.name"
             default-opened
-            :header-class="dark.isActive ? 'bg-grey-9 text-white' : 'bg-gray-2 text-black'"
+            header-class="bg-light-9 dark:bg-dark-1 text-gray-8 dark:text-gray-3"
             borderless
             dense
           >
@@ -76,7 +65,7 @@ const currentMachine = ref()
               v-ripple
               :active="route.params.machine_id === `${machine.id}`"
               active-class="e-selected"
-              :class="dark.isActive ? ' text-gray-3' : 'text-gray-8'"
+              class="text-gray-8 dark:text-gray-3"
               borderless
               clickable
               dense
@@ -86,12 +75,12 @@ const currentMachine = ref()
               <QItemSection dense>
                 {{ machine.name }}
               </QItemSection>
-              <q-menu
+              <QMenu
                 touch-position
                 context-menu
               >
                 <MachineListContextMenu :machine-id="currentMachine?.id" />
-              </q-menu>
+              </QMenu>
             </QItem>
           </QExpansionItem>
         </template>

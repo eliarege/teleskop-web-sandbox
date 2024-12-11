@@ -17,7 +17,6 @@ const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
 const $q = useQuasar()
 const route = useRoute()
-const { dark } = useQuasar()
 
 const editor = useEditorStore()
 editor.machine = editor.createMachine()
@@ -65,7 +64,7 @@ const items = [
   { label: tt('menu.tools'), disabled: true },
   {
     label: tt('menu.program'),
-    disabled: computed(() => !editor.machine.id),
+    disabled: computed(() => !isDef(route.params.machine_id)),
     subMenu: {
       items: [
         [
@@ -106,7 +105,7 @@ const items = [
             icon: 'edit',
             disabled: () => editor.selectedPrograms.length < 1,
             onClick() {
-              $commandManager.executeCommand('changeName', { $q }, editor.selectedPrograms, editor.machine.id)
+              $commandManager.executeCommand('changeName', { $q }, editor.machine.id, editor.selectedPrograms[0].programNo)
             },
           },
         ],
@@ -115,14 +114,14 @@ const items = [
   },
   {
     label: tt('menu.appearance'),
-    disabled: computed(() => !editor.program.programNo),
+    disabled: computed(() => !isDef(route.params.program_no)),
     subMenu: {
       items: [[
         { label: tt('menu.versionInfo'), icon: 'info', onClick: () => {
           editor.popupVersionDialog = true
         } },
         { label: tt('menu.commandInfo'), icon: 'info', onClick: () => {
-          editor.popupCommandDetailVisible = true
+          $commandManager.executeCommand('allCommandsList', { $q })
         } },
       ], [
         { label: tt('menu.tempTimeGraph'), icon: 'timeline', shortcut: 'F8', onClick: () => {
@@ -173,7 +172,7 @@ const items = [
           label: tt('menu.allCommandList'),
           disable: isDef(route.params.program_no),
           onClick() {
-            editor.popupCommandListVisible = true
+            $commandManager.executeCommand('allCommandsList', { $q })
           },
         },
       ]],
@@ -194,10 +193,10 @@ const itemsMobile = [
 </script>
 
 <template>
-  <QLayout view="hHh LpR fFf" :class="dark.isActive ? 'bg-dark' : 'bg-white'">
+  <QLayout view="hHh LpR fFf" class="bg-gray-1 dark:bg-dark-4">
     <QHeader
       borderless
-      class="bg-gray-2 text-black !dark:(bg-dark-1 text-gray-1) select-none"
+      class="bg-gray-1 text-black !dark:(bg-dark-1 text-gray-1) select-none"
     >
       <QToolbar class="min-h-unset">
         <template v-if="sm">
@@ -249,7 +248,7 @@ const itemsMobile = [
       v-model="editor.leftDrawerOpen"
       side="left"
       borderless
-      :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+      class="bg-light-7 dark:bg-dark-3"
     >
       <MachineList />
     </QDrawer>
@@ -257,8 +256,7 @@ const itemsMobile = [
     <QPageContainer>
       <QPage>
         <div
-          :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
-          class="flex sticky top-10 z-10"
+          class="flex sticky top-10 z-10 bg-gray-2 dark:bg-dark-3"
         >
           <ContextBar />
         </div>
@@ -272,19 +270,11 @@ const itemsMobile = [
       v-model="editor.rightDrawerOpen"
       side="right"
       borderless
-      :class="dark.isActive ? 'bg-dark-3' : 'bg-gray-1'"
+      class="bg-light-7 dark:bg-dark-3"
     >
       <MachineCommandList />
     </QDrawer>
   </QLayout>
-
-  <EliarModal v-if="editor.popupCommandListVisible">
-    <TBAllCommandsDialog />
-  </EliarModal>
-
-  <EliarModal v-if="editor.popupCommandDetailVisible">
-    <TBCommandDetailDialog />
-  </EliarModal>
 </template>
 
 <style lang="postcss" scoped>

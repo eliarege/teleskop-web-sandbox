@@ -4,11 +4,11 @@ import { enGB, tr } from 'date-fns/locale'
 import { useFuse } from '@vueuse/integrations/useFuse'
 import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import type { QTableColumn } from 'quasar'
-import { event, useQuasar } from 'quasar'
+import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
-import type { ProgramTable } from '~/shared/types'
+import type { ContextBarButtons, ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { formatDuration } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
@@ -117,8 +117,6 @@ onKeyStroke(['Delete'], (event: KeyboardEvent) => {
 onKeyStroke('Escape', (event: KeyboardEvent) => {
   event.preventDefault()
   editor.selectedPrograms = []
-  editor.popupCommandDetailVisible = false
-  editor.popupCommandListVisible = false
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
@@ -176,7 +174,7 @@ const { results: filterResults } = useFuse(debouncedFilter, () => editor.allProg
 })
 const filteredPrograms = computed<ProgramTable[]>(() => filterResults.value.map(res => res.item))
 
-const buttons = computed(() => [
+const buttons = computed<ContextBarButtons[]>(() => [
   {
     label: t('menu.newProgram'),
     originalLabel: t('menu.newProgram'),
@@ -204,7 +202,7 @@ const buttons = computed(() => [
     tooltip: t('menu.deleteProgram'),
     shortcut: 'Delete',
     icon: 'delete',
-    disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length,
+    disable: !editor.selectedPrograms.length,
     onClick() {
       // TODO: Context cannot be provided by executor
       $commandManager.executeCommand(
@@ -250,7 +248,6 @@ const buttons = computed(() => [
     },
   },
 ])
-
 useContextBar(buttons)
 
 function format(date: Date): string {
@@ -467,16 +464,15 @@ const contextMenuOptions = computed(() => [
       icon: 'edit_note',
       disabled: isMoreThanOneRowSelected.value
       || !!editor.selectedPrograms.find(
-        (row: any) =>
+        (row: ProgramTable) =>
           row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
       onClick: async () => {
-        // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'changeName',
           { $q },
-          editor.selectedPrograms,
           machineId,
+          editor.selectedPrograms[0].programNo,
         )
       },
     },
@@ -612,31 +608,46 @@ function getSelectedString() {
   return t('selectRange', { count: editor.selectedPrograms.length, total: editor.allPrograms.length })
 }
 
-function onRowClick(event: MouseEvent, row: ProgramTable) {
-  if (ctrl.value) {
-    if (isRowSelected(row)) {
-      removeSelection(row)
-    } else
-      editor.selectedPrograms.push(row)
-  } else if (shift.value) {
-    nextTick(() => {
-      const tableRows = tableRef.value.filteredSortedRows
-      let firstIndex = tableRows.indexOf(editor.selectedPrograms[0])
-      let lastIndex = tableRows.indexOf(row)
-      if (firstIndex > lastIndex) {
-        [firstIndex, lastIndex] = [lastIndex, firstIndex]
-      }
-      editor.selectedPrograms = tableRows.slice(firstIndex, lastIndex + 1)
-    })
-  } else if (event.button !== 2) { // not right click
-    editor.selectedPrograms = [row]
-  } else if (event.button === 2) { // right click
+function onRowClick(event: Event, row: ProgramTable) {
+  const pointer = event as PointerEvent
+
+  if (pointer.button === 2) { // Right click
     if (!isRowSelected(row))
       editor.selectedPrograms = [row]
+    return
   }
+
+  if (ctrl.value) {
+    isRowSelected(row) ? removeSelection(row) : editor.selectedPrograms.push(row)
+    return
+  }
+
+  if (shift.value) {
+    nextTick(() => {
+      const tableRows = tableRef.value.filteredSortedRows
+      const firstIndex = Math.min(
+        tableRows.indexOf(editor.selectedPrograms[0]),
+        tableRows.indexOf(row),
+      )
+      const lastIndex = Math.max(
+        tableRows.indexOf(editor.selectedPrograms[0]),
+        tableRows.indexOf(row),
+      )
+      editor.selectedPrograms = tableRows.slice(firstIndex, lastIndex + 1)
+    })
+    return
+  }
+
+  // Default: Left or middle click
+  editor.selectedPrograms = [row]
 }
 
 async function onRowDoubleClick(event: Event, row: ProgramTable) {
+  const target = event.target as HTMLElement
+
+  if (target.closest('.q-checkbox'))
+    return
+
   await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
 }
 
@@ -670,7 +681,7 @@ function handleRowClass(row: ProgramTable): string {
 </script>
 
 <template>
-  <div v-if="editor.isLoading">
+  <div v-if="editor.isLoading" class="loading-container">
     <LoadingSpinner :has-background="false" />
   </div>
   <div class="custom-page select-none relative">
@@ -687,15 +698,15 @@ function handleRowClass(row: ProgramTable): string {
       :columns="columns"
       row-key="programNo"
       :rows-per-page-options="[0]"
-      class="program-table"
+      class="program-table bg-gray-1 dark:bg-dark-4"
       selection="multiple"
       :selected-rows-label="getSelectedString"
       :filter="searchFilter"
       dense
       flat
-      table-header-style="position: sticky; top: 0; z-index: 1; background-color: #f5f5f5; height: 50px;"
-      bottom-row-style="background-color: #ff0000; color: white;"
-      table-style="border-radius: 10px;"
+      table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
+      table-header-class="bg-gray-1 dark:bg-dark-4"
+      table-class="bg-gray-1 dark:bg-dark-4"
       @row-click="onRowClick"
       @row-dblclick="onRowDoubleClick"
       @row-contextmenu="handleContextMenu"
@@ -780,15 +791,13 @@ function handleRowClass(row: ProgramTable): string {
 }
 
 .loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   z-index: 50;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background-color: rgb(229, 231, 235, 0.2);
 }
 
@@ -800,13 +809,8 @@ function handleRowClass(row: ProgramTable): string {
   border: 1px solid #ccc;
 }
 
-.program-table :deep(.q-table__bottom) {
-  background-color: #f5f5f5;
-}
-
 .program-table {
   height: 80vh;
-  border-radius: 10px;
   user-select: none;
 }
 </style>

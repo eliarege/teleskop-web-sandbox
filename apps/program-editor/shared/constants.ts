@@ -30,6 +30,12 @@ export enum CommandType {
   PARALLEL = 3,
 }
 
+export enum MoveParallel {
+  MOVE = 0,
+  MOVE_UNTIL_DISABLED = 1,
+  STOP = 2,
+}
+
 export const IO_TYPE: { [key: string]: string } = {
   '0': 'Analog Input',
   '1': 'Analog Input',

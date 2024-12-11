@@ -132,7 +132,7 @@ onMounted(() => {
   <q-dialog ref="dialogRef">
     <q-card class="flex flex-col max-w-6xl max-h-2xl min-w-6xl min-h-2xl !dark:(bg-dark-4)">
       <div id="container">
-        <q-card-section class="bg-gray-1 !dark:(bg-dark-1)">
+        <q-card-section class="bg-gray-1 dark:bg-dark-3">
           <div class="text-h6 flex">
             {{ t('stepCommandGraph._') }}
             <q-space />
@@ -144,7 +144,7 @@ onMounted(() => {
               dense
             />
           </div>
-          <div class="text-h8 flex flex-col">
+          <div class="text-h8 flex flex-col color-gray-6 dark:text-gray-4">
             <span>{{ editor.machine.id }} - {{ editor.machine.name }}</span>
             <span>{{ editor.program.programNo }} - {{ editor.program.name }}</span>
           </div>

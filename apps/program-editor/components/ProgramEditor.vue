@@ -38,7 +38,7 @@ function onDragEnd(event: SortableEvent) {
 
 <template>
   <Sortable
-    class="program-editor e-div-y pb-120"
+    class="program-editor e-div-y"
     :list="// eslint-disable-next-line vue/no-extra-parens
       (editor.program?.steps as ProgramStep[])"
     item-key="stepId"
@@ -52,13 +52,13 @@ function onDragEnd(event: SortableEvent) {
         class="program-step"
         :class="{ __selected: editor.selectedSteps.find(step => step.stepId === editor.program.steps[index].stepId) }"
       >
-        <QItemSection side>
+        <QItemSection side @click="editor.selectStep($event.ctrlKey, index)">
           <QItemLabel class="w-5">
             {{ index + 1 }}
           </QItemLabel>
         </QItemSection>
-        <QItemSection class="pl-2">
-          <div :id="`step-${index}`" @click="editor.selectStep($event.ctrlKey, index)">
+        <QItemSection class="pl-2" @click="editor.selectStep($event.ctrlKey, index)">
+          <div :id="`step-${index}`">
             <ProgramStepForm :path="`steps.${index}`" />
           </div>
         </QItemSection>
@@ -75,6 +75,9 @@ function onDragEnd(event: SortableEvent) {
           />
         </QItemSection>
       </QItem>
+    </template>
+    <template #footer>
+      <div class="h-120" @click="editor.selectedSteps = []" />
     </template>
   </Sortable>
 </template>

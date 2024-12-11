@@ -37,19 +37,33 @@ const stepIndex = computed(() => Number(props.path.split('.')[1]))
 const filteredCommands = computed(() => {
   const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
 
-  let filteredArray = commandsArray
-    .filter(({ commandType }) =>
-      !(isMainCommand === CommandType.MAIN && commandType === CommandType.PARALLEL),
-    )
+  let filteredArray = commandsArray.filter(({ commandType }) => {
+    // Ana komut türündeyken paralel komutları filtrele
+    return !(isMainCommand === CommandType.MAIN && commandType === CommandType.PARALLEL)
+  })
+
   filteredArray = filteredArray.filter(({ commandNo }) => {
     const step = editor.program.steps[stepIndex.value]
 
+    // Ana komutun "dontUseList" kontrolü
+    if (isMainCommand === CommandType.PARALLEL) {
+      const mainCommand = step.mainCommand
+      const machineMainCommand = editor.machine.commands.get(mainCommand.commandNo)
+
+      // dontUseList'te bulunanları filtrele
+      if (machineMainCommand?.dontUseList.includes(commandNo)) {
+        return false
+      }
+    }
+
+    // Aynı komut zaten kullanılmışsa filtrele
     return commandNo === programCommand.value.commandNo
       || (
         step.mainCommand.commandNo !== commandNo
-        && !step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === commandNo,
-        ))
+        && !step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === commandNo)
+      )
   })
+
   return filteredArray.map((command: MachineCommand) => ({
     label: `${command.commandNo} ${command.name}`,
     value: command.commandNo,

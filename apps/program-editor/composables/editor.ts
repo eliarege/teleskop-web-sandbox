@@ -3,7 +3,7 @@ import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramFilter, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
-import { CommandIconMapping, CommandType, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
+import { CommandIconMapping, CommandType, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
@@ -12,16 +12,12 @@ export const useEditorStore = defineStore('editor', () => {
   const originalProgram = ref<Program>(createEmptyProgram())
   const machine = ref<Machine>(createMachine())
   const selectedPrograms = ref<ProgramTable[]>([])
-  const allProcessType = ref<ProcessType[]>([])
+  const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTable[]>([])
-  const selectedCommand = ref<MachineCommand | null>(null)
   const selectedSteps = ref<ProgramStep[]>([])
   const selectedParallelStep = ref<number>(-1)
   const isLoading = ref<boolean>(false)
-  const popupCommandListVisible = ref(false)
-  const popupCommandDetailVisible = ref(false)
   const popupVersionDialog = ref(false)
-  const popupTempTimeGraphVisible = ref(false)
   const leftDrawerOpen = ref(true)
   const rightDrawerOpen = ref(false)
   let lastStepId = 0
@@ -124,7 +120,7 @@ export const useEditorStore = defineStore('editor', () => {
   function createEmptyCommand(): ProgramStepCommand {
     return {
       commandId: lastCommandId++,
-      commandNo: null,
+      commandNo: null!,
       parameters: [] as ParameterItem[],
       ioList: [] as ioListItem[],
     }
@@ -162,9 +158,31 @@ export const useEditorStore = defineStore('editor', () => {
       updateCommand(commandNo, newStep.mainCommand)
     }
 
+    const targetIndex = isDef(stepIndex) ? stepIndex : getStepIndex()
+
     // Paralel komutları kopyala (eğer varsa)
-    const index = stepIndex !== undefined && stepIndex >= 0 ? stepIndex : program.value.steps.length - 1
-    newStep.parallelCommands = index > 0 ? klona(program.value.steps[index].parallelCommands) : []
+    for (const command of program.value.steps[targetIndex].parallelCommands) {
+      const machineCommand = machine.value.commands.get(command.commandNo)
+
+      if (isDef(machineCommand)) {
+        // Paralel adımı taşı
+        if (machineCommand.moveParallel === MoveParallel.MOVE) {
+          newStep.parallelCommands.push(klona(command))
+
+        // Paralel adım devreden çıkana kadar taşı
+        } else if (machineCommand.moveParallel === 1) {
+          const mainCommandDontuselist = machine.value.commands.get(command.commandNo)?.dontUseList
+          if (mainCommandDontuselist && !mainCommandDontuselist.find(cNo => cNo === command.commandNo)) {
+            newStep.parallelCommands.push(klona(command))
+          }
+        // Paralel adımı taşıma
+        } else if (machineCommand.moveParallel === MoveParallel.STOP) {
+          // TODO
+        } else {
+          console.warn(`Invalid moveParallel value: ${machineCommand.moveParallel}`)
+        }
+      }
+    }
 
     // Paralel komutların ID'sini güncelle
     for (const command of newStep.parallelCommands) {
@@ -172,14 +190,32 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     // Yeni adımı belirtilen konuma ekle
-    program.value.steps.splice(index + 1, 0, newStep)
+    program.value.steps.splice(targetIndex + 1, 0, newStep)
 
     // Seçim ve kaydırma işlemleri
     selectedParallelStep.value = -1
-    selectedSteps.value = [program.value.steps[index + 1]]
+    selectedSteps.value = [program.value.steps[targetIndex + 1]]
     nextTick(() => {
-      scrollPage(index + 1, true)
+      scrollPage(targetIndex + 1, true)
     })
+  }
+
+  /**
+   * Belirtilen veya seçilen adımın indeksini döndürür.
+   *
+   * Bu fonksiyon, opsiyonel olarak verilen bir `stepId` değerine göre programın adımlarında arama yapar
+   * ve eşleşen adımın indeksini döndürür. Eğer `stepId` verilmemişse, seçilen adım (`selectedSteps`) kullanılır.
+   * Hiçbir adım bulunamazsa, programdaki son adımın indeksini döndürür.
+   *
+   * @param {number} [stepId] - İsteğe bağlı olarak kontrol edilecek adım kimliği.
+   * @returns {number} Adımın indeksini veya programdaki son adımın indeksini döndürür.
+   */
+  function getStepIndex(stepId?: number): number {
+    const selectedStepId = stepId ?? selectedSteps.value[0]?.stepId
+    const mainIndex = program.value.steps.findIndex(step => step.stepId === selectedStepId)
+    const targetIndex = mainIndex >= 0 ? mainIndex : program.value.steps.length - 1
+
+    return targetIndex
   }
 
   /**
@@ -230,13 +266,19 @@ export const useEditorStore = defineStore('editor', () => {
    * Eğer seçilen adım yoksa, paralel komut programın sonuna eklenir.
    */
   function newParallelStep(): void {
-    const index = program.value.steps.findIndex(step => step.stepId === selectedSteps.value[0]?.stepId)
-    const mainIndex = index < 0 ? program.value.steps.length - 1 : index
-    const parallelIndex = program.value.steps[mainIndex].parallelCommands.length - 1
-    program.value.steps[mainIndex].parallelCommands.splice(parallelIndex + 1, 0, createEmptyCommand())
+    const targetIndex = getStepIndex()
+
+    // Eğer adım yoksa, işlem yapılmaz
+    if (targetIndex < 0) {
+      notifyError(t('error.mainStepNotFound'))
+      return
+    }
+
+    const parallelCommands = program.value.steps[targetIndex].parallelCommands
+    parallelCommands.push(createEmptyCommand())
 
     nextTick(() => {
-      scrollPage(mainIndex, true)
+      scrollPage(targetIndex, true)
     })
   }
 
@@ -276,8 +318,8 @@ export const useEditorStore = defineStore('editor', () => {
    *
    * Eğer makine komutu bulunamazsa, kullanıcıya bir hata mesajı gösterilir.
    *
-   * @param {ProgramStepCommand} command - Güncellenmesi gereken program adımı komutu.
    * @param {number} newCommandNo - Makine komutunu almak için kullanılan yeni komut numarası.
+   * @param {ProgramStepCommand} step - Güncellenmesi gereken program adımı komutu.
    *
    * @returns {void}
    *
@@ -322,14 +364,14 @@ export const useEditorStore = defineStore('editor', () => {
    *
    * @param {Program} [newProgram] - Yeni program verisi (isteğe bağlı).
    *
-   * @returns {Promise<void>} Fonksiyon bir `Promise` döner ve işlemi tamamlar.
+   * @returns {Promise<boolean>} Program kaydedildi mi? `true` veya `false` döner.
    *
    * @description Bu fonksiyon, önce program formunda herhangi bir hata olup olmadığını kontrol eder.
    * Eğer hata varsa, kullanıcıyı hatalı alana yönlendirir ve hata mesajı gösterir.
    * Eğer hata yoksa, yeni program eklenir veya mevcut program güncellenir. İşlem sonucunda başarılı
    * veya başarısız bildirimleri yapılır.
    */
-  async function onSubmit(newProgram?: Program): Promise<void> {
+  async function onSubmit(newProgram?: Program): Promise<boolean> {
     const firstId = errorIds.value.values().next().value
     if (firstId) {
       const el = document.getElementById(firstId)
@@ -338,17 +380,21 @@ export const useEditorStore = defineStore('editor', () => {
 
       scrollPage(Number(stepIndex), true)
       notifyError(t('saveProgram.incorrect'))
+      return false
     } else {
       isLoading.value = true
       if (newProgram) {
         if (allPrograms.value.some(p => p.programNo === newProgram.programNo)) {
           notifyError(t('input.unique', { field: t('program.programNo') }))
+          isLoading.value = false
+          return false
         } else {
           if (await insertProgram(newProgram)) {
             originalProgram.value = newProgram
             notifySuccess(t('saveProgram.success'))
           } else {
             notifyError(t('saveProgram.fail'))
+            return false
           }
         }
       } else {
@@ -357,9 +403,11 @@ export const useEditorStore = defineStore('editor', () => {
           notifySuccess(t('saveProgram.success'))
         } else {
           notifyError(t('saveProgram.fail'))
+          return false
         }
       }
       isLoading.value = false
+      return true
     }
   }
 
@@ -472,7 +520,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Veriler çekildikten sonra, programın her bir adımı (`step`) ve paralel komutları (`parallelCommands`) işlenir.
    * Her bir adım ve komut için benzersiz ID'ler atanır.
    */
-  async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<void> {
+  async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<Program> {
     selectedSteps.value = []
     selectedParallelStep.value = -1
     lastStepId = 0
@@ -541,8 +589,6 @@ export const useEditorStore = defineStore('editor', () => {
   /**
    * Tüm programları getirir ve isteğe bağlı olarak filtreler uygular.
    *
-   * @param {ProgramFilter} [filter] - Programları filtrelemek için kullanılan opsiyonel filtre parametreleri.
-   *
    * @returns {Promise<void>} Programlar başarıyla getirildikten sonra `Promise` döner.
    *
    * @description Bu fonksiyon, API üzerinden tüm programları çeker. Eğer filtre parametreleri verilmişse, yalnızca verilen filtrelere uyan programlar getirilir.
@@ -574,7 +620,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Güncellenmiş işlem türleri, `allProcessType` değişkenine atanır.
    */
   async function fetchAllProcessTypes(): Promise<void> {
-    allProcessType.value = (await kc.fetch<ProcessType[]>('/api/process')).map(type => ({
+    allProcessTypes.value = (await kc.fetch<ProcessType[]>('/api/process')).map(type => ({
       ...type,
       label: capitalize(type.label),
     }))
@@ -673,6 +719,8 @@ export const useEditorStore = defineStore('editor', () => {
    * Yeni bir program ekler ve başarı durumuna göre yönlendirme yapar.
    *
    * @param {Program} newProgram - Eklenecek yeni program.
+   * @param {boolean} redirect - Ekleme sonrası kullanıcıyı programa yönlendirme yapılacaksa `true`, aksi halde `false`.
+   *                             Varsayılan deger `true`.
    *
    * @returns {Promise<boolean>} Programın eklenip eklenmediğine dair bir `Promise`.
    * Eğer program başarılı bir şekilde eklenirse `true`, hata durumunda `false` döner.
@@ -681,7 +729,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Eğer işlem sırasında bir hata oluşursa, hata mesajına göre uygun bir bildirim gösterilir.
    * Özellikle `PROGRAM_TREATMENT_COMMAND_LIMIT` hatası durumunda, ilgili limitin aşıldığına dair bir bildirim gösterilir.
    */
-  async function insertProgram(newProgram: Program): Promise<boolean> {
+  async function insertProgram(newProgram: Program, redirect: boolean = true): Promise<boolean> {
     try {
       await kc.fetch(`/api/machine/${newProgram.machineId}/program`, {
         method: 'POST',
@@ -690,7 +738,9 @@ export const useEditorStore = defineStore('editor', () => {
         },
       })
 
-      navigateTo(`/machine/${newProgram.machineId}/program/${newProgram.programNo}`)
+      if (redirect)
+        navigateTo(`/machine/${newProgram.machineId}/program/${newProgram.programNo}`)
+
       return true
     } catch (error: any) {
       if (error.statusCode === 400) {
@@ -874,14 +924,10 @@ export const useEditorStore = defineStore('editor', () => {
     isLoading,
     errorIds,
     popupVersionDialog,
-    allProcessType,
+    allProcessTypes,
     allPrograms,
-    selectedCommand,
     lastStepId,
     lastCommandId,
-    popupCommandListVisible,
-    popupCommandDetailVisible,
-    popupTempTimeGraphVisible,
     leftDrawerOpen,
     rightDrawerOpen,
     teleskopSettings,

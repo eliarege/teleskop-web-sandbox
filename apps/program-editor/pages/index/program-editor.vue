@@ -4,6 +4,7 @@ import LoadingSpinner from '../../../../packages/ui/components/LoadingSpinner.vu
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
+import type { ContextBarButtons } from '~/shared/types'
 
 const editor = useEditorStore()
 const form = ref<QForm>()
@@ -19,9 +20,10 @@ const ctrl = useKeyModifier('Control')
 
 definePageMeta({
   path: '/machine/:machine_id/program/:program_no',
+  roles: ['program-view'],
 })
 
-const buttons = computed(() => [
+const buttons = computed<ContextBarButtons[]>(() => [
   // {
   //   label: t('menu.print'),
   //   originalLabel: t('menu.print'),
@@ -271,10 +273,10 @@ onBeforeRouteLeave(() => {
 </script>
 
 <template>
-  <div v-if="editor.isLoading">
-    <LoadingSpinner :has-background="false" />
-  </div>
   <div class="q-pa-md select-none">
+    <div v-if="editor.isLoading" class="loading-container">
+      <LoadingSpinner :has-background="false" />
+    </div>
     <QForm ref="form">
       <DevOnly>
         <div class="flex flex-col color-gray-5 text-3">
@@ -286,3 +288,16 @@ onBeforeRouteLeave(() => {
     </QForm>
   </div>
 </template>
+
+<style scoped>
+.loading-container {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  z-index: 50;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgb(229, 231, 235, 0.2);
+}
+</style>

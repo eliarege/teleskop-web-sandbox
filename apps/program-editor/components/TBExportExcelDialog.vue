@@ -1,16 +1,35 @@
 <script setup lang="ts">
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
+import type { MachineCommand, MachineConstant, MachineGroup, MachineInfo } from '~/shared/types'
 
-const props = defineProps({
-  machines: Array<{ name: string, value: number, label: string }>,
-})
+const props = defineProps<{
+  machineGroups: MachineGroup[]
+}>()
 
-const { fetch } = useKeycloak()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const kc = useKeycloak()
 const { t } = useI18n()
+const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+let sheet: ExcelJS.Worksheet
+const { data: machineGroup } = useAuthFetch<MachineGroup[]>('/api/machine-group')
 
-const selectedMachines = ref([] as number[])
+const selectedMachines = ref<MachineInfo[]>([])
+const expanded = ref<string[]>([])
+const nodes = computed(() => {
+  if (!machineGroup.value)
+    return []
+
+  return machineGroup.value.filter(group => group.machines.length > 0).map(group => ({
+    id: group.groupId,
+    label: group.name,
+    selectable: false,
+    children: group.machines.map(machine => ({
+      id: `${machine.groupId}-${machine.id}`,
+      label: machine.name,
+      selectable: false,
+    })),
+  }))
+})
 
 const fields = ref([
   { label: t('exportExcelDialog.commandList'), value: 1 },
@@ -18,15 +37,21 @@ const fields = ref([
   { label: t('exportExcelDialog.machineConstantsList'), value: 3 },
   { label: t('exportExcelDialog.startParametersList'), value: 4 },
 ])
-const selectedFields = ref([1, 2, 3, 4] as number[])
+const selectedFields = ref<number[]>([1, 2, 3, 4])
 
 async function excelFormatter(workbook: ExcelJS.Workbook) {
-  let sheet: ExcelJS.Worksheet
+  const selectedMachineIds = selectedMachines.value.map(machine => Number(machine.toString().split('-')[1]))
+
+  const commands: MachineCommand[] = await kc.fetch(`/api/machine/commands`, {
+    method: 'POST',
+    body: { machineIds: selectedMachineIds },
+  })
+
   for (const field of selectedFields.value) {
     if (field === 1) {
       sheet = workbook.addWorksheet(t('exportExcelDialog.commandList'))
       sheet.columns = [
-        { key: 'machineName', width: 15 },
+        { key: 'machineName', width: 20 },
         { key: 'commandNo', width: 10 },
         { key: 'commandName', width: 50 },
       ]
@@ -39,23 +64,45 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
     if (field === 2) {
       sheet = workbook.addWorksheet(t('exportExcelDialog.detailedCommandList'))
       sheet.columns = [
-        { key: 'machineName', width: 15 },
-        { key: 'commandName', width: 50 },
+        { key: 'machineName', width: 10 },
+        { key: 'commandName', width: 20 },
+        { key: '', width: 20 },
+        { key: '', width: 10 },
+        { key: '', width: 10 },
       ]
       sheet.addRow({
         machineName: t('exportExcelDialog.machine'),
         commandName: t('exportExcelDialog.commandName'),
       }).font = { bold: true }
     }
+    if (field === 3) {
+      sheet = workbook.addWorksheet(t('exportExcelDialog.machineConstantsList'))
+      sheet.columns = [
+        { key: 'machineName', width: 10 },
+        { key: 'parameterId', width: 10 },
+        { key: 'parameterName', width: 20 },
+        { key: 'value', width: 10 },
+        { key: 'min', width: 7 },
+        { key: 'max', width: 7 },
+      ]
+      sheet.addRow({
+        machineName: t('exportExcelDialog.machine'),
+        parameterId: t('exportExcelDialog.parameterId'),
+        parameterName: t('exportExcelDialog.parameterName'),
+        value: t('exportExcelDialog.value'),
+        min: t('exportExcelDialog.min'),
+        max: t('exportExcelDialog.max'),
+      }).font = { bold: true }
+    }
     if (field === 4) {
       sheet = workbook.addWorksheet(t('exportExcelDialog.startParametersList'))
       sheet.columns = [
-        { key: 'machineName', width: 15 },
+        { key: 'machineName', width: 10 },
         { key: 'commandNo', width: 10 },
-        { key: 'commandName', width: 50 },
-        { key: 'value', width: 10 },
-        { key: 'min', width: 10 },
-        { key: 'max', width: 10 },
+        { key: 'commandName', width: 20 },
+        { key: 'value', width: 15 },
+        { key: 'min', width: 7 },
+        { key: 'max', width: 7 },
       ]
       sheet.addRow({
         machineName: t('exportExcelDialog.machine'),
@@ -67,26 +114,25 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
       }).font = { bold: true }
     }
 
-    for (const machine of selectedMachines.value) {
-      const machineObject = props.machines?.find(mach => mach.value === machine)
+    for (const machineId of selectedMachineIds) {
+      const machine = props.machineGroups.find(group => group.machines.find(machine => machine.id === machineId))
+
       if (field === 1) {
-        const commands = await fetch(`/api/machine/${machine}/commands?asList=true`)
         commands.forEach((command) => {
           sheet.addRow({
-            machineName: machineObject?.label,
-            commandNo: command.value,
+            machineName: machine?.name,
+            commandNo: command.commandNo,
             commandName: command.name,
           })
         })
       }
       if (field === 2) {
-        const commands = await fetch(`/api/machine/${machine}/commands`)
-
-        commands.forEach((command) => {
+        for (const command of commands) {
           sheet.addRow({
-            machineName: machineObject?.name,
+            machineName: machine?.name,
             commandName: command.name,
           })
+
           if (command.parameters.find(param => param.editable === true)) {
             sheet.addRow([
               ' ',
@@ -95,6 +141,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
               t('exportExcelDialog.min'),
               t('exportExcelDialog.max'),
             ]).font = { bold: true }
+
             command.parameters.forEach((param) => {
               if (param.editable) {
                 sheet.addRow([
@@ -128,22 +175,33 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
             })
           }
           sheet.addRow({})
-        })
+        }
       }
       if (field === 3) {
-        // TODO:
+        const machineConstants = await kc.fetch(`/api/machine/${machineId}/constants`)
+
+        machineConstants.forEach((constant: MachineConstant) => {
+          sheet.addRow({
+            machineName: machine?.name,
+            parameterId: constant.machineParameterId,
+            parameterName: constant.paramString,
+            value: constant.currentValue,
+            min: constant.paramLowLimit,
+            max: constant.paramHighLimit,
+          })
+        })
       }
       if (field === 4) {
-        const parameters = await fetch(`/api/machine/${machine}/parameters`)
-
-        parameters.forEach((param) => {
-          sheet.addRow({
-            machineName: machineObject?.label,
-            commandNo: param?.id,
-            commandName: param?.name,
-            value: param?.value < 0 ? t('exportExcelDialog.required') : param?.value,
-            min: param?.min,
-            max: param?.max,
+        commands.forEach((command) => {
+          command.parameters.forEach((param) => {
+            sheet.addRow({
+              machineName: machine?.name,
+              commandNo: command?.commandNo,
+              commandName: command?.name,
+              value: Number(param?.value) < 0 ? t('exportExcelDialog.required') : param?.value,
+              min: param?.minValue,
+              max: param?.maxValue,
+            })
           })
         })
       }
@@ -159,55 +217,57 @@ async function exportExcel() {
   downloadExcelFile('Program Editor Report', buffer)
 }
 
-function downloadExcelFile(fileName, buffer) {
+function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
   saveAs(blob, fileName)
 }
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" persistent>
-    <q-card>
-      <q-card-section class="row items-center q-pb-none">
+  <QDialog ref="dialogRef" class="select-none">
+    <QCard class="min-w-100">
+      <QCardSection class="row items-center q-pb-none">
         <div class="text-h6">
           {{ t('exportExcelDialog._') }}
         </div>
-        <q-space />
-        <q-btn
+        <QSpace />
+        <QBtn
           v-close-popup
           icon="close"
+          class="color-gray-6"
           flat
           round
           dense
           @click="onDialogCancel"
         />
-      </q-card-section>
-      <q-card-section>
-        <div class="flex">
-          {{ t('exportExcelDialog.machineList') }}
-          <q-space />
+      </QCardSection>
+      <QCardSection>
+        <div class="flex items-center">
+          <span>{{ t('exportExcelDialog.machineList') }}</span>
+          <QSpace />
           <OptionGroupFunctionalityButtons
             :model="selectedMachines"
-            :options="machines"
-            @update:model="e => selectedMachines = e"
+            :options="machineGroup?.flatMap(machine => machine.machines)"
           />
         </div>
-        <div class="flex max-h-60 overflow-y-scroll">
-          <q-option-group
-            v-model="selectedMachines"
-            dense
-            class="p-5"
-            :options="machines"
-            type="checkbox"
-          />
-        </div>
-      </q-card-section>
-      <q-card-section>
+
+        <QTree
+          v-model:ticked="selectedMachines"
+          v-model:expanded="expanded"
+          :nodes="nodes"
+          node-key="id"
+          tick-strategy="leaf"
+          default-expand-all
+          dense
+          class="w-full min-h-120 max-h-120 overflow-y-scroll"
+        />
+      </QCardSection>
+      <QCardSection>
         <div>
           {{ t('exportExcelDialog.fields') }}
         </div>
         <div class="flex max-h-60 overflow-y-scroll">
-          <q-option-group
+          <QOptionGroup
             v-model="selectedFields"
             dense
             class="p-5"
@@ -215,14 +275,25 @@ function downloadExcelFile(fileName, buffer) {
             type="checkbox"
           />
         </div>
-      </q-card-section>
-      <q-card-section>
-        <q-btn
-          :label="t('submit')"
+      </QCardSection>
+      <QCardActions
+        align="right"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
+      >
+        <QBtn
+          :label="t('cancel')"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+          flat
+          @click="onDialogCancel"
+        />
+        <QBtn
+          :label="t('ok')"
+          class="q-mr-sm bg-primary"
+          flat
           :disable="!(selectedFields.length && selectedMachines.length)"
           @click="exportExcel"
         />
-      </q-card-section>
-    </q-card>
-  </q-dialog>
+      </QCardActions>
+    </QCard>
+  </QDialog>
 </template>

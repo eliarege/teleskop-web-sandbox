@@ -22,10 +22,6 @@ async function deleteFilter() {
 function focusNumberInput() {
   document.getElementById(inputId)?.focus()
 }
-
-function togglePopup() {
-  filter.showFilterPopup = !filter.showFilterPopup
-}
 </script>
 
 <template>
@@ -34,23 +30,22 @@ function togglePopup() {
       :color="filter.hasFilter() ? 'red-6' : 'gray-6'"
       icon="filter_alt"
       rounded
-      @click="togglePopup"
     >
       <QTooltip class="text-capitalize">
         {{ t('filter.programFilter') }}
       </QTooltip>
 
-      <QPopupProxy
+      <QMenu
         v-model="filter.showFilterPopup"
+
         transition-show="scale"
         transition-hide="scale"
         anchor="bottom right"
         self="top right"
         class="rounded-md"
-        no-parent-event
         @show="focusNumberInput"
       >
-        <div class="q-pa-sm" style="width: 380px;">
+        <div class="q-pa-sm select-none" style="width: 350px;">
           <div class="text-4 flex items-center">
             <span class="text-gray-8 ml-2">{{ t('filter.programFilter') }}</span>
             <QSpace />
@@ -63,7 +58,7 @@ function togglePopup() {
               flat
               @click="deleteFilter"
             >
-              <QTooltip> {{ t('filter.delete_all') }} </QTooltip>
+              <QTooltip>{{ t('filter.delete_all') }}</QTooltip>
             </QBtn>
             <QBtn
               class="text-gray-8"
@@ -79,7 +74,7 @@ function togglePopup() {
           </div>
           <QSeparator />
 
-          <div class="q-pa-md justify-center">
+          <div class="q-pa-sm justify-center">
             <QForm class="q-gutter-md" @submit.prevent="applyFilter">
               <InputNumber
                 :id="inputId"
@@ -96,7 +91,7 @@ function togglePopup() {
               />
               <QSelect
                 v-model="filter.existingFilter.processType"
-                :options="editor.allProcessType"
+                :options="editor.allProcessTypes"
                 :label="t('filter.processType')"
                 options-dense
                 dense
@@ -113,13 +108,14 @@ function togglePopup() {
                   :label="t('filter.apply')"
                   type="submit"
                   icon="check"
+                  dense
                   flat
                 />
               </div>
             </QForm>
           </div>
         </div>
-      </QPopupProxy>
+      </QMenu>
     </TopbarButton>
   </div>
 </template>
