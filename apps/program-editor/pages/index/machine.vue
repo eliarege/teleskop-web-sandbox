@@ -681,7 +681,7 @@ function handleRowClass(row: ProgramTable): string {
 </script>
 
 <template>
-  <div v-if="editor.isLoading" class="loading-container">
+  <div v-if="editor.isLoading" class="loading-container bg-gray-3 bg-opacity-10 dark:bg-dark-2 dark:bg-opacity-10">
     <LoadingSpinner :has-background="false" />
   </div>
   <div class="custom-page select-none relative">
@@ -798,7 +798,6 @@ function handleRowClass(row: ProgramTable): string {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgb(229, 231, 235, 0.2);
 }
 
 .custom-scrollbar {

@@ -256,7 +256,7 @@ const itemsMobile = [
     <QPageContainer>
       <QPage>
         <div
-          class="flex sticky top-10 z-10 bg-gray-2 dark:bg-dark-3"
+          class="flex sticky top-10 z-10 bg-light-7  dark:bg-dark-3"
         >
           <ContextBar />
         </div>

@@ -135,6 +135,7 @@ const duration = computed(() => {
 .step-parallel-command {
   @apply flex flex-row items-center w-full pl-4;
   @apply border-b border-black border-opacity-20;
+  @apply hover:(bg-gray-1 text-black dark:(bg-dark-3 text-white));
   @apply dark:(border-b border-white border-opacity-20);
 }
 
