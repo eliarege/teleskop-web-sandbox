@@ -70,6 +70,7 @@ const duration = computed(() => {
       <DevOnly>
         <div class="flex flex-col color-gray-5 text-3">
           <span>{{ `stepId: ${step.stepId}` }}</span>
+          <span>{{ `commandId: ${step.mainCommand.commandId}` }}</span>
           <span>{{ duration }}</span>
         </div>
       </DevOnly>

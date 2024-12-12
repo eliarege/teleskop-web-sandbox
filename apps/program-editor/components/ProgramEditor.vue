@@ -48,7 +48,6 @@ function onDragEnd(event: SortableEvent) {
     @click="editor.selectedSteps = []"
   >
     <template #item="{ index }: { index: number, element: any }">
-      {{ editor.program.steps[index].stepId }}
       <QItem
         dense
         class="program-step"

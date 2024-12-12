@@ -13,27 +13,10 @@ const editor = useEditorStore()
 const programCommand = ref<ProgramStepCommand>(editor.getPathElement(props.path))
 const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? CommandType.MAIN : CommandType.PARALLEL
 
-const id = useId()
 const select = ref<QSelect>()
-
-watch(() => select.value?.modelValue, () => {
-  if (programCommand.value.commandNo === null) {
-    editor.errorIds.add(id)
-    select.value?.focus()
-  } else {
-    editor.errorIds.delete(id)
-  }
-})
-
-onUnmounted(() => {
-  editor.errorIds.delete(id)
-})
-
-const rules = [
-  (value: any) => !!value,
-]
-
 const stepIndex = computed(() => Number(props.path.split('.')[1]))
+const id = `${editor.program.steps[stepIndex.value].stepId}-${programCommand.value.commandId}`
+
 const filteredCommands = computed(() => {
   const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
 
@@ -73,10 +56,84 @@ const filteredCommands = computed(() => {
 const label = computed(() => {
   return !programCommand.value.commandNo ? t('selectCommand') : undefined
 })
+
+const rules = [
+  (value: number) => {
+    return !!value || t('validation.emptyCommand') // Seçim boşsa hata mesajı
+  },
+  (value: number) => {
+    const step = editor.program.steps[stepIndex.value]
+    const machineMainCommand = editor.machine.commands.get(step.mainCommand.commandNo)
+
+    // Ana komutun "dontUseList" kontrolü
+    if (isMainCommand === CommandType.PARALLEL) {
+      if (machineMainCommand?.dontUseList?.includes(value)) {
+        return t('cannotParallelCommand', {
+          mainCommandNo: step.mainCommand.commandNo,
+          parallelCommandNo: value,
+        })
+      }
+    }
+
+    return true
+  },
+]
+
+watch(() => programCommand.value.commandNo, (commandNo) => {
+  console.log('paralel tetik')
+  const step = editor.program.steps[stepIndex.value]
+  const machineMainCommand = editor.machine.commands.get(step.mainCommand.commandNo)
+
+  // Ana komutun "dontUseList" kontrolü
+  if (machineMainCommand?.dontUseList?.includes(commandNo)) {
+    editor.errorIds.add(id)
+    select.value?.focus()
+  } else {
+    editor.errorIds.delete(id)
+  }
+
+  select.value?.validate()
+})
+
+watch(() => editor.program.steps[stepIndex.value].mainCommand.commandNo, (commandNo) => {
+  console.log('ana tetik')
+  const machineMainCommand = editor.machine.commands.get(commandNo)
+
+  // Ana komutun "dontUseList" kontrolü
+  if (machineMainCommand?.dontUseList?.includes(programCommand.value.commandNo)) {
+    editor.errorIds.add(id)
+    select.value?.focus()
+  } else {
+    editor.errorIds.delete(id)
+  }
+
+  select.value?.validate()
+})
+
+onMounted(() => {
+  nextTick(() => {
+    const step = editor.program.steps[stepIndex.value]
+    const machineMainCommand = editor.machine.commands.get(step.mainCommand.commandNo)
+
+    if (machineMainCommand?.dontUseList.includes(programCommand.value.commandNo)) {
+      editor.errorIds.add(id)
+      select.value?.focus()
+    } else {
+      editor.errorIds.delete(id)
+    }
+
+    select.value?.validate() // QSelect kurallarını tetikle
+  })
+})
 </script>
 
 <template>
   <div>
+    <DevOnly>
+      <div class="flex flex-col color-gray-5 text-3">
+        <span>{{ id }}</span>
+      </div>
+    </DevOnly>
     <QSelect
       ref="select"
       :model-value="programCommand.commandNo"

@@ -17,6 +17,7 @@
   "programNotSaved": "Error occured while trying to save program",
   "programNotUpdated": "Program has not been updated",
   "treatmentParameterLimitReached": "Command {commandNo} cannot be used more than {limit}",
+  "cannotParallelCommand": "Command {parallelCommandNo} cannot be used in parallel with command {mainCommandNo}",
   "(copy)": "({programNo} Copy)",
   "noSelection": "No Selection",
   "invalidCommand": "Check for faulty command",
