@@ -15,7 +15,6 @@ export const useEditorStore = defineStore('editor', () => {
   const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTable[]>([])
   const selectedSteps = ref<ProgramStep[]>([])
-  const selectedParallelStep = ref<number>(-1)
   const isLoading = ref<boolean>(false)
   const popupVersionDialog = ref(false)
   const leftDrawerOpen = ref(true)
@@ -922,7 +921,6 @@ export const useEditorStore = defineStore('editor', () => {
     machine,
     selectedPrograms,
     selectedSteps,
-    selectedParallelStep,
     isLoading,
     errorIds,
     popupVersionDialog,

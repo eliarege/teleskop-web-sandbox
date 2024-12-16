@@ -106,7 +106,7 @@ const duration = computed(() => {
         <template #item="{ index }">
           <div
             class="step-parallel-command"
-            :class="{ __selected: editor.selectedSteps.find(step => step.stepId === stepIndex) && editor.selectedParallelStep === index }"
+            :class="{ __selected: false }"
           >
             <DevOnly>
               <div class="flex flex-col color-gray-5 text-3">
