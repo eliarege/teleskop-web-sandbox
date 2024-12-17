@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { QSelect } from 'quasar'
-import { isDef } from '@teleskop/utils'
 import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 import { useEditorStore } from '~~/composables/editor'
 import { CommandType } from '~/shared/constants'
@@ -60,7 +59,7 @@ const label = computed(() => {
 
 const rules = [
   (value: number) => {
-    return !!value || t('validation.emptyCommand') // Seçim boşsa hata mesajı
+    return !!value || t('emptyCommand') // Seçim boşsa hata mesajı
   },
   (value: number) => {
     const step = editor.program.steps[stepIndex.value]
@@ -80,72 +79,57 @@ const rules = [
   },
 ]
 
-watch(() => programCommand.value.commandNo, (commandNo) => {
-  if (!commandNo) {
-    editor.errorIds.add(id)
-    select.value?.focus()
-    return
-  } else {
-    const step = editor.program.steps[stepIndex.value]
+function validateCommand() {
+  nextTick(() => {
+    const commandNo = programCommand.value?.commandNo
+    const mainCommandNo = editor.program.steps[stepIndex.value]?.mainCommand?.commandNo
+    const machineMainCommand = editor.machine.commands.get(mainCommandNo)
 
-    // Ana komutun "dontUseList" kontrolü
-    const machineMainCommand = editor.machine.commands.get(step.mainCommand.commandNo)
-
-    if (machineMainCommand?.dontUseList.includes(commandNo)) {
+    if (!commandNo || machineMainCommand?.dontUseList?.includes(commandNo)) {
       editor.errorIds.add(id)
-      select.value?.focus()
     } else {
       editor.errorIds.delete(id)
     }
-  }
 
-  select.value?.validate()
-})
+    select.value?.validate()
+  })
+}
 
-watch(() => editor.program.steps[stepIndex.value].mainCommand.commandNo, (commandNo) => {
-  if (!programCommand.value.commandNo) {
-    editor.errorIds.add(id)
-    select.value?.focus()
-    return
-  }
+// watch: programCommand.value.commandNo
+watch(
+  () => programCommand.value.commandNo,
+  () => validateCommand(),
+)
 
-  const machineMainCommand = editor.machine.commands.get(commandNo)
-
-  // Ana komutun "dontUseList" kontrolü
-  if (machineMainCommand?.dontUseList?.includes(programCommand.value.commandNo)) {
-    editor.errorIds.add(id)
-    select.value?.focus()
-  } else {
-    editor.errorIds.delete(id)
-  }
-
-  select.value?.validate()
-})
+// watch: mainCommand.commandNo
+watch(
+  () => editor.program.steps[stepIndex.value]?.mainCommand?.commandNo,
+  () => validateCommand(),
+)
 
 onMounted(() => {
-  console.log('onMounted tetik')
   nextTick(() => {
     const step = editor.program.steps[stepIndex.value]
+    const mainCommand = step?.mainCommand
+    const commandNo = programCommand.value?.commandNo
+    const machineMainCommand = editor.machine.commands.get(mainCommand?.commandNo)
 
-    // Eğer step.mainCommand veya commandNo tanımlı değilse focus ol
-    if (!step?.mainCommand?.commandNo) {
-      console.warn('Komut numarası eksik, focus olacak')
+    select.value?.focus()
+
+    const isInvalidCommand = !commandNo
+      || (machineMainCommand?.dontUseList.includes(commandNo))
+
+    // Ana adım ve paralel adım için ortak kontrol
+    if (
+      (isMainCommand === CommandType.MAIN && isInvalidCommand)
+      || (isMainCommand === CommandType.PARALLEL && (!mainCommand?.commandNo || isInvalidCommand))
+    ) {
       editor.errorIds.add(id)
-      select.value?.focus()
       return
-    } else {
-      const machineMainCommand = editor.machine.commands.get(step.mainCommand.commandNo)
-
-      // Komut "dontUseList" içindeyse hata ekle
-      if (machineMainCommand?.dontUseList.includes(programCommand.value.commandNo)) {
-        editor.errorIds.add(id)
-        select.value?.focus()
-      } else {
-        editor.errorIds.delete(id)
-      }
     }
 
-    select.value?.validate() // QSelect kurallarını tetikle
+    editor.errorIds.delete(id)
+    select.value?.validate()
   })
 })
 </script>

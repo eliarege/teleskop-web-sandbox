@@ -20,7 +20,8 @@
   "cannotParallelCommand": "{parallelCommandNo} numaralı komut, {mainCommandNo} numralı komutun paralelinde kullanılamaz!",
   "(copy)": "({programNo} Kopya)",
   "noSelection": "Seçim Yok",
-  "invalidCommand": "Hatalı komutu kontrol ediniz.",
+  "invalidCommand": "Hatalı komutu kontrol ediniz",
+  "emptyCommand": "Komut boş olamaz",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",
