@@ -202,7 +202,6 @@ export const useEditorStore = defineStore('editor', () => {
     program.value.steps.splice(targetIndex + 1, 0, newStep)
 
     // Seçim ve kaydırma işlemleri
-    selectedParallelStep.value = -1
     selectedSteps.value = [program.value.steps[targetIndex + 1]]
     nextTick(() => {
       scrollPage(targetIndex + 1, true)
@@ -465,27 +464,58 @@ export const useEditorStore = defineStore('editor', () => {
    * Belirtilen adım indeksine göre adımı siler.
    * Eğer indeks belirtilmezse, seçili adımlar üzerinden silme işlemi yapılır.
    *
-   * @param {number} [stepIndex] - (İsteğe bağlı) Silinecek adımın indeksidir.
+   * @param {number} [stepId] - (İsteğe bağlı) Silinecek adımın ID'sidir.
    *
    * @returns {void} Fonksiyon herhangi bir değer döndürmez.
-   *
-   * @description Bu fonksiyon, belirtilen adım indeksine göre adımı siler. Eğer indeks belirtilmezse,
-   * seçili adımlar üzerinde işlem yapılır ve her bir seçili adım, programın adımlarından silinir.
-   * Silme işlemi, sondan başa doğru yapılır.
    */
-  function deleteStep(stepIndex?: number): void {
-    if (isDef(stepIndex)) {
-      program.value.steps.splice(stepIndex, 1)
+  function deleteStep(stepId?: number): void {
+  // Tek bir adımı sil
+    if (isDef(stepId)) {
+      removeStepById(stepId)
     } else {
-      // Sondan başa doğru iterasyon yaparak elemanları sil
-      for (let i = selectedSteps.value.length - 1; i >= 0; i--) {
-        const index = program.value.steps.findIndex(s => s.stepId === selectedSteps.value[i].stepId)
-        if (index !== -1) {
-          program.value.steps.splice(index, 1)
-        }
+    // Seçili adımları sil (sondan başa doğru iterasyon)
+      const stepsToDelete = [...selectedSteps.value]
+      for (let i = stepsToDelete.length - 1; i >= 0; i--) {
+        removeStepById(stepsToDelete[i].stepId)
       }
       selectedSteps.value = []
     }
+  }
+
+  /**
+   * Belirtilen stepId'ye göre adımı ve ilgili hataları siler.
+   *
+   * @param {number} stepId - Silinecek adımın ID'sidir.
+   */
+  function removeStepById(stepId: number): void {
+    const stepIndex = program.value.steps.findIndex(step => step.stepId === stepId)
+    if (stepIndex === -1)
+      return // Eğer adım bulunamazsa çık
+
+    deleteError(stepId) // Hataları temizle
+    nextTick(() => {
+      program.value.steps.splice(stepIndex, 1)
+    })
+  }
+
+  /**
+   * Belirtilen adımın hatalarını siler.
+   *
+   * @param {number} stepId - Hataları silinecek adımın ID'si.
+   */
+  function deleteError(stepId: number): void {
+    const step = program.value.steps.find(step => step.stepId === stepId)
+    if (!isDef(step))
+      return // Eğer adım bulunamazsa çık
+
+    // Ana komut hatasını sil
+    const errorId = `${step.stepId}-${step.mainCommand.commandId}`
+    errorIds.value.delete(errorId)
+
+    // Paralel komut hatalarını sil
+    step.parallelCommands.forEach((command) => {
+      errorIds.value.delete(`${step.stepId}-${command.commandId}`)
+    })
   }
 
   /**
@@ -500,19 +530,12 @@ export const useEditorStore = defineStore('editor', () => {
    * seçili adım ve paralel komut üzerinden işlem yapılır. Paralel komutlar silindikten sonra, seçilen paralel adımın
    * geçerli bir indekse sahip olması sağlanır.
    */
-  function deleteParallelStep(stepIndex?: number, parallelIndex?: number): void {
+  function deleteParallelStep(stepIndex: number, parallelIndex: number): void {
     if (isDef(stepIndex) && isDef(parallelIndex)) {
-      program.value.steps[stepIndex]?.parallelCommands.splice(parallelIndex, 1)
-    } else {
-      if (selectedSteps.value.length && selectedParallelStep.value !== -1) {
-        if (program.value.steps[selectedSteps.value.length].parallelCommands.length > 0)
-          program.value.steps[selectedSteps.value.length].parallelCommands.splice(selectedParallelStep.value, 1)
-      }
+      const stepId = program.value.steps[stepIndex].stepId
+      deleteError(stepId)
+      program.value.steps[stepIndex].parallelCommands.splice(parallelIndex, 1)
     }
-    selectedParallelStep.value = Math.min(
-      selectedParallelStep.value,
-      program.value.steps[selectedSteps.value.length].parallelCommands.length - 1,
-    )
   }
 
   /**
@@ -531,7 +554,6 @@ export const useEditorStore = defineStore('editor', () => {
    */
   async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<Program> {
     selectedSteps.value = []
-    selectedParallelStep.value = -1
     lastStepId = 0
     lastCommandId = 0
 
@@ -542,6 +564,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     for (const step of program.value.steps) {
       step.stepId = lastStepId++
+      step.mainCommand.commandId = lastCommandId++
       for (const command of step.parallelCommands) {
         command.commandId = lastCommandId++
       }
@@ -796,9 +819,8 @@ export const useEditorStore = defineStore('editor', () => {
    */
   function selectStep(ctrlKey: boolean, stepIndex: number): void {
     const stepId = program.value.steps[stepIndex].stepId
-    const hasSelectedStep = selectedSteps.value.find(step => step.stepId === stepId)
 
-    if (ctrlKey && !hasSelectedStep) {
+    if (ctrlKey && !isStepSelected(stepId)) {
       selectedSteps.value.push(program.value.steps.find(step => step.stepId === stepId)!)
 
       selectedSteps.value.sort((a, b) => {
@@ -806,10 +828,14 @@ export const useEditorStore = defineStore('editor', () => {
         const indexB = program.value.steps.findIndex(x => x.stepId === b.stepId)
         return indexA - indexB
       })
-    } else if (ctrlKey && hasSelectedStep)
+    } else if (ctrlKey && isStepSelected(stepId))
       selectedSteps.value = selectedSteps.value.filter(step => step.stepId !== stepId)
     else
       selectedSteps.value = [program.value.steps.find(step => step.stepId === stepId)!]
+  }
+
+  function isStepSelected(stepId: number): boolean {
+    return selectedSteps.value.some(step => step && step.stepId === stepId)
   }
 
   /**
@@ -970,5 +996,6 @@ export const useEditorStore = defineStore('editor', () => {
     fetchCommandTypes,
     allStepExpanded,
     hasProgramChanged,
+    isStepSelected,
   }
 })

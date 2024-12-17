@@ -21,7 +21,6 @@ const sortableOptions: SortableOptions & AutoScrollOptions = {
 
 function onDragStart(event: SortableEvent) {
   editor.selectedSteps = []
-  editor.selectedParallelStep = -1
   if (isDef(event.oldIndex)) {
     dragged = editor.program?.steps[event.oldIndex] || null
   }
@@ -51,7 +50,7 @@ function onDragEnd(event: SortableEvent) {
       <QItem
         dense
         class="program-step"
-        :class="{ __selected: editor.selectedSteps.find(step => step.stepId === editor.program.steps[index].stepId) }"
+        :class="{ __selected: editor.isStepSelected(editor.program.steps[index].stepId) }"
         @click.stop
       >
         <QItemSection side @click.stop="editor.selectStep($event.ctrlKey, index)">
@@ -69,7 +68,7 @@ function onDragEnd(event: SortableEvent) {
           <QIcon
             class="icon absolute top-2 cursor-pointer"
             name="close"
-            @click.stop="editor.deleteStep(index)"
+            @click.stop="editor.deleteStep(editor.program.steps[index].stepId)"
           />
           <QIcon
             class="icon command-drag-handle mt-7 cursor-move"
