@@ -157,8 +157,16 @@ export const useEditorStore = defineStore('editor', () => {
       updateCommand(commandNo, newStep.mainCommand)
     }
 
-    const targetIndex = isDef(stepIndex) ? stepIndex : getStepIndex()
+    let targetIndex = stepIndex ?? program.value.steps.length
 
+    if (!isDef(stepIndex)) {
+      const stepId = selectedSteps.value[0]?.stepId
+
+      if (isDef(stepId)) {
+        const foundIndex = program.value.steps.findIndex(step => step.stepId === stepId)
+        targetIndex = foundIndex !== -1 ? foundIndex : program.value.steps.length
+      }
+    }
     // Paralel komutları kopyala (eğer varsa)
     if (program.value.steps[targetIndex]) {
       for (const command of program.value.steps[targetIndex]?.parallelCommands) {
