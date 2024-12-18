@@ -6,7 +6,7 @@ import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { MachineCommand, Program, ProgramHeader, ProgramTable } from '~/shared/types'
+import type { MachineCommand, Program, ProgramHeader, ProgramStepCommand, ProgramTable } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -20,6 +20,7 @@ import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
 import TBDiscardChangesDialog from '~/components/TBDiscardChangesDialog.vue'
 import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
 import TBCommandDetailDialog from '~/components/TBCommandDetailDialog.vue'
+import CMMoveParallelStepDialog from '~/components/CMMoveParallelStepDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -69,6 +70,7 @@ export interface RegisteredCommands {
   discardChanges: [ctx: any, machineId?: number]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, machineId: number, commandNo: number]
+  moveParallelStep: [ctx: any]
 }
 
 registerCommand(() => {
@@ -573,11 +575,30 @@ registerCommand(() => {
         await nextTick()
         editor.program = klona(editor.originalProgram)
         editor.selectedSteps = []
-        editor.selectedParallelStep = -1
 
         if (machineId) {
           await editor.changeMachine(machineId)
         }
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
+  return {
+    name: 'moveParallelStep',
+    execute(ctx: any, commandNo: number, programCommand: ProgramStepCommand) {
+      const commandName = editor.machine.commands.get(commandNo)?.name
+      ctx.$q.dialog({
+        component: CMMoveParallelStepDialog,
+        componentProps: {
+          commandNo,
+          commandName,
+          programCommand,
+        },
+      }).onOk(async () => {
       })
       return true
     },

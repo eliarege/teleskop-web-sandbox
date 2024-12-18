@@ -8,8 +8,11 @@ const props = defineProps<{
   path: string
 }>()
 
+const $q = useQuasar()
 const { t } = useI18n()
 const editor = useEditorStore()
+const { $commandManager } = useNuxtApp()
+
 const programCommand = ref<ProgramStepCommand>(editor.getPathElement(props.path))
 const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? CommandType.MAIN : CommandType.PARALLEL
 
@@ -132,6 +135,11 @@ onMounted(() => {
     select.value?.validate()
   })
 })
+
+function updateStepCommand(commandNo: number, programCommand: ProgramStepCommand) {
+  editor.updateCommand(commandNo, programCommand)
+  $commandManager.executeCommand('moveParallelStep', { $q, commandNo, programCommand })
+}
 </script>
 
 <template>
@@ -166,7 +174,7 @@ onMounted(() => {
           v-close-popup
           clickable
           dense
-          @click="editor.updateCommand(scope.opt.value, programCommand)"
+          @click="updateStepCommand(scope.opt.value, programCommand)"
         >
           <QItemSection class="text-3">
             {{ scope.opt.label }}
