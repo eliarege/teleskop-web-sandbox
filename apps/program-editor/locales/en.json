@@ -442,5 +442,13 @@
     "message": "Are you sure you want to discard your changes?",
     "discard": "Discard",
     "cancel": "Cancel"
+  },
+  "moveParallelStep": {
+    "title": "Move Parallel Step",
+    "message": "Are you sure you want to move parallel step?",
+    "move": "Move",
+    "cancel": "Cancel",
+    "startIndex": "Start Step",
+    "endIndex": "End Step"
   }
 }

@@ -442,5 +442,13 @@
     "message": "Yaptığınız değişiklikleri geri almak istediğinizden emin misiniz?",
     "discard": "Geri Al",
     "cancel": "İptal"
+  },
+  "moveParallelStep": {
+    "title": "Paralel Adımı Tası",
+    "message": "Paralel adımı tasımak istediğinizden emin misiniz?",
+    "move": "Tası",
+    "cancel": "İptal",
+    "startIndex": "Başlangıç Adımı",
+    "endIndex": "Bitiş Adımı"
   }
 }
