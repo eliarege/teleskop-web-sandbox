@@ -70,7 +70,7 @@ export interface RegisteredCommands {
   discardChanges: [ctx: any, machineId?: number]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, machineId: number, commandNo: number]
-  moveParallelStep: [ctx: any]
+  moveParallelStep: [ctx: any, commandNo: number, programCommand: ProgramStepCommand]
 }
 
 registerCommand(() => {
@@ -590,6 +590,7 @@ registerCommand(() => {
   return {
     name: 'moveParallelStep',
     execute(ctx: any, commandNo: number, programCommand: ProgramStepCommand) {
+      console.log('moveParallelStep', commandNo)
       const commandName = editor.machine.commands.get(commandNo)?.name
       ctx.$q.dialog({
         component: CMMoveParallelStepDialog,
@@ -597,6 +598,8 @@ registerCommand(() => {
           commandNo,
           commandName,
           programCommand,
+          stepIndex: editor.program.steps.indexOf(editor.selectedSteps[0]) + 1,
+          stepsLength: editor.program.steps.length,
         },
       }).onOk(async () => {
       })
