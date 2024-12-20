@@ -402,8 +402,8 @@
     "edit": "DÜZENLE"
   },
   "tempTimeGraph": {
-    "_": "Sıcaklık/Zaman Grafiği",
-    "lower": "sicaklik-zaman-grafigi",
+    "label": "Sıcaklık/Zaman Grafiği",
+    "slug": "sicaklik-zaman-grafigi",
     "hideIcons": "İkonları Gizle",
     "showIcons": "Ikonları Göster",
     "hideSlopes": "Eğimleri Gizle",
@@ -411,12 +411,12 @@
     "hideDuration": "Süreyi Gizle",
     "showDuration": "Süreyi Göster",
     "fullScreen": "Tam Ekran",
-    "screenshot": "Ekran Görüntüsü"
+    "download": "Grafiği İndir"
   },
   "stepCommandGraph": {
-    "_": "Adım/Komut Grafiği",
-    "lower": "adim-komut-grafigi",
-    "screenshot": "Ekran Görüntüsü"
+    "label": "Adım/Komut Grafiği",
+    "slug": "adim-komut-grafigi",
+    "download": "Grafiği İndir"
   },
   "notification": {
     "_": "Bildirim",

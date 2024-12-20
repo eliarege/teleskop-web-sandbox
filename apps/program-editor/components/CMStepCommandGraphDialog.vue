@@ -120,7 +120,7 @@ chartOptions.value = {
 function takeScreenshot() {
   const element = document.getElementById('chart-container')
   if (element)
-    screenshot(element, `${editor.machine.id}-${editor.program.programNo}-${t('stepCommandGraph.lower')}`)
+    screenshot(element, `${editor.machine.id}-${editor.machine.name}/${editor.program.programNo}-${editor.program.name}-${t('stepCommandGraph.slug')}`)
 }
 
 onMounted(() => {
@@ -152,10 +152,10 @@ onMounted(() => {
         <q-card-section>
           <div class="flex justify-end mb-2">
             <q-btn
-              :label="t('tempTimeGraph.screenshot')"
+              :label="t('tempTimeGraph.download')"
               class="setting-btn"
               color="green"
-              icon="camera_alt"
+              icon="download"
               @click="takeScreenshot"
             />
           </div>

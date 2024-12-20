@@ -402,8 +402,8 @@
     "edit": "EDIT"
   },
   "tempTimeGraph": {
-    "_": "Temperature/Time Graph",
-    "lower": "temperature-time-graph",
+    "label": "Temperature/Time Graph",
+    "slug": "temperature-time-graph",
     "hideIcons": "Hide Icons",
     "showIcons": "Show Icons",
     "hideSlopes": "Hide Slopes",
@@ -411,12 +411,12 @@
     "hideDuration": "Hide Duration",
     "showDuration": "Show Duration",
     "fullScreen": "Full Screen",
-    "screenshot": "Screenshot"
+    "download": "Download Graph"
   },
   "stepCommandGraph": {
-    "_": "Step/Command Graph",
-    "lower": "step-command-graph",
-    "screenshot": "Screenshot"
+    "label": "Step/Command Graph",
+    "slug": "step-command-graph",
+    "download": "Download Graph"
   },
   "notification": {
     "_": "Notification",

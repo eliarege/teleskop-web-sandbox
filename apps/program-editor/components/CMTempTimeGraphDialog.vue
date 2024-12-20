@@ -260,7 +260,7 @@ function getDurationStyle(point1: Coordinate, point2: Coordinate) {
 function takeScreenshot() {
   const element = document.getElementById('chart-container')
   if (element)
-    screenshot(element, `${editor.machine.id}-${editor.program.programNo}-${t('tempTimeGraph.lower')}`)
+    screenshot(element, `${editor.machine.id}-${editor.machine.name}/${editor.program.programNo}-${editor.program.name}-${t('tempTimeGraph.slug')}`)
 }
 
 onMounted(() => {
@@ -278,7 +278,7 @@ onMounted(() => {
       <div id="container">
         <q-card-section class="bg-gray-1 dark:bg-dark-4">
           <div class="text-h6 flex">
-            {{ t('tempTimeGraph._') }}
+            {{ t('tempTimeGraph.label') }}
             <q-space />
             <q-btn
               v-close-popup
@@ -324,10 +324,10 @@ onMounted(() => {
               @click="isFullScreen = !isFullScreen"
             />
             <q-btn
-              :label="t('tempTimeGraph.screenshot')"
+              :label="t('tempTimeGraph.download')"
               class="setting-btn"
               color="green"
-              icon="camera_alt"
+              icon="download"
               @click="takeScreenshot"
             />
           </div>
