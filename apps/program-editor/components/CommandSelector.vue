@@ -19,6 +19,7 @@ const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? CommandType.M
 const select = ref<QSelect>()
 const stepIndex = computed(() => Number(props.path.split('.')[1]))
 const id = `${editor.program.steps[stepIndex.value].stepId}-${programCommand.value.commandId}`
+const isLastStep = stepIndex.value === editor.program.steps.length - 1
 
 const filteredCommands = computed(() => {
   const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
@@ -137,8 +138,11 @@ onMounted(() => {
 })
 
 function updateStepCommand(commandNo: number, programCommand: ProgramStepCommand) {
+  const isNewCommand = !programCommand.commandNo
   editor.updateCommand(commandNo, programCommand)
-  $commandManager.executeCommand('moveParallelStep', { $q, commandNo, programCommand })
+
+  if (isMainCommand === CommandType.PARALLEL && !isLastStep && isNewCommand)
+    $commandManager.executeCommand('moveParallelStep', { $q }, commandNo, programCommand)
 }
 </script>
 

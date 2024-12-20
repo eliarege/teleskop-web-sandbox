@@ -449,6 +449,8 @@
     "move": "Move",
     "cancel": "Cancel",
     "startIndex": "Start Step",
-    "endIndex": "End Step"
+    "endIndex": "End Step",
+    "startIndexMore": "Start step cannot be greater than end step",
+    "endIndexLess": "End step cannot be less than start step"
   }
 }

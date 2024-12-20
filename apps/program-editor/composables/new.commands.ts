@@ -592,16 +592,21 @@ registerCommand(() => {
     execute(ctx: any, commandNo: number, programCommand: ProgramStepCommand) {
       console.log('moveParallelStep', commandNo)
       const commandName = editor.machine.commands.get(commandNo)?.name
+      const stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
       ctx.$q.dialog({
         component: CMMoveParallelStepDialog,
         componentProps: {
           commandNo,
           commandName,
           programCommand,
-          stepIndex: editor.program.steps.indexOf(editor.selectedSteps[0]) + 1,
+          stepIndex,
           stepsLength: editor.program.steps.length,
         },
-      }).onOk(async () => {
+      }).onOk(async (command: { commandNo: number, startIndex: number, endIndex: number }) => {
+        for (let index = command.startIndex; index <= command.endIndex; index++) {
+          if (index !== stepIndex)
+            editor.newParallelStepCommand(command.commandNo, index - 1)
+        }
       })
       return true
     },

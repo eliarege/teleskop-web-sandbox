@@ -9,13 +9,13 @@ const props = defineProps<{
   stepsLength: number
 }>()
 
+const { t } = useI18n()
+const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+
 const commandNo = ref(props.commandNo)
 const commandName = ref(props.commandName)
 const startIndex = ref(props.stepIndex)
 const endIndex = ref(props.stepsLength)
-
-const { t } = useI18n()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 function checkTextOverflow() {
   if (commandName.value && commandName.value.length > 30) {
@@ -63,20 +63,28 @@ function checkTextOverflow() {
             </span>
           </div>
 
-          <QInput
+          <QSelect
             v-model="startIndex"
+            :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
             :label="t('moveParallelStep.startIndex')"
             class="col"
             dense
-            :rules="[(val: string) => !!val || t('input.required', { field: t('moveParallelStep.startIndex') })]"
+            :rules="[
+              (val: string) => !!val || t('input.required', { field: t('moveParallelStep.startIndex') }),
+              (val: number) => val <= endIndex || t('moveParallelStep.startIndexMore'),
+            ]"
           />
 
-          <QInput
+          <QSelect
             v-model="endIndex"
+            :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
             :label="t('moveParallelStep.endIndex')"
             class="col"
             dense
-            :rules="[(val: string) => !!val || t('input.required', { field: t('moveParallelStep.endIndex') })]"
+            :rules="[
+              (val: string) => !!val || t('input.required', { field: t('moveParallelStep.endIndex') }),
+              (val: number) => val >= startIndex || t('moveParallelStep.endIndexLess'),
+            ]"
           />
         </div>
       </QCardSection>
@@ -95,7 +103,8 @@ function checkTextOverflow() {
           :label="t('apply')"
           class="q-mr-sm bg-primary text-white"
           flat
-          @click="onDialogOK(commandNo)"
+          :disable="startIndex > endIndex"
+          @click="onDialogOK({ commandNo, startIndex, endIndex })"
         />
       </QCardActions>
     </QCard>

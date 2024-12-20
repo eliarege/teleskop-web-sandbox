@@ -449,6 +449,8 @@
     "move": "Tası",
     "cancel": "İptal",
     "startIndex": "Başlangıç Adımı",
-    "endIndex": "Bitiş Adımı"
+    "endIndex": "Bitiş Adımı",
+    "startIndexMore": "Başlangıç adımı bitiş adımından büyük olamaz",
+    "endIndexLess": "Bitiş adımı başlangıç adımından küçük olamaz"
   }
 }
