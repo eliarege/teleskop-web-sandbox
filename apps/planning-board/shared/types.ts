@@ -86,13 +86,13 @@ export interface Recipe {
 export interface PtLocaleSettings {
   deviationColor: string
   completedBatchColor: string
-  completedBatchText: keyof QueueBasedBaseEvent
+  completedBatchText: (keyof QueueBasedBaseEvent)[]
   completedBatchFabricColor: boolean
   ongoingBatchColor: string
-  ongoingBatchText: keyof QueueBasedBaseEvent
+  ongoingBatchText: (keyof QueueBasedBaseEvent)[]
   ongoingBatchFabricColor: boolean
   plannedBatchColor: string
-  plannedBatchText: keyof QueueBasedBaseEvent
+  plannedBatchText: (keyof QueueBasedBaseEvent)[]
   plannedBatchFabricColor: boolean
   showStops: { show: boolean, color: string }
 }

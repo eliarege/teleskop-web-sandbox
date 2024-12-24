@@ -3,7 +3,7 @@ import { mdiChevronDown, mdiChevronUp } from '@quasar/extras/mdi-v7'
 import { useFuse } from '@vueuse/integrations/useFuse'
 
 const emit = defineEmits(['scrollToEvent'])
-const { data: events } = useFetch('/api/queueBased/allScheduledEvents', {
+const { data: events } = useAuthFetch('/api/queueBased/allScheduledEvents', {
   default: () => [],
 })
 const { t } = useI18n()
@@ -34,6 +34,7 @@ function onItemSelect(item: { jobOrder: string, startTime: string }) {
       v-model="text"
       dense
       flat
+      dark
       borderless
       :placeholder="t('navbar.job-order-search')"
       clearable

@@ -28,10 +28,6 @@ const planParametersProps = computed(() => ({
 }))
 
 const recipe = ref(false)
-const recipeProps = reactive({
-  machineId: store.selectedEvent.machineId || 0,
-  jobOrder: store.selectedEvent.jobOrder || 0,
-})
 
 const notes = ref(false)
 const notesProps = reactive({
@@ -43,7 +39,7 @@ const datePicker = ref(false)
 </script>
 
 <template>
-  <div class="w-full flex gap-3">
+  <div class="flex gap-3">
     <NavbarButton
       :label="t('plan-parameters.title')"
       icon="i-mdi:slider"
@@ -67,7 +63,7 @@ const datePicker = ref(false)
       @click="recipe = !recipe"
     />
     <QDialog v-model="recipe">
-      <PlanRecipe :machine-id="recipeProps.machineId" :job-order="recipeProps.jobOrder" />
+      <PlanRecipe />
     </QDialog>
 
     <NavbarButton

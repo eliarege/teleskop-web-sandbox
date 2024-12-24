@@ -1,5 +1,6 @@
-export default defineEventHandler(async (_event) => {
+export default defineAuthEventHandler(async (event) => {
   const config = useRuntimeConfig()
+  const authFetch = useKcFetch(event)
   const url = `${config.planningEngineUrl}/planning_board/columns/unplanned_columns`
-  return await $fetch<{ id: number, parameterId: number, parameterName: string, visible: boolean }[]>(url)
+  return await authFetch<{ id: number, parameterId: number, parameterName: string, visible: boolean }[]>(url)
 })

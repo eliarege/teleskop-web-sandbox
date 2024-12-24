@@ -9,6 +9,7 @@ const { t } = useI18n()
   <q-input
     v-model="store.unplannedText"
     dense
+    dark
     flat
     borderless
     :placeholder="t('navbar.unplanned-search')"

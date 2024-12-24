@@ -1,22 +1,21 @@
 import type { SchedulerPro } from '@bryntum/schedulerpro'
 import { DateHelper } from '@bryntum/schedulerpro'
-import type { UnplannedEventsRaw } from '~/shared/types'
 
+const kc = useKeycloak()
 export function decompressJson(data: { columns: string[], values: any[][] }) {
   const { columns, values } = data
   return values.map(v =>
     Object.fromEntries(v.map((value, i) => [columns[i], value])))
 }
-export function integerToHex(int: number) {
-  if (int === 0 || int === null) {
+export function integerToHex(int?: number): string {
+  if (int == null || int === 0) {
     return '#69DB7C'
   }
-  let hex = int.toString(16)
-  while (hex.length < 6) {
-    hex = `0${hex}`
-  }
+
+  const hex = int.toString(16).padStart(6, '0')
   return `#${hex}`
 }
+
 export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
   const { $i18n } = useNuxtApp()
   const startMonth = DateHelper.format(eventRecord.startDate, 'MMM')
@@ -31,11 +30,11 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
   const endMinuteRotation = (eventRecord.endDate.getMinutes() + eventRecord.endDate.getSeconds() / 60) * 6
   const endHourRotation = (eventRecord.endDate.getHours() % 12 + eventRecord.endDate.getMinutes() / 60) * 30
   if (eventRecord.eventType !== 'stop') {
-    const parameters: any[] = await $fetch('/api/tootlipParameters', {
+    const parameters: any[] = await kc.fetch('/api/tootlipParameters', {
       query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
     })
     const parameterValues = parameters.map(param => `${param.paramName}: ${param.value}`).join('<br>')
-    const notes = await $fetch('/api/note/getNote', {
+    const notes = await kc.fetch('/api/note/getNote', {
       query: { jobOrder: eventRecord.originalData.jobOrder },
     })
     const screenNotes = notes.filter(n => n.showOnScreen === true).map(a => a.note)

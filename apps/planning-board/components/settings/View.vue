@@ -10,16 +10,13 @@ const actualEventsDropdown = computed(() => [
   { id: 2, label: t('settings.plan-area.dropDown.planKey'), value: 'planKey' },
   { id: 3, label: t('settings.plan-area.dropDown.machineId'), value: 'machineId' },
   { id: 4, label: t('settings.plan-area.dropDown.jobOrder'), value: 'jobOrder' },
-  { id: 5, label: t('settings.plan-area.dropDown.programList'), value: 'programList' },
+  { id: 5, label: t('settings.plan-area.dropDown.programList'), value: 'programNoList' },
   { id: 6, label: t('settings.plan-area.dropDown.startDate'), value: 'startTime' },
   { id: 7, label: t('settings.plan-area.dropDown.endTime'), value: 'endTime' },
-  { id: 8, label: t('settings.plan-area.dropDown.cancelTime'), value: 'cancelTime' },
-  { id: 9, label: t('settings.plan-area.dropDown.theoreticalDuration'), value: 'theoreticalDuration' },
-  { id: 10, label: t('settings.plan-area.dropDown.fabricWeight'), value: 'fabricWeight' },
-  { id: 11, label: t('settings.plan-area.dropDown.partyNumber'), value: 'partyNumber' },
-  { id: 12, label: t('settings.plan-area.dropDown.deviation'), value: 'deviation' },
-  { id: 13, label: t('settings.plan-area.dropDown.note'), value: 'note' },
-  { id: 14, label: t('settings.plan-area.dropDown.customerName'), value: 'customerName' },
+  { id: 8, label: t('settings.plan-area.dropDown.theoreticalDuration'), value: 'theoreticalDuration' },
+  { id: 9, label: t('settings.plan-area.dropDown.fabricWeight'), value: 'fabricWeight' },
+  { id: 10, label: t('settings.plan-area.dropDown.deviation'), value: 'deviation' },
+  { id: 11, label: t('settings.plan-area.dropDown.note'), value: 'note' },
 ] as {
   id: number
   label: string
@@ -34,11 +31,10 @@ const plannedEventsDropdown = computed(() => [
   { id: 5, label: t('settings.plan-area.dropDown.programList'), value: 'programList' },
   { id: 6, label: t('settings.plan-area.dropDown.theoreticalDuration'), value: 'theoreticalDuration' },
   { id: 7, label: t('settings.plan-area.dropDown.fabricWeight'), value: 'fabricWeight' },
-  { id: 8, label: t('settings.plan-area.dropDown.partyNumber'), value: 'partyNumber' },
-  { id: 9, label: t('settings.plan-area.dropDown.note'), value: 'note' },
-  { id: 10, label: t('settings.plan-area.dropDown.plannedStartDate'), value: 'plannedStartDate' },
-  { id: 11, label: t('settings.plan-area.dropDown.endDate'), value: 'endDate' },
-  { id: 12, label: t('settings.plan-area.dropDown.customerName'), value: 'customerName' },
+  { id: 8, label: t('settings.plan-area.dropDown.note'), value: 'note' },
+  { id: 9, label: t('settings.plan-area.dropDown.endTime'), value: 'endTime' },
+  { id: 10, label: t('settings.plan-area.dropDown.startTime'), value: 'startTime' },
+  { id: 11, label: t('settings.plan-area.dropDown.customer'), value: 'customer' },
 ] as {
   id: number
   label: string

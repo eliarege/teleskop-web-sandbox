@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind } from '@vueuse/core'
+import { useSettingStore } from '~/store/settings'
 
+const store = useSettingStore()
 const { t } = useI18n()
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
@@ -30,6 +32,15 @@ function zoomOut() {
 function resetZoom() {
   queueBasedRef.value.resetZoom()
 }
+
+function getBatchTextInfo(batchText: string[], translationKey: string) {
+  return computed(() => batchText.map(item => t(`${translationKey}.${item}`)))
+}
+
+const plannedEventTextInfo = getBatchTextInfo(store.settings.plannedBatchText, 'settings.plan-area.dropDown').value.join(', ')
+const completedEventTextInfo = getBatchTextInfo(store.settings.completedBatchText, 'settings.plan-area.dropDown').value.join(', ')
+const ongoingTextInfo = getBatchTextInfo(store.settings.ongoingBatchText, 'settings.plan-area.dropDown').value.join(', ')
+
 const tt = (key: string) => () => t(key)
 
 const items = [] as TopbarMenuItem[]
@@ -45,7 +56,7 @@ const itemsMobile = [
   items,
 ] as TopbarMenuItem[][]
 
-const { data: state } = await useFetch('/api/ptStatus')
+const { data: state } = useAuthFetch('/api/ptStatus')
 </script>
 
 <template>
@@ -65,8 +76,7 @@ const { data: state } = await useFetch('/api/ptStatus')
               />
             </NuxtLink>
           </QToolbarTitle>
-
-          <NavbarJobOrderSearch class="mr-5" @scroll-to-event=" (e) => scrollToDate(e)" />
+          <NavbarJobOrderSearch class="" @scroll-to-event=" (e) => scrollToDate(e)" />
 
           <NavbarButtonGroup
             @refresh-scheduler="refreshScheduler()"
@@ -88,7 +98,19 @@ const { data: state } = await useFetch('/api/ptStatus')
               v-bind="item.subMenu"
             />
           </TopbarButton>
-          <NavbarUnplannedJobOrderSearch />
+          <q-space />
+          <div class="mr-5">
+            <TwIcon name="i-material-symbols:info" size="30px" />
+            <QTooltip>
+              <div class="flex-center flex-col text-sm">
+                <span>{{ t('plannedEventTextInfo') }}: {{ plannedEventTextInfo }}</span>
+                <span>{{ t('completedEventTextInfo') }}: {{ completedEventTextInfo }}</span>
+                <span>{{ t('ongoingTextInfo') }}: {{ ongoingTextInfo }}</span>
+              </div>
+            </QTooltip>
+          </div>
+
+          <NavbarUnplannedJobOrderSearch class="w-auto" />
         </template>
         <TopbarButton
           v-else
@@ -96,7 +118,6 @@ const { data: state } = await useFetch('/api/ptStatus')
         >
           <TopbarMenu :items="itemsMobile" />
         </TopbarButton>
-        <QSpace />
         <div class="space-x-1">
           <TopbarAppGrid />
           <TopbarAuthenticatedUser disable-theme />

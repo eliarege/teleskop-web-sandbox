@@ -1,4 +1,7 @@
 {
+  "plannedEventTextInfo": "Planned Event Text",
+  "completedEventTextInfo": "Completed Event Text",
+  "ongoingTextInfo": "Ongoing Text Info",
   "toast": {
     "succesful": "Succesfully Saved",
     "fail": {
@@ -144,6 +147,7 @@
         "queueNumber": "Queue Number",
         "jobOrder": "Job Order",
         "programList": "Program List",
+        "programNoList": "Program List",
         "theoreticalDuration": "Theoretical Duration",
         "fabricWeight": "Fabric Weight",
         "partyNumber": "Party Number",
@@ -155,7 +159,7 @@
         "endTime": "End Time",
         "cancelTime": "Cancel Time",
         "deviation": "Deviation",
-        "customerName": "Customer Name"
+        "customer": "Customer Name"
       }
 
     },

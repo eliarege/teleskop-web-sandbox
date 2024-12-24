@@ -34,7 +34,6 @@ import {
   updatePlanParameter,
   updateUnplannedColumns,
   uploadToMachine,
-  validateTaskPrograms,
 } from './queries'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {

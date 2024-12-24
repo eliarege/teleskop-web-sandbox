@@ -2,13 +2,12 @@
 import { LoadingSpinner } from '@teleskop/ui'
 import type { TableColumnCtx } from 'element-plus'
 import type { RecipeRaw } from '~/shared/types'
-
-const props = defineProps<{ machineId: number, jobOrder: string }>()
+import { useSettingStore } from '~/store/settings'
 
 const { t } = useI18n()
-
-const { data: recipeData, pending } = await useFetch('/api/recipe', {
-  query: { machineId: props.machineId, jobOrder: props.jobOrder },
+const store = useSettingStore()
+const { data: recipeData, pending } = await useAuthFetch('/api/recipe', {
+  query: { machineId: store.selectedEvent.machineId, jobOrder: store.selectedEvent.jobOrder },
 })
 export interface SpanMethodProps {
   row: RecipeRaw

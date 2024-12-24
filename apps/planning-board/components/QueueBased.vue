@@ -6,13 +6,14 @@ import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import { determineTextColor } from '@teleskop/utils'
 import { useDocumentVisibility } from '@vueuse/core'
 import { useFuse } from '@vueuse/integrations/useFuse'
-import { addDays, addHours } from 'date-fns'
+import { addDays, addHours, addMinutes, addSeconds } from 'date-fns'
 import { eventTooltip } from '~/composables/helper'
-import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore } from '~/lib/queueBased'
+import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore, getResourceRow, removeAttributes, sortEventsByDateDesc } from '~/lib/queueBased'
 import type { QueueBasedEvent, QueueBasedNonActualEvent } from '~/shared/queueBased'
 import type { MachineStatus, PlanParameters } from '~/shared/types'
 import { useSettingStore } from '~/store/settings'
 
+const kc = useKeycloak()
 const { t, locale, d } = useI18n()
 const visibility = useDocumentVisibility()
 const config = useRuntimeConfig()
@@ -41,7 +42,7 @@ const jobOrderUploadLoading = ref(false)
 const refreshingScheduler = ref(false)
 const store = useSettingStore()
 
-const { data: events, refresh: eventRefresh, pending: eventPending } = await useFetch<QueueBasedEvent[]>('/api/queueBased/schedulerEvents', {
+const { data: events, refresh: eventRefresh, pending: eventPending } = await useAuthFetch<QueueBasedEvent[]>('/api/queueBased/schedulerEvents', {
   immediate: false,
   default: () => [],
   query: {
@@ -50,12 +51,14 @@ const { data: events, refresh: eventRefresh, pending: eventPending } = await use
     includeStops: store.settings.showStops.show,
   },
 })
-const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useFetch<MachineStatus[]>('/api/machineList', {
+const { data: machines, refresh: machineRefresh, pending: machinesPending } = await useAuthFetch<MachineStatus[]>('/api/machineList', {
   lazy: true,
   default: () => [],
   transform: unsortedMachines => sortMachines(unsortedMachines),
 })
-const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents')
+const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useAuthFetch('/api/unplannedEvents', {
+  default: () => [],
+})
 // #region MODALS
 async function uploadJobOrder(planKey: number) {
   const event: any = scheduler.events.find(e => e.id === planKey)
@@ -81,7 +84,7 @@ async function uploadJobOrder(planKey: number) {
   }, timeout)
 
   try {
-    const res: PlanParameters[] | string = await $fetch('/api/machineUpload', {
+    const res: PlanParameters[] | string = await kc.fetch('/api/machineUpload', {
       method: 'PUT',
       query: { program, machineId, planKey, machineIp, jobOrder },
       signal: controller.signal,
@@ -216,36 +219,41 @@ function setFabricColor(event: QueueBasedEvent) {
 
 type Values<T> = T[keyof T]
 
-function isDate(value: any): boolean | any {
-  if (/^\d+$/.test(value)) {
-    return false
+function isDate(value: any): boolean {
+  if (Object.prototype.toString.call(value) === '[object Date]' && !Number.isNaN(value.getTime())) {
+    return true
   }
   if (typeof value === 'string') {
-    const date = new Date(value)
-    return !Number.isNaN(date.getTime())
+    const parsedDate = new Date(value)
+    if (!Number.isNaN(parsedDate.getTime())) {
+      const isoDateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?Z?)?$/
+      return isoDateRegex.test(value.trim())
+    }
   }
-  return value instanceof Date && !Number.isNaN(value.getTime())
+  return false
 }
-
 function setEventName(event: QueueBasedEvent): Values<QueueBasedEvent> {
-  const plannedBatchText = store.settings.plannedBatchText || 'jobOrder'
-  const completedBatchText = store.settings.completedBatchText || 'jobOrder'
-  const ongoingBatchText = store.settings.ongoingBatchText || 'jobOrder'
+  const formatBatchText = (batchTextArray: string[]): string => {
+    return batchTextArray
+      .map((key) => {
+        const value = event[key]
+        return isDate(value) ? d(value, 'datetime') : value
+      })
+      .join(' - ')
+  }
 
   if (event.eventType === 'planned') {
-    const formattedText = isDate(event[plannedBatchText]) ? d(event[plannedBatchText], 'datetime') : event[plannedBatchText]
-    return formattedText
+    return formatBatchText(store.settings.plannedBatchText)
   }
   if (event.eventType === 'finished' || event.eventType === 'manual') {
-    const formattedText = isDate(event[completedBatchText]) ? d(event[completedBatchText], 'datetime') : event[completedBatchText]
-    return formattedText
+    return formatBatchText(store.settings.completedBatchText)
   } else if (event.eventType === 'ongoing') {
-    const formattedText = isDate(event[ongoingBatchText]) ? d(event[ongoingBatchText], 'datetime') : event[ongoingBatchText]
-    return formattedText
+    return formatBatchText(store.settings.ongoingBatchText)
   } else {
     return ' '
   }
 }
+
 function setId(event: QueueBasedEvent) {
   switch (event.eventType) {
     case 'finished':
@@ -346,9 +354,10 @@ watch(() => results.value, () => {
   grid.store.data = results.value.map(e => e.item)
 })
 
-watch(() => store.settings.showStops.show, async (newVal: boolean) => {
+watch(() => store.settings.showStops.show, async () => {
   await refreshScheduler()
 })
+
 function initialGridColumns() {
   const columnNames = Object.keys(modifiedUnscheduledEvents.value[0].erpParameters)
   for (let i = 0; i < columnNames.length; i++) {
@@ -364,6 +373,7 @@ function initialGridColumns() {
   // @ts-expect-error missing type
   grid.flex = `0 1 ${grid.columns.topColumns.length + 1}00px`
 }
+
 async function addGridColumn(data: { id: number, parameterId: number, parameterName: string, visible: boolean }) {
   await unScheduledRefresh().then(() => {
     // @ts-expect-error missing type
@@ -389,13 +399,13 @@ async function removeGridColumn(data: { id: number, parameterId: number, paramet
   })
 }
 async function unPlanEvent(planKey: number) {
-  await $fetch('/api/unplan', {
+  await kc.fetch('/api/unplan', {
     method: 'PUT',
     query: { planKey },
   }).then(() => refreshScheduler())
 }
 async function deleteEvent(planKey: number) {
-  await $fetch('api/delete', {
+  await kc.fetch('api/delete', {
     method: 'PUT',
     query: { planKey },
   }).then(() => refreshScheduler())
@@ -482,9 +492,6 @@ onMounted(async () => {
     eventStyle: null,
     onEventClick({ eventRecord }) {
       store.selectedEvent = eventRecord
-    },
-    onCellClick() {
-      store.selectedEvent = {}
     },
 
     onRenderEvent({ element, eventRecord }) {
@@ -706,7 +713,7 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-thumbtack',
             text: t('queue-based.ctx-menu.pin'),
             async onItem({ eventRecord }: any) {
-              await $fetch('api/pinEvent', {
+              await kc.fetch('api/pinEvent', {
                 query: { planKey: eventRecord.originalData.id },
                 method: 'PUT',
               })
@@ -722,7 +729,7 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-thumbtack',
             text: t('queue-based.ctx-menu.unpin'),
             async onItem({ eventRecord }: any) {
-              await $fetch('api/unpinEvent', {
+              await kc.fetch('api/unpinEvent', {
                 query: { planKey: eventRecord.originalData.id },
                 method: 'PUT',
               })
@@ -794,6 +801,7 @@ onMounted(async () => {
       },
     },
   } as Partial<SchedulerProConfig>)
+
   if (import.meta.dev) {
     // @ts-expect-error missing type
     window.sch = schedule
@@ -856,6 +864,7 @@ onMounted(async () => {
       autoLoad: true,
     },
   } as Partial<GridConfig>)
+
   initialGridColumns()
 
   new QueueDrag({
@@ -863,13 +872,102 @@ onMounted(async () => {
     schedule,
     constrain: false,
     outerElement: unplannedGrid.element,
+
+    async onDrop({ context }) {
+      const { task, isValid: valid, target, machine } = context
+      schedule.disableScrollingCloseToEdges(schedule.timeAxisSubGrid)
+      const targetEventRecord = schedule.resolveEventRecord(target)
+      let newEvent
+      if (target && valid) {
+        task.originalData.machineId = machine.id
+        const currentEvents = sortEventsByDateDesc(machine.events.filter((ev => ev.eventType === 'planned')))
+        if (targetEventRecord) {
+          newEvent = {
+            planKey: task.id,
+            machineId: machine.id,
+            queueNumber: targetEventRecord.queueNumber + 1 || 1,
+          }
+          task.startDate = addMinutes(targetEventRecord.endDate, 5)
+          task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
+          const futureEvents = currentEvents.filter(a => a.startDate >= targetEventRecord.endDate && a !== task)
+          sortEventsByDateDesc(futureEvents).forEach((ev, i, all) => {
+            const prevEvent = all[i - 1] || task
+            ev.startDate = addMinutes(prevEvent.endDate, 5)
+            ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
+          })
+        } else {
+          const targetEvents = sortEventsByDateDesc(currentEvents).filter(a => a.startDate <= task.startDate && a.endDate >= task.startDate)
+          if (targetEvents.length > 0) {
+            const sideEvents = sortEventsByDateDesc(targetEvents.filter(a =>
+              a.startDate <= task.startDate
+              && a.endDate >= task.startDate,
+            ))
+            task.startDate = addMinutes(sideEvents[0].endDate, 5)
+            task.endDate = addSeconds(task.startDate, task.originalData.theoreticalDuration)
+            newEvent = {
+              planKey: task.id,
+              machineId: machine.id,
+              queueNumber: sideEvents[0].queueNumber + 1 || 1,
+            }
+            const futureEvents = currentEvents.filter(a => a.startDate >= task.startDate && a !== task)
+            futureEvents.forEach((el, i, all) => {
+              const prev = all[i - 1] || task
+              el.startDate = addMinutes(prev.endDate, 5)
+              el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
+            })
+          } else {
+            if (currentEvents.length > 0) {
+              const lastEvent = currentEvents[currentEvents.length - 1]
+              task.startDate = addMinutes(lastEvent.endDate, 5)
+              task.endDate = addSeconds(task.startDate, task.originalData.theoreticalDuration)
+              newEvent = {
+                planKey: task.id,
+                machineId: machine.id,
+                queueNumber: lastEvent.queueNumber + 1 || 1,
+              }
+            } else {
+              task.startDate = new Date()
+              task.endDate = addSeconds(task.startDate, task.originalData.theoreticalDuration)
+              newEvent = {
+                planKey: task.id,
+                machineId: machine.id,
+                queueNumber: 1,
+              }
+            }
+          }
+        }
+        await schedule.scheduleEvent({
+          eventRecord: task,
+          startDate: task.startDate,
+          resourceRecord: machine,
+        })
+          .then(async () => {
+            grid.store.remove(task)
+            task.assign(machine)
+            await kc.fetch('/api/queueBased/scheduleUnplannedEvents', {
+              method: 'POST',
+              body: { newEvent },
+            }).then(async () => {
+              refreshScheduler()
+              schedule.renderRows()
+            })
+          }).catch(err => Toast.show(`Scheduling Failed: ${err}`))
+      }
+      schedule.features.eventTooltip.disabled = true
+      context.isDropped = true
+      for (let i = 0; i < schedule.resources.length; i++) {
+        const element = schedule.resources[i]
+        const currentRow = getResourceRow(element)
+        removeAttributes(currentRow, /^bg/)
+      }
+    },
+
   } as Partial<DragHelperConfig>)
 
   startDate.value = schedule.timeAxis.startDate.toISOString()
   endDate.value = schedule.timeAxis.endDate.toISOString()
 
   schedule.eventStore.on({
-
     async loadDateRange(e: any) {
       refreshingScheduler.value = true
       if (e.changed) {

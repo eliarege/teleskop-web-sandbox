@@ -9,6 +9,7 @@ export interface FastifyAdapterConfig {
   url: string
   realm: string
   clientId: string
+  global?: boolean
 }
 
 export interface KeycloakAuthOptions {
@@ -83,9 +84,9 @@ export const fastifyAdapter = fp<FastifyAdapterConfig>((fastify, config, done) =
   fastify.decorateRequest('kauth', null)
 
   fastify.addHook('onRoute', (options) => {
-    if (options.auth) {
-      const auth = typeof options.auth === 'boolean' ? {} : options.auth
-      addRequestHook(options, createRequestHook(auth))
+    const auth = options.auth ?? config.global ?? false
+    if (auth) {
+      addRequestHook(options, createRequestHook(typeof auth === 'boolean' ? {} : auth))
     }
   })
 

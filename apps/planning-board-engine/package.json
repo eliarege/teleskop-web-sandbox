@@ -20,6 +20,7 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
+    "@teleskop/keycloak-adapter": "workspace:*",
     "@teleskop/tbb-ftp-client": "workspace:*",
     "@teleskop/utils": "workspace:*",
     "async-mutex": "0.5.0",

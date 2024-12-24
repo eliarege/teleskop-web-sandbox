@@ -4,7 +4,7 @@ import { addSeconds, differenceInMilliseconds } from 'date-fns'
 const props = defineProps<{ machineId: number, planKey: number, theoreticalDuration: number, fabricWeight: number | string }>()
 const { t } = useI18n()
 
-const { data: batchProperties } = await useFetch('/api/batchProperties', {
+const { data: batchProperties } = await useAuthFetch('/api/batchProperties', {
   query: { machineId: props.machineId, planKey: props.planKey },
 })
 
