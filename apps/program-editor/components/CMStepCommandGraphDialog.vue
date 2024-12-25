@@ -118,9 +118,13 @@ chartOptions.value = {
 }
 
 function takeScreenshot() {
-  const element = document.getElementById('chart-container')
-  if (element)
-    screenshot(element, `${editor.machine.id}-${editor.machine.name}/${editor.program.programNo}-${editor.program.name}-${t('stepCommandGraph.slug')}`)
+  const canvas = document.querySelector('#chart-container canvas') as HTMLCanvasElement | null
+  if (canvas) {
+    const link = document.createElement('a')
+    link.download = `${editor.machine.id}-${editor.machine.name}/${editor.program.programNo}-${editor.program.name}-${t('stepCommandGraph.slug')}`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+  }
 }
 
 onMounted(() => {
