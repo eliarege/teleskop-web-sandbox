@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { removeAllCheckboxOnOptionGroup, reverseAllCheckboxOnOptionGroup, selectAllCheckboxOnOptionGroup } from '../shared/functions'
-import type { MachineInfo } from '~/shared/types'
-
 const props = defineProps<{
-  model: MachineInfo[] | undefined
-  options: MachineInfo[] | undefined
+  modelValue?: any[]
+  options?: any[]
 }>()
 
-const emit = defineEmits(['update:model'])
+const emit = defineEmits(['update:modelValue'])
+
 const { t } = useI18n()
 
 const buttons = [
@@ -16,21 +14,21 @@ const buttons = [
     tooltip: t('selectAll'),
     onClick: () => {
       if (props.options)
-        emit('update:model', selectAllCheckboxOnOptionGroup(props.options))
+        emit('update:modelValue', [...props.options])
     },
   },
   {
     icon: 'remove',
     tooltip: t('dropAll'),
     onClick: () =>
-      emit('update:model', removeAllCheckboxOnOptionGroup()),
+      emit('update:modelValue', []),
   },
   {
     icon: 'sync_alt',
     tooltip: t('selectReverse'),
     onClick: () => {
-      if (props.options && props.model)
-        emit('update:model', reverseAllCheckboxOnOptionGroup(props.options, props.model))
+      if (props.options && props.modelValue)
+        emit('update:modelValue', props.options.filter(opt => !props.modelValue!.includes(opt)))
     },
   },
 ]
