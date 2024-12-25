@@ -1,6 +1,26 @@
 import { defineConfiguration } from '@teleskop/utils'
 
 export const config = defineConfiguration({
+  keycloakUrl: {
+    default: 'http://localhost:8080',
+    type: 'string',
+    env: 'KC_URL',
+  },
+  keycloakRealm: {
+    default: 'teleskop-web',
+    type: 'string',
+    env: 'KC_REALM',
+  },
+  keycloakClientId: {
+    default: 'planning-board-engine',
+    type: 'string',
+    env: 'KC_CLIENT_ID',
+  },
+  keycloakEnabled: {
+    type: 'boolean',
+    env: 'KC_ENABLED',
+    default: false,
+  },
   teleskopHost: {
     env: 'TELESKOP_HOST',
     required: true,

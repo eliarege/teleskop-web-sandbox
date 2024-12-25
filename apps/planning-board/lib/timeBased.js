@@ -16,6 +16,8 @@ import {
 import { addSeconds } from 'date-fns'
 import { io } from 'socket.io-client'
 
+const kc = useKeycloak()
+
 const trLocalization = {
   Object: {
     planparam: 'Plan Parametreleri',
@@ -162,10 +164,10 @@ export class TimeDrag extends DragHelper {
     const { selectedRecords, store } = grid
     onDragStartSocket(selectedRecords[0].originalData.id)
     context.task = grid.getRecordFromElement(context.grabbed)
-    theoreticalDuration = await $fetch('api/theoreticalDuration', {
+    theoreticalDuration = await kc.fetch('api/theoreticalDuration', {
       query: { planKey: context.task.originalData.id },
     })
-    const isValid = await $fetch('/api/isValid', {
+    const isValid = await kc.fetch('/api/isValid', {
       query: { planKey: context.task.originalData.id },
     })
     context.isValid = isValid
@@ -319,7 +321,7 @@ export class TimeDrag extends DragHelper {
           queueNumber: a.originalData.queueNumber,
         }
       })
-      await $fetch('api/planningBoardUpdate', {
+      await kc.fetch('api/planningBoardUpdate', {
         method: 'PUT',
         body,
       }).then(() => {
@@ -433,10 +435,10 @@ export class TimeSchedule extends SchedulerPro {
       async onEventDragStart({ context }) {
         context.task = context.eventRecord
         const planKey = context.task.originalData.id
-        theoreticalDuration = await $fetch('api/theoreticalDuration', {
+        theoreticalDuration = await kc.fetch('api/theoreticalDuration', {
           query: { planKey },
         })
-        const isValid = await $fetch('/api/isValid', {
+        const isValid = await kc.fetch('/api/isValid', {
           query: { planKey },
         })
         context.isValid = isValid
@@ -487,7 +489,7 @@ export class TimeSchedule extends SchedulerPro {
               queueNumber: a.originalData.queueNumber,
             }
           })
-          await $fetch('/api/planningBoardUpdate', {
+          await kc.fetch('/api/planningBoardUpdate', {
             method: 'PUT',
             body,
           }).then(() => {

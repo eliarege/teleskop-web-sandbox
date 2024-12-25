@@ -1,6 +1,7 @@
-export default defineEventHandler(async (event) => {
+export default defineAuthEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const { planKey, machineId } = getQuery(event)
+  const authFetch = useKcFetch(event)
 
   const url = `${config.planningEngineUrl}/planning_board/batch_properties`
   interface ErpParameter {
@@ -26,8 +27,7 @@ export default defineEventHandler(async (event) => {
     programs: Program[]
     times: Time
   }
-
-  const batchProperties = await $fetch<ApiResponse>(url, {
+  const batchProperties = await authFetch<ApiResponse>(url, {
     query: { planKey, machineId },
   })
   return batchProperties

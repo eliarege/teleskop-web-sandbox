@@ -1,29 +1,38 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import type { QueueBasedEvent } from '~/shared/queueBased'
-import { useSettingStore } from '~/store/settings'
 
 interface SettingsItemProps {
   title: string
   dropdownOptions?: {
     id: number
     label: string
-    value: keyof QueueBasedEvent
+    value: string
   }[]
   checkboxText?: string
   eventNameLabel?: string
   isDeviation?: boolean
 }
 
-interface Dropdown {
-  id: number
-  label: string
-  value: keyof QueueBasedEvent
-}
-defineProps<SettingsItemProps>()
-const dropdown = defineModel('dropdown', { type: Object as PropType<Dropdown> })
+const _props = defineProps<SettingsItemProps>()
+const { t } = useI18n()
+
+const dropdown = defineModel('dropdown', { type: Array as PropType<string[]>, required: true })
 const fabricColor = defineModel('fabricColor', { type: Boolean })
 const color = defineModel('color', { type: String })
+
+function removeChip(item: string) {
+  const idx = dropdown.value?.indexOf(item)
+  dropdown.value.splice(idx, 1)
+}
+
+function handleDropdownChange(value: string[]) {
+  console.log(value)
+  if (value.length > 4) {
+    value.pop()
+  }
+  dropdown.value = value
+}
 </script>
 
 <template>
@@ -35,18 +44,34 @@ const color = defineModel('color', { type: String })
       {{ eventNameLabel }}
       <div class="w-full flex justify-end">
         <q-select
-          v-model="dropdown"
+          :model-value="dropdown"
           :options="dropdownOptions"
           dense
+          multiple
           options-dense
           flat
           outlined
           option-value="value"
           option-label="label"
-          emit-value
           map-options
-          class="dropdown max-w-40"
-        />
+          emit-value
+          class="dropdown"
+          @update:model-value="handleDropdownChange"
+        >
+          <template #selected>
+            <q-chip
+              v-for="(item, idx) in dropdown"
+              :key="idx"
+              removable
+              dense
+              square
+              class="p-2"
+              @remove="removeChip(item)"
+            >
+              {{ t(`settings.plan-area.dropDown.${item}`) }}
+            </q-chip>
+          </template>
+        </q-select>
       </div>
     </div>
     <div class="grid grid-cols-2 gap-10 min-h-40px items-center  whitespace-nowrap">

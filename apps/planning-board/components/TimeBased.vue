@@ -9,6 +9,7 @@ import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
 const currentTime = useNow({ interval: 1000 })
 const { t } = useI18n()
+const kc = useKeycloak()
 
 // TODO (BEFORE PRODUCTION): change start/end date!
 const startDate = ref('2022/01/01')
@@ -49,11 +50,11 @@ const showModal = reactive({
 })
 const archiveDays = localStorage.getItem('pt-settings')
 
-const { data: machines, refresh: machineRefresh } = await useFetch('/api/machineList')
-const { data: events, refresh: plannedRefresh } = await useFetch('/api/timeBased/plannedEvents', {
+const { data: machines, refresh: machineRefresh } = await useAuthFetch('/api/machineList')
+const { data: events, refresh: plannedRefresh } = await useAuthFetch('/api/timeBased/plannedEvents', {
   query: { archiveDays: JSON.parse(archiveDays || '0').archiveDays ?? 0 },
 })
-const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useFetch('/api/unplannedEvents', {
+const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useAuthFetch('/api/unplannedEvents', {
   query: { from: schedulerDateModel.value.from, to: schedulerDateModel.value.to },
 })
 const loading = ref(false)
@@ -108,13 +109,13 @@ watch(modifiedUnscheduledEvents, (newVal) => {
   grid.store.data = newVal
 })
 async function unPlanEvent(planKey: number) {
-  await $fetch('/api/unplan', {
+  await kc.fetch('/api/unplan', {
     method: 'PUT',
     query: { planKey },
   }).then(() => refreshSchedulerWithLoading())
 }
 async function deleteEvent(planKey: number) {
-  await $fetch('api/delete', {
+  await kc.fetch('api/delete', {
     method: 'PUT',
     query: { planKey },
   })
@@ -141,11 +142,11 @@ async function eventTooltip(eventRecord: any) {
     ? eventRecord.originalData.planKey.replace('P', '')
     : eventRecord.originalData.planKey
 
-  const parameters = await $fetch('/api/tootlipParameters', {
+  const parameters = await kc.fetch('/api/tootlipParameters', {
     query: { machineId: eventRecord.originalData.machineId, planKey },
   })
   const parameterValues = parameters.map(param => `${param.paramString}: ${param.value}`).join('<br>')
-  const notes = await $fetch('/api/note/getNote', {
+  const notes = await kc.fetch('/api/note/getNote', {
     query: { jobOrder: eventRecord.originalData.jobOrder },
   })
   const screenNotes = notes.filter(n => n.showOnScreen === true).map(a => a.note)
@@ -343,7 +344,7 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-thumbtack',
             text: t('ctx-menu.pin'),
             async onItem({ eventRecord }: any) {
-              await $fetch('api/pinEvent', {
+              await kc.fetch('api/pinEvent', {
                 query: { planKey: eventRecord.originalData.id },
                 method: 'PUT',
               })
@@ -359,7 +360,7 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-thumbtack',
             text: t('ctx-menu.unpin'),
             async onItem({ eventRecord }: any) {
-              await $fetch('api/unpinEvent', {
+              await kc.fetch('api/unpinEvent', {
                 query: { planKey: eventRecord.originalData.id },
                 method: 'PUT',
               })

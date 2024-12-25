@@ -2,12 +2,13 @@
 import { Toast } from '@bryntum/schedulerpro'
 import type { MachineStatus } from '~/shared/types'
 
+const kc = useKeycloak()
 const { t } = useI18n()
-const { data: machines } = await useFetch('/api/machineList', {
+const { data: machines } = await useAuthFetch('/api/machineList', {
   default: () => [],
 })
 
-const { data: erpParameters } = await useFetch('/api/settings/erpParameters', {
+const { data: erpParameters } = await useAuthFetch('/api/settings/erpParameters', {
   default: () => [],
   query: { distinct: true },
 })
@@ -23,10 +24,10 @@ async function setValidMachines(paramString: string) {
   groups.value = []
   selectedMachines.value = []
   selected.value = paramString
-  const machinesByErpParam = await $fetch('/api/settings/erpParameters/machinesByErpParam', {
+  const machinesByErpParam = await kc.fetch('/api/settings/erpParameters/machinesByErpParam', {
     query: { paramString },
   })
-  const selectedMachinesList = await $fetch('/api/settings/erpParameters/getSelectedMachines', {
+  const selectedMachinesList = await kc.fetch('/api/settings/erpParameters/getSelectedMachines', {
     query: { paramString },
   })
   selectedMachines.value = selectedMachinesList
@@ -90,7 +91,7 @@ async function saveParameters() {
   loading.value = true
   // wait 0.3 seconds to animate loading?
   await new Promise(resolve => setTimeout(resolve, 300))
-  await $fetch('/api/settings/erpParameters/bulkAddErpParameters', {
+  await kc.fetch('/api/settings/erpParameters/bulkAddErpParameters', {
     body: { paramString: selected.value, machines: selectedMachines.value },
     method: 'PUT',
   }).finally(() => {
@@ -127,8 +128,8 @@ async function saveParameters() {
     <div class="max-h-100 overflow-auto">
       <div v-for="(group, idx) in groupedMachines" :key="idx">
         <SettingsGroupedMachineSelector
-          v-model:selectedGroup="groups"
-          v-model:selectedMachine="selectedMachines"
+          v-model:selected-group="groups"
+          v-model:selected-machine="selectedMachines"
           :group="group[0].groupName"
           :machines="group"
           @selected-group="customModelValue(group[0].groupName)"

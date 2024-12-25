@@ -1,4 +1,7 @@
 {
+  "plannedEventTextInfo": "Planlanmış İş Emri Metni",
+  "completedEventTextInfo": "Tamamlanmış İş Emri Metni",
+  "ongoingTextInfo": "Devam Eden İş Emri Metni",
   "toast": {
     "succesful": "Başarıyla Kaydedildi",
     "fail": {
@@ -144,18 +147,20 @@
         "queueNumber": "Sıra No",
         "jobOrder": "İş Emri",
         "programList": "Program Listesi",
+        "programNoList": "Program Listesi",
         "theoreticalDuration": "Teorik Süre",
         "fabricWeight": "Kumaş Ağırlığı",
         "partyNumber": "Parti No",
         "note": "Not",
         "startDate": "Başlangıç Tarihi",
+        "startTime": "Başlangıç Tarihi",
         "plannedStartDate": "Planlanan Başlangıç Tarihi",
         "endDate": "Bitiş Tarihi",
         "batchKey": "Batch No",
         "endTime": "Bitiş Tarihi",
         "cancelTime": "İptal Tarihi",
         "deviation": "Gecikme",
-        "customerName": "Müşteri İsmi"
+        "customer": "Müşteri İsmi"
       }
     },
     "view-options": "Görünüm Seçenekleri",

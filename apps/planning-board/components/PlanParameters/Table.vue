@@ -3,6 +3,7 @@ import type { QTableColumn } from 'quasar'
 import { getUnitById, setParameterColor } from '~/shared/enums'
 import type { PlanParameters } from '~/shared/types'
 
+const kc = useKeycloak()
 interface PlanParameterProps {
   parameterData: any[]
   editable: boolean
@@ -39,12 +40,12 @@ function editValidation(parameterData: PlanParameters, value: number): boolean {
 }
 async function saveParameter(value: number, parameter: PlanParameters, machineId: number) {
   if (parameter.paramStatus === 2) {
-    await $fetch('/api/planParameters', {
+    await kc.fetch('/api/planParameters', {
       method: 'POST',
       body: { parameter, value, machineId },
     })
   }
-  await $fetch('/api/planParameters', {
+  await kc.fetch('/api/planParameters', {
     method: 'PUT',
     query: { planKey: parameter.planKey, value, paramString: parameter.paramString },
   })

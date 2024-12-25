@@ -3,7 +3,7 @@ import type { PlanParameterProps } from '~/shared/types'
 
 const props = defineProps<PlanParameterProps>()
 const emit = defineEmits(['uploadMachine'])
-const { data: planParameters } = useFetch('/api/planParameters', {
+const { data: planParameters } = useAuthFetch('/api/planParameters', {
   default: () => [],
   query: { planKey: props.planKey, machineId: props.machineId },
 })

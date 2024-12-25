@@ -2,8 +2,8 @@
 import { matChevronLeft, matChevronRight } from '@quasar/extras/material-icons'
 
 const emit = defineEmits(['addColumn', 'removeColumn'])
-const { data: unplannedColumns } = useFetch('/api/unplannedColumns', { default: () => [] })
-
+const { data: unplannedColumns } = useAuthFetch('/api/unplannedColumns', { default: () => [] })
+const kc = useKeycloak()
 const selected = ref()
 
 const sort = computed(() => unplannedColumns.value.toSorted((a, b) => a.id > b.id ? 1 : -1))
@@ -14,7 +14,7 @@ async function addParameter() {
   if (sort.value) {
     const index = sort.value.indexOf(selected.value)
     sort.value[index].visible = true
-    await $fetch('/api/unplannedColumns', {
+    await kc.fetch('/api/unplannedColumns', {
       method: 'PUT',
       body: { id: selected.value.id, visible: true },
     })
@@ -27,7 +27,7 @@ async function removeParameter() {
   if (sort.value) {
     const index = sort.value.indexOf(selected.value)
     sort.value[index].visible = false
-    await $fetch('/api/unplannedColumns', {
+    await kc.fetch('/api/unplannedColumns', {
       method: 'PUT',
       body: { id: selected.value.id, visible: false },
     })

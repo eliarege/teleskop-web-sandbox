@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Toast } from '@bryntum/schedulerpro'
 
+const kc = useKeycloak()
 const props = defineProps<{ jobOrder: string }>()
 const emit = defineEmits(['updateScheduler'])
 const { t, d } = useI18n()
-const { data: batchNotes, refresh } = await useFetch('/api/note/getNote', {
+const { data: batchNotes, refresh } = await useAuthFetch('/api/note/getNote', {
   query: { jobOrder: props.jobOrder },
   default: () => [],
 })
@@ -36,8 +37,9 @@ const newNote = reactive({
   showOnScreen: true,
   userId: 1, // TODO: ADD USER ID
 })
+
 function addNote() {
-  $fetch('/api/note/addNote', {
+  kc.fetch('/api/note/addNote', {
     method: 'POST',
     body: newNote,
   }).then(() => {
@@ -49,7 +51,7 @@ function addNote() {
   })
 }
 function updateNote(id: number, showOnScreen: boolean) {
-  $fetch('/api/note/updateNote', {
+  kc.fetch('/api/note/updateNote', {
     method: 'PUT',
     body: { noteKey: id, showOnScreen },
   }).then(() => {
@@ -75,7 +77,7 @@ function deleteNote(id: number) {
       color: 'red',
     },
   }).onOk(async () => {
-    $fetch('/api/note/deleteNote', {
+    kc.fetch('/api/note/deleteNote', {
       method: 'delete',
       query: { id },
     }).then(() => {
@@ -94,6 +96,7 @@ function deleteNote(id: number) {
     <QTable
       :rows="searchBatchNotes"
       :columns="columns"
+      dense
       :rows-per-page-options="[]"
       no-data-label="No Note"
     >
@@ -168,7 +171,7 @@ function deleteNote(id: number) {
 
 <style scoped lang="postcss">
 .note-wrapper {
-  @apply w-full max-h-200 p-3 overflow-auto border border-3 border-gray-600 rounded z-100 bg-white items-center;
+  @apply w-full min-w-250 max-h-200 p-3 overflow-auto border border-3 border-gray-600 rounded z-100 bg-white items-center;
 }
 </style>
 

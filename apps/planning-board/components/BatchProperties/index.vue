@@ -16,7 +16,7 @@ const colors = reactive({
   itemBackGround: '#000000',
 })
 
-const { data: machine } = await useFetch('/api/machineList')
+const { data: machine } = await useAuthFetch('/api/machineList')
 const currentMachine = computed(() => machine.value?.find(a => a.id === props.machineId))
 function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
   if (currentAlarmStatus === 0) {

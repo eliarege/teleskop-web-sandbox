@@ -2,6 +2,8 @@ import process from 'node:process'
 import { Mutex } from 'async-mutex'
 import Fastify from 'fastify'
 import fastifyIO from 'fastify-socket.io'
+import { fastifyAdapter } from '@teleskop/keycloak-adapter/fastify'
+import { defineConfiguration } from '@teleskop/utils'
 import * as planningBoard from './api/scheduler/routes'
 import * as queueBased from './api/scheduler/queue-based/routes'
 import * as timeBased from './api/scheduler/time-based/routes'
@@ -10,6 +12,7 @@ import { getAllTasks } from './composables/socket'
 import { knex } from './knexConfig'
 import { createPtColumnsTable, createPtMachineErpTable } from './composables/table'
 import { logger } from './composables/logger'
+import { config } from './config'
 
 const app = Fastify({ logger })
 const port = Number.parseInt(process.env.SERVER_PORT || '3500')
@@ -18,6 +21,16 @@ app.register(fastifyIO, {
     allowedHeaders: '*',
   },
 })
+
+if (config.keycloakEnabled) {
+  app.register(fastifyAdapter, {
+    url: config.keycloakUrl,
+    realm: config.keycloakRealm,
+    clientId: config.keycloakClientId,
+    global: true,
+  })
+}
+
 function registerRoutes(fastify: typeof app): void {
   fastify.register(planningBoard.routes)
   fastify.register(queueBased.routes)
@@ -28,8 +41,10 @@ registerRoutes(app)
 app.get('/', (req, reply) => {})
 
 const mutex = new Mutex()
+
 const clientTasks: Record<string, string[]> = {}
 const DB_NAME = process.env.TELESKOP_DATABASE
+
 app.ready().then(async () => {
   await knex.raw(/* sql */`ALTER DATABASE ${DB_NAME} SET COMPATIBILITY_LEVEL = 130`)
 

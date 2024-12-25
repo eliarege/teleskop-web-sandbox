@@ -1,9 +1,10 @@
-import { QueueBasedNonActualEvent } from '~/shared/queueBased'
+import type { QueueBasedNonActualEvent } from '~/shared/queueBased'
 
-export default defineEventHandler(async () => {
+export default defineAuthEventHandler(async (event) => {
+  const authFetch = useKcFetch(event)
   const config = useRuntimeConfig()
   const url = `${config.planningEngineUrl}/planning_board/unscheduled_events`
 
-  const unplannedEvents = await $fetch<QueueBasedNonActualEvent[]>(url)
+  const unplannedEvents = await authFetch<QueueBasedNonActualEvent[]>(url)
   return unplannedEvents
 })
