@@ -100,7 +100,7 @@ watch(() => model.value, (newValue: number) => {
       outlined
       dense
       style="width: 150px;"
-      class="text-3"
+      class="text-3 q-select-nowrap"
     />
     <div v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
       <QSelect
@@ -115,7 +115,7 @@ watch(() => model.value, (newValue: number) => {
         outlined
         dense
         style="width: 150px;"
-        class="text-3"
+        class="text-3 q-select-nowrap"
       >
         <template #option="scope">
           <QItem
@@ -141,3 +141,9 @@ watch(() => model.value, (newValue: number) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.q-select-nowrap :deep(.q-field__native) {
+  white-space: nowrap;
+}
+</style>
