@@ -134,7 +134,7 @@ onMounted(() => {
       <div id="container">
         <q-card-section class="bg-gray-1 dark:bg-dark-3">
           <div class="text-h6 flex">
-            {{ t('stepCommandGraph._') }}
+            {{ t('stepCommandGraph.label') }}
             <q-space />
             <q-btn
               v-close-popup
@@ -152,7 +152,7 @@ onMounted(() => {
         <q-card-section>
           <div class="flex justify-end mb-2">
             <q-btn
-              :label="t('tempTimeGraph.download')"
+              :label="t('stepCommandGraph.download')"
               class="setting-btn"
               color="green"
               icon="download"
