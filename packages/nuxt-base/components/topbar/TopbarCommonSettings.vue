@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { LocaleObject } from '@nuxtjs/i18n'
+import { useStorage } from '@vueuse/core'
 import AppAboutDialog from '../AppAboutDialog.vue'
 import type { TopbarMenuItem } from '~/types'
 
@@ -15,6 +16,11 @@ const tt = (key: string) => toRef(() => t(key))
 
 const feedbackEnabled = computed(() => nuxt.$feedback.isEnabled() === true)
 const feedbackDisableReason = computed(() => nuxt.$feedback.isEnabled())
+const darkMode = useStorage<'auto' | boolean>('theme', 'auto', localStorage)
+
+watch(darkMode, () => {
+  dark.set(darkMode.value)
+})
 
 const items = [
   ...(props.extraItems
@@ -46,17 +52,17 @@ const items = [
           {
             label: t('base.theme.device'),
             active: dark.mode === 'auto',
-            onClick: () => dark.set('auto'),
+            onClick: () => darkMode.value = 'auto',
           },
           {
             label: t('base.theme.light'),
             active: dark.mode === false,
-            onClick: () => dark.set(false),
+            onClick: () => darkMode.value = false,
           },
           {
             label: t('base.theme.dark'),
             active: dark.mode === true,
-            onClick: () => dark.set(true),
+            onClick: () => darkMode.value = true,
           },
         ]],
       },
