@@ -23,7 +23,7 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
       <q-card-section>
         {{ t('discardChanges.message') }}
       </q-card-section>
-      <q-card-actions align="right" class="bg-gray-1">
+      <q-card-actions align="right" class="bg-gray-1 dark:bg-dark-4">
         <q-btn
           v-close-popup
           class="bg-primary text-white"
