@@ -21,7 +21,6 @@ const sortableOptions: SortableOptions & AutoScrollOptions = {
 
 function onDragStart(event: SortableEvent) {
   editor.selectedSteps = []
-  editor.selectedParallelStep = -1
   if (isDef(event.oldIndex)) {
     dragged = editor.program?.steps[event.oldIndex] || null
   }
@@ -45,19 +44,21 @@ function onDragEnd(event: SortableEvent) {
     :options="sortableOptions"
     @start="onDragStart"
     @end="onDragEnd"
+    @click="editor.selectedSteps = []"
   >
     <template #item="{ index }: { index: number, element: any }">
       <QItem
         dense
         class="program-step"
-        :class="{ __selected: editor.selectedSteps.find(step => step.stepId === editor.program.steps[index].stepId) }"
+        :class="{ __selected: editor.isStepSelected(editor.program.steps[index].stepId) }"
+        @click.stop
       >
-        <QItemSection side @click="editor.selectStep($event.ctrlKey, index)">
+        <QItemSection side @click.stop="editor.selectStep($event.ctrlKey, index)">
           <QItemLabel class="w-5">
             {{ index + 1 }}
           </QItemLabel>
         </QItemSection>
-        <QItemSection class="pl-2" @click="editor.selectStep($event.ctrlKey, index)">
+        <QItemSection class="pl-2" @click.stop="editor.selectStep($event.ctrlKey, index)">
           <div :id="`step-${index}`">
             <ProgramStepForm :path="`steps.${index}`" />
           </div>
@@ -67,7 +68,7 @@ function onDragEnd(event: SortableEvent) {
           <QIcon
             class="icon absolute top-2 cursor-pointer"
             name="close"
-            @click="editor.deleteStep(index)"
+            @click.stop="editor.deleteStep(editor.program.steps[index].stepId)"
           />
           <QIcon
             class="icon command-drag-handle mt-7 cursor-move"
@@ -76,17 +77,18 @@ function onDragEnd(event: SortableEvent) {
         </QItemSection>
       </QItem>
     </template>
-    <template #footer>
-      <div class="h-120" @click="editor.selectedSteps = []" />
-    </template>
   </Sortable>
 </template>
 
 <style lang="postcss" scoped>
+.program-editor {
+  @apply pb-120;
+}
+
 .program-step {
   @apply select-none;
   @apply transition-none;
-  @apply hover:(bg-gray-1 text-black);
+  @apply hover:(bg-gray-1 text-black dark:bg-dark-2 dark:text-white);
   @apply dark:(hover:(bg-dark-4 text-white));
 }
 

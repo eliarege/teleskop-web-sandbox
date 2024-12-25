@@ -70,6 +70,7 @@ const duration = computed(() => {
       <DevOnly>
         <div class="flex flex-col color-gray-5 text-3">
           <span>{{ `stepId: ${step.stepId}` }}</span>
+          <span>{{ `commandId: ${step.mainCommand.commandId}` }}</span>
           <span>{{ duration }}</span>
         </div>
       </DevOnly>
@@ -105,7 +106,7 @@ const duration = computed(() => {
         <template #item="{ index }">
           <div
             class="step-parallel-command"
-            :class="{ __selected: editor.selectedSteps.find(step => step.stepId === stepIndex) && editor.selectedParallelStep === index }"
+            :class="{ __selected: false }"
           >
             <DevOnly>
               <div class="flex flex-col color-gray-5 text-3">
@@ -135,6 +136,7 @@ const duration = computed(() => {
 .step-parallel-command {
   @apply flex flex-row items-center w-full pl-4;
   @apply border-b border-black border-opacity-20;
+  @apply hover:(bg-gray-1 text-black dark:(bg-dark-3 text-white));
   @apply dark:(border-b border-white border-opacity-20);
 }
 

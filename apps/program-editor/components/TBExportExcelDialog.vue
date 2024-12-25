@@ -11,15 +11,14 @@ const kc = useKeycloak()
 const { t } = useI18n()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 let sheet: ExcelJS.Worksheet
-const { data: machineGroup } = useAuthFetch<MachineGroup[]>('/api/machine-group')
 
-const selectedMachines = ref<MachineInfo[]>([])
+const selectedMachines = ref<string[]>([])
 const expanded = ref<string[]>([])
 const nodes = computed(() => {
-  if (!machineGroup.value)
+  if (!props.machineGroups)
     return []
 
-  return machineGroup.value.filter(group => group.machines.length > 0).map(group => ({
+  return props.machineGroups.filter(group => group.machines.length > 0).map(group => ({
     id: group.groupId,
     label: group.name,
     selectable: false,
@@ -40,7 +39,7 @@ const fields = ref([
 const selectedFields = ref<number[]>([1, 2, 3, 4])
 
 async function excelFormatter(workbook: ExcelJS.Workbook) {
-  const selectedMachineIds = selectedMachines.value.map(machine => Number(machine.toString().split('-')[1]))
+  const selectedMachineIds = selectedMachines.value.map(machine => Number(machine.split('-')[1]))
 
   const commands: MachineCommand[] = await kc.fetch(`/api/machine/commands`, {
     method: 'POST',
@@ -246,8 +245,8 @@ function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
           <span>{{ t('exportExcelDialog.machineList') }}</span>
           <QSpace />
           <OptionGroupFunctionalityButtons
-            :model="selectedMachines"
-            :options="machineGroup?.flatMap(machine => machine.machines)"
+            v-model="selectedMachines"
+            :options="machineGroups?.flatMap(mg => mg.machines.map(m => `${m.groupId}-${m.id}`))"
           />
         </div>
 

@@ -16,10 +16,12 @@
   "noParallelStep": "Paralel Adım Yok",
   "programNotSaved": "Program güncellenirken hata oluştu",
   "programNotUpdated": "Program güncellenemedi",
-  "treatmentParameterLimitReached": "{commandNo} numaralı komut {limit}'den fazla kullanılamaz",
+  "treatmentParameterLimitReached": "{commandNo} numaralı komut {limit}'den fazla kullanılamaz!",
+  "cannotParallelCommand": "{parallelCommandNo} numaralı komut, {mainCommandNo} numralı komutun paralelinde kullanılamaz!",
   "(copy)": "({programNo} Kopya)",
   "noSelection": "Seçim Yok",
-  "invalidCommand": "Hatalı komutu kontrol ediniz.",
+  "invalidCommand": "Hatalı komutu kontrol ediniz",
+  "emptyCommand": "Komut boş olamaz",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",
@@ -400,8 +402,8 @@
     "edit": "DÜZENLE"
   },
   "tempTimeGraph": {
-    "_": "Sıcaklık/Zaman Grafiği",
-    "lower": "sicaklik-zaman-grafigi",
+    "label": "Sıcaklık/Zaman Grafiği",
+    "slug": "sicaklik-zaman-grafigi",
     "hideIcons": "İkonları Gizle",
     "showIcons": "Ikonları Göster",
     "hideSlopes": "Eğimleri Gizle",
@@ -409,12 +411,12 @@
     "hideDuration": "Süreyi Gizle",
     "showDuration": "Süreyi Göster",
     "fullScreen": "Tam Ekran",
-    "screenshot": "Ekran Görüntüsü"
+    "download": "Grafiği İndir"
   },
   "stepCommandGraph": {
-    "_": "Adım/Komut Grafiği",
-    "lower": "adim-komut-grafigi",
-    "screenshot": "Ekran Görüntüsü"
+    "label": "Adım/Komut Grafiği",
+    "slug": "adim-komut-grafigi",
+    "download": "Grafiği İndir"
   },
   "notification": {
     "_": "Bildirim",
@@ -440,5 +442,15 @@
     "message": "Yaptığınız değişiklikleri geri almak istediğinizden emin misiniz?",
     "discard": "Geri Al",
     "cancel": "İptal"
+  },
+  "moveParallelStep": {
+    "title": "Paralel Adımı Tası",
+    "message": "Paralel adımı tasımak istediğinizden emin misiniz?",
+    "move": "Tası",
+    "cancel": "İptal",
+    "startIndex": "Başlangıç Adımı",
+    "endIndex": "Bitiş Adımı",
+    "startIndexMore": "Başlangıç adımı bitiş adımından büyük olamaz",
+    "endIndexLess": "Bitiş adımı başlangıç adımından küçük olamaz"
   }
 }

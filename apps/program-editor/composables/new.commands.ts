@@ -6,7 +6,7 @@ import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { MachineCommand, Program, ProgramHeader, ProgramTable } from '~/shared/types'
+import type { MachineCommand, Program, ProgramHeader, ProgramStepCommand, ProgramTable } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -20,6 +20,7 @@ import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
 import TBDiscardChangesDialog from '~/components/TBDiscardChangesDialog.vue'
 import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
 import TBCommandDetailDialog from '~/components/TBCommandDetailDialog.vue'
+import CMMoveParallelStepDialog from '~/components/CMMoveParallelStepDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -69,6 +70,7 @@ export interface RegisteredCommands {
   discardChanges: [ctx: any, machineId?: number]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, machineId: number, commandNo: number]
+  moveParallelStep: [ctx: any, commandNo: number, programCommand: ProgramStepCommand]
 }
 
 registerCommand(() => {
@@ -119,8 +121,6 @@ registerCommand(() => {
           allProcessTypes: editor.allProcessTypes,
         },
       }).onOk(async (newProgram: Program) => {
-        console.log(newProgram)
-
         await editor.onSubmit(newProgram)
         return true
       }).onCancel(() => {
@@ -276,7 +276,6 @@ registerCommand(() => {
 
         // Yeni program detaylarını al
         const programDetails = await getNewProgramDetails(ctx)
-        console.log('Program Details:', programDetails)
 
         // Programları birleştir
         await contextMenuStore.concatenatePrograms(programsOrder, programDetails, machineId)
@@ -573,10 +572,36 @@ registerCommand(() => {
         await nextTick()
         editor.program = klona(editor.originalProgram)
         editor.selectedSteps = []
-        editor.selectedParallelStep = -1
 
         if (machineId) {
           await editor.changeMachine(machineId)
+        }
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
+  return {
+    name: 'moveParallelStep',
+    execute(ctx: any, commandNo: number, programCommand: ProgramStepCommand) {
+      const commandName = editor.machine.commands.get(commandNo)?.name
+      const stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
+      ctx.$q.dialog({
+        component: CMMoveParallelStepDialog,
+        componentProps: {
+          commandNo,
+          commandName,
+          programCommand,
+          stepIndex,
+          stepsLength: editor.program.steps.length,
+        },
+      }).onOk(async (command: { commandNo: number, startIndex: number, endIndex: number }) => {
+        for (let index = command.startIndex; index <= command.endIndex; index++) {
+          if (index !== stepIndex)
+            editor.newParallelStepCommand(command.commandNo, index - 1)
         }
       })
       return true

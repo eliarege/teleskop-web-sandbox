@@ -118,9 +118,13 @@ chartOptions.value = {
 }
 
 function takeScreenshot() {
-  const element = document.getElementById('chart-container')
-  if (element)
-    screenshot(element, `${editor.machine.id}-${editor.program.programNo}-${t('stepCommandGraph.lower')}`)
+  const canvas = document.querySelector('#chart-container canvas') as HTMLCanvasElement | null
+  if (canvas) {
+    const link = document.createElement('a')
+    link.download = `${editor.machine.id}-${editor.machine.name}/${editor.program.programNo}-${editor.program.name}-${t('stepCommandGraph.slug')}`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+  }
 }
 
 onMounted(() => {
@@ -134,7 +138,7 @@ onMounted(() => {
       <div id="container">
         <q-card-section class="bg-gray-1 dark:bg-dark-3">
           <div class="text-h6 flex">
-            {{ t('stepCommandGraph._') }}
+            {{ t('stepCommandGraph.label') }}
             <q-space />
             <q-btn
               v-close-popup
@@ -152,10 +156,10 @@ onMounted(() => {
         <q-card-section>
           <div class="flex justify-end mb-2">
             <q-btn
-              :label="t('tempTimeGraph.screenshot')"
+              :label="t('stepCommandGraph.download')"
               class="setting-btn"
               color="green"
-              icon="camera_alt"
+              icon="download"
               @click="takeScreenshot"
             />
           </div>

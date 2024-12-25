@@ -8,32 +8,19 @@ const props = defineProps<{
   path: string
 }>()
 
+const $q = useQuasar()
 const { t } = useI18n()
 const editor = useEditorStore()
+const { $commandManager } = useNuxtApp()
+
 const programCommand = ref<ProgramStepCommand>(editor.getPathElement(props.path))
 const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? CommandType.MAIN : CommandType.PARALLEL
 
-const id = useId()
 const select = ref<QSelect>()
-
-watch(() => select.value?.modelValue, () => {
-  if (programCommand.value.commandNo === null) {
-    editor.errorIds.add(id)
-    select.value?.focus()
-  } else {
-    editor.errorIds.delete(id)
-  }
-})
-
-onUnmounted(() => {
-  editor.errorIds.delete(id)
-})
-
-const rules = [
-  (value: any) => !!value,
-]
-
 const stepIndex = computed(() => Number(props.path.split('.')[1]))
+const id = `${editor.program.steps[stepIndex.value].stepId}-${programCommand.value.commandId}`
+const isLastStep = stepIndex.value === editor.program.steps.length - 1
+
 const filteredCommands = computed(() => {
   const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
 
@@ -73,10 +60,99 @@ const filteredCommands = computed(() => {
 const label = computed(() => {
   return !programCommand.value.commandNo ? t('selectCommand') : undefined
 })
+
+const rules = [
+  (value: number) => {
+    return !!value || t('emptyCommand') // Seçim boşsa hata mesajı
+  },
+  (value: number) => {
+    const step = editor.program.steps[stepIndex.value]
+    const machineMainCommand = editor.machine.commands.get(step.mainCommand.commandNo)
+
+    // Ana komutun "dontUseList" kontrolü
+    if (isMainCommand === CommandType.PARALLEL) {
+      if (machineMainCommand?.dontUseList?.includes(value)) {
+        return t('cannotParallelCommand', {
+          mainCommandNo: step.mainCommand.commandNo,
+          parallelCommandNo: value,
+        })
+      }
+    }
+
+    return true
+  },
+]
+
+function validateCommand() {
+  nextTick(() => {
+    const commandNo = programCommand.value?.commandNo
+    const mainCommandNo = editor.program.steps[stepIndex.value]?.mainCommand?.commandNo
+    const machineMainCommand = editor.machine.commands.get(mainCommandNo)
+
+    if (!commandNo || machineMainCommand?.dontUseList?.includes(commandNo)) {
+      editor.errorIds.add(id)
+    } else {
+      editor.errorIds.delete(id)
+    }
+
+    select.value?.validate()
+  })
+}
+
+// watch: programCommand.value.commandNo
+watch(
+  () => programCommand.value.commandNo,
+  () => validateCommand(),
+)
+
+// watch: mainCommand.commandNo
+watch(
+  () => editor.program.steps[stepIndex.value]?.mainCommand?.commandNo,
+  () => validateCommand(),
+)
+
+onMounted(() => {
+  nextTick(() => {
+    const step = editor.program.steps[stepIndex.value]
+    const mainCommand = step?.mainCommand
+    const commandNo = programCommand.value?.commandNo
+    const machineMainCommand = editor.machine.commands.get(mainCommand?.commandNo)
+
+    select.value?.focus()
+
+    const isInvalidCommand = !commandNo
+      || (machineMainCommand?.dontUseList.includes(commandNo))
+
+    // Ana adım ve paralel adım için ortak kontrol
+    if (
+      (isMainCommand === CommandType.MAIN && isInvalidCommand)
+      || (isMainCommand === CommandType.PARALLEL && (!mainCommand?.commandNo || isInvalidCommand))
+    ) {
+      editor.errorIds.add(id)
+      return
+    }
+
+    editor.errorIds.delete(id)
+    select.value?.validate()
+  })
+})
+
+function updateStepCommand(commandNo: number, programCommand: ProgramStepCommand) {
+  const isNewCommand = !programCommand.commandNo
+  editor.updateCommand(commandNo, programCommand)
+
+  if (isMainCommand === CommandType.PARALLEL && !isLastStep && isNewCommand)
+    $commandManager.executeCommand('moveParallelStep', { $q }, commandNo, programCommand)
+}
 </script>
 
 <template>
   <div>
+    <DevOnly>
+      <div class="flex flex-col color-gray-5 text-3">
+        <span>{{ id }}</span>
+      </div>
+    </DevOnly>
     <QSelect
       ref="select"
       :model-value="programCommand.commandNo"
@@ -102,7 +178,7 @@ const label = computed(() => {
           v-close-popup
           clickable
           dense
-          @click="editor.updateCommand(scope.opt.value, programCommand)"
+          @click="updateStepCommand(scope.opt.value, programCommand)"
         >
           <QItemSection class="text-3">
             {{ scope.opt.label }}

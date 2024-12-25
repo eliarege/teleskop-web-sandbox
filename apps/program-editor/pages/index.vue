@@ -19,6 +19,7 @@ const $q = useQuasar()
 const route = useRoute()
 
 const editor = useEditorStore()
+const { notifyError } = useNotify()
 editor.machine = editor.createMachine()
 
 const tt = (key: string) => toRef(() => t(key))
@@ -117,29 +118,45 @@ const items = [
     disabled: computed(() => !isDef(route.params.program_no)),
     subMenu: {
       items: [[
-        { label: tt('menu.versionInfo'), icon: 'info', onClick: () => {
-          editor.popupVersionDialog = true
-        } },
-        { label: tt('menu.commandInfo'), icon: 'info', onClick: () => {
-          $commandManager.executeCommand('allCommandsList', { $q })
-        } },
+        {
+          label: tt('menu.versionInfo'),
+          icon: 'info',
+          onClick: () => {
+            editor.popupVersionDialog = true
+          },
+        },
+        {
+          label: tt('menu.commandInfo'),
+          icon: 'info',
+          onClick: () => {
+            $commandManager.executeCommand('allCommandsList', { $q })
+          },
+        },
       ], [
-        { label: tt('menu.tempTimeGraph'), icon: 'timeline', shortcut: 'F8', onClick: () => {
-          const editor = useEditorStore()
-          if (!editor.errorIds.size) {
-            $commandManager.executeCommand('tempTimeGraph', { $q })
-          } else {
-            $q.notify({
-              type: 'negative',
-              icon: 'error',
-              position: 'top',
-              message: tt('invalidCommand'),
-            })
-          }
-        } },
-        { label: tt('menu.stepCommandGraph'), icon: 'timeline', shortcut: 'F7', onClick: () => {
-          $commandManager.executeCommand('stepCommandGraph', { $q })
-        } },
+        {
+          label: tt('menu.tempTimeGraph'),
+          icon: 'timeline',
+          shortcut: 'F8',
+          onClick: () => {
+            const editor = useEditorStore()
+            const firstId = editor.errorIds.values().next().value
+
+            if (!firstId) {
+              $commandManager.executeCommand('tempTimeGraph', { $q })
+            } else {
+              notifyError(t('invalidCommand'))
+              editor.scrollPage(Number(firstId.split('-')[0]), true)
+            }
+          },
+        },
+        {
+          label: tt('menu.stepCommandGraph'),
+          icon: 'timeline',
+          shortcut: 'F7',
+          onClick: () => {
+            $commandManager.executeCommand('stepCommandGraph', { $q })
+          },
+        },
       ]],
     },
   },
@@ -256,7 +273,7 @@ const itemsMobile = [
     <QPageContainer>
       <QPage>
         <div
-          class="flex sticky top-10 z-10 bg-gray-2 dark:bg-dark-3"
+          class="flex sticky top-10 z-10 bg-light-7  dark:bg-dark-3"
         >
           <ContextBar />
         </div>

@@ -53,7 +53,6 @@ async function handleProgramDeletion(
   }
 
   const { programState } = await machine.fetchProgram(programNo)
-  console.log('programState: ', programState)
   const source = query.source.toString()
 
   if (source.includes('machine')) {

@@ -17,9 +17,11 @@
   "programNotSaved": "Error occured while trying to save program",
   "programNotUpdated": "Program has not been updated",
   "treatmentParameterLimitReached": "Command {commandNo} cannot be used more than {limit}",
+  "cannotParallelCommand": "Command {parallelCommandNo} cannot be used in parallel with command {mainCommandNo}",
   "(copy)": "({programNo} Copy)",
   "noSelection": "No Selection",
   "invalidCommand": "Check for faulty command",
+  "emptyCommand": "Command cannot be empty",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",
@@ -400,8 +402,8 @@
     "edit": "EDIT"
   },
   "tempTimeGraph": {
-    "_": "Temperature/Time Graph",
-    "lower": "temperature-time-graph",
+    "label": "Temperature/Time Graph",
+    "slug": "temperature-time-graph",
     "hideIcons": "Hide Icons",
     "showIcons": "Show Icons",
     "hideSlopes": "Hide Slopes",
@@ -409,12 +411,12 @@
     "hideDuration": "Hide Duration",
     "showDuration": "Show Duration",
     "fullScreen": "Full Screen",
-    "screenshot": "Screenshot"
+    "download": "Download Graph"
   },
   "stepCommandGraph": {
-    "_": "Step/Command Graph",
-    "lower": "step-command-graph",
-    "screenshot": "Screenshot"
+    "label": "Step/Command Graph",
+    "slug": "step-command-graph",
+    "download": "Download Graph"
   },
   "notification": {
     "_": "Notification",
@@ -440,5 +442,15 @@
     "message": "Are you sure you want to discard your changes?",
     "discard": "Discard",
     "cancel": "Cancel"
+  },
+  "moveParallelStep": {
+    "title": "Move Parallel Step",
+    "message": "Are you sure you want to move parallel step?",
+    "move": "Move",
+    "cancel": "Cancel",
+    "startIndex": "Start Step",
+    "endIndex": "End Step",
+    "startIndexMore": "Start step cannot be greater than end step",
+    "endIndexLess": "End step cannot be less than start step"
   }
 }

@@ -170,16 +170,9 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
 
   event.preventDefault()
 
-  if (event.shiftKey) {
-    const parallelStep = editor.selectedParallelStep - 1
-    if (between(parallelStep, 0, editor.program.steps[editor.selectedSteps[0].stepId].parallelCommands.length - 1)) {
-      editor.selectedParallelStep = parallelStep
-    }
-  } else {
-    const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
-    const stepIndex = currentIndex > 0 ? currentIndex - 1 : editor.program.steps.length - 1
-    editor.selectedSteps = [editor.program.steps[stepIndex]]
-  }
+  const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
+  const stepIndex = currentIndex > 0 ? currentIndex - 1 : editor.program.steps.length - 1
+  editor.selectedSteps = [editor.program.steps[stepIndex]]
 
   editor.scrollPage(editor.selectedSteps[0].stepId)
 })
@@ -190,16 +183,9 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
 
   event.preventDefault()
 
-  if (event.shiftKey) {
-    const parallelStep = editor.selectedParallelStep + 1
-    if (between(parallelStep, 0, editor.program.steps[editor.selectedSteps[0].stepId].parallelCommands.length - 1)) {
-      editor.selectedParallelStep = parallelStep
-    }
-  } else {
-    const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
-    const stepIndex = between(currentIndex + 1, 0, editor.program.steps.length - 1) ? currentIndex + 1 : currentIndex
-    editor.selectedSteps = [editor.program.steps[stepIndex]]
-  }
+  const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
+  const stepIndex = between(currentIndex + 1, 0, editor.program.steps.length - 1) ? currentIndex + 1 : currentIndex
+  editor.selectedSteps = [editor.program.steps[stepIndex]]
 
   editor.scrollPage(editor.selectedSteps[0].stepId)
 })
@@ -207,7 +193,6 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
 onKeyStroke('Escape', (event: KeyboardEvent) => {
   event.preventDefault()
   editor.selectedSteps = []
-  editor.selectedParallelStep = -1
 })
 
 onKeyStroke(['S', 's'], async (event: KeyboardEvent) => {
@@ -274,7 +259,7 @@ onBeforeRouteLeave(() => {
 
 <template>
   <div class="q-pa-md select-none">
-    <div v-if="editor.isLoading" class="loading-container">
+    <div v-if="editor.isLoading" class="loading-container bg-gray-3 bg-opacity-10 dark:bg-dark-2 dark:bg-opacity-10">
       <LoadingSpinner :has-background="false" />
     </div>
     <QForm ref="form">
@@ -282,6 +267,7 @@ onBeforeRouteLeave(() => {
         <div class="flex flex-col color-gray-5 text-3">
           <span> {{ `selectedStep: ${editor.selectedSteps.map(x => x?.stepId)}` }} </span>
           <span> {{ `copiedSteps: ${contextMenuStore.getCopiedStepsValues(editor.machine.id, editor.program.programNo)?.steps.map(x => x?.stepId) || ''}` }} </span>
+          <span> {{ `errorIds: ${Array.from(editor.errorIds)}` }} </span>
         </div>
       </DevOnly>
       <ProgramEditor />
@@ -298,6 +284,5 @@ onBeforeRouteLeave(() => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgb(229, 231, 235, 0.2);
 }
 </style>

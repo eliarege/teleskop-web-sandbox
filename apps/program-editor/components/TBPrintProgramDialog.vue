@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak';
-
-const { fetch } = useKeycloak()
+import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 
 const props = defineProps({
   machines: Array,
 })
+
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
+
+const { fetch } = useKeycloak()
+
 const { t } = useI18n()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
@@ -67,9 +69,8 @@ async function machineSelected(e) {
           {{ t('printProgramDialog.selectPrograms') }}
           <q-space />
           <OptionGroupFunctionalityButtons
-            :model="programGroup"
+            v-model="programGroup"
             :options="programOptions"
-            @update:model="e => programGroup = e"
           />
         </div>
         <div class="flex max-h-60 overflow-y-scroll">
@@ -87,9 +88,8 @@ async function machineSelected(e) {
           {{ t('printProgramDialog.selectCommands') }}
           <q-space />
           <OptionGroupFunctionalityButtons
-            :model="commandGroup"
+            v-model="commandGroup"
             :options="commandOptions"
-            @update:model="e => commandGroup = e"
           />
         </div>
         <div class="flex max-h-60 overflow-y-scroll">
