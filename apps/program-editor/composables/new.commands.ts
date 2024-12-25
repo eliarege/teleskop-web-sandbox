@@ -121,8 +121,6 @@ registerCommand(() => {
           allProcessTypes: editor.allProcessTypes,
         },
       }).onOk(async (newProgram: Program) => {
-        console.log(newProgram)
-
         await editor.onSubmit(newProgram)
         return true
       }).onCancel(() => {
@@ -278,7 +276,6 @@ registerCommand(() => {
 
         // Yeni program detaylarını al
         const programDetails = await getNewProgramDetails(ctx)
-        console.log('Program Details:', programDetails)
 
         // Programları birleştir
         await contextMenuStore.concatenatePrograms(programsOrder, programDetails, machineId)
@@ -590,7 +587,6 @@ registerCommand(() => {
   return {
     name: 'moveParallelStep',
     execute(ctx: any, commandNo: number, programCommand: ProgramStepCommand) {
-      console.log('moveParallelStep', commandNo)
       const commandName = editor.machine.commands.get(commandNo)?.name
       const stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
       ctx.$q.dialog({
