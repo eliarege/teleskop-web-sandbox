@@ -1,0 +1,40 @@
+<script setup lang="ts">
+import * as d3 from 'd3'
+import { userSettingsStore } from '~/composables/userSettingsStore'
+import type { DigitalInputOutputType, IOSetting } from '~/types/archive'
+
+const props = defineProps<{
+  commands: DigitalInputOutputType[]
+  selectedTime: Date
+  typeKey: 'digitalInputs' | 'digitalOutputs' | 'digitalOutputsLock'
+}>()
+const { t } = useI18n()
+const settingsStore = userSettingsStore()
+
+const commandsWithClosestTime = computed(() => {
+  return getCommandsWithClosestTimeDigital(props.selectedTime, props.commands)
+})
+</script>
+
+<template>
+  <div class="mt-4 h-full overflow-y-auto">
+    <div
+      v-for="command in commandsWithClosestTime"
+      :key="command.ioIndex"
+    >
+      <IOLine
+        :setting="settingsStore.getSetting(`${typeKey}_${command.ioIndex}`)"
+        :command="command"
+        io-type="Digital"
+        :value="command.closestIoValue.value === 1 ? t('inputOutput.open') : t('inputOutput.closed') "
+        @update:setting="(setting: IOSetting) => settingsStore.setSetting(`${typeKey}_${command.ioIndex}`, setting.color, setting.selected)"
+      />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.adjust-font {
+  font-size: inherit;
+}
+</style>

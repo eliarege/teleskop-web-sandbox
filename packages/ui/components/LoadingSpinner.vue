@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import '../stylesheets/animations.css'
 
-withDefaults(defineProps<{ hasBackground: boolean }>(), {
-  hasBackground: true,
+withDefaults(defineProps<{ withBackground?: boolean }>(), {
+  withBackground: false,
 })
 </script>
 
 <template>
-  <div class="spinner-wrapper" :class="hasBackground ? 'custom-bg' : 'bg-inherit'">
-    <span class="loader" />
+  <div
+    class="spinner-wrapper"
+    :class="{ withBackground: 'spinner-wrapper-background' }"
+  >
+    <span class="spinner" />
   </div>
 </template>
 
 <style scoped lang="postcss">
-.custom-bg {
-  background-color: rgba(60, 60, 60, 0.3);
-}
 .spinner-wrapper {
   width: 100%;
   height: 100%;
@@ -25,8 +25,10 @@ withDefaults(defineProps<{ hasBackground: boolean }>(), {
   justify-content: center;
   align-items: center;
 }
-
-.loader {
+.spinner-wrapper-background {
+  background-color: rgba(60, 60, 60, 0.3);
+}
+.spinner {
   border-color: #212121 #212121 transparent transparent;
   border-width: 3px;
   border-radius: 50%;
@@ -38,8 +40,8 @@ withDefaults(defineProps<{ hasBackground: boolean }>(), {
   box-sizing: border-box;
 }
 
-.loader::after,
-.loader::before {
+.spinner::after,
+.spinner::before {
   border-color: transparent transparent #0d94fc #0d94fc;
   border-style: solid;
   border-width: 3px;
@@ -58,7 +60,7 @@ withDefaults(defineProps<{ hasBackground: boolean }>(), {
   height: 40px;
 }
 
-.loader::before {
+.spinner::before {
   border-color: #212121 #212121 transparent transparent;
   animation: rotation 1.5s linear infinite;
   width: 32px;

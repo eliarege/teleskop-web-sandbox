@@ -169,12 +169,12 @@ function getCpuInfo(): string {
 
 function getCpuCores() {
   try {
-    const quota = readFileSync('/sys/fs/cgroup/cpu/cpu.cfs_quota_us', 'utf8');
-    const period = readFileSync('/sys/fs/cgroup/cpu/cpu.cfs_period_us', 'utf8');
-    const cores = Math.ceil(parseInt(quota) / parseInt(period));
-    return cores > 0 ? cores : os.cpus().length;
+    const quota = readFileSync('/sys/fs/cgroup/cpu/cpu.cfs_quota_us', 'utf8')
+    const period = readFileSync('/sys/fs/cgroup/cpu/cpu.cfs_period_us', 'utf8')
+    const cores = Math.ceil(Number.parseInt(quota) / Number.parseInt(period))
+    return cores > 0 ? cores : os.cpus().length
   } catch (err) {
-    console.error('Failed to read cgroup CPU limits:', err);
-    return os.cpus().length;
+    console.error('Failed to read cgroup CPU limits:', err)
+    return os.cpus().length
   }
 }

@@ -1,0 +1,231 @@
+{
+  "app": {
+    "name": "Archive"
+  },
+  "date": "Date",
+  "description": "Description",
+  "close": "Close",
+  "interventions": "Interventions",
+  "search": "Search",
+  "cancel": "Cancel",
+  "command": "Command",
+  "startTime": "Start Time",
+  "startT": "Start",
+  "endTime": "End Time",
+  "endT": "End",
+  "undef": "Undefined Unit",
+  "cycle": "Cycle",
+  "cycleCount": "Cycle Count",
+  "reel": "Reel",
+  "axis": "Axis",
+  "flotte": "Flotte",
+  "kg": "Kilogram",
+  "print": "Print",
+  "recipe": "Recipe",
+  "recipeAmount": "Recipe Amount",
+  "actualAmount": "Actual Amount",
+  "ISN": "ISN",
+  "materialCode": "Material Code",
+  "materialName": "Material Name",
+  "programName": "Program Name",
+  "joborder": "Job Order",
+  "collectionNo": "Party No",
+  "process": "Process",
+  "theoreticalDuration": "Theoretical Duration",
+  "actualDuration": "Actual Duration",
+  "machine": "Machine",
+  "deviation": "Deviation",
+  "hideTooltip": "Hide Tooltip",
+  "showTooltip": "Show Tooltip",
+  "consumptions": "Consumptions",
+  "unknownCommand": "unknown command",
+  "parallelStepNo": "Paralel Step No",
+  "parallelStepNoShort": "P",
+  "stepNo": "Main Step No",
+  "stepNoShort": "S",
+  "amount": "Amount",
+  "sec": "sec",
+  "unit": "Unit",
+  "selectAll": "Select All",
+  "dropAll": "Drop All",
+  "selectReverse": "Reverse Selection",
+  "save": "Save",
+  "startingParameters": "Starting Parameters",
+  "showDigitalIOs": "Show digital IOs",
+  "showCycleTimes": "Show cycle times",
+  "hide": "Hide",
+  "parameter": "Parameter",
+  "reelDataDialog": "Reel Cycle Count / Time Table",
+  "updateAxises": "Update Axises",
+  "addRemoveAxis": "Add/Remove Axis",
+  "joborderSummarySettings": {
+    "_": "Job Order Summary Report Settings",
+    "description": "Please select the ERP parameters wanted to show on job order summary report."
+  },
+  "axisSettings": {
+    "_": "Axis Settings",
+    "description": "Select the Y axis that you want to update.",
+    "noAxisAvailableError": "No available axis."
+  },
+  "joborderSummary": {
+    "waterType1": "Cold Water",
+    "waterType2": "Hot Water",
+    "waterType3": "Osmosis Water",
+    "waterType4": "...",
+    "waterTotal": "Total Water",
+    "electricity": "Electricity",
+    "steam": "steam",
+    "steamPerWeight": "Kg Steam / Kg Fabric",
+    "electricityPerWeight": "Kw / Kg Fabric",
+    "totalWaterPerWeight": "Lt Water / Kg Fabric"
+  },
+  "panels": {
+    "JobOrderInfo": "Job Order Info",
+    "StartParameters": "Start Parameters",
+    "WorkingPrograms": "Working Programs",
+    "TheoricPrograms": "Theoric Programs",
+    "AIN": "AIN",
+    "DIN": "DIN",
+    "AOUT": "AOUT",
+    "Counter": "Counters",
+    "DOUTFunc": "DOUT",
+    "DOUTLock": "DOUT Lock",
+    "ChartComponent": "Chart",
+    "Commands": "Commands",
+    "Alarms": "Alarms",
+    "CycleTimes": "Cycle Times"
+
+  },
+  "joborderTable": {
+    "machineName": "Machine",
+    "model": "Model",
+    "operator": "Operator",
+    "batchReferance": "Batch Reference",
+    "jobOrder": "Job Order",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "theoreticalEndTime": "Theoretical End Time",
+    "cancelTime": "Cancel Time",
+    "key": "Key",
+    "value": "Value"
+  },
+  "startParameters": {
+    "Kilo": "Kilogram",
+    "Flotte Orani": "Flotte",
+    "Duze": "Duze",
+    "Pompa Hizi": "Pump Speed",
+    "Kule Hizi": "Tower Speed",
+    "Kumastaki Su": "Water In Fabric",
+    "AK Boya Orani": "AK Paint Ratio",
+    "Fan Hızı": "Fan Speed",
+    "Plaiter Hızı": "Plaiter Speed"
+  },
+  "alarmColumns": {
+    "startTime": "Started",
+    "endTime": "Ended",
+    "duration": "Duration",
+    "explanation": "Explanation",
+    "selected": "All"
+  },
+  "alarmSettings": {
+    "title": "Alarm Type Options",
+    "message": "Select the alarm types you want to see",
+    "0": "Command Delay Alarms",
+    "1": "Equipment Alarm",
+    "2": "Warning Message in Operator Warning Commands",
+    "3": "Time Exceeded in Operator Warning Commands",
+    "4": "Locking",
+    "5": "PLC",
+    "6": "Software",
+    "7": "Calibration Alarm",
+    "8": "Coupled",
+    "9": "Manual",
+    "10": "Stopped",
+    "11": "Process Alarms"
+  },
+  "inputOutput": {
+    "open": "Open",
+    "closed": "Closed"
+  },
+  "ioSettings": {
+    "showOnNewAxis": "Show on new axis",
+    "showOnExistingAxis": "Show on exisitng axis",
+    "selectAnAxis": "Select an axis"
+  },
+  "topbar": {
+    "graph": {
+      "_": "Graph",
+      "print": "Print"
+    },
+    "report": {
+      "_": "Report",
+      "batchSum": "Batch Summary(Graph)",
+      "joborderSum": "Job Order Summary",
+      "joborderSumSettings": "Job Order Summary Report Settings",
+      "joborderRecipe": "Job Order Recipe"
+    },
+    "options": {
+      "_": "Options",
+      "towerColors": "Tower Colors",
+      "showLeapGraph": "Show Leap Graph",
+      "tooltip": "Tooltip",
+      "tooltipOptions": "Tooltip Options"
+    },
+    "settings": {
+      "_": "Settings"
+    },
+    "interventions": "Interventions"
+  },
+  "tooltipOptions": {
+    "title": "Tooltip Options",
+    "message": "Please select the data wanted to show",
+    "markedAnalogInputs": "Marked analog inputs",
+    "markedAnalogOutputs": "Marked analog outputs",
+    "markedCalcualtedValues": "Marked calculated values",
+    "selectedTime": "Selected time",
+    "currentDuration": "Time passed since job order's start time",
+    "activeUser": "Active user",
+    "activeCommandTimeInfo": "Active command's start time and time passed since command's start time",
+    "manuelMeasuredValues": "Manuel values calculated by operator",
+    "timePassed": "Time passed"
+  },
+  "axisesVisibilityDialog": {
+    "_": "Axis Visibility Settings",
+    "description": "Select the axises to show the right hand side of the graph."
+  },
+  "errors": {
+    "cannotShowMoreThanFourAxis": "More than 4 axises cannot be shown at the same time."
+  },
+  "batchSummary": {
+    "_": "Batch Özeti",
+    "machineInfo": "Machine Info",
+    "machineNo": "Machine No",
+    "machineName": "Machine Name",
+    "status": "Status",
+    "operatorName": "Operator",
+    "machineModel": "Model",
+    "fast": "Hızlı",
+    "slow": "Yavaş",
+    "theoreticalCharge": "Theoretical Charge",
+    "capacity": "Capacity",
+    "operator": "Operator",
+    "joborder": "Job Order",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "cancelTime": "Cancel Time",
+    "theoreticalEndTime": "Theoretical End Time",
+    "actualDuration": "Actual Duration",
+    "actualTheoreticalDuration": "Actual Theoretical Duration",
+    "theoreticalDuration": "Theoretical Duration",
+    "deviation": "Deviation",
+    "batchStartParameters": "Batch Start Parameters",
+    "activeDuration": "Active Duration",
+    "manuelDuration": "Manual",
+    "alarmDelay": "Alarm Delay",
+    "operatorDelay": "Operator Delay",
+    "programNo": "Program No",
+    "programName": "Program Name",
+    "interventions": "Interventions"
+  }
+
+}

@@ -1,0 +1,228 @@
+{
+  "app": {
+    "name": "Arşiv"
+  },
+  "date": "Tarih",
+  "description": "Açıklama",
+  "interventions": "Müdaheleler",
+  "search": "Ara",
+  "close": "Kapat",
+  "cancel": "İptal",
+  "command": "Komut",
+  "cycle": "Tur",
+  "print": "Yazdır",
+  "startTime": "Başlangıç zamanı",
+  "startT": "Başlangıç",
+  "endTime": "Bitiş zamanı",
+  "endT": "Bitiş",
+  "undef": "Birim belirtilmemiş",
+  "recipe": "Reçete",
+  "kg": "Kilogram",
+  "axis": "Eksen",
+  "flotte": "Flotte",
+  "recipeAmount": "Reçete Miktarı",
+  "actualAmount": "Gönderilen Miktar",
+  "cycleCount": "Tur Sayısı",
+  "reel": "Kule",
+  "hideTooltip": "Göstergeyi Gizle",
+  "showTooltip": "Göstergeyi Göster",
+  "ISN": "ISN",
+  "materialCode": "Materyal Kodu",
+  "materialName": "Materyal Adı",
+  "programName": "Program Adı",
+  "joborder": "İş Emri",
+  "collectionNo": "Parti Numarası",
+  "process": "İşlem",
+  "theoreticalDuration": "Teorik Süre",
+  "actualDuration": "Gerçekleşen Süre",
+  "machine": "Makine",
+  "deviation": "Sapma",
+  "consumptions": "Tüketimler",
+  "unknownCommand": "bilinmeyen komut",
+  "parallelStepNo": "Paralel Adım Numarası",
+  "stepNo": "Ana Adım Numarası",
+  "parallelStepNoShort": "P",
+  "stepNoShort": "A",
+  "amount": "Miktar",
+  "unit": "Birim",
+  "selectAll": "Tümünü Seç",
+  "dropAll": "Tümünü Bırak",
+  "sec": "sn",
+  "selectReverse": "Seçimi Ters Çevir",
+  "save": "Kaydet",
+  "startingParameters": "Başlatma Parametreleri",
+  "parameter": "Parametre",
+  "showDigitalIOs": "Dijital IO'ları göster",
+  "showCycleTimes": "Tur sürelerini göster",
+  "hide": "Gizle",
+  "updateAxises": "Eksenleri Düzenle",
+  "addRemoveAxis": "Eksen Ekle/Kaldır",
+  "reelDataDialog": "Kule Tur/Zaman Tablosu",
+  "joborderSummary": {
+    "waterType1": "Soğuk Su",
+    "waterType2": "Sıcak Su",
+    "waterType3": "Ozmoz Suyu",
+    "waterType4": "...",
+    "waterTotal": "Toplam Su",
+    "electricity": "Elektrik",
+    "steam": "Buhar",
+    "steamPerWeight": "Kg Buhar / Kg Kumaş",
+    "electricityPerWeight": "Kw / Kg Kumaş",
+    "totalWaterPerWeight": "Lt Su / Kg Kumaş"
+  },
+  "axisSettings": {
+    "_": "Eksen Ayarları",
+    "description": "Düzenlemek istediğiniz Y eksenini seçiniz.",
+    "noAxisAvailableError": "Mevcut eksen bulunamadı."
+  },
+  "joborderSummarySettings": {
+    "_": "İş Emri Özet Raporu Ayarları",
+    "description": "İş emri özet raporunda görünmesini istediğiniz ERP parametrelerini seçiniz."
+  },
+  "panels": {
+    "JobOrderInfo": "İş Emri Bilgi",
+    "StartParameters": "Başlangıç Parametreleri",
+    "WorkingPrograms": "Çalışan",
+    "TheoricPrograms": "Teorik",
+    "AIN": "AIN",
+    "DIN": "DIN",
+    "AOUT": "AOUT",
+    "Counter": "Sayaçlar",
+    "DOUTFunc": "DOUT",
+    "DOUTLock": "DOUT Kilit",
+    "ChartComponent": "Grafik",
+    "Commands": "Komutlar",
+    "Alarms": "Alarmlar",
+    "CycleTimes": "Tur Süreleri"
+  },
+  "joborderTable": {
+    "machineName": "Makine Adı",
+    "model": "Model",
+    "operator": "Operatör",
+    "jobOrder": "İş Emri",
+    "startTime": "Başlangıç Zamanı",
+    "endTime": "Bitiş Zamanı",
+    "theoreticalEndTime": "Teorik Bitiş Zamanı",
+    "cancelTime": "İptal Edilme Zamanı"
+  },
+  "startParameters": {
+    "Kilo": "Kilogram",
+    "Flotte Orani": "Flotte",
+    "Duze": "Düze",
+    "Pompa Hizi": "Pompa Hızı",
+    "Kule Hizi": "Kule Hızı",
+    "Kumastaki Su": "Kumaştaki Su",
+    "AK Boya Orani": "AK Boya Oranı",
+    "Fan Hızı": "Fan Hızı",
+    "Plaiter Hızı": "Plaiter Hızı"
+  },
+
+  "alarmColumns": {
+    "startTime": "Başladı",
+    "endTime": "Bitti",
+    "duration": "Süre",
+    "explanation": "Açıklama",
+    "selected": "Tümü"
+  },
+  "alarmSettings": {
+    "title": "Alarm Tipi Seçenekleri",
+    "message": "Görmek istediğiniz alarm tiplerini seçiniz",
+    "0": "Komut Gecikme Alarmları",
+    "1": "Ekipman Alarmı",
+    "2": "Operatör Uyarı komutlarında uyarı mesajı",
+    "3": "Operatör Uyarı komutlarında Zaman Aşıldı",
+    "4": "Kilitleme",
+    "5": "PLC",
+    "6": "Yazılım",
+    "7": "Kalibrasyon Alarmı",
+    "8": "Akuple",
+    "9": "Manuel",
+    "10": "Durduruldu",
+    "11": "Proses Alarmları"
+  },
+  "inputOutput": {
+    "open": "Açık",
+    "closed": "Kapalı"
+  },
+  "ioSettings": {
+    "showOnNewAxis": "Yeni eksende göster",
+    "showOnExistingAxis": "Mevcut eksende göster",
+    "selectAnAxis": "Axis seçiniz"
+  },
+  "topbar": {
+    "graph": {
+      "_": "Grafik",
+      "print": "Yazdır"
+    },
+    "report": {
+      "_": "Rapor",
+      "batchSum": "Batch Özeti (Grafik)",
+      "joborderSum": "İş Emri Özeti",
+      "joborderSumSettings": "İş Emri Özet Raporu Ayarları",
+      "joborderRecipe": "İş Emri Reçetesi"
+    },
+    "options": {
+      "_": "Seçenekler",
+      "towerColors": "Kule Renkleri",
+      "showLeapGraph": "Tur Grafiğini Göster",
+      "tooltip": "Gösterge",
+      "tooltipOptions": "Gösterge Seçenekleri"
+    },
+    "settings": {
+      "_": "Ayarlar"
+    },
+    "interventions": "Müdaheleler"
+  },
+  "tooltipOptions": {
+    "title": "Gösterge Seçenekleri",
+    "message": "Lütfen göstermek istediğiniz verileri seçiniz",
+    "markedAnalogInputs": "İşaretlenmiş analog girişler",
+    "markedAnalogOutputs": "İşaretlenmiş analog çıkışlar",
+    "markedCalcualtedValues": "İşaretlenmiş hesaplanmış değerler",
+    "selectedTime": "Gösterge konumundaki saat",
+    "currentDuration": "Başlangıçtan gösterge konumuna kadar geçen süre",
+    "activeUser": "Aktif kullanıcı",
+    "activeCommandTimeInfo": "Aktif komutun başlangıç zamanı ve gösterge konumuna kadar geçen süre",
+    "manuelMeasuredValues": "Operatör tarafından ölçülmüş manuel değerler",
+    "timePassed": "Geçen süre"
+  },
+  "axisesVisibilityDialog": {
+    "_": "Eksen Görünürlüğü Ayarları",
+    "description": "Sağ tarafta görünmesini istediğiz eksenleri seçiniz."
+  },
+  "errors": {
+    "cannotShowMoreThanFourAxis": "Aynı anda 4'ten fazla eksen gösterilemez."
+  },
+  "batchSummary": {
+    "_": "Batch Özeti",
+    "machineInfo": "Makine Bilgileri",
+    "machineNo": "Makine No",
+    "fast": "Hızlı",
+    "slow": "Yavaş",
+    "status": "Durum",
+    "machineName": "Makine İsmi",
+    "model": "Model",
+    "operatorName": "Operatör",
+    "theoreticalCharge": "Teorik Şarj",
+    "capacity": "Kapasite",
+    "operator": "Operatör",
+    "joborder": "İş Emri",
+    "startTime": "Başlama",
+    "endTime": "Bitiş",
+    "cancelTime": "İptal",
+    "theoreticalEndTime": "Teorik Bitiş",
+    "actualDuration": "Gerçek Süre",
+    "actualTheoreticalDuration": "Fiili Teorik Süre",
+    "theoreticalDuration": "Teorik Süre",
+    "deviation": "Sapma",
+    "batchStartParameters": "Batch Başlatma Parametreleri",
+    "activeDuration": "Aktif Çalışma",
+    "manuelDuration": "Manuel",
+    "alarmDelay": "Alarm Duruşları",
+    "operatorDelay": "Operatör Gecikme",
+    "programNo": "Program No",
+    "programName": "Program İsmi",
+    "interventions": "Müdaheleler"
+  }
+
+}

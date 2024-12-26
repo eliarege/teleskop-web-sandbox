@@ -20,7 +20,7 @@ defineProps<{
           <span class="container__item-body__text">{{
             secondMessage
           }}</span>
-          <span class="loader" />
+          <span class="spinner" />
         </div>
       </div>
     </div>
@@ -71,7 +71,7 @@ defineProps<{
     }
   }
 }
-.loader {
+.spinner {
   border-color: #212121 #212121 transparent transparent;
   border-width: 3px;
   border-radius: 50%;

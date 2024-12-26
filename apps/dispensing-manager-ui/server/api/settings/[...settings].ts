@@ -230,7 +230,7 @@ router.post('/machine-dispenser-connection-filtered', defineAuthEventHandler(asy
   let machines: any = knex('DYTFMACHINES as N')
     .select(machineParameters)
     .leftJoin('DYTFMACHDISPCONNECTION as M', 'N.MACHINEID', 'M.MACHINEID')
-    .orderBy('N.MACHINEID', 'N.DISPENSERID')
+    .orderBy(['N.MACHINEID', 'N.DISPENSERID'])
   if (body?.length > 0) {
     filtersToKnex(body, machineParameters, machines)
   }
@@ -495,7 +495,7 @@ router.post('/material-dispenser-connection-filtered', defineAuthEventHandler(as
   let materials: any = knex('DYTFMATERIAL as M')
     .select(selectParametersMaterials)
     .leftJoin('DYTFCHEMDISPCONNECTION as C', 'C.CHEMCODE', 'M.MATERIALCODE')
-    .orderBy('M.MATERIALCODE', 'C.DISPENSERID')
+    .orderBy(['M.MATERIALCODE', 'C.DISPENSERID'])
   if (body?.length > 0) {
     filtersToKnex(body, selectParametersMaterials, materials)
   }

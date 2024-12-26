@@ -238,7 +238,7 @@ const programTwoHeader: ProgramInfoHeader = {
 <template>
   <div>
     <div v-if="loading" class="spinner-container">
-      <LoadingSpinner :has-background="false" />
+      <LoadingSpinner />
     </div>
     <div v-else>
       <Main

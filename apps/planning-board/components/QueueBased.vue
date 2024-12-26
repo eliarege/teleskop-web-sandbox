@@ -986,8 +986,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
 </script>
 
 <template>
-  <LoadingSpinner v-if="eventPending" :has-background="false" />
-  <LoadingSpinner v-if="jobOrderUploadLoading" :has-background="true" />
+  <LoadingSpinner v-if="eventPending || jobOrderUploadLoading" />
   <div>
     <div class="w-full h-full relative">
       <div id="main" class="w-full content-height overflow-auto" />
