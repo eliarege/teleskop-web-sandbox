@@ -16,7 +16,8 @@ const tt = (key: string) => toRef(() => t(key))
 
 const feedbackEnabled = computed(() => nuxt.$feedback.isEnabled() === true)
 const feedbackDisableReason = computed(() => nuxt.$feedback.isEnabled())
-const darkMode = useStorage<'auto' | boolean>('theme', 'auto', localStorage)
+const appProps = useAppProps()
+const darkMode = useStorage<'auto' | boolean>(`${appProps.name}.theme`, false, localStorage)
 
 watch(darkMode, () => {
   dark.set(darkMode.value)

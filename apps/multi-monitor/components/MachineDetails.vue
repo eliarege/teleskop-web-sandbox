@@ -434,14 +434,14 @@ const { width: windowWidth } = useWindowSize()
 .log-wrapper {
   grid-area: logs;
   height: -webkit-fill-available;
-  @apply rounded-2xl border border-gray-500 flex justify-between w-full  shadow shadow-gray-700/50 shadow-lg overflow-auto;
+  @apply rounded-2xl border border-gray-500 flex justify-between w-full h-min shadow shadow-gray-700/50 shadow-lg overflow-auto;
 
   ::slotted(.content) {
     background-color: rgb(48, 76, 76);
   }
 
   .log__item {
-    @apply w-full h-full;
+    @apply w-full h-min;
   }
 }
 
