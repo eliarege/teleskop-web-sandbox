@@ -67,6 +67,7 @@ prepare-apps:
         turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
       done
   artifacts:
+    expire_in: 1h
     paths:
       - out-*/
 
