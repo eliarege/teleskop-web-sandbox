@@ -12,7 +12,7 @@ defineProps({
 
 // Color
 function colorMethod(elapsedTime: number, theoreticalTime: number) {
-  return elapsedTime > theoreticalTime ? '#FFDC00' : '#20D618'
+  return elapsedTime > theoreticalTime ? '#ffdd00' : '#15870F'
 }
 </script>
 
