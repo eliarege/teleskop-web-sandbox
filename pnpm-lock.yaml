@@ -18,6 +18,67 @@ importers:
         specifier: 2.2.3
         version: 2.2.3
 
+  apps/archive:
+    dependencies:
+      '@teleskop/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      d3:
+        specifier: 7.9.0
+        version: 7.9.0
+      date-fns:
+        specifier: 4.1.0
+        version: 4.1.0
+      golden-layout:
+        specifier: 2.6.0
+        version: 2.6.0
+      knex:
+        specifier: 3.1.0
+        version: 3.1.0(pg@8.13.1)(tedious@18.6.1)
+      lru-cache:
+        specifier: 11.0.2
+        version: 11.0.2
+      moo:
+        specifier: 0.5.2
+        version: 0.5.2
+      nearley:
+        specifier: 2.20.1
+        version: 2.20.1
+      tedious:
+        specifier: 18.6.1
+        version: 18.6.1
+      zod:
+        specifier: 3.23.8
+        version: 3.23.8
+    devDependencies:
+      '@teleskop/nuxt-base':
+        specifier: workspace:*
+        version: link:../../packages/nuxt-base
+      '@types/nearley':
+        specifier: 2.11.5
+        version: 2.11.5
+      eslint:
+        specifier: 9.14.0
+        version: 9.14.0(jiti@2.4.0)
+      nuxt:
+        specifier: 3.14.159
+        version: 3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.2.3)
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+      vite:
+        specifier: 5.4.11
+        version: 5.4.11(@types/node@22.9.0)(terser@5.36.0)
+      vue:
+        specifier: 3.5.12
+        version: 3.5.12(typescript@5.6.3)
+      vue-router:
+        specifier: 4.4.5
+        version: 4.4.5(vue@3.5.12(typescript@5.6.3))
+      vue-tsc:
+        specifier: 2.1.10
+        version: 2.1.10(typescript@5.6.3)
+
   apps/dispensing-management-systems:
     dependencies:
       '@rollup/plugin-virtual':
@@ -473,6 +534,9 @@ importers:
 
   apps/planning-board-engine:
     dependencies:
+      '@teleskop/keycloak-adapter':
+        specifier: workspace:*
+        version: link:../../packages/keycloak-adapter
       '@teleskop/tbb-ftp-client':
         specifier: workspace:*
         version: link:../../packages/tbb-ftp-client
@@ -924,7 +988,7 @@ importers:
         version: 11.2.0(vue@3.5.12(typescript@5.6.3))
       '@vueuse/nuxt':
         specifier: 11.2.0
-        version: 11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
+        version: 11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
       element-plus:
         specifier: 2.6.3
         version: 2.6.3(vue@3.5.12(typescript@5.6.3))
@@ -5091,6 +5155,9 @@ packages:
     resolution: {integrity: sha512-s3Fq41ZVh7vbbe2PN3nrW7yC7U7MFVc5c98/iTl9c2GawNMKx/J648KQRW6WKkuU8GIbbh2IXfIRQjOZnXcTnw==}
     engines: {node: '>=18'}
 
+  golden-layout@2.6.0:
+    resolution: {integrity: sha512-sIVQCiRWOymHbVD1Aw/T9/ijbPYAVGBlgGYd1N9MRKfcyBNSpjr87Vg9nSHm+RCT8ELrvK8IJYJV0QRJuVUkCQ==}
+
   gopd@1.0.1:
     resolution: {integrity: sha512-d65bNlIadxvpb/A2abVdlqKqV563juRnZ1Wtk6s1sIR8uNsXR70xqIzVqxVf1eTqDunwT2MkczEeaezCKTZhwA==}
 
@@ -5731,6 +5798,10 @@ packages:
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
+
+  lru-cache@11.0.2:
+    resolution: {integrity: sha512-123qHRfJBmo2jXDbo/a5YOQrJoHF/GNQTLzQ5+IdK5pWpceK17yRc6ozlWd25FxvGKQbIUs91fDFkXmDHTKcyA==}
+    engines: {node: 20 || >=22}
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
@@ -10667,7 +10738,7 @@ snapshots:
 
   '@vueuse/metadata@9.13.0': {}
 
-  '@vueuse/nuxt@11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)':
+  '@vueuse/nuxt@11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)':
     dependencies:
       '@nuxt/kit': 3.14.159(magicast@0.3.5)(rollup@4.25.0)(webpack-sources@3.2.3)
       '@vueuse/core': 11.2.0(vue@3.5.12(typescript@5.6.3))
@@ -12793,6 +12864,8 @@ snapshots:
       slash: 5.1.0
       unicorn-magic: 0.1.0
 
+  golden-layout@2.6.0: {}
+
   gopd@1.0.1:
     dependencies:
       get-intrinsic: 1.2.4
@@ -13384,6 +13457,8 @@ snapshots:
   loupe@3.1.2: {}
 
   lru-cache@10.4.3: {}
+
+  lru-cache@11.0.2: {}
 
   lru-cache@5.1.1:
     dependencies:
