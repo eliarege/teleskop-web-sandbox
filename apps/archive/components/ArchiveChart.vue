@@ -103,9 +103,10 @@ const innerRect = computed(() => {
 })
 
 const id = useId()
+const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
 
 const endTime = ref(
-  new Date(props.batch.joborderInfo.endTime || '2024-08-13T16:25:37Z'),
+  new Date(props.batch.joborderInfo.endTime || theoreticalTemperatures[theoreticalTemperatures.length - 1].time),
   // return addMinutes(new Date(startTime.value), 80)
 )
 const xExtent = computed(() => {
@@ -133,7 +134,6 @@ const xScale = computed(() => {
 //   props.batch.theoreticalPrograms,
 //   props.batch.machine,
 // )
-const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
 settingsStore.updateAxis('\'C', {
   max: Math.max(
     settingsStore.axises.get('\'C')?.max,
@@ -625,20 +625,7 @@ const buttons = computed(() =>
         })
       },
     },
-    {
-      icon: 'cancel',
-      onClick: () => {
-        startTime.value = new Date('Tue Aug 13 2024 02:38:06 GMT+0300 (GMT+03:00)')
-        endTime.value = new Date('Tue Aug 13 2024 13:45:26 GMT+0300 (GMT+03:00)')
-      },
-    },
-    {
-      icon: 'done',
-      onClick: () => {
-        startTime.value = new Date('Tue Aug 13 2024 05:38:06 GMT+0300 (GMT+03:00)')
-        endTime.value = new Date('Tue Aug 13 2024 08:38:06 GMT+0300 (GMT+03:00)')
-      },
-    },
+
   ] as Array<QBtnWithTooltip>,
 )
 </script>
