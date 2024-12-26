@@ -260,7 +260,7 @@ onBeforeRouteLeave(() => {
 <template>
   <div class="q-pa-md select-none">
     <div v-if="editor.isLoading" class="loading-container bg-gray-3 bg-opacity-10 dark:bg-dark-2 dark:bg-opacity-10">
-      <LoadingSpinner :has-background="false" />
+      <LoadingSpinner />
     </div>
     <QForm ref="form">
       <DevOnly>

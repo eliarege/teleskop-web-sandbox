@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "h3": "^1.11.1"
+    "h3": "1.13.0"
   },
   "peerDependenciesMeta": {
     "h3": {
