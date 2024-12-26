@@ -44,7 +44,7 @@ function colorMethod(elapsedTime: number, theoreticalTime: number) {
     @apply rounded-2xl bg-gray-500 w-100px h-4 absolute;
   }
   .pg-text {
-    @apply flex absolute text-black z-2 h-4 w-full h-full justify-center items-center;
+    @apply flex absolute text-black z-2 h-min w-full justify-center items-center;
   }
   .pg-bar {
     @apply flex w-full items-center justify-start h-4;
