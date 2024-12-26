@@ -62,7 +62,8 @@ const settingsStore = userSettingsStore()
 const batchDataPromise = response.json().then((data) => {
   if (data.status === 'success') {
     batchData.value = data.data
-    getIncomingValues(batchData.value)
+    if (batchData.value.active)
+      scheduleBatchFetch(batchData.value, 60)
     settingsStore.machineId = batchData.value!.machine.id
     settingsStore.initializeSettings()
   } else {
@@ -71,18 +72,16 @@ const batchDataPromise = response.json().then((data) => {
 })
 await trackTaskProgress()
 
-async function getIncomingValues(batch: DuoRaw<Batch>) {
-  const incomingValues = await $fetch<DuoRaw<BatchValues>>(`/api/batch/${batchKey}/values?since=${batch.lastRecordDate}`)
-  console.log(incomingValues)
-  insertBatchValues(batch, incomingValues)
-  console.log(batch)
-  if (incomingValues.active)
-    setTimeout(() => {
-      getIncomingValues(batch)
-    }, 60 * 1000)
-  else {
-    batch.joborderInfo = await $fetch<BatchInfo>(`/api/batch/${batchKey}/info`)
-  }
+async function scheduleBatchFetch(batch: DuoRaw<Batch>, seconds: number) {
+  setTimeout(async () => {
+    const incomingValues = await $fetch<DuoRaw<BatchValues>>(`/api/batch/${batchKey}/values?since=${batch.lastRecordDate}`)
+    insertBatchValues(batch, incomingValues)
+    if (incomingValues.active) {
+      scheduleBatchFetch(batch, seconds)
+    } else {
+      batch.joborderInfo = await $fetch<BatchInfo>(`/api/batch/${batchKey}/info`)
+    }
+  }, seconds * 1000)
 }
 
 async function trackTaskProgress() {

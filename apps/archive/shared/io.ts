@@ -105,12 +105,12 @@ export function insertDigitalInputValues(digitalInputs: DuoAny<DigitalInputOutpu
   })
 
   for (const di of digitalInputs) {
-    di.ioValues = filterRepeatingDigitalValues(binaryValues.map(div => ({
+    di.ioValues.push(...filterRepeatingDigitalValues(binaryValues.map(div => ({
       time: div.logtime,
       value: div.DI.length > di.ioIndex
         ? Number(div.DI[di.ioIndex])
         : 0,
-    })))
+    }))))
   }
 
   return digitalInputs
@@ -119,18 +119,18 @@ export function insertDigitalInputValues(digitalInputs: DuoAny<DigitalInputOutpu
 export function insertDigitalOutputValues(digitalOutputs: DuoAny<DigitalInputOutputType>[], digitalValues: DuoAny<ArchivedDigitalValue>[]) {
   const binaryValues = digitalValues.map((div) => {
     return {
-      DOF: hexToBinary(div.DI),
+      DOF: hexToBinary(div.DOF),
       logtime: div.logtime,
     }
   })
 
   for (const dof of digitalOutputs) {
-    dof.ioValues = filterRepeatingDigitalValues(binaryValues.map(div => ({
+    dof.ioValues.push(...filterRepeatingDigitalValues(binaryValues.map(div => ({
       time: div.logtime,
       value: div.DOF.length > dof.ioIndex
         ? Number(div.DOF[dof.ioIndex])
         : 0,
-    })))
+    }))))
   }
 
   return digitalOutputs
@@ -139,18 +139,18 @@ export function insertDigitalOutputValues(digitalOutputs: DuoAny<DigitalInputOut
 export function insertDigitalOutputLockValues(digitalOutputLocks: DuoAny<DigitalInputOutputType>[], digitalValues: DuoAny<ArchivedDigitalValue>[]) {
   const binaryValues = digitalValues.map((div) => {
     return {
-      DOL: hexToBinary(div.DI),
+      DOL: hexToBinary(div.DOL),
       logtime: div.logtime,
     }
   })
 
   for (const dol of digitalOutputLocks) {
-    dol.ioValues = filterRepeatingDigitalValues(binaryValues.map(div => ({
+    dol.ioValues.push(...filterRepeatingDigitalValues(binaryValues.map(div => ({
       time: div.logtime,
       value: div.DOL.length > dol.ioIndex
         ? Number(div.DOL[dol.ioIndex])
         : 0,
-    })))
+    }))))
   }
 
   return digitalOutputLocks
@@ -178,6 +178,7 @@ export function insertReelCycleTimes(reels: DuoAny<Reel>[], cycles: DuoAny<Archi
  * Dijital değerlerin bulunduğu array'de tekrarlayan değerleri kaldırır.
  */
 function filterRepeatingDigitalValues(values: DuoAny<DigitalValue>[]): DuoAny<DigitalValue>[] {
+  // return values
   return values.reduce((acc, curr) => {
     const prev = acc[acc.length - 1]
     if (!prev || prev.value !== curr.value) {

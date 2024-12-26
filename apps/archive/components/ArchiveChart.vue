@@ -117,9 +117,6 @@ const xExtent = computed(() => {
     //   ? new Date(props.batch.joborderInfo.endTime)
     //   : joborderEndTime.value,
   ] as [Date, Date]
-  console.log(format(a[0], 'HH:mm:ss'))
-  console.log(format(a[1], 'HH:mm:ss'))
-  console.log(a)
   return a
 })
 
@@ -215,7 +212,11 @@ const digitalDataSet = computed(() => {
       if (setting && setting.selected)
         set.push(io)
     })
-    return set
+    return set.map((io) => {
+      const firstIO = { value: io.ioValues[0].value, time: startTime.value }
+      const lastIO = { value: io.ioValues[io.ioValues.length - 1].value, time: endTime.value }
+      return { ...io, ioValues: [firstIO, ...io.ioValues, lastIO] }
+    })
   } else return []
 })
 
@@ -625,7 +626,6 @@ const buttons = computed(() =>
         })
       },
     },
-
   ] as Array<QBtnWithTooltip>,
 )
 </script>
