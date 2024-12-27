@@ -1,6 +1,7 @@
 import type { SchedulerEventModel } from '@bryntum/schedulerpro'
 import { useStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
+import type { QueueBasedBaseEvent } from '~/shared/queueBased'
 import type { PtLocaleSettings } from '~/shared/types'
 
 export const useSettingStore = defineStore('settings', () => {
@@ -14,6 +15,18 @@ export const useSettingStore = defineStore('settings', () => {
   const machineOrdering = useStorage<number[]>('pt-machineOrdering', [])
 
   const selectedEvent = ref({} as SchedulerEventModel)
+  const migrateSettings = () => {
+    const oldSettings = JSON.parse(localStorage.getItem('pt-settings') || '{}') as PtLocaleSettings
+
+    const migrateText = (text: keyof QueueBasedBaseEvent | (keyof QueueBasedBaseEvent)[]): (keyof QueueBasedBaseEvent)[] => (typeof text === 'string' ? [text] : text)
+
+    oldSettings.completedBatchText = migrateText(oldSettings.completedBatchText)
+    oldSettings.ongoingBatchText = migrateText(oldSettings.ongoingBatchText)
+    oldSettings.plannedBatchText = migrateText(oldSettings.plannedBatchText)
+    localStorage.setItem('pt-settings', JSON.stringify(oldSettings))
+  }
+
+  migrateSettings()
 
   const settings = useStorage('pt-settings', {
     deviationColor: '',
