@@ -20,12 +20,10 @@ export const useSettingStore = defineStore('settings', () => {
 
     const migrateText = (text: keyof QueueBasedBaseEvent | (keyof QueueBasedBaseEvent)[]): (keyof QueueBasedBaseEvent)[] => (typeof text === 'string' ? [text] : text)
 
-    if (oldSettings && typeof oldSettings === 'object') {
-      oldSettings.completedBatchText = migrateText(oldSettings.completedBatchText)
-      oldSettings.ongoingBatchText = migrateText(oldSettings.ongoingBatchText)
-      oldSettings.plannedBatchText = migrateText(oldSettings.plannedBatchText)
-      localStorage.setItem('pt-settings', JSON.stringify(oldSettings))
-    }
+    oldSettings.completedBatchText = migrateText(oldSettings.completedBatchText)
+    oldSettings.ongoingBatchText = migrateText(oldSettings.ongoingBatchText)
+    oldSettings.plannedBatchText = migrateText(oldSettings.plannedBatchText)
+    localStorage.setItem('pt-settings', JSON.stringify(oldSettings))
   }
 
   migrateSettings()
