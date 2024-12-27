@@ -16,7 +16,8 @@ import { addMinutes, addSeconds } from 'date-fns'
 import { io } from 'socket.io-client'
 import { enLocalization, trLocalization } from './localization'
 
-const kc = useKeycloak()
+const nuxtApp = useNuxtApp()
+
 export function sortEventsByDateDesc(events) {
   return [...events].sort((a, b) => a.startDate < b.startDate ? -1 : 1)
 }
@@ -126,7 +127,7 @@ export class QueueDrag extends DragHelper {
     const fabricWeight = context.task.fabricWeight
 
     context.isValidating = true
-    const isValid = await kc.fetch('/api/isValid', {
+    const isValid = await nuxtApp.$keycloak.fetch('/api/isValid', {
       query: { planKey, fabricWeight },
     })
 
@@ -467,7 +468,7 @@ export class TaskStore extends EventStore {
       queueNumber: newQueueNumber,
     }
 
-    await kc.fetch('/api/queueBased/scheduleEvents', {
+    await nuxtApp.$keycloak.fetch('/api/queueBased/scheduleEvents', {
       method: 'PUT',
       body: { previousEventData, newEventData },
     })
@@ -576,7 +577,7 @@ export class QueueSchedule extends SchedulerPro {
         const fabricWeight = context.task.fabricWeight
 
         context.isValidating = true
-        const isValid = await kc.fetch('/api/isValid', {
+        const isValid = await nuxtApp.$keycloak.fetch('/api/isValid', {
           query: { planKey, fabricWeight },
         })
         if (context.context.grabbed && !context.isDropped) {
