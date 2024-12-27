@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { withBase } from 'ufo'
 import type { MergedBatchCommand } from '~/types/archive'
 
 const props = defineProps<{
@@ -11,6 +12,7 @@ const emit = defineEmits<{
 function handleCommandClick(command: MergedBatchCommand) {
   emit('commandClicked', command.startTime)
 }
+const config = useRuntimeConfig()
 </script>
 
 <template>
@@ -35,7 +37,7 @@ function handleCommandClick(command: MergedBatchCommand) {
       </div>
       <div>
         <img
-          :src="`/command-icons/${command.icon}`"
+          :src="withBase(`/command-icons/${command.icon}`, config.app.baseURL)"
           class="w-25 h-12"
         >
       </div>
