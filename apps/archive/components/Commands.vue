@@ -43,12 +43,12 @@ function handleCommandClick(command: MergedBatchCommand) {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
 .q-btn.disabled {
   opacity: 0.35 !important;
 }
-.q-btn--outline {
-  background: rgb(201, 201, 201) !important;
+.q-btn--outline::before {
+  border-color: theme('colors.gray.400');
 }
 .selected-command {
   background: rgba(0, 162, 255, 0.37) !important;

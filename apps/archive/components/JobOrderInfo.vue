@@ -69,7 +69,7 @@ const theoreticalEndTime = computed(() => new Date((new Date(props.jobOrderInfo.
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
 .table {
   width: 100%;
 }
@@ -77,7 +77,7 @@ const theoreticalEndTime = computed(() => new Date((new Date(props.jobOrderInfo.
 .table td {
   text-align: left;
   font-size: inherit;
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid theme('colors.gray.400');
 }
 
 .table-container {

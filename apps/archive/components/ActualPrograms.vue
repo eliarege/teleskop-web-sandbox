@@ -8,7 +8,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="flex w-full gap-2 pt-3">
+  <div class="flex w-full gap-2 pt-3 px-1">
     <div
       v-for="prg of programs"
       :key="prg.programNo"

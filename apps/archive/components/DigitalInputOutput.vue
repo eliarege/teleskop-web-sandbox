@@ -17,7 +17,7 @@ const commandsWithClosestTime = computed(() => {
 </script>
 
 <template>
-  <div class="mt-4 h-full overflow-y-auto">
+  <div class="py-2 h-full overflow-y-auto space-y-0.5 divide-y-1 divide-gray-300">
     <div
       v-for="command in commandsWithClosestTime"
       :key="command.ioIndex"

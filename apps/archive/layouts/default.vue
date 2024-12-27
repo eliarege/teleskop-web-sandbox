@@ -2,7 +2,7 @@
   <QLayout view="hHh lpR fFf">
     <QHeader
       bordered
-      class="bg-black text-white select-none"
+      class="bg-#e1e1e1 text-black select-none"
     >
       <QToolbar class="min-h-unset">
         <QToolbarTitle shrink>

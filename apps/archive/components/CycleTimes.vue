@@ -17,14 +17,13 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="mt-4 overflow-y-auto h-full">
+  <div class="py-2 overflow-y-auto h-full space-y-0.5 divide-y-1 divide-gray-300">
     <div v-for="cycle in cycles" :key="`${cycle.reelNo}reelNo`">
-      <div class="flex items-center flex-nowrap bg-gray-300 mb-1">
+      <div class="flex items-center flex-nowrap mb-1">
         <q-checkbox
-          :model-value="
-            settingsStore.getSetting(`cycleTimes_${cycle.reelNo}`).selected
-          "
-          class="mr-4 w-5 h-5"
+          :model-value="settingsStore.getSetting(`cycleTimes_${cycle.reelNo}`).selected"
+          dense
+          class="mx-2"
           @update:model-value="
             settingsStore.updateSetting(`cycleTimes_${cycle.reelNo}`, {
               selected: $event,
