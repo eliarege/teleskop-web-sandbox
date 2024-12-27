@@ -8,7 +8,7 @@ export const MachineSort = {
 } as const
 
 export const AppList = {
-  archive: 'archive-monitor',
+  archive: 'archive',
   multiMonitor: 'multi-monitor',
   planningBoard: 'planning-board',
   programEditor: 'program-editor',
