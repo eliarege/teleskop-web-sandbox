@@ -87,7 +87,7 @@ export const userSettingsStore = defineStore('settings', () => {
       }
     }
     if (bottomChartVisibilityStatus) {
-      bottomChartVisibilityStatus.value = userSettings.bottomChartVisibilityStatus
+      bottomChartVisibilityStatus.value = userSettings.bottomChartVisibilityStatus || 0
     }
   }
 
