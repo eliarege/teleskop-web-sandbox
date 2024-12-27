@@ -10,6 +10,7 @@ import { interpolateRgb } from 'd3'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind } from '@vueuse/core'
 import { addSeconds, format } from 'date-fns'
+import { withBase } from 'ufo'
 import type { DuoAny, DuoParsed, DuoRaw } from '~/types/utils'
 import type {
   AnalogInputOutputType,
@@ -49,13 +50,14 @@ import { insertBatchValues } from '~/shared/io'
 
 const { t } = useI18n()
 const $q = useQuasar()
+const config = useRuntimeConfig()
 
 const route = useRoute()
 const router = useRouter()
 
 const batchKey = route.params.batchkey
 const selectedDate = ref(new Date('2024-03-06T11:12:28.000Z'))
-const response = await fetch(`/api/batch/${batchKey}`)
+const response = await fetch(withBase(`/api/batch/${batchKey}`, config.app.baseURL))
 const taskId = response.headers.get('Task-ID')
 const batchData = ref<Batch>()
 const settingsStore = userSettingsStore()
