@@ -1,37 +1,37 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
 import type { QTableProps } from 'quasar'
-import { LoadingSpinner } from '@teleskop/ui'
-import { onMounted } from 'vue'
 import type { FilterableTableColumn } from '@teleskop/nuxt-base'
 
 // Call fetchData when component is mounted.
 // For this, we can use the onMounted hook from 'vue'
 
 const { t, d } = useI18n()
+const { loading } = useQuasar()
 
 const externalFilterSlots = useStorage('filterSlots', [], sessionStorage)
 const { data: machines } = await useFetch('/api/machine')
 const rowsNumber = await $fetch('/api/joborder/joborder-count')
 const pagination = ref({ rowsPerPage: 50, page: 1, rowsNumber } as QTableProps['pagination'])
-const visibleLoading = ref(true)
-const joborders = ref([])
+
+const joborders = ref([] as any[])
 async function fetchData() {
-  visibleLoading.value = true
-  const response = await $fetch('/api/joborder/joborders', {
+  loading.show()
+  const response = await $fetch<{ rows: any[], count: number }>('/api/joborder/joborders', {
     method: 'POST',
     body: { pagination: pagination.value, filters: externalFilterSlots.value },
-  }).finally(() => visibleLoading.value = false)
+  }).finally(() => {
+    loading.hide()
+  })
   joborders.value = response.rows
   pagination.value!.rowsNumber = response.count
 }
 
-watch(pagination, async (newPagination) => {
-  visibleLoading.value = true
+watch(pagination, async () => {
+  loading.show()
   await fetchData()
-  visibleLoading.value = false
+  loading.hide()
 })
-// onMounted(async () => await fetchData(pagination.value, externalFilterSlots.value))
 
 const columns = computed(() => [
   {
@@ -109,29 +109,22 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
 
 <template>
   <QPage>
-    <div class="h-100vh">
-      <div class="gap-5">
-        <div v-if="visibleLoading" class="absolute w-full h-full top-1/2 left-1/2 transform -translate-1/2 z-10">
-          <LoadingSpinner />
-        </div>
-        <div class="responsive-flex-container">
-          <FilterableTable
-            v-model:pagination="pagination"
-            v-model:selected="selectedRow"
-            class="responsive-table"
-            disable-search-filter
-            enable-key-strokes
-            dense
-            row-key="batchKey"
-            :rows="joborders"
-            :columns="columns"
-            :filter-slots="externalFilterSlots"
-            @row-dblclick="row => handleRowDblClick(row.batchKey)"
-            @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
-            @update-pagination="pgn => pagination = pgn"
-          />
-        </div>
-      </div>
+    <div class="responsive-flex-container">
+      <FilterableTable
+        v-model:pagination="pagination"
+        v-model:selected="selectedRow"
+        class="responsive-table"
+        disable-search-filter
+        enable-key-strokes
+        dense
+        row-key="batchKey"
+        :rows="joborders"
+        :columns="columns"
+        :filter-slots="externalFilterSlots"
+        @row-dblclick="row => handleRowDblClick(row.batchKey)"
+        @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
+        @update-pagination="pgn => pagination = pgn"
+      />
     </div>
   </QPage>
 </template>
@@ -152,7 +145,7 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
   display: flex;
   overflow-x: hidden;
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - 42px);
   padding: 1rem;
 }
 .responsive-table {

@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   css: [
     'golden-layout/dist/css/goldenlayout-base.css',
-    './assets/goldenlayout-custom-theme.css',
+    'golden-layout/dist/css/themes/goldenlayout-light-theme.css',
   ],
   ssr: false,
   devtools: { enabled: false },
