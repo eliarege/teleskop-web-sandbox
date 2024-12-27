@@ -12,15 +12,14 @@ const emit = defineEmits(['update:setting'])
 
 <template>
   <div
-    class="flex items-center flex-nowrap bg-gray-300 mb-1 "
+    class="flex items-center flex-nowrap"
   >
     <q-checkbox
       :model-value="setting.selected"
-      class="mr-4 w-5 h-5"
+      class="mx-2"
+      dense
       @update:model-value="emit('update:setting', { ...setting, selected: $event })"
     />
-    <!-- @change="triggerAxisSelection()" -->
-
     <q-btn
       v-if="ioType === 'Analog'"
       class="w-5 h-5"

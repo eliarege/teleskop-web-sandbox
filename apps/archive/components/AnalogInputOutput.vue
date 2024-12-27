@@ -24,19 +24,16 @@ function updateSetting(key: string, setting: IOSetting) {
 </script>
 
 <template>
-  <div class="mt-4 overflow-y-auto h-full">
-    <div
+  <div class="py-2 overflow-y-auto h-full space-y-0.5 divide-y-1 divide-gray-300">
+    <IOLine
       v-for="command in commandsWithClosestTime"
       :key="command.ioIndex"
-    >
-      <IOLine
-        :setting="settingsStore.getSetting(`${typeKey}_${command.ioIndex}`)"
-        :command="command"
-        io-type="Analog"
-        :value="`${command.closestIoValue.value.toFixed(2)}`"
-        @update:setting="(setting: IOSetting) => updateSetting(`${typeKey}_${command.ioIndex}`, setting)"
-      />
-    </div>
+      :setting="settingsStore.getSetting(`${typeKey}_${command.ioIndex}`)"
+      :command="command"
+      io-type="Analog"
+      :value="`${command.closestIoValue.value.toFixed(2)}`"
+      @update:setting="(setting: IOSetting) => updateSetting(`${typeKey}_${command.ioIndex}`, setting)"
+    />
   </div>
 </template>
 
