@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import type { IOSetting } from '~/types/archive'
 
-defineProps<{
+const props = defineProps<{
   command: any
   value: any
   setting: IOSetting
   ioType: 'Analog' | 'Digital'
 }>()
-const emit = defineEmits(['update:setting'])
+const emit = defineEmits(['update:setting', 'update:axis'])
+function updateSettingsSelectedAttribute(selected: boolean) {
+  emit('update:setting', { ...props.setting, selected })
+  emit('update:axis', { ...props.setting, selected })
+}
 </script>
 
 <template>
@@ -18,7 +22,7 @@ const emit = defineEmits(['update:setting'])
       :model-value="setting.selected"
       class="mx-2"
       dense
-      @update:model-value="emit('update:setting', { ...setting, selected: $event })"
+      @update:model-value="val => updateSettingsSelectedAttribute(val)"
     />
     <q-btn
       v-if="ioType === 'Analog'"

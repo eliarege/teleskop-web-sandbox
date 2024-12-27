@@ -21,6 +21,10 @@ function updateSetting(key: string, setting: IOSetting) {
   }
   settingsStore.updateSetting(key, setting)
 }
+function updateAxis(key: string, setting: IOSetting) {
+  const axis = settingsStore.axises.get(setting.axis)
+  axis.max = 0
+}
 </script>
 
 <template>
@@ -33,6 +37,7 @@ function updateSetting(key: string, setting: IOSetting) {
       io-type="Analog"
       :value="`${command.closestIoValue.value.toFixed(2)}`"
       @update:setting="(setting: IOSetting) => updateSetting(`${typeKey}_${command.ioIndex}`, setting)"
+      @update:axis="(setting: IOSetting) => updateAxis(`${typeKey}_${command.ioIndex}`, setting)"
     />
   </div>
 </template>

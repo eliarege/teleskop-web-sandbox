@@ -93,20 +93,16 @@ const rows = computed(() => {
       }
       const alarmTypeIncluded = !alarm.alarmType || settingStore.alarmSettings.includes(alarm.alarmType)
       if (alarmTypeIncluded) {
-        // TODO: This should not be addMinutes but some alarms has the same start and end time so IDK what to do
-        // On chart I show these with +10 width
-        const alarmStart = addMinutes(new Date(alarm.startTime), -1)
-        const alarmEnd = addMinutes(new Date(alarm.endTime), 1)
-        if (props.selectedTime > alarmStart && alarmEnd > props.selectedTime)
+        if (props.selectedTime > new Date(alarm.startTime) && (alarm.endTime ? new Date(alarm.endTime) > props.selectedTime : 1))
           return true
       }
       return false
     })
     .map((alarm) => {
       const startTime = d(new Date(alarm.startTime), 'datetime', 'tr')
-      const endTime = d(new Date(alarm.endTime), 'datetime', 'tr')
+      const endTime = alarm.endTime ? d(new Date(alarm.endTime), 'datetime', 'tr') : ''
 
-      const durationMs = new Date(alarm.endTime).getTime() - new Date(alarm.startTime).getTime()
+      const durationMs = new Date(alarm.endTime || '').getTime() - new Date(alarm.startTime).getTime()
       const duration = durationMs > 0 ? formatDuration(durationMs) : 'N/A'
 
       return {

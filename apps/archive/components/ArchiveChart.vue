@@ -237,8 +237,12 @@ const yScales = computed(() => {
     const setting = settingsStore.getSetting(aio.io.settingKey)
     let max = Number(d3Max(aio.io.ioValues, v => v.value))
     const axis = settingsStore.axises.get(setting.axis || 'undef')
-    if (axis)
-      max = axis.max
+    if (axis) {
+      if (max > axis.max)
+        axis.max = max
+      else
+        max = axis.max
+    }
     return scaleLinear()
       .range([innerRect.value.height * chartHeightMultiplier, 0])
       .domain([0, max * 1.1])
@@ -349,7 +353,7 @@ function updateYAxises() {
           .domain([0, axis.max * 1.1]),
       ).ticks(yAxisTickCount.value),
     )
-    customizeYAxis(yAxisesRight.value.get(key), true, axis.color)
+    customizeYAxis(yAxisesRight.value.get(key), true, 'transparent')
   })
   // yScales.value.forEach((yScale, index) => {
   //   if (index && dataSet.value[index].axis) {
@@ -429,7 +433,7 @@ const uniqueBars = ref(
   [] as {
     alarmNo: number
     color: any
-    value: { startTime: string, endTime: string }[]
+    value: { startTime: string | Date, endTime: string | Date }[]
   }[],
 )
 props.batch.alarms.forEach((alarm) => {
@@ -440,12 +444,12 @@ props.batch.alarms.forEach((alarm) => {
     uniqueBars.value.push({
       alarmNo: alarm.alarmNo,
       color: '',
-      value: [{ startTime: alarm.startTime, endTime: alarm.endTime }],
+      value: [{ startTime: alarm.startTime, endTime: alarm.endTime || new Date() }],
     })
   } else {
     uniqueBars.value[uniqueIndex].value.push({
       startTime: alarm.startTime,
-      endTime: alarm.endTime,
+      endTime: alarm.endTime || new Date(),
     })
   }
 })
