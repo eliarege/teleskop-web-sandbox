@@ -42,6 +42,7 @@ The `scope` provides additional contextual information.
 
 | Scope | Application                     |
 | ----- | ------------------------------- |
+| AR    | `archive`                       |
 | DMS   | `dispensing-management-systems` |
 | DM    | `dispensing-manager-ui`         |
 | MS    | `machine-status`                |
@@ -50,7 +51,6 @@ The `scope` provides additional contextual information.
 | PB    | `planning-board`                |
 | PBE   | `planning-board-engine`         |
 | PE    | `program-editor`                |
-| AR    | `Archive`                       |
 
 Other apps and packages should always use full name for scopes.
 
