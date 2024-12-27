@@ -28,7 +28,7 @@ const config = useRuntimeConfig()
       @click="handleCommandClick(command)"
     >
       <div class="w-full text-left pl-1 whitespace-nowrap overflow-x-hidden text-xs">
-        {{ command.theoreticalStepNo % 1 > 0 ? `${command.theoreticalStepNo}-${command.theoreticalStepNo + 1}` : command.theoreticalStepNo + 1 }} -
+        {{ command.theoreticalStepNo % 1 > 0 ? `${Math.ceil(command.theoreticalStepNo)}-${Math.ceil(command.theoreticalStepNo + 1)}` : command.theoreticalStepNo + 1 }} -
         {{ `(${command.commandNo}) ${command.commandName}` }}
         <q-tooltip>
           {{ command.theoreticalStepNo % 1 > 0 ? `${command.theoreticalStepNo}-${command.theoreticalStepNo + 1}` : command.theoreticalStepNo + 1 }} -
