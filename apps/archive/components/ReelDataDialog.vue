@@ -49,7 +49,7 @@ const formattedRows = computed(() => {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" persistent>
+  <q-dialog ref="dialogRef">
     <q-card>
       <q-card-section>
         <div>

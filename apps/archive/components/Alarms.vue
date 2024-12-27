@@ -42,7 +42,6 @@ function toggleAlarmsettings() {
       items: alarmOptions.value,
     },
     cancel: true,
-    persistent: true,
   }).onOk((data) => {
     settingStore.updateAlarmSettings(data)
   })

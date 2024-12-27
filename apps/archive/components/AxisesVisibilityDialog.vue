@@ -12,7 +12,6 @@ const settingsStore = userSettingsStore()
 <template>
   <q-dialog
     ref="dialogRef"
-    persistent
   >
     <q-card>
       <q-card-section>

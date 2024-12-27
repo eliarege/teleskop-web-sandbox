@@ -566,7 +566,6 @@ function showTooltipOptionDialog() {
       items: tooltipOptions.value,
     },
     cancel: true,
-    persistent: true,
   }).onOk((data) => {
     settingsStore.updateTooltipSettings(data)
   })
