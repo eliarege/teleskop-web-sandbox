@@ -33,17 +33,16 @@ const appList = parseAppList(config.public.appList).map((app) => {
         <QBtn
           v-for="(app, index) in appList"
           :key="index"
-          class="topbar-app-grid__btn p-2 rounded-lg h-20 max-w-20"
+          class="topbar-app-grid__btn py-2 px-5 rounded-lg h-20 max-w-20"
           dense
           flat
           no-caps
           @click="navigateTo(app.url, { external: true })"
         >
           <QImg
-            class="inline-block"
+            class="block"
             width="2rem"
             height="2rem"
-            t
             :src="app.img"
           />
           <div class="whitespace-wrap leading-4 text-xs pt-1">
