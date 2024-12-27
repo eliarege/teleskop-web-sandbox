@@ -155,17 +155,15 @@ function setAxisForAnalogSettings(
   if (command.calibUnit && !settingsStore.units.includes(command.calibUnit))
     settingsStore.units.push(command.calibUnit)
   const axis = settingsStore.axises.get(command.calibUnit)
-  const commandMax = command.ioValues
-    .map(io => io.value)
-    .reduce((a, b) => Math.max(a, b), Number.NEGATIVE_INFINITY)
   if (axis) {
-    axis.max = Math.max(axis.max, commandMax)
-    axis.ioKeys.push(`${type}_${command.ioIndex}`)
+    const commandKey = `${type}_${command.ioIndex}`
+    if (!axis.ioKeys.includes(commandKey))
+      axis.ioKeys.push(commandKey)
   } else {
     settingsStore.axises.set(command.calibUnit || 'undef', {
       color: '#FFFFFF',
       unit: command.calibUnit || 'undef',
-      max: commandMax,
+      max: 0,
       min: 0,
       ioKeys: [`${type}_${command.ioIndex}`],
       visible: false,
