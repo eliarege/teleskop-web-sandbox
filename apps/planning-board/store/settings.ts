@@ -16,7 +16,7 @@ export const useSettingStore = defineStore('settings', () => {
 
   const selectedEvent = ref({} as SchedulerEventModel)
 
-  const settings = useStorage('pt-settings', {
+  const settings = useStorage('planning-board-settings', {
     deviationColor: '',
     completedBatchColor: '#007efc',
     completedBatchText: ['jobOrder'],

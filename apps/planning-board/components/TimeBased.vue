@@ -48,7 +48,7 @@ const showModal = reactive({
   rule: false,
   settings: false,
 })
-const archiveDays = localStorage.getItem('pt-settings')
+const archiveDays = localStorage.getItem('planning-board-settings')
 
 const { data: machines, refresh: machineRefresh } = await useAuthFetch('/api/machineList')
 const { data: events, refresh: plannedRefresh } = await useAuthFetch('/api/timeBased/plannedEvents', {

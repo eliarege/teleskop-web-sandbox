@@ -354,7 +354,7 @@ export class TimeTask extends EventModel {
   static $name = 'Task'
 
   get eventColor() {
-    const ptSettings = JSON.parse(localStorage.getItem('pt-settings'))
+    const ptSettings = JSON.parse(localStorage.getItem('planning-board-settings'))
     const completedBatchSettings = ptSettings.completedBatch
     const ongoingBatchBatchSettings = ptSettings.ongoingBatch
     const plannedBatchBatchSettings = ptSettings.plannedBatch
