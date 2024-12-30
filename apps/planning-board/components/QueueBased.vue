@@ -879,6 +879,9 @@ onMounted(async () => {
       const targetEventRecord = schedule.resolveEventRecord(target)
       let newEvent
       if (target && valid) {
+        if (!machine)
+          return
+
         task.originalData.machineId = machine.id
         const currentEvents = sortEventsByDateDesc(machine.events.filter((ev => ev.eventType === 'planned')))
         if (targetEventRecord) {
@@ -1079,5 +1082,8 @@ div[bgGreen] {
 
 .b-task-percent-bar-outer {
   @apply !rounded-9px !overflow-hidden e-border;
+}
+.noClick {
+  pointer-events: none;
 }
 </style>

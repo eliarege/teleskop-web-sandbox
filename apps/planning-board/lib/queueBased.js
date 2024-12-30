@@ -149,7 +149,7 @@ export class QueueDrag extends DragHelper {
         clippedBy: [schedule.timeAxisSubGridElement, schedule.bodyContainer],
         forElement: context.element,
 
-        cls: 'b-popup b-sch-event-tooltip',
+        cls: 'b-popup b-sch-event-tooltip noClick',
       })
     }
     if (context.grabbed) {
@@ -172,17 +172,19 @@ export class QueueDrag extends DragHelper {
       event.offsetX,
       event.offsetY,
     ])
+    // used in onDrop
+    context.machine = machine
     const startDate = schedule.getDateFromCoordinate(
       coordinate,
       'round',
       false,
     )
-    context.machine = machine
+
     if (machine) {
       const currentMachineId = machine.id
       prevMachineId = currentMachineId
       endDate = startDate && DateHelper.add(startDate, task.originalData.theoreticalDuration, 'seconds')
-    }
+    } else return
     const eventStartDate = schedule.getDateFromCoordinate(context.clientX, 'round', false)
     const targetMachineEvents = machine && machine.events
       ? machine.events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
