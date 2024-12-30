@@ -599,13 +599,40 @@ export class QueueSchedule extends SchedulerPro {
           domEvent.offsetX,
           domEvent.offsetY,
         ])
+        let previousEvent = null
+        let nextEvent = null
+
+        const targetMachineEvents = machine && machine.events
+          ? machine.events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+          : []
+
+        for (let i = 0; i < targetMachineEvents.length - 1; i++) {
+          const currentEvent = targetMachineEvents[i]
+          const nextEventCandidate = targetMachineEvents[i + 1]
+
+          if (new Date(currentEvent.startDate) <= new Date(eventStartDate)
+            && new Date(eventStartDate) < new Date(nextEventCandidate.startDate)) {
+            previousEvent = currentEvent
+            nextEvent = nextEventCandidate
+            break
+          }
+        }
+        if (targetMachineEvents.length > 0) {
+          if (!previousEvent && !nextEvent) {
+            if (new Date(eventStartDate) < new Date(targetMachineEvents[0].startDate)) {
+              nextEvent = targetMachineEvents[0]
+            } else if (new Date(eventStartDate) >= new Date(targetMachineEvents[targetMachineEvents.length - 1].startDate)) {
+              previousEvent = targetMachineEvents[targetMachineEvents.length - 1]
+            }
+          }
+        }
         if (machine) {
           const currentMachineId = machine.id
           const theoreticalDuration = context.theoreticalDuration?.find(a => a.machineId === currentMachineId.theoreticalDuration) || 28800
           prevMachineId = currentMachineId
           endDate = addSeconds(startDate, theoreticalDuration || 28800)
         }
-        const target = context.targetEventRecord
+        const target = context.targetEventRecord || previousEvent
         context.valid = !isValidating
         && Boolean(startDate && machine)
         && target !== null
