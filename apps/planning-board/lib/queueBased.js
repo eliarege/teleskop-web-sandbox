@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from '@bryntum/schedulerpro'
 
-import { addMinutes, addSeconds } from 'date-fns'
+import { addMinutes, addSeconds, differenceInMinutes } from 'date-fns'
 import { io } from 'socket.io-client'
 import { enLocalization, trLocalization } from './localization'
 
@@ -218,7 +218,8 @@ export class QueueDrag extends DragHelper {
     context.isValid = !isValidating
     && Boolean(startDate && machine)
     && target !== null
-    && target.eventType !== 'finished'
+    // eventType finished olduğu zaman eventin ne zaman bittiğine bakıp eğer yakın zamanda bittiyse eventi başa ekliyoruz
+    && (target.eventType !== 'finished' ? true : differenceInMinutes(target.endTime, new Date()) <= 30)
     && validation.find(a => a.machineId === machine.id)?.valid === true
 
     task.startDate = startDate
@@ -608,11 +609,11 @@ export class QueueSchedule extends SchedulerPro {
           endDate = addSeconds(startDate, theoreticalDuration || 28800)
         }
         const target = context.targetEventRecord
-
         context.valid = !isValidating
         && Boolean(startDate && machine)
         && target !== null
-        && target.eventType !== 'finished'
+        // eventType finished olduğu zaman eventin ne zaman bittiğine bakıp eğer yakın zamanda bittiyse eventi başa ekliyoruz
+        && (target.eventType !== 'finished' ? true : differenceInMinutes(target.endTime, new Date()) <= 30)
         && validation.find(a => a.machineId === machine.id)?.valid === true
       },
       async onEventDrop({ eventRecords, context, targetEventRecord, resourceRecord, targetResourceRecord }) {
