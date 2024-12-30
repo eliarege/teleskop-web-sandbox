@@ -217,7 +217,6 @@ export class QueueDrag extends DragHelper {
     context.isValid = !isValidating
     && Boolean(startDate && machine)
     && target !== null
-    // eventType finished olduğu zaman eventin ne zaman bittiğine bakıp eğer yakın zamanda bittiyse eventi başa ekliyoruz
     && validation.find(a => a.machineId === machine.id)?.valid === true
 
     task.startDate = startDate
@@ -610,7 +609,6 @@ export class QueueSchedule extends SchedulerPro {
         context.valid = !isValidating
         && Boolean(startDate && machine)
         && target !== null
-        // eventType finished olduğu zaman eventin ne zaman bittiğine bakıp eğer yakın zamanda bittiyse eventi başa ekliyoruz
         && validation.find(a => a.machineId === machine.id)?.valid === true
       },
       async onEventDrop({ eventRecords, context, targetEventRecord, resourceRecord, targetResourceRecord }) {
