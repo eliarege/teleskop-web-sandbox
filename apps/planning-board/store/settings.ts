@@ -15,18 +15,6 @@ export const useSettingStore = defineStore('settings', () => {
   const machineOrdering = useStorage<number[]>('pt-machineOrdering', [])
 
   const selectedEvent = ref({} as SchedulerEventModel)
-  const migrateSettings = () => {
-    const oldSettings = JSON.parse(localStorage.getItem('pt-settings') || '{}') as PtLocaleSettings
-
-    const migrateText = (text: keyof QueueBasedBaseEvent | (keyof QueueBasedBaseEvent)[]): (keyof QueueBasedBaseEvent)[] => (typeof text === 'string' ? [text] : text)
-
-    oldSettings.completedBatchText = migrateText(oldSettings.completedBatchText)
-    oldSettings.ongoingBatchText = migrateText(oldSettings.ongoingBatchText)
-    oldSettings.plannedBatchText = migrateText(oldSettings.plannedBatchText)
-    localStorage.setItem('pt-settings', JSON.stringify(oldSettings))
-  }
-
-  migrateSettings()
 
   const settings = useStorage('pt-settings', {
     deviationColor: '',
@@ -41,6 +29,16 @@ export const useSettingStore = defineStore('settings', () => {
     plannedBatchFabricColor: false,
     showStops: { show: false, color: '#d61515' },
   } as PtLocaleSettings)
+
+  const migrateSettings = () => {
+    const toArray = (text: keyof QueueBasedBaseEvent | (keyof QueueBasedBaseEvent)[]): (keyof QueueBasedBaseEvent)[] => (typeof text === 'string' ? [text] : text)
+
+    settings.value.completedBatchText = toArray(settings.value.completedBatchText)
+    settings.value.ongoingBatchText = toArray(settings.value.ongoingBatchText)
+    settings.value.plannedBatchText = toArray(settings.value.plannedBatchText)
+  }
+
+  migrateSettings()
 
   return {
     startDate,
