@@ -14,7 +14,7 @@ const selectParameters = {
   cancelTime: db.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , B.CANCELTIME)`),
   theoreticalProgramNoList: 'B.PROGRAMNOLIST',
 }
-export default defineAuthEventHandler(async (event) => {
+export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const knexInstance: any = db('BADATA as B')
 
