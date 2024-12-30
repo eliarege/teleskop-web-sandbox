@@ -606,6 +606,7 @@ export class QueueSchedule extends SchedulerPro {
           ? machine.events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
           : []
 
+        const eventStartDate = this.getDateFromCoordinate(context.clientX, 'round', false)
         for (let i = 0; i < targetMachineEvents.length - 1; i++) {
           const currentEvent = targetMachineEvents[i]
           const nextEventCandidate = targetMachineEvents[i + 1]
