@@ -17,6 +17,9 @@ export default defineNuxtConfig({
     teleskopDatabaseUrl: '',
     teleskopArchiveServerUrl: '',
     teleskopTimezoneOffset: -180,
+    public: {
+      kcClientId: 'archive'
+    }
   },
   i18n: {
     lazy: true,
