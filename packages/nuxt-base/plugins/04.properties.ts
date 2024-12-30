@@ -1,5 +1,5 @@
 import { useStorage } from '@vueuse/core'
-import type { AppProperties } from '~/types'
+import type { AppProperties } from '../types'
 
 export default defineNuxtPlugin(async () => {
   const { dark } = useQuasar()

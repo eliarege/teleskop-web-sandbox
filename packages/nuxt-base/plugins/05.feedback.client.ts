@@ -1,5 +1,5 @@
 import type { DialogChainObject } from 'quasar'
-import FeedbackDialog from '~/components/feedback/FeedbackDialog.vue'
+import FeedbackDialog from '../components/feedback/FeedbackDialog.vue'
 
 export default defineNuxtPlugin(() => {
   const { dialog, notify } = useQuasar()

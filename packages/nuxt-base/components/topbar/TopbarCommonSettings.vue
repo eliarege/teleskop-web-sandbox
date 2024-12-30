@@ -2,7 +2,7 @@
 import type { LocaleObject } from '@nuxtjs/i18n'
 import { useStorage } from '@vueuse/core'
 import AppAboutDialog from '../AppAboutDialog.vue'
-import type { TopbarMenuItem } from '~/types'
+import type { TopbarMenuItem } from '../../types'
 
 const props = defineProps<{
   extraItems?: TopbarMenuItem[]

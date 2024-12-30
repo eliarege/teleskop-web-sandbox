@@ -5,7 +5,7 @@ import process from 'node:process'
 import prettyBytes from 'pretty-bytes'
 import nodemailer, { type SendMailOptions } from 'nodemailer'
 import { createError } from 'h3'
-import type { Feedback } from '~/types'
+import type { Feedback } from '../../types'
 
 // TODO: Body validation
 export default defineAuthEventHandler(async (event) => {

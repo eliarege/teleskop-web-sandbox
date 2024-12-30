@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TopbarMenuItem, TopbarMenuProps } from '~/types'
+import type { TopbarMenuItem, TopbarMenuProps } from '../../types'
 
 const props = withDefaults(defineProps<TopbarMenuProps>(), {
   anchor: 'bottom left',

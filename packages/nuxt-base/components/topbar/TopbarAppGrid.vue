@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { withBase } from 'ufo'
-import { parseAppList } from '~/utils/base'
+import { parseAppList } from '../../utils/base'
 
 const config = useRuntimeConfig()
 const { t } = useI18n()

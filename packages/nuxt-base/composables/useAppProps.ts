@@ -1,4 +1,4 @@
-import type { AppProperties } from '~/types'
+import type { AppProperties } from '../types'
 
 /** Return read-only details about the app */
 export function useAppProps() {

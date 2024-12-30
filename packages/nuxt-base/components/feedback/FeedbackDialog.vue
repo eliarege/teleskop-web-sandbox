@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
 import type { FetchError } from 'ofetch'
+import { parseAppList } from '../../utils/base'
+import type { Feedback, FeedbackModel } from '../../types'
+import { getBrowserInfo, getOSInfo } from '../../utils/userAgent'
+import { useAppProps } from '../../composables/useAppProps'
+import { convertElementToCanvas } from '../../utils/html2canvas'
 import type { Rect } from './FeedbackScreenshotEditor.vue'
-import { parseAppList } from '~/utils/base'
-import type { Feedback, FeedbackModel } from '~/types'
-import { getBrowserInfo, getOSInfo } from '~/utils/userAgent'
-import { useAppProps } from '~/composables/useAppProps'
-import { convertElementToCanvas } from '~/utils/html2canvas'
 
 defineEmits([...useDialogPluginComponent.emits])
 

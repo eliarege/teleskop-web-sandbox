@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableProps } from 'quasar'
-import { useAppProps } from '~/composables/useAppProps'
+import { useAppProps } from '../composables/useAppProps'
 
 defineEmits([...useDialogPluginComponent.emits])
 
