@@ -1,7 +1,7 @@
 import type { SchedulerPro } from '@bryntum/schedulerpro'
 import { DateHelper } from '@bryntum/schedulerpro'
 
-const kc = useKeycloak()
+const nuxtApp = useNuxtApp()
 export function decompressJson(data: { columns: string[], values: any[][] }) {
   const { columns, values } = data
   return values.map(v =>
@@ -30,11 +30,11 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
   const endMinuteRotation = (eventRecord.endDate.getMinutes() + eventRecord.endDate.getSeconds() / 60) * 6
   const endHourRotation = (eventRecord.endDate.getHours() % 12 + eventRecord.endDate.getMinutes() / 60) * 30
   if (eventRecord.eventType !== 'stop') {
-    const parameters: any[] = await kc.fetch('/api/tootlipParameters', {
+    const parameters: any[] = await nuxtApp.$keycloak.fetch('/api/tootlipParameters', {
       query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
     })
     const parameterValues = parameters.map(param => `${param.paramName}: ${param.value}`).join('<br>')
-    const notes = await kc.fetch('/api/note/getNote', {
+    const notes = await nuxtApp.$keycloak.fetch('/api/note/getNote', {
       query: { jobOrder: eventRecord.originalData.jobOrder },
     })
     const screenNotes = notes.filter(n => n.showOnScreen === true).map(a => a.note)
