@@ -49,7 +49,17 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const selectedTime = defineModel<Date>({ required: true })
 const settingsStore = userSettingsStore()
-const startTime = ref(new Date(props.batch.joborderInfo.startTime)) // props.batch.joborderInfo.startTime
+const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
+const startTime = ref(new Date(props.batch.joborderInfo.startTime))
+function getLastDate() {
+  const theoreticalLastDate = theoreticalTemperatures[theoreticalTemperatures.length - 1].time
+  const lastRecordDate = props.batch.lastRecordDate
+  return lastRecordDate > theoreticalLastDate ? lastRecordDate : theoreticalLastDate
+}
+const endTime = ref(
+  new Date(props.batch.joborderInfo.endTime || getLastDate()),
+  // return addMinutes(new Date(startTime.value), 80)
+)
 const chartEl = ref<HTMLElement>()
 const xAxisEl = ref<SVGGElement>()
 const reelsXAxisEl = ref<SVGGElement>()
@@ -103,12 +113,7 @@ const innerRect = computed(() => {
 })
 
 const id = useId()
-const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
 
-const endTime = ref(
-  new Date(props.batch.joborderInfo.endTime || theoreticalTemperatures[theoreticalTemperatures.length - 1].time),
-  // return addMinutes(new Date(startTime.value), 80)
-)
 const xExtent = computed(() => {
   const a = [
     new Date(startTime.value),
