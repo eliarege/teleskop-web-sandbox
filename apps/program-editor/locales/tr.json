@@ -443,6 +443,16 @@
     "discard": "Geri Al",
     "cancel": "İptal"
   },
+  "unsavedChanges": {
+    "title": "Kaydedilmemiş Değişiklikler",
+    "message": "Kaydedilmemiş değişiklikleriniz var. Ne yapmak istersiniz?",
+    "buttons": {
+      "revert": "Geri Al",
+      "discard": "Yok Say ve Devam Et",
+      "save": "Kaydet ve Devam Et",
+      "cancel": "İptal"
+    }
+  },
   "moveParallelStep": {
     "title": "Paralel Adımı Tası",
     "message": "Paralel adımı tasımak istediğinizden emin misiniz?",

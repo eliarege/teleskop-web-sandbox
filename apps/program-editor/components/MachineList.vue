@@ -24,7 +24,7 @@ async function onUpdateSelected(selection: string) {
     const id = Number.parseInt(selection.split('-')[1])
     const hasChanged = editor.hasProgramChanged()
     if (hasChanged)
-      $commandManager.executeCommand('discardChanges', { $q }, id)
+      $commandManager.executeCommand('unsavedChanges', { $q }, id)
     else
       await editor.changeMachine(id)
   } else {

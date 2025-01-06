@@ -21,6 +21,7 @@ import TBDiscardChangesDialog from '~/components/TBDiscardChangesDialog.vue'
 import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
 import TBCommandDetailDialog from '~/components/TBCommandDetailDialog.vue'
 import CMMoveParallelStepDialog from '~/components/CMMoveParallelStepDialog.vue'
+import TBUnsavedChangesDialog from '~/components/TBUnsavedChangesDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -67,7 +68,8 @@ export interface RegisteredCommands {
   stepCommandGraph: [ctx: any]
   newProgram: [ctx: any]
   saveAsProgram: [ctx: any]
-  discardChanges: [ctx: any, machineId?: number]
+  discardChanges: [ctx: any]
+  unsavedChanges: [ctx: any, machineId?: number]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, machineId: number, commandNo: number]
   moveParallelStep: [ctx: any, commandNo: number, programCommand: ProgramStepCommand]
@@ -563,7 +565,7 @@ registerCommand(() => {
 registerCommand(() => {
   return {
     name: 'discardChanges',
-    execute(ctx: any, machineId: number) {
+    execute(ctx: any) {
       ctx.$q.dialog({
         component: TBDiscardChangesDialog,
       }).onOk(async () => {
@@ -572,9 +574,37 @@ registerCommand(() => {
         await nextTick()
         editor.program = klona(editor.originalProgram)
         editor.selectedSteps = []
+      })
+      return true
+    },
+  }
+})
 
-        if (machineId) {
-          await editor.changeMachine(machineId)
+registerCommand(() => {
+  return {
+    name: 'unsavedChanges',
+    execute(ctx: any, machineId: number) {
+      ctx.$q.dialog({
+        component: TBUnsavedChangesDialog,
+      }).onOk(async (type: string) => {
+        const editor = useEditorStore()
+
+        if (type === 'save') {
+          const saved = await editor.onSubmit()
+
+          if (saved)
+            if (machineId) {
+              await editor.changeMachine(machineId)
+            }
+        } else if (type === 'discard') {
+          editor.program = editor.createEmptyProgram()
+          await nextTick()
+          editor.program = klona(editor.originalProgram)
+          editor.selectedSteps = []
+
+          if (machineId) {
+            await editor.changeMachine(machineId)
+          }
         }
       })
       return true

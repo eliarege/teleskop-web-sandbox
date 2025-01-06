@@ -249,7 +249,7 @@ editor.isLoading = false
 onBeforeRouteLeave(() => {
   const hasChanged = editor.hasProgramChanged()
   if (hasChanged) {
-    $commandManager.executeCommand('discardChanges', { $q })
+    $commandManager.executeCommand('unsavedChanges', { $q })
     return false
   } else {
     return true

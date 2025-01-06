@@ -402,6 +402,7 @@ export const useEditorStore = defineStore('editor', () => {
             notifySuccess(t('saveProgram.success'))
           } else {
             notifyError(t('saveProgram.fail'))
+            isLoading.value = false
             return false
           }
         }
@@ -769,6 +770,10 @@ export const useEditorStore = defineStore('editor', () => {
           program: newProgram,
         },
       })
+
+      const hasChanged = hasProgramChanged()
+      if (hasChanged)
+        return false
 
       if (redirect)
         navigateTo(`/machine/${newProgram.machineId}/program/${newProgram.programNo}`)

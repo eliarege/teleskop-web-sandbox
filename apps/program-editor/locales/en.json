@@ -443,6 +443,15 @@
     "discard": "Discard",
     "cancel": "Cancel"
   },
+  "unsavedChanges": {
+    "title": "Unsaved Changes",
+    "message": "You have unsaved changes. What would you like to do?",
+    "buttons": {
+      "discard": "Discard and Continue",
+      "save": "Save and Continue",
+      "cancel": "Cancel"
+    }
+  },
   "moveParallelStep": {
     "title": "Move Parallel Step",
     "message": "Are you sure you want to move parallel step?",
