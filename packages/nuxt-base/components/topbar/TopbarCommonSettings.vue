@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { LocaleObject } from '@nuxtjs/i18n'
-import { useStorage } from '@vueuse/core'
+import { StorageSerializers, useStorage } from '@vueuse/core'
 import AppAboutDialog from '../AppAboutDialog.vue'
 import type { TopbarMenuItem } from '../../types'
 
@@ -17,7 +17,9 @@ const tt = (key: string) => toRef(() => t(key))
 const feedbackEnabled = computed(() => nuxt.$feedback.isEnabled() === true)
 const feedbackDisableReason = computed(() => nuxt.$feedback.isEnabled())
 const appProps = useAppProps()
-const darkMode = useStorage<'auto' | boolean>(`${appProps.name}.theme`, false, localStorage)
+const darkMode = useStorage<'auto' | boolean>(`${appProps.name}.theme`, false, localStorage, {
+  serializer: StorageSerializers.any,
+})
 
 watch(darkMode, () => {
   dark.set(darkMode.value)
