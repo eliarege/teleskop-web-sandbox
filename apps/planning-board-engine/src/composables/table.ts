@@ -6,11 +6,11 @@ export async function createPtColumnsTable(knex: Knex) {
     const tableExists = await knex.schema.hasTable('PTCOLUMNS')
 
     if (!tableExists) {
-      const values = await knex('DYBFBATCHPLANPARAMETERS')
-        .distinct('PARAMSTRING', 'BATCHPARAMETERID')
-        .where('PARAMSTRING', '<>', '')
-        .select()
-        .orderBy('BATCHPARAMETERID', 'asc')
+      const values = await knex('DYBFBATCHPLANPARAMETERS as d')
+        .distinct('d.PARAMSTRING', 'd.BATCHPARAMETERID')
+        .join('BADATA as b', 'd.PLANKEY', 'b.PLANKEY')
+        .where('d.PARAMSTRING', '<>', '')
+        .orderBy('d.BATCHPARAMETERID', 'asc')
         .timeout(30_000)
 
       await knex.schema.createTable('PTCOLUMNS', (table) => {
