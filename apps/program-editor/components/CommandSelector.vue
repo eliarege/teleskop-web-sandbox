@@ -144,6 +144,10 @@ function updateStepCommand(commandNo: number, programCommand: ProgramStepCommand
   if (isMainCommand === CommandType.PARALLEL && !isLastStep && isNewCommand)
     $commandManager.executeCommand('moveParallelStep', { $q }, commandNo, programCommand)
 }
+
+onUnmounted(() => {
+  editor.errorIds.delete(id)
+})
 </script>
 
 <template>
