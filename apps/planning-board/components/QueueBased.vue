@@ -359,6 +359,9 @@ watch(() => store.settings.showStops.show, async () => {
 })
 
 function initialGridColumns() {
+  if (modifiedUnscheduledEvents.value.length < 1)
+    return
+
   const columnNames = Object.keys(modifiedUnscheduledEvents.value[0].erpParameters)
   for (let i = 0; i < columnNames.length; i++) {
     const name = columnNames[i]
@@ -823,6 +826,11 @@ onMounted(async () => {
       htmlEncode: false,
       minWidth: 150,
       renderer: (data: any) => `${data.record.name}`,
+    }, {
+      field: 'recordTime',
+      type: 'date',
+      text: 'L{jobOrderDate}',
+      flex: 1,
     }, {
       type: 'duration',
       minWidth: 100,

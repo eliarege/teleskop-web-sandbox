@@ -15,6 +15,7 @@ export const enLocalization = {
     machine: 'Machine Name',
     unassign: 'Unassigned Job Orders',
     scrollToEvent: 'Scroll To Job Order',
+    jobOrderDate: 'Creation Date',
   },
 }
 
@@ -35,5 +36,6 @@ export const trLocalization = {
     machine: 'Makine İsmi',
     unassign: 'Planlanmamış İş Emirleri',
     scrollToEvent: 'İş Emrine Git',
+    jobOrderDate: 'Oluşturulma Tarihi',
   },
 }
