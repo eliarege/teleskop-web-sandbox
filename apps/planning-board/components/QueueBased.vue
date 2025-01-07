@@ -296,6 +296,7 @@ const scrollStore = new Store({
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((unp) => {
   return {
     ...unp,
+    recordTime: d(new Date(unp.recordTime), 'date'),
     id: unp.planKey,
     name: unp.jobOrder,
     duration: (unp.theoreticalDuration / 60) / 60,
@@ -303,6 +304,7 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((u
     constraintDate: new Date(),
   }
 }))
+console.log(modifiedUnscheduledEvents.value.map(e => e.recordTime))
 const exactMatch = ref(false)
 const options = computed(() => ({
   fuseOptions: {
@@ -828,6 +830,7 @@ onMounted(async () => {
       renderer: (data: any) => `${data.record.name}`,
     }, {
       field: 'recordTime',
+      format: 'DD/MM/YYYY',
       type: 'date',
       text: 'L{jobOrderDate}',
       flex: 1,

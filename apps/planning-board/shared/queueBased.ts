@@ -29,6 +29,7 @@ export interface QueueBasedNonActualEvent extends QueueBasedBaseEvent {
   eventType: 'planned' | 'unplanned'
   queueNumber: number
   pinned: boolean
+  recordTime: string
 }
 export interface QueueBasedUnplannedEvent extends QueueBasedNonActualEvent {
   eventType: 'unplanned'
