@@ -22,6 +22,7 @@ import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
 import TBCommandDetailDialog from '~/components/TBCommandDetailDialog.vue'
 import CMMoveParallelStepDialog from '~/components/CMMoveParallelStepDialog.vue'
 import TBUnsavedChangesDialog from '~/components/TBUnsavedChangesDialog.vue'
+import TBMachineConstantsDialog from '~/components/TBMachineConstantsDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -73,6 +74,7 @@ export interface RegisteredCommands {
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, machineId: number, commandNo: number]
   moveParallelStep: [ctx: any, commandNo: number, programCommand: ProgramStepCommand]
+  machineConstants: [ctx: any, machineId: number]
 }
 
 registerCommand(() => {
@@ -633,6 +635,23 @@ registerCommand(() => {
           if (index !== stepIndex)
             editor.newParallelStepCommand(command.commandNo, index - 1)
         }
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  const kc = useKeycloak()
+  return {
+    name: 'machineConstants',
+    async execute(ctx: any, machineId: number) {
+      const machineConstants = await kc.fetch(`/api/machine/${machineId}/constants`)
+      ctx.$q.dialog({
+        component: TBMachineConstantsDialog,
+        componentProps: {
+          machineConstants,
+        },
       })
       return true
     },

@@ -192,6 +192,12 @@ const items = [
             $commandManager.executeCommand('allCommandsList', { $q })
           },
         },
+        {
+          label: tt('menu.machineConstants'),
+          onClick() {
+            $commandManager.executeCommand('machineConstants', { $q }, editor.machine.id)
+          },
+        },
       ]],
     },
   },
