@@ -304,7 +304,6 @@ const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((u
     constraintDate: new Date(),
   }
 }))
-console.log(modifiedUnscheduledEvents.value.map(e => e.recordTime))
 const exactMatch = ref(false)
 const options = computed(() => ({
   fuseOptions: {
