@@ -8,6 +8,8 @@ import {
   axisBottom,
   axisLeft,
   axisRight,
+  brush,
+  brushX,
   brush as d3Brush,
   extent as d3Extent,
   line as d3Line,
@@ -51,6 +53,7 @@ const selectedTime = defineModel<Date>({ required: true })
 const settingsStore = userSettingsStore()
 const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
 const startTime = ref(new Date(props.batch.joborderInfo.startTime))
+
 function getLastDate() {
   const theoreticalLastDate = theoreticalTemperatures[theoreticalTemperatures.length - 1].time
   const lastRecordDate = props.batch.lastRecordDate
@@ -60,11 +63,14 @@ const endTime = ref(
   new Date(props.batch.joborderInfo.endTime || getLastDate()),
   // return addMinutes(new Date(startTime.value), 80)
 )
+
 const chartEl = ref<HTMLElement>()
 const xAxisEl = ref<SVGGElement>()
 const reelsXAxisEl = ref<SVGGElement>()
 const yAxisEl = ref<SVGGElement>()
 const reelsYAxisEl = ref<SVGGElement>()
+const svgRef = ref<SVGGElement | null>(null)
+const brushGroup = ref<SVGGElement | null>(null)
 
 const clipId = useId()
 
@@ -113,11 +119,12 @@ const innerRect = computed(() => {
 })
 
 const id = useId()
-
+const xExtendStartTime = ref(startTime.value)
+const xExtendEndTime = ref(endTime.value)
 const xExtent = computed(() => {
   const a = [
-    new Date(startTime.value),
-    new Date(endTime.value),
+    new Date(xExtendStartTime.value),
+    new Date(xExtendEndTime.value),
     // props.batch.joborderInfo.endTime
     //   ? new Date(props.batch.joborderInfo.endTime)
     //   : joborderEndTime.value,
@@ -273,16 +280,22 @@ const xAxisTickScale = scaleLinear()
   .clamp(true)
 
 const yAxisTickScale = scaleLinear()
-  .range([0, 16])
+  .range([1, 32])
   .domain([150, 1024])
   .clamp(true)
-
+const reelAxisTickScale = scaleLinear()
+  .range([0, 4])
+  .domain([0, 200])
+  .clamp(true)
 const xAxisTickCount = computed(() => {
   return Math.round(xAxisTickScale(outerWidth.value))
 })
 
 const yAxisTickCount = computed(() => {
   return Math.round(yAxisTickScale(outerHeight.value * chartHeightMultiplier))
+})
+const reelsYAxisTickCount = computed(() => {
+  return Math.round(reelAxisTickScale(outerHeight.value * (1 - chartHeightMultiplier)))
 })
 
 function updateXAxis() {
@@ -346,7 +359,7 @@ function updateYAxises() {
   )
   yAxisReels?.call(
     axisLeft(reelYScale.value) // FIXME
-      .ticks(yAxisTickCount.value),
+      .ticks(reelsYAxisTickCount.value),
   )
   customizeYAxis(yAxisReels, false)
   customizeYAxis(yAxisLeft, false)
@@ -386,6 +399,14 @@ const selectedX = ref<number | null>(null)
 function formatASCII(asci: string) {
   return btoa(asci).replaceAll(/[=+\/]/g, '-')
 }
+function resetZoom() {
+  xExtendStartTime.value = startTime.value
+  xExtendEndTime.value = endTime.value
+}
+function zoom(zoomStartTime: Date, zoomEndTime: Date) {
+  xExtendStartTime.value = zoomStartTime
+  xExtendEndTime.value = zoomEndTime
+}
 onMounted(() => {
   xAxis = d3Select(xAxisEl.value!)
   xAxisReels = d3Select(reelsXAxisEl.value!)
@@ -394,6 +415,40 @@ onMounted(() => {
   visibleAxises.value.forEach((axis, key) => {
     yAxisesRight.value.set(key, d3Select(`#${id}-${formatASCII(key)}`))
   })
+  if (brushGroup.value) {
+    let startX = 0
+    let endX = 0
+    const brushBehavior = brushX()
+      .extent([
+        [margin.value.left, margin.value.top], // Top-left corner of the brush area
+        [innerRect.value.width + margin.value.left, innerRect.value.height + margin.value.bottom], // Bottom-right corner of the brush area
+      ])
+      .on('start', (event) => {
+        handleChartClick(event.sourceEvent)
+        startX = event.sourceEvent.x
+      })
+      .on('end', (event) => {
+        if (!event.selection)
+          return
+        const start = event.selection[0] - margin.value.left
+        const end = event.selection[1] - margin.value.left
+        endX = event.sourceEvent.x
+        const proximityCheck = Math.abs((startX - endX) / (startX + endX) / 2) * 100 > 0.5
+        if (proximityCheck) {
+          if (startX > endX)
+            resetZoom()
+          else {
+            const endTimeX = xScale.value.invert(end)
+            selectedTime.value = endTimeX
+            zoom(xScale.value.invert(start), endTimeX)
+          }
+        }
+        d3Select(brushGroup.value).call(el => brushX().clear(el as Selection<SVGGElement, any, any, any>))
+      })
+
+    // Apply the brush to the <g> element
+    d3Select(brushGroup.value).call(brushBehavior)
+  }
   updateXAxis()
   updateYAxises()
   if (selectedTime.value) {
@@ -561,13 +616,29 @@ function formatDurationHHMMSS(startDate, endDate) {
     seconds.toString().padStart(2, '0'),
   ].join(':')
 }
+function getBarEndTime(value: Date | string) {
+  return new Date(value) > xExtendEndTime.value ? xExtendEndTime.value : new Date(value)
+}
+function getBarStartTime(value: Date | string) {
+  return xExtendStartTime.value > new Date(value) ? xExtendStartTime.value : new Date(value)
+}
 function computeWidth(ioValues, idx) {
   const startTimeTemp = new Date(ioValues[idx].time)
   const endTimeTemp
     = idx + 1 < ioValues.length
       ? new Date(ioValues[idx + 1].time)
-      : xScale.value.domain()[1]
-  return xScale.value(endTimeTemp) - xScale.value(startTimeTemp)
+      : endTime.value
+  const res = xScale.value(getBarEndTime(endTimeTemp)) - xScale.value(getBarStartTime(startTimeTemp))
+  if (res < 0)
+    return 0
+  return res
+}
+function getAlarmWidth(startTime: string | Date, endTime: string | Date) {
+  const res = xScale.value(getBarEndTime(endTime)) - xScale.value(getBarStartTime(startTime))
+  if (res < 0) {
+    return 0
+  }
+  return res
 }
 interface QBtnWithTooltip extends QBtnProps {
   tooltip?: string
@@ -642,12 +713,16 @@ const buttons = computed(() =>
 <template>
   <div ref="chartEl" class="chart">
     <svg
+      ref="svgRef"
       :viewBox="`0 0 ${outerWidth} ${outerHeight}`"
       :width="outerWidth"
       :height="outerHeight"
     >
       <g
-        :transform="`translate(${innerRect.width + margin.right - 10}, ${margin.top})`"
+        ref="brushGroup"
+      />
+      <g
+        :transform="`translate(${innerRect.width + margin.right}, ${margin.top})`"
       >
         <foreignObject
           v-for="(button, index) in buttons"
@@ -673,7 +748,10 @@ const buttons = computed(() =>
           <rect :width="innerRect.width" :height="innerRect.height" />
         </clipPath>
       </defs>
-      <g :transform="`translate(${margin.left},${margin.top})`">
+      <g
+        :transform="`translate(${margin.left},${margin.top})`"
+        style="cursor: crosshair;"
+      >
         <g
           ref="xAxisEl"
           class="x-axis"
@@ -703,6 +781,7 @@ const buttons = computed(() =>
             fill="none"
             :stroke="line.isDefault ? 'url(#koko)' : line.color"
             :stroke-width="line.isDefault ? 1 : 2.5"
+            style="pointer-events: none;"
           />
           <linearGradient id="koko">
             <stop
@@ -733,14 +812,13 @@ const buttons = computed(() =>
             <rect
               v-for="(bar, indexBar) in barLine.value"
               :key="`${indexBar}-${barLine.alarmNo}`"
-              :x="xScale(new Date(bar.startTime))"
+              :x="xScale(getBarStartTime(bar.startTime))"
               :y="barScale(`${barLine.alarmNo}`)"
-              :width="
-                xScale(new Date(bar.endTime)) - xScale(new Date(bar.startTime))
-              "
+              :width="getAlarmWidth(bar.startTime, bar.endTime)"
               :height="barScale.bandwidth()"
               :fill="barLine.color"
               :stroke="barLine.color"
+              style="pointer-events: none;"
               stroke-width="1"
             />
           </g>
@@ -816,11 +894,12 @@ const buttons = computed(() =>
               <rect
                 v-for="(value, idx) in io.ioValues"
                 :key="`io-${index}-value-${idx}`"
-                :x="xScale(new Date(value.time))"
+                :x="xScale(getBarStartTime(value.time))"
                 :width="computeWidth(io.ioValues, idx)"
                 :height="8"
                 :y="index * 20"
                 :fill="value.value ? 'blue' : 'grey'"
+                style="pointer-events: none;"
                 stroke="none"
               />
             </template>
@@ -844,13 +923,7 @@ const buttons = computed(() =>
             />
           </g>
         </g>
-        <rect
-          :width="innerRect.width"
-          :height="innerRect.height"
-          fill="transparent"
-          style="cursor: crosshair"
-          @click="handleChartClick"
-        />
+
       </g>
     </svg>
   </div>
