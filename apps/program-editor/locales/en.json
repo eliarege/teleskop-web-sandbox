@@ -90,7 +90,8 @@
     "tempTimeGraph": "Temperature/Time Graph",
     "stepCommandGraph": "Step/Command Graph",
     "expandAll": "Expand All",
-    "collapseAll": "Collapse All"
+    "collapseAll": "Collapse All",
+    "machineConstants": "Machine Constants"
   },
   "program": {
     "name": "Program Name",
@@ -449,6 +450,15 @@
     "buttons": {
       "discard": "Discard and Continue",
       "save": "Save and Continue",
+      "cancel": "Cancel"
+    }
+  },
+  "machineConstants": {
+    "title": "Machine Constants",
+    "machineInfo": "{machineId} - {machineName}",
+    "paramString": "Parameter Name",
+    "currentValue": "Value",
+    "buttons": {
       "cancel": "Cancel"
     }
   },

@@ -90,7 +90,8 @@
     "tempTimeGraph": "Sıcaklık/Zaman Grafiği",
     "stepCommandGraph": "Adım/Komut Grafiği",
     "expandAll": "Tümünü Genişlet",
-    "collapseAll": "Tümünü Daralt"
+    "collapseAll": "Tümünü Daralt",
+    "machineConstants": "Makine Sabitleri"
   },
   "program": {
     "name": "Program Adı",
@@ -450,6 +451,15 @@
       "revert": "Geri Al",
       "discard": "Yok Say ve Devam Et",
       "save": "Kaydet ve Devam Et",
+      "cancel": "İptal"
+    }
+  },
+  "machineConstants": {
+    "title": "Makine Sabitleri",
+    "machineInfo": "{machineId} - {machineName}",
+    "paramString": "Parametre Adı",
+    "currentValue": "Değer",
+    "buttons": {
       "cancel": "İptal"
     }
   },
