@@ -62,6 +62,7 @@ export async function getUnplannedEvents() {
     AND p.PLANKEY IS NULL
     AND d.LASTFORJOBORDER = 1
     AND d.ISDELETESENDTOMANUNITES IS NULL OR d.ISDELETESENDTOMANUNITES = 0
+    ORDER BY d.RECORDTIME DESC
 `)
 
   return events.map(ev => ({

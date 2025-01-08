@@ -296,6 +296,7 @@ const scrollStore = new Store({
 const modifiedUnscheduledEvents = computed(() => unScheduledEvents.value!.map((unp) => {
   return {
     ...unp,
+    recordTime: d(new Date(unp.recordTime), 'date'),
     id: unp.planKey,
     name: unp.jobOrder,
     duration: (unp.theoreticalDuration / 60) / 60,
@@ -359,6 +360,9 @@ watch(() => store.settings.showStops.show, async () => {
 })
 
 function initialGridColumns() {
+  if (modifiedUnscheduledEvents.value.length < 1)
+    return
+
   const columnNames = Object.keys(modifiedUnscheduledEvents.value[0].erpParameters)
   for (let i = 0; i < columnNames.length; i++) {
     const name = columnNames[i]
@@ -823,6 +827,12 @@ onMounted(async () => {
       htmlEncode: false,
       minWidth: 150,
       renderer: (data: any) => `${data.record.name}`,
+    }, {
+      field: 'recordTime',
+      format: 'DD/MM/YYYY',
+      type: 'date',
+      text: 'L{jobOrderDate}',
+      flex: 1,
     }, {
       type: 'duration',
       minWidth: 100,

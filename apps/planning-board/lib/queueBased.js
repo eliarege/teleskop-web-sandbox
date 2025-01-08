@@ -212,11 +212,9 @@ export class QueueDrag extends DragHelper {
         }
       }
     }
-    const target = schedule.resolveEventRecord(context.target) || previousEvent
 
     context.isValid = !isValidating
     && Boolean(startDate && machine)
-    && target !== null
     && validation.find(a => a.machineId === machine.id)?.valid === true
 
     task.startDate = startDate
@@ -417,6 +415,46 @@ export class TaskStore extends EventStore {
   }
 
   async scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine) {
+    if (!targetEvent) {
+      grabbedEvent.startDate = new Date()
+      grabbedEvent.endDate = addSeconds(grabbedEvent.startDate, grabbedEvent.theoreticalDuration)
+      grabbedEvent.originalData.queueNumber = 1
+
+      const previousEvents = previousMachine.events.filter(
+        ev =>
+          ev.eventType === 'planned'
+          && ev.originalData.queueNumber >= grabbedEvent.originalData.queueNumber
+          && ev !== grabbedEvent,
+      )
+
+      previousEvents.forEach((ev) => {
+        this.expediteEvent(ev, grabbedEvent.theoreticalDuration + 300)
+      })
+
+      if (grabbedEvent.isRemoved) {
+        this.add(grabbedEvent)
+      }
+
+      const previousEventData = {
+        planKey: grabbedEvent.id,
+        machineId: previousMachine.id,
+        queueNumber: grabbedEvent.originalData.queueNumber || 1,
+      }
+
+      const newEventData = {
+        planKey: grabbedEvent.id,
+        machineId: targetMachine.id,
+        queueNumber: grabbedEvent.originalData.queueNumber,
+      }
+
+      await nuxtApp.$keycloak.fetch('/api/queueBased/scheduleEvents', {
+        method: 'PUT',
+        body: { previousEventData, newEventData },
+      })
+
+      return
+    }
+
     const futureEvents = targetMachine.events.filter(ev => ev.eventType === 'planned' && ev.originalData.queueNumber > (targetEvent.originalData.queueNumber || 0) && ev !== grabbedEvent)
     let previousEvents
 
@@ -476,6 +514,14 @@ export class TaskStore extends EventStore {
 
   createTargetEvent(targetMachine, grabbedEvent) {
     const targetMachineEvents = targetMachine.events.filter(ev => ev.id !== grabbedEvent.id)
+    if (targetMachineEvents.length === 0) {
+      return {
+        previousEvent: null,
+        nextEvent: null,
+        grabbedEvent: { ...grabbedEvent, startDate: new Date() },
+      }
+    }
+
     const sortedEvents = targetMachineEvents.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
 
     let previousEvent = null
@@ -517,6 +563,7 @@ export class TaskStore extends EventStore {
   async rescheduleOverlappingTasks(grabbedEvent, targetEvent, previousMachine, targetMachine, context) {
     this.isRescheduling = true
     this.beginBatch()
+
     if (grabbedEvent.isRemoved) {
       const createdEvent = grabbedEvent.originalData
       createdEvent.isRemoved = true
@@ -633,10 +680,8 @@ export class QueueSchedule extends SchedulerPro {
           prevMachineId = currentMachineId
           endDate = addSeconds(startDate, theoreticalDuration || 28800)
         }
-        const target = context.targetEventRecord || previousEvent
         context.valid = !isValidating
         && Boolean(startDate && machine)
-        && target !== null
         && validation.find(a => a.machineId === machine.id)?.valid === true
       },
       async onEventDrop({ eventRecords, context, targetEventRecord, resourceRecord, targetResourceRecord }) {
