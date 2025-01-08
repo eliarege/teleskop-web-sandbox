@@ -77,13 +77,13 @@ const columns = computed(() => [
   },
   {
     name: 'theoreticalProgramNoList',
-    label: t('panels.TheoricPrograms'),
+    label: t('panels.theoricPrograms'),
     field: 'theoreticalProgramNoList',
     format: val => val.toString(),
   },
   {
     name: 'actualProgramNoList',
-    label: t('panels.WorkingPrograms'),
+    label: t('panels.actualPrograms'),
     field: 'actualProgramNoList',
     format: val => val.toString(),
   },

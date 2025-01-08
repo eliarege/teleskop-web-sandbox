@@ -58,6 +58,7 @@
   "updateAxises": "Eksenleri Düzenle",
   "addRemoveAxis": "Eksen Ekle/Kaldır",
   "reelDataDialog": "Kule Tur/Zaman Tablosu",
+  "noAlarm": "Seçili Zamanda Alarm Bulunamadı",
   "joborderSummary": {
     "waterType1": "Soğuk Su",
     "waterType2": "Sıcak Su",
@@ -80,20 +81,20 @@
     "description": "İş emri özet raporunda görünmesini istediğiniz ERP parametrelerini seçiniz."
   },
   "panels": {
-    "JobOrderInfo": "İş Emri Bilgi",
-    "StartParameters": "Başlangıç Parametreleri",
-    "WorkingPrograms": "Çalışan",
-    "TheoricPrograms": "Teorik",
+    "jobOrderInfo": "İş Emri Bilgi",
+    "startParameters": "Başlangıç Parametreleri",
+    "actualPrograms": "Çalışan",
+    "theoricPrograms": "Teorik",
     "AIN": "AIN",
     "DIN": "DIN",
     "AOUT": "AOUT",
-    "Counter": "Sayaçlar",
+    "counter": "Sayaçlar",
     "DOUTFunc": "DOUT",
     "DOUTLock": "DOUT Kilit",
-    "ChartComponent": "Grafik",
-    "Commands": "Komutlar",
-    "Alarms": "Alarmlar",
-    "CycleTimes": "Tur Süreleri"
+    "chartComponent": "Grafik",
+    "commands": "Komutlar",
+    "alarms": "Alarmlar",
+    "cycleTimes": "Tur Süreleri"
   },
   "joborderTable": {
     "machineName": "Makine Adı",

@@ -165,6 +165,7 @@ onMounted(() => {
       dense
       :pagination="{ rowsPerPage: 0 }"
       :rows="rows"
+      :no-data-label="t('noAlarm')"
       :columns="columns"
       row-key="batchAlarmNo"
       class="text-black table-custom my-auto mt-10 ml-4 mr-4"
