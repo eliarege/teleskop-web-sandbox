@@ -112,29 +112,27 @@ watch(
 )
 
 onMounted(() => {
-  nextTick(() => {
-    const step = editor.program.steps[stepIndex.value]
-    const mainCommand = step?.mainCommand
-    const commandNo = programCommand.value?.commandNo
-    const machineMainCommand = editor.machine.commands.get(mainCommand?.commandNo)
+  const step = editor.program.steps[stepIndex.value]
+  const mainCommand = step?.mainCommand
+  const commandNo = programCommand.value?.commandNo
+  const machineMainCommand = editor.machine.commands.get(mainCommand?.commandNo)
 
-    select.value?.focus()
+  select.value?.focus()
 
-    const isInvalidCommand = !commandNo
-      || (machineMainCommand?.dontUseList.includes(commandNo))
+  const isInvalidCommand = !commandNo
+    || (machineMainCommand?.dontUseList.includes(commandNo))
 
-    // Ana adım ve paralel adım için ortak kontrol
-    if (
-      (isMainCommand === CommandType.MAIN && isInvalidCommand)
-      || (isMainCommand === CommandType.PARALLEL && (!mainCommand?.commandNo || isInvalidCommand))
-    ) {
-      editor.errorIds.add(id)
-      return
-    }
+  // Ana adım ve paralel adım için ortak kontrol
+  if (
+    (isMainCommand === CommandType.MAIN && isInvalidCommand)
+    || (isMainCommand === CommandType.PARALLEL && (!mainCommand?.commandNo || isInvalidCommand))
+  ) {
+    editor.errorIds.add(id)
+    return
+  }
 
-    editor.errorIds.delete(id)
-    select.value?.validate()
-  })
+  editor.errorIds.delete(id)
+  select.value?.validate()
 })
 
 function updateStepCommand(commandNo: number, programCommand: ProgramStepCommand) {
