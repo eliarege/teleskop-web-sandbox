@@ -101,6 +101,7 @@ export interface MachineCommand {
   maxA: string
   b: string
   isTemperature: boolean
+  isUnload: boolean
   parameters: MachineCommandParameter[]
   ioList: MachineCommandIO[]
 }
@@ -201,6 +202,7 @@ export interface TheoreticalProgram {
     value: number
     programNo: number
     commandNo: number
+    isUnload?: boolean
   }[]
 }
 export interface ProgramStep {

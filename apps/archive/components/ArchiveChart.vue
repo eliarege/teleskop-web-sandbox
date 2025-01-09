@@ -46,7 +46,7 @@ const props = defineProps<{
   theoreticalPrograms: TheoreticalProgram[]
 }>()
 const emit = defineEmits<{
-  updateModelValue: [date: Date]
+  'update:modelValue': [date: Date]
 }>()
 const { t } = useI18n()
 const selectedTime = defineModel<Date>({ required: true })
@@ -319,13 +319,25 @@ function updateXAxis() {
       .ticks(xAxisTickCount.value),
   )
 }
-
-const colorInterpolator = interpolateRgbBasis([
-  'purple',
-  'blue',
-  'red',
-  'orange',
-])
+function colorInterpolator(alarmType: number) {
+  if (alarmType === 0 || alarmType === 3)
+    return 'red'
+  else if (alarmType === 1)
+    return 'blue'
+  else if (alarmType === 2)
+    return 'green'
+  else if (alarmType === 9)
+    return 'yellow'
+  else if (alarmType === 10)
+    return 'fuchsia'
+  else return 'blue'
+}
+// const colorInterpolator = interpolateRgbBasis([
+// 'purple',
+// 'blue',
+// 'red',
+// 'orange',
+// ])
 
 const lines = computed(() => {
   return yScales.value.map((scale, index) => {
@@ -418,15 +430,19 @@ onMounted(() => {
   if (brushGroup.value) {
     let startX = 0
     let endX = 0
+    // TODO: On resize like fullscreen brushı updatelemek lazım xextend
     const brushBehavior = brushX()
       .extent([
         [margin.value.left, margin.value.top], // Top-left corner of the brush area
         [innerRect.value.width + margin.value.left, innerRect.value.height + margin.value.bottom], // Bottom-right corner of the brush area
       ])
       .on('start', (event) => {
-        handleChartClick(event.sourceEvent)
         startX = event.sourceEvent.x
+        handleChartClick(event.sourceEvent)
       })
+      // .on('brush', (event) => {
+      //   handleChartClick(event.sourceEvent)
+      // })
       .on('end', (event) => {
         if (!event.selection)
           return
@@ -435,12 +451,16 @@ onMounted(() => {
         endX = event.sourceEvent.x
         const proximityCheck = Math.abs((startX - endX) / (startX + endX) / 2) * 100 > 0.5
         if (proximityCheck) {
-          if (startX > endX)
+          if (startX > endX) {
+            const selectedTimeAxisX = xScale.value(selectedTime.value)
             resetZoom()
-          else {
+            selectedTime.value = xScale.value.invert(selectedTimeAxisX)
+          } else {
+            const startTimeX = xScale.value.invert(start)
             const endTimeX = xScale.value.invert(end)
-            selectedTime.value = endTimeX
-            zoom(xScale.value.invert(start), endTimeX)
+            const selectedTimeAxisX = xScale.value(selectedTime.value)
+            zoom(startTimeX, endTimeX)
+            selectedTime.value = xScale.value.invert(selectedTimeAxisX)
           }
         }
         d3Select(brushGroup.value).call(el => brushX().clear(el as Selection<SVGGElement, any, any, any>))
@@ -477,7 +497,6 @@ watch(visibleAxises, async (newval) => {
 })
 watch(selectedTime, () => {
   drawSelectedTimeLine()
-  emit('updateModelValue', selectedTime.value)
 })
 function handleChartClick(event: MouseEvent) {
   const rect = chartEl.value?.getBoundingClientRect()
@@ -491,6 +510,7 @@ function handleChartClick(event: MouseEvent) {
 
 const uniqueBars = ref(
   [] as {
+    alarmType: number
     alarmNo: number
     color: any
     value: { startTime: string | Date, endTime: string | Date }[]
@@ -502,6 +522,7 @@ props.batch.alarms.forEach((alarm) => {
   )
   if (uniqueIndex === -1) {
     uniqueBars.value.push({
+      alarmType: alarm.alarmType,
       alarmNo: alarm.alarmNo,
       color: '',
       value: [{ startTime: alarm.startTime, endTime: alarm.endTime || new Date() }],
@@ -514,7 +535,7 @@ props.batch.alarms.forEach((alarm) => {
   }
 })
 uniqueBars.value = uniqueBars.value.map((bar, index) => {
-  return { ...bar, color: colorInterpolator(index / uniqueBars.value.length) }
+  return { ...bar, color: colorInterpolator(bar.alarmType) }
 })
 
 const barLength
@@ -640,6 +661,30 @@ function getAlarmWidth(startTime: string | Date, endTime: string | Date) {
   }
   return res
 }
+const arrowPoints = computed(() => {
+  const unloadPoints: { x: number, y: number }[] = []
+  theoreticalTemperatures.forEach((temp) => {
+    if (props.batch.machine.commands.find(cmd => cmd.commandNo === temp.commandNo)?.isUnload) {
+      unloadPoints.push({
+        x: xScale.value(temp.time),
+        y: yScales.value[0](temp.value),
+      })
+    }
+  })
+  return unloadPoints
+})
+
+function getArrowPath(x: number, y: number) {
+  const arrowSize = 7
+  const offsetX = 50
+  const offsetY = 20
+
+  return `M${x + offsetX},${y + offsetY + arrowSize}
+          L${x - arrowSize + offsetX},${y + offsetY}
+          L${x + arrowSize + offsetX},${y + offsetY}
+          Z`
+}
+
 interface QBtnWithTooltip extends QBtnProps {
   tooltip?: string
 }
@@ -718,8 +763,21 @@ const buttons = computed(() =>
       :width="outerWidth"
       :height="outerHeight"
     >
+      <g :clip-path="`url(#${clipId})`">
+        <path
+          v-for="(point, index) in arrowPoints"
+          :key="`arrow-${index}`"
+          :d="getArrowPath(point.x, point.y)"
+          fill="blue"
+          stroke="black"
+          stroke-width="0.5"
+          class="arrow"
+        />
+      </g>
       <g
         ref="brushGroup"
+        :width="outerWidth"
+        :height="outerHeight"
       />
       <g
         :transform="`translate(${innerRect.width + margin.right}, ${margin.top})`"

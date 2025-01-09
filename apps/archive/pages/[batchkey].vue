@@ -252,6 +252,7 @@ const components: Record<string, () => any> = {
       commands: theoreticalCommands as DuoAny<BatchCommand>[],
       selectedTime: selectedDate.value,
       machineCommands: batchData.value?.machine.commands as MachineCommand[],
+      onUpdateSelectedTime: (time: string) => updateSelectedTime(time),
     }),
   AIN: () =>
     h(AnalogInputOutput, {
@@ -314,10 +315,10 @@ const components: Record<string, () => any> = {
     }),
   Chart: () =>
     h(ArchiveChart, {
-      batch: batchData.value,
+      'batch': batchData.value,
       theoreticalPrograms,
-      modelValue: selectedDate.value,
-      onUpdateModelValue: (newVal) => {
+      'modelValue': selectedDate.value,
+      'onUpdate:modelValue': (newVal: Date) => {
         selectedDate.value = newVal
       },
     }),

@@ -78,6 +78,7 @@ export default defineEventHandler(async (event) => {
       b: 'B',
       icon: 'ICON',
       isTemperature: 'ISTEMPERATURE',
+      isUnload: 'ISUNLOAD',
     })
     .where('MACHINEID', batch.machineId)
     .orderBy('COMMANDNO') as MachineCommand[]
