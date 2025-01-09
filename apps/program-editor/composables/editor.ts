@@ -387,9 +387,8 @@ export const useEditorStore = defineStore('editor', () => {
   async function onSubmit(newProgram?: Program): Promise<boolean> {
     const firstId = errorIds.value.values().next().value
     if (firstId) {
-      const el = document.getElementById(firstId)
-      const parentEl = el?.closest('.q-item__section--main')
-      const stepIndex = parentEl?.children[0].id?.split('-').pop()
+      const stepId = firstId.split('-')[0]
+      const stepIndex = getStepIndex(Number(stepId))
 
       scrollPage(Number(stepIndex), true)
       notifyError(t('saveProgram.incorrect'))
