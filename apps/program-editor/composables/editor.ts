@@ -283,7 +283,12 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     const parallelCommands = program.value.steps[targetIndex].parallelCommands
-    parallelCommands.push(createEmptyCommand())
+    const emptyCommand = createEmptyCommand()
+
+    const existingIds = new Set(parallelCommands.map(command => command.commandId))
+    emptyCommand.commandId = Array.from({ length: 100 }, (_, i) => i + 1).find(id => !existingIds.has(id))!
+
+    parallelCommands.push(emptyCommand)
 
     nextTick(() => {
       scrollPage(targetIndex, true)
