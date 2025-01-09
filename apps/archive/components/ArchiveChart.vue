@@ -419,6 +419,45 @@ function zoom(zoomStartTime: Date, zoomEndTime: Date) {
   xExtendStartTime.value = zoomStartTime
   xExtendEndTime.value = zoomEndTime
 }
+
+function getBrush() {
+  let startX = 0
+  let endX = 0
+  return brushX()
+    .extent([
+      [margin.value.left, margin.value.top], // Top-left corner of the brush area
+      [innerRect.value.width + margin.value.left, innerRect.value.height + margin.value.bottom], // Bottom-right corner of the brush area
+    ])
+    .on('start', (event) => {
+      startX = event.sourceEvent.x
+      handleChartClick(event.sourceEvent)
+    })
+  // .on('brush', (event) => {
+  //   handleChartClick(event.sourceEvent)
+  // })
+    .on('end', (event) => {
+      if (!event.selection)
+        return
+      const start = event.selection[0] - margin.value.left
+      const end = event.selection[1] - margin.value.left
+      endX = event.sourceEvent.x
+      const proximityCheck = Math.abs((startX - endX) / (startX + endX) / 2) * 100 > 0.5
+      if (proximityCheck) {
+        if (startX > endX) {
+          const selectedTimeAxisX = xScale.value(selectedTime.value)
+          resetZoom()
+          selectedTime.value = xScale.value.invert(selectedTimeAxisX)
+        } else {
+          const startTimeX = xScale.value.invert(start)
+          const endTimeX = xScale.value.invert(end)
+          const selectedTimeAxisX = xScale.value(selectedTime.value)
+          zoom(startTimeX, endTimeX)
+          selectedTime.value = xScale.value.invert(selectedTimeAxisX)
+        }
+      }
+      d3Select(brushGroup.value).call(el => brushX().clear(el as Selection<SVGGElement, any, any, any>))
+    })
+}
 onMounted(() => {
   xAxis = d3Select(xAxisEl.value!)
   xAxisReels = d3Select(reelsXAxisEl.value!)
@@ -428,46 +467,15 @@ onMounted(() => {
     yAxisesRight.value.set(key, d3Select(`#${id}-${formatASCII(key)}`))
   })
   if (brushGroup.value) {
-    let startX = 0
-    let endX = 0
     // TODO: On resize like fullscreen brushı updatelemek lazım xextend
-    const brushBehavior = brushX()
-      .extent([
-        [margin.value.left, margin.value.top], // Top-left corner of the brush area
-        [innerRect.value.width + margin.value.left, innerRect.value.height + margin.value.bottom], // Bottom-right corner of the brush area
-      ])
-      .on('start', (event) => {
-        startX = event.sourceEvent.x
-        handleChartClick(event.sourceEvent)
-      })
-      // .on('brush', (event) => {
-      //   handleChartClick(event.sourceEvent)
-      // })
-      .on('end', (event) => {
-        if (!event.selection)
-          return
-        const start = event.selection[0] - margin.value.left
-        const end = event.selection[1] - margin.value.left
-        endX = event.sourceEvent.x
-        const proximityCheck = Math.abs((startX - endX) / (startX + endX) / 2) * 100 > 0.5
-        if (proximityCheck) {
-          if (startX > endX) {
-            const selectedTimeAxisX = xScale.value(selectedTime.value)
-            resetZoom()
-            selectedTime.value = xScale.value.invert(selectedTimeAxisX)
-          } else {
-            const startTimeX = xScale.value.invert(start)
-            const endTimeX = xScale.value.invert(end)
-            const selectedTimeAxisX = xScale.value(selectedTime.value)
-            zoom(startTimeX, endTimeX)
-            selectedTime.value = xScale.value.invert(selectedTimeAxisX)
-          }
-        }
-        d3Select(brushGroup.value).call(el => brushX().clear(el as Selection<SVGGElement, any, any, any>))
-      })
+    const brushBehavior = ref(getBrush())
+    watch(innerRect, () => {
+      brushBehavior.value = getBrush()
+      d3Select(brushGroup.value).call(brushBehavior.value)
+    })
+    d3Select(brushGroup.value).call(brushBehavior.value)
 
     // Apply the brush to the <g> element
-    d3Select(brushGroup.value).call(brushBehavior)
   }
   updateXAxis()
   updateYAxises()
@@ -476,9 +484,16 @@ onMounted(() => {
   }
 })
 
+const tooltipOffset = ref(10)
 function drawSelectedTimeLine() {
+  const xStart = xScale.value(new Date(xExtendStartTime.value))
+  const xEnd = xScale.value(new Date(xExtendEndTime.value))
   const xCoord = xScale.value(new Date(selectedTime.value))
   selectedX.value = xCoord
+  if (xCoord > (xStart + xEnd) / 2)
+    tooltipOffset.value = -250
+  else
+    tooltipOffset.value = 10
 }
 
 watch([xScale, xAxisTickCount], () => {
@@ -537,7 +552,8 @@ props.batch.alarms.forEach((alarm) => {
 uniqueBars.value = uniqueBars.value.map((bar, index) => {
   return { ...bar, color: colorInterpolator(bar.alarmType) }
 })
-
+const predefinedAlarmTypeOrder = [0, 3, 2, 9, 10, 1]
+const orderedAlarms = orderArray(uniqueBars.value, predefinedAlarmTypeOrder, 'alarmType')
 const barLength
   = uniqueBars.value.length * 10 > 70 ? 70 : uniqueBars.value.length * 10
 
@@ -866,7 +882,7 @@ const buttons = computed(() =>
           stroke-width="2"
         />
         <g :clip-path="`url(#${clipId})`">
-          <g v-for="barLine in uniqueBars" :key="`${barLine.alarmNo}-bar`">
+          <g v-for="barLine in orderedAlarms" :key="`${barLine.alarmNo}-bar`">
             <rect
               v-for="(bar, indexBar) in barLine.value"
               :key="`${indexBar}-${barLine.alarmNo}`"
@@ -888,7 +904,7 @@ const buttons = computed(() =>
               && settingsStore.showGraphTooltip
           "
           id="chart-tooltip"
-          :transform="`translate(${selectedX + 10}, 10)`"
+          :transform="`translate(${selectedX + tooltipOffset}, 10)`"
         >
           <rect
             class="tooltip-bg"
