@@ -16,20 +16,14 @@ const commandNo = ref(props.commandNo)
 const commandName = ref(props.commandName)
 const startIndex = ref(props.stepIndex)
 const endIndex = ref(props.stepsLength)
-
-function checkTextOverflow() {
-  if (commandName.value && commandName.value.length > 30) {
-    commandName.value = `${commandName.value.substring(0, 27)}...`
-  }
-  return commandName.value
-}
 </script>
 
 <template>
   <QDialog ref="dialogRef" class="select-none">
-    <QCard class="w-600">
+    <QCard>
+      <!-- Başlık -->
       <QCardSection>
-        <div class="text-h6 flex">
+        <div class="text-h6 flex items-center">
           {{ t('moveParallelStep.title') }}
           <QSpace />
           <QBtn
@@ -43,52 +37,65 @@ function checkTextOverflow() {
         </div>
       </QCardSection>
 
-      <QCardSection class="text-gray-8 dark:text-gray-3 items-center flex flex-row">
-        <div class="flex flex-row gap-6 w-full">
-          <div class="flex flex-col" style="min-width: 100px;">
+      <!-- İçerik -->
+      <QCardSection class="text-gray-8 dark:text-gray-3">
+        <div class="flex gap-5 no-wrap">
+          <!-- Komut No -->
+          <div class="flex flex-col w-40">
             <label class="text-xs text-gray-7">{{ t('command.commandNo') }}</label>
-            <span class="text-base text-sm">{{ commandNo }}</span>
+            <span class="text-sm text-gray-8">{{ commandNo }}</span>
           </div>
 
-          <div class="flex flex-col" style="min-width: 0; flex-grow: 1;">
+          <!-- Komut Adı -->
+          <div class="flex flex-col w-60">
             <label class="text-xs text-gray-7">{{ t('command.name') }}</label>
-            <QTooltip>
-              {{ commandName }}
-            </QTooltip>
+            <QTooltip>{{ commandName }}</QTooltip>
             <span
-              class="text-base text-sm"
+              class="text-sm text-gray-8 w-full"
               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+              :title="commandName"
             >
-              {{ checkTextOverflow() }}
+              {{ commandName }}
             </span>
           </div>
 
-          <QSelect
-            v-model="startIndex"
-            :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
-            :label="t('moveParallelStep.startIndex')"
-            class="col"
-            dense
-            :rules="[
-              (val: string) => !!val || t('input.required', { field: t('moveParallelStep.startIndex') }),
-              (val: number) => val <= endIndex || t('moveParallelStep.startIndexMore'),
-            ]"
-          />
+          <!-- Başlangıç Index -->
+          <div class="flex flex-col w-50">
+            <QSelect
+              v-model="startIndex"
+              :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
+              :label="t('moveParallelStep.startIndex')"
+              class="col"
+              dense
+              options-dense
+              popup-content-class="h-80"
+              :rules="[
+                (val: string) => !!val || t('input.required', { field: t('moveParallelStep.startIndex') }),
+                (val: number) => val <= endIndex || t('moveParallelStep.startIndexMore'),
+              ]"
+            />
+          </div>
 
-          <QSelect
-            v-model="endIndex"
-            :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
-            :label="t('moveParallelStep.endIndex')"
-            class="col"
-            dense
-            :rules="[
-              (val: string) => !!val || t('input.required', { field: t('moveParallelStep.endIndex') }),
-              (val: number) => val >= startIndex || t('moveParallelStep.endIndexLess'),
-            ]"
-          />
+          <!-- Bitiş Index -->
+          <div class="flex flex-col w-50">
+            <QSelect
+              v-model="endIndex"
+              :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
+              :label="t('moveParallelStep.endIndex')"
+              class="col"
+              dense
+              options-dense
+              popup-content-class="h-80"
+              :rules="[
+                (val: string) => !!val || t('input.required', { field: t('moveParallelStep.endIndex') }),
+                (val: number) => val >= startIndex || t('moveParallelStep.endIndexLess'),
+              ]"
+            />
+          </div>
         </div>
       </QCardSection>
 
+      <!-- Aksiyonlar -->
       <QCardActions
         class="q-pa-md bg-gray-1 dark:bg-dark-4"
         align="right"
