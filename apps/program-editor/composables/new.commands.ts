@@ -647,13 +647,18 @@ registerCommand(() => {
     name: 'machineConstants',
     async execute(ctx: any, machineId: number) {
       const machineInfo = await kc.fetch(`/api/machine/${machineId}`)
-      const machineConstants = await kc.fetch(`/api/machine/${machineId}/constants`)
       ctx.$q.dialog({
         component: TBMachineConstantsDialog,
         componentProps: {
           machineId,
           machineName: machineInfo.name,
-          machineConstants,
+          machineConstants: machineInfo.constants,
+        },
+      })
+      return true
+    },
+  }
+})
         },
       })
       return true
