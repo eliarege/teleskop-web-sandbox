@@ -172,6 +172,8 @@ theoreticalTemperatures.forEach((io, index) => {
       )
     }
   }
+  if (!colorTransitionPortions.length)
+    colorTransitionPortions.push(0)
 })
 
 const dataSet = computed(() => {
@@ -319,18 +321,22 @@ function updateXAxis() {
       .ticks(xAxisTickCount.value),
   )
 }
+const alarmTypes = computed(() => [
+  { type: 0, label: t('alarmSettings.0sh'), color: 'red' },
+  { type: 1, label: t('alarmSettings.1sh'), color: 'blue' },
+  { type: 2, label: t('alarmSettings.2sh'), color: 'green' },
+  { type: 3, label: t('alarmSettings.3sh'), color: 'red' },
+  { type: 4, label: t('alarmSettings.4'), color: 'blue' },
+  { type: 5, label: t('alarmSettings.5'), color: 'blue' },
+  { type: 6, label: t('alarmSettings.6'), color: 'blue' },
+  { type: 7, label: t('alarmSettings.7sh'), color: 'blue' },
+  { type: 8, label: t('alarmSettings.8'), color: 'blue' },
+  { type: 9, label: t('alarmSettings.9'), color: 'yellow' },
+  { type: 10, label: t('alarmSettings.10'), color: '#FF00FF' },
+  { type: 11, label: t('alarmSettings.11sh'), color: 'blue' },
+] as { type: number, label: string, color: string }[])
 function colorInterpolator(alarmType: number) {
-  if (alarmType === 0 || alarmType === 3)
-    return 'red'
-  else if (alarmType === 1)
-    return 'blue'
-  else if (alarmType === 2)
-    return 'green'
-  else if (alarmType === 9)
-    return 'yellow'
-  else if (alarmType === 10)
-    return 'fuchsia'
-  else return 'blue'
+  return alarmTypes.value.find(alarm => alarm.type === alarmType)?.color || 'blue'
 }
 // const colorInterpolator = interpolateRgbBasis([
 // 'purple',
@@ -552,7 +558,7 @@ props.batch.alarms.forEach((alarm) => {
 uniqueBars.value = uniqueBars.value.map((bar, index) => {
   return { ...bar, color: colorInterpolator(bar.alarmType) }
 })
-const predefinedAlarmTypeOrder = [0, 3, 2, 9, 10, 1]
+const predefinedAlarmTypeOrder = [1, 10, 9, 2, 3, 0]
 const orderedAlarms = orderArray(uniqueBars.value, predefinedAlarmTypeOrder, 'alarmType')
 const barLength
   = uniqueBars.value.length * 10 > 70 ? 70 : uniqueBars.value.length * 10
@@ -773,6 +779,18 @@ const buttons = computed(() =>
 
 <template>
   <div ref="chartEl" class="chart">
+    <div style="display: flex; gap: 10px; margin-left: 10px; font-size: small; margin-bottom: -20px;">
+      <div
+        v-for="alarm of alarmTypes"
+        :key="`alarmType${alarm.type}`"
+        style="display: flex; align-items: center; justify-content: center; gap: 5px;"
+      >
+        <div :style="{ height: '8px', width: '8px', backgroundColor: alarm.color }" />
+        <text>
+          {{ alarm.label }}
+        </text>
+      </div>
+    </div>
     <svg
       ref="svgRef"
       :viewBox="`0 0 ${outerWidth} ${outerHeight}`"
