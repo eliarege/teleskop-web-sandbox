@@ -284,10 +284,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     const parallelCommands = program.value.steps[targetIndex].parallelCommands
     const emptyCommand = createEmptyCommand()
-
-    const existingIds = new Set(parallelCommands.map(command => command.commandId))
-    emptyCommand.commandId = Array.from({ length: 100 }, (_, i) => i + 1).find(id => !existingIds.has(id))!
-
+    emptyCommand.commandId = generateParallelStepId(targetIndex)
     parallelCommands.push(emptyCommand)
 
     nextTick(() => {
@@ -318,8 +315,22 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     const newCommand = createEmptyCommand()
+    newCommand.commandId = generateParallelStepId(stepIndex)
     updateCommand(commandNo, newCommand)
     program.value?.steps[stepIndex].parallelCommands.push(newCommand)
+  }
+
+  /**
+   * Parallel adımlar için komut id'si oluşturur.
+   *
+   * @param {number} stepIndex - Paralel adımın indeksi
+   *
+   * @returns {number} Oluşturulan id
+   */
+  function generateParallelStepId(stepIndex: number): number {
+    const parallelCommands = program.value.steps[stepIndex].parallelCommands
+    const existingIds = new Set(parallelCommands.map(command => command.commandId))
+    return Array.from({ length: 100 }, (_, i) => i + 1).find(id => !existingIds.has(id))!
   }
 
   /**
