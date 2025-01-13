@@ -42,16 +42,16 @@ const endIndex = ref(props.stepsLength)
         <div class="flex gap-5 no-wrap">
           <!-- Komut No -->
           <div class="flex flex-col w-40">
-            <label class="text-xs text-gray-7">{{ t('command.commandNo') }}</label>
-            <span class="text-sm text-gray-8">{{ commandNo }}</span>
+            <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('command.commandNo') }}</label>
+            <span class="text-sm text-gray-8 dark:text-gray-3">{{ commandNo }}</span>
           </div>
 
           <!-- Komut Adı -->
           <div class="flex flex-col w-60">
-            <label class="text-xs text-gray-7">{{ t('command.name') }}</label>
+            <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('command.name') }}</label>
             <QTooltip>{{ commandName }}</QTooltip>
             <span
-              class="text-sm text-gray-8 w-full"
+              class="text-sm text-gray-8 dark:text-gray-3 w-full"
               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
               :title="commandName"
             >
