@@ -34,7 +34,8 @@ const { dialogRef, onDialogCancel } = useDialogPluginComponent()
         <QTable
           flat
           dense
-          table-header-style="position: sticky; top: 0; z-index: 1; background-color: #fff;"
+          table-header-style="position: sticky; top: 0; z-index: 1;"
+          table-header-class="bg-light-1 dark:bg-dark-6"
           class="h-140 text-gray-8 dark:text-gray-3"
           no-data-label="No data"
           hide-bottom
