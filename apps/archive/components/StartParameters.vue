@@ -6,9 +6,6 @@ const props = defineProps<{
   selectedTime: Date
 }>()
 
-const outerDivRef = ref<HTMLElement | null>(null)
-const { t } = useI18n()
-
 const batchParametersWithClosestTime = computed(() => {
   const selectedTime = props.selectedTime.getTime()
 
@@ -39,31 +36,10 @@ const formattedRows = computed(() => {
     value: param.closestParamValue.value.toFixed(0),
   }))
 })
-
-onMounted(() => {
-  if (outerDivRef.value) {
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width } = entry.contentRect
-        const newFontSize = `${Math.max(12, width / 50)}px`
-        if (outerDivRef.value) {
-          outerDivRef.value.style.fontSize = newFontSize
-        }
-      }
-    })
-    observer.observe(outerDivRef.value)
-
-    onUnmounted(() => {
-      if (outerDivRef.value) {
-        observer.unobserve(outerDivRef.value)
-      }
-    })
-  }
-})
 </script>
 
 <template>
-  <div ref="outerDivRef" class="border wh-full overflow-y-auto h-full table-container">
+  <div class="border wh-full overflow-y-auto text-xs h-full table-container">
     <table class="table w-full">
       <tbody>
         <tr v-for="(row, index) in formattedRows" :key="index">

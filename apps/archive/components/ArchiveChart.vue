@@ -432,7 +432,7 @@ function getBrush() {
   return brushX()
     .extent([
       [margin.value.left, margin.value.top], // Top-left corner of the brush area
-      [innerRect.value.width + margin.value.left, innerRect.value.height + margin.value.bottom], // Bottom-right corner of the brush area
+      [innerRect.value.width + margin.value.left, settingsStore.bottomChartVisibilityStatus ? innerRect.value.height + margin.value.bottom : innerRect.value.height + margin.value.top], // Bottom-right corner of the brush area
     ])
     .on('start', (event) => {
       startX = event.sourceEvent.x

@@ -23,7 +23,7 @@ const theoreticalEndTime = computed(() => new Date((new Date(props.jobOrderInfo.
 </script>
 
 <template>
-  <div class="border wh-full overflow-y-auto h-full table-container">
+  <div class="border wh-full overflow-y-auto text-xs h-full table-container">
     <table class="table w-full">
       <tbody>
         <tr v-for="(value, key) in keyLabels" :key="`joborderInfo${key}`">
