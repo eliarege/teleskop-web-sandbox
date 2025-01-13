@@ -64,12 +64,12 @@ onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
   }
 })
 
-onKeyStroke(['r', 'R'], async (event: KeyboardEvent) => {
-  if (event.ctrlKey && !isActiveElementEditable()) {
-    event.preventDefault()
-    await editor.fetchMachine(machineId)
-  }
-})
+// onKeyStroke(['r', 'R'], async (event: KeyboardEvent) => {
+//   if (event.ctrlKey && !isActiveElementEditable()) {
+//     event.preventDefault()
+//     await editor.fetchMachine(machineId)
+//   }
+// })
 
 onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
   if (event.ctrlKey && !isActiveElementEditable()) {

@@ -57,19 +57,19 @@ const buttons = computed<ContextBarButtons[]>(() => [
       $commandManager.executeCommand('saveAsProgram', { $q })
     },
   },
-  {
-    label: t('menu.reset'),
-    originalLabel: t('menu.reset'),
-    tooltip: t('menu.reset'),
-    shortcut: 'Ctrl+R',
-    icon: 'refresh',
-    disable: !editor.hasProgramChanged() || editor.isLoading,
-    onClick() {
-      const hasChanged = editor.hasProgramChanged()
-      if (hasChanged)
-        $commandManager.executeCommand('discardChanges', { $q })
-    },
-  },
+  // {
+  //   label: t('menu.reset'),
+  //   originalLabel: t('menu.reset'),
+  //   tooltip: t('menu.reset'),
+  //   shortcut: 'Ctrl+R',
+  //   icon: 'refresh',
+  //   disable: !editor.hasProgramChanged() || editor.isLoading,
+  //   onClick() {
+  //     const hasChanged = editor.hasProgramChanged()
+  //     if (hasChanged)
+  //       $commandManager.executeCommand('discardChanges', { $q })
+  //   },
+  // },
   {
     label: t('menu.newStep'),
     originalLabel: t('menu.newStep'),
@@ -223,15 +223,15 @@ onKeyStroke(['V', 'v'], (event: KeyboardEvent) => {
   }
 })
 
-onKeyStroke(['R', 'r'], (event: KeyboardEvent) => {
-  if (ctrl.value) {
-    event.preventDefault()
+// onKeyStroke(['R', 'r'], (event: KeyboardEvent) => {
+//   if (ctrl.value) {
+//     event.preventDefault()
 
-    const hasChanged = editor.hasProgramChanged()
-    if (hasChanged)
-      $commandManager.executeCommand('discardChanges', { $q })
-  }
-})
+//     const hasChanged = editor.hasProgramChanged()
+//     if (hasChanged)
+//       $commandManager.executeCommand('discardChanges', { $q })
+//   }
+// })
 
 watch(locale, () => {
   form.value?.validate()
