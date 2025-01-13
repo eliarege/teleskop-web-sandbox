@@ -13,8 +13,6 @@ const emit = defineEmits<{
 const { t, d } = useI18n()
 const $q = useQuasar()
 
-const outerDivRef = ref<HTMLElement | null>(null)
-
 const alarmOptions = computed(() => [
   { label: t('alarmSettings.0'), value: 1 },
   { label: t('alarmSettings.1'), value: 2 },
@@ -113,30 +111,10 @@ const rows = computed(() => {
       }
     })
 })
-onMounted(() => {
-  if (outerDivRef.value) {
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width } = entry.contentRect
-        const newFontSize = `${Math.max(10, width / 80)}px`
-        if (outerDivRef.value) {
-          outerDivRef.value.style.fontSize = newFontSize
-        }
-      }
-    })
-    observer.observe(outerDivRef.value)
-
-    onUnmounted(() => {
-      if (outerDivRef.value) {
-        observer.unobserve(outerDivRef.value)
-      }
-    })
-  }
-})
 </script>
 
 <template>
-  <div ref="outerDivRef" class="wh-full overflow-y-auto h-full container">
+  <div class="wh-full overflow-y-auto text-xs h-full container">
     <!-- Checkbox for select all -->
     <div class="pos-relative">
       <q-checkbox
@@ -165,6 +143,7 @@ onMounted(() => {
       dense
       :pagination="{ rowsPerPage: 0 }"
       :rows="rows"
+      :no-data-label="t('noAlarm')"
       :columns="columns"
       row-key="batchAlarmNo"
       class="text-black table-custom my-auto mt-10 ml-4 mr-4"

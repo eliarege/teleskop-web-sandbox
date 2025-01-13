@@ -532,3 +532,18 @@ export function flattenPrograms(programs: Program[]) {
     })
   })
 }
+
+export function orderArray(array: Array<any>, predefinedOrder: Array<number | string | boolean>, key?: string) {
+  const orderedData = array.sort((a: any, b: any) => {
+    const indexA = predefinedOrder.indexOf(key ? a[key] : a)
+    const indexB = predefinedOrder.indexOf(key ? b[key] : b)
+    if (indexA === -1 && indexB === -1)
+      return 0 // Both are unordered
+    if (indexA === -1)
+      return 1 // a is unordered, comes after b
+    if (indexB === -1)
+      return -1 // b is unordered, comes after a
+    return indexA - indexB
+  })
+  return orderedData
+}

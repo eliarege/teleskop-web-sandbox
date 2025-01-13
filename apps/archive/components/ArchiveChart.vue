@@ -8,6 +8,8 @@ import {
   axisBottom,
   axisLeft,
   axisRight,
+  brush,
+  brushX,
   brush as d3Brush,
   extent as d3Extent,
   line as d3Line,
@@ -44,17 +46,31 @@ const props = defineProps<{
   theoreticalPrograms: TheoreticalProgram[]
 }>()
 const emit = defineEmits<{
-  updateModelValue: [date: Date]
+  'update:modelValue': [date: Date]
 }>()
 const { t } = useI18n()
 const selectedTime = defineModel<Date>({ required: true })
 const settingsStore = userSettingsStore()
-const startTime = ref(new Date(props.batch.joborderInfo.startTime)) // props.batch.joborderInfo.startTime
+const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
+const startTime = ref(new Date(props.batch.joborderInfo.startTime))
+
+function getLastDate() {
+  const theoreticalLastDate = theoreticalTemperatures[theoreticalTemperatures.length - 1].time
+  const lastRecordDate = props.batch.lastRecordDate
+  return lastRecordDate > theoreticalLastDate ? lastRecordDate : theoreticalLastDate
+}
+const endTime = ref(
+  new Date(props.batch.joborderInfo.endTime || getLastDate()),
+  // return addMinutes(new Date(startTime.value), 80)
+)
+
 const chartEl = ref<HTMLElement>()
 const xAxisEl = ref<SVGGElement>()
 const reelsXAxisEl = ref<SVGGElement>()
 const yAxisEl = ref<SVGGElement>()
 const reelsYAxisEl = ref<SVGGElement>()
+const svgRef = ref<SVGGElement | null>(null)
+const brushGroup = ref<SVGGElement | null>(null)
 
 const clipId = useId()
 
@@ -103,16 +119,12 @@ const innerRect = computed(() => {
 })
 
 const id = useId()
-const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
-
-const endTime = ref(
-  new Date(props.batch.joborderInfo.endTime || theoreticalTemperatures[theoreticalTemperatures.length - 1].time),
-  // return addMinutes(new Date(startTime.value), 80)
-)
+const xExtendStartTime = ref(startTime.value)
+const xExtendEndTime = ref(endTime.value)
 const xExtent = computed(() => {
   const a = [
-    new Date(startTime.value),
-    new Date(endTime.value),
+    new Date(xExtendStartTime.value),
+    new Date(xExtendEndTime.value),
     // props.batch.joborderInfo.endTime
     //   ? new Date(props.batch.joborderInfo.endTime)
     //   : joborderEndTime.value,
@@ -160,6 +172,8 @@ theoreticalTemperatures.forEach((io, index) => {
       )
     }
   }
+  if (!colorTransitionPortions.length)
+    colorTransitionPortions.push(0)
 })
 
 const dataSet = computed(() => {
@@ -268,16 +282,22 @@ const xAxisTickScale = scaleLinear()
   .clamp(true)
 
 const yAxisTickScale = scaleLinear()
-  .range([0, 16])
+  .range([1, 32])
   .domain([150, 1024])
   .clamp(true)
-
+const reelAxisTickScale = scaleLinear()
+  .range([0, 4])
+  .domain([0, 200])
+  .clamp(true)
 const xAxisTickCount = computed(() => {
   return Math.round(xAxisTickScale(outerWidth.value))
 })
 
 const yAxisTickCount = computed(() => {
   return Math.round(yAxisTickScale(outerHeight.value * chartHeightMultiplier))
+})
+const reelsYAxisTickCount = computed(() => {
+  return Math.round(reelAxisTickScale(outerHeight.value * (1 - chartHeightMultiplier)))
 })
 
 function updateXAxis() {
@@ -301,13 +321,29 @@ function updateXAxis() {
       .ticks(xAxisTickCount.value),
   )
 }
-
-const colorInterpolator = interpolateRgbBasis([
-  'purple',
-  'blue',
-  'red',
-  'orange',
-])
+const alarmTypes = computed(() => [
+  { type: 0, label: t('alarmSettings.0sh'), color: 'red' },
+  { type: 1, label: t('alarmSettings.1sh'), color: 'blue' },
+  { type: 2, label: t('alarmSettings.2sh'), color: 'green' },
+  { type: 3, label: t('alarmSettings.3sh'), color: 'red' },
+  { type: 4, label: t('alarmSettings.4'), color: 'blue' },
+  { type: 5, label: t('alarmSettings.5'), color: 'blue' },
+  { type: 6, label: t('alarmSettings.6'), color: 'blue' },
+  { type: 7, label: t('alarmSettings.7sh'), color: 'blue' },
+  { type: 8, label: t('alarmSettings.8'), color: 'blue' },
+  { type: 9, label: t('alarmSettings.9'), color: 'yellow' },
+  { type: 10, label: t('alarmSettings.10'), color: '#FF00FF' },
+  { type: 11, label: t('alarmSettings.11sh'), color: 'blue' },
+] as { type: number, label: string, color: string }[])
+function colorInterpolator(alarmType: number) {
+  return alarmTypes.value.find(alarm => alarm.type === alarmType)?.color || 'blue'
+}
+// const colorInterpolator = interpolateRgbBasis([
+// 'purple',
+// 'blue',
+// 'red',
+// 'orange',
+// ])
 
 const lines = computed(() => {
   return yScales.value.map((scale, index) => {
@@ -341,7 +377,7 @@ function updateYAxises() {
   )
   yAxisReels?.call(
     axisLeft(reelYScale.value) // FIXME
-      .ticks(yAxisTickCount.value),
+      .ticks(reelsYAxisTickCount.value),
   )
   customizeYAxis(yAxisReels, false)
   customizeYAxis(yAxisLeft, false)
@@ -381,6 +417,53 @@ const selectedX = ref<number | null>(null)
 function formatASCII(asci: string) {
   return btoa(asci).replaceAll(/[=+\/]/g, '-')
 }
+function resetZoom() {
+  xExtendStartTime.value = startTime.value
+  xExtendEndTime.value = endTime.value
+}
+function zoom(zoomStartTime: Date, zoomEndTime: Date) {
+  xExtendStartTime.value = zoomStartTime
+  xExtendEndTime.value = zoomEndTime
+}
+
+function getBrush() {
+  let startX = 0
+  let endX = 0
+  return brushX()
+    .extent([
+      [margin.value.left, margin.value.top], // Top-left corner of the brush area
+      [innerRect.value.width + margin.value.left, settingsStore.bottomChartVisibilityStatus ? innerRect.value.height + margin.value.bottom : innerRect.value.height + margin.value.top], // Bottom-right corner of the brush area
+    ])
+    .on('start', (event) => {
+      startX = event.sourceEvent.x
+      handleChartClick(event.sourceEvent)
+    })
+  // .on('brush', (event) => {
+  //   handleChartClick(event.sourceEvent)
+  // })
+    .on('end', (event) => {
+      if (!event.selection)
+        return
+      const start = event.selection[0] - margin.value.left
+      const end = event.selection[1] - margin.value.left
+      endX = event.sourceEvent.x
+      const proximityCheck = Math.abs((startX - endX) / (startX + endX) / 2) * 100 > 0.5
+      if (proximityCheck) {
+        if (startX > endX) {
+          const selectedTimeAxisX = xScale.value(selectedTime.value)
+          resetZoom()
+          selectedTime.value = xScale.value.invert(selectedTimeAxisX)
+        } else {
+          const startTimeX = xScale.value.invert(start)
+          const endTimeX = xScale.value.invert(end)
+          const selectedTimeAxisX = xScale.value(selectedTime.value)
+          zoom(startTimeX, endTimeX)
+          selectedTime.value = xScale.value.invert(selectedTimeAxisX)
+        }
+      }
+      d3Select(brushGroup.value).call(el => brushX().clear(el as Selection<SVGGElement, any, any, any>))
+    })
+}
 onMounted(() => {
   xAxis = d3Select(xAxisEl.value!)
   xAxisReels = d3Select(reelsXAxisEl.value!)
@@ -389,6 +472,17 @@ onMounted(() => {
   visibleAxises.value.forEach((axis, key) => {
     yAxisesRight.value.set(key, d3Select(`#${id}-${formatASCII(key)}`))
   })
+  if (brushGroup.value) {
+    // TODO: On resize like fullscreen brushı updatelemek lazım xextend
+    const brushBehavior = ref(getBrush())
+    watch(innerRect, () => {
+      brushBehavior.value = getBrush()
+      d3Select(brushGroup.value).call(brushBehavior.value)
+    })
+    d3Select(brushGroup.value).call(brushBehavior.value)
+
+    // Apply the brush to the <g> element
+  }
   updateXAxis()
   updateYAxises()
   if (selectedTime.value) {
@@ -396,9 +490,16 @@ onMounted(() => {
   }
 })
 
+const tooltipOffset = ref(10)
 function drawSelectedTimeLine() {
+  const xStart = xScale.value(new Date(xExtendStartTime.value))
+  const xEnd = xScale.value(new Date(xExtendEndTime.value))
   const xCoord = xScale.value(new Date(selectedTime.value))
   selectedX.value = xCoord
+  if (xCoord > (xStart + xEnd) / 2)
+    tooltipOffset.value = -250
+  else
+    tooltipOffset.value = 10
 }
 
 watch([xScale, xAxisTickCount], () => {
@@ -417,7 +518,6 @@ watch(visibleAxises, async (newval) => {
 })
 watch(selectedTime, () => {
   drawSelectedTimeLine()
-  emit('updateModelValue', selectedTime.value)
 })
 function handleChartClick(event: MouseEvent) {
   const rect = chartEl.value?.getBoundingClientRect()
@@ -431,6 +531,7 @@ function handleChartClick(event: MouseEvent) {
 
 const uniqueBars = ref(
   [] as {
+    alarmType: number
     alarmNo: number
     color: any
     value: { startTime: string | Date, endTime: string | Date }[]
@@ -442,6 +543,7 @@ props.batch.alarms.forEach((alarm) => {
   )
   if (uniqueIndex === -1) {
     uniqueBars.value.push({
+      alarmType: alarm.alarmType,
       alarmNo: alarm.alarmNo,
       color: '',
       value: [{ startTime: alarm.startTime, endTime: alarm.endTime || new Date() }],
@@ -454,9 +556,10 @@ props.batch.alarms.forEach((alarm) => {
   }
 })
 uniqueBars.value = uniqueBars.value.map((bar, index) => {
-  return { ...bar, color: colorInterpolator(index / uniqueBars.value.length) }
+  return { ...bar, color: colorInterpolator(bar.alarmType) }
 })
-
+const predefinedAlarmTypeOrder = [1, 10, 9, 2, 3, 0]
+const orderedAlarms = orderArray(uniqueBars.value, predefinedAlarmTypeOrder, 'alarmType')
 const barLength
   = uniqueBars.value.length * 10 > 70 ? 70 : uniqueBars.value.length * 10
 
@@ -556,14 +659,54 @@ function formatDurationHHMMSS(startDate, endDate) {
     seconds.toString().padStart(2, '0'),
   ].join(':')
 }
+function getBarEndTime(value: Date | string) {
+  return new Date(value) > xExtendEndTime.value ? xExtendEndTime.value : new Date(value)
+}
+function getBarStartTime(value: Date | string) {
+  return xExtendStartTime.value > new Date(value) ? xExtendStartTime.value : new Date(value)
+}
 function computeWidth(ioValues, idx) {
   const startTimeTemp = new Date(ioValues[idx].time)
   const endTimeTemp
     = idx + 1 < ioValues.length
       ? new Date(ioValues[idx + 1].time)
-      : xScale.value.domain()[1]
-  return xScale.value(endTimeTemp) - xScale.value(startTimeTemp)
+      : endTime.value
+  const res = xScale.value(getBarEndTime(endTimeTemp)) - xScale.value(getBarStartTime(startTimeTemp))
+  if (res < 0)
+    return 0
+  return res
 }
+function getAlarmWidth(startTime: string | Date, endTime: string | Date) {
+  const res = xScale.value(getBarEndTime(endTime)) - xScale.value(getBarStartTime(startTime))
+  if (res < 0) {
+    return 0
+  }
+  return res
+}
+const arrowPoints = computed(() => {
+  const unloadPoints: { x: number, y: number }[] = []
+  theoreticalTemperatures.forEach((temp) => {
+    if (props.batch.machine.commands.find(cmd => cmd.commandNo === temp.commandNo)?.isUnload) {
+      unloadPoints.push({
+        x: xScale.value(temp.time),
+        y: yScales.value[0](temp.value),
+      })
+    }
+  })
+  return unloadPoints
+})
+
+function getArrowPath(x: number, y: number) {
+  const arrowSize = 7
+  const offsetX = 50
+  const offsetY = 20
+
+  return `M${x + offsetX},${y + offsetY + arrowSize}
+          L${x - arrowSize + offsetX},${y + offsetY}
+          L${x + arrowSize + offsetX},${y + offsetY}
+          Z`
+}
+
 interface QBtnWithTooltip extends QBtnProps {
   tooltip?: string
 }
@@ -636,13 +779,42 @@ const buttons = computed(() =>
 
 <template>
   <div ref="chartEl" class="chart">
+    <div style="display: flex; gap: 10px; margin-left: 10px; font-size: small; margin-bottom: -20px;">
+      <div
+        v-for="alarm of alarmTypes"
+        :key="`alarmType${alarm.type}`"
+        style="display: flex; align-items: center; justify-content: center; gap: 5px;"
+      >
+        <div :style="{ height: '8px', width: '8px', backgroundColor: alarm.color }" />
+        <text>
+          {{ alarm.label }}
+        </text>
+      </div>
+    </div>
     <svg
+      ref="svgRef"
       :viewBox="`0 0 ${outerWidth} ${outerHeight}`"
       :width="outerWidth"
       :height="outerHeight"
     >
+      <g :clip-path="`url(#${clipId})`">
+        <path
+          v-for="(point, index) in arrowPoints"
+          :key="`arrow-${index}`"
+          :d="getArrowPath(point.x, point.y)"
+          fill="blue"
+          stroke="black"
+          stroke-width="0.5"
+          class="arrow"
+        />
+      </g>
       <g
-        :transform="`translate(${innerRect.width + margin.right - 10}, ${margin.top})`"
+        ref="brushGroup"
+        :width="outerWidth"
+        :height="outerHeight"
+      />
+      <g
+        :transform="`translate(${innerRect.width + margin.right}, ${margin.top})`"
       >
         <foreignObject
           v-for="(button, index) in buttons"
@@ -668,7 +840,10 @@ const buttons = computed(() =>
           <rect :width="innerRect.width" :height="innerRect.height" />
         </clipPath>
       </defs>
-      <g :transform="`translate(${margin.left},${margin.top})`">
+      <g
+        :transform="`translate(${margin.left},${margin.top})`"
+        style="cursor: crosshair;"
+      >
         <g
           ref="xAxisEl"
           class="x-axis"
@@ -698,6 +873,7 @@ const buttons = computed(() =>
             fill="none"
             :stroke="line.isDefault ? 'url(#koko)' : line.color"
             :stroke-width="line.isDefault ? 1 : 2.5"
+            style="pointer-events: none;"
           />
           <linearGradient id="koko">
             <stop
@@ -724,18 +900,17 @@ const buttons = computed(() =>
           stroke-width="2"
         />
         <g :clip-path="`url(#${clipId})`">
-          <g v-for="barLine in uniqueBars" :key="`${barLine.alarmNo}-bar`">
+          <g v-for="barLine in orderedAlarms" :key="`${barLine.alarmNo}-bar`">
             <rect
               v-for="(bar, indexBar) in barLine.value"
               :key="`${indexBar}-${barLine.alarmNo}`"
-              :x="xScale(new Date(bar.startTime))"
+              :x="xScale(getBarStartTime(bar.startTime))"
               :y="barScale(`${barLine.alarmNo}`)"
-              :width="
-                xScale(new Date(bar.endTime)) - xScale(new Date(bar.startTime))
-              "
+              :width="getAlarmWidth(bar.startTime, bar.endTime)"
               :height="barScale.bandwidth()"
               :fill="barLine.color"
               :stroke="barLine.color"
+              style="pointer-events: none;"
               stroke-width="1"
             />
           </g>
@@ -747,7 +922,7 @@ const buttons = computed(() =>
               && settingsStore.showGraphTooltip
           "
           id="chart-tooltip"
-          :transform="`translate(${selectedX + 10}, 10)`"
+          :transform="`translate(${selectedX + tooltipOffset}, 10)`"
         >
           <rect
             class="tooltip-bg"
@@ -811,11 +986,12 @@ const buttons = computed(() =>
               <rect
                 v-for="(value, idx) in io.ioValues"
                 :key="`io-${index}-value-${idx}`"
-                :x="xScale(new Date(value.time))"
+                :x="xScale(getBarStartTime(value.time))"
                 :width="computeWidth(io.ioValues, idx)"
                 :height="8"
                 :y="index * 20"
                 :fill="value.value ? 'blue' : 'grey'"
+                style="pointer-events: none;"
                 stroke="none"
               />
             </template>
@@ -839,13 +1015,7 @@ const buttons = computed(() =>
             />
           </g>
         </g>
-        <rect
-          :width="innerRect.width"
-          :height="innerRect.height"
-          fill="transparent"
-          style="cursor: crosshair"
-          @click="handleChartClick"
-        />
+
       </g>
     </svg>
   </div>

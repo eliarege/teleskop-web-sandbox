@@ -6,7 +6,6 @@ const props = defineProps<{
   jobOrderInfo: BatchInfo
 }>()
 const { t } = useI18n()
-const outerDivRef = ref<HTMLElement | null>(null)
 
 const keyLabels = computed(() => {
   return {
@@ -20,32 +19,11 @@ const keyLabels = computed(() => {
   }
 })
 
-onMounted(() => {
-  if (outerDivRef.value) {
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width } = entry.contentRect
-        const newFontSize = `${Math.max(12, width / 50)}px`
-        if (outerDivRef.value) {
-          outerDivRef.value.style.fontSize = newFontSize
-        }
-      }
-    })
-    observer.observe(outerDivRef.value)
-
-    onUnmounted(() => {
-      if (outerDivRef.value) {
-        observer.unobserve(outerDivRef.value)
-      }
-    })
-  }
-})
-
 const theoreticalEndTime = computed(() => new Date((new Date(props.jobOrderInfo.startTime)).getTime() + props.jobOrderInfo.theoreticalDuration * 1000))
 </script>
 
 <template>
-  <div ref="outerDivRef" class="border wh-full overflow-y-auto h-full table-container">
+  <div class="border wh-full overflow-y-auto text-xs h-full table-container">
     <table class="table w-full">
       <tbody>
         <tr v-for="(value, key) in keyLabels" :key="`joborderInfo${key}`">

@@ -58,6 +58,7 @@
   "updateAxises": "Eksenleri Düzenle",
   "addRemoveAxis": "Eksen Ekle/Kaldır",
   "reelDataDialog": "Kule Tur/Zaman Tablosu",
+  "noAlarm": "Seçili Zamanda Alarm Bulunamadı",
   "joborderSummary": {
     "waterType1": "Soğuk Su",
     "waterType2": "Sıcak Su",
@@ -80,20 +81,20 @@
     "description": "İş emri özet raporunda görünmesini istediğiniz ERP parametrelerini seçiniz."
   },
   "panels": {
-    "JobOrderInfo": "İş Emri Bilgi",
-    "StartParameters": "Başlangıç Parametreleri",
-    "WorkingPrograms": "Çalışan",
-    "TheoricPrograms": "Teorik",
+    "jobOrderInfo": "İş Emri Bilgi",
+    "startParameters": "Başlangıç Parametreleri",
+    "actualPrograms": "Çalışan",
+    "theoricPrograms": "Teorik",
     "AIN": "AIN",
     "DIN": "DIN",
     "AOUT": "AOUT",
-    "Counter": "Sayaçlar",
+    "counter": "Sayaçlar",
     "DOUTFunc": "DOUT",
     "DOUTLock": "DOUT Kilit",
-    "ChartComponent": "Grafik",
-    "Commands": "Komutlar",
-    "Alarms": "Alarmlar",
-    "CycleTimes": "Tur Süreleri"
+    "chartComponent": "Grafik",
+    "commands": "Komutlar",
+    "alarms": "Alarmlar",
+    "cycleTimes": "Tur Süreleri"
   },
   "joborderTable": {
     "machineName": "Makine Adı",
@@ -128,17 +129,23 @@
     "title": "Alarm Tipi Seçenekleri",
     "message": "Görmek istediğiniz alarm tiplerini seçiniz",
     "0": "Komut Gecikme Alarmları",
+    "0sh": "Komut Gecikme",
     "1": "Ekipman Alarmı",
+    "1sh": "Ekipman",
     "2": "Operatör Uyarı komutlarında uyarı mesajı",
+    "2sh": "Operatör uyarı",
     "3": "Operatör Uyarı komutlarında Zaman Aşıldı",
+    "3sh": "Operatör Zaman Aşıldı",
     "4": "Kilitleme",
     "5": "PLC",
     "6": "Yazılım",
     "7": "Kalibrasyon Alarmı",
+    "7sh": "Kalibrasyon",
     "8": "Akuple",
     "9": "Manuel",
     "10": "Durduruldu",
-    "11": "Proses Alarmları"
+    "11": "Proses Alarmları",
+    "11sh": "Proses"
   },
   "inputOutput": {
     "open": "Açık",

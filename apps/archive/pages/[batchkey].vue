@@ -252,6 +252,7 @@ const components: Record<string, () => any> = {
       commands: theoreticalCommands as DuoAny<BatchCommand>[],
       selectedTime: selectedDate.value,
       machineCommands: batchData.value?.machine.commands as MachineCommand[],
+      onUpdateSelectedTime: (time: string) => updateSelectedTime(time),
     }),
   AIN: () =>
     h(AnalogInputOutput, {
@@ -314,10 +315,10 @@ const components: Record<string, () => any> = {
     }),
   Chart: () =>
     h(ArchiveChart, {
-      batch: batchData.value,
+      'batch': batchData.value,
       theoreticalPrograms,
-      modelValue: selectedDate.value,
-      onUpdateModelValue: (newVal) => {
+      'modelValue': selectedDate.value,
+      'onUpdate:modelValue': (newVal: Date) => {
         selectedDate.value = newVal
       },
     }),
@@ -391,12 +392,12 @@ const layoutConfig = freezeLayoutConfig({
                 },
                 content: [
                   {
-                    title: t('panels.JobOrderInfo'),
+                    title: t('panels.jobOrderInfo'),
                     type: 'component',
                     componentType: 'JobOrderInfo',
                   },
                   {
-                    title: t('panels.StartParameters'),
+                    title: t('panels.startParameters'),
                     type: 'component',
                     componentType: 'StartParameters',
                   },
@@ -415,12 +416,12 @@ const layoutConfig = freezeLayoutConfig({
                 },
                 content: [
                   {
-                    title: t('panels.WorkingPrograms'),
+                    title: t('panels.actualPrograms'),
                     type: 'component',
                     componentType: 'ActualPrograms',
                   },
                   {
-                    title: t('panels.TheoricPrograms'),
+                    title: t('panels.theoricPrograms'),
                     type: 'component',
                     componentType: 'TheoreticalPrograms',
                   },
@@ -453,12 +454,12 @@ const layoutConfig = freezeLayoutConfig({
                     componentType: 'AOUT',
                   },
                   {
-                    title: t('panels.CycleTimes'),
+                    title: t('panels.cycleTimes'),
                     type: 'component',
                     componentType: 'CycleTimes',
                   },
                   {
-                    title: t('panels.Counter'),
+                    title: t('panels.counter'),
                     type: 'component',
                     componentType: 'Counter',
                   },
@@ -487,14 +488,14 @@ const layoutConfig = freezeLayoutConfig({
             type: 'row',
             content: [
               {
-                title: t('panels.ChartComponent'),
+                title: t('panels.chartComponent'),
                 type: 'component',
                 componentType: 'Chart',
               },
             ],
           },
           {
-            title: t('panels.Commands'),
+            title: t('panels.commands'),
             size: '15%',
             header: {
               maximise: false,
@@ -507,7 +508,7 @@ const layoutConfig = freezeLayoutConfig({
             type: 'row',
             content: [
               {
-                title: t('panels.Alarms'),
+                title: t('panels.alarms'),
                 size: '50%',
                 header: {
                   maximise: false,
@@ -516,12 +517,12 @@ const layoutConfig = freezeLayoutConfig({
                 componentType: 'Alarms',
               },
               {
-                title: t('panels.WorkingPrograms'),
+                title: t('panels.actualPrograms'),
                 type: 'component',
                 componentType: 'ActualSteps',
               },
               {
-                title: t('panels.TheoricPrograms'),
+                title: t('panels.theoricPrograms'),
                 type: 'component',
                 componentType: 'TheoreticalSteps',
               },
@@ -597,8 +598,6 @@ async function showJoborderSummarySettingsDialog() {
   })
 }
 
-const breakpoints = useBreakpoints(breakpointsTailwind)
-const sm = breakpoints.greaterOrEqual('sm')
 const tt = (key: string) => toRef(() => t(key))
 
 const items = [

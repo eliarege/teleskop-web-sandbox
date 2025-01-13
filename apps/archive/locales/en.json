@@ -58,6 +58,7 @@
   "reelDataDialog": "Reel Cycle Count / Time Table",
   "updateAxises": "Update Axises",
   "addRemoveAxis": "Add/Remove Axis",
+  "noAlarm": "No Alarm At Selected Time",
   "joborderSummarySettings": {
     "_": "Job Order Summary Report Settings",
     "description": "Please select the ERP parameters wanted to show on job order summary report."
@@ -80,20 +81,20 @@
     "totalWaterPerWeight": "Lt Water / Kg Fabric"
   },
   "panels": {
-    "JobOrderInfo": "Job Order Info",
-    "StartParameters": "Start Parameters",
-    "WorkingPrograms": "Working Programs",
-    "TheoricPrograms": "Theoric Programs",
+    "jobOrderInfo": "Job Order Info",
+    "startParameters": "Start Parameters",
+    "actualPrograms": "Actual",
+    "theoricPrograms": "Theoric",
     "AIN": "AIN",
     "DIN": "DIN",
     "AOUT": "AOUT",
-    "Counter": "Counters",
+    "counter": "Counters",
     "DOUTFunc": "DOUT",
     "DOUTLock": "DOUT Lock",
-    "ChartComponent": "Chart",
-    "Commands": "Commands",
-    "Alarms": "Alarms",
-    "CycleTimes": "Cycle Times"
+    "chartComponent": "Chart",
+    "commands": "Commands",
+    "alarms": "Alarms",
+    "cycleTimes": "Cycle Times"
 
   },
   "joborderTable": {
@@ -131,17 +132,23 @@
     "title": "Alarm Type Options",
     "message": "Select the alarm types you want to see",
     "0": "Command Delay Alarms",
+    "0sh": "Command Delay",
     "1": "Equipment Alarm",
+    "1sh": "Equipment",
     "2": "Warning Message in Operator Warning Commands",
+    "2sh": "Operator Warning",
     "3": "Time Exceeded in Operator Warning Commands",
+    "3sh": "Operator Delay",
     "4": "Locking",
     "5": "PLC",
     "6": "Software",
     "7": "Calibration Alarm",
+    "7sh": "Calibration",
     "8": "Coupled",
     "9": "Manual",
     "10": "Stopped",
-    "11": "Process Alarms"
+    "11": "Process Alarms",
+    "11sh": "Process"
   },
   "inputOutput": {
     "open": "Open",
