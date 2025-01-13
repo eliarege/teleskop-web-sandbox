@@ -659,9 +659,3 @@ registerCommand(() => {
     },
   }
 })
-        },
-      })
-      return true
-    },
-  }
-})
