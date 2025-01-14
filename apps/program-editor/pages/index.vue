@@ -176,6 +176,12 @@ const items = [
             $commandManager.executeCommand('editProgramIcons', { $q })
           },
         },
+        {
+          label: tt('menu.writeProgramSettings'),
+          onClick() {
+            $commandManager.executeCommand('writeProgramSettings', { $q })
+          },
+        },
       ],
       ],
     },
