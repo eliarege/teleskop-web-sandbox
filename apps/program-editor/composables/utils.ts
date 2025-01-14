@@ -332,3 +332,12 @@ export function parseDuration(duration: string): number {
   }
   return Number(duration) * 36000
 }
+
+export const programWriteSettings = useLocalStorage('programWriteSettings', {
+  addParallelCommandsFromPreviousStep: false,
+  confirmAddParallelCommandToSteps: false,
+  removeParallelCommandFromOtherSteps: false,
+  changeParallelCommandParameterInOtherSteps: false,
+  preventParallelUsageForDisabledCommands: false,
+  activeCommandGroups: false,
+})
