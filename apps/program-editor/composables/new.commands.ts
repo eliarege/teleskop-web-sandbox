@@ -23,6 +23,7 @@ import TBCommandDetailDialog from '~/components/TBCommandDetailDialog.vue'
 import CMMoveParallelStepDialog from '~/components/CMMoveParallelStepDialog.vue'
 import TBUnsavedChangesDialog from '~/components/TBUnsavedChangesDialog.vue'
 import TBMachineConstantsDialog from '~/components/TBMachineConstantsDialog.vue'
+import TBWriteProgramSettingsDialog from '~/components/TBWriteProgramSettingsDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -73,8 +74,9 @@ export interface RegisteredCommands {
   unsavedChanges: [ctx: any, machineId?: number]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, machineId: number, commandNo: number]
-  moveParallelStep: [ctx: any, commandNo: number, programCommand: ProgramStepCommand]
+  moveParallelStep: [ctx: any, type: 'add' | 'remove', commandNo: number, programCommand: ProgramStepCommand]
   machineConstants: [ctx: any, machineId: number]
+  writeProgramSettings: [ctx: any]
 }
 
 registerCommand(() => {
@@ -666,6 +668,18 @@ registerCommand(() => {
           machineName: machineInfo.name,
           machineConstants: machineInfo.constants,
         },
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'writeProgramSettings',
+    async execute(ctx: any) {
+      ctx.$q.dialog({
+        component: TBWriteProgramSettingsDialog,
       })
       return true
     },

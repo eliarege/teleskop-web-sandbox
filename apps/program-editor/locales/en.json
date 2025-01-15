@@ -91,7 +91,8 @@
     "stepCommandGraph": "Step/Command Graph",
     "expandAll": "Expand All",
     "collapseAll": "Collapse All",
-    "machineConstants": "Machine Constants"
+    "machineConstants": "Machine Constants",
+    "writeProgramSettings": "Program Write Settings"
   },
   "program": {
     "name": "Program Name",
@@ -473,5 +474,18 @@
     "endIndex": "End Step",
     "startIndexMore": "Start step cannot be greater than end step",
     "endIndexLess": "End step cannot be less than start step"
+  },
+  "writeProgramSettings": {
+    "title": "Program Write Settings",
+    "addParallelCommandsFromPreviousStep": "Add parallel commands of the previous command to the newly added step",
+    "confirmAddParallelCommandToSteps": "When a parallel instruction is added to a step, it asks if it should be added to other steps.",
+    "removeParallelCommandFromOtherSteps": "When a parallel instruction is deleted from a step, it asks if it should be deleted from other steps as well.",
+    "changeParallelCommandParameterInOtherSteps": "When a parameter of a parallel instruction is changed from one step, ask other steps to change it as well",
+    "preventParallelUsageForDisabledCommands": "Prevent the use of disabled commands in parallel",
+    "activeCommandGroups": "Command Groups Active",
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel"
+    }
   }
 }

@@ -91,7 +91,8 @@
     "stepCommandGraph": "Adım/Komut Grafiği",
     "expandAll": "Tümünü Genişlet",
     "collapseAll": "Tümünü Daralt",
-    "machineConstants": "Makine Sabitleri"
+    "machineConstants": "Makine Sabitleri",
+    "writeProgramSettings": "Program Yazma Ayarları"
   },
   "program": {
     "name": "Program Adı",
@@ -474,5 +475,18 @@
     "endIndex": "Bitiş Adımı",
     "startIndexMore": "Başlangıç adımı bitiş adımından büyük olamaz",
     "endIndexLess": "Bitiş adımı başlangıç adımından küçük olamaz"
+  },
+  "writeProgramSettings": {
+    "title": "Program Yazma Ayarları",
+    "addParallelCommandsFromPreviousStep": "Yeni eklenen adıma bir önceki komutun paralel komutlarını ekle",
+    "confirmAddParallelCommandToSteps": "Bir adıma paralel bir komut eklendiğinde, diğer adımlara da eklenmesi gerektiğini sor",
+    "removeParallelCommandFromOtherSteps": "Bir adımdan paralel komut silindiğinde, diğer adımlardan da  sillinmesi gerektiğini sor",
+    "changeParallelCommandParameterInOtherSteps": "Bir adımdan paralel komutun parametresi değiştirildiğinde, diğer adımlardan da değiştirilmesi gerektiğini sor",
+    "preventParallelUsageForDisabledCommands": "Devreden çıkan komutların paralelde kullanımını engelle",
+    "activeCommandGroups": "Komut Grupları Aktif",
+    "buttons": {
+      "save": "Kaydet",
+      "cancel": "İptal"
+    }
   }
 }

@@ -1,12 +1,25 @@
 <script setup lang="ts">
-import { programWriteSettings } from '~/composables/utils'
+import { ref } from 'vue'
+import { useProgramWriteSettings } from '~/composables/settings'
 
 const { t } = useI18n()
-const { dialogRef, onDialogCancel, onDialogOK } = useDialogPluginComponent()
+const settings = useProgramWriteSettings()
+const tempSettings = ref({ ...settings.value }) // Ayarların geçici bir kopyası
+
+const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+
+function onDialogOK() {
+  settings.value = tempSettings.value
+  onDialogCancel()
+}
 </script>
 
 <template>
-  <QDialog ref="dialogRef" class="select-none">
+  <QDialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogCancel"
+  >
     <QCard>
       <!-- Başlık -->
       <QCardSection>
@@ -28,27 +41,27 @@ const { dialogRef, onDialogCancel, onDialogOK } = useDialogPluginComponent()
       <QCardSection class="text-gray-8 dark:text-gray-3">
         <div class="text-sm mb-2 flex flex-col gap-4">
           <QToggle
-            v-model="programWriteSettings.addParallelCommandsFromPreviousStep"
+            v-model="tempSettings.addParallelCommandsFromPreviousStep"
             :label="t('writeProgramSettings.addParallelCommandsFromPreviousStep')"
           />
           <QToggle
-            v-model="programWriteSettings.confirmAddParallelCommandToSteps"
+            v-model="tempSettings.confirmAddParallelCommandToSteps"
             :label="t('writeProgramSettings.confirmAddParallelCommandToSteps')"
           />
           <QToggle
-            v-model="programWriteSettings.removeParallelCommandFromOtherSteps"
+            v-model="tempSettings.removeParallelCommandFromOtherSteps"
             :label="t('writeProgramSettings.removeParallelCommandFromOtherSteps')"
           />
           <QToggle
-            v-model="programWriteSettings.changeParallelCommandParameterInOtherSteps"
+            v-model="tempSettings.changeParallelCommandParameterInOtherSteps"
             :label="t('writeProgramSettings.changeParallelCommandParameterInOtherSteps')"
           />
           <QCheckbox
-            v-model="programWriteSettings.preventParallelUsageForDisabledCommands"
+            v-model="tempSettings.preventParallelUsageForDisabledCommands"
             :label="t('writeProgramSettings.preventParallelUsageForDisabledCommands')"
           />
           <QCheckbox
-            v-model="programWriteSettings.activeCommandGroups"
+            v-model="tempSettings.activeCommandGroups"
             :label="t('writeProgramSettings.activeCommandGroups')"
           />
         </div>
