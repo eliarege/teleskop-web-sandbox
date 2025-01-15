@@ -223,16 +223,17 @@ export function setAxisVisibility(keyParam: string, changeTo: boolean) {
       count += 1
   })
   const axx = settingsStore.axises.get(keyParam)
-  if (count >= 4) {
-    if (!axx?.visible)
-      Notify.create({
-        message: t('errors.cannotShowMoreThanFourAxis'),
-        group: 'axisError',
-        type: 'negative',
-        position: 'top',
-      })
+  if (!axx)
+    return
+  if (count >= 4 && !axx.visible && changeTo) {
+    Notify.create({
+      message: t('errors.cannotShowMoreThanFourAxis'),
+      group: 'axisError',
+      type: 'negative',
+      position: 'top',
+    })
   } else {
-    settingsStore.axises.set(keyParam, { ...axx, visible: changeTo })
+    axx.visible = changeTo
   }
 }
 

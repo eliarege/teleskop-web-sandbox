@@ -150,35 +150,43 @@ function initializeSetting(type: string, ioIndex: number, unit?: string) {
     )
 }
 
-function setAxisForAnalogSettings(
+function setAxisForAnalogSettingsOnInitialize(
   command: AnalogInputOutputType,
   type: string,
 ) {
+  const commandKey = `${type}_${command.ioIndex}`
+  // const axisesWithSameUnit = Array.from(settingsStore.axises).map(el => el[1]).filter(axis => axis.unit === command.calibUnit || 'undef')
+  // if (axisesWithSameUnit.some(axis => axis.ioKeys.includes(commandKey)))
+  //   return
+
+  // if (settingsStore.hasUserSettings())
+  //   return
   if (command.calibUnit && !settingsStore.units.includes(command.calibUnit))
     settingsStore.units.push(command.calibUnit)
   const axis = settingsStore.axises.get(command.calibUnit)
   if (axis) {
-    const commandKey = `${type}_${command.ioIndex}`
     if (!axis.ioKeys.includes(commandKey))
       axis.ioKeys.push(commandKey)
   } else {
     settingsStore.axises.set(command.calibUnit || 'undef', {
       color: '#FFFFFF',
       unit: command.calibUnit || 'undef',
+      name: command.calibUnit || 'undef',
       max: 0,
       min: 0,
-      ioKeys: [`${type}_${command.ioIndex}`],
+      ioKeys: [commandKey],
       visible: false,
       isDefault: command.calibUnit === '\'C',
     })
   }
 }
+
 batchData.value?.analogInputs.forEach((command) => {
-  setAxisForAnalogSettings(command, 'analogInputs')
+  setAxisForAnalogSettingsOnInitialize(command, 'analogInputs')
   initializeSetting('analogInputs', command.ioIndex, command.calibUnit)
 })
 batchData.value?.analogOutputs.forEach((command) => {
-  setAxisForAnalogSettings(command, 'analogOutputs')
+  setAxisForAnalogSettingsOnInitialize(command, 'analogOutputs')
   initializeSetting('analogOutputs', command.ioIndex)
 })
 batchData.value?.digitalInputs.forEach((command) => {

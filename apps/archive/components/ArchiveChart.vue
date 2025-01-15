@@ -172,9 +172,9 @@ theoreticalTemperatures.forEach((io, index) => {
       )
     }
   }
-  if (!colorTransitionPortions.length)
-    colorTransitionPortions.push(0)
 })
+if (!colorTransitionPortions.length)
+  colorTransitionPortions.push(0)
 
 const dataSet = computed(() => {
   const set: { io: any, color: string, axis?: any, isDefault?: boolean }[] = []
@@ -716,10 +716,12 @@ const buttons = computed(() =>
     {
       icon: 'print',
       tooltip: t('print'),
+      flat: true,
       onClick: () => printChartSVG(),
     },
     {
       icon: settingsStore.showGraphTooltip ? 'comments_disabled' : 'comment',
+      flat: true,
       tooltip: settingsStore.showGraphTooltip
         ? t('hideTooltip')
         : t('showTooltip'),
@@ -727,6 +729,7 @@ const buttons = computed(() =>
         (settingsStore.showGraphTooltip = !settingsStore.showGraphTooltip),
     },
     {
+      flat: true,
       icon: !settingsStore.bottomChartVisibilityStatus
         ? 'looks_one'
         : settingsStore.bottomChartVisibilityStatus === 1
@@ -742,6 +745,7 @@ const buttons = computed(() =>
     {
       icon: 'settings',
       tooltip: t('updateAxises'),
+      flat: true,
       onClick: () => {
         $q.dialog({
           component: UpdateAxisDialog,
@@ -755,6 +759,7 @@ const buttons = computed(() =>
     {
       icon: 'stacked_line_chart',
       tooltip: t('addRemoveAxis'),
+      flat: true,
       onClick: () => {
         $q.dialog({
           component: AxisesVisibilityDialog,
@@ -764,6 +769,7 @@ const buttons = computed(() =>
     {
       icon: 'analytics',
       tooltip: t('reelDataDialog'),
+      flat: true,
       onClick: () => {
         $q.dialog({
           component: ReelDataDialog,

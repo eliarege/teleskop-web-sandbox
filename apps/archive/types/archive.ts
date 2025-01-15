@@ -42,7 +42,7 @@ export interface IOSetting {
   axis: string
 }
 export interface Axis {
-  name?: string
+  name: string
   isDefault?: boolean
   visible: boolean
   color: string
