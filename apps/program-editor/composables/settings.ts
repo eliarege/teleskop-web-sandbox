@@ -1,20 +1,35 @@
 import type { ProgramWriteSettings } from '~/shared/types'
 
-export function useProgramWriteSettings() {
+export const useProgramWriteSettings = createGlobalState(() => {
   const kc = useKeycloak()
-  if (kc.enabled) {
-    until(kc.didInitialise).toBe(true)
-  }
+  const storage = useLocalStorage<Record<string, ProgramWriteSettings>>(`pe.programWriteSettings`, {})
+  const username = computed(() => {
+    return kc.tokenParsed.value?.preferred_username || 'guest'
+  })
 
-  const username = kc.tokenParsed.value?.preferred_username || 'guest'
-  const key = `pe.programWriteSettings.${username}`
+  const settings = ref(defaultSettings())
 
-  return useLocalStorage<ProgramWriteSettings>(key, {
+  watch(username, (uname) => {
+    if (!storage.value[uname]) {
+      storage.value[uname] = defaultSettings()
+    }
+    Object.assign(settings.value, storage.value[uname])
+  })
+
+  watch(settings, () => {
+    Object.assign(storage.value[username.value], settings.value)
+  }, { deep: true })
+
+  return settings
+})
+
+function defaultSettings(): ProgramWriteSettings {
+  return {
     addParallelCommandsFromPreviousStep: false,
     confirmAddParallelCommandToSteps: false,
     removeParallelCommandFromOtherSteps: false,
     changeParallelCommandParameterInOtherSteps: false,
     preventParallelUsageForDisabledCommands: false,
     activeCommandGroups: false,
-  })
+  }
 }

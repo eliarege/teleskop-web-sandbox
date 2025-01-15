@@ -142,7 +142,7 @@ async function updateStepCommand(commandNo: number, programCommand: ProgramStepC
 
   if (isMainCommand === CommandType.PARALLEL && !isLastStep && isNewCommand) {
   // Program yazma ayarlarına göre paralel adımları taşı
-    const settings = await useProgramWriteSettings()
+    const settings = useProgramWriteSettings()
     if (settings.value.confirmAddParallelCommandToSteps)
       $commandManager.executeCommand('moveParallelStep', { $q }, 'add', commandNo, programCommand)
   }
