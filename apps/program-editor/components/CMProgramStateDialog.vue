@@ -4,7 +4,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const showStatusColorPopup = useLocalStorage('showPopup', true)
+const showStatusColorPopup = useLocalStorage('pe.showPopup', true)
 
 function togglePopup() {
   showStatusColorPopup.value = !showStatusColorPopup.value

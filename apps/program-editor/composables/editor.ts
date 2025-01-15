@@ -1,6 +1,7 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
+import { useProgramWriteSettings } from './settings'
 import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramFilter, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
@@ -175,7 +176,10 @@ export const useEditorStore = defineStore('editor', () => {
         if (isDef(machineCommand)) {
         // Paralel adımı taşı
           if (machineCommand.moveParallel === MoveParallel.MOVE) {
-            newStep.parallelCommands.push(klona(command))
+            // Program yazma ayarlarına göre paralel komutları ekle
+            const settings = useProgramWriteSettings()
+            if (settings.value.addParallelCommandsFromPreviousStep)
+              newStep.parallelCommands.push(klona(command))
 
             // Paralel adım devreden çıkana kadar taşı
           } else if (machineCommand.moveParallel === 1) {

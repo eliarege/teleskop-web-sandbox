@@ -2,6 +2,7 @@
 import type { QSelect } from 'quasar'
 import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 import { useEditorStore } from '~~/composables/editor'
+import { useProgramWriteSettings } from '~/composables/settings'
 import { CommandType } from '~/shared/constants'
 
 const props = defineProps<{
@@ -135,12 +136,16 @@ onMounted(() => {
   select.value?.validate()
 })
 
-function updateStepCommand(commandNo: number, programCommand: ProgramStepCommand) {
+async function updateStepCommand(commandNo: number, programCommand: ProgramStepCommand) {
   const isNewCommand = !programCommand.commandNo
   editor.updateCommand(commandNo, programCommand)
 
-  if (isMainCommand === CommandType.PARALLEL && !isLastStep && isNewCommand)
-    $commandManager.executeCommand('moveParallelStep', { $q }, commandNo, programCommand)
+  if (isMainCommand === CommandType.PARALLEL && !isLastStep && isNewCommand) {
+  // Program yazma ayarlarına göre paralel adımları taşı
+    const settings = await useProgramWriteSettings()
+    if (settings.value.confirmAddParallelCommandToSteps)
+      $commandManager.executeCommand('moveParallelStep', { $q }, 'add', commandNo, programCommand)
+  }
 }
 
 onUnmounted(() => {
