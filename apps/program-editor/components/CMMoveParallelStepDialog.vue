@@ -2,6 +2,7 @@
 import type { ProgramStepCommand } from '~/shared/types'
 
 const props = defineProps<{
+  type: 'add' | 'remove'
   commandNo: number
   commandName: string
   programCommand: ProgramStepCommand
@@ -10,12 +11,15 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const editor = useEditorStore()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const commandNo = ref(props.commandNo)
 const commandName = ref(props.commandName)
 const startIndex = ref(props.stepIndex)
 const endIndex = ref(props.stepsLength)
+
+const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
 </script>
 
 <template>
@@ -24,7 +28,7 @@ const endIndex = ref(props.stepsLength)
       <!-- Başlık -->
       <QCardSection>
         <div class="text-h6 flex items-center">
-          {{ t('moveParallelStep.title') }}
+          {{ props.type === 'add' ? t('moveParallelStep.addTitle') : t('moveParallelStep.removeTitle') }}
           <QSpace />
           <QBtn
             icon="close"
@@ -55,6 +59,12 @@ const endIndex = ref(props.stepsLength)
               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
               :title="commandName"
             >
+              <UnoIcon
+                v-if="commandIcon"
+                class="inline-block mr-1"
+                :class="commandIcon?.name"
+                :style="{ color: commandIcon?.color }"
+              />
               {{ commandName }}
             </span>
           </div>
@@ -107,11 +117,12 @@ const endIndex = ref(props.stepsLength)
           @click="onDialogCancel"
         />
         <QBtn
-          :label="t('apply')"
-          class="q-mr-sm bg-primary text-white"
+          class="q-mr-sm text-white"
+          :label="type === 'add' ? t('moveParallelStep.add') : t('moveParallelStep.remove')"
+          :class="type === 'add' ? 'bg-primary' : 'bg-red-6'"
           flat
           :disable="startIndex > endIndex"
-          @click="onDialogOK({ commandNo, startIndex, endIndex })"
+          @click="onDialogOK({ type, commandNo, startIndex: startIndex - 1, endIndex: endIndex - 1 })"
         />
       </QCardActions>
     </QCard>

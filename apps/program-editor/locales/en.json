@@ -463,9 +463,11 @@
     }
   },
   "moveParallelStep": {
-    "title": "Move Parallel Step",
+    "addTitle": "Move Parallel Step",
+    "removeTitle": "Remove Parallel Step",
     "message": "Are you sure you want to move parallel step?",
-    "move": "Move",
+    "remove": "Remove",
+    "add": "Add",
     "cancel": "Cancel",
     "startIndex": "Start Step",
     "endIndex": "End Step",

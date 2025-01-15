@@ -449,7 +449,7 @@
     "message": "Kaydedilmemiş değişiklikleriniz var. Ne yapmak istersiniz?",
     "buttons": {
       "revert": "Geri Al",
-      "discard": "Yok Say ve Devam Et",
+      "discard": "Yoksay ve Devam Et",
       "save": "Kaydet ve Devam Et",
       "cancel": "İptal"
     }
@@ -464,9 +464,11 @@
     }
   },
   "moveParallelStep": {
-    "title": "Paralel Adımı Tası",
+    "addTitle": "Paralel Adımı Taşı",
+    "removeTitle": "Paralel Adımı Sil",
     "message": "Paralel adımı tasımak istediğinizden emin misiniz?",
-    "move": "Tası",
+    "remove": "Sil",
+    "add": "Ekle",
     "cancel": "İptal",
     "startIndex": "Başlangıç Adımı",
     "endIndex": "Bitiş Adımı",

@@ -9,10 +9,14 @@ const props = defineProps<{
   path: string
 }>()
 
-const editor = useEditorStore()
+const $q = useQuasar()
 const { t } = useI18n()
+const editor = useEditorStore()
+const { $commandManager } = useNuxtApp()
+
 const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
+const isLastStep = stepIndex.value === editor.program.steps.length - 1
 const stepIcons = computed(() => {
   const mainIcon = editor.getStepIcon(step.mainCommand.commandNo!)
   const parallelIcons = step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!))
@@ -42,6 +46,14 @@ const duration = computed(() => {
   const totalStepDuration = stepDurations.reduce((total, step) => total + step.duration, 0)
   return formatDuration(totalStepDuration)
 })
+
+function deleteParallelStep(stepIndex: number, index: number) {
+  editor.selectedSteps = [editor.program.steps[stepIndex]]
+  if (!isLastStep) {
+    $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', editor.program.steps[stepIndex].parallelCommands[index].commandNo, editor.program.steps[stepIndex].parallelCommands[index])
+  }
+  editor.deleteParallelStep(stepIndex, index)
+}
 </script>
 
 <template>
@@ -122,7 +134,7 @@ const duration = computed(() => {
             icon="close"
             flat
             dense
-            @click="editor.deleteParallelStep(stepIndex, index)"
+            @click="deleteParallelStep(stepIndex, index)"
           />
         </div>
       </template>

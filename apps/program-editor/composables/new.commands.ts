@@ -618,22 +618,34 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'moveParallelStep',
-    execute(ctx: any, commandNo: number, programCommand: ProgramStepCommand) {
+    execute(ctx: any, type: string, commandNo: number, programCommand: ProgramStepCommand) {
       const commandName = editor.machine.commands.get(commandNo)?.name
       const stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
       ctx.$q.dialog({
         component: CMMoveParallelStepDialog,
         componentProps: {
+          type,
           commandNo,
           commandName,
           programCommand,
           stepIndex,
           stepsLength: editor.program.steps.length,
         },
-      }).onOk(async (command: { commandNo: number, startIndex: number, endIndex: number }) => {
-        for (let index = command.startIndex; index <= command.endIndex; index++) {
-          if (index !== stepIndex)
-            editor.newParallelStepCommand(command.commandNo, index - 1)
+      }).onOk(async (command: { type: string, commandNo: number, startIndex: number, endIndex: number }) => {
+        if (command.type === 'add') {
+          for (let index = command.startIndex; index <= command.endIndex; index++) {
+            // Eklenen adıma tekrar ekleme
+            if (stepIndex !== index + 1) {
+              editor.newParallelStepCommand(command.commandNo, index)
+            }
+          }
+        } else if (command.type === 'remove') {
+          for (let index = command.startIndex; index <= command.endIndex; index++) {
+            editor.program.steps[index].parallelCommands.forEach((command, parallelIndex) => {
+              if (command.commandNo === commandNo)
+                editor.program.steps[index].parallelCommands.splice(parallelIndex, 1)
+            })
+          }
         }
       })
       return true
