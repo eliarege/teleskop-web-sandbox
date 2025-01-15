@@ -251,6 +251,7 @@ export function getChartSVG() {
   })
   removeElement(clonedChart, '#chart-selected-time-line')
   removeElement(clonedChart, '#chart-tooltip')
+  removeElement(clonedChart, '#top-alarm-defs')
   return clonedChart.innerHTML
 }
 

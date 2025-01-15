@@ -785,18 +785,18 @@ const buttons = computed(() =>
 
 <template>
   <div ref="chartEl" class="chart">
-    <div style="display: flex; gap: 10px; margin-left: 10px; font-size: small; margin-bottom: -20px;">
-      <div
+    <g id="top-alarm-defs" style="display: flex; gap: 10px; margin-left: 10px; font-size: small; margin-bottom: -20px;">
+      <g
         v-for="alarm of alarmTypes"
         :key="`alarmType${alarm.type}`"
         style="display: flex; align-items: center; justify-content: center; gap: 5px;"
       >
-        <div :style="{ height: '8px', width: '8px', backgroundColor: alarm.color }" />
+        <g :style="{ height: '8px', width: '8px', backgroundColor: alarm.color }" />
         <text>
           {{ alarm.label }}
         </text>
-      </div>
-    </div>
+      </g>
+    </g>
     <svg
       ref="svgRef"
       :viewBox="`0 0 ${outerWidth} ${outerHeight}`"
