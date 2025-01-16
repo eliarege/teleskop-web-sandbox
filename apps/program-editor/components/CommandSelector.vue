@@ -152,9 +152,6 @@ async function updateStepCommand(commandNo: number, programCommand: ProgramStepC
 onUnmounted(() => {
   editor.errorIds.delete(id)
 })
-  if (isMainCommand === CommandType.PARALLEL && !isLastStep && isNewCommand)
-    $commandManager.executeCommand('moveParallelStep', { $q }, commandNo, programCommand)
-}
 
 function getCommandName(option: any) {
   if (!option.label) {
