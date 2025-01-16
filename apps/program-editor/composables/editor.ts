@@ -1,6 +1,7 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
+import { useProgramWriteSettings } from './settings'
 import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramFilter, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
@@ -175,7 +176,10 @@ export const useEditorStore = defineStore('editor', () => {
         if (isDef(machineCommand)) {
         // Paralel adımı taşı
           if (machineCommand.moveParallel === MoveParallel.MOVE) {
-            newStep.parallelCommands.push(klona(command))
+            // Program yazma ayarlarına göre paralel komutları ekle
+            const settings = useProgramWriteSettings()
+            if (settings.value.addParallelCommandsFromPreviousStep)
+              newStep.parallelCommands.push(klona(command))
 
             // Paralel adım devreden çıkana kadar taşı
           } else if (machineCommand.moveParallel === 1) {
@@ -283,7 +287,9 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     const parallelCommands = program.value.steps[targetIndex].parallelCommands
-    parallelCommands.push(createEmptyCommand())
+    const emptyCommand = createEmptyCommand()
+    emptyCommand.commandId = generateParallelStepId(targetIndex)
+    parallelCommands.push(emptyCommand)
 
     nextTick(() => {
       scrollPage(targetIndex, true)
@@ -313,8 +319,22 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     const newCommand = createEmptyCommand()
+    newCommand.commandId = generateParallelStepId(stepIndex)
     updateCommand(commandNo, newCommand)
     program.value?.steps[stepIndex].parallelCommands.push(newCommand)
+  }
+
+  /**
+   * Parallel adımlar için komut id'si oluşturur.
+   *
+   * @param {number} stepIndex - Paralel adımın indeksi
+   *
+   * @returns {number} Oluşturulan id
+   */
+  function generateParallelStepId(stepIndex: number): number {
+    const parallelCommands = program.value.steps[stepIndex].parallelCommands
+    const existingIds = new Set(parallelCommands.map(command => command.commandId))
+    return Array.from({ length: 100 }, (_, i) => i + 1).find(id => !existingIds.has(id))!
   }
 
   /**
@@ -382,9 +402,8 @@ export const useEditorStore = defineStore('editor', () => {
   async function onSubmit(newProgram?: Program): Promise<boolean> {
     const firstId = errorIds.value.values().next().value
     if (firstId) {
-      const el = document.getElementById(firstId)
-      const parentEl = el?.closest('.q-item__section--main')
-      const stepIndex = parentEl?.children[0].id?.split('-').pop()
+      const stepId = firstId.split('-')[0]
+      const stepIndex = getStepIndex(Number(stepId))
 
       scrollPage(Number(stepIndex), true)
       notifyError(t('saveProgram.incorrect'))
@@ -402,6 +421,7 @@ export const useEditorStore = defineStore('editor', () => {
             notifySuccess(t('saveProgram.success'))
           } else {
             notifyError(t('saveProgram.fail'))
+            isLoading.value = false
             return false
           }
         }
@@ -769,6 +789,10 @@ export const useEditorStore = defineStore('editor', () => {
           program: newProgram,
         },
       })
+
+      const hasChanged = hasProgramChanged()
+      if (hasChanged)
+        return false
 
       if (redirect)
         navigateTo(`/machine/${newProgram.machineId}/program/${newProgram.programNo}`)

@@ -16,7 +16,7 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
           size="sm"
           dense
           icon="close"
-          class="float-right"
+          class="text-gray-4 dark:text-gray-6"
           @click="onDialogCancel"
         />
       </q-card-section>
@@ -26,9 +26,8 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
       <q-card-actions align="right" class="bg-gray-1 dark:bg-dark-4">
         <q-btn
           v-close-popup
-          class="bg-primary text-white"
+          class=" bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           :label="t('discardChanges.cancel')"
-          icon="close"
           flat
           @click="onDialogCancel"
         />
@@ -36,7 +35,6 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
           v-close-popup
           class=" bg-red text-white"
           :label="t('discardChanges.discard')"
-          icon="delete"
           flat
           @click="onDialogOK"
         />

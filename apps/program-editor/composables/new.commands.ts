@@ -21,6 +21,9 @@ import TBDiscardChangesDialog from '~/components/TBDiscardChangesDialog.vue'
 import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
 import TBCommandDetailDialog from '~/components/TBCommandDetailDialog.vue'
 import CMMoveParallelStepDialog from '~/components/CMMoveParallelStepDialog.vue'
+import TBUnsavedChangesDialog from '~/components/TBUnsavedChangesDialog.vue'
+import TBMachineConstantsDialog from '~/components/TBMachineConstantsDialog.vue'
+import TBWriteProgramSettingsDialog from '~/components/TBWriteProgramSettingsDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -67,10 +70,13 @@ export interface RegisteredCommands {
   stepCommandGraph: [ctx: any]
   newProgram: [ctx: any]
   saveAsProgram: [ctx: any]
-  discardChanges: [ctx: any, machineId?: number]
+  discardChanges: [ctx: any]
+  unsavedChanges: [ctx: any, machineId?: number]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, machineId: number, commandNo: number]
-  moveParallelStep: [ctx: any, commandNo: number, programCommand: ProgramStepCommand]
+  moveParallelStep: [ctx: any, type: 'add' | 'remove', commandNo: number, programCommand: ProgramStepCommand]
+  machineConstants: [ctx: any, machineId: number]
+  writeProgramSettings: [ctx: any]
 }
 
 registerCommand(() => {
@@ -563,7 +569,7 @@ registerCommand(() => {
 registerCommand(() => {
   return {
     name: 'discardChanges',
-    execute(ctx: any, machineId: number) {
+    execute(ctx: any) {
       ctx.$q.dialog({
         component: TBDiscardChangesDialog,
       }).onOk(async () => {
@@ -572,9 +578,37 @@ registerCommand(() => {
         await nextTick()
         editor.program = klona(editor.originalProgram)
         editor.selectedSteps = []
+      })
+      return true
+    },
+  }
+})
 
-        if (machineId) {
-          await editor.changeMachine(machineId)
+registerCommand(() => {
+  return {
+    name: 'unsavedChanges',
+    execute(ctx: any, machineId: number) {
+      ctx.$q.dialog({
+        component: TBUnsavedChangesDialog,
+      }).onOk(async (type: string) => {
+        const editor = useEditorStore()
+
+        if (type === 'save') {
+          const saved = await editor.onSubmit()
+
+          if (saved)
+            if (machineId) {
+              await editor.changeMachine(machineId)
+            }
+        } else if (type === 'discard') {
+          editor.program = editor.createEmptyProgram()
+          await nextTick()
+          editor.program = klona(editor.originalProgram)
+          editor.selectedSteps = []
+
+          if (machineId) {
+            await editor.changeMachine(machineId)
+          }
         }
       })
       return true
@@ -586,23 +620,66 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'moveParallelStep',
-    execute(ctx: any, commandNo: number, programCommand: ProgramStepCommand) {
+    execute(ctx: any, type: string, commandNo: number, programCommand: ProgramStepCommand) {
       const commandName = editor.machine.commands.get(commandNo)?.name
       const stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
       ctx.$q.dialog({
         component: CMMoveParallelStepDialog,
         componentProps: {
+          type,
           commandNo,
           commandName,
           programCommand,
           stepIndex,
           stepsLength: editor.program.steps.length,
         },
-      }).onOk(async (command: { commandNo: number, startIndex: number, endIndex: number }) => {
-        for (let index = command.startIndex; index <= command.endIndex; index++) {
-          if (index !== stepIndex)
-            editor.newParallelStepCommand(command.commandNo, index - 1)
+      }).onOk(async (command: { type: string, commandNo: number, startIndex: number, endIndex: number }) => {
+        if (command.type === 'add') {
+          for (let index = command.startIndex; index <= command.endIndex; index++) {
+            // Eklenen adıma tekrar ekleme
+            if (stepIndex !== index + 1) {
+              editor.newParallelStepCommand(command.commandNo, index)
+            }
+          }
+        } else if (command.type === 'remove') {
+          for (let index = command.startIndex; index <= command.endIndex; index++) {
+            editor.program.steps[index].parallelCommands.forEach((command, parallelIndex) => {
+              if (command.commandNo === commandNo)
+                editor.program.steps[index].parallelCommands.splice(parallelIndex, 1)
+            })
+          }
         }
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  const kc = useKeycloak()
+  return {
+    name: 'machineConstants',
+    async execute(ctx: any, machineId: number) {
+      const machineInfo = await kc.fetch(`/api/machine/${machineId}`)
+      ctx.$q.dialog({
+        component: TBMachineConstantsDialog,
+        componentProps: {
+          machineId,
+          machineName: machineInfo.name,
+          machineConstants: machineInfo.constants,
+        },
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'writeProgramSettings',
+    async execute(ctx: any) {
+      ctx.$q.dialog({
+        component: TBWriteProgramSettingsDialog,
       })
       return true
     },

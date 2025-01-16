@@ -90,7 +90,9 @@
     "tempTimeGraph": "Temperature/Time Graph",
     "stepCommandGraph": "Step/Command Graph",
     "expandAll": "Expand All",
-    "collapseAll": "Collapse All"
+    "collapseAll": "Collapse All",
+    "machineConstants": "Machine Constants",
+    "writeProgramSettings": "Program Write Settings"
   },
   "program": {
     "name": "Program Name",
@@ -443,14 +445,47 @@
     "discard": "Discard",
     "cancel": "Cancel"
   },
+  "unsavedChanges": {
+    "title": "Unsaved Changes",
+    "message": "You have unsaved changes. What would you like to do?",
+    "buttons": {
+      "discard": "Discard and Continue",
+      "save": "Save and Continue",
+      "cancel": "Cancel"
+    }
+  },
+  "machineConstants": {
+    "title": "Machine Constants",
+    "machineInfo": "{machineId} - {machineName}",
+    "paramString": "Parameter Name",
+    "currentValue": "Value",
+    "buttons": {
+      "cancel": "Cancel"
+    }
+  },
   "moveParallelStep": {
-    "title": "Move Parallel Step",
+    "addTitle": "Move Parallel Step",
+    "removeTitle": "Remove Parallel Step",
     "message": "Are you sure you want to move parallel step?",
-    "move": "Move",
+    "remove": "Remove",
+    "add": "Add",
     "cancel": "Cancel",
     "startIndex": "Start Step",
     "endIndex": "End Step",
     "startIndexMore": "Start step cannot be greater than end step",
     "endIndexLess": "End step cannot be less than start step"
+  },
+  "writeProgramSettings": {
+    "title": "Program Write Settings",
+    "addParallelCommandsFromPreviousStep": "Add parallel commands of the previous command to the newly added step",
+    "confirmAddParallelCommandToSteps": "When a parallel instruction is added to a step, it asks if it should be added to other steps.",
+    "removeParallelCommandFromOtherSteps": "When a parallel instruction is deleted from a step, it asks if it should be deleted from other steps as well.",
+    "changeParallelCommandParameterInOtherSteps": "When a parameter of a parallel instruction is changed from one step, ask other steps to change it as well",
+    "preventParallelUsageForDisabledCommands": "Prevent the use of disabled commands in parallel",
+    "activeCommandGroups": "Command Groups Active",
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel"
+    }
   }
 }

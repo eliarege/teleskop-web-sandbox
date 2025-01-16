@@ -176,6 +176,12 @@ const items = [
             $commandManager.executeCommand('editProgramIcons', { $q })
           },
         },
+        {
+          label: tt('menu.writeProgramSettings'),
+          onClick() {
+            $commandManager.executeCommand('writeProgramSettings', { $q })
+          },
+        },
       ],
       ],
     },
@@ -190,6 +196,12 @@ const items = [
           disable: isDef(route.params.program_no),
           onClick() {
             $commandManager.executeCommand('allCommandsList', { $q })
+          },
+        },
+        {
+          label: tt('menu.machineConstants'),
+          onClick() {
+            $commandManager.executeCommand('machineConstants', { $q }, editor.machine.id)
           },
         },
       ]],

@@ -90,7 +90,9 @@
     "tempTimeGraph": "Sıcaklık/Zaman Grafiği",
     "stepCommandGraph": "Adım/Komut Grafiği",
     "expandAll": "Tümünü Genişlet",
-    "collapseAll": "Tümünü Daralt"
+    "collapseAll": "Tümünü Daralt",
+    "machineConstants": "Makine Sabitleri",
+    "writeProgramSettings": "Program Yazma Ayarları"
   },
   "program": {
     "name": "Program Adı",
@@ -443,14 +445,48 @@
     "discard": "Geri Al",
     "cancel": "İptal"
   },
+  "unsavedChanges": {
+    "title": "Kaydedilmemiş Değişiklikler",
+    "message": "Kaydedilmemiş değişiklikleriniz var. Ne yapmak istersiniz?",
+    "buttons": {
+      "revert": "Geri Al",
+      "discard": "Yoksay ve Devam Et",
+      "save": "Kaydet ve Devam Et",
+      "cancel": "İptal"
+    }
+  },
+  "machineConstants": {
+    "title": "Makine Sabitleri",
+    "machineInfo": "{machineId} - {machineName}",
+    "paramString": "Parametre Adı",
+    "currentValue": "Değer",
+    "buttons": {
+      "cancel": "İptal"
+    }
+  },
   "moveParallelStep": {
-    "title": "Paralel Adımı Tası",
+    "addTitle": "Paralel Adımı Taşı",
+    "removeTitle": "Paralel Adımı Sil",
     "message": "Paralel adımı tasımak istediğinizden emin misiniz?",
-    "move": "Tası",
+    "remove": "Sil",
+    "add": "Ekle",
     "cancel": "İptal",
     "startIndex": "Başlangıç Adımı",
     "endIndex": "Bitiş Adımı",
     "startIndexMore": "Başlangıç adımı bitiş adımından büyük olamaz",
     "endIndexLess": "Bitiş adımı başlangıç adımından küçük olamaz"
+  },
+  "writeProgramSettings": {
+    "title": "Program Yazma Ayarları",
+    "addParallelCommandsFromPreviousStep": "Yeni eklenen adıma bir önceki komutun paralel komutlarını ekle",
+    "confirmAddParallelCommandToSteps": "Bir adıma paralel bir komut eklendiğinde, diğer adımlara da eklenmesi gerektiğini sor",
+    "removeParallelCommandFromOtherSteps": "Bir adımdan paralel komut silindiğinde, diğer adımlardan da  sillinmesi gerektiğini sor",
+    "changeParallelCommandParameterInOtherSteps": "Bir adımdan paralel komutun parametresi değiştirildiğinde, diğer adımlardan da değiştirilmesi gerektiğini sor",
+    "preventParallelUsageForDisabledCommands": "Devreden çıkan komutların paralelde kullanımını engelle",
+    "activeCommandGroups": "Komut Grupları Aktif",
+    "buttons": {
+      "save": "Kaydet",
+      "cancel": "İptal"
+    }
   }
 }

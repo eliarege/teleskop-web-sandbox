@@ -2,6 +2,7 @@
 import type { ProgramStepCommand } from '~/shared/types'
 
 const props = defineProps<{
+  type: 'add' | 'remove'
   commandNo: number
   commandName: string
   programCommand: ProgramStepCommand
@@ -10,6 +11,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const editor = useEditorStore()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const commandNo = ref(props.commandNo)
@@ -17,20 +19,16 @@ const commandName = ref(props.commandName)
 const startIndex = ref(props.stepIndex)
 const endIndex = ref(props.stepsLength)
 
-function checkTextOverflow() {
-  if (commandName.value && commandName.value.length > 30) {
-    commandName.value = `${commandName.value.substring(0, 27)}...`
-  }
-  return commandName.value
-}
+const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
 </script>
 
 <template>
   <QDialog ref="dialogRef" class="select-none">
-    <QCard class="w-600">
+    <QCard>
+      <!-- Başlık -->
       <QCardSection>
-        <div class="text-h6 flex">
-          {{ t('moveParallelStep.title') }}
+        <div class="text-h6 flex items-center">
+          {{ props.type === 'add' ? t('moveParallelStep.addTitle') : t('moveParallelStep.removeTitle') }}
           <QSpace />
           <QBtn
             icon="close"
@@ -43,52 +41,71 @@ function checkTextOverflow() {
         </div>
       </QCardSection>
 
-      <QCardSection class="text-gray-8 dark:text-gray-3 items-center flex flex-row">
-        <div class="flex flex-row gap-6 w-full">
-          <div class="flex flex-col" style="min-width: 100px;">
-            <label class="text-xs text-gray-7">{{ t('command.commandNo') }}</label>
-            <span class="text-base text-sm">{{ commandNo }}</span>
+      <!-- İçerik -->
+      <QCardSection class="text-gray-8 dark:text-gray-3">
+        <div class="flex gap-5 no-wrap">
+          <!-- Komut No -->
+          <div class="flex flex-col w-40">
+            <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('command.commandNo') }}</label>
+            <span class="text-sm text-gray-8 dark:text-gray-3">{{ commandNo }}</span>
           </div>
 
-          <div class="flex flex-col" style="min-width: 0; flex-grow: 1;">
-            <label class="text-xs text-gray-7">{{ t('command.name') }}</label>
-            <QTooltip>
-              {{ commandName }}
-            </QTooltip>
+          <!-- Komut Adı -->
+          <div class="flex flex-col w-60">
+            <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('command.name') }}</label>
+            <QTooltip>{{ commandName }}</QTooltip>
             <span
-              class="text-base text-sm"
+              class="text-sm text-gray-8 dark:text-gray-3 w-full"
               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+              :title="commandName"
             >
-              {{ checkTextOverflow() }}
+              <UnoIcon
+                v-if="commandIcon"
+                class="inline-block mr-1"
+                :class="commandIcon?.name"
+                :style="{ color: commandIcon?.color }"
+              />
+              {{ commandName }}
             </span>
           </div>
 
-          <QSelect
-            v-model="startIndex"
-            :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
-            :label="t('moveParallelStep.startIndex')"
-            class="col"
-            dense
-            :rules="[
-              (val: string) => !!val || t('input.required', { field: t('moveParallelStep.startIndex') }),
-              (val: number) => val <= endIndex || t('moveParallelStep.startIndexMore'),
-            ]"
-          />
+          <!-- Başlangıç Index -->
+          <div class="flex flex-col w-50">
+            <QSelect
+              v-model="startIndex"
+              :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
+              :label="t('moveParallelStep.startIndex')"
+              class="col"
+              dense
+              options-dense
+              popup-content-class="h-80"
+              :rules="[
+                (val: string) => !!val || t('input.required', { field: t('moveParallelStep.startIndex') }),
+                (val: number) => val <= endIndex || t('moveParallelStep.startIndexMore'),
+              ]"
+            />
+          </div>
 
-          <QSelect
-            v-model="endIndex"
-            :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
-            :label="t('moveParallelStep.endIndex')"
-            class="col"
-            dense
-            :rules="[
-              (val: string) => !!val || t('input.required', { field: t('moveParallelStep.endIndex') }),
-              (val: number) => val >= startIndex || t('moveParallelStep.endIndexLess'),
-            ]"
-          />
+          <!-- Bitiş Index -->
+          <div class="flex flex-col w-50">
+            <QSelect
+              v-model="endIndex"
+              :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
+              :label="t('moveParallelStep.endIndex')"
+              class="col"
+              dense
+              options-dense
+              popup-content-class="h-80"
+              :rules="[
+                (val: string) => !!val || t('input.required', { field: t('moveParallelStep.endIndex') }),
+                (val: number) => val >= startIndex || t('moveParallelStep.endIndexLess'),
+              ]"
+            />
+          </div>
         </div>
       </QCardSection>
 
+      <!-- Aksiyonlar -->
       <QCardActions
         class="q-pa-md bg-gray-1 dark:bg-dark-4"
         align="right"
@@ -100,11 +117,12 @@ function checkTextOverflow() {
           @click="onDialogCancel"
         />
         <QBtn
-          :label="t('apply')"
-          class="q-mr-sm bg-primary text-white"
+          class="q-mr-sm text-white"
+          :label="type === 'add' ? t('moveParallelStep.add') : t('moveParallelStep.remove')"
+          :class="type === 'add' ? 'bg-primary' : 'bg-red-6'"
           flat
           :disable="startIndex > endIndex"
-          @click="onDialogOK({ commandNo, startIndex, endIndex })"
+          @click="onDialogOK({ type, commandNo, startIndex: startIndex - 1, endIndex: endIndex - 1 })"
         />
       </QCardActions>
     </QCard>

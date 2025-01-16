@@ -64,7 +64,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const editor = useEditorStore()
     editor.isLoading = true
 
-    let stepIndex = editor.program.steps.length - 1
+    let stepIndex = editor.program.steps.length
     if (editor.selectedSteps.length) {
       stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0])
     }

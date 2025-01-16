@@ -443,4 +443,13 @@ export interface ContextBarButtons extends QBtnProps {
   tooltip?: string
 }
 
+export interface ProgramWriteSettings {
+  addParallelCommandsFromPreviousStep: boolean
+  confirmAddParallelCommandToSteps: boolean
+  removeParallelCommandFromOtherSteps: boolean
+  changeParallelCommandParameterInOtherSteps: boolean
+  preventParallelUsageForDisabledCommands: boolean
+  activeCommandGroups: boolean
+}
+
 // #endregion

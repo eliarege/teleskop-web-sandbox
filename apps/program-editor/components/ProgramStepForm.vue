@@ -9,10 +9,14 @@ const props = defineProps<{
   path: string
 }>()
 
-const editor = useEditorStore()
+const $q = useQuasar()
 const { t } = useI18n()
+const editor = useEditorStore()
+const { $commandManager } = useNuxtApp()
+
 const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
+const isLastStep = stepIndex.value === editor.program.steps.length - 1
 const stepIcons = computed(() => {
   const mainIcon = editor.getStepIcon(step.mainCommand.commandNo!)
   const parallelIcons = step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!))
@@ -42,93 +46,99 @@ const duration = computed(() => {
   const totalStepDuration = stepDurations.reduce((total, step) => total + step.duration, 0)
   return formatDuration(totalStepDuration)
 })
+
+function deleteParallelStep(stepIndex: number, index: number) {
+  editor.selectedSteps = [editor.program.steps[stepIndex]]
+  if (!isLastStep) {
+    $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', editor.program.steps[stepIndex].parallelCommands[index].commandNo, editor.program.steps[stepIndex].parallelCommands[index])
+  }
+  editor.deleteParallelStep(stepIndex, index)
+}
 </script>
 
 <template>
-  <div>
-    <div class="flex">
-      <div class="flex items-center w-5">
-        <div v-show="!expanded" class="space-y-1">
-          <div
-            v-for="(icon, key) in stepIcons"
-            :key="key"
-          >
-            <div v-if="icon">
-              <UnoIcon
-                class="icon"
-                :class="icon.name"
-                :style="{ color: icon.color }"
-              />
-              <q-tooltip>
-                {{ icon.name ? icon.label : t('noIcon') }}
-              </q-tooltip>
-            </div>
+  <div class="flex">
+    <div class="flex items-center w-5">
+      <div v-show="!expanded" class="space-y-1">
+        <div
+          v-for="(icon, key) in stepIcons"
+          :key="key"
+        >
+          <div v-if="icon">
+            <UnoIcon
+              class="icon"
+              :class="icon.name"
+              :style="{ color: icon.color }"
+            />
+            <q-tooltip>
+              {{ icon.name ? icon.label : t('noIcon') }}
+            </q-tooltip>
           </div>
         </div>
       </div>
-
-      <DevOnly>
-        <div class="flex flex-col color-gray-5 text-3">
-          <span>{{ `stepId: ${step.stepId}` }}</span>
-          <span>{{ `commandId: ${step.mainCommand.commandId}` }}</span>
-          <span>{{ duration }}</span>
-        </div>
-      </DevOnly>
-
-      <QBtn
-        class="expand-btn"
-        :icon="expandIcon"
-        flat
-        dense
-        @click="expanded = !expanded"
-      />
-
-      <ProgramStepCommandForm
-        class="flex-1"
-        :path="`${props.path}.mainCommand`"
-        :expanded
-      />
     </div>
-    <div v-show="expanded" class="e-border-color border-(t x-0) mt-2px pl-16">
-      <Sortable
-        :list="step.parallelCommands"
-        item-key="commandId"
-        :options="sortableOptions"
-        class="parallel-commands"
-        :data-index="stepIndex"
-      >
-        <template #header>
-          <span
-            v-if="step.parallelCommands.length === 0"
-            class="py-10 inline-block e-text-dim"
-          >{{ t('noParallelStep') }}</span>
-        </template>
-        <template #item="{ index }">
-          <div
-            class="step-parallel-command"
-            :class="{ __selected: false }"
-          >
-            <DevOnly>
-              <div class="flex flex-col color-gray-5 text-3">
-                <span>{{ `commandId: ${step.parallelCommands[index].commandId}` }}</span>
-              </div>
-            </DevOnly>
 
-            <div>
-              <ProgramStepCommandForm :path="`${props.path}.parallelCommands.${index}`" :expanded />
+    <DevOnly>
+      <div class="flex flex-col color-gray-5 text-3">
+        <span>{{ `stepId: ${step.stepId}` }}</span>
+        <span>{{ `commandId: ${step.mainCommand.commandId}` }}</span>
+        <span>{{ duration }}</span>
+      </div>
+    </DevOnly>
+
+    <QBtn
+      class="expand-btn"
+      :icon="expandIcon"
+      flat
+      dense
+      @click="expanded = !expanded"
+    />
+
+    <ProgramStepCommandForm
+      class="flex-1"
+      :path="`${props.path}.mainCommand`"
+      :expanded
+    />
+  </div>
+  <div v-show="expanded" class="e-border-color border-(t x-0) mt-2px pl-16">
+    <Sortable
+      :list="step.parallelCommands"
+      item-key="commandId"
+      :options="sortableOptions"
+      class="parallel-commands"
+      :data-index="stepIndex"
+    >
+      <template #header>
+        <span
+          v-if="step.parallelCommands.length === 0"
+          class="py-10 inline-block e-text-dim"
+        >{{ t('noParallelStep') }}</span>
+      </template>
+      <template #item="{ index }">
+        <div
+          class="step-parallel-command"
+          :class="{ __selected: false }"
+        >
+          <DevOnly>
+            <div class="flex flex-col color-gray-5 text-3">
+              <span>{{ `commandId: ${step.parallelCommands[index].commandId}` }}</span>
             </div>
-            <QSpace />
-            <QBtn
-              class="delete-btn"
-              icon="close"
-              flat
-              dense
-              @click="editor.deleteParallelStep(stepIndex, index)"
-            />
+          </DevOnly>
+
+          <div>
+            <ProgramStepCommandForm :path="`${props.path}.parallelCommands.${index}`" :expanded />
           </div>
-        </template>
-      </Sortable>
-    </div>
+          <QSpace />
+          <QBtn
+            class="delete-btn"
+            icon="close"
+            flat
+            dense
+            @click="deleteParallelStep(stepIndex, index)"
+          />
+        </div>
+      </template>
+    </Sortable>
   </div>
 </template>
 
