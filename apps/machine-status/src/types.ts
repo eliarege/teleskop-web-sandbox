@@ -254,7 +254,13 @@ export interface BFUSERS {
   userName: string
   userSurname: string
 }
-
+export interface BAACTUALPRGSTEPS {
+  STARTTIME: string
+  BATCHKEY: number
+  PRGNO: number
+  PARALLELSTEPNO: number
+  PRGINDEX: number
+}
 export interface TeleskopDatabase {
   BACONSUMPTIONPROGRAM: BACONSUMPTIONPROGRAM
   BADATA: BADATA
@@ -263,6 +269,7 @@ export interface TeleskopDatabase {
   BFMACHINES: BFMACHINES
   TFMACHINESTATUS: TFMACHINESTATUS
   BFUSERS: BFUSERS
+  BAACTUALPRGSTEPS: BAACTUALPRGSTEPS
 }
 
 export interface DmExchangeDatabase {
