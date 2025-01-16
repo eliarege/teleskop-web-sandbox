@@ -125,6 +125,22 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
       'totals.totalFM1',
       'totals.totalConsumedElectricity',
       sql<Record<string, any> | null>`null`.as('erp'),
+      sql<number>`
+        (SELECT TOP 1
+            DATEDIFF(SECOND, b.STARTTIME, GETDATE())
+         FROM BAACTUALPRGSTEPS b
+         WHERE b.BATCHKEY = s.RUNNING_BATCHKEY
+           AND b.PRGINDEX = -1
+           AND b.PARALLELSTEPNO = 0
+           AND b.PRGNO = s.RUNNING_PROGRAMID
+         ORDER BY b.STARTTIME ASC)`.as('runningPrgElapsedTime'),
+      sql<number>`
+        (SELECT SUM(b1.THEORETICDURATION)
+         FROM BAACTUALPRGSTEPS b1
+         WHERE b1.BATCHKEY = s.RUNNING_BATCHKEY
+           AND b1.PRGINDEX = -1
+           AND b1.PARALLELSTEPNO = 0
+           AND b1.PRGNO = s.RUNNING_PROGRAMID)`.as('runningPrgTotalTheoreticDuration'),
     ])
     .where(eb => eb.and([
       eb('m.INUSE', '=', true),

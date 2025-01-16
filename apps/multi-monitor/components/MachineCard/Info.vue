@@ -64,42 +64,43 @@ function reqStatus(params: number) {
       </q-tooltip>
     </div>
     <!-- PROG ID/NAME -->
-    <div
+    <MachineCardInfoProgressBar
       v-show="machine.runningBatchStatus === 2"
-      class="machine-commands_items"
-      :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
+      :data="machine"
     >
-      <q-tooltip
-        transition-show="scale"
-        class="text-black e-border bg-white"
-        :offset="[3, 3]"
-      >
-        {{ t("teleskop.program-name") }}
-      </q-tooltip>
+      <div class="absolute w-full h-full flex items-center flex-nowrap whitespace-nowrap overflow-hidden top-0 left-0">
+        <q-tooltip
+          transition-show="scale"
+          class="text-black e-border bg-white"
+          :offset="[3, 3]"
+        >
+          {{ t("teleskop.program-name") }}
+        </q-tooltip>
 
-      <div class="explanation">
-        {{ t("teleskop.program-name") }}
+        <div class="explanation">
+          {{ t("teleskop.program-name") }}
+        </div>
+        <q-separator
+          color="white"
+          vertical
+          class="h-full"
+          spaced
+        />
+
+        <span
+          class="overflow-hidden"
+          :class="
+            machine.runningProgramName.length > 70
+              ? 'justify-start'
+              : 'justify-center'
+          "
+        >
+          {{ machine.runningProgramId }}
+          <span v-show="machine.runningProgramName !== ' '">&nbsp;|&nbsp;</span>
+          {{ machine.runningProgramName }}
+        </span>
       </div>
-      <q-separator
-        color="white"
-        vertical
-        class="h-full"
-        spaced
-      />
-
-      <span
-        class="w-full overflow-hidden"
-        :class="
-          machine.runningProgramName.length > 70
-            ? 'justify-start'
-            : 'justify-center'
-        "
-      >
-        {{ machine.runningProgramId }}
-        <span v-show="machine.runningProgramName !== ' '">&nbsp;|&nbsp;</span>
-        {{ machine.runningProgramName }}
-      </span>
-    </div>
+    </MachineCardInfoProgressBar>
     <!-- PHASE NO/NAME ONLY FOR WASHING -->
     <div
       v-if="washing"
@@ -260,9 +261,4 @@ function reqStatus(params: number) {
 </template>
 
 <style scoped lang="postcss">
-.explanation {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
 </style>

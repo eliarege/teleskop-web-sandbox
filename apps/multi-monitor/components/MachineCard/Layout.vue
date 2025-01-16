@@ -84,7 +84,7 @@ withDefaults(defineProps<MachineCardProps>(), {
   .machine-commands {
     @apply relative flex flex-col gap-2px h-full justify-end mb-1 mx-1;
     .explanation {
-      @apply ml-2 w-25 min-w-25;
+      @apply ml-2 w-25 min-w-25 text-center;
     }
     .machine-commands_items {
       @apply w-full h-7 flex text-center items-center rounded-2xl overflow-hidden whitespace-nowrap text-white;

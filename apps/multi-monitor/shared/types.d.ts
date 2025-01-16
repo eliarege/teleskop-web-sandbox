@@ -50,6 +50,8 @@ export interface MachineDataRaw {
   totalSteam: number
   totalFM1: number
   totalConsumedElectricity: number
+  runningPrgElapsedTime?: number
+  runningPrgTotalTheoreticDuration?: number
   erp: Record<string, any> | null
 }
 export interface MachineData extends MachineDataRaw {
