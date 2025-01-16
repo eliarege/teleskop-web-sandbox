@@ -55,6 +55,7 @@ const filteredCommands = computed(() => {
   return filteredArray.map((command: MachineCommand) => ({
     label: `${command.commandNo} ${command.name}`,
     value: command.commandNo,
+    icon: editor.getStepIcon(command.commandNo),
   }))
 })
 
@@ -151,6 +152,16 @@ async function updateStepCommand(commandNo: number, programCommand: ProgramStepC
 onUnmounted(() => {
   editor.errorIds.delete(id)
 })
+  if (isMainCommand === CommandType.PARALLEL && !isLastStep && isNewCommand)
+    $commandManager.executeCommand('moveParallelStep', { $q }, commandNo, programCommand)
+}
+
+function getCommandName(option: any) {
+  if (!option.label) {
+    return `${programCommand.value.commandNo} ${editor.machine.commands.get(option)?.name}`
+  }
+  return option.label
+}
 </script>
 
 <template>
@@ -167,9 +178,8 @@ onUnmounted(() => {
       :label="label"
       :rules="rules"
       :for="id"
-      option-label="label"
+      :option-label="getCommandName"
       option-value="value"
-      map-options
       hide-bottom-space
       emit-value
       style="width: 250px"
@@ -179,26 +189,7 @@ onUnmounted(() => {
       auto-close
       outlined
       filled
-    >
-      <template #option="scope">
-        <QItem
-          v-close-popup
-          clickable
-          dense
-          @click="updateStepCommand(scope.opt.value, programCommand)"
-        >
-          <QItemSection class="text-3">
-            {{ scope.opt.label }}
-          </QItemSection>
-        </QItem>
-      </template>
-      <template #no-option>
-        <QItem>
-          <QItemSection>
-            {{ t('selectCommand') }}
-          </QItemSection>
-        </QItem>
-      </template>
-    </QSelect>
+      @update:model-value="value => updateStepCommand(value, programCommand)"
+    />
   </div>
 </template>
