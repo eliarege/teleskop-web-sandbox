@@ -332,3 +332,15 @@ export function parseDuration(duration: string): number {
   }
   return Number(duration) * 36000
 }
+
+/**
+ * Main step'te hata olup olmadığını kontrol eder
+ * @param errorIds Hata ID'lerinin listesi (ör. '1-0', '2-3')
+ * @returns {boolean} Eğer main step'te hata varsa true, yoksa false döner
+ */
+export function checkMainStepForErrors(errorIds: string[]): boolean {
+  return errorIds.some((error) => {
+    const [, commandId] = error.split('-')
+    return Number(commandId) === 0
+  })
+}
