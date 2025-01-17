@@ -139,13 +139,15 @@ const items = [
           shortcut: 'F8',
           onClick: () => {
             const editor = useEditorStore()
-            const firstId = editor.errorIds.values().next().value
+            const errors = Array.from(editor.errorIds.values())
+            const hasMainStepError = checkMainStepForErrors(errors)
+            const stepIndex = Number(errors[errors.length - 1].split('-')[0])
 
-            if (!firstId) {
+            if (!hasMainStepError) {
               $commandManager.executeCommand('tempTimeGraph', { $q })
             } else {
               notifyError(t('invalidCommand'))
-              editor.scrollPage(Number(firstId.split('-')[0]), true)
+              editor.scrollPage(stepIndex, true)
             }
           },
         },
