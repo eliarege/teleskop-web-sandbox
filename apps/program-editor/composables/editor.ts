@@ -170,29 +170,35 @@ export const useEditorStore = defineStore('editor', () => {
     }
     // Paralel komutları kopyala (eğer varsa)
     if (program.value.steps[targetIndex]) {
-      for (const command of program.value.steps[targetIndex]?.parallelCommands) {
+      const parallelCommands = program.value.steps[targetIndex]?.parallelCommands || []
+      const settings = useProgramWriteSettings()
+
+      for (const command of parallelCommands) {
         const machineCommand = machine.value.commands.get(command.commandNo)
 
-        if (isDef(machineCommand)) {
-        // Paralel adımı taşı
-          if (machineCommand.moveParallel === MoveParallel.MOVE) {
-            // Program yazma ayarlarına göre paralel komutları ekle
-            const settings = useProgramWriteSettings()
-            if (settings.value.addParallelCommandsFromPreviousStep)
-              newStep.parallelCommands.push(klona(command))
+        if (!machineCommand)
+          continue
 
-            // Paralel adım devreden çıkana kadar taşı
-          } else if (machineCommand.moveParallel === 1) {
-            const mainCommandDontuselist = machine.value.commands.get(command.commandNo)?.dontUseList
-            if (mainCommandDontuselist && !mainCommandDontuselist.find(cNo => cNo === command.commandNo)) {
+        switch (machineCommand.moveParallel) {
+          case MoveParallel.MOVE: {
+            if (settings.value.addParallelCommandsFromPreviousStep) {
               newStep.parallelCommands.push(klona(command))
             }
-            // Paralel adımı taşıma
-          } else if (machineCommand.moveParallel === MoveParallel.STOP) {
-          // TODO
-          } else {
-            console.warn(`Invalid moveParallel value: ${machineCommand.moveParallel}`)
+            break
           }
+          case MoveParallel.MOVE_UNTIL_DISABLED: {
+            const dontUseList = machineCommand.dontUseList || []
+            if (!dontUseList.includes(command.commandNo) && settings.value.addParallelCommandsFromPreviousStep) {
+              newStep.parallelCommands.push(klona(command))
+            }
+            break
+          }
+          case MoveParallel.STOP:
+            // TODO
+            break
+          default:
+            console.warn(`Invalid moveParallel value: ${machineCommand.moveParallel}`)
+            break
         }
       }
     }
