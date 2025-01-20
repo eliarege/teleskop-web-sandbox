@@ -26,7 +26,7 @@ export const useProgramWriteSettings = createGlobalState(() => {
 
 function defaultSettings(): ProgramWriteSettings {
   return {
-    addParallelCommandsFromPreviousStep: false,
+    addParallelCommandsFromPreviousStep: true,
     confirmAddParallelCommandToSteps: false,
     removeParallelCommandFromOtherSteps: false,
     changeParallelCommandParameterInOtherSteps: false,
