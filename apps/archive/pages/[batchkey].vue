@@ -227,6 +227,8 @@ const actualPrograms = computed(() => {
   })
   return prgs
 })
+const chart = ref<InstanceType<typeof ArchiveChart>>()
+
 const components: Record<string, () => any> = {
   JobOrderInfo: () =>
     h(JobOrderInfo, {
@@ -323,7 +325,8 @@ const components: Record<string, () => any> = {
     }),
   Chart: () =>
     h(ArchiveChart, {
-      'batch': batchData.value,
+      'ref': chart,
+      'batch': batchData.value!,
       theoreticalPrograms,
       'modelValue': selectedDate.value,
       'onUpdate:modelValue': (newVal: Date) => {
@@ -331,7 +334,6 @@ const components: Record<string, () => any> = {
       },
     }),
 }
-
 const componentTypes = Object.keys(components)
 const componentInstances = shallowRef<
   { id: number, type: string, element: HTMLElement }[]
@@ -617,13 +619,16 @@ const items = [
           {
             label: tt('topbar.report.batchSum'),
             // disabled: !batchData.value?.joborderInfo.endTime,
-            onClick: () =>
+            onClick: async () => {
+              chart.value?.resetZoom()
+              await nextTick()
               printBatchSummary(
                 batchKey,
                 batchData.value!.machine,
                 batchData.value!.joborderInfo,
                 batchData.value!.batchParameters,
-              ),
+              )
+            },
           },
         ],
         [

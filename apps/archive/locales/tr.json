@@ -232,6 +232,7 @@
     "manuelDuration": "Manuel",
     "alarmDelay": "Alarm Duruşları",
     "operatorDelay": "Operatör Gecikme",
+    "manualDelay": "Manuel Gecikme",
     "programNo": "Program No",
     "programName": "Program İsmi",
     "interventions": "Müdaheleler"

@@ -45,11 +45,11 @@ const props = defineProps<{
   batch: Batch
   theoreticalPrograms: TheoreticalProgram[]
 }>()
-const emit = defineEmits<{
-  'update:modelValue': [date: Date]
-}>()
+
 const { t } = useI18n()
 const selectedTime = defineModel<Date>({ required: true })
+defineExpose({ resetZoom })
+
 const settingsStore = userSettingsStore()
 const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
 const startTime = ref(new Date(props.batch.joborderInfo.startTime))
@@ -640,6 +640,7 @@ const tooltipContent = computed(() => {
 onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
+    resetZoom()
     printChartSVG()
   }
 })
@@ -717,7 +718,11 @@ const buttons = computed(() =>
       icon: 'print',
       tooltip: t('print'),
       flat: true,
-      onClick: () => printChartSVG(),
+      onClick: async () => {
+        resetZoom()
+        await nextTick()
+        printChartSVG()
+      },
     },
     {
       icon: settingsStore.showGraphTooltip ? 'comments_disabled' : 'comment',

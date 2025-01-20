@@ -235,6 +235,7 @@
     "manuelDuration": "Manual",
     "alarmDelay": "Alarm Delay",
     "operatorDelay": "Operator Delay",
+    "manualDelay": "Manual Delay",
     "programNo": "Program No",
     "programName": "Program Name",
     "interventions": "Interventions"

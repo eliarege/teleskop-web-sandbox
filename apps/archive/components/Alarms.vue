@@ -100,7 +100,7 @@ const rows = computed(() => {
       const endTime = alarm.endTime ? d(new Date(alarm.endTime), 'datetime', 'tr') : ''
 
       const durationMs = new Date(alarm.endTime || '').getTime() - new Date(alarm.startTime).getTime()
-      const duration = durationMs > 0 ? formatDuration(durationMs) : 'N/A'
+      const duration = durationMs > 0 ? formatDuration(durationMs / 1000) : 'N/A'
 
       return {
         startTime,
