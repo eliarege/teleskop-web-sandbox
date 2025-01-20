@@ -9,15 +9,19 @@ const props = defineProps<{
   commandNo: number
 }>()
 
+const $q = useQuasar()
+const { $commandManager } = useNuxtApp()
 const { t } = useI18n()
 const editor = useEditorStore()
-const programParameter: ParameterItem = editor.getPathElement(props.path)
+const programParameter = editor.getPathElement(props.path)
 const model = ref(Number(programParameter.value))
+const isLastStep = Number(props.path.split('.')[1]) === editor.program.steps.length - 1
 
 const rules = [
   (value: number | string) => value !== '' || t('input.required', { field: t('program.parameter') }),
   (value: number | string) => (Number(value) >= props.parameter.minValue && Number(value) <= props.parameter.maxValue) || t('valueOutOfRange', { minValue: props.parameter.minValue, maxValue: props.parameter.maxValue }),
 ]
+
 const options = computed(() => props.parameter.selections || [])
 const formulaOptions = computed(() =>
   editor.machine.commandFormulas.filter((f: CommandFormula) => f.commandNo === props.commandNo).map((f: CommandFormula) => ({
@@ -35,11 +39,47 @@ const isOptimizable = computed(() => {
 
 watch(() => model.value, (newValue: number) => {
   programParameter.value = newValue
+
+  // updateOtherParameters(newValue)
 })
+
+//  diğer adımdaki parametreyi de güncelle
+function updateOtherParameters(model: number) {
+  const stepIndex = Number(props.path.split('.')[1])
+  for (let index = stepIndex; index < editor.program.steps.length; index++) {
+    const step = editor.program.steps[index]
+
+    for (let paralelIndex = 0; paralelIndex < step.parallelCommands.length; paralelIndex++) {
+      const parallelCommand = step.parallelCommands[paralelIndex]
+
+      if (parallelCommand.commandNo === props.commandNo) {
+        for (const parallelParameter of parallelCommand.parameters) {
+          if (parallelParameter.index === props.parameter.index) {
+            console.log(parallelParameter.value)
+
+            parallelParameter.value = model
+            console.log(parallelParameter.value)
+          }
+        }
+      }
+    }
+  }
+}
+
+function handleInputBlur() {
+  const settings = useProgramWriteSettings()
+
+  if (!isLastStep && settings.value.changeParallelCommandParameterInOtherSteps) {
+    // $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', props.commandNo, {})
+  }
+}
 </script>
 
 <template>
   <div class="inline-block pr-1 pb-1">
+    <span class="text-3 text-gray-5">
+      {{ props.commandNo }} - {{ props.parameter.index }}
+    </span>
     <template v-if="parameter.type === 'NUMBER'">
       <InputDuration
         v-if="parameter.format === 'DURATION'"
@@ -51,6 +91,7 @@ watch(() => model.value, (newValue: number) => {
         style="width: 150px;"
         class="text-3"
         hide-bottom-space
+        @blur="handleInputBlur"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -75,6 +116,7 @@ watch(() => model.value, (newValue: number) => {
         dense
         style="width: 150px;"
         class="text-3"
+        @blur="handleInputBlur"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -101,6 +143,7 @@ watch(() => model.value, (newValue: number) => {
       dense
       style="width: 150px;"
       class="text-3 q-select-nowrap"
+      @blur="handleInputBlur"
     />
     <div v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
       <QSelect
@@ -116,6 +159,7 @@ watch(() => model.value, (newValue: number) => {
         dense
         style="width: 150px;"
         class="text-3 q-select-nowrap"
+        @blur="handleInputBlur"
       >
         <template #option="scope">
           <QItem
