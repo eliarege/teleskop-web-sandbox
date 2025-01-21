@@ -141,11 +141,11 @@ const items = [
             const editor = useEditorStore()
             const errors = Array.from(editor.errorIds.values())
             const hasMainStepError = checkMainStepForErrors(errors)
-            const stepIndex = Number(errors[errors.length - 1].split('-')[0])
 
             if (!hasMainStepError) {
               $commandManager.executeCommand('tempTimeGraph', { $q })
             } else {
+              const stepIndex = Number(errors[errors.length - 1].split('-')[0])
               notifyError(t('invalidCommand'))
               editor.scrollPage(stepIndex, true)
             }
