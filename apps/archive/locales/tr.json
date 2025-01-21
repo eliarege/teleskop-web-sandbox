@@ -19,6 +19,7 @@
   "recipe": "Reçete",
   "kg": "Kilogram",
   "axis": "Eksen",
+  "create": "Oluştur",
   "flotte": "Flotte",
   "recipeAmount": "Reçete Miktarı",
   "actualAmount": "Gönderilen Miktar",
@@ -74,7 +75,11 @@
   "axisSettings": {
     "_": "Eksen Ayarları",
     "description": "Düzenlemek istediğiniz Y eksenini seçiniz.",
-    "noAxisAvailableError": "Mevcut eksen bulunamadı."
+    "noAxisAvailableError": "Mevcut eksen bulunamadı.",
+    "add": "Yeni eksen oluştur",
+    "selectUnit": "Lütfen birim seçiniz",
+    "enterName": "Eksene isim veriniz",
+    "axisNameAlreadyExists": "Eksen ismi mevcut."
   },
   "joborderSummarySettings": {
     "_": "İş Emri Özet Raporu Ayarları",
@@ -227,6 +232,7 @@
     "manuelDuration": "Manuel",
     "alarmDelay": "Alarm Duruşları",
     "operatorDelay": "Operatör Gecikme",
+    "manualDelay": "Manuel Gecikme",
     "programNo": "Program No",
     "programName": "Program İsmi",
     "interventions": "Müdaheleler"

@@ -22,6 +22,7 @@
   "kg": "Kilogram",
   "print": "Print",
   "recipe": "Recipe",
+  "create": "Create",
   "recipeAmount": "Recipe Amount",
   "actualAmount": "Actual Amount",
   "ISN": "ISN",
@@ -66,7 +67,11 @@
   "axisSettings": {
     "_": "Axis Settings",
     "description": "Select the Y axis that you want to update.",
-    "noAxisAvailableError": "No available axis."
+    "noAxisAvailableError": "No available axis.",
+    "add": "Create new axis",
+    "selectUnit": "Please select unit",
+    "enterName": "Plase name the axis",
+    "axisNameAlreadyExists": "Axis name already exists."
   },
   "joborderSummary": {
     "waterType1": "Cold Water",
@@ -230,6 +235,7 @@
     "manuelDuration": "Manual",
     "alarmDelay": "Alarm Delay",
     "operatorDelay": "Operator Delay",
+    "manualDelay": "Manual Delay",
     "programNo": "Program No",
     "programName": "Program Name",
     "interventions": "Interventions"

@@ -45,11 +45,11 @@ const props = defineProps<{
   batch: Batch
   theoreticalPrograms: TheoreticalProgram[]
 }>()
-const emit = defineEmits<{
-  'update:modelValue': [date: Date]
-}>()
+
 const { t } = useI18n()
 const selectedTime = defineModel<Date>({ required: true })
+defineExpose({ resetZoom })
+
 const settingsStore = userSettingsStore()
 const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
 const startTime = ref(new Date(props.batch.joborderInfo.startTime))
@@ -172,9 +172,9 @@ theoreticalTemperatures.forEach((io, index) => {
       )
     }
   }
-  if (!colorTransitionPortions.length)
-    colorTransitionPortions.push(0)
 })
+if (!colorTransitionPortions.length)
+  colorTransitionPortions.push(0)
 
 const dataSet = computed(() => {
   const set: { io: any, color: string, axis?: any, isDefault?: boolean }[] = []
@@ -640,6 +640,7 @@ const tooltipContent = computed(() => {
 onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
+    resetZoom()
     printChartSVG()
   }
 })
@@ -716,10 +717,16 @@ const buttons = computed(() =>
     {
       icon: 'print',
       tooltip: t('print'),
-      onClick: () => printChartSVG(),
+      flat: true,
+      onClick: async () => {
+        resetZoom()
+        await nextTick()
+        printChartSVG()
+      },
     },
     {
       icon: settingsStore.showGraphTooltip ? 'comments_disabled' : 'comment',
+      flat: true,
       tooltip: settingsStore.showGraphTooltip
         ? t('hideTooltip')
         : t('showTooltip'),
@@ -727,6 +734,7 @@ const buttons = computed(() =>
         (settingsStore.showGraphTooltip = !settingsStore.showGraphTooltip),
     },
     {
+      flat: true,
       icon: !settingsStore.bottomChartVisibilityStatus
         ? 'looks_one'
         : settingsStore.bottomChartVisibilityStatus === 1
@@ -742,6 +750,7 @@ const buttons = computed(() =>
     {
       icon: 'settings',
       tooltip: t('updateAxises'),
+      flat: true,
       onClick: () => {
         $q.dialog({
           component: UpdateAxisDialog,
@@ -755,6 +764,7 @@ const buttons = computed(() =>
     {
       icon: 'stacked_line_chart',
       tooltip: t('addRemoveAxis'),
+      flat: true,
       onClick: () => {
         $q.dialog({
           component: AxisesVisibilityDialog,
@@ -764,6 +774,7 @@ const buttons = computed(() =>
     {
       icon: 'analytics',
       tooltip: t('reelDataDialog'),
+      flat: true,
       onClick: () => {
         $q.dialog({
           component: ReelDataDialog,
@@ -779,18 +790,18 @@ const buttons = computed(() =>
 
 <template>
   <div ref="chartEl" class="chart">
-    <div style="display: flex; gap: 10px; margin-left: 10px; font-size: small; margin-bottom: -20px;">
-      <div
+    <g id="top-alarm-defs" style="display: flex; gap: 10px; margin-left: 10px; font-size: small; margin-bottom: -20px;">
+      <g
         v-for="alarm of alarmTypes"
         :key="`alarmType${alarm.type}`"
         style="display: flex; align-items: center; justify-content: center; gap: 5px;"
       >
-        <div :style="{ height: '8px', width: '8px', backgroundColor: alarm.color }" />
+        <g :style="{ height: '8px', width: '8px', backgroundColor: alarm.color }" />
         <text>
           {{ alarm.label }}
         </text>
-      </div>
-    </div>
+      </g>
+    </g>
     <svg
       ref="svgRef"
       :viewBox="`0 0 ${outerWidth} ${outerHeight}`"

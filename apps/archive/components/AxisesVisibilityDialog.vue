@@ -36,10 +36,11 @@ const settingsStore = userSettingsStore()
               @click="setAxisVisibility(key, !axis.visible)"
             >
               <q-checkbox
-                v-model="axis.visible"
-                :label="`${axis.unit === 'undef' ? t('undef') : axis.unit} ${axis.name || ''}`"
+                :model-value="axis.visible"
+                :label="`${axis.unit === 'undef' ? t('undef') : axis.unit} ${axis.name}`"
                 dense
                 class="my-3 ml-5"
+                @update:model-value="setAxisVisibility(key, !axis.visible)"
               />
               <q-separator />
             </div>

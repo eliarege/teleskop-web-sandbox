@@ -12,12 +12,13 @@ const props = defineProps<{
   consumptions: any
   consumptionUnits: any
   programInfo: Array<any>
+  totalManualDelay: number
 }>()
 const { t, d } = useNuxtApp().$i18n
 // FIXME: Selman abi BADATA.STOP_DURATION_OPER  BADATA  .STOP_DURATION_ALR  BADATA.STOP_DURATION_WARNING_ALR
 // ancak bu fieldlar 0 ama programlarda delay gösteriyor?? check this out
 let totalAlarmDelay = 0
-const totalManuel = 0
+const totalManuel = props.totalManualDelay
 let totalOperatorDelay = 0
 props.programInfo.forEach((prg) => {
   totalAlarmDelay += prg.alarmDelay
@@ -80,12 +81,12 @@ const columns: Column[] = [
   {
     name: 'theoreticalDuration',
     label: t(`batchSummary.theoreticalDuration`),
-    format: val => formatDuration(val * 1000),
+    format: val => formatDuration(val),
   },
   {
     name: 'actualDuration',
     label: t(`batchSummary.actualDuration`),
-    format: val => formatDuration(val * 1000),
+    format: val => formatDuration(val),
   },
   {
     name: 'status',
@@ -96,17 +97,22 @@ const columns: Column[] = [
   {
     name: 'deviation',
     label: t(`batchSummary.deviation`),
-    format: val => formatDuration(val * 1000),
+    format: val => formatDuration(val),
+  },
+  {
+    name: 'manualDelay',
+    label: t(`batchSummary.manualDelay`),
+    format: val => formatDuration(val),
   },
   {
     name: 'operatorDelay',
     label: t(`batchSummary.operatorDelay`),
-    format: val => formatDuration(val * 1000),
+    format: val => formatDuration(val),
   },
   {
     name: 'alarmDelay',
     label: t(`batchSummary.alarmDelay`),
-    format: val => formatDuration(val * 1000),
+    format: val => formatDuration(val),
   },
   {
     name: 'interventions',

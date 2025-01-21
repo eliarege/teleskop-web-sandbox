@@ -3,12 +3,65 @@ import { db } from '~/server/database'
 export default defineEventHandler(async (event) => {
   const batchKey = getBatchKeyParam(event)
 
-  const operatorDelays = await db('BAALARM')
-    .select('PROGNO as programNo')
-    .sum({ totalDuration: db.raw('DATEDIFF(second, STARTTIME, ENDTIME)') })
+  // AlarmNo 6000 or 5000
+  const joborderStopAlarms = await db('BAALARM')
+    .select({
+      programNo: 'PROGNO',
+      startTime: 'STARTTIME',
+      endTime: 'ENDTIME',
+    })
     .where('BATCHKEY', batchKey)
     .andWhere('ALARMNO', 6000)
-    .groupBy('PROGNO')
+    .orderBy('STARTTIME')
+
+  const manualModeAlarms = await db('BAALARM')
+    .select({
+      startTime: 'STARTTIME',
+      endTime: 'ENDTIME',
+    })
+    .where('BATCHKEY', batchKey)
+    .andWhere('ALARMNO', 5000)
+    .orderBy('STARTTIME')
+
+  // const totalManualDelayDurations: Array<{ programNo: number, totalDuration: number }> = []
+  const programManualData: Array<{ programNo: number, intersection: number, duration: number }> = []
+  if (!joborderStopAlarms.length) {
+    if (manualModeAlarms.length) {
+      for (const manualAlarm of manualModeAlarms) {
+        manualAlarm.startTime = new Date(manualAlarm.startTime)
+        manualAlarm.endTime = new Date(manualAlarm.endTime)
+        const prgIndex = programManualData.findIndex(p => p.programNo === manualAlarm.programNo)
+        if (prgIndex !== -1) {
+          programManualData[prgIndex].duration += (manualAlarm.endTime.getTime() - manualAlarm.startTime.getTime()) / 1000
+        } else
+          programManualData.push({ programNo: -1, duration: (manualAlarm.endTime.getTime() - manualAlarm.startTime.getTime()) / 1000, intersection: 0 })
+      }
+    }
+  } else {
+    for (const stopAlarm of joborderStopAlarms) {
+      stopAlarm.startTime = new Date(stopAlarm.startTime)
+      stopAlarm.endTime = new Date(stopAlarm.endTime)
+      if (!programManualData.includes(int => int.programNo !== stopAlarm.programNo))
+        programManualData.push({ programNo: stopAlarm.programNo, intersection: 0, duration: 0 })
+      const programIndex = programManualData.findIndex(int => int.programNo === stopAlarm.programNo)
+      for (const manualAlarm of manualModeAlarms) {
+        manualAlarm.startTime = new Date(manualAlarm.startTime)
+        manualAlarm.endTime = new Date(manualAlarm.endTime)
+        programManualData[programIndex].duration += (manualAlarm.endTime.getTime() - manualAlarm.startTime.getTime()) / 1000
+        const manualStartTimeIsBetweenStop = stopAlarm.startTime <= manualAlarm.startTime && stopAlarm.endTime > manualAlarm.startTime
+        const manualEndTimeIsBetweenStop = stopAlarm.endTime >= manualAlarm.endTime && stopAlarm.startTime < manualAlarm.endTime
+        if (manualStartTimeIsBetweenStop || manualEndTimeIsBetweenStop) {
+          const lowerBound = Math.max(stopAlarm.startTime.getTime(), manualAlarm.startTime.getTime())
+          const upperBound = Math.min(stopAlarm.endTime.getTime(), manualAlarm.endTime.getTime())
+          programManualData[programIndex].intersection += (upperBound - lowerBound)
+        }
+      }
+      programManualData[programIndex].duration += (stopAlarm.endTime.getTime() - stopAlarm.startTime.getTime() - programManualData[programIndex].intersection) / 1000
+    }
+  }
+  let totalManualDelay = 0
+  programManualData.forEach(man => totalManualDelay += man.duration)
+  // return programManualData
 
   const alarmDelays = await db('BAALARM')
     .select('PROGNO as programNo')
@@ -17,8 +70,7 @@ export default defineEventHandler(async (event) => {
     .andWhere('ALARMTYPE', 0)
     .andWhere('ISPARALLEL', 0)
     .groupBy('PROGNO')
-
-  const warningAlarmDelays = await db('BAALARM')
+  const operatorDelay = await db('BAALARM')
     .select('PROGNO as programNo')
     .sum({ totalDuration: db.raw('DATEDIFF(second, STARTTIME, ENDTIME)') })
     .where('BATCHKEY', batchKey)
@@ -90,13 +142,14 @@ export default defineEventHandler(async (event) => {
         endTime: program.endDate,
         theoreticalDuration: program.totalDuration,
         interventions: program.interventions,
-        operatorDelay: operatorDelays.find(prg => prg.programNo === program.programNo)?.totalDuration || 0,
+        manualDelay: programManualData.find(prg => prg.programNo === program.programNo)?.duration || 0,
+        // manualDelay: manualDelay.find(prg => prg.programNo === program.programNo)?.totalDuration || 0,
         alarmDelay: alarmDelays.find(prg => prg.programNo === program.programNo)?.totalDuration || 0,
-        warningAlarmDelay: warningAlarmDelays.find(prg => prg.programNo === program.programNo)?.totalDuration || 0,
+        operatorDelay: operatorDelay.find(prg => prg.programNo === program.programNo)?.totalDuration || 0,
         actualDuration,
         deviation: actualDuration - program.totalDuration,
       },
     )
   })
-  return batchData
+  return { programInfo: batchData, totalManualDelay }
 })

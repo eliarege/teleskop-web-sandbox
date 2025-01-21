@@ -6,14 +6,14 @@ import RecipeSummary from '~/components/RecipeSummary.vue'
 import BatchSummary from '~/components/BatchSummary.vue'
 import type { AnalogInputOutputType, BasicProgram, BatchInfo, BatchParameters, DigitalInputOutputType, ERPParameter, Machine, Program } from '~/types/archive'
 
-export function formatDuration(ms: number): string {
-  const totalSeconds = Math.abs(Math.floor(ms / 1000))
+export function formatDuration(sec: number): string {
+  const totalSeconds = Math.abs(Math.floor(sec))
   const hours = Math.floor(totalSeconds / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
 
   return [
-    ms < 0 ? `-${String(hours).padStart(2, '0')}` : String(hours).padStart(2, '0'),
+    sec < 0 ? `-${String(hours).padStart(2, '0')}` : String(hours).padStart(2, '0'),
     String(minutes).padStart(2, '0'),
     String(seconds).padStart(2, '0'),
   ].join(':')
@@ -223,16 +223,17 @@ export function setAxisVisibility(keyParam: string, changeTo: boolean) {
       count += 1
   })
   const axx = settingsStore.axises.get(keyParam)
-  if (count >= 4) {
-    if (!axx?.visible)
-      Notify.create({
-        message: t('errors.cannotShowMoreThanFourAxis'),
-        group: 'axisError',
-        type: 'negative',
-        position: 'top',
-      })
+  if (!axx)
+    return
+  if (count >= 4 && !axx.visible && changeTo) {
+    Notify.create({
+      message: t('errors.cannotShowMoreThanFourAxis'),
+      group: 'axisError',
+      type: 'negative',
+      position: 'top',
+    })
   } else {
-    settingsStore.axises.set(keyParam, { ...axx, visible: changeTo })
+    axx.visible = changeTo
   }
 }
 
@@ -250,6 +251,7 @@ export function getChartSVG() {
   })
   removeElement(clonedChart, '#chart-selected-time-line')
   removeElement(clonedChart, '#chart-tooltip')
+  removeElement(clonedChart, '#top-alarm-defs')
   return clonedChart.innerHTML
 }
 
@@ -334,7 +336,7 @@ export async function printBatchSummary(
 
   const consumptions = await $fetch(`/api/batch/${batchKey}/consumptions`)
   const consumptionUnits = await $fetch(`/api/batch/${batchKey}/consumption-units`)
-  const programInfo = await $fetch(`/api/batch/${batchKey}/batch-summary`)
+  const { programInfo, totalManualDelay } = await $fetch(`/api/batch/${batchKey}/batch-summary`)
 
   // Render the BatchSummary component
   const appContent = await renderToString(
@@ -347,6 +349,7 @@ export async function printBatchSummary(
       consumptions,
       consumptionUnits,
       programInfo,
+      totalManualDelay,
     }),
   )
 

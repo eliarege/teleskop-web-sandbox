@@ -150,35 +150,43 @@ function initializeSetting(type: string, ioIndex: number, unit?: string) {
     )
 }
 
-function setAxisForAnalogSettings(
+function setAxisForAnalogSettingsOnInitialize(
   command: AnalogInputOutputType,
   type: string,
 ) {
+  const commandKey = `${type}_${command.ioIndex}`
+  // const axisesWithSameUnit = Array.from(settingsStore.axises).map(el => el[1]).filter(axis => axis.unit === command.calibUnit || 'undef')
+  // if (axisesWithSameUnit.some(axis => axis.ioKeys.includes(commandKey)))
+  //   return
+
+  // if (settingsStore.hasUserSettings())
+  //   return
   if (command.calibUnit && !settingsStore.units.includes(command.calibUnit))
     settingsStore.units.push(command.calibUnit)
   const axis = settingsStore.axises.get(command.calibUnit)
   if (axis) {
-    const commandKey = `${type}_${command.ioIndex}`
     if (!axis.ioKeys.includes(commandKey))
       axis.ioKeys.push(commandKey)
   } else {
     settingsStore.axises.set(command.calibUnit || 'undef', {
       color: '#FFFFFF',
       unit: command.calibUnit || 'undef',
+      name: command.calibUnit || 'undef',
       max: 0,
       min: 0,
-      ioKeys: [`${type}_${command.ioIndex}`],
+      ioKeys: [commandKey],
       visible: false,
       isDefault: command.calibUnit === '\'C',
     })
   }
 }
+
 batchData.value?.analogInputs.forEach((command) => {
-  setAxisForAnalogSettings(command, 'analogInputs')
+  setAxisForAnalogSettingsOnInitialize(command, 'analogInputs')
   initializeSetting('analogInputs', command.ioIndex, command.calibUnit)
 })
 batchData.value?.analogOutputs.forEach((command) => {
-  setAxisForAnalogSettings(command, 'analogOutputs')
+  setAxisForAnalogSettingsOnInitialize(command, 'analogOutputs')
   initializeSetting('analogOutputs', command.ioIndex)
 })
 batchData.value?.digitalInputs.forEach((command) => {
@@ -219,6 +227,8 @@ const actualPrograms = computed(() => {
   })
   return prgs
 })
+const chart = ref<InstanceType<typeof ArchiveChart>>()
+
 const components: Record<string, () => any> = {
   JobOrderInfo: () =>
     h(JobOrderInfo, {
@@ -315,7 +325,8 @@ const components: Record<string, () => any> = {
     }),
   Chart: () =>
     h(ArchiveChart, {
-      'batch': batchData.value,
+      'ref': chart,
+      'batch': batchData.value!,
       theoreticalPrograms,
       'modelValue': selectedDate.value,
       'onUpdate:modelValue': (newVal: Date) => {
@@ -323,7 +334,6 @@ const components: Record<string, () => any> = {
       },
     }),
 }
-
 const componentTypes = Object.keys(components)
 const componentInstances = shallowRef<
   { id: number, type: string, element: HTMLElement }[]
@@ -609,13 +619,16 @@ const items = [
           {
             label: tt('topbar.report.batchSum'),
             // disabled: !batchData.value?.joborderInfo.endTime,
-            onClick: () =>
+            onClick: async () => {
+              chart.value?.resetZoom()
+              await nextTick()
               printBatchSummary(
                 batchKey,
                 batchData.value!.machine,
                 batchData.value!.joborderInfo,
                 batchData.value!.batchParameters,
-              ),
+              )
+            },
           },
         ],
         [

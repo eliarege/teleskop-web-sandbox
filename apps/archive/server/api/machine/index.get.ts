@@ -6,7 +6,7 @@ export default defineEventHandler(async () => {
       machineName: 'MACHINECODE',
       machineId: 'MACHINEID',
     })
-    .where('INUSE', true)
+    // .where('INUSE', true)
     .orderBy('MACHINEID')
   return machines
 })

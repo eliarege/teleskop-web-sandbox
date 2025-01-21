@@ -39,7 +39,17 @@ export const userSettingsStore = defineStore('settings', () => {
     if (current)
       Object.assign(current, axis)
   }
-
+  function createAxis(name: string, unit: string, ioKeys: Array<string>) {
+    axises.value.set(name, {
+      visible: false,
+      name,
+      color: '',
+      ioKeys,
+      max: 0,
+      unit,
+      isDefault: false,
+    })
+  }
   function getCommandColor(id: number, key: string): string {
     const uid = `${key}_${id}`
     const setting = getSetting(uid)
@@ -59,6 +69,9 @@ export const userSettingsStore = defineStore('settings', () => {
   }
   function updateChartState() {
     bottomChartVisibilityStatus.value = (bottomChartVisibilityStatus.value + 1) % 3
+  }
+  function hasUserSettings() {
+    return !!localStorage.getItem(`userSettings.machine${machineId.value}`)
   }
   function initializeSettings() {
     const userSettings = JSON.parse(localStorage.getItem(`userSettings.machine${machineId.value}`) || '{}')
@@ -89,6 +102,7 @@ export const userSettingsStore = defineStore('settings', () => {
     if (bottomChartVisibilityStatus) {
       bottomChartVisibilityStatus.value = userSettings.bottomChartVisibilityStatus || 0
     }
+    return userSettings
   }
 
   function saveSettings() {
@@ -114,12 +128,14 @@ export const userSettingsStore = defineStore('settings', () => {
     axises,
     units,
     initializeSettings,
+    hasUserSettings,
     bottomChartVisibilityStatus,
     updateChartState,
     tooltipSettings,
     updateTooltipSettings,
     machineId,
     setSetting,
+    createAxis,
     updateAxis,
     getSetting,
     updateSetting,
