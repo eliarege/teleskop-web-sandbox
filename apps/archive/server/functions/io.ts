@@ -152,6 +152,7 @@ export async function getCounters(batchKey: number, analogValues?: DuoAny<Archiv
       ioIndex: 'M.ID',
       name: 'M.NAME',
       enabled: 'M.ENABLED',
+      calibUnit: 'M.CALIBUNIT',
     })
     .where('M.ISDELETED', 0)
     .join('BADATA as D', function () {

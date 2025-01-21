@@ -22,6 +22,7 @@ import type {
   BatchParameters,
   BatchStep,
   BatchValues,
+  Counter,
   DigitalInputOutputType,
   Machine,
   MachineCommand,
@@ -31,7 +32,6 @@ import type {
 import JobOrderInfo from '~/components/JobOrderInfo.vue'
 import StartParameters from '~/components/StartParameters.vue'
 import AnalogInputOutput from '~/components/AnalogInputOutput.vue'
-import CounterTab from '~/components/CounterTab.vue'
 import DigitalInputOutput from '~/components/DigitalInputOutput.vue'
 import CompareButton from '~/components/CompareButton.vue'
 import Commands from '~/components/Commands.vue'
@@ -151,7 +151,7 @@ function initializeSetting(type: string, ioIndex: number, unit?: string) {
 }
 
 function setAxisForAnalogSettingsOnInitialize(
-  command: AnalogInputOutputType,
+  command: AnalogInputOutputType | Counter,
   type: string,
 ) {
   const commandKey = `${type}_${command.ioIndex}`
@@ -201,7 +201,10 @@ batchData.value?.digitalOutputLocks.forEach((command) => {
 batchData.value?.cycleTimes.forEach((cycle) => {
   initializeSetting('cycleTimes', cycle.reelNo)
 })
-
+batchData.value?.counters.forEach((command) => {
+  setAxisForAnalogSettingsOnInitialize(command, 'counters')
+  initializeSetting('counters', command.ioIndex, command.calibUnit)
+})
 const commandNames = computed(() => getCommandsWithNames())
 const theoreticalCommands = calculateTheoreticalCommands(batchData.value?.joborderInfo.startTime, 25, batchData.value?.theoreticalPrograms, batchData.value?.machine)
 const theoreticalPrograms = calculateProgramTheoreticalTemperature(
@@ -280,8 +283,10 @@ const components: Record<string, () => any> = {
       typeKey: 'analogOutputs',
     }),
   Counter: () =>
-    h(CounterTab, {
-      commands: [],
+    h(AnalogInputOutput, {
+      commands: batchData.value?.counters || [] as Counter[],
+      selectedTime: selectedDate.value,
+      typeKey: 'counters',
     }),
   DIN: () =>
     h(DigitalInputOutput, {
