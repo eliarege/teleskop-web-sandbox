@@ -34,15 +34,15 @@ const filteredCommands = computed(() => {
     const step = editor.program.steps[stepIndex.value]
 
     // Ana komutun "dontUseList" kontrolü
-    if (isMainCommand === CommandType.PARALLEL) {
-      const mainCommand = step.mainCommand
-      const machineMainCommand = editor.machine.commands.get(mainCommand.commandNo)
+    // if (isMainCommand === CommandType.PARALLEL) {
+    //   const mainCommand = step.mainCommand
+    //   const machineMainCommand = editor.machine.commands.get(mainCommand.commandNo)
 
-      // dontUseList'te bulunanları filtrele
-      if (machineMainCommand?.dontUseList.includes(commandNo)) {
-        return false
-      }
-    }
+    //   // dontUseList'te bulunanları filtrele
+    //   if (machineMainCommand?.dontUseList.includes(commandNo)) {
+    //     return false
+    //   }
+    // }
 
     // Aynı komut zaten kullanılmışsa filtrele
     return commandNo === programCommand.value.commandNo
@@ -88,10 +88,10 @@ const rules = [
 function validateCommand() {
   nextTick(() => {
     const commandNo = programCommand.value?.commandNo
-    const mainCommandNo = editor.program.steps[stepIndex.value]?.mainCommand?.commandNo
-    const machineMainCommand = editor.machine.commands.get(mainCommandNo)
+    // const mainCommandNo = editor.program.steps[stepIndex.value]?.mainCommand?.commandNo
+    // const machineMainCommand = editor.machine.commands.get(mainCommandNo)
 
-    if (!commandNo || machineMainCommand?.dontUseList?.includes(commandNo)) {
+    if (!commandNo) {
       editor.errorIds.add(id)
     } else {
       editor.errorIds.delete(id)
@@ -117,17 +117,17 @@ onMounted(() => {
   const step = editor.program.steps[stepIndex.value]
   const mainCommand = step?.mainCommand
   const commandNo = programCommand.value?.commandNo
-  const machineMainCommand = editor.machine.commands.get(mainCommand?.commandNo)
+  // const machineMainCommand = editor.machine.commands.get(mainCommand?.commandNo)
 
   select.value?.focus()
 
-  const isInvalidCommand = !commandNo
-    || (machineMainCommand?.dontUseList.includes(commandNo))
+  // const isInvalidCommand = !commandNo
+  // || (machineMainCommand?.dontUseList.includes(commandNo))
 
   // Ana adım ve paralel adım için ortak kontrol
   if (
-    (isMainCommand === CommandType.MAIN && isInvalidCommand)
-    || (isMainCommand === CommandType.PARALLEL && (!mainCommand?.commandNo || isInvalidCommand))
+    (isMainCommand === CommandType.MAIN && !commandNo)
+    || (isMainCommand === CommandType.PARALLEL && (!mainCommand?.commandNo || !commandNo))
   ) {
     editor.errorIds.add(id)
     return
