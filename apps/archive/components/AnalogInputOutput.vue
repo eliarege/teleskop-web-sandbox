@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import * as d3 from 'd3'
-import type { AnalogInputOutputType, IOSetting } from '~/types/archive'
+import type { AnalogInputOutputType, Counter, IOSetting } from '~/types/archive'
 import { userSettingsStore } from '~/composables/userSettingsStore'
 import { getCommandsWithClosestTime } from '~/utils/functions'
 
 const props = defineProps<{
-  commands: AnalogInputOutputType[]
+  commands: AnalogInputOutputType[] | Counter[]
   selectedTime: Date
-  typeKey: 'analogInputs' | 'analogOutputs'
+  typeKey: 'analogInputs' | 'analogOutputs' | 'counters'
 }>()
 
 const settingsStore = userSettingsStore()

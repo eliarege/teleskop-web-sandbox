@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 import JoborderSummary from '~/components/JoborderSummary.vue'
 import RecipeSummary from '~/components/RecipeSummary.vue'
 import BatchSummary from '~/components/BatchSummary.vue'
-import type { AnalogInputOutputType, BasicProgram, BatchInfo, BatchParameters, DigitalInputOutputType, ERPParameter, Machine, Program } from '~/types/archive'
+import type { AnalogInputOutputType, BasicProgram, BatchInfo, BatchParameters, Counter, DigitalInputOutputType, ERPParameter, Machine, Program } from '~/types/archive'
 
 export function formatDuration(sec: number): string {
   const totalSeconds = Math.abs(Math.floor(sec))
@@ -19,7 +19,7 @@ export function formatDuration(sec: number): string {
   ].join(':')
 }
 
-export function getCommandsWithClosestTime(slcTime: Date, commands: AnalogInputOutputType[] | DigitalInputOutputType[]) {
+export function getCommandsWithClosestTime(slcTime: Date, commands: AnalogInputOutputType[] | DigitalInputOutputType[] | Counter[]) {
   const selectedTime = slcTime.getTime()
 
   return commands.map((io) => {

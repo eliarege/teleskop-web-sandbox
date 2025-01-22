@@ -166,6 +166,7 @@ export interface Counter {
   ioIndex: number
   name: string
   enabled: boolean
+  calibUnit: string
   ioValues: AnalogValue[]
 }
 

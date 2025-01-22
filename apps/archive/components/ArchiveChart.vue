@@ -193,6 +193,15 @@ const dataSet = computed(() => {
         axis: setting.axis,
       })
   })
+  props.batch.counters.forEach((io) => {
+    const setting = settingsStore.getSetting(`counters_${io.ioIndex}`)
+    if (setting && setting.selected)
+      set.push({
+        io: { ...io, type: 'AIN', settingKey: `counters_${io.ioIndex}` },
+        color: setting.color,
+        axis: setting.axis,
+      })
+  })
   props.batch.analogOutputs.forEach((io) => {
     const setting = settingsStore.getSetting(`analogOutputs_${io.ioIndex}`)
     if (setting && setting.selected)
