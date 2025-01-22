@@ -464,11 +464,21 @@
     }
   },
   "moveParallelStep": {
-    "addTitle": "Move Parallel Step",
-    "removeTitle": "Remove Parallel Step",
-    "message": "Are you sure you want to move parallel step?",
-    "remove": "Remove",
-    "add": "Add",
+    "add": {
+      "title": "Move Parallel Step",
+      "message": "Are you sure you want to move parallel step?",
+      "operate": "Move"
+    },
+    "remove": {
+      "title": "Remove Parallel Step",
+      "message": "Are you sure you want to remove parallel step?",
+      "operate": "Remove"
+    },
+    "changeParameter": {
+      "title": "Change Parameter",
+      "message": "Are you sure you want to change parallel steps?",
+      "operate": "Change"
+    },
     "cancel": "Cancel",
     "startIndex": "Start Step",
     "endIndex": "End Step",

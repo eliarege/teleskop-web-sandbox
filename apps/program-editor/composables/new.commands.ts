@@ -6,7 +6,7 @@ import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { MachineCommand, Program, ProgramHeader, ProgramStepCommand, ProgramTable } from '~/shared/types'
+import type { MachineCommand, ParameterItem, Program, ProgramHeader, ProgramStepCommand, ProgramTable } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -74,7 +74,7 @@ export interface RegisteredCommands {
   unsavedChanges: [ctx: any, machineId?: number]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, machineId: number, commandNo: number]
-  moveParallelStep: [ctx: any, type: 'add' | 'remove', commandNo: number, programCommand: ProgramStepCommand]
+  moveParallelStep: [ctx: any, type: 'add' | 'remove' | 'changeParameter', commandNo: number, programCommand: ProgramStepCommand, parameter: ParameterItem]
   machineConstants: [ctx: any, machineId: number]
   writeProgramSettings: [ctx: any]
 }
@@ -620,7 +620,7 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'moveParallelStep',
-    execute(ctx: any, type: string, commandNo: number, programCommand: ProgramStepCommand) {
+    execute(ctx: any, type: string, commandNo: number, programCommand: ProgramStepCommand, parameter: ParameterItem) {
       const commandName = editor.machine.commands.get(commandNo)?.name
       const stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
       ctx.$q.dialog({
@@ -632,6 +632,7 @@ registerCommand(() => {
           programCommand,
           stepIndex,
           stepsLength: editor.program.steps.length,
+          parameter: parameter.value,
         },
       }).onOk(async (command: { type: string, commandNo: number, startIndex: number, endIndex: number }) => {
         if (command.type === 'add') {
@@ -646,6 +647,14 @@ registerCommand(() => {
             editor.program.steps[index].parallelCommands.forEach((command, parallelIndex) => {
               if (command.commandNo === commandNo)
                 editor.program.steps[index].parallelCommands.splice(parallelIndex, 1)
+            })
+          }
+        } else if (command.type === 'changeParameter') {
+          for (let index = command.startIndex; index <= command.endIndex; index++) {
+            editor.program.steps[index].parallelCommands.forEach((command, parallelIndex) => {
+              if (command.commandNo === commandNo)
+                editor.program.steps[index].parallelCommands[parallelIndex].parameters.find(parameter =>
+                  parameter.index === programCommand.parameters[0].index)!.value = programCommand.parameters[0].value
             })
           }
         }
