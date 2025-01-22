@@ -204,9 +204,9 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     // Paralel komutların ID'sini güncelle
-    for (const command of newStep.parallelCommands) {
-      command.commandId = lastCommandId++
-    }
+    lastCommandId = 0
+    newStep.mainCommand.commandId = lastCommandId++
+    newStep.parallelCommands.forEach(command => command.commandId = lastCommandId++)
 
     // Yeni adımı belirtilen konuma ekle
     program.value.steps.splice(targetIndex + 1, 0, newStep)
