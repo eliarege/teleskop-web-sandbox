@@ -620,7 +620,7 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'moveParallelStep',
-    execute(ctx: any, type: string, commandNo: number, programCommand: ProgramStepCommand, parameter: ParameterItem) {
+    execute(ctx: any, type: string, commandNo: number, programCommand: ProgramStepCommand, parameter?: { name: string, value: number | string }) {
       const commandName = editor.machine.commands.get(commandNo)?.name
       const stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
       ctx.$q.dialog({
@@ -632,7 +632,7 @@ registerCommand(() => {
           programCommand,
           stepIndex,
           stepsLength: editor.program.steps.length,
-          parameter: parameter.value,
+          parameter,
         },
       }).onOk(async (command: { type: string, commandNo: number, startIndex: number, endIndex: number }) => {
         if (command.type === 'add') {

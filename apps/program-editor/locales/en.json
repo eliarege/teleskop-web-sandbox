@@ -477,7 +477,11 @@
     "changeParameter": {
       "title": "Change Parameter",
       "message": "Are you sure you want to change parallel steps?",
-      "operate": "Change"
+      "operate": "Change",
+      "parameter": {
+        "name": "Parameter Name",
+        "value": "Value"
+      }
     },
     "cancel": "Cancel",
     "startIndex": "Start Step",

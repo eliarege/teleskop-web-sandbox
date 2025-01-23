@@ -478,7 +478,11 @@
     "changeParameter": {
       "title": "Parametreleri Değiştir",
       "message": "Sonraki paralel adımları değiştirme istediğinizden emin misiniz?",
-      "operate": "Değiştir"
+      "operate": "Değiştir",
+      "parameter": {
+        "name": "Parametre Adı",
+        "value": "Değer"
+      }
     },
     "cancel": "İptal",
     "startIndex": "Başlangıç Adımı",

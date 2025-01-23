@@ -39,47 +39,27 @@ const isOptimizable = computed(() => {
 
 watch(() => model.value, (newValue: number) => {
   programParameter.value = newValue
-
-  // updateOtherParameters(newValue)
 })
 
-//  diğer adımdaki parametreyi de güncelle
-function updateOtherParameters(model: number) {
-  const stepIndex = Number(props.path.split('.')[1])
-  for (let index = stepIndex; index < editor.program.steps.length; index++) {
-    const step = editor.program.steps[index]
-
-    for (let paralelIndex = 0; paralelIndex < step.parallelCommands.length; paralelIndex++) {
-      const parallelCommand = step.parallelCommands[paralelIndex]
-
-      if (parallelCommand.commandNo === props.commandNo) {
-        for (const parallelParameter of parallelCommand.parameters) {
-          if (parallelParameter.index === props.parameter.index) {
-            console.log(parallelParameter.value)
-
-            parallelParameter.value = model
-            console.log(parallelParameter.value)
-          }
-        }
-      }
-    }
-  }
-}
-
+// TODO: update other steps parameter
 function handleInputBlur() {
   const settings = useProgramWriteSettings()
 
   if (!isLastStep && settings.value.changeParallelCommandParameterInOtherSteps) {
-    // $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', props.commandNo, {})
+    const stepIndex = Number(props.path.split('.')[1])
+    const programCommand = editor.program.steps[stepIndex].mainCommand
+    $commandManager.executeCommand('moveParallelStep', { $q }, 'changeParameter', props.commandNo, programCommand, { name: props.parameter.name, value: programParameter.value })
   }
 }
 </script>
 
 <template>
   <div class="inline-block pr-1 pb-1">
-    <span class="text-3 text-gray-5">
-      {{ props.commandNo }} - {{ props.parameter.index }}
-    </span>
+    <DevOnly>
+      <div class="color-gray-5 text-3">
+        {{ props.commandNo }} - {{ props.parameter.index }}
+      </div>
+    </DevOnly>
     <template v-if="parameter.type === 'NUMBER'">
       <InputDuration
         v-if="parameter.format === 'DURATION'"
@@ -91,7 +71,6 @@ function handleInputBlur() {
         style="width: 150px;"
         class="text-3"
         hide-bottom-space
-        @blur="handleInputBlur"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -116,7 +95,6 @@ function handleInputBlur() {
         dense
         style="width: 150px;"
         class="text-3"
-        @blur="handleInputBlur"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -143,7 +121,6 @@ function handleInputBlur() {
       dense
       style="width: 150px;"
       class="text-3 q-select-nowrap"
-      @blur="handleInputBlur"
     />
     <div v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
       <QSelect
@@ -159,7 +136,6 @@ function handleInputBlur() {
         dense
         style="width: 150px;"
         class="text-3 q-select-nowrap"
-        @blur="handleInputBlur"
       >
         <template #option="scope">
           <QItem
