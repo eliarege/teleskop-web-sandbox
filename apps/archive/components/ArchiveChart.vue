@@ -55,12 +55,23 @@ const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValue
 const startTime = ref(new Date(props.batch.joborderInfo.startTime))
 
 function getLastDate() {
-  const theoreticalLastDate = theoreticalTemperatures[theoreticalTemperatures.length - 1].time
-  const lastRecordDate = props.batch.lastRecordDate
-  return lastRecordDate > theoreticalLastDate ? lastRecordDate : theoreticalLastDate
+  return [
+    theoreticalTemperatures[theoreticalTemperatures.length - 1].time,
+    props.batch.lastRecordDate,
+    props.batch.joborderInfo.endTime,
+  ].reduce<Date | undefined>((max, value) => {
+    if (!value)
+      return max
+    if (!max)
+      return new Date(value)
+    return value > max ? new Date(value) : max
+  }, void 0) || null
+  // const theoreticalLastDate = theoreticalTemperatures[theoreticalTemperatures.length - 1].time
+  // const lastRecordDate = props.batch.lastRecordDate
+  // return lastRecordDate > theoreticalLastDate ? lastRecordDate : theoreticalLastDate
 }
 const endTime = ref(
-  new Date(props.batch.joborderInfo.endTime || getLastDate()),
+  new Date(getLastDate()),
   // return addMinutes(new Date(startTime.value), 80)
 )
 

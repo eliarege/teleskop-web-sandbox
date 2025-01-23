@@ -56,12 +56,13 @@ export async function getArchivedBatchIoValues(batchKey: number, since?: Date | 
     const dvLastIndex = values.digitalValues.findLastIndex(v => new Date(v.logtime) < since)
     const vivLastIndex = values.virtualInputValues.findLastIndex(v => new Date(v.logtime) < since)
     const ctLastIndex = values.cycleTimes.findLastIndex(v => new Date(v.cycleDate) < since)
+    const cvLastIndex = values.calculatedValues.findLastIndex(v => new Date(v.logtime) < since)
     return {
       analogValues: values.analogValues.slice(avLastIndex + 1),
       digitalValues: values.digitalValues.slice(dvLastIndex + 1),
       virtualInputValues: values.virtualInputValues.slice(vivLastIndex + 1),
       cycleTimes: values.cycleTimes.slice(ctLastIndex + 1),
-      calculatedValues: values.calculatedValues.slice(ctLastIndex + 1),
+      calculatedValues: values.calculatedValues.slice(cvLastIndex + 1),
     }
   } else {
     return values
@@ -450,7 +451,7 @@ export async function getActiveCalculatedValues(batchKey: number, since?: Date |
       logtime: db.raw('DATEADD(MINUTE, ?, LOGTIME)', teleskopTimezoneOffset),
     })
     .where('BATCHKEY', batchKey)
-    .orderBy(['PROGNO', 'VALUEID'])
+    .orderBy(['PROGNO', 'VALUEID', 'LOGTIME'])
 
   if (since) {
     query.andWhere('LOGTIME', '>', subMinutes(since, teleskopTimezoneOffset))
