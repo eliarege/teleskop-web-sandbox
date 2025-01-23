@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import * as d3 from 'd3'
-import type { AnalogInputOutputType, CalculatedValue, Counter, IOSetting } from '~/types/archive'
+import type { AnalogInputOutputType, Counter, IOSetting } from '~/types/archive'
 import { userSettingsStore } from '~/composables/userSettingsStore'
 import { getCommandsWithClosestTime } from '~/utils/functions'
 
 const props = defineProps<{
-  commands: AnalogInputOutputType[] | Counter[] | CalculatedValue[]
+  counters: Counter[]
   selectedTime: Date
-  typeKey: 'analogInputs' | 'analogOutputs' | 'counters' | 'calculatedValues'
 }>()
 
 const settingsStore = userSettingsStore()
 
 const commandsWithClosestTime = computed(() => {
-  return getCommandsWithClosestTime(props.selectedTime, props.commands)
+  return getCommandsWithClosestTime(props.selectedTime, props.counters)
 })
 function updateSetting(key: string, setting: IOSetting) {
   if (setting.selected) {
@@ -21,7 +20,7 @@ function updateSetting(key: string, setting: IOSetting) {
   }
   settingsStore.updateSetting(key, setting)
 }
-function updateAxis(setting: IOSetting) {
+function updateAxis(key: string, setting: IOSetting) {
   const axis = settingsStore.axises.get(setting.axis)
   axis.max = 0
 }
@@ -32,13 +31,12 @@ function updateAxis(setting: IOSetting) {
     <IOLine
       v-for="command in commandsWithClosestTime"
       :key="command.ioIndex"
-      :setting="settingsStore.getSetting(`${typeKey}_${command.ioIndex}`)"
+      :setting="settingsStore.getSetting(`counters_${command.ioIndex}`)"
       :command="command"
       io-type="Analog"
-      :type-key="typeKey"
       :value="`${command.closestIoValue.value.toFixed(2)}`"
-      @update:setting="(setting: IOSetting) => updateSetting(`${typeKey}_${command.ioIndex}`, setting)"
-      @update:axis="(setting: IOSetting) => updateAxis(setting)"
+      @update:setting="(setting: IOSetting) => updateSetting(`counters_${command.ioIndex}`, setting)"
+      @update:axis="(setting: IOSetting) => updateAxis(`counters_${command.ioIndex}`, setting)"
     />
   </div>
 </template>

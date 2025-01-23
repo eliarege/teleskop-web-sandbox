@@ -1,4 +1,4 @@
-import type { AnalogInputOutputType, AnalogValue, ArchivedAnalogValue, ArchivedDigitalValue, ArchivedIoValues, ArchivedReelCycleTime, ArchivedVirtualInputValue, Batch, BatchValues, Counter, DigitalInputOutputType, DigitalValue, Reel, VirtualInput } from '~/types/archive'
+import type { AnalogInputOutputType, AnalogValue, ArchivedAnalogValue, ArchivedCalculatedValue, ArchivedDigitalValue, ArchivedIoValues, ArchivedReelCycleTime, ArchivedVirtualInputValue, Batch, BatchValues, CalculatedValue, Counter, DigitalInputOutputType, DigitalValue, Reel, VirtualInput } from '~/types/archive'
 import type { DuoAny, DuoParsed, DuoRaw } from '~/types/utils'
 import { IOType } from '~/server/utils/constants'
 
@@ -22,6 +22,7 @@ export function insertBatchValues(batch: DuoAny<Batch>, values: DuoAny<BatchValu
   insertReelCycleTimes(batch.cycleTimes, values.cycleTimes)
   insertCounterValues(batch.counters, values.analogValues)
   insertVirtualInputValues(batch.virtualInputs, values.virtualInputValues)
+  insertCalculatedValues(batch.calculatedValues, values.calculatedValues)
 }
 
 export function insertAnalogInputValues(analogInputs: DuoAny<AnalogInputOutputType>[], analogValues: DuoAny<ArchivedAnalogValue>[]) {
@@ -198,4 +199,14 @@ function hexToBinary(hexValue: string): string {
   }
 
   return binaryResult
+}
+
+export function insertCalculatedValues(calculatedValues: DuoAny<CalculatedValue>[], archiveCalculatedValues: DuoAny<ArchivedCalculatedValue>[]) {
+  for (const acv of archiveCalculatedValues) {
+    calculatedValues[acv.valueId].ioValues.push({
+      time: acv.logtime,
+      value: acv.value,
+      valueId: acv.valueId,
+    })
+  }
 }

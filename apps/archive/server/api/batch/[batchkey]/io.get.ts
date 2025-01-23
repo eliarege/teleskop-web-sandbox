@@ -1,9 +1,10 @@
-import { getActiveBatchIoValues, getAnalogInputs, getAnalogOutputs, getArchivedBatchIoValues, getCounters, getDigitalInputs, getDigitalOutputLocks, getDigitalOutputs, getReels, getVirtualInputs, isBatchActive } from '~/server/functions/io'
+import { getActiveBatchIoValues, getAnalogInputs, getAnalogOutputs, getArchivedBatchIoValues, getCalculatedValues, getCounters, getDigitalInputs, getDigitalOutputLocks, getDigitalOutputs, getReels, getVirtualInputs, isBatchActive } from '~/server/functions/io'
 import { last } from '~/server/utils/functions'
 import { insertAnalogInputValues } from '~/shared/io'
 import type {
   AnalogInputOutputType,
   ArchivedIoValues,
+  CalculatedValue,
   Counter,
   DigitalInputOutputType,
   Reel,
@@ -24,6 +25,7 @@ interface IoValues {
   counters: Counter[]
   virtualInputs: VirtualInput[]
   cycleTimes: Reel[]
+  calculatedValues: CalculatedValue[]
 }
 
 export default defineEventHandler(async (event) => {
@@ -46,6 +48,7 @@ export default defineEventHandler(async (event) => {
     last(ioValues.analogValues)?.logtime,
     last(ioValues.virtualInputValues)?.logtime,
     last(ioValues.cycleTimes)?.cycleDate,
+    last(ioValues.calculatedValues)?.logtime,
   ].reduce<Date | undefined>((max, value) => {
     if (!value)
       return max
@@ -65,6 +68,7 @@ export default defineEventHandler(async (event) => {
     counters: await getCounters(batchKey, ioValues.analogValues),
     virtualInputs: await getVirtualInputs(batchKey, ioValues.virtualInputValues),
     cycleTimes: await getReels(batchKey, ioValues.cycleTimes),
+    calculatedValues: getCalculatedValues(ioValues.calculatedValues),
   }
 
   return ios

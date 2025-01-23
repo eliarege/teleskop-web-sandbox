@@ -27,6 +27,7 @@ export default defineEventHandler(async (event) => {
     last(ioValues.analogValues)?.logtime,
     last(ioValues.virtualInputValues)?.logtime,
     last(ioValues.cycleTimes)?.cycleDate,
+    last(ioValues.calculatedValues)?.logtime,
     last(interventions)?.time,
   ].reduce<Date | undefined>((max, value) => {
     if (!value)

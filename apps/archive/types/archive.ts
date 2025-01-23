@@ -19,6 +19,7 @@ export interface Batch {
   counters: Counter[]
   cycleTimes: Reel[]
   virtualInputs: VirtualInput[]
+  calculatedValues: CalculatedValue[]
 }
 
 export interface BatchValues extends ArchivedIoValues {
@@ -183,6 +184,17 @@ export interface Reel {
   cycles: { count: number, duration: number, cycledAt: DDate }[]
 }
 
+export interface CalculatedValue {
+  ioIndex: number
+  name: string
+  ioValues: CalculatedValueValue[]
+}
+export interface CalculatedValueValue {
+  time: DDate
+  valueId: number
+  value: number
+}
+
 // #endregion
 
 // #region Program
@@ -317,6 +329,7 @@ export interface ArchivedIoValues {
   digitalValues: ArchivedDigitalValue[]
   cycleTimes: ArchivedReelCycleTime[]
   virtualInputValues: ArchivedVirtualInputValue[]
+  calculatedValues: ArchivedCalculatedValue[]
 }
 
 export interface ArchivedAnalogValue {
@@ -337,6 +350,13 @@ export interface ArchivedVirtualInputValue {
   logtime: DDate
   ioId: number
   ioValue: number
+}
+
+export interface ArchivedCalculatedValue {
+  logtime: DDate
+  progNo: number
+  valueId: number
+  value: number
 }
 
 export interface ArchivedReelCycleTime {

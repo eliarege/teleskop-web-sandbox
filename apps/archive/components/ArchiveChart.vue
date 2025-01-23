@@ -202,6 +202,15 @@ const dataSet = computed(() => {
         axis: setting.axis,
       })
   })
+  props.batch.calculatedValues.forEach((io) => {
+    const setting = settingsStore.getSetting(`calculatedValues_${io.ioIndex}`)
+    if (setting && setting.selected)
+      set.push({
+        io: { ...io, name: t(`calculatedValues.${io.name}`), type: 'AIN', settingKey: `calculatedValues_${io.ioIndex}` },
+        color: setting.color,
+        axis: setting.axis,
+      })
+  })
   props.batch.analogOutputs.forEach((io) => {
     const setting = settingsStore.getSetting(`analogOutputs_${io.ioIndex}`)
     if (setting && setting.selected)
