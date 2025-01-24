@@ -28,3 +28,11 @@ export function inferBoolean(value: string | undefined, strict = true): boolean 
 export function isDef<T>(value: T): value is Exclude<T, undefined> {
   return typeof value !== 'undefined'
 }
+
+export function tryJsonParse(str: string): any {
+  try {
+    return JSON.parse(str)
+  } catch {
+    return str
+  }
+}
