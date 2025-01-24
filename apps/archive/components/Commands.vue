@@ -12,6 +12,15 @@ const emit = defineEmits<{
 function handleCommandClick(command: MergedBatchCommand) {
   emit('commandClicked', command.startTime)
 }
+
+watch(() => props.selectedTime, async () => {
+  await nextTick()
+  document.querySelector('.selected-command')?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center',
+  })
+})
 const config = useRuntimeConfig()
 </script>
 

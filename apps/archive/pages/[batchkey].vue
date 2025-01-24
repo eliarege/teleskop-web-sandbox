@@ -22,6 +22,7 @@ import type {
   BatchParameters,
   BatchStep,
   BatchValues,
+  CalculatedValue,
   Counter,
   DigitalInputOutputType,
   Machine,
@@ -56,7 +57,7 @@ const route = useRoute()
 const router = useRouter()
 
 const batchKey = route.params.batchkey
-const selectedDate = ref(new Date('2024-03-06T11:12:28.000Z'))
+const selectedDate = ref(new Date())
 const response = await fetch(withBase(`/api/batch/${batchKey}`, config.app.baseURL))
 const taskId = response.headers.get('Task-ID')
 const batchData = ref<Batch>()
@@ -205,6 +206,9 @@ batchData.value?.counters.forEach((command) => {
   setAxisForAnalogSettingsOnInitialize(command, 'counters')
   initializeSetting('counters', command.ioIndex, command.calibUnit)
 })
+batchData.value?.calculatedValues.forEach((command) => {
+  initializeSetting('calculatedValues', command.ioIndex)
+})
 const commandNames = computed(() => getCommandsWithNames())
 const theoreticalCommands = calculateTheoreticalCommands(batchData.value?.joborderInfo.startTime, 25, batchData.value?.theoreticalPrograms, batchData.value?.machine)
 const theoreticalPrograms = calculateProgramTheoreticalTemperature(
@@ -287,6 +291,12 @@ const components: Record<string, () => any> = {
       commands: batchData.value?.counters || [] as Counter[],
       selectedTime: selectedDate.value,
       typeKey: 'counters',
+    }),
+  CalculatedValues: () =>
+    h(AnalogInputOutput, {
+      commands: batchData.value?.calculatedValues.filter(cv => cv.ioValues.length) || [] as CalculatedValue[],
+      selectedTime: selectedDate.value,
+      typeKey: 'calculatedValues',
     }),
   DIN: () =>
     h(DigitalInputOutput, {
@@ -477,6 +487,11 @@ const layoutConfig = freezeLayoutConfig({
                     title: t('panels.counter'),
                     type: 'component',
                     componentType: 'Counter',
+                  },
+                  {
+                    title: t('panels.calculatedValues'),
+                    type: 'component',
+                    componentType: 'CalculatedValues',
                   },
                   {
                     title: t('panels.DOUTFunc'),

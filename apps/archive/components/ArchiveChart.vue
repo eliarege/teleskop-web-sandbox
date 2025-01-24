@@ -55,12 +55,23 @@ const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValue
 const startTime = ref(new Date(props.batch.joborderInfo.startTime))
 
 function getLastDate() {
-  const theoreticalLastDate = theoreticalTemperatures[theoreticalTemperatures.length - 1].time
-  const lastRecordDate = props.batch.lastRecordDate
-  return lastRecordDate > theoreticalLastDate ? lastRecordDate : theoreticalLastDate
+  return [
+    theoreticalTemperatures[theoreticalTemperatures.length - 1].time,
+    props.batch.lastRecordDate,
+    props.batch.joborderInfo.endTime,
+  ].reduce<Date | undefined>((max, value) => {
+    if (!value)
+      return max
+    if (!max)
+      return new Date(value)
+    return value > max ? new Date(value) : max
+  }, void 0) || null
+  // const theoreticalLastDate = theoreticalTemperatures[theoreticalTemperatures.length - 1].time
+  // const lastRecordDate = props.batch.lastRecordDate
+  // return lastRecordDate > theoreticalLastDate ? lastRecordDate : theoreticalLastDate
 }
 const endTime = ref(
-  new Date(props.batch.joborderInfo.endTime || getLastDate()),
+  new Date(getLastDate()),
   // return addMinutes(new Date(startTime.value), 80)
 )
 
@@ -198,6 +209,15 @@ const dataSet = computed(() => {
     if (setting && setting.selected)
       set.push({
         io: { ...io, type: 'AIN', settingKey: `counters_${io.ioIndex}` },
+        color: setting.color,
+        axis: setting.axis,
+      })
+  })
+  props.batch.calculatedValues.forEach((io) => {
+    const setting = settingsStore.getSetting(`calculatedValues_${io.ioIndex}`)
+    if (setting && setting.selected)
+      set.push({
+        io: { ...io, name: t(`calculatedValues.${io.name}`), type: 'AIN', settingKey: `calculatedValues_${io.ioIndex}` },
         color: setting.color,
         axis: setting.axis,
       })

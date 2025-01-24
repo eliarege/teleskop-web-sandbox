@@ -54,7 +54,6 @@ function updateSelectedUnit(newVal: string) {
     })
   }
 }
-console.log(uniqueUnits)
 const isAxisExist = computed(() => !!settingsStore.axises.get(axisName.value))
 const canUserSave = computed(() => !isAxisExist.value && axisName.value && selectedUnit.value)
 </script>

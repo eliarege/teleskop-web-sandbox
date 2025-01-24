@@ -9,10 +9,12 @@ import type {
   AnalogInputOutputType,
   AnalogValue,
   ArchivedAnalogValue,
+  ArchivedCalculatedValue,
   ArchivedDigitalValue,
   ArchivedIoValues,
   ArchivedReelCycleTime,
   ArchivedVirtualInputValue,
+  CalculatedValue,
   Counter,
   DigitalInputOutputType,
   DigitalValue,
@@ -20,7 +22,8 @@ import type {
   VirtualInput,
 } from '~/types/archive'
 import type { DuoAny, DuoParsed, DuoRaw } from '~/types/utils'
-import { insertAnalogInputValues, insertAnalogOutputValues, insertCounterValues, insertDigitalInputValues, insertDigitalOutputLockValues, insertDigitalOutputValues, insertReelCycleTimes, insertVirtualInputValues } from '~/shared/io'
+import { insertAnalogInputValues, insertAnalogOutputValues, insertCalculatedValues, insertCounterValues, insertDigitalInputValues, insertDigitalOutputLockValues, insertDigitalOutputValues, insertReelCycleTimes, insertVirtualInputValues } from '~/shared/io'
+import { calculatedValueKeys } from '~/utils/constants'
 
 interface BatchValueOptions {
   isActive?: boolean | null
@@ -53,12 +56,13 @@ export async function getArchivedBatchIoValues(batchKey: number, since?: Date | 
     const dvLastIndex = values.digitalValues.findLastIndex(v => new Date(v.logtime) < since)
     const vivLastIndex = values.virtualInputValues.findLastIndex(v => new Date(v.logtime) < since)
     const ctLastIndex = values.cycleTimes.findLastIndex(v => new Date(v.cycleDate) < since)
-
+    const cvLastIndex = values.calculatedValues.findLastIndex(v => new Date(v.logtime) < since)
     return {
       analogValues: values.analogValues.slice(avLastIndex + 1),
       digitalValues: values.digitalValues.slice(dvLastIndex + 1),
       virtualInputValues: values.virtualInputValues.slice(vivLastIndex + 1),
       cycleTimes: values.cycleTimes.slice(ctLastIndex + 1),
+      calculatedValues: values.calculatedValues.slice(cvLastIndex + 1),
     }
   } else {
     return values
@@ -68,6 +72,7 @@ export async function getArchivedBatchIoValues(batchKey: number, since?: Date | 
         digitalValues: [],
         virtualInputValues: [],
         cycleTimes: [],
+        calculatedValues: [],
       }
   }
 }
@@ -78,6 +83,7 @@ export async function getActiveBatchIoValues(batchKey: number, since?: Date | nu
     digitalValues: await getActiveDigitalIoValues(batchKey, since),
     cycleTimes: await getActiveReelCycleTimes(batchKey, since),
     virtualInputValues: await getActiveVirtualInputValues(batchKey, since),
+    calculatedValues: await getActiveCalculatedValues(batchKey, since),
   }
 }
 
@@ -303,6 +309,18 @@ export async function getReels(batchKey: number, cycleTimes?: DuoAny<ArchivedRee
   return reels
 }
 
+export function getCalculatedValues(calculatedValues: DuoAny<ArchivedCalculatedValue>[]): DuoAny<CalculatedValue>[] {
+  const cvs = Array.from({ length: 69 }, (_, i) => ({
+    ioIndex: i,
+    name: calculatedValueKeys[i],
+    ioValues: [],
+  } as DuoAny<CalculatedValue>))
+  if (calculatedValues) {
+    insertCalculatedValues(cvs, calculatedValues)
+  }
+  return cvs
+}
+
 export async function isBatchActive(batchKey: number): Promise<boolean | null> {
   const batch = await db
     .from('BADATA')
@@ -419,5 +437,25 @@ export async function getActiveReelCycleTimes(batchKey: number, since?: Date | n
   if (since) {
     query.andWhere('CYCLEDATETIME', '>', subMinutes(since, teleskopTimezoneOffset))
   }
+  return await query
+}
+
+export async function getActiveCalculatedValues(batchKey: number, since?: Date | null): Promise<DuoParsed<ArchivedCalculatedValue[]>> {
+  const { teleskopTimezoneOffset } = useRuntimeConfig()
+  const query = db
+    .from('BACALCULATEDVALUES')
+    .select({
+      progNo: 'PROGNO',
+      valueId: 'VALUEID',
+      value: 'VALUE',
+      logtime: db.raw('DATEADD(MINUTE, ?, LOGTIME)', teleskopTimezoneOffset),
+    })
+    .where('BATCHKEY', batchKey)
+    .orderBy('LOGTIME')
+
+  if (since) {
+    query.andWhere('LOGTIME', '>', subMinutes(since, teleskopTimezoneOffset))
+  }
+
   return await query
 }

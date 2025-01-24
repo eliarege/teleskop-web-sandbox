@@ -6,12 +6,14 @@ const props = defineProps<{
   value: any
   setting: IOSetting
   ioType: 'Analog' | 'Digital'
+  typeKey?: string
 }>()
 const emit = defineEmits(['update:setting', 'update:axis'])
 function updateSettingsSelectedAttribute(selected: boolean) {
   emit('update:setting', { ...props.setting, selected })
   emit('update:axis', { ...props.setting, selected })
 }
+const { t } = useI18n()
 </script>
 
 <template>
@@ -41,7 +43,7 @@ function updateSettingsSelectedAttribute(selected: boolean) {
     </q-btn>
 
     <span class="ml-4">
-      {{ command.name }}
+      {{ typeKey === 'calculatedValues' ? t(`calculatedValues.${command.name}`) : command.name }}
     </span>
     <q-space />
     <span class="mr-4">
