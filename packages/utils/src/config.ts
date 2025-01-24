@@ -2,7 +2,7 @@ import { inferBoolean, isDef, tryJsonParse } from './base'
 
 export type ConfigProps = {
   env: string
-  required?: boolean
+  required?: boolean | ((config: Record<string, any>) => boolean)
 } & (
   | StringConfigProps
   | NumberConfigProps
@@ -51,12 +51,22 @@ export function defineConfiguration<const T extends Record<string, ConfigProps>>
   const process = globalThis.process
   if (!process)
     throw new Error(`Can only run in node environment`)
+
+  // Array of configurations where the value is `undefined` but the `required` property is a function
+  const postRequiredChecks = [] as (ConfigProps & { required: Extract<ConfigProps['required'], Function> })[]
+
   for (const [key, props] of Object.entries(config)) {
     const type = props.type || 'string'
     const rawValue = process.env[props.env]
-    if (!isDef(rawValue) && props.required && !isDef(props.default)) {
-      throw new Error(`Missing env ${type}: ${props.env}`)
+    if (props.required && !isDef(props.default) && !isDef(rawValue)) {
+      if (typeof props.required === 'boolean') {
+        /* eslint-disable-next-line unicorn/prefer-type-error */
+        throw new Error(`Missing env ${type}: ${props.env}`)
+      } else if (typeof props.required === 'function') {
+        postRequiredChecks.push(props as (typeof postRequiredChecks)[0])
+      }
     }
+
     let value: any
     if (rawValue) {
       if (type === 'integer') {
@@ -85,6 +95,13 @@ export function defineConfiguration<const T extends Record<string, ConfigProps>>
       value = props.default
     }
     output[key] = value
+  }
+
+  // Check
+  for (const props of postRequiredChecks) {
+    if (props.required(config)) {
+      throw new Error(`Missing env ${props.type || 'string'}: ${props.env}`)
+    }
   }
   return output as InferConfigObject<T>
 }
