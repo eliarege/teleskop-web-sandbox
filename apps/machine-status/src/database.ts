@@ -5,57 +5,78 @@ import { parseConnectionString } from '@tediousjs/connection-string'
 import { inferBoolean } from '@teleskop/utils'
 import { logger } from './logger'
 
-export function createKyselyInstance<T>(connectionString: string) {
-  const connectionParams = parseConnectionString(connectionString) as Record<string, string>
-  let server = connectionParams.server
-  let port = '1433'
-  let instanceName: string | undefined
-  // https://www.connectionstrings.com/microsoft-data-sqlclient/using-a-non-standard-port/
-  if (server.includes(',')) {
-    ([server, port] = server.split(',') as [string, string])
-  } else if (server.includes('\\')) {
-    ([server, instanceName] = server.split('\\') as [string, string])
+interface DatabaseConfig {
+  host?: string
+  port?: number
+  user?: string
+  password?: string
+  database?: string
+  instanceName?: string
+  options?: tedious.ConnectionOptions
+}
+
+export function createKyselyInstance<T>(connectionStringOrOptions: string | DatabaseConfig) {
+  let server = '127.0.0.1'
+  const auth: tedious.ConnectionAuthentication = {
+    type: 'default',
+    options: {},
+  }
+  const connOptions: tedious.ConnectionOptions = {
+    trustServerCertificate: true,
+    encrypt: false,
   }
 
-  const trustServerCertificate = connectionParams.trustservercertificate
-    ? inferBoolean(connectionParams.trustservercertificate)
-    : true
+  if (typeof connectionStringOrOptions === 'string') {
+    const connParams = parseConnectionString(connectionStringOrOptions) as Record<string, string>
+    server = connParams.server
+    if (!server) {
+      throw new Error(`Connection string is missing 'server' property`)
+    }
+    auth.options.userName = connParams['user id']
+    auth.options.password = connParams.password
+    connOptions.database = connParams.database
+    connOptions.trustServerCertificate = connParams.trustservercertificate
+      ? inferBoolean(connParams.trustservercertificate)
+      : connOptions.trustServerCertificate
+    connOptions.encrypt = connParams.encrypt
+      ? inferBoolean(connParams.encrypt)
+      : false
 
-  const encrypt = connectionParams.encrypt
-    ? inferBoolean(connectionParams.encrypt)
-    : false
+    if (server.includes(',')) {
+      const seg = server.split(',')
+      server = seg[0]
+      connOptions.port = Number(seg[1])
+    } else if (server.includes('\\')) {
+      const seg = server.split('\\')
+      server = seg[0]
+      connOptions.instanceName = seg[1]
+    }
+  } else {
+    const opt = connectionStringOrOptions
+    server = opt.host || server
+    auth.options.userName = opt.user
+    auth.options.password = opt.password
+    connOptions.database = opt.database
+    connOptions.port = opt.port
+    connOptions.instanceName = opt.instanceName
+    Object.assign(connOptions, opt.options)
+  }
 
   const dialect = new MssqlDialect({
     tarn: {
       ...tarn,
       options: {
         min: 0,
-        max: 10,
+        max: 1,
       },
     },
     tedious: {
       ...tedious,
-      // @ts-expect-error Minor type difference between kysely's `TediousConnection` interface and `tedious`'s own `Connection` interface
       connectionFactory: () => new tedious.Connection({
-        authentication: {
-          options: {
-            password: connectionParams.password,
-            userName: connectionParams['user id'],
-          },
-          type: 'default',
-        },
-        options: {
-          database: connectionParams.database,
-          ...(
-            instanceName
-              ? { instanceName }
-              : { port: Number.parseInt(port, 10) }
-          ),
-          trustServerCertificate,
-          encrypt,
-        },
+        authentication: auth,
+        options: connOptions,
         server,
-      }).on('error', err => logger.error(`${err.message} [${server}/${connectionParams.database}]`)),
+      }).on('error', err => logger.error(`${err.message} [${server}/${connOptions.database}]`)),
     },
   })
 
