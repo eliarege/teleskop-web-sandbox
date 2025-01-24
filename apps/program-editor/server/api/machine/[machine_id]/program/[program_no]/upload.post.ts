@@ -2,7 +2,7 @@ import { machineStore } from '~/server/classes/MachineStore'
 import logger from '~/server/logger'
 
 export default defineAuthEventHandler({
-  roles: ['program-upload'],
+  roles: ['machine-upload'],
   handler: async (event) => {
     const { machine_id, program_no } = getRouterParams(event)
     const machineId = Number.parseInt(machine_id)
