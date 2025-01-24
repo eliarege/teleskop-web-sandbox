@@ -67,6 +67,12 @@ const rules = [
   (value: number) => {
     return !!value || t('emptyCommand') // Seçim boşsa hata mesajı
   },
+
+  (value: number) => {
+    const machineCommand = editor.machine.commands.get(value)
+    return !!machineCommand || t('error.machineCommandNotFound', { commandNo: value, machineId: editor.machine.id })
+  },
+
   (value: number) => {
     const step = editor.program.steps[stepIndex.value]
     const machineMainCommand = editor.machine.commands.get(step.mainCommand.commandNo)
@@ -133,6 +139,11 @@ onMounted(() => {
     return
   }
 
+  if (!editor.machine.commands.has(commandNo)) {
+    editor.errorIds.add(id)
+    return
+  }
+
   editor.errorIds.delete(id)
   select.value?.validate()
 })
@@ -154,10 +165,15 @@ onUnmounted(() => {
 })
 
 function getCommandName(option: any) {
-  if (!option.label) {
-    return `${programCommand.value.commandNo} ${editor.machine.commands.get(option)?.name}`
-  }
-  return option.label
+  if (option.label)
+    return option.label
+
+  const machineCommand = editor.machine.commands.get(option)
+
+  if (!machineCommand)
+    return `${option} ${t('error.commandNotFound')}`
+
+  return `${machineCommand.commandNo} ${machineCommand.name}`
 }
 </script>
 

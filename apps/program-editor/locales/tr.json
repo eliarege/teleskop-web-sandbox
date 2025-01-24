@@ -181,6 +181,7 @@
     "incorrect": "Hatalı değer girdiniz"
   },
   "error": {
+    "commandNotFound": "Komut Bulunamadı!",
     "machineCommandNotFound": "{commandNo} numaralı komut {machineId} numaralı makinede bulunamadı",
     "cannotMainCommand": "{commandNo} numaralı komut ana komut olamaz",
     "notSameCommand": "Bir adımda aynı komut iki kere kullanılamaz",
