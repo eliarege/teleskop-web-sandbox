@@ -1,4 +1,4 @@
-import { inferBoolean, isDef } from './base'
+import { inferBoolean, isDef, tryJsonParse } from './base'
 
 export type ConfigProps = {
   env: string
@@ -7,6 +7,7 @@ export type ConfigProps = {
   | StringConfigProps
   | NumberConfigProps
   | BooleanConfigProps
+  | QuerystringConfigProps
 )
 
 interface StringConfigProps {
@@ -23,6 +24,11 @@ interface BooleanConfigProps {
   default?: boolean
 }
 
+interface QuerystringConfigProps {
+  type: 'querystring'
+  default?: Record<string, any>
+}
+
 type InferRequired<Type, Props extends ConfigProps> =
   Props extends { required: true } ? RuntimeValue<Type, `You can configure this value by setting the env ${Props['env']}`>
     : Props extends { default: Type } ? RuntimeValue<Type, `You can configure this value by setting the env ${Props['env']}`>
@@ -31,7 +37,8 @@ type InferRequired<Type, Props extends ConfigProps> =
 type InferConfigObject<T extends Record<string, ConfigProps>> = {
   readonly [K in keyof T]: T[K] extends { type: 'number' | 'integer' } ? InferRequired<number, T[K]>
     : T[K] extends { type: 'boolean' } ? InferRequired<boolean, T[K]>
-      : InferRequired<string, T[K]>
+      : T[K] extends { type: 'querystring' } ? InferRequired<Record<string, any>, T[K]>
+        : InferRequired<string, T[K]>
 }
 declare const message: unique symbol
 type RuntimeValue<Type, Message extends string> = Type & {
@@ -64,6 +71,10 @@ export function defineConfiguration<const T extends Record<string, ConfigProps>>
         }
       } else if (type === 'boolean') {
         value = inferBoolean(rawValue)
+      } else if (type === 'querystring') {
+        value = Object.fromEntries([
+          ...new URLSearchParams(rawValue).entries(),
+        ].map(([k, v]) => [k, tryJsonParse(v)]))
       } else {
         value = rawValue
         if (type === 'url' && !isValidURL(rawValue)) {
