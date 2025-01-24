@@ -451,7 +451,7 @@ export async function getActiveCalculatedValues(batchKey: number, since?: Date |
       logtime: db.raw('DATEADD(MINUTE, ?, LOGTIME)', teleskopTimezoneOffset),
     })
     .where('BATCHKEY', batchKey)
-    .orderBy(['PROGNO', 'VALUEID', 'LOGTIME'])
+    .orderBy('LOGTIME')
 
   if (since) {
     query.andWhere('LOGTIME', '>', subMinutes(since, teleskopTimezoneOffset))
