@@ -73,22 +73,6 @@ const rules = [
     return !!machineCommand || t('error.machineCommandNotFound', { commandNo: value, machineId: editor.machine.id })
   },
 
-  (value: number) => {
-    const step = editor.program.steps[stepIndex.value]
-    const machineMainCommand = editor.machine.commands.get(step.mainCommand.commandNo)
-
-    // Ana komutun "dontUseList" kontrolü
-    if (isMainCommand === CommandType.PARALLEL) {
-      if (machineMainCommand?.dontUseList?.includes(value)) {
-        return t('cannotParallelCommand', {
-          mainCommandNo: step.mainCommand.commandNo,
-          parallelCommandNo: value,
-        })
-      }
-    }
-
-    return true
-  },
 ]
 
 function validateCommand() {
@@ -175,6 +159,17 @@ function getCommandName(option: any) {
 
   return `${machineCommand.commandNo} ${machineCommand.name}`
 }
+
+function canRunParallel(): boolean {
+  if (isMainCommand === CommandType.PARALLEL) {
+    const mainCommandNo = editor.program.steps[stepIndex.value].mainCommand.commandNo
+    const machineMainCommand = editor.machine.commands.get(mainCommandNo)
+
+    return machineMainCommand?.dontUseList?.includes(programCommand.value.commandNo) || false
+  }
+
+  return false
+}
 </script>
 
 <template>
@@ -192,6 +187,7 @@ function getCommandName(option: any) {
       :rules="rules"
       :for="id"
       :option-label="getCommandName"
+      :class="canRunParallel() ? 'opacity-70 ' : ''"
       option-value="value"
       hide-bottom-space
       emit-value
@@ -203,6 +199,13 @@ function getCommandName(option: any) {
       outlined
       filled
       @update:model-value="value => updateStepCommand(value, programCommand)"
-    />
+    >
+      <QTooltip v-if="canRunParallel()">
+        {{ t('cannotParallelCommand', {
+          mainCommandNo: editor.program.steps[stepIndex].mainCommand.commandNo,
+          parallelCommandNo: programCommand.commandNo,
+        }) }}
+      </QTooltip>
+    </QSelect>
   </div>
 </template>
