@@ -49,7 +49,8 @@ const duration = computed(() => {
 
 function deleteParallelStep(stepIndex: number, index: number) {
   editor.selectedSteps = [editor.program.steps[stepIndex]]
-  if (!isLastStep) {
+  const settings = useProgramWriteSettings()
+  if (!isLastStep && settings.value.removeParallelCommandFromOtherSteps) {
     $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', editor.program.steps[stepIndex].parallelCommands[index].commandNo, editor.program.steps[stepIndex].parallelCommands[index])
   }
   editor.deleteParallelStep(stepIndex, index)

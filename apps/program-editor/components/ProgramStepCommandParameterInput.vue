@@ -9,15 +9,19 @@ const props = defineProps<{
   commandNo: number
 }>()
 
+const $q = useQuasar()
+const { $commandManager } = useNuxtApp()
 const { t } = useI18n()
 const editor = useEditorStore()
-const programParameter: ParameterItem = editor.getPathElement(props.path)
+const programParameter = editor.getPathElement(props.path)
 const model = ref(Number(programParameter.value))
+const isLastStep = Number(props.path.split('.')[1]) === editor.program.steps.length - 1
 
 const rules = [
   (value: number | string) => value !== '' || t('input.required', { field: t('program.parameter') }),
   (value: number | string) => (Number(value) >= props.parameter.minValue && Number(value) <= props.parameter.maxValue) || t('valueOutOfRange', { minValue: props.parameter.minValue, maxValue: props.parameter.maxValue }),
 ]
+
 const options = computed(() => props.parameter.selections || [])
 const formulaOptions = computed(() =>
   editor.machine.commandFormulas.filter((f: CommandFormula) => f.commandNo === props.commandNo).map((f: CommandFormula) => ({
@@ -36,10 +40,26 @@ const isOptimizable = computed(() => {
 watch(() => model.value, (newValue: number) => {
   programParameter.value = newValue
 })
+
+// TODO: update other steps parameter
+function handleInputBlur() {
+  const settings = useProgramWriteSettings()
+
+  if (!isLastStep && settings.value.changeParallelCommandParameterInOtherSteps) {
+    const stepIndex = Number(props.path.split('.')[1])
+    const programCommand = editor.program.steps[stepIndex].mainCommand
+    $commandManager.executeCommand('moveParallelStep', { $q }, 'changeParameter', props.commandNo, programCommand, { name: props.parameter.name, value: programParameter.value })
+  }
+}
 </script>
 
 <template>
   <div class="inline-block pr-1 pb-1">
+    <DevOnly>
+      <div class="color-gray-5 text-3">
+        {{ props.commandNo }} - {{ props.parameter.index }}
+      </div>
+    </DevOnly>
     <template v-if="parameter.type === 'NUMBER'">
       <InputDuration
         v-if="parameter.format === 'DURATION'"

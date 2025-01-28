@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import type { ProgramStepCommand } from '~/shared/types'
+import type { ParameterItem, ProgramStepCommand } from '~/shared/types'
 
 const props = defineProps<{
-  type: 'add' | 'remove'
+  type: 'add' | 'remove' | 'changeParameter'
   commandNo: number
   commandName: string
   programCommand: ProgramStepCommand
   stepIndex: number
   stepsLength: number
+  parameter?: { name: string, value: number | string }
 }>()
 
 const { t } = useI18n()
@@ -28,7 +29,7 @@ const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
       <!-- Başlık -->
       <QCardSection>
         <div class="text-h6 flex items-center">
-          {{ props.type === 'add' ? t('moveParallelStep.addTitle') : t('moveParallelStep.removeTitle') }}
+          {{ t(`moveParallelStep.${props.type}.title`) }}
           <QSpace />
           <QBtn
             icon="close"
@@ -66,6 +67,20 @@ const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
                 :style="{ color: commandIcon?.color }"
               />
               {{ commandName }}
+            </span>
+          </div>
+
+          <!-- Parametre Adı -->
+          <div v-if="props.type === 'changeParameter'" class="flex flex-col w-40">
+            <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('moveParallelStep.changeParameter.parameter.name') }}</label>
+            <span class="text-sm text-gray-8 dark:text-gray-3">{{ props.parameter.name }}</span>
+          </div>
+
+          <!-- Parametre Degeri -->
+          <div v-if="props.type === 'changeParameter'" class="flex flex-col w-60">
+            <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('moveParallelStep.changeParameter.parameter.value') }}</label>
+            <span class="text-sm text-gray-8 dark:text-gray-3">
+              {{ props.parameter.value }}
             </span>
           </div>
 
@@ -118,8 +133,8 @@ const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
         />
         <QBtn
           class="q-mr-sm text-white"
-          :label="type === 'add' ? t('moveParallelStep.add') : t('moveParallelStep.remove')"
-          :class="type === 'add' ? 'bg-primary' : 'bg-red-6'"
+          :label="t(`moveParallelStep.${props.type}.operate`)"
+          :class="type === 'remove' ? 'bg-red-6' : 'bg-primary'"
           flat
           :disable="startIndex > endIndex"
           @click="onDialogOK({ type, commandNo, startIndex: startIndex - 1, endIndex: endIndex - 1 })"

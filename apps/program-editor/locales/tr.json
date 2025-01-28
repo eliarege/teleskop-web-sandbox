@@ -181,6 +181,7 @@
     "incorrect": "Hatalı değer girdiniz"
   },
   "error": {
+    "commandNotFound": "Komut Bulunamadı!",
     "machineCommandNotFound": "{commandNo} numaralı komut {machineId} numaralı makinede bulunamadı",
     "cannotMainCommand": "{commandNo} numaralı komut ana komut olamaz",
     "notSameCommand": "Bir adımda aynı komut iki kere kullanılamaz",
@@ -465,11 +466,25 @@
     }
   },
   "moveParallelStep": {
-    "addTitle": "Paralel Adımı Taşı",
-    "removeTitle": "Paralel Adımı Sil",
-    "message": "Paralel adımı tasımak istediğinizden emin misiniz?",
-    "remove": "Sil",
-    "add": "Ekle",
+    "add": {
+      "title": "Paralel Adımı Taşı",
+      "message": "Paralel adımı tasımak istediğinizden emin misiniz?",
+      "operate": "Ekle"
+    },
+    "remove": {
+      "title": "Paralel Adımı Sil",
+      "message": "Paralel adımı silmek istediğinizden emin misiniz?",
+      "operate": "Sil"
+    },
+    "changeParameter": {
+      "title": "Parametreleri Değiştir",
+      "message": "Sonraki paralel adımları değiştirme istediğinizden emin misiniz?",
+      "operate": "Değiştir",
+      "parameter": {
+        "name": "Parametre Adı",
+        "value": "Değer"
+      }
+    },
     "cancel": "İptal",
     "startIndex": "Başlangıç Adımı",
     "endIndex": "Bitiş Adımı",

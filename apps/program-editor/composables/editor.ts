@@ -158,49 +158,47 @@ export const useEditorStore = defineStore('editor', () => {
       updateCommand(commandNo, newStep.mainCommand)
     }
 
-    let targetIndex = stepIndex ?? program.value.steps.length
+    const targetIndex = stepIndex ?? getStepIndex()
 
-    if (!isDef(stepIndex)) {
-      const stepId = selectedSteps.value[0]?.stepId
-
-      if (isDef(stepId)) {
-        const foundIndex = program.value.steps.findIndex(step => step.stepId === stepId)
-        targetIndex = foundIndex !== -1 ? foundIndex : program.value.steps.length
-      }
-    }
     // Paralel komutları kopyala (eğer varsa)
     if (program.value.steps[targetIndex]) {
-      for (const command of program.value.steps[targetIndex]?.parallelCommands) {
+      const parallelCommands = program.value.steps[targetIndex]?.parallelCommands || []
+      const settings = useProgramWriteSettings()
+
+      for (const command of parallelCommands) {
         const machineCommand = machine.value.commands.get(command.commandNo)
 
-        if (isDef(machineCommand)) {
-        // Paralel adımı taşı
-          if (machineCommand.moveParallel === MoveParallel.MOVE) {
-            // Program yazma ayarlarına göre paralel komutları ekle
-            const settings = useProgramWriteSettings()
-            if (settings.value.addParallelCommandsFromPreviousStep)
-              newStep.parallelCommands.push(klona(command))
+        if (!machineCommand)
+          continue
 
-            // Paralel adım devreden çıkana kadar taşı
-          } else if (machineCommand.moveParallel === 1) {
-            const mainCommandDontuselist = machine.value.commands.get(command.commandNo)?.dontUseList
-            if (mainCommandDontuselist && !mainCommandDontuselist.find(cNo => cNo === command.commandNo)) {
+        switch (machineCommand.moveParallel) {
+          case MoveParallel.MOVE: {
+            if (settings.value.addParallelCommandsFromPreviousStep) {
               newStep.parallelCommands.push(klona(command))
             }
-            // Paralel adımı taşıma
-          } else if (machineCommand.moveParallel === MoveParallel.STOP) {
-          // TODO
-          } else {
-            console.warn(`Invalid moveParallel value: ${machineCommand.moveParallel}`)
+            break
           }
+          case MoveParallel.MOVE_UNTIL_DISABLED: {
+            const dontUseList = machineCommand.dontUseList || []
+            if (!dontUseList.includes(command.commandNo) && settings.value.addParallelCommandsFromPreviousStep) {
+              newStep.parallelCommands.push(klona(command))
+            }
+            break
+          }
+          case MoveParallel.STOP:
+            // TODO
+            break
+          default:
+            console.warn(`Invalid moveParallel value: ${machineCommand.moveParallel}`)
+            break
         }
       }
     }
 
     // Paralel komutların ID'sini güncelle
-    for (const command of newStep.parallelCommands) {
-      command.commandId = lastCommandId++
-    }
+    lastCommandId = 0
+    newStep.mainCommand.commandId = lastCommandId++
+    newStep.parallelCommands.forEach(command => command.commandId = lastCommandId++)
 
     // Yeni adımı belirtilen konuma ekle
     program.value.steps.splice(targetIndex + 1, 0, newStep)
