@@ -1,4 +1,5 @@
 import { convertElementToCanvas } from '@teleskop/nuxt-base/utils/html2canvas'
+import type { MachineCommand, Program } from './types'
 
 export const as = <T>(value: T) => value as T
 
@@ -52,4 +53,63 @@ export async function screenshot(element: HTMLElement, filename: string) {
   link.download = `${filename}.png`
   link.href = canvas.toDataURL('image/png')
   link.click()
+}
+export function checkProgram(program: Program, machineCommands: MachineCommand[]): { stepId: number, commandId: number, message: string }[] {
+  const errors: { stepId: number, commandId: number, message: string }[] = []
+
+  const getMachineCommand = (commandNo: number): MachineCommand | undefined =>
+    machineCommands.find(cmd => cmd.commandNo === commandNo)
+
+  const generateErrorMessage = (stepId: number, commandId: number, message: string) => {
+    errors.push({ stepId, commandId, message })
+  }
+
+  program.steps.forEach((step) => {
+    const allCommands = [step.mainCommand, ...step.parallelCommands]
+
+    allCommands.forEach((command) => {
+      const machineCommand = getMachineCommand(command.commandNo)
+
+      if (!command.commandNo) {
+        generateErrorMessage(step.stepId, command.commandId, 'Komut numarası yok.')
+        return
+      }
+
+      if (!machineCommand) {
+        generateErrorMessage(step.stepId, command.commandId, `Komut bulunamıyor. Komut numarası: ${command.commandNo}`)
+        return
+      }
+
+      const { parameters: machineParams, ioList: machineIOs } = machineCommand
+
+      machineParams.forEach((machineParam) => {
+        const programParam = command.parameters.find(p => p.index === machineParam.index)
+
+        if (!programParam) {
+          generateErrorMessage(step.stepId, command.commandId, `Parametre yok. Parametre index: ${machineParam.index}`)
+        } else {
+          if (
+            typeof programParam.value === 'number'
+            && (programParam.value < machineParam.minValue || programParam.value > machineParam.maxValue)
+          ) {
+            generateErrorMessage(step.stepId, command.commandId, `Parametre aralık dışında. Parametre index: ${machineParam.index}`)
+          }
+        }
+      })
+
+      machineIOs.forEach((machineIO) => {
+        const programIO = command.ioList.find(io => io.ioIndex === machineIO.index)
+
+        if (!programIO) {
+          generateErrorMessage(step.stepId, command.commandId, `IO yok. IO index: ${machineIO.index}`)
+        } else {
+          if (programIO.ioIndex !== machineIO.index && programIO.ioId !== machineIO.physicalId) {
+            generateErrorMessage(step.stepId, command.commandId, `IO bulunamadı. IO index: ${machineIO.index}`)
+          }
+        }
+      })
+    })
+  })
+
+  return errors
 }
