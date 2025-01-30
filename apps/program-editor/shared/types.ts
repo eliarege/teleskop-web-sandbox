@@ -453,3 +453,9 @@ export interface ProgramWriteSettings {
 }
 
 // #endregion
+
+export interface ProgramError {
+  stepId: number
+  commandId: number
+  message: string
+}
