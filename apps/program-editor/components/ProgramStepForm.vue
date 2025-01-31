@@ -2,11 +2,12 @@
 import { Sortable } from 'sortablejs-vue3'
 import type { SortableOptions } from 'sortablejs'
 import ProgramStepCommandForm from './ProgramStepCommandForm.vue'
-import type { ProgramStep } from '~/shared/types'
+import type { ProgramStep, StepError } from '~/shared/types'
 import { calculateProgramStepDuration } from '~/shared/formula'
 
 const props = defineProps<{
   path: string
+  stepError?: StepError
 }>()
 
 const $q = useQuasar()
@@ -94,14 +95,19 @@ function deleteParallelStep(stepIndex: number, index: number) {
       dense
       @click="expanded = !expanded"
     />
-
     <ProgramStepCommandForm
       class="flex-1"
+      :class="{
+        error: step.parallelCommands.some(cmd =>
+          stepError?.commands.find(error => error.commandId === cmd.commandId),
+        ) && !expanded,
+      }"
       :path="`${props.path}.mainCommand`"
       :expanded
+      :command-error="stepError?.commands.find(cmd => cmd.commandId === step.mainCommand.commandId)"
     />
   </div>
-  <div v-show="expanded" class="e-border-color border-(t x-0) mt-2px pl-16">
+  <div v-show="expanded" class="e-border-color border-(t x-0) pl-16">
     <Sortable
       :list="step.parallelCommands"
       item-key="commandId"
@@ -117,8 +123,10 @@ function deleteParallelStep(stepIndex: number, index: number) {
       </template>
       <template #item="{ index }">
         <div
-          class="step-parallel-command"
-          :class="{ __selected: false }"
+          class="step-parallel-command "
+          :class="{
+            error: stepError?.commands.find(cmd => cmd.commandId === step.parallelCommands[index].commandId),
+          }"
         >
           <DevOnly>
             <div class="flex flex-col color-gray-5 text-3">
@@ -127,7 +135,11 @@ function deleteParallelStep(stepIndex: number, index: number) {
           </DevOnly>
 
           <div>
-            <ProgramStepCommandForm :path="`${props.path}.parallelCommands.${index}`" :expanded />
+            <ProgramStepCommandForm
+              :path="`${props.path}.parallelCommands.${index}`"
+              :expanded
+              :command-error="stepError?.commands.find(cmd => cmd.commandId === step.parallelCommands[index].commandId)"
+            />
           </div>
           <QSpace />
           <QBtn
@@ -177,5 +189,9 @@ function deleteParallelStep(stepIndex: number, index: number) {
 
 .icon {
   @apply text-18px mr-4px cursor-pointer;
+}
+
+.error {
+  @apply bg-red-2;
 }
 </style>

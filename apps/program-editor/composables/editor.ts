@@ -23,7 +23,7 @@ export const useEditorStore = defineStore('editor', () => {
   let lastStepId = 0
   let lastCommandId = 0
   const allStepExpanded = ref(false)
-  const programErrors = ref<ProgramError[]>([])
+  const programErrors = ref<ProgramError>()
 
   const { $i18n } = useNuxtApp()
   const { t } = $i18n
@@ -579,7 +579,7 @@ export const useEditorStore = defineStore('editor', () => {
     if (isDef(version))
       program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
     else {
-      const response = await kc.fetch<{ program: Program, programErrors: ProgramError[] }>(`/api/machine/${machineId}/program/${programNo}`)
+      const response = await kc.fetch<{ program: Program, programErrors: ProgramError }>(`/api/machine/${machineId}/program/${programNo}`)
       program.value = response.program
       programErrors.value = response.programErrors
     }

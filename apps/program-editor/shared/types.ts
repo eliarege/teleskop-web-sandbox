@@ -463,7 +463,7 @@ export interface CreateError {
 }
 
 export interface ProgramError {
-  errors: StepError[]
+  steps: StepError[]
 }
 
 export interface StepError {

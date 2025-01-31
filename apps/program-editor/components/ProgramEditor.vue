@@ -59,15 +59,15 @@ function onDragEnd(event: SortableEvent) {
           </QItemLabel>
         </QItemSection>
         <QItemSection
-          :class="editor.programErrors.find(error => error.stepId === index) ? 'bg-red-2' : ''"
+
           class="pl-2"
           @click.stop="editor.selectStep($event.ctrlKey, index)"
         >
-          <span class="text-xs text-gray-7 dark:text-gray-4">
-            {{ editor.programErrors.find(error => error.stepId === index) ? editor.programErrors.find(error => error.stepId === index)?.message : '' }}
-          </span>
           <div :id="`step-${index}`">
-            <ProgramStepForm :path="`steps.${index}`" />
+            <ProgramStepForm
+              :path="`steps.${index}`"
+              :step-error="editor.programErrors?.steps?.[index]"
+            />
           </div>
         </QItemSection>
 

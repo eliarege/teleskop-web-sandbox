@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import InputDuration from './InputDuration.vue'
 import InputNumber from './InputNumber.vue'
-import type { CommandFormula, CommandParameter, ParameterItem } from '~/shared/types'
+import type { CommandFormula, CommandParameter } from '~/shared/types'
 
 const props = defineProps<{
   path: string
@@ -127,7 +127,7 @@ function handleInputBlur() {
         v-model="model"
         :label="parameter.name"
         :options="formulaOptions"
-        option-label="label"
+        :option-label="(f) => f.label.length > 15 ? `${f.label.slice(0, 15).trim()}.` : f.label.trim()"
         option-value="value"
         options-dense
         map-options

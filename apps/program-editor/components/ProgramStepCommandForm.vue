@@ -2,11 +2,12 @@
 import CommandSelector from './CommandSelector.vue'
 import ProgramStepCommandParameterInput from './ProgramStepCommandParameterInput.vue'
 import ProgramStepCommandIoInput from './ProgramStepCommandIoInput.vue'
-import type { CommandIO, CommandParameter, ProgramStepCommand } from '~/shared/types'
+import type { CommandError, CommandIO, CommandParameter, ProgramStepCommand } from '~/shared/types'
 
 const props = defineProps<{
   path: string
   expanded?: boolean
+  commandError?: CommandError
 }>()
 
 const editor = useEditorStore()
@@ -25,6 +26,14 @@ const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!)
 
 <template>
   <div class="pl-1 pt-1">
+    <span
+      v-for="messages in commandError?.messages"
+      :key="messages.message"
+      class="text-xs text-gray-7 dark:text-gray-4 block"
+    >
+      {{ messages.message }}
+    </span>
+
     <div class="flex">
       <div v-if="expanded" class="w-7 flex-center">
         <div v-if="commandIcon">
@@ -54,6 +63,7 @@ const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!)
           :key="`io-${programCommand.commandNo}-${index}`"
           :path="`${props.path}.ioList.${index}`"
           :io="io"
+          :command-no="programCommand.commandNo!"
         />
       </div>
     </div>
