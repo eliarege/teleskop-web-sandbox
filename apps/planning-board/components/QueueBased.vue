@@ -1,13 +1,13 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, EventModel, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro'
-import { LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro'
+import { DomHelper, LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro'
 import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import { determineTextColor } from '@teleskop/utils'
 import { useDocumentVisibility } from '@vueuse/core'
 import { useFuse } from '@vueuse/integrations/useFuse'
 import { addDays, addHours, addMinutes, addSeconds } from 'date-fns'
-import { eventTooltip } from '~/composables/helper'
+import { eventTooltip, expediteEvents, postponeEvent } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore, getResourceRow, removeAttributes, sortEventsByDateDesc } from '~/lib/queueBased'
 import type { QueueBasedEvent, QueueBasedNonActualEvent } from '~/shared/queueBased'
 import type { MachineStatus, PlanParameters } from '~/shared/types'
@@ -346,7 +346,6 @@ async function machineReload() {
   await eventRefresh()
   scheduler.refreshRows()
 }
-
 watch(modifiedEvents, (newVal: QueueBasedEvent[]) => {
   scheduler.events = newVal
   scrollStore.data = newVal
@@ -807,7 +806,6 @@ onMounted(async () => {
   } as Partial<SchedulerProConfig>)
 
   if (import.meta.dev) {
-    // @ts-expect-error missing type
     window.sch = schedule
   }
   new Splitter({
@@ -876,95 +874,49 @@ onMounted(async () => {
   } as Partial<GridConfig>)
 
   initialGridColumns()
-
   new QueueDrag({
     grid: unplannedGrid,
     schedule,
     constrain: false,
     outerElement: unplannedGrid.element,
-
-    async onDrop({ context }) {
+    async onDrop({ context, event }) {
       const { task, isValid: valid, target, machine } = context
       schedule.disableScrollingCloseToEdges(schedule.timeAxisSubGrid)
-      const targetEventRecord = schedule.resolveEventRecord(target)
-      let newEvent
+      const events = schedule.events
+
+      let mouseX
+      let eventTarget = event.target
+
+      while (eventTarget && !eventTarget.classList.contains('b-sch-event-wrap')) {
+        eventTarget = eventTarget.parentElement
+      }
+
+      if (eventTarget) {
+        const eventRect = eventTarget.getBoundingClientRect()
+        mouseX = event.offsetX + schedule.scrollLeft + eventRect.left - (schedule.subGrids.locked.width + schedule.subGrids.locked.splitterElement.offsetWidth)
+      } else {
+        mouseX = event.offsetX
+      }
+
       if (target && valid) {
         if (!machine)
           return
-
-        task.originalData.machineId = machine.id
-        const currentEvents = sortEventsByDateDesc(machine.events.filter((ev => ev.eventType === 'planned')))
-        if (targetEventRecord) {
-          newEvent = {
-            planKey: task.id,
-            machineId: machine.id,
-            queueNumber: targetEventRecord.queueNumber + 1 || 1,
-          }
-          task.startDate = addMinutes(targetEventRecord.endDate, 5)
-          task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
-          const futureEvents = currentEvents.filter(a => a.startDate >= targetEventRecord.endDate && a !== task)
-          sortEventsByDateDesc(futureEvents).forEach((ev, i, all) => {
-            const prevEvent = all[i - 1] || task
-            ev.startDate = addMinutes(prevEvent.endDate, 5)
-            ev.endDate = addSeconds(ev.startDate, ev.theoreticalDuration)
-          })
+        const targetEvent = setTargetEvent(mouseX, schedule, machine)
+        const machineEvents = schedule.events.filter(e => e.resourceId === machine.id)
+        if (targetEvent) {
+          setDropLocation(mouseX, targetEvent, schedule, task, machineEvents)
+          await handleSchedule(schedule, task, machine, grid, refreshScheduler)
         } else {
-          const targetEvents = sortEventsByDateDesc(currentEvents).filter(a => a.startDate <= task.startDate && a.endDate >= task.startDate)
-          if (targetEvents.length > 0) {
-            const sideEvents = sortEventsByDateDesc(targetEvents.filter(a =>
-              a.startDate <= task.startDate
-              && a.endDate >= task.startDate,
-            ))
-            task.startDate = addMinutes(sideEvents[0].endDate, 5)
-            task.endDate = addSeconds(task.startDate, task.originalData.theoreticalDuration)
-            newEvent = {
-              planKey: task.id,
-              machineId: machine.id,
-              queueNumber: sideEvents[0].queueNumber + 1 || 1,
-            }
-            const futureEvents = currentEvents.filter(a => a.startDate >= task.startDate && a !== task)
-            futureEvents.forEach((el, i, all) => {
-              const prev = all[i - 1] || task
-              el.startDate = addMinutes(prev.endDate, 5)
-              el.endDate = addSeconds(el.startDate, el.originalData.theoreticalDuration)
-            })
+          const machineEvents = events.filter(e => e.resourceId === machine.id)
+          if (machineEvents.length === 0) {
+            await handleSchedule(schedule, task, machine, grid, refreshScheduler)
           } else {
-            if (currentEvents.length > 0) {
-              const lastEvent = currentEvents[currentEvents.length - 1]
-              task.startDate = addMinutes(lastEvent.endDate, 5)
-              task.endDate = addSeconds(task.startDate, task.originalData.theoreticalDuration)
-              newEvent = {
-                planKey: task.id,
-                machineId: machine.id,
-                queueNumber: lastEvent.queueNumber + 1 || 1,
-              }
-            } else {
-              task.startDate = new Date()
-              task.endDate = addSeconds(task.startDate, task.originalData.theoreticalDuration)
-              newEvent = {
-                planKey: task.id,
-                machineId: machine.id,
-                queueNumber: 1,
-              }
-            }
+            task.startDate = new Date()
+            task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
+            task.queueNumber = 1
+            await handleSchedule(schedule, task, machine, grid, refreshScheduler)
           }
         }
-        await schedule.scheduleEvent({
-          eventRecord: task,
-          startDate: task.startDate,
-          resourceRecord: machine,
-        })
-          .then(async () => {
-            grid.store.remove(task)
-            task.assign(machine)
-            await kc.fetch('/api/queueBased/scheduleUnplannedEvents', {
-              method: 'POST',
-              body: { newEvent },
-            }).then(async () => {
-              refreshScheduler()
-              schedule.renderRows()
-            })
-          }).catch(err => Toast.show(`Scheduling Failed: ${err}`))
       }
       schedule.features.eventTooltip.disabled = true
       context.isDropped = true

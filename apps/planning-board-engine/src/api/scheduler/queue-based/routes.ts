@@ -7,6 +7,7 @@ import {
   getQueueBasedEvents,
   getQueueBasedPlannedEvents,
   queueUnplannedEvents,
+  scheduleFutureEvents,
   updateEventQueue,
 } from './queries'
 
@@ -59,6 +60,18 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { previousEventData, newEventData } = request.body
         await updateEventQueue(previousEventData, newEventData)
         return reply.code(200).send('Succesful!')
+      } catch (err) {
+        fastify.log.error(`An error occured while updating events: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating events: ${err}` })
+      }
+    },
+  )
+  fastify.post(
+    '/queue_based/schedule_future_events',
+    async (request: FastifyRequest<{ Body: { newEvent: { planKey: number, machineId: number } } }>, reply) => {
+      try {
+        const { newEvent } = request.body
+        await scheduleFutureEvents(newEvent)
       } catch (err) {
         fastify.log.error(`An error occured while updating events: ${err}`)
         return reply.code(500).send({ error: `An error occured while updating events: ${err}` })

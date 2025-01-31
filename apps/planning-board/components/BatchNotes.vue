@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { Toast } from '@bryntum/schedulerpro'
 
-const kc = useKeycloak()
 const props = defineProps<{ jobOrder: string }>()
 const emit = defineEmits(['updateScheduler'])
+const kc = useKeycloak()
 const { t, d } = useI18n()
+
+// fetches all notes
 const { data: batchNotes, refresh } = await useAuthFetch('/api/note/getNote', {
   query: { jobOrder: props.jobOrder },
   default: () => [],
 })
+
 const refactoredBatchNotes = computed(() => batchNotes.value.map((a) => {
   return {
     ...a,
