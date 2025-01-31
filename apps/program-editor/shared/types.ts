@@ -454,8 +454,28 @@ export interface ProgramWriteSettings {
 
 // #endregion
 
-export interface ProgramError {
+export interface CreateError {
   stepId: number
   commandId: number
   message: string
+  parameterIndex?: number
+  IOIndex?: number
+}
+
+export interface ProgramError {
+  errors: StepError[]
+}
+
+export interface StepError {
+  stepId: number
+  commands: CommandError[]
+}
+
+export interface CommandError {
+  commandId: number
+  messages: {
+    message: string
+    parameterIndex?: number
+    IOIndex?: number
+  }[]
 }

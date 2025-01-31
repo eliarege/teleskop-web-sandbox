@@ -1,5 +1,5 @@
 import { convertElementToCanvas } from '@teleskop/nuxt-base/utils/html2canvas'
-import type { MachineCommand, Program } from './types'
+import type { CreateError, MachineCommand, Program, StepError } from './types'
 
 export const as = <T>(value: T) => value as T
 
@@ -54,14 +54,20 @@ export async function screenshot(element: HTMLElement, filename: string) {
   link.href = canvas.toDataURL('image/png')
   link.click()
 }
-export function checkProgram(program: Program, machineCommands: MachineCommand[]): { stepId: number, commandId: number, message: string }[] {
-  const errors: { stepId: number, commandId: number, message: string }[] = []
+export function checkProgram(program: Program, machineCommands: MachineCommand[]): StepError[] {
+  const errors: CreateError[] = []
 
   const getMachineCommand = (commandNo: number): MachineCommand | undefined =>
     machineCommands.find(cmd => cmd.commandNo === commandNo)
 
-  const generateErrorMessage = (stepId: number, commandId: number, message: string) => {
-    errors.push({ stepId, commandId, message })
+  const generateErrorMessage = (
+    stepId: number,
+    commandId: number,
+    message: string,
+    parameterIndex?: number,
+    IOIndex?: number,
+  ) => {
+    errors.push({ stepId, commandId, message, parameterIndex, IOIndex })
   }
 
   program.steps.forEach((step) => {
@@ -71,12 +77,12 @@ export function checkProgram(program: Program, machineCommands: MachineCommand[]
       const machineCommand = getMachineCommand(command.commandNo)
 
       if (!command.commandNo) {
-        generateErrorMessage(step.stepId, command.commandId, 'Komut numarası yok.')
+        generateErrorMessage(step.stepId, command.commandId, 'Komut numarası bulunamadı.')
         return
       }
 
       if (!machineCommand) {
-        generateErrorMessage(step.stepId, command.commandId, `Komut bulunamıyor. Komut numarası: ${command.commandNo}`)
+        // generateErrorMessage(step.stepId, command.commandId, `${command.commandNo} numaralı komut bulunamadı.`)
         return
       }
 
@@ -86,13 +92,19 @@ export function checkProgram(program: Program, machineCommands: MachineCommand[]
         const programParam = command.parameters.find(p => p.index === machineParam.index)
 
         if (!programParam) {
-          generateErrorMessage(step.stepId, command.commandId, `Parametre yok. Parametre index: ${machineParam.index}`)
+          generateErrorMessage(
+            step.stepId,
+            command.commandId,
+            `Komuta ${machineParam.name} parametresi eklendi.`,
+            machineParam.index,
+          )
+          command.parameters.push({ index: machineParam.index, value: machineParam.value, optimized: false })
         } else {
           if (
             typeof programParam.value === 'number'
             && (programParam.value < machineParam.minValue || programParam.value > machineParam.maxValue)
           ) {
-            generateErrorMessage(step.stepId, command.commandId, `Parametre aralık dışında. Parametre index: ${machineParam.index}`)
+            generateErrorMessage(step.stepId, command.commandId, `${machineParam.name} parametresi aralık dışında.`)
           }
         }
       })
@@ -101,7 +113,14 @@ export function checkProgram(program: Program, machineCommands: MachineCommand[]
         const programIO = command.ioList.find(io => io.ioIndex === machineIO.index)
 
         if (!programIO) {
-          generateErrorMessage(step.stepId, command.commandId, `IO yok. IO index: ${machineIO.index}`)
+          generateErrorMessage(
+            step.stepId,
+            command.commandId,
+            `Komuta ${machineIO.name} IO eklendi.`,
+            undefined,
+            machineIO.index,
+          )
+          command.ioList.push({ ioIndex: machineIO.index, ioId: machineIO.physicalId, value: [] })
         } else {
           if (programIO.ioIndex !== machineIO.index && programIO.ioId !== machineIO.physicalId) {
             generateErrorMessage(step.stepId, command.commandId, `IO bulunamadı. IO index: ${machineIO.index}`)
@@ -111,5 +130,26 @@ export function checkProgram(program: Program, machineCommands: MachineCommand[]
     })
   })
 
-  return errors
+  // 🔹 Hataları Step ve Command bazında gruplama
+  const groupedErrors = errors.reduce((acc, error) => {
+    const { stepId, commandId, message, parameterIndex, IOIndex } = error
+
+    let step = acc.find(s => s.stepId === stepId)
+    if (!step) {
+      step = { stepId, commands: [] }
+      acc.push(step)
+    }
+
+    let command = step.commands.find(c => c.commandId === commandId)
+    if (!command) {
+      command = { commandId, messages: [] }
+      step.commands.push(command)
+    }
+
+    command.messages.push({ message, parameterIndex, IOIndex })
+
+    return acc
+  }, [] as { stepId: number, commands: { commandId: number, messages: { message: string, parameterIndex?: number, IOIndex?: number }[] }[] }[])
+
+  return groupedErrors
 }
