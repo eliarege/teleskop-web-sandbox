@@ -238,11 +238,9 @@ watch(locale, () => {
 })
 
 editor.isLoading = true
-await editor.fetchTeleskopSettings()
 if (editor.machine.id !== machineId)
   await editor.fetchMachine(machineId)
 await editor.fetchCommandTypes(machineId)
-await editor.fetchAllProcessTypes()
 await editor.fetchProgram(machineId, programNo)
 editor.isLoading = false
 

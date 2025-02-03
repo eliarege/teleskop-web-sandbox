@@ -149,12 +149,11 @@ if (filter.existingFilter.clearOnChange)
   filter.clearFilter()
 
 editor.isLoading = true
-await editor.fetchTeleskopSettings()
-if (editor.machine.id !== machineId)
+if (editor.machine.id !== machineId) {
   await editor.fetchMachine(machineId)
-await editor.fetchCommandTypes(machineId)
-await editor.fetchAllPrograms()
-await editor.fetchAllProcessTypes().then(() => {
+  await editor.fetchCommandTypes(machineId)
+}
+await editor.fetchAllPrograms().then(() => {
   editor.isLoading = false
 })
 
