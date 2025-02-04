@@ -1,5 +1,6 @@
-import type { SchedulerPro } from '@bryntum/schedulerpro'
-import { DateHelper } from '@bryntum/schedulerpro'
+import type { SchedulerPro, SchedulerResourceModel } from '@bryntum/schedulerpro'
+import { DateHelper, Toast } from '@bryntum/schedulerpro'
+import { addMinutes, addSeconds, differenceInSeconds } from 'date-fns'
 
 export function decompressJson(data: { columns: string[], values: any[][] }) {
   const { columns, values } = data
@@ -111,4 +112,116 @@ export function darkenColor(color: string, percent: number): string {
   return `#${(0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255))
     .toString(16)
     .slice(1).toUpperCase()}`
+}
+
+// Mouse pozisyonuna en yakın olan event targetEvent olarak alınır.
+// Eğer scheduler.events.filter(ev => ev.resourceId === machine.id).length 0 ise
+// task.startDate = new Date()
+// task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
+// task.queueNumber = 1
+
+export function setTargetEvent(mouseX: number, schedule: SchedulerPro, machine: SchedulerResourceModel, grabbedEvent?) {
+  let events
+  if (grabbedEvent) {
+    events = schedule.events.filter(ev =>
+      ev.resourceId === machine.id
+      && (ev.eventType === 'planned' || ev.eventType === 'ongoing')
+      && ev !== grabbedEvent,
+    )
+  } else {
+    events = schedule.events.filter(ev =>
+      ev.resourceId === machine.id
+      && (ev.eventType === 'planned' || ev.eventType === 'ongoing'),
+    )
+  }
+  if (events.length === 0) {
+    return null
+  }
+
+  const mousePosDate = schedule.getDateFromCoordinate(mouseX)
+
+  let closestEvent = null
+  let smallestDiff = Number.POSITIVE_INFINITY
+
+  events.forEach((ev) => {
+    const middleDate = addSeconds(ev.startDate, ev.theoreticalDuration / 2)
+    const dateDiff = Math.abs(differenceInSeconds(middleDate, mousePosDate))
+
+    if (dateDiff < smallestDiff) {
+      smallestDiff = dateDiff
+      closestEvent = ev
+    }
+  })
+
+  return closestEvent
+}
+
+export function postponeEvent(event: any, duration: number) {
+  event.startDate = addSeconds(event.startDate, duration + 300)
+  event.endDate = addSeconds(event.startDate, event.theoreticalDuration)
+  event.queueNumber++
+}
+export function expediteEvents(event: any, duration: number) {
+  event.startDate = addSeconds(event.startDate, -(duration + 360))
+  event.endDate = addSeconds(event.startDate, event.theoreticalDuration)
+  event.queueNumber--
+}
+export function setDropLocation(mouseX, targetEvent, schedule, task, events) {
+  const mousePosDate = schedule.getDateFromCoordinate(mouseX)
+  const targetMiddle = addSeconds(targetEvent.startDate, targetEvent.theoreticalDuration / 2)
+  const isAfter = mousePosDate > targetMiddle
+  if (isAfter) {
+    task.startDate = addMinutes(targetEvent.endDate, 5)
+    task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
+    task.queueNumber = targetEvent.queueNumber + 1
+    const futureEvents = events.filter(e => e.queueNumber >= task.queueNumber)
+    futureEvents.forEach((e) => {
+      postponeEvent(e, task.theoreticalDuration)
+    })
+  } else {
+    task.startDate = targetEvent.startDate
+    task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
+    task.queueNumber = targetEvent.queueNumber
+    const futureEvents = events.filter(e => e.queueNumber >= task.queueNumber)
+    futureEvents.forEach((e) => {
+      postponeEvent(e, task.theoreticalDuration)
+    })
+  }
+}
+
+export async function handleSchedule(schedule: SchedulerPro, task, machine, grid, refreshScheduler: Function) {
+  const { $keycloak } = useNuxtApp()
+  const machineEvents = machine.events.filter(e => e.resourceId === machine.id)
+
+  await schedule.scheduleEvent({
+    eventRecord: task,
+    startDate: task.startDate,
+    resourceRecord: machine,
+  }).catch(err => Toast.show(`Scheduling Failed: ${err}`))
+
+  grid.store.remove(task)
+  task.assign(machine)
+
+  if (machineEvents.length === 0) {
+    const newEvent = {
+      planKey: task.id,
+      machineId: machine.id,
+    }
+    await $keycloak.fetch('/api/queueBased/scheduleUnplannedFutureEvents', {
+      method: 'POST',
+      body: { newEvent },
+    })
+  } else {
+    const newEvent = {
+      planKey: task.id,
+      machineId: machine.id,
+      queueNumber: task.queueNumber || 1,
+    }
+    await $keycloak.fetch('/api/queueBased/scheduleUnplannedEvents', {
+      method: 'POST',
+      body: { newEvent },
+    })
+  }
+  refreshScheduler()
+  schedule.renderRows()
 }

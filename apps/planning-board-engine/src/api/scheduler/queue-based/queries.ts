@@ -174,14 +174,13 @@ export async function getQueueBasedActualEvents(startTime: string, endTime: stri
       `, { timezoneOffset: config.teleskopTimezoneOffset, startTime, endTime })
 }
 
-export async function checkMachineLastTaskQueue(machineId: number) {
+export async function checkMachineLastTaskQueue(machineId: number): Promise<{ queueNumber: number }> {
   return await knex({ p: 'PTBATCHPLANQUEUE' })
-    .select({
+    .first({
       queueNumber: 'p.QUEUENUMBER',
     })
     .where('p.MACHINEID', '=', machineId)
     .orderBy('p.QUEUENUMBER', 'desc')
-    .limit(1)
 }
 
 export async function updateEventQueue(previousEventData: EventReschedule, newEventData: EventReschedule) {
@@ -264,4 +263,17 @@ export async function queueUnplannedEvents(newData: EventReschedule) {
       STATE: null,
     })
   })
+}
+
+export async function scheduleFutureEvents(newEvent: { planKey: number, machineId: number }) {
+  let lastQueueNumber = await checkMachineLastTaskQueue(newEvent.machineId)
+  if (!lastQueueNumber) {
+    lastQueueNumber = { queueNumber: 0 }
+  }
+  const newData = {
+    planKey: newEvent.planKey,
+    machineId: newEvent.machineId,
+    queueNumber: lastQueueNumber.queueNumber + 1,
+  }
+  return await queueUnplannedEvents(newData)
 }
