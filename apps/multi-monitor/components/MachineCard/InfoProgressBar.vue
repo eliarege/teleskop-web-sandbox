@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { determineTextColor } from '@teleskop/utils'
 import type { MachineData } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 
@@ -45,19 +44,19 @@ watch(
 <template>
   <div
     class="relative h-7 rounded-2xl w-full h-7 overflow-hidden"
-    :style="{ background: colors.cardItemBg, color: determineTextColor(colors.cardItemBg) }"
+    :style="{ background: colors.cardItemBg }"
   >
     <div class="absolute top-0 left-0 w-full h-full">
       <div class="absolute right-0 h-full progress-bar-delay" :style="{ width: `${delayRatio}%` }" />
-      <div class="progress-bar-slot" style="color: black">
+      <div
+        class="progress-bar-slot"
+        style="color: black"
+      >
         <slot />
       </div>
     </div>
-
-    <!--  -->
-
-    <div class="relative h-full" :style="{ width: `${completitionRatio}%` }">
-      <div class="absolute left-0 w-full h-full progress-bar-completion" />
+    <div class="relative h-full" :style="{ width: `${100 - delayRatio}%` }">
+      <div class="absolute left-0 w-full h-full progress-bar-completion" :style="{ width: `${completitionRatio}%` }" />
       <div class="progress-bar-slot" style="color: white">
         <slot />
       </div>
@@ -75,6 +74,7 @@ watch(
   background: #ffdd00;
   transition: width 0.3s ease;
 }
+
 .progress-bar-slot {
   position: absolute;
   left: 0;
@@ -83,6 +83,7 @@ watch(
   height: 100%;
   display: flex;
   align-items: center;
+  justify-content: center;
   overflow: hidden;
   white-space: nowrap;
 }
