@@ -462,10 +462,6 @@ export interface CreateError {
   IOIndex?: number
 }
 
-export interface ProgramError {
-  steps: StepError[]
-}
-
 export interface StepError {
   stepId: number
   commands: CommandError[]
@@ -476,6 +472,6 @@ export interface CommandError {
   messages: {
     message: string
     parameterIndex?: number
-    IOIndex?: number
+    ioIndex?: number
   }[]
 }

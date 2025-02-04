@@ -127,7 +127,7 @@ function handleInputBlur() {
         v-model="model"
         :label="parameter.name"
         :options="formulaOptions"
-        :option-label="(f) => f.label.length > 15 ? `${f.label.slice(0, 15).trim()}.` : f.label.trim()"
+        :option-label="(f) => f.label.trim().slice(0, 15)"
         option-value="value"
         options-dense
         map-options

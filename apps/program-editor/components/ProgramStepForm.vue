@@ -10,6 +10,10 @@ const props = defineProps<{
   stepError?: StepError
 }>()
 
+const emit = defineEmits<{
+  (event: 'removeError', stepId: number, commandId: number): void
+}>()
+
 const $q = useQuasar()
 const { t } = useI18n()
 const editor = useEditorStore()
@@ -56,6 +60,16 @@ function deleteParallelStep(stepIndex: number, index: number) {
   }
   editor.deleteParallelStep(stepIndex, index)
 }
+
+const getCommandError = (commandId: number) => props.stepError?.commands.find(cmd => cmd.commandId === commandId)
+const showStepError = computed(() => {
+  return step.parallelCommands.some(cmd =>
+    !!getCommandError(cmd.commandId)) && !expanded.value
+})
+
+function removeError(stepId: number, commandId: number) {
+  emit('removeError', stepId, commandId)
+}
 </script>
 
 <template>
@@ -95,16 +109,13 @@ function deleteParallelStep(stepIndex: number, index: number) {
       dense
       @click="expanded = !expanded"
     />
+
     <ProgramStepCommandForm
       class="flex-1"
-      :class="{
-        error: step.parallelCommands.some(cmd =>
-          stepError?.commands.find(error => error.commandId === cmd.commandId),
-        ) && !expanded,
-      }"
+      :class="{ error: showStepError }"
       :path="`${props.path}.mainCommand`"
       :expanded
-      :command-error="stepError?.commands.find(cmd => cmd.commandId === step.mainCommand.commandId)"
+      :command-error="getCommandError(step.mainCommand.commandId)"
     />
   </div>
   <div v-show="expanded" class="e-border-color border-(t x-0) pl-16">
@@ -123,10 +134,11 @@ function deleteParallelStep(stepIndex: number, index: number) {
       </template>
       <template #item="{ index }">
         <div
-          class="step-parallel-command "
+          class="step-parallel-command"
           :class="{
-            error: stepError?.commands.find(cmd => cmd.commandId === step.parallelCommands[index].commandId),
+            error: getCommandError(step.parallelCommands[index].commandId),
           }"
+          @click="removeError(stepIndex, step.parallelCommands[index].commandId)"
         >
           <DevOnly>
             <div class="flex flex-col color-gray-5 text-3">
@@ -138,7 +150,7 @@ function deleteParallelStep(stepIndex: number, index: number) {
             <ProgramStepCommandForm
               :path="`${props.path}.parallelCommands.${index}`"
               :expanded
-              :command-error="stepError?.commands.find(cmd => cmd.commandId === step.parallelCommands[index].commandId)"
+              :command-error="getCommandError(step.parallelCommands[index].commandId)"
             />
           </div>
           <QSpace />
@@ -159,7 +171,6 @@ function deleteParallelStep(stepIndex: number, index: number) {
 .step-parallel-command {
   @apply flex flex-row items-center w-full pl-4;
   @apply border-b border-black border-opacity-20;
-  @apply hover:(bg-gray-1 text-black dark:(bg-dark-3 text-white));
   @apply dark:(border-b border-white border-opacity-20);
 }
 
@@ -168,8 +179,6 @@ function deleteParallelStep(stepIndex: number, index: number) {
 }
 
 .step-parallel-command:hover {
-  background-color: #d1e4fa;
-
   .delete-btn {
     @apply !text-(black opacity-60) !dark:(text-(white opacity-60));
   }

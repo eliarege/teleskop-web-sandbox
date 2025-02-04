@@ -2,7 +2,7 @@ import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
-import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramError, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTable, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -23,7 +23,7 @@ export const useEditorStore = defineStore('editor', () => {
   let lastStepId = 0
   let lastCommandId = 0
   const allStepExpanded = ref(false)
-  const programErrors = ref<ProgramError>()
+  const programErrors = ref<StepError[]>()
 
   const { $i18n } = useNuxtApp()
   const { t } = $i18n
@@ -579,7 +579,7 @@ export const useEditorStore = defineStore('editor', () => {
     if (isDef(version))
       program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
     else {
-      const response = await kc.fetch<{ program: Program, programErrors: ProgramError }>(`/api/machine/${machineId}/program/${programNo}`)
+      const response = await kc.fetch<{ program: Program, programErrors: StepError[] }>(`/api/machine/${machineId}/program/${programNo}`)
       program.value = response.program
       programErrors.value = response.programErrors
     }
