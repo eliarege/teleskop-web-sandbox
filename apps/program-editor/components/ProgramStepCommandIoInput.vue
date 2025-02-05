@@ -38,18 +38,19 @@ const selectedOptionsText = computed(() => {
     .filter(option => model.value.includes(option.value))
     .map(option => `${option.label.substring(0, 6).trim()}.`)
 
-  return selected.length > 0 ? selected.join(', ') : t('noSelection')
+  return selected.length > 0 ? selected.join(', ').slice(0, 24) : t('noSelection')
 })
 </script>
 
 <template>
-  <div class="inline-block">
+  <div class="inline-block align-top">
     <DevOnly>
       <div class="color-gray-5 text-3">
         {{ props.commandNo }} - {{ props.io.index }}
       </div>
     </DevOnly>
-    <div class="q-input-border inline-block mr-1 mb-1">
+
+    <div class="q-input-border mr-1 mb-1">
       <div class="relative pt-4 text-3 min-w-32 max-w-40">
         <div class="q-input-text">
           {{ props.io.name }}

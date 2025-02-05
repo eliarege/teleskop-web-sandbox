@@ -63,8 +63,8 @@ function deleteParallelStep(stepIndex: number, index: number) {
 
 const getCommandError = (commandId: number) => props.stepError?.commands.find(cmd => cmd.commandId === commandId)
 const showStepError = computed(() => {
-  return step.parallelCommands.some(cmd =>
-    !!getCommandError(cmd.commandId)) && !expanded.value
+  return getCommandError(step.mainCommand.commandId)
+    || (step.parallelCommands.some(cmd => !!getCommandError(cmd.commandId)) && !expanded.value)
 })
 
 function removeError(stepId: number, commandId: number) {
@@ -110,13 +110,15 @@ function removeError(stepId: number, commandId: number) {
       @click="expanded = !expanded"
     />
 
-    <ProgramStepCommandForm
-      class="flex-1"
-      :class="{ error: showStepError }"
-      :path="`${props.path}.mainCommand`"
-      :expanded
-      :command-error="getCommandError(step.mainCommand.commandId)"
-    />
+    <div @click="removeError(stepIndex, step.mainCommand.commandId)">
+      <ProgramStepCommandForm
+        class="flex-1"
+        :class="{ error: showStepError }"
+        :path="`${props.path}.mainCommand`"
+        :expanded
+        :command-error="getCommandError(step.mainCommand.commandId)"
+      />
+    </div>
   </div>
   <div v-show="expanded" class="e-border-color border-(t x-0) pl-16">
     <Sortable
