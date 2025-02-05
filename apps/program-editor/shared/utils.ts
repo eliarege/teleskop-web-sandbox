@@ -1,5 +1,6 @@
 import { convertElementToCanvas } from '@teleskop/nuxt-base/utils/html2canvas'
 import type { CreateError, MachineCommand, Program, StepError } from './types'
+import { ParameterType } from './constants'
 
 export const as = <T>(value: T) => value as T
 
@@ -54,21 +55,12 @@ export async function screenshot(element: HTMLElement, filename: string) {
   link.href = canvas.toDataURL('image/png')
   link.click()
 }
-export function checkProgram(program: Program, machineCommands: MachineCommand[]): StepError[] {
-  const errors: CreateError[] = []
+
+export function validateProgram(program: Program, machineCommands: MachineCommand[]): StepError[] {
+  const errors: StepError[] = []
 
   const getMachineCommand = (commandNo: number): MachineCommand | undefined =>
     machineCommands.find(cmd => cmd.commandNo === commandNo)
-
-  const generateErrorMessage = (
-    stepId: number,
-    commandId: number,
-    message: string,
-    parameterIndex?: number,
-    IOIndex?: number,
-  ) => {
-    errors.push({ stepId, commandId, message, parameterIndex, IOIndex })
-  }
 
   program.steps.forEach((step) => {
     const allCommands = [step.mainCommand, ...step.parallelCommands]
@@ -76,80 +68,160 @@ export function checkProgram(program: Program, machineCommands: MachineCommand[]
     allCommands.forEach((command) => {
       const machineCommand = getMachineCommand(command.commandNo)
 
-      if (!command.commandNo) {
-        generateErrorMessage(step.stepId, command.commandId, 'Komut numarası bulunamadı.')
-        return
-      }
-
       if (!machineCommand) {
-        // generateErrorMessage(step.stepId, command.commandId, `${command.commandNo} numaralı komut bulunamadı.`)
+        errors.push({ stepId: step.stepId, commands: [{
+          commandId: command.commandId,
+          messages: [{
+            type: 'program-command',
+            message: `${command.commandNo} numaralı komut bulunamadı.`,
+          }],
+        }] })
         return
       }
 
       const { parameters: machineParams, ioList: machineIOs } = machineCommand
 
+      command.parameters.forEach((param) => {
+        const machineParam = machineParams.find(p => p.index === param.index)
+
+        if (!machineParam || (!machineParam.editable && machineParam.type !== ParameterType.SELECTABLE_FORMULA)) {
+          errors.push({
+            stepId: step.stepId,
+            commands: [
+              {
+                commandId: command.commandId,
+                messages: [
+                  {
+                    type: 'program-parameter',
+                    message: `Parametre tanımı bulunamadı. Parametre index: ${param.index}`,
+                    parameterIndex: param.index,
+                  },
+                ],
+              },
+            ],
+          })
+
+          command.parameters = command.parameters.filter(p => p.index !== param.index)
+        }
+      })
+
       machineParams.forEach((machineParam) => {
         const programParam = command.parameters.find(p => p.index === machineParam.index)
 
         if (!programParam) {
-          generateErrorMessage(
-            step.stepId,
-            command.commandId,
-            `Komuta ${machineParam.name} parametresi eklendi.`,
-            machineParam.index,
-          )
-          command.parameters.push({ index: machineParam.index, value: machineParam.value, optimized: false })
-        } else {
-          if (
-            typeof programParam.value === 'number'
-            && (programParam.value < machineParam.minValue || programParam.value > machineParam.maxValue)
-          ) {
-            generateErrorMessage(step.stepId, command.commandId, `${machineParam.name} parametresi aralık dışında.`)
+          if (machineParam.editable || machineParam.type === ParameterType.SELECTABLE_FORMULA) {
+            errors.push({
+              stepId: step.stepId,
+              commands: [
+                {
+                  commandId: command.commandId,
+                  messages: [
+                    {
+                      type: 'machine-parameter',
+                      message: `${machineParam.name} parametresi eklendi.`,
+                      parameterIndex: machineParam.index,
+                    },
+                  ],
+                },
+              ],
+            })
+            command.parameters.push({ index: machineParam.index, value: machineParam.value, optimized: false })
           }
         }
       })
 
+      command.ioList.forEach((io) => {
+        const machineIO = machineIOs.find(m => m.index === io.ioIndex && m.physicalId === io.ioId)
+        if (!machineIO) {
+          errors.push({
+            stepId: step.stepId,
+            commands: [
+              {
+                commandId: command.commandId,
+                messages: [
+                  {
+                    type: 'program-io',
+                    message: `IO tanımı bulunamadı. IO index: ${io.ioIndex}`,
+                    ioIndex: io.ioIndex,
+                  },
+                ],
+              },
+            ],
+          })
+          command.ioList = command.ioList.filter(i => i.ioIndex !== io.ioIndex && i.ioId !== io.ioId)
+        }
+      })
+
       machineIOs.forEach((machineIO) => {
-        const programIO = command.ioList.find(io => io.ioIndex === machineIO.index)
+        if (!machineIO.selectable)
+          return
+
+        const programIO = command.ioList.find(io => io.ioIndex === machineIO.index && io.ioId === machineIO.physicalId)
 
         if (!programIO) {
-          generateErrorMessage(
-            step.stepId,
-            command.commandId,
-            `Komuta ${machineIO.name} IO eklendi.`,
-            undefined,
-            machineIO.index,
-          )
-          command.ioList.push({ ioIndex: machineIO.index, ioId: machineIO.physicalId, value: [] })
-        } else {
-          if (programIO.ioIndex !== machineIO.index && programIO.ioId !== machineIO.physicalId) {
-            generateErrorMessage(step.stepId, command.commandId, `IO bulunamadı. IO index: ${machineIO.index}`)
-          }
+          errors.push({
+            stepId: step.stepId,
+            commands: [
+              {
+                commandId: command.commandId,
+                messages: [
+                  {
+                    type: 'program-io',
+                    message: `${machineIO.name} IO'su eklendi.`,
+                    ioIndex: machineIO.index,
+                  },
+                ],
+              },
+            ],
+          })
+
+          command.ioList.push({
+            ioIndex: machineIO.index,
+            ioId: machineIO.physicalId,
+            value: machineIO.selections.map(s => [s.type, s.physicalId]),
+          })
+        } else if (programIO.ioIndex !== machineIO.index || programIO.ioId !== machineIO.physicalId) {
+          errors.push({
+            stepId: step.stepId,
+            commands: [
+              {
+                commandId: command.commandId,
+                messages: [
+                  {
+                    type: 'machine-io',
+                    message: `IO bulunamadı. IO index: ${machineIO.index}`,
+                    ioIndex: machineIO.index,
+                  },
+                ],
+              },
+            ],
+          })
         }
       })
     })
   })
 
-  // 🔹 Hataları Step ve Command bazında gruplama
-  const groupedErrors = errors.reduce((acc, error) => {
-    const { stepId, commandId, message, parameterIndex, IOIndex } = error
+  const groupedErrors: Map<number, Map<number, { type: string, message: string, parameterIndex?: number }[]>> = new Map()
 
-    let step = acc.find(s => s.stepId === stepId)
-    if (!step) {
-      step = { stepId, commands: [] }
-      acc.push(step)
+  errors.forEach(({ stepId, commands }) => {
+    if (!groupedErrors.has(stepId)) {
+      groupedErrors.set(stepId, new Map())
     }
+    const stepCommands = groupedErrors.get(stepId)!
 
-    let command = step.commands.find(c => c.commandId === commandId)
-    if (!command) {
-      command = { commandId, messages: [] }
-      step.commands.push(command)
-    }
+    commands.forEach(({ commandId, messages }) => {
+      if (!stepCommands.has(commandId)) {
+        stepCommands.set(commandId, [])
+      }
+      stepCommands.get(commandId)!.push(...messages)
+    })
+  })
 
-    command.messages.push({ message, parameterIndex, IOIndex })
-
-    return acc
-  }, [] as { stepId: number, commands: { commandId: number, messages: { message: string, parameterIndex?: number, IOIndex?: number }[] }[] }[])
-
-  return groupedErrors
+  return Array.from(groupedErrors.entries()).map(([stepId, commandsMap]) => ({
+    stepId,
+    commands: Array.from(commandsMap.entries()).map(([commandId, messages]) => ({
+      commandId,
+      messages,
+    })),
+  }))
 }
