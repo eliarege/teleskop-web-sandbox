@@ -5,7 +5,7 @@ import { logEditorOperation } from '~/server/functions'
 import logger from '~/server/logger'
 import { ProgramStatus } from '~/shared/constants'
 import { checkPermission } from '~/server/utils/auth'
-import { checkProgram } from '~/shared/utils'
+import { validateProgram } from '~/shared/utils'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
@@ -20,8 +20,8 @@ export default defineAuthEventHandler(async (event) => {
     try {
       const program = await machine.fetchProgram(programNo)
       program.author = event.context.kauth?.name || ''
-      const commands = await machine.fetchCommands(true, true)
-      const programErrors = checkProgram(program, commands)
+      const commands = await machine.fetchCommands()
+      const programErrors = validateProgram(program, commands)
       return { program, programErrors }
     } catch (error) {
       if (error instanceof PError && error.code === 'PROGRAM_NOT_FOUND') {

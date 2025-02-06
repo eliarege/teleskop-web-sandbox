@@ -10,6 +10,7 @@ const props = defineProps<{
   commandError?: CommandError
 }>()
 
+const { t } = useI18n()
 const editor = useEditorStore()
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
 const machineCommand = computed(() => {
@@ -26,14 +27,6 @@ const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!)
 
 <template>
   <div class="pl-1 pt-1">
-    <span
-      v-for="messages in commandError?.messages"
-      :key="messages.message"
-      class="text-xs text-gray-7 dark:text-gray-4 block"
-    >
-      {{ messages.message }}
-    </span>
-
     <div class="flex">
       <div v-if="expanded" class="w-7 flex-center">
         <div v-if="commandIcon">
@@ -47,24 +40,47 @@ const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!)
           </q-tooltip>
         </div>
       </div>
-      <div class="pb-1 pr-2">
-        <CommandSelector :path="props.path" />
-      </div>
-      <div class="flex-1">
-        <ProgramStepCommandParameterInput
-          v-for="(parameter, index) in machineCommand.editableParameters"
-          :key="`pr-${programCommand.commandNo}-${index}`"
-          :path="`${props.path}.parameters.${index}`"
-          :parameter="parameter"
-          :command-no="programCommand.commandNo!"
-        />
-        <ProgramStepCommandIoInput
-          v-for="(io, index) in machineCommand.selectableIOs"
-          :key="`io-${programCommand.commandNo}-${index}`"
-          :path="`${props.path}.ioList.${index}`"
-          :io="io"
-          :command-no="programCommand.commandNo!"
-        />
+
+      <div>
+        <span
+          v-for="messages in commandError?.messages"
+          :key="messages.type"
+          class="text-red text-xs text-gray-7 dark:text-gray-4 block pb-1"
+        >
+          {{
+            t(`programError.${messages.type}`, {
+              commandNo: programCommand.commandNo,
+              paramIndex: messages.parameterIndex,
+              paramName: messages.parameterName,
+              ioIndex: messages.ioIndex,
+              ioName: messages.ioName,
+              ioValue: messages.ioValue,
+            })
+          }}
+        </span>
+
+        <div class="flex">
+          <div class="pb-1 pr-2">
+            <CommandSelector :path="props.path" />
+          </div>
+
+          <div>
+            <ProgramStepCommandParameterInput
+              v-for="(parameter, index) in machineCommand.editableParameters"
+              :key="`pr-${programCommand.commandNo}-${index}`"
+              :path="`${props.path}.parameters.${index}`"
+              :parameter="parameter"
+              :command-no="programCommand.commandNo!"
+            />
+            <ProgramStepCommandIoInput
+              v-for="(io, index) in machineCommand.selectableIOs"
+              :key="`io-${programCommand.commandNo}-${index}`"
+              :path="`${props.path}.ioList.${index}`"
+              :io="io"
+              :command-no="programCommand.commandNo!"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </div>
