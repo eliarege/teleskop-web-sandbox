@@ -149,6 +149,28 @@ export function validateProgram(program: Program, machineCommands: MachineComman
             ],
           })
           command.ioList = command.ioList.filter(i => i.ioIndex !== io.ioIndex && i.ioId !== io.ioId)
+        } else {
+          io.value.forEach((value) => {
+            const machineSelection = machineIO.selections.find(s => s.type === value[0] && s.physicalId === value[1])
+            if (!machineSelection) {
+              errors.push({
+                stepId: step.stepId,
+                commands: [
+                  {
+                    commandId: command.commandId,
+                    messages: [
+                      {
+                        type: 'program-io',
+                        message: `IO seçeneği bulunamadı. IO index: ${io.ioIndex}, IO value: ${value}`,
+                        ioIndex: io.ioIndex,
+                      },
+                    ],
+                  },
+                ],
+              })
+              io.value = io.value.filter(v => v[0] !== value[0] && v[1] !== value[1])
+            }
+          })
         }
       })
 
