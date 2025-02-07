@@ -5,169 +5,96 @@ import { useEditorStore } from '~~/composables/editor'
 import { useProgramWriteSettings } from '~/composables/settings'
 import { CommandType } from '~/shared/constants'
 
-const props = defineProps<{
-  path: string
-}>()
+const props = defineProps<{ path: string }>()
 
 const $q = useQuasar()
 const { t } = useI18n()
 const editor = useEditorStore()
 const { $commandManager } = useNuxtApp()
+const selectRef = ref<QSelect>()
 
 const programCommand = ref<ProgramStepCommand>(editor.getPathElement(props.path))
-const isMainCommand = props.path.split('.')[2] === 'mainCommand' ? CommandType.MAIN : CommandType.PARALLEL
-
-const select = ref<QSelect>()
 const stepIndex = computed(() => Number(props.path.split('.')[1]))
-const id = `${editor.program.steps[stepIndex.value].stepId}-${programCommand.value.commandId}`
-const isLastStep = stepIndex.value === editor.program.steps.length - 1
+const isMainCommand = computed(() => props.path.split('.')[2] === 'mainCommand')
+const isLastStep = computed(() => stepIndex.value === editor.program.steps.length - 1)
+const stepData = computed(() => editor.program.steps[stepIndex.value])
+const id = computed(() => `${stepData.value.stepId}-${programCommand.value.commandId}`)
 
-const filteredCommands = computed(() => {
-  const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
+const availableCommands = computed(() => {
+  const allCommands: MachineCommand[] = Array.from(editor.machine.commands.values())
 
-  let filteredArray = commandsArray.filter(({ commandType }) => {
-    // Ana komut türündeyken paralel komutları filtrele
-    return !(isMainCommand === CommandType.MAIN && commandType === CommandType.PARALLEL)
-  })
-
-  filteredArray = filteredArray.filter(({ commandNo }) => {
-    const step = editor.program.steps[stepIndex.value]
-
-    // Ana komutun "dontUseList" kontrolü
-    // if (isMainCommand === CommandType.PARALLEL) {
-    //   const mainCommand = step.mainCommand
-    //   const machineMainCommand = editor.machine.commands.get(mainCommand.commandNo)
-
-    //   // dontUseList'te bulunanları filtrele
-    //   if (machineMainCommand?.dontUseList.includes(commandNo)) {
-    //     return false
-    //   }
-    // }
-
-    // Aynı komut zaten kullanılmışsa filtrele
-    return commandNo === programCommand.value.commandNo
-      || (
-        step.mainCommand.commandNo !== commandNo
-        && !step.parallelCommands.some((command: ProgramStepCommand) => command.commandNo === commandNo)
-      )
-  })
-
-  return filteredArray.map((command: MachineCommand) => ({
-    label: `${command.commandNo} ${command.name}`,
-    value: command.commandNo,
-    icon: editor.getStepIcon(command.commandNo),
-  }))
-})
-
-const label = computed(() => {
-  return !programCommand.value.commandNo ? t('selectCommand') : undefined
+  return allCommands
+    .filter(({ commandType }) => !(isMainCommand.value && commandType === CommandType.PARALLEL))
+    .filter(({ commandNo }) =>
+      commandNo === programCommand.value.commandNo
+      || (stepData.value.mainCommand.commandNo !== commandNo
+      && !stepData.value.parallelCommands.some(cmd => cmd.commandNo === commandNo)),
+    )
+    .map(command => ({
+      label: `${command.commandNo} ${command.name}`,
+      value: command.commandNo,
+      icon: editor.getStepIcon(command.commandNo),
+    }))
 })
 
 const rules = [
-  (value: number) => {
-    return !!value || t('emptyCommand') // Seçim boşsa hata mesajı
-  },
+  (value: number) => (!!value || t('emptyCommand')),
 
   (value: number) => {
     const machineCommand = editor.machine.commands.get(value)
-    return !!machineCommand || t('error.machineCommandNotFound', { commandNo: value, machineId: editor.machine.id })
+    return machineCommand ? true : t('error.machineCommandNotFound', { commandNo: value, machineId: editor.machine.id })
   },
-
 ]
 
+// Komut doğrulama fonksiyonu
 function validateCommand() {
   nextTick(() => {
     const commandNo = programCommand.value?.commandNo
-    // const mainCommandNo = editor.program.steps[stepIndex.value]?.mainCommand?.commandNo
-    // const machineMainCommand = editor.machine.commands.get(mainCommandNo)
-
-    if (!commandNo) {
-      editor.errorIds.add(id)
-    } else {
-      editor.errorIds.delete(id)
-    }
-
-    select.value?.validate()
+    commandNo ? editor.errorIds.delete(id.value) : editor.errorIds.add(id.value)
+    selectRef.value?.validate()
   })
 }
 
-// watch: programCommand.value.commandNo
-watch(
-  () => programCommand.value.commandNo,
-  () => validateCommand(),
-)
-
-// watch: mainCommand.commandNo
-watch(
-  () => editor.program.steps[stepIndex.value]?.mainCommand?.commandNo,
-  () => validateCommand(),
-)
+watch(() => programCommand.value.commandNo, validateCommand)
+watch(() => stepData.value.mainCommand.commandNo, validateCommand)
 
 onMounted(() => {
-  const step = editor.program.steps[stepIndex.value]
-  const mainCommand = step?.mainCommand
-  const commandNo = programCommand.value?.commandNo
-  // const machineMainCommand = editor.machine.commands.get(mainCommand?.commandNo)
-
-  select.value?.focus()
-
-  // const isInvalidCommand = !commandNo
-  // || (machineMainCommand?.dontUseList.includes(commandNo))
-
-  // Ana adım ve paralel adım için ortak kontrol
-  if (
-    (isMainCommand === CommandType.MAIN && !commandNo)
-    || (isMainCommand === CommandType.PARALLEL && (!mainCommand?.commandNo || !commandNo))
-  ) {
-    editor.errorIds.add(id)
-    return
+  if (!programCommand.value.commandNo || (isMainCommand.value && !stepData.value.mainCommand.commandNo)) {
+    editor.errorIds.add(id.value)
+  } else if (!editor.machine.commands.has(programCommand.value.commandNo)) {
+    editor.errorIds.add(id.value)
   }
-
-  if (!editor.machine.commands.has(commandNo)) {
-    editor.errorIds.add(id)
-    return
-  }
-
-  editor.errorIds.delete(id)
-  select.value?.validate()
+  selectRef.value?.focus()
+  selectRef.value?.validate()
 })
-
-async function updateStepCommand(commandNo: number, programCommand: ProgramStepCommand) {
-  const isNewCommand = !programCommand.commandNo
-  editor.updateCommand(commandNo, programCommand)
-
-  if (isMainCommand === CommandType.PARALLEL && !isLastStep && isNewCommand) {
-  // Program yazma ayarlarına göre paralel adımları taşı
-    const settings = useProgramWriteSettings()
-    if (settings.value.confirmAddParallelCommandToSteps)
-      $commandManager.executeCommand('moveParallelStep', { $q }, 'add', commandNo, programCommand)
-  }
-}
 
 onUnmounted(() => {
-  editor.errorIds.delete(id)
+  editor.errorIds.delete(id.value)
 })
 
-function getCommandName(option: any) {
-  if (option.label)
-    return option.label
+async function updateStepCommand(commandNo: number) {
+  const isNewCommand = !programCommand.value.commandNo
+  editor.updateCommand(commandNo, programCommand.value)
 
-  const machineCommand = editor.machine.commands.get(option)
-
-  if (!machineCommand)
-    return `${option} ${t('error.commandNotFound')}`
-
-  return `${machineCommand.commandNo} ${machineCommand.name}`
+  if (!isMainCommand.value && !isLastStep.value && isNewCommand) {
+    const settings = useProgramWriteSettings()
+    if (settings.value.confirmAddParallelCommandToSteps)
+      $commandManager.executeCommand('moveParallelStep', { $q }, 'add', commandNo, programCommand.value)
+  }
 }
 
-function canRunParallel(): boolean {
-  if (isMainCommand === CommandType.PARALLEL) {
-    const mainCommandNo = editor.program.steps[stepIndex.value].mainCommand.commandNo
-    const machineMainCommand = editor.machine.commands.get(mainCommandNo)
+function getCommandLabel(option: any) {
+  if (option.label)
+    return option.label
+  const command = editor.machine.commands.get(option)
+  return command ? `${command.commandNo} ${command.name}` : `${option} ${t('error.commandNotFound')}`
+}
 
-    return machineMainCommand?.dontUseList?.includes(programCommand.value.commandNo) || false
+function isParallelCommandRestricted(): boolean {
+  if (!isMainCommand.value) {
+    const mainCommandNo = stepData.value.mainCommand.commandNo
+    return editor.machine.commands.get(mainCommandNo)?.dontUseList?.includes(programCommand.value.commandNo) || false
   }
-
   return false
 }
 </script>
@@ -180,14 +107,14 @@ function canRunParallel(): boolean {
       </div>
     </DevOnly>
     <QSelect
-      ref="select"
+      ref="selectRef"
       :model-value="programCommand.commandNo"
-      :options="filteredCommands"
-      :label="label"
+      :options="availableCommands"
+      :label="programCommand.commandNo ? undefined : t('selectCommand')"
       :rules="rules"
       :for="id"
-      :option-label="getCommandName"
-      :class="canRunParallel() ? 'opacity-70 ' : ''"
+      :option-label="getCommandLabel"
+      :class="isParallelCommandRestricted() ? 'opacity-70 ' : ''"
       option-value="value"
       hide-bottom-space
       emit-value
@@ -198,11 +125,11 @@ function canRunParallel(): boolean {
       auto-close
       outlined
       filled
-      @update:model-value="value => updateStepCommand(value, programCommand)"
+      @update:model-value="updateStepCommand"
     >
-      <QTooltip v-if="canRunParallel()">
+      <QTooltip v-if="isParallelCommandRestricted()">
         {{ t('cannotParallelCommand', {
-          mainCommandNo: editor.program.steps[stepIndex].mainCommand.commandNo,
+          mainCommandNo: stepData.mainCommand.commandNo,
           parallelCommandNo: programCommand.commandNo,
         }) }}
       </QTooltip>

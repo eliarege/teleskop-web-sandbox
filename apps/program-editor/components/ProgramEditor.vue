@@ -37,10 +37,11 @@ function onDragEnd(event: SortableEvent) {
 const getStepError = (stepId: number) => editor.programErrors?.find(err => err.stepId === stepId)
 
 function handleRemoveError(stepId: number, commandId: number) {
+  const id = `${stepId}-${commandId}`
   const errors = editor.programErrors || []
   const stepErrorIndex = errors.findIndex(err => err.stepId === stepId)
   if (stepErrorIndex !== -1) {
-    const stepError = errors.find(err => err.stepId === stepId)!
+    const stepError = errors[stepErrorIndex]
     stepError.commands = stepError.commands.filter(
       cmd => cmd.commandId !== commandId,
     )
@@ -49,6 +50,8 @@ function handleRemoveError(stepId: number, commandId: number) {
     if (stepError.commands.length === 0) {
       errors.splice(stepErrorIndex, 1)
     }
+
+    editor.errorIds.delete(id)
   }
 }
 </script>

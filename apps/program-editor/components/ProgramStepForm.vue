@@ -62,10 +62,6 @@ function deleteParallelStep(stepIndex: number, index: number) {
 }
 
 const getCommandError = (commandId: number) => props.stepError?.commands.find(cmd => cmd.commandId === commandId)
-const showStepError = computed(() => {
-  return getCommandError(step.mainCommand.commandId)
-    || (step.parallelCommands.some(cmd => !!getCommandError(cmd.commandId)) && !expanded.value)
-})
 
 function removeError(stepId: number, commandId: number) {
   emit('removeError', stepId, commandId)
@@ -113,7 +109,6 @@ function removeError(stepId: number, commandId: number) {
     <div @click="removeError(stepIndex, step.mainCommand.commandId)">
       <ProgramStepCommandForm
         class="flex-1"
-        :class="{ error: showStepError }"
         :path="`${props.path}.mainCommand`"
         :expanded
         :command-error="getCommandError(step.mainCommand.commandId)"
@@ -137,9 +132,6 @@ function removeError(stepId: number, commandId: number) {
       <template #item="{ index }">
         <div
           class="step-parallel-command"
-          :class="{
-            error: getCommandError(step.parallelCommands[index].commandId),
-          }"
           @click="removeError(stepIndex, step.parallelCommands[index].commandId)"
         >
           <DevOnly>
