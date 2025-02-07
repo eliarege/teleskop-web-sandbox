@@ -503,5 +503,12 @@
       "save": "Kaydet",
       "cancel": "İptal"
     }
+  },
+  "programError": {
+    "programParameterNotFound": "{paramIndex} indeksli komut parametresi makinede bulunamadı!",
+    "machineParameterAdded": "{paramName} parametresi eklendi!",
+    "programIONotFound": "{ioIndex} indeksli IO makinede bulunamadı!",
+    "programIOSelectionNotFound": "{ioIndex} indeksli [{ioValue}] IO seçimi makinede bulunamadı!",
+    "machineIOAdded": "{ioName} IO'su eklendi!"
   }
 }

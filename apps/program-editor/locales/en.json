@@ -502,5 +502,12 @@
       "save": "Save",
       "cancel": "Cancel"
     }
+  },
+  "programError": {
+    "programParameterNotFound": "Command parameter with index {paramIndex} was not found on the machine!",
+    "machineParameterAdded": "{paramName} parameter has been added!",
+    "programIONotFound": "IO with index {ioIndex} was not found on the machine!",
+    "programIOSelectionNotFound": "IO selection with index {ioIndex} [{ioValue}] was not found on the machine!",
+    "machineIOAdded": "{ioName} IO has been added!"
   }
 }

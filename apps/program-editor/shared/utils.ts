@@ -1,4 +1,6 @@
 import { convertElementToCanvas } from '@teleskop/nuxt-base/utils/html2canvas'
+import type { CreateError, MachineCommand, Program, StepError } from './types'
+import { ParameterType } from './constants'
 
 export const as = <T>(value: T) => value as T
 
@@ -52,4 +54,170 @@ export async function screenshot(element: HTMLElement, filename: string) {
   link.download = `${filename}.png`
   link.href = canvas.toDataURL('image/png')
   link.click()
+}
+
+export function validateProgram(program: Program, machineCommands: MachineCommand[]): StepError[] {
+  const errors: StepError[] = []
+
+  const getMachineCommand = (commandNo: number): MachineCommand | undefined =>
+    machineCommands.find(cmd => cmd.commandNo === commandNo)
+
+  program.steps.forEach((step) => {
+    const allCommands = [step.mainCommand, ...step.parallelCommands]
+
+    allCommands.forEach((command) => {
+      const machineCommand = getMachineCommand(command.commandNo)
+
+      if (!machineCommand)
+        return
+
+      const { parameters: machineParams, ioList: machineIOs } = machineCommand
+
+      command.parameters.forEach((param) => {
+        const machineParam = machineParams.find(p => p.index === param.index)
+
+        if (!machineParam || (!machineParam.editable && machineParam.type !== ParameterType.SELECTABLE_FORMULA)) {
+          errors.push({
+            stepId: step.stepId,
+            commands: [
+              {
+                commandId: command.commandId,
+                messages: [
+                  {
+                    type: 'programParameterNotFound',
+                    parameterIndex: param.index,
+                  },
+                ],
+              },
+            ],
+          })
+
+          command.parameters = command.parameters.filter(p => p.index !== param.index)
+        }
+      })
+
+      machineParams.forEach((machineParam) => {
+        const programParam = command.parameters.find(p => p.index === machineParam.index)
+
+        if (!programParam) {
+          if (machineParam.editable || machineParam.type === ParameterType.SELECTABLE_FORMULA) {
+            errors.push({
+              stepId: step.stepId,
+              commands: [
+                {
+                  commandId: command.commandId,
+                  messages: [
+                    {
+                      type: 'machineParameterAdded',
+                      parameterName: machineParam.name,
+                      parameterIndex: machineParam.index,
+                    },
+                  ],
+                },
+              ],
+            })
+            command.parameters.push({ index: machineParam.index, value: machineParam.value, optimized: false })
+          }
+        }
+      })
+
+      command.ioList.forEach((io) => {
+        const machineIO = machineIOs.find(m => m.index === io.ioIndex && m.physicalId === io.ioId)
+        if (!machineIO) {
+          errors.push({
+            stepId: step.stepId,
+            commands: [
+              {
+                commandId: command.commandId,
+                messages: [
+                  {
+                    type: 'programIONotFound',
+                    ioIndex: io.ioIndex,
+                  },
+                ],
+              },
+            ],
+          })
+          command.ioList = command.ioList.filter(i => i.ioIndex !== io.ioIndex && i.ioId !== io.ioId)
+        } else {
+          io.value.forEach((value) => {
+            const machineSelection = machineIO.selections.find(s => s.type === value[0] && s.physicalId === value[1])
+            if (!machineSelection) {
+              errors.push({
+                stepId: step.stepId,
+                commands: [
+                  {
+                    commandId: command.commandId,
+                    messages: [
+                      {
+                        type: 'programIOSelectionNotFound',
+                        ioIndex: io.ioIndex,
+                        ioValue: value.toString(),
+                      },
+                    ],
+                  },
+                ],
+              })
+              io.value = io.value.filter(v => v[0] !== value[0] && v[1] !== value[1])
+            }
+          })
+        }
+      })
+
+      machineIOs.forEach((machineIO) => {
+        if (!machineIO.selectable)
+          return
+
+        const programIO = command.ioList.find(io => io.ioIndex === machineIO.index && io.ioId === machineIO.physicalId)
+
+        if (!programIO) {
+          errors.push({
+            stepId: step.stepId,
+            commands: [
+              {
+                commandId: command.commandId,
+                messages: [
+                  {
+                    type: 'machineIOAdded',
+                    ioIndex: machineIO.index,
+                    ioName: machineIO.name,
+                  },
+                ],
+              },
+            ],
+          })
+
+          command.ioList.push({
+            ioIndex: machineIO.index,
+            ioId: machineIO.physicalId,
+            value: machineIO.selections.map(s => [s.type, s.physicalId]),
+          })
+        }
+      })
+    })
+  })
+
+  const groupedErrors: Map<number, Map<number, { type: string, message: string, parameterIndex?: number }[]>> = new Map()
+
+  errors.forEach(({ stepId, commands }) => {
+    if (!groupedErrors.has(stepId)) {
+      groupedErrors.set(stepId, new Map())
+    }
+    const stepCommands = groupedErrors.get(stepId)!
+
+    commands.forEach(({ commandId, messages }) => {
+      if (!stepCommands.has(commandId)) {
+        stepCommands.set(commandId, [])
+      }
+      stepCommands.get(commandId)!.push(...messages)
+    })
+  })
+
+  return Array.from(groupedErrors.entries()).map(([stepId, commandsMap]) => ({
+    stepId,
+    commands: Array.from(commandsMap.entries()).map(([commandId, messages]) => ({
+      commandId,
+      messages,
+    })),
+  }))
 }

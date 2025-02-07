@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind } from '@vueuse/core'
-import { EliarModal } from '@teleskop/ui'
 import { isDef } from '@teleskop/utils'
 import MachineCommandList from '~/components/MachineCommandList.vue'
 import MachineList from '~/components/MachineList.vue'
 import ProgramTitle from '~/components/ProgramTitle.vue'
 import ContextBar from '~/components/ContextBar.vue'
 import { useEditorStore } from '~/composables/editor'
-import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
 import TopbarNotificationButton from '~/components/TopbarNotificationButton.vue'
 
 const { $commandManager } = useNuxtApp()
@@ -21,6 +19,11 @@ const route = useRoute()
 const editor = useEditorStore()
 const { notifyError } = useNotify()
 editor.machine = editor.createMachine()
+
+editor.isLoading = true
+await editor.fetchTeleskopSettings()
+await editor.fetchAllProcessTypes()
+editor.isLoading = false
 
 const tt = (key: string) => toRef(() => t(key))
 

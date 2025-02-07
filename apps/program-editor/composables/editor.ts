@@ -2,7 +2,7 @@ import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
-import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramFilter, ProgramStep, ProgramStepCommand, ProgramTable, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTable, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -23,6 +23,7 @@ export const useEditorStore = defineStore('editor', () => {
   let lastStepId = 0
   let lastCommandId = 0
   const allStepExpanded = ref(false)
+  const programErrors = ref<StepError[]>()
 
   const { $i18n } = useNuxtApp()
   const { t } = $i18n
@@ -570,15 +571,24 @@ export const useEditorStore = defineStore('editor', () => {
    * Veriler çekildikten sonra, programın her bir adımı (`step`) ve paralel komutları (`parallelCommands`) işlenir.
    * Her bir adım ve komut için benzersiz ID'ler atanır.
    */
-  async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<Program> {
+  async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<void> {
     selectedSteps.value = []
     lastStepId = 0
     lastCommandId = 0
 
     if (isDef(version))
       program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
-    else
-      program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}`)
+    else {
+      const response = await kc.fetch<{ program: Program, programErrors: StepError[] }>(`/api/machine/${machineId}/program/${programNo}`)
+      program.value = response.program
+      programErrors.value = response.programErrors
+
+      programErrors.value.forEach((step) => {
+        step.commands.forEach((command) => {
+          errorIds.value.add(`${step.stepId}-${command.commandId}`)
+        })
+      })
+    }
 
     for (const step of program.value.steps) {
       step.stepId = lastStepId++
@@ -987,6 +997,7 @@ export const useEditorStore = defineStore('editor', () => {
     leftDrawerOpen,
     rightDrawerOpen,
     teleskopSettings,
+    programErrors,
     createEmptyStep,
     createEmptyCommand,
     changeMachine,

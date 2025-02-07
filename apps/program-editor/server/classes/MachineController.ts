@@ -380,9 +380,11 @@ export class MachineController {
     program.steps = []
 
     let currentStepIndex = 0
-    let currentStep = {
-      mainCommand: null as ProgramStepCommand | null,
-      parallelCommands: [] as ProgramStepCommand[],
+    let commandIdCounter = 0
+    let currentStep: ProgramStep = {
+      stepId: 0,
+      mainCommand: null,
+      parallelCommands: [],
     }
     for (let i = 0; i < rawCommands.length; i++) {
       const rawCommand = rawCommands[i]
@@ -393,12 +395,15 @@ export class MachineController {
           program.steps.push(currentStep as ProgramStep)
         }
         currentStepIndex = rawCommand.mainStep
+        commandIdCounter = 0
         currentStep = {
+          stepId: currentStepIndex,
           mainCommand: null,
           parallelCommands: [],
         }
       }
       const currentCommand: ProgramStepCommand = {
+        commandId: commandIdCounter++,
         commandNo: rawCommand.commandNo,
         parameters: [],
         ioList: [],
@@ -1180,6 +1185,7 @@ export class MachineController {
       INTERVENTIONFREEPROGRAM: 0,
     }]
     program.steps.forEach((step, i) => {
+      // TODO: programda hatalı io varsa makinedeki tanımı yoksa burada hata veriyor.
       const mainIOList = this.getSelectableIO(step.mainCommand.commandNo, commands)
 
       // BFMASTERSTEPS
