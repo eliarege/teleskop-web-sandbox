@@ -71,6 +71,7 @@ const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!)
               :path="`${props.path}.parameters.${index}`"
               :parameter="parameter"
               :command-no="programCommand.commandNo!"
+              :parameter-error="props.commandError?.messages.find(m => m.parameterIndex === parameter.index)"
             />
             <ProgramStepCommandIoInput
               v-for="(io, index) in machineCommand.selectableIOs"
@@ -78,6 +79,7 @@ const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!)
               :path="`${props.path}.ioList.${index}`"
               :io="io"
               :command-no="programCommand.commandNo!"
+              :io-error="props.commandError?.messages.find(m => m.ioIndex === io.index)"
             />
           </div>
         </div>

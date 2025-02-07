@@ -1,19 +1,20 @@
 <script lang="ts" setup>
 import InputDuration from './InputDuration.vue'
 import InputNumber from './InputNumber.vue'
-import type { CommandFormula, CommandParameter } from '~/shared/types'
+import type { CommandFormula, CommandParameter, ParameterItem } from '~/shared/types'
 
 const props = defineProps<{
   path: string
   parameter: CommandParameter
   commandNo: number
+  parameterError?: { type: string, parameterIndex?: number, parameterName?: string }
 }>()
 
 const $q = useQuasar()
-const { $commandManager } = useNuxtApp()
 const { t } = useI18n()
 const editor = useEditorStore()
-const programParameter = editor.getPathElement(props.path)
+const { $commandManager } = useNuxtApp()
+const programParameter: ParameterItem = editor.getPathElement(props.path)
 const model = ref(Number(programParameter.value))
 const isLastStep = Number(props.path.split('.')[1]) === editor.program.steps.length - 1
 
@@ -48,7 +49,7 @@ function handleInputBlur() {
   if (!isLastStep && settings.value.changeParallelCommandParameterInOtherSteps) {
     const stepIndex = Number(props.path.split('.')[1])
     const programCommand = editor.program.steps[stepIndex].mainCommand
-    $commandManager.executeCommand('moveParallelStep', { $q }, 'changeParameter', props.commandNo, programCommand, { name: props.parameter.name, value: programParameter.value })
+    $commandManager.executeCommand('moveParallelStep', { $q }, 'changeParameter', props.commandNo, programCommand, programParameter)
   }
 }
 </script>
@@ -60,6 +61,7 @@ function handleInputBlur() {
         {{ props.commandNo }} - {{ props.parameter.index }}
       </div>
     </DevOnly>
+
     <template v-if="parameter.type === 'NUMBER'">
       <InputDuration
         v-if="parameter.format === 'DURATION'"
@@ -71,6 +73,8 @@ function handleInputBlur() {
         style="width: 150px;"
         class="text-3"
         hide-bottom-space
+
+        :class="{ 'border-2 border-red-2': props.parameterError }"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -82,6 +86,7 @@ function handleInputBlur() {
           </div>
         </template>
       </InputDuration>
+
       <InputNumber
         v-else
         v-model="model"
@@ -95,6 +100,7 @@ function handleInputBlur() {
         dense
         style="width: 150px;"
         class="text-3"
+        :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -107,22 +113,26 @@ function handleInputBlur() {
         </template>
       </InputNumber>
     </template>
-    <QSelect
-      v-else-if="parameter.type === 'SELECT'"
-      v-model="model"
-      :label="parameter.name"
-      :options="options"
-      option-label="name"
-      option-value="value"
-      options-dense
-      map-options
-      emit-value
-      outlined
-      dense
-      style="width: 150px;"
-      class="text-3 q-select-nowrap"
-    />
-    <div v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
+
+    <template v-else-if="parameter.type === 'SELECT'">
+      <QSelect
+        v-model="model"
+        :label="parameter.name"
+        :options="options"
+        option-label="name"
+        option-value="value"
+        options-dense
+        map-options
+        emit-value
+        outlined
+        dense
+        style="width: 150px;"
+        class="text-3 q-select-nowrap"
+        :class="{ 'border-2 border-red rounded-2': props.parameterError }"
+      />
+    </template>
+
+    <template v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
       <QSelect
         v-model="model"
         :label="parameter.name"
@@ -136,6 +146,7 @@ function handleInputBlur() {
         dense
         style="width: 150px;"
         class="text-3 q-select-nowrap"
+        :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       >
         <template #option="scope">
           <QItem
@@ -145,7 +156,6 @@ function handleInputBlur() {
             :active="model === scope.opt.value"
             active-class="bg-blue-1"
             class="text-3"
-
             @click="model = scope.opt.value"
           >
             <QItemSection>
@@ -158,7 +168,7 @@ function handleInputBlur() {
       <QTooltip>
         {{ formulaOptions.find((f) => f.value === model)?.formula }}
       </QTooltip>
-    </div>
+    </template>
   </div>
 </template>
 
