@@ -13,7 +13,9 @@ FROM base AS build
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-RUN corepack enable
+# Fix for 'Cannot find matching keyid' errors (https://vercel.com/guides/corepack-errors-github-actions)
+RUN npm install -g corepack@latest \
+  && corepack enable
 
 WORKDIR /opt/build
 
