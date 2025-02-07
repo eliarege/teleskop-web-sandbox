@@ -470,8 +470,12 @@ export interface StepError {
 export interface CommandError {
   commandId: number
   messages: {
-    message: string
+    type: string
+    commandNo?: number
     parameterIndex?: number
+    parameterName?: string
     ioIndex?: number
+    ioName?: string
+    ioValue?: string
   }[]
 }

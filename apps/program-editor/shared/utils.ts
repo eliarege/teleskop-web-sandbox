@@ -68,16 +68,8 @@ export function validateProgram(program: Program, machineCommands: MachineComman
     allCommands.forEach((command) => {
       const machineCommand = getMachineCommand(command.commandNo)
 
-      if (!machineCommand) {
-        errors.push({ stepId: step.stepId, commands: [{
-          commandId: command.commandId,
-          messages: [{
-            type: 'program-command',
-            message: `${command.commandNo} numaralı komut bulunamadı.`,
-          }],
-        }] })
+      if (!machineCommand)
         return
-      }
 
       const { parameters: machineParams, ioList: machineIOs } = machineCommand
 
@@ -92,8 +84,7 @@ export function validateProgram(program: Program, machineCommands: MachineComman
                 commandId: command.commandId,
                 messages: [
                   {
-                    type: 'program-parameter',
-                    message: `Parametre tanımı bulunamadı. Parametre index: ${param.index}`,
+                    type: 'programParameterNotFound',
                     parameterIndex: param.index,
                   },
                 ],
@@ -117,8 +108,8 @@ export function validateProgram(program: Program, machineCommands: MachineComman
                   commandId: command.commandId,
                   messages: [
                     {
-                      type: 'machine-parameter',
-                      message: `${machineParam.name} parametresi eklendi.`,
+                      type: 'machineParameterAdded',
+                      parameterName: machineParam.name,
                       parameterIndex: machineParam.index,
                     },
                   ],
@@ -140,8 +131,7 @@ export function validateProgram(program: Program, machineCommands: MachineComman
                 commandId: command.commandId,
                 messages: [
                   {
-                    type: 'program-io',
-                    message: `IO tanımı bulunamadı. IO index: ${io.ioIndex}`,
+                    type: 'programIONotFound',
                     ioIndex: io.ioIndex,
                   },
                 ],
@@ -160,9 +150,9 @@ export function validateProgram(program: Program, machineCommands: MachineComman
                     commandId: command.commandId,
                     messages: [
                       {
-                        type: 'program-io',
-                        message: `IO seçeneği bulunamadı. IO index: ${io.ioIndex}, IO value: ${value}`,
+                        type: 'programIOSelectionNotFound',
                         ioIndex: io.ioIndex,
+                        ioValue: value.toString(),
                       },
                     ],
                   },
@@ -188,9 +178,9 @@ export function validateProgram(program: Program, machineCommands: MachineComman
                 commandId: command.commandId,
                 messages: [
                   {
-                    type: 'program-io',
-                    message: `${machineIO.name} IO'su eklendi.`,
+                    type: 'machineIOAdded',
                     ioIndex: machineIO.index,
+                    ioName: machineIO.name,
                   },
                 ],
               },
@@ -201,22 +191,6 @@ export function validateProgram(program: Program, machineCommands: MachineComman
             ioIndex: machineIO.index,
             ioId: machineIO.physicalId,
             value: machineIO.selections.map(s => [s.type, s.physicalId]),
-          })
-        } else if (programIO.ioIndex !== machineIO.index || programIO.ioId !== machineIO.physicalId) {
-          errors.push({
-            stepId: step.stepId,
-            commands: [
-              {
-                commandId: command.commandId,
-                messages: [
-                  {
-                    type: 'machine-io',
-                    message: `IO bulunamadı. IO index: ${machineIO.index}`,
-                    ioIndex: machineIO.index,
-                  },
-                ],
-              },
-            ],
           })
         }
       })

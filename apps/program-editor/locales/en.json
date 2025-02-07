@@ -504,7 +504,6 @@
     }
   },
   "programError": {
-    "commandNotFound": "Command number {commandNo} was not found on the machine!",
     "programParameterNotFound": "Command parameter with index {paramIndex} was not found on the machine!",
     "machineParameterAdded": "{paramName} parameter has been added!",
     "programIONotFound": "IO with index {ioIndex} was not found on the machine!",

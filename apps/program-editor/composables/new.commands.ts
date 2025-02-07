@@ -74,7 +74,7 @@ export interface RegisteredCommands {
   unsavedChanges: [ctx: any, machineId?: number]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, machineId: number, commandNo: number]
-  moveParallelStep: [ctx: any, type: 'add' | 'remove' | 'changeParameter', commandNo: number, programCommand: ProgramStepCommand, parameter: ParameterItem]
+  moveParallelStep: [ctx: any, type: 'add' | 'remove' | 'changeParameter', commandNo: number, programCommand: ProgramStepCommand, parameter?: ParameterItem]
   machineConstants: [ctx: any, machineId: number]
   writeProgramSettings: [ctx: any]
 }
@@ -620,7 +620,7 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'moveParallelStep',
-    execute(ctx: any, type: string, commandNo: number, programCommand: ProgramStepCommand, parameter?: { name: string, value: number | string }) {
+    execute(ctx: any, type: string, commandNo: number, programCommand: ProgramStepCommand, parameter?: ParameterItem) {
       const commandName = editor.machine.commands.get(commandNo)?.name
       const stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
       ctx.$q.dialog({

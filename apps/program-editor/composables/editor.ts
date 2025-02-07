@@ -582,6 +582,13 @@ export const useEditorStore = defineStore('editor', () => {
       const response = await kc.fetch<{ program: Program, programErrors: StepError[] }>(`/api/machine/${machineId}/program/${programNo}`)
       program.value = response.program
       programErrors.value = response.programErrors
+
+      programErrors.value.forEach((step) => {
+        step.commands.forEach((command) => {
+          errorIds.value.add(`${step.stepId}-${command.commandId}`)
+        })
+      })
+      console.log(errorIds.value)
     }
 
     for (const step of program.value.steps) {
