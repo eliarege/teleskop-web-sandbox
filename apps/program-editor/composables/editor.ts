@@ -588,7 +588,6 @@ export const useEditorStore = defineStore('editor', () => {
           errorIds.value.add(`${step.stepId}-${command.commandId}`)
         })
       })
-      console.log(errorIds.value)
     }
 
     for (const step of program.value.steps) {
