@@ -658,24 +658,18 @@ function handleContextMenu(event: Event, row: ProgramTable) {
 function handleRowClass(row: ProgramTable): string {
   if (row.isChanged)
     return 'changed-on-teleskop'
-
-  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+  if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
     return 'only-on-controller'
-
-  else if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
+  if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
     return 'only-on-teleskop'
-
-  else {
-    const changeDate = (new Date(row.updatedAt || 0)).getTime()
-    const changeDateTBB = (new Date(row.updatedAtTBB || 0)).getTime()
-    const interval = (changeDateTBB - changeDate) / 1000
-
-    if (Math.abs(interval) > 600) {
-      return changeDateTBB > changeDate ? 'changed-on-machine' : 'changed-on-teleskop'
+  if (row.programState === ProgramStatus.EXISTS_ON_BOTH) {
+    if (row.updatedAtTBB && row.updatedAt) {
+      if (row.updatedAtTBB === row.updatedAt)
+        return 'no-changes'
+      return row.updatedAtTBB > row.updatedAt ? 'changed-on-machine' : 'changed-on-teleskop'
     }
-
-    return 'no-changes'
   }
+  return 'no-changes'
 }
 </script>
 
