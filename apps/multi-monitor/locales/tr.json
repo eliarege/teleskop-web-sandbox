@@ -3,6 +3,7 @@
     "name": "Çoklu İzleme"
   },
   "archive-monitor": "Arşiv Monitör",
+  "machine-error": "Makine Arıza",
   "home": "Anasayfa",
   "loading": "Yükleniyor",
   "vnc-error": "{name} Bağlantısı Başarısız Oldu!",

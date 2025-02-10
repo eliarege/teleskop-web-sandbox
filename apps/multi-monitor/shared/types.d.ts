@@ -34,6 +34,7 @@ export interface MachineDataRaw {
   reqCommandNo: number
   reqStatus: number
   stopReason: string
+  machineError?: boolean
   stopReasonDateTime: string
   connectionStatus: number
   isSynchronizing: boolean

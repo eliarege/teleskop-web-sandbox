@@ -107,7 +107,17 @@ const archiveUrl = computed(() => parseAppList(config.public.appList).find(e => 
       </div>
     </div>
     <!-- ICONS -->
-    <div class="machine-icons">
+    <div v-if="machine.machineError" class="w-full h-full flex-center">
+      <TwIcon
+        name="i-mdi:warning-octagon"
+        size="43px"
+        color="red"
+      />
+      <QTooltip anchor="top middle">
+        {{ t('machine-error') }}
+      </QTooltip>
+    </div>
+    <div v-else class="machine-icons">
       <img
         v-if="machine.runningBatchStatus !== 0"
         :src="withBaseURL(machine.runningBatchStatus === 1 ? '/icons/is-emri-off.png' : '/icons/is-emri-on.png')"
