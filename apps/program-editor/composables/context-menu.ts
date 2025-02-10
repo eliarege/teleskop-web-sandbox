@@ -1,8 +1,7 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { notification } from '~/shared/functions'
-import type { ProcessType, Program, ProgramHeader, ProgramStep, ProgramTable } from '~/shared/types'
-import { ProgramStatus } from '~/shared/constants'
+import type { MachineInfo, ProcessType, Program, ProgramHeader, ProgramStep, ProgramTable } from '~/shared/types'
 
 export interface ContextMenuStore {
   getCopiedValues: () => Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>
@@ -17,10 +16,10 @@ export interface ContextMenuStore {
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   getProcessTypes: () => Promise<ProcessType[]>
   changeProcessType: (selectedRows: Array<{ programNo: number }>, newType: number, machineId: number) => Promise<void>
-  sendProgram: (programs: Array<ProgramHeader>, machineId: number) => Promise<void>
+  sendProgram: (programs: ProgramTable[], machineId: number) => Promise<void>
   getRemoteProgram: (programs: Array<ProgramTable>, machineId: number) => Promise<void>
-  sendProgramToMachines: (programs: Array<ProgramHeader>, machines: Array<any>, machineId: number) => Promise<void>
-  deleteProgramFromMachine: (programs: Array<ProgramHeader>, machines: Array<any>, source: string) => Promise<void>
+  sendProgramToMachines: (programs: ProgramHeader[], machines: MachineInfo[], machineId: number) => Promise<void>
+  deleteProgramFromMachine: (programs: ProgramTable[], machines: Array<any>, source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
   concatenatePrograms: (programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
@@ -225,7 +224,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return await fetch('/api/process')
   }
 
-  async function changeProcessType(selectedRow, newType: number, machineId: number) {
+  async function changeProcessType(selectedRows: ProgramTable[], newType: number, machineId: number) {
     const { fetch } = useKeycloak()
     for (const row of selectedRows) {
       const program = await getProgram(row.programNo, machineId)
@@ -248,20 +247,18 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function sendProgram(programs: ProgramTable[], machineId: number) {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-    editor.isLoading = true
 
     for (const program of programs) {
       try {
+        editor.isLoading = true
         const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
-
-        const status = check?.name ? 'failedToConnectMachine' : check ? 'success' : 'fail'
-        notification(check, t(`contextMenu.send.${status}`, { name: program.name }))
+        notification(check, t(`contextMenu.send.${check ? 'success' : 'fail'}`, { name: program.name }))
       } catch (error) {
-        notification(null, t(`contextMenu.send.fail`, { name: program.name }))
+        notification(false, t(`contextMenu.send.fail`, { name: program.name }))
+      } finally {
+        editor.isLoading = false
       }
     }
-
-    editor.isLoading = false
   }
 
   async function getRemoteProgram(programs: ProgramTable[], machineId: number) {

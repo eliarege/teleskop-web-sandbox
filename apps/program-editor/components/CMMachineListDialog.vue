@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { QCheckbox, QTree, useDialogPluginComponent } from 'quasar'
+import { QTree, useDialogPluginComponent } from 'quasar'
 import type { MachineGroup, MachineInfo } from '~/shared/types'
 
-const props = defineProps({
-  type: String,
-})
+const props = defineProps<{
+  type: string
+  allMachines: MachineInfo[]
+  machineGroups: MachineGroup[]
+}>()
 
 defineEmits([
   ...useDialogPluginComponent.emits,
@@ -13,18 +15,19 @@ defineEmits([
 const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const { data: machineGroup } = useAuthFetch<MachineGroup[]>('/api/machine-group')
-const { data: allMachine } = useAuthFetch<MachineInfo[]>('/api/machine')
-
 const ticked = ref<string[]>([])
 const selectAll = ref(false)
 const expanded = ref<string[]>([])
 
+const selectedMachines = computed(() => {
+  return props.allMachines.filter(machine => ticked.value.includes(`${machine.groupId}-${machine.id}`))
+})
+
 const nodes = computed(() => {
-  if (!machineGroup.value || !allMachine.value)
+  if (!props.machineGroups || !props.allMachines)
     return []
 
-  return machineGroup.value.filter(group => group.machines.length > 0).map(group => ({
+  return props.machineGroups.filter(group => group.machines.length > 0).map(group => ({
     id: group.groupId,
     label: group.name,
     selectable: false,
@@ -130,7 +133,7 @@ function getAllNodeIds(node: any) {
           :class="props.type === 'deleteFromMultiMachine' ? 'bg-red-6' : 'bg-primary'"
           :label="t(`contextMenu.${props.type}.operate`)"
           flat
-          @click="onDialogOK(ticked)"
+          @click="onDialogOK(selectedMachines)"
         />
       </QCardActions>
     </QCard>

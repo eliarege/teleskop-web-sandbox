@@ -6,7 +6,7 @@ import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { MachineCommand, ParameterItem, Program, ProgramHeader, ProgramStepCommand, ProgramTable } from '~/shared/types'
+import type { MachineCommand, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramStepCommand, ProgramTable } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -53,11 +53,11 @@ export function registerCommand(command: () => AppCommand) {
 export interface RegisteredCommands {
   deleteProgram: [ctx: any, selectedRows: ProgramTable[], machineId: number]
   pasteProgram: [ctx: any, machineId: number, remains?: any]
-  deleteProgramFromMultiMachine: [ctx: any, selectedRows: Array<any>]
+  deleteProgramFromMultiMachine: [ctx: any, selectedRows: ProgramTable[]]
   concatenatePrograms: [ctx: any, selectedRows: ProgramTable[], machineId: number]
   changeName: [ctx: any, machineId: number, programNo: number]
   changeProcessType: [ctx: any, selectedRows: Array<any>, machineId: number]
-  sendProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
+  sendProgram: [ctx: any, selectedRows: ProgramTable[], machineId: number]
   copyAndSend: [ctx: any, selectedRows: Array<any>, machineId: number]
   fetchProgram: [ctx: any, selectedRows: Array<any>, machineId: number]
   printProgram: [ctx: any]
@@ -243,17 +243,21 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'deleteProgramFromMultiMachine',
-    execute(ctx: any, selectedRows) {
+    async execute(ctx: any, selectedRows: ProgramTable[]) {
+      const allMachines = await editor.fetchAllMachine()
+      const machineGroups = await editor.fetchMachineGroup()
       ctx.$q.dialog({
         component: CMMachineListDialog,
         componentProps: {
           type: 'deleteFromMultiMachine',
+          allMachines,
+          machineGroups,
         },
-      }).onOk(async (machines) => {
+      }).onOk(async (machines: MachineInfo[]) => {
         ctx.$q.dialog({
           component: CMDeleteProgramDialog,
           componentProps: {
-            programNames: selectedRows.map(r => r.name),
+            programNames: selectedRows.map(row => row.name),
           },
         }).onOk(async (option: string) => {
           await contextMenuStore.deleteProgramFromMachine(selectedRows, machines, option)
@@ -389,10 +393,10 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'sendProgram',
-    async execute(ctx: any, selectedRows, machineId) {
+    async execute(ctx: any, selectedRows: ProgramTable[], machineId: number) {
       await contextMenuStore.sendProgram(selectedRows, machineId)
       await editor.fetchAllPrograms()
-      return false // Dont want to add uno redo stack 'cause it cannot be reversible'
+      return false
     },
   }
 })
@@ -401,14 +405,17 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'copyAndSend',
-    execute(ctx: any, selectedRows, machineId) {
+    async execute(ctx: any, selectedRows, machineId) {
+      const allMachines = await editor.fetchAllMachine()
+      const machineGroups = await editor.fetchMachineGroup()
       ctx.$q.dialog({
         component: CMMachineListDialog,
         componentProps: {
           type: 'copyAndSend',
+          allMachines,
+          machineGroups,
         },
-      }).onOk(async (machines: string[]) => {
-        // FIXME: steps null check for on backend
+      }).onOk(async (machines: MachineInfo[]) => {
         await contextMenuStore.sendProgramToMachines(selectedRows, machines, machineId)
         await editor.fetchAllPrograms()
         return true
@@ -419,6 +426,7 @@ registerCommand(() => {
     },
   }
 })
+
 registerCommand(() => {
   const editor = useEditorStore()
   return {
