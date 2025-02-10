@@ -5,6 +5,7 @@ const props = defineProps<{
   path: string
   io: CommandIO
   commandNo: number
+  ioError: { type: string, ioIndex?: number, ioName?: string }
 }>()
 
 const { t } = useI18n()
@@ -65,6 +66,7 @@ const selectedOptionsText = computed(() => {
             type="checkbox"
             class="pt-1"
             dense
+            :class="{ 'border-2 border-red rounded-2': props.ioError }"
           />
         </div>
       </div>

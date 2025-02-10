@@ -153,7 +153,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
     await editor.fetchAllPrograms()
     return remains
-    // TODO: Command contextmenu.paste() i kullanamlı ardından remains dönmeli pastedValues'i redo undo stacke kaydedip ona göre delete atmalı
   }
 
   async function createProgramOnPaste(copiedValue: { machine?: number, program: ProgramTable, newProgramNo?: number }, machineId: number): Promise<number> {
@@ -273,48 +272,42 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     editor.isLoading = false
   }
 
-  async function sendProgramToMachines(programs: ProgramHeader[], machines: string[], machineId: number) {
+  async function sendProgramToMachines(programs: ProgramTable[], machines: MachineInfo[], machineId: number) {
     const { fetch } = useKeycloak()
+    const editor = useEditorStore()
+
     for (const machine of machines) {
-      const m_id = getMachineId(machine)
       for (const program of programs) {
-        // TODO: Maybe do not need to call machines * programs much endpoint machines can be taken through body and then for of loop on backend for faster runtime
-        // but think about notification logic on each paste operation maybe bulk notification can be shown for each machine idk ...later.
-        const editor = useEditorStore()
-        editor.isLoading = true
-        const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: m_id } })
-        editor.isLoading = false
-        const status = check?.statusCode === 'ECONNREFUSED' ? 'failedToConnectMachine' : check ? 'success' : 'fail'
-        notification(check, t(`contextMenu.getInMachine.${status}`, { name: program.name, machine: m_id }))
+        try {
+          editor.isLoading = true
+          const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: machine.id } })
+          notification(check, t(`contextMenu.getInMachine.${check ? 'success' : 'fail'}`, { name: program.name, machine: machine.id }))
+        } catch (error) {
+          notification(false, t(`contextMenu.getInMachine.fail`, { name: program.name, machine: machine.id }))
+        } finally {
+          editor.isLoading = false
+        }
       }
     }
   }
 
-  async function deleteProgramFromMachine(programs: Array<any>, machines: Array<any>, source: string) {
+  async function deleteProgramFromMachine(programs: ProgramTable[], machines: MachineInfo[], source: string) {
     const { fetch } = useKeycloak()
+    const editor = useEditorStore()
+
     for (const machine of machines) {
-      const m_id = getMachineId(machine)
       for (const program of programs) {
-        const check = await fetch(`/api/machine/${m_id}/program/${program.programNo}`, {
-          method: 'DELETE',
-          query: {
-            source,
-          },
-        })
-        const status = check ? 'success' : 'fail'
-        notification(check, t(`contextMenu.deleteFromMultiMachineNotification.${status}`, { name: program.name, programNo: program.programNo, machineId: m_id }))
+        try {
+          editor.isLoading = true
+          const check = await fetch(`/api/machine/${machine.id}/program/${program.programNo}`, { method: 'DELETE', query: { source } })
+          notification(check, t(`contextMenu.deleteFromMultiMachineNotification.${check ? 'success' : 'fail'}`, { name: program.name, programNo: program.programNo, machineId: machine.id }))
+        } catch (error) {
+          notification(false, t(`contextMenu.deleteFromMultiMachineNotification.fail`, { name: program.name, programNo: program.programNo, machineId: machine.id }))
+        } finally {
+          editor.isLoading = false
+        }
       }
     }
-  }
-
-  function getMachineId(machine: any) {
-    let m_id
-    if (typeof machine === 'string') {
-      m_id = Number(machine.split('-')[1])
-    } else if (typeof machine === 'number') {
-      m_id = machine
-    }
-    return m_id
   }
 
   async function deleteVersion(versions: Array<any>, machineId: number) {
