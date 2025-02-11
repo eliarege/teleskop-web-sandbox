@@ -836,7 +836,7 @@ export class MachineController {
    * @returns {Promise<boolean>} - Güncellenme durumu icin boolean
    */
   @withTransaction
-  async updateProgramHeader(program: ProgramHeader): Promise<boolean> {
+  async updateProgramHeader(program: Program): Promise<boolean> {
     const result = await this.trx
       .update({
         NAME: program.name,

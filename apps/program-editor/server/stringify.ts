@@ -1,9 +1,9 @@
 import { format } from 'date-fns'
 import { AUTHOR, BEGIN_HEADER, BEGIN_PROGRAM, COMMENT, CREATED_AT_DATE, CREATED_AT_TIME, END_TAGS, FIRST_COMMAND_NO, LAST_COMMAND_NO, NAME, PROCESS_CODE, START_TAGS, UPDATED_AT_DATE, UPDATED_AT_TIME } from './constants'
-import type { Machine, ProgramHeader, ProgramStepCommand } from '~/shared/types'
+import type { Machine, Program } from '~/shared/types'
 import { ParameterType } from '~/shared/constants'
 
-export function stringifyProgram(program: ProgramHeader, machine: Pick<Machine, 'commands'>) {
+export function stringifyProgram(program: Program, machine: Pick<Machine, 'commands'>): string {
   const lines: string[] = []
 
   const dateFormat = 'dd.MM.yy'
@@ -37,7 +37,10 @@ export function stringifyProgram(program: ProgramHeader, machine: Pick<Machine, 
           .map((io) => {
             if (io.selectable) {
               const ioItem = step.mainCommand.ioList.find(pio => pio.ioIndex === io.index)
-              return `[${ioItem!.value.map(v => `(${v[0]},${v[1]})`).join('')}]`
+              if (!ioItem) {
+                return ''
+              }
+              return `[${ioItem.value.map(v => `(${v[0]},${v[1]})`).join('')}]`
             } else {
               return `[(${io.type + 1},${io.physicalId})]`
             }
@@ -47,7 +50,7 @@ export function stringifyProgram(program: ProgramHeader, machine: Pick<Machine, 
           const parameterType = command?.parameters.find(p => p.index === parameter.index)?.type || ParameterType.NUMBER
           return parameterType === ParameterType.SELECTABLE_FORMULA || parameterType === ParameterType.MACHINE_FORMULA
             ? parameter.value
-            : Number.parseFloat(parameter.value).toFixed(2)
+            : Number.parseFloat(String(parameter.value)).toFixed(2)
         }).join(' ')
         }`,
       ].join(' ')
@@ -62,7 +65,10 @@ export function stringifyProgram(program: ProgramHeader, machine: Pick<Machine, 
             .map((io) => {
               if (io.selectable) {
                 const ioItem = parallelCmd.ioList.find(pio => pio.ioIndex === io.index)
-                return `[${ioItem!.value.map(v => `(${v[0]},${v[1]})`).join('')}]`
+                if (!ioItem) {
+                  return ''
+                }
+                return `[${ioItem.value.map(v => `(${v[0]},${v[1]})`).join('')}]`
               } else {
                 return `[(${io.type + 1},${io.physicalId})]`
               }
@@ -72,7 +78,7 @@ export function stringifyProgram(program: ProgramHeader, machine: Pick<Machine, 
             const parameterType = command?.parameters.find(p => p.index === parameter.index)?.type || ParameterType.NUMBER
             return parameterType === ParameterType.SELECTABLE_FORMULA || parameterType === ParameterType.MACHINE_FORMULA
               ? parameter.value
-              : Number.parseFloat(parameter.value).toFixed(2)
+              : Number.parseFloat(String(parameter.value)).toFixed(2)
           }).join(' ')}`,
         ].join(' ')
         return parts

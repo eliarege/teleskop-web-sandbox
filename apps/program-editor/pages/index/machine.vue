@@ -528,7 +528,6 @@ const contextMenuOptions = computed(() => [
       icon: '',
       disabled: false,
       onClick: async () => {
-        // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'fetchProgram',
           { $q },

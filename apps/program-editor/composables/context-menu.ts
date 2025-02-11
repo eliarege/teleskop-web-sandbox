@@ -17,7 +17,7 @@ export interface ContextMenuStore {
   getProcessTypes: () => Promise<ProcessType[]>
   changeProcessType: (selectedRows: Array<{ programNo: number }>, newType: number, machineId: number) => Promise<void>
   sendProgram: (programs: ProgramTable[], machineId: number) => Promise<void>
-  getRemoteProgram: (programs: Array<ProgramTable>, machineId: number) => Promise<void>
+  getRemoteProgram: (programs: ProgramTable[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramHeader[], machines: MachineInfo[], machineId: number) => Promise<void>
   deleteProgramFromMachine: (programs: ProgramTable[], machines: Array<any>, source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
@@ -260,19 +260,24 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function getRemoteProgram(programs: ProgramTable[], machineId: number) {
+  async function getRemoteProgram(programs: ProgramTable[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-    editor.isLoading = true
+
     for (const program of programs) {
-      const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
-      const status = check ? 'success' : 'fail'
-      notification(check, t(`contextMenu.get.${status}`, { name: program.name }))
+      try {
+        editor.isLoading = true
+        const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
+        notification(check, t(`contextMenu.get.${check ? 'success' : 'fail'}`, { programNo: program.programNo, name: program.name }))
+      } catch (error) {
+        notification(false, t(`contextMenu.get.fail`, { programNo: program.programNo, name: program.name }))
+      } finally {
+        editor.isLoading = false
+      }
     }
-    editor.isLoading = false
   }
 
-  async function sendProgramToMachines(programs: ProgramTable[], machines: MachineInfo[], machineId: number) {
+  async function sendProgramToMachines(programs: ProgramTable[], machines: MachineInfo[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
 
@@ -291,7 +296,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function deleteProgramFromMachine(programs: ProgramTable[], machines: MachineInfo[], source: string) {
+  async function deleteProgramFromMachine(programs: ProgramTable[], machines: MachineInfo[], source: string): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
 

@@ -297,8 +297,8 @@
       "fail": "An error occurred while sending the program {name}."
     },
     "get": {
-      "success": "Taking program {name} is succeed.",
-      "fail": "An error occured while taking program {name}."
+      "success": "{programNo} - {name} retrieved successfully.",
+      "fail": "Failed to retrieve {programNo} - {name}."
     },
     "delete": {
       "success": "Deleting program {name} with program no {programNo} is succeed.",

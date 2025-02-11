@@ -434,7 +434,7 @@ registerCommand(() => {
     async execute(ctx: any, selectedRows, machineId) {
       await contextMenuStore.getRemoteProgram(selectedRows, machineId)
       await editor.fetchAllPrograms()
-      return false // Dont want to add uno redo stack 'cause it cannot be reversible'
+      return false
     },
   }
 })
