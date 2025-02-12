@@ -13,7 +13,7 @@ export default defineAuthEventHandler(async (event) => {
   const machineId = Number.parseInt(machine_id)
   const programNo = Number.parseInt(program_no)
 
-  if (isNaN(machineId) || isNaN(programNo)) {
+  if (Number.isNaN(machineId) || Number.isNaN(programNo)) {
     throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo })
   }
 

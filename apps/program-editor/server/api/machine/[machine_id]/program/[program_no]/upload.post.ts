@@ -1,4 +1,3 @@
-import { isNaN } from 'lodash-es'
 import { machineStore } from '~/server/classes/MachineStore'
 import { PError } from '~/server/error'
 import logger from '~/server/logger'
@@ -10,7 +9,7 @@ export default defineAuthEventHandler({
     const machineId = Number.parseInt(machine_id)
     const programNo = Number.parseInt(program_no)
 
-    if (isNaN(machineId) || isNaN(programNo)) {
+    if (Number.isNaN(machineId) || Number.isNaN(programNo)) {
       throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo })
     }
 
