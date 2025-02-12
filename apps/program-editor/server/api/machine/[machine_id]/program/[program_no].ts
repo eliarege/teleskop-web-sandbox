@@ -1,4 +1,3 @@
-import { isNaN } from 'lodash-es'
 import { machineStore } from '~/server/classes/MachineStore'
 import { ProgramEditorActivityCodes } from '~/server/constants'
 import { PError } from '~/server/error'
@@ -34,10 +33,6 @@ export default defineAuthEventHandler(async (event) => {
       }
       program.author = event.context.kauth?.name || ''
       const commands = await machine.fetchCommands()
-      if (!commands) {
-        throw new PError('NO_COMMANDS_FOUND', { machineId })
-      }
-
       const programErrors = validateProgram(program, commands)
       return { program, programErrors }
     } catch (error) {
