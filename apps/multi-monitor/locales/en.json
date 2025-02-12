@@ -3,6 +3,7 @@
     "name": "Multi Monitor"
   },
   "archive-monitor": "Archive Monitor",
+  "machine-error": "Machine Failure",
   "home": "Home",
   "loading": "Loading",
   "vnc-error": "{name} Connection Failed!",

@@ -58,6 +58,7 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
     .leftJoin('TFMACHINESTATUS as s', 'm.MACHINEID', 's.MACHINEID')
     .leftJoin('BFMACHGROUP as g', 'm.GRUPNO', 'g.GROUPID')
     .leftJoin('BADATA as b', 'b.BATCHKEY', 's.RUNNING_BATCHKEY')
+    .leftJoin('BFSTOPREASONS as t', 't.STOPNAME', 's.stopReason')
     .leftJoin(eb => eb
       .selectFrom('BACONSUMPTIONPROGRAM as c')
       .groupBy('c.MACHINEID')
@@ -109,6 +110,7 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
       's.REQ_CMDNO as reqCommandNo',
       's.REQ_STATUS as reqStatus',
       's.stopReason',
+      't.ReportToERP as machineError',
       's.stopReasonDateTime',
       's.ConnectionStatus as connectionStatus',
       's.IsSynchronizing as isSynchronizing',

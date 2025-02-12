@@ -261,6 +261,11 @@ export interface BAACTUALPRGSTEPS {
   PARALLELSTEPNO: number
   PRGINDEX: number
 }
+export interface BFSTOPREASONS {
+  STOPCODE: number
+  STOPNAME: string
+  ReportToERP: boolean
+}
 export interface TeleskopDatabase {
   BACONSUMPTIONPROGRAM: BACONSUMPTIONPROGRAM
   BADATA: BADATA
@@ -270,6 +275,7 @@ export interface TeleskopDatabase {
   TFMACHINESTATUS: TFMACHINESTATUS
   BFUSERS: BFUSERS
   BAACTUALPRGSTEPS: BAACTUALPRGSTEPS
+  BFSTOPREASONS: BFSTOPREASONS
 }
 
 export interface DmExchangeDatabase {
