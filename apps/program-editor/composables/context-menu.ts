@@ -1,8 +1,7 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { notification } from '~/shared/functions'
-import type { ProcessType, Program, ProgramHeader, ProgramStep, ProgramTable } from '~/shared/types'
-import { ProgramStatus } from '~/shared/constants'
+import type { MachineInfo, ProcessType, Program, ProgramHeader, ProgramStep, ProgramTable } from '~/shared/types'
 
 export interface ContextMenuStore {
   getCopiedValues: () => Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>
@@ -17,10 +16,10 @@ export interface ContextMenuStore {
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   getProcessTypes: () => Promise<ProcessType[]>
   changeProcessType: (selectedRows: Array<{ programNo: number }>, newType: number, machineId: number) => Promise<void>
-  sendProgram: (programs: Array<ProgramHeader>, machineId: number) => Promise<void>
-  getRemoteProgram: (programs: Array<ProgramTable>, machineId: number) => Promise<void>
-  sendProgramToMachines: (programs: Array<ProgramHeader>, machines: Array<any>, machineId: number) => Promise<void>
-  deleteProgramFromMachine: (programs: Array<ProgramHeader>, machines: Array<any>, source: string) => Promise<void>
+  sendProgram: (programs: ProgramTable[], machineId: number) => Promise<void>
+  getRemoteProgram: (programs: ProgramTable[], machineId: number) => Promise<void>
+  sendProgramToMachines: (programs: ProgramHeader[], machines: MachineInfo[], machineId: number) => Promise<void>
+  deleteProgramFromMachine: (programs: ProgramTable[], machines: Array<any>, source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
   concatenatePrograms: (programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
@@ -154,7 +153,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
     await editor.fetchAllPrograms()
     return remains
-    // TODO: Command contextmenu.paste() i kullanamlı ardından remains dönmeli pastedValues'i redo undo stacke kaydedip ona göre delete atmalı
   }
 
   async function createProgramOnPaste(copiedValue: { machine?: number, program: ProgramTable, newProgramNo?: number }, machineId: number): Promise<number> {
@@ -225,7 +223,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return await fetch('/api/process')
   }
 
-  async function changeProcessType(selectedRow, newType: number, machineId: number) {
+  async function changeProcessType(selectedRows: ProgramTable[], newType: number, machineId: number) {
     const { fetch } = useKeycloak()
     for (const row of selectedRows) {
       const program = await getProgram(row.programNo, machineId)
@@ -248,76 +246,73 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function sendProgram(programs: ProgramTable[], machineId: number) {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-    editor.isLoading = true
 
     for (const program of programs) {
       try {
+        editor.isLoading = true
         const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
-
-        const status = check?.name ? 'failedToConnectMachine' : check ? 'success' : 'fail'
-        notification(check, t(`contextMenu.send.${status}`, { name: program.name }))
+        notification(check, t(`contextMenu.send.${check ? 'success' : 'fail'}`, { name: program.name }))
       } catch (error) {
-        notification(null, t(`contextMenu.send.fail`, { name: program.name }))
+        notification(false, t(`contextMenu.send.fail`, { name: program.name }))
+      } finally {
+        editor.isLoading = false
       }
     }
-
-    editor.isLoading = false
   }
 
-  async function getRemoteProgram(programs: ProgramTable[], machineId: number) {
+  async function getRemoteProgram(programs: ProgramTable[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-    editor.isLoading = true
+
     for (const program of programs) {
-      const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
-      const status = check ? 'success' : 'fail'
-      notification(check, t(`contextMenu.get.${status}`, { name: program.name }))
-    }
-    editor.isLoading = false
-  }
-
-  async function sendProgramToMachines(programs: ProgramHeader[], machines: string[], machineId: number) {
-    const { fetch } = useKeycloak()
-    for (const machine of machines) {
-      const m_id = getMachineId(machine)
-      for (const program of programs) {
-        // TODO: Maybe do not need to call machines * programs much endpoint machines can be taken through body and then for of loop on backend for faster runtime
-        // but think about notification logic on each paste operation maybe bulk notification can be shown for each machine idk ...later.
-        const editor = useEditorStore()
+      try {
         editor.isLoading = true
-        const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: m_id } })
+        const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
+        notification(check, t(`contextMenu.get.${check ? 'success' : 'fail'}`, { programNo: program.programNo, name: program.name }))
+      } catch (error) {
+        notification(false, t(`contextMenu.get.fail`, { programNo: program.programNo, name: program.name }))
+      } finally {
         editor.isLoading = false
-        const status = check?.statusCode === 'ECONNREFUSED' ? 'failedToConnectMachine' : check ? 'success' : 'fail'
-        notification(check, t(`contextMenu.getInMachine.${status}`, { name: program.name, machine: m_id }))
       }
     }
   }
 
-  async function deleteProgramFromMachine(programs: Array<any>, machines: Array<any>, source: string) {
+  async function sendProgramToMachines(programs: ProgramTable[], machines: MachineInfo[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
+    const editor = useEditorStore()
+
     for (const machine of machines) {
-      const m_id = getMachineId(machine)
       for (const program of programs) {
-        const check = await fetch(`/api/machine/${m_id}/program/${program.programNo}`, {
-          method: 'DELETE',
-          query: {
-            source,
-          },
-        })
-        const status = check ? 'success' : 'fail'
-        notification(check, t(`contextMenu.deleteFromMultiMachineNotification.${status}`, { name: program.name, programNo: program.programNo, machineId: m_id }))
+        try {
+          editor.isLoading = true
+          const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: machine.id } })
+          notification(check, t(`contextMenu.getInMachine.${check ? 'success' : 'fail'}`, { name: program.name, machine: machine.id }))
+        } catch (error) {
+          notification(false, t(`contextMenu.getInMachine.fail`, { name: program.name, machine: machine.id }))
+        } finally {
+          editor.isLoading = false
+        }
       }
     }
   }
 
-  function getMachineId(machine: any) {
-    let m_id
-    if (typeof machine === 'string') {
-      m_id = Number(machine.split('-')[1])
-    } else if (typeof machine === 'number') {
-      m_id = machine
+  async function deleteProgramFromMachine(programs: ProgramTable[], machines: MachineInfo[], source: string): Promise<void> {
+    const { fetch } = useKeycloak()
+    const editor = useEditorStore()
+
+    for (const machine of machines) {
+      for (const program of programs) {
+        try {
+          editor.isLoading = true
+          const check = await fetch(`/api/machine/${machine.id}/program/${program.programNo}`, { method: 'DELETE', query: { source } })
+          notification(check, t(`contextMenu.deleteFromMultiMachineNotification.${check ? 'success' : 'fail'}`, { name: program.name, programNo: program.programNo, machineId: machine.id }))
+        } catch (error) {
+          notification(false, t(`contextMenu.deleteFromMultiMachineNotification.fail`, { name: program.name, programNo: program.programNo, machineId: machine.id }))
+        } finally {
+          editor.isLoading = false
+        }
+      }
     }
-    return m_id
   }
 
   async function deleteVersion(versions: Array<any>, machineId: number) {

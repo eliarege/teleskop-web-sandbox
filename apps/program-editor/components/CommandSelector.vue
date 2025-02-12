@@ -69,7 +69,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  editor.errorIds.delete(id.value)
+  if (stepData.value)
+    editor.errorIds.delete(id.value)
 })
 
 async function updateStepCommand(commandNo: number) {

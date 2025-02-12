@@ -297,8 +297,8 @@
       "fail": "{name} programını gönderirken hata oluştu."
     },
     "get": {
-      "success": "{name} programı başarıyla alındı.",
-      "fail": "{name} programını alınırken hata oluştu."
+      "success": "{programNo} - {name} başarıyla alındı.",
+      "fail": "{programNo} - {name} alınamadı."
     },
     "delete": {
       "success": "{programNo} numaralı {name} programı başarıyla silindi.",

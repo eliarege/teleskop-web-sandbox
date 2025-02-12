@@ -5,6 +5,7 @@ const props = defineProps<{
   path: string
   io: CommandIO
   commandNo: number
+  ioError?: { type: string, ioIndex?: number, ioName?: string }
 }>()
 
 const { t } = useI18n()
@@ -50,7 +51,10 @@ const selectedOptionsText = computed(() => {
       </div>
     </DevOnly>
 
-    <div class="q-input-border mr-1 mb-1">
+    <div
+      class="q-input-border border-[rgba(0,0,0,0.24)] border-1 mr-1 mb-1"
+      :class="{ 'border-red border-2': props.ioError }"
+    >
       <div class="relative pt-4 text-3 min-w-32 max-w-40">
         <div class="q-input-text">
           {{ props.io.name }}
@@ -58,7 +62,9 @@ const selectedOptionsText = computed(() => {
         <div class="option-text">
           {{ selectedOptionsText }}
         </div>
-        <div class="option-group">
+        <div
+          class="option-group"
+        >
           <QOptionGroup
             v-model="model"
             :options="options"
@@ -93,7 +99,6 @@ const selectedOptionsText = computed(() => {
 .q-input-border {
   border-radius: 4px;
   padding: 0 0.5rem 0.25rem 0.5rem;
-  border: 1px solid rgba(0, 0, 0, 0.24);
   position: relative;
 }
 

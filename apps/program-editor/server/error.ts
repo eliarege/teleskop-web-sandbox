@@ -10,6 +10,11 @@ export type ErrorCode =
   | 'PROGRAM_INSERT_FAILED'
   | 'PROGRAM_UPDATE_FAILED'
   | 'PROGRAM_TREATMENT_COMMAND_LIMIT'
+  | 'NO_COMMANDS_FOUND'
+  | 'INVALID_MACHINE_OR_PROGRAM_NUMBER'
+  | 'COMMAND_NOT_FOUND'
+  | 'PROGRAM_IO_NOT_FOUND'
+  | 'MACHINE_PARAMETER_NOT_FOUND'
 
 export interface ErrorMachineDetail {
   machineId: number
@@ -37,6 +42,26 @@ export interface ErrorTreatmentLimitDetail {
   programNo: number
   commandNo: number
   limit: number
+}
+
+export interface ErrorCommandDetail {
+  machineId: number
+  programNo: number
+  commandNo: number
+}
+
+export interface ErrorProgramIoDetail {
+  machineId: number
+  programNo: number
+  commandNo: number
+  ioIndex: number
+}
+
+export interface ErrorMachineParameterDetail {
+  machineId: number
+  programNo: number
+  commandNo: number
+  parameterIndex: number
 }
 
 export interface ErrorMachineNotFound extends PError {
@@ -94,6 +119,31 @@ export interface ErrorTreatmentLimit extends PError {
   detail: ErrorTreatmentLimitDetail
 }
 
+export interface ErrorNoCommandsFound extends PError {
+  code: 'NO_COMMANDS_FOUND'
+  detail: ErrorProgramDetail
+}
+
+export interface ErrorInvalidMachineOrProgramNumber extends PError {
+  code: 'INVALID_MACHINE_OR_PROGRAM_NUMBER'
+  detail: ErrorProgramDetail
+}
+
+export interface ErrorCommandNotFound extends PError {
+  code: 'COMMAND_NOT_FOUND'
+  detail: ErrorCommandDetail
+}
+
+export interface ErrorProgramIoNotFound extends PError {
+  code: 'PROGRAM_IO_NOT_FOUND'
+  detail: ErrorProgramIoDetail
+}
+
+export interface ErrorMachineParameterNotFound extends PError {
+  code: 'MACHINE_PARAMETER_NOT_FOUND'
+  detail: ErrorMachineParameterDetail
+}
+
 export type AnyError =
   | ErrorMachineNotFound
   | ErrorMachineUnavailable
@@ -105,6 +155,11 @@ export type AnyError =
   | ErrorProgramInsert
   | ErrorProgramUpdate
   | ErrorTreatmentLimit
+  | ErrorNoCommandsFound
+  | ErrorInvalidMachineOrProgramNumber
+  | ErrorCommandNotFound
+  | ErrorProgramIoNotFound
+  | ErrorMachineParameterNotFound
 
 export class PError extends Error {
   code: ErrorCode
@@ -121,6 +176,12 @@ export class PError extends Error {
   constructor(code: 'PROGRAM_INSERT_FAILED', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_UPDATE_FAILED', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_TREATMENT_COMMAND_LIMIT', detail: ErrorTreatmentLimitDetail)
+  constructor(code: 'NO_COMMANDS_FOUND', detail: ErrorMachineDetail)
+  constructor(code: 'INVALID_MACHINE_OR_PROGRAM_NUMBER', detail: ErrorProgramDetail)
+  constructor(code: 'COMMAND_NOT_FOUND', detail: ErrorCommandDetail)
+  constructor(code: 'PROGRAM_IO_NOT_FOUND', detail: ErrorProgramIoDetail)
+  constructor(code: 'MACHINE_PARAMETER_NOT_FOUND', detail: ErrorMachineParameterDetail)
+
   constructor(code: ErrorCode, detail?: any) {
     super(code)
     this.code = code

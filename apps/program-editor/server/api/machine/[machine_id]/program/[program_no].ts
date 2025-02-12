@@ -11,7 +11,16 @@ export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
   const machineId = Number.parseInt(machine_id)
   const programNo = Number.parseInt(program_no)
+
+  if (Number.isNaN(machineId) || Number.isNaN(programNo)) {
+    throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo })
+  }
+
   const machine = await machineStore.get(machineId)
+  if (!machine) {
+    throw new PError('MACHINE_NOT_FOUND', { machineId })
+  }
+
   const query = getQuery(event)
 
   if (event.method === 'GET') {
@@ -19,6 +28,9 @@ export default defineAuthEventHandler(async (event) => {
     checkPermission(event, 'program-view')
     try {
       const program = await machine.fetchProgram(programNo)
+      if (!program) {
+        throw new PError('PROGRAM_NOT_FOUND', { machineId, programNo })
+      }
       program.author = event.context.kauth?.name || ''
       const commands = await machine.fetchCommands()
       const programErrors = validateProgram(program, commands)

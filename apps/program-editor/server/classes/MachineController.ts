@@ -331,6 +331,7 @@ export class MachineController {
         typeName: 'T.PROCESSNAME',
         machineId: 'M.MACHINEID',
         programState: 'P.PRGSTATE',
+        isChanged: 'P.ISCHANGED',
         createdAt: 'P.CREATIONDATE',
         updatedAt: 'P.CHANGEDATE',
         updatedAtTBB: 'P.TBBCHANGEDATE',
@@ -635,95 +636,41 @@ export class MachineController {
   }
 
   /**
-   * Kullanımda olan ve teleskop kullanımına izin verilen tüm makinelerin listesini getirir
-   * @returns {Promise<MachineInfo[]>} - Makine dizisi içeren bir Promise
-   */
-  // @withTransaction
-  // async fetchAllMachines(): Promise<MachineInfo[]> {
-  //   const machines = await this.trx
-  //     .select('MACHINEID AS id', 'MACHINECODE AS name')
-  //     .from('BFMACHINES')
-  //     .where('INUSE', 1)
-  //     .andWhere('USEINTELESKOP', 1)
-
-  //   await Promise.all(
-  //     machines.map(async (machine) => {
-  //       machine.commands = await this.fetchCommands(machine.id)
-  //     }),
-  //   )
-
-  //   return machines
-  // }
-
-  /**
-   * Bir programı makineye yükler. Programın varlık durumuna göre uygun işlemi gerçekleştirir.
+   * Bir programı makineye yükler.
    *
-   * @param {Program} program - Yüklenecek programın detaylarını içeren nesne.
+   * @param {Program} program - Yüklenecek program
    * @returns {Promise<boolean | Error>} Program başarıyla yüklendiğinde `true`, hata durumunda bir `Error` nesnesi döner.
    *
-   * @throws {PError} - Eğer program veritabanında yok ancak makinede mevcutsa, `PROGRAM_NOT_FOUND` hata kodu ile bir hata fırlatır.
-   *
-   * @description
-   * Bu fonksiyon, programın teleskop (veritabanı) ve makine üzerindeki varlık durumunu kontrol eder.
-   * Aşağıdaki durumları ele alır:
-   * 1. **Veritabanında yok, makinede var**: Hata fırlatır (`PROGRAM_NOT_FOUND`).
-   * 2. **Veritabanında yok, makinede yok**: Programı veritabanına ekler.
-   * 3. **Veritabanında var, makinede var**: Programı günceller.
-   *
-   * Sonrasında, program veritabanından silinir, yeniden eklenir ve FTP üzerinden makineye yüklenir.
-   * Hata durumlarında özel hata kodları (`ECONNREFUSED`, `EHOSTUNREACH`) işlenir.
+   * @throws {PError} Hata durumunda bir `PError` nesnesi fırlatılır.
    */
   @withFTP
   async uploadProgram(program: Program): Promise<boolean | Error> {
     try {
-      // FIXME:
-      // Code below line does not give error in the case that teleskop has not have program but machine has program.
-      // It should return false 'cause program already exists on machine so it cannot be uploaded to machine
-      const exists = await this.hasProgram(program.programNo)
-      const existsOnMachine = await this.hasProgramOnMachine(program.programNo)
-
-      // Program veritabanında yok, makine de var
-      if (!exists && existsOnMachine)
-        throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo: program.programNo })
-
-      // Program veritabanında yok, makine de yok
-      if (!exists && !existsOnMachine)
-        await this.insertProgram(program)
-
-      // Program veritabanında var, makine de var
-      if (exists && existsOnMachine)
-        await this.updateProgram(program)
-
-      await this.deleteProgramFromDatabase(program.programNo)
       const currentTimestamp = this.getCurrentTimestamp()
+      program.isChanged = false
       program.programState = ProgramStatus.EXISTS_ON_BOTH
       program.updatedAtTBB = currentTimestamp
       program.updatedAt = currentTimestamp
-      await this.insertProgram(program)
-      // TODO: Look again. hasProgram() not looks that good.
-      await this.ftp.upload(`/tbb6500/data/programs/program/${program.programNo}`, stringifyProgram(program, {
-        commands: this.commandArrayToMap(await this.fetchCommands()),
-      }))
-      logger.info(`Program ${program.programNo} sent to machine ${this.id}.`)
+
+      const commands = await this.fetchCommands()
+      if (!commands.length) {
+        throw new PError('NO_COMMANDS_FOUND', { machineId: this.id })
+      }
+
+      const programPath = `/tbb6500/data/programs/program/${program.programNo}`
+      const programData = stringifyProgram(program, {
+        commands: this.commandArrayToMap(commands),
+      })
+
+      await this.ftp.upload(programPath, programData)
+      await this.updateProgramHeader(program)
+
+      logger.info(`Program ${program.programNo} successfully sent to machine ${this.id}.`)
       return true
     } catch (err) {
-      if (isError(err)) {
-        if (err.code === 'ECONNREFUSED' || err.code === 'EHOSTUNREACH') {
-          return createError({
-            statusCode: 502,
-            name: err.code,
-            statusMessage: 'Failed to connect to FTP server',
-          })
-        }
-      }
-      console.error('An error occured during sending program(s) to machine', err)
       logger.error({ error: err }, 'An error occured during sending program(s) to machine.')
-      return false
+      throw new PError('PROGRAM_FAILED_TO_LOAD', { machineId: this.id, programNo: program.programNo })
     }
-  }
-
-  isError(err: unknown): err is NodeJS.ErrnoException {
-    return err instanceof Error
   }
 
   /**
@@ -886,26 +833,25 @@ export class MachineController {
   /**
    * Programın header bilgilerini günceller
    * @param {ProgramHeader} program - Güncellenmek istenen program
-   * @returns {Promise<number>} - Etkilenen satır sayısı
+   * @returns {Promise<boolean>} - Güncellenme durumu icin boolean
    */
   @withTransaction
-  async updateProgramHeader(program: ProgramHeader): Promise<number> {
-    const config = useRuntimeConfig()
-    const date = new Date(new Date().getTime() - Number(config.teleskopTimezoneOffset) * 60000).toISOString()
-    if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
-      program.isChanged = true
+  async updateProgramHeader(program: ProgramHeader): Promise<boolean> {
     const result = await this.trx
       .update({
         NAME: program.name,
+        ISCHANGED: program.isChanged,
         PROCESSCODE: program.typeId,
-        CHANGEDATE: date,
+        PRGSTATE: program.programState,
+        CHANGEDATE: program.updatedAt,
+        TBBCHANGEDATE: program.updatedAtTBB,
         TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       })
       .from('BFMASTERPRGHEADER')
       .where('PROGNO', program.programNo)
       .andWhere('MACHINEID', this.id)
 
-    return result
+    return !!result
   }
 
   /**
