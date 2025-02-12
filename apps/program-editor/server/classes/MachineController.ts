@@ -39,131 +39,181 @@ export class MachineController {
   }
 
   /**
-   * COMMANDTYPE (0,3)
-   * 0 ana
-   * 3 parallel
-   * analar parallel eklenir
-   * paralleller ana olamamaz.
-   * DONTUSELIST (liste) - bos olabilir - (-1) ise null getir
-   * MOVEPARALLEL (0,1,2) - Program yazarken sonraki adıma taşıma
-   *
-   *
-   * Makine id numarasına göre makinenin komutlarını getirir
-   * @returns {Promise<Array<MachineCommand>>} - MachineCommand dizisi
+   * Mevcut makinenin komutlarını getirir
+   * @param {boolean} editable - Editable parametreler
+   * @param {boolean} selectable - Selectable io'lar
+   * @returns {Promise<MachineCommand[]>} - Komutlar
    */
   @withTransaction
   async fetchCommands(editable?: boolean, selectable?: boolean): Promise<MachineCommand[]> {
-    const commandsOutput = await this.trx
+    const commands = await db
+      .from('BFMASTERCOMMANDS')
       .select({
-        machineId: 'C.MACHINEID',
-        commandNo: 'C.COMMANDNO',
-        name: 'C.NAME',
-        icon: 'C.ICON',
-        adviceList: this.trx.raw(sql`(C.ADVICELIST)`),
-        dontUseList: this.trx.raw(sql`(NULLIF (C.DONTUSELIST , '-1'))`),
-        isRunManual: 'C.ISRUNMANUAL',
-        commandType: 'C.COMMANDTYPE',
-        moveParallel: 'C.MOVEPARALLEL',
-        x: 'C.X',
-        y: 'C.Y',
-        a: 'C.A',
-        maxA: 'C.MAXA',
-        b: 'C.B',
-        isTemperature: 'C.ISTEMPERATURE',
-        isUnload: 'C.ISUNLOAD',
-        parameters: this.trx.raw(sql`
-        ISNULL((
-          SELECT
-            P.PARAMETERINDEX as [index],
-            P.PARAMSTRING as name,
-            P.PROGRAMEDITING as editable,
-            type = ISNULL(
-              CASE
-                WHEN P.TBBFORMUL = 1 THEN 'MACHINE_FORMULA'
-                WHEN P.USEFORMULA = 1 THEN 'SELECTABLE_FORMULA'
-                WHEN P.PARAMETERTYPE = 0 THEN 'NUMBER'
-                WHEN P.PARAMETERTYPE = 1 THEN 'SELECT'
-              END
-            ,'[]'),
-            format = ISNULL(
-              CASE P.TEMPERATURE
-                WHEN 0 THEN 'NONE'
-                WHEN 1 THEN 'TEMPERATURE'
-                ELSE 'DURATION'
-              END
-            , '[]'),
-            P.VALUE as [value],
-            P.PARAMLOWLIMIT as minValue,
-            P.PARAMHIGHLIMIT as maxValue,
-            P.CONTAINSVARIABLE as containsVariable,
-            P.USEDEFAULT as useDefault,
-            P.USEFORMULA as useFormula,
-            selections = ISNULL((
-              SELECT
-                TRIM(SUBSTRING(l.value, 2, LEN(l.value) - 2)) as name,
-                CAST(TRIM(SUBSTRING(v.value, 2, LEN(v.value) - 2)) as int) as value
-              FROM (values (1)) t(x)
-              JOIN (
-                SELECT value, ROW_NUMBER() OVER (ORDER BY (SELECT 1)) ordinal
-                FROM STRING_SPLIT(REPLACE(P.SELECTIONLIST, '" "', '"&"'), '&')
-              ) l on 1=1
-              JOIN (
-                SELECT value, ROW_NUMBER() OVER (ORDER BY (SELECT 1)) ordinal
-                FROM STRING_SPLIT(REPLACE(P.SELECTIONVALUES, '" "', '"&"'), '&')
-              ) v on l.ordinal = v.ordinal
-              WHERE P.PARAMETERTYPE = 1 AND P.SELECTIONLIST != '' AND P.SELECTIONVALUES != ''
-              FOR JSON AUTO, INCLUDE_NULL_VALUES
-            ), '[]')
-          FROM BFCOMMANDPARAMETERS P
-          WHERE C.COMMANDNO = P.COMMANDNO AND C.MACHINEID = P.MACHINEID
-          ${typeof editable === 'boolean' ? `${editable ? 'AND P.PROGRAMEDITING = 1' : ''}` : ''}
-          ORDER BY P.PARAMETERINDEX
-          FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')
-      `),
-        ioList: this.trx.raw(sql`
-        ISNULL((
-          SELECT
-            IO.IOINDEX as [index],
-            IO.IOID as [physicalId],
-            IO.IOTYPE as [type],
-            selectable =
-              CAST(
-                CASE IO.IOTYPE
-                  WHEN 5 THEN 1
-                  ELSE 0
-                END
-              as bit),
-            IO.NAME as [name],
-            selections = ISNULL((
-              SELECT
-                SL.SELECTINDEX as [index],
-                SL.IOTYPE + 1 as [type],
-                SL.NAME as [name],
-                SL.ISDEFAULT as [defaultValue],
-                SL.IOID as [physicalId]
-              FROM BFCOMMANDSELECTIONLIST SL
-              WHERE SL.IOINDEX = IO.IOINDEX AND SL.COMMANDNO = IO.COMMANDNO AND SL.MACHINEID = IO.MACHINEID
-              FOR JSON AUTO, INCLUDE_NULL_VALUES
-            ), '[]')
-          FROM BFCOMMANDINPUTOUTPUTS IO
-          WHERE C.COMMANDNO = IO.COMMANDNO AND C.MACHINEID = IO.MACHINEID ${selectable ? 'AND IO.IOTYPE = 5' : ''}
-          FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')
-      `),
+        machineId: 'MACHINEID',
+        commandNo: 'COMMANDNO',
+        name: 'NAME',
+        icon: 'ICON',
+        adviceList: 'ADVICELIST',
+        dontUseList: 'DONTUSELIST',
+        isRunManual: 'ISRUNMANUAL',
+        commandType: 'COMMANDTYPE',
+        moveParallel: 'MOVEPARALLEL',
+        x: 'X',
+        y: 'Y',
+        a: 'A',
+        maxA: 'MAXA',
+        b: 'B',
+        isTemperature: 'ISTEMPERATURE',
+        isUnload: 'ISUNLOAD',
       })
-      .from('BFMASTERCOMMANDS AS C')
-      .where('C.MACHINEID', this.id)
-      .orderBy('C.COMMANDNO')
+      .where('MACHINEID', this.id)
+      .orderBy('COMMANDNO') as MachineCommand[]
 
-    for (const cmd of commandsOutput) {
-      cmd.dontUseList = cmd.dontUseList?.split(',').map(Number) || []
-      cmd.isRunManual = cmd.isRunManual ? 1 : 0
-      cmd.parameters = JSON.parse(cmd.parameters)
-      cmd.ioList = JSON.parse(cmd.ioList)
+    const parameters = await db
+      .from('BFCOMMANDPARAMETERS')
+      .select({
+        commandNo: 'COMMANDNO',
+        index: 'PARAMETERINDEX',
+        name: 'PARAMSTRING',
+        editable: 'PROGRAMEDITING',
+        type: db.raw(/* sql */`
+          CASE
+            WHEN TBBFORMUL = 1 THEN 'MACHINE_FORMULA'
+            WHEN USEFORMULA = 1 THEN 'SELECTABLE_FORMULA'
+            WHEN PARAMETERTYPE = 0 THEN 'NUMBER'
+            WHEN PARAMETERTYPE = 1 THEN 'SELECT'
+          END`,
+        ),
+        format: db.raw(/* sql */`
+          CASE TEMPERATURE
+            WHEN 0 THEN 'NONE'
+            WHEN 1 THEN 'TEMPERATURE'
+            ELSE 'DURATION'
+          END`,
+        ),
+        value: 'VALUE',
+        minValue: 'PARAMLOWLIMIT',
+        maxValue: 'PARAMHIGHLIMIT',
+        containsVariable: 'CONTAINSVARIABLE',
+        useDefault: 'USEDEFAULT',
+        useFormula: 'USEFORMULA',
+        selectionLabels: db.raw(`NULLIF(SELECTIONLIST, '')`),
+        selectionValues: db.raw(`NULLIF(SELECTIONVALUES, '')`),
+      })
+      .where('MACHINEID', this.id)
+      .modify((queryBuilder) => {
+        if (editable) {
+          queryBuilder.where('PROGRAMEDITING', 1)
+        }
+      })
+      .orderBy(['COMMANDNO', 'PARAMETERINDEX'])
+
+    const ioList = await db
+      .from('BFCOMMANDINPUTOUTPUTS')
+      .select({
+        commandNo: 'COMMANDNO',
+        index: 'IOINDEX',
+        physicalId: 'IOID',
+        type: db.raw('IOTYPE'),
+        selectable: db.raw(/* sql */`CAST(CASE IOTYPE WHEN 5 THEN 1 ELSE 0 END as bit)`),
+        name: 'NAME',
+      })
+      .where('MACHINEID', this.id)
+      .orderBy(['COMMANDNO', 'IOINDEX'])
+
+    const ioListSelections = await db
+      .from('BFCOMMANDSELECTIONLIST')
+      .select({
+        commandNo: 'COMMANDNO',
+        ioIndex: 'IOINDEX',
+        index: 'SELECTINDEX',
+        type: db.raw('IOTYPE + 1'),
+        name: 'NAME',
+        defaultValue: 'ISDEFAULT',
+        physicalId: 'IOID',
+      })
+      .where('MACHINEID', this.id)
+      .modify((queryBuilder) => {
+        if (selectable) {
+          queryBuilder.where('IO.IOTYPE = 5')
+        }
+      })
+      .orderBy(['COMMANDNO', 'IOINDEX', 'SELECTINDEX'])
+
+    let parCursor = 0
+    let iosCursor = 0
+    let selCursor = 0
+
+    for (const command of commands) {
+      command.parameters = []
+      command.ioList = []
+
+      command.dontUseList = String(command.dontUseList)
+        .split(',')
+        .map(num => Number(num.trim()))
+        .filter(Number.isFinite)
+
+      for (; parCursor < parameters.length; parCursor++) {
+        const rawParameter = parameters[parCursor]
+        if (rawParameter.commandNo !== command.commandNo) {
+          break
+        }
+        const selectionLabels = rawParameter.selectionLabels?.trim().slice(1, -1).split('" "') || [] as string[]
+        const selectionValues = rawParameter.selectionValues?.trim().slice(1, -1).split('" "').map(Number) || [] as number[]
+        const selectionLength = Math.min(selectionLabels.length, selectionValues.length)
+        const selections = Array.from({ length: selectionLength }, (_, i) => {
+          return {
+            name: selectionLabels[i],
+            value: selectionValues[i],
+          }
+        })
+
+        command.parameters.push({
+          index: rawParameter.index,
+          name: rawParameter.name,
+          editable: rawParameter.editable,
+          type: rawParameter.type,
+          format: rawParameter.format,
+          value: rawParameter.value,
+          minValue: rawParameter.minValue,
+          maxValue: rawParameter.maxValue,
+          containsVariable: rawParameter.containsVariable,
+          useDefault: rawParameter.useDefault,
+          useFormula: rawParameter.useFormula,
+          selections,
+        })
+      }
+      for (; iosCursor < ioList.length; iosCursor++) {
+        const rawIo = ioList[iosCursor]
+        if (rawIo.commandNo !== command.commandNo) {
+          break
+        }
+        const currentIo: CommandIO = {
+          index: rawIo.index,
+          physicalId: rawIo.physicalId,
+          type: rawIo.type,
+          selectable: rawIo.selectable,
+          name: rawIo.name,
+          selections: [],
+        }
+        command.ioList.push(currentIo)
+        for (; selCursor < ioListSelections.length; selCursor++) {
+          const rawIoSelection = ioListSelections[selCursor]
+          if (rawIoSelection.ioIndex !== rawIo.index || rawIoSelection.commandNo !== rawIo.commandNo) {
+            break
+          }
+          currentIo.selections.push({
+            index: rawIoSelection.index,
+            type: rawIoSelection.type,
+            name: rawIoSelection.name,
+            defaultValue: rawIoSelection.defaultValue,
+            physicalId: rawIoSelection.physicalId,
+          })
+        }
+      }
     }
 
-    return commandsOutput as MachineCommand[]
+    return commands
   }
 
   @withTransaction
