@@ -53,26 +53,23 @@ defineExpose({ resetZoom })
 const settingsStore = userSettingsStore()
 const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
 const startTime = ref(new Date(props.batch.joborderInfo.startTime))
-
 function getLastDate() {
-  return [
-    theoreticalTemperatures[theoreticalTemperatures.length - 1].time,
-    props.batch.lastRecordDate,
-    props.batch.joborderInfo.endTime,
-  ].reduce<Date | undefined>((max, value) => {
+  const possibleEndTimes: number[] = [
+    new Date(theoreticalTemperatures[theoreticalTemperatures.length - 1].time).getTime(),
+    new Date(props.batch.lastRecordDate).getTime(),
+    new Date(props.batch.joborderInfo.endTime!).getTime(),
+  ]
+  const maxDateMs = possibleEndTimes.reduce<number>((max: number, value: number) => {
     if (!value)
       return max
     if (!max)
-      return new Date(value)
-    return value > max ? new Date(value) : max
-  }, void 0) || null
-  // const theoreticalLastDate = theoreticalTemperatures[theoreticalTemperatures.length - 1].time
-  // const lastRecordDate = props.batch.lastRecordDate
-  // return lastRecordDate > theoreticalLastDate ? lastRecordDate : theoreticalLastDate
+      return value
+    return value > max ? value : max
+  }, 0) || null
+  return maxDateMs ? new Date(maxDateMs) : new Date()
 }
 const endTime = ref(
   new Date(getLastDate()),
-  // return addMinutes(new Date(startTime.value), 80)
 )
 
 const chartEl = ref<HTMLElement>()

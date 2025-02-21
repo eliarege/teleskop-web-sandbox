@@ -49,7 +49,7 @@ export function insertAnalogOutputValues(analogOutputs: DuoAny<AnalogInputOutput
   )
 
   for (const av of analogValues) {
-    const ao = analogOutputMap.get(`${IOType.AnalogOutput}-${av.ioIndex}`)
+    const ao = analogOutputMap.get(`${av.ioType}-${av.ioIndex}`)
     if (ao) {
       ao.ioValues.push({
         time: av.logtime,
