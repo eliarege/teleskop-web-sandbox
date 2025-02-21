@@ -140,7 +140,6 @@ const { width: windowWidth } = useWindowSize()
     <ElScrollbar class="table-wrapper e-border">
       <div class="table-body">
         <RecipeTable
-          current-running-index
           show
           :title="t('details.recipe-t-auto')"
           is-first
