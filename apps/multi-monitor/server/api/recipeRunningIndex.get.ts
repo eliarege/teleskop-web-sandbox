@@ -1,11 +1,7 @@
-import connection from '~/server/connectionPool'
+import { getCurrentRunningIndex } from '../queries/currentRunningIndex'
 
 export default defineEventHandler(async (event) => {
-  await connection.pool.connect()
   const { batchKey } = getQuery(event)
-  const response = await connection.pool.query<{ currentRunningPrgIndex: number }>(`\
-  SELECT COUNT(DISTINCT PRGNO) AS currentRunningPrgIndex FROM BAACTUALPRGSTEPS
-  WHERE BATCHKEY = ${batchKey} AND PARALLELSTEPNO = 0
-  `)
-  return response.recordset[0]
+  const response = await getCurrentRunningIndex(batchKey)
+  return response
 })
