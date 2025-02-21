@@ -40,6 +40,12 @@ const { data: recipe } = useFetch('/api/recipe', {
 const { data: batchLogs } = useFetch('/api/machine_logs', {
   query: { machineId: props.currentMachine.id },
 })
+const { data: currentRunningIndex } = useFetch('/api/recipeRunningIndex', {
+  method: 'GET',
+  query: {
+    batchKey: props.currentMachine.runningBatchKey,
+  },
+})
 const refactoredBatchLogs = computed(() => {
   return batchLogs.value
     ?.filter(machine => machine.planKey)
@@ -98,6 +104,7 @@ const autoRecipe = computed(() => {
   return recipe.value?.map((val) => {
     return {
       ...val,
+      recIndex: currentRunningIndex.value?.currentRunningPrgIndex === val.recIndex ? `> ${val.recIndex}` : val.recIndex,
       phaseIndex: val.phaseIndex! + 1,
       program: `${val.recNo} - ${val.name}`,
       amount: val.amount,
@@ -110,6 +117,7 @@ const manuelRecipe = computed(() => {
   return recipe.value?.map((val) => {
     return {
       ...val,
+      recIndex: currentRunningIndex.value?.currentRunningPrgIndex === val.recIndex ? `> ${val.recIndex}` : val.recIndex,
       program: `${val.recNo} - ${val.name}`,
       amount: Math.round(val.amount || 0),
       newAmount: `${val.amount} ${unitFunc(val.unit)}`,

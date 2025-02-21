@@ -7,6 +7,7 @@ interface InfoProgressBarProps {
 }
 const props = defineProps<InfoProgressBarProps>()
 const colors = useColorStore()
+const { t } = useI18n()
 
 const completitionRatio = ref(0)
 const delay = computed(() => {
@@ -52,6 +53,13 @@ watch(
         class="progress-bar-slot"
         style="color: black"
       >
+        <QTooltip
+          transition-show="scale"
+          class="text-black e-border bg-white"
+          :offset="[3, 3]"
+        >
+          {{ t('teleskop.current-delay') }}: {{ delayRatio }}%
+        </QTooltip>
         <slot />
       </div>
     </div>

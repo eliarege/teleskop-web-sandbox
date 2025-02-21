@@ -65,7 +65,8 @@
     "status-prio": "Prioridade Alterada",
     "status-cancelled": "Cancelado",
     "command": "Número da Etapa - Número do Comando - Nome do Comando",
-    "command-info": "Informações do Comando"
+    "command-info": "Informações do Comando",
+    "current-delay": "Atraso atual"
   },
   "details": {
     "_": "Detalhes",
