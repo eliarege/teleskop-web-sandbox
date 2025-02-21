@@ -65,7 +65,8 @@
     "status-prio": "Priority Changed",
     "status-cancelled": "Cancelled",
     "command": "Step No - Command No - Command Name",
-    "command-info": "Command Info"
+    "command-info": "Command Info",
+    "current-delay": "Current Delay"
   },
   "details": {
     "_": "Details",

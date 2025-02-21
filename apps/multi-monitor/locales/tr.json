@@ -65,7 +65,8 @@
     "status-prio": "Öncelik Değişti",
     "status-cancelled": "İptal Edildi",
     "command": "Adım No - Komut No - Komut İsmi",
-    "command-info": "Komut Bilgi"
+    "command-info": "Komut Bilgi",
+    "current-delay": "Güncel Gecikme"
   },
   "details": {
     "_": "Detaylar",
