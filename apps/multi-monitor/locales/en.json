@@ -66,7 +66,8 @@
     "status-cancelled": "Cancelled",
     "command": "Step No - Command No - Command Name",
     "command-info": "Command Info",
-    "current-delay": "Current Delay"
+    "current-delay": "Current Delay",
+    "current-progress": "Current Progress"
   },
   "details": {
     "_": "Details",
