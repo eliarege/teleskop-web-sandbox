@@ -66,7 +66,8 @@
     "status-cancelled": "Cancelado",
     "command": "Número da Etapa - Número do Comando - Nome do Comando",
     "command-info": "Informações do Comando",
-    "current-delay": "Atraso atual"
+    "current-delay": "Atraso atual",
+    "current-progress": "Progresso Atual"
   },
   "details": {
     "_": "Detalhes",

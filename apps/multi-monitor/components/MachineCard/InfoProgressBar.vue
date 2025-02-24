@@ -9,37 +9,28 @@ const props = defineProps<InfoProgressBarProps>()
 const colors = useColorStore()
 const { t } = useI18n()
 
-const completitionRatio = ref(0)
-const delay = computed(() => {
-  const elapsedTime = props.data.runningPrgElapsedTime
-  const totalDuration = props.data.runningPrgTotalTheoreticDuration
+const totalDuration = props.data.runningPrgTotalTheoreticDuration || 0
+const elapsedTime = props.data.runningPrgElapsedTime || 0
 
-  if (elapsedTime && totalDuration && elapsedTime > totalDuration) {
+const completion = computed(() => Math.min(elapsedTime, totalDuration))
+
+const completionRatio = computed(() => {
+  return Math.round((completion.value / totalDuration) * 100) || 0
+})
+
+const delay = computed(() => {
+  if (elapsedTime > totalDuration) {
     return elapsedTime - totalDuration
   }
   return 0
 })
 
 const delayRatio = computed(() => {
-  const totalDuration = props.data.runningPrgTotalTheoreticDuration
   if (delay.value && totalDuration) {
     return Math.round(Math.min((delay.value / totalDuration) * 100, 100))
   }
   return 0
 })
-
-watch(
-  [() => props.data.runningPrgElapsedTime, () => props.data.runningPrgTotalTheoreticDuration],
-  ([elapsedTime, totalDuration]) => {
-    if (elapsedTime && totalDuration) {
-      const baseRatio = Math.round(Math.min((elapsedTime / totalDuration) * 100, 100))
-      completitionRatio.value = Math.max(baseRatio - delayRatio.value, 0)
-    } else {
-      completitionRatio.value = 0
-    }
-  },
-  { immediate: true },
-)
 </script>
 
 <template>
@@ -47,24 +38,26 @@ watch(
     class="relative h-7 rounded-2xl w-full h-7 overflow-hidden"
     :style="{ background: colors.cardItemBg }"
   >
+    <QTooltip
+      transition-show="scale"
+      class="text-black e-border bg-white"
+      :offset="[3, 3]"
+    >
+      {{ t('teleskop.current-progress') }}: {{ completionRatio }}%
+      |
+      {{ t('teleskop.current-delay') }}: {{ delayRatio }}%
+    </QTooltip>
     <div class="absolute top-0 left-0 w-full h-full">
       <div class="absolute right-0 h-full progress-bar-delay" :style="{ width: `${delayRatio}%` }" />
       <div
         class="progress-bar-slot"
         style="color: black"
       >
-        <QTooltip
-          transition-show="scale"
-          class="text-black e-border bg-white"
-          :offset="[3, 3]"
-        >
-          {{ t('teleskop.current-delay') }}: {{ delayRatio }}%
-        </QTooltip>
         <slot />
       </div>
     </div>
     <div class="relative h-full" :style="{ width: `${100 - delayRatio}%` }">
-      <div class="absolute left-0 w-full h-full progress-bar-completion" :style="{ width: `${completitionRatio}%` }" />
+      <div class="absolute left-0 w-full h-full progress-bar-completion" :style="{ width: `${completionRatio}%` }" />
       <div class="progress-bar-slot" style="color: white">
         <slot />
       </div>
