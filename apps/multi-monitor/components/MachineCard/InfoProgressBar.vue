@@ -35,7 +35,7 @@ const delayRatio = computed(() => {
 
 <template>
   <div
-    class="relative h-7 rounded-2xl w-full h-7 overflow-hidden"
+    class="relative h-7 rounded-2xl w-full overflow-hidden"
     :style="{ background: colors.cardItemBg }"
   >
     <QTooltip
