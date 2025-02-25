@@ -69,14 +69,6 @@ function reqStatus(params: number) {
       :data="machine"
     >
       <div class="absolute w-full h-full flex items-center flex-nowrap whitespace-nowrap overflow-hidden top-0 left-0">
-        <!-- <q-tooltip
-          transition-show="scale"
-          class="text-black e-border bg-white"
-          :offset="[3, 3]"
-        >
-          {{ t("teleskop.program-name") }}
-        </q-tooltip> -->
-
         <div class="explanation">
           {{ t("teleskop.program-name") }}
         </div>

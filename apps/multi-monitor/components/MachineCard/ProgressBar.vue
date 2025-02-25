@@ -2,64 +2,97 @@
 import type { PropType } from 'vue'
 import type { MachineData } from '~/shared/types'
 
-defineProps({
+const props = defineProps({
   data: {
     type: Object as PropType<MachineData>,
     required: true,
   },
-  completitionRatio: Number,
+  completionRatio: Number,
+})
+const { t } = useI18n()
+
+const totalDuration = props.data.theoreticalDuration || 0
+const elapsedTime = props.data.elapsedTime || 0
+
+const completion = computed(() => Math.min(elapsedTime, totalDuration))
+
+const completionRatio = computed(() => {
+  return Math.round((completion.value / totalDuration) * 100) || 0
 })
 
-// Color
-function colorMethod(elapsedTime: number, theoreticalTime: number) {
-  return elapsedTime > theoreticalTime ? '#ffdd00' : '#15870F'
-}
+const delay = computed(() => {
+  if (elapsedTime > totalDuration) {
+    return elapsedTime - totalDuration
+  }
+  return 0
+})
+
+const delayRatio = computed(() => {
+  if (delay.value && totalDuration) {
+    return Math.round(Math.min((delay.value / totalDuration) * 100, 100))
+  }
+  return 0
+})
 </script>
 
 <template>
-  <div class="wrapper">
-    <!-- backgorund -->
-    <div class="background" />
-    <!-- progress text -->
-    <div class="pg-text">
-      {{ completitionRatio! > 100 ? 100 : completitionRatio?.toFixed() }}
-    </div>
-    <!-- progress bar -->
-    <div class="pg-bar">
+  <div
+    class="relative rounded-2xl w-100px h-4 text-xs overflow-hidden bg-black"
+  >
+    <QTooltip
+      v-if="delayRatio > 0"
+      transition-show="scale"
+      class="text-black e-border bg-white"
+      :offset="[3, 3]"
+    >
+      {{ t('teleskop.current-delay') }}: {{ delayRatio }}%
+    </QTooltip>
+    <!--  -->
+    <div class="absolute top-0 left-0 w-100px h-full">
+      <div class="absolute right-0 h-full progress-bar-delay" :style="{ width: `${delayRatio}%` }" />
       <div
-        class="pg-bar-child"
-        :style="{
-          width: `${completitionRatio}%`,
-          background: colorMethod(data.elapsedTime!, data.theoreticalDuration!),
-        }"
-      />
+        class="progress-bar"
+        style="color: black"
+      >
+        <div class="absolute w-100px h-full text-center whitespace-nowrap overflow-hidden">
+          {{ completionRatio }}%
+        </div>
+      </div>
     </div>
+    <!--  -->
+    <div class="relative h-full" :style="{ width: `${100 - delayRatio}%` }">
+      <div class="absolute left-0 w-100px h-full progress-bar-completion" :style="{ width: `${completionRatio}%` }" />
+      <div class="progress-bar" style="color: white">
+        <div class="absolute left-0 w-100px h-full text-center whitespace-nowrap overflow-hidden">
+          {{ completionRatio }}%
+        </div>
+      </div>
+    </div>
+    <!--  -->
   </div>
 </template>
 
-<style scoped lang="postcss">
-.wrapper {
-  @apply flex flex-row w-full h-full rounded-2xl z-0 text-xs justify-start items-center;
-  .background {
-    @apply rounded-2xl bg-gray-500 w-100px h-4 absolute;
-  }
-  .pg-text {
-    @apply flex absolute text-black z-2 h-min w-full justify-center items-center;
-  }
-  .pg-bar {
-    @apply flex w-full items-center justify-start h-4;
-    .pg-bar-child {
-      transition: width 0.5s linear;
-      @apply flex rounded-2xl h-4 max-w-100px absolute overflow-hidden;
-      .pg-delay {
-        @apply flex w-full items-center z-4 h-4 absolute justify-end self-end;
-        .pg-delay-child {
-          border-radius: 0 1em 1em 0;
-          background: #d43b1c;
-          @apply h-4 max-w-100px min-w-10px;
-        }
-      }
-    }
-  }
+<style scoped>
+.progress-bar-completion {
+  background-color: #6aa84f;
+  transition: width 0.3s ease;
+}
+
+.progress-bar-delay {
+  background: #ffdd00;
+  transition: width 0.3s ease;
+}
+
+.progress-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
 }
 </style>

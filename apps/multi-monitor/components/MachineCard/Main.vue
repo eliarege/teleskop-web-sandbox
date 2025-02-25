@@ -75,8 +75,8 @@ function reqStatus(params: number) {
 
 const { width: screenWidth } = useWindowSize()
 
-function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: number) {
-  if (currentAlarmStatus === 0) {
+function cardBackgroundColor(runningAlarmNo: number, currentAlarmStatus: number, runningBatchStatus: number) {
+  if (runningAlarmNo > 0 && currentAlarmStatus === 0) {
     return '#a30000'
   }
   if (runningBatchStatus !== 2) {
@@ -102,7 +102,7 @@ function isScreenViable(screen: number) {
       <div class="w-full h-full">
         <MachineCardLayout
           :colors="{
-            backGround: cardBackgroundColor(element.currentAlarmStatus, element.runningBatchStatus),
+            backGround: cardBackgroundColor(element.runningAlarmNo, element.currentAlarmStatus, element.runningBatchStatus),
             itemBackGround: colors.cardItemBg,
             activeBackGround: colors.cardActiveBg,
             idleBackGround: colors.cardIdleBg,
