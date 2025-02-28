@@ -1,6 +1,7 @@
 import { set as setTimestamp } from 'date-fns'
 import type { Machine, MachineCommand, ParameterItem, ProgramHeader, ioListItem } from '../shared/types'
 import { BEGIN_HEADER, BEGIN_PROGRAM, FIRST_COMMAND_NO, LAST_COMMAND_NO } from './constants'
+import { PError } from './error'
 
 const NAME_RE = /^ISIM=(.+)?$/
 /** Capture groups: 1) isSet?, 2) date, 3) month, 4) year (20XX) */
@@ -152,6 +153,7 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
       receivedLastCommand = true
       break
     }
+
     const match = line.match(COMMAND_PATTERN)
     if (!match)
       throw new Error(`Invalid command defined at program ${program.name}: '${line}'`)
@@ -171,7 +173,7 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
           commandId: 0,
           commandNo,
           ioList: parseCommandIOList(match[7], command),
-          parameters: parseCommandParameters(match[8], command),
+          parameters: parseCommandParameters(program.programNo, match[8], command),
         },
         parallelCommands: [],
       }
@@ -180,7 +182,7 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
         commandId: 0,
         commandNo,
         ioList: parseCommandIOList(match[7], command),
-        parameters: parseCommandParameters(match[8], command),
+        parameters: parseCommandParameters(program.programNo, match[8], command),
       })
     }
   }
@@ -191,31 +193,57 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
   return program
 }
 
-function parseCommandParameters(parameter: string, command: MachineCommand): ParameterItem[] {
-  const editableParameters = command.parameters.filter(p => p.editable)
-  return parameter
-    ? parameter.split(' ').map((item, index) => ({
-      index: editableParameters[index].index,
-      value: Number.parseFloat(item),
-      optimized: false,
-    }))
-    : []
+function parseCommandParameters(programNo: number, parameter: string, command: MachineCommand): ParameterItem[] {
+  const parameters: ParameterItem[] = []
+
+  if (parameter) {
+    const parameterValues = parameter.split(' ')
+    console.log('parameter count', parameterValues.length)
+    for (let index = 0; index < parameterValues.length; index++) {
+      const parameterValue = parameterValues[index]
+      console.log('parameter', index, parameterValue)
+
+      const commandParameter = command.parameters.find(p => p.index === index)
+      if (!commandParameter)
+        throw new PError('MACHINE_PARAMETER_NOT_FOUND', { machineId: command.machineId, programNo, commandNo: command.commandNo, parameterIndex: index })
+
+      parameters.push({
+        index: commandParameter.index,
+        value: Number.parseInt(parameterValue),
+        optimized: false,
+      })
+    }
+  }
+
+  return parameters
 }
 
 function parseCommandIOList(list: string, command: MachineCommand): ioListItem[] {
+  const ioList: ioListItem[] = []
   const IO_OUTER_RE = /\[(.+?)\]/g
   const IO_SELECTION_RE = /\((\d+?,\d+?)\)/g
 
-  const ioList: ioListItem[] = []
+  const ioMatches = [...list.matchAll(IO_OUTER_RE)]
+  for (let index = 0; index < ioMatches.length; index++) {
+    const ioMatch = ioMatches[index]
+    const io: ioListItem['value'] = []
 
-  for (const [index, ioMatch] of [...list.matchAll(IO_OUTER_RE)].entries()) {
-    if (command.ioList[index]?.selectable) {
-      const io: [number, number][] = []
-      for (const ioSelectionMatch of ioMatch[1].matchAll(IO_SELECTION_RE)) {
-        const [type, physicalId] = ioSelectionMatch[1].split(',').map(v => Number.parseInt(v))
-        io.push([type, physicalId])
-      }
+    const ioSelectionMatches = [...ioMatch[1].matchAll(IO_SELECTION_RE)]
+    for (const ioSelectionMatch of ioSelectionMatches) {
+      const [type, physicalId] = ioSelectionMatch[1].split(',').map(v => Number.parseInt(v))
+      io.push([type, physicalId])
     }
+
+    const commandIO = command.ioList.find(io => io.index === index)
+
+    if (!commandIO)
+      throw new PError('PROGRAM_IO_NOT_FOUND', { machineId: command.machineId, programNo: 0, commandNo: command.commandNo, ioIndex: index })
+
+    ioList.push({
+      ioIndex: index,
+      ioId: commandIO.physicalId,
+      value: io,
+    })
   }
   return ioList
 }

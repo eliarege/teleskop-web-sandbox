@@ -674,7 +674,7 @@ export class MachineController {
   }
 
   /**
-   * Belirtilen program numarasına sahip programı sunucudan indirir
+   * Belirtilen program numarasına sahip programı machineden indirir
    * @param {number} programNo - Indirilmek istenen program numarası
    * @returns {Promise<Program | null>} - İndirilen programı içeren bir Promise
    */
@@ -682,9 +682,8 @@ export class MachineController {
   @withTransaction
   async fetchRemoteProgram(programNo: number): Promise<Program | null> {
     const exists = await this.doesMachineHaveProgram(programNo)
-    if (!exists) {
+    if (!exists)
       throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
-    }
 
     const programString = await this.ftp.download(`/tbb6500/data/programs/program/${programNo}`, 'utf-8')
 
@@ -759,17 +758,32 @@ export class MachineController {
   /**
    * Programı günceller
    * @param {Program} program - Güncellenmek istenen program
+   * @returns {Promise<boolean>} - Programın silinip yeniden eklendiğine dair sonuç
    */
   @withTransaction
-  async updateProgram(program: Program) {
-    const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
-    if (isDeleted) {
-      if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+  async updateProgram(program: Program): Promise<boolean> {
+    try {
+      const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
+      if (!isDeleted)
+        return false
+
+      if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
         program.isChanged = true
+      }
+
       await this.insertProgram(program)
-      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMCHANGED, `Makine ${this.id}`, program.name)
+
+      await logEditorOperation(
+        ProgramEditorActivityCodes.PROGRAMCHANGED,
+      `Makine ${this.id}`,
+      program.name,
+      )
+
+      return true
+    } catch (error) {
+      console.error('Program update error:', error)
+      return false
     }
-    return isDeleted
   }
 
   @withTransaction
@@ -974,8 +988,6 @@ export class MachineController {
     }]
 
     program.steps.forEach((step, i) => {
-      const mainIOList = this.getSelectableIO(step.mainCommand.commandNo, commands)
-
       // BAMASTERSTEPS
       stepsArchive.push({
         MACHINEID: this.id,
@@ -1004,7 +1016,11 @@ export class MachineController {
         })
       })
 
+      const mainIOList = this.getSelectableIO(step.mainCommand.commandNo, commands)
       step.mainCommand.ioList.forEach((io, k) => {
+        if (!mainIOList[k])
+          return
+
         // BAMASTERSTEPINPUTOUTPUTS
         stepIOArchive.push({
           MACHINEID: this.id,
@@ -1012,8 +1028,8 @@ export class MachineController {
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: 0,
-          IOINDEX: mainIOList[k]?.index,
-          IOID: mainIOList[k]?.physicalId,
+          IOINDEX: mainIOList[k].index,
+          IOID: mainIOList[k].physicalId,
           IOTYPE: 5,
         })
         // BAMASTERSTEPSELECTIONLIST
@@ -1025,7 +1041,7 @@ export class MachineController {
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: 0,
-            IOINDEX: mainIOList[k]?.index,
+            IOINDEX: mainIOList[k].index,
             SELECTEDIOID: ioValue[1],
             IOTYPE: ioValue[0] - 1,
           })
@@ -1063,6 +1079,9 @@ export class MachineController {
 
         const paralelIOList = this.getSelectableIO(command.commandNo, commands)
         command.ioList.forEach((io, m) => {
+          if (!paralelIOList[m])
+            return
+
           // BAMASTERSTEPINPUTOUTPUTS
           stepIOArchive.push({
             MACHINEID: this.id,
@@ -1070,8 +1089,8 @@ export class MachineController {
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: j + 1,
-            IOINDEX: paralelIOList[m]?.index,
-            IOID: paralelIOList[m]?.physicalId,
+            IOINDEX: paralelIOList[m].index,
+            IOID: paralelIOList[m].physicalId,
             IOTYPE: 5,
           })
 
@@ -1084,7 +1103,7 @@ export class MachineController {
               PROGNO: program.programNo,
               MAINSTEP: i,
               PARALELSTEP: j + 1,
-              IOINDEX: paralelIOList[m]?.index,
+              IOINDEX: paralelIOList[m].index,
               SELECTEDIOID: ioValue[1],
               IOTYPE: ioValue[0] - 1,
             })
@@ -1146,6 +1165,7 @@ export class MachineController {
     const parameters: StepParameter[] = []
     const stepIO: StepInputOutput[] = []
     const ioSelection: SelectionList[] = []
+
     // BFMASTERPRGHEADER
     const header = [{
       MACHINEID: this.id,
@@ -1182,7 +1202,6 @@ export class MachineController {
     }]
     program.steps.forEach((step, i) => {
       // TODO: programda hatalı io varsa makinedeki tanımı yoksa burada hata veriyor.
-      const mainIOList = this.getSelectableIO(step.mainCommand.commandNo, commands)
 
       // BFMASTERSTEPS
       steps.push({
@@ -1212,15 +1231,19 @@ export class MachineController {
         })
       })
 
+      const mainIOList = this.getSelectableIO(step.mainCommand.commandNo, commands)
       step.mainCommand.ioList.forEach((io, k) => {
+        if (!mainIOList[k])
+          return
+
         // BFMASTERSTEPINPUTOUTPUTS
         stepIO.push({
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: 0,
-          IOINDEX: mainIOList[k]?.index,
+          IOINDEX: mainIOList[k].index,
           MACHINEID: this.id,
-          IOID: mainIOList[k]?.physicalId,
+          IOID: mainIOList[k].physicalId,
           IOTYPE: 5,
           ERRORWARNING: 0,
         })
@@ -1231,7 +1254,7 @@ export class MachineController {
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: 0,
-            IOINDEX: mainIOList[k]?.index,
+            IOINDEX: mainIOList[k].index,
             MACHINEID: this.id,
             SELECTEDIOID: ioValue[1],
             IOTYPE: ioValue[0] - 1,
@@ -1270,14 +1293,17 @@ export class MachineController {
 
         const paralelIOList = this.getSelectableIO(command.commandNo, commands)
         command.ioList.forEach((io, m) => {
+          if (!paralelIOList[m])
+            return
+
           // BFMASTERSTEPINPUTOUTPUTS
           stepIO.push({
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: j + 1,
-            IOINDEX: paralelIOList[m]?.index,
+            IOINDEX: paralelIOList[m].index,
             MACHINEID: this.id,
-            IOID: paralelIOList[m]?.physicalId,
+            IOID: paralelIOList[m].physicalId,
             IOTYPE: 5,
             ERRORWARNING: 0,
           })
@@ -1289,7 +1315,7 @@ export class MachineController {
               PROGNO: program.programNo,
               MAINSTEP: i,
               PARALELSTEP: j + 1,
-              IOINDEX: paralelIOList[m]?.index,
+              IOINDEX: paralelIOList[m].index,
               MACHINEID: this.id,
               SELECTEDIOID: ioValue[1],
               IOTYPE: ioValue[0] - 1,

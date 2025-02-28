@@ -19,7 +19,7 @@ const options = [
 
 <template>
   <QDialog ref="dialogRef">
-    <QCard>
+    <QCard style="width: 500px" class="select-none">
       <QCardSection>
         <div class="text-h6 flex">
           {{ t('contextMenu.deleteProgramDialog.title') }}
@@ -59,7 +59,7 @@ const options = [
         />
         <QBtn
           :label="t('delete')"
-          class="q-mr-sm bg-red-6"
+          class="q-mr-sm bg-red-6 text-white"
           flat
           @click="onDialogOK(selectedOption)"
         />

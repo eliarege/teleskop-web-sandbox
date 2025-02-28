@@ -431,7 +431,7 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'fetchProgram',
-    async execute(ctx: any, selectedRows, machineId) {
+    async execute(ctx: any, selectedRows: ProgramTable[], machineId: number) {
       await contextMenuStore.getRemoteProgram(selectedRows, machineId)
       await editor.fetchAllPrograms()
       return false
