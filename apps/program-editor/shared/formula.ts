@@ -255,18 +255,18 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
 
         // Selectable formula
         } else if (commandParameter.type === ParameterType.SELECTABLE_FORMULA) {
-          const formulaId = step.mainCommand.parameters.find(p => p.index === commandParameter.index)?.value
-          if (!formulaId) {
+          const formula = step.mainCommand.parameters.find(p => p.index === commandParameter.index)
+          if (!formula?.value) {
             return warnAndReturn(`No parameter defined with index ${commandParameter.index}`, {
               definition: commandParameter,
               availableParameters: step.mainCommand.parameters,
             })
           }
-          const commandFormula = getCommandFormula(formulaId)
+          const commandFormula = getCommandFormula(Number(formula.value))
           if (!commandFormula) {
             return warnAndReturn(`Formula used for parameter ${node.value} is not found`, {
               machine,
-              requestedFormalaId: formulaId,
+              requestedFormalaId: formula.value,
             })
           }
 
@@ -293,6 +293,9 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
         case '*':
           return leftValue * rightValue
         case '/':
+          if (Number.isNaN(leftValue) || Number.isNaN(rightValue)) {
+            return 0
+          }
           if ((rightValue) === 0) {
             throw new Error('Division by zero')
           }
