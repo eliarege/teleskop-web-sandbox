@@ -349,6 +349,9 @@ export async function validateTaskPrograms(planKey: number) {
   )
 
   const rawPrograms = await knex({ b: 'dbo.BFMASTERPRGHEADER' })
+    .join({ m: 'dbo.BFMACHINES' }, 'b.MACHINEID', 'm.MACHINEID')
+    .where('m.INUSE', '=', true)
+    .andWhere('m.USEINTELESKOP', '=', true)
     .select({
       machineId: 'b.MACHINEID',
       programNo: 'b.PROGNO',
@@ -361,20 +364,10 @@ export async function validateTaskPrograms(planKey: number) {
     return acc
   }, {} as Record<number, Set<number>>)
 
-  const machines = await knex({ p: 'dbo.BFMACHINES' })
-    .select('p.MACHINEID')
-    .where('p.INUSE', '=', true)
-    .andWhere('p.USEINTELESKOP', '=', true)
-
-  const machineProgramAvailability = machines.map((machine) => {
-    const prgList = machinePrgMap[machine.MACHINEID] ?? new Set()
-    return {
-      machineId: machine.MACHINEID,
-      valid: [...taskPrgList].every(a => prgList.has(a)),
-    }
-  })
-
-  return machineProgramAvailability
+  return Object.entries(machinePrgMap).map(([machineId, prgList]) => ({
+    machineId: Number(machineId),
+    valid: [...taskPrgList].every(a => prgList.has(a)),
+  }))
 }
 
 export async function validateTaskCapacityAgainstMachines(fabricWeight: number) {
