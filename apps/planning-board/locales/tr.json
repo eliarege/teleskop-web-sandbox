@@ -76,6 +76,7 @@
   },
   "batch-notes": {
     "_": "Notlar",
+    "add-note": "Notu Ekle",
     "columns": {
       "user-name": "Kullanıcı Adı",
       "job-order": "İş Emri",

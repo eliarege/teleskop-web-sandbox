@@ -345,34 +345,31 @@ export async function validateTaskPrograms(planKey: number) {
       await knex({ p: 'dbo.DYBFBATCHPLAN' })
         .select({ prgList: 'p.PROGRAMNOLIST' })
         .where('p.PLANKEY', '=', planKey)
-    )[0].prgList.split(',').slice(0, -1).map(a => Number.parseInt(a)),
+    )[0]?.prgList?.split(',').slice(0, -1).map(a => Number.parseInt(a)) ?? [],
   )
 
-  const machinePrgList: number[] = (
-    await knex({ p: 'dbo.BFMACHINES' })
-      .select({
-        machineId: 'p.MACHINEID',
-        programs: knex.raw(/* sql */`
-        (select
-          CONCAT('[', STRING_AGG(PROGNO, ','), ']') list
-        from BFMASTERPRGHEADER b
-          where b.MACHINEID = p.MACHINEID
-          for json auto, include_null_values)
-      `),
-      })
-      .where('p.INUSE', '=', true)
-      .andWhere('p.USEINTELESKOP', '=', true)
-  )
-  const machineProgramAvailability = machinePrgList.map((machine: any) => {
-    const prgList: any[] = JSON.parse(machine.programs)
-    return {
-      machineId: machine.machineId,
-      valid: [...taskPrgList].every(a => prgList[0].list.includes(a)),
-    }
-  })
+  const rawPrograms = await knex({ b: 'dbo.BFMASTERPRGHEADER' })
+    .join({ m: 'dbo.BFMACHINES' }, 'b.MACHINEID', 'm.MACHINEID')
+    .where('m.INUSE', '=', true)
+    .andWhere('m.USEINTELESKOP', '=', true)
+    .select({
+      machineId: 'b.MACHINEID',
+      programNo: 'b.PROGNO',
+    })
 
-  return machineProgramAvailability
+  const machinePrgMap = rawPrograms.reduce((acc, { machineId, programNo }) => {
+    if (!acc[machineId])
+      acc[machineId] = new Set()
+    acc[machineId].add(programNo)
+    return acc
+  }, {} as Record<number, Set<number>>)
+
+  return Object.entries(machinePrgMap).map(([machineId, prgList]) => ({
+    machineId: Number(machineId),
+    valid: [...taskPrgList].every(a => prgList.has(a)),
+  }))
 }
+
 export async function validateTaskCapacityAgainstMachines(fabricWeight: number) {
   const capacity = await knex('BFMACHINES as b')
     .select({

@@ -76,6 +76,7 @@
   },
   "batch-notes": {
     "_": "Notes",
+    "add-note": "Add Note",
     "columns": {
       "user-name": "User Name",
       "job-order": "Job Order",

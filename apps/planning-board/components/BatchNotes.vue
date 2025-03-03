@@ -153,7 +153,7 @@ function deleteNote(id: number) {
     <br>
     <QInput
       v-model="newNote.note"
-      placeholder="Add new Note"
+      :placeholder="t('batch-notes.template.new-note')"
       outlined
       clearable
       color="primary"
@@ -162,7 +162,7 @@ function deleteNote(id: number) {
         <div class="flex-center flex-col px-2">
           <QBtn
             color="primary"
-            label="Add Note"
+            :label="t('batch-notes.add-note')"
             :disabled="newNote.note === '' || newNote.note === null"
             @click="addNote()"
           />
