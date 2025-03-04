@@ -38,56 +38,75 @@ const unitMap = [
   'oz/Feet',
 ]
 
-const pattern = /^SABIT_(\d+)=(.+),(.+)$/gim
-
+// const pattern = /^SABIT_(\d+)=(.+), (.+), (.+), (.+), (.+), (.+), ([^\n,]*),(?:([^\n,]*),)?(\[.*\])$/gim
+// const pattern = /^SABIT_(\d+)=(.+),(.+)$/gim
 /**
  * **Path**: `/tbb6500/data/config/baslatmaParametreleri`
  *
  * **Example**:
  * ```
  * SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600, []"
+ * SABIT_11=Wss Yoğun Yıkama, 0, 0, 1, 0, 0, 0,9611,["Hayır","0",1,"Evet","1",0]
  * ```
  */
 export function parseBatchParameters(content: string) {
   const reasons = []
-  let match = pattern.exec(content)
-  while (match !== null) {
-    const list = JSON.parse(match[3])
-    const selectionList = []
-    const selectionValues = []
-    let selectionListDefault = null as string | null
 
-    if (list && list.length) {
-      for (let i = 0; i < list.length; i += 3) {
-        selectionList.push(list[i])
-        selectionValues.push(list[i + 1])
-        const isDefault = list[i + 2] === 1
-        if (isDefault) {
-          selectionListDefault = list[i + 1]
-        }
+  const lines = content
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.startsWith('SABIT_'))
+
+  for (const line of lines) {
+    const parts = line.split(/[\[\]]/).map(e => e.trim())
+    if (parts.length < 1)
+      continue
+
+    const keyValue = parts[0]
+    const listString = parts[1] ?? ''
+
+    const keyValueParts = keyValue.split('=')
+    if (keyValueParts.length < 2)
+      continue
+
+    const id = Number(keyValueParts[0].slice(6))
+    const entries = keyValueParts[1].split(',').map(e => e.trim())
+
+    if (entries.length < 8)
+      continue
+
+    const list = JSON.parse(`[${listString}]`)
+    const selectionList: string[] = []
+    const selectionValues: string[] = []
+    let selectionListDefault: string | null = null
+
+    for (let i = 0; i < list.length; i += 3) {
+      selectionList.push(list[i])
+      selectionValues.push(list[i + 1])
+
+      if (list[i + 2] === 1) {
+        selectionListDefault = list[i + 1]
       }
     }
-
-    const id = Number.parseInt(match[1])
-    const entries = match[2].split(',').map(e => e.trim())
 
     const reason = {
       batchParameterId: id,
       paramString: entries[0],
       format: entries[1],
-      min: Number.parseInt(entries[2]),
-      max: Number.parseInt(entries[3]),
-      default: Number.parseInt(entries[4]),
-      unitCode: Number.parseInt(entries[5]),
-      unitText: unitMap[Number.parseInt(entries[5])],
-      parameterId: Number.parseInt(entries[6]),
-      dmArea: entries[7] ? Number.parseInt(entries[7]) : null,
+      min: Number(entries[2]),
+      max: Number(entries[3]),
+      default: Number(entries[4]),
+      unitCode: Number(entries[5]),
+      unitText: unitMap[Number(entries[5])] || '',
+      parameterId: Number(entries[6]) || 0,
+      dmArea: Number(entries[7]) || null,
       selectionList,
       selectionValues,
       selectionListDefault,
     }
+
     reasons.push(reason)
-    match = pattern.exec(content)
   }
+
   return reasons
 }
