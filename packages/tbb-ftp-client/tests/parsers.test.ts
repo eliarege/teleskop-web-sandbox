@@ -64,6 +64,7 @@ it('parseBatchParameters', () => {
   const contents = `
 SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600, []
 SABIT_2=Ikinci Soda, 0, 0, 5000, 0, 2, 4, []
+SABIT_11=Wss Yoğun Yıkama, 0, 0, 1, 0, 0, 0,9611,["Hayır","0",1,"Evet","1",0]
 `
 
   const output = parseBatchParameters(contents)
@@ -98,6 +99,21 @@ SABIT_2=Ikinci Soda, 0, 0, 5000, 0, 2, 4, []
       selectionList: [],
       selectionValues: [],
       selectionListDefault: null,
+    },
+    {
+      batchParameterId: 11,
+      paramString: 'Wss Yoğun Yıkama',
+      format: '0',
+      min: 0,
+      max: 1,
+      default: 0,
+      unitCode: 0,
+      unitText: '---',
+      parameterId: 0,
+      dmArea: 9611,
+      selectionList: ['Hayır', 'Evet'],
+      selectionValues: ['0', '1'],
+      selectionListDefault: '0',
     },
   ]
 
