@@ -10,6 +10,7 @@ export interface H3AdapterConfig {
   url: string
   realm: string
   clientId: string
+  accessRole?: string | null
   logger?: boolean
   logLevel?: LogLevel
 }
@@ -77,11 +78,12 @@ export function h3Adapter(config: H3AdapterConfig) {
         if (!payload) {
           throw createError({ statusMessage: 'Unauthenticated', statusCode: 401 })
         }
-        if (roles.length) {
+        if (roles.length || config.accessRole) {
           const userRoles = payload.resource_access?.[config.clientId]?.roles || []
-          const hasPermission = roles.every(role => userRoles.includes(role))
-          if (!hasPermission) {
-            logger.debug('Does not have permission')
+          if (
+            (config.accessRole && !userRoles.includes(config.accessRole))
+            || (roles.length && !roles.some(role => userRoles.includes(role)))
+          ) {
             throw createError({ statusMessage: 'Unauthorized', statusCode: 403 })
           }
         }

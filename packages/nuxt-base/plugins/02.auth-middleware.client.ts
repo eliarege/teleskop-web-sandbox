@@ -1,6 +1,8 @@
+import { withBase } from 'ufo'
+
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
-  const kcConfig = useAppConfig().keycloak
+  const kcConfig = useAppConfig().keycloak || {}
   const kcEnabled = config.public.kcEnabled
   const unauthorized = () => navigateTo('/unauthorized', { replace: true })
 
@@ -17,19 +19,26 @@ export default defineNuxtPlugin(() => {
     await until(keycloak.didInitialise).toBe(true)
 
     if (!keycloak.authenticated.value) {
-      return keycloak.login()
+      return keycloak.login({
+        redirectUri: withBase(to.path, location.origin),
+      })
     }
-    const roles = to.meta.roles as string[] | undefined
-    if (roles?.length) {
+    const roles = to.meta.roles ?? []
+    if (typeof roles !== 'object' || !Array.isArray(roles) || !roles.every(r => typeof r === 'string')) {
+      throw new TypeError(`${to.path} roles should be string[]`)
+    }
+    if (kcConfig.accessRole || roles.length) {
       try {
-        await keycloak.updateToken(kcConfig?.minimumTokenValidity)
+        await keycloak.updateToken(kcConfig.minimumTokenValidity)
       } catch (err) {
         if (!keycloak.authenticated.value) {
           return unauthorized()
         }
       }
-      const authorized = roles.some(role => keycloak.hasResourceRole(role))
-      if (!authorized) {
+      if (
+        (kcConfig.accessRole && !keycloak.hasResourceRole(kcConfig.accessRole))
+        || (roles.length && !roles.some(role => keycloak.hasResourceRole(role)))
+      ) {
         return unauthorized()
       }
     }
