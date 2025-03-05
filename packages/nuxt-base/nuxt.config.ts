@@ -101,13 +101,6 @@ export default defineNuxtConfig({
             $schema: {
               description: 'Configure keycloak plugin and middleware behaviour',
             },
-            globalMiddleware: {
-              $default: false,
-              $schema: {
-                description: 'Adds `auth` middleware as global middleware. Authentication is done silently unlike `loginRequired`',
-                tsType: 'boolean',
-              },
-            },
             accessRole: {
               $default: null,
               $schema: {

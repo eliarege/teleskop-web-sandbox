@@ -2,7 +2,7 @@ import type { KeycloakError, KeycloakInitOptions, KeycloakProfile, KeycloakToken
 import Keycloak from 'keycloak-js'
 import type { EventHookOn } from '@vueuse/core'
 import { withBase } from 'ufo'
-import { setHeader } from '../utils/ofetch'
+import { setHeader } from '../../utils/ofetch'
 
 export interface KeycloakPlugin {
   fetch: typeof $fetch

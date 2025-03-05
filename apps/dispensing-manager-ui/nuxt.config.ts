@@ -23,6 +23,9 @@ export default defineNuxtConfig({
       websockifyUrl: 'ws://localhost:6800',
     },
   },
+  keycloak: {
+    globalMiddleware: true,
+  },
   i18n: {
     lazy: true,
     langDir: './locales',

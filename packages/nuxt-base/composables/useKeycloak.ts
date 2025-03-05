@@ -1,4 +1,4 @@
-import type { KeycloakPlugin } from '../plugins/01.keycloak.client'
+import type { KeycloakPlugin } from '../modules/keycloak/plugin'
 
 export function useKeycloak(): KeycloakPlugin {
   const { $keycloak } = useNuxtApp()
