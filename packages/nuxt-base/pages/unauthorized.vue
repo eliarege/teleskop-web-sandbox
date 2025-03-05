@@ -1,16 +1,41 @@
-<script setup>
-import { useRouter } from 'vue-router'
-
-const { t } = useI18n({ useScope: 'local' })
-
-const router = useRouter()
+<script setup lang="ts">
+import type { RouteRecordNormalized } from 'vue-router'
 
 definePageMeta({
   layout: false,
+  noAuth: true,
 })
-function goToMainPage() {
-  router.push('/')
+
+const { t } = useI18n({ useScope: 'local' })
+
+const route = useRoute()
+const router = useRouter()
+const appList = useAppList()
+const kcConfig = useAppConfig().keycloak || {}
+const keycloak = useKeycloak()
+const rootRoute = router.getRoutes().find(r => r.path === '/')
+
+function isAuthorizedRoute(route: RouteRecordNormalized) {
+  return route.meta.noAuth || (
+    (!kcConfig.accessRole || keycloak.hasResourceRole(kcConfig.accessRole))
+    && (!route.meta.roles?.length || route.meta.roles.some(r => keycloak.hasResourceRole(r)))
+  )
 }
+
+const returnUrl = computed(() => {
+  if (typeof route.query.back === 'string') {
+    return { to: route.query.back, external: false }
+  }
+  if (rootRoute && isAuthorizedRoute(rootRoute)) {
+    return { to: rootRoute.path, external: false }
+  }
+  const rootUrl = appList.find(a => a.name === 'root')?.url
+  if (rootUrl) {
+    return { to: rootUrl, external: true }
+  }
+
+  return null
+})
 </script>
 
 <template>
@@ -22,14 +47,19 @@ function goToMainPage() {
       {{ t('unauthorizedMessage') }}
     </p>
     <q-btn
+      v-if="returnUrl"
       color="black"
       outline
       class="back-button font-bold mt-5"
       size="lg"
       no-caps
-      @click="goToMainPage"
     >
-      {{ t('goToMainPage') }}
+      <nuxt-link
+        :to="returnUrl.to"
+        :external="returnUrl.external"
+      >
+        {{ t('goToMainPage') }}
+      </nuxt-link>
     </q-btn>
   </div>
 </template>
