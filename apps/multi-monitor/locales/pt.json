@@ -18,8 +18,7 @@
   "return": "Voltar",
   "404": {
     "message": "Desculpe, não conseguimos encontrar a página que você está procurando.",
-    "return": "Voltar",
-    "unauthorized": "Você não tem permissão para visualizar esta página!"
+    "return": "Voltar"
   },
   "nav": {
     "welcome-message": "Bem-vindo,",

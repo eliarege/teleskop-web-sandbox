@@ -18,8 +18,7 @@
   "return": "Geri Dön",
   "404": {
     "message": "Aradığınız sayfayı bulamadık",
-    "return": "Geri Dön",
-    "unauthorized": "Bu sayfayı görüntülemek için yetkiniz yok!"
+    "return": "Geri Dön"
   },
   "nav": {
     "welcome-message": "Hoşgeldin,",
