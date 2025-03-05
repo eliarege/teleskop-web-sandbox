@@ -1,4 +1,4 @@
-import type { KeycloakError, KeycloakProfile, KeycloakTokenParsed } from 'keycloak-js'
+import type { KeycloakError, KeycloakInitOptions, KeycloakProfile, KeycloakTokenParsed } from 'keycloak-js'
 import Keycloak from 'keycloak-js'
 import type { EventHookOn } from '@vueuse/core'
 import { withBase } from 'ufo'
@@ -18,7 +18,7 @@ export interface KeycloakPlugin {
   userProfile: Readonly<Ref<KeycloakProfile | undefined>>
   userInfo: Readonly<Ref<Record<string, any> | undefined>>
   /** Redirects to login form. */
-  login: () => void
+  login: (options?: { redirectUri?: string }) => void
   /** Redirects to logout. */
   logout: () => void
   /** Redirects to registration form. */
@@ -102,6 +102,7 @@ export default defineNuxtPlugin(() => {
   const authenticated = ref(false)
   const userProfile = ref<KeycloakProfile>()
   const userInfo = ref<Record<string, any>>()
+  const route = useRoute()
 
   const onReady = createEventHook<boolean>()
   const onAuthSuccess = createEventHook()
@@ -114,7 +115,7 @@ export default defineNuxtPlugin(() => {
 
   keycloak.onReady = (auth) => {
     ready.value = true
-    onReady.trigger(auth)
+    onReady.trigger(auth ?? false)
   }
   keycloak.onAuthSuccess = () => {
     authenticated.value = true
@@ -141,24 +142,36 @@ export default defineNuxtPlugin(() => {
 
   if (kcEnabled) {
     let initPromise: Promise<any>
+    const initOptions: KeycloakInitOptions = {
+      flow: 'standard',
+      scope: kcScope,
+      enableLogging: kcConfig?.enableLogging ?? import.meta.dev,
+      pkceMethod: 'S256',
+    }
     if (kcConfig?.loginRequired) {
       initPromise = keycloak.init({
+        ...initOptions,
         onLoad: 'login-required',
-        scope: kcScope,
         locale: locale.value || 'en-US',
-        enableLogging: kcConfig?.enableLogging ?? import.meta.dev,
       })
     } else {
       initPromise = keycloak.init({
+        ...initOptions,
         onLoad: 'check-sso',
-        scope: kcScope,
+        checkLoginIframe: window.isSecureContext,
         silentCheckSsoRedirectUri: withBase('/api/check-sso', withBase(config.app.baseURL, location.origin)),
-        messageReceiveTimeout: 5000,
-        enableLogging: kcConfig?.enableLogging ?? import.meta.dev,
       })
     }
     initPromise.finally(() => {
       didInitialise.value = true
+      // Supported parameters for standard flow: https://github.com/keycloak/keycloak-js/blob/52c8ad8f2e75123dfd1c5a4f6ef6c76ce2fd9be4/lib/keycloak.js#L1039
+      let cleanHash = location.hash
+        .replaceAll(/[#&](?:code|state|session_state|iss|kc_action(?:_status)?)=[^#&]*/g, '')
+
+      if (cleanHash.length && !cleanHash.startsWith('#')) {
+        cleanHash = `#${cleanHash}`
+      }
+      navigateTo(route.path + location.search + cleanHash, { replace: true })
     })
   } else {
     ready.value = true
@@ -168,10 +181,11 @@ export default defineNuxtPlugin(() => {
 
   const noop = () => {}
 
-  const login = () => {
+  const login = (options?: { redirectUri?: string }) => {
     navigateTo(
       keycloak.createLoginUrl({
         locale: locale.value || 'en',
+        redirectUri: options?.redirectUri,
       }),
       { external: true },
     )
