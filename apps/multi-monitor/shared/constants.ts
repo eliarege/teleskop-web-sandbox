@@ -7,7 +7,7 @@ export const MachineSort = {
   ByGroup: 4,
 } as const
 
-export const AppList = {
+export const Apps = {
   archive: 'archive',
   multiMonitor: 'multi-monitor',
   planningBoard: 'planning-board',

@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { withBase } from 'ufo'
-import { parseAppList } from '../../utils/base'
+import { useAppList } from '../../composables/useAppList'
 
 const config = useRuntimeConfig()
+const appList = useAppList()
 const { t } = useI18n()
 
 function withHostname(url: string) {
   return url.replace('$hostname', window.location.hostname)
 }
 
-const appList = parseAppList(config.public.appList).map((app) => {
+const appButtons = appList.map((app) => {
   return {
     label: () => t(`base.apps.${app.name}`),
     url: withHostname(app.url || '/'),
@@ -20,7 +21,7 @@ const appList = parseAppList(config.public.appList).map((app) => {
 
 <template>
   <TopbarButton
-    v-show="appList.length"
+    v-show="appButtons.length"
     icon="apps"
     class="h-unset"
     round
@@ -31,7 +32,7 @@ const appList = parseAppList(config.public.appList).map((app) => {
     <QMenu :transition-duration="0">
       <div class="grid grid-cols-3 p-2">
         <QBtn
-          v-for="(app, index) in appList"
+          v-for="(app, index) in appButtons"
           :key="index"
           class="topbar-app-grid__btn py-2 px-5 rounded-lg h-20 max-w-20"
           dense
