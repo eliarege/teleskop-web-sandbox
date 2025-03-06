@@ -38,6 +38,9 @@ export default defineNuxtConfig({
       { code: 'pt', file: 'pt.json' },
     ],
   },
+  keycloak: {
+    globalMiddleware: false,
+  },
   nitro: {
     rollupConfig: {
       // @ts-expect-error Infinite

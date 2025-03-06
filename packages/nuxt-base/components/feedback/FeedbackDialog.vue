@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
 import type { FetchError } from 'ofetch'
-import { parseAppList } from '../../utils/base'
-import type { Feedback, FeedbackModel } from '../../types'
+import type { Feedback } from '../../types'
 import { getBrowserInfo, getOSInfo } from '../../utils/userAgent'
 import { useAppProps } from '../../composables/useAppProps'
 import { convertElementToCanvas } from '../../utils/html2canvas'
+import { useAppList } from '../../composables/useAppList'
 import type { Rect } from './FeedbackScreenshotEditor.vue'
 
 defineEmits([...useDialogPluginComponent.emits])
@@ -13,16 +13,16 @@ defineEmits([...useDialogPluginComponent.emits])
 const { t } = useI18n()
 const q = useQuasar()
 const appProps = useAppProps()
+const appList = useAppList()
 const { width, height } = useWindowSize()
 
-const config = useRuntimeConfig()
 const { fetch: kcFetch, tokenParsed } = useKeycloak()
 
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
-const appList = parseAppList(config.public.appList).map(n => ({
-  name: t(`base.apps.${n.name}`),
-  value: n.name,
+const appOptions = appList.map(a => ({
+  name: t(`base.apps.${a.name}`),
+  value: a.name,
 }))
 const reportTypes = reactive([
   { name: t('feedback.reportType.bug'), value: 'bug' },
@@ -157,7 +157,7 @@ function onSave(newImage: string, newRects: Rect[]) {
         <QSelect
           v-model="feedbackModel.appName"
           :label="t('feedback.appName')"
-          :options="appList"
+          :options="appOptions"
           option-label="name"
           map-options
           emit-value

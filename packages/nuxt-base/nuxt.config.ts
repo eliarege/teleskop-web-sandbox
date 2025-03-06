@@ -59,7 +59,7 @@ export default defineNuxtConfig({
   postcss: {
     plugins: {
       'postcss-nested': {},
-    }
+    },
   },
   i18n: {
     strategy: 'no_prefix',
@@ -99,21 +99,18 @@ export default defineNuxtConfig({
         appConfig: {
           keycloak: {
             $schema: {
-              title: 'Keycloak',
               description: 'Configure keycloak plugin and middleware behaviour',
             },
-            globalMiddleware: {
-              $default: false,
+            accessRole: {
+              $default: null,
               $schema: {
-                title: 'Global Middleware',
-                description: 'Adds `auth` middleware as global middleware. Authentication is done silently unlike `loginRequired`',
-                tsType: 'boolean',
+                description: 'Required role to access application. Must be defined as Client Role.',
+                tsType: 'string | null',
               },
             },
             loginRequired: {
               $default: false,
               $schema: {
-                title: 'Login Required',
                 description: 'Redirects user to login page if the user is not logged in.',
                 tsType: 'boolean',
               },
@@ -121,7 +118,6 @@ export default defineNuxtConfig({
             minimumTokenValidity: {
               $default: 5,
               $schema: {
-                title: 'Minimum Token Validity',
                 description: 'Access tokens are refreshed if it expires within `minimumTokenValidity` seconds.',
                 tsType: 'number',
               },
@@ -129,7 +125,6 @@ export default defineNuxtConfig({
             enableLogging: {
               $default: 'import.meta.env.DEV',
               $schema: {
-                title: 'Global Middleware',
                 description: 'Enables logging of `keycloak-js`',
                 tsType: 'boolean',
               },

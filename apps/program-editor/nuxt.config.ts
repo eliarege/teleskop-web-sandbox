@@ -36,6 +36,9 @@ export default defineNuxtConfig({
       { code: 'tr', file: 'tr.json' },
     ],
   },
+  keycloak: {
+    globalMiddleware: true,
+  },
   nitro: {
     rollupConfig: {
       // @ts-expect-error Infinite type inference

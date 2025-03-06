@@ -1,3 +1,6 @@
 {
-  "ports": [3500]
+  "ports": [3500],
+  "roles": [
+    { "name": "access" }
+  ]
 }

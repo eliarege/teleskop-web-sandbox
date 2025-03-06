@@ -4,6 +4,7 @@
     "aboutApp": "Uygulama hakkında",
     "apps": {
       "_": "Uygulamalar",
+      "root": "Ana Sayfa",
       "machines": "Makineler",
       "multi-monitor": "Çoklu İzleme",
       "program-editor": "Program Editörü",

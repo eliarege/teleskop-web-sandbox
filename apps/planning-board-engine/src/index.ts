@@ -16,6 +16,8 @@ import { config } from './config'
 
 const app = Fastify({ logger })
 const port = Number.parseInt(process.env.SERVER_PORT || '3500')
+const KC_ACCESS_ROLE = 'access'
+
 app.register(fastifyIO, {
   cors: {
     allowedHeaders: '*',
@@ -27,6 +29,7 @@ if (config.keycloakEnabled) {
     url: config.keycloakUrl,
     realm: config.keycloakRealm,
     clientId: config.keycloakClientId,
+    accessRole: KC_ACCESS_ROLE,
     global: true,
   })
 }

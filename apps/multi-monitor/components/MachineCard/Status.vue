@@ -2,7 +2,7 @@
 import { withBase } from 'ufo'
 import { determineTextColor } from '@teleskop/utils'
 import type { MachineData } from '~/shared/types'
-import { AppList } from '~/shared/constants'
+import { Apps } from '~/shared/constants'
 
 interface MachineStautsProps {
   colors: {
@@ -19,7 +19,7 @@ const config = useRuntimeConfig()
 const { t } = useI18n()
 const baseURL = config.app.baseURL
 const withBaseURL = (input: string) => withBase(input, baseURL)
-const keycloak = useKeycloak()
+const appList = useAppList()
 
 function connectionStatus(params: number) {
   if (params === 1) {
@@ -50,7 +50,7 @@ function handleRouting(batchStatus: number, id: number) {
     return `/details/${id}`
   }
 }
-const archiveUrl = computed(() => parseAppList(config.public.appList).find(e => e.name === AppList.archive)?.url)
+const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.url ?? null)
 </script>
 
 <template>
@@ -91,6 +91,7 @@ const archiveUrl = computed(() => parseAppList(config.public.appList).find(e => 
             <QTooltip>{{ t('details._') }}</QTooltip>
           </NuxtLink>
           <NuxtLink
+            v-if="archiveUrl !== null"
             external
             target="_blank"
             :to="`${archiveUrl}/${machine.runningBatchKey}`"

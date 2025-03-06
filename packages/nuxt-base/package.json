@@ -14,6 +14,7 @@
   "dependencies": {
     "@element-plus/nuxt": "1.0.10",
     "@iconify/utils": "2.1.33",
+    "@nuxt/kit": "3.14.159",
     "@nuxtjs/i18n": "8.3.1",
     "@pinia/nuxt": "0.7.0",
     "@quasar/extras": "1.16.13",
@@ -25,6 +26,7 @@
     "element-plus": "2.6.3",
     "html2canvas-pro": "1.5.8",
     "keycloak-js": "25.0.6",
+    "klona": "2.0.6",
     "nodemailer": "6.9.16",
     "nuxt-quasar-ui": "2.1.7",
     "pinia": "2.2.6",

@@ -1,26 +1,48 @@
 <script setup lang="ts">
 import { withBase } from 'ufo'
-import { parseAppList } from '../../utils/base'
+import { type AppMeta, useAppList } from '../../composables/useAppList'
 
 const config = useRuntimeConfig()
+const appList = useAppList()
 const { t } = useI18n()
 
 function withHostname(url: string) {
   return url.replace('$hostname', window.location.hostname)
 }
 
-const appList = parseAppList(config.public.appList).map((app) => {
-  return {
-    label: () => t(`base.apps.${app.name}`),
-    url: withHostname(app.url || '/'),
-    img: withBase(`/app-icons/${app.img}`, config.app.baseURL),
+function getCurrentApp() {
+  const currentAppUrl = withBase(config.app.baseURL, window.origin)
+  let closest = null as AppMeta | null
+  let closestDist = 1000
+  for (const app of appList) {
+    const appUrl = withBase(app.url, window.origin)
+    if (currentAppUrl.startsWith(appUrl)) {
+      const dist = currentAppUrl.length - appUrl.length
+      if (closestDist > dist) {
+        closest = app
+        closestDist = dist
+      }
+    }
   }
-})
+  return closest
+}
+
+const currentApp = getCurrentApp()
+
+const appButtons = appList
+  .filter(app => !currentApp || currentApp !== app)
+  .map((app) => {
+    return {
+      label: () => t(`base.apps.${app.name}`),
+      url: withHostname(app.url || '/'),
+      img: withBase(`/app-icons/${app.img}`, config.app.baseURL),
+    }
+  })
 </script>
 
 <template>
   <TopbarButton
-    v-show="appList.length"
+    v-show="appButtons.length"
     icon="apps"
     class="h-unset"
     round
@@ -31,7 +53,7 @@ const appList = parseAppList(config.public.appList).map((app) => {
     <QMenu :transition-duration="0">
       <div class="grid grid-cols-3 p-2">
         <QBtn
-          v-for="(app, index) in appList"
+          v-for="(app, index) in appButtons"
           :key="index"
           class="topbar-app-grid__btn py-2 px-5 rounded-lg h-20 max-w-20"
           dense

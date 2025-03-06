@@ -4,6 +4,7 @@
     "aboutApp": "About application",
     "apps": {
       "_": "Apps",
+      "root": "Home",
       "machines": "Machines",
       "multi-monitor": "Multi Monitor",
       "program-editor": "Program Editor",

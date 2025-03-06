@@ -9,6 +9,7 @@ export interface FastifyAdapterConfig {
   url: string
   realm: string
   clientId: string
+  accessRole?: string | null
   global?: boolean
 }
 
@@ -55,7 +56,7 @@ export const fastifyAdapter = fp<FastifyAdapterConfig>((fastify, config, done) =
   const JWKS = createRemoteJWKSet(new URL(`${config.url}/realms/${config.realm}/protocol/openid-connect/certs`))
 
   function createRequestHook(auth: KeycloakAuthOptions): onRequestHookHandler {
-    const requiredRoles = auth.roles || []
+    const roles = auth.roles || []
 
     return async (request, reply) => {
       const jwt = getBearerToken(request)
@@ -65,11 +66,12 @@ export const fastifyAdapter = fp<FastifyAdapterConfig>((fastify, config, done) =
       }
       try {
         const { payload } = await jwtVerify<KeycloakScope>(jwt, JWKS)
-        if (requiredRoles.length) {
-          const userRoles = payload.resource_access?.[config.clientId].roles || []
-          const hasPermission = requiredRoles.every(role => userRoles.includes(role))
-          if (!hasPermission) {
-            fastify.log.debug('Does not have permission')
+        if (roles.length || config.accessRole) {
+          const userRoles = payload.resource_access?.[config.clientId]?.roles || []
+          if (
+            (config.accessRole && !userRoles.includes(config.accessRole))
+            || (roles.length && !roles.some(role => userRoles.includes(role)))
+          ) {
             return callUnauthorized(reply)
           }
         }

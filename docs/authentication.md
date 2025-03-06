@@ -66,7 +66,7 @@ export default defineNuxtConfig({
       kcClientId: 'nuxt-client',
       kcEnabled: true
     }
-  }
+  },
 })
 ```
 
@@ -86,6 +86,21 @@ Configurable via `NUXT_PUBLIC_KC_CLIENT_ID` environment variable. Keycloak Clien
 
 Configurable via `NUXT_PUBLIC_KC_ENABLED` environment variable. Enables Keycloak Integration, default `false`.
 
+### Keycloak Module Configuration
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  keycloak: {
+    globalMiddleware: false,
+  }
+})
+```
+
+#### `globalMiddleware`
+
+Adds `auth` middleware as global middleware. Meaning every page in app requires authentication. See middlewares for more details.
+
 ### App Configuration
 
 ```ts
@@ -103,10 +118,6 @@ export default defineAppConfig({
 #### `minimumTokenValidity`
 
 Access tokens are refreshed if it expires within `minimumTokenValidity` seconds.
-
-#### `globalMiddleware`
-
-Adds `auth` middleware as global middleware. Meaning every page in app requires authentication. See middlewares for more details.
 
 #### `loginRequired`
 

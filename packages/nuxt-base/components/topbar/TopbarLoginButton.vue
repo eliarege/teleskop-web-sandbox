@@ -10,6 +10,6 @@ const { authenticated, didInitialise } = useKeycloak()
     icon="person"
     :label="t('base.login')"
     no-caps
-    @click="keycloak.login"
+    @click="keycloak.login()"
   />
 </template>
