@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { withBase } from 'ufo'
-import { useAppList } from '../../composables/useAppList'
+import { type AppMeta, useAppList } from '../../composables/useAppList'
 
 const config = useRuntimeConfig()
 const appList = useAppList()
@@ -10,13 +10,34 @@ function withHostname(url: string) {
   return url.replace('$hostname', window.location.hostname)
 }
 
-const appButtons = appList.map((app) => {
-  return {
-    label: () => t(`base.apps.${app.name}`),
-    url: withHostname(app.url || '/'),
-    img: withBase(`/app-icons/${app.img}`, config.app.baseURL),
+function getCurrentApp() {
+  const currentAppUrl = withBase(config.app.baseURL, window.origin)
+  let closest = null as AppMeta | null
+  let closestDist = 1000
+  for (const app of appList) {
+    const appUrl = withBase(app.url, window.origin)
+    if (currentAppUrl.startsWith(appUrl)) {
+      const dist = currentAppUrl.length - appUrl.length
+      if (closestDist > dist) {
+        closest = app
+        closestDist = dist
+      }
+    }
   }
-})
+  return closest
+}
+
+const currentApp = getCurrentApp()
+
+const appButtons = appList
+  .filter(app => !currentApp || currentApp !== app)
+  .map((app) => {
+    return {
+      label: () => t(`base.apps.${app.name}`),
+      url: withHostname(app.url || '/'),
+      img: withBase(`/app-icons/${app.img}`, config.app.baseURL),
+    }
+  })
 </script>
 
 <template>

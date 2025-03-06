@@ -58,7 +58,7 @@ const returnUrl = computed(() => {
         :to="returnUrl.to"
         :external="returnUrl.external"
       >
-        {{ t('goToMainPage') }}
+        {{ t('goBack') }}
       </nuxt-link>
     </q-btn>
   </div>
@@ -95,12 +95,17 @@ const returnUrl = computed(() => {
     "en": {
       "unauthorizedAccess": "Unauthorized Access",
       "unauthorizedMessage": "You don't have rights to access this page. Please contact with your supervisor or server admin.",
-      "goToMainPage": "Go Back"
+      "goBack": "Go Back"
     },
     "tr": {
       "unauthorizedAccess": "Yetkisiz Erişim",
       "unauthorizedMessage": "Bu sayfaya ulaşmak için gerekli yetkilere sahip değilsiniz. Lütfen yöneticinizle veya sunucu admini ile iletişime geçiniz.",
-      "goToMainPage": "Geri Dön"
+      "goBack": "Geri Dön"
+    },
+    "pt": {
+      "unauthorizedAccess": "Acesso Não Autorizado",
+      "unauthorizedMessage": "Você não tem permissão para acessar esta página. Por favor, entre em contato com seu supervisor ou administrador do servidor.",
+      "goBack": "Voltar"
     }
   }
 </i18n>
