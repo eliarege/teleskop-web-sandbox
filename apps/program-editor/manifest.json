@@ -1,5 +1,6 @@
 {
   "roles": [
+    { "name": "access" },
     { "name": "machine-upload" },
     { "name": "machine-download" },
     { "name": "program-view" },

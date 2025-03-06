@@ -3,6 +3,7 @@
     "samba"
   ],
   "roles": [
+    { "name": "access" },
     { "name": "manage" }
   ]
 }
