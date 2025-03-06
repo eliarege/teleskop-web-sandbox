@@ -167,7 +167,7 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
 
     if (stepIndex !== lastStepIndex) {
       lastStepIndex = stepIndex
-      program.steps[stepIndex] = {
+      program.steps.push({
         stepId: 0,
         mainCommand: {
           commandId: 0,
@@ -176,7 +176,7 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
           parameters: parseCommandParameters(program.programNo, match[8], command),
         },
         parallelCommands: [],
-      }
+      })
     } else {
       program.steps[stepIndex].parallelCommands.push({
         commandId: 0,

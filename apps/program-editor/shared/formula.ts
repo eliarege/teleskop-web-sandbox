@@ -270,7 +270,13 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
             })
           }
 
-          return calculateFormula(step, commandNo, commandFormula.formula, machine)
+          // komut parametresi mi?
+          const formulaValue = getCommandParameter(commandNo, commandFormula.formula)?.value
+          if (formulaValue) {
+            return calculateFormula(step, commandNo, formulaValue, machine)
+          } else {
+            return calculateFormula(step, commandNo, commandFormula.formula, machine)
+          }
 
         // Machine formula
         } else if (commandParameter.type === ParameterType.MACHINE_FORMULA) {
