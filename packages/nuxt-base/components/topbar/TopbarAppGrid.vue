@@ -30,7 +30,7 @@ function getCurrentApp() {
 const currentApp = getCurrentApp()
 
 const appButtons = appList
-  .filter(app => !currentApp || currentApp !== app)
+  .filter(app => app.name !== 'root' && (!currentApp || currentApp !== app))
   .map((app) => {
     return {
       label: () => t(`base.apps.${app.name}`),
