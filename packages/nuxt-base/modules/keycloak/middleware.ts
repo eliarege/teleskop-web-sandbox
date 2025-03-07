@@ -1,11 +1,8 @@
 import { withBase } from 'ufo'
 
-const config = useRuntimeConfig()
-const kcConfig = useAppConfig().keycloak || {}
-const kcEnabled = config.public.kcEnabled
-
 // Midleware checks if user is authenticated and has required roles to access the page.
 export default defineNuxtRouteMiddleware(async (to) => {
+  const kcEnabled = useRuntimeConfig().public.kcEnabled ?? false
   if (!kcEnabled || to.meta.noAuth)
     return
 
@@ -22,6 +19,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (typeof roles !== 'object' || !Array.isArray(roles) || !roles.every(r => typeof r === 'string')) {
     throw new TypeError(`${to.path} roles should be string[]`)
   }
+
+  const kcConfig = useAppConfig().keycloak || {}
   if (kcConfig.accessRole || roles.length) {
     try {
       await keycloak.updateToken(kcConfig.minimumTokenValidity)
