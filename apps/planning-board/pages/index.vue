@@ -68,13 +68,7 @@ const { data: state } = useAuthFetch('/api/ptStatus')
       <QToolbar class="min-h-unset">
         <template v-if="sm">
           <QToolbarTitle shrink class="text-clip">
-            <NuxtLink to="/">
-              <TwIcon
-                name="i-tw:eliar"
-                size="2.5rem"
-                class="p-1"
-              />
-            </NuxtLink>
+            <TopbarHomeButton />
           </QToolbarTitle>
           <NavbarJobOrderSearch class="" @scroll-to-event=" (e) => scrollToDate(e)" />
 

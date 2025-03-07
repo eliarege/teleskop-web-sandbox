@@ -44,13 +44,7 @@ const filterModal = ref(false)
       <QToolbar class="min-h-unset">
         <template v-if="sm">
           <QToolbarTitle class="text-clip" shrink>
-            <NuxtLink to="/">
-              <TwIcon
-                name="i-tw:eliar"
-                size="3rem"
-                class="p-1"
-              />
-            </NuxtLink>
+            <TopbarHomeButton />
           </QToolbarTitle>
           <TopbarButton
             v-for="(item, index) in items"
@@ -69,13 +63,7 @@ const filterModal = ref(false)
           v-if="isMobile"
           class="flex items-center"
         >
-          <NuxtLink to="/">
-            <TwIcon
-              name="i-tw:eliar"
-              size="2rem"
-              class="mr-2"
-            />
-          </NuxtLink>
+          <TopbarHomeButton />
         </div>
         <AlarmTopbar />
         <QSpace />

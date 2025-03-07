@@ -6,11 +6,7 @@
     >
       <QToolbar class="min-h-unset">
         <QToolbarTitle shrink>
-          <TwIcon
-            name="i-tw:eliar"
-            size="2.5rem"
-            class="p-1"
-          />
+          <TopbarHomeButton />
         </QToolbarTitle>
         <div id="topbar-buttons" />
 

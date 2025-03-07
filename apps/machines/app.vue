@@ -189,13 +189,7 @@ const itemsMobile = [
       <QToolbar class="min-h-unset">
         <template v-if="sm">
           <QToolbarTitle shrink>
-            <NuxtLink to="/">
-              <TwIcon
-                name="i-tw:eliar"
-                size="2.5rem"
-                class="p-1"
-              />
-            </NuxtLink>
+            <TopbarHomeButton />
           </QToolbarTitle>
           <TopbarButton
             v-for="(item, index) in items"
@@ -239,18 +233,18 @@ const itemsMobile = [
 </template>
 
 <style>
-input.formkit-input[type="number"]::-webkit-inner-spin-button,
-input.formkit-input[type="number"]::-webkit-outer-spin-button {
+input.formkit-input[type='number']::-webkit-inner-spin-button,
+input.formkit-input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-input.formkit-input[type="number"] {
+input.formkit-input[type='number'] {
   -moz-appearance: textfield; /* Firefox */
   appearance: textfield; /* Standard */
 }
 
-[data-type="checkbox"].formkit-outer {
+[data-type='checkbox'].formkit-outer {
   display: grid;
   align-self: center;
 }

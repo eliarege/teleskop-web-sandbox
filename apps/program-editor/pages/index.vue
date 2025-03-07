@@ -235,13 +235,7 @@ const itemsMobile = [
       <QToolbar class="min-h-unset">
         <template v-if="sm">
           <QToolbarTitle shrink>
-            <NuxtLink to="/">
-              <TwIcon
-                name="i-tw:eliar"
-                size="2.5rem"
-                class="p-1"
-              />
-            </NuxtLink>
+            <TopbarHomeButton />
           </QToolbarTitle>
           <TopbarButton
             v-for="(item, index) in items"
