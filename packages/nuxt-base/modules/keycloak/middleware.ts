@@ -3,14 +3,10 @@ import { withBase } from 'ufo'
 const config = useRuntimeConfig()
 const kcConfig = useAppConfig().keycloak || {}
 const kcEnabled = config.public.kcEnabled
-const unauthorized = () => navigateTo('/unauthorized', { replace: true })
 
+// Midleware checks if user is authenticated and has required roles to access the page.
 export default defineNuxtRouteMiddleware(async (to) => {
-  if (!kcEnabled)
-    return
-
-  const noAuth = to.meta.noAuth as boolean ?? false
-  if (noAuth)
+  if (!kcEnabled || to.meta.noAuth)
     return
 
   const keycloak = useKeycloak()
@@ -30,15 +26,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
     try {
       await keycloak.updateToken(kcConfig.minimumTokenValidity)
     } catch (err) {
+      // Session probably expired, redirect back to login page
       if (!keycloak.authenticated.value) {
-        return unauthorized()
+        return keycloak.login({
+          redirectUri: withBase(to.path, location.origin),
+        })
       }
     }
     if (
       (kcConfig.accessRole && !keycloak.hasResourceRole(kcConfig.accessRole))
       || (roles.length && !roles.some(role => keycloak.hasResourceRole(role)))
     ) {
-      return unauthorized()
+      return navigateTo('/unauthorized', { replace: true })
     }
   }
 })
