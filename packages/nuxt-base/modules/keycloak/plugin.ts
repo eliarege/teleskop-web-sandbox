@@ -18,11 +18,11 @@ export interface KeycloakPlugin {
   userProfile: Readonly<Ref<KeycloakProfile | undefined>>
   userInfo: Readonly<Ref<Record<string, any> | undefined>>
   /** Redirects to login form. */
-  login: (options?: { redirectUri?: string }) => void
+  login: (options?: { redirectUri?: string }) => ReturnType<typeof navigateTo>
   /** Redirects to logout. */
-  logout: () => void
+  logout: () => ReturnType<typeof navigateTo>
   /** Redirects to registration form. */
-  register: () => void
+  register: () => ReturnType<typeof navigateTo>
   /** Called when keycloak is initialised */
   onReady: EventHookOn<boolean>
   /** Called when a user is successfully authenticated. */
@@ -102,7 +102,6 @@ export default defineNuxtPlugin(() => {
   const authenticated = ref(false)
   const userProfile = ref<KeycloakProfile>()
   const userInfo = ref<Record<string, any>>()
-  const route = useRoute()
 
   const onReady = createEventHook<boolean>()
   const onAuthSuccess = createEventHook()
@@ -171,7 +170,9 @@ export default defineNuxtPlugin(() => {
       if (cleanHash.length && !cleanHash.startsWith('#')) {
         cleanHash = `#${cleanHash}`
       }
-      navigateTo(route.path + location.search + cleanHash, { replace: true })
+      setTimeout(() => {
+        window.location.hash = cleanHash
+      }, 500)
     })
   } else {
     ready.value = true
@@ -182,7 +183,7 @@ export default defineNuxtPlugin(() => {
   const noop = () => {}
 
   const login = (options?: { redirectUri?: string }) => {
-    navigateTo(
+    return navigateTo(
       keycloak.createLoginUrl({
         locale: locale.value || 'en',
         redirectUri: options?.redirectUri,
@@ -192,14 +193,14 @@ export default defineNuxtPlugin(() => {
   }
 
   const logout = () => {
-    navigateTo(
+    return navigateTo(
       keycloak.createLogoutUrl(),
       { external: true },
     )
   }
 
   const register = () => {
-    navigateTo(
+    return navigateTo(
       keycloak.createRegisterUrl({
         locale: locale.value || 'en',
       }),
