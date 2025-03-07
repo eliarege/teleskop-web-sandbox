@@ -10,14 +10,16 @@ export default defineNuxtModule<ModuleOptions>({
     name: 'keycloak',
     configKey: 'keycloak',
   },
-  defaults: {},
+  defaults: {
+    globalMiddleware: true,
+  },
   setup(options) {
     const resolver = createResolver(import.meta.url)
 
     addRouteMiddleware({
       name: 'auth',
       path: resolver.resolve('./keycloak/middleware'),
-      global: options.globalMiddleware || false,
+      global: options.globalMiddleware ?? true,
     }, {
       prepend: true,
     })

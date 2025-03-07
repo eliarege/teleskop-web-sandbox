@@ -41,9 +41,6 @@ export default defineNuxtConfig({
       { code: 'tr', file: 'tr.json' },
     ],
   },
-  keycloak: {
-    globalMiddleware: true,
-  },
   vite: {
     build: {
       rollupOptions: {

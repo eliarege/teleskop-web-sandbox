@@ -92,7 +92,7 @@ Configurable via `NUXT_PUBLIC_KC_ENABLED` environment variable. Enables Keycloak
 // nuxt.config.ts
 export default defineNuxtConfig({
   keycloak: {
-    globalMiddleware: false,
+    globalMiddleware: true,
   }
 })
 ```
@@ -107,7 +107,6 @@ Adds `auth` middleware as global middleware. Meaning every page in app requires 
 // app.config.ts
 export default defineAppConfig({
   keycloak: {
-    globalMiddleware: true,
     loginRequired: false,
     minimumTokenValidity: 30,
     enableLogging: import.meta.env.DEV
