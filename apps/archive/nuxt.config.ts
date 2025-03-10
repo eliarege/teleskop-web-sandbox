@@ -18,8 +18,11 @@ export default defineNuxtConfig({
     teleskopArchiveServerUrl: '',
     teleskopTimezoneOffset: -180,
     public: {
-      kcClientId: 'archive'
-    }
+      kcClientId: 'archive',
+    },
+  },
+  keycloak: {
+    globalMiddleware: false,
   },
   i18n: {
     lazy: true,
