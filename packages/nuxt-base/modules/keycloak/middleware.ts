@@ -7,12 +7,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
 
   const keycloak = useKeycloak()
+  const baseURL = useRuntimeConfig().app.baseURL
 
   await until(keycloak.didInitialise).toBe(true)
 
   if (!keycloak.authenticated.value) {
     return keycloak.login({
-      redirectUri: withBase(to.path, location.origin),
+      redirectUri: withBase(withBase(to.path, baseURL), location.origin),
     })
   }
   const roles = to.meta.roles ?? []
@@ -28,7 +29,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
       // Session probably expired, redirect back to login page
       if (!keycloak.authenticated.value) {
         return keycloak.login({
-          redirectUri: withBase(to.path, location.origin),
+          redirectUri: withBase(withBase(to.path, baseURL), location.origin),
         })
       }
     }
