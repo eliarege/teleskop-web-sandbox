@@ -198,7 +198,6 @@ function parseCommandParameters(programNo: number, parameter: string, command: M
   const editableParameters = command.parameters.filter(p => p.editable)
   if (parameter) {
     const parameterValues = parameter.split(' ')
-    console.log('parameter count', parameterValues.length)
     for (let index = 0; index < parameterValues.length; index++) {
       const parameterValue = parameterValues[index]
       const commandParameter = editableParameters[index]

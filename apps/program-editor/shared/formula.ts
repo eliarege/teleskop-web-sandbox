@@ -303,9 +303,6 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
         case '*':
           return leftValue * rightValue
         case '/':
-          if (Number.isNaN(leftValue) || Number.isNaN(rightValue)) {
-            return 0
-          }
           if ((rightValue) === 0) {
             throw new Error('Division by zero')
           }
