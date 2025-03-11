@@ -209,7 +209,7 @@ export interface StepParameter {
   PARALELSTEP: number
   PARAMETERINDEX: number
   MACHINEID: number
-  VALUE: number
+  VALUE: string
   CONTAINSVARIABLE: number
   OPTIMIZEDVALUE: string
   ERRORWARNING: number
@@ -223,7 +223,7 @@ export interface StepArchiveParameter {
   MAINSTEP: number
   PARALELSTEP: number
   PARAMETERINDEX: number
-  VALUE: number
+  VALUE: string
   CONTAINSVARIABLE: number
   ERRORWARNING: number
   OPTIMIZED: number

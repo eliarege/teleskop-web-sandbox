@@ -255,22 +255,28 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
 
         // Selectable formula
         } else if (commandParameter.type === ParameterType.SELECTABLE_FORMULA) {
-          const formulaId = step.mainCommand.parameters.find(p => p.index === commandParameter.index)?.value
-          if (!formulaId) {
+          const formula = step.mainCommand.parameters.find(p => p.index === commandParameter.index)
+          if (!formula?.value) {
             return warnAndReturn(`No parameter defined with index ${commandParameter.index}`, {
               definition: commandParameter,
               availableParameters: step.mainCommand.parameters,
             })
           }
-          const commandFormula = getCommandFormula(formulaId)
+          const commandFormula = getCommandFormula(Number(formula.value))
           if (!commandFormula) {
             return warnAndReturn(`Formula used for parameter ${node.value} is not found`, {
               machine,
-              requestedFormalaId: formulaId,
+              requestedFormalaId: formula.value,
             })
           }
 
-          return calculateFormula(step, commandNo, commandFormula.formula, machine)
+          // komut parametresi mi?
+          const formulaValue = getCommandParameter(commandNo, commandFormula.formula)?.value
+          if (formulaValue) {
+            return calculateFormula(step, commandNo, formulaValue, machine)
+          } else {
+            return calculateFormula(step, commandNo, commandFormula.formula, machine)
+          }
 
         // Machine formula
         } else if (commandParameter.type === ParameterType.MACHINE_FORMULA) {
@@ -284,6 +290,10 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
     case 'operator': {
       const leftValue = calculateTreeNode(step, commandNo, node.left, machine)
       const rightValue = calculateTreeNode(step, commandNo, node.right, machine)
+
+      if (Number.isNaN(leftValue) || Number.isNaN(rightValue)) {
+        return 0
+      }
 
       switch (node.operator) {
         case '+':

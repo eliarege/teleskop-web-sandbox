@@ -646,7 +646,8 @@ async function onRowDoubleClick(event: Event, row: ProgramTable) {
   if (target.closest('.q-checkbox'))
     return
 
-  await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
+  if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE || row.programState === ProgramStatus.EXISTS_ON_BOTH)
+    await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
 }
 
 function handleContextMenu(event: Event, row: ProgramTable) {
