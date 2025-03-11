@@ -291,6 +291,10 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
       const leftValue = calculateTreeNode(step, commandNo, node.left, machine)
       const rightValue = calculateTreeNode(step, commandNo, node.right, machine)
 
+      if (Number.isNaN(leftValue) || Number.isNaN(rightValue)) {
+        return 0
+      }
+
       switch (node.operator) {
         case '+':
           return leftValue + rightValue

@@ -195,15 +195,13 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
 
 function parseCommandParameters(programNo: number, parameter: string, command: MachineCommand): ParameterItem[] {
   const parameters: ParameterItem[] = []
-
+  const editableParameters = command.parameters.filter(p => p.editable)
   if (parameter) {
     const parameterValues = parameter.split(' ')
     console.log('parameter count', parameterValues.length)
     for (let index = 0; index < parameterValues.length; index++) {
       const parameterValue = parameterValues[index]
-      console.log('parameter', index, parameterValue)
-
-      const commandParameter = command.parameters.find(p => p.index === index)
+      const commandParameter = editableParameters[index]
       if (!commandParameter)
         throw new PError('MACHINE_PARAMETER_NOT_FOUND', { machineId: command.machineId, programNo, commandNo: command.commandNo, parameterIndex: index })
 

@@ -10,8 +10,8 @@ const editor = useEditorStore()
 
 const el = ref<HTMLElement | null>(null)
 const parentEl = ref<HTMLElement | null>(null)
-const width = ref(useElementSize(el).width)
-const parentWidth = ref(useElementSize(parentEl).width)
+const { width } = useElementSize(el)
+const { width: parentWidth } = useElementSize(parentEl)
 const defaultWidth = ref(0)
 
 function calcProgramDuration() {
@@ -19,19 +19,7 @@ function calcProgramDuration() {
   return editor.program.duration
 }
 
-watch([width, parentWidth, defaultWidth], () => {
-  defaultWidth.value = width.value > defaultWidth.value ? width.value : defaultWidth.value
-
-  if (parentWidth.value < (defaultWidth.value + 50)) {
-    contextBarButtons.value.forEach((button: any) => {
-      button.label = ''
-    })
-  } else {
-    contextBarButtons.value.forEach((button: any) => {
-      button.label = button.originalLabel
-    })
-  }
-})
+const textVisibilityThreshold = 600 // Örneğin, 600px'den küçükse metni gizle
 </script>
 
 <template>
@@ -58,7 +46,7 @@ watch([width, parentWidth, defaultWidth], () => {
             :name="button.icon"
             size="1.2rem"
           />
-          <span class="pl-1">{{ button.label }}</span>
+          <span v-if="width >= textVisibilityThreshold" class="pl-1">{{ button.label }}</span>
           <QTooltip v-if="button.tooltip && button.shortcut">
             {{ button.label !== '' ? button.shortcut : `${button.tooltip} (${button.shortcut})` }}
           </QTooltip>
