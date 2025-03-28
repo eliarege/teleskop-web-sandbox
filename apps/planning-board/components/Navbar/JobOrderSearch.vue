@@ -15,7 +15,7 @@ const options = computed(() => ({
   fuseOptions: {
     keys: ['jobOrder'],
     isCaseSensitive: false,
-    threshold: exactMatch.value ? 0 : undefined,
+    threshold: exactMatch.value ? 0 : 0.3,
   },
   matchAllWhenSearchEmpty: true,
 }))
