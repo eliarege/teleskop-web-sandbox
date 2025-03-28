@@ -875,7 +875,7 @@ function txtFormat(data: {
     lines.push(`Program${index + 1}=${program}`)
   })
 
-  return lines.join('\n')
+  return `${lines.join('\n')}\n`
 }
 export async function uploadToMachine(machineIp: string, startingParams: { paramString: string, value: string | number }[], programNoList: string, jobOrder: string) {
   const programs = programNoList.split(',')
