@@ -30,9 +30,9 @@ const planParametersProps = computed(() => ({
 const recipe = ref(false)
 
 const notes = ref(false)
-const notesProps = reactive({
-  jobOrder: store.selectedEvent.jobOrder || 0,
-})
+const notesProps = computed(() => ({
+  jobOrder: store.selectedEvent.jobOrder,
+}))
 const datePicker = ref(false)
 
 // #endregion
@@ -43,7 +43,7 @@ const datePicker = ref(false)
     <NavbarButton
       :label="t('plan-parameters.title')"
       icon="i-mdi:slider"
-      :disabled="!store.selectedEvent.id"
+      :disabled="store.selectedEvent === null"
       flat
       dense
       no-caps
@@ -56,7 +56,7 @@ const datePicker = ref(false)
     <NavbarButton
       :label="t('plan-recipe._')"
       icon="i-mdi:flask"
-      :disabled="!store.selectedEvent.id"
+      :disabled="store.selectedEvent === null"
       flat
       dense
       no-caps
@@ -69,7 +69,7 @@ const datePicker = ref(false)
     <NavbarButton
       :label="t('batch-notes._')"
       icon="i-mdi:note-outline"
-      :disabled="!store.selectedEvent.id"
+      :disabled="store.selectedEvent === null"
       flat
       dense
       no-caps

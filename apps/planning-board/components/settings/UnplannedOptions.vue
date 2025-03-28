@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { Toast } from '@bryntum/schedulerpro'
 import { matChevronLeft, matChevronRight } from '@quasar/extras/material-icons'
 
 const emit = defineEmits(['addColumn', 'removeColumn'])
-const { data: unplannedColumns } = useAuthFetch('/api/unplannedColumns', { default: () => [] })
+const { data: unplannedColumns, refresh: unplannedColumnsRefresh } = useAuthFetch('/api/unplannedColumns', { default: () => [] })
+const { t } = useI18n()
 const kc = useKeycloak()
 const selected = ref()
 
@@ -48,6 +50,17 @@ async function onDoubleClick(item: {
     await addParameter()
   }
 }
+const refreshDataLoading = ref(false)
+async function refreshData() {
+  refreshDataLoading.value = true
+  // wait 0.3 seconds to animate loading?
+  await new Promise(resolve => setTimeout(resolve, 300))
+  await kc.fetch('/api/refreshCustomTables').finally(async () => {
+    await unplannedColumnsRefresh()
+    refreshDataLoading.value = false
+    Toast.show(t('toast.succesful'))
+  })
+}
 </script>
 
 <template>
@@ -76,13 +89,24 @@ async function onDoubleClick(item: {
           </q-item-section>
         </q-item>
       </q-list>
-      <div class="flex-center flex-col gap-10 w-full h-full">
+      <div class="flex-center flex-col gap-5 w-full h-full">
         <q-btn
           :disabled="visibleColumns.includes(selected)"
           color="primary"
           :icon-right="matChevronRight"
           @click="addParameter()"
         />
+        <q-btn
+          dense
+          color="primary"
+          icon="refresh"
+          :loading="refreshDataLoading"
+          @click="refreshData"
+        >
+          <q-tooltip>
+            Refresh Data
+          </q-tooltip>
+        </q-btn>
         <q-btn
           :disabled="invisibleColumns.includes(selected)"
           color="primary"

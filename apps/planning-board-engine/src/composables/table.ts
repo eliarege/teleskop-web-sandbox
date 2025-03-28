@@ -1,4 +1,5 @@
 import type { Knex } from 'knex'
+import { chunk } from 'lodash-es'
 import { logger } from './logger'
 
 export async function createPtColumnsTable(knex: Knex) {
@@ -6,6 +7,18 @@ export async function createPtColumnsTable(knex: Knex) {
     const tableExists = await knex.schema.hasTable('PTCOLUMNS')
 
     if (!tableExists) {
+      await knex.schema.createTable('PTCOLUMNS', (table) => {
+        table.increments('id')
+        table.integer('parameterId')
+        table.string('parameterName')
+        table.boolean('visible')
+      })
+      logger.info('Table PTCOLUMNS created successfully')
+    }
+
+    const count = await knex('PTCOLUMNS').count<{ count: number }[]>('* as count')
+
+    if (count[0].count === 0) {
       const values = await knex('DYBFBATCHPLANPARAMETERS as d')
         .distinct('d.PARAMSTRING', 'd.BATCHPARAMETERID')
         .join('BADATA as b', 'd.PLANKEY', 'b.PLANKEY')
@@ -13,28 +26,20 @@ export async function createPtColumnsTable(knex: Knex) {
         .orderBy('d.BATCHPARAMETERID', 'asc')
         .timeout(30_000)
 
-      await knex.schema.createTable('PTCOLUMNS', (table) => {
-        table.increments('id')
-        table.integer('parameterId')
-        table.string('parameterName')
-        table.boolean('visible')
-      }).then(async () => {
-        logger.info('Table PTCOLUMNS created successfully')
-        // TODO: Bulk insert
-        await knex.transaction(async (trx) => {
-          for (const row of values) {
-            await trx('PTCOLUMNS').insert({
-              parameterId: row.BATCHPARAMETERID,
-              parameterName: row.PARAMSTRING,
-              visible: false,
-            })
-          }
-        })
-          .then(() => logger.info('Values inserted into PTCOLUMNS'))
-          .catch(err => logger.error(err, 'An error occured while inserting values into PTCOLUMNS'))
-      })
+      if (values.length > 0) {
+        await knex('PTCOLUMNS').insert(
+          values.map(row => ({
+            parameterId: row.BATCHPARAMETERID,
+            parameterName: row.PARAMSTRING,
+            visible: false,
+          })),
+        )
+        logger.info('Values inserted into PTCOLUMNS')
+      } else {
+        logger.info('No data found to insert into PTCOLUMNS')
+      }
     } else {
-      logger.info('Table PTCOLUMNS already exists, no data inserted')
+      logger.info('Table PTCOLUMNS already exists and contains data, no action taken')
     }
   } catch (err) {
     logger.error(err, 'error:')
@@ -54,26 +59,37 @@ export async function createPtMachineErpTable(knex: Knex) {
         table.boolean('visible')
       })
       logger.info('Table PTMACHINEERP created successfully')
+    }
+
+    const count = await knex('PTMACHINEERP').count<{ count: number }[]>('* as count')
+
+    if (count[0].count === 0) {
       const values = await knex('BFMACHBATCHPARAMETERS').select({
         paramId: 'BATCHPARAMETERID',
         machineId: 'MACHINEID',
         paramName: 'PARAMSTRING',
       })
-      // TODO: Bulk insert
-      await knex.transaction(async (trx) => {
-        for (const row of values) {
-          await trx('PTMACHINEERP').insert({
-            paramId: row.paramId,
-            machineId: row.machineId,
-            paramName: row.paramName,
-            visible: false,
-          })
+
+      if (values.length > 0) {
+        const chunks = chunk(values, 500)
+
+        for (const ch of chunks) {
+          await knex('PTMACHINEERP').insert(
+            ch.map(row => ({
+              paramId: row.paramId,
+              machineId: row.machineId,
+              paramName: row.paramName,
+              visible: false,
+            })),
+          )
         }
-      })
-        .then(() => logger.info('Values inserted into PTMACHINEERP'))
-        .catch(err => logger.error(err, 'An error occured while inserting values into PTMACHINEERP'))
+
+        logger.info(`Inserted ${values.length} values into PTMACHINEERP`)
+      } else {
+        logger.info('No data found to insert into PTMACHINEERP')
+      }
     } else {
-      logger.info('Table PTMACHINEERP already exists, no data inserted')
+      logger.info('Table PTMACHINEERP already exists and contains data, no action taken')
     }
   } catch (err) {
     logger.error(err, 'error:')

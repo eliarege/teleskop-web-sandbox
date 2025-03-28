@@ -26,6 +26,7 @@ import {
   getUnplannedEvents,
   pinEvent,
   planningBoardStops,
+  refreshCustomTables,
   removeErpParameter,
   removeFromPlan,
   scheduleEvents,
@@ -110,6 +111,17 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching plan parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching plan parameters: ${err}` })
+      }
+    },
+  )
+  fastify.put(
+    '/planning_board/refresh_tables',
+    async (request: FastifyRequest, reply) => {
+      try {
+        return await refreshCustomTables()
+      } catch (err) {
+        fastify.log.error(`An error occured while updating tables: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating tables: ${err}` })
       }
     },
   )
