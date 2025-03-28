@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Toast } from '@bryntum/schedulerpro'
+import { useSettingStore } from '~/store/settings'
 
 const props = defineProps<{ jobOrder: string }>()
 const emit = defineEmits(['updateScheduler'])
 const kc = useKeycloak()
 const { t, d } = useI18n()
-
 // fetches all notes
 const { data: batchNotes, refresh } = await useAuthFetch('/api/note/getNote', {
   query: { jobOrder: props.jobOrder },
@@ -67,7 +67,7 @@ function updateNote(id: number, showOnScreen: boolean) {
 const q = useQuasar()
 function deleteNote(id: number) {
   q.dialog({
-    title: 'Are you sure to delete this note?',
+    title: t('batch-notes.delete-confirm'),
     class: 'e-border',
     ok: {
       push: true,
@@ -162,7 +162,7 @@ function deleteNote(id: number) {
         <div class="flex-center flex-col px-2">
           <QBtn
             color="primary"
-            :label="t('batch-notes.add-note')"
+            :label="t('batch-notes.template.submit')"
             :disabled="newNote.note === '' || newNote.note === null"
             @click="addNote()"
           />
@@ -177,58 +177,3 @@ function deleteNote(id: number) {
   @apply w-full min-w-250 max-h-200 p-3 overflow-auto border border-3 border-gray-600 rounded z-100 bg-white items-center;
 }
 </style>
-
-<i18n lang="json">
- {
-  "en": {
-    "columns": {
-      "user-name": "User Name",
-      "job-order": "Job Order",
-      "note": "Note",
-      "date": "Date",
-      "show-on-screen": "Show On Screen"
-    },
-    "toast": {
-      "succesful": "Note Added successfully!",
-      "error": "An error occured: {err}"
-    },
-    "dialog": {
-      "title": "Are you sure to delete this note?"
-    },
-    "template": {
-      "no-data": "No Note to show.",
-      "delete": "Delete",
-      "ok": "Delete",
-      "cancel": "Cancel",
-      "new-note": "Add new Note",
-      "show-on-screen": "Show on Screen",
-      "submit": "Add Note"
-    }
-  },
-  "tr": {
-    "columns": {
-      "user-name": "Kullanıcı Adı",
-      "job-order": "İş Emri",
-      "note": "Not",
-      "date": "Tarih",
-      "show-on-screen": "Ekranda Göster"
-    },
-    "toast": {
-      "succesful": "Not başarıyla eklendi!",
-      "error": "Bir hata oluştu: {err}"
-    },
-    "dialog": {
-      "title": "Bu notu silmek istediğinizden emin misiniz?"
-    },
-    "template": {
-      "no-data": "Gösterilecek not yok.",
-      "delete": "Sil",
-      "ok": "Sil",
-      "cancel": "İptal",
-      "new-note": "Yeni not ekle",
-      "show-on-screen": "Ekranda göster",
-      "submit": "Not Ekle"
-    }
-  }
-}
-</i18n>
