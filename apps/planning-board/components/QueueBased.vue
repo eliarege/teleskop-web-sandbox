@@ -165,6 +165,19 @@ function setVnc(id: number, name: string) {
   vncModal.currentMachine.name = name
 }
 const machineSortModal = ref(false)
+
+const machineMessageModal = reactive({
+  show: false,
+  currentMachine: {
+    ip: '',
+    name: '',
+  },
+})
+function setMessageMachine(ip: number, name: string) {
+  machineMessageModal.show = true
+  machineMessageModal.currentMachine.ip = ip
+  machineMessageModal.currentMachine.name = name
+}
 // #endregion
 
 const sortIndex = Symbol('sortIndex')
@@ -493,10 +506,13 @@ onMounted(async () => {
     resources: machines.value,
     events: modifiedEvents.value,
     eventStyle: null,
-    onEventClick({ eventRecord }) {
-      store.selectedEvent = eventRecord
+    onEventSelectionChange(a) {
+      if (a.action === 'select' || a.action === 'update') {
+        store.selectedEvent = a.selected[0]
+      } else {
+        store.selectedEvent = null
+      }
     },
-
     onRenderEvent({ element, eventRecord }) {
       if (eventRecord.originalData.eventType !== 'stop' && eventRecord.originalData.eventType !== 'unplanned') {
         const outerBar = element.querySelector('.b-task-percent-bar-outer')
@@ -649,6 +665,13 @@ onMounted(async () => {
               machineSortModal.value = !machineSortModal.value
             },
           },
+          machineMessage: {
+            text: 'Machine Message',
+            icon: 'b-fa b-fa-solid b-fa-comment',
+            onItem: (arg: any) => {
+              setMessageMachine(arg.record.machineIpAddress, arg.record.name)
+            },
+          },
         },
       },
     ],
@@ -742,13 +765,6 @@ onMounted(async () => {
                   Toast.show('Event successfully pinned!')
                 })
                 .catch(err => Toast.show(err))
-            },
-          },
-          changeColor: {
-            icon: 'b-fa-solid b-fa-palette',
-            text: t('queue-based.ctx-menu.change-color'),
-            async onItem() {
-              console.log('COLOR PICKER')
             },
           },
           copyEvent: {
@@ -987,6 +1003,15 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
     <EliarModal v-if="machineSortModal" @click.stop="machineSortModal = false">
       <template #default>
         <MachineSort :machines="machines" @update-scheduler="machineReload()" />
+      </template>
+    </EliarModal>
+    <EliarModal v-if="machineMessageModal.show" @click.stop="machineMessageModal.show = false">
+      <template #default>
+        <MachineMessage
+          :machine-ip="machineMessageModal.currentMachine.ip"
+          :machine-name="machineMessageModal.currentMachine.name"
+          @close="machineMessageModal.show = false"
+        />
       </template>
     </EliarModal>
   </div>

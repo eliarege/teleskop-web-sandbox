@@ -1,4 +1,5 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
+import { ofetch } from 'ofetch'
 import {
   addBatchNote,
   addErpParameters,
@@ -35,6 +36,7 @@ import {
   updateUnplannedColumns,
   uploadToMachine,
 } from './queries'
+import { messageSendTest } from '~/composables/helper'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -439,7 +441,22 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     },
   )
   /* ------------------------------------------------------------------------------------------------------------------------ */
-
+  fastify.post('/planning_board/send_message', async (request: FastifyRequest<{
+    Body: { machineIp: string, title: string, message: string }
+  }>, reply) => {
+    try {
+      const body = request.body
+      const machineIpAdress = `http://${body.machineIp}:8080`
+      await ofetch(machineIpAdress, {
+        method: 'POST',
+        body: messageSendTest('remoteShowMessage', body),
+      })
+      return reply.code(200).send('Succesful')
+    } catch (err) {
+      console.error('An error occured while sending message to machine', err)
+      return reply.code(500).send({ error: `An error occured while sending message to machine: ${err}` })
+    }
+  })
   fastify.put(
     '/planning_board/upload_joborder',
     async (request: FastifyRequest<{
