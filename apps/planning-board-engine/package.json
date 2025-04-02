@@ -28,6 +28,7 @@
     "fastify": "4.26.2",
     "fastify-socket.io": "5.1.0",
     "knex": "3.1.0",
+    "lodash-es": "4.17.21",
     "moo": "0.5.2",
     "ofetch": "1.4.1",
     "pino": "9.5.0",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@teleskop/build-utils": "workspace:*",
     "@teleskop/tsconfig": "workspace:*",
+    "@types/lodash-es": "4.17.12",
     "@types/node": "22.9.0",
     "@types/ws": "8.5.13",
     "eslint": "9.14.0",
