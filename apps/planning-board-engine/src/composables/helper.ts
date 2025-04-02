@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { addSeconds } from 'date-fns'
-import type { QueueBasedEvent, QueueBasedEventStop, QueueBasedEventWithStops, QueueBasedNonActualEvent, QueueBasedNonActualEventRaw } from '../../types/planning-board'
+import type { QueueBasedEvent, QueueBasedEventStop, QueueBasedEventWithStops, QueueBasedNonActualEvent } from '../../types/planning-board'
 import { knex } from '../knexConfig'
 
 export function generateClientId() {
@@ -9,7 +9,7 @@ export function generateClientId() {
 export function calculateDeviation(actualStartTime: string, plannedStartTime: string) {
   return new Date(actualStartTime).getTime() - new Date(plannedStartTime).getTime()
 }
-export async function compressJson(data: QueueBasedNonActualEventRaw[]) {
+export async function compressJson(data: QueueBasedNonActualEvent[]) {
   const columns = Object.keys(data[0])
   const values = data.map(a => Object.values(a).map(e => e instanceof Date ? e.toISOString() : e))
 
@@ -105,19 +105,4 @@ export function setStopTimes(events: QueueBasedEvent[], stops: QueueBasedEventSt
   }
 
   return [...nonStopEvents, ...stopEvents]
-}
-export function messageSendTest(tag: string, body: { title: string, message: string }) {
-  const modifiedMessage = `<header>${body.title}</header><msg>${body.message}</msg>`
-  return `
-<?xml version="1.0"?>
-<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
-  xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/">
-  <SOAP-ENV:Body xmlns:NS1="urn:tbb6500"
-  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-  <NS1:${tag}>
-  ${modifiedMessage}
-  </NS1:${tag}>
-  </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>`
 }

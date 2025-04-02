@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
-  machineIp: string
+  machineId: number
   machineName: string
 }>()
 const emits = defineEmits(['close'])
@@ -14,7 +14,11 @@ const sendButtonDisabled = computed(() => message.value === '' || title.value ==
 function sendMessage() {
   kc.fetch('/api/sendMessage', {
     method: 'POST',
-    body: { machineIp: props.machineIp, message: message.value, title: title.value },
+    body: {
+      machineId: props.machineId,
+      title: title.value,
+      message: message.value,
+    },
   })
   emits('close')
 }

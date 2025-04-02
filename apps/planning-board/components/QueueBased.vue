@@ -169,13 +169,13 @@ const machineSortModal = ref(false)
 const machineMessageModal = reactive({
   show: false,
   currentMachine: {
-    ip: '',
+    id: 0,
     name: '',
   },
 })
-function setMessageMachine(ip: number, name: string) {
+function setMessageMachine(id: number, name: string) {
   machineMessageModal.show = true
-  machineMessageModal.currentMachine.ip = ip
+  machineMessageModal.currentMachine.id = id
   machineMessageModal.currentMachine.name = name
 }
 // #endregion
@@ -669,7 +669,7 @@ onMounted(async () => {
             text: 'Machine Message',
             icon: 'b-fa b-fa-solid b-fa-comment',
             onItem: (arg: any) => {
-              setMessageMachine(arg.record.machineIpAddress, arg.record.name)
+              setMessageMachine(arg.record.id, arg.record.name)
             },
           },
         },
@@ -1008,7 +1008,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
     <EliarModal v-if="machineMessageModal.show" @click.stop="machineMessageModal.show = false">
       <template #default>
         <MachineMessage
-          :machine-ip="machineMessageModal.currentMachine.ip"
+          :machine-id="machineMessageModal.currentMachine.id"
           :machine-name="machineMessageModal.currentMachine.name"
           @close="machineMessageModal.show = false"
         />

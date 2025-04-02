@@ -15,6 +15,7 @@ import {
   getErpParameters,
   getEventTooltipParams,
   getFormula,
+  getMachineInfo,
   getMachines,
   getMachinesByErpParameter,
   getPlanParameters,
@@ -37,7 +38,7 @@ import {
   updateUnplannedColumns,
   uploadToMachine,
 } from './queries'
-import { messageSendTest } from '~/composables/helper'
+import { remoteShowMessageBody } from '~/composables/soap'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -454,16 +455,28 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   )
   /* ------------------------------------------------------------------------------------------------------------------------ */
   fastify.post('/planning_board/send_message', async (request: FastifyRequest<{
-    Body: { machineIp: string, title: string, message: string }
+    Body?: { machineId: number, title: string, message: string }
   }>, reply) => {
     try {
       const body = request.body
-      const machineIpAdress = `http://${body.machineIp}:8080`
-      await ofetch(machineIpAdress, {
+      if (!body
+        || typeof body.machineId !== 'number'
+        || typeof body.title !== 'string'
+        || typeof body.message !== 'string'
+      ) {
+        return reply.code(400).send('Invalid request body')
+      }
+
+      const machine = await getMachineInfo(body.machineId)
+      if (!machine) {
+        return reply.code(404).send('Machine not found')
+      }
+
+      await ofetch(`http://${machine.ip}:8080`, {
         method: 'POST',
-        body: messageSendTest('remoteShowMessage', body),
+        body: remoteShowMessageBody(body.title, body.message),
       })
-      return reply.code(200).send('Succesful')
+      return reply.code(200).send('Successful')
     } catch (err) {
       console.error('An error occured while sending message to machine', err)
       return reply.code(500).send({ error: `An error occured while sending message to machine: ${err}` })

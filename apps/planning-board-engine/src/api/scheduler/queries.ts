@@ -328,6 +328,15 @@ export async function getMachines(idList?: number[]) {
 export async function getMachineIds(): Promise<number[]> {
   return (await knex('BFMACHINES').select('MACHINEID as id').where('INUSE', true).andWhere('USEINTELESKOP', true)).map(m => m.id)
 }
+
+export async function getMachineInfo(id: number): Promise<{ ip: string } | undefined> {
+  return await knex
+    .where('INUSE', true)
+    .andWhere('USEINTELESKOP', true)
+    .andWhere('MACHINEID', id)
+    .first({ ip: 'IP' })
+}
+
 export async function getErpParameters(paramName: string) {
   const erpParams = await knex({ p: 'dbo.PTMACHINEERP' })
     .select('*')
