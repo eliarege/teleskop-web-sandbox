@@ -2,6 +2,12 @@
   "plannedEventTextInfo": "Planlanmış İş Emri Metni",
   "completedEventTextInfo": "Tamamlanmış İş Emri Metni",
   "ongoingTextInfo": "Devam Eden İş Emri Metni",
+  "send-message": {
+    "_": "{machineName} Makinesine mesaj gönder.",
+    "send": "Gönder",
+    "title": "Başlık",
+    "message": "Mesaj"
+  },
   "toast": {
     "succesful": "Başarıyla Kaydedildi",
     "fail": {
@@ -76,6 +82,7 @@
   },
   "batch-notes": {
     "_": "Notlar",
+    "delete-confirm": "Notu silmek istediğinizden emin misiniz?",
     "add-note": "Notu Ekle",
     "columns": {
       "user-name": "Kullanıcı Adı",
@@ -94,7 +101,7 @@
     "template": {
       "no-data": "Gösterilecek not yok.",
       "delete": "Sil",
-      "ok": "Sil",
+      "ok": "Tamam",
       "cancel": "İptal",
       "new-note": "Yeni not ekle",
       "show-on-screen": "Ekranda göster",

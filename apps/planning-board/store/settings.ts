@@ -14,7 +14,7 @@ export const useSettingStore = defineStore('settings', () => {
   const unplannedText = ref()
   const machineOrdering = useStorage<number[]>('pt-machineOrdering', [])
 
-  const selectedEvent = ref({} as SchedulerEventModel)
+  const selectedEvent = ref({} as SchedulerEventModel | null)
 
   const settings = useStorage('planning-board-settings', {
     deviationColor: '',

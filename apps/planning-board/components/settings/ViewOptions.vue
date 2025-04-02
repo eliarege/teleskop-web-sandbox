@@ -4,11 +4,11 @@ import type { MachineStatus } from '~/shared/types'
 
 const kc = useKeycloak()
 const { t } = useI18n()
-const { data: machines } = await useAuthFetch('/api/machineList', {
+const { data: machines, refresh: machinesRefresh } = await useAuthFetch('/api/machineList', {
   default: () => [],
 })
 
-const { data: erpParameters } = await useAuthFetch('/api/settings/erpParameters', {
+const { data: erpParameters, refresh: erpParameterRefresh } = await useAuthFetch('/api/settings/erpParameters', {
   default: () => [],
   query: { distinct: true },
 })
@@ -85,17 +85,29 @@ async function customModelValue(group: string) {
     groups.value.push(group)
   }
 }
-const loading = ref(false)
-
+const paramatereSaveLoading = ref(false)
+const refreshDataLoading = ref(false)
 async function saveParameters() {
-  loading.value = true
+  paramatereSaveLoading.value = true
   // wait 0.3 seconds to animate loading?
   await new Promise(resolve => setTimeout(resolve, 300))
   await kc.fetch('/api/settings/erpParameters/bulkAddErpParameters', {
     body: { paramString: selected.value, machines: selectedMachines.value },
     method: 'PUT',
   }).finally(() => {
-    loading.value = false
+    paramatereSaveLoading.value = false
+    Toast.show(t('toast.succesful'))
+  })
+}
+
+async function refreshData() {
+  refreshDataLoading.value = true
+  // wait 0.3 seconds to animate loading?
+  await new Promise(resolve => setTimeout(resolve, 300))
+  await kc.fetch('/api/refreshCustomTables').finally(async () => {
+    await machinesRefresh()
+    await erpParameterRefresh()
+    refreshDataLoading.value = false
     Toast.show(t('toast.succesful'))
   })
 }
@@ -138,17 +150,30 @@ async function saveParameters() {
     </div>
   </div>
   <div class="w-full flex px-3">
-    <q-space />
-    <q-btn
-      color="primary"
-      :label="t('settings.save')"
-      :loading="loading"
-      @click="saveParameters()"
-    >
-      <template #loading>
-        <q-spinner-facebook />
-      </template>
-    </q-btn>
+    <div class="w-full h-full flex gap-3">
+      <q-space />
+      <q-btn
+        dense
+        color="primary"
+        icon="refresh"
+        :loading="refreshDataLoading"
+        @click="refreshData"
+      >
+        <q-tooltip>
+          Refresh Data
+        </q-tooltip>
+      </q-btn>
+      <q-btn
+        color="primary"
+        :label="t('settings.save')"
+        :loading="paramatereSaveLoading"
+        @click="saveParameters()"
+      >
+        <template #loading>
+          <q-spinner-facebook />
+        </template>
+      </q-btn>
+    </div>
   </div>
 </template>
 

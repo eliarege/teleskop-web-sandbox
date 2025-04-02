@@ -1,4 +1,5 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
+import { ofetch } from 'ofetch'
 import {
   addBatchNote,
   addErpParameters,
@@ -14,6 +15,7 @@ import {
   getErpParameters,
   getEventTooltipParams,
   getFormula,
+  getMachineInfo,
   getMachines,
   getMachinesByErpParameter,
   getPlanParameters,
@@ -25,6 +27,7 @@ import {
   getUnplannedEvents,
   pinEvent,
   planningBoardStops,
+  refreshCustomTables,
   removeErpParameter,
   removeFromPlan,
   scheduleEvents,
@@ -35,6 +38,7 @@ import {
   updateUnplannedColumns,
   uploadToMachine,
 } from './queries'
+import { remoteShowMessageBody } from '~/composables/soap'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -108,6 +112,17 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching plan parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching plan parameters: ${err}` })
+      }
+    },
+  )
+  fastify.put(
+    '/planning_board/refresh_tables',
+    async (request: FastifyRequest, reply) => {
+      try {
+        return await refreshCustomTables()
+      } catch (err) {
+        fastify.log.error(`An error occured while updating tables: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating tables: ${err}` })
       }
     },
   )
@@ -439,7 +454,34 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     },
   )
   /* ------------------------------------------------------------------------------------------------------------------------ */
+  fastify.post('/planning_board/send_message', async (request: FastifyRequest<{
+    Body?: { machineId: number, title: string, message: string }
+  }>, reply) => {
+    try {
+      const body = request.body
+      if (!body
+        || typeof body.machineId !== 'number'
+        || typeof body.title !== 'string'
+        || typeof body.message !== 'string'
+      ) {
+        return reply.code(400).send('Invalid request body')
+      }
 
+      const machine = await getMachineInfo(body.machineId)
+      if (!machine) {
+        return reply.code(404).send('Machine not found')
+      }
+
+      await ofetch(`http://${machine.ip}:8080`, {
+        method: 'POST',
+        body: remoteShowMessageBody(body.title, body.message),
+      })
+      return reply.code(200).send('Successful')
+    } catch (err) {
+      console.error('An error occured while sending message to machine', err)
+      return reply.code(500).send({ error: `An error occured while sending message to machine: ${err}` })
+    }
+  })
   fastify.put(
     '/planning_board/upload_joborder',
     async (request: FastifyRequest<{

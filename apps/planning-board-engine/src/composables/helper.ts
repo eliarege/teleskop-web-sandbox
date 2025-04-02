@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { addSeconds } from 'date-fns'
-import type { QueueBasedEvent, QueueBasedEventStop, QueueBasedEventWithStops, QueueBasedNonActualEvent, QueueBasedNonActualEventRaw } from '../../types/planning-board'
+import type { QueueBasedEvent, QueueBasedEventStop, QueueBasedEventWithStops, QueueBasedNonActualEvent } from '../../types/planning-board'
 import { knex } from '../knexConfig'
 
 export function generateClientId() {
@@ -9,7 +9,7 @@ export function generateClientId() {
 export function calculateDeviation(actualStartTime: string, plannedStartTime: string) {
   return new Date(actualStartTime).getTime() - new Date(plannedStartTime).getTime()
 }
-export async function compressJson(data: QueueBasedNonActualEventRaw[]) {
+export async function compressJson(data: QueueBasedNonActualEvent[]) {
   const columns = Object.keys(data[0])
   const values = data.map(a => Object.values(a).map(e => e instanceof Date ? e.toISOString() : e))
 

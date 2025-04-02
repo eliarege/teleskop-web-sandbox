@@ -2,6 +2,12 @@
   "plannedEventTextInfo": "Planned Event Text",
   "completedEventTextInfo": "Completed Event Text",
   "ongoingTextInfo": "Ongoing Text Info",
+  "send-message": {
+    "_": "Send a message to Machine {machineName}.",
+    "send": "Send",
+    "title": "Title",
+    "message": "Message"
+  },
   "toast": {
     "succesful": "Succesfully Saved",
     "fail": {
@@ -76,6 +82,7 @@
   },
   "batch-notes": {
     "_": "Notes",
+    "delete-confirm": "Are you sure to delete this note?",
     "add-note": "Add Note",
     "columns": {
       "user-name": "User Name",

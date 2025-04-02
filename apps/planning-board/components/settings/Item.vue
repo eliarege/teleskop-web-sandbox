@@ -27,7 +27,6 @@ function removeChip(item: string) {
 }
 
 function handleDropdownChange(value: string[]) {
-  console.log(value)
   if (value.length > 4) {
     value.pop()
   }

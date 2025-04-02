@@ -70,7 +70,7 @@ const { data: state } = useAuthFetch('/api/ptStatus')
           <QToolbarTitle shrink class="text-clip">
             <TopbarHomeButton />
           </QToolbarTitle>
-          <NavbarJobOrderSearch class="" @scroll-to-event=" (e) => scrollToDate(e)" />
+          <NavbarJobOrderSearch @scroll-to-event=" (e) => scrollToDate(e)" />
 
           <NavbarButtonGroup
             @refresh-scheduler="refreshScheduler()"

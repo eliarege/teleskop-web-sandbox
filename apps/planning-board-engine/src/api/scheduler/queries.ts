@@ -2,8 +2,72 @@ import moo from 'moo'
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { PlanParameters, QueueBasedEventStop } from 'types/planning-board'
 import type { Program } from 'typescript'
+import { chunk } from 'lodash-es'
 import { config } from '~/config'
 import { knex } from '~/knexConfig'
+import { logger } from '~/composables/logger'
+
+export async function refreshCustomTables() {
+  // refresh PTCOLUMNS table
+  const existingPtColumns = await knex('PTCOLUMNS')
+    .select('parameterId', 'parameterName')
+
+  const ptColumnsValues = await knex('DYBFBATCHPLANPARAMETERS as d')
+    .distinct('d.PARAMSTRING', 'd.BATCHPARAMETERID')
+    .join('BADATA as b', 'd.PLANKEY', 'b.PLANKEY')
+    .where('d.PARAMSTRING', '<>', '')
+    .orderBy('d.BATCHPARAMETERID', 'asc')
+    .timeout(30_000)
+
+  const newPtColumns = ptColumnsValues.filter(
+    row => !existingPtColumns.some(e => e.parameterId === row.BATCHPARAMETERID),
+  )
+
+  if (newPtColumns.length > 0) {
+    await knex('PTCOLUMNS').insert(
+      newPtColumns.map(row => ({
+        parameterId: row.BATCHPARAMETERID,
+        parameterName: row.PARAMSTRING,
+        visible: false,
+      })),
+    )
+    logger.info('New values inserted into PTCOLUMNS')
+  } else {
+    logger.info('No new data found to insert into PTCOLUMNS')
+  }
+
+  // refresh PTMACHINEERP table
+  const existingPtMachineErp = await knex('PTMACHINEERP')
+    .select('paramId', 'machineId')
+
+  const ptMachineErpValues = await knex('BFMACHBATCHPARAMETERS').select({
+    paramId: 'BATCHPARAMETERID',
+    machineId: 'MACHINEID',
+    paramName: 'PARAMSTRING',
+  })
+
+  const newPtMachineErp = ptMachineErpValues.filter(
+    row => !existingPtMachineErp.some(e => e.paramId === row.paramId && e.machineId === row.machineId),
+  )
+
+  if (newPtMachineErp.length > 0) {
+    const chunks = chunk(newPtMachineErp, 500)
+    for (const ch of chunks) {
+      await knex('PTMACHINEERP').insert(
+        ch.map(row => ({
+          paramId: row.paramId,
+          machineId: row.machineId,
+          paramName: row.paramName,
+          visible: false,
+        })),
+      )
+    }
+    logger.info(`Inserted ${newPtMachineErp.length} new values into PTMACHINEERP`)
+  } else {
+    logger.info('No new data found to insert into PTMACHINEERP')
+  }
+  return logger.info('OK')
+}
 
 export async function getPtStatus() {
   const res = await knex('dbo.TFTELESKOPSETTINGS as P')
@@ -264,6 +328,15 @@ export async function getMachines(idList?: number[]) {
 export async function getMachineIds(): Promise<number[]> {
   return (await knex('BFMACHINES').select('MACHINEID as id').where('INUSE', true).andWhere('USEINTELESKOP', true)).map(m => m.id)
 }
+
+export async function getMachineInfo(id: number): Promise<{ ip: string } | undefined> {
+  return await knex
+    .where('INUSE', true)
+    .andWhere('USEINTELESKOP', true)
+    .andWhere('MACHINEID', id)
+    .first({ ip: 'IP' })
+}
+
 export async function getErpParameters(paramName: string) {
   const erpParams = await knex({ p: 'dbo.PTMACHINEERP' })
     .select('*')
@@ -811,7 +884,7 @@ function txtFormat(data: {
     lines.push(`Program${index + 1}=${program}`)
   })
 
-  return lines.join('\n')
+  return `${lines.join('\n')}\n`
 }
 export async function uploadToMachine(machineIp: string, startingParams: { paramString: string, value: string | number }[], programNoList: string, jobOrder: string) {
   const programs = programNoList.split(',')
