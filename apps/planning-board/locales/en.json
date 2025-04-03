@@ -6,7 +6,11 @@
     "_": "Send a message to Machine {machineName}.",
     "send": "Send",
     "title": "Title",
-    "message": "Message"
+    "message": "Message",
+    "toast": {
+      "succesful": "Message sent.",
+      "fail": "Failed to send message: {err}"
+    }
   },
   "toast": {
     "succesful": "Succesfully Saved",

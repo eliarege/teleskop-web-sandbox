@@ -6,7 +6,11 @@
     "_": "{machineName} Makinesine mesaj gönder.",
     "send": "Gönder",
     "title": "Başlık",
-    "message": "Mesaj"
+    "message": "Mesaj",
+    "toast": {
+      "succesful": "Mesaj gönderildi.",
+      "fail": "Mesaj gönderilirken hata oluştu: {err}"
+    }
   },
   "toast": {
     "succesful": "Başarıyla Kaydedildi",
