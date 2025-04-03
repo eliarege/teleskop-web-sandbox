@@ -334,6 +334,7 @@ export async function getMachineInfo(id: number): Promise<{ ip: string } | undef
     .where('INUSE', true)
     .andWhere('USEINTELESKOP', true)
     .andWhere('MACHINEID', id)
+    .from('BFMACHINES')
     .first({ ip: 'IP' })
 }
 
