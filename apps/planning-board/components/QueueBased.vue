@@ -659,14 +659,14 @@ onMounted(async () => {
             },
           },
           machineSort: {
-            text: 'Machine Sort',
+            text: 'L{machineSort}',
             icon: 'b-fa b-fa-solid b-fa-list',
             onItem: () => {
               machineSortModal.value = !machineSortModal.value
             },
           },
           machineMessage: {
-            text: 'Machine Message',
+            text: 'L{machineMessage}',
             icon: 'b-fa b-fa-solid b-fa-comment',
             onItem: (arg: any) => {
               setMessageMachine(arg.record.id, arg.record.name)

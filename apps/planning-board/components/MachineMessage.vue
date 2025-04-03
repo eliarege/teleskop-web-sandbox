@@ -1,26 +1,39 @@
 <script setup lang="ts">
+import { Toast } from '@bryntum/schedulerpro'
+import type { FetchError } from 'ofetch'
+
 const props = defineProps<{
   machineId: number
   machineName: string
 }>()
-const emits = defineEmits(['close'])
+const emit = defineEmits(['close'])
 const kc = useKeycloak()
 const { t } = useI18n()
 const title = ref('')
 const message = ref('')
+const loading = ref(false)
 
 const sendButtonDisabled = computed(() => message.value === '' || title.value === '')
 
-function sendMessage() {
-  kc.fetch('/api/sendMessage', {
-    method: 'POST',
-    body: {
-      machineId: props.machineId,
-      title: title.value,
-      message: message.value,
-    },
-  })
-  emits('close')
+async function sendMessage() {
+  loading.value = true
+  try {
+    await kc.fetch('/api/sendMessage', {
+      method: 'POST',
+      body: {
+        machineId: props.machineId,
+        title: title.value,
+        message: message.value,
+      },
+    })
+    Toast.show(t('send-message.toast.succesful'))
+    emit('close')
+  } catch (err) {
+    console.error(err)
+    Toast.show(t('send-message.toast.fail', { err: (err as FetchError).message }))
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -48,6 +61,7 @@ function sendMessage() {
       class="px-3"
       dense
       no-caps
+      :loading
       :disable="sendButtonDisabled"
       @click="sendMessage"
     />
