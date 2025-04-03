@@ -16,6 +16,8 @@ export const enLocalization = {
     unassign: 'Unassigned Job Orders',
     scrollToEvent: 'Scroll To Job Order',
     jobOrderDate: 'Creation Date',
+    machineSort: 'Machine Sort',
+    machineMessage: 'Send Message',
   },
 }
 
@@ -37,5 +39,7 @@ export const trLocalization = {
     unassign: 'Planlanmamış İş Emirleri',
     scrollToEvent: 'İş Emrine Git',
     jobOrderDate: 'Oluşturulma Tarihi',
+    machineSort: 'Makine Sıralama',
+    machineMessage: 'Mesaj Gönder',
   },
 }
