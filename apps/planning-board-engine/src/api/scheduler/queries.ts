@@ -49,7 +49,7 @@ export async function refreshCustomTables() {
   const existingParamNames = ptMachineErpValues.map(p => p.paramName)
 
   const missingParams = await knex('BFERPPARAMETERDEFINITIONS')
-    .select('PARAMNAME')
+    .select('PARAMNAME', 'PARAMID')
     .whereNotIn('PARAMNAME', existingParamNames)
     .distinct()
 
@@ -58,7 +58,7 @@ export async function refreshCustomTables() {
   const extra = missingParams.map((param, index) => {
     const machine = machines[index % machines.length]
     return {
-      paramId: null,
+      paramId: param.PARAMID,
       machineId: machine.MACHINEID,
       paramName: param.PARAMNAME,
       visible: false,
