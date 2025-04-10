@@ -38,7 +38,7 @@ export async function refreshCustomTables() {
 
   // refresh PTMACHINEERP table
   const existingPtMachineErp = await knex('PTMACHINEERP')
-    .select('paramId', 'machineId')
+    .select('paramId', 'machineId', 'paramName')
 
   const ptMachineErpValues = await knex('BFMACHBATCHPARAMETERS').select({
     paramId: 'BATCHPARAMETERID',
@@ -46,26 +46,53 @@ export async function refreshCustomTables() {
     paramName: 'PARAMSTRING',
   })
 
-  const newPtMachineErp = ptMachineErpValues.filter(
-    row => !existingPtMachineErp.some(e => e.paramId === row.paramId && e.machineId === row.machineId),
+  const existingParamNames = ptMachineErpValues.map(p => p.paramName)
+
+  const missingParams = await knex('BFERPPARAMETERDEFINITIONS')
+    .select('PARAMNAME')
+    .whereNotIn('PARAMNAME', existingParamNames)
+    .distinct()
+
+  const machines = await knex('BFMACHINES').select('MACHINEID')
+
+  const extra = missingParams.map((param, index) => {
+    const machine = machines[index % machines.length]
+    return {
+      paramId: null,
+      machineId: machine.MACHINEID,
+      paramName: param.PARAMNAME,
+      visible: false,
+    }
+  })
+
+  const newPtMachineErp = [
+    ...ptMachineErpValues.map(row => ({
+      paramId: row.paramId,
+      machineId: row.machineId,
+      paramName: row.paramName,
+      visible: false,
+    })),
+    ...extra,
+  ].filter(
+    row =>
+      !existingPtMachineErp.some(
+        e =>
+          e.paramId === row.paramId
+          && e.machineId === row.machineId
+          && e.paramName === row.paramName,
+      ),
   )
 
   if (newPtMachineErp.length > 0) {
     const chunks = chunk(newPtMachineErp, 500)
     for (const ch of chunks) {
-      await knex('PTMACHINEERP').insert(
-        ch.map(row => ({
-          paramId: row.paramId,
-          machineId: row.machineId,
-          paramName: row.paramName,
-          visible: false,
-        })),
-      )
+      await knex('PTMACHINEERP').insert(ch)
     }
     logger.info(`Inserted ${newPtMachineErp.length} new values into PTMACHINEERP`)
   } else {
     logger.info('No new data found to insert into PTMACHINEERP')
   }
+
   return logger.info('OK')
 }
 
@@ -352,7 +379,9 @@ export async function getMachinesByErpParameter(paramString: string) {
     })
     .where('b.PARAMSTRING', paramString)
 
-  return await getMachines(idList.map(id => id.machineId))
+  // erpden gelen parametre başlangıç parametresi olarak kaydedilmemiş ise muhtemelen müşteri bunu
+  // sadece planlamada göstermek istiyordur diye varsayıyoruz.
+  return idList.map(i => i.machineId)
 }
 export async function getUnplannedColumns() {
   return await knex('PTCOLUMNS').select('*')

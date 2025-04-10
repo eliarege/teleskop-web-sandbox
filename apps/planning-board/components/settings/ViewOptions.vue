@@ -12,6 +12,7 @@ const { data: erpParameters, refresh: erpParameterRefresh } = await useAuthFetch
   default: () => [],
   query: { distinct: true },
 })
+
 const modifiedParameters = computed(() => erpParameters.value.toSorted((a, b) => a.paramId > b.paramId ? 1 : -1))
 const selected = ref()
 
@@ -24,14 +25,20 @@ async function setValidMachines(paramString: string) {
   groups.value = []
   selectedMachines.value = []
   selected.value = paramString
-  const machinesByErpParam = await kc.fetch('/api/settings/erpParameters/machinesByErpParam', {
+
+  const machineIds: number[] = await kc.fetch('/api/settings/erpParameters/machinesByErpParam', {
     query: { paramString },
   })
-  const selectedMachinesList = await kc.fetch('/api/settings/erpParameters/getSelectedMachines', {
+
+  const selectedMachinesList: number[] = await kc.fetch('/api/settings/erpParameters/getSelectedMachines', {
     query: { paramString },
   })
+
   selectedMachines.value = selectedMachinesList
-  validMachines.value = machinesByErpParam
+
+  validMachines.value = machineIds.length === 0
+    ? machines.value
+    : machines.value.filter(machine => machineIds.includes(machine.id))
 
   const groupMap = new Map<string, number[]>()
 
@@ -61,15 +68,18 @@ const groupedMachines = computed(() => {
   })
   return Object.values(groupsRecord).map(group => group)
 })
+
 function selectMachine(id: number) {
   if (!selectedMachines.value.includes(id)) {
     selectedMachines.value.push(id)
   }
 }
+
 function deselectMachine(id: number) {
   const idx = selectedMachines.value.indexOf(id)
   selectedMachines.value.splice(idx, 1)
 }
+
 async function customModelValue(group: string) {
   const idList = machines.value.filter(m => m.groupName === group).map(m => m.id)
   if (groups.value.includes(group)) {
@@ -85,8 +95,10 @@ async function customModelValue(group: string) {
     groups.value.push(group)
   }
 }
+
 const paramatereSaveLoading = ref(false)
 const refreshDataLoading = ref(false)
+
 async function saveParameters() {
   paramatereSaveLoading.value = true
   // wait 0.3 seconds to animate loading?

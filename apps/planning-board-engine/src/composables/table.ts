@@ -70,24 +70,40 @@ export async function createPtMachineErpTable(knex: Knex) {
         paramName: 'PARAMSTRING',
       })
 
-      if (values.length > 0) {
-        const chunks = chunk(values, 500)
+      const missingParams = await knex
+        .select('PARAMNAME')
+        .from('BFERPPARAMETERDEFINITIONS')
+        .whereNotIn('PARAMNAME', function () {
+          this.select('PARAMSTRING').from('BFMACHBATCHPARAMETERS')
+        })
 
-        for (const ch of chunks) {
-          await knex('PTMACHINEERP').insert(
-            ch.map(row => ({
-              paramId: row.paramId,
-              machineId: row.machineId,
-              paramName: row.paramName,
-              visible: false,
-            })),
-          )
+      const machines = await knex('BFMACHINES').select('MACHINEID')
+
+      const extra = missingParams.map((param, index) => {
+        const machine = machines[index % machines.length]
+        return {
+          paramId: null,
+          machineId: machine.MACHINEID,
+          paramName: param.PARAMNAME,
+          visible: false,
         }
+      })
+      const allValues = [
+        ...values.map(row => ({
+          paramId: row.paramId,
+          machineId: row.machineId,
+          paramName: row.paramName,
+          visible: false,
+        })),
+        ...extra,
+      ]
 
-        logger.info(`Inserted ${values.length} values into PTMACHINEERP`)
-      } else {
-        logger.info('No data found to insert into PTMACHINEERP')
+      const chunks = chunk(allValues, 500)
+      for (const ch of chunks) {
+        await knex('PTMACHINEERP').insert(ch)
       }
+
+      logger.info(`Inserted ${allValues.length} total rows into PTMACHINEERP`)
     } else {
       logger.info('Table PTMACHINEERP already exists and contains data, no action taken')
     }
