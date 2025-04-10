@@ -71,19 +71,16 @@ export async function createPtMachineErpTable(knex: Knex) {
       })
 
       const missingParams = await knex
-        .select('PARAMNAME', 'PARAMID')
+        .select('PARAMNAME', 'PARAMID', 'MACHINEID')
         .from('BFERPPARAMETERDEFINITIONS')
         .whereNotIn('PARAMNAME', function () {
           this.select('PARAMSTRING').from('BFMACHBATCHPARAMETERS')
         })
-      console.log('HI', missingParams)
-      const machines = await knex('BFMACHINES').select('MACHINEID')
 
-      const extra = missingParams.map((param, index) => {
-        const machine = machines[index % machines.length]
+      const extra = missingParams.map((param) => {
         return {
           paramId: param.PARAMID,
-          machineId: machine.MACHINEID,
+          machineId: param.MACHINEID,
           paramName: param.PARAMNAME,
           visible: false,
         }
