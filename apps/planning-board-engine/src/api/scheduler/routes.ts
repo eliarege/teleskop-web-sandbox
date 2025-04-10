@@ -195,8 +195,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { paramString } = request.query
         return await getMachinesByErpParameter(paramString)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching machines: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching machines: ${err}` })
+        fastify.log.error(`An error occured while fetching machines ids ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching machine ids: ${err}` })
       }
     },
   )
