@@ -276,7 +276,7 @@ router.post('/path-of-endpoint', defineEventHandler(async (event) => {
     const dataQuery: any = knex('BTable as b')
       .select(selectParameters)
       .join('MTable as m', 'b.BData1', 'm.MData1')
-      .orderBy('b.BData1', 'b.BData2')
+      .orderBy(['b.BData1', 'b.BData2'])
     if (body.filters)
       return await filtersToKnex(body.filters, selectParameters, dataQuery)
     else

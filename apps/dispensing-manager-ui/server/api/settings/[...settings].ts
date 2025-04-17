@@ -230,7 +230,7 @@ router.post('/machine-dispenser-connection-filtered', defineAuthEventHandler(asy
   let machines: any = knex('DYTFMACHINES as N')
     .select(machineParameters)
     .leftJoin('DYTFMACHDISPCONNECTION as M', 'N.MACHINEID', 'M.MACHINEID')
-    .orderBy(['N.MACHINEID', 'N.DISPENSERID'])
+    .orderBy(['N.MACHINEID', 'M.DISPENSERID'])
   if (body?.length > 0) {
     filtersToKnex(body, machineParameters, machines)
   }
