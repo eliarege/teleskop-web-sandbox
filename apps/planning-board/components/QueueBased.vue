@@ -745,7 +745,7 @@ onMounted(async () => {
             text: t('queue-based.ctx-menu.pin'),
             async onItem({ eventRecord }: any) {
               await kc.fetch('api/pinEvent', {
-                query: { planKey: eventRecord.originalData.id },
+                query: { planKey: eventRecord.originalData.planKey },
                 method: 'PUT',
               })
                 .then(() => {
@@ -761,7 +761,7 @@ onMounted(async () => {
             text: t('queue-based.ctx-menu.unpin'),
             async onItem({ eventRecord }: any) {
               await kc.fetch('api/unpinEvent', {
-                query: { planKey: eventRecord.originalData.id },
+                query: { planKey: eventRecord.originalData.planKey },
                 method: 'PUT',
               })
                 .then(() => {
@@ -788,8 +788,8 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-calendar-xmark',
             text: t('queue-based.ctx-menu.properties'),
             onItem({ eventRecord, assignmentRecord }) {
-              const planKey = eventRecord.originalData.id
-              const jobOrder = eventRecord.originalData.name
+              const planKey = eventRecord.originalData.planKey
+              const jobOrder = eventRecord.originalData.jobOrder
               const machineId = assignmentRecord.originalData.resourceId
               const fabricWeight = eventRecord.originalData.fabricWeight
               const theoreticalDuration = eventRecord.originalData.theoreticalDuration
@@ -809,7 +809,7 @@ onMounted(async () => {
             },
           },
           sendToMachine: {
-            icon: 'b-fa-solid b-fa-calendar-xmark',
+            icon: 'b-fa-solid b-fa-share',
             text: t('upload-joborder._'),
             async onItem({ eventRecord, resourceRecord }) {
               const planKey: number = eventRecord.originalData.planKey
