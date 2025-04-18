@@ -43,7 +43,7 @@ const jobOrderUploadLoading = ref(false)
 const refreshingScheduler = ref(false)
 const store = useSettingStore()
 const appList = useAppList()
-console.log(appList)
+
 const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.url ?? null)
 const router = useRouter()
 
