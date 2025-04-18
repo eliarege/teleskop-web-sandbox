@@ -60,6 +60,7 @@
     "req-status": "Durum",
     "status-new": "Yeni",
     "status-sent": "Dağıtıcıya Gönderildi",
+    "status-started": "Dağıtıcı Başladı",
     "status-finished": "Bitti",
     "status-prio": "Öncelik Değişti",
     "status-cancelled": "İptal Edildi",

@@ -60,6 +60,7 @@
     "req-status": "Status",
     "status-new": "Novo",
     "status-sent": "Enviado ao Dispensador",
+    "status-started": "Dispensador iniciado",
     "status-finished": "Concluído",
     "status-prio": "Prioridade Alterada",
     "status-cancelled": "Cancelado",

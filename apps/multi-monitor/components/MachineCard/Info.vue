@@ -23,13 +23,15 @@ const erpKey = useStorage<string | null>(
   null,
   localStorage,
 )
-
+// The status of the last request. (0 new- 1 send to the dispenser - 2 Dispenser started - 3 Completed - 8 Cancelled)
 function reqStatus(params: number) {
   if (params === 0) {
     return t('teleskop.status-new')
   } else if (params === 1) {
     return t('teleskop.status-sent')
   } else if (params === 2) {
+    return t('teleskop.status-started')
+  } else if (params === 3) {
     return t('teleskop.status-finished')
   } else if (params === 4) {
     return t('teleskop.status-prio')
