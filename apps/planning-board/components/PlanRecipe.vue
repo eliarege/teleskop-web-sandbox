@@ -43,37 +43,35 @@ const columns = computed(() => [
   <div v-show="pending">
     <LoadingSpinner with-background />
   </div>
-  <div>
-    <div class="w-full h-full">
+  <div class="min-w-250 w-full h-min p-3 bg-white overflow-auto">
+    <RecipeTable
+      show
+      :title="t('plan-recipe.title')"
+      is-first
+      has-object-span-method
+      :full-screen="false"
+      :groupables="groupables"
+      :rows="recipeData?.autoRecipe || []"
+      :columns="columns"
+      :cell-class="cellClass"
+      :empty-text="t('plan-recipe.empty-text')"
+      chem-class="green-class"
+      dyeing-class="normal-class"
+    />
+    <div v-if="recipeData?.manualRecipe?.length">
       <RecipeTable
         show
-        :title="t('plan-recipe.title')"
-        is-first
+        :title="t('plan-recipe.manuel.title')"
+        :is-first="false"
         has-object-span-method
         :full-screen="false"
         :groupables="groupables"
-        :rows="recipeData?.autoRecipe || []"
+        :rows="recipeData?.manualRecipe || []"
         :columns="columns"
-        :cell-class="cellClass"
-        :empty-text="t('plan-recipe.empty-text')"
+        :empty-text="t('plan-recipe.manuel.empty-text')"
         chem-class="green-class"
         dyeing-class="normal-class"
       />
-      <div v-if="recipeData?.manualRecipe?.length">
-        <RecipeTable
-          show
-          :title="t('plan-recipe.manuel.title')"
-          :is-first="false"
-          has-object-span-method
-          :full-screen="false"
-          :groupables="groupables"
-          :rows="recipeData?.manualRecipe || []"
-          :columns="columns"
-          :empty-text="t('plan-recipe.manuel.empty-text')"
-          chem-class="green-class"
-          dyeing-class="normal-class"
-        />
-      </div>
     </div>
   </div>
 </template>
