@@ -785,7 +785,7 @@ onMounted(async () => {
             hidden: true,
           },
           properties: {
-            icon: 'b-fa-solid b-fa-calendar-xmark',
+            icon: 'b-fa-solid b-fa-circle-info',
             text: t('queue-based.ctx-menu.properties'),
             onItem({ eventRecord, assignmentRecord }) {
               const planKey = eventRecord.originalData.planKey
