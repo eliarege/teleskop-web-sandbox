@@ -9,6 +9,7 @@ import { useFuse } from '@vueuse/integrations/useFuse'
 import { addDays, addHours, addMinutes, addSeconds } from 'date-fns'
 import { eventTooltip, expediteEvents, postponeEvent } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore, getResourceRow, removeAttributes, sortEventsByDateDesc } from '~/lib/queueBased'
+import { Apps } from '~/shared/constants'
 import type { QueueBasedEvent, QueueBasedNonActualEvent } from '~/shared/queueBased'
 import type { MachineStatus, PlanParameters } from '~/shared/types'
 import { useSettingStore } from '~/store/settings'
@@ -41,6 +42,10 @@ const jobOrderUploadLoading = ref(false)
 
 const refreshingScheduler = ref(false)
 const store = useSettingStore()
+const appList = useAppList()
+console.log(appList)
+const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.url ?? null)
+const router = useRouter()
 
 const { data: events, refresh: eventRefresh, pending: eventPending } = await useAuthFetch<QueueBasedEvent[]>('/api/queueBased/schedulerEvents', {
   immediate: false,
@@ -794,6 +799,13 @@ onMounted(async () => {
               }
               const isBatchStarted = eventRecord.originalData.isStarted
               setProperties(machineId, jobOrder, planKey, fabricWeight, theoreticalDuration, program, isBatchStarted)
+            },
+          },
+          process: {
+            icon: 'b-fa-solid b-fa-chart-line',
+            text: t('queue-based.ctx-menu.process'),
+            onItem({ eventRecord }) {
+              router.push(`${archiveUrl.value}/${eventRecord.originalData.id}`)
             },
           },
           sendToMachine: {
