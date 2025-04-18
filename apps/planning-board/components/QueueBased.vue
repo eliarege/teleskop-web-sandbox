@@ -599,14 +599,27 @@ onMounted(async () => {
       unit: 'minute',
       increment: 5,
     },
-    onEventMenuBeforeShow: (a: any) => {
-      if (a.eventRecord.originalData.pinned) {
-        a.items.pin.hidden = true
-        a.items.unpin.hidden = false
-      } else {
-        a.items.pin.hidden = false
-        a.items.unpin.hidden = true
+    onEventMenuBeforeShow: ({ eventRecord, items }) => {
+      if (eventRecord.originalData.eventType === 'stop') {
+        return false
       }
+      if (eventRecord.originalData.pinned) {
+        items.pin.hidden = true
+        items.unpin.hidden = false
+      } else {
+        items.pin.hidden = false
+        items.unpin.hidden = true
+      }
+      const isPlanned = eventRecord.originalData.eventType === 'planned'
+
+      const updateDisabledStatus = (item: any) => {
+        item.disabled = !isPlanned
+      }
+
+      updateDisabledStatus(items.delete)
+      updateDisabledStatus(items.pin)
+      updateDisabledStatus(items.sendToMachine)
+      updateDisabledStatus(items.unplan)
     },
     columns: [
       {
