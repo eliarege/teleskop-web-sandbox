@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TableColumnCtx } from 'element-plus'
-import type { PropType } from 'vue'
+import type { CSSProperties, PropType } from 'vue'
 import RecipeStepPreviousRequestsContent from './RecipeStepPreviousRequestsContent.vue'
 import { notification, onDrop, onKeydownPreventNonNumerical, onPastePreventNonNumerical } from '~/shared/functions'
 import type { RecipeLatest } from '~/shared/types'
@@ -108,7 +108,22 @@ function a({ row, columnIndex }: SpanMethodProps) {
 
   return 'normal-class'
 }
-
+const statusColors = {
+  '-1': '',
+  '0': '',
+  '1': '#ffff00',
+  '2': '#0000ff',
+  '3': '#008000',
+  '4': '#808080',
+  '8': '#ff0000',
+  '10': '#ffa500',
+}
+function cellStyle({ row, column }: SpanMethodProps): CSSProperties {
+  if (column.property === 'status') {
+    return { backgroundColor: `${statusColors[row.status]} !important` }
+  }
+  return {}
+}
 const tableContainer = ref()
 const contextMenuVisible = ref(false)
 const contextMenuPosition = ref({ top: '0px', left: '0px' })
@@ -250,6 +265,7 @@ async function showLogsOfSelectedStep() {
       table-layout="fixed"
       class-name="el-table-override"
       header-cell-class-name="whitespace-nowrap text-black"
+      :cell-style="cellStyle"
       row-class-name="text-black"
       :cell-class-name="a"
       style=" cursor: pointer;"

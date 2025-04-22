@@ -56,7 +56,7 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const router = useRouter()
 
-const batchKey = route.params.batchkey
+const batchKey = Number(route.params.batchkey)
 const selectedDate = ref(new Date())
 const response = await fetch(withBase(`/api/batch/${batchKey}`, config.app.baseURL))
 const taskId = response.headers.get('Task-ID')
@@ -91,7 +91,6 @@ async function trackTaskProgress() {
   try {
     while (true) {
       const data = (await $fetch(`/api/task/${taskId}`)) as TaskStatus
-
       if (data.state === 'active') {
         $q.loading.show({
           messageColor: 'white',
@@ -105,6 +104,7 @@ async function trackTaskProgress() {
         $q.loading.hide()
         break
       }
+      await sleep(300)
     }
   } catch (error: any) {
     $q.loading.hide()
@@ -137,16 +137,33 @@ function getCommandsWithNames() {
 }
 console.log(batchData.value)
 
-const colorInterpolator = interpolateRgb('red', 'blue')
+const colorInterpolator = [
+  'red',
+  'blue',
+  'yellow',
+  'green',
+  'purple',
+  'cyan',
+  'fuchsia',
+  'orange',
+  'lightblue',
+  'rose',
+  'stone',
+  'lime',
+]
 
 function initializeSetting(type: string, ioIndex: number, unit?: string) {
   const key = `${type}_${ioIndex}`
+  let visibility = false
   const setting = settingsStore.settings.get(key)
+  if (type === 'analogInputs' && ioIndex === 0) {
+    visibility = true
+  }
   if (!setting)
     settingsStore.setSetting(
       key,
-      colorInterpolator((ioIndex % 4) / 4),
-      false,
+      colorInterpolator[ioIndex % 12],
+      visibility,
       unit || 'undef',
     )
 }

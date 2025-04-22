@@ -57,7 +57,7 @@ router.get('/joborder', defineAuthEventHandler(async (event) => {
     .select('PLANNEDMACHINE')
     .where('PLANKEY', planKey))[0].PLANNEDMACHINE
 
-  const asd = await knex('dbo.DYBFBATCHORDERRECIPESTEPS as r')
+  const recipeSteps = await knex('dbo.DYBFBATCHORDERRECIPESTEPS as r')
     .where('r.PLANKEY', planKey)
     .select({
       planKey: 'r.PLANKEY',
@@ -75,6 +75,7 @@ router.get('/joborder', defineAuthEventHandler(async (event) => {
       programNo: 'p.RECIPENO',
       programName: 't.NAME',
       recipeAmount: 'r.RECIPEAMOUNT',
+      status: -1,
     })
     .leftJoin('dbo.DYBFBATCHORDERRECIPEHEADER as p', function () {
       this.on('r.PLANKEY', '=', 'p.PLANKEY')
@@ -90,7 +91,21 @@ router.get('/joborder', defineAuthEventHandler(async (event) => {
     .whereNotNull('REQNO_BATCH')
     .orderBy(['r.RCPINDEX', 'r.REQNO_PROG', 'r.PARALLELSTEP'])
 
-  return asd
+  const requests = await knex('DYTFCHEMREQUESTS')
+    .where('PLANKEY', planKey)
+    .select('RECIPEINDEX', 'PROGRAMNO', 'PROGRAMSTEPNO', 'RECIPETYPE', 'STATUS')
+
+  for (const step of recipeSteps) {
+    const request = requests.find((request) => {
+      return request.RECIPEINDEX === step.processOrder
+        && request.PROGRAMNO === step.programNo
+        && request.PROGRAMSTEPNO === step.mainStep
+        && request.RECIPETYPE === step.recipeType
+    })
+    step.status = request?.STATUS || -1
+  }
+
+  return recipeSteps
 }))
 
 router.put('/change-planned-machine', defineAuthEventHandler({

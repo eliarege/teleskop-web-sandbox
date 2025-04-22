@@ -150,10 +150,9 @@ function pushToFilters(col: FilterableTableColumn, index: number, orderByType?: 
         filterSlots.value.splice(index, 1)
     })
     filterSlots.value.push(temp)
-  }
-  else {
-    const filterIndex = filterSlots.value.findIndex((filter) => filter.field === col.field)
-    if(filterIndex !== -1) {
+  } else {
+    const filterIndex = filterSlots.value.findIndex(filter => filter.field === col.field)
+    if (filterIndex !== -1) {
       filterSlots.value.splice(filterIndex, 1)
     }
     // If the filterType is date the index parameter will be the index of dateOptions
