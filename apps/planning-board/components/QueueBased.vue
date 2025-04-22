@@ -818,7 +818,9 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-chart-line',
             text: t('queue-based.ctx-menu.process'),
             onItem({ eventRecord }) {
-              router.push(`${archiveUrl.value}/${eventRecord.originalData.id}`)
+              navigateTo(`${archiveUrl.value}/${eventRecord.originalData.id}`, {
+                external: true,
+              })
             },
           },
           sendToMachine: {
