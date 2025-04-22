@@ -616,6 +616,8 @@ onMounted(async () => {
         item.disabled = !isPlanned
       }
 
+      items.process.disabled = isPlanned
+
       updateDisabledStatus(items.delete)
       updateDisabledStatus(items.pin)
       updateDisabledStatus(items.sendToMachine)
@@ -818,8 +820,11 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-chart-line',
             text: t('queue-based.ctx-menu.process'),
             onItem({ eventRecord }) {
-              navigateTo(`${archiveUrl.value}/${eventRecord.originalData.id}`, {
+              navigateTo(`${archiveUrl.value}/${eventRecord.originalData.batchKey}`, {
                 external: true,
+                open: {
+                  target: '_blank',
+                },
               })
             },
           },
