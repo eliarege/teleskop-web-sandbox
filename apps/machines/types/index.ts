@@ -338,3 +338,24 @@ export interface Setting {
   token: string | number
   isActive?: boolean
 }
+
+export interface ColumnSchema {
+  filled: boolean
+  validation: string
+  disabled: boolean
+}
+
+export interface ColumnDefinition {
+  label: string
+  field: string
+  align: 'left' | 'right' | 'center'
+  filterable: boolean
+  filterType: 'includes' | 'startsWith' | 'equals' | string
+  unique: boolean
+  type: 'string' | 'number' | 'boolean' | string
+  visible: boolean
+  editable: boolean
+  schema: ColumnSchema
+}
+
+export type Columns = Record<string, ColumnDefinition>

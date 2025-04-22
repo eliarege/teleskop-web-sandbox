@@ -3,11 +3,11 @@ import { FormKitSchema } from '@formkit/vue'
 import { changeLocale } from '@formkit/i18n'
 import { klona } from 'klona'
 import { onKeyStroke } from '@vueuse/core'
-import type { Machine } from '~/types'
+import type { Columns } from '~/types'
 
 const props = defineProps<{
   rows: T[]
-  columns: Machine
+  columns: Columns
   formClass: string
 }>()
 
@@ -54,12 +54,29 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
 
 watch(cols, (_newValue, _oldValue) => {
   tableColumns.value = []
-  schema.value = []
   visibleColumns.value = []
 
   for (const [key, column] of Object.entries(props.columns)) {
     tableColumns.value.push({ ...column, name: key })
 
+    if (column.visible)
+      visibleColumns.value.push(key)
+
+    if (column.unique)
+      rowKey.value = key
+  }
+
+  updateSchemaFields()
+}, { immediate: true })
+
+watch(() => formData.value.theoreticalSteam, (newValue) => {
+  updateSchemaFields()
+}, { immediate: false })
+
+function updateSchemaFields() {
+  schema.value = []
+
+  for (const [key, column] of Object.entries(props.columns)) {
     if (column.editable && column.schema) {
       const deepClonedSchema = klona(column.schema)
       const schemaItem = {
@@ -69,27 +86,32 @@ watch(cols, (_newValue, _oldValue) => {
         label: column.label,
         $formkit: column.type,
       }
+
+      if ((key === 'steamKgPerHour' || key === 'steamValveDo')
+        && formData.value.theoreticalSteam !== true) {
+        schemaItem.disabled = true
+      }
+
       schema.value.push(schemaItem)
     }
-
-    if (column.visible)
-      visibleColumns.value.push(key)
-
-    if (column.unique)
-      rowKey.value = key
   }
-}, { immediate: true })
+}
 
 function showForm(buttonAction: 'add' | 'edit') {
   action.value = buttonAction
   if (action.value === 'edit' && selected.value.length) {
     formData.value = { ...selected.value[0] }
+    console.log(formData.value)
     showModal.value = true
   } else {
     selected.value = []
     formData.value = {}
     showModal.value = true
   }
+
+  nextTick(() => {
+    updateSchemaFields()
+  })
 }
 
 function handleSubmit(formData: T) {
@@ -236,6 +258,7 @@ watch(showModal, async (newValue, _oldValue) => {
           @click="showModal = false;emit('close')"
         />
       </q-card-actions>
+
       <q-card-section>
         <FormKit
           v-model="formData"
