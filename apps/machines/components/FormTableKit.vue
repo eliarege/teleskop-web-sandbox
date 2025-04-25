@@ -101,7 +101,6 @@ function showForm(buttonAction: 'add' | 'edit') {
   action.value = buttonAction
   if (action.value === 'edit' && selected.value.length) {
     formData.value = { ...selected.value[0] }
-    console.log(formData.value)
     showModal.value = true
   } else {
     selected.value = []

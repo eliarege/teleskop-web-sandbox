@@ -37,6 +37,21 @@ const { data: machineGroups } = useAuthFetch('/api/machines/machine-groups', {
   },
 })
 
+const { data: MTTempIoOptions } = useAuthFetch('/api/machines/mt-temp-io-options', {
+  default: () => [],
+  transform: (MTTempIoOptions: { machineId: number, id: number, name: string }[]) => {
+    return MTTempIoOptions.map(io => ({
+      machineId: io.machineId,
+      label: io.name,
+      value: io.id,
+    }))
+  },
+})
+
+function getMTTempIOOptions(machineId: number) {
+  return MTTempIoOptions.value.filter(io => io.machineId === machineId)
+}
+
 const columns = computed(() => ({
   machineId: {
     label: 'ID',
@@ -332,12 +347,13 @@ const columns = computed(() => ({
     align: 'left',
     filterable: true,
     filterType: 'includes',
-    type: 'number',
+    type: 'select',
     visible: false,
     editable: true,
     schema: {
       filled: true,
       validation: 'min:1',
+      options: (row: any) => getMTTempIOOptions(row.machineId),
     },
   },
   theoreticalSteam: {
