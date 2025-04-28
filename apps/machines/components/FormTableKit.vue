@@ -3,11 +3,12 @@ import { FormKitSchema } from '@formkit/vue'
 import { changeLocale } from '@formkit/i18n'
 import { klona } from 'klona'
 import { onKeyStroke } from '@vueuse/core'
-import type { Columns } from '~/types'
+import type { ColumnDefinition, Columns, Machine } from '~/types'
 
 const props = defineProps<{
   rows: T[]
   columns: Columns
+  machines: Machine[]
   formClass: string
 }>()
 
@@ -25,7 +26,7 @@ const showModal = ref(false)
 const selected = ref<T[]>([])
 const formData = ref<T>({})
 const action = ref<'add' | 'edit'>()
-const tableColumns = ref<T[]>([])
+const tableColumns = ref<ColumnDefinition[]>([])
 const schema = ref([])
 const visibleColumns = ref<string[]>([])
 const rowKey = ref()
@@ -99,6 +100,7 @@ function updateSchemaFields() {
 
 function showForm(buttonAction: 'add' | 'edit') {
   action.value = buttonAction
+
   if (action.value === 'edit' && selected.value.length) {
     formData.value = { ...selected.value[0] }
     showModal.value = true
@@ -106,6 +108,20 @@ function showForm(buttonAction: 'add' | 'edit') {
     selected.value = []
     formData.value = {}
     showModal.value = true
+  }
+
+  for (const [key, column] of Object.entries(props.columns)) {
+    if (column.editable && column.schema) {
+      if (key === 'MTTempIo') {
+        column.schema.disabled = buttonAction === 'add'
+
+        const machine = props.machines.find((m) => {
+          return m.machineId === formData.value.machineId
+        })
+
+        column.schema.disabled = machine?.theoreticalSteam !== true
+      }
+    }
   }
 
   nextTick(() => {

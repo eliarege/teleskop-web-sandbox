@@ -24,6 +24,7 @@ export interface Machine {
   productModel: string
   hardwareModel: string
   steamValveDo: number
+  theoreticalSteam: boolean
 }
 
 export interface User {
