@@ -111,10 +111,11 @@ const columns = computed(() => [
     align: 'center',
     showOverflowTooltip: true,
     formatter: (row: any) => {
-      if(!row.amount) return ''
-    const amount = Number(row.amount);
-    return amount % 1 === 0 ? amount.toString() : amount.toFixed(2);
-  }
+      if (!row.amount)
+        return ''
+      const amount = Number(row.amount)
+      return amount % 1 === 0 ? amount.toString() : amount.toFixed(2)
+    },
   },
   {
     label: t('recipe.recipeAmount'),
@@ -122,10 +123,11 @@ const columns = computed(() => [
     align: 'center',
     showOverflowTooltip: true,
     formatter: (row: any) => {
-      if(!row.recipeAmount) return ''
-    const amount = Number(row.recipeAmount);
-    return amount % 1 === 0 ? amount.toString() : amount.toFixed(2);
-  }
+      if (!row.recipeAmount)
+        return ''
+      const amount = Number(row.recipeAmount)
+      return amount % 1 === 0 ? amount.toString() : amount.toFixed(2)
+    },
   },
   {
     label: t('recipe.metric'),
@@ -133,6 +135,13 @@ const columns = computed(() => [
     align: 'center',
     showOverflowTooltip: true,
     formatter: (row: any) => t(`units.${row.unit}`),
+  },
+  {
+    label: t('recipe.status'),
+    prop: 'status',
+    align: 'center',
+    showOverflowTooltip: true,
+    formatter: (row: any) => t(`statusCodes.${row.status}`),
   },
 ])
 

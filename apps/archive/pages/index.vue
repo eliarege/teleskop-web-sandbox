@@ -11,8 +11,7 @@ const { loading } = useQuasar()
 
 const externalFilterSlots = useStorage('filterSlots', [], sessionStorage)
 const { data: machines } = await useFetch('/api/machine')
-const rowsNumber = await $fetch('/api/joborder/joborder-count')
-const pagination = ref({ rowsPerPage: 50, page: 1, rowsNumber } as QTableProps['pagination'])
+const pagination = ref({ rowsPerPage: 50, page: 1 } as QTableProps['pagination'])
 
 const joborders = ref([] as any[])
 async function fetchData() {
