@@ -2,10 +2,13 @@
 import { FormKitSchema } from '@formkit/vue'
 import { changeLocale } from '@formkit/i18n'
 import { klona } from 'klona'
+import { onKeyStroke } from '@vueuse/core'
+import type { ColumnDefinition, Columns, Machine } from '~/types'
 
 const props = defineProps<{
   rows: T[]
-  columns: object
+  columns: Columns
+  machines: Machine[]
   formClass: string
 }>()
 
@@ -23,21 +26,58 @@ const showModal = ref(false)
 const selected = ref<T[]>([])
 const formData = ref<T>({})
 const action = ref<'add' | 'edit'>()
-const tableColumns = ref([])
+const tableColumns = ref<ColumnDefinition[]>([])
 const schema = ref([])
-const visibleColumns = ref([])
+const visibleColumns = ref<string[]>([])
 const rowKey = ref()
 
 const cols = computed(() => props.columns)
 
+onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  const currentIndex = props.rows.indexOf(selected.value[0])
+
+  if (currentIndex > 0) {
+    const newSelection = props.rows[currentIndex - 1]
+    selected.value = [newSelection]
+  }
+})
+
+onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
+  event.preventDefault()
+  const currentIndex = props.rows.indexOf(selected.value[0])
+
+  if (currentIndex < props.rows.length - 1) {
+    const newSelection = props.rows[currentIndex + 1]
+    selected.value = [newSelection]
+  }
+})
+
 watch(cols, (_newValue, _oldValue) => {
   tableColumns.value = []
-  schema.value = []
   visibleColumns.value = []
 
   for (const [key, column] of Object.entries(props.columns)) {
     tableColumns.value.push({ ...column, name: key })
 
+    if (column.visible)
+      visibleColumns.value.push(key)
+
+    if (column.unique)
+      rowKey.value = key
+  }
+
+  updateSchemaFields()
+}, { immediate: true })
+
+watch(() => formData.value.theoreticalSteam, (newValue) => {
+  updateSchemaFields()
+}, { immediate: false })
+
+function updateSchemaFields() {
+  schema.value = []
+
+  for (const [key, column] of Object.entries(props.columns)) {
     if (column.editable && column.schema) {
       const deepClonedSchema = klona(column.schema)
       const schemaItem = {
@@ -47,19 +87,20 @@ watch(cols, (_newValue, _oldValue) => {
         label: column.label,
         $formkit: column.type,
       }
+
+      if ((key === 'steamKgPerHour' || key === 'steamValveDo')
+        && formData.value.theoreticalSteam !== true) {
+        schemaItem.disabled = true
+      }
+
       schema.value.push(schemaItem)
     }
-
-    if (column.visible)
-      visibleColumns.value.push(key)
-
-    if (column.unique)
-      rowKey.value = key
   }
-}, { immediate: true })
+}
 
 function showForm(buttonAction: 'add' | 'edit') {
   action.value = buttonAction
+
   if (action.value === 'edit' && selected.value.length) {
     formData.value = { ...selected.value[0] }
     showModal.value = true
@@ -68,6 +109,24 @@ function showForm(buttonAction: 'add' | 'edit') {
     formData.value = {}
     showModal.value = true
   }
+
+  for (const [key, column] of Object.entries(props.columns)) {
+    if (column.editable && column.schema) {
+      if (key === 'MTTempIo') {
+        column.schema.disabled = buttonAction === 'add'
+
+        const machine = props.machines.find((m) => {
+          return m.machineId === formData.value.machineId
+        })
+
+        column.schema.disabled = machine?.theoreticalSteam !== true
+      }
+    }
+  }
+
+  nextTick(() => {
+    updateSchemaFields()
+  })
 }
 
 function handleSubmit(formData: T) {
@@ -86,6 +145,61 @@ function handleDelete() {
   } else
     notifyError(t('pleaseSelectaRowToDelete'))
 }
+
+function isRowSelected(row: T) {
+  return selected.value.includes(row)
+}
+
+function removeSelection(row: T) {
+  selected.value = selected.value.filter(r => r !== row)
+}
+
+const ctrl = useKeyModifier('Control')
+const shift = useKeyModifier('Shift')
+
+function onRowClick(event: Event, row: T) {
+  const pointer = event as PointerEvent
+
+  if (pointer.button === 2) { // Right click
+    if (!isRowSelected(row))
+      selected.value = [row]
+    return
+  }
+
+  if (ctrl.value) {
+    isRowSelected(row) ? removeSelection(row) : selected.value.push(row)
+    return
+  }
+
+  if (shift.value) {
+    nextTick(() => {
+      const tableRows = props.rows
+      const firstIndex = Math.min(
+        tableRows.indexOf(selected.value[0]),
+        tableRows.indexOf(row),
+      )
+      const lastIndex = Math.max(
+        tableRows.indexOf(selected.value[0]),
+        tableRows.indexOf(row),
+      )
+      selected.value = tableRows.slice(firstIndex, lastIndex + 1)
+    })
+    return
+  }
+
+  // Default: Left or middle click
+  selected.value = [row]
+}
+
+async function onRowDoubleClick(event: Event) {
+  const target = event.target as HTMLElement
+
+  if (target.closest('.q-checkbox'))
+    return
+
+  showForm('edit')
+}
+
 // TODO: fix locale change error
 watch(showModal, async (newValue, _oldValue) => {
   await nextTick()
@@ -128,12 +242,16 @@ watch(showModal, async (newValue, _oldValue) => {
     :rows="rows"
     :hide-bottom="true"
     :columns="tableColumns"
-    selection="single"
+    selection="multiple"
     :row-key="rowKey"
     :visible-columns="visibleColumns"
-    class="overflow-y-auto	h-160"
+    class="overflow-y-auto	h-160 select-none"
     :rows-per-page-options="[0]"
+    table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
+    table-header-class="bg-gray-1 dark:bg-dark-4"
     @update:selected="emit('select', selected)"
+    @row-click="onRowClick"
+    @row-dblclick="onRowDoubleClick"
   >
     <template #body-cell="props">
       <q-td :props="props">
@@ -155,6 +273,7 @@ watch(showModal, async (newValue, _oldValue) => {
           @click="showModal = false;emit('close')"
         />
       </q-card-actions>
+
       <q-card-section>
         <FormKit
           v-model="formData"

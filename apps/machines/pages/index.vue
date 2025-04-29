@@ -669,7 +669,7 @@ function handleClose() {
       target=".q-table"
       @click="(option: IContextMenuOption) => option.onClick(selected)"
     />
-    <FormTableKit
+    <MachineList
       :rows="machines"
       :columns="columns"
       :machines="allMachines"
@@ -728,7 +728,7 @@ function handleClose() {
           {{ networkConnectionMessage.message }}
         </h3>
       </template>
-    </FormTableKit>
+    </MachineList>
 
     <q-scroll-area style="height: 200px">
       <div
