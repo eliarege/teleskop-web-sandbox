@@ -52,8 +52,23 @@ const { data: MTTempIoOptions } = useAuthFetch('/api/machines/mt-temp-io-options
   },
 })
 
+const { data: steamValveDoOptions } = useAuthFetch('/api/machines/steam-valve-do-options', {
+  default: () => [],
+  transform: (steamValveDoOptions: { machineId: number, id: number, name: string }[]) => {
+    return steamValveDoOptions.map(io => ({
+      machineId: io.machineId,
+      label: io.name,
+      value: io.id,
+    }))
+  },
+})
+
 function getMTTempIOOptions(machineId: number) {
   return MTTempIoOptions.value.filter(io => io.machineId === machineId)
+}
+
+function getSteamValveDoOptions(machineId: number) {
+  return steamValveDoOptions.filter(io => io.machineId === machineId)
 }
 
 const columns = computed(() => ({
@@ -393,12 +408,13 @@ const columns = computed(() => ({
     align: 'left',
     filterable: true,
     filterType: 'includes',
-    type: 'number',
+    type: 'select',
     visible: false,
     editable: true,
     schema: {
       filled: true,
       validation: 'min:1',
+      options: (row: any) => getSteamValveDoOptions(row.machineId),
     },
   },
 }))
