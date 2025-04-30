@@ -9,6 +9,7 @@ import { useFuse } from '@vueuse/integrations/useFuse'
 import { addDays, addHours, addMinutes, addSeconds } from 'date-fns'
 import { eventTooltip, expediteEvents, postponeEvent } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore, getResourceRow, removeAttributes, sortEventsByDateDesc } from '~/lib/queueBased'
+import { Apps } from '~/shared/constants'
 import type { QueueBasedEvent, QueueBasedNonActualEvent } from '~/shared/queueBased'
 import type { MachineStatus, PlanParameters } from '~/shared/types'
 import { useSettingStore } from '~/store/settings'
@@ -41,6 +42,10 @@ const jobOrderUploadLoading = ref(false)
 
 const refreshingScheduler = ref(false)
 const store = useSettingStore()
+const appList = useAppList()
+
+const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.url ?? null)
+const router = useRouter()
 
 const { data: events, refresh: eventRefresh, pending: eventPending } = await useAuthFetch<QueueBasedEvent[]>('/api/queueBased/schedulerEvents', {
   immediate: false,
@@ -594,14 +599,29 @@ onMounted(async () => {
       unit: 'minute',
       increment: 5,
     },
-    onEventMenuBeforeShow: (a: any) => {
-      if (a.eventRecord.originalData.pinned) {
-        a.items.pin.hidden = true
-        a.items.unpin.hidden = false
-      } else {
-        a.items.pin.hidden = false
-        a.items.unpin.hidden = true
+    onEventMenuBeforeShow: ({ eventRecord, items }) => {
+      if (eventRecord.originalData.eventType === 'stop') {
+        return false
       }
+      if (eventRecord.originalData.pinned) {
+        items.pin.hidden = true
+        items.unpin.hidden = false
+      } else {
+        items.pin.hidden = false
+        items.unpin.hidden = true
+      }
+      const isPlanned = eventRecord.originalData.eventType === 'planned'
+
+      const updateDisabledStatus = (item: any) => {
+        item.disabled = !isPlanned
+      }
+
+      items.process.disabled = isPlanned
+
+      updateDisabledStatus(items.delete)
+      updateDisabledStatus(items.pin)
+      updateDisabledStatus(items.sendToMachine)
+      updateDisabledStatus(items.unplan)
     },
     columns: [
       {
@@ -740,7 +760,7 @@ onMounted(async () => {
             text: t('queue-based.ctx-menu.pin'),
             async onItem({ eventRecord }: any) {
               await kc.fetch('api/pinEvent', {
-                query: { planKey: eventRecord.originalData.id },
+                query: { planKey: eventRecord.originalData.planKey },
                 method: 'PUT',
               })
                 .then(() => {
@@ -756,7 +776,7 @@ onMounted(async () => {
             text: t('queue-based.ctx-menu.unpin'),
             async onItem({ eventRecord }: any) {
               await kc.fetch('api/unpinEvent', {
-                query: { planKey: eventRecord.originalData.id },
+                query: { planKey: eventRecord.originalData.planKey },
                 method: 'PUT',
               })
                 .then(() => {
@@ -780,11 +800,11 @@ onMounted(async () => {
             hidden: true,
           },
           properties: {
-            icon: 'b-fa-solid b-fa-calendar-xmark',
+            icon: 'b-fa-solid b-fa-circle-info',
             text: t('queue-based.ctx-menu.properties'),
             onItem({ eventRecord, assignmentRecord }) {
-              const planKey = eventRecord.originalData.id
-              const jobOrder = eventRecord.originalData.name
+              const planKey = eventRecord.originalData.planKey
+              const jobOrder = eventRecord.originalData.jobOrder
               const machineId = assignmentRecord.originalData.resourceId
               const fabricWeight = eventRecord.originalData.fabricWeight
               const theoreticalDuration = eventRecord.originalData.theoreticalDuration
@@ -796,8 +816,20 @@ onMounted(async () => {
               setProperties(machineId, jobOrder, planKey, fabricWeight, theoreticalDuration, program, isBatchStarted)
             },
           },
+          process: {
+            icon: 'b-fa-solid b-fa-chart-line',
+            text: t('queue-based.ctx-menu.process'),
+            onItem({ eventRecord }) {
+              navigateTo(`${archiveUrl.value}/${eventRecord.originalData.batchKey}`, {
+                external: true,
+                open: {
+                  target: '_blank',
+                },
+              })
+            },
+          },
           sendToMachine: {
-            icon: 'b-fa-solid b-fa-calendar-xmark',
+            icon: 'b-fa-solid b-fa-share',
             text: t('upload-joborder._'),
             async onItem({ eventRecord, resourceRecord }) {
               const planKey: number = eventRecord.originalData.planKey

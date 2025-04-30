@@ -44,6 +44,7 @@
       "task-delete": "Delete Job Order",
       "remove-plan": "Remove From Plan",
       "properties": "Job Order Properties",
+      "process": "Process Information",
       "pin": "Pin Task",
       "unpin": "Unpin Task",
       "change-color": "Change Job Order Color"
