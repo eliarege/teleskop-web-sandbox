@@ -285,7 +285,8 @@
         "success": "Tartım istekleri başarıyla yenilendi.",
         "fail": "Tartım isteklerini yenilerken hata oluştu."
       }
-    }
+    },
+    "status": "Durum"
   },
   "registeredJobOrders": {
     "_": "Kayıtlı İş Emirleri",
