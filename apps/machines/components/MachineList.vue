@@ -29,49 +29,57 @@ const { notifyError } = useNotify()
 const showModal = ref(false)
 const selected = ref<T[]>([])
 const formData = ref<T>({})
-// const tableColumns = ref([])
 const action = ref<'add' | 'edit'>()
 const schema = ref([])
-const rowKey = ref()
 
-// const cols = computed(() => props.columns)
+const ctrl = useKeyModifier('Control')
+const shift = useKeyModifier('Shift')
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
   event.preventDefault()
-  const currentIndex = props.rows.indexOf(selected.value[0])
+  if (!selected.value.length && props.rows.length > 0) {
+    selected.value = [props.rows[0]]
+    return
+  }
 
+  const currentIndex = props.rows.indexOf(selected.value[0])
   if (currentIndex > 0) {
     const newSelection = props.rows[currentIndex - 1]
-    selected.value = [newSelection]
+
+    if (shift.value) {
+      if (!selected.value.includes(newSelection)) {
+        selected.value = [...selected.value, newSelection]
+      } else {
+        selected.value = selected.value.filter(row => row !== selected.value[selected.value.length - 1])
+      }
+    } else {
+      selected.value = [newSelection]
+    }
   }
 })
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
   event.preventDefault()
-  const currentIndex = props.rows.indexOf(selected.value[0])
+  if (!selected.value.length && props.rows.length > 0) {
+    selected.value = [props.rows[0]]
+    return
+  }
 
+  const currentIndex = props.rows.indexOf(selected.value[0])
   if (currentIndex < props.rows.length - 1) {
     const newSelection = props.rows[currentIndex + 1]
-    selected.value = [newSelection]
+
+    if (shift.value) {
+      if (!selected.value.includes(newSelection)) {
+        selected.value = [...selected.value, newSelection]
+      } else {
+        selected.value = selected.value.filter(row => row !== selected.value[selected.value.length - 1])
+      }
+    } else {
+      selected.value = [newSelection]
+    }
   }
 })
-
-// watch(cols, (_newValue, _oldValue) => {
-//   tableColumns.value = []
-//   visibleColumns.value = []
-
-//   for (const [key, column] of Object.entries(props.columns)) {
-//     tableColumns.value.push(column)
-
-//     if (column.visible)
-//       visibleColumns.value.push(key)
-
-//     if (column.unique)
-//       rowKey.value = key
-//   }
-
-//   updateSchemaFields()
-// }, { immediate: true })
 
 watch(() => formData.value.theoreticalSteam, (newValue) => {
   updateSchemaFields()
@@ -157,9 +165,6 @@ function removeSelection(row: T) {
   selected.value = selected.value.filter(r => r !== row)
 }
 
-const ctrl = useKeyModifier('Control')
-const shift = useKeyModifier('Shift')
-
 function onRowClick(event: Event, row: T) {
   const pointer = event as PointerEvent
 
@@ -174,19 +179,18 @@ function onRowClick(event: Event, row: T) {
     return
   }
 
-  if (shift.value) {
-    nextTick(() => {
-      const tableRows = props.rows
-      const firstIndex = Math.min(
-        tableRows.indexOf(selected.value[0]),
-        tableRows.indexOf(row),
-      )
-      const lastIndex = Math.max(
-        tableRows.indexOf(selected.value[0]),
-        tableRows.indexOf(row),
-      )
-      selected.value = tableRows.slice(firstIndex, lastIndex + 1)
-    })
+  if (shift.value && selected.value.length > 0) {
+    const tableRows = props.rows
+    const lastSelectedRow = selected.value[selected.value.length - 1]
+    const lastSelectedIndex = tableRows.indexOf(lastSelectedRow)
+    const clickedIndex = tableRows.indexOf(row)
+
+    const startIndex = Math.min(lastSelectedIndex, clickedIndex)
+    const endIndex = Math.max(lastSelectedIndex, clickedIndex)
+
+    const rowsToSelect = tableRows.slice(startIndex, endIndex + 1)
+
+    selected.value = rowsToSelect
     return
   }
 
@@ -245,9 +249,10 @@ watch(showModal, async (newValue, _oldValue) => {
     :rows="rows"
     :columns="columns"
     :hide-bottom="true"
-    selection="multiple"
     row-key="machineId"
-    class="overflow-y-auto	h-160 select-none"
+    selection="multiple"
+    binary-state-sort
+    class="overflow-y-auto h-160 select-none"
     :rows-per-page-options="[0]"
     table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
     table-header-class="bg-gray-1 dark:bg-dark-4"
