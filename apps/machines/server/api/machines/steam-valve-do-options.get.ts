@@ -1,11 +1,12 @@
 import { knex } from '~/server/connectionPool'
+import type { IOOption } from '~/types'
 
 export default defineAuthEventHandler(async () => {
-  const steamValveDoOptions: { machineId: number, id: number, name: string }[] = await knex('BFMACHDOUT')
+  const steamValveDoOptions: IOOption[] = await knex('BFMACHDOUT')
     .select({
       machineId: 'MACHINEID',
-      id: 'ID',
-      name: 'NAME',
+      ioId: 'ID',
+      ioName: 'NAME',
     })
 
   return steamValveDoOptions

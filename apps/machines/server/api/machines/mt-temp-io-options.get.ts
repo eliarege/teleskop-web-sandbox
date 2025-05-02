@@ -1,11 +1,12 @@
 import { knex } from '~/server/connectionPool'
+import type { IOOption } from '~/types'
 
 export default defineAuthEventHandler(async () => {
-  const MTTempIOOptions: { machineId: number, id: number, name: string }[] = await knex('BFMACHAIN')
+  const MTTempIOOptions: IOOption[] = await knex('BFMACHAIN')
     .select({
       machineId: 'MACHINEID',
-      id: 'ID',
-      name: 'NAME',
+      ioId: 'ID',
+      ioName: 'NAME',
     })
 
   return MTTempIOOptions

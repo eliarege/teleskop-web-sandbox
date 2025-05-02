@@ -36,27 +36,27 @@ const { data: machineGroups } = useAuthFetch('/api/machines/machine-groups', {
   },
 })
 
-const { data: MTTempIoOptions } = useAuthFetch('/api/machines/mt-temp-io-options', {
+const { data: MTTempIoOptions } = useAuthFetch<IOOption[]>('/api/machines/mt-temp-io-options', {
   default: () => [],
   transform: (MTTempIoOptions: IOOption[]) => {
     return MTTempIoOptions.map(io => ({
       machineId: io.machineId,
-      label: io.name,
-      value: io.id,
+      label: io.ioName,
+      value: io.ioId,
     }))
   },
 })
 
-// const { data: steamValveDoOptions } = useAuthFetch('/api/machines/steam-valve-do-options', {
-//   default: () => [],
-//   transform: (steamValveDoOptions: { machineId: number, id: number, name: string }[]) => {
-//     return steamValveDoOptions.map(io => ({
-//       machineId: io.machineId,
-//       label: io.name,
-//       value: io.id,
-//     }))
-//   },
-// })
+const { data: steamValveDoOptions } = useAuthFetch<IOOption[]>('/api/machines/steam-valve-do-options', {
+  default: () => [],
+  transform: (steamValveDoOptions: IOOption[]) => {
+    return steamValveDoOptions.map(io => ({
+      machineId: io.machineId,
+      label: io.ioName,
+      value: io.ioId,
+    }))
+  },
+})
 
 // function getMTTempIOOptions(machineId: number) {
 //   return MTTempIoOptions.value.filter(io => io.machineId === machineId)
@@ -856,6 +856,7 @@ const columns = ref<MachineTableColumn[]>([
       :machines="allMachines"
       :machine-groups="machineGroups"
       :mt-temp-io-options="MTTempIoOptions"
+      :steam-valve-do-options="steamValveDoOptions"
       form-class="grid grid-cols-5 gap-4 grid-rows-7 h-160 select-none"
       @add="handleAdd"
       @edit="handleEdit"

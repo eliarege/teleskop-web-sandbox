@@ -13,6 +13,7 @@ const props = defineProps<{
   machines: Machine[]
   machineGroups: MachineGroup[]
   mtTempIoOptions: IOOption[]
+  steamValveDoOptions: IOOption[]
 }>()
 
 const emit = defineEmits<{
@@ -208,10 +209,6 @@ watch(showModal, async (newValue, _oldValue) => {
   if (newValue)
     changeLocale(locale.value)
 })
-
-const { data: allMachines } = useAuthFetch<Machine[]>('/api/machines/machines', {
-  default: () => [],
-})
 </script>
 
 <template>
@@ -397,9 +394,11 @@ const { data: allMachines } = useAuthFetch<Machine[]>('/api/machines/machines', 
             :disabled="!formData.theoreticalSteam"
           />
           <FormKit
-            type="text"
+            type="select"
             name="steamValveDo"
             :label="t('steamValveDo')"
+            :options="steamValveDoOptions
+              .filter((opt: IOOption) => opt.machineId === formData.machineId)"
             :disabled="!formData.theoreticalSteam"
           />
           <slot name="form-content" :form-data="formData" />
