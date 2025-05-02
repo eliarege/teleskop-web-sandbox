@@ -3,13 +3,16 @@ import { FormKitSchema } from '@formkit/vue'
 import { changeLocale } from '@formkit/i18n'
 import { klona } from 'klona'
 import { onKeyStroke } from '@vueuse/core'
-import type { ColumnDefinition, Columns, Machine } from '~/types'
+import type { IOOption, Machine, MachineGroup, MachineTableColumn } from '~/types'
+import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 
 const props = defineProps<{
-  rows: T[]
-  columns: Columns
-  machines: Machine[]
   formClass: string
+  rows: Machine[]
+  columns: MachineTableColumn[]
+  machines: Machine[]
+  machineGroups: MachineGroup[]
+  mtTempIoOptions: IOOption[]
 }>()
 
 const emit = defineEmits<{
@@ -25,13 +28,12 @@ const { notifyError } = useNotify()
 const showModal = ref(false)
 const selected = ref<T[]>([])
 const formData = ref<T>({})
+// const tableColumns = ref([])
 const action = ref<'add' | 'edit'>()
-const tableColumns = ref<ColumnDefinition[]>([])
 const schema = ref([])
-const visibleColumns = ref<string[]>([])
 const rowKey = ref()
 
-const cols = computed(() => props.columns)
+// const cols = computed(() => props.columns)
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
   event.preventDefault()
@@ -53,22 +55,22 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
   }
 })
 
-watch(cols, (_newValue, _oldValue) => {
-  tableColumns.value = []
-  visibleColumns.value = []
+// watch(cols, (_newValue, _oldValue) => {
+//   tableColumns.value = []
+//   visibleColumns.value = []
 
-  for (const [key, column] of Object.entries(props.columns)) {
-    tableColumns.value.push({ ...column, name: key })
+//   for (const [key, column] of Object.entries(props.columns)) {
+//     tableColumns.value.push(column)
 
-    if (column.visible)
-      visibleColumns.value.push(key)
+//     if (column.visible)
+//       visibleColumns.value.push(key)
 
-    if (column.unique)
-      rowKey.value = key
-  }
+//     if (column.unique)
+//       rowKey.value = key
+//   }
 
-  updateSchemaFields()
-}, { immediate: true })
+//   updateSchemaFields()
+// }, { immediate: true })
 
 watch(() => formData.value.theoreticalSteam, (newValue) => {
   updateSchemaFields()
@@ -206,6 +208,10 @@ watch(showModal, async (newValue, _oldValue) => {
   if (newValue)
     changeLocale(locale.value)
 })
+
+const { data: allMachines } = useAuthFetch<Machine[]>('/api/machines/machines', {
+  default: () => [],
+})
 </script>
 
 <template>
@@ -240,11 +246,10 @@ watch(showModal, async (newValue, _oldValue) => {
   <q-table
     v-model:selected="selected"
     :rows="rows"
+    :columns="columns"
     :hide-bottom="true"
-    :columns="tableColumns"
     selection="multiple"
     :row-key="rowKey"
-    :visible-columns="visibleColumns"
     class="overflow-y-auto	h-160 select-none"
     :rows-per-page-options="[0]"
     table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
@@ -252,16 +257,7 @@ watch(showModal, async (newValue, _oldValue) => {
     @update:selected="emit('select', selected)"
     @row-click="onRowClick"
     @row-dblclick="onRowDoubleClick"
-  >
-    <template #body-cell="props">
-      <q-td :props="props">
-        <component :is="props.col.renderCell(props.row)" v-if="props.col.renderCell" />
-        <span v-else>
-          {{ props.value }}
-        </span>
-      </q-td>
-    </template>
-  </q-table>
+  />
 
   <!-- Form Dialog -->
   <q-dialog v-model="showModal" @hide="emit('close')">
@@ -282,7 +278,130 @@ watch(showModal, async (newValue, _oldValue) => {
           :form-class="`${formClass ?? 'grid items-baseline'} grid-items-baseline`"
           @submit="handleSubmit"
         >
-          <FormKitSchema :schema="schema" />
+          <FormKit
+            type="text"
+            name="machineId"
+            label="ID"
+          />
+          <FormKit
+            type="text"
+            name="machineCode"
+            :label="t('machineName')"
+          />
+          <FormKit
+            type="select"
+            name="groupName"
+            :label="t('machineGroup')"
+            :options="machineGroups"
+          />
+          <FormKit
+            type="select"
+            name="tbbModel"
+            label="TBB Model"
+            :options="tbbModelOptions"
+          />
+          <FormKit
+            type="text"
+            name="machineCapacity"
+            :label="t('machineCapacity')"
+          />
+          <FormKit
+            type="text"
+            name="reelCount"
+            :label="t('reelCount')"
+          />
+          <FormKit
+            type="text"
+            name="nozzleCount"
+            :label="t('nozzleCount')"
+          />
+          <FormKit
+            type="text"
+            name="ip"
+            label="IP"
+          />
+          <FormKit
+            type="text"
+            name="theoricalCharge"
+            :label="t('theoricalCharge')"
+          />
+          <FormKit
+            type="text"
+            name="theoricalChargeDuration"
+            :label="t('theoricalChargeDuration')"
+          />
+          <FormKit
+            type="select"
+            name="steamUnit"
+            :label="t('steamUnit')"
+            :options="steamUnitOptions"
+          />
+          <FormKit
+            type="checkbox"
+            name="inUse"
+            :label="t('inUse')"
+          />
+          <FormKit
+            type="checkbox"
+            name="additionalTank1"
+            :label="t('additionalTank1')"
+          />
+          <FormKit
+            type="checkbox"
+            name="additionalTank2"
+            :label="t('additionalTank2')"
+          />
+          <FormKit
+            type="checkbox"
+            name="additionalTank3"
+            :label="t('additionalTank3')"
+          />
+          <FormKit
+            type="checkbox"
+            name="additionalTank4"
+            :label="t('additionalTank4')"
+          />
+          <FormKit
+            type="checkbox"
+            name="reserveTank"
+            :label="t('reserveTank')"
+          />
+
+          <FormKit
+            type="checkbox"
+            name="storeElectricityAsInc"
+            :label="t('storeElectricityAsInc')"
+          />
+          <FormKit
+            type="checkbox"
+            name="theoreticalWater"
+            :label="t('theoreticalWaterCalculationActive')"
+          />
+          <FormKit
+            type="select"
+            name="MTTempIo"
+            :label="t('MTTempIo')"
+            :options="mtTempIoOptions
+              .filter((opt: IOOption) => opt.machineId === formData.machineId)"
+            :disabled="!formData.version"
+          />
+          <FormKit
+            type="checkbox"
+            name="theoreticalSteam"
+            :label="t('theoreticalSteam')"
+          />
+          <FormKit
+            type="text"
+            name="steamKgPerHour"
+            :label="t('steamKgPerHour')"
+            :disabled="!formData.theoreticalSteam"
+          />
+          <FormKit
+            type="text"
+            name="steamValveDo"
+            :label="t('steamValveDo')"
+            :disabled="!formData.theoreticalSteam"
+          />
           <slot name="form-content" :form-data="formData" />
           <q-card-actions align="right" class="col-span-full">
             <FormKit type="submit" :label="t('submit')" />

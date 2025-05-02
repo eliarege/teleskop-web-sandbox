@@ -1,8 +1,7 @@
 export interface Machine {
   machineId: number
   machineCode: string
-  groupName: string
-  groupId: number
+  groupNo: number
   tbbModel: string
   plcModel: string
   ip: string
@@ -18,6 +17,8 @@ export interface Machine {
   additionalTank3: boolean
   additionalTank4: boolean
   reserveTank: boolean
+  storeElectricityAsInc: boolean
+  theoreticalWater: boolean
   inUse: boolean
   MTTempIo: string[]
   version: string
@@ -360,3 +361,28 @@ export interface ColumnDefinition {
 }
 
 export type Columns = Record<string, ColumnDefinition>
+
+export interface MachineTableColumn extends Omit<QTableColumn, 'label'> {
+  name: string
+  label: string | Readonly<Ref<string>>
+  field: keyof Machine | ((row: Machine) => any)
+  sortable?: boolean
+  align?: 'left' | 'right' | 'center'
+  format?: (value: Date, row: Machine) => string
+  tooltip?: (value: Date, row: Machine) => string
+}
+
+export type QTableColumn<
+  Row extends Record<string, any> = any,
+  Key = keyof Row extends string ? keyof Row : string,
+  Field = Key | ((row: Row) => any),
+> = Omit<NonNullable<QTableProps['columns']>[number], 'field' | 'format'> & {
+  field: Field
+  format?: (val: any, row: Row) => string
+}
+
+export interface IOOption {
+  machineId: number
+  ioId: number
+  ioName: string
+}
