@@ -426,7 +426,6 @@ const { data: allMachines } = useAuthFetch<Machine[]>('/api/machines/machines', 
 
 watch(allMachines, (val) => {
   rows.value = val || []
-  console.log('rows: ', rows.value)
 })
 
 const selected = ref<Partial<Machine>>({
