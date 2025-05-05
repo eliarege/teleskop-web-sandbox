@@ -1,7 +1,10 @@
+import type { QTableProps } from 'quasar'
+
 export interface Machine {
   machineId: number
   machineCode: string
-  groupNo: number
+  groupId: number
+  groupName: string
   tbbModel: string
   plcModel: string
   ip: string

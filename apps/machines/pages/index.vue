@@ -15,7 +15,7 @@ interface Option {
 }
 
 const kc = useKeycloak()
-const { t, locale, setLocale } = useI18n()
+const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 
 const { data: databaseVersion } = useAuthFetch('/api/machines/database-version', {
@@ -58,360 +58,6 @@ const { data: steamValveDoOptions } = useAuthFetch<IOOption[]>('/api/machines/st
   },
 })
 
-// function getMTTempIOOptions(machineId: number) {
-//   return MTTempIoOptions.value.filter(io => io.machineId === machineId)
-// }
-
-// function getSteamValveDoOptions(machineId: number) {
-//   return steamValveDoOptions.filter(io => io.machineId === machineId)
-// }
-
-// const columns = computed(() => ({
-//   machineId: {
-//     label: 'ID',
-//     field: 'machineId',
-//     align: 'left',
-//     filterable: true,
-//     unique: true,
-//     type: 'number',
-//     visible: true,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'required|min:1',
-//     },
-//   },
-//   machineCode: {
-//     label: t('machineName'),
-//     field: 'machineCode',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'text',
-//     visible: true,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'required',
-//     },
-//   },
-//   groupNo: {
-//     label: t('group'),
-//     field: 'groupNo',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'select',
-//     visible: true,
-//     editable: true,
-//     format: (val: number) => machineGroups.value.find(d => d.value === val)?.label || val,
-//     schema: {
-//       validation: 'required',
-//       options: machineGroups.value,
-//     },
-//   },
-//   tbbModel: {
-//     label: 'Model',
-//     field: 'tbbModel',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'select',
-//     visible: true,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'required',
-//       options: tbbModelOptions,
-//     },
-//   },
-//   version: {
-//     label: t('version'),
-//     field: 'version',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'text',
-//     visible: true,
-//     editable: false,
-//     schema: {
-//       filled: true,
-//     },
-//   },
-//   machineCapacity: {
-//     label: t('machineCapacity'),
-//     field: 'machineCapacity',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'number',
-//     visible: true,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'required|min:1',
-//     },
-//   },
-//   reelCount: {
-//     label: t('reelCount'),
-//     field: 'reelCount',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'number',
-//     visible: true,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'min:1',
-//     },
-//   },
-//   nozzleCount: {
-//     label: t('nozzleCount'),
-//     field: 'nozzleCount',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'number',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'min:1',
-//     },
-//   },
-//   ip: {
-//     label: 'Ip',
-//     field: 'ip',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'text',
-//     visible: true,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'required',
-//     },
-//   },
-//   plcModel: {
-//     label: t('plcModel'),
-//     field: 'plcModel',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'text',
-//     visible: true,
-//     editable: false,
-//     schema: {
-//       filled: true,
-//     },
-//   },
-
-//   ////
-//   theoricalCharge: {
-//     label: t('theoricalCharge'),
-//     field: 'theoricalCharge',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'number',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'required|min:1',
-//     },
-//   },
-//   theoricalChargeDuration: {
-//     label: t('theoricalChargeDuration'),
-//     field: 'theoricalChargeDuration',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'number',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'min:1',
-//     },
-//   },
-//   steamUnit: {
-//     label: t('steamUnit'),
-//     field: 'steamUnit',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'select',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       options: steamUnitOptions,
-//     },
-//   },
-//   inUse: {
-//     label: t('inUse'),
-//     field: 'inUse',
-//     align: 'left',
-//     type: 'checkbox',
-//     visible: true,
-//     editable: true,
-//     format: (val: boolean) => val ? t('yes') : t('no'),
-//     schema: {
-//       filled: true,
-//     },
-//   },
-//   additionalTank1: {
-//     label: t('additionalTank1'),
-//     field: 'additionalTank1',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'checkbox',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//     },
-//   },
-//   additionalTank2: {
-//     label: t('additionalTank2'),
-//     field: 'additionalTank2',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'checkbox',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//     },
-//   },
-//   additionalTank3: {
-//     label: t('additionalTank3'),
-//     field: 'additionalTank3',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'checkbox',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//     },
-//   },
-//   additionalTank4: {
-//     label: t('additionalTank4'),
-//     field: 'additionalTank4',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'checkbox',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//     },
-//   },
-//   reserveTank: {
-//     label: t('reserveTank'),
-//     field: 'reserveTank',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'checkbox',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//     },
-//   },
-//   storeElectricityAsInc: {
-//     label: t('storeElectricityAsInc'),
-//     field: 'storeElectricityAsInc',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'checkbox',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//     },
-//   },
-//   theoreticalWater: {
-//     label: t('theoreticalWaterCalculationActive'),
-//     field: 'theoreticalWater',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'checkbox',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//     },
-//   },
-//   MTTempIo: {
-//     label: t('MTTempIo'),
-//     field: 'MTTempIo',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'select',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'min:1',
-//       options: (row: any) => getMTTempIOOptions(row.machineId),
-//     },
-//   },
-//   theoreticalSteam: {
-//     label: t('theoreticalSteam'),
-//     field: 'theoreticalSteam',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'checkbox',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//     },
-//   },
-//   steamKgPerHour: {
-//     label: t('steamKgPerHour'),
-//     field: 'steamKgPerHour',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'number',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       validation: 'min:1',
-//     },
-//   },
-//   steamValveDo: {
-//     label: t('steamValveDo'),
-//     field: 'steamValveDo',
-//     align: 'left',
-//     filterable: true,
-//     filterType: 'includes',
-//     type: 'select',
-//     visible: false,
-//     editable: true,
-//     schema: {
-//       filled: true,
-//       options: (row: any) => getSteamValveDoOptions(row.machineId),
-//     },
-//   },
-// }))
-
 const { data: machines, refresh } = useAuthFetch<Machine[]>('/api/machines/machines', {
   default: () => [],
   method: 'POST',
@@ -420,11 +66,7 @@ const { data: machines, refresh } = useAuthFetch<Machine[]>('/api/machines/machi
 
 const rows = ref<Machine[]>([])
 
-const { data: allMachines } = useAuthFetch<Machine[]>('/api/machines/machines', {
-  default: () => [],
-})
-
-watch(allMachines, (val) => {
+watch(machines, (val) => {
   rows.value = val || []
 })
 
@@ -680,9 +322,9 @@ const columns = ref<MachineTableColumn[]>([
     align: 'left',
   },
   {
-    name: 'groupNo',
-    label: t('groupNo'),
-    field: 'groupNo',
+    name: 'groupName',
+    label: t('group'),
+    field: 'groupName',
     sortable: true,
     align: 'left',
   },
@@ -853,7 +495,7 @@ const columns = ref<MachineTableColumn[]>([
     <MachineList
       :rows="rows"
       :columns="columns"
-      :machines="allMachines"
+      :machines="machines"
       :machine-groups="machineGroups"
       :mt-temp-io-options="MTTempIoOptions"
       :steam-valve-do-options="steamValveDoOptions"
