@@ -105,7 +105,7 @@ async function handleSubmit() {
         :columns="columns"
         hide-pagination
         :pagination="{ rowsPerPage: 0 }"
-        row-key="groupNo"
+        row-key="groupId"
         separator="cell"
         bordered
         table-header-class="table-header"
