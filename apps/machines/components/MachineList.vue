@@ -1,5 +1,4 @@
 <script setup lang="ts" generic="T extends object">
-import { FormKitSchema } from '@formkit/vue'
 import { changeLocale } from '@formkit/i18n'
 import { klona } from 'klona'
 import { onKeyStroke } from '@vueuse/core'
@@ -196,6 +195,7 @@ function onRowClick(event: Event, row: T) {
 
   // Default: Left or middle click
   selected.value = [row]
+  emit('select', selected.value)
 }
 
 async function onRowDoubleClick(event: Event) {
@@ -256,7 +256,6 @@ watch(showModal, async (newValue, _oldValue) => {
     :rows-per-page-options="[0]"
     table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
     table-header-class="bg-gray-1 dark:bg-dark-4"
-    @update:selected="emit('select', selected)"
     @row-click="onRowClick"
     @row-dblclick="onRowDoubleClick"
   />
@@ -292,7 +291,7 @@ watch(showModal, async (newValue, _oldValue) => {
           />
           <FormKit
             type="select"
-            name="groupName"
+            name="groupId"
             :label="t('machineGroup')"
             :options="machineGroups"
           />
@@ -408,7 +407,11 @@ watch(showModal, async (newValue, _oldValue) => {
           />
           <slot name="form-content" :form-data="formData" />
           <q-card-actions align="right" class="col-span-full">
-            <FormKit type="submit" :label="t('submit')" />
+            <FormKit
+              type="submit"
+              :label="t('submit')"
+              @submit="handleSubmit"
+            />
           </q-card-actions>
         </FormKit>
       </q-card-section>
