@@ -1,8 +1,10 @@
+import type { QTableProps } from 'quasar'
+
 export interface Machine {
   machineId: number
   machineCode: string
-  groupName: string
   groupId: number
+  groupName: string
   tbbModel: string
   plcModel: string
   ip: string
@@ -18,12 +20,15 @@ export interface Machine {
   additionalTank3: boolean
   additionalTank4: boolean
   reserveTank: boolean
+  storeElectricityAsInc: boolean
+  theoreticalWater: boolean
   inUse: boolean
   MTTempIo: string[]
   version: string
   productModel: string
   hardwareModel: string
   steamValveDo: number
+  theoreticalSteam: boolean
 }
 
 export interface User {
@@ -337,4 +342,50 @@ export interface Setting {
   caption: string
   token: string | number
   isActive?: boolean
+}
+
+export interface ColumnSchema {
+  filled: boolean
+  validation: string
+  disabled: boolean
+}
+
+export interface ColumnDefinition {
+  label: string
+  field: string
+  align: 'left' | 'right' | 'center'
+  filterable: boolean
+  filterType: 'includes' | 'startsWith' | 'equals' | string
+  unique: boolean
+  type: 'string' | 'number' | 'boolean' | string
+  visible: boolean
+  editable: boolean
+  schema: ColumnSchema
+}
+
+export type Columns = Record<string, ColumnDefinition>
+
+export interface MachineTableColumn extends Omit<QTableColumn, 'label'> {
+  name: string
+  label: string | Readonly<Ref<string>>
+  field: keyof Machine | ((row: Machine) => any)
+  sortable?: boolean
+  align?: 'left' | 'right' | 'center'
+  format?: (value: Date, row: Machine) => string
+  tooltip?: (value: Date, row: Machine) => string
+}
+
+export type QTableColumn<
+  Row extends Record<string, any> = any,
+  Key = keyof Row extends string ? keyof Row : string,
+  Field = Key | ((row: Row) => any),
+> = Omit<NonNullable<QTableProps['columns']>[number], 'field' | 'format'> & {
+  field: Field
+  format?: (val: any, row: Row) => string
+}
+
+export interface IOOption {
+  machineId: number
+  ioId: number
+  ioName: string
 }

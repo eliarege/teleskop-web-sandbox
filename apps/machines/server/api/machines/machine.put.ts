@@ -13,6 +13,7 @@ export default defineAuthEventHandler(async (event) => {
     TBBMODEL: machine.tbbModel,
     THEORICALCHARGE: machine.theoricalCharge,
     MACHINECAPACITY: machine.machineCapacity,
+    PlcModel: machine.plcModel,
     IP: machine.ip,
     PORT: 8080,
     VERSION: machine.version,
@@ -24,6 +25,15 @@ export default defineAuthEventHandler(async (event) => {
     MTTEMPIO: machine.MTTempIo,
     STEAMKGPERHOUR: machine.steamKgPerHour,
     STEAMVALVEDO: machine.steamValveDo,
+    ADDITIONALTANK1: machine.additionalTank1,
+    ADDITIONALTANK2: machine.additionalTank2,
+    ADDITIONALTANK3: machine.additionalTank3,
+    ADDITIONALTANK4: machine.additionalTank4,
+    RESERVETANK: machine.reserveTank,
+    STOREELECTRICITYASINC: machine.storeElectricityAsInc,
+    THEORETICALWATER: machine.theoreticalWater,
+    THEORETICALSTEAM: machine.theoreticalSteam,
   })
+
   return res
 })
