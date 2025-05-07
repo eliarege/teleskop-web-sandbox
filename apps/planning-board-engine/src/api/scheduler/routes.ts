@@ -4,6 +4,7 @@ import {
   addBatchNote,
   addErpParameters,
   bulkAddErpParameter,
+  checkMachineParameterRequest,
   createPlanParameter,
   deleteEvent,
   deleteNote,
@@ -485,28 +486,38 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.put(
     '/planning_board/upload_joborder',
     async (request: FastifyRequest<{
-      Querystring: { program: string, machineId: number, planKey: string, machineIp: string, jobOrder: string }
+      Querystring: { program: string, machineId: number, planKey: number, machineIp: string, jobOrder: string }
     }>, reply) => {
       try {
         const { program, machineId, planKey, machineIp, jobOrder } = request.query
-        const formula = await getFormula(program, machineId)
-        if (formula.length > 0) {
-          // @ts-expect-error ???
-          const startingParameterValues: {
-            machineId: number
-            paramString: string
-            value: string | number
-            paramLowLimit: number
-            paramHighLimit: number
-          }[] = await getStartingParametersWithValues(formula, planKey)
-          const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
-          if (!requestedStartingParameters || requestedStartingParameters.length === 0) {
-            // write to machine
-            await uploadToMachine(machineIp, startingParameterValues, program, jobOrder)
+        // check if machine wants all params
+        const allParamsRequired = await checkMachineParameterRequest(machineId)
+        if (allParamsRequired) {
+          const allParams = await getPlanParameters(planKey, machineId)
+          if (allParams.every(p => p.paramStatus === 0)) {
             return reply.code(200).send('DONE')
-          }
-          return reply.code(200).send(requestedStartingParameters)
-        } else return reply.code(200).send('NO PROGRAM')
+          } else return allParams
+        } else {
+          const formula = await getFormula(program, machineId)
+          if (formula.length > 0) {
+            const startingParameterValues: {
+              machineId: number
+              paramString: string
+              value: string | number
+              paramLowLimit: number
+              paramHighLimit: number
+              paramStatus: number
+            }[] = await getStartingParametersWithValues(formula, planKey)
+            const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
+
+            if (requestedStartingParameters.every(e => e.paramStatus !== 0) || requestedStartingParameters.length === 0) {
+            // write to machine
+              await uploadToMachine(machineIp, startingParameterValues, program, jobOrder)
+              return reply.code(200).send('DONE')
+            }
+            return reply.code(200).send(startingParameterValues)
+          } else return reply.code(200).send('NO PROGRAM')
+        }
       } catch (err) {
         console.error(err)
       }

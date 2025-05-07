@@ -709,30 +709,60 @@ export async function getDetailedProgram(programNo: number, machineId: number): 
 }
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------------ */
-function resolveParamStatus(param: PlanParameters) {
+function resolveParamStatus(param: PlanParameters): number {
   if ((param.paramHighLimit === undefined || param.paramHighLimit === null) && (param.paramLowLimit === undefined || param.paramLowLimit === null)) {
     return 3
+  } else if (param.value === null) {
+    return 2
     // @ts-expect-error TODO: fix types
-  } else if (param.value > param.paramHighLimit || param.value < param.paramLowLimit) {
+  } else if (param.value > param.paramHighLimit || param.value < param.paramLowLimit || param.value === null) {
     return 1
   } else return 0
 }
+
+export async function checkMachineParameterRequest(machineId: number): Promise<boolean> {
+  const value = await knex.column('ParamValue')
+    .select()
+    .where('ParamToken', 'IS_EMRI_BASLATILIRKEN_TUM_PARAMETRELERI_SOR')
+    .andWhere('MachineId', machineId)
+    .from('BFMACHINESYSTEMPARAMS')
+
+  return value[0].ParamValue === '1'
+}
 export async function getPlanParameters(planKey: number, machineId: number) {
-  const parameters: PlanParameters[] = await knex({ d: 'DYBFBATCHPLANPARAMETERS' })
-    .leftJoin('BFMACHBATCHPARAMETERS as b', (builder) => {
-      builder.on('b.PARAMSTRING', 'd.PARAMSTRING')
-        .andOn('b.MACHINEID', knex.raw('?', [machineId]))
-    })
-    .select({
-      planKey: 'd.PLANKEY',
-      machineId: 'b.MACHINEID',
-      paramString: 'd.PARAMSTRING',
-      value: 'd.VALUE',
-      unitCode: 'd.UNITCODE',
-      paramHighLimit: 'b.PARAMHIGHLIMIT',
-      paramLowLimit: 'b.PARAMLOWLIMIT',
-    })
-    .where('d.PLANKEY', planKey)
+  let parameters: PlanParameters[]
+  const machineRequest = await checkMachineParameterRequest(machineId)
+  if (machineRequest) {
+    parameters = await knex({ b: 'BFMACHBATCHPARAMETERS' })
+      .leftJoin('DYBFBATCHPLANPARAMETERS as d', function () {
+        this.on('b.PARAMSTRING', '=', 'd.PARAMSTRING')
+          .andOn('d.PLANKEY', knex.raw('?', [98085]))
+      })
+      .select({
+        machineId: 'b.MACHINEID',
+        paramString: 'b.PARAMSTRING',
+        value: 'd.VALUE',
+        unitCode: 'b.UNITCODE',
+        paramHighLimit: 'b.PARAMHIGHLIMIT',
+        paramLowLimit: 'b.PARAMLOWLIMIT',
+      })
+      .where('b.MACHINEID', machineId)
+  } else {
+    parameters = await knex({ d: 'DYBFBATCHPLANPARAMETERS' })
+      .leftJoin('BFMACHBATCHPARAMETERS as b', (builder) => {
+        builder.on('b.PARAMSTRING', 'd.PARAMSTRING')
+          .andOn('b.MACHINEID', knex.raw('?', [machineId]))
+      })
+      .select({
+        machineId: 'b.MACHINEID',
+        paramString: 'd.PARAMSTRING',
+        value: 'd.VALUE',
+        unitCode: 'd.UNITCODE',
+        paramHighLimit: 'b.PARAMHIGHLIMIT',
+        paramLowLimit: 'b.PARAMLOWLIMIT',
+      })
+      .where('d.PLANKEY', planKey)
+  }
 
   return parameters.map(param => ({
     paramStatus: resolveParamStatus(param),
@@ -757,7 +787,6 @@ export async function createPlanParameter(parameter: {
   paramHighLimit: number
   paramStatus: number
 }, value: number | string, machineId: number) {
-  console.log('machineId', machineId)
   const planReference = await knex({ d: 'DYBFBATCHPLANPARAMETERS' })
     .select('*')
     .orderBy('BATCHPARAMETERID', 'desc')
@@ -795,6 +824,7 @@ export async function getFormula(program: string, machineId: number) {
         .whereIn('PROGNO', progNoList)
     })
     .andWhere('TBBFORMUL', 1)
+
   const selectedFormulas = await knex({ prm: 'BFMASTERSTEPPARAMS' })
     .distinct('frm.formula as value')
     .innerJoin('BFMASTERSTEPS as stps', (builder) => {
@@ -823,6 +853,7 @@ export async function getFormula(program: string, machineId: number) {
         .where('MACHINEID', machineId)
         .andWhere('PROGNO', 'in', progNoList))
       .andWhere('USEFORMULA', 1))
+
   const formula = [...selectedFormulas, ...commandFormulas]
   return (await formulaStartingParams(parseFormulas(formula.map(e => e.value)), machineId))
 }
@@ -865,7 +896,7 @@ export async function getStartingParametersWithValues(params: {
   paramString: string
   paramLowLimit: number
   paramHighLimit: number
-}[], planKey: string): Promise<{ paramString: string, value: string | number | null }[]> {
+}[], planKey: number): Promise<{ paramString: string, value: string | number | null }[]> {
   const formattedValues = params.map(param => `('${param.paramString}')`).join(', ')
   const parameters = await knex.raw(/* sql */`
     select
@@ -878,13 +909,15 @@ export async function getStartingParametersWithValues(params: {
     left join DYBFBATCHPLANPARAMETERS d
         on v.PARAMSTRING = d.PARAMSTRING and d.PLANKEY = ${planKey}
   `)
-
-  return parameters.map(e => ({
+  const enrichedParameters = parameters.map(e => ({
     ...e,
     planKey,
     paramLowLimit: params.find(ev => ev.paramString === e.paramString)?.paramLowLimit || 0,
     paramHighLimit: params.find(ev => ev.paramString === e.paramString)?.paramHighLimit || 0,
-    paramStatus: 2,
+  }))
+  return enrichedParameters.map(e => ({
+    ...e,
+    paramStatus: resolveParamStatus(e),
   }))
 }
 function txtFormat(data: {
