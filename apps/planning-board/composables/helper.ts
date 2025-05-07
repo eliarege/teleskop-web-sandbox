@@ -168,20 +168,20 @@ export function expediteEvents(event: any, duration: number) {
 }
 export function setDropLocation(mouseX, targetEvent, schedule, task, events) {
   const mousePosDate = schedule.getDateFromCoordinate(mouseX)
-  const targetMiddle = addSeconds(targetEvent.startDate, targetEvent.theoreticalDuration / 2)
+  const targetMiddle = addSeconds(targetEvent.originalData.startDate, targetEvent.originalData.theoreticalDuration / 2)
   const isAfter = mousePosDate > targetMiddle
   if (isAfter) {
-    task.startDate = addMinutes(targetEvent.endDate, 5)
+    task.startDate = addMinutes(targetEvent.originalData.endDate, 5)
     task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
-    task.queueNumber = targetEvent.queueNumber + 1
+    task.queueNumber = targetEvent.originalData.queueNumber + 1
     const futureEvents = events.filter(e => e.queueNumber >= task.queueNumber)
     futureEvents.forEach((e) => {
       postponeEvent(e, task.theoreticalDuration)
     })
   } else {
-    task.startDate = targetEvent.startDate
+    task.startDate = targetEvent.originalData.startDate
     task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
-    task.queueNumber = targetEvent.queueNumber
+    task.queueNumber = targetEvent.originalData.queueNumber
     const futureEvents = events.filter(e => e.queueNumber >= task.queueNumber)
     futureEvents.forEach((e) => {
       postponeEvent(e, task.theoreticalDuration)
