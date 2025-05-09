@@ -286,7 +286,8 @@
         "success": "Weighing requests refreshed successfully.",
         "fail": "An error occured during refreshing weighing requests."
       }
-    }
+    },
+    "status": "Status"
 
   },
   "registeredJobOrders": {

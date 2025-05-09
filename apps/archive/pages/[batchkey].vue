@@ -11,6 +11,7 @@ import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind } from '@vueuse/core'
 import { addSeconds, format } from 'date-fns'
 import { withBase } from 'ufo'
+import ExpandableMessage from '../components/ExpandableMessage.vue'
 import type { DuoAny, DuoParsed, DuoRaw } from '~/types/utils'
 import type {
   AnalogInputOutputType,
@@ -228,12 +229,32 @@ batchData.value?.calculatedValues.forEach((command) => {
 })
 const commandNames = computed(() => getCommandsWithNames())
 const theoreticalCommands = calculateTheoreticalCommands(batchData.value?.joborderInfo.startTime, 25, batchData.value?.theoreticalPrograms, batchData.value?.machine)
-const theoreticalPrograms = calculateProgramTheoreticalTemperature(
+const { theoreticalPrograms, errors } = calculateProgramTheoreticalTemperature(
   batchData.value?.joborderInfo.startTime,
   25,
   batchData.value?.theoreticalPrograms,
   batchData.value?.machine,
 )
+if (errors.length) {
+  $q.notify({
+    timeout: 0,
+    type: 'negative',
+    position: 'top-right',
+    group: false,
+    actions: [
+      {
+        label: t('dismiss'),
+        color: 'white',
+        noCaps: true,
+      },
+    ],
+    multiLine: true,
+    message: h(ExpandableMessage, {
+      title: t('commandErrors.title'),
+      details: errors.map(error => t(`commandErrors.${error.code}`, error.params)),
+    }),
+  })
+}
 
 const actualPrograms = computed(() => {
   const prgs: Array<BasicProgram> = []
