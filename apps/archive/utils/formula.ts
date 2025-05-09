@@ -27,7 +27,7 @@ enum ParameterType {
 //     commandNo: number
 //   }[]
 // }
-
+let errors: { code: string, message: string, params?: any }[] = []
 /**
  * Programın teorik süresini hesaplar.
  * @param program - Program
@@ -36,6 +36,7 @@ enum ParameterType {
  */
 export function calculateProgramTheoreticalTemperature(startTime: string | Date, initialTemp: number, programs: Program[], machine: Machine) {
   let time = new Date(startTime)
+  errors = [] as any
   // const ioValues: { time: Date | string, value: number, programNo: number, commandNo: number }[] = []
   const context: CalculationContext = {
     temperature: initialTemp,
@@ -64,7 +65,7 @@ export function calculateProgramTheoreticalTemperature(startTime: string | Date,
     }
     theoreticalPrograms[index].endTime = time
   })
-  return theoreticalPrograms
+  return { theoreticalPrograms, errors }
 }
 export function calculateTheoreticalCommands(startTime: string | Date, initialTemp: number, programs: Program[], machine: Machine) {
   let time = new Date(startTime)
@@ -268,9 +269,15 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
         } else if (commandParameter.type === ParameterType.MACHINE_FORMULA) {
           return calculateFormula(step, commandNo, commandParameter.value, machine)
         }
+      } else {
+        errors.push({
+          code: 'VARIABLE_NOT_FOUND',
+          message: `Variable ${node.value} not defined. Command No: ${commandNo}`,
+          params: { value: node.value, commandNo },
+        })
       }
 
-      throw new Error(`Variable ${node.value} not defined. Command No: ${commandNo}`)
+      return 0
     }
 
     case 'operator': {
@@ -286,15 +293,18 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
           return leftValue * rightValue
         case '/':
           if ((rightValue) === 0) {
-            throw new Error('Division by zero')
+            errors.push({ code: 'DIVISION_BY_ZERO', message: 'Division by zero' })
+            return 0
           }
           return leftValue / rightValue
         default:
-          throw new Error(`Unknown operator: ${node.operator}`)
+          errors.push({ code: 'UNKNOWN_OPERATOR', message: `Unknown operator: ${node.operator}`, params: { operator: node.operator } })
+          return 0
       }
     }
 
     default:
-      throw new Error(`Unknown node type: ${(node as any).type}`)
+      errors.push({ code: 'UNKNOWN_NODE_TYPE', message: `Unknown node type: ${(node as any).type}`, params: { type: (node as any).type } })
+      return 0
   }
 }
