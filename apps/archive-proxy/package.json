@@ -1,0 +1,38 @@
+{
+  "name": "archive-proxy",
+  "type": "module",
+  "description": "",
+  "license": "UNLICENSED",
+  "keywords": [],
+  "scripts": {
+    "dev": "NODE_ENV=development tsx -r dotenv/config src/server.ts | pino-pretty",
+    "start": "node dist/server.mjs",
+    "preview": "NODE_ENV=production node -r dotenv/config dist/server.mjs | pino-pretty",
+    "build": "unbuild",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "keycloak": "../../keycloak/keycloak.sh"
+  },
+  "dependencies": {
+    "@fastify/cors": "9.0.1",
+    "@teleskop/utils": "workspace:*",
+    "date-fns": "4.1.0",
+    "fastify": "4.26.2",
+    "http-graceful-shutdown": "3.1.13",
+    "knex": "3.1.0",
+    "ofetch": "1.4.1",
+    "pino": "9.5.0",
+    "tedious": "18.6.1"
+  },
+  "devDependencies": {
+    "@teleskop/build-utils": "workspace:*",
+    "@teleskop/tsconfig": "workspace:*",
+    "@types/node": "22.9.0",
+    "dotenv": "16.5.0",
+    "eslint": "9.14.0",
+    "pino-pretty": "13.0.0",
+    "tsx": "4.19.2",
+    "typescript": "5.6.3",
+    "unbuild": "2.0.0"
+  }
+}
