@@ -34,7 +34,7 @@ const { data: recipe } = useFetch('/api/recipe', {
   query: {
     recipeJB: props.currentMachine.runningJobOrder,
     recipeID: props.currentMachine.id,
-    teleskopType: store.settings?.washing ? 'washing' : 'normal',
+    teleskopType: store.settings ? 'washing' : 'normal',
   },
 })
 const { data: batchLogs } = useFetch('/api/machine_logs', {

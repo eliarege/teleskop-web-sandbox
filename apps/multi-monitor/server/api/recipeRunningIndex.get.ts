@@ -1,4 +1,4 @@
-import { getCurrentRunningIndex } from '../queries/currentRunningIndex'
+import { getCurrentRunningIndex } from '../queries'
 
 export default defineEventHandler(async (event) => {
   const { batchKey } = getQuery(event)

@@ -1,4 +1,4 @@
-import { getMachineAlarmList } from '../queries/alarms'
+import { getMachineAlarmList } from '../queries'
 import type { MachineAlarmList } from '~/shared/types'
 
 export default defineEventHandler(async () => {
