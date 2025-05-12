@@ -5,7 +5,7 @@ import ViewOptions from './ViewOptions.vue'
 import UnplannedOptions from './UnplannedOptions.vue'
 import DataCleanup from './DataCleanup.vue'
 
-const emits = defineEmits(['addColumn', 'removeColumn'])
+const emits = defineEmits(['addColumn', 'removeColumn', 'updateScheduler'])
 const { t } = useI18n()
 
 const settingItems = reactive([
@@ -32,6 +32,7 @@ const settingItems = reactive([
           :is="item.component"
           @add-column="(ev) => emits('addColumn', ev)"
           @remove-column="(ev) => emits('removeColumn', ev)"
+          @update-scheduler="emits('updateScheduler')"
         />
       </q-expansion-item>
     </q-list>

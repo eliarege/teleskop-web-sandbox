@@ -2,9 +2,9 @@
 import { matStorage } from '@quasar/extras/material-icons'
 import { Toast } from '@bryntum/schedulerpro'
 
+const emit = defineEmits(['updateScheduler'])
 const refresDataLoading = ref(false)
 const dataCleanupLoading = ref(false)
-
 const { t } = useI18n()
 const q = useQuasar()
 const kc = useKeycloak()
@@ -13,7 +13,6 @@ function dataCleanup() {
   q.dialog({
     title: `<strong>${t('settings.data-cleanup._')}!</strong>`,
     message: t('settings.data-cleanup.cleanup-message'),
-    cancel: true,
     persistent: true,
     html: true,
     ok: {
@@ -28,6 +27,7 @@ function dataCleanup() {
     await new Promise(resolve => setTimeout(resolve, 300))
     await kc.fetch('/api/settings/dataCleanup').finally(async () => {
       dataCleanupLoading.value = false
+      emit('updateScheduler')
       Toast.show(t('toast.data-cleanup'))
     })
   })
@@ -37,7 +37,6 @@ function refreshData() {
   q.dialog({
     title: `<strong>${t('settings.data-cleanup.refresh-title')}!</strong>`,
     message: t('settings.data-cleanup.refresh-message'),
-    cancel: true,
     persistent: true,
     html: true,
     ok: {
