@@ -10,7 +10,7 @@ export type ConfigProps = {
 )
 
 interface StringConfigProps {
-  type?: 'string'
+  type?: 'string' | 'url'
   default?: string
 }
 
@@ -66,6 +66,9 @@ export function defineConfiguration<const T extends Record<string, ConfigProps>>
         value = inferBoolean(rawValue)
       } else {
         value = rawValue
+        if (type === 'url' && !isValidURL(rawValue)) {
+          throw new TypeError(`Invalid ${type}: ${props.env}`)
+        }
       }
     } else if (props.default) {
       value = props.default
@@ -73,4 +76,13 @@ export function defineConfiguration<const T extends Record<string, ConfigProps>>
     output[key] = value
   }
   return output as InferConfigObject<T>
+}
+
+function isValidURL(value: string): boolean {
+  try {
+    const _ = new URL(value)
+    return true
+  } catch (err) {
+    return false
+  }
 }
