@@ -61,13 +61,13 @@ export const useDataStore = defineStore('datas', () => {
   const hex = useStorage('card-color', '#4B5563')
 
   // settings
-  const settings = ref<boolean>()
-  async function fetchSettings() {
+  const isWashing = ref<boolean>()
+  async function fetchIsWashing() {
     const response = await $fetch('/api/settings')
-    settings.value = response
+    isWashing.value = response
   }
 
-  fetchSettings()
+  fetchIsWashing()
   fetchMachineData()
 
   return {
@@ -76,7 +76,7 @@ export const useDataStore = defineStore('datas', () => {
     hex,
     filteredMachines,
     filteredGroups,
-    settings,
+    isWashing,
     group,
     sortMachines,
     mode,
@@ -91,7 +91,7 @@ export const useDataStore = defineStore('datas', () => {
     scrollSpeedProps,
     fetchMachineStatus,
     fetchMachineError,
-    fetchSettings,
+    fetchIsWashing,
     fetchMachineData,
   }
 })
