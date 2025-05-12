@@ -492,8 +492,58 @@ export async function removeFromPlan(planKey: number) {
   await knex('dbo.PTBATCHPLANQUEUE').where('PLANKEY', '=', planKey).del()
 }
 export async function deleteEvent(planKey: number) {
-  await knex('dbo.DYBFBATCHPLAN').update({ ISDELETED: 1 }).where('PLANKEY', '=', planKey)
+  const deletedRow = await knex('dbo.PTBATCHPLANQUEUE')
+    .select('MACHINEID', 'QUEUENUMBER')
+    .where('PLANKEY', planKey)
+    .first()
+
+  if (!deletedRow)
+    return
+
+  const { MACHINEID, QUEUENUMBER } = deletedRow
+
+  await knex('dbo.DYBFBATCHPLAN')
+    .update({ ISDELETED: 1 })
+    .where('PLANKEY', planKey)
+
+  await knex('dbo.PTBATCHPLANQUEUE')
+    .delete()
+    .where('PLANKEY', planKey)
+
+  await knex('dbo.PTBATCHPLANQUEUE')
+    .where('MACHINEID', MACHINEID)
+    .andWhere('QUEUENUMBER', '>', QUEUENUMBER)
+    .decrement('QUEUENUMBER', 1)
 }
+
+export async function dataCleanup() {
+  await knex('PTBATCHPLANQUEUE')
+    .whereIn(
+      'PLANKEY',
+      knex('DYBFBATCHPLAN')
+        .select('PLANKEY')
+        .where('ISDELETED', 1),
+    )
+    .del()
+
+  const machines = await knex('PTBATCHPLANQUEUE').distinct('MACHINEID')
+
+  for (const machine of machines) {
+    const rows = await knex('PTBATCHPLANQUEUE')
+      .where('MACHINEID', machine.MACHINEID)
+      .orderBy('QUEUENUMBER', 'asc')
+
+    for (let i = 0; i < rows.length; i++) {
+      const newQueueNumber = i + 1
+      if (rows[i].QUEUENUMBER !== newQueueNumber) {
+        await knex('PTBATCHPLANQUEUE')
+          .where('PLANKEY', rows[i].PLANKEY)
+          .update({ QUEUENUMBER: newQueueNumber })
+      }
+    }
+  }
+}
+
 export async function addBatchNote(jobOrder: string, note: string, userId: number, showOnScreen: boolean) {
   await knex('dbo.PTBATCHNOTES').insert({
     JOBORDER: jobOrder,

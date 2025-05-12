@@ -4,11 +4,11 @@ import type { MachineStatus } from '~/shared/types'
 
 const kc = useKeycloak()
 const { t } = useI18n()
-const { data: machines, refresh: machinesRefresh } = await useAuthFetch('/api/machineList', {
+const { data: machines } = await useAuthFetch('/api/machineList', {
   default: () => [],
 })
 
-const { data: erpParameters, refresh: erpParameterRefresh } = await useAuthFetch('/api/settings/erpParameters', {
+const { data: erpParameters } = await useAuthFetch('/api/settings/erpParameters', {
   default: () => [],
   query: { distinct: true },
 })
@@ -97,7 +97,6 @@ async function customModelValue(group: string) {
 }
 
 const paramatereSaveLoading = ref(false)
-const refreshDataLoading = ref(false)
 
 async function saveParameters() {
   paramatereSaveLoading.value = true
@@ -108,18 +107,6 @@ async function saveParameters() {
     method: 'PUT',
   }).finally(() => {
     paramatereSaveLoading.value = false
-    Toast.show(t('toast.succesful'))
-  })
-}
-
-async function refreshData() {
-  refreshDataLoading.value = true
-  // wait 0.3 seconds to animate loading?
-  await new Promise(resolve => setTimeout(resolve, 300))
-  await kc.fetch('/api/refreshCustomTables').finally(async () => {
-    await machinesRefresh()
-    await erpParameterRefresh()
-    refreshDataLoading.value = false
     Toast.show(t('toast.succesful'))
   })
 }
@@ -164,17 +151,6 @@ async function refreshData() {
   <div class="w-full flex px-3">
     <div class="w-full h-full flex gap-3">
       <q-space />
-      <q-btn
-        dense
-        color="primary"
-        icon="refresh"
-        :loading="refreshDataLoading"
-        @click="refreshData"
-      >
-        <q-tooltip>
-          Refresh Data
-        </q-tooltip>
-      </q-btn>
       <q-btn
         color="primary"
         :label="t('settings.save')"

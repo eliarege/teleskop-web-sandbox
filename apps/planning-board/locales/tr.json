@@ -13,6 +13,7 @@
     }
   },
   "toast": {
+    "data-cleanup": "Veri Temizliği tamamlandı!",
     "succesful": "Başarıyla Kaydedildi",
     "fail": {
       "refresh": "Yenileme başarısız",
@@ -177,7 +178,13 @@
       }
     },
     "view-options": "Görünüm Seçenekleri",
-    "unplanned-options": "Bekleyen İş Emirleri"
+    "unplanned-options": "Bekleyen İş Emirleri",
+    "data-cleanup": {
+      "_": "Veri Temizliği",
+      "cleanup-message": "Bu işlem, tüm planlama kuyruğunu yenileyecek ve veri kaybına veya tutarsızlıklara neden olabilir. Devam etmek istediğinize emin misiniz?",
+      "refresh-title": "Verileri Yenile",
+      "refresh-message": "Bu işlem, tüm Görünüm ve Planlanmamış İş Emri ayarlarını sıfırlayacaktır. Devam etmek istediğinize emin misiniz?"
+    }
   },
   "machine-card": {
     "consumption-electricity": "Geçen Hafta Elektrik",

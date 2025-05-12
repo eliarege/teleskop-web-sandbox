@@ -6,6 +6,7 @@ import {
   bulkAddErpParameter,
   checkMachineParameterRequest,
   createPlanParameter,
+  dataCleanup,
   deleteEvent,
   deleteNote,
   getBatchNotes,
@@ -376,6 +377,15 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
+
+  fastify.put('/planning_board/data_cleanup', async (_request, reply) => {
+    try {
+      await dataCleanup()
+    } catch (err) {
+      fastify.log.error(`An error occured while data clenaup: ${err}`)
+      return reply.code(500).send({ error: `An error occured while data clenaup: ${err}` })
+    }
+  })
 
   fastify.post<{
     Body: { jobOrder: string, note: string, showOnScreen: boolean, userId: number }

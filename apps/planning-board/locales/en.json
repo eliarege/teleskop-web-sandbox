@@ -13,6 +13,7 @@
     }
   },
   "toast": {
+    "data-cleanup": "Data Cleanup completed!",
     "succesful": "Succesfully Saved",
     "fail": {
       "refresh": "Failed to Refresh",
@@ -174,10 +175,15 @@
         "deviation": "Deviation",
         "customer": "Customer Name"
       }
-
     },
     "view-options": "View Options",
-    "unplanned-options": "Unplanned Job Orders"
+    "unplanned-options": "Unplanned Job Orders",
+    "data-cleanup": {
+      "_": "Data Cleanup",
+      "cleanup-message": "This action will refresh the entire planning queue and may result in data loss or inaccuracies. Are you sure you want to proceed?",
+      "refresh-title": "Refresh Data",
+      "refresh-message": "This action will reset all View and Unplanned Job Order settings. Are you sure you want to proceed?"
+    }
   },
   "machine-card": {
     "consumption-electricity": "Last Week Electricity",

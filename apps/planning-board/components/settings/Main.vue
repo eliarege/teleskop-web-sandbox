@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { matDisplaySettings, matPreview } from '@quasar/extras/material-icons'
+import { matDisplaySettings, matPreview, matSync } from '@quasar/extras/material-icons'
 import View from './View.vue'
 import ViewOptions from './ViewOptions.vue'
 import UnplannedOptions from './UnplannedOptions.vue'
+import DataCleanup from './DataCleanup.vue'
 
 const emits = defineEmits(['addColumn', 'removeColumn'])
 const { t } = useI18n()
@@ -11,6 +12,7 @@ const settingItems = reactive([
   { name: 'planningArea', caption: () => t('settings.plan-area._'), component: View, icon: matDisplaySettings },
   { name: 'viewOptions', caption: () => t('settings.view-options'), component: ViewOptions, icon: matPreview },
   { name: 'unplannedOptions', caption: () => t('settings.unplanned-options'), component: UnplannedOptions, icon: matPreview },
+  { name: 'dataCleanUp', caption: () => t('settings.data-cleanup._'), component: DataCleanup, icon: matSync },
 ])
 </script>
 
