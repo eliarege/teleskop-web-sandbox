@@ -488,9 +488,34 @@ export async function validateTaskCapacityAgainstMachines(fabricWeight: number) 
   }))
 }
 export async function removeFromPlan(planKey: number) {
-  await knex('dbo.DYBFBATCHPLAN').update({ MACHINEIDLIST: 0, PLANNEDMACHINE: 0, PLANNEDSTARTTIME: '2019-03-22 00:00:00.000' }).where('PLANKEY', '=', planKey)
-  await knex('dbo.PTBATCHPLANQUEUE').where('PLANKEY', '=', planKey).del()
+  const deletedRow = await knex('dbo.PTBATCHPLANQUEUE')
+    .select('MACHINEID', 'QUEUENUMBER')
+    .where('PLANKEY', planKey)
+    .first()
+
+  if (!deletedRow)
+    return
+
+  const { MACHINEID, QUEUENUMBER } = deletedRow
+
+  await knex('dbo.DYBFBATCHPLAN')
+    .update({
+      MACHINEIDLIST: 0,
+      PLANNEDMACHINE: 0,
+      PLANNEDSTARTTIME: '2019-03-22 00:00:00.000',
+    })
+    .where('PLANKEY', planKey)
+
+  await knex('dbo.PTBATCHPLANQUEUE')
+    .where('PLANKEY', planKey)
+    .delete()
+
+  await knex('dbo.PTBATCHPLANQUEUE')
+    .where('MACHINEID', MACHINEID)
+    .andWhere('QUEUENUMBER', '>', QUEUENUMBER)
+    .decrement('QUEUENUMBER', 1)
 }
+
 export async function deleteEvent(planKey: number) {
   const deletedRow = await knex('dbo.PTBATCHPLANQUEUE')
     .select('MACHINEID', 'QUEUENUMBER')
