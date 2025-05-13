@@ -41,6 +41,9 @@ export default defineNuxtConfig({
       'Dialog',
       'Notify',
     ],
+    extras: {
+      font: 'roboto-font-latin-ext'
+    },
     components: {
       defaults: {
         QBtn: {
