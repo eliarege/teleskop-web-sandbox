@@ -25,7 +25,7 @@ function printTable() {
 
   props.interventions?.forEach((intervention) => {
     const timeFormatted = cols.find(col => col.field === 'time')?.format(intervention.time)
-    const explanation = intervention.explanation[0]
+    const explanation = intervention.explanation.join(' | ')
     printWindow.document.write(`<div class="row"><strong>${t('date')}:</strong> ${timeFormatted} ->> <strong>${t('description')}:</strong> ${explanation}</div>`)
   })
 
@@ -71,15 +71,7 @@ function printTable() {
                 v-for="(col, index) in bodyProps.cols"
                 :key="`${index}intervention`"
               >
-                {{ col.field === 'explanation' ? col.value[0] : col.value }}
-                <q-tooltip v-if="col.field === 'explanation'">
-                  <div
-                    v-for="exp in col.value"
-                    :key="exp"
-                  >
-                    {{ exp }}
-                  </div>
-                </q-tooltip>
+                {{ col.field === 'explanation' ? col.value.join(' | ') : col.value }}
               </q-td>
             </q-tr>
           </template>
