@@ -31,6 +31,7 @@ watch(pagination, async () => {
   await fetchData()
   loading.hide()
 })
+const { data: theoreticalPrograms } = await useFetch('/api/theoretical-programs')
 
 const columns = computed(() => [
   {
@@ -78,6 +79,9 @@ const columns = computed(() => [
     name: 'theoreticalProgramNoList',
     label: t('panels.theoricPrograms'),
     field: 'theoreticalProgramNoList',
+    filterable: true,
+    filterType: 'multiselect',
+    selectionOptions: theoreticalPrograms.value,
     format: val => val.toString(),
   },
   {
