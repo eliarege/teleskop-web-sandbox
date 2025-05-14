@@ -14,6 +14,7 @@ import {
   extent as d3Extent,
   line as d3Line,
   max as d3Max,
+  min as d3Min,
   select as d3Select,
   interpolateRgb,
   interpolateRgbBasis,
@@ -275,17 +276,28 @@ const reelsDataSet = computed(() => {
 const yScales = computed(() => {
   return dataSet.value.map((aio) => {
     const setting = settingsStore.getSetting(aio.io.settingKey)
-    let max = Number(d3Max(aio.io.ioValues, v => v.value))
+    let max = Number(d3Max(aio.io.ioValues, (v: any) => v.value))
+    let min = 0
     const axis = settingsStore.axises.get(setting.axis || 'undef')
     if (axis) {
       if (max > axis.max)
         axis.max = max
       else
         max = axis.max
+
+      if (axis.unit.includes('counters')) {
+        min = Number(d3Min(aio.io.ioValues, (v: any) => v.value))
+        if (axis?.min || axis.min === 0) {
+          if (axis.min > min)
+            axis.min = min
+          else
+            min = axis.min
+        }
+      }
     }
     return scaleLinear()
       .range([innerRect.value.height * chartHeightMultiplier, 0])
-      .domain([0, max * 1.1])
+      .domain([min * 1.1, max * 1.1])
   })
 })
 const reelYScale = computed(() => {

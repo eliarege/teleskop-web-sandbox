@@ -23,7 +23,8 @@ function updateSetting(key: string, setting: IOSetting) {
 }
 function updateAxis(setting: IOSetting) {
   const axis = settingsStore.axises.get(setting.axis)
-  axis.max = 0
+  axis!.max = 0
+  axis!.min = 0
 }
 </script>
 
