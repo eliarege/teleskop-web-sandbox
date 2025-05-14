@@ -659,7 +659,7 @@ const tooltipContent = computed(() => {
   }
   return {
     time: selectedTime.value,
-    data: tooltipData,
+    data: tooltipData.filter(i => i?.value?.name && (i?.value?.value || i?.value?.duration)),
   }
 })
 
