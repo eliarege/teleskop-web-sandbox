@@ -260,7 +260,7 @@ export async function getWashingRecipe(recipeJB: string, recipeID: number): Prom
     })
     .leftJoin('BFMASTERPRGHEADER as h', (builder) => {
       builder.on('p.RECIPENO', '=', 'h.PROGNO')
-        .andOn('h.MACHINEID', '=', knex.raw(recipeID))
+        .andOn('h.MACHINEID', '=', knex.raw('?', [recipeID]))
     })
     .leftJoin('DYTFMATERIAL as m', (builder) => {
       builder.on('m.MATERIALCODE', '=', 'r.CHEMCODE')
@@ -297,7 +297,7 @@ export async function getWashingRecipe(recipeJB: string, recipeID: number): Prom
     })
     .leftJoin('BFMASTERPRGHEADER as h', (builder) => {
       builder.on('p.RECIPENO', '=', 'h.PROGNO')
-        .andOn('h.MACHINEID', '=', knex.raw(recipeID))
+        .andOn('h.MACHINEID', '=', knex.raw('?', [recipeID]))
     })
     .leftJoin('DYTFMATERIAL as m', (builder) => {
       builder.on('m.MATERIALCODE', '=', 'r.CHEMCODE')
@@ -341,7 +341,7 @@ export async function getDyeingRecipe(recipeJB: string, recipeID: number): Promi
         .andOn('r.RCPINDEX', 'p.RCPINDEX')
     }).leftJoin('BFMASTERPRGHEADER as h', (builder) => {
       builder.on('p.RECIPENO', 'h.PROGNO')
-        .andOn('h.MACHINEID', knex.raw(recipeID))
+        .andOn('h.MACHINEID', knex.raw('?', [recipeID]))
     })
     .leftJoin('DYTFMATERIAL as m', (builder) => {
       builder.on('m.MATERIALCODE', 'r.CHEMCODE')
@@ -378,7 +378,7 @@ export async function getDyeingRecipe(recipeJB: string, recipeID: number): Promi
     .leftJoin(
       'BFMASTERPRGHEADER AS h',
       (builder) => {
-        builder.on('p.RECIPENO', 'h.PROGNO').andOn('h.MACHINEID', knex.raw(recipeID))
+        builder.on('p.RECIPENO', 'h.PROGNO').andOn('h.MACHINEID', knex.raw('?', [recipeID]))
       },
     )
     .leftJoin('DYTFMATERIAL AS m', 'm.MATERIALCODE', 'r.CHEMCODE')
