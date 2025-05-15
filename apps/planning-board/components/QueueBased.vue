@@ -9,7 +9,7 @@ import { useFuse } from '@vueuse/integrations/useFuse'
 import { addDays, addHours, addMinutes, addSeconds } from 'date-fns'
 import { eventTooltip, expediteEvents, postponeEvent } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore, getResourceRow, removeAttributes, sortEventsByDateDesc } from '~/lib/queueBased'
-import { Apps } from '~/shared/constants'
+import { Apps, UploadJoborder } from '~/shared/constants'
 import type { QueueBasedEvent, QueueBasedNonActualEvent } from '~/shared/queueBased'
 import type { MachineStatus, PlanParameters } from '~/shared/types'
 import { useSettingStore } from '~/store/settings'
@@ -97,7 +97,7 @@ async function uploadJobOrder(planKey: number) {
 
     clearTimeout(timeoutId)
 
-    if (missingParams === 'NO PROGRAM') {
+    if (missingParams === UploadJoborder.MissingParameter) {
       Toast.show(t('upload-joborder.no-program'))
     } else if (typeof missingParams !== 'string' && missingParams.some(f => f.value === null)) {
       const uploadData = {

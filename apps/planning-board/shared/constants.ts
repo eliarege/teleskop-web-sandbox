@@ -5,3 +5,8 @@ export const Apps = {
   programEditor: 'program-editor',
   dispensingManager: 'dispensing-manager',
 }
+
+export const UploadJoborder = {
+  MissingParameter: 'NO PARAMETER', // Sent joborder has missing parameter
+  OK: 'DONE', // Joborder has no invalid/missing parameter
+}

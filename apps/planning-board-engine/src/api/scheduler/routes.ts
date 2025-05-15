@@ -527,7 +527,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
               return reply.code(200).send('DONE')
             }
             return reply.code(200).send(startingParameterValues)
-          } else return reply.code(200).send('NO PROGRAM')
+          } else return reply.code(200).send('NO PARAMETER')
         }
       } catch (err) {
         console.error(err)
