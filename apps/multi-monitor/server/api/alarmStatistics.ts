@@ -1,4 +1,4 @@
-import { getLastDayAlarmCount } from '../queries/alarms'
+import { getLastDayAlarmCount } from '../queries'
 
 export default defineEventHandler(async () => {
   const res = await getLastDayAlarmCount()

@@ -1,4 +1,4 @@
-import { updateMachineAlarmVisibility } from '../queries/alarms'
+import { updateMachineAlarmVisibility } from '../queries'
 
 // TODO: Body validation
 // Maybe queries can be executed in routes

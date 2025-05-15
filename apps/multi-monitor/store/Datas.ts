@@ -3,10 +3,6 @@ import { useStorage } from '@vueuse/core'
 import type { FetchStatus, MachineDataRaw } from '../shared/types'
 import { MachineSort, type MachineSortValue } from '~/shared/constants'
 
-interface Settings {
-  washing: boolean
-}
-
 export const useDataStore = defineStore('datas', () => {
   // settings
   const scrollAnimationActive = ref(false)
@@ -65,13 +61,13 @@ export const useDataStore = defineStore('datas', () => {
   const hex = useStorage('card-color', '#4B5563')
 
   // settings
-  const settings = ref<Settings>()
-  async function fetchSettings() {
+  const isWashing = ref<boolean>()
+  async function fetchIsWashing() {
     const response = await $fetch('/api/settings')
-    settings.value = response
+    isWashing.value = response
   }
 
-  fetchSettings()
+  fetchIsWashing()
   fetchMachineData()
 
   return {
@@ -80,7 +76,7 @@ export const useDataStore = defineStore('datas', () => {
     hex,
     filteredMachines,
     filteredGroups,
-    settings,
+    isWashing,
     group,
     sortMachines,
     mode,
@@ -95,7 +91,7 @@ export const useDataStore = defineStore('datas', () => {
     scrollSpeedProps,
     fetchMachineStatus,
     fetchMachineError,
-    fetchSettings,
+    fetchIsWashing,
     fetchMachineData,
   }
 })

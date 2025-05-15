@@ -1,135 +1,15 @@
-import connection from '~/server/connectionPool'
-import type { Recipe } from '~/shared/types'
+import { getDyeingRecipe, getWashingRecipe } from '../queries'
 
 export default defineEventHandler(async (event) => {
-  const { recipeJB } = getQuery(event)
-  const { recipeID } = getQuery(event)
-  const { teleskopType } = getQuery(event)
-  const washingQuery = `
-  SELECT
-    p.RCPINDEX AS recIndex,
-    p.RECIPENO AS recNo,
-    h.NAME AS name,
-    DYEREQUESTNUMBER AS reqNumber,
-    MAINSTEP AS mainStep,
-    PARALLELSTEP AS parallelStep,
-    r.RECIPETYPE AS recType,
-    CHEMCODE AS chemCode,
-    m.MATERIALNAME AS materialName,
-    AMOUNT AS amount,
-    REQNO_BATCH AS reqBatchNo,
-    REQNO_PROG AS reqProgNo,
-    PHASENO AS phaseNo,
-    PHASEINDEX as phaseIndex,
-    otherUnit as unit
-FROM
-    DYBFBATCHORDERRECIPESTEPS r
-    RIGHT JOIN DYBFBATCHORDERRECIPEHEADER p ON r.PLANKEY = p.PLANKEY
-    and r.RCPINDEX = p.RCPINDEX
-    and r.RECIPETYPE = p.RECIPETYPE
-    LEFT JOIN BFMASTERPRGHEADER h ON p.RECIPENO = h.PROGNO
-    and h.MACHINEID = '${recipeID}'
-    LEFT JOIN DYTFMATERIAL m ON m.MATERIALCODE = r.CHEMCODE
-WHERE
-    p.PLANKEY = (
-        SELECT
-            TOP 1 PLANKEY
-        FROM
-            DYBFBATCHPLAN
-        WHERE
-            JOBORDER = '${recipeJB}'
-        ORDER BY
-            PLANKEY DESC
-    )
-    AND REQNO_BATCH IS NOT NULL
-ORDER BY
-    p.RCPINDEX,
-    DYEREQUESTNUMBER,
-    PARALLELSTEP
+  const { recipeJB, recipeID, teleskopType } = getQuery(event)
 
-SELECT
-    p.RCPINDEX AS recIndex,
-    p.RECIPENO AS recNo,
-    h.NAME AS name,
-    DYEREQUESTNUMBER AS reqNumber,
-    MAINSTEP AS mainStep,
-    PARALLELSTEP AS parallelStep,
-    r.RECIPETYPE AS recType,
-    CHEMCODE AS chemCode,
-    m.MATERIALNAME AS materialName,
-    AMOUNT AS amount,
-    REQNO_BATCH AS reqBatchNo,
-    REQNO_PROG AS reqProgNo,
-    otherUnit as unit
-FROM
-    DYBFBATCHORDERRECIPEMANUALS r
-    LEFT JOIN DYBFBATCHORDERRECIPEHEADER p ON r.PLANKEY = p.PLANKEY
-    and r.RCPINDEX = p.RCPINDEX
-    LEFT JOIN BFMASTERPRGHEADER h ON p.RECIPENO = h.PROGNO
-    and h.MACHINEID = '${recipeID}'
-    LEFT JOIN DYTFMATERIAL m ON m.MATERIALCODE = r.CHEMCODE
-WHERE
-    p.PLANKEY = (
-        SELECT
-            TOP 1 PLANKEY
-        FROM
-            DYBFBATCHPLAN
-        WHERE
-            JOBORDER = '${recipeJB}'
-        ORDER BY
-            PLANKEY DESC
-    )
-    AND REQNO_BATCH IS NOT NULL
-    AND AMOUNT != 0
-ORDER BY
-    p.RCPINDEX,
-    DYEREQUESTNUMBER,
-    PARALLELSTEP`
-  const dyeingQuery = `SELECT
-  p.RCPINDEX AS recIndex,
-  p.RECIPENO AS recNo,
-  h.NAME AS name,
-  DYEREQUESTNUMBER AS reqNumber,
-  MAINSTEP AS mainStep,
-  PARALLELSTEP AS parallelStep,
-  r.RECIPETYPE AS recType,
-  CHEMCODE AS chemCode,
-  m.MATERIALNAME AS materialName,
-  AMOUNT AS amount,
-  REQNO_BATCH AS reqBatchNo,
-  REQNO_PROG AS reqProgNo,
-  PHASENO AS phaseNo,
-  PHASEINDEX as phaseIndex,
-  otherUnit as unit
-FROM DYBFBATCHORDERRECIPESTEPS r
-RIGHT JOIN DYBFBATCHORDERRECIPEHEADER p ON r.PLANKEY = p.PLANKEY and r.RCPINDEX = p.RCPINDEX and r.RECIPETYPE = p.RECIPETYPE
-LEFT JOIN BFMASTERPRGHEADER h ON p.RECIPENO = h.PROGNO and h.MACHINEID = '${recipeID}'
-LEFT JOIN DYTFMATERIAL m ON m.MATERIALCODE = r.CHEMCODE
-  WHERE p.PLANKEY = (SELECT TOP 1 PLANKEY FROM DYBFBATCHPLAN WHERE JOBORDER = '${recipeJB}' ORDER BY PLANKEY desc) AND REQNO_BATCH IS NOT NULL
-  ORDER BY p.RCPINDEX, DYEREQUESTNUMBER, PARALLELSTEP
+  if (typeof recipeJB !== 'string' || typeof recipeID !== 'string')
+    return []
 
-  SELECT
-  p.RCPINDEX AS recIndex,
-  p.RECIPENO AS recNo,
-  h.NAME AS name,
-  DYEREQUESTNUMBER AS reqNumber,
-  MAINSTEP AS mainStep,
-  PARALLELSTEP AS parallelStep,
-  r.RECIPETYPE AS recType,
-  CHEMCODE AS chemCode,
-  m.MATERIALNAME AS materialName,
-  AMOUNT AS amount,
-  REQNO_BATCH AS reqBatchNo,
-  REQNO_PROG AS reqProgNo,
-  otherUnit as unit
-FROM DYBFBATCHORDERRECIPEMANUALS r
-LEFT JOIN DYBFBATCHORDERRECIPEHEADER p ON r.PLANKEY = p.PLANKEY and r.RCPINDEX = p.RCPINDEX
-LEFT JOIN BFMASTERPRGHEADER h ON p.RECIPENO = h.PROGNO and h.MACHINEID = '${recipeID}'
-LEFT JOIN DYTFMATERIAL m ON m.MATERIALCODE = r.CHEMCODE
-  WHERE p.PLANKEY = ( SELECT TOP 1 PLANKEY FROM DYBFBATCHPLAN WHERE JOBORDER = '${recipeJB}' ORDER BY PLANKEY DESC ) AND REQNO_BATCH IS NOT NULL AND AMOUNT != 0
-  ORDER BY p.RCPINDEX, DYEREQUESTNUMBER, PARALLELSTEP`
-  const response = await connection.pool.query<Recipe>(
-    teleskopType === 'washing' ? washingQuery : dyeingQuery,
-  )
-  return response.recordset
+  const data
+    = teleskopType === 'washing'
+      ? await getWashingRecipe(recipeJB, recipeID)
+      : await getDyeingRecipe(recipeJB, recipeID)
+
+  return data
 })
