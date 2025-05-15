@@ -121,7 +121,11 @@ export class QueueDrag extends DragHelper {
     context.task = grid.getRecordFromElement(context.grabbed)
 
     const planKey = context.task.id
-    const fabricWeight = context.task.fabricWeight
+    const fabricWeight = context.task.fabricWeight ? Number(context.task.fabricWeight.replace(',', '.')) : 0
+
+    if (Number.isNaN(fabricWeight)) {
+      throw new TypeError('Invalid fabricWeight format')
+    }
 
     context.isValidating = true
     const isValid = await nuxtApp.$keycloak.fetch('/api/isValid', {
@@ -302,14 +306,14 @@ export class TaskStore extends EventStore {
   }
 
   async scheduleEventOnTarget(grabbedEvent, targetEvent, previousMachine, targetMachine, isAfter) {
-    const oldQueueNumber = grabbedEvent.queueNumber
+    const oldQueueNumber = grabbedEvent.originalData.queueNumber
 
     const newQueueNumber = isAfter
       ? targetEvent.eventType === 'planned'
-        ? targetEvent.queueNumber + 1
+        ? targetEvent.originalData.queueNumber + 1
         : 1
       : targetEvent.eventType === 'planned'
-        ? targetEvent.queueNumber
+        ? targetEvent.originalData.queueNumber
         : 1
 
     if (previousMachine.id !== targetMachine.id) {
@@ -317,15 +321,15 @@ export class TaskStore extends EventStore {
     }
 
     const affectedEvents = this.getEventsForMachine(targetMachine).filter(
-      event => event.queueNumber >= newQueueNumber,
+      event => event.originalData.queueNumber >= newQueueNumber,
     )
 
     affectedEvents.forEach((event) => {
-      event.queueNumber += 1
+      event.originalData.queueNumber += 1
     })
 
     grabbedEvent.resourceId = targetMachine.id
-    grabbedEvent.queueNumber = newQueueNumber
+    grabbedEvent.originalData.queueNumber = newQueueNumber
 
     await this.reorderEventsForMachine(targetMachine)
 
@@ -345,7 +349,7 @@ export class TaskStore extends EventStore {
   }
 
   async scheduleEventOnEmptyRow(grabbedEvent, previousMachine, targetMachine) {
-    const oldQueueNumber = grabbedEvent.queueNumber
+    const oldQueueNumber = grabbedEvent.originalData.queueNumber
     if (targetMachine.events.length === 0) {
       const newEvent = {
         planKey: grabbedEvent.id,
@@ -363,11 +367,11 @@ export class TaskStore extends EventStore {
       e.eventType === 'ongoing' || e.eventType === 'manual',
     )
     const newStartDate = hasOngoingEvent ? addMinutes(new Date(), 5) : new Date()
-    const newEndDate = addSeconds(newStartDate, grabbedEvent.theoreticalDuration)
+    const newEndDate = addSeconds(newStartDate, grabbedEvent.originalData.theoreticalDuration)
 
     grabbedEvent.startDate = newStartDate
     grabbedEvent.endDate = newEndDate
-    grabbedEvent.queueNumber = 1
+    grabbedEvent.originalData.queueNumber = 1
 
     await this.reorderEventsForMachine(targetMachine)
     const previousEventData = {
@@ -379,7 +383,7 @@ export class TaskStore extends EventStore {
     const newEventData = {
       planKey: grabbedEvent.id,
       machineId: targetMachine.id,
-      queueNumber: grabbedEvent.queueNumber,
+      queueNumber: grabbedEvent.originalData.queueNumber,
     }
     await this.commitChanges(previousEventData, newEventData)
   }
@@ -387,7 +391,7 @@ export class TaskStore extends EventStore {
   async reorderEventsForMachine(machine) {
     const events = this.getEventsForMachine(machine)
       .filter(event => event.eventType === 'planned')
-      .sort((a, b) => a.queueNumber - b.queueNumber)
+      .sort((a, b) => a.originalData.queueNumber - b.originalData.queueNumber)
 
     let currentDate = new Date()
 
@@ -401,7 +405,7 @@ export class TaskStore extends EventStore {
 
     let queueIndex = 1
     events.forEach((event) => {
-      event.queueNumber = queueIndex++
+      event.originalData.queueNumber = queueIndex++
       event.startDate = currentDate
       event.endDate = addSeconds(event.startDate, event.theoreticalDuration)
       currentDate = addMinutes(event.endDate, 5)
@@ -476,7 +480,7 @@ export class QueueSchedule extends SchedulerPro {
 
         context.isFirst = resourceRecord.events[0].name === eventRecords[0].name
         const planKey = context.task.id
-        const fabricWeight = context.task.fabricWeight
+        const fabricWeight = context.task.fabricWeight ? Number(context.task.fabricWeight.replace(',', '.')) : 0
 
         context.isValidating = true
         const isValid = await nuxtApp.$keycloak.fetch('/api/isValid', {

@@ -9,7 +9,7 @@ import { useFuse } from '@vueuse/integrations/useFuse'
 import { addDays, addHours, addMinutes, addSeconds } from 'date-fns'
 import { eventTooltip, expediteEvents, postponeEvent } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore, getResourceRow, removeAttributes, sortEventsByDateDesc } from '~/lib/queueBased'
-import { Apps } from '~/shared/constants'
+import { Apps, UploadJoborder } from '~/shared/constants'
 import type { QueueBasedEvent, QueueBasedNonActualEvent } from '~/shared/queueBased'
 import type { MachineStatus, PlanParameters } from '~/shared/types'
 import { useSettingStore } from '~/store/settings'
@@ -89,7 +89,7 @@ async function uploadJobOrder(planKey: number) {
   }, timeout)
 
   try {
-    const res: PlanParameters[] | string = await kc.fetch('/api/machineUpload', {
+    const missingParams: PlanParameters[] | string = await kc.fetch('/api/machineUpload', {
       method: 'PUT',
       query: { program, machineId, planKey, machineIp, jobOrder },
       signal: controller.signal,
@@ -97,9 +97,9 @@ async function uploadJobOrder(planKey: number) {
 
     clearTimeout(timeoutId)
 
-    if (res === 'NO PROGRAM') {
+    if (missingParams === UploadJoborder.MissingParameter) {
       Toast.show(t('upload-joborder.no-program'))
-    } else if (typeof res !== 'string' && res.some(f => f.value === null)) {
+    } else if (typeof missingParams !== 'string' && missingParams.some(f => f.value === null)) {
       const uploadData = {
         program,
         machineId,
@@ -107,8 +107,6 @@ async function uploadJobOrder(planKey: number) {
         machineIp,
         jobOrder,
       }
-
-      const missingParams = res.filter(f => f.value === null)
       setPlanParameters(true, planKey, machineId, program, batchStart, missingParams, true, uploadData)
     } else Toast.show(t('job-order.upload-succes'))
   } catch (err) {
@@ -513,7 +511,8 @@ onMounted(async () => {
     eventStyle: null,
     onEventSelectionChange(a) {
       if (a.action === 'select' || a.action === 'update') {
-        store.selectedEvent = a.selected[0]
+        const selected = a.selected[0]
+        store.selectedEvent = selected
       } else {
         store.selectedEvent = null
       }
@@ -1071,7 +1070,7 @@ div[bgGreen] {
 .b-selected {
   background-color: inherit !important;
   opacity: 1 !important;
-  @apply !rounded-9px;
+  @apply;
 }
 
 #main {

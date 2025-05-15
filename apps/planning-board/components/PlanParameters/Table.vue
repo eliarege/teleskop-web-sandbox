@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import { getUnitById, setParameterColor } from '~/shared/enums'
+import { StartingParameters, getUnitById, setParameterColor } from '~/shared/enums'
 import type { PlanParameters } from '~/shared/types'
 
-const kc = useKeycloak()
 interface PlanParameterProps {
   parameterData: any[]
   editable: boolean
@@ -17,8 +16,9 @@ interface PlanParameterProps {
     machineIp: string
   }
 }
-const props = defineProps<PlanParameterProps>()
+defineProps<PlanParameterProps>()
 const emit = defineEmits(['uploadMachine'])
+const kc = useKeycloak()
 const { t } = useI18n()
 const columns = computed(() => {
   return [
@@ -135,7 +135,9 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
             v-if="isSendMachine"
             color="primary"
             :label="t('plan-parameters.resend')"
-            :disable="parameterData.some(e => e.value === null)"
+            :disable="!parameterData
+              .filter(e => e.paramStatus !== StartingParameters.NonStartingParameter)
+              .every(e => e.value > e.paramLowLimit && e.value < e.paramHighLimit)"
             @click="emit('uploadMachine', parameterData[0].planKey)"
           />
         </template>

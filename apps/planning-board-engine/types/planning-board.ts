@@ -121,7 +121,6 @@ export interface TimeBasedEventStates {
   }[]
 }
 export interface PlanParameters {
-  planKey: number
   machineId: number
   paramString: string
   value: number | string
