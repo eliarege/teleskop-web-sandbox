@@ -41,6 +41,7 @@ import {
   uploadToMachine,
 } from './queries'
 import { remoteShowMessageBody } from '~/composables/soap'
+import { StartingParameters } from '~/composables/enums'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -504,7 +505,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const allParamsRequired = await checkMachineParameterRequest(machineId)
         if (allParamsRequired) {
           const allParams = await getPlanParameters(planKey, machineId)
-          if (allParams.every(p => p.paramStatus === 0)) {
+          if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
             return reply.code(200).send('DONE')
           } else return allParams
         } else {

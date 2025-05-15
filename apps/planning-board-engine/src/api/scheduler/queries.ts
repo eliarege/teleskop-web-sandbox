@@ -6,6 +6,7 @@ import { chunk } from 'lodash-es'
 import { config } from '~/config'
 import { knex } from '~/knexConfig'
 import { logger } from '~/composables/logger'
+import { StartingParameters } from '~/composables/enums'
 
 export async function refreshCustomTables() {
   // refresh PTCOLUMNS table
@@ -784,15 +785,22 @@ export async function getDetailedProgram(programNo: number, machineId: number): 
 }
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------------ */
-function resolveParamStatus(param: PlanParameters): number {
-  if ((param.paramHighLimit === undefined || param.paramHighLimit === null) && (param.paramLowLimit === undefined || param.paramLowLimit === null)) {
-    return 3
-  } else if (param.value === null) {
-    return 2
-    // @ts-expect-error TODO: fix types
-  } else if (param.value > param.paramHighLimit || param.value < param.paramLowLimit || param.value === null) {
-    return 1
-  } else return 0
+function resolveParamStatus(param: PlanParameters): StartingParameters {
+  const { paramHighLimit, paramLowLimit, value } = param
+
+  const hasNoLimits = (paramHighLimit === undefined || paramHighLimit === null)
+    && (paramLowLimit === undefined || paramLowLimit === null)
+
+  if (hasNoLimits) {
+    return StartingParameters.NonStartingParameter
+  } else if (value === null) {
+    return StartingParameters.Changed
+  // @ts-expect-error TODO: fix types
+  } else if (value > paramHighLimit || value < paramLowLimit || value === null) {
+    return StartingParameters.Invalid
+  } else {
+    return StartingParameters.Correct
+  }
 }
 
 export async function checkMachineParameterRequest(machineId: number): Promise<boolean> {

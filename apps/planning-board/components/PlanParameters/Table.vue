@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import { getUnitById, setParameterColor } from '~/shared/enums'
+import { StartingParameters, getUnitById, setParameterColor } from '~/shared/enums'
 import type { PlanParameters } from '~/shared/types'
 
 interface PlanParameterProps {
@@ -135,7 +135,9 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
             v-if="isSendMachine"
             color="primary"
             :label="t('plan-parameters.resend')"
-            :disable="!parameterData.filter(e => e.paramStatus !== 3).every(e => e.value > e.paramLowLimit && e.value < e.paramHighLimit)"
+            :disable="!parameterData
+              .filter(e => e.paramStatus !== StartingParameters.NonStartingParameter)
+              .every(e => e.value > e.paramLowLimit && e.value < e.paramHighLimit)"
             @click="emit('uploadMachine', parameterData[0].planKey)"
           />
         </template>
