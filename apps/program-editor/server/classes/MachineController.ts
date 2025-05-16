@@ -10,9 +10,10 @@ import { parseProgramString } from '../parse'
 import { PError } from '../error'
 import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
-import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
+import { validateProgram } from '~/shared/utils'
 
 export class MachineController {
   readonly id: number
@@ -294,7 +295,7 @@ export class MachineController {
     const programNoList = await this.getLocalMachineProgramList()
     for (const programNo of programNoList) {
       const program = await this.fetchProgram(programNo)
-      await this.uploadProgram(program)
+      await this.uploadProgram(program.program)
     }
   }
 
@@ -315,10 +316,10 @@ export class MachineController {
   /**
    * Makine id numarasına göre makinenin belirli bir programını getirir
    * @param {number} programNo - Program numarası
-   * @returns {Promise<Program>} - Program
+   * @returns {Promise<{program: Program, programErrors: StepError[]}>} - Program ve hata bilgileri
    */
   @withTransaction
-  async fetchProgram(programNo: number): Promise<Program> {
+  async fetchProgram(programNo: number): Promise<{ program: Program, programErrors: StepError[] }> {
     const program = await this.trx
       .first({
         name: 'P.NAME',
@@ -503,7 +504,10 @@ export class MachineController {
       program.steps.push(currentStep as ProgramStep)
     }
 
-    return program
+    const commands = await this.fetchCommands()
+    const programErrors = validateProgram(program, commands)
+
+    return { program, programErrors }
   }
 
   /**

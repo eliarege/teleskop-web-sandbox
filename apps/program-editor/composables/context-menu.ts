@@ -248,16 +248,15 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const editor = useEditorStore()
 
     for (const program of programs) {
-      try {
-        editor.isLoading = true
-        const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
-        notification(check, t(`contextMenu.send.${check ? 'success' : 'fail'}`, { name: program.name }))
-      } catch (error) {
-        notification(false, t(`contextMenu.send.fail`, { name: program.name }))
-      } finally {
-        editor.isLoading = false
+      editor.isLoading = true
+      const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
+      if (check === 'PROGRAM_HAS_ERRORS') {
+        notification(false, t(`contextMenu.send.programHasErrors`, { name: program.name }))
+        continue
       }
+      notification(check, t(`contextMenu.send.${check ? 'success' : 'fail'}`, { name: program.name }))
     }
+    editor.isLoading = false
   }
 
   async function getRemoteProgram(programs: ProgramTable[], machineId: number): Promise<void> {

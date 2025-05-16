@@ -1,6 +1,7 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { PError } from '~/server/error'
 import logger from '~/server/logger'
+import { validateProgram } from '~/shared/utils'
 
 export default defineAuthEventHandler({
   roles: ['machine-upload'],
@@ -23,8 +24,12 @@ export default defineAuthEventHandler({
       throw new PError('PROGRAM_NOT_FOUND', { machineId, programNo })
     }
 
+    if (program.programErrors.length) {
+      return 'PROGRAM_HAS_ERRORS'
+    }
+
     logger.info(`User: ${event.context.kauth?.name}. Uploading program ${programNo} of machine ${machineId}.`)
 
-    return await machine.uploadProgram(program)
+    return await machine.uploadProgram(program.program)
   },
 })
