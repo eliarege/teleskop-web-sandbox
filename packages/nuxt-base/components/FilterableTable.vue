@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { QTableProps } from 'quasar'
+import { format } from 'date-fns'
 import type { FilterableTableColumn, FilterableTableFilter } from '../types'
 
 interface DateType {
@@ -86,6 +87,9 @@ const comparisonOperations = [
 
 const today = new Date()
 const startOfToday = new Date(today)
+const showTimeSelect = ref(false)
+const timeIntervalBoundary1 = ref()
+const timeIntervalBoundary2 = ref()
 startOfToday.setHours(0, 0, 0, 0)
 const dateOptions = ref<DateType[]>([
   { text: t('today'), from: startOfToday, to: today },
@@ -158,10 +162,37 @@ function pushToFilters(col: FilterableTableColumn, index: number, orderByType?: 
     // If the filterType is date the index parameter will be the index of dateOptions
     if (col.filterType === 'date') {
       const selectedDate: DateType = dateOptions.value[index]
-      if (selectedDate.text) {
-        temp = { label: `${col.label} ${t('in')} ${selectedDate.text}`, field: col.field, value: { from: selectedDate.from, to: selectedDate.to }, filterType: col.filterType }
+      let value: { from: Date, to: Date } = {} as any
+      let dateFormat = 'dd/MM/yyyy'
+      if (index === 8 && timeIntervalBoundary1.value && timeIntervalBoundary2.value) {
+        dateFormat = 'HH:mm dd/MM/yyyy'
+        const fromDate = new Date(selectedDate.from)
+        const toDate = new Date(selectedDate.to)
+
+        // Parse 'HH:mm' format (from fulltime mask)
+        const [fromHours, fromMinutes] = timeIntervalBoundary1.value.split(':').map(Number)
+        const [toHours, toMinutes] = timeIntervalBoundary2.value.split(':').map(Number)
+
+        fromDate.setHours(fromHours, fromMinutes, 0, 0)
+        toDate.setHours(toHours, toMinutes, 0, 0)
+        value = { from: fromDate, to: toDate }
       } else {
-        temp = { label: `${col.label} ${t('from')} ${selectedDate.from} ${t('to')} ${selectedDate.to}`, field: col.field, value: { from: selectedDate.from, to: selectedDate.to }, filterType: col.filterType }
+        value = { from: selectedDate.from, to: selectedDate.to }
+      }
+      if (selectedDate.text) {
+        temp = {
+          label: `${col.label} ${t('in')} ${selectedDate.text}`,
+          field: col.field,
+          value,
+          filterType: col.filterType,
+        }
+      } else {
+        temp = {
+          label: `${col.label} ${t('from')} ${format(value.from, dateFormat)} ${t('to')} ${format(value.to, dateFormat)}`,
+          field: col.field,
+          value,
+          filterType: col.filterType,
+        }
       }
       if (!contains(filterSlots.value, temp))
         filterSlots.value.push(temp)
@@ -506,6 +537,33 @@ function onRequest(pagination: QTableProps['pagination']) {
                     </q-tab-panel>
 
                     <q-tab-panel name="custom" class="m-0">
+                      <div v-if="showTimeSelect" class="flex">
+                        <q-input
+                          v-model="timeIntervalBoundary1"
+                          dense
+                          filled
+                          class="w-30"
+                          mask="time"
+                          :rules="['time']"
+                        >
+                          <template #append>
+                            <q-icon name="access_time" />
+                          </template>
+                        </q-input>
+                        <q-space />
+                        <q-input
+                          v-model="timeIntervalBoundary2"
+                          dense
+                          class="w-30"
+                          filled
+                          mask="time"
+                          :rules="['time']"
+                        >
+                          <template #append>
+                            <q-icon name="access_time" />
+                          </template>
+                        </q-input>
+                      </div>
                       <q-date
                         v-model="dateOptions[8]"
                         range
@@ -515,12 +573,18 @@ function onRequest(pagination: QTableProps['pagination']) {
                         bordered
                       >
                         <template #default>
-                          <q-btn
-                            @click="pushToFilters(col, 8)"
-                          >
+                          <div class="q-pa-sm flex items-center gap-2">
+                            <q-btn dense @click="showTimeSelect = !showTimeSelect">
+                              {{ !showTimeSelect ? t('addTime') : t('removeTime') }}
+                            </q-btn>
+
+                            <q-space />
+
                             <!-- FIXME: HARDOCDED: '8' is the index of custom object of dateOptions array if more spesific intervals added it should be changed -->
-                            {{ t('add') }}
-                          </q-btn>
+                            <q-btn dense @click="pushToFilters(col, 8)">
+                              {{ t('add') }}
+                            </q-btn>
+                          </div>
                         </template>
                       </q-date>
                     </q-tab-panel>
@@ -808,7 +872,9 @@ function onRequest(pagination: QTableProps['pagination']) {
     "false": "False",
     "from": "from",
     "to": "to",
-    "is": "is"
+    "is": "is",
+    "addTime": "Add time",
+    "removeTime": "Remove time"
   },
   "tr": {
     "between": "arasında",
@@ -836,7 +902,9 @@ function onRequest(pagination: QTableProps['pagination']) {
     "false": "Yanlış",
     "from": "arasında",
     "to": "ile",
-    "is": "eşittir"
+    "is": "eşittir",
+    "addTime": "Saat ekle",
+    "removeTime": "Saati kaldır"
   }
 }
 </i18n>
