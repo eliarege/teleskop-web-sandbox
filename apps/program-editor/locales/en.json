@@ -294,7 +294,8 @@
     },
     "send": {
       "success": "Program {name} has been sent successfully.",
-      "fail": "An error occurred while sending the program {name}."
+      "fail": "An error occurred while sending the program {name}.",
+      "programHasErrors": "Program {programNo} has errors. Please check."
     },
     "get": {
       "success": "{programNo} - {name} retrieved successfully.",

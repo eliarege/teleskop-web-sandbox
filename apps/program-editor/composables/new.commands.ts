@@ -200,8 +200,8 @@ async function openDialogonPaste(ctx: any, remainsFromPaste: any, machineId: num
       componentProps: {
         remains,
       },
-    }).onOk(async (newIds) => {
-      remains.forEach((val, index: number) => {
+    }).onOk(async (newIds: number[]) => {
+      remains.forEach((val: any, index: number) => {
         val.newProgramNo = newIds[index]
       })
       remains = await contextMenuStore.paste(machineId, remains)
@@ -307,7 +307,7 @@ async function getProgramsOrder(ctx: any, selectedRows: ProgramTable[]): Promise
       componentProps: {
         programs: selectedRows,
       },
-    }).onOk((programsOrder) => {
+    }).onOk((programsOrder: ProgramTable[]) => {
       resolve(programsOrder)
     }).onCancel(() => {
       reject(new Error('Program order selection cancelled'))
@@ -377,7 +377,7 @@ registerCommand(() => {
         componentProps: {
           options: processTypes,
         },
-      }).onOk(async (newType) => {
+      }).onOk(async (newType: number) => {
         await contextMenuStore.changeProcessType(selectedRows, newType, machineId)
         await editor.fetchAllPrograms()
         return true

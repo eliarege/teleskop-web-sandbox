@@ -84,6 +84,8 @@ export const useEditorStore = defineStore('editor', () => {
       path: `/machine/${id}`,
       replace,
     })
+
+    program.value = createEmptyProgram()
   }
 
   /**
