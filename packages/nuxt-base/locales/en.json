@@ -25,6 +25,7 @@
     "locale": "Locale",
     "login": "Login",
     "logout": "Logout",
+    "profile": "Profile",
     "name": "Name",
     "nodeVersion": "Node version",
     "sendFeedback": "Send feedback",

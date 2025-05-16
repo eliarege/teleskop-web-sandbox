@@ -57,6 +57,7 @@ export interface KeycloakPlugin {
   loadUserInfo: () => void
   /** Loads the users profile. Updates `userProfile` ref */
   loadUserProfile: () => void
+  createAccountUrl: () => string
 }
 
 declare module 'keycloak-js' {
@@ -277,6 +278,7 @@ export default defineNuxtPlugin(() => {
         clearToken: kcEnabled ? keycloak.clearToken : noop,
         loadUserInfo: kcEnabled ? loadUserInfo : noop,
         loadUserProfile: kcEnabled ? loadUserProfile : noop,
+        createAccountUrl: keycloak.createAccountUrl,
       } as KeycloakPlugin,
     },
   }
