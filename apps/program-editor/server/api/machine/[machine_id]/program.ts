@@ -40,37 +40,69 @@ async function handleGetPrograms(machine: any, query: any) {
   }
   return await machine.fetchAllProgramHeaders(query)
 }
-
-async function handleCreateProgram(machine: any, body: any, machineId: number, userName?: string) {
+async function handleCreateProgram(
+  machine: any,
+  body: any,
+  machineId: number,
+  userName?: string,
+) {
   const programNoToCheck = body.newProgramNo ?? body.programNo ?? body.program?.programNo
-  let program: Program
-  let actCode, act1, act2
 
-  if (body.program) {
-    program = body.program
-    actCode = ProgramEditorActivityCodes.PROGRAMCREATED
-    act1 = `Machine ${machineId}`
-    act2 = program.programNo
-  } else {
-    const machineOfCopiedProgram = await machineStore.get(body.machineIdOfCopiedProgram)
-    program = await machineOfCopiedProgram.fetchProgram(body.programNo)
-    program.programState = ProgramStatus.EXISTS_ONLY_ON_DATABASE
-    program.machineId = machineId
-    program.programNo = programNoToCheck
-    actCode = ProgramEditorActivityCodes.PROGRAMCOPIED
-    act1 = `Source Machine/Program ${body.machineIdOfCopiedProgram},${body.programNo}`
-    act2 = `Target Machine/Program ${machineId},${program.programNo}`
-  }
+  let program: Program
+  let actCode: string
+  let act1: string
+  let act2: string
 
   try {
-    logger.info(`User: ${userName}. Created program ${program.programNo} of machine ${machineId}.`)
+    if (body.program) {
+      // Yeni program oluşturuluyor
+      program = body.program
+      program.programNo = programNoToCheck
+      program.machineId = machineId
+
+      actCode = ProgramEditorActivityCodes.PROGRAMCREATED
+      act1 = `Machine ${machineId}`
+      act2 = program.programNo
+    } else {
+      // Var olan program kopyalanıyor
+      const sourceMachineId = body.machineIdOfCopiedProgram
+      const sourceProgramNo = body.programNo
+
+      if (!sourceMachineId || !sourceProgramNo) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Invalid source program',
+          data: {
+            code: 'INVALID_PROGRAM',
+            detail: 'Invalid source program',
+          },
+        })
+      }
+
+      const sourceMachine = await machineStore.get(sourceMachineId)
+      const result = await sourceMachine.fetchProgram(sourceProgramNo)
+
+      program = result.program
+      program.programState = ProgramStatus.EXISTS_ONLY_ON_DATABASE
+      program.machineId = machineId
+      program.programNo = programNoToCheck
+
+      actCode = ProgramEditorActivityCodes.PROGRAMCOPIED
+      act1 = `Source Machine/Program ${sourceMachineId},${sourceProgramNo}`
+      act2 = `Target Machine/Program ${machineId},${program.programNo}`
+    }
+
+    // Loglama ve kaydetme işlemleri
+    logger.info(`User: ${userName}. Created program ${program.programNo} on machine ${machineId}.`)
     await machine.insertProgram(program)
     await logEditorOperation(actCode, act1, act2)
-  } catch (err) {
-    handleProgramError(err)
-  }
 
-  return 1
+    return { success: true }
+  } catch (err) {
+    logger.error(`Error creating program on machine ${machineId}: ${err.message}`)
+    handleProgramError(err)
+    return { success: false, error: err.message }
+  }
 }
 
 async function handleUpdateProgram(machine: any, body: any, machineId: number, userName?: string) {
