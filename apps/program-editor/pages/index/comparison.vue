@@ -2,7 +2,7 @@
 import DMP from 'diff-match-patch'
 import { LoadingSpinner } from '@teleskop/ui'
 import Main from '~/components/Comparison/Main.vue'
-import type { ContextBarButtons, Program, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion } from '~/shared/types'
+import type { ContextBarButtons, Program, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion, StepError } from '~/shared/types'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
 
@@ -56,11 +56,11 @@ editor.fetchMachine(Number(m)).then(() => {
   navigateTo('/')
 })
 
-const programOneData = await kc.fetch<Program>(paths[0])
-const programTwoData = await kc.fetch<Program>(paths[1])
+const programOneData = await kc.fetch<{ program: Program, programErrors: StepError[] }>(paths[0])
+const programTwoData = await kc.fetch<{ program: Program, programErrors: StepError[] }>(paths[1])
 
-const programOneCommands = programOneData.steps.map(step => step.mainCommand.commandNo)
-const programTwoCommands = programTwoData.steps.map(step => step.mainCommand.commandNo)
+const programOneCommands = programOneData.program.steps.map(step => step.mainCommand.commandNo)
+const programTwoCommands = programTwoData.program.steps.map(step => step.mainCommand.commandNo)
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
@@ -188,8 +188,8 @@ function processDmpDiffs(): void {
     if (diffType === DiffType.bothSides) {
       const steps = diffValue.toString().split(',').length
       for (let i = 0; i < steps; i++) {
-        const left = createProgramStepCommandDiff(programOneData.steps[leftIndex])
-        const right = createProgramStepCommandDiff(programTwoData.steps[rightIndex])
+        const left = createProgramStepCommandDiff(programOneData.program.steps[leftIndex])
+        const right = createProgramStepCommandDiff(programTwoData.program.steps[rightIndex])
 
         compareCommands(left, right)
         diffResults.push([left, right])
@@ -199,7 +199,7 @@ function processDmpDiffs(): void {
     } else if (diffType === DiffType.onlyLeft) {
       const steps = diffValue.toString().split(',').length
       for (let i = 0; i < steps; i++) {
-        const left = createProgramStepCommandDiff(programOneData.steps[leftIndex])
+        const left = createProgramStepCommandDiff(programOneData.program.steps[leftIndex])
         left.mainCommand.diff = true
         diffResults.push([left, null])
         leftIndex++
@@ -207,7 +207,7 @@ function processDmpDiffs(): void {
     } else if (diffType === DiffType.onlyRight) {
       const steps = diffValue.toString().split(',').length
       for (let i = 0; i < steps; i++) {
-        const right = createProgramStepCommandDiff(programTwoData.steps[rightIndex])
+        const right = createProgramStepCommandDiff(programTwoData.program.steps[rightIndex])
         right.mainCommand.diff = true
         diffResults.push([null, right])
         rightIndex++
@@ -219,18 +219,18 @@ function processDmpDiffs(): void {
 processDmpDiffs()
 
 const programOneHeader: ProgramInfoHeader = {
-  programName: programOneData.name,
-  programNo: programOneData.programNo,
+  programName: programOneData.program.name,
+  programNo: programOneData.program.programNo,
   programVersion: Number(v1),
-  stepCount: programOneData.steps.length,
+  stepCount: programOneData.program.steps.length,
   isValid: isValid1,
 }
 
 const programTwoHeader: ProgramInfoHeader = {
-  programName: programTwoData.name,
-  programNo: programTwoData.programNo,
+  programName: programTwoData.program.name,
+  programNo: programTwoData.program.programNo,
   programVersion: Number(v2),
-  stepCount: programTwoData.steps.length,
+  stepCount: programTwoData.program.steps.length,
   isValid: isValid2,
 }
 </script>
