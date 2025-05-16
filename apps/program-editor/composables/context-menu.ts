@@ -247,16 +247,35 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
 
-    for (const program of programs) {
-      editor.isLoading = true
-      const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
-      if (check === 'PROGRAM_HAS_ERRORS') {
-        notification(false, t(`contextMenu.send.programHasErrors`, { name: program.name }))
-        continue
+    editor.isLoading = true
+
+    try {
+      for (const program of programs) {
+        try {
+          const response = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
+
+          let success = true
+          let messageKey = 'success'
+          let params = { name: program.name, programNo: program.programNo }
+
+          if (response === 'PROGRAM_HAS_ERRORS') {
+            success = false
+            messageKey = 'programHasErrors'
+            params = { name: program.name, programNo: program.programNo }
+          } else if (response !== true) {
+            success = false
+            messageKey = 'fail'
+          }
+
+          notification(success, t(`contextMenu.send.${messageKey}`, params))
+        } catch (error) {
+          console.error(`Upload failed for program ${program.programNo}`, error)
+          notification(false, t('contextMenu.send.fail', { name: program.name }))
+        }
       }
-      notification(check, t(`contextMenu.send.${check ? 'success' : 'fail'}`, { name: program.name }))
+    } finally {
+      editor.isLoading = false
     }
-    editor.isLoading = false
   }
 
   async function getRemoteProgram(programs: ProgramTable[], machineId: number): Promise<void> {

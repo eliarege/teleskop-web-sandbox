@@ -295,7 +295,7 @@
     "send": {
       "success": "{name} programı makineye başarıyla gönderildi.",
       "fail": "{name} programını gönderirken hata oluştu.",
-      "programHasErrors": "Programda hatalar var. Lütfen kontrol ediniz."
+      "programHasErrors": "{programNo} numaralı programda hatalar var. Lütfen kontrol ediniz."
     },
     "get": {
       "success": "{programNo} - {name} başarıyla alındı.",
