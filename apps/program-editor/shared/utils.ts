@@ -69,6 +69,22 @@ export function validateProgram(program: Program, machineCommands: MachineComman
       const machineCommand = getMachineCommand(command.commandNo)
 
       if (!machineCommand)
+        errors.push({
+          stepId: step.stepId,
+          commands: [
+            {
+              commandId: command.commandId,
+              messages: [
+                {
+                  type: 'machineCommandNotFound',
+                  commandNo: command.commandNo,
+                },
+              ],
+            },
+          ],
+        })
+
+      if (!machineCommand)
         return
 
       const { parameters: machineParams, ioList: machineIOs } = machineCommand
