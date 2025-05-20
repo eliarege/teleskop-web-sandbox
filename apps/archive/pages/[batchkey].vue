@@ -139,18 +139,18 @@ function getCommandsWithNames() {
 console.log(batchData.value)
 
 const colorInterpolator = [
-  'red',
-  'blue',
-  'yellow',
-  'green',
-  'purple',
-  'cyan',
-  'fuchsia',
-  'orange',
-  'lightblue',
-  'rose',
-  'stone',
-  'lime',
+  '#ff0000', // 'red',
+  '#0000ff', // 'blue',
+  '#ffff00', // 'yellow',
+  '#008000', // 'green',
+  '#800080', // 'purple',
+  '#00ffff', // 'cyan',
+  '#ff00ff', // 'fuchsia',
+  '#ffa500', // 'orange',
+  '#add8e6', // 'lightblue',
+  '#ff007f', // 'rose',
+  '#78716c', // 'stone',
+  '#00ff00', // 'lime',
 ]
 
 function initializeSetting(type: string, ioIndex: number, unit?: string) {

@@ -316,5 +316,14 @@
     "UNKNOWN_NODE_TYPE": "Bilinmeyen node tipi: {type}",
     "VARIABLE_NOT_FOUND": "Değişken {value} bulunamadı. Komut No: {commandNo}"
   },
-  "dismiss": "Kapat"
+  "dismiss": "Kapat",
+  "settings": {
+    "_": "Ayarlar",
+    "color": "Renk Ayarları",
+    "line": "Çizgi Ayarları",
+    "lineChart": "Çizgi Grafik",
+    "dashedLineChart": "Kesikli Çizgi Grafik",
+    "dottedLineChart": "Nokta Grafik"
+  }
+
 }

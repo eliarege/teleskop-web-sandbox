@@ -37,8 +37,11 @@ export interface BasicProgram {
   startTime: string
   endTime: string
 }
+
+export type LineType = 'default' | 'dashed' | 'dotted'
 export interface IOSetting {
   color: string
+  lineType?: LineType
   selected: boolean
   axis: string
 }

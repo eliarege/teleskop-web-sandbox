@@ -318,6 +318,14 @@
     "UNKNOWN_NODE_TYPE": "Unknown node type: {type}",
     "VARIABLE_NOT_FOUND": "Variable {value} not defined. Command No: {commandNo}"
   },
-  "dismiss": "Dismiss"
+  "dismiss": "Dismiss",
+  "settings": {
+    "_": "Settings",
+    "color": "Color Settings",
+    "line": "Line Settings",
+    "lineChart": "Line Graph",
+    "dashedLineChart": "Dashed Line Graph",
+    "dottedLineChart": "Dotted Line Graph"
+  }
 
 }
