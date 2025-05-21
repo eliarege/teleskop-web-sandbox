@@ -14,6 +14,7 @@ import {
   extent as d3Extent,
   line as d3Line,
   max as d3Max,
+  min as d3Min,
   select as d3Select,
   interpolateRgb,
   interpolateRgbBasis,
@@ -38,7 +39,7 @@ import {
 import type { QBtnProps } from 'quasar'
 import AxisesVisibilityDialog from './AxisesVisibilityDialog.vue'
 import ReelDataDialog from './ReelDataDialog.vue'
-import type { Batch, DigitalInputOutputType, Reel, TheoreticalProgram } from '~/types/archive'
+import type { Batch, DigitalInputOutputType, LineType, Reel, TheoreticalProgram } from '~/types/archive'
 import UpdateAxisDialog from '~/components/UpdateAxisDialog.vue'
 
 const props = defineProps<{
@@ -185,7 +186,7 @@ if (!colorTransitionPortions.length)
   colorTransitionPortions.push(0)
 
 const dataSet = computed(() => {
-  const set: { io: any, color: string, axis?: any, isDefault?: boolean }[] = []
+  const set: { io: any, color: string, axis?: any, isDefault?: boolean, lineType?: LineType }[] = []
   set.push({
     io: { ioValues: theoreticalTemperatures, settingKey: 'DEFAULT' },
     isDefault: true,
@@ -198,6 +199,7 @@ const dataSet = computed(() => {
       set.push({
         io: { ...io, type: 'AIN', settingKey: `analogInputs_${io.ioIndex}` },
         color: setting.color,
+        lineType: setting.lineType,
         axis: setting.axis,
       })
   })
@@ -207,6 +209,7 @@ const dataSet = computed(() => {
       set.push({
         io: { ...io, type: 'AIN', settingKey: `counters_${io.ioIndex}` },
         color: setting.color,
+        lineType: setting.lineType,
         axis: setting.axis,
       })
   })
@@ -216,6 +219,7 @@ const dataSet = computed(() => {
       set.push({
         io: { ...io, name: t(`calculatedValues.${io.name}`), type: 'AIN', settingKey: `calculatedValues_${io.ioIndex}` },
         color: setting.color,
+        lineType: setting.lineType,
         axis: setting.axis,
       })
   })
@@ -225,6 +229,7 @@ const dataSet = computed(() => {
       set.push({
         io: { ...io, type: 'AOUT', settingKey: `analogOutputs_${io.ioIndex}` },
         color: setting.color,
+        lineType: setting.lineType,
         axis: setting.axis,
       })
   })
@@ -275,17 +280,28 @@ const reelsDataSet = computed(() => {
 const yScales = computed(() => {
   return dataSet.value.map((aio) => {
     const setting = settingsStore.getSetting(aio.io.settingKey)
-    let max = Number(d3Max(aio.io.ioValues, v => v.value))
+    let max = Number(d3Max(aio.io.ioValues, (v: any) => v.value))
+    let min = 0
     const axis = settingsStore.axises.get(setting.axis || 'undef')
     if (axis) {
       if (max > axis.max)
         axis.max = max
       else
         max = axis.max
+
+      if (axis.unit.includes('counters')) {
+        min = Number(d3Min(aio.io.ioValues, (v: any) => v.value))
+        if (axis?.min || axis.min === 0) {
+          if (axis.min > min)
+            axis.min = min
+          else
+            min = axis.min
+        }
+      }
     }
     return scaleLinear()
       .range([innerRect.value.height * chartHeightMultiplier, 0])
-      .domain([0, max * 1.1])
+      .domain([min * 1.1, max * 1.1])
   })
 })
 const reelYScale = computed(() => {
@@ -376,6 +392,7 @@ const lines = computed(() => {
     return {
       color: dataSet.value[index]?.color || '#FFFFFF',
       isDefault: dataSet.value[index]?.isDefault,
+      lineType: dataSet.value[index]?.lineType,
       line: d3Line()
         .x((d: any) => {
           return xScale.value(new Date(d.time))
@@ -659,7 +676,7 @@ const tooltipContent = computed(() => {
   }
   return {
     time: selectedTime.value,
-    data: tooltipData,
+    data: tooltipData.filter(i => i?.value?.name && (i?.value?.value || i?.value?.duration)),
   }
 })
 
@@ -910,8 +927,21 @@ const buttons = computed(() =>
             fill="none"
             :stroke="line.isDefault ? 'url(#koko)' : line.color"
             :stroke-width="line.isDefault ? 1 : 2.5"
+            :stroke-dasharray="line.lineType === 'dashed' ? '4,2' : 'none'"
             style="pointer-events: none;"
           />
+          <g v-for="(line, index) in lines" :key="`${index}-dots`">
+            <g v-if="line.lineType === 'dotted'">
+              <circle
+                v-for="(point, pointIndex) in dataSet[index].io.ioValues"
+                :key="`${index}-${pointIndex}`"
+                :cx="xScale(new Date(point.time))"
+                :cy="yScales[index](point.value)"
+                r="3"
+                :fill="line.color"
+              />
+            </g>
+          </g>
           <linearGradient id="koko">
             <stop
               v-for="(point, index) of colorTransitionPortions"

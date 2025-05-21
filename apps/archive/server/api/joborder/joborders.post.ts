@@ -17,14 +17,36 @@ const selectParameters = {
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const knexInstance: any = db('BADATA as B')
+  let programFilter
+  let filters
 
   if (body.filters && body.filters?.length > 0) {
-    filtersToKnex(body.filters, selectParameters, knexInstance)
+    const programFilterIndex = body.filters.findIndex((flt: any) => flt.field === 'theoreticalProgramNoList')
+    if (programFilterIndex !== -1) {
+      filters = body.filters.filter((flt: any) => flt.field !== 'theoreticalProgramNoList')
+      programFilter = body.filters[programFilterIndex]
+    } else {
+      filters = body.filters
+    }
+    filtersToKnex(filters, selectParameters, knexInstance)
   }
 
   const { count } = (await knexInstance.clone().count('* as count').first())
 
   knexInstance.select(selectParameters)
+
+  if (programFilter) {
+    knexInstance.andWhere((builder: any) => {
+      const DBName = 'B.PROGRAMNOLIST' // selectParameters[programFilter.field]
+      programFilter.value.option.forEach((opt: number) => {
+        builder.andWhere((innerBuilder: any) => {
+          innerBuilder.orWhere(DBName, '=', `${opt}`)
+          innerBuilder.orWhere(DBName, 'like', `%,${opt}%`)
+          innerBuilder.orWhere(DBName, 'like', `%${opt},%`)
+        })
+      })
+    })
+  }
 
   if (body.pagination) {
     if (body.pagination.sortBy)
@@ -38,15 +60,17 @@ export default defineEventHandler(async (event) => {
   }
   const rows = await knexInstance
   for (const row of rows) {
-    const programNoList = (await db('BAACTUALPRGSTEPS').select('PRGNO').where('BATCHKEY', Number(row.batchKey)).orderBy('STEPNO', 'asc')).map(el => el.PRGNO)
-    row.theoreticalProgramNoList = row.theoreticalProgramNoList.includes(',') ? row.theoreticalProgramNoList.split(',') : [row.theoreticalProgramNoList]
-    row.theoreticalProgramNoList.forEach(e => e = Number(e))
+    const programNoList = (await db('BAACTUALPRGSTEPS')
+      .select('PRGNO')
+      .where('BATCHKEY', Number(row.batchKey))
+      .orderBy('STEPNO', 'asc'))
+      .map(el => el.PRGNO)
+    row.theoreticalProgramNoList = row.theoreticalProgramNoList.includes(',') ? row.theoreticalProgramNoList.split(',').map((p: string) => Number(p)) : [Number(row.theoreticalProgramNoList)]
     row.actualProgramNoList = []
     programNoList.forEach((programNo: number, index) => {
       if (index === 0 || programNo !== programNoList[index - 1])
         row.actualProgramNoList.push(programNo)
     })
   }
-
   return { rows, count }
 })

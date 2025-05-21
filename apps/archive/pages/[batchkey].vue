@@ -139,18 +139,18 @@ function getCommandsWithNames() {
 console.log(batchData.value)
 
 const colorInterpolator = [
-  'red',
-  'blue',
-  'yellow',
-  'green',
-  'purple',
-  'cyan',
-  'fuchsia',
-  'orange',
-  'lightblue',
-  'rose',
-  'stone',
-  'lime',
+  '#ff0000', // 'red',
+  '#0000ff', // 'blue',
+  '#ffff00', // 'yellow',
+  '#008000', // 'green',
+  '#800080', // 'purple',
+  '#00ffff', // 'cyan',
+  '#ff00ff', // 'fuchsia',
+  '#ffa500', // 'orange',
+  '#add8e6', // 'lightblue',
+  '#ff007f', // 'rose',
+  '#78716c', // 'stone',
+  '#00ff00', // 'lime',
 ]
 
 function initializeSetting(type: string, ioIndex: number, unit?: string) {
@@ -165,7 +165,7 @@ function initializeSetting(type: string, ioIndex: number, unit?: string) {
       key,
       colorInterpolator[ioIndex % 12],
       visibility,
-      unit || 'undef',
+      type === 'counters' ? `${unit}-counters` : (unit || 'undef'), // TODO: unit means axis lt-counter something like
     )
 }
 
@@ -180,22 +180,31 @@ function setAxisForAnalogSettingsOnInitialize(
 
   // if (settingsStore.hasUserSettings())
   //   return
-  if (command.calibUnit && !settingsStore.units.includes(command.calibUnit))
-    settingsStore.units.push(command.calibUnit)
-  const axis = settingsStore.axises.get(command.calibUnit)
+  let unit = ''
+  if (command.calibUnit) {
+    if (type === 'counters') {
+      unit = `${command.calibUnit}-counters`
+    } else {
+      unit = command.calibUnit
+    }
+  }
+
+  if (unit && !settingsStore.units.includes(unit))
+    settingsStore.units.push(unit)
+  const axis = settingsStore.axises.get(unit)
   if (axis) {
     if (!axis.ioKeys.includes(commandKey))
       axis.ioKeys.push(commandKey)
   } else {
-    settingsStore.axises.set(command.calibUnit || 'undef', {
+    settingsStore.axises.set(unit || 'undef', {
       color: '#FFFFFF',
-      unit: command.calibUnit || 'undef',
-      name: command.calibUnit || 'undef',
+      unit: unit || 'undef',
+      name: unit || 'undef',
       max: 0,
       min: 0,
       ioKeys: [commandKey],
       visible: false,
-      isDefault: command.calibUnit === '\'C',
+      isDefault: unit === '\'C',
     })
   }
 }
