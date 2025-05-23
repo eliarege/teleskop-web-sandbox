@@ -898,12 +898,14 @@ it('parseUser', () => {
 })
 
 it('parseMachineTranslations', () => {
-  const content = `Sistem~System~Система~سیستم~Sistem~Sistema~Sistema~نظام~系统~系统~Σύστημα~Sistem~Tizim~Sistema~Hệ thống~Sistem~시스템~System~Système`
+  const content = `
+  Sistem~System~~سیستم~Sistem~Sistema~Sistema~نظام~系统~系统~Σύστημα~Sistem~Tizim~Sistema~Hệ thống~Sistem~시스템~System~Système
+  acil~urgent~~
+  `
 
   const results = [
-    { machine_id: 1, from_locale: 0, to_locale: 0, messages: { Sistem: 'Sistem' } },
-    { machine_id: 1, from_locale: 0, to_locale: 1, messages: { Sistem: 'System' } },
-    { machine_id: 1, from_locale: 0, to_locale: 2, messages: { Sistem: 'Система' } },
+    { machine_id: 1, from_locale: 0, to_locale: 0, messages: { Sistem: 'Sistem', acil: 'acil' } },
+    { machine_id: 1, from_locale: 0, to_locale: 1, messages: { Sistem: 'System', acil: 'urgent' } },
     { machine_id: 1, from_locale: 0, to_locale: 3, messages: { Sistem: 'سیستم' } },
     { machine_id: 1, from_locale: 0, to_locale: 4, messages: { Sistem: 'Sistem' } },
     { machine_id: 1, from_locale: 0, to_locale: 5, messages: { Sistem: 'Sistema' } },

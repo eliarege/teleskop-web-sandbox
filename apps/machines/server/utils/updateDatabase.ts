@@ -1081,7 +1081,8 @@ export async function updateMachineTranslations(
   tbb: TbbFtpClient,
 ) {
   try {
-    const messages = await tbb.readTranslationFiles(machineId, 0)
+    const fromLocale = await knex('BFMACHINESYSTEMPARAMS').select({ lang: 'ParamValue' }).first().where('ParamToken', 'FROM_PROJECT_LANGUAGE').andWhere('MachineId', machineId)
+    const messages = await tbb.readTranslationFiles(machineId, fromLocale.lang)
     await knex('BFMACHINETRANSLATIONS').insert(messages)
   } catch (err: any) {
     throw new DatabaseQueryError(err.message)

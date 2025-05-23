@@ -1,5 +1,25 @@
 export default defineI18nLocale(async (locale) => {
-  const machineId = 1
-  const res = await $fetch(`/api/project-translations?locale=${locale}&machineId=${machineId}`)
-  return res.project
+  const locales = [
+    'tr',
+    'en',
+    'ru',
+    'fa',
+    'fa-Latn',
+    'pt',
+    'es',
+    'ar',
+    'zh',
+    'zh-Hans',
+    'el',
+    'ms',
+    'uz',
+    'it',
+    'vi',
+    'sr',
+    'ko',
+    'de',
+    'fr',
+  ]
+  const localeIndex = locales.indexOf(locale)
+  return await $fetch(`/api/projectTranslations?locale=${localeIndex}`)
 })
