@@ -5,6 +5,7 @@ import { logEditorOperation } from '~/server/functions'
 import logger from '~/server/logger'
 import { ProgramStatus } from '~/shared/constants'
 import { checkPermission } from '~/server/utils/auth'
+import type { MachineController } from '~/server/classes/MachineController'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
@@ -56,7 +57,7 @@ export default defineAuthEventHandler(async (event) => {
 // Helper Functions
 
 async function handleProgramDeletion(
-  machine: any,
+  machine: MachineController,
   programNo: number,
   query: any,
   machineId: number,
@@ -66,7 +67,7 @@ async function handleProgramDeletion(
     return 0
   }
 
-  const { programState } = await machine.fetchProgram(programNo)
+  const { program: { programState } } = await machine.fetchProgram(programNo)
   const source = query.source.toString()
 
   if (source.includes('machine')) {
@@ -80,7 +81,7 @@ async function handleProgramDeletion(
   return 1
 }
 
-async function deleteFromMachineIfValid(machine: any, programNo: number, programState: string, machineId: number, userName?: string) {
+async function deleteFromMachineIfValid(machine: MachineController, programNo: number, programState: number | null, machineId: number, userName?: string) {
   if (
     programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER
     || programState === ProgramStatus.EXISTS_ON_BOTH
@@ -95,9 +96,9 @@ async function deleteFromMachineIfValid(machine: any, programNo: number, program
 }
 
 async function deleteFromDatabaseIfValid(
-  machine: any,
+  machine: MachineController,
   programNo: number,
-  programState: string,
+  programState: number | null,
   machineId: number,
   userName?: string,
 ) {
@@ -111,6 +112,7 @@ async function deleteFromDatabaseIfValid(
       `Machine ${machineId}`,
       `Program No ${programNo}`,
     )
+
     return await machine.deleteProgramFromDatabase(programNo)
   }
   return 0

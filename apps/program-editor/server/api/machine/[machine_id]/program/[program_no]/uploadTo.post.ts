@@ -10,9 +10,9 @@ export default defineAuthEventHandler({
     const body = await readBody(event)
     const machineOfProgram = await machineStore.get(machineId)
     const machineToUpload = await machineStore.get(body.machineId)
-    const program = await machineOfProgram.fetchProgram(programNo)
+    const { program } = await machineOfProgram.fetchProgram(programNo)
     logger.info(`User: ${event.context.kauth?.name}. Uploading program ${programNo} of machine ${machineId} to machine ${body.machineId}.`)
 
-    return await machineToUpload.uploadProgram(program.program)
+    return await machineToUpload.uploadProgram(program)
   },
 })

@@ -294,8 +294,8 @@ export class MachineController {
   async uploadAllProgramsToMachine(): Promise<void> {
     const programNoList = await this.getLocalMachineProgramList()
     for (const programNo of programNoList) {
-      const program = await this.fetchProgram(programNo)
-      await this.uploadProgram(program.program)
+      const { program } = await this.fetchProgram(programNo)
+      await this.uploadProgram(program)
     }
   }
 
