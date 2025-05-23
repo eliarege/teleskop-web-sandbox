@@ -28,7 +28,7 @@ const stepIcons = computed(() => {
   return [mainIcon, ...parallelIcons]
 })
 
-const expanded = ref(editor.allStepExpanded)
+const expanded = ref(props.stepError || editor.allStepExpanded)
 const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')
 
 watch(() => editor.allStepExpanded, () => {
