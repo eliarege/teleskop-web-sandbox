@@ -29,6 +29,7 @@ import { parseManualReason } from '../src/parsers/parseManualReason'
 import { parseStopReason } from '../src/parsers/parseStopReason'
 import { parseSystem } from '../src/parsers/parseSystem'
 import { parseUser } from '../src/parsers/parseUser'
+import { parseMachineTranslations } from '../src/parsers/parseMachineTranslations'
 
 it('parseAnalogInput', () => {
   const contents = `
@@ -892,6 +893,35 @@ it('parseUser', () => {
       userType: 1,
     },
   ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseMachineTranslations', () => {
+  const content = `Sistem~System~Система~سیستم~Sistem~Sistema~Sistema~نظام~系统~系统~Σύστημα~Sistem~Tizim~Sistema~Hệ thống~Sistem~시스템~System~Système`
+
+  const results = [
+    { machine_id: 1, from_locale: 0, to_locale: 0, messages: { Sistem: 'Sistem' } },
+    { machine_id: 1, from_locale: 0, to_locale: 1, messages: { Sistem: 'System' } },
+    { machine_id: 1, from_locale: 0, to_locale: 2, messages: { Sistem: 'Система' } },
+    { machine_id: 1, from_locale: 0, to_locale: 3, messages: { Sistem: 'سیستم' } },
+    { machine_id: 1, from_locale: 0, to_locale: 4, messages: { Sistem: 'Sistem' } },
+    { machine_id: 1, from_locale: 0, to_locale: 5, messages: { Sistem: 'Sistema' } },
+    { machine_id: 1, from_locale: 0, to_locale: 6, messages: { Sistem: 'Sistema' } },
+    { machine_id: 1, from_locale: 0, to_locale: 7, messages: { Sistem: 'نظام' } },
+    { machine_id: 1, from_locale: 0, to_locale: 8, messages: { Sistem: '系统' } },
+    { machine_id: 1, from_locale: 0, to_locale: 9, messages: { Sistem: '系统' } },
+    { machine_id: 1, from_locale: 0, to_locale: 10, messages: { Sistem: 'Σύστημα' } },
+    { machine_id: 1, from_locale: 0, to_locale: 11, messages: { Sistem: 'Sistem' } },
+    { machine_id: 1, from_locale: 0, to_locale: 12, messages: { Sistem: 'Tizim' } },
+    { machine_id: 1, from_locale: 0, to_locale: 13, messages: { Sistem: 'Sistema' } },
+    { machine_id: 1, from_locale: 0, to_locale: 14, messages: { Sistem: 'Hệ thống' } },
+    { machine_id: 1, from_locale: 0, to_locale: 15, messages: { Sistem: 'Sistem' } },
+    { machine_id: 1, from_locale: 0, to_locale: 16, messages: { Sistem: '시스템' } },
+    { machine_id: 1, from_locale: 0, to_locale: 17, messages: { Sistem: 'System' } },
+    { machine_id: 1, from_locale: 0, to_locale: 18, messages: { Sistem: 'Système' } },
+  ]
+  const output = parseMachineTranslations(0, content, 1)
 
   expect(output).toStrictEqual(results)
 })

@@ -252,7 +252,7 @@ watch(showModal, async (newValue, _oldValue) => {
     row-key="machineId"
     selection="multiple"
     binary-state-sort
-    class="overflow-y-auto h-160 select-none"
+    class="overflow-y-auto h-88vh select-none"
     :rows-per-page-options="[0]"
     table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
     table-header-class="bg-gray-1 dark:bg-dark-4"

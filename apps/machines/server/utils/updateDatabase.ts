@@ -2,6 +2,7 @@ import type { Knex } from 'knex'
 import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { DatabaseQueryError } from '../error'
+import { knex } from '../connectionPool'
 import { calcIONumber, getIONames } from '.'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'
 
@@ -1072,5 +1073,17 @@ export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx:
     return true
   } catch (error: any) {
     throw new DatabaseQueryError(error.message)
+  }
+}
+
+export async function updateMachineTranslations(
+  machineId: number,
+  tbb: TbbFtpClient,
+) {
+  try {
+    const messages = await tbb.readTranslationFiles(machineId, 0)
+    await knex('BFMACHINETRANSLATIONS').insert(messages)
+  } catch (err: any) {
+    throw new DatabaseQueryError(err.message)
   }
 }

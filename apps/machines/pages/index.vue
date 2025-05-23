@@ -499,7 +499,7 @@ const columns = ref<MachineTableColumn[]>([
       :machine-groups="machineGroups"
       :mt-temp-io-options="MTTempIoOptions"
       :steam-valve-do-options="steamValveDoOptions"
-      form-class="grid grid-cols-5 gap-4 grid-rows-7 h-160 select-none"
+      form-class="grid grid-cols-5 gap-4 grid-rows-7 select-none"
       @add="handleAdd"
       @edit="handleEdit"
       @select="handleSelection"
@@ -556,7 +556,7 @@ const columns = ref<MachineTableColumn[]>([
       </template>
     </MachineList>
 
-    <q-scroll-area style="height: 200px">
+    <q-scroll-area>
       <div
         v-for="(log, index) in logs"
         :key="index"
