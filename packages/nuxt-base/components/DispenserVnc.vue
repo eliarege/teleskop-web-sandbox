@@ -198,8 +198,10 @@ function resolveWebSocketUrl(url: string) {
     isSecure ? `wss://` : `ws://`,
   )
 }
+const disconnected = ref(false)
 const websockifyWsUrl = resolveWebSocketUrl(props.websockifyUrl)
 function onDisconnect() {
+  disconnected.value = true
   quasar.notify({
     message: t('base.vncError', { name: props.dispenserName }),
     timeout: 3000,
@@ -260,7 +262,7 @@ const config = useRuntimeConfig()
         <div class="wrapper" @click.stop.prevent>
           <div class="machine-screen">
             <div class="screen">
-              <span class="loader z-1 absolute" />
+              <span class="z-1 absolute" :class="disconnected ? '' : 'loader'" />
               <NoVnc
                 ref="vnc"
                 :url="joinURL(websockifyWsUrl, 'dispenser', `${dispenserId}`)"

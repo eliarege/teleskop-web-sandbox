@@ -15,6 +15,7 @@
   "devDependencies": {
     "@teleskop/tsconfig": "workspace:*",
     "@types/d3": "7.4.3",
+    "@types/novnc__novnc": "1.6.0",
     "vue": "3.5.12"
   }
 }
