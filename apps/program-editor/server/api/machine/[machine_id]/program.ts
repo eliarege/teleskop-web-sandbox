@@ -6,11 +6,16 @@ import { ProgramEditorActivityCodes } from '~/server/constants'
 import { logEditorOperation } from '~/server/functions'
 import logger from '~/server/logger'
 import { checkPermission } from '~/server/utils/auth'
+import type { MachineController } from '~/server/classes/MachineController'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
   const machineId = Number.parseInt(machine_id)
   const machine = await machineStore.get(machineId)
+  if (!machine) {
+    throw new PError('MACHINE_NOT_FOUND', { machineId })
+  }
+
   const query = getQuery(event)
 
   if (event.method === 'GET') {
@@ -34,14 +39,14 @@ export default defineAuthEventHandler(async (event) => {
 
 // Helper Functions
 
-async function handleGetPrograms(machine: any, query: any) {
+async function handleGetPrograms(machine: MachineController, query: any) {
   if (query?.asList) {
     return await machine.getProgramHeadersAsList()
   }
   return await machine.fetchAllProgramHeaders(query)
 }
 async function handleCreateProgram(
-  machine: any,
+  machine: MachineController,
   body: any,
   machineId: number,
   userName?: string,
@@ -49,7 +54,7 @@ async function handleCreateProgram(
   const programNoToCheck = body.newProgramNo ?? body.programNo ?? body.program?.programNo
 
   let program: Program
-  let actCode: string
+  let actCode: number
   let act1: string
   let act2: string
 
@@ -62,7 +67,7 @@ async function handleCreateProgram(
 
       actCode = ProgramEditorActivityCodes.PROGRAMCREATED
       act1 = `Machine ${machineId}`
-      act2 = program.programNo
+      act2 = program.programNo.toString()
     } else {
       // Var olan program kopyalanıyor
       const sourceMachineId = body.machineIdOfCopiedProgram
@@ -98,14 +103,14 @@ async function handleCreateProgram(
     await logEditorOperation(actCode, act1, act2)
 
     return { success: true }
-  } catch (err) {
+  } catch (err: any) {
     logger.error(`Error creating program on machine ${machineId}: ${err.message}`)
     handleProgramError(err)
     return { success: false, error: err.message }
   }
 }
 
-async function handleUpdateProgram(machine: any, body: any, machineId: number, userName?: string) {
+async function handleUpdateProgram(machine: MachineController, body: any, machineId: number, userName?: string) {
   try {
     logger.info(`User: ${userName}. Updated program ${body.program.programNo} of machine ${machineId}.`)
     return await machine.updateProgram(body.program)

@@ -12,6 +12,14 @@ const fullSelect = Number.parseInt('1'.repeat(commandTypeMaps.length), 2)
 const selectAll = ref(selectedIcons.value === fullSelect)
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
+const groupCommandsByType = editor.machine.commandTypes.reduce((acc, command) => {
+  if (!acc[command.commandType]) {
+    acc[command.commandType] = []
+  }
+  acc[command.commandType].push(command.commandNo)
+  return acc
+}, {} as Record<number, number[]>)
+
 function toggleSelectAll() {
   selectAll.value = !selectAll.value
   selectedIcons.value = selectAll.value ? fullSelect : 0
@@ -49,11 +57,20 @@ function toggleSelectAll() {
           <div
             v-for="commandType in commandTypeMaps"
             :key="commandType.index"
+            class="flex items-center"
           >
             <ChemIconCheckbox
               v-model="selectedIcons"
               :command-index="commandType.index"
               :label="commandType.title"
+              class="mr-2"
+            />
+            <UnoIcon
+              v-for="commandNo in groupCommandsByType[commandType.value]"
+              :key="commandNo"
+              :class="editor.getStepIcon(commandNo)?.name"
+              :style="{ color: editor.getStepIcon(commandNo)?.color }"
+              class="inline-block mr-1"
             />
           </div>
         </div>

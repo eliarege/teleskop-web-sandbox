@@ -64,7 +64,7 @@ const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!)
             <CommandSelector :path="props.path" />
           </div>
 
-          <div>
+          <div class="flex-1">
             <ProgramStepCommandParameterInput
               v-for="(parameter, index) in machineCommand.editableParameters"
               :key="`pr-${programCommand.commandNo}-${index}`"
