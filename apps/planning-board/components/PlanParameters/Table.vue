@@ -99,7 +99,7 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
               {{ prop.row.id }}
             </q-td>
             <q-td key="paramString" :props="prop">
-              {{ prop.row.paramString }}
+              {{ t(`messages.${prop.row.paramString}`) }}
             </q-td>
             <q-td
               key="value"

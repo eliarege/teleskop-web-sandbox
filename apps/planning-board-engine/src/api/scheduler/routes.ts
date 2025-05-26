@@ -21,6 +21,7 @@ import {
   getMachines,
   getMachinesByErpParameter,
   getPlanParameters,
+  getProjectTranslations,
   getPtStatus,
   getRecipe,
   getStartingParametersWithValues,
@@ -53,6 +54,18 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while fetching pt status: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching pt status: ${err}` })
+      }
+    },
+  )
+  fastify.get(
+    '/planning_board/project-translations',
+    async (request: FastifyRequest<{ Querystring: { locale: number } }>, reply) => {
+      const { locale } = request.query
+      try {
+        return await getProjectTranslations(locale)
+      } catch (err) {
+        fastify.log.error(`An error occured while fetching project translations: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching project translations: ${err}` })
       }
     },
   )

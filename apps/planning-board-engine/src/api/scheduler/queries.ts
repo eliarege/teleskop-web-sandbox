@@ -8,6 +8,26 @@ import { knex } from '~/knexConfig'
 import { logger } from '~/composables/logger'
 import { StartingParameters } from '~/composables/enums'
 
+export async function getProjectTranslations(locale: number) {
+  try {
+    const res = await knex('BFMACHINETRANSLATIONS')
+      .select('messages')
+      .where('to_locale', locale)
+      .first()
+
+    if (res?.messages) {
+      try {
+        return { messages: JSON.parse(res.messages) }
+      } catch (parseError) {
+        console.error('Invalid JSON in messages:', res.messages)
+        throw new Error('Invalid JSON in messages field')
+      }
+    }
+  } catch (err) {
+    console.error(err)
+  }
+}
+
 export async function refreshCustomTables() {
   // refresh PTCOLUMNS table
   const existingPtColumns = await knex('PTCOLUMNS')
