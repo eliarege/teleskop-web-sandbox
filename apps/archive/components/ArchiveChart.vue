@@ -829,6 +829,11 @@ const buttons = computed(() =>
     },
   ] as Array<QBtnWithTooltip>,
 )
+const selectedCommand = computed(() => {
+  return props.batch.mergedCommands.find((cmd) => {
+    return new Date(cmd.startTime) <= selectedTime.value && new Date(cmd.endTime) > selectedTime.value
+  })
+})
 </script>
 
 <template>
@@ -994,7 +999,7 @@ const buttons = computed(() =>
           <rect
             class="tooltip-bg"
             width="240"
-            :height="90 + tooltipContent.data.length * 20"
+            :height="110 + tooltipContent.data.length * 20"
             rx="4"
             fill="white"
             stroke="gray"
@@ -1024,11 +1029,26 @@ const buttons = computed(() =>
             {{ t("tooltipOptions.activeUser") }}:
             {{ batch.joborderInfo.operatorName }}
           </text>
-
+          <text
+            v-if="selectedCommand"
+            x="8"
+            y="80"
+          >
+            {{ t('tooltipOptions.activeCommand') }}:
+            {{ `(${selectedCommand.commandNo}) ${selectedCommand.commandName}` }}
+          </text>
+          <text
+            v-if="selectedCommand"
+            x="8"
+            y="100"
+          >
+            {{ t('tooltipOptions.timeUntilCommandStart') }}:
+            {{ formatDurationHHMMSS(new Date(selectedCommand.startTime), selectedTime) }}
+          </text>
           <g v-for="(item, index) in tooltipContent.data" :key="index">
             <text
               x="8"
-              :y="80 + index * 20"
+              :y="120 + index * 20"
               class="text-sm"
               :fill="item.color"
             >

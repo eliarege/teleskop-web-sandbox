@@ -197,7 +197,9 @@
     "activeUser": "Aktif kullanıcı",
     "activeCommandTimeInfo": "Aktif komutun başlangıç zamanı ve gösterge konumuna kadar geçen süre",
     "manuelMeasuredValues": "Operatör tarafından ölçülmüş manuel değerler",
-    "timePassed": "Geçen süre"
+    "timePassed": "Geçen süre",
+    "activeCommand": "Aktif Komut",
+    "timeUntilCommandStart": "Komut Geçen Süre"
   },
   "axisesVisibilityDialog": {
     "_": "Eksen Görünürlüğü Ayarları",
