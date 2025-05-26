@@ -68,14 +68,3 @@ const erpLabel = computed(() => {
   font-weight: 600;
 }
 </style>
-
-<i18n lang="json">
-{
-  "en": {
-    "no-erp-val": "NO ERP VALUE"
-  },
-  "tr": {
-    "no-erp-val": "ERP DEĞERİ SEÇİLMEDİ"
-  }
-}
-</i18n>

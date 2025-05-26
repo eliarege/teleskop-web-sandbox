@@ -33,9 +33,9 @@ export default defineNuxtConfig({
     lazy: true,
     langDir: './locales',
     locales: [
-      { code: 'en-GB', file: 'en.json' },
-      { code: 'tr', file: 'tr.json' },
-      { code: 'pt', file: 'pt.json' },
+      { code: 'en-GB', files: ['en.json', 'projectTranslations.ts'] },
+      { code: 'tr', files: ['tr.json', 'projectTranslations.ts'] },
+      { code: 'pt', files: ['pt.json', 'projectTranslations.ts'] },
     ],
   },
   keycloak: {

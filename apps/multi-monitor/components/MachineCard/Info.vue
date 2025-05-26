@@ -48,7 +48,7 @@ function reqStatus(params: number) {
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
       <div class="explanation">
-        {{ erpKey || 'ERP' }}
+        {{ t(`messages.${erpKey}`) || 'ERP' }}
       </div>
       <q-separator
         color="white"
