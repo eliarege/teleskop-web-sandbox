@@ -10,6 +10,8 @@ import {
   axisRight,
   brush,
   brushX,
+  curveLinear,
+  curveStepAfter,
   brush as d3Brush,
   extent as d3Extent,
   line as d3Line,
@@ -397,7 +399,8 @@ const lines = computed(() => {
         .x((d: any) => {
           return xScale.value(new Date(d.time))
         })
-        .y((d: any) => scale(d.value)),
+        .y((d: any) => scale(d.value))
+        .curve(dataSet.value[index].io.type !== 'AOUT' ? curveLinear : curveStepAfter),
     }
   })
 })
@@ -623,24 +626,35 @@ const tooltipContent = computed(() => {
     .map((dataset) => {
       // Find the closest data point
 
-      let closestPoint
+      let dataPoint
 
       if (dataset.io.ioValues.length) {
-        closestPoint = dataset.io.ioValues.reduce((prev, curr) => {
-          const prevDiff = Math.abs(
-            new Date(prev.time).getTime() - selectedTime.value.getTime(),
-          )
-          const currDiff = Math.abs(
-            new Date(curr.time).getTime() - selectedTime.value.getTime(),
-          )
-          return currDiff < prevDiff
-            ? { ...curr, name: dataset.io.name }
-            : { ...prev, name: dataset.io.name }
-        })
+        if (dataset.io.type === 'AOUT') {
+          const filtered = dataset.io.ioValues
+            .filter(
+              v => (new Date(v.time)).getTime() <= selectedTime.value.getTime(),
+            )
+            .sort((a, b) => (new Date(a.time)).getTime() - (new Date(b.time)).getTime())
+
+          if (filtered.length > 0)
+            dataPoint = { ...filtered[filtered.length - 1], name: dataset.io.name }
+        } else {
+          dataPoint = dataset.io.ioValues.reduce((prev, curr) => {
+            const prevDiff = Math.abs(
+              new Date(prev.time).getTime() - selectedTime.value.getTime(),
+            )
+            const currDiff = Math.abs(
+              new Date(curr.time).getTime() - selectedTime.value.getTime(),
+            )
+            return currDiff < prevDiff
+              ? { ...curr, name: dataset.io.name }
+              : { ...prev, name: dataset.io.name }
+          })
+        }
       }
 
       return {
-        value: closestPoint,
+        value: dataPoint,
         color: dataset.color,
         type: dataset.io.type,
       }
@@ -676,7 +690,7 @@ const tooltipContent = computed(() => {
   }
   return {
     time: selectedTime.value,
-    data: tooltipData.filter(i => i?.value?.name && (i?.value?.value || i?.value?.duration)),
+    data: tooltipData.filter(i => i?.value?.name && ((i?.value?.value || i?.value?.value === 0) || i?.value?.duration)),
   }
 })
 

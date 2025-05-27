@@ -13,7 +13,11 @@ const props = defineProps<{
 const settingsStore = userSettingsStore()
 
 const commandsWithClosestTime = computed(() => {
-  return getCommandsWithClosestTime(props.selectedTime, props.commands)
+  return getCommandsWithClosestTime(
+    props.selectedTime,
+    props.commands,
+    props.typeKey === 'analogOutputs' ? 'lastTime' : 'closestTime',
+  )
 })
 function updateSetting(key: string, setting: IOSetting) {
   if (setting.selected) {
