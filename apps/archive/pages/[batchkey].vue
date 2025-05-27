@@ -29,6 +29,7 @@ import type {
   Machine,
   MachineCommand,
   Program,
+  Reel,
   TaskStatus,
 } from '~/types/archive'
 import JobOrderInfo from '~/components/JobOrderInfo.vue'
@@ -236,7 +237,7 @@ batchData.value?.counters.forEach((command) => {
 batchData.value?.calculatedValues.forEach((command) => {
   initializeSetting('calculatedValues', command.ioIndex)
 })
-const commandNames = computed(() => getCommandsWithNames())
+const mergedCommandsWithNames = computed(() => getCommandsWithNames())
 const theoreticalCommands = calculateTheoreticalCommands(batchData.value?.joborderInfo.startTime, 25, batchData.value?.theoreticalPrograms, batchData.value?.machine)
 const { theoreticalPrograms, errors } = calculateProgramTheoreticalTemperature(
   batchData.value?.joborderInfo.startTime,
@@ -368,7 +369,7 @@ const components: Record<string, () => any> = {
     }),
   CycleTimes: () =>
     h(CycleTimes, {
-      cycles: (batchData.value?.cycleTimes || []) as Cycle[],
+      cycles: (batchData.value?.cycleTimes || []) as Reel[],
       selectedTime: selectedDate.value,
     }),
   CompareButton: () => h(CompareButton),
@@ -381,14 +382,14 @@ const components: Record<string, () => any> = {
 
   Commands: () =>
     h(Commands, {
-      commands: commandNames.value as any[],
+      commands: mergedCommandsWithNames.value as any[],
       selectedTime: selectedDate.value,
       onCommandClicked: (time: string) => updateSelectedTime(time),
     }),
   Chart: () =>
     h(ArchiveChart, {
       'ref': chart,
-      'batch': batchData.value!,
+      'batch': { ...batchData.value, mergedCommands: mergedCommandsWithNames.value },
       theoreticalPrograms,
       'modelValue': selectedDate.value,
       'onUpdate:modelValue': (newVal: Date) => {

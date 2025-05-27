@@ -199,7 +199,9 @@
     "activeUser": "Active user",
     "activeCommandTimeInfo": "Active command's start time and time passed since command's start time",
     "manuelMeasuredValues": "Manuel values calculated by operator",
-    "timePassed": "Time passed"
+    "timePassed": "Time passed",
+    "activeCommand": "Command",
+    "timeUntilCommandStart": "Time Until Command"
   },
   "axisesVisibilityDialog": {
     "_": "Axis Visibility Settings",
