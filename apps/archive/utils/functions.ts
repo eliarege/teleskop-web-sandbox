@@ -5,6 +5,7 @@ import JoborderSummary from '~/components/JoborderSummary.vue'
 import RecipeSummary from '~/components/RecipeSummary.vue'
 import BatchSummary from '~/components/BatchSummary.vue'
 import type { AnalogInputOutputType, BasicProgram, BatchInfo, BatchParameters, CalculatedValue, Counter, DigitalInputOutputType, ERPParameter, Machine, Program } from '~/types/archive'
+import type { DDate } from '~/types/utils'
 
 export function formatDuration(sec: number): string {
   const totalSeconds = Math.abs(Math.floor(sec))
@@ -19,22 +20,36 @@ export function formatDuration(sec: number): string {
   ].join(':')
 }
 
-export function getCommandsWithClosestTime(slcTime: Date, commands: AnalogInputOutputType[] | DigitalInputOutputType[] | Counter[] | CalculatedValue[]) {
+export function getCommandsWithClosestTime(
+  slcTime: Date,
+  commands: AnalogInputOutputType[] | DigitalInputOutputType[] | Counter[] | CalculatedValue[],
+  getWith: 'closestTime' | 'lastTime' = 'closestTime',
+) {
   const selectedTime = slcTime.getTime()
 
   return commands.map((io) => {
-    const closestIoValue = io?.ioValues?.length > 0
-      ? io.ioValues.reduce((closest, current) => {
-        const currentTime = new Date(current.time).getTime()
-        const closestTime = new Date(closest.time).getTime()
+    const values = io?.ioValues ?? []
+    let closestIoValue = { time: '' as unknown as DDate, value: 0 }
+    if (getWith === 'closestTime') {
+      if (values.length > 0)
+        closestIoValue = io.ioValues.reduce((closest, current) => {
+          const currentTime = new Date(current.time).getTime()
+          const closestTime = new Date(closest.time).getTime()
 
-        const currentDiff = Math.abs(currentTime - selectedTime)
-        const closestDiff = Math.abs(closestTime - selectedTime)
+          const currentDiff = Math.abs(currentTime - selectedTime)
+          const closestDiff = Math.abs(closestTime - selectedTime)
 
-        return currentDiff < closestDiff ? current : closest
-      })
-      : { time: '', value: 0 }
-
+          return currentDiff < closestDiff ? current : closest
+        })
+    } else if (getWith === 'lastTime') {
+      const filtered = values
+        .filter(
+          v => new Date(v.time).getTime() <= selectedTime,
+        )
+        .sort((a, b) => (new Date(a.time)).getTime() - (new Date(b.time)).getTime())
+      if (filtered.length > 0)
+        closestIoValue = filtered[filtered.length - 1]
+    }
     return {
       ...io,
       closestIoValue,
