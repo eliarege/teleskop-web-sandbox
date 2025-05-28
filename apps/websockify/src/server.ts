@@ -1,6 +1,6 @@
 import { createConnection } from 'node:net'
 import { setTimeout as wait } from 'node:timers/promises'
-import { Buffer } from 'node:buffer'
+import type { Buffer } from 'node:buffer'
 import process from 'node:process'
 import type { IncomingMessage } from 'node:http'
 import type { WebSocket } from 'ws'
@@ -10,9 +10,8 @@ import type { Machine } from './database'
 import { fetchDMSMachine, fetchTeleskopMachine } from './database'
 import { getPathname, onExitSignal } from './utils'
 import { logger as parentLogger } from './logger'
-import { DESECBCipher } from './crypto/des'
 import { initKcAuth } from './auth'
-import { ClientMessageType, HandshakeError, HandshakeState, createRFBHandshakeProxy, interceptClientMessageType } from './rfb'
+import { ClientMessageType, ProxyHandshake, interceptClientMessageType } from './rfb'
 import { config } from './config'
 
 interface WebSocketExt extends WebSocket {
@@ -23,7 +22,6 @@ const MAX_RETRIES = 5
 const RETRY_INTERVAL = 1000
 const HEARTBEAT_INTERVAL = 30000
 const CONNECTION_TIMEOUT = 10000
-const TBB_VNC_PASSWORD = '123456'
 
 const VNC_VIEW_ROLE = 'vnc-view'
 const VNC_INPUT_ROLE = 'vnc-input'
@@ -36,6 +34,10 @@ const logger = parentLogger.child({ name: 'server' })
 
 if (process.env.NODE_ENV === 'development' && config.targetHost) {
   logger.info(`TARGET_HOST defined, requests will be forwarded to ${config.targetHost}`)
+  if (!config.targetPassword) {
+    logger.error(`TARGET_PASSWORD is not defined. Exiting..`)
+    process.exit(1)
+  }
 }
 
 const wss = new WebSocketServer({
@@ -109,9 +111,9 @@ wss.on('connection', async (client: WebSocketExt, request: IncomingMessage) => {
     }
   }
 
-  const pathname = getPathname(request)
   let machine: Machine | null = null
 
+  const pathname = getPathname(request)
   if (process.env.NODE_ENV === 'production' || !config.targetHost) {
     if (!pathname || pathname === '/')
       return close('Expected machine id')
@@ -127,6 +129,7 @@ wss.on('connection', async (client: WebSocketExt, request: IncomingMessage) => {
       name: 'DEV',
       host: config.targetHost,
       port: config.targetPort,
+      password: config.targetPassword!,
     }
   }
 
@@ -140,24 +143,35 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
     host: machine.host,
     port: machine.port,
   })
-  const proxy = createRFBHandshakeProxy()
-  // The argument passed to the first next() call cannot be retrieved because there's no currently suspended yield.
-  // So we need to call next() once before initiating the handshake
-  // Read more: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield
-  proxy.next()
-
-  let hsInProgress = true
-  let hsSuccess = false
-  let hsNextState = HandshakeState.ProtocolVersionServer
-  let hsChallenge: Buffer | null = null
+  const controller = new AbortController()
+  const proxy = new ProxyHandshake(client, server, machine, controller.signal, logger)
 
   /** Retry counter for connection errors */
   let retries = 0
+  let handshaking = true
+
+  const cleanup = () => {
+    controller.abort()
+    client.close()
+    server.end()
+  }
+
+  proxy.handshake()
+    .then((success) => {
+      if (success) {
+        handshaking = false
+      } else {
+        // Let server/client close the connection
+      }
+    })
+    .catch((err) => {
+      logger.error(err, 'Error during handshake')
+      cleanup()
+    })
 
   const timeout = setTimeout(() => {
     logger.error(`Failed to connect in ${CONNECTION_TIMEOUT}ms`)
-    server.end()
-    client.close()
+    cleanup()
   }, CONNECTION_TIMEOUT)
 
   server.on('connect', () => {
@@ -168,63 +182,22 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
 
   // Intercept server messages
   server.on('data', (data: Buffer) => {
-    try {
-      if (hsInProgress) {
-        // Server finalizes handshakes, so we check if iterator is done
-        const result = proxy.next({ type: 'server', data })
-        if (result.done) {
-          hsInProgress = false
-          hsSuccess = result.value
-        } else {
-          hsNextState = result.value
-          if (hsNextState === HandshakeState.AuthenticationClient) {
-            hsChallenge = data
-          }
-        }
-      }
+    if (!handshaking) {
       client.send(data)
-    } catch (err) {
-      if (err instanceof HandshakeError) {
-        logger.error(err, 'Error during handshake:')
-      } else {
-        logger.debug('Client closed connection, closing server connection')
-      }
-      server.end()
     }
   })
 
   // Intercept Client Messages
   client.on('message', (data: Buffer) => {
-    try {
-      if (hsInProgress) {
-        const prevState = hsNextState
-        // Client never finalizes handshake so we can safely assume iterator is `done` yet
-        hsNextState = proxy.next({ type: 'client', data }).value as HandshakeState
-        // Solve authentication challenge
-        if (prevState === HandshakeState.AuthenticationClient && hsChallenge) {
-          const cipher = DESECBCipher.importKey(Buffer.from(machine.password ? machine.password : TBB_VNC_PASSWORD))
-          const result = cipher.encrypt(hsChallenge)
-          server.write(result || data)
-        } else {
-          server.write(data)
-        }
-      } else if (hsSuccess) {
+    if (!handshaking) {
+      if (viewOnly) {
+        const type = interceptClientMessageType(data)
         // Filter out key and pointer events if client is view only
-        if (viewOnly) {
-          const type = interceptClientMessageType(data)
-          if (type === ClientMessageType.KeyEvent || type === ClientMessageType.PointerEvent) {
-            return
-          }
+        if (type === ClientMessageType.KeyEvent || type === ClientMessageType.PointerEvent) {
+          return
         }
-        server.write(data)
       }
-    } catch (err) {
-      if (err instanceof HandshakeError) {
-        logger.error(err, 'Error during handshake:')
-      } else {
-        logger.debug('Server closed connection, closing client connection')
-      }
-      client.close()
+      server.write(data)
     }
   })
 
@@ -245,20 +218,19 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
 
   server.on('end', () => {
     clearTimeout(timeout)
+    cleanup()
     logger.info('Server connection closed')
-    client.close()
   })
 
   client.on('error', (err) => {
     logger.error(`Client connection error: ${err.message}`)
-    client.close()
-    server.end()
+    cleanup()
   })
 
   client.on('close', () => {
     clearTimeout(timeout)
+    cleanup()
     logger.info('Client connection closed')
-    server.end()
   })
 }
 

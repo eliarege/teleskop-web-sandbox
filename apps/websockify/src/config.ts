@@ -93,6 +93,11 @@ export const config = defineConfiguration({
     env: 'TARGET_PORT',
     default: 5900,
   },
+  /** Dev only, required if `targetHost` is defined */
+  targetPassword: {
+    type: 'string',
+    env: 'TARGET_PASSWORD',
+  },
   keycloakUrl: {
     type: 'string',
     env: 'KC_URL',

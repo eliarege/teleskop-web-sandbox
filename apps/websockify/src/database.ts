@@ -9,7 +9,7 @@ export interface Machine {
   name: string
   host: string
   port: number
-  password?: string
+  password: string
 }
 
 const logger = parentLogger.child({ name: 'database' })
@@ -68,7 +68,7 @@ export async function fetchTeleskopMachine(id: number): Promise<Machine | null> 
         MACHINEID: id,
       })
 
-    return response[0] || null
+    return response[0] ? { ...response[0], password: '123456' } : null
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
       if (!config.teleskopUser)
