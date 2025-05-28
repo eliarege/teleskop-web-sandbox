@@ -45,36 +45,18 @@ const cyclesWithClosestCycleCount = computed(() => {
             })
           "
         />
-
-        <q-btn
-          class="w-5 h-5"
-          padding="none"
-          :style="{
-            backgroundColor: settingsStore.getSetting(
-              `cycleTimes_${cycle.reelNo}`,
-            ).color,
-          }"
-        >
-          <q-popup-proxy :transition-duration="0">
-            <q-color
-              :model-value="
-                settingsStore.getSetting(`cycleTimes_${cycle.reelNo}`).color
-              "
-              @update:model-value="
-                settingsStore.updateSetting(`cycleTimes_${cycle.reelNo}`, {
-                  color: $event,
-                })
-              "
-            />
-          </q-popup-proxy>
-        </q-btn>
+        <AxisSettingsButton
+          :setting="settingsStore.getSetting(`cycleTimes_${cycle.reelNo}`)"
+          :command="{ name: `${cycle.reelNo + 1}. ${t('reel')}` }"
+          @update:setting="setting => settingsStore.updateSetting(`cycleTimes_${cycle.reelNo}`, setting)"
+        />
 
         <span class="ml-4">
           {{ `${cycle.reelNo + 1}. ${t("reel")}` }}
         </span>
         <q-space />
         <span class="mr-4">
-          {{ cycle.closestCount.count + 1 }}
+          {{ cycle.closestCount.count + 1 }}. {{ `${t('cycle')}` }}
         </span>
       </div>
     </div>

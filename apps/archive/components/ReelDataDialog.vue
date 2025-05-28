@@ -22,7 +22,9 @@ const dynamicColumns = computed(() => {
   ]
   const reelColumns = props.cycleTimes.map((reel, index) => ({
     name: `reel${index + 1}`,
-    label: `${t('reel')} ${index + 1} (${t('sec')})`,
+    label: h('span', {
+      innerHTML: `${t('reel')} ${index + 1} (${t('sec')})<br>${props.cycleTimes[index].cycles.length} ${t('cycle')}`,
+    }),
     align: 'center',
     field: `reel${index + 1}`,
   }))
