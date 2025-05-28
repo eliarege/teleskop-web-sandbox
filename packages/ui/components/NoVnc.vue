@@ -89,6 +89,16 @@ export interface NoVncProps {
    * side. Use high levels with very slow network connections. Default value is `2`.
    */
   compressionLevel?: number
+
+  /**
+   * Number of connection attempts
+   */
+  retries?: number
+
+  /**
+   * Interval between each retry
+   */
+  retryInterval?: number
 }
 
 interface ConnectionDetails {
@@ -110,6 +120,8 @@ const props = withDefaults(defineProps<NoVncProps>(), {
   background: 'rgb(40, 40, 40)',
   qualityLevel: 6,
   compressionLevel: 2,
+  retries: 5,
+  retryInterval: 1000,
 })
 
 const emit = defineEmits<{
@@ -209,7 +221,7 @@ async function initRFBWithRetries(maxRetries = 5, retryDelay = 1000): Promise<vo
   let lastError: unknown
   let viewOnly = props.viewOnly
 
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       let socket: WebSocket
       if (isUnmounted) {
@@ -276,7 +288,7 @@ async function initRFBWithRetries(maxRetries = 5, retryDelay = 1000): Promise<vo
 onMounted(async () => {
   await nextTick()
   try {
-    await initRFBWithRetries(5, 1000)
+    await initRFBWithRetries(props.retries, props.retryInterval)
   } catch (err) {
     emit('error', err as Error)
   }
