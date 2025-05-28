@@ -273,7 +273,7 @@ const reelsDataSet = computed(() => {
     props.batch.cycleTimes.forEach((cycle) => {
       const setting = settingsStore.getSetting(`cycleTimes_${cycle.reelNo}`)
       if (setting && setting.selected)
-        cycs.push({ ...cycle, color: setting.color })
+        cycs.push({ ...cycle, color: setting.color, lineType: setting.lineType })
     })
     return cycs
   } else return []
@@ -405,9 +405,10 @@ const lines = computed(() => {
   })
 })
 const reelLines = computed(() => {
-  return reelsDataSet.value.map((cyc) => {
+  return reelsDataSet.value.map((cyc, index) => {
     return {
       color: cyc?.color || '#FFFFFF',
+      lineType: reelsDataSet.value[index]?.lineType,
       line: d3Line()
         .x((d: any) => {
           return xScale.value(new Date(d.cycledAt))
@@ -1067,7 +1068,7 @@ const selectedCommand = computed(() => {
               :fill="item.color"
             >
               {{
-                `${item?.value?.name}: ${item?.value?.value?.toFixed(2) || item?.value?.duration}`
+                `${item?.value?.name}: ${item?.value?.value?.toFixed(2) || (`${item?.value?.duration} - ${t('cycle')}: ${item.value.count}`)}`
               }}
             </text>
           </g>
@@ -1113,7 +1114,20 @@ const selectedCommand = computed(() => {
               fill="none"
               :stroke="line.color"
               stroke-width="3"
+              :stroke-dasharray="line.lineType === 'dashed' ? '4,2' : 'none'"
             />
+            <g v-for="(line, index) in reelLines" :key="`${index}-dots-reel`">
+              <g v-if="line.lineType === 'dotted'">
+                <circle
+                  v-for="(point, pointIndex) in reelsDataSet[index].cycles"
+                  :key="`${index}-${pointIndex}`"
+                  :cx="xScale(new Date(point.cycledAt))"
+                  :cy="reelYScale(point.duration)"
+                  r="3"
+                  :fill="line.color"
+                />
+              </g>
+            </g>
           </g>
         </g>
 
