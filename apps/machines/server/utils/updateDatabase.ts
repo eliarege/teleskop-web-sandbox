@@ -1083,7 +1083,25 @@ export async function updateMachineTranslations(
   try {
     const fromLocale = await knex('BFMACHINESYSTEMPARAMS').select({ lang: 'ParamValue' }).first().where('ParamToken', 'FROM_PROJECT_LANGUAGE').andWhere('MachineId', machineId)
     const messages = await tbb.readTranslationFiles(machineId, fromLocale.lang)
-    await knex('BFMACHINETRANSLATIONS').insert(messages)
+
+    for (const message of messages) {
+      const translationExists = await knex('BFMACHINETRANSLATIONS')
+        .where('from_locale', fromLocale.lang)
+        .andWhere('to_locale', message.to_locale)
+        .first()
+        .then(row => !!row)
+
+      if (translationExists) {
+        await knex('BFMACHINETRANSLATIONS')
+          .update({ messages: JSON.stringify(message.messages) })
+          .where('machine_id', machineId)
+          .andWhere('from_locale', fromLocale.lang)
+          .andWhere('to_locale', message.to_locale)
+      } else {
+        await knex('BFMACHINETRANSLATIONS').insert(message)
+      }
+    }
+    return true
   } catch (err: any) {
     throw new DatabaseQueryError(err.message)
   }
