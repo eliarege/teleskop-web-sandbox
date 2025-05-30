@@ -25,6 +25,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const { mt } = useMachineTranslations()
 const store = useDataStore()
 const { t, locale } = useI18n()
 const tableShow = ref(false)
@@ -227,7 +228,7 @@ const { width: windowWidth } = useWindowSize()
             :key="idx"
             class="info-col"
           >
-            {{ idx }}: {{ val }}
+            {{ mt(idx, currentMachine.id) }}: {{ val }}
           </div>
         </div>
       </div>

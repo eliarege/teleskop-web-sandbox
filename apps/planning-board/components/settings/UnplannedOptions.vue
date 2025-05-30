@@ -5,6 +5,8 @@ import { matChevronLeft, matChevronRight } from '@quasar/extras/material-icons'
 const emit = defineEmits(['addColumn', 'removeColumn'])
 const { data: unplannedColumns } = useAuthFetch('/api/unplannedColumns', { default: () => [] })
 const kc = useKeycloak()
+const { mt } = useMachineTranslations()
+
 const selected = ref()
 
 const sort = computed(() => unplannedColumns.value.toSorted((a, b) => a.id > b.id ? 1 : -1))
@@ -73,7 +75,7 @@ async function onDoubleClick(item: {
           @dblclick="onDoubleClick(item)"
         >
           <q-item-section>
-            {{ item.parameterName }}
+            {{ mt(item.parameterName) }}
           </q-item-section>
         </q-item>
       </q-list>
@@ -111,7 +113,7 @@ async function onDoubleClick(item: {
             @dblclick="onDoubleClick(item)"
           >
             <q-item-section>
-              {{ item.parameterName }}
+              {{ mt(item.parameterName) }}
             </q-item-section>
           </q-item>
         </q-list>

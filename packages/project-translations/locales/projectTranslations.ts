@@ -1,4 +1,5 @@
 export default defineI18nLocale(async (locale) => {
+  const kc = useNuxtApp().$keycloak
   const localeMap: Record<string, number> = {
     'tr': 0,
     'en': 1,
@@ -20,7 +21,6 @@ export default defineI18nLocale(async (locale) => {
     'de': 17,
     'fr': 18,
   }
-
   const localeIndex = localeMap[locale] ?? localeMap.en
-  return await $fetch(`/api/projectTranslations?locale=${localeIndex}`)
+  return await kc.fetch(`/api/project-translations?locale=${localeIndex}`)
 })
