@@ -173,7 +173,8 @@
         "endTime": "End Time",
         "cancelTime": "Cancel Time",
         "deviation": "Deviation",
-        "customer": "Customer Name"
+        "customer": "Customer Name",
+        "partyNo": "Party No"
       }
     },
     "view-options": "View Options",

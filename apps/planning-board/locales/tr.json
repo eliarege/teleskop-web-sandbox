@@ -174,7 +174,8 @@
         "endTime": "Bitiş Tarihi",
         "cancelTime": "İptal Tarihi",
         "deviation": "Gecikme",
-        "customer": "Müşteri İsmi"
+        "customer": "Müşteri İsmi",
+        "partyNo": "Parti No"
       }
     },
     "view-options": "Görünüm Seçenekleri",

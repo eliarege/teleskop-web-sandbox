@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import type { QueueBasedEvent } from '~/shared/queueBased'
 
 interface SettingsItemProps {
   title: string
