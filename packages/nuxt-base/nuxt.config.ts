@@ -66,14 +66,14 @@ export default defineNuxtConfig({
   },
   i18n: {
     strategy: 'no_prefix',
-    defaultLocale: 'en',
+    defaultLocale: 'en-GB',
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'teleskop_locale',
     },
     langDir: './locales',
     locales: [
-      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'en-GB', name: 'English', file: 'en.json' },
       { code: 'tr', name: 'Türkçe', file: 'tr.json' },
       { code: 'pt', name: 'Português', file: 'pt.json' },
     ],

@@ -1,9 +1,9 @@
 export default defineI18nConfig(() => ({
   legacy: false,
-  locale: 'en',
-  fallbackLocale: 'en',
+  locale: 'en-GB',
+  fallbackLocale: 'en-GB',
   datetimeFormats: {
-    en: {
+    'en-GB': {
       datetime: {
         year: 'numeric',
         month: 'numeric',
@@ -24,7 +24,7 @@ export default defineI18nConfig(() => ({
       },
 
     },
-    tr: {
+    'tr': {
       datetime: {
         year: 'numeric',
         month: 'numeric',
