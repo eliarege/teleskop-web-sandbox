@@ -111,7 +111,7 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
       AND p.PLANKEY IS NOT NULL
   ) AS subQuery
   LEFT JOIN (
-    SELECT TOP 1
+    SELECT
       c.PLANKEY,
       c.ERPVALUE AS partyNo,
       b.MACHINEID
