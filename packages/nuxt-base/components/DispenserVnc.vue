@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
 import { joinURL, parseHost, parseURL, stringifyParsedURL, withBase, withProtocol } from 'ufo'
-import { NoVnc } from '@teleskop/ui'
 
 const props = defineProps({
   dispenserId: {
@@ -252,7 +251,6 @@ function onKeyPress(key: string) {
 onBeforeUnmount(() => {
   vnc.value?.disconnect()
 })
-const config = useRuntimeConfig()
 </script>
 
 <template>

@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { LoadingSpinner } from '@teleskop/ui'
 import { useStateStore } from '~/store/State'
 import { useDataStore } from '~/store/DataStore'
 
@@ -64,11 +63,11 @@ watch(() => route.params, () => {
     <NavigationBar />
     <QDrawer
       v-if="route.path !== '/settings'"
+      v-model="showDrawer"
       show-if-above
       bordered
       persistent
       behavior="desktop"
-      v-model="showDrawer"
     >
       <QScrollArea
         class="px-1"

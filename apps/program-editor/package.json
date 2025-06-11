@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@teleskop/tbb-ftp-client": "workspace:*",
-    "@teleskop/ui": "workspace:*",
     "@teleskop/utils": "workspace:*",
     "@vueuse/integrations": "11.2.0",
     "chart.js": "4.4.6",

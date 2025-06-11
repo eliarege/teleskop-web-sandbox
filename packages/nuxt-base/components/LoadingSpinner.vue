@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import '../stylesheets/animations.css'
+import '../assets/animations.css'
 
 withDefaults(defineProps<{ withBackground?: boolean }>(), {
   withBackground: false,

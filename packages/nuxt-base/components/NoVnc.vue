@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { NoVncEvents } from '@novnc/novnc/core/rfb'
 import RFB from '@novnc/novnc/lib/rfb'
-import { nextTick, onMounted, onUnmounted, ref, toRef, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, reactive, ref, toRef, watch } from 'vue'
 import type { Ref } from 'vue'
 
 export interface NoVncProps {
@@ -99,6 +99,11 @@ export interface NoVncProps {
    * Interval between each retry
    */
   retryInterval?: number
+
+  /**
+   * Connection timeout
+   */
+  connectionTimeout?: number
 }
 
 interface ConnectionDetails {
@@ -122,6 +127,7 @@ const props = withDefaults(defineProps<NoVncProps>(), {
   compressionLevel: 2,
   retries: 5,
   retryInterval: 1000,
+  connectionTimeout: 10000,
 })
 
 const emit = defineEmits<{
@@ -129,13 +135,19 @@ const emit = defineEmits<{
   (e: 'disconnect', clean: boolean): void
   (e: 'clipboard', content: string): void
   (e: 'error', error: Error): void
+  (e: 'ready'): void
 }>()
 
 const screen = ref<HTMLElement | undefined>()
+const overlay = reactive({
+  message: 'Çok uzun bir mesaj ama yeniden bağlanıyorum aga Connecting...',
+  promptRetry: true,
+})
+// Bağlantı koptu / Bağlantı kesildi
+const connected = ref(false)
 const AUTH_FAILED_ERR = 'VNC Authentication Failed'
 
 let rfb: RFB | null = null
-let isUnmounted = false
 
 function authenticate(socket: WebSocket, token: string): Promise<ConnectionDetails> {
   return new Promise((resolve, reject) => {
@@ -181,122 +193,69 @@ function untilTruthy<T>(ref: Ref<T>, timeoutReason = 'Timeout'): Promise<NonNull
   })
 }
 
-/** Waits for RFB handshake to be complete */
-async function waitForRFBConnect(rfbInstance: RFB, timeout = 5000): Promise<void> {
-  return new Promise((resolve, reject) => {
-    let connected = false
-
-    const onConnect = () => {
-      connected = true
-      cleanup()
-      resolve()
-    }
-
-    const onDisconnect = () => {
-      if (!connected) {
-        cleanup()
-        reject(new Error('Disconnected before connect'))
-      }
-    }
-
-    const timer = setTimeout(() => {
-      if (!connected) {
-        cleanup()
-        reject(new Error('Timeout waiting for RFB connect'))
-      }
-    }, timeout)
-
-    function cleanup() {
-      clearTimeout(timer)
-      rfbInstance.removeEventListener('connect', onConnect)
-      rfbInstance.removeEventListener('disconnect', onDisconnect)
-    }
-
-    rfbInstance.addEventListener('connect', onConnect)
-    rfbInstance.addEventListener('disconnect', onDisconnect)
+async function initRFB() {
+  let socket: WebSocket
+  let viewOnly = props.viewOnly
+  if (props.auth) {
+    const token = await untilTruthy(toRef(() => props.token))
+    socket = new WebSocket(props.url)
+    const response = await authenticate(socket, token)
+    viewOnly = response.viewOnly
+  } else {
+    socket = new WebSocket(props.url)
+  }
+  rfb = new RFB(screen.value!, socket, {
+    credentials: props.credentials,
   })
+  rfb.addEventListener('connect', () => {
+    connected.value = true
+    emit('connect')
+  })
+  rfb.addEventListener('disconnect', (e: NoVncEvents['disconnect']) => {
+    connected.value = false
+    emit('disconnect', e.detail.clean)
+  })
+  rfb.addEventListener('clipboard', (e: NoVncEvents['clipboard']) => {
+    emit('clipboard', e.detail.text)
+  })
+  rfb.viewOnly = viewOnly
+  rfb.focusOnClick = props.focusOnClick
+  rfb.clipViewport = props.clipViewport
+  rfb.dragViewport = props.dragViewport
+  rfb.scaleViewport = props.scaleViewport
+  rfb.resizeSession = props.resizeSession
+  rfb.showDotCursor = props.showDotCursor
+  rfb.background = props.background
+  rfb.qualityLevel = props.qualityLevel
+  rfb.compressionLevel = props.compressionLevel
+  emit('ready')
 }
 
-async function initRFBWithRetries(maxRetries = 5, retryDelay = 1000): Promise<void> {
-  let lastError: unknown
-  let viewOnly = props.viewOnly
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      let socket: WebSocket
-      if (isUnmounted) {
-        return
-      }
-
-      if (props.auth) {
-        const token = await untilTruthy(toRef(() => props.token))
-        socket = new WebSocket(props.url)
-        const response = await authenticate(socket, token)
-        viewOnly = response.viewOnly
-      } else {
-        socket = new WebSocket(props.url)
-      }
-
-      rfb = new RFB(screen.value!, socket, {
-        credentials: {
-          username: props.credentials.username || 'user',
-          password: props.credentials.password || 'password',
-          target: props.credentials.target!,
-        },
-      })
-
-      rfb.viewOnly = viewOnly
-      rfb.focusOnClick = props.focusOnClick
-      rfb.clipViewport = props.clipViewport
-      rfb.dragViewport = props.dragViewport
-      rfb.scaleViewport = props.scaleViewport
-      rfb.resizeSession = props.resizeSession
-      rfb.showDotCursor = props.showDotCursor
-      rfb.background = props.background
-      rfb.qualityLevel = props.qualityLevel
-      rfb.compressionLevel = props.compressionLevel
-
-      rfb.addEventListener('clipboard', (e: NoVncEvents['clipboard']) => {
-        emit('clipboard', e.detail.text)
-      })
-      rfb.addEventListener('disconnect', (e: NoVncEvents['disconnect']) => {
-        emit('disconnect', e.detail.clean)
-      })
-
-      // Await a 'connect' event or fail
-      await waitForRFBConnect(rfb)
-
-      emit('connect')
-      return
-    } catch (err) {
-      if (isUnmounted) {
-        return
-      }
-      lastError = err
-      // Dont retry if auth failed
-      if (err instanceof Error && err.message.startsWith(AUTH_FAILED_ERR)) {
-        throw err
-      }
-      console.warn(`Attempt ${attempt} failed to connect to RFB. Retrying in ${retryDelay}ms...`, err)
-      await new Promise(res => setTimeout(res, retryDelay))
-    }
+async function connect() {
+  try {
+    await initRFB()
+  } catch (err) {
+    emit('error', err as Error)
   }
+}
 
-  throw lastError
+function disconnect() {
+  rfb?.disconnect()
+  rfb = null
+}
+
+async function reconnect() {
+  disconnect()
+  await connect()
 }
 
 onMounted(async () => {
   await nextTick()
-  try {
-    await initRFBWithRetries(props.retries, props.retryInterval)
-  } catch (err) {
-    emit('error', err as Error)
-  }
+  await connect()
 })
 
 onUnmounted(() => {
-  isUnmounted = true
-  rfb?.disconnect()
+  disconnect()
 })
 
 watch(() => props.focusOnClick, (newValue) => {
@@ -383,5 +342,41 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="screen" />
+  <div ref="screen">
+    <div v-show="overlay.visible" class="novnc-overlay">
+      <div class="novnc-overlay-message">
+        <div>{{ overlay.message }}</div>
+        <q-btn
+          v-if="overlay.promptRetry"
+          class="mt-2"
+          color="primary"
+          size="sm"
+          @click="reconnect"
+        >
+          Retry
+        </q-btn>
+      </div>
+    </div>
+  </div>
 </template>
+
+<style scoped>
+.novnc-overlay {
+  z-index: 20;
+  position: absolute;
+  color: white;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+.novnc-overlay-message {
+  max-width: 60%;
+  text-align: center;
+}
+</style>

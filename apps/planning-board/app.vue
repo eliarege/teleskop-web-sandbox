@@ -2,7 +2,6 @@
 import { LocaleManager } from '@bryntum/schedulerpro'
 import '@bryntum/schedulerpro/locales/schedulerpro.locale.En'
 import '@bryntum/schedulerpro/locales/schedulerpro.locale.Tr'
-import { LoadingScreen } from '@teleskop/ui'
 
 const { locale } = useI18n()
 

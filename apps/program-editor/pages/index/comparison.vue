@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import DMP from 'diff-match-patch'
-import { LoadingSpinner } from '@teleskop/ui'
 import Main from '~/components/Comparison/Main.vue'
 import type { ContextBarButtons, Program, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion, StepError } from '~/shared/types'
 import { useEditorStore } from '~/composables/editor'

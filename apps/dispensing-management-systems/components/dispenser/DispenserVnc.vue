@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
 import { joinURL, parseURL, withBase, withProtocol } from 'ufo'
-import { NoVnc } from '@teleskop/ui'
 import type { Dispenser } from '~/shared/types'
 
 const props = defineProps({

@@ -2,7 +2,6 @@
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro'
 import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro'
-import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import { decompressJson } from '~/composables/helper'
 import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'

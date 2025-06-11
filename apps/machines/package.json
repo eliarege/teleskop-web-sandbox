@@ -20,7 +20,6 @@
     "@formkit/nuxt": "1.6.7",
     "@formkit/themes": "1.6.7",
     "@teleskop/tbb-ftp-client": "workspace:*",
-    "@teleskop/ui": "workspace:*",
     "@teleskop/utils": "workspace:*",
     "klona": "2.0.6",
     "knex": "3.1.0",

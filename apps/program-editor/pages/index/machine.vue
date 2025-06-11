@@ -2,7 +2,6 @@
 import { formatDistanceToNow } from 'date-fns'
 import { enGB, tr } from 'date-fns/locale'
 import { useFuse } from '@vueuse/integrations/useFuse'
-import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import type { QTableColumn } from 'quasar'
 import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'

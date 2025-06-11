@@ -14,6 +14,7 @@
   "dependencies": {
     "@element-plus/nuxt": "1.0.10",
     "@iconify/utils": "2.1.33",
+    "@novnc/novnc": "1.5.0",
     "@nuxt/kit": "3.14.159",
     "@nuxtjs/i18n": "8.3.1",
     "@pinia/nuxt": "0.7.0",
@@ -43,6 +44,7 @@
   "devDependencies": {
     "@types/node": "22.9.0",
     "@types/nodemailer": "6.4.16",
+    "@types/novnc__novnc": "1.6.0",
     "nuxt": "3.14.159",
     "vite": "5.4.11",
     "vue": "3.5.12",

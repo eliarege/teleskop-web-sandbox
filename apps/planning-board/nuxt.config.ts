@@ -32,12 +32,5 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: ['@bryntum/schedulerpro'],
     },
-    vue: {
-      template: {
-        transformAssetUrls: {
-          LoadingScreen: ['image'],
-        },
-      },
-    },
   },
 })

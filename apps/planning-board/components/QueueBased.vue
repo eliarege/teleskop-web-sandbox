@@ -2,7 +2,6 @@
 <script setup lang="ts">
 import type { DragHelperConfig, EventModel, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro'
 import { DomHelper, LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro'
-import { EliarModal, LoadingSpinner } from '@teleskop/ui'
 import { determineTextColor } from '@teleskop/utils'
 import { useDocumentVisibility } from '@vueuse/core'
 import { useFuse } from '@vueuse/integrations/useFuse'

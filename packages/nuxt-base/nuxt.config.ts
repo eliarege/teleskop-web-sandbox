@@ -42,7 +42,7 @@ export default defineNuxtConfig({
       'Notify',
     ],
     extras: {
-      font: 'roboto-font-latin-ext'
+      font: 'roboto-font-latin-ext',
     },
     components: {
       defaults: {
@@ -84,14 +84,16 @@ export default defineNuxtConfig({
     },
     vue: {
       template: {
-        // Nuxt layers break merging strategy of vite configurations.
-        // It breaks url transformations on projects that has their own configurations like `multi-monitor`
         transformAssetUrls: {
+          // Defaults
           video: ['src', 'poster'],
           source: ['src'],
           img: ['src'],
           image: ['xlink:href', 'href'],
           use: ['xlink:href', 'href'],
+          // Custom components
+          MachineVncButton: ['img'],
+          LoadingScreen: ['image'],
         },
       },
     },

@@ -17,7 +17,6 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "@teleskop/ui": "workspace:*",
     "@teleskop/utils": "workspace:*",
     "animejs": "3.2.2",
     "d3": "7.9.0",
