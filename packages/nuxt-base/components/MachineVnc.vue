@@ -1,54 +1,13 @@
 <script setup lang="ts">
 import { joinURL, parseHost, parseURL, stringifyParsedURL, withBase, withProtocol } from 'ufo'
-import { NoVnc } from '@teleskop/ui'
-import Key0 from '../assets/keyboard/0.svg'
-import Key1 from '../assets/keyboard/1.svg'
-import Key2 from '../assets/keyboard/2.svg'
-import Key3 from '../assets/keyboard/3.svg'
-import Key4 from '../assets/keyboard/4.svg'
-import Key5 from '../assets/keyboard/5.svg'
-import Key6 from '../assets/keyboard/6.svg'
-import Key7 from '../assets/keyboard/7.svg'
-import Key8 from '../assets/keyboard/8.svg'
-import Key9 from '../assets/keyboard/9.svg'
-import KeyAlarms from '../assets/keyboard/alarms.svg'
-import KeyCycle from '../assets/keyboard/cycle.svg'
-import KeyDelete from '../assets/keyboard/delete.svg'
-import KeyDisp from '../assets/keyboard/disp.svg'
-import KeyDispR from '../assets/keyboard/dispR.svg'
-import KeyDot from '../assets/keyboard/dot.svg'
-import KeyDown from '../assets/keyboard/down.svg'
-import KeyEsc from '../assets/keyboard/esc.svg'
-import KeyF1 from '../assets/keyboard/f1.svg'
-import KeyF2 from '../assets/keyboard/f2.svg'
-import KeyF3 from '../assets/keyboard/f3.svg'
-import KeyF4 from '../assets/keyboard/f4.svg'
-import KeyF5 from '../assets/keyboard/f5.svg'
-import KeyF6 from '../assets/keyboard/f6.svg'
-import KeyF7 from '../assets/keyboard/f7.svg'
-import KeyF8 from '../assets/keyboard/f8.svg'
-import KeyLeft from '../assets/keyboard/left.svg'
-import KeyLock from '../assets/keyboard/lock.svg'
-import KeyManCmd from '../assets/keyboard/man_cmd.svg'
-import KeyManCtrl from '../assets/keyboard/man_ctrl.svg'
-import KeyMimic from '../assets/keyboard/mimic.svg'
-import KeyOk from '../assets/keyboard/ok.svg'
-import KeyPageDown from '../assets/keyboard/pagedown.svg'
-import KeyPageUp from '../assets/keyboard/pageup.svg'
-import KeyPlusMinus from '../assets/keyboard/plusminus.svg'
-import KeyRight from '../assets/keyboard/right.svg'
-import KeyStart from '../assets/keyboard/start.svg'
-import KeyStop from '../assets/keyboard/stop.svg'
-import KeyTab from '../assets/keyboard/tab.svg'
-import KeyUp from '../assets/keyboard/up.svg'
+import MachineVncButton from './MachineVncButton.vue'
+import NoVnc from './NoVnc.vue'
 
 const props = defineProps<{
   machineId: number
   machineName: string
   websockifyUrl: string
 }>()
-const { t } = useI18n()
-const quasar = useQuasar()
 const { width } = useWindowSize()
 const { token, enabled } = useKeycloak()
 const vnc = ref<InstanceType<typeof NoVnc> | null>(null)
@@ -105,15 +64,6 @@ const keysym = {
 
 function sendKey(key: keyof typeof keysym) {
   vnc.value!.sendKey(keysym[key], null)
-}
-
-function onDisconnect(_clean: boolean) {
-  quasar.notify({
-    message: t('base.vncError', { name: props.machineName }),
-    timeout: 4000,
-    position: 'top',
-    color: 'negative',
-  })
 }
 
 function resolveWebSocketUrl(url: string) {
@@ -192,230 +142,189 @@ const websockifyWsUrl = resolveWebSocketUrl(props.websockifyUrl)
             :token="token"
             scale-viewport
             class="w-full h-full z-2 absolute"
-            @disconnect="onDisconnect"
           />
         </div>
       </div>
       <div class="t7-keyboard">
         <div class="t7-function-row">
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyF1})` }"
+          <MachineVncButton
+            img="../assets/keyboard/f1.svg"
             @click="sendKey('XK_F1')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyF2})` }"
+          <MachineVncButton
+            img="../assets/keyboard/f2.svg"
             @click="sendKey('XK_F2')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyF3})` }"
+          <MachineVncButton
+            img="../assets/keyboard/f3.svg"
             @click="sendKey('XK_F3')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyF4})` }"
+          <MachineVncButton
+            img="../assets/keyboard/f4.svg"
             @click="sendKey('XK_F4')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyF5})` }"
+          <MachineVncButton
+            img="../assets/keyboard/f5.svg"
             @click="sendKey('XK_F5')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyF6})` }"
+          <MachineVncButton
+            img="../assets/keyboard/f6.svg"
             @click="sendKey('XK_F6')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyF7})` }"
+          <MachineVncButton
+            img="../assets/keyboard/f7.svg"
             @click="sendKey('XK_F7')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyF8})` }"
+          <MachineVncButton
+            img="../assets/keyboard/f8.svg"
             @click="sendKey('XK_F8')"
           />
         </div>
         <div class="t7-panel-row">
           <div class="t7-panel-grid t7-startstop-grid">
             <div class="t7-keyinput-container">
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyStart})` }"
+              <MachineVncButton
+                img="../assets/keyboard/start.svg"
                 @click="sendKey('XK_F9')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyStop})` }"
+              <MachineVncButton
+                img="../assets/keyboard/stop.svg"
                 @click="sendKey('XK_F10')"
               />
             </div>
           </div>
           <div class="t7-panel-grid t7-numpad-grid">
             <div class="t7-keyinput-container">
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${Key1})` }"
+              <MachineVncButton
+                img="../assets/keyboard/1.svg"
                 @click="sendKey('XK_1')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${Key2})` }"
+              <MachineVncButton
+                img="../assets/keyboard/2.svg"
                 @click="sendKey('XK_2')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${Key3})` }"
+              <MachineVncButton
+                img="../assets/keyboard/3.svg"
                 @click="sendKey('XK_3')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${Key4})` }"
+              <MachineVncButton
+                img="../assets/keyboard/4.svg"
                 @click="sendKey('XK_4')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${Key5})` }"
+              <MachineVncButton
+                img="../assets/keyboard/5.svg"
                 @click="sendKey('XK_5')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${Key6})` }"
+              <MachineVncButton
+                img="../assets/keyboard/6.svg"
                 @click="sendKey('XK_6')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${Key7})` }"
+              <MachineVncButton
+                img="../assets/keyboard/7.svg"
                 @click="sendKey('XK_7')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${Key8})` }"
+              <MachineVncButton
+                img="../assets/keyboard/8.svg"
                 @click="sendKey('XK_8')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${Key9})` }"
+              <MachineVncButton
+                img="../assets/keyboard/9.svg"
                 @click="sendKey('XK_9')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyPlusMinus})` }"
+              <MachineVncButton
+                img="../assets/keyboard/plusminus.svg"
                 @click="sendKey('XK_KP_Add')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${Key0})` }"
+              <MachineVncButton
+                img="../assets/keyboard/0.svg"
                 @click="sendKey('XK_0')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyDot})` }"
+              <MachineVncButton
+                img="../assets/keyboard/dot.svg"
                 @click="sendKey('XK_Period')"
               />
             </div>
           </div>
           <div class="t7-panel-grid t7-arrowpad-grid">
             <div class="t7-keyinput-container">
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyTab})` }"
+              <MachineVncButton
+                img="../assets/keyboard/tab.svg"
                 @click="sendKey('XK_Tab')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyUp})` }"
+              <MachineVncButton
+                img="../assets/keyboard/up.svg"
                 @click="sendKey('XK_Up')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyDelete})` }"
+              <MachineVncButton
+                img="../assets/keyboard/delete.svg"
                 @click="sendKey('XK_BackSpace')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyLeft})` }"
+              <MachineVncButton
+                img="../assets/keyboard/left.svg"
                 @click="sendKey('XK_Left')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyOk})` }"
+              <MachineVncButton
+                img="../assets/keyboard/ok.svg"
                 @click="sendKey('XK_Return')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyRight})` }"
+              <MachineVncButton
+                img="../assets/keyboard/right.svg"
                 @click="sendKey('XK_Right')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyEsc})` }"
+              <MachineVncButton
+                img="../assets/keyboard/esc.svg"
                 @click="sendKey('XK_Escape')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyDown})` }"
+              <MachineVncButton
+                img="../assets/keyboard/down.svg"
                 @click="sendKey('XK_Down')"
               />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyLock})` }"
+              <MachineVncButton
+                img="../assets/keyboard/lock.svg"
                 @click="sendKey('XK_F12')"
               />
             </div>
           </div>
           <div class="t7-panel-grid t7-updown-grid">
             <div class="t7-keyinput-container">
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyPageUp})` }"
-                @click="sendKey('XK_KP_Page_Up')"
-              />
-              <button
-                class="t7-keyinput"
-                :style="{ backgroundImage: `url(${KeyPageDown})` }"
+              <MachineVncButton
+                img="../assets/keyboard/pagedown.svg"
                 @click="sendKey('XK_Page_Down')"
+              />
+              <MachineVncButton
+                img="../assets/keyboard/pageup.svg"
+                @click="sendKey('XK_KP_Page_Up')"
               />
             </div>
           </div>
         </div>
         <div class="t7-shortcut-row">
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyAlarms})` }"
+          <MachineVncButton
+            img="../assets/keyboard/alarms.svg"
             @click="sendKey('XK_KP_Insert')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyMimic})` }"
+          <MachineVncButton
+            img="../assets/keyboard/mimic.svg"
             @click="sendKey('XK_KP_End')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyDisp})` }"
+          <MachineVncButton
+            img="../assets/keyboard/disp.svg"
             @click="sendKey('XK_KP_Begin')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyCycle})` }"
+          <MachineVncButton
+            img="../assets/keyboard/cycle.svg"
             @click="sendKey('XK_KP_Down')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyManCmd})` }"
+          <MachineVncButton
+            img="../assets/keyboard/man_cmd.svg"
             @click="sendKey('XK_KP_Page_Down')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyManCtrl})` }"
+          <MachineVncButton
+            img="../assets/keyboard/man_ctrl.svg"
             @click="sendKey('XK_KP_Left')"
           />
-          <button
-            class="t7-keyinput"
-            :style="{ backgroundImage: `url(${KeyDispR})` }"
+          <MachineVncButton
+            img="../assets/keyboard/dispR.svg"
             @click="sendKey('XK_Home')"
           />
         </div>
@@ -559,26 +468,5 @@ const websockifyWsUrl = resolveWebSocketUrl(props.websockifyUrl)
   height: 100%;
   padding: calc(4px * var(--factor));
   fill: white;
-}
-
-.t7-keyinput {
-  position: relative;
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-
-  &:hover {
-    filter: brightness(1.2);
-  }
-  &:active {
-    filter: brightness(1.3);
-  }
-  & img {
-    object-fit: scale-down;
-    width: 100%;
-    height: 100%;
-  }
 }
 </style>

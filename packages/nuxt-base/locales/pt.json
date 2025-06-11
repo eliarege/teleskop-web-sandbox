@@ -34,8 +34,7 @@
       "device": "Tema do dispositivo",
       "light": "Tema claro"
     },
-    "version": "Versão",
-    "vncError": "Conexão com {name} falhou!"
+    "version": "Versão"
   },
   "feedback": {
     "title": "Relatar um Feedback",
@@ -71,5 +70,12 @@
       "save": "Salvar",
       "cancel": "Cancelar"
     }
+  },
+  "vnc": {
+    "connecting": "Conectando",
+    "error": "Falha na conexão! Tente novamente ou verifique os logs para mais detalhes.",
+    "retry": "Tentar novamente",
+    "reconnect": "Reconectar",
+    "disconnected": "Desconectado"
   }
 }

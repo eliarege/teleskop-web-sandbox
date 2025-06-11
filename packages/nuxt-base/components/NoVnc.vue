@@ -1,8 +1,7 @@
 <script lang="ts" setup>
-import type { NoVncEvents } from '@novnc/novnc/core/rfb'
+import type { NoVncEvents } from '@novnc/novnc/lib/rfb'
 import RFB from '@novnc/novnc/lib/rfb'
-import { nextTick, onMounted, onUnmounted, reactive, ref, toRef, watch } from 'vue'
-import type { Ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, toRef, watch } from 'vue'
 
 export interface NoVncProps {
   /** WebSocket URL `string` */
@@ -91,16 +90,6 @@ export interface NoVncProps {
   compressionLevel?: number
 
   /**
-   * Number of connection attempts
-   */
-  retries?: number
-
-  /**
-   * Interval between each retry
-   */
-  retryInterval?: number
-
-  /**
    * Connection timeout
    */
   connectionTimeout?: number
@@ -112,7 +101,7 @@ interface ConnectionDetails {
 
 const props = withDefaults(defineProps<NoVncProps>(), {
   url: 'ws://localhost:6080/websockify',
-  credentials: () => ({ password: '...' }),
+  credentials: () => ({}),
   auth: false,
   tokenTimeout: 3000,
   viewOnly: false,
@@ -125,8 +114,6 @@ const props = withDefaults(defineProps<NoVncProps>(), {
   background: 'rgb(40, 40, 40)',
   qualityLevel: 6,
   compressionLevel: 2,
-  retries: 5,
-  retryInterval: 1000,
   connectionTimeout: 10000,
 })
 
@@ -135,16 +122,27 @@ const emit = defineEmits<{
   (e: 'disconnect', clean: boolean): void
   (e: 'clipboard', content: string): void
   (e: 'error', error: Error): void
-  (e: 'ready'): void
 }>()
 
 const screen = ref<HTMLElement | undefined>()
-const overlay = reactive({
-  message: 'Çok uzun bir mesaj ama yeniden bağlanıyorum aga Connecting...',
-  promptRetry: true,
+const { t } = useI18n()
+
+type Status = 'connected' | 'connecting' | 'disconnected' | 'error'
+const status = ref<Status>('connecting')
+
+const overlayMessage = computed(() => {
+  switch (status.value) {
+    case 'connecting':
+      return t('vnc.connecting')
+    case 'disconnected':
+      return t('vnc.disconnected')
+    case 'error':
+      return t('vnc.error')
+    default:
+      return ''
+  }
 })
-// Bağlantı koptu / Bağlantı kesildi
-const connected = ref(false)
+
 const AUTH_FAILED_ERR = 'VNC Authentication Failed'
 
 let rfb: RFB | null = null
@@ -173,46 +171,39 @@ function authenticate(socket: WebSocket, token: string): Promise<ConnectionDetai
   })
 }
 
-/** Wait for `ref` to be a truthy value */
-function untilTruthy<T>(ref: Ref<T>, timeoutReason = 'Timeout'): Promise<NonNullable<T>> {
-  return new Promise((resolve, reject) => {
-    let stop: (() => void) | null = null
-    const timer = window.setTimeout(() => {
-      stop?.()
-      reject(new Error(timeoutReason))
-    }, props.tokenTimeout)
-    stop = watch(ref, (value) => {
-      if (value) {
-        nextTick(() => stop?.())
-        resolve(value!)
-        window.clearTimeout(timer)
-      }
-    }, {
-      immediate: true,
-    })
-  })
-}
-
 async function initRFB() {
+  status.value = 'connecting'
   let socket: WebSocket
   let viewOnly = props.viewOnly
   if (props.auth) {
-    const token = await untilTruthy(toRef(() => props.token))
+    const token = await until(() => props.token)
+      .toBeTruthy({
+        timeout: props.tokenTimeout,
+        throwOnTimeout: true,
+      })
     socket = new WebSocket(props.url)
     const response = await authenticate(socket, token)
     viewOnly = response.viewOnly
   } else {
     socket = new WebSocket(props.url)
   }
-  rfb = new RFB(screen.value!, socket, {
-    credentials: props.credentials,
+  if (!screen.value) {
+    throw new Error('RFB container is not mounted')
+  }
+  rfb = new RFB(screen.value, socket, {
+    credentials: {
+      username: props.credentials.username || '',
+      password: props.credentials.password || '',
+      target: props.credentials.target || '',
+    },
   })
   rfb.addEventListener('connect', () => {
-    connected.value = true
+    status.value = 'connected'
     emit('connect')
   })
   rfb.addEventListener('disconnect', (e: NoVncEvents['disconnect']) => {
-    connected.value = false
+    status.value = e.detail.clean ? 'disconnected' : 'error'
+    rfb = null
     emit('disconnect', e.detail.clean)
   })
   rfb.addEventListener('clipboard', (e: NoVncEvents['clipboard']) => {
@@ -228,13 +219,14 @@ async function initRFB() {
   rfb.background = props.background
   rfb.qualityLevel = props.qualityLevel
   rfb.compressionLevel = props.compressionLevel
-  emit('ready')
 }
 
 async function connect() {
   try {
     await initRFB()
   } catch (err) {
+    status.value = 'error'
+    console.error(err)
     emit('error', err as Error)
   }
 }
@@ -258,52 +250,38 @@ onUnmounted(() => {
   disconnect()
 })
 
-watch(() => props.focusOnClick, (newValue) => {
-  if (rfb)
-    rfb.focusOnClick = newValue
-})
-watch(() => props.clipViewport, (newValue) => {
-  if (rfb)
-    rfb.clipViewport = newValue
-})
-watch(() => props.dragViewport, (newValue) => {
-  if (rfb)
-    rfb.dragViewport = newValue
-})
-watch(() => props.scaleViewport, (newValue) => {
-  if (rfb)
-    rfb.scaleViewport = newValue
-})
-watch(() => props.resizeSession, (newValue) => {
-  if (rfb)
-    rfb.resizeSession = newValue
-})
-watch(() => props.showDotCursor, (newValue) => {
-  if (rfb)
-    rfb.showDotCursor = newValue
-})
-watch(() => props.background, (newValue) => {
-  if (rfb)
-    rfb.background = newValue
-})
-watch(() => props.qualityLevel, (newValue) => {
-  if (rfb)
-    rfb.qualityLevel = newValue
-})
-watch(() => props.compressionLevel, (newValue) => {
-  if (rfb)
-    rfb.compressionLevel = newValue
+const reactiveOptions = [
+  'focusOnClick',
+  'clipViewport',
+  'dragViewport',
+  'scaleViewport',
+  'resizeSession',
+  'showDotCursor',
+  'background',
+  'qualityLevel',
+  'compressionLevel',
+] as const satisfies (keyof RFB)[]
+
+reactiveOptions.forEach((key) => {
+  watch(() => props[key], (newValue) => {
+    if (rfb) {
+      (rfb as any)[key] = newValue
+    }
+  })
 })
 
 function wrap<T extends any[] = any[]>(callback: (rfb: RFB, ...args: T) => void) {
   return (...args: T) => {
-    if (!rfb)
-      throw new Error('RFB is not ready')
-    callback(rfb, ...args)
+    if (rfb)
+      callback(rfb, ...args)
   }
 }
 
 defineExpose({
+  /**
+   * Connection status
+   */
+  status: readonly(status),
   /**
    * Disconnect from the server.
    */
@@ -342,18 +320,23 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="screen">
-    <div v-show="overlay.visible" class="novnc-overlay">
-      <div class="novnc-overlay-message">
-        <div>{{ overlay.message }}</div>
+  <div ref="screen" :style="{ backgroundColor: props.background }">
+    <div v-show="status !== 'connected'" class="novnc-overlay">
+      <div class="novnc-overlay-message space-y-2">
+        <div>{{ overlayMessage }}</div>
+        <LoadingSpinner
+          v-if="status === 'connecting'"
+          :with-wrapper="false"
+          inner-color="#0D75FD"
+          outer-color="#0D75FD"
+        />
         <q-btn
-          v-if="overlay.promptRetry"
-          class="mt-2"
+          v-if="status !== 'connecting'"
           color="primary"
           size="sm"
           @click="reconnect"
         >
-          Retry
+          {{ status === 'error' ? t('vnc.retry') : t('vnc.reconnect') }}
         </q-btn>
       </div>
     </div>

@@ -35,8 +35,7 @@
       "device": "Cihaz teması",
       "light": "Açık tema"
     },
-    "version": "Version",
-    "vncError": "{name} Bağlantısı Başarısız Oldu!"
+    "version": "Version"
   },
   "feedback": {
     "dialogTitle": "Geri bildirim Gönder",
@@ -74,5 +73,12 @@
       "save": "Kaydet",
       "cancel": "İptal Et"
     }
+  },
+  "vnc": {
+    "connecting": "Bağlantı kuruluyor",
+    "error": "Bağlantı başarısız oldu! Tekrar deneyin veya detaylar için logları kontrol edin.",
+    "retry": "Yeniden dene",
+    "reconnect": "Yeniden bağlan",
+    "disconnected": "Bağlantı kesildi."
   }
 }

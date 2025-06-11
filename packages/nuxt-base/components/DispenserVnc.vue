@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
 import { joinURL, parseHost, parseURL, stringifyParsedURL, withBase, withProtocol } from 'ufo'
+import NoVnc from './NoVnc.vue'
 
 const props = defineProps({
   dispenserId: {
@@ -18,8 +18,6 @@ const props = defineProps({
 })
 
 const { token, enabled } = useKeycloak()
-
-const { t } = useI18n()
 
 const KeyEnum = {
   'A': 65,
@@ -177,7 +175,6 @@ const KeyEnum = {
   'z': 122,
 } as Readonly<Record<string, number>>
 
-const quasar = useQuasar()
 const vnc = ref<InstanceType<typeof NoVnc> | null>(null)
 const isFullScreen = ref(false)
 function resolveWebSocketUrl(url: string) {
@@ -201,12 +198,6 @@ const disconnected = ref(false)
 const websockifyWsUrl = resolveWebSocketUrl(props.websockifyUrl)
 function onDisconnect() {
   disconnected.value = true
-  quasar.notify({
-    message: t('base.vncError', { name: props.dispenserName }),
-    timeout: 3000,
-    position: 'top',
-    color: 'negative',
-  })
 }
 function onConnect() {
   console.log('connected', props.dispenserName)

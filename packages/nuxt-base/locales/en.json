@@ -35,8 +35,7 @@
       "device": "Device theme",
       "light": "Light theme"
     },
-    "version": "Version",
-    "vncError": "{name} Connection Failed!"
+    "version": "Version"
   },
   "feedback": {
     "dialogTitle": "Report a Feedback",
@@ -74,5 +73,12 @@
       "save": "Save",
       "cancel": "Cancel"
     }
+  },
+  "vnc": {
+    "connecting": "Connecting",
+    "error": "Connection failed! Retry or check logs for details.",
+    "retry": "Retry",
+    "reconnect": "Reconnect",
+    "disconnected": "Disconnected"
   }
 }

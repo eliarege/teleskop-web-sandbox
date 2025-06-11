@@ -44,7 +44,6 @@
   "devDependencies": {
     "@types/node": "22.9.0",
     "@types/nodemailer": "6.4.16",
-    "@types/novnc__novnc": "1.6.0",
     "nuxt": "3.14.159",
     "vite": "5.4.11",
     "vue": "3.5.12",
