@@ -1,5 +1,5 @@
 import { createConnection } from 'node:net'
-import { setTimeout as wait } from 'node:timers/promises'
+import { setTimeout as pSetTimeout } from 'node:timers/promises'
 import type { Buffer } from 'node:buffer'
 import process from 'node:process'
 import type { IncomingMessage } from 'node:http'
@@ -149,11 +149,15 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
   /** Retry counter for connection errors */
   let retries = 0
   let handshaking = true
+  let isClean = false
 
   const cleanup = () => {
-    controller.abort()
-    client.close()
-    server.end()
+    if (!isClean) {
+      isClean = true
+      controller.abort()
+      client.close()
+      server.end()
+    }
   }
 
   proxy.handshake()
@@ -203,14 +207,16 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
 
   server.on('error', async (err) => {
     logger.error(`Server connection error: ${err.message}`)
-    if (retries < MAX_RETRIES) {
+    if (!controller.signal.aborted && retries < MAX_RETRIES) {
       retries++
       logger.info(`Re-connecting. Retry: ${retries} / ${MAX_RETRIES}`)
-      await wait(RETRY_INTERVAL)
-      server.connect({
-        host: machine.host,
-        port: machine.port,
-      })
+      const aborted = await pSetTimeout(RETRY_INTERVAL, false, { signal: controller.signal }).catch(() => true)
+      if (!aborted) {
+        server.connect({
+          host: machine.host,
+          port: machine.port,
+        })
+      }
     } else {
       client.close(1011, `Connection to ${machine.name} failed after ${MAX_RETRIES}. ${err.message}`)
     }
@@ -218,7 +224,6 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
 
   server.on('end', () => {
     clearTimeout(timeout)
-    cleanup()
     logger.info('Server connection closed')
   })
 
