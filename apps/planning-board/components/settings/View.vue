@@ -17,6 +17,7 @@ const actualEventsDropdown = computed(() => [
   { id: 9, label: t('settings.plan-area.dropDown.fabricWeight'), value: 'fabricWeight' },
   { id: 10, label: t('settings.plan-area.dropDown.deviation'), value: 'deviation' },
   { id: 11, label: t('settings.plan-area.dropDown.note'), value: 'note' },
+  { id: 11, label: t('settings.plan-area.dropDown.partyNo'), value: 'partyNo' },
 ] as {
   id: number
   label: string
@@ -35,6 +36,7 @@ const plannedEventsDropdown = computed(() => [
   { id: 9, label: t('settings.plan-area.dropDown.endTime'), value: 'endTime' },
   { id: 10, label: t('settings.plan-area.dropDown.startTime'), value: 'startTime' },
   { id: 11, label: t('settings.plan-area.dropDown.customer'), value: 'customer' },
+  { id: 11, label: t('settings.plan-area.dropDown.partyNo'), value: 'partyNo' },
 ] as {
   id: number
   label: string
