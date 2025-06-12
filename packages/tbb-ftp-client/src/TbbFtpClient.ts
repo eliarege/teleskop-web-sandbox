@@ -446,20 +446,22 @@ export class TbbFtpClient {
     await upload(this.client, remotePath, content)
   }
 
-  async fetchTranslations(): Promise<string> {
+  async fetchTranslations(): Promise<{ locale: number, text: string }[][]> {
     const paths = [
       '/tbb6500/data/config/translationsProject20.txt',
       '/tbb6500/data/config/translationsProject50.txt',
       '/tbb6500/data/config/translationsProject100.txt',
     ]
 
-    let combinedContent = ''
+    const translations: { locale: number, text: string }[][] = []
 
     for (const path of paths) {
       const content = (await this.download(path)).toString()
-      combinedContent += content
+      const saferContent = content.endsWith('\n') ? content : `${content}\n`
+      const parsedLines = parseMachineTranslations(saferContent)
+      translations.push(...parsedLines)
     }
 
-    return combinedContent.trim()
+    return translations
   }
 }

@@ -3,7 +3,6 @@ import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFt
 import { chunk } from 'lodash-es'
 import { DatabaseQueryError } from '../error'
 import { knex } from '../connectionPool'
-import { parseMachineTranslations } from '../../../../packages/tbb-ftp-client/src/parsers/parseMachineTranslations'
 import { calcIONumber, getIONames } from '.'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'
 
@@ -1090,13 +1089,12 @@ export async function updateMachineTranslations(
 
     const fromLocale = Number(fromLocaleResult?.lang ?? 0)
 
-    const rawContentParts = await tbb.fetchTranslations()
-    const parsedLines = parseMachineTranslations(rawContentParts)
+    const translations = await tbb.fetchTranslations()
     const resultMap = new Map<number, Record<string, string>>()
 
-    for (const row of parsedLines) {
+    for (const row of translations) {
       const sourceObj = row.find(item => item.locale === fromLocale)
-      if (!sourceObj || sourceObj.text.trim() === '')
+      if (!sourceObj)
         continue
 
       const source = sourceObj.text
