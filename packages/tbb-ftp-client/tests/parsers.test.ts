@@ -904,26 +904,33 @@ it('parseMachineTranslations', () => {
   `
 
   const results = [
-    { machine_id: 1, from_locale: 0, to_locale: 0, messages: { Sistem: 'Sistem', acil: 'acil' } },
-    { machine_id: 1, from_locale: 0, to_locale: 1, messages: { Sistem: 'System', acil: 'urgent' } },
-    { machine_id: 1, from_locale: 0, to_locale: 3, messages: { Sistem: 'سیستم' } },
-    { machine_id: 1, from_locale: 0, to_locale: 4, messages: { Sistem: 'Sistem' } },
-    { machine_id: 1, from_locale: 0, to_locale: 5, messages: { Sistem: 'Sistema' } },
-    { machine_id: 1, from_locale: 0, to_locale: 6, messages: { Sistem: 'Sistema' } },
-    { machine_id: 1, from_locale: 0, to_locale: 7, messages: { Sistem: 'نظام' } },
-    { machine_id: 1, from_locale: 0, to_locale: 8, messages: { Sistem: '系统' } },
-    { machine_id: 1, from_locale: 0, to_locale: 9, messages: { Sistem: '系统' } },
-    { machine_id: 1, from_locale: 0, to_locale: 10, messages: { Sistem: 'Σύστημα' } },
-    { machine_id: 1, from_locale: 0, to_locale: 11, messages: { Sistem: 'Sistem' } },
-    { machine_id: 1, from_locale: 0, to_locale: 12, messages: { Sistem: 'Tizim' } },
-    { machine_id: 1, from_locale: 0, to_locale: 13, messages: { Sistem: 'Sistema' } },
-    { machine_id: 1, from_locale: 0, to_locale: 14, messages: { Sistem: 'Hệ thống' } },
-    { machine_id: 1, from_locale: 0, to_locale: 15, messages: { Sistem: 'Sistem' } },
-    { machine_id: 1, from_locale: 0, to_locale: 16, messages: { Sistem: '시스템' } },
-    { machine_id: 1, from_locale: 0, to_locale: 17, messages: { Sistem: 'System' } },
-    { machine_id: 1, from_locale: 0, to_locale: 18, messages: { Sistem: 'Système' } },
+    [
+      { locale: 0, text: 'Sistem' },
+      { locale: 1, text: 'System' },
+      { locale: 3, text: 'سیستم' },
+      { locale: 4, text: 'Sistem' },
+      { locale: 5, text: 'Sistema' },
+      { locale: 6, text: 'Sistema' },
+      { locale: 7, text: 'نظام' },
+      { locale: 8, text: '系统' },
+      { locale: 9, text: '系统' },
+      { locale: 10, text: 'Σύστημα' },
+      { locale: 11, text: 'Sistem' },
+      { locale: 12, text: 'Tizim' },
+      { locale: 13, text: 'Sistema' },
+      { locale: 14, text: 'Hệ thống' },
+      { locale: 15, text: 'Sistem' },
+      { locale: 16, text: '시스템' },
+      { locale: 17, text: 'System' },
+      { locale: 18, text: 'Système' },
+    ],
+    [
+      { locale: 0, text: 'acil' },
+      { locale: 1, text: 'urgent' },
+    ],
   ]
-  const output = parseMachineTranslations(0, content, 1)
+
+  const output = parseMachineTranslations(content)
 
   expect(output).toStrictEqual(results)
 })
