@@ -21,6 +21,6 @@ export default defineI18nLocale(async (locale) => {
     'de': 17,
     'fr': 18,
   }
-  const localeIndex = localeMap[locale] ?? localeMap.en
-  return await kc.fetch(`/api/project-translations?locale=${localeIndex}`)
+  const localeIndex = localeMap[locale] ?? localeMap['en-GB']
+  return { mt: await kc.fetch(`/api/project-translations?locale=${localeIndex}`) }
 })

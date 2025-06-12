@@ -3,7 +3,7 @@ export function useMachineTranslations() {
 
   return {
     mt(value: string, machineId = 0) {
-      return t(`messages.${machineId}.${value}`, value)
+      return t(`mt.${machineId}.${value}`, value)
     },
   }
 }

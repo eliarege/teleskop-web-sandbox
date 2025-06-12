@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
     result[0] = mergedMessages
 
-    return { messages: result }
+    return result
   } catch (err: any) {
     console.error('Database query failed:', err)
     throw new Error('Database query failed:', err)
