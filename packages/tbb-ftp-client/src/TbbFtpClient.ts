@@ -446,42 +446,20 @@ export class TbbFtpClient {
     await upload(this.client, remotePath, content)
   }
 
-  async readTranslationFiles(machineId: number, fromLocale: number) {
-    const translationsPerLocale: {
-      machine_id: number
-      from_locale: number
-      to_locale: number
-      messages: Record<string, string>
-    }[] = []
-
+  async fetchTranslations(): Promise<string> {
     const paths = [
       '/tbb6500/data/config/translationsProject20.txt',
       '/tbb6500/data/config/translationsProject50.txt',
       '/tbb6500/data/config/translationsProject100.txt',
     ]
 
-    const tempMap = new Map<number, Record<string, string>>()
+    let combinedContent = ''
 
     for (const path of paths) {
       const content = (await this.download(path)).toString()
-      const parsedList = parseMachineTranslations(fromLocale, content, machineId)
-
-      for (const item of parsedList) {
-        if (!tempMap.has(item.to_locale)) {
-          tempMap.set(item.to_locale, {})
-        }
-        Object.assign(tempMap.get(item.to_locale)!, item.messages)
-      }
+      combinedContent += content
     }
 
-    for (const [toLocale, messages] of tempMap.entries()) {
-      translationsPerLocale.push({
-        machine_id: machineId,
-        from_locale: fromLocale,
-        to_locale: toLocale,
-        messages,
-      })
-    }
-    return translationsPerLocale
+    return combinedContent.trim()
   }
 }

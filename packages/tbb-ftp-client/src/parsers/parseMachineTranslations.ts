@@ -1,37 +1,22 @@
-export function parseMachineTranslations(fromLocale: number, content: string, machineId: number) {
+export function parseMachineTranslations(content: string) {
   const lines = content.split('\n').filter(Boolean)
-  const translationsPerLocale: any[] = []
+  const messages: { locale: number, text: string }[][] = []
 
   for (const line of lines) {
     const parts = line.split('~')
-    const source = parts[fromLocale]?.trim()
+    const row: { locale: number, text: string }[] = []
 
-    if (!source)
-      continue
-
-    parts.forEach((targetRaw, index) => {
-      if (targetRaw) {
-        const target = targetRaw?.trim()
-        if (!target)
-          return
-
-        let localeEntry = translationsPerLocale.find(
-          entry => entry.to_locale === index,
-        )
-
-        if (!localeEntry) {
-          localeEntry = {
-            machine_id: machineId,
-            from_locale: fromLocale,
-            to_locale: index,
-            messages: {},
-          }
-          translationsPerLocale.push(localeEntry)
-        }
-
-        localeEntry.messages[source] = target
+    parts.forEach((text, index) => {
+      const trimmed = text.trim()
+      if (trimmed !== '') {
+        row.push({ locale: index, text: trimmed })
       }
     })
+
+    if (row.length > 0) {
+      messages.push(row)
+    }
   }
-  return translationsPerLocale
+
+  return messages
 }
