@@ -2,7 +2,7 @@ export default defineI18nLocale(async (locale) => {
   const kc = useNuxtApp().$keycloak
   const localeMap: Record<string, number> = {
     'tr': 0,
-    'en': 1,
+    'en-GB': 1,
     'ru': 2,
     'fa': 3,
     'fa-Latn': 4,
