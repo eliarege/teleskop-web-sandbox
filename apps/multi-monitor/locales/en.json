@@ -67,7 +67,8 @@
     "command": "Step No - Command No - Command Name",
     "command-info": "Command Info",
     "current-delay": "Current Delay",
-    "current-progress": "Current Progress"
+    "current-progress": "Current Progress",
+    "elapsed-time": "Elapsed Time"
   },
   "details": {
     "_": "Details",

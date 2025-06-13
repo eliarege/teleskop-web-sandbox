@@ -67,7 +67,8 @@
     "command": "Adım No - Komut No - Komut İsmi",
     "command-info": "Komut Bilgi",
     "current-delay": "Güncel Gecikme",
-    "current-progress": "Güncel İlerleme"
+    "current-progress": "Güncel İlerleme",
+    "elapsed-time": "Geçen Zaman"
   },
   "details": {
     "_": "Detaylar",

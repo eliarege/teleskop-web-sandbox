@@ -67,7 +67,8 @@
     "command": "Número da Etapa - Número do Comando - Nome do Comando",
     "command-info": "Informações do Comando",
     "current-delay": "Atraso atual",
-    "current-progress": "Progresso Atual"
+    "current-progress": "Progresso Atual",
+    "elapsed-time": "Tempo decorrido"
   },
   "details": {
     "_": "Detalhes",
