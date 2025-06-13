@@ -107,8 +107,8 @@ const autoRecipe = computed(() => {
       recIndex: currentRunningIndex.value?.currentRunningPrgIndex === val.recIndex ? `> ${val.recIndex}` : val.recIndex,
       phaseIndex: val.phaseIndex! + 1,
       program: `${val.recNo} - ${val.name}`,
-      amount: val.amount,
-      newAmount: `${val.amount} ${unitFunc(val.unit)}`,
+      amount: Math.round(val.amount || 0),
+      newAmount: `${val.amount?.toFixed(2).replace(/\.?0+$/, '')} ${unitFunc(val.unit)}`,
     } as NewRecipe
   })
 })
@@ -120,7 +120,7 @@ const manuelRecipe = computed(() => {
       recIndex: currentRunningIndex.value?.currentRunningPrgIndex === val.recIndex ? `> ${val.recIndex}` : val.recIndex,
       program: `${val.recNo} - ${val.name}`,
       amount: Math.round(val.amount || 0),
-      newAmount: `${val.amount} ${unitFunc(val.unit)}`,
+      newAmount: `${val.amount?.toFixed(2).replace(/\.?0+$/, '')} ${unitFunc(val.unit)}`,
     } as NewRecipe
   })
 })
@@ -133,6 +133,9 @@ function closeModal() {
 }
 
 const { width: windowWidth } = useWindowSize()
+watch((autoRecipe), () => {
+  console.log(autoRecipe.value)
+})
 </script>
 
 <template>
