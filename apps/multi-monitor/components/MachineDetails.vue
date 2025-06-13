@@ -133,14 +133,18 @@ function closeModal() {
 }
 
 const { width: windowWidth } = useWindowSize()
-watch((autoRecipe), () => {
-  console.log(autoRecipe.value)
-})
+function truncateWithTooltip(content?: string): { content: string, tooltip: boolean } {
+  if (content && content.length > 60) {
+    return { content: `${content.slice(0, 60)}...`, tooltip: true }
+  } else {
+    return { content: content || '', tooltip: false }
+  }
+}
 </script>
 
 <template>
   <div class="wrapper">
-    <ElScrollbar class="table-wrapper e-border">
+    <div class="table-wrapper e-border w-f-o">
       <div class="table-body">
         <RecipeTable
           show
@@ -182,8 +186,8 @@ watch((autoRecipe), () => {
           />
         </div>
       </div>
-    </ElScrollbar>
-    <ElScrollbar class="chart-wrapper e-border">
+    </div>
+    <div class="chart-wrapper e-border w-f-o">
       <div class="chart-body">
         <DGauge
           :model-value="currentMachine.currentTemperature"
@@ -200,133 +204,177 @@ watch((autoRecipe), () => {
           needle-color="red"
         />
       </div>
-    </ElScrollbar>
-
-    <ElScrollbar class="info-wrapper e-border">
-      <div class="info">
-        <div class="title">
-          {{ t("details.info") }}
-        </div>
-        <div class="info-body">
-          <div class="info-col">
-            <span>
-              {{ t("details.name") }}:
-              {{ currentMachine.name }}
-            </span>
-          </div>
-          <div class="info-col">
-            <span>
-              {{ t("details.machine-cap") }}:
-              {{ currentMachine.machineCapacity }} (KG)
-            </span>
-          </div>
-          <div class="info-col">
-            <span>
-              {{ t("details.order-no") }}:
-              {{ currentMachine.reqProgramNo }}
-            </span>
-          </div>
-          <div
-            v-for="(val, idx) in erpVal"
-            :key="idx"
-            class="info-col"
-          >
-            {{ mt(idx, currentMachine.id) }}: {{ val }}
-          </div>
-        </div>
+    </div>
+    <div class="info-wrapper e-border w-f-o">
+      <div class="title">
+        {{ t("details.info") }}
       </div>
-    </ElScrollbar>
-    <ElScrollbar class="command-wrapper relative">
+      <q-list
+        v-ripple
+        separator
+        dense
+      >
+        <q-item
+          dense
+          class="w-full h-full text-left"
+        >
+          <q-item-section no-wrap>
+            {{ t("details.name") }}
+          </q-item-section>
+          <q-item-section>
+            {{ currentMachine.name }}
+          </q-item-section>
+        </q-item>
+
+        <q-item
+          dense
+          class="w-full h-full text-left"
+        >
+          <q-item-section no-wrap>
+            {{ t("details.machine-cap") }}
+          </q-item-section>
+          <q-item-section>
+            {{ currentMachine.machineCapacity }} (KG)
+          </q-item-section>
+        </q-item>
+
+        <q-item
+          dense
+          class="w-full h-full text-left"
+        >
+          <q-item-section no-wrap>
+            {{ t("details.order-no") }}
+          </q-item-section>
+          <q-item-section>
+            {{ currentMachine.reqProgramNo }}
+          </q-item-section>
+        </q-item>
+
+        <q-item
+          v-for="(val, idx) in erpVal"
+          :key="idx"
+          dense
+          class="w-full h-full text-left"
+        >
+          <q-item-section no-wrap>
+            {{ mt(idx, currentMachine.id) }}
+          </q-item-section>
+          <q-item-section>
+            {{ val }}
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </div>
+    <div class="intervention-wrapper e-border w-f-o">
       <div v-if="!intervents" class="absolute w-full h-full top-1/2 left-1/2 transform -translate-1/2">
         <LoadingSpinner />
       </div>
-      <div class="op-commands">
-        <div class="title">
-          {{ t("details.op-intervents") }}
-        </div>
-        <div
+      <div class="title">
+        {{ t("details.op-intervents") }}
+      </div>
+      <q-list v-ripple separator>
+        <q-item
           v-for="(item, idx) in intervents"
           :key="idx"
-          class="flex flex-col w-full h-full"
-        >
-          <div class="command-items">
-            <span>
-              {{ item.newTime }}
-            </span>
-            <span class="flex justify-center w-full">
-              {{ item.explanation }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </ElScrollbar>
-    <div class="log-wrapper">
-      <div class="log__item e-border">
-        <QTable
+          v-ripple
           dense
-          :columns="[
-            { name: 'planKey', label: t('batchLogs.plan-key'), field: 'planKey', align: 'left' },
-            { name: 'newTime', label: t('batchLogs.new-time'), field: 'newTime', align: 'left' },
-            { name: 'jobOrder', label: t('batchLogs.job-order'), field: 'jobOrder', align: 'left' },
-            { name: 'explanation', label: t('batchLogs.explanation'), field: 'explanation', align: 'left' },
-            { name: 'programIndex', label: t('batchLogs.program-index'), field: 'programIndex', align: 'left' },
-            { name: 'programNo', label: t('batchLogs.program-no'), field: 'programNo', align: 'left' },
-            { name: 'recipeType', label: t('batchLogs.recipe-type'), field: 'recipeType', align: 'left' },
-            { name: 'requestprogramIndex', label: t('batchLogs.request-program-index'), field: 'requestprogramIndex', align: 'left' },
-            { name: 'status', label: t('batchLogs.status'), field: 'status', align: 'left' },
-          ]"
-          :no-data-label="t('batchLogs.no-data')"
-          row-key="name"
-          :rows-per-page-options="[]"
-          :rows="sortedLogs"
-          :filter="logTableFilter"
+          class="w-full h-full text-center"
         >
-          <template #top>
-            <div class="flex w-full">
-              <q-input
-                v-model="logTableFilter"
-                borderless
-                dense
-                debounce="300"
-                :placeholder="t('batchLogs.placeholder')"
-              >
-                <template #append>
-                  <div />
-                  <q-icon name="search" />
-                </template>
-              </q-input>
-              <QSpace />
+          <q-item-section avatar>
+            {{ item.newTime }}
+          </q-item-section>
+          <q-item-section>
+            {{ item.explanation }}
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </div>
+    <div class="log-wrapper e-border w-f-o">
+      <QTable
+        dense
+        :columns="[
+          { name: 'planKey', label: t('batchLogs.plan-key'), field: 'planKey', align: 'left' },
+          { name: 'newTime', label: t('batchLogs.new-time'), field: 'newTime', align: 'left' },
+          { name: 'jobOrder', label: t('batchLogs.job-order'), field: 'jobOrder', align: 'left' },
+          { name: 'explanation', label: t('batchLogs.explanation'), field: 'explanation', align: 'left' },
+          { name: 'programIndex', label: t('batchLogs.program-index'), field: 'programIndex', align: 'left' },
+          { name: 'programNo', label: t('batchLogs.program-no'), field: 'programNo', align: 'left' },
+          { name: 'recipeType', label: t('batchLogs.recipe-type'), field: 'recipeType', align: 'left' },
+          { name: 'requestprogramIndex', label: t('batchLogs.request-program-index'), field: 'requestprogramIndex', align: 'left' },
+          { name: 'status', label: t('batchLogs.status'), field: 'status', align: 'left' },
+        ]"
+        :no-data-label="t('batchLogs.no-data')"
+        row-key="name"
+        class="h-full w-full"
+        :rows-per-page-options="[]"
+        :rows="sortedLogs"
+        :filter="logTableFilter"
+      >
+        <template #top>
+          <div class="flex w-full">
+            <q-input
+              v-model="logTableFilter"
+              borderless
+              dense
+              debounce="300"
+              :placeholder="t('batchLogs.placeholder')"
+            >
+              <template #append>
+                <div />
+                <q-icon name="search" />
+              </template>
+            </q-input>
 
-              <div class="flex gap-3">
-                <div class="m-auto">
-                  {{ t('batchLogs.checked-names') }} {{ checkedNames }}
-                </div>
-                <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <q-radio
-                    v-model="checkedNames"
-                    val="ID"
-                    label="ID"
-                  />
-                </div>
-                <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <q-radio
-                    v-model="checkedNames"
-                    val="Plan Key"
-                    :label="t('batchLogs.plan-key')"
-                  />
-                </div>
-                <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <q-radio
-                    v-model="checkedNames"
-                    val="Event Time"
-                    :label="t('batchLogs.new-time')"
-                  />
-                </div>
+            <QSpace />
+
+            <div class="flex gap-3">
+              <div class="m-auto">
+                {{ t('batchLogs.checked-names') }} {{ checkedNames }}
+              </div>
+              <div class="flex flex-col-reversed w-auto justify-center items-center">
+                <q-radio
+                  v-model="checkedNames"
+                  val="ID"
+                  label="ID"
+                />
+              </div>
+              <div class="flex flex-col-reversed w-auto justify-center items-center">
+                <q-radio
+                  v-model="checkedNames"
+                  val="Plan Key"
+                  :label="t('batchLogs.plan-key')"
+                />
+              </div>
+              <div class="flex flex-col-reversed w-auto justify-center items-center">
+                <q-radio
+                  v-model="checkedNames"
+                  val="Event Time"
+                  :label="t('batchLogs.new-time')"
+                />
               </div>
             </div>
-          </template>
-        </QTable>
-      </div>
+          </div>
+        </template>
+        <template #body="bodyProps">
+          <q-tr :props="bodyProps">
+            <q-td
+              v-for="col in bodyProps.cols"
+              :key="col.name"
+              :props="bodyProps"
+            >
+              <div v-if="col.name === 'explanation'">
+                <q-tooltip v-if="truncateWithTooltip(col.value).tooltip">
+                  {{ col.value }}
+                </q-tooltip>
+                {{ truncateWithTooltip(col.value).content }}
+              </div>
+              <div v-else>
+                {{ col.value }}
+              </div>
+            </q-td>
+          </q-tr>
+        </template>
+      </QTable>
     </div>
   </div>
   <Teleport to="body">
@@ -376,6 +424,9 @@ watch((autoRecipe), () => {
 </template>
 
 <style scoped lang="postcss">
+.w-f-o {
+  @apply w-full h-full overflow-auto;
+}
 .normal-class {
   background: scroll !important;
 }
@@ -390,25 +441,25 @@ watch((autoRecipe), () => {
   grid-template-columns: 0.5fr 1fr 1fr 0.5fr;
   grid-template-rows: repeat(3, 1fr);
   grid-template-areas:
-    'operator table table info'
-    'operator table table info'
-    'operator logs logs chart';
+    'intervention table table info'
+    'intervention table table info'
+    'intervention logs logs chart';
   @apply grid gap-x-3 gap-y-1 w-full text-center max-w-1920px px-2 pb-1 text-black;
 }
 
 .table-wrapper {
   grid-area: table;
   height: -webkit-fill-available;
-  @apply rounded-2xl shadow shadow-gray-700/50 shadow-lg;
+  @apply rounded;
 }
 
 .info-wrapper {
   grid-area: info;
   height: -webkit-fill-available;
-  @apply rounded-2xl overflow-auto shadow shadow-gray-700/50 shadow-lg shadow;
+  @apply rounded overflow-auto;
 
   .info {
-    @apply text-lg;
+    @apply;
 
     .info-body {
       @apply border-t border-white text-left;
@@ -422,16 +473,16 @@ watch((autoRecipe), () => {
 
 .chart-wrapper {
   grid-area: chart;
-  @apply w-full h-full rounded-2xl shadow shadow-gray-700/50 shadow-lg;
+  @apply w-full h-full rounded;
 
   .chart-body {
     @apply w-full h-full;
   }
 }
 
-.command-wrapper {
-  grid-area: operator;
-  @apply e-border rounded-2xl shadow shadow-gray-700/50 shadow-lg overflow-auto relative;
+.intervention-wrapper {
+  grid-area: intervention;
+  @apply rounded overflow-auto relative;
 
   .command-items {
     @apply flex flex-row justify-center items-center gap-3 w-full h-full;
@@ -445,19 +496,19 @@ watch((autoRecipe), () => {
 .log-wrapper {
   grid-area: logs;
   height: -webkit-fill-available;
-  @apply rounded-2xl border border-gray-500 flex justify-between w-full h-min shadow shadow-gray-700/50 shadow-lg overflow-auto;
+  @apply rounded flex justify-between w-full h-full overflow-auto;
 
   ::slotted(.content) {
     background-color: rgb(48, 76, 76);
   }
 
   .log__item {
-    @apply w-full h-min;
+    @apply w-full h-full;
   }
 }
 
 .title {
-  @apply text-black font-extrabold w-full rounded-2xl;
+  @apply w-full rounded font-bold;
 }
 
 .modal-mask {
@@ -481,8 +532,8 @@ watch((autoRecipe), () => {
       'header header header'
       'table table table'
       'table table table'
-      'chart operator operator'
-      'info operator operator'
+      'chart intervention intervention'
+      'info intervention intervention'
       'logs logs logs';
     @apply grid w-full h-full max-w-full px-10;
 
@@ -498,7 +549,7 @@ watch((autoRecipe), () => {
       @apply h-full;
     }
 
-    .command-wrapper {
+    .intervention-wrapper {
       @apply h-full;
     }
   }
@@ -516,7 +567,7 @@ watch((autoRecipe), () => {
       }
     }
 
-    .command-wrapper {
+    .intervention-wrapper {
       .op-commands {
         .command-items {
           @apply flex flex-row justify-center items-center gap-1 w-full h-full;
