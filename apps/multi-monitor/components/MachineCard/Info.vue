@@ -39,6 +39,25 @@ function reqStatus(params: number) {
     return t('teleskop.status-prio')
   } else return t('teleskop.status-cancelled')
 }
+function formatElapsedTime(ms: number) {
+  const totalSeconds = Math.floor(ms / 1000)
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0')
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0')
+  const seconds = String(totalSeconds % 60).padStart(2, '0')
+  return `${hours}:${minutes}:${seconds}`
+}
+
+const stopReasonElapsedTime = computed(() => {
+  const givenDate = new Date(props.machine.stopReasonDateTime)
+  const elapsed = Date.now() - givenDate.getTime()
+  return formatElapsedTime(elapsed)
+})
+
+const manualReasonElapsedTime = computed(() => {
+  const givenDate = new Date(props.machine.manualReasonDateTime)
+  const elapsed = Date.now() - givenDate.getTime()
+  return formatElapsedTime(elapsed)
+})
 </script>
 
 <template>
@@ -92,7 +111,7 @@ function reqStatus(params: number) {
           "
         >
           {{ machine.runningProgramId }}
-          <span v-show="machine.runningProgramName !== ' '">&nbsp;|&nbsp;</span>
+          <span v-show="machine.runningProgramName">&nbsp;|&nbsp;</span>
           {{ machine.runningProgramName }}
         </span>
       </div>
@@ -124,7 +143,7 @@ function reqStatus(params: number) {
 
       <span class="flex-center w-full">
         {{ machine.runningPhaseNo }}
-        <span v-show="machine.runningPhaseName !== ' '">&nbsp;|&nbsp;</span>
+        <span v-show="machine.runningPhaseName">&nbsp;|&nbsp;</span>
         {{ machine.runningPhaseName }}
       </span>
     </div>
@@ -159,7 +178,7 @@ function reqStatus(params: number) {
           &nbsp;-&nbsp;
         </span>
         {{ machine.runningCommandNo }}
-        <span v-show="machine.runningCommandName !== ' '">
+        <span v-show="machine.runningCommandName">
           &nbsp;-&nbsp;
         </span>
         {{ machine.runningCommandName }}
@@ -188,8 +207,32 @@ function reqStatus(params: number) {
         spaced
       />
       <div class="flex-center w-full">
-        <span>{{ machine.manualReason }}</span>
-        <span>{{ machine.stopReason }}</span>
+        <div v-if="machine.manualReason" class="flex-center gap-3">
+          <span>{{ machine.manualReason }}</span>
+          <span>
+            {{ manualReasonElapsedTime }}
+            <q-tooltip
+              transition-show="scale"
+              class="text-black e-border bg-white"
+              :offset="[3, 3]"
+            >
+              {{ t('teleskop.elapsed-time') }}
+            </q-tooltip>
+          </span>
+        </div>
+        <br>
+        <div v-if="machine.stopReason" class="flex-center gap-3">
+          <span>{{ machine.stopReason }}</span>
+          <span> {{ stopReasonElapsedTime }}
+            <q-tooltip
+              transition-show="scale"
+              class="text-black e-border bg-white"
+              :offset="[3, 3]"
+            >
+              {{ t('teleskop.elapsed-time') }}
+            </q-tooltip>
+          </span>
+        </div>
         <span v-show="machine.connectionStatus === 2" class="text-red-700">
           {{ t("teleskop.no-connection") }}
         </span>
@@ -199,7 +242,7 @@ function reqStatus(params: number) {
       class="machine-commands_items"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
       :class="
-        machine.runningAlarmName === ' '
+        machine.runningAlarmName === ''
           ? 'text-white'
           : machine.currentAlarmStatus === 0
             ? 'alarm'
@@ -227,8 +270,6 @@ function reqStatus(params: number) {
       />
 
       <div class="flex-center w-full">
-        <!-- {{ machine.runningAlarmNo }} -->
-        <!-- <span v-show="machine.runningAlarmName !== ' '">&nbsp;|&nbsp;</span> -->
         {{ machine.runningAlarmName }}
       </div>
     </div>

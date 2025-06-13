@@ -49,28 +49,28 @@ const machineData = computed(() => {
       loggedInOperatorName: machine.loggedInOperatorName
         ? machine.loggedInOperatorName
         : t('teleskop.machine-stop-notification'),
-      runningJobOrder: machine.runningJobOrder ? machine.runningJobOrder : ' ',
+      runningJobOrder: machine.runningJobOrder ? machine.runningJobOrder : '',
       runningProgramName: machine.runningProgramName
         ? machine.runningProgramName
-        : ' ',
+        : '',
       runningProgramList: machine.runningProgramList
         ? machine.runningProgramList
-        : ' ',
+        : '',
       runningCommandName: machine.runningCommandName
         ? machine.runningCommandName
-        : ' ',
+        : '',
       runningAlarmName: machine.runningAlarmName
         ? machine.runningAlarmName
-        : ' ',
+        : '',
       runningPhaseName: machine.runningPhaseName
         ? machine.runningPhaseName
-        : ' ',
+        : '',
       newTheoreticalDuration: machine.theoreticalDuration
         ? machine.theoreticalDuration
         : 1,
-      stopReason: machine.stopReason ? machine.stopReason : ' ',
-      manualReason: machine.manualReason ? machine.manualReason : ' ',
-      runningAlarmNo: machine.runningAlarmNo ? machine.runningAlarmNo : ' ',
+      stopReason: machine.stopReason ? machine.stopReason : '',
+      manualReason: machine.manualReason ? machine.manualReason : '',
+      runningAlarmNo: machine.runningAlarmNo ? machine.runningAlarmNo : '',
     } as MachineData
   })
 })
