@@ -29,6 +29,7 @@ import { parseManualReason } from '../src/parsers/parseManualReason'
 import { parseStopReason } from '../src/parsers/parseStopReason'
 import { parseSystem } from '../src/parsers/parseSystem'
 import { parseUser } from '../src/parsers/parseUser'
+import { parseMachineTranslations } from '../src/parsers/parseMachineTranslations'
 
 it('parseAnalogInput', () => {
   const contents = `
@@ -892,6 +893,44 @@ it('parseUser', () => {
       userType: 1,
     },
   ]
+
+  expect(output).toStrictEqual(results)
+})
+
+it('parseMachineTranslations', () => {
+  const content = `
+  Sistem~System~~سیستم~Sistem~Sistema~Sistema~نظام~系统~系统~Σύστημα~Sistem~Tizim~Sistema~Hệ thống~Sistem~시스템~System~Système
+  acil~urgent~~
+  `
+
+  const results = [
+    [
+      { locale: 0, text: 'Sistem' },
+      { locale: 1, text: 'System' },
+      { locale: 3, text: 'سیستم' },
+      { locale: 4, text: 'Sistem' },
+      { locale: 5, text: 'Sistema' },
+      { locale: 6, text: 'Sistema' },
+      { locale: 7, text: 'نظام' },
+      { locale: 8, text: '系统' },
+      { locale: 9, text: '系统' },
+      { locale: 10, text: 'Σύστημα' },
+      { locale: 11, text: 'Sistem' },
+      { locale: 12, text: 'Tizim' },
+      { locale: 13, text: 'Sistema' },
+      { locale: 14, text: 'Hệ thống' },
+      { locale: 15, text: 'Sistem' },
+      { locale: 16, text: '시스템' },
+      { locale: 17, text: 'System' },
+      { locale: 18, text: 'Système' },
+    ],
+    [
+      { locale: 0, text: 'acil' },
+      { locale: 1, text: 'urgent' },
+    ],
+  ]
+
+  const output = parseMachineTranslations(content)
 
   expect(output).toStrictEqual(results)
 })

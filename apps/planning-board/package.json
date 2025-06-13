@@ -17,6 +17,7 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
+    "@teleskop/project-translations": "workspace:*",
     "@teleskop/utils": "workspace:*",
     "@vueuse/integrations": "11.2.0",
     "d3": "7.9.0",

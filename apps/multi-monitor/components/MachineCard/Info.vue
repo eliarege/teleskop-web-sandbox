@@ -18,9 +18,11 @@ const props = withDefaults(defineProps<CardInfoProps>(), {
   washing: false,
 })
 const { t } = useI18n()
+const { mt } = useMachineTranslations()
+
 const erpKey = useStorage<string | null>(
   `machine-${props.machine.id}-settings`,
-  null,
+  'Kilo',
   localStorage,
 )
 // The status of the last request. (0 new- 1 send to the dispenser - 2 Dispenser started - 3 Completed - 8 Cancelled)
@@ -48,7 +50,7 @@ function reqStatus(params: number) {
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
       <div class="explanation">
-        {{ erpKey || 'ERP' }}
+        {{ mt(erpKey, machine.id) || 'Kilo' }}
       </div>
       <q-separator
         color="white"

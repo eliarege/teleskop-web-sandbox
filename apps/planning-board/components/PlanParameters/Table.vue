@@ -20,6 +20,8 @@ defineProps<PlanParameterProps>()
 const emit = defineEmits(['uploadMachine'])
 const kc = useKeycloak()
 const { t } = useI18n()
+const { mt } = useMachineTranslations()
+
 const columns = computed(() => {
   return [
     { name: 'paramString', label: t('plan-parameters.param-string'), align: 'center', field: 'paramString' },
@@ -99,7 +101,7 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
               {{ prop.row.id }}
             </q-td>
             <q-td key="paramString" :props="prop">
-              {{ prop.row.paramString }}
+              {{ mt(prop.row.paramString, machineId) }}
             </q-td>
             <q-td
               key="value"

@@ -2,7 +2,7 @@ import { withTbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { getQuery } from 'h3'
 import { inferBoolean } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
-import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIOChangedEvent, updateIcons, updateLocksGeneral, updateLocksOutput, updateSystemParams } from '~/server/utils/updateDatabase'
+import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIOChangedEvent, updateIcons, updateLocksGeneral, updateLocksOutput, updateMachineTranslations, updateSystemParams } from '~/server/utils/updateDatabase'
 import { DatabaseQueryError } from '~/server/error'
 
 const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
@@ -84,6 +84,8 @@ export default defineAuthEventHandler(async (event) => {
             { func: () => updateIcons(numMachineId, tbb, trx), message: 'icons updated' },
             // archives
             { func: () => updateArchives(numMachineId, tbb, trx), message: 'archives updated' },
+            // translations
+            { func: () => updateMachineTranslations(numMachineId, tbb), message: 'translations updated successfully' },
           ]
 
           for (const { func, message } of updateFunctions) {

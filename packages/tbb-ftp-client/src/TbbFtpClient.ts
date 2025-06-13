@@ -38,6 +38,7 @@ import { parseLocksOutput } from './parsers/parseLocksOutput'
 import { parseCalibrationCounter } from './parsers/parseCalibrationCounter'
 import { parseCalibrationAnalogInput } from './parsers/parseCalibrationAnalogInput'
 import { parseIOChangedEvent } from './parsers/parseIOChangedEvent'
+import { parseMachineTranslations } from './parsers/parseMachineTranslations'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -443,5 +444,24 @@ export class TbbFtpClient {
     const remotePath = '/tbb6500/data/config/commandAlarmReasons'
     const content = serializeCommandAlarmReasons(reasons)
     await upload(this.client, remotePath, content)
+  }
+
+  async fetchTranslations(): Promise<{ locale: number, text: string }[][]> {
+    const paths = [
+      '/tbb6500/data/config/translationsProject20.txt',
+      '/tbb6500/data/config/translationsProject50.txt',
+      '/tbb6500/data/config/translationsProject100.txt',
+    ]
+
+    const translations: { locale: number, text: string }[][] = []
+
+    for (const path of paths) {
+      const content = (await this.download(path)).toString()
+      const saferContent = content.endsWith('\n') ? content : `${content}\n`
+      const parsedLines = parseMachineTranslations(saferContent)
+      translations.push(...parsedLines)
+    }
+
+    return translations
   }
 }

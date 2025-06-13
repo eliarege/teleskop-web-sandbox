@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   devtools: {
     enabled: false,
   },
-  extends: ['@teleskop/nuxt-base'],
+  extends: ['@teleskop/nuxt-base', '@teleskop/project-translations'],
   spaLoadingTemplate: false,
   ssr: false,
   typescript: {
@@ -33,9 +33,9 @@ export default defineNuxtConfig({
     lazy: true,
     langDir: './locales',
     locales: [
-      { code: 'en-GB', file: 'en.json' },
-      { code: 'tr', file: 'tr.json' },
-      { code: 'pt', file: 'pt.json' },
+      { code: 'en-GB', files: ['en.json'] },
+      { code: 'tr', files: ['tr.json'] },
+      { code: 'pt', files: ['pt.json'] },
     ],
   },
   keycloak: {

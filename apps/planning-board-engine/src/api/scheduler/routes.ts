@@ -56,6 +56,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
+
   fastify.get(
     '/planning_board/stops',
     async (request: FastifyRequest<{ Querystring: { startDate: string, endDate: string } }>, reply) => {

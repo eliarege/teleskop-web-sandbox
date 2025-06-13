@@ -15,6 +15,7 @@ import { useSettingStore } from '~/store/settings'
 
 const kc = useKeycloak()
 const { t, locale, d } = useI18n()
+const { mt } = useMachineTranslations()
 const visibility = useDocumentVisibility()
 const config = useRuntimeConfig()
 
@@ -379,11 +380,11 @@ function initialGridColumns() {
 
   const columnNames = Object.keys(modifiedUnscheduledEvents.value[0].erpParameters)
   for (let i = 0; i < columnNames.length; i++) {
-    const name = columnNames[i]
+    const name = ref(mt(columnNames[i]))
     // @ts-expect-error missing type
     grid.columns.add({
-      field: `erpParameters.${name}`,
-      text: name,
+      field: `erpParameters.${name.value}`,
+      text: name.value,
       width: 100,
       align: 'center',
     })

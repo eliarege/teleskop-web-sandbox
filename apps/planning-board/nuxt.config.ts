@@ -3,7 +3,7 @@ import string from '@teleskop/rollup-plugin-string'
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: false },
-  extends: ['@teleskop/nuxt-base'],
+  extends: ['@teleskop/nuxt-base', '@teleskop/project-translations'],
   runtimeConfig: {
     planningEngineUrl: 'http://localhost:3500',
     public: {
@@ -15,8 +15,8 @@ export default defineNuxtConfig({
     lazy: true,
     langDir: './locales',
     locales: [
-      { code: 'en-GB', file: 'en.json' },
-      { code: 'tr', file: 'tr.json' },
+      { code: 'en-GB', files: ['en.json'] },
+      { code: 'tr', files: ['tr.json'] },
     ],
   },
   nitro: {

@@ -2,6 +2,7 @@ import type { Knex } from 'knex'
 import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { DatabaseQueryError } from '../error'
+import { knex } from '../connectionPool'
 import { calcIONumber, getIONames } from '.'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'
 
@@ -1072,5 +1073,64 @@ export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx:
     return true
   } catch (error: any) {
     throw new DatabaseQueryError(error.message)
+  }
+}
+
+export async function updateMachineTranslations(
+  machineId: number,
+  tbb: TbbFtpClient,
+) {
+  try {
+    const fromLocaleResult = await knex('BFMACHINESYSTEMPARAMS')
+      .select({ lang: 'ParamValue' })
+      .where('ParamToken', 'FROM_PROJECT_LANGUAGE')
+      .andWhere('MachineId', machineId)
+      .first()
+
+    const fromLocale = Number(fromLocaleResult?.lang ?? 0)
+
+    const translations = await tbb.fetchTranslations()
+    const resultMap = new Map<number, Record<string, string>>()
+
+    for (const row of translations) {
+      const sourceObj = row.find(item => item.locale === fromLocale)
+      if (!sourceObj)
+        continue
+
+      const source = sourceObj.text
+
+      for (const { locale, text } of row) {
+        if (!resultMap.has(locale)) {
+          resultMap.set(locale, {})
+        }
+
+        resultMap.get(locale)![source] = text
+      }
+    }
+
+    const results = Array.from(resultMap.entries()).map(([toLocale, messages]) => ({
+      machine_id: machineId,
+      from_locale: fromLocale,
+      to_locale: toLocale,
+      messages,
+    }))
+
+    // upsert
+    for (const record of results) {
+      await knex.raw(`
+        MERGE BFMACHINETRANSLATIONS AS target
+        USING (SELECT :machineId AS machine_id, :fromLocale AS from_locale, :toLocale AS to_locale) AS source
+        ON target.machine_id = source.machine_id AND target.from_locale = source.from_locale AND target.to_locale = source.to_locale
+        WHEN MATCHED THEN
+          UPDATE SET messages = :messages
+        WHEN NOT MATCHED THEN
+          INSERT (machine_id, from_locale, to_locale, messages)
+          VALUES (:machineId, :fromLocale, :toLocale, :messages);
+      `, { machineId: record.machine_id, fromLocale: record.from_locale, toLocale: record.to_locale, messages: JSON.stringify(record.messages) })
+    }
+
+    return true
+  } catch (err: any) {
+    throw new DatabaseQueryError(err.message)
   }
 }
