@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
+import { textTruncate } from '~/shared/helper'
 import type {
   MachineDataRaw,
   NewBatchLogs,
@@ -58,6 +59,7 @@ const refactoredBatchLogs = computed(() => {
       }
     }) as NewBatchLogs[] || []
 })
+
 const checkedNames = ref()
 const sortedLogs = computed(() => {
   const activeLogs = refactoredBatchLogs.value.filter(a => a.planKey)
@@ -131,15 +133,6 @@ const erpVal = computed(() => {
 function closeModal() {
   tableShow.value = false
 }
-
-const { width: windowWidth } = useWindowSize()
-function truncateWithTooltip(content?: string): { content: string, tooltip: boolean } {
-  if (content && content.length > 60) {
-    return { content: `${content.slice(0, 60)}...`, tooltip: true }
-  } else {
-    return { content: content || '', tooltip: false }
-  }
-}
 </script>
 
 <template>
@@ -210,7 +203,6 @@ function truncateWithTooltip(content?: string): { content: string, tooltip: bool
         {{ t("details.info") }}
       </div>
       <q-list
-        v-ripple
         separator
         dense
       >
@@ -219,7 +211,10 @@ function truncateWithTooltip(content?: string): { content: string, tooltip: bool
           class="w-full h-full text-left"
         >
           <q-item-section no-wrap>
-            {{ t("details.name") }}
+            {{ textTruncate(t("details.name"), 20).content }}
+            <q-tooltip v-if="textTruncate(t('details.name'), 20).tooltip">
+              {{ t("details.name") }}
+            </q-tooltip>
           </q-item-section>
           <q-item-section>
             {{ currentMachine.name }}
@@ -231,7 +226,10 @@ function truncateWithTooltip(content?: string): { content: string, tooltip: bool
           class="w-full h-full text-left"
         >
           <q-item-section no-wrap>
-            {{ t("details.machine-cap") }}
+            {{ textTruncate(t("details.machine-cap"), 20).content }}
+            <q-tooltip v-if="textTruncate(t('details.machine-cap'), 20).tooltip">
+              {{ t("details.machine-cap") }}
+            </q-tooltip>
           </q-item-section>
           <q-item-section>
             {{ currentMachine.machineCapacity }} (KG)
@@ -243,7 +241,10 @@ function truncateWithTooltip(content?: string): { content: string, tooltip: bool
           class="w-full h-full text-left"
         >
           <q-item-section no-wrap>
-            {{ t("details.order-no") }}
+            {{ textTruncate(t("details.order-no"), 20).content }}
+            <q-tooltip v-if="textTruncate(t('details.order-no'), 20).tooltip">
+              {{ t("details.order-no") }}
+            </q-tooltip>
           </q-item-section>
           <q-item-section>
             {{ currentMachine.reqProgramNo }}
@@ -257,7 +258,10 @@ function truncateWithTooltip(content?: string): { content: string, tooltip: bool
           class="w-full h-full text-left"
         >
           <q-item-section no-wrap>
-            {{ mt(idx, currentMachine.id) }}
+            <q-tooltip v-if="textTruncate(mt(idx, currentMachine.id), 15).tooltip">
+              {{ mt(idx, currentMachine.id) }}
+            </q-tooltip>
+            {{ textTruncate(mt(idx, currentMachine.id), 15).content }}
           </q-item-section>
           <q-item-section>
             {{ val }}
@@ -272,11 +276,10 @@ function truncateWithTooltip(content?: string): { content: string, tooltip: bool
       <div class="title">
         {{ t("details.op-intervents") }}
       </div>
-      <q-list v-ripple separator>
+      <q-list separator>
         <q-item
           v-for="(item, idx) in intervents"
           :key="idx"
-          v-ripple
           dense
           class="w-full h-full text-center"
         >
@@ -363,10 +366,10 @@ function truncateWithTooltip(content?: string): { content: string, tooltip: bool
               :props="bodyProps"
             >
               <div v-if="col.name === 'explanation'">
-                <q-tooltip v-if="truncateWithTooltip(col.value).tooltip">
+                <q-tooltip v-if="textTruncate(col.value, 60).tooltip">
                   {{ col.value }}
                 </q-tooltip>
-                {{ truncateWithTooltip(col.value).content }}
+                {{ textTruncate(col.value, 60).content }}
               </div>
               <div v-else>
                 {{ col.value }}
