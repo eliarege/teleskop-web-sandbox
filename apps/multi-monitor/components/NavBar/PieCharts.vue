@@ -24,7 +24,7 @@ const activeMachines = computed(
 )
 const inUse = computed(() => {
   return props.machineData
-    .map(machine => machine.runningMachineCapacity)
+    .map(machine => machine.runningFabricWeight)
     .reduce((sum, val) => Math.round(sum) + Math.round(val), 0)
 })
 const inActive = computed(() => {
