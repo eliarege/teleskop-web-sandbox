@@ -18,6 +18,7 @@ interface MachineStatus {
   id: number
   runningJobOrder: string | null
   runningBatchKey: number | null
+  runningFabricWeight: number | null
   erp: Record<string, unknown> | null
   [key: string]: any
 }
@@ -51,7 +52,18 @@ const fetchMachineErpMappings = memoize(async (teleskop: Kysely<TeleskopDatabase
 }, {
   maxAge: config.machineErpMappingsMaxAge,
 })
-
+sql<number>`
+LEFT JOIN (
+  SELECT
+      c.PLANKEY AS planKey,
+        c.ERPVALUE AS fabricWeight,
+        b.MACHINEID AS machineId
+      FROM BFMACHBATCHPARAMETERTYPES b
+      LEFT JOIN BFERPPARAMETERDEFINITIONS d ON b.PARAMID = d.PARAMID AND b.MACHINEID = d.MACHINEID
+      LEFT JOIN DYBFBATCHPLANERPPARAMETERS c ON c.ERPFIELDNAME = d.ERPFIELDNAME
+      WHERE b.PARAMTYPEID = 0
+  ) AS runningFabricWeightQuery ON runningFabricWeightQuery.planKey = b.PLANKEY AND runningFabricWeightQuery.machineId = m.MACHINEID
+`
 const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): Promise<MachineStatus[]> => {
   return await teleskop
     .selectFrom('BFMACHINES as m')
@@ -71,6 +83,21 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
         fn.agg<number>('sum', ['c.ELECTRICITY']).as('totalConsumedElectricity'),
       ]).as('totals'), join => join
       .onRef('m.MACHINEID', '=', 'totals.machineId'))
+    .leftJoin(eb => eb
+      .selectFrom('BFMACHBATCHPARAMETERTYPES as eb')
+      .leftJoin('BFERPPARAMETERDEFINITIONS as ed', join => join
+        .onRef('eb.PARAMID', '=', 'ed.PARAMID')
+        .onRef('eb.MACHINEID', '=', 'ed.MACHINEID'))
+      .leftJoin('DYBFBATCHPLANERPPARAMETERS as ec', 'ec.ERPFIELDNAME', 'ed.ERPFIELDNAME')
+      .select([
+        'ec.PLANKEY as planKey',
+        'ec.ERPVALUE as fabricWeight',
+        'eb.MACHINEID as machineId',
+      ])
+      .where('eb.PARAMTYPEID', '=', 0)
+      .as('runningFabricWeightQuery'), join => join
+      .onRef('runningFabricWeightQuery.planKey', '=', 'b.PLANKEY')
+      .onRef('runningFabricWeightQuery.machineId', '=', 'm.MACHINEID'))
     .select([
       'm.MACHINEID as id',
       'm.MACHINECODE as name',
@@ -98,6 +125,7 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
       's.RUNNING_PHASENO as runningPhaseNo',
       's.RUNNING_PHASENAME as runningPhaseName',
       's.RUNNING_PHASESTEPNO as runningPhaseStepNo',
+      'runningFabricWeightQuery.fabricWeight as runningFabricWeight',
       'b.FABRIC_WEIGHT as runningMachineCapacity',
       's.REQ_RECIPEINDEX as reqRecipeIndex',
       's.REQ_REQORDERINDEX as reqOrderIndex',
