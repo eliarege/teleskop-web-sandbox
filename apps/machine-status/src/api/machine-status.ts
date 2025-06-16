@@ -52,18 +52,7 @@ const fetchMachineErpMappings = memoize(async (teleskop: Kysely<TeleskopDatabase
 }, {
   maxAge: config.machineErpMappingsMaxAge,
 })
-sql<number>`
-LEFT JOIN (
-  SELECT
-      c.PLANKEY AS planKey,
-        c.ERPVALUE AS fabricWeight,
-        b.MACHINEID AS machineId
-      FROM BFMACHBATCHPARAMETERTYPES b
-      LEFT JOIN BFERPPARAMETERDEFINITIONS d ON b.PARAMID = d.PARAMID AND b.MACHINEID = d.MACHINEID
-      LEFT JOIN DYBFBATCHPLANERPPARAMETERS c ON c.ERPFIELDNAME = d.ERPFIELDNAME
-      WHERE b.PARAMTYPEID = 0
-  ) AS runningFabricWeightQuery ON runningFabricWeightQuery.planKey = b.PLANKEY AND runningFabricWeightQuery.machineId = m.MACHINEID
-`
+
 const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): Promise<MachineStatus[]> => {
   return await teleskop
     .selectFrom('BFMACHINES as m')
