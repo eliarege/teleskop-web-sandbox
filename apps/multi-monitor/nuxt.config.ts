@@ -22,6 +22,7 @@ export default defineNuxtConfig({
     machineStatusUrl: 'http://localhost:3050',
     isStaging: 'no',
     twName: 'multi-monitor',
+    timezoneOffset: -3,
     public: {
       kcClientId: 'multi-monitor',
       isDigitalFactory: 'false',

@@ -38,7 +38,7 @@ export async function getMachineAlarms(): Promise<MachineAlarm[]> {
   return machineCommandAlarms
 }
 
-export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
+export async function getMachineAlarmList(timezoneOffset: number): Promise<MachineAlarmList[]> {
   const queryResults = await knex.raw(`
     SELECT
       m.MACHINEID AS machineId,
@@ -53,7 +53,7 @@ export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
       d.COMMANDNO as commandNo,
       d.EXPLANATION as alarmName,
       d.ALARMNO as alarmNo,
-      d.STARTTIME as alarmStartTime,
+      DATEADD(HOUR, :timezoneOffset, d.STARTTIME) AS alarmStartTime,
       f.SHOWONSCREEN as showOnScreen,
       CASE
         WHEN d.CONFIRMTIME IS NOT NULL THEN 1
@@ -70,7 +70,7 @@ export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
       AND (d.ENDTIME IS NULL OR d.ENDTIME > GETUTCDATE())
       AND (s.currentAlarmStatus = 0 OR s.currentAlarmStatus = 1)
     ORDER BY d.STARTTIME
-  `)
+  `, { timezoneOffset })
   const machinesMap = new Map<number, MachineAlarmList>()
 
   for (const row of queryResults) {
