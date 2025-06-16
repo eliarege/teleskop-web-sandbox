@@ -273,7 +273,7 @@ export interface BFMACHBATCHPARAMETERTYPES {
 }
 export interface DYBFBATCHPLANERPPARAMETERS {
   PLANKEY: number
-  ERPVALUE: number | string
+  ERPVALUE: string
   ERPFIELDNAME: string | null
 }
 export interface TeleskopDatabase {

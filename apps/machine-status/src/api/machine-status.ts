@@ -18,7 +18,7 @@ interface MachineStatus {
   id: number
   runningJobOrder: string | null
   runningBatchKey: number | null
-  runningFabricWeight: number | null
+  runningFabricWeight: string | number | null
   erp: Record<string, unknown> | null
   [key: string]: any
 }
@@ -72,21 +72,6 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
         fn.agg<number>('sum', ['c.ELECTRICITY']).as('totalConsumedElectricity'),
       ]).as('totals'), join => join
       .onRef('m.MACHINEID', '=', 'totals.machineId'))
-    .leftJoin(eb => eb
-      .selectFrom('BFMACHBATCHPARAMETERTYPES as eb')
-      .leftJoin('BFERPPARAMETERDEFINITIONS as ed', join => join
-        .onRef('eb.PARAMID', '=', 'ed.PARAMID')
-        .onRef('eb.MACHINEID', '=', 'ed.MACHINEID'))
-      .leftJoin('DYBFBATCHPLANERPPARAMETERS as ec', 'ec.ERPFIELDNAME', 'ed.ERPFIELDNAME')
-      .select([
-        'ec.PLANKEY as planKey',
-        'ec.ERPVALUE as fabricWeight',
-        'eb.MACHINEID as machineId',
-      ])
-      .where('eb.PARAMTYPEID', '=', 0)
-      .as('runningFabricWeightQuery'), join => join
-      .onRef('runningFabricWeightQuery.planKey', '=', 'b.PLANKEY')
-      .onRef('runningFabricWeightQuery.machineId', '=', 'm.MACHINEID'))
     .select([
       'm.MACHINEID as id',
       'm.MACHINECODE as name',
@@ -114,7 +99,6 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
       's.RUNNING_PHASENO as runningPhaseNo',
       's.RUNNING_PHASENAME as runningPhaseName',
       's.RUNNING_PHASESTEPNO as runningPhaseStepNo',
-      'runningFabricWeightQuery.fabricWeight as runningFabricWeight',
       'b.FABRIC_WEIGHT as runningMachineCapacity',
       's.REQ_RECIPEINDEX as reqRecipeIndex',
       's.REQ_REQORDERINDEX as reqOrderIndex',
@@ -143,6 +127,12 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
       'totals.totalFM1',
       'totals.totalConsumedElectricity',
       sql<Record<string, any> | null>`null`.as('erp'),
+      sql<number>`
+        (SELECT
+          CAST(ERPVALUE as float)
+        FROM DYBFBATCHPLANERPPARAMETERS
+        WHERE ERPFIELDNAME = 'Weight'
+        AND PLANKEY = b.PLANKEY)`.as('runningFabricWeight'),
       sql<number>`
         (SELECT TOP 1
             DATEDIFF(SECOND, b.STARTTIME, GETDATE())
