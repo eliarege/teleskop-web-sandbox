@@ -19,6 +19,7 @@ interface MachineStatus {
   runningJobOrder: string | null
   runningBatchKey: number | null
   runningFabricWeight: string | number | null
+  runningPlankey: number
   erp: Record<string, unknown> | null
   [key: string]: any
 }
@@ -60,6 +61,7 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
     .leftJoin('BFMACHGROUP as g', 'm.GRUPNO', 'g.GROUPID')
     .leftJoin('BADATA as b', 'b.BATCHKEY', 's.RUNNING_BATCHKEY')
     .leftJoin('BFSTOPREASONS as t', 't.STOPNAME', 's.stopReason')
+    .leftJoin('DYBFBATCHPLAN as d', 'd.JOBORDER', 's.RUNNING_JOBORDER')
     .leftJoin(eb => eb
       .selectFrom('BACONSUMPTIONPROGRAM as c')
       .groupBy('c.MACHINEID')
@@ -78,13 +80,14 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
       'm.MACHINECAPACITY as machineCapacity',
       'm.IP as machineIpAddress',
       'g.GROUPNAME as groupName',
-      sql<number>`coalesce(datediff(second, s.RUNNING_JOBORDERSTARTTIME, getdate()), 0)`.as('elapsedTime'),
+      sql<number>`coalesce(datediff(second, DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, s.RUNNING_JOBORDERSTARTTIME), getdate()), 0)`.as('elapsedTime'),
       's.RUNNING_THEOTIME as theoreticalDuration',
       's.RUNNING_AUTOMANSTATUS as autoManualStatus',
       's.RUNNING_OPRNO as loggedInOperatorNo',
       's.RUNNING_OPRNAME as loggedInOperatorName',
+      'd.PLANKEY as runningPlankey',
       's.RUNNING_JOBORDER as runningJobOrder',
-      's.RUNNING_JOBORDERSTARTTIME as runningStartTime',
+      sql<string>`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, s.RUNNING_JOBORDERSTARTTIME)`.as('runningStartTime'),
       's.RUNNING_BATCHKEY as runningBatchKey',
       's.RUNNING_BATCHSTATUS as runningBatchStatus',
       's.RUNNING_PROGRAMID as runningProgramId',
@@ -112,14 +115,14 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
       's.REQ_STATUS as reqStatus',
       's.stopReason',
       't.ReportToERP as machineError',
-      's.stopReasonDateTime',
+      sql<string>`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, s.stopReasonDateTime)`.as('stopReasonDateTime'),
       's.ConnectionStatus as connectionStatus',
       's.IsSynchronizing as isSynchronizing',
       's.currentTemp as currentTemperature',
       's.currentAlarmStatus',
       's.runningCompletionRatio',
       's.manuelReason as manualReason',
-      's.manuelReasonDateTime as manualReasonDateTime',
+      sql<string>`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, s.manuelReasonDateTime)`.as('manualReasonDateTime'),
       's.MANUELCOMMANDACTIVE as manualCommandActive',
       'totals.totalConsumedWater',
       'totals.totalConsumedSalt',
