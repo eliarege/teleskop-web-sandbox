@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { format } from 'date-fns'
 import type { BatchLogs, MachineDataRaw, NewBatchLogs, NewInterventions } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
 
@@ -19,7 +20,7 @@ const interventions = computed(() => {
     return {
       ...intervents,
       newTime: intervents.interventTime
-        ? intervents.interventTime.slice(11, -5)
+        ? format(new Date(intervents.interventTime), 'MM-dd HH:mm:ss')
         : intervents.interventTime,
     } as NewInterventions
   })

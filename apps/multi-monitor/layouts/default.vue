@@ -2,6 +2,7 @@
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind, useWindowSize } from '@vueuse/core'
 import { matAlarm, matSettings } from '@quasar/extras/material-icons'
+import { format } from 'date-fns'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
 
@@ -49,13 +50,9 @@ const machineData = computed(() => {
         : null,
       stopReasonDateTime: new Date(machine.stopReasonDateTime),
       manualReasonDateTime: new Date(machine.stopReasonDateTime),
-      runningStartHour:
-        machine.runningStartTime === null
-          ? '-'
-          : `${machine.runningStartTime?.slice(
-              5,
-              -14,
-            )} ${machine.runningStartTime?.slice(11, -5)}` || null,
+      runningStartHour: machine.runningStartTime
+        ? format(new Date(machine.runningStartTime), 'MM-dd HH:mm:ss')
+        : '-',
       loggedInOperatorName: machine.loggedInOperatorName
         ? machine.loggedInOperatorName
         : tt('teleskop.machine-stop-notification'),

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { format } from 'date-fns'
 import type { PropType } from 'vue'
 import { textTruncate } from '~/shared/helper'
 import type {
@@ -54,7 +55,7 @@ const refactoredBatchLogs = computed(() => {
       return {
         ...logs,
         newTime: logs.eventTime
-          ? logs.eventTime.toString().slice(0, -5).replace('T', ' ')
+          ? format(new Date(logs.eventTime), 'YYYY-MM-dd HH:mm:ss')
           : logs.eventTime,
       }
     }) as NewBatchLogs[] || []

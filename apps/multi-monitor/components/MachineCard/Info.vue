@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { determineTextColor } from '@teleskop/utils'
 import { useStorage } from '@vueuse/core'
+import { format } from 'date-fns'
 import type { MachineData } from '~/shared/types'
 
 interface CardInfoProps {
@@ -39,24 +40,17 @@ function reqStatus(params: number) {
     return t('teleskop.status-prio')
   } else return t('teleskop.status-cancelled')
 }
-function formatElapsedTime(ms: number) {
-  const totalSeconds = Math.floor(ms / 1000)
-  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0')
-  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0')
-  const seconds = String(totalSeconds % 60).padStart(2, '0')
-  return `${hours}:${minutes}:${seconds}`
-}
 
 const stopReasonElapsedTime = computed(() => {
   const givenDate = new Date(props.machine.stopReasonDateTime)
   const elapsed = Date.now() - givenDate.getTime()
-  return formatElapsedTime(elapsed)
+  return format(elapsed, 'HH:mm:ss')
 })
 
 const manualReasonElapsedTime = computed(() => {
   const givenDate = new Date(props.machine.manualReasonDateTime)
   const elapsed = Date.now() - givenDate.getTime()
-  return formatElapsedTime(elapsed)
+  return format(elapsed, 'HH:mm:ss')
 })
 </script>
 
