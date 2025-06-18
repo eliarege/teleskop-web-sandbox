@@ -77,11 +77,13 @@ export interface Trends {
   currentWeekFM: number
   currentWeekSalt: number
   currentWeekSteam: number
+  currentWeekProduction: number
   lastWeekTotalWater: number
   lastWeekElectricity: number
   lastWeekFM: number
   lastWeekSalt: number
   lastWeekSteam: number
+  lastWeekProduction: number
 }
 export interface Interventions {
   interventKey: number

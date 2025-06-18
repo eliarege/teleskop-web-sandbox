@@ -11,6 +11,7 @@ export const useDataStore = defineStore('datas', () => {
   const steam = useStorage('steam', true)
   const salt = useStorage('salt', true)
   const water = useStorage('water', true)
+  const production = useStorage('production', false)
   const group = useStorage('group', false)
   const locale = useStorage('language', useI18n().locale)
   const filteredMachines = useStorage('filtered-machines', new Set<number>())
@@ -85,6 +86,7 @@ export const useDataStore = defineStore('datas', () => {
     steam,
     salt,
     water,
+    production,
     zoomLevel: readonly(zoomLevel),
     setZoomLevel,
     scrollSpeed,

@@ -19,9 +19,11 @@ const pieOptions = {
 const passiveMachines = computed(
   () => props.machineData.filter(item => item.runningBatchStatus === 0).length,
 )
+
 const activeMachines = computed(
   () => props.machineData.length - passiveMachines.value,
 )
+
 const inUse = computed(() => {
   return props.machineData
     .map(machine => machine.runningFabricWeight)
@@ -29,7 +31,7 @@ const inUse = computed(() => {
 })
 const inActive = computed(() => {
   return props.machineData
-    .map(machine => machine.machineCapacity - machine.runningMachineCapacity)
+    .map(machine => machine.machineCapacity - machine.runningFabricWeight)
     .reduce((sum, val) => Math.round(sum) + Math.round(val), 0)
 })
 </script>

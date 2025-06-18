@@ -27,7 +27,7 @@ const store = useDataStore()
 
       <div class="text-black px-3 text-center">
         <span>{{ t("settings.options") }}</span>
-        <div class="flex-center">
+        <div class="grid grid-cols-3 justify-items-center">
           <q-checkbox
             v-model="store.electricity"
             :label="t('settings.electricity')"
@@ -49,6 +49,12 @@ const store = useDataStore()
           <q-checkbox
             v-model="store.steam"
             :label="t('settings.steam')"
+            checked-icon="task_alt"
+            unchecked-icon="highlight_off"
+          />
+          <q-checkbox
+            v-model="store.production"
+            :label="t('settings.production')"
             checked-icon="task_alt"
             unchecked-icon="highlight_off"
           />
