@@ -7,6 +7,7 @@ export interface MachineDataRaw {
   autoManualStatus: number
   loggedInOperatorNo: number
   loggedInOperatorName: string
+  runningPlankey: number
   runningJobOrder: string
   runningStartTime: string | null
   runningBatchKey: number
