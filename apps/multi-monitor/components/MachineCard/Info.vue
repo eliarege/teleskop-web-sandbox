@@ -52,6 +52,14 @@ const manualReasonElapsedTime = computed(() => {
   const elapsed = Date.now() - givenDate.getTime()
   return format(elapsed, 'HH:mm:ss')
 })
+
+const infoTextColor = computed(() => {
+  if (props.machine.reqStatus === 3)
+    return 'text-green-500'
+  if (props.machine.reqStatus === 8)
+    return 'text-red-500'
+  return ''
+})
 </script>
 
 <template>
@@ -190,9 +198,17 @@ const manualReasonElapsedTime = computed(() => {
       >
         {{ t("teleskop.stop-reason") }}
       </q-tooltip>
-
+      <!-- machine.runningBatchStatus === 1 ise makine duruş -->
       <div class="explanation">
-        {{ t("teleskop.stop-reason") }}
+        <span v-if="machine.runningBatchStatus === 1">
+          {{ t("teleskop.stop-reason") }}
+        </span>
+        <span v-else-if="machine.autoManualStatus">
+          {{ t("teleskop.manual-reason") }}
+        </span>
+        <span v-else>
+          {{ t("teleskop.stop-reason") }}
+        </span>
       </div>
       <q-separator
         color="white"
@@ -200,8 +216,9 @@ const manualReasonElapsedTime = computed(() => {
         class="h-full"
         spaced
       />
+      <!-- machine.autoManualStatus === 1 ise makine manuelde -->
       <div class="flex-center w-full">
-        <div v-if="machine.manualReason" class="flex-center gap-3">
+        <div v-if="machine.autoManualStatus" class="flex-center gap-3">
           <span>{{ machine.manualReason }}</span>
           <span>
             {{ manualReasonElapsedTime }}
@@ -215,7 +232,7 @@ const manualReasonElapsedTime = computed(() => {
           </span>
         </div>
         <br>
-        <div v-if="machine.stopReason" class="flex-center gap-3">
+        <div v-if="machine.runningBatchStatus !== 2" class="flex-center gap-3">
           <span>{{ machine.stopReason }}</span>
           <span> {{ stopReasonElapsedTime }}
             <q-tooltip
@@ -272,21 +289,35 @@ const manualReasonElapsedTime = computed(() => {
       class="machine-commands_items justify-center"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
-      <div v-show="machine.reqOrderIndex !== -1" class="overflow-hidden">
-        <span>{{ t("teleskop.order-index") }} - {{ machine.reqOrderIndex }}
-        </span>
+      <div
+        v-show="machine.reqOrderIndex !== -1"
+        class="overflow-hidden"
+        :class="infoTextColor"
+      >
+        <span>{{ t("teleskop.order-index") }} - {{ machine.reqOrderIndex }}</span>
         |
-        <span>{{ t("teleskop.target-recipe") }} -
-          {{ machine.reqTargetRecipe }}</span>
+        <span>{{ t("teleskop.target-recipe") }} - {{ machine.reqTargetRecipe }}</span>
         <!--  0 kimyasal 1 boya 2 tuz 4 jenerik materyal 1 5 jenerik 2  -->
         |
         <span>{{ t("teleskop.tank-no") }} - {{ machine.reqTankNo }}</span>
         |
         <span>{{ t("teleskop.program-no") }} - {{ machine.reqProgramNo }}</span>
         |
-        <span>{{ t("teleskop.req-status") }} -
-          {{ reqStatus(machine.reqStatus) }}</span>
+        <span>{{ t("teleskop.req-status") }} - {{ reqStatus(machine.reqStatus) }}</span>
       </div>
+      <q-tooltip
+        transition-show="scale"
+        class="text-black e-border bg-white"
+        :offset="[3, 3]"
+        :delay="300"
+        :hide-delay="300"
+      >
+        <MachineCardInfoTooltip
+          :plan-key="machine.runningPlankey"
+          :program-no="machine.reqProgramNo"
+          :recipe-index="machine.reqOrderIndex"
+        />
+      </q-tooltip>
     </div>
   </div>
 </template>
