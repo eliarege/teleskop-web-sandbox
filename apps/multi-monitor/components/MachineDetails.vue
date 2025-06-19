@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { format } from 'date-fns'
 import type { PropType } from 'vue'
+import type { QTableColumn } from 'quasar'
 import { textTruncate } from '@teleskop/utils'
 import type {
   MachineDataRaw,
   NewBatchLogs,
   NewInterventions,
-  NewRecipe,
-  Recipe,
 } from '~/shared/types'
 import { useDataStore } from '~~/store/Datas'
 
@@ -26,21 +25,22 @@ const props = defineProps({
   },
 })
 
-const router = useRouter()
 const { mt } = useMachineTranslations()
 const store = useDataStore()
 const { t, locale } = useI18n()
 const tableShow = ref(false)
 
-const { data: recipe } = useFetch('/api/recipe', {
+const { data: recipe, status: recipeStatus } = useFetch('/api/recipe', {
   query: {
     recipeJB: props.currentMachine.runningJobOrder,
     recipeID: props.currentMachine.id,
     teleskopType: store.isWashing ? 'washing' : 'normal',
   },
+  default: () => [],
 })
-const { data: batchLogs } = useFetch('/api/machine_logs', {
+const { data: batchLogs, status: batchLogStatus } = useFetch('/api/machine_logs', {
   query: { machineId: props.currentMachine.id },
+  default: () => [],
 })
 const { data: currentRunningIndex } = useFetch('/api/recipeRunningIndex', {
   method: 'GET',
@@ -50,12 +50,12 @@ const { data: currentRunningIndex } = useFetch('/api/recipeRunningIndex', {
 })
 const refactoredBatchLogs = computed(() => {
   return batchLogs.value
-    ?.filter(machine => machine.planKey)
+    .filter(machine => machine.planKey)
     .map((logs) => {
       return {
         ...logs,
         newTime: logs.eventTime
-          ? format(new Date(logs.eventTime), 'YYYY-MM-dd HH:mm:ss')
+          ? format(new Date(logs.eventTime), 'yyyy-MM-dd HH:mm:ss')
           : logs.eventTime,
       }
     }) as NewBatchLogs[] || []
@@ -76,21 +76,16 @@ const sortedLogs = computed(() => {
 })
 const logTableFilter = ref()
 const deg = (value: number) => (value / 180) * Math.PI
-const groupables = [
-  { key: 'recIndex', index: 0 },
-  { key: 'program', index: 1 },
-  { key: 'reqNumber', index: 2 },
-  { key: 'mainStep', index: 3 },
-] as { key: keyof Recipe, index: number }[]
+
 const columns = controlledComputed(locale, () => [
-  { label: t('details.index'), prop: 'recIndex', align: 'center', showOverflowTooltip: true },
-  { label: t('details.program'), prop: 'program', align: 'center', showOverflowTooltip: true },
-  { label: t('details.number'), prop: 'reqNumber', align: 'center', showOverflowTooltip: true },
-  { label: t('details.main-step'), prop: 'mainStep', align: 'center', showOverflowTooltip: true },
-  { label: t('details.chem-code'), prop: 'chemCode', align: 'center', showOverflowTooltip: true },
-  { label: t('details.material-name'), prop: 'materialName', align: 'center', showOverflowTooltip: true },
-  { label: t('details.amount'), prop: 'newAmount', align: 'center', showOverflowTooltip: true },
-] as { label: string, prop: string, align: 'left' | 'right' | 'start' | 'end' | 'center', showOverflowTooltip: boolean }[])
+  { label: t('details.index'), name: 'recIndex', align: 'center' },
+  { label: t('details.program'), name: 'program', align: 'center' },
+  { label: t('details.number'), name: 'reqNumber', align: 'center' },
+  { label: t('details.main-step'), name: 'mainStep', align: 'center' },
+  { label: t('details.chem-code'), name: 'chemCode', align: 'center' },
+  { label: t('details.material-name'), name: 'materialName', align: 'center' },
+  { label: t('details.amount'), name: 'newAmount', align: 'center' },
+] as QTableColumn[])
 
 function unitFunc(param: number) {
   if (param === 3) {
@@ -104,27 +99,27 @@ function unitFunc(param: number) {
   }
 }
 const autoRecipe = computed(() => {
-  return recipe.value?.map((val) => {
+  return recipe.value.map((val) => {
     return {
       ...val,
-      recIndex: currentRunningIndex.value?.currentRunningPrgIndex === val.recIndex ? `> ${val.recIndex}` : val.recIndex,
+      recIndex: val.recIndex,
       phaseIndex: val.phaseIndex! + 1,
       program: `${val.recNo} - ${val.name}`,
       amount: Math.round(val.amount || 0),
       newAmount: `${val.amount?.toFixed(2).replace(/\.?0+$/, '')} ${unitFunc(val.unit)}`,
-    } as NewRecipe
+    }
   })
 })
 
 const manuelRecipe = computed(() => {
-  return recipe.value?.map((val) => {
+  return recipe.value.map((val) => {
     return {
       ...val,
       recIndex: currentRunningIndex.value?.currentRunningPrgIndex === val.recIndex ? `> ${val.recIndex}` : val.recIndex,
       program: `${val.recNo} - ${val.name}`,
       amount: Math.round(val.amount || 0),
       newAmount: `${val.amount?.toFixed(2).replace(/\.?0+$/, '')} ${unitFunc(val.unit)}`,
-    } as NewRecipe
+    }
   })
 })
 
@@ -139,46 +134,49 @@ function closeModal() {
 <template>
   <div class="wrapper">
     <div class="table-wrapper e-border w-f-o">
-      <div class="table-body">
-        <RecipeTable
-          show
+      <div v-if="recipeStatus === 'pending'" class="flex-center w-full h-full">
+        <LoadingSpinner />
+      </div>
+      <div v-else class="table-body">
+        <TeleskopTable
           :title="t('details.recipe-t-auto')"
-          is-first
-          has-object-span-method
-          :full-screen="true"
-          :full-screen-button-props="{
-            buttonText: t('details.btn-open'),
-            plain: true,
-            color: '#0d94fc',
-          }"
-          :groupables="groupables"
-          :rows="autoRecipe || []"
-          :columns="columns"
-          :empty-text="t('details.empty-text')"
-          chem-class="green-class"
-          dyeing-class="normal-class"
-          @fullscreen="tableShow = !tableShow"
+          :data="autoRecipe"
+          :columns
+          align="center"
+        >
+          <template #columns="{ columns: cols }">
+            <tr class="q-tr">
+              <th
+                v-for="(item, idx) in cols.slice(0, -1)"
+                :key="idx"
+              >
+                {{ item.label }}
+              </th>
+              <th>
+                <div class="w-full h-full flex-center flex-col gap-2">
+                  <div>
+                    <q-btn
+                      outline
+                      color="primary"
+                      :label="t('details.btn-open')"
+                      no-caps
+                      @click="tableShow = !tableShow"
+                    />
+                  </div>
+                  <div>
+                    {{ cols[cols.length - 1].label }}
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </template>
+        </TeleskopTable>
+        <TeleskopTable
+          :title="t('details.recipe-t-manuel')"
+          :data="manuelRecipe"
+          :columns
+          align="center"
         />
-        <div v-if="recipe?.length">
-          <RecipeTable
-            show
-            :title="t('details.recipe-t-manuel')"
-            :is-first="false"
-            has-object-span-method
-            :full-screen="false"
-            :full-screen-button-props="{
-              buttonText: t('details.btn-open'),
-              plain: true,
-              color: '#0d94fc',
-            }"
-            :groupables="groupables"
-            :rows="manuelRecipe || []"
-            :columns="columns"
-            :empty-text="t('details.empty-text')"
-            chem-class="green-class"
-            dyeing-class="normal-class"
-          />
-        </div>
       </div>
     </div>
     <div class="chart-wrapper e-border w-f-o">
@@ -265,7 +263,7 @@ function closeModal() {
             {{ textTruncate(mt(idx, currentMachine.id), 15).content }}
           </q-item-section>
           <q-item-section>
-            {{ val }}
+            {{ typeof val === 'number' ? val.toFixed(2).replace(/\.?0+$/, '') : val }}
           </q-item-section>
         </q-item>
       </q-list>
@@ -293,7 +291,10 @@ function closeModal() {
         </q-item>
       </q-list>
     </div>
-    <div class="log-wrapper e-border w-f-o">
+    <div v-if="batchLogStatus === 'pending'" class="w-full h-full grid-area-[logs] e-border rounded flex-center">
+      <LoadingSpinner />
+    </div>
+    <div v-else class="log-wrapper e-border w-f-o">
       <QTable
         dense
         :columns="[
@@ -387,37 +388,45 @@ function closeModal() {
         <div class="modal-wrapper">
           <div class="modal-container cursor-default" @click.stop.prevent>
             <div class="bg-white flex flex-col w-full h-full">
-              <RecipeTable
-                show
+              <TeleskopTable
                 :title="t('details.recipe-t-auto')"
-                is-first
-                has-object-span-method
-                full-screen
-                :full-screen-button-props="{
-                  buttonText: t('details.btn-close'),
-                  plain: true,
-                  color: '#0d94fc',
-                }"
-                :groupables="groupables"
-                :rows="autoRecipe || []"
-                :columns="columns"
-                :empty-text="t('details.empty-text')"
-                chem-class="green-class"
-                dyeing-class="normal-class"
-                @fullscreen="tableShow = false"
-              />
-              <RecipeTable
-                show
+                :data="autoRecipe"
+                :columns
+                align="center"
+              >
+                <template #columns="{ columns: cols }">
+                  <tr class="q-tr">
+                    <th
+                      v-for="(item, idx) in cols.slice(0, -1)"
+                      :key="idx"
+                    >
+                      {{ item.label }}
+                    </th>
+                    <th>
+                      <div class="w-full h-full flex-center flex-col">
+                        <div>
+                          <q-btn
+                            outline
+                            color="primary"
+                            :label="t('details.btn-close')"
+                            no-caps
+                            @click="tableShow = !tableShow"
+                          />
+                        </div>
+                        <br>
+                        <div>
+                          {{ cols[cols.length - 1].label }}
+                        </div>
+                      </div>
+                    </th>
+                  </tr>
+                </template>
+              </TeleskopTable>
+              <TeleskopTable
                 :title="t('details.recipe-t-manuel')"
-                :is-first="false"
-                has-object-span-method
-                :full-screen="false"
-                :groupables="groupables"
-                :rows="manuelRecipe || []"
-                :columns="columns"
-                :empty-text="t('details.empty-text')"
-                chem-class="green-class"
-                dyeing-class="normal-class"
+                :data="manuelRecipe"
+                :columns
+                align="center"
               />
             </div>
           </div>
@@ -428,15 +437,28 @@ function closeModal() {
 </template>
 
 <style scoped lang="postcss">
+th {
+  width: 100px;
+  border-width: 0 1px 0 1px;
+  border-style: solid;
+  border-color: #88888857;
+}
+td {
+  width: 100px;
+  border-width: 0 1px 0 1px;
+  border-style: solid;
+  border-color: #88888857;
+}
+.q-table--dense .q-table th:first-child,
+.q-table--dense .q-table td:first-child {
+  padding-left: 8px;
+}
+.q-table--dense .q-table th:last-child,
+.q-table--dense .q-table td:last-child {
+  padding-right: 8px;
+}
 .w-f-o {
   @apply w-full h-full overflow-auto;
-}
-.normal-class {
-  background: scroll !important;
-}
-
-.green-class {
-  background: rgba(40, 220, 40, 0.6) !important;
 }
 
 .wrapper {
