@@ -89,6 +89,7 @@
     "chem-code": "Código Químico",
     "material-name": "Código do Material",
     "amount": "Quantidade",
+    "recipeAmount": "Recipe Quantidade",
     "btn-open": "Visualizar Completo",
     "btn-close": "Fechar",
     "id": "ID",

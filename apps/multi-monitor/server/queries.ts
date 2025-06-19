@@ -354,6 +354,13 @@ export async function getDyeingRecipe(recipeJB: string, recipeID: number): Promi
       'REQNO_BATCH as reqBatchNo',
       'REQNO_PROG as reqProgNo',
       'otherUnit as unit',
+      knex.raw(`
+        CASE
+          WHEN (SELECT SHOWRECIPEAMOUNT FROM DYTFDYSETTINGS) = 1
+          THEN r.RECIPEAMOUNT
+          ELSE NULL
+        END AS recipeAmount
+      `),
     ])
     .whereNot('REQNO_BATCH', null)
     .whereIn('p.PLANKEY', planKeyQuery)

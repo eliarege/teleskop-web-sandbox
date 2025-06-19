@@ -89,6 +89,7 @@
     "chem-code": "Chemical Code",
     "material-name": "Material Code",
     "amount": "Amount",
+    "recipeAmount": "Recipe Amount",
     "btn-open": "Full View",
     "btn-close": "Close",
     "id": "ID",

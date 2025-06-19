@@ -85,6 +85,7 @@ const columns = controlledComputed(locale, () => [
   { label: t('details.chem-code'), name: 'chemCode', align: 'center' },
   { label: t('details.material-name'), name: 'materialName', align: 'center' },
   { label: t('details.amount'), name: 'newAmount', align: 'center' },
+  { label: t('details.recipeAmount'), name: 'newRecipeAmount', align: 'recipeAmount' },
 ] as QTableColumn[])
 
 function unitFunc(param: number) {
@@ -103,14 +104,15 @@ const autoRecipe = computed(() => {
     return {
       ...val,
       recIndex: val.recIndex,
-      phaseIndex: val.phaseIndex! + 1,
       program: `${val.recNo} - ${val.name}`,
       amount: Math.round(val.amount || 0),
+      recipeAmount: Math.round(val.recipeAmount || 0),
       newAmount: `${val.amount?.toFixed(2).replace(/\.?0+$/, '')} ${unitFunc(val.unit)}`,
+      newRecipeAmount: `${val.recipeAmount ? val.recipeAmount.toFixed(2).replace(/\.?0+$/, '') + unitFunc(val.unit) : ''}`,
     }
   })
 })
-
+console.log(autoRecipe.value)
 const manuelRecipe = computed(() => {
   return recipe.value.map((val) => {
     return {
@@ -119,6 +121,7 @@ const manuelRecipe = computed(() => {
       program: `${val.recNo} - ${val.name}`,
       amount: Math.round(val.amount || 0),
       newAmount: `${val.amount?.toFixed(2).replace(/\.?0+$/, '')} ${unitFunc(val.unit)}`,
+      newRecipeAmount: `${val.recipeAmount ? val.recipeAmount.toFixed(2).replace(/\.?0+$/, '') + unitFunc(val.unit) : ''}`,
     }
   })
 })

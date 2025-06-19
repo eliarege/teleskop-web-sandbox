@@ -112,6 +112,7 @@ export interface Recipe {
   chemCode: string | null
   materialName: string | null
   amount: number | null
+  recipeAmount: number | null
   reqBatchNo: number | null
   reqProgNo: number | null
   otherUnit: number | null

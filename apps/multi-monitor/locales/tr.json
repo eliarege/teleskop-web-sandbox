@@ -89,6 +89,7 @@
     "chem-code": "Kimyasal Kodu",
     "material-name": "Materyal Kodu",
     "amount": "Miktar",
+    "recipeAmount": "Reçete Miktarı",
     "btn-open": "Tam Görünüm",
     "btn-close": "Kapat",
     "id": "ID",
