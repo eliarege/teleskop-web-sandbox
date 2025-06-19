@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { format } from 'date-fns'
 import type { PropType } from 'vue'
-import { textTruncate } from '~/shared/helper'
+import { textTruncate } from '@teleskop/utils'
 import type {
   MachineDataRaw,
   NewBatchLogs,
