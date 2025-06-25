@@ -80,7 +80,7 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
       'm.MACHINECAPACITY as machineCapacity',
       'm.IP as machineIpAddress',
       'g.GROUPNAME as groupName',
-      sql<number>`coalesce(datediff(second, DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, s.RUNNING_JOBORDERSTARTTIME), getdate()), 0)`.as('elapsedTime'),
+      sql<number>`coalesce(datediff(second, DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, s.RUNNING_JOBORDERSTARTTIME), GETUTCCDATE()), 0)`.as('elapsedTime'),
       's.RUNNING_THEOTIME as theoreticalDuration',
       's.RUNNING_AUTOMANSTATUS as autoManualStatus',
       's.RUNNING_OPRNO as loggedInOperatorNo',
