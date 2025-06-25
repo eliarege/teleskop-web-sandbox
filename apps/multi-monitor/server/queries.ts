@@ -53,7 +53,7 @@ export async function getMachineAlarmList(timezoneOffset: number): Promise<Machi
       d.COMMANDNO as commandNo,
       d.EXPLANATION as alarmName,
       d.ALARMNO as alarmNo,
-      DATEADD(HOUR, :timezoneOffset, d.STARTTIME) AS alarmStartTime,
+      DATEADD(MINUTE, :timezoneOffset, d.STARTTIME) AS alarmStartTime,
       f.SHOWONSCREEN as showOnScreen,
       CASE
         WHEN d.CONFIRMTIME IS NOT NULL THEN 1
