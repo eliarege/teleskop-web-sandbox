@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useMagicKeys, whenever } from '@vueuse/core'
 import { withBase } from 'ufo'
+import { QLinearProgress } from 'quasar'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { IOOption, Machine, MachineGroup, MachineTableColumn } from '~/types'
 
 interface sseLog {
   message: string
-  type?: 'info' | 'error'
+  type: 'info' | 'log' | 'error' | 'ping'
 }
 
 interface Option {
@@ -93,39 +94,90 @@ async function updateVersions() {
   await refresh()
 }
 
-const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid'], {
+const logs = ref<sseLog[]>([])
+const lastLog = ref<sseLog>()
+const uuid = ref('')
+
+const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid', 'error'], {
   autoReconnect: true,
 })
-
 onBeforeUnmount(() => {
   close()
 })
 
-const logs = ref<sseLog[]>([])
-const uuid = ref('')
+const { dialog } = useQuasar()
+const percentage = ref(0)
+const showSseLogDialog = ref<any>(null)
+const showFullSseLogDialog = ref<boolean>(false)
 
 watch(data, (newData) => {
-  if (event.value === 'log' && newData) {
-    const parsedData = JSON.parse(newData)
-    logs.value.push(parsedData)
-  } else if (event.value === 'uuid' && newData) {
-    const parsedData = JSON.parse(newData)
-    uuid.value = parsedData.uuid
+  if (newData) {
+    const sseData = {
+      type: event.value,
+      message: JSON.parse(newData).message,
+      progress: JSON.parse(newData).progress,
+    }
+
+    if (sseData.type === 'uuid') {
+      uuid.value = JSON.parse(newData).uuid
+    }
+
+    logs.value.push(sseData)
+
+    lastLog.value = {
+      type: sseData.type,
+      message: t(sseData.message),
+    }
+
+    percentage.value = sseData.progress / 100
+
+    if (showSseLogDialog.value) {
+      showSseLogDialog.value.update({
+        message: t(`${lastLog.value?.message}`),
+        progress: {
+          spinner: h(QLinearProgress, {
+            color: 'primary',
+            value: percentage.value,
+          }),
+        },
+      })
+      if (percentage.value === 1) {
+        setTimeout(() => {
+          showSseLogDialog.value?.hide()
+          showSseLogDialog.value = null
+          showFullSseLogDialog.value = !showFullSseLogDialog.value
+          percentage.value = 0
+        }, 350)
+      }
+    }
   }
 })
 
-const { notifySuccess, notifyError } = useNotify()
+function showSseLogs() {
+  showSseLogDialog.value = dialog({
+    message: `Starting Project Upload`,
+    progress: {
+      spinner: h(QLinearProgress, {
+        color: 'primary',
+        value: percentage.value,
+      }),
+    },
+    persistent: true,
+    ok: false,
+  })
+}
 
 async function loadProject() {
+  showSseLogs()
   try {
     await kc.fetch('/api/sync/network-connection', {
       method: 'POST',
       retry: false,
       body: {
+        uuid: uuid.value,
         ip: selected.value.ip,
       },
     })
-    notifySuccess(t('connectionSuccessful'))
 
     await kc.fetch('/api/sync/update-machine', {
       method: 'GET',
@@ -135,12 +187,11 @@ async function loadProject() {
         sseId: uuid.value,
       },
     })
-    notifySuccess(t('updateFinished'))
   } catch (error: any) {
     if (error.statusCode === 500) {
-      notifyError(t('errorLoadingProject'))
+    // notifyError(t('errorLoadingProject'))
     } else if (error.statusCode === 504) {
-      notifyError(t('connectionTimeout'))
+      // notifyError(t('connectionTimeout'))
     }
   }
 }
@@ -268,7 +319,7 @@ async function checkTeleskopConnection(formData: Machine) {
         ip: formData.ip,
       },
     })
-    teleskopConnectionMessage.value.message = t('connectionSuccessful')
+    teleskopConnectionMessage.value.message = t('connection-successful')
     teleskopConnectionMessage.value.color = 'text-green'
   } catch (error: any) {
     console.error(error)
@@ -290,7 +341,7 @@ async function checkNetworkConnection(formData: Machine) {
         ip: formData.ip,
       },
     })
-    networkConnectionMessage.value.message = (t('connectionSuccessful'))
+    networkConnectionMessage.value.message = (t('connection-successful'))
     networkConnectionMessage.value.color = 'text-green'
   } catch (error: any) {
     console.error(error)
@@ -556,16 +607,11 @@ const columns = ref<MachineTableColumn[]>([
       </template>
     </MachineList>
 
-    <q-scroll-area>
-      <div
-        v-for="(log, index) in logs"
-        :key="index"
-        :class="log.type === 'error' ? 'text-red pl-2' : 'pl-2'"
-      >
-        {{ log.message }}
-      </div>
-    </q-scroll-area>
-
+    <SseLogDialog
+      :model-value="showFullSseLogDialog"
+      :logs
+      @close="showFullSseLogDialog = false"
+    />
     <TeleskopSettingsDialog
       v-if="showTeleskopSettings"
       :show="showTeleskopSettings"
