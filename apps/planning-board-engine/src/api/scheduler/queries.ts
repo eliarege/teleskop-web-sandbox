@@ -125,7 +125,7 @@ export async function getUnplannedEvents() {
           d.PLANKEY AS planKey,
           d.RECORDTIME AS recordTime,
           d.JOBORDER AS jobOrder,
-          c.VALUE AS fabricWeight,
+          ERPVALUE AS fabricWeight,
           d.PLANNEDMACHINE AS machineId,
           d.PRGCOUNT AS programCount,
           d.PROGRAMNOLIST AS programList,
@@ -146,7 +146,7 @@ export async function getUnplannedEvents() {
             ) as erpParameters
         FROM DYBFBATCHPLAN d
         LEFT JOIN PTBATCHPLANQUEUE p ON p.PLANKEY = d.PLANKEY
-        LEFT JOIN DYBFBATCHPLANPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.PARAMSTRING = 'Kilo'
+        LEFT JOIN DYBFBATCHPLANERPPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.ERPFIELDNAME = 'Weight'
     WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
     AND p.PLANKEY IS NULL
     AND d.LASTFORJOBORDER = 1

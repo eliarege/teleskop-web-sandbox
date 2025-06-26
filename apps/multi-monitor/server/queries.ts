@@ -38,7 +38,7 @@ export async function getMachineAlarms(): Promise<MachineAlarm[]> {
   return machineCommandAlarms
 }
 
-export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
+export async function getMachineAlarmList(timezoneOffset: number): Promise<MachineAlarmList[]> {
   const queryResults = await knex.raw(`
     SELECT
       m.MACHINEID AS machineId,
@@ -53,7 +53,7 @@ export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
       d.COMMANDNO as commandNo,
       d.EXPLANATION as alarmName,
       d.ALARMNO as alarmNo,
-      d.STARTTIME as alarmStartTime,
+      DATEADD(MINUTE, :timezoneOffset, d.STARTTIME) AS alarmStartTime,
       f.SHOWONSCREEN as showOnScreen,
       CASE
         WHEN d.CONFIRMTIME IS NOT NULL THEN 1
@@ -70,7 +70,7 @@ export async function getMachineAlarmList(): Promise<MachineAlarmList[]> {
       AND (d.ENDTIME IS NULL OR d.ENDTIME > GETUTCDATE())
       AND (s.currentAlarmStatus = 0 OR s.currentAlarmStatus = 1)
     ORDER BY d.STARTTIME
-  `)
+  `, { timezoneOffset })
   const machinesMap = new Map<number, MachineAlarmList>()
 
   for (const row of queryResults) {
@@ -156,40 +156,35 @@ export async function getCurrentRunningIndex(batchKey: number) {
 
 export async function getTrendData(): Promise<Trends> {
   const currentWeekData = await knex('BACONSUMPTION AS c')
+    .leftJoin('BADATA as r', 'r.BATCHKEY', 'c.BATCHKEY')
     .select({
       currentWeekTotalWater: knex.raw('COALESCE(SUM(c.WaterTotal), 0)'),
       currentWeekElectricity: knex.raw('COALESCE(SUM(c.ELECTRICITY), 0)'),
       currentWeekFM: knex.raw('COALESCE(SUM(c.FM1VALUE), 0)'),
       currentWeekSalt: knex.raw('COALESCE(SUM(c.SALT), 0)'),
       currentWeekSteam: knex.raw('COALESCE(SUM(c.STEAM), 0)'),
+      currentWeekProduction: knex.raw('COALESCE(SUM(r.FABRIC_WEIGHT), 0)'),
     })
-    .innerJoin(
-      knex('BADATA AS r').select('r.BATCHKEY', 'r.STARTTIME').as('r'),
-      'c.BATCHKEY',
-      'r.BATCHKEY',
-    )
     .whereBetween('r.STARTTIME', [
       knex.raw('dateadd(day, (2 - datepart(weekday, getdate())), cast(getdate() as date))'),
-      knex.raw('dateadd(day,(2 - datepart(weekday, getdate())),cast(getdate()+7 AS date))'),
+      knex.raw('dateadd(day,(2 - datepart(weekday, getdate())), cast(getdate()+7 AS date))'),
     ])
 
   const lastWeekData = await knex('BACONSUMPTION AS c')
+    .leftJoin('BADATA as r', 'r.BATCHKEY', 'c.BATCHKEY')
     .select({
       lastWeekTotalWater: knex.raw('COALESCE(SUM(c.WaterTotal), 0)'),
       lastWeekElectricity: knex.raw('COALESCE(SUM(c.ELECTRICITY), 0)'),
       lastWeekFM: knex.raw('COALESCE(SUM(c.FM1VALUE), 0)'),
       lastWeekSalt: knex.raw('COALESCE(SUM(c.SALT), 0)'),
       lastWeekSteam: knex.raw('COALESCE(SUM(c.STEAM), 0)'),
+      lastWeekProduction: knex.raw('COALESCE(SUM(r.FABRIC_WEIGHT), 0)'),
     })
-    .innerJoin(
-      knex('BADATA AS r').select('r.BATCHKEY', 'r.STARTTIME').as('r'),
-      'c.BATCHKEY',
-      'r.BATCHKEY',
-    )
     .whereBetween('r.STARTTIME', [
       knex.raw('dateadd(day,(2 - datepart(weekday, dateadd(week, -1, getdate()))),cast(dateadd(week, -1, getdate()) AS date))'),
-      knex.raw('dateadd(day,(2 - datepart(weekday, getdate())),cast(getdate() as date))'),
+      knex.raw('dateadd(day,(2 - datepart(weekday, getdate())), cast(getdate() as date))'),
     ])
+
   return {
     ...currentWeekData[0],
     ...lastWeekData[0],
@@ -359,6 +354,13 @@ export async function getDyeingRecipe(recipeJB: string, recipeID: number): Promi
       'REQNO_BATCH as reqBatchNo',
       'REQNO_PROG as reqProgNo',
       'otherUnit as unit',
+      knex.raw(`
+        CASE
+          WHEN (SELECT SHOWRECIPEAMOUNT FROM DYTFDYSETTINGS) = 1
+          THEN r.RECIPEAMOUNT
+          ELSE NULL
+        END AS recipeAmount
+      `),
     ])
     .whereNot('REQNO_BATCH', null)
     .whereIn('p.PLANKEY', planKeyQuery)
@@ -408,4 +410,17 @@ export async function getDyeingRecipe(recipeJB: string, recipeID: number): Promi
 
   const [auto, manual] = await Promise.all([autoRecipe, manualRecipe])
   return [...auto, ...manual]
+}
+export async function getRecipeStepMaterial(planKey: number, recipeIndex: number, programNo: number): Promise<{ materialName: string, amount: number }[]> {
+  const a: { materialName: string, amount: number }[] = await knex('DYBFBATCHORDERRECIPESTEPS as d')
+    .leftJoin('DYBFBATCHORDERRECIPEHEADER as m', 'm.PLANKEY', 'd.PLANKEY')
+    .leftJoin('DYTFMATERIAL as b', 'b.MATERIALCODE', 'd.CHEMCODE')
+    .select({
+      materialName: 'b.MATERIALNAME',
+      amount: 'd.AMOUNT',
+    })
+    .where('d.PLANKEY', planKey)
+    .andWhere('d.RCPINDEX', recipeIndex)
+    .andWhere('m.RECIPENO', programNo)
+  return a
 }

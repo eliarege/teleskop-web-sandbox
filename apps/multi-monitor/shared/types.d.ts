@@ -7,6 +7,7 @@ export interface MachineDataRaw {
   autoManualStatus: number
   loggedInOperatorNo: number
   loggedInOperatorName: string
+  runningPlankey: number
   runningJobOrder: string
   runningStartTime: string | null
   runningBatchKey: number
@@ -24,6 +25,7 @@ export interface MachineDataRaw {
   runningPhaseName: string
   runningPhaseStepNo: number
   runningMachineCapacity: number
+  runningFabricWeight: number
   reqRecipeIndex: number
   reqOrderIndex: number
   reqOperationCode: number
@@ -76,11 +78,13 @@ export interface Trends {
   currentWeekFM: number
   currentWeekSalt: number
   currentWeekSteam: number
+  currentWeekProduction: number
   lastWeekTotalWater: number
   lastWeekElectricity: number
   lastWeekFM: number
   lastWeekSalt: number
   lastWeekSteam: number
+  lastWeekProduction: number
 }
 export interface Interventions {
   interventKey: number
@@ -108,6 +112,7 @@ export interface Recipe {
   chemCode: string | null
   materialName: string | null
   amount: number | null
+  recipeAmount: number | null
   reqBatchNo: number | null
   reqProgNo: number | null
   otherUnit: number | null

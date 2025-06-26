@@ -34,6 +34,7 @@
     "consumption-water": "Geçen Hafta Su",
     "consumption-salt": "Geçen Hafta Tuz",
     "consumption-steam": "Geçen Hafta Buhar",
+    "consumption-production": "Geçen Hafta Üretim",
     "active": "Aktif",
     "idle": "Boş",
     "mode": "Detaylar",
@@ -53,6 +54,7 @@
     "program-name": "Program İsmi",
     "phase": "Faz",
     "stop-reason": "Duruş Nedeni",
+    "manual-reason": "Manuel Nedeni",
     "order-index": "Sıra",
     "target-recipe": "Reçete",
     "tank-no": "Tank",
@@ -67,7 +69,8 @@
     "command": "Adım No - Komut No - Komut İsmi",
     "command-info": "Komut Bilgi",
     "current-delay": "Güncel Gecikme",
-    "current-progress": "Güncel İlerleme"
+    "current-progress": "Güncel İlerleme",
+    "elapsed-time": "Geçen Zaman"
   },
   "details": {
     "_": "Detaylar",
@@ -86,6 +89,7 @@
     "chem-code": "Kimyasal Kodu",
     "material-name": "Materyal Kodu",
     "amount": "Miktar",
+    "recipeAmount": "Reçete Miktarı",
     "btn-open": "Tam Görünüm",
     "btn-close": "Kapat",
     "id": "ID",
@@ -111,6 +115,7 @@
     "steam": "Buhar",
     "water": "Su",
     "salt": "Tuz",
+    "production": "Üretim",
     "layout": "Görünüm",
     "side": "Yatay",
     "top": "Dikey",

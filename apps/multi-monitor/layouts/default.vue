@@ -2,6 +2,7 @@
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind, useWindowSize } from '@vueuse/core'
 import { matAlarm, matSettings } from '@quasar/extras/material-icons'
+import { format } from 'date-fns'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
 
@@ -49,38 +50,34 @@ const machineData = computed(() => {
         : null,
       stopReasonDateTime: new Date(machine.stopReasonDateTime),
       manualReasonDateTime: new Date(machine.stopReasonDateTime),
-      runningStartHour:
-        machine.runningStartTime === null
-          ? '-'
-          : `${machine.runningStartTime?.slice(
-              5,
-              -14,
-            )} ${machine.runningStartTime?.slice(11, -5)}` || null,
+      runningStartHour: machine.runningStartTime
+        ? format(new Date(machine.runningStartTime), 'MM-dd HH:mm:ss')
+        : '-',
       loggedInOperatorName: machine.loggedInOperatorName
         ? machine.loggedInOperatorName
         : tt('teleskop.machine-stop-notification'),
-      runningJobOrder: machine.runningJobOrder ? machine.runningJobOrder : ' ',
+      runningJobOrder: machine.runningJobOrder ? machine.runningJobOrder : '',
       runningProgramName: machine.runningProgramName
         ? machine.runningProgramName
-        : ' ',
+        : '',
       runningProgramList: machine.runningProgramList
         ? machine.runningProgramList
-        : ' ',
+        : '',
       runningCommandName: machine.runningCommandName
         ? machine.runningCommandName
-        : ' ',
+        : '',
       runningAlarmName: machine.runningAlarmName
         ? machine.runningAlarmName
-        : ' ',
+        : '',
       runningPhaseName: machine.runningPhaseName
         ? machine.runningPhaseName
-        : ' ',
+        : '',
       newTheoreticalDuration: machine.theoreticalDuration
         ? machine.theoreticalDuration
         : 1,
-      stopReason: machine.stopReason ? machine.stopReason : ' ',
-      manualReason: machine.manualReason ? machine.manualReason : ' ',
-      runningAlarmNo: machine.runningAlarmNo ? machine.runningAlarmNo : ' ',
+      stopReason: machine.stopReason ? machine.stopReason : '',
+      manualReason: machine.manualReason ? machine.manualReason : '',
+      runningAlarmNo: machine.runningAlarmNo ? machine.runningAlarmNo : '',
     } as MachineData
   })
 })

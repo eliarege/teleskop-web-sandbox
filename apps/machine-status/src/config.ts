@@ -43,4 +43,9 @@ export const config = defineConfiguration({
     type: 'integer',
     default: 60_000,
   },
+  teleskopTimezoneOffset: {
+    env: 'TELESKOP_TIMEZONE_OFFSET',
+    type: 'integer',
+    default: -180,
+  },
 })

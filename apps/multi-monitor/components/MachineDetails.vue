@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { format } from 'date-fns'
 import type { PropType } from 'vue'
+import type { QTableColumn } from 'quasar'
+import { textTruncate } from '@teleskop/utils'
 import type {
   MachineDataRaw,
   NewBatchLogs,
   NewInterventions,
-  NewRecipe,
-  Recipe,
 } from '~/shared/types'
 import { useDataStore } from '~~/store/Datas'
 
@@ -24,21 +25,22 @@ const props = defineProps({
   },
 })
 
-const router = useRouter()
 const { mt } = useMachineTranslations()
 const store = useDataStore()
 const { t, locale } = useI18n()
 const tableShow = ref(false)
 
-const { data: recipe } = useFetch('/api/recipe', {
+const { data: recipe, status: recipeStatus } = useFetch('/api/recipe', {
   query: {
     recipeJB: props.currentMachine.runningJobOrder,
     recipeID: props.currentMachine.id,
     teleskopType: store.isWashing ? 'washing' : 'normal',
   },
+  default: () => [],
 })
-const { data: batchLogs } = useFetch('/api/machine_logs', {
+const { data: batchLogs, status: batchLogStatus } = useFetch('/api/machine_logs', {
   query: { machineId: props.currentMachine.id },
+  default: () => [],
 })
 const { data: currentRunningIndex } = useFetch('/api/recipeRunningIndex', {
   method: 'GET',
@@ -48,16 +50,17 @@ const { data: currentRunningIndex } = useFetch('/api/recipeRunningIndex', {
 })
 const refactoredBatchLogs = computed(() => {
   return batchLogs.value
-    ?.filter(machine => machine.planKey)
+    .filter(machine => machine.planKey)
     .map((logs) => {
       return {
         ...logs,
         newTime: logs.eventTime
-          ? logs.eventTime.toString().slice(0, -5).replace('T', ' ')
+          ? format(new Date(logs.eventTime), 'yyyy-MM-dd HH:mm:ss')
           : logs.eventTime,
       }
     }) as NewBatchLogs[] || []
 })
+
 const checkedNames = ref()
 const sortedLogs = computed(() => {
   const activeLogs = refactoredBatchLogs.value.filter(a => a.planKey)
@@ -73,21 +76,17 @@ const sortedLogs = computed(() => {
 })
 const logTableFilter = ref()
 const deg = (value: number) => (value / 180) * Math.PI
-const groupables = [
-  { key: 'recIndex', index: 0 },
-  { key: 'program', index: 1 },
-  { key: 'reqNumber', index: 2 },
-  { key: 'mainStep', index: 3 },
-] as { key: keyof Recipe, index: number }[]
+
 const columns = controlledComputed(locale, () => [
-  { label: t('details.index'), prop: 'recIndex', align: 'center', showOverflowTooltip: true },
-  { label: t('details.program'), prop: 'program', align: 'center', showOverflowTooltip: true },
-  { label: t('details.number'), prop: 'reqNumber', align: 'center', showOverflowTooltip: true },
-  { label: t('details.main-step'), prop: 'mainStep', align: 'center', showOverflowTooltip: true },
-  { label: t('details.chem-code'), prop: 'chemCode', align: 'center', showOverflowTooltip: true },
-  { label: t('details.material-name'), prop: 'materialName', align: 'center', showOverflowTooltip: true },
-  { label: t('details.amount'), prop: 'newAmount', align: 'center', showOverflowTooltip: true },
-] as { label: string, prop: string, align: 'left' | 'right' | 'start' | 'end' | 'center', showOverflowTooltip: boolean }[])
+  { label: t('details.index'), name: 'recIndex', align: 'center' },
+  { label: t('details.program'), name: 'program', align: 'center' },
+  { label: t('details.number'), name: 'reqNumber', align: 'center' },
+  { label: t('details.main-step'), name: 'mainStep', align: 'center' },
+  { label: t('details.chem-code'), name: 'chemCode', align: 'center' },
+  { label: t('details.material-name'), name: 'materialName', align: 'center' },
+  { label: t('details.amount'), name: 'newAmount', align: 'center' },
+  { label: t('details.recipeAmount'), name: 'newRecipeAmount', align: 'recipeAmount' },
+] as QTableColumn[])
 
 function unitFunc(param: number) {
   if (param === 3) {
@@ -101,27 +100,29 @@ function unitFunc(param: number) {
   }
 }
 const autoRecipe = computed(() => {
-  return recipe.value?.map((val) => {
+  return recipe.value.map((val) => {
     return {
       ...val,
-      recIndex: currentRunningIndex.value?.currentRunningPrgIndex === val.recIndex ? `> ${val.recIndex}` : val.recIndex,
-      phaseIndex: val.phaseIndex! + 1,
+      recIndex: val.recIndex,
       program: `${val.recNo} - ${val.name}`,
-      amount: val.amount,
-      newAmount: `${val.amount} ${unitFunc(val.unit)}`,
-    } as NewRecipe
+      amount: Math.round(val.amount || 0),
+      recipeAmount: Math.round(val.recipeAmount || 0),
+      newAmount: `${val.amount?.toFixed(2).replace(/\.?0+$/, '')} ${unitFunc(val.unit)}`,
+      newRecipeAmount: `${val.recipeAmount ? val.recipeAmount.toFixed(2).replace(/\.?0+$/, '') + unitFunc(val.unit) : ''}`,
+    }
   })
 })
-
+console.log(autoRecipe.value)
 const manuelRecipe = computed(() => {
-  return recipe.value?.map((val) => {
+  return recipe.value.map((val) => {
     return {
       ...val,
       recIndex: currentRunningIndex.value?.currentRunningPrgIndex === val.recIndex ? `> ${val.recIndex}` : val.recIndex,
       program: `${val.recNo} - ${val.name}`,
       amount: Math.round(val.amount || 0),
-      newAmount: `${val.amount} ${unitFunc(val.unit)}`,
-    } as NewRecipe
+      newAmount: `${val.amount?.toFixed(2).replace(/\.?0+$/, '')} ${unitFunc(val.unit)}`,
+      newRecipeAmount: `${val.recipeAmount ? val.recipeAmount.toFixed(2).replace(/\.?0+$/, '') + unitFunc(val.unit) : ''}`,
+    }
   })
 })
 
@@ -131,56 +132,57 @@ const erpVal = computed(() => {
 function closeModal() {
   tableShow.value = false
 }
-
-const { width: windowWidth } = useWindowSize()
 </script>
 
 <template>
   <div class="wrapper">
-    <ElScrollbar class="table-wrapper e-border">
-      <div class="table-body">
-        <RecipeTable
-          show
-          :title="t('details.recipe-t-auto')"
-          is-first
-          has-object-span-method
-          :full-screen="true"
-          :full-screen-button-props="{
-            buttonText: t('details.btn-open'),
-            plain: true,
-            color: '#0d94fc',
-          }"
-          :groupables="groupables"
-          :rows="autoRecipe || []"
-          :columns="columns"
-          :empty-text="t('details.empty-text')"
-          chem-class="green-class"
-          dyeing-class="normal-class"
-          @fullscreen="tableShow = !tableShow"
-        />
-        <div v-if="recipe?.length">
-          <RecipeTable
-            show
-            :title="t('details.recipe-t-manuel')"
-            :is-first="false"
-            has-object-span-method
-            :full-screen="false"
-            :full-screen-button-props="{
-              buttonText: t('details.btn-open'),
-              plain: true,
-              color: '#0d94fc',
-            }"
-            :groupables="groupables"
-            :rows="manuelRecipe || []"
-            :columns="columns"
-            :empty-text="t('details.empty-text')"
-            chem-class="green-class"
-            dyeing-class="normal-class"
-          />
-        </div>
+    <div class="table-wrapper e-border w-f-o">
+      <div v-if="recipeStatus === 'pending'" class="flex-center w-full h-full">
+        <LoadingSpinner />
       </div>
-    </ElScrollbar>
-    <ElScrollbar class="chart-wrapper e-border">
+      <div v-else class="table-body">
+        <TeleskopTable
+          :title="t('details.recipe-t-auto')"
+          :data="autoRecipe"
+          :columns
+          align="center"
+        >
+          <template #columns="{ columns: cols }">
+            <tr class="q-tr">
+              <th
+                v-for="(item, idx) in cols.slice(0, -1)"
+                :key="idx"
+              >
+                {{ item.label }}
+              </th>
+              <th>
+                <div class="w-full h-full flex-center flex-col gap-2">
+                  <div>
+                    <q-btn
+                      outline
+                      color="primary"
+                      :label="t('details.btn-open')"
+                      no-caps
+                      @click="tableShow = !tableShow"
+                    />
+                  </div>
+                  <div>
+                    {{ cols[cols.length - 1].label }}
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </template>
+        </TeleskopTable>
+        <TeleskopTable
+          :title="t('details.recipe-t-manuel')"
+          :data="manuelRecipe"
+          :columns
+          align="center"
+        />
+      </div>
+    </div>
+    <div class="chart-wrapper e-border w-f-o">
       <div class="chart-body">
         <DGauge
           :model-value="currentMachine.currentTemperature"
@@ -197,133 +199,190 @@ const { width: windowWidth } = useWindowSize()
           needle-color="red"
         />
       </div>
-    </ElScrollbar>
-
-    <ElScrollbar class="info-wrapper e-border">
-      <div class="info">
-        <div class="title">
-          {{ t("details.info") }}
-        </div>
-        <div class="info-body">
-          <div class="info-col">
-            <span>
-              {{ t("details.name") }}:
-              {{ currentMachine.name }}
-            </span>
-          </div>
-          <div class="info-col">
-            <span>
-              {{ t("details.machine-cap") }}:
-              {{ currentMachine.machineCapacity }} (KG)
-            </span>
-          </div>
-          <div class="info-col">
-            <span>
-              {{ t("details.order-no") }}:
-              {{ currentMachine.reqProgramNo }}
-            </span>
-          </div>
-          <div
-            v-for="(val, idx) in erpVal"
-            :key="idx"
-            class="info-col"
-          >
-            {{ mt(idx, currentMachine.id) }}: {{ val }}
-          </div>
-        </div>
+    </div>
+    <div class="info-wrapper e-border w-f-o">
+      <div class="title">
+        {{ t("details.info") }}
       </div>
-    </ElScrollbar>
-    <ElScrollbar class="command-wrapper relative">
+      <q-list
+        separator
+        dense
+      >
+        <q-item
+          dense
+          class="w-full h-full text-left"
+        >
+          <q-item-section no-wrap>
+            {{ textTruncate(t("details.name"), 20).content }}
+            <q-tooltip v-if="textTruncate(t('details.name'), 20).tooltip">
+              {{ t("details.name") }}
+            </q-tooltip>
+          </q-item-section>
+          <q-item-section>
+            {{ currentMachine.name }}
+          </q-item-section>
+        </q-item>
+
+        <q-item
+          dense
+          class="w-full h-full text-left"
+        >
+          <q-item-section no-wrap>
+            {{ textTruncate(t("details.machine-cap"), 20).content }}
+            <q-tooltip v-if="textTruncate(t('details.machine-cap'), 20).tooltip">
+              {{ t("details.machine-cap") }}
+            </q-tooltip>
+          </q-item-section>
+          <q-item-section>
+            {{ currentMachine.machineCapacity }} (KG)
+          </q-item-section>
+        </q-item>
+
+        <q-item
+          dense
+          class="w-full h-full text-left"
+        >
+          <q-item-section no-wrap>
+            {{ textTruncate(t("details.order-no"), 20).content }}
+            <q-tooltip v-if="textTruncate(t('details.order-no'), 20).tooltip">
+              {{ t("details.order-no") }}
+            </q-tooltip>
+          </q-item-section>
+          <q-item-section>
+            {{ currentMachine.reqProgramNo }}
+          </q-item-section>
+        </q-item>
+
+        <q-item
+          v-for="(val, idx) in erpVal"
+          :key="idx"
+          dense
+          class="w-full h-full text-left"
+        >
+          <q-item-section no-wrap>
+            <q-tooltip v-if="textTruncate(mt(idx, currentMachine.id), 15).tooltip">
+              {{ mt(idx, currentMachine.id) }}
+            </q-tooltip>
+            {{ textTruncate(mt(idx, currentMachine.id), 15).content }}
+          </q-item-section>
+          <q-item-section>
+            {{ typeof val === 'number' ? val.toFixed(2).replace(/\.?0+$/, '') : val }}
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </div>
+    <div class="intervention-wrapper e-border w-f-o">
       <div v-if="!intervents" class="absolute w-full h-full top-1/2 left-1/2 transform -translate-1/2">
         <LoadingSpinner />
       </div>
-      <div class="op-commands">
-        <div class="title">
-          {{ t("details.op-intervents") }}
-        </div>
-        <div
+      <div class="title">
+        {{ t("details.op-intervents") }}
+      </div>
+      <q-list separator>
+        <q-item
           v-for="(item, idx) in intervents"
           :key="idx"
-          class="flex flex-col w-full h-full"
-        >
-          <div class="command-items">
-            <span>
-              {{ item.newTime }}
-            </span>
-            <span class="flex justify-center w-full">
-              {{ item.explanation }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </ElScrollbar>
-    <div class="log-wrapper">
-      <div class="log__item e-border">
-        <QTable
           dense
-          :columns="[
-            { name: 'planKey', label: t('batchLogs.plan-key'), field: 'planKey', align: 'left' },
-            { name: 'newTime', label: t('batchLogs.new-time'), field: 'newTime', align: 'left' },
-            { name: 'jobOrder', label: t('batchLogs.job-order'), field: 'jobOrder', align: 'left' },
-            { name: 'explanation', label: t('batchLogs.explanation'), field: 'explanation', align: 'left' },
-            { name: 'programIndex', label: t('batchLogs.program-index'), field: 'programIndex', align: 'left' },
-            { name: 'programNo', label: t('batchLogs.program-no'), field: 'programNo', align: 'left' },
-            { name: 'recipeType', label: t('batchLogs.recipe-type'), field: 'recipeType', align: 'left' },
-            { name: 'requestprogramIndex', label: t('batchLogs.request-program-index'), field: 'requestprogramIndex', align: 'left' },
-            { name: 'status', label: t('batchLogs.status'), field: 'status', align: 'left' },
-          ]"
-          :no-data-label="t('batchLogs.no-data')"
-          row-key="name"
-          :rows-per-page-options="[]"
-          :rows="sortedLogs"
-          :filter="logTableFilter"
+          class="w-full h-full text-center"
         >
-          <template #top>
-            <div class="flex w-full">
-              <q-input
-                v-model="logTableFilter"
-                borderless
-                dense
-                debounce="300"
-                :placeholder="t('batchLogs.placeholder')"
-              >
-                <template #append>
-                  <div />
-                  <q-icon name="search" />
-                </template>
-              </q-input>
-              <QSpace />
+          <q-item-section avatar>
+            {{ item.newTime }}
+          </q-item-section>
+          <q-item-section>
+            {{ item.explanation }}
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </div>
+    <div v-if="batchLogStatus === 'pending'" class="w-full h-full grid-area-[logs] e-border rounded flex-center">
+      <LoadingSpinner />
+    </div>
+    <div v-else class="log-wrapper e-border w-f-o">
+      <QTable
+        dense
+        :columns="[
+          { name: 'planKey', label: t('batchLogs.plan-key'), field: 'planKey', align: 'left' },
+          { name: 'newTime', label: t('batchLogs.new-time'), field: 'newTime', align: 'left' },
+          { name: 'jobOrder', label: t('batchLogs.job-order'), field: 'jobOrder', align: 'left' },
+          { name: 'explanation', label: t('batchLogs.explanation'), field: 'explanation', align: 'left' },
+          { name: 'programIndex', label: t('batchLogs.program-index'), field: 'programIndex', align: 'left' },
+          { name: 'programNo', label: t('batchLogs.program-no'), field: 'programNo', align: 'left' },
+          { name: 'recipeType', label: t('batchLogs.recipe-type'), field: 'recipeType', align: 'left' },
+          { name: 'requestprogramIndex', label: t('batchLogs.request-program-index'), field: 'requestprogramIndex', align: 'left' },
+          { name: 'status', label: t('batchLogs.status'), field: 'status', align: 'left' },
+        ]"
+        :no-data-label="t('batchLogs.no-data')"
+        row-key="name"
+        class="h-full w-full"
+        :rows-per-page-options="[]"
+        :rows="sortedLogs"
+        :filter="logTableFilter"
+      >
+        <template #top>
+          <div class="flex w-full">
+            <q-input
+              v-model="logTableFilter"
+              borderless
+              dense
+              debounce="300"
+              :placeholder="t('batchLogs.placeholder')"
+            >
+              <template #append>
+                <div />
+                <q-icon name="search" />
+              </template>
+            </q-input>
 
-              <div class="flex gap-3">
-                <div class="m-auto">
-                  {{ t('batchLogs.checked-names') }} {{ checkedNames }}
-                </div>
-                <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <q-radio
-                    v-model="checkedNames"
-                    val="ID"
-                    label="ID"
-                  />
-                </div>
-                <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <q-radio
-                    v-model="checkedNames"
-                    val="Plan Key"
-                    :label="t('batchLogs.plan-key')"
-                  />
-                </div>
-                <div class="flex flex-col-reversed w-auto justify-center items-center">
-                  <q-radio
-                    v-model="checkedNames"
-                    val="Event Time"
-                    :label="t('batchLogs.new-time')"
-                  />
-                </div>
+            <QSpace />
+
+            <div class="flex gap-3">
+              <div class="m-auto">
+                {{ t('batchLogs.checked-names') }} {{ checkedNames }}
+              </div>
+              <div class="flex flex-col-reversed w-auto justify-center items-center">
+                <q-radio
+                  v-model="checkedNames"
+                  val="ID"
+                  label="ID"
+                />
+              </div>
+              <div class="flex flex-col-reversed w-auto justify-center items-center">
+                <q-radio
+                  v-model="checkedNames"
+                  val="Plan Key"
+                  :label="t('batchLogs.plan-key')"
+                />
+              </div>
+              <div class="flex flex-col-reversed w-auto justify-center items-center">
+                <q-radio
+                  v-model="checkedNames"
+                  val="Event Time"
+                  :label="t('batchLogs.new-time')"
+                />
               </div>
             </div>
-          </template>
-        </QTable>
-      </div>
+          </div>
+        </template>
+        <template #body="bodyProps">
+          <q-tr :props="bodyProps">
+            <q-td
+              v-for="col in bodyProps.cols"
+              :key="col.name"
+              :props="bodyProps"
+            >
+              <div v-if="col.name === 'explanation'">
+                <q-tooltip v-if="textTruncate(col.value, 60).tooltip">
+                  {{ col.value }}
+                </q-tooltip>
+                {{ textTruncate(col.value, 60).content }}
+              </div>
+              <div v-else>
+                {{ col.value }}
+              </div>
+            </q-td>
+          </q-tr>
+        </template>
+      </QTable>
     </div>
   </div>
   <Teleport to="body">
@@ -332,37 +391,45 @@ const { width: windowWidth } = useWindowSize()
         <div class="modal-wrapper">
           <div class="modal-container cursor-default" @click.stop.prevent>
             <div class="bg-white flex flex-col w-full h-full">
-              <RecipeTable
-                show
+              <TeleskopTable
                 :title="t('details.recipe-t-auto')"
-                is-first
-                has-object-span-method
-                full-screen
-                :full-screen-button-props="{
-                  buttonText: t('details.btn-close'),
-                  plain: true,
-                  color: '#0d94fc',
-                }"
-                :groupables="groupables"
-                :rows="autoRecipe || []"
-                :columns="columns"
-                :empty-text="t('details.empty-text')"
-                chem-class="green-class"
-                dyeing-class="normal-class"
-                @fullscreen="tableShow = false"
-              />
-              <RecipeTable
-                show
+                :data="autoRecipe"
+                :columns
+                align="center"
+              >
+                <template #columns="{ columns: cols }">
+                  <tr class="q-tr">
+                    <th
+                      v-for="(item, idx) in cols.slice(0, -1)"
+                      :key="idx"
+                    >
+                      {{ item.label }}
+                    </th>
+                    <th>
+                      <div class="w-full h-full flex-center flex-col">
+                        <div>
+                          <q-btn
+                            outline
+                            color="primary"
+                            :label="t('details.btn-close')"
+                            no-caps
+                            @click="tableShow = !tableShow"
+                          />
+                        </div>
+                        <br>
+                        <div>
+                          {{ cols[cols.length - 1].label }}
+                        </div>
+                      </div>
+                    </th>
+                  </tr>
+                </template>
+              </TeleskopTable>
+              <TeleskopTable
                 :title="t('details.recipe-t-manuel')"
-                :is-first="false"
-                has-object-span-method
-                :full-screen="false"
-                :groupables="groupables"
-                :rows="manuelRecipe || []"
-                :columns="columns"
-                :empty-text="t('details.empty-text')"
-                chem-class="green-class"
-                dyeing-class="normal-class"
+                :data="manuelRecipe"
+                :columns
+                align="center"
               />
             </div>
           </div>
@@ -373,12 +440,28 @@ const { width: windowWidth } = useWindowSize()
 </template>
 
 <style scoped lang="postcss">
-.normal-class {
-  background: scroll !important;
+th {
+  width: 100px;
+  border-width: 0 1px 0 1px;
+  border-style: solid;
+  border-color: #88888857;
 }
-
-.green-class {
-  background: rgba(40, 220, 40, 0.6) !important;
+td {
+  width: 100px;
+  border-width: 0 1px 0 1px;
+  border-style: solid;
+  border-color: #88888857;
+}
+.q-table--dense .q-table th:first-child,
+.q-table--dense .q-table td:first-child {
+  padding-left: 8px;
+}
+.q-table--dense .q-table th:last-child,
+.q-table--dense .q-table td:last-child {
+  padding-right: 8px;
+}
+.w-f-o {
+  @apply w-full h-full overflow-auto;
 }
 
 .wrapper {
@@ -387,25 +470,25 @@ const { width: windowWidth } = useWindowSize()
   grid-template-columns: 0.5fr 1fr 1fr 0.5fr;
   grid-template-rows: repeat(3, 1fr);
   grid-template-areas:
-    'operator table table info'
-    'operator table table info'
-    'operator logs logs chart';
+    'intervention table table info'
+    'intervention table table info'
+    'intervention logs logs chart';
   @apply grid gap-x-3 gap-y-1 w-full text-center max-w-1920px px-2 pb-1 text-black;
 }
 
 .table-wrapper {
   grid-area: table;
   height: -webkit-fill-available;
-  @apply rounded-2xl shadow shadow-gray-700/50 shadow-lg;
+  @apply rounded;
 }
 
 .info-wrapper {
   grid-area: info;
   height: -webkit-fill-available;
-  @apply rounded-2xl overflow-auto shadow shadow-gray-700/50 shadow-lg shadow;
+  @apply rounded overflow-auto;
 
   .info {
-    @apply text-lg;
+    @apply;
 
     .info-body {
       @apply border-t border-white text-left;
@@ -419,16 +502,16 @@ const { width: windowWidth } = useWindowSize()
 
 .chart-wrapper {
   grid-area: chart;
-  @apply w-full h-full rounded-2xl shadow shadow-gray-700/50 shadow-lg;
+  @apply w-full h-full rounded;
 
   .chart-body {
     @apply w-full h-full;
   }
 }
 
-.command-wrapper {
-  grid-area: operator;
-  @apply e-border rounded-2xl shadow shadow-gray-700/50 shadow-lg overflow-auto relative;
+.intervention-wrapper {
+  grid-area: intervention;
+  @apply rounded overflow-auto relative;
 
   .command-items {
     @apply flex flex-row justify-center items-center gap-3 w-full h-full;
@@ -442,19 +525,19 @@ const { width: windowWidth } = useWindowSize()
 .log-wrapper {
   grid-area: logs;
   height: -webkit-fill-available;
-  @apply rounded-2xl border border-gray-500 flex justify-between w-full h-min shadow shadow-gray-700/50 shadow-lg overflow-auto;
+  @apply rounded flex justify-between w-full h-full overflow-auto;
 
   ::slotted(.content) {
     background-color: rgb(48, 76, 76);
   }
 
   .log__item {
-    @apply w-full h-min;
+    @apply w-full h-full;
   }
 }
 
 .title {
-  @apply text-black font-extrabold w-full rounded-2xl;
+  @apply w-full rounded font-bold;
 }
 
 .modal-mask {
@@ -478,8 +561,8 @@ const { width: windowWidth } = useWindowSize()
       'header header header'
       'table table table'
       'table table table'
-      'chart operator operator'
-      'info operator operator'
+      'chart intervention intervention'
+      'info intervention intervention'
       'logs logs logs';
     @apply grid w-full h-full max-w-full px-10;
 
@@ -495,7 +578,7 @@ const { width: windowWidth } = useWindowSize()
       @apply h-full;
     }
 
-    .command-wrapper {
+    .intervention-wrapper {
       @apply h-full;
     }
   }
@@ -513,7 +596,7 @@ const { width: windowWidth } = useWindowSize()
       }
     }
 
-    .command-wrapper {
+    .intervention-wrapper {
       .op-commands {
         .command-items {
           @apply flex flex-row justify-center items-center gap-1 w-full h-full;

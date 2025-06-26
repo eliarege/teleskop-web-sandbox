@@ -49,12 +49,6 @@ html {
   border-radius: 10px;
 }
 
-@media screen and (min-width: 735px) {
-  body {
-    overflow: hidden;
-  }
-}
-
 #__nuxt {
   width: 100%;
   height: 100%;

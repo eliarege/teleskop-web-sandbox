@@ -34,6 +34,7 @@
     "consumption-water": "Last Week Water",
     "consumption-salt": "Last Week Salt",
     "consumption-steam": "Last Week Steam",
+    "consumption-production": "Last Week Production",
     "active": "Active",
     "idle": "Idle",
     "mode": "Details",
@@ -53,6 +54,7 @@
     "program-name": "Program Name",
     "phase": "Phase",
     "stop-reason": "Stop Reason",
+    "manual-reason": "Manual Reason",
     "order-index": "Order",
     "target-recipe": "Recipe",
     "tank-no": "Tank",
@@ -67,7 +69,8 @@
     "command": "Step No - Command No - Command Name",
     "command-info": "Command Info",
     "current-delay": "Current Delay",
-    "current-progress": "Current Progress"
+    "current-progress": "Current Progress",
+    "elapsed-time": "Elapsed Time"
   },
   "details": {
     "_": "Details",
@@ -86,6 +89,7 @@
     "chem-code": "Chemical Code",
     "material-name": "Material Code",
     "amount": "Amount",
+    "recipeAmount": "Recipe Amount",
     "btn-open": "Full View",
     "btn-close": "Close",
     "id": "ID",
@@ -111,6 +115,7 @@
     "steam": "Steam",
     "water": "Water",
     "salt": "Salt",
+    "production": "Production",
     "layout": "Layout",
     "side": "Horizontal",
     "top": "Vertical",
