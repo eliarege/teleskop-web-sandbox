@@ -2,6 +2,9 @@ import nearley from 'nearley'
 import type { BatchCommand, Machine, MachineBatchParameter, MachineCommand, MachineCommandFormula, MachineCommandParameter, MachineConstant, Program, ProgramStep, TheoreticalProgram } from '../types/archive'
 import { grammar } from './grammar'
 
+/**
+ * Lütfen bu sayafadaki herhangi bir değişiklikten önce @egeiliklier 'e danışınız
+ */
 interface CalculationContext {
   temperature: number
   machine: Machine
@@ -67,6 +70,9 @@ export function calculateProgramTheoreticalTemperature(startTime: string | Date,
   })
   return { theoreticalPrograms, errors }
 }
+/**
+ * Lütfen bu sayafadaki herhangi bir değişiklikten önce @egeiliklier 'e danışınız
+ */
 export function calculateTheoreticalCommands(startTime: string | Date, initialTemp: number, programs: Program[], machine: Machine) {
   let time = new Date(startTime)
   let prevTime = new Date(startTime)

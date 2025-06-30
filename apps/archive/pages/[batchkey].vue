@@ -64,6 +64,7 @@ const response = await fetch(withBase(`/api/batch/${batchKey}`, config.app.baseU
 const taskId = response.headers.get('Task-ID')
 const batchData = ref<Batch>()
 const settingsStore = userSettingsStore()
+// task'in ilerlemesini takip etmek için yapıldı
 const batchDataPromise = response.json().then((data) => {
   if (data.status === 'success') {
     batchData.value = data.data
@@ -77,6 +78,8 @@ const batchDataPromise = response.json().then((data) => {
 })
 await trackTaskProgress()
 
+// API'dan gelen batchData'nın içerisinde .active = true olduğu durumlarda çalışır.
+// Bitmiş iş emirleri için düzenli fetch atmaya gerek yoktur
 async function scheduleBatchFetch(batch: DuoRaw<Batch>, seconds: number) {
   setTimeout(async () => {
     const incomingValues = await $fetch<DuoRaw<BatchValues>>(`/api/batch/${batchKey}/values?since=${batch.lastRecordDate}`)
@@ -154,6 +157,11 @@ const colorInterpolator = [
   '#00ff00', // 'lime',
 ]
 
+/**
+ * Sayfa kapatılırken ilgili makine için ayarlar zaten kaydediliyor.
+ * Ancak yeni bir metrik gelmesi veya makinenin ilk defa açılması gibi durumlara karşı
+ * ilgili setting'in olup olmadığı kontrol edilir ve yoksa eklenir.
+ */
 function initializeSetting(type: string, ioIndex: number, unit?: string) {
   const key = `${type}_${ioIndex}`
   let visibility = false
@@ -170,6 +178,7 @@ function initializeSetting(type: string, ioIndex: number, unit?: string) {
     )
 }
 
+// Axis sadece analog io'lar ve counter'lar için mevcuttur
 function setAxisForAnalogSettingsOnInitialize(
   command: AnalogInputOutputType | Counter,
   type: string,
@@ -237,11 +246,14 @@ batchData.value?.counters.forEach((command) => {
 batchData.value?.calculatedValues.forEach((command) => {
   initializeSetting('calculatedValues', command.ioIndex)
 })
+// Command bilgisi ve isimleri farklı yerden gelir frontta birleşir
 const mergedCommandsWithNames = computed(() => getCommandsWithNames())
+// Teorik sıcaklık hesaplama kısmı için lütfen herhangi bir şey değiştirmeden önce
+// @egeiliklier 'e danışınız.
 const theoreticalCommands = calculateTheoreticalCommands(batchData.value?.joborderInfo.startTime, 25, batchData.value?.theoreticalPrograms, batchData.value?.machine)
 const { theoreticalPrograms, errors } = calculateProgramTheoreticalTemperature(
   batchData.value?.joborderInfo.startTime,
-  25,
+  25, // Flat 25 normalde DB'den alınacak. TODO:
   batchData.value?.theoreticalPrograms,
   batchData.value?.machine,
 )
@@ -284,6 +296,14 @@ const actualPrograms = computed(() => {
 })
 const chart = ref<InstanceType<typeof ArchiveChart>>()
 
+/**
+ * Component kullanımları aşağıdaki gibidir.
+ * Bu implementation golden-layout kullanımı için öncelenmiştir.
+ * Lütfen useGoldenLayout.ts dosyasını inceleyiniz.
+ *
+ * prop - event ekleme dışında kalan implementationlar için
+ * lütfen @egeiliklier ile iletişime geçiniz.
+ */
 const components: Record<string, () => any> = {
   JobOrderInfo: () =>
     h(JobOrderInfo, {
@@ -442,6 +462,12 @@ function freezeLayoutConfig(config: LayoutConfig) {
 }
 
 // GOLDEN LAYOUT PANELS
+/**
+ * CARE: Golden layout size belirlerken girilmiş size / toplam size yapıyor
+ * Yani %20 vermiş olmanız ilgili alanın %20'sini kaplayaacağı anlamına gelmez.
+ * İlgili alanın % / Toplam %
+ * ( % anlamsız aslında flat değer bunlar )
+ */
 const layoutConfig = freezeLayoutConfig({
   dimensions: {
     defaultMinItemHeight: '50px',

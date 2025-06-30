@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Genel anlamıyla bütün component'i anlamak zor olabilir
+ * o yüzden gelebilecek feedbackler için hangi partların ne yaptığını açıkladım biraz biraz
+ */
 import {
   type BrushBehavior,
   type D3BrushEvent,
@@ -53,6 +57,7 @@ const { t } = useI18n()
 const selectedTime = defineModel<Date>({ required: true })
 defineExpose({ resetZoom })
 
+// Start time - end time initleri burada başka bir yerde modifiye etmeyiniz
 const settingsStore = userSettingsStore()
 const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
 const startTime = ref(new Date(props.batch.joborderInfo.startTime))
@@ -75,6 +80,7 @@ const endTime = ref(
   new Date(getLastDate()),
 )
 
+// element refleri
 const chartEl = ref<HTMLElement>()
 const xAxisEl = ref<SVGGElement>()
 const reelsXAxisEl = ref<SVGGElement>()
@@ -101,6 +107,9 @@ const { width: outerWidth, height: outerHeight } = useElementSize(chartEl)
 const margin = ref({ top: 20, right: 180, bottom: 50, left: 50 })
 let chartHeightMultiplier = 1
 
+// Chart status deişiyor between show digital io show kule vs
+// Chart ve altında kalan digital-io gösterim yeri için gerekli alanı burası oluşturur
+// Lütfen sadece burayı update'leyiniz alanlarla alakalı
 function updateMultipliers() {
   if (settingsStore.bottomChartVisibilityStatus !== 0) {
     margin.value.bottom = 0
@@ -115,7 +124,7 @@ function changeBottomVisibiltyStatus() {
   settingsStore.updateChartState()
   updateMultipliers()
 }
-// dont show io mean bottom 50 multp 1
+// dont show io means bottom 50 multp 1
 const innerRect = computed(() => {
   return {
     width: Math.max(
@@ -162,6 +171,10 @@ settingsStore.updateAxis('\'C', {
 })
 const colorTransitionPortions: number[] = []
 
+/**
+ * Teorik sıcaklı grafigindeki renk değişimlerini (program değişince renk değişir)
+ * göstermek için yapılmış bir implementation. Değiştirilmesini önermem.
+ */
 const joborderDurationTheoreticalDuration
   = new Date(
     theoreticalTemperatures[theoreticalTemperatures.length - 1].time,
@@ -187,6 +200,7 @@ theoreticalTemperatures.forEach((io, index) => {
 if (!colorTransitionPortions.length)
   colorTransitionPortions.push(0)
 
+// Data set burada oluşturulur analog değerler ve counter - calculated values için
 const dataSet = computed(() => {
   const set: { io: any, color: string, axis?: any, isDefault?: boolean, lineType?: LineType }[] = []
   set.push({
@@ -239,6 +253,7 @@ const dataSet = computed(() => {
   return set.length ? set : [{ io: { ioValues: [] }, color: '#FFFFFF' }]
 })
 
+// Digital iolar için dataset
 const digitalDataSet = computed(() => {
   if (settingsStore.bottomChartVisibilityStatus === 1) {
     const set = [] as DigitalInputOutputType[]
@@ -267,6 +282,8 @@ const digitalDataSet = computed(() => {
   } else return []
 })
 
+// Reels data seti. Bunların hepsinin tipi ve gösterildikleri alanlar - componentler farklı
+
 const reelsDataSet = computed(() => {
   if (settingsStore.bottomChartVisibilityStatus === 2) {
     const cycs = []
@@ -278,6 +295,8 @@ const reelsDataSet = computed(() => {
     return cycs
   } else return []
 })
+
+// yScales array olmak zorunda çünkü birden fazla line için birden fazla axis mevcut
 // FIXME: If first io has not the unit of 'C it will show some axis different from 'C on the left
 const yScales = computed(() => {
   return dataSet.value.map((aio) => {
@@ -473,6 +492,7 @@ function zoom(zoomStartTime: Date, zoomEndTime: Date) {
   xExtendEndTime.value = zoomEndTime
 }
 
+// Tıkla sürükle bırak şeklinde çalışan zoom functionality
 function getBrush() {
   let startX = 0
   let endX = 0
@@ -619,6 +639,7 @@ const barScale = computed(() =>
     ]) // Bars at the bottom
     .padding(0.1),
 )
+// Tooltip contenti burası belirler. Tooltip verisini chartta konumlandırmak için lütfen <template> kısmına bakınız
 const tooltipContent = computed(() => {
   if (selectedX.value === null)
     return null
@@ -666,6 +687,7 @@ const tooltipContent = computed(() => {
         || (settingsStore.tooltipSettings.includes(2) && io.type === 'AOUT'),
     )
 
+  // TODO: bottomChartVisibilityStatus enum değer olmalı
   if (settingsStore.bottomChartVisibilityStatus === 2) {
     reelsDataSet.value.forEach((reel) => {
       let closestPoint
@@ -695,6 +717,7 @@ const tooltipContent = computed(() => {
   }
 })
 
+// Printten önce zoomu resetlemek lazım yoksa zoomlu printler
 onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
@@ -887,6 +910,7 @@ const selectedCommand = computed(() => {
         :width="outerWidth"
         :height="outerHeight"
       />
+      <!-- Right buttons see buttons[] array -->
       <g
         :transform="`translate(${innerRect.width + margin.right}, ${margin.top})`"
       >
@@ -914,6 +938,7 @@ const selectedCommand = computed(() => {
           <rect :width="innerRect.width" :height="innerRect.height" />
         </clipPath>
       </defs>
+      <!-- Right axises -->
       <g
         :transform="`translate(${margin.left},${margin.top})`"
         style="cursor: crosshair;"
@@ -939,6 +964,7 @@ const selectedCommand = computed(() => {
             {{ axis.unit === "undef" ? t("undef") : axis.unit }}
           </text>
         </g>
+        <!-- Lines -->
         <g :clip-path="`url(#${clipId})`">
           <path
             v-for="(line, index) in lines"
@@ -962,6 +988,7 @@ const selectedCommand = computed(() => {
               />
             </g>
           </g>
+          <!-- teorik sıcaklık grafiği -->
           <linearGradient id="koko">
             <stop
               v-for="(point, index) of colorTransitionPortions"
@@ -971,6 +998,7 @@ const selectedCommand = computed(() => {
             />
           </linearGradient>
         </g>
+        <!-- selected time line -->
         <line
           v-if="selectedX !== null"
           id="chart-selected-time-line"
@@ -986,6 +1014,7 @@ const selectedCommand = computed(() => {
           stroke-dasharray="4"
           stroke-width="2"
         />
+        <!-- Alarm bars -->
         <g :clip-path="`url(#${clipId})`">
           <g v-for="barLine in orderedAlarms" :key="`${barLine.alarmNo}-bar`">
             <rect
@@ -1002,6 +1031,7 @@ const selectedCommand = computed(() => {
             />
           </g>
         </g>
+        <!-- Tooltip content pixel pixel belirlenir maybe daha iyi bir implementation yapılabilir. -->
         <g
           v-if="
             tooltipContent
@@ -1073,6 +1103,7 @@ const selectedCommand = computed(() => {
             </text>
           </g>
         </g>
+        <!-- Digital ios -->
         <g
           v-if="settingsStore.bottomChartVisibilityStatus === 1"
           :transform="`translate(${0}, ${outerHeight * chartHeightMultiplier + 20})`"
@@ -1099,6 +1130,7 @@ const selectedCommand = computed(() => {
             </template>
           </g>
         </g>
+        <!-- Reel lines -->
         <g v-show="settingsStore.bottomChartVisibilityStatus === 2">
           <g
             ref="reelsXAxisEl"

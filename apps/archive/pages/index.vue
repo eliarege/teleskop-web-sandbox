@@ -100,7 +100,7 @@ async function handleRowDblClick(batchkey: number) {
 
 onKeyStroke('Enter', () => {
   if (selectedRow.value) {
-    handleRowDblClick(selectedRow.value)
+    handleRowDblClick(selectedRow.value.batchKey)
   }
 })
 
