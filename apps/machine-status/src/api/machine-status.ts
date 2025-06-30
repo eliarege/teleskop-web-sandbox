@@ -61,7 +61,9 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
     .leftJoin('BFMACHGROUP as g', 'm.GRUPNO', 'g.GROUPID')
     .leftJoin('BADATA as b', 'b.BATCHKEY', 's.RUNNING_BATCHKEY')
     .leftJoin('BFSTOPREASONS as t', 't.STOPNAME', 's.stopReason')
-    .leftJoin('DYBFBATCHPLAN as d', 'd.JOBORDER', 's.RUNNING_JOBORDER')
+    .leftJoin('DYBFBATCHPLAN as d', join => join
+      .onRef('d.JOBORDER', '=', 's.RUNNING_JOBORDER')
+      .on('d.lastForJobOrder', '=', 1))
     .leftJoin(eb => eb
       .selectFrom('BACONSUMPTIONPROGRAM as c')
       .groupBy('c.MACHINEID')
