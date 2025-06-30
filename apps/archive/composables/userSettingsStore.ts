@@ -13,7 +13,7 @@ export const userSettingsStore = defineStore('settings', () => {
   const axises = ref(new Map<string, Axis>())
   const bottomChartVisibilityStatus = ref(0)
   /**
-   * 0 = Show graph
+   *  0 = Show graph
    *  1 = Show digital IO lines
    *  2 = Show cycle times graph
    */
