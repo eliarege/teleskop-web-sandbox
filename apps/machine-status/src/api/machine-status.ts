@@ -134,7 +134,7 @@ const fetchMachineStatus = memoize(async (teleskop: Kysely<TeleskopDatabase>): P
       sql<Record<string, any> | null>`null`.as('erp'),
       sql<number>`
         (SELECT
-          COALESCE(TRY_CAST(ERPVALUE as float),0),
+          COALESCE(TRY_CAST(ERPVALUE as float),0)
         FROM DYBFBATCHPLANERPPARAMETERS
         WHERE ERPFIELDNAME = 'Weight'
         AND PLANKEY = b.PLANKEY)`.as('runningFabricWeight'),
