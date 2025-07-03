@@ -40,6 +40,7 @@
     "@iconify-json/bi": "1.2.1",
     "@iconify-json/carbon": "1.2.4",
     "@iconify-json/icon-park-outline": "1.2.1",
+    "@iconify-json/jam": "1.2.1",
     "@iconify-json/material-symbols": "1.2.6",
     "@iconify-json/ri": "1.2.3",
     "@teleskop/nuxt-base": "workspace:*",
