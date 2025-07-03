@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 
-const props = defineProps({
-  machineId: Number,
-})
+const props = defineProps<{
+  machineId: number
+}>()
+
 const { $commandManager } = useNuxtApp()
-const editor = useEditorStore()
-const $q = useQuasar()
 const { fetch } = useNuxtApp().$keycloak
+const $q = useQuasar()
 const { t } = useI18n()
+
 const items = computed(() => [[
   {
     label: t('machineContextMenu.uploadAllPrograms'),
@@ -51,7 +52,7 @@ const items = computed(() => [[
       $commandManager.executeCommand(
         'pasteProgram',
         { $q, fetchPrograms: () => {} },
-        props.machineId!,
+        props.machineId,
       )
     },
   },

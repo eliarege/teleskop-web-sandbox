@@ -479,3 +479,19 @@ export interface CommandError {
     ioValue?: string
   }[]
 }
+
+export interface CopyItem {
+  formMachineId: number
+  toMachineId: number
+  program: {
+    programNo: number
+    name: string
+    newProgramNo: number | null
+  }[]
+}
+
+export interface ProgramItem {
+  machineId: number
+  programNo: number
+  name: string
+}

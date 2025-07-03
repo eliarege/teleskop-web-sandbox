@@ -2,7 +2,7 @@ import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
-import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTable, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramItem, ProgramStep, ProgramStepCommand, ProgramTable, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -12,7 +12,7 @@ export const useEditorStore = defineStore('editor', () => {
   const program = ref<Program>(createEmptyProgram())
   const originalProgram = ref<Program>(createEmptyProgram())
   const machine = ref<Machine>(createMachine())
-  const selectedPrograms = ref<ProgramTable[]>([])
+  const selectedPrograms = ref<ProgramItem[]>([])
   const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTable[]>([])
   const selectedSteps = ref<ProgramStep[]>([])
@@ -755,12 +755,13 @@ export const useEditorStore = defineStore('editor', () => {
    * Özellikle `PROGRAM_TREATMENT_COMMAND_LIMIT` hatası durumunda, ilgili limitin aşıldığına dair bir bildirim gösterilir.
    * Eğer işlem sırasında bir hata oluşursa, hata mesajına göre uygun bir bildirim gösterilir ve `false` döner.
    */
-  async function updateProgram(): Promise<boolean> {
+  async function updateProgram(newProgram?: Program): Promise<boolean> {
+    const updatedProgram = newProgram || program.value
     try {
       await kc.fetch(`/api/machine/${route.params.machine_id}/program`, {
         method: 'PUT',
         body: {
-          program: program.value,
+          program: updatedProgram,
         },
       })
       return true
