@@ -80,7 +80,7 @@ onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
 onKeyStroke(['c', 'C'], (event: KeyboardEvent) => {
   if (event.ctrlKey && editor.selectedPrograms.length && !isActiveElementEditable()) {
     event.preventDefault()
-    contextMenuStore.copy(editor.selectedPrograms, machineId)
+    contextMenuStore.copy(machineId, editor.selectedPrograms)
   }
 })
 
@@ -219,7 +219,7 @@ const buttons = computed<ContextBarButtons[]>(() => [
     icon: 'content_copy',
     disable: !editor.selectedPrograms.length,
     onClick() {
-      contextMenuStore.copy(editor.selectedPrograms, machineId)
+      contextMenuStore.copy(machineId, editor.selectedPrograms)
     },
   },
   {
@@ -376,7 +376,7 @@ const contextMenuOptions = computed(() => [
       icon: 'content_copy',
       disabled: false,
       onClick: () => {
-        contextMenuStore.copy(editor.selectedPrograms, machineId)
+        contextMenuStore.copy(machineId, editor.selectedPrograms)
       },
     },
     {
@@ -385,11 +385,7 @@ const contextMenuOptions = computed(() => [
       icon: 'content_paste',
       disabled: !contextMenuStore.isThereCopiedValue.value,
       onClick: () => {
-        $commandManager.executeCommand(
-          'pasteProgram',
-          { $q },
-          machineId,
-        )
+        $commandManager.executeCommand('pasteProgram', { $q }, machineId)
       },
     },
   ],
@@ -537,14 +533,13 @@ const contextMenuOptions = computed(() => [
     },
   ],
   [
-
     {
       label: tt('contextMenu.addToComparison'),
       shortcut: '',
       icon: 'playlist_add',
       disabled: false,
       onClick: () => {
-        contextMenuStore.addToComparisonBasket(editor.selectedPrograms, machineId)
+        contextMenuStore.addToComparisonBasket(machineId, editor.selectedPrograms)
       },
     },
     {
@@ -553,14 +548,22 @@ const contextMenuOptions = computed(() => [
       icon: 'compare_arrows',
       disabled: !contextMenuStore.comparisonBasketLength(),
       onClick: () => {
-        contextMenuStore.addToComparisonBasket(editor.selectedPrograms, machineId)
+        contextMenuStore.addToComparisonBasket(machineId, editor.selectedPrograms)
         // comparisonDialogVisible.value = true
         contextMenuStore.comparison()
       },
     },
+    {
+      label: tt('contextMenu.clearComparisonBasket'),
+      shortcut: '',
+      icon: 'clear',
+      disabled: !contextMenuStore.comparisonBasketLength(),
+      onClick: () => {
+        contextMenuStore.clearComparisonBasket()
+      },
+    },
   ],
   [
-
     {
       label: tt('contextMenu.programVersion'),
       shortcut: '',
@@ -680,7 +683,7 @@ function handleRowClass(row: ProgramTable): string {
     <DevOnly>
       <div class="flex flex-col color-gray-5 text-3">
         <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
-        <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues()?.map(p => p.program.programNo).join(', ')}` }} </span>
+        <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues().map(p => `${p.machineId}-${p.programNo}-${p.name}`).join(', ')}` }} </span>
       </div>
     </DevOnly>
     <QTable

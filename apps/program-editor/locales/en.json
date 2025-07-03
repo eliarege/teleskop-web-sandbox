@@ -266,7 +266,7 @@
     "programVersion": "Program Version",
     "addToComparison": "Add To Comparison List",
     "compareWith": "Compare With",
-    "pasteDuplicateKeyWarning": "Programs with given program numbers exists. Please provide a new program number for programs below.",
+    "clearComparisonBasket": "Clear Comparison List",
     "deleteProgramDialog": {
       "title": "Delete Program",
       "warning": "Program {name} will be deleted! Are you sure you want to continue?",
@@ -277,6 +277,12 @@
     "concatenateProgramsDialog": {
       "title": "Concatenate Programs",
       "warning": "Re-order programs by dragging."
+    },
+    "changeProgramNoOnPasteDialog": {
+      "title": "Change Program No",
+      "warning": "Programs with given program numbers exists. Please provide a new program number for programs below.",
+      "overwrite": "Overwrite",
+      "copyWillOverwriteProgram": "This program will overwrite on machine"
     },
     "version": {
       "_": "Version",

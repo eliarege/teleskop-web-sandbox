@@ -1,41 +1,42 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { notification } from '~/shared/functions'
-import type { MachineInfo, ProcessType, Program, ProgramHeader, ProgramStep, ProgramTable } from '~/shared/types'
+import type { CopyItem, MachineInfo, ProcessType, Program, ProgramHeader, ProgramItem, ProgramStep } from '~/shared/types'
 
 export interface ContextMenuStore {
-  getCopiedValues: () => Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>
+  getCopiedValues: () => ProgramItem[]
   getCopiedStepsValues: (machineId: number, programNo: number) => { machineId: number, programNo: number, steps: ProgramStep[] } | undefined
   comparisonBasketLength: () => number
-  copy: (program: ProgramTable[], fromMachine: number) => void
-  paste: (machineId: number, directPasteValues?: Array<{ machine: number, program: Program, newProgramNo?: number }>) => Promise<Array<{ machine: number, program: Program }>>
+  copy: (fromMachine: number, program: ProgramItem[]) => void
+  paste: (machineId: number, remains?: CopyItem) => Promise<CopyItem>
   setCtx: (ctx?: any) => void
-  deleteProgram: (selectedRows: ProgramTable[], selectedOption: number, machineId: number) => Promise<void>
+  deleteProgram: (selectedRows: ProgramItem[], selectedOption: number, machineId: number) => Promise<void>
   getProgram: (programNo: number, machineId: number) => Promise<Program>
   updateProgramHeader: (machineId: number, program: ProgramHeader,) => Promise<void>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   getProcessTypes: () => Promise<ProcessType[]>
-  changeProcessType: (selectedRows: Array<{ programNo: number }>, newType: number, machineId: number) => Promise<void>
-  sendProgram: (programs: ProgramTable[], machineId: number) => Promise<void>
-  getRemoteProgram: (programs: ProgramTable[], machineId: number) => Promise<void>
-  sendProgramToMachines: (programs: ProgramHeader[], machines: MachineInfo[], machineId: number) => Promise<void>
-  deleteProgramFromMachine: (programs: ProgramTable[], machines: Array<any>, source: string) => Promise<void>
+  changeProcessType: (machineId: number, programs: ProgramItem[], newType: number) => Promise<void>
+  sendProgram: (programs: ProgramItem[], machineId: number) => Promise<void>
+  getRemoteProgram: (programs: ProgramItem[], machineId: number) => Promise<void>
+  sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
+  deleteProgramFromMachine: (programs: ProgramItem[], machines: Array<any>, source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
-  concatenatePrograms: (programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
+  concatenatePrograms: (programs: ProgramItem[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
   comparison: () => void
-  addToComparisonBasket: (e: any, machineId: number) => void
+  addToComparisonBasket: (machineId: number, programs: ProgramItem[]) => void
   clearComparisonBasket: () => void
-  getComparisonBasket: () => Array<{ program: Program, machineId: number }>
+  getComparisonBasket: () => { machineId: number, programNo: number }[]
   isThereCopiedValue: ComputedRef<boolean>
   copyStep: () => void
   pasteStep: () => void
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
-  const copiedValues = ref([] as Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>)
-  const copiedStepValues = ref([] as Array<{ machineId: number, programNo: number, steps: ProgramStep[] }>)
-  let comparsionBasket = [] as Array<any>
+  const copiedValues = ref([] as ProgramItem[])
+  const copiedStepValues = ref([] as { machineId: number, programNo: number, steps: ProgramStep[] }[])
+  let comparsionBasket = [] as { machineId: number, programNo: number }[]
+
   // const machineId = Number(route.params.machine_id)
   let t = function (param: string, ...args: any[]) {
     return param
@@ -109,15 +110,15 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     comparsionBasket = []
   }
 
-  function addToComparisonBasket(e: any, machineId: number) {
-    e.forEach((element) => {
-      if (!comparsionBasket.includes([element.programNo, machineId]))
-        comparsionBasket.push([element.programNo, machineId])
+  function addToComparisonBasket(machineId: number, programs: ProgramItem[]) {
+    programs.forEach((program) => {
+      if (!comparsionBasket.includes({ machineId, programNo: program.programNo }))
+        comparsionBasket.push({ machineId, programNo: program.programNo })
     })
   }
 
   function comparison() {
-    const path = `/comparison?m=${comparsionBasket[0][1]}&p1=${comparsionBasket[0][0]}&p2=${comparsionBasket[1][0]}`
+    const path = `/comparison?m=${comparsionBasket[0].machineId}&p1=${comparsionBasket[0].programNo}&p2=${comparsionBasket[1].programNo}`
     clearComparisonBasket()
     navigateTo(path)
   }
@@ -128,53 +129,41 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return comparsionBasket.length
   }
 
-  function copy(selectedPrograms: ProgramTable[], fromMachine: number) {
+  function copy(fromMachine: number, programs: ProgramItem[]) {
     copiedValues.value = []
-    selectedPrograms.forEach((program) => {
-      copiedValues.value.push({ machine: fromMachine, program })
+    programs.forEach(({ programNo, name }) => {
+      copiedValues.value.push({ machineId: fromMachine, programNo, name })
     })
   }
 
-  async function paste(machineId: number, directPasteValues?: Array<{ machine: number, program: ProgramTable, newProgramNo?: number }>) {
+  async function paste(machineId: number, remains?: CopyItem): Promise<CopyItem> {
     const editor = useEditorStore()
-    const operationValues = directPasteValues || copiedValues.value
-    const remains: { machine: number, program: ProgramTable }[] = []
-    const pastedValues: { machine: number, program: ProgramTable }[] = []
-    for (const val of operationValues) {
-      const returnValue = await createProgramOnPaste(val, machineId)
-      if (returnValue === 0) {
-        remains.push(val)
-        notification(false, t('contextMenu.pasteNotification.fail', { name: val.program.name, programNo: val.newProgramNo ? val.newProgramNo : val.program.programNo }))
-      } else {
-        pastedValues.push(val)
-        editor.selectedPrograms.push(val.program)
-        notification(true, t('contextMenu.pasteNotification.success', { name: val.program.name, programNo: val.newProgramNo ? val.newProgramNo : val.program.programNo }))
-      }
-    }
-    await editor.fetchAllPrograms()
-    return remains
-  }
+    const toPaste: CopyItem = { formMachineId: 0, toMachineId: 0, program: [] }
 
-  async function createProgramOnPaste(copiedValue: { machine?: number, program: ProgramTable, newProgramNo?: number }, machineId: number): Promise<number> {
-    const { fetch } = useKeycloak()
-    try {
-      return await fetch(`/api/machine/${machineId}/program`, {
-        method: 'POST',
-        body: {
-          newProgramNo: Number(copiedValue.newProgramNo),
-          programNo: Number(copiedValue.program.programNo),
-          machineIdOfCopiedProgram: copiedValue.machine,
-        },
+    if (remains) {
+      toPaste.formMachineId = remains.formMachineId
+      toPaste.toMachineId = machineId
+      toPaste.program.push(...remains.program)
+    } else {
+      copiedValues.value.forEach((item) => {
+        toPaste.formMachineId = item.machineId
+        toPaste.toMachineId = machineId
+        toPaste.program.push({ programNo: item.programNo, name: item.name, newProgramNo: null })
       })
-    } catch (e: any) {
-      if (e.data.data.code === 'PROGRAM_EXISTS') {
-        return 0
-      }
-      throw e
     }
+
+    const { fetch } = useKeycloak()
+    const conflicts = await fetch('/api/copy', {
+      method: 'POST',
+      body: JSON.stringify({ copyProgram: toPaste }),
+    })
+
+    await editor.fetchAllPrograms()
+    editor.selectedPrograms = getCopiedValues()
+    return conflicts
   }
 
-  async function deleteProgram(selectedRows: ProgramTable[], selectedOption: number, machineId: number) {
+  async function deleteProgram(selectedRows: ProgramItem[], selectedOption: number, machineId: number) {
     const { fetch } = useKeycloak()
     const query = `source=${selectedOption}`
 
@@ -223,11 +212,11 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return await fetch('/api/process')
   }
 
-  async function changeProcessType(selectedRows: ProgramTable[], newType: number, machineId: number) {
+  async function changeProcessType(machineId: number, programs: ProgramItem[], newType: number) {
     const { fetch } = useKeycloak()
-    for (const row of selectedRows) {
-      const program = await getProgram(row.programNo, machineId)
-      program.typeId = newType
+    for (const program of programs) {
+      const existingProgram = await getProgram(program.programNo, machineId)
+      existingProgram.typeId = newType
       try {
         const check = await fetch(`/api/machine/${machineId}/program`, {
           method: 'PUT',
@@ -243,7 +232,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function sendProgram(programs: ProgramTable[], machineId: number) {
+  async function sendProgram(programs: ProgramItem[], machineId: number) {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
 
@@ -278,7 +267,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function getRemoteProgram(programs: ProgramTable[], machineId: number): Promise<void> {
+  async function getRemoteProgram(programs: ProgramItem[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
 
@@ -295,7 +284,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function sendProgramToMachines(programs: ProgramTable[], machines: MachineInfo[], machineId: number): Promise<void> {
+  async function sendProgramToMachines(programs: ProgramItem[], machines: MachineInfo[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
 
@@ -314,7 +303,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function deleteProgramFromMachine(programs: ProgramTable[], machines: MachineInfo[], source: string): Promise<void> {
+  async function deleteProgramFromMachine(programs: ProgramItem[], machines: MachineInfo[], source: string): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
 
@@ -349,7 +338,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return await fetch(`/api/machine/${machineId}/program/${programNo}/version`)
   }
 
-  async function concatenatePrograms(programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) {
+  async function concatenatePrograms(programs: ProgramItem[], programDetails: ProgramHeader, machineId: number) {
     const editor = useEditorStore()
 
     const newProgram = editor.createEmptyProgram()

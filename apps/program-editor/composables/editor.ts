@@ -573,7 +573,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Veriler çekildikten sonra, programın her bir adımı (`step`) ve paralel komutları (`parallelCommands`) işlenir.
    * Her bir adım ve komut için benzersiz ID'ler atanır.
    */
-  async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<void> {
+  async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<Program> {
     selectedSteps.value = []
     lastStepId = 0
     lastCommandId = 0
@@ -602,6 +602,8 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     originalProgram.value = klona(program.value)
+
+    return program.value
   }
 
   /**
@@ -984,6 +986,15 @@ export const useEditorStore = defineStore('editor', () => {
     return CommandIconMapping[machineCommand.icon]
   }
 
+  async function hasProgram(machineId: number, programNo: number): Promise<boolean> {
+    await fetchAllPrograms()
+    await fetchMachine(machineId)
+    const res = allPrograms.value.find(program => program.programNo === programNo)
+    if (machine.value.id === machineId && res)
+      return true
+    return false
+  }
+
   return {
     program,
     originalProgram,
@@ -1033,5 +1044,6 @@ export const useEditorStore = defineStore('editor', () => {
     allStepExpanded,
     hasProgramChanged,
     isStepSelected,
+    hasProgram,
   }
 })
