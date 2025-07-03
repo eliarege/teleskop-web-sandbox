@@ -22,6 +22,7 @@ withDefaults(defineProps<{
   <div
     v-if="withWrapper"
     class="spinner-wrapper"
+    :style="{ '--outer-color': outerColor, '--center-color': centerColor, '--inner-color': innerColor }"
     :class="{ withBackground: 'spinner-wrapper-background' }"
   >
     <span class="spinner" />
@@ -46,7 +47,7 @@ withDefaults(defineProps<{
 
 /* Outer spinner */
 .spinner {
-  border-color: v-bind(outerColor) v-bind(outerColor) transparent transparent;
+  border-color: var(--outer-color) var(--outer-color) transparent transparent;
   border-width: 3px;
   border-radius: 50%;
   animation: rotation 1s linear infinite;
@@ -75,7 +76,7 @@ withDefaults(defineProps<{
 
 /* Center spinner */
 .spinner::after {
-  border-color: transparent transparent v-bind(centerColor) v-bind(centerColor);
+  border-color: transparent transparent var(--center-color) var(--center-color);
   animation: rotation 0.5s linear reverse infinite;
   width: 40px;
   height: 40px;
@@ -83,7 +84,7 @@ withDefaults(defineProps<{
 
 /* Inner spinner */
 .spinner::before {
-  border-color: v-bind(innerColor) v-bind(innerColor) transparent transparent;
+  border-color: var(--inner-color) var(--inner-color) transparent transparent;
   animation: rotation 1.5s linear infinite;
   width: 32px;
   height: 32px;
