@@ -33,12 +33,15 @@ export default defineAuthEventHandler(async (event) => {
     const targetProgramNo = program.newProgramNo ?? program.programNo
     const isToExist = await toMachine.hasProgram(targetProgramNo)
 
-    if (isToExist) {
+    if (isToExist && !program.newProgramNo) {
       conflicts.program.push({
         programNo: program.programNo,
         name: program.name,
         newProgramNo: null,
       })
+    } else if (isToExist && program.newProgramNo) {
+      const { program: fetchedProgram } = await fromMachine.fetchProgram(program.programNo)
+      await toMachine.updateProgram({ ...fetchedProgram, programNo: program.newProgramNo })
     } else {
       const { program: fetchedProgram } = await fromMachine.fetchProgram(program.programNo)
 
