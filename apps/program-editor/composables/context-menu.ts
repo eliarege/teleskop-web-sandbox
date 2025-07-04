@@ -136,6 +136,18 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     })
   }
 
+  /**
+   * copiedValues’da saklanan programları verilen makineye yapıştırır.
+   * Eğer `remains` parametresi verilirse, yapıştırılacak programların kaynağı olarak bu kullanılır.
+   * Aksi halde, copiedValues’da saklanan programlar kullanılır.
+   * Metot, yapıştırılan programları içeren bir CopyItem nesnesi döner.
+   * Dönen CopyItem’ın `program` özelliği, yapıştırılan programları içerir;
+   * `fromMachineId` ve `toMachineId` özellikleri ise programların kopyalandığı ve yapıştırıldığı makine ID’lerini belirtir.
+   *
+   * @param machineId — Programların yapıştırılacağı makinenin ID’si
+   * @param remains — Opsiyonel olarak yapıştırılacak programları içeren CopyItem nesnesi
+   * @returns Yapıştırılan programları içeren bir CopyItem nesnesi
+   */
   async function paste(machineId: number, remains?: CopyItem): Promise<CopyItem> {
     const editor = useEditorStore()
     const toPaste: CopyItem = { fromMachineId: 0, toMachineId: 0, program: [] }
