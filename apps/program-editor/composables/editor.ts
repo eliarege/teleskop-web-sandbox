@@ -12,7 +12,7 @@ export const useEditorStore = defineStore('editor', () => {
   const program = ref<Program>(createEmptyProgram())
   const originalProgram = ref<Program>(createEmptyProgram())
   const machine = ref<Machine>(createMachine())
-  const selectedPrograms = ref<ProgramItem[]>([])
+  const selectedPrograms = ref<ProgramTable[]>([])
   const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTable[]>([])
   const selectedSteps = ref<ProgramStep[]>([])

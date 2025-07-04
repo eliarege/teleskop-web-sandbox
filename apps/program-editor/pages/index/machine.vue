@@ -7,7 +7,7 @@ import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
-import type { ContextBarButtons, ProgramTable } from '~/shared/types'
+import type { ContextBarButtons, ProgramItem, ProgramTable } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { formatDuration } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
@@ -480,8 +480,10 @@ const contextMenuOptions = computed(() => [
         $commandManager.executeCommand(
           'changeProcessType',
           { $q },
-          editor.selectedPrograms,
           machineId,
+          editor.selectedPrograms.map((row: ProgramItem) => {
+            return { machineId, programNo: row.programNo, name: row.name }
+          }),
         )
       },
     },

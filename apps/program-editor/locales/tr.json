@@ -284,6 +284,10 @@
       "overwrite": "Üzerine Yapıştır",
       "copyWillOverwriteProgram": "Bu program bu makinedeki mevcut programın üzerine kopyalanacak."
     },
+    "changeProcessTypeDialog": {
+      "title": "Program Tipini Değiştir",
+      "warning": "Değiştirmek istediğiniz program tipini seçiniz"
+    },
     "version": {
       "_": "Versiyon",
       "header": "Versiyon Bilgileri",

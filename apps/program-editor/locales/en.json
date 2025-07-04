@@ -284,6 +284,10 @@
       "overwrite": "Overwrite",
       "copyWillOverwriteProgram": "This program will overwrite on machine"
     },
+    "changeProcessTypeDialog": {
+      "title": "Change Process Type",
+      "warning": "Please select the process type you want to change"
+    },
     "version": {
       "_": "Version",
       "header": "Version Information",
