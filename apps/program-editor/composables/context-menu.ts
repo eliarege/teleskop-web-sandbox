@@ -138,15 +138,15 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function paste(machineId: number, remains?: CopyItem): Promise<CopyItem> {
     const editor = useEditorStore()
-    const toPaste: CopyItem = { formMachineId: 0, toMachineId: 0, program: [] }
+    const toPaste: CopyItem = { fromMachineId: 0, toMachineId: 0, program: [] }
 
     if (remains) {
-      toPaste.formMachineId = remains.formMachineId
+      toPaste.fromMachineId = remains.fromMachineId
       toPaste.toMachineId = machineId
       toPaste.program.push(...remains.program)
     } else {
       copiedValues.value.forEach((item) => {
-        toPaste.formMachineId = item.machineId
+        toPaste.fromMachineId = item.machineId
         toPaste.toMachineId = machineId
         toPaste.program.push({ programNo: item.programNo, name: item.name, newProgramNo: null })
       })

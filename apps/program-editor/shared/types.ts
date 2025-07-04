@@ -490,7 +490,7 @@ export interface CommandError {
 }
 
 export interface CopyItem {
-  formMachineId: number
+  fromMachineId: number
   toMachineId: number
   program: {
     programNo: number

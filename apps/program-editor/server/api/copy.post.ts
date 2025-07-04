@@ -7,15 +7,15 @@ export default defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
 
   const copyProgram: CopyItem = body.copyProgram
-  const conflicts: CopyItem = { formMachineId: copyProgram.formMachineId, toMachineId: copyProgram.toMachineId, program: [] }
+  const conflicts: CopyItem = { fromMachineId: copyProgram.fromMachineId, toMachineId: copyProgram.toMachineId, program: [] }
 
-  const fromMachine = await machineStore.get(copyProgram.formMachineId)
+  const fromMachine = await machineStore.get(copyProgram.fromMachineId)
 
   if (!fromMachine) {
-    throw new PError('MACHINE_NOT_FOUND', { machineId: copyProgram.formMachineId })
+    throw new PError('MACHINE_NOT_FOUND', { machineId: copyProgram.fromMachineId })
   }
 
-  const toMachine = (copyProgram.formMachineId === copyProgram.toMachineId)
+  const toMachine = (copyProgram.fromMachineId === copyProgram.toMachineId)
     ? fromMachine
     : await machineStore.get(copyProgram.toMachineId)
 
@@ -27,7 +27,7 @@ export default defineAuthEventHandler(async (event) => {
     const isFromExist = await fromMachine.hasProgram(program.programNo)
 
     if (!isFromExist) {
-      throw new PError('PROGRAM_NOT_FOUND', { machineId: copyProgram.formMachineId, programNo: program.programNo })
+      throw new PError('PROGRAM_NOT_FOUND', { machineId: copyProgram.fromMachineId, programNo: program.programNo })
     }
 
     const targetProgramNo = program.newProgramNo ?? program.programNo
