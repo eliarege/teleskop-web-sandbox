@@ -31,19 +31,24 @@ export default defineAuthEventHandler(async (event) => {
         throw new PError('PROGRAM_NOT_FOUND', { machineId: copyProgram.formMachineId, programNo: program.programNo })
       }
 
-      const isToExist = await toMachine.hasProgram(program.programNo)
+      const targetProgramNo = program.newProgramNo ?? program.programNo
+      const isToExist = await toMachine.hasProgram(targetProgramNo)
 
       if (isToExist) {
-        if (program.newProgramNo) {
-          const { program: fetchProgram } = await fromMachine.fetchProgram(program.programNo)
-          fetchProgram.programNo = program.newProgramNo!
-          await toMachine.updateProgram(fetchProgram)
-        } else {
-          conflicts.program.push({ programNo: program.programNo, name: program.name, newProgramNo: null })
-        }
+        conflicts.program.push({
+          programNo: program.programNo,
+          name: program.name,
+          newProgramNo: null,
+        })
       } else {
-        const { program: fetchProgram } = await fromMachine.fetchProgram(program.programNo)
-        await toMachine.insertProgram(fetchProgram)
+        const { program: fetchedProgram } = await fromMachine.fetchProgram(program.programNo)
+
+        // Sadece newProgramNo varsa değiştirilir
+        if (program.newProgramNo) {
+          fetchedProgram.programNo = program.newProgramNo
+        }
+
+        await toMachine.insertProgram(fetchedProgram)
       }
     }
 
