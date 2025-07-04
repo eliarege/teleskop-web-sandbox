@@ -219,7 +219,6 @@ registerCommand(() => {
         const resolvedItems = await openDialogonPaste(ctx, conflicts)
 
         // Yeni numaralarla tekrar yapıştır
-        console.log('resolvedItems', resolvedItems)
         if (resolvedItems.program.length) {
           await contextMenuStore.paste(toMachineId, resolvedItems)
         }
