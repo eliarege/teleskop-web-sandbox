@@ -146,6 +146,15 @@ export interface ProgramHeader {
   manDyeReq: number
 }
 
+export interface ProgramHeaderUpdate {
+  programNo: number
+  name?: string
+  typeId?: number
+  author?: string | null
+  comment?: string | null
+  isChanged?: boolean | null
+}
+
 export interface Program extends ProgramHeader {
   icon: string | null
   programNo: number
