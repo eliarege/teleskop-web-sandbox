@@ -146,6 +146,15 @@ export interface ProgramHeader {
   manDyeReq: number
 }
 
+export interface ProgramHeaderUpdate {
+  programNo: number
+  name?: string
+  typeId?: number
+  author?: string | null
+  comment?: string | null
+  isChanged?: boolean | null
+}
+
 export interface Program extends ProgramHeader {
   icon: string | null
   programNo: number
@@ -478,4 +487,20 @@ export interface CommandError {
     ioName?: string
     ioValue?: string
   }[]
+}
+
+export interface CopyItem {
+  fromMachineId: number
+  toMachineId: number
+  program: {
+    programNo: number
+    name: string
+    newProgramNo: number | null
+  }[]
+}
+
+export interface ProgramItem {
+  machineId: number
+  programNo: number
+  name: string
 }

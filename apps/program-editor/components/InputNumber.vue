@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<{
   disable?: boolean
   maybeEmpty?: boolean
   id?: string
+  label?: string
 }>(), {
   type: 'decimal',
   rules: () => [],
@@ -204,6 +205,7 @@ onMounted(() => {
     :outlined="outlined"
     :disable="disable"
     :dense="dense"
+    :label="label"
     :suffix="format === 'DURATION' ? 'min' : ''"
   >
     <template #control="{ id: inputId }">

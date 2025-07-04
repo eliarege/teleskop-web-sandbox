@@ -10,7 +10,8 @@ import { parseProgramString } from '../parse'
 import { PError } from '../error'
 import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
-import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramStep, ProgramStepCommand, ProgramTable, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import { mapObject } from '../utils/map'
+import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTable, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
@@ -272,14 +273,14 @@ export class MachineController {
   }
 
   /**
-   * Makinenin tüm programlarının headers'larını getirir
-   * @returns {Promise<Array<[string, string]>>} - Header dizisi
+   * Makinenin tüm programlarının dizisini getirir
+   * @returns {Promise<{ programNo: number, name: string }[]>} - Makinenin tüm programlarının dizisi
    */
   @withTransaction
-  async getProgramHeadersAsList(): Promise<Array<[string, string]>[]> {
+  async getProgramHeadersAsList(): Promise<{ programNo: number, name: string }[]> {
     return await this.trx
       .select({
-        value: 'H.PROGNO',
+        programNo: 'H.PROGNO',
         name: 'H.NAME',
       })
       .from('BFMASTERPRGHEADER AS H')
@@ -854,17 +855,16 @@ export class MachineController {
    * @returns {Promise<boolean>} - Güncellenme durumu icin boolean
    */
   @withTransaction
-  async updateProgramHeader(program: ProgramHeader): Promise<boolean> {
+  async updateProgramHeader(program: ProgramHeaderUpdate): Promise<boolean> {
+    const programObject = mapObject(program, {
+      name: 'NAME',
+      isChanged: 'ISCHANGED',
+      typeId: 'PROCESSCODE',
+      // güncellenecek sütunlar ...
+    })
+
     const result = await this.trx
-      .update({
-        NAME: program.name,
-        ISCHANGED: program.isChanged,
-        PROCESSCODE: program.typeId,
-        PRGSTATE: program.programState,
-        CHANGEDATE: program.updatedAt,
-        TBBCHANGEDATE: program.updatedAtTBB,
-        TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
-      })
+      .update(programObject)
       .from('BFMASTERPRGHEADER')
       .where('PROGNO', program.programNo)
       .andWhere('MACHINEID', this.id)

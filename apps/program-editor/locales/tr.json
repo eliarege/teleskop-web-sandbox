@@ -266,7 +266,7 @@
     "programVersion": "Program Versiyonları",
     "addToComparison": "Karşılaştırma Listesine Ekle",
     "compareWith": "Bununla Karşılaştır",
-    "pasteDuplicateKeyWarning": "Yapıştırılmak istenilen programların numaraları bu makinede mevcut. Lütfen yeni program numaralarını giriniz.",
+    "clearComparisonBasket": "Karşılaştırma Listesini Temizle",
     "deleteProgramDialog": {
       "title": "Programı Sil",
       "warning": "Program {name} silinecek! Devam etmek istediğinize emin misiniz?",
@@ -277,6 +277,16 @@
     "concatenateProgramsDialog": {
       "title": "Programları Birleştir",
       "warning": "Programları fare ile taşıyarak sıralayınız."
+    },
+    "changeProgramNoOnPasteDialog": {
+      "title": "Program Numaralarını Düzenle",
+      "warning": "Yapıştırılmak istenilen programların numaraları bu makinede mevcut. Lütfen yeni program numaralarını giriniz.",
+      "overwrite": "Üzerine Yapıştır",
+      "copyWillOverwriteProgram": "Bu program bu makinedeki mevcut programın üzerine kopyalanacak."
+    },
+    "changeProcessTypeDialog": {
+      "title": "Program Tipini Değiştir",
+      "warning": "Değiştirmek istediğiniz program tipini seçiniz"
     },
     "version": {
       "_": "Versiyon",

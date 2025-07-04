@@ -99,7 +99,14 @@ async function handleCreateProgram(
 
     // Loglama ve kaydetme işlemleri
     logger.info(`User: ${userName}. Created program ${program.programNo} on machine ${machineId}.`)
-    await machine.insertProgram(program)
+
+    const existingProgram = await machine.hasProgram(program.programNo)
+    if (existingProgram) {
+      await machine.updateProgram(program)
+    } else {
+      await machine.insertProgram(program)
+    }
+
     await logEditorOperation(actCode, act1, act2)
 
     return { success: true }
