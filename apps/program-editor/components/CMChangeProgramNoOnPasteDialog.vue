@@ -12,14 +12,11 @@ defineEmits([
 const { t } = useI18n()
 const editor = useEditorStore()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
-
 const newIds = ref(props.remains)
 
-// const isOKDisabled = computed(() => {
-//   return props.remains.some((remainder, index) => {
-//     return newIds.value.newProgramNos[index].newProgramNo !== remainder.programNo
-//   })
-// })
+const isOKDisabled = computed(() => {
+  return newIds.value.program.some(program => program.newProgramNo === null)
+})
 
 function formatProgramName(name: string) {
   return name.length > 30 ? `${name.substring(0, 30)}...` : name
@@ -56,17 +53,18 @@ function formatProgramName(name: string) {
         >
           <div class="flex items-center ">
             <InputNumber
-              :id="`programNo-${index}`"
-              v-model="newIds.program[index].newProgramNo"
+              :id="`${index}`"
+              :model-value="newIds.program[index].newProgramNo ?? undefined"
               class="w-20"
               label=""
               hide-bottom-space
               maybe-empty
               dense
+              @update:model-value="val => newIds.program[index].newProgramNo = val ?? null"
             />
             <UnoIcon
               class="i-jam:write-f size-4 ml-2 cursor-pointer"
-              :class="{ 'text-blue': program.newProgramNo !== newIds.program[index].newProgramNo! }"
+              :class="{ 'text-blue': program.programNo === newIds.program[index].newProgramNo! }"
               @click="newIds.program[index].newProgramNo = program.programNo"
             >
               <q-tooltip>
@@ -107,6 +105,7 @@ function formatProgramName(name: string) {
         />
         <q-btn
           :label="t('apply')"
+          :disable="isOKDisabled"
           class="q-mr-sm bg-primary text-white"
           flat
           @click="onDialogOK(newIds)"
