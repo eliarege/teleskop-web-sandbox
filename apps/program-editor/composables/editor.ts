@@ -987,15 +987,6 @@ export const useEditorStore = defineStore('editor', () => {
     return CommandIconMapping[machineCommand.icon]
   }
 
-  async function hasProgram(machineId: number, programNo: number): Promise<boolean> {
-    await fetchAllPrograms()
-    await fetchMachine(machineId)
-    const res = allPrograms.value.find(program => program.programNo === programNo)
-    if (machine.value.id === machineId && res)
-      return true
-    return false
-  }
-
   return {
     program,
     originalProgram,
@@ -1045,6 +1036,5 @@ export const useEditorStore = defineStore('editor', () => {
     allStepExpanded,
     hasProgramChanged,
     isStepSelected,
-    hasProgram,
   }
 })

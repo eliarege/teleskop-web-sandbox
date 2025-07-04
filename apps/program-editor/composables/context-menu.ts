@@ -159,7 +159,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     })
 
     await editor.fetchAllPrograms()
-    editor.selectedPrograms = getCopiedValues()
     return conflicts
   }
 
@@ -214,13 +213,10 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function changeProcessType(machineId: number, programs: ProgramItem[], newType: number) {
     for (const program of programs) {
       try {
-        const check = await updateProgramHeader(machineId, program.programNo, {
+        await updateProgramHeader(machineId, program.programNo, {
           programNo: program.programNo,
           typeId: newType,
         })
-
-        const status = check ? 'success' : 'fail'
-        notification(!!check, t(`contextMenu.changeProcessTypeNotification.${status}`, { programNo: program.programNo }))
       } catch (e) {
         notification(false, t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
       }
