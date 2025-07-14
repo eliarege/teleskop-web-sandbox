@@ -157,7 +157,6 @@ await editor.fetchAllPrograms().then(() => {
 })
 
 const versionDialogVisible = ref(false)
-const comparisonDialogVisible = ref(false)
 const versions = ref([] as Array<any>)
 const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length > 1)
 
@@ -551,7 +550,6 @@ const contextMenuOptions = computed(() => [
       disabled: !contextMenuStore.comparisonBasketLength(),
       onClick: () => {
         contextMenuStore.addToComparisonBasket(machineId, editor.selectedPrograms)
-        // comparisonDialogVisible.value = true
         contextMenuStore.comparison()
       },
     },
@@ -767,13 +765,6 @@ function handleRowClass(row: ProgramTable): string {
       @close="versionDialogVisible = false"
       @delete="e => handleVersionDelete(e)"
       @active-version-changed="editor.fetchAllPrograms(), fetchVersions(editor.selectedPrograms[0].programNo)"
-    />
-  </EliarModal>
-
-  <EliarModal v-if="comparisonDialogVisible">
-    <CMComparisonDialog
-      type="comparison"
-      @close="comparisonDialogVisible = false"
     />
   </EliarModal>
 </template>
