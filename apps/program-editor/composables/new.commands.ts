@@ -306,11 +306,17 @@ async function getProgramsOrder(ctx: any, selectedRows: ProgramTable[]): Promise
 }
 
 async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
+  const editor = useEditorStore()
+
   return new Promise((resolve, reject) => {
     ctx.$q.dialog({
       component: CMNewProgramDialog,
       componentProps: {
         type: 'newProgram',
+        program: editor.createEmptyProgram(),
+        machineId: editor.machine.id,
+        machineName: editor.machine.name,
+        allProcessTypes: editor.allProcessTypes,
       },
     }).onOk((program: ProgramHeader) => {
       resolve(program)

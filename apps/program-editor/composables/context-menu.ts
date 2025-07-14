@@ -1,7 +1,7 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { notification } from '~/shared/functions'
-import type { CopyItem, MachineInfo, ProcessType, Program, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStep } from '~/shared/types'
+import type { CopyItem, MachineInfo, ProcessType, Program, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTable, StepError } from '~/shared/types'
 
 export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
@@ -11,7 +11,7 @@ export interface ContextMenuStore {
   paste: (machineId: number, remains?: CopyItem) => Promise<CopyItem>
   setCtx: (ctx?: any) => void
   deleteProgram: (selectedRows: ProgramItem[], selectedOption: number, machineId: number) => Promise<void>
-  getProgram: (programNo: number, machineId: number) => Promise<Program>
+  getProgram: (programNo: number, machineId: number) => Promise<{ program: Program, programErrors: StepError[] }>
   updateProgramHeader: (machineId: number, programNo: number, program: ProgramHeaderUpdate) => Promise<boolean>
   changeProgramName: (machineId: number, programNo: number, newName: string) => Promise<boolean>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
@@ -23,7 +23,7 @@ export interface ContextMenuStore {
   deleteProgramFromMachine: (programs: ProgramItem[], machines: Array<any>, source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
-  concatenatePrograms: (programs: ProgramItem[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
+  concatenatePrograms: (programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
   comparison: () => void
   addToComparisonBasket: (machineId: number, programs: ProgramItem[]) => void
   clearComparisonBasket: () => void
@@ -198,14 +198,18 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     await Promise.all(deletionTasks)
   }
 
-  async function getProgram(programNo: number, machineId: number): Promise<Program> {
+  async function getProgram(programNo: number, machineId: number): Promise<{ program: Program, programErrors: StepError[] }> {
     const { fetch } = useKeycloak()
-    return await fetch(`/api/machine/${machineId}/program/${programNo}`)
+    const result = await fetch(`/api/machine/${machineId}/program/${programNo}`)
+
+    return result as { program: Program, programErrors: StepError[] }
   }
 
   async function getProgramHeader(machineId: number, programNo: number): Promise<ProgramHeader> {
     const { fetch } = useKeycloak()
-    return await fetch(`/api/machine/${machineId}/program/${programNo}/header`)
+    const result = await fetch(`/api/machine/${machineId}/program/${programNo}/header`)
+
+    return result as ProgramHeader
   }
 
   async function updateProgramHeader(machineId: number, programNo: number, program: ProgramHeaderUpdate): Promise<boolean> {
@@ -351,7 +355,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return await fetch(`/api/machine/${machineId}/program/${programNo}/version`)
   }
 
-  async function concatenatePrograms(programs: ProgramItem[], programDetails: ProgramHeader, machineId: number) {
+  async function concatenatePrograms(programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) {
     const editor = useEditorStore()
 
     const newProgram = editor.createEmptyProgram()
@@ -365,7 +369,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     editor.isLoading = true
     try {
       for (const program of programs) {
-        const fetchedProgram = await getProgram(program.programNo, machineId)
+        const { program: fetchedProgram } = await getProgram(program.programNo, machineId)
         newProgram.steps.push(...fetchedProgram.steps)
       }
 

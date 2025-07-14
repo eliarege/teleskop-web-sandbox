@@ -3,19 +3,19 @@ import { Sortable } from 'sortablejs-vue3'
 import { useDialogPluginComponent } from 'quasar'
 import type { ProgramTable } from '~/shared/types'
 
-const props = defineProps({
-  programs: Array<ProgramTable[]>,
-})
+const props = defineProps<{
+  programs: ProgramTable[]
+}>()
 
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
 
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
+const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const programs = ref(props.programs)
 
-function moveItemInArray(array: [], from: number, to: number) {
+function moveItemInArray(array: ProgramTable[], from: number, to: number) {
   const item = array.splice(from, 1)[0]
   array.splice(to, 0, item)
 }
