@@ -341,7 +341,7 @@ registerCommand(() => {
           },
         }).onOk(async (program: ProgramHeader) => {
           editor.isLoading = true
-          await contextMenuStore.updateProgramHeader(machineId, programNo, program)
+          await contextMenuStore.changeProgramName(machineId, programNo, program.name)
           await editor.fetchAllPrograms()
           editor.isLoading = false
           return true

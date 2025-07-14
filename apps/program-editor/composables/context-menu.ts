@@ -13,6 +13,7 @@ export interface ContextMenuStore {
   deleteProgram: (selectedRows: ProgramItem[], selectedOption: number, machineId: number) => Promise<void>
   getProgram: (programNo: number, machineId: number) => Promise<Program>
   updateProgramHeader: (machineId: number, programNo: number, program: ProgramHeaderUpdate) => Promise<boolean>
+  changeProgramName: (machineId: number, programNo: number, newName: string) => Promise<boolean>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   getProcessTypes: () => Promise<ProcessType[]>
   changeProcessType: (machineId: number, programs: ProgramItem[], newType: number) => Promise<void>
@@ -217,6 +218,15 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return !!check
   }
 
+  async function changeProgramName(machineId: number, programNo: number, newName: string): Promise<boolean> {
+    const check = updateProgramHeader(machineId, programNo, {
+      programNo,
+      name: newName,
+    })
+
+    return !!check
+  }
+
   async function getProcessTypes(): Promise<ProcessType[]> {
     const { fetch } = useKeycloak()
     return await fetch('/api/process')
@@ -392,6 +402,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     sendProgram,
     getProgramHeader,
     updateProgramHeader,
+    changeProgramName,
     changeProcessType,
     comparison,
     addToComparisonBasket,
