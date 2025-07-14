@@ -15,10 +15,13 @@ const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const programs = ref(props.programs)
 
-function moveItemInArray(array: ProgramTable[], from: number, to: number) {
+function moveItemInArray(array: ProgramTable[], from: number | undefined, to: number | undefined) {
+  if (typeof from === 'undefined' || typeof to === 'undefined')
+    return
   const item = array.splice(from, 1)[0]
   array.splice(to, 0, item)
 }
+
 const options = {
   animation: 150,
   ghostClass: 'bg-blue-2',
