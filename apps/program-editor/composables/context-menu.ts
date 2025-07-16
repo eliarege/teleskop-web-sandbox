@@ -17,7 +17,7 @@ export interface ContextMenuStore {
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   getProcessTypes: () => Promise<ProcessType[]>
   changeProcessType: (machineId: number, programs: ProgramItem[], newType: number) => Promise<void>
-  sendProgram: (programs: ProgramItem[], machineId: number) => Promise<void>
+  sendProgram: (programs: ProgramTable[], machineId: number) => Promise<void>
   getRemoteProgram: (programs: ProgramItem[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
   deleteProgramFromMachine: (programs: ProgramItem[], machines: Array<any>, source: string) => Promise<void>
@@ -233,7 +233,9 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function getProcessTypes(): Promise<ProcessType[]> {
     const { fetch } = useKeycloak()
-    return await fetch('/api/process')
+    const result = await fetch('/api/process')
+
+    return result as ProcessType[]
   }
 
   async function changeProcessType(machineId: number, programs: ProgramItem[], newType: number) {
@@ -249,7 +251,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function sendProgram(programs: ProgramItem[], machineId: number) {
+  async function sendProgram(programs: ProgramTable[], machineId: number) {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
 
@@ -352,7 +354,9 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function fetchVersions(programNo: number, machineId: number): Promise<any[]> {
     const { fetch } = useKeycloak()
-    return await fetch(`/api/machine/${machineId}/program/${programNo}/version`)
+    const result = await fetch(`/api/machine/${machineId}/program/${programNo}/version`)
+
+    return result as any
   }
 
   async function concatenatePrograms(programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) {

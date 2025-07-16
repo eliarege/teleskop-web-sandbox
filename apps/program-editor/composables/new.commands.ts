@@ -389,7 +389,7 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'sendProgram',
-    async execute(ctx: any, selectedRows: ProgramItem[], machineId: number) {
+    async execute(ctx: any, selectedRows: ProgramTable[], machineId: number) {
       await contextMenuStore.sendProgram(selectedRows, machineId)
       await editor.fetchAllPrograms()
       return false
