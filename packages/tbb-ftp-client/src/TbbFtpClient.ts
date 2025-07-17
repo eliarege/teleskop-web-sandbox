@@ -69,6 +69,12 @@ export class TbbFtpClient {
     })
   }
 
+  private async ensureConnected() {
+    if (!this.client.closed)
+      return
+    await this.connect()
+  }
+
   /**
    * Alias for `connect`
    */
@@ -100,7 +106,8 @@ export class TbbFtpClient {
   }
 
   /** Download with defaults */
-  private _download(path: string) {
+  private async _download(path: string) {
+    await this.ensureConnected()
     return download(this.client, path, {
       encoding: 'utf8',
       emptyWhenNotFound: true,
@@ -112,7 +119,8 @@ export class TbbFtpClient {
    *
    * @param path
    */
-  upload(path: string, data: string | Uint8Array | Buffer, mode?: string | number) {
+  async upload(path: string, data: string | Uint8Array | Buffer, mode?: string | number) {
+    await this.ensureConnected()
     return upload(this.client, path, data, mode)
   }
 
@@ -128,7 +136,8 @@ export class TbbFtpClient {
    * @param path
    */
   async list(path: string): Promise<FileInfo[]> {
-    return await this.client.list(path)
+    await this.ensureConnected()
+    return this.client.list(path)
   }
 
   /**

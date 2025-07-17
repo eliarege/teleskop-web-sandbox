@@ -7,7 +7,7 @@ export type * from './types'
 
 export async function withTbbFtpClient(
   host: string,
-  callback: (client: TbbFtpClient) => Promise<void> | void,
+  callback: (client: TbbFtpClient) => any,
   options?: TbbFtpClientOptions,
 ) {
   const client = new TbbFtpClient(host, options)
