@@ -257,6 +257,7 @@ onBeforeUnmount(() => {
                 :url="joinURL(websockifyWsUrl, 'dispenser', `${dispenserId}`)"
                 :auth="enabled"
                 :token="token"
+                scale-viewport
                 resize-session
                 clip-viewport
                 drag-viewport

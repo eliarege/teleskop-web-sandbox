@@ -18,14 +18,14 @@ export default defineNuxtModule<ModuleOptions>({
 
     addRouteMiddleware({
       name: 'auth',
-      path: resolver.resolve('./keycloak/middleware'),
+      path: resolver.resolve('./runtime/middleware'),
       global: options.globalMiddleware ?? true,
     }, {
       prepend: true,
     })
 
     addPlugin({
-      src: resolver.resolve('./keycloak/plugin'),
+      src: resolver.resolve('./runtime/plugin'),
       mode: 'client',
       // Run before user plugins
       order: -1,

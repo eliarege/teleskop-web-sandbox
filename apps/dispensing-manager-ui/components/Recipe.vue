@@ -33,6 +33,7 @@ const isLastCorrectionNo = computed(() => {
 const hasManagerRole = computed(() => {
   return keycloak.hasResourceRole('manage')
 })
+
 const groupables: Array<{ key: keyof RecipeLatest, index: number }> = [
   { key: 'processOrder', index: 0 },
   { key: 'recipeType', index: 1 },
@@ -378,24 +379,17 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('keyup', handleKeyUp)
 })
+
+const plannedMachineButton = computed(() => {
+  return !!plankey.value && keycloak.hasResourceRole('manage')
+})
 </script>
 
 <template>
-  <!-- <button class="w-50 h-50 e-border" @click="getCorrectionNOs('11428', 'planKey')">
-    1
-  </button> -->
-
   <div class="outer-div">
     <div class="content flex flex-col gap-5">
       <div class="ml-5">
-        <!-- {{ t('recipe.infoText') }} -->
         <div class="flex flex-row items-center gap-5 pt-5">
-          <!-- {{ t('joborderNo') }}
-          <q-input
-            v-model="jobordernum"
-            clearable
-            style="width: 10%;"
-            /> -->
           <q-input
             :model-value="jobordernum"
             outlined
@@ -445,10 +439,11 @@ onBeforeUnmount(() => {
         <div class="ml-auto items-center mr-5">
           {{ t('plannedMachine') }} :
           {{ machine?.machinename }}
+
           <q-btn
             class="ml-5 py-3 w-75 items-start"
             :label="`${t('recipe.changePlannedMachine')}`"
-            :disabled="!plankey"
+            :disabled="!plannedMachineButton"
             icon="published_with_changes"
             @click="showChangeMachineDialog = true"
           />

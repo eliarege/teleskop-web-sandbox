@@ -292,7 +292,7 @@ async function showLogsOfSelectedStep() {
       </ElTableColumn>
     </ElTable>
     <div
-      v-if="contextMenuVisible && props.haveContextMenu && hasManagerRole"
+      v-if="contextMenuVisible && props.haveContextMenu"
       ref="tableContainer"
       class="context-menu"
       :style="contextMenuPosition"
@@ -301,10 +301,18 @@ async function showLogsOfSelectedStep() {
         class="el-menu-vertical-demo"
         @click="handleMenuClick"
       >
-        <ElMenuItem index="1" @click="checkIsTankNoRequired()">
+        <ElMenuItem
+          :disabled="!hasManagerRole"
+          index="1"
+          @click="checkIsTankNoRequired()"
+        >
           {{ t('recipe.requestSelectedStep') }}
         </ElMenuItem>
-        <ElMenuItem index="2" @click="changeDialog = true">
+        <ElMenuItem
+          :disabled="!hasManagerRole"
+          index="2"
+          @click="changeDialog = true"
+        >
           {{ t('recipe.changeSelectedStepAmount') }}
         </ElMenuItem>
         <ElMenuItem index="3" @click="showLogsOfSelectedStep">
