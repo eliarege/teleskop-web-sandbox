@@ -9,7 +9,10 @@ const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
 
 export default defineAuthEventHandler(async (event) => {
   const { machineId, sseId } = getQuery(event)
-
+  if (sseLoggingEnabled && !sseId) {
+    throw new Error('SSE ID REQUIRED')
+  }
+  const strSseId = sseId?.toString() ?? ''
   const numMachineId = Number.parseInt(machineId as string)
   const sse = useSSE()
 
@@ -53,33 +56,43 @@ export default defineAuthEventHandler(async (event) => {
             { func: () => updateIOChangedEvent(numMachineId, tbb, trx), message: 'io-change-events-updated' },
             { func: () => updateIcons(numMachineId, tbb, trx), message: 'icons-updated' },
             { func: () => updateArchives(numMachineId, tbb, trx), message: 'archives-updated' },
-            { func: () => updateMachineTranslations(numMachineId, tbb), message: 'translations-updated' },
+            { func: () => updateMachineTranslations(numMachineId, tbb, trx), message: 'translations-updated' },
           ]
           const totalSteps = updateFunctions.length
           let currentStep = 0
 
           for (const { func, message } of updateFunctions) {
-            currentStep++
+            const startingMessage = message.replace('-updated', '-starting')
             const progress = Math.round((currentStep / totalSteps) * 100)
+            sse.send(strSseId, 'start', { message: startingMessage, progress })
 
             try {
               await func()
-              sse.send(sseId, 'log', { message, progress })
+              currentStep++
+              const successProgress = Math.round((currentStep / totalSteps) * 100)
+              sse.send(strSseId, 'log', { message, progress: successProgress })
             } catch (err) {
-              const failedMsg = message.replace('-updated', '-failed')
-              sse.send(sseId, 'error', { message: failedMsg, progress })
+              const failedMessage = message.replace('-updated', '-failed')
+              await trx.rollback()
+              sse.send(strSseId, 'error', {
+                message: failedMessage,
+                progress: 100,
+              })
+              throw createError({ statusMessage: 'UPDATE_FAILED', statusCode: 500 })
             }
           }
+
           await trx.commit()
+          return true
         } catch (err) {
           await trx.rollback()
           throw err
         }
       }, { timeout: 1000 })
     } catch (error: any) {
-      console.error(error)
-      if (error instanceof DatabaseQueryError && sseId) {
-        sse.send(sseId, 'error', { message: `Error: ${error.message}` })
+      if (error instanceof DatabaseQueryError && strSseId) {
+        sse.send(strSseId, 'error', { message: `Error: ${error.message}`, progress: 100 })
+        throw new DatabaseQueryError(error.message)
       }
 
       if (error.message.includes('Timeout')) {
@@ -89,8 +102,8 @@ export default defineAuthEventHandler(async (event) => {
       }
     }
   } else {
-    if (sseId)
-      sse.send(sseId, 'error', { message: 'Error: Invalid machineId parameter. Expected number.' })
+    if (strSseId)
+      sse.send(strSseId, 'error', { message: 'Error: Invalid machineId parameter. Expected number.', progress: 100 })
     throw new TypeError('Invalid machineId parameter. Expected number.')
   }
 })
