@@ -41,32 +41,36 @@ async function insertIgnoringDuplicates(trx: Knex, tableName: string, data: any[
 }
 
 export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
-  const inputs = await tbb.fetchAnalogInputs()
-  if (!inputs.length)
-    return false
+  try {
+    const inputs = await tbb.fetchAnalogInputs()
+    if (!inputs.length)
+      return false
 
-  const controllerModel = await tbb.fetchControllerModel()
-  const calibrations: CalibrationAnalogInput[] = await tbb.fetchCalibrationAnalogInput()
+    const controllerModel = await tbb.fetchControllerModel()
+    const calibrations: CalibrationAnalogInput[] = await tbb.fetchCalibrationAnalogInput()
+    const analogInputs = inputs?.map((d) => {
+      const calib = calibrations.find(c => c.id === d.id)
+      const calibMaxValue = calib?.calibType === 0
+        ? 150
+        : Math.max(...(calib?.measureValues?.map(m => m.value) ?? [0])) * 1.2
+      return {
+        MACHINEID: machineId,
+        ID: calcIONumber(d, controllerModel, 'analog input'),
+        CARD: d.card,
+        CANAL: d.channel,
+        NAME: d.name,
+        ENABLED: d.enabled,
+        ISDELETED: false,
+        CALIBTYPE: calib?.calibType ?? 0,
+        CALIBMAXVALUE: calibMaxValue,
+        CALIBUNIT: calib?.unit,
+      }
+    })
 
-  const analogInputs = inputs?.map((d) => {
-    const calib = calibrations.find(c => c.id === d.id)
-    const calibMaxValue = calib?.calibType === 0 ? 150 : Math.max(...calib?.measureValues?.map(m => m.value) ?? [0]) * 1.2
-
-    return {
-      MACHINEID: machineId,
-      ID: calcIONumber(d, controllerModel, 'analog input'),
-      CARD: d.card,
-      CANAL: d.channel,
-      NAME: d.name,
-      ENABLED: d.enabled,
-      ISDELETED: false,
-      CALIBTYPE: calib!.calibType,
-      CALIBMAXVALUE: calibMaxValue,
-      CALIBUNIT: calib!.unit,
-    }
-  })
-
-  return await replaceRecords(trx, 'BFMACHAIN', analogInputs, { MACHINEID: machineId })
+    return await replaceRecords(trx, 'BFMACHAIN', analogInputs, { MACHINEID: machineId })
+  } catch (error: any) {
+    throw new DatabaseQueryError(error.message)
+  }
 }
 
 export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
