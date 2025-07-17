@@ -2,13 +2,11 @@ import type { Knex } from 'knex'
 import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { chunk } from 'lodash-es'
 import { DatabaseQueryError } from '../error'
-import { knex } from '../connectionPool'
 import { calcIONumber, getIONames } from '.'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'
 
 async function replaceRecords(knex: Knex, tableName: string, data: any[], whereObject?: Record<string, any>): Promise<boolean> {
   const chunks = chunk(data, 50)
-
   const delQuery = knex(tableName).del()
   if (whereObject)
     delQuery.where(whereObject)
@@ -1057,22 +1055,25 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
 
 export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx: Knex) {
   try {
-    // Proje yükleme aşamasında makineden alınan başlatma parametreleri listesi,
-    // ERP parametrelerinin kolay tanımlanması için aşağıdaki script ile ERP parametre tanımları tablosuna aktarılıyor.
-    await trx.raw(/* sql */`
-      INSERT INTO BFERPPARAMETERDEFINITIONS (PARAMID, PARAMNAME, PARAMTYPE, MACHINEID)
-      SELECT (
-        SELECT ISNULL(MAX(PARAMID), 0)
-        FROM BFERPPARAMETERDEFINITIONS
-        WHERE MACHINEID = P.MACHINEID
-      ) + ROW_NUMBER() OVER(ORDER BY P.BATCHPARAMETERID ASC) AS BATCHPARAMETERID
-        , P.PARAMSTRING
-        , P.PARAMETERTYPE
-        , P.MACHINEID
-      FROM BFMACHBATCHPARAMETERS P
-      LEFT JOIN BFERPPARAMETERDEFINITIONS E ON (E.MACHINEID = P.MACHINEID AND P.PARAMSTRING = E.PARAMNAME)
-      WHERE P.MACHINEID = :machineId
-      ORDER BY P.BATCHPARAMETERID ASC`, { machineId })
+    const batchParams = await trx('BFMACHBATCHPARAMETERS')
+      .where({ MACHINEID: machineId })
+      .orderBy('BATCHPARAMETERID', 'asc')
+
+    const maxParamIdResult = await trx('BFERPPARAMETERDEFINITIONS')
+      .where({ MACHINEID: machineId })
+      .max('PARAMID as max')
+      .first()
+
+    const maxParamId = maxParamIdResult?.max ?? 0
+
+    const definitions = batchParams.map((p, i) => ({
+      PARAMID: maxParamId + i + 1,
+      PARAMNAME: p.PARAMSTRING,
+      PARAMTYPE: p.PARAMETERTYPE,
+      MACHINEID: p.MACHINEID,
+    }))
+
+    await replaceRecords(trx, 'BFERPPARAMETERDEFINITIONS', definitions, { MACHINEID: machineId })
 
     return true
   } catch (error: any) {
@@ -1083,9 +1084,10 @@ export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx:
 export async function updateMachineTranslations(
   machineId: number,
   tbb: TbbFtpClient,
+  trx: Knex,
 ) {
   try {
-    const fromLocaleResult = await knex('BFMACHINESYSTEMPARAMS')
+    const fromLocaleResult = await trx('BFMACHINESYSTEMPARAMS')
       .select({ lang: 'ParamValue' })
       .where('ParamToken', 'FROM_PROJECT_LANGUAGE')
       .andWhere('MachineId', machineId)
@@ -1118,10 +1120,9 @@ export async function updateMachineTranslations(
       to_locale: toLocale,
       messages,
     }))
-
     // upsert
     for (const record of results) {
-      await knex.raw(`
+      await trx.raw(`
         MERGE BFMACHINETRANSLATIONS AS target
         USING (SELECT :machineId AS machine_id, :fromLocale AS from_locale, :toLocale AS to_locale) AS source
         ON target.machine_id = source.machine_id AND target.from_locale = source.from_locale AND target.to_locale = source.to_locale
