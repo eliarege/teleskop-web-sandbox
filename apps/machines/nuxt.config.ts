@@ -10,14 +10,13 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   extends: ['@teleskop/nuxt-base'],
   runtimeConfig: {
-    teleskopHost: 'localhost',
-    teleskopUser: 'EliarClient',
-    teleskopPort: '1433',
+    teleskopHost: '',
+    teleskopUser: '',
+    teleskopPort: '',
     teleskopPassword: '',
-    teleskopDatabase: 'Teleskop',
+    teleskopDatabase: '',
     teleskopInstanceName: '',
-    sseLoggingEnabled: 'false',
-
+    sseLoggingEnabled: 'true',
     twName: 'machines',
     public: {
       kcClientId: 'machines',

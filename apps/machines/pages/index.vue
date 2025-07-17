@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useMagicKeys, whenever } from '@vueuse/core'
 import { withBase } from 'ufo'
+import { QLinearProgress } from 'quasar'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { IOOption, Machine, MachineGroup, MachineTableColumn } from '~/types'
 
 interface sseLog {
   message: string
-  type?: 'info' | 'error'
+  type: 'info' | 'log' | 'error' | 'ping' | 'start'
+  progress: number
 }
 
 interface Option {
@@ -93,39 +95,107 @@ async function updateVersions() {
   await refresh()
 }
 
-const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid'], {
+const logs = ref<sseLog[]>([])
+const fullSseLogs = ref<sseLog[]>([])
+const lastLog = ref<sseLog>()
+const uuid = ref('')
+
+const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid', 'error', 'start'], {
   autoReconnect: true,
 })
-
 onBeforeUnmount(() => {
   close()
 })
 
-const logs = ref<sseLog[]>([])
-const uuid = ref('')
+const { dialog } = useQuasar()
+const percentage = ref(0)
+const showSseLogDialog = ref<any>(null)
+const showFullSseLogDialog = ref<boolean>(false)
+
+const closeButtonVisible = ref(false)
+let closeButtonTimer: NodeJS.Timeout | null = null
 
 watch(data, (newData) => {
-  if (event.value === 'log' && newData) {
+  if (newData) {
     const parsedData = JSON.parse(newData)
-    logs.value.push(parsedData)
-  } else if (event.value === 'uuid' && newData) {
-    const parsedData = JSON.parse(newData)
-    uuid.value = parsedData.uuid
+
+    const sseData = {
+      type: event.value,
+      message: parsedData.message,
+      progress: parsedData.progress,
+    }
+
+    if (sseData.type === 'uuid') {
+      uuid.value = parsedData.uuid
+    }
+
+    logs.value.push(sseData)
+
+    lastLog.value = {
+      type: sseData.type,
+      message: t(sseData.message),
+    }
+    percentage.value = sseData.progress / 100
+
+    if (showSseLogDialog.value) {
+      showSseLogDialog.value.update({
+        message: t(`${lastLog.value?.message}`),
+        progress: {
+          spinner: h(QLinearProgress, {
+            color: 'primary',
+            value: percentage.value,
+          }),
+        },
+      })
+
+      if (closeButtonTimer)
+        clearTimeout(closeButtonTimer)
+      if (sseData.message === 'NETWORK_CONN_FAILED')
+        closeButtonTimer = setTimeout(() => {
+          showSseLogDialog.value.update({
+            cancel: {
+              label: t('dismiss'),
+            },
+          })
+        }, 1700)
+      if (percentage.value === 1) {
+        fullSseLogs.value = logs.value.filter(l => l.type !== 'start').sort((a, b) => a.progress > b.progress ? 1 : 0)
+        setTimeout(() => {
+          showSseLogDialog.value?.hide()
+          showSseLogDialog.value = null
+          showFullSseLogDialog.value = !showFullSseLogDialog.value
+          percentage.value = 0
+          closeButtonVisible.value = false
+        }, 350)
+      }
+    }
   }
 })
-
-const { notifySuccess, notifyError } = useNotify()
+function showSseLogs() {
+  showSseLogDialog.value = dialog({
+    message: `Starting Project Upload`,
+    progress: {
+      spinner: h(QLinearProgress, {
+        color: 'primary',
+        value: percentage.value,
+      }),
+    },
+    persistent: true,
+    ok: false,
+  })
+}
 
 async function loadProject() {
+  showSseLogs()
   try {
     await kc.fetch('/api/sync/network-connection', {
       method: 'POST',
       retry: false,
       body: {
+        uuid: uuid.value,
         ip: selected.value.ip,
       },
     })
-    notifySuccess(t('connectionSuccessful'))
 
     await kc.fetch('/api/sync/update-machine', {
       method: 'GET',
@@ -135,12 +205,11 @@ async function loadProject() {
         sseId: uuid.value,
       },
     })
-    notifySuccess(t('updateFinished'))
   } catch (error: any) {
     if (error.statusCode === 500) {
-      notifyError(t('errorLoadingProject'))
+    // notifyError(t('errorLoadingProject'))
     } else if (error.statusCode === 504) {
-      notifyError(t('connectionTimeout'))
+      // notifyError(t('connectionTimeout'))
     }
   }
 }
@@ -268,7 +337,7 @@ async function checkTeleskopConnection(formData: Machine) {
         ip: formData.ip,
       },
     })
-    teleskopConnectionMessage.value.message = t('connectionSuccessful')
+    teleskopConnectionMessage.value.message = t('connection-successful')
     teleskopConnectionMessage.value.color = 'text-green'
   } catch (error: any) {
     console.error(error)
@@ -290,7 +359,7 @@ async function checkNetworkConnection(formData: Machine) {
         ip: formData.ip,
       },
     })
-    networkConnectionMessage.value.message = (t('connectionSuccessful'))
+    networkConnectionMessage.value.message = (t('connection-successful'))
     networkConnectionMessage.value.color = 'text-green'
   } catch (error: any) {
     console.error(error)
@@ -555,17 +624,11 @@ const columns = ref<MachineTableColumn[]>([
         </h3>
       </template>
     </MachineList>
-
-    <q-scroll-area>
-      <div
-        v-for="(log, index) in logs"
-        :key="index"
-        :class="log.type === 'error' ? 'text-red pl-2' : 'pl-2'"
-      >
-        {{ log.message }}
-      </div>
-    </q-scroll-area>
-
+    <SseLogDialog
+      :model-value="showFullSseLogDialog"
+      :logs="fullSseLogs"
+      @close="showFullSseLogDialog = false"
+    />
     <TeleskopSettingsDialog
       v-if="showTeleskopSettings"
       :show="showTeleskopSettings"
