@@ -17,6 +17,7 @@ export interface KeycloakPlugin {
   authenticated: Readonly<Ref<boolean>>
   userProfile: Readonly<Ref<KeycloakProfile | undefined>>
   userInfo: Readonly<Ref<Record<string, any> | undefined>>
+  userRoles: Readonly<Ref<Record<string, any> | undefined>>
   /** Redirects to login form. */
   login: (options?: { redirectUri?: string }) => ReturnType<typeof navigateTo>
   /** Redirects to logout. */
@@ -103,6 +104,11 @@ export default defineNuxtPlugin(() => {
   const authenticated = ref(false)
   const userProfile = ref<KeycloakProfile>()
   const userInfo = ref<Record<string, any>>()
+
+  const userRoles = computed(() =>
+    [...new Set(Object.values(tokenParsed.value?.resource_access || {})
+      .flatMap(resource => resource.roles))],
+  )
 
   const onReady = createEventHook<boolean>()
   const onAuthSuccess = createEventHook()
@@ -259,6 +265,7 @@ export default defineNuxtPlugin(() => {
         authenticated: readonly(authenticated),
         userProfile: readonly(userProfile),
         userInfo: readonly(userInfo),
+        userRoles: readonly(userRoles),
         login: kcEnabled ? login : noop,
         logout: kcEnabled ? logout : noop,
         register: kcEnabled ? register : noop,
