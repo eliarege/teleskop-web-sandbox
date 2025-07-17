@@ -2,7 +2,7 @@ import type { KeycloakError, KeycloakInitOptions, KeycloakProfile, KeycloakToken
 import Keycloak from 'keycloak-js'
 import type { EventHookOn } from '@vueuse/core'
 import { withBase } from 'ufo'
-import { setHeader } from '../../utils/ofetch'
+import { setHeader } from '../../../utils/ofetch'
 
 export interface KeycloakPlugin {
   fetch: typeof $fetch
@@ -17,7 +17,7 @@ export interface KeycloakPlugin {
   authenticated: Readonly<Ref<boolean>>
   userProfile: Readonly<Ref<KeycloakProfile | undefined>>
   userInfo: Readonly<Ref<Record<string, any> | undefined>>
-  userRoles: Readonly<Ref<Record<string, any> | undefined>>
+  userResourceRoles: ComputedRef<{ client: string, role: string }[]>
   /** Redirects to login form. */
   login: (options?: { redirectUri?: string }) => ReturnType<typeof navigateTo>
   /** Redirects to logout. */
@@ -105,9 +105,9 @@ export default defineNuxtPlugin(() => {
   const userProfile = ref<KeycloakProfile>()
   const userInfo = ref<Record<string, any>>()
 
-  const userRoles = computed(() =>
-    [...new Set(Object.values(tokenParsed.value?.resource_access || {})
-      .flatMap(resource => resource.roles))],
+  const userResourceRoles = computed(() =>
+    Object.entries(tokenParsed.value?.resource_access || {})
+      .flatMap(([client, { roles }]) => roles.map(role => ({ client, role }))),
   )
 
   const onReady = createEventHook<boolean>()
@@ -265,7 +265,7 @@ export default defineNuxtPlugin(() => {
         authenticated: readonly(authenticated),
         userProfile: readonly(userProfile),
         userInfo: readonly(userInfo),
-        userRoles: readonly(userRoles),
+        userResourceRoles,
         login: kcEnabled ? login : noop,
         logout: kcEnabled ? logout : noop,
         register: kcEnabled ? register : noop,
