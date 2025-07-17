@@ -18,7 +18,7 @@ export interface ProgramFilter {
   clearOnChange: boolean
 }
 
-export interface ProgramTable {
+export interface ProgramTableRow {
   programNo: number
   name: string
   duration: number

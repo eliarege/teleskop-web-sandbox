@@ -73,14 +73,14 @@ const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
           <!-- Parametre Adı -->
           <div v-if="props.type === 'changeParameter'" class="flex flex-col w-40">
             <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('moveParallelStep.changeParameter.parameter.name') }}</label>
-            <span class="text-sm text-gray-8 dark:text-gray-3">{{ props.parameter.name }}</span>
+            <span class="text-sm text-gray-8 dark:text-gray-3">{{ props.parameter?.name }}</span>
           </div>
 
           <!-- Parametre Degeri -->
           <div v-if="props.type === 'changeParameter'" class="flex flex-col w-60">
             <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('moveParallelStep.changeParameter.parameter.value') }}</label>
             <span class="text-sm text-gray-8 dark:text-gray-3">
-              {{ props.parameter.value }}
+              {{ props.parameter?.value }}
             </span>
           </div>
 

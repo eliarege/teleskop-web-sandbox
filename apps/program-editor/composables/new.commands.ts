@@ -6,7 +6,7 @@ import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { CopyItem, MachineCommand, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTable } from '~/shared/types'
+import type { CopyItem, MachineCommand, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -269,7 +269,7 @@ registerCommand(() => {
 
   return {
     name: 'concatenatePrograms',
-    async execute(ctx: any, selectedRows: ProgramTable[], machineId: number) {
+    async execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number) {
       try {
         // Kullanıcıdan program sıralaması al
         const programsOrder = await getProgramsOrder(ctx, selectedRows)
@@ -290,14 +290,14 @@ registerCommand(() => {
   }
 })
 
-async function getProgramsOrder(ctx: any, selectedRows: ProgramTable[]): Promise<ProgramTable[]> {
+async function getProgramsOrder(ctx: any, selectedRows: ProgramTableRow[]): Promise<ProgramTableRow[]> {
   return new Promise((resolve, reject) => {
     ctx.$q.dialog({
       component: CMProgramOrdersOnConcatenationDialog,
       componentProps: {
         programs: selectedRows,
       },
-    }).onOk((programsOrder: ProgramTable[]) => {
+    }).onOk((programsOrder: ProgramTableRow[]) => {
       resolve(programsOrder)
     }).onCancel(() => {
       reject(new Error('Program order selection cancelled'))
@@ -306,11 +306,17 @@ async function getProgramsOrder(ctx: any, selectedRows: ProgramTable[]): Promise
 }
 
 async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
+  const editor = useEditorStore()
+
   return new Promise((resolve, reject) => {
     ctx.$q.dialog({
       component: CMNewProgramDialog,
       componentProps: {
         type: 'newProgram',
+        program: editor.createEmptyProgram(),
+        machineId: editor.machine.id,
+        machineName: editor.machine.name,
+        allProcessTypes: editor.allProcessTypes,
       },
     }).onOk((program: ProgramHeader) => {
       resolve(program)
@@ -341,7 +347,7 @@ registerCommand(() => {
           },
         }).onOk(async (program: ProgramHeader) => {
           editor.isLoading = true
-          await contextMenuStore.updateProgramHeader(machineId, programNo, program)
+          await contextMenuStore.changeProgramName(machineId, programNo, program.name)
           await editor.fetchAllPrograms()
           editor.isLoading = false
           return true
@@ -383,7 +389,7 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'sendProgram',
-    async execute(ctx: any, selectedRows: ProgramItem[], machineId: number) {
+    async execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number) {
       await contextMenuStore.sendProgram(selectedRows, machineId)
       await editor.fetchAllPrograms()
       return false
