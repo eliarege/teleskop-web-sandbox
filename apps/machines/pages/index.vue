@@ -7,7 +7,8 @@ import type { IOOption, Machine, MachineGroup, MachineTableColumn } from '~/type
 
 interface sseLog {
   message: string
-  type: 'info' | 'log' | 'error' | 'ping'
+  type: 'info' | 'log' | 'error' | 'ping' | 'start'
+  progress: number
 }
 
 interface Option {
@@ -95,10 +96,11 @@ async function updateVersions() {
 }
 
 const logs = ref<sseLog[]>([])
+const fullSseLogs = ref<sseLog[]>([])
 const lastLog = ref<sseLog>()
 const uuid = ref('')
 
-const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid', 'error'], {
+const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid', 'error', 'start'], {
   autoReconnect: true,
 })
 onBeforeUnmount(() => {
@@ -110,16 +112,21 @@ const percentage = ref(0)
 const showSseLogDialog = ref<any>(null)
 const showFullSseLogDialog = ref<boolean>(false)
 
+const closeButtonVisible = ref(false)
+let closeButtonTimer: NodeJS.Timeout | null = null
+
 watch(data, (newData) => {
   if (newData) {
+    const parsedData = JSON.parse(newData)
+
     const sseData = {
       type: event.value,
-      message: JSON.parse(newData).message,
-      progress: JSON.parse(newData).progress,
+      message: parsedData.message,
+      progress: parsedData.progress,
     }
 
     if (sseData.type === 'uuid') {
-      uuid.value = JSON.parse(newData).uuid
+      uuid.value = parsedData.uuid
     }
 
     logs.value.push(sseData)
@@ -128,7 +135,6 @@ watch(data, (newData) => {
       type: sseData.type,
       message: t(sseData.message),
     }
-
     percentage.value = sseData.progress / 100
 
     if (showSseLogDialog.value) {
@@ -141,18 +147,30 @@ watch(data, (newData) => {
           }),
         },
       })
+
+      if (closeButtonTimer)
+        clearTimeout(closeButtonTimer)
+      if (sseData.message === 'NETWORK_CONN_FAILED')
+        closeButtonTimer = setTimeout(() => {
+          showSseLogDialog.value.update({
+            cancel: {
+              label: t('dismiss'),
+            },
+          })
+        }, 1700)
       if (percentage.value === 1) {
+        fullSseLogs.value = logs.value.filter(l => l.type !== 'start').sort((a, b) => a.progress > b.progress ? 1 : 0)
         setTimeout(() => {
           showSseLogDialog.value?.hide()
           showSseLogDialog.value = null
           showFullSseLogDialog.value = !showFullSseLogDialog.value
           percentage.value = 0
+          closeButtonVisible.value = false
         }, 350)
       }
     }
   }
 })
-
 function showSseLogs() {
   showSseLogDialog.value = dialog({
     message: `Starting Project Upload`,
@@ -606,10 +624,9 @@ const columns = ref<MachineTableColumn[]>([
         </h3>
       </template>
     </MachineList>
-
     <SseLogDialog
       :model-value="showFullSseLogDialog"
-      :logs
+      :logs="fullSseLogs"
       @close="showFullSseLogDialog = false"
     />
     <TeleskopSettingsDialog

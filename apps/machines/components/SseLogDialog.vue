@@ -16,7 +16,7 @@ const compLogs = computed(() => props.logs.filter(l => l.type !== 'uuid'))
     <div
       class="bg-white w-full"
     >
-      <q-list dense class="max-h-150 overflow-auto">
+      <q-list dense class="max-h-150 overflow-auto ml-2 mt-1">
         <q-item
           v-for="(log, idx) in compLogs"
           :key="idx"
