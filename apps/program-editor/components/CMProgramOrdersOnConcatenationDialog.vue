@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Sortable } from 'sortablejs-vue3'
 import { useDialogPluginComponent } from 'quasar'
-import type { ProgramTable } from '~/shared/types'
+import type { ProgramTableRow } from '~/shared/types'
 
 const props = defineProps<{
-  programs: ProgramTable[]
+  programs: ProgramTableRow[]
 }>()
 
 defineEmits([
@@ -15,7 +15,7 @@ const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const programs = ref(props.programs)
 
-function moveItemInArray(array: ProgramTable[], from: number | undefined, to: number | undefined) {
+function moveItemInArray(array: ProgramTableRow[], from: number | undefined, to: number | undefined) {
   if (typeof from === 'undefined' || typeof to === 'undefined')
     return
   const item = array.splice(from, 1)[0]

@@ -7,7 +7,7 @@ import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
-import type { ContextBarButtons, ProgramItem, ProgramTable } from '~/shared/types'
+import type { ContextBarButtons, ProgramItem, ProgramTableRow } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { formatDuration } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
@@ -169,7 +169,7 @@ const { results: filterResults } = useFuse(debouncedFilter, () => editor.allProg
     keys: ['programNo', 'name', 'type'],
   },
 })
-const filteredPrograms = computed<ProgramTable[]>(() => filterResults.value.map(res => res.item))
+const filteredPrograms = computed<ProgramTableRow[]>(() => filterResults.value.map(res => res.item))
 
 const buttons = computed<ContextBarButtons[]>(() => [
   {
@@ -262,11 +262,11 @@ function tooltip(value: Date): string {
 interface ProgramTableColumn extends Omit<QTableColumn, 'label'> {
   name: string
   label: string | Readonly<Ref<string>>
-  field: keyof ProgramTable | ((row: ProgramTable) => any)
+  field: keyof ProgramTableRow | ((row: ProgramTableRow) => any)
   sortable?: boolean
   align?: 'left' | 'right' | 'center'
-  format?: (value: Date, row: ProgramTable) => string
-  tooltip?: (value: Date, row: ProgramTable) => string
+  format?: (value: Date, row: ProgramTableRow) => string
+  tooltip?: (value: Date, row: ProgramTableRow) => string
 }
 
 const columns = ref<ProgramTableColumn[]>([
@@ -457,7 +457,7 @@ const contextMenuOptions = computed(() => [
       icon: 'edit_note',
       disabled: isMoreThanOneRowSelected.value
       || !!editor.selectedPrograms.find(
-        (row: ProgramTable) =>
+        (row: ProgramTableRow) =>
           row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
       onClick: async () => {
@@ -589,10 +589,10 @@ function formatTooltip<T extends Record<string, any>>(row: T, column: QTableColu
   return column.tooltip ? column.tooltip(value, row) : value
 }
 
-function isRowSelected(row: ProgramTable) {
+function isRowSelected(row: ProgramTableRow) {
   return editor.selectedPrograms.includes(row)
 }
-function removeSelection(row: ProgramTable) {
+function removeSelection(row: ProgramTableRow) {
   editor.selectedPrograms = editor.selectedPrograms.filter(r => r !== row)
 }
 
@@ -608,7 +608,7 @@ function getSelectedString() {
   return t('selectRange', { count: editor.selectedPrograms.length, total: editor.allPrograms.length })
 }
 
-function onRowClick(event: Event, row: ProgramTable) {
+function onRowClick(event: Event, row: ProgramTableRow) {
   const pointer = event as PointerEvent
 
   if (pointer.button === 2) { // Right click
@@ -642,7 +642,7 @@ function onRowClick(event: Event, row: ProgramTable) {
   editor.selectedPrograms = [row]
 }
 
-async function onRowDoubleClick(event: Event, row: ProgramTable) {
+async function onRowDoubleClick(event: Event, row: ProgramTableRow) {
   const target = event.target as HTMLElement
 
   if (target.closest('.q-checkbox'))
@@ -652,12 +652,12 @@ async function onRowDoubleClick(event: Event, row: ProgramTable) {
     await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
 }
 
-function handleContextMenu(event: Event, row: ProgramTable) {
+function handleContextMenu(event: Event, row: ProgramTableRow) {
   event.preventDefault()
   onRowClick(event, row)
 }
 
-function handleRowClass(row: ProgramTable): string {
+function handleRowClass(row: ProgramTableRow): string {
   if (row.isChanged)
     return 'changed-on-teleskop'
   if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)

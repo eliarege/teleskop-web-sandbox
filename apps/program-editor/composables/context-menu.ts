@@ -1,7 +1,7 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { notification } from '~/shared/functions'
-import type { CopyItem, MachineInfo, ProcessType, Program, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTable, StepError } from '~/shared/types'
+import type { CopyItem, MachineInfo, ProcessType, Program, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, StepError } from '~/shared/types'
 
 export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
@@ -17,13 +17,13 @@ export interface ContextMenuStore {
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   getProcessTypes: () => Promise<ProcessType[]>
   changeProcessType: (machineId: number, programs: ProgramItem[], newType: number) => Promise<void>
-  sendProgram: (programs: ProgramTable[], machineId: number) => Promise<void>
+  sendProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   getRemoteProgram: (programs: ProgramItem[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
   deleteProgramFromMachine: (programs: ProgramItem[], machines: Array<any>, source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
-  concatenatePrograms: (programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
+  concatenatePrograms: (programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
   comparison: () => void
   addToComparisonBasket: (machineId: number, programs: ProgramItem[]) => void
   clearComparisonBasket: () => void
@@ -251,7 +251,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function sendProgram(programs: ProgramTable[], machineId: number) {
+  async function sendProgram(programs: ProgramTableRow[], machineId: number) {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
 
@@ -359,7 +359,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return result as any
   }
 
-  async function concatenatePrograms(programs: ProgramTable[], programDetails: ProgramHeader, machineId: number) {
+  async function concatenatePrograms(programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) {
     const editor = useEditorStore()
 
     const newProgram = editor.createEmptyProgram()

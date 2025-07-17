@@ -11,7 +11,7 @@ import { PError } from '../error'
 import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
 import { mapObject } from '../utils/map'
-import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTable, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
@@ -235,7 +235,7 @@ export class MachineController {
    * @returns {Promise<Array<ProgramHeader>>} - Makinenin tüm programlarının dizisi
    */
   @withTransaction
-  async fetchAllProgramHeaders(query?: any): Promise<ProgramTable[]> {
+  async fetchAllProgramHeaders(query?: any): Promise<ProgramTableRow[]> {
     const config = useRuntimeConfig()
 
     const headers = await this.trx

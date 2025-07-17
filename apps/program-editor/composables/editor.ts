@@ -2,7 +2,7 @@ import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
-import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramItem, ProgramStep, ProgramStepCommand, ProgramTable, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramItem, ProgramStep, ProgramStepCommand, ProgramTableRow, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandIconMapping, CommandType, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -12,9 +12,9 @@ export const useEditorStore = defineStore('editor', () => {
   const program = ref<Program>(createEmptyProgram())
   const originalProgram = ref<Program>(createEmptyProgram())
   const machine = ref<Machine>(createMachine())
-  const selectedPrograms = ref<ProgramTable[]>([])
+  const selectedPrograms = ref<ProgramTableRow[]>([])
   const allProcessTypes = ref<ProcessType[]>([])
-  const allPrograms = ref<ProgramTable[]>([])
+  const allPrograms = ref<ProgramTableRow[]>([])
   const selectedSteps = ref<ProgramStep[]>([])
   const isLoading = ref<boolean>(false)
   const popupVersionDialog = ref(false)
@@ -670,7 +670,7 @@ export const useEditorStore = defineStore('editor', () => {
         }
       : undefined
 
-    allPrograms.value = await kc.fetch<ProgramTable[]>(
+    allPrograms.value = await kc.fetch<ProgramTableRow[]>(
       `/api/machine/${machine.value.id}/program`,
       { query },
     )
