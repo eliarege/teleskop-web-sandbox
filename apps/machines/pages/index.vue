@@ -7,7 +7,7 @@ import type { IOOption, Machine, MachineGroup, MachineTableColumn } from '~/type
 
 interface sseLog {
   message: string
-  type: 'info' | 'log' | 'error' | 'ping' | 'start'
+  type: 'info' | 'log' | 'error' | 'ping' | 'start' | 'reset'
   progress: number
 }
 
@@ -100,7 +100,7 @@ const fullSseLogs = ref<sseLog[]>([])
 const lastLog = ref<sseLog>()
 const uuid = ref('')
 
-const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid', 'error', 'start'], {
+const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid', 'error', 'start', 'reset'], {
   autoReconnect: true,
 })
 onBeforeUnmount(() => {
@@ -123,6 +123,10 @@ watch(data, (newData) => {
       type: event.value,
       message: parsedData.message,
       progress: parsedData.progress,
+    }
+
+    if (sseData.type === 'reset') {
+      logs.value = []
     }
 
     if (sseData.type === 'uuid') {
