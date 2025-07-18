@@ -27,7 +27,11 @@ withDefaults(defineProps<{
   >
     <span class="spinner" />
   </div>
-  <span v-else class="spinner" />
+  <span
+    v-else
+    class="spinner"
+    :style="{ '--outer-color': outerColor, '--center-color': centerColor, '--inner-color': innerColor }"
+  />
 </template>
 
 <style scoped lang="postcss">
