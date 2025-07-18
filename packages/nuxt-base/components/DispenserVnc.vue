@@ -286,6 +286,7 @@ const keyboardOpen = useStorage('keyboard-open', false)
             v-model="keyboardOpen"
             expand-separator
             dense
+            expand-icon-class="text-white"
           >
             <div class="flex justify-center mb-1 z-10">
               <VirtualKeyboard
