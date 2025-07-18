@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { joinURL, parseHost, parseURL, stringifyParsedURL, withBase, withProtocol } from 'ufo'
+import { useStorage } from '@vueuse/core'
 import NoVnc from './NoVnc.vue'
 
 const props = defineProps({
@@ -242,6 +243,7 @@ function onKeyPress(key: string) {
 onBeforeUnmount(() => {
   vnc.value?.disconnect()
 })
+const keyboardOpen = useStorage('keyboard-open', false)
 </script>
 
 <template>
@@ -250,7 +252,7 @@ onBeforeUnmount(() => {
       <div class="modal-container">
         <div class="wrapper" @click.stop.prevent>
           <div class="machine-screen">
-            <div class="screen">
+            <div class="screen transition-all" :class="keyboardOpen ? 'w-800px h-540px' : 'w-1000px h-640px'">
               <span class="z-1 absolute" :class="disconnected ? '' : 'loader'" />
               <NoVnc
                 ref="vnc"
@@ -261,7 +263,8 @@ onBeforeUnmount(() => {
                 resize-session
                 clip-viewport
                 drag-viewport
-                class="z-2 absolute h-125 w-200 p-1"
+                class="z-2 absolute p-1 transition-all"
+                :class="keyboardOpen ? 'w-800px h-540px' : 'w-1000px h-640px'"
                 @disconnect="onDisconnect"
                 @connect="onConnect"
               />
@@ -279,11 +282,17 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
-          <div class="flex justify-center mb-1 z-10">
-            <VirtualKeyboard
-              @key-press="onKeyPress"
-            />
-          </div>
+          <q-expansion-item
+            v-model="keyboardOpen"
+            expand-separator
+            dense
+          >
+            <div class="flex justify-center mb-1 z-10">
+              <VirtualKeyboard
+                @key-press="onKeyPress"
+              />
+            </div>
+          </q-expansion-item>
         </div>
       </div>
     </div>
@@ -292,16 +301,16 @@ onBeforeUnmount(() => {
 
 <style scoped lang="postcss">
 .modal-wrapper {
-  @apply justify-center w-auto;
+  @apply h-95vh flex justify-center items-center;
 
   * {
-    @apply font-extrabold text-gray-900;
+    @apply font-extrabold;
   }
 
   .modal-container {
     width: 100%;
     background-color: rgb(50, 50, 50);
-    @apply m-1;
+    @apply m-2px;
   }
 }
 
@@ -314,13 +323,13 @@ onBeforeUnmount(() => {
     @apply w-full h-full;
 
     .screen {
-      @apply flex justify-center items-center w-800px h-540px mx-7 my-2 border border-gray-300 border-3px rounded;
+      @apply flex justify-center items-center mx-7 my-2 border border-gray-300 border-3px rounded;
     }
   }
 
   .machine-keys {
     grid-template-rows: 0.1fr 0.01fr 0.1fr;
-    @apply grid w-full h-full gap-3;
+    @apply grid w-full h-full;
 
     .fn-keys {
       display: grid;
