@@ -430,7 +430,7 @@ const plannedMachineButton = computed(() => {
           v-model="correctionNoDisplayed"
           class="w-20"
           filled
-          :disabled="!plankey"
+          :disable="!plankey"
           dense
           hide-bottom-space
           :options="correctionNoList"
@@ -443,7 +443,7 @@ const plannedMachineButton = computed(() => {
           <q-btn
             class="ml-5 py-3 w-75 items-start"
             :label="`${t('recipe.changePlannedMachine')}`"
-            :disabled="!plannedMachineButton"
+            :disable="!plannedMachineButton"
             icon="published_with_changes"
             @click="showChangeMachineDialog = true"
           />
@@ -563,7 +563,7 @@ const plannedMachineButton = computed(() => {
         :key="button.name"
         class="footer-button"
         outline
-        :disabled="!plankey || !button.authorized"
+        :disable="!plankey || !button.authorized"
         color="black"
         @click="buttonAction(button.link)"
       >
