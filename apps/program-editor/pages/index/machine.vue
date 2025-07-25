@@ -458,7 +458,7 @@ const contextMenuOptions = computed(() => [
       disabled: isMoreThanOneRowSelected.value
       || !!editor.selectedPrograms.find(
         (row: ProgramTableRow) =>
-          row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+          row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
       onClick: async () => {
         $commandManager.executeCommand(
@@ -648,7 +648,7 @@ async function onRowDoubleClick(event: Event, row: ProgramTableRow) {
   if (target.closest('.q-checkbox'))
     return
 
-  if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE || row.programState === ProgramStatus.EXISTS_ON_BOTH)
+  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE || row.prgState === ProgramStatus.EXISTS_ON_BOTH)
     await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
 }
 
@@ -660,11 +660,11 @@ function handleContextMenu(event: Event, row: ProgramTableRow) {
 function handleRowClass(row: ProgramTableRow): string {
   if (row.isChanged)
     return 'changed-on-teleskop'
-  if (row.programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
     return 'only-on-controller'
-  if (row.programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
+  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
     return 'only-on-teleskop'
-  if (row.programState === ProgramStatus.EXISTS_ON_BOTH) {
+  if (row.prgState === ProgramStatus.EXISTS_ON_BOTH) {
     if (row.updatedAtTBB && row.updatedAt) {
       if (row.updatedAtTBB === row.updatedAt)
         return 'no-changes'

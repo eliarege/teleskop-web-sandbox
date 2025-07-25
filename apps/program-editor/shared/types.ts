@@ -7,7 +7,7 @@ export interface ProgramInfo {
   type: number
   updatedAt: Date
   updatedAtTBB: Date | null
-  programState: number
+  prgState: number
   isChanged: boolean
 }
 
@@ -26,7 +26,7 @@ export interface ProgramTableRow {
   type: string
   operator: boolean
   updatedAt: Date
-  programState: number
+  prgState: number
   isChanged: boolean
   totalChemReq: number
   totalDyeReq: number
@@ -135,7 +135,7 @@ export interface ProgramHeader {
   updatedAt: Date | null
   steps: ProgramStep[]
   updatedAtTBB: Date | null
-  programState: number | null
+  prgState: number | null
   isChanged: boolean | null
   tbbProgramChangedEvent: number | null
   totalChemReq: number
