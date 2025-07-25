@@ -492,7 +492,9 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.sendProgram'),
       shortcut: '',
       icon: 'send',
-      disabled: false,
+      disabled: editor.selectedPrograms.some(
+        row => row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+      ),
       onClick: async () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
@@ -507,7 +509,9 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.copyToMachinesAndSend'),
       shortcut: '',
       icon: '',
-      disabled: false,
+      disabled: editor.selectedPrograms.some(
+        row => row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+      ),
       onClick: () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
