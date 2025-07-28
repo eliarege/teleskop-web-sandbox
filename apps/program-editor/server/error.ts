@@ -145,11 +145,6 @@ export interface ErrorMachineParameterNotFound extends PError {
   detail: ErrorMachineParameterDetail
 }
 
-export interface ErrorProgramHasErrors extends PError {
-  code: 'PROGRAM_HAS_ERRORS'
-  detail: ErrorProgramDetail
-}
-
 export type AnyError =
   | ErrorMachineNotFound
   | ErrorMachineUnavailable
@@ -166,7 +161,6 @@ export type AnyError =
   | ErrorCommandNotFound
   | ErrorProgramIoNotFound
   | ErrorMachineParameterNotFound
-  | ErrorProgramHasErrors
 
 export class PError extends Error {
   code: ErrorCode
@@ -188,7 +182,7 @@ export class PError extends Error {
   constructor(code: 'COMMAND_NOT_FOUND', detail: ErrorCommandDetail)
   constructor(code: 'PROGRAM_IO_NOT_FOUND', detail: ErrorProgramIoDetail)
   constructor(code: 'MACHINE_PARAMETER_NOT_FOUND', detail: ErrorMachineParameterDetail)
-  constructor(code: 'PROGRAM_HAS_ERRORS', detail: ErrorProgramHasErrors)
+  constructor(code: 'PROGRAM_HAS_ERRORS', detail: ErrorProgramDetail)
 
   constructor(code: ErrorCode, detail?: any) {
     super(code)
