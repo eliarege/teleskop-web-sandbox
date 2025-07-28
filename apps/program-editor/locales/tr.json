@@ -303,13 +303,15 @@
       "setDefaultFail": "Aktif versiyonu değiştirirken hata oluştu."
     },
     "send": {
-      "success": "{name} programı makineye başarıyla gönderildi.",
-      "fail": "{name} programını gönderirken hata oluştu.",
+      "success": "{programNo} numaralı program makineye başarıyla gönderildi.",
+      "fail": "{programNo} numaralı program makineye gönderilemedi.",
       "programHasErrors": "{programNo} numaralı programda hatalar var. Lütfen kontrol ediniz."
     },
     "get": {
-      "success": "{programNo} - {name} başarıyla alındı.",
-      "fail": "{programNo} - {name} alınamadı."
+      "success": "{programNo} numaralı program makineden başarıyla alındı.",
+      "fail": "{programNo} numaralı program makineden alınamadı.",
+      "programNotFound": "{programNo} numaralı program makinede bulunamadı."
+
     },
     "delete": {
       "success": "{programNo} numaralı {name} programı başarıyla silindi.",
