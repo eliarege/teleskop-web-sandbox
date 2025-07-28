@@ -67,24 +67,24 @@ async function handleProgramDeletion(
     return 0
   }
 
-  const { program: { programState } } = await machine.fetchProgram(programNo)
+  const { program: { prgState } } = await machine.fetchProgram(programNo)
   const source = query.source.toString()
 
   if (source.includes('machine')) {
-    await deleteFromMachineIfValid(machine, programNo, programState, machineId, userName)
+    await deleteFromMachineIfValid(machine, programNo, prgState, machineId, userName)
   }
 
   if (source.includes('db')) {
-    return await deleteFromDatabaseIfValid(machine, programNo, programState, machineId, userName)
+    return await deleteFromDatabaseIfValid(machine, programNo, prgState, machineId, userName)
   }
 
   return 1
 }
 
-async function deleteFromMachineIfValid(machine: MachineController, programNo: number, programState: number | null, machineId: number, userName?: string) {
+async function deleteFromMachineIfValid(machine: MachineController, programNo: number, prgState: number | null, machineId: number, userName?: string) {
   if (
-    programState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER
-    || programState === ProgramStatus.EXISTS_ON_BOTH
+    prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER
+    || prgState === ProgramStatus.EXISTS_ON_BOTH
   ) {
     try {
       logger.info(`User: ${userName}. Deleted program ${programNo} from machine ${machineId}.`)
@@ -98,13 +98,13 @@ async function deleteFromMachineIfValid(machine: MachineController, programNo: n
 async function deleteFromDatabaseIfValid(
   machine: MachineController,
   programNo: number,
-  programState: number | null,
+  prgState: number | null,
   machineId: number,
   userName?: string,
 ) {
   if (
-    programState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
-    || programState === ProgramStatus.EXISTS_ON_BOTH
+    prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
+    || prgState === ProgramStatus.EXISTS_ON_BOTH
   ) {
     logger.info(`User: ${userName}. Deleted program ${programNo} from database for machine ${machineId}.`)
     await logEditorOperation(

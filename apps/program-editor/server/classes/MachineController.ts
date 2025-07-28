@@ -248,7 +248,7 @@ export class MachineController {
         operator: 'H.TBBPRGCHANGEDEVENT',
         updatedAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.CHANGEDATE)`),
         updatedAtTBB: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.TBBCHANGEDATE)`),
-        programState: 'H.PRGSTATE',
+        prgState: 'H.PRGSTATE',
         isChanged: 'H.ISCHANGED',
         totalChemReq: 'H.TotalChemReq',
         totalDyeReq: 'H.TotalDyeReq',
@@ -332,7 +332,7 @@ export class MachineController {
         typeId: 'T.PROCESSCODE',
         typeName: 'T.PROCESSNAME',
         machineId: 'M.MACHINEID',
-        programState: 'P.PRGSTATE',
+        prgState: 'P.PRGSTATE',
         isChanged: 'P.ISCHANGED',
         createdAt: 'P.CREATIONDATE',
         updatedAt: 'P.CHANGEDATE',
@@ -653,7 +653,7 @@ export class MachineController {
     try {
       const currentTimestamp = this.getCurrentTimestamp()
       program.isChanged = false
-      program.programState = ProgramStatus.EXISTS_ON_BOTH
+      program.prgState = ProgramStatus.EXISTS_ON_BOTH
       program.updatedAtTBB = currentTimestamp
       program.updatedAt = currentTimestamp
 
@@ -708,7 +708,7 @@ export class MachineController {
       programNo,
       duration: 0,
       typeName: '',
-      programState: ProgramStatus.EXISTS_ON_BOTH,
+      prgState: ProgramStatus.EXISTS_ON_BOTH,
       icon: '',
       isChanged: false,
       createdAt: currentTimestamp,
@@ -772,7 +772,7 @@ export class MachineController {
       if (!isDeleted)
         return false
 
-      if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
+      if (program.prgState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
         program.isChanged = true
       }
 
@@ -795,7 +795,7 @@ export class MachineController {
   async changeName(program: Program, newName: string) {
     const config = useRuntimeConfig()
     const date = new Date(new Date().getTime() - Number(config.teleskopTimezoneOffset) * 60000).toISOString()
-    if (program.programState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+    if (program.prgState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
       program.isChanged = true
     const result = await this.trx
       .from('BFMASTERPRGHEADER')
@@ -831,7 +831,7 @@ export class MachineController {
         createdAt: 'H.CREATIONDATE',
         updatedAt: 'H.CHANGEDATE',
         updatedAtTBB: 'H.TBBCHANGEDATE',
-        programState: 'H.PRGSTATE',
+        prgState: 'H.PRGSTATE',
         isChanged: 'H.ISCHANGED',
         tbbProgramChangedEvent: this.trx.raw(sql`CASE H.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
         totalChemReq: 'H.TotalChemReq',
@@ -860,6 +860,7 @@ export class MachineController {
       name: 'NAME',
       isChanged: 'ISCHANGED',
       typeId: 'PROCESSCODE',
+      prgState: 'PRGSTATE',
       // güncellenecek sütunlar ...
     })
 
@@ -1180,13 +1181,13 @@ export class MachineController {
       TOTALSTEP: program.steps.length,
       CHANGEDATE: date,
       TBBCHANGESOURCE: '',
-      TBBCHANGEDATE: program.updatedAtTBB ?? '',
+      TBBCHANGEDATE: program.updatedAtTBB ?? null,
       LOCKEDBY: program.author ? program.author : '',
       CREATIONDATE: program.createdAt ? new Date((new Date(program.createdAt)).getTime() - timezone * 60000).toISOString() : date,
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
-      PRGSTATE: isDef(program.programState) ? ProgramStatus.EXISTS_ONLY_ON_DATABASE : program.programState,
+      PRGSTATE: isDef(program.prgState) ? ProgramStatus.EXISTS_ONLY_ON_DATABASE : program.prgState,
       TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
       TotalChemReq: 0,
@@ -1434,7 +1435,7 @@ export class MachineController {
         type: 'T.PROCESSNAME',
         changedDate: 'H.CHANGEDATE',
         // updatedAtTBB: 'H.TBBCHANGEDATE',
-        // programState: 'H.PRGSTATE',
+        // prgState: 'H.PRGSTATE',
         // isChanged: 'H.ISCHANGED',
         // tbbProgramChangedEvent: 'H.TBBPRGCHANGEDEVENT',
       })

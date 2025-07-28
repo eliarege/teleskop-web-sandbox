@@ -250,7 +250,7 @@ function createEmptyProgram(): ProgramHeader {
     programNo: 0,
     duration: 0,
     updatedAtTBB: null,
-    programState: 0,
+    prgState: 0,
     name: '',
     author: null,
     comment: null,

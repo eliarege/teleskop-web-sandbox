@@ -737,7 +737,7 @@ export const useEditorStore = defineStore('editor', () => {
       updatedAt: new Date(),
       isChanged: false,
       tbbProgramChangedEvent: 0,
-      programState: 1,
+      prgState: 1,
       updatedAtTBB: null,
       totalChemReq: 0,
       totalDyeReq: 0,

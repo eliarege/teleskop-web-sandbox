@@ -88,7 +88,7 @@ async function handleCreateProgram(
       const result = await sourceMachine.fetchProgram(sourceProgramNo)
 
       program = result.program
-      program.programState = ProgramStatus.EXISTS_ONLY_ON_DATABASE
+      program.prgState = ProgramStatus.EXISTS_ONLY_ON_DATABASE
       program.machineId = machineId
       program.programNo = programNoToCheck
 
