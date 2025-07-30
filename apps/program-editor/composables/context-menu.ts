@@ -1,5 +1,6 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
+import { isProgramError } from './utils'
 import { notification } from '~/shared/functions'
 import type { CopyItem, MachineInfo, ProcessType, Program, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, StepError } from '~/shared/types'
 
@@ -254,23 +255,18 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function sendProgram(programs: ProgramTableRow[], machineId: number) {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-
     editor.isLoading = true
 
     for (const program of programs) {
       try {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
-
         notification(true, t(`contextMenu.send.success`, { programNo: program.programNo }))
       } catch (error: any) {
         let messageKey = 'fail'
 
-        if (error?.response?.status === 400 && error.response._data?.message === 'PROGRAM_NOT_FOUND') {
+        if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
           messageKey = 'programNotFound'
-        } else if (error?.response?.status === 400 && error.response._data?.message === 'PROGRAM_HAS_ERRORS') {
-          messageKey = 'programHasErrors'
         }
-
         notification(false, t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
       }
     }
@@ -280,21 +276,20 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function getRemoteProgram(programs: ProgramItem[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-
     editor.isLoading = true
 
     for (const program of programs) {
       try {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
-
         notification(true, t(`contextMenu.get.success`, { programNo: program.programNo }))
       } catch (error: any) {
         let messageKey = 'fail'
 
-        if (error?.response?.status === 400 && error.response._data?.message === 'PROGRAM_NOT_FOUND') {
+        if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
           messageKey = 'programNotFound'
+        } else if (isProgramError(error, 'PROGRAM_HAS_ERRORS')) {
+          messageKey = 'programHasErrors'
         }
-
         notification(false, t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
       }
     }

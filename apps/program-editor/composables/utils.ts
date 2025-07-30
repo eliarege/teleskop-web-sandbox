@@ -344,3 +344,19 @@ export function checkMainStepForErrors(errorIds: string[]): boolean {
     return Number(commandId) === 0
   })
 }
+
+/**
+ * Program hatası olup olmadığını kontrol eder
+ * @param {object} error Hata objesi
+ * @param {string} message Hata mesajı
+ * @returns {string} Hata key'i döndürür
+ */
+export function isProgramError(error: any, message: string): boolean {
+  const status = error?.response?.status
+  const errorMessage = error?.response?._data?.message
+
+  if (status === 400 && errorMessage === message)
+    return true
+
+  return false
+}
