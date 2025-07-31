@@ -651,11 +651,9 @@ export class MachineController {
   @withFTP
   async uploadProgram(program: Program): Promise<boolean | Error> {
     try {
-      const currentTimestamp = this.getCurrentTimestamp()
       program.isChanged = false
       program.prgState = ProgramStatus.EXISTS_ON_BOTH
-      program.updatedAtTBB = currentTimestamp
-      program.updatedAt = currentTimestamp
+      program.updatedAtTBB = program.updatedAt
 
       const commands = await this.fetchCommands()
       if (!commands.length) {
@@ -708,7 +706,7 @@ export class MachineController {
       programNo,
       duration: 0,
       typeName: '',
-      prgState: ProgramStatus.EXISTS_ON_BOTH,
+      prgState: ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       icon: '',
       isChanged: false,
       createdAt: currentTimestamp,
@@ -772,7 +770,8 @@ export class MachineController {
       if (!isDeleted)
         return false
 
-      if (program.prgState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
+      if (program.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
+        || program.prgState === ProgramStatus.EXISTS_ON_BOTH) {
         program.isChanged = true
       }
 
@@ -861,6 +860,8 @@ export class MachineController {
       isChanged: 'ISCHANGED',
       typeId: 'PROCESSCODE',
       prgState: 'PRGSTATE',
+      updatedAt: 'CHANGEDATE',
+      updatedAtTBB: 'TBBCHANGEDATE',
       // güncellenecek sütunlar ...
     })
 
