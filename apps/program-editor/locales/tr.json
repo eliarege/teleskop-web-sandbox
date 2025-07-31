@@ -314,12 +314,12 @@
 
     },
     "delete": {
-      "success": "{programNo} numaralı {name} programı başarıyla silindi.",
-      "fail": "{programNo} numaralı {name} programı silinirken hata oluştu."
+      "success": "{programNo} numaralı program başarıyla silindi.",
+      "fail": "{programNo} numaralı program silinirken hata oluştu."
     },
     "getInMachine": {
-      "success": "{name} programı {machine} makinesine başarıyla alındı.",
-      "fail": "{name} programı {machine} makinesine alınırken hata oluştu."
+      "success": "{programNo} numaralı program {machine} makinesine başarıyla alındı.",
+      "fail": "{programNo} numaralı program {machine} makinesine alınırken hata oluştu."
     },
     "copyAndSend": {
       "machineSelection": "Makine Seçimi",
