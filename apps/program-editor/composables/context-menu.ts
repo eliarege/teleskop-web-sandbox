@@ -1,5 +1,6 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
+import { isProgramError } from './utils'
 import { notification } from '~/shared/functions'
 import type { CopyItem, MachineInfo, ProcessType, Program, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, StepError } from '~/shared/types'
 
@@ -20,7 +21,7 @@ export interface ContextMenuStore {
   sendProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   getRemoteProgram: (programs: ProgramItem[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
-  deleteProgramFromMachine: (programs: ProgramItem[], machines: Array<any>, source: string) => Promise<void>
+  deleteProgramFromMachine: (programs: ProgramItem[], machines: MachineInfo[], source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
   concatenatePrograms: (programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
@@ -254,53 +255,45 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function sendProgram(programs: ProgramTableRow[], machineId: number) {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-
     editor.isLoading = true
 
-    try {
-      for (const program of programs) {
-        try {
-          const response = await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
+    for (const program of programs) {
+      try {
+        await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
+        notification(true, t(`contextMenu.send.success`, { programNo: program.programNo }))
+      } catch (error: any) {
+        let messageKey = 'fail'
 
-          let success = true
-          let messageKey = 'success'
-          let params = { name: program.name, programNo: program.programNo }
-
-          if (response === 'PROGRAM_HAS_ERRORS') {
-            success = false
-            messageKey = 'programHasErrors'
-            params = { name: program.name, programNo: program.programNo }
-          } else if (response !== true) {
-            success = false
-            messageKey = 'fail'
-          }
-
-          notification(success, t(`contextMenu.send.${messageKey}`, params))
-        } catch (error) {
-          console.error(`Upload failed for program ${program.programNo}`, error)
-          notification(false, t('contextMenu.send.fail', { name: program.name }))
+        if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
+          messageKey = 'programNotFound'
         }
+        notification(false, t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
       }
-    } finally {
-      editor.isLoading = false
     }
+    editor.isLoading = false
   }
 
   async function getRemoteProgram(programs: ProgramItem[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
+    editor.isLoading = true
 
     for (const program of programs) {
       try {
-        editor.isLoading = true
-        const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
-        notification(check, t(`contextMenu.get.${check ? 'success' : 'fail'}`, { programNo: program.programNo, name: program.name }))
-      } catch (error) {
-        notification(false, t(`contextMenu.get.fail`, { programNo: program.programNo, name: program.name }))
-      } finally {
-        editor.isLoading = false
+        await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
+        notification(true, t(`contextMenu.get.success`, { programNo: program.programNo }))
+      } catch (error: any) {
+        let messageKey = 'fail'
+
+        if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
+          messageKey = 'programNotFound'
+        } else if (isProgramError(error, 'PROGRAM_HAS_ERRORS')) {
+          messageKey = 'programHasErrors'
+        }
+        notification(false, t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
       }
     }
+    editor.isLoading = false
   }
 
   async function sendProgramToMachines(programs: ProgramItem[], machines: MachineInfo[], machineId: number): Promise<void> {

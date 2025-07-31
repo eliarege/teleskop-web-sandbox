@@ -303,13 +303,14 @@
       "setDefaultFail": "An error occured while setting active version to {version}"
     },
     "send": {
-      "success": "Program {name} has been sent successfully.",
-      "fail": "An error occurred while sending the program {name}.",
+      "success": "Program {programNo} sent successfully.",
+      "fail": "An error occurred while sending program {programNo}.",
       "programHasErrors": "Program {programNo} has errors. Please check."
     },
     "get": {
-      "success": "{programNo} - {name} retrieved successfully.",
-      "fail": "Failed to retrieve {programNo} - {name}."
+      "success": "Program {programNo} retrieved successfully.",
+      "fail": "An error occured while retrieving program {programNo}.",
+      "programNotFound": "Program {programNo} not found on the machine."
     },
     "delete": {
       "success": "Deleting program {name} with program no {programNo} is succeed.",

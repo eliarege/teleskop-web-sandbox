@@ -25,7 +25,7 @@ export default defineAuthEventHandler({
       }
 
       if (programErrors.length) {
-        return 'PROGRAM_HAS_ERRORS'
+        throw new PError('PROGRAM_HAS_ERRORS', { machineId, programNo })
       }
 
       logger.info(`User: ${event.context.kauth?.name}. Uploading program ${programNo} of machine ${machineId}.`)
