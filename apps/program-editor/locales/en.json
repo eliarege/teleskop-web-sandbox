@@ -313,12 +313,12 @@
       "programNotFound": "Program {programNo} not found on the machine."
     },
     "delete": {
-      "success": "Deleting program {name} with program no {programNo} is succeed.",
-      "fail": "An error occured while deleting program {name} with program no {programNo}."
+      "success": "Program {programNo} is deleted successfully.",
+      "fail": "An error occured while deleting program {programNo}."
     },
     "getInMachine": {
-      "success": "Taking program {name} in machine {machine} is succeed.",
-      "fail": "An error occured while taking program {name} in machine {machine}."
+      "success": "Program {programNo} is successfully taken in machine {machine}.",
+      "fail": "An error occured while taking program {programNo} in machine {machine}."
     },
     "copyAndSend": {
       "machineSelection": "Machine Selection",

@@ -22,7 +22,7 @@ export default defineAuthEventHandler(async (event) => {
   for (const remotePrgNo of remotePrograms) {
     try {
       if (!teleskopPrograms.find(teleskopProgram => teleskopProgram.PROGNO === remotePrgNo)) {
-        const remoteProgram = await machine.fetchRemoteProgram(remotePrgNo)
+        const remoteProgram = await machine.downloadProgram(remotePrgNo)
         if (remoteProgram) {
           await db('BFMASTERPRGHEADER')
             .insert({

@@ -187,12 +187,10 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         })
 
         const status = response ? 'success' : 'fail'
-        notification(response, t(`contextMenu.delete.${status}`, { programNo: program.programNo, name: program.name,
-        }))
+        notification(response, t(`contextMenu.delete.${status}`, { programNo: program.programNo }))
       } catch (error) {
         console.error(`Error deleting program ${program.programNo}:`, error)
-        notification(false, t('contextMenu.delete.fail', { programNo: program.programNo, name: program.name,
-        }))
+        notification(false, t('contextMenu.delete.fail', { programNo: program.programNo }))
       }
     })
 
@@ -266,6 +264,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
         if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
           messageKey = 'programNotFound'
+        } else if (isProgramError(error, 'PROGRAM_HAS_ERRORS')) {
+          messageKey = 'programHasErrors'
         }
         notification(false, t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
       }
@@ -287,8 +287,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
         if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
           messageKey = 'programNotFound'
-        } else if (isProgramError(error, 'PROGRAM_HAS_ERRORS')) {
-          messageKey = 'programHasErrors'
         }
         notification(false, t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
       }
@@ -299,20 +297,19 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function sendProgramToMachines(programs: ProgramItem[], machines: MachineInfo[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
+    editor.isLoading = true
 
     for (const machine of machines) {
       for (const program of programs) {
         try {
-          editor.isLoading = true
           const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: machine.id } })
-          notification(check, t(`contextMenu.getInMachine.${check ? 'success' : 'fail'}`, { name: program.name, machine: machine.id }))
+          notification(check, t(`contextMenu.getInMachine.${check ? 'success' : 'fail'}`, { name: program.name, machine: machine.name }))
         } catch (error) {
-          notification(false, t(`contextMenu.getInMachine.fail`, { name: program.name, machine: machine.id }))
-        } finally {
-          editor.isLoading = false
+          notification(false, t(`contextMenu.getInMachine.fail`, { name: program.name, machine: machine.name }))
         }
       }
     }
+    editor.isLoading = false
   }
 
   async function deleteProgramFromMachine(programs: ProgramItem[], machines: MachineInfo[], source: string): Promise<void> {
@@ -341,7 +338,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         method: 'DELETE',
       })
       const status = check ? 'success' : 'fail'
-      notification(check, t(`contextMenu.delete.${status}`, { programNo: version.programNo, name: version.name }))
+      notification(check, t(`contextMenu.delete.${status}`, { programNo: version.programNo }))
     }
   }
 

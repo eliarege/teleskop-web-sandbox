@@ -15,7 +15,7 @@ import TBExportExcelDialog from '~/components/TBExportExcelDialog.vue'
 import hooks from '~/utils/hooks'
 import CMTempTimeGraphDialog from '~/components/CMTempTimeGraphDialog.vue'
 import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
-import { TeleskopSettingsIds } from '~/shared/constants'
+import { ProgramStatus, TeleskopSettingsIds } from '~/shared/constants'
 import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
 import TBDiscardChangesDialog from '~/components/TBDiscardChangesDialog.vue'
 import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
@@ -24,6 +24,7 @@ import CMMoveParallelStepDialog from '~/components/CMMoveParallelStepDialog.vue'
 import TBUnsavedChangesDialog from '~/components/TBUnsavedChangesDialog.vue'
 import TBMachineConstantsDialog from '~/components/TBMachineConstantsDialog.vue'
 import TBWriteProgramSettingsDialog from '~/components/TBWriteProgramSettingsDialog.vue'
+import CMProgramExistsDialog from '~/components/CMProgramExistsDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 

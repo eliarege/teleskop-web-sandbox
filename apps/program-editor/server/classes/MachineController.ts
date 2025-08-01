@@ -651,11 +651,9 @@ export class MachineController {
   @withFTP
   async uploadProgram(program: Program): Promise<boolean | Error> {
     try {
-      const currentTimestamp = this.getCurrentTimestamp()
       program.isChanged = false
       program.prgState = ProgramStatus.EXISTS_ON_BOTH
-      program.updatedAtTBB = currentTimestamp
-      program.updatedAt = currentTimestamp
+      program.updatedAtTBB = program.updatedAt
 
       const commands = await this.fetchCommands()
       if (!commands.length) {
@@ -685,7 +683,7 @@ export class MachineController {
    */
   @withFTP
   @withTransaction
-  async fetchRemoteProgram(programNo: number): Promise<Program | null> {
+  async downloadProgram(programNo: number): Promise<Program | null> {
     const exists = await this.doesMachineHaveProgram(programNo)
     if (!exists)
       throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
@@ -716,7 +714,6 @@ export class MachineController {
       updatedAtTBB: currentTimestamp,
       tbbProgramChangedEvent: 0,
     }
-    await this.updateProgram(program)
     return program
   }
 
@@ -767,28 +764,53 @@ export class MachineController {
    */
   @withTransaction
   async updateProgram(program: Program): Promise<boolean> {
-    try {
-      const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
-      if (!isDeleted)
-        return false
+    const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
+    if (!isDeleted)
+      return false
 
-      if (program.prgState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
-        program.isChanged = true
-      }
+    if (program.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
+      || program.prgState === ProgramStatus.EXISTS_ON_BOTH) {
+      program.isChanged = true
+    }
 
-      await this.insertProgram(program)
+    await this.insertProgram(program)
 
-      await logEditorOperation(
-        ProgramEditorActivityCodes.PROGRAMCHANGED,
+    await logEditorOperation(
+      ProgramEditorActivityCodes.PROGRAMCHANGED,
       `Makine ${this.id}`,
       program.name,
-      )
+    )
 
-      return true
-    } catch (error) {
-      console.error('Program update error:', error)
+    return true
+  }
+
+  /**
+   * Programı indirerek yeniden ekler
+   * @param {number} programNo - İndirilmek istenen program numarası
+   * @returns {Promise<boolean>} - Programın silinip yeniden eklendiğine dair sonuç
+   */
+  @withTransaction
+  async downloadAndSaveProgram(programNo: number): Promise<boolean> {
+    const program = await this.downloadProgram(programNo)
+    if (!program)
       return false
-    }
+
+    const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
+    if (!isDeleted)
+      return false
+
+    program.prgState = ProgramStatus.EXISTS_ON_BOTH
+    program.isChanged = false
+
+    await this.insertProgram(program)
+
+    await logEditorOperation(
+      ProgramEditorActivityCodes.PROGRAMCHANGED,
+      `Makine ${this.id}`,
+      program.name,
+    )
+
+    return true
   }
 
   @withTransaction
@@ -861,6 +883,8 @@ export class MachineController {
       isChanged: 'ISCHANGED',
       typeId: 'PROCESSCODE',
       prgState: 'PRGSTATE',
+      updatedAt: 'CHANGEDATE',
+      updatedAtTBB: 'TBBCHANGEDATE',
       // güncellenecek sütunlar ...
     })
 
@@ -1187,7 +1211,7 @@ export class MachineController {
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
-      PRGSTATE: isDef(program.prgState) ? ProgramStatus.EXISTS_ONLY_ON_DATABASE : program.prgState,
+      PRGSTATE: program.prgState ?? ProgramStatus.EXISTS_ONLY_ON_DATABASE,
       TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
       TotalChemReq: 0,

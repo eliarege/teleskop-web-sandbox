@@ -670,7 +670,8 @@ function handleRowClass(row: ProgramTableRow): string {
     return 'only-on-teleskop'
   if (row.prgState === ProgramStatus.EXISTS_ON_BOTH) {
     if (row.updatedAtTBB && row.updatedAt) {
-      if (row.updatedAtTBB === row.updatedAt)
+      const diff = Math.abs(new Date(row.updatedAtTBB).getTime() - new Date(row.updatedAt).getTime())
+      if (diff < 1000)
         return 'no-changes'
       return row.updatedAtTBB > row.updatedAt ? 'changed-on-machine' : 'changed-on-teleskop'
     }
