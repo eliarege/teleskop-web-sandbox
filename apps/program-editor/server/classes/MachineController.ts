@@ -786,11 +786,15 @@ export class MachineController {
 
   /**
    * Programı indirerek yeniden ekler
-   * @param {Program} program - İndirilmek istenen program
+   * @param {number} programNo - İndirilmek istenen program numarası
    * @returns {Promise<boolean>} - Programın silinip yeniden eklendiğine dair sonuç
    */
   @withTransaction
-  async downloadAndSaveProgram(program: Program): Promise<boolean> {
+  async downloadAndSaveProgram(programNo: number): Promise<boolean> {
+    const program = await this.downloadProgram(programNo)
+    if (!program)
+      return false
+
     const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
     if (!isDeleted)
       return false
