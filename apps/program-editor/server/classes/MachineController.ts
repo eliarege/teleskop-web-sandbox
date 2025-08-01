@@ -714,7 +714,6 @@ export class MachineController {
       updatedAtTBB: currentTimestamp,
       tbbProgramChangedEvent: 0,
     }
-    await this.updateProgram(program)
     return program
   }
 
@@ -786,6 +785,36 @@ export class MachineController {
       return true
     } catch (error) {
       console.error('Program update error:', error)
+      return false
+    }
+  }
+
+  /**
+   * Programı makineden indirir
+   * @param {Program} program - İndirilmek istenen program
+   * @returns {Promise<boolean>} - Programın silinip yeniden eklendiğine dair sonuç
+   */
+  @withTransaction
+  async downloadProgram(program: Program): Promise<boolean> {
+    try {
+      const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
+      if (!isDeleted)
+        return false
+
+      program.prgState = ProgramStatus.EXISTS_ON_BOTH
+      program.isChanged = false
+
+      await this.insertProgram(program)
+
+      await logEditorOperation(
+        ProgramEditorActivityCodes.PROGRAMCHANGED,
+      `Makine ${this.id}`,
+      program.name,
+      )
+
+      return true
+    } catch (error) {
+      console.error('Program download error:', error)
       return false
     }
   }

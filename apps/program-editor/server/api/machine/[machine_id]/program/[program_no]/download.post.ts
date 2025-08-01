@@ -21,7 +21,7 @@ export default defineAuthEventHandler(async (event) => {
       throw new PError('PROGRAM_NOT_FOUND', { machineId, programNo })
     }
 
-    return program
+    await machine.downloadProgram(program)
   } catch (error: PError | unknown) {
     if (isPError(error)) {
       throw createError({
