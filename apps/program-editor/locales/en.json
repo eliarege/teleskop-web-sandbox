@@ -521,5 +521,9 @@
     "programIONotFound": "IO with index {ioIndex} was not found on the machine!",
     "programIOSelectionNotFound": "IO selection with index {ioIndex} [{ioValue}] was not found on the machine!",
     "machineIOAdded": "{ioName} IO has been added!"
+  },
+  "programExist": {
+    "title": "Program Already Exists",
+    "message": "Program with number {programNo} already exists. Do you want to overwrite it?"
   }
 }

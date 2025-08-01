@@ -523,5 +523,9 @@
     "programIONotFound": "{ioIndex} indeksli IO makinede bulunamadı!",
     "programIOSelectionNotFound": "{ioIndex} indeksli [{ioValue}] IO seçimi makinede bulunamadı!",
     "machineIOAdded": "{ioName} IO'su eklendi!"
+  },
+  "programExist": {
+    "title": "Program Zaten Var",
+    "message": "{programNo} numaralı program zaten var. Üzerine yazmak ister misiniz?"
   }
 }

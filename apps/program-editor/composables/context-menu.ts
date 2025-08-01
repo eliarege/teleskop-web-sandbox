@@ -19,7 +19,7 @@ export interface ContextMenuStore {
   getProcessTypes: () => Promise<ProcessType[]>
   changeProcessType: (machineId: number, programs: ProgramItem[], newType: number) => Promise<void>
   sendProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
-  getRemoteProgram: (programs: ProgramItem[], machineId: number) => Promise<void>
+  getRemoteProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
   deleteProgramFromMachine: (programs: ProgramItem[], machines: MachineInfo[], source: string) => Promise<void>
   deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
@@ -273,7 +273,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     editor.isLoading = false
   }
 
-  async function getRemoteProgram(programs: ProgramItem[], machineId: number): Promise<void> {
+  async function getRemoteProgram(programs: ProgramTableRow[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
     editor.isLoading = true

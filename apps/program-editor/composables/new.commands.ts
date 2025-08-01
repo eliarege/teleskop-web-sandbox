@@ -425,10 +425,36 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+
   return {
     name: 'fetchProgram',
-    async execute(ctx: any, selectedRows: ProgramItem[], machineId: number) {
-      await contextMenuStore.getRemoteProgram(selectedRows, machineId)
+    async execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number) {
+      for (const row of selectedRows) {
+        const program = await contextMenuStore.getProgramHeader(machineId, row.programNo)
+
+        const shouldFetch = (
+          program.prgState !== ProgramStatus.EXISTS_ONLY_ON_DATABASE
+          && program.prgState !== ProgramStatus.EXISTS_ON_BOTH
+        )
+
+        if (shouldFetch) {
+          await contextMenuStore.getRemoteProgram([row], machineId)
+          continue
+        }
+
+        const userConfirmed = await new Promise((resolve) => {
+          ctx.$q.dialog({
+            component: CMProgramExistsDialog,
+            componentProps: { program },
+          }).onOk(() => resolve(true))
+            .onCancel(() => resolve(false))
+        })
+
+        if (userConfirmed) {
+          await contextMenuStore.getRemoteProgram([row], machineId)
+        }
+      }
+
       await editor.fetchAllPrograms()
       return false
     },
