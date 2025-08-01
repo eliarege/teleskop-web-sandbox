@@ -683,7 +683,7 @@ export class MachineController {
    */
   @withFTP
   @withTransaction
-  async fetchRemoteProgram(programNo: number): Promise<Program | null> {
+  async downloadProgram(programNo: number): Promise<Program | null> {
     const exists = await this.doesMachineHaveProgram(programNo)
     if (!exists)
       throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
@@ -706,7 +706,7 @@ export class MachineController {
       programNo,
       duration: 0,
       typeName: '',
-      prgState: ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+      prgState: ProgramStatus.EXISTS_ON_BOTH,
       icon: '',
       isChanged: false,
       createdAt: currentTimestamp,
@@ -764,59 +764,49 @@ export class MachineController {
    */
   @withTransaction
   async updateProgram(program: Program): Promise<boolean> {
-    try {
-      const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
-      if (!isDeleted)
-        return false
+    const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
+    if (!isDeleted)
+      return false
 
-      if (program.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
-        || program.prgState === ProgramStatus.EXISTS_ON_BOTH) {
-        program.isChanged = true
-      }
+    if (program.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
+      || program.prgState === ProgramStatus.EXISTS_ON_BOTH) {
+      program.isChanged = true
+    }
 
-      await this.insertProgram(program)
+    await this.insertProgram(program)
 
-      await logEditorOperation(
-        ProgramEditorActivityCodes.PROGRAMCHANGED,
+    await logEditorOperation(
+      ProgramEditorActivityCodes.PROGRAMCHANGED,
       `Makine ${this.id}`,
       program.name,
-      )
+    )
 
-      return true
-    } catch (error) {
-      console.error('Program update error:', error)
-      return false
-    }
+    return true
   }
 
   /**
-   * Programı makineden indirir
+   * Programı indirerek yeniden ekler
    * @param {Program} program - İndirilmek istenen program
    * @returns {Promise<boolean>} - Programın silinip yeniden eklendiğine dair sonuç
    */
   @withTransaction
-  async downloadProgram(program: Program): Promise<boolean> {
-    try {
-      const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
-      if (!isDeleted)
-        return false
+  async downloadAndSaveProgram(program: Program): Promise<boolean> {
+    const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
+    if (!isDeleted)
+      return false
 
-      program.prgState = ProgramStatus.EXISTS_ON_BOTH
-      program.isChanged = false
+    program.prgState = ProgramStatus.EXISTS_ON_BOTH
+    program.isChanged = false
 
-      await this.insertProgram(program)
+    await this.insertProgram(program)
 
-      await logEditorOperation(
-        ProgramEditorActivityCodes.PROGRAMCHANGED,
+    await logEditorOperation(
+      ProgramEditorActivityCodes.PROGRAMCHANGED,
       `Makine ${this.id}`,
       program.name,
-      )
+    )
 
-      return true
-    } catch (error) {
-      console.error('Program download error:', error)
-      return false
-    }
+    return true
   }
 
   @withTransaction
@@ -1217,7 +1207,7 @@ export class MachineController {
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
-      PRGSTATE: isDef(program.prgState) ? ProgramStatus.EXISTS_ONLY_ON_DATABASE : program.prgState,
+      PRGSTATE: program.prgState ?? ProgramStatus.EXISTS_ONLY_ON_DATABASE,
       TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
       TotalChemReq: 0,

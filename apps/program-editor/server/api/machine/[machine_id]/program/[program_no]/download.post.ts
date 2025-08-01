@@ -16,12 +16,12 @@ export default defineAuthEventHandler(async (event) => {
       throw new PError('MACHINE_NOT_FOUND', { machineId })
     }
 
-    const program = await machine.fetchRemoteProgram(programNo)
+    const program = await machine.downloadProgram(programNo)
     if (!program) {
       throw new PError('PROGRAM_NOT_FOUND', { machineId, programNo })
     }
 
-    await machine.downloadProgram(program)
+    return machine.downloadAndSaveProgram(program)
   } catch (error: PError | unknown) {
     if (isPError(error)) {
       throw createError({
