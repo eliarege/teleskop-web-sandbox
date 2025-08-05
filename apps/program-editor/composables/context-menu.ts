@@ -25,7 +25,7 @@ export interface ContextMenuStore {
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
   concatenatePrograms: (programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
   comparison: () => void
-  addToComparisonBasket: (machineId: number, programs: ProgramItem[]) => void
+  addToComparisonBasket: (machineId: number, programs: ProgramTableRow[]) => void
   clearComparisonBasket: () => void
   getComparisonBasket: () => { machineId: number, programNo: number }[]
   isThereCopiedValue: ComputedRef<boolean>
@@ -111,7 +111,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     comparsionBasket = []
   }
 
-  function addToComparisonBasket(machineId: number, programs: ProgramItem[]) {
+  function addToComparisonBasket(machineId: number, programs: ProgramTableRow[]) {
     programs.forEach((program) => {
       if (!comparsionBasket.includes({ machineId, programNo: program.programNo }))
         comparsionBasket.push({ machineId, programNo: program.programNo })
