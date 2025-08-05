@@ -1,4 +1,5 @@
 import { machineStore } from '~/server/classes/MachineStore'
+import { PError } from '~/server/error'
 import logger from '~/server/logger'
 import type { ProgramHeader } from '~/shared/types'
 
@@ -8,11 +9,31 @@ export default defineAuthEventHandler({
     if (event.method === 'PUT') {
       const { machine_id } = getRouterParams(event)
       const machineId = Number.parseInt(machine_id)
+
+      if (Number.isNaN(machineId)) {
+        throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo: 0 })
+      }
+
       const body = await readBody(event)
       const program: ProgramHeader = body.program
+      if (!program) {
+        throw new PError('PROGRAM_NOT_FOUND', { machineId, programNo: 0 })
+      }
+
       const machine = await machineStore.get(machineId)
+      if (!machine) {
+        throw new PError('MACHINE_NOT_FOUND', { machineId })
+      }
+
+      const config = useRuntimeConfig()
+      const timezone = Number(config.teleskopTimezoneOffset)
+      const date = new Date(Date.now() - timezone * 60000)
+
+      program.isChanged = true
+      program.updatedAt = date
 
       logger.info(`User: ${event.context.kauth?.name}. Updating name of program ${program.programNo} of machine ${machineId}.`)
+
       return await machine.updateProgramHeader(program)
     }
 

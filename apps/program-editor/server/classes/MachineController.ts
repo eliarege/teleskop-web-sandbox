@@ -864,6 +864,7 @@ export class MachineController {
       prgState: 'PRGSTATE',
       updatedAt: 'CHANGEDATE',
       updatedAtTBB: 'TBBCHANGEDATE',
+      tbbProgramChangedEvent: 'TBBPRGCHANGEDEVENT',
       // güncellenecek sütunlar ...
     })
 
