@@ -16,11 +16,11 @@ const { t } = useI18n()
     <div class="w-full m-5 bg-white">
       <q-card>
         <q-card-section class="row items-center">
-          <span class="q-ml-sm"> {{ t('changeNameDialog._') }}</span>
+          <span class="q-ml-sm"> {{ t('renameProgramDialog.title') }}</span>
         </q-card-section>
         <q-card-section>
           <div class="flex  gap-5 items-center justify-center">
-            <span> {{ t('changeNameDialog.enterNewName') }}</span>
+            <span> {{ t('renameProgramDialog.message') }}</span>
             <q-input v-model="programName" dense />
           </div>
         </q-card-section>

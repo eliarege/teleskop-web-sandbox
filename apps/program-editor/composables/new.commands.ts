@@ -56,7 +56,7 @@ export interface RegisteredCommands {
   pasteProgram: [ctx: any, machineId: number, remains?: CopyItem]
   deleteProgramFromMultiMachine: [ctx: any, selectedRows: ProgramTableRow[]]
   concatenatePrograms: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
-  changeName: [ctx: any, machineId: number, programNo: number]
+  renameProgram: [ctx: any, machineId: number, programNo: number]
   changeProcessType: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
   sendProgram: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
   copyAndSend: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
@@ -330,7 +330,7 @@ async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
 registerCommand(() => {
   const editor = useEditorStore()
   return {
-    name: 'changeName',
+    name: 'renameProgram',
     async execute(ctx: any, machineId: number, programNo: number) {
       try {
         editor.isLoading = true

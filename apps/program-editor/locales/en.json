@@ -226,9 +226,9 @@
     "selectCommands": "Select command that will be on print",
     "selectPrinter": "Select printer"
   },
-  "changeNameDialog": {
-    "_": "Change program name",
-    "enterNewName": "Enter the new name of the program."
+  "renameProgramDialog": {
+    "title": "Rename Program",
+    "message": "Enter the new name of the program."
   },
   "changeProcessTypeDialog": {
     "_": "Edit Process Types",
@@ -258,7 +258,7 @@
     "deleteProgram": "Delete Program",
     "deleteProgramsFromMachine": "Delete Program(s) From Machine",
     "concatPrograms": "Concatenate Programs",
-    "changeName": "Change Name",
+    "renameProgram": "Rename",
     "changeProcessType": "Change Process Type",
     "sendProgram": "Send Program",
     "copyToMachinesAndSend": "Copy To Machines And Send",

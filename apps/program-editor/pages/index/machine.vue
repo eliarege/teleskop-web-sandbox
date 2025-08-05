@@ -452,7 +452,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.changeName'),
+      label: tt('contextMenu.renameProgram'),
       shortcut: '',
       icon: 'edit_note',
       disabled: isMoreThanOneRowSelected.value
@@ -462,7 +462,7 @@ const contextMenuOptions = computed(() => [
       ),
       onClick: async () => {
         $commandManager.executeCommand(
-          'changeName',
+          'renameProgram',
           { $q },
           machineId,
           editor.selectedPrograms[0].programNo,
