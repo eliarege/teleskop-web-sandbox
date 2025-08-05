@@ -813,27 +813,6 @@ export class MachineController {
     return true
   }
 
-  @withTransaction
-  async changeName(program: Program, newName: string) {
-    const config = useRuntimeConfig()
-    const date = new Date(new Date().getTime() - Number(config.teleskopTimezoneOffset) * 60000).toISOString()
-    if (program.prgState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
-      program.isChanged = true
-    const result = await this.trx
-      .from('BFMASTERPRGHEADER')
-      .where('PROGNO', program.programNo)
-      .andWhere('MACHINEID', this.id)
-      .update({
-        ISCHANGED: program.isChanged,
-        CHANGEDATE: date,
-        NAME: newName,
-      })
-    if (result)
-      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMNAMECHANGED, `Makine ${this.id}`, `Program İsmi ${newName}`)
-
-    return result
-  }
-
   /**
    * Programın header bilgilerini getirir
    * @param {number} machineId - Makine numarası
