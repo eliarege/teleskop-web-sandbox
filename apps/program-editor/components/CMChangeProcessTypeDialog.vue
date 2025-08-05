@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
+  programType: string
   options: { label: string, value: number }[]
 }>()
 
@@ -8,7 +9,9 @@ defineEmits([
 ])
 
 const { t } = useI18n()
-const selectedOption = ref(props.options[0].value)
+const selectedOption = ref(
+  props.options.find(option => option.label === props.programType) || props.options[0].value,
+)
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 </script>
 

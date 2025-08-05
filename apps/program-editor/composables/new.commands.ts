@@ -52,15 +52,15 @@ export function registerCommand(command: () => AppCommand) {
   })
 }
 export interface RegisteredCommands {
-  deleteProgram: [ctx: any, selectedRows: ProgramItem[], machineId: number]
+  deleteProgram: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
   pasteProgram: [ctx: any, machineId: number, remains?: CopyItem]
-  deleteProgramFromMultiMachine: [ctx: any, selectedRows: ProgramItem[]]
-  concatenatePrograms: [ctx: any, selectedRows: ProgramItem[], machineId: number]
+  deleteProgramFromMultiMachine: [ctx: any, selectedRows: ProgramTableRow[]]
+  concatenatePrograms: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
   changeName: [ctx: any, machineId: number, programNo: number]
-  changeProcessType: [ctx: any, machineId: number, selectedRows: ProgramItem[]]
-  sendProgram: [ctx: any, selectedRows: ProgramItem[], machineId: number]
-  copyAndSend: [ctx: any, selectedRows: ProgramItem[], machineId: number]
-  fetchProgram: [ctx: any, selectedRows: ProgramItem[], machineId: number]
+  changeProcessType: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
+  sendProgram: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
+  copyAndSend: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
+  fetchProgram: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
   printProgram: [ctx: any]
   printProgramList: [ctx: any]
   editProgramTypes: [ctx: any]
@@ -367,11 +367,15 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'changeProcessType',
-    async execute(ctx: any, machineId: number, selectedRows: ProgramItem[]) {
+    async execute(ctx: any, machineId: number, selectedRows: ProgramTableRow[]) {
+      editor.isLoading = true
       const processTypes = await contextMenuStore.getProcessTypes()
+      editor.isLoading = false
+
       ctx.$q.dialog({
         component: CMChangeProcessTypeDialog,
         componentProps: {
+          programType: selectedRows[0].type,
           options: processTypes,
         },
       }).onOk(async (newType: number) => {

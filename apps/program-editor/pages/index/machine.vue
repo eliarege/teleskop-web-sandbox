@@ -480,9 +480,7 @@ const contextMenuOptions = computed(() => [
           'changeProcessType',
           { $q },
           machineId,
-          editor.selectedPrograms.map((row: ProgramItem) => {
-            return { machineId, programNo: row.programNo, name: row.name }
-          }),
+          editor.selectedPrograms,
         )
       },
     },
