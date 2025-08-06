@@ -403,7 +403,11 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.editProgram'),
       shortcut: 'F3',
       icon: 'edit',
-      disabled: isMoreThanOneRowSelected.value,
+      disabled: isMoreThanOneRowSelected.value
+      || editor.selectedPrograms.some(
+        (row: ProgramTableRow) =>
+          row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+      ),
       onClick: async () => {
         await navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
       },
@@ -473,7 +477,10 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.changeProcessType'),
       shortcut: '',
       icon: '',
-      disabled: false,
+      disabled: editor.selectedPrograms.some(
+        (row: ProgramTableRow) =>
+          row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+      ),
       onClick: () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
