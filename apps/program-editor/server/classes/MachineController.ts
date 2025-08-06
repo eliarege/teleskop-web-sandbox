@@ -857,20 +857,24 @@ export class MachineController {
    */
   @withTransaction
   async updateProgramHeader(program: ProgramHeaderUpdate): Promise<boolean> {
+    const config = useRuntimeConfig()
+    const timezoneOffset = Number(config.teleskopTimezoneOffset) || 0
+
     const programObject = mapObject(program, {
       name: 'NAME',
       isChanged: 'ISCHANGED',
       typeId: 'PROCESSCODE',
       prgState: 'PRGSTATE',
-      updatedAt: 'CHANGEDATE',
       updatedAtTBB: 'TBBCHANGEDATE',
       tbbProgramChangedEvent: 'TBBPRGCHANGEDEVENT',
       // güncellenecek sütunlar ...
     })
 
-    const result = await this.trx
-      .update(programObject)
-      .from('BFMASTERPRGHEADER')
+    const result = await this.trx('BFMASTERPRGHEADER')
+      .update({
+        ...programObject,
+        CHANGEDATE: this.trx.raw('DATEADD(MINUTE, ?, GETDATE())', [-timezoneOffset]),
+      })
       .where('PROGNO', program.programNo)
       .andWhere('MACHINEID', this.id)
 

@@ -25,12 +25,7 @@ export default defineAuthEventHandler({
         throw new PError('MACHINE_NOT_FOUND', { machineId })
       }
 
-      const config = useRuntimeConfig()
-      const timezone = Number(config.teleskopTimezoneOffset)
-      const date = new Date(Date.now() - timezone * 60000)
-
       program.isChanged = true
-      program.updatedAt = date
 
       logger.info(`User: ${event.context.kauth?.name}. Updating name of program ${program.programNo} of machine ${machineId}.`)
 
