@@ -226,9 +226,9 @@
     "selectCommands": "Çıktıda görünmesini istediğiniz komutları seçiniz",
     "selectPrinter": "Yazıcı seçiniz"
   },
-  "changeNameDialog": {
-    "_": "Program Adı Değiştir",
-    "enterNewName": "Programın yeni adını giriniz."
+  "renameProgramDialog": {
+    "title": "Yeniden Adlandır",
+    "message": "Yeni program adını giriniz."
   },
   "changeProcessTypeDialog": {
     "_": "Program Tipi Düzenleme",
@@ -258,7 +258,7 @@
     "deleteProgram": "Programı Sil",
     "deleteProgramsFromMachine": "Program(lar)ı Makinelerden Sil",
     "concatPrograms": "Programları Birleştir",
-    "changeName": "Ad Değiştir",
+    "renameProgram": "Yeniden Adlandır",
     "changeProcessType": "Program Tipini Değiştir",
     "sendProgram": "Programı Yolla",
     "copyToMachinesAndSend": "Makinelere Kopyala ve Yolla",
@@ -333,10 +333,6 @@
     "pasteNotification": {
       "success": "{name} programı {programNo} numarasıyla kaydedildi.",
       "fail": "{name} programı {programNo} numarasına kaydedilirken hata oluştu."
-    },
-    "changeNameNotification": {
-      "success": "{programNo} numaralı programın ismi başarıyla değiştirildi.",
-      "fail": "{programNo} numaralı programın ismini değiştirme işlemi başarısız."
     },
     "changeProcessTypeNotification": {
       "success": "{programNo} numaralı programın tipi başarıyla değiştirildi.",

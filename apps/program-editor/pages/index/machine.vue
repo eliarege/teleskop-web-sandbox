@@ -159,6 +159,9 @@ await editor.fetchAllPrograms().then(() => {
 const versionDialogVisible = ref(false)
 const versions = ref([] as Array<any>)
 const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length > 1)
+const hasOnlyOnController = computed(() => editor.selectedPrograms.some(
+  row => row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+))
 
 const searchFilter = ref('')
 const debouncedFilter = refDebounced(searchFilter, 250)
@@ -403,7 +406,11 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.editProgram'),
       shortcut: 'F3',
       icon: 'edit',
-      disabled: isMoreThanOneRowSelected.value,
+      disabled: isMoreThanOneRowSelected.value
+      || editor.selectedPrograms.some(
+        (row: ProgramTableRow) =>
+          row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+      ),
       onClick: async () => {
         await navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
       },
@@ -452,7 +459,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.changeName'),
+      label: tt('contextMenu.renameProgram'),
       shortcut: '',
       icon: 'edit_note',
       disabled: isMoreThanOneRowSelected.value
@@ -462,7 +469,7 @@ const contextMenuOptions = computed(() => [
       ),
       onClick: async () => {
         $commandManager.executeCommand(
-          'changeName',
+          'renameProgram',
           { $q },
           machineId,
           editor.selectedPrograms[0].programNo,
@@ -473,16 +480,17 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.changeProcessType'),
       shortcut: '',
       icon: '',
-      disabled: false,
+      disabled: editor.selectedPrograms.some(
+        (row: ProgramTableRow) =>
+          row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+      ),
       onClick: () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
           'changeProcessType',
           { $q },
           machineId,
-          editor.selectedPrograms.map((row: ProgramItem) => {
-            return { machineId, programNo: row.programNo, name: row.name }
-          }),
+          editor.selectedPrograms,
         )
       },
     },
@@ -492,9 +500,7 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.sendProgram'),
       shortcut: '',
       icon: 'send',
-      disabled: editor.selectedPrograms.some(
-        row => row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
-      ),
+      disabled: hasOnlyOnController.value,
       onClick: async () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
@@ -509,9 +515,7 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.copyToMachinesAndSend'),
       shortcut: '',
       icon: '',
-      disabled: editor.selectedPrograms.some(
-        row => row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
-      ),
+      disabled: hasOnlyOnController.value,
       onClick: () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
@@ -525,7 +529,7 @@ const contextMenuOptions = computed(() => [
     {
       label: tt('contextMenu.getProgram'),
       shortcut: '',
-      icon: '',
+      icon: 'get_app',
       disabled: false,
       onClick: async () => {
         $commandManager.executeCommand(
@@ -542,7 +546,7 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.addToComparison'),
       shortcut: '',
       icon: 'playlist_add',
-      disabled: false,
+      disabled: hasOnlyOnController.value,
       onClick: () => {
         contextMenuStore.addToComparisonBasket(machineId, editor.selectedPrograms)
       },
@@ -551,7 +555,7 @@ const contextMenuOptions = computed(() => [
       label: tt('contextMenu.compareWith'),
       shortcut: '',
       icon: 'compare_arrows',
-      disabled: !contextMenuStore.comparisonBasketLength(),
+      disabled: !contextMenuStore.comparisonBasketLength() || hasOnlyOnController.value,
       onClick: () => {
         contextMenuStore.addToComparisonBasket(machineId, editor.selectedPrograms)
         contextMenuStore.comparison()

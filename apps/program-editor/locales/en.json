@@ -226,9 +226,9 @@
     "selectCommands": "Select command that will be on print",
     "selectPrinter": "Select printer"
   },
-  "changeNameDialog": {
-    "_": "Change program name",
-    "enterNewName": "Enter the new name of the program."
+  "renameProgramDialog": {
+    "title": "Rename Program",
+    "message": "Enter the new name of the program."
   },
   "changeProcessTypeDialog": {
     "_": "Edit Process Types",
@@ -258,7 +258,7 @@
     "deleteProgram": "Delete Program",
     "deleteProgramsFromMachine": "Delete Program(s) From Machine",
     "concatPrograms": "Concatenate Programs",
-    "changeName": "Change Name",
+    "renameProgram": "Rename",
     "changeProcessType": "Change Process Type",
     "sendProgram": "Send Program",
     "copyToMachinesAndSend": "Copy To Machines And Send",
@@ -332,10 +332,6 @@
     "pasteNotification": {
       "success": "Program {name} is successfully saved with program no {programNo}.",
       "fail": "An error occured while saving program {name} with program no {programNo}."
-    },
-    "changeNameNotification": {
-      "success": "Change name operation is succeed for program with program no {programNo}.",
-      "fail": "Change name operation is failed for program with program no {programNo}."
     },
     "changeProcessTypeNotification": {
       "success": "Change process type operation is succeed for program with program no {programNo}.",

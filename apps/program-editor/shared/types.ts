@@ -153,6 +153,8 @@ export interface ProgramHeaderUpdate {
   author?: string | null
   comment?: string | null
   isChanged?: boolean | null
+  updatedAt?: Date | null
+  tbbProgramChangedEvent?: number | null
 }
 
 export interface Program extends ProgramHeader {

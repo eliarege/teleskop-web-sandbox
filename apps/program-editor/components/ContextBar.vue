@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { QBtn } from 'quasar'
-import { useElementSize } from '@vueuse/core'
 import { useContextBarState } from '~/composables/useContextBar'
 import { calculateProgramDuration } from '~/shared/formula'
 
@@ -10,16 +9,11 @@ const editor = useEditorStore()
 
 const el = ref<HTMLElement | null>(null)
 const parentEl = ref<HTMLElement | null>(null)
-const { width } = useElementSize(el)
-const { width: parentWidth } = useElementSize(parentEl)
-const defaultWidth = ref(0)
 
 function calcProgramDuration() {
   editor.program.duration = calculateProgramDuration(editor.program, editor.machine, editor.teleskopSettings.initialTemperature)
   return editor.program.duration
 }
-
-const textVisibilityThreshold = 600 // Örneğin, 600px'den küçükse metni gizle
 </script>
 
 <template>
@@ -46,9 +40,8 @@ const textVisibilityThreshold = 600 // Örneğin, 600px'den küçükse metni giz
             :name="button.icon"
             size="1.2rem"
           />
-          <span v-if="width >= textVisibilityThreshold" class="pl-1">{{ button.label }}</span>
-          <QTooltip v-if="button.tooltip && button.shortcut">
-            {{ button.label !== '' ? button.shortcut : `${button.tooltip} (${button.shortcut})` }}
+          <QTooltip>
+            {{ `${button.tooltip} (${button.shortcut})` }}
           </QTooltip>
         </QBtn>
       </div>

@@ -74,7 +74,7 @@ const buttons = computed<ContextBarButtons[]>(() => [
     originalLabel: t('menu.newStep'),
     tooltip: t('menu.newStep'),
     shortcut: 'F2',
-    icon: 'add_circle_outline',
+    icon: 'add_box',
     disable: editor.isLoading,
     onClick() {
       editor.addStep()
@@ -85,7 +85,7 @@ const buttons = computed<ContextBarButtons[]>(() => [
     originalLabel: t('menu.newParallelStep'),
     tooltip: t('menu.newParallelStep'),
     shortcut: 'F3',
-    icon: 'add_circle_outline',
+    icon: 'queue',
     disable: editor.isLoading,
     onClick() {
       editor.newParallelStep()

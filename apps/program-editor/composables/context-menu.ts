@@ -8,16 +8,15 @@ export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
   getCopiedStepsValues: (machineId: number, programNo: number) => { machineId: number, programNo: number, steps: ProgramStep[] } | undefined
   comparisonBasketLength: () => number
-  copy: (fromMachine: number, program: ProgramItem[]) => void
+  copy: (fromMachine: number, program: ProgramTableRow[]) => void
   paste: (machineId: number, remains?: CopyItem) => Promise<CopyItem>
   setCtx: (ctx?: any) => void
   deleteProgram: (selectedRows: ProgramItem[], selectedOption: number, machineId: number) => Promise<void>
   getProgram: (programNo: number, machineId: number) => Promise<{ program: Program, programErrors: StepError[] }>
   updateProgramHeader: (machineId: number, programNo: number, program: ProgramHeaderUpdate) => Promise<boolean>
-  changeProgramName: (machineId: number, programNo: number, newName: string) => Promise<boolean>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   getProcessTypes: () => Promise<ProcessType[]>
-  changeProcessType: (machineId: number, programs: ProgramItem[], newType: number) => Promise<void>
+  changeProcessType: (machineId: number, programs: ProgramTableRow[], newType: number) => Promise<void>
   sendProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   getRemoteProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
@@ -26,7 +25,7 @@ export interface ContextMenuStore {
   fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
   concatenatePrograms: (programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
   comparison: () => void
-  addToComparisonBasket: (machineId: number, programs: ProgramItem[]) => void
+  addToComparisonBasket: (machineId: number, programs: ProgramTableRow[]) => void
   clearComparisonBasket: () => void
   getComparisonBasket: () => { machineId: number, programNo: number }[]
   isThereCopiedValue: ComputedRef<boolean>
@@ -112,7 +111,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     comparsionBasket = []
   }
 
-  function addToComparisonBasket(machineId: number, programs: ProgramItem[]) {
+  function addToComparisonBasket(machineId: number, programs: ProgramTableRow[]) {
     programs.forEach((program) => {
       if (!comparsionBasket.includes({ machineId, programNo: program.programNo }))
         comparsionBasket.push({ machineId, programNo: program.programNo })
@@ -131,7 +130,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return comparsionBasket.length
   }
 
-  function copy(fromMachine: number, programs: ProgramItem[]) {
+  function copy(fromMachine: number, programs: ProgramTableRow[]) {
     copiedValues.value = []
     programs.forEach(({ programNo, name }) => {
       copiedValues.value.push({ machineId: fromMachine, programNo, name })
@@ -221,15 +220,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return !!check
   }
 
-  async function changeProgramName(machineId: number, programNo: number, newName: string): Promise<boolean> {
-    const check = updateProgramHeader(machineId, programNo, {
-      programNo,
-      name: newName,
-    })
-
-    return !!check
-  }
-
   async function getProcessTypes(): Promise<ProcessType[]> {
     const { fetch } = useKeycloak()
     const result = await fetch('/api/process')
@@ -237,7 +227,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return result as ProcessType[]
   }
 
-  async function changeProcessType(machineId: number, programs: ProgramItem[], newType: number) {
+  async function changeProcessType(machineId: number, programs: ProgramTableRow[], newType: number) {
     for (const program of programs) {
       try {
         await updateProgramHeader(machineId, program.programNo, {
@@ -400,7 +390,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     sendProgram,
     getProgramHeader,
     updateProgramHeader,
-    changeProgramName,
     changeProcessType,
     comparison,
     addToComparisonBasket,

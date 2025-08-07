@@ -81,6 +81,7 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
                 :label="t('program.programState')"
                 options-dense
                 :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.programState') })]"
+                :disable="isRename"
                 map-options
                 emit-value
                 dense
