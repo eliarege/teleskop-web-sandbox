@@ -9,6 +9,7 @@
     "dev": "nuxt dev",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
+    "start": "node .output/server/index.mjs",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -16,6 +17,8 @@
   },
   "dependencies": {
     "@teleskop/utils": "workspace:*",
+    "@teleskop/nuxt-base": "workspace:*",
+    "eslint": "9.14.0",
     "nuxt": "3.14.159",
     "vue": "3.5.12",
     "vue-router": "4.4.5"
