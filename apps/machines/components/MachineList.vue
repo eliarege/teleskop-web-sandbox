@@ -258,7 +258,38 @@ watch(showModal, async (newValue, _oldValue) => {
     table-header-class="bg-gray-1 dark:bg-dark-4"
     @row-click="onRowClick"
     @row-dblclick="onRowDoubleClick"
-  />
+  >
+    <template #body="bodyProps">
+      <q-tr>
+        <q-td>
+          <q-checkbox v-model="selected" :val="bodyProps.row" />
+        </q-td>
+        <q-td
+          v-for="col in bodyProps.cols"
+          :key="col.name"
+          :props="bodyProps"
+        >
+          <div v-if="col.value === true">
+            <TwIcon
+              name="i-mdi-check"
+              size="20px"
+              color="green"
+            />
+          </div>
+          <div v-else-if="col.value === false">
+            <TwIcon
+              name="i-mdi-close"
+              size="20px"
+              color="red"
+            />
+          </div>
+          <div v-else>
+            {{ col.value }}
+          </div>
+        </q-td>
+      </q-tr>
+    </template>
+  </q-table>
 
   <!-- Form Dialog -->
   <q-dialog v-model="showModal" @hide="emit('close')">

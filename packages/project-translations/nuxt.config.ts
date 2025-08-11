@@ -4,8 +4,9 @@ export default defineNuxtConfig({
     lazy: true,
     langDir: './locales',
     locales: [
-      { code: 'en', files: ['projectTranslations.ts'] },
+      { code: 'en-GB', files: ['projectTranslations.ts'] },
       { code: 'tr', files: ['projectTranslations.ts'] },
+      { code: 'pt', files: ['projectTranslations.ts'] },
     ],
   },
   runtimeConfig: {

@@ -3,5 +3,5 @@ import { defaultConfig } from '@formkit/vue'
 
 export default defaultConfig({
   locales: { tr, en },
-  locale: 'en',
+  locale: 'en-GB',
 })

@@ -1,0 +1,12 @@
+{
+  "app": {
+    "name": "Teleskop Web"
+  },
+  "machines": "Makineler",
+  "dispensing-manager": "Dağıtım Yöneticisi",
+  "program-editor": "Program Editörü",
+  "planning-board": "Planlama Tablosu",
+  "multi-monitor": "Çoklu İzleme",
+  "report": "Rapor",
+  "archive": "Arşiv"
+}

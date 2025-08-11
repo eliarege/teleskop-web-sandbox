@@ -1,26 +1,26 @@
 {
   "name": "root",
   "type": "module",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
-  "description": "",
   "license": "UNLICENSED",
   "scripts": {
-    "dev": "node -r dotenv/config src/index.js",
-    "build": "unbuild",
-    "start": "node dist/index.mjs",
+    "build": "nuxt build",
+    "dev": "nuxt dev",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "ejs": "3.1.10",
-    "express": "4.21.1"
+    "@teleskop/utils": "workspace:*",
+    "nuxt": "3.14.159",
+    "vue": "3.5.12",
+    "vue-router": "4.4.5"
   },
   "devDependencies": {
-    "@teleskop/build-utils": "workspace:*",
-    "@types/express": "4.17.21",
-    "eslint": "9.14.0",
-    "unbuild": "2.0.0"
+    "typescript": "5.6.3"
   }
 }

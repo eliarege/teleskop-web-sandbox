@@ -221,7 +221,7 @@ const infoTextColor = computed(() => {
         <div v-if="machine.autoManualStatus" class="flex-center gap-3">
           <span>{{ machine.manualReason }}</span>
           <span>
-            {{ manualReasonElapsedTime }}
+            {{ manualReasonElapsedTime }} &nbsp;
             <q-tooltip
               transition-show="scale"
               class="text-black e-border bg-white"
@@ -234,7 +234,7 @@ const infoTextColor = computed(() => {
         <br>
         <div v-if="machine.runningBatchStatus !== 2" class="flex-center gap-3">
           <span>{{ machine.stopReason }}</span>
-          <span> {{ stopReasonElapsedTime }}
+          <span> {{ stopReasonElapsedTime }} &nbsp;
             <q-tooltip
               transition-show="scale"
               class="text-black e-border bg-white"
