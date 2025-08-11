@@ -112,7 +112,6 @@ const autoRecipe = computed(() => {
     }
   })
 })
-console.log(autoRecipe.value)
 const manuelRecipe = computed(() => {
   return recipe.value.map((val) => {
     return {
