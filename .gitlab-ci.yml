@@ -134,6 +134,7 @@ release-apps:
     - *docker-login
   script:
     - mkdir release-logs
+    - export ERRORS=""
     # Build/Push every app defined in TARGET_APPS sequentially
     - |
       for APP_NAME in $TARGET_APPS; do

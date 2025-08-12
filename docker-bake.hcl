@@ -132,5 +132,8 @@ target "root" {
 
 target "websockify" {
   inherits = ["_common"]
-  context = "apps/websockify"
+  target = "node-app"
+  args = {
+    APP_BUILD_DIR = "dist"
+  }
 }
