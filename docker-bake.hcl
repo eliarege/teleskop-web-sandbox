@@ -125,9 +125,6 @@ target "program-editor" {
 target "root" {
   inherits = ["_common"]
   target = "nuxt-app"
-  args = {
-    NITRO_PORT = "4000"
-  }
 }
 
 target "websockify" {
