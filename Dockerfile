@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 ###############
 ## Base Image
 ###############
@@ -50,7 +52,7 @@ RUN \
 ##########################
 ## Nuxt Apps
 ##########################
-FROM base AS nuxt
+FROM base AS nuxt-app
 
 WORKDIR /opt/app
 
@@ -92,20 +94,21 @@ FROM build AS deploy-node
 WORKDIR /opt/deploy
 
 ARG APP_NAME
+ARG APP_BUILD_DIR=dist
 
-# Here we assume node apps are bundled in `dist` via `@teleskop/build-utils`.
+# Here we assume node apps are bundled in a single directory.
 # It's possible to do this without this assumption but it's a lot more complex.
 # Read more: https://gitlab.com/eliarelektronik/dijital_boyahane/teleskop-web/-/commit/82687055346afa7c6c6c0f3cab0f380d5983c19a
 
 # Extract start script from `package.json`, move build output to deploy
-RUN cp -r /opt/build/apps/${APP_NAME}/dist /opt/build/apps/${APP_NAME}/package.json ./ \
+RUN cp -r /opt/build/apps/${APP_NAME}/${APP_BUILD_DIR} /opt/build/apps/${APP_NAME}/package.json ./ \
   && node -e "console.log('#!/bin/sh\nexec ' + require('./package.json').scripts.start)" > ./start \
   && chmod +x ./start
 
 ###############
 ## Node Apps
 ###############
-FROM base AS node
+FROM base AS node-app
 
 WORKDIR /opt/app
 
