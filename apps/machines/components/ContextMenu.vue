@@ -2,7 +2,6 @@
 export interface IContextMenuOption {
   label: string
   category: string
-  keybind: string
   icon: string
   disabled: boolean
   onClick: (data: any) => void
@@ -10,7 +9,7 @@ export interface IContextMenuOption {
 
 const props = defineProps<{
   contextMenuOptions: Partial<IContextMenuOption>[]
-  target: string | boolean | Element | undefined
+  target: string | boolean | Element
 }>()
 
 const emit = defineEmits(['click'])
@@ -28,8 +27,8 @@ function handleClick(event: Event, option: Partial<IContextMenuOption>) {
   <q-menu
     touch-position
     context-menu
-    class="whitespace-nowrap w-fit pr-12"
-    :target="target ?? true"
+    class="whitespace-nowrap"
+    :target
   >
     <q-list>
       <template
@@ -43,15 +42,11 @@ function handleClick(event: Event, option: Partial<IContextMenuOption>) {
           :class="option.disabled ? 'text-gray cursor-not-allowed' : ''"
           @click="event => handleClick(event, option)"
         >
-          <q-item-section class="flex w-8 justify-center items-center">
-            <q-icon :name="option.icon" />
-          </q-item-section>
           <q-item-section>
-            {{ option.label }}
-          </q-item-section>
-          <q-space />
-          <q-item-section class="mr-5">
-            {{ option.keybind }}
+            <div class="flex items-center justify-start gap-3">
+              <q-icon dense :name="option.icon" />
+              {{ option.label }}
+            </div>
           </q-item-section>
         </q-item>
       </template>
