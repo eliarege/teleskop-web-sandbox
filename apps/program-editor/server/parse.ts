@@ -1,7 +1,6 @@
 import { set as setTimestamp } from 'date-fns'
-import type { Machine, MachineCommand, ParameterItem, ProgramHeader, ioListItem } from '../shared/types'
+import type { Machine, MachineCommand, ParameterItem, Program, ioListItem } from '../shared/types'
 import { BEGIN_HEADER, BEGIN_PROGRAM, FIRST_COMMAND_NO, LAST_COMMAND_NO } from './constants'
-import { PError } from './error'
 
 const NAME_RE = /^ISIM=(.+)?$/
 /** Capture groups: 1) isSet?, 2) date, 3) month, 4) year (20XX) */
@@ -126,7 +125,7 @@ function readProcessCode(it: IterableIterator<string>): number {
   return match[1] ? Number.parseInt(match[1]) : 0
 }
 
-export function parseProgramString(programString: string, machine: Pick<Machine, 'id' | 'commands'>): ProgramHeader {
+export function parseProgramString(programString: string, machine: Pick<Machine, 'id' | 'commands'>): Program {
   const program = createEmptyProgram()
 
   const reader = programString.split('\n')
@@ -136,7 +135,7 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
   readLineStrict(it, BEGIN_HEADER)
   program.name = readProgramName(it)
   program.createdAt = readCreatedAt(it)
-  program.updatedAt = readUpdatedAt(it)
+  program.updatedAtTBB = readUpdatedAt(it)
   program.author = readAuthor(it)
   program.comment = readComment(it)
   program.typeId = readProcessCode(it)
@@ -201,14 +200,14 @@ function parseCommandParameters(programNo: number, parameter: string, command: M
     for (let index = 0; index < parameterValues.length; index++) {
       const parameterValue = parameterValues[index]
       const commandParameter = editableParameters[index]
-      if (!commandParameter)
-        throw new PError('MACHINE_PARAMETER_NOT_FOUND', { machineId: command.machineId, programNo, commandNo: command.commandNo, parameterIndex: index })
 
-      parameters.push({
-        index: commandParameter.index,
-        value: Number.parseInt(parameterValue),
-        optimized: false,
-      })
+      if (commandParameter) {
+        parameters.push({
+          index: commandParameter.index,
+          value: Number.parseInt(parameterValue),
+          optimized: false,
+        })
+      }
     }
   }
 
@@ -223,43 +222,45 @@ function parseCommandIOList(list: string, command: MachineCommand): ioListItem[]
   const ioMatches = [...list.matchAll(IO_OUTER_RE)]
   for (let index = 0; index < ioMatches.length; index++) {
     const ioMatch = ioMatches[index]
-    const io: ioListItem['value'] = []
+    const ioValues: ioListItem['value'] = []
 
     const ioSelectionMatches = [...ioMatch[1].matchAll(IO_SELECTION_RE)]
     for (const ioSelectionMatch of ioSelectionMatches) {
       const [type, physicalId] = ioSelectionMatch[1].split(',').map(v => Number.parseInt(v))
-      io.push([type, physicalId])
+      ioValues.push([type, physicalId])
     }
 
     const commandIO = command.ioList.find(io => io.index === index)
-
-    if (!commandIO)
-      throw new PError('PROGRAM_IO_NOT_FOUND', { machineId: command.machineId, programNo: 0, commandNo: command.commandNo, ioIndex: index })
-
-    ioList.push({
-      ioIndex: index,
-      ioId: commandIO.physicalId,
-      value: io,
-    })
+    if (commandIO) {
+      ioList.push({
+        ioIndex: index,
+        ioId: commandIO.physicalId,
+        value: ioValues,
+      })
+    }
   }
   return ioList
 }
 
-function createEmptyProgram(): ProgramHeader {
+function createEmptyProgram(): Program {
   return {
+    name: '',
+    icon: '',
     programNo: 0,
     duration: 0,
-    updatedAtTBB: null,
-    prgState: 0,
-    name: '',
     author: null,
-    comment: null,
+    comment: '',
     typeId: 0,
+    typeName: '',
+    machineId: 0,
+    machineName: '',
+    steps: [],
     createdAt: null,
     updatedAt: null,
-    steps: [],
     isChanged: false,
     tbbProgramChangedEvent: 0,
+    prgState: 0,
+    updatedAtTBB: null,
     totalChemReq: 0,
     totalDyeReq: 0,
     manChemReq: 0,

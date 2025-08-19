@@ -7,6 +7,7 @@ export type ErrorCode =
   | 'PROGRAM_INVALID'
   | 'PROGRAM_ARCHIVE_NOT_FOUND'
   | 'PROGRAM_FAILED_TO_LOAD'
+  | 'PROGRAM_FAILED_TO_DOWNLOAD'
   | 'PROGRAM_INSERT_FAILED'
   | 'PROGRAM_UPDATE_FAILED'
   | 'PROGRAM_TREATMENT_COMMAND_LIMIT'
@@ -105,6 +106,11 @@ export interface ErrorProgramLoad extends PError {
   detail: ErrorProgramDetail
 }
 
+export interface ErrorProgramDownload extends PError {
+  code: 'PROGRAM_FAILED_TO_DOWNLOAD'
+  detail: ErrorProgramDetail
+}
+
 export interface ErrorProgramInsert extends PError {
   code: 'PROGRAM_INSERT_FAILED'
   detail: ErrorProgramDetail
@@ -153,6 +159,7 @@ export type AnyError =
   | ErrorProgramNotFound
   | ErrorProgramArchiveNotFound
   | ErrorProgramLoad
+  | ErrorProgramDownload
   | ErrorProgramInsert
   | ErrorProgramUpdate
   | ErrorTreatmentLimit
@@ -174,6 +181,7 @@ export class PError extends Error {
   constructor(code: 'PROGRAM_INVALID', detail: ErrorProgramInvalidDetail)
   constructor(code: 'PROGRAM_ARCHIVE_NOT_FOUND', detail: ErrorProgramArchiveNotFound)
   constructor(code: 'PROGRAM_FAILED_TO_LOAD', detail: ErrorProgramDetail)
+  constructor(code: 'PROGRAM_FAILED_TO_DOWNLOAD', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_INSERT_FAILED', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_UPDATE_FAILED', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_TREATMENT_COMMAND_LIMIT', detail: ErrorTreatmentLimitDetail)

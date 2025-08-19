@@ -10,7 +10,11 @@ import type { MachineController } from '~/server/classes/MachineController'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
-  const machineId = Number.parseInt(machine_id)
+  const machineId = Number(machine_id)
+  if (!Number.isInteger(machineId)) {
+    throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo: 0 })
+  }
+
   const machine = await machineStore.get(machineId)
   if (!machine) {
     throw new PError('MACHINE_NOT_FOUND', { machineId })

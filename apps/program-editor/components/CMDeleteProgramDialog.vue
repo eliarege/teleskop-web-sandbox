@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar'
 
-const props = defineProps({
-  programNames: Array,
-})
+const props = defineProps<{
+  programNos: number[]
+}>()
+
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
+
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
 const selectedOption = ref('db-machine')
@@ -36,7 +38,9 @@ const options = [
       </QCardSection>
 
       <QCardSection class="text-gray-8 dark:text-gray-3">
-        <span class="max-w-100"> {{ t('contextMenu.deleteProgramDialog.warning', { name: props.programNames }) }}</span>
+        <span class="max-w-100">
+          {{ t('contextMenu.deleteProgramDialog.message', { count: programNos.length, programNo: props.programNos.join(', ') }) }}
+        </span>
         <div class="mt-4 ml-4 flex">
           <QOptionGroup
             v-model="selectedOption"

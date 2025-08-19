@@ -32,6 +32,10 @@ async function onUpdateSelected(selection: string) {
   }
 }
 
+function openMachineInNewTab(machineId: number) {
+  window.open(`/machine/${machineId}`, '_blank')
+}
+
 const thumbStyle = { opacity: '0' }
 const currentMachine = ref()
 </script>
@@ -71,6 +75,7 @@ const currentMachine = ref()
               dense
               @click="onUpdateSelected(`${machine.groupId}-${machine.id}`)"
               @contextmenu.prevent="currentMachine = machine"
+              @mousedown.middle="openMachineInNewTab(machine.id)"
             >
               <QItemSection dense>
                 {{ machine.name }}

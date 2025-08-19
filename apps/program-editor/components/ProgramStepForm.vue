@@ -28,7 +28,7 @@ const stepIcons = computed(() => {
   return [mainIcon, ...parallelIcons]
 })
 
-const expanded = ref(props.stepError || editor.allStepExpanded)
+const expanded = ref<boolean>(!!props.stepError || editor.allStepExpanded)
 const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')
 
 watch(() => editor.allStepExpanded, () => {
@@ -52,7 +52,7 @@ const duration = computed(() => {
   return formatDuration(totalStepDuration)
 })
 
-function deleteParallelStep(stepIndex: number, index: number) {
+function deleteParallelStep(stepIndex: number, index: number): void {
   editor.selectedSteps = [editor.program.steps[stepIndex]]
   const settings = useProgramWriteSettings()
   if (!isLastStep && settings.value.removeParallelCommandFromOtherSteps) {
@@ -132,7 +132,7 @@ function removeError(stepId: number, commandId: number) {
       <template #item="{ index }">
         <div
           class="step-parallel-command"
-          @click="removeError(stepIndex, step.parallelCommands[index].commandId)"
+          @click="removeError(step.stepId, step.parallelCommands[index].commandId)"
         >
           <DevOnly>
             <div class="flex flex-col color-gray-5 text-3">
@@ -153,7 +153,7 @@ function removeError(stepId: number, commandId: number) {
             icon="close"
             flat
             dense
-            @click="deleteParallelStep(stepIndex, index)"
+            @click.stop="deleteParallelStep(stepIndex, index)"
           />
         </div>
       </template>

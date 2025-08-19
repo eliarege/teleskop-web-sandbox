@@ -1,16 +1,17 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { PError, isPError } from '~/server/error'
 import logger from '~/server/logger'
+import { ProgramStatus } from '~/shared/constants'
 
 export default defineAuthEventHandler({
   roles: ['machine-upload'],
   handler: async (event) => {
     try {
       const { machine_id, program_no } = getRouterParams(event)
-      const machineId = Number.parseInt(machine_id)
-      const programNo = Number.parseInt(program_no)
+      const machineId = Number(machine_id)
+      const programNo = Number(program_no)
 
-      if (Number.isNaN(machineId) || Number.isNaN(programNo)) {
+      if (!Number.isInteger(machineId) || !Number.isInteger(programNo)) {
         throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo })
       }
 
@@ -30,7 +31,15 @@ export default defineAuthEventHandler({
 
       logger.info(`User: ${event.context.kauth?.name}. Uploading program ${programNo} of machine ${machineId}.`)
 
-      return await machine.uploadProgram(program)
+      const isUploaded = await machine.uploadProgram(program)
+      if (isUploaded) {
+        program.isChanged = false
+        program.prgState = ProgramStatus.EXISTS_ON_BOTH
+        program.updatedAtTBB = program.updatedAt
+        await machine.updateProgramHeader(program)
+      }
+
+      return true
     } catch (error: PError | unknown) {
       if (isPError(error)) {
         throw createError({

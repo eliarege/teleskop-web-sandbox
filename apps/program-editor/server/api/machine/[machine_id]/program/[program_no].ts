@@ -1,6 +1,6 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { ProgramEditorActivityCodes } from '~/server/constants'
-import { PError } from '~/server/error'
+import { PError, isPError } from '~/server/error'
 import { logEditorOperation } from '~/server/functions'
 import logger from '~/server/logger'
 import { ProgramStatus } from '~/shared/constants'
@@ -9,10 +9,10 @@ import type { MachineController } from '~/server/classes/MachineController'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
-  const machineId = Number.parseInt(machine_id)
-  const programNo = Number.parseInt(program_no)
+  const machineId = Number(machine_id)
+  const programNo = Number(program_no)
 
-  if (Number.isNaN(machineId) || Number.isNaN(programNo)) {
+  if (!Number.isInteger(machineId) || !Number.isInteger(programNo)) {
     throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo })
   }
 
@@ -36,19 +36,39 @@ export default defineAuthEventHandler(async (event) => {
 
       return { program, programErrors }
     } catch (error) {
-      if (error instanceof PError && error.code === 'PROGRAM_NOT_FOUND') {
+      if (isPError(error)) {
         throw createError({
-          statusCode: 404,
-          data: { code: error.code, detail: error.detail },
+          statusCode: 400,
+          message: error.code,
+          data: error.detail,
         })
       }
-      throw error
+
+      throw createError({
+        statusCode: 500,
+        message: 'INTERNAL_SERVER_ERROR',
+      })
     }
   }
 
   if (event.method === 'DELETE') {
     checkPermission(event, 'program-delete')
-    return await handleProgramDeletion(machine, programNo, query, machineId, event.context?.kauth?.name)
+    try {
+      return await handleProgramDeletion(machine, programNo, query, machineId, event.context?.kauth?.name)
+    } catch (error) {
+      if (isPError(error)) {
+        throw createError({
+          statusCode: 400,
+          message: error.code,
+          data: error.detail,
+        })
+      }
+
+      throw createError({
+        statusCode: 500,
+        message: 'INTERNAL_SERVER_ERROR',
+      })
+    }
   }
 
   throw createError({ statusCode: 405, statusMessage: `Method ${event.method} not allowed.` })
@@ -62,9 +82,9 @@ async function handleProgramDeletion(
   query: any,
   machineId: number,
   userName?: string,
-) {
+): Promise<boolean> {
   if (!query?.source) {
-    return 0
+    return false
   }
 
   const { program: { prgState } } = await machine.fetchProgram(programNo)
@@ -78,7 +98,7 @@ async function handleProgramDeletion(
     return await deleteFromDatabaseIfValid(machine, programNo, prgState, machineId, userName)
   }
 
-  return 1
+  return true
 }
 
 async function deleteFromMachineIfValid(machine: MachineController, programNo: number, prgState: number | null, machineId: number, userName?: string) {
@@ -86,11 +106,11 @@ async function deleteFromMachineIfValid(machine: MachineController, programNo: n
     prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER
     || prgState === ProgramStatus.EXISTS_ON_BOTH
   ) {
-    try {
-      logger.info(`User: ${userName}. Deleted program ${programNo} from machine ${machineId}.`)
-      await machine.deleteRemoteProgram(programNo)
-    } catch (error) {
-      logger.error(`Error deleting program ${programNo} from machine ${machineId}: ${error.message}`)
+    logger.info(`User: ${userName}. Deleted program ${programNo} from machine ${machineId}.`)
+    await machine.deleteRemoteProgram(programNo)
+
+    if (prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
+      await machine.deleteProgramFromDatabase(programNo)
     }
   }
 }
@@ -101,7 +121,7 @@ async function deleteFromDatabaseIfValid(
   prgState: number | null,
   machineId: number,
   userName?: string,
-) {
+): Promise<boolean> {
   if (
     prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
     || prgState === ProgramStatus.EXISTS_ON_BOTH
@@ -115,5 +135,5 @@ async function deleteFromDatabaseIfValid(
 
     return await machine.deleteProgramFromDatabase(programNo)
   }
-  return 0
+  return false
 }
