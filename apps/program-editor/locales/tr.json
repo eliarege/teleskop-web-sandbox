@@ -269,7 +269,7 @@
     "clearComparisonBasket": "Karşılaştırma Listesini Temizle",
     "deleteProgramDialog": {
       "title": "Programı Sil",
-      "warning": "Program {name} silinecek! Devam etmek istediğinize emin misiniz?",
+      "message": "{programNo} numaralı program silinecek! Devam etmek istediğinize emin misiniz? | {programNo} numaralı programlar silinecek! Devam etmek istediğinize emin misiniz?",
       "deleteFromBoth": "Programı Teleskop'tan ve cihazdan sil",
       "deleteFromTeleskop": "Programı sadece Teleskop'tan sil",
       "deleteFromMachine": "Programı sadece cihazdan sil"
@@ -514,6 +514,7 @@
     }
   },
   "programError": {
+    "machineCommandNotFound": "{commandNo} numaralı komut makinede bulunamadı!",
     "programParameterNotFound": "{paramIndex} indeksli komut parametresi makinede bulunamadı!",
     "machineParameterAdded": "{paramName} parametresi eklendi!",
     "programIONotFound": "{ioIndex} indeksli IO makinede bulunamadı!",

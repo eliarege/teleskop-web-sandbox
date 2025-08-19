@@ -13,6 +13,8 @@ const editor = useEditorStore()
 const { $commandManager } = useNuxtApp()
 const selectRef = ref<QSelect>()
 
+const settings = useProgramWriteSettings()
+
 const programCommand = ref<ProgramStepCommand>(editor.getPathElement(props.path))
 const stepIndex = computed(() => Number(props.path.split('.')[1]))
 const isMainCommand = computed(() => props.path.split('.')[2] === 'mainCommand')
@@ -30,6 +32,10 @@ const availableCommands = computed(() => {
       || (stepData.value.mainCommand.commandNo !== commandNo
       && !stepData.value.parallelCommands.some(cmd => cmd.commandNo === commandNo)),
     )
+    .filter(({ commandNo }) =>
+      !settings.value.preventParallelUsageForDisabledCommands
+      || !isParallelCommandRestricted(commandNo),
+    )
     .map(command => ({
       label: `${command.commandNo} ${command.name}`,
       value: command.commandNo,
@@ -39,10 +45,9 @@ const availableCommands = computed(() => {
 
 const rules = [
   (value: number) => (!!value || t('emptyCommand')),
-
   (value: number) => {
     const machineCommand = editor.machine.commands.get(value)
-    return machineCommand ? true : t('error.machineCommandNotFound', { commandNo: value, machineId: editor.machine.id })
+    return machineCommand ? true : t('error.machineCommandNotFound', { commandNo: value })
   },
 ]
 
@@ -78,7 +83,6 @@ async function updateStepCommand(commandNo: number) {
   editor.updateCommand(commandNo, programCommand.value)
 
   if (!isMainCommand.value && !isLastStep.value && isNewCommand) {
-    const settings = useProgramWriteSettings()
     if (settings.value.confirmAddParallelCommandToSteps)
       $commandManager.executeCommand('moveParallelStep', { $q }, 'add', commandNo, programCommand.value)
   }
@@ -91,10 +95,10 @@ function getCommandLabel(option: any) {
   return command ? `${command.commandNo} ${command.name}` : `${option} ${t('error.commandNotFound')}`
 }
 
-function isParallelCommandRestricted(): boolean {
+function isParallelCommandRestricted(commandNo: number): boolean {
   if (!isMainCommand.value) {
     const mainCommandNo = stepData.value.mainCommand.commandNo
-    return editor.machine.commands.get(mainCommandNo)?.dontUseList?.includes(programCommand.value.commandNo) || false
+    return editor.machine.commands.get(mainCommandNo)?.dontUseList?.includes(commandNo) || false
   }
   return false
 }
@@ -115,7 +119,7 @@ function isParallelCommandRestricted(): boolean {
       :rules="rules"
       :for="id"
       :option-label="getCommandLabel"
-      :class="isParallelCommandRestricted() ? 'opacity-70 ' : ''"
+      :class="isParallelCommandRestricted(programCommand.commandNo) ? 'opacity-70 ' : ''"
       option-value="value"
       hide-bottom-space
       emit-value
@@ -128,7 +132,7 @@ function isParallelCommandRestricted(): boolean {
       filled
       @update:model-value="updateStepCommand"
     >
-      <QTooltip v-if="isParallelCommandRestricted()">
+      <QTooltip v-if="isParallelCommandRestricted(programCommand.commandNo)">
         {{ t('cannotParallelCommand', {
           mainCommandNo: stepData.mainCommand.commandNo,
           parallelCommandNo: programCommand.commandNo,

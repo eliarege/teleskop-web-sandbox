@@ -7,7 +7,7 @@ import { withFTP, withTransaction } from '../decorators'
 import { sql } from '../sql'
 import { stringifyProgram } from '../stringify'
 import { parseProgramString } from '../parse'
-import { PError } from '../error'
+import { PError, isPError } from '../error'
 import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
 import { mapObject } from '../utils/map'
@@ -55,6 +55,7 @@ export class MachineController {
         commandNo: 'COMMANDNO',
         name: 'NAME',
         icon: 'ICON',
+        activated: 'ACTIVATED',
         adviceList: 'ADVICELIST',
         dontUseList: 'DONTUSELIST',
         isRunManual: 'ISRUNMANUAL',
@@ -69,78 +70,99 @@ export class MachineController {
         isUnload: 'ISUNLOAD',
       })
       .where('MACHINEID', this.id)
+      .andWhere('ACTIVATED', 1)
       .orderBy('COMMANDNO') as MachineCommand[]
 
     const parameters = await db
-      .from('BFCOMMANDPARAMETERS')
+      .from('BFCOMMANDPARAMETERS as P')
+      .join('BFMASTERCOMMANDS as C', function () {
+        this.on('P.MACHINEID', '=', 'C.MACHINEID')
+          .andOn('P.COMMANDNO', '=', 'C.COMMANDNO')
+      })
       .select({
-        commandNo: 'COMMANDNO',
-        index: 'PARAMETERINDEX',
-        name: 'PARAMSTRING',
-        editable: 'PROGRAMEDITING',
-        type: db.raw(/* sql */`
+        commandNo: 'P.COMMANDNO',
+        index: 'P.PARAMETERINDEX',
+        name: 'P.PARAMSTRING',
+        editable: 'P.PROGRAMEDITING',
+        type: db.raw(`
           CASE
             WHEN TBBFORMUL = 1 THEN 'MACHINE_FORMULA'
             WHEN USEFORMULA = 1 THEN 'SELECTABLE_FORMULA'
             WHEN PARAMETERTYPE = 0 THEN 'NUMBER'
             WHEN PARAMETERTYPE = 1 THEN 'SELECT'
-          END`,
-        ),
-        format: db.raw(/* sql */`
+          END
+        `),
+        format: db.raw(`
           CASE TEMPERATURE
             WHEN 0 THEN 'NONE'
             WHEN 1 THEN 'TEMPERATURE'
             ELSE 'DURATION'
-          END`,
-        ),
-        value: 'VALUE',
-        minValue: 'PARAMLOWLIMIT',
-        maxValue: 'PARAMHIGHLIMIT',
-        containsVariable: 'CONTAINSVARIABLE',
-        useDefault: 'USEDEFAULT',
-        useFormula: 'USEFORMULA',
-        selectionLabels: db.raw(`NULLIF(SELECTIONLIST, '')`),
-        selectionValues: db.raw(`NULLIF(SELECTIONVALUES, '')`),
+          END
+        `),
+        value: 'P.VALUE',
+        minValue: 'P.PARAMLOWLIMIT',
+        maxValue: 'P.PARAMHIGHLIMIT',
+        containsVariable: 'P.CONTAINSVARIABLE',
+        useDefault: 'P.USEDEFAULT',
+        useFormula: 'P.USEFORMULA',
+        selectionLabels: db.raw(`NULLIF(P.SELECTIONLIST, '')`),
+        selectionValues: db.raw(`NULLIF(P.SELECTIONVALUES, '')`),
       })
-      .where('MACHINEID', this.id)
+      .where('P.MACHINEID', this.id)
+      .andWhere('C.ACTIVATED', 1)
       .modify((queryBuilder) => {
         if (editable) {
-          queryBuilder.where('PROGRAMEDITING', 1)
+          queryBuilder.where('P.PROGRAMEDITING', 1)
         }
       })
-      .orderBy(['COMMANDNO', 'PARAMETERINDEX'])
+      .orderBy(['P.COMMANDNO', 'P.PARAMETERINDEX'])
 
     const ioList = await db
-      .from('BFCOMMANDINPUTOUTPUTS')
-      .select({
-        commandNo: 'COMMANDNO',
-        index: 'IOINDEX',
-        physicalId: 'IOID',
-        type: db.raw('IOTYPE'),
-        selectable: db.raw(/* sql */`CAST(CASE IOTYPE WHEN 5 THEN 1 ELSE 0 END as bit)`),
-        name: 'NAME',
+      .from('BFCOMMANDINPUTOUTPUTS as IO')
+      .join('BFMASTERCOMMANDS as C', function () {
+        this.on('IO.MACHINEID', '=', 'C.MACHINEID')
+          .andOn('IO.COMMANDNO', '=', 'C.COMMANDNO')
       })
-      .where('MACHINEID', this.id)
-      .orderBy(['COMMANDNO', 'IOINDEX'])
+      .select({
+        commandNo: 'IO.COMMANDNO',
+        index: 'IO.IOINDEX',
+        physicalId: 'IO.IOID',
+        type: db.raw('IO.IOTYPE'),
+        selectable: db.raw(`CAST(CASE IO.IOTYPE WHEN 5 THEN 1 ELSE 0 END as bit)`),
+        name: 'IO.NAME',
+      })
+      .where('IO.MACHINEID', this.id)
+      .andWhere('C.ACTIVATED', 1)
+      .orderBy(['IO.COMMANDNO', 'IO.IOINDEX'])
 
     const ioListSelections = await db
-      .from('BFCOMMANDSELECTIONLIST')
-      .select({
-        commandNo: 'COMMANDNO',
-        ioIndex: 'IOINDEX',
-        index: 'SELECTINDEX',
-        type: db.raw('IOTYPE + 1'),
-        name: 'NAME',
-        defaultValue: 'ISDEFAULT',
-        physicalId: 'IOID',
+      .from('BFCOMMANDSELECTIONLIST as S')
+      .join('BFCOMMANDINPUTOUTPUTS as IO', function () {
+        this.on('S.MACHINEID', '=', 'IO.MACHINEID')
+          .andOn('S.COMMANDNO', '=', 'IO.COMMANDNO')
+          .andOn('S.IOINDEX', '=', 'IO.IOINDEX')
       })
-      .where('MACHINEID', this.id)
+      .join('BFMASTERCOMMANDS as C', function () {
+        this.on('IO.MACHINEID', '=', 'C.MACHINEID')
+          .andOn('IO.COMMANDNO', '=', 'C.COMMANDNO')
+      })
+      .select({
+        commandNo: 'S.COMMANDNO',
+        ioIndex: 'S.IOINDEX',
+        index: 'S.SELECTINDEX',
+        type: db.raw('S.IOTYPE + 1'),
+        name: 'S.NAME',
+        defaultValue: 'S.ISDEFAULT',
+        physicalId: 'S.IOID',
+      })
+      .where('S.MACHINEID', this.id)
+      .andWhere('C.ACTIVATED', 1)
       .modify((queryBuilder) => {
         if (selectable) {
-          queryBuilder.where('IO.IOTYPE = 5')
+          queryBuilder.where('IO.IOTYPE', 5)
         }
       })
-      .orderBy(['COMMANDNO', 'IOINDEX', 'SELECTINDEX'])
+      .orderBy(['S.COMMANDNO', 'S.IOINDEX', 'S.SELECTINDEX'])
 
     let parCursor = 0
     let iosCursor = 0
@@ -232,6 +254,7 @@ export class MachineController {
 
   /**
    * Makinenin tüm programlarının headers'larını getirir
+   * @param query - Sorgu parametreleri
    * @returns {Promise<Array<ProgramHeader>>} - Makinenin tüm programlarının dizisi
    */
   @withTransaction
@@ -436,7 +459,7 @@ export class MachineController {
     let commandIdCounter = 0
     let currentStep: ProgramStep = {
       stepId: 0,
-      mainCommand: null,
+      mainCommand: null!,
       parallelCommands: [],
     }
     for (let i = 0; i < rawCommands.length; i++) {
@@ -451,7 +474,7 @@ export class MachineController {
         commandIdCounter = 0
         currentStep = {
           stepId: currentStepIndex,
-          mainCommand: null,
+          mainCommand: null!,
           parallelCommands: [],
         }
       }
@@ -628,19 +651,6 @@ export class MachineController {
   }
 
   /**
-   * Programın makinede olup olmadığını kontrol eder
-   * @param {number} programNo - Program numarası
-   * @returns {Promise<boolean>} - Programın var olup olmadığını belirten bir Promise
-   */
-  @withFTP
-  async hasProgramOnMachine(programNo: number): Promise<boolean> {
-    const result = await this.ftp
-      .fetchProgramList()
-      .then(list => list.includes(programNo))
-    return result
-  }
-
-  /**
    * Bir programı makineye yükler.
    *
    * @param {Program} program - Yüklenecek program
@@ -651,10 +661,6 @@ export class MachineController {
   @withFTP
   async uploadProgram(program: Program): Promise<boolean | Error> {
     try {
-      program.isChanged = false
-      program.prgState = ProgramStatus.EXISTS_ON_BOTH
-      program.updatedAtTBB = program.updatedAt
-
       const commands = await this.fetchCommands()
       if (!commands.length) {
         throw new PError('NO_COMMANDS_FOUND', { machineId: this.id })
@@ -666,7 +672,6 @@ export class MachineController {
       })
 
       await this.ftp.upload(programPath, programData)
-      await this.updateProgramHeader(program)
 
       logger.info(`Program ${program.programNo} successfully sent to machine ${this.id}.`)
       return true
@@ -698,7 +703,6 @@ export class MachineController {
       id: this.id,
       commands: this.commandArrayToMap(commands),
     })
-    const currentTimestamp = this.getCurrentTimestamp()
     const program: Program = {
       ...rawProgram,
       machineId: this.id,
@@ -709,9 +713,6 @@ export class MachineController {
       prgState: ProgramStatus.EXISTS_ON_BOTH,
       icon: '',
       isChanged: false,
-      createdAt: currentTimestamp,
-      updatedAt: currentTimestamp,
-      updatedAtTBB: currentTimestamp,
       tbbProgramChangedEvent: 0,
     }
     return program
@@ -785,35 +786,6 @@ export class MachineController {
   }
 
   /**
-   * Programı indirerek yeniden ekler
-   * @param {number} programNo - İndirilmek istenen program numarası
-   * @returns {Promise<boolean>} - Programın silinip yeniden eklendiğine dair sonuç
-   */
-  @withTransaction
-  async downloadAndSaveProgram(programNo: number): Promise<boolean> {
-    const program = await this.downloadProgram(programNo)
-    if (!program)
-      return false
-
-    const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
-    if (!isDeleted)
-      return false
-
-    program.prgState = ProgramStatus.EXISTS_ON_BOTH
-    program.isChanged = false
-
-    await this.insertProgram(program)
-
-    await logEditorOperation(
-      ProgramEditorActivityCodes.PROGRAMCHANGED,
-      `Makine ${this.id}`,
-      program.name,
-    )
-
-    return true
-  }
-
-  /**
    * Programın header bilgilerini getirir
    * @param {number} machineId - Makine numarası
    * @param {number} programNo - Program numarası
@@ -857,9 +829,6 @@ export class MachineController {
    */
   @withTransaction
   async updateProgramHeader(program: ProgramHeaderUpdate): Promise<boolean> {
-    const config = useRuntimeConfig()
-    const timezoneOffset = Number(config.teleskopTimezoneOffset) || 0
-
     const programObject = mapObject(program, {
       name: 'NAME',
       isChanged: 'ISCHANGED',
@@ -867,18 +836,16 @@ export class MachineController {
       prgState: 'PRGSTATE',
       updatedAtTBB: 'TBBCHANGEDATE',
       tbbProgramChangedEvent: 'TBBPRGCHANGEDEVENT',
-      // güncellenecek sütunlar ...
+    // ...
     })
 
-    const result = await this.trx('BFMASTERPRGHEADER')
-      .update({
-        ...programObject,
-        CHANGEDATE: this.trx.raw('DATEADD(MINUTE, ?, GETDATE())', [-timezoneOffset]),
-      })
+    programObject.CHANGEDATE = program.updatedAt ?? this.getCurrentTimestamp()
+    program.updatedAt = programObject.CHANGEDATE
+
+    return !!await this.trx('BFMASTERPRGHEADER')
+      .update(programObject)
       .where('PROGNO', program.programNo)
       .andWhere('MACHINEID', this.id)
-
-    return !!result
   }
 
   /**
@@ -887,7 +854,9 @@ export class MachineController {
    */
   private getCurrentTimestamp(): Date {
     const config = useRuntimeConfig()
-    return new Date(new Date().getTime() - config.teleskopTimezoneOffset * 60_000)
+    const timezone = Number(config.teleskopTimezoneOffset) || 0
+
+    return new Date(Date.now() - timezone * 60000)
   }
 
   /**
@@ -955,9 +924,7 @@ export class MachineController {
     const lastVersion = await this.updateLastProgramDate(program.programNo)
     const commands: MachineCommand[] = await this.fetchCommands()
 
-    const config = useRuntimeConfig()
-    const timezone = Number(config.teleskopTimezoneOffset)
-    const date = new Date(new Date().getTime() - timezone * 60000).toISOString()
+    const timestamp = this.getCurrentTimestamp()
 
     const stepsArchive: StepArchiveItem[] = []
     const parametersArchive: StepArchiveParameter[] = []
@@ -968,20 +935,20 @@ export class MachineController {
     const headerArchive = [{
       MACHINEID: this.id,
       MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
-      RELEASEDATE: date,
+      RELEASEDATE: timestamp,
       RELEASEENDDATE: null,
       PROGNO: program.programNo,
       PROCESSCODE: program.typeId,
       NAME: program.name,
       DURATION: program.duration,
       TOTALSTEP: program.steps.length,
-      CHANGEDATE: date,
+      CHANGEDATE: timestamp,
       TBBCHANGESOURCE: '',
       TBBCHANGEDATE: '',
-      CREATIONDATE: program.createdAt ? new Date((new Date(program.createdAt)).getTime() - timezone * 60000).toISOString() : date,
+      CREATIONDATE: program.createdAt ?? timestamp,
       USERCOMMENT: program.comment,
       USERNAME: program.author, // ?
-      CHANGETIME: date, // ?
+      CHANGETIME: timestamp, // ?
       WHATCHANGE: '', // ?
       PRGSOURCE: 0, // ?
       TotalChemReq: 0,
@@ -1164,10 +1131,8 @@ export class MachineController {
     }
     const machine = await this.getMachineInfo()
     const commands = machine.commands
-    const config = useRuntimeConfig()
-    const timezone = Number(config.teleskopTimezoneOffset)
-    const date = new Date(new Date().getTime() - timezone * 60000).toISOString()
     const initialTemp = (await getTeleskopSettings()).initialTemperature
+    const timestamp = this.getCurrentTimestamp()
 
     program.duration = calculateProgramDuration(program, {
       ...machine,
@@ -1187,11 +1152,11 @@ export class MachineController {
       NAME: program.name,
       DURATION: program.duration,
       TOTALSTEP: program.steps.length,
-      CHANGEDATE: date,
+      CHANGEDATE: program.updatedAt ?? timestamp,
       TBBCHANGESOURCE: '',
       TBBCHANGEDATE: program.updatedAtTBB ?? null,
       LOCKEDBY: program.author ? program.author : '',
-      CREATIONDATE: program.createdAt ? new Date((new Date(program.createdAt)).getTime() - timezone * 60000).toISOString() : date,
+      CREATIONDATE: program.createdAt ?? timestamp,
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
@@ -1743,5 +1708,24 @@ export class MachineController {
         commandNo: 'CT.commandNo',
       })
       .where('CT.machineId', this.id)
+  }
+
+  async insertEmptyProgramHeader(machineId: number, programNo: number): Promise<void> {
+    const timestamp = this.getCurrentTimestamp()
+
+    await db('BFMASTERPRGHEADER')
+      .insert({
+        MACHINEID: machineId,
+        PROGNO: programNo,
+        PROCESSCODE: '',
+        NAME: '',
+        PRGSTATE: ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
+        ISDELETED: 0,
+        ISCHANGED: 0,
+        CREATIONDATE: timestamp,
+        CHANGEDATE: timestamp,
+        DURATION: 0,
+        TOTALSTEP: 0,
+      })
   }
 }

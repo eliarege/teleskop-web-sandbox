@@ -22,7 +22,7 @@ export const useEditorStore = defineStore('editor', () => {
   const rightDrawerOpen = ref(false)
   let lastStepId = 0
   let lastCommandId = 0
-  const allStepExpanded = ref(false)
+  const allStepExpanded = ref<boolean>(false)
   const programErrors = ref<StepError[]>()
 
   const { $i18n } = useNuxtApp()
@@ -51,7 +51,7 @@ export const useEditorStore = defineStore('editor', () => {
    * @returns {Promise<void>} Promise döner ve asenkron bir işlem olduğunu belirtir.
    */
   async function fetchTeleskopSettings(): Promise<void> {
-    teleskopSettings.value = await kc.fetch('/api/teleskop-settings')
+    teleskopSettings.value = await kc.fetch('/api/teleskop-settings', { method: 'GET' })
   }
 
   /**
@@ -149,7 +149,7 @@ export const useEditorStore = defineStore('editor', () => {
       const machineCommand = machine.value?.commands.get(commandNo)
 
       if (!isDef(machineCommand)) {
-        return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
+        return notifyError(t('error.machineCommandNotFound', { commandNo }))
       }
 
       // Komut tipi paralel ise hata ver
@@ -316,7 +316,7 @@ export const useEditorStore = defineStore('editor', () => {
   function newParallelStepCommand(commandNo: number, stepIndex: number): void {
     const machineCommand = machine.value?.commands.get(commandNo)
     if (!machineCommand) {
-      return notifyError(t('error.machineCommandNotFound', { commandNo, machineId: machine.value?.id }))
+      return notifyError(t('error.machineCommandNotFound', { commandNo }))
     }
 
     const newCommand = createEmptyCommand()
@@ -359,7 +359,7 @@ export const useEditorStore = defineStore('editor', () => {
   function updateCommand(newCommandNo: number, step: ProgramStepCommand): void {
     const machineCommand = machine.value.commands.get(newCommandNo)
     if (!machineCommand) {
-      return notifyError(t('error.machineCommandNotFound', { commandNo: newCommandNo, machineId: machine.value?.id }))
+      return notifyError(t('error.machineCommandNotFound', { commandNo: newCommandNo }))
     }
 
     step.commandNo = newCommandNo
@@ -553,8 +553,6 @@ export const useEditorStore = defineStore('editor', () => {
    */
   function deleteParallelStep(stepIndex: number, parallelIndex: number): void {
     if (isDef(stepIndex) && isDef(parallelIndex)) {
-      const stepId = program.value.steps[stepIndex].stepId
-      deleteError(stepId)
       program.value.steps[stepIndex].parallelCommands.splice(parallelIndex, 1)
     }
   }

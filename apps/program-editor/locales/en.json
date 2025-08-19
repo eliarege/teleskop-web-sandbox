@@ -269,7 +269,7 @@
     "clearComparisonBasket": "Clear Comparison List",
     "deleteProgramDialog": {
       "title": "Delete Program",
-      "warning": "Program {name} will be deleted! Are you sure you want to continue?",
+      "message": "Program {programNo} will be deleted! Are you sure you want to continue? | Programs {programNo} will be deleted! Are you sure you want to continue?",
       "deleteFromBoth": "Delete program from both machine and Teleskop",
       "deleteFromTeleskop": "Delete program from Teleskop",
       "deleteFromMachine": "Delete program from machine"
@@ -512,6 +512,7 @@
     }
   },
   "programError": {
+    "machineCommandNotFound": "Command with index {commandNo} was not found on the machine!",
     "programParameterNotFound": "Command parameter with index {paramIndex} was not found on the machine!",
     "machineParameterAdded": "{paramName} parameter has been added!",
     "programIONotFound": "IO with index {ioIndex} was not found on the machine!",

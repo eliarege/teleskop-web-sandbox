@@ -167,13 +167,13 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'deleteProgram',
-    execute(ctx: any, selectedRows: ProgramItem[], machineId: number) {
+    execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number) {
       ctx.$q.dialog({
         component: CMDeleteProgramDialog,
         componentProps: {
-          programNames: selectedRows.map(r => r.name),
+          programNos: selectedRows.map(row => row.programNo),
         },
-      }).onOk(async (option: number) => {
+      }).onOk(async (option: string) => {
         editor.isLoading = true
         try {
           await contextMenuStore.deleteProgram(selectedRows, option, machineId)
@@ -248,7 +248,7 @@ registerCommand(() => {
         ctx.$q.dialog({
           component: CMDeleteProgramDialog,
           componentProps: {
-            programNames: selectedRows.map(row => row.name),
+            programNos: selectedRows.map(row => row.programNo),
           },
         }).onOk(async (option: string) => {
           await contextMenuStore.deleteProgramFromMachine(selectedRows, machines, option)

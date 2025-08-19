@@ -61,6 +61,7 @@ export interface MachineCommand {
   commandNo: number
   name: string
   icon: string
+  activated: boolean
   adviceList: string
   dontUseList: number[]
   isRunManual: boolean
@@ -133,7 +134,6 @@ export interface ProgramHeader {
   typeId: number
   createdAt: Date | null
   updatedAt: Date | null
-  steps: ProgramStep[]
   updatedAtTBB: Date | null
   prgState: number | null
   isChanged: boolean | null
@@ -153,6 +153,7 @@ export interface ProgramHeaderUpdate {
   author?: string | null
   comment?: string | null
   isChanged?: boolean | null
+  prgState?: number | null
   updatedAt?: Date | null
   tbbProgramChangedEvent?: number | null
 }
@@ -163,6 +164,7 @@ export interface Program extends ProgramHeader {
   typeName: string
   machineId: number
   machineName: string
+  steps: ProgramStep[]
 }
 
 export interface ProgramStep {

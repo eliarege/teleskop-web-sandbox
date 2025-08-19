@@ -11,7 +11,7 @@ export interface ContextMenuStore {
   copy: (fromMachine: number, program: ProgramTableRow[]) => void
   paste: (machineId: number, remains?: CopyItem) => Promise<CopyItem>
   setCtx: (ctx?: any) => void
-  deleteProgram: (selectedRows: ProgramItem[], selectedOption: number, machineId: number) => Promise<void>
+  deleteProgram: (selectedRows: ProgramTableRow[], selectedOption: string, machineId: number) => Promise<void>
   getProgram: (programNo: number, machineId: number) => Promise<{ program: Program, programErrors: StepError[] }>
   updateProgramHeader: (machineId: number, programNo: number, program: ProgramHeaderUpdate) => Promise<boolean>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
@@ -175,25 +175,24 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return conflicts
   }
 
-  async function deleteProgram(selectedRows: ProgramItem[], selectedOption: number, machineId: number) {
+  async function deleteProgram(selectedRows: ProgramTableRow[], selectedOption: string, machineId: number) {
     const { fetch } = useKeycloak()
     const query = `source=${selectedOption}`
 
-    const deletionTasks = selectedRows.map(async (program) => {
+    for (const program of selectedRows) {
       try {
         const response = await fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
           method: 'DELETE',
         })
 
-        const status = response ? 'success' : 'fail'
-        notification(response, t(`contextMenu.delete.${status}`, { programNo: program.programNo }))
+        if (!response) {
+          notification(false, t('contextMenu.delete.fail', { programNo: program.programNo }))
+        }
       } catch (error) {
         console.error(`Error deleting program ${program.programNo}:`, error)
         notification(false, t('contextMenu.delete.fail', { programNo: program.programNo }))
       }
-    })
-
-    await Promise.all(deletionTasks)
+    }
   }
 
   async function getProgram(programNo: number, machineId: number): Promise<{ program: Program, programErrors: StepError[] }> {
