@@ -723,9 +723,8 @@ export class MachineController {
    * @param {number} programNo - Kontrol edilmek istenen program numarası
    * @returns {Promise<boolean>} - Programın var olup olmadığını belirten bir Promise
    */
-  @withFTP
   async doesMachineHaveProgram(programNo: number): Promise<boolean> {
-    const programList = await this.ftp.fetchProgramList()
+    const programList = await this.fetchRemoteProgramList()
     return programList.includes(programNo)
   }
 
