@@ -654,12 +654,12 @@ export class MachineController {
    * Bir programı makineye yükler.
    *
    * @param {Program} program - Yüklenecek program
-   * @returns {Promise<boolean | Error>} Program başarıyla yüklendiğinde `true`, hata durumunda bir `Error` nesnesi döner.
+   * @returns {Promise<boolean>} Program başarıyla yüklendiğinde true döner.
    *
    * @throws {PError} Hata durumunda bir `PError` nesnesi fırlatılır.
    */
   @withFTP
-  async uploadProgram(program: Program): Promise<boolean | Error> {
+  async uploadProgram(program: Program): Promise<boolean> {
     try {
       const commands = await this.fetchCommands()
       if (!commands.length) {
