@@ -253,7 +253,6 @@ function createEmptyProgram(): Program {
     typeId: 0,
     typeName: '',
     machineId: 0,
-    machineName: '',
     steps: [],
     createdAt: null,
     updatedAt: null,

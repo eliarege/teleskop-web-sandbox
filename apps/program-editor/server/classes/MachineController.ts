@@ -7,7 +7,7 @@ import { withFTP, withTransaction } from '../decorators'
 import { sql } from '../sql'
 import { stringifyProgram } from '../stringify'
 import { parseProgramString } from '../parse'
-import { PError, isPError } from '../error'
+import { PError } from '../error'
 import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
 import { mapObject } from '../utils/map'
@@ -697,7 +697,6 @@ export class MachineController {
 
     await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${programNo}`)
 
-    const { name } = await this.trx.from('BFMACHINES').first({ name: 'MACHINECODE' }).where('MACHINEID', this.id)!
     const commands = await this.fetchCommands()
     const rawProgram = parseProgramString(programString, {
       id: this.id,
@@ -706,7 +705,6 @@ export class MachineController {
     const program: Program = {
       ...rawProgram,
       machineId: this.id,
-      machineName: name,
       programNo,
       duration: 0,
       typeName: '',

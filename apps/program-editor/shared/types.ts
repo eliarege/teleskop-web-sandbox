@@ -163,7 +163,6 @@ export interface Program extends ProgramHeader {
   programNo: number
   typeName: string
   machineId: number
-  machineName: string
   steps: ProgramStep[]
 }
 

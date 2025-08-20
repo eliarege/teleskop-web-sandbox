@@ -729,7 +729,6 @@ export const useEditorStore = defineStore('editor', () => {
       typeId: 0,
       typeName: '',
       machineId: 0,
-      machineName: '',
       steps: [],
       createdAt: new Date(),
       updatedAt: new Date(),
