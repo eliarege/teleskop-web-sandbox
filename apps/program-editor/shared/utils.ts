@@ -213,7 +213,12 @@ export function validateProgram(program: Program, machineCommands: MachineComman
     })
   })
 
-  const groupedErrors: Map<number, Map<number, { type: string, message: string, parameterIndex?: number }[]>> = new Map()
+  const groupedErrors: Map<number, Map<number, {
+    type: string
+    parameterIndex?: number
+    ioIndex?: number
+    ioValue?: string
+  }[]>> = new Map()
 
   errors.forEach(({ stepId, commands }) => {
     if (!groupedErrors.has(stepId)) {
