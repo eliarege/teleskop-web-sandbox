@@ -49,6 +49,7 @@ export const IO_TYPE: { [key: string]: string } = {
 export enum ParameterType {
   NUMBER = 'NUMBER',
   SELECT = 'SELECT',
+  CHECKBOX = 'CHECKBOX',
   MACHINE_FORMULA = 'MACHINE_FORMULA',
   SELECTABLE_FORMULA = 'SELECTABLE_FORMULA',
 }

@@ -281,6 +281,8 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
         // Machine formula
         } else if (commandParameter.type === ParameterType.MACHINE_FORMULA) {
           return calculateFormula(step, commandNo, commandParameter.value, machine)
+        } else if (commandParameter.type === ParameterType.CHECKBOX) {
+          return Number(commandParameter.value)
         }
       }
 

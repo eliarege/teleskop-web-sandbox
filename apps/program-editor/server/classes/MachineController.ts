@@ -90,6 +90,7 @@ export class MachineController {
             WHEN USEFORMULA = 1 THEN 'SELECTABLE_FORMULA'
             WHEN PARAMETERTYPE = 0 THEN 'NUMBER'
             WHEN PARAMETERTYPE = 1 THEN 'SELECT'
+            WHEN PARAMETERTYPE = 2 THEN 'CHECKBOX'
           END
         `),
         format: db.raw(`
