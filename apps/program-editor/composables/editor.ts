@@ -4,7 +4,7 @@ import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
 import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramItem, ProgramStep, ProgramStepCommand, ProgramTableRow, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
-import { CommandIconMapping, CommandType, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
+import { CommandEligibility, CommandIconMapping, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
@@ -153,7 +153,7 @@ export const useEditorStore = defineStore('editor', () => {
       }
 
       // Komut tipi paralel ise hata ver
-      if (machineCommand.commandType === CommandType.PARALLEL) {
+      if (machineCommand.commandType === CommandEligibility.PARALLEL_ONLY) {
         return notifyError(t('error.cannotMainCommand', { commandNo }))
       }
 

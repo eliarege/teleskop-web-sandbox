@@ -1,5 +1,5 @@
 import type { QBtnProps } from 'quasar'
-import type { CommandType, ParameterType } from './constants'
+import type { CommandEligibility, ParameterType } from './constants'
 
 export interface ProgramInfo {
   programNo: number
@@ -65,7 +65,7 @@ export interface MachineCommand {
   adviceList: string
   dontUseList: number[]
   isRunManual: boolean
-  commandType: CommandType
+  commandType: CommandEligibility
   moveParallel: number
   x: string
   y: string

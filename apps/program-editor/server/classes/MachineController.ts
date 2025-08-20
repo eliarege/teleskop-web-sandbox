@@ -12,7 +12,7 @@ import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../consta
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
-import { ProgramStatus } from '~/shared/constants'
+import { CommandType, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
 
@@ -742,7 +742,7 @@ export class MachineController {
     const constants = await this.fetchMachineConstants()
     const commandFormulas = await this.fetchCommandFormulas()
     const treatmentParameters = await this.fetchTreatmentParameters()
-    const commandTypes = await this.fetchCommandTypes()
+    const commandTypes = await this.fetchCommandTypeMappings()
     return {
       id: this.id,
       name,
@@ -948,12 +948,12 @@ export class MachineController {
       CHANGETIME: timestamp, // ?
       WHATCHANGE: '', // ?
       PRGSOURCE: 0, // ?
-      TotalChemReq: 0,
-      TotalDyeReq: 0,
-      ManChemReq: 0,
-      AutoChemReq: 0,
-      AutoDyeReq: 0,
-      ManDyeReq: 0,
+      TotalChemReq: program.totalChemReq || 0,
+      TotalDyeReq: program.totalDyeReq || 0,
+      ManChemReq: program.manChemReq || 0,
+      AutoChemReq: program.autoChemReq || 0,
+      AutoDyeReq: program.autoDyeReq || 0,
+      ManDyeReq: program.manDyeReq || 0,
       DefaultRecipeNo: '',
       ICONNAME: program.icon,
       ORDEROFREQUESTS: '',
@@ -1136,6 +1136,13 @@ export class MachineController {
       commands: this.commandArrayToMap(machine.commands),
     }, initialTemp)
 
+    const chemRequests = await this.countChemicalRequests(program)
+
+    program.manChemReq = chemRequests.get(CommandType.ManChem) ?? 0
+    program.autoChemReq = chemRequests.get(CommandType.AutoChem) ?? 0
+    program.autoDyeReq = chemRequests.get(CommandType.AutoDye) ?? 0
+    program.manDyeReq = chemRequests.get(CommandType.ManDye) ?? 0
+
     const steps: StepItem[] = []
     const parameters: StepParameter[] = []
     const stepIO: StepInputOutput[] = []
@@ -1160,12 +1167,12 @@ export class MachineController {
       PRGSTATE: program.prgState ?? ProgramStatus.EXISTS_ONLY_ON_DATABASE,
       TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
-      TotalChemReq: 0,
-      TotalDyeReq: 0,
-      ManChemReq: 0,
-      AutoChemReq: 0,
-      AutoDyeReq: 0,
-      ManDyeReq: 0,
+      TotalChemReq: program.manChemReq + program.autoChemReq,
+      TotalDyeReq: program.manDyeReq + program.autoDyeReq,
+      ManChemReq: program.manChemReq,
+      AutoChemReq: program.autoChemReq,
+      AutoDyeReq: program.autoDyeReq,
+      ManDyeReq: program.manDyeReq,
       DefaultRecipeNo: '',
       ICONNAME: program.icon,
       ORDEROFREQUESTS: '',
@@ -1698,7 +1705,7 @@ export class MachineController {
       .where('MG.MACHINEID', this.id)
   }
 
-  async fetchCommandTypes(): Promise<CommandTypes[]> {
+  async fetchCommandTypeMappings(): Promise<CommandTypes[]> {
     return await db('BFCOMMANDTYPES as CT')
       .select({
         commandType: 'CT.commandType',
@@ -1724,5 +1731,56 @@ export class MachineController {
         DURATION: 0,
         TOTALSTEP: 0,
       })
+  }
+
+  /**
+   * Programdaki toplam kimyasal ve boya istek sayısını hesaplar
+   *
+   * @param {Program} program - Program
+   * @returns {Promise<Map<CommandType, number>>} - Toplam istek sayılarını döndürür
+   */
+  async countChemicalRequests(program: Program): Promise<Map<CommandType, number>> {
+    const chemRequestCommandTypes = [
+      CommandType.AutoChem,
+      CommandType.AutoDye,
+      CommandType.ManDye,
+      CommandType.ManChem,
+    ]
+    const chemRequestCounters = new Map<CommandType, number>(
+      chemRequestCommandTypes.map(type => [type, 0]),
+    )
+
+    if (!program.steps.length)
+      return chemRequestCounters
+
+    const mappings = await this.fetchCommandTypeMappings()
+
+    let activeRequests: number[] = []
+
+    const handleCommand = (commandNo: number) => {
+      const { commandType } = mappings.find(ct => ct.commandNo === commandNo) || {}
+      if (!commandType)
+        return
+
+      if (!activeRequests.includes(commandNo)) {
+        activeRequests.push(commandNo)
+        chemRequestCounters.set(commandType, (chemRequestCounters.get(commandType) || 0) + 1)
+      }
+    }
+
+    for (const step of program.steps) {
+      const stepCommandNos: number[] = []
+
+      handleCommand(step.mainCommand.commandNo)
+      stepCommandNos.push(step.mainCommand.commandNo)
+
+      for (const parallelCommand of step.parallelCommands || []) {
+        handleCommand(parallelCommand.commandNo)
+        stepCommandNos.push(parallelCommand.commandNo)
+      }
+      activeRequests = activeRequests.filter(cmdNo => stepCommandNos.includes(cmdNo))
+    }
+
+    return chemRequestCounters
   }
 }

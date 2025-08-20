@@ -25,9 +25,9 @@ export enum ProgramStatus {
   EXISTS_ON_BOTH = 2,
 }
 
-export enum CommandType {
-  MAIN = 0,
-  PARALLEL = 3,
+export enum CommandEligibility {
+  MAIN_OR_PARALLEL = 0,
+  PARALLEL_ONLY = 3,
 }
 
 export enum MoveParallel {
@@ -53,20 +53,36 @@ export enum ParameterType {
   SELECTABLE_FORMULA = 'SELECTABLE_FORMULA',
 }
 
+export enum CommandType {
+  AutoChem = 100,
+  ManChem = 101,
+  AutoDye = 200,
+  ManDye = 201,
+  ChemTankTransfer = 300,
+  PaintTankTransfer = 400,
+  ReserveTankTransfer = 500,
+  PHControl = 600,
+  TakeSample = 700,
+  SaltRequest = 800,
+  GenericMaterial1 = 810,
+  GenericMaterial2 = 820,
+  ManualMeasurement = 1000,
+}
+
 export const commandTypeMaps = [
-  { index: 0, ref: [], value: 100, title: 'chemicalRequestCommands' },
-  { index: 1, ref: [], value: 101, title: 'manualChemicalRequestCommands' },
-  { index: 2, ref: [], value: 200, title: 'paintRequestCommands' },
-  { index: 3, ref: [], value: 201, title: 'manualPaintRequestCommands' },
-  { index: 4, ref: [], value: 300, title: 'chemicalTankTransferCommands' },
-  { index: 5, ref: [], value: 400, title: 'paintTankTransferCommands' },
-  { index: 6, ref: [], value: 500, title: 'reserveTankTransferCommands' },
-  { index: 7, ref: [], value: 600, title: 'pHControl' },
-  { index: 8, ref: [], value: 700, title: 'takeSample' },
-  { index: 9, ref: [], value: 800, title: 'saltRequestCommands' },
-  { index: 10, ref: [], value: 810, title: 'genericMaterial1Request' },
-  { index: 11, ref: [], value: 820, title: 'genericMaterial2Request' },
-  { index: 12, ref: [], value: 1000, title: 'manualMeasurementCommands' },
+  { index: 0, ref: [], value: CommandType.AutoChem, title: 'chemicalRequestCommands' },
+  { index: 1, ref: [], value: CommandType.ManChem, title: 'manualChemicalRequestCommands' },
+  { index: 2, ref: [], value: CommandType.AutoDye, title: 'paintRequestCommands' },
+  { index: 3, ref: [], value: CommandType.ManDye, title: 'manualPaintRequestCommands' },
+  { index: 4, ref: [], value: CommandType.ChemTankTransfer, title: 'chemicalTankTransferCommands' },
+  { index: 5, ref: [], value: CommandType.PaintTankTransfer, title: 'paintTankTransferCommands' },
+  { index: 6, ref: [], value: CommandType.ReserveTankTransfer, title: 'reserveTankTransferCommands' },
+  { index: 7, ref: [], value: CommandType.PHControl, title: 'pHControl' },
+  { index: 8, ref: [], value: CommandType.TakeSample, title: 'takeSample' },
+  { index: 9, ref: [], value: CommandType.SaltRequest, title: 'saltRequestCommands' },
+  { index: 10, ref: [], value: CommandType.GenericMaterial1, title: 'genericMaterial1Request' },
+  { index: 11, ref: [], value: CommandType.GenericMaterial2, title: 'genericMaterial2Request' },
+  { index: 12, ref: [], value: CommandType.ManualMeasurement, title: 'manualMeasurementCommands' },
 ]
 
 // @unocss-include
