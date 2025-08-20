@@ -121,11 +121,11 @@ export const diffs: any[] = []
 
 /**
  * Programın header bilgilerini karsılastırır
- * @param programA Program Header
- * @param programB Program Header
+ * @param programA Program
+ * @param programB Program
  * @returns {boolean} Aynı ise true döner
  */
-function compareHeader(programA: ProgramHeader, programB: ProgramHeader): boolean {
+function compareHeader(programA: Program, programB: Program): boolean {
   if (!isDef(programA) || !isDef(programB)) {
     return false
   }
