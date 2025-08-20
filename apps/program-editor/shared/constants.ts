@@ -54,19 +54,19 @@ export enum ParameterType {
 }
 
 export const commandTypeMaps = [
-  { index: 0, ref: [], value: 100, title: 'chemIcons.chemicalRequestCommands' },
-  { index: 1, ref: [], value: 101, title: 'chemIcons.manualChemicalRequestCommands' },
-  { index: 2, ref: [], value: 200, title: 'chemIcons.paintRequestCommands' },
-  { index: 3, ref: [], value: 201, title: 'chemIcons.manualPaintRequestCommands' },
-  { index: 4, ref: [], value: 300, title: 'chemIcons.chemicalTankTransferCommands' },
-  { index: 5, ref: [], value: 400, title: 'chemIcons.paintTankTransferCommands' },
-  { index: 6, ref: [], value: 500, title: 'chemIcons.reserveTankTransferCommands' },
-  { index: 7, ref: [], value: 600, title: 'chemIcons.pHControl' },
-  { index: 8, ref: [], value: 700, title: 'chemIcons.takeSample' },
-  { index: 9, ref: [], value: 800, title: 'chemIcons.saltRequestCommands' },
-  { index: 10, ref: [], value: 810, title: 'chemIcons.genericMaterial1Request' },
-  { index: 11, ref: [], value: 820, title: 'chemIcons.genericMaterial2Request' },
-  { index: 12, ref: [], value: 1000, title: 'chemIcons.manualMeasurementCommands' },
+  { index: 0, ref: [], value: 100, title: 'chemicalRequestCommands' },
+  { index: 1, ref: [], value: 101, title: 'manualChemicalRequestCommands' },
+  { index: 2, ref: [], value: 200, title: 'paintRequestCommands' },
+  { index: 3, ref: [], value: 201, title: 'manualPaintRequestCommands' },
+  { index: 4, ref: [], value: 300, title: 'chemicalTankTransferCommands' },
+  { index: 5, ref: [], value: 400, title: 'paintTankTransferCommands' },
+  { index: 6, ref: [], value: 500, title: 'reserveTankTransferCommands' },
+  { index: 7, ref: [], value: 600, title: 'pHControl' },
+  { index: 8, ref: [], value: 700, title: 'takeSample' },
+  { index: 9, ref: [], value: 800, title: 'saltRequestCommands' },
+  { index: 10, ref: [], value: 810, title: 'genericMaterial1Request' },
+  { index: 11, ref: [], value: 820, title: 'genericMaterial2Request' },
+  { index: 12, ref: [], value: 1000, title: 'manualMeasurementCommands' },
 ]
 
 // @unocss-include

@@ -371,7 +371,7 @@
     "IOName": "IO Name",
     "default": "Default"
   },
-  "chemIcons": {
+  "chemicalRequest": {
     "chemicalRequestCommands": "Chemical Request Commands",
     "manualChemicalRequestCommands": "Manual Chemical Request Commands",
     "paintRequestCommands": "Paint Request Commands",
