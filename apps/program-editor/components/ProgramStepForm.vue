@@ -99,6 +99,7 @@ function removeError(stepId: number, commandId: number) {
     </DevOnly>
 
     <QBtn
+      v-if="!editor.isTonello()"
       class="expand-btn"
       :icon="expandIcon"
       flat
@@ -115,7 +116,10 @@ function removeError(stepId: number, commandId: number) {
       />
     </div>
   </div>
-  <div v-show="expanded" class="e-border-color border-(t x-0) pl-16">
+  <div
+    v-if="!editor.isTonello() && expanded"
+    class="e-border-color border-(t x-0) pl-16"
+  >
     <Sortable
       :list="step.parallelCommands"
       item-key="commandId"

@@ -87,6 +87,7 @@ const buttons = computed<ContextBarButtons[]>(() => [
     shortcut: 'F3',
     icon: 'queue',
     disable: editor.isLoading,
+    visible: !editor.isTonello(),
     onClick() {
       editor.newParallelStep()
     },
@@ -120,6 +121,7 @@ const buttons = computed<ContextBarButtons[]>(() => [
     shortcut: '',
     icon: editor.allStepExpanded ? 'expand_less' : 'expand_more',
     disable: editor.isLoading,
+    visible: !editor.isTonello(),
     onClick() {
       editor.allStepExpanded = !editor.allStepExpanded
     },
@@ -133,7 +135,7 @@ onKeyStroke('F2', (event: KeyboardEvent) => {
 })
 
 onKeyStroke('F3', (event: KeyboardEvent) => {
-  if (route.params.program_no) {
+  if (route.params.program_no && !editor.isTonello()) {
     event.preventDefault()
     editor.newParallelStep()
   }

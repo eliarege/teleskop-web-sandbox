@@ -985,6 +985,10 @@ export const useEditorStore = defineStore('editor', () => {
     return CommandIconMapping[machineCommand.icon]
   }
 
+  function isTonello(): boolean {
+    return machine.value.tbbModel === 'Tonello'
+  }
+
   return {
     program,
     originalProgram,
@@ -1034,5 +1038,6 @@ export const useEditorStore = defineStore('editor', () => {
     allStepExpanded,
     hasProgramChanged,
     isStepSelected,
+    isTonello,
   }
 })
