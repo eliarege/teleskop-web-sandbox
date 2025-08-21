@@ -406,6 +406,7 @@ const columns = ref([
 ] as MachineTableColumn[])
 
 function showAddModal() {
+  const selectedMachine = selected.value[0]
   dialog({
     component: AddEditModal,
     componentProps: {
@@ -415,39 +416,40 @@ function showAddModal() {
       tbbModelOptions,
       steamUnitOptions,
       machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
-      mtTempIoOptions: selected.value[0].MTOptions.map(o => ({
+      mtTempIoOptions: selectedMachine.MTOptions.map(o => ({
         label: o.name,
         value: o.id,
-        machineId: selected.value[0].machineId,
+        machineId: selectedMachine.machineId,
       })),
-      steamValveDoOptions: selected.value[0].steamValveOptions.map(s => ({
+      steamValveDoOptions: selectedMachine.steamValveOptions.map(s => ({
         label: s.ioName,
         value: s.ioId,
-        machineId: selected.value[0].machineId,
+        machineId: selectedMachine.machineId,
       })),
     },
     persistent: true,
   })
 }
 function showEditModal() {
+  const selectedMachine = selected.value[0]
   dialog({
     component: AddEditModal,
     componentProps: {
       title: t('editMachine'),
-      modelValue: selected.value[0],
+      modelValue: selectedMachine,
       onSubmit: (e: Machine) => handleEdit(e),
       tbbModelOptions,
       steamUnitOptions,
       machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
-      mtTempIoOptions: selected.value[0].MTOptions.map(o => ({
+      mtTempIoOptions: selectedMachine.MTOptions.map(o => ({
         label: o.name,
         value: o.id,
-        machineId: selected.value[0].machineId,
+        machineId: selectedMachine.machineId,
       })),
-      steamValveDoOptions: selected.value[0].steamValveOptions.map(s => ({
+      steamValveDoOptions: selectedMachine.steamValveOptions.map(s => ({
         label: s.ioName,
         value: s.ioId,
-        machineId: selected.value[0].machineId,
+        machineId: selectedMachine.machineId,
       })),
     },
     persistent: true,
