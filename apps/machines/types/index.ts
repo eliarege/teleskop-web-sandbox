@@ -23,11 +23,19 @@ export interface Machine {
   storeElectricityAsInc: boolean
   theoreticalWater: boolean
   inUse: boolean
-  MTTempIo: string[]
+  MTTempIo: number
+  MTOptions: {
+    id: number
+    name: string
+  }[]
   version: string
   productModel: string
   hardwareModel: string
   steamValveDo: number
+  steamValveOptions: {
+    ioId: number
+    ioName: string
+  }[]
   theoreticalSteam: boolean
 }
 

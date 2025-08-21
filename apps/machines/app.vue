@@ -11,10 +11,6 @@ const sm = breakpoints.greaterOrEqual('sm')
 
 const items = [
   {
-    label: tt('machine'),
-    to: '/',
-  },
-  {
     label: tt('machineGroup'),
     subMenu: {
       items: [[

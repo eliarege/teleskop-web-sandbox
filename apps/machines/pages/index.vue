@@ -2,98 +2,47 @@
 import { useMagicKeys, whenever } from '@vueuse/core'
 import { withBase } from 'ufo'
 import { QLinearProgress } from 'quasar'
+import AddEditModal from '../components/AddEditModal.vue'
 import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { IOOption, Machine, MachineGroup, MachineTableColumn } from '~/types'
+import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 
 interface sseLog {
   message: string
   type: 'info' | 'log' | 'error' | 'ping' | 'start' | 'reset'
   progress: number
 }
-
-interface Option {
-  label: string
-  value: number
-}
-
 const kc = useKeycloak()
+const { dialog, notify } = useQuasar()
 const { t } = useI18n()
+const { notifyError } = useNotify()
 const baseURL = useRuntimeConfig().app.baseURL
 
 const { data: databaseVersion } = useAuthFetch('/api/machines/database-version', {
   default: () => '',
 })
 
-const { data: machineGroups } = useAuthFetch('/api/machines/machine-groups', {
+const { data: machineGroups } = await useAuthFetch<MachineGroup[]>('/api/machines/machine-groups', {
   default: () => [],
-  transform: (machineGroups: MachineGroup[]) => {
-    const options: Option[] = []
-    machineGroups.forEach((group) => {
-      options.push({
-        label: group.groupName,
-        value: group.groupId,
-      })
-    })
-    return options
-  },
 })
-
-const { data: MTTempIoOptions } = useAuthFetch<IOOption[]>('/api/machines/mt-temp-io-options', {
-  default: () => [],
-  transform: (MTTempIoOptions: IOOption[]) => {
-    return MTTempIoOptions.map(io => ({
-      machineId: io.machineId,
-      label: io.ioName,
-      value: io.ioId,
-    }))
-  },
-})
-
-const { data: steamValveDoOptions } = useAuthFetch<IOOption[]>('/api/machines/steam-valve-do-options', {
-  default: () => [],
-  transform: (steamValveDoOptions: IOOption[]) => {
-    return steamValveDoOptions.map(io => ({
-      machineId: io.machineId,
-      label: io.ioName,
-      value: io.ioId,
-    }))
-  },
-})
-
 const { data: machines, refresh } = useAuthFetch<Machine[]>('/api/machines/machines', {
   default: () => [],
   method: 'POST',
   body: {},
 })
 
-const rows = ref<Machine[]>([])
+const modifiedMachines = computed(() => machines.value.map(m => ({
+  ...m,
+  MTTempIoName: m.MTOptions.find(o => o.id === m.MTTempIo)?.name || '',
+  steamValveDoName: m.steamValveOptions.find(s => s.ioId === m.steamValveDo)?.ioName || '',
+})))
 
-watch(machines, (val) => {
-  rows.value = val || []
-})
-
-const selected = ref<Partial<Machine>>({
-  machineId: -1,
-})
+const selected = ref([] as Machine[])
 
 const showMachineParameters = ref(false)
 const showMimic = ref(false)
 const showGetDyeHouseDefinitions = ref(false)
 const showSetDyeHouseDefinitions = ref(false)
-
-function handleSelection(formData: Machine[]) {
-  if (formData.length)
-    selected.value = formData[0]
-  else
-    selected.value = {
-      machineId: -1,
-    }
-}
-
-async function updateVersions() {
-  await kc.fetch('/api/sync/machine-versions')
-  await refresh()
-}
 
 const logs = ref<sseLog[]>([])
 const fullSseLogs = ref<sseLog[]>([])
@@ -107,7 +56,6 @@ onBeforeUnmount(() => {
   close()
 })
 
-const { dialog } = useQuasar()
 const percentage = ref(0)
 const showSseLogDialog = ref<any>(null)
 const showFullSseLogDialog = ref<boolean>(false)
@@ -137,7 +85,7 @@ watch(data, (newData) => {
 
     lastLog.value = {
       type: sseData.type,
-      message: t(sseData.message),
+      message: sseData.message,
     }
     percentage.value = sseData.progress / 100
 
@@ -189,35 +137,6 @@ function showSseLogs() {
   })
 }
 
-async function loadProject() {
-  showSseLogs()
-  try {
-    await kc.fetch('/api/sync/network-connection', {
-      method: 'POST',
-      retry: false,
-      body: {
-        uuid: uuid.value,
-        ip: selected.value.ip,
-      },
-    })
-
-    await kc.fetch('/api/sync/update-machine', {
-      method: 'GET',
-      retry: false,
-      query: {
-        machineId: selected.value.machineId,
-        sseId: uuid.value,
-      },
-    })
-  } catch (error: any) {
-    if (error.statusCode === 500) {
-    // notifyError(t('errorLoadingProject'))
-    } else if (error.statusCode === 504) {
-      // notifyError(t('connectionTimeout'))
-    }
-  }
-}
-
 async function handleAdd(formData: Machine) {
   await kc.fetch('/api/machines/machine', {
     method: 'POST',
@@ -229,22 +148,32 @@ async function handleAdd(formData: Machine) {
 async function handleEdit(formData: Machine) {
   await kc.fetch('/api/machines/machine', {
     method: 'PUT',
-    body: {
-      machine: formData,
-      machineId: selected.value.machineId,
-    },
+    body: { formData },
   })
   await refresh()
 }
 
-async function handleDelete(formData: Machine[]) {
-  await kc.fetch('/api/machines/machine', {
-    method: 'DELETE',
-    body: {
-      machineIds: formData.map((d: Machine) => d.machineId),
+async function handleDelete() {
+  dialog({
+    title: t('deleteMachines'),
+    message: t('confirmDeleteMachines', { count: selected.value.length }),
+    ok: {
+      label: t('delete'),
+      color: 'negative',
+      handler: async () => {
+        await kc.fetch('/api/machines/machine', {
+          method: 'DELETE',
+          body: {
+            machineIds: selected.value.map(d => d.machineId),
+          },
+        })
+        await refresh()
+      },
+    },
+    cancel: {
+      label: t('cancel'),
     },
   })
-  await refresh()
 }
 
 const showTeleskopSettings = ref(false)
@@ -263,9 +192,9 @@ const contextMenuOptions = computed<Partial<IContextMenuOption>[]>(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_copy',
-    disabled: selected.value.machineId === -1,
+    disabled: selected.value.length !== 1,
     onClick: () => {
-      copy.value = selected.value.machineId
+      copy.value = selected.value[0].machineId
     },
   },
   {
@@ -273,13 +202,13 @@ const contextMenuOptions = computed<Partial<IContextMenuOption>[]>(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_paste',
-    disabled: selected.value.machineId === -1 || !copy.value,
+    disabled: selected.value.length !== 1 || !copy.value,
     onClick: async () => {
       await kc.fetch('/api/io/copy', {
         method: 'POST',
         body: {
           sourceMachineId: copy.value,
-          targetMachineId: selected.value.machineId,
+          targetMachineId: selected.value[0].machineId,
         },
       })
     },
@@ -287,278 +216,345 @@ const contextMenuOptions = computed<Partial<IContextMenuOption>[]>(() => [
   {
     label: 'Mimic',
     category: 'edit',
-    disabled: selected.value.machineId === -1,
+    disabled: selected.value.length !== 1,
     onClick: () => showMimic.value = true,
   },
   {
     label: t('machineConstants'),
     category: 'edit',
-    disabled: selected.value.machineId === -1,
+    disabled: selected.value.length !== 1,
     onClick: () => showMachineParameters.value = true,
   },
   {
     label: t('formulas'),
     category: 'edit',
-    disabled: selected.value.machineId === -1,
+    disabled: selected.value.length !== 1,
     onClick: async () => {
       await navigateTo({
-        path: `/formulas/${selected.value.machineId}`,
+        path: `/formulas/${selected.value[0].machineId}`,
       })
     },
   },
   {
     label: t('setDyeHouseDefinitions'),
     category: 'edit',
-    disabled: selected.value.machineId === -1,
+    disabled: selected.value.length === 0,
     onClick: () => showSetDyeHouseDefinitions.value = true,
   },
   {
     label: t('getDyeHouseDefinitions'),
     category: 'edit',
-    disabled: selected.value.machineId === -1,
+    disabled: selected.value.length === 0,
     onClick: () => showGetDyeHouseDefinitions.value = true,
   },
 ])
 
-const teleskopConnectionMessage = ref({
-  message: '',
-  color: '',
-})
-
-const networkConnectionMessage = ref({
-  message: '',
-  color: '',
-})
-
-async function checkTeleskopConnection(formData: Machine) {
-  try {
-    teleskopConnectionMessage.value.message = t('tryingConnection')
-    teleskopConnectionMessage.value.color = ''
-    await kc.fetch('/api/sync/teleskop-connection', {
-      method: 'GET',
-      retry: false,
-      query: {
-        ip: formData.ip,
-      },
-    })
-    teleskopConnectionMessage.value.message = t('connection-successful')
-    teleskopConnectionMessage.value.color = 'text-green'
-  } catch (error: any) {
-    console.error(error)
-    if (error.statusCode === 500) {
-      teleskopConnectionMessage.value.message = (t('noConnectionToTeleskop'))
-      teleskopConnectionMessage.value.color = 'text-red'
-    }
-  }
-}
-
-async function checkNetworkConnection(formData: Machine) {
-  try {
-    networkConnectionMessage.value.message = t('tryingConnection')
-    networkConnectionMessage.value.color = ''
-    await kc.fetch('/api/sync/network-connection', {
-      method: 'POST',
-      retry: false,
-      body: {
-        ip: formData.ip,
-      },
-    })
-    networkConnectionMessage.value.message = (t('connection-successful'))
-    networkConnectionMessage.value.color = 'text-green'
-  } catch (error: any) {
-    console.error(error)
-    if (error.statusCode === 500) {
-      networkConnectionMessage.value.message = (t('noConnectionToNetwork'))
-      networkConnectionMessage.value.color = 'text-red'
-    }
-  }
-}
-
-function handleClose() {
-  teleskopConnectionMessage.value = { message: '', color: '' }
-  networkConnectionMessage.value = { message: '', color: '' }
-}
-
-const columns = ref<MachineTableColumn[]>([
+const columns = ref([
   {
     name: 'machineId',
     label: '#',
     field: 'machineId',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'machineCode',
     label: t('machineCode'),
     field: 'machineCode',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'groupName',
     label: t('group'),
     field: 'groupName',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'tbbModel',
     label: t('tbbModel'),
     field: 'tbbModel',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'plcModel',
     label: t('plcModel'),
     field: 'plcModel',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'ip',
     label: t('ip'),
     field: 'ip',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'theoricalCharge',
     label: t('theoricalCharge'),
     field: 'theoricalCharge',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'theoricalChargeDuration',
     label: t('theoricalChargeDuration'),
     field: 'theoricalChargeDuration',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'machineCapacity',
     label: t('machineCapacity'),
     field: 'machineCapacity',
-    sortable: true,
     align: 'left',
   },
   {
+    // kule sayısı
     name: 'reelCount',
     label: t('reelCount'),
     field: 'reelCount',
-    sortable: true,
     align: 'left',
   },
   {
+    // düze sayısı
     name: 'nozzleCount',
     label: t('nozzleCount'),
     field: 'nozzleCount',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'steamUnit',
     label: t('steamUnit'),
     field: 'steamUnit',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'steamKgPerHour',
     label: t('steamKgPerHour'),
     field: 'steamKgPerHour',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'additionalTank1',
     label: t('additionalTank1'),
     field: 'additionalTank1',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'additionalTank2',
     label: t('additionalTank2'),
     field: 'additionalTank2',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'additionalTank3',
     label: t('additionalTank3'),
     field: 'additionalTank3',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'additionalTank4',
     label: t('additionalTank4'),
     field: 'additionalTank4',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'reserveTank',
     label: t('reserveTank'),
     field: 'reserveTank',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'inUse',
     label: t('inUse'),
     field: 'inUse',
-    sortable: true,
     align: 'left',
   },
   {
+    // ana kazan sıcaklık girişi
     name: 'MTTempIo',
     label: t('MTTempIo'),
-    field: 'MTTempIo',
-    sortable: true,
+    field: 'MTTempIoName',
     align: 'left',
   },
   {
     name: 'version',
     label: t('version'),
     field: 'version',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'productModel',
     label: t('productModel'),
     field: 'productModel',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'hardwareModel',
     label: t('hardwareModel'),
     field: 'hardwareModel',
-    sortable: true,
     align: 'left',
   },
   {
     name: 'steamValveDo',
     label: t('steamValveDo'),
-    field: 'steamValveDo',
-    sortable: true,
+    field: 'steamValveDoName',
     align: 'left',
   },
   {
     name: 'theoreticalSteam',
     label: t('theoreticalSteam'),
     field: 'theoreticalSteam',
-    sortable: true,
     align: 'left',
   },
-])
+] as MachineTableColumn[])
+
+function showAddModal() {
+  const selectedMachine = selected.value[0]
+  dialog({
+    component: AddEditModal,
+    componentProps: {
+      title: t('addMachine'),
+      modelValue: {},
+      onSubmit: (e: Machine) => handleAdd(e),
+      tbbModelOptions,
+      steamUnitOptions,
+      machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
+      mtTempIoOptions: selectedMachine.MTOptions.map(o => ({
+        label: o.name,
+        value: o.id,
+        machineId: selectedMachine.machineId,
+      })),
+      steamValveDoOptions: selectedMachine.steamValveOptions.map(s => ({
+        label: s.ioName,
+        value: s.ioId,
+        machineId: selectedMachine.machineId,
+      })),
+    },
+    persistent: true,
+  })
+}
+function showEditModal() {
+  const selectedMachine = selected.value[0]
+  dialog({
+    component: AddEditModal,
+    componentProps: {
+      title: t('editMachine'),
+      modelValue: selectedMachine,
+      onSubmit: (e: Machine) => handleEdit(e),
+      tbbModelOptions,
+      steamUnitOptions,
+      machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
+      mtTempIoOptions: selectedMachine.MTOptions.map(o => ({
+        label: o.name,
+        value: o.id,
+        machineId: selectedMachine.machineId,
+      })),
+      steamValveDoOptions: selectedMachine.steamValveOptions.map(s => ({
+        label: s.ioName,
+        value: s.ioId,
+        machineId: selectedMachine.machineId,
+      })),
+    },
+    persistent: true,
+  })
+}
+async function loadProject() {
+  showSseLogs()
+  try {
+    await kc.fetch('/api/sync/network-connection', {
+      method: 'POST',
+      retry: false,
+      body: {
+        uuid: uuid.value,
+        ip: selected.value[0].ip,
+      },
+    })
+
+    await kc.fetch('/api/sync/update-machine', {
+      method: 'GET',
+      retry: false,
+      query: {
+        machineId: selected.value[0].machineId,
+        sseId: uuid.value,
+      },
+    })
+  } catch (error: any) {
+    if (error.statusCode === 500) {
+      notifyError(t('errorLoadingProject'))
+    } else if (error.statusCode === 504) {
+      notifyError(t('connectionTimeout'))
+    }
+  }
+}
+async function receiveVersionInfo() {
+  try {
+    notify({
+      message: t('receivingVersionInfo'),
+      color: 'primary',
+      position: 'top',
+      timeout: 1000,
+    })
+    await kc.fetch('/api/sync/machine-versions')
+    await refresh()
+    selected.value = []
+    notify({
+      message: t('versionInfoReceived'),
+      color: 'green',
+      position: 'top',
+      timeout: 2000,
+    })
+  } catch (error: any) {
+    notifyError(t('errorReceivingVersionInfo', { error: error.message }))
+  }
+}
 </script>
 
 <template>
+  <div class="actions">
+    <div class="flex justify-between items-center grow">
+      <div class="flex gap-4 m-4">
+        <q-btn
+          no-caps
+          push
+          color="primary"
+          :label="t('add')"
+          @click="showAddModal"
+        />
+        <q-btn
+          no-caps
+          push
+          color="primary"
+          :label="t('edit')"
+          :disable="selected.length !== 1"
+          @click="showEditModal"
+        />
+        <q-btn
+          no-caps
+          push
+          color="primary"
+          :disable="selected.length === 0"
+          :label="t('delete')"
+          @click="handleDelete"
+        />
+        <q-btn
+          no-caps
+          push
+          color="primary"
+          :label="t('loadProject')"
+          :disable="selected.length !== 1"
+          @click="loadProject"
+        />
+        <q-btn
+          :label="t('receiveVersionInfo')"
+          :disable="selected.length !== 1"
+          no-caps
+          push
+          color="primary"
+          @click="receiveVersionInfo"
+        />
+      </div>
+      <q-chip class="self-end">
+        {{ `DB v${databaseVersion}` }}
+      </q-chip>
+    </div>
+  </div>
   <div>
     <ContextMenu
       :context-menu-options="contextMenuOptions"
@@ -566,68 +562,12 @@ const columns = ref<MachineTableColumn[]>([
       @click="(option: IContextMenuOption) => option.onClick(selected)"
     />
     <MachineList
-      :rows="rows"
+      v-model:selected="selected"
+      :rows="modifiedMachines"
       :columns="columns"
-      :machines="machines"
       :machine-groups="machineGroups"
-      :mt-temp-io-options="MTTempIoOptions"
-      :steam-valve-do-options="steamValveDoOptions"
       form-class="grid grid-cols-5 gap-4 grid-rows-7 select-none"
-      @add="handleAdd"
-      @edit="handleEdit"
-      @select="handleSelection"
-      @delete="handleDelete"
-      @close="handleClose"
-    >
-      <template #actions>
-        <div class="flex justify-between items-center grow">
-          <div class="flex">
-            <q-btn
-              :label="t('loadProject')"
-              no-caps
-              push
-              color="primary"
-              :disable="selected.machineId === -1"
-              class="mr-4"
-              @click="loadProject"
-            />
-            <q-btn
-              :label="t('receiveVersionInfo')"
-              no-caps
-              push
-              color="primary"
-              class="mr-4"
-              @click="updateVersions"
-            />
-          </div>
-          <q-chip class="self-end">
-            {{ `DB v${databaseVersion}` }}
-          </q-chip>
-        </div>
-      </template>
-      <template #form-content="slotProps">
-        <q-btn
-          :label="t('checkTeleskopConnection')"
-          color="primary"
-          no-caps
-          class="row-start-6"
-          @click="checkTeleskopConnection(slotProps.formData)"
-        />
-        <q-btn
-          :label="t('checkNetworkConnection')"
-          color="primary"
-          no-caps
-          class="row-start-6"
-          @click="checkNetworkConnection(slotProps.formData)"
-        />
-        <h3 :class="teleskopConnectionMessage.color" class="row-start-7">
-          {{ teleskopConnectionMessage.message }}
-        </h3>
-        <h3 :class="networkConnectionMessage.color" class="row-start-7">
-          {{ networkConnectionMessage.message }}
-        </h3>
-      </template>
-    </MachineList>
+    />
     <SseLogDialog
       :model-value="showFullSseLogDialog"
       :logs="fullSseLogs"
@@ -640,27 +580,27 @@ const columns = ref<MachineTableColumn[]>([
       @close="showTeleskopSettings = false"
     />
     <GetDyeHouseDefinitionsDialog
-      v-if="showGetDyeHouseDefinitions && selected"
+      v-if="showGetDyeHouseDefinitions && selected[0]"
       :show="showGetDyeHouseDefinitions"
-      :selected="selected as Machine"
+      :selected="selected[0] as Machine"
       @close="showGetDyeHouseDefinitions = false"
     />
     <SetDyeHouseDefinitionsDialog
-      v-if="showSetDyeHouseDefinitions && selected"
+      v-if="showSetDyeHouseDefinitions && selected[0]"
       :show="showSetDyeHouseDefinitions"
-      :selected="selected as Machine"
+      :selected="selected[0] as Machine"
       @close="showSetDyeHouseDefinitions = false"
     />
     <MachineParametersDialog
       v-if="showMachineParameters"
       :show="showMachineParameters"
-      :selected="selected"
+      :selected="selected[0]"
       @close="showMachineParameters = false"
     />
     <MimicDialog
       v-if="showMimic"
       :show="showMimic"
-      :selected="selected"
+      :selected="selected[0]"
       @close="showMimic = false"
     />
   </div>
