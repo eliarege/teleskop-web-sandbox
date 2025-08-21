@@ -376,15 +376,11 @@ registerCommand(() => {
   return {
     name: 'changeProcessType',
     async execute(ctx: any, machineId: number, selectedRows: ProgramTableRow[]) {
-      editor.isLoading = true
-      const processTypes = await contextMenuStore.getProcessTypes()
-      editor.isLoading = false
-
       ctx.$q.dialog({
         component: CMChangeProcessTypeDialog,
         componentProps: {
           programType: selectedRows[0].type,
-          options: processTypes,
+          options: editor.allProcessTypes,
         },
       }).onOk(async (newType: number) => {
         await contextMenuStore.changeProcessType(machineId, selectedRows, newType)
