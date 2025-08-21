@@ -7,6 +7,7 @@ const props = defineProps<{
   program: ProgramHeader
   machineId: number
   machineName: string
+  allProgramNos: number[]
   allProcessTypes: ProcessType[]
   isTonello: boolean
 }>()
@@ -60,8 +61,7 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
                 :maxlength="10"
                 :rules="[
                   (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
-                  //alltaki editorü kaldır, qdialog kapanmaması gerekiyor
-                  (val: number) => !useEditorStore().allPrograms.some(p => p.programNo === val) || t('input.unique', { field: t('program.programNo') }),
+                  (val: number) => !allProgramNos.includes(val) || t('input.unique', { field: t('program.programNo') }),
                 ]"
                 :disable="isRename"
                 class="mb-3"
