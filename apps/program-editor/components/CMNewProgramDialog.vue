@@ -8,6 +8,7 @@ const props = defineProps<{
   machineId: number
   machineName: string
   allProcessTypes: ProcessType[]
+  isTonello: boolean
 }>()
 
 const { t } = useI18n()
@@ -76,6 +77,7 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
               />
 
               <QSelect
+                v-if="!isTonello"
                 v-model="processType"
                 :options="allProcessTypes"
                 :label="t('program.programState')"

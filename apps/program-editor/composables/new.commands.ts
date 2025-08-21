@@ -95,6 +95,7 @@ registerCommand(() => {
           machineId: editor.machine.id,
           machineName: editor.machine.name,
           allProcessTypes: editor.allProcessTypes,
+          isTonello: editor.isTonello(),
         },
       }).onOk(async (newProgram: Program) => {
         const result = await editor.onSubmit(newProgram)
@@ -126,6 +127,7 @@ registerCommand(() => {
           machineId: editor.machine.id,
           machineName: editor.machine.name,
           allProcessTypes: editor.allProcessTypes,
+          isTonello: editor.isTonello(),
         },
       }).onOk(async (newProgram: Program) => {
         await editor.onSubmit(newProgram)
@@ -318,6 +320,7 @@ async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
         machineId: editor.machine.id,
         machineName: editor.machine.name,
         allProcessTypes: editor.allProcessTypes,
+        isTonello: editor.isTonello(),
       },
     }).onOk((program: ProgramHeader) => {
       resolve(program)
@@ -345,6 +348,7 @@ registerCommand(() => {
             machineId,
             machineName: editor.machine.name,
             allProcessTypes: editor.allProcessTypes,
+            isTonello: editor.isTonello(),
           },
         }).onOk(async (program: ProgramHeader) => {
           editor.isLoading = true
