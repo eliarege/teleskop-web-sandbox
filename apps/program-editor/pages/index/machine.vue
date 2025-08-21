@@ -484,6 +484,7 @@ const contextMenuOptions = computed(() => [
         (row: ProgramTableRow) =>
           row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
+      hidden: editor.isTonello(),
       onClick: () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(

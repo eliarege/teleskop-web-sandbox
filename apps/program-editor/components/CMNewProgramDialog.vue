@@ -4,7 +4,7 @@ import type { ProcessType, Program, ProgramHeader } from '~/shared/types'
 
 const props = defineProps<{
   type: 'newProgram' | 'saveAs' | 'rename'
-  program: ProgramHeader
+  program: Program
   machineId: number
   machineName: string
   allProgramNos: number[]
@@ -43,7 +43,7 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
 
 <template>
   <div class="w-full h-full select-none">
-    <QDialog ref="dialogRef">
+    <QDialog ref="dialogRef" persistent>
       <QCard>
         <QForm @submit.prevent="onDialogOK(newProgram)">
           <QCard style="width: 500px">
