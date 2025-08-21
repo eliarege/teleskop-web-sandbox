@@ -734,8 +734,8 @@ export class MachineController {
   @withTransaction
   async getMachineInfo(_editable?: boolean): Promise<Omit<Machine, 'commands'> & { commands: MachineCommand[] }> {
     await hasMachine(this.id)
-    const [{ name }] = await this.trx
-      .select('MACHINECODE as name')
+    const [{ name, tbbModel }] = await this.trx
+      .select('MACHINECODE as name', 'TBBMODEL as tbbModel')
       .from('BFMACHINES')
       .where('MACHINEID', this.id)
     const commands = await this.fetchCommands()
@@ -747,6 +747,7 @@ export class MachineController {
     return {
       id: this.id,
       name,
+      tbbModel,
       commands,
       constants,
       commandFormulas,

@@ -289,6 +289,7 @@ export interface SelectionArchiveList {
 export interface Machine {
   id: number
   name: string
+  tbbModel: string
   commands: Map<number, MachineCommand>
   commandFormulas: CommandFormula[]
   constants: MachineConstant[]
