@@ -454,6 +454,7 @@ export interface ContextBarButtons extends QBtnProps {
   originalLabel?: string
   shortcut?: string
   tooltip?: string
+  visible?: boolean
 }
 
 export interface ProgramWriteSettings {
