@@ -1,7 +1,7 @@
 import type { QueueBasedActualEvent, QueueBasedNonActualEvent } from '../../../../types/planning-board'
 import { queueBasedEventStatus } from '../../../composables/helper'
 import { knex } from '../../../knexConfig'
-import { planningBoardStops } from '../queries'
+import { getUnplannedEvents, planningBoardStops, taskValid } from '../queries'
 import { config } from '~/config'
 
 export interface EventReschedule {
@@ -202,6 +202,45 @@ export async function getQueueBasedActualEvents(startTime: string, endTime: stri
       OR  (endTime BETWEEN :startTime AND :endTime)
       OR  (startTime < :startTime AND :endTime < endTime)
       `, { timezoneOffset: config.teleskopTimezoneOffset, startTime, endTime })
+}
+export async function getLastQueueNumber(
+  machineId: number,
+): Promise<{ queueNumber: number } | undefined> {
+  return knex('PTBATCHPLANQUEUE')
+    .max<{ queueNumber: number }>('QUEUENUMBER as queueNumber')
+    .where('MACHINEID', machineId)
+    .first()
+}
+
+export async function preplanJoborders(logger: any) {
+  const allUnplannedEvents = await getUnplannedEvents()
+  const processed = [] as any[]
+
+  for (const { planKey, fabricWeight, machineId } of allUnplannedEvents) {
+    const intFabricWeight = Number.parseFloat(String(fabricWeight).replace(',', '.'))
+    if (Number.isNaN(intFabricWeight)) {
+      logger.debug({ planKey, fabricWeight }, 'Invalid fabric weight, skipping event')
+      continue
+    }
+
+    const taskResults = await taskValid(planKey, intFabricWeight)
+    const isPlannedMachineValid = taskResults.find(m => m.machineId === machineId)?.valid
+    if (!isPlannedMachineValid) {
+      logger.debug({ planKey, machineId }, 'Planned machine is not valid, skipping event')
+      continue
+    }
+
+    const lastQueueNumber = await getLastQueueNumber(machineId)
+    const queueNumber = lastQueueNumber?.queueNumber ?? 1
+
+    const newData = { planKey, queueNumber, machineId }
+    await queueUnplannedEvents(newData)
+    processed.push(newData)
+
+    logger.info({ planKey, machineId, queueNumber }, 'Event successfully queued')
+  }
+
+  return processed
 }
 
 export async function checkMachineLastTaskQueue(machineId: number): Promise<{ queueNumber: number }> {

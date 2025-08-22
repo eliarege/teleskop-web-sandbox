@@ -3,7 +3,6 @@ import { Mutex } from 'async-mutex'
 import Fastify from 'fastify'
 import fastifyIO from 'fastify-socket.io'
 import { fastifyAdapter } from '@teleskop/keycloak-adapter/fastify'
-import { defineConfiguration } from '@teleskop/utils'
 import * as planningBoard from './api/scheduler/routes'
 import * as queueBased from './api/scheduler/queue-based/routes'
 import * as timeBased from './api/scheduler/time-based/routes'
@@ -13,6 +12,7 @@ import { knex } from './knexConfig'
 import { createPtColumnsTable, createPtMachineErpTable } from './composables/table'
 import { logger } from './composables/logger'
 import { config } from './config'
+import { autoPlan } from './composables/autoPlan'
 
 const app = Fastify({ logger })
 const port = Number.parseInt(process.env.SERVER_PORT || '3500')
@@ -53,6 +53,17 @@ app.ready().then(async () => {
 
   await createPtColumnsTable(knex)
   await createPtMachineErpTable(knex)
+
+  async function scheduleAutoPlan() {
+    try {
+      await autoPlan(knex)
+    } catch (err) {
+      logger.error(err, 'Error in scheduled autoPlan')
+    } finally {
+      setTimeout(scheduleAutoPlan, 15 * 60 * 1000)
+    }
+  }
+  scheduleAutoPlan()
 
   app.io.on('connection', async (socket) => {
     console.log('User connected!')

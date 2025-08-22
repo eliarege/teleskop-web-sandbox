@@ -6,6 +6,7 @@ import {
   getFullQueueBasedEvents,
   getQueueBasedEvents,
   getQueueBasedPlannedEvents,
+  preplanJoborders,
   queueUnplannedEvents,
   scheduleFutureEvents,
   updateEventQueue,
@@ -63,6 +64,17 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occured while updating events: ${err}`)
         return reply.code(500).send({ error: `An error occured while updating events: ${err}` })
+      }
+    },
+  )
+  fastify.post(
+    '/queue_based/auto_plan',
+    async (_request, reply) => {
+      try {
+        return await preplanJoborders(fastify)
+      } catch (err) {
+        fastify.log.error(`An error occured while auto planning events: ${err}`)
+        return reply.code(500).send({ error: `An error occured while auto planning events: ${err}` })
       }
     },
   )
