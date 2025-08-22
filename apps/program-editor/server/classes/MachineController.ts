@@ -83,6 +83,7 @@ export class MachineController {
         commandNo: 'P.COMMANDNO',
         index: 'P.PARAMETERINDEX',
         name: 'P.PARAMSTRING',
+        group: 'P.PARAMETERGROUP',
         editable: 'P.PROGRAMEDITING',
         type: db.raw(`
           CASE
@@ -196,6 +197,7 @@ export class MachineController {
         command.parameters.push({
           index: rawParameter.index,
           name: rawParameter.name,
+          group: rawParameter.group,
           editable: rawParameter.editable,
           type: rawParameter.type,
           format: rawParameter.format,

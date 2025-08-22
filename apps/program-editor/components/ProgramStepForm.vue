@@ -69,8 +69,8 @@ function removeError(stepId: number, commandId: number) {
 </script>
 
 <template>
-  <div class="flex">
-    <div class="flex items-center w-5">
+  <div class="flex flex-nowrap">
+    <div class="flex items-center">
       <div v-show="!expanded" class="space-y-1">
         <div
           v-for="(icon, key) in stepIcons"
@@ -100,7 +100,7 @@ function removeError(stepId: number, commandId: number) {
 
     <QBtn
       v-if="!editor.isTonello()"
-      class="expand-btn"
+      class="expand-btn mr-2"
       :icon="expandIcon"
       flat
       dense

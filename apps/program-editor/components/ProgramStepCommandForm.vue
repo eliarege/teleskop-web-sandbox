@@ -23,6 +23,17 @@ const machineCommand = computed(() => {
 })
 
 const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!))
+
+const groupedParameters = computed(() => {
+  const groups: Record<string, { param: CommandParameter, originalIndex: number }[]> = {}
+  machineCommand.value.editableParameters.forEach((parameter, idx) => {
+    const groupName = parameter.group || 'default'
+    if (!groups[groupName])
+      groups[groupName] = []
+    groups[groupName].push({ param: parameter, originalIndex: idx })
+  })
+  return groups
+})
 </script>
 
 <template>
@@ -65,14 +76,20 @@ const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!)
           </div>
 
           <div class="flex-1">
-            <ProgramStepCommandParameterInput
-              v-for="(parameter, index) in machineCommand.editableParameters"
-              :key="`pr-${programCommand.commandNo}-${index}`"
-              :path="`${props.path}.parameters.${index}`"
-              :parameter="parameter"
-              :command-no="programCommand.commandNo!"
-              :parameter-error="props.commandError?.messages.find(m => m.parameterIndex === parameter.index)"
-            />
+            <div
+              v-for="(group, groupName) in groupedParameters"
+              :key="`group-${programCommand.commandNo}-${groupName}`"
+              class="inline-flex"
+            >
+              <ProgramStepCommandParameterInput
+                v-for="item in group"
+                :key="`pr-${programCommand.commandNo}-${item.originalIndex}`"
+                :path="`${props.path}.parameters.${item.originalIndex}`"
+                :parameter="item.param"
+                :command-no="programCommand.commandNo!"
+                :parameter-error="props.commandError?.messages.find(m => m.parameterIndex === item.param.index)"
+              />
+            </div>
             <ProgramStepCommandIoInput
               v-for="(io, index) in machineCommand.selectableIOs"
               :key="`io-${programCommand.commandNo}-${index}`"

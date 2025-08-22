@@ -81,6 +81,7 @@ export interface MachineCommand {
 export interface CommandParameter {
   index: number
   name: string
+  group: number
   editable: boolean
   type: ParameterType
   format: string

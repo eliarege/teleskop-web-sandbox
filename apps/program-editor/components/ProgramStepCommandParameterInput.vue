@@ -62,10 +62,10 @@ function handleInputBlur() {
 </script>
 
 <template>
-  <div class="inline-block pr-1 pb-1">
+  <div class="pr-1 pb-1">
     <DevOnly>
       <div class="color-gray-5 text-3">
-        {{ props.commandNo }} - {{ props.parameter.index }}
+        {{ props.commandNo }} - {{ props.parameter.index }} - {{ props.parameter.group }}
       </div>
     </DevOnly>
 
