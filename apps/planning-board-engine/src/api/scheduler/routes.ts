@@ -355,18 +355,6 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-  fastify.put<{ Body: { planKey: number, machineId: number, plannedStartTime: string, queueNumber: number }[] }>(
-    '/planning_board/schedule_events',
-    async (request, reply) => {
-      try {
-        const body = request.body
-        await scheduleEvents(body)
-      } catch (err) {
-        fastify.log.error(`An error occured while scheduling events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while scheduling events: ${err}` })
-      }
-    },
-  )
   fastify.put<{ Body: { id: number, visible: boolean } }>(
     '/planning_board/columns/unplanned_columns',
     async (request, reply) => {
