@@ -7,10 +7,12 @@ interface RecipeTableProps {
   title: string
   columns: QTableColumn[]
   align: 'center' | 'left' | 'right'
+  mergeCellsActive: boolean
 }
 
 const props = withDefaults(defineProps<RecipeTableProps>(), {
   align: 'center',
+  mergeCellsActive: true,
 })
 
 function cellClass(row: any, columnIndex: number): string {
@@ -80,6 +82,22 @@ interface Group {
 }
 
 function renderCells(table: Record<string, any>[]): MergedCell[][] {
+  if (!props.mergeCellsActive) {
+    return table.map(row =>
+      props.columns.map((col, colIndex) => ({
+        value: row[col.name],
+        col,
+        row,
+        colIndex,
+        rowIndex: table.indexOf(row),
+        _visited: true,
+        _group: -1,
+        _below: null,
+        _right: null,
+        _rect: { rowspan: 1, colspan: 1 },
+      })),
+    )
+  }
   const cells = [] as Cell[][]
   const mergedCells = [] as MergedCell[][]
 
@@ -310,7 +328,7 @@ const cells = renderCells(props.data)
   border-color: #88888857;
 }
 .q-table th {
-  border-width: 0 1px 0 1px;
+  border-width: 1px 1px 1px 1px;
   border-style: solid;
   border-color: #88888857;
 }

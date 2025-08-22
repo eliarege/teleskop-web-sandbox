@@ -36,15 +36,7 @@ enum Units {
   FahrenheitPerMinute = 35, // °F/min
   OuncePerFoot = 36, // oz/ft
 }
-
-export enum StartingParameters {
-  Correct = 0,
-  Invalid = 1,
-  Changed = 2,
-  NonStartingParameter = 3,
-}
 export function getUnitById(id: number): string {
-  // TODO: I18N!
   switch (id) {
     case Units.Kilogram:
       return 'kg'
@@ -123,6 +115,12 @@ export function getUnitById(id: number): string {
   }
 }
 
+export enum StartingParameters {
+  Correct = 0,
+  Invalid = 1,
+  Changed = 2,
+  NonStartingParameter = 3,
+}
 // @unocss-include
 export function setParameterColor(paramStatus: 0 | 1 | 2 | 3) {
   switch (paramStatus) {
@@ -134,5 +132,38 @@ export function setParameterColor(paramStatus: 0 | 1 | 2 | 3) {
       return 'bg-red-600'
     case StartingParameters.NonStartingParameter:
       return 'bg-green-600'
+  }
+}
+
+enum RecipeUnits {
+  Percent = 0,
+  gr_lt = 1,
+  cc_lt = 2,
+  gr = 3,
+  cc = 4,
+  kg = 5,
+  lt = 6,
+  Oz = 20,
+}
+export function getRecipeUnitById(id: number): string {
+  switch (id) {
+    case RecipeUnits.Percent:
+      return '%'
+    case RecipeUnits.gr_lt:
+      return 'gr/lt'
+    case RecipeUnits.cc_lt:
+      return 'cc/lt'
+    case RecipeUnits.gr:
+      return 'gr'
+    case RecipeUnits.cc:
+      return 'cc'
+    case RecipeUnits.kg:
+      return 'kg'
+    case RecipeUnits.lt:
+      return 'lt'
+    case RecipeUnits.Oz:
+      return 'oz'
+    default:
+      return ''
   }
 }

@@ -263,15 +263,40 @@ export async function getBatchProperties(machineId: number, planKey: number) {
     .orderBy('p.paramId')
 
   const programs = await knex.raw(/* sql */`
-    WITH SplitValues AS (
-      SELECT CAST(value AS INT) AS ProgramNo
-      FROM STRING_SPLIT((SELECT LEFT(d.PROGRAMNOLIST, LEN(d.PROGRAMNOLIST) - 1) FROM DYBFBATCHPLAN d WHERE d.PLANKEY = ${planKey}), ',')
-      )
-    SELECT b.PROGNO, b.NAME
-    FROM BFMASTERPRGHEADER b
-    WHERE b.PROGNO IN (SELECT ProgramNo FROM SplitValues)
+WITH SplitValues AS (
+  SELECT CAST(value AS INT) AS ProgramNo
+  FROM STRING_SPLIT(
+    (SELECT LEFT(d.PROGRAMNOLIST, LEN(d.PROGRAMNOLIST) - 1)
+     FROM DYBFBATCHPLAN d
+     WHERE d.PLANKEY = ${planKey}),
+    ','
+  )
+),
+actualDuration AS (
+  SELECT
+    c.PRGNO,
+    c.BATCHKEY,
+    DATEDIFF(SECOND, MIN(c.STARTTIME), MAX(c.ENDTIME)) AS duration
+  FROM DYBFBATCHPLAN d
+  LEFT JOIN BADATA b ON b.JOBORDER = d.JOBORDER
+  LEFT JOIN BAACTUALPRGSTEPS c ON c.BATCHKEY = b.BATCHKEY
+  WHERE d.PLANKEY = ${planKey}
+    AND d.lastForJoborder = 1
     AND b.MACHINEID = ${machineId}
-    GROUP BY b.PROGNO, b.NAME;
+  GROUP BY c.BATCHKEY, c.PRGNO
+)
+SELECT
+  b.PROGNO as prgNo,
+  b.NAME as prgName,
+  b.DURATION AS theoreticalDuration,
+  ad.duration AS actualDuration,
+  IIF(t.RUNNING_PROGRAMID = b.PROGNO, CAST(1 AS BIT), CAST(0 AS BIT)) AS currentlyRunning
+FROM BFMASTERPRGHEADER b
+LEFT JOIN actualDuration ad ON ad.PRGNO = b.PROGNO
+LEFT JOIN TFMACHINESTATUS t ON t.MACHINEID = ${machineId}
+WHERE b.PROGNO IN (SELECT ProgramNo FROM SplitValues)
+  AND b.MACHINEID = ${machineId}
+GROUP BY b.PROGNO, b.NAME, b.DURATION, ad.duration, t.RUNNING_PROGRAMID;
   `)
   const times = await knex.raw(/* sql */`
   SELECT TOP 1

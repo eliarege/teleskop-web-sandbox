@@ -8,6 +8,8 @@ const props = defineProps<{
   fabricWeight: number | string
   theoreticalDuration: number
   planParameters: PlanParameterProps
+  realDuration: number
+  deviation: number
 }>()
 const colors = reactive({
   activeBackGround: '#4B5563',
@@ -31,7 +33,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
 </script>
 
 <template>
-  <div class="bg-white cursor-default grid grid-cols-[1fr_2fr] gap-4 h-98vh max-h-98vh overflow-auto">
+  <div class="bg-white cursor-default grid grid-cols-[0.5fr_1fr] gap-4 w-80vw h-98vh max-h-98vh overflow-auto">
     <div class="w-full h-full bg-white min-w-29rem">
       <MachineCardMain
         class="!h-270px !font-extrabold"
@@ -57,6 +59,8 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
           :plan-key
           :theoretical-duration
           :fabric-weight
+          :real-duration
+          :deviation
         />
       </div>
     </div>
