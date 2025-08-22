@@ -119,36 +119,34 @@ export async function planningBoardStops(startDate: string, endDate: string): Pr
 }
 export async function getUnplannedEvents() {
   const events = await knex.raw(/* sql */`
-        SELECT
-        TOP 100
-        'unplanned' as eventType,
-          d.PLANKEY AS planKey,
-          d.RECORDTIME AS recordTime,
-          d.JOBORDER AS jobOrder,
-          ERPVALUE AS fabricWeight,
-          d.PLANNEDMACHINE AS machineId,
-          d.PRGCOUNT AS programCount,
-          d.PROGRAMNOLIST AS programList,
-          d.PLANNEDSTARTTIME AS startTime,
-          d.NOTE AS note,
-          d.TheoricalDuration AS theoreticalDuration,
-          d.Color AS fabricColor,
-          d.CUSTOMERNAME AS customer,
-          p.QUEUENUMBER AS queueNumber,
-          p.PINNED AS pinned,
-          (
+    SELECT
+    'unplanned' as eventType,
+      d.PLANKEY AS planKey,
+      d.RECORDTIME AS recordTime,
+      d.JOBORDER AS jobOrder,
+      ERPVALUE AS fabricWeight,
+      d.PLANNEDMACHINE AS machineId,
+      d.PRGCOUNT AS programCount,
+      d.PROGRAMNOLIST AS programList,
+      d.PLANNEDSTARTTIME AS startTime,
+      d.NOTE AS note,
+      d.TheoricalDuration AS theoreticalDuration,
+      d.Color AS fabricColor,
+      d.CUSTOMERNAME AS customer,
+      null AS queueNumber,
+      null AS pinned,
+      (
           SELECT v.parameterName as 'paramName', r.VALUE as 'value'
-            FROM DYBFBATCHPLANPARAMETERS r
-            LEFT JOIN PTCOLUMNS v ON v.parameterId = r.BATCHPARAMETERID
-            WHERE r.PLANKEY = d.PLANKEY
-            AND v.visible = 1
-            FOR JSON PATH
-            ) as erpParameters
-        FROM DYBFBATCHPLAN d
-        LEFT JOIN PTBATCHPLANQUEUE p ON p.PLANKEY = d.PLANKEY
-        LEFT JOIN DYBFBATCHPLANERPPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.ERPFIELDNAME = 'Weight'
+          FROM DYBFBATCHPLANPARAMETERS r
+          LEFT JOIN PTCOLUMNS v ON v.parameterId = r.BATCHPARAMETERID
+          WHERE r.PLANKEY = d.PLANKEY
+          AND v.visible = 1
+          FOR JSON PATH
+      ) as erpParameters
+    FROM DYBFBATCHPLAN d
+    LEFT JOIN DYBFBATCHPLANERPPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.ERPFIELDNAME = 'Weight'
     WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
-    AND p.PLANKEY IS NULL
+    AND d.PLANKEY not in (select PLANKEY from PTBATCHPLANQUEUE)
     AND d.LASTFORJOBORDER = 1
     AND d.ISDELETESENDTOMANUNITES IS NULL OR d.ISDELETESENDTOMANUNITES = 0
     ORDER BY d.RECORDTIME DESC
@@ -387,7 +385,6 @@ export async function getMachineInfo(id: number): Promise<{ ip: string } | undef
     .from('BFMACHINES')
     .first({ ip: 'IP' })
 }
-
 export async function getErpParameters(paramName: string) {
   const erpParams = await knex({ p: 'dbo.PTMACHINEERP' })
     .select('*')
