@@ -62,7 +62,7 @@ function toggleSelectAll() {
             <ChemIconCheckbox
               v-model="selectedIcons"
               :command-index="commandType.index"
-              :label="t(`chemicalRequest.${commandType.title}`)"
+              :label="t(`commandType.${commandType.title}`)"
               class="mr-2"
             />
             <UnoIcon
