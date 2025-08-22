@@ -3,7 +3,7 @@ import type { QSelect } from 'quasar'
 import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 import { useEditorStore } from '~~/composables/editor'
 import { useProgramWriteSettings } from '~/composables/settings'
-import { CommandType } from '~/shared/constants'
+import { CommandEligibility } from '~/shared/constants'
 
 const props = defineProps<{ path: string }>()
 
@@ -26,7 +26,7 @@ const availableCommands = computed(() => {
   const allCommands: MachineCommand[] = Array.from(editor.machine.commands.values())
 
   return allCommands
-    .filter(({ commandType }) => !(isMainCommand.value && commandType === CommandType.PARALLEL))
+    .filter(({ commandType }) => !(isMainCommand.value && commandType === CommandEligibility.PARALLEL_ONLY))
     .filter(({ commandNo }) =>
       commandNo === programCommand.value.commandNo
       || (stepData.value.mainCommand.commandNo !== commandNo

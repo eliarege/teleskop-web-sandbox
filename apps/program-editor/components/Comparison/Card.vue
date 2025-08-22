@@ -34,6 +34,9 @@ function getParameterValue(param: CommandParameterDiff, commandNo: number): stri
     if (machineParameter.type === ParameterType.SELECT) {
       return machineParameter.selections.find(s => s.value === param.value)?.name || ''
     }
+    if (machineParameter.type === ParameterType.CHECKBOX) {
+      return param.value
+    }
   }
   return String(param.value)
 }

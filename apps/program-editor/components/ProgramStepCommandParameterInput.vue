@@ -38,6 +38,13 @@ const isOptimizable = computed(() => {
   })
 })
 
+const isChecked = computed({
+  get: () => !!programParameter.value,
+  set: (val: boolean) => {
+    programParameter.value = val ? 1 : 0
+  },
+})
+
 watch(() => model.value, (newValue: number) => {
   programParameter.value = newValue
 })
@@ -73,7 +80,6 @@ function handleInputBlur() {
         style="width: 150px;"
         class="text-3"
         hide-bottom-space
-
         :class="{ 'border-2 border-red-2': props.parameterError }"
       >
         <template #optimized>
@@ -169,11 +175,31 @@ function handleInputBlur() {
         {{ formulaOptions.find((f) => f.value === model)?.formula }}
       </QTooltip>
     </template>
+
+    <template v-else-if="parameter.type === 'CHECKBOX'">
+      <QCheckbox
+        v-model="isChecked"
+        class="checkbox-outlined"
+        :class="{ 'border-2 border-red rounded-2': props.parameterError }"
+        style="width: 150px;"
+        @blur="handleInputBlur"
+      >
+        <span class="text-3">
+          {{ parameter.name.length > 15 ? `${parameter.name.trim().slice(0, 15)}...` : parameter.name }}
+          <QTooltip v-if="parameter.name.length > 15">{{ parameter.name }}</QTooltip>
+        </span>
+      </QCheckbox>
+    </template>
   </div>
 </template>
 
 <style scoped>
 .q-select-nowrap :deep(.q-field__native) {
   white-space: nowrap;
+}
+
+.checkbox-outlined {
+  border: 1px solid #c0c0c0;
+  border-radius: 4px;
 }
 </style>

@@ -1,4 +1,5 @@
 import type { Knex } from 'knex'
+import { isDef } from './base'
 
 // Should mirror `FilterableTableFilter` from `nuxt-base/types`
 interface Filter {
@@ -32,21 +33,23 @@ export function filtersToKnex(filters: Filter[], attributes: any, knexInstance: 
           // Ordering is an optional for backend. Its not implemented right now.
         } else if (filter.filterType === 'select' || filter.filterType === 'multiselect') {
           builder.andWhere((innerBuilder) => {
-            filter.value.option.forEach((opt) => {
+            filter.value.option?.forEach((opt) => {
               innerBuilder.orWhere(DBName, '=', opt[attName])
             })
           })
         } else if (filter.filterType === 'comparison') {
-          if (filter.value.max && filter.value.min) {
+          if (isDef(filter.value.max) && isDef(filter.value.min)) {
             builder.andWhere(DBName, '<', filter.value.max)
             builder.andWhere(DBName, '>=', filter.value.min)
-          } else if (filter.value.number && filter.value.operator) {
+          } else if (isDef(filter.value.number) && filter.value.operator) {
             builder.andWhere(DBName, filter.value.operator, filter.value.number)
           }
         } else if (filter.filterType === 'date') {
-          builder.andWhere(DBName, '<', filter.value.to) // FIXME:
-          builder.andWhere(DBName, '>=', filter.value.from)
-        } else if (filter.filterType === 'boolean') {
+          if (isDef(filter.value.to))
+            builder.andWhere(DBName, '<', filter.value.to)
+          if (isDef(filter.value.from))
+            builder.andWhere(DBName, '>=', filter.value.from)
+        } else if (filter.filterType === 'boolean' && isDef(filter.value.option)) {
           builder.andWhere(DBName, filter.value.option[0])
         } else if (filter.filterType === 'includes') {
           builder.andWhere(DBName, 'like', `%${filter.value}%`)

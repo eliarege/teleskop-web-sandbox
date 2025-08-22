@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ParameterItem, ProgramStepCommand } from '~/shared/types'
+import type { ProgramStepCommand } from '~/shared/types'
 
 const props = defineProps<{
   type: 'add' | 'remove' | 'changeParameter'

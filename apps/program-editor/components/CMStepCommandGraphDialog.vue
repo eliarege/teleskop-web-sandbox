@@ -3,7 +3,6 @@ import { useDialogPluginComponent } from 'quasar'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { BarController, BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from 'chart.js'
 import { Bar } from 'vue-chartjs'
-import { screenshot } from '~/shared/utils'
 
 const { t } = useI18n()
 const editor = useEditorStore()

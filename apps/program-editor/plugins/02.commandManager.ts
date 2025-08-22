@@ -38,7 +38,7 @@ class CommandManager {
   redo(): void {
     const command = this.redoStack.pop()
     if (command && command.execute) {
-      const ctx = {} // You need to maintain or reconstruct context here if needed
+      const ctx: any = {} // You need to maintain or reconstruct context here if needed
       if (command.execute(ctx)) {
         this.undoStack.push(command)
       }

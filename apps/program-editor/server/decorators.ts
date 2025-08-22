@@ -3,7 +3,7 @@ import type { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { db } from './database'
 
 const ftpRefMap = new WeakMap<any, { count: number }>()
-const trxRefMap = new WeakMap<any, { count: number; failed: boolean }>()
+const trxRefMap = new WeakMap<any, { count: number, failed: boolean }>()
 
 function _withFTP<This extends { ftp: TbbFtpClient }, Args extends any[], Return>(
   target: (this: This, ...args: Args) => Return,
