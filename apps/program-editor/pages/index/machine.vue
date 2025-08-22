@@ -267,12 +267,13 @@ interface ProgramTableColumn extends Omit<QTableColumn, 'label'> {
   label: string | Readonly<Ref<string>>
   field: keyof ProgramTableRow | ((row: ProgramTableRow) => any)
   sortable?: boolean
+  hidden?: boolean
   align?: 'left' | 'right' | 'center'
   format?: (value: Date, row: ProgramTableRow) => string
   tooltip?: (value: Date, row: ProgramTableRow) => string
 }
 
-const columns = ref<ProgramTableColumn[]>([
+const allColumns = ref<ProgramTableColumn[]>([
   {
     name: 'programNo',
     label: '#',
@@ -309,6 +310,7 @@ const columns = ref<ProgramTableColumn[]>([
     field: 'type',
     sortable: true,
     align: 'center',
+    hidden: editor.isTonello(),
   },
   {
     name: 'operator',
@@ -683,6 +685,10 @@ function handleRowClass(row: ProgramTableRow): string {
   }
   return 'no-changes'
 }
+
+const columns = computed(() =>
+  allColumns.value.filter(col => !col.hidden),
+)
 </script>
 
 <template>
@@ -700,7 +706,7 @@ function handleRowClass(row: ProgramTableRow): string {
       ref="tableRef"
       v-model:selected="editor.selectedPrograms"
       :rows="filteredPrograms"
-      :columns="columns"
+      :columns
       row-key="programNo"
       :rows-per-page-options="[0]"
       class="program-table bg-gray-1 dark:bg-dark-4"
