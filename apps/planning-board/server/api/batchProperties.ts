@@ -11,8 +11,11 @@ export default defineAuthEventHandler(async (event) => {
   }
 
   interface Program {
-    PROGNO: number
-    NAME: string
+    prgNo: number
+    prgName: string
+    theoreticalDuration: number
+    actualDuration: number
+    currentlyRunning: boolean
   }
 
   interface Time {
