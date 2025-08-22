@@ -994,7 +994,8 @@ onMounted(async () => {
 function capitalizeFirstLetter(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
-LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
+const bryntumLocale = computed(() => locale.value === 'en-GB' ? 'en' : locale.value)
+LocaleManager.applyLocale(capitalizeFirstLetter(bryntumLocale.value))
 </script>
 
 <template>
