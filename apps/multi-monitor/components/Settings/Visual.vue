@@ -19,6 +19,7 @@ const store = useDataStore()
           { label: t('settings.sort-active'), value: 2 },
           { label: t('settings.sort-idle'), value: 3 },
           { label: t('settings.sort-group'), value: 4 },
+          { label: t('settings.sort-custom'), value: 5 },
         ]"
         class="lg:(flex-center) lt-sm:(text-start)"
       />

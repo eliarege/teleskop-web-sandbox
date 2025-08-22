@@ -16,9 +16,11 @@ export const useDataStore = defineStore('datas', () => {
   const locale = useStorage('language', useI18n().locale)
   const filteredMachines = useStorage('filtered-machines', new Set<number>())
   const filteredGroups = useStorage('filtered-groups', new Set<string>())
+
+  const customSort = useStorage<number[]>('mm-machineOrdering', [])
+
   // machinestatus
   const sortMachines = useStorage<MachineSortValue>('machine-sort', MachineSort.ById)
-
   const zoomLevel = ref(1)
   const setZoomLevel = (value: number | string | null) => {
     if (!value) {
@@ -80,6 +82,7 @@ export const useDataStore = defineStore('datas', () => {
     isWashing,
     group,
     sortMachines,
+    customSort,
     mode,
     machines,
     electricity,

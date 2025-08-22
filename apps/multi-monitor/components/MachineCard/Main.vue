@@ -27,6 +27,8 @@ const sortedMachines = computed(() => {
   const filteredMachines = filteredGroups.filter(item => !store.filteredMachines.has(item.id))
   const activeMachines = filteredMachines.filter(machine => machine.runningBatchStatus !== 0)
   const inactiveMachines = filteredMachines.filter(machine => machine.runningBatchStatus === 0)
+  const customSort = store.customSort
+  const order = new Map(customSort.map((id, i) => [id, i]))
 
   switch (store.sortMachines) {
     case MachineSort.ById:
@@ -45,6 +47,8 @@ const sortedMachines = computed(() => {
       return filteredMachines.sort((a, b) =>
         a.groupName < b.groupName ? -1 : (a.groupName > b.groupName ? 1 : 0),
       )
+    case MachineSort.ByCustom:
+      return filteredMachines.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
     default:
       return filteredMachines
   }

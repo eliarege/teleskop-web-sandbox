@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind, useWindowSize } from '@vueuse/core'
-import { matAlarm, matSettings } from '@quasar/extras/material-icons'
+import { matAlarm, matDeveloperBoard, matSettings } from '@quasar/extras/material-icons'
 import { format } from 'date-fns'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
@@ -36,6 +36,13 @@ const commonSettingsItems: TopbarMenuItem[] = [
     icon: matAlarm,
     onClick() {
       navigateTo('/alarm')
+    },
+  },
+  {
+    label: tt('teleskop.custom-config'),
+    icon: matDeveloperBoard,
+    onClick() {
+      navigateTo('/custom-configurations')
     },
   },
 ]
