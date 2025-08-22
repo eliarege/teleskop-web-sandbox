@@ -115,6 +115,20 @@ const buttons = computed<ContextBarButtons[]>(() => [
   //   },
   // },
   {
+    label: t('menu.commandDetails'),
+    originalLabel: t('menu.commandDetails'),
+    tooltip: t('menu.commandDetails'),
+    shortcut: '',
+    icon: 'info',
+    disable: editor.isLoading || !editor.selectedSteps[0]?.mainCommand.commandNo,
+    onClick() {
+      const commandNo = editor.selectedSteps[0]?.mainCommand?.commandNo
+      if (commandNo) {
+        $commandManager.executeCommand('commandDetails', { $q }, commandNo)
+      }
+    },
+  },
+  {
     label: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
     originalLabel: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
     tooltip: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
