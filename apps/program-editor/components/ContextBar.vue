@@ -45,7 +45,8 @@ const visibleContextBarButtons = computed(() =>
             size="1.2rem"
           />
           <QTooltip>
-            {{ `${button.tooltip} (${button.shortcut})` }}
+            {{ button.tooltip }}
+            <span v-if="button.shortcut"> ({{ button.shortcut }})</span>
           </QTooltip>
         </QBtn>
       </div>
