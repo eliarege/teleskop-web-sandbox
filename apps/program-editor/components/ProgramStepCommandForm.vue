@@ -44,7 +44,7 @@ const groupedParameters = computed(() => {
 <template>
   <div class="pl-1 pt-1">
     <div class="flex">
-      <div v-if="expanded" class="w-7 flex-center">
+      <div v-show="expanded" class="flex-center">
         <div v-if="commandIcon">
           <UnoIcon
             class="icon"
