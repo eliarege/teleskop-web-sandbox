@@ -15,7 +15,6 @@ export interface ContextMenuStore {
   getProgram: (programNo: number, machineId: number) => Promise<{ program: Program, programErrors: StepError[] }>
   updateProgramHeader: (machineId: number, programNo: number, program: ProgramHeaderUpdate) => Promise<boolean>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
-  getProcessTypes: () => Promise<ProcessType[]>
   changeProcessType: (machineId: number, programs: ProgramTableRow[], newType: number) => Promise<void>
   sendProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   getRemoteProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
@@ -219,14 +218,10 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return !!check
   }
 
-  async function getProcessTypes(): Promise<ProcessType[]> {
-    const { fetch } = useKeycloak()
-    const result = await fetch('/api/process')
-
-    return result as ProcessType[]
-  }
-
   async function changeProcessType(machineId: number, programs: ProgramTableRow[], newType: number) {
+    const editor = useEditorStore()
+    editor.isLoading = true
+
     for (const program of programs) {
       try {
         await updateProgramHeader(machineId, program.programNo, {
@@ -237,6 +232,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         notification(false, t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
       }
     }
+    editor.isLoading = false
   }
 
   async function sendProgram(programs: ProgramTableRow[], machineId: number) {
@@ -383,7 +379,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     concatenatePrograms,
     deleteProgramFromMachine,
     getRemoteProgram,
-    getProcessTypes,
     deleteProgram,
     getProgram,
     sendProgram,

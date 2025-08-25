@@ -23,12 +23,28 @@ const machineCommand = computed(() => {
 })
 
 const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!))
+
+/**
+ * Parametreleri `BFCOMMANDPARAMETERS.PARAMETERGROUP` alanına göre grupla.
+ *
+ * - PARAMETERGROUP null → tek başına gösterilecek (tekil grup).
+ * - PARAMETERGROUP numara → aynı gruptakiler yan yana dizilecek.
+ */
+const groupedParameters = computed(() => {
+  return machineCommand.value.editableParameters.reduce((groups, param, idx) => {
+    const groupName = param.group == null ? `single-${idx}` : String(param.group)
+    if (!groups[groupName])
+      groups[groupName] = []
+    groups[groupName].push({ param, originalIndex: idx })
+    return groups
+  }, {} as Record<string, { param: CommandParameter, originalIndex: number }[]>)
+})
 </script>
 
 <template>
   <div class="pl-1 pt-1">
     <div class="flex">
-      <div v-if="expanded" class="w-7 flex-center">
+      <div v-show="expanded" class="flex-center">
         <div v-if="commandIcon">
           <UnoIcon
             class="icon"
@@ -65,14 +81,20 @@ const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!)
           </div>
 
           <div class="flex-1">
-            <ProgramStepCommandParameterInput
-              v-for="(parameter, index) in machineCommand.editableParameters"
-              :key="`pr-${programCommand.commandNo}-${index}`"
-              :path="`${props.path}.parameters.${index}`"
-              :parameter="parameter"
-              :command-no="programCommand.commandNo!"
-              :parameter-error="props.commandError?.messages.find(m => m.parameterIndex === parameter.index)"
-            />
+            <div
+              v-for="(group, groupName) in groupedParameters"
+              :key="`group-${programCommand.commandNo}-${groupName}`"
+              class="inline-flex"
+            >
+              <ProgramStepCommandParameterInput
+                v-for="item in group"
+                :key="`pr-${programCommand.commandNo}-${item.originalIndex}`"
+                :path="`${props.path}.parameters.${item.originalIndex}`"
+                :parameter="item.param"
+                :command-no="programCommand.commandNo!"
+                :parameter-error="props.commandError?.messages.find(m => m.parameterIndex === item.param.index)"
+              />
+            </div>
             <ProgramStepCommandIoInput
               v-for="(io, index) in machineCommand.selectableIOs"
               :key="`io-${programCommand.commandNo}-${index}`"

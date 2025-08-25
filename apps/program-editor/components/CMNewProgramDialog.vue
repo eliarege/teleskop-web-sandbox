@@ -4,10 +4,12 @@ import type { ProcessType, Program, ProgramHeader } from '~/shared/types'
 
 const props = defineProps<{
   type: 'newProgram' | 'saveAs' | 'rename'
-  program: ProgramHeader
+  program: Program
   machineId: number
   machineName: string
+  allProgramNos: number[]
   allProcessTypes: ProcessType[]
+  isTonello: boolean
 }>()
 
 const { t } = useI18n()
@@ -41,7 +43,7 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
 
 <template>
   <div class="w-full h-full select-none">
-    <QDialog ref="dialogRef">
+    <QDialog ref="dialogRef" persistent>
       <QCard>
         <QForm @submit.prevent="onDialogOK(newProgram)">
           <QCard style="width: 500px">
@@ -59,8 +61,7 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
                 :maxlength="10"
                 :rules="[
                   (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
-                  //alltaki editorü kaldır, qdialog kapanmaması gerekiyor
-                  (val: number) => !useEditorStore().allPrograms.some(p => p.programNo === val) || t('input.unique', { field: t('program.programNo') }),
+                  (val: number) => !allProgramNos.includes(val) || t('input.unique', { field: t('program.programNo') }),
                 ]"
                 :disable="isRename"
                 class="mb-3"
@@ -76,6 +77,7 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
               />
 
               <QSelect
+                v-if="!isTonello"
                 v-model="processType"
                 :options="allProcessTypes"
                 :label="t('program.programState')"

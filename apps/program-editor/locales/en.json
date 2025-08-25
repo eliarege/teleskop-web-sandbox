@@ -92,7 +92,8 @@
     "expandAll": "Expand All",
     "collapseAll": "Collapse All",
     "machineConstants": "Machine Constants",
-    "writeProgramSettings": "Program Write Settings"
+    "writeProgramSettings": "Program Write Settings",
+    "commandDetails": "Command Details"
   },
   "program": {
     "name": "Program Name",

@@ -14,6 +14,10 @@ function calcProgramDuration() {
   editor.program.duration = calculateProgramDuration(editor.program, editor.machine, editor.teleskopSettings.initialTemperature)
   return editor.program.duration
 }
+
+const visibleContextBarButtons = computed(() =>
+  contextBarButtons.value.filter(btn => btn.visible !== false),
+)
 </script>
 
 <template>
@@ -28,7 +32,7 @@ function calcProgramDuration() {
     <div ref="parentEl" class="flex">
       <div ref="el">
         <QBtn
-          v-for="(button, index) in contextBarButtons"
+          v-for="(button, index) in visibleContextBarButtons"
           :key="index"
           :disable="button.disable"
           square
@@ -41,7 +45,8 @@ function calcProgramDuration() {
             size="1.2rem"
           />
           <QTooltip>
-            {{ `${button.tooltip} (${button.shortcut})` }}
+            {{ button.tooltip }}
+            <span v-if="button.shortcut"> ({{ button.shortcut }})</span>
           </QTooltip>
         </QBtn>
       </div>

@@ -32,6 +32,8 @@ export const useEditorStore = defineStore('editor', () => {
   const { notifySuccess, notifyError } = useNotify()
   const kc = useKeycloak()
 
+  const isTonello = computed(() => machine.value.tbbModel === 'Tonello')
+
   const teleskopSettings = ref<TeleskopSettings>({
     initialTemperature: 25,
     selectedIcons: 0,
@@ -701,6 +703,7 @@ export const useEditorStore = defineStore('editor', () => {
     return {
       id: 0,
       name: '',
+      tbbModel: '',
       commands: new Map<number, MachineCommand>(),
       batchParameters: [],
       commandFormulas: [],
@@ -1001,6 +1004,8 @@ export const useEditorStore = defineStore('editor', () => {
     rightDrawerOpen,
     teleskopSettings,
     programErrors,
+    allStepExpanded,
+    isTonello,
     createEmptyStep,
     createEmptyCommand,
     changeMachine,
@@ -1030,7 +1035,6 @@ export const useEditorStore = defineStore('editor', () => {
     fetchTeleskopSettings,
     updateTeleskopSettings,
     fetchCommandTypes,
-    allStepExpanded,
     hasProgramChanged,
     isStepSelected,
   }

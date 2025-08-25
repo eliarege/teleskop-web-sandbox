@@ -94,7 +94,9 @@ registerCommand(() => {
           program,
           machineId: editor.machine.id,
           machineName: editor.machine.name,
+          allProgramNos: editor.allPrograms.map(p => p.programNo),
           allProcessTypes: editor.allProcessTypes,
+          isTonello: editor.isTonello,
         },
       }).onOk(async (newProgram: Program) => {
         const result = await editor.onSubmit(newProgram)
@@ -125,7 +127,9 @@ registerCommand(() => {
           program: editor.program,
           machineId: editor.machine.id,
           machineName: editor.machine.name,
+          allProgramNos: editor.allPrograms.map(p => p.programNo),
           allProcessTypes: editor.allProcessTypes,
+          isTonello: editor.isTonello,
         },
       }).onOk(async (newProgram: Program) => {
         await editor.onSubmit(newProgram)
@@ -317,7 +321,9 @@ async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
         program: editor.createEmptyProgram(),
         machineId: editor.machine.id,
         machineName: editor.machine.name,
+        allProgramNos: editor.allPrograms.map(p => p.programNo),
         allProcessTypes: editor.allProcessTypes,
+        isTonello: editor.isTonello,
       },
     }).onOk((program: ProgramHeader) => {
       resolve(program)
@@ -344,7 +350,9 @@ registerCommand(() => {
             program,
             machineId,
             machineName: editor.machine.name,
+            allProgramNos: [],
             allProcessTypes: editor.allProcessTypes,
+            isTonello: editor.isTonello,
           },
         }).onOk(async (program: ProgramHeader) => {
           editor.isLoading = true
@@ -368,15 +376,11 @@ registerCommand(() => {
   return {
     name: 'changeProcessType',
     async execute(ctx: any, machineId: number, selectedRows: ProgramTableRow[]) {
-      editor.isLoading = true
-      const processTypes = await contextMenuStore.getProcessTypes()
-      editor.isLoading = false
-
       ctx.$q.dialog({
         component: CMChangeProcessTypeDialog,
         componentProps: {
           programType: selectedRows[0].type,
-          options: processTypes,
+          options: editor.allProcessTypes,
         },
       }).onOk(async (newType: number) => {
         await contextMenuStore.changeProcessType(machineId, selectedRows, newType)

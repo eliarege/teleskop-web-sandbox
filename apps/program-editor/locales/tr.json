@@ -92,7 +92,8 @@
     "expandAll": "Tümünü Genişlet",
     "collapseAll": "Tümünü Daralt",
     "machineConstants": "Makine Sabitleri",
-    "writeProgramSettings": "Program Yazma Ayarları"
+    "writeProgramSettings": "Program Yazma Ayarları",
+    "commandDetails": "Komut Detayları"
   },
   "program": {
     "name": "Program Adı",

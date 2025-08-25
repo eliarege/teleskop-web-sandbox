@@ -4,6 +4,7 @@ interface CustomQBtnProps extends QBtnProps {
   tooltip?: string | number
   originalLabel?: string
   shortcut?: string
+  visible?: boolean
 }
 
 const route = useRoute()
