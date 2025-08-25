@@ -165,10 +165,10 @@ export async function getTheoreticalDuration(planKey: number) {
   WHERE B.PROGNO IN (
       SELECT RECIPENO
       FROM DYBFBATCHORDERRECIPEHEADER
-      WHERE PLANKEY = ${planKey}
+      WHERE PLANKEY = :planKey
     )
     group by b.MACHINEID
-`)
+`, { planKey })
 }
 export async function getRecipe(machineId: string, jobOrder: string) {
   const autoRecipe = await knex.select(
@@ -278,7 +278,7 @@ WITH SplitValues AS (
   FROM STRING_SPLIT(
     (SELECT LEFT(d.PROGRAMNOLIST, LEN(d.PROGRAMNOLIST) - 1)
      FROM DYBFBATCHPLAN d
-     WHERE d.PLANKEY = ${planKey}),
+     WHERE d.PLANKEY = :planKey),
     ','
   )
 ),
@@ -290,9 +290,9 @@ actualDuration AS (
   FROM DYBFBATCHPLAN d
   LEFT JOIN BADATA b ON b.JOBORDER = d.JOBORDER
   LEFT JOIN BAACTUALPRGSTEPS c ON c.BATCHKEY = b.BATCHKEY
-  WHERE d.PLANKEY = ${planKey}
+  WHERE d.PLANKEY = :planKey
     AND d.lastForJoborder = 1
-    AND b.MACHINEID = ${machineId}
+    AND b.MACHINEID = :machineId
   GROUP BY c.BATCHKEY, c.PRGNO
 )
 SELECT
@@ -303,11 +303,11 @@ SELECT
   IIF(t.RUNNING_PROGRAMID = b.PROGNO, CAST(1 AS BIT), CAST(0 AS BIT)) AS currentlyRunning
 FROM BFMASTERPRGHEADER b
 LEFT JOIN actualDuration ad ON ad.PRGNO = b.PROGNO
-LEFT JOIN TFMACHINESTATUS t ON t.MACHINEID = ${machineId}
+LEFT JOIN TFMACHINESTATUS t ON t.MACHINEID = :machineId
 WHERE b.PROGNO IN (SELECT ProgramNo FROM SplitValues)
-  AND b.MACHINEID = ${machineId}
+  AND b.MACHINEID = :machineId
 GROUP BY b.PROGNO, b.NAME, b.DURATION, ad.duration, t.RUNNING_PROGRAMID;
-  `)
+  `, { planKey, machineId })
   const times = await knex.raw(/* sql */`
   SELECT TOP 1
     d.TheoricalDuration AS theoreticalDuration,
@@ -1024,8 +1024,8 @@ export async function getStartingParametersWithValues(params: {
             ${formattedValues}
         ) v (PARAMSTRING)
     left join DYBFBATCHPLANPARAMETERS d
-        on v.PARAMSTRING = d.PARAMSTRING and d.PLANKEY = ${planKey}
-  `)
+        on v.PARAMSTRING = d.PARAMSTRING and d.PLANKEY = :planKey
+  `, { planKey })
   const enrichedParameters = parameters.map(e => ({
     ...e,
     planKey,
