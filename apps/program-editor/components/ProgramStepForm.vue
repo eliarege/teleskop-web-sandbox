@@ -116,52 +116,54 @@ function removeError(stepId: number, commandId: number) {
       />
     </div>
   </div>
-  <div
-    v-if="!editor.isTonello() && expanded"
-    class="e-border-color border-(t x-0) pl-16"
-  >
-    <Sortable
-      :list="step.parallelCommands"
-      item-key="commandId"
-      :options="sortableOptions"
-      class="parallel-commands"
-      :data-index="stepIndex"
+  <div v-if="!editor.isTonello()">
+    <div
+      v-show="expanded"
+      class="e-border-color border-(t x-0) pl-16"
     >
-      <template #header>
-        <span
-          v-if="step.parallelCommands.length === 0"
-          class="py-10 inline-block e-text-dim"
-        >{{ t('noParallelStep') }}</span>
-      </template>
-      <template #item="{ index }">
-        <div
-          class="step-parallel-command"
-          @click="removeError(step.stepId, step.parallelCommands[index].commandId)"
-        >
-          <DevOnly>
-            <div class="flex flex-col color-gray-5 text-3">
-              <span>{{ `commandId: ${step.parallelCommands[index].commandId}` }}</span>
-            </div>
-          </DevOnly>
+      <Sortable
+        :list="step.parallelCommands"
+        item-key="commandId"
+        :options="sortableOptions"
+        class="parallel-commands"
+        :data-index="stepIndex"
+      >
+        <template #header>
+          <span
+            v-if="step.parallelCommands.length === 0"
+            class="py-10 inline-block e-text-dim"
+          >{{ t('noParallelStep') }}</span>
+        </template>
+        <template #item="{ index }">
+          <div
+            class="step-parallel-command"
+            @click="removeError(step.stepId, step.parallelCommands[index].commandId)"
+          >
+            <DevOnly>
+              <div class="flex flex-col color-gray-5 text-3">
+                <span>{{ `commandId: ${step.parallelCommands[index].commandId}` }}</span>
+              </div>
+            </DevOnly>
 
-          <div>
-            <ProgramStepCommandForm
-              :path="`${props.path}.parallelCommands.${index}`"
-              :expanded
-              :command-error="getCommandError(step.parallelCommands[index].commandId)"
+            <div>
+              <ProgramStepCommandForm
+                :path="`${props.path}.parallelCommands.${index}`"
+                :expanded
+                :command-error="getCommandError(step.parallelCommands[index].commandId)"
+              />
+            </div>
+            <QSpace />
+            <QBtn
+              class="delete-btn"
+              icon="close"
+              flat
+              dense
+              @click.stop="deleteParallelStep(stepIndex, index)"
             />
           </div>
-          <QSpace />
-          <QBtn
-            class="delete-btn"
-            icon="close"
-            flat
-            dense
-            @click.stop="deleteParallelStep(stepIndex, index)"
-          />
-        </div>
-      </template>
-    </Sortable>
+        </template>
+      </Sortable>
+    </div>
   </div>
 </template>
 
