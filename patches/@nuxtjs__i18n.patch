@@ -1,0 +1,31 @@
+diff --git a/dist/runtime/messages.mjs b/dist/runtime/messages.mjs
+index a84bddb891d94d074710e68f791a092e6ae9f195..baebe4da8d064272af863cc3ea447c6e25bac939 100644
+--- a/dist/runtime/messages.mjs
++++ b/dist/runtime/messages.mjs
+@@ -1,11 +1,24 @@
+ import { deepCopy, isFunction, isArray, isObject, isString } from "@intlify/shared";
++import { createDefu } from "defu"
++
+ const cacheMessages = /* @__PURE__ */ new Map();
++
++const create = Object.create
++
++const merger = createDefu((obj, key, value) => {
++  if (key === 'messages' || key === 'datetimeFormats' || key === 'numberFormats') {
++    obj[key] ??= create(null)
++    deepCopy(value, obj[key])
++    return true
++  }
++})
++
+ export async function loadVueI18nOptions(vueI18nConfigs, nuxt) {
+-  const vueI18nOptions = { messages: {} };
++  let vueI18nOptions = { messages: create(null) }
+   for (const configFile of vueI18nConfigs) {
+     const { default: resolver } = await configFile();
+     const resolved = typeof resolver === "function" ? await nuxt.runWithContext(async () => await resolver()) : resolver;
+-    deepCopy(resolved, vueI18nOptions);
++    vueI18nOptions = merger(create(null), resolved, vueI18nOptions)
+   }
+   return vueI18nOptions;
+ }

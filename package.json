@@ -27,6 +27,9 @@
       "ignoreMissing": [
         "webpack"
       ]
+    },
+    "patchedDependencies": {
+      "@nuxtjs/i18n": "patches/@nuxtjs__i18n.patch"
     }
   }
 }
