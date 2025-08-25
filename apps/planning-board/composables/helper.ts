@@ -225,3 +225,13 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
   refreshScheduler()
   schedule.renderRows()
 }
+
+export function formatSeconds(second: number): string {
+  const hours = Math.floor(second / 3600)
+  const minutes = Math.floor((second % 3600) / 60)
+  const seconds = second % 60
+
+  const pad = (num: number) => String(num).padStart(2, '0')
+
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+}

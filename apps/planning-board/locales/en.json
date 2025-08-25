@@ -59,12 +59,17 @@
       "empty-text": "No Recipe to show"
     },
     "index": "Index",
+    "program-no": "Program No",
     "program": "Program",
+    "theoretical-duration": "Theoretical Duration",
+    "actual-duration": "Actual Duration",
+    "deviation": "Deviation",
     "number": "Number",
     "main-step": "Main Step",
     "chem-code": "Chemical Code",
     "material-name": "Material Name",
     "amount": "Amount",
+    "recipe-amount": "Weighed Amount",
     "empty-text": "No Recipe to show"
   },
   "date-picker": {
@@ -229,6 +234,8 @@
   "batch-properties": {
     "time": {
       "theoretical-duration": "Theoretical Duration",
+      "real-duration": "Real Duration",
+      "deviation": "Deviation",
       "start-time": "Start Time",
       "theoretical-start-time": "Theoretical Start Time",
       "end-time": "End Time",
@@ -253,5 +260,49 @@
   "navbar": {
     "unplanned-search": "Unplanned Job Order Search",
     "job-order-search": "Job Order Search"
+  },
+  "units": {
+    "kg": "kg",
+    "lt": "Liter",
+    "saniye": "Second",
+    "dk": "Minute",
+    "°C": "°C",
+    "%": "%",
+    "pH": "pH",
+    "mbar": "mbar",
+    "lt/dk": "Liters per Minute",
+    "m/dk": "Meters per Minute",
+    "bar": "bar",
+    "rpm": "rpm",
+    "S/m": "Siemens per Meter",
+    "m": "Meter",
+    "kWh": "Kilowatt Hour",
+    "cc": "Cubic Centimeter",
+    "lt/kg": "Liters per Kilogram",
+    "gr/lt": "Grams per Liter",
+    "°C/dk": "Celsius per Minute",
+    "cm": "Centimeter",
+    "ms/cm": "Millisiemens per Centimeter",
+    "K": "Kelvin",
+    "gr/mt": "Grams per Metric Ton",
+    "gr/mt-lim": "Grams per Metric Ton (Lime)",
+    "inch": "Inch",
+    "gr": "Gram",
+    "lb": "Pound",
+    "gal": "Gallon",
+    "°F": "Fahrenheit",
+    "ft": "Feet",
+    "gal/min": "Gallons per Minute",
+    "ft/min": "Feet per Minute",
+    "gal/lb": "Gallons per Pound",
+    "oz/gal": "Ounces per Gallon",
+    "°F/min": "Fahrenheit per Minute",
+    "oz/ft": "Ounces per Foot"
+  },
+  "legend": {
+    "early": "Finished Early",
+    "ontime": "Finished On Time",
+    "late": "Finished Late",
+    "ongoing": "Ongoing"
   }
 }

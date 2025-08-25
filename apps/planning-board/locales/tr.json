@@ -59,12 +59,17 @@
       "empty-text": "Gösterilecek Reçete yok"
     },
     "index": "İndeks",
+    "program-no": "Program No",
     "program": "Program",
+    "theoretical-duration": "Teorik Süre",
+    "actual-duration": "Gerçek Süre",
+    "deviation": "Gecikme",
     "number": "Numara",
     "main-step": "Ana Adım",
     "chem-code": "Kimyasal Kodu",
     "material-name": "Materyal İsmi",
-    "amount": "Adet",
+    "amount": "Miktar",
+    "recipe-amount": "Tartım Miktarı",
     "empty-text": "Gösterilecek Reçete yok"
   },
   "date-picker": {
@@ -230,6 +235,8 @@
   "batch-properties": {
     "time": {
       "theoretical-duration": "Teorik Süre",
+      "real-duration": "Gerçek Süre",
+      "deviation": "Gecikme",
       "start-time": "Başlangıç Saati",
       "theoretical-start-time": "Teorik Başlangıç Saati",
       "end-time": "Bitiş Saati",
@@ -254,5 +261,49 @@
   "navbar": {
     "unplanned-search": "Planlanmamış İş Emirleri Arama",
     "job-order-search": "İş Emirleri Arama"
+  },
+  "units": {
+    "kg": "kg",
+    "lt": "Litre",
+    "saniye": "Saniye",
+    "dk": "Dakika",
+    "°C": "°C",
+    "%": "%",
+    "pH": "pH",
+    "mbar": "mbar",
+    "lt/dk": "Litre/Dakika",
+    "m/dk": "Metre/Dakika",
+    "bar": "bar",
+    "rpm": "rpm",
+    "S/m": "Siemens/Metre",
+    "m": "Metre",
+    "kWh": "Kilovat-Saat",
+    "cc": "Santimetreküp",
+    "lt/kg": "Litre/Kilogram",
+    "gr/lt": "Gram/Litre",
+    "°C/dk": "°C/Dakika",
+    "cm": "Santimetre",
+    "ms/cm": "Milisiemens/Santimetre",
+    "K": "Kelvin",
+    "gr/mt": "Gram/Metrik Ton",
+    "gr/mt-lim": "Gram/Metrik Ton (Kireç)",
+    "inch": "İnç",
+    "gr": "Gram",
+    "lb": "Libre",
+    "gal": "Galon",
+    "°F": "Fahrenhayt",
+    "ft": "Fit",
+    "gal/min": "Galon/Dakika",
+    "ft/min": "Fit/Dakika",
+    "gal/lb": "Galon/Libre",
+    "oz/gal": "Ons/Galon",
+    "°F/min": "Fahrenhayt/Dakika",
+    "oz/ft": "Ons/Fit"
+  },
+  "legend": {
+    "early": "Erken Tamamlandı",
+    "ontime": "Zamanında Tamamlandı",
+    "late": "Geç Tamamlandı",
+    "ongoing": "Devam Ediyor"
   }
 }

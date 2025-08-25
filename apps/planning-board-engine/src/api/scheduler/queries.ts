@@ -119,36 +119,34 @@ export async function planningBoardStops(startDate: string, endDate: string): Pr
 }
 export async function getUnplannedEvents() {
   const events = await knex.raw(/* sql */`
-        SELECT
-        TOP 100
-        'unplanned' as eventType,
-          d.PLANKEY AS planKey,
-          d.RECORDTIME AS recordTime,
-          d.JOBORDER AS jobOrder,
-          ERPVALUE AS fabricWeight,
-          d.PLANNEDMACHINE AS machineId,
-          d.PRGCOUNT AS programCount,
-          d.PROGRAMNOLIST AS programList,
-          d.PLANNEDSTARTTIME AS startTime,
-          d.NOTE AS note,
-          d.TheoricalDuration AS theoreticalDuration,
-          d.Color AS fabricColor,
-          d.CUSTOMERNAME AS customer,
-          p.QUEUENUMBER AS queueNumber,
-          p.PINNED AS pinned,
-          (
+    SELECT
+    'unplanned' as eventType,
+      d.PLANKEY AS planKey,
+      d.RECORDTIME AS recordTime,
+      d.JOBORDER AS jobOrder,
+      ERPVALUE AS fabricWeight,
+      d.PLANNEDMACHINE AS machineId,
+      d.PRGCOUNT AS programCount,
+      d.PROGRAMNOLIST AS programList,
+      d.PLANNEDSTARTTIME AS startTime,
+      d.NOTE AS note,
+      d.TheoricalDuration AS theoreticalDuration,
+      d.Color AS fabricColor,
+      d.CUSTOMERNAME AS customer,
+      null AS queueNumber,
+      null AS pinned,
+      (
           SELECT v.parameterName as 'paramName', r.VALUE as 'value'
-            FROM DYBFBATCHPLANPARAMETERS r
-            LEFT JOIN PTCOLUMNS v ON v.parameterId = r.BATCHPARAMETERID
-            WHERE r.PLANKEY = d.PLANKEY
-            AND v.visible = 1
-            FOR JSON PATH
-            ) as erpParameters
-        FROM DYBFBATCHPLAN d
-        LEFT JOIN PTBATCHPLANQUEUE p ON p.PLANKEY = d.PLANKEY
-        LEFT JOIN DYBFBATCHPLANERPPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.ERPFIELDNAME = 'Weight'
+          FROM DYBFBATCHPLANPARAMETERS r
+          LEFT JOIN PTCOLUMNS v ON v.parameterId = r.BATCHPARAMETERID
+          WHERE r.PLANKEY = d.PLANKEY
+          AND v.visible = 1
+          FOR JSON PATH
+      ) as erpParameters
+    FROM DYBFBATCHPLAN d
+    LEFT JOIN DYBFBATCHPLANERPPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.ERPFIELDNAME = 'Weight'
     WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
-    AND p.PLANKEY IS NULL
+    AND d.PLANKEY not in (select PLANKEY from PTBATCHPLANQUEUE)
     AND d.LASTFORJOBORDER = 1
     AND d.ISDELETESENDTOMANUNITES IS NULL OR d.ISDELETESENDTOMANUNITES = 0
     ORDER BY d.RECORDTIME DESC
@@ -167,10 +165,10 @@ export async function getTheoreticalDuration(planKey: number) {
   WHERE B.PROGNO IN (
       SELECT RECIPENO
       FROM DYBFBATCHORDERRECIPEHEADER
-      WHERE PLANKEY = ${planKey}
+      WHERE PLANKEY = :planKey
     )
     group by b.MACHINEID
-`)
+`, { planKey })
 }
 export async function getRecipe(machineId: string, jobOrder: string) {
   const autoRecipe = await knex.select(
@@ -183,12 +181,13 @@ export async function getRecipe(machineId: string, jobOrder: string) {
     'r.RECIPETYPE AS recType',
     'CHEMCODE AS chemCode',
     'm.MATERIALNAME AS materialName',
-    'AMOUNT AS amount',
+    'r.AMOUNT AS amount',
+    't.AMOUNT AS weighedAmount',
     'REQNO_BATCH AS reqBatchNo',
     'REQNO_PROG AS reqProgNo',
     'PHASENO AS phaseNo',
     'PHASEINDEX as phaseIndex',
-    'otherUnit as unit',
+    'r.otherUnit as unit',
   )
     .from('DYBFBATCHORDERRECIPESTEPS as r')
     .rightJoin('DYBFBATCHORDERRECIPEHEADER as p', (builder) => {
@@ -197,6 +196,11 @@ export async function getRecipe(machineId: string, jobOrder: string) {
         .andOn('r.RECIPETYPE', '=', 'p.RECIPETYPE')
     })
     .leftJoin('BFMASTERPRGHEADER as h', 'p.RECIPENO', '=', 'h.PROGNO')
+    .leftJoin('DYTACONSUMPTION as t', (b) => {
+      b.on('t.MATERIALCODE', '=', 'r.CHEMCODE')
+      b.andOn('t.JOBORDERCODE', '=', 'r.JOBORDER')
+      b.andOn('t.programOrder', '=', 'r.RCPINDEX')
+    })
     .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
     .where('h.MACHINEID', '=', machineId)
     .whereIn('p.PLANKEY', (builder) => {
@@ -215,10 +219,11 @@ export async function getRecipe(machineId: string, jobOrder: string) {
     'r.RECIPETYPE AS recType',
     'CHEMCODE AS chemCode',
     'm.MATERIALNAME AS materialName',
-    'AMOUNT AS amount',
+    'r.AMOUNT AS amount',
+    't.AMOUNT AS weighedAmount',
     'REQNO_BATCH AS reqBatchNo',
     'REQNO_PROG AS reqProgNo',
-    'otherUnit as unit',
+    'r.otherUnit as unit',
   )
     .from('DYBFBATCHORDERRECIPEMANUALS as r')
     .leftJoin('DYBFBATCHORDERRECIPEHEADER as p', (builder) => {
@@ -226,13 +231,18 @@ export async function getRecipe(machineId: string, jobOrder: string) {
         .andOn('r.RCPINDEX', '=', 'p.RCPINDEX')
     })
     .leftJoin('BFMASTERPRGHEADER as h', 'p.RECIPENO', '=', 'h.PROGNO')
+    .leftJoin('DYTACONSUMPTION as t', (b) => {
+      b.on('t.MATERIALCODE', '=', 'r.CHEMCODE')
+      b.andOn('t.JOBORDERCODE', '=', 'r.JOBORDER')
+      b.andOn('t.programOrder', '=', 'r.RCPINDEX')
+    })
     .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
     .where('h.MACHINEID', '=', machineId)
     .whereIn('p.PLANKEY', (builder) => {
       builder.select('PLANKEY').from('DYBFBATCHPLAN').where('JOBORDER', '=', jobOrder).orderBy('PLANKEY', 'desc').limit(1)
     })
     .whereNotNull('REQNO_BATCH')
-    .where('AMOUNT', '!=', 0)
+    .where('r.AMOUNT', '!=', 0)
     .orderBy(['p.RCPINDEX', 'DYEREQUESTNUMBER', 'PARALLELSTEP'])
   return { autoRecipe, manualRecipe }
 }
@@ -263,16 +273,41 @@ export async function getBatchProperties(machineId: number, planKey: number) {
     .orderBy('p.paramId')
 
   const programs = await knex.raw(/* sql */`
-    WITH SplitValues AS (
-      SELECT CAST(value AS INT) AS ProgramNo
-      FROM STRING_SPLIT((SELECT LEFT(d.PROGRAMNOLIST, LEN(d.PROGRAMNOLIST) - 1) FROM DYBFBATCHPLAN d WHERE d.PLANKEY = ${planKey}), ',')
-      )
-    SELECT b.PROGNO, b.NAME
-    FROM BFMASTERPRGHEADER b
-    WHERE b.PROGNO IN (SELECT ProgramNo FROM SplitValues)
-    AND b.MACHINEID = ${machineId}
-    GROUP BY b.PROGNO, b.NAME;
-  `)
+WITH SplitValues AS (
+  SELECT CAST(value AS INT) AS ProgramNo
+  FROM STRING_SPLIT(
+    (SELECT LEFT(d.PROGRAMNOLIST, LEN(d.PROGRAMNOLIST) - 1)
+     FROM DYBFBATCHPLAN d
+     WHERE d.PLANKEY = :planKey),
+    ','
+  )
+),
+actualDuration AS (
+  SELECT
+    c.PRGNO,
+    c.BATCHKEY,
+    DATEDIFF(SECOND, MIN(c.STARTTIME), MAX(c.ENDTIME)) AS duration
+  FROM DYBFBATCHPLAN d
+  LEFT JOIN BADATA b ON b.JOBORDER = d.JOBORDER
+  LEFT JOIN BAACTUALPRGSTEPS c ON c.BATCHKEY = b.BATCHKEY
+  WHERE d.PLANKEY = :planKey
+    AND d.lastForJoborder = 1
+    AND b.MACHINEID = :machineId
+  GROUP BY c.BATCHKEY, c.PRGNO
+)
+SELECT
+  b.PROGNO as prgNo,
+  b.NAME as prgName,
+  b.DURATION AS theoreticalDuration,
+  ad.duration AS actualDuration,
+  IIF(t.RUNNING_PROGRAMID = b.PROGNO, CAST(1 AS BIT), CAST(0 AS BIT)) AS currentlyRunning
+FROM BFMASTERPRGHEADER b
+LEFT JOIN actualDuration ad ON ad.PRGNO = b.PROGNO
+LEFT JOIN TFMACHINESTATUS t ON t.MACHINEID = :machineId
+WHERE b.PROGNO IN (SELECT ProgramNo FROM SplitValues)
+  AND b.MACHINEID = :machineId
+GROUP BY b.PROGNO, b.NAME, b.DURATION, ad.duration, t.RUNNING_PROGRAMID;
+  `, { planKey, machineId })
   const times = await knex.raw(/* sql */`
   SELECT TOP 1
     d.TheoricalDuration AS theoreticalDuration,
@@ -362,7 +397,6 @@ export async function getMachineInfo(id: number): Promise<{ ip: string } | undef
     .from('BFMACHINES')
     .first({ ip: 'IP' })
 }
-
 export async function getErpParameters(paramName: string) {
   const erpParams = await knex({ p: 'dbo.PTMACHINEERP' })
     .select('*')
@@ -990,8 +1024,8 @@ export async function getStartingParametersWithValues(params: {
             ${formattedValues}
         ) v (PARAMSTRING)
     left join DYBFBATCHPLANPARAMETERS d
-        on v.PARAMSTRING = d.PARAMSTRING and d.PLANKEY = ${planKey}
-  `)
+        on v.PARAMSTRING = d.PARAMSTRING and d.PLANKEY = :planKey
+  `, { planKey })
   const enrichedParameters = parameters.map(e => ({
     ...e,
     planKey,

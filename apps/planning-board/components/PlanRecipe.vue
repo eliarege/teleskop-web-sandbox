@@ -5,7 +5,7 @@ import { useSettingStore } from '~/store/settings'
 
 const { t } = useI18n()
 const store = useSettingStore()
-const { data: recipeData, pending } = await useAuthFetch('/api/recipe', {
+const { data: recipeData } = await useAuthFetch('/api/recipe', {
   query: { machineId: store.selectedEvent.machineId, jobOrder: store.selectedEvent.jobOrder },
 })
 export interface SpanMethodProps {
@@ -39,9 +39,6 @@ const columns = computed(() => [
 </script>
 
 <template>
-  <div v-show="pending">
-    <LoadingSpinner with-background />
-  </div>
   <div class="min-w-250 w-full h-min p-3 bg-white overflow-auto">
     <RecipeTable
       show

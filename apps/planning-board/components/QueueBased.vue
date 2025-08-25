@@ -5,8 +5,8 @@ import { DomHelper, LocaleManager, Splitter, Store, Toast } from '@bryntum/sched
 import { determineTextColor } from '@teleskop/utils'
 import { useDocumentVisibility } from '@vueuse/core'
 import { useFuse } from '@vueuse/integrations/useFuse'
-import { addDays, addHours, addMinutes, addSeconds } from 'date-fns'
-import { eventTooltip, expediteEvents, postponeEvent } from '~/composables/helper'
+import { addDays, addHours, addSeconds, differenceInSeconds } from 'date-fns'
+import { eventTooltip } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore, getResourceRow, removeAttributes, sortEventsByDateDesc } from '~/lib/queueBased'
 import { Apps, UploadJoborder } from '~/shared/constants'
 import type { QueueBasedEvent, QueueBasedNonActualEvent } from '~/shared/queueBased'
@@ -46,7 +46,6 @@ const appList = useAppList()
 
 const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.url ?? null)
 const router = useRouter()
-
 const { data: events, refresh: eventRefresh, pending: eventPending } = await useAuthFetch<QueueBasedEvent[]>('/api/queueBased/schedulerEvents', {
   immediate: false,
   default: () => [],
@@ -143,15 +142,21 @@ const propertiesModal = reactive({
   planKey: 0,
   fabricWeight: 0,
   theoreticalDuration: 0,
+  realDuration: 0,
+  deviation: 0,
   planParameters: {},
+  eventType: '',
 })
-function setProperties(machineId: number, jobOrder: string, planKey: number, fabricWeight: number, theoreticalDuration: number, program: string, isBatchStarted: boolean) {
+function setProperties(machineId: number, jobOrder: string, planKey: number, fabricWeight: number, theoreticalDuration: number, realDuration: number, deviation: number, program: string, isBatchStarted: boolean, eventType: string) {
   propertiesModal.show = true
   propertiesModal.planKey = planKey
   propertiesModal.jobOrder = jobOrder
   propertiesModal.machineId = machineId
   propertiesModal.fabricWeight = fabricWeight
   propertiesModal.theoreticalDuration = theoreticalDuration
+  propertiesModal.realDuration = realDuration
+  propertiesModal.deviation = deviation
+  propertiesModal.eventType = eventType
 
   setPlanParameters(false, planKey, machineId, program, isBatchStarted, [], false)
 }
@@ -807,12 +812,15 @@ onMounted(async () => {
               const machineId = assignmentRecord.originalData.resourceId
               const fabricWeight = eventRecord.originalData.fabricWeight
               const theoreticalDuration = eventRecord.originalData.theoreticalDuration
+              const realDuration = eventRecord.originalData.eventType === 'finished' ? differenceInSeconds(eventRecord.originalData.startTime, eventRecord.originalData.endTime) : 0
+              const deviation = eventRecord.originalData.eventType === 'finished' ? eventRecord.originalData.deviation : 0
+              const eventType = eventRecord.originalData.eventType
               let program: string = eventRecord.originalData.programList
               if (program.endsWith(',')) {
                 program = program.slice(0, -1)
               }
               const isBatchStarted = eventRecord.originalData.isStarted
-              setProperties(machineId, jobOrder, planKey, fabricWeight, theoreticalDuration, program, isBatchStarted)
+              setProperties(machineId, jobOrder, planKey, fabricWeight, theoreticalDuration, realDuration, deviation, program, isBatchStarted, eventType)
             },
           },
           process: {
@@ -994,7 +1002,8 @@ onMounted(async () => {
 function capitalizeFirstLetter(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
-LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
+const bryntumLocale = locale.value === 'en-GB' ? 'en' : locale.value
+LocaleManager.applyLocale(capitalizeFirstLetter(bryntumLocale))
 </script>
 
 <template>
@@ -1012,6 +1021,9 @@ LocaleManager.applyLocale(capitalizeFirstLetter(locale.value))
           :fabric-weight="propertiesModal.fabricWeight"
           :theoretical-duration="propertiesModal.theoreticalDuration"
           :plan-parameters="planParametersModal"
+          :real-duration="propertiesModal.realDuration"
+          :deviation="propertiesModal.deviation"
+          :event-type="propertiesModal.eventType"
         />
       </template>
     </EliarModal>
