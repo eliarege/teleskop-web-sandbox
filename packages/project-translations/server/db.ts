@@ -2,7 +2,7 @@ import Knex from 'knex'
 
 const config = useRuntimeConfig()
 
-export const knex = Knex({
+export const db = Knex({
   client: 'mssql',
   connection: {
     host: config.teleskopHost,

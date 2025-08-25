@@ -1,9 +1,9 @@
-import { knex } from '../knexConfig'
+import { db } from '../db'
 
 export default defineEventHandler(async (event) => {
   const { locale } = getQuery(event)
   try {
-    const rows = await knex('BFMACHINETRANSLATIONS')
+    const rows = await db('BFMACHINETRANSLATIONS')
       .select('machine_id', 'messages')
       .where('to_locale', locale)
 
