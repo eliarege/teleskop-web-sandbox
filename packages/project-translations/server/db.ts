@@ -1,6 +1,7 @@
 import Knex from 'knex'
 
 const config = useRuntimeConfig()
+
 export const knex = Knex({
   client: 'mssql',
   connection: {
