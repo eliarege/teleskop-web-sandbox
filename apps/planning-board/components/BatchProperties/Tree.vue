@@ -2,7 +2,15 @@
 import { addSeconds, differenceInMilliseconds, toDate } from 'date-fns'
 import type { QTableColumn } from 'quasar'
 
-const props = defineProps<{ machineId: number, planKey: number, theoreticalDuration: number, fabricWeight: number | string, realDuration: number, deviation: number }>()
+const props = defineProps<{
+  eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'stop' | 'unplanned'
+  machineId: number
+  planKey: number
+  theoreticalDuration: number
+  fabricWeight: number | string
+  realDuration: number
+  deviation: number
+}>()
 const { t } = useI18n()
 
 const { data: batchProperties } = await useAuthFetch('/api/batchProperties', {
@@ -60,17 +68,67 @@ const time = computed(() => {
     ]
   }
 })
+
+const validEventTypes = ['finished', 'ongoing', 'manual']
+
+function formatDeviation(actualDuration: number, theoreticalDuration: number) {
+  console.log(props.eventType, validEventTypes.includes(props.eventType))
+  if (!validEventTypes.includes(props.eventType)) {
+    return 0
+  }
+
+  const val = actualDuration - theoreticalDuration
+  return val < 0
+    ? `-${formatSeconds(Math.abs(val))}`
+    : formatSeconds(val)
+}
+
+function cellColor(data: {
+  prgNo: number
+  prgName: string
+  theoreticalDuration: number
+  actualDuration: number
+  currentlyRunning: boolean
+}): string {
+  if (!validEventTypes.includes(props.eventType)) {
+    return 'white'
+  }
+
+  const deviation = data.actualDuration - data.theoreticalDuration
+  if (data.currentlyRunning)
+    return '#0951C0'
+  if (deviation === 0)
+    return '#1E5D18'
+  if (deviation > 0)
+    return '#C02A15'
+  if (deviation < 0)
+    return '#94AEB7'
+
+  return 'white'
+}
+
+function formatActualDuration(actualDuration?: number) {
+  if (!validEventTypes.includes(props.eventType)) {
+    return '00:00:00'
+  }
+
+  return actualDuration ? formatSeconds(actualDuration) : '00:00:00'
+}
 const programs = computed(() => batchProperties.value?.programs.map(p => ({
   ...p,
   prgNo: p.currentlyRunning ? `>>${p.prgNo}` : p.prgNo,
   theoreticalDuration: formatSeconds(p.theoreticalDuration),
-  actualDuration: p.actualDuration ? formatSeconds(p.actualDuration) : '00:00:00',
+  actualDuration: formatActualDuration(p.actualDuration),
+  deviation: formatDeviation(p.actualDuration, p.theoreticalDuration),
+  color: cellColor(p),
 })))
+
 const programColumns = reactive([
   { label: t('plan-recipe.program-no'), name: 'prgNo', field: 'prgNo', align: 'center' },
   { label: t('plan-recipe.program'), name: 'prgName', field: 'prgName', align: 'center' },
   { label: t('plan-recipe.theoretical-duration'), name: 'theoreticalDuration', field: 'theoreticalDuration', align: 'center' },
   { label: t('plan-recipe.actual-duration'), name: 'actualDuration', field: 'actualDuration', align: 'center' },
+  { label: t('plan-recipe.deviation'), name: 'deviation', field: 'deviation', align: 'center' },
 ] as QTableColumn[])
 const summary = computed(() => {
   return [
@@ -82,20 +140,43 @@ const summary = computed(() => {
     },
   ]
 })
+const items = [
+  {
+    label: t('legend.early'),
+    color: '#94AEB7',
+  },
+  {
+    label: t('legend.ontime'),
+    color: '#1E5D18',
+  },
+  {
+    label: t('legend.late'),
+    color: '#C02A15',
+  },
+  {
+    label: t('legend.ongoing'),
+    color: '#0951C0',
+  },
+]
 </script>
 
 <template>
-  <div class="w-full flx-center flex-col">
+  <div class="w-full h-full flex flex-col">
     <!-- ERP Parametreleri -->
     <q-expansion-item
       :label="t('batch-properties.tree.erp-params')"
       header-class="font-extrabold text-l"
+      dense
       fold
       expand-seperator
       class="w-full"
     >
-      <q-list v-for="(item, idx) in batchProperties?.erpParameters" :key="idx">
-        <q-item>
+      <q-list dense>
+        <q-item
+          v-for="(item, idx) in batchProperties?.erpParameters"
+          :key="idx"
+          class="border-b-1 first:border-t-1"
+        >
           <q-item-section class="pl-3 text-s">
             {{ item.paramName }}
           </q-item-section>
@@ -108,12 +189,17 @@ const summary = computed(() => {
     <q-expansion-item
       :label="t('batch-properties.tree.time')"
       header-class="font-extrabold text-l"
+      dense
       fold
       expand-seperator
       class="w-full"
     >
-      <q-list v-for="(item, idx) in time" :key="idx">
-        <q-item>
+      <q-list dense>
+        <q-item
+          v-for="(item, idx) in time"
+          :key="idx"
+          class="border-b-1 first:border-t-1"
+        >
           <q-item-section class="pl-3 text-s">
             {{ item.label }}
           </q-item-section>
@@ -130,8 +216,9 @@ const summary = computed(() => {
       expand-seperator
     >
       <div class="!max-h-70 !overflow-auto">
+        <BatchPropertiesLegend :items />
         <TeleskopTable
-          dense
+          row-colors
           :columns="programColumns"
           :data="programs"
           :merge-cells-active="false"
@@ -145,18 +232,24 @@ const summary = computed(() => {
     <q-expansion-item
       :label="t('batch-properties.tree.summary')"
       header-class="font-extrabold text-l"
+      dense
       fold
       expand-seperator
       class="w-full"
     >
-      <q-list v-for="(item, idx) in summary" :key="idx">
-        <q-item>
+      <q-list dense>
+        <q-item
+          v-for="(item, idx) in summary"
+          :key="idx"
+          class="border-b-1 first:border-t-1"
+        >
           <q-item-section class="pl-3 text-s">
             {{ item.label }}
           </q-item-section>
         </q-item>
       </q-list>
     </q-expansion-item>
+    <q-space />
   </div>
 </template>
 

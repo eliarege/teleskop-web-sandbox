@@ -63,11 +63,13 @@
     "program": "Program",
     "theoretical-duration": "Teorik Süre",
     "actual-duration": "Gerçek Süre",
+    "deviation": "Gecikme",
     "number": "Numara",
     "main-step": "Ana Adım",
     "chem-code": "Kimyasal Kodu",
     "material-name": "Materyal İsmi",
-    "amount": "Adet",
+    "amount": "Miktar",
+    "recipe-amount": "Tartım Miktarı",
     "empty-text": "Gösterilecek Reçete yok"
   },
   "date-picker": {
@@ -297,5 +299,11 @@
     "oz/gal": "Ons/Galon",
     "°F/min": "Fahrenhayt/Dakika",
     "oz/ft": "Ons/Fit"
+  },
+  "legend": {
+    "early": "Erken Tamamlandı",
+    "ontime": "Zamanında Tamamlandı",
+    "late": "Geç Tamamlandı",
+    "ongoing": "Devam Ediyor"
   }
 }

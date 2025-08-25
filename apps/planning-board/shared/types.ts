@@ -70,6 +70,7 @@ export interface RecipeRaw {
   chemCode: string | null
   materialName: string | null
   amount: number | null
+  weighedAmount: number | null
   reqBatchNo: number | null
   reqProgNo: number | null
   otherUnit: number | null

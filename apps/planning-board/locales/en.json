@@ -63,11 +63,13 @@
     "program": "Program",
     "theoretical-duration": "Theoretical Duration",
     "actual-duration": "Actual Duration",
+    "deviation": "Deviation",
     "number": "Number",
     "main-step": "Main Step",
     "chem-code": "Chemical Code",
     "material-name": "Material Name",
     "amount": "Amount",
+    "recipe-amount": "Weighed Amount",
     "empty-text": "No Recipe to show"
   },
   "date-picker": {
@@ -296,5 +298,11 @@
     "oz/gal": "Ounces per Gallon",
     "°F/min": "Fahrenheit per Minute",
     "oz/ft": "Ounces per Foot"
+  },
+  "legend": {
+    "early": "Finished Early",
+    "ontime": "Finished On Time",
+    "late": "Finished Late",
+    "ongoing": "Ongoing"
   }
 }

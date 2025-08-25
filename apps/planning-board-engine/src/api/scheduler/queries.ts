@@ -181,12 +181,13 @@ export async function getRecipe(machineId: string, jobOrder: string) {
     'r.RECIPETYPE AS recType',
     'CHEMCODE AS chemCode',
     'm.MATERIALNAME AS materialName',
-    'AMOUNT AS amount',
+    'r.AMOUNT AS amount',
+    't.AMOUNT AS weighedAmount',
     'REQNO_BATCH AS reqBatchNo',
     'REQNO_PROG AS reqProgNo',
     'PHASENO AS phaseNo',
     'PHASEINDEX as phaseIndex',
-    'otherUnit as unit',
+    'r.otherUnit as unit',
   )
     .from('DYBFBATCHORDERRECIPESTEPS as r')
     .rightJoin('DYBFBATCHORDERRECIPEHEADER as p', (builder) => {
@@ -195,6 +196,11 @@ export async function getRecipe(machineId: string, jobOrder: string) {
         .andOn('r.RECIPETYPE', '=', 'p.RECIPETYPE')
     })
     .leftJoin('BFMASTERPRGHEADER as h', 'p.RECIPENO', '=', 'h.PROGNO')
+    .leftJoin('DYTACONSUMPTION as t', (b) => {
+      b.on('t.MATERIALCODE', '=', 'r.CHEMCODE')
+      b.andOn('t.JOBORDERCODE', '=', 'r.JOBORDER')
+      b.andOn('t.programOrder', '=', 'r.RCPINDEX')
+    })
     .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
     .where('h.MACHINEID', '=', machineId)
     .whereIn('p.PLANKEY', (builder) => {
@@ -213,10 +219,11 @@ export async function getRecipe(machineId: string, jobOrder: string) {
     'r.RECIPETYPE AS recType',
     'CHEMCODE AS chemCode',
     'm.MATERIALNAME AS materialName',
-    'AMOUNT AS amount',
+    'r.AMOUNT AS amount',
+    't.AMOUNT AS weighedAmount',
     'REQNO_BATCH AS reqBatchNo',
     'REQNO_PROG AS reqProgNo',
-    'otherUnit as unit',
+    'r.otherUnit as unit',
   )
     .from('DYBFBATCHORDERRECIPEMANUALS as r')
     .leftJoin('DYBFBATCHORDERRECIPEHEADER as p', (builder) => {
@@ -224,13 +231,18 @@ export async function getRecipe(machineId: string, jobOrder: string) {
         .andOn('r.RCPINDEX', '=', 'p.RCPINDEX')
     })
     .leftJoin('BFMASTERPRGHEADER as h', 'p.RECIPENO', '=', 'h.PROGNO')
+    .leftJoin('DYTACONSUMPTION as t', (b) => {
+      b.on('t.MATERIALCODE', '=', 'r.CHEMCODE')
+      b.andOn('t.JOBORDERCODE', '=', 'r.JOBORDER')
+      b.andOn('t.programOrder', '=', 'r.RCPINDEX')
+    })
     .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
     .where('h.MACHINEID', '=', machineId)
     .whereIn('p.PLANKEY', (builder) => {
       builder.select('PLANKEY').from('DYBFBATCHPLAN').where('JOBORDER', '=', jobOrder).orderBy('PLANKEY', 'desc').limit(1)
     })
     .whereNotNull('REQNO_BATCH')
-    .where('AMOUNT', '!=', 0)
+    .where('r.AMOUNT', '!=', 0)
     .orderBy(['p.RCPINDEX', 'DYEREQUESTNUMBER', 'PARALLELSTEP'])
   return { autoRecipe, manualRecipe }
 }

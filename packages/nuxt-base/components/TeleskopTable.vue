@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import { textTruncate } from '@teleskop/utils'
+import { determineTextColor, textTruncate } from '@teleskop/utils'
 
 interface RecipeTableProps {
   data: any[]
@@ -8,11 +8,13 @@ interface RecipeTableProps {
   columns: QTableColumn[]
   align: 'center' | 'left' | 'right'
   mergeCellsActive: boolean
+  rowColors: boolean
 }
 
 const props = withDefaults(defineProps<RecipeTableProps>(), {
   align: 'center',
   mergeCellsActive: true,
+  rowColors: false,
 })
 
 function cellClass(row: any, columnIndex: number): string {
@@ -286,8 +288,9 @@ const cells = renderCells(props.data)
               :colspan="c._rect.colspan"
               :class="cellClass(c.row, c.colIndex)"
               class="q-td overflow-hidden"
+              :style="props.rowColors ? { backgroundColor: c.row.color } : ''"
             >
-              <span class="w-min">
+              <span class="w-min" :style="{ color: determineTextColor(c.row.color) }">
                 {{ textTruncate(c.value, 15).content }}
                 <q-tooltip v-if="textTruncate(c.value, 15).tooltip" :delay="300">
                   {{ c.value }}
