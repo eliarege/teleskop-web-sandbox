@@ -7,7 +7,7 @@ import {
   getQueueBasedEvents,
   getQueueBasedPlannedEvents,
   preplanJoborders,
-  queueUnplannedEvents,
+  queueUnplannedEvent,
   scheduleFutureEvents,
   updateEventQueue,
 } from './queries'
@@ -95,7 +95,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request: FastifyRequest<{ Body: { newEvent: EventReschedule } }>, reply) => {
       try {
         const { newEvent } = request.body
-        await queueUnplannedEvents(newEvent)
+        await queueUnplannedEvent(newEvent)
         return reply.code(200).send('Succesful!')
       } catch (err) {
         fastify.log.error(`An error occured while scheduling events: ${err}`)

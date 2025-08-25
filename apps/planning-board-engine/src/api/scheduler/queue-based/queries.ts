@@ -234,7 +234,7 @@ export async function preplanJoborders(logger: any) {
     const queueNumber = lastQueueNumber?.queueNumber ?? 1
 
     const newData = { planKey, queueNumber, machineId }
-    await queueUnplannedEvents(newData)
+    await queueUnplannedEvent(newData)
     processed.push(newData)
 
     logger.info({ planKey, machineId, queueNumber }, 'Event successfully queued')
@@ -309,7 +309,7 @@ export async function updateEventQueue(previousEventData: EventReschedule, newEv
       })
   })
 }
-export async function queueUnplannedEvents(newData: EventReschedule) {
+export async function queueUnplannedEvent(newData: EventReschedule) {
   await knex.transaction(async (trx) => {
     await trx('PTBATCHPLANQUEUE')
       .where('MACHINEID', newData.machineId)
@@ -344,5 +344,5 @@ export async function scheduleFutureEvents(newEvent: { planKey: number, machineI
     machineId: newEvent.machineId,
     queueNumber: lastQueueNumber.queueNumber + 1,
   }
-  return await queueUnplannedEvents(newData)
+  return await queueUnplannedEvent(newData)
 }
