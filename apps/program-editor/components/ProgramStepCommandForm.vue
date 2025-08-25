@@ -24,15 +24,20 @@ const machineCommand = computed(() => {
 
 const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!))
 
+/**
+ * Parametreleri `BFCOMMANDPARAMETERS.PARAMETERGROUP` alanına göre grupla.
+ *
+ * - PARAMETERGROUP null → tek başına gösterilecek (tekil grup).
+ * - PARAMETERGROUP numara → aynı gruptakiler yan yana dizilecek.
+ */
 const groupedParameters = computed(() => {
-  const groups: Record<string, { param: CommandParameter, originalIndex: number }[]> = {}
-  machineCommand.value.editableParameters.forEach((parameter, idx) => {
-    const groupName = parameter.group || 'default'
+  return machineCommand.value.editableParameters.reduce((groups, param, idx) => {
+    const groupName = param.group == null ? `single-${idx}` : String(param.group)
     if (!groups[groupName])
       groups[groupName] = []
-    groups[groupName].push({ param: parameter, originalIndex: idx })
-  })
-  return groups
+    groups[groupName].push({ param, originalIndex: idx })
+    return groups
+  }, {} as Record<string, { param: CommandParameter, originalIndex: number }[]>)
 })
 </script>
 
