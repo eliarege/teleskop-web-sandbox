@@ -81,7 +81,7 @@ export interface MachineCommand {
 export interface CommandParameter {
   index: number
   name: string
-  group: number
+  group: number | null
   editable: boolean
   type: ParameterType
   format: string
@@ -297,33 +297,6 @@ export interface Machine {
   batchParameters: BatchParameter[]
   treatmentParameters: TreatmentParameter[]
   commandTypes: CommandTypes[]
-}
-
-export interface CommandItem {
-  MACHINEID: number
-  COMMANDNO: number
-  FUNCTIONID: number
-  TBBFUNTIONNAME: string
-  NAME: string
-  ACTIVATED: boolean
-  ADVICELIST: string
-  DONTUSELIST: string
-  ISRUNMANUAL: boolean
-  COMMANDTYPE: number
-  MOVEPARALLEL: number
-  CHANGETIME: string
-  TBBCHANGETIME: string
-  ISDELETED: boolean
-  ISCHANGED: boolean
-  X: string
-  Y: string
-  A: string
-  B: string
-  MAXA: string
-  ISTEMPERATURE: boolean
-  ISUNLOAD: boolean
-  ICON: string
-  GROUPID: number
 }
 
 export interface MachineConstant {
