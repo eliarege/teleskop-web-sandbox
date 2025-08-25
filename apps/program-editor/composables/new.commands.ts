@@ -74,7 +74,7 @@ export interface RegisteredCommands {
   discardChanges: [ctx: any]
   unsavedChanges: [ctx: any, machineId?: number]
   allCommandsList: [ctx: any]
-  commandDetails: [ctx: any, machineId: number, commandNo: number]
+  commandDetails: [ctx: any, commandNo: number]
   moveParallelStep: [ctx: any, type: 'add' | 'remove' | 'changeParameter', commandNo: number, programCommand: ProgramStepCommand, parameter?: ParameterItem]
   machineConstants: [ctx: any, machineId: number]
   writeProgramSettings: [ctx: any]
@@ -559,11 +559,19 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'commandDetails',
-    async execute(ctx: any) {
+    async execute(ctx: any, commandNo: number) {
+      const machineCommand = editor.machine.commands.get(commandNo)
+
       ctx.$q.dialog({
         component: TBCommandDetailDialog,
+        componentProps: {
+          machineId: editor.machine.id,
+          machineName: editor.machine.name,
+          machineCommand,
+        },
       })
       return true
     },
