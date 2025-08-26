@@ -101,14 +101,17 @@ export const config = defineConfiguration({
   keycloakUrl: {
     type: 'string',
     env: 'KC_URL',
+    required: inferBoolean(process.env.KC_ENABLED),
   },
   keycloakRealm: {
     type: 'string',
     env: 'KC_REALM',
+    required: inferBoolean(process.env.KC_ENABLED),
   },
   keycloakClientId: {
     type: 'string',
     env: 'KC_CLIENT_ID',
+    required: inferBoolean(process.env.KC_ENABLED),
   },
   keycloakEnabled: {
     type: 'boolean',

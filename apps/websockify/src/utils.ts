@@ -25,13 +25,6 @@ export function destruct<T extends Record<string, any>>(object: T): T {
   })
 }
 
-export function getEnvOrThrow(name: keyof NodeJS.ProcessEnv): string {
-  const env = process.env[name]
-  if (!env)
-    throw new Error(`${name} should be defined`)
-  return env
-}
-
 const PATH_RE = /^[^#?]+/
 
 export function getPathname(request: IncomingMessage) {

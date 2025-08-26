@@ -4,7 +4,6 @@ import { createRemoteJWKSet, jwtVerify } from 'jose'
 import type { WebSocket } from 'ws'
 import { JOSEError } from 'jose/errors'
 import { logger as parentLogger } from './logger'
-import { getEnvOrThrow } from './utils'
 import { config } from './config'
 
 const logger = parentLogger.child({ name: 'auth' })
@@ -20,12 +19,6 @@ export interface KeycloakScope {
   resource_access?: Record<string, {
     roles: string[]
   }>
-}
-
-export interface KeycloakConfig {
-  url: string
-  realm: string
-  clientId: string
 }
 
 export type AuthResult<T = any> =
@@ -49,21 +42,6 @@ if (process.env.NODE_ENV === 'development' && process.env.KC_DEV_TOKEN) {
   logger.info(`Using KC_DEV_TOKEN for authentications`)
 }
 
-function getKeycloakEnv(): KeycloakConfig {
-  try {
-    return {
-      url: getEnvOrThrow('KC_URL'),
-      realm: getEnvOrThrow('KC_REALM'),
-      clientId: getEnvOrThrow('KC_CLIENT_ID'),
-    }
-  } catch (err) {
-    if (process.env.NODE_ENV === 'development') {
-      logger.info('You can disable auth by setting KC_ENABLED to false')
-    }
-    throw err
-  }
-}
-
 function sendError(msg: string): AuthResult {
   return {
     status: 'error',
@@ -83,8 +61,7 @@ export function initKcAuth(): KeycloakAuth {
     return { enabled: false }
   }
   logger.debug('Authentication enabled')
-  const { url, realm, clientId } = getKeycloakEnv()
-  const JWKS = createRemoteJWKSet(new URL(`${url}/realms/${realm}/protocol/openid-connect/certs`))
+  const JWKS = createRemoteJWKSet(new URL(`${config.keycloakUrl}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`))
 
   async function authenticate(client: WebSocket): Promise<AuthResult> {
     const result = await getBearer(client)
@@ -99,7 +76,7 @@ export function initKcAuth(): KeycloakAuth {
       const { payload } = await jwtVerify<KeycloakScope>(jwt, JWKS)
       return sendPayload({
         name: payload.preferred_username || 'unknown_user',
-        roles: payload.resource_access?.[clientId]?.roles || [],
+        roles: payload.resource_access?.[config.keycloakClientId!]?.roles || [],
       })
     } catch (err) {
       if (err instanceof JOSEError) {
