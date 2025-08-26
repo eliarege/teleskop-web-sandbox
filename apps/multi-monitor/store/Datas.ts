@@ -17,6 +17,8 @@ export const useDataStore = defineStore('datas', () => {
   const filteredMachines = useStorage('filtered-machines', new Set<number>())
   const filteredGroups = useStorage('filtered-groups', new Set<string>())
 
+  const erpKeys = useStorage<{ id: number, key: string }[]>('erp-keys', [], localStorage)
+
   const customSort = useStorage<number[]>('mm-machineOrdering', [])
 
   // machinestatus
@@ -52,6 +54,7 @@ export const useDataStore = defineStore('datas', () => {
     fetchMachineStatus.value = 'pending'
     try {
       machines.value = await $fetch('/api/machines')
+
       fetchMachineStatus.value = 'success'
       fetchMachineError.value = null
     } catch (err: any) {
@@ -79,6 +82,7 @@ export const useDataStore = defineStore('datas', () => {
     hex,
     filteredMachines,
     filteredGroups,
+    erpKeys,
     isWashing,
     group,
     sortMachines,

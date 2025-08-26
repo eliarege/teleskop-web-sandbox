@@ -3,6 +3,7 @@ import { determineTextColor } from '@teleskop/utils'
 import { useStorage } from '@vueuse/core'
 import { format } from 'date-fns'
 import type { MachineData } from '~/shared/types'
+import { useDataStore } from '~/store/Datas'
 
 interface CardInfoProps {
   colors: {
@@ -15,17 +16,15 @@ interface CardInfoProps {
   machineSort: number
   washing?: boolean
 }
+
 const props = withDefaults(defineProps<CardInfoProps>(), {
   washing: false,
 })
+
 const { t } = useI18n()
 const { mt } = useMachineTranslations()
-
-const erpKey = useStorage<string | null>(
-  `machine-${props.machine.id}-settings`,
-  'Kilo',
-  localStorage,
-)
+const store = useDataStore()
+const erpKey = computed(() => store.erpKeys.find(e => e.id === props.machine.id)?.key || '')
 // The status of the last request. (0 new- 1 send to the dispenser - 2 Dispenser started - 3 Completed - 8 Cancelled)
 function reqStatus(params: number) {
   if (params === 0) {
@@ -71,7 +70,7 @@ const infoTextColor = computed(() => {
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
       <div class="explanation">
-        {{ mt(erpKey, machine.id) || 'Kilo' }}
+        {{ mt(erpKey, machine.id) }}
       </div>
       <q-separator
         color="white"

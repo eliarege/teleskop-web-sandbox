@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { QBtn, QList, QMenu } from 'quasar'
 import type { MachineData } from '~/shared/types'
+import { useDataStore } from '~/store/Datas'
 
 const props = defineProps({
   data: {
@@ -12,12 +13,17 @@ const props = defineProps({
   },
 })
 const { t } = useI18n()
+const store = useDataStore()
 
-const erpKey = useStorage<string | null>(
-  `machine-${props.data.id}-settings`,
-  null,
-  localStorage,
-)
+const isKeyEmpty = computed(() => store.erpKeys.find(e => e.id === props.data.id)?.key === '' || !store.erpKeys.find(e => e.id === props.data.id))
+if (isKeyEmpty.value && props.data.erp) {
+  const firstKey = Object.keys(props.data.erp)[0]
+  if (firstKey) {
+    store.erpKeys.push({ id: props.data.id, key: firstKey })
+  }
+}
+
+const erpKey = ref(store.erpKeys.find(e => e.id === props.data.id)?.key || '')
 
 const erpLabel = computed(() => {
   if (!props.data.erp)
@@ -29,6 +35,16 @@ const erpLabel = computed(() => {
     ? value.toFixed(2)
     : value
 })
+
+function updateErpKey(newKey: string) {
+  erpKey.value = newKey
+  const existingIndex = store.erpKeys.findIndex(e => e.id === props.data.id)
+  if (existingIndex !== -1) {
+    store.erpKeys[existingIndex].key = newKey
+  } else {
+    store.erpKeys.push({ id: props.data.id, key: newKey })
+  }
+}
 </script>
 
 <template>
@@ -49,7 +65,7 @@ const erpLabel = computed(() => {
           clickable
           dense
           class="divide-y"
-          @click="erpKey = idx"
+          @click="updateErpKey(idx)"
         >
           <q-item-section>
             <q-item-label class="text-black">

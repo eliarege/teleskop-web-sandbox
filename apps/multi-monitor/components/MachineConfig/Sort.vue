@@ -48,9 +48,6 @@ function onEnd(ev: SortableEvent) {
 </script>
 
 <template>
-  <span>
-    Custom Machine Sort
-  </span>
   <Sortable
     tag="div"
     :list="sortableMachines"
