@@ -264,7 +264,7 @@ export class DESECBCipher {
 
   /**
    *
-   * @param {ArrayBufferLike} key
+   * @param {Buffer} key
    * @returns
    */
   static importKey(key) {

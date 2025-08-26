@@ -113,7 +113,7 @@ export class ProxyHandshake {
   }
 
   destroy() {
-    this.server.off('message', this.serverListener)
+    this.server.off('data', this.serverListener)
   }
 
   /**
