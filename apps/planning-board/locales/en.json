@@ -37,6 +37,7 @@
   "tooltip": {
     "theoretical-duration": "Theoretical Duration",
     "actual-duration": "Actual Duration",
+    "duration": "Duration",
     "deviation": "Deviation",
     "note": "Notes",
     "auto-message": "There is no stop reason input!"
