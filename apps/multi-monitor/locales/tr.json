@@ -106,11 +106,15 @@
     "alarms": "Alarm(lar)"
   },
   "settings": {
+    "_": "Ayarlar",
     "en": "İngilizce",
     "tr": "Türkçe",
     "zoom": "Yakınlaştırma Seviyesi",
     "color-picker": "Renk Seçici",
     "machine-filter": "Makine Filtreleme",
+    "machine-sort": "Makine Sıralama",
+    "machine-parameter": "Makine ERP Parametreleri",
+    "machine-settings": "Makine Ayarları",
     "current-color": "Aktif Renk",
     "electricity": "Elektrik",
     "steam": "Buhar",

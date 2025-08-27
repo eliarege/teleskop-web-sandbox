@@ -106,11 +106,15 @@
     "alarms": "Alarm(s)"
   },
   "settings": {
+    "_": "Settings",
     "tr": "Turkish",
     "en": "English",
     "zoom": "Zoom Level",
     "color-picker": "Color Picker",
     "machine-filter": "Machine Filter",
+    "machine-sort": "Machine Sort",
+    "machine-parameter": "Machine ERP Parameters",
+    "machine-settings": "Machine Settings",
     "current-color": "Current Color",
     "electricity": "Electricity",
     "steam": "Steam",

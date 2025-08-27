@@ -45,7 +45,7 @@ function toggleAll() {
 <template>
   <div :class="selectedMachines.length > 0 ? 'border-1' : ''">
     <q-list>
-      <q-item dense>
+      <q-item v-show="erpKey" dense>
         <q-item-section avatar>
           <q-checkbox
             :model-value="allSelected"

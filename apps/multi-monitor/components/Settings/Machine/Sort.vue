@@ -8,6 +8,8 @@ const props = defineProps<{
   machines: MachineDataRaw[]
 }>()
 const emit = defineEmits(['updateScheduler'])
+
+const { t } = useI18n()
 const store = useDataStore()
 const sortableMachines = ref([] as { name: string, index: number }[])
 
@@ -48,24 +50,29 @@ function onEnd(ev: SortableEvent) {
 </script>
 
 <template>
-  <Sortable
-    tag="div"
-    :list="sortableMachines"
-    item-key="id"
-    class="w-full"
-    :options="{
-      animation: 150,
-      ghostClass: 'ghost',
-    }"
-    @end="(ev) => onEnd(ev)"
-  >
-    <template #item="{ element }">
-      <div class="w-full h-full flex justify-start items-center whitespace-nowrap p-1 border-1px border-gray-500/50 rounded m-1 hover:(bg-#4b5563 text-white)">
-        <TwIcon name="i-ic:twotone-list" />
-        {{ element.name }}
-      </div>
-    </template>
-  </Sortable>
+  <div>
+    <span class="settings-sub-title inline-block mb-2px">
+      {{ t('settings.machine-sort') }}
+    </span>
+    <Sortable
+      tag="div"
+      :list="sortableMachines"
+      item-key="id"
+      class="w-full"
+      :options="{
+        animation: 150,
+        ghostClass: 'ghost',
+      }"
+      @end="(ev) => onEnd(ev)"
+    >
+      <template #item="{ element }">
+        <div class="w-full h-full flex justify-start items-center gap-1 whitespace-nowrap p-1 border-1px border-gray-500/50 rounded m-1 hover:(bg-#4b5563 text-white cursor-pointer)">
+          <TwIcon name="i-ic:twotone-list" />
+          {{ element.name }}
+        </div>
+      </template>
+    </Sortable>
+  </div>
 </template>
 
 <style scoped>

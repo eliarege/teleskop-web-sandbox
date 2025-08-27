@@ -8,31 +8,33 @@ const machineGroups = computed(() => new Set(store.machines.map(g => g.groupName
 </script>
 
 <template>
-  <div>
-    <span class="w-full flex-center font-extrabold">
+  <div class="w-full">
+    <span class="settings-sub-title inline-block mb-2px">
       {{ t('settings.filter.title') }}
     </span>
-    <div class="grid grid-cols-3">
+    <div class="grid grid-cols-2 w-min min-w-100">
       <div
         v-for="item in store.machines"
         :key="item.id"
-        class="max-h-50"
+        class="max-h-50 w-1/6 gap-0"
       >
         <q-checkbox
           :label="item.name"
+          dense
           :model-value="!store.filteredMachines.has(item.id)"
           @update:model-value="(r) => r ? store.filteredMachines.delete(item.id) : store.filteredMachines.add(item.id)"
         />
       </div>
     </div>
 
-    <q-separator spaced />
-    <span class="w-full flex-center font-extrabold">
+    <q-separator class="my-10" />
+    <span class="settings-sub-title inline-block mb-2px">
       {{ t('settings.filter.group-title') }}
     </span>
-    <div class="grid grid-cols-3">
+    <div class="grid grid-cols-2 w-min min-w-100">
       <div v-for="(item, idx) in machineGroups" :key="idx">
         <q-checkbox
+          dense
           :label="item"
           :model-value="!store.filteredGroups.has(item)"
           @update:model-value="(r) => r ? store.filteredGroups.delete(item) : store.filteredGroups.add(item)"

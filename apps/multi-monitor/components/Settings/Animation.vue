@@ -9,8 +9,11 @@ const store = useDataStore()
 </script>
 
 <template>
-  <div class="p-4 flex justify-between gap-3">
-    <div class="flex-center gap-3 w-full">
+  <div class="p-4 flex justify-between gap-3 bg-gray-100 rounded m-1 px-2 py-1">
+    <span class="settings-title inline-block mb-3">
+      {{ t('settings.animation') }}
+    </span>
+    <div class="flex items-center justify-start gap-3 w-full">
       <span> {{ t('settings.scrollSpeed') }}</span>
       <q-rating
         v-model="store.scrollSpeed"
@@ -21,23 +24,20 @@ const store = useDataStore()
       />
     </div>
     <div class="flex w-full">
-      <q-space />
-      <ElButton
+      <q-btn
         v-if="store.scrollAnimationActive"
-        color="#0d94fc"
-        plain
+        color="primary"
+        outline
+        :label="t('settings.animation-end')"
         @click="store.scrollAnimationActive = !store.scrollAnimationActive"
-      >
-        {{ t("settings.animation-end") }}
-      </ElButton>
-      <ElButton
+      />
+      <q-btn
         v-else
-        color="#0d94fc"
-        plain
+        color="primary"
+        outline
+        :label="t('settings.animation-start')"
         @click="store.scrollAnimationActive = !store.scrollAnimationActive"
-      >
-        {{ t("settings.animation-start") }}
-      </ElButton>
+      />
     </div>
   </div>
 </template>

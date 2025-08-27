@@ -94,7 +94,7 @@ export const useDataStore = defineStore('datas', () => {
     salt,
     water,
     production,
-    zoomLevel: readonly(zoomLevel),
+    zoomLevel,
     setZoomLevel,
     scrollSpeed,
     scrollSpeedProps,

@@ -70,7 +70,8 @@ const infoTextColor = computed(() => {
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
       <div class="explanation">
-        {{ mt(erpKey, machine.id) }}
+        <!-- {{ mt(erpKey, machine.id) }} -->
+        {{ erpKey }}
       </div>
       <q-separator
         color="white"
