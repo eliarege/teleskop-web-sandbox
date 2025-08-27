@@ -35,6 +35,9 @@
     "customer-name": "Customer Name"
   },
   "tooltip": {
+    "theoretical-duration": "Theoretical Duration",
+    "actual-duration": "Actual Duration",
+    "deviation": "Deviation",
     "note": "Notes",
     "auto-message": "There is no stop reason input!"
   },

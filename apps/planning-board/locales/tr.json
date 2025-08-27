@@ -35,6 +35,9 @@
     "customer-name": "Müşteri İsmi"
   },
   "tooltip": {
+    "theoretical-duration": "Teorik Süre",
+    "actual-duration": "Gerçek Süre",
+    "deviation": "Gecikme",
     "note": "Notlar",
     "auto-message": "Duruş sebebi girilmedi!"
   },

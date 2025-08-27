@@ -1,6 +1,6 @@
 import type { SchedulerPro, SchedulerResourceModel } from '@bryntum/schedulerpro'
 import { DateHelper, Toast } from '@bryntum/schedulerpro'
-import { addMinutes, addSeconds, differenceInSeconds } from 'date-fns'
+import { addMinutes, addSeconds, differenceInMilliseconds, differenceInSeconds } from 'date-fns'
 
 export function decompressJson(data: { columns: string[], values: any[][] }) {
   const { columns, values } = data
@@ -17,18 +17,51 @@ export function integerToHex(int?: number): string {
 }
 
 export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
+  // console.log('eventRecord', eventRecord)
   const { $i18n, $keycloak } = useNuxtApp()
-  const startMonth = DateHelper.format(eventRecord.startDate, 'MMM')
-  const startDay = DateHelper.format(eventRecord.startDate, 'D')
+  const startMonth = DateHelper.format(eventRecord.originalData.startDate, 'MMM')
+  const startDay = DateHelper.format(eventRecord.originalData.startDate, 'D')
 
-  const endMonth = DateHelper.format(eventRecord.endDate, 'MM')
-  const endDay = DateHelper.format(eventRecord.endDate, 'D')
+  const endMonth = DateHelper.format(eventRecord.originalData.endDate, 'MM')
+  const endDay = DateHelper.format(eventRecord.originalData.endDate, 'D')
 
-  const startMinuteRotation = (eventRecord.startDate.getMinutes() + eventRecord.startDate.getSeconds() / 60) * 6
-  const startHourRotation = (eventRecord.startDate.getHours() % 12 + eventRecord.startDate.getMinutes() / 60) * 30
+  const startMinuteRotation = (new Date(eventRecord.originalData.startDate).getMinutes() + new Date(eventRecord.originalData.startDate).getSeconds() / 60) * 6
+  const startHourRotation = (new Date(eventRecord.originalData.startDate).getHours() % 12 + new Date(eventRecord.originalData.startDate).getMinutes() / 60) * 30
 
-  const endMinuteRotation = (eventRecord.endDate.getMinutes() + eventRecord.endDate.getSeconds() / 60) * 6
-  const endHourRotation = (eventRecord.endDate.getHours() % 12 + eventRecord.endDate.getMinutes() / 60) * 30
+  const endMinuteRotation = (new Date(eventRecord.originalData.endDate).getMinutes() + new Date(eventRecord.originalData.endDate).getSeconds() / 60) * 6
+  const endHourRotation = (new Date(eventRecord.originalData.endDate).getHours() % 12 + new Date(eventRecord.originalData.endDate).getMinutes() / 60) * 30
+
+  const theoreticalDuration = eventRecord.originalData.theoreticalDuration
+  const isEventFinishedorOngoing = eventRecord.originalData.eventType === 'finished' || eventRecord.originalData.eventType === 'ongoing' || eventRecord.originalData.eventType === 'manual'
+  const actualDuration = isEventFinishedorOngoing
+    ? Math.floor(
+      differenceInMilliseconds(
+        new Date(eventRecord.endDate).getTime(),
+        new Date(eventRecord.startDate).getTime(),
+      ) / 1000,
+    )
+    : 0
+  const deviation = actualDuration - theoreticalDuration
+
+  function renderDurationInfo() {
+    if (isEventFinishedorOngoing)
+      return `
+        <div class="b-sch-event-title">
+          ${$i18n.t('tooltip.theoretical-duration')}: ${theoreticalDuration}
+        </div>
+        <div class="b-sch-event-title">
+          ${$i18n.t('tooltip.actual-duration')}: ${actualDuration}
+        </div>
+        <div class="b-sch-event-title">
+          ${$i18n.t('tooltip.deviation')}: ${deviation}
+        </div>
+        `
+    else return `
+          <div class="b-sch-event-title">
+            ${$i18n.t('tooltip.theoretical-duration')}: ${theoreticalDuration}
+          </div>
+          `
+  }
   if (eventRecord.eventType !== 'stop') {
     const parameters: any[] = await $keycloak.fetch('/api/tootlipParameters', {
       query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
@@ -42,6 +75,11 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
         <div>
           ${screenNotes.length !== 0 ? `<div class="b-sch-event-title">${$i18n.t('tooltip.note')}: ${screenNotes}</div>` : ''}
           <div class="b-sch-event-title">${eventRecord.originalData.name}</div>
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
+            <div class="whitespace-nowrap">
+              ${renderDurationInfo()}
+            </div>
+          </div>
           <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
             <div class="b-sch-clock">
               <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">
