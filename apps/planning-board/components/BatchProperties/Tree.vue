@@ -18,10 +18,10 @@ const { data: batchProperties } = await useAuthFetch('/api/batchProperties', {
 })
 
 const deviation = computed(() => {
-  if (props.deviation) {
-    const deviationStr = String(props.deviation)
-    return deviationStr.startsWith('-') ? `-${formatSeconds(props.deviation)}` : formatSeconds(props.deviation)
-  } else return '00:00:00'
+  if (props.deviation)
+    return formatSeconds(props.deviation)
+  else
+    return '00:00:00'
 })
 const time = computed(() => {
   if (batchProperties.value?.times.startTime) {

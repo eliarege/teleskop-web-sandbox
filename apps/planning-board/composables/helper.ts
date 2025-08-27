@@ -17,7 +17,6 @@ export function integerToHex(int?: number): string {
 }
 
 export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
-  // console.log('eventRecord', eventRecord)
   const { $i18n, $keycloak } = useNuxtApp()
   const startMonth = DateHelper.format(eventRecord.originalData.startDate, 'MMM')
   const startDay = DateHelper.format(eventRecord.originalData.startDate, 'D')
@@ -273,11 +272,13 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
 }
 
 export function formatSeconds(second: number): string {
-  const hours = Math.floor(second / 3600)
-  const minutes = Math.floor((second % 3600) / 60)
-  const seconds = second % 60
+  const sign = second < 0 ? '-' : ''
+  const absSec = Math.abs(second)
+  const hours = Math.floor(absSec / 3600)
+  const minutes = Math.floor((absSec % 3600) / 60)
+  const seconds = absSec % 60
 
   const pad = (num: number) => String(num).padStart(2, '0')
 
-  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+  return `${sign}${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
 }
