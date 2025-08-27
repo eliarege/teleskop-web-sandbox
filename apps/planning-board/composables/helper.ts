@@ -31,9 +31,10 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
   const endMinuteRotation = (new Date(eventRecord.originalData.endDate).getMinutes() + new Date(eventRecord.originalData.endDate).getSeconds() / 60) * 6
   const endHourRotation = (new Date(eventRecord.originalData.endDate).getHours() % 12 + new Date(eventRecord.originalData.endDate).getMinutes() / 60) * 30
 
-  const theoreticalDuration = eventRecord.originalData.theoreticalDuration
+  const theoreticalDurationValue = eventRecord.originalData.theoreticalDuration
+  const theoreticalDuration = formatSeconds(theoreticalDurationValue)
   const isEventFinishedorOngoing = eventRecord.originalData.eventType === 'finished' || eventRecord.originalData.eventType === 'ongoing' || eventRecord.originalData.eventType === 'manual'
-  const actualDuration = isEventFinishedorOngoing
+  const actualDurationValue = isEventFinishedorOngoing
     ? Math.floor(
       differenceInMilliseconds(
         new Date(eventRecord.endDate).getTime(),
@@ -41,8 +42,12 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
       ) / 1000,
     )
     : 0
-  const deviation = actualDuration - theoreticalDuration
-
+  const actualDuration = formatSeconds(actualDurationValue)
+  const deviation = formatSeconds(actualDurationValue - theoreticalDurationValue)
+  const stopDuration = formatSeconds(differenceInMilliseconds(
+    new Date(eventRecord.endDate).getTime(),
+    new Date(eventRecord.startDate).getTime(),
+  ) / 1000)
   function renderDurationInfo() {
     if (isEventFinishedorOngoing)
       return `
@@ -137,6 +142,9 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
         <div class="b-sch-clock-dot"></div>
       </div>
       <span class="b-sch-clock-text">${DateHelper.format(eventRecord.endDate, scheduler.displayDateFormat)}</span>
+      </div>
+      <div>
+        ${$i18n.t('tooltip.duration')}: ${stopDuration}
       </div>
   </div>
 `
