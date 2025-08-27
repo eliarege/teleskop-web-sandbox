@@ -314,33 +314,6 @@ export class MachineController {
   }
 
   /**
-   * Makinenin tüm programlarını makineye yükler
-   * @returns {Promise<void>}
-   */
-  @withTransaction @withFTP
-  async uploadAllProgramsToMachine(): Promise<void> {
-    const programNoList = await this.getLocalMachineProgramList()
-    for (const programNo of programNoList) {
-      const { program } = await this.fetchProgram(programNo)
-      await this.uploadProgram(program)
-    }
-  }
-
-  /**
-   * Makinenin tüm programlarının numaralarını getirir
-   * @returns {Promise<Array<number>>} - Program numarası dizisi
-   */
-  @withTransaction
-  async getLocalMachineProgramList(): Promise<number[]> {
-    const programNoList = await this.trx
-      .select('PROGNO as programNo')
-      .from('BFMASTERPRGHEADER')
-      .where('MACHINEID', this.id)
-    const result = programNoList.map(item => item.programNo)
-    return result
-  }
-
-  /**
    * Makine id numarasına göre makinenin belirli bir programını getirir
    * @param {number} programNo - Program numarası
    * @returns {Promise<{program: Program, programErrors: StepError[]}>} - Program ve hata bilgileri
