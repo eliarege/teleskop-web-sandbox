@@ -288,12 +288,12 @@ const websockifyWsUrl = resolveWebSocketUrl(props.websockifyUrl)
           <div class="t7-panel-grid t7-updown-grid">
             <div class="t7-keyinput-container">
               <MachineVncButton
-                img="../assets/keyboard/pagedown.svg"
-                @click="sendKey('XK_Page_Down')"
-              />
-              <MachineVncButton
                 img="../assets/keyboard/pageup.svg"
                 @click="sendKey('XK_KP_Page_Up')"
+              />
+              <MachineVncButton
+                img="../assets/keyboard/pagedown.svg"
+                @click="sendKey('XK_Page_Down')"
               />
             </div>
           </div>
