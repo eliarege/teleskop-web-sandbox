@@ -1,5 +1,5 @@
 import { inferBoolean } from '@teleskop/utils'
-import { MachineController } from '~/server/classes/MachineController'
+import { machineStore } from '~/server/classes/MachineStore'
 import { PError } from '~/server/error'
 import logger from '~/server/logger'
 
@@ -12,7 +12,7 @@ export default defineAuthEventHandler(async (event) => {
   }
 
   const query = getQuery(event)
-  const machine = await MachineController.create(machineId)
+  const machine = await machineStore.get(machineId)
   if (!machine) {
     throw new PError('MACHINE_NOT_FOUND', { machineId })
   }

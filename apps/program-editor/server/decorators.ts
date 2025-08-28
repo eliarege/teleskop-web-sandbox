@@ -1,6 +1,7 @@
 import type { Knex } from 'knex'
 import type { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { db } from './database'
+import type { ProgramClient } from './classes/ProgramClient'
 
 const ftpRefMap = new WeakMap<any, { count: number }>()
 const trxRefMap = new WeakMap<any, { count: number, failed: boolean }>()
@@ -89,6 +90,34 @@ export function withFTP<This extends { ftp: TbbFtpClient }>(target: This, proper
       if (!ref.count) {
         ftpRefMap.delete(this)
         this.ftp.close()
+      }
+    }
+  }
+}
+
+export function withProgramClient<This extends { client: ProgramClient }>(target: This, propertyKey: string, descriptor: PropertyDescriptor) {
+  const method = descriptor.value
+  if (typeof method !== 'function')
+    throw new TypeError('Decorator should be used on methods')
+
+  descriptor.value = async function (this: This, ...args: any[]) {
+    let ref = ftpRefMap.get(this)
+    if (!ref) {
+      ref = { count: 1 }
+      ftpRefMap.set(this, ref)
+    } else {
+      ref.count++
+    }
+    try {
+      if (ref.count === 1) {
+        await this.client.connect()
+      }
+      return await method.call(this, ...args)
+    } finally {
+      ref.count--
+      if (!ref.count) {
+        ftpRefMap.delete(this)
+        await this.client.disconnect()
       }
     }
   }

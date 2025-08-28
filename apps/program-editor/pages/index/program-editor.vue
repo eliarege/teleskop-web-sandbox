@@ -258,6 +258,7 @@ if (editor.machine.id !== machineId)
 await editor.fetchCommandTypes(machineId)
 await editor.fetchProgram(machineId, programNo)
 editor.isLoading = false
+editor.selectedPrograms = []
 
 onBeforeRouteLeave(() => {
   const hasChanged = editor.hasProgramChanged()
