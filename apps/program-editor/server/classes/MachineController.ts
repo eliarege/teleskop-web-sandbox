@@ -1,38 +1,27 @@
-import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { Knex } from 'knex'
 import { isDef } from '@teleskop/utils'
-import { ensureTreatmentGroups, fetchTeleskopSettings, getMachineHost, getTeleskopSettings, hasMachine, logEditorOperation } from '../functions'
+import { ensureTreatmentGroups, fetchTeleskopSettings, getTeleskopSettings, hasMachine, logEditorOperation } from '../functions'
 import { db, dmExchange } from '../database'
-import { withFTP, withTransaction } from '../decorators'
+import { withProgramClient, withTransaction } from '../decorators'
 import { sql } from '../sql'
-import { stringifyProgram } from '../stringify'
-import { parseProgramString } from '../parse'
 import { PError } from '../error'
 import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
 import { mapObject } from '../utils/map'
+import type { ProgramClient } from './ProgramClient'
 import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { CommandType, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
 
 export class MachineController {
-  readonly id: number
-  readonly host: string
-  readonly ftp: TbbFtpClient
   readonly trx: Knex.Transaction
 
-  constructor(id: number, host: string) {
-    this.id = id
-    this.host = host
-    this.ftp = new TbbFtpClient(host)
+  constructor(
+    public readonly id: number,
+    public readonly client: ProgramClient,
+  ) {
     this.trx = db as Knex.Transaction
-  }
-
-  static async create(id: number) {
-    await hasMachine(id)
-    const host = await getMachineHost(id)
-    return new MachineController(id, host)
   }
 
   @withTransaction
@@ -634,22 +623,13 @@ export class MachineController {
    *
    * @throws {PError} Hata durumunda bir `PError` nesnesi fırlatılır.
    */
-  @withFTP
+  @withProgramClient
   async uploadProgram(program: Program): Promise<boolean> {
     try {
-      const commands = await this.fetchCommands()
-      if (!commands.length) {
-        throw new PError('NO_COMMANDS_FOUND', { machineId: this.id })
-      }
+      await this.client.uploadProgram(program)
 
-      const programPath = `/tbb6500/data/programs/program/${program.programNo}`
-      const programData = stringifyProgram(program, {
-        commands: this.commandArrayToMap(commands),
-      })
+      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `Program ${program.programNo}`)
 
-      await this.ftp.upload(programPath, programData)
-
-      logger.info(`Program ${program.programNo} successfully sent to machine ${this.id}.`)
       return true
     } catch (err) {
       logger.error({ error: err }, 'An error occured during sending program(s) to machine.')
@@ -662,34 +642,21 @@ export class MachineController {
    * @param {number} programNo - Indirilmek istenen program numarası
    * @returns {Promise<Program | null>} - İndirilen programı içeren bir Promise
    */
-  @withFTP
+  @withProgramClient
   @withTransaction
   async downloadProgram(programNo: number): Promise<Program | null> {
-    const exists = await this.doesMachineHaveProgram(programNo)
-    if (!exists)
-      throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
+    try {
+      const program = await this.client.downloadProgram(programNo)
+      if (!program)
+        throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
 
-    const programString = await this.ftp.download(`/tbb6500/data/programs/program/${programNo}`, 'utf-8')
+      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${programNo}`)
 
-    await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${programNo}`)
-
-    const commands = await this.fetchCommands()
-    const rawProgram = parseProgramString(programString, {
-      id: this.id,
-      commands: this.commandArrayToMap(commands),
-    })
-    const program: Program = {
-      ...rawProgram,
-      machineId: this.id,
-      programNo,
-      duration: 0,
-      typeName: '',
-      prgState: ProgramStatus.EXISTS_ON_BOTH,
-      icon: '',
-      isChanged: false,
-      tbbProgramChangedEvent: 0,
+      return program
+    } catch (err) {
+      logger.error({ error: err }, 'An error occured during downloading program(s) from machine.')
+      throw new PError('PROGRAM_FAILED_TO_DOWNLOAD', { machineId: this.id, programNo })
     }
-    return program
   }
 
   /**
@@ -1358,19 +1325,28 @@ export class MachineController {
    * @param programNo - Silinecek programın numarası
    * @returns {Promise<void>}
    */
-  @withFTP
+  @withProgramClient
   async deleteRemoteProgram(programNo: number): Promise<void> {
-    await this.ftp.remove(`/tbb6500/data/programs/program/${programNo}`)
-    await logEditorOperation(ProgramEditorActivityCodes.PROGRAMDELETED_CONTROLLER, this.host, `Program No ${programNo}`)
+    try {
+      await this.client.deleteProgram(programNo)
+      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMDELETED_CONTROLLER, `Makine ${this.id}`, `Program No ${programNo}`)
+    } catch (error) {
+      logger.error({ error }, 'An error occured during deleting program(s) from machine.')
+    }
   }
 
   /**
    * Makineden program numaralarının listesini alır ve döndürür.
    * @returns {Promise<number[]>} - Program listesi
    */
-  @withFTP
+  @withProgramClient
   async fetchRemoteProgramList(): Promise<number[]> {
-    return await this.ftp.fetchProgramList()
+    try {
+      return await this.client.fetchProgramList()
+    } catch (error) {
+      logger.error({ error }, 'An error occured during fetching program list from machine.')
+      return []
+    }
   }
 
   /**
