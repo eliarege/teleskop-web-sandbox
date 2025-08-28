@@ -1,6 +1,8 @@
 import { inferBoolean } from '@teleskop/utils'
 import { MachineController } from '~/server/classes/MachineController'
+import { T7ProgramClient } from '~/server/classes/ProgramClient'
 import { PError } from '~/server/error'
+import { getMachineHost } from '~/server/functions'
 import logger from '~/server/logger'
 
 export default defineAuthEventHandler(async (event) => {
@@ -12,7 +14,9 @@ export default defineAuthEventHandler(async (event) => {
   }
 
   const query = getQuery(event)
-  const machine = await MachineController.create(machineId)
+  const host = await getMachineHost(machineId)
+  const client = new T7ProgramClient(machineId, host)
+  const machine = new MachineController(machineId, client)
   if (!machine) {
     throw new PError('MACHINE_NOT_FOUND', { machineId })
   }

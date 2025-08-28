@@ -45,7 +45,8 @@ export class T7ProgramClient implements ProgramClient {
     const remoteFile = `/tbb6500/data/programs/program/${programNo}`
     const programString = await this.ftp.download(remoteFile, 'utf-8')
 
-    const machine = new MachineController(this.id, this)
+    const client = new T7ProgramClient(this.id, this.host)
+    const machine = new MachineController(this.id, client)
     const commands = await machine.fetchCommands()
     if (!commands.length)
       throw new PError('NO_COMMANDS_FOUND', { machineId: this.id })
