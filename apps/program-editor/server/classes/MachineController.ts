@@ -626,7 +626,12 @@ export class MachineController {
   @withProgramClient
   async uploadProgram(program: Program): Promise<boolean> {
     try {
-      await this.client.uploadProgram(program)
+      const commands = await this.fetchCommands()
+      if (!commands.length) {
+        throw new PError('NO_COMMANDS_FOUND', { machineId: this.id })
+      }
+
+      await this.client.uploadProgram(program, commands)
 
       await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `Program ${program.programNo}`)
 
@@ -646,9 +651,15 @@ export class MachineController {
   @withTransaction
   async downloadProgram(programNo: number): Promise<Program | null> {
     try {
-      const program = await this.client.downloadProgram(programNo)
-      if (!program)
+      const commands = await this.fetchCommands()
+      if (!commands.length) {
+        throw new PError('NO_COMMANDS_FOUND', { machineId: this.id })
+      }
+
+      const program = await this.client.downloadProgram(programNo, commands)
+      if (!program) {
         throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
+      }
 
       await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${programNo}`)
 

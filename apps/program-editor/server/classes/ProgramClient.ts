@@ -2,15 +2,14 @@ import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { parseProgramString } from '../parse'
 import { stringifyProgram } from '../stringify'
 import { PError } from '../error'
-import { MachineController } from './MachineController'
 import type { MachineCommand, Program } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 
 export interface ProgramClient {
   connect: () => Promise<void>
   disconnect: () => Promise<void>
-  downloadProgram: (programNo: number) => Promise<Program | null>
-  uploadProgram: (program: Program) => Promise<boolean>
+  downloadProgram: (programNo: number, commands: MachineCommand[]) => Promise<Program | null>
+  uploadProgram: (program: Program, commands: MachineCommand[]) => Promise<boolean>
   deleteProgram: (programNo: number) => Promise<void>
   fetchProgramList: () => Promise<number[]>
 }
@@ -41,15 +40,13 @@ export class T7ProgramClient implements ProgramClient {
       .filter((n: number) => !Number.isNaN(n))
   }
 
-  async downloadProgram(programNo: number): Promise<Program | null> {
+  async downloadProgram(programNo: number, commands: MachineCommand[]): Promise<Program | null> {
     const remoteFile = `/tbb6500/data/programs/program/${programNo}`
     const programString = await this.ftp.download(remoteFile, 'utf-8')
 
-    const client = new T7ProgramClient(this.id, this.host)
-    const machine = new MachineController(this.id, client)
-    const commands = await machine.fetchCommands()
-    if (!commands.length)
-      throw new PError('NO_COMMANDS_FOUND', { machineId: this.id })
+    if (!programString) {
+      throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
+    }
 
     const rawProgram = parseProgramString(programString, {
       id: this.id,
@@ -74,14 +71,7 @@ export class T7ProgramClient implements ProgramClient {
     return new Map(commands.map(cmd => [cmd.commandNo, cmd]))
   }
 
-  async uploadProgram(program: Program): Promise<boolean> {
-    const machine = new MachineController(this.id, this)
-
-    const commands = await machine.fetchCommands()
-    if (!commands.length) {
-      throw new PError('NO_COMMANDS_FOUND', { machineId: this.id })
-    }
-
+  async uploadProgram(program: Program, commands: MachineCommand[]): Promise<boolean> {
     const programPath = `/tbb6500/data/programs/program/${program.programNo}`
     const programData = stringifyProgram(program, {
       commands: this.commandArrayToMap(commands),
