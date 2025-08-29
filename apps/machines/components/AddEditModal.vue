@@ -18,9 +18,6 @@ const formData = defineModel({
   required: true,
 })
 
-watch(() => formData.value, () => {
-  console.log('formData', formData.value)
-})
 const { t } = useI18n()
 function onSubmitForm() {
   emit('submit', formData.value)

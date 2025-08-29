@@ -3,6 +3,7 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import gracefulShutdown from 'http-graceful-shutdown'
 import type { Kysely } from 'kysely'
+import type { ConnectionOptions } from 'tedious'
 import machineStatus from './api/machine-status'
 import { config } from './config'
 import { createKyselyInstance } from './database'
@@ -18,13 +19,29 @@ declare module 'fastify' {
 
 export async function main() {
   const fastify = Fastify({ logger })
-  const teleskop = createKyselyInstance<TeleskopDatabase>(config.teleskopConnectionString)
-  const dmExchange = config.dmExchangeConnectionString
-    ? createKyselyInstance<DmExchangeDatabase>(config.dmExchangeConnectionString)
+  const teleskop = createKyselyInstance<TeleskopDatabase>(config.teleskopConnectionString || {
+    host: config.teleskopHost,
+    port: config.teleskopPort,
+    database: config.teleskopDatabase,
+    user: config.teleskopUser,
+    password: config.teleskopPassword,
+    instanceName: config.teleskopInstanceName,
+    options: config.teleskopConnectionOptions as ConnectionOptions,
+  })
+  const dmExchange = config.dmExchangeConnectionString || config.dmExchangeEnabled
+    ? createKyselyInstance<DmExchangeDatabase>(config.dmExchangeConnectionString || {
+      host: config.dmExchangeHost,
+      port: config.dmExchangePort,
+      database: config.dmExchangeDatabase,
+      user: config.dmExchangeUser,
+      password: config.dmExchangePassword,
+      instanceName: config.dmExchangeInstanceName,
+      options: config.dmExchangeConnectionOptions as ConnectionOptions,
+    })
     : null
 
   if (!dmExchange) {
-    logger.info(`DMEXCHANGE_CONNECTION_STRING is not set, ERP values will be null`)
+    logger.info(`DMEXCHANGE disabled, ERP values will be null`)
   }
 
   fastify.decorate('teleskop', teleskop)

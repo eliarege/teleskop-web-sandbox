@@ -1,12 +1,13 @@
-import { inferBoolean, isDef } from './base'
+import { inferBoolean, isDef, tryJsonParse } from './base'
 
 export type ConfigProps = {
   env: string
-  required?: boolean
+  required?: boolean | ((config: Record<string, any>) => boolean)
 } & (
   | StringConfigProps
   | NumberConfigProps
   | BooleanConfigProps
+  | QuerystringConfigProps
 )
 
 interface StringConfigProps {
@@ -23,6 +24,11 @@ interface BooleanConfigProps {
   default?: boolean
 }
 
+interface QuerystringConfigProps {
+  type: 'querystring'
+  default?: Record<string, any>
+}
+
 type InferRequired<Type, Props extends ConfigProps> =
   Props extends { required: true } ? RuntimeValue<Type, `You can configure this value by setting the env ${Props['env']}`>
     : Props extends { default: Type } ? RuntimeValue<Type, `You can configure this value by setting the env ${Props['env']}`>
@@ -31,7 +37,8 @@ type InferRequired<Type, Props extends ConfigProps> =
 type InferConfigObject<T extends Record<string, ConfigProps>> = {
   readonly [K in keyof T]: T[K] extends { type: 'number' | 'integer' } ? InferRequired<number, T[K]>
     : T[K] extends { type: 'boolean' } ? InferRequired<boolean, T[K]>
-      : InferRequired<string, T[K]>
+      : T[K] extends { type: 'querystring' } ? InferRequired<Record<string, any>, T[K]>
+        : InferRequired<string, T[K]>
 }
 declare const message: unique symbol
 type RuntimeValue<Type, Message extends string> = Type & {
@@ -44,12 +51,22 @@ export function defineConfiguration<const T extends Record<string, ConfigProps>>
   const process = globalThis.process
   if (!process)
     throw new Error(`Can only run in node environment`)
+
+  // Array of configurations where the value is `undefined` but the `required` property is a function
+  const postRequiredChecks = [] as (ConfigProps & { required: Extract<ConfigProps['required'], Function> })[]
+
   for (const [key, props] of Object.entries(config)) {
     const type = props.type || 'string'
     const rawValue = process.env[props.env]
-    if (!isDef(rawValue) && props.required && !isDef(props.default)) {
-      throw new Error(`Missing env ${type}: ${props.env}`)
+    if (props.required && !isDef(props.default) && !isDef(rawValue)) {
+      if (typeof props.required === 'boolean') {
+        /* eslint-disable-next-line unicorn/prefer-type-error */
+        throw new Error(`Missing env ${type}: ${props.env}`)
+      } else if (typeof props.required === 'function') {
+        postRequiredChecks.push(props as (typeof postRequiredChecks)[0])
+      }
     }
+
     let value: any
     if (rawValue) {
       if (type === 'integer') {
@@ -64,6 +81,10 @@ export function defineConfiguration<const T extends Record<string, ConfigProps>>
         }
       } else if (type === 'boolean') {
         value = inferBoolean(rawValue)
+      } else if (type === 'querystring') {
+        value = Object.fromEntries([
+          ...new URLSearchParams(rawValue).entries(),
+        ].map(([k, v]) => [k, tryJsonParse(v)]))
       } else {
         value = rawValue
         if (type === 'url' && !isValidURL(rawValue)) {
@@ -74,6 +95,13 @@ export function defineConfiguration<const T extends Record<string, ConfigProps>>
       value = props.default
     }
     output[key] = value
+  }
+
+  // Check
+  for (const props of postRequiredChecks) {
+    if (props.required(config)) {
+      throw new Error(`Missing env ${props.type || 'string'}: ${props.env}`)
+    }
   }
   return output as InferConfigObject<T>
 }

@@ -16,9 +16,13 @@ export const useDataStore = defineStore('datas', () => {
   const locale = useStorage('language', useI18n().locale)
   const filteredMachines = useStorage('filtered-machines', new Set<number>())
   const filteredGroups = useStorage('filtered-groups', new Set<string>())
+
+  const erpKeys = useStorage<{ id: number, key: string }[]>('erp-keys', [], localStorage)
+
+  const customSort = useStorage<number[]>('mm-machineOrdering', [])
+
   // machinestatus
   const sortMachines = useStorage<MachineSortValue>('machine-sort', MachineSort.ById)
-
   const zoomLevel = ref(1)
   const setZoomLevel = (value: number | string | null) => {
     if (!value) {
@@ -50,6 +54,7 @@ export const useDataStore = defineStore('datas', () => {
     fetchMachineStatus.value = 'pending'
     try {
       machines.value = await $fetch('/api/machines')
+
       fetchMachineStatus.value = 'success'
       fetchMachineError.value = null
     } catch (err: any) {
@@ -77,9 +82,11 @@ export const useDataStore = defineStore('datas', () => {
     hex,
     filteredMachines,
     filteredGroups,
+    erpKeys,
     isWashing,
     group,
     sortMachines,
+    customSort,
     mode,
     machines,
     electricity,
@@ -87,7 +94,7 @@ export const useDataStore = defineStore('datas', () => {
     salt,
     water,
     production,
-    zoomLevel: readonly(zoomLevel),
+    zoomLevel,
     setZoomLevel,
     scrollSpeed,
     scrollSpeedProps,

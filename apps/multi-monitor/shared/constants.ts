@@ -5,6 +5,7 @@ export const MachineSort = {
   ByActive: 2,
   ByIdle: 3,
   ByGroup: 4,
+  ByCustom: 5,
 } as const
 
 export const Apps = {
