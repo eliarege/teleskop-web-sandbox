@@ -3,25 +3,26 @@ import { defaultConfig } from '@formkit/vue'
 import { createValidationPlugin } from '@formkit/validation'
 import type { FormKitNode } from '@formkit/core'
 
-function notStartsWithZero(node: FormKitNode): boolean {
+function notStartsWith(node: FormKitNode, ...args: string[]): boolean {
   if (!node.value)
     return true
-  return !String(node.value).startsWith('0')
+  const value = String(node.value)
+  return !args.some(forbidden => value.startsWith(forbidden))
 }
 
 export default defaultConfig({
   locales: { tr, en },
   locale: 'en-GB',
-  plugins: [createValidationPlugin({ notStartsWithZero })],
+  plugins: [createValidationPlugin({ notStartsWith })],
   messages: {
     en: {
       validation: {
-        notStartsWithZero: 'Password cannot start with 0.',
+        notStartsWith: ({ name, args }) => `${name} cannot start with "${args}".`,
       },
     },
     tr: {
       validation: {
-        notStartsWithZero: 'Şifre 0 ile başlayamaz.',
+        notStartsWith: ({ name, args }) => `${name} "${args}" ile başlayamaz.`,
       },
     },
   },

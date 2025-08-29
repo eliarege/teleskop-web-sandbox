@@ -61,7 +61,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
-      validation: 'required|length:4,12|notStartsWithZero',
+      validation: 'required|length:4,12|notStartsWith:0',
     },
   },
   userActive: {
