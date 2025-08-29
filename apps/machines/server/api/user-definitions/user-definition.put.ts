@@ -1,17 +1,18 @@
 import { knex } from '~/server/connectionPool'
-import type { User } from '~/types'
 
 export default defineAuthEventHandler(async (event) => {
-  const user: User = await readBody(event)
-  const res = await knex('BFUSERS').where({
-    userID: user.userId,
-  }).update({
-    userName: user.userName,
-    userSurname: user.userSurname,
-    userPass: user.userPass,
-    userInfo: user.userInfo,
-    userActive: user.userActive,
-    userType: user.userType,
-  })
+  const user = await readBody(event)
+
+  if (user.userId === undefined) {
+    throw createError({
+      statusCode: 400,
+      message: 'userId is required',
+    })
+  }
+
+  const res = await knex('BFUSERS')
+    .where({ userID: user.userId })
+    .update(user)
+
   return res
 })
