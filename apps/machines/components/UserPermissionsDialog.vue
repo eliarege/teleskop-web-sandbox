@@ -49,7 +49,7 @@ const permissionsGroup1 = reactive<Permission[]>([
   { label: t('changeBatchParameter'), index: 28, value: false },
 ])
 
-const permissionsGroup2 = computed(() => ([
+const permissionsGroup2 = reactive<Permission[]>(([
   { label: t('warningCommandsApprovalAuthority'), index: 0, value: true },
   { label: t('stepChangeAuthority'), index: 1, value: true },
   { label: t('changingMachineAuthority'), index: 2, value: false },
@@ -72,7 +72,7 @@ function updatePermissionsFromHex(hexStringGroup1: string, hexStringGroup2: stri
   })
 
   // Update Group 2 permissions
-  permissionsGroup2.value.forEach((permission) => {
+  permissionsGroup2.forEach((permission) => {
     const bitPosition = permission.index
     permission.value = binaryStringGroup2.charAt(31 - bitPosition) === '1'
   })
@@ -90,7 +90,7 @@ async function savePermissions() {
   })
 
   // Group 2
-  permissionsGroup2.value.forEach((permission) => {
+  permissionsGroup2.forEach((permission: Permission) => {
     if (permission.value) {
       combinedPermissionValueGroup2 |= 1 << (permission.index)
     }
