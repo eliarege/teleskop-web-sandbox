@@ -446,6 +446,7 @@
   "translations-updated": "Çeviriler güncellendi",
   "translations-failed": "Çeviriler güncellemesi başarısız",
   "translations-starting": "Çeviriler güncelleniyor",
+  "user-permission-update-failed": "Kullanıcı izinleri güncellenemedi",
   "NETWORK_CONN_FAILED": "Bağlantı kurulamadı.",
   "passive": "Pasif",
   "selectSettingToUpdate": "Makinede güncellenecek sistem ayarını seçiniz",

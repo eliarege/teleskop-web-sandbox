@@ -15,13 +15,15 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['close'])
+
+const q = useQuasar()
+const { t } = useI18n()
 const kc = useKeycloak()
+const { notifyError } = useNotify()
 
 // sistem menulerine erisim ve cihaz ayar yetkisi'nin baglı oldugu izinler var bu secenekler secilmeden diger izinler secilemez
 const controllerPermission = ref(false)
 const menuAccessPermission = ref(false)
-
-const { t } = useI18n()
 
 const permissionsGroup1 = reactive<Permission[]>([
   { label: t('createProgram'), index: 0, value: false },
@@ -49,12 +51,13 @@ const permissionsGroup1 = reactive<Permission[]>([
   { label: t('changeBatchParameter'), index: 28, value: false },
 ])
 
-const permissionsGroup2 = computed(() => ([
+const permissionsGroup2 = reactive<Permission[]>(([
   { label: t('warningCommandsApprovalAuthority'), index: 0, value: true },
   { label: t('stepChangeAuthority'), index: 1, value: true },
   { label: t('changingMachineAuthority'), index: 2, value: false },
   { label: t('authorityForOperatorInterventionFreePrograms'), index: 3, value: false },
 ]))
+
 const user = computed(() => props.selected)
 watch(user, (_newValue, _oldValue) => {
   if (props.selected.userMode && props.selected.userMode2)
@@ -72,7 +75,7 @@ function updatePermissionsFromHex(hexStringGroup1: string, hexStringGroup2: stri
   })
 
   // Update Group 2 permissions
-  permissionsGroup2.value.forEach((permission) => {
+  permissionsGroup2.forEach((permission) => {
     const bitPosition = permission.index
     permission.value = binaryStringGroup2.charAt(31 - bitPosition) === '1'
   })
@@ -90,7 +93,7 @@ async function savePermissions() {
   })
 
   // Group 2
-  permissionsGroup2.value.forEach((permission) => {
+  permissionsGroup2.forEach((permission: Permission) => {
     if (permission.value) {
       combinedPermissionValueGroup2 |= 1 << (permission.index)
     }
@@ -99,10 +102,21 @@ async function savePermissions() {
   const hexadecimalValueGroup1 = `0x${combinedPermissionValueGroup1.toString(16).padStart(8, '0')}`
   const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
 
-  return await kc.fetch('/api/user-definitions/user-definition', {
-    method: 'PUT',
-    body: { userId: user.value.userId, userMode: hexadecimalValueGroup1, userMode2: hexadecimalValueGroup2 },
-  })
+  try {
+    const response = await kc.fetch('/api/user-definitions/user-definition', {
+      method: 'PUT',
+      body: {
+        userId: user.value.userId,
+        userMode: hexadecimalValueGroup1,
+        userMode2: hexadecimalValueGroup2,
+      },
+    })
+    emit('close')
+  }
+  catch (err) {
+    console.error(`Failed to update user permissions`, err)
+    notifyError(t('user-permission-update-failed'))
+  }
 }
 </script>
 
@@ -135,7 +149,10 @@ async function savePermissions() {
         <q-card-section class="grid grid-cols-3">
           <!-- Group 2 -->
           <div v-for="(permission, key) in permissionsGroup2" :key="key">
-            <q-checkbox v-model="permission.value" :label="permission.label" />
+            <q-checkbox
+              v-model="permission.value"
+              :label="permission.label"
+            />
           </div>
         </q-card-section>
         <q-card-actions align="right">
@@ -152,6 +169,3 @@ async function savePermissions() {
     </q-dialog>
   </div>
 </template>
-
-<style scoped>
-</style>
