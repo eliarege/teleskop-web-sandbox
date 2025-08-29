@@ -447,6 +447,7 @@
   "translations-updated": "Translations updated",
   "translations-failed": "Translations update failed",
   "translations-starting": "Translations are updating",
+  "user-permission-update-failed": "Failed to update user permissions",
   "NETWORK_CONN_FAILED": "Network connection failed.",
   "passive": "Passive",
   "selectSettingToUpdate": "Select the system setting that will be updated on machine",

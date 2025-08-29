@@ -15,13 +15,15 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['close'])
+
+const q = useQuasar()
+const { t } = useI18n()
 const kc = useKeycloak()
+const { notifyError } = useNotify()
 
 // sistem menulerine erisim ve cihaz ayar yetkisi'nin baglı oldugu izinler var bu secenekler secilmeden diger izinler secilemez
 const controllerPermission = ref(false)
 const menuAccessPermission = ref(false)
-
-const { t } = useI18n()
 
 const permissionsGroup1 = reactive<Permission[]>([
   { label: t('createProgram'), index: 0, value: false },
@@ -55,6 +57,7 @@ const permissionsGroup2 = reactive<Permission[]>(([
   { label: t('changingMachineAuthority'), index: 2, value: false },
   { label: t('authorityForOperatorInterventionFreePrograms'), index: 3, value: false },
 ]))
+
 const user = computed(() => props.selected)
 watch(user, (_newValue, _oldValue) => {
   if (props.selected.userMode && props.selected.userMode2)
@@ -99,18 +102,21 @@ async function savePermissions() {
   const hexadecimalValueGroup1 = `0x${combinedPermissionValueGroup1.toString(16).padStart(8, '0')}`
   const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
 
-  const response = await kc.fetch('/api/user-definitions/user-definition', {
-    method: 'PUT',
-    body: { userId: user.value.userId, userMode: hexadecimalValueGroup1, userMode2: hexadecimalValueGroup2 },
-  })
-
-  if (response.statusCode === 200) {
+  try {
+    const response = await kc.fetch('/api/user-definitions/user-definition', {
+      method: 'PUT',
+      body: {
+        userId: user.value.userId,
+        userMode: hexadecimalValueGroup1,
+        userMode2: hexadecimalValueGroup2,
+      },
+    })
     emit('close')
-  } else {
-    console.error('Failed to update user permissions')
   }
-
-  return response.result
+  catch (err) {
+    console.error(`Failed to update user permissions`, err)
+    notifyError(t('user-permission-update-failed'))
+  }
 }
 </script>
 
@@ -163,6 +169,3 @@ async function savePermissions() {
     </q-dialog>
   </div>
 </template>
-
-<style scoped>
-</style>
