@@ -7,7 +7,8 @@ function notStartsWith(node: FormKitNode, ...args: string[]): boolean {
   if (!node.value)
     return true
   const value = String(node.value)
-  return !args.some(forbidden => value.startsWith(forbidden))
+  const forbidden = args[0] ?? ''
+  return !value.startsWith(forbidden)
 }
 
 export default defaultConfig({
@@ -17,12 +18,14 @@ export default defaultConfig({
   messages: {
     en: {
       validation: {
-        notStartsWith: ({ name, args }) => `${name} cannot start with "${args}".`,
+        notStartsWith: ({ name, args }) =>
+          `${name} cannot start with "${args[0]}".`,
       },
     },
     tr: {
       validation: {
-        notStartsWith: ({ name, args }) => `${name} "${args}" ile başlayamaz.`,
+        notStartsWith: ({ name, args }) =>
+          `${name} "${args[0]}" ile başlayamaz.`,
       },
     },
   },
