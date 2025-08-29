@@ -18,7 +18,7 @@ const columns = computed(() => ({
     editable: true,
     schema: {
       filled: true,
-      validation: 'required|min:1',
+      validation: 'required|min:0',
     },
   },
   userName: {
