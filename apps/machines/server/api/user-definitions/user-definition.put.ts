@@ -14,5 +14,5 @@ export default defineAuthEventHandler(async (event) => {
     .where({ userID: user.userId })
     .update(user)
 
-  return res
+  return { result: res, statusCode: 200 }
 })

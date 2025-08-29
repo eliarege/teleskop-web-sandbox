@@ -99,10 +99,18 @@ async function savePermissions() {
   const hexadecimalValueGroup1 = `0x${combinedPermissionValueGroup1.toString(16).padStart(8, '0')}`
   const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
 
-  return await kc.fetch('/api/user-definitions/user-definition', {
+  const response = await kc.fetch('/api/user-definitions/user-definition', {
     method: 'PUT',
     body: { userId: user.value.userId, userMode: hexadecimalValueGroup1, userMode2: hexadecimalValueGroup2 },
   })
+
+  if (response.statusCode === 200) {
+    emit('close')
+  } else {
+    console.error('Failed to update user permissions')
+  }
+
+  return response.result
 }
 </script>
 
@@ -135,7 +143,10 @@ async function savePermissions() {
         <q-card-section class="grid grid-cols-3">
           <!-- Group 2 -->
           <div v-for="(permission, key) in permissionsGroup2" :key="key">
-            <q-checkbox v-model="permission.value" :label="permission.label" />
+            <q-checkbox
+              v-model="permission.value"
+              :label="permission.label"
+            />
           </div>
         </q-card-section>
         <q-card-actions align="right">
