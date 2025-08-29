@@ -9,9 +9,7 @@ variable "CI_COMMIT_TAG" {
   }
 }
 variable "CI_COMMIT_SHA" {
-  validation {
-    condition = CI_COMMIT_SHA != ""
-  }
+  default = ""
 }
 variable "TURBO_CONFIG" {
   default = "{}"
