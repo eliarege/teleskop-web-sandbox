@@ -61,8 +61,6 @@ export default defineAuthEventHandler(async (event) => {
           const totalSteps = updateFunctions.length
           let currentStep = 0
 
-          sse.send(strSseId, 'reset', { message: 'reset', progress: 0 })
-
           for (const { func, message } of updateFunctions) {
             const startingMessage = message.replace('-updated', '-starting')
             const progress = Math.round((currentStep / totalSteps) * 100)

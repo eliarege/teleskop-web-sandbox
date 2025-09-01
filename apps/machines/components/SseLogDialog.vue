@@ -26,7 +26,7 @@ const compLogs = computed(() => props.logs.filter(l => l.type !== 'uuid'))
           <q-item-section avatar>
             {{ log.type }}
           </q-item-section>
-          <q-item-section>{{ t(log.message) }}</q-item-section>
+          <q-item-section>{{ log.message }}</q-item-section>
         </q-item>
       </q-list>
       <br>

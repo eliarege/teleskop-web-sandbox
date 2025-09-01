@@ -12,8 +12,9 @@ interface sseLog {
   type: 'info' | 'log' | 'error' | 'ping' | 'start' | 'reset'
   progress: number
 }
+
 const kc = useKeycloak()
-const { dialog, notify } = useQuasar()
+const { dialog } = useQuasar()
 const { t } = useI18n()
 const { notifyError } = useNotify()
 const baseURL = useRuntimeConfig().app.baseURL
@@ -44,97 +45,162 @@ const showMimic = ref(false)
 const showGetDyeHouseDefinitions = ref(false)
 const showSetDyeHouseDefinitions = ref(false)
 
-const logs = ref<sseLog[]>([])
-const fullSseLogs = ref<sseLog[]>([])
-const lastLog = ref<sseLog>()
+const projectLogs = ref<sseLog[]>([])
+const versionLogs = ref<sseLog[]>([])
+const fullProjectSseLogs = ref<sseLog[]>([])
+const fullVersionSseLogs = ref<sseLog[]>([])
+const lastProjectLogs = ref<sseLog>()
+const lastVersionLogs = ref<sseLog>()
 const uuid = ref('')
+
+const currentOperation = ref<'project' | 'version' | null>(null)
 
 const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid', 'error', 'start', 'reset'], {
   autoReconnect: true,
 })
+
 onBeforeUnmount(() => {
   close()
 })
 
 const percentage = ref(0)
-const showSseLogDialog = ref<any>(null)
-const showFullSseLogDialog = ref<boolean>(false)
+const showProjectSseLogDialog = ref<any>(null)
+const showVersionSseLogDialog = ref<any>(null)
+const showFullProjectSseLogDialog = ref<boolean>(false)
+const showFullVersionSseLogDialog = ref<boolean>(false)
 
 const closeButtonVisible = ref(false)
 let closeButtonTimer: NodeJS.Timeout | null = null
 
+function parseMessage(message?: string) {
+  if (!message)
+    return ''
+  const regex = /^version-check-(started|failed|completed)-(\d+)$/
+  const match = message.match(regex)
+
+  if (match) {
+    return t(`version-check-${match[1]}`, { machineId: match[2] })
+  }
+
+  return t(message)
+}
+
 watch(data, (newData) => {
   if (newData) {
     const parsedData = JSON.parse(newData)
-
     const sseData = {
       type: event.value,
-      message: parsedData.message,
+      message: parseMessage(parsedData.message),
       progress: parsedData.progress,
-    }
-
-    if (sseData.type === 'reset') {
-      logs.value = []
     }
 
     if (sseData.type === 'uuid') {
       uuid.value = parsedData.uuid
+      return
     }
 
-    logs.value.push(sseData)
-
-    lastLog.value = {
-      type: sseData.type,
-      message: sseData.message,
-    }
-    percentage.value = sseData.progress / 100
-
-    if (showSseLogDialog.value) {
-      showSseLogDialog.value.update({
-        message: t(`${lastLog.value?.message}`),
-        progress: {
-          spinner: h(QLinearProgress, {
-            color: 'primary',
-            value: percentage.value,
-          }),
-        },
-      })
-
-      if (closeButtonTimer)
-        clearTimeout(closeButtonTimer)
-      if (sseData.message === 'NETWORK_CONN_FAILED')
-        closeButtonTimer = setTimeout(() => {
-          showSseLogDialog.value.update({
-            cancel: {
-              label: t('dismiss'),
-            },
-          })
-        }, 1700)
-      if (percentage.value === 1) {
-        fullSseLogs.value = logs.value.filter(l => l.type !== 'start').sort((a, b) => a.progress > b.progress ? 1 : 0)
-        setTimeout(() => {
-          showSseLogDialog.value?.hide()
-          showSseLogDialog.value = null
-          showFullSseLogDialog.value = !showFullSseLogDialog.value
-          percentage.value = 0
-          closeButtonVisible.value = false
-        }, 350)
-      }
+    if (currentOperation.value === 'project') {
+      handleProjectLogs(sseData)
+    } else if (currentOperation.value === 'version') {
+      handleVersionLogs(sseData)
     }
   }
 })
-function showSseLogs() {
-  showSseLogDialog.value = dialog({
-    message: `Starting Project Upload`,
-    progress: {
-      spinner: h(QLinearProgress, {
-        color: 'primary',
-        value: percentage.value,
-      }),
-    },
-    persistent: true,
-    ok: false,
-  })
+
+function handleProjectLogs(sseData: any) {
+  if (sseData.type === 'reset') {
+    projectLogs.value = []
+  }
+
+  projectLogs.value.push(sseData)
+  lastProjectLogs.value = {
+    type: sseData.type,
+    message: sseData.message,
+    progress: sseData.progress,
+  }
+  percentage.value = sseData.progress / 100
+
+  if (showProjectSseLogDialog.value) {
+    showProjectSseLogDialog.value.update({
+      message: lastProjectLogs.value?.message,
+      progress: {
+        spinner: h(QLinearProgress, {
+          color: 'primary',
+          value: percentage.value,
+        }),
+      },
+    })
+
+    if (closeButtonTimer)
+      clearTimeout(closeButtonTimer)
+    if (sseData.message === 'NETWORK_CONN_FAILED')
+      closeButtonTimer = setTimeout(() => {
+        showProjectSseLogDialog.value.update({
+          cancel: {
+            label: t('dismiss'),
+          },
+        })
+      }, 1700)
+    if (percentage.value === 1) {
+      fullProjectSseLogs.value = projectLogs.value.filter(l => l.type !== 'start').sort((a, b) => a.progress > b.progress ? 1 : 0)
+      setTimeout(() => {
+        showProjectSseLogDialog.value?.hide()
+        showProjectSseLogDialog.value = null
+        showFullProjectSseLogDialog.value = true
+        percentage.value = 0
+        closeButtonVisible.value = false
+        currentOperation.value = null
+      }, 350)
+    }
+  }
+}
+
+function handleVersionLogs(sseData: any) {
+  if (sseData.type === 'reset') {
+    versionLogs.value = []
+  }
+
+  versionLogs.value.push(sseData)
+  lastVersionLogs.value = {
+    type: sseData.type,
+    message: sseData.message,
+    progress: sseData.progress,
+  }
+  percentage.value = sseData.progress / 100
+
+  if (showVersionSseLogDialog.value) {
+    showVersionSseLogDialog.value.update({
+      message: lastVersionLogs.value?.message,
+      progress: {
+        spinner: h(QLinearProgress, {
+          color: 'primary',
+          value: percentage.value,
+        }),
+      },
+    })
+
+    if (closeButtonTimer)
+      clearTimeout(closeButtonTimer)
+    if (sseData.message === 'NETWORK_CONN_FAILED')
+      closeButtonTimer = setTimeout(() => {
+        showVersionSseLogDialog.value.update({
+          cancel: {
+            label: t('dismiss'),
+          },
+        })
+      }, 1700)
+    if (percentage.value === 1) {
+      fullVersionSseLogs.value = versionLogs.value.sort((a, b) => a.progress > b.progress ? 1 : 0)
+      setTimeout(() => {
+        showVersionSseLogDialog.value?.hide()
+        showVersionSseLogDialog.value = null
+        showFullVersionSseLogDialog.value = true
+        percentage.value = 0
+        closeButtonVisible.value = false
+        currentOperation.value = null
+      }, 350)
+    }
+  }
 }
 
 async function handleAdd(formData: Machine) {
@@ -305,14 +371,12 @@ const columns = ref([
     align: 'left',
   },
   {
-    // kule sayısı
     name: 'reelCount',
     label: t('reelCount'),
     field: 'reelCount',
     align: 'left',
   },
   {
-    // düze sayısı
     name: 'nozzleCount',
     label: t('nozzleCount'),
     field: 'nozzleCount',
@@ -367,7 +431,6 @@ const columns = ref([
     align: 'left',
   },
   {
-    // ana kazan sıcaklık girişi
     name: 'MTTempIo',
     label: t('MTTempIo'),
     field: 'MTTempIoName',
@@ -446,8 +509,11 @@ function showEditModal() {
     persistent: true,
   })
 }
+
 async function loadProject() {
-  showSseLogs()
+  currentOperation.value = 'project'
+
+  showProjectSseLogs()
   try {
     await kc.fetch('/api/sync/network-connection', {
       method: 'POST',
@@ -472,28 +538,62 @@ async function loadProject() {
     } else if (error.statusCode === 504) {
       notifyError(t('connectionTimeout'))
     }
+    currentOperation.value = null
   }
 }
+
 async function receiveVersionInfo() {
   try {
-    notify({
-      message: t('receivingVersionInfo'),
-      color: 'primary',
-      position: 'top',
-      timeout: 1000,
+    currentOperation.value = 'version'
+
+    showVersionSseLogs()
+    await kc.fetch('/api/sync/machine-versions', {
+      query: { sseId: uuid.value },
     })
-    await kc.fetch('/api/sync/machine-versions')
     await refresh()
     selected.value = []
-    notify({
-      message: t('versionInfoReceived'),
-      color: 'green',
-      position: 'top',
-      timeout: 2000,
-    })
   } catch (error: any) {
     notifyError(t('errorReceivingVersionInfo', { error: error.message }))
+    currentOperation.value = null
   }
+}
+
+function showProjectSseLogs() {
+  showProjectSseLogDialog.value = dialog({
+    message: `Starting Project Upload`,
+    progress: {
+      spinner: h(QLinearProgress, {
+        color: 'primary',
+        value: percentage.value,
+      }),
+    },
+    persistent: true,
+    ok: false,
+  }).onCancel(() => {
+    projectLogs.value = []
+    lastProjectLogs.value = undefined
+    percentage.value = 0
+    currentOperation.value = null
+  })
+}
+
+function showVersionSseLogs() {
+  showVersionSseLogDialog.value = dialog({
+    message: `Starting Version Update`,
+    progress: {
+      spinner: h(QLinearProgress, {
+        color: 'primary',
+        value: percentage.value,
+      }),
+    },
+    persistent: true,
+    ok: false,
+  }).onCancel(() => {
+    versionLogs.value = []
+    lastVersionLogs.value = undefined
+    percentage.value = 0
+    currentOperation.value = null
+  })
 }
 </script>
 
@@ -534,7 +634,6 @@ async function receiveVersionInfo() {
         />
         <q-btn
           :label="t('receiveVersionInfo')"
-          :disable="selected.length !== 1"
           no-caps
           push
           color="primary"
@@ -560,9 +659,14 @@ async function receiveVersionInfo() {
       form-class="grid grid-cols-5 gap-4 grid-rows-7 select-none"
     />
     <SseLogDialog
-      :model-value="showFullSseLogDialog"
-      :logs="fullSseLogs"
-      @close="showFullSseLogDialog = false"
+      :model-value="showFullProjectSseLogDialog"
+      :logs="fullProjectSseLogs"
+      @close="showFullProjectSseLogDialog = false"
+    />
+    <SseLogDialog
+      :model-value="showFullVersionSseLogDialog"
+      :logs="fullVersionSseLogs"
+      @close="showFullVersionSseLogDialog = false"
     />
     <TeleskopSettingsDialog
       v-if="showTeleskopSettings"
