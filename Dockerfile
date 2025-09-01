@@ -21,17 +21,11 @@ WORKDIR /opt/build
 RUN npm install -g corepack@latest \
   && corepack use pnpm@9
 
-COPY out/json/pnpm-*.yaml out/json/.npmrc ./
-
-RUN \
-  --mount=type=cache,id=pnpm,target=/pnpm/store \
-  pnpm fetch --frozen-lockfile
-
 COPY out/json/ ./
 
 RUN \
   --mount=type=cache,id=pnpm,target=/pnpm/store \
-  pnpm install --offline --frozen-lockfile --ignore-scripts=false
+  pnpm install --frozen-lockfile --ignore-scripts=false
 
 COPY out/full ./
 
