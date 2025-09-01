@@ -5,3 +5,7 @@ packages:
   - keycloak/*
   - devops/*
   - playground
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild
+  - vue-demi

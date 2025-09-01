@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   '@nuxtjs/i18n':
-    hash: h3raohk5tsl6nelo5w2sd55rmq
+    hash: eba71082aa649df3e352c8c13969dea0b77d0ddb47d7a131c4812beaabfb35cb
     path: patches/@nuxtjs__i18n.patch
 
 importers:
@@ -1051,7 +1051,7 @@ importers:
         version: 3.14.159(magicast@0.3.5)(rollup@4.25.0)(webpack-sources@3.2.3)
       '@nuxtjs/i18n':
         specifier: 8.3.1
-        version: 8.3.1(patch_hash=h3raohk5tsl6nelo5w2sd55rmq)(magicast@0.3.5)(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
+        version: 8.3.1(patch_hash=eba71082aa649df3e352c8c13969dea0b77d0ddb47d7a131c4812beaabfb35cb)(magicast@0.3.5)(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
       '@pinia/nuxt':
         specifier: 0.7.0
         version: 0.7.0(magicast@0.3.5)(rollup@4.25.0)(typescript@5.6.3)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
@@ -9405,7 +9405,7 @@ snapshots:
       - vue-tsc
       - webpack-sources
 
-  '@nuxtjs/i18n@8.3.1(patch_hash=h3raohk5tsl6nelo5w2sd55rmq)(magicast@0.3.5)(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)':
+  '@nuxtjs/i18n@8.3.1(patch_hash=eba71082aa649df3e352c8c13969dea0b77d0ddb47d7a131c4812beaabfb35cb)(magicast@0.3.5)(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)':
     dependencies:
       '@intlify/h3': 0.5.0
       '@intlify/shared': 9.14.1
