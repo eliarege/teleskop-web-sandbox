@@ -460,6 +460,7 @@ function unplannedSearch(str: string) {
 }
 async function scrollToDate(ev: { jobOrder: string, startTime: string }) {
   const event = scheduler.events.find(e => e.jobOrder === ev.jobOrder)
+
   if (event) {
     event.cls = 'custom-focus'
     scheduler.scrollEventIntoView(event, {
@@ -468,26 +469,42 @@ async function scrollToDate(ev: { jobOrder: string, startTime: string }) {
     })
     setTimeout(() => {
       event.cls = ''
-    }, 1000)
+    }, 3000)
   } else {
     scheduler.scrollToDate(new Date(ev.startTime))
+
     if (!refreshingScheduler.value) {
       await until(refreshingScheduler).toBe(true)
     }
     await until(refreshingScheduler).toBe(false)
-    const event = scheduler.events.find(e => e.jobOrder === ev.jobOrder)
-    if (!event) {
-      Toast.show(t('toast.fail.load'))
-    } else {
-      event.cls = 'custom-focus'
-      scheduler.scrollEventIntoView(event, {
-        highlight: true,
-        animate: false,
-      })
-      setTimeout(() => {
-        event.cls = ''
-      }, 1000)
+
+    // idea is from chatgpt
+    let attempts = 0
+    const maxAttempts = 5
+    const retryDelay = 500
+
+    while (attempts < maxAttempts) {
+      const foundEvent = scheduler.events.find(e => e.jobOrder === ev.jobOrder)
+
+      if (foundEvent) {
+        foundEvent.cls = 'custom-focus'
+        scheduler.scrollEventIntoView(foundEvent, {
+          highlight: true,
+          animate: false,
+        })
+        setTimeout(() => {
+          foundEvent.cls = ''
+        }, 3000)
+        return
+      }
+
+      attempts++
+      if (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+      }
     }
+
+    Toast.show(t('toast.fail.load'))
   }
 }
 
