@@ -38,7 +38,7 @@ for package_json in apps/*/package.json; do
 done
 
 npx git-cliff --bump -o CHANGELOG.md
-git add package.json CHANGELOG.md
+git add .
 git commit -m "chore(release): $next_version"
 git tag "$next_version"
 echo "Version bumped to $next_version and changelog updated."
