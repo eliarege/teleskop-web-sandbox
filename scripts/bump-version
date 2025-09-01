@@ -1,0 +1,44 @@
+#!/bin/bash
+set -e
+
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Working directory is not clean. Please commit or stash your changes."
+  exit 1
+fi
+
+if ! command -v jq &> /dev/null; then
+  echo "jq is not installed. Please install jq to proceed."
+  exit 1
+fi
+
+next_version=$(npx git-cliff --bumped-version)
+# Check if next_version tag exists
+if git rev-parse "$next_version" >/dev/null 2>&1; then
+  echo "Tag $next_version already exists. Aborting."
+  exit 1
+fi
+
+update_package_json_version() {
+  local path=$1
+  jq --arg v "${next_version:1}" '.version = $v' "$path" > "$path.tmp.json" && mv "$path.tmp.json" "$path"
+}
+
+update_package_json_version package.json
+
+for package_json in packages/*/package.json; do
+  if [[ -f "$package_json" ]]; then
+    update_package_json_version "$package_json"
+  fi
+done
+
+for package_json in apps/*/package.json; do
+  if [[ -f "$package_json" ]]; then
+    update_package_json_version "$package_json"
+  fi
+done
+
+npx git-cliff --bump -o CHANGELOG.md
+git add package.json CHANGELOG.md
+git commit -m "chore(release): $next_version"
+git tag "$next_version"
+echo "Version bumped to $next_version and changelog updated."
