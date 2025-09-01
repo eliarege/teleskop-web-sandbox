@@ -16,6 +16,9 @@ importers:
       '@teleskop/eslint-config':
         specifier: workspace:*
         version: link:packages/eslint-config
+      git-cliff:
+        specifier: 2.10.0
+        version: 2.10.0
       syncpack:
         specifier: 13.0.0
         version: 13.0.0(typescript@5.6.3)
@@ -1075,7 +1078,7 @@ importers:
         version: 11.2.0(vue@3.5.12(typescript@5.6.3))
       '@vueuse/nuxt':
         specifier: 11.2.0
-        version: 11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
+        version: 11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
       date-fns:
         specifier: 4.1.0
         version: 4.1.0
@@ -5101,6 +5104,41 @@ packages:
 
   giget@1.2.3:
     resolution: {integrity: sha512-8EHPljDvs7qKykr6uw8b+lqLiUc/vUg+KVTI0uND4s63TdsZM2Xus3mflvF0DDG9SiM4RlCkFGL+7aAjRmV7KA==}
+    hasBin: true
+
+  git-cliff-darwin-arm64@2.10.0:
+    resolution: {integrity: sha512-/x+KW+CRCpfn3xG71YD0lpQd1MmKH+fhUI7aki5QkU8dRp+IBxieswwb+lJcU4+FcLEbAEL/8hVxrBawrcmLcA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  git-cliff-darwin-x64@2.10.0:
+    resolution: {integrity: sha512-Yiufjb9wNEJ6Y//Na/BvfSd68sB4kp3NPKHtA9keO4UX+EM7xd4qy4daWUTnbDyvqJw4ZHWrdXND0SYoZ1qUqA==}
+    cpu: [x64]
+    os: [darwin]
+
+  git-cliff-linux-arm64@2.10.0:
+    resolution: {integrity: sha512-rGhsuItIwZlYmoW0h74dox7hJNVwG9H6h61URIh+Ey6EJaQGt7toh7GmgPBnhOnzKXHiVgMAfZaVNuhuuaYTKQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  git-cliff-linux-x64@2.10.0:
+    resolution: {integrity: sha512-MSXv/vvZuSfjfB81i3LiqnjwJm63Go+Ns2L+USLYktHZ69uq1iEWuhqNrCAU4V1xP1i6VMdXeax8Q6gc4Msehg==}
+    cpu: [x64]
+    os: [linux]
+
+  git-cliff-windows-arm64@2.10.0:
+    resolution: {integrity: sha512-38iGWPi8O+0c3ejIYZ00d1cXmJ+0Sx0j9WzFBwE2HS2I938sJssrEdkzQyg+/1m8HG+a8yWK86wPEOxvfJ6kQQ==}
+    cpu: [arm64]
+    os: [win32]
+
+  git-cliff-windows-x64@2.10.0:
+    resolution: {integrity: sha512-ke5yHH2BKtOyQWEtvasw2Dfd18PRbVJjbU/0FrBNBh/AjPOIKctDR0IaApxDDuEk+tJcSmrOA8s44Hw+Pd72Ig==}
+    cpu: [x64]
+    os: [win32]
+
+  git-cliff@2.10.0:
+    resolution: {integrity: sha512-V7rIKfGsmXq5oUqFn8GJ+hkZcdl/enbrUwZIQl7dDgo/PxLOdiXD69+XG4zB7ufaPqhHcMzzH5TZwpFaPK3qNg==}
+    engines: {node: '>=18.19 || >=20.6 || >=21'}
     hasBin: true
 
   git-config-path@2.0.0:
@@ -10642,7 +10680,7 @@ snapshots:
 
   '@vueuse/metadata@9.13.0': {}
 
-  '@vueuse/nuxt@11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)':
+  '@vueuse/nuxt@11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)':
     dependencies:
       '@nuxt/kit': 3.14.159(magicast@0.3.5)(rollup@4.25.0)(webpack-sources@3.2.3)
       '@vueuse/core': 11.2.0(vue@3.5.12(typescript@5.6.3))
@@ -12565,6 +12603,35 @@ snapshots:
       ohash: 1.1.4
       pathe: 1.1.2
       tar: 6.2.1
+
+  git-cliff-darwin-arm64@2.10.0:
+    optional: true
+
+  git-cliff-darwin-x64@2.10.0:
+    optional: true
+
+  git-cliff-linux-arm64@2.10.0:
+    optional: true
+
+  git-cliff-linux-x64@2.10.0:
+    optional: true
+
+  git-cliff-windows-arm64@2.10.0:
+    optional: true
+
+  git-cliff-windows-x64@2.10.0:
+    optional: true
+
+  git-cliff@2.10.0:
+    dependencies:
+      execa: 8.0.1
+    optionalDependencies:
+      git-cliff-darwin-arm64: 2.10.0
+      git-cliff-darwin-x64: 2.10.0
+      git-cliff-linux-arm64: 2.10.0
+      git-cliff-linux-x64: 2.10.0
+      git-cliff-windows-arm64: 2.10.0
+      git-cliff-windows-x64: 2.10.0
 
   git-config-path@2.0.0: {}
 
