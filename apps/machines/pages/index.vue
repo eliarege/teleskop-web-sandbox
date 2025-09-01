@@ -406,7 +406,6 @@ const columns = ref([
 ] as MachineTableColumn[])
 
 function showAddModal() {
-  const selectedMachine = selected.value[0]
   dialog({
     component: AddEditModal,
     componentProps: {
@@ -416,16 +415,8 @@ function showAddModal() {
       tbbModelOptions,
       steamUnitOptions,
       machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
-      mtTempIoOptions: selectedMachine.MTOptions.map(o => ({
-        label: o.name,
-        value: o.id,
-        machineId: selectedMachine.machineId,
-      })),
-      steamValveDoOptions: selectedMachine.steamValveOptions.map(s => ({
-        label: s.ioName,
-        value: s.ioId,
-        machineId: selectedMachine.machineId,
-      })),
+      mtTempIoOptions: [],
+      steamValveDoOptions: [],
     },
     persistent: true,
   })
