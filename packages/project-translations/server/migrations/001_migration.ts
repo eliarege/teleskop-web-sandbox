@@ -50,6 +50,7 @@ export async function up(knex: Knex) {
     table.integer('message_id').unsigned().notNullable()
     table.integer('locale_id').unsigned().notNullable()
     table.string('text').notNullable()
+    table.primary(['machine_id', 'message_id', 'locale_id'])
     table.foreign(['machine_id', 'message_id'])
       .references(['machine_id', 'message_id'])
       .inTable('BFPROJECTMESSAGES')
