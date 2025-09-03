@@ -1095,7 +1095,12 @@ export async function updateMachineTranslations(
   trx: Knex,
 ) {
   try {
-    const translations = await tbb.fetchTranslations()
+    let translations = await tbb.fetchTranslations()
+
+    // Filter out entries that have only one translation or all of their translations are identical
+    translations = translations.filter((tr) => {
+      return tr.length > 1 && tr.slice(1).some(txt => txt.text !== tr[0].text)
+    })
 
     await trx('BFPROJECTTRANSLATIONS').delete().where('machine_id', machineId)
     await trx('BFPROJECTMESSAGES').delete().where('machine_id', machineId)
