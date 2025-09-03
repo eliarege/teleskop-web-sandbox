@@ -8,6 +8,9 @@ patchedDependencies:
   '@nuxtjs/i18n':
     hash: eba71082aa649df3e352c8c13969dea0b77d0ddb47d7a131c4812beaabfb35cb
     path: patches/@nuxtjs__i18n.patch
+  httpxy:
+    hash: b368a8dd810663a4b97ecfbaa010178cc1cf4644f16a8ad8f5573a7dfda092bb
+    path: patches/httpxy.patch
 
 importers:
 
@@ -1078,7 +1081,7 @@ importers:
         version: 11.2.0(vue@3.5.12(typescript@5.6.3))
       '@vueuse/nuxt':
         specifier: 11.2.0
-        version: 11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
+        version: 11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
       date-fns:
         specifier: 4.1.0
         version: 4.1.0
@@ -10680,7 +10683,7 @@ snapshots:
 
   '@vueuse/metadata@9.13.0': {}
 
-  '@vueuse/nuxt@11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)':
+  '@vueuse/nuxt@11.2.0(magicast@0.3.5)(nuxt@3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.36.0))(webpack-sources@3.2.3))(rollup@4.25.0)(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)':
     dependencies:
       '@nuxt/kit': 3.14.159(magicast@0.3.5)(rollup@4.25.0)(webpack-sources@3.2.3)
       '@vueuse/core': 11.2.0(vue@3.5.12(typescript@5.6.3))
@@ -12817,7 +12820,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  httpxy@0.1.5: {}
+  httpxy@0.1.5(patch_hash=b368a8dd810663a4b97ecfbaa010178cc1cf4644f16a8ad8f5573a7dfda092bb): {}
 
   human-signals@2.1.0: {}
 
@@ -13546,7 +13549,7 @@ snapshots:
       gzip-size: 7.0.0
       h3: 1.13.0
       hookable: 5.5.3
-      httpxy: 0.1.5
+      httpxy: 0.1.5(patch_hash=b368a8dd810663a4b97ecfbaa010178cc1cf4644f16a8ad8f5573a7dfda092bb)
       ioredis: 5.4.1
       jiti: 2.4.0
       klona: 2.0.6

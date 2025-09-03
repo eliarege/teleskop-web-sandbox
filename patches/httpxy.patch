@@ -1,0 +1,28 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 5121f5e2d3ff693dfdae73f535188e36e951e7fa..4f9873ed1df5d927cb60cefd6dcecd5b12666897 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -271,6 +271,9 @@ const stream$1 = defineProxyMiddleware(
+     req.on("aborted", function() {
+       proxyReq.abort();
+     });
++    res.on('close', function () {
++      proxyReq.abort()
++    });
+     const proxyError = createErrorHandler(proxyReq, options.target);
+     req.on("error", proxyError);
+     proxyReq.on("error", proxyError);
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 9a6359436d6e13007f2947e5b2d27f1504271bd7..b5f19ad20a21ce83dfece4c7e0f70152b68be284 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -264,6 +264,9 @@ const stream$1 = defineProxyMiddleware(
+     req.on("aborted", function() {
+       proxyReq.abort();
+     });
++    res.on('close', function () {
++      proxyReq.abort()
++    });
+     const proxyError = createErrorHandler(proxyReq, options.target);
+     req.on("error", proxyError);
+     proxyReq.on("error", proxyError);

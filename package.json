@@ -31,7 +31,8 @@
       ]
     },
     "patchedDependencies": {
-      "@nuxtjs/i18n": "patches/@nuxtjs__i18n.patch"
+      "@nuxtjs/i18n": "patches/@nuxtjs__i18n.patch",
+      "httpxy": "patches/httpxy.patch"
     }
   }
 }
