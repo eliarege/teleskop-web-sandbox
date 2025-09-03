@@ -207,7 +207,7 @@ function handleVersionLogs(sseData: any) {
           })
         }, 1700)
       if (percentage.value === 1) {
-        fullVersionSseLogs.value = versionLogs.value.sort((a, b) => a.progress > b.progress ? 1 : 0)
+        fullVersionSseLogs.value = versionLogs.value.toSorted((a, b) => a.progress > b.progress ? 1 : 0)
         setTimeout(() => {
           showVersionSseLogDialog.value?.hide()
           showVersionSseLogDialog.value = null
