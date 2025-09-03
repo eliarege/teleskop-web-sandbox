@@ -35,7 +35,10 @@ const compLogs = computed(() => props.logs.filter(l => l.type !== 'uuid'))
             {{ errMessage }}
           </q-tooltip>
           <q-item-section avatar>
-            {{ log.type }}
+            <q-icon
+              :name="log.type === 'error' ? 'error' : 'check_circle'"
+              :color="log.type === 'error' ? 'negative' : 'positive'"
+            />
           </q-item-section>
           <q-item-section>{{ log.message }}</q-item-section>
         </q-item>
