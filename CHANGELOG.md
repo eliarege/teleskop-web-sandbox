@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.45.3 - 2025-09-03
+
+[Compare Changes](51d7f4e21f0fbe6fc9e6e495430b6ebd47b083ba...d1542456621a6c1dc633236284b56b98976535e5)
+
+### 🐛 Bug Fixes
+
+- `bump-version` not staging all `package.json` files ([2b6267e](2b6267ec3cab4b3e58fa38e180cb0baa063ca4eb))
+-  **MA**: Fixed option check for machine add modal ([1d9de87](1d9de87210996b584aef002ba750966fb0d16e68))
+-  **PT**: Fixed formatSeconds function to expect negative values ([3228b46](3228b465d65caa9bc8469a7359b0ad340f73b8c0))
+-  **PT**: Added missing translations ([900d2a7](900d2a7386d78e6ee9226d4fc4b0b0f511fbfda1))
+-  **PT**: Joborder search wasn't highlighting events from outside of daterange ([bca9a37](bca9a372a7ec5e88b71eaf4d59e54f9f828a4494))
+
+### 🔧 Miscellaneous Tasks
+
+- Added CHANGELOG.md generated via git-cliff ([f1914db](f1914db626d917e4205c9be37fb285dcffc7d019))
+- Added `bump-version` script ([b8832eb](b8832eb2ecfa73d1aafc3df41dc7e75bccb3cf1d))
+- Added `version` prop to `package.json` files ([078b57f](078b57f938c13ffdb93689bc9356e9f8a8517a50))
+-  **MA**: Updated version update & added sse logs ([b812042](b812042496b108d75894c2d5be0c6f43a6929ed9))
+-  **PT**: Added theoretical duration, actual duration and deviation to tooltip ([578c2da](578c2da55f65b091882f797f24bfa62555b76cba))
+-  **PT**: Added stops duration & formatted seconds ([3ba10c4](3ba10c44ed98bb35c5d7ca60b0e788695ac170b8))
+
 ## 0.45.2 - 2025-09-01
 
 [Compare Changes](d58d808a7da8c4cb9d3b7612e85b2cb3b1e2a359...51d7f4e21f0fbe6fc9e6e495430b6ebd47b083ba)
