@@ -36,3 +36,14 @@ export function tryJsonParse(str: string): any {
     return str
   }
 }
+
+export function chunks<T extends Record<string, unknown>>(
+  records: T[],
+  batchSize: number,
+): T[][] {
+  const result: T[][] = []
+  for (let i = 0; i < records.length; i += batchSize) {
+    result.push(records.slice(i, i + batchSize))
+  }
+  return result
+}
