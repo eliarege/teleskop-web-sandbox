@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { db } from '../db'
 import { supportedProjectLocales } from '../../shared/constants'
+import { escapeKey } from '../../shared/utils'
 
 const querySchema = z.object({
   locale: z
@@ -78,7 +79,7 @@ async function fetchMachineTranslations(localeId: number): Promise<Record<string
   const result = {} as Record<string, Record<string, string>>
   kv.forEach((row) => {
     result[row.machine_id] ??= {}
-    result[row.machine_id][row.key] = row.value
+    result[row.machine_id][escapeKey(row.key)] = row.value
   })
   return result
 }
@@ -119,7 +120,7 @@ async function fetchGlobalTranslations(localeId: number): Promise<Record<string,
 
   const result: Record<string, string> = {}
   kv.forEach((row) => {
-    result[row.key] = row.value
+    result[escapeKey(row.key)] = row.value
   })
   return result
 }

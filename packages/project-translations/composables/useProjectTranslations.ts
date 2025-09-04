@@ -1,4 +1,5 @@
 import type { TranslateOptions } from 'vue-i18n'
+import { escapeKey } from '../shared/utils'
 
 export function useProjectTranslations() {
   const { $projectTranslations: pt } = useNuxtApp()
@@ -6,7 +7,7 @@ export function useProjectTranslations() {
     useScope: 'local',
     inheritLocale: false,
     locale: pt.locale.value,
-    fallbackLocale: pt.fallbackLocale.value,
+    fallbackLocale: pt.locale.value,
     messages: pt.messages as Record<string, any>,
   })
 
@@ -18,14 +19,12 @@ export function useProjectTranslations() {
   pt.hooks.hook('newLocale', (loc, msgs) => {
     mergeLocaleMessage(loc, msgs)
     locale.value = loc
+    fallbackLocale.value = loc
   })
 
   pt.hooks.hook('updateLocale', (loc) => {
     locale.value = loc
-  })
-
-  watch(pt.fallbackLocale, (newFallback) => {
-    fallbackLocale.value = newFallback
+    fallbackLocale.value = loc
   })
 
   return {
@@ -34,15 +33,16 @@ export function useProjectTranslations() {
     setLocale(newLocale: string) {
       pt.locale.value = newLocale
     },
-    mt(value: string, machineId?: number) {
+    mt(key: string, machineId?: number) {
+      const escapedKey = escapeKey(key)
       if (machineId) {
         return t(
-          `machine.${machineId}.${value}`,
-          t(`global.${value}`, value, silentOptions),
+          `machine.${machineId}.${escapedKey}`,
+          t(`global.${escapedKey}`, key, silentOptions),
           silentOptions,
         )
       } else {
-        return t(`global.${value}`, value, silentOptions)
+        return t(`global.${escapedKey}`, key, silentOptions)
       }
     },
   }

@@ -18,12 +18,10 @@ export default defineNuxtPlugin(() => {
   }>()
   const locale = ref(supportedProjectLocales[0].code)
   const messages = {} as Record<string, ProjectTranslations>
-  const fallbackLocale = ref('tr')
   const availableLocales = ref<{ id: number, code: string, name: string }[]>([])
 
   kc.fetch('/api/project-translations/available-locales').then((locales) => {
     availableLocales.value = locales
-    fallbackLocale.value = locales[0]?.code || 'tr'
   })
 
   watch(locale, async (newLocale) => {
@@ -42,7 +40,6 @@ export default defineNuxtPlugin(() => {
       projectTranslations: {
         locale,
         locales: readonly(availableLocales),
-        fallbackLocale: readonly(fallbackLocale),
         messages,
         hooks,
       },
