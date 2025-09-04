@@ -9,7 +9,7 @@ import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../consta
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
-import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { CommandType, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
@@ -305,10 +305,10 @@ export class MachineController {
   /**
    * Makine id numarasına göre makinenin belirli bir programını getirir
    * @param {number} programNo - Program numarası
-   * @returns {Promise<{program: Program, programErrors: StepError[]}>} - Program ve hata bilgileri
+   * @returns {Promise<ProgramWithErrors>} - Program ve hata bilgileri
    */
   @withTransaction
-  async fetchProgram(programNo: number): Promise<{ program: Program, programErrors: StepError[] }> {
+  async fetchProgram(programNo: number): Promise<ProgramWithErrors> {
     const program = await this.trx
       .first({
         name: 'P.NAME',
@@ -494,9 +494,9 @@ export class MachineController {
     }
 
     const commands = await this.fetchCommands()
-    const programErrors = validateProgram(program, commands)
+    const programError = validateProgram(program, commands)
 
-    return { program, programErrors }
+    return { program, programError }
   }
 
   /**

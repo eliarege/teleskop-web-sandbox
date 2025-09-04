@@ -12,7 +12,7 @@ export interface ContextMenuStore {
   paste: (machineId: number, remains?: CopyItem) => Promise<CopyItem>
   setCtx: (ctx?: any) => void
   deleteProgram: (selectedRows: ProgramTableRow[], selectedOption: string, machineId: number) => Promise<void>
-  getProgram: (programNo: number, machineId: number) => Promise<{ program: Program, programErrors: StepError[] }>
+  getProgram: (programNo: number, machineId: number) => Promise<ProgramWithErrors>
   updateProgramHeader: (machineId: number, programNo: number, program: ProgramHeaderUpdate) => Promise<boolean>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   changeProcessType: (machineId: number, programs: ProgramTableRow[], newType: number) => Promise<void>

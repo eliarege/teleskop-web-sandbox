@@ -9,7 +9,7 @@ import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
 import type { ContextBarButtons, ProgramItem, ProgramTableRow } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
-import { formatDuration } from '~/composables/utils'
+import { formatDuration, useErrorStore } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
@@ -273,6 +273,12 @@ interface ProgramTableColumn extends Omit<QTableColumn, 'label'> {
   tooltip?: (value: Date, row: ProgramTableRow) => string
 }
 
+function getErrorCount(rowProgram: ProgramTableRow): number {
+  const errorStore = useErrorStore()
+  const error = errorStore.errors.find(e => e.programNo === rowProgram.programNo)
+  return error ? error.steps.length : 0
+}
+
 const allColumns = ref<ProgramTableColumn[]>([
   {
     name: 'programNo',
@@ -287,6 +293,13 @@ const allColumns = ref<ProgramTableColumn[]>([
     field: 'name',
     sortable: true,
     align: 'left',
+  },
+  {
+    name: 'errorCount',
+    label: tt('program.errorCount'),
+    field: (row: ProgramTableRow) => getErrorCount(row),
+    align: 'center',
+    sortable: false,
   },
   {
     name: 'duration',
@@ -700,6 +713,7 @@ const columns = computed(() =>
       <div class="flex flex-col color-gray-5 text-3">
         <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
         <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues().map(p => `${p.machineId}-${p.programNo}-${p.name}`).join(', ')}` }} </span>
+        <span> {{ `programErrors: ${useErrorStore().errors.map(p => `${p.programNo}-${p.steps.length}`).join(', ')}` }} </span>
       </div>
     </DevOnly>
     <QTable

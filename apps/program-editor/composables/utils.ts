@@ -270,9 +270,97 @@ interface Notification {
 
 export const useNotificationStore = defineStore('notification', () => {
   const showNotificationPopup = ref<boolean>(false)
-  const notifications = ref<Notification[]>([])
 
-  return { showNotificationPopup, notifications }
+})
+
+export const useErrorStore = defineStore('program-errors', () => {
+  const errors = ref<ProgramError[]>(JSON.parse(localStorage.getItem('program-errors') || '[]'))
+
+  watch(errors, (newVal) => {
+    localStorage.setItem('program-errors', JSON.stringify(newVal))
+  }, { deep: true })
+
+  function getProgramErrors(programNo: number): ProgramError[] {
+    return errors.value.filter(p => p.programNo === programNo)
+  }
+
+  function setErrors(programNo: number, stepErrors: StepError[]) {
+    const index = errors.value.findIndex(p => p.programNo === programNo)
+
+    if (stepErrors.length === 0) {
+    // eğer daha önce kayıtlı varsa sil
+      if (index !== -1) {
+        errors.value.splice(index, 1)
+      }
+      return
+    }
+
+    if (index !== -1) {
+      errors.value[index].steps = stepErrors
+    } else {
+      errors.value.push({
+        programNo,
+        steps: stepErrors,
+      })
+    }
+  }
+
+  function clearStepErrors(programNo: number, stepId: number) {
+    const index = errors.value.findIndex(p => p.programNo === programNo)
+    if (index !== -1) {
+      errors.value[index].steps = errors.value[index].steps.filter(s => s.stepId !== stepId)
+    }
+  }
+
+  function clearCommandErrors(programNo: number, stepId: number, commandId: number) {
+    const index = errors.value.findIndex(p => p.programNo === programNo)
+    if (index !== -1) {
+      errors.value[index].steps = errors.value[index].steps
+        .map((step) => {
+          if (step.stepId === stepId) {
+            step.commands = step.commands.filter(c => c.commandId !== commandId)
+          }
+          return step
+        })
+        .filter(step => step.commands && step.commands.length > 0)
+    }
+  }
+
+  function getStepErrors(programNo: number, stepId: number): StepError[] {
+    return errors.value
+      .filter(p => p.programNo === programNo)
+      .map(p => p.steps)
+      .flat()
+      .filter(s => s.stepId === stepId)
+  }
+
+  function getCommandErrors(programNo: number, stepId: number, commandId: number): CommandError[] {
+    return errors.value
+      .filter(p => p.programNo === programNo)
+      .map(p => p.steps)
+      .flat()
+      .filter(s => s.stepId === stepId)
+      .map(s => s.commands)
+      .flat()
+      .filter(c => c.commandId === commandId)
+  }
+
+  function addError(programNo: number, stepError: StepError[]) {
+    errors.value.push({
+      programNo,
+      steps: stepError,
+    })
+  }
+
+  function clearErrors(programNumber?: number) {
+    if (programNumber !== undefined) {
+      errors.value = errors.value.filter(p => p.programNo !== programNumber)
+    } else {
+      errors.value = []
+    }
+  }
+
+  return { errors, getProgramErrors, setErrors, clearStepErrors, clearCommandErrors, getStepErrors, getCommandErrors, addError, clearErrors }
 })
 
 export const useProgramFilterStore = defineStore('filter', () => {

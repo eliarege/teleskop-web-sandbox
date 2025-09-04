@@ -93,11 +93,13 @@
     "collapseAll": "Tümünü Daralt",
     "machineConstants": "Makine Sabitleri",
     "writeProgramSettings": "Program Yazma Ayarları",
-    "commandDetails": "Komut Detayları"
+    "commandDetails": "Komut Detayları",
+    "checkErrors": "Hata Kontrolü"
   },
   "program": {
     "name": "Program Adı",
     "programNo": "Program Numarası",
+    "errorCount": "Hata Sayısı",
     "programState": "Proccess Tipi",
     "stepCount": "Adım Sayısı",
     "type": "Tip",

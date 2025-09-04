@@ -2,21 +2,18 @@
 import { Sortable } from 'sortablejs-vue3'
 import type { SortableOptions } from 'sortablejs'
 import ProgramStepCommandForm from './ProgramStepCommandForm.vue'
-import type { ProgramStep, StepError } from '~/shared/types'
+import type { ProgramStep } from '~/shared/types'
 import { calculateProgramStepDuration } from '~/shared/formula'
+import { useErrorStore } from '~/composables/utils'
 
 const props = defineProps<{
   path: string
-  stepError?: StepError
-}>()
-
-const emit = defineEmits<{
-  (event: 'removeError', stepId: number, commandId: number): void
 }>()
 
 const $q = useQuasar()
 const { t } = useI18n()
 const editor = useEditorStore()
+const errorStore = useErrorStore()
 const { $commandManager } = useNuxtApp()
 
 const step: ProgramStep = editor.getPathElement(props.path)
@@ -28,7 +25,10 @@ const stepIcons = computed(() => {
   return [mainIcon, ...parallelIcons]
 })
 
-const expanded = ref<boolean>(!!props.stepError || editor.allStepExpanded)
+const expanded = ref<boolean>(
+  errorStore.getStepErrors(editor.program.programNo, step.stepId).length > 0
+  || editor.allStepExpanded,
+)
 const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')
 
 watch(() => editor.allStepExpanded, () => {
@@ -61,10 +61,13 @@ function deleteParallelStep(stepIndex: number, index: number): void {
   editor.deleteParallelStep(stepIndex, index)
 }
 
-const getCommandError = (commandId: number) => props.stepError?.commands.find(cmd => cmd.commandId === commandId)
+function getCommandError(commandId: number) {
+  return errorStore.getCommandErrors(editor.program.programNo, step.stepId, commandId)[0]
+}
 
-function removeError(stepId: number, commandId: number) {
-  emit('removeError', stepId, commandId)
+function removeError(commandId: number) {
+  errorStore.clearCommandErrors(editor.program.programNo, step.stepId, commandId)
+  editor.errorIds.delete(`${step.stepId}-${commandId}`)
 }
 </script>
 
@@ -107,7 +110,7 @@ function removeError(stepId: number, commandId: number) {
       @click="expanded = !expanded"
     />
 
-    <div @click="removeError(stepIndex, step.mainCommand.commandId)">
+    <div @click="removeError(step.mainCommand.commandId)">
       <ProgramStepCommandForm
         class="flex-1"
         :path="`${props.path}.mainCommand`"
@@ -137,7 +140,7 @@ function removeError(stepId: number, commandId: number) {
         <template #item="{ index }">
           <div
             class="step-parallel-command"
-            @click="removeError(step.stepId, step.parallelCommands[index].commandId)"
+            @click="removeError(step.parallelCommands[index].commandId)"
           >
             <DevOnly>
               <div class="flex flex-col color-gray-5 text-3">
