@@ -247,6 +247,16 @@ const buttons = computed<ContextBarButtons[]>(() => [
       $commandManager.executeCommand('refresh', { $q }, machineId)
     },
   },
+  {
+    label: t('menu.checkErrors'),
+    originalLabel: t('menu.checkErrors'),
+    tooltip: t('menu.checkErrors'),
+    disable: !editor.selectedPrograms.length,
+    icon: 'check_circle',
+    onClick() {
+      $commandManager.executeCommand('checkErrors', { $q }, machineId, editor.selectedPrograms)
+    },
+  },
 ])
 useContextBar(buttons)
 
