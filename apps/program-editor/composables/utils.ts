@@ -2,7 +2,7 @@ import isEqual from 'fast-deep-equal'
 import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
 import { useEditorStore } from './editor'
-import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramHeader, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramError, ProgramFilter, ProgramHeader, ProgramStepCommand, StepError, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -271,6 +271,35 @@ interface Notification {
 export const useNotificationStore = defineStore('notification', () => {
   const showNotificationPopup = ref<boolean>(false)
 
+  const notifications = ref<Notification[]>(
+    (JSON.parse(localStorage.getItem('notifications') || '[]') as Notification[]).map(n => ({
+      ...n,
+      date: new Date(n.date),
+    })),
+  )
+
+  watch(notifications, (newVal) => {
+    localStorage.setItem('notifications', JSON.stringify(newVal))
+  }, { deep: true })
+
+  function addNotification(message: string, type: 'positive' | 'warning') {
+    notifications.value.push({
+      message,
+      type,
+      date: new Date(),
+    })
+  }
+
+  function removeNotification(index: number) {
+    notifications.value.splice(index, 1)
+  }
+
+  return {
+    showNotificationPopup,
+    notifications,
+    addNotification,
+    removeNotification,
+  }
 })
 
 export const useErrorStore = defineStore('program-errors', () => {
