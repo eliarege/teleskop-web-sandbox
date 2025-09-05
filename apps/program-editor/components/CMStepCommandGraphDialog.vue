@@ -10,7 +10,7 @@ const { dialogRef } = useDialogPluginComponent()
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, BarController, CategoryScale, LinearScale)
 
-const chartData = ref<ChartData>()
+const chartData = ref<ChartData<'bar', { x: [number, number], y: string }[]>>()
 const chartOptions = ref<ChartOptions<'bar'>>()
 
 interface CommandLength {
@@ -50,7 +50,7 @@ function calculateChartData() {
 
   const dataPoints = commandsLength.value.map(({ commandNo, startStep, endStep }) => {
     const commandName = editor.machine.commands.get(commandNo)?.name || t('apperance.unknownCommand')
-    return { x: [startStep, endStep], y: commandName }
+    return { x: [startStep, endStep] as [number, number], y: commandName }
   })
 
   chartData.value = {
@@ -100,9 +100,10 @@ chartOptions.value = {
       displayColors: false,
       callbacks: {
         label(context) {
+          const cmd = commandsLength.value[context.dataIndex]
           return [
-          `${t('apperance.stepStart')}: ${context.dataset.data[context.dataIndex]?.x[0]}`,
-          `${t('apperance.stepEnd')}: ${context.dataset.data[context.dataIndex]?.x[1]}`,
+            `${t('apperance.stepStart')}: ${cmd.startStep}`,
+            `${t('apperance.stepEnd')}: ${cmd.endStep}`,
           ]
         },
       },

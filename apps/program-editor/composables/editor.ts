@@ -53,7 +53,7 @@ export const useEditorStore = defineStore('editor', () => {
    * @returns {Promise<void>} Promise döner ve asenkron bir işlem olduğunu belirtir.
    */
   async function fetchTeleskopSettings(): Promise<void> {
-    teleskopSettings.value = await kc.fetch('/api/teleskop-settings', { method: 'GET' })
+    teleskopSettings.value = await kc.fetch<TeleskopSettings>('/api/teleskop-settings', { method: 'GET' })
   }
 
   /**
@@ -475,7 +475,7 @@ export const useEditorStore = defineStore('editor', () => {
    * fonksiyon hiçbir değer döndürmez.
    */
   async function deleteProgram(machineId: number, programNo: number): Promise<void> {
-    await kc.fetch(`/api/machine/${machineId}/program/${programNo}`, {
+    await kc.fetch<boolean>(`/api/machine/${machineId}/program/${programNo}`, {
       method: 'DELETE',
       body: {
         programNo,
@@ -636,7 +636,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Elde edilen makineler, `Machine` türünde nesneler içerir.
    */
   async function fetchAllMachine(): Promise<Machine[]> {
-    return await kc.fetch('/api/machine')
+    return await kc.fetch<Machine[]>('/api/machine')
   }
 
   /**
@@ -648,7 +648,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Elde edilen makine grupları, `MachineGroup` türünde nesneler içerir.
    */
   async function fetchMachineGroup(): Promise<MachineGroup[]> {
-    return await kc.fetch('/api/machine-group')
+    return await kc.fetch<MachineGroup[]>('/api/machine-group')
   }
 
   /**
@@ -761,13 +761,12 @@ export const useEditorStore = defineStore('editor', () => {
   async function updateProgram(newProgram?: Program): Promise<boolean> {
     const updatedProgram = newProgram || program.value
     try {
-      await kc.fetch(`/api/machine/${route.params.machine_id}/program`, {
+      return await kc.fetch<boolean>(`/api/machine/${route.params.machine_id}/program`, {
         method: 'PUT',
         body: {
           program: updatedProgram,
         },
       })
-      return true
     } catch (error: any) {
       if (error.statusCode === 400) {
         if (error.data.data.code === 'PROGRAM_TREATMENT_COMMAND_LIMIT') {
@@ -797,7 +796,7 @@ export const useEditorStore = defineStore('editor', () => {
    */
   async function insertProgram(newProgram: Program, redirect: boolean = true): Promise<boolean> {
     try {
-      await kc.fetch(`/api/machine/${newProgram.machineId}/program`, {
+      await kc.fetch<{ success: boolean, error?: string }>(`/api/machine/${newProgram.machineId}/program`, {
         method: 'POST',
         body: {
           program: newProgram,
@@ -932,7 +931,7 @@ export const useEditorStore = defineStore('editor', () => {
         break
     }
 
-    await kc.fetch('/api/teleskop-settings', {
+    await kc.fetch<void>('/api/teleskop-settings', {
       method: 'PUT',
       body: { id, value },
     })
