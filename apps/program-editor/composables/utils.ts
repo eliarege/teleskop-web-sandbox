@@ -313,7 +313,7 @@ export const useErrorStore = defineStore('program-errors', () => {
     return errors.value.filter(p => p.programNo === programNo)
   }
 
-  function setErrors(programNo: number, stepErrors: StepError[]) {
+  function setErrors(machineId: number, programNo: number, stepErrors: StepError[]) {
     const index = errors.value.findIndex(p => p.programNo === programNo)
 
     if (stepErrors.length === 0) {
@@ -328,6 +328,7 @@ export const useErrorStore = defineStore('program-errors', () => {
       errors.value[index].steps = stepErrors
     } else {
       errors.value.push({
+        machineId,
         programNo,
         steps: stepErrors,
       })
@@ -374,8 +375,9 @@ export const useErrorStore = defineStore('program-errors', () => {
       .filter(c => c.commandId === commandId)
   }
 
-  function addError(programNo: number, stepError: StepError[]) {
+  function addError(machineId: number, programNo: number, stepError: StepError[]) {
     errors.value.push({
+      machineId,
       programNo,
       steps: stepError,
     })

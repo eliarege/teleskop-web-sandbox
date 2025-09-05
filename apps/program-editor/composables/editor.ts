@@ -586,7 +586,7 @@ export const useEditorStore = defineStore('editor', () => {
     } else {
       const response = await kc.fetch<ProgramWithErrors>(`/api/machine/${machineId}/program/${programNo}`)
       program.value = response.program
-      errorStore.setErrors(programNo, response.programError.steps)
+      errorStore.setErrors(machineId, programNo, response.programError.steps)
 
       errorIds.value.clear()
       response.programError.steps.forEach((step: StepError) => {

@@ -457,6 +457,7 @@ export interface ProgramWithErrors {
 }
 
 export interface ProgramError {
+  machineId: number
   programNo: number
   steps: StepError[]
 }

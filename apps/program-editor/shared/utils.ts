@@ -235,6 +235,7 @@ export function validateProgram(program: Program, machineCommands: MachineComman
   })
 
   return {
+    machineId: program.machineId,
     programNo: program.programNo,
     steps: Array.from(groupedErrors.entries()).map(([stepId, commandsMap]) => ({
       stepId,
