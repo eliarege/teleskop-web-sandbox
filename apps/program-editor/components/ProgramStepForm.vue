@@ -26,7 +26,7 @@ const stepIcons = computed(() => {
 })
 
 const expanded = ref<boolean>(
-  errorStore.getStepErrors(editor.program.programNo, step.stepId).length > 0
+  errorStore.getStepErrors(editor.machine.id, editor.program.programNo, step.stepId).length > 0
   || editor.allStepExpanded,
 )
 const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')

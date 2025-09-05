@@ -356,8 +356,9 @@ export const useErrorStore = defineStore('program-errors', () => {
     }
   }
 
-  function getStepErrors(programNo: number, stepId: number): StepError[] {
+  function getStepErrors(machineId: number, programNo: number, stepId: number): StepError[] {
     return errors.value
+      .filter(p => p.machineId === machineId)
       .filter(p => p.programNo === programNo)
       .map(p => p.steps)
       .flat()

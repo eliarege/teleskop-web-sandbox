@@ -285,7 +285,7 @@ interface ProgramTableColumn extends Omit<QTableColumn, 'label'> {
 
 function getErrorCount(rowProgram: ProgramTableRow): number {
   const errorStore = useErrorStore()
-  const error = errorStore.errors.find(e => e.programNo === rowProgram.programNo)
+  const error = errorStore.errors.find(e => e.machineId === machineId && e.programNo === rowProgram.programNo)
   return error ? error.steps.length : 0
 }
 
