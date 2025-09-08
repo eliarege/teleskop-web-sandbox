@@ -4,6 +4,7 @@ interface LogsProps {
     type: string
     message: string
   }[]
+  errMessage?: string
 }
 const props = defineProps<LogsProps>()
 const emit = defineEmits(['close'])
@@ -23,6 +24,16 @@ const compLogs = computed(() => props.logs.filter(l => l.type !== 'uuid'))
           class="border-b-1 border-b-gray-500-50"
           :class="log.type === 'error' ? 'text-red' : '' "
         >
+          <q-tooltip
+            v-if="log.type === 'error' && errMessage && errMessage.length > 0"
+            anchor="top middle"
+            self="bottom middle"
+            :offset="[10, 10]"
+            transition-show="scale"
+            transition-hide="scale"
+          >
+            {{ errMessage }}
+          </q-tooltip>
           <q-item-section avatar>
             {{ log.type }}
           </q-item-section>

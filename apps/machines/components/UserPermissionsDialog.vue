@@ -7,6 +7,7 @@ interface Permission {
   index: number
   value: MaybeRef<boolean>
   disabled?: MaybeRef<boolean>
+  _value?: boolean
 }
 
 const props = defineProps<{
@@ -16,12 +17,10 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const q = useQuasar()
 const { t } = useI18n()
 const kc = useKeycloak()
 const { notifyError } = useNotify()
 
-// sistem menulerine erisim ve cihaz ayar yetkisi'nin baglı oldugu izinler var bu secenekler secilmeden diger izinler secilemez
 const controllerPermission = ref(false)
 const menuAccessPermission = ref(false)
 
@@ -34,16 +33,100 @@ const permissionsGroup1 = reactive<Permission[]>([
   { label: t('accessingToSystemMenu'), index: 5, value: menuAccessPermission },
   { label: t('modifyingProgramAtRunTime'), index: 6, value: false },
   { label: t('test'), index: 7, value: false },
-  { label: t('accessingToDyeHouseParameters'), index: 8, value: false, disabled: computed(() => !menuAccessPermission.value) },
-  { label: t('ioSettings'), index: 9, value: false, disabled: computed(() => !menuAccessPermission.value) },
+  {
+    label: t('accessingToDyeHouseParameters'),
+    index: 8,
+    value: computed({
+      get: (): boolean => menuAccessPermission.value ? !!permissionsGroup1[8]._value : false,
+      set: (v) => {
+        if (menuAccessPermission.value)
+          permissionsGroup1[8]._value = v
+      },
+    }),
+    _value: false,
+    disabled: computed(() => !menuAccessPermission.value),
+  },
+  {
+    label: t('ioSettings'),
+    index: 9,
+    value: computed({
+      get: (): boolean => menuAccessPermission.value ? !!permissionsGroup1[9]._value : false,
+      set: (v) => {
+        if (menuAccessPermission.value)
+          permissionsGroup1[9]._value = v
+      },
+    }),
+    _value: false,
+    disabled: computed(() => !menuAccessPermission.value),
+  },
   { label: t('updatingIOAndLanguage'), index: 10, value: false },
   { label: t('controllerSettings'), index: 11, value: controllerPermission },
-  { label: t('userSettings'), index: 12, value: false, disabled: computed(() => !controllerPermission.value) },
-  { label: t('interLocks'), index: 13, value: false, disabled: computed(() => !menuAccessPermission.value) },
-  { label: t('calibration'), index: 14, value: false, disabled: computed(() => !menuAccessPermission.value) },
-  { label: t('commands'), index: 15, value: false, disabled: computed(() => !menuAccessPermission.value) },
+  {
+    label: t('userSettings'),
+    index: 12,
+    value: computed({
+      get: (): boolean => controllerPermission.value ? !!permissionsGroup1[12]._value : false,
+      set: (v) => {
+        if (controllerPermission.value)
+          permissionsGroup1[12]._value = v
+      },
+    }),
+    _value: false,
+    disabled: computed(() => !controllerPermission.value),
+  },
+  {
+    label: t('interLocks'),
+    index: 13,
+    value: computed({
+      get: (): boolean => menuAccessPermission.value ? !!permissionsGroup1[13]._value : false,
+      set: (v) => {
+        if (menuAccessPermission.value)
+          permissionsGroup1[13]._value = v
+      },
+    }),
+    _value: false,
+    disabled: computed(() => !menuAccessPermission.value),
+  },
+  {
+    label: t('calibration'),
+    index: 14,
+    value: computed({
+      get: (): boolean => menuAccessPermission.value ? !!permissionsGroup1[14]._value : false,
+      set: (v) => {
+        if (menuAccessPermission.value)
+          permissionsGroup1[14]._value = v
+      },
+    }),
+    _value: false,
+    disabled: computed(() => !menuAccessPermission.value),
+  },
+  {
+    label: t('commands'),
+    index: 15,
+    value: computed({
+      get: (): boolean => menuAccessPermission.value ? !!permissionsGroup1[15]._value : false,
+      set: (v) => {
+        if (menuAccessPermission.value)
+          permissionsGroup1[15]._value = v
+      },
+    }),
+    _value: false,
+    disabled: computed(() => !menuAccessPermission.value),
+  },
   { label: t('startingBatch'), index: 16, value: false },
-  { label: t('equipmentMaintenancePlan'), index: 17, value: false, disabled: computed(() => !controllerPermission.value) },
+  {
+    label: t('equipmentMaintenancePlan'),
+    index: 17,
+    value: computed({
+      get: (): boolean => controllerPermission.value ? !!permissionsGroup1[17]._value : false,
+      set: (v) => {
+        if (controllerPermission.value)
+          permissionsGroup1[17]._value = v
+      },
+    }),
+    _value: false,
+    disabled: computed(() => !controllerPermission.value),
+  },
   { label: t('restrictGLGPageAccessRights'), index: 18, value: false },
   { label: t('reelPumpSettings'), index: 20, value: false },
   { label: t('defineBatchParameter'), index: 24, value: false },
@@ -103,7 +186,7 @@ async function savePermissions() {
   const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
 
   try {
-    const response = await kc.fetch('/api/user-definitions/user-definition', {
+    await kc.fetch('/api/user-definitions/user-definition', {
       method: 'PUT',
       body: {
         userId: user.value.userId,
@@ -112,8 +195,7 @@ async function savePermissions() {
       },
     })
     emit('close')
-  }
-  catch (err) {
+  } catch (err) {
     console.error(`Failed to update user permissions`, err)
     notifyError(t('user-permission-update-failed'))
   }

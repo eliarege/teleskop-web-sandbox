@@ -55,7 +55,7 @@ const uuid = ref('')
 
 const currentOperation = ref<'project' | 'version' | null>(null)
 
-const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid', 'error', 'start', 'reset'], {
+const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid', 'error', 'error-log', 'start', 'reset'], {
   autoReconnect: true,
 })
 
@@ -84,7 +84,9 @@ function parseMessage(message?: string) {
 
   return t(message)
 }
-
+const sseErrMessage = ref('')
+const sseErrLogMessage = ref('')
+const hasError = ref(false)
 watch(data, (newData) => {
   if (newData) {
     const parsedData = JSON.parse(newData)
@@ -96,6 +98,21 @@ watch(data, (newData) => {
 
     if (sseData.type === 'uuid') {
       uuid.value = parsedData.uuid
+      return
+    }
+
+    if (sseData.type === 'error-log') {
+      sseErrLogMessage.value = sseData.message
+    }
+
+    if (sseData.type === 'error') {
+      hasError.value = true
+      sseErrMessage.value = t(sseData.message)
+      if (currentOperation.value === 'project') {
+        handleProjectLogs(sseData)
+      } else if (currentOperation.value === 'version') {
+        handleVersionLogs(sseData)
+      }
       return
     }
 
@@ -111,94 +128,95 @@ function handleProjectLogs(sseData: any) {
   if (sseData.type === 'reset') {
     projectLogs.value = []
   }
-
-  projectLogs.value.push(sseData)
-  lastProjectLogs.value = {
-    type: sseData.type,
-    message: sseData.message,
-    progress: sseData.progress,
-  }
-  percentage.value = sseData.progress / 100
-
-  if (showProjectSseLogDialog.value) {
-    showProjectSseLogDialog.value.update({
-      message: lastProjectLogs.value?.message,
-      progress: {
-        spinner: h(QLinearProgress, {
-          color: 'primary',
-          value: percentage.value,
-        }),
-      },
-    })
-
-    if (closeButtonTimer)
-      clearTimeout(closeButtonTimer)
-    if (sseData.message === 'NETWORK_CONN_FAILED')
-      closeButtonTimer = setTimeout(() => {
-        showProjectSseLogDialog.value.update({
-          cancel: {
-            label: t('dismiss'),
-          },
-        })
-      }, 1700)
-    if (percentage.value === 1) {
-      fullProjectSseLogs.value = projectLogs.value.filter(l => l.type !== 'start').sort((a, b) => a.progress > b.progress ? 1 : 0)
-      setTimeout(() => {
-        showProjectSseLogDialog.value?.hide()
-        showProjectSseLogDialog.value = null
-        showFullProjectSseLogDialog.value = true
-        percentage.value = 0
-        closeButtonVisible.value = false
-        currentOperation.value = null
-      }, 350)
+  if (sseData.type !== 'error-log') {
+    projectLogs.value.push(sseData)
+    lastProjectLogs.value = {
+      type: sseData.type,
+      message: sseData.message,
+      progress: sseData.progress,
     }
-  }
+    percentage.value = sseData.progress / 100
+
+    if (showProjectSseLogDialog.value) {
+      showProjectSseLogDialog.value.update({
+        message: lastProjectLogs.value?.message,
+        progress: {
+          spinner: h(QLinearProgress, {
+            color: 'primary',
+            value: percentage.value,
+          }),
+        },
+      })
+      if (closeButtonTimer)
+        clearTimeout(closeButtonTimer)
+      if (sseData.message === 'NETWORK_CONN_FAILED')
+        closeButtonTimer = setTimeout(() => {
+          showProjectSseLogDialog.value.update({
+            cancel: {
+              label: t('dismiss'),
+            },
+          })
+        }, 1700)
+      if (percentage.value === 1) {
+        fullProjectSseLogs.value = projectLogs.value.filter(l => l.type !== 'start').sort((a, b) => a.progress > b.progress ? 1 : 0)
+        setTimeout(() => {
+          showProjectSseLogDialog.value?.hide()
+          showProjectSseLogDialog.value = null
+          showFullProjectSseLogDialog.value = true
+          percentage.value = 0
+          closeButtonVisible.value = false
+          currentOperation.value = null
+        }, 350)
+      }
+    }
+  } else console.log(sseData.message)
 }
 
 function handleVersionLogs(sseData: any) {
   if (sseData.type === 'reset') {
     versionLogs.value = []
   }
+  if (sseData.type !== 'error-log') {
+    versionLogs.value.push(sseData)
+    lastVersionLogs.value = {
+      type: sseData.type,
+      message: sseData.message,
+      progress: sseData.progress,
+    }
+    percentage.value = sseData.progress / 100
 
-  versionLogs.value.push(sseData)
-  lastVersionLogs.value = {
-    type: sseData.type,
-    message: sseData.message,
-    progress: sseData.progress,
-  }
-  percentage.value = sseData.progress / 100
+    if (showVersionSseLogDialog.value) {
+      showVersionSseLogDialog.value.update({
+        message: lastVersionLogs.value?.message,
+        progress: {
+          spinner: h(QLinearProgress, {
+            color: 'primary',
+            value: percentage.value,
+          }),
+        },
+      })
 
-  if (showVersionSseLogDialog.value) {
-    showVersionSseLogDialog.value.update({
-      message: lastVersionLogs.value?.message,
-      progress: {
-        spinner: h(QLinearProgress, {
-          color: 'primary',
-          value: percentage.value,
-        }),
-      },
-    })
-
-    if (closeButtonTimer)
-      clearTimeout(closeButtonTimer)
-    if (sseData.message === 'NETWORK_CONN_FAILED')
-      closeButtonTimer = setTimeout(() => {
-        showVersionSseLogDialog.value.update({
-          cancel: {
-            label: t('dismiss'),
-          },
-        })
-      }, 1700)
-    if (percentage.value === 1) {
-      fullVersionSseLogs.value = versionLogs.value.sort((a, b) => a.progress > b.progress ? 1 : 0)
-      setTimeout(() => {
-        showVersionSseLogDialog.value?.hide()
-        showVersionSseLogDialog.value = null
-        showFullVersionSseLogDialog.value = true
-        percentage.value = 0
-        closeButtonVisible.value = false
-        currentOperation.value = null
-      }, 350)
+      if (closeButtonTimer)
+        clearTimeout(closeButtonTimer)
+      if (sseData.message === 'NETWORK_CONN_FAILED')
+        closeButtonTimer = setTimeout(() => {
+          showVersionSseLogDialog.value.update({
+            cancel: {
+              label: t('dismiss'),
+            },
+          })
+        }, 1700)
+      if (percentage.value === 1) {
+        fullVersionSseLogs.value = versionLogs.value.sort((a, b) => a.progress > b.progress ? 1 : 0)
+        setTimeout(() => {
+          showVersionSseLogDialog.value?.hide()
+          showVersionSseLogDialog.value = null
+          showFullVersionSseLogDialog.value = true
+          percentage.value = 0
+          closeButtonVisible.value = false
+          currentOperation.value = null
+        }, 350)
+      }
     }
   }
 }
@@ -533,11 +551,6 @@ async function loadProject() {
       },
     })
   } catch (error: any) {
-    if (error.statusCode === 500) {
-      notifyError(t('errorLoadingProject'))
-    } else if (error.statusCode === 504) {
-      notifyError(t('connectionTimeout'))
-    }
     currentOperation.value = null
   }
 }
@@ -661,11 +674,13 @@ function showVersionSseLogs() {
     <SseLogDialog
       :model-value="showFullProjectSseLogDialog"
       :logs="fullProjectSseLogs"
+      :err-message="sseErrLogMessage"
       @close="showFullProjectSseLogDialog = false"
     />
     <SseLogDialog
       :model-value="showFullVersionSseLogDialog"
       :logs="fullVersionSseLogs"
+      :err-message="sseErrLogMessage"
       @close="showFullVersionSseLogDialog = false"
     />
     <TeleskopSettingsDialog

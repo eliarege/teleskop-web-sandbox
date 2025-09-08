@@ -1059,21 +1059,28 @@ export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx:
       .where({ MACHINEID: machineId })
       .orderBy('BATCHPARAMETERID', 'asc')
 
-    const maxParamIdResult = await trx('BFERPPARAMETERDEFINITIONS')
+    const erpParameters = await trx('BFERPPARAMETERDEFINITIONS')
       .where({ MACHINEID: machineId })
-      .max('PARAMID as max')
-      .first()
+      .orderBy('PARAMID', 'asc')
 
-    const maxParamId = maxParamIdResult?.max ?? 0
+    const erpMap = new Map(
+      erpParameters.map(p => [p.PARAMNAME, p.ERPFIELDNAME]),
+    )
 
-    const definitions = batchParams.map((p, i) => ({
-      PARAMID: maxParamId + i + 1,
-      PARAMNAME: p.PARAMSTRING,
-      PARAMTYPE: p.PARAMETERTYPE,
-      MACHINEID: p.MACHINEID,
+    const data = batchParams.map(d => ({
+      PARAMID: d.BATCHPARAMETERID,
+      PARAMNAME: d.PARAMSTRING,
+      PARAMTYPE: d.PARAMETERTYPE,
+      ERPFIELDNAME: erpMap.get(d.PARAMSTRING) || '',
+      BATCHREPORTVISIBLE: 0,
+      BATCHREPORTORDER: -1,
+      PartyNoParam: 0,
+      PARAMNAMEEn: d.PARAMSTRINGEn,
+      MACHINEID: machineId,
     }))
 
-    await replaceRecords(trx, 'BFERPPARAMETERDEFINITIONS', definitions, { MACHINEID: machineId })
+    await trx('BFERPPARAMETERDEFINITIONS').where({ MACHINEID: machineId }).del()
+    await trx('BFERPPARAMETERDEFINITIONS').insert(data)
 
     return true
   } catch (error: any) {
