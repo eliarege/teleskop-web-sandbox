@@ -169,7 +169,7 @@ function handleProjectLogs(sseData: any) {
         }, 350)
       }
     }
-  } else console.log(sseData.message)
+  }
 }
 
 function handleVersionLogs(sseData: any) {
