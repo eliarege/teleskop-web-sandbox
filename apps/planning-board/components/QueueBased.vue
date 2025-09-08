@@ -385,11 +385,11 @@ function initialGridColumns() {
 
   const columnNames = Object.keys(modifiedUnscheduledEvents.value[0].erpParameters)
   for (let i = 0; i < columnNames.length; i++) {
-    const name = ref(mt(columnNames[i]))
+    const name = columnNames[i]
     // @ts-expect-error missing type
     grid.columns.add({
-      field: `erpParameters.${name.value}`,
-      text: name.value,
+      field: `erpParameters.${name}`,
+      text: name,
       width: 100,
       align: 'center',
     })

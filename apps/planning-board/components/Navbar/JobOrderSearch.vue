@@ -13,9 +13,10 @@ const dropdownOpen = ref(false)
 const exactMatch = ref(false)
 const options = computed(() => ({
   fuseOptions: {
-    keys: ['jobOrder'],
+    keys: ['jobOrder', 'partyNo'],
     isCaseSensitive: false,
     threshold: exactMatch.value ? 0 : 0.3,
+    includeMatches: true,
   },
   matchAllWhenSearchEmpty: true,
 }))
@@ -74,7 +75,11 @@ function onItemSelect(item: { jobOrder: string, startTime: string }) {
                   >
                     <q-item-section>
                       <q-item-label>
-                        {{ item.item.jobOrder }}
+                        {{
+                          item.matches?.[0]?.key === 'partyNo'
+                            ? item.item.partyNo
+                            : item.item.jobOrder
+                        }}
                       </q-item-label>
                     </q-item-section>
                   </q-item>
