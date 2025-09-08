@@ -1,8 +1,24 @@
 # Changelog
 
+## 0.45.4 - 2025-09-08
+
+[Compare Changes](be3d75a20275f12efd71b5670edeac0b7a787269...3dad2bd63d9ecf0b8ed842a5fc3526a89ca00a03)
+
+### 🐛 Bug Fixes
+
+- Nitro dev server not detecting ignored requests ([0b0e1f9](0b0e1f9e3525ba5da83c8489b19c68bfcaf22362))
+-  **MA**: Fixed menu access permission dependent permissions ([cf8e5b2](cf8e5b211e1456ad8abbdd393d6769f2f9c4a878))
+-  **MA**: Fixed an issue where updating erp parameters caused missing user entries ([6118b6d](6118b6dfccdb20454c7fa1a2555340002edf6601))
+
+### 🔧 Miscellaneous Tasks
+
+- Updated cliff.toml, removed unused parsers ([37f4d3c](37f4d3c33ead6abc04f257495bfeeaacc2050d1e))
+-  **MA**: Meaningful sse error messages ([b944545](b9445459fb2bd27c338cfa4b1ba7b696f1d4600a))
+-  **MA**: Remove debug console.log ([3dad2bd](3dad2bd63d9ecf0b8ed842a5fc3526a89ca00a03))
+
 ## 0.45.3 - 2025-09-03
 
-[Compare Changes](51d7f4e21f0fbe6fc9e6e495430b6ebd47b083ba...d1542456621a6c1dc633236284b56b98976535e5)
+[Compare Changes](51d7f4e21f0fbe6fc9e6e495430b6ebd47b083ba...be3d75a20275f12efd71b5670edeac0b7a787269)
 
 ### 🐛 Bug Fixes
 
