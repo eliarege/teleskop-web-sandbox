@@ -2,6 +2,25 @@
   "app": {
     "name": "Machines"
   },
+  "error": {
+    "timeout": "Connection to the machine timed out. Please ensure the machine is powered on and accessible.",
+    "connection_refused": "Could not connect to the machine. Check your network connection or whether the machine is running.",
+    "network_unreachable": "The machine is unreachable. Please check your network connection.",
+    "address_resolution_failed": "The machine address could not be resolved. Please verify your settings.",
+
+    "ftp": "An error occurred while retrieving data from the machine. Please try again.",
+
+    "db": {
+      "query": "An error occurred while executing a database query. Please try again.",
+      "deadlock": "The database transaction is locked. Please try again shortly.",
+      "duplicate_key": "A constraint violation occurred while saving data. Please check your input."
+    },
+
+    "invalid_machine_id": "An invalid machine ID parameter was provided.",
+    "sse_id_required": "System error: Invalid request.",
+
+    "unknown": "An unknown error occurred. Please try again or contact support."
+  },
   "addMachine": "Add Machine",
   "editMachine": "Edit Machine",
   "deleteMachines": "Delete Machines",

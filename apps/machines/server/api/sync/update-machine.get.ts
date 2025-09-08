@@ -1,11 +1,56 @@
 import { withTbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { getQuery } from 'h3'
 import { inferBoolean } from '@teleskop/utils'
+import { ErrorMessageKey } from '~/shared/enums'
 import { knex } from '~/server/connectionPool'
 import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIOChangedEvent, updateIcons, updateLocksGeneral, updateLocksOutput, updateMachineTranslations, updateSystemParams } from '~/server/utils/updateDatabase'
 import { DatabaseQueryError } from '~/server/error'
 
 const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
+function mapErrorToUserMessage(error: any): ErrorMessageKey {
+  const msg = error.message ?? ''
+
+  // --- Bağlantı / Ağ hataları ---
+  if (msg.includes('Timeout')) {
+    return ErrorMessageKey.Timeout
+  }
+  if (msg.includes('ECONNREFUSED')) {
+    return ErrorMessageKey.ConnectionRefused
+  }
+  if (msg.includes('ENETUNREACH') || msg.includes('EHOSTUNREACH')) {
+    return ErrorMessageKey.NetworkUnreachable
+  }
+  if (msg.includes('EAI_AGAIN')) {
+    return ErrorMessageKey.AddressResolutionFailed
+  }
+
+  // --- FTP / TBB istemcisi ---
+  if (msg.includes('FTP') || msg.includes('tbb-ftp-client')) {
+    return ErrorMessageKey.FtpError
+  }
+
+  // --- Veritabanı hataları ---
+  if (error instanceof DatabaseQueryError) {
+    return ErrorMessageKey.DatabaseQueryError
+  }
+  if (msg.includes('deadlock') || msg.includes('lock wait timeout')) {
+    return ErrorMessageKey.DatabaseDeadlock
+  }
+  if (msg.includes('duplicate key') || msg.includes('unique constraint')) {
+    return ErrorMessageKey.DatabaseDuplicateKey
+  }
+
+  // --- Validation / Geçersiz parametre ---
+  if (msg.includes('Invalid machineId')) {
+    return ErrorMessageKey.InvalidMachineId
+  }
+  if (msg.includes('SSE ID REQUIRED')) {
+    return ErrorMessageKey.SseIdRequired
+  }
+
+  // --- Genel / bilinmeyen ---
+  return ErrorMessageKey.Unknown
+}
 
 export default defineAuthEventHandler(async (event) => {
   const { machineId, sseId } = getQuery(event)
@@ -71,14 +116,20 @@ export default defineAuthEventHandler(async (event) => {
               currentStep++
               const successProgress = Math.round((currentStep / totalSteps) * 100)
               sse.send(strSseId, 'log', { message, progress: successProgress })
-            } catch (err) {
-              const failedMessage = message.replace('-updated', '-failed')
+            } catch (err: any) {
+              const errorMessage = err.message
+              const userMessage = mapErrorToUserMessage(err)
+
               await trx.rollback()
-              sse.send(strSseId, 'error', {
-                message: failedMessage,
+              sse.send(strSseId, 'error-log', {
+                message: errorMessage,
                 progress: 100,
               })
-              throw createError({ statusMessage: 'UPDATE_FAILED', statusCode: 500 })
+              sse.send(strSseId, 'error', {
+                message: userMessage,
+                progress: 100,
+              })
+              throw createError({ statusMessage: 'UPDATE_FAILED', message: err.message, statusCode: 500 })
             }
           }
 
@@ -96,9 +147,9 @@ export default defineAuthEventHandler(async (event) => {
       }
 
       if (error.message.includes('Timeout')) {
-        throw createError({ statusMessage: 'MACHINE_CONN_TIMEOUT', statusCode: 504 })
+        throw createError({ statusMessage: 'MACHINE_CONN_TIMEOUT', message: error.message, statusCode: 504 })
       } else {
-        throw createError({ statusMessage: 'MACHINE_CONN_ERROR', statusCode: 500 })
+        throw createError({ statusMessage: 'MACHINE_CONN_ERROR', message: error.message, statusCode: 500 })
       }
     }
   } else {

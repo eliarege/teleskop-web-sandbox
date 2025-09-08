@@ -2,6 +2,25 @@
   "app": {
     "name": "Makineler"
   },
+  "error": {
+    "timeout": "Makineye bağlantı zaman aşımına uğradı. Lütfen makinenin açık ve erişilebilir olduğundan emin olun.",
+    "connection_refused": "Makineye bağlantı kurulamadı. Ağ bağlantınızı veya makinenin çalışır durumda olduğunu kontrol edin.",
+    "network_unreachable": "Makineye ulaşılamıyor. Ağ bağlantınızı kontrol edin.",
+    "address_resolution_failed": "Makine adresi çözümlenemedi. Lütfen ayarları kontrol edin.",
+
+    "ftp": "Makineden veri alınırken hata oluştu. Lütfen tekrar deneyin.",
+
+    "db": {
+      "query": "Sistemde veritabanı sorgusu sırasında hata oluştu. Lütfen tekrar deneyin.",
+      "deadlock": "Veritabanı işlemi kilitlendi. Lütfen kısa süre sonra tekrar deneyin.",
+      "duplicate_key": "Veri kaydı sırasında kural ihlali oldu. Lütfen girdiğiniz bilgileri kontrol edin."
+    },
+
+    "invalid_machine_id": "Geçersiz makine ID parametresi gönderildi.",
+    "sse_id_required": "Sistem hatası: Geçersiz istek.",
+
+    "unknown": "Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin veya destek ekibiyle iletişime geçin."
+  },
   "addMachine": "Makine Ekle",
   "editMachine": "Makine Düzenle",
   "deleteMachines": "Makineleri Sil",
