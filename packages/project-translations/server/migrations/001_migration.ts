@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import { insertBatch } from '../utils'
+import { insertBatch } from '@teleskop/utils'
 import { supportedProjectLocales } from '../../shared/constants'
 
 export type LegacyTranslationRow = {
