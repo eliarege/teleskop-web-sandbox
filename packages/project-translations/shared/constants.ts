@@ -1,4 +1,4 @@
-export const supportedProjectLocales: { id: number, code: string, name: string }[] = [
+export const supportedProjectLocales = Object.freeze([
   { id: 0, code: 'tr', name: 'Türkçe (Turkish)' },
   { id: 1, code: 'en-GB', name: 'English (United Kingdom)' },
   { id: 2, code: 'ru', name: 'Русский (Russian)' },
@@ -18,4 +18,4 @@ export const supportedProjectLocales: { id: number, code: string, name: string }
   { id: 16, code: 'ko', name: '한국어 (Korean)' },
   { id: 17, code: 'de', name: 'Deutsch (German)' },
   { id: 18, code: 'fr', name: 'Français (French)' },
-]
+])
