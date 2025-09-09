@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import { isDef } from './base'
+import { chunks, isDef } from './base'
 
 // Should mirror `FilterableTableFilter` from `nuxt-base/types`
 interface Filter {
@@ -58,4 +58,35 @@ export function filtersToKnex(filters: Filter[], attributes: any, knexInstance: 
         }
       })
     })
+}
+
+/** Gets the maximum batch size for inserting records into the database */
+export function getMaxBatchSize(records: Record<string, unknown>[]): number {
+  // mssql supports a max of 2100 parameters in one statement
+  // I actually had trouble using the full 2100 on an old SQL 2008 R2 server.
+  // I think it must reserve a few internally for return values or something, hence the minus 10.
+  const maxDBParameters = 2100 - 10
+  // get a set of all column names, across all the records
+  const uniqueKeySet = records
+    .reduce((uniqueKeySet, currentRecord) => {
+      Object
+        .keys(currentRecord)
+        .forEach(key => uniqueKeySet.add(key))
+      return uniqueKeySet
+    }, new Set())
+  return Math.floor(maxDBParameters / uniqueKeySet.size)
+}
+
+/** Inserts a batch of records into the specified table in chunks */
+export async function insertBatch<T extends Record<string | number | symbol, unknown>>(
+  knex: Knex,
+  tableName: string,
+  records: T[],
+): Promise<void> {
+  if (records.length === 0)
+    return Promise.resolve()
+  const chunkedRecords = chunks(records, getMaxBatchSize(records))
+  for (const chunk of chunkedRecords) {
+    await knex(tableName).insert(chunk)
+  }
 }

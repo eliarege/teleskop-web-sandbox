@@ -1,14 +1,5 @@
 export default defineNuxtConfig({
   extends: ['@teleskop/nuxt-base'],
-  i18n: {
-    lazy: true,
-    langDir: './locales',
-    locales: [
-      { code: 'en-GB', files: ['projectTranslations.ts'] },
-      { code: 'tr', files: ['projectTranslations.ts'] },
-      { code: 'pt', files: ['projectTranslations.ts'] },
-    ],
-  },
   runtimeConfig: {
     teleskopHost: '',
     teleskopUser: '',
@@ -16,5 +7,13 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: '',
     teleskopInstanceName: '',
+  },
+  i18n: {
+    langDir: './locales',
+    locales: [
+      { code: 'en-GB', file: './en.json' },
+      { code: 'tr', file: './tr.json' },
+      { code: 'pt', file: './pt.json' },
+    ],
   },
 })
