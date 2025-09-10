@@ -1,8 +1,60 @@
 # Changelog
 
+## 0.46.0 - 2025-09-10
+
+[Compare Changes](e8231420b17ebe6a281b4bd10a496955c6bdd0bd...4a776b320a67cdbcbe81032f56d0694ae8923e63)
+
+### 🚀 Features
+
+- **utils**: Added `insertBatch` function ([086c482](086c482026237c980513bde4cef5c25189f51cba))
+- **project-translations**: Add endpoint to retrieve available locales ([64971e0](64971e0835f79788ea5b70e241dd531dee741d20))
+- **project-translations**: Implement `useProjectTranslations` composable for locale management ([4acda04](4acda04bff34dbaade22d04c1afacb8e07011c6b))
+-  **PE**: Add project locale selector ([0ffc7ed](0ffc7ed6504e23f29ea8953f91807be4e9792e6f))
+-  **AR**: Add 'active' field to job order table and implement custom cell rendering ([6690c00](6690c006d5b5e0342fbf18568e669d5921bf8942))
+
+### 🐛 Bug Fixes
+
+-  **MA**: User friendly icons for SseLogDialog ([864de5e](864de5ec1f021c9cc253143e64f6ea4c6fcfe70c))
+-  **MA**: Modify `updateMachineTranslations` based on latest db changes ([3ab55eb](3ab55ebcc291b38265864cbc84d0e5a80e79d453))
+- **project-translations**: Add primary key to `BFPROJECTTRANSLATIONS` ([ce5c9dc](ce5c9dc0abb2a2ae3473ad8ac95ee0a4318333e0))
+-  **MA**: Use `toSorted` instead of `sort` ([eaaa729](eaaa729695d0333f3cf3ec25ad671d8239b7355f))
+-  **MA**: Filter out unused project translations ([29ef18c](29ef18c4b570f3daa35e642546081557ebcec6d9))
+- **project-translations**: Migrate translation endpoint and plugin to use new data structure ([715166e](715166e27ec896b9802e17b20a9b80afa48be252))
+- **project-translations**: Disable fallbacking, escape i18n keys ([06af624](06af6245ae096484edea70f03be3542fd88da666))
+- **locales**: Update "locale" key to "App Language" for consistency across translations ([ebd28c2](ebd28c2ab9b281f0c00b99fe19f018f14008290d))
+- **nuxt-base**: Remove invalid `extends` ([6e57707](6e577075e6251e4f14988f05023b4710b9730b06))
+- **project-translations**: Rename migration for future flexibility ([2b33d56](2b33d561272cee1529c9e6bee5db78b4c1354638))
+-  **MM**: Update timezone offset reference in alarm list API ([9473033](94730333243340c3a83b2ff617dda97bebb3e92c))
+- **nuxt-base**: Add `h-unset` for round topbar buttons ([39832d2](39832d252eee8e7c4c07b87b6fc4e456a43c0dbd))
+-  **AR**: Add new calculated values keys, make it future proof ([aa5c878](aa5c87866297efb752ce988d2e18a1d4fe47d499))
+- **project-translations**: Missing constraints in migration ([334f418](334f4187ce82df45a74ffe5d35c6a57b69fc7fef))
+-  **AR**: Replace usage of `router.push` with `navigateTo` ([dba3340](dba33405790b35f48aac367fa3067377ed1674b7))
+-  **AR**: Reactive layout component titles and alarm table columns based on locale ([bbe2ee6](bbe2ee63ceb01c65e4a90f01c77e6587b76b23c8))
+-  **AR**: Better error messages when batch fails to load ([4906ac6](4906ac629e156fe3b31e73aa016e8712de57c552))
+
+### ♻️ Refactor
+
+- **project-translations**: Move `insertBatch` utility to `@teleskop/utils` and update import path ([de32866](de32866af823ba86fb43e9788d07eb3fb92ea4f2))
+- **project-translations**: Change supportedProjectLocales to use Object.freeze for immutability ([f671c34](f671c347df67e24f23b70060c261744ab831bf4f))
+- Replace `useMachineTranslations` with `useProjectTranslations` across components ([a8bf877](a8bf8775f57947888e135febfd5cd0118edfa124))
+- Removed `twName` default values from `nuxt.config` per app ([a50a1de](a50a1dea0a7287460d8ee47b8e347f5b0c9197e4))
+
+### 🎨 Styling
+
+- Disabled `ts/consistent-type-definitions` rule ([c18725c](c18725c03b897d37332fcc5f454563525761ed66))
+
+### 🔧 Miscellaneous Tasks
+
+- **project-translations**: Migrate to new data structure ([36688e2](36688e2ad396a44947b5365e329f5230679af990))
+- **project-translations**: Remove `projectTranslations` locale ([ef41cda](ef41cdaa7101d2d26657998d45de3c1b265a0e46))
+- **project-translations**: Add `TopbarProjectLocaleSelect` component ([efb963c](efb963c6858d02ca39875db3c0f65d52c720287e))
+- **nuxt-base**: Remove unused component ([f171cfc](f171cfc921594c28e19aa7e1730b739482cc524e))
+-  **MM**: Change default `machineStatusUrl` to better align with the dev environment ([128f4f1](128f4f1a2bb82fb3fa3ef4e7eb4dfddbe1a27ceb))
+- Update lockfile ([4a776b3](4a776b320a67cdbcbe81032f56d0694ae8923e63))
+
 ## 0.45.4 - 2025-09-08
 
-[Compare Changes](be3d75a20275f12efd71b5670edeac0b7a787269...3dad2bd63d9ecf0b8ed842a5fc3526a89ca00a03)
+[Compare Changes](be3d75a20275f12efd71b5670edeac0b7a787269...e8231420b17ebe6a281b4bd10a496955c6bdd0bd)
 
 ### 🐛 Bug Fixes
 
