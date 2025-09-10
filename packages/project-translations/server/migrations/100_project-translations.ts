@@ -37,6 +37,9 @@ export async function up(knex: Knex) {
     table.integer('message_id').unsigned().notNullable()
     table.string('note').nullable()
     table.primary(['machine_id', 'message_id'])
+    table.foreign(['machine_id'])
+      .references(['MACHINEID'])
+      .inTable('BFMACHINES')
   })
 
   await knex.schema.createTable('BFPROJECTLOCALE', (table) => {

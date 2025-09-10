@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { type LegacyTranslationRow, migrateTranslations } from '../server/migrations/001_migration'
+import { type LegacyTranslationRow, migrateTranslations } from '../server/migrations/100_project-translations'
 
 describe('migrateTranslations', () => {
   it('should migrate a single machine with one locale', () => {
