@@ -494,11 +494,17 @@ const layoutConfig = freezeLayoutConfig({
                     title: t('panels.jobOrderInfo'),
                     type: 'component',
                     componentType: 'JobOrderInfo',
+                    componentState: {
+                      i18nKey: 'panels.jobOrderInfo',
+                    },
                   },
                   {
                     title: t('panels.startParameters'),
                     type: 'component',
                     componentType: 'StartParameters',
+                    componentState: {
+                      i18nKey: 'panels.startParameters',
+                    },
                   },
                 ],
               },
@@ -518,11 +524,17 @@ const layoutConfig = freezeLayoutConfig({
                     title: t('panels.actualPrograms'),
                     type: 'component',
                     componentType: 'ActualPrograms',
+                    componentState: {
+                      i18nKey: 'panels.actualPrograms',
+                    },
                   },
                   {
                     title: t('panels.theoricPrograms'),
                     type: 'component',
                     componentType: 'TheoreticalPrograms',
+                    componentState: {
+                      i18nKey: 'panels.theoricPrograms',
+                    },
                   },
                 ],
               },
@@ -541,41 +553,65 @@ const layoutConfig = freezeLayoutConfig({
                     title: t('panels.AIN'),
                     type: 'component',
                     componentType: 'AIN',
+                    componentState: {
+                      i18nKey: 'panels.AIN',
+                    },
                   },
                   {
                     title: t('panels.DIN'),
                     type: 'component',
                     componentType: 'DIN',
+                    componentState: {
+                      i18nKey: 'panels.DIN',
+                    },
                   },
                   {
                     title: t('panels.AOUT'),
                     type: 'component',
                     componentType: 'AOUT',
+                    componentState: {
+                      i18nKey: 'panels.AOUT',
+                    },
                   },
                   {
                     title: t('panels.cycleTimes'),
                     type: 'component',
                     componentType: 'CycleTimes',
+                    componentState: {
+                      i18nKey: 'panels.cycleTimes',
+                    },
                   },
                   {
                     title: t('panels.counter'),
                     type: 'component',
                     componentType: 'Counter',
+                    componentState: {
+                      i18nKey: 'panels.counter',
+                    },
                   },
                   {
                     title: t('panels.calculatedValues'),
                     type: 'component',
                     componentType: 'CalculatedValues',
+                    componentState: {
+                      i18nKey: 'panels.calculatedValues',
+                    },
                   },
                   {
                     title: t('panels.DOUTFunc'),
                     type: 'component',
                     componentType: 'DOUTFunc',
+                    componentState: {
+                      i18nKey: 'panels.DOUTFunc',
+                    },
                   },
                   {
                     title: t('panels.DOUTLock'),
                     type: 'component',
                     componentType: 'DOUTLock',
+                    componentState: {
+                      i18nKey: 'panels.DOUTLock',
+                    },
                   },
                 ],
               },
@@ -595,6 +631,9 @@ const layoutConfig = freezeLayoutConfig({
                 title: t('panels.chartComponent'),
                 type: 'component',
                 componentType: 'Chart',
+                componentState: {
+                  i18nKey: 'panels.chartComponent',
+                },
               },
             ],
           },
@@ -606,6 +645,9 @@ const layoutConfig = freezeLayoutConfig({
             },
             type: 'component',
             componentType: 'Commands',
+            componentState: {
+              i18nKey: 'panels.commands',
+            },
           },
           {
             size: '25%',
@@ -619,16 +661,25 @@ const layoutConfig = freezeLayoutConfig({
                 },
                 type: 'component',
                 componentType: 'Alarms',
+                componentState: {
+                  i18nKey: 'panels.alarms',
+                },
               },
               {
                 title: t('panels.actualPrograms'),
                 type: 'component',
                 componentType: 'ActualSteps',
+                componentState: {
+                  i18nKey: 'panels.actualPrograms',
+                },
               },
               {
                 title: t('panels.theoricPrograms'),
                 type: 'component',
                 componentType: 'TheoreticalSteps',
+                componentState: {
+                  i18nKey: 'panels.theoricPrograms',
+                },
               },
             ],
           },

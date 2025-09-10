@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { addMinutes } from 'date-fns'
 import type { BatchAlarm } from '~/types/archive'
 import { formatDuration } from '~/utils/functions'
 
@@ -51,7 +50,7 @@ function handleRowClick(_evt: any, row: Record<string, any>, _index: any) {
 
 const checkLabel = t('alarmColumns.selected')
 
-const columns = [
+const columns = computed(() => [
   {
     name: 'startTime',
     label: t('alarmColumns.startTime'),
@@ -80,7 +79,7 @@ const columns = [
     field: 'explanation',
     align: 'center' as const,
   },
-]
+])
 
 const rows = computed(() => {
   return props.alarms
