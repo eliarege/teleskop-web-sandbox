@@ -44,7 +44,6 @@ const appButtons = appList
   <TopbarButton
     v-show="appButtons.length"
     icon="apps"
-    class="h-unset"
     round
   >
     <QTooltip>

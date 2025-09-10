@@ -13,7 +13,6 @@ const { didInitialise, authenticated } = keycloak
   <TopbarButton
     v-if="!keycloak.enabled || (didInitialise && !authenticated)"
     icon="more_vert"
-    class="h-unset"
     round
   >
     <QMenu :transition-duration="0">

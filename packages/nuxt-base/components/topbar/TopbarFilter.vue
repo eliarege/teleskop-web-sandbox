@@ -7,7 +7,6 @@ const { t } = useI18n()
 <template>
   <TopbarButton
     :icon="mdiFilterOutline"
-    class="h-unset"
     round
   >
     <QTooltip>

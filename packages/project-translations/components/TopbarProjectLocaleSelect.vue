@@ -8,9 +8,8 @@ const debouncedLocale = useDebounce(locale, 10)
 
 <template>
   <TopbarButton
-    icon="translate"
+    icon="language"
     round
-    class="h-unset"
   >
     <QTooltip>
       {{ t('pt.projectLocale') }}
