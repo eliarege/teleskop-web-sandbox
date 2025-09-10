@@ -33,10 +33,12 @@ export async function up(knex: Knex) {
   }
 
   await knex.schema.createTable('BFPROJECTMESSAGES', (table) => {
+    table.primary(['machine_id', 'message_id'])
     table.integer('machine_id').unsigned().notNullable()
     table.integer('message_id').unsigned().notNullable()
     table.string('note').nullable()
-    table.primary(['machine_id', 'message_id'])
+  })
+  await knex.schema.alterTable('BFPROJECTMESSAGES', (table) => {
     table.foreign(['machine_id'])
       .references(['MACHINEID'])
       .inTable('BFMACHINES')
@@ -49,11 +51,14 @@ export async function up(knex: Knex) {
   })
 
   await knex.schema.createTable('BFPROJECTTRANSLATIONS', (table) => {
-    table.integer('machine_id').unsigned().notNullable()
-    table.integer('message_id').unsigned().notNullable()
-    table.integer('locale_id').unsigned().notNullable()
-    table.string('text').notNullable()
     table.primary(['machine_id', 'message_id', 'locale_id'])
+    table.integer('machine_id').unsigned()
+    table.integer('message_id').unsigned()
+    table.integer('locale_id').unsigned()
+    table.string('text').notNullable()
+  })
+
+  await knex.schema.alterTable('BFPROJECTTRANSLATIONS', (table) => {
     table.foreign(['machine_id', 'message_id'])
       .references(['machine_id', 'message_id'])
       .inTable('BFPROJECTMESSAGES')
