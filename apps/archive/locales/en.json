@@ -311,6 +311,8 @@
     "SENSOR_ICT_SICAKLIK": "ICT Sensor Temperature",
     "SENSOR_SAT_1mm": "SAT Sensor 1mm",
     "SENSOR_SAT_10mm": "SAT Sensor 10mm",
+    "CPT_ILETKENLIK": "CPT Conductivity",
+    "CPT_SICAKLIK": "CPT Temperature",
     "SENSOR_HUB_STATUS": "Sensor Hub Status"
   },
   "commandErrors": {

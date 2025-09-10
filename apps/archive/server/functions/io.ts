@@ -23,7 +23,7 @@ import type {
 } from '~/types/archive'
 import type { DuoAny, DuoParsed, DuoRaw } from '~/types/utils'
 import { insertAnalogInputValues, insertAnalogOutputValues, insertCalculatedValues, insertCounterValues, insertDigitalInputValues, insertDigitalOutputLockValues, insertDigitalOutputValues, insertReelCycleTimes, insertVirtualInputValues } from '~/shared/io'
-import { calculatedValueKeys } from '~/utils/constants'
+import { calculatedValueKeys } from '~/shared/constants'
 
 interface BatchValueOptions {
   isActive?: boolean | null
@@ -310,7 +310,7 @@ export async function getReels(batchKey: number, cycleTimes?: DuoAny<ArchivedRee
 }
 
 export function getCalculatedValues(calculatedValues: DuoAny<ArchivedCalculatedValue>[]): DuoAny<CalculatedValue>[] {
-  const cvs = Array.from({ length: 69 }, (_, i) => ({
+  const cvs = Array.from({ length: calculatedValueKeys.length }, (_, i) => ({
     ioIndex: i,
     name: calculatedValueKeys[i],
     ioValues: [],

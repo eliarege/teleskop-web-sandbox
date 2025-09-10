@@ -203,7 +203,7 @@ function hexToBinary(hexValue: string): string {
 
 export function insertCalculatedValues(calculatedValues: DuoAny<CalculatedValue>[], archiveCalculatedValues: DuoAny<ArchivedCalculatedValue>[]) {
   for (const acv of archiveCalculatedValues) {
-    calculatedValues[acv.valueId].ioValues.push({
+    calculatedValues[acv.valueId]?.ioValues.push({
       time: acv.logtime,
       value: acv.value,
       valueId: acv.valueId,
