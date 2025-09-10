@@ -30,6 +30,7 @@ import type {
   MachineCommand,
   Program,
   Reel,
+  TaskResponse,
   TaskStatus,
 } from '~/types/archive'
 import JobOrderInfo from '~/components/JobOrderInfo.vue'
@@ -56,16 +57,15 @@ const $q = useQuasar()
 const config = useRuntimeConfig()
 
 const route = useRoute()
-const router = useRouter()
 
 const batchKey = Number(route.params.batchkey)
 const selectedDate = ref(new Date())
 const response = await fetch(withBase(`/api/batch/${batchKey}`, config.app.baseURL))
 const taskId = response.headers.get('Task-ID')
-const batchData = ref<Batch>()
+const batchData = ref<DuoAny<Batch>>()
 const settingsStore = userSettingsStore()
 // task'in ilerlemesini takip etmek için yapıldı
-const batchDataPromise = response.json().then((data) => {
+const batchDataPromise = response.json().then((data: TaskResponse<DuoAny<Batch>>): void => {
   if (data.status === 'success') {
     batchData.value = data.data
     if (batchData.value.active)
@@ -73,16 +73,16 @@ const batchDataPromise = response.json().then((data) => {
     settingsStore.machineId = batchData.value!.machine.id
     settingsStore.initializeSettings()
   } else {
-    router.push('/')
+    navigateTo('/')
   }
 })
 await trackTaskProgress()
 
 // API'dan gelen batchData'nın içerisinde .active = true olduğu durumlarda çalışır.
 // Bitmiş iş emirleri için düzenli fetch atmaya gerek yoktur
-async function scheduleBatchFetch(batch: DuoRaw<Batch>, seconds: number) {
+async function scheduleBatchFetch(batch: DuoAny<Batch>, seconds: number) {
   setTimeout(async () => {
-    const incomingValues = await $fetch<DuoRaw<BatchValues>>(`/api/batch/${batchKey}/values?since=${batch.lastRecordDate}`)
+    const incomingValues = await $fetch<DuoAny<BatchValues>>(`/api/batch/${batchKey}/values?since=${batch.lastRecordDate}`)
     insertBatchValues(batch, incomingValues)
     if (incomingValues.active) {
       scheduleBatchFetch(batch, seconds)
@@ -95,7 +95,7 @@ async function scheduleBatchFetch(batch: DuoRaw<Batch>, seconds: number) {
 async function trackTaskProgress() {
   try {
     while (true) {
-      const data = (await $fetch(`/api/task/${taskId}`)) as TaskStatus
+      const data = await $fetch<TaskStatus>(`/api/task/${taskId}`)
       if (data.state === 'active') {
         $q.loading.show({
           messageColor: 'white',

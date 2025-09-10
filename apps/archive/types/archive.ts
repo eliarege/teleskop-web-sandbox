@@ -385,3 +385,7 @@ export interface TaskStepContext {
   next: (ctx: { message: string }) => void
   isCancelled: () => boolean
 }
+
+export type TaskResponse<T> =
+  | { status: 'success', data: T }
+  | { status: 'error', error: { message: string, data: any | null } }
