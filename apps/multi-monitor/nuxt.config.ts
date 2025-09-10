@@ -20,7 +20,7 @@ export default defineNuxtConfig({
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
     teleskopTimezoneOffset: -180,
-    machineStatusUrl: 'http://localhost:3050',
+    machineStatusUrl: 'http://localhost:5000',
     isStaging: 'no',
     public: {
       kcClientId: 'multi-monitor',
