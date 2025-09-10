@@ -103,6 +103,7 @@
     "calculatedValues": "Calculated Values"
   },
   "joborderTable": {
+    "active": "Active",
     "machineName": "Machine",
     "model": "Model",
     "operator": "Operator",

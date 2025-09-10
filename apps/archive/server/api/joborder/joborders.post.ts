@@ -4,6 +4,11 @@ import { db } from '~/server/database'
 const config = useRuntimeConfig()
 
 const selectParameters = {
+  active: db.raw(/* sql */`\
+    CAST(CASE
+      WHEN B.CANCELTIME IS NULL AND B.ENDTIME IS NULL
+      THEN 1
+      ELSE 0 END AS BIT)`),
   batchKey: 'B.BATCHKEY',
   batchReference: 'B.BATCHREFERENCE',
   machineId: 'B.MACHINEID',

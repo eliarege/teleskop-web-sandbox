@@ -35,6 +35,13 @@ const { data: theoreticalPrograms } = await useFetch('/api/theoretical-programs'
 
 const columns = computed(() => [
   {
+    name: 'active',
+    label: t('joborderTable.active'),
+    field: 'active',
+    filterable: true,
+    filterType: 'boolean',
+  },
+  {
     name: 'joborder',
     label: t('joborderTable.jobOrder'),
     field: 'joborder',
@@ -127,7 +134,15 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
         @row-dblclick="row => handleRowDblClick(row.batchKey)"
         @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
         @update-pagination="pgn => pagination = pgn"
-      />
+      >
+        <template #body-cell-active="props">
+          <q-icon
+            :name="props.value ? 'directions_run' : 'check'"
+            :color="props.value ? 'positive' : 'grey'"
+            size="1.5rem"
+          />
+        </template>
+      </FilterableTable>
     </div>
   </QPage>
 </template>

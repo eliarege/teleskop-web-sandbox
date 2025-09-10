@@ -103,6 +103,7 @@
     "calculatedValues": "Hesaplanmış Değerler"
   },
   "joborderTable": {
+    "active": "Aktif",
     "machineName": "Makine Adı",
     "model": "Model",
     "operator": "Operatör",
