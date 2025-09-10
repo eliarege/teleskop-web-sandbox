@@ -5,7 +5,7 @@ import { matChevronLeft, matChevronRight } from '@quasar/extras/material-icons'
 const emit = defineEmits(['addColumn', 'removeColumn'])
 const { data: unplannedColumns } = useAuthFetch('/api/unplannedColumns', { default: () => [] })
 const kc = useKeycloak()
-const { mt } = useMachineTranslations()
+const { mt } = useProjectTranslations()
 
 const selected = ref()
 

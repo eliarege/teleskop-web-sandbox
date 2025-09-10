@@ -15,7 +15,7 @@ import { useSettingStore } from '~/store/settings'
 
 const kc = useKeycloak()
 const { t, locale, d } = useI18n()
-const { mt } = useMachineTranslations()
+const { mt } = useProjectTranslations()
 const visibility = useDocumentVisibility()
 const config = useRuntimeConfig()
 

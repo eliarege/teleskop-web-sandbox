@@ -25,7 +25,7 @@ const props = defineProps({
   },
 })
 
-const { mt } = useMachineTranslations()
+const { mt } = useProjectTranslations()
 const store = useDataStore()
 const { t, locale } = useI18n()
 const tableShow = ref(false)

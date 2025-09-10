@@ -20,7 +20,7 @@ defineProps<PlanParameterProps>()
 const emit = defineEmits(['uploadMachine'])
 const kc = useKeycloak()
 const { t } = useI18n()
-const { mt } = useMachineTranslations()
+const { mt } = useProjectTranslations()
 
 const columns = computed(() => {
   return [

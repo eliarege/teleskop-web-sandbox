@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<CardInfoProps>(), {
 })
 
 const { t } = useI18n()
-const { mt } = useMachineTranslations()
+const { mt } = useProjectTranslations()
 const store = useDataStore()
 const erpKey = computed(() => store.erpKeys.find(e => e.id === props.machine.id)?.key || '')
 // The status of the last request. (0 new- 1 send to the dispenser - 2 Dispenser started - 3 Completed - 8 Cancelled)
