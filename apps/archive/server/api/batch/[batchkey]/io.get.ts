@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
   if (isActive === null) {
     throw createError({
       statusCode: 404,
-      message: 'Batch not found',
+      message: 'BATCH_NOT_FOUND',
     })
   }
 

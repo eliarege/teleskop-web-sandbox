@@ -330,6 +330,10 @@
     "lineChart": "Line Graph",
     "dashedLineChart": "Dashed Line Graph",
     "dottedLineChart": "Dotted Line Graph"
+  },
+  "error": {
+    "_": "Error while loading Job Order data: {message}",
+    "BATCH_NOT_FOUND": "Job Order not found.",
+    "UNKNOWN_ERROR": "Unknown error occurred."
   }
-
 }

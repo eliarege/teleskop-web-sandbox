@@ -1,7 +1,6 @@
 import { addMinutes, subMinutes } from 'date-fns'
 import { isDef } from '@teleskop/utils'
 import { db } from '../database'
-import { NotFoundError } from '../errors'
 import { isBatchActive } from './io'
 import type { BatchAlarm, BatchCommand, BatchIntervention, MergedBatchCommand } from '~/types/archive'
 import type { DuoParsed } from '~/types/utils'
@@ -111,7 +110,10 @@ export async function getMergedCommands(batchKey: number, isActive?: boolean | n
   if (!isDef(isActive)) {
     isActive = await isBatchActive(batchKey)
     if (!isDef(isActive)) {
-      throw new NotFoundError('Batch not found')
+      throw createError({
+        statusCode: 404,
+        message: 'BATCH_NOT_FOUND',
+      })
     }
   }
 

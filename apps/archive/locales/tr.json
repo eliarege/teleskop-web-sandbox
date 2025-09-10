@@ -328,6 +328,10 @@
     "lineChart": "Çizgi Grafik",
     "dashedLineChart": "Kesikli Çizgi Grafik",
     "dottedLineChart": "Nokta Grafik"
+  },
+  "error": {
+    "_": "İş Emri yüklenirken hata oluştu: {message}",
+    "BATCH_NOT_FOUND": "İş Emri bulunamadı",
+    "UNKNOWN_ERROR": "Bilinmeyen bir hata oluştu"
   }
-
 }

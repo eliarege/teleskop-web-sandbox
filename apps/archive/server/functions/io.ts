@@ -3,7 +3,6 @@ import { LRUCache } from 'lru-cache'
 import { isDef } from '@teleskop/utils'
 import { IOType } from '../utils/constants'
 import { archiveCache } from '../archiveCache'
-import { NotFoundError } from '../errors'
 import { db } from '~/server/database'
 import type {
   AnalogInputOutputType,
@@ -39,7 +38,10 @@ export async function getBatchIoValues(batchKey: number, options = {} as BatchVa
   if (!isDef(options.isActive)) {
     isActive = await isBatchActive(batchKey)
     if (!isDef(isActive)) {
-      throw new NotFoundError('Batch not found')
+      throw createError({
+        statusCode: 404,
+        message: 'BATCH_NOT_FOUND',
+      })
     }
   }
   return isActive
@@ -294,7 +296,10 @@ export async function getReels(batchKey: number, cycleTimes?: DuoAny<ArchivedRee
     .first({ reelCount: 'REELCOUNT' }) as { reelCount: number } | undefined
 
   if (!machine) {
-    throw new NotFoundError('Batch not found')
+    throw createError({
+      statusCode: 404,
+      message: 'BATCH_NOT_FOUND',
+    })
   }
 
   const reels = Array.from({ length: machine.reelCount }, (_, i) => ({

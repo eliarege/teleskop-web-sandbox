@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 404,
       statusMessage: 'Not Found',
-      message: 'Batch not found',
+      message: 'BATCH_NOT_FOUND',
     })
   }
 

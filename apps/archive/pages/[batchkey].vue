@@ -103,7 +103,7 @@ async function trackTaskProgress() {
           message: data.message,
         })
       } else if (data.state === 'failed') {
-        throw new Error('Task failed.')
+        throw new Error(data.message || 'UNKNOWN_ERROR')
       } else {
         await batchDataPromise
         $q.loading.hide()
@@ -113,11 +113,16 @@ async function trackTaskProgress() {
     }
   } catch (error: any) {
     $q.loading.hide()
-    console.error('Error tracking task progress:', error)
+    console.error(error)
+    const message = error instanceof Error
+      ? t(`error.${error.message}`, error.message)
+      : t('error.UNKNOWN_ERROR')
+
     $q.notify({
-      color: 'red',
-      position: 'top',
-      message: `An error occured. Returning...`,
+      color: 'negative',
+      position: 'top-right',
+      message: t('error._', { message }),
+      icon: 'error',
     })
   }
 }
@@ -140,7 +145,6 @@ function getCommandsWithNames() {
     }
   })
 }
-console.log(batchData.value)
 
 const colorInterpolator = [
   '#ff0000', // 'red',
