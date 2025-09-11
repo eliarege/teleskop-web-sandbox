@@ -201,6 +201,7 @@ async function checkNetworkConnection(formData: Machine) {
               type="checkbox"
               name="inUse"
               :label="t('inUse')"
+              :value="true"
             />
             <FormKit
               type="checkbox"
