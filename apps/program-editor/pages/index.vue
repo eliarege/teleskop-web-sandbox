@@ -266,8 +266,9 @@ const itemsMobile = [
           <TopbarFullscreenButton />
           <TopbarAppGrid />
           <TopbarProjectLocaleSelect />
-          <TopbarAuthenticatedUser />
-          <TopbarUnauthenticatedUser />
+          <TopbarUser>
+            <TopbarPtCommonSettings />
+          </TopbarUser>
           <TopbarLoginButton />
         </div>
       </QToolbar>

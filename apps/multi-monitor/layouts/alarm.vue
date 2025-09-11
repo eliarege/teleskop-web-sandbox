@@ -76,8 +76,9 @@ const filterModal = ref(false)
           </QDialog>
         </TopbarFilter>
         <TopbarAppGrid />
-        <TopbarAuthenticatedUser disable-theme :extra-items="commonSettingsItems" />
-        <TopbarUnauthenticatedUser disable-theme :extra-items="commonSettingsItems" />
+        <TopbarUser>
+          <TopbarPtCommonSettings disable-theme :items="commonSettingsItems" />
+        </TopbarUser>
         <TopbarLoginButton />
       </QToolbar>
     </QHeader>
