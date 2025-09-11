@@ -410,6 +410,31 @@ importers:
         specifier: 2.1.10
         version: 2.1.10(typescript@5.6.3)
 
+  apps/migration-service:
+    dependencies:
+      '@teleskop/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      knex:
+        specifier: 3.1.0
+        version: 3.1.0(pg@8.13.1)(tedious@18.6.1)
+      tedious:
+        specifier: 18.6.1
+        version: 18.6.1
+    devDependencies:
+      '@teleskop/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: 22.9.0
+        version: 22.9.0
+      eslint:
+        specifier: 9.14.0
+        version: 9.14.0(jiti@2.4.0)
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
   apps/multi-monitor:
     dependencies:
       '@teleskop/project-translations':

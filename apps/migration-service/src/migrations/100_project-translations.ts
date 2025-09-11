@@ -1,6 +1,5 @@
 import type { Knex } from 'knex'
 import { insertBatch } from '@teleskop/utils'
-import { supportedProjectLocales } from '../../shared/constants'
 
 export type LegacyTranslationRow = {
   machine_id: number
@@ -67,11 +66,27 @@ export async function up(knex: Knex) {
       .inTable('BFPROJECTLOCALE')
   })
 
-  await knex.from('BFPROJECTLOCALE').insert(supportedProjectLocales.map(locale => ({
-    id: locale.id,
-    code: locale.code,
-    name: locale.name,
-  })))
+  await knex.from('BFPROJECTLOCALE').insert([
+    { id: 0, code: 'tr', name: 'Türkçe (Turkish)' },
+    { id: 1, code: 'en-GB', name: 'English (United Kingdom)' },
+    { id: 2, code: 'ru', name: 'Русский (Russian)' },
+    { id: 3, code: 'fa', name: 'فارسی (Persian)' },
+    { id: 4, code: 'fa-Latn', name: 'Fārsi (Persian, Latin)' },
+    { id: 5, code: 'pt-BR', name: 'Português (Brazilian Portuguese)' },
+    { id: 6, code: 'es', name: 'Español (Spanish)' },
+    { id: 7, code: 'ar', name: 'العربية (Arabic)' },
+    { id: 8, code: 'zh-Hans', name: '简体中文 (Chinese, Simplified)' },
+    { id: 9, code: 'zh-Hant', name: '繁體中文 (Chinese, Traditional)' },
+    { id: 10, code: 'el', name: 'Ελληνικά (Greek)' },
+    { id: 11, code: 'ms', name: 'Bahasa Melayu (Malay)' },
+    { id: 12, code: 'uz-Latn', name: 'Oʻzbekcha (Uzbek, Latin)' },
+    { id: 13, code: 'it', name: 'Italiano (Italian)' },
+    { id: 14, code: 'vi', name: 'Tiếng Việt (Vietnamese)' },
+    { id: 15, code: 'sr-Latn', name: 'Српски (Serbian, Latin)' },
+    { id: 16, code: 'ko', name: '한국어 (Korean)' },
+    { id: 17, code: 'de', name: 'Deutsch (German)' },
+    { id: 18, code: 'fr', name: 'Français (French)' },
+  ])
 
   if (legacyTranslations.length > 0) {
     const { messages, translations } = migrateTranslations(legacyTranslations)
