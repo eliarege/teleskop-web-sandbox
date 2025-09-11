@@ -58,7 +58,7 @@
   "plan-recipe": {
     "_": "Recipe",
     "title": "Automatic Recipe",
-    "manuel": {
+    "manual": {
       "title": "Manual Recipe",
       "empty-text": "No Recipe to show"
     },

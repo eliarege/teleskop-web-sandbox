@@ -72,11 +72,12 @@ const time = computed(() => {
 const validEventTypes = ['finished', 'ongoing', 'manual']
 
 function formatDeviation(actualDuration: number, theoreticalDuration: number) {
-  console.log(props.eventType, validEventTypes.includes(props.eventType))
   if (!validEventTypes.includes(props.eventType)) {
     return 0
   }
-
+  if (!actualDuration) {
+    return '00:00:00'
+  }
   const val = actualDuration - theoreticalDuration
   return val < 0
     ? `-${formatSeconds(Math.abs(val))}`
@@ -95,6 +96,9 @@ function cellColor(data: {
   }
 
   const deviation = data.actualDuration - data.theoreticalDuration
+  if (!data.actualDuration) {
+    return 'white'
+  }
   if (data.currentlyRunning)
     return '#0951C0'
   if (deviation === 0)
@@ -103,7 +107,6 @@ function cellColor(data: {
     return '#C02A15'
   if (deviation < 0)
     return '#94AEB7'
-
   return 'white'
 }
 
