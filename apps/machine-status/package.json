@@ -9,9 +9,9 @@
     "dist"
   ],
   "scripts": {
-    "dev": "NODE_ENV=development tsx -r dotenv/config src/server.ts | pino-pretty",
+    "dev": "NODE_ENV=development tsx --env-file-if-exists=.env src/server.ts | pino-pretty",
     "start": "node dist/server.mjs",
-    "preview": "NODE_ENV=production node -r dotenv/config dist/server.mjs | pino-pretty",
+    "preview": "NODE_ENV=production node --env-file-if-exists=.env dist/server.mjs | pino-pretty",
     "build": "unbuild",
     "stub": "unbuild --stub",
     "lint": "eslint .",
