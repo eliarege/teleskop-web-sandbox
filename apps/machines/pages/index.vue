@@ -244,19 +244,18 @@ async function handleDelete() {
     ok: {
       label: t('delete'),
       color: 'negative',
-      handler: async () => {
-        await kc.fetch('/api/machines/machine', {
-          method: 'DELETE',
-          body: {
-            machineIds: selected.value.map(d => d.machineId),
-          },
-        })
-        await refresh()
-      },
     },
     cancel: {
       label: t('cancel'),
     },
+  }).onOk(async () => {
+    await kc.fetch('/api/machines/machine', {
+      method: 'DELETE',
+      body: {
+        machineIds: selected.value.map(d => d.machineId),
+      },
+    })
+    await refresh()
   })
 }
 
