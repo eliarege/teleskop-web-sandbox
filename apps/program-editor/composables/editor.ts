@@ -2,7 +2,8 @@ import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
-import type { CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramItem, ProgramStep, ProgramStepCommand, ProgramTableRow, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import { useErrorStore } from './utils'
+import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandEligibility, CommandIconMapping, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -23,7 +24,6 @@ export const useEditorStore = defineStore('editor', () => {
   let lastStepId = 0
   let lastCommandId = 0
   const allStepExpanded = ref<boolean>(false)
-  const programErrors = ref<StepError[]>()
 
   const { $i18n } = useNuxtApp()
   const { t } = $i18n
@@ -574,20 +574,23 @@ export const useEditorStore = defineStore('editor', () => {
    * Her bir adım ve komut için benzersiz ID'ler atanır.
    */
   async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<Program> {
+    const errorStore = useErrorStore()
+
     selectedSteps.value = []
     lastStepId = 0
     lastCommandId = 0
 
-    if (isDef(version))
+    if (isDef(version)) {
       program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
-    else {
-      const response = await kc.fetch<{ program: Program, programErrors: StepError[] }>(`/api/machine/${machineId}/program/${programNo}`)
+      errorStore.clearErrors(programNo) // version’lı çağrıda hata listesi temizlenebilir
+    } else {
+      const response = await kc.fetch<ProgramWithErrors>(`/api/machine/${machineId}/program/${programNo}`)
       program.value = response.program
-      programErrors.value = response.programErrors
-      errorIds.value.clear()
+      errorStore.setErrors(machineId, programNo, response.programError.steps)
 
-      programErrors.value.forEach((step) => {
-        step.commands.forEach((command) => {
+      errorIds.value.clear()
+      response.programError.steps.forEach((step: StepError) => {
+        step.commands.forEach((command: CommandError) => {
           errorIds.value.add(`${step.stepId}-${command.commandId}`)
         })
       })
@@ -1002,7 +1005,6 @@ export const useEditorStore = defineStore('editor', () => {
     leftDrawerOpen,
     rightDrawerOpen,
     teleskopSettings,
-    programErrors,
     allStepExpanded,
     isTonello,
     createEmptyStep,

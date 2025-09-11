@@ -33,27 +33,6 @@ function onDragEnd(event: SortableEvent) {
     dragged = null
   }
 }
-
-const getStepError = (stepId: number) => editor.programErrors?.find(err => err.stepId === stepId)
-
-function handleRemoveError(stepId: number, commandId: number) {
-  const id = `${stepId}-${commandId}`
-  const errors = editor.programErrors || []
-  const stepErrorIndex = errors.findIndex(err => err.stepId === stepId)
-  if (stepErrorIndex !== -1) {
-    const stepError = errors[stepErrorIndex]
-    stepError.commands = stepError.commands.filter(
-      cmd => cmd.commandId !== commandId,
-    )
-
-    // Eğer komut hatası kalmadıysa, stepi de kaldır
-    if (stepError.commands.length === 0) {
-      errors.splice(stepErrorIndex, 1)
-    }
-
-    editor.errorIds.delete(id)
-  }
-}
 </script>
 
 <template>
@@ -86,8 +65,6 @@ function handleRemoveError(stepId: number, commandId: number) {
           <div :id="`step-${index}`">
             <ProgramStepForm
               :path="`steps.${index}`"
-              :step-error="getStepError(editor.program.steps[index].stepId)"
-              @remove-error="handleRemoveError"
             />
           </div>
         </QItemSection>

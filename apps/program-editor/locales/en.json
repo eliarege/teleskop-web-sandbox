@@ -93,11 +93,13 @@
     "collapseAll": "Collapse All",
     "machineConstants": "Machine Constants",
     "writeProgramSettings": "Program Write Settings",
-    "commandDetails": "Command Details"
+    "commandDetails": "Command Details",
+    "checkErrors": "Check Errors"
   },
   "program": {
     "name": "Program Name",
     "programNo": "Program No",
+    "errorCount": "Error Count",
     "programState": "Proccess Type",
     "stepCount": "Step Count",
     "type": "Type",

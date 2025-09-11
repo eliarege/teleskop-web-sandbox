@@ -2,7 +2,7 @@ import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { isProgramError } from './utils'
 import { notification } from '~/shared/functions'
-import type { CopyItem, MachineInfo, ProcessType, Program, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, StepError } from '~/shared/types'
+import type { CopyItem, MachineInfo, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors, StepError } from '~/shared/types'
 
 export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
@@ -12,7 +12,7 @@ export interface ContextMenuStore {
   paste: (machineId: number, remains?: CopyItem) => Promise<CopyItem>
   setCtx: (ctx?: any) => void
   deleteProgram: (selectedRows: ProgramTableRow[], selectedOption: string, machineId: number) => Promise<void>
-  getProgram: (programNo: number, machineId: number) => Promise<{ program: Program, programErrors: StepError[] }>
+  getProgram: (programNo: number, machineId: number) => Promise<ProgramWithErrors>
   updateProgramHeader: (machineId: number, programNo: number, program: ProgramHeaderUpdate) => Promise<boolean>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   changeProcessType: (machineId: number, programs: ProgramTableRow[], newType: number) => Promise<void>
@@ -194,18 +194,18 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function getProgram(programNo: number, machineId: number): Promise<{ program: Program, programErrors: StepError[] }> {
+  async function getProgram(programNo: number, machineId: number): Promise<ProgramWithErrors> {
     const { fetch } = useKeycloak()
-    const result = await fetch(`/api/machine/${machineId}/program/${programNo}`)
+    const result = await fetch<ProgramWithErrors>(`/api/machine/${machineId}/program/${programNo}`)
 
-    return result as { program: Program, programErrors: StepError[] }
+    return result
   }
 
   async function getProgramHeader(machineId: number, programNo: number): Promise<ProgramHeader> {
     const { fetch } = useKeycloak()
-    const result = await fetch(`/api/machine/${machineId}/program/${programNo}/header`)
+    const result = await fetch<ProgramHeader>(`/api/machine/${machineId}/program/${programNo}/header`)
 
-    return result as ProgramHeader
+    return result
   }
 
   async function updateProgramHeader(machineId: number, programNo: number, program: ProgramHeaderUpdate): Promise<boolean> {

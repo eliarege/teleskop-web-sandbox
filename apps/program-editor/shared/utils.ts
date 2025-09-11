@@ -1,5 +1,5 @@
 import { convertElementToCanvas } from '@teleskop/nuxt-base/utils/html2canvas'
-import type { CreateError, MachineCommand, Program, StepError } from './types'
+import type { MachineCommand, Program, ProgramError, StepError } from './types'
 import { ParameterType } from './constants'
 
 export const as = <T>(value: T) => value as T
@@ -56,7 +56,7 @@ export async function screenshot(element: HTMLElement, filename: string) {
   link.click()
 }
 
-export function validateProgram(program: Program, machineCommands: MachineCommand[]): StepError[] {
+export function validateProgram(program: Program, machineCommands: MachineCommand[]): ProgramError {
   const errors: StepError[] = []
 
   const getMachineCommand = (commandNo: number): MachineCommand | undefined =>
@@ -234,11 +234,15 @@ export function validateProgram(program: Program, machineCommands: MachineComman
     })
   })
 
-  return Array.from(groupedErrors.entries()).map(([stepId, commandsMap]) => ({
-    stepId,
-    commands: Array.from(commandsMap.entries()).map(([commandId, messages]) => ({
-      commandId,
-      messages,
+  return {
+    machineId: program.machineId,
+    programNo: program.programNo,
+    steps: Array.from(groupedErrors.entries()).map(([stepId, commandsMap]) => ({
+      stepId,
+      commands: Array.from(commandsMap.entries()).map(([commandId, messages]) => ({
+        commandId,
+        messages,
+      })),
     })),
-  }))
+  }
 }

@@ -21,6 +21,7 @@ export interface ProgramFilter {
 export interface ProgramTableRow {
   programNo: number
   name: string
+  errorCount?: number
   duration: number
   stepCount: number
   type: string
@@ -448,6 +449,17 @@ export interface CreateError {
   message: string
   parameterIndex?: number
   IOIndex?: number
+}
+
+export interface ProgramWithErrors {
+  program: Program
+  programError: ProgramError
+}
+
+export interface ProgramError {
+  machineId: number
+  programNo: number
+  steps: StepError[]
 }
 
 export interface StepError {

@@ -78,6 +78,7 @@ export interface RegisteredCommands {
   moveParallelStep: [ctx: any, type: 'add' | 'remove' | 'changeParameter', commandNo: number, programCommand: ProgramStepCommand, parameter?: ParameterItem]
   machineConstants: [ctx: any, machineId: number]
   writeProgramSettings: [ctx: any]
+  checkErrors: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
 }
 
 registerCommand(() => {
@@ -738,6 +739,21 @@ registerCommand(() => {
         component: TBWriteProgramSettingsDialog,
       })
       return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'checkErrors',
+    async execute(ctx: any, machineId: number, selectedRows: ProgramTableRow[]) {
+      const editor = useEditorStore()
+
+      editor.isLoading = true
+      for (const { programNo } of selectedRows) {
+        await editor.fetchProgram(machineId, programNo)
+      }
+      editor.isLoading = false
     },
   }
 })

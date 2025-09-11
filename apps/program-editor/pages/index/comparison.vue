@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import DMP from 'diff-match-patch'
 import Main from '~/components/Comparison/Main.vue'
-import type { ContextBarButtons, Program, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion, StepError } from '~/shared/types'
+import type { ContextBarButtons, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion, ProgramWithErrors } from '~/shared/types'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
 
@@ -55,8 +55,8 @@ editor.fetchMachine(Number(m)).then(() => {
   navigateTo('/')
 })
 
-const programOneData = await kc.fetch<{ program: Program, programErrors: StepError[] }>(paths[0])
-const programTwoData = await kc.fetch<{ program: Program, programErrors: StepError[] }>(paths[1])
+const programOneData = await kc.fetch<ProgramWithErrors>(paths[0])
+const programTwoData = await kc.fetch<ProgramWithErrors>(paths[1])
 
 const programOneCommands = programOneData.program.steps.map(step => step.mainCommand.commandNo)
 const programTwoCommands = programTwoData.program.steps.map(step => step.mainCommand.commandNo)

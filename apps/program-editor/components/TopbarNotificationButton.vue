@@ -1,9 +1,16 @@
 <script setup lang="ts">
-const { t, d } = useI18n()
+const { t } = useI18n()
 const notificationState = useNotificationStore()
 
-function getNoficationTime(notificationDate: Date) {
-  return d(notificationDate, { hour: '2-digit', minute: '2-digit', hour12: false })
+function getNotificationTime(notificationDate: Date) {
+  if (!notificationDate)
+    return ''
+
+  return new Intl.DateTimeFormat('default', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(notificationDate)
 }
 
 function removeNotification(index: number) {
@@ -14,7 +21,7 @@ function removeNotification(index: number) {
 <template>
   <TopbarButton
     icon="notifications"
-    :color="notificationState.notifications.length ? 'red' : 'gray-6 dark:text-gray-4'"
+    :color="notificationState.notifications.length ? 'red' : 'gray-6 dark:text-gray-3'"
     round
   >
     <QTooltip class="text-capitalize">
@@ -29,13 +36,13 @@ function removeNotification(index: number) {
       self="top right"
       class="rounded-md select-none"
     >
-      <div class="q-pa-sm " style="width: 400px;">
+      <div class="q-pa-sm" style="width: 400px;">
         <div class="text-4 flex items-center">
           <span class="pl-2 text-sm">{{ `${t('notification.notifications')} (${notificationState.notifications.length})` }}</span>
           <QSpace />
           <QBtn
             icon="delete"
-            class="text-gray-6 mr-2"
+            class=" mr-2"
             flat
             round
             size="sm"
@@ -45,7 +52,7 @@ function removeNotification(index: number) {
             <QTooltip> {{ t('notification.delete_all') }} </QTooltip>
           </QBtn>
           <QBtn
-            class="text-gray-4 dark:text-gray-6"
+            class=""
             icon="close"
             flat
             round
@@ -64,15 +71,17 @@ function removeNotification(index: number) {
             class="p-1"
           >
             <div
-              class="flex flex-nowrap justify-between items-center text-gray-1 rounded-lg"
-              :class="`bg-${notification.type}`"
+              class="flex flex-nowrap justify-between items-center rounded-lg bg-gray-1 dark:bg-dark-3"
             >
-              <span class="p-2">{{ notification.message }}</span>
+              <span
+                class="p-2 text-xs"
+                :class="`text-${notification.type}`"
+              >{{ notification.message }}</span>
               <div class="flex flex-nowrap items-center">
-                <span class="text-gray-2 text-xs">{{ getNoficationTime(notification.date) }}</span>
+                <span class="text-gray-6 text-xs">{{ getNotificationTime(notification.date) }}</span>
                 <QBtn
                   icon="close"
-                  class="text-gray-2 m-1"
+                  class="m-1"
                   flat
                   round
                   size="xs"

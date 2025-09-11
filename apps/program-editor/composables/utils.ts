@@ -2,7 +2,7 @@ import isEqual from 'fast-deep-equal'
 import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
 import { useEditorStore } from './editor'
-import type { CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramFilter, ProgramHeader, ProgramStepCommand, ioListItem } from '~/shared/types'
+import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramError, ProgramFilter, ProgramHeader, ProgramStepCommand, StepError, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -270,9 +270,129 @@ interface Notification {
 
 export const useNotificationStore = defineStore('notification', () => {
   const showNotificationPopup = ref<boolean>(false)
-  const notifications = ref<Notification[]>([])
 
-  return { showNotificationPopup, notifications }
+  const notifications = ref<Notification[]>(
+    (JSON.parse(localStorage.getItem('notifications') || '[]') as Notification[]).map(n => ({
+      ...n,
+      date: new Date(n.date),
+    })),
+  )
+
+  watch(notifications, (newVal) => {
+    localStorage.setItem('notifications', JSON.stringify(newVal))
+  }, { deep: true })
+
+  function addNotification(message: string, type: 'positive' | 'warning') {
+    notifications.value.push({
+      message,
+      type,
+      date: new Date(),
+    })
+  }
+
+  function removeNotification(index: number) {
+    notifications.value.splice(index, 1)
+  }
+
+  return {
+    showNotificationPopup,
+    notifications,
+    addNotification,
+    removeNotification,
+  }
+})
+
+export const useErrorStore = defineStore('program-errors', () => {
+  const errors = ref<ProgramError[]>(JSON.parse(localStorage.getItem('program-errors') || '[]'))
+
+  watch(errors, (newVal) => {
+    localStorage.setItem('program-errors', JSON.stringify(newVal))
+  }, { deep: true })
+
+  function getProgramErrors(programNo: number): ProgramError[] {
+    return errors.value.filter(p => p.programNo === programNo)
+  }
+
+  function setErrors(machineId: number, programNo: number, stepErrors: StepError[]) {
+    const index = errors.value.findIndex(p => p.programNo === programNo)
+
+    if (stepErrors.length === 0) {
+    // eğer daha önce kayıtlı varsa sil
+      if (index !== -1) {
+        errors.value.splice(index, 1)
+      }
+      return
+    }
+
+    if (index !== -1) {
+      errors.value[index].steps = stepErrors
+    } else {
+      errors.value.push({
+        machineId,
+        programNo,
+        steps: stepErrors,
+      })
+    }
+  }
+
+  function clearStepErrors(programNo: number, stepId: number) {
+    const index = errors.value.findIndex(p => p.programNo === programNo)
+    if (index !== -1) {
+      errors.value[index].steps = errors.value[index].steps.filter(s => s.stepId !== stepId)
+    }
+  }
+
+  function clearCommandErrors(programNo: number, stepId: number, commandId: number) {
+    const index = errors.value.findIndex(p => p.programNo === programNo)
+    if (index !== -1) {
+      errors.value[index].steps = errors.value[index].steps
+        .map((step) => {
+          if (step.stepId === stepId) {
+            step.commands = step.commands.filter(c => c.commandId !== commandId)
+          }
+          return step
+        })
+        .filter(step => step.commands && step.commands.length > 0)
+    }
+  }
+
+  function getStepErrors(machineId: number, programNo: number, stepId: number): StepError[] {
+    return errors.value
+      .filter(p => p.machineId === machineId)
+      .filter(p => p.programNo === programNo)
+      .map(p => p.steps)
+      .flat()
+      .filter(s => s.stepId === stepId)
+  }
+
+  function getCommandErrors(programNo: number, stepId: number, commandId: number): CommandError[] {
+    return errors.value
+      .filter(p => p.programNo === programNo)
+      .map(p => p.steps)
+      .flat()
+      .filter(s => s.stepId === stepId)
+      .map(s => s.commands)
+      .flat()
+      .filter(c => c.commandId === commandId)
+  }
+
+  function addError(machineId: number, programNo: number, stepError: StepError[]) {
+    errors.value.push({
+      machineId,
+      programNo,
+      steps: stepError,
+    })
+  }
+
+  function clearErrors(programNumber?: number) {
+    if (programNumber !== undefined) {
+      errors.value = errors.value.filter(p => p.programNo !== programNumber)
+    } else {
+      errors.value = []
+    }
+  }
+
+  return { errors, getProgramErrors, setErrors, clearStepErrors, clearCommandErrors, getStepErrors, getCommandErrors, addError, clearErrors }
 })
 
 export const useProgramFilterStore = defineStore('filter', () => {
