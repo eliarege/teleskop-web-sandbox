@@ -73,8 +73,7 @@ const itemsMobile = [
         <div class="space-x-1">
           <TopbarFullscreenButton />
           <TopbarAppGrid />
-          <TopbarAuthenticatedUser disable-theme />
-          <TopbarUnauthenticatedUser disable-theme />
+          <TopbarUser disable-theme />
           <TopbarLoginButton />
         </div>
       </QToolbar>

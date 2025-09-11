@@ -10,8 +10,7 @@
         </QToolbarTitle>
         <QSpace />
         <div>
-          <TopbarAuthenticatedUser />
-          <TopbarUnauthenticatedUser />
+          <TopbarUser />
           <TopbarLoginButton />
         </div>
       </QToolbar>

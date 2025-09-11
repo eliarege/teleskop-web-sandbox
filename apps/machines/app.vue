@@ -211,8 +211,7 @@ const itemsMobile = [
         <QSpace />
         <div class="space-x-1">
           <TopbarAppGrid />
-          <TopbarAuthenticatedUser />
-          <TopbarUnauthenticatedUser />
+          <TopbarUser />
           <TopbarLoginButton />
         </div>
       </QToolbar>

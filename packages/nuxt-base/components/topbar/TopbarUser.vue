@@ -55,16 +55,20 @@ const profileButton: TopbarMenuItem = {
       <TopbarMenuItem :item="profileButton" />
       <TopbarMenuItem :item="logoutButton" />
       <QSeparator class="my-1" />
-      <TopbarCommonSettings :disable-theme :extra-items />
+      <slot>
+        <TopbarCommonSettings :disable-theme :extra-items />
+      </slot>
     </QMenu>
   </TopbarButton>
   <TopbarButton
-    v-if="!keycloak.enabled || (didInitialise && !authenticated)"
+    v-else
     icon="more_vert"
     round
   >
     <QMenu :transition-duration="0">
-      <TopbarCommonSettings :disable-theme :extra-items />
+      <slot>
+        <TopbarCommonSettings :disable-theme :extra-items />
+      </slot>
     </QMenu>
   </TopbarButton>
 </template>

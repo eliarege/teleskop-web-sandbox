@@ -114,8 +114,9 @@ const { data: state } = useAuthFetch('/api/ptStatus')
         </TopbarButton>
         <div class="space-x-1">
           <TopbarAppGrid />
-          <TopbarAuthenticatedUser disable-theme />
-          <TopbarUnauthenticatedUser disable-theme />
+          <TopbarUser>
+            <TopbarPtCommonSettings disable-theme />
+          </TopbarUser>
           <TopbarLoginButton />
         </div>
       </QToolbar>
