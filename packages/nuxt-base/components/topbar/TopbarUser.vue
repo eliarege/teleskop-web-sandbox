@@ -58,4 +58,16 @@ const profileButton: TopbarMenuItem = {
       <TopbarCommonSettings :disable-theme :extra-items />
     </QMenu>
   </TopbarButton>
+  <TopbarButton
+    v-if="!keycloak.enabled || (didInitialise && !authenticated)"
+    icon="more_vert"
+    round
+  >
+    <QMenu :transition-duration="0">
+      <TopbarCommonSettings :disable-theme :extra-items />
+    </QMenu>
+  </TopbarButton>
 </template>
+
+<style scoped lang="postcss">
+</style>
