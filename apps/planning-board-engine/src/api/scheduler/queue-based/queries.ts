@@ -21,23 +21,55 @@ export async function getQueueBasedEvents(startDate: string, endDate: string, in
 }
 export async function getFullQueueBasedEvents() {
   const plannedEvents = await knex.raw(/* sql */`
-  select jobOrder, startTime from (
-        select
-              d.JOBORDER AS jobOrder,
-                CASE
-                      WHEN p.QUEUENUMBER = 1 THEN GETUTCDATE()
-                      ELSE DATEADD(second, COALESCE(
-                            SUM(CASE
-                              WHEN d.TheoricalDuration = 0 OR d.TheoricalDuration IS NULL THEN 28800
-                              ELSE d.TheoricalDuration
-                            END + 300) OVER (PARTITION BY d.PLANNEDMACHINE ORDER BY p.QUEUENUMBER ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0), GETUTCDATE())
-                    END AS startTime
-        from DYBFBATCHPLAN d
-        LEFT JOIN PTBATCHPLANQUEUE p ON p.PLANKEY = d.PLANKEY
-        LEFT JOIN DYBFBATCHPLANPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.PARAMSTRING = 'Kilo'
-        WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
-        AND p.PLANKEY IS NOT NULL
-) as subQuery
+SELECT
+  subQuery.jobOrder,
+  subQuery.startTime,
+  partyNoQuery.partyNo
+FROM (
+  SELECT
+    d.JOBORDER AS jobOrder,
+    CASE
+      WHEN p.QUEUENUMBER = 1 THEN GETUTCDATE()
+      ELSE DATEADD(
+        second,
+        COALESCE(
+          SUM(
+            CASE
+              WHEN d.TheoricalDuration = 0 OR d.TheoricalDuration IS NULL THEN 28800
+              ELSE d.TheoricalDuration
+            END + 300
+          ) OVER (
+            PARTITION BY d.PLANNEDMACHINE
+            ORDER BY p.QUEUENUMBER
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+          ),
+        0),
+        GETUTCDATE()
+      )
+    END AS startTime,
+    d.PLANKEY AS planKey,
+    d.PLANNEDMACHINE AS machineId
+  FROM DYBFBATCHPLAN d
+  LEFT JOIN PTBATCHPLANQUEUE p ON p.PLANKEY = d.PLANKEY
+  LEFT JOIN DYBFBATCHPLANPARAMETERS c
+    ON c.PLANKEY = d.PLANKEY AND c.PARAMSTRING = 'Kilo'
+  WHERE (d.ISDELETED IS NULL OR d.ISDELETED = 0)
+    AND p.PLANKEY IS NOT NULL
+) AS subQuery
+LEFT JOIN (
+  SELECT
+    c.PLANKEY,
+    c.ERPVALUE AS partyNo,
+    b.MACHINEID
+  FROM BFMACHBATCHPARAMETERTYPES b
+  LEFT JOIN BFERPPARAMETERDEFINITIONS d
+    ON b.PARAMID = d.PARAMID AND b.MACHINEID = d.MACHINEID
+  LEFT JOIN DYBFBATCHPLANERPPARAMETERS c
+    ON c.ERPFIELDNAME = d.ERPFIELDNAME
+  WHERE b.PARAMTYPEID = 3
+) AS partyNoQuery
+  ON subQuery.planKey = partyNoQuery.PLANKEY
+  AND subQuery.machineId = partyNoQuery.MACHINEID
   `)
   const actualEvents = await knex.raw(/* sql */`
     WITH ActualEvent AS (

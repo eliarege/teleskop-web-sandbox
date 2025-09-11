@@ -8,13 +8,6 @@ const { data: recipeData } = await useAuthFetch('/api/recipe', {
   query: { machineId: props.machineId, jobOrder: props.jobOrder },
 })
 const { t } = useI18n()
-function formatWeighedAmount(value: number | null, unit: number) {
-  if (value) {
-    const grams = Math.floor(value / 1000)
-    const milligrams = value % 1000
-    return `${grams},${milligrams.toString().padStart(3, '0')} ${getRecipeUnitById(unit)}`
-  } else return 0
-}
 const autoRecipe = computed(() => {
   if (recipeData.value) {
     return recipeData.value.autoRecipe.map(r => ({
@@ -79,7 +72,7 @@ const tab = ref('planParameter')
             :columns
             :data="manualRecipe"
             merge-cells-active
-            :title="t('plan-recipe.manuel.title')"
+            :title="t('plan-recipe.manual.title')"
             align="center"
           />
         </div>

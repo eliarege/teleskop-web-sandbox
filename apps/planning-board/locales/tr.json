@@ -58,7 +58,7 @@
   "plan-recipe": {
     "_": "Reçete",
     "title": "Otomatik Reçete",
-    "manuel": {
+    "manual": {
       "title": "Manuel Reçete",
       "empty-text": "Gösterilecek Reçete yok"
     },

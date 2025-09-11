@@ -1,6 +1,7 @@
 import type { SchedulerPro, SchedulerResourceModel } from '@bryntum/schedulerpro'
 import { DateHelper, Toast } from '@bryntum/schedulerpro'
 import { addMinutes, addSeconds, differenceInMilliseconds, differenceInSeconds } from 'date-fns'
+import { getRecipeUnitById } from '~/shared/enums'
 
 export function decompressJson(data: { columns: string[], values: any[][] }) {
   const { columns, values } = data
@@ -281,4 +282,12 @@ export function formatSeconds(second: number): string {
   const pad = (num: number) => String(num).padStart(2, '0')
 
   return `${sign}${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+}
+
+export function formatWeighedAmount(value: number | null, unit: number) {
+  if (value) {
+    const grams = Math.floor(value / 1000)
+    const milligrams = value % 1000
+    return `${grams},${milligrams.toString().padStart(3, '0')} ${getRecipeUnitById(unit)}`
+  } else return 0
 }
