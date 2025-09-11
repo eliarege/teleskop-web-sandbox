@@ -3,8 +3,11 @@ import { IO_TYPE } from '~/shared/constants'
 import type { MachineCommand } from '~/shared/types'
 
 const props = defineProps<{ command: MachineCommand }>()
-const ioTab = ref(0)
 const { t } = useI18n()
+const editor = useEditorStore()
+const { mt } = useProjectTranslations()
+
+const ioTab = ref(0)
 </script>
 
 <template>
@@ -21,7 +24,7 @@ const { t } = useI18n()
         v-for="io in props.command.ioList"
         :key="io.index"
         :name="io.index"
-        :label="io.name"
+        :label="mt(io.name, editor.machine.id)"
       />
     </q-tabs>
     <q-tab-panels v-model="ioTab">
@@ -35,7 +38,7 @@ const { t } = useI18n()
           <tbody>
             <tr>
               <td>{{ t('command.io.name') }}</td>
-              <td>{{ io.name }}</td>
+              <td>{{ mt(io.name, editor.machine.id) }}</td>
             </tr>
             <tr>
               <td>{{ t('command.io.index') }}</td>

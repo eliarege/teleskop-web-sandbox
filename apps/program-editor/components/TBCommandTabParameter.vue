@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import type { MachineCommand } from '~/shared/types'
 
-const props = defineProps<{ command: MachineCommand }>()
+const props = defineProps<{
+  machineId: number
+  command: MachineCommand
+}>()
+
 const { t } = useI18n()
+const { mt } = useProjectTranslations()
+
 const parameterTab = ref(0)
 </script>
 
@@ -20,7 +26,7 @@ const parameterTab = ref(0)
         v-for="parameter in props.command.parameters"
         :key="parameter.index"
         :name="parameter.index"
-        :label="`${parameter.name}`"
+        :label="mt(parameter.name, props.machineId)"
       />
     </q-tabs>
     <q-tab-panels v-model="parameterTab">
@@ -34,7 +40,7 @@ const parameterTab = ref(0)
           <tbody>
             <tr>
               <td>{{ t('command.parameter.name') }}</td>
-              <td>{{ props.command.parameters[parameter.index].name }}</td>
+              <td>{{ mt(props.command.parameters[parameter.index].name, props.machineId) }}</td>
             </tr>
             <tr>
               <td>{{ t('command.parameter.type') }}</td>

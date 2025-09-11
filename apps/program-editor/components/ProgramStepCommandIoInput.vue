@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const editor = useEditorStore()
+const { mt } = useProjectTranslations()
 const programIO: ioListItem = editor.getPathElement(props.path)
 
 const model = computed({
@@ -22,7 +23,7 @@ const model = computed({
 const separator = ','
 const options = computed(() => (
   props.io.selections.map((selection: CommandIOSelection) => ({
-    label: selection.name,
+    label: mt(selection.name, editor.machine.id),
     value: `${selection.type}${separator}${selection.physicalId}`,
   }))
 ))
@@ -57,7 +58,7 @@ const selectedOptionsText = computed(() => {
     >
       <div class="relative pt-4 text-3 min-w-32 max-w-40">
         <div class="q-input-text">
-          {{ props.io.name }}
+          {{ mt(props.io.name, editor.machine.id) }}
         </div>
         <div class="option-text">
           {{ selectedOptionsText }}

@@ -6,6 +6,7 @@ import { useEditorStore } from '~/composables/editor'
 import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 
 const editor = useEditorStore()
+const { mt } = useProjectTranslations()
 const { t } = useI18n()
 
 const sortableOptions = computed<SortableOptions>(() => ({
@@ -16,16 +17,24 @@ const sortableOptions = computed<SortableOptions>(() => ({
     put: false,
   },
 }))
+
 const route = useRoute()
 const isProgramPage = computed(() => route.path.includes('program'))
 const searchQuery = ref('')
 const { notifyError } = useNotify()
 
+const translatedCommands = computed(() => {
+  const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
+  return commandsArray.map(command => ({
+    ...command,
+    name: mt(command.name, editor.machine.id),
+  }))
+})
+
 const filteredCommands = computed(() => {
   const query = searchQuery.value.toLowerCase()
-  const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
 
-  return commandsArray
+  return translatedCommands.value
     .filter(({ commandNo, name }) => (
       commandNo.toString().includes(query)
       || name.toLowerCase().includes(query)
@@ -100,7 +109,7 @@ function validateParallelCommands(stepIndex: number): boolean {
         >
           <QItemSection>
             <QItemLabel>
-              <span class="font-bold">{{ command.commandNo }}</span> / {{ command.name }}
+              <span class="font-bold">{{ command.commandNo }}</span> / {{ mt(command.name, editor.machine.id) }}
             </QItemLabel>
           </QItemSection>
         </QItem>

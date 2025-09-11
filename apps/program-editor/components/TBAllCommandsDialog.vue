@@ -8,6 +8,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { mt } = useProjectTranslations()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 </script>
 
@@ -47,7 +48,7 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
               @click="onDialogOK(command)"
             >
               <QItemSection>
-                {{ command.commandNo }} - {{ command.name }}
+                {{ command.commandNo }} - {{ mt(command.name, props.machineId) }}
               </QItemSection>
             </QItem>
           </QList>

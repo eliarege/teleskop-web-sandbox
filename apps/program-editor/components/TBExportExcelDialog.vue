@@ -9,6 +9,8 @@ const props = defineProps<{
 
 const kc = useKeycloak()
 const { t } = useI18n()
+const { mt } = useProjectTranslations()
+
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 let sheet: ExcelJS.Worksheet
 
@@ -121,7 +123,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
           sheet.addRow({
             machineName: machine?.name,
             commandNo: command.commandNo,
-            commandName: command.name,
+            commandName: mt(command.name, machineId),
           })
         })
       }
@@ -129,7 +131,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
         for (const command of commands) {
           sheet.addRow({
             machineName: machine?.name,
-            commandName: command.name,
+            commandName: mt(command.name, machineId),
           })
 
           if (command.parameters.find(param => param.editable === true)) {
