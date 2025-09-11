@@ -7,6 +7,8 @@ defineProps<{
   resultSide?: ProgramStepCommandDiff | null
   stepIndex: number
 }>()
+
+const { mt } = useProjectTranslations()
 const editor = useEditorStore()
 
 function getCommandInfo(commandNo: number): MachineCommand | undefined {
@@ -15,12 +17,13 @@ function getCommandInfo(commandNo: number): MachineCommand | undefined {
 
 function getParameterName(commandNo: number, paramIndex: number): string {
   const command = getCommandInfo(commandNo)
-  return command?.parameters[paramIndex]?.name || ''
+  const paramName = command?.parameters[paramIndex]?.name
+  return paramName ? mt(paramName, editor.machine.id) : ''
 }
 
 function getCommandString(commandNo: number): string {
   const command = getCommandInfo(commandNo)
-  return command ? `${commandNo} - ${command.name}` : ''
+  return command ? `${commandNo} - ${mt(command.name, editor.machine.id)}` : ''
 }
 
 function getParameterValue(param: CommandParameterDiff, commandNo: number): string {

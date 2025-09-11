@@ -7,8 +7,10 @@ const props = defineProps<{
   machineCommand: MachineCommand
 }>()
 
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
+const { mt } = useProjectTranslations()
+const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+
 const tab = ref('general')
 </script>
 
@@ -37,7 +39,7 @@ const tab = ref('general')
             {{ props.machineId }} - {{ props.machineName }}
           </div>
           <div class="text-h8 color-gray-6 dark:text-gray-4">
-            {{ props.machineCommand.commandNo }} - {{ props.machineCommand.name }}
+            {{ props.machineCommand.commandNo }} - {{ mt(props.machineCommand.name, props.machineId) }}
           </div>
         </QCardSection>
         <QCardSection>
@@ -62,15 +64,15 @@ const tab = ref('general')
 
               <QTabPanels v-model="tab">
                 <QTabPanel name="general">
-                  <TBCommandTabGeneral :command="props.machineCommand" />
+                  <TBCommandTabGeneral :machine-id="props.machineId" :command="props.machineCommand" />
                 </QTabPanel>
 
                 <QTabPanel name="parameter">
-                  <TBCommandTabParameter :command="props.machineCommand" />
+                  <TBCommandTabParameter :machine-id="props.machineId" :command="props.machineCommand" />
                 </QTabPanel>
 
                 <QTabPanel name="io">
-                  <TBCommandTabIO :command="props.machineCommand" />
+                  <TBCommandTabIO :machine-id="props.machineId" :command="props.machineCommand" />
                 </QTabPanel>
 
                 <QTabPanel name="graphic">

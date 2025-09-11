@@ -686,11 +686,17 @@ export class MachineController {
    */
   @withTransaction
   async getMachineInfo(_editable?: boolean): Promise<Omit<Machine, 'commands'> & { commands: MachineCommand[] }> {
-    await hasMachine(this.id)
-    const [{ name, tbbModel }] = await this.trx
-      .select('MACHINECODE as name', 'TBBMODEL as tbbModel')
+    const machine = await this.trx
+      .first('MACHINECODE as name', 'TBBMODEL as tbbModel')
       .from('BFMACHINES')
       .where('MACHINEID', this.id)
+      .andWhere('USEINTELESKOP', 1)
+
+    if (!machine) {
+      throw new PError('MACHINE_NOT_FOUND', { machineId: this.id })
+    }
+
+    const { name, tbbModel } = machine
     const commands = await this.fetchCommands()
     const batchParameters = await this.fetchBatchParameters()
     const constants = await this.fetchMachineConstants()

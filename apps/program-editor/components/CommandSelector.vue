@@ -13,6 +13,7 @@ const editor = useEditorStore()
 const { $commandManager } = useNuxtApp()
 const selectRef = ref<QSelect>()
 
+const { mt } = useProjectTranslations()
 const settings = useProgramWriteSettings()
 
 const programCommand = ref<ProgramStepCommand>(editor.getPathElement(props.path))
@@ -37,7 +38,7 @@ const availableCommands = computed(() => {
       || !isParallelCommandRestricted(commandNo),
     )
     .map(command => ({
-      label: `${command.commandNo} ${command.name}`,
+      label: `${command.commandNo} ${mt(command.name, editor.machine.id)}`,
       value: command.commandNo,
       icon: editor.getStepIcon(command.commandNo),
     }))
@@ -92,7 +93,7 @@ function getCommandLabel(option: any) {
   if (option.label)
     return option.label
   const command = editor.machine.commands.get(option)
-  return command ? `${command.commandNo} ${command.name}` : `${option} ${t('error.commandNotFound')}`
+  return command ? `${command.commandNo} ${mt(command.name, editor.machine.id)}` : `${option} ${t('error.commandNotFound')}`
 }
 
 function isParallelCommandRestricted(commandNo: number): boolean {

@@ -40,6 +40,8 @@ export function calculateProgramDuration(program: Program, machine: Machine, ini
  * @returns {number} Teorik sure
  */
 export function calculateProgramDurationPoint(program: Program, machine: Machine, initialTemperature: number) {
+  const { mt } = useProjectTranslations()
+
   const tempData: number[] = [initialTemperature]
   const timeData: number[] = [0]
   const gradientData: number[] = [0]
@@ -65,7 +67,7 @@ export function calculateProgramDurationPoint(program: Program, machine: Machine
 
       const commandNo = program.steps[i].mainCommand.commandNo!
       const machineCommand = machine.commands.get(commandNo)!
-      stepInfo.push({ step: i + 1, commandNo, commandName: machineCommand.name })
+      stepInfo.push({ step: i + 1, commandNo, commandName: mt(machineCommand.name, machine.id) })
 
       dataPoints.push({ x: currentTime, y: point.temperature })
 

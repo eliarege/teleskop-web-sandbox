@@ -6,6 +6,7 @@ import { Bar } from 'vue-chartjs'
 
 const { t } = useI18n()
 const editor = useEditorStore()
+const { mt } = useProjectTranslations()
 const { dialogRef } = useDialogPluginComponent()
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, BarController, CategoryScale, LinearScale)
@@ -49,8 +50,10 @@ function calculateChartData() {
   calcCommandsLength()
 
   const dataPoints = commandsLength.value.map(({ commandNo, startStep, endStep }) => {
-    const commandName = editor.machine.commands.get(commandNo)?.name || t('apperance.unknownCommand')
-    return { x: [startStep, endStep] as [number, number], y: commandName }
+    const machineCommandName = editor.machine.commands.get(commandNo)?.name || ''
+    const commandName = mt(machineCommandName, editor.machine.id) || t('apperance.unknownCommand')
+
+    return { x: [startStep, endStep], y: commandName }
   })
 
   chartData.value = {

@@ -2,8 +2,13 @@
 import { MoveParallel } from '~/shared/constants'
 import type { MachineCommand } from '~/shared/types'
 
-const props = defineProps<{ command: MachineCommand }>()
+const props = defineProps<{
+  machineId: number
+  command: MachineCommand
+}>()
+
 const { t } = useI18n()
+const { mt } = useProjectTranslations()
 </script>
 
 <template>
@@ -16,7 +21,7 @@ const { t } = useI18n()
         </tr>
         <tr>
           <td>{{ t('command.name') }}</td>
-          <td>{{ props.command.name }}</td>
+          <td>{{ mt(props.command.name, props.machineId) }}</td>
         </tr>
         <tr>
           <td>{{ t('command.type') }}</td>

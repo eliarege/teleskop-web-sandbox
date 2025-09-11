@@ -13,10 +13,11 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const editor = useEditorStore()
+const { mt } = useProjectTranslations()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
 const commandNo = ref(props.commandNo)
-const commandName = ref(props.commandName)
+const commandName = mt(props.commandName, editor.machine.id)
 const startIndex = ref(props.stepIndex)
 const endIndex = ref(props.stepsLength)
 
@@ -54,12 +55,7 @@ const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
           <!-- Komut Adı -->
           <div class="flex flex-col w-60">
             <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('command.name') }}</label>
-            <QTooltip>{{ commandName }}</QTooltip>
-            <span
-              class="text-sm text-gray-8 dark:text-gray-3 w-full"
-              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-              :title="commandName"
-            >
+            <TruncatedText :text="commandName">
               <UnoIcon
                 v-if="commandIcon"
                 class="inline-block mr-1"
@@ -67,13 +63,13 @@ const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
                 :style="{ color: commandIcon?.color }"
               />
               {{ commandName }}
-            </span>
+            </TruncatedText>
           </div>
 
           <!-- Parametre Adı -->
           <div v-if="props.type === 'changeParameter'" class="flex flex-col w-40">
             <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('moveParallelStep.changeParameter.parameter.name') }}</label>
-            <span class="text-sm text-gray-8 dark:text-gray-3">{{ props.parameter?.name }}</span>
+            <span class="text-sm text-gray-8 dark:text-gray-3">{{ mt(props.parameter?.name || '', editor.machine.id) }}</span>
           </div>
 
           <!-- Parametre Degeri -->

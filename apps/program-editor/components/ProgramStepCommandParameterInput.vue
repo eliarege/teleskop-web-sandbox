@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import InputDuration from './InputDuration.vue'
 import InputNumber from './InputNumber.vue'
-import type { CommandFormula, CommandParameter, ParameterItem } from '~/shared/types'
+import type { CommandFormula, CommandParameter, ParameterItem, ParameterSelections } from '~/shared/types'
 
 const props = defineProps<{
   path: string
@@ -13,6 +13,7 @@ const props = defineProps<{
 const $q = useQuasar()
 const { t } = useI18n()
 const editor = useEditorStore()
+const { mt } = useProjectTranslations()
 const { $commandManager } = useNuxtApp()
 const programParameter: ParameterItem = editor.getPathElement(props.path)
 const model = ref(Number(programParameter.value))
@@ -23,7 +24,14 @@ const rules = [
   (value: number | string) => (Number(value) >= props.parameter.minValue && Number(value) <= props.parameter.maxValue) || t('valueOutOfRange', { minValue: props.parameter.minValue, maxValue: props.parameter.maxValue }),
 ]
 
-const options = computed(() => props.parameter.selections || [])
+const options = computed(() => {
+  const selections = props.parameter.selections ?? []
+  return selections.map((selection: ParameterSelections) => ({
+    name: mt(selection.name, editor.machine.id),
+    value: selection.value,
+  }))
+})
+
 const formulaOptions = computed(() =>
   editor.machine.commandFormulas.filter((f: CommandFormula) => f.commandNo === props.commandNo).map((f: CommandFormula) => ({
     label: f.formulaName,
@@ -75,7 +83,7 @@ function handleInputBlur() {
         v-model="model"
         dense
         outlined
-        :label="parameter.name"
+        :label="mt(parameter.name, editor.machine.id)"
         :rules="rules"
         style="width: 150px;"
         class="text-3"
@@ -97,7 +105,7 @@ function handleInputBlur() {
         v-else
         v-model="model"
         :rules="rules"
-        :label="parameter.name"
+        :label="mt(parameter.name, editor.machine.id)"
         type="decimal"
         :maxlength="10"
         :hide-bottom-space="true"
@@ -123,7 +131,7 @@ function handleInputBlur() {
     <template v-else-if="parameter.type === 'SELECT'">
       <QSelect
         v-model="model"
-        :label="parameter.name"
+        :label="mt(parameter.name, editor.machine.id)"
         :options="options"
         option-label="name"
         option-value="value"
@@ -141,7 +149,7 @@ function handleInputBlur() {
     <template v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
       <QSelect
         v-model="model"
-        :label="parameter.name"
+        :label="mt(parameter.name, editor.machine.id)"
         :options="formulaOptions"
         :option-label="(f) => f.label?.trim().slice(0, 15)"
         option-value="value"
@@ -185,8 +193,7 @@ function handleInputBlur() {
         @blur="handleInputBlur"
       >
         <span class="text-3">
-          {{ parameter.name.length > 15 ? `${parameter.name.trim().slice(0, 15)}...` : parameter.name }}
-          <QTooltip v-if="parameter.name.length > 15">{{ parameter.name }}</QTooltip>
+          <TruncatedText :text="mt(parameter.name, editor.machine.id)" />
         </span>
       </QCheckbox>
     </template>
