@@ -491,6 +491,7 @@ function showAddModal() {
     componentProps: {
       title: t('addMachine'),
       modelValue: {},
+      isEdit: false,
       onSubmit: (e: Machine) => handleAdd(e),
       tbbModelOptions,
       steamUnitOptions,
@@ -508,6 +509,7 @@ function showEditModal() {
     componentProps: {
       title: t('editMachine'),
       modelValue: selectedMachine,
+      isEdit: true,
       onSubmit: (e: Machine) => handleEdit(e),
       tbbModelOptions,
       steamUnitOptions,
