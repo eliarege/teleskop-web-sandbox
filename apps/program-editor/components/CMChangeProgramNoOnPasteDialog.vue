@@ -17,10 +17,6 @@ const newIds = ref(props.remains)
 const isOKDisabled = computed(() => {
   return newIds.value.program.some(program => program.newProgramNo === null)
 })
-
-function formatProgramName(name: string) {
-  return name.length > 30 ? `${name.substring(0, 30)}...` : name
-}
 </script>
 
 <template>
@@ -72,14 +68,11 @@ function formatProgramName(name: string) {
               </q-tooltip>
             </UnoIcon>
 
-            <span class="ml-2">
-              <div>
-                {{ program.programNo }} - {{ formatProgramName(program.name) }}
-                <q-tooltip v-if="program.name.length > 30">
-                  {{ program.name }}
-                </q-tooltip>
-              </div>
-            </span>
+            <TruncatedText
+              :text="`${program.programNo} - ${program.name}`"
+              :max-length="40"
+              class="ml-4"
+            />
           </div>
 
           <div>

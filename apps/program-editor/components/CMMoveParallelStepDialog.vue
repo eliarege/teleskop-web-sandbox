@@ -54,12 +54,7 @@ const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
           <!-- Komut Adı -->
           <div class="flex flex-col w-60">
             <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('command.name') }}</label>
-            <QTooltip>{{ commandName }}</QTooltip>
-            <span
-              class="text-sm text-gray-8 dark:text-gray-3 w-full"
-              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-              :title="commandName"
-            >
+            <TruncatedText :text="commandName">
               <UnoIcon
                 v-if="commandIcon"
                 class="inline-block mr-1"
@@ -67,7 +62,7 @@ const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
                 :style="{ color: commandIcon?.color }"
               />
               {{ commandName }}
-            </span>
+            </TruncatedText>
           </div>
 
           <!-- Parametre Adı -->

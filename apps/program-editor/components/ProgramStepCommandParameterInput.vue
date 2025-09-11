@@ -185,8 +185,7 @@ function handleInputBlur() {
         @blur="handleInputBlur"
       >
         <span class="text-3">
-          {{ parameter.name.length > 15 ? `${parameter.name.trim().slice(0, 15)}...` : parameter.name }}
-          <QTooltip v-if="parameter.name.length > 15">{{ parameter.name }}</QTooltip>
+          <TruncatedText :text="mt(parameter.name, editor.machine.id)" />
         </span>
       </QCheckbox>
     </template>
