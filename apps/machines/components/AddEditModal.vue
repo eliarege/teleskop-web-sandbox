@@ -4,6 +4,7 @@ import type { Machine, MachineGroup } from '~/types'
 
 defineProps<{
   title: string
+  isEdit: boolean
   formClass?: string
   steamUnitOptions: string[]
   machineGroups: { label: string, value: number | string }[]
@@ -108,6 +109,8 @@ async function checkNetworkConnection(formData: Machine) {
         >
           <div class="grid grid-cols-5 gap-4 grid-items-baseline items-center">
             <FormKit
+              :readonly="isEdit"
+              blocked
               type="text"
               name="machineId"
               label="ID"
@@ -201,6 +204,7 @@ async function checkNetworkConnection(formData: Machine) {
               type="checkbox"
               name="inUse"
               :label="t('inUse')"
+              :value="true"
             />
             <FormKit
               type="checkbox"

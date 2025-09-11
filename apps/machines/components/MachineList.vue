@@ -20,7 +20,6 @@ function isRowSelected(row: Machine) {
 function removeSelection(row: Machine) {
   selected.value = selected.value.filter(r => r.machineId !== row.machineId)
 }
-// const shift = useKeyModifier('Shift')
 const ctrl = useKeyModifier('Control')
 let cursor = -1
 let lastDirection = 0

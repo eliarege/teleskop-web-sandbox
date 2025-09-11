@@ -244,19 +244,18 @@ async function handleDelete() {
     ok: {
       label: t('delete'),
       color: 'negative',
-      handler: async () => {
-        await kc.fetch('/api/machines/machine', {
-          method: 'DELETE',
-          body: {
-            machineIds: selected.value.map(d => d.machineId),
-          },
-        })
-        await refresh()
-      },
     },
     cancel: {
       label: t('cancel'),
     },
+  }).onOk(async () => {
+    await kc.fetch('/api/machines/machine', {
+      method: 'DELETE',
+      body: {
+        machineIds: selected.value.map(d => d.machineId),
+      },
+    })
+    await refresh()
   })
 }
 
@@ -492,6 +491,7 @@ function showAddModal() {
     componentProps: {
       title: t('addMachine'),
       modelValue: {},
+      isEdit: false,
       onSubmit: (e: Machine) => handleAdd(e),
       tbbModelOptions,
       steamUnitOptions,
@@ -509,6 +509,7 @@ function showEditModal() {
     componentProps: {
       title: t('editMachine'),
       modelValue: selectedMachine,
+      isEdit: true,
       onSubmit: (e: Machine) => handleEdit(e),
       tbbModelOptions,
       steamUnitOptions,
