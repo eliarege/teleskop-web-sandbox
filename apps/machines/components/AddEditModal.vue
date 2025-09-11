@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { changeLocale } from '@formkit/i18n'
 import type { Machine, MachineGroup } from '~/types'
 
 defineProps<{
@@ -18,7 +19,12 @@ const formData = defineModel({
   required: true,
 })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+watch(locale, (newLocale) => {
+  changeLocale(newLocale)
+})
+
 function onSubmitForm() {
   emit('submit', formData.value)
   onDialogHide()
@@ -105,59 +111,81 @@ async function checkNetworkConnection(formData: Machine) {
               type="text"
               name="machineId"
               label="ID"
+              validation="required|number"
+              validation-label="ID"
             />
             <FormKit
               type="text"
               name="machineCode"
               :label="t('machineName')"
+              validation="required"
+              :validation-label="t('machineName')"
             />
             <FormKit
               type="select"
               name="groupId"
               :label="t('machineGroup')"
               :options="machineGroups"
+              validation="required"
+              :validation-label="t('machineGroup')"
             />
             <FormKit
               type="select"
               name="tbbModel"
               label="TBB Model"
               :options="tbbModelOptions"
+              validation="required"
+              validation-label="TBB Model"
             />
             <FormKit
               type="text"
               name="machineCapacity"
               :label="t('machineCapacity')"
+              validation="required|number"
+              :validation-label="t('machineCapacity')"
             />
             <FormKit
               type="text"
               name="reelCount"
               :label="t('reelCount')"
+              validation="required|number"
+              :validation-label="t('reelCount')"
             />
             <FormKit
               type="text"
               name="nozzleCount"
               :label="t('nozzleCount')"
+              validation="required|number"
+              :validation-label="t('nozzleCount')"
             />
             <FormKit
               type="text"
               name="ip"
               label="IP"
+              :validation="[['required'], ['matches', /^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/]]"
+              validation-label="IP"
             />
             <FormKit
               type="text"
               name="theoricalCharge"
               :label="t('theoricalCharge')"
+              validation="number"
+              :validation-label="t('theoricalCharge')"
             />
             <FormKit
               type="text"
               name="theoricalChargeDuration"
               :label="t('theoricalChargeDuration')"
+              validation="number"
+              :validation-label="t('theoricalChargeDuration')"
             />
             <FormKit
               type="select"
               name="steamUnit"
               :label="t('steamUnit')"
               :options="steamUnitOptions"
+              validation="required"
+              :validation-label="t('steamUnit')"
             />
             <FormKit
               type="select"
@@ -223,6 +251,8 @@ async function checkNetworkConnection(formData: Machine) {
               name="steamKgPerHour"
               :label="t('steamKgPerHour')"
               :disabled="!formData.theoreticalSteam"
+              validation="number"
+              :validation-label="t('steamKgPerHour')"
             />
             <FormKit
               type="select"
