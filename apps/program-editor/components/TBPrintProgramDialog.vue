@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
+import type { Machine } from '@teleskop/tbb-ftp-client'
+import type { MachineCommand, ProgramTableRow } from '~/shared/types'
 
-const props = defineProps({
-  machines: Array,
-})
+const props = defineProps<{
+  machines: Machine[]
+}>()
 
 defineEmits([
   ...useDialogPluginComponent.emits,
@@ -14,15 +16,15 @@ const { fetch } = useKeycloak()
 const { t } = useI18n()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
-const selectedMachine = ref()
+const selectedMachine = ref<Machine>()
 const programGroup = ref([])
 const programOptions = ref([] as any[])
 const commandGroup = ref([])
 const commandOptions = ref([] as any[])
-async function machineSelected(e) {
-  selectedMachine.value = e
-  programOptions.value = await fetch(`/api/machine/${selectedMachine.value.id}/program?asList=true`)
-  commandOptions.value = await fetch(`/api/machine/${selectedMachine.value.id}/commands?asList=true`)
+async function machineSelected(machine: Machine) {
+  selectedMachine.value = machine
+  programOptions.value = await fetch<{ programNo: number, name: string }[] | ProgramTableRow[]>(`/api/machine/${selectedMachine.value.id}/program?asList=true`)
+  commandOptions.value = await fetch<Pick<MachineCommand, 'commandNo' | 'name'>[] | MachineCommand[]>(`/api/machine/${selectedMachine.value.id}/commands?asList=true`)
   commandOptions.value = commandOptions.value.map(row => ({
     name: row.name,
     value: row.value,
@@ -59,7 +61,7 @@ async function machineSelected(e) {
         <q-select
           :model-value="selectedMachine"
           dense
-          :options="machines"
+          :options="props.machines"
           option-label="name"
           @update:model-value="machineSelected"
         />

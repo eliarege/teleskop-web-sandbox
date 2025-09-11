@@ -1,5 +1,5 @@
 import { machineStore } from '~/server/classes/MachineStore'
-import type { Program } from '~/shared/types'
+import type { Program, ProgramTableRow } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { PError } from '~/server/error'
 import { ProgramEditorActivityCodes } from '~/server/constants'
@@ -43,7 +43,7 @@ export default defineAuthEventHandler(async (event) => {
 
 // Helper Functions
 
-async function handleGetPrograms(machine: MachineController, query: any) {
+async function handleGetPrograms(machine: MachineController, query: any): Promise<{ programNo: number, name: string }[] | ProgramTableRow[]> {
   if (query?.asList) {
     return await machine.getProgramHeadersAsList()
   }
@@ -54,7 +54,7 @@ async function handleCreateProgram(
   body: any,
   machineId: number,
   userName?: string,
-) {
+): Promise<{ success: boolean, error?: string }> {
   const programNoToCheck = body.newProgramNo ?? body.programNo ?? body.program?.programNo
 
   let program: Program
@@ -121,12 +121,13 @@ async function handleCreateProgram(
   }
 }
 
-async function handleUpdateProgram(machine: MachineController, body: any, machineId: number, userName?: string) {
+async function handleUpdateProgram(machine: MachineController, body: any, machineId: number, userName?: string): Promise<boolean> {
   try {
     logger.info(`User: ${userName}. Updated program ${body.program.programNo} of machine ${machineId}.`)
     return await machine.updateProgram(body.program)
   } catch (err) {
     handleProgramError(err)
+    return false
   }
 }
 
