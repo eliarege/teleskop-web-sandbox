@@ -1,0 +1,13 @@
+{
+  "name": "@teleskop/core",
+  "type": "module",
+  "version": "0.46.0",
+  "packageManager": "pnpm@10.15.0",
+  "description": "",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "ofetch": "1.4.1"
+  }
+}
