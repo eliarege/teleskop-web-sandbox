@@ -100,6 +100,14 @@ target "machines" {
   target = "nuxt-app"
 }
 
+target "migration-service" {
+  inherits = ["_common"]
+  target = "node-app"
+  args = {
+    APP_BUILD_DIR = "dist"
+  }
+}
+
 target "multi-monitor" {
   inherits = ["_common"]
   target = "nuxt-app"
