@@ -1089,7 +1089,7 @@ export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx:
   }
 }
 
-export async function updateMachineTranslations(
+export async function updateProjectTranslations(
   machineId: number,
   tbb: TbbFtpClient,
   trx: Knex,

@@ -29,7 +29,8 @@
     "soap": "1.1.6",
     "sortablejs": "1.15.3",
     "sortablejs-vue3": "1.2.11",
-    "ufo": "1.5.4"
+    "ufo": "1.5.4",
+    "zod": "3.23.8"
   },
   "devDependencies": {
     "@iconify-json/mdi": "1.2.1",

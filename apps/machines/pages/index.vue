@@ -16,8 +16,9 @@ interface sseLog {
 const kc = useKeycloak()
 const { dialog } = useQuasar()
 const { t } = useI18n()
-const { notifyError } = useNotify()
+const { notifySuccess, notifyError } = useNotify()
 const baseURL = useRuntimeConfig().app.baseURL
+const loadingProjectTranslations = ref(false)
 
 const { data: databaseVersion } = useAuthFetch('/api/machines/database-version', {
   default: () => '',
@@ -556,6 +557,26 @@ async function loadProject() {
   }
 }
 
+async function loadProjectTranslations() {
+  const machineId = selected.value[0].machineId
+
+  if (!machineId) {
+    return
+  }
+  try {
+    loadingProjectTranslations.value = true
+    await kc.fetch('/api/sync/project-translations', {
+      method: 'POST',
+      body: { machineId },
+    })
+    notifySuccess(t('projectTranslationsLoadedSuccessfully'))
+  } catch (error: any) {
+    notifyError(`${t('errorloadingProjectTranslationsTranslations')}: ${error?.message}`)
+  } finally {
+    loadingProjectTranslations.value = false
+  }
+}
+
 async function receiveVersionInfo() {
   try {
     currentOperation.value = 'version'
@@ -627,7 +648,7 @@ function showVersionSseLogs() {
           push
           color="primary"
           :label="t('edit')"
-          :disable="selected.length !== 1"
+          :disable="selected.length !== 1 || loadingProjectTranslations"
           @click="showEditModal"
         />
         <q-btn
@@ -643,8 +664,17 @@ function showVersionSseLogs() {
           push
           color="primary"
           :label="t('loadProject')"
-          :disable="selected.length !== 1"
+          :disable="selected.length !== 1 || loadingProjectTranslations"
           @click="loadProject"
+        />
+        <q-btn
+          no-caps
+          push
+          color="primary"
+          :label="t('loadProjectTranslations')"
+          :disable="selected.length !== 1"
+          :loading="loadingProjectTranslations"
+          @click="loadProjectTranslations"
         />
         <q-btn
           :label="t('receiveVersionInfo')"

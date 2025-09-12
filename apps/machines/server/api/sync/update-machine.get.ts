@@ -3,7 +3,7 @@ import { getQuery } from 'h3'
 import { inferBoolean } from '@teleskop/utils'
 import { ErrorMessageKey } from '~/shared/enums'
 import { knex } from '~/server/connectionPool'
-import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIOChangedEvent, updateIcons, updateLocksGeneral, updateLocksOutput, updateMachineTranslations, updateSystemParams } from '~/server/utils/updateDatabase'
+import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIOChangedEvent, updateIcons, updateLocksGeneral, updateLocksOutput, updateProjectTranslations, updateSystemParams } from '~/server/utils/updateDatabase'
 import { DatabaseQueryError } from '~/server/error'
 
 const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
@@ -101,7 +101,7 @@ export default defineAuthEventHandler(async (event) => {
             { func: () => updateIOChangedEvent(numMachineId, tbb, trx), message: 'io-change-events-updated' },
             { func: () => updateIcons(numMachineId, tbb, trx), message: 'icons-updated' },
             { func: () => updateArchives(numMachineId, tbb, trx), message: 'archives-updated' },
-            { func: () => updateMachineTranslations(numMachineId, tbb, trx), message: 'translations-updated' },
+            { func: () => updateProjectTranslations(numMachineId, tbb, trx), message: 'translations-updated' },
           ]
           const totalSteps = updateFunctions.length
           let currentStep = 0
