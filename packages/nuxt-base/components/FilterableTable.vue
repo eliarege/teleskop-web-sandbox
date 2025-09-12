@@ -196,6 +196,14 @@ function pushToFilters(col: FilterableTableColumn, index: number, orderByType?: 
       }
       if (!contains(filterSlots.value, temp))
         filterSlots.value.push(temp)
+    } else if (col.filterType === 'boolean') {
+      const name = col.label
+      const option = selectedOptions.value[index]
+      const optionLabel = option ? (col.trueLabel ?? t('true')) : (col.falseLabel ?? t('false'))
+      temp = { label: t(`refactor.is`, { entity: name, value: optionLabel }), field: col.field, value: { option: [option] }, filterType: col.filterType }
+      if (!contains(filterSlots.value, temp) && option !== null) {
+        filterSlots.value.push(temp)
+      }
     } else {
     // If the filterType is not date the index parameter will be the index of selectionOptions
       const name = col.label
@@ -209,7 +217,7 @@ function pushToFilters(col: FilterableTableColumn, index: number, orderByType?: 
       } else
         optionLabel = option
       const filterType = col.filterType
-      if (filterType === 'select' || filterType === 'multiselect' || filterType === 'boolean') {
+      if (filterType === 'select' || filterType === 'multiselect') {
         temp = { label: `${name} ${t('is')} ${optionLabel}`, field: col.field, value: { option: [option] }, filterType, optionValue: col.optionValue }
         if (filterType === 'multiselect')
           temp.value.option = option
@@ -593,12 +601,12 @@ function onRequest(pagination: QTableProps['pagination']) {
                 <div v-if="col.filterType === 'boolean'">
                   <q-radio
                     v-model="selectedOptions[index]"
-                    :label="t('true')"
+                    :label="col.trueLabel ?? t('true')"
                     :val="1"
                   />
                   <q-radio
                     v-model="selectedOptions[index]"
-                    :label="t('false')"
+                    :label="col.falseLabel ?? t('false')"
                     :val="0"
                   />
                 </div>
@@ -876,7 +884,10 @@ function onRequest(pagination: QTableProps['pagination']) {
     "to": "to",
     "is": "is",
     "addTime": "Add time",
-    "removeTime": "Remove time"
+    "removeTime": "Remove time",
+    "refactor": {
+      "is": "{entity} is {value}"
+    }
   },
   "tr": {
     "between": "arasında",
@@ -906,7 +917,10 @@ function onRequest(pagination: QTableProps['pagination']) {
     "to": "ile",
     "is": "eşittir",
     "addTime": "Saat ekle",
-    "removeTime": "Saati kaldır"
+    "removeTime": "Saati kaldır",
+    "refactor": {
+      "is": "{entity} {value} ise"
+    }
   }
 }
 </i18n>

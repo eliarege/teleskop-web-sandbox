@@ -33,6 +33,8 @@ export interface FilterableTableColumn extends QTableColumn {
   selectionOptions?: Array<any>
   optionLabel?: string
   optionValue?: string
+  trueLabel?: string
+  falseLabel?: string
 }
 
 export interface FilterableTableFilter {
