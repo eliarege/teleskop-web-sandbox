@@ -72,6 +72,12 @@ function applyProductionCondition(exports: PackageJson['exports']) {
   if (!exports || typeof exports === 'string') {
     return
   }
+  if (Array.isArray(exports)) {
+    for (const exp of exports) {
+      applyProductionCondition(exp)
+    }
+    return
+  }
   if (exports.production) {
     if (typeof exports.production === 'string') {
       exports.default = exports.production
@@ -124,7 +130,9 @@ async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'optio
       const code = await fsp.readFile(entryPath, 'utf8')
       const imports = [
         ...findStaticImports(code).map(i => i.specifier),
-        ...findDynamicImports(code).map(i => i.expression),
+        ...findDynamicImports(code)
+          .filter(i => /^\s*(['"])[^'"]*\1\s*$/.test(i.expression))
+          .map(i => i.expression.trim().slice(1, -1)),
       ]
       for (const im of imports) {
         if (!im.startsWith('.') && !builtinModules.includes(im)) {
@@ -133,7 +141,6 @@ async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'optio
       }
     }
   }
-
   for (const dep of dependencies) {
     resolvedDependencies.add(await resolvePath(dep))
   }
@@ -144,7 +151,6 @@ async function copyNodeExternals(ctx: Pick<BuildContext, 'buildEntries' | 'optio
       resolvedDependencies.add(await resolvePath(name))
     }
   }
-
   // Trace used files using `@vercel/nft`
   const result = await nodeFileTrace([...resolvedDependencies], {
     base: '/',
@@ -430,6 +436,7 @@ export function workspaceExternals(ctx: BuildContext, options?: CopyNodeExternal
     // Inline workspace dependencies
     const workspaceDependencies = await getWorkspaceDependencies()
     const externalDependencies = await getExternalDependencies()
+
     ctx.options.rollup.inlineDependencies = true
     ctx.options.externals = ctx.options.externals
       .filter(e => typeof e === 'string' && !workspaceDependencies.includes(e))
