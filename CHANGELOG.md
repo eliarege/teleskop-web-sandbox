@@ -1,8 +1,21 @@
 # Changelog
 
+## 0.48.0 - 2025-09-12
+
+[Compare Changes](7210afb650b29c01646b617b2d9df2a28d310700...fe38f5cfe69d11d1820f43d64287d095fee548e8)
+
+### 🚀 Features
+
+-  **MA**: Add button for loading project translations ([4424f5c](4424f5c9484bc3a36e971ae1e7651e877ce92bf7))
+- **nuxt-base**: Add `trueLabel` and `falseLabel` options to `FilterableTable` ([b42633a](b42633a0102b09498acd4af653d3eb29d803ba29))
+
+### 🐛 Bug Fixes
+
+-  **AR**: Rename `active` field to `batchStatus` and label icons/filters for status ([fe38f5c](fe38f5cfe69d11d1820f43d64287d095fee548e8))
+
 ## 0.47.0 - 2025-09-12
 
-[Compare Changes](397b4d40c0396cabdc7cb74f8ff471dc18de9c15...6892f839fee0ce598aa719ac82ff48bf07406b24)
+[Compare Changes](397b4d40c0396cabdc7cb74f8ff471dc18de9c15...7210afb650b29c01646b617b2d9df2a28d310700)
 
 ### 🚀 Features
 
