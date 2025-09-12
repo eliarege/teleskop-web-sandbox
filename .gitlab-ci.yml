@@ -52,7 +52,7 @@ workflow:
 
 variables:
   TARGET_APPS:
-    value: archive dispensing-manager-ui machine-status machines multi-monitor planning-board planning-board-engine root websockify program-editor
+    value: archive dispensing-manager-ui machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
     description: Whitespace seperated list of apps to build/release
 
 prepare-apps:

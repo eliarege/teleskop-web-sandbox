@@ -1,7 +1,4 @@
 {
   "extends": "@teleskop/tsconfig/base",
-  "compilerOptions": {
-    "noUnusedLocals": false
-  },
   "include": ["src/**/*"]
 }

@@ -9,7 +9,6 @@ import * as timeBased from './api/scheduler/time-based/routes'
 import { generateClientId } from './composables/helper'
 import { getAllTasks } from './composables/socket'
 import { knex } from './knexConfig'
-import { createPtColumnsTable, createPtMachineErpTable } from './composables/table'
 import { logger } from './composables/logger'
 import { config } from './config'
 import { autoPlan } from './composables/autoPlan'
@@ -49,11 +48,6 @@ const clientTasks: Record<string, string[]> = {}
 const DB_NAME = process.env.TELESKOP_DATABASE
 
 app.ready().then(async () => {
-  await knex.raw(/* sql */`ALTER DATABASE ${DB_NAME} SET COMPATIBILITY_LEVEL = 130`)
-
-  await createPtColumnsTable(knex)
-  await createPtMachineErpTable(knex)
-
   async function scheduleAutoPlan() {
     try {
       await autoPlan(knex)
