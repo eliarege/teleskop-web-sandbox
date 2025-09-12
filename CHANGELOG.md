@@ -1,8 +1,49 @@
 # Changelog
 
+## 0.47.0 - 2025-09-12
+
+[Compare Changes](397b4d40c0396cabdc7cb74f8ff471dc18de9c15...6892f839fee0ce598aa719ac82ff48bf07406b24)
+
+### 🚀 Features
+
+-  **MA**: Form validation ([58ee0ee](58ee0eee365d766a84f8fcba5de7e4c3864e0b16))
+-  **PE**: Store program errors in errorStore, update types, and display errors in program table ([57a1dba](57a1dba1422772ffec5085168456605b29ef4148))
+-  **PE**: Add context bar button to check selected programs ([445dfe5](445dfe5e3802dc4bb8e1280606dc87a4783d65fa))
+-  **PE**: Add machineId to program errors ([f085874](f085874f09a784ec5ce356b0703fbd6b1ded016e))
+-  **PE**: Add machineId filter to getStepError function ([63838ca](63838cadeb7bb4df0e0172778bbfcad47a1e8e46))
+- **nuxt-base**: Truncate text with tooltip on overflow ([bdf801e](bdf801ef0b2bc3290e59179d4dced43485fa76b4))
+-  **PE**: Use useProjectTranslations() method for project translations ([2cf4838](2cf48387bcc9213f826e6ce44fd30db76274c3d1))
+- Add `@teleskop/core` ([8fd4047](8fd40470735fe072d0be5301b0df2c8d0a3fe903))
+- **migration-service**: Add migration service with all required db modifications ([dd1d8cc](dd1d8cceaf2a63654695054b3a5963843c17a687))
+
+### 🐛 Bug Fixes
+
+-  **PE**: Run type check and resolve existing errors ([85399e3](85399e3ccc8d0edcdd4b8e6004b7d71dcb116a22))
+-  **PE**: Update notificationState and adjust CSS ([1643f8e](1643f8eda3623087d5b6d56d205aea360e8601d8))
+-  **PE**: Add missing types ([0becc5d](0becc5d452691982384e0b45219e4d5d0606f399))
+-  **PT**: Fixed program legend coloring ([94a25f6](94a25f60e4a8b7cf8c4a812422187c2070dceb0d))
+-  **PE**: Hide inactive machines in Teleskop ([8f93ad4](8f93ad454c157e7582d916915c6663d732cd52f6))
+-  **MA**: Fixed machine delete handling ([893cb4a](893cb4a8f6d35ca5ea87d98521d769ee1bfccf21))
+-  **MA**: Default inuse value should be true ([aae9ade](aae9ade74ae747fa7bdcf3e89ab6478e72c942ae))
+-  **MA**: Added useinteleskop as true by default & readonly ID ([b876f1f](b876f1fad6bc9505c5402fe42e646c0e56d65142))
+- **build-utils**: Handle array-like `exports` and correctly parse dynamic imports ([a15e3a9](a15e3a996ac034490f07d780752e72f6b5644d99))
+- **migration-service**: Handle bundling, remove compatibility level migration ([39cb826](39cb8265428d545b8e558257ce60bff2cfd727de))
+
+### 🔧 Miscellaneous Tasks
+
+-  **PE**: Remove unused component ([4b92dfd](4b92dfd6b6fcc912c0ce9c79f92079ec74a6f1da))
+-  **PT**: Added party no search to joborder search ([4b5b645](4b5b645a463449f225676e67f52bc0b0572126b7))
+-  **PT**: Updated recipe modal ([3073a31](3073a31b3325a4d90f8694c656d0fbdaa4d9215d))
+- Use `--env-file-if-exists` instead of `dotenv` ([d621550](d6215501343e107ad842e396dbf79a5aee4a3447))
+- **nuxt-base**: Merged topbar auth components ([121f2e1](121f2e1eadd6066029e51d950ee3738fe8a8f8c9))
+- **nuxt-base**: Added project translations to TopbarMenu ([d497382](d497382a79750c2ac30808d2f02cb7790ac73604))
+- **utils**: Rename `textTruncate.ts` to `string.ts` ([96b9a8f](96b9a8fed2bdac85974a26fe0cf61ae4f6adb093))
+- **tsconfig**: Disable `noUnusedLocals` and `noUnusedParameters` ([6f48c59](6f48c591bab2a8997eb1ea574df8aa92b0db2bf1))
+- Add `migration-service` to pipeline ([781c1eb](781c1eb5841d82862fa9943105f2e9113f6914fe))
+
 ## 0.46.0 - 2025-09-10
 
-[Compare Changes](e8231420b17ebe6a281b4bd10a496955c6bdd0bd...4a776b320a67cdbcbe81032f56d0694ae8923e63)
+[Compare Changes](e8231420b17ebe6a281b4bd10a496955c6bdd0bd...397b4d40c0396cabdc7cb74f8ff471dc18de9c15)
 
 ### 🚀 Features
 
