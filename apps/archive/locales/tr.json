@@ -103,7 +103,11 @@
     "calculatedValues": "Hesaplanmış Değerler"
   },
   "joborderTable": {
-    "active": "Aktif",
+    "batchStatus": {
+      "_": "İş Emri Durumu",
+      "active": "Aktif",
+      "completed": "Tamamlandı"
+    },
     "machineName": "Makine Adı",
     "model": "Model",
     "operator": "Operatör",

@@ -103,7 +103,11 @@
     "calculatedValues": "Calculated Values"
   },
   "joborderTable": {
-    "active": "Active",
+    "batchStatus": {
+      "_": "Batch Status",
+      "active": "Active",
+      "completed": "Completed"
+    },
     "machineName": "Machine",
     "model": "Model",
     "operator": "Operator",

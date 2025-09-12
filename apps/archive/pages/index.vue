@@ -35,11 +35,13 @@ const { data: theoreticalPrograms } = await useFetch('/api/theoretical-programs'
 
 const columns = computed(() => [
   {
-    name: 'active',
-    label: t('joborderTable.active'),
-    field: 'active',
+    name: 'batchStatus',
+    label: t('joborderTable.batchStatus._'),
+    field: 'batchStatus',
     filterable: true,
     filterType: 'boolean',
+    trueLabel: t('joborderTable.batchStatus.active'),
+    falseLabel: t('joborderTable.batchStatus.completed'),
   },
   {
     name: 'joborder',
@@ -135,12 +137,16 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
         @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
         @update-pagination="pgn => pagination = pgn"
       >
-        <template #body-cell-active="props">
+        <template #body-cell-batchStatus="props">
           <q-icon
             :name="props.value ? 'directions_run' : 'check'"
             :color="props.value ? 'positive' : 'grey'"
             size="1.5rem"
-          />
+          >
+            <q-tooltip :delay="500">
+              {{ props.value ? t('joborderTable.batchStatus.active') : t('joborderTable.batchStatus.completed') }}
+            </q-tooltip>
+          </q-icon>
         </template>
       </FilterableTable>
     </div>

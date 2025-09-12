@@ -4,7 +4,7 @@ import { db } from '~/server/database'
 const config = useRuntimeConfig()
 
 const selectParameters = {
-  active: db.raw(/* sql */`\
+  batchStatus: db.raw(/* sql */`\
     CAST(CASE
       WHEN B.CANCELTIME IS NULL AND B.ENDTIME IS NULL
       THEN 1
