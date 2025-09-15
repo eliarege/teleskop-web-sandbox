@@ -16,6 +16,7 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
+    "@teleskop/core": "workspace:*",
     "@teleskop/project-translations": "workspace:*",
     "@teleskop/tbb-ftp-client": "workspace:*",
     "@teleskop/utils": "workspace:*",
