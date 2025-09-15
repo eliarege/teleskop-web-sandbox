@@ -49,7 +49,6 @@ const envFile = [
   `NUXT_DMEXCHANGE_PASSWORD=${dmexchangePassword}`,
   `NUXT_DMEXCHANGE_DATABASE=${dmexchangeDatabase}`,
   dmexchangeInstanceName ? `NUXT_DMEXCHANGE_INSTANCE_NAME=${dmexchangeInstanceName}` : null,
-  `NUXT_DMEXCHANGE_TIMEZONE_OFFSET=${dmexchangeTimezoneOffset}`,
   `NUXT_DMEXCHANGE_CONNECTION_OPTIONS=${dmexchangeConnectionOptions}`,
 ].filter((v) => v != null).join('\n') + '\n'
 
