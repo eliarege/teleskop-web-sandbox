@@ -22,30 +22,30 @@ export const config = defineConfiguration({
   teleskopHost: {
     type: 'string',
     default: 'localhost',
-    env: 'TELESKOP_HOST',
+    env: ['TELESKOP_HOST', 'NUXT_TELESKOP_HOST'],
   },
   teleskopPort: {
     type: 'integer',
     default: 1433,
-    env: 'TELESKOP_PORT',
+    env: ['TELESKOP_PORT', 'NUXT_TELESKOP_PORT'],
   },
   teleskopUser: {
     type: 'string',
     required: process.env.NODE_ENV === 'production',
-    env: 'TELESKOP_USER',
+    env: ['TELESKOP_USER', 'NUXT_TELESKOP_USER'],
   },
   teleskopPassword: {
     type: 'string',
-    env: 'TELESKOP_PASSWORD',
+    env: ['TELESKOP_PASSWORD', 'NUXT_TELESKOP_PASSWORD'],
     required: process.env.NODE_ENV === 'production',
   },
   teleskopDatabase: {
     type: 'string',
-    env: 'TELESKOP_DATABASE',
+    env: ['TELESKOP_DATABASE', 'NUXT_TELESKOP_DATABASE'],
   },
   teleskopInstanceName: {
     type: 'string',
-    env: 'TELESKOP_INSTANCE_NAME',
+    env: ['TELESKOP_INSTANCE_NAME', 'NUXT_TELESKOP_INSTANCE_NAME'],
   },
   dmsEnabled: {
     type: 'boolean',
@@ -79,7 +79,7 @@ export const config = defineConfiguration({
   /** Pino Log Level (debug|info|warn|error|fatal) */
   logLevel: {
     type: 'string',
-    env: 'LOG_LEVEL',
+    env: ['LOG_LEVEL', 'NUXT_LOG_LEVEL'],
     default: 'info',
   },
   /** Dev only, ignores `TELESKOP_*` variables when set */
@@ -100,22 +100,22 @@ export const config = defineConfiguration({
   },
   keycloakUrl: {
     type: 'string',
-    env: 'KC_URL',
+    env: ['KC_URL', 'NUXT_PUBLIC_KC_URL'],
     required: inferBoolean(process.env.KC_ENABLED),
   },
   keycloakRealm: {
     type: 'string',
-    env: 'KC_REALM',
+    env: ['KC_REALM', 'NUXT_PUBLIC_KC_REALM'],
     required: inferBoolean(process.env.KC_ENABLED),
   },
   keycloakClientId: {
     type: 'string',
-    env: 'KC_CLIENT_ID',
+    env: ['KC_CLIENT_ID', 'NUXT_PUBLIC_KC_CLIENT_ID'],
     required: inferBoolean(process.env.KC_ENABLED),
   },
   keycloakEnabled: {
     type: 'boolean',
-    env: 'KC_ENABLED',
+    env: ['KC_ENABLED', 'NUXT_PUBLIC_KC_ENABLED'],
     default: false,
   },
   /** Dev only, token to use for authentication */
