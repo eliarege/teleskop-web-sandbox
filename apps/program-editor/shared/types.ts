@@ -57,6 +57,17 @@ export interface MachineGroup {
   machines: MachineInfo[]
 }
 
+export type MachineTbbModel =
+  | 'TBB6500'
+  | 'TBB7000'
+  | 'T7000/T710-PLC'
+  | 'T712'
+  | 'T7500'
+  | 'T7700'
+  | 'T7701ex'
+  | 'T711ex'
+  | 'Tonello'
+
 export interface MachineCommand {
   machineId: number
   commandNo: number
@@ -292,7 +303,7 @@ export interface SelectionArchiveList {
 export interface Machine {
   id: number
   name: string
-  tbbModel: string
+  tbbModel: MachineTbbModel
   commands: Map<number, MachineCommand>
   commandFormulas: CommandFormula[]
   constants: MachineConstant[]

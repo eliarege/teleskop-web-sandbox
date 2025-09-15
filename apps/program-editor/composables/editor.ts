@@ -706,7 +706,7 @@ export const useEditorStore = defineStore('editor', () => {
     return {
       id: 0,
       name: '',
-      tbbModel: '',
+      tbbModel: 'T7700',
       commands: new Map<number, MachineCommand>(),
       batchParameters: [],
       commandFormulas: [],
