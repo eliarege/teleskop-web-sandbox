@@ -1,9 +1,13 @@
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
+import type { TonelloProgram } from '@teleskop/core'
+import { TonelloApi } from '@teleskop/core'
+import { isDef } from '@teleskop/utils'
 import { parseProgramString } from '../parse'
 import { stringifyProgram } from '../stringify'
+import type { ErrorMachineParameterDetail } from '../error'
 import { PError } from '../error'
-import type { MachineCommand, Program } from '~/shared/types'
-import { ProgramStatus } from '~/shared/constants'
+import type { MachineCommand, Program, ProgramStepCommand } from '~/shared/types'
+import { ParameterType, ProgramStatus } from '~/shared/constants'
 
 export interface ProgramClient {
   connect: () => Promise<void>
@@ -15,13 +19,12 @@ export interface ProgramClient {
 }
 
 export class T7ProgramClient implements ProgramClient {
-  readonly id: number
-  readonly host: string
   readonly ftp: TbbFtpClient
 
-  constructor(id: number, host: string) {
-    this.id = id
-    this.host = host
+  constructor(
+    readonly id: number,
+    readonly host: string,
+  ) {
     this.ftp = new TbbFtpClient(host)
   }
 
@@ -85,5 +88,175 @@ export class T7ProgramClient implements ProgramClient {
   async deleteProgram(programNo: number): Promise<void> {
     const remoteFile = `/tbb6500/data/programs/program/${programNo}`
     await this.ftp.remove(remoteFile)
+  }
+}
+
+export class TonelloProgramClient implements ProgramClient {
+  private api: TonelloApi
+
+  constructor(
+    readonly id: number,
+    readonly host: string,
+  ) {
+    this.api = new TonelloApi(`http://${host}:1234`)
+  }
+
+  async connect(): Promise<void> {
+    // noop
+  }
+
+  async disconnect(): Promise<void> {
+    // noop
+  }
+
+  async downloadProgram(
+    id: number,
+    commands: MachineCommand[],
+  ): Promise<Program | null> {
+    const { data: tonelloProgram } = await this.api.getProgram(id)
+    const teleskopProgram: Program = {
+      name: tonelloProgram.name,
+      author: '',
+      comment: tonelloProgram.description,
+      steps: [],
+      machineId: this.id,
+      programNo: id,
+      typeId: -1,
+      duration: 0,
+      typeName: '',
+      prgState: ProgramStatus.EXISTS_ON_BOTH,
+      icon: '',
+      isChanged: false,
+      createdAt: new Date(), // TODO
+      updatedAt: new Date(), // TODO
+      updatedAtTBB: null,
+      tbbProgramChangedEvent: 0,
+      autoChemReq: 0,
+      autoDyeReq: 0,
+      manChemReq: 0,
+      manDyeReq: 0,
+      totalChemReq: 0,
+      totalDyeReq: 0,
+    }
+    for (const tonelloStep of tonelloProgram.steps) {
+      const cmd: ProgramStepCommand = {
+        commandId: 0,
+        commandNo: tonelloStep.index,
+        parameters: [],
+        ioList: [],
+      }
+      teleskopProgram.steps.push({
+        stepId: 0,
+        mainCommand: cmd,
+        parallelCommands: [],
+      })
+      const cmdDef = commands.find(cmd => cmd.commandNo === tonelloStep.index)
+      if (!cmdDef) {
+        continue
+      }
+      for (let i = 0; i < cmdDef.parameters.length; i++) {
+        const paramDef = cmdDef.parameters[i]
+        if (!isDef(paramDef.valueIndex)) {
+          throw new PError('MACHINE_PARAMETER_INVALID', {
+            machineId: this.id,
+            programNo: id,
+            commandNo: cmd.commandNo,
+            parameterIndex: paramDef.index,
+            reason: 'Tonello parameters require valueIndex to be set',
+          })
+        }
+
+        const value = paramDef.type === ParameterType.CHECKBOX
+          ? tonelloStep.params.bits[paramDef.valueIndex]
+          : tonelloStep.params.values[paramDef.valueIndex]
+
+        cmd.parameters.push({
+          index: i,
+          value,
+          optimized: false,
+        })
+      }
+    }
+
+    return teleskopProgram
+  }
+
+  async uploadProgram(
+    program: Program,
+    commands: MachineCommand[],
+  ): Promise<boolean> {
+    const tonelloProgram: TonelloProgram = {
+      // TODO: Tonnelo'ya sorulacak numara mı olacak bu diye
+      code: program.programNo,
+      name: program.name,
+      description: program.comment || '',
+      type: 'program',
+      params: [],
+      stepsCount: program.steps.length,
+      steps: program.steps.map((s, i) => ({
+        step: i + 1,
+        index: s.mainCommand.commandNo,
+        version: 0,
+        params: {
+          bits: Array.from<0 | 1>({ length: 16 }).fill(0),
+          values: Array.from<number>({ length: 64 }).fill(0),
+        },
+      })),
+    }
+
+    for (let i = 0; i < program.steps.length; i++) {
+      const step = program.steps[i]
+      const tonelloStep = tonelloProgram.steps[i]
+      const cmd = step.mainCommand
+      const cmdDef = commands.find(c => c.commandNo === cmd.commandNo)
+      if (!cmdDef) {
+        throw new PError('COMMAND_NOT_FOUND', {
+          machineId: program.machineId,
+          programNo: program.programNo,
+          commandNo: cmd.commandNo,
+        })
+      }
+      for (const param of cmd.parameters) {
+        const paramDef = cmdDef.parameters.find(p => p.index === param.index)
+        const paramDetails: ErrorMachineParameterDetail = {
+          machineId: program.machineId,
+          programNo: program.programNo,
+          commandNo: cmd.commandNo,
+          parameterIndex: param.index,
+        }
+        if (!paramDef) {
+          throw new PError('MACHINE_PARAMETER_NOT_FOUND', paramDetails)
+        }
+        if (!paramDef.valueIndex) {
+          throw new PError('MACHINE_PARAMETER_INVALID', {
+            ...paramDetails,
+            reason: 'Tonello parameters require valueIndex to be set',
+          })
+        }
+        if (paramDef.type !== ParameterType.CHECKBOX) {
+          if (typeof param.value !== 'number') {
+            throw new PError('MACHINE_PARAMETER_TYPE_ERROR', {
+              ...paramDetails,
+              expected: 'number',
+            })
+          }
+          tonelloStep.params.values[paramDef.valueIndex] = param.value
+        } else {
+          tonelloStep.params.bits[paramDef.valueIndex] = param.value ? 1 : 0
+        }
+      }
+    }
+
+    await this.api.updateProgram(tonelloProgram)
+    return true
+  }
+
+  async fetchProgramList(): Promise<number[]> {
+    const list = await this.api.getProgramsList()
+    return list.data.programs.map(p => Number(p.code))
+  }
+
+  async deleteProgram(_id: number): Promise<void> {
+    // NOT IMPLEMENTED
   }
 }
