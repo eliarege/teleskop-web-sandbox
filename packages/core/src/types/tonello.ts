@@ -1,3 +1,8 @@
+export type TonelloLocale =
+  | 'ENU'
+  | 'ITA'
+  | string & NonNullable<unknown>
+
 export interface TonelloResponse<T = unknown> {
   result: TonelloResponseResult
   data: T
@@ -261,11 +266,11 @@ export interface TonelloConfiguration {
     page: number
     /** Localized page label */
     label: string
-    params: TMachineParameter[]
+    params: TonelloMachineParameter[]
   }[]
 }
 
-export type TMachineParameter =
+export type TonelloMachineParameter =
   | TonelloMachineParameterValue
   | TonelloMachineParameterList
   | TonelloMachineParameterBit
