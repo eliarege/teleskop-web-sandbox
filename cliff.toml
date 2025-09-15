@@ -67,7 +67,7 @@ commit_parsers = [
     { message = "^test", group = "<!-- 6 -->✅ Testing" },
     { message = "^chore: merge", skip = true },
     { message = "^chore\\(release\\)", skip = true },
-    { message = "^chore|^ci", group = "<!-- 7 -->🔧 Miscellaneous Tasks" },
+    { message = "^chore|^ci|^build", group = "<!-- 7 -->🔧 Miscellaneous Tasks" },
     { body = ".*security", group = "Security" },
 ]
 # Exclude commits that are not matched by any commit parser.
