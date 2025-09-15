@@ -1,7 +1,7 @@
 import { inferBoolean, isDef, tryJsonParse } from './base'
 
 export type ConfigProps = {
-  env: string
+  env: string | [string, ...string[]]
   required?: boolean | ((config: Record<string, any>) => boolean)
 } & (
   | StringConfigProps
@@ -30,9 +30,9 @@ interface QuerystringConfigProps {
 }
 
 type InferRequired<Type, Props extends ConfigProps> =
-  Props extends { required: true } ? RuntimeValue<Type, `You can configure this value by setting the env ${Props['env']}`>
-    : Props extends { default: Type } ? RuntimeValue<Type, `You can configure this value by setting the env ${Props['env']}`>
-      : RuntimeValue<Type, `You can configure this value by setting the env ${Props['env']}`> | undefined
+  Props extends { required: true } ? RuntimeValue<Type, `You can configure this value by setting the env ${Props['env'][0]}`>
+    : Props extends { default: Type } ? RuntimeValue<Type, `You can configure this value by setting the env ${Props['env'][0]}`>
+      : RuntimeValue<Type, `You can configure this value by setting the env ${Props['env'][0]}`> | undefined
 
 type InferConfigObject<T extends Record<string, ConfigProps>> = {
   readonly [K in keyof T]: T[K] extends { type: 'number' | 'integer' } ? InferRequired<number, T[K]>
@@ -57,7 +57,10 @@ export function defineConfiguration<const T extends Record<string, ConfigProps>>
 
   for (const [key, props] of Object.entries(config)) {
     const type = props.type || 'string'
-    const rawValue = process.env[props.env]
+    const env = Array.isArray(props.env) ? props.env : [props.env]
+    // Find the first env that is defined
+    const rawValue = env.map(e => process.env[e]).find(Boolean)
+
     if (props.required && !isDef(props.default) && !isDef(rawValue)) {
       if (typeof props.required === 'boolean') {
         /* eslint-disable-next-line unicorn/prefer-type-error */
