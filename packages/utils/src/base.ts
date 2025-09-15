@@ -25,8 +25,8 @@ export function inferBoolean(value: string | undefined, strict = true): boolean 
     throw new TypeError(`Expected boolean value, got ${value}`)
 }
 
-export function isDef<T>(value: T): value is Exclude<T, undefined> {
-  return typeof value !== 'undefined'
+export function isDef<T>(value: T): value is Exclude<T, undefined | null> {
+  return value != null
 }
 
 export function tryJsonParse(str: string): any {
