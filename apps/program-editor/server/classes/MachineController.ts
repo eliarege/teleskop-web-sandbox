@@ -91,6 +91,7 @@ export class MachineController {
           END
         `),
         value: 'P.VALUE',
+        valueIndex: 'P.VALUEINDEX',
         minValue: 'P.PARAMLOWLIMIT',
         maxValue: 'P.PARAMHIGHLIMIT',
         containsVariable: 'P.CONTAINSVARIABLE',
@@ -191,6 +192,7 @@ export class MachineController {
           type: rawParameter.type,
           format: rawParameter.format,
           value: rawParameter.value,
+          valueIndex: rawParameter.valueIndex,
           minValue: rawParameter.minValue,
           maxValue: rawParameter.maxValue,
           containsVariable: rawParameter.containsVariable,

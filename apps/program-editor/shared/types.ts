@@ -87,6 +87,7 @@ export interface CommandParameter {
   type: ParameterType
   format: string
   value: string
+  valueIndex: number | null
   minValue: number
   maxValue: number
   containsVariable: boolean
