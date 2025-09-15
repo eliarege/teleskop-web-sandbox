@@ -2,9 +2,9 @@
 import type { Knex } from 'knex'
 
 export async function up(knex: Knex) {
-  const columns = await knex('BFCOMMANDPARAMETERS').columnInfo()
+  const columnExists = await knex.schema.hasColumn('BFCOMMANDPARAMETERS', 'PARAMETERGROUP')
 
-  if (!columns.PARAMETERGROUP) {
+  if (!columnExists) {
     await knex.schema.alterTable('BFCOMMANDPARAMETERS', (table) => {
       table.integer('PARAMETERGROUP').nullable()
     })
@@ -12,9 +12,9 @@ export async function up(knex: Knex) {
 }
 
 export async function down(knex: Knex) {
-  const columns = await knex('BFCOMMANDPARAMETERS').columnInfo()
+  const columnExists = await knex.schema.hasColumn('BFCOMMANDPARAMETERS', 'PARAMETERGROUP')
 
-  if (columns.PARAMETERGROUP) {
+  if (columnExists) {
     await knex.schema.alterTable('BFCOMMANDPARAMETERS', (table) => {
       table.dropColumn('PARAMETERGROUP')
     })
