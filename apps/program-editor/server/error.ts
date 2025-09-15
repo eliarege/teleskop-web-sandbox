@@ -1,7 +1,6 @@
 export type ErrorCode =
   | 'MACHINE_NOT_FOUND'
   | 'MACHINE_UNAVAILABLE'
-  | 'MACHINE_IP_NOT_FOUND'
   | 'PROGRAM_NOT_FOUND'
   | 'PROGRAM_EXISTS'
   | 'PROGRAM_INVALID'
@@ -16,6 +15,8 @@ export type ErrorCode =
   | 'COMMAND_NOT_FOUND'
   | 'PROGRAM_IO_NOT_FOUND'
   | 'MACHINE_PARAMETER_NOT_FOUND'
+  | 'MACHINE_PARAMETER_TYPE_ERROR'
+  | 'MACHINE_PARAMETER_INVALID'
   | 'PROGRAM_HAS_ERRORS'
 
 export interface ErrorMachineDetail {
@@ -66,6 +67,14 @@ export interface ErrorMachineParameterDetail {
   parameterIndex: number
 }
 
+export interface ErrorMachineParameterTypeDetail {
+  machineId: number
+  programNo: number
+  commandNo: number
+  parameterIndex: number
+  expected: string
+}
+
 export interface ErrorMachineNotFound extends PError {
   code: 'MACHINE_NOT_FOUND'
   detail: ErrorMachineDetail
@@ -73,11 +82,6 @@ export interface ErrorMachineNotFound extends PError {
 
 export interface ErrorMachineUnavailable extends PError {
   code: 'MACHINE_UNAVAILABLE'
-  detail: ErrorMachineDetail
-}
-
-export interface ErrorMachineIpNotFound extends PError {
-  code: 'MACHINE_IP_NOT_FOUND'
   detail: ErrorMachineDetail
 }
 
@@ -151,6 +155,21 @@ export interface ErrorMachineParameterNotFound extends PError {
   detail: ErrorMachineParameterDetail
 }
 
+export interface ErrorMachineParameterTypeError extends PError {
+  code: 'MACHINE_PARAMETER_TYPE_ERROR'
+  detail: ErrorMachineParameterTypeDetail
+}
+
+export interface ErrorMachineParameterInvalid extends PError {
+  code: 'MACHINE_PARAMETER_INVALID'
+  detail: ErrorMachineParameterDetail & { reason: string }
+}
+
+export interface ErrorProgramHasErrors extends PError {
+  code: 'PROGRAM_HAS_ERRORS'
+  detail: ErrorProgramDetail
+}
+
 export type AnyError =
   | ErrorMachineNotFound
   | ErrorMachineUnavailable
@@ -168,6 +187,9 @@ export type AnyError =
   | ErrorCommandNotFound
   | ErrorProgramIoNotFound
   | ErrorMachineParameterNotFound
+  | ErrorMachineParameterTypeError
+  | ErrorMachineParameterInvalid
+  | ErrorProgramHasErrors
 
 export class PError extends Error {
   code: ErrorCode
@@ -175,7 +197,6 @@ export class PError extends Error {
 
   constructor(code: 'MACHINE_NOT_FOUND', detail: ErrorMachineDetail)
   constructor(code: 'MACHINE_UNAVAILABLE', detail: ErrorMachineDetail)
-  constructor(code: 'MACHINE_IP_NOT_FOUND', detail: ErrorMachineDetail)
   constructor(code: 'PROGRAM_NOT_FOUND', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_EXISTS', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_INVALID', detail: ErrorProgramInvalidDetail)
@@ -190,6 +211,8 @@ export class PError extends Error {
   constructor(code: 'COMMAND_NOT_FOUND', detail: ErrorCommandDetail)
   constructor(code: 'PROGRAM_IO_NOT_FOUND', detail: ErrorProgramIoDetail)
   constructor(code: 'MACHINE_PARAMETER_NOT_FOUND', detail: ErrorMachineParameterDetail)
+  constructor(code: 'MACHINE_PARAMETER_TYPE_ERROR', detail: ErrorMachineParameterTypeDetail)
+  constructor(code: 'MACHINE_PARAMETER_INVALID', detail: ErrorMachineParameterDetail & { reason: string })
   constructor(code: 'PROGRAM_HAS_ERRORS', detail: ErrorProgramDetail)
 
   constructor(code: ErrorCode, detail?: any) {
