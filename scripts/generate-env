@@ -1,0 +1,65 @@
+#!/usr/bin/env node
+
+// Generates .env files for all apps based on the selected config (default: dev)
+import { readdir, writeFile } from 'fs/promises'
+import { resolve } from 'path'
+import { encode } from 'querystring'
+
+const workspaceDir =  resolve(import.meta.dirname, '..')
+const configDir = resolve(workspaceDir, 'config')
+const appsDir = resolve(workspaceDir, 'apps')
+const configName = process.argv[2] || 'dev'
+const configPath = resolve(configDir, `${configName}.json`)
+const config = await import(configPath, { with: { type: 'json' } }).then(m => m.default)
+
+const teleskopHost = config.teleskop?.host || 'localhost'
+const teleskopPort = config.teleskop?.port || 1433
+const teleskopUser = config.teleskop?.user || 'sa'
+const teleskopPassword = config.teleskop?.password || ''
+const teleskopDatabase = config.teleskop?.database || 'Teleskop'
+const teleskopInstanceName = config.teleskop?.instanceName
+const teleskopTimezoneOffset = config.teleskop?.timezoneOffset || -180
+const teleskopConnectionOptions =  encode(config.teleskop?.connectionOptions || {})
+
+const dmexchangeEnabled = config.dmexchange?.enabled || false
+const dmexchangeHost = config.dmexchange?.host || teleskopHost
+const dmexchangePort = config.dmexchange?.port || teleskopPort
+const dmexchangeUser = config.dmexchange?.user || teleskopUser
+const dmexchangePassword = config.dmexchange?.password || teleskopPassword
+const dmexchangeDatabase = config.dmexchange?.database || 'DmExchange'
+const dmexchangeInstanceName = config.dmexchange?.instanceName || teleskopInstanceName
+const dmexchangeConnectionOptions =  encode(config.dmexchange?.connectionOptions || {})
+
+const envFile = [
+  '# Teleskop database connection',
+  `NUXT_TELESKOP_HOST=${teleskopHost}`,
+  `NUXT_TELESKOP_PORT=${teleskopPort}`,
+  `NUXT_TELESKOP_USER=${teleskopUser}`,
+  `NUXT_TELESKOP_PASSWORD=${teleskopPassword}`,
+  `NUXT_TELESKOP_DATABASE=${teleskopDatabase}`,
+  teleskopInstanceName ? `NUXT_TELESKOP_INSTANCE_NAME=${teleskopInstanceName}` : null,
+  `NUXT_TELESKOP_TIMEZONE_OFFSET=${teleskopTimezoneOffset}`,
+  `NUXT_TELESKOP_CONNECTION_OPTIONS=${teleskopConnectionOptions}`,
+  '',
+  '# DmExchange database connection',
+  `NUXT_DMEXCHANGE_ENABLED=${dmexchangeEnabled}`,
+  `NUXT_DMEXCHANGE_HOST=${dmexchangeHost}`,
+  `NUXT_DMEXCHANGE_PORT=${dmexchangePort}`,
+  `NUXT_DMEXCHANGE_USER=${dmexchangeUser}`,
+  `NUXT_DMEXCHANGE_PASSWORD=${dmexchangePassword}`,
+  `NUXT_DMEXCHANGE_DATABASE=${dmexchangeDatabase}`,
+  dmexchangeInstanceName ? `NUXT_DMEXCHANGE_INSTANCE_NAME=${dmexchangeInstanceName}` : null,
+  `NUXT_DMEXCHANGE_TIMEZONE_OFFSET=${dmexchangeTimezoneOffset}`,
+  `NUXT_DMEXCHANGE_CONNECTION_OPTIONS=${dmexchangeConnectionOptions}`,
+].filter((v) => v != null).join('\n') + '\n'
+
+const appDirs = await readdir(appsDir, { withFileTypes: true })
+  .then(files => files.filter(f => f.isDirectory())
+  .map(f => f.name))
+
+for (const appDir of appDirs) {
+  const appEnvPath = resolve(appsDir, appDir, '.env')
+  await writeFile(appEnvPath, envFile)
+}
+
+console.log(`Generated .env files for config "${configName}"`)
