@@ -1,9 +1,0 @@
-{
-  "teleskop": {
-    "host": "localhost",
-    "port": 1433,
-    "user": "sa",
-    "password": "<password>",
-    "database": "Teleskop"
-  }
-}

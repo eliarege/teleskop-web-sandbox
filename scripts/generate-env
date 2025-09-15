@@ -5,10 +5,15 @@ import { readdir, writeFile } from 'fs/promises'
 import { resolve } from 'path'
 import { encode } from 'querystring'
 
+const configName = process.argv[2]
+if (!configName) {
+  console.error('Usage: generate-env <config-name>')
+  process.exit(1)
+}
+
 const workspaceDir =  resolve(import.meta.dirname, '..')
 const configDir = resolve(workspaceDir, 'config')
 const appsDir = resolve(workspaceDir, 'apps')
-const configName = process.argv[2] || 'dev'
 const configPath = resolve(configDir, `${configName}.json`)
 const config = await import(configPath, { with: { type: 'json' } }).then(m => m.default)
 
