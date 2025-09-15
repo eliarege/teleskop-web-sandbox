@@ -146,6 +146,7 @@ export interface ProgramHeader {
   author: string | null
   comment: string | null
   typeId: number
+  additionalTypeId: number
   createdAt: Date | null
   updatedAt: Date | null
   updatedAtTBB: Date | null

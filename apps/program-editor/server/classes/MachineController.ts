@@ -263,6 +263,7 @@ export class MachineController {
         duration: 'H.DURATION',
         stepCount: 'H.TOTALSTEP',
         type: 'T.PROCESSNAME',
+        additionalType: 'T2.PROCESSNAME',
         operator: 'H.TBBPRGCHANGEDEVENT',
         updatedAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.CHANGEDATE)`),
         updatedAtTBB: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.TBBCHANGEDATE)`),
@@ -277,6 +278,7 @@ export class MachineController {
       })
       .from('BFMASTERPRGHEADER AS H')
       .join('BFPROCESSTYPES AS T', 'T.PROCESSCODE', 'H.PROCESSCODE')
+      .join('BFPROCESSTYPES AS T2', 'T2.PROCESSCODE', 'H.ADDITIONALPROCESSCODE')
       .where('H.MACHINEID', this.id)
       .andWhere((builder) => {
         if (query?.programNo)
@@ -320,8 +322,10 @@ export class MachineController {
         duration: 'P.DURATION',
         author: 'P.LOCKEDBY',
         comment: 'P.USERCOMMENT',
-        typeId: 'T.PROCESSCODE',
+        typeId: 'P.PROCESSCODE',
         typeName: 'T.PROCESSNAME',
+        additionalTypeId: 'P.ADDITIONALPROCESSCODE',
+        additionalTypeName: 'T2.PROCESSNAME',
         machineId: 'M.MACHINEID',
         prgState: 'P.PRGSTATE',
         isChanged: 'P.ISCHANGED',
@@ -340,6 +344,7 @@ export class MachineController {
       .from('BFMASTERPRGHEADER AS P')
       .join('BFMACHINES AS M', 'M.MACHINEID', 'P.MACHINEID')
       .join('BFPROCESSTYPES AS T', 'T.PROCESSCODE', 'P.PROCESSCODE')
+      .join('BFPROCESSTYPES AS T2', 'T2.PROCESSCODE', 'P.ADDITIONALPROCESSCODE')
       .where('P.PROGNO', programNo)
       .andWhere('M.MACHINEID', this.id)
 
@@ -522,8 +527,10 @@ export class MachineController {
         programNo: 'P.PROGNO',
         author: 'P.USERNAME',
         command: 'P.USERCOMMENT',
-        typeId: 'T.PROCESSCODE',
+        typeId: 'P.PROCESSCODE',
         typeName: 'T.PROCESSNAME',
+        additionalTypeId: 'P.ADDITIONALPROCESSCODE',
+        additionalTypeName: 'T2.PROCESSNAME',
         machineId: 'M.MACHINEID',
         machineName: 'M.MACHINECODE',
         steps: this.trx.raw(sql`ISNULL((
@@ -581,6 +588,7 @@ export class MachineController {
       .from('BAMASTERPRGHEADER AS P')
       .join('BFMACHINES AS M', 'M.MACHINEID', 'P.MACHINEID')
       .join('BFPROCESSTYPES AS T', 'T.PROCESSCODE', 'P.PROCESSCODE')
+      .join('BFPROCESSTYPES AS T2', 'T2.PROCESSCODE', 'P.ADDITIONALPROCESSCODE')
       .where('P.PROGNO', programNo)
       .andWhere('M.MACHINEID', this.id)
       .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
@@ -762,6 +770,7 @@ export class MachineController {
         author: 'H.LOCKEDBY',
         comment: 'H.USERCOMMENT',
         typeId: 'H.PROCESSCODE',
+        additionalTypeId: 'H.ADDITIONALPROCESSCODE',
         createdAt: 'H.CREATIONDATE',
         updatedAt: 'H.CHANGEDATE',
         updatedAtTBB: 'H.TBBCHANGEDATE',
@@ -794,6 +803,7 @@ export class MachineController {
       name: 'NAME',
       isChanged: 'ISCHANGED',
       typeId: 'PROCESSCODE',
+      additionalTypeId: 'ADDITIONALPROCESSCODE',
       prgState: 'PRGSTATE',
       updatedAtTBB: 'TBBCHANGEDATE',
       tbbProgramChangedEvent: 'TBBPRGCHANGEDEVENT',
@@ -900,6 +910,7 @@ export class MachineController {
       RELEASEENDDATE: null,
       PROGNO: program.programNo,
       PROCESSCODE: program.typeId,
+      ADDITIONALPROCESSCODE: program.additionalTypeId,
       NAME: program.name,
       DURATION: program.duration,
       TOTALSTEP: program.steps.length,
@@ -1119,6 +1130,7 @@ export class MachineController {
       MACHINEID: this.id,
       PROGNO: program.programNo,
       PROCESSCODE: program.typeId,
+      ADDITIONALPROCESSCODE: program.additionalTypeId,
       NAME: program.name,
       DURATION: program.duration,
       TOTALSTEP: program.steps.length,
@@ -1385,6 +1397,7 @@ export class MachineController {
         version: 'H.MACHINEPRGVERSIONNO',
         stepCount: 'H.TOTALSTEP',
         type: 'T.PROCESSNAME',
+        additionalType: 'T2.PROCESSNAME',
         changedDate: 'H.CHANGEDATE',
         // updatedAtTBB: 'H.TBBCHANGEDATE',
         // prgState: 'H.PRGSTATE',
@@ -1393,6 +1406,7 @@ export class MachineController {
       })
       .from('BAMASTERPRGHEADER AS H')
       .join('BFPROCESSTYPES AS T', 'T.PROCESSCODE', 'H.PROCESSCODE')
+      .join('BFPROCESSTYPES AS T2', 'T2.PROCESSCODE', 'H.ADDITIONALPROCESSCODE')
       .where('H.MACHINEID', this.id)
       .andWhere('H.PROGNO', programNo)
       .orderBy('H.MACHINEPRGVERSIONNO', 'asc')

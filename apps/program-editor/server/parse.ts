@@ -14,6 +14,7 @@ const UPDATED_AT_TIME_RE = /^DEGISIKLIKSAAT=(([0-1]\d|2[0-3]):([0-5]\d)(?::([0-5
 const AUTHOR_RE = /^YAZAR=(.+)?$/
 const COMMENT_RE = /^YORUMLAR=(.+)?$/
 const PROCESS_CODE_RE = /^PROCESSCODE=(\d+)?$/
+const ADDITIONAL_PROCESS_CODE_RE = /^ADDITIONALPROCESSCODE=(\d+)?$/
 
 /**
  * Capture groups:
@@ -125,6 +126,11 @@ function readProcessCode(it: IterableIterator<string>): number {
   return match[1] ? Number.parseInt(match[1]) : 0
 }
 
+function readAdditionalProcessCode(it: IterableIterator<string>): number {
+  const match = readLineStrict(it, ADDITIONAL_PROCESS_CODE_RE)
+  return match[1] ? Number.parseInt(match[1]) : 0
+}
+
 export function parseProgramString(programString: string, machine: Pick<Machine, 'id' | 'commands'>): Program {
   const program = createEmptyProgram()
 
@@ -139,6 +145,7 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
   program.author = readAuthor(it)
   program.comment = readComment(it)
   program.typeId = readProcessCode(it)
+  program.additionalTypeId = readAdditionalProcessCode(it)
 
   readLineStrict(it, BEGIN_PROGRAM)
   readLineStrict(it, FIRST_COMMAND_NO)
@@ -251,6 +258,7 @@ function createEmptyProgram(): Program {
     author: null,
     comment: '',
     typeId: 0,
+    additionalTypeId: 0,
     typeName: '',
     machineId: 0,
     steps: [],

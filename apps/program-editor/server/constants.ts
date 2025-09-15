@@ -11,6 +11,7 @@ export const UPDATED_AT_TIME = 'DEGISIKLIKSAAT'
 export const AUTHOR = 'YAZAR'
 export const COMMENT = 'YORUMLAR'
 export const PROCESS_CODE = 'PROCESSCODE'
+export const ADDITIONAL_PROCESS_CODE = 'ADDITIONALPROCESSCODE'
 export const START_TAGS = 'START_TAGS'
 export const END_TAGS = 'END_TAGS'
 

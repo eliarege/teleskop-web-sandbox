@@ -733,6 +733,7 @@ export const useEditorStore = defineStore('editor', () => {
       author: '',
       comment: '',
       typeId: 0,
+      additionalTypeId: 0,
       typeName: '',
       machineId: 0,
       steps: [],
