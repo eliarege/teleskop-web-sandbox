@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type { CommandParameter, MachineGroup, MachineInfo, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
+import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
 import { MSSQL_ERROR } from './constants'
@@ -28,13 +28,19 @@ export async function hasMachine(machineId: number): Promise<MachineInfo> {
  * @returns {Promise<string>} - Makinenin IP adresi
  * @throws {PError} Makine IP adresi bulunamazsa error döner.
  */
-export async function getMachineHost(machineId: number): Promise<string> {
-  const host = (await db('BFMACHINES').where('MACHINEID', machineId).first('IP')).IP
+export async function fetchMachineDetails(machineId: number): Promise<{ host: string, tbbModel: MachineTbbModel }> {
+  const response = await db
+    .from('BFMACHINES')
+    .where('MACHINEID', machineId)
+    .first({
+      host: 'IP',
+      tbbModel: 'TBBMODEL',
+    })
 
-  if (!host)
-    throw new PError('MACHINE_IP_NOT_FOUND', { machineId })
+  if (!response)
+    throw new PError('MACHINE_NOT_FOUND', { machineId })
 
-  return host
+  return response
 }
 
 export interface InsertProgramOptions extends TransactionOptions {
@@ -97,10 +103,6 @@ export async function groupMachinesByGroup(): Promise<MachineGroup[]> {
   }))
 }
 
-/**
- * Return all process types
- * @returns {Promise<{label: string, value: number, description: string}[]>}
- */
 export async function fetchProcessTypes(): Promise<ProcessType[]> {
   return await db
     .select({
@@ -110,6 +112,7 @@ export async function fetchProcessTypes(): Promise<ProcessType[]> {
     })
     .from('BFPROCESSTYPES')
 }
+
 export async function createProcessType(type: ProcessType): Promise<any> {
   try {
     return await db('BFPROCESSTYPES')
