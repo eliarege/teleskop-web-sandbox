@@ -1,13 +1,13 @@
 import type { $Fetch } from 'ofetch'
 import { $fetch } from 'ofetch'
 import type {
-  TConfiguration,
-  TFunctionBody,
-  TInputOutputList,
-  TProgram,
-  TProgramList,
-  TResponse,
-} from '../types/tonello.ts'
+  TonelloConfiguration,
+  TonelloFunctionBody,
+  TonelloInputOutputList,
+  TonelloProgram,
+  TonelloProgramList,
+  TonelloResponse,
+} from '../types/tonello'
 
 export class TonelloApi {
   private fetch: $Fetch = $fetch
@@ -20,31 +20,31 @@ export class TonelloApi {
     })
   }
 
-  async fetchProgramList(): Promise<TResponse<TProgramList>> {
+  async fetchProgramList(): Promise<TonelloResponse<TonelloProgramList>> {
     return await this.fetch('/api/v1/getProgramsList')
   }
 
-  async fetchFunctions(): Promise<TResponse<TFunctionBody>> {
+  async fetchFunctions(): Promise<TonelloResponse<TonelloFunctionBody>> {
     return await this.fetch('/api/v1/getFunctions')
   }
 
-  async fetchInputOutputList(): Promise<TResponse<TInputOutputList>> {
+  async fetchInputOutputList(): Promise<TonelloResponse<TonelloInputOutputList>> {
     return await this.fetch('/api/v1/getInputOutputList')
   }
 
-  async fetchConfiguration(): Promise<TResponse<TConfiguration>> {
+  async fetchConfiguration(): Promise<TonelloResponse<TonelloConfiguration>> {
     return await this.fetch('/api/v1/getConfiguration')
   }
 
-  async getProgram(code: string | number): Promise<TResponse<TProgram>> {
+  async getProgram(code: string | number): Promise<TonelloResponse<TonelloProgram>> {
     return await this.fetch('/api/v1/getProgram', { query: { code } })
   }
 
-  async getProgramsList(): Promise<TResponse<TProgramList>> {
+  async getProgramsList(): Promise<TonelloResponse<TonelloProgramList>> {
     return await this.fetch('/api/v1/getProgramsList')
   }
 
-  async updateProgram(program: TProgram): Promise<TResponse<void>> {
+  async updateProgram(program: TonelloProgram): Promise<TonelloResponse<void>> {
     return await this.fetch('/api/v1/putProgram', {
       method: 'POST',
       body: { program },
