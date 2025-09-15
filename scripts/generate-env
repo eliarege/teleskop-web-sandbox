@@ -35,6 +35,8 @@ const dmexchangeDatabase = config.dmexchange?.database || 'DmExchange'
 const dmexchangeInstanceName = config.dmexchange?.instanceName || teleskopInstanceName
 const dmexchangeConnectionOptions =  encode(config.dmexchange?.connectionOptions || {})
 
+const keycloakEnabled = config.keycloak?.enabled || false
+
 const envFile = [
   '# Teleskop database connection',
   `NUXT_TELESKOP_HOST=${teleskopHost}`,
@@ -55,6 +57,9 @@ const envFile = [
   `NUXT_DMEXCHANGE_DATABASE=${dmexchangeDatabase}`,
   dmexchangeInstanceName ? `NUXT_DMEXCHANGE_INSTANCE_NAME=${dmexchangeInstanceName}` : null,
   `NUXT_DMEXCHANGE_CONNECTION_OPTIONS=${dmexchangeConnectionOptions}`,
+  '',
+  '# Keycloak configuration',
+  `NUXT_PUBLIC_KC_ENABLED=${keycloakEnabled}`
 ].filter((v) => v != null).join('\n') + '\n'
 
 const appDirs = await readdir(appsDir, { withFileTypes: true })
