@@ -9,7 +9,7 @@ import {
   MISSING_LOCALE_ERROR,
 } from './errors'
 
-export async function updateTonelloMachineParameteres(
+export async function updateTonelloMachineParameters(
   trx: Knex.Transaction,
   machineId: number,
   parameters: TonelloMachineParameter[],
