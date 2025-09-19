@@ -83,7 +83,7 @@ function handleInputBlur() {
         v-model="model"
         dense
         outlined
-        :label="mt(parameter.name, editor.machine.id)"
+        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         :rules="rules"
         style="width: 150px;"
         class="text-3"
@@ -105,7 +105,7 @@ function handleInputBlur() {
         v-else
         v-model="model"
         :rules="rules"
-        :label="mt(parameter.name, editor.machine.id)"
+        :label="parameter.name && mt(parameter.name, editor.machine.id)"
         type="decimal"
         :maxlength="10"
         :hide-bottom-space="true"
@@ -131,7 +131,7 @@ function handleInputBlur() {
     <template v-else-if="parameter.type === 'SELECT' || parameter.type === 'SELECT_ADDITIVE'">
       <QSelect
         v-model="model"
-        :label="mt(parameter.name, editor.machine.id)"
+        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         :options="options"
         option-label="name"
         option-value="value"
@@ -149,7 +149,7 @@ function handleInputBlur() {
     <template v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
       <QSelect
         v-model="model"
-        :label="mt(parameter.name, editor.machine.id)"
+        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         :options="formulaOptions"
         :option-label="(f) => f.label?.trim().slice(0, 15)"
         option-value="value"
@@ -189,11 +189,10 @@ function handleInputBlur() {
         v-model="isChecked"
         class="checkbox-outlined"
         :class="{ 'border-2 border-red rounded-2': props.parameterError }"
-        style="width: 150px;"
         @blur="handleInputBlur"
       >
         <span class="text-3">
-          <TruncatedText :text="mt(parameter.name, editor.machine.id)" />
+          {{ parameter.name && mt(parameter.name, editor.machine.id) }}
         </span>
       </QCheckbox>
     </template>

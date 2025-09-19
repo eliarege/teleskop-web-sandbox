@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { isDef } from '@teleskop/utils'
 import CommandSelector from './CommandSelector.vue'
 import ProgramStepCommandParameterInput from './ProgramStepCommandParameterInput.vue'
 import ProgramStepCommandIoInput from './ProgramStepCommandIoInput.vue'
@@ -14,7 +15,7 @@ const { t } = useI18n()
 const editor = useEditorStore()
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
 const machineCommand = computed(() => {
-  if (!programCommand.commandNo)
+  if (!isDef(programCommand.commandNo))
     return { editableParameters: [], selectableIOs: [] }
   const command = editor.machine?.commands.get(programCommand.commandNo)
   const editableParameters = command?.parameters.filter((parameter: CommandParameter) => parameter.editable || parameter.useFormula) || []
