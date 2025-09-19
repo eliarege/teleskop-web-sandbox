@@ -99,13 +99,13 @@ async function fetchGlobalTranslations(localeId: number): Promise<Record<string,
     .with('keys', (q) => {
       return q
         .from('BFPROJECTTRANSLATIONS')
-        .select('message_id', 'text')
+        .select('machine_id', 'message_id', 'text')
         .where('locale_id', '!=', localeId)
     })
     .with('vals', (q) => {
       return q
         .from('BFPROJECTTRANSLATIONS')
-        .select('message_id', 'text')
+        .select('machine_id', 'message_id', 'text')
         .where('locale_id', '=', localeId)
     })
     .distinct({
@@ -115,6 +115,7 @@ async function fetchGlobalTranslations(localeId: number): Promise<Record<string,
     .from('keys as k')
     .join('vals as v', function () {
       this.on('k.message_id', 'v.message_id')
+        .andOn('k.machine_id', 'v.machine_id')
         .andOn('k.text', '!=', 'v.text')
     })
 
