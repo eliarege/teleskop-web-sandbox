@@ -90,6 +90,7 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
               />
 
               <QCheckbox
+                v-if="!isTonello"
                 v-model="operator"
                 :label="t('operator')"
                 dense
