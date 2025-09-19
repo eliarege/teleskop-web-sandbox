@@ -50,7 +50,7 @@ const leftIcon = computed(() => {
       </QItemLabel>
     </QItemSection>
     <TopbarMenu
-      v-if="item.subMenu && !item.disabled"
+      v-if="item.subMenu && !toValue(item.disabled)"
       anchor="top right"
       :offset="[-1, 0]"
       v-bind="item.subMenu"
