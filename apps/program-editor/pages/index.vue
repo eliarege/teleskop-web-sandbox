@@ -265,7 +265,6 @@ const itemsMobile = [
           <TopbarNotificationButton />
           <TopbarFullscreenButton />
           <TopbarAppGrid />
-          <TopbarProjectLocaleSelect />
           <TopbarUser>
             <TopbarPtCommonSettings />
           </TopbarUser>
