@@ -46,13 +46,6 @@ const isOptimizable = computed(() => {
   })
 })
 
-const isChecked = computed({
-  get: () => !!programParameter.value,
-  set: (val: boolean) => {
-    programParameter.value = val ? 1 : 0
-  },
-})
-
 watch(() => model.value, (newValue: number) => {
   programParameter.value = newValue
 })
@@ -186,8 +179,11 @@ function handleInputBlur() {
 
     <template v-else-if="parameter.type === 'CHECKBOX'">
       <QCheckbox
-        v-model="isChecked"
-        class="checkbox-outlined"
+        v-model="model"
+        class="checkbox-outlined pr-4"
+        :true-value="1"
+        :false-value="0"
+        dense
         :class="{ 'border-2 border-red rounded-2': props.parameterError }"
         @blur="handleInputBlur"
       >
