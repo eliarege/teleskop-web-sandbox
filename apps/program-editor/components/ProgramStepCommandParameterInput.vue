@@ -128,7 +128,7 @@ function handleInputBlur() {
       </InputNumber>
     </template>
 
-    <template v-else-if="parameter.type === 'SELECT'">
+    <template v-else-if="parameter.type === 'SELECT' || parameter.type === 'SELECT_ADDITIVE'">
       <QSelect
         v-model="model"
         :label="mt(parameter.name, editor.machine.id)"

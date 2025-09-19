@@ -1,3 +1,5 @@
+import type { ValueOf } from '@teleskop/utils'
+
 export const ProgramStateColors = {
   EXISTS_ONLY_ON_CONTROLLER: '#bebebe',
   EXISTS_ONLY_ON_DATABASE: '#009900',
@@ -46,13 +48,16 @@ export const IO_TYPE: { [key: string]: string } = {
   '-1': 'Seçilmemiş',
 }
 
-export enum ParameterType {
-  NUMBER = 'NUMBER',
-  SELECT = 'SELECT',
-  CHECKBOX = 'CHECKBOX',
-  MACHINE_FORMULA = 'MACHINE_FORMULA',
-  SELECTABLE_FORMULA = 'SELECTABLE_FORMULA',
-}
+export const ParameterType = {
+  NUMBER: 'NUMBER',
+  SELECT: 'SELECT',
+  CHECKBOX: 'CHECKBOX',
+  SELECT_ADDITIVE: 'SELECT_ADDITIVE',
+  MACHINE_FORMULA: 'MACHINE_FORMULA',
+  SELECTABLE_FORMULA: 'SELECTABLE_FORMULA',
+} as const
+
+export type ParameterTypeValue = ValueOf<typeof ParameterType>
 
 export enum CommandType {
   AutoChem = 100,

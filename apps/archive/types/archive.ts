@@ -1,3 +1,4 @@
+import type { ParameterType } from '../utils/formula'
 import type { DDate, NullableDDate } from './utils'
 
 export interface Batch {
@@ -113,7 +114,7 @@ export interface MachineCommand {
 export interface MachineCommandParameter {
   index: number
   name: string
-  type: 'NUMBER' | 'SELECT' | 'MACHINE_FORMULA' | 'SELECTABLE_FORMULA'
+  type: typeof ParameterType[keyof typeof ParameterType]
   value: string
   containsVariable: boolean
   useDefault: boolean

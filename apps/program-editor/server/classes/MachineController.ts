@@ -81,6 +81,7 @@ export class MachineController {
             WHEN PARAMETERTYPE = 0 THEN 'NUMBER'
             WHEN PARAMETERTYPE = 1 THEN 'SELECT'
             WHEN PARAMETERTYPE = 2 THEN 'CHECKBOX'
+            WHEN PARAMETERTYPE = 3 THEN 'SELECT_ADDITIVE'
           END
         `),
         format: db.raw(`

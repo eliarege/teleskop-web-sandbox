@@ -10,12 +10,13 @@ interface CalculationContext {
   machine: Machine
 }
 
-enum ParameterType {
-  NUMBER = 'NUMBER',
-  SELECT = 'SELECT',
-  MACHINE_FORMULA = 'MACHINE_FORMULA',
-  SELECTABLE_FORMULA = 'SELECTABLE_FORMULA',
-}
+export const ParameterType = {
+  NUMBER: 'NUMBER',
+  SELECT: 'SELECT',
+  SELECT_ADDITIVE: 'SELECT_ADDITIVE',
+  MACHINE_FORMULA: 'MACHINE_FORMULA',
+  SELECTABLE_FORMULA: 'SELECTABLE_FORMULA',
+} as const
 
 // interface TheoreticalProgram {
 //   programNo: number

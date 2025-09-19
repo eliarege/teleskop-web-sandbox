@@ -1,5 +1,5 @@
 import type { QBtnProps } from 'quasar'
-import type { CommandEligibility, ParameterType } from './constants'
+import type { CommandEligibility, ParameterTypeValue } from './constants'
 
 export interface ProgramInfo {
   programNo: number
@@ -95,7 +95,7 @@ export interface CommandParameter {
   name: string
   group: number | null
   editable: boolean
-  type: ParameterType
+  type: ParameterTypeValue
   format: string
   value: string
   valueIndex: number | null

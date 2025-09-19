@@ -34,7 +34,7 @@ function getParameterValue(param: CommandParameterDiff, commandNo: number): stri
     if (machineParameter.type === ParameterType.NUMBER && machineParameter.format === 'DURATION') {
       return formatDuration(Number(param.value))
     }
-    if (machineParameter.type === ParameterType.SELECT) {
+    if (machineParameter.type === ParameterType.SELECT || machineParameter.type === ParameterType.SELECT_ADDITIVE) {
       return machineParameter.selections.find(s => s.value === param.value)?.name || ''
     }
     if (machineParameter.type === ParameterType.CHECKBOX) {
