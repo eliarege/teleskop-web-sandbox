@@ -91,12 +91,14 @@ export async function updateTonelloProjectTranslations(
         // Skip unknown locales
         continue
       }
-      translationRows.push({
-        machine_id: machineId,
-        message_id: messageId,
-        locale_id: localeId,
-        text: localeMessage.message,
-      })
+      if (localeMessage.message) {
+        translationRows.push({
+          machine_id: machineId,
+          message_id: messageId,
+          locale_id: localeId,
+          text: localeMessage.message,
+        })
+      }
     }
   }
 
