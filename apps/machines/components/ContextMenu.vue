@@ -2,19 +2,21 @@
 export interface IContextMenuOption {
   label: string
   category: string
-  icon: string
-  disabled: boolean
+  icon?: string
+  disabled?: boolean
   onClick: (data: any) => void
 }
 
 const props = defineProps<{
-  contextMenuOptions: Partial<IContextMenuOption>[]
-  target: string | boolean | Element
+  options: IContextMenuOption[]
+  target?: string | boolean | Element
 }>()
 
-const emit = defineEmits(['click'])
+const emit = defineEmits<{
+  click: [option: IContextMenuOption]
+}>()
 
-function handleClick(event: Event, option: Partial<IContextMenuOption>) {
+function handleClick(event: Event, option: IContextMenuOption) {
   if (option.disabled)
     event.preventDefault()
   else {
@@ -28,28 +30,31 @@ function handleClick(event: Event, option: Partial<IContextMenuOption>) {
     touch-position
     context-menu
     class="whitespace-nowrap"
+    :transition-duration="0"
     :target
   >
     <q-list>
-      <template
-        v-for="option in props.contextMenuOptions"
+      <q-item
+        v-for="option in props.options"
         :key="option.category"
+        v-close-popup="!option.disabled"
+        :disable="option.disabled"
+        clickable
+        dense
+        class="q-item-avatar-dense px-2.5 whitespace-nowrap"
+        @click="event => handleClick(event, option)"
       >
-        <q-item
-          v-close-popup="!option.disabled"
-          clickable
-          dense
-          :class="option.disabled ? 'text-gray cursor-not-allowed' : ''"
-          @click="event => handleClick(event, option)"
-        >
-          <q-item-section>
-            <div class="flex items-center justify-start gap-3">
-              <q-icon dense :name="option.icon" />
-              {{ option.label }}
-            </div>
-          </q-item-section>
-        </q-item>
-      </template>
+        <q-item-section avatar class="px-0 mr-2.5 opacity-60">
+          <q-icon
+            size="1rem"
+            dense
+            :name="option.icon"
+          />
+        </q-item-section>
+        <q-item-section>
+          {{ option.label }}
+        </q-item-section>
+      </q-item>
     </q-list>
   </q-menu>
 </template>

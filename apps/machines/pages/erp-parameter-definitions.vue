@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nuxt-base'
-import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { BatchParam, ErpParameter, Machine } from '~/types'
 
 const kc = useKeycloak()
@@ -348,9 +347,9 @@ const contextMenuOptions = computed(() => [
 
 <template>
   <ContextMenu
-    :context-menu-options="contextMenuOptions"
+    :options="contextMenuOptions"
     target=".q-table"
-    @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)"
+    @click="option => option.onClick(selectedMachineId)"
   />
   <div>
     <q-card>

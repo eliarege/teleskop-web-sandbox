@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { IContextMenuOption } from '~/components/ContextMenu.vue'
-
 interface ConsumptionCounter {
   machineId: number
   counterId1: number
@@ -99,9 +97,9 @@ const contextMenuOptions = computed(() => [
 <template>
   <div>
     <ContextMenu
-      :context-menu-options="contextMenuOptions"
+      :options="contextMenuOptions"
       target=".q-list"
-      @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)"
+      @click="option => option.onClick(selectedMachineId)"
     />
     <q-card>
       <q-card-section class="flex flex-row justify-center gap-8">

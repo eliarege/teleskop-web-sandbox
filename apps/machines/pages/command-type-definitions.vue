@@ -3,7 +3,6 @@ import { Sortable } from 'sortablejs-vue3'
 import { klona } from 'klona'
 import type { SortableEvent } from 'sortablejs'
 import type { CommandType } from '~/types'
-import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
 interface commandTypeMap {
   ref: CommandType[]
@@ -140,9 +139,9 @@ const contextMenuOptions = computed(() => [
 <template>
   <div>
     <ContextMenu
-      :context-menu-options="contextMenuOptions"
+      :options="contextMenuOptions"
       target=".q-list"
-      @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)"
+      @click="option => option.onClick(selectedMachineId)"
     />
     <q-card>
       <q-card-section class="flex">
