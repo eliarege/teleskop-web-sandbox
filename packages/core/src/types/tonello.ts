@@ -167,7 +167,7 @@ export interface TonelloFunctionBody {
 
 export interface TonelloFunction {
   /** Function index */
-  index: number
+  index: number | null
   /** Can earlier versions be accesed? */
   // version: number
   label: string

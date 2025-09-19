@@ -22,6 +22,9 @@ export async function updateTonelloFunctions(
 
   for (const fn of functions) {
     const name = extractLocalizedMessage(fn.label, DEFAULT_LOCALE)
+    if (fn.index === null) {
+      continue
+    }
     if (!isDef(name)) {
       ctx.errors.push({
         code: MISSING_LOCALE_ERROR,
