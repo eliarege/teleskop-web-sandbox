@@ -7,6 +7,7 @@
     "connection_refused": "Makineye bağlantı kurulamadı. Ağ bağlantınızı veya makinenin çalışır durumda olduğunu kontrol edin.",
     "network_unreachable": "Makineye ulaşılamıyor. Ağ bağlantınızı kontrol edin.",
     "address_resolution_failed": "Makine adresi çözümlenemedi. Lütfen ayarları kontrol edin.",
+    "api_no_response": "Makineden yanıt alınamadı. Lütfen doğru TBB Modeli ve IP adresini girdiğinizden emin olun.",
 
     "ftp": "Makineden veri alınırken hata oluştu. Lütfen tekrar deneyin.",
 
@@ -469,6 +470,12 @@
   "translations-updated": "Çeviriler güncellendi",
   "translations-failed": "Çeviriler güncellemesi başarısız",
   "translations-starting": "Çeviriler güncelleniyor",
+  "functions-updated": "Fonksiyonlar güncellendi",
+  "functions-failed": "Fonksiyonlar güncellemesi başarısız",
+  "functions-starting": "Fonksiyonlar güncelleniyor",
+  "input-outputs-updated": "Giriş/Çıkışlar güncellendi",
+  "input-outputs-failed": "Giriş/Çıkışlar güncellemesi başarısız",
+  "input-outputs-starting": "Giriş/Çıkışlar güncelleniyor",
   "user-permission-update-failed": "Kullanıcı izinleri güncellenemedi",
   "NETWORK_CONN_FAILED": "Bağlantı kurulamadı.",
   "passive": "Pasif",

@@ -4,6 +4,7 @@ export enum ErrorMessageKey {
   ConnectionRefused = 'error.connection_refused',
   NetworkUnreachable = 'error.network_unreachable',
   AddressResolutionFailed = 'error.address_resolution_failed',
+  ApiNoResponse = 'error.api_no_response',
 
   // FTP / TBB istemcisi
   FtpError = 'error.ftp',

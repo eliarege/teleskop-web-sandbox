@@ -3,6 +3,7 @@ import { getQuery } from 'h3'
 import { inferBoolean } from '@teleskop/utils'
 import { z } from 'zod'
 import type { Knex } from 'knex'
+import type { TonelloConfiguration, TonelloFunctionBody, TonelloInputOutputList, TonelloResponse } from '@teleskop/core'
 import { TonelloApi } from '@teleskop/core'
 import { ErrorMessageKey } from '~/shared/enums'
 import { knex } from '~/server/connectionPool'
@@ -48,7 +49,27 @@ export default defineAuthEventHandler(async (event) => {
 
   type Step = {
     fn: (trx: Knex.Transaction) => Promise<unknown>
-    name: string
+    message: string
+  }
+
+  function handleAndCreateError(err: unknown): Error {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+    const userMessage = mapErrorToUserMessage(err)
+
+    sseId && sse.send(sseId, 'error-log', {
+      message: errorMessage,
+      progress: 100,
+    })
+    sseId && sse.send(sseId, 'error', {
+      message: userMessage,
+      progress: 100,
+    })
+    console.error(err)
+    return createError({
+      message: 'UPDATE_FAILED',
+      statusCode: 500,
+      data: { message: errorMessage },
+    })
   }
 
   async function runSteps(steps: Step[]) {
@@ -58,9 +79,9 @@ export default defineAuthEventHandler(async (event) => {
     const getCurrentProgress = () => Math.round((currentStep / totalSteps) * 100)
 
     await knex.transaction(async (trx) => {
-      for (const { fn, name } of steps) {
+      for (const { fn, message } of steps) {
         sseId && sse.send(sseId, 'start', {
-          name,
+          message,
           progress: getCurrentProgress(),
         })
 
@@ -68,24 +89,11 @@ export default defineAuthEventHandler(async (event) => {
           await fn(trx)
           currentStep++
           sseId && sse.send(sseId, 'log', {
-            name,
+            message,
             progress: getCurrentProgress(),
           })
-        } catch (err: any) {
-          const errorMessage = err.message
-          const userMessage = mapErrorToUserMessage(err)
-
-          sseId && sse.send(sseId, 'error-log', { message: errorMessage, progress: 100 })
-          sseId && sse.send(sseId, 'error', {
-            name,
-            message: userMessage,
-            progress: 100,
-          })
-          throw createError({
-            message: 'UPDATE_FAILED',
-            statusCode: 500,
-            data: { message: errorMessage },
-          })
+        } catch (err: unknown) {
+          throw handleAndCreateError(err)
         }
       }
     })
@@ -95,35 +103,35 @@ export default defineAuthEventHandler(async (event) => {
   if (machine.tbbModel !== 'Tonello') {
     await withTbbFtpClient(machine.host, async (tbb) => {
       await runSteps([
-        { fn: trx => updateMachineController(machineId, tbb, trx), name: 'controller-updated' },
-        { fn: trx => updateBatchParameters(machineId, tbb, trx), name: 'batch-parameters-updated' },
-        { fn: trx => updateCommandGroups(machineId, tbb, trx), name: 'command-groups-updated' },
-        { fn: trx => updateCycleControl(machineId, tbb, trx), name: 'cycle-control-updated' },
-        { fn: trx => updateSystemParams(machineId, tbb, trx), name: 'system-parameters-updated' },
-        { fn: trx => updateManualReasons(machineId, tbb, trx), name: 'manual-reasons-updated' },
-        { fn: trx => updateAnalogInputs(machineId, tbb, trx), name: 'analog-inputs-updated' },
-        { fn: trx => updateAnalogOutputs(machineId, tbb, trx), name: 'analog-outputs-updated' },
-        { fn: trx => updateDigitalInputs(machineId, tbb, trx), name: 'digital-inputs-updated' },
-        { fn: trx => updateDigitalOutputs(machineId, tbb, trx), name: 'digital-outputs-updated' },
-        { fn: trx => updateCounters(machineId, tbb, trx), name: 'counters-updated' },
-        { fn: trx => updateMachineParameters(machineId, tbb, trx), name: 'machine-parameters-updated' },
-        { fn: trx => updateCommandsGeneral(machineId, tbb, trx), name: 'general-commands-updated' },
-        { fn: trx => updateCommandParameters(machineId, tbb, trx), name: 'command-parameters-updated' },
-        { fn: trx => updateCommandIO(machineId, tbb, trx), name: 'command-io-updated' },
-        { fn: trx => updateCommandFeedback(machineId, tbb, trx), name: 'command-feedback-updated' },
-        { fn: trx => updateCommandAlarms(machineId, tbb, trx), name: 'command-alarms-updated' },
-        { fn: trx => updateCommandGraphic(machineId, tbb, trx), name: 'command-graphic-updated' },
-        { fn: trx => updateCommandEditing(machineId, tbb, trx), name: 'command-editing-updated' },
-        { fn: trx => updateLocksGeneral(machineId, tbb, trx), name: 'lock-general-updated' },
-        { fn: trx => updateLocksInput(machineId, tbb, trx), name: 'lock-input-updated' },
-        { fn: trx => updateLocksOutput(machineId, tbb, trx), name: 'lock-output-updated' },
-        { fn: trx => updateGlobalCommandFormulas(machineId, tbb, trx), name: 'global-command-formulas-updated' },
-        { fn: trx => updateConsumption(machineId, tbb, trx), name: 'consumptions-updated' },
-        { fn: trx => updateERPParams(machineId, tbb, trx), name: 'erp-parameters-updated' },
-        { fn: trx => updateIOChangedEvent(machineId, tbb, trx), name: 'io-change-events-updated' },
-        { fn: trx => updateIcons(machineId, tbb, trx), name: 'icons-updated' },
-        { fn: trx => updateArchives(machineId, tbb, trx), name: 'archives-updated' },
-        { fn: trx => updateProjectTranslations(machineId, tbb, trx), name: 'translations-updated' },
+        { fn: trx => updateMachineController(machineId, tbb, trx), message: 'controller-updated' },
+        { fn: trx => updateBatchParameters(machineId, tbb, trx), message: 'batch-parameters-updated' },
+        { fn: trx => updateCommandGroups(machineId, tbb, trx), message: 'command-groups-updated' },
+        { fn: trx => updateCycleControl(machineId, tbb, trx), message: 'cycle-control-updated' },
+        { fn: trx => updateSystemParams(machineId, tbb, trx), message: 'system-parameters-updated' },
+        { fn: trx => updateManualReasons(machineId, tbb, trx), message: 'manual-reasons-updated' },
+        { fn: trx => updateAnalogInputs(machineId, tbb, trx), message: 'analog-inputs-updated' },
+        { fn: trx => updateAnalogOutputs(machineId, tbb, trx), message: 'analog-outputs-updated' },
+        { fn: trx => updateDigitalInputs(machineId, tbb, trx), message: 'digital-inputs-updated' },
+        { fn: trx => updateDigitalOutputs(machineId, tbb, trx), message: 'digital-outputs-updated' },
+        { fn: trx => updateCounters(machineId, tbb, trx), message: 'counters-updated' },
+        { fn: trx => updateMachineParameters(machineId, tbb, trx), message: 'machine-parameters-updated' },
+        { fn: trx => updateCommandsGeneral(machineId, tbb, trx), message: 'general-commands-updated' },
+        { fn: trx => updateCommandParameters(machineId, tbb, trx), message: 'command-parameters-updated' },
+        { fn: trx => updateCommandIO(machineId, tbb, trx), message: 'command-io-updated' },
+        { fn: trx => updateCommandFeedback(machineId, tbb, trx), message: 'command-feedback-updated' },
+        { fn: trx => updateCommandAlarms(machineId, tbb, trx), message: 'command-alarms-updated' },
+        { fn: trx => updateCommandGraphic(machineId, tbb, trx), message: 'command-graphic-updated' },
+        { fn: trx => updateCommandEditing(machineId, tbb, trx), message: 'command-editing-updated' },
+        { fn: trx => updateLocksGeneral(machineId, tbb, trx), message: 'lock-general-updated' },
+        { fn: trx => updateLocksInput(machineId, tbb, trx), message: 'lock-input-updated' },
+        { fn: trx => updateLocksOutput(machineId, tbb, trx), message: 'lock-output-updated' },
+        { fn: trx => updateGlobalCommandFormulas(machineId, tbb, trx), message: 'global-command-formulas-updated' },
+        { fn: trx => updateConsumption(machineId, tbb, trx), message: 'consumptions-updated' },
+        { fn: trx => updateERPParams(machineId, tbb, trx), message: 'erp-parameters-updated' },
+        { fn: trx => updateIOChangedEvent(machineId, tbb, trx), message: 'io-change-events-updated' },
+        { fn: trx => updateIcons(machineId, tbb, trx), message: 'icons-updated' },
+        { fn: trx => updateArchives(machineId, tbb, trx), message: 'archives-updated' },
+        { fn: trx => updateProjectTranslations(machineId, tbb, trx), message: 'translations-updated' },
       ])
     })
   }
@@ -134,9 +142,18 @@ export default defineAuthEventHandler(async (event) => {
       errors: [],
       messages: [],
     }
-    const functions = await api.fetchFunctions()
-    const ioList = await api.fetchInputOutputList()
-    const config = await api.fetchConfiguration()
+    let functions: TonelloResponse<TonelloFunctionBody>
+    let ioList: TonelloResponse<TonelloInputOutputList>
+    let config: TonelloResponse<TonelloConfiguration>
+
+    try {
+      functions = await api.fetchFunctions()
+      ioList = await api.fetchInputOutputList()
+      config = await api.fetchConfiguration()
+    } catch (err: unknown) {
+      throw handleAndCreateError(err)
+    }
+
     const parameters = config.data.pages.flatMap(p => p.params)
 
     const throwOnError = (ctx: UpdateContext) => {
@@ -156,28 +173,28 @@ export default defineAuthEventHandler(async (event) => {
           await updateTonelloFunctions(trx, machineId, functions.data.layout.pages, ctx)
           throwOnError(ctx)
         },
-        name: 'functions-updated',
+        message: 'functions-updated',
       },
       {
         fn: async (trx) => {
           await updateTonelloInputOutputs(trx, machineId, ioList.data)
           throwOnError(ctx)
         },
-        name: 'input-outputs-updated',
+        message: 'input-outputs-updated',
       },
       {
         fn: async (trx) => {
           await updateTonelloMachineParameters(trx, machineId, parameters, ctx)
           throwOnError(ctx)
         },
-        name: 'machine-parameters-updated',
+        message: 'machine-parameters-updated',
       },
       {
         fn: async (trx) => {
           await updateTonelloProjectTranslations(trx, machineId, ctx.messages)
           throwOnError(ctx)
         },
-        name: 'translations-updated',
+        message: 'translations-updated',
       },
     ])
   }
@@ -195,6 +212,9 @@ function mapErrorToUserMessage(error: any): ErrorMessageKey {
   }
   if (msg.includes('ENETUNREACH') || msg.includes('EHOSTUNREACH')) {
     return ErrorMessageKey.NetworkUnreachable
+  }
+  if (msg.includes('<no response>')) {
+    return ErrorMessageKey.ApiNoResponse
   }
   if (msg.includes('EAI_AGAIN')) {
     return ErrorMessageKey.AddressResolutionFailed
