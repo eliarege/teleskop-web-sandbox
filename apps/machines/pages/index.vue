@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { useMagicKeys, whenever } from '@vueuse/core'
 import { withBase } from 'ufo'
-import { QLinearProgress } from 'quasar'
+import { type DialogChainObject, QLinearProgress } from 'quasar'
+import { last } from 'lodash-es'
 import AddEditModal from '../components/AddEditModal.vue'
-import type { IContextMenuOption } from '~/components/ContextMenu.vue'
-import type { IOOption, Machine, MachineGroup, MachineTableColumn } from '~/types'
+import type { Machine, MachineGroup, MachineTableColumn } from '~/types'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 
-interface sseLog {
+type SseEvent = 'log' | 'uuid' | 'error' | 'error-log' | 'start' | 'reset'
+
+interface SseLog {
   message: string
-  type: 'info' | 'log' | 'error' | 'ping' | 'start' | 'reset'
+  type: SseEvent
   progress: number
 }
 
@@ -41,18 +43,28 @@ const modifiedMachines = computed(() => machines.value.map(m => ({
 
 const selected = ref([] as Machine[])
 
-const showMachineParameters = ref(false)
-const showMimic = ref(false)
-const showGetDyeHouseDefinitions = ref(false)
-const showSetDyeHouseDefinitions = ref(false)
-
-const projectLogs = ref<sseLog[]>([])
-const versionLogs = ref<sseLog[]>([])
-const fullProjectSseLogs = ref<sseLog[]>([])
-const fullVersionSseLogs = ref<sseLog[]>([])
-const lastProjectLogs = ref<sseLog>()
-const lastVersionLogs = ref<sseLog>()
 const uuid = ref('')
+
+interface LogContext {
+  logs: SseLog[]
+  fullLogs: SseLog[]
+  logDialog: DialogChainObject | null
+  showFullLogDialog: boolean
+}
+
+const projectContext: LogContext = reactive({
+  logs: [],
+  fullLogs: [],
+  logDialog: null,
+  showFullLogDialog: false,
+} as LogContext)
+
+const versionContext: LogContext = reactive({
+  logs: [],
+  fullLogs: [],
+  logDialog: null,
+  showFullLogDialog: false,
+} as LogContext)
 
 const currentOperation = ref<'project' | 'version' | null>(null)
 
@@ -65,10 +77,6 @@ onBeforeUnmount(() => {
 })
 
 const percentage = ref(0)
-const showProjectSseLogDialog = ref<any>(null)
-const showVersionSseLogDialog = ref<any>(null)
-const showFullProjectSseLogDialog = ref<boolean>(false)
-const showFullVersionSseLogDialog = ref<boolean>(false)
 
 const closeButtonVisible = ref(false)
 let closeButtonTimer: NodeJS.Timeout | null = null
@@ -85,14 +93,16 @@ function parseMessage(message?: string) {
 
   return t(message)
 }
+
 const sseErrMessage = ref('')
 const sseErrLogMessage = ref('')
 const hasError = ref(false)
+
 watch(data, (newData) => {
   if (newData) {
     const parsedData = JSON.parse(newData)
     const sseData = {
-      type: event.value,
+      type: event.value as SseEvent,
       message: parseMessage(parsedData.message),
       progress: parsedData.progress,
     }
@@ -110,85 +120,50 @@ watch(data, (newData) => {
       hasError.value = true
       sseErrMessage.value = t(sseData.message)
       if (currentOperation.value === 'project') {
-        handleProjectLogs(sseData)
+        handleSseLogs(projectContext, sseData)
       } else if (currentOperation.value === 'version') {
-        handleVersionLogs(sseData)
+        handleSseLogs(versionContext, sseData)
       }
       return
     }
 
     if (currentOperation.value === 'project') {
-      handleProjectLogs(sseData)
+      handleSseLogs(projectContext, sseData)
     } else if (currentOperation.value === 'version') {
-      handleVersionLogs(sseData)
+      handleSseLogs(versionContext, sseData)
     }
   }
 })
 
-function handleProjectLogs(sseData: any) {
-  if (sseData.type === 'reset') {
-    projectLogs.value = []
-  }
-  if (sseData.type !== 'error-log') {
-    projectLogs.value.push(sseData)
-    lastProjectLogs.value = {
-      type: sseData.type,
-      message: sseData.message,
-      progress: sseData.progress,
-    }
-    percentage.value = sseData.progress / 100
-
-    if (showProjectSseLogDialog.value) {
-      showProjectSseLogDialog.value.update({
-        message: lastProjectLogs.value?.message,
-        progress: {
-          spinner: h(QLinearProgress, {
-            color: 'primary',
-            value: percentage.value,
-          }),
-        },
-      })
-      if (closeButtonTimer)
-        clearTimeout(closeButtonTimer)
-      if (sseData.message === 'NETWORK_CONN_FAILED')
-        closeButtonTimer = setTimeout(() => {
-          showProjectSseLogDialog.value.update({
-            cancel: {
-              label: t('dismiss'),
-            },
-          })
-        }, 1700)
-      if (percentage.value === 1) {
-        fullProjectSseLogs.value = projectLogs.value.filter(l => l.type !== 'start').sort((a, b) => a.progress > b.progress ? 1 : 0)
-        setTimeout(() => {
-          showProjectSseLogDialog.value?.hide()
-          showProjectSseLogDialog.value = null
-          showFullProjectSseLogDialog.value = true
-          percentage.value = 0
-          closeButtonVisible.value = false
-          currentOperation.value = null
-        }, 350)
-      }
-    }
-  }
+function showSseLogs(ctx: LogContext) {
+  ctx.logDialog = dialog({
+    message: `Starting Project Upload`,
+    progress: {
+      spinner: h(QLinearProgress, {
+        color: 'primary',
+        value: percentage.value,
+      }),
+    },
+    persistent: true,
+    ok: false,
+  }).onCancel(() => {
+    ctx.logs = []
+    percentage.value = 0
+    currentOperation.value = null
+  })
 }
 
-function handleVersionLogs(sseData: any) {
+function handleSseLogs(ctx: LogContext, sseData: SseLog) {
   if (sseData.type === 'reset') {
-    versionLogs.value = []
+    ctx.logs = []
   }
   if (sseData.type !== 'error-log') {
-    versionLogs.value.push(sseData)
-    lastVersionLogs.value = {
-      type: sseData.type,
-      message: sseData.message,
-      progress: sseData.progress,
-    }
+    ctx.logs.push(sseData)
     percentage.value = sseData.progress / 100
 
-    if (showVersionSseLogDialog.value) {
-      showVersionSseLogDialog.value.update({
-        message: lastVersionLogs.value?.message,
+    if (ctx.logDialog) {
+      ctx.logDialog.update({
+        message: last(ctx.logs)?.message,
         progress: {
           spinner: h(QLinearProgress, {
             color: 'primary',
@@ -201,18 +176,20 @@ function handleVersionLogs(sseData: any) {
         clearTimeout(closeButtonTimer)
       if (sseData.message === 'NETWORK_CONN_FAILED')
         closeButtonTimer = setTimeout(() => {
-          showVersionSseLogDialog.value.update({
+          ctx.logDialog?.update({
             cancel: {
               label: t('dismiss'),
             },
           })
         }, 1700)
       if (percentage.value === 1) {
-        fullVersionSseLogs.value = versionLogs.value.toSorted((a, b) => a.progress > b.progress ? 1 : 0)
+        ctx.fullLogs = ctx.logs
+          .filter(l => l.type !== 'start')
+          .toSorted((a, b) => a.progress > b.progress ? 1 : 0)
         setTimeout(() => {
-          showVersionSseLogDialog.value?.hide()
-          showVersionSseLogDialog.value = null
-          showFullVersionSseLogDialog.value = true
+          ctx.logDialog?.hide()
+          ctx.logDialog = null
+          ctx.showFullLogDialog = true
           percentage.value = 0
           closeButtonVisible.value = false
           currentOperation.value = null
@@ -267,71 +244,6 @@ const keys = useMagicKeys()
 whenever(keys.shift_alt_t, () => {
   showTeleskopSettings.value = true
 })
-
-const copy = ref()
-
-const contextMenuOptions = computed<Partial<IContextMenuOption>[]>(() => [
-  {
-    label: t('copy'),
-    category: 'copy',
-    keybind: '',
-    icon: 'content_copy',
-    disabled: selected.value.length !== 1,
-    onClick: () => {
-      copy.value = selected.value[0].machineId
-    },
-  },
-  {
-    label: t('paste'),
-    category: 'copy',
-    keybind: '',
-    icon: 'content_paste',
-    disabled: selected.value.length !== 1 || !copy.value,
-    onClick: async () => {
-      await kc.fetch('/api/io/copy', {
-        method: 'POST',
-        body: {
-          sourceMachineId: copy.value,
-          targetMachineId: selected.value[0].machineId,
-        },
-      })
-    },
-  },
-  {
-    label: 'Mimic',
-    category: 'edit',
-    disabled: selected.value.length !== 1,
-    onClick: () => showMimic.value = true,
-  },
-  {
-    label: t('machineConstants'),
-    category: 'edit',
-    disabled: selected.value.length !== 1,
-    onClick: () => showMachineParameters.value = true,
-  },
-  {
-    label: t('formulas'),
-    category: 'edit',
-    disabled: selected.value.length !== 1,
-    onClick: async () => {
-      await navigateTo({
-        path: `/formulas/${selected.value[0].machineId}`,
-      })
-    },
-  },
-  {
-    label: t('setDyeHouseDefinitions'),
-    category: 'edit',
-    disabled: selected.value.length === 0,
-    onClick: () => showSetDyeHouseDefinitions.value = true,
-  },
-  {
-    label: t('getDyeHouseDefinitions'),
-    category: 'edit',
-    disabled: selected.value.length === 0,
-    onClick: () => showGetDyeHouseDefinitions.value = true,
-  },
-])
 
 const columns = ref([
   {
@@ -533,7 +445,7 @@ function showEditModal() {
 async function loadProject() {
   currentOperation.value = 'project'
 
-  showProjectSseLogs()
+  showSseLogs(projectContext)
   try {
     await kc.fetch('/api/sync/network-connection', {
       method: 'POST',
@@ -553,6 +465,7 @@ async function loadProject() {
       },
     })
   } catch (error: any) {
+    console.error(error)
     currentOperation.value = null
   }
 }
@@ -581,7 +494,7 @@ async function receiveVersionInfo() {
   try {
     currentOperation.value = 'version'
 
-    showVersionSseLogs()
+    showSseLogs(versionContext)
     await kc.fetch('/api/sync/machine-versions', {
       query: { sseId: uuid.value },
     })
@@ -591,44 +504,6 @@ async function receiveVersionInfo() {
     notifyError(t('errorReceivingVersionInfo', { error: error.message }))
     currentOperation.value = null
   }
-}
-
-function showProjectSseLogs() {
-  showProjectSseLogDialog.value = dialog({
-    message: `Starting Project Upload`,
-    progress: {
-      spinner: h(QLinearProgress, {
-        color: 'primary',
-        value: percentage.value,
-      }),
-    },
-    persistent: true,
-    ok: false,
-  }).onCancel(() => {
-    projectLogs.value = []
-    lastProjectLogs.value = undefined
-    percentage.value = 0
-    currentOperation.value = null
-  })
-}
-
-function showVersionSseLogs() {
-  showVersionSseLogDialog.value = dialog({
-    message: `Starting Version Update`,
-    progress: {
-      spinner: h(QLinearProgress, {
-        color: 'primary',
-        value: percentage.value,
-      }),
-    },
-    persistent: true,
-    ok: false,
-  }).onCancel(() => {
-    versionLogs.value = []
-    lastVersionLogs.value = undefined
-    percentage.value = 0
-    currentOperation.value = null
-  })
 }
 </script>
 
@@ -690,11 +565,6 @@ function showVersionSseLogs() {
     </div>
   </div>
   <div>
-    <ContextMenu
-      :context-menu-options="contextMenuOptions"
-      target=".q-table"
-      @click="(option: IContextMenuOption) => option.onClick(selected)"
-    />
     <MachineList
       v-model:selected="selected"
       :rows="modifiedMachines"
@@ -703,46 +573,22 @@ function showVersionSseLogs() {
       form-class="grid grid-cols-5 gap-4 grid-rows-7 select-none"
     />
     <SseLogDialog
-      :model-value="showFullProjectSseLogDialog"
-      :logs="fullProjectSseLogs"
+      :model-value="projectContext.showFullLogDialog"
+      :logs="projectContext.fullLogs"
       :err-message="sseErrLogMessage"
-      @close="showFullProjectSseLogDialog = false"
+      @close="projectContext.showFullLogDialog = false"
     />
     <SseLogDialog
-      :model-value="showFullVersionSseLogDialog"
-      :logs="fullVersionSseLogs"
+      :model-value="versionContext.showFullLogDialog"
+      :logs="versionContext.fullLogs"
       :err-message="sseErrLogMessage"
-      @close="showFullVersionSseLogDialog = false"
+      @close="versionContext.showFullLogDialog = false"
     />
     <TeleskopSettingsDialog
       v-if="showTeleskopSettings"
       :show="showTeleskopSettings"
       form-class=""
       @close="showTeleskopSettings = false"
-    />
-    <GetDyeHouseDefinitionsDialog
-      v-if="showGetDyeHouseDefinitions && selected[0]"
-      :show="showGetDyeHouseDefinitions"
-      :selected="selected[0] as Machine"
-      @close="showGetDyeHouseDefinitions = false"
-    />
-    <SetDyeHouseDefinitionsDialog
-      v-if="showSetDyeHouseDefinitions && selected[0]"
-      :show="showSetDyeHouseDefinitions"
-      :selected="selected[0] as Machine"
-      @close="showSetDyeHouseDefinitions = false"
-    />
-    <MachineParametersDialog
-      v-if="showMachineParameters"
-      :show="showMachineParameters"
-      :selected="selected[0]"
-      @close="showMachineParameters = false"
-    />
-    <MimicDialog
-      v-if="showMimic"
-      :show="showMimic"
-      :selected="selected[0]"
-      @close="showMimic = false"
     />
   </div>
 </template>
