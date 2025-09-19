@@ -1,5 +1,6 @@
 import type { $Fetch } from 'ofetch'
 import { $fetch } from 'ofetch'
+import { format } from 'date-fns'
 import type {
   TonelloConfiguration,
   TonelloFunctionBody,
@@ -17,6 +18,18 @@ export class TonelloApi {
       headers: {
         Accept: 'application/json',
       },
+    })
+  }
+
+  async fetchDatetime(): Promise<TonelloResponse<{ dateTime: string }>> {
+    return await this.fetch('/api/v1/getDateTime')
+  }
+
+  async updateDatetime(dateTime: Date): Promise<TonelloResponse<void>> {
+    const date = format(dateTime, 'yyyy-MM-dd')
+    const time = format(dateTime, 'HH:mm:ss')
+    return await this.fetch('/api/v1/setDateTime', {
+      body: { date, time },
     })
   }
 
