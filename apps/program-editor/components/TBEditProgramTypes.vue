@@ -1,83 +1,78 @@
 <script setup lang="ts">
-import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
+import type { QTableColumn } from 'quasar'
 import TBCreateProcessTypeDialog from './TBCreateProcessTypeDialog.vue'
-import { notification } from '~/shared/functions'
+import TBDeleteProcessTypeDialog from './TBDeleteProcessTypeDialog.vue'
 import type { ProcessType } from '~/shared/types'
 
-defineEmits([
-  ...useDialogPluginComponent.emits,
-])
+defineEmits([...useDialogPluginComponent.emits])
 
 const $q = useQuasar()
 const { t } = useI18n()
-const { fetch } = useKeycloak()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
-const selectedRow = ref()
-const { data: programTypes, refresh } = useAuthFetch('/api/process', { default: () => [] })
+const editor = useEditorStore()
 
-const columns = computed(() => [
-  { name: 'value', label: t('changeProcessTypeDialog.processTypeNo'), field: 'value', align: 'left' },
-  { name: 'label', label: t('changeProcessTypeDialog.processTypeName'), field: 'label', align: 'left' },
-  { name: 'description', label: t('changeProcessTypeDialog.note'), field: 'description', align: 'left' },
-])
-
-async function handleUpdateProcessTypes() {
-  const check = await fetch('/api/process', { method: 'PUT', body: programTypes.value })
-  const status = check ? 'success' : 'fail'
-  notification(check, t(`changeProcessTypeDialog.updateProcessTypes.${status}`, { no: selectedRow.value.value }))
-  refresh()
-}
+const selectedRow = ref<ProcessType[]>([])
+const columns: QTableColumn[] = [
+  { name: 'value', label: t('processTypeDialog.processTypeNo'), field: 'value', align: 'center', sortable: true },
+  { name: 'label', label: t('processTypeDialog.processTypeName'), field: 'label', align: 'center', sortable: true },
+  { name: 'description', label: t('processTypeDialog.note'), field: 'description', align: 'center', sortable: true },
+]
 
 function handleCreateProcessType() {
   $q.dialog({
     component: TBCreateProcessTypeDialog,
   }).onOk(async (type: ProcessType) => {
-    let check
-    try {
-      check = await fetch('/api/process', { method: 'POST', body: type })
-    } catch {
-      check = false
-    }
-    const status = check ? 'success' : 'fail'
-    notification(check, t(`changeProcessTypeDialog.createProcessType.${status}`, { no: type.value, name: type.label }))
-    refresh()
+    await editor.addProcessTypes(type)
+    // Eklenen kaydı seç
+    selectedRow.value = [type]
+  })
+}
+
+function handleEditProcessType() {
+  if (!selectedRow.value.length)
+    return
+  const row = selectedRow.value[0]
+  $q.dialog({
+    component: TBCreateProcessTypeDialog,
+    componentProps: { processType: row },
+  }).onOk(async (type: ProcessType) => {
+    await editor.updateProcessTypes([type])
+    // Güncellenmiş kaydı seç
+    selectedRow.value = [type]
   })
 }
 
 function handleDeleteProcessType() {
+  if (!selectedRow.value.length)
+    return
+  const row = selectedRow.value[0]
   $q.dialog({
-    title: t('delete'),
-    message: t('changeProcessTypeDialog.deletionWarning', { type: selectedRow.value.label }),
-    cancel: {
-      icon: 'close',
-      label: t('cancel'),
-      outline: true,
-    },
-    ok: {
-      label: t('delete'),
-      outline: true,
-      icon: 'delete',
-      color: 'red',
-    },
-    persistent: true,
+    component: TBDeleteProcessTypeDialog,
+    componentProps: { processType: row },
   }).onOk(async () => {
-    const check = await fetch('/api/process', { method: 'DELETE', body: selectedRow.value.value })
-    const status = check ? 'success' : 'fail'
-    notification(check, t(`changeProcessTypeDialog.deleteProcessType.${status}`, { no: selectedRow.value.value }))
-    refresh()
+    await editor.deleteProcessType(row.value)
+    // Silinen kayıt seçimini temizle
+    selectedRow.value = []
   })
+}
+
+function onRowClick(event: Event, row: ProcessType) {
+  selectedRow.value = [row]
+}
+
+function onRowDoubleClick(event: Event, row: ProcessType) {
+  selectedRow.value = [row]
+  handleEditProcessType()
 }
 </script>
 
 <template>
-  <QDialog
-    ref="dialogRef"
-  >
-    <QCard>
-      <QCardSection>
+  <q-dialog ref="dialogRef">
+    <q-card class="w-120 select-none">
+      <q-card-section>
         <div class="text-h6 flex">
-          {{ t('contextMenu.changeProcessType') }}
+          {{ t('processTypeDialog.title') }}
           <q-space />
           <q-btn
             class="text-gray-4 dark:text-gray-6"
@@ -88,70 +83,70 @@ function handleDeleteProcessType() {
             @click="onDialogCancel"
           />
         </div>
-      </QCardSection>
+      </q-card-section>
 
-      <QCardSection>
-        <QTable
+      <q-card-section>
+        <div class="actions-row">
+          <q-btn
+            :label="t('processTypeDialog.createProcessType.newProcessType')"
+            class="bg-gray-2 text-dark-4 dark:bg-dark-3 dark:text-gray-4"
+            flat
+            @click="handleCreateProcessType"
+          />
+          <q-btn
+            :label="t('edit')"
+            class="bg-gray-2 text-dark-4 dark:bg-dark-3 dark:text-gray-4"
+            flat
+            :disable="!selectedRow.length"
+            @click="handleEditProcessType"
+          />
+          <q-btn
+            :label="t('delete')"
+            class="bg-negative text-white"
+            flat
+            :disable="!selectedRow.length"
+            @click="handleDeleteProcessType"
+          />
+        </div>
+        <q-table
+          v-model:selected="selectedRow"
+          class="process-type-table"
+          :columns="columns"
+          :rows="editor.allProcessTypes"
+          row-key="value"
+          hide-bottom
           flat
-          class="h-150"
           bordered
           dense
-          :pagination=" { rowsPerPage: 0 } "
-          :rows="programTypes"
-          :columns="columns"
-          row-key="value"
-          cursor="pointer"
-          @row-click="(e, row) => selectedRow = row "
-        >
-          <template #body-cell="props">
-            <QTd :props="props" :class="props.row === selectedRow ? '!e-selected' : ''">
-              <QInput
-                v-if="props.col.name !== 'value'"
-                v-model="props.row[ props.col.name ]"
-                dense
-                borderless
-              />
-              <span v-else>
-                {{ props.row[props.col.name] }}
-              </span>
-            </QTd>
-          </template>
-        </QTable>
-      </QCardSection>
+          selection="single"
+          :rows-per-page-options="[0]"
+          @row-click="onRowClick"
+          @row-dblclick="onRowDoubleClick"
+        />
+      </q-card-section>
 
-      <QCardActions
-        class="q-pa-md bg-gray-1 dark:bg-dark-4"
+      <q-card-actions
         align="right"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
-        <QBtn
-          :label="t('create')"
+        <q-btn
+          :label="t('close')"
           class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
-          icon="create"
           flat
-          @click="handleCreateProcessType"
+          @click="onDialogCancel"
         />
-        <QBtn
-          :label="t('delete')"
-          class="q-mr-sm bg-red-6"
-          icon="delete"
-          :disable="!selectedRow"
-          flat
-          @click="handleDeleteProcessType"
-        />
-        <QBtn
-          :label="t('submit')"
-          class="q-mr-sm bg-primary"
-          icon="save"
-          flat
-          @click="handleUpdateProcessTypes"
-        />
-      </QCardActions>
-    </QCard>
-  </QDialog>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <style scoped>
-.q-dialog__inner--minimized > div {
-  max-width: none !important;
+.actions-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.process-type-table {
+  height: 400px;
 }
 </style>

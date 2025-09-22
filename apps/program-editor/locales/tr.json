@@ -200,12 +200,14 @@
   "no": "Hayır",
   "cancel": "İptal",
   "create": "Oluştur",
+  "edit": "Düzenle",
   "submit": "Kaydet",
   "delete": "Sil",
   "change": "Değiştir",
   "send": "Gönder",
   "apply": "Uygula",
   "ok": "Tamam",
+  "close": "Kapat",
   "save": "Kaydet",
   "message": {
     "delete_program": "Program Teleskop'tan silindi",
@@ -233,18 +235,32 @@
     "title": "Yeniden Adlandır",
     "message": "Yeni program adını giriniz."
   },
-  "changeProcessTypeDialog": {
-    "_": "Program Tipi Düzenleme",
-    "processTypeNo": "Program Tipi Numarası",
+  "processTypeDialog": {
+    "title": "Program Tipleri",
+    "processTypeNo": "Program Tipi No",
     "processTypeName": "Program Tipi Adı",
     "note": "Not",
-    "deletionWarning": "Program tipi {type} silinecek! Devam etmek istediğinize emin misiniz?",
     "createProcessType": {
-      "_": "Program Tipi Oluştur",
+      "title": "Yeni Tip Oluştur",
+      "newProcessType": "Yeni Program Tipi",
+      "processTypeNo": "Program Tipi No",
+      "processTypeNoRequired": "Program Tipi No gereklidir",
+      "processTypeNoUnique": "Program Tipi No benzersiz olmalıdır",
+      "processTypeName": "Program Tipi Adı",
+      "processTypeNameRequired": "Program Tipi Adı gereklidir",
+      "note": "Not",
+      "processTypeNoReadOnlyHint": "Program Tipi Numarası değiştirilemez.",
       "success": "{no} - {name} program tipi başarıyla oluşturuldu.",
       "fail": "Program tipi oluşturulamadı."
     },
+    "editProcessType": {
+      "title": "Program Tipi Düzenle",
+      "success": "{no} - {name} program tipi başarıyla güncellendi.",
+      "fail": "Program tipi güncellenemedi."
+    },
     "deleteProcessType": {
+      "title": "Program Tipini Sil",
+      "deletionWarning": "Program tipi \"{type}\" silinecek! Devam etmek istediğinize emin misiniz?",
       "success": "{no} - {name} program tipi başarıyla silindi.",
       "fail": "Program tipi silinirken hata oluştu."
     },
@@ -293,7 +309,7 @@
       "clearAll": "Tümünü Temizle",
       "clearAllTooltip": "Tüm program numaralarını temizle"
     },
-    "changeProcessTypeDialog": {
+    "processTypeDialog": {
       "title": "Program Tipini Değiştir",
       "warning": "Değiştirmek istediğiniz program tipini seçiniz"
     },

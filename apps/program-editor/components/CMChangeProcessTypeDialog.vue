@@ -20,7 +20,7 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
     <q-card style="width: 500px" class="select-none">
       <q-card-section>
         <div class="text-h6 flex">
-          {{ t('contextMenu.changeProcessTypeDialog.title') }}
+          {{ t('contextMenu.processTypeDialog.title') }}
           <q-space />
           <q-btn
             icon="close"
@@ -34,7 +34,7 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
       </q-card-section>
 
       <q-card-section class="row items-center">
-        <span class="q-ml-sm"> {{ t('contextMenu.changeProcessTypeDialog.warning') }}</span>
+        <span class="q-ml-sm"> {{ t('contextMenu.processTypeDialog.warning') }}</span>
       </q-card-section>
 
       <q-card-section>

@@ -694,6 +694,27 @@ export const useEditorStore = defineStore('editor', () => {
     }))
   }
 
+  async function addProcessTypes(newType: ProcessType) {
+    const apiPayload = {
+      types: [newType],
+    }
+    await kc.fetch<void>('/api/process', { method: 'POST', body: apiPayload })
+    return fetchAllProcessTypes()
+  }
+
+  async function deleteProcessType(processCode: number) {
+    await kc.fetch<void>(`/api/process`, { method: 'DELETE', body: { processCode } })
+    return fetchAllProcessTypes()
+  }
+
+  async function updateProcessTypes(updatedTypes: ProcessType[]) {
+    const apiPayload = {
+      types: updatedTypes,
+    }
+    await kc.fetch<void>('/api/process', { method: 'PUT', body: apiPayload })
+    return fetchAllProcessTypes()
+  }
+
   /**
    * Yeni bir makine nesnesi oluşturur ve başlangıç değerleriyle döner.
    *
@@ -1032,6 +1053,9 @@ export const useEditorStore = defineStore('editor', () => {
     selectStep,
     getPathElement,
     fetchAllProcessTypes,
+    addProcessTypes,
+    deleteProcessType,
+    updateProcessTypes,
     scrollPage,
     getStepIcon,
     fetchTeleskopSettings,

@@ -113,8 +113,9 @@ export async function fetchProcessTypes(): Promise<ProcessType[]> {
     .from('BFPROCESSTYPES')
 }
 
-export async function createProcessType(type: ProcessType): Promise<any> {
+export async function createProcessType(body: { types: ProcessType[] }): Promise<any> {
   try {
+    const type = body.types[0]
     return await db('BFPROCESSTYPES')
       .insert({
         PROCESSCODE: type.value,
@@ -124,23 +125,24 @@ export async function createProcessType(type: ProcessType): Promise<any> {
       })
   } catch (e: any) {
     if (e.number === MSSQL_ERROR.DUPLICATE_PK)
-      throw createError({ statusCode: 400, data: { messageCode: 'PROCESS_TYPE_EXISTS', key: type.value } })
+      throw createError({ statusCode: 400, data: { messageCode: 'PROCESS_TYPE_EXISTS', key: body.types[0].value } })
     throw e
   }
 }
-export async function updateProcessTypes(types: ProcessType[]): Promise<any> {
-  types.forEach(async (type) => {
+export async function updateProcessTypes(body: { types: ProcessType[] }): Promise<any> {
+  const types = body.types
+  for (const type of types) {
     await db('BFPROCESSTYPES')
       .update({
-        PROCESSCODE: type.value,
         PROCESSNAME: type.label,
         NOTE: type.description,
       })
       .where('PROCESSCODE', type.value)
-  })
+  }
   return true
 }
-export async function deleteProcessType(processCode: number): Promise<any> {
+export async function deleteProcessType(body: { processCode?: number, PROCESSCODE?: number }): Promise<any> {
+  const processCode = body.processCode || body.PROCESSCODE
   return await db
     .del()
     .where('PROCESSCODE', processCode)
