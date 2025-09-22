@@ -25,13 +25,7 @@ update_package_json_version() {
 
 update_package_json_version package.json
 
-for package_json in packages/*/package.json; do
-  if [[ -f "$package_json" ]]; then
-    update_package_json_version "$package_json"
-  fi
-done
-
-for package_json in apps/*/package.json; do
+for package_json in packages/*/package.json apps/*/package.json; do
   if [[ -f "$package_json" ]]; then
     update_package_json_version "$package_json"
   fi
