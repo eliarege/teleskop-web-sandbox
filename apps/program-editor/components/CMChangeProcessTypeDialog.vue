@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { ADDITIONAL_PROCESS_CODE_ILAVE } from '~/shared/constants'
+
 const props = defineProps<{
-  programType: string
+  programType: number
+  additionalType?: number
   options: { label: string, value: number }[]
 }>()
 
@@ -9,10 +12,16 @@ defineEmits([
 ])
 
 const { t } = useI18n()
-const selectedOption = ref(
-  props.options.find(option => option.label === props.programType) || props.options[0].value,
-)
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+
+const selectedOption = ref(
+  props.programType || props.options[0]?.value || 0,
+)
+const selectedAdditionalOption = ref(
+  props.additionalType || props.options[0]?.value || 0,
+)
+const isIlaveSelected = computed(() => selectedOption.value === ADDITIONAL_PROCESS_CODE_ILAVE)
+const additionalOptions = computed(() => props.options.filter(option => option.value !== ADDITIONAL_PROCESS_CODE_ILAVE))
 </script>
 
 <template>
@@ -38,10 +47,23 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
       </q-card-section>
 
       <q-card-section>
-        <div class="flex items-center justify-center">
+        <div class="flex flex-col items-center justify-center gap-4">
           <q-select
             v-model="selectedOption"
             :options="options"
+            :label="t('program.processType')"
+            class="w-1/2"
+            map-options
+            emit-value
+            options-dense
+            outlined
+            dense
+          />
+          <q-select
+            v-if="isIlaveSelected"
+            v-model="selectedAdditionalOption"
+            :options="additionalOptions"
+            :label="t('program.additionalType')"
             class="w-1/2"
             map-options
             emit-value
@@ -66,7 +88,10 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
           :label="t('apply')"
           class="q-mr-sm bg-primary text-white"
           flat
-          @click="onDialogOK(selectedOption)"
+          @click="onDialogOK({
+            type: selectedOption,
+            additionalType: isIlaveSelected ? selectedAdditionalOption : null,
+          })"
         />
       </q-card-actions>
     </q-card>

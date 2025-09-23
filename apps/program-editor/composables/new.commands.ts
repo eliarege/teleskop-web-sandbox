@@ -388,10 +388,11 @@ registerCommand(() => {
         component: CMChangeProcessTypeDialog,
         componentProps: {
           programType: selectedRows[0].type,
+          additionalType: selectedRows[0].additionalType,
           options: editor.allProcessTypes,
         },
-      }).onOk(async (newType: number) => {
-        await contextMenuStore.changeProcessType(machineId, selectedRows, newType)
+      }).onOk(async (result: { type: number, additionalType: number | null }) => {
+        await contextMenuStore.changeProcessType(machineId, selectedRows, result)
         await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
