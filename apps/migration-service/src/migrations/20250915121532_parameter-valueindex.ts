@@ -3,18 +3,34 @@
 import type { Knex } from 'knex'
 
 export async function up(knex: Knex) {
-  const columnExists = await knex.schema.hasColumn('BFCOMMANDPARAMETERS', 'VALUEINDEX')
-  if (!columnExists) {
+  const bfColumnExists = await knex.schema.hasColumn('BFCOMMANDPARAMETERS', 'VALUEINDEX')
+  const baColumnExists = await knex.schema.hasColumn('BACOMMANDPARAMETERS', 'VALUEINDEX')
+
+  if (!bfColumnExists) {
     await knex.schema.alterTable('BFCOMMANDPARAMETERS', (table) => {
+      table.integer('VALUEINDEX').nullable()
+    })
+  }
+
+  if (!baColumnExists) {
+    await knex.schema.alterTable('BACOMMANDPARAMETERS', (table) => {
       table.integer('VALUEINDEX').nullable()
     })
   }
 }
 
 export async function down(knex: Knex) {
-  const columnExists = await knex.schema.hasColumn('BFCOMMANDPARAMETERS', 'VALUEINDEX')
-  if (columnExists) {
+  const bfColumnExists = await knex.schema.hasColumn('BFCOMMANDPARAMETERS', 'VALUEINDEX')
+  const baColumnExists = await knex.schema.hasColumn('BACOMMANDPARAMETERS', 'VALUEINDEX')
+
+  if (bfColumnExists) {
     await knex.schema.alterTable('BFCOMMANDPARAMETERS', (table) => {
+      table.dropColumn('VALUEINDEX')
+    })
+  }
+
+  if (baColumnExists) {
+    await knex.schema.alterTable('BACOMMANDPARAMETERS', (table) => {
       table.dropColumn('VALUEINDEX')
     })
   }
