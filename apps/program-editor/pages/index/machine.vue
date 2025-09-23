@@ -8,7 +8,7 @@ import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
 import type { ContextBarButtons, ProgramItem, ProgramTableRow } from '~/shared/types'
-import { ProgramStatus } from '~/shared/constants'
+import { ADDITIONAL_PROCESS_CODE_ILAVE, ProgramStatus } from '~/shared/constants'
 import { formatDuration, useErrorStore } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
@@ -289,6 +289,10 @@ function getErrorCount(rowProgram: ProgramTableRow): number {
   return error ? error.steps.length : 0
 }
 
+function getProcessTypeName(typeValue: number): string {
+  return editor.allProcessTypes.find(pt => pt.value === typeValue)?.label || ''
+}
+
 const allColumns = ref<ProgramTableColumn[]>([
   {
     name: 'programNo',
@@ -330,7 +334,20 @@ const allColumns = ref<ProgramTableColumn[]>([
   {
     name: 'type',
     label: tt('program.type'),
-    field: 'type',
+    field: (row: ProgramTableRow) => getProcessTypeName(row.type),
+    sortable: true,
+    align: 'center',
+    hidden: editor.isTonello,
+  },
+  {
+    name: 'additionalType',
+    label: tt('program.additionalType'),
+    field: (row: ProgramTableRow) => {
+      if (row.type === ADDITIONAL_PROCESS_CODE_ILAVE && row.additionalType) {
+        return getProcessTypeName(row.additionalType)
+      }
+      return ''
+    },
     sortable: true,
     align: 'center',
     hidden: editor.isTonello,

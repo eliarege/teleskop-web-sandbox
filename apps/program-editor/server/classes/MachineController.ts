@@ -262,8 +262,8 @@ export class MachineController {
         name: 'H.NAME',
         duration: 'H.DURATION',
         stepCount: 'H.TOTALSTEP',
-        type: 'T.PROCESSNAME',
-        additionalType: 'T2.PROCESSNAME',
+        type: 'H.PROCESSCODE',
+        additionalType: 'H.ADDITIONALPROCESSCODE',
         operator: 'H.TBBPRGCHANGEDEVENT',
         updatedAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.CHANGEDATE)`),
         updatedAtTBB: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.TBBCHANGEDATE)`),
@@ -277,8 +277,6 @@ export class MachineController {
         manDyeReq: 'H.ManDyeReq',
       })
       .from('BFMASTERPRGHEADER AS H')
-      .join('BFPROCESSTYPES AS T', 'T.PROCESSCODE', 'H.PROCESSCODE')
-      .join('BFPROCESSTYPES AS T2', 'T2.PROCESSCODE', 'H.ADDITIONALPROCESSCODE')
       .where('H.MACHINEID', this.id)
       .andWhere((builder) => {
         if (query?.programNo)
