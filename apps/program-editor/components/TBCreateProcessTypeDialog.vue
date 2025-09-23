@@ -21,7 +21,7 @@ const processType = ref<ProcessType>({
 })
 
 const isFormValid = computed(() => {
-  return processType.value.value > 0
+  return processType.value.value >= 0
     && processType.value.label.trim().length > 0
     && (!props.processType ? !editor.allProcessTypes.find(type => type.value === processType.value.value) : true)
 })
@@ -53,7 +53,7 @@ const isFormValid = computed(() => {
             :label="t('processTypeDialog.processTypeNo')"
             type="number"
             min="0"
-            :rules="[val => val > 0
+            :rules="[val => val >= 0
               || t('processTypeDialog.createProcessType.processTypeNoRequired'), val => !(!props.processType && editor.allProcessTypes.find(type => type.value === val))
               || t('processTypeDialog.createProcessType.processTypeNoUnique')]"
             :readonly="!!props.processType"
