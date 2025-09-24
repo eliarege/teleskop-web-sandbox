@@ -253,7 +253,7 @@ export const useEditorStore = defineStore('editor', () => {
       return
 
     setTimeout(() => {
-      el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
+      el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' })
     }, 100)
 
     const button = el.querySelector('.expand-btn') as HTMLElement | null
