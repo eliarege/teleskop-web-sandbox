@@ -50,6 +50,10 @@ watch(() => model.value, (newValue: number) => {
   programParameter.value = newValue
 })
 
+const labelLength = computed(() => {
+  return props.parameter.name ? mt(props.parameter.name, editor.machine.id).length : 0
+})
+
 // TODO: update other steps parameter
 function handleInputBlur() {
   const settings = useProgramWriteSettings()
@@ -63,7 +67,7 @@ function handleInputBlur() {
 </script>
 
 <template>
-  <div class="pr-1 pb-1">
+  <div class="flex">
     <DevOnly>
       <div class="color-gray-5 text-3">
         {{ props.commandNo }} - {{ props.parameter.index }} - {{ props.parameter.group }}
@@ -98,15 +102,15 @@ function handleInputBlur() {
         v-else
         v-model="model"
         :rules="rules"
-        :label="parameter.name && mt(parameter.name, editor.machine.id)"
+        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         type="decimal"
         :maxlength="10"
         :hide-bottom-space="true"
         :format="parameter.format"
         outlined
         dense
-        style="width: 150px;"
-        class="text-3"
+        :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
+        class="text-3 dynamic-min-width"
         :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       >
         <template #optimized>
@@ -133,8 +137,8 @@ function handleInputBlur() {
         emit-value
         outlined
         dense
-        style="width: 150px;"
-        class="text-3 q-select-nowrap"
+        :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
+        class="text-3 q-select-nowrap dynamic-min-width"
         :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       />
     </template>
@@ -151,8 +155,8 @@ function handleInputBlur() {
         emit-value
         outlined
         dense
-        style="width: 150px;"
-        class="text-3 q-select-nowrap"
+        :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
+        class="text-3 q-select-nowrap dynamic-min-width"
         :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       >
         <template #option="scope">
@@ -178,19 +182,12 @@ function handleInputBlur() {
     </template>
 
     <template v-else-if="parameter.type === 'CHECKBOX'">
-      <QCheckbox
+      <InputCheckbox
         v-model="model"
-        class="checkbox-outlined pr-4"
-        :true-value="1"
-        :false-value="0"
-        dense
+        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         :class="{ 'border-2 border-red rounded-2': props.parameterError }"
         @blur="handleInputBlur"
-      >
-        <span class="text-3">
-          {{ parameter.name && mt(parameter.name, editor.machine.id) }}
-        </span>
-      </QCheckbox>
+      />
     </template>
   </div>
 </template>
@@ -200,8 +197,7 @@ function handleInputBlur() {
   white-space: nowrap;
 }
 
-.checkbox-outlined {
-  border: 1px solid #c0c0c0;
-  border-radius: 4px;
+.dynamic-min-width {
+  min-width: calc(var(--q-label-length) * 0.6em + 2.5rem);
 }
 </style>

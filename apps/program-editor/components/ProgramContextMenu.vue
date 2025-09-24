@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 
-const props = defineProps<{
+defineProps<{
   items: TopbarMenuItem[][]
 }>()
 </script>

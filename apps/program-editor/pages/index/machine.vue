@@ -839,7 +839,7 @@ const columns = computed(() =>
 }
 
 .program-table {
-  height: 80vh;
+  height: calc(100vh - 10rem);
   user-select: none;
 }
 </style>
