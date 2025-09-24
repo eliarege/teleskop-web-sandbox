@@ -770,7 +770,7 @@ const columns = computed(() =>
         <template #top>
           <QInput
             v-model="searchFilter"
-            class="q-pa-md w-xs"
+            class="w-xs"
             :placeholder="t('search')"
             autocomplete="false"
             debounce="100"
@@ -787,13 +787,13 @@ const columns = computed(() =>
         </template>
       </QTable>
 
-      <q-menu
+      <QMenu
         touch-position
         context-menu
         :transition-duration="0"
       >
         <ProgramContextMenu :items="contextMenuOptions" />
-      </q-menu>
+      </QMenu>
     </div>
 
     <CMProgramStateDialog v-if="!route.params.program_no" />
