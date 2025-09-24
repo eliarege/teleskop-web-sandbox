@@ -695,10 +695,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function addProcessTypes(newType: ProcessType) {
-    const apiPayload = {
-      types: [newType],
-    }
-    await kc.fetch<void>('/api/process', { method: 'POST', body: apiPayload })
+    await kc.fetch<void>('/api/process', { method: 'POST', body: { type: [newType] } })
     return fetchAllProcessTypes()
   }
 
@@ -707,11 +704,8 @@ export const useEditorStore = defineStore('editor', () => {
     return fetchAllProcessTypes()
   }
 
-  async function updateProcessTypes(updatedTypes: ProcessType[]) {
-    const apiPayload = {
-      types: updatedTypes,
-    }
-    await kc.fetch<void>('/api/process', { method: 'PUT', body: apiPayload })
+  async function updateProcessType(updatedType: ProcessType) {
+    await kc.fetch<void>('/api/process', { method: 'PUT', body: { type: [updatedType] } })
     return fetchAllProcessTypes()
   }
 
@@ -1055,7 +1049,7 @@ export const useEditorStore = defineStore('editor', () => {
     fetchAllProcessTypes,
     addProcessTypes,
     deleteProcessType,
-    updateProcessTypes,
+    updateProcessType,
     scrollPage,
     getStepIcon,
     fetchTeleskopSettings,

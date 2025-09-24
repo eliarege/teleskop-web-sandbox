@@ -104,49 +104,68 @@ export async function groupMachinesByGroup(): Promise<MachineGroup[]> {
 }
 
 export async function fetchProcessTypes(): Promise<ProcessType[]> {
-  return await db
-    .select({
-      value: 'PROCESSCODE',
-      label: 'PROCESSNAME',
-      description: 'NOTE',
-    })
-    .from('BFPROCESSTYPES')
+  try {
+    return await db
+      .select({
+        value: 'PROCESSCODE',
+        label: 'PROCESSNAME',
+        description: 'NOTE',
+      })
+      .from('BFPROCESSTYPES')
+  } catch (e: any) {
+    throw createError({ statusCode: 500, data: { messageCode: 'PROCESS_TYPE_FETCH_FAILED', error: e.message } })
+  }
 }
 
-export async function createProcessType(body: { types: ProcessType[] }): Promise<any> {
+export async function createProcessType(body: { type: ProcessType }): Promise<boolean> {
   try {
-    const type = body.types[0]
-    return await db('BFPROCESSTYPES')
+    const type = body.type
+    const result = await db('BFPROCESSTYPES')
       .insert({
         PROCESSCODE: type.value,
         PROCESSNAME: type.label,
         NOTE: type.description,
         BOYAPRGMI: 1,
       })
+
+    return result.length > 0
   } catch (e: any) {
     if (e.number === MSSQL_ERROR.DUPLICATE_PK)
-      throw createError({ statusCode: 400, data: { messageCode: 'PROCESS_TYPE_EXISTS', key: body.types[0].value } })
+      throw createError({ statusCode: 400, data: { messageCode: 'PROCESS_TYPE_EXISTS', key: body.type.value } })
     throw e
   }
 }
-export async function updateProcessTypes(body: { types: ProcessType[] }): Promise<any> {
-  const types = body.types
-  for (const type of types) {
-    await db('BFPROCESSTYPES')
+export async function updateProcessType(body: { type: ProcessType }): Promise<boolean> {
+  try {
+    const type = body.type
+    const result = await db('BFPROCESSTYPES')
       .update({
         PROCESSNAME: type.label,
         NOTE: type.description,
       })
       .where('PROCESSCODE', type.value)
+
+    return result > 0
+  } catch (e: any) {
+    if (e.number === MSSQL_ERROR.DUPLICATE_PK)
+      throw createError({ statusCode: 400, data: { messageCode: 'PROCESS_TYPE_EXISTS', key: body.type.value } })
+    throw e
   }
-  return true
 }
-export async function deleteProcessType(body: { processCode?: number, PROCESSCODE?: number }): Promise<any> {
-  const processCode = body.processCode || body.PROCESSCODE
-  return await db
-    .del()
-    .where('PROCESSCODE', processCode)
-    .from('BFPROCESSTYPES')
+export async function deleteProcessType(body: { processCode?: number, PROCESSCODE?: number }): Promise<boolean> {
+  try {
+    const processCode = body.processCode || body.PROCESSCODE
+    const result = await db
+      .del()
+      .where('PROCESSCODE', processCode)
+      .from('BFPROCESSTYPES')
+
+    return result > 0
+  } catch (e: any) {
+    if (e.number === MSSQL_ERROR.DUPLICATE_PK)
+      throw createError({ statusCode: 400, data: { messageCode: 'PROCESS_TYPE_EXISTS', key: body.processCode || body.PROCESSCODE } })
+    throw e
+  }
 }
 
 export async function getMachineBatchParameters(machineId: number): Promise<CommandParameter[]> {

@@ -1,4 +1,4 @@
-import { createProcessType, deleteProcessType, fetchProcessTypes, updateProcessTypes } from '../functions'
+import { createProcessType, deleteProcessType, fetchProcessTypes, updateProcessType } from '../functions'
 import { checkPermission } from '../utils/auth'
 
 export default defineAuthEventHandler(async (event) => {
@@ -12,7 +12,7 @@ export default defineAuthEventHandler(async (event) => {
   if (event.method === 'POST') {
     return createProcessType(body)
   } else if (event.method === 'PUT') {
-    return updateProcessTypes(body)
+    return updateProcessType(body)
   } else if (event.method === 'DELETE') {
     return deleteProcessType(body)
   }

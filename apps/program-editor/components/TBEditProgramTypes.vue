@@ -37,7 +37,7 @@ function handleEditProcessType() {
     component: TBCreateProcessTypeDialog,
     componentProps: { processType: row },
   }).onOk(async (type: ProcessType) => {
-    await editor.updateProcessTypes([type])
+    await editor.updateProcessType(type)
     // Güncellenmiş kaydı seç
     selectedRow.value = [type]
   })
