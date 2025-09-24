@@ -177,11 +177,13 @@ function onBlur(event: FocusEvent) {
   input.value?.validate()
 }
 
+const IGNORE_RE = /^(\.|-|-\.)?$/
+
 function onInput(event: Event) {
   const { value } = event.target as HTMLInputElement
   if (value === '' && props.maybeEmpty) {
     model.value = undefined
-  } else if (value !== '') {
+  } else if (!IGNORE_RE.test(value)) {
     model.value = Number.parseFloat(value)
   }
 }
