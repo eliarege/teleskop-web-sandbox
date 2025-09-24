@@ -57,6 +57,13 @@ export const ParameterType = {
   SELECTABLE_FORMULA: 'SELECTABLE_FORMULA',
 } as const
 
+export const ParameterTypeRaw = {
+  NUMBER: 0,
+  SELECT: 1,
+  CHECKBOX: 2,
+  SELECT_ADDITIVE: 3,
+} as const
+
 export type ParameterTypeValue = ValueOf<typeof ParameterType>
 
 export enum CommandType {
@@ -74,6 +81,11 @@ export enum CommandType {
   GenericMaterial2 = 820,
   ManualMeasurement = 1000,
 }
+
+export const AdditiveType = {
+  Chemical: 0,
+  Dye: 1,
+} as const
 
 export const commandTypeMaps = [
   { index: 0, ref: [], value: CommandType.AutoChem, title: 'chemicalRequestCommands' },
