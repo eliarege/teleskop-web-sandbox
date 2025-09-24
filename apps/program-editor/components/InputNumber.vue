@@ -249,4 +249,11 @@ onMounted(() => {
     -moz-appearance: textfield;
   }
 }
+/*
+  When there are no labels sent to `QField`, for some reason there is a odd padding despite `QField` dense.
+  This is a workaround to remove it.
+*/
+.input-number .q-field__native {
+  padding: 0;
+}
 </style>
