@@ -45,6 +45,7 @@ const groupedParameters = computed(() => {
 <template>
   <div class="pl-1 pt-1">
     <div class="flex">
+      <!-- Command Icon -->
       <div v-show="expanded" class="flex-center">
         <div v-if="commandIcon">
           <UnoIcon
@@ -59,6 +60,7 @@ const groupedParameters = computed(() => {
       </div>
 
       <div>
+        <!-- Error Messages -->
         <span
           v-for="messages in commandError?.messages"
           :key="messages.type"
@@ -75,17 +77,19 @@ const groupedParameters = computed(() => {
             })
           }}
         </span>
-
+        <!-- Command -->
         <div class="flex">
           <div class="pb-1 pr-2">
             <CommandSelector :path="props.path" />
           </div>
 
-          <div class="flex-1">
+          <!-- Parameters & IOs -->
+          <div class="flex-1 flex">
             <div
               v-for="(group, groupName) in groupedParameters"
               :key="`group-${programCommand.commandNo}-${groupName}`"
-              class="inline-flex"
+              class="inline-flex parameter-group mr-2 mb-1 rounded"
+              :class="{ 'parameter-group__multiple': group.length > 1 }"
             >
               <ProgramStepCommandParameterInput
                 v-for="item in group"
@@ -93,6 +97,7 @@ const groupedParameters = computed(() => {
                 :path="`${props.path}.parameters.${item.originalIndex}`"
                 :parameter="item.param"
                 :command-no="programCommand.commandNo!"
+                class="parameter-input"
                 :parameter-error="props.commandError?.messages.find(m => m.parameterIndex === item.param.index)"
               />
             </div>
@@ -112,7 +117,37 @@ const groupedParameters = computed(() => {
 </template>
 
 <style lang="postcss" scoped>
-  .icon {
+.icon {
   @apply text-18px mr-4px cursor-pointer;
+}
+</style>
+
+<style lang="postcss">
+.parameter-group__multiple {
+  .parameter-input {
+    &:not(:last-child) {
+      .q-field--outlined {
+        .q-field__control {
+          &::before,
+          &::after {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+          }
+        }
+      }
+    }
+
+    &:not(:first-child) {
+      .q-field--outlined {
+        .q-field__control {
+          &::before,
+          &::after {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+          }
+        }
+      }
+    }
+  }
 }
 </style>
