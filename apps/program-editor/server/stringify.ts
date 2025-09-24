@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { AUTHOR, BEGIN_HEADER, BEGIN_PROGRAM, COMMENT, CREATED_AT_DATE, CREATED_AT_TIME, END_TAGS, FIRST_COMMAND_NO, LAST_COMMAND_NO, NAME, PROCESS_CODE, START_TAGS, UPDATED_AT_DATE, UPDATED_AT_TIME } from './constants'
+import { ADDITIONAL_PROCESS_CODE, AUTHOR, BEGIN_HEADER, BEGIN_PROGRAM, COMMENT, CREATED_AT_DATE, CREATED_AT_TIME, END_TAGS, FIRST_COMMAND_NO, LAST_COMMAND_NO, NAME, PROCESS_CODE, START_TAGS, UPDATED_AT_DATE, UPDATED_AT_TIME } from './constants'
 import { PError } from './error'
 import type { Machine, Program } from '~/shared/types'
 import { ParameterType } from '~/shared/constants'
@@ -26,6 +26,7 @@ export function stringifyProgram(program: Program, machine: Pick<Machine, 'comma
     `${AUTHOR}=${program.author || ''}`,
     `${COMMENT}=${program.comment || ''}`,
     `${PROCESS_CODE}=${program.typeId}`,
+    `${ADDITIONAL_PROCESS_CODE}=${program.additionalTypeId || ''}`,
     BEGIN_PROGRAM,
     FIRST_COMMAND_NO,
     ...program.steps.flatMap((step) => {
