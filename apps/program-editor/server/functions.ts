@@ -123,8 +123,8 @@ export async function createProcessType(body: { type: ProcessType }): Promise<bo
     const result = await db('BFPROCESSTYPES')
       .insert({
         PROCESSCODE: type.value,
-        PROCESSNAME: type.label,
-        NOTE: type.description,
+        PROCESSNAME: type.label.trim(),
+        NOTE: type.description?.trim() || '',
         BOYAPRGMI: 1,
       })
 
@@ -135,13 +135,14 @@ export async function createProcessType(body: { type: ProcessType }): Promise<bo
     throw e
   }
 }
+
 export async function updateProcessType(body: { type: ProcessType }): Promise<boolean> {
   try {
     const type = body.type
     const result = await db('BFPROCESSTYPES')
       .update({
-        PROCESSNAME: type.label,
-        NOTE: type.description,
+        PROCESSNAME: type.label.trim(),
+        NOTE: type.description?.trim() || '',
       })
       .where('PROCESSCODE', type.value)
 
@@ -152,6 +153,7 @@ export async function updateProcessType(body: { type: ProcessType }): Promise<bo
     throw e
   }
 }
+
 export async function deleteProcessType(body: { processCode?: number, PROCESSCODE?: number }): Promise<boolean> {
   try {
     const processCode = body.processCode || body.PROCESSCODE

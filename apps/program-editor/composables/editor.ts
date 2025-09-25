@@ -694,19 +694,19 @@ export const useEditorStore = defineStore('editor', () => {
     }))
   }
 
-  async function addProcessTypes(newType: ProcessType) {
-    await kc.fetch<void>('/api/process', { method: 'POST', body: { type: [newType] } })
-    return fetchAllProcessTypes()
+  async function addProcessType(newType: ProcessType): Promise<void> {
+    await kc.fetch<void>('/api/process', { method: 'POST', body: { type: newType } })
+    await fetchAllProcessTypes()
   }
 
-  async function deleteProcessType(processCode: number) {
+  async function deleteProcessType(processCode: number): Promise<void> {
     await kc.fetch<void>(`/api/process`, { method: 'DELETE', body: { processCode } })
-    return fetchAllProcessTypes()
+    await fetchAllProcessTypes()
   }
 
-  async function updateProcessType(updatedType: ProcessType) {
-    await kc.fetch<void>('/api/process', { method: 'PUT', body: { type: [updatedType] } })
-    return fetchAllProcessTypes()
+  async function updateProcessType(updatedType: ProcessType): Promise<void> {
+    await kc.fetch<void>('/api/process', { method: 'PUT', body: { type: updatedType } })
+    await fetchAllProcessTypes()
   }
 
   /**
@@ -1047,7 +1047,7 @@ export const useEditorStore = defineStore('editor', () => {
     selectStep,
     getPathElement,
     fetchAllProcessTypes,
-    addProcessTypes,
+    addProcessType,
     deleteProcessType,
     updateProcessType,
     scrollPage,

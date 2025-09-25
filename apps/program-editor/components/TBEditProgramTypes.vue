@@ -23,7 +23,7 @@ function handleCreateProcessType() {
   $q.dialog({
     component: TBCreateProcessTypeDialog,
   }).onOk(async (type: ProcessType) => {
-    await editor.addProcessTypes(type)
+    await editor.addProcessType(type)
     // Eklenen kaydı seç
     selectedRow.value = [type]
   })
