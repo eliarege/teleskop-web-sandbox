@@ -26,7 +26,7 @@ export default defineAuthEventHandler(async (event) => {
       if (duplicateCheck) {
         throw createError({
           statusCode: 409,
-          statusMessage: `ID_INUSE`,
+          statusMessage: 'ID_INUSE',
         })
       }
     }
@@ -44,7 +44,7 @@ export default defineAuthEventHandler(async (event) => {
     if (error?.code === 'ERR_DUP_ENTRY' || error?.message?.includes('PRIMARY KEY constraint')) {
       throw createError({
         statusCode: 409,
-        statusMessage: `ID_INUSE`,
+        statusMessage: 'ID_INUSE',
       })
     }
 
