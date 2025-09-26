@@ -50,7 +50,7 @@ const items = [
                 to: '/command-type-definitions',
               },
               {
-                label: tt('commandTypeParameters'),
+                label: tt('manualReasons'),
                 to: '/manual-reasons',
               },
               {
