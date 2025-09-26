@@ -49,6 +49,11 @@ const props = defineProps({
     required: false,
     default: false,
   },
+  rowsPerPageOptions: {
+    type: Array,
+    required: false,
+    default: () => [5, 10, 25, 50, 100],
+  },
 })
 
 const emit = defineEmits<{
@@ -357,6 +362,7 @@ function onRequest(pagination: QTableProps['pagination']) {
       class="text-override-left filterable-table virtual-scroll"
       column-sort-order="da"
       :visible-columns="visibleColumns"
+      :rows-per-page-options="rowsPerPageOptions"
       @update:pagination="e => tablePagination = e"
       @request="(reqProp) => onRequest(reqProp.pagination)"
     >
