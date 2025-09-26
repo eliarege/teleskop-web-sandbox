@@ -2,6 +2,8 @@
 import type { Machine } from '~/types'
 
 const kc = useKeycloak()
+const { notifySuccess, notifyError } = useNotify()
+const { t } = useI18n()
 
 const columns = computed(() => ({
   machineId: {
@@ -42,32 +44,55 @@ const { data: machines, refresh } = useAuthFetch<Machine[]>('/api/machines/other
 })
 
 async function handleAdd(formData: Machine) {
-  await kc.fetch('/api/machines/other-machine', {
-    method: 'POST',
-    body: formData,
-  })
-  await refresh()
+  try {
+    await kc.fetch('/api/machines/other-machine', {
+      method: 'POST',
+      body: formData,
+    })
+    notifySuccess(t('machineAddedSuccessfully'))
+    await refresh()
+  } catch (error: any) {
+    if (error.status === 409) {
+      notifyError(t('machineDuplicateId'))
+    } else {
+      notifyError(t('errorAddingMachine'))
+    }
+  }
 }
 
 async function handleEdit(formData: Machine, old: Machine) {
-  await kc.fetch('/api/machines/other-machine', {
-    method: 'PUT',
-    body: {
-      ...formData,
-      oldId: old.machineId,
-    },
-  })
-  await refresh()
+  try {
+    await kc.fetch('/api/machines/other-machine', {
+      method: 'PUT',
+      body: {
+        ...formData,
+        oldId: old.machineId,
+      },
+    })
+    notifySuccess(t('machineUpdatedSuccessfully'))
+    await refresh()
+  } catch (error: any) {
+    if (error.status === 409) {
+      notifyError(t('machineDuplicateId'))
+    } else {
+      notifyError(t('errorUpdatingMachine'))
+    }
+  }
 }
 
 async function handleDelete(formData: Machine[]) {
-  await kc.fetch('/api/machines/other-machine', {
-    method: 'DELETE',
-    body: {
-      machineIds: formData.map(d => d.machineId),
-    },
-  })
-  await refresh()
+  try {
+    await kc.fetch('/api/machines/other-machine', {
+      method: 'DELETE',
+      body: {
+        machineIds: formData.map(d => d.machineId),
+      },
+    })
+    notifySuccess(t('machinesDeletedSuccessfully'))
+    await refresh()
+  } catch (error: any) {
+    notifyError(t('errorDeletingMachines'))
+  }
 }
 </script>
 
